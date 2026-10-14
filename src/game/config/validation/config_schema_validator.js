@@ -410,6 +410,7 @@ export class ConfigSchemaValidator {
       ["lifetimeMinMs", 1, Infinity], ["lifetimeMaxMs", 1, Infinity],
       ["motionMultiplier", 0, 1], ["minimumFeedMs", 1, Infinity], ["maxWeightKg", 0.001, Infinity],
       ["autoFeedTriggerFraction", 0, 0.99],
+      ["feedReloadRemainingFraction", 0, 0.99],
       ["freeFeedPortions", 1, Infinity], ["careTickMs", 1, Infinity],
       ["displayTickMs", 1, Infinity], ["keepnetCapacity", 1, Infinity],
     ]) this.#requireFiniteNumber(`CONFIG.liveBait.${key}`, cfg[key], { min, max });

@@ -5,6 +5,7 @@ export class GameTimeClock {
   #now;
   #save;
   #load;
+  #rateMultiplier = 1;
 
   constructor({ anchorHours, anchorMs, timeScale, now, save = null, load = null }) {
     this.#anchorHours = anchorHours;
@@ -17,7 +18,22 @@ export class GameTimeClock {
 
   getHours() {
     const elapsed = Math.max(0, this.#now() - this.#anchorMs);
-    return (this.#anchorHours + elapsed * this.#timeScale / 3600000) % 24;
+    return (this.#anchorHours + elapsed * this.#timeScale * this.#rateMultiplier / 3600000) % 24;
+  }
+
+  getRateMultiplier() { return this.#rateMultiplier; }
+
+  setRateMultiplier(multiplier) {
+    if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier === this.#rateMultiplier) return;
+    this.checkpoint();
+    this.#rateMultiplier = multiplier;
+  }
+
+  checkpoint() {
+    this.#anchorHours = this.getHours();
+    this.#anchorMs = this.#now();
+    // Transient rate changes persist reached hours, never the extra rate itself.
+    this.#save?.({ anchorHours: this.#anchorHours, anchorMs: this.#anchorMs, timeScale: this.#timeScale });
   }
 
   setTimeScale(timeScale) {

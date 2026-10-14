@@ -69,9 +69,11 @@ export class DraggableButton {
   #savePosition() {
     if (!this.#options.cache) return;
 
-    const rect = this.#element.getBoundingClientRect();
-    const winWidth = window.innerWidth;
-    const winHeight = window.innerHeight;
+    const physicalRect = this.#element.getBoundingClientRect();
+    const rect = this.#options.uiSurface?.physicalToLogicalRect(physicalRect) || physicalRect;
+    const metrics = this.#options.uiSurface?.getMetrics();
+    const winWidth = metrics?.logicalWidth ?? window.innerWidth;
+    const winHeight = metrics?.logicalHeight ?? window.innerHeight;
 
     const distLeft = rect.left;
     const distRight = winWidth - rect.right;
@@ -133,6 +135,7 @@ export class DraggableButton {
     e.stopPropagation();
 
     if (e.button !== 0 && e.pointerType === "mouse") return;
+    if (this.#options.uiSurface && !this.#options.uiSurface.getMetrics().valid) return;
 
     this.#element.setPointerCapture(e.pointerId);
     this.#pointerId = e.pointerId;
@@ -142,8 +145,9 @@ export class DraggableButton {
     this.#startY = e.clientY;
 
     const rect = this.#element.getBoundingClientRect();
-    this.#offsetX = e.clientX - rect.left;
-    this.#offsetY = e.clientY - rect.top;
+    const offset = this.#options.uiSurface?.physicalToLogicalDelta({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    this.#offsetX = offset?.x ?? e.clientX - rect.left;
+    this.#offsetY = offset?.y ?? e.clientY - rect.top;
 
     if (this.#config.ui?.draggableButtons) {
       this.#holdTimer = setTimeout(() => {
@@ -184,11 +188,16 @@ export class DraggableButton {
   }
 
   #updatePosition(clientX, clientY) {
-    let x = clientX - this.#offsetX;
-    let y = clientY - this.#offsetY;
-    const rect = this.#element.getBoundingClientRect();
-    x = Math.max(0, Math.min(x, window.innerWidth - rect.width));
-    y = Math.max(0, Math.min(y, window.innerHeight - rect.height));
+    const point = this.#options.uiSurface?.physicalToLogicalPoint({ x: clientX, y: clientY });
+    let x = (point?.x ?? clientX) - this.#offsetX;
+    let y = (point?.y ?? clientY) - this.#offsetY;
+    const physicalRect = this.#element.getBoundingClientRect();
+    const rect = this.#options.uiSurface?.physicalToLogicalRect(physicalRect) || physicalRect;
+    const metrics = this.#options.uiSurface?.getMetrics();
+    const left = metrics?.safeArea.left || 0;
+    const top = metrics?.safeArea.top || 0;
+    x = Math.max(left, Math.min(x, (metrics?.logicalWidth ?? window.innerWidth) - rect.width - (metrics?.safeArea.right || 0)));
+    y = Math.max(top, Math.min(y, (metrics?.logicalHeight ?? window.innerHeight) - rect.height - (metrics?.safeArea.bottom || 0)));
     this.#element.style.left = `${x}px`;
     this.#element.style.top = `${y}px`;
   }
@@ -196,15 +205,9 @@ export class DraggableButton {
   onPointerUp(e) {
     this.#element.releasePointerCapture(e.pointerId);
     this.#pointerId = null;
-    this.#element.removeEventListener("pointermove", this.onPointerMove, {
-      capture: true,
-    });
-    this.#element.removeEventListener("pointerup", this.onPointerUp, {
-      capture: true,
-    });
-    this.#element.removeEventListener("pointercancel", this.onPointerUp, {
-      capture: true,
-    });
+    this.#element.removeEventListener("pointermove", this.onPointerMove);
+    this.#element.removeEventListener("pointerup", this.onPointerUp);
+    this.#element.removeEventListener("pointercancel", this.onPointerUp);
 
     if (this.#holdTimer) {
       clearTimeout(this.#holdTimer);

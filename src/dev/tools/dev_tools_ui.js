@@ -11,9 +11,16 @@ export class DevToolsUI {
   #controlBindings = new DevToolsControlBindingRegistry();
   #dragButton;
   #storageCache;
+  #uiSurface;
+  #mountNode;
+  #toggleMountNode;
 
-  constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null) {
+  constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
+    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode) {
     this.#storageCache = storageCache;
+    this.#uiSurface = uiSurface;
+    this.#mountNode = mountNode;
+    this.#toggleMountNode = toggleMountNode;
     this.#onToggleCallback = onToggleCallback;
     this.#tooltipProvider = tooltipProvider;
     this.#initBtn(config);
@@ -37,6 +44,7 @@ export class DevToolsUI {
     this.#dragButton = null;
     this.#tooltipProvider?.dispose();
     this.#controlBindings.clear();
+    this.#btn?.removeEventListener("click", this.#onToggleCallback);
     this.#btn?.remove();
     this.#panel?.remove();
     this.#btn = null;
@@ -94,10 +102,19 @@ export class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  createButtonRow(labelStr, parentElement, onClickCallback) {
+  createNavigation(pages, parentElement) {
+    const navigation = document.createElement("nav");
+    navigation.className = "devtools__pages";
+    navigation.setAttribute("aria-label", "Сторінки розробника");
+    for (const [label, activate] of pages) this.createButtonRow(label, navigation, activate, true);
+    parentElement.appendChild(navigation);
+  }
+
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false) {
     const row = document.createElement("div");
-    row.className = "devtools__row";
+    row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.className = "devtools__action";
     btn.innerText = labelStr;
     btn.addEventListener("click", onClickCallback);
@@ -124,7 +141,9 @@ export class DevToolsUI {
     inputElement.className = "devtools__switch";
 
     const cb = document.createElement("input");
+    cb.className = "devtools__switch-input";
     cb.type = "checkbox";
+    cb.setAttribute("aria-label", labelStr);
     cb.checked = initialValue;
 
     const slider = document.createElement("span");
@@ -262,18 +281,23 @@ export class DevToolsUI {
   #initBtn(config) {
     this.#btn = document.createElement("button");
     this.#btn.innerHTML = "⚙️";
-    this.#btn.className = "devtools__toggle";
+    this.#btn.className = "hud-control hud-control--square devtools__toggle";
+    this.#btn.type = "button";
+    this.#btn.setAttribute("aria-label", "Параметри розробника");
 
     UiEventShield.makeSolid(this.#btn);
 
-    this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
+    if (this.#toggleMountNode !== this.#mountNode) {
+      this.#btn.addEventListener("click", this.#onToggleCallback);
+    } else this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
       // Old saved coordinates were next to the clock; start the new corner layout at its CSS anchor.
       id: "devtools_btn_corner",
       cache: this.#storageCache,
       noTransform: true,
+      uiSurface: this.#uiSurface,
     });
 
-    document.body.appendChild(this.#btn);
+    this.#toggleMountNode.appendChild(this.#btn);
   }
 
   #initPanel() {
@@ -282,13 +306,13 @@ export class DevToolsUI {
 
     this.#panel.innerHTML = `
             <div class="devtools__header">
-                <h2>⚙️ DEV TOOLS</h2>
-                <button class="devtools__close">×</button>
+                <h2 class="devtools__title">⚙️ DEV TOOLS</h2>
+                <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
             </div>
             <div class="devtools__body"></div>
         `;
 
-    document.body.appendChild(this.#panel);
+    this.#mountNode.appendChild(this.#panel);
     this.#body = this.#panel.querySelector(".devtools__body");
 
     UiEventShield.makeSolid(this.#panel);

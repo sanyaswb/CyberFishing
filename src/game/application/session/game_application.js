@@ -19,6 +19,7 @@ export class GameApplication {
   #inventory;
   #gameStateName = "scouting";
   #canvasMetrics;
+  #viewportResizePending = false;
   #float;
   #net;
   #castPenalty;
@@ -325,6 +326,7 @@ export class GameApplication {
 
     this.#initEvents();
     this.setState("scouting");
+    this.#syncInputAvailability();
   }
 
   #createDebugContext() {
@@ -436,8 +438,7 @@ export class GameApplication {
     this.#handleInventoryChanged(this.#inventory.getEquipped());
 
     this.#listeners.add(this.#windowTarget, "resize", () => {
-      this.#canvasMetrics.resizeToViewport();
-      this.#refreshViewport();
+      this.#viewportResizePending = true;
     });
 
     this.#ui.onNetClick = () => {
@@ -604,6 +605,12 @@ export class GameApplication {
   }
 
   update(dt) {
+    // Consume the latest size once before input/world update; resize events never draw independently.
+    if (this.#viewportResizePending) {
+      this.#viewportResizePending = false;
+      this.#canvasMetrics.resizeToViewport();
+      this.#refreshViewport();
+    }
     this.#keepnetRefreshElapsedMs += Math.max(0, dt);
     if (this.#keepnetRefreshElapsedMs >= this.#config.liveBait?.displayTickMs) {
       this.#keepnetRefreshElapsedMs = 0;
@@ -621,7 +628,7 @@ export class GameApplication {
       }
     }
     const timeScale = this.#config.debug?.timeScale || 1;
-    this.#syncDragControlAvailability();
+    this.#syncInputAvailability();
     const input = this.#input.getState();
     this.#lastInputState = input;
     this.#applyViewportPan(input);
@@ -658,11 +665,13 @@ export class GameApplication {
     this.#debugService?.update(this.#debugContext);
   }
 
-  #syncDragControlAvailability() {
+  #syncInputAvailability() {
     const eq = this.#inventory.getEquipped() || {};
     const rodAllowsReel = eq.rod?.effectiveStats?.hasReel !== false;
     const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
     this.#input.setDragControlEnabled(rodAllowsReel && reelHasDrag);
+    const stateName = this.#stateMachine?.currentName || this.#gameStateName;
+    this.#input.setPointerPanEnabled(stateName === "scouting" && !this.isAimingChum && !eq.rod);
   }
 
   #applyViewportPan(input) {

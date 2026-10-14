@@ -1,7 +1,7 @@
 import { UiEventShield } from "../dom/ui_event_shield.js";
 
 export class GameControls {
-  #fullscreenBtn;
+  #fullscreenControl;
   #netBtn;
   #isNetReady = false;
   onNetClick;
@@ -9,22 +9,23 @@ export class GameControls {
   onContinueClick;
   #lifecycle;
   #labels;
-  #logger;
-  #onFullscreenChange = () => {
-    if (!this.#fullscreenBtn) return;
-    const active = Boolean(document.fullscreenElement);
-    this.#fullscreenBtn.classList.toggle("game-control--fullscreen-hidden", active);
-    this.#fullscreenBtn.disabled = active;
-    this.#fullscreenBtn.setAttribute("aria-hidden", String(active));
-  };
+  #mount;
+  #toolbarMount;
+  #document;
+  #frameScheduler;
+  #pendingFrames = new Set();
 
-  constructor(config, lifecycle, { labels, logger } = {}) {
+  constructor(config, lifecycle, { labels, documentRef = document,
+    mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null } = {}) {
     this.#labels = labels;
-    this.#logger = logger;
+    this.#mount = mountNode;
+    this.#toolbarMount = toolbarMountNode;
+    this.#document = documentRef;
+    this.#frameScheduler = frameScheduler;
+    this.#fullscreenControl = fullscreenControl;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("GameControls requires devTools");
     }
-    this.#initFullscreenBtn();
     this.#initNetBtn();
     this.#initContinueBtn();
 
@@ -39,36 +40,8 @@ export class GameControls {
     }
   }
 
-  #initFullscreenBtn() {
-    this.#fullscreenBtn = document.createElement("button");
-    this.#fullscreenBtn.className = "game-control game-control--fullscreen";
-    this.#fullscreenBtn.type = "button";
-    this.#fullscreenBtn.innerHTML = "⛶";
-    this.#fullscreenBtn.setAttribute("aria-label", this.#labels.fullscreen);
-    this.#fullscreenBtn.title = this.#labels.fullscreen;
-    this.#fullscreenBtn.hidden = typeof document.documentElement.requestFullscreen !== "function";
-    UiEventShield.makeSolid(this.#fullscreenBtn);
-    this.#fullscreenBtn.addEventListener("click", () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch((err) => {
-          this.#logger?.warn(
-            `Error attempting to enable full-screen mode: ${err.message}`,
-          );
-        });
-      }
-    });
-
-    document.addEventListener(
-      "fullscreenchange",
-      this.#onFullscreenChange,
-    );
-
-    document.body.appendChild(this.#fullscreenBtn);
-    this.#onFullscreenChange();
-  }
-
   #initNetBtn() {
-    this.#netBtn = document.createElement("button");
+    this.#netBtn = this.#document.createElement("button");
     this.#netBtn.className = "game-control game-control--net game-toolbar-button game-toolbar-button--net";
     this.#netBtn.type = "button";
     this.#netBtn.innerHTML = "🕸️";
@@ -79,7 +52,7 @@ export class GameControls {
       if (this.#isNetReady) this.onNetClick?.();
     });
 
-    document.body.appendChild(this.#netBtn);
+    this.#toolbarMount.appendChild(this.#netBtn);
   }
 
   updateNetButtonState(hasNet, isReady) {
@@ -99,14 +72,14 @@ export class GameControls {
     this.#netBtn.classList.toggle("game-control--net-unready", !isReady);
     if (isAppearing) {
       this.#netBtn.classList.remove("game-control--net-entered");
-      requestAnimationFrame(() => {
+      this.#scheduleFrame(() => {
         this.#netBtn?.classList.add("game-control--net-entered");
       });
     }
   }
 
   #initContinueBtn() {
-    this.#continueBtn = document.createElement("button");
+    this.#continueBtn = this.#document.createElement("button");
     this.#continueBtn.className = "game-control game-control--continue";
     this.#continueBtn.innerHTML = this.#labels.continueAfterOutcome;
 
@@ -116,7 +89,7 @@ export class GameControls {
       if (this.onContinueClick) this.onContinueClick();
     });
 
-    document.body.appendChild(this.#continueBtn);
+    this.#mount.appendChild(this.#continueBtn);
   }
 
   updateContinueButtonState(isVisible) {
@@ -126,42 +99,51 @@ export class GameControls {
 
   // Scouting pointer feedback: dims the page while the pointer is held, flashes the release class for one frame.
   setScoutingPointerDimmed(isDimmed) {
-    document.body.classList.toggle("game-shell--pointer-hold", isDimmed);
+    this.#document.body.classList.toggle("game-shell--pointer-hold", isDimmed);
 
     if (isDimmed) {
-      document.body.classList.remove("game-shell--pointer-release");
+      this.#document.body.classList.remove("game-shell--pointer-release");
       return;
     }
 
-    document.body.classList.add("game-shell--pointer-release");
-    requestAnimationFrame(() => {
-      document.body.classList.remove("game-shell--pointer-release");
+    this.#document.body.classList.add("game-shell--pointer-release");
+    this.#scheduleFrame(() => {
+      this.#document.body.classList.remove("game-shell--pointer-release");
     });
   }
 
   setOutcomeOverlayActive(isActive) {
-    document.body?.classList.toggle(
+    this.#document.body?.classList.toggle(
       "game-shell--outcome-active",
       isActive === true,
     );
+    if (this.#mount !== this.#document.body) this.#mount.inert = isActive === true;
   }
 
   dispose() {
     this.setOutcomeOverlayActive(false);
-    document.removeEventListener(
-      "fullscreenchange",
-      this.#onFullscreenChange,
-    );
+    this.#fullscreenControl?.dispose();
+    this.#fullscreenControl = null;
     this.#lifecycle?.dispose?.();
     this.#lifecycle = null;
-    this.#fullscreenBtn?.remove();
     this.#netBtn?.remove();
     this.#continueBtn?.remove();
-    this.#fullscreenBtn = null;
     this.#netBtn = null;
     this.#continueBtn = null;
     this.onNetClick = null;
     this.onContinueClick = null;
+    for (const id of this.#pendingFrames) {
+      if (this.#frameScheduler) this.#frameScheduler.cancelAnimationFrame(id);
+      else if (typeof cancelAnimationFrame === "function") cancelAnimationFrame(id);
+    }
+    this.#pendingFrames.clear();
+  }
+
+  #scheduleFrame(callback) {
+    let id;
+    const run = () => { this.#pendingFrames.delete(id); callback(); };
+    id = this.#frameScheduler ? this.#frameScheduler.requestAnimationFrame(run) : requestAnimationFrame(run);
+    this.#pendingFrames.add(id);
   }
 }
 

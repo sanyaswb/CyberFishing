@@ -55,6 +55,15 @@ try {
         `room level ${level} has day, evening and night backgrounds`);
     }
   }
+  if (tree.has("ui-catalog.html")) {
+    const catalogPage = tree.read("ui-catalog.html").toString("utf8");
+    assert(files.has("ui-catalog.html"));
+    assert(files.has("src/entrypoints/dev/ui_catalog.entry.js"));
+    assert(files.has("src/dev/styles/ui-catalog.css"));
+    for (const [, href] of catalogPage.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href));
+    assert.equal(fs.readFileSync(path.join(site, "ui-catalog.html"), "utf8"),
+      catalogPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`));
+  }
   for (const file of tree.paths().filter((file) => file.startsWith("assets/"))) assert(files.has(file), `asset ${file} is released`);
   // The release is closed: every module it contains imports only released modules (dynamic imports included).
   const modules = [...files].filter((file) => file.endsWith(".js"));
@@ -87,8 +96,24 @@ try {
   assert.throws(() => PagesReleaseBuilder.rootPage("<head>\n<base href=\"x/\">", "1.0.0-abcdef0"), /must not declare <base>/u);
   const fakeTree = { read: (file) => Buffer.from(file === "index.html"
     ? '<link rel="stylesheet" href="https://cdn.example/x.css"><script type="module" src="src/e.js"></script>' : ""),
-  has: (file) => !["fisherman-house.html", "dev.html"].includes(file), paths: () => [] };
+  has: (file) => !["fisherman-house.html", "dev.html", "ui-catalog.html"].includes(file), paths: () => [] };
   assert.throws(() => ReleaseFileSet.collect(fakeTree), /project-relative paths/u, "external stylesheets are rejected");
+
+  // New uncommitted catalog code is checked too; the immutable release above still uses HEAD bytes.
+  const workspace = path.resolve(__dirname, "..");
+  const authoredTree = {
+    has: (file) => fs.existsSync(path.join(workspace, file)),
+    read: (file) => fs.readFileSync(path.join(workspace, file)),
+    readAll: (requested) => new Map(requested.map((file) => [file, fs.readFileSync(path.join(workspace, file))])),
+    paths: () => tree.paths(),
+  };
+  const authoredFiles = new Set(ReleaseFileSet.collect(authoredTree));
+  for (const file of ["ui-catalog.html", "fisherman-house.html", "src/entrypoints/dev/ui_catalog.entry.js",
+    "src/bootstrap/development/ui_catalog_bootstrap.js", "src/dev/styles/ui-catalog.css",
+    "src/game/presentation/styles/auto-switch.css", "src/game/presentation/styles/ui-surface.css",
+    "src/game/presentation/ui/ui_close_button_renderer.js", "src/game/presentation/ui/ui_auto_switch_renderer.js"]) {
+    assert(authoredFiles.has(file), `authored catalog release closure includes ${file}`);
+  }
 
   console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, ` +
     `${modules.length} modules, assets), closed module graph, base-resolved root page, earlier releases and root files ` +

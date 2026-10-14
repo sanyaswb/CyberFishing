@@ -37,7 +37,7 @@
   pointer-events: auto;
   touch-action: manipulation;
 }
-.debug-overlay__tab:hover,
+.ui-surface--desktop-hover .debug-overlay__tab:hover,
 .debug-overlay__tab:focus-visible {
   background: rgba(120, 190, 255, 0.16);
   border-color: rgba(120, 190, 255, 0.45);
@@ -47,6 +47,9 @@
   background: rgba(120, 190, 255, 0.22);
   border-color: rgba(120, 190, 255, 0.65);
 }
+.debug-overlay__tab:focus-visible,
+.debug-overlay__metric-label:focus-visible,
+.debug-overlay__scale-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .debug-overlay__metric-label {
   cursor: help;
   pointer-events: auto;
@@ -57,13 +60,13 @@
   outline: none;
   transition: background 80ms ease, color 80ms ease;
 }
-.debug-overlay__metric-label:hover,
+.ui-surface--desktop-hover .debug-overlay__metric-label:hover,
 .debug-overlay__metric-label:focus-visible {
   color: var(--ui-text);
   background: rgba(115, 194, 251, 0.16);
 }
-.debug-overlay__metric-label--active,
-.debug-overlay__metric-label:active {
+.ui-surface--desktop-hover .debug-overlay__metric-label--active,
+.ui-surface--desktop-hover .debug-overlay__metric-label:active {
   color: var(--ui-text);
   background: rgba(255, 255, 255, 0.2);
 }

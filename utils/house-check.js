@@ -1,6 +1,286 @@
 "use strict";
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const { TestDocument } = require("./testing/keepnet/test_document");
+
+function houseDocument() {
+  const documentRef = new TestDocument();
+  const simpleMatch = (node, selector) => {
+    const match = selector.match(/^(?:([a-z]+))?(?:\.([\w-]+))?(?:\[([\w-]+)(?:="([^"]*)")?\])?$/);
+    if (!match) throw new Error(`Unsupported house test selector: ${selector}`);
+    const [, tag, className, name, value] = match;
+    return (!tag || node.tagName === tag) && (!className || node.className.split(" ").includes(className)) &&
+      (!name || (name === "hidden" ? node.hidden : node.getAttribute(name) !== null && (value === undefined || node.getAttribute(name) === value)));
+  };
+  const matches = (node, selector) => selector.split(",").some((entry) => {
+    const parts = entry.trim().split(/\s+/);
+    if (!simpleMatch(node, parts.pop())) return false;
+    let ancestor = node.parentNode;
+    while (parts.length) {
+      const previous = parts.pop();
+      while (ancestor && !simpleMatch(ancestor, previous)) ancestor = ancestor.parentNode;
+      if (!ancestor) return false;
+      ancestor = ancestor.parentNode;
+    }
+    return true;
+  });
+  const enhance = (node) => {
+    node.classList.contains = (name) => node.className.split(" ").includes(name);
+    node.classList.toggle = (name, force) => {
+      const enabled = force === undefined ? !node.classList.contains(name) : force;
+      node.classList[enabled ? "add" : "remove"](name);
+      return enabled;
+    };
+    node.querySelectorAll = (selector) => documentRef.all((entry) => entry !== node && matches(entry, selector), node);
+    node.querySelector = (selector) => node.querySelectorAll(selector)[0] || null;
+    node.closest = (selector) => { for (let current = node; current; current = current.parentNode) if (matches(current, selector)) return current; return null; };
+    node.scrollTo = (options) => node.lastScrollOptions = options;
+    Object.defineProperty(node, "isConnected", { get: () => documentRef.body.contains(node) });
+    return node;
+  };
+  const create = documentRef.createElement.bind(documentRef);
+  documentRef.createElement = (tag) => enhance(create(tag));
+  enhance(documentRef.body);
+  documentRef.querySelectorAll = (selector) => documentRef.all((node) => matches(node, selector));
+  documentRef.querySelector = (selector) => documentRef.querySelectorAll(selector)[0] || null;
+  const html = fs.readFileSync("fisherman-house.html", "utf8").split(/<body[^>]*>/)[1].split("</body>")[0];
+  const stack = [documentRef.body];
+  for (const [, close, tag, attributes] of html.matchAll(/<(\/)?([a-z][a-z0-9-]*)([^>]*)>/g)) {
+    if (close) { if (stack.at(-1).tagName === tag) stack.pop(); continue; }
+    const node = documentRef.createElement(tag);
+    for (const [, name, value] of attributes.matchAll(/([\w-]+)(?:="([^"]*)")?/g)) {
+      node.setAttribute(name, value ?? "");
+      if (name === "class") node.className = value;
+      if (name === "hidden") node.hidden = true;
+      if (name.startsWith("data-")) node.dataset[name.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value ?? "";
+    }
+    stack.at(-1).appendChild(node);
+    if (!["img", "input", "link", "meta", "br"].includes(tag)) stack.push(node);
+  }
+  return documentRef;
+}
+
+async function checkHousePresentation(HOUSE_CONFIG) {
+  const { HouseView } = await import("../src/game/presentation/house/house_view.js");
+  const { InventoryDomFactory } = await import("../src/platform/browser/dom/inventory_dom_factory.js");
+  const { InventoryResourceMeterRenderer } = await import("../src/game/presentation/inventory/inventory_resource_meter_renderer.js");
+  const { DegradationColorResolver } = await import("../src/game/presentation/styles/degradation_color_resolver.js");
+  const { UiSheetHandleRenderer } = await import("../src/game/presentation/ui/ui_sheet_handle_renderer.js");
+  const { SheetDismissController } = await import("../src/platform/browser/dom/sheet_dismiss_controller.js");
+  const { SheetHeightController } = await import("../src/platform/browser/dom/sheet_height_controller.js");
+  const { UiAutoSwitchRenderer } = await import("../src/game/presentation/ui/ui_auto_switch_renderer.js");
+  const documentRef = houseDocument(), domFactory = new InventoryDomFactory(documentRef);
+  let degradationColors = { range: { minimum: 0, maximum: 100 }, colorStops: [
+    { position: 0, color: [255, 0, 0] }, { position: 100, color: [0, 255, 0] }] };
+  const colorResolver = new DegradationColorResolver({ configProvider: () => degradationColors });
+  const motionPreference = { matches: false };
+  const timers = new Map(); let timerId = 0;
+  const frames = new Map(); let frameId = 0;
+  const flushFrames = () => { const pending = [...frames.values()]; frames.clear(); for (const callback of pending) callback(); };
+  for (const panel of documentRef.querySelectorAll("[data-house-panel]")) {
+    panel.querySelector(".house__sheet-content").scrollHeight = 480;
+    panel.getBoundingClientRect = () => ({ height: Number.parseFloat(panel.style.getPropertyValue("--house-sheet-height")) || 481 });
+  }
+  const windowTarget = { addEventListener() {}, removeEventListener() {},
+    requestAnimationFrame: callback => { frames.set(++frameId, callback); return frameId; }, cancelAnimationFrame: id => frames.delete(id),
+    getComputedStyle: () => ({ maxHeight: "690px", borderTopWidth: "1px",
+      getPropertyValue: name => ["--ui-sheet-handle-size", "--house-dock-collapsed-height"].includes(name) ? "44px" : "0px" }),
+    setTimeout: callback => { timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id),
+    matchMedia: () => motionPreference };
+  const actions = [];
+  const createView = () => new HouseView({ documentRef, windowTarget,
+    sheetHeights: new SheetHeightController({ windowTarget, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }),
+    roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, returnTo: "index.html",
+    perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
+    resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
+    sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
+    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }) });
+  const view = createView();
+  const header = documentRef.querySelector("[data-house-header]"), dock = documentRef.querySelector("[data-house-dock]");
+  assert.equal(header.inert, true, "House starts with both gesture zones closed");
+  assert.equal(dock.inert, false, "the default compact menu keeps its three icon buttons accessible");
+  const hoverButton = documentRef.querySelector('[data-house-panel-button="room"]');
+  const hoverHandle = documentRef.querySelector("[data-house-dock-handle-mount]").children[0];
+  documentRef.body.classList.add("ui-surface--desktop-hover");
+  dock.fire("pointerover", { target: hoverHandle, pointerType: "mouse" });
+  assert(!dock.classList.contains("house__dock--hovered"), "the handle cannot initiate menu hover expansion");
+  let hoverWrites = 0; const dockToggle = dock.classList.toggle;
+  dock.classList.toggle = (...args) => { if (args[0] === "house__dock--hovered") hoverWrites++; return dockToggle(...args); };
+  for (let move = 0; move < 100; move++) dock.fire("pointerover", { target: hoverButton, pointerType: "mouse" });
+  assert(dock.classList.contains("house__dock--hovered")); assert.equal(hoverWrites, 1);
+  dock.fire("pointerover", { target: dock, pointerType: "mouse" });
+  dock.fire("pointerover", { target: hoverHandle, pointerType: "mouse" });
+  assert(dock.classList.contains("house__dock--hovered"), "moving into a gap or handle preserves the expanded container height");
+  dock.fire("pointerleave"); assert(!dock.classList.contains("house__dock--hovered"));
+  dock.fire("pointerover", { target: hoverButton, pointerType: "touch" });
+  assert(!dock.classList.contains("house__dock--hovered"), "touch does not acquire desktop hover state");
+  documentRef.body.classList.remove("ui-surface--desktop-hover");
+  dock.fire("pointerover", { target: hoverButton, pointerType: "mouse" });
+  assert(!dock.classList.contains("house__dock--hovered"), "disabled adapter hover policy also covers mouse use on a hybrid device");
+  const background = documentRef.querySelector('[data-house-background="day"]');
+  documentRef.body.fire("click", { target: background });
+  assert(header.classList.contains("house__header--visible") && dock.classList.contains("house__dock--expanded"));
+  documentRef.body.fire("click", { target: background });
+  assert(!header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"));
+  view.handleSceneGesture(30);
+  assert(header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"), "down opens the header");
+  view.handleSceneGesture(-30);
+  assert(!header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"), "the first upward gesture only closes the header");
+  view.handleSceneGesture(-30);
+  assert(!header.classList.contains("house__header--visible") && dock.classList.contains("house__dock--expanded"), "up opens the section menu");
+  view.handleSceneGesture(30);
+  assert(!header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"), "the first downward gesture only closes the menu");
+  view.handleSceneGesture(30);
+  assert(header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"), "the next downward gesture opens the header");
+  view.handleSceneGesture(-30); view.handleSceneGesture(-30);
+  const model = { aquarium: { count: 1, capacity: 5, owned: true, level: 1, maxLevel: 2,
+      feed: { name: "Feed", quantity: 1, imagePath: "feed.svg", percentage: 50 }, autoFeeder: { owned: true, enabled: false } },
+    liveBaits: [{ id: "fish-1", name: "Fish", weightLabel: "1 г", location: "aquarium", locationLabel: "Акваріум",
+      selected: false, actionLabel: "Обрати", timerLabel: "00:00:05", canTransfer: false }], keepnet: [], deadCount: 0,
+    levelLabel: "1", upgradeLevel: 2, upgradeCapacity: 6, upgradeLabel: "Покращити", feedStock: 5, nextFeedLabel: "Feed", autoStatus: "Вручну",
+    autoToggleLabel: "Увімкнути", feedTimeLabel: "00:00:05", room: { level: 1, maxLevel: 5, nextDurationMs: 7200000,
+      targetLevel: null, remainingMs: 0, eveningOpacity: 0, nightOpacity: 0 } };
+  view.render(model);
+  const meter = documentRef.querySelector("[data-house-feed-meter]").children[0];
+  const capacityMeter = documentRef.querySelector("[data-house-capacity-meter]").children[0];
+  const levelCounter = documentRef.querySelector("[data-house-aquarium-level-count]");
+  const capacityCounter = documentRef.querySelector("[data-house-capacity]");
+  assert(levelCounter.parentNode.classList.contains("inventory-parameter__header"));
+  assert(capacityCounter.parentNode.classList.contains("inventory-parameter__header"), "both counts share a label/header row above their meter");
+  const feedButton = documentRef.querySelector("[data-house-feed-toggle]");
+  assert(feedButton.parentNode.classList.contains("house__feeding-row"));
+  assert(feedButton.parentNode.parentNode.classList.contains("house__upgrade-card"), "feeding replaces reserve text inside the status card");
+  assert.equal(documentRef.querySelector("[data-house-feed-stock]"), null);
+  assert.equal(documentRef.querySelector("[data-house-slot-count]"), null);
+  assert.equal(documentRef.querySelector("[data-house-upgrade-level]").textContent, "2");
+  assert.equal(documentRef.querySelector("[data-house-upgrade-capacity]").textContent, "6");
+  assert.equal(capacityMeter.getAttribute("aria-valuenow"), "20");
+  assert.equal(capacityMeter.style.getPropertyValue("--inventory-resource-color"), "rgb(51, 204, 0)", "occupancy color reads remaining free capacity");
+  for (const [count, capacity, expected] of [[5, 5, 100], [0, 0, 0], [1, 0, 100], [20, 5, 100], [0, 5, 0]]) {
+    model.aquarium.count = count; model.aquarium.capacity = capacity; view.render(model);
+    assert.equal(capacityMeter.getAttribute("aria-valuenow"), String(expected));
+  }
+  model.aquarium.count = 1; model.aquarium.capacity = 5; view.render(model);
+  let capacityWrites = 0; const capacitySet = capacityMeter.style.setProperty;
+  capacityMeter.style.setProperty = (...args) => { capacityWrites++; capacitySet(...args); };
+  for (let tick = 0; tick < 120; tick++) view.render(model);
+  assert.equal(capacityWrites, 0, "unchanged occupancy causes no meter CSS writes");
+  const upgradeButton = documentRef.querySelector('[data-house-action="upgrade"]');
+  model.upgradeAffordable = false; view.render(model);
+  assert(upgradeButton.disabled && upgradeButton.classList.contains("inventory-action--danger"));
+  model.upgradeAffordable = true; view.render(model);
+  assert(!upgradeButton.disabled && upgradeButton.classList.contains("inventory-action--primary"));
+  assert.equal(meter.getAttribute("role"), "meter");
+  assert.equal(meter.getAttribute("aria-valuenow"), "50");
+  assert.equal(meter.style.getPropertyValue("--inventory-resource-color"), "rgb(128, 128, 0)", "feed uses the injected shared degradation colors");
+  const fishRow = documentRef.byClass("house__fish")[0], fishAction = documentRef.byClass("house__fish-action")[0];
+  fishAction.focus();
+  const fishList = documentRef.querySelector("[data-house-live-baits]"); fishList.scrollTop = 42;
+  model.liveBaits[0].timerLabel = "00:00:04";
+  model.liveBaits[0].selected = true;
+  model.liveBaits[0].actionLabel = "Зняти";
+  degradationColors = { ...degradationColors, colorStops: [{ position: 0, color: [0, 0, 255] }, { position: 100, color: [255, 255, 255] }] };
+  view.render(model);
+  assert.equal(documentRef.querySelector("[data-house-feed-meter]").children[0], meter);
+  assert.equal(meter.style.getPropertyValue("--inventory-resource-color"), "rgb(128, 128, 255)", "live palette edits propagate");
+  assert.equal(documentRef.byClass("house__fish")[0], fishRow);
+  assert.equal(documentRef.byClass("house__fish-action")[0], fishAction);
+  assert.equal(documentRef.activeElement, fishAction, "numeric ticks and selection preserve keyboard focus");
+  assert.equal(fishList.scrollTop, 42);
+  assert.equal(fishAction.dataset.houseAction, "deselect");
+  for (const [value, expected] of [[-10, 0], [140, 100], [NaN, 0]]) {
+    model.aquarium.feed.percentage = value; view.render(model);
+    assert.equal(meter.style.getPropertyValue("--inventory-resource-percent"), `${expected}%`);
+    assert.equal(meter.getAttribute("aria-valuenow"), String(expected));
+  }
+  assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "the compact menu and all sheets reuse the shared tap/swipe handle");
+  assert.equal(documentRef.byClass("ui-modal-close").length, 0, "House sheets have no cross buttons");
+  const autoInput = documentRef.byClass("inventory-toggle__input")[0];
+  autoInput.checked = true; autoInput.fire("change");
+  assert.deepEqual(actions.at(-1), ["toggleAutoFeeder"]);
+  model.aquarium.autoFeeder.enabled = true; view.render(model);
+  assert.equal(autoInput.checked, true);
+  model.feedStock = 0; view.render(model);
+  assert.equal(autoInput.disabled, true, "the automatic feeder is inactive without reserve feed");
+  assert.equal(autoInput.checked, false, "an empty reserve does not display an active feeder");
+  const actionCountWithoutStock = actions.length;
+  autoInput.fire("change"); assert.equal(actions.length, actionCountWithoutStock, "disabled shared switches do not dispatch changes");
+  model.feedStock = 5; view.render(model);
+  const roomButton = documentRef.querySelector('[data-house-panel-button="room"]');
+  roomButton.focus(); documentRef.body.fire("click", { target: roomButton });
+  const roomPanel = documentRef.querySelector('[data-house-panel="room"]');
+  assert.equal(roomPanel.hidden, false);
+  assert(dock.classList.contains("house__dock--panel-open"), "opening a section collapses the other labels to miniature icons");
+  assert.equal(documentRef.querySelector("[data-house-dock-handle-mount]").hidden, true, "an open sheet has one visible top handle");
+  assert.equal(roomPanel.getAttribute("aria-modal"), "false", "the visible dock remains accessible");
+  assert.equal(documentRef.activeElement, roomPanel.querySelector(".ui-sheet-handle"));
+  documentRef.body.fire("keydown", { key: "Escape" });
+  assert(roomPanel.classList.contains("house__sheet--closing"), "dismissal animates the sheet downward");
+  flushFrames(); for (const callback of [...timers.values()]) callback(); timers.clear();
+  assert.equal(roomPanel.hidden, true);
+  assert.equal(documentRef.activeElement, roomButton);
+  assert(!dock.classList.contains("house__dock--expanded") && !dock.classList.contains("house__dock--panel-open"));
+  view.handleSceneGesture(-30);
+  assert(dock.classList.contains("house__dock--expanded"), "one upward gesture expands all three names without a sheet");
+  assert.equal(documentRef.querySelector("[data-house-scrim]").hidden, true);
+  const aquariumButton = documentRef.querySelector('[data-house-panel-button="aquarium"]');
+  const baitButton = documentRef.querySelector('[data-house-panel-button="bait"]');
+  documentRef.body.fire("click", { target: aquariumButton });
+  const aquariumPanel = documentRef.querySelector('[data-house-panel="aquarium"]');
+  assert.equal(aquariumPanel.hidden, false);
+  documentRef.body.fire("click", { target: baitButton });
+  assert.equal(aquariumPanel.hidden, true);
+  assert.equal(documentRef.querySelector('[data-house-panel="bait"]').hidden, false, "a miniature changes sections directly");
+  assert.equal(documentRef.byClass("house__dock-button--selected").length, 1, "exactly the active section is highlighted");
+  view.handleSceneGesture(30);
+  assert(documentRef.querySelector('[data-house-panel="bait"]').classList.contains("house__sheet--closing"), "down on the backdrop closes the active sheet");
+  flushFrames(); for (const callback of [...timers.values()]) callback(); timers.clear();
+  assert.equal(documentRef.querySelector("[data-house-scrim]").hidden, true);
+  assert.equal(dock.inert, false, "closing leaves the compact navigation accessible");
+  const menuHandle = documentRef.querySelector("[data-house-dock-handle-mount]").children[0];
+  menuHandle.fire("click", { detail: 0 }); assert(dock.classList.contains("house__dock--expanded"));
+  menuHandle.fire("click", { detail: 0 }); assert(!dock.classList.contains("house__dock--expanded"));
+  const roomTrack = documentRef.querySelector("[data-house-room-track]");
+  assert.equal(roomTrack.lastScrollOptions.behavior, "smooth");
+  motionPreference.matches = true;
+  roomTrack.fire("keydown", { key: "ArrowRight" });
+  assert.equal(roomTrack.lastScrollOptions.behavior, "auto", "room scrolling respects reduced motion");
+  model.aquarium.feed = null; view.render(model);
+  assert.equal(documentRef.querySelector("[data-house-feed-bar]").hidden, true);
+  view.dispose();
+  assert.equal(dock.listeners.get("pointerover").size, 0); assert.equal(dock.listeners.get("pointerleave").size, 0);
+  assert.equal(documentRef.body.listeners.get("keydown").size, 0);
+  assert.equal(documentRef.byClass("ui-sheet-handle").length, 0);
+  assert.equal(documentRef.byClass("inventory-toggle").length, 0);
+  assert.equal(documentRef.byClass("inventory-resource-meter").length, 0);
+  assert.equal(documentRef.byClass("house__fish").length, 0);
+  model.aquarium.feed = { name: "Feed", quantity: 1, imagePath: "feed.svg", percentage: 50 };
+  const remounted = createView(); remounted.render(model);
+  assert.equal(dock.listeners.get("pointerover").size, 1); assert.equal(dock.listeners.get("pointerleave").size, 1);
+  assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "remount creates one handle for the compact menu and each sheet");
+  assert.equal(documentRef.byClass("inventory-toggle").length, 1);
+  assert.equal(documentRef.byClass("inventory-resource-meter").length, 2);
+  assert.equal(documentRef.byClass("house__fish").length, 1);
+  assert.equal(documentRef.body.listeners.get("click").size, 1);
+  assert.equal(documentRef.body.listeners.get("keydown").size, 1);
+  const actionCount = actions.length;
+  documentRef.byClass("inventory-toggle__input")[0].fire("change");
+  assert.equal(actions.length, actionCount + 1, "a remounted switch performs exactly once");
+  remounted.dispose();
+  const { HousePresenter } = await import("../src/game/presentation/house/house_presenter.js");
+  const { HOUSE_LABELS } = await import("../src/game/presentation/house/house_labels.js");
+  let funds = 2, presented;
+  const pricedState = { ...model, aquarium: { ...model.aquarium, level: 5, maxLevel: 10, capacity: 16, nextUpgradeCapacity: 18 },
+    feedItems: [], prices: { upgrade: 5 } };
+  const presenter = new HousePresenter({ liveBait: { getView: () => pricedState }, room: { getView: () => model.room },
+    gameTime: { getHours: () => 12 }, labels: HOUSE_LABELS, getAvailableFunds: () => funds,
+    view: { render: next => presented = next } });
+  presenter.refresh(); assert.equal(presented.upgradeLabel, "Рівень 6 · Місткість 18");
+  assert.equal(presented.upgradeLevel, 6); assert.equal(presented.upgradeCapacity, 18);
+  assert.equal(presented.upgradeAffordable, false);
+  funds = 5; presenter.refresh(); assert.equal(presented.upgradeAffordable, true);
+  assert.equal(presented.canAutoFeed, false, "auto availability follows the selected feed's authoritative reserve");
+}
 
 async function main() {
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");
@@ -67,7 +347,8 @@ async function main() {
   assert.equal(room.start().reason, "max_level");
   values.set("cyber_fishing_room_1_v1", "{bad");
   assert.equal(new RoomUpgradeService({ config: HOUSE_CONFIG.room, store, now: nowFn }).getView().level, 1);
-  console.log("House passed: shared game time, location blend, all room art, persisted upgrades, countdown and free completion.");
+  await checkHousePresentation(HOUSE_CONFIG);
+  console.log("House passed: shared time/art/upgrades, shared feed colors and clamping, stable rows/focus, shared close/switch and sheet keyboard lifecycle.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

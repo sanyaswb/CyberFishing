@@ -25,6 +25,9 @@ async function main() {
   let entered = 0;
   let exited = 0;
   let readyWindow = null;
+  let returnedFocus = 0;
+  const opener = { isConnected: true, focus: () => returnedFocus++ };
+  documentRef.activeElement = opener;
   const overlay = new EmbeddedPageOverlay({ documentRef, windowTarget,
     src: "fisherman-house.html?embedded=1", title: "House",
     onEnter: () => entered++, onExit: () => exited++, onReady: (frameWindow) => readyWindow = frameWindow });
@@ -49,12 +52,34 @@ async function main() {
     data: { type: EMBEDDED_PAGE_RETURN_MESSAGE } });
   assert.equal(frames[0].removed, true);
   assert.equal(exited, 1, "only the house page can resume the location");
+  assert.equal(returnedFocus, 1, "return restores the opening control's keyboard focus");
+  let catalogReadyWindow = null;
+  overlay.open({ src: "ui-catalog.html?embedded=1", title: "UI catalog",
+    onReady: frameWindow => { catalogReadyWindow = frameWindow; } });
   overlay.open();
-  overlay.dispose();
+  assert.equal(frames.length, 2, "House and catalog share one active embedded page");
+  assert.equal(frames[1].src, "ui-catalog.html?embedded=1");
+  assert.equal(frames[1].title, "UI catalog");
+  frames[1].load();
+  assert.equal(catalogReadyWindow, frames[1].contentWindow);
+  assert.equal(readyWindow, frames[0].contentWindow, "Catalog load must not update the House preview");
+  message({ source: frames[0].contentWindow, origin: windowTarget.location.origin,
+    data: { type: EMBEDDED_PAGE_RETURN_MESSAGE } });
+  assert.equal(exited, 1, "A closed House frame cannot close the catalog");
+  message({ source: frames[1].contentWindow, origin: windowTarget.location.origin,
+    data: { type: EMBEDDED_PAGE_RETURN_MESSAGE } });
   assert.equal(frames[1].removed, true);
-  assert.equal(exited, 1, "page cleanup does not restart a disposed game");
+  assert.equal(exited, 2, "Returning from the catalog resumes the existing game once");
+  assert.equal(returnedFocus, 2);
+  overlay.open();
+  assert.equal(frames[2].src, "fisherman-house.html?embedded=1", "Catalog does not change the default House destination");
+  overlay.dispose();
+  overlay.open({ src: "ui-catalog.html?embedded=1" });
+  assert.equal(frames.length, 3, "A disposed overlay cannot reopen a page");
+  assert.equal(frames[2].removed, true);
+  assert.equal(exited, 2, "page cleanup does not restart a disposed game");
   assert.equal(listeners.has("message"), false);
-  console.log("Embedded house overlay passed: one active page, fullscreen-capable frame, trusted return and lifecycle cleanup.");
+  console.log("Embedded House/UI catalog overlay passed: one active page, fullscreen-capable frame, trusted return, focus restoration and lifecycle cleanup.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -19,6 +19,8 @@ const UI_SCRIPT_ORDER = Object.freeze([
   ["inventory_action_contract.js", "src/game/presentation/inventory/inventory_action_contract.js"],
   ["inventory_view_model_normalizer.js", "src/game/presentation/inventory/inventory_view_model_normalizer.js"],
   ["inventory_dom_factory.js", "src/platform/browser/dom/inventory_dom_factory.js"],
+  ["ui_close_button_renderer.js", "src/game/presentation/ui/ui_close_button_renderer.js"],
+  ["ui_auto_switch_renderer.js", "src/game/presentation/ui/ui_auto_switch_renderer.js"],
   ["inventory_long_press_controller.js", "src/platform/browser/dom/inventory_long_press_controller.js"],
   ["inventory_attachment_badge_renderer.js", "src/game/presentation/inventory/inventory_attachment_badge_renderer.js"],
   ["inventory_balance_parameter_resolver.js", "src/game/presentation/inventory/inventory_balance_parameter_resolver.js"],
@@ -433,7 +435,7 @@ class InventoryStaticContractCheck {
       "Inventory must use one wheel and pointer horizontal-scroll controller",
     );
     assert.ok(
-      composition.includes("createHorizontalScrollController: () => new HorizontalScrollController()") &&
+      composition.includes("createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface })") &&
         !composition.includes('element.addEventListener("mousedown"'),
       "Canonical inventory composition must inject the shared horizontal-scroll controller",
     );
@@ -449,6 +451,22 @@ class InventoryStaticContractCheck {
   }
 
   #assertVisualContract(style) {
+    const mobileModal = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/modal.css"), "utf8")
+      .split("@container ui-surface (max-width: 820px)")[1];
+    const mobileLoadout = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/loadout.css"), "utf8")
+      .split("@container ui-surface (max-width: 820px)")[1];
+    const mobileList = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/list-and-filters.css"), "utf8")
+      .split("@container ui-surface (max-width: 820px)")[1];
+    assert.match(mobileModal, /grid-template-rows:\s*max-content\s+max-content;/,
+      "mobile equipment and items must reserve independent intrinsic rows");
+    assert.match(mobileLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
+      "mobile equipment must not inherit a percentage height from the desktop grid");
+    assert.match(mobileLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
+      "mobile equipment must not shrink its auxiliary row into the item container");
+    assert.match(mobileList, /\.inventory-list-panel\s*\{[^}]*height:\s*auto;/,
+      "the mobile item panel must own its height independently of equipment");
+    assert.match(style, /\.inventory-list-grid\s*\{[^}]*grid-row:\s*4;/,
+      "items must keep their scroll track when the filter/sort rows are hidden");
     for (const selector of [
       ".inventory-modal",
       ".game-toolbar-button",
@@ -472,8 +490,8 @@ class InventoryStaticContractCheck {
       ".inventory-assembly-editor__visual",
       ".inventory-item-parameters",
       ".inventory-item-parameter-section",
-      ".inventory-item-parameter-section:only-child",
-      ".inventory-item-parameter-section:last-child:nth-child(odd):not(:only-child)",
+      ".inventory-item-parameters--single .inventory-item-parameter-section",
+      ".inventory-item-parameter-section--centered",
       ".inventory-item-parameter-section__header",
       ".inventory-parameters-list",
       ".inventory-parameter",
@@ -569,7 +587,7 @@ class InventoryStaticContractCheck {
       "All production parameter scales must share one configured height",
     );
     assert.ok(
-      style.includes("clamp(170px, 10.1vw, 194px)"),
+      style.includes("clamp(170px, calc(var(--ui-logical-width, 100vw) * 0.101), 194px)"),
       "Rod column must stay close to the 194px reference width",
     );
     assert.ok(
@@ -594,7 +612,7 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-item-parameter-section:last-child:nth-child\(odd\):not\(:only-child\)\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?justify-self:\s*center;/,
+      /\.inventory-item-parameter-section--centered\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?justify-self:\s*center;/,
       "The final odd parameter tile must occupy a centered row",
     );
     assert.match(
@@ -618,7 +636,7 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding-left:\s*clamp\(14px,\s*1\.8vw,\s*34px\)/,
+      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding-left:\s*clamp\(14px,\s*calc\(var\(--ui-logical-width, 100vw\) \* 0\.018\),\s*34px\)/,
       "Auxiliary row must share the rod column's left inset",
     );
     assert.ok(
@@ -969,6 +987,10 @@ class InventoryStaticContractCheck {
     };
     const ui = sandbox.InventoryUiBootstrap.create({
       facade,
+      uiSurface: { getMetrics: () => ({ valid: true, hoverEnabled: true, logicalWidth: 1280, logicalHeight: 720,
+          safeArea: { top: 0, right: 0, bottom: 0, left: 0 } }),
+        subscribe: () => () => {}, portalRoot: document.body,
+        physicalToLogicalDelta: value => value, physicalToLogicalRect: value => value },
       documentRef: document,
       mountNode: document.body,
       warningTimers: new BrowserTimeoutScheduler(sandbox),
@@ -978,15 +1000,18 @@ class InventoryStaticContractCheck {
     assert.strictEqual(headerPills.length, 2, "bait and groundbait each have one combined control");
     assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__thumb").length, 2);
     assert(headerPills.every((pill) => this.#findByClass(pill, "inventory-toggle__thumb").textContent === "A"));
-    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-active-indicator__placeholder").length, 2,
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__placeholder").length, 2,
       "unset consumables use vector placeholders");
-    const headerRenderer = new sandbox.InventoryHeaderRenderer({ domFactory: new sandbox.InventoryDomFactory(document) });
+    const headerDom = new sandbox.InventoryDomFactory(document);
+    const headerRenderer = new sandbox.InventoryHeaderRenderer({ domFactory: headerDom,
+      closeButtonRenderer: new sandbox.UiCloseButtonRenderer({ domFactory: headerDom }),
+      autoSwitchRenderer: new sandbox.UiAutoSwitchRenderer({ domFactory: headerDom }) });
     let toggled = null;
     const selectedHeader = headerRenderer.render({ loadLabel: "Load", loadValue: 1, loadUnit: "kg",
       activeBaits: [{ name: "Worm", imageUrl: "assets/worm.svg" }],
       activeChums: [{ name: "Mix", imageUrl: "assets/mix.svg" }], baitStock: 17, chumStock: 8 },
       { autoBait: true, autoChum: false }, { onAutoBaitChange: (value) => { toggled = value; } });
-    assert.strictEqual(this.#findAllByClass(selectedHeader, "inventory-active-indicator__placeholder").length, 0,
+    assert.strictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__placeholder").length, 0,
       "selected item artwork replaces both category illustrations");
     assert.deepStrictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__count").map((node) => node.textContent), ["17", "8"]);
     const selectedSwitch = this.#findById(selectedHeader, "inventory-auto-bait");
@@ -1017,6 +1042,14 @@ class InventoryStaticContractCheck {
       ui.rootNode,
       "inventory-loadout-panel__auxiliary",
     );
+    const equipmentHost = this.#findByClass(mainNode, "inventory-main__left");
+    const itemsHost = this.#findByClass(mainNode, "inventory-main__right");
+    assert.strictEqual(equipmentHost.parentNode, mainNode);
+    assert.strictEqual(itemsHost.parentNode, mainNode);
+    assert(equipmentHost.contains(bottomAuxiliary) && !itemsHost.contains(bottomAuxiliary),
+      "auxiliary equipment belongs exclusively to the equipment container");
+    assert(itemsHost.contains(this.#findByClass(ui.rootNode, "inventory-list-grid")),
+      "inventory items occupy the separate sibling container");
     ["net", "handChum", "delivery", "gasMask"].forEach((slotId) => {
       assert.ok(bottomAuxiliary.contains(this.#field(ui.rootNode, slotId)));
     });

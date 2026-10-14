@@ -170,6 +170,10 @@ function checkDevelopmentInputs() {
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
   const godModeInstance = { enabled: true }, gameLoopGuard = {}, listenerCounter = {};
+  const uiSurface = { mountRoot: {} }, developmentMount = {}, toolbar = { element: {} };
+  const openedPages = [];
+  const pageOverlay = { open: options => openedPages.push(options) };
+  const catalogLabels = { pageTitle: "Catalog fixture" };
   const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
@@ -182,9 +186,10 @@ function checkDevelopmentInputs() {
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
-    DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
+    DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; } },
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
-    documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, godMode: godModeInstance } });
+    documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
+    pageOverlay, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -192,6 +197,8 @@ function checkDevelopmentInputs() {
   assert.equal(ports.windowTarget, window);
   assert.equal(ports.gameLoopGuard, gameLoopGuard, "the page loop guard reaches the composition root");
   assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
+  assert.equal(ports.uiSurface, uiSurface, "Production DOM UI receives the composed browser coordinate port");
+  assert.equal(ports.toolbarMountNode, toolbar.element, "DEV reuses the composed production toolbar row");
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.godMode);
@@ -237,6 +244,17 @@ function checkDevelopmentInputs() {
   assert.equal(tools.options.configRuntime, configRuntime);
   assert.equal(tools.options.configValidation, configValidation, "DEV tools validate the live config after edits");
   assert.equal(tools.options.itemProgressionResolver, progression);
+  tools.options.openHouse();
+  tools.options.openUiCatalog();
+  assert.equal(openedPages[0], undefined, "House keeps the default embedded destination");
+  assert.equal(openedPages[1].src, "ui-catalog.html?embedded=1");
+  assert.equal(openedPages[1].title, catalogLabels.pageTitle);
+  assert.equal(openedPages[1].onReady, null, "Catalog must not receive live House preview data");
+  const toggle = () => {};
+  const toolsUi = tools.options.createUI(toggle, config).ui;
+  assert.equal(toolsUi.args[0], toggle);
+  assert.equal(toolsUi.args[4], uiSurface, "DEV dragging shares the production logical coordinate space");
+  assert.equal(toolsUi.args[5], developmentMount, "DEV controls retain their independent outcome visibility branch");
 }
 checkDevelopmentInputs();
 
@@ -331,12 +349,30 @@ async function checkNativeProductionStartup() {
     const config = { physics: physicsCatalog, spawns: { fishes: fishCatalog }, locations: { map: mapCatalog }, rarity: { visual: null }, degradationColors: null,
       debug: { godMode: { enabled: true, noEquipmentLoss: true } } };
     const visual = {}, degradation = {}, version = {}, windowListeners = new Map(), documentListeners = new Map();
-    let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0;
+    let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, surfaces = 0, surfaceDisposals = 0, toolbars = 0, toolbarDisposals = 0;
+    const toolbarElement = {};
     const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
       CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
-    const documentTarget = { readyState, addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); },
+    const documentTarget = { readyState, body: { appendChild() {} }, getElementById() { return null; },
+      addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); },
       removeEventListener(type,fn){if(documentListeners.get(type)===fn)documentListeners.delete(type);} };
+    class Surface {
+      constructor(options) {
+        surfaces++; assert.equal(options.hostElement, documentTarget.body);
+        assert.equal(options.documentRef, documentTarget); assert.equal(options.windowRef, windowTarget);
+        assert.equal(options.viewport, true); this.mountRoot = { appendChild() {} };
+      }
+      dispose() { surfaceDisposals++; }
+    }
+    class Toolbar {
+      constructor(options) {
+        toolbars++; assert.equal(options.documentRef, documentTarget);
+        assert(options.mountNode?.appendChild); assert.equal(options.versionBadge, null);
+        this.element = toolbarElement;
+      }
+      dispose() { toolbarDisposals++; }
+    }
     class Adapter extends FightPhysicsConfigAdapter { constructor(owner) { super(owner);adapters++;assert.equal(owner, config); } }
     const composition = evaluate("src/bootstrap/production/game_config_composition.js", ["createProductionConfigContext"], {
       CONFIG: config, RARITY_VISUAL_CONFIG: visual, DEGRADATION_COLOR_CONFIG: degradation, FightPhysicsConfigAdapter: Adapter,
@@ -353,7 +389,9 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "uiSurface", "toolbarMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.equal(ports.toolbarMountNode, toolbarElement, "startup injects the shared toolbar mount");
+        assert(ports.uiSurface instanceof Surface, "startup injects one browser coordinate surface into production composition");
         assert(ports.gameLoopGuard instanceof ActiveGameLoopGuard, "startup composes the page loop guard");
         this.ports = ports;
         const flags = ports.createDevFlags(owner);assert(flags instanceof InactiveDevFlags, "production composes the inactive DEV flags");
@@ -369,7 +407,7 @@ async function checkNativeProductionStartup() {
     }
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
-      GameCompositionRoot: Root, ActiveGameLoopGuard, ...composition, ...platform,
+      GameCompositionRoot: Root, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
     });
@@ -390,6 +428,8 @@ async function checkNativeProductionStartup() {
     assert.equal(mounts, 1);assert.equal(windowListeners.size, 1);assert.equal(pagehideAdds, 1);
     const cleanup = windowListeners.get("pagehide");assert.equal(cleanup, windowTarget.CYBER_FISHING_GAME_CLEANUP);cleanup();cleanup();
     assert.equal(disposals, 1);assert.equal(windowListeners.size, 0);assert.equal(windowTarget.game, null);assert.equal(windowTarget.CYBER_FISHING_MEMORY_WATCHDOG, null);
+    assert.equal(surfaces, 1);assert.equal(surfaceDisposals, 1, "page cleanup disposes the coordinate surface exactly once");
+    assert.equal(toolbars, 1);assert.equal(toolbarDisposals, 1, "page cleanup disposes the shared toolbar exactly once");
     assert.equal(startup.startProductionGame(), first, "completed single-shot startup retains its original promise");assert.equal(roots, 1);
   }
 }
@@ -506,12 +546,23 @@ function checkLocationMapConfigChanges() {
   map.refreshConfig(changedReplacement,resources);verify(13,14);
   map.update(16,12);verify(14,15);
   const switches = new Map();
-  const ui = new Proxy({body:{},createSection:()=>({}),createSwitcherRow(key,value,parent,change,path){switches.set(path.join('.'),change);}},
+  const navigationButtons = new Map();
+  let houseOpens = 0, catalogOpens = 0;
+  const ui = new Proxy({body:{},createSection:()=>({}),
+    createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
+    createButtonRow(label,parent,click){navigationButtons.set(label,click);},
+    createSwitcherRow(key,value,parent,change,path){switches.set(path.join('.'),change);}},
     {get:(target,key)=>target[key] || (()=>{})});
   const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
   const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,storageCache:{get:()=>({}),set(){}},
-    debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}})});
+    debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
+    openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
   tools.toggle();
+  assert.equal(typeof navigationButtons.get("Каталог UI 🧩"), "function", "DEV menu exposes the UI catalog");
+  navigationButtons.get("Каталог UI 🧩")();
+  assert.equal(catalogOpens, 1); assert.equal(houseOpens, 0, "Catalog navigation must not open the House");
+  navigationButtons.get("Будинок рибалки 🏠")();
+  assert.equal(houseOpens, 1);
   // The map receives the same live view that actual checkbox callbacks write through the authoritative store.
   map.refreshConfig(config.locations,resources);verify(15,16);
   map.update(16,12);verify(16,17);
@@ -530,19 +581,42 @@ function checkLocationMapConfigChanges() {
 }
 
 async function checkNativeDevelopmentLifecycle() {
-  const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0};
-  const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
-  const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
+  const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
+  const listeners=new Map(), registered=new Map();
+  const windowTarget={console,location:{origin:"https://game.example"},
+    addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
+    removeEventListener(type,fn){registered.get(type)?.delete(fn);const remaining=[...(registered.get(type)||[])];if(remaining.length)listeners.set(type,remaining.at(-1));else listeners.delete(type);}};
+  const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{timeScale:240,timeAccelerationEnabled:false,godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
   const composition = new SourceRuntime({moduleStubs:{'src/game/config/runtime/game_config.js':{CONFIG:config}}})
     .importModule('src/bootstrap/production/game_config_composition.js');
   let configRuntime;
   let resolveBuild,rejectBuild,buildReady;
   const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
-  const app={start(){counts.start++;return true;},dispose(){counts.gameDispose++;}};
-  class Root { constructor(config,options){counts.root++;this.options=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
+  const app={start(){counts.start++;return true;},stop(){counts.stop++;},dispose(){counts.gameDispose++;}};
+  let rootPorts;
+  class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
   const resource=key=>({dispose(){counts[key]++;}});
+  const frames = [], previewMessages = [], timeResumes = [];
+  const documentTarget = { body: { appendChild() {} }, getElementById() { return null; },
+    createElement(tag) {
+      if(tag!=="iframe")return{remove(){this.removed=true;}};
+      const frame={contentWindow:{postMessage(data){previewMessages.push(data);}},addEventListener(type,callback){this[type]=callback;},remove(){this.removed=true;}};
+      frames.push(frame);return frame;
+    }, addEventListener() {}, removeEventListener() {} };
+  const timeControl = { suspend:()=>({enabled:true,multiplier:2,timeScale:240}),resume:snapshot=>timeResumes.push(snapshot) };
+  class Surface {
+    constructor(options) {
+      counts.surfaces++; assert.equal(options.hostElement, documentTarget.body);
+      assert.equal(options.documentRef, documentTarget); assert.equal(options.windowRef, windowTarget);
+      this.mountRoot = { appendChild() {} }; this.portalRoot = { appendChild() {} };
+    }
+    dispose() { counts.surfaceDispose++; }
+  }
   const source=new SourceRuntime({moduleStubs:{
-    'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget:{addEventListener(){},removeEventListener(){}}}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
+    'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
+    'src/platform/browser/dom/ui_surface_adapter.js':{UiSurfaceAdapter:Surface},
+    'src/bootstrap/development/dev_time_composition.js':{composeDevTimeDisplay:()=>timeControl},
+    'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
@@ -557,7 +631,27 @@ async function checkNativeDevelopmentLifecycle() {
   assert.notEqual(Game,new SourceRuntime().importModule('src/bootstrap/production/game.js').Game,'different VM realms retain isolated module identity');
   resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
   const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);
+  assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
   assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'house return and page cleanup listeners are active');
+  assert.equal(registered.get("message").size,2,"ready handshake and trusted return have separate lifecycle owners");
+  rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
+  const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
+  navigationTools.options.openHouse();
+  assert.equal(frames[0].src,"dev.html?page=house&returnTo=dev.html&embedded=1");
+  assert.equal(counts.stop,1,"opening the DEV House stops the existing location loop");
+  frames[0].load();
+  const dispatch=event=>{for(const listener of [...registered.get("message")])listener(event);};
+  const readyMessage={source:frames[0].contentWindow,origin:windowTarget.location.origin,data:{type:"cyber-fishing:dev-house-ready"}};
+  const beforeReady=previewMessages.length;
+  dispatch({...readyMessage,source:{}});assert.equal(previewMessages.length,beforeReady,"unrelated pages cannot request a time snapshot");
+  dispatch(readyMessage);assert.equal(previewMessages.at(-1).debugTime.multiplier,2);
+  const afterReady=previewMessages.length;dispatch(readyMessage);assert.equal(previewMessages.length,afterReady,"replayed readiness does not reset House acceleration");
+  dispatch({source:frames[0].contentWindow,origin:windowTarget.location.origin,
+    data:{type:"cyber-fishing:close-embedded-page",debugTime:{enabled:true,multiplier:3,timeScale:480}}});
+  await Promise.resolve();
+  assert.equal(counts.start,2,"trusted return resumes exactly once");
+  assert.equal(timeResumes.at(-1).multiplier,3);assert.equal(config.debug.timeScale,480);
+  assert.equal(config.debug.timeAccelerationEnabled,true);
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
   const {GameplayOverrideReader} = source.importModule('src/dev/runtime/gameplay_override_reader.js');
@@ -569,17 +663,19 @@ async function checkNativeDevelopmentLifecycle() {
   configRuntime.resetAll();assert.equal(reader.noEquipmentLoss,true);assert.equal(config.debug.fixedCatch.enabled,true);
   configRuntime.importOverrides(saved);assert.equal(reader.noEquipmentLoss,false);assert.equal(config.debug.fixedCatch.enabled,false);
   const cleanup=windowTarget.CYBER_FISHING_GAME_CLEANUP;cleanup();cleanup();
+  assert.equal(rootPorts.toolbarMountNode.removed, true, "cleanup removes the toolbar alongside its surface");
   assert.equal(counts.gameDispose,1);assert.equal(counts.watchdogDispose,1);assert.equal(listeners.size,0);
   assert.equal(windowTarget.game,null);assert.equal(windowTarget.CYBER_FISHING_GAME_CLEANUP,null);assert.equal(windowTarget.getCyberFishingMemoryReport,null);
   resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
   assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
   assert.equal(config.debug.fixedCatch.enabled,false);
-  assert.equal(counts.root,2);assert.equal(counts.start,2);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
+  assert.equal(counts.root,2);assert.equal(counts.start,3);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
-  assert.equal(counts.start,2,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
+  assert.equal(counts.start,3,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
   assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
+  assert.equal(counts.surfaces,4);assert.equal(counts.surfaceDispose,4, "DEV restart, failed build and pagehide clean every surface exactly once");
 }
 
 checkNativeProductionStartup().then(checkNativeDevelopmentLifecycle).then(() => {

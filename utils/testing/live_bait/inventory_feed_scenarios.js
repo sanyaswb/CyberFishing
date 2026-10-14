@@ -38,8 +38,11 @@ module.exports = async function checkInventoryFeed() {
   assert.equal(s.getView().aquarium.feed.durationMs, 55 * 60000);
   assert.equal(s.getView().feedItems.find((item) => item.id === simple).count, 1);
   assert.equal(create().getView().feedItems.find((item) => item.id === simple).count, 1);
+  assert.equal(s.feedAquarium(simple).reason, "feed_locked");
+  now += s.getView().aquarium.feed.durationMs / 2;
   assert.equal(s.feedAquarium(simple).ok, true);
   assert.equal(s.getView().feedItems.filter((item) => item.count > 0).length, 1);
+  now += s.getView().aquarium.feed.durationMs / 2;
   fail = true;
   assert.equal(s.feedAquarium(premium).ok, false, "write failure cannot report success");
   assert(values.has(journalKey), "interrupted two-key write retains recovery intent");
@@ -54,10 +57,11 @@ module.exports = async function checkInventoryFeed() {
   const legacy = JSON.parse(values.get(featureKey)); legacy.schemaVersion = 3;
   legacy.feedSupply.stock = { [simple]: 4 };
   delete legacy.aquarium.feed.quantity;
+  delete legacy.aquarium.feed.carriedMs;
   values.set(featureKey, JSON.stringify(legacy));
   assert.equal(create().getView().feedStock, 4);
   assert.equal(create().getView().feedStock, 4, "legacy migration is exactly once");
-  assert.equal(JSON.parse(values.get(featureKey)).schemaVersion, 4);
+  assert.equal(JSON.parse(values.get(featureKey)).schemaVersion, 5);
   assert.equal(Object.hasOwn(JSON.parse(values.get(featureKey)).feedSupply, "stock"), false);
   for (const item of Object.values(ITEM_DB.aquariumFeeds)) {
     assert.equal(item.itemType, "aquarium_feed");

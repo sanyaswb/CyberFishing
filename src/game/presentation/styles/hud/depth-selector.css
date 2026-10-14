@@ -5,8 +5,8 @@
   --depth-ratio: 0%;
   --depth-float-size: 60px;
   /* Reserve the entire toolbar plus breathing room for the marker at the bottom. */
-  --depth-track-height: max(0px, calc(50dvh - var(--depth-float-size) / 2 - 16px - var(--ui-edge-bottom) - var(--ui-toolbar-size) - 24px));
-  position: fixed; top: calc(50dvh - var(--depth-float-size) / 2); right: var(--ui-edge-right); width: 124px;
+  --depth-track-height: max(0px, calc(calc(var(--ui-logical-height, 100dvh) * 0.5) - var(--depth-float-size) / 2 - 16px - var(--ui-edge-bottom) - var(--ui-toolbar-size) - 24px));
+  position: fixed; top: calc(calc(var(--ui-logical-height, 100dvh) * 0.5) - var(--depth-float-size) / 2); right: var(--ui-edge-right); width: 124px;
   display: none; font-family: var(--ui-font-mono); color: var(--ui-text);
   z-index: var(--ui-layer-controls); user-select: none; -webkit-user-select: none;
 }
@@ -20,8 +20,8 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); color: inherit; cursor: pointer; touch-action: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
 }
-.depth-selector__float:hover { border-color: var(--ui-accent); }
-.depth-selector__float:active { transform: scale(0.95); }
+.ui-surface--desktop-hover .depth-selector__float:hover { border-color: var(--ui-accent); }
+.ui-surface--desktop-hover .depth-selector__float:active { transform: scale(0.95); }
 .depth-selector__float:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .depth-selector--open .depth-selector__float {
   border-color: var(--ui-accent); box-shadow: 0 0 16px rgba(var(--ui-accent-rgb), 0.45), 0 4px 14px rgba(0, 0, 0, 0.5);

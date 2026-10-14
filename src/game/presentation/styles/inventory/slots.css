@@ -91,6 +91,11 @@
 
 .inventory-field--rod .inventory-slot-icon { height: 82%; }
 
+.inventory-slot--locked .inventory-slot-icon,
+.inventory-slot--unavailable .inventory-slot-icon {
+  filter: brightness(var(--inventory-locked-icon-brightness, 0.45));
+}
+
 .inventory-slot--locked .inventory-slot__empty-button::after {
   position: absolute;
   bottom: 5px;

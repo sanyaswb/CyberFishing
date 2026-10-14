@@ -68,6 +68,7 @@ const ENTRIES = Object.freeze({
   production: { page: "index.html", entry: "src/entrypoints/game.entry.js" },
   development: { page: "dev.html", entry: "src/entrypoints/dev.entry.js" },
   house: { page: "fisherman-house.html", entry: "src/entrypoints/house.entry.js" },
+  catalog: { page: "ui-catalog.html", entry: "src/entrypoints/dev/ui_catalog.entry.js" },
 });
 
 // Analyses an authored source set ({ "src/...js": text, "index.html": text }) and lists rule violations.
@@ -295,12 +296,15 @@ function checkFixtures() {
     "index.html": '<body><script type="module" src="src/entrypoints/game.entry.js?v=1.0.0"></script></body>',
     "dev.html": '<body><script type="module" src="src/entrypoints/dev.entry.js"></script></body>',
     "fisherman-house.html": '<body><script type="module" src="src/entrypoints/house.entry.js"></script></body>',
+    "ui-catalog.html": '<body><script type="module" src="src/entrypoints/dev/ui_catalog.entry.js"></script></body>',
   };
   const base = {
     ...pages,
     "src/entrypoints/game.entry.js": 'import "../bootstrap/production/start.js";',
     "src/entrypoints/dev.entry.js": 'import "../bootstrap/development/start.js";',
     "src/entrypoints/house.entry.js": 'import "../bootstrap/production/start.js";',
+    "src/entrypoints/dev/ui_catalog.entry.js": 'import "../../bootstrap/development/catalog.js";',
+    "src/bootstrap/development/catalog.js": 'import "../../dev/panel.js";',
     "src/bootstrap/production/start.js": 'import { Rule } from "../../game/domain/rule.js"; new Rule();',
     "src/bootstrap/development/start.js": 'import "../production/start.js"; import "../../dev/panel.js";',
     "src/game/domain/rule.js": 'import { clamp } from "../../engine/math.js"; export class Rule { value() { return clamp(Math.PI); } }',
@@ -325,6 +329,9 @@ function checkFixtures() {
     ["dynamic import", { "src/engine/math.js": "export const clamp = (v) => import(v);" }, /non-literal dynamic import/u],
     ["outside layers", { "src/misc.js": "" }, /outside every layer/u],
     ["second page script", { "index.html": pages["index.html"] + "<script>start()</script>" }, /index\.html must load exactly one module script/u],
+    ["catalog second page script", { "ui-catalog.html": pages["ui-catalog.html"] + "<script>start()</script>" }, /ui-catalog\.html must load exactly one module script/u],
+    ["production reaches catalog", { "src/bootstrap/production/start.js": 'import "../../dev/ui_catalog/page.js";',
+      "src/dev/ui_catalog/page.js": "export const page = () => document.body;" }, /bootstrap\/production\) imports src\/dev\/ui_catalog\/page\.js/u],
     ["inline module", { "dev.html": '<script type="module">import "./src/entrypoints/dev.entry.js";</script>' }, /dev\.html must load exactly one module script/u],
     ["two classes", { "src/engine/math.js": "export class Math2 {}\nexport class Clamp {}\nexport const clamp = (v) => v;" }, /exports 2 classes/u],
     ["file not named after class", { "src/engine/math.js": "export class Clamp {}\nexport const clamp = (v) => v;" }, /must be named clamp\.js after its class Clamp/u],

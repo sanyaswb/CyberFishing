@@ -2,6 +2,7 @@ import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js"
 
 export class OverlayDomAdapter {
   #documentTarget;
+  #mountNode;
   #createScaleControls;
   #createDragController;
   #container = null;
@@ -11,10 +12,12 @@ export class OverlayDomAdapter {
 
   constructor({
     documentTarget = document,
+    mountNode = documentTarget.body,
     createScaleControls,
     createDragController,
   } = {}) {
     this.#documentTarget = documentTarget;
+    this.#mountNode = mountNode;
     this.#createScaleControls = createScaleControls;
     this.#createDragController = createDragController;
   }
@@ -39,7 +42,7 @@ export class OverlayDomAdapter {
       onScaleChanged: (scale) => this.setScale(scale),
     });
     this.#container.appendChild(controls.create());
-    this.#documentTarget.body.appendChild(this.#container);
+    this.#mountNode.appendChild(this.#container);
 
     this.#dragController = this.#createDragController(this.#container);
     this.#dragController.attach();

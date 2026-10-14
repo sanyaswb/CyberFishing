@@ -201,10 +201,14 @@ export class ScoutingState extends GameState {
     }
 
     const eq = this.deps.inventory.getEquipped();
-    if (wantsRodAim && !this.#canStartRodCast(eq)) {
+    const wantsCast = wantsRodAim || input?.clickPos || input?.isDoubleClick;
+    if (wantsCast && !this.#canStartRodCast(eq)) {
       this.#castAim.reset();
       this.#pendingCast = null;
       this.#setUiDimmed(false);
+      // A bare pointer press may still become map navigation. Warn only once
+      // the pointer completes a click, or keyboard casting is requested.
+      if (!input?.clickPos && !input?.isDoubleClick && !input?.isPulling) return false;
       if (!eq?.rod && !this.#missingRodWarnedForPress) {
         this.deps.commands.showMissingRodInventoryWarning?.();
         this.#missingRodWarnedForPress = true;
@@ -226,6 +230,9 @@ export class ScoutingState extends GameState {
       }
       return false;
     }
+
+    // Keep a navigation gesture from becoming a cast if equipment changes mid-drag.
+    if (input?.pointerPanning) return false;
 
     if (this.#pendingCast) {
       this.#setUiDimmed(false);

@@ -7,7 +7,10 @@ export class OverlayMetricInfoBridge {
   #onDebugLiveUpdate = (event) => {
     this.#inspector.updateLiveData(event.detail || {});
   };
-  #onPointerOver = (event) => this.#handleHover(event);
+  #onPointerOver = (event) => {
+    if (event.pointerType === "touch" || !event.target?.closest?.(".ui-surface--desktop-hover")) return;
+    this.#handleHover(event);
+  };
   #onFocusIn = (event) => this.#handleHover(event);
   #onClick = (event) => this.#handleClick(event);
   #onKeyDown = (event) => this.#handleKeyDown(event);

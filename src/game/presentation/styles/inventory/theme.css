@@ -5,9 +5,6 @@
   --inventory-scrollbar-thumb: #3f565f;
   --inventory-scrollbar-thumb-hover: #58727d;
   --inventory-scrollbar-track: transparent;
-}
-
-.inventory-modal {
   --inventory-accent: #00d8ff;
   --inventory-accent-rgb: 0, 216, 255;
   --inventory-success: #00f58a;
@@ -15,6 +12,9 @@
   --inventory-danger: #ff4257;
   --inventory-danger-rgb: 255, 66, 87;
   --inventory-warning: #ffb300;
+}
+
+.inventory-modal {
   --inventory-panel: rgba(14, 20, 22, 0.92);
   --inventory-resource-track: #4b5155;
   --inventory-resource-icon: #28a9ff;
@@ -22,8 +22,8 @@
   --inventory-assembly-card-width: min(100%, 292px);
   --inventory-assembly-content-width: min(100%, 720px);
   --inventory-parameter-tile-gap: 12px;
-  --inventory-card-size: clamp(78px, 6.2vw, 110px);
-  --inventory-socket-size: clamp(66px, 5vw, 88px);
+  --inventory-card-size: clamp(78px, calc(var(--ui-logical-width, 100vw) * 0.062), 110px);
+  --inventory-socket-size: clamp(66px, calc(var(--ui-logical-width, 100vw) * 0.05), 88px);
   --inventory-control-border: #627077;
   --inventory-control-background: #29343a;
   --inventory-control-text: #f1f5f6;

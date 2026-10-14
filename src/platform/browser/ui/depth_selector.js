@@ -9,6 +9,7 @@ const DEPTH_PAGE_METERS = 1;
 export class DepthSelector {
   #labels;
   #document;
+  #mount;
   #root;
   #button;
   #icon;
@@ -32,9 +33,10 @@ export class DepthSelector {
     if (this.#isOpen && event.key === "Escape") this.close();
   };
 
-  constructor({ labels } = {}) {
+  constructor({ labels, documentRef = document, mountNode = documentRef.body } = {}) {
     this.#labels = labels;
-    this.#document = document;
+    this.#document = documentRef;
+    this.#mount = mountNode;
     this.onChange = null;
     this.isActive = false;
     this.#build();
@@ -160,7 +162,7 @@ export class DepthSelector {
     this.#root.appendChild(this.#button);
     this.#root.appendChild(this.#panel);
     UiEventShield.makeSolid(this.#root);
-    doc.body.appendChild(this.#root);
+    this.#mount.appendChild(this.#root);
   }
 
   #bindEvents() {

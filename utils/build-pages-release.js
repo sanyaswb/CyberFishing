@@ -15,6 +15,7 @@ const acorn = require("acorn");
 const PAGE = "index.html";
 const DEV_PAGE = "dev.html";
 const HOUSE_PAGE = "fisherman-house.html";
+const CATALOG_PAGE = "ui-catalog.html";
 const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
 const DEV_METADATA_PREFIX = "src/dev/metadata/";
@@ -99,6 +100,7 @@ class ReleaseFileSet {
     const pages = [PAGE];
     if (tree.has(DEV_PAGE)) pages.push(DEV_PAGE);
     if (tree.has(HOUSE_PAGE)) pages.push(HOUSE_PAGE);
+    if (tree.has(CATALOG_PAGE)) pages.push(CATALOG_PAGE);
     const files = new Set(pages);
     for (const pageName of pages) {
       const page = tree.read(pageName).toString("utf8");
@@ -220,6 +222,10 @@ class PagesReleaseBuilder {
     if (files.includes(DEV_PAGE)) {
       fs.writeFileSync(path.join(siteDir, DEV_PAGE),
         PagesReleaseBuilder.rootPage(contents.get(DEV_PAGE).toString("utf8"), id));
+    }
+    if (files.includes(CATALOG_PAGE)) {
+      fs.writeFileSync(path.join(siteDir, CATALOG_PAGE),
+        PagesReleaseBuilder.rootPage(contents.get(CATALOG_PAGE).toString("utf8"), id));
     }
     return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes });
   }

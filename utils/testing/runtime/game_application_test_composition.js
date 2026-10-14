@@ -31,7 +31,8 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
   const net={updateConfig(value){this.config=value;}},rng={next:()=>0.5};
   const projector={screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){out.x=x;out.y=y;return out;}};
-  const canvasMetrics={width:800,height:600,resizeToViewport(){this.width=900;}};
+  let resizeCalls=0;
+  const canvasMetrics={width:800,height:600,resizeToViewport(){resizeCalls++;this.width=900;}};
   let appPorts,freshness,onInventory,stateContext,debugContext,locationFails=false,victoryFails=false,castResult={success:false,reason:'missing_rod'};
   const inventory={getEquipped:()=>equipment,setFreshnessExposureProvider(fn){freshness=fn;},onInventoryChanged(fn){onInventory=fn;return()=>{disposed.push('inventory-listener');onInventory=null;};},setLock(value){this.locked=value;},refreshItemData(){events.push('items');},handleRodRetrieved(context){events.push(['retrieved',context]);},dispose(){disposed.push('inventory');}};
   const stateMachine={currentName:'scouting',currentState:{handleNetClick(){events.push('net-click');}},setState(name,data){this.currentName=name;this.data=data;appPorts.onStateChanged(name);},handleInput(value){assert.equal(value,input);events.push('input');},update(dt,area,context){assert.equal(dt,16);assert.equal(area,bounds);stateContext??=context;assert.equal(context,stateContext);assert.equal(context.env,physics);assert.equal(context.biteEnv,biteEnv);assert.equal(context.input,input);events.push('state');},dispose(){disposed.push('state');}};
@@ -42,7 +43,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const assetPreloadCoordinator={preloadFishingAssets:()=>Promise.resolve(),preloadVictoryAssets:()=>victoryFails?Promise.reject(new Error('victory unavailable')):Promise.resolve(),preloadLocation:()=>locationFails?Promise.reject(new Error('location unavailable')):Promise.resolve()};
   const locationResources={map:'same-resource'};
   const runtime={location:{id:'lake',chumCastDistance:300,config:{}},rng,projector,map:{},net,inventory,
-    env:{getPhysicsEnv:()=>physics,getSnapshot:()=>({time:5})},input:{getState:()=>input,setDragControlEnabled(value){assert.equal(value,true);},dispose(){disposed.push('input');}},
+    env:{getPhysicsEnv:()=>physics,getSnapshot:()=>({time:5})},input:{getState:()=>input,setDragControlEnabled(value){assert.equal(value,true);},setPointerPanEnabled(value){this.pointerPanEnabled=value;},dispose(){disposed.push('input');}},
     ui:{updateNetButtonState(){},dispose(){disposed.push('ui');}},inventoryUI:{updateDynamicProgression(dt){assert.equal(dt,16);events.push('inventory-ui');},open(){events.push('open');},showWarning(message){warnings.push(message);},dispose(){disposed.push('inventory-ui');}},
     chum:{getBoats:()=>[],getChumDataAt:()=>({bonus:1,targets:[]}),dispose(){disposed.push('chum');}},bite:{setFishDatabase(value){assert.equal(value,source.context.FISH_DB);events.push('fish-db');}},
     world:{refreshViewport(){events.push('viewport');},refreshLocationConfig(value,resources){assert.equal(value,config.locations);assert.equal(resources,locationResources);events.push('location');},pan(x,y){assert.equal(x,3);assert.equal(y,0);events.push('pan');},update(dt,scale,area){assert.equal(dt,16);assert.equal(scale,config.debug.timeScale);assert.equal(area,bounds);events.push('world');return{time:5};}},
@@ -67,12 +68,30 @@ async function checkGameApplicationComposition(diagnostics = true) {
     return;
   }
   const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,listeners,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()});
+  assert.equal(runtime.input.pointerPanEnabled,false,'equipped scouting preserves casting input from startup');
+  const equippedRod=equipment.rod;
+  equipment.rod=null;app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,true,'bare scouting enables map navigation before reading input');
+  app.isAimingChum=true;app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,false,'chum aiming keeps its casting gesture without a rod');
+  app.isAimingChum=false;stateMachine.currentName='playing';app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,false,'fight input never becomes map navigation');
+  equipment.rod=equippedRod;stateMachine.currentName='scouting';
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
   assert.equal(listenerCounter.getActiveCount(),dev?3:2,'production subscribes no DEV hook');
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);
   for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','cast','time','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
   assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),1); // Preserve the existing null playable-bound clamp.
-  windowTarget.emit('resize');assert.equal(app.getViewportSize().width,900);assert.equal(app.getViewportSize(),viewport);
+  events.length=0;
+  for(let event=0;event<100;event++)windowTarget.emit('resize');
+  assert.equal(resizeCalls,0,'resize events must not reset the Canvas between game frames');
+  assert.equal(events.filter(value=>value==='viewport').length,0,'resize bursts must not repeatedly recalculate map zones');
+  appPorts.update(16);
+  assert.equal(resizeCalls,1,'the next game frame consumes one pending viewport resize');
+  assert.equal(events.filter(value=>value==='viewport').length,1);
+  assert.equal(events.indexOf('viewport')<events.indexOf('world'),true,'new viewport is applied before world/input update');
+  assert.equal(app.getViewportSize().width,900);assert.equal(app.getViewportSize(),viewport);
+  appPorts.update(16);assert.equal(resizeCalls,1,'stable game frames perform no viewport resize');
   input.pointerDown=true;events.length=0;app.update(16);assert.equal(events.includes('pan'),false);input.pointerDown=false;
   app.markInvalidCast({x:7,y:8});assert.equal(app.invalidCastMarker.timer,500);for(let frame=0;frame<32;frame++)app.update(16);assert.equal(app.invalidCastMarker,null);
   app.isAimingChum=true;Object.assign(input,{isPulling:true,pullDirection:'left',clickPos:{x:1,y:1},longPressPos:{x:1,y:1},isDoubleClick:true});events.length=0;app.update(16);assert.equal(events.includes('chum-aim'),true);assert.equal(events.includes('input'),false);assert.equal(input.isPulling,false);assert.equal(input.clickPos,null);assert.equal(input.longPressPos,null);assert.equal(input.isDoubleClick,false);app.isAimingChum=false;

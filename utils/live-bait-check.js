@@ -2,6 +2,7 @@
 const assert = require("node:assert/strict");
 
 async function main() {
+  await require("./testing/live_bait/feed_loading_scenarios")();
   await require("./testing/live_bait/keepnet_lifecycle_scenarios")();
   await require("./testing/live_bait/shared_feed_scenarios")();
   await require("./testing/live_bait/inventory_feed_scenarios")();
@@ -90,7 +91,7 @@ async function main() {
   assert.equal(aquarium.getView().aquarium.feed.percentage, 100);
   aquarium.buyAutoFeeder();
   aquarium.buyFeed();
-  now += LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].durationMs;
+  now += aquarium.getView().aquarium.feed.remainingMs;
   aquarium.advance();
   assert.equal(aquarium.getView().feedStock, 0, "auto feeder consumes finite stock");
   assert.equal(aquarium.getView().aquarium.feed.percentage, 100);

@@ -45,9 +45,14 @@ spec-kit work (029); Claude's specs start at 030.
 | [052](052-depth-selector-ux/spec.md) | Depth on the float button, slide-down track, cast limit line (G-005) | Done | — |
 | [053](053-water-metric/spec.md) | Perspective metres on the water: one `WaterMetric` per location; casting, fight and tackle in ground metres (G-006) | Implemented | — |
 | [054](054-bait-boat-water-metric/spec.md) | Bait boat speed and motion on the water metric (G-007) | Specified | — |
-| [055](055-live-bait-aquarium/spec.md) | Live bait, keepnet, aquarium and Fisherman's House: [plan](055-live-bait-aquarium/plan.md), [tasks](055-live-bait-aquarium/tasks.md) | Implementation in progress; 5 tasks open | v0.33.1 |
+| [055](055-live-bait-aquarium/spec.md) | Live bait, keepnet, aquarium and Fisherman's House: [plan](055-live-bait-aquarium/plan.md), [tasks](055-live-bait-aquarium/tasks.md) | Implementation/release tasks complete; 2 open: owner gameplay acceptance and second room | v0.35.0 |
 | [056](056-inventory-icon-design/spec.md) | Minimal-text inventory design, vector placeholders, automatic refill pills and scrollbar spacing | Implemented; owner checks visuals | v0.34.3 |
-| [057](057-modular-ui-catalog/spec.md) | Reusable UI components, isolated DEV catalog and logical 320px scaling: [plan](057-modular-ui-catalog/plan.md) | Spec and plan; implementation deferred by owner | — |
+| [057](057-modular-ui-catalog/spec.md) | Reusable UI components, isolated DEV catalog and logical 320px scaling: [plan](057-modular-ui-catalog/plan.md), [tasks](057-modular-ui-catalog/tasks.md), [coverage](057-modular-ui-catalog/coverage.md) | Implemented; Architecture 4/4, Quick 21/21, Full 47/47; owner visual acceptance pending | v0.35.0 |
+| [058](058-dev-time-controls/spec.md) | Tablet/landscape loadout, locked placeholders, compact DEV navigation, House DevTools and transient calendar acceleration | Implemented; Architecture4/4, Quick23/23, Full49/49; owner visual acceptance pending | v0.35.0 |
+| [059](059-map-navigation-input/spec.md) | Map click/drag/wheel before rod equipment, configurable navigation and clock input isolation | Implemented; Architecture 4/4, Quick 24/24, Full 50/50; index/dev browser smoke passed; owner phone feel pending | v0.35.0 |
+| [060](060-house-navigation-header/spec.md) | House scene/zone gestures, tap/swipe sheets, shared single-row HUD and wide-screen cover | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; console clear; owner visual/input acceptance pending | v0.35.0 |
+| [061](061-aquarium-feed-loading/spec.md) | Aquarium right-aligned counts, single-pack selection/loading, half-time lock and additive protection with v5 save migration | Implemented; automated checks pass; console clear; owner visual/input acceptance pending | v0.35.0 |
+| [062](062-house-feed-preview/spec.md) | Shared compact feed row, selection/reopen flow, responsive numeric upgrade and stable desktop dock hover | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; console clear; owner visual/input acceptance pending | v0.35.0 |
 
 ## Archived
 

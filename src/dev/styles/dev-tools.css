@@ -1,4 +1,6 @@
 /* DEV Tools panel, editor fields, switches and scrollbars. */
+.game-shell__dev-ui { display: contents; }
+.ui-surface--time-accelerated { --ui-clock-width: 196px; }
 .devtools__action {
   width: 100%;
   min-height: 44px;
@@ -12,7 +14,8 @@
   cursor: pointer;
   touch-action: manipulation;
 }
-.devtools__action:hover, .devtools__action:focus-visible {
+.ui-surface--desktop-hover .devtools__action:hover,
+.devtools__action:focus-visible {
   background: rgba(var(--ui-accent-rgb), 0.24);
   outline: 2px solid var(--ui-success);
   outline-offset: 2px;
@@ -22,14 +25,14 @@
   position: fixed;
   top: 0;
   left: -400px;
-  width: 350px;
-  height: 100vh;
+  width: min(350px, var(--ui-logical-width, 100vw));
+  height: var(--ui-logical-height, 100dvh);
   background: rgba(17, 26, 34, 0.95);
   border-right: 2px solid var(--ui-accent);
   z-index: var(--ui-layer-panel);
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   font-family: var(--ui-font-mono);
   color: var(--ui-text);
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
@@ -49,20 +52,14 @@
   background: #0b1520;
 }
 
-.devtools__header h2 {
+.devtools__title {
   margin: 0;
   font-size: 18px;
   color: var(--ui-success);
 }
 
 .devtools__close {
-  background: none;
-  border: none;
-  color: var(--ui-danger);
-  font-size: 24px;
-  cursor: pointer;
-  font-weight: bold;
-  padding: 0 5px;
+  flex: 0 0 var(--ui-close-size);
 }
 
 .devtools__body {
@@ -106,8 +103,7 @@
   display: flex;
   gap: 8px;
 }
-
-.devtools__section-title:hover {
+.ui-surface--desktop-hover .devtools__section-title:hover {
   background: rgba(var(--ui-accent-rgb), 0.2);
   color: var(--ui-text);
 }
@@ -127,6 +123,9 @@
   padding: 4px 0;
   border-bottom: 1px dashed #2a3b4c;
 }
+
+.devtools__pages { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
+.devtools__row--navigation { margin: 0; padding: 0; border-bottom: 0; }
 
 .devtools__label {
   font-size: 13px;
@@ -158,7 +157,7 @@
   height: 18px;
 }
 
-.devtools__switch input {
+.devtools__switch-input {
   opacity: 0;
   width: 0;
   height: 0;
@@ -188,12 +187,17 @@
   border-radius: 50%;
 }
 
-.devtools__switch input:checked + .devtools__slider {
+.devtools__switch-input:checked + .devtools__slider {
   background-color: var(--ui-success);
 }
 
-.devtools__switch input:checked + .devtools__slider:before {
+.devtools__switch-input:checked + .devtools__slider:before {
   transform: translateX(18px);
+}
+.devtools__switch-input:focus-visible + .devtools__slider { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.devtools__input:focus-visible, .devtools__enum:focus-visible, .devtools__toggle:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .devtools, .devtools__section-title, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
 }
 
 .devtools__enum {
@@ -211,26 +215,7 @@
   position: fixed;
   top: var(--ui-edge-top);
   left: var(--ui-edge-left);
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  font-size: 32px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
   z-index: var(--ui-layer-hud);
-  filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.8));
-  transition: transform 0.1s ease;
-}
-
-.devtools__toggle:hover {
-  transform: scale(1.1);
-}
-
-.devtools__toggle:not(:hover) {
-  transform: scale(1);
 }
 .embedded-page-overlay {
   position: fixed;

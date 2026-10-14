@@ -1,5 +1,31 @@
 /* Shared game control appearance and component state variants. */
 
+.hud-control {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: calc(var(--ui-hud-control-size) * var(--ui-hud-scale, 1));
+  padding: 0;
+  border: calc(var(--ui-control-border-width) * var(--ui-hud-scale, 1)) solid var(--ui-control-border-color);
+  border-radius: calc(var(--ui-radius-panel) * var(--ui-hud-scale, 1));
+  color: var(--hud-control-color, var(--ui-text));
+  background: var(--hud-control-background, rgba(var(--ui-surface-rgb), 0.85));
+  font-family: var(--ui-font-mono);
+  font-size: calc(24px * var(--ui-hud-scale, 1));
+  font-weight: bold;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--ui-duration-control) var(--ui-ease-standard);
+}
+.hud-control--square { width: calc(var(--ui-hud-control-size) * var(--ui-hud-scale, 1)); }
+.hud-control--borderless { border: 0; }
+.hud-control:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 3px; }
+.ui-surface--desktop-hover .hud-control:hover { background: var(--hud-control-hover-background, rgba(var(--ui-accent-rgb), 0.2)); }
+
 .game-control--fullscreen,
 .game-control--continue {
   position: fixed;
@@ -11,18 +37,8 @@
   top: var(--ui-edge-top);
   right: calc(var(--ui-edge-right) + var(--ui-clock-width) + var(--ui-toolbar-gap));
   display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background-color: rgba(15, 23, 30, 0.8);
-  color: var(--ui-success);
-  border: 1px solid var(--ui-success);
-  border-radius: var(--ui-radius-control);
-  cursor: pointer;
-  touch-action: none;
-  font-size: 24px;
+  --hud-control-color: var(--ui-success);
+  --hud-control-hover-background: rgba(var(--ui-success-rgb), 0.2);
   opacity: 1;
   visibility: visible;
   transition: opacity 280ms ease, visibility 0s;
@@ -32,8 +48,7 @@
   display: none;
   transform: scale(0.85);
 }
-
-.game-control--fullscreen:active {
+.ui-surface--desktop-hover .game-control--fullscreen:active {
   transform: none;
 }
 
@@ -60,17 +75,14 @@
   box-shadow: 0 0 15px rgba(var(--ui-accent-rgb), 0.4);
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
-
-.game-control--fullscreen:hover {
-  background-color: rgba(var(--ui-success-rgb), 0.2);
+.ui-surface--desktop-hover .game-control--fullscreen:hover {
+  background: var(--hud-control-hover-background);
 }
-
-.game-control--continue:hover {
+.ui-surface--desktop-hover .game-control--continue:hover {
   background-color: rgba(var(--ui-accent-rgb), 1);
   transform: translate(-50%, -50%) scale(1.05);
 }
-
-.game-control--continue:active:not(:hover) {
+.ui-surface--desktop-hover .game-control--continue:active:not(:hover) {
   transform: translate(-50%, -50%);
 }
 
@@ -82,8 +94,7 @@
   transform: scale(1);
   transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
-
-.game-control--net-entered:active {
+.ui-surface--desktop-hover .game-control--net-entered:active {
   transform: scale(1);
 }
 
@@ -102,6 +113,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hud-control { transition: none; }
   .game-control--fullscreen,
   .game-control--fullscreen.game-control--fullscreen-hidden,
   .game-control--net-entered,

@@ -2,7 +2,7 @@
 
 .hold-charges {
   position: fixed;
-  bottom: 25vh;
+  bottom: calc(var(--ui-logical-height, 100dvh) * .25);
   left: 50%;
   transform: translateX(-50%);
   display: none;

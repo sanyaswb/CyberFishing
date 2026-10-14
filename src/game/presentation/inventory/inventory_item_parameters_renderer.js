@@ -38,6 +38,7 @@ export class InventoryItemParametersRenderer {
         this.#renderSection(section, parameters, showHeaders),
       );
     }
+    this.#syncSectionLayout(panel);
     return panel.children.length ? panel : null;
   }
 
@@ -46,7 +47,9 @@ export class InventoryItemParametersRenderer {
     if (!section) return null;
     const parameters = this.#resolver.resolve(item);
     if (!parameters.length) {
+      const panel = section.parentNode;
       section.remove();
+      this.#syncSectionLayout(panel);
       return null;
     }
     section.dataset.instanceId = String(item?.instanceId || "");
@@ -57,6 +60,16 @@ export class InventoryItemParametersRenderer {
     );
     if (!list.parentNode) section.appendChild(list);
     return section;
+  }
+
+  #syncSectionLayout(panel) {
+    if (!panel?.classList?.contains("inventory-item-parameters")) return;
+    const count = panel.children.length;
+    panel.classList.toggle("inventory-item-parameters--single", count === 1);
+    for (let index = 0; index < count; index++) {
+      panel.children[index].classList.toggle("inventory-item-parameter-section--centered",
+        count > 1 && count % 2 === 1 && index === count - 1);
+    }
   }
 
   updateSections(host, sections = []) {

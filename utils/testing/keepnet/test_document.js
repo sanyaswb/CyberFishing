@@ -11,6 +11,12 @@ class TestElement {
     this.classList = {
       add: (name) => { this.className = [...new Set([...this.className.split(" "), name])].join(" "); },
       remove: (name) => { this.className = this.className.split(" ").filter((entry) => entry !== name).join(" "); },
+      contains: (name) => this.className.split(" ").includes(name),
+      toggle: (name, force = undefined) => {
+        const enabled = force === undefined ? !this.className.split(" ").includes(name) : Boolean(force);
+        if (enabled) this.classList.add(name); else this.classList.remove(name);
+        return enabled;
+      },
     };
   }
   get childNodes() { return this.children; }

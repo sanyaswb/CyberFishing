@@ -5,9 +5,9 @@ const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "re
 export class ChumControls {
   #labels;
 
-  constructor(onClickCallback, { labels } = {}) {
+  constructor(onClickCallback, { labels, documentRef = document, mountNode = documentRef.body } = {}) {
     this.#labels = labels;
-    this.button = document.createElement("button");
+    this.button = documentRef.createElement("button");
     this.button.className = "game-control chum-control game-toolbar-button game-toolbar-button--chum";
     this.button.type = "button";
     this.button.setAttribute("aria-label", labels?.chumAction || "");
@@ -31,7 +31,7 @@ export class ChumControls {
       if (onClickCallback) onClickCallback(e);
     });
 
-    document.body.appendChild(this.button);
+    mountNode.appendChild(this.button);
   }
 
   setState(state, method = "hand", count = 0, isManual = false, isVisible = true) {

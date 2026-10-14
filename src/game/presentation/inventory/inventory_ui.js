@@ -16,6 +16,7 @@ export class InventoryUI {
   #inventoryRenderer;
   #tooltipPresenter;
   #mountNode;
+  #buttonMountNode;
   #backpackButtonNode;
   #rootNode;
   #headerHost;
@@ -40,7 +41,9 @@ export class InventoryUI {
     onAction = null,
     onWarning = null,
     mountNode,
+    buttonMountNode = mountNode,
     documentRef,
+    uiSurface = null,
     rarityDomAdapter = null,
     rarityVisualResolver = null,
     progressionDomAdapter = null,
@@ -74,9 +77,11 @@ export class InventoryUI {
         : (action) => this.#facade.dispatch(action);
     this.#onWarning = onWarning;
     this.#mountNode = mountNode;
+    this.#buttonMountNode = buttonMountNode;
     this.#warningTimers = warningTimers;
     const presentation = createPresentation({
       documentRef,
+      uiSurface,
       rarityDomAdapter,
       rarityVisualResolver,
       progressionDomAdapter,
@@ -117,7 +122,8 @@ export class InventoryUI {
 
   mount() {
     if (this.#isMounted) return this;
-    this.#mountNode.append(this.#backpackButtonNode, this.#rootNode);
+    this.#buttonMountNode.appendChild(this.#backpackButtonNode);
+    this.#mountNode.appendChild(this.#rootNode);
     this.#isMounted = true;
     if (typeof this.#facade.subscribe === "function") {
       const unsubscribe = this.#facade.subscribe((notification) =>
@@ -306,6 +312,7 @@ export class InventoryUI {
       this.#warningTimer = null;
     }
     this.#longPressController.dispose();
+    this.#headerRenderer.dispose?.();
     this.#tooltipPresenter.dispose();
     this.#backpackButtonNode.remove();
     this.#rootNode.remove();
@@ -351,6 +358,7 @@ export class InventoryUI {
   }
 
   #renderHeader(viewModel) {
+    this.#headerRenderer.dispose?.();
     const header = this.#headerRenderer.render(
       viewModel.header,
       viewModel.settings,

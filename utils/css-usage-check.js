@@ -81,6 +81,13 @@ function stylePolicyViolations(css) {
   if (/:\s+(?:active|hover|checked|focus-visible)\b/.test(source)) {
     violations.push("Whitespace splits a pseudo-class");
   }
+  for (const rule of source.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
+    for (const selector of rule[1].split(",").map((value) => value.trim())) {
+      if (/:(?:hover|active)\b/.test(selector) && !selector.startsWith(".ui-surface--desktop-hover ")) {
+        violations.push(`Ungated pointer decoration: ${selector}`);
+      }
+    }
+  }
   return violations;
 }
 
@@ -115,7 +122,7 @@ function projectVocabulary() {
   walk("src");
   production.addHtml(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"));
   production.addHtml(fs.readFileSync(path.join(ROOT, "fisherman-house.html"), "utf8"));
-  for (const page of ["index.html", "dev.html", "fisherman-house.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
+  for (const page of ["index.html", "dev.html", "fisherman-house.html", "ui-catalog.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
   return { production, development, injected };
 }
 
@@ -130,12 +137,18 @@ const fixturePath = "src/game/presentation/styles/game-shell.css";
 assert.throws(() => readPageStylesheets({ html: link(fixturePath) + link(`${fixturePath}?different=1`) }), /Duplicate stylesheet/);
 assert.throws(() => readPageStylesheets({ html: link("src/game/presentation/styles/missing.css") }), /Missing stylesheet/);
 assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/dev-tools.css") }), /Production loads DEV CSS/);
+assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/ui-catalog.css") }), /Production loads DEV CSS/);
 assert.throws(() => readPageStylesheets({ html: link("../../outside.css") }), /escapes project/);
 assert.throws(() => readPageStylesheets({ html: link("https://external.example/styles.css") }), /relative project path/);
 assert.equal(stylePolicyViolations('.is-open {} .card__image--large {}').length, 1);
 assert.equal(stylePolicyViolations('.card { font: 700 12px inherit; }').length, 1);
 assert.equal(stylePolicyViolations('*:focus { outline: none !important; }').length, 1);
 assert.equal(stylePolicyViolations('button: active { transform: scale(1); }').length, 1);
+assert.equal(stylePolicyViolations('.control:hover { background: red; }').length, 1);
+assert.equal(stylePolicyViolations('.link:active { background: red; }').length, 1);
+assert.equal(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .other:hover {}').length, 1);
+assert.equal(stylePolicyViolations('.control:not(:hover) {}').length, 1);
+assert.deepEqual(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .control:focus-visible, .control--selected {}'), []);
 assert.equal(staticStyleViolations('document.createElement("style");').length, 1);
 assert.equal(staticStyleViolations('el.style.cssText = "color: red";').length, 1);
 assert.equal(staticStyleViolations('`<span style="color:red">text</span>`').length, 1);
@@ -143,15 +156,15 @@ assert.deepEqual(staticStyleViolations('`<span style="--debug-overlay-color:${co
 
 const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
-const stylesheets = [...composition.development, ...composition.house.filter(({ file }) =>
-  !composition.development.some((entry) => entry.file === file))];
+const stylesheets = [...new Map([...composition.development, ...composition.house, ...composition.catalog]
+  .map((entry) => [entry.file, entry])).values()];
 let total = 0;
 for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
   const dev = file.startsWith("src/dev/");
   const unused = unusedClasses(css, dev ? vocabulary.development : vocabulary.production);
   total += classSelectors(css).length;
-  assert.deepEqual(stylePolicyViolations(css), [], `${file} violates the BEM/focus/font policy`);
+  assert.deepEqual(stylePolicyViolations(css), [], `${file} violates the BEM/focus/font/pointer policy`);
   assert.deepEqual(unused, [], `${file} styles classes that no code uses: ${unused.join(", ")}`);
 }
 assert.equal(vocabulary.injected.length, 0, "static presentation styles belong in native CSS assets");
-console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and no injected blocks; native order/version/ownership/reachability and BEM/focus/font policy valid; 13 negative fixtures rejected.`);
+console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and no injected blocks; native order/version/ownership/reachability and BEM/focus/font/pointer policy valid; 18 negative fixtures rejected.`);

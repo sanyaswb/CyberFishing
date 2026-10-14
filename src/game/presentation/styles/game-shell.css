@@ -17,17 +17,17 @@
   background-color: #0f171e;
 }
 
-body.game-shell--outcome-active .game-shell__canvas {
+.game-shell--outcome-active .game-shell__canvas {
   position: relative;
   z-index: var(--ui-layer-outcome);
 }
 
-body.game-shell--pointer-hold .game-control {
+.game-shell--pointer-hold .game-control {
   opacity: 0.18;
   transition: opacity 180ms ease-out;
 }
 
-body.game-shell--pointer-release .game-control {
+.game-shell--pointer-release .game-control {
   opacity: 1;
   transition: none;
 }
@@ -38,19 +38,12 @@ body.game-shell--pointer-release .game-control {
   -webkit-touch-callout: none;
 }
 
-:where(.game-shell) button,
-:where(.game-shell) a {
-  transition: transform 0.12s ease-out;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-:where(.game-shell) button:active,
-:where(.game-shell) a:active {
-  transform: scale(0.96);
-}
-
 .game-shell :focus-visible {
   outline: 2px solid var(--ui-accent);
   outline-offset: 3px;
 }
+
+/* The DOM island stays above the outcome Canvas only for DEV; ordinary UI is inert in this state. */
+.game-shell--outcome-active .ui-surface-frame { z-index: 30000; }
+.game-shell--outcome-active .ui-surface__content { opacity: 0; pointer-events: none; }
+.game-shell--outcome-active .inventory-tooltip { visibility: hidden; }

@@ -9,6 +9,8 @@ import { createProductionConfigContext } from "./game_config_composition.js";
 import { GameVersionBadge } from "./game_version_badge.js";
 import { GameCompositionRoot } from "./game_composition_root.js";
 import { Game } from "./game.js";
+import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
+import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
 
 let startup;
 // One loop guard per page, shared by every game this realm starts.
@@ -30,6 +32,10 @@ async function startGame() {
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
+  const uiSurface = new UiSurfaceAdapter({ hostElement: documentTarget.body,
+    documentRef: documentTarget, windowRef: windowTarget, viewport: true });
+  const badge = documentTarget.getElementById("gameVersionBadge");
+  const toolbar = new GameToolbar({ documentRef: documentTarget, mountNode: uiSurface.mountRoot, versionBadge: badge });
   gameLoopGuard ??= new ActiveGameLoopGuard({ logger: new ConsoleLogger(), warningTarget: windowTarget });
   const compositionRoot = new GameCompositionRoot(CONFIG, {
     loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
@@ -39,6 +45,8 @@ async function startGame() {
     documentTarget,
     windowTarget,
     gameLoopGuard,
+    uiSurface,
+    toolbarMountNode: toolbar.element,
     createDevFlags: () => new InactiveDevFlags(),
   });
   const game = new Game("gameCanvas", compositionRoot);
@@ -51,6 +59,8 @@ async function startGame() {
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
     game.dispose();
+    toolbar.dispose();
+    uiSurface.dispose();
     disposeInterface?.();
     browserLifecycle.clearPublishedHandles(game, null, cleanup);
   };

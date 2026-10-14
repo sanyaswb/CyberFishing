@@ -1,0 +1,68 @@
+const assert = require("node:assert/strict");
+
+module.exports = async function checkFeedLoading() {
+  const { composeLiveBait } = await import("../../../src/bootstrap/production/live_bait_composition.js");
+  const { LIVE_BAIT_CONFIG: config } = await import("../../../src/game/config/raw/live_bait/live_bait_config.js");
+  const featureKey = "fishing_game_player_live_bait_v1", inventoryKey = "fishing_game_player_inventory_v2";
+  const values = new Map([[inventoryKey, JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+  let now = 1000;
+  const simple = config.defaultFeedId, premium = "aquarium_feed_premium_500";
+  const fish = { id: "crucian_stalker", name: "Crucian", weight: .1 };
+  const create = () => composeLiveBait({ config, fishDb: [fish], clock: { nowMs: () => now }, rng: { next: () => .5 },
+    storage: { getItem: (id) => values.get(id) ?? null, setItem: (id, raw) => values.set(id, raw), removeItem: (id) => values.delete(id) } });
+  let service = create();
+  service.buyAquarium(); service.convertCatch(fish, "one");
+  service.buyFeed(simple); service.buyFeed(simple); service.buyFeed(premium); service.buyFeed(premium);
+  assert.equal(service.feedAquarium(simple).ok, true);
+  const stock = values.get(inventoryKey), bytes = values.get(featureKey);
+  assert.equal(service.feedAquarium(premium).reason, "feed_locked", "a second pack cannot replace fresh feed");
+  assert.equal(service.selectAquariumFeed(premium).reason, "feed_locked", "automatic preference cannot bypass the lock");
+  assert.equal(values.get(inventoryKey), stock);
+  assert.equal(values.get(featureKey), bytes, "rejected immediate loads leave both snapshots untouched");
+  assert.equal(service.getView().aquarium.canLoadFeed, false);
+  now += config.aquariumFeeds[simple].durationMs / 2 - 1;
+  service = create();
+  assert.equal(service.feedAquarium(premium).reason, "feed_locked", "reload and offline time preserve the exact half-time gate");
+  now++;
+  const previous = service.getView().aquarium.feed.remainingMs;
+  assert.equal(service.getView().aquarium.canLoadFeed, true);
+  const peer = create();
+  assert.equal(service.feedAquarium(premium).ok, true);
+  let feed = service.getView().aquarium.feed;
+  assert.equal(feed.id, premium);
+  assert.equal(feed.remainingMs, previous + config.aquariumFeeds[premium].durationMs);
+  assert.equal(feed.percentage, 100);
+  assert.equal(service.getView().aquarium.canLoadFeed, false, "top-up starts a new half-time gate");
+  const afterLoad = values.get(inventoryKey);
+  assert.equal(peer.feedAquarium(simple).reason, "feed_locked", "a second page cannot load again using its stale unlocked model");
+  assert.equal(values.get(inventoryKey), afterLoad);
+  assert.deepEqual(create().getView(), service.getView(), "carry, latest quality and gate survive reload");
+  const carry = previous;
+  now += 60000;
+  service.convertCatch(fish, "two");
+  feed = service.getView().aquarium.feed;
+  assert.equal(feed.durationMs, carry + config.aquariumFeeds[premium].durationMs - config.aquariumFeeds[premium].extraFishPenaltyMs);
+  assert.equal(feed.remainingMs, feed.durationMs - 60000, "population recalculation preserves carry and elapsed time");
+  now += feed.remainingMs;
+  assert.equal(service.getView().aquarium.canLoadFeed, true);
+  assert(service.getView().aquarium.starvation);
+  assert.equal(service.feedAquarium(simple).ok, true);
+  assert.equal(service.getView().aquarium.starvation, null);
+
+  // v4 has no carry: retain the running duration and remaining time, without replenishing it.
+  const legacy = JSON.parse(values.get(featureKey));
+  legacy.schemaVersion = 4; delete legacy.aquarium.feed.carriedMs;
+  legacy.aquarium.feed.remainingMs /= 2;
+  values.set(featureKey, JSON.stringify(legacy));
+  service = create();
+  assert.equal(service.getView().aquarium.feed.remainingMs, legacy.aquarium.feed.remainingMs);
+  assert.equal(service.getView().aquarium.canLoadFeed, true);
+  service.buyFeed(simple);
+  const migrated = JSON.parse(values.get(featureKey));
+  assert.equal(migrated.schemaVersion, 5);
+  assert.equal(migrated.aquarium.feed.carriedMs, 0);
+  const invalid = { ...migrated, aquarium: { ...migrated.aquarium, feed: { ...migrated.aquarium.feed, carriedMs: -1 } } };
+  const invalidBytes = JSON.stringify(invalid); values.set(featureKey, invalidBytes);
+  assert.equal(create().error, "invalid_snapshot");
+  assert.equal(values.get(featureKey), invalidBytes, "invalid carry bytes remain recoverable");
+};

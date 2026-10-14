@@ -1,112 +1,138 @@
 export class AquariumFeedPicker {
-  #document;
-  #button;
-  #list;
-  #dialog;
-  #range;
-  #quantity;
-  #minus;
-  #plus;
-  #confirm;
-  #title;
-  #items = [];
-  #signature = "";
-  #selection = null;
-  #onFeed;
-  #labels;
-  #lastFocus = null;
-  constructor({ documentRef, button, list, onFeed, labels }) {
-    this.#document = documentRef; this.#button = button; this.#list = list;
+  #document; #button; #list; #preview; #hint; #labels; #onFeed; #original;
+  #previewRecord;
+  #items = []; #rows = new Map(); #empty; #selectionId = null; #model; #disposed = false;
+  constructor({ documentRef, button, list, preview, hint, onFeed, labels }) {
+    this.#document = documentRef; this.#button = button; this.#list = list; this.#preview = preview; this.#hint = hint;
     this.#onFeed = onFeed; this.#labels = labels;
-    this.#button.addEventListener("click", this.#toggle);
+    this.#original = { children: [...list.childNodes], hidden: list.hidden, expanded: button.getAttribute("aria-expanded"),
+      disabled: button.disabled, text: button.textContent, title: button.getAttribute("title"),
+      preview: [...preview.childNodes], hint: hint.hidden };
+    this.#empty = this.#el("p", "house__muted", labels.empty);
+    this.#previewRecord = this.#createRow(this.#toggleList);
+    preview.replaceChildren(this.#previewRecord.row);
+    const listId = list.getAttribute("id");
+    if (listId) this.#previewRecord.row.setAttribute("aria-controls", listId);
+    this.#button.addEventListener("click", this.#activate);
+    this.#button.addEventListener("keydown", this.#handleKey);
+    this.#list.addEventListener("keydown", this.#handleKey);
     this.#button.setAttribute("aria-expanded", "false");
-    this.#dialog = this.#el("dialog", "house__feed-dialog");
-    this.#dialog.setAttribute("aria-label", labels.quantityTitle);
-    this.#title = this.#el("h3", "house__feed-dialog-title");
-    this.#quantity = this.#el("output", "house__feed-quantity");
-    this.#range = this.#el("input", "house__feed-range");
-    this.#range.type = "range"; this.#range.min = "1"; this.#range.step = "1";
-    this.#range.setAttribute("aria-label", labels.quantityTitle);
-    this.#range.addEventListener("input", () => this.#setQuantity(Number(this.#range.value)));
-    const controls = this.#el("div", "house__feed-quantity-controls");
-    this.#minus = this.#square("−", labels.minus, () => this.#setQuantity(this.#selection.quantity - 1));
-    this.#plus = this.#square("+", labels.plus, () => this.#setQuantity(this.#selection.quantity + 1));
-    controls.append(this.#minus, this.#range, this.#plus);
-    const actions = this.#el("div", "house__action-row");
-    this.#confirm = this.#el("button", "house__button house__button--primary", labels.add);
-    this.#confirm.type = "button"; this.#confirm.addEventListener("click", this.#apply);
-    const cancel = this.#el("button", "house__button", labels.cancel);
-    cancel.type = "button"; cancel.addEventListener("click", () => this.#close());
-    actions.append(cancel, this.#confirm);
-    this.#dialog.append(this.#title, this.#quantity, controls, actions);
-    this.#dialog.addEventListener("cancel", (event) => { event.preventDefault(); this.#close(); });
-    documentRef.body.append(this.#dialog);
   }
   update(model) {
+    this.#model = model;
     this.#items = model.feedItems.filter((item) => item.count > 0);
-    this.#button.disabled = !model.aquarium.owned || model.aquarium.count === 0;
-    const signature = JSON.stringify(this.#items.map((item) => [item.id, item.count]));
-    if (signature !== this.#signature) {
-      const rows = this.#items.map((item) => {
-        const row = this.#el("article", "house__feed-item");
-        const thumbnail = this.#el("div", "house__feed-thumbnail inventory-item-card");
-        const image = this.#el("img", "house__feed-item-image"); image.src = item.imagePath; image.alt = item.name;
-        const icon = this.#el("span", "house__feed-emoji", "🐟"); icon.setAttribute("aria-hidden", "true");
-        thumbnail.append(image, icon, this.#el("span", "inventory-item-card__quantity", String(item.count)));
-        const add = this.#square("+", this.#labels.addItem(item.name), () => this.#choose(item.id, add));
-        row.append(thumbnail, this.#el("span", "house__feed-item-name", item.name), add);
-        return row;
-      });
-      this.#list.replaceChildren(...(rows.length ? rows : [this.#el("p", "house__muted", this.#labels.empty)]));
-      this.#signature = signature;
+    // Draft selection belongs to this UI. Inventory and the load gate remain service-owned.
+    if (!this.#canChoose() || !this.#items.some(item => item.id === this.#selectionId)) this.#selectionId = null;
+    if (!this.#canChoose()) this.close();
+    const active = new Set();
+    const rows = this.#items.map((item) => {
+      active.add(item.id);
+      let record = this.#rows.get(item.id);
+      if (!record) {
+        record = this.#createRow(() => this.#choose(item.id)); this.#rows.set(item.id, record);
+      }
+      this.#updateRow(record, item);
+      record.row.disabled = !this.#canChoose();
+      return record.row;
+    });
+    for (const id of this.#rows.keys()) if (!active.has(id)) this.#rows.delete(id);
+    const next = rows.length ? rows : [this.#empty];
+    if (next.length !== this.#list.children.length || next.some((row, index) => this.#list.children[index] !== row))
+      this.#list.replaceChildren(...next);
+    this.#renderSelection();
+  }
+  get isOpen() { return !this.#list.hidden; }
+  close() {
+    this.#selectionId = null; this.#setExpanded(false);
+    if (this.#model) this.#renderSelection();
+  }
+  dispose() {
+    if (this.#disposed) return;
+    this.#disposed = true;
+    this.#button.removeEventListener("click", this.#activate); this.#button.removeEventListener("keydown", this.#handleKey);
+    this.#list.removeEventListener("keydown", this.#handleKey);
+    this.#previewRecord.row.removeEventListener("click", this.#toggleList);
+    this.#list.replaceChildren(...this.#original.children); this.#list.hidden = this.#original.hidden;
+    this.#preview.replaceChildren(...this.#original.preview); this.#hint.hidden = this.#original.hint;
+    this.#button.disabled = this.#original.disabled; this.#button.textContent = this.#original.text;
+    for (const [key, value] of [["aria-expanded", this.#original.expanded], ["title", this.#original.title]]) {
+      if (value === null) this.#button.removeAttribute(key); else this.#button.setAttribute(key, value);
     }
-    if (this.#selection) {
-      const current = this.#items.find((item) => item.id === this.#selection.id);
-      if (!current) this.#close();
-      else { this.#selection.max = current.count; this.#setQuantity(this.#selection.quantity); }
+    this.#rows.clear();
+  }
+  #canChoose() {
+    return !this.#disposed && !this.#model?.error && this.#model?.aquarium.owned &&
+      this.#model.aquarium.count > 0 && this.#model.aquarium.canLoadFeed !== false;
+  }
+  #activate = () => {
+    if (!this.#canChoose()) return;
+    if (!this.#selectionId) {
+      this.#toggleList(); return;
     }
-  }
-  dispose() { this.#button.removeEventListener("click", this.#toggle); this.#dialog.remove(); }
-  #toggle = () => {
-    this.#list.hidden = !this.#list.hidden;
-    this.#button.setAttribute("aria-expanded", String(!this.#list.hidden));
+    const result = this.#onFeed(this.#selectionId, 1);
+    if (result?.ok) {
+      this.close();
+      (this.#button.disabled ? this.#hint.hidden ? this.#preview : this.#hint : this.#button).focus();
+    }
   };
-  #choose(id, source) {
-    const item = this.#items.find((entry) => entry.id === id);
-    if (!item) return;
-    if (item.count === 1) { this.#onFeed(id, 1); return; }
-    this.#lastFocus = source;
-    this.#selection = { id, max: item.count, quantity: 1 };
-    this.#title.textContent = item.name;
-    this.#setQuantity(1); this.#dialog.showModal(); this.#range.focus();
+  #choose(id) {
+    if (!this.#canChoose() || !this.#items.some(item => item.id === id)) return;
+    this.#selectionId = id; this.#setExpanded(false); this.#renderSelection(); this.#button.focus();
   }
-  #setQuantity(quantity) {
-    if (!this.#selection) return;
-    const value = Math.max(1, Math.min(this.#selection.max, Math.round(quantity)));
-    this.#selection.quantity = value;
-    this.#range.max = String(this.#selection.max); this.#range.value = String(value);
-    this.#quantity.textContent = this.#labels.quantity(value, this.#selection.max);
-    this.#minus.disabled = value === 1; this.#plus.disabled = value === this.#selection.max;
-  }
-  #apply = () => {
-    if (!this.#selection) return;
-    const { id, quantity } = this.#selection;
-    const result = this.#onFeed(id, quantity);
-    if (result?.ok) this.#close();
+  #toggleList = () => {
+    if (this.#canChoose()) this.#setExpanded(!this.isOpen);
   };
-  #close() {
-    if (this.#dialog.open) this.#dialog.close();
-    this.#selection = null;
-    (this.#lastFocus?.isConnected ? this.#lastFocus : this.#button).focus();
-    this.#lastFocus = null;
+  #setExpanded(expanded) {
+    this.#list.hidden = !expanded;
+    this.#button.setAttribute("aria-expanded", String(expanded));
+    this.#previewRecord.row.setAttribute("aria-expanded", String(expanded));
   }
-  #square(text, label, action) {
-    const button = this.#el("button", "house__feed-square", text);
-    button.type = "button"; button.setAttribute("aria-label", label); button.addEventListener("click", action); return button;
+  #renderSelection() {
+    for (const [id, record] of this.#rows) {
+      const selected = id === this.#selectionId;
+      record.row.setAttribute("aria-pressed", String(selected)); record.row.classList.toggle("inventory-action--primary", selected);
+    }
+    const feed = this.#model.aquarium.feed;
+    const draft = this.#items.find(item => item.id === this.#selectionId);
+    const item = draft || feed ||
+      this.#items.find(item => item.id === this.#model.selectedFeedId) || this.#items[0];
+    this.#updateRow(this.#previewRecord, item, !draft && feed ? this.#model.feedCountdownLabel || "" : "",
+      !draft && feed ? feed.quantity : item?.count, !draft && feed ? this.#model.feedTimeLabel || "" : "");
+    this.#previewRecord.row.disabled = !this.#canChoose();
+    this.#button.disabled = !this.#canChoose();
+    this.#text(this.#button, this.#selectionId || (this.#button.disabled && this.#items.length > 0) ? this.#labels.load : this.#labels.feed);
+    const locked = this.#model.aquarium.canLoadFeed === false && feed?.remainingMs > 0;
+    this.#hint.hidden = !locked; this.#text(this.#hint, this.#labels.locked);
+    if (locked) this.#button.setAttribute("title", this.#labels.locked); else this.#button.removeAttribute("title");
   }
+  #handleKey = (event) => {
+    if (event.key !== "Escape" || !this.isOpen) return;
+    event.preventDefault(); event.stopPropagation(); this.close(); this.#button.focus();
+  };
+  #createRow(onChoose) {
+    const row = this.#el("button", "inventory-action house__feed-item"); row.type = "button";
+    row.addEventListener("click", onChoose);
+    const thumbnail = this.#el("span", "house__feed-thumbnail inventory-item-card");
+    const image = this.#el("img", "house__feed-item-image"); image.alt = "";
+    const quantity = this.#el("span", "inventory-item-card__quantity"); thumbnail.append(image, quantity);
+    const details = this.#el("span", "house__feed-item-details");
+    const name = this.#el("span", "house__feed-item-name");
+    const meta = this.#el("span", "house__feed-item-meta"); details.append(name, meta);
+    row.append(thumbnail, details);
+    return { row, image, quantity, details, name, meta, imagePath: null };
+  }
+  #updateRow(record, item, description = "", quantity = item?.count, accessibleDescription = description) {
+    record.image.hidden = !item;
+    record.quantity.hidden = !Number.isFinite(quantity);
+    if (item && record.imagePath !== item.imagePath) { record.image.src = item.imagePath; record.imagePath = item.imagePath; }
+    this.#text(record.name, item?.name || this.#labels.noSelection);
+    this.#text(record.quantity, Number.isFinite(quantity) ? quantity : "");
+    this.#text(record.meta, description); record.meta.hidden = !description;
+    record.row.setAttribute("aria-label", item ? [this.#labels.item(item.name, quantity || 0), accessibleDescription].filter(Boolean).join(" · ") : this.#labels.noSelection);
+  }
+  #text(node, value) { if (node.textContent !== String(value)) node.textContent = String(value); }
   #el(tag, className, text) {
     const node = this.#document.createElement(tag); node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
+    if (text !== undefined) node.textContent = text; return node;
   }
 }

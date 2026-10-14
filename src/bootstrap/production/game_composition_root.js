@@ -115,6 +115,7 @@ import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
+import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
 import { InactiveDebugEvents } from "../../game/application/session/inactive_debug_events.js";
 import { InactiveGameDiagnostics } from "../../game/application/session/inactive_game_diagnostics.js";
 import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
@@ -143,11 +144,14 @@ export class GameCompositionRoot {
   #createDebugEvents;
   #createGameDiagnostics;
   #createDevTools;
+  #createTimeDisplay;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
   #storageCache;
   #rendering;
+  #uiSurface;
+  #toolbarMountNode;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -168,15 +172,18 @@ export class GameCompositionRoot {
     createGameDiagnostics,
     createWorldDebugRenderer,
     createDevTools,
+    createTimeDisplay,
     createLocationDebugRenderFrameBuilder,
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
     createFightDiagnosticsBuilder,
+    uiSurface = null,
+    toolbarMountNode = null,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
-      createDevTools, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
+      createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
     })) {
       if (factory != null && typeof factory !== "function") {
@@ -213,9 +220,12 @@ export class GameCompositionRoot {
     this.#createDebugEvents = createDebugEvents;
     this.#createGameDiagnostics = createGameDiagnostics;
     this.#createDevTools = createDevTools;
+    this.#createTimeDisplay = createTimeDisplay;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
+    this.#uiSurface = uiSurface;
+    this.#toolbarMountNode = toolbarMountNode;
     this.#rendering = new GameRenderComposition({
       readRenderDiagnostics: () => this.#readRenderDiagnostics(),
       createOptionalDiagnostic: (factory, name, args, methods) =>
@@ -385,7 +395,7 @@ export class GameCompositionRoot {
       castRules, biteRules, chumRules, boatRules, playerCastRules,
     } = this.#composeRulesAndWorld({
       castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
-      physicsConfig, own,
+      physicsConfig, own, gameTimeClock,
     });
     return {
       liveBait,
@@ -784,6 +794,7 @@ export class GameCompositionRoot {
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
     gameTimeClock,
   }) {
+    const uiLogger = new ConsoleLogger();
     const systems = {
       projector,
       map: new LocationMap(
@@ -815,7 +826,13 @@ export class GameCompositionRoot {
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
           }], ["dispose"],
         ))),
-        { cache: this.#storageCache, labels: HUD_LABELS, logger: new ConsoleLogger() },
+        { cache: this.#storageCache, labels: HUD_LABELS,
+          fullscreenControl: own(new FullscreenControl({ documentRef: this.#documentTarget,
+            mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body, label: HUD_LABELS.fullscreen,
+            onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),
+          mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+          toolbarMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+          documentRef: this.#documentTarget, frameScheduler: this.#windowTarget },
       )),
       chum: own(new ChumService(locId, chumConfigObj, projector, {
         cache: this.#storageCache,
@@ -871,7 +888,9 @@ export class GameCompositionRoot {
     systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
       documentRef: this.#documentTarget,
-      mountNode: this.#documentTarget?.body,
+      mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      uiSurface: this.#uiSurface,
       warningTimers: new BrowserTimeoutScheduler(),
       onAction: (action) => inventory.dispatchInventoryAction(action),
       rarityDomAdapter: itemRarityDomAdapter,
@@ -889,14 +908,16 @@ export class GameCompositionRoot {
       }),
     }));
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
-      liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver });
+      liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver,
+      buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     return {  };
   }
 
   // Gameplay rules, the game world, fishing controller and HUD widgets.
   #composeRulesAndWorld({
-    castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq, physicsConfig,
+    castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq, physicsConfig, gameTimeClock,
     own,
   }) {
     const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
@@ -935,9 +956,12 @@ export class GameCompositionRoot {
       physicsConfig?.getDistanceConfig?.() || {},
     );
     const castPenalty = new CastPenalty();
-    const depthUI = own(new DepthSelector({ labels: HUD_LABELS }));
-    const timeUI = own(new TimeDisplay());
-    const holdUI = own(new HoldCharges({ labels: HUD_LABELS }));
+    const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
+    const depthUI = own(new DepthSelector({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
+    const timeUI = own(this.#createTimeDisplay
+      ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
+      : new TimeDisplay({ documentRef: this.#documentTarget, mount: mountNode }));
+    const holdUI = own(new HoldCharges({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
     return { world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules, castRules, biteRules, chumRules, boatRules, playerCastRules };
   }
 
@@ -1190,7 +1214,8 @@ export class GameCompositionRoot {
       markInvalidCast: appPorts.markInvalidCast,
       canPlayerCast: appPorts.canPlayerCast,
       getGameStateName: appPorts.getGameStateName,
-      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS }),
+      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS,
+        documentRef: this.#documentTarget, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body }),
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
     }));

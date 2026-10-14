@@ -112,6 +112,7 @@ export class LiveBaitCommandService {
   getFeed(itemId) { return this.buyFeed(itemId); }
   selectAquariumFeed(itemId) { return this.#commit((state) => {
     if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
+    if (!this.#care.canLoadFeed(state)) return "feed_locked";
     state.feedSupply.selectedFeedId = itemId; return null;
   }); }
   feedAquarium(itemId = null, quantity = 1) { return this.#commit((state) => {
@@ -120,6 +121,7 @@ export class LiveBaitCommandService {
     if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
     if (!Number.isSafeInteger(quantity) || quantity < 1) return "invalid_quantity";
     if (!state.fish.some((fish) => fish.disposition === "aquarium")) return "nothing_to_feed";
+    if (!this.#care.canLoadFeed(state)) return "feed_locked";
     if (!new FeedSupplyState(state.feedSupply).consume(itemId, quantity)) return "no_feed";
     state.feedSupply.selectedFeedId = itemId;
     this.#care.feed(state, itemId, Math.floor(this.#rng.next() * 4294967296), quantity); return null;
@@ -153,7 +155,7 @@ export class LiveBaitCommandService {
     if (this.#error) return { error: this.#error, feedStock: 0, selectedBaitId: null, liveBaits: [], keepnet: [],
       keepnetCapacity: this.#config.keepnetCapacity, keepnetReservedCount: 0,
       feedItems: [], selectedFeedId: this.#config.defaultFeedId,
-      aquarium: { owned: false, level: 0, capacity: 0, count: 0, feed: null, starvation: null, autoFeeder: { owned: false, enabled: false } }, deadCount: 0 };
+      aquarium: { owned: false, level: 0, capacity: 0, count: 0, canLoadFeed: false, feed: null, starvation: null, autoFeeder: { owned: false, enabled: false } }, deadCount: 0 };
     // Read-only event-time projection: the display must agree with the next care settlement,
     // including deaths and automatic refills, without writing on every display tick.
     const state = JSON.parse(JSON.stringify(this.#state));
@@ -180,6 +182,7 @@ export class LiveBaitCommandService {
       keepnetCapacity: this.#config.keepnetCapacity,
       keepnetReservedCount: state.fish.filter((fish) => fish.disposition === "hook").length,
       aquarium: { owned: aquarium.owned, level: aquarium.level, capacity: aquarium.capacity,
+        canLoadFeed: this.#care.canLoadFeed(state),
         count: state.fish.filter((fish) => fish.disposition === "aquarium").length,
         nextUpgradeCapacity: aquarium.level < this.#config.capacities.length ? this.#config.capacities[aquarium.level] : null,
         maxLevel: this.#config.capacities.length,

@@ -19,7 +19,8 @@ export class CanvasMetricsProvider {
 
   resizeToViewport() {
     const viewport = this.#viewport();
-    this.#canvas.width = viewport.width;
-    this.#canvas.height = viewport.height;
+    // Assigning even an unchanged dimension clears the bitmap and resets Canvas state.
+    if (this.#canvas.width !== viewport.width) this.#canvas.width = viewport.width;
+    if (this.#canvas.height !== viewport.height) this.#canvas.height = viewport.height;
   }
 }

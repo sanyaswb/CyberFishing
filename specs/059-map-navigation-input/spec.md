@@ -1,0 +1,15 @@
+# Map navigation and clock input
+
+Owner request: 2026-10-14. Scope: distinguish map navigation from a click before rod equipment and keep clock interaction within the HUD.
+
+- In scouting without an equipped rod, a primary mouse/touch press remains pending until movement exceeds `input.pointerThreshold`. Waiting before moving must not turn it into a fishing hold or open Inventory.
+- A drag beyond that tolerance remains navigation until release, even when it returns to its starting point. Movement is accumulated between game updates, consumed once and includes the final release position. A cancelled gesture must not become a click; blur discards unfinished input and releases pointer capture.
+- A completed stationary click still opens the existing missing-rod warning. Rapid clicks and keyboard cast attempts retain feedback. Other pointer IDs cannot finish or move an active gesture.
+- Navigation uses the existing horizontal camera and location boundaries. Vertical gestures suppress accidental clicks but do not change the camera's existing vertical follow behavior.
+- `input.mapPan.inverted: true` makes the map follow a dragging finger/mouse; false reverses it. `sensitivity: 1` preserves pixel distance. `maxDistancePx: 0` allows the full map range; a positive value limits displacement from the gesture start in camera pixels. `wheelStepPx: 40` sets distance for one wheel line; pixel deltas retain native distance and page deltas use viewport width. Wheel uses its horizontal delta or falls back to the vertical delta. Browser Ctrl+wheel zoom is preserved.
+- Equipped rod casting, fights, waiting, victory and chum aiming retain their existing input ownership. Application selects the platform navigation mode; input never reads inventory or imports gameplay rules. The mode is latched for a gesture so equipping a rod during navigation cannot turn the drag into a cast.
+- Passive, disabled and enabled clocks all own their pointer hit area and shield input. Production remains a passive display; enabled DEV acceleration retains its existing cycle.
+
+Validation: deterministic `scouting-input`, game application composition, victory input and DEV time checks, Architecture + Quick + Full, and browser smoke for index/dev clock and map gestures. Physical phone/mouse feel acceptance belongs to the owner.
+
+Evidence (2026-10-14): the early-warning regression failed before the fix and passes after it. Architecture passed 4 checks, Quick passed 24, Full passed 50 with the existing game-cycle baseline unchanged. Browser smoke on a separate localhost session with the rod slot visibly empty confirmed mouse drag, wheel movement, a passive production clock click without Inventory, the missing-rod warning on an actual map click, disabled DEV clock shielding and an enabled DEV clock advancing to ×1.5 while map dragging remains available. DEV console had no warning/error entries. Touch classification/cancellation is deterministic coverage; physical phone feel remains owner acceptance.

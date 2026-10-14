@@ -9,7 +9,7 @@ const DEV_STYLES = "src/dev/styles/";
 
 // HTML is the CSS composition root. Tests read the same ordered assets as the browser.
 function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", html = null } = {}) {
-  if (!["index.html", "dev.html", "fisherman-house.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
+  if (!["index.html", "dev.html", "fisherman-house.html", "ui-catalog.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
   const source = html ?? fs.readFileSync(path.join(projectRoot, page), "utf8");
   const stylesheets = [];
   const seen = new Set();
@@ -28,7 +28,7 @@ function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", 
       throw new Error(`Stylesheet has no presentation/DEV owner: ${file}`);
     }
     if (!file.endsWith(".css")) throw new Error(`Stylesheet must be CSS: ${file}`);
-    if (page !== "dev.html" && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
+    if (!["dev.html", "ui-catalog.html"].includes(page) && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
     if (seen.has(file)) throw new Error(`Duplicate stylesheet: ${file}`);
     if (!fs.existsSync(absolute)) throw new Error(`Missing stylesheet: ${file}`);
     seen.add(file);
@@ -48,20 +48,26 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   const production = readPageStylesheets({ projectRoot });
   const development = readPageStylesheets({ projectRoot, page: "dev.html" });
   const house = readPageStylesheets({ projectRoot, page: "fisherman-house.html" });
+  const catalog = readPageStylesheets({ projectRoot, page: "ui-catalog.html" });
   const productionPaths = production.map(({ file }) => file);
   const reused = development.filter(({ file }) => file.startsWith(PRODUCTION_STYLES)).map(({ file }) => file);
-  if (JSON.stringify(reused) !== JSON.stringify(productionPaths) ||
+  if (JSON.stringify(reused) !== JSON.stringify([...productionPaths, `${PRODUCTION_STYLES}house.css`]) ||
       JSON.stringify(development.slice(0, production.length).map(({ file }) => file)) !== JSON.stringify(productionPaths)) {
-    throw new Error("DEV must reuse production CSS in the same order, followed by DEV styles");
+    throw new Error("DEV must reuse production CSS in the same order, followed by House and DEV styles");
   }
   if (!development.some(({ file }) => file.startsWith(DEV_STYLES))) throw new Error("DEV page has no DEV stylesheet");
+  const catalogPrefix = catalog.slice(0, production.length).map(({ file }) => file);
+  if (JSON.stringify(catalogPrefix) !== JSON.stringify(productionPaths)) {
+    throw new Error("Catalog must reuse the complete production CSS prefix in the same order");
+  }
+  if (!catalog.some(({ file }) => file === `${DEV_STYLES}ui-catalog.css`)) throw new Error("Catalog page has no catalog stylesheet");
   const version = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
-  for (const { file, href } of [...production, ...development, ...house]) {
+  for (const { file, href } of [...production, ...development, ...house, ...catalog]) {
     if (new URL(href, "http://project.local/").searchParams.get("v") !== version) {
       throw new Error(`Stylesheet cache version differs from project version: ${file}`);
     }
   }
-  const linked = new Set([...development, ...house].map(({ file }) => file));
+  const linked = new Set([...development, ...house, ...catalog].map(({ file }) => file));
   const walk = (relative) => {
     for (const entry of fs.readdirSync(path.join(projectRoot, relative), { withFileTypes: true })) {
       const file = relative + entry.name;
@@ -71,7 +77,7 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   };
   walk(PRODUCTION_STYLES);
   walk(DEV_STYLES);
-  return { production, development, house };
+  return { production, development, house, catalog };
 }
 
 module.exports = { readPageStylesheets, readPageCss, validatePageStyleComposition };

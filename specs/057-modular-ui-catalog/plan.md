@@ -2,7 +2,9 @@
 
 **Branch**: `develop` | **Date**: 2026-10-13 | **Spec**: [spec.md](spec.md)
 
-**Input**: Окрема специфікація 057. Власник дозволив у цій ітерації лише підготовку spec і plan; наведені нижче runtime-файли та етапи є майбутніми змінами.
+**Input**: Окрема специфікація 057. Початкова ітерація створювала документацію; поточний запит дозволив реалізацію каталогу патернів, адаптера масштабу та виправлення дизайну.
+
+**Current owner revision (2026-10-13)**: поточний запит дозволяє реалізацію, дизайнерські виправлення та паралельну роботу. Актуальний executable scope й acceptance — [tasks.md](tasks.md), [coverage.md](coverage.md). Browser automation, commit/push та публікація не входять у поточне виконання. Автоматичне приймання завершено 2026-10-14: Architecture 4/4, Quick 21/21, Full 47/47; візуальне приймання лишається за власником.
 
 ## Summary
 
@@ -40,7 +42,7 @@
 | Авторитетний стан | PASS: поточний UI читає production read models | PASS: isolated fixtures не є другим власником ігрового стану |
 | Збереження поведінки | PASS: немає gameplay-задач | PASS: виділення шаблонів зберігає callbacks/ARIA/classes; scale=1 — поточна геометрія |
 | Докази й guards | PASS: джерела/споживачі перевірені | PASS: нова сторінка додається до перевірок, а не виключається з них |
-| Межа цієї ітерації | PASS: owner обрав документацію | PASS: каталог, адаптер масштабу й component extraction зараз не реалізуються |
+| Межа цієї ітерації | PASS: owner дозволив implementation поточним запитом | PASS: реалізовано runtime, gameplay/save baseline незмінні; owner visual acceptance окремо |
 
 ## Project Structure
 
@@ -59,9 +61,9 @@ specs/057-modular-ui-catalog/
 └── contracts/ui-components.md
 ```
 
-`tasks.md` створюється окремим етапом після прийняття плану; у цій ітерації він не потрібний.
+`tasks.md` створено для авторизованої implementation-ітерації. Historical completed specs не переписуються.
 
-### Source Code (repository root; proposed, not created)
+### Source Code (repository root; implemented)
 
 ```text
 ui-catalog.html
@@ -69,24 +71,30 @@ src/entrypoints/dev/ui_catalog.entry.js
 src/bootstrap/development/ui_catalog_bootstrap.js
 src/dev/ui_catalog/
 ├── ui_catalog_page.js
-├── ui_catalog_examples.js
-├── ui_catalog_fixture_models.js
-└── ui_catalog_preview_controller.js
+├── ui_catalog_definitions.js
+├── ui_catalog_document_scope.js
+├── ui_catalog_frame_scheduler.js
+├── ui_catalog_inventory_fixture.js
+├── ui_catalog_keepnet_fixture.js
+└── ui_catalog_*_example.js
 src/dev/styles/ui-catalog.css
 src/game/presentation/ui/
 ├── ui_close_button_renderer.js
 └── ui_auto_switch_renderer.js
 src/platform/browser/dom/ui_surface_adapter.js
 src/game/presentation/styles/modal-controls.css       # existing shared close appearance
+src/game/presentation/styles/auto-switch.css
+src/game/presentation/styles/ui-surface.css
 src/game/presentation/styles/inventory/resource-meters.css
 src/game/presentation/styles/tokens.css
 utils/ui-catalog-check.js
+utils/ui-components-check.js
 utils/ui-surface-check.js
 ```
 
 **Structure Decision**: UI-спільні шаблони розміщуються у presentation. Каталог і контрольні дані — DEV; будь-які factory/strategy з host/config залежностями створює development bootstrap. Scale adapter — platform із вузьким інжектованим контрактом. Уже спільний `InventoryResourceMeterRenderer` повторно використовується без перейменування або нового wrapper лише заради каталогу. Стилі не переносяться масово: зберігати їхніх наявних власників і native порядок завантаження.
 
-## Implementation sequence for the next iteration
+## Implementation sequence
 
 1. **Інвентаризація й контракт.** Побудувати coverage-таблицю всіх FR-002 компонентів/станів, реальних source/style owners та споживачів. Додати missing family до плану до написання runtime-коду. Перевірити форму callback/lifecycle кожного renderer; не створювати fixtures із вигаданими gameplay-контрактами.
 2. **Спільні примітиви.** Виділити close і auto-switch markup за доказом повторного використання; споживачі додають свої layout BEM-mix. Для toolbar відокремити нинішні `position: fixed`, `bottom/right` від appearance, зберігши screen-specific класи й поведінку. Ресурсні meter і Canvas bar renderers уже існують — не копіювати їх. Спільну help/focus логіку виділяти лише для реальних повторних споживачів.

@@ -23,6 +23,7 @@ import { GameCompositionRoot } from "../production/game_composition_root.js";
 import { GameDebugFacade } from "../../dev/runtime/game_debug_facade.js";
 import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
 import { GameVersionBadge } from "../production/game_version_badge.js";
+import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
@@ -41,6 +42,9 @@ import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
+import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
+import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
+import { composeDevTimeDisplay } from "./dev_time_composition.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -66,6 +70,13 @@ async function startGame() {
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
+  const uiSurface = new UiSurfaceAdapter({ hostElement: documentTarget.body,
+    documentRef: documentTarget, windowRef: windowTarget, viewport: true });
+  const badge = documentTarget.getElementById("gameVersionBadge");
+  const toolbar = new GameToolbar({ documentRef: documentTarget, mountNode: uiSurface.mountRoot, versionBadge: badge });
+  const developmentMount = documentTarget.createElement("div");
+  developmentMount.className = "game-shell__dev-ui";
+  uiSurface.portalRoot.appendChild(developmentMount);
   gameLoopGuard ??= new ActiveGameLoopGuard({logger: new ConsoleLogger(), warningTarget: windowTarget});
   listenerCounter ??= new ManagedListenerCounter();
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
@@ -83,33 +94,58 @@ async function startGame() {
   });
   let consoleRuntime, overlayRuntime, game, watchdog;
   let housePreviewWindow = null;
+  let timeControl = null;
+  let houseTimeSnapshot = null;
+  let houseReady = false;
+  const onHouseReady = event => {
+    if (!housePreviewWindow || houseReady || event.source !== housePreviewWindow || event.origin !== windowTarget.location.origin ||
+      event.data?.type !== "cyber-fishing:dev-house-ready") return;
+    houseReady = true;
+    updateHousePreview();
+    housePreviewWindow.postMessage({ type: "cyber-fishing:aquarium-preview", debugTime: houseTimeSnapshot }, windowTarget.location.origin);
+  };
   const updateHousePreview = () => housePreviewWindow?.postMessage({ type: "cyber-fishing:aquarium-preview",
     visual: JSON.parse(JSON.stringify(CONFIG.liveBait.visual)) }, windowTarget.location.origin);
   documentTarget.addEventListener("debug-live-update", updateHousePreview);
-  const houseOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
-    src: "fisherman-house.html?returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
-    onEnter: () => game?.stop(),
-    onReady: (frameWindow) => { housePreviewWindow = frameWindow; updateHousePreview(); },
-    onExit: () => { housePreviewWindow = null; void game?.start().catch((error) => windowTarget.console.error(error)); } });
+  windowTarget.addEventListener("message", onHouseReady);
+  const pageOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
+    src: "dev.html?page=house&returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
+    onEnter: () => { game?.stop(); houseTimeSnapshot = timeControl?.suspend(); houseReady = false; },
+    onReady: (frameWindow) => {
+      housePreviewWindow = frameWindow; updateHousePreview();
+    },
+    onExit: data => {
+      housePreviewWindow = null;
+      const snapshot = data?.debugTime || houseTimeSnapshot;
+      if (data?.debugTime) {
+        configRuntime.set("debug.timeAccelerationEnabled", snapshot.enabled === true);
+        if (Number.isFinite(snapshot.timeScale) && snapshot.timeScale > 0) configRuntime.set("debug.timeScale", snapshot.timeScale);
+      }
+      timeControl?.resume(snapshot); houseTimeSnapshot = null;
+      void game?.start().catch((error) => windowTarget.console.error(error));
+    } });
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
     if (disposed) return;
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
-    houseOverlay.dispose();
+    pageOverlay.dispose();
+    windowTarget.removeEventListener("message", onHouseReady);
     documentTarget.removeEventListener("debug-live-update", updateHousePreview);
     watchdog?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
     disposeInterface?.();
     if (gameReady) game?.dispose();
+    toolbar.dispose();
+    uiSurface.dispose();
     browserLifecycle.clearPublishedHandles(game, watchdog, cleanup);
     startup = null;
   };
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
-    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache});
+    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount});
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
@@ -117,6 +153,8 @@ async function startGame() {
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
       documentTarget, windowTarget, gameLoopGuard, listenerCounter,
+      uiSurface,
+      toolbarMountNode: toolbar.element,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
       createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
@@ -130,12 +168,17 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
-        openHouse: () => houseOverlay.open(),
+        openHouse: () => pageOverlay.open(),
+        openUiCatalog: () => pageOverlay.open({ src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle, onReady: null }),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
-          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache)};
+          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount)};
         }}),
+      createTimeDisplay: options => {
+        timeControl = composeDevTimeDisplay({ ...options, config: CONFIG, uiSurface });
+        return timeControl;
+      },
       createLocationDebugRenderFrameBuilder: options => new LocationDebugRenderFrameBuilder(options),
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,

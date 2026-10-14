@@ -9,6 +9,7 @@ export class EmbeddedPageOverlay {
   #onExit;
   #onReady;
   #frame = null;
+  #returnFocus = null;
   #disposed = false;
 
   constructor({ documentRef, windowTarget, src, title, onEnter, onExit, onReady }) {
@@ -22,26 +23,30 @@ export class EmbeddedPageOverlay {
     windowTarget.addEventListener("message", this.#handleMessage);
   }
 
-  open() {
+  open({ src = this.#src, title = this.#title, onReady = this.#onReady } = {}) {
     if (this.#disposed || this.#frame) return;
     const frame = this.#document.createElement("iframe");
     frame.className = "embedded-page-overlay";
-    frame.title = this.#title;
+    frame.title = title;
     frame.allowFullscreen = true;
-    frame.src = this.#src;
+    frame.src = src;
     frame.addEventListener("load", () => {
-      if (!this.#disposed && this.#frame === frame) this.#onReady?.(frame.contentWindow);
+      if (!this.#disposed && this.#frame === frame) onReady?.(frame.contentWindow);
     }, { once: true });
     this.#onEnter?.();
+    this.#returnFocus = this.#document.activeElement;
     this.#frame = frame;
     this.#document.body.appendChild(frame);
+    frame.focus?.();
   }
 
-  close() {
+  close(returnData = null) {
     if (!this.#frame) return;
     this.#frame.remove();
     this.#frame = null;
-    this.#onExit?.();
+    this.#onExit?.(returnData);
+    if (this.#returnFocus?.isConnected !== false) this.#returnFocus?.focus?.();
+    this.#returnFocus = null;
   }
 
   dispose() {
@@ -50,12 +55,13 @@ export class EmbeddedPageOverlay {
     this.#window.removeEventListener("message", this.#handleMessage);
     this.#frame?.remove();
     this.#frame = null;
+    this.#returnFocus = null;
   }
 
   #handleMessage = (event) => {
     if (!this.#frame || event.source !== this.#frame.contentWindow ||
       event.origin !== this.#window.location.origin ||
       event.data?.type !== EMBEDDED_PAGE_RETURN_MESSAGE) return;
-    this.close();
+    this.close(event.data);
   };
 }

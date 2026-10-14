@@ -3,6 +3,7 @@ import { Vector2 } from "../../../engine/math/vector2.js";
 export const PointerAction = Object.freeze({
   IDLE: "idle",
   PENDING: "pending",
+  PAN: "pan",
   PULL: "pull",
   DRAG_CONTROL: "drag_control",
   ROD_CONTROL_X: "rod_control_x",
@@ -53,6 +54,10 @@ export class InputController {
   #fightInputActionComposer = null;
   #stateSnapshot;
   #runtimeConfig;
+  #pointerPanEnabled = false;
+  #pointerPanGesture = false;
+  #panGestureX = 0;
+  #activePointerId = null;
 
   constructor(canvas, anchorX = null, { runtimeConfig, listeners, fightInputActionComposer = null } = {}) {
     this.#listeners = listeners;
@@ -99,6 +104,7 @@ export class InputController {
       isDoubleClick: false,
       longPressPos: null,
       pointerDown: false,
+      pointerPanning: false,
       dragControlActive: false,
       dragControlEnabled: true,
       pointerAction: PointerAction.IDLE,
@@ -130,6 +136,10 @@ export class InputController {
     }
   }
 
+  setPointerPanEnabled(enabled) {
+    this.#pointerPanEnabled = enabled === true;
+  }
+
   #isKeyMatch(e, actionArray) {
     if (!actionArray) return false;
     return actionArray.includes(e.code) || actionArray.includes(e.key);
@@ -149,6 +159,13 @@ export class InputController {
 
   #bindEvents() {
     this.#addEventListener(this.#canvas, "pointerdown", (e) => {
+      if (this.#isPointerDown || (e.button !== undefined && e.button !== 0)) return;
+      this.#activePointerId = e.pointerId ?? null;
+      this.#pointerPanGesture = this.#pointerPanEnabled;
+      this.#panGestureX = 0;
+      if (this.#pointerPanGesture && this.#activePointerId !== null) {
+        this.#canvas.setPointerCapture?.(this.#activePointerId);
+      }
       this.#pointerGestureId += 1;
       this.#isPointerDown = true;
       this.#isPulling = false;
@@ -175,7 +192,8 @@ export class InputController {
       this.#hasLongPressed = false;
       this.#updateDirection(e);
 
-      if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
+      this.#clearLongPressTimeout();
+      if (this.#pointerPanGesture) return;
       this.#longPressTimeout = setTimeout(() => {
         if (this.#canTriggerLongPress()) {
           this.#longPressPos = {
@@ -189,6 +207,12 @@ export class InputController {
 
     this.#addEventListener(this.#canvas, "pointermove", (e) => {
       if (!this.#isPointerDown) return;
+      if (this.#activePointerId !== null && e.pointerId !== undefined && e.pointerId !== this.#activePointerId) return;
+
+      if (this.#pointerPanGesture) {
+        this.#updateMapPointer(e.clientX, e.clientY);
+        return;
+      }
 
       this.#currentPointerX = e.clientX;
       this.#currentPointerY = e.clientY;
@@ -205,8 +229,8 @@ export class InputController {
       }
 
       if (this.#isDragging) {
-        this.#panDeltaX = this.#lastPointerX - e.clientX;
-        this.#panDeltaY = this.#lastPointerY - e.clientY;
+        this.#panDeltaX += this.#lastPointerX - e.clientX;
+        this.#panDeltaY += this.#lastPointerY - e.clientY;
 
         if (!this.#hasSwipedThisTouch) {
           this.#swipeDeltaY = this.#startY - e.clientY;
@@ -224,6 +248,10 @@ export class InputController {
     });
 
     const resetInput = (e) => {
+      if (this.#activePointerId !== null && e?.pointerId !== undefined && e.pointerId !== this.#activePointerId) return;
+      // Pointer Events own captured touch gestures; another finger's touchend
+      // must not finish the primary pointer's navigation.
+      if (this.#pointerPanGesture && this.#activePointerId !== null && e?.type === "touchend") return;
       if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
 
       const isPointerEvent =
@@ -239,13 +267,17 @@ export class InputController {
           const holdMs = Math.max(0, Number(this.#runtimeConfig.input?.pullHoldMinMs) || 0);
           const elapsedMs = Math.max(0, now - Number(this.#pointerDownAtMs || now));
           const pointerWasClickCandidate =
-            this.#pointerAction === PointerAction.PENDING && elapsedMs < holdMs;
+            this.#pointerAction === PointerAction.PENDING &&
+            (this.#pointerPanGesture || elapsedMs < holdMs);
           const clientX =
             e.clientX ?? (e.changedTouches && e.changedTouches[0]?.clientX);
           const clientY =
             e.clientY ?? (e.changedTouches && e.changedTouches[0]?.clientY);
 
           if (clientX !== undefined && clientY !== undefined) {
+            if (this.#pointerPanGesture && !this.#pointerReleaseCancelled) {
+              this.#updateMapPointer(clientX, clientY);
+            }
             this.#releasePointerX = clientX;
             this.#releasePointerY = clientY;
             this.#currentPointerX = clientX;
@@ -253,9 +285,9 @@ export class InputController {
             this.#hasPointerRelease = true;
           }
 
-          // Only a short pending click becomes a click;
-          // a fight hold or drag-control gesture does not.
-          if (pointerWasClickCandidate && !this.#isDragging && !this.#hasLongPressed) {
+          // A stationary navigation press can become a click regardless of its
+          // duration; fishing holds, drags and cancellations cannot.
+          if (pointerWasClickCandidate && !this.#pointerReleaseCancelled && !this.#isDragging && !this.#hasLongPressed) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {
@@ -274,6 +306,7 @@ export class InputController {
         this.#rodControlPointerActive = false;
         this.#rodControlDirectionX = 0;
         this.#rodControlInputRatio = 0;
+        this.#releasePointerCapture();
       }
 
       const pullKeys = this.#runtimeConfig.input?.keys?.pull || ["Space"];
@@ -303,8 +336,27 @@ export class InputController {
       this.#rodControlPointerActive = false;
       this.#rodControlDirectionX = 0;
       this.#rodControlInputRatio = 0;
+      this.#pointerPanGesture = false;
+      this.#panDeltaX = 0;
+      this.#panDeltaY = 0;
+      this.#clickPos = null;
+      this.#isDoubleClick = false;
+      this.#longPressPos = null;
+      this.#hasPointerRelease = false;
+      this.#releasePointerCapture();
       resetInput();
     });
+
+    this.#addEventListener(this.#canvas, "wheel", (e) => {
+      if (!this.#pointerPanEnabled || this.#isPointerDown || e.ctrlKey) return;
+      const config = this.#runtimeConfig.input?.mapPan || {};
+      const unit = e.deltaMode === 1
+        ? Math.max(0, Number(config.wheelStepPx ?? 40) || 0)
+        : e.deltaMode === 2 ? this.#canvas.clientWidth : 1;
+      const delta = e.deltaX || e.deltaY || 0;
+      this.#panDeltaX += delta * unit * this.#getPanSensitivity() * (config.inverted === false ? -1 : 1);
+      e.preventDefault();
+    }, { passive: false });
 
     this.#addEventListener(window, "keydown", (e) => {
       this.#keys[e.code] = true;
@@ -376,6 +428,37 @@ export class InputController {
     }
   }
 
+  #getPanSensitivity() {
+    const value = Number(this.#runtimeConfig.input?.mapPan?.sensitivity ?? 1);
+    return Number.isFinite(value) ? Math.max(0, value) : 1;
+  }
+
+  #updateMapPointer(x, y) {
+    this.#currentPointerX = x;
+    this.#currentPointerY = y;
+    const configuredThreshold = Number(this.#runtimeConfig.input?.pointerThreshold ?? 10);
+    const threshold = Number.isFinite(configuredThreshold) ? Math.max(0, configuredThreshold) : 10;
+    if (!this.#isDragging && Math.hypot(x - this.#startX, y - this.#startY) > threshold) {
+      this.#isDragging = true;
+      this.#pointerAction = PointerAction.PAN;
+      this.#clearLongPressTimeout();
+    }
+    if (!this.#isDragging) return;
+    const config = this.#runtimeConfig.input?.mapPan || {};
+    let distance = (x - this.#startX) * this.#getPanSensitivity() * (config.inverted === false ? 1 : -1);
+    const limit = Math.max(0, Number(config.maxDistancePx) || 0);
+    if (limit > 0) distance = Math.max(-limit, Math.min(limit, distance));
+    this.#panDeltaX += distance - this.#panGestureX;
+    this.#panGestureX = distance;
+  }
+
+  #releasePointerCapture() {
+    if (this.#activePointerId !== null && this.#canvas.hasPointerCapture?.(this.#activePointerId)) {
+      this.#canvas.releasePointerCapture(this.#activePointerId);
+    }
+    this.#activePointerId = null;
+  }
+
   #updateDragControlState() {
     if (!this.#dragControlEnabled) return;
     if (!this.#isPointerDown || this.#isDragControlActive) return;
@@ -428,6 +511,11 @@ export class InputController {
       if (this.#pointerAction !== PointerAction.IDLE) {
         this.#pointerAction = PointerAction.IDLE;
       }
+      return;
+    }
+
+    if (this.#pointerPanGesture) {
+      this.#isPulling = false;
       return;
     }
 
@@ -628,6 +716,7 @@ export class InputController {
     state.isDoubleClick = this.#isDoubleClick;
     state.longPressPos = this.#longPressPos;
     state.pointerDown = this.#isPointerDown;
+    state.pointerPanning = this.#pointerPanGesture;
     state.dragControlActive = this.#dragControlEnabled && this.#isDragControlActive;
     state.dragControlEnabled = this.#dragControlEnabled;
     state.pointerAction = this.#pointerAction;
@@ -663,6 +752,7 @@ export class InputController {
     this.#longPressPos = null;
     this.#hasPointerRelease = false;
     this.#pointerReleaseCancelled = false;
+    if (!this.#isPointerDown) this.#pointerPanGesture = false;
 
     return state;
   }
@@ -705,6 +795,7 @@ export class InputController {
   }
 
   dispose() {
+    this.#releasePointerCapture();
     if (this.#longPressTimeout) {
       clearTimeout(this.#longPressTimeout);
       this.#longPressTimeout = null;

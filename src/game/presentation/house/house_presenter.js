@@ -6,14 +6,16 @@ export class HousePresenter {
   #labels;
   #room;
   #gameTime;
+  #getAvailableFunds;
   #blend = { evening: 0, night: 0 };
 
-  constructor({ liveBait, room, gameTime, view, labels }) {
+  constructor({ liveBait, room, gameTime, view, labels, getAvailableFunds = null }) {
     this.#liveBait = liveBait;
     this.#room = room;
     this.#gameTime = gameTime;
     this.#view = view;
     this.#labels = labels;
+    this.#getAvailableFunds = getAvailableFunds;
   }
 
   refresh() {
@@ -23,16 +25,20 @@ export class HousePresenter {
     const selectedFeed = state.feedItems.find((item) => item.id === state.selectedFeedId);
     const starvation = aquarium.starvation;
     const room = this.#room.getView();
+    const upgradeLevel = aquarium.nextUpgradeCapacity ? aquarium.level + 1 : aquarium.level;
+    const upgradeCapacity = aquarium.nextUpgradeCapacity ?? aquarium.capacity;
     backgroundTimeBlend(this.#gameTime.getHours(), this.#blend);
     this.#view.render({
       ...state,
       aquarium,
       levelLabel: aquarium.owned ? labels.level(aquarium.level) : labels.absent,
-      upgradeLabel: aquarium.nextUpgradeCapacity ? labels.upgrade(aquarium.nextUpgradeCapacity) : labels.maxLevel,
-      nextFeedLabel: selectedFeed?.name || "",
+      upgradeLevel, upgradeCapacity, upgradeLabel: labels.upgrade(upgradeLevel, upgradeCapacity),
+      upgradeAffordable: this.#isAffordable(state.prices?.upgrade),
+      capacityLabel: labels.capacity(aquarium.count, aquarium.capacity),
+      feedCountdownLabel: aquarium.feed ? labels.duration(aquarium.feed.remainingMs) : "",
       feedTimeLabel: starvation ? labels.starvationWindow(labels.duration(starvation.remainingMs), labels.duration(starvation.nextDeathMs))
         : aquarium.feed ? labels.feedLeft(labels.duration(aquarium.feed.remainingMs)) : labels.noFood,
-      canFeed: aquarium.owned && aquarium.count > 0 && selectedFeed?.count > 0,
+      canAutoFeed: selectedFeed?.count > 0,
       autoStatus: !aquarium.autoFeeder.owned ? labels.manual : !aquarium.autoFeeder.enabled
         ? labels.automaticPaused : selectedFeed?.count > 0 ? labels.automatic : labels.automaticEmpty,
       autoToggleLabel: aquarium.autoFeeder.enabled ? labels.disableFeeder : labels.enableFeeder,
@@ -47,6 +53,13 @@ export class HousePresenter {
       keepnet: state.keepnet.map((fish) => ({ ...fish, weightLabel: labels.weight(fish.weightKg) })),
       room: { ...room, eveningOpacity: this.#blend.evening, nightOpacity: this.#blend.night },
     });
+  }
+
+  #isAffordable(price) {
+    const cost = Number(price) || 0;
+    if (cost <= 0) return true;
+    const funds = this.#getAvailableFunds?.();
+    return Number.isFinite(funds) && funds >= cost;
   }
 
   perform(action, id, quantity = 1) {

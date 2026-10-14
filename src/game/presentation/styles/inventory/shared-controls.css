@@ -93,16 +93,15 @@
   border-radius: calc(var(--inventory-scrollbar-size) / 2);
   background: var(--inventory-scrollbar-thumb);
 }
-
-.inventory-modal::-webkit-scrollbar-thumb:hover,
-.inventory-list-grid::-webkit-scrollbar-thumb:hover,
-.inventory-categories::-webkit-scrollbar-thumb:hover,
-.inventory-subfilters::-webkit-scrollbar-thumb:hover,
-.inventory-sort-options::-webkit-scrollbar-thumb:hover,
-.inventory-loadout-panel::-webkit-scrollbar-thumb:hover,
-.inventory-assembly-editor::-webkit-scrollbar-thumb:hover,
-.inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,
-.inventory-tooltip::-webkit-scrollbar-thumb:hover {
+.ui-surface--desktop-hover .inventory-modal::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-list-grid::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-categories::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-subfilters::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-sort-options::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-loadout-panel::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-assembly-editor::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-tooltip::-webkit-scrollbar-thumb:hover {
   background: var(--inventory-scrollbar-thumb-hover);
 }
 
@@ -119,7 +118,7 @@
 }
 
 .inventory-action {
-  min-height: 37px;
+  min-height: var(--inventory-control-min-height, 37px);
   padding: var(--inventory-control-padding);
   border: 1px solid var(--inventory-control-border);
   border-radius: var(--inventory-control-radius);
@@ -127,12 +126,28 @@
   color: var(--inventory-control-text);
   cursor: pointer;
   font-family: inherit;
-  font-size: 11px;
+  font-size: var(--inventory-control-font-size, 11px);
   font-weight: 700;
+}
+.ui-surface--desktop-hover .inventory-action:hover:not(:disabled) {
+  background: var(--inventory-control-hover-background, var(--inventory-control-background));
+  border-color: var(--inventory-accent, var(--ui-accent));
+}
+.ui-surface--desktop-hover .inventory-action:active:not(:disabled) {
+  background: var(--inventory-control-active-background, var(--inventory-control-hover-background, var(--inventory-control-background)));
+}
+.inventory-action:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.inventory-action:disabled { opacity: var(--inventory-control-disabled-opacity, 0.46); cursor: not-allowed; }
+.ui-surface--desktop-hover .inventory-action--primary:hover:not(:disabled) {
+  background: var(--inventory-primary-hover-background, var(--inventory-primary-background));
+}
+.ui-surface--desktop-hover .inventory-action--danger:hover:not(:disabled) {
+  border-color: var(--inventory-danger);
+  background: var(--inventory-danger-background);
 }
 
 .inventory-action--primary {
-  border-color: var(--inventory-success);
+  border-color: var(--inventory-primary-border, var(--inventory-success));
   background: var(--inventory-primary-background);
   color: var(--inventory-primary-text);
 }

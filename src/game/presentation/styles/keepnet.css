@@ -16,7 +16,7 @@
   color: #edf8f4;
   font: 15px/1.45 system-ui, sans-serif;
 }
-.keepnet-modal--open { display: flex; }
+.keepnet-modal--open { display: grid; grid-template-rows: auto minmax(0, 1fr); }
 .keepnet-modal *, .keepnet-modal *::before, .keepnet-modal *::after { box-sizing: border-box; }
 .keepnet-modal [hidden] { display: none; }
 .keepnet-modal__header {
@@ -45,13 +45,13 @@
   cursor: pointer;
   touch-action: manipulation;
 }
-.keepnet-modal__help:hover { background: rgba(115, 170, 160, 0.24); }
+.ui-surface--desktop-hover .keepnet-modal__help:hover { background: rgba(115, 170, 160, 0.24); }
 .keepnet-modal__help-text {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   z-index: var(--ui-layer-tooltip);
-  width: min(320px, calc(100vw - 32px));
+  width: min(320px, calc(var(--ui-logical-width, 100vw) - 32px));
   padding: 12px 14px;
   border: 1px solid #73aaa0;
   border-radius: 12px;
@@ -86,7 +86,7 @@
 .keepnet-modal__visual {
   display: grid;
   place-items: center;
-  height: clamp(150px, 32vh, 300px);
+  height: clamp(150px, calc(var(--ui-logical-height, 100dvh) * .32), 300px);
   overflow: hidden;
   background: radial-gradient(#255d58, #0a181b);
   border: 1px solid #4c8c83;
@@ -134,7 +134,7 @@
   overflow-wrap: anywhere;
 }
 .keepnet-modal__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
-.keepnet-modal__group:hover { background: #214b49; border-color: #94dfd0; }
+.ui-surface--desktop-hover .keepnet-modal__group:hover { background: #214b49; border-color: #94dfd0; }
 .keepnet-modal__group .keepnet-modal__thumbnail { position: relative; flex: 1; min-height: 0; }
 .keepnet-modal__group .keepnet-modal__image { position: absolute; inset: 0; height: 100%; max-height: none; }
 .keepnet-modal__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: radial-gradient(#31625a, #11282a); border-radius: 5px; overflow: hidden; }
@@ -161,9 +161,9 @@
 .keepnet-modal__fish-timer { color: #f2cf8d; }
 .keepnet-modal__empty { grid-column: 1 / -1; color: #afc8c1; }
 
-@media (max-width: 740px) {
+@container ui-surface (max-width: 740px) {
   .keepnet-modal { --keepnet-list-gap: 6px; --keepnet-image-inset: 2px; padding: 8px; overflow: hidden; }
-  .keepnet-modal__main { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .keepnet-modal__main { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; overflow-y: auto; }
   .keepnet-modal__left, .keepnet-modal__right { overflow: visible; padding: 10px; flex: none; }
   .keepnet-modal__visual { grid-template-columns: minmax(0, 1fr); height: auto; padding: var(--keepnet-visual-inset); }
   /* The square spacer sets a minimum; a taller intrinsic image grows the same grid row. */

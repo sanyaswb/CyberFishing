@@ -5,6 +5,8 @@ export class OverlayWindowDragController {
   #element;
   #config;
   #windowTarget;
+  #uiSurface;
+  #unsubscribeSurface;
   #id;
   #cache;
   #holdTimer = null;
@@ -13,6 +15,7 @@ export class OverlayWindowDragController {
   #startY = 0;
   #offsetX = 0;
   #offsetY = 0;
+  #pointerId = null;
   #onPointerDown = (event) => this.#handlePointerDown(event);
   #onPointerMove = (event) => this.#handlePointerMove(event);
   #onPointerUp = (event) => this.#handlePointerUp(event);
@@ -24,12 +27,14 @@ export class OverlayWindowDragController {
     id = "debug_overlay",
     windowTarget = typeof window !== "undefined" ? window : null,
     cache,
+    uiSurface = null,
   } = {}) {
     this.#element = element;
     this.#config = config || {};
     this.#windowTarget = windowTarget;
     this.#id = id;
     this.#cache = cache;
+    this.#uiSurface = uiSurface;
   }
 
   attach() {
@@ -40,6 +45,7 @@ export class OverlayWindowDragController {
     this.#restorePosition();
     this.#element.addEventListener("pointerdown", this.#onPointerDown);
     this.#windowTarget?.addEventListener?.("resize", this.#onResize);
+    this.#unsubscribeSurface = this.#uiSurface?.subscribe(this.#onResize);
   }
 
   detach() {
@@ -50,6 +56,13 @@ export class OverlayWindowDragController {
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
     this.#windowTarget?.removeEventListener?.("resize", this.#onResize);
+    this.#unsubscribeSurface?.();
+    this.#unsubscribeSurface = null;
+    if (this.#pointerId !== null && this.#element.hasPointerCapture?.(this.#pointerId)) {
+      this.#element.releasePointerCapture(this.#pointerId);
+    }
+    this.#pointerId = null;
+    this.#isDragging = false;
   }
 
   isDragging() {
@@ -63,22 +76,25 @@ export class OverlayWindowDragController {
     const rect = this.#element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const maxLeft = Math.max(0, this.#windowTarget.innerWidth - rect.width);
-    const maxTop = Math.max(0, this.#windowTarget.innerHeight - rect.height);
+    const origin = this.#uiSurface?.getMetrics();
+    const maxLeft = Math.max(origin?.originX || 0, (origin?.originX || 0) + (origin?.physicalWidth ?? this.#windowTarget.innerWidth) - rect.width);
+    const maxTop = Math.max(origin?.originY || 0, (origin?.originY || 0) + (origin?.physicalHeight ?? this.#windowTarget.innerHeight) - rect.height);
     this.#placeVisualAt(
-      clampNumber(rect.left, 0, maxLeft),
-      clampNumber(rect.top, 0, maxTop),
+      clampNumber(rect.left, origin?.originX || 0, maxLeft),
+      clampNumber(rect.top, origin?.originY || 0, maxTop),
     );
   }
 
   #handlePointerDown(event) {
     if (!this.#config.ui?.draggableButtons) return;
     if (!this.#windowTarget) return;
+    if (this.#uiSurface && !this.#uiSurface.getMetrics().valid) return;
     if (event.button !== 0 && event.pointerType === "mouse") return;
     if (this.#isInteractiveTarget(event.target)) return;
 
     event.stopPropagation();
     this.#element.setPointerCapture?.(event.pointerId);
+    this.#pointerId = event.pointerId;
     const rect = this.#element.getBoundingClientRect();
     this.#startX = event.clientX;
     this.#startY = event.clientY;
@@ -113,6 +129,7 @@ export class OverlayWindowDragController {
 
   #handlePointerUp(event) {
     this.#element.releasePointerCapture?.(event.pointerId);
+    this.#pointerId = null;
     this.#element.removeEventListener("pointermove", this.#onPointerMove);
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
@@ -137,19 +154,24 @@ export class OverlayWindowDragController {
   #updatePosition(clientX, clientY) {
     const rect = this.#element.getBoundingClientRect();
     if (!this.#windowTarget) return;
-    const maxLeft = Math.max(0, this.#windowTarget.innerWidth - rect.width);
-    const maxTop = Math.max(0, this.#windowTarget.innerHeight - rect.height);
-    const nextLeft = clampNumber(clientX - this.#offsetX, 0, maxLeft);
-    const nextTop = clampNumber(clientY - this.#offsetY, 0, maxTop);
+    const origin = this.#uiSurface?.getMetrics();
+    const minLeft = origin?.originX || 0;
+    const minTop = origin?.originY || 0;
+    const maxLeft = Math.max(minLeft, minLeft + (origin?.physicalWidth ?? this.#windowTarget.innerWidth) - rect.width);
+    const maxTop = Math.max(minTop, minTop + (origin?.physicalHeight ?? this.#windowTarget.innerHeight) - rect.height);
+    const nextLeft = clampNumber(clientX - this.#offsetX, minLeft, maxLeft);
+    const nextTop = clampNumber(clientY - this.#offsetY, minTop, maxTop);
     this.#placeVisualAt(nextLeft, nextTop);
   }
 
   #placeVisualAt(left, top) {
     const rect = this.#element.getBoundingClientRect();
-    const currentLeft = this.#readStylePx("left", rect.left);
-    const currentTop = this.#readStylePx("top", rect.top);
-    this.#element.style.left = `${currentLeft + left - rect.left}px`;
-    this.#element.style.top = `${currentTop + top - rect.top}px`;
+    const logicalPoint = this.#uiSurface?.physicalToLogicalPoint({ x: rect.left, y: rect.top });
+    const currentLeft = this.#readStylePx("left", logicalPoint?.x ?? rect.left);
+    const currentTop = this.#readStylePx("top", logicalPoint?.y ?? rect.top);
+    const delta = this.#uiSurface?.physicalToLogicalDelta({ x: left - rect.left, y: top - rect.top });
+    this.#element.style.left = `${currentLeft + (delta?.x ?? left - rect.left)}px`;
+    this.#element.style.top = `${currentTop + (delta?.y ?? top - rect.top)}px`;
     this.#element.style.right = "auto";
     this.#element.style.bottom = "auto";
   }
@@ -170,7 +192,8 @@ export class OverlayWindowDragController {
 
   #savePosition() {
     if (!this.#element) return;
-    const rect = this.#element.getBoundingClientRect();
+    const physicalRect = this.#element.getBoundingClientRect();
+    const rect = this.#uiSurface?.physicalToLogicalRect(physicalRect) || physicalRect;
     this.#cache.set(`drag_pos_${this.#id}`, {
       left: `${Math.max(0, rect.left)}px`,
       top: `${Math.max(0, rect.top)}px`,

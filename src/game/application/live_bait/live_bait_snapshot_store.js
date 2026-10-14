@@ -15,8 +15,8 @@ export class LiveBaitSnapshotStore {
     const known = new Set(fishDb.map((fish) => fish.id));
     const locations = new Set(["keepnet", "aquarium", "hook", "dead", "consumed", "released"]);
     const fish = state?.fish;
-    if (![1, 2, 3, 4].includes(state?.schemaVersion) ||
-      (state.schemaVersion === 4 && Object.hasOwn(state, "pendingLegacyStock")) ||
+    if (![1, 2, 3, 4, 5].includes(state?.schemaVersion) ||
+      (state.schemaVersion >= 4 && Object.hasOwn(state, "pendingLegacyStock")) ||
       !Number.isSafeInteger(state.revision) || state.revision < 0 ||
       !Number.isFinite(state.lastAppliedAtMs) || state.lastAppliedAtMs < 0 ||
       !Array.isArray(fish) || !state.resolvedCatchIds || Array.isArray(state.resolvedCatchIds) ||
@@ -79,6 +79,10 @@ export class LiveBaitSnapshotStore {
       if (state.aquarium.feed) state.aquarium.feed.quantity = 1;
       state.schemaVersion = 4;
     }
+    if (state.schemaVersion === 4) {
+      if (state.aquarium.feed) state.aquarium.feed.carriedMs = 0;
+      state.schemaVersion = 5;
+    }
     return { ok: true, state };
   }
   save(state, changes = []) {
@@ -93,7 +97,7 @@ export class LiveBaitSnapshotStore {
     return { ok: true, revision: next.revision };
   }
   #empty(nowMs, config) {
-    return { schemaVersion: 4, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
+    return { schemaVersion: 5, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
       aquarium: { owned: false, level: 0, feed: null, starvation: null },
       feedSupply: { selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null };
   }
@@ -104,7 +108,7 @@ export class LiveBaitSnapshotStore {
       Object.keys(aquarium.feedBySpecies).every((id) => known.has(id)) &&
       Object.values(aquarium.feedBySpecies).every((value) => Number.isFinite(value) && value >= 0 && value <= 1);
     const feed = aquarium.feed, episode = aquarium.starvation;
-    const validStock = state.schemaVersion === 4 ? !Object.hasOwn(supply, "stock") :
+    const validStock = state.schemaVersion >= 4 ? !Object.hasOwn(supply, "stock") :
       !!supply.stock && !Array.isArray(supply.stock) && typeof supply.stock === "object" &&
       Object.entries(supply.stock).every(([id, count]) => Object.hasOwn(config.aquariumFeeds, id) && Number.isSafeInteger(count) && count >= 0);
     return validStock && Object.hasOwn(config.aquariumFeeds, supply.selectedFeedId) &&
@@ -112,6 +116,7 @@ export class LiveBaitSnapshotStore {
         Number.isFinite(feed.durationMs) && feed.durationMs > 0 && Number.isFinite(feed.remainingMs) &&
         feed.remainingMs >= 0 && feed.remainingMs <= feed.durationMs && this.#validSeed(feed.seed))) &&
       (state.schemaVersion < 4 || feed === null || (Number.isSafeInteger(feed.quantity) && feed.quantity > 0)) &&
+      (state.schemaVersion < 5 || feed === null || (Number.isFinite(feed.carriedMs) && feed.carriedMs >= 0 && feed.carriedMs < feed.durationMs)) &&
       (episode === null || (!!episode && Number.isFinite(episode.startedAtMs) && episode.startedAtMs >= 0 &&
         Number.isFinite(episode.windowMs) && episode.windowMs > 0 && this.#validSeed(episode.seed)));
   }

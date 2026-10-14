@@ -15,6 +15,7 @@ export class KeepnetUI {
   #root;
   #button;
   #closeButton;
+  #closeButtons;
   #helpButton;
   #helpText;
   #back;
@@ -34,7 +35,8 @@ export class KeepnetUI {
   #rendered = new Map();
   #cardFocusables = [];
 
-  constructor({ documentRef, liveBait, inventoryUI, model, cards, labels, resourceMeterRenderer }) {
+  constructor({ documentRef, liveBait, inventoryUI, model, cards, labels, resourceMeterRenderer, closeButtonRenderer,
+    mountNode = documentRef.body, buttonMountNode = mountNode }) {
     this.#document = documentRef;
     this.#liveBait = liveBait;
     this.#inventoryUI = inventoryUI;
@@ -42,6 +44,7 @@ export class KeepnetUI {
     this.#cards = cards;
     this.#meters = resourceMeterRenderer;
     this.#labels = labels;
+    this.#closeButtons = closeButtonRenderer;
     this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
     this.#button.append(this.#icon("keepnet-button__icon"));
     this.#button.type = "button";
@@ -66,11 +69,8 @@ export class KeepnetUI {
     this.#helpText.id = "keepnet-help";
     this.#helpText.hidden = true;
     this.#helpText.setAttribute("role", "note");
-    this.#closeButton = this.#el("button", "keepnet-modal__close ui-modal-close", "×");
-    this.#closeButton.type = "button";
-    this.#closeButton.setAttribute("aria-label", labels.close);
-    this.#closeButton.title = labels.close;
-    this.#closeButton.addEventListener("click", () => this.close());
+    this.#closeButton = this.#closeButtons.create({ className: "keepnet-modal__close",
+      label: labels.close, onClose: () => this.close() });
     headerActions.append(this.#helpButton, this.#closeButton);
     header.append(headerActions, this.#helpText);
     const main = this.#el("main", "keepnet-modal__main");
@@ -114,7 +114,8 @@ export class KeepnetUI {
     main.append(left, this.#right);
     this.#root.append(header, main);
     this.#root.addEventListener("keydown", this.#handleKey);
-    documentRef.body.append(this.#button, this.#root);
+    buttonMountNode.appendChild(this.#button);
+    mountNode.appendChild(this.#root);
     this.refresh();
   }
   get isOpen() { return this.#open; }
@@ -212,6 +213,7 @@ export class KeepnetUI {
     this.#setHelpVisible(false);
     this.#button.removeEventListener("click", this.#toggle);
     this.#root.removeEventListener("keydown", this.#handleKey);
+    this.#closeButtons.dispose(this.#closeButton);
     this.#button.remove(); this.#root.remove();
     this.#rendered.clear(); this.#cardFocusables = [];
   }

@@ -36,7 +36,7 @@ module.exports = async function checkKeepnetLifecycle() {
   assert.equal(migrated.error, null, "schema 1 saves still load");
   assert.equal(migrated.getView().liveBaits[0].rarity, null, "lost historical rarity is explicitly unknown");
   migrated.buyFeed();
-  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 4);
+  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 5);
   const corrupt = JSON.parse(metadata.values.get(key));
   corrupt.fish[0].rarity = { halfSteps: 50, maxHalfSteps: 12, unitsPerStar: 2 };
   const corruptBytes = JSON.stringify(corrupt);
@@ -83,10 +83,11 @@ module.exports = async function checkKeepnetLifecycle() {
   automatic.tick(6000);
   const bytesBeforeView = automatic.values.get(key);
   assert.equal(fed.getView().feedStock, 0, "read model projects automatic feeding between care ticks");
-  assert(Math.abs(fed.getView().aquarium.feed.percentage - 90) < .001, "feeder fires at its configured threshold");
+  assert.equal(fed.getView().aquarium.feed.remainingMs, 14000, "feeder fires at five seconds and adds ten seconds to the five-second remainder");
+  assert.equal(fed.getView().aquarium.feed.durationMs, 15000);
   assert.equal(automatic.values.get(key), bytesBeforeView, "view projection never writes storage");
   fed.advance();
-  assert(Math.abs(fed.getView().aquarium.feed.percentage - 90) < .001);
+  assert.equal(fed.getView().aquarium.feed.remainingMs, 14000);
 
   const recovery = fixture({ lifetimeMinMs: 1000, lifetimeMaxMs: 1000 });
   const interrupted = recovery.create();

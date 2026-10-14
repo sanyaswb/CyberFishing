@@ -9,10 +9,10 @@ export class LiveBaitCareService {
     this.#calculator = calculator;
     this.#starvation = starvation;
   }
+  canLoadFeed(state) { return this.#calculator.canLoad(state.aquarium.feed); }
   feed(state, itemId, seed, quantity = 1) {
     const count = state.fish.filter((fish) => fish.disposition === "aquarium").length;
-    const durationMs = this.#calculator.duration(itemId, count, quantity);
-    state.aquarium.feed = { itemId, quantity, durationMs, remainingMs: durationMs, seed };
+    state.aquarium.feed = this.#calculator.load(state.aquarium.feed, itemId, count, quantity, seed);
     state.aquarium.starvation = null;
     for (const fish of state.fish) fish.starvationDeadlineMs = null;
   }
@@ -23,7 +23,7 @@ export class LiveBaitCareService {
     const feed = aquarium.feed;
     if (feed?.remainingMs > 0) {
       const elapsed = feed.durationMs - feed.remainingMs;
-      feed.durationMs = this.#calculator.duration(feed.itemId, inhabitants.length, feed.quantity);
+      feed.durationMs = this.#calculator.cycleDuration(feed, inhabitants.length);
       feed.remainingMs = Math.max(0, feed.durationMs - elapsed);
     }
     this.#autoFill(state, inhabitants.length);
@@ -51,7 +51,7 @@ export class LiveBaitCareService {
       const stock = state.feedSupply.stock[state.feedSupply.selectedFeedId] || 0;
       if (feed?.remainingMs > 0) {
         const trigger = state.feedSupply.autoFeederEnabled && stock > 0
-          ? feed.durationMs * this.#config.autoFeedTriggerFraction : 0;
+          ? this.#calculator.autoFillThreshold(feed) : 0;
         step = Math.min(step, Math.max(1, feed.remainingMs - trigger));
       }
       for (const fish of state.fish) {
@@ -86,7 +86,7 @@ export class LiveBaitCareService {
     const feed = state.aquarium.feed;
     if (!count || !supply.autoFeederOwned || !supply.autoFeederEnabled ||
       !(supply.stock[supply.selectedFeedId] > 0) ||
-      (feed && feed.remainingMs > feed.durationMs * this.#config.autoFeedTriggerFraction)) return;
+      (feed && feed.remainingMs > this.#calculator.autoFillThreshold(feed))) return;
     supply.stock[supply.selectedFeedId]--;
     this.feed(state, supply.selectedFeedId, this.#starvation.nextSeed(feed?.seed ?? 0));
   }

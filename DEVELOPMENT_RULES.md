@@ -44,6 +44,11 @@ Modules:
 - DEV-only behavior (GodMode effects, Fixed Catch, fight diagnostics snapshot, overlays) reaches production code only through injected ports whose production implementation is inactive or absent.
 
 Performance:
+- UI performance and input states follow [DESIGN_RULES.md](DESIGN_RULES.md), especially sections 10 and 13.
+- coalesce viewport/Canvas resize work before the next game update; DOM UI measurements have at most one pending frame, not a continuous extra loop;
+- unchanged dimensions/readings must cause zero CSS layout writes, Canvas bitmap resets and subscriber updates;
+- size-observer feedback must settle: do not observe content whose size the viewport adapter itself sets; write flow footprints only when changed;
+- dispose scheduled frames, observers, media-query listeners and UI subscriptions with their owner; repeated panel openings must not multiply work;
 - no unnecessary allocations in hot loops;
 - no repeated DOM queries per frame;
 - preload assets;

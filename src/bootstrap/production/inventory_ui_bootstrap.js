@@ -25,12 +25,16 @@ import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
+import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
+import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
 
 export class InventoryUiBootstrap {
-  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver }) {
+  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver,
+    mountNode = documentRef?.body, buttonMountNode = mountNode }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI,
+    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI, mountNode, buttonMountNode,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
+      closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: new InventoryDomFactory(documentRef) }),
       resourceMeterRenderer: new InventoryResourceMeterRenderer({
         domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
       }),
@@ -55,6 +59,7 @@ export class InventoryUiBootstrap {
   // Create the existing UI tree only after UI validates its facade/mount; keep collaborator order and overrides.
   static #createPresentation({
     documentRef,
+    uiSurface,
     rarityDomAdapter,
     rarityVisualResolver,
     progressionDomAdapter,
@@ -84,6 +89,7 @@ export class InventoryUiBootstrap {
       tooltipPresenter ||
       new InventoryTooltipPresenter({
         documentRef,
+        uiSurface,
         getView: () => dom.view,
         rarityDomAdapter,
         balanceParameterResolver:
@@ -128,7 +134,10 @@ export class InventoryUiBootstrap {
     });
     const resolvedHeaderRenderer =
       headerRenderer ||
-      new InventoryHeaderRenderer({ domFactory: dom });
+      new InventoryHeaderRenderer({ domFactory: dom,
+        closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: dom }),
+        autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }),
+      });
     const resolvedLoadoutRenderer =
       loadoutRenderer ||
       new InventoryLoadoutPanelRenderer({
@@ -158,7 +167,7 @@ export class InventoryUiBootstrap {
       new InventoryGridRenderer({
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
-        createHorizontalScrollController: () => new HorizontalScrollController(),
+        createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
       });
     return {
       dom,

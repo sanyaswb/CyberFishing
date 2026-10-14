@@ -1,16 +1,18 @@
 export class HoldCharges {
   #labels;
+  #document;
 
-  constructor({ labels } = {}) {
+  constructor({ labels, documentRef = document, mountNode = documentRef.body } = {}) {
     this.#labels = labels;
-    this.container = document.createElement("div");
+    this.#document = documentRef;
+    this.container = documentRef.createElement("div");
     this.container.className = "hold-charges";
 
-    this.textLabel = document.createElement("div");
+    this.textLabel = documentRef.createElement("div");
     this.textLabel.className = "hold-charges__label";
 
     this.container.appendChild(this.textLabel);
-    document.body.appendChild(this.container);
+    mountNode.appendChild(this.container);
 
     this.circles = [];
     this.maxCharges = 0;
@@ -30,7 +32,7 @@ export class HoldCharges {
       this.circles.forEach((c) => c.remove());
       this.circles = [];
       for (let i = 0; i < holdState.max; i++) {
-        const circle = document.createElement("div");
+        const circle = this.#document.createElement("div");
         circle.className = "hold-charges__charge";
         this.container.appendChild(circle);
         this.circles.push(circle);
@@ -64,6 +66,8 @@ export class HoldCharges {
         circle.className = "hold-charges__charge hold-charges__charge--restoring";
         circle.style.setProperty("--hold-charge-progress", (progress * 100).toFixed(1) + "%");
         restoringCount--;
+      } else {
+        circle.className = "hold-charges__charge";
       }
     }
   }

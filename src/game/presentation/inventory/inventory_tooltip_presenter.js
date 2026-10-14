@@ -12,12 +12,15 @@ export class InventoryTooltipPresenter {
   };
   #anchor = null;
   #visibleInstanceId = null;
+  #uiSurface;
+  #unsubscribeSurface;
 
   constructor({
     documentRef,
     getView,
     rarityDomAdapter = null,
     balanceParameterResolver = null,
+    uiSurface = null,
   } = {}) {
     if (!documentRef?.createElement || !documentRef.body?.appendChild) {
       throw new TypeError("InventoryTooltipPresenter requires a document");
@@ -26,11 +29,16 @@ export class InventoryTooltipPresenter {
     this.#getView = getView;
     this.#rarityDomAdapter = rarityDomAdapter;
     this.#balanceParameterResolver = balanceParameterResolver;
+    this.#uiSurface = uiSurface;
     this.#tooltipNode = this.#document.createElement("div");
     this.#tooltipNode.className =
       "inventory-tooltip inventory-balance-tooltip";
     this.#tooltipNode.setAttribute("role", "tooltip");
-    this.#document.body.appendChild(this.#tooltipNode);
+    (uiSurface?.portalRoot || this.#document.body).appendChild(this.#tooltipNode);
+    this.#unsubscribeSurface = uiSurface?.subscribe(() => {
+      if (!this.#supportsHover()) { this.hide(); return; }
+      if (this.#anchor) this.#position(this.#anchor);
+    });
   }
 
   setContext(context = {}) {
@@ -97,6 +105,7 @@ export class InventoryTooltipPresenter {
   }
 
   dispose() {
+    this.#unsubscribeSurface?.();
     this.hide();
     this.#tooltipNode.remove();
   }
@@ -196,6 +205,22 @@ export class InventoryTooltipPresenter {
 
   #position(anchor) {
     const rect = anchor.getBoundingClientRect?.() || { right: 0, top: 0 };
+    if (this.#uiSurface) {
+      const metrics = this.#uiSurface.getMetrics();
+      if (!metrics.valid) return;
+      const logicalRect = this.#uiSurface.physicalToLogicalRect(rect);
+      const width = Number(this.#tooltipNode.offsetWidth) || 0;
+      const height = Number(this.#tooltipNode.offsetHeight) || 0;
+      const minLeft = Math.max(12, metrics.safeArea.left);
+      const minTop = Math.max(12, metrics.safeArea.top);
+      const maxLeft = Math.max(minLeft, metrics.logicalWidth - width - Math.max(12, metrics.safeArea.right));
+      const maxTop = Math.max(minTop, metrics.logicalHeight - height - Math.max(12, metrics.safeArea.bottom));
+      const preferredLeft = logicalRect.right + 10;
+      const fallbackLeft = logicalRect.left - width - 10;
+      this.#tooltipNode.style.left = `${Math.max(minLeft, Math.min(maxLeft, preferredLeft > maxLeft ? fallbackLeft : preferredLeft))}px`;
+      this.#tooltipNode.style.top = `${Math.max(minTop, Math.min(maxTop, logicalRect.top))}px`;
+      return;
+    }
     const view = this.#getView() || {};
     const scrollX = Number(view.scrollX || 0);
     const scrollY = Number(view.scrollY || 0);
@@ -219,9 +244,7 @@ export class InventoryTooltipPresenter {
   }
 
   #supportsHover() {
-    const view = this.#getView();
-    return typeof view?.matchMedia !== "function" ||
-      view.matchMedia("(hover: hover)").matches;
+    return this.#uiSurface?.getMetrics().hoverEnabled === true;
   }
 
   #scrollTooltipFirst(event, item) {
@@ -238,7 +261,8 @@ export class InventoryTooltipPresenter {
 
     const deltaMode = Number(event?.deltaMode) || 0;
     const unit = deltaMode === 1 ? 16 : deltaMode === 2 ? viewportHeight : 1;
-    const delta = (Number(event?.deltaY) || 0) * unit;
+    const physicalDelta = (Number(event?.deltaY) || 0) * unit;
+    const delta = deltaMode === 0 ? this.#uiSurface?.physicalToLogicalDelta({ y: physicalDelta }).y ?? physicalDelta : physicalDelta;
     if (!delta) return;
     const current = Math.max(
       0,

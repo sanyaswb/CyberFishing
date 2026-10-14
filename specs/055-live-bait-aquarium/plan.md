@@ -33,6 +33,8 @@ Focused deterministic scenarios cover every pack for one/three fish; random dead
 
 T039 full owner gameplay acceptance, T040 owner care/movement play check, T048 multi-room navigation and T052 immutable packaged-release browser smoke remain tracked separately. Full's release check tests the committed release; publication repeats that check after commit. Future cloud progress needs an explicit spec-029 contract/version change. Source push and Pages publication are authorized for v0.34.1.
 
+Release update, 2026-10-14: v0.35.0 completes T040's metadata/documentation preparation and incorporates the staged/additive feed contract in spec 061 plus the shared preview in spec 062. T052 is completed: committed packaging verifies 770 files/669 modules, all seventeen room assets and closed House/catalog module/style graphs; packaged index/DEV/House/catalog console startup is clear. Owner care/movement play acceptance remains T039, and a second room remains T048. The current owner request authorizes source commit/push; it does not request a new Pages deployment.
+
 ## v0.34.1 inventory ownership
 
 Resolved item_catalog adds aquarium pack definitions from the existing feed configuration. Inventory keeps schema v4 and owns pack quantities. AquariumFeedInventoryPort reads detached stock projections and prepares targeted inventory changes through FlatInventoryItemRepository; unrelated items/equipment/settings stay intact. Feature snapshot v4 strips projection stock and migrates previous stock once. BrowserSnapshotTransaction journals the inventory/feature compare-and-swap pair and recovers only known before/after states. Game composition initializes inventory before feature care, then synchronizes targeted feed items after commits or iframe storage events.

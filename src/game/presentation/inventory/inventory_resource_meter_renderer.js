@@ -1,6 +1,9 @@
+import { clampFinite } from "../../../engine/math/number_normalization.js";
+
 export class InventoryResourceMeterRenderer {
   #dom;
   #colors;
+  #readings = new WeakMap();
 
   constructor({ domFactory, degradationColorResolver = null } = {}) {
     this.#dom = domFactory;
@@ -62,16 +65,21 @@ export class InventoryResourceMeterRenderer {
   }
 
   #applyModel(meter, model) {
-    meter.style.setProperty(
-      "--inventory-resource-percent",
-      `${model.percent}%`,
-    );
+    const percent = clampFinite(model.percent, 0, 100);
+    const previous = this.#readings.get(meter);
+    if (previous?.percent !== percent) meter.style.setProperty("--inventory-resource-percent", `${percent}%`);
     // Occupancy grows toward danger; remaining resources shrink toward it.
     const color = this.#colors?.resolvePercent(model.remainingPercent ?? model.percent);
-    meter.style.setProperty("--inventory-resource-color", color?.cssColor || "");
-    meter.setAttribute("aria-valuenow", String(model.percent));
-    meter.setAttribute("aria-label", model.label);
-    meter.title = model.label;
+    const cssColor = color?.cssColor || "";
+    if (previous?.color !== cssColor) meter.style.setProperty("--inventory-resource-color", cssColor);
+    if (previous?.percent !== percent) meter.setAttribute("aria-valuenow", String(percent));
+    if (previous?.label !== model.label) {
+      meter.setAttribute("aria-valuetext", model.label);
+      meter.setAttribute("aria-label", model.label);
+      meter.title = model.label;
+    }
+    if (previous) { previous.percent = percent; previous.color = cssColor; previous.label = model.label; }
+    else this.#readings.set(meter, { percent, color: cssColor, label: model.label });
   }
 
   #findDirectMeter(host) {

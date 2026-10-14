@@ -1343,6 +1343,10 @@
     "label": "Inventory: EffectiveItemStats",
     "description": "Показує у tooltip інвентарю технічну секцію EffectiveItemStats. За замовчуванням вимкнено."
   },
+  "CONFIG.liveBait.feedReloadRemainingFraction": {
+    "label": "Поріг дозавантаження прикормки",
+    "description": "Частка залишку циклу, за якої дозволено зміну й завантаження корму. 0.5 відкриває завантаження після половини часу; нова упаковка додає час і починає новий цикл."
+  },
   "CONFIG.liveBait.visual.fishSizePx": {
     "label": "Розмір риби в акваріумі, px",
     "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."

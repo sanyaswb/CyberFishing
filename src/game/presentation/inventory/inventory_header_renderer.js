@@ -2,9 +2,14 @@ import { inventorySlotIconPath } from "./inventory_slot_icons.js";
 
 export class InventoryHeaderRenderer {
   #dom;
+  #closeButtons;
+  #autoSwitches;
+  #bindings = new Map();
 
-  constructor({ domFactory } = {}) {
+  constructor({ domFactory, closeButtonRenderer, autoSwitchRenderer } = {}) {
     this.#dom = domFactory;
+    this.#closeButtons = closeButtonRenderer;
+    this.#autoSwitches = autoSwitchRenderer;
   }
 
   render(
@@ -16,13 +21,23 @@ export class InventoryHeaderRenderer {
     top.append(this.#renderLoad(header), this.#renderSettings(header, settings, {
       onAutoBaitChange, onAutoChumChange,
     }));
-    const close = this.#dom.button("inventory-header__close ui-modal-close", "×", {
-      title: "Закрити інвентар",
+    const close = this.#closeButtons.create({
+      className: "inventory-header__close", label: "Закрити інвентар", onClose,
     });
-    close.setAttribute("aria-label", "Закрити інвентар");
-    close.addEventListener("click", () => onClose?.());
     top.appendChild(close);
+    this.#bindings.set(top, { close, switches: [...top.children[1].children] });
     return top;
+  }
+
+  dispose(header = null) {
+    const headers = header ? [header] : [...this.#bindings.keys()];
+    for (const node of headers) {
+      const binding = this.#bindings.get(node);
+      if (!binding) continue;
+      this.#closeButtons.dispose(binding.close);
+      for (const toggle of binding.switches) this.#autoSwitches.dispose(toggle);
+      this.#bindings.delete(node);
+    }
   }
 
   #renderLoad(header) {
@@ -49,41 +64,8 @@ export class InventoryHeaderRenderer {
   }
 
   #createToggle(id, slotId, name, modeLabel, items, checked, stock = 0, onChange) {
-    const label = this.#dom.element("label", "inventory-toggle");
-    label.title = items.length ? items.map((item) => item.name || name).join(", ") : name;
-    const content = this.#dom.element("span", "inventory-active-indicator__items");
-    content.setAttribute("aria-label", name);
-    if (!items.length) {
-      const icon = this.#dom.image(inventorySlotIconPath(slotId), "");
-      icon.className = "inventory-active-indicator__placeholder";
-      icon.setAttribute("aria-hidden", "true");
-      content.appendChild(icon);
-    } else {
-      for (const item of items) {
-        const media = this.#dom.element("span", "inventory-active-indicator__item");
-        media.title = item.name || name;
-        const image = this.#dom.image(item.iconUrl || item.imageUrl, item.name || name);
-        if (image) media.appendChild(image);
-        else media.textContent = String(item.icon || item.emoji || "");
-        content.appendChild(media);
-      }
-    }
-
-    const input = this.#dom.element("input");
-    input.id = id;
-    input.type = "checkbox";
-    input.checked = checked;
-    input.setAttribute("role", "switch");
-    input.setAttribute("aria-label", `${modeLabel}. Доступно в інвентарі: ${stock}`);
-    input.addEventListener("change", () => onChange?.(input.checked));
-    const control = this.#dom.element("span", "inventory-toggle__control");
-    control.setAttribute("aria-hidden", "true");
-    control.append(
-      this.#dom.element("span", "inventory-toggle__count", String(stock)),
-      this.#dom.element("span", "inventory-toggle__thumb", "A"),
-    );
-    label.append(content, input, control);
-    return label;
+    return this.#autoSwitches.create({ id, name, modeLabel, items, checked, stock, onChange,
+      placeholderUrl: inventorySlotIconPath(slotId) });
   }
 
   #format(value) {

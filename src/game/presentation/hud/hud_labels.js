@@ -1,5 +1,8 @@
 // Player-facing HUD labels, injected into the browser HUD widgets by composition.
 export const HUD_LABELS = Object.freeze({
+  timeAcceleration: (multiplier, enabled) => enabled
+    ? `Ігровий час · ×${multiplier}. Натисніть для наступної швидкості; після ×5 повернення до ×1.`
+    : "Ігровий час",
   depthValue: (meters) => `${meters} м`,
   depthToggle: "Глибина поплавка",
   depthTrack: "Вибір глибини",

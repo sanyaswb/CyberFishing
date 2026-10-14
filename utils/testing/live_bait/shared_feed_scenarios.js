@@ -87,10 +87,11 @@ module.exports = async function checkSharedFeed() {
   assert.equal(migrated.error, null); assert.equal(migrated.getView().feedStock, 2);
   assert.equal(migrated.getView().liveBaits[0].remainingMs, 5000);
   assert.equal(migrated.getView().liveBaits[0].isUnique, null);
-  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 4);
+  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 5);
   legacy.tick(5000); migrated.advance(); assert.equal(migrated.getView().liveBaits.length, 0);
 
   const motion = new AquariumFishMotion({ config: config.visual, rng: new SeededRng(123) });
+  assert.equal(config.visual.fishSizePx, 60); assert.equal(config.visual.zone.width, .80);
   motion.setBounds(400, 250); motion.setFish(Array.from({ length: 48 }, (_, i) => ({ id: String(i), imagePath: "" })));
   for (let i = 0; i < 1000; i++) motion.update(100);
   for (const entry of motion.fish) {

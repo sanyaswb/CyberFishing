@@ -24,6 +24,8 @@ export class DevTools {
   #grantCatalogItem;
   #storageCache;
   #openHouse;
+  #openUiCatalog;
+  #openGame;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -66,10 +68,14 @@ export class DevTools {
       createUI,
       storageCache,
       openHouse = null,
+      openUiCatalog = null,
+      openGame = null,
     } = {},
   ) {
     this.#storageCache = storageCache;
     this.#openHouse = openHouse;
+    this.#openUiCatalog = openUiCatalog;
+    this.#openGame = openGame;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -127,7 +133,11 @@ export class DevTools {
     const body = this.#ui.body;
     this.#ui.clearValueBindings();
     body.innerHTML = "";
-    if (this.#openHouse) this.#ui.createButtonRow("Будинок рибалки 🏠", body, () => this.#openHouse());
+    const pages = [];
+    if (this.#openGame) pages.push(["До риболовлі ▶", () => this.#openGame()]);
+    if (this.#openHouse) pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
+    if (this.#openUiCatalog) pages.push(["Каталог UI 🧩", () => this.#openUiCatalog()]);
+    if (pages.length) this.#ui.createNavigation(pages, body);
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 
@@ -511,6 +521,7 @@ export class DevTools {
   }
 
   #formatDevToolsKey(key, path) {
+    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled") return "Прискорення ⏩";
     if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore)
       return key;
     const overridePath = path.slice(1).join(".");

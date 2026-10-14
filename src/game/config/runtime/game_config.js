@@ -14,6 +14,12 @@ export const CONFIG = {
 
   input: {
     pointerThreshold: 10,
+    mapPan: {
+      inverted: true, // The map follows the pointer; false reverses the direction.
+      sensitivity: 1,
+      maxDistancePx: 0, // Maximum displacement per drag; 0 uses the full map bounds.
+      wheelStepPx: 40, // Distance for one wheel line; pixel-mode trackpads keep their native delta.
+    },
     dragRadius: 200,
     swipeResistanceY: 200,
     dragControlActivationPx: 30,
@@ -87,6 +93,7 @@ export const CONFIG = {
     overlayUpdateMs: 150,
     initialTime: null, // Початковий час. 17.5 = 17:30. null бере спільний стартовий час із game_time_config.js.
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
+    timeAccelerationEnabled: false,
 
     inventory: {
       showEffectiveStats: false,

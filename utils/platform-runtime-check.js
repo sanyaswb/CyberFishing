@@ -174,7 +174,7 @@ function checkBrowserWidgets() {
     ...document.defaultView,
     setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
   const definitions=[["src/platform/browser/dom/engine_interface.js",'UI_EXCEPTIONS','initEngineInterface'],["src/platform/browser/dom/ui_event_shield.js",'UiEventShield'],["src/platform/browser/dom/draggable_button.js",'DraggableButton'],
-    ["src/platform/browser/ui/game_controls.js",'GameControls'],["src/platform/browser/ui/chum_controls.js",'ChumControls'],["src/platform/browser/ui/depth_selector.js",'DepthSelector'],["src/platform/browser/ui/time_display.js",'TimeDisplay'],["src/platform/browser/ui/hold_charges.js",'HoldCharges']];
+    ["src/platform/browser/ui/fullscreen_control.js",'FullscreenControl'],["src/platform/browser/ui/game_controls.js",'GameControls'],["src/platform/browser/ui/chum_controls.js",'ChumControls'],["src/platform/browser/ui/depth_selector.js",'DepthSelector'],["src/platform/browser/ui/time_display.js",'TimeDisplay'],["src/platform/browser/ui/hold_charges.js",'HoldCharges']];
   for(const [file,...expose]of definitions)runtime.load(file,{expose});
   runtime.load('src/game/presentation/hud/hud_labels.js',{expose:['HUD_LABELS']});
   const c=runtime.context;c.initEngineInterface();
@@ -194,8 +194,9 @@ function checkBrowserWidgets() {
   for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
   assert(!button.classList.contains('draggable-control--dragging'),'releasing clears drag feedback');
-  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS,logger:{warn(){}}});
-  const fullscreen=document.body.children.find(node=>node.className==='game-control game-control--fullscreen');
+  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS,logger:{warn(){}},
+    fullscreenControl:new c.FullscreenControl({documentRef:document,mountNode:document.body,label:c.HUD_LABELS.fullscreen})});
+  const fullscreen=document.body.children.find(node=>node.className.split(' ').includes('game-control--fullscreen'));
   fullscreen.emit('click');document.emit('fullscreenchange');
   assert(fullscreen.classList.contains('game-control--fullscreen-hidden')&&fullscreen.disabled,
     'the fullscreen button fades only after the browser confirms fullscreen');
@@ -555,6 +556,15 @@ async function checkGameLoopAndAdapters() {
   assert.equal(json([metrics.width,metrics.height]),json([800,600]),"default viewport reads the window size");
   const custom=new CanvasMetricsProvider(canvas,()=>({width:320,height:200}));custom.resizeToViewport();
   assert.equal(json([canvas.width,canvas.height]),json([320,200]));
+  let bitmapWrites=0, bitmapWidth=320, bitmapHeight=200;
+  const measuredCanvas={get width(){return bitmapWidth;},set width(value){bitmapWrites++;bitmapWidth=value;},
+    get height(){return bitmapHeight;},set height(value){bitmapWrites++;bitmapHeight=value;}};
+  const viewportSize={width:320,height:200};
+  const stableMetrics=new CanvasMetricsProvider(measuredCanvas,()=>viewportSize);
+  for(let notification=0;notification<100;notification++)stableMetrics.resizeToViewport();
+  assert.equal(bitmapWrites,0,'unchanged Canvas dimensions must not reset its bitmap/context');
+  viewportSize.width=321;stableMetrics.resizeToViewport();
+  assert.equal(bitmapWrites,1,'only the dimension that changes resets the bitmap');
 
   const raw={physics:{g:1},debug:{overlay:true},fightPhysicsConfig:{f:1}};
   const provider=new ConfigProvider(raw);

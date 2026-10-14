@@ -48,7 +48,7 @@
 }
 
 .inventory-assembly-editor__visual .inventory-item-card__icon {
-  font-size: clamp(80px, 11vw, 148px);
+  font-size: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
 }
 
 .inventory-assembly-editor__sockets {
@@ -77,7 +77,7 @@
   gap: 8px;
 }
 
-@media (max-width: 520px) {
+@container ui-surface (max-width: 520px) {
   .inventory-assembly-editor {
     padding: 10px;
   }

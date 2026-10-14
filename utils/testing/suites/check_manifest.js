@@ -21,6 +21,24 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "ui-components",
+    title: "Shared UI component contracts",
+    file: "utils/ui-components-check.js",
+    suites: ["quick", "inventory"],
+  },
+  {
+    id: "ui-surface",
+    title: "Logical UI surface and pointer coordinates",
+    file: "utils/ui-surface-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
+    id: "ui-catalog",
+    title: "Isolated production UI catalog",
+    file: "utils/ui-catalog-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "line-allocation",
     title: "Line allocation domain",
     file: "utils/line-allocation-check.js",
@@ -226,8 +244,20 @@ const CHECK_DEFINITIONS = Object.freeze([
   },
   {
     id: "embedded-page-overlay",
-    title: "Embedded house navigation and return lifecycle",
+    title: "Embedded House/UI catalog navigation and return lifecycle",
     file: "utils/embedded-page-overlay-check.js",
+    suites: ["quick", "tools"],
+  },
+  {
+    id: "service-artifacts",
+    title: "Bounded service logs and safe artifact cleanup",
+    file: "utils/service-artifacts-check.js",
+    suites: ["quick", "tools"],
+  },
+  {
+    id: "dev-time",
+    title: "DEV calendar speed, day/night and House handoff",
+    file: "utils/dev-time-check.js",
     suites: ["quick", "tools"],
   },
   {
@@ -252,6 +282,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     id: "viewport",
     title: "Camera and world perspective ownership",
     file: "utils/viewport-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
+    id: "scouting-input",
+    title: "Scouting click, map navigation and clock input isolation",
+    file: "utils/scouting-input-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
+    id: "house-navigation",
+    title: "House scene gestures, sheet dismissal and shared HUD",
+    file: "utils/house-navigation-check.js",
     suites: ["quick", "gameplay"],
   },
   {

@@ -46,6 +46,7 @@ export class GameViewportFacade {
     if (
       this.#config.casting?.enabled !== false &&
       input.pointerDown &&
+      !input.pointerPanning &&
       (stateName === "scouting" || isAimingChum)
     ) {
       return;

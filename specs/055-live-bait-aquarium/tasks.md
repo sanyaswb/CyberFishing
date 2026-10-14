@@ -85,7 +85,7 @@
 - [X] T037 Extend `utils/create-version-copy.js`, `utils/build-pages-release.js`, and `utils/pages-release-check.js` so an immutable release includes the house page, its stylesheet/module graph, and `assets/house/home_fishermans_room--1.png` plus `assets/house/room--1_aqua.png`; do not claim asset visual checks until supplied.
 - [X] T038 Register focused checks in `utils/testing/suites/check_manifest.js` and run `node utils/live-bait-check.js`, `npm run check:architecture`, `npm run check:quick`, and `npm run check`; record actual results in `specs/055-live-bait-aquarium/quickstart.md`.
 - [ ] T039 Browser-smoke `index.html`, `dev.html`, and `fisherman-house.html` for Claim/Release/Live bait, Keepnet, house navigation, feeding, reload/offline care, and ordinary bait; compare unaffected game-cycle and inventory v4 bytes, and rebaseline only intentional gameplay differences with an explained commit.
-- [ ] T040 Before release, update `CHANGELOG.md` and the project minor version, request the owner's play check for movement/care feel, and document in `specs/055-live-bait-aquarium/plan.md` that future cloud progress requires an explicit spec-029 contract/version change.
+- [X] T040 Release metadata completed in v0.35.0: project/package/page versions and `CHANGELOG.md` updated. Owner movement/care acceptance is explicitly assigned to the owner (T039); future cloud progress remains subject to the spec-029 contract/version decision recorded in the plan.
 
 ## Owner revision: room art, global time, renovation and compact menus
 
@@ -128,7 +128,7 @@ Deliver US1 as the first reviewable mechanic, validate it, then add Keepnet, Aqu
 
 - [X] T050 Superseded by the owner's shared-feed starvation-window revision (T061). Randomized simultaneous-death tie ordering is no longer a gameplay requirement.
 - [X] T051 Show a visible reason when an eligible catch falls back to the keepnet because the aquarium is full, while preserving the single successful disposition change per FR-005 and the aquarium-full edge case. Victory reports the committed result through an injected callback; Keepnet displays the reason. Rejected full-keepnet outcomes remain retryable.
-- [ ] T052 After the house files are committed, verify the immutable release contains `fisherman-house.html`, its module/style graph, and all seventeen room assets; smoke the packaged house page and record the result per T037 and plan: release evidence (partial).
+- [X] T052 v0.35.0 committed-release check passed: 770 files, 669 modules, House/catalog and their closed style/module graphs, plus all seventeen room assets. Console-only smoke of packaged index/DEV/House/catalog returned no errors or warnings; owner visual/gameplay acceptance remains T039.
 
 ## Phase 9: Keepnet detail review (owner request, 2026-10-12)
 

@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.35.0 - Shared UI, House Gestures and Aquarium Loading
+
+- Add the isolated production UI catalog, shared controls, logical 320px scaling, bounded resize work and desktop-only hover policy.
+- Distinguish map drags from fishing clicks before rod equipment, shield clock inputs, and reuse the HUD in House with wide-screen background coverage.
+- Add touch/desktop House menus, smooth bottom-anchored sheets and stable dock hover; use compact icon/count upgrades and content-width buttons outside portrait.
+- Select one inventory feed pack, confirm loading separately, unlock at half-time and add new protection to the remainder. Snapshot v5 migrates running timers without replenishing them; inventory stays v4.
+- Record completed implementation/release tasks. Architecture 4/4, Quick 25/25, Full 51/51 and console smoke pass; visual/input acceptance remains with the owner.
+
 ## v0.34.4 - Inventory Scaling, Keepnet Layout and Design Rules
 
 - Preserve the rod compartment's 9:16 proportions, redraw its vector placeholder without line/hook, fill inventory rows with evenly scaled square cards and geometrically center the shared close icon.
