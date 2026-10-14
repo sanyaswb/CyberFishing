@@ -287,8 +287,6 @@
 
 @container ui-surface (max-width: 820px) {
   .inventory-list-panel {
-    height: auto;
-    --inventory-panel-min-height: 440px;
     --inventory-list-inset: 8px;
     --inventory-list-gap: var(--inventory-mobile-gap);
     gap: 16px;
@@ -304,6 +302,26 @@
   }
   .inventory-list-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    max-height: var(--ui-logical-height, 100dvh);
+  }
+
+  @media (orientation: portrait) {
+    /* Portrait (spec 068): the list fills its row and scrolls inside it without a visible scrollbar. */
+    .inventory-list-panel {
+      height: 100%;
+    }
+
+    .inventory-list-grid {
+      scrollbar-width: none;
+      scrollbar-gutter: auto;
+    }
+
+    .inventory-list-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .inventory-modal--section-backpack .inventory-list-panel {
+      --inventory-panel: transparent;
+      --inventory-panel-border: transparent;
+    }
   }
 }

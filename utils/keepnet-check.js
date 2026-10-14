@@ -68,6 +68,9 @@ async function main() {
   const summary = documentRef.byClass("keepnet-section__summary")[0];
   const content = documentRef.byClass("keepnet-section__content")[0];
   assert.equal(documentRef.byClass("keepnet-modal").length, 0, "no separate keepnet dialog remains");
+  const backdrop = documentRef.byClass("keepnet-section__backdrop")[0];
+  assert(content.contains(backdrop) && backdrop.alt === "" && backdrop.src === "assets/ui/inventory/keepnet.svg",
+    "a decorative keepnet lies behind the fish list (shown in portrait)");
   const back = documentRef.byClass("keepnet-section__back")[0];
   const capacity = documentRef.byClass("keepnet-section__capacity")[0];
   const capacityCount = documentRef.byClass("keepnet-section__count")[0];

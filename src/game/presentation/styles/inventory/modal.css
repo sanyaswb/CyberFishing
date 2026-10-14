@@ -81,38 +81,53 @@
     --inventory-card-size: min(82px, calc((var(--ui-logical-width, 100vw) - 72px) / 4));
     --inventory-socket-size: min(66px, var(--inventory-card-size));
     --inventory-mobile-gap: 6px;
-    --inventory-panel-min-height: 560px;
     padding: 9px;
-    overflow-y: auto;
-    grid-template-rows: auto auto max-content;
-    align-content: start;
   }
 
-  .inventory-main {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: max-content max-content max-content;
-    grid-template-areas: "left" "tabs" "right";
-    align-items: start;
-    align-content: start;
-    overflow: visible;
-    gap: 0;
-    padding-top: 16px;
-  }
+  /* Portrait (spec 068): the inventory fills the screen, the tabs stay at the bottom and only lists scroll.
+     Narrow landscape keeps the separate containers above. */
+  @media (orientation: portrait) {
+    .inventory-modal {
+      padding-bottom: max(9px, env(safe-area-inset-bottom, 0px));
+      overflow: hidden;
+    }
 
-  .inventory-main__left,
-  .inventory-main__right {
-    min-height: auto;
-  }
+    .inventory-main {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-areas: "left" "right" "tabs";
+      gap: 0;
+      padding-top: 10px;
+    }
 
-  .inventory-main__left {
-    container-type: inline-size;
-  }
+    /* A tall assembly editor or saved preview scrolls inside the summary row and never hides the list or tabs. */
+    .inventory-main__left {
+      container-type: inline-size;
+      max-height: calc(var(--ui-logical-height, 100dvh) * 0.62);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
 
-  .inventory-main__section {
-    height: auto;
-  }
+    .inventory-main__section {
+      height: auto;
+    }
 
-  .inventory-main__right {
-    margin-top: 16px;
+    .inventory-main__right {
+      padding-top: 10px;
+    }
+
+    .inventory-main__right > .inventory-main__section {
+      height: 100%;
+    }
+
+    /* The backpack summary lies under the item list as its background. */
+    .inventory-modal--section-backpack .inventory-main__left {
+      grid-area: right;
+      max-height: none;
+    }
+
+    .inventory-modal--section-backpack .inventory-main__right {
+      z-index: 1;
+    }
   }
 }

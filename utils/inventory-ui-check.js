@@ -463,16 +463,27 @@ class InventoryStaticContractCheck {
       .split("@container ui-surface (max-width: 820px)")[1];
     const mobileList = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/list-and-filters.css"), "utf8")
       .split("@container ui-surface (max-width: 820px)")[1];
-    assert.match(mobileModal, /grid-template-rows:\s*max-content\s+max-content\s+max-content;/,
-      "mobile equipment, section tabs and items must reserve independent intrinsic rows");
-    assert.match(mobileModal, /grid-template-areas:\s*"left"\s+"tabs"\s+"right";/,
-      "mobile section tabs sit directly below the equipment container");
-    assert.match(mobileLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
-      "mobile equipment must not inherit a percentage height from the desktop grid");
-    assert.match(mobileLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
-      "mobile equipment must not shrink its auxiliary row into the item container");
-    assert.match(mobileList, /\.inventory-list-panel\s*\{[^}]*height:\s*auto;/,
-      "the mobile item panel must own its height independently of equipment");
+    // Spec 068: portrait fills the screen — summary, the scrolling content row, tabs always at the bottom.
+    const portraitModal = mobileModal.split("@media (orientation: portrait)")[1];
+    const portraitLoadout = mobileLoadout.split("@media (orientation: portrait)")[1];
+    const portraitList = mobileList.split("@media (orientation: portrait)")[1];
+    assert.ok(portraitModal && portraitLoadout && portraitList, "the stacked layout applies only in portrait");
+    assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*overflow:\s*hidden;/, "the portrait inventory never scrolls as a page");
+    assert.match(portraitModal, /grid-template-rows:\s*auto\s+minmax\(0,\s*1fr\)\s+auto;/,
+      "portrait summary, content and tabs reserve their own rows");
+    assert.match(portraitModal, /grid-template-areas:\s*"left"\s+"right"\s+"tabs";/,
+      "the portrait tab bar is the last row");
+    assert.match(portraitModal, /\.inventory-modal--section-backpack \.inventory-main__left\s*\{\s*grid-area:\s*right;/,
+      "the backpack summary lies under the item list");
+    assert.match(portraitLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
+      "portrait equipment must not inherit a percentage height from the desktop grid");
+    assert.match(portraitLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
+      "portrait equipment must not shrink its auxiliary row into the item container");
+    assert.match(portraitLoadout, /calc\(var\(--ui-logical-height, 100dvh\) \* 0\.55 \/ 4\.56\)/,
+      "portrait equipment leaves room for the item list");
+    assert.match(portraitList, /\.inventory-list-panel\s*\{\s*height:\s*100%;/, "the portrait item panel fills its row");
+    assert.match(portraitList, /\.inventory-list-grid\s*\{[^}]*scrollbar-width:\s*none;/,
+      "the portrait item list scrolls without a visible scrollbar");
     assert.match(style, /\.inventory-list-grid\s*\{[^}]*grid-row:\s*4;/,
       "items must keep their scroll track when the filter/sort rows are hidden");
     for (const selector of [
@@ -596,8 +607,8 @@ class InventoryStaticContractCheck {
     );
     // Spec 067: one container-relative unit sizes the equipment reference; separate columns also bound it by height.
     assert.ok(
-      style.includes("--inventory-equipment-unit: calc(100cqi / 3.66);") &&
-        style.includes("--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.56));") &&
+      style.includes("--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.56));") &&
+        /\.inventory-loadout-panel\s*\{[^}]*align-content:\s*start;/.test(style) &&
         style.includes("container: inventory-equipment / size;"),
       "The equipment composition must scale from its container's width, and height in the two-column layout",
     );
@@ -1135,6 +1146,8 @@ class InventoryStaticContractCheck {
     const sectionView = (activeId) => ({ ...currentView, sections: { activeId, backpackItemCount: 7 } });
     ui.render(sectionView("backpack"));
     assert.deepStrictEqual(visibleSections(), [false, true, false, true, false], "backpack: summary left, the item list right");
+    assert.deepStrictEqual(["equipment", "backpack", "keepnet"].map((id) => ui.rootNode.classList.contains("inventory-modal--section-" + id)),
+      [false, true, false], "one root modifier names the visible section");
     assert.deepStrictEqual(activeTabs(), ["backpack"]);
     assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__count").textContent, "Предметів у рюкзаку: 7");
     assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__image").src, "assets/ui/inventory/backpack.svg");

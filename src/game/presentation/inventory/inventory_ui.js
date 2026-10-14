@@ -32,6 +32,7 @@ export class InventoryUI {
   #equipmentHost;
   #itemsHost;
   #keepnetSection = null;
+  #sections;
   #activeSectionId = null;
   #unsubscribe = null;
   #warningTimer = null;
@@ -120,6 +121,7 @@ export class InventoryUI {
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
     this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
+    this.#sections = presentation.sections;
     this.#buildShell();
   }
 
@@ -385,18 +387,19 @@ export class InventoryUI {
       onSelect: (sectionId) => this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId }) });
     this.#sectionTabsNode.classList.add("inventory-main__tabs");
     main.append(this.#leftHost, this.#sectionTabsNode, this.#rightHost);
-    this.#equipmentHost = this.#section("equipment", "left");
+    const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
+    this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));
     this.#backpackSummaryNode = this.#backpackSummaryRenderer.create();
-    this.#section("backpack", "left").appendChild(this.#backpackSummaryNode);
-    this.#section("keepnet", "left");
-    this.#itemsHost = this.#section("items", "right");
-    this.#section("keepnet", "right");
+    this.#section("backpack", "left", hostClass("backpack")).appendChild(this.#backpackSummaryNode);
+    this.#section("keepnet", "left", hostClass("keepnet"));
+    this.#itemsHost = this.#section("items", "right", "inventory-main__section--items");
+    this.#section("keepnet", "right", hostClass("keepnet"));
     this.#rootNode.append(this.#headerHost, this.#warningNode, main);
   }
 
   // One host per section and side; hidden hosts keep their DOM, scroll and the item-list render signature.
-  #section(sectionId, side) {
-    const host = this.#dom.element("div", `inventory-main__section inventory-main__section--${sectionId}`);
+  #section(sectionId, side, className) {
+    const host = this.#dom.element("div", `inventory-main__section ${className}`);
     host.hidden = true;
     (side === "left" ? this.#leftHost : this.#rightHost).appendChild(host);
     const hosts = this.#sectionHosts.get(sectionId) || {};
@@ -415,6 +418,8 @@ export class InventoryUI {
       for (const hosts of this.#sectionHosts.values())
         for (const host of [hosts.left, hosts.right]) if (host) host.hidden = !visible.has(host);
       this.#sectionTabsRenderer.update(this.#sectionTabsNode, sectionId);
+      for (const section of this.#sections.items)
+        this.#rootNode.classList.toggle(section.modifier, section.id === sectionId);
     }
     this.#keepnetSection?.setVisible(this.#isOpen && sectionId === "keepnet");
   }

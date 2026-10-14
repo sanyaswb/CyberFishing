@@ -98,7 +98,8 @@ export class KeepnetSectionView {
     });
     filters.append(this.#kind, this.#species);
     this.#list = this.#el("div", "keepnet-section__list");
-    this.#content.append(this.#back, this.#heading, filters, this.#list);
+    // A decorative keepnet behind the fish list; CSS shows it only in the portrait layout (spec 068).
+    this.#content.append(this.#icon("keepnet-section__backdrop"), this.#back, this.#heading, filters, this.#list);
     this.#summary.addEventListener("keydown", this.#handleKey);
     this.#content.addEventListener("keydown", this.#handleKey);
     buttonMountNode.appendChild(this.#button);

@@ -138,19 +138,15 @@
 .keepnet-section__fish-timer { color: #f2cf8d; }
 .keepnet-section__empty { grid-column: 1 / -1; color: #bdbdbd; }
 
+.keepnet-section__backdrop { display: none; }
+
 @container ui-surface (max-width: 820px) {
   .keepnet-section__summary, .keepnet-section__content {
     --keepnet-list-gap: 6px;
     --keepnet-image-inset: 2px;
-    height: auto;
-    overflow: visible;
     padding: 10px;
   }
-  .keepnet-section__visual { grid-template-columns: minmax(0, 1fr); height: auto; padding: var(--keepnet-visual-inset); }
-  /* The square spacer sets a minimum; a taller intrinsic image grows the same grid row. */
-  .keepnet-section__visual::before { content: ""; grid-area: 1 / 1; width: 100%; aspect-ratio: 1; }
-  .keepnet-section__icon { grid-area: 1 / 1; width: 100%; height: auto; min-width: 0; padding: 0; }
-  .keepnet-section__status { margin: 8px 0 0; font-size: 13px; }
+  .keepnet-section__status { font-size: 13px; }
   .keepnet-section__filters { gap: 8px; }
   .keepnet-section__filter { flex: 1 1 120px; }
   /* The owner's current mobile keepnet layout has two equal columns. */
@@ -167,4 +163,52 @@
   .keepnet-section__image-fallback { font-size: 24px; }
   .keepnet-section__actions { flex-direction: column; gap: 4px; }
   .keepnet-section__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
+
+  /* Portrait (spec 068): a compact summary above the filters; only the fish list scrolls, over a faded keepnet. */
+  @media (orientation: portrait) {
+    .keepnet-section__summary {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "count help" "capacity capacity" "status status";
+      gap: 6px 10px;
+      align-items: center;
+      height: auto;
+      overflow: visible;
+    }
+    .keepnet-section__visual { display: contents; }
+    .keepnet-section__icon { display: none; }
+    .keepnet-section__help { position: static; grid-area: help; }
+    .keepnet-section__help-text { top: 54px; right: 10px; }
+    .keepnet-section__count { grid-area: count; margin: 0; }
+    .keepnet-section__capacity { grid-area: capacity; }
+    .keepnet-section__status { grid-area: status; margin: 0; }
+    .keepnet-section__content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .keepnet-section__filters { margin-bottom: 10px; }
+    .keepnet-section__list {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .keepnet-section__list::-webkit-scrollbar { display: none; }
+    .keepnet-section__backdrop {
+      position: absolute;
+      top: 15%;
+      left: 15%;
+      display: block;
+      width: 70%;
+      height: 70%;
+      object-fit: contain;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+  }
 }

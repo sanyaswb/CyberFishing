@@ -107,10 +107,12 @@
 .inventory-toggle--disabled .inventory-toggle__input { cursor: not-allowed; }
 .inventory-toggle--control { width: 104px; height: var(--inventory-toggle-height); padding: 0; border: 0; background: transparent; }
 .ui-surface--desktop-hover .inventory-toggle--control:hover:not(.inventory-toggle--disabled) .inventory-toggle__control { border-color: var(--inventory-accent, var(--ui-accent)); }
+/* Mobile (spec 068): the pill is exactly as tall as its track; the track's border coincides with the pill's. */
 @container ui-surface (max-width: 520px) {
-  .inventory-toggle:not(.inventory-toggle--control) { gap: 6px; padding: 6px; }
-  .inventory-toggle__items { flex-basis: 32px; width: 32px; height: 36px; }
-  .inventory-toggle__control { min-width: 80px; }
+  .inventory-toggle:not(.inventory-toggle--control) { height: var(--inventory-toggle-height); gap: 4px; padding: 0 0 0 6px; }
+  .inventory-toggle:not(.inventory-toggle--control) .inventory-toggle__control { align-self: stretch; height: auto; margin: -1px -1px -1px 0; }
+  .inventory-toggle__items { flex-basis: 28px; width: 28px; height: 28px; }
+  .inventory-toggle__control { min-width: 64px; }
   .inventory-toggle__count { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {

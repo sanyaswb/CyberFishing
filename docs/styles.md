@@ -17,7 +17,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/game-shell.css`, `version-badge.css`, `styles/hud/toolbar.css` | Page interaction policy, canvas stacking, badge and common bottom action row |
 | `styles/inventory/theme.css` | Inventory palette and shared dimensions; portal scrollbar tokens |
 | `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout (left container, section tabs, right content areas) |
-| `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme |
+| `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
 | `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |

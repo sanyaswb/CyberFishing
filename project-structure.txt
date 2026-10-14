@@ -302,6 +302,8 @@
 │  │  └── spec.md
 │  ├── 067-inventory-sections
 │  │  └── spec.md
+│  ├── 068-portrait-inventory-screen
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
