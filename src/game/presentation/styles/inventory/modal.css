@@ -168,9 +168,11 @@
     }
 
     /* Equipment owns the whole content row: the items live in the backpack section. */
+    /* Its real size scales the equipment unit (spec 078): no estimate of the header or tab heights. */
     .inventory-modal--section-equipment .inventory-main__left {
       grid-area: right;
       max-height: none;
+      container-type: size;
     }
 
     .inventory-modal--section-equipment .inventory-main__right {

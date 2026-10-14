@@ -492,8 +492,12 @@ class InventoryStaticContractCheck {
       "portrait equipment must not inherit a percentage height from the desktop grid");
     assert.match(portraitLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
       "portrait equipment must not shrink its auxiliary row into the item container");
-    assert.match(portraitLoadout, /calc\(\(var\(--ui-logical-height, 100dvh\) - var\(--ui-logical-width, 100vw\) \* 0\.15 - 96px\) \/ 4\.56\)/,
-      "portrait equipment fits between the header and the bottom tabs");
+    // Spec 078: the unit comes from the real equipment row (a size container), never from a viewport estimate.
+    assert.match(portraitModal, /\.inventory-modal--section-equipment \.inventory-main__left\s*\{[^}]*container-type:\s*size;/,
+      "portrait equipment fits between the header and the bottom tabs through its real size");
+    assert.doesNotMatch(portraitLoadout, /--inventory-equipment-unit:/, "portrait keeps the container-relative base unit");
+    assert.doesNotMatch(style, /var\(--ui-logical-height[^)]*\)\s*-\s*var\(--ui-logical-width[^)]*\)\s*\*/,
+      "no equipment size estimates the header from the viewport");
     // Spec 074: backpack and keepnet share the collection block — filters panel, gap, scrolling items panel.
     const sharedControls = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/shared-controls.css"), "utf8");
     assert.match(sharedControls, /\.inventory-collection\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*gap:\s*var\(--inventory-container-gap, 10px\);[^}]*height:\s*100%;/,
