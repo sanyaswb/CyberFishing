@@ -1252,6 +1252,26 @@ class InventoryStaticContractCheck {
       itemsPage.contains(this.#findByClass(gridBeforeSections, "inventory-collection__backdrop")) &&
       backpackPage.contains(this.#findByClass(backpackPage, "inventory-backpack__capacity")),
     "the backpack list is a filters panel and a two-page items pager");
+    // Spec 076 follow-up: the scrolling list must keep a bounded height. Every node from the panel to the grid is a
+    // height-passing flex/grid box (min-height: 0); an unstyled wrapper let the grid grow with its cards and stopped all
+    // vertical scrolling.
+    const listGridNode = this.#findByClass(gridBeforeSections, "inventory-list-grid");
+    const heightChain = [];
+    for (let node = listGridNode; node && node !== gridBeforeSections; node = node.parentNode) heightChain.unshift(node);
+    assert.deepStrictEqual(heightChain.map((node) => node.className.split(" ")[0]), ["inventory-pager", "inventory-pager__viewport",
+      "inventory-pager__track", "inventory-pager__page", "inventory-list-grid"],
+    "no wrapper sits between the pager page and the scrolling grid");
+    const listCss = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/list-and-filters.css"), "utf8");
+    const sharedCss = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/shared-controls.css"), "utf8");
+    for (const [css, rule] of [[listCss, /\.inventory-pager\s*\{[^}]*display:\s*flex;[^}]*min-height:\s*0;/],
+      [listCss, /\.inventory-pager__viewport\s*\{\s*flex:\s*1;/],
+      [sharedCss, /\.inventory-collection__items\s*\{[^}]*display:\s*flex;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden;/],
+      [listCss, /\.inventory-pager__track\s*\{[^}]*display:\s*flex;[^}]*flex:\s*1;[^}]*min-height:\s*0;/],
+      [listCss, /\.inventory-pager__page\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*min-height:\s*0;/],
+      [sharedCss, /\.inventory-collection__list\s*\{[^}]*flex:\s*1;[^}]*min-height:\s*0;[^}]*overflow-y:\s*auto;/]]) {
+      assert.match(css, rule, "each box of the list's height chain passes a bounded height down");
+    }
+    assert.strictEqual(listGridNode.classList.contains("inventory-collection__list"), true);
     const pagerTabButtons = this.#findAllByClass(pagerTabs, "inventory-section-tabs__tab");
     const pagerIndex = () => pagerViewport.style.getPropertyValue("--inventory-pager-index");
     assert.deepStrictEqual(pagerTabButtons.map((tab) => tab.getAttribute("aria-label")), ["Предмети", "Рюкзак"]);

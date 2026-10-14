@@ -16,6 +16,7 @@ export class InventoryCollectionPagerRenderer {
     this.#config = config;
   }
 
+  // pages: the nodes of each page; they become the page's direct children, so the page (a flex column) bounds them.
   create(pages, { viewportClassName = "" } = {}) {
     const pager = this.#dom.element("div", "inventory-pager");
     const ids = this.#config.items.map((item) => item.id);
@@ -23,9 +24,9 @@ export class InventoryCollectionPagerRenderer {
     tabs.classList.add("inventory-pager__tabs");
     const viewport = this.#dom.element("div", `inventory-pager__viewport ${viewportClassName}`.trim());
     const track = this.#dom.element("div", "inventory-pager__track");
-    pages.forEach((page, index) => {
+    pages.forEach((nodes, index) => {
       const host = this.#dom.element("div", `inventory-pager__page inventory-pager__page--${ids[index]}`);
-      host.appendChild(page);
+      host.append(...nodes);
       track.appendChild(host);
     });
     viewport.appendChild(track);

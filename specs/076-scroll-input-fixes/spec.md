@@ -23,6 +23,17 @@ Change: the controller gains `axis: "y"`. The backpack item grid and the keepnet
 over any card scrolls the list and suppresses its click; touch keeps native panning and inertia, and a swipe still
 never activates a card. Wheel scrolling of vertical lists stays native.
 
+## Follow-up: the list stopped scrolling vertically
+
+Cause: spec 075 placed the grid in an unstyled `inventory-list-panel__page` wrapper inside the pager page. The wrapper
+was a plain block that grew with its cards, so the grid never had a bounded height: no wheel, touch or drag
+scrolling, and the overflow was clipped by the items panel. The structure checks only asserted containment.
+
+Change: the pager takes each page's nodes as direct children (`create([[backdrop, grid], [backpackView]])`); the
+wrapper is removed. The inventory UI check asserts the exact chain pager → viewport → track → page → grid and that
+each of those boxes passes a bounded height (flex, `min-height: 0`, the grid's `overflow-y: auto`). DESIGN_RULES §7
+records the height-chain rule.
+
 No gameplay, save or formula changes. Verification: application composition check (pan with a non-ready rod, cast
 gesture with a ready rod), inventory UI check (mouse drag scroll, click suppression after drag/swipe, a plain press
 still selects); Architecture, Quick, Full. Owner play check; no browser testing by Claude.

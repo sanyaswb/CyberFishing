@@ -44,7 +44,6 @@ export class InventoryGridRenderer {
     const panel = this.#dom.element("section", "inventory-list-panel inventory-collection");
     const controls = this.#dom.element("div",
       "inventory-list-panel__controls inventory-collection__controls inventory-panel");
-    const items = this.#dom.element("div", "inventory-list-panel__page");
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
       onSortCriterionSelect,
@@ -68,17 +67,20 @@ export class InventoryGridRenderer {
     this.#horizontalScrollController.attach(subfilters);
     this.#horizontalScrollController.attach(sortOptions);
     controls.append(categories, subfilters, sortOptions);
+    // The item page holds the faded backpack and the grid directly: the pager page is the flex parent that bounds the
+    // grid's height, so no wrapper may sit between them (spec 076 follow-up).
+    const items = [];
     const backdrop = this.#dom.image(this.#backdropImage, "");
     if (backdrop) {
       backdrop.className = "inventory-collection__backdrop";
       backdrop.setAttribute("aria-hidden", "true");
-      items.appendChild(backdrop);
+      items.push(backdrop);
     }
     const grid = this.#renderItems(model, { onItemActivate, onItemLongPress });
     // Dragging over a card scrolls the list instead of activating the card (spec 076).
     this.#listScrollController.attach(grid);
-    items.appendChild(grid);
-    const pager = this.#pager.create([items, backpackView], {
+    items.push(grid);
+    const pager = this.#pager.create([items, [backpackView]], {
       viewportClassName: "inventory-list-panel__items inventory-collection__items inventory-panel",
     });
     panel.append(controls, pager);
