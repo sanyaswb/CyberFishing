@@ -43,7 +43,9 @@ DEV injects the calendar control through a bootstrap factory. Its active root re
 including the fullscreen neighbour. House reuses the same HUD components and shared `hud-control`
 appearance; its single header row scales every control together when needed. A coalesced `HudRowSizer`
 reads shared token sizes only for viewport/rate changes. The room artwork has its own horizontal
-viewport, uses injected map pan settings and covers wide screens without side gaps. Vertical gestures
+viewport, uses injected map pan settings and covers wide screens without side gaps.
+Its day/evening/night art uses the location's `timeOfDayLayers` composition (one opaque base, at most one
+blend); HouseView writes phase opacities only on change and a linear transition lasting one refresh blends them. Vertical gestures
 reveal the header/menu zones; sheets use a shared tap/swipe handle in place of a cross. Page navigation
 actions share one compact Grid without the parameter rows' dashed separators.
 An opposite scene gesture closes the visible zone before a later gesture can open the other. House

@@ -125,25 +125,27 @@
 │  │     ├── bg_test--night.webp
 │  │     └── test-depth.webp
 │  └── ui
-│     └── inventory
-│        ├── bait.svg
-│        ├── boat.svg
-│        ├── chum.svg
-│        ├── float.svg
-│        ├── gas-mask.svg
-│        ├── keepnet.svg
-│        ├── line.svg
-│        ├── net.svg
-│        ├── reel.svg
-│        ├── rod.svg
-│        ├── tackle.svg
-│        └── weight.svg
+│     ├── inventory
+│     │  ├── bait.svg
+│     │  ├── boat.svg
+│     │  ├── chum.svg
+│     │  ├── float.svg
+│     │  ├── gas-mask.svg
+│     │  ├── keepnet.svg
+│     │  ├── line.svg
+│     │  ├── net.svg
+│     │  ├── reel.svg
+│     │  ├── rod.svg
+│     │  ├── tackle.svg
+│     │  └── weight.svg
+│     └── status-icons.svg
 ├── dev.html
 ├── docs
 │  ├── architecture.md
 │  ├── audits
 │  │  ├── 2026-10-08-finalization-review.md
-│  │  └── 2026-10-08-stage7-post-closure.md
+│  │  ├── 2026-10-08-stage7-post-closure.md
+│  │  └── 2026-10-14-inventory-resize.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
 │  ├── gameplay_backlog.md
@@ -271,10 +273,24 @@
 │  │  │  └── requirements.md
 │  │  ├── contracts
 │  │  │  └── ui-components.md
+│  │  ├── coverage.md
 │  │  ├── data-model.md
 │  │  ├── plan.md
 │  │  ├── quickstart.md
 │  │  ├── research.md
+│  │  ├── spec.md
+│  │  └── tasks.md
+│  ├── 058-dev-time-controls
+│  │  └── spec.md
+│  ├── 059-map-navigation-input
+│  │  └── spec.md
+│  ├── 060-house-navigation-header
+│  │  └── spec.md
+│  ├── 061-aquarium-feed-loading
+│  │  └── spec.md
+│  ├── 062-house-feed-preview
+│  │  └── spec.md
+│  ├── 063-house-time-of-day
 │  │  └── spec.md
 │  └── README.md
 ├── src
@@ -282,7 +298,11 @@
 │  │  ├── development
 │  │  │  ├── debug_console_bootstrap.js
 │  │  │  ├── debug_overlay_bootstrap.js
-│  │  │  └── development_game_startup.js
+│  │  │  ├── dev_time_composition.js
+│  │  │  ├── development_game_startup.js
+│  │  │  ├── development_house_startup.js
+│  │  │  ├── development_page_startup.js
+│  │  │  └── ui_catalog_bootstrap.js
 │  │  └── production
 │  │     ├── config_context.js
 │  │     ├── fishing_services_composition.js
@@ -430,11 +450,27 @@
 │  │  ├── styles
 │  │  │  ├── dev-tools.css
 │  │  │  ├── overlay-content.css
-│  │  │  └── overlay.css
-│  │  └── tools
-│  │     ├── dev_tools.js
-│  │     ├── dev_tools_parameter_tooltip_provider.js
-│  │     └── dev_tools_ui.js
+│  │  │  ├── overlay.css
+│  │  │  └── ui-catalog.css
+│  │  ├── time
+│  │  │  └── dev_time_control.js
+│  │  ├── tools
+│  │  │  ├── dev_tools.js
+│  │  │  ├── dev_tools_parameter_tooltip_provider.js
+│  │  │  └── dev_tools_ui.js
+│  │  └── ui_catalog
+│  │     ├── ui_catalog_controls_example.js
+│  │     ├── ui_catalog_definitions.js
+│  │     ├── ui_catalog_document_scope.js
+│  │     ├── ui_catalog_frame_scheduler.js
+│  │     ├── ui_catalog_house_example.js
+│  │     ├── ui_catalog_hud_example.js
+│  │     ├── ui_catalog_inventory_example.js
+│  │     ├── ui_catalog_inventory_fixture.js
+│  │     ├── ui_catalog_keepnet_example.js
+│  │     ├── ui_catalog_keepnet_fixture.js
+│  │     ├── ui_catalog_meters_example.js
+│  │     └── ui_catalog_page.js
 │  ├── engine
 │  │  ├── assets
 │  │  │  ├── asset_load_result.js
@@ -456,6 +492,8 @@
 │  │     ├── render_math.js
 │  │     └── render_pass.js
 │  ├── entrypoints
+│  │  ├── dev
+│  │  │  └── ui_catalog.entry.js
 │  │  ├── dev.entry.js
 │  │  ├── game.entry.js
 │  │  └── house.entry.js
@@ -978,6 +1016,7 @@
 │  │     │  ├── victory_renderer.js
 │  │     │  └── victory_theme_resolver.js
 │  │     ├── styles
+│  │     │  ├── auto-switch.css
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── game-shell.css
@@ -1011,7 +1050,14 @@
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
 │  │     │  ├── tokens.css
+│  │     │  ├── ui-surface.css
 │  │     │  └── version-badge.css
+│  │     ├── time
+│  │     │  └── time_of_day_layers.js
+│  │     ├── ui
+│  │     │  ├── ui_auto_switch_renderer.js
+│  │     │  ├── ui_close_button_renderer.js
+│  │     │  └── ui_sheet_handle_renderer.js
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── viewport
@@ -1040,12 +1086,16 @@
 │        │  ├── draggable_button.js
 │        │  ├── engine_interface.js
 │        │  ├── horizontal_scroll_controller.js
+│        │  ├── hud_row_sizer.js
 │        │  ├── inventory_dom_factory.js
 │        │  ├── inventory_long_press_controller.js
 │        │  ├── item_condition_dom_adapter.js
 │        │  ├── item_progression_dom_adapter.js
 │        │  ├── item_rarity_dom_adapter.js
-│        │  └── ui_event_shield.js
+│        │  ├── sheet_dismiss_controller.js
+│        │  ├── sheet_height_controller.js
+│        │  ├── ui_event_shield.js
+│        │  └── ui_surface_adapter.js
 │        ├── input
 │        │  └── input_controller.js
 │        ├── inventory
@@ -1077,14 +1127,18 @@
 │           ├── chum_controls.js
 │           ├── depth_selector.js
 │           ├── embedded_page_overlay.js
+│           ├── fullscreen_control.js
 │           ├── game_controls.js
+│           ├── game_toolbar.js
 │           ├── hold_charges.js
 │           └── time_display.js
+├── ui-catalog.html
 └── utils
    ├── architecture-check.js
    ├── bait-effectiveness-check.js
    ├── build-pages-release.js
    ├── check-js.js
+   ├── clean-artifacts.js
    ├── config-runtime-check.js
    ├── config-schema-check.js
    ├── consumable-event-identity-check.js
@@ -1093,6 +1147,7 @@
    ├── css-usage-check.js
    ├── degradation-color-check.js
    ├── dev-server.js
+   ├── dev-time-check.js
    ├── dev-tools-linked-parameter-check.js
    ├── embedded-page-overlay-check.js
    ├── fish-rarity-check.js
@@ -1102,6 +1157,7 @@
    ├── git-version-copy.js
    ├── hook-domain-semantics-check.js
    ├── house-check.js
+   ├── house-navigation-check.js
    ├── inventory-auto-refill-stock-check.js
    ├── inventory-cast-and-lure-check.js
    ├── inventory-equipment-check.js
@@ -1129,6 +1185,8 @@
    ├── project-structure.js
    ├── rarity-production-check.js
    ├── run-checks.js
+   ├── scouting-input-check.js
+   ├── service-artifacts-check.js
    ├── testing
    │  ├── README.md
    │  ├── baselines
@@ -1142,6 +1200,7 @@
    │  ├── keepnet
    │  │  └── test_document.js
    │  ├── live_bait
+   │  │  ├── feed_loading_scenarios.js
    │  │  ├── feed_picker_scenarios.js
    │  │  ├── inventory_feed_scenarios.js
    │  │  ├── keepnet_lifecycle_scenarios.js
@@ -1160,6 +1219,9 @@
    │  │  └── page_stylesheet_reader.js
    │  └── suites
    │     └── check_manifest.js
+   ├── ui-catalog-check.js
+   ├── ui-components-check.js
+   ├── ui-surface-check.js
    ├── victory-input-check.js
    ├── viewport-check.js
    └── water-metric-check.js

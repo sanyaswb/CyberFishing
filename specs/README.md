@@ -53,6 +53,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [060](060-house-navigation-header/spec.md) | House scene/zone gestures, tap/swipe sheets, shared single-row HUD and wide-screen cover | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; console clear; owner visual/input acceptance pending | v0.35.0 |
 | [061](061-aquarium-feed-loading/spec.md) | Aquarium right-aligned counts, single-pack selection/loading, half-time lock and additive protection with v5 save migration | Implemented; automated checks pass; console clear; owner visual/input acceptance pending | v0.35.0 |
 | [062](062-house-feed-preview/spec.md) | Shared compact feed row, selection/reopen flow, responsive numeric upgrade and stable desktop dock hover | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; console clear; owner visual/input acceptance pending | v0.35.0 |
+| [063](063-house-time-of-day/spec.md) | House time of day shares the location base/overlay composition and blends each refresh with a CSS transition | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
 
 ## Archived
 

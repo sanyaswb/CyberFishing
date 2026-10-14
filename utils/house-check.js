@@ -94,7 +94,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
-    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }) });
+    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000 });
   const view = createView();
   const header = documentRef.querySelector("[data-house-header]"), dock = documentRef.querySelector("[data-house-dock]");
   assert.equal(header.inert, true, "House starts with both gesture zones closed");
@@ -140,6 +140,23 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     levelLabel: "1", upgradeLevel: 2, upgradeCapacity: 6, upgradeLabel: "Покращити", feedStock: 5, nextFeedLabel: "Feed", autoStatus: "Вручну",
     autoToggleLabel: "Увімкнути", feedTimeLabel: "00:00:05", room: { level: 1, maxLevel: 5, nextDurationMs: 7200000,
       targetLevel: null, remainingMs: 0, eveningOpacity: 0, nightOpacity: 0 } };
+  const scene = documentRef.querySelector(".house__scene");
+  const phaseOpacity = (phase) => scene.style.getPropertyValue(`--house-${phase}`);
+  let sceneWrites = 0;
+  const writeSceneProperty = scene.style.setProperty;
+  scene.style.setProperty = (...args) => { sceneWrites += 1; return writeSceneProperty(...args); };
+  assert.equal(scene.style.getPropertyValue("--house-time-blend-duration"), "1000ms", "the blend lasts one refresh interval");
+  view.render(model);
+  assert.deepEqual(["day", "evening", "night"].map(phaseOpacity), ["1", "0", "0"]);
+  assert(!scene.classList.contains("house__scene--time-blend"), "the first time-of-day reading appears without a fade");
+  sceneWrites = 0; view.render(model);
+  assert.equal(sceneWrites, 0, "an unchanged time-of-day reading writes nothing");
+  for (const [evening, night, expected] of [[.5, 0, ["1", "0.5", "0"]], [1, 0, ["0", "1", "0"]],
+    [1, .25, ["0", "1", "0.25"]], [1, 1, ["0", "0", "1"]], [0, 0, ["1", "0", "0"]]]) {
+    model.room.eveningOpacity = evening; model.room.nightOpacity = night; view.render(model);
+    assert.deepEqual(["day", "evening", "night"].map(phaseOpacity), expected, `house layers at ${evening}/${night}`);
+  }
+  assert(scene.classList.contains("house__scene--time-blend"), "later readings blend through the CSS transition");
   view.render(model);
   const meter = documentRef.querySelector("[data-house-feed-meter]").children[0];
   const capacityMeter = documentRef.querySelector("[data-house-capacity-meter]").children[0];
@@ -282,7 +299,30 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert.equal(presented.canAutoFeed, false, "auto availability follows the selected feed's authoritative reserve");
 }
 
+async function checkSharedTimeOfDayLayers() {
+  const { timeOfDayLayers } = await import("../src/game/presentation/time/time_of_day_layers.js");
+  const { WorldRenderFrameBuilder } = await import("../src/game/presentation/rendering/world_render_frame_builder.js");
+  const data = { loaded: true, dynamic: true, width: 10, height: 5, eveningOpacity: 0, nightOpacity: 0,
+    assetIds: { day: "day", evening: "evening", night: "night" } };
+  const builder = new WorldRenderFrameBuilder({ map: { getBackgroundRenderData: () => data },
+    projector: { virtualToScreen: (x, y, out) => { out.x = x; out.y = y; return out; }, getScale: () => 1 },
+    config: { canvas: {}, locations: {} }, canvasMetrics: { width: 10, height: 5 }, boatChumBuilder: { buildInto() {} }, locationId: "test" });
+  const layers = { base: "", overlay: null, overlayOpacity: 0 };
+  // The Canvas location and the House DOM compose the same phases: an opaque base and at most one blend.
+  for (const [evening, night, expected] of [[0, 0, "day:1"], [.5, 0, "day:1 evening:0.5"], [1, 0, "evening:1"],
+    [1, .25, "evening:1 night:0.25"], [1, 1, "night:1"]]) {
+    timeOfDayLayers(evening, night, layers);
+    assert.equal([`${layers.base}:1`, layers.overlay && `${layers.overlay}:${layers.overlayOpacity}`].filter(Boolean).join(" "), expected);
+    const records = [];
+    data.eveningOpacity = evening; data.nightOpacity = night;
+    builder.buildInto({ target: { backgroundLayers: { acquire: () => { const record = {}; records.push(record); return record; } },
+      clipRegions: {}, invalidCastMarker: {} }, invalidCastMarker: null, debugEnabled: false });
+    assert.equal(records.map((record) => `${record.assetId}:${record.alpha}`).join(" "), expected, `map layers at ${evening}/${night}`);
+  }
+}
+
 async function main() {
+  await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");
   const { RoomUpgradeService } = await import("../src/game/application/house/room_upgrade_service.js");
   const { RoomProgressLocalStore } = await import("../src/platform/browser/storage/room_progress_local_store.js");

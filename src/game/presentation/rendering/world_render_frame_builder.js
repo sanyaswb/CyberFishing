@@ -1,4 +1,5 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { timeOfDayLayers } from "../time/time_of_day_layers.js";
 
 export class WorldRenderFrameBuilder {
   #map;
@@ -10,6 +11,7 @@ export class WorldRenderFrameBuilder {
   #locationId;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
+  #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
 
   constructor({
     map,
@@ -75,67 +77,10 @@ export class WorldRenderFrameBuilder {
       return;
     }
 
-    if (data.nightOpacity === 1) {
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.night,
-        1,
-        position,
-        width,
-        height,
-      );
-    } else if (data.nightOpacity > 0) {
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.evening,
-        1,
-        position,
-        width,
-        height,
-      );
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.night,
-        data.nightOpacity,
-        position,
-        width,
-        height,
-      );
-    } else if (data.eveningOpacity === 1) {
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.evening,
-        1,
-        position,
-        width,
-        height,
-      );
-    } else if (data.eveningOpacity > 0) {
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.day,
-        1,
-        position,
-        width,
-        height,
-      );
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.evening,
-        data.eveningOpacity,
-        position,
-        width,
-        height,
-      );
-    } else {
-      this.#addBackgroundLayer(
-        target,
-        data.assetIds.day,
-        1,
-        position,
-        width,
-        height,
-      );
+    const layers = timeOfDayLayers(data.eveningOpacity, data.nightOpacity, this.#timeLayers);
+    this.#addBackgroundLayer(target, data.assetIds[layers.base], 1, position, width, height);
+    if (layers.overlay) {
+      this.#addBackgroundLayer(target, data.assetIds[layers.overlay], layers.overlayOpacity, position, width, height);
     }
   }
 

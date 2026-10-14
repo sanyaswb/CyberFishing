@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-036 House day/night images step instead of blending (P3, done, not released)
+Found: 2026-10-14, owner House review against the test location.
+Reproduce: open the House around 17:00–21:00 or 05:00–09:00 game time (timeScale 240, optionally DEV ×5) and watch the room art.
+Expected: the same continuous crossfade and layer composition as the test location.
+Actual: opacity changed only on the 1 s House refresh (3–17 % jumps); the House always stacked three layers.
+Fix/evidence: shared `timeOfDayLayers` for location Canvas and House DOM; House blends each refresh with a linear CSS transition. Map/House layer and no-write checks in house-check. Spec 063; owner visual acceptance pending.
+
 ### G-033 Selected feed is separate from active information and cannot reopen its list (P3, done in v0.35.0)
 Found: 2026-10-14, owner House review and compact-text correction.
 Reproduce: choose a feed, inspect the remaining open list, plain preview and separate active-feed caption; try clicking the preview to change the draft.

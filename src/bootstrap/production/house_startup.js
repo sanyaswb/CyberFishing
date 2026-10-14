@@ -99,7 +99,7 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
     menuHandleLabel: HOUSE_LABELS.menuHandle,
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-    returnTo, fishView, feedPicker,
+    returnTo, fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs,
     onReturn: hostWindow || onReturnData ? returnToGame : null,
     perform: (action, id) => presenter.perform(action, id) });
   const fullscreen = new FullscreenControl({ documentRef: documentTarget, fullscreenDocument,

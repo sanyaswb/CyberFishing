@@ -104,12 +104,25 @@
   object-fit: contain;
 }
 
+/* HouseView sets the phase opacities from the shared time-of-day layers: one opaque base, one blend. */
+.house__background--day {
+  opacity: var(--house-day, 1);
+}
+
 .house__background--evening {
   opacity: var(--house-evening, 0);
 }
 
 .house__background--night {
   opacity: var(--house-night, 0);
+}
+
+.house__scene--time-blend .house__background {
+  transition: opacity var(--house-time-blend-duration, 0ms) linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house__scene--time-blend .house__background { transition: none; }
 }
 
 .house__aquarium-stage {

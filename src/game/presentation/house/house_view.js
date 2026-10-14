@@ -1,3 +1,7 @@
+import { timeOfDayLayers } from "../time/time_of_day_layers.js";
+
+const TIME_PHASES = Object.freeze(["day", "evening", "night"]);
+
 export class HouseView {
   #document;
   #window;
@@ -32,6 +36,9 @@ export class HouseView {
   #panelButtons;
   #actions = new Map();
   #backgrounds = new Map();
+  #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
+  #phaseOpacities = new Map();
+  #timeBlendEnabled = false;
   #scene;
   #panelFocus = null;
   #fishLists = new Map();
@@ -39,7 +46,7 @@ export class HouseView {
 
   constructor({ documentRef, windowTarget, perform, roomConfig, uiConfig,
     returnTo, onReturn, fishView, feedPicker,
-    resourceMeters, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel = sheetDismissLabel, autoSwitchRenderer }) {
+    resourceMeters, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel = sheetDismissLabel, autoSwitchRenderer, timeBlendMs }) {
     this.#document = documentRef;
     this.#window = windowTarget;
     this.#motionPreference = windowTarget.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
@@ -68,9 +75,11 @@ export class HouseView {
     this.#panelButtons = [...documentRef.querySelectorAll("[data-house-panel-button]")];
     for (const action of documentRef.querySelectorAll("[data-house-action]"))
       this.#actions.set(action.dataset.houseAction, action);
-    for (const phase of ["day", "evening", "night"])
+    for (const phase of TIME_PHASES)
       this.#backgrounds.set(phase, documentRef.querySelector(`[data-house-background="${phase}"]`));
     this.#scene = documentRef.querySelector(".house__scene");
+    // Opacity eases linearly across one refresh interval, so the stepped clock reads as a continuous blend.
+    this.#scene.style.setProperty("--house-time-blend-duration", `${timeBlendMs}ms`);
     for (const panel of this.#panels) sheetHeights.attach(panel, panel.querySelector(".house__sheet-content"));
     for (const mount of documentRef.querySelectorAll("[data-house-sheet-handle-mount]")) {
       const panel = mount.closest("[data-house-panel]");
@@ -192,17 +201,31 @@ export class HouseView {
     if (model.error) this.announce(`Помилка збереження: ${model.error}`, true);
   }
 
+  #renderTimeOfDay(eveningOpacity, nightOpacity) {
+    const scene = this.#scene;
+    // The first reading appears at once; later readings blend from the previous one.
+    if (!this.#timeBlendEnabled && this.#phaseOpacities.size > 0) {
+      scene.classList.add("house__scene--time-blend");
+      this.#timeBlendEnabled = true;
+    }
+    const layers = timeOfDayLayers(eveningOpacity, nightOpacity, this.#timeLayers);
+    for (const phase of TIME_PHASES) {
+      const opacity = phase === layers.base ? 1 : phase === layers.overlay ? layers.overlayOpacity : 0;
+      if (this.#phaseOpacities.get(phase) === opacity) continue;
+      this.#phaseOpacities.set(phase, opacity);
+      scene.style.setProperty(`--house-${phase}`, String(opacity));
+    }
+  }
+
   #renderRoom(room) {
     const get = (key) => this.#nodes.get(key);
     if (room.level !== this.#lastLevel) {
       const art = this.#roomConfig.backgrounds[room.level];
-      for (const phase of ["day", "evening", "night"])
+      for (const phase of TIME_PHASES)
         this.#backgrounds.get(phase).src = art[phase];
       this.#lastLevel = room.level;
     }
-    const scene = this.#scene;
-    scene.style.setProperty("--house-evening", room.eveningOpacity);
-    scene.style.setProperty("--house-night", room.nightOpacity);
+    this.#renderTimeOfDay(room.eveningOpacity, room.nightOpacity);
     get("room-level-panel").textContent = String(room.level);
     get("room-max-level").textContent = String(room.maxLevel);
     get("room-level-count").textContent = `${room.level} / ${room.maxLevel}`;
