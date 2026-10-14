@@ -1,0 +1,195 @@
+import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
+import { GameplayOverrideReader } from "../../dev/runtime/gameplay_override_reader.js";
+import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
+import { BrowserDebugAdapter } from "../../dev/runtime/browser_debug_adapter.js";
+import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
+import { CONFIG } from "../../game/config/runtime/game_config.js";
+import { composeDevConfigValidation } from "./dev_config_validation_composition.js";
+import { DebugService } from "../../dev/runtime/debug_service.js";
+import { DevFlagsProvider } from "../../dev/runtime/dev_flags_provider.js";
+import { DevTools } from "../../dev/tools/dev_tools.js";
+import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
+import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
+import { EventBus } from "../../engine/events/event_bus.js";
+import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
+import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { FightDiagnosticsSnapshotBuilder } from "../../dev/fishing/fight_diagnostics_snapshot_builder.js";
+import { FixedCatchFishFactory } from "../../dev/fishing/fixed_catch_fish_factory.js";
+import { FixedCatchHook } from "../../dev/fishing/fixed_catch_hook.js";
+import { Game } from "../production/game.js";
+import { GameCompositionRoot } from "../production/game_composition_root.js";
+import { GameDebugFacade } from "../../dev/runtime/game_debug_facade.js";
+import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
+import { GameVersionBadge } from "../production/game_version_badge.js";
+import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
+import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
+import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
+import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
+import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
+import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
+import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
+import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
+import { OVERLAY_MODULES } from "../../dev/overlay/config/overlay_modules_config.js";
+import { OverlaySettingsStore } from "../../dev/overlay/overlay_settings_store.js";
+import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
+import { RenderAllocationDiagnostics } from "../../dev/diagnostics/render_allocation_diagnostics.js";
+import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js";
+import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
+import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
+import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
+import { createProductionConfigContext } from "../production/game_config_composition.js";
+import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
+import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
+import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
+import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
+import { composeDevTimeDisplay } from "./dev_time_composition.js";
+
+let startup;
+// One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
+let gameLoopGuard;
+let listenerCounter;
+
+export function startDevelopmentGame() {
+  if (startup) return startup;
+  const requested = startGame();
+  startup = requested;
+  requested.catch(() => { if (startup === requested) startup = null; });
+  return requested;
+}
+
+async function startGame() {
+  const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
+  const configRuntime = createProductionConfigContext(config => {
+    config.debug.godMode.enabled = true;
+    config.debug.fixedCatch.enabled = true;
+    config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
+  });
+  publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
+  const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
+  const browserLifecycle = new BrowserGameLifecycle(windowTarget);
+  browserLifecycle.cleanupPreviousGame();
+  const uiSurface = new UiSurfaceAdapter({ hostElement: documentTarget.body,
+    documentRef: documentTarget, windowRef: windowTarget, viewport: true });
+  const badge = documentTarget.getElementById("gameVersionBadge");
+  const toolbar = new GameToolbar({ documentRef: documentTarget, mountNode: uiSurface.mountRoot, versionBadge: badge });
+  const developmentMount = documentTarget.createElement("div");
+  developmentMount.className = "game-shell__dev-ui";
+  uiSurface.portalRoot.appendChild(developmentMount);
+  gameLoopGuard ??= new ActiveGameLoopGuard({logger: new ConsoleLogger(), warningTarget: windowTarget});
+  listenerCounter ??= new ManagedListenerCounter();
+  const debugModules = {...(CONFIG.debug?.consoleModules || {})};
+  const debugModulesSource = () => debugModules;
+  const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
+  // DEV window positions and section states share the game's storage prefix.
+  const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
+  const godMode = new GameplayOverrideReader(CONFIG);
+  const itemCatalog = createDevItemCatalog(ITEM_DB);
+  const mapCatalog = CONFIG.locations.map;
+  const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
+  let consoleRuntime, overlayRuntime, game, watchdog;
+  let housePreviewWindow = null;
+  let timeControl = null;
+  let devTools = null;
+  let houseTimeSnapshot = null;
+  let houseReady = false;
+  const onHouseReady = event => {
+    if (!housePreviewWindow || houseReady || event.source !== housePreviewWindow || event.origin !== windowTarget.location.origin ||
+      event.data?.type !== "cyber-fishing:dev-house-ready") return;
+    houseReady = true;
+    // The House realm has its own config runtime: it receives every location override and returns its own set.
+    housePreviewWindow.postMessage({ type: "cyber-fishing:dev-house-handoff", overrides: configRuntime.exportOverrides(),
+      debugTime: houseTimeSnapshot }, windowTarget.location.origin);
+  };
+  windowTarget.addEventListener("message", onHouseReady);
+  const pageOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
+    src: "dev.html?page=house&returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
+    onEnter: () => { game?.stop(); houseTimeSnapshot = timeControl?.suspend(); houseReady = false; },
+    onReady: (frameWindow) => { housePreviewWindow = frameWindow; },
+    onExit: data => {
+      housePreviewWindow = null;
+      if (data?.overrides) devTools?.replaceOverrides(data.overrides);
+      timeControl?.resume(data?.debugTime || houseTimeSnapshot); houseTimeSnapshot = null;
+      void game?.start().catch((error) => windowTarget.console.error(error));
+    } });
+  let gameReady = false;
+  let disposed = false;
+  const cleanup = () => {
+    if (disposed) return;
+    disposed = true;
+    browserLifecycle.removePagehideListener(cleanup);
+    pageOverlay.dispose();
+    windowTarget.removeEventListener("message", onHouseReady);
+    watchdog?.dispose();
+    overlayRuntime?.dispose();
+    consoleRuntime?.dispose();
+    disposeInterface?.();
+    if (gameReady) game?.dispose();
+    toolbar.dispose();
+    uiSurface.dispose();
+    browserLifecycle.clearPublishedHandles(game, watchdog, cleanup);
+    startup = null;
+  };
+  try {
+    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
+    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount});
+    const compositionRoot = new GameCompositionRoot(CONFIG, {
+      itemDb: itemCatalog,
+      loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
+      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
+      loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
+      loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
+      documentTarget, windowTarget, gameLoopGuard, listenerCounter,
+      uiSurface,
+      toolbarMountNode: toolbar.element,
+      createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
+      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
+      createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
+      createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
+      createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
+      createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({
+        config, biteRules, devFlags, fishFactory: new FixedCatchFishFactory(resolvers),
+      }),
+      createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
+      createDebugService: config => new DebugService(config, debugModulesSource),
+      createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
+      createWorldDebugRenderer: options => new WorldDebugRenderer(options),
+      createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
+        openHouse: () => pageOverlay.open(),
+        openUiCatalog: () => pageOverlay.open({ src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle, onReady: null }),
+        catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
+        createUI: (toggle, liveConfig) => {
+          const tooltipProvider = new DevToolsParameterTooltipProvider();
+          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount)};
+        }}),
+      createTimeDisplay: options => {
+        timeControl = composeDevTimeDisplay({ ...options, config: CONFIG, uiSurface });
+        return timeControl;
+      },
+      createLocationDebugRenderFrameBuilder: options => new LocationDebugRenderFrameBuilder(options),
+      getRenderDiagnostics: () => RenderAllocationDiagnostics,
+      isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,
+    });
+    game = new Game("gameCanvas", compositionRoot);
+    browserLifecycle.publishGame(game);
+    browserLifecycle.installPagehideCleanup(cleanup);
+    await game.ready;
+    gameReady = true;
+    if (disposed) { game.dispose(); return game; }
+    const started = await game.start();
+    if (disposed) return game;
+    const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
+    watchdog = memoryConfig.enabled === true ? new MemoryLeakWatchdog({intervalMs: memoryConfig.intervalMs,
+      maxSamples: memoryConfig.maxSamples, minTrendSamples: memoryConfig.minTrendSamples, thresholds: memoryConfig.thresholds,
+      metricsProvider: () => {
+        const loop = gameLoopGuard.getDiagnostics();
+        return {activeGameLoops: loop.activeCount, duplicateLoopStarts: loop.duplicateStartAttempts,
+          managedListeners: listenerCounter.getActiveCount()};
+      }}) : null;
+    watchdog?.start();
+    browserLifecycle.publishWatchdog(watchdog);
+    if (!started) windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+    compositionRoot.printStorageUsage();
+    return game;
+  } catch (error) { cleanup(); throw error; }
+}
