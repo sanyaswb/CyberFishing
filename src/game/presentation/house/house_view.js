@@ -21,9 +21,12 @@ export class HouseView {
   #aquariumLevelCard;
   #liveBaitList;
   #keepnetList;
+  #hints;
+  #notice;
+  #noticeRoom;
 
   constructor({ documentRef, windowTarget, perform, uiConfig, returnTo, onReturn, fishView, feedPicker,
-    resourceMeters, autoSwitchRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
+    resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
     this.#window = windowTarget;
     this.#root = documentRef.body;
     this.#perform = perform;
@@ -39,8 +42,9 @@ export class HouseView {
     this.#aquariumLevelCard = aquariumLevelCard;
     this.#liveBaitList = liveBaitList;
     this.#keepnetList = keepnetList;
+    this.#hints = hintRenderer;
     for (const name of ["level", "capacity", "unowned", "owned", "upgrade-level", "upgrade-capacity",
-      "auto-status", "bait-count", "keepnet-warning", "dead-count", "catch-count", "notice", "aquarium-image",
+      "auto-status", "bait-count", "keepnet-warning", "dead-count", "catch-count", "notice", "notice-text", "notice-close", "aquarium-image",
       "aquarium-level-count", "capacity-meter", "aquarium-stage", "feed-bar",
       "feed-image", "feed-meter", "feed-time", "auto-switch-mount"])
       this.#nodes.set(name, documentRef.querySelector(`[data-house-${name}]`));
@@ -50,13 +54,18 @@ export class HouseView {
       modeLabel: labels.enableFeeder, variant: "control", className: "house__auto-switch",
       onChange: () => this.#perform("toggleAutoFeeder") });
     this.#nodes.get("auto-switch-mount").appendChild(this.#autoSwitch);
+    this.#notice = this.#nodes.get("notice");
+    this.#noticeRoom = this.#notice.parentNode;
+    hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close"),
+      onClose: () => this.#clearNoticeTimer() });
     documentRef.querySelector("[data-house-return]").href = returnTo;
     this.#root.addEventListener("click", this.#handleClick);
   }
 
   dispose() {
     this.#navigation.dispose();
-    if (this.#noticeTimer !== null) this.#window.clearTimeout(this.#noticeTimer);
+    this.#clearNoticeTimer();
+    this.#hints.dispose(this.#notice);
     this.#root.removeEventListener("click", this.#handleClick);
     this.#autoSwitchRenderer.dispose(this.#autoSwitch);
     this.#autoSwitch.remove();
@@ -68,15 +77,26 @@ export class HouseView {
     this.#keepnetList.dispose();
   }
 
+  // The notice appears inside its container (spec 080): the open sheet whose action it reports, otherwise the room.
   announce(message, failed = false) {
-    const node = this.#nodes.get("notice");
-    node.textContent = message || "";
-    node.classList.toggle("house__notice--error", failed);
-    if (this.#noticeTimer !== null) this.#window.clearTimeout(this.#noticeTimer);
-    this.#noticeTimer = message ? this.#window.setTimeout(() => {
-      node.textContent = "";
+    const node = this.#notice;
+    this.#clearNoticeTimer();
+    if (!message) { this.#hints.hide(node); return; }
+    const sheet = this.#navigation.activeSheetContent();
+    const host = sheet || this.#noticeRoom;
+    if (node.parentNode !== host) host.appendChild(node);
+    node.classList.toggle("house__notice--sheet", sheet !== null);
+    this.#hints.show(node, message, failed ? "error" : "info");
+    this.#noticeTimer = this.#window.setTimeout(() => {
+      this.#hints.hide(node);
       this.#noticeTimer = null;
-    }, this.#uiConfig.noticeDurationMs) : null;
+    }, this.#uiConfig.noticeDurationMs);
+  }
+
+  #clearNoticeTimer() {
+    if (this.#noticeTimer === null) return;
+    this.#window.clearTimeout(this.#noticeTimer);
+    this.#noticeTimer = null;
   }
 
   handleSceneGesture(deltaY) {

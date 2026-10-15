@@ -120,7 +120,7 @@
         <img class="house__renovation-image" src="assets/house/room-1/under-renovation.png" alt="Кімната на ремонті" />
         <div class="house__renovation-controls"><span data-house-renovation-level>Ремонт до рівня 2</span><strong class="house__renovation-time" data-house-renovation-time>02:00:00</strong><button class="inventory-action inventory-action--primary house__button" type="button" data-house-action="finishRoom">Завершити · Безкоштовно</button></div>
       </div>
-      <p class="house__notice" role="status" aria-live="polite" data-house-notice></p>
+      <div class="ui-hint house__notice" role="status" aria-live="polite" data-house-notice hidden><p class="ui-hint__text" data-house-notice-text></p><button class="ui-modal-close ui-hint__close" type="button" title="Закрити повідомлення" aria-label="Закрити повідомлення" data-house-notice-close>×</button></div>
     </main>
     <script type="module" src="src/entrypoints/house.entry.js?v=0.36.0"></script>
   </body>

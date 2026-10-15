@@ -101,6 +101,7 @@ Use equal gaps between cards. Internal spacing and icon dimensions should be con
   Inline symbols inside a sentence (tooltip titles, labels) stay text. Item artwork and SVG icons remain the preferred visuals; glyphs are their fallback.
 - Add permanent text only when it communicates useful state, quantity or action consequences. The keepnet occupancy counter uses `0 / 100` above the meter.
 - Keep icon names and instructions available through accessible names, contextual hints and help popovers. Minimal text does not remove accessibility, errors or necessary confirmations.
+- A transient hint (help popover, warning, notice) is the shared `ui-hint` built or adopted by `UiHintRenderer`, with a close button ([spec 080](specs/080-hints-in-containers/spec.md)). It appears inside the container it belongs to: the owner positions it with a BEM mix relative to that container (insets, `max-height` from the container, never a fixed width or a viewport-centred `position: fixed`), long text wraps and scrolls inside the hint. Hover-only item tooltips keep their hover placement and share the hint surface tokens.
 
 ## 9. Shared parameter-meter semantics
 

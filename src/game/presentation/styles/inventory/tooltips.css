@@ -3,13 +3,14 @@
 .inventory-tooltip {
   position: absolute;
   display: none;
-  background: rgba(10, 20, 30, 0.95);
+  /* The shared hint surface (spec 080); the border keeps the accent or the item rarity colour. */
+  background: var(--ui-hint-background);
   border: 1px solid var(--ui-accent);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: var(--ui-hint-radius);
   pointer-events: none;
   z-index: var(--ui-layer-tooltip);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--ui-hint-shadow);
   box-sizing: border-box;
   width: max-content;
   min-width: min(390px, calc(var(--ui-logical-width, 100vw) - 24px));

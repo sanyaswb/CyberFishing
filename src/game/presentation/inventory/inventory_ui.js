@@ -28,6 +28,7 @@ export class InventoryUI {
   #sectionTabsRenderer;
   #sectionTabsNode;
   #backpackSummaryRenderer;
+  #hintRenderer;
   #backpackSummaryNode;
   // The portrait pager's backpack page (spec 075): a second backpack view, moved into each re-rendered item list.
   #backpackPageNode;
@@ -125,6 +126,7 @@ export class InventoryUI {
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
     this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
+    this.#hintRenderer = presentation.hintRenderer;
     this.#sections = presentation.sections;
     this.#buildShell();
   }
@@ -320,24 +322,26 @@ export class InventoryUI {
   showWarning(message) {
     const text = typeof message === "string" ? message.trim() : "";
     if (!text) return;
-    this.#warningNode.textContent = text;
-    this.#warningNode.classList.add("inventory-warning--visible");
-    this.#warningNode.setAttribute("role", "alert");
-    if (this.#warningTimer !== null) this.#warningTimers.clearTimeout(this.#warningTimer);
+    this.#hintRenderer.show(this.#warningNode, text);
+    this.#clearWarningTimer();
     this.#warningTimer = this.#warningTimers.setTimeout(() => {
-      this.#warningNode.classList.remove("inventory-warning--visible");
+      this.#hintRenderer.hide(this.#warningNode);
       this.#warningTimer = null;
     }, 5000);
     this.#onWarning?.(text);
   }
 
+  #clearWarningTimer() {
+    if (this.#warningTimer === null) return;
+    this.#warningTimers.clearTimeout(this.#warningTimer);
+    this.#warningTimer = null;
+  }
+
   dispose() {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
-    if (this.#warningTimer !== null) {
-      this.#warningTimers.clearTimeout(this.#warningTimer);
-      this.#warningTimer = null;
-    }
+    this.#clearWarningTimer();
+    this.#hintRenderer.dispose(this.#warningNode);
     this.#longPressController.dispose();
     this.#headerRenderer.dispose?.();
     this.#headerNode = null;
@@ -368,10 +372,9 @@ export class InventoryUI {
       "div",
       "inventory-modal__header-host",
     );
-    this.#warningNode = this.#dom.element(
-      "div",
-      "inventory-warning",
-    );
+    // The warning lies inside the inventory's main area (spec 080): over its top edge, never clipped by a flow row.
+    this.#warningNode = this.#hintRenderer.create({ className: "inventory-warning", tone: "warning", role: "alert",
+      closeLabel: "Закрити попередження", onClose: () => this.#clearWarningTimer() });
     const main = this.#dom.element("main", "inventory-main");
     this.#leftHost = this.#dom.element(
       "div",
@@ -396,7 +399,8 @@ export class InventoryUI {
     this.#section("keepnet", "left", hostClass("keepnet"));
     this.#itemsHost = this.#section("items", "right", "inventory-main__section--items");
     this.#section("keepnet", "right", hostClass("keepnet"));
-    this.#rootNode.append(this.#headerHost, this.#warningNode, main);
+    main.appendChild(this.#warningNode);
+    this.#rootNode.append(this.#headerHost, main);
   }
 
   // One host per section and side; hidden hosts keep their DOM, scroll and the item-list render signature.

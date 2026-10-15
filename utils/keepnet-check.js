@@ -113,6 +113,14 @@ async function main() {
   assert(hint.hidden && ui.isOpen, "Escape dismisses help before navigating");
   help.click(); ui.setVisible(false); ui.setVisible(true);
   assert(hint.hidden, "hiding and showing the section resets help");
+  // Spec 080: the hint is a ui-hint inside the summary; reading inside it keeps it open, its close button dismisses it.
+  assert(hint.classList.contains("ui-hint") && hint.parentNode === summary, "the help hint lies inside the summary");
+  help.click();
+  assert(!documentRef.fire("click", { target: hint }).stopped && !hint.hidden, "a click inside the hint keeps it open");
+  const closeHelp = hint.children.find((node) => node.classList.contains("ui-hint__close"));
+  assert.equal(closeHelp.getAttribute("aria-label"), "Закрити підказку");
+  closeHelp.click();
+  assert(hint.hidden && help.getAttribute("aria-expanded") === "false", "the close button dismisses the hint");
   assert.equal(documentRef.listeners.get("click").size, 0, "help document listeners are released");
   assert.equal(documentRef.byClass("keepnet-section__group").length, 2);
   assert.equal(documentRef.byClass("keepnet-section__badge")[0].textContent, "3");

@@ -111,6 +111,13 @@ export class HouseNavigationController {
     this.#setPanel(panel);
   }
 
+  // The open sheet's content, the container of notices about its actions (spec 080); null when no sheet is open.
+  activeSheetContent() {
+    if (this.#activePanel === null) return null;
+    const panel = this.#panels.find((entry) => entry.dataset.housePanel === this.#activePanel);
+    return panel?.querySelector(".house__sheet-content") ?? null;
+  }
+
   // A renovation hides the menu and closes its sheet.
   setLocked(locked) {
     this.#nodes.get("dock").hidden = locked;

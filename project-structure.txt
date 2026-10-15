@@ -334,6 +334,8 @@
 │  │  └── spec.md
 │  ├── 079-pager-touch-axis
 │  │  └── spec.md
+│  ├── 080-hints-in-containers
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1117,6 +1119,7 @@
 │  │     ├── ui
 │  │     │  ├── ui_auto_switch_renderer.js
 │  │     │  ├── ui_close_button_renderer.js
+│  │     │  ├── ui_hint_renderer.js
 │  │     │  └── ui_sheet_handle_renderer.js
 │  │     ├── version
 │  │     │  └── project_version.js

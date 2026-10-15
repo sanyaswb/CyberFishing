@@ -21,6 +21,8 @@ export class KeepnetSectionView {
   #content;
   #helpButton;
   #helpText;
+  #hints;
+  #helpOpen = false;
   #back;
   #heading;
   #kind;
@@ -35,9 +37,10 @@ export class KeepnetSectionView {
   #rendered = new Map();
   #cardFocusables = [];
 
-  constructor({ documentRef, liveBait, model, cards, labels, resourceMeterRenderer, openSection, toggleSection,
-    buttonMountNode, listScrollController }) {
+  constructor({ documentRef, liveBait, model, cards, labels, resourceMeterRenderer, hintRenderer, openSection,
+    toggleSection, buttonMountNode, listScrollController }) {
     this.#document = documentRef;
+    this.#hints = hintRenderer;
     this.#liveBait = liveBait;
     this.#model = model;
     this.#cards = cards;
@@ -59,19 +62,19 @@ export class KeepnetSectionView {
     this.#helpButton.setAttribute("aria-expanded", "false");
     this.#helpButton.setAttribute("aria-controls", "keepnet-help");
     this.#helpButton.addEventListener("click", () => this.#setHelpVisible(true));
-    this.#helpText = this.#el("div", "keepnet-section__help-text", `${labels.status}\n${labels.note}`);
+    // The help hint lies inside the summary (spec 080): it spans the summary's width and never leaves it.
+    this.#helpText = this.#hints.create({ className: "keepnet-section__help-text", closeLabel: labels.closeHelp,
+      role: "note", onClose: () => this.#setHelpVisible(false) });
     this.#helpText.id = "keepnet-help";
-    this.#helpText.hidden = true;
-    this.#helpText.setAttribute("role", "note");
     const visual = this.#el("div", "keepnet-section__visual");
-    visual.append(this.#icon("keepnet-section__icon", labels.title), this.#helpButton, this.#helpText);
+    visual.append(this.#icon("keepnet-section__icon", labels.title), this.#helpButton);
     this.#capacity = this.#meters.create({ id: "keepnet-capacity", percent: 0,
       remainingPercent: 100, label: labels.capacity }, { variant: "summary", showIcon: false });
     this.#capacity.classList.add("keepnet-section__capacity");
     this.#count = this.#el("p", "keepnet-section__count");
     this.#status = this.#el("p", "keepnet-section__status");
     this.#status.setAttribute("role", "status");
-    this.#summary.append(visual, this.#count, this.#capacity, this.#status);
+    this.#summary.append(visual, this.#count, this.#capacity, this.#status, this.#helpText);
     this.#content = this.#el("section", "keepnet-section__content");
     this.#content.setAttribute("aria-label", labels.title);
     this.#back = this.#el("button", "keepnet-section__back", labels.back);
@@ -199,6 +202,7 @@ export class KeepnetSectionView {
   dispose() {
     this.setVisible(false);
     this.#setHelpVisible(false);
+    this.#hints.dispose(this.#helpText);
     this.#button.removeEventListener("click", this.#toggle);
     this.#summary.removeEventListener("keydown", this.#handleKey);
     this.#content.removeEventListener("keydown", this.#handleKey);
@@ -257,14 +261,18 @@ export class KeepnetSectionView {
     return image;
   }
   #setHelpVisible(visible) {
-    if (!this.#helpText || this.#helpText.hidden === !visible) return;
-    this.#helpText.hidden = !visible;
+    if (!this.#helpText || this.#helpOpen === visible) return;
+    this.#helpOpen = visible;
+    if (visible) this.#hints.show(this.#helpText, `${this.#labels.status}\n${this.#labels.note}`);
+    else this.#hints.hide(this.#helpText);
     this.#helpButton.setAttribute("aria-expanded", String(visible));
     if (visible) this.#document.addEventListener("click", this.#dismissHelp, true);
     else this.#document.removeEventListener("click", this.#dismissHelp, true);
   }
-  // Capture sees the next click even on controls that shield their bubbling events.
+  // Capture sees the next click even on controls that shield their bubbling events. Reading (scrolling, selecting)
+  // inside the hint keeps it open; its close button and every click elsewhere dismiss it.
   #dismissHelp = (event) => {
+    if (this.#helpText.contains(event.target) && !event.target.closest?.(".ui-hint__close")) return;
     this.#setHelpVisible(false);
     // A second press on ? dismisses the hint without reopening it in the button's handler.
     if (this.#helpButton.contains(event.target)) event.stopPropagation();
@@ -273,7 +281,7 @@ export class KeepnetSectionView {
   // Escape steps back inside the section (hint, pending release, species details); otherwise it is not handled here.
   #handleKey = (event) => {
     if (event.key !== "Escape") return;
-    if (!this.#helpText.hidden) this.#setHelpVisible(false);
+    if (this.#helpOpen) this.#setHelpVisible(false);
     else if (this.#pendingRelease) { this.#pendingRelease = null; this.refresh(); }
     else if (this.#detailSpecies) this.#goBack();
     else return;

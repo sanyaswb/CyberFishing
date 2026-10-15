@@ -636,29 +636,29 @@
   font-size: clamp(1.7rem, 4cqw, 3rem);
 }
 
+/* Placement of the notice (a ui-hint, spec 080). In the room it sits under the header within the room width; inside
+   an open sheet it is the last child of the sheet content and sticks above the dock while the sheet scrolls. */
 .house__notice {
-  position: fixed;
+  position: absolute;
   z-index: var(--house-layer-notice);
-  top: 140px;
-  left: 50%;
-  max-width: min(600px, 90%);
-  margin: 0;
-  transform: translateX(-50%);
-  padding: 0;
-  color: #d5f4d2;
-  background: #0b1b18ec;
-  border-radius: 7px;
-  text-align: center;
-  overflow-wrap: anywhere;
+  top: calc(var(--ui-edge-top) + var(--ui-hud-control-size) + 12px);
+  left: var(--ui-edge-left);
+  right: var(--ui-edge-right);
+  max-width: 600px;
+  max-height: 40%;
+  margin-inline: auto;
 }
 
-.house__notice:not(:empty) {
-  padding: 8px 13px;
-  border: 1px solid #a3cda3;
-}
-
-.house__notice--error {
-  color: #ffbca9;
+.house__notice--sheet {
+  position: sticky;
+  z-index: 2;
+  top: auto;
+  bottom: calc(var(--house-dock-height) + var(--ui-hint-inset));
+  left: auto;
+  right: auto;
+  max-width: none;
+  max-height: none;
+  margin-top: 12px;
 }
 
 .house__feed-list {

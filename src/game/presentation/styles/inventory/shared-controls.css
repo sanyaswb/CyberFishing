@@ -1,40 +1,17 @@
 /* Warnings, disabled actions and shared scrolling surfaces. */
 
+/* Placement of the inventory warning (a ui-hint, spec 080) inside inventory-main: centred over its top edge, within
+   the main area at every size; long text scrolls inside the hint instead of being clipped. */
 .inventory-warning {
-  width: min(620px, calc(100% - 40px));
-  max-height: 0;
-  flex: 0 0 auto;
-  align-self: center;
-  padding: 0 16px;
-  overflow: hidden;
-  border: 0 solid var(--inventory-danger);
-  border-radius: 5px;
-  margin: 0;
-  opacity: 0;
-  background: rgba(54, 4, 10, 0.96);
-  color: #ffb9c1;
-  font-weight: 700;
-  line-height: 1.35;
-  pointer-events: none;
-  transform: translateY(-8px);
-  visibility: hidden;
-  transition:
-    max-height 150ms ease,
-    padding 150ms ease,
-    border-width 150ms ease,
-    margin 150ms ease,
-    opacity 150ms ease,
-    transform 150ms ease;
-}
-
-.inventory-warning.inventory-warning--visible {
-  max-height: 120px;
-  padding: 9px 16px;
-  border-width: 1px;
-  margin-top: 10px;
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
+  position: absolute;
+  z-index: var(--ui-layer-tooltip);
+  top: var(--ui-hint-inset);
+  left: var(--ui-hint-inset);
+  right: var(--ui-hint-inset);
+  width: auto;
+  max-width: 620px;
+  max-height: calc(100% - var(--ui-hint-inset) * 2);
+  margin-inline: auto;
 }
 
 .inventory-action.inventory-action--disabled {
@@ -246,8 +223,3 @@
   color: var(--inventory-muted-text);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .inventory-warning {
-    transition: none;
-  }
-}

@@ -9,6 +9,7 @@ import { InventoryResourceMeterRenderer } from "../../game/presentation/inventor
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
+import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
 import { KeepnetSectionView } from "../../game/presentation/keepnet/keepnet_section_view.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
@@ -104,7 +105,7 @@ export function startUiCatalog() {
         ui = own(new KeepnetSectionView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
           openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen),
           model: new KeepnetViewModel(), cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
-          labels: KEEPNET_LABELS, resourceMeterRenderer: meters,
+          labels: KEEPNET_LABELS, resourceMeterRenderer: meters, hintRenderer: new UiHintRenderer({ domFactory: new InventoryDomFactory(scope) }),
           listScrollController: InventoryUiBootstrap.createListScrollController(surface) }));
         const layout = dom.element("div", "ui-catalog-preview__keepnet");
         layout.append(ui.summaryNode, ui.contentNode);

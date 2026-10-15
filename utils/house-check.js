@@ -215,7 +215,26 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     assert.equal(meter.getAttribute("aria-valuenow"), String(expected));
   }
   assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "the compact menu and all sheets reuse the shared tap/swipe handle");
-  assert.equal(documentRef.byClass("ui-modal-close").length, 0, "House sheets have no cross buttons");
+  assert.equal(documentRef.byClass("ui-modal-close").filter((node) => !node.classList.contains("ui-hint__close")).length, 0,
+    "House sheets have no cross buttons");
+  // Spec 080: the notice is a ui-hint inside its container (the open sheet, otherwise the room) with a close button.
+  const notice = documentRef.querySelector("[data-house-notice]");
+  const noticeRoom = notice.parentNode;
+  assert(notice.hidden && notice.classList.contains("ui-hint"), "the notice starts hidden");
+  view.setNavigationState({ panel: "aquarium" });
+  view.announce("Готово");
+  const aquariumContent = documentRef.querySelector('[data-house-panel="aquarium"]').querySelector(".house__sheet-content");
+  assert.equal(notice.parentNode, aquariumContent, "a notice about a sheet action lies inside that sheet");
+  assert(!notice.hidden && notice.classList.contains("house__notice--sheet") && notice.classList.contains("ui-hint--info"));
+  assert.equal(documentRef.querySelector("[data-house-notice-text]").textContent, "Готово");
+  documentRef.querySelector("[data-house-notice-close]").click();
+  assert(notice.hidden, "the close button dismisses the notice");
+  view.setNavigationState({ panel: null });
+  view.announce("Помилка", true);
+  assert.equal(notice.parentNode, noticeRoom, "without an open sheet the notice returns to the room");
+  assert(!notice.classList.contains("house__notice--sheet") && notice.classList.contains("ui-hint--error"));
+  view.announce("");
+  assert(notice.hidden, "an empty message hides the notice");
   const autoInput = documentRef.byClass("inventory-toggle__input")[0];
   autoInput.checked = true; autoInput.fire("change");
   assert.deepEqual(actions.at(-1), ["toggleAutoFeeder"]);

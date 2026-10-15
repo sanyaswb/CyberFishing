@@ -31,6 +31,15 @@
   --ui-edge-right: max(12px, env(safe-area-inset-right, 0px));
   --ui-edge-bottom: max(12px, env(safe-area-inset-bottom, 0px));
   --ui-edge-left: max(12px, env(safe-area-inset-left, 0px));
+  /* Shared hint surface (spec 080): ui-hint and the item tooltip. */
+  --ui-hint-background: rgba(8, 17, 24, 0.97);
+  --ui-hint-border: rgba(var(--ui-accent-rgb), 0.55);
+  --ui-hint-text: #e6eef2;
+  --ui-hint-radius: var(--ui-radius-panel);
+  --ui-hint-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --ui-hint-inset: 8px;
+  --ui-hint-font-size: 13px;
+  --ui-hint-close-size: 28px;
   --ui-toolbar-size: 48px;
   --ui-toolbar-gap: 8px;
   --ui-clock-width: 116px;

@@ -598,9 +598,7 @@ class InventoryStaticContractCheck {
     const warningRule = style.match(
       /\.inventory-warning\s*\{[\s\S]*?\n\}/,
     )?.[0];
-    const visibleWarningRule = style.match(
-      /\.inventory-warning\.inventory-warning--visible\s*\{[\s\S]*?\n\}/,
-    )?.[0];
+    const mainRule = style.match(/^\.inventory-main\s*\{[\s\S]*?\n\}/m)?.[0];
     const resourceThumbnailRule = style.match(
       /\.inventory-resource-meter--thumbnail\s*\{[\s\S]*?\n\}/,
     )?.[0];
@@ -617,17 +615,17 @@ class InventoryStaticContractCheck {
       /\.inventory-parameter__segments\s*\{[\s\S]*?\n\}/,
     )?.[0];
     assert.ok(warningRule, "Missing inventory warning rule");
+    // Spec 080: the warning is a ui-hint placed inside inventory-main, bounded by it, never sized from the viewport.
     assert.ok(
-      !warningRule.includes("position: absolute") &&
-        warningRule.includes("max-height: 0") &&
-        warningRule.includes("align-self: center"),
-      "Warnings must stay collapsed in normal document flow instead of overlaying content",
+      warningRule.includes("position: absolute") &&
+        warningRule.includes("left: var(--ui-hint-inset)") &&
+        warningRule.includes("right: var(--ui-hint-inset)") &&
+        warningRule.includes("max-height: calc(100% - var(--ui-hint-inset) * 2)") &&
+        !/vw|--ui-logical-width/.test(warningRule) &&
+        mainRule?.includes("position: relative"),
+      "The warning must stay inside the inventory main area",
     );
-    assert.ok(
-      visibleWarningRule?.includes("max-height: 120px") &&
-        visibleWarningRule.includes("margin-top: 10px"),
-      "Visible warnings must reserve space below the header",
-    );
+    assert.ok(!style.includes("inventory-warning--visible"), "Warning visibility belongs to the ui-hint hidden state");
     assert.ok(
       !style.includes(".inventory-charge") &&
         style.includes("background: var(--inventory-resource-color, var(--ui-border))") &&
@@ -1164,9 +1162,11 @@ class InventoryStaticContractCheck {
 
     assert.strictEqual(typeof subscriber, "function");
     subscriber({ viewModel: currentView, warning: "Partial refill" });
-    const warningNode = this.#findByClass(ui.rootNode, "inventory-warning");
+    const warningHint = this.#findByClass(ui.rootNode, "inventory-warning");
+    const warningNode = this.#findByClass(warningHint, "ui-hint__text");
     assert.strictEqual(warningNode.textContent, "Partial refill");
-    assert.ok(warningNode.classList.contains("inventory-warning--visible"));
+    assert.ok(!warningHint.hidden && warningHint.classList.contains("ui-hint") &&
+      warningHint.classList.contains("ui-hint--warning"));
     const mainNode = this.#findByClass(ui.rootNode, "inventory-main");
     const headerHost = this.#findByClass(
       ui.rootNode,
@@ -1174,9 +1174,14 @@ class InventoryStaticContractCheck {
     );
     assert.deepStrictEqual(
       Array.from(ui.rootNode.children),
-      [headerHost, warningNode, mainNode],
-      "Warning must sit between the header parameters and both inventory panels",
+      [headerHost, mainNode],
+      "The modal holds the header parameters and the main area",
     );
+    assert.strictEqual(warningHint.parentNode, mainNode, "The warning lies inside the main area (spec 080)");
+    this.#findByClass(warningHint, "ui-hint__close").click();
+    assert.ok(warningHint.hidden, "The close button dismisses the warning");
+    subscriber({ viewModel: currentView, warning: "Partial refill" });
+    assert.ok(!warningHint.hidden, "A new warning reopens the closed hint");
     subscriber(currentView);
 
     const bottomAuxiliary = this.#findByClass(
@@ -2729,7 +2734,7 @@ class InventoryStaticContractCheck {
     );
     blockedEquipButton.click();
     assert.strictEqual(
-      this.#findByClass(ui.rootNode, "inventory-warning").textContent,
+      this.#findByClass(this.#findByClass(ui.rootNode, "inventory-warning"), "ui-hint__text").textContent,
       "Цей слот не підтримується обраним вудилищем.",
       "The inactive Equip action must explain the rod incompatibility",
     );
@@ -2756,7 +2761,7 @@ class InventoryStaticContractCheck {
     assert.strictEqual(ui.isOpen, true);
     assert.ok(ui.rootNode.classList.contains("inventory-modal--open"));
     assert.strictEqual(
-      this.#findByClass(ui.rootNode, "inventory-warning").textContent,
+      this.#findByClass(this.#findByClass(ui.rootNode, "inventory-warning"), "ui-hint__text").textContent,
       "Not enough bait for every hook",
     );
     this.#assertLast(dispatched, {

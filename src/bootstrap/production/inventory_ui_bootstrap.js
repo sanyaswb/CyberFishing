@@ -35,6 +35,7 @@ import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_car
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
+import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
 
 export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
@@ -49,6 +50,7 @@ export class InventoryUiBootstrap {
         domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
       }),
       cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
+      hintRenderer: new UiHintRenderer({ domFactory: new InventoryDomFactory(documentRef) }),
       listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
     inventoryUI.attachKeepnetSection(keepnet);
     return keepnet;
@@ -208,6 +210,7 @@ export class InventoryUiBootstrap {
       sections: INVENTORY_SECTIONS,
       sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
       backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS, scaleRenderer }),
+      hintRenderer: new UiHintRenderer({ domFactory: dom }),
     };
   }
 }

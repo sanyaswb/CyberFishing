@@ -327,7 +327,7 @@ async function checkHouseExample() {
   assert.equal(documentRef.byClass("house__feed-item-image")[0], feedItemImage);
   example.setState("renovating"); assert.equal(documentRef.querySelector("[data-house-renovation]").hidden, false);
   example.setState("unowned"); assert.equal(documentRef.querySelector("[data-house-aquarium-stage]").hidden, true);
-  example.setState("error"); assert(documentRef.querySelector("[data-house-notice]").classList.contains("house__notice--error"));
+  example.setState("error"); assert(documentRef.querySelector("[data-house-notice]").classList.contains("ui-hint--error"));
   example.dispose();
   assert.equal(disconnected, 1);
   assert.equal(timers.size, 0, "dispose clears actual HouseView announcement timer");
