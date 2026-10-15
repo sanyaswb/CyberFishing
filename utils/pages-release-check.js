@@ -43,12 +43,16 @@ try {
       devPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
       "the root DEV page resolves its files inside the release");
   }
+  // Spec 082: published raster art is WebP; masters stay in asset-sources/ and are never released.
+  assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
+    "released raster assets are WebP");
+  assert(![...files].some((file) => file.startsWith("asset-sources/")), "image masters are not released");
   if (tree.has("fisherman-house.html")) {
     assert(files.has("fisherman-house.html"));
     assert(files.has("src/entrypoints/house.entry.js"));
     assert(files.has("src/game/presentation/styles/house.css"));
-    assert(files.has("assets/house/room-1/room--1_aqua.png"));
-    assert(files.has("assets/house/room-1/under-renovation.png"));
+    assert(files.has("assets/house/room-1/room--1_aqua.webp"));
+    assert(files.has("assets/house/room-1/under-renovation.webp"));
     for (let level = 1; level <= 5; level++) {
       const prefix = `assets/house/room-1/lvl-${level}/room--1-`;
       assert([...files].filter((file) => file.startsWith(prefix)).length === 3,

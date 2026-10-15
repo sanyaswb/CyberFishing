@@ -1,4 +1,4 @@
-// convert-images.js v1.3.0
+// convert-images.js v1.4.0
 
 const fs = require('fs');
 const path = require('path');
@@ -130,13 +130,13 @@ function askForFormat() {
 
 // --- Основна логіка ---
 
-async function convertImages(quality, formatChoice, addSuffix) {
+async function convertImages(quality, formatChoice, addSuffix, rootDir = BASE_DIR) {
   const { webp: webpQuality, avif: avifQuality } = quality;
   const qualitySuffix = addSuffix ? `--${quality.name.toLowerCase()}` : '';
 
   console.log('Starting image search...');
 
-  const pattern = path.join(BASE_DIR, '**', '*.{png,jpg,jpeg}');
+  const pattern = path.join(rootDir, '**', '*.{png,jpg,jpeg}');
   const globPattern = pattern.replace(/\\/g, '/');
   console.log(`Searching with glob pattern: ${globPattern}`);
 
@@ -461,7 +461,32 @@ async function createThumbnails(args) {
   console.log(`Created ${files.length} thumbnails at max ${size}px in ${path.relative(BASE_DIR, output)}`);
 }
 
-if (process.argv.includes('--thumbnails')) {
+// Non-interactive conversion (spec 082): the same presets and naming as the dialogue, limited to one folder.
+// node utils/convert-images.js --batch [--quality low|middle|high] [--format webp|avif|both] [--input assets]
+// Originals stay in place; the caller updates references and removes them (Git keeps their history).
+async function convertBatch(args) {
+  const option = (name, fallback) => {
+    const index = args.indexOf(name);
+    return index < 0 ? fallback : args[index + 1];
+  };
+  const qualityKeys = { low: '1', middle: '2', medium: '2', high: '3' };
+  const formatKeys = { webp: '1', avif: '2', both: '3' };
+  const quality = QUALITY_PRESETS[qualityKeys[option('--quality', 'middle')]];
+  const formatChoice = formatKeys[option('--format', 'webp')];
+  const input = path.resolve(BASE_DIR, option('--input', 'assets'));
+  if (!quality || !formatChoice || path.relative(BASE_DIR, input).startsWith('..')) {
+    throw new Error('Invalid batch options');
+  }
+  console.log(`Batch: ${quality.name} (WebP ${quality.webp}, AVIF ${quality.avif}) in ${path.relative(BASE_DIR, input)}`);
+  await convertImages(quality, formatChoice, false, input);
+  if (successfullyConvertedFiles.length === 0) process.exitCode = 1;
+}
+
+if (process.argv.includes('--batch')) {
+  convertBatch(process.argv.slice(2)).catch((error) => {
+    console.error(error.message); process.exitCode = 1;
+  }).finally(() => rl.close());
+} else if (process.argv.includes('--thumbnails')) {
   createThumbnails(process.argv.slice(2)).catch((error) => {
     console.error(error.message); process.exitCode = 1;
   }).finally(() => rl.close());

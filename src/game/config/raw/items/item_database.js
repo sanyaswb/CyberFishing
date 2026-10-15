@@ -127,10 +127,10 @@ export const ITEM_DB = {
       // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без.
       skin: {
         id: "bamboo-rod-v1",
-        thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.png", visibleHeight: 0.5, focusX: 0.31 },
+        thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp", visibleHeight: 0.5, focusX: 0.31 },
         equipment: {
-          withLine: "assets/items/rods/bamboo-rod-ecip-v1.png",
-          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.png",
+          withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
+          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.webp",
         },
       },
       rarityProfile: {

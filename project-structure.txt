@@ -55,6 +55,35 @@
 ├── DESIGN_RULES.md
 ├── DEVELOPMENT_RULES.md
 ├── README.md
+├── asset-sources
+│  ├── house
+│  │  └── room-1
+│  │     ├── lvl-1
+│  │     │  ├── room--1-day-lvl--1.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--1.jpg
+│  │     │  └── room--1-nightLight--on-lvl--1.jpg
+│  │     ├── lvl-2
+│  │     │  ├── room--1-day-lvl--2.jpg
+│  │     │  ├── room--1-eveningLight--off-lvl--2.jpg
+│  │     │  └── room--1-nightLight--on-lvl--2.jpg
+│  │     ├── lvl-3
+│  │     │  ├── room--1-day-lvl--3.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--3.jpg
+│  │     │  └── room--1-nightLight--on-lvl--3.jpg
+│  │     ├── lvl-4
+│  │     │  ├── room--1-day-lvl--4.jpg
+│  │     │  ├── room--1-eveningLight--off-lvl--4.jpg
+│  │     │  └── room--1-nightLight--off-lvl--4.jpg
+│  │     ├── lvl-5
+│  │     │  ├── room--1-day-lvl--5.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--5.jpg
+│  │     │  └── room--1-nightLight--on-lvl--5.jpg
+│  │     ├── room--1_aqua.png
+│  │     └── under-renovation.png
+│  └── items
+│     └── rods
+│        ├── bamboo-rod-ecip-v1.png
+│        └── bamboo-rod-unecip-v1.png
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
@@ -93,34 +122,34 @@
 │  ├── house
 │  │  └── room-1
 │  │     ├── lvl-1
-│  │     │  ├── room--1-day-lvl--1.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--1.jpg
-│  │     │  └── room--1-nightLight--on-lvl--1.jpg
+│  │     │  ├── room--1-day-lvl--1.webp
+│  │     │  ├── room--1-eveningLight--on-lvl--1.webp
+│  │     │  └── room--1-nightLight--on-lvl--1.webp
 │  │     ├── lvl-2
-│  │     │  ├── room--1-day-lvl--2.jpg
-│  │     │  ├── room--1-eveningLight--off-lvl--2.jpg
-│  │     │  └── room--1-nightLight--on-lvl--2.jpg
+│  │     │  ├── room--1-day-lvl--2.webp
+│  │     │  ├── room--1-eveningLight--off-lvl--2.webp
+│  │     │  └── room--1-nightLight--on-lvl--2.webp
 │  │     ├── lvl-3
-│  │     │  ├── room--1-day-lvl--3.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--3.jpg
-│  │     │  └── room--1-nightLight--on-lvl--3.jpg
+│  │     │  ├── room--1-day-lvl--3.webp
+│  │     │  ├── room--1-eveningLight--on-lvl--3.webp
+│  │     │  └── room--1-nightLight--on-lvl--3.webp
 │  │     ├── lvl-4
-│  │     │  ├── room--1-day-lvl--4.jpg
-│  │     │  ├── room--1-eveningLight--off-lvl--4.jpg
-│  │     │  └── room--1-nightLight--off-lvl--4.jpg
+│  │     │  ├── room--1-day-lvl--4.webp
+│  │     │  ├── room--1-eveningLight--off-lvl--4.webp
+│  │     │  └── room--1-nightLight--off-lvl--4.webp
 │  │     ├── lvl-5
-│  │     │  ├── room--1-day-lvl--5.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--5.jpg
-│  │     │  └── room--1-nightLight--on-lvl--5.jpg
-│  │     ├── room--1_aqua.png
-│  │     └── under-renovation.png
+│  │     │  ├── room--1-day-lvl--5.webp
+│  │     │  ├── room--1-eveningLight--on-lvl--5.webp
+│  │     │  └── room--1-nightLight--on-lvl--5.webp
+│  │     ├── room--1_aqua.webp
+│  │     └── under-renovation.webp
 │  ├── items
 │  │  ├── aquarium-feed-good.svg
 │  │  ├── aquarium-feed-premium.svg
 │  │  ├── aquarium-feed-simple.svg
 │  │  └── rods
-│  │     ├── bamboo-rod-ecip-v1.png
-│  │     └── bamboo-rod-unecip-v1.png
+│  │     ├── bamboo-rod-ecip-v1.webp
+│  │     └── bamboo-rod-unecip-v1.webp
 │  ├── locations
 │  │  └── test
 │  │     ├── bg_test--day.webp
@@ -337,6 +366,8 @@
 │  ├── 080-hints-in-containers
 │  │  └── spec.md
 │  ├── 081-house-clock-every-minute
+│  │  └── spec.md
+│  ├── 082-webp-art
 │  │  └── spec.md
 │  └── README.md
 ├── src
