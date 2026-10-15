@@ -9,11 +9,6 @@ import { InventoryResourceMeterRenderer } from "../../game/presentation/inventor
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
-import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
-import { KeepnetSectionView } from "../../game/presentation/keepnet/keepnet_section_view.js";
-import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
-import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
-import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 import { composeHouseView } from "../production/house_view_composition.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
@@ -103,11 +98,9 @@ export function startUiCatalog() {
         const fixture = new UiCatalogKeepnetFixture();
         // The production section view without an inventory: the catalog places its two halves side by side.
         let ui;
-        ui = own(new KeepnetSectionView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
-          openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen),
-          model: new KeepnetViewModel(), cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
-          labels: KEEPNET_LABELS, resourceMeterRenderer: meters, hintRenderer: new UiHintRenderer({ domFactory: new InventoryDomFactory(scope) }),
-          listScrollController: InventoryUiBootstrap.createListScrollController(surface) }));
+        ui = own(InventoryUiBootstrap.createKeepnetView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
+          uiSurface: surface, degradationColorResolver: colors,
+          openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen) }));
         const layout = dom.element("div", "ui-catalog-preview__keepnet");
         layout.append(ui.helpNode, ui.summaryNode, ui.contentNode);
         surface.mountRoot.appendChild(layout);

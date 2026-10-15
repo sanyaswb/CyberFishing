@@ -7,6 +7,7 @@ class TestElement {
     this.style = {
       setProperty: (name, value) => properties.set(name, String(value)),
       getPropertyValue: (name) => properties.get(name) || "",
+      removeProperty: (name) => properties.delete(name),
     };
     this.classList = {
       add: (name) => { this.className = [...new Set([...this.className.split(" "), name])].join(" "); },
@@ -47,10 +48,17 @@ class TestElement {
   }
   focus() { this.document.activeElement = this; }
   click() { this.focus(); this.fire("click"); }
+  // Layout width and pointer capture for swipe checks (spec 088).
+  getBoundingClientRect() { return { width: this.layoutWidth || 0, height: 0, left: 0, top: 0 }; }
+  setPointerCapture() {}
 }
 
 class TestDocument {
-  constructor() { this.body = new TestElement(this, "body"); this.activeElement = this.body; this.listeners = new Map(); }
+  constructor() {
+    this.body = new TestElement(this, "body"); this.activeElement = this.body; this.listeners = new Map();
+    // Computed style for the portrait swipe flag (spec 087): swipes are on, as in portrait.
+    this.defaultView = { getComputedStyle: () => ({ getPropertyValue: (name) => name === "--inventory-swipe" ? "on" : "" }) };
+  }
   addEventListener(type, listener) {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());
     this.listeners.get(type).add(listener);
@@ -62,6 +70,14 @@ class TestDocument {
     return event;
   }
   createElement(tag) { return new TestElement(this, tag); }
+  // Sprite icons (tab icons, the capacity scale's fish) are SVG elements; class arrives as an attribute.
+  createElementNS(namespace, tag) {
+    const element = new TestElement(this, tag);
+    element.namespaceURI = namespace;
+    const setAttribute = element.setAttribute.bind(element);
+    element.setAttribute = (key, value) => { setAttribute(key, value); if (key === "class") element.className = String(value); };
+    return element;
+  }
   all(predicate, root = this.body) {
     return [...(predicate(root) ? [root] : []), ...root.children.flatMap((child) => this.all(predicate, child))];
   }

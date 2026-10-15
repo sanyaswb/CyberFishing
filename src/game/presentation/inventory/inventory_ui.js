@@ -183,6 +183,13 @@ export class InventoryUI {
     this.#selectSection(sectionId);
   }
 
+  // A swipe moves one section in tab order and keeps its direction for the backpack's entry page (spec 087); section
+  // pagers (backpack, keepnet) hand their edge swipes here.
+  swipeSection(step) {
+    const section = this.#sections.items[this.#sectionIndex() + step];
+    if (section) this.#selectSection(section.id, step);
+  }
+
   toggleSection(sectionId) {
     if (this.#isOpen && this.#activeSectionId === sectionId) this.close();
     else this.openSection(sectionId);
@@ -402,7 +409,7 @@ export class InventoryUI {
     main.append(sidebar, this.#rightHost);
     // The backpack pager and the filter rows own their own horizontal gestures; the pager hands its edges back here.
     this.#sectionSwipeController.attach(main, { pageCount: this.#sections.items.length,
-      getIndex: () => this.#sectionIndex(), onSelect: (index) => this.#swipeSection(index - this.#sectionIndex()),
+      getIndex: () => this.#sectionIndex(), onSelect: (index) => this.swipeSection(index - this.#sectionIndex()),
       ignoreSelector: ".inventory-pager__viewport, .inventory-horizontal-scroll" });
     const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
     this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));
@@ -454,12 +461,6 @@ export class InventoryUI {
 
   #sectionIndex() {
     return this.#sections.items.findIndex((section) => section.id === this.#activeSectionId);
-  }
-
-  // A swipe moves one section in tab order and keeps its direction for the backpack's entry page.
-  #swipeSection(step) {
-    const section = this.#sections.items[this.#sectionIndex() + step];
-    if (section) this.#selectSection(section.id, step);
   }
 
   #renderHeader(viewModel) {
@@ -633,7 +634,7 @@ export class InventoryUI {
           type: this.#actionTypes.INVENTORY_ITEM_LONG_PRESS,
           instanceId: item.instanceId,
         }),
-      onPagerEdge: (step) => this.#swipeSection(step),
+      onPagerEdge: (step) => this.swipeSection(step),
       backpackView: this.#backpackPageNode,
     });
     this.#dom.replaceChildren(this.#itemsHost, grid);

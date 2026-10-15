@@ -19,6 +19,10 @@
     <rect x="4" y="13" width="7" height="7" rx="1.5"/>
     <rect x="13" y="13" width="7" height="7" rx="1.5"/>
   </symbol>
+  <symbol id="fish" viewBox="0 0 24 24">
+    <path d="M5 12c4-5 8.5-5 12 0-3.5 5-8 5-12 0Zm0 0L1 8v8l4-4Z"/>
+    <circle cx="14" cy="11" r="0.7" fill="currentColor" stroke="none"/>
+  </symbol>
   <symbol id="keepnet" viewBox="0 0 24 24">
     <ellipse cx="12" cy="5" rx="7" ry="2.4"/>
     <path d="M5 5 7 19c.4 2 9.6 2 10 0l2-14"/>

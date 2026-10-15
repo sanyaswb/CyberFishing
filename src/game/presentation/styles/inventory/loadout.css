@@ -124,8 +124,10 @@
 }
 
 /* Backpack view (spec 075): one image container, then a separate stats container with the capacity scale. The gap is
-   the shared container gap. Inside the portrait pager the containers use the cell colour on the items panel. */
-.inventory-backpack {
+   the shared container gap. Inside the portrait pager the containers use the cell colour on the items panel. The
+   keepnet view shares these containers (spec 088). */
+.inventory-backpack,
+.keepnet-overview {
   --inventory-panel: var(--inventory-equipment-panel);
   --inventory-panel-border: transparent;
   display: grid;
@@ -136,7 +138,8 @@
   min-height: 0;
 }
 
-.inventory-backpack__visual {
+.inventory-backpack__visual,
+.keepnet-overview__visual {
   display: grid;
   place-items: center;
   min-height: 0;
@@ -152,11 +155,19 @@
   pointer-events: none;
 }
 
-.inventory-backpack__stats {
+.inventory-backpack__stats,
+.keepnet-overview__stats {
   padding: var(--inventory-container-gap);
 }
 
-.inventory-pager__page--backpack .inventory-backpack {
+/* The keepnet's stats container also holds the status line under the scale. */
+.keepnet-overview__stats {
+  display: grid;
+  gap: var(--inventory-container-gap);
+}
+
+.inventory-pager__page--backpack .inventory-backpack,
+.inventory-pager__page--keepnet .keepnet-overview {
   --inventory-panel: var(--inventory-equipment-cell);
 }
 

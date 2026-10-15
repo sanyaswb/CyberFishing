@@ -498,8 +498,8 @@ class InventoryStaticContractCheck {
       "portrait summary, content and tabs reserve their own rows");
     assert.match(portraitModal, /grid-template-areas:\s*"left"\s+"right"\s+"tabs";/,
       "the portrait tab bar is the last row");
-    assert.match(portraitModal, /\.inventory-modal--section-backpack \.inventory-main__left\s*\{\s*display:\s*none;/,
-      "portrait shows the backpack illustration inside the items panel, not as a summary column");
+    assert.match(portraitModal, /\.inventory-modal--section-backpack \.inventory-main__left,\s*\.inventory-modal--section-keepnet \.inventory-main__left\s*\{\s*display:\s*none;/,
+      "portrait shows the backpack and keepnet views inside their items panels, not as a summary column (spec 088)");
     assert.match(portraitLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
       "portrait equipment must not inherit a percentage height from the desktop grid");
     assert.match(portraitLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
@@ -532,17 +532,19 @@ class InventoryStaticContractCheck {
     assert.match(mobileHeader, /\.inventory-header\s*\{[^}]*border-radius:\s*var\(--inventory-header-radius\);[^}]*background:\s*var\(--inventory-equipment-panel\);/,
       "the portrait header is a rounded mini panel");
     // Spec 075: only visible filter rows take space; one container gap token; the portrait pager slides its track.
-    assert.match(style, /\.inventory-list-panel__controls\s*\{\s*display:\s*flex;\s*flex-direction:\s*column;/,
+    // Spec 088: the backpack and keepnet controls panels share the rule.
+    assert.match(style, /\.inventory-collection__controls\s*\{\s*display:\s*flex;\s*flex-direction:\s*column;/,
       "closed filter rows reserve no space and opening them pushes the items panel down");
-    assert.doesNotMatch(style, /\.inventory-list-panel__controls\s*\{[^}]*grid-template-rows/, "no empty reserved filter rows");
+    assert.doesNotMatch(style, /\.inventory-(?:list-panel|collection)__controls\s*\{[^}]*grid-template-rows/, "no empty reserved filter rows");
+    assert.doesNotMatch(style, /\.keepnet-section__controls\s*\{/, "the keepnet controls panel has no layout of its own");
     assert.match(style, /--inventory-container-gap:\s*var\(--inventory-content-gap\);/, "wide layouts space containers by the column gap");
     assert.match(mobileModal, /--inventory-container-gap:\s*var\(--inventory-mobile-inset\);/, "phones space containers by the mobile inset");
     const portraitPager = mobileList.split("@media (orientation: portrait)")[1];
     assert.match(portraitPager, /\.inventory-pager__track\s*\{\s*transform:\s*translateX\(calc\(var\(--inventory-pager-position, var\(--inventory-pager-index, 0\)\)/,
       "portrait pages follow the drag position and settle on the page index");
     assert.match(portraitPager, /\.inventory-pager__viewport\s*\{[^}]*touch-action:\s*pan-y;/, "vertical list scrolling stays native");
-    assert.match(style, /\.inventory-pager__tabs,\s*\.inventory-pager__page--backpack\s*\{\s*display:\s*none;/,
-      "wide layouts show neither pager tabs nor the backpack page");
+    assert.match(style, /\.inventory-pager__tabs,\s*\.inventory-pager__page:not\(:first-child\)\s*\{\s*display:\s*none;/,
+      "wide layouts show neither pager tabs nor a pager's second page (backpack, keepnet)");
     // Spec 077: one parent paints the left column; the tab bar and the sections paint no outer background.
     assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;[^}]*border-radius:\s*var\(--inventory-panel-radius\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
       "the sidebar owns the column's background and frame");

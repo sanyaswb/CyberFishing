@@ -53,7 +53,8 @@ async function main() {
   assert.equal(new KeepnetViewModel().build(source, { kind: "live_bait" }).groups[0].count, 1);
   assert.equal(source.keepnet.length, 3, "grouping never changes ownership");
   // The keepnet is the inventory's keepnet section (spec 067): the inventory mounts its halves and owns visibility.
-  const inventory = { opened: [], toggled: 0, view: null,
+  const inventory = { opened: [], toggled: 0, view: null, swiped: [],
+    swipeSection(step) { this.swiped.push(step); },
     // Like the inventory: the help hint goes to the host's hint region above the sections (spec 086).
     attachKeepnetSection(view) { this.view = view; documentRef.body.append(view.helpNode, view.summaryNode, view.contentNode); },
     openSection(id) { this.opened.push(id); this.view.setVisible(true); },
@@ -72,30 +73,66 @@ async function main() {
   const backdrop = documentRef.byClass("keepnet-section__backdrop")[0];
   assert(content.contains(backdrop) && backdrop.alt === "" && backdrop.src === "assets/ui/inventory/keepnet.svg",
     "a decorative keepnet lies behind the fish list (shown in portrait)");
-  // Spec 074: the shared collection — back/heading/filters panel, then the fish-list panel with the backdrop.
+  // Spec 074/088: the shared collection, laid out like the backpack: the filters panel, then the fish pager — tabs
+  // above the items panel whose pages are the fish list over the faded keepnet and the keepnet view.
   const keepnetControls = documentRef.byClass("keepnet-section__controls")[0];
-  const keepnetItems = documentRef.byClass("keepnet-section__items")[0];
+  const fishList = documentRef.byClass("keepnet-section__list")[0];
+  const pager = content.children[1];
+  const [pagerTabs, keepnetItems] = pager.children;
+  const [fishPage, keepnetPage] = keepnetItems.children[0].children;
   assert(content.classList.contains("inventory-collection") && content.children[0] === keepnetControls &&
-    content.children[1] === keepnetItems && keepnetControls.classList.contains("inventory-collection__controls") &&
-    keepnetControls.contains(documentRef.byClass("keepnet-section__filters")[0]) &&
-    keepnetItems.classList.contains("inventory-collection__items") && keepnetItems.contains(backdrop) &&
-    keepnetItems.contains(documentRef.byClass("keepnet-section__list")[0]) &&
+    keepnetControls.classList.contains("inventory-collection__controls") &&
+    pager.classList.contains("inventory-pager") && pagerTabs.classList.contains("inventory-pager__tabs") &&
+    keepnetItems === documentRef.byClass("keepnet-section__items")[0] &&
+    keepnetItems.classList.contains("inventory-collection__items") && keepnetItems.classList.contains("inventory-panel") &&
+    fishPage.className.includes("inventory-pager__page--fish") && keepnetPage.className.includes("inventory-pager__page--keepnet") &&
+    fishPage.children[0] === backdrop && fishPage.children[1] === fishList &&
     backdrop.classList.contains("inventory-collection__backdrop"),
-  "the keepnet content is a filters panel and a fish-list panel");
+  "the keepnet content is a filters panel and a two-page fish pager");
+  const pagerTabButtons = pagerTabs.children[0].children;
+  assert.deepEqual(pagerTabButtons.map((tab) => tab.getAttribute("aria-label")), ["Риба", "Садок"]);
+  assert.equal(pagerTabButtons[0].children[0].children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#fish");
+  const pagerIndex = () => keepnetItems.style.getPropertyValue("--inventory-pager-index");
+  assert.equal(pagerIndex(), "0", "the section opens on the fish list");
+  // The filters are the backpack's rows: a category row (species toggle, kind buttons), then the species row.
+  const [kinds, speciesRow] = documentRef.byClass("keepnet-section__filters")[0].children;
+  const [speciesToggle, ...kindButtons] = kinds.children;
+  assert(keepnetControls.children[0].contains(kinds) && kinds.classList.contains("inventory-categories") &&
+    speciesRow.classList.contains("inventory-subfilters") && speciesToggle.classList.contains("inventory-categories__toggle") &&
+    kindButtons.every((button) => button.classList.contains("inventory-categories__button")),
+  "keepnet filters use the backpack's filter rows at the top of the controls panel");
+  assert.deepEqual(kindButtons.map((button) => button.textContent), ["Уся риба", "Забраний улов", "Живці"]);
+  assert.deepEqual(kindButtons.map((button) => button.getAttribute("aria-pressed")), ["true", "false", "false"]);
+  assert(!speciesRow.classList.contains("inventory-subfilters--open"));
+  speciesToggle.click();
+  assert(speciesRow.classList.contains("inventory-subfilters--open") && speciesToggle.getAttribute("aria-expanded") === "true",
+    "the toggle opens the species row");
+  const speciesRadios = () => documentRef.byClass("inventory-subfilters__checkbox");
+  assert.deepEqual(speciesRadios().map((radio) => [radio.type, radio.value, radio.checked]),
+    [["radio", "all", true], ["radio", "crucian_stalker", false], ["radio", "pike", false]]);
+  // Two keepnet views like the backpack's: the left column's summary and the pager's second page.
+  const overviews = documentRef.byClass("keepnet-overview");
+  assert(overviews.length === 2 && overviews[0] === summary && keepnetPage.children[0] === overviews[1] &&
+    overviews.every((view) => view.children[0].className === "keepnet-overview__visual inventory-panel" &&
+      view.children[1].className === "keepnet-overview__stats inventory-panel"),
+  "each keepnet view is an image container and a stats container");
   const back = documentRef.byClass("keepnet-section__back")[0];
-  const capacity = documentRef.byClass("keepnet-section__capacity")[0];
-  const capacityCount = documentRef.byClass("keepnet-section__count")[0];
-  assert(summary.contains(capacity) && content.contains(documentRef.byClass("keepnet-section__list")[0]),
-    "parameters belong to the summary, fish to the content");
+  const scale = documentRef.byClass("keepnet-section__capacity")[0];
+  const [scaleIcon, capacity, capacityCount] = scale.children;
+  assert(scale.classList.contains("inventory-scale") && scaleIcon.tagName === "svg" &&
+    scaleIcon.children[0].getAttribute("href") === "assets/ui/status-icons.svg#fish",
+  "the capacity scale shows the fish icon on its left");
+  assert(summary.contains(scale) && content.contains(fishList), "parameters belong to the summary, fish to the content");
   assert.equal(capacity.getAttribute("role"), "meter");
   assert.equal(capacity.getAttribute("aria-valuenow"), "4");
   assert(capacity.title.includes("4 / 100"), "exact capacity stays available as a contextual hint");
   assert.equal(documentRef.byClass("keepnet-section__section-title")[0].hidden, true);
+  assert.equal(documentRef.byClass("keepnet-section__detail")[0].hidden, true, "the details row takes no space");
   assert.equal(documentRef.byClass("keepnet-section__icon")[0].src, "assets/ui/inventory/keepnet.svg");
   assert.equal(capacity.textContent, "", "the capacity meter has no permanent numeric label");
-  assert.equal(capacityCount.textContent, "4 / 100");
-  assert.equal(capacity.parentNode.children.indexOf(capacityCount) + 1,
-    capacity.parentNode.children.indexOf(capacity), "the occupancy counter sits directly above its meter");
+  assert.equal(capacityCount.textContent, "4 / 100", "the occupancy reading is centred on the meter");
+  assert.equal(documentRef.byClass("keepnet-section__capacity")[1].children[2].textContent, "4 / 100",
+    "both keepnet views show the same reading");
   const help = documentRef.byClass("keepnet-section__help")[0];
   const hint = documentRef.byClass("keepnet-section__help-text")[0];
   assert(hint.hidden && documentRef.byClass("keepnet-section__status")[0].hidden,
@@ -125,6 +162,29 @@ async function main() {
   assert(hint.hidden && help.getAttribute("aria-expanded") === "false", "the close button dismisses the hint");
   assert.equal(documentRef.listeners.get("click").size, 0, "help document listeners are released");
   assert.equal(documentRef.byClass("keepnet-section__group").length, 2);
+  kindButtons[2].click();
+  assert.deepEqual(kindButtons.map((button) => button.getAttribute("aria-pressed")), ["false", "false", "true"]);
+  assert.equal(documentRef.byClass("keepnet-section__group").length, 1, "a kind button filters the fish");
+  kindButtons[0].click();
+  speciesRadios()[2].checked = true; speciesRadios()[2].fire("change");
+  assert.equal(documentRef.byClass("keepnet-section__group").length, 1, "a species choice filters the fish");
+  assert.deepEqual(speciesRadios().map((radio) => radio.checked), [false, false, true]);
+  speciesRadios()[0].checked = true; speciesRadios()[0].fire("change");
+  assert.equal(documentRef.byClass("keepnet-section__group").length, 2);
+  // Spec 088: the fish pager swipes like the backpack's and hands swipes past its edges to the inventory.
+  keepnetItems.layoutWidth = 300;
+  const swipe = (fromX, toX) => {
+    keepnetItems.fire("pointerdown", { pointerType: "touch", pointerId: 1, clientX: fromX, clientY: 100 });
+    keepnetItems.fire("pointermove", { pointerType: "touch", pointerId: 1, clientX: toX, clientY: 101 });
+    keepnetItems.fire("pointerup", { type: "pointerup", pointerType: "touch", pointerId: 1, clientX: toX, clientY: 101 });
+  };
+  swipe(250, 50);
+  assert.equal(pagerIndex(), "1", "a left swipe shows the keepnet view");
+  swipe(250, 50);
+  assert.deepEqual(inventory.swiped, [1], "a left swipe on the keepnet view goes past the last section");
+  swipe(50, 250); swipe(50, 250);
+  assert.equal(pagerIndex(), "0");
+  assert.deepEqual(inventory.swiped, [1, -1], "a right swipe on the fish list returns to the backpack");
   assert.equal(documentRef.byClass("keepnet-section__badge")[0].textContent, "3");
   const group = documentRef.byKey("species:crucian_stalker");
   content.scrollTop = 200;
@@ -146,7 +206,7 @@ async function main() {
   now += 1000; ui.refresh();
   assert.equal(documentRef.activeElement, select, "countdown refresh retains focus");
   assert.equal(documentRef.byClass("keepnet-section__image")[0], images[0], "timer refresh does not reload images");
-  assert.equal(documentRef.byClass("keepnet-section__capacity")[0], capacity, "timer refresh retains the shared meter node");
+  assert.equal(documentRef.byClass("keepnet-section__capacity")[0], scale, "timer refresh retains the shared scale node");
   assert.equal(content.scrollTop, 137);
   assert(documentRef.byClass("keepnet-section__fish-timer")[2].textContent.includes("0:09"));
   select.click(); assert.equal(service.getSelectedBait().fishId, "bait");

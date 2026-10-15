@@ -383,6 +383,8 @@
 │  │  └── spec.md
 │  ├── 087-portrait-section-swipe
 │  │  └── spec.md
+│  ├── 088-keepnet-like-backpack
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1094,7 +1096,9 @@
 │  │     │  └── terminal_line_slot_label_resolver.js
 │  │     ├── keepnet
 │  │     │  ├── keepnet_card_renderer.js
+│  │     │  ├── keepnet_filters_renderer.js
 │  │     │  ├── keepnet_labels.js
+│  │     │  ├── keepnet_overview_renderer.js
 │  │     │  ├── keepnet_section_view.js
 │  │     │  └── keepnet_view_model.js
 │  │     ├── rarity

@@ -1,14 +1,17 @@
 import { inventorySlotIconPath } from "../inventory/inventory_slot_icons.js";
 
-// The inventory's keepnet section (spec 067): the summary (illustration, occupancy, status, help) belongs in the
-// inventory's left container and the content (groups, details, filters, fish cards) in its right host. The toolbar
-// keepnet button opens the inventory at this section.
+// The inventory's keepnet section (spec 067), laid out like the backpack section (spec 088): the summary (the keepnet
+// view: image with help, capacity scale, status) belongs in the inventory's left container and the content (filters
+// panel, then the fish-list pager whose second page repeats the keepnet view for portrait) in its right host. The
+// toolbar keepnet button opens the inventory at this section.
 export class KeepnetSectionView {
   #document;
   #liveBait;
   #model;
   #cards;
-  #meters;
+  #overviews;
+  #filtersRenderer;
+  #pager;
   #labels;
   #openSection;
   #toggleSection;
@@ -18,33 +21,32 @@ export class KeepnetSectionView {
   #notice = "";
   #button;
   #summary;
+  #pagerOverview;
   #content;
-  #helpButton;
+  #helpButtons;
   #helpText;
   #hints;
   #helpOpen = false;
   #back;
   #heading;
-  #kind;
+  #detail;
+  #filters;
   #list;
-  #capacity;
-  #count;
-  #species;
-  #status;
   #visible = false;
   #signature = "";
-  #speciesSignature = "";
   #rendered = new Map();
   #cardFocusables = [];
 
-  constructor({ documentRef, liveBait, model, cards, labels, resourceMeterRenderer, hintRenderer, openSection,
-    toggleSection, buttonMountNode, listScrollController }) {
+  constructor({ documentRef, liveBait, model, cards, labels, overviewRenderer, filtersRenderer, pagerRenderer,
+    hintRenderer, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null }) {
     this.#document = documentRef;
     this.#hints = hintRenderer;
     this.#liveBait = liveBait;
     this.#model = model;
     this.#cards = cards;
-    this.#meters = resourceMeterRenderer;
+    this.#overviews = overviewRenderer;
+    this.#filtersRenderer = filtersRenderer;
+    this.#pager = pagerRenderer;
     this.#labels = labels;
     this.#openSection = openSection;
     this.#toggleSection = toggleSection;
@@ -54,64 +56,48 @@ export class KeepnetSectionView {
     this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
     this.#button.addEventListener("click", this.#toggle);
-    this.#summary = this.#el("section", "keepnet-section__summary");
-    this.#summary.setAttribute("aria-label", labels.title);
-    this.#helpButton = this.#el("button", "keepnet-section__help", "?");
-    this.#helpButton.type = "button";
-    this.#helpButton.setAttribute("aria-label", labels.help);
-    this.#helpButton.setAttribute("aria-expanded", "false");
-    this.#helpButton.setAttribute("aria-controls", "keepnet-help");
-    this.#helpButton.addEventListener("click", () => this.#setHelpVisible(true));
+    const showHelp = () => this.#setHelpVisible(true);
+    this.#summary = this.#overviews.create({ className: "keepnet-section__summary", onHelp: showHelp });
+    this.#pagerOverview = this.#overviews.create({ onHelp: showHelp });
+    this.#helpButtons = [this.#summary, this.#pagerOverview].map((view) => this.#overviews.helpButton(view));
     this.#helpText = this.#hints.create({ className: "keepnet-section__help-text", closeLabel: labels.closeHelp,
       role: "note", onClose: () => this.#setHelpVisible(false) });
     this.#helpText.id = "keepnet-help";
-    const visual = this.#el("div", "keepnet-section__visual");
-    visual.append(this.#icon("keepnet-section__icon", labels.title), this.#helpButton);
-    this.#capacity = this.#meters.create({ id: "keepnet-capacity", percent: 0,
-      remainingPercent: 100, label: labels.capacity }, { variant: "summary", showIcon: false });
-    this.#capacity.classList.add("keepnet-section__capacity");
-    this.#count = this.#el("p", "keepnet-section__count");
-    this.#status = this.#el("p", "keepnet-section__status");
-    this.#status.setAttribute("role", "status");
-    this.#summary.append(visual, this.#count, this.#capacity, this.#status);
     this.#content = this.#el("section", "keepnet-section__content");
     this.#content.setAttribute("aria-label", labels.title);
     this.#back = this.#el("button", "keepnet-section__back", labels.back);
     this.#back.type = "button";
     this.#back.addEventListener("click", this.#goBack);
     this.#heading = this.#el("h3", "keepnet-section__section-title");
-    const filters = this.#el("div", "keepnet-section__filters");
-    this.#kind = this.#el("select", "keepnet-section__filter");
-    this.#kind.setAttribute("aria-label", labels.kindLabel);
-    for (const [value, label] of labels.kinds) this.#kind.append(this.#option(value, label));
-    this.#kind.value = "all";
-    this.#kind.addEventListener("change", () => {
-      this.#filter.kind = this.#kind.value;
-      this.#pendingRelease = null;
-      this.refresh();
+    // The species details row takes no space (and no column gap) while the list shows all species.
+    this.#detail = this.#el("div", "keepnet-section__detail");
+    this.#detail.append(this.#back, this.#heading);
+    this.#filters = this.#filtersRenderer.create({
+      onKind: (kind) => {
+        this.#filter.kind = kind;
+        this.#pendingRelease = null;
+        this.refresh();
+      },
+      onSpecies: (speciesId) => {
+        this.#filter.speciesId = speciesId;
+        this.#detailSpecies = null;
+        this.#pendingRelease = null;
+        this.refresh();
+      },
     });
-    this.#species = this.#el("select", "keepnet-section__filter");
-    this.#species.setAttribute("aria-label", labels.speciesLabel);
-    this.#species.addEventListener("change", () => {
-      this.#filter.speciesId = this.#species.value;
-      this.#detailSpecies = null;
-      this.#pendingRelease = null;
-      this.refresh();
-    });
-    filters.append(this.#kind, this.#species);
     this.#list = this.#el("div", "keepnet-section__list inventory-collection__list");
     // Dragging over a fish card scrolls the list instead of opening the card (spec 076).
     listScrollController.attach(this.#list);
-    // Shared collection (spec 074): back/heading/filters panel, a gap, then the fish list over the faded keepnet,
-    // which CSS shows only in portrait.
+    // Shared collection (spec 074): the filters panel at the top, a gap, then the items panel, which in portrait is a
+    // pager like the backpack's: the fish list over the faded keepnet, and the keepnet view.
     const controls = this.#el("div", "keepnet-section__controls inventory-collection__controls inventory-panel");
-    const items = this.#el("div", "keepnet-section__items inventory-collection__items inventory-panel");
     const backdrop = this.#icon("keepnet-section__backdrop");
     backdrop.classList.add("inventory-collection__backdrop");
-    controls.append(this.#back, this.#heading, filters);
-    items.append(backdrop, this.#list);
+    controls.append(this.#filters, this.#detail);
+    const pager = this.#pager.create([[backdrop, this.#list], [this.#pagerOverview]], {
+      viewportClassName: "keepnet-section__items inventory-collection__items inventory-panel", onEdge: onPagerEdge });
     this.#content.classList.add("inventory-collection");
-    this.#content.append(controls, items);
+    this.#content.append(controls, pager);
     this.#summary.addEventListener("keydown", this.#handleKey);
     this.#content.addEventListener("keydown", this.#handleKey);
     buttonMountNode.appendChild(this.#button);
@@ -128,6 +114,8 @@ export class KeepnetSectionView {
     this.#visible = visible;
     if (visible) {
       this.#notice = "";
+      // Opening the section starts on the fish list, like the backpack's item list.
+      this.#pager.select(0);
       this.#liveBait.advance();
       this.refresh();
     } else {
@@ -142,7 +130,6 @@ export class KeepnetSectionView {
     if (result.fishId) {
       const fish = this.#liveBait.getView().liveBaits.find((entry) => entry.id === result.fishId);
       this.#filter = { kind: "all", speciesId: "all" };
-      this.#kind.value = "all";
       this.#detailSpecies = fish ? fish.hasAnomaly !== false || fish.isUnique !== false
         ? `fish:${fish.id}` : fish.sourceSpeciesId : null;
     }
@@ -155,24 +142,17 @@ export class KeepnetSectionView {
     const group = model.groups.find((entry) => entry.id === this.#detailSpecies);
     if (!group) this.#detailSpecies = null;
     if (!model.filtered.some((fish) => fish.id === this.#pendingRelease)) this.#pendingRelease = null;
-    this.#meters.updateReading(this.#capacity, { percent: model.capacityPercent,
-      remainingPercent: 100 - model.capacityPercent,
-      label: `${this.#labels.capacity}: ${this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount)}` });
-    const count = this.#labels.occupancy(model.count + model.reservedCount, model.capacity);
-    if (this.#count.textContent !== count) this.#count.textContent = count;
-    const status = model.error ? this.#labels.error(model.error) : this.#notice;
-    if (this.#status.textContent !== status) this.#status.textContent = status;
-    this.#status.hidden = !status;
+    const reading = { percent: model.capacityPercent,
+      value: this.#labels.occupancy(model.count + model.reservedCount, model.capacity),
+      label: `${this.#labels.capacity}: ${this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount)}`,
+      status: model.error ? this.#labels.error(model.error) : this.#notice };
+    this.#overviews.update(this.#summary, reading);
+    this.#overviews.update(this.#pagerOverview, reading);
+    this.#detail.hidden = !group;
     this.#back.hidden = !group;
     this.#heading.hidden = !group;
     this.#heading.textContent = group ? this.#labels.details(group.name, group.count) : "";
-    const speciesSignature = JSON.stringify(model.species);
-    if (speciesSignature !== this.#speciesSignature) {
-      this.#species.replaceChildren(this.#option("all", this.#labels.allSpecies),
-        ...model.species.map((item) => this.#option(item.id, item.name)));
-      this.#speciesSignature = speciesSignature;
-    }
-    this.#species.value = model.speciesId;
+    this.#filtersRenderer.update(this.#filters, { kind: model.kind, species: model.species, speciesId: model.speciesId });
     // Timer-only updates retain images, focused controls and scroll position.
     const signature = JSON.stringify([this.#detailSpecies, this.#pendingRelease, model.kind,
       model.speciesId, model.aquarium?.owned,
@@ -195,8 +175,8 @@ export class KeepnetSectionView {
       this.#signature = signature;
       this.#content.scrollTop = scroll;
       if (hadCardFocus) (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === focusKey) ||
-        (group ? this.#back : this.#kind)).focus();
-      else if (active === this.#back && !group) this.#kind.focus();
+        (group ? this.#back : this.#activeKind())).focus();
+      else if (active === this.#back && !group) this.#activeKind().focus();
     }
     if (group) for (const fish of group.fish) this.#rendered.get(fish.id)?.update(fish);
   }
@@ -210,6 +190,7 @@ export class KeepnetSectionView {
     this.#button.remove(); this.#summary.remove(); this.#content.remove(); this.#helpText.remove();
     this.#rendered.clear(); this.#cardFocusables = [];
   }
+  #activeKind() { return this.#filtersRenderer.activeKind(this.#filters); }
   #openSpecies = (id) => {
     this.#detailSpecies = id; this.#pendingRelease = null;
     this.refresh(); this.#content.scrollTop = 0; this.#back.focus();
@@ -218,7 +199,7 @@ export class KeepnetSectionView {
     const id = this.#detailSpecies;
     this.#detailSpecies = null; this.#pendingRelease = null;
     this.refresh(); this.#content.scrollTop = 0;
-    (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === `species:${id}`) || this.#kind).focus();
+    (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === `species:${id}`) || this.#activeKind()).focus();
   };
   #act = (fish, action) => {
     if (action === "release" || action === "cancel-release") {
@@ -253,7 +234,6 @@ export class KeepnetSectionView {
     if (text !== null) el.textContent = text;
     return el;
   }
-  #option(value, label) { const option = this.#el("option", "", label); option.value = value; return option; }
   #icon(className, alt = "") {
     const image = this.#el("img", className);
     image.src = inventorySlotIconPath("keepnet");
@@ -266,7 +246,7 @@ export class KeepnetSectionView {
     this.#helpOpen = visible;
     if (visible) this.#hints.show(this.#helpText, `${this.#labels.status}\n${this.#labels.note}`);
     else this.#hints.hide(this.#helpText);
-    this.#helpButton.setAttribute("aria-expanded", String(visible));
+    for (const button of this.#helpButtons) button.setAttribute("aria-expanded", String(visible));
     if (visible) this.#document.addEventListener("click", this.#dismissHelp, true);
     else this.#document.removeEventListener("click", this.#dismissHelp, true);
   }
@@ -276,7 +256,7 @@ export class KeepnetSectionView {
     if (this.#helpText.contains(event.target) && !event.target.closest?.(".ui-hint__close")) return;
     this.#setHelpVisible(false);
     // A second press on ? dismisses the hint without reopening it in the button's handler.
-    if (this.#helpButton.contains(event.target)) event.stopPropagation();
+    if (this.#helpButtons.some((button) => button.contains(event.target))) event.stopPropagation();
   };
   #toggle = () => this.#toggleSection();
   // Escape steps back inside the section (hint, pending release, species details); otherwise it is not handled here.

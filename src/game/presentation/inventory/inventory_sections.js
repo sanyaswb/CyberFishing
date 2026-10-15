@@ -27,4 +27,15 @@ export const INVENTORY_SECTIONS = Object.freeze({
       Object.freeze({ id: "backpack", icon: "backpack", label: "Рюкзак" }),
     ]),
   }),
+  // The portrait keepnet pager (spec 088): the fish list on the left page, the keepnet view on the right. The capacity
+  // scale uses the status sprite's fish icon (the House capacity icon).
+  keepnetPager: Object.freeze({
+    label: "Вміст садка",
+    iconSprite: "assets/ui/inventory-sections.svg",
+    capacityIcon: "assets/ui/status-icons.svg#fish",
+    items: Object.freeze([
+      Object.freeze({ id: "fish", icon: "fish", label: "Риба" }),
+      Object.freeze({ id: "keepnet", icon: "keepnet", label: "Садок" }),
+    ]),
+  }),
 });

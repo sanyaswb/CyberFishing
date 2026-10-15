@@ -95,7 +95,12 @@
   min-height: 0;
 }
 
+/* Only the visible filter rows take space (spec 075): opening a filter row pushes the items panel down. Backpack and
+   keepnet share the rows' order and spacing (spec 088). */
 .inventory-collection__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   min-width: 0;
   padding: var(--inventory-collection-inset);
 }
@@ -139,6 +144,10 @@
 @container ui-surface (max-width: 820px) {
   .inventory-collection {
     --inventory-collection-inset: 8px;
+  }
+
+  .inventory-collection__controls {
+    gap: 16px;
   }
 
   @media (orientation: portrait) {

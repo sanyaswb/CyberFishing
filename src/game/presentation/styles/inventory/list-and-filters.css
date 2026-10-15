@@ -5,14 +5,8 @@
   --inventory-list-gap: 10px;
 }
 
-/* Only the visible filter rows take space (spec 075): opening subfilters or sorting pushes the items panel down. */
-.inventory-list-panel__controls {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Backpack pager (spec 075): wide layouts show only the item page; portrait adds the tabs and the swipeable track. */
+/* Collection pager (spec 075; the keepnet's since spec 088): wide layouts show only the first page; portrait adds the
+   tabs and the swipeable track. */
 .inventory-pager {
   display: flex;
   flex-direction: column;
@@ -21,7 +15,7 @@
 }
 
 .inventory-pager__tabs,
-.inventory-pager__page--backpack {
+.inventory-pager__page:not(:first-child) {
   display: none;
 }
 
@@ -328,10 +322,6 @@
     --inventory-list-gap: var(--inventory-mobile-gap);
   }
 
-  .inventory-list-panel__controls {
-    gap: 16px;
-  }
-
   .inventory-subfilters,
   .inventory-sort-options {
     flex-shrink: 0;
@@ -367,7 +357,7 @@
       touch-action: pan-y;
     }
 
-    .inventory-pager__page--backpack {
+    .inventory-pager__page:not(:first-child) {
       display: flex;
     }
 

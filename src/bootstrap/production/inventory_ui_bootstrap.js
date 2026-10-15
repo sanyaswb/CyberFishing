@@ -32,6 +32,9 @@ import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
 import { KeepnetSectionView } from "../../game/presentation/keepnet/keepnet_section_view.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
+import { KeepnetOverviewRenderer } from "../../game/presentation/keepnet/keepnet_overview_renderer.js";
+import { KeepnetFiltersRenderer } from "../../game/presentation/keepnet/keepnet_filters_renderer.js";
+import { inventorySlotIconPath } from "../../game/presentation/inventory/inventory_slot_icons.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
@@ -42,18 +45,41 @@ export class InventoryUiBootstrap {
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
     buttonMountNode = documentRef?.body }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnet = new KeepnetSectionView({ documentRef, liveBait, buttonMountNode,
-      model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
+    const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface,
+      degradationColorResolver,
       openSection: () => inventoryUI.openSection("keepnet"),
       toggleSection: () => inventoryUI.toggleSection("keepnet"),
-      resourceMeterRenderer: new InventoryResourceMeterRenderer({
-        domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
-      }),
-      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
-      hintRenderer: new UiHintRenderer({ domFactory: new InventoryDomFactory(documentRef) }),
-      listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
+      onPagerEdge: (step) => inventoryUI.swipeSection(step) });
     inventoryUI.attachKeepnetSection(keepnet);
     return keepnet;
+  }
+
+  // The keepnet section view with the backpack's collaborators (spec 088): scale, filter rows and the swipe pager.
+  // The UI catalog builds the same view without an inventory.
+  static createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, degradationColorResolver,
+    openSection, toggleSection, onPagerEdge = null }) {
+    const dom = new InventoryDomFactory(documentRef);
+    const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
+    const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
+    return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
+      model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
+      overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
+        scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),
+        imagePath: inventorySlotIconPath("keepnet"), capacityIcon: pagerConfig.capacityIcon }),
+      filtersRenderer: new KeepnetFiltersRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
+        horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
+      pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
+        tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: pagerConfig }),
+        swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom) }),
+        config: pagerConfig }),
+      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
+      hintRenderer: new UiHintRenderer({ domFactory: dom }),
+      listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
+  }
+
+  // Pages and sections swipe only where CSS turns the flag on (portrait, spec 087).
+  static #swipeEnabled(dom) {
+    return (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-swipe").trim() === "on";
   }
 
   // Vertical drag-to-scroll for item and fish lists (spec 076); filters keep the horizontal default.
@@ -184,8 +210,7 @@ export class InventoryUiBootstrap {
         parametersRenderer: itemParametersRenderer,
         parameterSectionResolver: new InventoryAssemblyParameterSectionResolver(),
       });
-    // Pages and sections swipe only where CSS turns the flag on (portrait, spec 087).
-    const swipeEnabled = (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-swipe").trim() === "on";
+    const swipeEnabled = InventoryUiBootstrap.#swipeEnabled(dom);
     const resolvedInventoryRenderer =
       inventoryRenderer ||
       new InventoryGridRenderer({

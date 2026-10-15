@@ -94,7 +94,8 @@
   --inventory-panel-border: transparent;
 }
 
-.inventory-main__sidebar .inventory-backpack {
+.inventory-main__sidebar .inventory-backpack,
+.inventory-main__sidebar .keepnet-overview {
   padding: var(--inventory-container-gap);
 }
 
@@ -170,8 +171,7 @@
     .inventory-main__left,
     .inventory-main .inventory-loadout-panel,
     .inventory-main .inventory-assembly-editor,
-    .inventory-main .inventory-saved-loadout-preview,
-    .inventory-main .keepnet-section__summary {
+    .inventory-main .inventory-saved-loadout-preview {
       touch-action: pan-y;
     }
 
@@ -201,14 +201,6 @@
       padding: 0 var(--inventory-mobile-inset) var(--inventory-container-gap);
     }
 
-    .inventory-modal--section-keepnet .inventory-main__right {
-      padding-top: var(--inventory-container-gap);
-    }
-
-    .inventory-main__left > .inventory-main__section--keepnet {
-      padding: 0 var(--inventory-mobile-inset);
-    }
-
     /* Equipment owns the whole content row: the items live in the backpack section. */
     /* Its real size scales the equipment unit (spec 078): no estimate of the header or tab heights. */
     .inventory-modal--section-equipment .inventory-main__left {
@@ -225,8 +217,10 @@
       height: 100%;
     }
 
-    /* The backpack illustration lies inside the items panel (spec 074); the summary column is not shown. */
-    .inventory-modal--section-backpack .inventory-main__left {
+    /* The backpack illustration lies inside the items panel (spec 074) and the keepnet view inside the fish panel
+       (spec 088); the summary column is not shown. */
+    .inventory-modal--section-backpack .inventory-main__left,
+    .inventory-modal--section-keepnet .inventory-main__left {
       display: none;
     }
   }

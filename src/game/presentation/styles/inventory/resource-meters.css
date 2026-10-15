@@ -49,6 +49,15 @@
   min-width: 0;
 }
 .inventory-scale__icon { width: var(--inventory-parameter-meter-height); height: var(--inventory-parameter-meter-height); object-fit: contain; }
+/* A sprite icon (the keepnet's fish, spec 088) is a line drawing in the light tab-icon colour. */
+.inventory-scale__icon--sprite {
+  color: var(--inventory-equipment-tab-icon-active);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .inventory-scale__meter, .inventory-scale__value { grid-column: 2; grid-row: 1; }
 .inventory-scale__meter { border-radius: 999px; }
 .inventory-scale__value { z-index: 1; justify-self: center; color: var(--ui-text); font-size: calc(var(--inventory-scale-unit, 1px) * 12); line-height: 1; white-space: nowrap; text-shadow: 0 1px 2px #000; }

@@ -20,12 +20,12 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout: the hint region above the header (spec 086), the `inventory-main__sidebar` parent (section content + tab bar, the only painter of the left column's background and frame; `display: contents` in portrait, spec 077) and the right content area; portrait's `--inventory-swipe: on` flag and `pan-y` touch axis for the section swipe ([spec 087](../specs/087-portrait-section-swipe/spec.md)) |
 | `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the transparent section tab bar (spec 067, 077); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
 | `styles/inventory/shared-controls.css` | Reusable panels/actions, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet, and the lists' `inventory-vertical-scroll` drag state (spec 076) ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
-| `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the `inventory-scale` icon/meter/reading composition (load and backpack capacity, `InventoryScaleRenderer`); header placement belongs to `header.css` |
+| `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the `inventory-scale` icon/meter/reading composition (load, backpack and keepnet capacity, `InventoryScaleRenderer`; sprite icons via `inventory-scale__icon--sprite`, spec 088); header placement belongs to `header.css` |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |
 | `src/dev/styles/dev-tools.css` | DEV editor and toggle |
 | `src/dev/styles/overlay.css`, `overlay-content.css` | Diagnostic window/interaction and diagnostic content |
-| `styles/house.css`, `keepnet.css` | House composition; the inventory's keepnet section (`keepnet-section`, spec 067) and its cards; shared actions/meters/close/switch are reused |
+| `styles/house.css`, `keepnet.css` | House composition; the inventory's keepnet section (`keepnet-section`, spec 067) and its cards; since [spec 088](../specs/088-keepnet-like-backpack/spec.md) its view (`keepnet-overview`) shares the backpack view's containers in `loadout.css` and its filters are the backpack's rows; shared actions/meters/close/switch are reused |
 | `src/dev/styles/ui-catalog.css` | Catalog page, fixture controls and external placement of examples |
 
 Layout belongs to the component containing an element. Appearance shared across components belongs
