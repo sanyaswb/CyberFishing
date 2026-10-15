@@ -1,0 +1,54 @@
+/* Shared DOM palette and stacking roles. Canvas visual descriptors stay injected. */
+:root {
+  --ui-accent: #00ccff;
+  --ui-accent-rgb: 0, 204, 255;
+  --ui-success: #00ff80;
+  --ui-success-rgb: 0, 255, 128;
+  --ui-danger: #ff4444;
+  --ui-danger-rgb: 255, 68, 68;
+  --ui-danger-text: #ff8e9b;
+  --ui-warning: #ffaa00;
+  --ui-info: #73c2fb;
+  --ui-muted: #8a9bac;
+  --ui-text: #fff;
+  --ui-border: #4a5b6c;
+  --ui-surface-rgb: 11, 21, 32;
+  --ui-font-mono: monospace;
+  --ui-font-body: system-ui, sans-serif;
+  --ui-focus-color: #f7de93;
+  --ui-duration-fast: 200ms;
+  --ui-duration-normal: 280ms;
+  --ui-duration-control: 160ms;
+  --ui-duration-switch: 180ms;
+  --ui-ease-standard: ease;
+  --ui-close-size: 44px;
+  --ui-sheet-handle-size: 44px;
+  --ui-radius-control: 4px;
+  --ui-radius-panel: 8px;
+  --ui-control-border-width: 2px;
+  --ui-control-border-color: rgba(var(--ui-accent-rgb), 0.65);
+  --ui-edge-top: max(12px, env(safe-area-inset-top, 0px));
+  --ui-edge-right: max(12px, env(safe-area-inset-right, 0px));
+  --ui-edge-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  --ui-edge-left: max(12px, env(safe-area-inset-left, 0px));
+  /* Shared hint surface (spec 080): ui-hint and the item tooltip. */
+  --ui-hint-background: rgba(8, 17, 24, 0.97);
+  --ui-hint-border: rgba(var(--ui-accent-rgb), 0.55);
+  --ui-hint-text: #e6eef2;
+  --ui-hint-radius: var(--ui-radius-panel);
+  --ui-hint-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --ui-hint-inset: 8px;
+  --ui-hint-font-size: 13px;
+  --ui-hint-close-size: 28px;
+  --ui-toolbar-size: 48px;
+  --ui-toolbar-gap: 8px;
+  --ui-clock-width: 116px;
+  --ui-hud-control-size: 44px;
+  --ui-layer-badge: 9800;
+  --ui-layer-backpack: 9900;
+  --ui-layer-hud: 9998;
+  --ui-layer-controls: 9999;
+  --ui-layer-panel: 10000;
+  --ui-layer-tooltip: 10001;
+  --ui-layer-outcome: 20000;
+}

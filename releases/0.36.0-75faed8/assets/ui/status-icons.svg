@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="level" viewBox="0 0 24 24">
+    <path d="m7 12 5-5 5 5m-10 6 5-5 5 5"/>
+  </symbol>
+  <symbol id="fish" viewBox="0 0 24 24">
+    <path d="M5 12c4-5 8.5-5 12 0-3.5 5-8 5-12 0Zm0 0L1 8v8l4-4Z"/>
+    <circle cx="14" cy="11" r="0.7" fill="currentColor" stroke="none"/>
+  </symbol>
+</svg>
