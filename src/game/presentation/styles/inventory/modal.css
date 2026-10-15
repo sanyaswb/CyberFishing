@@ -70,9 +70,8 @@
   min-height: 0;
 }
 
-/* The left column's one parent (spec 077): the section content above, the tab bar at the bottom. The bar has no
-   wrapper background (spec 089): only the content above it paints the column's surface, so the tabs stand on the
-   page background and the active tab joins the content. */
+/* The left column's one parent (spec 077): the section content above, the transparent tab bar at the bottom. It
+   alone paints the column's background and frame; sections and the tab bar paint no outer background. */
 .inventory-main__sidebar {
   grid-area: left;
   display: flex;
@@ -80,12 +79,12 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-equipment-surface);
 }
 
 .inventory-main__sidebar > .inventory-main__left {
   flex: 1;
-  border-radius: var(--inventory-panel-radius) var(--inventory-panel-radius) 0 0;
-  background: var(--inventory-equipment-surface);
 }
 
 .inventory-main__sidebar .inventory-loadout-panel,
@@ -110,7 +109,12 @@
   grid-area: right;
 }
 
+/* The bottom section bar stands on its parent container (the sidebar, or the full-screen portrait container): its tabs
+   paint no background of their own; the active tab keeps its frame and light icon (spec 089). The backpack/keepnet
+   pager tabs keep their colours to join their items panel. */
 .inventory-main__tabs {
+  --inventory-equipment-tab: transparent;
+  --inventory-equipment-tab-active: transparent;
   grid-area: tabs;
 }
 

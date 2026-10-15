@@ -2,13 +2,21 @@
 
 Owner request, 2026-10-16. No version bump.
 
-## Section tab bar without a wrapper background
+## Section tab buttons without their own background
 
-The bottom tab bar (Equipment, Backpack, Keepnet) stood on the dark grey surface of its parent, the left column's
-`inventory-main__sidebar` (spec 077), which shows on wide layouts as a wrapper around the tabs. The sidebar now paints
-no background; the section content above the bar (`.inventory-main__sidebar > .inventory-main__left`) paints the
-column's surface with top-rounded corners, so the tabs stand on the page background and the active tab still joins the
-content. Portrait is unchanged (the sidebar has no box there and the full-screen container is the background).
+The dark grey the owner saw is the bottom section buttons' own fill: inactive tabs `--inventory-equipment-tab`
+(#262626), the active one `--inventory-equipment-tab-active` (#303030) with square bottom corners. Above a transparent
+section (an item editor in portrait) the active tab stood out as a separate grey tile.
+
+`.inventory-main__tabs` sets both tokens to `transparent`: the buttons stand on their parent container — the sidebar on
+wide layouts (spec 077, unchanged), the full-screen container in portrait. The active tab keeps its frame
+(`--inventory-equipment-tab-border`) and light icon. The backpack/keepnet pager tabs keep their colours to join their
+items panel.
+
+A first attempt (3e4fbfe9) moved the sidebar's surface onto the section content instead; it did not touch the buttons'
+fill and is reverted. Measured with the owner's permission in the in-app browser, portrait 360 x 740 with the rod
+editor open (computed styles only, no screenshots): bottom tabs `rgba(0, 0, 0, 0)`, active frame `rgb(123, 123, 123)`,
+pager tabs unchanged, no other background between the full-screen container and the tabs.
 
 ## Keepnet help button hidden, component kept
 
