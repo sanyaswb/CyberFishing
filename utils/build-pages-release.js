@@ -3,9 +3,10 @@
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
 //   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets
 //   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">
-// Files are the committed bytes. A published release directory is never overwritten, and nothing else in the site
-// is removed, so older tabs and cached pages keep a consistent set of files. Publishing (commit and push of the
-// site checkout) is a separate, manual step.
+// Files are the committed bytes. A published release directory is never overwritten. Retention (owner decision
+// 2026-10-15, spec 085): the site keeps the new release and, with keep 2 (default), the release that was live before
+// it, so open tabs of the previous version and a rollback still work; older releases are removed. Other root files are
+// left alone. Publishing (commit and push of the site checkout) is a separate, manual step.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -195,8 +196,10 @@ class PagesReleaseBuilder {
     return `${version}-${this.#tree.shortCommit()}`;
   }
 
-  build(siteDir) {
+  build(siteDir, { keep = 2 } = {}) {
+    if (keep !== 1 && keep !== 2) throw new Error("keep must be 1 (new release only) or 2 (new and previous live)");
     const id = this.releaseId();
+    const previous = PagesReleaseBuilder.liveRelease(siteDir);
     const releaseDir = path.join(siteDir, "releases", id);
     if (fs.existsSync(releaseDir)) {
       throw new Error(`Release ${id} is already published in ${siteDir}; published releases are never overwritten`);
@@ -225,7 +228,26 @@ class PagesReleaseBuilder {
       fs.writeFileSync(path.join(siteDir, CATALOG_PAGE),
         PagesReleaseBuilder.rootPage(contents.get(CATALOG_PAGE).toString("utf8"), id));
     }
-    return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes });
+    const removed = PagesReleaseBuilder.#prune(siteDir, new Set(keep === 2 && previous ? [id, previous] : [id]));
+    return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes, previous, removed: Object.freeze(removed) });
+  }
+
+  // The release the root page loads now (its <base href="releases/<id>/">), or null.
+  static liveRelease(siteDir) {
+    const page = path.join(siteDir, PAGE);
+    if (!fs.existsSync(page)) return null;
+    return fs.readFileSync(page, "utf8").match(/<base href="releases\/([^/"]+)\/"/u)?.[1] ?? null;
+  }
+
+  static #prune(siteDir, retained) {
+    const releasesDir = path.join(siteDir, "releases");
+    const removed = [];
+    for (const entry of fs.readdirSync(releasesDir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || retained.has(entry.name) || entry.name.includes(".partial-")) continue;
+      fs.rmSync(path.join(releasesDir, entry.name), { recursive: true, force: true });
+      removed.push(entry.name);
+    }
+    return removed.sort();
   }
 
   // The release page with every relative URL (stylesheets, entry, runtime assets) resolved inside the release.
@@ -241,18 +263,22 @@ class PagesReleaseBuilder {
 function readSiteArgument(argv) {
   const index = argv.indexOf("--site");
   const site = index === -1 ? "" : argv[index + 1] || "";
-  if (!site) throw new Error("Usage: npm run release:pages -- --site <gh-pages checkout> [--ref <commit>]");
+  if (!site) throw new Error("Usage: npm run release:pages -- --site <gh-pages checkout> [--ref <commit>] [--keep 1|2]");
   const refIndex = argv.indexOf("--ref");
-  return { site: path.resolve(site), ref: refIndex === -1 ? "HEAD" : argv[refIndex + 1] };
+  const keepIndex = argv.indexOf("--keep");
+  return { site: path.resolve(site), ref: refIndex === -1 ? "HEAD" : argv[refIndex + 1],
+    keep: keepIndex === -1 ? 2 : Number(argv[keepIndex + 1]) };
 }
 
 if (require.main === module) {
   try {
-    const { site, ref } = readSiteArgument(process.argv.slice(2));
+    const { site, ref, keep } = readSiteArgument(process.argv.slice(2));
     if (!fs.existsSync(site)) throw new Error(`Site directory does not exist: ${site}`);
     const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, ".."), ref });
-    const release = new PagesReleaseBuilder({ tree }).build(site);
+    const release = new PagesReleaseBuilder({ tree }).build(site, { keep });
     console.log(`Release ${release.id}: ${release.files.length} files, ${release.bytes} bytes in ${release.releaseDir}.`);
+    console.log(`Kept ${release.previous && keep === 2 ? `the previous live release ${release.previous}` : "no older release"}; ` +
+      `removed ${release.removed.length ? release.removed.join(", ") : "nothing"}.`);
     console.log("Root index.html and dev.html now load it. Review, then commit and push the site checkout to publish.");
   } catch (error) {
     console.error(error.message);

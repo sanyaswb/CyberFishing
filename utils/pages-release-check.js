@@ -11,12 +11,15 @@ const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, "..") });
 const site = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-pages-"));
 try {
   // An earlier release and the old root files must survive.
+  // The live release (named by the root page) and an older one; retention keeps only the live one (spec 085).
   const olderRelease = path.join(site, "releases", "0.0.1-0000000", "index.html");
+  const staleRelease = path.join(site, "releases", "0.0.0-ffffff0", "index.html");
   const oldRootFile = path.join(site, "src", "old.js");
-  fs.mkdirSync(path.dirname(olderRelease), { recursive: true });
-  fs.mkdirSync(path.dirname(oldRootFile), { recursive: true });
+  for (const file of [olderRelease, staleRelease, oldRootFile]) fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(olderRelease, "older release");
+  fs.writeFileSync(staleRelease, "stale release");
   fs.writeFileSync(oldRootFile, "// old root file");
+  fs.writeFileSync(path.join(site, "index.html"), '<head>\n    <base href="releases/0.0.1-0000000/" />\n</head>');
 
   const builder = new PagesReleaseBuilder({ tree });
   const release = builder.build(site);
@@ -90,7 +93,11 @@ try {
   const root = fs.readFileSync(path.join(site, "index.html"), "utf8");
   assert.equal(root, page.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
     "the root page is the release page resolved inside the release");
-  assert.equal(fs.readFileSync(olderRelease, "utf8"), "older release", "earlier releases are retained");
+  assert.equal(fs.readFileSync(olderRelease, "utf8"), "older release", "the previously live release is retained");
+  assert(!fs.existsSync(path.dirname(staleRelease)), "older releases are removed");
+  assert.equal(release.previous, "0.0.1-0000000"); assert.deepEqual([...release.removed], ["0.0.0-ffffff0"]);
+  assert.equal(PagesReleaseBuilder.liveRelease(site), release.id, "the root page loads the new release");
+  assert.throws(() => builder.build(site, { keep: 3 }), /keep must be 1/u);
   assert.equal(fs.readFileSync(oldRootFile, "utf8"), "// old root file", "old root files are retained");
   assert.deepEqual(fs.readdirSync(path.join(site, "releases")).sort(), ["0.0.1-0000000", release.id].sort(), "no staging left");
 
@@ -121,7 +128,7 @@ try {
   }
 
   console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, ` +
-    `${modules.length} modules, assets), closed module graph, base-resolved root page, earlier releases and root files ` +
+    `${modules.length} modules, assets), closed module graph, base-resolved root page, previous live release kept, older ones removed, root files ` +
     "retained, overwrite refused.");
 } finally {
   fs.rmSync(site, { recursive: true, force: true });
