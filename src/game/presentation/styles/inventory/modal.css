@@ -141,8 +141,10 @@
      Narrow landscape keeps the separate containers above. */
   @media (orientation: portrait) {
     /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
+    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
     .inventory-modal {
       --inventory-content-columns: minmax(0, 1fr);
+      --inventory-swipe: on;
       padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       background: var(--inventory-equipment-surface);
@@ -159,6 +161,22 @@
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
       padding-top: var(--inventory-container-gap);
+    }
+
+    /* Horizontal swipes switch sections (spec 087). touch-action is resolved only up to the nearest scroller, so the
+       main area and each vertical scroller inside it keep only vertical native panning; filter rows and lists declare
+       their own axes (spec 079). */
+    .inventory-main,
+    .inventory-main__left,
+    .inventory-main .inventory-loadout-panel,
+    .inventory-main .inventory-assembly-editor,
+    .inventory-main .inventory-saved-loadout-preview,
+    .inventory-main .keepnet-section__summary {
+      touch-action: pan-y;
+    }
+
+    .inventory-main.inventory-main--swiping {
+      user-select: none;
     }
 
     /* The sidebar keeps no box in portrait (spec 077): content, items and tabs keep their own grid areas, and the

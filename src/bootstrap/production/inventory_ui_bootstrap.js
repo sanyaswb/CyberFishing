@@ -184,6 +184,8 @@ export class InventoryUiBootstrap {
         parametersRenderer: itemParametersRenderer,
         parameterSectionResolver: new InventoryAssemblyParameterSectionResolver(),
       });
+    // Pages and sections swipe only where CSS turns the flag on (portrait, spec 087).
+    const swipeEnabled = (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-swipe").trim() === "on";
     const resolvedInventoryRenderer =
       inventoryRenderer ||
       new InventoryGridRenderer({
@@ -194,7 +196,7 @@ export class InventoryUiBootstrap {
         backdropImage: INVENTORY_SECTIONS.backpackImage,
         pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
           tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),
-          swipeController: new SwipePagerController(), config: INVENTORY_SECTIONS.backpackPager }),
+          swipeController: new SwipePagerController({ isEnabled: swipeEnabled }), config: INVENTORY_SECTIONS.backpackPager }),
       });
     return {
       dom,
@@ -208,6 +210,8 @@ export class InventoryUiBootstrap {
       resolvedSavedLoadoutRenderer,
       resolvedInventoryRenderer,
       sections: INVENTORY_SECTIONS,
+      sectionSwipeController: new SwipePagerController({ isEnabled: swipeEnabled, positionProperty: null,
+        draggingClassName: "inventory-main--swiping" }),
       sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
       backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS, scaleRenderer }),
       hintRenderer: new UiHintRenderer({ domFactory: dom }),

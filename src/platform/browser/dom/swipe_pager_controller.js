@@ -1,28 +1,36 @@
 // Horizontal swipe between the pages of a pager (spec 075). While a pointer drags it writes only the transient
-// position, in pages, to --inventory-pager-position on the viewport; on release it settles on a page and reports it.
+// position, in pages, to its position property on the viewport; on release it settles on a page and reports it.
 // Vertical gestures stay with the browser (the viewport uses touch-action: pan-y). A finished drag suppresses the
-// click that would otherwise activate the card under the pointer.
+// click that would otherwise activate the card under the pointer. isEnabled lets CSS decide where swipes work, and a
+// swipe past the first or last page goes to onEdge, so pagers can chain (spec 087).
 export class SwipePagerController {
-  static #DRAGGING = "inventory-pager__viewport--dragging";
   #thresholdPx;
   #commitShare;
   #clickSuppressionMs;
   #nowMs;
+  #isEnabled;
+  #positionProperty;
+  #draggingClassName;
   #bindings = new WeakMap();
 
-  constructor({ thresholdPx = 8, commitShare = 0.2, clickSuppressionMs = 400, nowMs = Date.now } = {}) {
+  constructor({ thresholdPx = 8, commitShare = 0.2, clickSuppressionMs = 400, nowMs = Date.now, isEnabled = () => true,
+    positionProperty = "--inventory-pager-position", draggingClassName = "inventory-pager__viewport--dragging" } = {}) {
     this.#thresholdPx = thresholdPx;
     this.#commitShare = commitShare;
     this.#clickSuppressionMs = clickSuppressionMs;
     this.#nowMs = nowMs;
+    this.#isEnabled = isEnabled;
+    this.#positionProperty = positionProperty;
+    this.#draggingClassName = draggingClassName;
   }
 
-  attach(viewport, { pageCount, getIndex, onSelect }) {
+  // ignoreSelector: gestures that start inside a matching element belong to a nested pager or scroller.
+  attach(viewport, { pageCount, getIndex, onSelect, onEdge = null, ignoreSelector = "" }) {
     this.detach(viewport);
-    const options = { pageCount, getIndex, onSelect };
+    const options = { pageCount, getIndex, onSelect, onEdge, ignoreSelector };
     const state = { pointerId: null, startX: 0, startY: 0, width: 0, dragging: false, suppressClickUntil: -Infinity };
     const handlers = {
-      pointerdown: (event) => this.#down(viewport, state, event),
+      pointerdown: (event) => this.#down(viewport, state, options, event),
       pointermove: (event) => this.#move(viewport, state, options, event),
       pointerup: (event) => this.#end(viewport, state, options, event),
       pointercancel: (event) => this.#end(viewport, state, options, event),
@@ -43,8 +51,10 @@ export class SwipePagerController {
     this.#bindings.delete(viewport);
   }
 
-  #down(viewport, state, event) {
+  #down(viewport, state, options, event) {
     if (state.pointerId !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (options.ignoreSelector && event.target.closest(options.ignoreSelector)) return;
+    if (!this.#isEnabled(viewport)) return;
     state.pointerId = event.pointerId;
     state.startX = event.clientX;
     state.startY = event.clientY;
@@ -64,10 +74,11 @@ export class SwipePagerController {
       if (Math.abs(dx) <= this.#thresholdPx || !(state.width > 0)) return;
       state.dragging = true;
       viewport.setPointerCapture(event.pointerId);
-      viewport.classList.add(SwipePagerController.#DRAGGING);
+      viewport.classList.add(this.#draggingClassName);
     }
+    if (!this.#positionProperty) return;
     const position = Math.min(options.pageCount - 1, Math.max(0, options.getIndex() - dx / state.width));
-    viewport.style.setProperty("--inventory-pager-position", String(position));
+    viewport.style.setProperty(this.#positionProperty, String(position));
   }
 
   #end(viewport, state, options, event) {
@@ -75,14 +86,15 @@ export class SwipePagerController {
     state.pointerId = null;
     if (!state.dragging) return;
     state.dragging = false;
-    viewport.classList.remove(SwipePagerController.#DRAGGING);
-    viewport.style.removeProperty("--inventory-pager-position");
+    viewport.classList.remove(this.#draggingClassName);
+    if (this.#positionProperty) viewport.style.removeProperty(this.#positionProperty);
     state.suppressClickUntil = this.#nowMs() + this.#clickSuppressionMs;
     const dx = event.clientX - state.startX;
-    const index = options.getIndex();
     const step = event.type === "pointerup" && Math.abs(dx) >= state.width * this.#commitShare ? Math.sign(-dx) : 0;
-    const next = Math.min(options.pageCount - 1, Math.max(0, index + step));
-    if (next !== index) options.onSelect(next);
+    if (!step) return;
+    const next = options.getIndex() + step;
+    if (next >= 0 && next < options.pageCount) options.onSelect(next);
+    else options.onEdge?.(step);
   }
 
   #click(state, event) {

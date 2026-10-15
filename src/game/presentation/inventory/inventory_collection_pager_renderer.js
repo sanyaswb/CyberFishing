@@ -17,7 +17,8 @@ export class InventoryCollectionPagerRenderer {
   }
 
   // pages: the nodes of each page; they become the page's direct children, so the page (a flex column) bounds them.
-  create(pages, { viewportClassName = "" } = {}) {
+  // onEdge receives a swipe past the first (-1) or the last (+1) page (spec 087).
+  create(pages, { viewportClassName = "", onEdge = null } = {}) {
     const pager = this.#dom.element("div", "inventory-pager");
     const ids = this.#config.items.map((item) => item.id);
     const tabs = this.#tabs.create({ activeId: ids[this.#index], onSelect: (id) => this.select(ids.indexOf(id)) });
@@ -32,7 +33,8 @@ export class InventoryCollectionPagerRenderer {
     viewport.appendChild(track);
     pager.append(tabs, viewport);
     if (this.#current) this.#swipe.detach(this.#current.viewport);
-    this.#swipe.attach(viewport, { pageCount: pages.length, getIndex: () => this.#index, onSelect: (index) => this.select(index) });
+    this.#swipe.attach(viewport, { pageCount: pages.length, getIndex: () => this.#index, onSelect: (index) => this.select(index),
+      onEdge });
     this.#current = { tabs, viewport };
     this.#apply();
     return pager;
@@ -42,6 +44,10 @@ export class InventoryCollectionPagerRenderer {
     if (index < 0 || index === this.#index) return;
     this.#index = index;
     this.#apply();
+  }
+
+  selectLast() {
+    this.select(this.#config.items.length - 1);
   }
 
   #apply() {

@@ -357,8 +357,11 @@
     }
 
     /* touch-action here covers pages without their own scroller (the backpack view); the item list declares its own
-       pan axis through .inventory-vertical-scroll (spec 079). */
+       pan axis through .inventory-vertical-scroll (spec 079). The panel continues the tabs' frame on its left, right
+       and bottom; the tab baseline is its top edge (spec 087). */
     .inventory-pager__viewport {
+      border-color: var(--inventory-equipment-tab-border);
+      border-top-width: 0;
       border-top-left-radius: 0;
       border-top-right-radius: 0;
       touch-action: pan-y;

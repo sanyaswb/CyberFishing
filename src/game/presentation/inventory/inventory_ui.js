@@ -40,6 +40,9 @@ export class InventoryUI {
   #keepnetSection = null;
   #sections;
   #activeSectionId = null;
+  // Portrait swipes walk the sections in tab order (spec 087); -1 enters the backpack on its last page.
+  #sectionSwipeController;
+  #sectionEntryStep = 1;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
@@ -129,6 +132,7 @@ export class InventoryUI {
     this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
     this.#hintRenderer = presentation.hintRenderer;
     this.#sections = presentation.sections;
+    this.#sectionSwipeController = presentation.sectionSwipeController;
     this.#buildShell();
   }
 
@@ -176,7 +180,7 @@ export class InventoryUI {
 
   openSection(sectionId) {
     if (!this.#isOpen) this.open();
-    this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId });
+    this.#selectSection(sectionId);
   }
 
   toggleSection(sectionId) {
@@ -390,12 +394,16 @@ export class InventoryUI {
       "inventory-main__right",
     );
     this.#sectionTabsNode = this.#sectionTabsRenderer.create({ activeId: null,
-      onSelect: (sectionId) => this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId }) });
+      onSelect: (sectionId) => this.#selectSection(sectionId) });
     this.#sectionTabsNode.classList.add("inventory-main__tabs");
     // One parent for the section content and the tab bar (spec 077): it owns the column's background and frame.
     const sidebar = this.#dom.element("div", "inventory-main__sidebar");
     sidebar.append(this.#leftHost, this.#sectionTabsNode);
     main.append(sidebar, this.#rightHost);
+    // The backpack pager and the filter rows own their own horizontal gestures; the pager hands its edges back here.
+    this.#sectionSwipeController.attach(main, { pageCount: this.#sections.items.length,
+      getIndex: () => this.#sectionIndex(), onSelect: (index) => this.#swipeSection(index - this.#sectionIndex()),
+      ignoreSelector: ".inventory-pager__viewport, .inventory-horizontal-scroll" });
     const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
     this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));
     this.#backpackSummaryNode = this.#backpackSummaryRenderer.create();
@@ -425,7 +433,9 @@ export class InventoryUI {
     const sectionId = sections.activeId;
     if (sectionId !== this.#activeSectionId) {
       this.#activeSectionId = sectionId;
-      if (sectionId === "backpack") this.#inventoryRenderer.showItemsPage();
+      if (sectionId === "backpack" && this.#sectionEntryStep < 0) this.#inventoryRenderer.showBackpackPage();
+      else if (sectionId === "backpack") this.#inventoryRenderer.showItemsPage();
+      this.#sectionEntryStep = 1;
       const visible = new Set([this.#sectionHosts.get(sectionId).left,
         sectionId === "keepnet" ? this.#sectionHosts.get("keepnet").right : this.#itemsHost]);
       for (const hosts of this.#sectionHosts.values())
@@ -435,6 +445,21 @@ export class InventoryUI {
         this.#rootNode.classList.toggle(section.modifier, section.id === sectionId);
     }
     this.#keepnetSection?.setVisible(this.#isOpen && sectionId === "keepnet");
+  }
+
+  #selectSection(sectionId, entryStep = 1) {
+    this.#sectionEntryStep = entryStep;
+    this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId });
+  }
+
+  #sectionIndex() {
+    return this.#sections.items.findIndex((section) => section.id === this.#activeSectionId);
+  }
+
+  // A swipe moves one section in tab order and keeps its direction for the backpack's entry page.
+  #swipeSection(step) {
+    const section = this.#sections.items[this.#sectionIndex() + step];
+    if (section) this.#selectSection(section.id, step);
   }
 
   #renderHeader(viewModel) {
@@ -608,6 +633,7 @@ export class InventoryUI {
           type: this.#actionTypes.INVENTORY_ITEM_LONG_PRESS,
           instanceId: item.instanceId,
         }),
+      onPagerEdge: (step) => this.#swipeSection(step),
       backpackView: this.#backpackPageNode,
     });
     this.#dom.replaceChildren(this.#itemsHost, grid);

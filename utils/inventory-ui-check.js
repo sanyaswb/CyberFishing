@@ -284,6 +284,15 @@ class FakeElement {
     this.#capturedPointers.delete(pointerId);
   }
 
+  // Class selectors only (".a, .b"), enough for the swipe controller's ignore list (spec 087).
+  closest(selector) {
+    const classNames = selector.split(",").map((part) => part.trim().replace(/^\./, ""));
+    for (let node = this; node; node = node.parentNode) {
+      if (classNames.some((className) => node.classList?.contains(className))) return node;
+    }
+    return null;
+  }
+
   contains(candidate) {
     if (candidate === this) return true;
     return this.children.some((child) => child.contains?.(candidate));
@@ -307,6 +316,9 @@ class FakeDocument {
   constructor() {
     this.activeElement = null;
     this.body = new FakeElement("body", this);
+    // Computed custom properties shared by every element; portrait turns the inventory swipes on (spec 087).
+    this.cssProperties = { "--inventory-swipe": "on" };
+    this.defaultView = { getComputedStyle: () => ({ getPropertyValue: (name) => this.cssProperties[name] ?? "" }) };
   }
 
   createElement(tagName) {
@@ -1336,6 +1348,49 @@ class InventoryStaticContractCheck {
       [false, true, false], "one root modifier names the visible section");
     assert.deepStrictEqual(activeTabs(), ["backpack"]);
     assert.strictEqual(pagerIndex(), "0", "entering the backpack section starts on the item list");
+    // Spec 087: the pager hands swipes past its edges to the sections, the main area swipes the sections in tab
+    // order, and a swipe back from the keepnet enters the backpack on its backpack page.
+    const sectionSelects = () => dispatched.filter((action) => action.type === sandbox.InventoryActionType.SECTION_SELECT)
+      .map((action) => action.sectionId);
+    const selectsDuring = (gesture) => {
+      const before = sectionSelects().length;
+      gesture();
+      return sectionSelects().slice(before);
+    };
+    assert.deepStrictEqual(selectsDuring(() => swipe(50, 250)), ["equipment"], "a right swipe on the item list opens equipment");
+    assert.strictEqual(pagerIndex(), "0");
+    assert.deepStrictEqual(selectsDuring(() => swipe(250, 50)), [], "a left swipe on the item list first shows the backpack page");
+    assert.strictEqual(pagerIndex(), "1");
+    assert.deepStrictEqual(selectsDuring(() => swipe(250, 50)), ["keepnet"], "the next left swipe opens the keepnet");
+    ui.render(sectionView("keepnet"));
+    const mainArea = this.#findByClass(ui.rootNode, "inventory-main");
+    mainArea.layoutWidth = 300;
+    const swipeMain = (fromX, toX, target = mainArea) => {
+      mainArea.emit("pointerdown", { pointerType: "touch", clientX: fromX, clientY: 100, target });
+      mainArea.emit("pointermove", { pointerType: "touch", clientX: toX, clientY: 101, target });
+      return mainArea.emit("pointerup", { pointerType: "touch", clientX: toX, clientY: 101, target });
+    };
+    assert.deepStrictEqual(selectsDuring(() => swipeMain(250, 50)), [], "the keepnet is the last section");
+    assert.deepStrictEqual(selectsDuring(() => swipeMain(50, 250, pagerViewport)), [],
+      "a gesture that starts in the pager belongs to the pager");
+    assert.deepStrictEqual(selectsDuring(() => swipeMain(50, 250)), ["backpack"], "a right swipe on the keepnet opens the backpack");
+    assert.ok(mainArea.emit("click").defaultPrevented, "the click that ends a section swipe is suppressed");
+    ui.render(sectionView("backpack"));
+    assert.strictEqual(pagerIndex(), "1", "returning from the keepnet enters on the backpack page");
+    swipe(50, 250);
+    assert.strictEqual(pagerIndex(), "0");
+    document.cssProperties["--inventory-swipe"] = "";
+    assert.deepStrictEqual(selectsDuring(() => { swipe(50, 250); swipe(250, 50); swipeMain(50, 250); }), [],
+      "wide layouts keep neither page nor section swipes");
+    assert.strictEqual(pagerIndex(), "0");
+    document.cssProperties["--inventory-swipe"] = "on";
+    const modalCss = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/modal.css"), "utf8");
+    assert.match(modalCss, /orientation: portrait\)[\s\S]*\.inventory-modal\s*\{[^}]*--inventory-swipe:\s*on;/,
+      "only portrait turns the swipes on");
+    assert.match(modalCss, /\.inventory-main,\s*\.inventory-main__left,[^{]*\{\s*touch-action:\s*pan-y;/,
+      "horizontal touch swipes reach the section swipe");
+    assert.match(listCss, /\.inventory-pager__viewport\s*\{\s*border-color:\s*var\(--inventory-equipment-tab-border\);\s*border-top-width:\s*0;/,
+      "the items panel continues the tabs' frame without a top edge");
     // Spec 075: one image container, then a separate stats container with the 0..100 capacity scale.
     const backpackView = this.#findByClass(backpackSection, "inventory-backpack");
     const [backpackVisual, backpackStats] = backpackView.children;

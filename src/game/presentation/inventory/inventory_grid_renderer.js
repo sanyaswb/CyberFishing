@@ -36,6 +36,7 @@ export class InventoryGridRenderer {
       onRarityFilterToggle = null,
       onItemActivate = null,
       onItemLongPress = null,
+      onPagerEdge = null,
       backpackView,
     } = {},
   ) {
@@ -82,6 +83,7 @@ export class InventoryGridRenderer {
     items.push(grid);
     const pager = this.#pager.create([items, [backpackView]], {
       viewportClassName: "inventory-list-panel__items inventory-collection__items inventory-panel",
+      onEdge: onPagerEdge,
     });
     panel.append(controls, pager);
     return panel;
@@ -90,6 +92,11 @@ export class InventoryGridRenderer {
   // Entering the backpack section starts on the item list, so a pick always shows its highlighted cards.
   showItemsPage() {
     this.#pager.select(0);
+  }
+
+  // A swipe back from the next section enters on the backpack page next to it (spec 087).
+  showBackpackPage() {
+    this.#pager.selectLast();
   }
 
   #renderCategories(
