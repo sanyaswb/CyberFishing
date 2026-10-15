@@ -279,6 +279,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "asset-preloader",
+    title: "Smart preloader foundation and optional Spine runtime",
+    file: "utils/asset-preloader-check.js",
+    suites: ["quick"],
+  },
+  {
     id: "viewport",
     title: "Camera and world perspective ownership",
     file: "utils/viewport-check.js",

@@ -369,6 +369,8 @@
 │  │  └── spec.md
 │  ├── 082-webp-art
 │  │  └── spec.md
+│  ├── 083-preloader-foundation
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -552,8 +554,12 @@
 │  │     └── ui_catalog_page.js
 │  ├── engine
 │  │  ├── assets
+│  │  │  ├── asset_catalog.js
+│  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
-│  │  │  └── asset_manifest.js
+│  │  │  ├── asset_manifest.js
+│  │  │  ├── asset_variant_selector.js
+│  │  │  └── startup_load_progress.js
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── events
@@ -1167,6 +1173,9 @@
 │  ├── package.json
 │  └── platform
 │     └── browser
+│        ├── animation
+│        │  ├── spine_runtime_module.js
+│        │  └── spine_runtime_provider.js
 │        ├── assets
 │        │  ├── asset_preload_coordinator.js
 │        │  └── image_asset_provider.js
@@ -1234,6 +1243,7 @@
 ├── ui-catalog.html
 └── utils
    ├── architecture-check.js
+   ├── asset-preloader-check.js
    ├── bait-effectiveness-check.js
    ├── build-pages-release.js
    ├── check-js.js

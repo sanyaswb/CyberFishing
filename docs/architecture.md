@@ -126,6 +126,17 @@ node utils/run-checks.js --check game-cycle
 `utils/testing/baselines/game-cycle.txt`. A refactor that preserves behavior leaves that file unchanged. A gameplay
 change that changes the report re-baselines it (`npm run baseline:game-cycle`) in the same commit.
 
+## Assets and preloading
+
+Today `AssetPreloadCoordinator` (platform) preloads location backgrounds, the depth map and fish sprites through
+`ImageAssetProvider` and returns `AssetLoadResult`. The smart preloader ([spec 047](../specs/047-smart-asset-preloader/spec.md),
+first step [spec 083](../specs/083-preloader-foundation/spec.md)) replaces it in steps: `engine/assets` holds the
+immutable `AssetCatalog`, the pure `AssetVariantSelector`, the shared priority `AssetLoadQueue` and
+`StartupLoadProgress`; the browser transport, decoder and the optional Spine runtime (`platform/browser/animation`,
+`SpineRuntimeProvider` over the checked-in `spine_runtime_module.js` stub) stay in platform. Until the facade step
+these engine modules are exercised only by the `asset-preloader` check. Raster art is WebP under `assets/`; image
+masters live in `asset-sources/` and are never published ([spec 082](../specs/082-webp-art/spec.md)).
+
 ## Migration history
 
 The classic-script → ESM migration (Stages 1–7.1) and all of its records, evidence, Manifest and
