@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.37.1 - Portrait Section Swipe
+
+- Portrait inventory swipes walk Equipment, Items, Backpack and Keepnet as one chain (the backpack pages first, then the next section); wide layouts keep tabs only. The items panel under the Items/Backpack tabs continues their frame on the left, right and bottom. Gameplay formulas and saves are unchanged.
+
 ## v0.37.0 - Hint Regions, House Screen and Preloader Foundation
 
 - Hints (inventory warning, keepnet help, House notices) share one style with a close button and take an in-flow region at the top of their container; fix the collapsed Equipment/Keepnet sections on phones (G-061). The House clock shows every game minute.
