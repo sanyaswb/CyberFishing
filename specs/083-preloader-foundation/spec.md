@@ -108,8 +108,13 @@ Consequences for the plan:
 - DEV time jumps or fast time scales may reach a phase that is not loaded yet; it shows its placeholder or `l` until
   its own request (promoted to `interactive` as soon as the phase becomes visible) completes.
 
-Still open: the loader's static poster (shown while Spine is unavailable) and the art that stays visible while the
-loading layer fades.
+4. **Loader poster** (owner art, 2026-10-15): the flooded city with the great tree seen through a ruined window,
+   `assets/ui/loader/loader-poster.webp`, 2752 × 1536, opaque. Converted with `convert-images --batch --quality middle`
+   (WebP 80): 7.0 MB PNG → 319 KB; the master is `asset-sources/ui/loader/loader-poster.png`. It is the loading layer's
+   first-paint art and the static fallback while Spine is unavailable; its placeholder colour (average) is `#7d7f88`,
+   the layer's background until the poster decodes. The loader step adds a reduced variant for narrow screens.
+
+Still open: the art that stays visible while the loading layer fades.
 
 ## Verification
 

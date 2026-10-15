@@ -80,10 +80,13 @@
 │  │     │  └── room--1-nightLight--on-lvl--5.jpg
 │  │     ├── room--1_aqua.png
 │  │     └── under-renovation.png
-│  └── items
-│     └── rods
-│        ├── bamboo-rod-ecip-v1.png
-│        └── bamboo-rod-unecip-v1.png
+│  ├── items
+│  │  └── rods
+│  │     ├── bamboo-rod-ecip-v1.png
+│  │     └── bamboo-rod-unecip-v1.png
+│  └── ui
+│     └── loader
+│        └── loader-poster.png
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
@@ -172,6 +175,8 @@
 │     │  ├── tackle.svg
 │     │  └── weight.svg
 │     ├── inventory-sections.svg
+│     ├── loader
+│     │  └── loader-poster.webp
 │     └── status-icons.svg
 ├── dev.html
 ├── docs
