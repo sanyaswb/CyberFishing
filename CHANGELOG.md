@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.37.2 - Keepnet Like the Backpack
+
+- The keepnet section follows the backpack's layout on phones and PC: the backpack's filter rows (fish kinds, species), a capacity scale with the fish icon and the count on the meter, and Fish/Keepnet pages in portrait that swipe as part of the section chain. Gameplay formulas and saves are unchanged.
+
 ## v0.37.1 - Portrait Section Swipe
 
 - Portrait inventory swipes walk Equipment, Items, Backpack and Keepnet as one chain (the backpack pages first, then the next section); wide layouts keep tabs only. The items panel under the Items/Backpack tabs continues their frame on the left, right and bottom. Gameplay formulas and saves are unchanged.

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.37.1";
+export const CURRENT_PROJECT_VERSION = "0.37.2";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -14,8 +14,9 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
   codename: "screens-and-preloader",
-  updatedAt: "2026-10-15",
+  updatedAt: "2026-10-16",
   notes: Object.freeze([
+    "The keepnet is laid out like the backpack: the same filter rows, a fish capacity scale, Fish and Keepnet pages in portrait",
     "Portrait inventory swipes chain through Equipment, Items, Backpack and Keepnet; the items panel continues the tabs' frame",
     "Hints have their own region at the top of their container and push the content down; every hint has a close button",
     "Equipment and Keepnet sections fill the phone screen again",
