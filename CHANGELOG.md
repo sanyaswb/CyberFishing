@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.37.0 - Hint Regions, House Screen and Preloader Foundation
+
+- Hints (inventory warning, keepnet help, House notices) share one style with a close button and take an in-flow region at the top of their container; fix the collapsed Equipment/Keepnet sections on phones (G-061). The House clock shows every game minute.
+- The House is a screen of the game page (DEV access until the lobby); raster art is WebP with masters outside releases; smart preloader foundation and optional Spine runtime; Pages keeps only the new and the previous release. Gameplay formulas and saves are unchanged.
+
 ## v0.36.0 - Inventory Sections, Picks and the First Rod Skin
 
 - Turn the inventory into Equipment/Backpack/Keepnet sections: full-screen portrait container, one sidebar parent on wide screens, two-section header with a 100kg load scale, shared filter/items collections for backpack and keepnet, and a portrait backpack pager with a presentation-only 0/100 capacity scale.

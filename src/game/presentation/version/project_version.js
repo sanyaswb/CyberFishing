@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.36.0";
+export const CURRENT_PROJECT_VERSION = "0.37.0";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,13 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-sections",
+  codename: "screens-and-preloader",
   updatedAt: "2026-10-15",
   notes: Object.freeze([
-    "The inventory has Equipment, Backpack and Keepnet sections, a full-screen portrait layout and one sidebar container on wide screens",
-    "An empty cell, craft socket or header circle picks from the backpack with highlighted items; a waiting bait or chum applies at the first header press",
-    "Header bait and chum pills show every hook slot, manual and automatic counts, and a 100kg load scale",
-    "Portrait backpack swipes between items and the backpack view with a 0/100 capacity scale; lists scroll by drag without selecting cards",
-    "The bamboo rod has its first painted skin, with and without the equipped line",
+    "Hints have their own region at the top of their container and push the content down; every hint has a close button",
+    "Equipment and Keepnet sections fill the phone screen again",
+    "The House is a screen of the game page and its clock shows every game minute",
+    "Raster art is WebP (49.9 MB to 5.9 MB) and the smart preloader foundation with an optional Spine runtime is in place",
   ]),
 });
 
