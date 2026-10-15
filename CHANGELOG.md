@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.37.3 - Editor Under the Tabs and Rod Removal Rule
+
+- In portrait the item editor scrolls under the section tabs (the active tab shows the content through its frame); the keepnet help button is hidden for now. A long press offers to save a rod as a loadout only when every first-level cell is filled; an incomplete rod comes off at once with its components intact.
+
 ## v0.37.2 - Keepnet Like the Backpack
 
 - The keepnet section follows the backpack's layout on phones and PC: the backpack's filter rows (fish kinds, species), a capacity scale with the fish icon and the count on the meter, and Fish/Keepnet pages in portrait that swipe as part of the section chain. Gameplay formulas and saves are unchanged.
