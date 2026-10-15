@@ -1,0 +1,233 @@
+/* Backpack, modal lifecycle and inventory screen layout. */
+
+.inventory-modal {
+  --inventory-content-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
+  --inventory-content-gap: 20px;
+  /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
+  --inventory-container-gap: var(--inventory-content-gap);
+  position: fixed;
+  inset: 0;
+  z-index: var(--ui-layer-panel);
+  display: none;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  padding: 14px 20px 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(2, 7, 9, 0.8), rgba(2, 7, 9, 0.9)),
+    radial-gradient(circle at 50% 72%, rgba(0, 120, 61, 0.18), transparent 45%);
+  color: #f4f7f7;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  isolation: isolate;
+}
+
+/* Three rows for the modal's three children (spec 086): the hint region, the header, the main area. Only the main
+   area stretches; a template row without its child would leave the main area in a content-sized row. */
+.inventory-modal.inventory-modal--open {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+/* Hint region (spec 086): the first row, above the header and its switchers. No height while no hint is shown; a
+   shown hint takes its own space and pushes the header and the sections down, with the inventory's container gap. */
+.inventory-modal__hints {
+  display: grid;
+  gap: var(--inventory-container-gap);
+  min-width: 0;
+}
+
+.inventory-modal__hints:has(> :not([hidden])) {
+  margin-bottom: var(--inventory-container-gap);
+}
+
+.inventory-modal__hints > .ui-hint {
+  max-height: calc(var(--ui-logical-height, 100dvh) * 0.3);
+}
+
+.inventory-modal *,
+.inventory-modal *::before,
+.inventory-modal *::after {
+  box-sizing: border-box;
+}
+
+.inventory-main {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: var(--inventory-content-columns);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "left right";
+  gap: 0 var(--inventory-content-gap);
+  padding-top: 18px;
+  overflow: hidden;
+}
+
+.inventory-main__left,
+.inventory-main__right {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The left column's one parent (spec 077): the section content above, the transparent tab bar at the bottom. It
+   alone paints the column's background and frame; sections and the tab bar paint no outer background. */
+.inventory-main__sidebar {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-equipment-surface);
+}
+
+.inventory-main__sidebar > .inventory-main__left {
+  flex: 1;
+}
+
+.inventory-main__sidebar .inventory-loadout-panel,
+.inventory-main__sidebar .inventory-assembly-editor,
+.inventory-main__sidebar .inventory-saved-loadout-preview {
+  --inventory-panel: transparent;
+  --inventory-panel-border: transparent;
+}
+
+.inventory-main__sidebar .inventory-backpack {
+  padding: var(--inventory-container-gap);
+}
+
+/* The equipment composition scales from this container (spec 067); separate columns give it a definite height. */
+.inventory-main__left {
+  grid-area: left;
+  container: inventory-equipment / size;
+}
+
+.inventory-main__right {
+  grid-area: right;
+}
+
+.inventory-main__tabs {
+  grid-area: tabs;
+}
+
+/* Every section keeps its hosts; only the active section's hosts are visible (spec 067). */
+.inventory-main__section {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+@container ui-surface (max-width: 1180px) {
+  .inventory-modal {
+    --inventory-content-columns: minmax(370px, 0.9fr) minmax(0, 1.35fr);
+  }
+}
+
+@container ui-surface (max-width: 820px) {
+  .inventory-modal {
+    /* 320px: reserve panel borders/padding, three equal gaps and both scrolling surfaces. */
+    --inventory-card-size: min(82px, calc((var(--ui-logical-width, 100vw) - 72px) / 4));
+    --inventory-socket-size: min(66px, var(--inventory-card-size));
+    --inventory-mobile-gap: 6px;
+    --inventory-mobile-inset: 10px;
+    --inventory-container-gap: var(--inventory-mobile-inset);
+    --inventory-header-radius: 14px;
+    padding: 9px;
+  }
+
+  /* Portrait (spec 068): the inventory fills the screen, the tabs stay at the bottom and only lists scroll.
+     Narrow landscape keeps the separate containers above. */
+  @media (orientation: portrait) {
+    /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
+    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
+    .inventory-modal {
+      --inventory-content-columns: minmax(0, 1fr);
+      --inventory-swipe: on;
+      padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+      overflow: hidden;
+      background: var(--inventory-equipment-surface);
+    }
+
+    /* The full-screen portrait container has no outer padding: the region keeps the containers' inset. */
+    .inventory-modal__hints:has(> :not([hidden])) {
+      margin-bottom: 0;
+      padding: var(--inventory-container-gap) var(--inventory-container-gap) 0;
+    }
+
+    .inventory-main {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-areas: "left" "right" "tabs";
+      gap: 0;
+      padding-top: var(--inventory-container-gap);
+    }
+
+    /* Horizontal swipes switch sections (spec 087). touch-action is resolved only up to the nearest scroller, so the
+       main area and each vertical scroller inside it keep only vertical native panning; filter rows and lists declare
+       their own axes (spec 079). */
+    .inventory-main,
+    .inventory-main__left,
+    .inventory-main .inventory-loadout-panel,
+    .inventory-main .inventory-assembly-editor,
+    .inventory-main .inventory-saved-loadout-preview,
+    .inventory-main .keepnet-section__summary {
+      touch-action: pan-y;
+    }
+
+    .inventory-main.inventory-main--swiping {
+      user-select: none;
+    }
+
+    /* The sidebar keeps no box in portrait (spec 077): content, items and tabs keep their own grid areas, and the
+       full-screen container is the background. */
+    .inventory-main__sidebar {
+      display: contents;
+    }
+
+    /* A tall assembly editor or saved preview scrolls inside the summary row and never hides the list or tabs. */
+    .inventory-main__left {
+      container-type: inline-size;
+      max-height: calc(var(--ui-logical-height, 100dvh) * 0.62);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .inventory-main__section {
+      height: auto;
+    }
+
+    .inventory-main__right {
+      padding: 0 var(--inventory-mobile-inset) var(--inventory-container-gap);
+    }
+
+    .inventory-modal--section-keepnet .inventory-main__right {
+      padding-top: var(--inventory-container-gap);
+    }
+
+    .inventory-main__left > .inventory-main__section--keepnet {
+      padding: 0 var(--inventory-mobile-inset);
+    }
+
+    /* Equipment owns the whole content row: the items live in the backpack section. */
+    /* Its real size scales the equipment unit (spec 078): no estimate of the header or tab heights. */
+    .inventory-modal--section-equipment .inventory-main__left {
+      grid-area: right;
+      max-height: none;
+      container-type: size;
+    }
+
+    .inventory-modal--section-equipment .inventory-main__right {
+      display: none;
+    }
+
+    .inventory-main__right > .inventory-main__section {
+      height: 100%;
+    }
+
+    /* The backpack illustration lies inside the items panel (spec 074); the summary column is not shown. */
+    .inventory-modal--section-backpack .inventory-main__left {
+      display: none;
+    }
+  }
+}
