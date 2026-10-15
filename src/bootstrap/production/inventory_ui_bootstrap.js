@@ -43,10 +43,10 @@ import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
 export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
-    buttonMountNode = documentRef?.body }) {
+    buttonMountNode = documentRef?.body, showHelp = false }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
     const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface,
-      degradationColorResolver,
+      degradationColorResolver, showHelp,
       openSection: () => inventoryUI.openSection("keepnet"),
       toggleSection: () => inventoryUI.toggleSection("keepnet"),
       onPagerEdge: (step) => inventoryUI.swipeSection(step) });
@@ -55,9 +55,10 @@ export class InventoryUiBootstrap {
   }
 
   // The keepnet section view with the backpack's collaborators (spec 088): scale, filter rows and the swipe pager.
-  // The UI catalog builds the same view without an inventory.
+  // The UI catalog builds the same view without an inventory. The help button stays a component but the game hides
+  // it for now (spec 089).
   static createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, degradationColorResolver,
-    openSection, toggleSection, onPagerEdge = null }) {
+    openSection, toggleSection, onPagerEdge = null, showHelp = false }) {
     const dom = new InventoryDomFactory(documentRef);
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
@@ -65,7 +66,7 @@ export class InventoryUiBootstrap {
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
       overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),
-        imagePath: inventorySlotIconPath("keepnet"), capacityIcon: pagerConfig.capacityIcon }),
+        imagePath: inventorySlotIconPath("keepnet"), capacityIcon: pagerConfig.capacityIcon, showHelp }),
       filtersRenderer: new KeepnetFiltersRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
       pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,

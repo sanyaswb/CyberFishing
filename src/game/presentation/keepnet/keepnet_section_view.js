@@ -59,7 +59,8 @@ export class KeepnetSectionView {
     const showHelp = () => this.#setHelpVisible(true);
     this.#summary = this.#overviews.create({ className: "keepnet-section__summary", onHelp: showHelp });
     this.#pagerOverview = this.#overviews.create({ onHelp: showHelp });
-    this.#helpButtons = [this.#summary, this.#pagerOverview].map((view) => this.#overviews.helpButton(view));
+    this.#helpButtons = [this.#summary, this.#pagerOverview].map((view) => this.#overviews.helpButton(view))
+      .filter(Boolean);
     this.#helpText = this.#hints.create({ className: "keepnet-section__help-text", closeLabel: labels.closeHelp,
       role: "note", onClose: () => this.#setHelpVisible(false) });
     this.#helpText.id = "keepnet-help";

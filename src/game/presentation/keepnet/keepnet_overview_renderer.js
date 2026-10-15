@@ -1,21 +1,24 @@
-// Keepnet view (spec 088), the counterpart of the backpack view (spec 075): an image container with the help button,
+// Keepnet view (spec 088), the counterpart of the backpack view (spec 075): an image container (optional help button),
 // then a separate stats container with the capacity scale (fish icon, meter, occupancy centred on it) and the status
 // line. Wide layouts show it in the keepnet section's left column; portrait shows a second instance as the keepnet
-// pager's right page.
+// pager's right page. showHelp places the help button on the image; the game hides it for now (spec 089) and keeps
+// the button and its hint as a component.
 export class KeepnetOverviewRenderer {
   #dom;
   #labels;
   #scales;
   #imagePath;
   #capacityIcon;
+  #showHelp;
   #bindings = new WeakMap();
 
-  constructor({ domFactory, labels, scaleRenderer, imagePath, capacityIcon }) {
+  constructor({ domFactory, labels, scaleRenderer, imagePath, capacityIcon, showHelp = true }) {
     this.#dom = domFactory;
     this.#labels = labels;
     this.#scales = scaleRenderer;
     this.#imagePath = imagePath;
     this.#capacityIcon = capacityIcon;
+    this.#showHelp = showHelp;
   }
 
   create({ className = "", onHelp }) {
@@ -24,12 +27,9 @@ export class KeepnetOverviewRenderer {
     const visual = this.#dom.element("div", "keepnet-overview__visual inventory-panel");
     const image = this.#dom.image(this.#imagePath, this.#labels.title);
     image.className = "keepnet-section__icon";
-    const help = this.#dom.button("keepnet-section__help", "?");
-    help.setAttribute("aria-label", this.#labels.help);
-    help.setAttribute("aria-expanded", "false");
-    help.setAttribute("aria-controls", "keepnet-help");
-    help.addEventListener("click", onHelp);
-    visual.append(image, help);
+    visual.appendChild(image);
+    const help = this.#showHelp ? this.#helpButton(onHelp) : null;
+    if (help) visual.appendChild(help);
     const stats = this.#dom.element("div", "keepnet-overview__stats inventory-panel");
     const capacity = this.#scales.create({ iconHref: this.#capacityIcon, meterId: "keepnet-capacity",
       className: "keepnet-section__capacity" });
@@ -42,8 +42,18 @@ export class KeepnetOverviewRenderer {
     return view;
   }
 
+  // The view's help button, or null while help is hidden.
   helpButton(view) {
     return this.#bindings.get(view).help;
+  }
+
+  #helpButton(onHelp) {
+    const help = this.#dom.button("keepnet-section__help", "?");
+    help.setAttribute("aria-label", this.#labels.help);
+    help.setAttribute("aria-expanded", "false");
+    help.setAttribute("aria-controls", "keepnet-help");
+    help.addEventListener("click", onHelp);
+    return help;
   }
 
   // Occupied space fills the meter; its colour follows the free space like every remaining resource.

@@ -385,6 +385,8 @@
 │  │  └── spec.md
 │  ├── 088-keepnet-like-backpack
 │  │  └── spec.md
+│  ├── 089-inventory-polish-rod-removal
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

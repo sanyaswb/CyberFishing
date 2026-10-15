@@ -59,8 +59,14 @@ async function main() {
     attachKeepnetSection(view) { this.view = view; documentRef.body.append(view.helpNode, view.summaryNode, view.contentNode); },
     openSection(id) { this.opened.push(id); this.view.setVisible(true); },
     toggleSection(id) { this.toggled++; assert.equal(id, "keepnet"); this.view.setVisible(!this.view.isOpen); } };
+  // Spec 089: the game hides the help button for now; the component stays and is checked here with showHelp.
+  const hiddenHelpDocument = new TestDocument();
+  InventoryUiBootstrap.createKeepnet({ documentRef: hiddenHelpDocument, liveBait: service, degradationColorResolver: colors,
+    inventoryUI: { attachKeepnetSection(view) { hiddenHelpDocument.body.append(view.summaryNode, view.contentNode); } } });
+  assert.equal(hiddenHelpDocument.byClass("keepnet-section__help").length, 0, "the game shows no keepnet help button");
+  assert.equal(hiddenHelpDocument.byClass("keepnet-overview").length, 2);
   const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service, degradationColorResolver: colors,
-    inventoryUI: inventory });
+    inventoryUI: inventory, showHelp: true });
   assert.equal(inventory.view, ui, "the keepnet attaches itself as the inventory section");
   assert.equal(ui.isOpen, false);
   const button = documentRef.byClass("keepnet-button")[0];

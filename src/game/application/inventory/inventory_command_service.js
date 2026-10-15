@@ -32,6 +32,7 @@ export class InventoryCommandService {
   #uiState;
   #itemRemoval;
   #consumableTargets;
+  #slotVisibility;
 
   constructor({
     messages,
@@ -62,6 +63,7 @@ export class InventoryCommandService {
     uiState,
     itemRemoval,
     consumableTargets,
+    slotVisibilityPolicy,
   } = {}) {
     this.#messages = messages;
     this.#repository = repository;
@@ -90,6 +92,7 @@ export class InventoryCommandService {
     this.#uiState = uiState;
     this.#itemRemoval = itemRemoval;
     this.#consumableTargets = consumableTargets;
+    this.#slotVisibility = slotVisibilityPolicy;
     this.#assertDependencies();
   }
 
@@ -398,9 +401,9 @@ export class InventoryCommandService {
     const currentId = this.#equipmentState.getRootInstanceId(slotId);
     if (!currentId) return this.#failure(this.#messages.slotAlreadyEmpty);
     const isSavedRoot = InventoryItemLocation.isLoadout(this.#repository.require(currentId).location);
-    const hasComponents = EQUIPMENT_MAIN_SLOT_IDS.some((id) =>
-      id !== "rod" && this.#equipmentState.getRootInstanceId(id));
-    if (slotId === "rod" && !isSavedRoot && hasComponents) {
+    // Only a fully equipped rod offers to be saved as a loadout; an incomplete one comes off at once and its components
+    // return to the backpack as they are (spec 089).
+    if (slotId === "rod" && !isSavedRoot && this.#isRodFullyEquipped(currentId)) {
       this.#uiState.showRodRemoval(currentId);
       return this.#success({ requiresRodRemovalChoice: true });
     }
@@ -629,6 +632,13 @@ export class InventoryCommandService {
     if (InventoryItemLocation.isLoadout(item?.location)) {
       this.#uiState.showSavedLoadoutPreview(item.location.loadoutId);
     } else this.#uiState.showLoadoutPanel();
+  }
+
+  // Every first-level cell the rod shows (reel, line, tackle, float as its capabilities allow) is filled.
+  #isRodFullyEquipped(rodInstanceId) {
+    const rod = this.#hydrate(this.#repository.require(rodInstanceId));
+    return EQUIPMENT_MAIN_SLOT_IDS.every((slotId) => slotId === "rod" ||
+      !this.#slotVisibility.isVisible(slotId, { rod }) || this.#equipmentState.getRootInstanceId(slotId) !== null);
   }
 
   #loadoutName(name) {
@@ -1091,6 +1101,7 @@ export class InventoryCommandService {
       [this.#uiState, "uiState"],
       [this.#itemRemoval, "itemRemoval"],
       [this.#consumableTargets, "consumableTargets"],
+      [this.#slotVisibility, "slotVisibilityPolicy"],
     ];
     for (const [dependency, name] of dependencies) {
       if (!dependency) throw new TypeError(`InventoryCommandService requires ${name}`);

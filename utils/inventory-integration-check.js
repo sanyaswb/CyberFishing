@@ -392,8 +392,9 @@ vm.runInContext(
       raw("ux-line", "line", 1, { statOverrides: { lengthMeters: 8 } }),
       raw("ux-hook", "hook"), raw("ux-bait", "bait", 1, {
         location: InventoryItemLocation.attached("ux-hook", "bait"),
-      })],
-    equipment: { ...emptyEquipment(), rod: "ux-rod", terminalLine: "ux-line", tackle: "ux-hook" },
+      }), raw("ux-float", "floatDay")],
+    // Spec 089: a fully equipped pole rod (line, tackle, float) is the one that offers to be saved.
+    equipment: { ...emptyEquipment(), rod: "ux-rod", terminalLine: "ux-line", tackle: "ux-hook", float: "ux-float" },
     assemblies: [{ rootInstanceId: "ux-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }],
   });
   const beforeRodInspect = JSON.stringify(rodUx.snapshotFactory.create());
@@ -434,7 +435,7 @@ vm.runInContext(
   dispatch(rodUx, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
   dispatch(rodUx, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
   const savedRodCard = rodUx.facade.getViewModel().inventory.items.find((item) => item.loadoutId === savedRodUx.loadoutId);
-  assertIntegration(savedRodCard.icon !== "🧰" && savedRodCard.attachments.length === 2 &&
+  assertIntegration(savedRodCard.icon !== "🧰" && savedRodCard.attachments.length === 3 &&
     savedRodCard.attachments.every((slot) => slot.instanceId !== "ux-bait"),
     "the saved card uses the rod visual and only its first-level equipment roots");
   const inventoryBeforeSavedPreview = rodUx.facade.getViewModel().inventory.items.map((item) => item.instanceId).join(",");
@@ -445,13 +446,13 @@ vm.runInContext(
     "the saved loadout opens on the left without changing the inventory list");
   dispatch(rodUx, InventoryActionType.LOADOUT_EQUIP_ALL, { loadoutId: savedRodUx.loadoutId });
   const memberViews = rodUx.facade.getViewModel().panel.loadout.mainSlots.filter((slot) => slot.item).map((slot) => slot.item);
-  assertIntegration(memberViews.length === 3 && memberViews.every((item) =>
+  assertIntegration(memberViews.length === 4 && memberViews.every((item) =>
     item.loadoutMembership?.id === savedRodUx.loadoutId &&
     item.loadoutMembership.color === memberViews[0].loadoutMembership.color),
     "equipped members of one loadout share a stable membership color");
   const savedRemoval = dispatch(rodUx, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, { slotId: "rod" });
   assertIntegration(!savedRemoval.requiresRodRemovalChoice && !rodUx.commands.getUiState().rodRemovalStep &&
-    rodUx.loadouts.list().length === 1 && rodUx.repository.size === 5 &&
+    rodUx.loadouts.list().length === 1 && rodUx.repository.size === 6 &&
     savedRodRoots.rod === rodUx.loadouts.require(savedRodUx.loadoutId).getRootInstanceId("rod") &&
     EQUIPMENT_MAIN_SLOT_IDS.every((slot) => !rodUx.equipmentState.getRootInstanceId(slot)) &&
     rodUx.repository.require("ux-bait").location.kind === "ATTACHED" && lineMeters(rodUx, "ux-line") === 8,
@@ -1860,6 +1861,22 @@ vm.runInContext(
       !flow.loadouts.has(saved.loadoutId),
     "consuming every loadout root removes the empty loadout card",
   );
+
+  // Spec 089: an incomplete rod (the pole shows a float cell, here empty) comes off at once: no save prompt, no
+  // loadout; its components return to the backpack as they are, the hook keeping its bait.
+  const incompleteRod = makeComposition({
+    items: [raw("part-rod", "rodPole"), raw("part-line", "line", 1, { statOverrides: { lengthMeters: 8 } }),
+      raw("part-hook", "hook"), raw("part-bait", "bait", 1, { location: InventoryItemLocation.attached("part-hook", "bait") })],
+    equipment: { ...emptyEquipment(), rod: "part-rod", terminalLine: "part-line", tackle: "part-hook" },
+    assemblies: [{ rootInstanceId: "part-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }],
+  });
+  const incompleteRemoval = dispatch(incompleteRod, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, { slotId: "rod" });
+  assertIntegration(!incompleteRemoval.requiresRodRemovalChoice && !incompleteRod.commands.getUiState().rodRemovalStep &&
+    EQUIPMENT_MAIN_SLOT_IDS.every((slot) => !incompleteRod.equipmentState.getRootInstanceId(slot)) &&
+    incompleteRod.loadouts.list().length === 0 && incompleteRod.assemblyStates.has("part-hook") &&
+    incompleteRod.repository.require("part-bait").location.kind === "ATTACHED" &&
+    ["part-rod", "part-line", "part-hook"].every((id) => incompleteRod.repository.require(id).location.kind === "INVENTORY"),
+  "an incomplete rod comes off without the save prompt and keeps its components intact in the backpack");
 
   const looseStackCycles = makeComposition({
     items: [raw("stacked-pole-rods", "rodPole", 2)],

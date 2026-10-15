@@ -435,6 +435,7 @@ export class InventoryCompositionRoot {
       now,
       uiState: new InventoryUiState({ sortConfig: INVENTORY_SORT_CONFIG }),
       itemRemoval,
+      slotVisibilityPolicy: visibilityPolicy,
     });
     const gameplayCommands = new InventoryGameplayCommands({
       messages: INVENTORY_MESSAGES,

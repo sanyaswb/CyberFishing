@@ -545,9 +545,13 @@ class InventoryStaticContractCheck {
     assert.match(portraitPager, /\.inventory-pager__viewport\s*\{[^}]*touch-action:\s*pan-y;/, "vertical list scrolling stays native");
     assert.match(style, /\.inventory-pager__tabs,\s*\.inventory-pager__page:not\(:first-child\)\s*\{\s*display:\s*none;/,
       "wide layouts show neither pager tabs nor a pager's second page (backpack, keepnet)");
-    // Spec 077: one parent paints the left column; the tab bar and the sections paint no outer background.
-    assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;[^}]*border-radius:\s*var\(--inventory-panel-radius\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
-      "the sidebar owns the column's background and frame");
+    // Spec 077/089: one parent holds the left column; only the content above the tab bar paints the surface, so the
+    // tab bar has no wrapper background.
+    assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;/,
+      "the sidebar is the left column's parent");
+    assert.doesNotMatch(style, /\.inventory-main__sidebar\s*\{[^}]*background:/, "the sidebar paints no background behind the tabs");
+    assert.match(style, /\.inventory-main__sidebar > \.inventory-main__left\s*\{[^}]*border-radius:\s*var\(--inventory-panel-radius\) var\(--inventory-panel-radius\) 0 0;[^}]*background:\s*var\(--inventory-equipment-surface\);/,
+      "the section content paints the column's surface above the tab bar");
     assert.match(style, /\.inventory-section-tabs\s*\{[^}]*background:\s*transparent;/, "the tab bar paints no background");
     assert.match(style, /\.inventory-main__sidebar \.inventory-loadout-panel,\s*\.inventory-main__sidebar \.inventory-assembly-editor,\s*\.inventory-main__sidebar \.inventory-saved-loadout-preview\s*\{\s*--inventory-panel:\s*transparent;\s*--inventory-panel-border:\s*transparent;/,
       "equipment-section panels paint no outer frame inside the sidebar");
