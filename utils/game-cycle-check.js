@@ -2199,11 +2199,11 @@ const worldConfig = {
 };
 let worldRoll = 0;
 const worldRng = { next: () => { worldRoll = (worldRoll * 9301 + 49297) % 233280; return worldRoll / 233280; } };
-const lake = new WorldMap("lake", worldConfig, worldRng, { background: { dynamic: true, assetIds: { day: "day" } }, loaded: true },
-  () => new Date(2026, 9, 1, 18, 30));
+// Backgrounds follow game time only (spec 081); the second half holds 18:30.
+const lake = new WorldMap("lake", worldConfig, worldRng, { background: { dynamic: true, assetIds: { day: "day" } }, loaded: true });
 const worldOpacities = [];
 for (let frame = 0; frame < 120; frame++) {
-  lake.update(1000 / 60, frame < 60 ? 6 + frame / 4 : null);
+  lake.update(1000 / 60, frame < 60 ? 6 + frame / 4 : 18.5);
   const background = lake.getBackgroundRenderData();
   worldOpacities.push(background.eveningOpacity + "/" + background.nightOpacity);
 }

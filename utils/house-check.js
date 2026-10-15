@@ -357,7 +357,7 @@ function checkHouseConfigUpdates() {
   const documentTarget = { body: { children: [], appendChild() {} }, querySelector: node, querySelectorAll: () => [],
     addEventListener: listen, removeEventListener: unlisten };
   const windowTarget = { URLSearchParams, location: { search: "", origin: "https://game.example" }, localStorage: {},
-    setInterval: () => 1, clearInterval() {}, addEventListener() {}, removeEventListener() {} };
+    setInterval: () => 1, clearInterval() {}, setTimeout: () => 1, clearTimeout() {}, addEventListener() {}, removeEventListener() {} };
   windowTarget.parent = windowTarget;
   const visualUpdates = [];
   const liveConfig = { liveBait: { visual: { gridSizePx: 10 }, careTickMs: 10000, displayTickMs: 1000 },
@@ -367,7 +367,7 @@ function checkHouseConfigUpdates() {
     "src/platform/browser/runtime/browser_startup_environment.js": { getBrowserStartupEnvironment: () => ({ documentTarget, windowTarget }) },
     "src/game/config/runtime/game_config.js": { CONFIG: liveConfig },
     "src/bootstrap/production/live_bait_composition.js": { composeLiveBait: () => ({ advance() {} }) },
-    "src/bootstrap/production/game_time_composition.js": { composeGameTime: () => ({ getHours: () => 12, sync() {} }) },
+    "src/bootstrap/production/game_time_composition.js": { composeGameTime: () => ({ getHours: () => 12, msUntilNextMinute: () => 250, sync() {} }) },
     "src/platform/browser/ui/embedded_page_overlay.js": { EMBEDDED_PAGE_RETURN_MESSAGE: "return" },
     "src/game/presentation/house/aquarium_fish_view.js": { AquariumFishView: class {
       setConfig(config) { visualUpdates.push(config); return true; } dispose() {} } },
@@ -419,8 +419,46 @@ async function checkAquariumCanvasResize() {
   view.dispose();
 }
 
+// Spec 081 (G-060): at timeScale 240 a game minute lasts 250 real ms. The old one-second refresh showed every fourth
+// minute; the ticker shows each one, also after a rate change and across midnight.
+async function checkHouseMinuteTicker() {
+  const { GameTimeClock } = await import("../src/game/domain/time/game_time_clock.js");
+  const { GameMinuteTicker } = await import("../src/platform/browser/time/game_minute_ticker.js");
+  let now = 0;
+  const clock = new GameTimeClock({ anchorHours: 23 + 58 / 60, anchorMs: 0, timeScale: 240, now: () => now });
+  const minuteOf = () => Math.floor(clock.getHours() * 60 + 1e-9) % 60;
+  assert.equal(Math.round(clock.msUntilNextMinute()), 250, "one game minute lasts 250 ms at x240");
+  const legacy = [];
+  for (let step = 1; step <= 3; step += 1) { now = step * 1000; legacy.push(minuteOf()); }
+  assert.deepEqual(legacy, [2, 6, 10], "reproduction: a one-second refresh skips three of every four minutes");
+  now = 0;
+  const timers = new Map(); let timerId = 0;
+  const windowTarget = { setTimeout: (callback, delay) => { timers.set(++timerId, { callback, at: now + delay }); return timerId; },
+    clearTimeout: (id) => timers.delete(id) };
+  const shown = [];
+  const ticker = new GameMinuteTicker({ windowTarget, clock, maxDelayMs: 1000, onTick: () => shown.push(minuteOf()) });
+  ticker.start(); ticker.start();
+  assert.equal(timers.size, 1, "start is idempotent");
+  const runUntil = (limit) => {
+    while (timers.size) {
+      const [id, timer] = [...timers.entries()][0];
+      if (timer.at > limit) return;
+      timers.delete(id); now = timer.at; timer.callback();
+    }
+  };
+  runUntil(1600);
+  assert.deepEqual(shown, [59, 0, 1, 2, 3, 4], "every minute is shown, across midnight");
+  clock.setRateMultiplier(2);
+  shown.length = 0; ticker.restart();
+  runUntil(now + 4 * 125 + 10);
+  assert.deepEqual(shown, [5, 6, 7, 8], "a faster rate keeps consecutive minutes");
+  ticker.dispose();
+  assert.equal(timers.size, 0, "dispose clears the pending timeout");
+}
+
 async function main() {
   await checkAquariumCanvasResize();
+  await checkHouseMinuteTicker();
   checkHouseConfigUpdates();
   await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");

@@ -21,6 +21,13 @@ export class GameTimeClock {
     return (this.#anchorHours + elapsed * this.#timeScale * this.#rateMultiplier / 3600000) % 24;
   }
 
+  // Real milliseconds until the displayed game minute changes (spec 081), at the current scale and rate.
+  msUntilNextMinute() {
+    const minutes = this.getHours() * 60;
+    const remainingMinutes = Math.floor(minutes) + 1 - minutes;
+    return remainingMinutes * 60000 / (this.#timeScale * this.#rateMultiplier);
+  }
+
   getRateMultiplier() { return this.#rateMultiplier; }
 
   setRateMultiplier(multiplier) {

@@ -35,16 +35,13 @@ export class LocationMap {
     height: 0,
   };
   #rng;
-  #currentDate;
 
-  // The wall clock (time of day without game time) is injected by composition.
-  constructor(locationId, locationsConfig, rng = null, resources = null, currentDate = null) {
+  constructor(locationId, locationsConfig, rng = null, resources = null) {
     if (!resources || typeof resources !== "object") {
       throw new TypeError("LocationMap requires ready location resources");
     }
     this.#locationsConfig = locationsConfig;
     this.#rng = rng || { next: () => Math.random() };
-    this.#currentDate = currentDate;
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
     this.#id = locationId;
     this.#dynamicZones = [];
@@ -284,7 +281,7 @@ export class LocationMap {
     return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows;
   }
 
-  update(dt, gameTimeHours = null) {
+  update(dt, gameTimeHours) {
     const locCfg = this.#locationsConfig;
     if (
       !this.#debugStateInitialized ||
@@ -308,15 +305,8 @@ export class LocationMap {
       this.recalculateZones(null, locCfg.cellSize);
     }
 
-    if (this.#isDynamicBg) {
-      let time = gameTimeHours;
-      if (time === null) {
-        const now = this.#currentDate();
-        time = now.getHours() + now.getMinutes() / 60;
-      }
-
-      backgroundTimeBlend(time, this.#bgOpacities);
-    }
+    // Backgrounds follow game time only (spec 081): GameWorld passes the environment's clock reading every frame.
+    if (this.#isDynamicBg) backgroundTimeBlend(gameTimeHours, this.#bgOpacities);
 
     if (locCfg.enableDynamicZones !== false) {
       for (const dz of this.#dynamicZones) {

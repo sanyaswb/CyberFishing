@@ -802,7 +802,6 @@ export class GameCompositionRoot {
         this.#config.locations,
         rng,
         locationResources,
-        () => new Date(),
       ),
       env: new EnvironmentSystem(
         locCfg,

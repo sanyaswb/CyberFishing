@@ -10,6 +10,7 @@ import { RoomUpgradeService } from "../../game/application/house/room_upgrade_se
 import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
+import { GameMinuteTicker } from "../../platform/browser/time/game_minute_ticker.js";
 import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
@@ -118,10 +119,15 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
   refresh();
   const careTimer = windowTarget.setInterval(() => { liveBait.advance(); refresh(); }, CONFIG.liveBait.careTickMs);
   const displayTimer = windowTarget.setInterval(() => { gameTime.sync(); refresh(); }, CONFIG.liveBait.displayTickMs);
-  const onFocus = () => { gameTime.sync(); liveBait.advance(); refresh(); };
+  // The clock follows every game minute (spec 081); the view refresh above keeps its own interval.
+  const minuteTicker = new GameMinuteTicker({ windowTarget, clock: gameTime, maxDelayMs: CONFIG.liveBait.displayTickMs,
+    onTick: () => timeDisplay.update(gameTime.getHours()) });
+  minuteTicker.start();
+  const onFocus = () => { gameTime.sync(); liveBait.advance(); refresh(); minuteTicker.restart(); };
   windowTarget.addEventListener("focus", onFocus);
   const devTools = createDevTools?.({ uiSurface, returnToGame, toggleMountNode: documentTarget.querySelector("[data-house-dev-mount]") });
   return { dispose() { windowTarget.clearInterval(careTimer); windowTarget.clearInterval(displayTimer);
+    minuteTicker.dispose();
     windowTarget.removeEventListener("focus", onFocus); windowTarget.removeEventListener("message", onPreview);
     documentTarget.removeEventListener("config-updated", onConfigUpdated);
     devTools?.dispose(); headerSizer.dispose(); fullscreen.dispose();

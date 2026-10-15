@@ -336,6 +336,8 @@
 │  │  └── spec.md
 │  ├── 080-hints-in-containers
 │  │  └── spec.md
+│  ├── 081-house-clock-every-minute
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1187,7 +1189,8 @@
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js
-│        │  └── game_clock.js
+│        │  ├── game_clock.js
+│        │  └── game_minute_ticker.js
 │        └── ui
 │           ├── chum_controls.js
 │           ├── depth_selector.js

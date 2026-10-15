@@ -20,6 +20,10 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-059–G-060 Owner reports of 2026-10-15, later (P3, done)
+- G-059 Hints had three styles; the keepnet help was clipped by its column and the House notice was fixed to the viewport: one `ui-hint` with a close button, inside its container ([spec 080](../specs/080-hints-in-containers/spec.md)).
+- G-060 House clock skipped minutes (01 → 04): it refreshed once per second while game time runs at x240; it now updates on every game minute ([spec 081](../specs/081-house-clock-every-minute/spec.md)).
+
 ### G-052–G-058 Owner inventory/input reports of 2026-10-15 (P2/P3, done in v0.36.0)
 - G-052 Header bait glyph sat ~4px right/1px low (emoji advance wider than its grid box): one shared ui-glyph centred by measured ink ([spec 073](../specs/073-glyph-ink-centring/spec.md)).
 - G-053 Wide header had four sections; header circles did not apply a waiting bait/chum; wide picks switched to the backpack although the list was visible; backpack/keepnet filters and items shared one panel ([spec 074](../specs/074-header-sections-and-collections/spec.md)).
