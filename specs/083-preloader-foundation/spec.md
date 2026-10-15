@@ -114,6 +114,11 @@ Consequences for the plan:
    first-paint art and the static fallback while Spine is unavailable; its placeholder colour (average) is `#7d7f88`,
    the layer's background until the poster decodes. The loader step adds a reduced variant for narrow screens.
 
+5. **Portrait poster**: may be cropped to 9:16 (a separate centred crop, 864 × 1536, produced with the variants).
+6. **Background order** (2026-10-15): the current scene first, then owned/available items and the starting locations,
+   then the House (its access belongs to the future lobby). One page with several screens instead of separate HTML
+   pages, so prefetched art is decoded once and reused ([spec 084](../084-house-screen/spec.md)).
+
 Still open: the art that stays visible while the loading layer fades.
 
 ## Verification

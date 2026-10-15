@@ -19,9 +19,9 @@ export class HouseNavigationController {
   #feedPicker;
   #motionPreference;
 
-  constructor({ documentRef, windowTarget, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel, feedPicker }) {
+  constructor({ documentRef, rootNode, windowTarget, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel, feedPicker }) {
     this.#document = documentRef;
-    this.#root = documentRef.body;
+    this.#root = rootNode;
     this.#sheetHeights = sheetHeights;
     this.#sheetHandleRenderer = sheetHandleRenderer;
     this.#feedPicker = feedPicker;

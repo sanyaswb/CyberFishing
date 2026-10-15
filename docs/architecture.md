@@ -126,6 +126,15 @@ node utils/run-checks.js --check game-cycle
 `utils/testing/baselines/game-cycle.txt`. A refactor that preserves behavior leaves that file unchanged. A gameplay
 change that changes the report re-baselines it (`npm run baseline:game-cycle`) in the same commit.
 
+## Screens
+
+One page, several screens (spec 084). `engine/screens/ScreenHost` keeps one active screen above the base game:
+opening suspends the game loop, a lazy factory creates the screen, closing disposes it and resumes the game. The House
+is such a screen: `bootstrap/production/house_screen_composition.js` mounts `HOUSE_SCREEN_MARKUP` into the page's UI
+surface and composes the House over the session's live bait service and game clock
+(`GameCompositionRoot.getSessionServices()`), so no second config runtime, clock or storage owner exists. Today DEV
+opens it (DevTools → House, `dev.html?screen=house`); the future lobby composes the same function in production.
+
 ## Assets and preloading
 
 Today `AssetPreloadCoordinator` (platform) preloads location backgrounds, the depth map and fish sprites through

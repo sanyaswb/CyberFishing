@@ -2,7 +2,6 @@ export const HOUSE_LABELS = Object.freeze({
   fullscreenFailed: "Не вдалося ввімкнути повноекранний режим.",
   sheetDismiss: "Закрити шторку: натисніть або потягніть вниз",
   menuHandle: "Меню будинку: потягніть угору для назв або вниз для згортання",
-  pageTitle: "Будинок рибалки",
   free: "Безкоштовно",
   feedPicker: Object.freeze({ feed: "Прикормити", load: "Завантажити", noSelection: "Немає прикормки",
     locked: "Дозавантаження доступне після 50% часу прикормки.",

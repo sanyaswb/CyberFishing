@@ -22,6 +22,7 @@ import { isUsableAquariumVisual } from "../../game/config/validation/aquarium_vi
 import { AquariumFeedPicker } from "../../game/presentation/house/aquarium_feed_picker.js";
 import { AquariumCareCalculator } from "../../game/domain/live_bait/aquarium_care_calculator.js";
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
+import { HOUSE_SCREEN_MARKUP } from "../../game/presentation/house/house_screen_markup.js";
 import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { DEGRADATION_COLOR_CONFIG } from "../../game/presentation/visual/degradation_color_config.js";
@@ -114,14 +115,9 @@ export function startUiCatalog() {
         return new UiCatalogKeepnetExample({ fixture, ui, documentScope: scope, surface, status });
       }
       if (id === "house") {
-        // Only the production shell is reused. No scripts or production bootstrap execute.
-        const response = await windowTarget.fetch("fisherman-house.html", { signal: abort.signal });
-        if (!response.ok) throw new Error(`House source HTTP ${response.status}`);
-        const parsed = new windowTarget.DOMParser().parseFromString(await response.text(), "text/html");
+        // The House screen markup (spec 084); no production composition, timers, clock or storage run here.
         const root = dom.element("div", "house ui-catalog-preview__house");
-        for (const node of [...parsed.body.children]) {
-          if (node.tagName !== "SCRIPT") root.append(documentRef.importNode(node, true));
-        }
+        root.innerHTML = HOUSE_SCREEN_MARKUP;
         surface.mountRoot.append(root);
         const scope = own(scopeFor(root));
         const scheduler = own(new UiCatalogFrameScheduler({ windowTarget }));
@@ -166,8 +162,8 @@ export function startUiCatalog() {
           addEventListener: (type, listener, options) => { windowBindings.push([type, listener, options]); windowTarget.addEventListener(type, listener, options); },
           removeEventListener: (type, listener, options) => windowTarget.removeEventListener(type, listener, options) };
         const sheetHeights = own(new SheetHeightController({ windowTarget, uiSurface: surface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }));
-        view = own(composeHouseView({ documentRef: scope, windowTarget: houseWindow, domFactory: dom, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-          returnTo: "#house", fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
+        view = own(composeHouseView({ documentRef: scope, rootNode: root, windowTarget: houseWindow, domFactory: dom, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
+          fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
           resourceMeters: meters, autoSwitchRenderer: auto,
           sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController({ uiSurface: surface,
             dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }),

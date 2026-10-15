@@ -3,7 +3,7 @@
 Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
 
 Native HTML pages compose the stylesheet order. `index.html` loads 29 production assets;
-`dev.html` reuses that exact prefix, appends the House stylesheet for its DEV House route and three DEV assets. `ui-catalog.html` reuses the
+`dev.html` reuses that exact prefix, appends the House stylesheet for the House screen it opens (spec 084) and three DEV assets. `ui-catalog.html` reuses the
 same prefix, appends the House component styles, catalog stylesheet and shared DEV clock/navigation styles. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.
 
@@ -96,7 +96,7 @@ choosing a section leaves the other buttons miniature and permits direct switchi
 supports up/down/tap for the footer, and the backdrop accepts downward dismissal of an open sheet.
 Header/footer/sheets share glass-background and blur properties, with no footer gradient or button glow.
 The translucent footer and open sheets omit their bottom borders.
-The catalog loads production HTML and exposes compact/expanded/open-section states through HouseView;
+The catalog builds the House screen markup module (spec 084) and exposes compact/expanded/open-section states through HouseView;
 it defines no alternative markup, geometry or input behavior for these controls.
 Sheet motion belongs to `SheetHeightController`: bottom anchoring stays fixed, height shrinks to the
 compact footer, and pointer release never resets to a full/open value before dismissal. Its observer

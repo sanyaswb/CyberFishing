@@ -145,6 +145,7 @@ export class GameCompositionRoot {
   #createGameDiagnostics;
   #createDevTools;
   #createTimeDisplay;
+  #sessionServices = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
@@ -251,6 +252,12 @@ export class GameCompositionRoot {
 
   printStorageUsage() {
     this.#storageCache.printStorageUsage();
+  }
+
+  // Services of the running session that other screens share instead of composing their own (spec 084).
+  getSessionServices() {
+    if (!this.#sessionServices) throw new Error("GameCompositionRoot.getSessionServices before build");
+    return this.#sessionServices;
   }
 
   getMemoryWatchdogConfig() {
@@ -379,6 +386,7 @@ export class GameCompositionRoot {
       initialHours: this.#config.debug?.initialTime,
       timeScale: this.#config.debug?.timeScale || 1,
     });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
     const { systems } = this.#composeWorldSystems({
       projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,

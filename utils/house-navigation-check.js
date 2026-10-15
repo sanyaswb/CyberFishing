@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { TestDocument } = require("./testing/keepnet/test_document");
+const { readHouseMarkup } = require("./testing/core/house_markup_source");
 
 const runtime = new SourceRuntime();
 const { HorizontalScrollController } = runtime.importModule("src/platform/browser/dom/horizontal_scroll_controller.js");
@@ -218,13 +219,13 @@ gameControls.dispose(); toolbar.dispose(); toolbar.dispose();
 assert.equal(badge.parentNode, documentRef.body, "disposal restores the version badge and removes the toolbar");
 assert.equal(documentRef.byClass("game-toolbar").length, 0);
 
-const html = runtime.read("fisherman-house.html"), css = runtime.read("src/game/presentation/styles/house.css");
+const html = readHouseMarkup(), devPage = runtime.read("dev.html"), css = runtime.read("src/game/presentation/styles/house.css");
 assert(!css.includes("house-rise") && !css.includes("--house-sheet-drag-y"), "height transitions cannot restart the former entrance/offscreen animations");
 assert.match(css, /\.house__sheet\s*\{[^}]*height:\s*var\(--house-sheet-height, auto\)[^}]*transition:\s*height/s);
 assert.match(css, /\.house__sheet-handle-mount\s*\{[^}]*position:\s*sticky/s, "the sheet handle stays reachable while content scrolls");
 assert(!html.includes("data-house-aquarium-level-list"), "the aquarium does not repeat next-level text outside its upgrade button");
 assert.match(html, /inventory-action inventory-action--primary house__button house__button--wide" data-house-action="buyAutoFeeder"/);
-assert(html.includes("styles/hud/game-controls.css"), "House reuses game control CSS");
+assert(devPage.includes("styles/hud/game-controls.css") && devPage.includes("styles/house.css"), "the House screen page loads the game control CSS");
 assert(!css.includes(".house__time {") && !css.includes(".house__fullscreen {"), "House must not duplicate shared HUD appearances or coordinates");
 assert(css.includes(".house__header--visible"), "header visibility is a gesture zone with a fixed screen position");
 assert.match(css, /\.house__scene\s*\{[^}]*overflow-x:\s*auto/s, "the room interior has its own viewport");

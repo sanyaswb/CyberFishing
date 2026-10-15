@@ -121,8 +121,7 @@ function projectVocabulary() {
   };
   walk("src");
   production.addHtml(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"));
-  production.addHtml(fs.readFileSync(path.join(ROOT, "fisherman-house.html"), "utf8"));
-  for (const page of ["index.html", "dev.html", "fisherman-house.html", "ui-catalog.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
+  for (const page of ["index.html", "dev.html", "ui-catalog.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
   return { production, development, injected };
 }
 
@@ -156,7 +155,7 @@ assert.deepEqual(staticStyleViolations('`<span style="--debug-overlay-color:${co
 
 const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
-const stylesheets = [...new Map([...composition.development, ...composition.house, ...composition.catalog]
+const stylesheets = [...new Map([...composition.development, ...composition.catalog]
   .map((entry) => [entry.file, entry])).values()];
 let total = 0;
 for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {

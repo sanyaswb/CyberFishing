@@ -4,7 +4,7 @@ Browser fishing game (native ES modules, Canvas 2D). [Demo](https://sanyaswb.git
 
 - `npm run dev` — local server at http://127.0.0.1:4173/ (`index.html` game, `dev.html` with DEV tools)
 - UI patterns: DEV tools → `Каталог UI 🧩` opens `ui-catalog.html` over the paused game; `← До DevTools` returns to the same session. The standalone page shows isolated production component examples, states and responsive widths; [validation guide](specs/057-modular-ui-catalog/quickstart.md)
-- DEV House: `dev.html?page=house&returnTo=dev.html` reuses the House page with DevTools; the House action in DEV opens it over the same session. DEBUG → `Прискорення ⏩` enables clock clicks: ×1.5, then +0.5 through ×5, then ×1. Clock, day/night and House lighting advance together; production stays passive.
+- DEV House: DevTools → `Будинок рибалки 🏠` opens the House screen over the paused game in the same page (spec 084); `dev.html?screen=house` opens it after startup. In production the future lobby will open it. DEBUG → `Прискорення ⏩` enables clock clicks: ×1.5, then +0.5 through ×5, then ×1. Clock, day/night and House lighting advance together; production stays passive.
 - `npm run check` — syntax, architecture guard and behavior tests
 - `npm run clean:artifacts` — keep at most 50 meaningful records per service text file in temporary/log/archive folders; remove empty files and repetitive Git LF/CRLF warnings
 - Architecture: [docs/architecture.md](docs/architecture.md); rules: [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md)

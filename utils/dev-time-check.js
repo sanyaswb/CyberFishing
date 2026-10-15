@@ -106,81 +106,46 @@ const beforeDisposedClick = clock.getRateMultiplier(); button.click();
 assert.equal(clock.getRateMultiplier(), beforeDisposedClick, "disposed click handler cannot change time");
 assert.equal(JSON.parse(values.get("cyber_fishing_game_time_v1")).version, 1);
 async function checkHouseToolsComposition() {
+  // Spec 084: the House is a screen of the DEV page; the clock rate moves between time controls in memory.
   const doc = new TestDocument();
-  const shell = new TestDocument();
-  shell.body.append(shell.createElement("header"), shell.createElement("main"), shell.createElement("SCRIPT"));
-  shell.title = "House fixture";
-  const cloned = [];
-  doc.importNode = node => { cloned.push(node.tagName); return doc.createElement(node.tagName); };
-  doc.readyState = "complete";
-  const listeners = new Map(), messages = [];
-  let fetchSignal;
-  const windowTarget = {
-    location: { search: "?page=house&returnTo=dev.html&embedded=1", origin: "https://game.example" },
-    parent: { location: { origin: "https://game.example" }, postMessage: (data, origin) => messages.push({ data, origin }) },
-    URLSearchParams, AbortController,
-    DOMParser: class { parseFromString() { return shell; } },
-    fetch: async (url, options) => { assert.equal(url, "fisherman-house.html"); fetchSignal = options.signal; return { ok: true, text: async () => "house shell" }; },
-    addEventListener(type, callback) { if (!listeners.has(type)) listeners.set(type, new Set()); listeners.get(type).add(callback); },
-    removeEventListener(type, callback) { listeners.get(type)?.delete(callback); },
-  };
-  const houseConfig = { debug: { timeScale: 240, timeAccelerationEnabled: false }, rarity: {}, locations: { map: {} } };
-  let houseOptions, toolsOptions, houseDisposals = 0, resumed;
-  const replaced = [];
-  const fakeControl = { resume: snapshot => { resumed = snapshot; }, suspend: () => ({ enabled: true, multiplier: 3, timeScale: 240 }) };
-  const uiSurface = { mountRoot: { parentNode: root }, portalRoot: doc.body };
+  const houseConfig = { debug: { timeScale: 240, timeAccelerationEnabled: true } };
+  const calls = [];
+  const control = (name, snapshot) => ({ resume: (value) => calls.push([`${name}.resume`, value?.multiplier ?? null]),
+    suspend: () => { calls.push([`${name}.suspend`]); return snapshot; } });
+  const gameControl = control("game", { enabled: true, multiplier: 2.5, timeScale: 240 });
+  const houseControl = control("house", { enabled: true, multiplier: 4, timeScale: 240 });
+  const services = { liveBait: { id: "session live bait" }, gameTime: { id: "session clock" } };
+  let houseOptions, houseDisposals = 0, toggleMounts = 0;
   const source = new SourceRuntime({ moduleStubs: {
-    "src/platform/browser/runtime/browser_startup_environment.js": { getBrowserStartupEnvironment: () => ({ documentTarget: doc, windowTarget }) },
-    "src/game/config/runtime/game_config.js": { CONFIG: houseConfig },
-    "src/bootstrap/production/game_config_composition.js": { createProductionConfigContext: () => ({
-      set(path, value) { houseConfig.debug[path.split(".").at(-1)] = value; },
-      exportOverrides: () => ({ "debug.timeAccelerationEnabled": true }),
-    }) },
-    "src/bootstrap/production/house_startup.js": { startFishermanHouse: options => {
-      houseOptions = options;
-      options.createTimeDisplay({ documentRef: doc, mount: doc.body, clock: {}, uiSurface });
-      options.createDevTools({ uiSurface, returnToGame() {} });
-      return { dispose() { houseDisposals++; } };
-    } },
-    "src/bootstrap/development/dev_time_composition.js": { composeDevTimeDisplay: () => fakeControl },
-    "src/dev/tools/dev_tools.js": { DevTools: class { constructor(config, sync, options) {
-      assert.equal(config, houseConfig); assert.equal(typeof sync.synchronize, "function"); toolsOptions = options;
-    } replaceOverrides(overrides) { replaced.push(overrides); } } },
+    "src/bootstrap/development/dev_time_composition.js": { composeDevTimeDisplay: (options) => {
+      assert.equal(options.config, houseConfig); assert.equal(options.clock, services.gameTime); return houseControl; } },
   } });
-  const { startDevelopmentHouse } = source.importModule("src/bootstrap/development/development_house_startup.js");
-  const house = await startDevelopmentHouse();
-  assert.deepEqual(cloned, ["header", "main"], "DEV reuses production House markup without running its entry script");
-  assert.equal(doc.body.className, "house house--dev");
-  assert.equal(typeof toolsOptions.openGame, "function");
-  assert.equal(typeof toolsOptions.openUiCatalog, "function");
-  assert.equal(typeof toolsOptions.configValidation.report, "function", "House DevTools validate edits like the location page");
-  assert(toolsOptions.catalogs.items.builds.debug_float_build, "House DevTools use the DEV item catalog");
-  assert.equal(messages[0].data.type, "cyber-fishing:dev-house-ready");
-  assert.equal(messages[0].origin, windowTarget.location.origin);
-  houseOptions.onPreviewData({ overrides: { "debug.timeScale": 480 }, debugTime: { enabled: true, multiplier: 2.5, timeScale: 480 } });
-  assert.deepEqual(replaced, [{ "debug.timeScale": 480 }], "the location override set replaces the House set before the clock resumes");
-  assert.equal(resumed.multiplier, 2.5);
-  houseOptions.onPreviewData({ debugTime: { multiplier: 1 } });
-  assert.equal(replaced.length, 1, "a time-only message keeps the House overrides");
-  const returned = houseOptions.onReturnData();
-  assert.equal(returned.debugTime.multiplier, 3);
-  assert.deepEqual(returned.overrides, { "debug.timeAccelerationEnabled": true }, "the House returns its whole override set");
-  toolsOptions.openUiCatalog(); toolsOptions.openUiCatalog();
-  assert.equal(doc.byClass("embedded-page-overlay").length, 1);
-  house.dispose(); house.dispose();
+  const { createDevHouseScreenFactory } = source.importModule("src/bootstrap/development/dev_house_screen_composition.js");
+  const devTools = { mountScreenToggle: () => { toggleMounts++; return () => {}; } };
+  const factory = createDevHouseScreenFactory({ documentTarget: doc, windowTarget: {}, uiSurface: {}, config: houseConfig,
+    getSessionServices: () => services, getGameTimeControl: () => gameControl, getDevTools: () => devTools,
+    loadHouseScreen: async () => ({ composeHouseScreen: (options) => {
+      houseOptions = options;
+      options.createTimeDisplay({ documentRef: doc, mount: doc.body, clock: options.gameTime });
+      return { dispose: () => { houseDisposals++; } };
+    } }) });
+  let closes = 0;
+  const screen = await factory({ close: () => { closes++; } });
+  assert.equal(houseOptions.liveBait, services.liveBait, "the House screen reuses the session live bait");
+  assert.equal(houseOptions.gameTime, services.gameTime, "the House screen reuses the session clock");
+  houseOptions.onExit(); assert.equal(closes, 1, "the House return closes the screen");
+  assert.equal(typeof houseOptions.mountHeaderControl(doc.body), "function"); assert.equal(toggleMounts, 1,
+    "the House header gets a DevTools toggle");
+  assert.deepEqual(calls, [["game.suspend"], ["house.resume", 2.5]], "the game's rate moves to the House clock control");
+  calls.length = 0;
+  screen.dispose();
+  assert.deepEqual(calls, [["house.suspend"], ["game.resume", 4]], "closing returns the House rate to the game");
   assert.equal(houseDisposals, 1);
-  assert.equal(fetchSignal.aborted, true);
-  assert.equal(doc.byClass("embedded-page-overlay").length, 0);
-  assert.equal([...listeners.values()].reduce((count, entries) => count + entries.size, 0), 0);
-  let finishFetch;
-  windowTarget.fetch = () => new Promise(resolve => { finishFetch = resolve; });
-  const pending = startDevelopmentHouse();
-  for (const disposePending of [...listeners.get("pagehide")]) disposePending();
-  finishFetch({ ok: true, text: async () => "house shell" });
-  await pending;
-  assert.equal(cloned.length, 2, "pagehide during template loading must not mount late House controls");
-  assert.equal(houseDisposals, 1);
-  assert.equal([...listeners.values()].reduce((count, entries) => count + entries.size, 0), 0);
+  const withoutTools = createDevHouseScreenFactory({ documentTarget: doc, windowTarget: {}, uiSurface: {}, config: houseConfig,
+    getSessionServices: () => services, getGameTimeControl: () => null, getDevTools: () => null,
+    loadHouseScreen: async () => ({ composeHouseScreen: (options) => { houseOptions = options; return { dispose() {} }; } }) });
+  (await withoutTools({ close() {} })).dispose();
+  assert.equal(houseOptions.mountHeaderControl(doc.body), null, "no DevTools, no header toggle");
 
   const uiDocument = new TestDocument();
   const runtime = new SourceRuntime({ globals: { document: uiDocument } });
@@ -193,5 +158,5 @@ async function checkHouseToolsComposition() {
   assert.equal(navigationButton.type, "button"); navigationButton.click(); assert.equal(opened, 1);
 }
 
-checkHouseToolsComposition().then(() => console.log("DEV time passed: 1.5..5/reset, disabled/production isolation, continuous hours/phase, normal saved rate, House handoff/tools/template lifecycle, compact navigation, tablet/orientation and bounded work."))
+checkHouseToolsComposition().then(() => console.log("DEV time passed: 1.5..5/reset, disabled/production isolation, continuous hours/phase, normal saved rate, House screen rate transfer/tools, compact navigation, tablet/orientation and bounded work."))
   .catch(error => { console.error(error); process.exitCode = 1; });

@@ -47,10 +47,11 @@ try {
   assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
     "released raster assets are WebP");
   assert(![...files].some((file) => file.startsWith("asset-sources/")), "image masters are not released");
-  if (tree.has("fisherman-house.html")) {
-    assert(files.has("fisherman-house.html"));
-    assert(files.has("src/entrypoints/house.entry.js"));
-    assert(files.has("src/game/presentation/styles/house.css"));
+  // Spec 084: the House is a screen of the DEV page (the lobby will compose it in production), not a page.
+  assert(!tree.has("fisherman-house.html") && !files.has("fisherman-house.html"), "no separate House page");
+  if (tree.has("dev.html") && tree.has("src/bootstrap/production/house_screen_composition.js")) {
+    for (const file of ["src/game/presentation/styles/house.css", "src/bootstrap/production/house_screen_composition.js",
+      "src/game/presentation/house/house_screen_markup.js"]) assert(files.has(file), `the lazy House screen releases ${file}`);
     assert(files.has("assets/house/room-1/room--1_aqua.webp"));
     assert(files.has("assets/house/room-1/under-renovation.webp"));
     for (let level = 1; level <= 5; level++) {
@@ -100,7 +101,7 @@ try {
   assert.throws(() => PagesReleaseBuilder.rootPage("<head>\n<base href=\"x/\">", "1.0.0-abcdef0"), /must not declare <base>/u);
   const fakeTree = { read: (file) => Buffer.from(file === "index.html"
     ? '<link rel="stylesheet" href="https://cdn.example/x.css"><script type="module" src="src/e.js"></script>' : ""),
-  has: (file) => !["fisherman-house.html", "dev.html", "ui-catalog.html"].includes(file), paths: () => [] };
+  has: (file) => !["dev.html", "ui-catalog.html"].includes(file), paths: () => [] };
   assert.throws(() => ReleaseFileSet.collect(fakeTree), /project-relative paths/u, "external stylesheets are rejected");
 
   // New uncommitted catalog code is checked too; the immutable release above still uses HEAD bytes.
@@ -112,7 +113,7 @@ try {
     paths: () => tree.paths(),
   };
   const authoredFiles = new Set(ReleaseFileSet.collect(authoredTree));
-  for (const file of ["ui-catalog.html", "fisherman-house.html", "src/entrypoints/dev/ui_catalog.entry.js",
+  for (const file of ["ui-catalog.html", "src/game/presentation/house/house_screen_markup.js", "src/entrypoints/dev/ui_catalog.entry.js",
     "src/bootstrap/development/ui_catalog_bootstrap.js", "src/dev/styles/ui-catalog.css",
     "src/game/presentation/styles/auto-switch.css", "src/game/presentation/styles/ui-surface.css",
     "src/game/presentation/ui/ui_close_button_renderer.js", "src/game/presentation/ui/ui_auto_switch_renderer.js"]) {

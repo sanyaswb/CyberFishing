@@ -25,10 +25,10 @@ export class HouseView {
   #notice;
   #noticeRoom;
 
-  constructor({ documentRef, windowTarget, perform, uiConfig, returnTo, onReturn, fishView, feedPicker,
+  constructor({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
     resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
     this.#window = windowTarget;
-    this.#root = documentRef.body;
+    this.#root = rootNode;
     this.#perform = perform;
     this.#uiConfig = uiConfig;
     this.#onReturn = onReturn;
@@ -58,7 +58,6 @@ export class HouseView {
     this.#noticeRoom = this.#notice.parentNode;
     hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close"),
       onClose: () => this.#clearNoticeTimer() });
-    documentRef.querySelector("[data-house-return]").href = returnTo;
     this.#root.addEventListener("click", this.#handleClick);
   }
 
@@ -178,7 +177,7 @@ export class HouseView {
 
   #handleClick = (event) => {
     if (this.#navigation.handleClick(event)) return;
-    if (event.target.closest("[data-house-return]") && this.#onReturn) {
+    if (event.target.closest("[data-house-return]")) {
       event.preventDefault();
       this.#onReturn();
       return;

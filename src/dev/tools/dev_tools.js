@@ -108,6 +108,10 @@ export class DevTools {
     );
   }
 
+  mountScreenToggle(mountNode) {
+    return this.#isDisposed ? () => {} : this.#ui.mountScreenToggle(mountNode);
+  }
+
   toggle() {
     if (this.#isDisposed) return;
     this.#isOpen = !this.#isOpen;
@@ -116,14 +120,6 @@ export class DevTools {
     if (this.#isOpen) {
       this.#populatePanel();
     }
-  }
-
-  // Embedded DEV pages hand their whole override set over on open and return; the receiver's set becomes identical.
-  replaceOverrides(overrides) {
-    if (this.#isDisposed || !this.#configRuntime || !overrides || typeof overrides !== "object") return;
-    this.#configRuntime.resetAll();
-    this.#applyImportedOverrides(overrides);
-    this.#configValidation?.report("page handoff overrides", { quietWhenValid: true });
   }
 
   dispose() {

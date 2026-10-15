@@ -256,7 +256,7 @@ const CHECK_DEFINITIONS = Object.freeze([
   },
   {
     id: "dev-time",
-    title: "DEV calendar speed, day/night and House handoff",
+    title: "DEV calendar speed, day/night and House screen rate transfer",
     file: "utils/dev-time-check.js",
     suites: ["quick", "tools"],
   },

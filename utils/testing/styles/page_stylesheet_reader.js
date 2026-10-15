@@ -9,7 +9,7 @@ const DEV_STYLES = "src/dev/styles/";
 
 // HTML is the CSS composition root. Tests read the same ordered assets as the browser.
 function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", html = null } = {}) {
-  if (!["index.html", "dev.html", "fisherman-house.html", "ui-catalog.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
+  if (!["index.html", "dev.html", "ui-catalog.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
   const source = html ?? fs.readFileSync(path.join(projectRoot, page), "utf8");
   const stylesheets = [];
   const seen = new Set();
@@ -47,7 +47,6 @@ function readPageCss(options = {}) {
 function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   const production = readPageStylesheets({ projectRoot });
   const development = readPageStylesheets({ projectRoot, page: "dev.html" });
-  const house = readPageStylesheets({ projectRoot, page: "fisherman-house.html" });
   const catalog = readPageStylesheets({ projectRoot, page: "ui-catalog.html" });
   const productionPaths = production.map(({ file }) => file);
   const reused = development.filter(({ file }) => file.startsWith(PRODUCTION_STYLES)).map(({ file }) => file);
@@ -62,12 +61,12 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   }
   if (!catalog.some(({ file }) => file === `${DEV_STYLES}ui-catalog.css`)) throw new Error("Catalog page has no catalog stylesheet");
   const version = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
-  for (const { file, href } of [...production, ...development, ...house, ...catalog]) {
+  for (const { file, href } of [...production, ...development, ...catalog]) {
     if (new URL(href, "http://project.local/").searchParams.get("v") !== version) {
       throw new Error(`Stylesheet cache version differs from project version: ${file}`);
     }
   }
-  const linked = new Set([...development, ...house, ...catalog].map(({ file }) => file));
+  const linked = new Set([...development, ...catalog].map(({ file }) => file));
   const walk = (relative) => {
     for (const entry of fs.readdirSync(path.join(projectRoot, relative), { withFileTypes: true })) {
       const file = relative + entry.name;
@@ -77,7 +76,7 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   };
   walk(PRODUCTION_STYLES);
   walk(DEV_STYLES);
-  return { production, development, house, catalog };
+  return { production, development, catalog };
 }
 
 module.exports = { readPageStylesheets, readPageCss, validatePageStyleComposition };

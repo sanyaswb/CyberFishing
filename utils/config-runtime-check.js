@@ -173,6 +173,8 @@ function checkDevelopmentInputs() {
   const uiSurface = { mountRoot: {} }, developmentMount = {}, toolbar = { element: {} };
   const openedPages = [];
   const pageOverlay = { open: options => openedPages.push(options) };
+  const openedScreens = [];
+  const openHouse = () => openedScreens.push("house");
   const catalogLabels = { pageTitle: "Catalog fixture" };
   const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
@@ -189,7 +191,7 @@ function checkDevelopmentInputs() {
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; } },
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
-    pageOverlay, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance } });
+    pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -246,10 +248,8 @@ function checkDevelopmentInputs() {
   assert.equal(tools.options.itemProgressionResolver, progression);
   tools.options.openHouse();
   tools.options.openUiCatalog();
-  assert.equal(openedPages[0], undefined, "House keeps the default embedded destination");
-  assert.equal(openedPages[1].src, "ui-catalog.html?embedded=1");
-  assert.equal(openedPages[1].title, catalogLabels.pageTitle);
-  assert.equal(openedPages[1].onReady, null, "Catalog must not receive live House preview data");
+  assert.deepEqual(openedScreens, ["house"], "the House opens as a screen of the page (spec 084)");
+  assert.deepEqual(openedPages, [undefined], "the UI catalog opens the overlay at its default destination");
   const toggle = () => {};
   const toolsUi = tools.options.createUI(toggle, config).ui;
   assert.equal(toolsUi.args[0], toggle);
@@ -572,15 +572,6 @@ function checkLocationMapConfigChanges() {
     change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
     map.update(16,12);verify(index+17,index+18);
   }
-  // An embedded DEV page hands over its whole override set: the receiver's set becomes identical.
-  const baseScale = context.baseConfig.debug.timeScale, baseGrid = context.baseConfig.liveBait.visual.gridSizePx;
-  context.set('debug.timeScale',baseScale+1);
-  const handoff = {'liveBait.visual.gridSizePx':baseGrid+5,'debug.timeAccelerationEnabled':true};
-  tools.replaceOverrides(handoff);
-  assert.deepEqual(JSON.parse(JSON.stringify(context.exportOverrides())),handoff,'the handed-over set replaces local overrides');
-  assert.equal(config.debug.timeScale,baseScale,'an override absent from the handoff returns to its base value');
-  assert.equal(config.liveBait.visual.gridSizePx,baseGrid+5);assert.equal(config.debug.timeAccelerationEnabled,true);
-  tools.replaceOverrides(null);assert.deepEqual(JSON.parse(JSON.stringify(context.exportOverrides())),handoff,'a message without overrides changes nothing');
   tools.dispose();
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];
@@ -592,7 +583,7 @@ function checkLocationMapConfigChanges() {
 async function checkNativeDevelopmentLifecycle() {
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
   const listeners=new Map(), registered=new Map();
-  const windowTarget={console,location:{origin:"https://game.example"},
+  const windowTarget={console,URLSearchParams,location:{origin:"https://game.example",search:""},
     addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
     removeEventListener(type,fn){registered.get(type)?.delete(fn);const remaining=[...(registered.get(type)||[])];if(remaining.length)listeners.set(type,remaining.at(-1));else listeners.delete(type);}};
   const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{timeScale:240,timeAccelerationEnabled:false,godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
@@ -603,13 +594,15 @@ async function checkNativeDevelopmentLifecycle() {
   const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
   const app={start(){counts.start++;return true;},stop(){counts.stop++;},dispose(){counts.gameDispose++;}};
   let rootPorts;
-  class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
+  class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getSessionServices(){return sessionServices;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
   const resource=key=>({dispose(){counts[key]++;}});
-  const frames = [], previewMessages = [], timeResumes = [], handoffs = [];
+  const frames = [], timeResumes = [];
+  const sessionServices = { liveBait: {}, gameTime: {} };
+  let houseFactoryOptions = null, closeHouse = null, houseScreens = 0, houseDisposals = 0;
   const documentTarget = { body: { appendChild() {} }, getElementById() { return null; },
     createElement(tag) {
       if(tag!=="iframe")return{remove(){this.removed=true;}};
-      const frame={contentWindow:{postMessage(data){previewMessages.push(data);}},addEventListener(type,callback){this[type]=callback;},remove(){this.removed=true;}};
+      const frame={contentWindow:{},addEventListener(type,callback){this[type]=callback;},remove(){this.removed=true;}};
       frames.push(frame);return frame;
     }, addEventListener() {}, removeEventListener() {} };
   const timeControl = { suspend:()=>({enabled:true,multiplier:2,timeScale:240}),resume:snapshot=>timeResumes.push(snapshot) };
@@ -625,7 +618,9 @@ async function checkNativeDevelopmentLifecycle() {
     'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
     'src/platform/browser/dom/ui_surface_adapter.js':{UiSurfaceAdapter:Surface},
     'src/bootstrap/development/dev_time_composition.js':{composeDevTimeDisplay:()=>timeControl},
-    'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}replaceOverrides(overrides){handoffs.push(overrides);}}},
+    'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}}},
+    'src/bootstrap/development/dev_house_screen_composition.js':{createDevHouseScreenFactory:options=>{houseFactoryOptions=options;
+      return async({close})=>{closeHouse=close;houseScreens++;return{dispose(){houseDisposals++;}};};}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
@@ -641,30 +636,29 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
   const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);
   assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
-  assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'house return and page cleanup listeners are active');
-  assert.equal(registered.get("message").size,2,"ready handshake and trusted return have separate lifecycle owners");
+  assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'catalog return and page cleanup listeners are active');
+  assert.equal(registered.get("message").size,1,"only the UI catalog overlay listens for a trusted return");
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
-  navigationTools.options.openHouse();
-  assert.equal(frames[0].src,"dev.html?page=house&returnTo=dev.html&embedded=1");
-  assert.equal(counts.stop,1,"opening the DEV House stops the existing location loop");
+  assert.equal(houseFactoryOptions.getSessionServices(),sessionServices,"the House screen reuses the session services");
+  assert.equal(houseFactoryOptions.getGameTimeControl(),timeControl,"the game's DEV time control hands its rate to the House");
+  assert.equal(houseFactoryOptions.getDevTools(),navigationTools,"the House header toggles the page DevTools");
+  await navigationTools.options.openHouse();
+  assert.equal(houseScreens,1);assert.equal(frames.length,0,"the House is a screen, not a frame");
+  assert.equal(counts.stop,1,"opening the DEV House stops the location loop");
+  await navigationTools.options.openHouse();assert.equal(houseScreens,1,"an open House is not created twice");
+  closeHouse();await Promise.resolve();await Promise.resolve();
+  assert.equal(houseDisposals,1);assert.equal(counts.start,2,"closing the House resumes the loop exactly once");
+  navigationTools.options.openUiCatalog();
+  assert.equal(frames[0].src,"ui-catalog.html?embedded=1");assert.equal(counts.stop,2);
   frames[0].load();
   const dispatch=event=>{for(const listener of [...registered.get("message")])listener(event);};
-  const readyMessage={source:frames[0].contentWindow,origin:windowTarget.location.origin,data:{type:"cyber-fishing:dev-house-ready"}};
-  const beforeReady=previewMessages.length;
-  dispatch({...readyMessage,source:{}});assert.equal(previewMessages.length,beforeReady,"unrelated pages cannot request a time snapshot");
-  configRuntime.set('debug.timeScale',300);
-  dispatch(readyMessage);assert.equal(previewMessages.at(-1).debugTime.multiplier,2);
-  assert.equal(previewMessages.at(-1).type,"cyber-fishing:dev-house-handoff");
-  assert.equal(previewMessages.at(-1).overrides['debug.timeScale'],300,'the House receives every location override in one message');
-  assert.equal(previewMessages.filter(message=>message.visual).length,0,'no separate aquarium visual message remains');
-  const afterReady=previewMessages.length;dispatch(readyMessage);assert.equal(previewMessages.length,afterReady,"replayed readiness does not reset House acceleration");
-  dispatch({source:frames[0].contentWindow,origin:windowTarget.location.origin,
-    data:{type:"cyber-fishing:close-embedded-page",overrides:{'debug.timeScale':480},debugTime:{enabled:true,multiplier:3,timeScale:480}}});
-  await Promise.resolve();
-  assert.equal(counts.start,2,"trusted return resumes exactly once");
-  assert.equal(timeResumes.at(-1).multiplier,3);
-  assert.deepEqual(handoffs,[{'debug.timeScale':480}],'the House override set returns through the location DevTools');
+  dispatch({source:{},origin:windowTarget.location.origin,data:{type:"cyber-fishing:close-embedded-page"}});
+  assert.equal(counts.start,2,"unrelated pages cannot close the catalog");
+  dispatch({source:frames[0].contentWindow,origin:windowTarget.location.origin,data:{type:"cyber-fishing:close-embedded-page"}});
+  await Promise.resolve();await Promise.resolve();
+  assert.equal(counts.start,3,"trusted catalog return resumes exactly once");
+  assert.equal(timeResumes.at(-1).multiplier,2,"the catalog returns the suspended clock rate");
   configRuntime.resetAll();
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
@@ -683,11 +677,11 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
   assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
   assert.equal(config.debug.fixedCatch.enabled,false);
-  assert.equal(counts.root,2);assert.equal(counts.start,3);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
+  assert.equal(counts.root,2);assert.equal(counts.start,4);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
-  assert.equal(counts.start,3,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
+  assert.equal(counts.start,4,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
   assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
   assert.equal(counts.surfaces,4);assert.equal(counts.surfaceDispose,4, "DEV restart, failed build and pagehide clean every surface exactly once");
 }

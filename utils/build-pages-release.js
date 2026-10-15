@@ -14,7 +14,6 @@ const acorn = require("acorn");
 
 const PAGE = "index.html";
 const DEV_PAGE = "dev.html";
-const HOUSE_PAGE = "fisherman-house.html";
 const CATALOG_PAGE = "ui-catalog.html";
 const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
@@ -99,7 +98,6 @@ class ReleaseFileSet {
   static collect(tree) {
     const pages = [PAGE];
     if (tree.has(DEV_PAGE)) pages.push(DEV_PAGE);
-    if (tree.has(HOUSE_PAGE)) pages.push(HOUSE_PAGE);
     if (tree.has(CATALOG_PAGE)) pages.push(CATALOG_PAGE);
     const files = new Set(pages);
     for (const pageName of pages) {

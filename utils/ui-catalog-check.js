@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const { readHouseMarkup } = require("./testing/core/house_markup_source");
 const path = require("node:path");
 const { TestDocument } = require("./testing/keepnet/test_document");
 
@@ -68,7 +69,8 @@ async function main() {
   assert(page.includes('type="module" src="src/entrypoints/dev/ui_catalog.entry.js'));
   const bootstrap = fs.readFileSync("src/bootstrap/development/ui_catalog_bootstrap.js", "utf8");
   assert(!/localStorage|sessionStorage|setInterval|start(?:Game|DevelopmentGame|FishermanHouse)|composeLiveBait|RoomProgressLocalStore/.test(bootstrap), "catalog composition must not open storage/game/care services");
-  assert(bootstrap.includes('fetch("fisherman-house.html"') && bootstrap.includes('node.tagName !== "SCRIPT"'), "house reuses production shell without running scripts");
+  assert(bootstrap.includes("root.innerHTML = HOUSE_SCREEN_MARKUP") && !bootstrap.includes("fisherman-house"),
+    "house reuses the screen markup module without production composition (spec 084)");
   assert(bootstrap.includes("composeHouseView(") && bootstrap.includes("new AquariumFishView(") && bootstrap.includes("new AquariumFeedPicker("), "actual house views are exercised");
   for (const file of fs.readdirSync("src/dev/ui_catalog")) {
     const source = fs.readFileSync(path.join("src/dev/ui_catalog", file), "utf8");
@@ -199,7 +201,7 @@ function productionHouseDocument() {
   documentRef.createElement = (tag) => enhance(create(tag.toUpperCase()));
   documentRef.querySelector = (selector) => documentRef.body.querySelector(selector);
   documentRef.querySelectorAll = (selector) => documentRef.body.querySelectorAll(selector);
-  const source = fs.readFileSync("fisherman-house.html", "utf8").match(/<body[^>]*>([\s\S]*?)<\/body>/i)[1];
+  const source = readHouseMarkup();
   const stack = [documentRef.body];
   const voidTags = new Set(["img", "input", "br", "hr", "meta", "link"]);
   for (const token of source.matchAll(/<\/?[a-z][^>]*>/gi)) {
@@ -271,7 +273,7 @@ async function checkHouseExample() {
     mountNode: documentRef.querySelector("[data-house-fullscreen-mount]"), label: "Fullscreen" });
   const view = composeHouseView({ documentRef, windowTarget, domFactory: dom, sheetHeights, perform: (action, id) => example.perform(action, id),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-    returnTo: "#house", onReturn: () => {}, fishView, feedPicker, timeBlendMs: 1000, labels: HOUSE_LABELS,
+    rootNode: documentRef.body, onReturn: () => {}, fishView, feedPicker, timeBlendMs: 1000, labels: HOUSE_LABELS,
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver: colors }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController() }),
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }) });

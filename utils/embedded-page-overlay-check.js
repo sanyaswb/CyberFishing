@@ -29,13 +29,13 @@ async function main() {
   const opener = { isConnected: true, focus: () => returnedFocus++ };
   documentRef.activeElement = opener;
   const overlay = new EmbeddedPageOverlay({ documentRef, windowTarget,
-    src: "fisherman-house.html?embedded=1", title: "House",
+    src: "ui-catalog.html?embedded=1&page=default", title: "Default page",
     onEnter: () => entered++, onExit: () => exited++, onReady: (frameWindow) => readyWindow = frameWindow });
   overlay.open();
   overlay.open();
   assert.equal(frames.length, 1, "opening twice keeps one house page");
   assert.equal(entered, 1, "the location pauses once");
-  assert.equal(frames[0].src, "fisherman-house.html?embedded=1");
+  assert.equal(frames[0].src, "ui-catalog.html?embedded=1&page=default");
   assert.equal(frames[0].className, "embedded-page-overlay");
   assert.equal(frames[0].allowFullscreen, true);
   frames[0].load();
@@ -72,7 +72,7 @@ async function main() {
   assert.equal(exited, 2, "Returning from the catalog resumes the existing game once");
   assert.equal(returnedFocus, 2);
   overlay.open();
-  assert.equal(frames[2].src, "fisherman-house.html?embedded=1", "Catalog does not change the default House destination");
+  assert.equal(frames[2].src, "ui-catalog.html?embedded=1&page=default", "a page opened with options does not change the default destination");
   overlay.dispose();
   overlay.open({ src: "ui-catalog.html?embedded=1" });
   assert.equal(frames.length, 3, "A disposed overlay cannot reopen a page");

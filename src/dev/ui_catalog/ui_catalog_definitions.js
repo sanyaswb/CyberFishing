@@ -43,10 +43,10 @@ export const UI_CATALOG_DEFINITIONS = Object.freeze([
     id: "house", name: "Будинок та акваріум: панелі та завантаження корму",
     families: ["tabs", "house", "aquarium"], height: 680,
     description: "Production HTML і HouseView: мініатюри, усі назви після свайпу вгору та відкритий розділ. Список прикормки використовує справжній AquariumFeedPicker: вибір одного рядка й окреме завантаження. Риба малюється лише при зміні прикладу.",
-    contract: "Розмітка завантажується з fisherman-house.html без виконання script. Підставляються read models, renderer ports та контрольований scheduler. Жодного care timer, clock чи storage.",
+    contract: "Розмітка береться з модуля екрана будинку (house_screen_markup.js) без production-композиції. Підставляються read models, renderer ports та контрольований scheduler. Жодного care timer, clock чи storage.",
     states: [["normal", "Акваріум із рибою"], ["feed-ready", "Прикормка: доступне дозавантаження"], ["menu-collapsed", "Меню: мініатюри"], ["menu-expanded", "Меню: усі назви"], ["section-open", "Меню: відкритий розділ"], ["empty", "Порожній"], ["full", "Місткість 100%"], ["no-feed", "Автогодівниця: немає запасу"], ["unaffordable", "Прокачка: недостатньо коштів"], ["unowned", "Не встановлено"], ["renovating", "Ремонт"], ["error", "Помилка"], ["long", "Довгі назви"], ["evening", "Вечір"], ["night", "Ніч"]],
     reading: { min: 0, max: 100, value: 67, label: "Залишок корму, %" },
-    sources: ["fisherman-house.html", "src/game/presentation/house/house_view.js", "src/game/presentation/house/aquarium_feed_picker.js", "src/game/presentation/house/aquarium_fish_view.js", "src/game/domain/live_bait/aquarium_care_calculator.js", "src/game/presentation/ui/ui_sheet_handle_renderer.js", "src/platform/browser/dom/sheet_dismiss_controller.js", "src/platform/browser/dom/sheet_height_controller.js", "src/platform/browser/dom/horizontal_scroll_controller.js"],
+    sources: ["src/game/presentation/house/house_screen_markup.js", "src/game/presentation/house/house_view.js", "src/game/presentation/house/aquarium_feed_picker.js", "src/game/presentation/house/aquarium_fish_view.js", "src/game/domain/live_bait/aquarium_care_calculator.js", "src/game/presentation/ui/ui_sheet_handle_renderer.js", "src/platform/browser/dom/sheet_dismiss_controller.js", "src/platform/browser/dom/sheet_height_controller.js", "src/platform/browser/dom/horizontal_scroll_controller.js"],
     styles: ["src/game/presentation/styles/house.css", "src/game/presentation/styles/modal-controls.css"],
   },
   {

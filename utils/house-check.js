@@ -2,6 +2,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const { TestDocument } = require("./testing/keepnet/test_document");
+const { readHouseMarkup } = require("./testing/core/house_markup_source");
 const { SourceRuntime } = require("./testing/core/source_runtime.js");
 
 function houseDocument() {
@@ -44,7 +45,7 @@ function houseDocument() {
   enhance(documentRef.body);
   documentRef.querySelectorAll = (selector) => documentRef.all((node) => matches(node, selector));
   documentRef.querySelector = (selector) => documentRef.querySelectorAll(selector)[0] || null;
-  const html = fs.readFileSync("fisherman-house.html", "utf8").split(/<body[^>]*>/)[1].split("</body>")[0];
+  const html = readHouseMarkup();
   const stack = [documentRef.body];
   for (const [, close, tag, attributes] of html.matchAll(/<(\/)?([a-z][a-z0-9-]*)([^>]*)>/g)) {
     if (close) { if (stack.at(-1).tagName === tag) stack.pop(); continue; }
@@ -91,10 +92,10 @@ async function checkHousePresentation(HOUSE_CONFIG) {
       getPropertyValue: name => ["--ui-sheet-handle-size", "--house-dock-collapsed-height"].includes(name) ? "44px" : "0px" }),
     setTimeout: callback => { timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id),
     matchMedia: () => motionPreference };
-  const actions = [];
+  const actions = [], returns = [];
   const createView = () => composeHouseView({ documentRef, windowTarget, domFactory,
     sheetHeights: new SheetHeightController({ windowTarget, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }),
-    roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, returnTo: "index.html",
+    roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, rootNode: documentRef.body, onReturn: () => returns.push("return"),
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
@@ -235,6 +236,11 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert(!notice.classList.contains("house__notice--sheet") && notice.classList.contains("ui-hint--error"));
   view.announce("");
   assert(notice.hidden, "an empty message hides the notice");
+  // Spec 084: the return control is a button that closes the House screen.
+  const returnControl = documentRef.querySelector("[data-house-return]");
+  assert.equal(returnControl.tagName.toLowerCase(), "button");
+  documentRef.body.fire("click", { target: returnControl });
+  assert.deepEqual(returns, ["return"], "the return control closes the House screen");
   const autoInput = documentRef.byClass("inventory-toggle__input")[0];
   autoInput.checked = true; autoInput.fire("change");
   assert.deepEqual(actions.at(-1), ["toggleAutoFeeder"]);
@@ -343,40 +349,45 @@ async function checkSharedTimeOfDayLayers() {
   }
 }
 
-function checkHouseConfigUpdates() {
+// Spec 084: the House screen inside the game page, composed over the session's live bait and clock.
+function checkHouseScreenComposition() {
   const recorder = () => class {
     constructor(options) {
       this.options = options;
+      created.push(this);
       return new Proxy(this, { get: (target, key) => key in target ? target[key] : () => () => {} });
     }
   };
+  const created = [];
   const listeners = new Map();
   const listen = (type, callback) => { if (!listeners.has(type)) listeners.set(type, new Set()); listeners.get(type).add(callback); };
   const unlisten = (type, callback) => listeners.get(type)?.delete(callback);
   const node = () => ({ classList: { add() {}, toggle() {} }, appendChild() {}, scrollWidth: 0, clientWidth: 0 });
-  const documentTarget = { body: { children: [], appendChild() {} }, querySelector: node, querySelectorAll: () => [],
-    addEventListener: listen, removeEventListener: unlisten };
-  const windowTarget = { URLSearchParams, location: { search: "", origin: "https://game.example" }, localStorage: {},
-    setInterval: () => 1, clearInterval() {}, setTimeout: () => 1, clearTimeout() {}, addEventListener() {}, removeEventListener() {} };
-  windowTarget.parent = windowTarget;
+  let root = null;
+  const documentTarget = { createElement: () => (root = { innerHTML: "", className: "", removed: false,
+    querySelector: node, querySelectorAll: () => [], remove() { this.removed = true; } }),
+  addEventListener: listen, removeEventListener: unlisten };
+  const intervals = new Set(); let intervalId = 0;
+  const windowListeners = new Map();
+  const windowTarget = { localStorage: {},
+    setInterval: () => { intervals.add(++intervalId); return intervalId; }, clearInterval: (id) => intervals.delete(id),
+    setTimeout: () => 1, clearTimeout() {},
+    addEventListener: (type, callback) => windowListeners.set(type, callback), removeEventListener: (type) => windowListeners.delete(type) };
+  const mounted = [];
+  const uiSurface = { mountRoot: { appendChild: (child) => mounted.push(child) } };
   const visualUpdates = [];
   const liveConfig = { liveBait: { visual: { gridSizePx: 10 }, careTickMs: 10000, displayTickMs: 1000 },
     input: { pointerThreshold: 10, mapPan: {} }, debug: {} };
   const stub = (name) => ({ [name]: recorder() });
   const runtime = new SourceRuntime({ moduleStubs: {
-    "src/platform/browser/runtime/browser_startup_environment.js": { getBrowserStartupEnvironment: () => ({ documentTarget, windowTarget }) },
     "src/game/config/runtime/game_config.js": { CONFIG: liveConfig },
-    "src/bootstrap/production/live_bait_composition.js": { composeLiveBait: () => ({ advance() {} }) },
-    "src/bootstrap/production/game_time_composition.js": { composeGameTime: () => ({ getHours: () => 12, msUntilNextMinute: () => 250, sync() {} }) },
-    "src/platform/browser/ui/embedded_page_overlay.js": { EMBEDDED_PAGE_RETURN_MESSAGE: "return" },
     "src/game/presentation/house/aquarium_fish_view.js": { AquariumFishView: class {
       setConfig(config) { visualUpdates.push(config); return true; } dispose() {} } },
-    "src/platform/browser/dom/ui_surface_adapter.js": { UiSurfaceAdapter: class { mountRoot = { appendChild() {} }; dispose() {} } },
     "src/platform/browser/dom/horizontal_scroll_controller.js": { HorizontalScrollController: class { attach() { return () => {}; } } },
-    "src/bootstrap/production/house_view_composition.js": { composeHouseView: () => new (recorder())() },
+    "src/bootstrap/production/house_view_composition.js": { composeHouseView: (options) => new (recorder())(options) },
     ...Object.fromEntries([
       ["src/platform/browser/time/browser_wall_clock.js", "BrowserWallClock"], ["src/game/presentation/house/house_presenter.js", "HousePresenter"],
- ["src/game/application/house/room_upgrade_service.js", "RoomUpgradeService"],
+      ["src/game/application/house/room_upgrade_service.js", "RoomUpgradeService"],
       ["src/platform/browser/storage/room_progress_local_store.js", "RoomProgressLocalStore"], ["src/platform/browser/ui/time_display.js", "TimeDisplay"],
       ["src/game/presentation/house/aquarium_fish_motion.js", "AquariumFishMotion"], ["src/game/presentation/house/aquarium_feed_picker.js", "AquariumFeedPicker"],
       ["src/platform/browser/dom/inventory_dom_factory.js", "InventoryDomFactory"],
@@ -387,8 +398,20 @@ function checkHouseConfigUpdates() {
       ["src/platform/browser/dom/hud_row_sizer.js", "HudRowSizer"], ["src/platform/browser/ui/fullscreen_control.js", "FullscreenControl"],
     ].map(([path, name]) => [path, stub(name)])),
   } });
-  const { startFishermanHouse } = runtime.importModule("src/bootstrap/production/house_startup.js");
-  const house = startFishermanHouse();
+  const { composeHouseScreen } = runtime.importModule("src/bootstrap/production/house_screen_composition.js");
+  const liveBait = { advance() {} };
+  const gameTime = { getHours: () => 12, msUntilNextMinute: () => 250 };
+  const exits = [];
+  const house = composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, onExit: () => exits.push("exit") });
+  assert.deepEqual(mounted, [root], "the screen root is mounted into the page's UI surface");
+  assert(root.className === "house" && root.innerHTML === readHouseMarkup(), "the root holds the House screen markup");
+  const presenter = created.find((entry) => entry.options?.liveBait);
+  assert.equal(presenter.options.liveBait, liveBait, "the House uses the session's live bait service");
+  assert.equal(presenter.options.gameTime, gameTime, "the House uses the session's game clock");
+  const view = created.find((entry) => entry.options?.rootNode);
+  assert.equal(view.options.rootNode, root, "views listen on the screen root, not on the document body");
+  view.options.onReturn();
+  assert.deepEqual(exits, ["exit"], "the return control closes the screen");
   const emit = (path) => { for (const callback of [...listeners.get("config-updated") || []]) callback({ detail: { path } }); };
   emit(["CONFIG", "liveBait", "visual", "showZone"]);
   assert.equal(visualUpdates.at(-1), liveConfig.liveBait.visual, "a DEV edit reaches the aquarium motion");
@@ -399,8 +422,10 @@ function checkHouseConfigUpdates() {
   assert.equal(visualUpdates.length, 4, "reset/import of the whole config or liveBait also reapplies the visual settings");
   emit(["CONFIG", "liveBait", "careTickMs"]); emit(["CONFIG", "debug", "timeScale"]); emit(["ITEM_DB", "rods"]);
   assert.equal(visualUpdates.length, 4, "unrelated edits leave the swimming fish unchanged");
-  house.dispose();
+  assert.equal(intervals.size, 2, "care and view refresh intervals run while the screen is open");
+  house.dispose(); house.dispose();
   assert.equal(listeners.get("config-updated").size, 0, "disposal removes the config listener");
+  assert(intervals.size === 0 && !windowListeners.has("focus") && root.removed, "disposal clears timers, focus listener and DOM");
 }
 
 async function checkAquariumCanvasResize() {
@@ -456,10 +481,49 @@ async function checkHouseMinuteTicker() {
   assert.equal(timers.size, 0, "dispose clears the pending timeout");
 }
 
+// Spec 084: one active screen above the paused game.
+async function checkScreenHost() {
+  const { ScreenHost } = await import("../src/engine/screens/screen_host.js");
+  const events = [];
+  const base = { suspend: () => events.push("suspend"), resume: () => events.push("resume") };
+  let release;
+  const screen = (name) => ({ dispose: () => events.push(`dispose:${name}`) });
+  const host = new ScreenHost({ base, factories: {
+    house: async ({ close }) => { events.push("create:house"); host.closeFromScreen = close; return screen("house"); },
+    lobby: async () => { events.push("create:lobby"); return screen("lobby"); },
+    slow: () => new Promise((resolve) => { release = () => resolve(screen("slow")); }),
+    broken: async () => { throw new Error("module failed"); },
+  } });
+  await assert.rejects(host.open("missing"), /unknown screen/u);
+  await host.open("house"); await host.open("house");
+  assert.deepEqual(events, ["suspend", "create:house"], "the factory runs once and the base is suspended once");
+  assert.equal(host.activeId, "house");
+  await host.open("lobby");
+  assert.deepEqual(events.slice(2), ["dispose:house", "create:lobby"], "switching screens keeps the game suspended");
+  host.close(); host.close();
+  assert.deepEqual(events.slice(4), ["dispose:lobby", "resume"], "closing disposes the screen and resumes the game once");
+  events.length = 0;
+  const pending = host.open("slow");
+  host.close(); release(); await pending;
+  assert.deepEqual(events, ["suspend", "resume", "dispose:slow"], "a screen that arrives after close is disposed at once");
+  events.length = 0;
+  await assert.rejects(host.open("broken"), /module failed/u);
+  assert.deepEqual(events, ["suspend", "resume"], "a failed screen resumes the game");
+  assert.equal(host.activeId, null);
+  events.length = 0;
+  await host.open("house");
+  const staleClose = host.closeFromScreen;
+  host.dispose(); staleClose();
+  assert.deepEqual(events, ["suspend", "create:house", "dispose:house"], "dispose releases the screen without restarting the game");
+  await host.open("house");
+  assert.equal(events.length, 3, "a disposed host opens nothing");
+}
+
 async function main() {
   await checkAquariumCanvasResize();
   await checkHouseMinuteTicker();
-  checkHouseConfigUpdates();
+  await checkScreenHost();
+  checkHouseScreenComposition();
   await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");
   const { RoomUpgradeService } = await import("../src/game/application/house/room_upgrade_service.js");

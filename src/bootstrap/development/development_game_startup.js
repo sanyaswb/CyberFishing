@@ -40,10 +40,11 @@ import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
-import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
+import { ScreenHost } from "../../engine/screens/screen_host.js";
+import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -88,38 +89,31 @@ async function startGame() {
   const mapCatalog = CONFIG.locations.map;
   const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;
-  let housePreviewWindow = null;
   let timeControl = null;
   let devTools = null;
-  let houseTimeSnapshot = null;
-  let houseReady = false;
-  const onHouseReady = event => {
-    if (!housePreviewWindow || houseReady || event.source !== housePreviewWindow || event.origin !== windowTarget.location.origin ||
-      event.data?.type !== "cyber-fishing:dev-house-ready") return;
-    houseReady = true;
-    // The House realm has its own config runtime: it receives every location override and returns its own set.
-    housePreviewWindow.postMessage({ type: "cyber-fishing:dev-house-handoff", overrides: configRuntime.exportOverrides(),
-      debugTime: houseTimeSnapshot }, windowTarget.location.origin);
-  };
-  windowTarget.addEventListener("message", onHouseReady);
+  let compositionRoot = null;
+  let catalogTimeSnapshot = null;
+  const resumeGame = () => { void game?.start().catch((error) => windowTarget.console.error(error)); };
+  // The UI catalog stays a separate DEV page in an overlay frame.
   const pageOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
-    src: "dev.html?page=house&returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
-    onEnter: () => { game?.stop(); houseTimeSnapshot = timeControl?.suspend(); houseReady = false; },
-    onReady: (frameWindow) => { housePreviewWindow = frameWindow; },
-    onExit: data => {
-      housePreviewWindow = null;
-      if (data?.overrides) devTools?.replaceOverrides(data.overrides);
-      timeControl?.resume(data?.debugTime || houseTimeSnapshot); houseTimeSnapshot = null;
-      void game?.start().catch((error) => windowTarget.console.error(error));
-    } });
+    src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle,
+    onEnter: () => { game?.stop(); catalogTimeSnapshot = timeControl?.suspend(); },
+    onExit: () => { timeControl?.resume(catalogTimeSnapshot); catalogTimeSnapshot = null; resumeGame(); } });
+  // The House is a screen of this page (spec 084), composed over the session's live bait and clock.
+  const screens = new ScreenHost({ base: { suspend: () => game?.stop(), resume: resumeGame }, factories: {
+    house: createDevHouseScreenFactory({ documentTarget, windowTarget, uiSurface, config: CONFIG,
+      getSessionServices: () => compositionRoot.getSessionServices(), getGameTimeControl: () => timeControl,
+      getDevTools: () => devTools }),
+  } });
+  const openHouse = () => screens.open("house").catch((error) => windowTarget.console.error(error));
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
     if (disposed) return;
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
+    screens.dispose();
     pageOverlay.dispose();
-    windowTarget.removeEventListener("message", onHouseReady);
     watchdog?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
@@ -133,7 +127,7 @@ async function startGame() {
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount});
-    const compositionRoot = new GameCompositionRoot(CONFIG, {
+    compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
       loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
@@ -155,8 +149,8 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
-        openHouse: () => pageOverlay.open(),
-        openUiCatalog: () => pageOverlay.open({ src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle, onReady: null }),
+        openHouse,
+        openUiCatalog: () => pageOverlay.open(),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
@@ -189,6 +183,8 @@ async function startGame() {
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);
     if (!started) windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+    // dev.html?screen=house opens the House right after startup.
+    if (new windowTarget.URLSearchParams(windowTarget.location.search).get("screen") === "house") openHouse();
     compositionRoot.printStorageUsage();
     return game;
   } catch (error) { cleanup(); throw error; }

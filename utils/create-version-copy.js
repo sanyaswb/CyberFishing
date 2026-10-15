@@ -16,7 +16,6 @@ const VERSION_COPY_CONFIG = Object.freeze({
     "CHANGELOG.md",
     "index.html",
     "dev.html",
-    "fisherman-house.html",
   ]),
 });
 

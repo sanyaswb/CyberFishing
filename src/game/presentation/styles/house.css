@@ -37,9 +37,13 @@
   --inventory-primary-background: #5c815d;
   --inventory-primary-hover-background: var(--inventory-control-hover-background);
   --inventory-primary-text: var(--inventory-control-text);
+  /* The House is a screen of the game page (spec 084): it covers the UI surface above the game and its HUD; DEV tools
+     in the surface portal stay above it. */
+  position: fixed;
+  z-index: var(--ui-layer-panel);
+  inset: 0;
   margin: 0;
   min-width: 0;
-  min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--house-background);

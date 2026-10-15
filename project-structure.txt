@@ -200,7 +200,6 @@
 │  ├── simplified_fight_physics_model.md
 │  ├── stats_and_balance_spec.md
 │  └── styles.md
-├── fisherman-house.html
 ├── index.html
 ├── package-lock.json
 ├── package.json
@@ -376,6 +375,8 @@
 │  │  └── spec.md
 │  ├── 083-preloader-foundation
 │  │  └── spec.md
+│  ├── 084-house-screen
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -383,10 +384,9 @@
 │  │  │  ├── debug_console_bootstrap.js
 │  │  │  ├── debug_overlay_bootstrap.js
 │  │  │  ├── dev_config_validation_composition.js
+│  │  │  ├── dev_house_screen_composition.js
 │  │  │  ├── dev_time_composition.js
 │  │  │  ├── development_game_startup.js
-│  │  │  ├── development_house_startup.js
-│  │  │  ├── development_page_startup.js
 │  │  │  └── ui_catalog_bootstrap.js
 │  │  └── production
 │  │     ├── config_context.js
@@ -398,7 +398,7 @@
 │  │     ├── game_startup.js
 │  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
-│  │     ├── house_startup.js
+│  │     ├── house_screen_composition.js
 │  │     ├── house_view_composition.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_ui_bootstrap.js
@@ -576,17 +576,18 @@
 │  │  │  └── vector2.js
 │  │  ├── random
 │  │  │  └── seeded_rng.js
-│  │  └── rendering
-│  │     ├── composite_renderer.js
-│  │     ├── render_component.js
-│  │     ├── render_math.js
-│  │     └── render_pass.js
+│  │  ├── rendering
+│  │  │  ├── composite_renderer.js
+│  │  │  ├── render_component.js
+│  │  │  ├── render_math.js
+│  │  │  └── render_pass.js
+│  │  └── screens
+│  │     └── screen_host.js
 │  ├── entrypoints
 │  │  ├── dev
 │  │  │  └── ui_catalog.entry.js
 │  │  ├── dev.entry.js
-│  │  ├── game.entry.js
-│  │  └── house.entry.js
+│  │  └── game.entry.js
 │  ├── game
 │  │  ├── application
 │  │  │  ├── casting
@@ -1024,6 +1025,7 @@
 │  │     │  ├── house_navigation_controller.js
 │  │     │  ├── house_presenter.js
 │  │     │  ├── house_room_view.js
+│  │     │  ├── house_screen_markup.js
 │  │     │  └── house_view.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
@@ -1307,6 +1309,7 @@
    │  │  └── game-cycle.txt
    │  ├── core
    │  │  ├── check_assertion.js
+   │  │  ├── house_markup_source.js
    │  │  ├── output_baseline.js
    │  │  └── source_runtime.js
    │  ├── doubles

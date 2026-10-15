@@ -1,3 +1,3 @@
-import { startDevelopmentPage } from "../bootstrap/development/development_page_startup.js";
+import { startDevelopmentGame } from "../bootstrap/development/development_game_startup.js";
 
-startDevelopmentPage();
+startDevelopmentGame();

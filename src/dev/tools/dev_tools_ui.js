@@ -39,6 +39,19 @@ export class DevToolsUI {
     }
   }
 
+  // A second toggle inside another screen's header (the House screen, spec 084); the returned function removes it.
+  mountScreenToggle(mountNode) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hud-control hud-control--square";
+    button.textContent = "⚙️";
+    button.setAttribute("aria-label", "Параметри розробника");
+    const onClick = () => this.#onToggleCallback?.();
+    button.addEventListener("click", onClick);
+    mountNode.appendChild(button);
+    return () => { button.removeEventListener("click", onClick); button.remove(); };
+  }
+
   dispose() {
     this.#dragButton?.dispose();
     this.#dragButton = null;
