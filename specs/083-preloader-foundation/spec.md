@@ -12,8 +12,8 @@ Engine (`src/engine/assets`, no browser or CyberFishing knowledge, timers inject
 
 | Module | Responsibility |
 | --- | --- |
-| `AssetCatalog` | Immutable catalog snapshot (`schemaVersion` 1, `revision`): stable asset IDs, kinds (`visual-image`, `data-image`, `binary`, `json`, `text`, `bundle`), tiered variants (`l`, `m`, `h`, `legacy`) with project-relative URLs, atomic groups, exact legacy aliases, static fallbacks and bundle dependencies. Rejects duplicates, absolute/parent/scheme URLs, unknown tiers, alias/group/fallback/dependency errors and cycles. A `data-image` (depth map) accepts only its exact legacy variant. |
-| `AssetVariantSelector` | Pure tier/format choice. Minimum: a ready variant the mode allows (the best one) or the cheapest `l → legacy → m → h`; Low mode only `l → legacy`. Target: High with permission (or High mode), else Middle, else the minimum. Formats in the injected preference order; unsupported formats never. |
+| `AssetCatalog` | Immutable catalog snapshot (`schemaVersion` 1, `revision`): stable asset IDs, kinds (`visual-image`, `data-image`, `binary`, `json`, `text`, `bundle`), tiered variants (`l`, `m`, `h`, `legacy`) with project-relative URLs, atomic groups, exact legacy aliases, static fallbacks, bundle dependencies and a visual image's `placeholderColor` (`#rrggbb`). Rejects duplicates, absolute/parent/scheme URLs, unknown tiers, alias/group/fallback/dependency errors and cycles. A `data-image` (depth map) accepts only its exact legacy variant. |
+| `AssetVariantSelector` | Pure tier/format choice. Minimum: a ready variant the mode allows (the best one) or the cheapest `l → legacy → m → h`; Low mode only `l → legacy`. `selectReady` is what a layer draws: the best ready variant the mode allows, or `null` for the placeholder. Target: High with permission (or High mode), else Middle, else the minimum. Formats in the injected preference order; unsupported formats never. |
 | `AssetLoadQueue` | One job per resource key shared by every consumer; classes `blocking > interactive > upgrade > prefetch`, FIFO inside a class; network cap (4) and speculative cap (1); promotion without duplicates; per-consumer release (a queued job without consumers never starts, a running one is marked cancelled and keeps its slot until it settles, a new consumer revives it); speculative work can be paused (hidden tab, offline, save-data, Low); bounded retry (2 attempts, 500 ms) through an injected scheduler. Results resolve with `ready`, `failed` or `cancelled`, never reject. |
 | `StartupLoadProgress` | Startup progress over a fixed set of required IDs: the denominator is captured once, optional work never moves it, ready and failed are separate, no invented byte totals. The loading screen subscribes to its snapshots. |
 
@@ -22,8 +22,10 @@ Platform (`src/platform/browser/animation`):
 - `spine_runtime_module.js`: the one Spine runtime entry, checked in as a stub (`createSpineRuntime()` returns
   `null`). A prepared runtime replaces this file with the same named export.
 - `SpineRuntimeProvider`: imports that entry once, on first need, and always resolves
-  `{ available, runtime, reason }` (`not-installed`, `import-failed`, `factory-failed`, `version-mismatch` against the
-  required editor line such as `4.2`). A missing or broken runtime never breaks a scene; it keeps the static fallback.
+  `{ available, runtime, reason }` (`not-installed`, `import-failed`, `factory-failed`, `version-mismatch`). The
+  version line comes from the export: `load(exportVersion)` compares the runtime with the skeleton's
+  `skeleton.spine` major.minor (`4.2.43` needs a 4.2 runtime). A missing or broken runtime never breaks a scene; it
+  keeps the static fallback.
 
 Check: `asset-preloader` (Quick). Production modules and the game-cycle report are unchanged; nothing in the
 running game uses these modules yet.
@@ -56,10 +58,10 @@ Startup sequence:
 Spine's own `AssetManager` would issue its own uncapped requests, so the platform adapter builds the scene from
 resources the queue already loaded:
 
-1. Queue: `*.atlas` (text) and the skeleton (`*.skel` binary, or `*.json` while authoring).
+1. Queue: `*.atlas` (text) and the JSON skeleton (owner decision 2).
 2. Parse the atlas text (`TextureAtlas`); every page name becomes its own queue job (image decode in the preparation
    lane); then each page gets its texture (`GLTexture` over the decoded image) on the loader's WebGL surface.
-3. `AtlasAttachmentLoader` over the atlas → `SkeletonBinary`/`SkeletonJson` → `SkeletonData` → `Skeleton` and
+3. `AtlasAttachmentLoader` over the atlas → `SkeletonJson` → `SkeletonData` → `Skeleton` and
    `AnimationState`; the scene object exposes `applyState(snapshot)`, `update(dt)`, `render(transform)`, `dispose()`.
 4. The game's single loop drives `update(dt)` (no second requestAnimationFrame loop); hidden screen or reduced motion
    stop updates; context loss falls back to the poster.
@@ -80,21 +82,39 @@ image converter never rewrites a page alone.
 4. Quality: `l`/`h` variants from the masters in `asset-sources/` (converter profiles), Auto/Low/High, upgrades after
    the barrier, diagnostics in DEV.
 
-## Owner decisions needed
+## Owner decisions (2026-10-15)
 
-1. Loading screen form. Recommended: a layer of `index.html` shown from first paint and removed when the game is
-   ready. A separate HTML page would navigate after loading, so decoded images and the module graph would be
-   loaded again; the layer keeps one page, one entry module and the Pages release paths.
-2. Spine editor version and export: the runtime must match the editor's major.minor (4.2 assumed); binary `.skel`
-   for releases (smaller, faster) and JSON while authoring; atlas pages with premultiplied alpha or not (the
-   renderer must match). The Spine Runtimes license requires a Spine Editor license for the project.
-3. The loader's static poster (the fallback when Spine is unavailable) and which art stays visible while it fades.
-4. Minimum set for the first scene: all three time-of-day backgrounds (current blending and DEV time jumps keep
-   working) or only the current phase plus a lookahead (fewer bytes, needs a policy for fast time scales).
+1. **Loading screen: a layer inside `index.html`**, not a separate HTML page. It is painted from HTML/CSS on first paint
+   and removed once the game is ready; one page, one entry module, decoded images and modules are not loaded twice.
+2. **Spine export: texture atlases (`*.atlas` + pages) and a JSON skeleton.** The catalog bundle is the JSON skeleton,
+   the atlas text and its pages (`json`, `text`, `visual-image` members). The runtime line and premultiplied alpha
+   are read from the export itself, not configured by hand: the JSON's `skeleton.spine` version gives the required
+   major.minor for `SpineRuntimeProvider`, the atlas header's `pma` flag selects the blend mode. A Spine Editor
+   license is required by the Spine Runtimes license.
+3. **Time-of-day art loads the current phase first, by quality with fallbacks.** The current phase is what the scene
+   shows now: the base layer and, during dusk (17–21 h) or dawn (5–9 h), its overlay (`backgroundTimeBlend` +
+   `timeOfDayLayers`). Its art is requested first, the other phases after it as prefetch, the next phase ahead of the
+   one after it. Each layer draws the best ready variant: the full-quality image when ready, otherwise the reduced
+   one (`l`), otherwise a placeholder. The placeholder is the image's average colour stored in the catalog
+   (`placeholderColor`, written by the converter), drawn instantly with no request. A missing background is
+   therefore no longer a critical startup failure; the depth map (gameplay data) stays required and exact.
+
+Consequences for the plan:
+- Step 1 (store and facade) stays behavior-identical (all three backgrounds required, legacy tier only); the
+  time-of-day order arrives with the quality step, together with the `l` variants it falls back to.
+- Readiness of the first scene: the depth map plus the current phase's layers at `l` (or `legacy`); if they fail or
+  are still missing after the demand deadline, the scene starts on placeholders and keeps upgrading.
+- A layer swaps `placeholder → l → full` between frames (never back down), as spec 047 FR-011 requires.
+- DEV time jumps or fast time scales may reach a phase that is not loaded yet; it shows its placeholder or `l` until
+  its own request (promoted to `interactive` as soon as the phase becomes visible) completes.
+
+Still open: the loader's static poster (shown while Spine is unavailable) and the art that stays visible while the
+loading layer fades.
 
 ## Verification
 
 `asset-preloader` check: catalog validation and immutability, aliases, protected data images, tier/format choice and
 Low mode, caps, priority and FIFO, promotion, release/revival, speculative pause, retry and failure, dispose,
-progress denominator and events, Spine provider outcomes (stub, import failure, factory failure, version line).
+progress denominator and events, placeholder colour validation, ready-variant display order, Spine provider outcomes
+(stub, import failure, factory failure, version line from the export).
 Architecture, Quick, Full; the game-cycle report is unchanged.

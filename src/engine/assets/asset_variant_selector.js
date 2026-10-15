@@ -9,10 +9,17 @@ export class AssetVariantSelector {
   // The variant that makes the asset usable now. A ready variant the mode allows wins over a new download (the best
   // one); otherwise the cheapest permitted tier. Low mode never chooses m/h for a new consumer.
   selectMinimum(asset, { mode = "auto", formats, isReady = () => false }) {
-    const candidates = this.#candidates(asset, this.#mode(mode) === "low" ? LOW_ORDER : COLD_ORDER, formats);
+    return this.selectReady(asset, { mode, formats, isReady })
+      ?? this.#candidates(asset, this.#order(mode), formats)[0] ?? null;
+  }
+
+  // What a layer draws now: the best ready variant the mode allows, or null (the caller draws the placeholder).
+  // Full quality when ready, otherwise the reduced one (owner decision, spec 083).
+  selectReady(asset, { mode = "auto", formats, isReady }) {
+    const candidates = this.#candidates(asset, this.#order(mode), formats);
     for (let index = candidates.length - 1; index >= 0; index -= 1)
       if (isReady(candidates[index])) return candidates[index];
-    return candidates[0] ?? null;
+    return null;
   }
 
   // The quality the asset should reach when upgrades are allowed: High only with allowHigh (budget, conditions),
@@ -34,6 +41,10 @@ export class AssetVariantSelector {
       }
     }
     return result;
+  }
+
+  #order(mode) {
+    return this.#mode(mode) === "low" ? LOW_ORDER : COLD_ORDER;
   }
 
   #mode(mode) {

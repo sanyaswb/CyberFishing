@@ -9,7 +9,8 @@ function catalogSnapshot(overrides = {}) {
   return {
     schemaVersion: 1, revision: "rev-1",
     assets: [
-      { id: "location.test.background.day", kind: "visual-image", logicalSize: { width: 2560, height: 1440 }, variants: [
+      { id: "location.test.background.day", kind: "visual-image", logicalSize: { width: 2560, height: 1440 },
+        placeholderColor: "#4a6b7c", variants: [
         { tier: "legacy", format: "webp", url: "assets/locations/test/bg_test--day.webp", width: 2560, height: 1440, byteLength: 222664 },
         { tier: "l", format: "webp", url: "assets/variants/locations/test/g1/bg_test--day--l.webp", width: 1280, height: 720 },
         { tier: "l", format: "avif", url: "assets/variants/locations/test/g1/bg_test--day--l.avif", width: 1280, height: 720 },
@@ -38,6 +39,8 @@ async function checkCatalog(AssetCatalog) {
   assert.equal(catalog.getGroup("scene.test.minimum").atomic, true, "groups activate as one by default");
   assert.equal(catalog.getAsset("lobby.fisher").fallbackId, "lobby.poster");
   assert.equal(catalog.getAsset("unknown"), null);
+  assert.equal(day.placeholderColor, "#4a6b7c", "a background carries its average colour as the placeholder");
+  assert.equal(catalog.getAsset("lobby.poster").placeholderColor, null);
   const rejects = (overrides, pattern, message) => assert.throws(() => new AssetCatalog(catalogSnapshot(overrides)), pattern, message);
   rejects({ schemaVersion: 2 }, /schemaVersion/u, "an unknown schema is rejected");
   rejects({ assets: [...catalogSnapshot().assets, catalogSnapshot().assets[0]] }, /duplicate asset/u);
@@ -47,6 +50,9 @@ async function checkCatalog(AssetCatalog) {
   rejects({ assets: [{ id: "a", kind: "data-image", variants: [{ tier: "l", url: "assets/a.webp" }] }] }, /exact legacy/u,
     "depth maps cannot get resampled tiers");
   rejects({ aliases: { old: "missing" } }, /unknown asset/u);
+  for (const [kind, placeholderColor] of [["visual-image", "blue"], ["visual-image", "#12345"], ["data-image", "#123456"]])
+    rejects({ groups: [], aliases: {}, assets: [{ id: "a", kind, placeholderColor, variants: [{ tier: "legacy", url: "assets/a.webp" }] }] },
+      /placeholderColor/u, `placeholder ${kind} ${placeholderColor}`);
   rejects({ groups: [{ id: "g", members: ["missing"] }] }, /unknown asset/u);
   rejects({ groups: [], aliases: {}, assets: [
     { id: "a", kind: "visual-image", fallbackId: "b", variants: [{ tier: "l", url: "assets/a.webp" }] },
@@ -64,6 +70,13 @@ async function checkVariantSelector(AssetCatalog, AssetVariantSelector) {
     "a ready better variant is used without a Low request");
   assert.equal(selector.selectMinimum(day, { mode: "low", formats: webp, isReady: ready("h") }).tier, "l",
     "Low mode never picks High for a new consumer");
+  // Owner decision (spec 083): draw full quality when ready, else the reduced image, else the placeholder.
+  const readySet = (...tiers) => (variant) => tiers.includes(variant.tier);
+  assert.equal(selector.selectReady(day, { formats: webp, isReady: readySet() }), null, "nothing ready: the placeholder");
+  assert.equal(selector.selectReady(day, { formats: webp, isReady: readySet("l") }).tier, "l");
+  assert.equal(selector.selectReady(day, { formats: webp, isReady: readySet("l", "h") }).tier, "h");
+  assert.equal(selector.selectReady(day, { formats: webp, isReady: readySet("l", "legacy") }).tier, "legacy",
+    "the original outranks the reduced image");
   assert.equal(selector.selectTarget(day, { formats: webp }).tier, "l", "Auto without High permission stays on the minimum");
   assert.equal(selector.selectTarget(day, { formats: webp, allowHigh: true }).tier, "h");
   assert.equal(selector.selectTarget(day, { mode: "high", formats: webp }).tier, "h");
@@ -200,12 +213,18 @@ async function checkProgress(StartupLoadProgress) {
 async function checkSpineProvider(SpineRuntimeProvider, stub) {
   assert.equal(stub.createSpineRuntime(), null, "the checked-in stub reports no runtime");
   let imports = 0;
-  const provider = new SpineRuntimeProvider({ requiredVersion: "4.2", importModule: async () => { imports += 1; return stub; } });
-  const first = provider.load(); const second = provider.load();
-  assert.equal(first, second, "one shared capability promise");
-  assert.deepEqual({ ...(await first) }, { available: false, runtime: null, reason: "not-installed" });
+  const provider = new SpineRuntimeProvider({ importModule: async () => { imports += 1; return stub; } });
+  const [first, second] = await Promise.all([provider.load("4.2.43"), provider.load("4.2.43")]);
+  assert.deepEqual({ ...first }, { available: false, runtime: null, reason: "not-installed" });
+  assert.equal(second, first, "one shared capability result");
   assert.equal(imports, 1, "the runtime module is imported once, on first need");
-  const outcome = async (importModule) => (await new SpineRuntimeProvider({ requiredVersion: "4.2", importModule }).load()).reason;
+  // The required line comes from the export's skeleton.spine (owner decision: atlases + JSON).
+  const outcome = async (importModule, exportVersion = "4.2.43") =>
+    (await new SpineRuntimeProvider({ importModule }).load(exportVersion)).reason;
+  assert.equal(await outcome(async () => ({ createSpineRuntime: () => ({ version: "4.2.0" }) }), "4.1.24"), "version-mismatch",
+    "a 4.1 export needs a 4.1 runtime");
+  assert.equal(await outcome(async () => ({ createSpineRuntime: () => ({ version: "4.2.0" }) }), ""), "version-mismatch",
+    "an export without a version is not trusted");
   assert.equal(await outcome(async () => { throw new Error("404"); }), "import-failed");
   assert.equal(await outcome(async () => ({ createSpineRuntime: () => { throw new Error("no WebGL"); } })), "factory-failed");
   assert.equal(await outcome(async () => ({ createSpineRuntime: () => ({ version: "4.1.24" }) })), "version-mismatch");

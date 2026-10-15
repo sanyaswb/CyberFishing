@@ -59,7 +59,11 @@ export class AssetCatalog {
       throw new Error(`AssetCatalog: data image "${id}" accepts only its exact legacy variant`);
     const logicalSize = record.logicalSize ? Object.freeze({ width: this.#positive(record.logicalSize.width, id),
       height: this.#positive(record.logicalSize.height, id) }) : null;
-    return Object.freeze({ id, kind: record.kind, logicalSize, variants: Object.freeze(variants),
+    // A visual image's placeholder is its average colour (owner decision, spec 083): drawn at once, no request.
+    const placeholderColor = record.placeholderColor === undefined ? null : String(record.placeholderColor);
+    if (placeholderColor !== null && (record.kind !== "visual-image" || !/^#[0-9a-f]{6}$/iu.test(placeholderColor)))
+      throw new Error(`AssetCatalog: "${id}" has an invalid placeholderColor`);
+    return Object.freeze({ id, kind: record.kind, logicalSize, placeholderColor, variants: Object.freeze(variants),
       fallbackId: record.fallbackId ? String(record.fallbackId) : null,
       dependencies: Object.freeze([...(record.dependencies || [])].map(String)) });
   }
