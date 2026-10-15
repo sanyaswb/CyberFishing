@@ -1,22 +1,27 @@
-# Transparent section tab bar, hidden keepnet help, rod removal only for a full rod
+# Item editor scrolls under the section tabs, hidden keepnet help, rod removal only for a full rod
 
 Owner request, 2026-10-16. No version bump.
 
-## Section tab buttons without their own background
+## Portrait item editor scrolls under the section tabs
 
-The dark grey the owner saw is the bottom section buttons' own fill: inactive tabs `--inventory-equipment-tab`
-(#262626), the active one `--inventory-equipment-tab-active` (#303030) with square bottom corners. Above a transparent
-section (an item editor in portrait) the active tab stood out as a separate grey tile.
+Owner screenshot (portrait, rod editor): the editor's content stopped above the bottom tab row with a hard edge, so the
+row looked like a second background strip under the buttons. Owner decision: only in the item editor the content
+scrolls under the tabs, which lie on the full-screen container; elsewhere each section's own container clips its
+scrolling, as before. The active tab's frame stays visible and everything behind it shows through (its fill is not
+needed); inactive tabs keep their fill.
 
-`.inventory-main__tabs` sets both tokens to `transparent`: the buttons stand on their parent container — the sidebar on
-wide layouts (spec 077, unchanged), the full-screen container in portrait. The active tab keeps its frame
-(`--inventory-equipment-tab-border`) and light icon. The backpack/keepnet pager tabs keep their colours to join their
-items panel.
+Portrait, `.inventory-modal--section-equipment:has(.inventory-assembly-editor)`:
+- `.inventory-main__left` (the scroller) spans the content and tab rows (`grid-row: 2 / 4`);
+- the editor's bottom padding clears the tab bar (`100cqi * 0.15`, the bar height of section-tabs.css, plus the
+  container gap), so its last content can scroll above the tabs;
+- `.inventory-main__tabs` lies on top (`z-index: 1`), its active tab is transparent, and the bar passes touches through
+  its gaps to the content (`pointer-events: none`, tabs `auto`).
 
-A first attempt (3e4fbfe9) moved the sidebar's surface onto the section content instead; it did not touch the buttons'
-fill and is reverted. Measured with the owner's permission in the in-app browser, portrait 360 x 740 with the rod
-editor open (computed styles only, no screenshots): bottom tabs `rgba(0, 0, 0, 0)`, active frame `rgb(123, 123, 123)`,
-pager tabs unchanged, no other background between the full-screen container and the tabs.
+Earlier attempts (3e4fbfe9: sidebar surface moved onto the content; 9647f280: transparent tab fills everywhere) are
+reverted to the pre-089 tab and sidebar styles. Measured with the owner's permission in the in-app browser at
+360 x 740 (computed styles and geometry only): outside the editor the content ends at 687 px above the tabs (686 px);
+in the editor the scroller runs to the bottom (106-741 px) under the tabs, the active tab is `rgba(0, 0, 0, 0)`, a tap
+in a tab gap reaches the editor, and fully scrolled the last parameter ends at 665 px, above the tabs.
 
 ## Keepnet help button hidden, component kept
 

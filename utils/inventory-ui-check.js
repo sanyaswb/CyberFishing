@@ -549,9 +549,14 @@ class InventoryStaticContractCheck {
     assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;[^}]*border-radius:\s*var\(--inventory-panel-radius\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
       "the sidebar owns the column's background and frame");
     assert.match(style, /\.inventory-section-tabs\s*\{[^}]*background:\s*transparent;/, "the tab bar paints no background");
-    // Spec 089: the bottom section tabs paint no background of their own; the pager's tabs keep their colours.
-    assert.match(style, /\.inventory-main__tabs\s*\{\s*--inventory-equipment-tab:\s*transparent;\s*--inventory-equipment-tab-active:\s*transparent;/,
-      "the bottom section tabs stand on their parent container");
+    // Spec 089: in portrait the item editor scrolls under the section tabs; the active tab shows it through.
+    const editorUnderTabs = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
+    for (const [selector, rule] of [[" .inventory-main__left", /grid-row:\s*2 \/ 4;/],
+      [" .inventory-assembly-editor", /padding-bottom:\s*calc\(100cqi \* 0\.15 \+ var\(--inventory-container-gap\)\);/],
+      [" .inventory-main__tabs", /--inventory-equipment-tab-active:\s*transparent;[^}]*z-index:\s*1;[^}]*pointer-events:\s*none;/]]) {
+      const block = portraitModal.split(editorUnderTabs + selector + " {")[1]?.split("}")[0] || "";
+      assert.match(block, rule, "portrait item editor rule " + selector.trim());
+    }
     assert.match(style, /\.inventory-main__sidebar \.inventory-loadout-panel,\s*\.inventory-main__sidebar \.inventory-assembly-editor,\s*\.inventory-main__sidebar \.inventory-saved-loadout-preview\s*\{\s*--inventory-panel:\s*transparent;\s*--inventory-panel-border:\s*transparent;/,
       "equipment-section panels paint no outer frame inside the sidebar");
     assert.doesNotMatch(style, /\.keepnet-section__summary\s*\{[^}]*background:/, "the keepnet summary paints no outer frame");
