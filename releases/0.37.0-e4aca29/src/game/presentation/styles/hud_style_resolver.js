@@ -1,0 +1,71 @@
+export class HudStyleResolver {
+  #hudStylesProvider;
+  #cache = new Map();
+
+  constructor({ hudStylesProvider = null } = {}) {
+    this.#hudStylesProvider = typeof hudStylesProvider === "function"
+      ? hudStylesProvider
+      : () => null;
+  }
+
+  resolveBarStyle(path, { overrides = null } = {}) {
+    if (!overrides && this.#cache.has(path)) {
+      return this.#cache.get(path);
+    }
+    const bars = this.#getBarsConfig();
+    const sharedStyle = bars.shared || {};
+    const componentStyle = this.#getPathValue(bars, path) || {};
+    const resolved = HudStyleResolver.merge(
+      sharedStyle,
+      componentStyle,
+      overrides,
+    );
+    if (!overrides) this.#cache.set(path, resolved);
+    return resolved;
+  }
+
+  invalidate() {
+    this.#cache.clear();
+  }
+
+  static merge(...sources) {
+    const target = {};
+    for (const source of sources) {
+      HudStyleResolver.#mergeInto(target, source);
+    }
+    return target;
+  }
+
+  #getBarsConfig() {
+    const hudStyles = this.#hudStylesProvider() || {};
+    return hudStyles.bars || {};
+  }
+
+  #getPathValue(source, path) {
+    if (!source || !path) return null;
+    let cursor = source;
+    for (const segment of String(path).split(".")) {
+      if (!cursor || typeof cursor !== "object") return null;
+      cursor = cursor[segment];
+    }
+    return cursor && typeof cursor === "object" ? cursor : null;
+  }
+
+  static #mergeInto(target, source) {
+    if (!source || typeof source !== "object") return target;
+    for (const [key, value] of Object.entries(source)) {
+      if (value === undefined) continue;
+      if (Array.isArray(value)) {
+        target[key] = value.slice();
+      } else if (value && typeof value === "object") {
+        const base = target[key] && typeof target[key] === "object" && !Array.isArray(target[key])
+          ? target[key]
+          : {};
+        target[key] = HudStyleResolver.#mergeInto(base, value);
+      } else {
+        target[key] = value;
+      }
+    }
+    return target;
+  }
+}
