@@ -118,6 +118,11 @@ export class HouseNavigationController {
     return panel?.querySelector(".house__sheet-content") ?? null;
   }
 
+  // Shows the header zone, the hint region for notices without an open sheet (spec 086).
+  revealHeader() {
+    this.#setZones(true, this.#dockExpanded);
+  }
+
   // A renovation hides the menu and closes its sheet.
   setLocked(locked) {
     this.#nodes.get("dock").hidden = locked;

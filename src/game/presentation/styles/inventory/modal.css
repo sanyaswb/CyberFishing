@@ -22,9 +22,27 @@
   isolation: isolate;
 }
 
+/* Three rows for the modal's three children (spec 086): the hint region, the header, the main area. Only the main
+   area stretches; a template row without its child would leave the main area in a content-sized row. */
 .inventory-modal.inventory-modal--open {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+/* Hint region (spec 086): the first row, above the header and its switchers. No height while no hint is shown; a
+   shown hint takes its own space and pushes the header and the sections down, with the inventory's container gap. */
+.inventory-modal__hints {
+  display: grid;
+  gap: var(--inventory-container-gap);
+  min-width: 0;
+}
+
+.inventory-modal__hints:has(> :not([hidden])) {
+  margin-bottom: var(--inventory-container-gap);
+}
+
+.inventory-modal__hints > .ui-hint {
+  max-height: calc(var(--ui-logical-height, 100dvh) * 0.3);
 }
 
 .inventory-modal *,
@@ -34,8 +52,6 @@
 }
 
 .inventory-main {
-  /* Positions the inventory warning (spec 080). */
-  position: relative;
   display: grid;
   min-width: 0;
   min-height: 0;
@@ -130,6 +146,12 @@
       padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       background: var(--inventory-equipment-surface);
+    }
+
+    /* The full-screen portrait container has no outer padding: the region keeps the containers' inset. */
+    .inventory-modal__hints:has(> :not([hidden])) {
+      margin-bottom: 0;
+      padding: var(--inventory-container-gap) var(--inventory-container-gap) 0;
     }
 
     .inventory-main {

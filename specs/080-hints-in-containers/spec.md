@@ -45,3 +45,6 @@ Focused: inventory UI (placement rule, structure, × closes and a new warning re
 inside click keeps it open, × closes and releases the document listener), House (notice in the open sheet, back in the
 room without one, × closes, error tone, House sheets still have no cross buttons), UI catalog, UI components, CSS usage,
 Architecture. Quick and Full. Visual acceptance by the owner; Claude did not open a browser.
+
+Superseded in part by [spec 086](../086-hint-regions/spec.md): the placements above overlaid content; hints now take an
+in-flow region at the top of their container. The removed warning row also caused regression G-061.

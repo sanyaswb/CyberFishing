@@ -54,7 +54,8 @@ async function main() {
   assert.equal(source.keepnet.length, 3, "grouping never changes ownership");
   // The keepnet is the inventory's keepnet section (spec 067): the inventory mounts its halves and owns visibility.
   const inventory = { opened: [], toggled: 0, view: null,
-    attachKeepnetSection(view) { this.view = view; documentRef.body.append(view.summaryNode, view.contentNode); },
+    // Like the inventory: the help hint goes to the host's hint region above the sections (spec 086).
+    attachKeepnetSection(view) { this.view = view; documentRef.body.append(view.helpNode, view.summaryNode, view.contentNode); },
     openSection(id) { this.opened.push(id); this.view.setVisible(true); },
     toggleSection(id) { this.toggled++; assert.equal(id, "keepnet"); this.view.setVisible(!this.view.isOpen); } };
   const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service, degradationColorResolver: colors,
@@ -114,7 +115,8 @@ async function main() {
   help.click(); ui.setVisible(false); ui.setVisible(true);
   assert(hint.hidden, "hiding and showing the section resets help");
   // Spec 080: the hint is a ui-hint inside the summary; reading inside it keeps it open, its close button dismisses it.
-  assert(hint.classList.contains("ui-hint") && hint.parentNode === summary, "the help hint lies inside the summary");
+  assert(hint.classList.contains("ui-hint") && hint.parentNode !== summary && !summary.contains(hint),
+    "the help hint is placed by its host's hint region, not inside the summary (spec 086)");
   help.click();
   assert(!documentRef.fire("click", { target: hint }).stopped && !hint.hidden, "a click inside the hint keeps it open");
   const closeHelp = hint.children.find((node) => node.classList.contains("ui-hint__close"));

@@ -19,7 +19,6 @@
   --house-layer-sheet: 5;
   --house-layer-dock: 6;
   --house-layer-renovation: 10;
-  --house-layer-notice: 12;
   --house-layer-header: 20;
   --house-layer-skip: 30;
   --inventory-parameter-meter-height: 9px;
@@ -640,28 +639,18 @@
   font-size: clamp(1.7rem, 4cqw, 3rem);
 }
 
-/* Placement of the notice (a ui-hint, spec 080). In the room it sits under the header within the room width; inside
-   an open sheet it is the last child of the sheet content and sticks above the dock while the sheet scrolls. */
-.house__notice {
-  position: absolute;
-  z-index: var(--house-layer-notice);
-  top: calc(var(--ui-edge-top) + var(--ui-hud-control-size) + 12px);
-  left: var(--ui-edge-left);
-  right: var(--ui-edge-right);
-  max-width: 600px;
-  max-height: 40%;
-  margin-inline: auto;
+/* Hint regions (spec 086): at the top of each sheet's content and under the header row. No height while empty; a shown
+   notice takes its own space and pushes the content below it down. */
+.house__hints {
+  display: grid;
+  min-width: 0;
 }
 
-.house__notice--sheet {
-  position: sticky;
-  z-index: 2;
-  top: auto;
-  bottom: calc(var(--house-dock-height) + var(--ui-hint-inset));
-  left: auto;
-  right: auto;
-  max-width: none;
-  max-height: none;
+.house__hints--sheet:has(> :not([hidden])) {
+  margin-bottom: 14px;
+}
+
+.house__hints--header:has(> :not([hidden])) {
   margin-top: 12px;
 }
 

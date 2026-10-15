@@ -23,6 +23,7 @@ export class InventoryUI {
   #headerNode = null;
   #lastEquipmentFeedbackRevision = 0;
   #warningNode;
+  #hintRegion;
   #leftHost;
   #rightHost;
   #sectionTabsRenderer;
@@ -168,6 +169,8 @@ export class InventoryUI {
     this.#keepnetSection = view;
     this.#sectionHosts.get("keepnet").left.appendChild(view.summaryNode);
     this.#sectionHosts.get("keepnet").right.appendChild(view.contentNode);
+    // The keepnet help shares the inventory's hint region (spec 086).
+    this.#hintRegion.appendChild(view.helpNode);
     view.setVisible(this.#isOpen && this.#activeSectionId === "keepnet");
   }
 
@@ -372,7 +375,9 @@ export class InventoryUI {
       "div",
       "inventory-modal__header-host",
     );
-    // The warning lies inside the inventory's main area (spec 080): over its top edge, never clipped by a flow row.
+    // Hints have their own region at the top of the inventory (spec 086): it has no height while empty and pushes the
+    // header and the sections down when a hint appears.
+    this.#hintRegion = this.#dom.element("div", "inventory-modal__hints");
     this.#warningNode = this.#hintRenderer.create({ className: "inventory-warning", tone: "warning", role: "alert",
       closeLabel: "Закрити попередження", onClose: () => this.#clearWarningTimer() });
     const main = this.#dom.element("main", "inventory-main");
@@ -399,8 +404,8 @@ export class InventoryUI {
     this.#section("keepnet", "left", hostClass("keepnet"));
     this.#itemsHost = this.#section("items", "right", "inventory-main__section--items");
     this.#section("keepnet", "right", hostClass("keepnet"));
-    main.appendChild(this.#warningNode);
-    this.#rootNode.append(this.#headerHost, main);
+    this.#hintRegion.appendChild(this.#warningNode);
+    this.#rootNode.append(this.#hintRegion, this.#headerHost, main);
   }
 
   // One host per section and side; hidden hosts keep their DOM, scroll and the item-list render signature.

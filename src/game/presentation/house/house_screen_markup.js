@@ -11,6 +11,7 @@ export const HOUSE_SCREEN_MARKUP = `
       <div class="house__hud-mount" data-house-time-mount></div>
     </div>
   </div>
+  <div class="house__hints house__hints--header" data-house-header-hints><div class="ui-hint house__notice" role="status" aria-live="polite" data-house-notice hidden><p class="ui-hint__text" data-house-notice-text></p><button class="ui-modal-close ui-hint__close" type="button" title="Закрити повідомлення" aria-label="Закрити повідомлення" data-house-notice-close>×</button></div></div>
 </header>
 <main class="house__main">
   <div class="house__room-track" data-house-room-track tabindex="0" aria-label="Кімнати будинку. Стрілки ліворуч і праворуч перемикають кімнати.">
@@ -52,6 +53,7 @@ export const HOUSE_SCREEN_MARKUP = `
   <section class="house__sheet" id="house-panel-room" data-house-panel="room" aria-label="Прокачка кімнати" hidden>
     <div class="house__sheet-content">
     <div class="house__sheet-handle-mount" data-house-sheet-handle-mount></div>
+    <div class="house__hints house__hints--sheet" data-house-sheet-hints></div>
     <div class="house__sheet-heading"><h1 class="house__sheet-title">Кімната <span data-house-room-level-panel>1</span> / <span data-house-room-max-level>5</span></h1></div>
     <div class="inventory-parameter house__upgrade-card">
       <div class="inventory-parameter__header"><span class="inventory-parameter__label house__upgrade-label" data-house-room-next-level>Наступний рівень: 2</span></div>
@@ -65,6 +67,7 @@ export const HOUSE_SCREEN_MARKUP = `
   <section class="house__sheet" id="house-panel-aquarium" data-house-panel="aquarium" aria-label="Акваріум і постачання" hidden>
     <div class="house__sheet-content">
     <div class="house__sheet-handle-mount" data-house-sheet-handle-mount></div>
+    <div class="house__hints house__hints--sheet" data-house-sheet-hints></div>
     <div class="house__sheet-heading"><h2 class="house__sheet-title">Акваріум</h2></div>
     <div class="inventory-parameter house__upgrade-card">
       <div class="inventory-parameter__header house__stat-header" data-house-level role="group" aria-label="Рівень акваріума" title="Рівень акваріума"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/ui/status-icons.svg#level"></use></svg><span data-house-aquarium-level-count>0 / 10</span></div>
@@ -86,6 +89,7 @@ export const HOUSE_SCREEN_MARKUP = `
   <section class="house__sheet" id="house-panel-bait" data-house-panel="bait" aria-label="Живець і садок" hidden>
     <div class="house__sheet-content">
     <div class="house__sheet-handle-mount" data-house-sheet-handle-mount></div>
+    <div class="house__hints house__hints--sheet" data-house-sheet-hints></div>
     <div class="house__sheet-heading"><h2 class="house__sheet-title">Живець <span class="house__sheet-meta" data-house-bait-count>0 риб</span></h2></div>
     <div class="house__fish-list" data-house-live-baits></div>
     <p class="house__warning" data-house-keepnet-warning hidden>У садку живець втрачає час життя.</p>
@@ -99,6 +103,5 @@ export const HOUSE_SCREEN_MARKUP = `
     <img class="house__renovation-image" src="assets/house/room-1/under-renovation.webp" alt="Кімната на ремонті" />
     <div class="house__renovation-controls"><span data-house-renovation-level>Ремонт до рівня 2</span><strong class="house__renovation-time" data-house-renovation-time>02:00:00</strong><button class="inventory-action inventory-action--primary house__button" type="button" data-house-action="finishRoom">Завершити · Безкоштовно</button></div>
   </div>
-  <div class="ui-hint house__notice" role="status" aria-live="polite" data-house-notice hidden><p class="ui-hint__text" data-house-notice-text></p><button class="ui-modal-close ui-hint__close" type="button" title="Закрити повідомлення" aria-label="Закрити повідомлення" data-house-notice-close>×</button></div>
 </main>
 `;

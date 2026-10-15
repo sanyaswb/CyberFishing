@@ -17,10 +17,8 @@
 /* The content is an inventory-collection (shared-controls.css, spec 074): back/heading/filters panel, gap, fish list. */
 /* The summary paints no outer frame: the sidebar is its parent container (spec 077). */
 .keepnet-section__summary {
-  --keepnet-summary-padding: 16px;
-  position: relative;
   overflow-y: auto;
-  padding: var(--keepnet-summary-padding);
+  padding: 16px;
 }
 .keepnet-section__summary [hidden],
 .keepnet-section__content [hidden] { display: none; }
@@ -53,15 +51,6 @@
   touch-action: manipulation;
 }
 .ui-surface--desktop-hover .keepnet-section__help:hover { background: var(--inventory-equipment-tab-active); }
-/* Placement of the help hint (a ui-hint, spec 080): inside the summary under the ? button, across the summary width
-   minus its padding. The summary scrolls, so a long hint stays reachable instead of being clipped. */
-.keepnet-section__help-text {
-  position: absolute;
-  z-index: 2;
-  top: calc(var(--keepnet-summary-padding) + 52px);
-  left: var(--keepnet-summary-padding);
-  right: var(--keepnet-summary-padding);
-}
 .keepnet-section__help:focus-visible,
 .keepnet-section__filter:focus-visible,
 .keepnet-section__group:focus-visible,
@@ -175,7 +164,6 @@
     .keepnet-section__visual { display: contents; }
     .keepnet-section__icon { display: none; }
     .keepnet-section__help { position: static; grid-area: help; }
-    .keepnet-section__help-text { top: 54px; max-height: calc(var(--ui-logical-height, 100dvh) * 0.45); }
     .keepnet-section__count { grid-area: count; margin: 0; }
     .keepnet-section__capacity { grid-area: capacity; }
     .keepnet-section__status { grid-area: status; margin: 0; }

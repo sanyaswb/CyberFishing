@@ -20,6 +20,10 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-061–G-062 Owner reports of 2026-10-15, evening (P2, done)
+- G-061 Equipment and keepnet sections collapsed on phones (equipment 0 px tall, tab bar at the top): spec 080 removed the warning row from the inventory modal but kept three grid row tracks, so the main area fell into a content-sized row. Fixed by the hint region row; rule and check: grid templates match the container's children ([spec 086](../specs/086-hint-regions/spec.md)).
+- G-062 Hints floated over content: every hint now has an in-flow region at the top of its container that pushes the content down ([spec 086](../specs/086-hint-regions/spec.md)).
+
 ### G-059–G-060 Owner reports of 2026-10-15, later (P3, done)
 - G-059 Hints had three styles; the keepnet help was clipped by its column and the House notice was fixed to the viewport: one `ui-hint` with a close button, inside its container ([spec 080](../specs/080-hints-in-containers/spec.md)).
 - G-060 House clock skipped minutes (01 → 04): it refreshed once per second while game time runs at x240; it now updates on every game minute ([spec 081](../specs/081-house-clock-every-minute/spec.md)).

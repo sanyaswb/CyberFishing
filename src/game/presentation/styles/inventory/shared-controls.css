@@ -1,18 +1,4 @@
-/* Warnings, disabled actions and shared scrolling surfaces. */
-
-/* Placement of the inventory warning (a ui-hint, spec 080) inside inventory-main: centred over its top edge, within
-   the main area at every size; long text scrolls inside the hint instead of being clipped. */
-.inventory-warning {
-  position: absolute;
-  z-index: var(--ui-layer-tooltip);
-  top: var(--ui-hint-inset);
-  left: var(--ui-hint-inset);
-  right: var(--ui-hint-inset);
-  width: auto;
-  max-width: 620px;
-  max-height: calc(100% - var(--ui-hint-inset) * 2);
-  margin-inline: auto;
-}
+/* Disabled actions and shared scrolling surfaces. */
 
 .inventory-action.inventory-action--disabled {
   opacity: 0.46;

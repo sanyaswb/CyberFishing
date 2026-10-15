@@ -218,24 +218,33 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "the compact menu and all sheets reuse the shared tap/swipe handle");
   assert.equal(documentRef.byClass("ui-modal-close").filter((node) => !node.classList.contains("ui-hint__close")).length, 0,
     "House sheets have no cross buttons");
-  // Spec 080: the notice is a ui-hint inside its container (the open sheet, otherwise the room) with a close button.
+  // Spec 086: the notice takes the hint region at the top of its container and pushes the content below it down: the
+  // open sheet's region, otherwise the header's (which is revealed). Booleans keep failures readable (no DOM diffs).
   const notice = documentRef.querySelector("[data-house-notice]");
-  const noticeRoom = notice.parentNode;
-  assert(notice.hidden && notice.classList.contains("ui-hint"), "the notice starts hidden");
+  const headerHints = documentRef.querySelector("[data-house-header-hints]");
+  assert(notice.hidden && notice.classList.contains("ui-hint") && notice.parentNode === headerHints,
+    "the notice starts hidden in the header's hint region");
+  const aquariumContent = documentRef.querySelector('[data-house-panel="aquarium"]').querySelector(".house__sheet-content");
+  const aquariumHints = aquariumContent.querySelector("[data-house-sheet-hints]");
+  assert(aquariumContent.children.indexOf(aquariumHints) === 1, "each sheet's hint region follows its handle, above the content");
   view.setNavigationState({ panel: "aquarium" });
   view.announce("Готово");
-  const aquariumContent = documentRef.querySelector('[data-house-panel="aquarium"]').querySelector(".house__sheet-content");
-  assert.equal(notice.parentNode, aquariumContent, "a notice about a sheet action lies inside that sheet");
-  assert(!notice.hidden && notice.classList.contains("house__notice--sheet") && notice.classList.contains("ui-hint--info"));
+  assert(notice.parentNode === aquariumHints, "a notice about a sheet action lies in that sheet's hint region");
+  assert(!notice.hidden && notice.classList.contains("ui-hint--info"));
   assert.equal(documentRef.querySelector("[data-house-notice-text]").textContent, "Готово");
   documentRef.querySelector("[data-house-notice-close]").click();
   assert(notice.hidden, "the close button dismisses the notice");
   view.setNavigationState({ panel: null });
+  // header: the House header from the zone checks above.
+  header.classList.remove("house__header--visible");
   view.announce("Помилка", true);
-  assert.equal(notice.parentNode, noticeRoom, "without an open sheet the notice returns to the room");
-  assert(!notice.classList.contains("house__notice--sheet") && notice.classList.contains("ui-hint--error"));
+  assert(notice.parentNode === headerHints, "without an open sheet the notice uses the header's hint region");
+  assert(header.classList.contains("house__header--visible"), "the header is revealed for its notice");
+  assert(notice.classList.contains("ui-hint--error"));
   view.announce("");
   assert(notice.hidden, "an empty message hides the notice");
+  view.handleSceneGesture(-30);
+  assert(!header.classList.contains("house__header--visible"), "the revealed header closes with the usual gesture");
   // Spec 084: the return control is a button that closes the House screen.
   const returnControl = documentRef.querySelector("[data-house-return]");
   assert.equal(returnControl.tagName.toLowerCase(), "button");

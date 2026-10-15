@@ -595,10 +595,8 @@ class InventoryStaticContractCheck {
     ]) {
       assert.ok(style.includes(selector), `Missing selector: ${selector}`);
     }
-    const warningRule = style.match(
-      /\.inventory-warning\s*\{[\s\S]*?\n\}/,
-    )?.[0];
-    const mainRule = style.match(/^\.inventory-main\s*\{[\s\S]*?\n\}/m)?.[0];
+    const hintRegionRule = style.match(/^\.inventory-modal__hints\s*\{[\s\S]*?\n\}/m)?.[0];
+    const openModalRule = style.match(/^\.inventory-modal\.inventory-modal--open\s*\{[\s\S]*?\n\}/m)?.[0];
     const resourceThumbnailRule = style.match(
       /\.inventory-resource-meter--thumbnail\s*\{[\s\S]*?\n\}/,
     )?.[0];
@@ -614,18 +612,16 @@ class InventoryStaticContractCheck {
     const parameterSegmentsRule = style.match(
       /\.inventory-parameter__segments\s*\{[\s\S]*?\n\}/,
     )?.[0];
-    assert.ok(warningRule, "Missing inventory warning rule");
-    // Spec 080: the warning is a ui-hint placed inside inventory-main, bounded by it, never sized from the viewport.
-    assert.ok(
-      warningRule.includes("position: absolute") &&
-        warningRule.includes("left: var(--ui-hint-inset)") &&
-        warningRule.includes("right: var(--ui-hint-inset)") &&
-        warningRule.includes("max-height: calc(100% - var(--ui-hint-inset) * 2)") &&
-        !/vw|--ui-logical-width/.test(warningRule) &&
-        mainRule?.includes("position: relative"),
-      "The warning must stay inside the inventory main area",
-    );
+    // Spec 086: hints have an in-flow region at the top of the inventory; nothing overlays the sections.
+    assert.ok(hintRegionRule && !/position:\s*(absolute|fixed)/.test(hintRegionRule), "The hint region stays in the flow");
+    assert.ok(!/\.inventory-warning\b/.test(style) && !/\.keepnet-section__help-text\s*\{/.test(style),
+      "Hints are not positioned over the inventory");
     assert.ok(!style.includes("inventory-warning--visible"), "Warning visibility belongs to the ui-hint hidden state");
+    // G-061: a row template without its child left the main area in a content-sized row (equipment 0 px tall).
+    const rowTracks = (template) => template.replace(/\([^)]*\)/g, "()").trim().split(/\s+/);
+    this.modalRowTracks = rowTracks(openModalRule?.match(/grid-template-rows:\s*([^;]+);/)?.[1] || "");
+    assert.deepStrictEqual(this.modalRowTracks, ["auto", "auto", "minmax()"],
+      "The open modal has one content row per hint region and header, and the stretching main row last");
     assert.ok(
       !style.includes(".inventory-charge") &&
         style.includes("background: var(--inventory-resource-color, var(--ui-border))") &&
@@ -1172,12 +1168,15 @@ class InventoryStaticContractCheck {
       ui.rootNode,
       "inventory-modal__header-host",
     );
+    const hintRegion = this.#findByClass(ui.rootNode, "inventory-modal__hints");
     assert.deepStrictEqual(
       Array.from(ui.rootNode.children),
-      [headerHost, mainNode],
-      "The modal holds the header parameters and the main area",
+      [hintRegion, headerHost, mainNode],
+      "The modal holds the hint region, the header and the main area (spec 086)",
     );
-    assert.strictEqual(warningHint.parentNode, mainNode, "The warning lies inside the main area (spec 080)");
+    assert.strictEqual(ui.rootNode.children.length, this.modalRowTracks?.length ?? 3,
+      "Every modal grid row has its child; the main area is the last, stretching row (G-061)");
+    assert.strictEqual(warningHint.parentNode, hintRegion, "The warning lies in the hint region above the header (spec 086)");
     this.#findByClass(warningHint, "ui-hint__close").click();
     assert.ok(warningHint.hidden, "The close button dismisses the warning");
     subscriber({ viewModel: currentView, warning: "Partial refill" });

@@ -109,7 +109,7 @@ export function startUiCatalog() {
           labels: KEEPNET_LABELS, resourceMeterRenderer: meters, hintRenderer: new UiHintRenderer({ domFactory: new InventoryDomFactory(scope) }),
           listScrollController: InventoryUiBootstrap.createListScrollController(surface) }));
         const layout = dom.element("div", "ui-catalog-preview__keepnet");
-        layout.append(ui.summaryNode, ui.contentNode);
+        layout.append(ui.helpNode, ui.summaryNode, ui.contentNode);
         surface.mountRoot.appendChild(layout);
         own({ dispose: () => layout.remove() });
         return new UiCatalogKeepnetExample({ fixture, ui, documentScope: scope, surface, status });

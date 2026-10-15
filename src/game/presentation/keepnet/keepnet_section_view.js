@@ -62,7 +62,6 @@ export class KeepnetSectionView {
     this.#helpButton.setAttribute("aria-expanded", "false");
     this.#helpButton.setAttribute("aria-controls", "keepnet-help");
     this.#helpButton.addEventListener("click", () => this.#setHelpVisible(true));
-    // The help hint lies inside the summary (spec 080): it spans the summary's width and never leaves it.
     this.#helpText = this.#hints.create({ className: "keepnet-section__help-text", closeLabel: labels.closeHelp,
       role: "note", onClose: () => this.#setHelpVisible(false) });
     this.#helpText.id = "keepnet-help";
@@ -74,7 +73,7 @@ export class KeepnetSectionView {
     this.#count = this.#el("p", "keepnet-section__count");
     this.#status = this.#el("p", "keepnet-section__status");
     this.#status.setAttribute("role", "status");
-    this.#summary.append(visual, this.#count, this.#capacity, this.#status, this.#helpText);
+    this.#summary.append(visual, this.#count, this.#capacity, this.#status);
     this.#content = this.#el("section", "keepnet-section__content");
     this.#content.setAttribute("aria-label", labels.title);
     this.#back = this.#el("button", "keepnet-section__back", labels.back);
@@ -119,6 +118,8 @@ export class KeepnetSectionView {
     this.refresh();
   }
   get summaryNode() { return this.#summary; }
+  // The help hint; its host places it in its hint region (the inventory's, spec 086).
+  get helpNode() { return this.#helpText; }
   get contentNode() { return this.#content; }
   // Game timers refresh the keepnet only while its section is visible.
   get isOpen() { return this.#visible; }
@@ -206,7 +207,7 @@ export class KeepnetSectionView {
     this.#button.removeEventListener("click", this.#toggle);
     this.#summary.removeEventListener("keydown", this.#handleKey);
     this.#content.removeEventListener("keydown", this.#handleKey);
-    this.#button.remove(); this.#summary.remove(); this.#content.remove();
+    this.#button.remove(); this.#summary.remove(); this.#content.remove(); this.#helpText.remove();
     this.#rendered.clear(); this.#cardFocusables = [];
   }
   #openSpecies = (id) => {

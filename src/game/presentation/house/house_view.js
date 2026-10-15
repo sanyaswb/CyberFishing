@@ -55,7 +55,7 @@ export class HouseView {
       onChange: () => this.#perform("toggleAutoFeeder") });
     this.#nodes.get("auto-switch-mount").appendChild(this.#autoSwitch);
     this.#notice = this.#nodes.get("notice");
-    this.#noticeRoom = this.#notice.parentNode;
+    this.#noticeRoom = documentRef.querySelector("[data-house-header-hints]");
     hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close"),
       onClose: () => this.#clearNoticeTimer() });
     this.#root.addEventListener("click", this.#handleClick);
@@ -76,15 +76,16 @@ export class HouseView {
     this.#keepnetList.dispose();
   }
 
-  // The notice appears inside its container (spec 080): the open sheet whose action it reports, otherwise the room.
+  // The notice takes the hint region at the top of its container (spec 086) and pushes the content below it down:
+  // the open sheet whose action it reports, otherwise the header, which is revealed.
   announce(message, failed = false) {
     const node = this.#notice;
     this.#clearNoticeTimer();
     if (!message) { this.#hints.hide(node); return; }
     const sheet = this.#navigation.activeSheetContent();
-    const host = sheet || this.#noticeRoom;
+    const host = sheet?.querySelector("[data-house-sheet-hints]") ?? this.#noticeRoom;
     if (node.parentNode !== host) host.appendChild(node);
-    node.classList.toggle("house__notice--sheet", sheet !== null);
+    if (!sheet) this.#navigation.revealHeader();
     this.#hints.show(node, message, failed ? "error" : "info");
     this.#noticeTimer = this.#window.setTimeout(() => {
       this.#hints.hide(node);
