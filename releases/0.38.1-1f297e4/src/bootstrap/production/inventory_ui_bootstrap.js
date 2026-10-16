@@ -17,6 +17,7 @@ import { InventoryLoadRenderer } from "../../game/presentation/inventory/invento
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
 import { InventoryCollectionPagerRenderer } from "../../game/presentation/inventory/inventory_collection_pager_renderer.js";
 import { SwipePagerController } from "../../platform/browser/dom/swipe_pager_controller.js";
+import { ScrollContainerAligner } from "../../platform/browser/dom/scroll_container_aligner.js";
 import { INVENTORY_LOAD_METER_CONFIG } from "../../game/presentation/inventory/inventory_load_meter_config.js";
 import { InventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
 import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inventory_item_card_renderer.js";
@@ -203,15 +204,16 @@ export class InventoryUiBootstrap {
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
-        createParameterSectionResolver: () => new InventoryAssemblyParameterSectionResolver(),
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
-        // Phone item editor tabs (spec 091): their own swipe flag, so the section swipe can be off in the editor.
+        // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
+        // off in the editor.
         tabsRenderer: new InventoryEditorTabsRenderer({ domFactory: dom, resolver: new InventoryEditorTabsResolver(),
           itemRenderer: resolvedItemRenderer, parametersRenderer: itemParametersRenderer,
           swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
             positionProperty: null, draggingClassName: "inventory-editor-tabs__panel--dragging" }),
           rowScrollController: new HorizontalScrollController({ uiSurface }), labels: INVENTORY_EDITOR_TABS_LABELS,
-          longPressDurationMs: LongPressController.EQUIPPED_DURATION_MS }),
+          longPressDurationMs: LongPressController.EQUIPPED_DURATION_MS,
+          scrollAligner: new ScrollContainerAligner({ windowRef: dom.view }) }),
       });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||

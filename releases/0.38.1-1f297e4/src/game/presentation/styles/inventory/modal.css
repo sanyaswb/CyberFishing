@@ -1,7 +1,9 @@
 /* Backpack, modal lifecycle and inventory screen layout. */
 
+/* --inventory-editor-swipe: the item editor's tabs swipe in every layout (spec 094). */
 .inventory-modal {
   --inventory-content-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
+  --inventory-editor-swipe: on;
   --inventory-content-gap: 20px;
   /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
   --inventory-container-gap: var(--inventory-content-gap);
@@ -73,6 +75,7 @@
 /* The left column's one parent (spec 077): the section content above, the transparent tab bar at the bottom. It
    alone paints the column's background and frame; sections and the tab bar paint no outer background. */
 .inventory-main__sidebar {
+  position: relative;
   grid-area: left;
   display: flex;
   flex-direction: column;
@@ -113,6 +116,28 @@
   grid-area: tabs;
 }
 
+/* An open item editor beside the section tabs (wide and landscape layouts, spec 095): the editor runs to the bottom of
+   the column and the tab bar lies over its bottom edge, so the parameters scroll under the tabs and are clipped only by
+   the column itself, as on phones; the gaps between the tabs show the content and pass touches to it. The editor's
+   last content clears the bar (its height is 15% of the column width, section-tabs.css). Portrait phones hide the
+   tabs instead (spec 091). */
+.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar > .inventory-main__tabs {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs .inventory-section-tabs__tab {
+  pointer-events: auto;
+}
+
+.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar .inventory-assembly-editor {
+  padding-bottom: calc(var(--inventory-container-gap) + 100cqi * 0.15);
+}
+
 /* Every section keeps its hosts; only the active section's hosts are visible (spec 067). */
 .inventory-main__section {
   height: 100%;
@@ -142,12 +167,10 @@
      Narrow landscape keeps the separate containers above. */
   @media (orientation: portrait) {
     /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
-    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController);
-       --inventory-editor-swipe the item editor's parameter swipe (spec 091). */
+    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
     .inventory-modal {
       --inventory-content-columns: minmax(0, 1fr);
       --inventory-swipe: on;
-      --inventory-editor-swipe: on;
       padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       background: var(--inventory-equipment-surface);
@@ -235,6 +258,11 @@
 
     .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main {
       --inventory-swipe: off;
+    }
+
+    /* No tab bar to clear here (spec 095). */
+    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar .inventory-assembly-editor {
+      padding-bottom: var(--inventory-container-gap);
     }
   }
 }

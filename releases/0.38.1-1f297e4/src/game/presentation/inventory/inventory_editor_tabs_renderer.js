@@ -1,7 +1,8 @@
 // Phone item editor tabs (spec 091): one row of tabs — the editor's root item, its cells, items with parameters only —
 // joined to one parameter panel that shows the active tab's page. A tap on a filled cell, the root or a view-only tab,
 // a swipe on the panel or the preview and Left/Right/Home/End on the row only switch the page; a long press on a filled
-// cell removes its item and a tap on an empty cell keeps its own action (pick) (spec 092). The active tab key is presentation state kept here across editor re-renders: another root item, a removed
+// cell removes its item and a tap on an empty cell keeps its own action (pick) (spec 092). Every tap on a tab with an item,
+// the active one included, also scrolls the editor down to the tab row (spec 093). The active tab key is presentation state kept here across editor re-renders: another root item, a removed
 // address or resetView() returns to the root tab. CSS decides where this block is shown (portrait phones).
 export class InventoryEditorTabsRenderer {
   #dom;
@@ -12,12 +13,13 @@ export class InventoryEditorTabsRenderer {
   #rowScroll;
   #labels;
   #longPressDurationMs;
+  #scrollAligner;
   #rootKey = null;
   #activeKey = null;
   #current = null;
 
   constructor({ domFactory, resolver, itemRenderer, parametersRenderer, swipeController, rowScrollController, labels,
-    longPressDurationMs }) {
+    longPressDurationMs, scrollAligner }) {
     this.#dom = domFactory;
     this.#resolver = resolver;
     this.#items = itemRenderer;
@@ -26,6 +28,12 @@ export class InventoryEditorTabsRenderer {
     this.#rowScroll = rowScrollController;
     this.#labels = labels;
     this.#longPressDurationMs = longPressDurationMs;
+    this.#scrollAligner = scrollAligner;
+  }
+
+  // The items shown on the tab pages, for in-place parameter updates.
+  items(model) {
+    return this.#resolver.resolve(model).map((tab) => tab.item).filter(Boolean);
   }
 
   // A newly opened editor starts on its root item, even one viewed before.
@@ -76,15 +84,17 @@ export class InventoryEditorTabsRenderer {
     node.dataset.tabKey = tab.key;
     if (tab.kind === "socket") {
       const filled = Boolean(tab.item);
-      node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false, showTooltip: false,
-        onActivate: filled ? () => this.#select(tab.key) : () => onSocketActivate?.(tab.socket),
+      // Tabs show only the item; its scales live in the parameters (spec 093).
+      node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false,
+        showResourceMeter: false, showTooltip: false,
+        onActivate: filled ? () => this.#showByTap(tab.key) : () => onSocketActivate?.(tab.socket),
         onLongPress: filled ? () => onSocketLongPress?.(tab.socket) : null,
         longPressDurationMs: this.#longPressDurationMs,
         onUnavailable: (warning) => onWarning?.(warning) }));
       return node;
     }
     const card = this.#items.renderItem(tab.item, { variant: "socket", showAttachments: false, showMetadata: false,
-      showResourceMeter: false, showTooltip: false, onActivate: () => this.#select(tab.key) });
+      showResourceMeter: false, showTooltip: false, onActivate: () => this.#showByTap(tab.key) });
     const name = tab.label || tab.item?.name || "Предмет";
     card.setAttribute("aria-label", tab.kind === "root" ? this.#labels.root(name) : this.#labels.view(name));
     card.title = card.getAttribute("aria-label");
@@ -106,6 +116,12 @@ export class InventoryEditorTabsRenderer {
       }
     }
     return page;
+  }
+
+  // A tap shows the tab's parameters and brings the tab row to the top of the editor, as far as the content allows.
+  #showByTap(key) {
+    this.#select(key);
+    this.#scrollAligner.alignToTop(this.#current.row);
   }
 
   #activeIndex() {
