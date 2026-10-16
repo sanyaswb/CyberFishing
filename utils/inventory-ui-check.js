@@ -565,8 +565,8 @@ class InventoryStaticContractCheck {
     assert.match(style, /\.inventory-attachments\s*\{\s*position:\s*relative;\s*z-index:\s*1;/, "squares lie above the artwork");
     assert.match(style, /@keyframes inventory-equipped-flash\s*\{[^@]*13% \{ opacity: 0\.4; \}[^@]*60\.4% \{ opacity: 0\.4; \}/,
       "equipping flashes twice, the second time slower");
-    assert.match(style, /\.inventory-assembly-editor__actions\s*\{\s*display:\s*flex;\s*gap:\s*var\(--inventory-mobile-gap\);/,
-      "phone editor actions share one row");
+    assert.match(style, /\.inventory-assembly-editor__actions\s*\{\s*display:\s*flex;\s*gap:\s*8px;/,
+      "editor actions share one row in every layout (spec 094)");
     // Spec 091 (replacing 089): a visible portrait item editor hides the section tabs and turns the section swipe off;
     // the editor's own parameter swipe has its own flag. The editor's tab block is shown only on portrait phones.
     const visibleEditor = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
@@ -576,8 +576,19 @@ class InventoryStaticContractCheck {
       assert.match(block, rule, "portrait item editor rule " + selector.trim());
     }
     assert.doesNotMatch(portraitModal, /grid-row:\s*2 \/ 4;/, "the editor no longer scrolls under the section tabs");
-    assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*--inventory-editor-swipe:\s*on;/, "portrait turns the editor swipe on");
-    assert.match(style, /\.inventory-editor-tabs\s*\{\s*display:\s*none;\s*\}/, "wide layouts keep the cell grid and stacked sections");
+    // Spec 095: beside the section tabs (wide, landscape) an open editor runs to the column's bottom under the tab bar,
+    // which passes touches through its gaps; the editor's last content clears the bar.
+    const besideTabs = ".inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar";
+    assert.match(style.split(besideTabs + " > .inventory-main__tabs {")[1]?.split("}")[0] || "",
+      /position:\s*absolute;[^]*z-index:\s*1;[^]*bottom:\s*0;[^]*pointer-events:\s*none;/, "the tab bar lies over the editor");
+    assert.match(style.split(besideTabs + " .inventory-assembly-editor {")[1]?.split("}")[0] || "",
+      /padding-bottom:\s*calc\(var\(--inventory-container-gap\) \+ 100cqi \* 0\.15\);/, "the editor's last content clears the bar");
+    assert.match(style, /\.inventory-main__sidebar\s*\{\s*position:\s*relative;/, "the column positions its tab bar");
+    // Spec 094: the editor uses its tabs in every layout; wide layouts no longer hide them or keep a cell grid.
+    assert.match(style, /\/\* --inventory-editor-swipe[^*]*\*\/\s*\.inventory-modal\s*\{[^}]*--inventory-editor-swipe:\s*on;/,
+      "the editor swipe is on in every layout");
+    assert.doesNotMatch(style, /\.inventory-editor-tabs\s*\{\s*display:\s*none;/, "no layout hides the editor tabs");
+    assert.doesNotMatch(style, /inventory-assembly-editor__sockets|inventory-assembly-workspace/, "the cell grid and its stack are gone");
     assert.match(style, /\.inventory-main__sidebar \.inventory-loadout-panel,\s*\.inventory-main__sidebar \.inventory-assembly-editor,\s*\.inventory-main__sidebar \.inventory-saved-loadout-preview\s*\{\s*--inventory-panel:\s*transparent;\s*--inventory-panel-border:\s*transparent;/,
       "equipment-section panels paint no outer frame inside the sidebar");
     assert.doesNotMatch(style, /\.keepnet-section__summary\s*\{[^}]*background:/, "the keepnet summary paints no outer frame");
@@ -729,10 +740,9 @@ class InventoryStaticContractCheck {
       /\.inventory-main__section--equipment:has\(\.inventory-loadout-panel__primary--single\) \.inventory-loadout-shell\s*\{\s*height:\s*100%;/,
       "A rodless portrait equipment section fills the content row");
     assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(style), "The rod cell no longer keeps a fixed 9:16 proportion");
+    // Spec 094: the editor's cells are its tabs, sized by the shared socket size.
     assert.ok(
-      style.includes(
-        "minmax(var(--inventory-socket-size), var(--inventory-socket-size))",
-      ),
+      /\.inventory-editor-tabs__tab\s*\{[^}]*flex:\s*0 0 var\(--inventory-socket-size\);/.test(style),
       "Assembly socket size must remain centralized",
     );
     assert.ok(
@@ -754,10 +764,11 @@ class InventoryStaticContractCheck {
       /\.inventory-item-parameter-section--centered\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?justify-self:\s*center;/,
       "The final odd parameter tile must occupy a centered row",
     );
+    // Spec 094: the editor shows one item's parameters per tab page on the panel's surface; no tile grid to collapse.
     assert.match(
       style,
-      /@container inventory-assembly-workspace \(max-width:\s*520px\)\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/,
-      "The parameter tile grid must collapse to one column from its own container width",
+      /\.inventory-editor-tabs__page \.inventory-item-parameter-section\s*\{\s*padding:\s*0;\s*border:\s*0;/,
+      "a tab page's parameters stand on the editor panel",
     );
     assert.ok(
       style.includes("--inventory-scrollbar-size") &&
@@ -2404,6 +2415,15 @@ class InventoryStaticContractCheck {
     assert.strictEqual(capacityResolver.resolve({ itemType: "reel", equipped: true,
       reelLineCapacity: { percent: 25, label: "Заповнення котушки" } }).percent, 25,
       "The equipped reel must display its own projected fill ratio");
+    // Spec 094: a card rendered without its scale (editor tabs) keeps it off on timer updates.
+    const chargedBoat = { instanceId: "tab-boat", name: "Boat", icon: "B", charge: { percent: 40, label: "Заряд" } };
+    const meterlessCard = isolatedItemRenderer.renderItem(chargedBoat, { showResourceMeter: false });
+    isolatedItemRenderer.updateDynamicVisuals(meterlessCard, chargedBoat);
+    assert.strictEqual(this.#findAllByClass(meterlessCard, "inventory-resource-meter").length, 0,
+      "a tab card shows no condition or line scale, even after a timer update");
+    const meteredCard = isolatedItemRenderer.renderItem(chargedBoat);
+    isolatedItemRenderer.updateDynamicVisuals(meteredCard, chargedBoat);
+    assert.strictEqual(this.#findAllByClass(meteredCard, "inventory-resource-meter").length, 1, "other cards keep their scale");
     const emptyDraftCard = isolatedItemRenderer.renderItem({
       instanceId: "empty-draft-stack",
       name: "Empty draft stack",
@@ -2637,16 +2657,16 @@ class InventoryStaticContractCheck {
       0,
       "The large assembly root must not duplicate socket contents as circles",
     );
-    const assemblyParameters = this.#findByClass(
-      ui.rootNode,
-      "inventory-item-parameters",
-    );
+    // Spec 094: parameters live on the tab pages of one panel; item names are the tabs' accessible names.
+    const assemblyParameters = this.#findByClass(ui.rootNode, "inventory-editor-tabs__panel");
+    const tabNames = this.#findAllByClass(this.#findByClass(ui.rootNode, "inventory-editor-tabs__row"), "inventory-item-card")
+      .map((card) => card.getAttribute("aria-label")).join(" | ");
     assert.ok(
       assemblyParameters.textContent.includes("Клас рейтингу") &&
         assemblyParameters.textContent.includes("Power") &&
         assemblyParameters.textContent.includes("55%") &&
-        assemblyParameters.textContent.includes("Spring") &&
-        assemblyParameters.textContent.includes("Worm") &&
+        tabNames.includes("Spring") &&
+        tabNames.includes("Worm") &&
         assemblyParameters.textContent.includes("Freshness"),
       "The assembly editor must show production parameters for its root and attached components",
     );
@@ -2664,7 +2684,7 @@ class InventoryStaticContractCheck {
         "inventory-item-parameter-section",
       ).length,
       2,
-      "Root and attached bait must render as separate parameter sections",
+      "Root and attached bait must render as separate parameter pages",
     );
     assert.ok(
       this.#findAllByClass(assemblyParameters, "inventory-parameter")
@@ -2721,15 +2741,12 @@ class InventoryStaticContractCheck {
       ui.rootNode,
       "inventory-assembly-editor__workspace",
     );
+    // Spec 094: actions, the preview, then the tabs block; no separate cell grid or parameter stack.
     assert.deepStrictEqual(
-      assemblyWorkspace.children.slice(0, 3).map((node) => node.className),
-      [
-        "inventory-assembly-editor__visual",
-        "inventory-assembly-editor__sockets",
-        "inventory-item-parameters",
-      ],
-      "The assembly card must order visual, sockets and parameters vertically",
+      assemblyWorkspace.parentNode.children.map((node) => node.className.split(" ")[0]),
+      ["inventory-assembly-editor__actions", "inventory-assembly-editor__workspace", "inventory-editor-tabs"],
     );
+    assert.deepStrictEqual(assemblyWorkspace.children.map((node) => node.className), ["inventory-assembly-editor__visual"]);
     const socket = this.#field(ui.rootNode, "hook");
     this.#findByClass(socket, "inventory-slot__empty-button").click();
     this.#assertLast(dispatched, {
@@ -2752,8 +2769,7 @@ class InventoryStaticContractCheck {
     const socketTabs = tabNodes.filter((node) => node.classList.contains("inventory-editor-tabs__tab--socket"));
     assert.strictEqual(tabNodes[0].dataset.tabKey, "root:assembly-active");
     assert.ok(tabNodes[0].classList.contains("inventory-editor-tabs__tab--root"));
-    assert.strictEqual(socketTabs.length, this.#findByClass(assemblyWorkspace, "inventory-assembly-editor__sockets").children.length,
-      "every cell of the editor has its own tab");
+    assert.strictEqual(socketTabs.length, currentView.panel.assembly.sockets.length, "every cell of the editor has its own tab");
     assert.strictEqual(tabPanel.children.length, tabNodes.length);
     assert.deepStrictEqual([activeTab(), ...visiblePages()], [0, 0], "the editor opens on its root item's page only");
     assert.strictEqual(tabNodes[0].getAttribute("aria-current"), "true");
