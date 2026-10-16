@@ -225,8 +225,8 @@
     }
 
     /* Item editor (spec 089): its scroller runs to the bottom of the screen and the section tabs lie on top of it, so
-       the content scrolls under them. Only the tabs' frames and the inactive fills cover it: the active tab and the
-       gaps show it through and pass touches to it. The last content clears the tab bar (its height is 15% of the
+       the content scrolls under them. The tabs keep their fills (spec 090: the owner kept the active tab's); the gaps
+       between them show the content and pass touches to it. The last content clears the tab bar (its height is 15% of the
        width, section-tabs.css). Other sections keep their content above the tabs. */
     .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__left {
       grid-row: 2 / 4;
@@ -237,7 +237,6 @@
     }
 
     .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs {
-      --inventory-equipment-tab-active: transparent;
       position: relative;
       z-index: 1;
       pointer-events: none;

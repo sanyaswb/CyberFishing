@@ -252,7 +252,7 @@ export class InventoryUI {
         name: item.name, icon: item.icon, iconUrl: item.iconUrl || item.imageUrl,
         quantity: item.quantity, rarity: item.rarity, attachments: item.attachments,
         ratingTier: item.progression?.ratingTier, rarityVisual: item.rarityVisual,
-        assemblyCompletion: item.assemblyCompletion,
+        assemblyCompletion: item.assemblyCompletion, equipmentCompletion: item.equipmentCompletion,
         loadoutMembership: item.loadoutMembership,
         compatibleWithHighlightedSlot: item.compatibleWithHighlightedSlot,
       })),

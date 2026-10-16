@@ -99,9 +99,9 @@
   --inventory-side-slot-count: 0;
   --inventory-bottom-slot-count: 0;
   --inventory-bottom-slot-row: 0;
-  /* One square size fits both rows, including cards with a resource meter. */
+  /* One square size fits both rows, including cards with a resource meter; 1.5 times the former 22% (spec 090). */
   --inventory-attachment-size: min(
-    calc(var(--inventory-slot-size) * 0.22),
+    calc(var(--inventory-slot-size) * 0.33),
     calc((100cqw - (max(1, var(--inventory-bottom-slot-count)) - 1) * var(--inventory-card-gap)) / max(1, var(--inventory-bottom-slot-count))),
     calc((100cqh - var(--inventory-card-meter-space) - (max(1, var(--inventory-side-slot-count)) + var(--inventory-bottom-slot-row) - 1) * var(--inventory-card-gap)) / (max(1, var(--inventory-side-slot-count)) + var(--inventory-bottom-slot-row)))
   );
@@ -125,9 +125,12 @@
   grid-template-rows: minmax(0, 1fr) var(--inventory-attachment-size);
 }
 
+/* The artwork is centred on the whole card (spec 090): it lies under the equipment squares and the resource meter, which
+   keep their own places in the content grid and the card's column, so they never push it off centre. */
 .inventory-item-card__visual {
-  grid-column: 1;
-  grid-row: 1;
+  position: absolute;
+  z-index: 0;
+  inset: var(--inventory-card-gap);
   min-width: 0;
   min-height: 0;
   padding: var(--inventory-image-inset);
@@ -151,10 +154,6 @@
 
 /* Skin thumbnail (spec 071): the artwork is scaled so only its lower visible-height share fits the card, aligned to the
    bottom; the focus share of its width sits at the card centre. */
-.inventory-item-card__visual--cropped {
-  position: relative;
-}
-
 .inventory-item-card__visual--cropped .inventory-item-card__image {
   position: absolute;
   bottom: var(--inventory-image-inset, 0px);

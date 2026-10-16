@@ -77,6 +77,23 @@
   gap: 8px;
 }
 
+/* Phones (spec 090): the editor's actions (equip/remove, disassemble, back) share one row with small gaps. */
+@container ui-surface (max-width: 820px) {
+  .inventory-assembly-editor__actions {
+    display: flex;
+    gap: var(--inventory-mobile-gap);
+  }
+
+  .inventory-assembly-editor__actions > .inventory-action {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 @container ui-surface (max-width: 520px) {
   .inventory-assembly-editor {
     padding: 10px;
@@ -84,9 +101,5 @@
 
   .inventory-assembly-editor__sockets {
     gap: var(--inventory-mobile-gap);
-  }
-
-  .inventory-assembly-editor__actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

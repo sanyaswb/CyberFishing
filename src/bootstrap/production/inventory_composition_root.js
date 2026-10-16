@@ -33,7 +33,7 @@ import { InventoryItemReservationPolicy } from "../../game/domain/inventory/inve
 import { InventoryItemSnapshotMapper } from "../../game/application/inventory/persistence/inventory_item_snapshot_mapper.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryCommandService } from "../../game/application/inventory/inventory_command_service.js";
-import { EquipmentConsumableTargetResolver } from "../../game/application/inventory/equipment_consumable_target_resolver.js";
+import { EquipmentConsumableTargetResolver, HEADER_CONSUMABLE_SLOT_IDS } from "../../game/application/inventory/equipment_consumable_target_resolver.js";
 import { InventoryGameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
 import { InventoryItemRemovalService } from "../../game/application/inventory/inventory_item_removal_service.js";
 import { InventoryUiState } from "../../game/application/inventory/inventory_ui_state.js";
@@ -366,6 +366,7 @@ export class InventoryCompositionRoot {
       hydrate: (raw) =>
         itemViewFactory?.create?.(raw) || hydrator.hydrate(raw, repository),
       boatChargeProvider,
+      consumableSlotIds: HEADER_CONSUMABLE_SLOT_IDS,
     });
     const subfilterResolver = new InventorySubfilterResolver();
     const itemOrderResolver = new InventoryItemOrderResolver({

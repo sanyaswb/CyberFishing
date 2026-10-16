@@ -549,11 +549,21 @@ class InventoryStaticContractCheck {
     assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;[^}]*border-radius:\s*var\(--inventory-panel-radius\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
       "the sidebar owns the column's background and frame");
     assert.match(style, /\.inventory-section-tabs\s*\{[^}]*background:\s*transparent;/, "the tab bar paints no background");
-    // Spec 089: in portrait the item editor scrolls under the section tabs; the active tab shows it through.
+    // Spec 090: card artwork centred on the whole card under its squares and meter; squares 1.5x; two equip flashes;
+    // one row of editor actions on phones.
+    assert.match(style, /\.inventory-item-card__visual\s*\{\s*position:\s*absolute;\s*z-index:\s*0;\s*inset:\s*var\(--inventory-card-gap\);/,
+      "the artwork is centred on the whole card");
+    assert.match(style, /--inventory-attachment-size:\s*min\(\s*calc\(var\(--inventory-slot-size\) \* 0\.33\),/, "equipment squares are 1.5x");
+    assert.match(style, /\.inventory-attachments\s*\{\s*position:\s*relative;\s*z-index:\s*1;/, "squares lie above the artwork");
+    assert.match(style, /@keyframes inventory-equipped-flash\s*\{[^@]*13% \{ opacity: 0\.4; \}[^@]*60\.4% \{ opacity: 0\.4; \}/,
+      "equipping flashes twice, the second time slower");
+    assert.match(style, /\.inventory-assembly-editor__actions\s*\{\s*display:\s*flex;\s*gap:\s*var\(--inventory-mobile-gap\);/,
+      "phone editor actions share one row");
+    // Spec 089/090: in portrait the item editor scrolls under the section tabs, which keep their fills.
     const editorUnderTabs = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
     for (const [selector, rule] of [[" .inventory-main__left", /grid-row:\s*2 \/ 4;/],
       [" .inventory-assembly-editor", /padding-bottom:\s*calc\(100cqi \* 0\.15 \+ var\(--inventory-container-gap\)\);/],
-      [" .inventory-main__tabs", /--inventory-equipment-tab-active:\s*transparent;[^}]*z-index:\s*1;[^}]*pointer-events:\s*none;/]]) {
+      [" .inventory-main__tabs", /position:\s*relative;[^}]*z-index:\s*1;[^}]*pointer-events:\s*none;/]]) {
       const block = portraitModal.split(editorUnderTabs + selector + " {")[1]?.split("}")[0] || "";
       assert.match(block, rule, "portrait item editor rule " + selector.trim());
     }
@@ -1509,13 +1519,11 @@ class InventoryStaticContractCheck {
       this.#field(ui.rootNode, "delivery"),
       "inventory-resource-meter",
     );
+    // Spec 090: the boat's energy scale has no lightning icon.
     assert.strictEqual(
-      this.#findByClass(
-        equippedBoatMeter,
-        "inventory-resource-meter__icon",
-      ).textContent,
-      "⚡",
-      "Boat energy meter must place the lightning left of the scale",
+      this.#findAllByClass(equippedBoatMeter, "inventory-resource-meter__icon").length,
+      0,
+      "Boat energy meter shows the scale without an icon",
     );
     assert.strictEqual(
       this.#findAllByClass(
@@ -2290,13 +2298,7 @@ class InventoryStaticContractCheck {
       equippedBoatMeter.className,
       "Equipped and inventory boats must use the exact same energy meter",
     );
-    assert.strictEqual(
-      this.#findByClass(
-        inventoryBoatMeter,
-        "inventory-resource-meter__icon",
-      ).textContent,
-      "⚡",
-    );
+    assert.strictEqual(this.#findAllByClass(inventoryBoatMeter, "inventory-resource-meter__icon").length, 0);
     // Spec 071: a skin thumbnail is bottom-cropped; an equipment cell's artwork shows whole.
     const skin = { thumbnail: { src: "rod-thumb.png", visibleHeight: 0.5, focusX: 0.31 },
       equipment: { withLine: "rod-line.png", withoutLine: "rod-bare.png" } };
@@ -2382,7 +2384,7 @@ class InventoryStaticContractCheck {
       icon: "D",
       status: "draft",
       equipped: false,
-      assemblyCompletion: {
+      equipmentCompletion: {
         isComplete: false,
         hasAnyComponent: false,
       },
@@ -2401,7 +2403,7 @@ class InventoryStaticContractCheck {
       icon: "P",
       status: "draft",
       equipped: false,
-      assemblyCompletion: {
+      equipmentCompletion: {
         isComplete: false,
         hasAnyComponent: true,
       },
@@ -2419,7 +2421,7 @@ class InventoryStaticContractCheck {
       name: "Equipped empty stack",
       icon: "E",
       equipped: true,
-      assemblyCompletion: {
+      equipmentCompletion: {
         isComplete: false,
         hasAnyComponent: false,
       },
@@ -2437,7 +2439,7 @@ class InventoryStaticContractCheck {
       name: "Complete stack",
       icon: "C",
       equipped: true,
-      assemblyCompletion: {
+      equipmentCompletion: {
         isComplete: true,
         hasAnyComponent: true,
       },

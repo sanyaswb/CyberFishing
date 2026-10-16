@@ -387,6 +387,8 @@
 │  │  └── spec.md
 │  ├── 089-inventory-polish-rod-removal
 │  │  └── spec.md
+│  ├── 090-inventory-cards-and-editor-polish
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

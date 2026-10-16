@@ -1878,6 +1878,17 @@ vm.runInContext(
     ["part-rod", "part-line", "part-hook"].every((id) => incompleteRod.repository.require(id).location.kind === "INVENTORY"),
   "an incomplete rod comes off without the save prompt and keeps its components intact in the backpack");
 
+  // Spec 090: bait and tackle chum are filled through the header switchers, so an empty bait slot does not make a hook
+  // incomplete equipment (no red marker); the full assembly analysis still reports the empty slot.
+  const baitlessHook = makeComposition({
+    items: [raw("bare-hook", "hook")],
+    assemblies: [{ rootInstanceId: "bare-hook", profileId: "hook_standard", status: "DRAFT", refillSignatures: {} }],
+  });
+  const baitlessHookView = baitlessHook.facade.getViewModel().inventory.items.find((item) => item.instanceId === "bare-hook");
+  assertIntegration(baitlessHookView.equipmentCompletion.isComplete === true &&
+    baitlessHookView.assemblyCompletion.isComplete === false,
+  "a hook without bait is complete equipment while its assembly still lists the empty bait slot");
+
   const looseStackCycles = makeComposition({
     items: [raw("stacked-pole-rods", "rodPole", 2)],
   });

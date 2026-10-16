@@ -1,3 +1,6 @@
+// The assembly slots the header consumable switchers fill (bait on a hook, chum in a feeder rig; spec 074).
+export const HEADER_CONSUMABLE_SLOT_IDS = Object.freeze(["bait", "chum"]);
+
 // Header consumables belong to the equipped cast tackle, never to hand chum or boat cargo.
 export class EquipmentConsumableTargetResolver {
   #equipmentState;

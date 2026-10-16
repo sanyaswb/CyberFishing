@@ -14,7 +14,8 @@ export class AssemblyCompletionPolicy {
     this.#assemblyReader = assemblyReader;
   }
 
-  analyze(rootInstanceId, { profileId = null } = {}) {
+  // ignoredSlotIds: slots another control fills (header consumables) count neither as filled nor as missing.
+  analyze(rootInstanceId, { profileId = null, ignoredSlotIds = [] } = {}) {
     const root = this.#repository.get(rootInstanceId);
     if (!root) {
       return Object.freeze({
@@ -26,11 +27,11 @@ export class AssemblyCompletionPolicy {
       });
     }
     return Object.freeze(
-      this.#analyzeItem(root, profileId, new Set()),
+      this.#analyzeItem(root, profileId, new Set(), new Set(ignoredSlotIds)),
     );
   }
 
-  #analyzeItem(item, explicitProfileId, visited) {
+  #analyzeItem(item, explicitProfileId, visited, ignored) {
     if (visited.has(item.instanceId)) {
       throw new RangeError(`Assembly cycle detected at ${item.instanceId}`);
     }
@@ -55,6 +56,7 @@ export class AssemblyCompletionPolicy {
     let isComplete = true;
 
     for (const definition of profile.slots) {
+      if (ignored.has(definition.id)) continue;
       const capacity = this.#profileRegistry.getSlotCapacity(item, definition);
       for (let slotIndex = 0; slotIndex < capacity; slotIndex += 1) {
         totalSlotCount += 1;
@@ -70,7 +72,7 @@ export class AssemblyCompletionPolicy {
 
         hasAnyComponent = true;
         filledSlotCount += 1;
-        const childResult = this.#analyzeItem(child, null, visited);
+        const childResult = this.#analyzeItem(child, null, visited, ignored);
         totalSlotCount += childResult.totalSlotCount;
         filledSlotCount += childResult.filledSlotCount;
         hasAnyComponent =
