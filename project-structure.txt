@@ -394,6 +394,8 @@
 │  │  └── tasks.md
 │  ├── 092-editor-tabs-first-fixes
 │  │  └── spec.md
+│  ├── 093-editor-tabs-second-fixes
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1227,6 +1229,7 @@
 │        │  ├── item_condition_dom_adapter.js
 │        │  ├── item_progression_dom_adapter.js
 │        │  ├── item_rarity_dom_adapter.js
+│        │  ├── scroll_container_aligner.js
 │        │  ├── sheet_dismiss_controller.js
 │        │  ├── sheet_height_controller.js
 │        │  ├── swipe_pager_controller.js

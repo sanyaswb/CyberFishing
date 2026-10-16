@@ -1101,6 +1101,21 @@ class InventoryStaticContractCheck {
       runtime.load(file.relativePath);
     });
     runtime.load('src/platform/browser/dom/horizontal_scroll_controller.js');
+    runtime.load('src/platform/browser/dom/scroll_container_aligner.js');
+    // Spec 093: a tab tap brings the tab row to the top of the nearest vertical scroller (smooth unless reduced motion);
+    // the browser clamps the target at the end of the content.
+    for (const reduced of [false, true]) {
+      const calls = [];
+      const scroller = { parentElement: null, scrollHeight: 900, clientHeight: 600, scrollTop: 100,
+        getBoundingClientRect: () => ({ top: 106 }), scrollTo: (options) => calls.push(options) };
+      const plain = { parentElement: scroller };
+      const row = { parentElement: plain, getBoundingClientRect: () => ({ top: 506 }) };
+      const styles = new Map([[scroller, "auto"], [plain, "visible"]]);
+      new sandbox.ScrollContainerAligner({ windowRef: { getComputedStyle: (node) => ({ overflowY: styles.get(node) }),
+        matchMedia: () => ({ matches: reduced }) } }).alignToTop(row);
+      assert.strictEqual(JSON.stringify(calls), JSON.stringify([{ top: 500, behavior: reduced ? "auto" : "smooth" }]),
+        "the tab row meets the scroller's top");
+    }
     let identities=0; for(const exports of runtime.moduleNamespaces) for(const [name,value]of Object.entries(exports)) if(Object.hasOwn(runtime.context,name)){if(runtime.context[name]!==value)throw new Error('UI export identity changed: '+name);identities++;}
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
     sandbox.InventoryItemParametersResolver = bindConstructorDefaults(sandbox.InventoryItemParametersResolver,

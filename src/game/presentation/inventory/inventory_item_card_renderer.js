@@ -53,6 +53,7 @@ export class InventoryItemCardRenderer {
       onUnavailable = null,
       framelessItem = false,
       showAttachments = true,
+      showResourceMeter = true,
       showTooltip = true,
     } = {},
   ) {
@@ -80,6 +81,7 @@ export class InventoryItemCardRenderer {
           longPressDurationMs,
           frameless: framelessItem,
           showAttachments,
+          showResourceMeter,
           showTooltip,
         }),
       );

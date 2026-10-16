@@ -163,10 +163,14 @@
       display: none;
     }
 
+    /* The inset keeps the artwork clear of the tab's edges (spec 093). */
     .inventory-editor-tabs__tab {
+      --inventory-editor-tab-inset: calc(var(--inventory-socket-size) * 0.14);
       position: relative;
       flex: 0 0 var(--inventory-socket-size);
+      min-width: 0;
       height: var(--inventory-socket-size);
+      padding: var(--inventory-editor-tab-inset);
       border-radius: var(--inventory-panel-radius);
       background: var(--inventory-equipment-cell);
     }
@@ -209,13 +213,28 @@
         var(--inventory-editor-panel) var(--inventory-panel-radius));
     }
 
-    /* The tab's card or cell keeps the cell size; the tab paints the surface, so their own frames and fills step back. */
+    /* The tab's card or cell fills the cell square inside the inset, so its artwork is centred in the square (the active
+       tab's extra height below belongs to the join); the tab paints the surface, so their own frames and fills step
+       back. */
     .inventory-editor-tabs__tab > .inventory-item-card,
     .inventory-editor-tabs__tab > .inventory-field {
       width: 100%;
-      height: var(--inventory-socket-size);
+      height: calc(var(--inventory-socket-size) - 2 * var(--inventory-editor-tab-inset));
       overflow: hidden;
-      border-radius: var(--inventory-panel-radius);
+    }
+
+    /* A skin thumbnail is shown whole and centred here, not bottom-cropped (spec 093). */
+    .inventory-editor-tabs__tab .inventory-item-card__visual--cropped .inventory-item-card__image {
+      position: static;
+      width: 100%;
+      height: 100%;
+      transform: none;
+    }
+
+    /* The cell's well follows the tab's square instead of its own cell size. */
+    .inventory-editor-tabs__tab .inventory-slot {
+      width: 100%;
+      height: 100%;
     }
 
     .inventory-editor-tabs__tab .inventory-item-card,
