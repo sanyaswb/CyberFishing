@@ -103,3 +103,126 @@
     gap: var(--inventory-mobile-gap);
   }
 }
+
+/* Phone item editor tabs (spec 091): the root item, its cells and items with parameters only, joined to one parameter
+   panel. Shown only on portrait phones (below); wide layouts keep the cell grid and the stacked sections. */
+.inventory-editor-tabs {
+  display: none;
+}
+
+@container ui-surface (max-width: 820px) {
+  @media (orientation: portrait) {
+    /* Order (owner reference): actions panel, preview panel, the tab row joined to the parameter panel. Panels span
+       the editor's width and are spaced by the container gap. */
+    .inventory-assembly-editor {
+      align-items: stretch;
+      gap: var(--inventory-container-gap);
+      padding: var(--inventory-container-gap) var(--inventory-mobile-inset);
+    }
+
+    .inventory-assembly-editor__actions {
+      width: 100%;
+      padding: var(--inventory-container-gap);
+      border-radius: var(--inventory-panel-radius);
+      background: var(--inventory-equipment-panel);
+    }
+
+    .inventory-assembly-editor__workspace {
+      width: 100%;
+    }
+
+    .inventory-assembly-editor__sockets,
+    .inventory-assembly-editor__workspace > .inventory-item-parameters {
+      display: none;
+    }
+
+    /* The preview fits the root item whole (contain) in a square panel; no fixed pixel height. */
+    .inventory-assembly-editor__visual {
+      width: 100%;
+      padding: var(--inventory-container-gap);
+      border-radius: var(--inventory-panel-radius);
+      background: var(--inventory-equipment-panel);
+    }
+
+    .inventory-editor-tabs {
+      display: block;
+    }
+
+    /* One row; the active tab grows by one gap to touch the panel, the others keep a gap above it. A long row scrolls
+       sideways (drag-scroll), it never wraps or shrinks its tabs. */
+    .inventory-editor-tabs__row {
+      display: flex;
+      height: calc(var(--inventory-socket-size) + var(--inventory-container-gap));
+      gap: var(--inventory-container-gap);
+      align-items: flex-start;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .inventory-editor-tabs__row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .inventory-editor-tabs__tab {
+      flex: 0 0 var(--inventory-socket-size);
+      height: var(--inventory-socket-size);
+      overflow: hidden;
+      border-radius: var(--inventory-panel-radius);
+      background: var(--inventory-equipment-cell);
+    }
+
+    /* A root item without cells: its tab takes half of the row, the panel below keeps the full width. */
+    .inventory-editor-tabs__row--single .inventory-editor-tabs__tab {
+      flex-basis: 50%;
+    }
+
+    .inventory-editor-tabs__tab.inventory-editor-tabs__tab--active {
+      height: 100%;
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+      background: var(--inventory-editor-panel);
+    }
+
+    /* The tab's card or cell keeps the cell size; the tab paints the surface, so their own frames and fills step back. */
+    .inventory-editor-tabs__tab > .inventory-item-card,
+    .inventory-editor-tabs__tab > .inventory-field {
+      width: 100%;
+      height: var(--inventory-socket-size);
+    }
+
+    .inventory-editor-tabs__tab .inventory-item-card,
+    .inventory-editor-tabs__tab .inventory-slot {
+      border-color: transparent;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .inventory-editor-tabs__panel {
+      padding: var(--inventory-container-gap);
+      border-radius: var(--inventory-panel-radius);
+      background: var(--inventory-editor-panel);
+    }
+
+    .inventory-editor-tabs__panel--first-active {
+      border-top-left-radius: 0;
+    }
+
+    /* The panel owns the surface and outline: the page's section shows only its rows. */
+    .inventory-editor-tabs__page .inventory-item-parameter-section {
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+
+    .inventory-editor-tabs__empty {
+      margin: 0;
+      color: var(--inventory-muted-text);
+      font: 13px/1.4 system-ui, sans-serif;
+    }
+
+    .inventory-editor-tabs__empty + .inventory-editor-tabs__empty {
+      margin-top: 6px;
+    }
+  }
+}

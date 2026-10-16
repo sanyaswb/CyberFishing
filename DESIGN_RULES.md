@@ -91,6 +91,7 @@ Use equal gaps between cards. Internal spacing and icon dimensions should be con
 
 ## 8. Illustrations, proportions and minimal text
 
+- Identification tabs of items and cells use recognizable icons instead of permanently repeated names; text is added for a value, a count, an action or an explanation. Accessible names, hints, warnings and required confirmations stay ([spec 091](specs/091-mobile-editor-parameter-tabs/spec.md), the phone item editor).
 - Identify empty compartments with recognizable minimalist vector icons in closely related light-grey tones. Selected-item artwork replaces the placeholder.
 - Use `currentColor` for vector themes where the SVG embedding method supports it: `stroke` for outline icons and `fill` for filled icons. An external SVG loaded through `<img>` does not inherit `currentColor` from its HTML parent; do not rely on that inheritance.
 - Control and equipment illustrations must fit without cropping (`contain`). Use `cover` for photos/thumbnails only when cropping is explicitly allowed; keepnet fish thumbnails permit it with small, consistent edge insets.

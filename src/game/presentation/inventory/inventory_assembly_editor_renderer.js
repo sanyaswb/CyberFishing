@@ -1,9 +1,12 @@
+// Item editor: actions, the root item's preview, its cells and parameters. Wide layouts show the cell grid and every
+// parameter section; portrait phones show the tabs block instead (spec 091), CSS decides which.
 export class InventoryAssemblyEditorRenderer {
   #dom;
   #itemRenderer;
   #parametersRenderer;
   #parameterSectionResolver;
   #rodRemovalRenderer;
+  #tabsRenderer;
 
   constructor({
     domFactory,
@@ -12,11 +15,13 @@ export class InventoryAssemblyEditorRenderer {
     parameterSectionResolver = null,
     createParameterSectionResolver,
     rodRemovalRenderer,
+    tabsRenderer,
   } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#parametersRenderer = parametersRenderer;
     this.#rodRemovalRenderer = rodRemovalRenderer;
+    this.#tabsRenderer = tabsRenderer;
     this.#parameterSectionResolver =
       parameterSectionResolver ||
       createParameterSectionResolver();
@@ -79,7 +84,14 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
+    const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onWarning });
+    if (tabs) editor.appendChild(tabs);
     return editor;
+  }
+
+  // A newly opened editor shows its root item's parameters first (spec 091).
+  resetView() {
+    this.#tabsRenderer.resetView();
   }
 
   updateDynamicVisuals(host, model) {

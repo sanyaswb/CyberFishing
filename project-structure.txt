@@ -389,6 +389,9 @@
 │  │  └── spec.md
 │  ├── 090-inventory-cards-and-editor-polish
 │  │  └── spec.md
+│  ├── 091-mobile-editor-parameter-tabs
+│  │  ├── spec.md
+│  │  └── tasks.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1062,6 +1065,9 @@
 │  │     │  ├── inventory_backpack_summary_renderer.js
 │  │     │  ├── inventory_balance_parameter_resolver.js
 │  │     │  ├── inventory_collection_pager_renderer.js
+│  │     │  ├── inventory_editor_tabs_labels.js
+│  │     │  ├── inventory_editor_tabs_renderer.js
+│  │     │  ├── inventory_editor_tabs_resolver.js
 │  │     │  ├── inventory_facade_contract.js
 │  │     │  ├── inventory_grid_renderer.js
 │  │     │  ├── inventory_header_renderer.js

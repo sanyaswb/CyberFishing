@@ -36,6 +36,9 @@ const UI_SCRIPT_ORDER = Object.freeze([
   ["inventory_load_renderer.js", "src/game/presentation/inventory/inventory_load_renderer.js"],
   ["inventory_load_meter_config.js", "src/game/presentation/inventory/inventory_load_meter_config.js"],
   ["inventory_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js"],
+  ["inventory_editor_tabs_labels.js", "src/game/presentation/inventory/inventory_editor_tabs_labels.js"],
+  ["inventory_editor_tabs_resolver.js", "src/game/presentation/inventory/inventory_editor_tabs_resolver.js"],
+  ["inventory_editor_tabs_renderer.js", "src/game/presentation/inventory/inventory_editor_tabs_renderer.js"],
   ["inventory_assembly_editor_renderer.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js"],
   ["inventory_saved_loadout_preview_renderer.js", "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js"],
   ["inventory_inventory_grid_renderer.js", "src/game/presentation/inventory/inventory_grid_renderer.js"],
@@ -284,6 +287,11 @@ class FakeElement {
     this.#capturedPointers.delete(pointerId);
   }
 
+  // The phone editor brings its active tab into view (spec 091); the fake records the request.
+  scrollIntoView(options) {
+    this.scrolledIntoView = options;
+  }
+
   // Class selectors only (".a, .b"), enough for the swipe controller's ignore list (spec 087).
   closest(selector) {
     const classNames = selector.split(",").map((part) => part.trim().replace(/^\./, ""));
@@ -317,7 +325,7 @@ class FakeDocument {
     this.activeElement = null;
     this.body = new FakeElement("body", this);
     // Computed custom properties shared by every element; portrait turns the inventory swipes on (spec 087).
-    this.cssProperties = { "--inventory-swipe": "on" };
+    this.cssProperties = { "--inventory-swipe": "on", "--inventory-editor-swipe": "on" };
     this.defaultView = { getComputedStyle: () => ({ getPropertyValue: (name) => this.cssProperties[name] ?? "" }) };
   }
 
@@ -559,14 +567,17 @@ class InventoryStaticContractCheck {
       "equipping flashes twice, the second time slower");
     assert.match(style, /\.inventory-assembly-editor__actions\s*\{\s*display:\s*flex;\s*gap:\s*var\(--inventory-mobile-gap\);/,
       "phone editor actions share one row");
-    // Spec 089/090: in portrait the item editor scrolls under the section tabs, which keep their fills.
-    const editorUnderTabs = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
-    for (const [selector, rule] of [[" .inventory-main__left", /grid-row:\s*2 \/ 4;/],
-      [" .inventory-assembly-editor", /padding-bottom:\s*calc\(100cqi \* 0\.15 \+ var\(--inventory-container-gap\)\);/],
-      [" .inventory-main__tabs", /position:\s*relative;[^}]*z-index:\s*1;[^}]*pointer-events:\s*none;/]]) {
-      const block = portraitModal.split(editorUnderTabs + selector + " {")[1]?.split("}")[0] || "";
+    // Spec 091 (replacing 089): a visible portrait item editor hides the section tabs and turns the section swipe off;
+    // the editor's own parameter swipe has its own flag. The editor's tab block is shown only on portrait phones.
+    const visibleEditor = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
+    for (const [selector, rule] of [[" .inventory-main__tabs", /^\s*display:\s*none;\s*$/],
+      [" .inventory-main", /^\s*--inventory-swipe:\s*off;\s*$/]]) {
+      const block = portraitModal.split(visibleEditor + selector + " {")[1]?.split("}")[0] || "";
       assert.match(block, rule, "portrait item editor rule " + selector.trim());
     }
+    assert.doesNotMatch(portraitModal, /grid-row:\s*2 \/ 4;/, "the editor no longer scrolls under the section tabs");
+    assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*--inventory-editor-swipe:\s*on;/, "portrait turns the editor swipe on");
+    assert.match(style, /\.inventory-editor-tabs\s*\{\s*display:\s*none;\s*\}/, "wide layouts keep the cell grid and stacked sections");
     assert.match(style, /\.inventory-main__sidebar \.inventory-loadout-panel,\s*\.inventory-main__sidebar \.inventory-assembly-editor,\s*\.inventory-main__sidebar \.inventory-saved-loadout-preview\s*\{\s*--inventory-panel:\s*transparent;\s*--inventory-panel-border:\s*transparent;/,
       "equipment-section panels paint no outer frame inside the sidebar");
     assert.doesNotMatch(style, /\.keepnet-section__summary\s*\{[^}]*background:/, "the keepnet summary paints no outer frame");
@@ -2715,6 +2726,65 @@ class InventoryStaticContractCheck {
       parentInstanceId: "assembly-active",
       listVisible: false,
     });
+
+    // Spec 091: phone editor tabs — the root first, one tab per cell, the active page only; a cell keeps its tap action,
+    // the root tab, Left/Right and a panel swipe only switch the page and dispatch nothing.
+    const editorTabs = this.#findByClass(ui.rootNode, "inventory-editor-tabs");
+    const [tabRow, tabPanel] = editorTabs.children;
+    const tabNodes = tabRow.children;
+    const activeTab = () => tabNodes.findIndex((node) => node.classList.contains("inventory-editor-tabs__tab--active"));
+    const visiblePages = () => tabPanel.children.map((page, index) => (page.hidden ? -1 : index)).filter((index) => index >= 0);
+    const socketTabs = tabNodes.filter((node) => node.classList.contains("inventory-editor-tabs__tab--socket"));
+    assert.strictEqual(tabNodes[0].dataset.tabKey, "root:assembly-active");
+    assert.ok(tabNodes[0].classList.contains("inventory-editor-tabs__tab--root"));
+    assert.strictEqual(socketTabs.length, this.#findByClass(assemblyWorkspace, "inventory-assembly-editor__sockets").children.length,
+      "every cell of the editor has its own tab");
+    assert.strictEqual(tabPanel.children.length, tabNodes.length);
+    assert.deepStrictEqual([activeTab(), ...visiblePages()], [0, 0], "the editor opens on its root item's page only");
+    assert.strictEqual(tabNodes[0].getAttribute("aria-current"), "true");
+    const hookTab = socketTabs.find((node) => node.dataset.tabKey.includes(":hook[0]:"));
+    this.#findByClass(hookTab, "inventory-slot__empty-button").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId: "assembly-active", socketId: "hook[0]",
+      slotId: "hook", slotIndex: 0, parentInstanceId: "assembly-active", listVisible: false,
+    });
+    assert.strictEqual(activeTab(), 0, "a tap on a cell runs its own action, it does not switch the page");
+    const dispatchedBeforeViewing = dispatched.length;
+    tabRow.emit("keydown", { key: "ArrowRight" });
+    assert.deepStrictEqual([activeTab(), ...visiblePages()], [1, 1], "Right shows the next tab's page");
+    assert.strictEqual(JSON.stringify(tabNodes[1].scrolledIntoView), JSON.stringify({ block: "nearest", inline: "nearest" }));
+    tabRow.emit("keydown", { key: "Home" });
+    assert.strictEqual(activeTab(), 0);
+    tabPanel.layoutWidth = 300;
+    const swipePanel = (fromX, toX) => {
+      tabPanel.emit("pointerdown", { pointerType: "touch", clientX: fromX, clientY: 100 });
+      tabPanel.emit("pointermove", { pointerType: "touch", clientX: toX, clientY: 101 });
+      tabPanel.emit("pointerup", { pointerType: "touch", clientX: toX, clientY: 101 });
+    };
+    swipePanel(250, 50);
+    assert.strictEqual(activeTab(), 1, "a left swipe on the panel shows the next tab");
+    assert.ok(tabPanel.emit("click").defaultPrevented, "the click that ends a swipe is suppressed");
+    swipePanel(50, 250);
+    swipePanel(50, 250);
+    assert.strictEqual(activeTab(), 0, "swipes stop at the first tab");
+    tabRow.emit("keydown", { key: "End" });
+    assert.strictEqual(activeTab(), tabNodes.length - 1);
+    this.#findByClass(tabNodes[0], "inventory-item-card").click();
+    assert.strictEqual(activeTab(), 0, "a tap on the root tab shows its parameters");
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "viewing parameters dispatches nothing");
+    // Equal items in different cells keep separate tabs; nested parameter items already in a cell are not repeated.
+    const tabResolver = new sandbox.InventoryEditorTabsResolver();
+    const hookA = { instanceId: "hook-a", name: "Hook" };
+    const hookB = { instanceId: "hook-b", name: "Hook" };
+    const resolvedTabs = tabResolver.resolve({ root: { instanceId: "rig", name: "Rig" }, rootInstanceId: "rig",
+      sockets: [{ socketId: "hook[0]", slotId: "hook", slotIndex: 0, parentInstanceId: "rig", item: hookA, label: "Гачок 1" },
+        { socketId: "hook[1]", slotId: "hook", slotIndex: 1, parentInstanceId: "rig", item: hookB, label: "Гачок 2" },
+        { socketId: "chum[0]", slotId: "chum", slotIndex: 0, parentInstanceId: "rig", item: null, label: "Прикормка" }],
+      parameterItems: [hookA, { instanceId: "bait-1", name: "Worm" }, { instanceId: "bait-1", name: "Worm" }] });
+    assert.strictEqual(JSON.stringify(resolvedTabs.map((tab) => [tab.kind, tab.key])), JSON.stringify([
+      ["root", "root:rig"], ["socket", "socket:rig:hook[0]:hook:0"], ["socket", "socket:rig:hook[1]:hook:1"],
+      ["socket", "socket:rig:chum[0]:chum:0"], ["view", "item:bait-1"]]), "one tab per address, no merged equal items");
+    assert.strictEqual(tabResolver.resolve({ root: { instanceId: "rod", name: "Rod" } }).length, 1, "a root without cells has one tab");
 
     const baitSocket = this.#field(ui.rootNode, "bait");
     assert.strictEqual(

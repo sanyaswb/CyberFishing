@@ -142,10 +142,12 @@
      Narrow landscape keeps the separate containers above. */
   @media (orientation: portrait) {
     /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
-    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
+    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController);
+       --inventory-editor-swipe the item editor's parameter swipe (spec 091). */
     .inventory-modal {
       --inventory-content-columns: minmax(0, 1fr);
       --inventory-swipe: on;
+      --inventory-editor-swipe: on;
       padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       background: var(--inventory-equipment-surface);
@@ -224,26 +226,15 @@
       display: none;
     }
 
-    /* Item editor (spec 089): its scroller runs to the bottom of the screen and the section tabs lie on top of it, so
-       the content scrolls under them. The tabs keep their fills (spec 090: the owner kept the active tab's); the gaps
-       between them show the content and pass touches to it. The last content clears the tab bar (its height is 15% of the
-       width, section-tabs.css). Other sections keep their content above the tabs. */
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__left {
-      grid-row: 2 / 4;
-    }
-
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-assembly-editor {
-      padding-bottom: calc(100cqi * 0.15 + var(--inventory-container-gap));
-    }
-
+    /* Visible item editor (spec 091, replacing spec 089's content under the tabs): the section tabs are gone — no row,
+       no hit testing, no focus — and the section swipe is off; the editor's own tabs switch its parameters. A pick that
+       opens the backpack leaves the equipment section, so the tabs come back there. */
     .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs {
-      position: relative;
-      z-index: 1;
-      pointer-events: none;
+      display: none;
     }
 
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs .inventory-section-tabs__tab {
-      pointer-events: auto;
+    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main {
+      --inventory-swipe: off;
     }
   }
 }
