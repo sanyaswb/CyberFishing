@@ -12,6 +12,8 @@
   --inventory-equipment-tab-border: #7b7b7b;
   --inventory-equipment-tab-icon: #6c6c6c;
   --inventory-equipment-tab-icon-active: #d4d4d4;
+  /* Phone item editor (spec 091, owner reference): the active tab and its parameter panel. */
+  --inventory-editor-panel: #132b33;
   --inventory-scrollbar-size: 6px;
   --inventory-scrollbar-thumb: #3f565f;
   --inventory-scrollbar-thumb-hover: #58727d;

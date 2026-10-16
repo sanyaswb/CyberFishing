@@ -1,6 +1,9 @@
 /* Equipment compartments stay inside the card's content grid. */
 
+/* Above the card's centred artwork (spec 090). */
 .inventory-attachments {
+  position: relative;
+  z-index: 1;
   display: grid;
   min-width: 0;
   min-height: 0;
@@ -59,7 +62,7 @@
 
 /* A ui-glyph filling the badge's content box (DESIGN_RULES §8). */
 .inventory-attachment-badge__icon {
-  --ui-glyph-max-size: 20px;
+  --ui-glyph-max-size: 30px;
   width: 100%;
   height: 100%;
 }

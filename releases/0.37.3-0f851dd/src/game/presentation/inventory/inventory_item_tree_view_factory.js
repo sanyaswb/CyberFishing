@@ -5,6 +5,7 @@ export class InventoryItemTreeViewFactory {
   #completionPolicy;
   #hydrate;
   #boatChargeProvider;
+  #consumableSlotIds;
 
   constructor({
     repository,
@@ -13,6 +14,7 @@ export class InventoryItemTreeViewFactory {
     completionPolicy = null,
     hydrate,
     boatChargeProvider = null,
+    consumableSlotIds = [],
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -20,6 +22,7 @@ export class InventoryItemTreeViewFactory {
     this.#completionPolicy = completionPolicy;
     this.#hydrate = hydrate;
     this.#boatChargeProvider = boatChargeProvider;
+    this.#consumableSlotIds = consumableSlotIds;
   }
 
   setBoatChargeProvider(provider) {
@@ -38,6 +41,12 @@ export class InventoryItemTreeViewFactory {
           profileId: state.profileId,
         }) || null
       : null;
+    // Equipment completeness for the incomplete marker (spec 090): consumable slots are the header switchers' job.
+    const equipmentCompletion = state
+      ? this.#completionPolicy?.analyze?.(instanceId, {
+          profileId: state.profileId, ignoredSlotIds: this.#consumableSlotIds,
+        }) || null
+      : null;
     const view = {
       ...item,
       instanceId: raw.instanceId,
@@ -45,6 +54,7 @@ export class InventoryItemTreeViewFactory {
       status: state?.isDraft ? "draft" : state?.isPrepared ? "prepared" : null,
       prepared: state ? state.isPrepared : null,
       assemblyCompletion,
+      equipmentCompletion,
       loadoutMembership: this.#loadoutMembership(raw),
     };
     if (includeAttachments) {

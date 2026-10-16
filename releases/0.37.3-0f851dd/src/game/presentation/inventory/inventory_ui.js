@@ -43,6 +43,7 @@ export class InventoryUI {
   // Portrait swipes walk the sections in tab order (spec 087); -1 enters the backpack on its last page.
   #sectionSwipeController;
   #sectionEntryStep = 1;
+  #editorOpen = false;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
@@ -252,7 +253,7 @@ export class InventoryUI {
         name: item.name, icon: item.icon, iconUrl: item.iconUrl || item.imageUrl,
         quantity: item.quantity, rarity: item.rarity, attachments: item.attachments,
         ratingTier: item.progression?.ratingTier, rarityVisual: item.rarityVisual,
-        assemblyCompletion: item.assemblyCompletion,
+        assemblyCompletion: item.assemblyCompletion, equipmentCompletion: item.equipmentCompletion,
         loadoutMembership: item.loadoutMembership,
         compatibleWithHighlightedSlot: item.compatibleWithHighlightedSlot,
       })),
@@ -503,6 +504,9 @@ export class InventoryUI {
   }
 
   #renderLeftPanel(panel) {
+    // Opening the editor (from another panel) starts its phone tabs on the root item (spec 091).
+    if (panel.mode === "assembly" && !this.#editorOpen) this.#assemblyRenderer.resetView();
+    this.#editorOpen = panel.mode === "assembly";
     if (panel.mode === "saved-loadout") {
       this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
       return;

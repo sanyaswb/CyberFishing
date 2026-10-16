@@ -1,7 +1,7 @@
 export const INVENTORY_RESOURCE_METER_DEFINITIONS = Object.freeze([
   Object.freeze({
     id: "energy",
-    icon: "⚡",
+    icon: "",
     read: (item) => item?.charge || null,
     fallbackLabel: "Заряд",
   }),

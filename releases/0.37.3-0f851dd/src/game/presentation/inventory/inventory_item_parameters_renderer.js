@@ -42,9 +42,15 @@ export class InventoryItemParametersRenderer {
     return panel.children.length ? panel : null;
   }
 
+  // Every section of the item is updated: the phone editor shows it on its tab page beside the wide layout's stack
+  // (spec 091).
   update(host, item) {
-    const section = this.#findSection(host, item?.instanceId);
-    if (!section) return null;
+    let updated = null;
+    for (const section of this.#findSections(host, item?.instanceId)) updated = this.#updateSection(section, item) || updated;
+    return updated;
+  }
+
+  #updateSection(section, item) {
     const parameters = this.#resolver.resolve(item);
     if (!parameters.length) {
       const panel = section.parentNode;
@@ -270,7 +276,7 @@ export class InventoryItemParametersRenderer {
     return multiplier.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
-  #findSection(host, instanceId) {
+  #findSections(host, instanceId) {
     const sections = [
       ...(host?.classList?.contains("inventory-item-parameter-section")
         ? [host]
@@ -279,10 +285,10 @@ export class InventoryItemParametersRenderer {
         host?.querySelectorAll?.(".inventory-item-parameter-section") || [],
       ),
     ];
-    return sections.find(
+    return sections.filter(
       (section) =>
         String(section.dataset?.instanceId || "") === String(instanceId || ""),
-    ) || null;
+    );
   }
 
   #findParameterList(section) {

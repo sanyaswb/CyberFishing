@@ -237,7 +237,8 @@ export class InventoryItemCardRenderer {
   }
 
   #showsIncompleteIndicator(item) {
-    const completion = item?.assemblyCompletion;
+    // Consumables are filled through the header switchers, so an empty bait or chum slot is not incomplete (spec 090).
+    const completion = item?.equipmentCompletion;
     if (!completion || completion.isComplete !== false) return false;
     return item.equipped === true || completion.hasAnyComponent === true;
   }
