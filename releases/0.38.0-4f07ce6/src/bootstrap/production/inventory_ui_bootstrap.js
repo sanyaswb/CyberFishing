@@ -6,6 +6,9 @@ import { InventoryViewModelNormalizer } from "../../game/presentation/inventory/
 import { InventoryAssemblyEditorRenderer } from "../../game/presentation/inventory/inventory_assembly_editor_renderer.js";
 import { InventoryAssemblyParameterSectionResolver } from "../../game/presentation/inventory/inventory_assembly_parameter_section_resolver.js";
 import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/inventory/inventory_attachment_badge_renderer.js";
+import { InventoryEditorTabsRenderer } from "../../game/presentation/inventory/inventory_editor_tabs_renderer.js";
+import { InventoryEditorTabsResolver } from "../../game/presentation/inventory/inventory_editor_tabs_resolver.js";
+import { INVENTORY_EDITOR_TABS_LABELS } from "../../game/presentation/inventory/inventory_editor_tabs_labels.js";
 import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
@@ -79,8 +82,8 @@ export class InventoryUiBootstrap {
   }
 
   // Pages and sections swipe only where CSS turns the flag on (portrait, spec 087).
-  static #swipeEnabled(dom) {
-    return (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-swipe").trim() === "on";
+  static #swipeEnabled(dom, property = "--inventory-swipe") {
+    return (node) => dom.view.getComputedStyle(node).getPropertyValue(property).trim() === "on";
   }
 
   // Vertical drag-to-scroll for item and fish lists (spec 076); filters keep the horizontal default.
@@ -202,6 +205,13 @@ export class InventoryUiBootstrap {
         parametersRenderer: itemParametersRenderer,
         createParameterSectionResolver: () => new InventoryAssemblyParameterSectionResolver(),
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
+        // Phone item editor tabs (spec 091): their own swipe flag, so the section swipe can be off in the editor.
+        tabsRenderer: new InventoryEditorTabsRenderer({ domFactory: dom, resolver: new InventoryEditorTabsResolver(),
+          itemRenderer: resolvedItemRenderer, parametersRenderer: itemParametersRenderer,
+          swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
+            positionProperty: null, draggingClassName: "inventory-editor-tabs__panel--dragging" }),
+          rowScrollController: new HorizontalScrollController({ uiSurface }), labels: INVENTORY_EDITOR_TABS_LABELS,
+          longPressDurationMs: LongPressController.EQUIPPED_DURATION_MS }),
       });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||

@@ -1,9 +1,12 @@
+// Item editor: actions, the root item's preview, its cells and parameters. Wide layouts show the cell grid and every
+// parameter section; portrait phones show the tabs block instead (spec 091), CSS decides which.
 export class InventoryAssemblyEditorRenderer {
   #dom;
   #itemRenderer;
   #parametersRenderer;
   #parameterSectionResolver;
   #rodRemovalRenderer;
+  #tabsRenderer;
 
   constructor({
     domFactory,
@@ -12,11 +15,13 @@ export class InventoryAssemblyEditorRenderer {
     parameterSectionResolver = null,
     createParameterSectionResolver,
     rodRemovalRenderer,
+    tabsRenderer,
   } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#parametersRenderer = parametersRenderer;
     this.#rodRemovalRenderer = rodRemovalRenderer;
+    this.#tabsRenderer = tabsRenderer;
     this.#parameterSectionResolver =
       parameterSectionResolver ||
       createParameterSectionResolver();
@@ -33,6 +38,7 @@ export class InventoryAssemblyEditorRenderer {
       onWarning = null,
       onRodRemovalChoice = null,
       onRodRemovalSave = null,
+      onSocketLongPress = null,
     } = {},
   ) {
     const editor = this.#dom.element(
@@ -49,7 +55,8 @@ export class InventoryAssemblyEditorRenderer {
       }));
       return editor;
     }
-    workspace.appendChild(this.#renderRootVisual(model));
+    const visual = this.#renderRootVisual(model);
+    workspace.appendChild(visual);
     if (model.sockets.length > 0) {
       const sockets = this.#dom.element(
         "div",
@@ -79,7 +86,16 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
+    // The preview swipes the phone tabs too (spec 092).
+    const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onSocketLongPress, onWarning },
+      { swipeSurfaces: [visual] });
+    if (tabs) editor.appendChild(tabs);
     return editor;
+  }
+
+  // A newly opened editor shows its root item's parameters first (spec 091).
+  resetView() {
+    this.#tabsRenderer.resetView();
   }
 
   updateDynamicVisuals(host, model) {

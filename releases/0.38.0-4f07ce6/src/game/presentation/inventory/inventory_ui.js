@@ -43,6 +43,7 @@ export class InventoryUI {
   // Portrait swipes walk the sections in tab order (spec 087); -1 enters the backpack on its last page.
   #sectionSwipeController;
   #sectionEntryStep = 1;
+  #editorOpen = false;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
@@ -503,6 +504,9 @@ export class InventoryUI {
   }
 
   #renderLeftPanel(panel) {
+    // Opening the editor (from another panel) starts its phone tabs on the root item (spec 091).
+    if (panel.mode === "assembly" && !this.#editorOpen) this.#assemblyRenderer.resetView();
+    this.#editorOpen = panel.mode === "assembly";
     if (panel.mode === "saved-loadout") {
       this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
       return;
@@ -522,6 +526,13 @@ export class InventoryUI {
             parentInstanceId: socket.parentInstanceId,
             listVisible: this.#isItemListVisible(),
           }),
+        // Phone editor tabs (spec 092): a long press removes a filled cell's item. A rod's cells are equipment slots;
+        // an assembly's filled socket detaches its component through the socket command.
+        onSocketLongPress: (socket) => this.#dispatch(panel.assembly.root?.itemType === "rod"
+          ? { type: this.#actionTypes.EQUIPMENT_SLOT_LONG_PRESS, slotId: socket.slotId, instanceId: socket.item.instanceId }
+          : { type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId, socketId: socket.socketId,
+            slotId: socket.slotId, slotIndex: socket.slotIndex, parentInstanceId: socket.parentInstanceId,
+            listVisible: this.#isItemListVisible() }),
         onEquip: () =>
           this.#dispatch({
             type: this.#actionTypes.ASSEMBLY_EQUIP,
