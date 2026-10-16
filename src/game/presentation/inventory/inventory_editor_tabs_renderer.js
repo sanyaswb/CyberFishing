@@ -31,6 +31,11 @@ export class InventoryEditorTabsRenderer {
     this.#scrollAligner = scrollAligner;
   }
 
+  // The items shown on the tab pages, for in-place parameter updates.
+  items(model) {
+    return this.#resolver.resolve(model).map((tab) => tab.item).filter(Boolean);
+  }
+
   // A newly opened editor starts on its root item, even one viewed before.
   resetView() {
     this.#rootKey = null;

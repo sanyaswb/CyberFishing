@@ -35,10 +35,13 @@ export class InventoryItemCardRenderer {
 
   updateDynamicVisuals(card, item = null) {
     if (!card || !item) return;
-    this.#resourceMeterRenderer.update(
-      card,
-      this.#resourceMeterResolver.resolve(item),
-    );
+    // A card rendered without its scale (editor tabs, spec 094) keeps it off on timer updates too.
+    if (card.dataset.resourceMeter !== "off") {
+      this.#resourceMeterRenderer.update(
+        card,
+        this.#resourceMeterResolver.resolve(item),
+      );
+    }
     this.#conditionDomAdapter?.apply(card, item.condition);
     this.#tooltipPresenter?.update?.(item);
   }
@@ -171,6 +174,7 @@ export class InventoryItemCardRenderer {
     card.appendChild(content);
     if (showMetadata) this.#renderMetadata(card, item);
     this.#applyVisualAdapters(card, item, frameless, { showMetadata });
+    if (!showResourceMeter) card.dataset.resourceMeter = "off";
     if (showResourceMeter) {
       this.#resourceMeterRenderer.update(
         card,

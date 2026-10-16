@@ -1,10 +1,9 @@
-// Item editor: actions, the root item's preview, its cells and parameters. Wide layouts show the cell grid and every
-// parameter section; portrait phones show the tabs block instead (spec 091), CSS decides which.
+// Item editor in every layout (spec 091 on phones, spec 094 on wide screens): the actions panel, the root item's
+// preview and the tabs block (the item, its cells, nested items) joined to the active tab's parameters.
 export class InventoryAssemblyEditorRenderer {
   #dom;
   #itemRenderer;
   #parametersRenderer;
-  #parameterSectionResolver;
   #rodRemovalRenderer;
   #tabsRenderer;
 
@@ -12,8 +11,6 @@ export class InventoryAssemblyEditorRenderer {
     domFactory,
     itemRenderer,
     parametersRenderer = null,
-    parameterSectionResolver = null,
-    createParameterSectionResolver,
     rodRemovalRenderer,
     tabsRenderer,
   } = {}) {
@@ -22,9 +19,6 @@ export class InventoryAssemblyEditorRenderer {
     this.#parametersRenderer = parametersRenderer;
     this.#rodRemovalRenderer = rodRemovalRenderer;
     this.#tabsRenderer = tabsRenderer;
-    this.#parameterSectionResolver =
-      parameterSectionResolver ||
-      createParameterSectionResolver();
   }
 
   render(
@@ -57,28 +51,6 @@ export class InventoryAssemblyEditorRenderer {
     }
     const visual = this.#renderRootVisual(model);
     workspace.appendChild(visual);
-    if (model.sockets.length > 0) {
-      const sockets = this.#dom.element(
-        "div",
-        "inventory-assembly-editor__sockets",
-      );
-      model.sockets.forEach((socket) => {
-        sockets.appendChild(
-          this.#itemRenderer.renderSlot(socket, {
-            variant: "socket",
-            onActivate: () => onSocketActivate?.(socket),
-            onUnavailable: (warning) => onWarning?.(warning),
-            showTooltip: !this.#parametersRenderer.hasParameters(socket.item),
-          }),
-        );
-      });
-      workspace.appendChild(sockets);
-    }
-    const parameterSections = this.#parameterSectionResolver.resolve(model);
-    const parameters = this.#parametersRenderer.renderSections(
-      parameterSections,
-    );
-    if (parameters) workspace.appendChild(parameters);
     editor.append(this.#renderActions(model, {
       onEquip,
       onUnequip,
@@ -86,7 +58,7 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
-    // The preview swipes the phone tabs too (spec 092).
+    // The preview swipes the tabs too (spec 092).
     const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onSocketLongPress, onWarning },
       { swipeSurfaces: [visual] });
     if (tabs) editor.appendChild(tabs);
@@ -98,9 +70,9 @@ export class InventoryAssemblyEditorRenderer {
     this.#tabsRenderer.resetView();
   }
 
+  // Timer updates refresh every tab page's parameters in place (each cell's item, equal items included).
   updateDynamicVisuals(host, model) {
-    const sections = this.#parameterSectionResolver.resolve(model);
-    return this.#parametersRenderer.updateSections(host, sections);
+    for (const item of this.#tabsRenderer.items(model)) this.#parametersRenderer.update(host, item);
   }
 
   #renderRootVisual(model) {

@@ -204,9 +204,9 @@ export class InventoryUiBootstrap {
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
-        createParameterSectionResolver: () => new InventoryAssemblyParameterSectionResolver(),
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
-        // Phone item editor tabs (spec 091): their own swipe flag, so the section swipe can be off in the editor.
+        // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
+        // off in the editor.
         tabsRenderer: new InventoryEditorTabsRenderer({ domFactory: dom, resolver: new InventoryEditorTabsResolver(),
           itemRenderer: resolvedItemRenderer, parametersRenderer: itemParametersRenderer,
           swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),

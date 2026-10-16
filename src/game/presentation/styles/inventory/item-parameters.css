@@ -1,4 +1,4 @@
-/* Parameter sections, bars, segments, bait effectiveness and workspace container query. */
+/* Parameter sections, bars, segments and bait effectiveness. */
 
 .inventory-item-parameters {
   display: grid;
@@ -86,18 +86,6 @@
   margin: 0;
   list-style: none;
   border-top: 1px solid rgba(201, 216, 218, 0.16);
-}
-
-@container inventory-assembly-workspace (max-width: 520px) {
-  .inventory-item-parameters {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .inventory-item-parameters--single .inventory-item-parameter-section,
-  .inventory-item-parameter-section--centered {
-    width: 100%;
-    grid-column: auto;
-  }
 }
 
 .inventory-parameter {

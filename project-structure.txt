@@ -396,6 +396,10 @@
 │  │  └── spec.md
 │  ├── 093-editor-tabs-second-fixes
 │  │  └── spec.md
+│  ├── 094-editor-tabs-every-layout
+│  │  └── spec.md
+│  ├── 095-editor-under-section-tabs
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
