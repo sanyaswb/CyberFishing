@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.38.0 - Phone Item Editor
+
+- On portrait phones the item editor shows an actions panel, a preview and one row of tabs (the item, each cell, nested items) joined to the active tab's parameters; swipes on the panel or the preview switch tabs, a tap on a filled cell shows its parameters and a long press removes the item. The section tabs hide while the editor is open and only its buttons leave it. Card artwork is centred with larger equipment squares, equipping flashes twice, the hook has no incomplete marker for missing bait, and the boat scale has no lightning. Gameplay formulas and saves are unchanged.
+
 ## v0.37.3 - Editor Under the Tabs and Rod Removal Rule
 
 - In portrait the item editor scrolls under the section tabs (the active tab shows the content through its frame); the keepnet help button is hidden for now. A long press offers to save a rod as a loadout only when every first-level cell is filled; an incomplete rod comes off at once with its components intact.
