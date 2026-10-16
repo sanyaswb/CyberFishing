@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.38.1 - Editor Tabs Polish
+
+- Phone editor tabs show their artwork centred with a larger inset and without scales (values stay in the parameters); a tap on a tab with an item scrolls the editor down to the tab row. Gameplay formulas and saves are unchanged.
+
 ## v0.38.0 - Phone Item Editor
 
 - On portrait phones the item editor shows an actions panel, a preview and one row of tabs (the item, each cell, nested items) joined to the active tab's parameters; swipes on the panel or the preview switch tabs, a tap on a filled cell shows its parameters and a long press removes the item. The section tabs hide while the editor is open and only its buttons leave it. Card artwork is centred with larger equipment squares, equipping flashes twice, the hook has no incomplete marker for missing bait, and the boat scale has no lightning. Gameplay formulas and saves are unchanged.
