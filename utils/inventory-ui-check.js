@@ -2772,6 +2772,29 @@ class InventoryStaticContractCheck {
     this.#findByClass(tabNodes[0], "inventory-item-card").click();
     assert.strictEqual(activeTab(), 0, "a tap on the root tab shows its parameters");
     assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "viewing parameters dispatches nothing");
+    // Spec 092: a tap on a filled cell shows its parameters, a long press removes its item; the preview swipes too.
+    const filledTabIndex = tabNodes.findIndex((node) => node.classList.contains("inventory-editor-tabs__tab--socket") &&
+      this.#findAllByClass(node, "inventory-item-card").length > 0);
+    assert.ok(filledTabIndex > 0, "the editor scenario has a filled cell tab");
+    const filledCard = this.#findByClass(tabNodes[filledTabIndex], "inventory-item-card");
+    filledCard.click();
+    assert.strictEqual(activeTab(), filledTabIndex, "a tap on a filled cell shows its parameters");
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "and dispatches nothing");
+    const filledSocketKey = tabNodes[filledTabIndex].dataset.tabKey.split(":");
+    filledCard.emit("pointerdown", { pointerType: "touch", pointerId: 7, clientX: 10, clientY: 10, button: 0 });
+    timers.advance(1200);
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId: "assembly-active",
+      socketId: filledSocketKey[2], slotId: filledSocketKey[3], slotIndex: Number(filledSocketKey[4]),
+      parentInstanceId: filledSocketKey[1], listVisible: false });
+    filledCard.emit("pointerup", { pointerType: "touch", pointerId: 7, clientX: 10, clientY: 10 });
+    filledCard.click();
+    const preview = this.#findByClass(assemblyWorkspace, "inventory-assembly-editor__visual");
+    preview.layoutWidth = 300;
+    tabRow.emit("keydown", { key: "Home" });
+    preview.emit("pointerdown", { pointerType: "touch", clientX: 250, clientY: 100 });
+    preview.emit("pointermove", { pointerType: "touch", clientX: 50, clientY: 101 });
+    preview.emit("pointerup", { pointerType: "touch", clientX: 50, clientY: 101 });
+    assert.strictEqual(activeTab(), 1, "a swipe on the preview switches the tab");
     // Equal items in different cells keep separate tabs; nested parameter items already in a cell are not repeated.
     const tabResolver = new sandbox.InventoryEditorTabsResolver();
     const hookA = { instanceId: "hook-a", name: "Hook" };

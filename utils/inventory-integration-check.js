@@ -1889,6 +1889,28 @@ vm.runInContext(
     baitlessHookView.assemblyCompletion.isComplete === false,
   "a hook without bait is complete equipment while its assembly still lists the empty bait slot");
 
+  // Spec 092: inside an item editor only its own buttons leave it. An item picked for its empty cell returns to the
+  // same editor, and switching sections (keepnet, backpack) never closes it.
+  const editorPick = makeComposition({
+    items: [raw("pick-rod", "rodPole"), raw("pick-float", "floatDay")],
+    equipment: { ...emptyEquipment(), rod: "pick-rod" },
+  });
+  const editorState = () => editorPick.commands.getUiState();
+  dispatch(editorPick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod", listVisible: false });
+  dispatch(editorPick, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, { rootInstanceId: "pick-rod", socketId: "float",
+    slotId: "float", slotIndex: 0, parentInstanceId: "pick-rod", listVisible: false });
+  assertIntegration(editorState().activeSectionId === "backpack" && editorState().highlightedEquipmentSlotId === "float",
+    "an empty editor cell starts a pick in the backpack");
+  dispatch(editorPick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-float" });
+  assertIntegration(editorPick.equipmentState.getRootInstanceId("float") === "pick-float" &&
+    editorState().panelMode === "assembly" && editorState().editingRootInstanceId === "pick-rod" &&
+    editorState().activeSectionId === "equipment", "an item picked from the editor returns to the same editor");
+  for (const sectionId of ["keepnet", "backpack", "equipment"]) {
+    dispatch(editorPick, InventoryActionType.SECTION_SELECT, { sectionId });
+  }
+  assertIntegration(editorState().panelMode === "assembly" && editorState().editingRootInstanceId === "pick-rod",
+    "switching sections keeps the open editor");
+
   const looseStackCycles = makeComposition({
     items: [raw("stacked-pole-rods", "rodPole", 2)],
   });

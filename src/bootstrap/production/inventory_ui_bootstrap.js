@@ -210,7 +210,8 @@ export class InventoryUiBootstrap {
           itemRenderer: resolvedItemRenderer, parametersRenderer: itemParametersRenderer,
           swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
             positionProperty: null, draggingClassName: "inventory-editor-tabs__panel--dragging" }),
-          rowScrollController: new HorizontalScrollController({ uiSurface }), labels: INVENTORY_EDITOR_TABS_LABELS }),
+          rowScrollController: new HorizontalScrollController({ uiSurface }), labels: INVENTORY_EDITOR_TABS_LABELS,
+          longPressDurationMs: LongPressController.EQUIPPED_DURATION_MS }),
       });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||

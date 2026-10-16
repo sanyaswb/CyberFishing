@@ -392,6 +392,8 @@
 │  ├── 091-mobile-editor-parameter-tabs
 │  │  ├── spec.md
 │  │  └── tasks.md
+│  ├── 092-editor-tabs-first-fixes
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

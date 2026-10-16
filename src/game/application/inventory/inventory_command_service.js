@@ -124,7 +124,7 @@ export class InventoryCommandService {
         this.#uiState.selectCategory(action.categoryId);
         return this.#success();
       case InventoryActionType.SECTION_SELECT:
-        if (action.sectionId === "backpack" && !this.#uiState.isPicking) this.#uiState.showLoadoutPanel();
+        // Sections never close an open item editor (spec 092): returning to equipment shows it again.
         this.#uiState.selectSection(action.sectionId);
         return this.#success();
       case InventoryActionType.CONSUMABLE_SLOT_ACTIVATE:
@@ -188,9 +188,16 @@ export class InventoryCommandService {
       }
     }
     const picking = this.#uiState.isPicking;
+    const editorRootInstanceId = this.#uiState.panelMode === "assembly" ? this.#uiState.editingRootInstanceId : null;
     const result = this.#activateInventoryItemInPanel(instanceId);
     if (picking && result.success && !result.requiresSocketChoice) {
       this.#uiState.completePick();
+    }
+    // Inside an item editor only its own buttons leave it (spec 092): an item equipped from the editor (a pick for its
+    // cell or a list card) returns to that editor instead of the equipment panel.
+    if (editorRootInstanceId && result.success && this.#uiState.panelMode === "loadout" &&
+        this.#repository.has(editorRootInstanceId)) {
+      this.#uiState.showAssemblyEditor(editorRootInstanceId);
     }
     return result;
   }

@@ -164,23 +164,49 @@
     }
 
     .inventory-editor-tabs__tab {
+      position: relative;
       flex: 0 0 var(--inventory-socket-size);
       height: var(--inventory-socket-size);
-      overflow: hidden;
       border-radius: var(--inventory-panel-radius);
       background: var(--inventory-equipment-cell);
     }
 
     /* A root item without cells: its tab takes half of the row, the panel below keeps the full width. */
-    .inventory-editor-tabs__row--single .inventory-editor-tabs__tab {
-      flex-basis: 50%;
+    .inventory-editor-tabs__row--single .inventory-editor-tabs__tab.inventory-editor-tabs__tab--active {
+      flex: 0 0 50%;
     }
 
+    /* The active tab takes the row's free width (spec 092), so every gap stays equal and the row is always full. */
     .inventory-editor-tabs__tab.inventory-editor-tabs__tab--active {
+      flex-grow: 1;
       height: 100%;
       border-bottom-right-radius: 0;
       border-bottom-left-radius: 0;
       background: var(--inventory-editor-panel);
+    }
+
+    /* Where the panel continues beside the active tab, the join is a concave fillet of the panel radius on both sides
+       (spec 092); the fillet sits in the gap above the panel, so it needs no extra space. */
+    .inventory-editor-tabs__tab--active:not(:first-child)::before,
+    .inventory-editor-tabs__tab--active:not(:last-child)::after {
+      position: absolute;
+      bottom: 0;
+      width: var(--inventory-panel-radius);
+      height: var(--inventory-panel-radius);
+      content: "";
+      pointer-events: none;
+    }
+
+    .inventory-editor-tabs__tab--active:not(:first-child)::before {
+      right: 100%;
+      background: radial-gradient(circle at 0 0, transparent calc(var(--inventory-panel-radius) - 0.5px),
+        var(--inventory-editor-panel) var(--inventory-panel-radius));
+    }
+
+    .inventory-editor-tabs__tab--active:not(:last-child)::after {
+      left: 100%;
+      background: radial-gradient(circle at 100% 0, transparent calc(var(--inventory-panel-radius) - 0.5px),
+        var(--inventory-editor-panel) var(--inventory-panel-radius));
     }
 
     /* The tab's card or cell keeps the cell size; the tab paints the surface, so their own frames and fills step back. */
@@ -188,6 +214,8 @@
     .inventory-editor-tabs__tab > .inventory-field {
       width: 100%;
       height: var(--inventory-socket-size);
+      overflow: hidden;
+      border-radius: var(--inventory-panel-radius);
     }
 
     .inventory-editor-tabs__tab .inventory-item-card,
@@ -205,6 +233,10 @@
 
     .inventory-editor-tabs__panel--first-active {
       border-top-left-radius: 0;
+    }
+
+    .inventory-editor-tabs__panel--last-active {
+      border-top-right-radius: 0;
     }
 
     /* The panel owns the surface and outline: the page's section shows only its rows. */
