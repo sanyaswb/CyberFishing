@@ -1,7 +1,8 @@
 // Phone item editor tabs (spec 091): one row of tabs — the editor's root item, its cells, items with parameters only —
-// joined to one parameter panel that shows the active tab's page. A tap keeps each cell's own action (equip, remove,
-// open, pick); a tap on the root or a view-only tab, a swipe on the panel and Left/Right/Home/End on the row only switch
-// the page. The active tab key is presentation state kept here across editor re-renders: another root item, a removed
+// joined to one parameter panel that shows the active tab's page. A tap on a filled cell, the root or a view-only tab,
+// a swipe on the panel or the preview and Left/Right/Home/End on the row only switch the page; a long press on a filled
+// cell removes its item and a tap on an empty cell keeps its own action (pick) (spec 092). Every tap on a tab with an item,
+// the active one included, also scrolls the editor down to the tab row (spec 093). The active tab key is presentation state kept here across editor re-renders: another root item, a removed
 // address or resetView() returns to the root tab. CSS decides where this block is shown (portrait phones).
 export class InventoryEditorTabsRenderer {
   #dom;
@@ -11,11 +12,14 @@ export class InventoryEditorTabsRenderer {
   #swipe;
   #rowScroll;
   #labels;
+  #longPressDurationMs;
+  #scrollAligner;
   #rootKey = null;
   #activeKey = null;
   #current = null;
 
-  constructor({ domFactory, resolver, itemRenderer, parametersRenderer, swipeController, rowScrollController, labels }) {
+  constructor({ domFactory, resolver, itemRenderer, parametersRenderer, swipeController, rowScrollController, labels,
+    longPressDurationMs, scrollAligner }) {
     this.#dom = domFactory;
     this.#resolver = resolver;
     this.#items = itemRenderer;
@@ -23,6 +27,8 @@ export class InventoryEditorTabsRenderer {
     this.#swipe = swipeController;
     this.#rowScroll = rowScrollController;
     this.#labels = labels;
+    this.#longPressDurationMs = longPressDurationMs;
+    this.#scrollAligner = scrollAligner;
   }
 
   // A newly opened editor starts on its root item, even one viewed before.
@@ -30,7 +36,8 @@ export class InventoryEditorTabsRenderer {
     this.#rootKey = null;
   }
 
-  render(model, { onSocketActivate = null, onWarning = null } = {}) {
+  // swipeSurfaces: more elements whose horizontal swipe switches the page (the editor's preview).
+  render(model, { onSocketActivate = null, onSocketLongPress = null, onWarning = null } = {}, { swipeSurfaces = [] } = {}) {
     const tabs = this.#resolver.resolve(model);
     if (!tabs.length) return null;
     if (tabs[0].key !== this.#rootKey) {
@@ -46,34 +53,43 @@ export class InventoryEditorTabsRenderer {
     const panel = this.#dom.element("div", "inventory-editor-tabs__panel");
     panel.setAttribute("role", "region");
     panel.setAttribute("aria-label", this.#labels.panel);
-    const tabNodes = tabs.map((tab) => this.#renderTab(tab, { onSocketActivate, onWarning }));
+    const tabNodes = tabs.map((tab) => this.#renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning }));
     const pages = tabs.map((tab) => this.#renderPage(tab));
     row.append(...tabNodes);
     panel.append(...pages);
     row.addEventListener("keydown", (event) => this.#key(event));
     block.append(row, panel);
     if (this.#current) {
-      this.#swipe.detach(this.#current.panel);
+      for (const surface of this.#current.surfaces) this.#swipe.detach(surface);
       this.#rowScroll.detach(this.#current.row);
     }
-    this.#swipe.attach(panel, { pageCount: tabs.length, getIndex: () => this.#activeIndex(),
-      onSelect: (index) => this.#select(this.#current.tabs[index].key) });
+    const surfaces = [panel, ...swipeSurfaces];
+    for (const surface of surfaces) {
+      this.#swipe.attach(surface, { pageCount: tabs.length, getIndex: () => this.#activeIndex(),
+        onSelect: (index) => this.#select(this.#current.tabs[index].key) });
+    }
     this.#rowScroll.attach(row);
-    this.#current = { tabs, tabNodes, pages, row, panel };
+    this.#current = { tabs, tabNodes, pages, row, panel, surfaces };
     this.#apply();
     return block;
   }
 
-  #renderTab(tab, { onSocketActivate, onWarning }) {
+  #renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning }) {
     const node = this.#dom.element("div", `inventory-editor-tabs__tab inventory-editor-tabs__tab--${tab.kind}`);
     node.dataset.tabKey = tab.key;
     if (tab.kind === "socket") {
-      node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false, showTooltip: false,
-        onActivate: () => onSocketActivate?.(tab.socket), onUnavailable: (warning) => onWarning?.(warning) }));
+      const filled = Boolean(tab.item);
+      // Tabs show only the item; its scales live in the parameters (spec 093).
+      node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false,
+        showResourceMeter: false, showTooltip: false,
+        onActivate: filled ? () => this.#showByTap(tab.key) : () => onSocketActivate?.(tab.socket),
+        onLongPress: filled ? () => onSocketLongPress?.(tab.socket) : null,
+        longPressDurationMs: this.#longPressDurationMs,
+        onUnavailable: (warning) => onWarning?.(warning) }));
       return node;
     }
     const card = this.#items.renderItem(tab.item, { variant: "socket", showAttachments: false, showMetadata: false,
-      showResourceMeter: false, showTooltip: false, onActivate: () => this.#select(tab.key) });
+      showResourceMeter: false, showTooltip: false, onActivate: () => this.#showByTap(tab.key) });
     const name = tab.label || tab.item?.name || "Предмет";
     card.setAttribute("aria-label", tab.kind === "root" ? this.#labels.root(name) : this.#labels.view(name));
     card.title = card.getAttribute("aria-label");
@@ -95,6 +111,12 @@ export class InventoryEditorTabsRenderer {
       }
     }
     return page;
+  }
+
+  // A tap shows the tab's parameters and brings the tab row to the top of the editor, as far as the content allows.
+  #showByTap(key) {
+    this.#select(key);
+    this.#scrollAligner.alignToTop(this.#current.row);
   }
 
   #activeIndex() {
@@ -129,5 +151,8 @@ export class InventoryEditorTabsRenderer {
     });
     this.#current.pages.forEach((page, position) => { page.hidden = position !== index; });
     this.#current.panel.classList.toggle("inventory-editor-tabs__panel--first-active", index === 0);
+    // A growing active last tab reaches the row's right edge; a lone root tab keeps half the width (spec 091).
+    this.#current.panel.classList.toggle("inventory-editor-tabs__panel--last-active",
+      this.#current.tabs.length > 1 && index === this.#current.tabs.length - 1);
   }
 }

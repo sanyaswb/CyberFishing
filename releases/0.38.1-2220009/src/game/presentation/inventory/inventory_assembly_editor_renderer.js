@@ -38,6 +38,7 @@ export class InventoryAssemblyEditorRenderer {
       onWarning = null,
       onRodRemovalChoice = null,
       onRodRemovalSave = null,
+      onSocketLongPress = null,
     } = {},
   ) {
     const editor = this.#dom.element(
@@ -54,7 +55,8 @@ export class InventoryAssemblyEditorRenderer {
       }));
       return editor;
     }
-    workspace.appendChild(this.#renderRootVisual(model));
+    const visual = this.#renderRootVisual(model);
+    workspace.appendChild(visual);
     if (model.sockets.length > 0) {
       const sockets = this.#dom.element(
         "div",
@@ -84,7 +86,9 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
-    const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onWarning });
+    // The preview swipes the phone tabs too (spec 092).
+    const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onSocketLongPress, onWarning },
+      { swipeSurfaces: [visual] });
     if (tabs) editor.appendChild(tabs);
     return editor;
   }
