@@ -1,4 +1,5 @@
 export const OVERLAY_MODULES = {
+  performance: true,
   echo: true,
   state: true,
   chancesDetail: false,
@@ -94,7 +95,13 @@ export const ADVANCED_OVERLAY_MODULE_KEYS = [
   "fightTension",
 ];
 
+export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance"];
+
 export const OVERLAY_MODULE_GROUPS = Object.freeze([
+  Object.freeze({
+    label: "Performance",
+    keys: Object.freeze(PERFORMANCE_OVERLAY_MODULE_KEYS),
+  }),
   Object.freeze({
     label: "Balance",
     keys: Object.freeze(BALANCE_OVERLAY_MODULE_KEYS),

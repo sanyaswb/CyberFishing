@@ -46,6 +46,7 @@ import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.j
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
 import { ScreenHost } from "../../engine/screens/screen_host.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
+import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -83,6 +84,16 @@ async function startGame() {
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
+  // Spec 101: one DEV frame profiler for the game loop, the render passes, the Spine rod and the overlay.
+  const frameProfiler = new FrameProfiler();
+  const readRenderInfo = () => {
+    const canvas = documentTarget.getElementById("gameCanvas");
+    if (!canvas) return null;
+    const cssWidth = Number.parseFloat(canvas.style.width) || canvas.width || 1;
+    const memory = windowTarget.performance?.memory;
+    return { backingWidth: canvas.width, backingHeight: canvas.height, pixelRatio: Number((canvas.width / cssWidth).toFixed(2)),
+      memoryMb: memory ? memory.usedJSHeapSize / 1048576 : null };
+  };
   // DEV window positions and section states share the game's storage prefix.
   const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
   const godMode = new GameplayOverrideReader(CONFIG);
@@ -117,6 +128,7 @@ async function startGame() {
     pageOverlay.dispose();
     watchdog?.dispose();
     overlayRuntime?.dispose();
+    frameProfiler.dispose();
     consoleRuntime?.dispose();
     disposeInterface?.();
     if (gameReady) game?.dispose();
@@ -127,7 +139,8 @@ async function startGame() {
   };
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
-    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount});
+    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
+      frameProfiler, readRenderInfo});
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
@@ -138,6 +151,7 @@ async function startGame() {
       uiSurface,
       toolbarMountNode: toolbar.element,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
+      createFrameProbe: () => frameProfiler,
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
         new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
       createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),

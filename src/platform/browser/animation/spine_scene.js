@@ -20,6 +20,7 @@ export class SpineScene {
   #points = new Map();
   #missingClips = new Set();
   #deltaClips = new Set();
+  #mipmapped = false;
   #unsubscribe;
   #disposed = false;
 
@@ -28,6 +29,7 @@ export class SpineScene {
   static create({ spine, bundle, surface, graphics, runtimeVersion }) {
     if (!SpineScene.#sameLine(runtimeVersion, bundle.version)) return SpineScene.#failure("version-mismatch");
     let atlas = null;
+    let mipmapped = false;
     try {
       atlas = new spine.TextureAtlas(bundle.atlasText);
       for (const page of atlas.pages) {
@@ -37,6 +39,11 @@ export class SpineScene {
           return SpineScene.#failure("texture-too-large", null, atlas);
         }
         page.setTexture(graphics.createTexture(image, page.pma));
+        // Minification is the renderer's choice (spec 100 D3): mipmaps wherever the GPU can build them for the page.
+        if (graphics.canMipmap?.(page.width, page.height) === true) {
+          page.texture.setFilters(spine.TextureFilter.MipMapLinearLinear, spine.TextureFilter.Linear);
+          mipmapped = true;
+        }
       }
     } catch (error) {
       return SpineScene.#failure("skeleton-invalid", error, atlas);
@@ -49,11 +56,12 @@ export class SpineScene {
     }
     const skin = bundle.skin ? data.findSkin(bundle.skin) : data.defaultSkin;
     if (bundle.skin && !skin) return SpineScene.#failure("skin-missing", null, atlas);
-    return { scene: new SpineScene({ spine, surface, graphics, atlas, data, skin }), reason: null, error: null };
+    return { scene: new SpineScene({ spine, surface, graphics, atlas, data, skin, mipmapped }), reason: null, error: null };
   }
 
-  constructor({ spine, surface, graphics, atlas, data, skin }) {
+  constructor({ spine, surface, graphics, atlas, data, skin, mipmapped = false }) {
     this.#spine = spine;
+    this.#mipmapped = mipmapped;
     this.#surface = surface;
     this.#graphics = graphics;
     this.#atlas = atlas;
@@ -197,6 +205,11 @@ export class SpineScene {
 
   getMissingClips() {
     return [...this.#missingClips];
+  }
+
+  // True when the atlas pages were mipmapped (spec 100 D3); false keeps the atlas filter (WebGL 1, non-power-of-two).
+  isMipmapped() {
+    return this.#mipmapped;
   }
 
   // DEV inspection (spec 099 Phase 4). Clips of the skeleton with their durations.

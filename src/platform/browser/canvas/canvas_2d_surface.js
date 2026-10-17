@@ -1,8 +1,13 @@
+// A 2D drawing surface in logical pixels (spec 100 D1/D2). With a resolution (the game canvas's CanvasMetricsProvider:
+// logical width/height and pixelRatio), beginFrame() re-applies the base transform and the image smoothing policy,
+// because a canvas resize between frames resets the context state. Without one (offscreen data surfaces: depth maps,
+// debug maps) a logical pixel is a backing pixel. getImageData always reads backing pixels.
 export class Canvas2DSurface {
   #canvas;
   #context;
+  #resolution;
 
-  constructor(canvas, { contextAttributes = { alpha: false } } = {}) {
+  constructor(canvas, { contextAttributes = { alpha: false }, resolution = null } = {}) {
     if (!canvas || typeof canvas.getContext !== "function") {
       throw new TypeError("Canvas2DSurface requires an HTMLCanvasElement-like object");
     }
@@ -14,14 +19,21 @@ export class Canvas2DSurface {
 
     this.#canvas = canvas;
     this.#context = context;
+    this.#resolution = resolution;
   }
 
+  // Logical pixels.
   get width() {
-    return Math.max(0, Number(this.#canvas.width) || 0);
+    return Math.max(0, Number(this.#resolution ? this.#resolution.width : this.#canvas.width) || 0);
   }
 
   get height() {
-    return Math.max(0, Number(this.#canvas.height) || 0);
+    return Math.max(0, Number(this.#resolution ? this.#resolution.height : this.#canvas.height) || 0);
+  }
+
+  // Backing pixels per logical pixel.
+  get pixelRatio() {
+    return this.#resolution ? this.#resolution.pixelRatio : 1;
   }
 
   get canvas() {
@@ -98,6 +110,16 @@ export class Canvas2DSurface {
 
   set lineDashOffset(value) {
     this.#context.lineDashOffset = value;
+  }
+
+  // Starts a frame (spec 100): the base transform (logical -> backing pixels) and high-quality smoothing for downscaled
+  // images. The render coordinator calls it before every frame, so a resize in between never leaves a frame unscaled.
+  beginFrame() {
+    const context = this.#context;
+    const ratio = this.pixelRatio;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
   }
 
   clear(color = "#0f171e") {

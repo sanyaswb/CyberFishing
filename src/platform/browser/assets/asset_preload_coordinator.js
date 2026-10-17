@@ -6,12 +6,18 @@ export class AssetPreloadCoordinator {
   #imageAssets;
   #locationsConfig;
   #diagnostics;
+  #resolveFishImage;
   #requests = new Map();
 
-  constructor({ imageAssets, locationsConfig, diagnostics = null }) {
+  // resolveFishImage(fish): the one victory image source (spec 100 D4), shared with the outcome frame builder.
+  constructor({ imageAssets, locationsConfig, resolveFishImage, diagnostics = null }) {
     if (!imageAssets || typeof imageAssets.preload !== "function") {
       throw new TypeError("AssetPreloadCoordinator requires imageAssets");
     }
+    if (typeof resolveFishImage !== "function") {
+      throw new TypeError("AssetPreloadCoordinator requires resolveFishImage");
+    }
+    this.#resolveFishImage = resolveFishImage;
     this.#imageAssets = imageAssets;
     this.#locationsConfig = locationsConfig || {};
     this.#diagnostics = diagnostics;
@@ -126,9 +132,7 @@ export class AssetPreloadCoordinator {
   }
 
   #addFishSprite(manifest, fish, critical) {
-    const id = String(fish?.id || "unknown");
-    const level = Number(fish?.level) || 1;
-    const source = fish?.imagePath || `assets/fish/${id}/${id}--${level}.webp`;
+    const source = this.#resolveFishImage(fish);
     manifest.add(ImageAssetProvider.assetIdForSource(source, "fish"), source, {
       critical,
     });

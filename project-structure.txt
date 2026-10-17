@@ -131,6 +131,37 @@
 │  │        ├── perch_radioactive--4-uniq.webp
 │  │        ├── perch_radioactive--5-uniq.webp
 │  │        └── perch_radioactive--6-uniq.webp
+│  ├── fish-display
+│  │  ├── crucian_stalker
+│  │  │  ├── standart
+│  │  │  │  ├── crucian_stalker--1.webp
+│  │  │  │  ├── crucian_stalker--2.webp
+│  │  │  │  ├── crucian_stalker--3.webp
+│  │  │  │  ├── crucian_stalker--4.webp
+│  │  │  │  ├── crucian_stalker--5.webp
+│  │  │  │  └── crucian_stalker--6.webp
+│  │  │  └── unique
+│  │  │     ├── crucian_stalker--1-uniq.webp
+│  │  │     ├── crucian_stalker--2-uniq.webp
+│  │  │     ├── crucian_stalker--3-uniq.webp
+│  │  │     ├── crucian_stalker--4-uniq.webp
+│  │  │     ├── crucian_stalker--5-uniq.webp
+│  │  │     └── crucian_stalker--6-uniq.webp
+│  │  └── perch_radioactive
+│  │     ├── standart
+│  │     │  ├── perch_radioactive--1.webp
+│  │     │  ├── perch_radioactive--2.webp
+│  │     │  ├── perch_radioactive--3.webp
+│  │     │  ├── perch_radioactive--4.webp
+│  │     │  ├── perch_radioactive--5.webp
+│  │     │  └── perch_radioactive--6.webp
+│  │     └── unique
+│  │        ├── perch_radioactive--1-uniq.webp
+│  │        ├── perch_radioactive--2-uniq.webp
+│  │        ├── perch_radioactive--3-uniq.webp
+│  │        ├── perch_radioactive--4-uniq.webp
+│  │        ├── perch_radioactive--5-uniq.webp
+│  │        └── perch_radioactive--6-uniq.webp
 │  ├── fish-thumbnails
 │  │  ├── crucian_stalker
 │  │  │  ├── standart
@@ -470,6 +501,10 @@
 │  │  └── tasks.md
 │  ├── 100-cast-rod-control
 │  │  └── spec.md
+│  ├── 100-render-resolution-and-image-quality
+│  │  └── spec.md
+│  ├── 101-frame-profiler-overlay
+│  │  └── spec.md
 │  ├── 101-rod-side-tension
 │  │  └── spec.md
 │  ├── 102-cast-line-speed
@@ -512,6 +547,7 @@
 │  │  │  └── dev_item_catalog.js
 │  │  ├── diagnostics
 │  │  │  ├── config_validation_reporter.js
+│  │  │  ├── frame_profiler.js
 │  │  │  └── render_allocation_diagnostics.js
 │  │  ├── fishing
 │  │  │  ├── active_fish_dev_tools_visibility_policy.js
@@ -604,6 +640,7 @@
 │  │  │  │  ├── fish_balance_overlay_module.js
 │  │  │  │  ├── fish_power_overlay_module.js
 │  │  │  │  ├── live_forces_overlay_module.js
+│  │  │  │  ├── performance_overlay_module.js
 │  │  │  │  ├── player_max_overlay_module.js
 │  │  │  │  ├── stamina_balance_overlay_module.js
 │  │  │  │  └── worst_case_overlay_module.js
@@ -670,6 +707,8 @@
 │  │  │  └── startup_load_progress.js
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
+│  │  ├── diagnostics
+│  │  │  └── inactive_frame_probe.js
 │  │  ├── events
 │  │  │  ├── event_bus.js
 │  │  │  └── event_lifecycle.js
@@ -1112,6 +1151,7 @@
 │  │     ├── casting
 │  │     │  └── cast_scene_renderer.js
 │  │     ├── fish
+│  │     │  ├── fish_art_variants.js
 │  │     │  └── fish_visual_variant_resolver.js
 │  │     ├── fishing
 │  │     │  ├── fight_area_renderer.js
@@ -1399,6 +1439,7 @@
 │  ├── embedded-page-overlay-check.js
 │  ├── fish-rarity-check.js
 │  ├── float-depth-cast-check.js
+│  ├── frame-profiler-check.js
 │  ├── game-application-composition-check.js
 │  ├── game-cycle-check.js
 │  ├── git-version-copy.js
@@ -1431,6 +1472,7 @@
 │  ├── player-inventory-check.js
 │  ├── project-structure.js
 │  ├── rarity-production-check.js
+│  ├── render-resolution-check.js
 │  ├── rod-side-tension-check.js
 │  ├── run-checks.js
 │  ├── scouting-input-check.js

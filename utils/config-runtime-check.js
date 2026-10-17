@@ -458,8 +458,12 @@ function checkNativeDevelopmentDisplays() {
   const tree = acorn.parse(source,{ecmaVersion:"latest",sourceType:"module"});
   const body = tree.body.filter(node => node.type !== "ImportDeclaration").map(node => source.slice(node.declaration?.start || node.start,node.end)).join("\n");
   const factory = new SourceRuntime({globals:bindings}).run("(function(){"+body+";return createDebugOverlayRuntime;})()",file);
-  const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:{}});
-  assert.equal(captured.length,19,"all original main overlays are composed exactly once");
+  // Spec 101: the performance module reads the injected DEV frame profiler; the overlay rebuild is measured through it.
+  const frameProfiler={getSnapshot:()=>({frames:0}),measure:(id,callback)=>callback()};
+  const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:{},frameProfiler,readRenderInfo:()=>null});
+  assert.equal(captured.length,20,"all main overlays (19 + performance) are composed exactly once");
+  assert(captured.some(record=>record.name==="PerformanceOverlayModule"&&record.options.profiler===frameProfiler),
+    "the performance overlay gets the shared profiler");
   const data = {gameState:"playing",hookedFish:{id:"fish",name:"Fish",physics:{behaviors:{swim:{forceMultiplier:1,speedMultiplier:1,weight:1}}}},
     fishState:"swim",fishBasePower:1,fishInitialPower:1,fishBaseForceCurrentKg:1,fishCurrentStateMaxForceKg:1,
     fishPassiveKg:1,fishOppositionKg:1,fishConditionPhase:"stamina",currentStamina:1,fishConditionMaxStamina:2,

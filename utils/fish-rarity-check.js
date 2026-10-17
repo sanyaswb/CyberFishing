@@ -1016,6 +1016,7 @@ class FishRarityCheck {
       styleResolver: { resolveVictory: () => ({}) },
       layoutResolver: { resolve: () => ({}) },
       assetIdForSource: (source, namespace) => runtime.ImageAssetProvider.assetIdForSource(source, namespace),
+      resolveFishImage: (fish) => fish.imagePath || "",
     });
     const frame = new this.GameRenderFrame();
     const resolved = this.resolver.resolve({

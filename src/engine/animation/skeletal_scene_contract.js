@@ -13,6 +13,7 @@ export const SKELETAL_SCENE_METHODS = Object.freeze([
   "hasClip",
   "clipDuration",
   "getMissingClips",
+  "isMipmapped",
   "getClips",
   "getBones",
   "setBoneSetup",

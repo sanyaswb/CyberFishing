@@ -107,6 +107,8 @@ import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_sty
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
+import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
+import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
 import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
 import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
 import { LiveBaitMotionProfileResolver } from "../../game/domain/live_bait/live_bait_motion_profile_resolver.js";
@@ -156,6 +158,7 @@ export class GameCompositionRoot {
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
+  #frameProbe;
   #storageCache;
   #rendering;
   #uiSurface;
@@ -186,6 +189,7 @@ export class GameCompositionRoot {
     isCatchResolutionLogEnabled,
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
+    createFrameProbe,
     uiSurface = null,
     toolbarMountNode = null,
   } = {}) {
@@ -194,7 +198,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource,
+      createInventorySplitSource, createFrameProbe,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -238,12 +242,17 @@ export class GameCompositionRoot {
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
+    // Frame timing port (spec 101): the DEV FrameProfiler when Development composes one, inactive otherwise.
+    this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
+    new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
+      this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
     this.#rendering = new GameRenderComposition({
       readRenderDiagnostics: () => this.#readRenderDiagnostics(),
       createOptionalDiagnostic: (factory, name, args, methods) =>
         this.#createOptionalDiagnostic(factory, name, args, methods),
       createWorldDebugRenderer,
       createLocationDebugRenderFrameBuilder,
+      frameProbe: this.#frameProbe,
     });
     this.#storageCache = new LocalStorageCache({ storage: windowTarget?.localStorage, logger: new ConsoleLogger() });
     this.#config = config || {};
@@ -284,8 +293,11 @@ export class GameCompositionRoot {
       policy: new InventorySplitLayoutPolicy(), listeners: new EventLifecycle(this.#listenerCounter),
     });
     this.#stageLayout = stageLayout;
-    const canvasMetrics = stageLayout ? new CanvasMetricsProvider(canvas, () => stageLayout.getViewport())
-      : new CanvasMetricsProvider(canvas);
+    // Logical CSS pixels for the game, a backing store at the device pixel ratio up to the cap (spec 100 D1).
+    const resolutionOptions = { devicePixelRatio: () => this.#windowTarget.devicePixelRatio,
+      maxPixelRatio: this.#config.canvas?.maxPixelRatio };
+    const canvasMetrics = new CanvasMetricsProvider(canvas, stageLayout ? () => stageLayout.getViewport() : null,
+      resolutionOptions);
     canvasMetrics.resizeToViewport();
     const devFlags = this.#createDevFlags(this.#config);
     const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
@@ -362,7 +374,7 @@ export class GameCompositionRoot {
     });
     const {
       surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
-    } = this.#composeRenderingInfrastructure({ canvas, contracts });
+    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts });
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
       outcomeStyleResolver,
@@ -458,6 +470,7 @@ export class GameCompositionRoot {
       keepnetUI: systems.keepnetUI,
       world,
       rendering: {
+        surface,
         imageAssets,
         assetPreloadCoordinator,
         locationAssetLoader,
@@ -507,9 +520,10 @@ export class GameCompositionRoot {
 }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.
-  #composeRenderingInfrastructure({ canvas, contracts }) {
+  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts }) {
     const surface = new Canvas2DSurface(canvas, {
       contextAttributes: { alpha: false },
+      resolution: canvasMetrics,
     });
     const primitives = new CanvasPrimitives(surface);
     const imageAssets = new ImageAssetProvider();
@@ -517,6 +531,7 @@ export class GameCompositionRoot {
     const canvasFactory = new OffscreenCanvasFactory();
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
+      resolveFishImage: fishDisplayImagePath,
       locationsConfig: this.#config.locations,
       diagnostics: this.#readRenderDiagnostics(),
     });
@@ -1061,6 +1076,7 @@ export class GameCompositionRoot {
       (dt) => appPorts.update(dt),
       () => appPorts.draw(),
       this.#gameLoopGuard,
+      this.#frameProbe,
     );
 
     const viewportFacade = new GameViewportFacade({

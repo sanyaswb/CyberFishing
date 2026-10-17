@@ -146,6 +146,14 @@ Spine capability stay in platform. Until the facade step these engine modules ar
 art is WebP under `assets/`; image masters live in `asset-sources/` and are never published
 ([spec 082](../specs/082-webp-art/spec.md)).
 
+Render resolution ([spec 100](../specs/100-render-resolution-and-image-quality/spec.md)): the game works in logical
+(CSS) pixels. `CanvasMetricsProvider` (platform) is the only owner of the game canvas element's size: its backing store
+is logical × `min(devicePixelRatio, CONFIG.canvas.maxPixelRatio)` and its CSS size the logical size. `Canvas2DSurface`
+reports logical sizes; `beginFrame()`, called by `GameRenderCoordinator` before each frame, applies the base transform
+and high-quality image smoothing. Offscreen data surfaces keep ratio 1. Fish art comes in sized variants
+(`game/presentation/fish/fish_art_variants.js`: thumbnail 128, display 768). The victory image source
+`fishDisplayImagePath` is injected into both `OutcomeRenderFrameBuilder` and `AssetPreloadCoordinator`.
+
 Spine ([spec 099](../specs/099-spine-rod-animation/spec.md)): `engine/animation` holds the scene port method list
 (`SKELETAL_SCENE_METHODS`) and `ScalarSmoother`. `platform/browser/animation` holds `SpineRuntimeProvider` (lazy
 import, version line), `spine_runtime_module.js` (the only importer of the pinned runtime), `SpineScene` (the only

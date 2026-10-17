@@ -297,6 +297,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick"],
   },
   {
+    id: "frame-profiler",
+    title: "Frame probe port, DEV frame profiler and the performance overlay",
+    file: "utils/frame-profiler-check.js",
+    suites: ["quick", "tools"],
+  },
+  {
+    id: "render-resolution",
+    title: "Logical canvas pixels at the device pixel ratio, rod depth order and display-sized fish art",
+    file: "utils/render-resolution-check.js",
+    suites: ["quick"],
+  },
+  {
     id: "spine-rod",
     title: "Spine runtime, bundle loading and scene adapter over the bamboo rod export",
     file: "utils/spine-rod-check.js",

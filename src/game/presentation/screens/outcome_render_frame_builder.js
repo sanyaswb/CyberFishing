@@ -4,6 +4,7 @@ export class OutcomeRenderFrameBuilder {
   #styleResolver;
   #layoutResolver;
   #assetIdForSource;
+  #resolveFishImage;
   #unknownRarity = Object.freeze({
     isResolved: false,
     halfSteps: 0,
@@ -30,7 +31,12 @@ export class OutcomeRenderFrameBuilder {
     styleResolver,
     layoutResolver,
     assetIdForSource = null,
+    resolveFishImage,
   }) {
+    // The one victory image source (spec 100 D4), shared with the asset preloader; composed in bootstrap.
+    if (typeof resolveFishImage !== "function") {
+      throw new TypeError("OutcomeRenderFrameBuilder requires resolveFishImage");
+    }
     if (!styleResolver || typeof styleResolver.resolveVictory !== "function") {
       throw new TypeError(
         "OutcomeRenderFrameBuilder requires styleResolver",
@@ -46,6 +52,7 @@ export class OutcomeRenderFrameBuilder {
     this.#styleResolver = styleResolver;
     this.#layoutResolver = layoutResolver;
     this.#assetIdForSource = assetIdForSource || OutcomeRenderFrameBuilder.#defaultAssetIdForSource;
+    this.#resolveFishImage = resolveFishImage;
   }
 
   buildInto({ target, intent }) {
@@ -95,9 +102,7 @@ export class OutcomeRenderFrameBuilder {
     const fish = target.fish || (target.fish = {});
     const id = String(source.id || "unknown");
     const level = Number(source.level) || 1;
-    const imagePath =
-      source.imagePath ||
-      `assets/fish/${id}/${id}--${level}.webp`;
+    const imagePath = this.#resolveFishImage(source);
     fish.id = id;
     fish.name = String(source.name || "Unknown fish");
     fish.level = level;

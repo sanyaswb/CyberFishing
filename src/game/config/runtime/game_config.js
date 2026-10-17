@@ -10,6 +10,9 @@ export const CONFIG = {
   canvas: {
     id: "gameCanvas",
     backgroundColor: "#0f171e",
+    // Backing-store cap (spec 100): pixels per CSS pixel are min(devicePixelRatio, this); 2 keeps 3x phones at 4x
+    // today's fill cost instead of 9x. Applied on the next resize.
+    maxPixelRatio: 2,
   },
 
   input: {

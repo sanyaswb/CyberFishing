@@ -55,7 +55,8 @@ export class GameStageLayout {
       this.#open = open;
       // The side is chosen on opening and kept while the inventory stays open.
       if (open) {
-        this.#side = this.#policy.sideForRod(this.#getRodScreenX(), this.#canvas.width,
+        // The canvas's logical width is the strip (spec 100: canvas.width is the backing store, device pixels).
+        this.#side = this.#policy.sideForRod(this.#getRodScreenX(), Math.trunc(this.#layout.stageWidth),
           this.#source.resolve().defaultSide);
       }
       this.#update(true);

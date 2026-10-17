@@ -38,9 +38,10 @@ export class RodAnimationController {
     rainMultiplier: 1, reducedMotion: false, critical: false,
   };
   #anchor = {
-    mode: "rectangle", baseX: 0, baseY: 0, tipX: 0, tipY: 0, scale: 1, destX: 0, destY: 0,
+    mode: "rectangle", baseX: 0, baseY: 0, tipX: 0, tipY: 0, scale: 1, destX: 0, destY: 0, destWidth: 0, destHeight: 0,
     image: null, region: null, bounds: null,
   };
+  #pixelRatio = 1;
   #disposed = false;
 
   // readSetupPose(skeletonJson, atlas, descriptor) recomputes the static picture after a DEV bone edit.
@@ -97,7 +98,8 @@ export class RodAnimationController {
   }
 
   // context: { dtSec, state, stressRatio, tensionRatio, fishScreenX, baseX, baseY, canvasWidth, canvasHeight,
-  // windDirection, rainMultiplier, critical }. Returns the RodAnchorFrame.
+  // pixelRatio, windDirection, rainMultiplier, critical } (logical pixels; pixelRatio: device pixels per logical one).
+  // Returns the RodAnchorFrame.
   advance(context) {
     const anchor = this.#anchor;
     anchor.baseX = context.baseX;
@@ -145,6 +147,8 @@ export class RodAnimationController {
       mode: this.#anchor.mode,
       reason: this.#reason,
       missingClips: this.#scene?.getMissingClips() ?? [],
+      mipmapped: this.#scene?.isMipmapped() ?? false,
+      pixelRatio: this.#pixelRatio,
       bend: this.#bend.value,
       side: this.#side,
     };
@@ -173,8 +177,9 @@ export class RodAnimationController {
   // Bones with setup values and their position on the game canvas (Spine mode, last frame); empty without a scene.
   getBones() {
     const anchor = this.#anchor;
+    const ratio = this.#pixelRatio;
     return (this.#scene?.getBones() ?? []).map((bone) => ({
-      ...bone, canvasX: anchor.destX + bone.worldX, canvasY: anchor.destY + bone.worldY,
+      ...bone, canvasX: anchor.destX + bone.worldX / ratio, canvasY: anchor.destY + bone.worldY / ratio,
     }));
   }
 
@@ -260,20 +265,27 @@ export class RodAnimationController {
     } else {
       scene.clearTrack(3, config.criticalMixSec);
     }
+    // The GL surface is in device pixels (spec 100 D3): placement and scale times the canvas pixel ratio, points and
+    // the copy's destination back in logical pixels, so the copy into the 2D canvas is 1:1 in device pixels.
+    const ratio = context.pixelRatio > 0 ? context.pixelRatio : 1;
+    this.#pixelRatio = ratio;
+    const deviceScale = anchor.scale * ratio;
+    const padding = SURFACE_PADDING_PX * ratio;
     const bounds = scene.getLocalBounds(this.#localBounds);
     const surface = this.#glSurface;
-    surface.resize(bounds.width * anchor.scale + 2 * SURFACE_PADDING_PX,
-      bounds.height * anchor.scale + 2 * SURFACE_PADDING_PX);
-    const originX = -bounds.x * anchor.scale + SURFACE_PADDING_PX;
-    const originY = surface.height - (-bounds.y * anchor.scale + SURFACE_PADDING_PX);
-    scene.setPlacement(originX, originY, anchor.scale);
+    surface.resize(bounds.width * deviceScale + 2 * padding, bounds.height * deviceScale + 2 * padding);
+    const originX = -bounds.x * deviceScale + padding;
+    const originY = surface.height - (-bounds.y * deviceScale + padding);
+    scene.setPlacement(originX, originY, deviceScale);
     scene.update(context.dtSec);
-    anchor.destX = context.baseX - originX;
-    anchor.destY = context.baseY - originY;
+    anchor.destX = context.baseX - originX / ratio;
+    anchor.destY = context.baseY - originY / ratio;
+    anchor.destWidth = surface.width / ratio;
+    anchor.destHeight = surface.height / ratio;
     const point = this.#point;
     if (scene.getPoint(this.#descriptor.linePoint || "line-tip", point)) {
-      anchor.tipX = anchor.destX + point.x;
-      anchor.tipY = anchor.destY + point.y;
+      anchor.tipX = anchor.destX + point.x / ratio;
+      anchor.tipY = anchor.destY + point.y / ratio;
     } else {
       anchor.tipX = context.baseX;
       anchor.tipY = context.baseY - (anchor.bounds.y + anchor.bounds.height) * anchor.scale;

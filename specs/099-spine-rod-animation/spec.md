@@ -200,7 +200,8 @@ and clipping. It stays a rejected option unless D1 says otherwise.
 Order in a frame (as implemented in Phase 3): in `onDraw()`, `FishingRenderFrameBuilder` first calls
 `FishingEquipmentRenderModelBuilder.prepareRod`. That call computes the rod base, advances the controller with
 `GameClock.delta` (resolver → tracks → `update(dt)` → anchor) and returns the anchor. The line frame and the rod line
-model are then built from that anchor's tip, and the pipeline draws the rod (static or Spine) under the line. The
+model are then built from that anchor's tip, and the pipeline draws the line, then the rod (static or Spine) over its
+start; the first version drew the rod under the line, which spec 100 (D5) corrected. The
 line and the rod therefore come from the same skeleton pose. The same loop drives it; no second
 `requestAnimationFrame` exists. It runs at frame build rather than in `GameApplication.update`, because only the
 render path has the float's screen position, the fight frame and the equipped skin together, and the application

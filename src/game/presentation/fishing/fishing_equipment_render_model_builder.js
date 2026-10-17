@@ -11,7 +11,7 @@ export class FishingEquipmentRenderModelBuilder {
   #rodBaseY = 0;
   #advanceContext = {
     dtSec: 0, state: "", stressRatio: 0, tensionRatio: 0, fishScreenX: 0, baseX: 0, baseY: 0, canvasWidth: 0, canvasHeight: 0,
-    windDirection: 0, rainMultiplier: 1, critical: false,
+    pixelRatio: 1, windDirection: 0, rainMultiplier: 1, critical: false,
   };
 
   constructor({
@@ -71,6 +71,7 @@ export class FishingEquipmentRenderModelBuilder {
     context.baseY = this.#rodBaseY;
     context.canvasWidth = this.#canvasMetrics.width;
     context.canvasHeight = this.#canvasMetrics.height;
+    context.pixelRatio = this.#canvasMetrics.pixelRatio ?? 1;
     context.windDirection = wind?.direction ?? 0;
     context.rainMultiplier = wind?.rainMult ?? 1;
     context.critical = critical === true;
@@ -128,6 +129,8 @@ export class FishingEquipmentRenderModelBuilder {
     target.rodScale = anchor.scale;
     target.rodDestX = anchor.destX;
     target.rodDestY = anchor.destY;
+    target.rodDestWidth = anchor.destWidth;
+    target.rodDestHeight = anchor.destHeight;
     target.rodImage = anchor.image;
     target.rodRegion = anchor.region;
     target.rodBounds = anchor.bounds;

@@ -3,11 +3,17 @@ import { GameRenderOrder } from "./game_render_order.js";
 export class GameRenderPipeline {
   #passes;
   #passIds;
+  #probe;
 
-  constructor({ passes, diagnostics = null }) {
+  // probe: the frame timing port (spec 101); each pass is one section named by its id.
+  constructor({ passes, diagnostics = null, probe }) {
     if (!Array.isArray(passes) || passes.length === 0) {
       throw new TypeError("GameRenderPipeline requires render passes");
     }
+    if (typeof probe?.begin !== "function" || typeof probe.end !== "function") {
+      throw new TypeError("GameRenderPipeline requires a frame probe");
+    }
+    this.#probe = probe;
     const passIds = [];
     const seenIds = new Set();
     for (let index = 0; index < passes.length; index += 1) {
@@ -30,8 +36,12 @@ export class GameRenderPipeline {
   }
 
   render(frame) {
+    const probe = this.#probe;
     for (let index = 0; index < this.#passes.length; index += 1) {
+      const id = this.#passIds[index];
+      probe.begin(id);
       this.#passes[index].render(frame);
+      probe.end(id);
     }
   }
 

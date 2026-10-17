@@ -9,6 +9,7 @@ export class GameRenderCoordinator {
   #getInvalidCastMarker;
   #isDebugEnabled;
   #invalidateStyles;
+  #beginFrame;
   #intent = new GameRenderIntent();
   #buildContext = {
     frame: null,
@@ -27,6 +28,7 @@ export class GameRenderCoordinator {
     getInvalidCastMarker,
     isDebugEnabled,
     invalidateStyles,
+    beginFrame,
   }) {
     if (!stateMachine || typeof stateMachine.getRenderState !== "function") {
       throw new TypeError(
@@ -42,7 +44,8 @@ export class GameRenderCoordinator {
     if (!pipeline || typeof pipeline.render !== "function") {
       throw new TypeError("GameRenderCoordinator requires pipeline");
     }
-    const ports = { getBounds, getInvalidCastMarker, isDebugEnabled };
+    // beginFrame: the surface's frame start (spec 100: base transform and smoothing before any pass draws).
+    const ports = { getBounds, getInvalidCastMarker, isDebugEnabled, beginFrame };
     for (const [name, port] of Object.entries(ports)) {
       if (typeof port !== "function") {
         throw new TypeError(`GameRenderCoordinator requires ${name}`);
@@ -57,6 +60,7 @@ export class GameRenderCoordinator {
     this.#isDebugEnabled = isDebugEnabled;
     this.#invalidateStyles =
       typeof invalidateStyles === "function" ? invalidateStyles : () => {};
+    this.#beginFrame = beginFrame;
   }
 
   render(dt = 0) {
@@ -74,6 +78,7 @@ export class GameRenderCoordinator {
     context.invalidCastMarker = this.#getInvalidCastMarker();
     context.debugEnabled = this.#isDebugEnabled();
     this.#frameBuilder.buildInto(context);
+    this.#beginFrame();
     this.#pipeline.render(frame);
     return frame;
   }

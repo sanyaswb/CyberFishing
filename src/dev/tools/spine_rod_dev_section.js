@@ -38,6 +38,8 @@ export class SpineRodDevSection {
     this.#ui.createInfoRow("режим", status.mode, content);
     if (status.reason) this.#ui.createInfoRow("причина без Spine", status.reason, content);
     if (status.missingClips.length) this.#ui.createInfoRow("немає кліпів", status.missingClips.join(", "), content);
+    this.#ui.createInfoRow("текстура", status.mipmapped ? "mipmaps (трилінійна)" : "фільтр атласу (без mipmaps)", content);
+    this.#ui.createInfoRow("pixel ratio", String(status.pixelRatio), content);
     this.#ui.createSwitcherRow("Spine увімкнено", this.#controller.isSpineEnabled(), content, (enabled) => {
       this.#controller.setSpineEnabled(enabled);
       this.#fill();

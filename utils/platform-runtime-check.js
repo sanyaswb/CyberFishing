@@ -459,6 +459,7 @@ async function checkGameLoopAndAdapters() {
   runtime.load('src/engine/events/event_lifecycle.js',{expose:['EventLifecycle']});
   runtime.load('src/dev/services/managed_listener_counter.js',{expose:['ManagedListenerCounter']});
   runtime.load("src/platform/browser/runtime/active_game_loop_guard.js",{expose:["ActiveGameLoopGuard"]});
+  runtime.load("src/engine/diagnostics/inactive_frame_probe.js",{expose:["FRAME_SECTIONS","InactiveFrameProbe"]});
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
   runtime.load("src/platform/browser/runtime/browser_buffered_audio_player.js", { expose: ["BrowserBufferedAudioPlayer"] });
   runtime.load("src/platform/browser/runtime/browser_audio_adapter.js", { expose: ["BrowserAudioAdapter"] });
@@ -477,7 +478,11 @@ async function checkGameLoopAndAdapters() {
   const clock={reset(){clockCalls.push("reset");},tick(time){clockCalls.push(time);return time/1000;}};
   const loopLogger={error:error=>errors.push(error)};
   const guard=new ActiveGameLoopGuard({logger:loopLogger,warningTarget:window});
-  const loop=new GameLoop(clock,dt=>updates.push(dt),()=>draws++,guard);
+  // Spec 101: every frame reports beginFrame, update, draw and endFrame to the injected probe, in that order.
+  const probeCalls=[];const probe={beginFrame:time=>probeCalls.push(["frame",time]),begin:id=>probeCalls.push(["begin",id]),
+    end:id=>probeCalls.push(["end",id]),gauge(){},endFrame:()=>probeCalls.push(["endFrame"])};
+  assert.throws(()=>new GameLoop(clock,()=>{},()=>{},guard),/requires a frame probe/,"the probe is composed, never defaulted");
+  const loop=new GameLoop(clock,dt=>updates.push(dt),()=>draws++,guard,probe);
   assert.equal(loop.start(),true);assert.equal(loop.start(),true,"a running loop starts idempotently");
   assert.equal(loop.isRunning,true);assert.equal(frames.size,1);
   const callback=frames.get(1);
@@ -488,9 +493,11 @@ async function checkGameLoopAndAdapters() {
     assert.equal(frames.size,1,"one scheduled continuation per frame");
   }
   assert.equal(updates.length,120);assert.equal(draws,120);
+  assert.equal(json(probeCalls.slice(0,6)),json([["frame",16],["begin","update"],["end","update"],["begin","draw"],["end","draw"],["endFrame"]]));
+  assert.equal(probeCalls.length,720,"six probe calls per frame, nothing else");
   assert.equal(updates[0],0.016);assert.equal(updates[119],1.92,"the clock's deltaTime is passed through unchanged");
   assert.equal(json(clockCalls.slice(0,3)),json(["reset",16,32]));
-  const second=new GameLoop(clock,()=>{},()=>{},guard);
+  const second=new GameLoop(clock,()=>{},()=>{},guard,new runtime.context.InactiveFrameProbe());
   assert.equal(second.start(),false,"a second active loop is refused");
   assert.equal(errors.length,1);assert.equal(dispatched.length,1);
   assert.equal(dispatched[0].type,"cyber-fishing-memory-warning");
@@ -557,18 +564,31 @@ async function checkGameLoopAndAdapters() {
   assert.equal(json(listeners.map(item=>[item[0],item[1],item[3]])),json([["add","resize",{passive:true}],["remove","resize",{passive:true}]]));
   assert.equal(listeners[1][2],handler);assert.equal(targetEvents.at(-1).type,"ready");
 
-  const canvas={width:1,height:1};
+  const canvas={width:1,height:1,style:{}};
   const metrics=new CanvasMetricsProvider(canvas);metrics.resizeToViewport();
   assert.equal(json([metrics.width,metrics.height]),json([800,600]),"default viewport reads the window size");
   const custom=new CanvasMetricsProvider(canvas,()=>({width:320,height:200}));custom.resizeToViewport();
   assert.equal(json([canvas.width,canvas.height]),json([320,200]));
   let bitmapWrites=0, bitmapWidth=320, bitmapHeight=200;
+  let styleWrites=0;const style={};
   const measuredCanvas={get width(){return bitmapWidth;},set width(value){bitmapWrites++;bitmapWidth=value;},
-    get height(){return bitmapHeight;},set height(value){bitmapWrites++;bitmapHeight=value;}};
+    get height(){return bitmapHeight;},set height(value){bitmapWrites++;bitmapHeight=value;},
+    style:new Proxy(style,{set(target,key,value){styleWrites++;target[key]=value;return true;}})};
   const viewportSize={width:320,height:200};
   const stableMetrics=new CanvasMetricsProvider(measuredCanvas,()=>viewportSize);
   for(let notification=0;notification<100;notification++)stableMetrics.resizeToViewport();
   assert.equal(bitmapWrites,0,'unchanged Canvas dimensions must not reset its bitmap/context');
+  assert.equal(styleWrites,2,'the CSS size is written once (width, height), then never for unchanged readings');
+  // Spec 100 D1: logical CSS pixels stay the game's unit; the backing store follows the device pixel ratio up to the cap.
+  for(const [device,cap,ratio] of [[1,2,1],[2,2,2],[3,2,2],[3,3,3],[2.5,3,2.5],[0.5,2,1],[undefined,2,1]]){
+    const sharp={width:1,height:1,style:{}};
+    const sharpMetrics=new CanvasMetricsProvider(sharp,()=>({width:390.7,height:844}),{devicePixelRatio:()=>device,maxPixelRatio:cap});
+    sharpMetrics.resizeToViewport();
+    assert.equal(json([sharpMetrics.width,sharpMetrics.height,sharpMetrics.pixelRatio]),json([390,844,ratio]),
+      `logical size is truncated CSS pixels and the ratio is clamp(${device}, 1, ${cap})`);
+    assert.equal(json([sharp.width,sharp.height,sharp.style.width,sharp.style.height]),
+      json([Math.round(390*ratio),Math.round(844*ratio),"390px","844px"]),"backing store = logical x ratio, CSS size = logical");
+  }
   viewportSize.width=321;stableMetrics.resizeToViewport();
   assert.equal(bitmapWrites,1,'only the dimension that changes resets the bitmap');
 
@@ -661,7 +681,7 @@ async function main() {
 
   let diagnosticCalls=0;
   const pending=[],ready=new Set();
-  const coordinator=new runtime.context.AssetPreloadCoordinator({locationsConfig:{},
+  const coordinator=new runtime.context.AssetPreloadCoordinator({locationsConfig:{},resolveFishImage:fish=>fish?.imagePath||"",
     imageAssets:{isReady:id=>ready.has(id),preload:manifest=>new Promise((resolve,reject)=>pending.push({manifest,resolve,reject}))},
     diagnostics:{recordAssetRequestCreated(){diagnosticCalls++;}},
   });

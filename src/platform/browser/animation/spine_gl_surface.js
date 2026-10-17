@@ -63,6 +63,13 @@ export class SpineGlSurface {
     return typeof WebGL2RenderingContext !== "undefined" && this.#gl instanceof WebGL2RenderingContext;
   }
 
+  // Mipmaps for a texture of that size (spec 100 D3): WebGL 2 builds them for any size, WebGL 1 only for
+  // power-of-two sizes.
+  canMipmap(width, height) {
+    const powerOfTwo = (value) => value > 0 && (value & (value - 1)) === 0;
+    return this.isWebGl2 || (powerOfTwo(width) && powerOfTwo(height));
+  }
+
   isContextLost() {
     return this.#lost || !this.#gl;
   }

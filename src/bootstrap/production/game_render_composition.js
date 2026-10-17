@@ -5,6 +5,7 @@ import { CastingRenderPass } from "../../game/presentation/rendering/casting_ren
 import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { FightAreaRenderer } from "../../game/presentation/fishing/fight_area_renderer.js";
+import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
 import { FightAreaRenderFrameBuilder } from "../../game/presentation/rendering/fight_area_render_frame_builder.js";
 import { FightHudFrameBuilder } from "../../game/presentation/hud/fight_hud_frame_builder.js";
 import { FightHudRenderer } from "../../game/presentation/hud/fight_hud_renderer.js";
@@ -49,13 +50,16 @@ export class GameRenderComposition {
   #createOptionalDiagnostic;
   #createWorldDebugRenderer;
   #createLocationDebugRenderFrameBuilder;
+  #frameProbe;
 
   constructor({
     readRenderDiagnostics,
     createOptionalDiagnostic,
     createWorldDebugRenderer,
     createLocationDebugRenderFrameBuilder,
+    frameProbe,
   }) {
+    this.#frameProbe = frameProbe;
     this.#readRenderDiagnostics = readRenderDiagnostics;
     this.#createOptionalDiagnostic = createOptionalDiagnostic;
     this.#createWorldDebugRenderer = createWorldDebugRenderer;
@@ -92,7 +96,7 @@ export class GameRenderComposition {
     });
     const rodLineRenderer = new RodLineRenderer({ surface });
     const rodStaticRenderer = new RodStaticRenderer({ surface });
-    const rodSpineRenderer = new RodSpineRenderer({ surface, controller: rodAnimation });
+    const rodSpineRenderer = new RodSpineRenderer({ surface, controller: rodAnimation, probe: this.#frameProbe });
     const floatRenderer = new FloatRenderer({ surface });
     const fishingSceneRenderer = new FishingSceneRenderer({
       components: [
@@ -102,23 +106,24 @@ export class GameRenderComposition {
           renderer: fightAreaRenderer,
           selectModel: (model) => model.fightAreas,
         }),
-        // The rod picture (static or Spine, spec 099) under the line; the rectangle stays in rod-line.
+        // Depth order (spec 100 D5): the line first, then the rod picture (static or Spine, spec 099), which is nearer
+        // the camera and covers the line where it leaves the tip. The rectangle and the line stay one component.
+        new RenderComponent({
+          id: "rod-line",
+          order: GameRenderOrder.values.FISHING_EQUIPMENT - 2,
+          renderer: rodLineRenderer,
+          selectModel: (model) => model.rodLine,
+        }),
         new RenderComponent({
           id: "rod-static",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT - 2,
+          order: GameRenderOrder.values.FISHING_EQUIPMENT - 1,
           renderer: rodStaticRenderer,
           selectModel: (model) => model.rodLine,
         }),
         new RenderComponent({
           id: "rod-spine",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT - 1,
-          renderer: rodSpineRenderer,
-          selectModel: (model) => model.rodLine,
-        }),
-        new RenderComponent({
-          id: "rod-line",
           order: GameRenderOrder.values.FISHING_EQUIPMENT,
-          renderer: rodLineRenderer,
+          renderer: rodSpineRenderer,
           selectModel: (model) => model.rodLine,
         }),
         new RenderComponent({
@@ -180,6 +185,7 @@ export class GameRenderComposition {
     });
     const pipeline = new GameRenderPipeline({
       diagnostics: this.#readRenderDiagnostics(),
+      probe: this.#frameProbe,
       passes: GameRenderOrder.createPassList({
         world: new WorldRenderPass({
           components: [
@@ -326,6 +332,8 @@ export class GameRenderComposition {
       }),
     });
     const outcomeBuilder = new OutcomeRenderFrameBuilder({
+      // The victory image: the fish's 768 px display variant, the same source the preloader loads (spec 100 D4).
+      resolveFishImage: fishDisplayImagePath,
       canvasMetrics,
       clock,
       styleResolver: runtime.rendering.outcomeStyleResolver,
@@ -367,6 +375,7 @@ export class GameRenderComposition {
       getBounds: appPorts.getDynamicBounds,
       getInvalidCastMarker: appPorts.getInvalidCastMarker,
       isDebugEnabled: appPorts.isDebugEnabled,
+      beginFrame: () => runtime.rendering.surface.beginFrame(),
       invalidateStyles: () => {
         runtime.rendering.hudStyleResolver.invalidate();
         runtime.rendering.fightAreaStyleResolver.invalidate();

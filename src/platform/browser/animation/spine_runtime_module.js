@@ -29,6 +29,7 @@ export function createSpineRuntime() {
         runtimeVersion: RUNTIME_VERSION,
         graphics: {
           createTexture: (image, pma) => new spine.GLTexture(context, image, pma, false),
+          canMipmap: (width, height) => surface.canMipmap(width, height),
           createRenderer: () => new spine.SceneRenderer(surface.canvas, context, true),
           restore: () => context.restore(),
           dispose: () => {},

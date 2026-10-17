@@ -43,13 +43,16 @@ import { OverlayUpdateLoop } from "../../dev/overlay/core/overlay_update_loop.js
 import { OverlayValueFormatter } from "../../dev/overlay/services/overlay_value_formatter.js";
 import { OverlayViewStateStore } from "../../dev/overlay/services/overlay_view_state_store.js";
 import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_window_drag_controller.js";
+import { PerformanceOverlayModule } from "../../dev/overlay/modules/performance_overlay_module.js";
 import { PlayerMaxOverlayModule } from "../../dev/overlay/modules/player_max_overlay_module.js";
 import { RodControlSummaryOverlayModule } from "../../dev/overlay/fight_summary/rod_control_summary_overlay_module.js";
 import { StaminaBalanceOverlayModule } from "../../dev/overlay/modules/stamina_balance_overlay_module.js";
 import { WorstCaseForceDebugSelector } from "../../dev/fishing/worst_case_force_debug_selector.js";
 import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_overlay_module.js";
 
-export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body}) {
+// frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap.
+export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
+  frameProfiler, readRenderInfo}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -108,6 +111,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
       ];
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
+    new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}),
     new EchoOverlayModule(moduleOptions), new ChancesDetailOverlayModule(moduleOptions), new BehaviorOverlayModule(moduleOptions),
     new FishBalanceOverlayModule({...moduleOptions, liveForceSection: new FishLiveForceSummarySection(moduleOptions),
       forcePreviewSection: new FishStateForcePreviewSection(moduleOptions)}),
@@ -122,7 +126,9 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget, cache: storageCache, uiSurface})});
   const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore});
   let controller;
-  const updateLoop = new OverlayUpdateLoop({callback: () => controller.update(), intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150});
+  // The overlay's own HTML rebuild is measured as the DEV "overlay" section, so its cost is never mistaken for the game's.
+  const updateLoop = new OverlayUpdateLoop({callback: () => frameProfiler.measure("overlay", () => controller.update()),
+    intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150});
   controller = new OverlayController({registry, domAdapter, documentTarget, configSource, updateLoop, viewStateStore, interactionBridge});
   controller.start();
   const metricInfoBridge = new OverlayMetricInfoBridge({documentTarget, catalog: new OverlayMetricCatalog(),

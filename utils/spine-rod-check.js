@@ -156,8 +156,26 @@ async function checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle) {
   assert.equal(invalid.reason, "skeleton-invalid");
   assert(invalid.graphics.textures.every((texture) => texture.disposed), "a failed scene disposes its textures");
 
+  // Spec 100 D3: mipmaps wherever the surface can build them; otherwise the atlas filter stays.
+  const filters = [];
+  const mipmappedGraphics = fakeGraphics();
+  const plainCreate = mipmappedGraphics.createTexture;
+  mipmappedGraphics.createTexture = (image, pma) => {
+    const texture = plainCreate(image, pma);
+    texture.setFilters = (min, mag) => filters.push([min, mag]);
+    return texture;
+  };
+  mipmappedGraphics.canMipmap = (width, height) => width === 2739 && height === 89;
+  const mipmapped = SpineScene.create({ spine, bundle, surface: fakeSurface(), graphics: mipmappedGraphics,
+    runtimeVersion: "4.3.13" }).scene;
+  assert.equal(mipmapped.isMipmapped(), true);
+  assert.deepEqual(filters.at(-1), [spine.TextureFilter.MipMapLinearLinear, spine.TextureFilter.Linear],
+    "the page is switched to trilinear mipmaps");
+  mipmapped.dispose();
+
   const { scene, surface, graphics } = create();
   assert(scene, "the bamboo rod builds a scene");
+  assert.equal(scene.isMipmapped(), false, "without mipmap support the atlas filter stays");
   assert.equal(graphics.textures.length, 1);
   assert.equal(graphics.textures[0].pma, false, "the page's straight alpha reaches the texture");
   for (const clip of ["rod_idle-2", "rod_idle-1--left", "rod_idle-1--right", "rod_fighting-1--left",
@@ -284,6 +302,8 @@ function checkSurface(SpineGlSurface) {
   assert.equal(canvas.contexts[0][1].preserveDrawingBuffer, false);
   assert.equal(canvas.contexts[0][1].premultipliedAlpha, true);
   assert.equal(surface.maxTextureSize, 4096);
+  assert.deepEqual([surface.canMipmap(2048, 128), surface.canMipmap(2739, 89)], [true, false],
+    "WebGL 1 mipmaps power-of-two pages only (WebGL 2 any page)");
   surface.resize(120.2, 0);
   assert.deepEqual([surface.width, surface.height], [121, 1], "integer pixels, at least 1");
   const seen = [];
@@ -458,6 +478,15 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   assert.equal(anchor.mode, "spine");
   near(anchor.tipX, staticTip.x, 0.02, "the Spine tip at rest matches the static tip x");
   near(anchor.tipY, staticTip.y, 0.02, "the Spine tip at rest matches the static tip y");
+  // Spec 100 D3: at pixel ratio 2 the GL surface has twice the pixels, the tip and the copy stay in logical pixels.
+  const logicalWidth = surface.width;
+  const sharpAnchor = { ...controller.advance(context({ dtSec: 0, pixelRatio: 2 })) };
+  near(sharpAnchor.tipX, staticTip.x, 0.02, "the tip is logical at pixel ratio 2 (x)");
+  near(sharpAnchor.tipY, staticTip.y, 0.02, "the tip is logical at pixel ratio 2 (y)");
+  assert(Math.abs(surface.width - 2 * logicalWidth) <= 2, `the GL surface doubles: ${logicalWidth} -> ${surface.width}`);
+  near(sharpAnchor.destWidth * 2, surface.width, 1e-9, "the copy's destination is the surface size in logical pixels");
+  assert.equal(controller.getStatus().pixelRatio, 2);
+  anchor = controller.advance(context({ dtSec: 0 }));
   const originX = 640 - anchor.destX;
   const originY = 800 - anchor.destY;
   assert(originX > 0 && originX < surface.width && originY > 0 && originY <= surface.height,
@@ -610,13 +639,22 @@ function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationCont
 
   const spineSurface = recordingSurface();
   let rendered = true;
-  const spineRenderer = new RodSpineRenderer({ surface: spineSurface,
+  const probeCalls = [];
+  const probe = { begin: (id) => probeCalls.push(["begin", id]), end: (id) => probeCalls.push(["end", id]),
+    gauge: (id, value) => probeCalls.push(["gauge", id, value]) };
+  assert.throws(() => new RodSpineRenderer({ surface: spineSurface, controller: { renderScene: () => true } }),
+    /requires a frame probe/u);
+  const spineRenderer = new RodSpineRenderer({ surface: spineSurface, probe,
     controller: { renderScene: () => rendered, glSurface: { canvas: "gl" } } });
-  spineRenderer.render({ visible: true, rodMode: "static", rodDestX: 1, rodDestY: 2 });
-  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2 });
+  spineRenderer.render({ visible: true, rodMode: "static", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
+  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
   rendered = false;
-  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2 });
-  assert.deepEqual(spineSurface.calls, [["drawImage", "gl", 1, 2]], "the GL surface is copied only in Spine mode after a draw");
+  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
+  assert.deepEqual(spineSurface.calls, [["drawImage", "gl", 1, 2, 30, 40]],
+    "the GL surface is copied only in Spine mode after a draw, into its logical size (spec 100)");
+  assert.deepEqual(probeCalls.filter((call) => call[0] !== "gauge"),
+    [["begin", "rod-spine"], ["end", "rod-spine"], ["begin", "rod-spine"], ["end", "rod-spine"]],
+    "each Spine frame is one timed section (spec 101), static frames none");
 }
 
 async function main() {
