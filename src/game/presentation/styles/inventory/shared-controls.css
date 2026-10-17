@@ -32,15 +32,6 @@
   height: var(--inventory-scrollbar-size);
 }
 
-/* Presentation config can restore the existing scrollbar; scrolling itself always remains available. */
-.inventory-assembly-editor.inventory-assembly-editor--scrollbar-hidden {
-  scrollbar-width: none;
-}
-
-.inventory-assembly-editor.inventory-assembly-editor--scrollbar-hidden::-webkit-scrollbar {
-  display: none;
-}
-
 .inventory-modal::-webkit-scrollbar-track,
 .inventory-list-grid::-webkit-scrollbar-track,
 .inventory-categories::-webkit-scrollbar-track,
