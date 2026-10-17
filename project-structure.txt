@@ -645,6 +645,9 @@
 │  │     ├── ui_catalog_meters_example.js
 │  │     └── ui_catalog_page.js
 │  ├── engine
+│  │  ├── animation
+│  │  │  ├── scalar_smoother.js
+│  │  │  └── skeletal_scene_contract.js
 │  │  ├── assets
 │  │  │  ├── asset_catalog.js
 │  │  │  ├── asset_load_queue.js
@@ -1277,10 +1280,15 @@
 │  └── platform
 │     └── browser
 │        ├── animation
+│        │  ├── spine_atlas_text_reader.js
+│        │  ├── spine_bundle_loader.js
+│        │  ├── spine_gl_surface.js
 │        │  ├── spine_runtime_module.js
-│        │  └── spine_runtime_provider.js
+│        │  ├── spine_runtime_provider.js
+│        │  └── spine_scene.js
 │        ├── assets
 │        │  ├── asset_preload_coordinator.js
+│        │  ├── browser_asset_transport.js
 │        │  └── image_asset_provider.js
 │        ├── canvas
 │        │  ├── canvas_2d_surface.js
@@ -1401,6 +1409,7 @@
 │  ├── run-checks.js
 │  ├── scouting-input-check.js
 │  ├── service-artifacts-check.js
+│  ├── spine-rod-check.js
 │  ├── testing
 │  │  ├── README.md
 │  │  ├── baselines

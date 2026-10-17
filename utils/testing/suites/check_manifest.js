@@ -285,6 +285,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick"],
   },
   {
+    id: "spine-rod",
+    title: "Spine runtime, bundle loading and scene adapter over the bamboo rod export",
+    file: "utils/spine-rod-check.js",
+    suites: ["quick"],
+  },
+  {
     id: "viewport",
     title: "Camera and world perspective ownership",
     file: "utils/viewport-check.js",

@@ -49,32 +49,42 @@ fixtures), Quick 26/26, game-cycle digest unchanged. Nothing in the game imports
 
 **Goal**: everything Spine-generic, independent of the rod.
 
-- [ ] T009 `src/engine/animation/skeletal_scene_contract.js`: the scene port method list (spec "Scene port") for
-  `contracts.requireMethods`; `src/engine/animation/scalar_smoother.js`: frame-rate independent approach with a time
-  constant, no allocation.
-- [ ] T010 `src/platform/browser/animation/browser_asset_transport.js`: fetch text/JSON, decode images
-  (`createImageBitmap`, `Image.decode` fallback), cancellation, used as the `AssetLoadQueue` loader. The same transport
-  becomes 083's step-1 browser transport.
-- [ ] T011 `spine_bundle_loader.js`: skeleton JSON + atlas text → page names parsed from the atlas header lines →
-  page URLs relative to the atlas → one queue job each (`interactive`). Result `{ skeletonJson, atlasText, pages:
-  Map<name, ImageSource> }` or a failure reason (`fetch-failed`, `atlas-invalid`, `page-missing`). No Spine
-  `AssetManager`.
-- [ ] T012 `spine_gl_surface.js`: offscreen canvas, WebGL context (`alpha: true`, `premultipliedAlpha` per bundle,
-  `preserveDrawingBuffer: false`), `resize(width, height, pixelRatio)` capped at DPR 2, `MAX_TEXTURE_SIZE`, context
-  lost/restored callbacks, `dispose()`.
-- [ ] T013 `spine_scene.js` (the only module using the Spine API, 4.3 poses): `TextureAtlas` with `GLTexture` per page
-  (PMA from the atlas page), `AtlasAttachmentLoader`, `SkeletonJson` (scale), `Skeleton`, `AnimationStateData` mixes,
-  `AnimationState`, `SceneRenderer`/`SkeletonRenderer`; `setSkinByName(bundle.skin)` + `setSlotsToSetupPose()` when
-  the bundle names a skin (the bamboo export has no `default` skin, so without it nothing draws). Implements the port: `setLoop`, `setSampled` (timeScale 0,
-  trackTime = ratio × duration, alpha), `clearTrack`, `update` (`updateWorldTransform(Physics.update)`), `render`
-  (orthographic camera on the surface size), `getPoint` (point attachment → surface px, else last chain bone tip),
-  `getBounds` (union over setup and each clip's sampled extremes, computed once), `hasClip`, `clipDuration`,
-  `restoreContext` (re-upload retained pages), `dispose`.
-- [ ] T014 Replace the stub `spine_runtime_module.js`: import the vendor file, `createSpineRuntime()` returns
-  `{ version: "4.3.13", createScene(bundle, surface) }`; `createScene` validates (version line, pages, texture size,
-  clips) and returns the scene or a reason. Update the 083 provider checks (the stub case moves to a fake module).
+- [X] T009 `src/engine/animation/skeletal_scene_contract.js` (`SKELETAL_SCENE_METHODS`: setPlacement, setLoop,
+  setSampled, clearTrack, setTrackTimeScale, update, render, getPoint, getLocalBounds, hasClip, clipDuration,
+  getMissingClips, restoreContext, dispose) and `src/engine/animation/scalar_smoother.js` (`ScalarSmoother`,
+  exponential approach with a time constant, no allocation).
+- [X] T010 `src/platform/browser/assets/browser_asset_transport.js` (`BrowserAssetTransport`; in `assets/`, since it is
+  generic): fetch text/JSON, decoded `HTMLImageElement`s (`Image.decode`). Not `ImageBitmap`: WebGL ignores the
+  premultiply upload flag for ImageBitmaps, and spine-webgl 4.3 relies on that flag (`GLTexture` premultiplies straight
+  pages on upload and always draws with PMA blending). A cancelled token drops the result. The same transport becomes
+  083's browser transport.
+- [X] T011 `spine_bundle_loader.js` (`SpineBundleLoader`) + `spine_atlas_text_reader.js` (`SpineAtlasTextReader`, pages,
+  filters, PMA, region bounds/rotation without the runtime). Atlas text first, then each page and the skeleton JSON as
+  their own `AssetLoadQueue` jobs; `pages` settles alone (static picture), `result` with the bundle `{ skeleton,
+  version, atlasText, atlas, pages, skin, linePoint }`. Reasons: `atlas-failed`, `atlas-invalid`, `page-failed`,
+  `skeleton-failed`, `cancelled`. No Spine `AssetManager`.
+- [X] T012 `spine_gl_surface.js` (`SpineGlSurface`): offscreen canvas created on first `ensureContext()`, WebGL 2 then
+  1 (`alpha`, `premultipliedAlpha: true`, `antialias`, no depth/stencil, `preserveDrawingBuffer: false`), integer
+  `resize(width, height)` in game canvas pixels (1:1 with the game canvas, so no pixel ratio of its own),
+  `maxTextureSize`, lost/restored listeners (lost is prevented so the context can return), `simulateContextLoss` for
+  DEV, `dispose()`.
+- [X] T013 `spine_scene.js` (`SpineScene`, the only user of the Spine API). Runtime namespace and graphics (texture
+  factory, renderer factory, restore) are injected, so checks build it in Node with fake textures. 4.3 names:
+  `getTrack`, `setAnimation`/`addAnimation` with an Animation, `setupPose`/`setupPoseBones`, `bone.appliedPose`,
+  skin entries `placeholder`. Bones start from the setup pose every frame (`setupPoseBones`), so blended tracks are
+  exact and never build on the previous frame. Bounds = union of the setup pose and 25 samples per clip
+  (`getBoundsRect`). Reasons: `version-mismatch`, `page-missing`, `texture-too-large`, `skeleton-invalid`,
+  `skin-missing`. A failure disposes the textures it made.
+- [X] T014 `spine_runtime_module.js` imports `vendor/spine-webgl/4.3.13/spine-webgl.js`; `createSpineRuntime()` returns
+  `{ version: "4.3.13", createScene(bundle, surface) }` with one `ManagedWebGLRenderingContext` per surface;
+  `context-unavailable` without WebGL. `asset-preloader` now checks the provider over the real module (4.3 export →
+  available, 4.2 export → version-mismatch) and keeps the not-installed case with a fake module.
 
-**Checkpoint**: `asset-preloader` + the new `spine-rod` check (bundle/scene parts with the real export in Node) green.
+**Checkpoint** (2026-10-17): new Quick check `spine-rod` (real export through the vendored runtime: line-tip at setup
+(1.21, 466.06), pure left bend (−237.54, 326.65), front (1.27, 328.27), exact front/side weights, idle loop and time
+scale, failures, bounds, restore, dispose; loader, surface, transport, smoother). Architecture 4/4 (716 modules,
+production unchanged 542 / 835), Quick 27/27, game-cycle unchanged. Finding for Phase 3: front alpha must be
+1 − |side| (spec "Pose mapping" updated). Nothing in the game uses Spine yet. Not committed.
 
 ## Phase 3: Rod in the game
 

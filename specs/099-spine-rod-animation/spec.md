@@ -5,8 +5,8 @@ ready. Integrate Spine into the engine as fully as the project needs and list wh
 export must provide. This spec changes the order of [spec 083](../083-preloader-foundation/spec.md): the Spine runtime,
 adapter and bundle loading are delivered by the rod (this spec), the loading screen reuses them afterwards. Contracts
 of [spec 047](../047-smart-asset-preloader/contracts/runtime-assets.md) ("Spine Surface Contract") still apply.
-Tasks: [tasks.md](tasks.md). Status: **all decisions D1–D9 answered 2026-10-17; Phase 1 (runtime in `vendor/`, guard rule) done, not
-committed; Phase 2 next.**
+Tasks: [tasks.md](tasks.md). Status: **all decisions D1–D9 answered 2026-10-17; Phase 1 committed (7288d624); Phase 2 (engine/platform Spine
+capability, `spine-rod` check) done, not committed; Phase 3 (rod in the game) next.**
 
 ## Starting point (verified 2026-10-17)
 
@@ -147,7 +147,7 @@ and clipping. It stays a rejected option unless D1 says otherwise.
 | --- | --- | --- | --- |
 | no float (before the cast) | rod not drawn, as today (D3) | — | — |
 | casting / waiting / biting | idle by wind (D4): direction −1 → `rod_idle-1--left`, +1 → `rod_idle-1--right`, 0 (calm) → `rod_idle-2`; a wind change mixes over `windMixSec` (default 1.0 s) | — | — |
-| playing | idle faded out (mix `idleToFightSec`) | `rod_fighting-1--front`, ratio = bend, alpha 1 | side clip (`--left` / `--right` by fish side), ratio = bend, alpha = abs(side) |
+| playing | idle faded out (mix `idleToFightSec`) | `rod_fighting-1--front`, ratio = bend, alpha = 1 − abs(side) | side clip (`--left` / `--right` by fish side), ratio = bend, alpha = abs(side) |
 | landing / victory / game over / line lost | idle by wind, fight tracks cleared (mix `fightToIdleSec`) | — | — |
 
 - Wind (D4, owner 2026-10-17): the `--left` / `--right` idles are the rod swaying in a wind blowing that way. The
@@ -158,8 +158,10 @@ and clipping. It stays a rejected option unless D1 says otherwise.
 - `bend = smoother(clamp01(rodStressRatio))`, time constant `bendSmoothingSec` (default 0.12 s). Rod stress is
   already 0..1 against the rod's effective max load, so a weak rod bends more for the same fish.
 - `side = clamp((fishScreenX − rodTipX) / (canvasWidth × sideRangeRatio), −1, 1)`. Fish screen X is the float/hook
-  position the line already targets. Track 1 is the front pose; track 2 blends the side pose over it, which is an
-  exact two-way blend because only one side is non-zero.
+  position the line already targets. The front clip keys only scale and the side clips only rotation, and the
+  bones start from the setup pose every frame. So front alpha 1 − abs(side) plus side alpha abs(side) is an exact
+  weighted blend of the two poses, verified in Phase 2: full side weight gives the pure side bend. Front alpha 1
+  under a side alpha 1 would keep the front foreshortening.
 - Reduced motion (`prefers-reduced-motion: reduce`): idle clips hold at time 0. The bend still follows the load,
   because it is gameplay feedback.
 - Clip names come from config (`ui.rod.spine.clips`), so an export with other names or more variants (`rod_idle-3`,

@@ -210,14 +210,20 @@ async function checkProgress(StartupLoadProgress) {
   assert.equal(new StartupLoadProgress([]).getSnapshot().complete, true);
 }
 
-async function checkSpineProvider(SpineRuntimeProvider, stub) {
-  assert.equal(stub.createSpineRuntime(), null, "the checked-in stub reports no runtime");
+async function checkSpineProvider(SpineRuntimeProvider, runtimeModule) {
+  // The runtime module is the pinned 4.3 bundle (spec 099); a module without a runtime still reports not-installed.
+  const notInstalled = { createSpineRuntime: () => null };
   let imports = 0;
-  const provider = new SpineRuntimeProvider({ importModule: async () => { imports += 1; return stub; } });
+  const provider = new SpineRuntimeProvider({ importModule: async () => { imports += 1; return notInstalled; } });
   const [first, second] = await Promise.all([provider.load("4.2.43"), provider.load("4.2.43")]);
   assert.deepEqual({ ...first }, { available: false, runtime: null, reason: "not-installed" });
   assert.equal(second, first, "one shared capability result");
   assert.equal(imports, 1, "the runtime module is imported once, on first need");
+  const real = await new SpineRuntimeProvider({ importModule: async () => runtimeModule }).load("4.3.26");
+  assert.equal(real.available, true, "the checked-in runtime module serves a 4.3 export");
+  assert.equal(real.runtime.version, "4.3.13");
+  assert.equal((await new SpineRuntimeProvider({ importModule: async () => runtimeModule }).load("4.2.43")).reason,
+    "version-mismatch", "a 4.2 export does not run on the 4.3 runtime");
   // The required line comes from the export's skeleton.spine (owner decision: atlases + JSON).
   const outcome = async (importModule, exportVersion = "4.2.43") =>
     (await new SpineRuntimeProvider({ importModule }).load(exportVersion)).reason;
@@ -239,12 +245,12 @@ async function main() {
   const { AssetLoadQueue } = await import("../src/engine/assets/asset_load_queue.js");
   const { StartupLoadProgress } = await import("../src/engine/assets/startup_load_progress.js");
   const { SpineRuntimeProvider } = await import("../src/platform/browser/animation/spine_runtime_provider.js");
-  const stub = await import("../src/platform/browser/animation/spine_runtime_module.js");
+  const runtimeModule = await import("../src/platform/browser/animation/spine_runtime_module.js");
   await checkCatalog(AssetCatalog);
   await checkVariantSelector(AssetCatalog, AssetVariantSelector);
   await checkQueue(AssetLoadQueue);
   await checkProgress(StartupLoadProgress);
-  await checkSpineProvider(SpineRuntimeProvider, stub);
+  await checkSpineProvider(SpineRuntimeProvider, runtimeModule);
   console.log("Asset preloader passed: immutable catalog and aliases, protected data images, tier/format choice, "
     + "priority caps, shared jobs, promotion, release/revival, retry, fixed-denominator progress and optional Spine runtime.");
 }

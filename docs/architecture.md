@@ -141,10 +141,19 @@ Today `AssetPreloadCoordinator` (platform) preloads location backgrounds, the de
 `ImageAssetProvider` and returns `AssetLoadResult`. The smart preloader ([spec 047](../specs/047-smart-asset-preloader/spec.md),
 first step [spec 083](../specs/083-preloader-foundation/spec.md)) replaces it in steps: `engine/assets` holds the
 immutable `AssetCatalog`, the pure `AssetVariantSelector`, the shared priority `AssetLoadQueue` and
-`StartupLoadProgress`; the browser transport, decoder and the optional Spine runtime (`platform/browser/animation`,
-`SpineRuntimeProvider` over the checked-in `spine_runtime_module.js` stub) stay in platform. Until the facade step
-these engine modules are exercised only by the `asset-preloader` check. Raster art is WebP under `assets/`; image
-masters live in `asset-sources/` and are never published ([spec 082](../specs/082-webp-art/spec.md)).
+`StartupLoadProgress`; the browser transport (`platform/browser/assets/browser_asset_transport.js`) and the optional
+Spine capability stay in platform. Until the facade step these engine modules are exercised only by checks. Raster
+art is WebP under `assets/`; image masters live in `asset-sources/` and are never published
+([spec 082](../specs/082-webp-art/spec.md)).
+
+Spine ([spec 099](../specs/099-spine-rod-animation/spec.md)): `engine/animation` holds the scene port method list
+(`SKELETAL_SCENE_METHODS`) and `ScalarSmoother`. `platform/browser/animation` holds `SpineRuntimeProvider` (lazy
+import, version line), `spine_runtime_module.js` (the only importer of the pinned runtime), `SpineScene` (the only
+user of the Spine API), `SpineBundleLoader` (atlas, pages and skeleton through `AssetLoadQueue`), `SpineAtlasTextReader`
+and `SpineGlSurface` (offscreen WebGL canvas composited into the 2D game). Third-party code lives in `vendor/` and is
+pinned by `vendor/manifest.json`. `utils/vendor-spine.js` writes it from the exact npm devDependency. The
+architecture check verifies each vendor file's SHA-256, that it has no imports and that only its one named importer
+imports it.
 
 ## Migration history
 
