@@ -713,10 +713,10 @@ export class DevTools {
       );
       return;
     }
-    if (typeof value === "string" && key === "currentMethod") {
+    if (typeof value === "string" && (key === "currentMethod" || key === "defaultSide")) {
       this.#ui.createEnumToggleRow(
         key,
-        ["hand", "boat"],
+        key === "defaultSide" ? ["right", "left"] : ["hand", "boat"],
         value,
         parentElement,
         onChange,

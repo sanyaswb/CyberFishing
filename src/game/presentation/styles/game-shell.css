@@ -17,6 +17,13 @@
   background-color: #0f171e;
 }
 
+/* Landscape split inventory (spec 098, DEV switch): the canvas is the game strip beside the inventory. */
+.game-shell__canvas--staged {
+  position: fixed;
+  top: 0;
+  left: var(--game-stage-left, 0px);
+}
+
 .game-shell--outcome-active .game-shell__canvas {
   position: relative;
   z-index: var(--ui-layer-outcome);

@@ -3,7 +3,8 @@
 .hold-charges {
   position: fixed;
   bottom: calc(var(--ui-logical-height, 100dvh) * .25);
-  left: 50%;
+  /* The game strip's centre while the landscape split inventory is open (spec 098). */
+  left: var(--ui-stage-center-x, 50%);
   transform: translateX(-50%);
   display: none;
   gap: 12px;

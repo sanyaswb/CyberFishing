@@ -8,6 +8,7 @@ import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { composeDevConfigValidation } from "./dev_config_validation_composition.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
 import { DevFlagsProvider } from "../../dev/runtime/dev_flags_provider.js";
+import { DevInventorySplitSource } from "../../dev/runtime/dev_inventory_split_source.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
 import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
 import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
@@ -137,6 +138,8 @@ async function startGame() {
       uiSurface,
       toolbarMountNode: toolbar.element,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
+      createInventorySplitSource: ({documentTarget: target, listeners}) =>
+        new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
       createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
       createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),

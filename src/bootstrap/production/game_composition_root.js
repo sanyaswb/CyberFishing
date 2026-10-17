@@ -116,6 +116,8 @@ import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/t
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
+import { GameStageLayout } from "../../platform/browser/ui/game_stage_layout.js";
+import { InventorySplitLayoutPolicy } from "../../game/presentation/viewport/inventory_split_layout_policy.js";
 import { InactiveDebugEvents } from "../../game/application/session/inactive_debug_events.js";
 import { InactiveGameDiagnostics } from "../../game/application/session/inactive_game_diagnostics.js";
 import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
@@ -130,6 +132,8 @@ export class GameCompositionRoot {
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
   #createHookedFishOverride;
+  #createInventorySplitSource;
+  #stageLayout = null;
   #createHookedFishProfileSynchronizer;
   #createDebugService;
   #loadRandomInventoryId;
@@ -178,6 +182,7 @@ export class GameCompositionRoot {
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
     createFightDiagnosticsBuilder,
+    createInventorySplitSource,
     uiSurface = null,
     toolbarMountNode = null,
   } = {}) {
@@ -186,6 +191,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
+      createInventorySplitSource,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -206,6 +212,8 @@ export class GameCompositionRoot {
     this.#createLocationDebugMapBuilder = createLocationDebugMapBuilder;
     this.#createItemProgressionDebugSnapshotProvider = createItemProgressionDebugSnapshotProvider;
     this.#createHookedFishOverride = createHookedFishOverride;
+    // DEV landscape split inventory (spec 098); production passes none and composes no stage.
+    this.#createInventorySplitSource = createInventorySplitSource;
     this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
     this.#createDebugService = createDebugService;
     this.#loadRandomInventoryId = loadRandomInventoryId;
@@ -266,7 +274,15 @@ export class GameCompositionRoot {
 
   async build(canvasId) {
     const canvas = this.#documentTarget.getElementById(canvasId);
-    const canvasMetrics = new CanvasMetricsProvider(canvas);
+    const stageLayout = this.#createInventorySplitSource == null ? null : new GameStageLayout({
+      canvas, windowRef: this.#windowTarget, uiSurface: this.#uiSurface,
+      source: this.#createInventorySplitSource({ documentTarget: this.#documentTarget,
+        listeners: new EventLifecycle(this.#listenerCounter) }),
+      policy: new InventorySplitLayoutPolicy(), listeners: new EventLifecycle(this.#listenerCounter),
+    });
+    this.#stageLayout = stageLayout;
+    const canvasMetrics = stageLayout ? new CanvasMetricsProvider(canvas, () => stageLayout.getViewport())
+      : new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
     const devFlags = this.#createDevFlags(this.#config);
     const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
@@ -287,14 +303,24 @@ export class GameCompositionRoot {
     contracts.requireMethods(debugEvents, "debugEvents", ["on", "emit", "clear"]);
     contracts.requireMethods(diagnostics, "diagnostics",
       ["isDebugEnabled", "emit", "on", "subscribeHookedFishRuntimeUpdated", "dispose"]);
-    const runtime = await this.create(
-      canvas,
-      canvasMetrics,
-      clock,
-      debugEvents,
-      devFlags,
-      audio,
-    );
+    let runtime;
+    try {
+      runtime = await this.create(
+        canvas,
+        canvasMetrics,
+        clock,
+        debugEvents,
+        devFlags,
+        audio,
+      );
+    } catch (error) {
+      stageLayout?.dispose();
+      throw error;
+    }
+    if (stageLayout) {
+      stageLayout.attachInventory(runtime.inventoryUI);
+      runtime.stageLayout = stageLayout;
+    }
     return new GameApplication({
       messages: FISHING_MESSAGES,
       canvas,
@@ -822,6 +848,7 @@ export class GameCompositionRoot {
         runtimeConfig: this.#runtimeConfig,
         listeners: new EventLifecycle(this.#listenerCounter),
         fightInputActionComposer: new FightInputActionComposer(),
+        ...(this.#stageLayout ? { getOriginX: () => this.#stageLayout.originX } : {}),
       })),
       ui: own(new GameControls(
         this.#config,

@@ -448,6 +448,8 @@
 │  │  └── spec.md
 │  ├── 097-backpack-item-keepnet-art
 │  │  └── spec.md
+│  ├── 098-landscape-split-inventory
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -595,6 +597,7 @@
 │  │  │  ├── browser_debug_adapter.js
 │  │  │  ├── debug_service.js
 │  │  │  ├── dev_flags_provider.js
+│  │  │  ├── dev_inventory_split_source.js
 │  │  │  ├── game_debug_facade.js
 │  │  │  └── gameplay_override_reader.js
 │  │  ├── services
@@ -1249,7 +1252,8 @@
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── viewport
-│  │     │  └── game_viewport_facade.js
+│  │     │  ├── game_viewport_facade.js
+│  │     │  └── inventory_split_layout_policy.js
 │  │     ├── visual
 │  │     │  ├── degradation_color_config.js
 │  │     │  └── degradation_color_config_validator.js
@@ -1324,6 +1328,7 @@
 │           ├── embedded_page_overlay.js
 │           ├── fullscreen_control.js
 │           ├── game_controls.js
+│           ├── game_stage_layout.js
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
 │           └── time_display.js

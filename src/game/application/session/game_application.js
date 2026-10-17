@@ -22,6 +22,8 @@ export class GameApplication {
   #gameStateName = "scouting";
   #canvasMetrics;
   #viewportResizePending = false;
+  #stageSplitPending = false;
+  #stageLayout = null;
   #float;
   #net;
   #castPenalty;
@@ -174,6 +176,16 @@ export class GameApplication {
     this.#input = runtime.input;
     this.#ui = runtime.ui;
     this.#inventoryUI = runtime.inventoryUI;
+    // DEV landscape split (spec 098); production composes no stage.
+    this.#stageLayout = runtime.stageLayout || null;
+    this.#stageLayout?.attachGame({
+      // null while the rod is not cast: the inventory then opens on the configured default side.
+      getRodScreenX: () => this.#castRodScreenX === null ? null : this.getRodScreenX(),
+      onSplitChange: () => {
+        this.#viewportResizePending = true;
+        this.#stageSplitPending = true;
+      },
+    });
     this.#keepnetUI = runtime.keepnetUI || null;
     this.#chum = runtime.chum;
     this.#bite = runtime.bite;
@@ -610,8 +622,15 @@ export class GameApplication {
     // Consume the latest size once before input/world update; resize events never draw independently.
     if (this.#viewportResizePending) {
       this.#viewportResizePending = false;
+      // A split change keeps the rod's world position: the camera follows it into the new canvas (spec 098).
+      const rodAnchorX = this.#stageSplitPending ? this.#viewportFacade.rodAnchorVirtualX(this.#castRodScreenX) : null;
+      this.#stageSplitPending = false;
       this.#canvasMetrics.resizeToViewport();
       this.#refreshViewport();
+      if (rodAnchorX !== null) {
+        const rodScreenX = this.#viewportFacade.recenterRod(rodAnchorX);
+        if (this.#castRodScreenX !== null) this.#castRodScreenX = rodScreenX;
+      }
     }
     this.#keepnetRefreshElapsedMs += Math.max(0, dt);
     if (this.#keepnetRefreshElapsedMs >= this.#config.liveBait?.displayTickMs) {
@@ -938,6 +957,7 @@ export class GameApplication {
     this.#chum?.dispose?.();
     this.#inventory?.dispose?.();
     this.#inventoryUI?.dispose?.();
+    this.#stageLayout?.dispose();
     this.#keepnetUI?.dispose?.();
     this.#liveBaitMotion = null;
     this.#depthUI?.dispose?.();

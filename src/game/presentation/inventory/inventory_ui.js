@@ -45,6 +45,7 @@ export class InventoryUI {
   #sectionEntryStep = 1;
   #editorRootInstanceId = null;
   #unsubscribe = null;
+  #visibilityListeners = new Set();
   #warningTimer = null;
   #warningTimers;
   #isOpen = false;
@@ -145,6 +146,12 @@ export class InventoryUI {
     return this.#rootNode;
   }
 
+  // Open/close notifications for the page layout (the landscape split, spec 098); returns the unsubscribe.
+  onVisibilityChange(listener) {
+    this.#visibilityListeners.add(listener);
+    return () => this.#visibilityListeners.delete(listener);
+  }
+
   mount() {
     if (this.#isMounted) return this;
     this.#buttonMountNode.appendChild(this.#backpackButtonNode);
@@ -167,6 +174,11 @@ export class InventoryUI {
     this.#rootNode.removeAttribute("aria-hidden");
     this.#dispatch({ type: this.#actionTypes.OPEN });
     this.refresh();
+    this.#notifyVisibility();
+  }
+
+  #notifyVisibility() {
+    for (const listener of [...this.#visibilityListeners]) listener(this.#isOpen);
   }
 
   // The keepnet section view is composed after the inventory (it opens the inventory at its own section).
@@ -207,6 +219,7 @@ export class InventoryUI {
     this.#tooltipPresenter.hide();
     this.#dynamicRefreshElapsedMs = 0;
     this.#dispatch({ type: this.#actionTypes.CLOSE });
+    this.#notifyVisibility();
   }
 
   toggle() {
@@ -358,6 +371,7 @@ export class InventoryUI {
   dispose() {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
+    this.#visibilityListeners.clear();
     this.#clearWarningTimer();
     this.#hintRenderer.dispose(this.#warningNode);
     this.#longPressController.dispose();

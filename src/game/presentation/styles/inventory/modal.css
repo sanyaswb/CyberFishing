@@ -24,6 +24,20 @@
   isolation: isolate;
 }
 
+/* Landscape split (spec 098, DEV switch): the modal takes its share of the width on the side without the rod; the
+   game strip beside it stays visible and playable. */
+.inventory-modal--split {
+  width: var(--inventory-split-width);
+}
+
+.inventory-modal--split-left {
+  right: auto;
+}
+
+.inventory-modal--split-right {
+  left: auto;
+}
+
 /* Three rows for the modal's three children (spec 086): the hint region, the header, the main area. Only the main
    area stretches; a template row without its child would leave the main area in a content-sized row. */
 .inventory-modal.inventory-modal--open {

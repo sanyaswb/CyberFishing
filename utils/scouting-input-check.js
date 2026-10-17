@@ -156,4 +156,16 @@ for (const onActivate of [null, () => {}]) {
   clock.dispose();
 }
 assert.equal(casts, 0);
+// Spec 098: with the split strip on the right the canvas starts at its left edge; world input is canvas-relative.
+{
+  const stripCanvas = eventTarget();
+  const stripInput = new InputController(stripCanvas, null, { runtimeConfig: config, listeners: new EventLifecycle(),
+    getOriginX: () => 896 });
+  stripCanvas.emit("pointerdown", { pointerType: "mouse", button: 0, clientX: 1000, clientY: 200 });
+  const pressed = stripInput.getState();
+  assert.equal(pressed.pointerStart.x, 104, "a press in the strip starts at its canvas position");
+  assert.equal(pressed.pointerCurrent.x, 104);
+  assert.equal(pressed.pointerStart.y, 200, "the strip has no vertical offset");
+  stripInput.dispose();
+}
 console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding.");

@@ -70,6 +70,18 @@ export class GameViewportFacade {
     return this.#rodVirtualPos;
   }
 
+  // Split stage change (spec 098): the rod's world X before the canvas changes size, then a camera pan that puts that
+  // point at the new canvas centre. Returns the rod's new screen X (the centre unless the camera reached a map edge).
+  rodAnchorVirtualX(screenXOverride = null) {
+    return this.#projector.screenToVirtual(this.#resolveBaseRodScreenX(screenXOverride), 0, this.#screenScratch).x;
+  }
+
+  recenterRod(virtualX) {
+    const currentX = this.#projector.virtualToScreen(virtualX, 0, this.#screenScratch).x;
+    this.#world.pan(currentX - this.#canvasMetrics.width / 2, 0);
+    return this.#projector.virtualToScreen(virtualX, 0, this.#screenScratch).x;
+  }
+
   getBaseRodVirtualPos(bounds, screenXOverride = null) {
     const screenX = this.#resolveBaseRodScreenX(screenXOverride);
 

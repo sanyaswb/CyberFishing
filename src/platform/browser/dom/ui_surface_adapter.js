@@ -60,6 +60,13 @@ export class UiSurfaceAdapter {
 
   getMetrics() { return this.#metrics; }
 
+  // A page layout value for every layer of the surface, content and portals alike (the split stage's edges, spec 098);
+  // null removes it.
+  setLayoutProperty(name, value) {
+    if (value == null) this.#root.style.removeProperty(name);
+    else this.#root.style.setProperty(name, value);
+  }
+
   subscribe(listener) {
     if (this.#disposed || typeof listener !== "function") return () => {};
     this.#listeners.add(listener);

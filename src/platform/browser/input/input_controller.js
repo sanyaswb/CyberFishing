@@ -58,8 +58,11 @@ export class InputController {
   #pointerPanGesture = false;
   #panGestureX = 0;
   #activePointerId = null;
+  #getOriginX;
 
-  constructor(canvas, anchorX = null, { runtimeConfig, listeners, fightInputActionComposer = null } = {}) {
+  // getOriginX: the canvas left edge in page pixels (the landscape split strip, spec 098); world input is canvas-relative.
+  constructor(canvas, anchorX = null, { runtimeConfig, listeners, fightInputActionComposer = null, getOriginX = () => 0 } = {}) {
+    this.#getOriginX = getOriginX;
     this.#listeners = listeners;
     this.#runtimeConfig = runtimeConfig;
     this.#canvas = canvas;
@@ -153,6 +156,10 @@ export class InputController {
     return false;
   }
 
+  #eventX(e) {
+    return e.clientX - this.#getOriginX();
+  }
+
   #addEventListener(target, type, handler, options) {
     this.#listeners.add(target, type, handler, options);
   }
@@ -173,17 +180,17 @@ export class InputController {
       this.#isDragControlActive = false;
       this.#pointerAction = PointerAction.PENDING;
       this.#pointerDownAtMs = Date.now();
-      this.#startX = e.clientX;
+      this.#startX = this.#eventX(e);
       this.#startY = e.clientY;
-      this.#lastPointerX = e.clientX;
+      this.#lastPointerX = this.#eventX(e);
       this.#lastPointerY = e.clientY;
-      this.#currentPointerX = e.clientX;
+      this.#currentPointerX = this.#eventX(e);
       this.#currentPointerY = e.clientY;
       this.#hasPointerRelease = false;
       this.#pointerReleaseCancelled = false;
       this.#rodControlPointerActive = false;
-      this.#rodControlAnchorX = e.clientX;
-      this.#rodControlCurrentX = e.clientX;
+      this.#rodControlAnchorX = this.#eventX(e);
+      this.#rodControlCurrentX = this.#eventX(e);
       this.#rodControlDirectionX = 0;
       this.#rodControlInputRatio = 0;
       this.#lastKeyboardRodControlUpdateMs = Date.now();
@@ -210,15 +217,15 @@ export class InputController {
       if (this.#activePointerId !== null && e.pointerId !== undefined && e.pointerId !== this.#activePointerId) return;
 
       if (this.#pointerPanGesture) {
-        this.#updateMapPointer(e.clientX, e.clientY);
+        this.#updateMapPointer(this.#eventX(e), e.clientY);
         return;
       }
 
-      this.#currentPointerX = e.clientX;
+      this.#currentPointerX = this.#eventX(e);
       this.#currentPointerY = e.clientY;
 
       const dist = Math.hypot(
-        e.clientX - this.#startX,
+        this.#eventX(e) - this.#startX,
         e.clientY - this.#startY,
       );
       if (dist > 5) {
@@ -229,14 +236,14 @@ export class InputController {
       }
 
       if (this.#isDragging) {
-        this.#panDeltaX += this.#lastPointerX - e.clientX;
+        this.#panDeltaX += this.#lastPointerX - this.#eventX(e);
         this.#panDeltaY += this.#lastPointerY - e.clientY;
 
         if (!this.#hasSwipedThisTouch) {
           this.#swipeDeltaY = this.#startY - e.clientY;
         }
 
-        this.#lastPointerX = e.clientX;
+        this.#lastPointerX = this.#eventX(e);
         this.#lastPointerY = e.clientY;
       }
 
@@ -269,8 +276,9 @@ export class InputController {
           const pointerWasClickCandidate =
             this.#pointerAction === PointerAction.PENDING &&
             (this.#pointerPanGesture || elapsedMs < holdMs);
-          const clientX =
+          const rawClientX =
             e.clientX ?? (e.changedTouches && e.changedTouches[0]?.clientX);
+          const clientX = rawClientX === undefined ? undefined : rawClientX - this.#getOriginX();
           const clientY =
             e.clientY ?? (e.changedTouches && e.changedTouches[0]?.clientY);
 
@@ -414,7 +422,7 @@ export class InputController {
   #updateDirection(e) {
     if (e && e.clientX !== undefined) {
       if (this.#isDragging) {
-        const dx = e.clientX - this.#startX;
+        const dx = this.#eventX(e) - this.#startX;
 
         const dy = this.#runtimeConfig.input?.swipeResistanceY ?? 200;
 
