@@ -83,6 +83,14 @@
   white-space: nowrap;
 }
 
+.inventory-categories__image {
+  width: 1.5em;
+  height: 1.5em;
+  object-fit: contain;
+  vertical-align: middle;
+  pointer-events: none;
+}
+
 .inventory-categories__button.inventory-categories__button--active {
   background: #7bc8ef;
   color: #061218;

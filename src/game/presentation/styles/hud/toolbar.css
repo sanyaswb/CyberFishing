@@ -47,6 +47,12 @@
 .game-toolbar-button:disabled { opacity: 0.46; cursor: not-allowed; }
 .game-toolbar-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .game-toolbar-button[hidden] { display: none; }
+.game-toolbar-button__image {
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  pointer-events: none;
+}
 .game-toolbar-button--inventory,
 .game-toolbar-button--keepnet,
 .game-toolbar-button--net,

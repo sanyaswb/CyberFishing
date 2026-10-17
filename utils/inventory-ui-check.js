@@ -525,8 +525,12 @@ class InventoryStaticContractCheck {
     const portraitCollection = sharedControls.split("@media (orientation: portrait)")[1];
     assert.match(portraitCollection, /\.inventory-collection__list\s*\{\s*scrollbar-width:\s*none;/,
       "the portrait item list scrolls without a visible scrollbar");
-    assert.match(portraitCollection, /\.inventory-collection__backdrop\s*\{[^}]*display:\s*block;[^}]*opacity:\s*0\.12;/,
+    assert.match(sharedControls, /\.inventory-collection__backdrop\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.12;[^}]*pointer-events:\s*none;/,
+      "collection artwork is a faint non-interactive background");
+    assert.match(portraitCollection, /\.inventory-collection__backdrop\s*\{[^}]*display:\s*block;/,
       "portrait shows the faded backdrop inside the items panel");
+    assert.match(sharedControls, /@media \(orientation: landscape\)\s*\{\s*\.inventory-list-panel \.inventory-collection__backdrop\s*\{[^}]*right:\s*var\(--inventory-collection-inset\);[^}]*left:\s*auto;[^}]*display:\s*block;[^}]*object-position:\s*right center;/,
+      "landscape shows the backpack backdrop at the right of the item collection only");
     assert.ok(portraitList.includes(".inventory-list-grid"), "the portrait list keeps its gutter rule");
     // Spec 069: one full-screen dark container; equipment owns the content row; the header is a rounded mini panel.
     assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*padding:\s*env\(safe-area-inset-top, 0px\) 0 env\(safe-area-inset-bottom, 0px\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
@@ -1341,6 +1345,8 @@ class InventoryStaticContractCheck {
       itemsPage.contains(this.#findByClass(gridBeforeSections, "inventory-collection__backdrop")) &&
       backpackPage.contains(this.#findByClass(backpackPage, "inventory-backpack__capacity")),
     "the backpack list is a filters panel and a two-page items pager");
+    assert.strictEqual(this.#findByClass(itemsPage, "inventory-collection__backdrop").src,
+      "assets/items/briefcases/briefcase--1--open.webp");
     // Spec 076 follow-up: the scrolling list must keep a bounded height. Every node from the panel to the grid is a
     // height-passing flex/grid box (min-height: 0); an unstyled wrapper let the grid grow with its cards and stopped all
     // vertical scrolling.
@@ -1454,12 +1460,14 @@ class InventoryStaticContractCheck {
     assert.ok(backpackVisual.classList.contains("inventory-backpack__visual") &&
       backpackStats.classList.contains("inventory-backpack__stats") &&
       this.#findAllByClass(backpackView, "inventory-loadout-panel").length === 0, "the backpack view has no nested panels");
-    assert.strictEqual(this.#findByClass(backpackVisual, "inventory-backpack__image").src, "assets/ui/inventory/backpack.svg");
+    assert.strictEqual(this.#findByClass(backpackVisual, "inventory-backpack__image").src,
+      "assets/items/briefcases/briefcase--1--close.webp");
     for (const view of [backpackView, this.#findByClass(backpackPage, "inventory-backpack")]) {
       const capacity = this.#findByClass(view, "inventory-backpack__capacity");
       assert.strictEqual(this.#findByClass(capacity, "inventory-scale__value").textContent, "7 / 100");
       assert.strictEqual(this.#findByClass(capacity, "inventory-resource-meter").style.getPropertyValue("--inventory-resource-percent"), "7%");
-      assert.strictEqual(this.#findByClass(capacity, "inventory-scale__icon").src, "assets/ui/inventory/backpack.svg");
+      assert.strictEqual(this.#findByClass(capacity, "inventory-scale__icon").src,
+        "assets/items/briefcases/briefcase--1--close.webp");
     }
     ui.render(sectionView("keepnet"));
     assert.deepStrictEqual(visibleSections(), [false, false, true, false, true], "keepnet: parameters left, fish right");
@@ -2337,6 +2345,12 @@ class InventoryStaticContractCheck {
     );
     assert.strictEqual(this.#findAllByClass(inventoryBoatMeter, "inventory-resource-meter__icon").length, 0);
     // Spec 071: a skin thumbnail is bottom-cropped; an equipment cell's artwork shows whole.
+    const backpackArt = "assets/items/briefcases/briefcase--1--close.webp";
+    const backpackCard = isolatedItemRenderer.renderInventoryItem({ instanceId: "backpack", name: "Backpack",
+      itemType: "backpack", iconUrl: backpackArt });
+    assert.strictEqual(this.#findByClass(backpackCard, "inventory-item-card__image").src, backpackArt);
+    assert.strictEqual(this.#findAllByClass(backpackCard, "inventory-item-card__icon").length, 0,
+      "the backpack uses its full-resolution art instead of an emoji thumbnail");
     const skin = { thumbnail: { src: "rod-thumb.png", visibleHeight: 0.5, focusX: 0.31 },
       equipment: { withLine: "rod-line.png", withoutLine: "rod-bare.png" } };
     const skinnedCard = isolatedItemRenderer.renderInventoryItem({ instanceId: "skin-rod", name: "Rod", icon: "R", skin });

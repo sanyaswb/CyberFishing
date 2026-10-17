@@ -496,13 +496,15 @@ export class DevTools {
       const section = this.#createSectionWithCache(labels[category] || category, content);
       for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
         if (!item?.itemType) continue;
-        const label = `${item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
+        const iconUrl = item.iconUrl || item.skin?.thumbnail?.src || "";
+        const label = `${iconUrl ? "" : item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
         let granted = 0;
         this.#ui.createButtonRow(label, section, (event) => {
           const result = this.#grantCatalogItem(itemId, 1);
           if (result?.success) granted += 1;
-          event.currentTarget.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
-        });
+          const labelNode = iconUrl ? event.currentTarget.querySelector(".devtools__action-label") : event.currentTarget;
+          labelNode.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
+        }, false, iconUrl);
       }
     }
   }

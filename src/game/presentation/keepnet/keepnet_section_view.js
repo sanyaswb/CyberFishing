@@ -1,5 +1,3 @@
-import { inventorySlotIconPath } from "../inventory/inventory_slot_icons.js";
-
 // The inventory's keepnet section (spec 067), laid out like the backpack section (spec 088): the summary (the keepnet
 // view: image with help, capacity scale, status) belongs in the inventory's left container and the content (filters
 // panel, then the fish-list pager whose second page repeats the keepnet view for portrait) in its right host. The
@@ -20,6 +18,10 @@ export class KeepnetSectionView {
   #pendingRelease = null;
   #notice = "";
   #button;
+  #buttonImage;
+  #backdrop;
+  #imageResolver;
+  #imagePath;
   #summary;
   #pagerOverview;
   #content;
@@ -38,7 +40,7 @@ export class KeepnetSectionView {
   #cardFocusables = [];
 
   constructor({ documentRef, liveBait, model, cards, labels, overviewRenderer, filtersRenderer, pagerRenderer,
-    hintRenderer, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null }) {
+    hintRenderer, imageResolver, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null }) {
     this.#document = documentRef;
     this.#hints = hintRenderer;
     this.#liveBait = liveBait;
@@ -48,10 +50,13 @@ export class KeepnetSectionView {
     this.#filtersRenderer = filtersRenderer;
     this.#pager = pagerRenderer;
     this.#labels = labels;
+    this.#imageResolver = imageResolver;
+    this.#imagePath = imageResolver.resolve(0);
     this.#openSection = openSection;
     this.#toggleSection = toggleSection;
     this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
-    this.#button.append(this.#icon("keepnet-button__icon"));
+    this.#buttonImage = this.#icon("keepnet-button__icon");
+    this.#button.append(this.#buttonImage);
     this.#button.type = "button";
     this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
@@ -93,6 +98,7 @@ export class KeepnetSectionView {
     // pager like the backpack's: the fish list over the faded keepnet, and the keepnet view.
     const controls = this.#el("div", "keepnet-section__controls inventory-collection__controls inventory-panel");
     const backdrop = this.#icon("keepnet-section__backdrop");
+    this.#backdrop = backdrop;
     backdrop.classList.add("inventory-collection__backdrop");
     controls.append(this.#filters, this.#detail);
     const pager = this.#pager.create([[backdrop, this.#list], [this.#pagerOverview]], {
@@ -149,6 +155,12 @@ export class KeepnetSectionView {
       status: model.error ? this.#labels.error(model.error) : this.#notice };
     this.#overviews.update(this.#summary, reading);
     this.#overviews.update(this.#pagerOverview, reading);
+    const imagePath = this.#imageResolver.resolve(model.capacityPercent);
+    if (this.#imagePath !== imagePath) {
+      this.#buttonImage.src = imagePath;
+      this.#backdrop.src = imagePath;
+      this.#imagePath = imagePath;
+    }
     this.#detail.hidden = !group;
     this.#back.hidden = !group;
     this.#heading.hidden = !group;
@@ -237,7 +249,7 @@ export class KeepnetSectionView {
   }
   #icon(className, alt = "") {
     const image = this.#el("img", className);
-    image.src = inventorySlotIconPath("keepnet");
+    image.src = this.#imagePath;
     image.alt = alt;
     image.draggable = false;
     return image;

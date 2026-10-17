@@ -123,13 +123,24 @@ export class DevToolsUI {
     parentElement.appendChild(navigation);
   }
 
-  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false) {
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "") {
     const row = document.createElement("div");
     row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "devtools__action";
     btn.innerText = labelStr;
+    if (iconUrl) {
+      const image = document.createElement("img");
+      image.className = "devtools__action-image";
+      image.src = iconUrl;
+      image.alt = "";
+      image.draggable = false;
+      const label = document.createElement("span");
+      label.className = "devtools__action-label";
+      label.innerText = labelStr;
+      btn.replaceChildren(image, label);
+    }
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
     parentElement.appendChild(row);

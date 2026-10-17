@@ -5,6 +5,12 @@ export const PREDATOR_FISH = [
     name: "Окунь-радіоактивний",
     baseChance: 0.02,
     maxHookSize: 4,
+    visual: {
+      imagePattern:
+        "assets/fish/perch_radioactive/standart/perch_radioactive--{level}.webp",
+      uniqueImagePattern:
+        "assets/fish/perch_radioactive/unique/perch_radioactive--{level}-uniq.webp",
+    },
 
     weatherMultipliers: {
       rain: 2.0,

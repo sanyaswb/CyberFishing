@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.38.2 - Fish and Inventory Artwork
+
+- Integrate perch WebP artwork and thumbnails; add the backpack item to the DEV free shop and use full-resolution backpack miniatures.
+- Show six keepnet artwork stages by occupied capacity, including reserved space. Show the open backpack as a faint background on the right of the landscape item panel. Gameplay formulas and save formats are unchanged.
+
 ## v0.38.1 - Editor Tabs Polish
 
 - Phone editor tabs show their artwork centred with a larger inset and without scales (values stay in the parameters); a tap on a tab with an item scrolls the editor down to the tab row. Gameplay formulas and saves are unchanged.

@@ -902,6 +902,16 @@ export const ITEM_DB = {
   },
 
   misc: {
+    backpack_basic: {
+      id: "backpack_basic",
+      name: "Похідний рюкзак",
+      itemType: "backpack",
+      iconUrl: "assets/items/briefcases/briefcase--1--close.webp",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "storage.backpack" },
+      displayStats: {},
+      gameplayStats: {},
+    },
     sys_build_box: {
       id: "sys_build_box",
       name: "Ящик збірки",

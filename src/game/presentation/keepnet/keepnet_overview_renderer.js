@@ -7,16 +7,16 @@ export class KeepnetOverviewRenderer {
   #dom;
   #labels;
   #scales;
-  #imagePath;
+  #imageResolver;
   #capacityIcon;
   #showHelp;
   #bindings = new WeakMap();
 
-  constructor({ domFactory, labels, scaleRenderer, imagePath, capacityIcon, showHelp = true }) {
+  constructor({ domFactory, labels, scaleRenderer, imageResolver, capacityIcon, showHelp = true }) {
     this.#dom = domFactory;
     this.#labels = labels;
     this.#scales = scaleRenderer;
-    this.#imagePath = imagePath;
+    this.#imageResolver = imageResolver;
     this.#capacityIcon = capacityIcon;
     this.#showHelp = showHelp;
   }
@@ -25,7 +25,8 @@ export class KeepnetOverviewRenderer {
     const view = this.#dom.element("section", `keepnet-overview ${className}`.trim());
     view.setAttribute("aria-label", this.#labels.title);
     const visual = this.#dom.element("div", "keepnet-overview__visual inventory-panel");
-    const image = this.#dom.image(this.#imagePath, this.#labels.title);
+    const imagePath = this.#imageResolver.resolve(0);
+    const image = this.#dom.image(imagePath, this.#labels.title);
     image.className = "keepnet-section__icon";
     visual.appendChild(image);
     const help = this.#showHelp ? this.#helpButton(onHelp) : null;
@@ -38,7 +39,7 @@ export class KeepnetOverviewRenderer {
     status.hidden = true;
     stats.append(capacity, status);
     view.append(visual, stats);
-    this.#bindings.set(view, { help, capacity, status });
+    this.#bindings.set(view, { image, imagePath, help, capacity, status });
     return view;
   }
 
@@ -59,6 +60,11 @@ export class KeepnetOverviewRenderer {
   // Occupied space fills the meter; its colour follows the free space like every remaining resource.
   update(view, { percent, value, label, status }) {
     const binding = this.#bindings.get(view);
+    const imagePath = this.#imageResolver.resolve(percent);
+    if (binding.imagePath !== imagePath) {
+      binding.image.src = imagePath;
+      binding.imagePath = imagePath;
+    }
     this.#scales.update(binding.capacity, { percent, remainingPercent: 100 - percent, value, label });
     if (binding.status.textContent !== status) binding.status.textContent = status;
     binding.status.hidden = !status;

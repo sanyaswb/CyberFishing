@@ -371,9 +371,13 @@ export class InventoryUI {
   #buildShell() {
     this.#backpackButtonNode = this.#dom.button(
       "inventory-backpack-button game-toolbar-button game-toolbar-button--inventory",
-      "🎒",
+      "",
       { title: "Відкрити інвентар" },
     );
+    const backpackIcon = this.#dom.image(this.#sections.backpackImage, "");
+    backpackIcon.className = "game-toolbar-button__image";
+    backpackIcon.setAttribute("aria-hidden", "true");
+    this.#backpackButtonNode.appendChild(backpackIcon);
     this.#backpackButtonNode.setAttribute("aria-label", "Відкрити інвентар");
     this.#backpackButtonNode.addEventListener("click", () => this.toggleSection("backpack"));
 

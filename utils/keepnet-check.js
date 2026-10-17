@@ -3,6 +3,13 @@ const { TestDocument } = require("./testing/keepnet/test_document");
 
 async function main() {
   const { InventoryUiBootstrap } = await import("../src/bootstrap/production/inventory_ui_bootstrap.js");
+  const { KeepnetFillImageResolver } = await import("../src/game/presentation/keepnet/keepnet_fill_image_resolver.js");
+  const { KEEPNET_ART_STAGES } = await import("../src/game/presentation/keepnet/keepnet_art_config.js");
+  const artwork = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
+  for (const [percent, stage] of [[-1, 0], [0, 0], [.01, 20], [20, 20], [20.01, 40], [40, 40],
+    [40.01, 60], [60, 60], [60.01, 80], [80, 80], [80.01, 100], [100, 100], [150, 100], [NaN, 0]]) {
+    assert.equal(artwork.resolve(percent), `assets/items/keepnet/keepnet--${stage}.webp`);
+  }
   const { composeLiveBait } = await import("../src/bootstrap/production/live_bait_composition.js");
   const { KeepnetViewModel } = await import("../src/game/presentation/keepnet/keepnet_view_model.js");
   const { VictoryState } = await import("../src/game/application/state/victory_state.js");
@@ -35,6 +42,36 @@ async function main() {
     "filtering never changes the occupied capacity");
   const empty = { ...source, keepnet: [], liveBaits: [], keepnetReservedCount: 0 };
   assert.equal(new KeepnetViewModel().build(empty).capacityPercent, 0);
+  // Production composition: both overview images, the backdrop and toolbar share the unfiltered occupancy.
+  const artworkDocument = new TestDocument();
+  const artworkState = { ...empty };
+  const artworkView = InventoryUiBootstrap.createKeepnetView({ documentRef: artworkDocument,
+    liveBait: { getView: () => artworkState, advance() {} }, buttonMountNode: artworkDocument.body,
+    degradationColorResolver: colors, openSection() {}, toggleSection() {} });
+  artworkDocument.body.append(artworkView.summaryNode, artworkView.contentNode);
+  artworkView.setVisible(true);
+  const artworkImages = [...artworkDocument.byClass("keepnet-section__icon"),
+    ...artworkDocument.byClass("keepnet-section__backdrop"), ...artworkDocument.byClass("keepnet-button__icon")];
+  let imageWrites = 0;
+  for (const image of artworkImages) {
+    let source = image.src;
+    Object.defineProperty(image, "src", { get: () => source, set: (value) => { source = value; imageWrites++; } });
+  }
+  for (const count of [0, 1, 20, 21, 40, 41, 60, 61, 80, 81, 100, 101, 0]) {
+    artworkState.keepnet = Array.from({ length: count }, (_, index) => ({ ...source.keepnet[0], id: `art-${index}` }));
+    artworkView.refresh();
+    assert(artworkImages.every((image) => image.src === artwork.resolve(Math.min(100, count))), `artwork at ${count}%`);
+    const writes = imageWrites;
+    artworkView.refresh();
+    assert.equal(imageWrites, writes, "unchanged occupancy never reassigns image sources");
+  }
+  artworkState.keepnetReservedCount = 21;
+  artworkView.refresh();
+  assert(artworkImages.every((image) => image.src === artwork.resolve(21)), "reservations count towards artwork");
+  artworkState.keepnetCapacity = 0;
+  artworkView.refresh();
+  assert(artworkImages.every((image) => image.src === artwork.resolve(100)), "zero capacity follows the full meter");
+  artworkView.dispose();
   assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 4 }).capacityPercent, 100);
   assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 3 }).capacityPercent, 100,
     "overcapacity cannot overflow the meter");
@@ -77,7 +114,7 @@ async function main() {
   const content = documentRef.byClass("keepnet-section__content")[0];
   assert.equal(documentRef.byClass("keepnet-modal").length, 0, "no separate keepnet dialog remains");
   const backdrop = documentRef.byClass("keepnet-section__backdrop")[0];
-  assert(content.contains(backdrop) && backdrop.alt === "" && backdrop.src === "assets/ui/inventory/keepnet.svg",
+  assert(content.contains(backdrop) && backdrop.alt === "" && backdrop.src === "assets/items/keepnet/keepnet--20.webp",
     "a decorative keepnet lies behind the fish list (shown in portrait)");
   // Spec 074/088: the shared collection, laid out like the backpack: the filters panel, then the fish pager — tabs
   // above the items panel whose pages are the fish list over the faded keepnet and the keepnet view.
@@ -134,7 +171,7 @@ async function main() {
   assert(capacity.title.includes("4 / 100"), "exact capacity stays available as a contextual hint");
   assert.equal(documentRef.byClass("keepnet-section__section-title")[0].hidden, true);
   assert.equal(documentRef.byClass("keepnet-section__detail")[0].hidden, true, "the details row takes no space");
-  assert.equal(documentRef.byClass("keepnet-section__icon")[0].src, "assets/ui/inventory/keepnet.svg");
+  assert.equal(documentRef.byClass("keepnet-section__icon")[0].src, "assets/items/keepnet/keepnet--20.webp");
   assert.equal(capacity.textContent, "", "the capacity meter has no permanent numeric label");
   assert.equal(capacityCount.textContent, "4 / 100", "the occupancy reading is centred on the meter");
   assert.equal(documentRef.byClass("keepnet-section__capacity")[1].children[2].textContent, "4 / 100",

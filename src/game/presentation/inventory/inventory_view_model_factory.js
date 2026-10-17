@@ -4,13 +4,14 @@ import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_po
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { EquipmentState } from "../../domain/equipment/equipment_state.js";
 import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
+import { INVENTORY_SECTIONS } from "./inventory_sections.js";
 
 const BAIT_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_BAIT]);
 const CHUM_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_CHUM]);
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
-    { id: "all", label: "Усі", icon: "🎒" },
+    { id: "all", label: "Усі", iconUrl: INVENTORY_SECTIONS.backpackImage },
     { id: "compatible", label: "Сумісне", icon: "✓" },
     { id: "loadouts", label: "Збірки", icon: "🎣" },
     { id: "rods", label: "Вудилища", icon: "🎣" },
@@ -683,7 +684,7 @@ export class InventoryViewModelFactory {
       return ["boat", "chum_delivery"].includes(itemType);
     }
     if (categoryId === "nets") return itemType === "net";
-    return itemType === "gas_mask";
+    return itemType === "gas_mask" || itemType === "backpack";
   }
 
   #itemType(item) {

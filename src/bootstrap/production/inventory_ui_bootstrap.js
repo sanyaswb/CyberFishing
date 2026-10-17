@@ -12,6 +12,8 @@ import { INVENTORY_EDITOR_TABS_LABELS } from "../../game/presentation/inventory/
 import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
+import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
+import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
@@ -38,7 +40,8 @@ import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_m
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
 import { KeepnetOverviewRenderer } from "../../game/presentation/keepnet/keepnet_overview_renderer.js";
 import { KeepnetFiltersRenderer } from "../../game/presentation/keepnet/keepnet_filters_renderer.js";
-import { inventorySlotIconPath } from "../../game/presentation/inventory/inventory_slot_icons.js";
+import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_config.js";
+import { KeepnetFillImageResolver } from "../../game/presentation/keepnet/keepnet_fill_image_resolver.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
@@ -66,11 +69,16 @@ export class InventoryUiBootstrap {
     const dom = new InventoryDomFactory(documentRef);
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
+    const imageResolver = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
+    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
+    imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imagePath, src: stage.imagePath })))
+      .catch((error) => new ConsoleLogger().warn("[Keepnet] Artwork preload failed", error));
     return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
+      imageResolver,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
       overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),
-        imagePath: inventorySlotIconPath("keepnet"), capacityIcon: pagerConfig.capacityIcon, showHelp }),
+        imageResolver, capacityIcon: pagerConfig.capacityIcon, showHelp }),
       filtersRenderer: new KeepnetFiltersRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
       pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
@@ -231,7 +239,7 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
         listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface),
-        backdropImage: INVENTORY_SECTIONS.backpackImage,
+        backdropImage: INVENTORY_SECTIONS.backpackBackdropImage,
         pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
           tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),
           swipeController: new SwipePagerController({ isEnabled: swipeEnabled }), config: INVENTORY_SECTIONS.backpackPager }),

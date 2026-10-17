@@ -57,9 +57,10 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
   };
 
   return deepFreeze({
-    revision: 8,
+    revision: 9,
     qualityLimits: { minSections: 2, maxSections: 12 },
     groups: {
+      "storage.backpack": {}, // Artwork item; no capacity or upgrade gameplay contract yet.
       "aquarium.feed": {}, // Packs have authored rarity; no upgrade, condition or freshness metric.
       "rod.spinning": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {

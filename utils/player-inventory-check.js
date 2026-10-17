@@ -215,7 +215,7 @@ function checkInstanceIds() {
 // follow, and the item survives a restart.
 function checkCatalogItemGrant() {
   const key = "player_inventory_v2";
-  const { inventory, cache, forwarded } = compose();
+  const { inventory, cache, forwarded, actions } = compose();
   const before = items(inventory).length;
   const writesBefore = cache.writes.length;
   const eventsBefore = forwarded.filter((entry) => entry.type === "inventory-changed").length;
@@ -234,6 +234,15 @@ function checkCatalogItemGrant() {
   assert.equal(cache.values.get(key).items.find((item) => item.instanceId === stack.instanceId).quantity, 3,
     "a grant keeps the requested quantity");
 
+  const backpack = inventory.grantCatalogItem("backpack_basic");
+  assert.equal(backpack.success, true, "the backpack is available to the DEV catalog grant port");
+  const backpackView = items(inventory).find((item) => item.instanceId === backpack.instanceId);
+  assert.equal(backpackView.itemType, "backpack");
+  assert.equal(backpackView.iconUrl, "assets/items/briefcases/briefcase--1--close.webp");
+  inventory.inventoryFacade.dispatch({ type: actions.CATEGORY_SELECT, categoryId: "tools" });
+  assert(items(inventory).some((item) => item.instanceId === backpack.instanceId), "the backpack appears in Other");
+  inventory.inventoryFacade.dispatch({ type: actions.CATEGORY_SELECT, categoryId: "all" });
+
   const writesAfterGrants = cache.writes.length;
   const unknown = inventory.grantCatalogItem("missing_item");
   assert.equal(unknown.success, false, "an unknown item id is rejected");
@@ -243,6 +252,8 @@ function checkCatalogItemGrant() {
   const restarted = compose({ cache });
   assert(items(restarted.inventory).some((item) => item.instanceId === granted.instanceId),
     "the granted item survives a restart");
+  assert.equal(items(restarted.inventory).find((item) => item.instanceId === backpack.instanceId).iconUrl,
+    backpackView.iconUrl, "the backpack retains its full-resolution art after rehydration");
 }
 
 checkFreshStart();

@@ -21,7 +21,7 @@ export class InventoryBackpackSummaryRenderer {
     image.setAttribute("aria-hidden", "true");
     visual.appendChild(image);
     const stats = this.#dom.element("div", "inventory-backpack__stats inventory-panel");
-    const capacity = this.#scales.create({ iconPath: this.#sections.backpackImage, meterId: "backpack-capacity",
+    const capacity = this.#scales.create({ iconPath: this.#sections.backpackCapacityIcon, meterId: "backpack-capacity",
       className: "inventory-backpack__capacity" });
     stats.appendChild(capacity);
     view.append(visual, stats);

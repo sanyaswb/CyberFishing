@@ -124,7 +124,24 @@
 }
 
 .inventory-collection__backdrop {
+  position: absolute;
+  top: 15%;
+  left: 15%;
   display: none;
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+@media (orientation: landscape) {
+  .inventory-list-panel .inventory-collection__backdrop {
+    right: var(--inventory-collection-inset);
+    left: auto;
+    display: block;
+    object-position: right center;
+  }
 }
 
 /* Item and fish lists scroll by mouse drag too (spec 076); touch keeps native panning. A drag never activates a card.
@@ -160,15 +177,7 @@
     }
 
     .inventory-collection__backdrop {
-      position: absolute;
-      top: 15%;
-      left: 15%;
       display: block;
-      width: 70%;
-      height: 70%;
-      object-fit: contain;
-      opacity: 0.12;
-      pointer-events: none;
     }
   }
 }

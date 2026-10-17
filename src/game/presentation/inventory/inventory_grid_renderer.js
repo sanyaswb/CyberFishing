@@ -133,11 +133,17 @@ export class InventoryGridRenderer {
     sortToggle.addEventListener("click", () => onSortToggle?.(sortToggle));
     navigation.appendChild(sortToggle);
     model.categories.forEach((category) => {
-      const label = [category.icon, category.label].filter(Boolean).join(" ");
+      const label = [category.iconUrl ? "" : category.icon, category.label].filter(Boolean).join(" ");
       const button = this.#dom.button(
         "inventory-categories__button",
-        label,
+        category.iconUrl ? "" : label,
       );
+      const image = this.#dom.image(category.iconUrl, "");
+      if (image) {
+        image.className = "inventory-categories__image";
+        image.setAttribute("aria-hidden", "true");
+        button.append(image, this.#dom.element("span", "", label));
+      }
       button.classList.toggle("inventory-categories__button--active", category.selected);
       button.setAttribute("aria-pressed", String(category.selected));
       button.addEventListener("click", () => onCategorySelect?.(category.id));
