@@ -282,6 +282,7 @@
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
 │  ├── refactoring_remaining.md
+│  ├── rendering.md
 │  ├── rod_animation_reference.md
 │  ├── rod_control_ownership.md
 │  ├── rod_lateral_movement.md
@@ -508,6 +509,8 @@
 │  ├── 101-rod-side-tension
 │  │  └── spec.md
 │  ├── 102-cast-line-speed
+│  │  └── spec.md
+│  ├── 102-render-quality-policy
 │  │  └── spec.md
 │  └── README.md
 ├── src

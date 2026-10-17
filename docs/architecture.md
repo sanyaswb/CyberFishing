@@ -149,8 +149,10 @@ art is WebP under `assets/`; image masters live in `asset-sources/` and are neve
 Render resolution ([spec 100](../specs/100-render-resolution-and-image-quality/spec.md)): the game works in logical
 (CSS) pixels. `CanvasMetricsProvider` (platform) is the only owner of the game canvas element's size: its backing store
 is logical × `min(devicePixelRatio, CONFIG.canvas.maxPixelRatio)` and its CSS size the logical size. `Canvas2DSurface`
-reports logical sizes; `beginFrame()`, called by `GameRenderCoordinator` before each frame, applies the base transform
-and high-quality image smoothing. Offscreen data surfaces keep ratio 1. Fish art comes in sized variants
+reports logical sizes; `beginFrame()`, called by `GameRenderCoordinator` before each frame, applies the base
+transform, and `drawImage` chooses the image filter from each draw's scale (spec 102: `"medium"` for downscales over
+1.5×, otherwise `"low"`, never `"high"`). Offscreen data surfaces keep ratio 1. Rules:
+[docs/rendering.md](rendering.md) (mandatory before rendering work). Fish art comes in sized variants
 (`game/presentation/fish/fish_art_variants.js`: thumbnail 128, display 768). The victory image source
 `fishDisplayImagePath` is injected into both `OutcomeRenderFrameBuilder` and `AssetPreloadCoordinator`.
 

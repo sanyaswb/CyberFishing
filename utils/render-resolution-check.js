@@ -18,11 +18,61 @@ function recordingCanvas(width, height) {
     calls,
     setTransform: (...args) => calls.push(["setTransform", ...args]),
     fillRect: (...args) => calls.push(["fillRect", ...args]),
+    drawImage: (...args) => calls.push(["drawImage", args.length]),
     set fillStyle(value) { calls.push(["fillStyle", value]); },
     set imageSmoothingEnabled(value) { calls.push(["imageSmoothingEnabled", value]); },
     set imageSmoothingQuality(value) { calls.push(["imageSmoothingQuality", value]); },
   };
   return { width, height, context, getContext: () => context };
+}
+
+// Spec 102: the filter for each draw follows its scale; "high" is never used.
+async function checkFilterPolicy() {
+  const { Canvas2DSurface } = await importSource("src/platform/browser/canvas/canvas_2d_surface.js");
+  const canvas = recordingCanvas(768, 1632);
+  const surface = new Canvas2DSurface(canvas, { resolution: { width: 384, height: 816, pixelRatio: 2 } });
+  const qualityOf = (draw) => {
+    canvas.context.calls.length = 0;
+    draw();
+    const set = canvas.context.calls.filter((call) => call[0] === "imageSmoothingQuality");
+    assert.equal(set.length, 1, "exactly one filter per draw");
+    return set[0][1];
+  };
+  const background = { naturalWidth: 2560, naturalHeight: 1440 };
+  assert.equal(qualityOf(() => surface.drawImage(background, 0, 0, 1451, 816)), "low",
+    "the portrait background is enlarged (1440 px over 1632 device px): bilinear, never bicubic");
+  assert.equal(qualityOf(() => surface.drawImage(background, 0, 0, 683, 384)), "medium",
+    "the landscape background (1440 px over 768 device px, 1.9x) is shrunk: mipmaps");
+  const fish = { naturalWidth: 768, naturalHeight: 768 };
+  assert.equal(qualityOf(() => surface.drawImage(fish, 0, 0, 768, 768, 10, 10, 200, 200)), "medium",
+    "victory fish 768 px into a 200 px box at 2x (1.9x): mipmaps");
+  assert.equal(qualityOf(() => surface.drawImage(fish, 0, 0, 768, 768, 10, 10, 300, 300)), "low",
+    "768 px into 600 device px (1.28x) is near 1:1: bilinear");
+  assert.equal(qualityOf(() => surface.drawImage({ width: 500, height: 300 }, 0, 0, 250, 150)), "low",
+    "the Spine GL copy is 1:1 in device pixels");
+  assert.equal(qualityOf(() => surface.drawImage(fish, 1, 2)), "low", "a 3-argument draw is 1:1");
+  assert.equal(qualityOf(() => surface.drawImage({ naturalWidth: 85, naturalHeight: 2735 }, 2, 2, 2735, 85, 0, 0, 234, 8)),
+    "medium", "the static rod region (rotated footprint) shrinks 5.8x: mipmaps");
+  canvas.context.calls.length = 0;
+  surface.beginFrame();
+  assert(!canvas.context.calls.some((call) => call[0] === "imageSmoothingQuality"), "beginFrame sets no filter");
+
+  const offenders = [];
+  const walk = (directory) => {
+    for (const entry of fs.readdirSync(path.join(ROOT_DIR, directory), { withFileTypes: true })) {
+      const relative = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) walk(relative);
+      else if (relative.endsWith(".js")) {
+        const source = fs.readFileSync(path.join(ROOT_DIR, relative), "utf8");
+        if (/imageSmoothingQuality\s*=/u.test(source) && relative !== "src/platform/browser/canvas/canvas_2d_surface.js") {
+          offenders.push(`${relative} sets imageSmoothingQuality`);
+        }
+        if (/imageSmoothingQuality\s*=\s*["']high["']/u.test(source)) offenders.push(`${relative} uses "high"`);
+      }
+    }
+  };
+  walk("src");
+  assert.deepEqual(offenders, [], "only the surface sets the filter, and never \"high\" (docs/rendering.md rules 3-4)");
 }
 
 async function checkSurface() {
@@ -35,8 +85,8 @@ async function checkSurface() {
   surface.beginFrame();
   surface.clear("#123");
   assert.deepEqual(canvas.context.calls, [["setTransform", 2, 0, 0, 2, 0, 0], ["imageSmoothingEnabled", true],
-    ["imageSmoothingQuality", "high"], ["fillStyle", "#123"], ["fillRect", 0, 0, 390, 844]],
-    "frame start: base transform and high-quality smoothing; clear fills the logical size");
+    ["fillStyle", "#123"], ["fillRect", 0, 0, 390, 844]],
+    "frame start: base transform and smoothing on; clear fills the logical size");
   resolution.width = 400;
   resolution.pixelRatio = 1.5;
   canvas.context.calls.length = 0;
@@ -107,12 +157,14 @@ async function checkOneSource() {
 
 async function main() {
   await checkSurface();
+  await checkFilterPolicy();
   checkDrawOrder();
   const masters = await checkFishArt();
   await checkOneSource();
-  console.log(`Render resolution passed: logical surface with base transform and high smoothing at frame start, offscreen `
+  console.log(`Render resolution passed: logical surface with the base transform at frame start, offscreen `
     + `data at ratio 1, rod depth order, ${masters} fish masters with tracked thumbnail/display variants within size, `
-    + "one victory image source for the frame and the preloader.");
+    + "one victory image source for the frame and the preloader, per-draw image filter (medium for downscales, low "
+    + "otherwise, never high, set only by the surface).");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -61,27 +61,17 @@ Performance:
 - hot-loop read models (for example the fight frame) are reused objects written in place; diagnostics snapshots are built only when DEV composes them;
 - normalized configuration is computed once per runtime config revision, not per frame.
 
-Rendering resolution and image quality ([spec 100](specs/100-render-resolution-and-image-quality/spec.md); problem: on phones the
-whole canvas was drawn at one pixel per CSS pixel and stretched 2.6–3×, and 2752 px fish art and a 2735 px rod texture
-were shrunk 10–14× in one bilinear step):
-- gameplay, input, layout, projection and render models use logical (CSS) pixels. Only `CanvasMetricsProvider` (the
-  game canvas) and `SpineGlSurface` (GL) touch backing pixels; never read `canvas.width` / `canvas.height` for layout,
-  input or game sizes (they are device pixels);
-- every on-screen canvas, 2D or WebGL, has a backing store of logical size × pixel ratio (`CONFIG.canvas.maxPixelRatio`
-  caps it), its CSS size set explicitly, and draws through a base transform applied at frame start
-  (`Canvas2DSurface.beginFrame`, called by the render coordinator). Do not put the transform into a pass that may be
-  skipped. Data canvases (depth maps, debug maps) keep their data's pixel size;
-- runtime art is sized for its largest on-screen use × the pixel-ratio cap; never draw a master into a small box. Fish
-  art has one variant table (`src/game/presentation/fish/fish_art_variants.js`) and the `render-resolution` check
-  requires a tracked variant for every master;
-- large downscales are filtered: mipmaps for GL textures (`SpineScene` switches pages to trilinear where the GPU can),
-  `imageSmoothingQuality = "high"` for 2D. Never rely on a single bilinear step for more than about 2× minification;
-- one source per derived asset path: when two modules need "the image for X" (draw and preload), compose one function in
-  bootstrap and inject it into both. No module keeps its own default path;
-- draw order follows depth: nearer objects are drawn later. When a component gains a new picture (the rod over the
-  line's start), review its order instead of inheriting it;
-- configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as image
-  scales.
+Rendering — **mandatory reading before any rendering work**: [docs/rendering.md](docs/rendering.md). That covers
+renderers, render passes, the canvas or its size, image assets and their sizes, Spine, the HUD over the canvas and the
+frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; portrait phones at 10–17 FPS from
+`imageSmoothingQuality = "high"`, spec 102) and the rules that prevent them:
+- logical (CSS) pixels everywhere, backing pixels only in their owners;
+- the image filter is chosen per draw by the surface, never `"high"`;
+- art sized close to 1:1 with the screen;
+- the 16.7 ms frame budget includes the GPU;
+- every rendering change is measured on a phone in both orientations with the DevTools overlay "⚡ ПРОДУКТИВНІСТЬ"
+  before the commit;
+- draw order follows depth.
 
 Before creating or changing any design/UI element, read and follow [DESIGN_RULES.md](DESIGN_RULES.md) and [docs/styles.md](docs/styles.md). DESIGN_RULES is the current source for component/style reuse, BEM, tokens, Grid/Flex responsibilities, the 320px logical layout with proportional scaling below it, inventory's four mobile columns, keepnet's two mobile columns and shared parameter-meter semantics. Completed design specs remain historical records.
 

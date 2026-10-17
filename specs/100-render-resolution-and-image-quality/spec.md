@@ -43,9 +43,11 @@ The game-cycle report cannot change. Rendering, input and gameplay units stay lo
 
 ### D2 Image smoothing policy
 
-`Canvas2DSurface.clear()` sets `imageSmoothingEnabled = true` and `imageSmoothingQuality = "high"` for the frame.
-Browsers then filter large downscales with mip-mapped or higher-order sampling instead of 4 texels. That is the 2D
-counterpart of D3 and applies to every `drawImage` (backgrounds, victory art, the static rod).
+**Superseded by [spec 102](../102-render-quality-policy/spec.md) — this decision caused a regression.** As first
+implemented, the frame start set `imageSmoothingEnabled = true` and `imageSmoothingQuality = "high"` for the whole
+canvas. That made Chromium sample the enlarged portrait background bicubically every frame, and portrait phones ran at
+10–17 FPS. Spec 102 chooses the filter per draw from its scale (`"medium"` for downscales over 1.5×, otherwise `"low"`)
+and never uses `"high"`.
 
 ### D3 Spine at device pixels, mipmapped
 
@@ -90,8 +92,9 @@ mode is unchanged: the bar and the line are one component, drawn in their old or
    size.
 3. Runtime art is sized for its largest on-screen use × the pixel-ratio cap. Masters stay in `asset-sources/` (or
    stay as masters next to sized variants until 047's quality tiers exist). Never draw a master into a small box.
-4. Large downscales need filtering: mipmaps for GL textures, `imageSmoothingQuality = "high"` for 2D. Never rely on
-   the default single-step bilinear filter for more than about 2× minification.
+4. Large downscales need filtering: mipmaps for GL textures, and for 2D the per-draw `"medium"` filter of spec 102.
+   The first version said `"high"` here, which was wrong; see spec 102. Never rely on the default single-step bilinear
+   filter for more than about 2× minification. The current rules live in docs/rendering.md.
 5. One source per derived asset path: if two modules need "the image for X", compose one function and inject it into
    both.
 6. Draw order follows depth: nearer objects are drawn later. A new picture added to an existing component (the rod

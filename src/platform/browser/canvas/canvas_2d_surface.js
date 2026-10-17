@@ -1,7 +1,13 @@
-// A 2D drawing surface in logical pixels (spec 100 D1/D2). With a resolution (the game canvas's CanvasMetricsProvider:
-// logical width/height and pixelRatio), beginFrame() re-applies the base transform and the image smoothing policy,
-// because a canvas resize between frames resets the context state. Without one (offscreen data surfaces: depth maps,
-// debug maps) a logical pixel is a backing pixel. getImageData always reads backing pixels.
+// A 2D drawing surface in logical pixels (spec 100 D1). With a resolution (the game canvas's CanvasMetricsProvider:
+// logical width/height and pixelRatio), beginFrame() re-applies the base transform, because a canvas resize between
+// frames resets the context state. Without one (offscreen data surfaces: depth maps, debug maps) a logical pixel is a
+// backing pixel. getImageData always reads backing pixels.
+// Image filtering is chosen per drawImage by the scale of that draw (spec 102, docs/rendering.md): a downscale of
+// more than MIPMAP_DOWNSCALE uses "medium" (bilinear with mipmaps: clean, cheap), anything near 1:1 or enlarged uses
+// "low" (bilinear). "high" is never used: Chromium turns it into bicubic sampling on enlargement, 16 texture reads per
+// screen pixel every frame, which dropped portrait phones to 10-17 FPS (spec 102).
+const MIPMAP_DOWNSCALE = 1.5;
+
 export class Canvas2DSurface {
   #canvas;
   #context;
@@ -112,14 +118,13 @@ export class Canvas2DSurface {
     this.#context.lineDashOffset = value;
   }
 
-  // Starts a frame (spec 100): the base transform (logical -> backing pixels) and high-quality smoothing for downscaled
-  // images. The render coordinator calls it before every frame, so a resize in between never leaves a frame unscaled.
+  // Starts a frame (spec 100): the base transform (logical -> backing pixels). The render coordinator calls it before
+  // every frame, so a resize in between never leaves a frame unscaled.
   beginFrame() {
     const context = this.#context;
     const ratio = this.pixelRatio;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = "high";
   }
 
   clear(color = "#0f171e") {
@@ -237,10 +242,13 @@ export class Canvas2DSurface {
     dHeight,
   ) {
     if (arguments.length === 3) {
+      this.#context.imageSmoothingQuality = "low";
       this.#context.drawImage(image, sxOrDx, syOrDy);
       return;
     }
     if (arguments.length === 5) {
+      this.#applySmoothing(Canvas2DSurface.#naturalWidth(image), Canvas2DSurface.#naturalHeight(image),
+        sWidthOrDWidth, sHeightOrDHeight);
       this.#context.drawImage(
         image,
         sxOrDx,
@@ -250,6 +258,7 @@ export class Canvas2DSurface {
       );
       return;
     }
+    this.#applySmoothing(sWidthOrDWidth, sHeightOrDHeight, dWidth, dHeight);
     this.#context.drawImage(
       image,
       sxOrDx,
@@ -296,6 +305,26 @@ export class Canvas2DSurface {
   }
 
   drawCurrentSurface(x, y, width, height) {
+    this.#applySmoothing(this.#canvas.width, this.#canvas.height, width, height);
     this.#context.drawImage(this.#canvas, x, y, width, height);
+  }
+
+  // The filter for one draw (spec 102): source pixels against the destination in backing pixels. Set on every draw,
+  // because save()/restore() in renderers would make a cached value wrong.
+  #applySmoothing(sourceWidth, sourceHeight, destWidth, destHeight) {
+    const ratio = this.pixelRatio;
+    const downscale = Math.min(
+      Math.abs(Number(sourceWidth) || 0) / Math.max(1e-6, Math.abs(Number(destWidth) || 0) * ratio),
+      Math.abs(Number(sourceHeight) || 0) / Math.max(1e-6, Math.abs(Number(destHeight) || 0) * ratio),
+    );
+    this.#context.imageSmoothingQuality = downscale > MIPMAP_DOWNSCALE ? "medium" : "low";
+  }
+
+  static #naturalWidth(image) {
+    return image?.naturalWidth || image?.videoWidth || image?.width || 0;
+  }
+
+  static #naturalHeight(image) {
+    return image?.naturalHeight || image?.videoHeight || image?.height || 0;
   }
 }
