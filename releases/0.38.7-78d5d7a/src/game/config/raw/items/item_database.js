@@ -124,17 +124,18 @@ export const ITEM_DB = {
       itemType: "rod",
       variant: "float",
       icon: "🎣",
-      // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без.
+      // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без,
+      // прев'ю редактора — весь малюнок.
       skin: {
         id: "bamboo-rod-v1",
         thumbnail: {
-          src: "assets/items/rods/bamboo-rod-ecip-v1.png",
+          src: "assets/items/rods/bamboo-rod-ecip-v1.webp",
           visibleHeight: 0.5,
           focusX: 0.31,
         },
         equipment: {
-          withLine: "assets/items/rods/bamboo-rod-ecip-v1.png",
-          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.png",
+          withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
+          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.webp",
         },
       },
       rarityProfile: {
@@ -788,7 +789,6 @@ export const ITEM_DB = {
           visibleHeight: 0.4,
           focusX: 0.5,
           anchor: "top",
-          editorPreview: "whole",
         },
       },
       rarityProfile: {

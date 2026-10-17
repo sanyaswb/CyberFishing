@@ -12,10 +12,14 @@
   background: var(--ui-close-background, rgba(var(--ui-danger-rgb), 0.12));
   color: var(--ui-close-color, var(--ui-danger-text));
   /* Keep the accessible button name; draw the cross without a font baseline. */
-  font: 0/1 system-ui, sans-serif;
+  font:
+    0/1 system-ui,
+    sans-serif;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color var(--ui-duration-control) var(--ui-ease-standard), border-color var(--ui-duration-control) var(--ui-ease-standard);
+  transition:
+    background-color var(--ui-duration-control) var(--ui-ease-standard),
+    border-color var(--ui-duration-control) var(--ui-ease-standard);
 }
 .ui-modal-close::before,
 .ui-modal-close::after {
@@ -28,14 +32,34 @@
   background: currentColor;
   content: "";
 }
-.ui-modal-close::before { transform: translate(-50%, -50%) rotate(45deg); }
-.ui-modal-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
-.ui-surface--desktop-hover .ui-modal-close:hover:not(:disabled) { background: var(--ui-close-hover-background, rgba(var(--ui-danger-rgb), 0.24)); border-color: var(--ui-close-border, var(--ui-danger)); }
-.ui-surface--desktop-hover .ui-modal-close:active:not(:disabled) { background: rgba(var(--ui-danger-rgb), 0.32); }
-.ui-modal-close:disabled { opacity: 0.46; cursor: not-allowed; }
-.ui-modal-close:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.ui-modal-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.ui-modal-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.ui-surface--desktop-hover .ui-modal-close:hover:not(:disabled) {
+  background: var(
+    --ui-close-hover-background,
+    rgba(var(--ui-danger-rgb), 0.24)
+  );
+  border-color: var(--ui-close-border, var(--ui-danger));
+}
+.ui-surface--desktop-hover .ui-modal-close:active:not(:disabled) {
+  background: rgba(var(--ui-danger-rgb), 0.32);
+}
+.ui-modal-close:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+}
+.ui-modal-close:focus-visible {
+  outline: 2px solid var(--ui-info);
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: reduce) {
-  .ui-modal-close { transition: none; }
+  .ui-modal-close {
+    transition: none;
+  }
 }
 
 /* Shared, keyboard-accessible tap/swipe target for bottom sheets. */
@@ -59,8 +83,16 @@
   border-radius: var(--ui-radius-control);
   background: currentColor;
 }
-.ui-sheet-handle:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: -2px; }
-.ui-surface--desktop-hover .ui-sheet-handle:hover { background: var(--ui-sheet-handle-hover-background, rgba(var(--ui-accent-rgb), 0.08)); }
+.ui-sheet-handle:focus-visible {
+  outline: 2px solid var(--ui-focus-color);
+  outline-offset: -2px;
+}
+.ui-surface--desktop-hover .ui-sheet-handle:hover {
+  background: var(
+    --ui-sheet-handle-hover-background,
+    rgba(var(--ui-accent-rgb), 0.08)
+  );
+}
 
 /* Shared transient hint (spec 080): message and close button, one surface for every tone. The owner positions it
    inside its own container through a BEM mix (inset, top/bottom, max-height); the hint never sizes from the viewport
@@ -74,7 +106,7 @@
   min-width: 0;
   max-width: 100%;
   margin: 0;
-  padding: 10px 8px 10px 12px;
+  padding: 5px 5px 5px 10px;
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--ui-hint-accent);
@@ -86,9 +118,17 @@
   text-align: start;
   animation: ui-hint-enter var(--ui-duration-control) var(--ui-ease-standard);
 }
-.ui-hint[hidden] { display: none; }
-.ui-hint--warning { --ui-hint-accent: var(--ui-warning); --ui-hint-text: #ffe2b0; }
-.ui-hint--error { --ui-hint-accent: var(--ui-danger); --ui-hint-text: #ffc4ca; }
+.ui-hint[hidden] {
+  display: none;
+}
+.ui-hint--warning {
+  --ui-hint-accent: var(--ui-warning);
+  --ui-hint-text: #ffe2b0;
+}
+.ui-hint--error {
+  --ui-hint-accent: var(--ui-danger);
+  --ui-hint-text: #ffc4ca;
+}
 .ui-hint__text {
   flex: 1 1 auto;
   min-width: 0;
@@ -106,11 +146,21 @@
   flex: 0 0 auto;
 }
 .ui-hint__close::before,
-.ui-hint__close::after { width: 12px; }
+.ui-hint__close::after {
+  width: 12px;
+}
 @keyframes ui-hint-enter {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ui-hint { animation: none; }
+  .ui-hint {
+    animation: none;
+  }
 }
