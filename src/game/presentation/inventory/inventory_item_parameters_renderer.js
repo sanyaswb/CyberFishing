@@ -58,14 +58,77 @@ export class InventoryItemParametersRenderer {
       this.#syncSectionLayout(panel);
       return null;
     }
-    section.dataset.instanceId = String(item?.instanceId || "");
+    const instanceId = String(item?.instanceId || "");
+    if (section.dataset.instanceId !== instanceId) section.dataset.instanceId = instanceId;
     const list = this.#findParameterList(section) ||
       this.#dom.element("ul", "inventory-parameters-list");
-    list.replaceChildren(
-      ...parameters.map((parameter) => this.#renderRow(parameter)),
-    );
+    // The timer refresh (every 250 ms) keeps the rows: rebuilding them each time made the list flash in DevTools and
+    // dropped hover, tooltips and selection. Only a changed set of parameters rebuilds the list.
+    const rows = list.children;
+    const sameRows = rows.length === parameters.length &&
+      parameters.every((parameter, index) => rows[index].dataset?.parameterKey === this.#rowKey(parameter));
+    if (sameRows) parameters.forEach((parameter, index) => this.#patchRow(rows[index], parameter));
+    else list.replaceChildren(...parameters.map((parameter) => this.#renderRow(parameter)));
     if (!list.parentNode) section.appendChild(list);
     return section;
+  }
+
+  // A row keeps its nodes while its kind, label, help text and shape stay the same.
+  #rowKey(parameter) {
+    const hasValue = parameter.value !== undefined && parameter.value !== null;
+    const shape = parameter.kind === "effectiveness" ? (parameter.entries || []).length
+      : parameter.kind === "segments" ? parameter.totalSections || 10
+        : parameter.kind === "resource" ? parameter.resource?.id || "" : "";
+    return [parameter.kind || "", parameter.label || "", parameter.description || "", hasValue ? "v" : "", shape].join("|");
+  }
+
+  // Writes only what changed, so an unchanged reading causes no DOM mutation.
+  #patchRow(li, parameter) {
+    const color = parameter.color || "";
+    if (li.style.getPropertyValue("--inventory-parameter-color") !== color) {
+      if (color) li.style.setProperty("--inventory-parameter-color", color);
+      else li.style.removeProperty("--inventory-parameter-color");
+    }
+    const value = li.querySelector?.(".inventory-parameter__value");
+    if (value) this.#setText(value, String(parameter.value));
+    if (parameter.kind === "resource" && parameter.resource) {
+      const meter = li.querySelector?.(".inventory-resource-meter");
+      if (meter) this.#resourceMeterRenderer.updateReading(meter, parameter.resource);
+    } else if (parameter.kind === "effectiveness") {
+      const rows = li.querySelectorAll?.(".inventory-bait-effectiveness__row") || [];
+      (parameter.entries || []).forEach((entry, index) => this.#patchEffectiveness(rows[index], entry));
+    } else if (parameter.kind === "bar" && parameter.percent !== undefined) {
+      const fill = li.querySelector?.(".inventory-parameter__bar-fill");
+      const width = `${Math.max(0, Math.min(100, Number(parameter.percent)))}%`;
+      if (fill && fill.style.width !== width) fill.style.width = width;
+    } else if (parameter.kind === "segments") {
+      const filled = parameter.filledSections || 0;
+      Array.from(li.querySelectorAll?.(".inventory-parameter__segment") || []).forEach((segment, index) => {
+        this.#toggle(segment, "inventory-parameter__segment--filled", index < filled);
+        this.#toggle(segment, "inventory-parameter__segment--colored", index < filled && Boolean(parameter.color));
+      });
+    }
+  }
+
+  #patchEffectiveness(row, entry) {
+    if (!row) return;
+    const fish = row.querySelector?.(".inventory-bait-effectiveness__fish");
+    if (fish) this.#setText(fish, String(entry.fishName || entry.fishId));
+    const value = row.querySelector?.(".inventory-bait-effectiveness__value");
+    if (!value) return;
+    this.#setText(value, this.#effectivenessText(entry));
+    const title = this.#effectivenessTitle(entry);
+    if (title === null) {
+      if (value.hasAttribute?.("title")) value.removeAttribute("title");
+    } else if (value.getAttribute("title") !== title) value.setAttribute("title", title);
+  }
+
+  #setText(node, text) {
+    if (node.textContent !== text) node.textContent = text;
+  }
+
+  #toggle(node, className, enabled) {
+    if (node.classList.contains(className) !== enabled) node.classList.toggle(className, enabled);
   }
 
   #syncSectionLayout(panel) {
@@ -146,6 +209,7 @@ export class InventoryItemParametersRenderer {
 
   #renderRow(parameter) {
     const li = this.#dom.element("li", "inventory-parameter");
+    li.dataset.parameterKey = this.#rowKey(parameter);
     if (parameter.color) {
       li.style.setProperty("--inventory-parameter-color", parameter.color);
     }
@@ -231,32 +295,29 @@ export class InventoryItemParametersRenderer {
         "inventory-bait-effectiveness__value",
         this.#effectivenessText(entry),
       );
-      if (entry.discovered && Number.isFinite(Number(entry.multiplier))) {
-        const lines = [
-          `Базовий множник клювання ×${this.#formatMultiplier(entry.multiplier)}`,
-        ];
-        if (Number.isFinite(Number(entry.freshnessPercent))) {
-          lines.push(`Свіжість ${Math.round(Number(entry.freshnessPercent))}%`);
-        }
-        if (Number.isFinite(Number(entry.freshnessMultiplier))) {
-          lines.push(
-            `Модифікатор свіжості ×${this.#formatMultiplier(entry.freshnessMultiplier)}`,
-          );
-        }
-        if (Number.isFinite(Number(entry.effectiveMultiplier))) {
-          lines.push(
-            `Поточний множник ×${this.#formatMultiplier(entry.effectiveMultiplier)}`,
-          );
-        }
-        value.setAttribute(
-          "title",
-          lines.join("\n"),
-        );
-      }
+      const title = this.#effectivenessTitle(entry);
+      if (title !== null) value.setAttribute("title", title);
       row.appendChild(value);
       list.appendChild(row);
     }
     return list;
+  }
+
+  #effectivenessTitle(entry) {
+    if (!entry.discovered || !Number.isFinite(Number(entry.multiplier))) return null;
+    const lines = [
+      `Базовий множник клювання ×${this.#formatMultiplier(entry.multiplier)}`,
+    ];
+    if (Number.isFinite(Number(entry.freshnessPercent))) {
+      lines.push(`Свіжість ${Math.round(Number(entry.freshnessPercent))}%`);
+    }
+    if (Number.isFinite(Number(entry.freshnessMultiplier))) {
+      lines.push(`Модифікатор свіжості ×${this.#formatMultiplier(entry.freshnessMultiplier)}`);
+    }
+    if (Number.isFinite(Number(entry.effectiveMultiplier))) {
+      lines.push(`Поточний множник ×${this.#formatMultiplier(entry.effectiveMultiplier)}`);
+    }
+    return lines.join("\n");
   }
 
   #effectivenessText(entry) {
