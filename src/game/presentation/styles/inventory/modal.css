@@ -2,7 +2,9 @@
 
 /* --inventory-editor-swipe: the item editor's tabs swipe in every layout (spec 094). */
 .inventory-modal {
-  --inventory-content-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
+  /* The sidebar keeps its minimum until both columns are equal; narrower, both share the width equally (half of the
+     row without the gap), so they shrink together instead of only the items column. */
+  --inventory-content-columns: minmax(min(430px, calc((100% - var(--inventory-content-gap)) / 2)), 0.92fr) minmax(0, 1.88fr);
   --inventory-editor-swipe: on;
   --inventory-content-gap: 20px;
   /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
@@ -171,7 +173,7 @@
 
 @container ui-surface (max-width: 1180px) {
   .inventory-modal {
-    --inventory-content-columns: minmax(370px, 0.9fr) minmax(0, 1.35fr);
+    --inventory-content-columns: minmax(min(370px, calc((100% - var(--inventory-content-gap)) / 2)), 0.9fr) minmax(0, 1.35fr);
   }
 }
 

@@ -722,31 +722,44 @@ class InventoryStaticContractCheck {
       "All production parameter scales must share one configured height",
     );
     // Spec 067: one container-relative unit sizes the equipment reference; separate columns also bound it by height.
+    // Formatters may wrap long selectors and calc(): these loadout rules are compared with collapsed whitespace.
+    const flatCss = (css) => css.replace(/\s+/g, " ").replace(/\(\s/g, "(").replace(/\s\)/g, ")");
+    const flatStyle = flatCss(style);
     assert.ok(
-      style.includes("--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.56));") &&
-        /\.inventory-loadout-panel\s*\{[^}]*align-content:\s*start;/.test(style) &&
-        style.includes("container: inventory-equipment / size;"),
+      flatStyle.includes("--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.88));") &&
+        /\.inventory-loadout-panel\s*\{[^}]*align-content:\s*start;/.test(flatStyle) &&
+        flatStyle.includes("container: inventory-equipment / size;"),
       "The equipment composition must scale from its container's width, and height in the two-column layout",
     );
     assert.match(
-      style,
-      /\.inventory-loadout-panel__primary\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s+var\(--inventory-equipment-unit\);[\s\S]*?height:\s*calc\(var\(--inventory-equipment-unit\) \* 3 \+/,
+      flatStyle,
+      /\.inventory-loadout-panel__primary\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s+var\(--inventory-equipment-unit\);[\s\S]*?height:\s*calc\(\s*var\(--inventory-equipment-unit\) \* 3 \+/,
       "The rod cell fills the width beside one dependent column three units tall",
     );
     assert.match(
-      style,
+      flatStyle,
       /\.inventory-loadout-panel__primary--single\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/,
       "Without dependent slots the rod cell spans the primary panel",
     );
     assert.match(
-      style,
+      flatStyle,
       /\.inventory-main__section--equipment \.inventory-loadout-panel:has\(> \.inventory-loadout-panel__primary--single\)\s*\{\s*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+max-content;/,
       "Without a rod the rod cell grows into the free height of the equipment section",
     );
-    assert.match(mobileLoadout.split("@container ui-surface (orientation: portrait)")[1],
+    assert.match(flatCss(mobileLoadout).split("@container ui-surface (orientation: portrait)")[1],
       /\.inventory-main__section--equipment:has\(\.inventory-loadout-panel__primary--single\) \.inventory-loadout-shell\s*\{\s*height:\s*100%;/,
       "A rodless portrait equipment section fills the content row");
-    assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(style), "The rod cell no longer keeps a fixed 9:16 proportion");
+    assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(flatStyle), "The rod cell no longer keeps a fixed 9:16 proportion");
+    // A container at least as wide as tall puts the auxiliary wells in a column left of the primary panel.
+    const wideLoadout = flatStyle.split("@container inventory-equipment (min-aspect-ratio: 1 / 1) {")[1] || "";
+    assert.match(wideLoadout, /\.inventory-loadout-panel\s*\{[^}]*--inventory-equipment-unit:\s*min\(calc\(100cqi \/ 4\.83\),\s*calc\(100cqb \/ 3\.81\)\);[^}]*grid-template-areas:\s*"auxiliary primary";[^}]*column-gap:\s*var\(--inventory-equipment-inset\);/,
+      "a wide equipment container rescales the unit for the side column");
+    assert.match(wideLoadout, /\.inventory-loadout-panel__auxiliary\s*\{[^}]*grid-template-rows:\s*repeat\(4, var\(--inventory-equipment-well-size\)\);/,
+      "the four wells stand in one column");
+    assert.match(wideLoadout, /\.inventory-loadout-panel__auxiliary\s*\{[^}]*justify-self:\s*stretch;[^}]*padding:\s*var\(--inventory-equipment-inset\);/,
+      "the wells column fills the free width with the primary panel's inset as padding");
+    assert.match(flatStyle, /--inventory-content-columns:\s*minmax\(min\(430px, calc\(\(100% - var\(--inventory-content-gap\)\) \/ 2\)\), 0\.92fr\)/,
+      "both content columns shrink together once they are equal");
     // Spec 094: the editor's cells are its tabs, sized by the shared socket size.
     assert.ok(
       /\.inventory-editor-tabs__tab\s*\{[^}]*flex:\s*0 0 var\(--inventory-socket-size\);/.test(style),
@@ -793,7 +806,7 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding:\s*calc\(var\(--inventory-equipment-unit\) \* 0\.065\)\s+var\(--inventory-equipment-inset\);/,
+      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding:\s*calc\(\s*var\(--inventory-equipment-unit\) \* 0\.15\s*\)\s+var\(--inventory-equipment-inset\);/,
       "Auxiliary row must share the primary panel's inset so its outer wells align with the rod and column edges",
     );
     assert.ok(
