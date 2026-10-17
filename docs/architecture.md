@@ -153,7 +153,11 @@ user of the Spine API), `SpineBundleLoader` (atlas, pages and skeleton through `
 and `SpineGlSurface` (offscreen WebGL canvas composited into the 2D game). Third-party code lives in `vendor/` and is
 pinned by `vendor/manifest.json`. `utils/vendor-spine.js` writes it from the exact npm devDependency. The
 architecture check verifies each vendor file's SHA-256, that it has no imports and that only its one named importer
-imports it.
+imports it. The rod (presentation, `game/presentation/fishing`): `RodAnimationStateResolver` (pure pose choice) and
+`RodAnimationController` (modes rectangle → static → spine, the `RodAnchorFrame` whose tip starts the line) are
+advanced by `FishingEquipmentRenderModelBuilder.prepareRod` while the fishing frame is built. `RodStaticRenderer`,
+`RodSpineRenderer` and `RodLineRenderer` draw from the frame model. `bootstrap/production/rod_animation_composition.js`
+wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime.
 
 ## Migration history
 

@@ -50,7 +50,11 @@ function checkRenderFrameComposition() {
   const landingBuilder=new c.LandingAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,getNet:()=>({isActive:true,getTriggerVirtualY:metric=>metric.shoreY-100}),landingPolicyResolver:{resolve:()=>({getLandingDistanceMeters:()=>1})}});
   const areaBuilder=new c.FightAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,landingAreaBuilder:landingBuilder,sectorGeometry:{resolve:()=>geometry}});
   const hudBuilder=new c.FightHudFrameBuilder({config,canvasMetrics:metrics});
-  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400});
+  // Rod without an animated skin (spec 099): the controller's rectangle anchor, tip at base - 200 px.
+  const rodAnchor={mode:'rectangle',baseX:0,baseY:0,tipX:0,tipY:0,scale:1,destX:0,destY:0,image:null,region:null,bounds:null};
+  const rodAnimation={setSkin(){},advance(context){rodAnchor.baseX=rodAnchor.tipX=context.baseX;rodAnchor.baseY=context.baseY;rodAnchor.tipY=context.baseY-200;return rodAnchor;}};
+  assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,getWind:()=>null}),/requires rodAnimation/);
+  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null});
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
   const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});
   const victoryConfig={},layout={id:'layout'};

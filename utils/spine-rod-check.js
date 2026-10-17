@@ -107,8 +107,9 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
 function fakeSurface({ height = 600, maxTextureSize = 4096 } = {}) {
   const listeners = new Set();
   return {
-    width: 300, height, maxTextureSize, gl: null, canvas: null, lost: false,
+    width: 300, height, maxTextureSize, gl: null, canvas: { id: "gl-canvas" }, lost: false,
     ensureContext: () => true,
+    resize(width, nextHeight) { this.width = Math.max(1, Math.ceil(width)); this.height = Math.max(1, Math.ceil(nextHeight)); },
     isContextLost() { return this.lost; },
     onContextChange(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     emit(lost) { this.lost = lost; for (const listener of listeners) listener(lost); },
@@ -308,6 +309,215 @@ function checkSmoother(ScalarSmoother) {
   assert.equal(snap.value, 0.2);
 }
 
+function checkSetupPose(SpineSetupPoseReader, bundle) {
+  const pose = bundle.staticPose;
+  assert(pose, "the bundle carries the static setup pose");
+  near(pose.bounds.x, -6.404351, 1e-6, "header bounds x");
+  near(pose.bounds.height, 468.857, 1e-6, "header bounds height");
+  near(pose.linePoint.x, 1.21, 0.01, "setup line-tip x without the runtime");
+  near(pose.linePoint.y, 466.06, 0.01, "setup line-tip y without the runtime");
+  assert.deepEqual([pose.region.pageName, pose.region.name, pose.region.rotate, pose.region.width, pose.region.height],
+    ["rod.webp", "bamboo_rod--1", 90, 85, 2735], "the one drawn region");
+  const atlas = { pages: [{ name: "p.webp", regions: [{ name: "a", x: 0, y: 0, width: 4, height: 8, rotate: 0 }] }] };
+  const json = (overrides = {}) => ({
+    skeleton: { x: 0, y: 0, width: 4, height: 8 },
+    bones: [{ name: "root" }, { name: "tip", parent: "root", y: 8, ...overrides.tip }],
+    slots: overrides.slots ?? [{ name: "s", bone: "root", attachment: "a" }],
+    skins: [{ name: "default", attachments: { s: { a: { type: "mesh" }, p: { type: "point", x: 1, y: 2 } } } }],
+  });
+  assert.deepEqual({ ...SpineSetupPoseReader.read(json(), atlas, { linePoint: "p" }).linePoint }, { x: 1, y: 2 },
+    "a point attachment is a line point");
+  assert.equal(SpineSetupPoseReader.read(json({ tip: { shearX: 5 } }), atlas, { linePoint: "tip" }).linePoint, null,
+    "a sheared chain is not followed");
+  const twoSlots = json({ slots: [{ name: "s", bone: "root", attachment: "a" }, { name: "s", bone: "root", attachment: "a" }] });
+  assert.equal(SpineSetupPoseReader.read(twoSlots, atlas, {}).region, null, "two drawn slots have no single picture");
+}
+
+function checkResolver(RodAnimationStateResolver, config) {
+  const resolver = new RodAnimationStateResolver();
+  const out = resolver.createSnapshot();
+  const input = (overrides) => ({ state: "waiting", stressRatio: 0.5, fishScreenX: 640, rodBaseX: 640, canvasWidth: 1000,
+    windDirection: 0, rainMultiplier: 1, reducedMotion: false, ...overrides });
+  for (const [wind, clip] of [[-1, config.windClips.left], [0, config.windClips.calm], [1, config.windClips.right]]) {
+    resolver.resolve(input({ windDirection: wind }), config, out);
+    assert.equal(out.idleClip, clip, `wind ${wind} plays ${clip}`);
+    assert.equal(out.fighting, false);
+    assert.equal(out.bendTarget, 0, "no bend outside the fight");
+  }
+  resolver.resolve(input({ reducedMotion: true }), config, out);
+  assert.equal(out.idleTimeScale, 0, "reduced motion holds the idle");
+  resolver.resolve(input({ rainMultiplier: 1.5 }), { ...config, windRainTimeScale: true }, out);
+  assert.equal(out.idleTimeScale, 1.5, "rain speeds the sway only when enabled");
+  resolver.resolve(input({ rainMultiplier: 1.5 }), config, out);
+  assert.equal(out.idleTimeScale, 1);
+  resolver.resolve(input({ state: "playing", fishScreenX: 640 - 350 * 0.5, stressRatio: 1.4 }), config, out);
+  assert.equal(out.fighting, true);
+  assert.equal(out.sideClip, config.fightClips.left, "a fish left of the rod bends it left");
+  near(out.side, -0.5, 1e-12, "side is the offset over sideRangeRatio of the width");
+  near(out.frontAlpha + out.sideAlpha, 1, 1e-12, "front and side weights sum to one");
+  assert.equal(out.bendTarget, 1, "rod stress is clamped to 0..1");
+  resolver.resolve(input({ state: "playing", fishScreenX: 5000 }), config, out);
+  assert.deepEqual([out.sideClip, out.side, out.frontAlpha], [config.fightClips.right, 1, 0], "far right is the pure side");
+}
+
+function recordingSurface() {
+  const calls = [];
+  const record = (name) => (...args) => calls.push([name, ...args]);
+  return {
+    calls,
+    set fillStyle(value) { calls.push(["fillStyle", value]); },
+    set strokeStyle(value) { calls.push(["strokeStyle", value]); },
+    set lineWidth(value) { calls.push(["lineWidth", value]); },
+    fillRect: record("fillRect"), save: record("save"), restore: record("restore"), beginPath: record("beginPath"),
+    moveTo: record("moveTo"), quadraticCurveTo: record("quadraticCurveTo"), stroke: record("stroke"),
+    translate: record("translate"), rotate: record("rotate"), drawImage: record("drawImage"),
+  };
+}
+
+async function checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, spine, bundle, config }) {
+  const surface = fakeSurface();
+  const runtimeOutcome = { available: true, reason: null, runtime: { version: "4.3.13",
+    createScene: (sceneBundle, glSurface) => SpineScene.create({ spine, bundle: sceneBundle, surface: glSurface,
+      graphics: fakeGraphics(), runtimeVersion: "4.3.13" }) } };
+  let runtime = runtimeOutcome;
+  let forceStatic = false;
+  const loads = [];
+  const controller = new RodAnimationController({
+    loadBundle: (descriptor) => {
+      const load = { descriptor, released: false, release() { this.released = true; } };
+      load.result = Promise.resolve({ status: "ready", bundle });
+      loads.push(load);
+      return load;
+    },
+    loadRuntime: async () => runtime,
+    glSurface: surface,
+    resolver: new RodAnimationStateResolver(),
+    getConfig: () => config,
+    forceStatic: () => forceStatic,
+  });
+  const context = (overrides = {}) => ({ dtSec: 1 / 60, state: "waiting", stressRatio: 0, fishScreenX: 640, baseX: 640,
+    baseY: 800, canvasWidth: 1280, canvasHeight: 800, windDirection: 0, rainMultiplier: 1, ...overrides });
+  const flush = async () => { for (let index = 0; index < 8; index += 1) await Promise.resolve(); };
+
+  controller.setSkin(null);
+  let anchor = controller.advance(context());
+  assert.deepEqual([anchor.mode, anchor.tipX, anchor.tipY], ["rectangle", 640, 600], "no animated skin: today's rectangle top");
+
+  const animation = { skeleton: DESCRIPTOR.skeleton, atlas: DESCRIPTOR.atlas, skin: "rod-1", linePoint: "line-tip" };
+  runtime = { available: false, runtime: null, reason: "import-failed" };
+  controller.setSkin(animation);
+  controller.setSkin({ ...animation });
+  assert.equal(loads.length, 1, "the same descriptor does not reload");
+  assert.equal(controller.advance(context()).mode, "rectangle", "the rectangle stays until the bundle is ready");
+  await flush();
+  anchor = controller.advance(context());
+  assert.equal(anchor.mode, "static", "an unavailable runtime keeps the static picture");
+  assert.equal(controller.getStatus().reason, "import-failed");
+  const scale = (800 * config.heightRatio) / bundle.staticPose.bounds.height;
+  near(anchor.tipX, 640 + 1.21 * scale, 0.01, "static tip x from the setup pose");
+  near(anchor.tipY, 800 - 466.06 * scale, 0.01, "static tip y from the setup pose");
+  const staticTip = { x: anchor.tipX, y: anchor.tipY };
+
+  runtime = runtimeOutcome;
+  controller.setSkin(null);
+  assert.equal(loads[0].released, true, "a skin change releases the previous load");
+  controller.setSkin(animation);
+  await flush();
+  anchor = controller.advance(context({ dtSec: 0 }));
+  assert.equal(anchor.mode, "spine");
+  near(anchor.tipX, staticTip.x, 0.02, "the Spine tip at rest matches the static tip x");
+  near(anchor.tipY, staticTip.y, 0.02, "the Spine tip at rest matches the static tip y");
+  const originX = 640 - anchor.destX;
+  const originY = 800 - anchor.destY;
+  assert(originX > 0 && originX < surface.width && originY > 0 && originY <= surface.height,
+    `the rod base lies inside the GL surface: origin ${originX},${originY} in ${surface.width}x${surface.height}`);
+  for (let frame = 0; frame < 60; frame += 1) {
+    anchor = controller.advance(context({ state: "playing", stressRatio: 1, fishScreenX: 0 }));
+  }
+  assert(anchor.tipX < staticTip.x - 50 * scale, "a loaded rod bends toward a fish on its left");
+  assert(controller.getStatus().bend > 0.99, "the bend reaches the load after many time constants");
+  const bentX = anchor.tipX;
+  for (let frame = 0; frame < 3; frame += 1) anchor = controller.advance(context());
+  assert(anchor.tipX < staticTip.x && anchor.tipX > bentX, "after the fight the rod springs back on the same side");
+  for (let frame = 0; frame < 120; frame += 1) anchor = controller.advance(context());
+  near(controller.getStatus().bend, 0, 0.001, "the bend relaxes to zero");
+  surface.lost = true;
+  assert.equal(controller.advance(context()).mode, "static", "a lost context shows the static picture");
+  surface.lost = false;
+  forceStatic = true;
+  assert.equal(controller.advance(context()).mode, "static", "DEV spine=off forces the static picture");
+  forceStatic = false;
+  assert.equal(controller.advance(context()).mode, "spine");
+  controller.setSkin(null);
+  assert.equal(controller.advance(context()).mode, "rectangle", "removing the skin returns to the rectangle");
+  controller.setSkin(animation);
+  controller.setSkin(null);
+  await flush();
+  assert.equal(controller.advance(context()).mode, "rectangle", "a stale load does not come back");
+  controller.dispose();
+  controller.dispose();
+}
+
+function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
+  RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config }) {
+  const controller = new RodAnimationController({
+    loadBundle: () => ({ result: new Promise(() => {}), release() {} }), loadRuntime: async () => ({ available: false }),
+    glSurface: fakeSurface(), resolver: new RodAnimationStateResolver(), getConfig: () => config,
+  });
+  const gameConfig = { ui: { rod: { x: "center", yOffset: 12 }, line: { sagOffset: 60 } } };
+  const builder = new FishingEquipmentRenderModelBuilder({
+    projector: {}, canvasMetrics: { width: 1280, height: 800 }, clock: { now: 1000, delta: 16 }, config: gameConfig,
+    getRodScreenX: () => 610.5, rodAnimation: controller, getWind: () => ({ direction: 1, rainMult: 1 }),
+  });
+  const lineFrame = { renderRatio: 0.73, renderDrop: 4.5, straightFactor: 0.4 };
+  const floatPosition = { x: 900.25, y: 333.5 };
+  const anchor = builder.prepareRod({ state: "waiting", equipment: { rod: {} }, fightFrame: null, floatScreenX: 900.25 });
+  assert.equal(anchor.tipY, 800 - 12 - 200, "the line frame's rod top equals today's base - 200");
+  const target = {};
+  builder.buildRodLine({ target, floatPosition, state: "waiting", tension: 0, lineFrame });
+  // Today's formulas (before spec 099) for the same inputs.
+  const rodBaseX = 610.5;
+  const rodTopY = 800 - 12 - 200;
+  const targetX = rodBaseX + (floatPosition.x - rodBaseX) * lineFrame.renderRatio;
+  const targetY = rodTopY + (floatPosition.y - rodTopY) * lineFrame.renderRatio + lineFrame.renderDrop;
+  const straightY = (rodTopY + targetY) / 2;
+  const slackY = Math.max(rodTopY, targetY) + 60;
+  assert.deepEqual(
+    [target.rodMode, target.rodBaseX, target.rodTopY, target.rodWidth, target.rodHeight, target.lineStartX,
+      target.lineStartY, target.targetX, target.targetY, target.controlX, target.controlY],
+    ["rectangle", rodBaseX, rodTopY, 3, 200, rodBaseX, rodTopY, targetX, targetY, (rodBaseX + targetX) / 2,
+      slackY + (straightY - slackY) * lineFrame.straightFactor],
+    "without an animated skin the rod line model is bit for bit today's");
+
+  const lineSurface = recordingSurface();
+  new RodLineRenderer({ surface: lineSurface }).render({ ...target, lineVisible: true });
+  assert.deepEqual(lineSurface.calls.find((call) => call[0] === "fillRect"), ["fillRect", rodBaseX - 1.5, rodTopY, 3, 200]);
+  const spineLine = recordingSurface();
+  new RodLineRenderer({ surface: spineLine }).render({ ...target, rodMode: "spine", lineStartX: 5, lineStartY: 6, lineVisible: true });
+  assert(!spineLine.calls.some((call) => call[0] === "fillRect"), "no rectangle under a skinned rod");
+  assert.deepEqual(spineLine.calls.find((call) => call[0] === "moveTo"), ["moveTo", 5, 6], "the line starts at the tip");
+
+  const staticSurface = recordingSurface();
+  const region = { x: 2, y: 2, width: 85, height: 2735, rotate: 90 };
+  const bounds = { x: -6, y: -2, width: 16, height: 468 };
+  new RodStaticRenderer({ surface: staticSurface }).render({ visible: true, rodMode: "static", rodImage: "img",
+    rodRegion: region, rodBounds: bounds, rodScale: 0.5, rodBaseX: 100, rodBaseY: 700 });
+  assert.deepEqual(staticSurface.calls.map((call) => call[0]), ["save", "translate", "rotate", "drawImage", "restore"]);
+  assert.deepEqual(staticSurface.calls[1], ["translate", 100 + (-6 + 16) * 0.5, 700 - (466) * 0.5]);
+  assert.deepEqual(staticSurface.calls[3], ["drawImage", "img", 2, 2, 2735, 85, 0, 0, 234, 8],
+    "a 90 degree region is drawn from its rotated page footprint");
+
+  const spineSurface = recordingSurface();
+  let rendered = true;
+  const spineRenderer = new RodSpineRenderer({ surface: spineSurface,
+    controller: { renderScene: () => rendered, glSurface: { canvas: "gl" } } });
+  spineRenderer.render({ visible: true, rodMode: "static", rodDestX: 1, rodDestY: 2 });
+  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2 });
+  rendered = false;
+  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2 });
+  assert.deepEqual(spineSurface.calls, [["drawImage", "gl", 1, 2]], "the GL surface is copied only in Spine mode after a draw");
+}
+
 async function main() {
   const version = checkVendorManifest();
   const spine = await importSource("vendor/spine-webgl/4.3.13/spine-webgl.js");
@@ -331,10 +541,32 @@ async function main() {
   checkSurface(SpineGlSurface);
   await checkTransport(BrowserAssetTransport);
   checkSmoother(ScalarSmoother);
+
+  const { SpineSetupPoseReader } = await importSource("src/platform/browser/animation/spine_setup_pose_reader.js");
+  const { RodAnimationStateResolver } = await importSource("src/game/presentation/fishing/rod_animation_state_resolver.js");
+  const { RodAnimationController } = await importSource("src/game/presentation/fishing/rod_animation_controller.js");
+  const { RodLineRenderer } = await importSource("src/game/presentation/fishing/rod_line_renderer.js");
+  const { RodStaticRenderer } = await importSource("src/game/presentation/fishing/rod_static_renderer.js");
+  const { RodSpineRenderer } = await importSource("src/game/presentation/fishing/rod_spine_renderer.js");
+  const { FishingEquipmentRenderModelBuilder } =
+    await importSource("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const { ITEM_DB } = await importSource("src/game/config/raw/items/item_database.js");
+  const config = CONFIG.ui.rod.spine;
+  assert.deepEqual({ ...ITEM_DB.rods.rod_test_float.skin.animation }, { ...DESCRIPTOR },
+    "the bamboo rod skin names the tracked export");
+  checkSetupPose(SpineSetupPoseReader, bundle);
+  checkResolver(RodAnimationStateResolver, config);
+  await checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, spine, bundle, config });
+  checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
+    RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `
     + "queue (shared jobs, failures, release), scene from the real export (failures, placement, line-tip at setup and full "
     + "bends, side blend, idle loop and time scale, missing clips, bounds, context restore, dispose), GL surface lifecycle, "
-    + "transport and frame-rate independent smoothing.");
+    + "transport and frame-rate independent smoothing; setup pose without the runtime, pose resolver (wind, reduced "
+    + "motion, rain, side weights), controller modes rectangle -> static -> spine (unavailable runtime, context loss, "
+    + "DEV static, stale loads, spring-back), static/Spine/line renderers and the bit-for-bit rod line model without a "
+    + "skin.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

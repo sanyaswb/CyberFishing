@@ -33,6 +33,8 @@ import { RenderComponent } from "../../engine/rendering/render_component.js";
 import { RenderFrameBuffer } from "../../game/presentation/rendering/render_frame_buffer.js";
 import { GameRenderOrder } from "../../game/presentation/rendering/game_render_order.js";
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
+import { RodSpineRenderer } from "../../game/presentation/fishing/rod_spine_renderer.js";
+import { RodStaticRenderer } from "../../game/presentation/fishing/rod_static_renderer.js";
 import { StarRatingRenderer } from "../../game/presentation/screens/star_rating_renderer.js";
 import { VictoryRenderer } from "../../game/presentation/screens/victory_renderer.js";
 import { VictoryThemeResolver } from "../../game/presentation/screens/victory_theme_resolver.js";
@@ -63,7 +65,7 @@ export class GameRenderComposition {
   // Renderers and the ordered render pipeline (world, casting, fishing, HUD, outcome).
   composePipeline({
     surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-    rarityVisualResolver,
+    rarityVisualResolver, rodAnimation,
   }) {
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -89,6 +91,8 @@ export class GameRenderComposition {
       styleResolver: fightAreaStyleResolver,
     });
     const rodLineRenderer = new RodLineRenderer({ surface });
+    const rodStaticRenderer = new RodStaticRenderer({ surface });
+    const rodSpineRenderer = new RodSpineRenderer({ surface, controller: rodAnimation });
     const floatRenderer = new FloatRenderer({ surface });
     const fishingSceneRenderer = new FishingSceneRenderer({
       components: [
@@ -97,6 +101,19 @@ export class GameRenderComposition {
           order: GameRenderOrder.values.FIGHT_AREAS,
           renderer: fightAreaRenderer,
           selectModel: (model) => model.fightAreas,
+        }),
+        // The rod picture (static or Spine, spec 099) under the line; the rectangle stays in rod-line.
+        new RenderComponent({
+          id: "rod-static",
+          order: GameRenderOrder.values.FISHING_EQUIPMENT - 2,
+          renderer: rodStaticRenderer,
+          selectModel: (model) => model.rodLine,
+        }),
+        new RenderComponent({
+          id: "rod-spine",
+          order: GameRenderOrder.values.FISHING_EQUIPMENT - 1,
+          renderer: rodSpineRenderer,
+          selectModel: (model) => model.rodLine,
         }),
         new RenderComponent({
           id: "rod-line",
@@ -152,6 +169,8 @@ export class GameRenderComposition {
       castSceneRenderer,
       fightAreaRenderer,
       rodLineRenderer,
+      rodStaticRenderer,
+      rodSpineRenderer,
       floatRenderer,
       fishingSceneRenderer,
       statusBarsRenderer,
@@ -301,6 +320,8 @@ export class GameRenderComposition {
         clock,
         config,
         getRodScreenX: appPorts.getRodScreenX,
+        rodAnimation: runtime.rendering.rodAnimation.controller,
+        getWind: () => runtime.env.getSnapshot()?.wind ?? null,
       }),
     });
     const outcomeBuilder = new OutcomeRenderFrameBuilder({

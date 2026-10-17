@@ -57,6 +57,7 @@ export class ConfigSchemaValidator {
     this.#validateFishCategories();
     this.#validateRarityConfig();
     this.#validateLiveBaitConfig();
+    this.#validateRodSpineConfig();
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();
@@ -441,6 +442,36 @@ export class ConfigSchemaValidator {
       this.#error(path ? "CONFIG.liveBait.visual." + path : "CONFIG.liveBait.visual", message);
     for (const key of ["aquarium", "upgrade", "feed", "autoFeeder"]) {
       if (cfg.prices?.[key] !== 0) this.#error(`CONFIG.liveBait.prices.${key}`, "must be zero while currency is absent");
+    }
+  }
+
+  // Spine rod presentation settings (spec 099).
+  #validateRodSpineConfig() {
+    const cfg = this.config.ui?.rod?.spine;
+    const path = "CONFIG.ui.rod.spine";
+    if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
+    this.#requireFiniteNumber(`${path}.heightRatio`, cfg.heightRatio, { min: 0.01, max: 2 });
+    this.#requireFiniteNumber(`${path}.sideRangeRatio`, cfg.sideRangeRatio, { min: 0.01, max: 2 });
+    for (const key of ["windMixSec", "idleToFightSec", "fightToIdleSec", "bendSmoothingSec"]) {
+      this.#requireFiniteNumber(`${path}.${key}`, cfg[key], { min: 0, max: 10 });
+    }
+    for (const [group, keys] of [["windClips", ["left", "calm", "right"]], ["fightClips", ["front", "left", "right"]]]) {
+      for (const key of keys) this.#requireNonEmptyString(`${path}.${group}.${key}`, cfg[group]?.[key]);
+    }
+    if (typeof cfg.windRainTimeScale !== "boolean") this.#error(`${path}.windRainTimeScale`, "expected boolean");
+  }
+
+  // A skin's Spine bundle: project-relative skeleton JSON and atlas paths, optional skin and line point names.
+  #validateSkinAnimation(animation, path) {
+    if (animation === undefined) return;
+    if (!animation || typeof animation !== "object") { this.#error(path, "must be an object"); return; }
+    const relative = /^(?![a-z]+:|\/)(?!.*(?:^|\/)\.\.(?:\/|$)).+/iu;
+    this.#requirePattern(`${path}.skeleton`, animation.skeleton, new RegExp(`${relative.source}\\.json$`, "iu"),
+      "expected a project-relative .json path");
+    this.#requirePattern(`${path}.atlas`, animation.atlas, new RegExp(`${relative.source}\\.atlas$`, "iu"),
+      "expected a project-relative .atlas path");
+    for (const key of ["skin", "linePoint"]) {
+      if (animation[key] !== undefined) this.#requireNonEmptyString(`${path}.${key}`, animation[key]);
     }
   }
 
@@ -890,6 +921,7 @@ export class ConfigSchemaValidator {
         this.#requireNonEmptyString(`${path}.id`, item?.id);
         this.#requireNonEmptyString(`${path}.name`, item?.name);
         this.#requireNonEmptyString(`${path}.itemType`, item?.itemType);
+        this.#validateSkinAnimation(item?.skin?.animation, `${path}.skin.animation`);
         this.#validateFiniteNumberLeaves(item, path);
         this.#validateMinMaxPairs(item, path);
       }

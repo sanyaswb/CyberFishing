@@ -49,6 +49,7 @@ export class GameApplication {
   #renderCoordinator;
   #assetPreloadCoordinator;
   #locationAssetLoader;
+  #rodAnimation = null;
   #fishingController;
   #chumController;
   #stateMachine;
@@ -210,6 +211,8 @@ export class GameApplication {
     if (!this.#locationAssetLoader || typeof this.#locationAssetLoader.load !== "function") {
       throw new TypeError("GameApplication requires LocationAssetLoader");
     }
+    // The Spine rod's scene, GL surface and load queue (spec 099) live as long as the session.
+    this.#rodAnimation = runtime.rendering.rodAnimation ?? null;
     this.#fishingController = runtime.fishing;
     this.#liveBait = runtime.liveBait || null;
     this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
@@ -963,6 +966,7 @@ export class GameApplication {
     this.#depthUI?.dispose?.();
     this.#timeUI?.dispose?.();
     this.#holdUI?.dispose?.();
+    this.#rodAnimation?.dispose();
     if (this.#ui) {
       this.#ui.onNetClick = null;
       this.#ui.onContinueClick = null;

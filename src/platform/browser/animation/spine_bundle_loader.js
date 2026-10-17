@@ -1,4 +1,5 @@
 import { SpineAtlasTextReader } from "./spine_atlas_text_reader.js";
+import { SpineSetupPoseReader } from "./spine_setup_pose_reader.js";
 
 // Loads one Spine bundle through AssetLoadQueue (spec 099): the atlas text first, then each atlas page and the
 // skeleton JSON as their own jobs. Spine's AssetManager is never used, so every request obeys the queue caps.
@@ -38,6 +39,12 @@ export class SpineBundleLoader {
           skeletonOutcome.error);
       }
       const json = skeletonOutcome.payload;
+      let staticPose = null;
+      try {
+        staticPose = SpineSetupPoseReader.read(json, pagesOutcome.atlas, descriptor);
+      } catch {
+        staticPose = null;
+      }
       return {
         status: "ready",
         bundle: Object.freeze({
@@ -48,6 +55,8 @@ export class SpineBundleLoader {
           pages: pagesOutcome.pages,
           skin: descriptor.skin ?? null,
           linePoint: descriptor.linePoint ?? null,
+          // The setup-pose picture for the static fallback: { bounds, linePoint, region } (skeleton units, y up).
+          staticPose,
         }),
       };
     });

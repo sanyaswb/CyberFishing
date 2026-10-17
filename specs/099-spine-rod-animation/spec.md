@@ -5,8 +5,8 @@ ready. Integrate Spine into the engine as fully as the project needs and list wh
 export must provide. This spec changes the order of [spec 083](../083-preloader-foundation/spec.md): the Spine runtime,
 adapter and bundle loading are delivered by the rod (this spec), the loading screen reuses them afterwards. Contracts
 of [spec 047](../047-smart-asset-preloader/contracts/runtime-assets.md) ("Spine Surface Contract") still apply.
-Tasks: [tasks.md](tasks.md). Status: **all decisions D1–D9 answered 2026-10-17; Phase 1 committed (7288d624); Phase 2 (engine/platform Spine
-capability, `spine-rod` check) done, not committed; Phase 3 (rod in the game) next.**
+Tasks: [tasks.md](tasks.md). Status: **all decisions D1–D9 answered 2026-10-17; Phase 1 committed (7288d624), Phase 2 committed (621dc589);
+Phase 3 (rod in the game) done, checks green, owner dev.html check passed 2026-10-17; Phase 4 (DEV tools) next.**
 
 ## Starting point (verified 2026-10-17)
 
@@ -151,13 +151,14 @@ and clipping. It stays a rejected option unless D1 says otherwise.
 | landing / victory / game over / line lost | idle by wind, fight tracks cleared (mix `fightToIdleSec`) | — | — |
 
 - Wind (D4, owner 2026-10-17): the `--left` / `--right` idles are the rod swaying in a wind blowing that way. The
-  mapping of direction to clip is config (`ui.rod.spine.windClips` keyed −1 / 0 / 1), so the owner can swap the
+  mapping of direction to clip is config (`ui.rod.spine.windClips` with keys `left` / `calm` / `right` for −1 / 0 / +1), so the owner can swap the
   sides after the browser check if the sign reads the other way. Optional `windRainTimeScale` (default off): the idle
   plays faster by `rainMult` in rain.
 
 - `bend = smoother(clamp01(rodStressRatio))`, time constant `bendSmoothingSec` (default 0.12 s). Rod stress is
   already 0..1 against the rod's effective max load, so a weak rod bends more for the same fish.
-- `side = clamp((fishScreenX − rodTipX) / (canvasWidth × sideRangeRatio), −1, 1)`. Fish screen X is the float/hook
+- `side = clamp((fishScreenX − rodBaseX) / (canvasWidth × sideRangeRatio), −1, 1)`. The base, not the tip: the tip
+  moves with the bend and would feed back into its own side. Fish screen X is the float/hook
   position the line already targets. The front clip keys only scale and the side clips only rotation, and the
   bones start from the setup pose every frame. So front alpha 1 − abs(side) plus side alpha abs(side) is an exact
   weighted blend of the two poses, verified in Phase 2: full side weight gives the pure side bend. Front alpha 1
@@ -183,10 +184,15 @@ and clipping. It stays a rejected option unless D1 says otherwise.
   `FishingRenderFrameBuilder` read the tip from the anchor instead of `rodBaseY − 200`. For a rod without an
   animated skin, the render model is bit-for-bit what it is now (check).
 
-Order in a frame: `onUpdate(dt)` advances the controller (resolver → scene tracks → `update(dt)` → anchor). Then
-`onDraw()` builds the render model from that anchor and renders. The line and the rod therefore come from the same
-skeleton pose. The controller runs from the session update path next to `RodVisualOffsetSystem` (viewport facade),
-not from a second `requestAnimationFrame`.
+Order in a frame (as implemented in Phase 3): in `onDraw()`, `FishingRenderFrameBuilder` first calls
+`FishingEquipmentRenderModelBuilder.prepareRod`. That call computes the rod base, advances the controller with
+`GameClock.delta` (resolver → tracks → `update(dt)` → anchor) and returns the anchor. The line frame and the rod line
+model are then built from that anchor's tip, and the pipeline draws the rod (static or Spine) under the line. The
+line and the rod therefore come from the same skeleton pose. The same loop drives it; no second
+`requestAnimationFrame` exists. It runs at frame build rather than in `GameApplication.update`, because only the
+render path has the float's screen position, the fight frame and the equipped skin together, and the application
+layer needs no change. While no float exists the fishing scene is not built, so the rod neither draws nor advances
+(D3).
 
 ### Loading and lifetime
 

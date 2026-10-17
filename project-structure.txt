@@ -489,7 +489,8 @@
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_ui_bootstrap.js
 │  │     ├── live_bait_composition.js
-│  │     └── player_inventory_composition.js
+│  │     ├── player_inventory_composition.js
+│  │     └── rod_animation_composition.js
 │  ├── dev
 │  │  ├── core
 │  │  │  ├── debug_console.js
@@ -1101,7 +1102,11 @@
 │  │     │  ├── fishing_scene_renderer.js
 │  │     │  ├── float_renderer.js
 │  │     │  ├── line_visual_state_controller.js
+│  │     │  ├── rod_animation_controller.js
+│  │     │  ├── rod_animation_state_resolver.js
 │  │     │  ├── rod_line_renderer.js
+│  │     │  ├── rod_spine_renderer.js
+│  │     │  ├── rod_static_renderer.js
 │  │     │  └── rod_visual_offset_system.js
 │  │     ├── house
 │  │     │  ├── aquarium_feed_picker.js
@@ -1285,7 +1290,8 @@
 │        │  ├── spine_gl_surface.js
 │        │  ├── spine_runtime_module.js
 │        │  ├── spine_runtime_provider.js
-│        │  └── spine_scene.js
+│        │  ├── spine_scene.js
+│        │  └── spine_setup_pose_reader.js
 │        ├── assets
 │        │  ├── asset_preload_coordinator.js
 │        │  ├── browser_asset_transport.js

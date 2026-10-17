@@ -479,6 +479,18 @@ export const CONFIG = {
     rod: {
       x: "center",
       yOffset: 0,
+      // Spine rod (spec 099), presentation only: screen height share, clips by wind and fight side, blend and timing.
+      spine: {
+        heightRatio: 0.25,
+        sideRangeRatio: 0.35,
+        windClips: { left: "rod_idle-1--left", calm: "rod_idle-2", right: "rod_idle-1--right" },
+        fightClips: { front: "rod_fighting-1--front", left: "rod_fighting-1--left", right: "rod_fighting-1--right" },
+        windMixSec: 1,
+        idleToFightSec: 0.25,
+        fightToIdleSec: 0.4,
+        bendSmoothingSec: 0.12,
+        windRainTimeScale: false,
+      },
     },
 
     hudStyles: {

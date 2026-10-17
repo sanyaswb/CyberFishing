@@ -35,6 +35,12 @@ export class FishingRenderFrameBuilder {
     tension: 0,
     lineFrame: null,
   };
+  #rodContext = {
+    state: "",
+    equipment: null,
+    fightFrame: null,
+    floatScreenX: 0,
+  };
   #floatContext = {
     target: null,
     screenPosition: null,
@@ -106,6 +112,7 @@ export class FishingRenderFrameBuilder {
     }
     if (
       !equipmentModelBuilder ||
+      typeof equipmentModelBuilder.prepareRod !== "function" ||
       typeof equipmentModelBuilder.buildRodLine !== "function" ||
       typeof equipmentModelBuilder.buildFloat !== "function"
     ) {
@@ -151,11 +158,18 @@ export class FishingRenderFrameBuilder {
     }
     const tension = hasTensionMeter ? tensionMeter.getTension() : 0;
     const fightDebug = hasTensionMeter ? tensionMeter.getFightFrame() : null;
+    const rodContext = this.#rodContext;
+    rodContext.state = intent.state;
+    rodContext.equipment = equipment;
+    rodContext.fightFrame = fightDebug;
+    rodContext.floatScreenX = screenPosition.x;
+    const rodAnchor = this.#equipmentModelBuilder.prepareRod(rodContext);
     const lineFrame = this.#resolveLineFrame(
       intent,
       equipment,
       tension,
       screenPosition,
+      rodAnchor.tipY,
     );
 
     fishingTarget.visible = true;
@@ -196,7 +210,8 @@ export class FishingRenderFrameBuilder {
     }
   }
 
-  #resolveLineFrame(intent, equipment, tension, screenPosition) {
+  // rodTopY: where the line leaves the rod (the anchor tip; base - 200 px without an animated skin).
+  #resolveLineFrame(intent, equipment, tension, screenPosition, rodTopY) {
     const lineConfig = this.#config.ui.line;
     const activeItem =
       (this.#equipmentRules.isSpinning(equipment)
@@ -223,9 +238,6 @@ export class FishingRenderFrameBuilder {
       intent.bottom,
       this.#screenB,
     ).y;
-    const rodBaseY =
-      this.#canvasMetrics.height - (this.#config.ui?.rod?.yOffset || 0);
-    const rodTopY = rodBaseY - 200;
     const distanceY = screenPosition.y - rodTopY;
     if (distanceY < 0) {
       ratio = Math.max(ratio, (mapBottomY - rodTopY) / distanceY);

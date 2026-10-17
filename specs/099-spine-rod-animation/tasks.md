@@ -90,35 +90,46 @@ production unchanged 542 / 835), Quick 27/27, game-cycle unchanged. Finding for 
 
 **Goal**: the equipped rod draws and animates through Spine; the fallback stays bit-for-bit.
 
-- [ ] T015 Config: rod skin `animation { bundleId, skeleton: "assets/animations/rods/bamboo-rod-v1/rod.json", atlas:
-  ".../rod.atlas", skin: "rod-1", linePoint: "line-tip" }` for `bamboo-rod-v1` in
-  `src/game/config/raw/items/item_database.js`; `ui.rod.spine` (heightRatio, pivot, clips, `windClips` keyed
-  −1/0/1, `windMixSec`, optional `windRainTimeScale`, `sideRangeRatio`, `idleToFightSec`, `fightToIdleSec`,
-  `bendSmoothingSec`) with validation in the config schema validator (numbers, clip names, project-relative paths).
-- [ ] T016 `src/game/presentation/fishing/rod_animation_state_resolver.js`: pure mapping table from the spec (states,
-  idle by wind direction [D4] with its mix, fish side blend, smoothed bend from `rodStressRatio`, reduced motion).
-  It writes into a reused snapshot. The wind comes from the session's read-only `getEnvSnapshot().wind` (no RNG, no
-  write).
-- [ ] T017 `rod_animation_controller.js`: per session. Watches the equipped rod skin; requests atlas + page first,
-  then the runtime + skeleton; mode `rectangle → static → spine` (never backwards except context loss → static);
-  keeps the previous scene until the new one is ready; applies snapshots to tracks; `update(dtSec)`; computes
-  `RodAnchorFrame` for each mode; handles context lost/restored and `dispose`. The session update path calls it next
-  to `RodVisualOffsetSystem` in `game_viewport_facade.js` (no second `requestAnimationFrame`).
-- [ ] T018 `rod_spine_renderer.js`: at `GameRenderOrder.FISHING_EQUIPMENT`, render the scene into the GL surface and
-  `drawImage` it into the 2D surface at the anchor; it draws only in mode `spine`. `RodLineRenderer` draws the
-  rectangle only in mode `rectangle` and always the line from `tipX/tipY`.
-- [ ] T019 [D9] `rod_static_renderer.js` + a small atlas-text reader (region bounds, rotate flag) and JSON-header
-  reader (`skeleton.x/y/width/height`, setup position of `line-tip`): draw the region in the setup pose with Canvas 2D
-  at the skeleton's placement and scale, in mode `static`. No Spine runtime import.
-- [ ] T020 `FishingEquipmentRenderModelBuilder.buildRodLine` and the float fit in `FishingRenderFrameBuilder` take the
-  tip from the anchor instead of `rodBaseY - 200`. For rods without an animated skin, the render model equals today's
-  (check). D3 (owner): no rod before the cast, so today's early return without a float stays unchanged.
-- [ ] T021 `src/bootstrap/production/rod_animation_composition.js`: provider, surface, loader over `AssetLoadQueue`
-  (scheduler from the platform), controller, renderers; registered in `GameRenderComposition` and the session;
-  `contracts.requireMethods` on the scene port. Production never imports DEV.
-- [ ] T022 `prefers-reduced-motion` source in platform (media query listener), injected into the resolver.
+- [X] T015 Config. `ITEM_DB.rods.rod_test_float.skin.animation { skeleton, atlas, skin: "rod-1", linePoint: "line-tip" }`
+  (no bundleId: the URLs are the key). `CONFIG.ui.rod.spine { heightRatio 0.25, sideRangeRatio 0.35, windClips
+  { left, calm, right }, fightClips { front, left, right }, windMixSec 1, idleToFightSec 0.25, fightToIdleSec 0.4,
+  bendSmoothingSec 0.12, windRainTimeScale false }`. `ConfigSchemaValidator` checks the ranges, clip names and
+  project-relative `.json`/`.atlas` paths of every skin animation. heightRatio 0.25 keeps today's 200 px rod on an
+  800 px canvas.
+- [X] T016 `RodAnimationStateResolver` (pure, reused snapshot): idle clip by wind −1/0/+1, idle time scale (reduced
+  motion 0, optional rain), side from the fish's offset to the rod base, front weight 1 − |side|, side weight |side|,
+  bend target = clamped `rodStressRatio` while playing. Wind: `EnvironmentSystem.getSnapshot().wind` read-only, so no RNG
+  is consumed.
+- [X] T017 `RodAnimationController`: `setSkin` every frame (string compare, a change releases the old load and ignores
+  stale results), bundle then runtime then scene; modes rectangle → static → spine, lost context or DEV force → static;
+  the new skin's bundle drops the old scene; `advance(context)` smooths the bend (`ScalarSmoother`), drives tracks 0
+  (idle, fades out on fight start, back with `fightToIdleSec`), 1 (front) and 2 (side), and keeps the last side while
+  the bend relaxes after a fight. Sizes the GL surface from the scene's local bounds and writes the `RodAnchorFrame`
+  (mode, base, tip, scale, GL destination, static image/region/bounds). It runs at frame build (spec "Order in a
+  frame"), not next to `RodVisualOffsetSystem`.
+- [X] T018 `RodSpineRenderer` (order FISHING_EQUIPMENT − 1): `controller.renderScene()` then `drawImage(glCanvas)` at
+  the anchor, Spine mode only. `RodLineRenderer` draws the rectangle only in mode `rectangle` and the line from
+  `lineStartX/Y` (the tip).
+- [X] T019 [D9] `RodStaticRenderer` (order FISHING_EQUIPMENT − 2) + `SpineSetupPoseReader` (platform, no runtime: header
+  bounds, `line-tip` setup position through plain bones, the one drawn region; the bundle carries it as `staticPose`).
+  A 90° region (stored counter-clockwise; the page probe shows the thin tip at the page's left) is drawn through a
+  canvas rotation over the header bounds.
+- [X] T020 `FishingRenderFrameBuilder` calls `prepareRod` before the line frame and passes the anchor tip as the line's
+  rod top. `buildRodLine` starts the line at the tip. Without an animated skin the model is bit for bit today's
+  (check). D3: today's early return without a float is unchanged.
+- [X] T021 `src/bootstrap/production/rod_animation_composition.js` (`composeRodAnimation`: queue with the window
+  timers, loader, transport, provider, GL surface from the document, controller, dispose). `GameCompositionRoot`
+  composes it, checks its methods, passes it to the pipeline and keeps it in `runtime.rendering.rodAnimation`.
+  `GameApplication.dispose()` disposes it. The test render composition gets a rectangle stub.
+- [X] T022 Reduced motion: `windowTarget.matchMedia("(prefers-reduced-motion: reduce)").matches` read per frame in the
+  composition. A platform class was not needed, since the query object is live.
 
-**Checkpoint**: `spine-rod` complete; game-cycle SHA-256 unchanged; production module/import counts recorded.
+**Checkpoint** (2026-10-17): `spine-rod` covers the setup pose, resolver, controller modes (unavailable runtime, context
+loss, DEV static, stale loads, spring-back), the three renderers and the bit-for-bit rectangle model. Architecture 4/4
+(722 modules; production 558 / 851, it was 542 / 835), Quick 27/27, Full 53/53. Game-cycle baseline unchanged
+(SHA-256 7b9baea3…). Not checked automatically: allocation per frame (objects are reused by construction, not
+measured), WebGL drawing itself and the look. Owner browser check in dev.html, 2026-10-17, performed by the owner:
+"everything renders well". The Pages check stays with T028.
 
 ## Phase 4: DEV tools
 

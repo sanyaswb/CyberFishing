@@ -104,6 +104,7 @@ import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_
 import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_style_resolver.js";
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
+import { composeRodAnimation } from "./rod_animation_composition.js";
 import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
 import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
 import { LiveBaitMotionProfileResolver } from "../../game/domain/live_bait/live_bait_motion_profile_resolver.js";
@@ -377,9 +378,14 @@ export class GameCompositionRoot {
       baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver,
     } = this.#composeFishModels({ contracts, itemFreshnessResolver });
+    const rodAnimation = own(composeRodAnimation({
+      windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
+    }));
+    contracts.requireMethods(rodAnimation.controller, "rodAnimation",
+      ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver,
+      rarityVisualResolver, rodAnimation: rodAnimation.controller,
     });
     const { projector, locId, rng, locationResources, locCfg, location } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
@@ -459,6 +465,7 @@ export class GameCompositionRoot {
         outcomeStyleResolver,
         rarityVisualResolver,
         victoryLayoutResolver,
+        rodAnimation,
       },
       interaction: {
         victoryActionGestureResolver,
