@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Fishing Mechanic Prototype</title>
+    <link rel="preload" as="image" href="assets/ui/inventory/rod.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/reel.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/line.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/float.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/tackle.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/net.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/keepnet.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/chum.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/boat.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/gas-mask.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/bait.svg" />
+    <link rel="preload" as="image" href="assets/ui/inventory/weight.svg" />
+    <link rel="stylesheet" href="src/game/presentation/styles/tokens.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/ui-glyph.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/ui-surface.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/game-shell.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/modal-controls.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/auto-switch.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/toolbar.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/version-badge.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/theme.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/modal.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/header.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/shared-controls.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/loadout.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/section-tabs.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/slots.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-cards.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/resource-meters.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/attachments.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/assembly-editor.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-parameters.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/list-and-filters.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/tooltips.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/keepnet.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/game-controls.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/time-display.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/hold-charges.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/depth-selector.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/chum-control.css?v=0.38.7" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/draggable-control.css?v=0.38.7" />
+  </head>
+  <body class="game-shell">
+    <canvas id="gameCanvas" class="game-shell__canvas"></canvas>
+    <div
+      id="gameVersionBadge"
+      class="game-version-badge"
+      aria-label="Поточна версія гри"
+    ></div>
+    <script type="module" src="src/entrypoints/game.entry.js?v=0.38.7"></script>
+  </body>
+</html>
