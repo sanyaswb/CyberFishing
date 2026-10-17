@@ -43,7 +43,7 @@ export class InventoryUI {
   // Portrait swipes walk the sections in tab order (spec 087); -1 enters the backpack on its last page.
   #sectionSwipeController;
   #sectionEntryStep = 1;
-  #editorOpen = false;
+  #editorRootInstanceId = null;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
@@ -305,7 +305,10 @@ export class InventoryUI {
     viewModel.panel.loadout.mainSlots.forEach((slot) => append(slot.item));
     viewModel.panel.loadout.auxiliarySlots.forEach((slot) => append(slot.item));
     append(viewModel.panel.assembly.root);
-    viewModel.panel.assembly.sockets.forEach((slot) => append(slot.item));
+    viewModel.panel.assembly.sockets.forEach((slot) => {
+      append(slot.item);
+      slot.compatibleItems.forEach(append);
+    });
     viewModel.inventory.savedLoadout.slots.forEach((slot) => append(slot.item));
     append(viewModel.panel.savedLoadout.card);
     viewModel.panel.savedLoadout.slots.forEach((slot) => append(slot.item));
@@ -508,28 +511,33 @@ export class InventoryUI {
   }
 
   #renderLeftPanel(panel) {
-    // Opening the editor (from another panel) starts its phone tabs on the root item (spec 091).
-    if (panel.mode === "assembly" && !this.#editorOpen) this.#assemblyRenderer.resetView();
-    this.#editorOpen = panel.mode === "assembly";
+    // A socket pick refreshes the same editor. Keep its scroll position while replacing the view's DOM.
+    const rootInstanceId = panel.mode === "assembly" ? panel.assembly.rootInstanceId : null;
+    const sameEditor = rootInstanceId !== null && rootInstanceId === this.#editorRootInstanceId;
+    const scrollTop = sameEditor ? this.#equipmentHost.children[0]?.scrollTop || 0 : 0;
+    if (rootInstanceId !== null && !sameEditor) this.#assemblyRenderer.resetView();
+    this.#editorRootInstanceId = rootInstanceId;
     if (panel.mode === "saved-loadout") {
       this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
       return;
     }
     if (panel.mode === "assembly") {
-      const rootInstanceId = panel.assembly.rootInstanceId;
       const editor = this.#assemblyRenderer.render(panel.assembly, {
         onRodRemovalChoice: (choice) => this.#dispatch({ type: this.#actionTypes.ROD_REMOVAL_CHOICE, choice }),
         onRodRemovalSave: (name) => this.#dispatch({ type: this.#actionTypes.LOADOUT_SAVE, name }),
-        onSocketActivate: (socket) =>
-          this.#dispatch({
-            type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE,
-            rootInstanceId,
-            socketId: socket.socketId,
-            slotId: socket.slotId,
-            slotIndex: socket.slotIndex,
-            parentInstanceId: socket.parentInstanceId,
-            listVisible: this.#isItemListVisible(),
-          }),
+        // Beside a visible item list (landscape, desktop) an empty cell starts the pick that highlights compatible
+        // items there; portrait offers the inline choices instead (spec 096).
+        inlineChoices: () => !this.#isItemListVisible(),
+        onSocketActivate: (socket) => this.#dispatch({
+          type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId, socketId: socket.socketId,
+          slotId: socket.slotId, slotIndex: socket.slotIndex, parentInstanceId: socket.parentInstanceId,
+          listVisible: this.#isItemListVisible(),
+        }),
+        onSocketItemActivate: (socket, item) => this.#dispatch({
+          type: this.#actionTypes.ASSEMBLY_SOCKET_ITEM_ACTIVATE, rootInstanceId, instanceId: item.instanceId,
+          socketId: socket.socketId, slotId: socket.slotId, slotIndex: socket.slotIndex,
+          parentInstanceId: socket.parentInstanceId,
+        }),
         // Phone editor tabs (spec 092): a long press removes a filled cell's item. A rod's cells are equipment slots;
         // an assembly's filled socket detaches its component through the socket command.
         onSocketLongPress: (socket) => this.#dispatch(panel.assembly.root?.itemType === "rod"
@@ -560,6 +568,7 @@ export class InventoryUI {
         onWarning: (message) => this.showWarning(message),
       });
       this.#dom.replaceChildren(this.#equipmentHost, editor);
+      editor.scrollTop = scrollTop;
       return;
     }
 

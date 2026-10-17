@@ -127,10 +127,14 @@ export const ITEM_DB = {
       // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без.
       skin: {
         id: "bamboo-rod-v1",
-        thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp", visibleHeight: 0.5, focusX: 0.31 },
+        thumbnail: {
+          src: "assets/items/rods/bamboo-rod-ecip-v1.png",
+          visibleHeight: 0.5,
+          focusX: 0.31,
+        },
         equipment: {
-          withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
-          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.webp",
+          withLine: "assets/items/rods/bamboo-rod-ecip-v1.png",
+          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.png",
         },
       },
       rarityProfile: {
@@ -666,6 +670,7 @@ export const ITEM_DB = {
       itemType: "float",
       variant: "day",
       icon: "🥢",
+      iconUrl: "assets/items/floats/float-day.webp",
       rarityProfile: {
         mode: "authored",
         tier: 4,
@@ -774,6 +779,18 @@ export const ITEM_DB = {
       name: "Базова підсака",
       itemType: "net",
       icon: "🕸️",
+      iconUrl: "assets/items/nets/net--1.webp",
+      // Мініатюри показують верхні 40% малюнка по центру; прев'ю редактора — весь малюнок.
+      skin: {
+        id: "net-v1",
+        thumbnail: {
+          src: "assets/items/nets/net--1.webp",
+          visibleHeight: 0.4,
+          focusX: 0.5,
+          anchor: "top",
+          editorPreview: "whole",
+        },
+      },
       rarityProfile: {
         mode: "authored",
         tier: 1,

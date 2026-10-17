@@ -6,7 +6,8 @@ export const INVENTORY_SECTIONS = Object.freeze({
   defaultSectionId: "equipment",
   backpackImage: "assets/items/briefcases/briefcase--1--close.webp",
   backpackBackdropImage: "assets/items/briefcases/briefcase--1--open.webp",
-  backpackCapacityIcon: "assets/items/briefcases/briefcase--1--close.webp",
+  // A scale icon is interface: the vector backpack icon, never item artwork (DESIGN_RULES.md).
+  backpackCapacityIcon: "assets/ui/inventory/backpack.svg",
   // Presentation scale only (spec 075): gameplay inventory capacity stays unlimited.
   backpackCapacity: Object.freeze({ maxItems: 100 }),
   labels: Object.freeze({

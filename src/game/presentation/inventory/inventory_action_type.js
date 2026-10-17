@@ -14,6 +14,7 @@ export const InventoryActionType = Object.freeze({
   EQUIPMENT_SLOT_ACTIVATE: "inventory/equipment-slot-activate",
   EQUIPMENT_SLOT_LONG_PRESS: "inventory/equipment-slot-long-press",
   ASSEMBLY_SOCKET_ACTIVATE: "inventory/assembly-socket-activate",
+  ASSEMBLY_SOCKET_ITEM_ACTIVATE: "inventory/assembly-socket-item-activate",
   ASSEMBLY_EQUIP: "inventory/assembly-equip",
   ASSEMBLY_UNEQUIP: "inventory/assembly-unequip",
   ASSEMBLY_DISASSEMBLE: "inventory/assembly-disassemble",

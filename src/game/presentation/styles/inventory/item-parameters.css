@@ -129,7 +129,7 @@
   color: var(--inventory-accent);
   font-size: 11px;
   font-weight: 800;
-  cursor: help;
+  cursor: default;
   transition: all 0.2s ease;
 }
 .ui-surface--desktop-hover .inventory-parameter__help:hover {

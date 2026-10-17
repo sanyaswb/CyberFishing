@@ -52,6 +52,7 @@ Performance:
 - no unnecessary allocations in hot loops;
 - no repeated DOM queries per frame;
 - preload assets;
+- optimize every new or replaced raster illustration before integration: always use `utils/convert-images.js` to generate WebP (Middle / quality 80 by default), and reference the optimized file in runtime/catalog data; keep original dimensions and alpha unless resizing is requested, and retain source masters outside runtime references. Keep SVG artwork as vectors and preserve pixel-exact data maps when selecting compression;
 - use deltaTime;
 - keep update separate from render;
 - cache/reuse data where justified;

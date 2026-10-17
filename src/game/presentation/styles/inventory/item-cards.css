@@ -164,6 +164,12 @@
   transform: translateX(calc(var(--inventory-item-art-focus-x, 0.5) * -100%));
 }
 
+/* anchor "top": the upper visible-height share, aligned to the top (the landing net). */
+.inventory-item-card__visual--cropped-top .inventory-item-card__image {
+  top: var(--inventory-image-inset, 0px);
+  bottom: auto;
+}
+
 /* A ui-glyph filling the visual (DESIGN_RULES §8). */
 .inventory-item-card__icon {
   --ui-glyph-max-size: 63px;

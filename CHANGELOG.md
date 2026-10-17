@@ -1,5 +1,22 @@
 # CyberFishing changelog
 
+## v0.38.7 - Editor Choices and Equipment Polish
+
+- Portrait editor cells list compatible inventory items inline (spec 096); landscape and desktop again start a pick that highlights them in the item list. The rod condition meter sits in a stats container under the rod, and the backpack scale uses its SVG icon again.
+- Landing-net miniatures and the toolbar net button crop the full artwork to its upper 40%, while the editor preview shows the whole net. The bamboo rod artwork is re-encoded from the new PNG.
+
+## v0.38.6 - Backpack and Landing Net Artwork Fixes
+
+- Restore the missing optimized open-backpack backdrop, removing the browser's broken-image frame. Constrain toolbar grid tracks so artwork stays inside its button.
+
+## v0.38.5 - Float Artwork
+
+- Convert the day-float illustration to WebP with the project utility, organize it under assets/items/floats and use it in inventory cards, equipment, editor tabs and the DEV free shop. Gameplay stats and saves are unchanged.
+
+## v0.38.4 - Landing Net Artwork
+
+- Optimize the landing-net artwork to WebP with the project conversion utility and use it in inventory cards, equipment, the DEV free shop and HUD. Require optimized image assets in the development rules. Gameplay stats and saves are unchanged.
+
 ## v0.38.3 - Centre the Backpack Backdrop
 
 - Centre the open-backpack background in the landscape item panel, matching portrait placement.

@@ -9,6 +9,7 @@ import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/invent
 import { InventoryEditorTabsRenderer } from "../../game/presentation/inventory/inventory_editor_tabs_renderer.js";
 import { InventoryEditorTabsResolver } from "../../game/presentation/inventory/inventory_editor_tabs_resolver.js";
 import { INVENTORY_EDITOR_TABS_LABELS } from "../../game/presentation/inventory/inventory_editor_tabs_labels.js";
+import { INVENTORY_EDITOR_CONFIG } from "../../game/presentation/inventory/inventory_editor_config.js";
 import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
@@ -210,6 +211,7 @@ export class InventoryUiBootstrap {
       assemblyRenderer ||
       new InventoryAssemblyEditorRenderer({
         domFactory: dom,
+        scrollbarEnabled: INVENTORY_EDITOR_CONFIG.scrollbar.enabled,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),

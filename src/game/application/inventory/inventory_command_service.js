@@ -147,6 +147,8 @@ export class InventoryCommandService {
         return this.#unequipSlot(action.slotId);
       case InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE:
         return this.#activateAssemblySocket(action);
+      case InventoryActionType.ASSEMBLY_SOCKET_ITEM_ACTIVATE:
+        return this.#activateAssemblySocketItem(action);
       case InventoryActionType.ASSEMBLY_EQUIP:
         return this.#equipAssembly(action.rootInstanceId);
       case InventoryActionType.ASSEMBLY_UNEQUIP:
@@ -434,6 +436,45 @@ export class InventoryCommandService {
     this.#uiState.clearSelection();
     this.#uiState.clearHighlightedSlot();
     return this.#success({ unequippedInstanceId });
+  }
+
+  // The inline editor picker names both the empty target and its inventory source in one UI command. Recheck the
+  // address before starting the existing pick/item flow, so a stale card cannot replace a newly filled cell.
+  #activateAssemblySocketItem(action) {
+    const rootInstanceId = action.rootInstanceId;
+    if (this.#uiState.panelMode !== "assembly" || this.#uiState.editingRootInstanceId !== rootInstanceId) {
+      return this.#failure(this.#messages.assemblyNotFound);
+    }
+    const source = this.#repository.get(action.instanceId);
+    if (!source || !InventoryItemLocation.isInventory(source.location) ||
+        Object.values(this.#equipmentState.snapshot()).includes(source.instanceId)) {
+      return this.#failure(this.#messages.itemNotFound);
+    }
+    const root = this.#hydrate(this.#repository.get(rootInstanceId));
+    if (this.#type(root) === "rod") {
+      if (this.#equipmentState.getRootInstanceId("rod") !== rootInstanceId) {
+        return this.#failure(this.#messages.equipRodBeforeComponents);
+      }
+      if (!EQUIPMENT_MAIN_SLOT_IDS.includes(action.slotId) || action.slotId === "rod" ||
+          action.parentInstanceId !== rootInstanceId || action.socketId !== action.slotId || action.slotIndex !== 0 ||
+          !this.#slotVisibility.isVisible(action.slotId, { rod: root })) {
+        return this.#failure(this.#messages.socketNotFound);
+      }
+      if (this.#equipmentState.getRootInstanceId(action.slotId)) return this.#failure(this.#messages.socketAlreadyFilled);
+      const validation = this.#validateEquipment(action.slotId, source);
+      if (!validation.isValid) return this.#failure(validation.reason || this.#messages.itemIncompatible);
+    } else {
+      const target = this.#attachmentTargetResolver.listTargets(rootInstanceId).find((candidate) =>
+        candidate.socketId === action.socketId && candidate.parentInstanceId === action.parentInstanceId &&
+        candidate.slotId === action.slotId && candidate.slotIndex === action.slotIndex);
+      if (!target) return this.#failure(this.#messages.socketNotFound);
+      if (target.occupied) return this.#failure(this.#messages.socketAlreadyFilled);
+      if (!this.#attachmentTargetResolver.accepts(target, source)) return this.#failure(this.#messages.itemIncompatible);
+    }
+    this.#uiState.clearSelection();
+    const pick = this.#activateAssemblySocket({ ...action, listVisible: true });
+    if (!pick.success) return pick;
+    return this.#activateInventoryItem(source.instanceId);
   }
 
   #activateAssemblySocket(action) {

@@ -1,9 +1,8 @@
-// Phone item editor tabs (spec 091): one row of tabs — the editor's root item, its cells, items with parameters only —
-// joined to one parameter panel that shows the active tab's page. A tap on a filled cell, the root or a view-only tab,
-// a swipe on the panel or the preview and Left/Right/Home/End on the row only switch the page; a long press on a filled
-// cell removes its item and a tap on an empty cell keeps its own action (pick) (spec 092). Every tap on a tab with an item,
-// the active one included, also scrolls the editor down to the tab row (spec 093). The active tab key is presentation state kept here across editor re-renders: another root item, a removed
-// address or resetView() returns to the root tab. CSS decides where this block is shown (portrait phones).
+// Item editor tabs in every layout: taps, swipes and Left/Right/Home/End share one active parameter page.
+// Empty cells: without a visible item list (portrait) the page shows inline compatible choices and no pick starts;
+// beside a visible list (landscape, desktop) the tap also starts the pick that highlights compatible items there.
+// CSS shows the inline choices only in portrait. A long press on a filled cell keeps its removal action. Taps align the tab row (spec 093). Another root, a removed address or resetView() resets
+// the active page to the root item.
 export class InventoryEditorTabsRenderer {
   #dom;
   #resolver;
@@ -42,7 +41,9 @@ export class InventoryEditorTabsRenderer {
   }
 
   // swipeSurfaces: more elements whose horizontal swipe switches the page (the editor's preview).
-  render(model, { onSocketActivate = null, onSocketLongPress = null, onWarning = null } = {}, { swipeSurfaces = [] } = {}) {
+  // inlineChoices(): true while the editor offers inline choices instead of the item list beside it.
+  render(model, { onSocketActivate = null, onSocketLongPress = null, onSocketItemActivate = null, onWarning = null,
+    inlineChoices = () => true } = {}, { swipeSurfaces = [] } = {}) {
     const tabs = this.#resolver.resolve(model);
     if (!tabs.length) return null;
     if (tabs[0].key !== this.#rootKey) {
@@ -58,7 +59,7 @@ export class InventoryEditorTabsRenderer {
     const panel = this.#dom.element("div", "inventory-editor-tabs__panel");
     panel.setAttribute("role", "region");
     panel.setAttribute("aria-label", this.#labels.panel);
-    const tabNodes = tabs.map((tab) => this.#renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning }));
+    const tabNodes = tabs.map((tab) => this.#renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning, inlineChoices }));
     const pages = tabs.map((tab) => this.#renderPage(tab));
     row.append(...tabNodes);
     panel.append(...pages);
@@ -74,12 +75,13 @@ export class InventoryEditorTabsRenderer {
         onSelect: (index) => this.#select(this.#current.tabs[index].key) });
     }
     this.#rowScroll.attach(row);
-    this.#current = { tabs, tabNodes, pages, row, panel, surfaces };
+    this.#current = { tabs, tabNodes, pages, row, panel, surfaces, onSocketItemActivate, onWarning,
+      candidateKey: null, candidates: null };
     this.#apply();
     return block;
   }
 
-  #renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning }) {
+  #renderTab(tab, { onSocketActivate, onSocketLongPress, onWarning, inlineChoices }) {
     const node = this.#dom.element("div", `inventory-editor-tabs__tab inventory-editor-tabs__tab--${tab.kind}`);
     node.dataset.tabKey = tab.key;
     if (tab.kind === "socket") {
@@ -87,10 +89,16 @@ export class InventoryEditorTabsRenderer {
       // Tabs show only the item; its scales live in the parameters (spec 093).
       node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false,
         showResourceMeter: false, showTooltip: false,
-        onActivate: filled ? () => this.#showByTap(tab.key) : () => onSocketActivate?.(tab.socket),
+        onActivate: filled ? () => this.#showByTap(tab.key) : () => {
+          this.#showByTap(tab.key);
+          if (!inlineChoices()) onSocketActivate?.(tab.socket);
+        },
         onLongPress: filled ? () => onSocketLongPress?.(tab.socket) : null,
         longPressDurationMs: this.#longPressDurationMs,
-        onUnavailable: (warning) => onWarning?.(warning) }));
+        // Inline: no stock still opens the page with the shop stub. Locked prerequisites, and every unavailable cell
+        // beside the item list, retain their warning.
+        onUnavailable: (warning) => tab.socket.canSelectCompatibleItem && inlineChoices()
+          ? this.#showByTap(tab.key) : onWarning?.(warning) }));
       return node;
     }
     const card = this.#items.renderItem(tab.item, { variant: "socket", showAttachments: false, showMetadata: false,
@@ -116,6 +124,26 @@ export class InventoryEditorTabsRenderer {
       }
     }
     return page;
+  }
+
+  #renderCandidates(socket, { onSocketItemActivate, onWarning }) {
+    const candidates = this.#dom.element("div", "inventory-editor-tabs__candidates");
+    candidates.setAttribute("aria-label", this.#labels.compatibleItems(socket.label));
+    const items = socket.compatibleItems || [];
+    if (items.length) {
+      const grid = this.#dom.element("div", "inventory-editor-tabs__candidate-grid");
+      for (const item of items) {
+        grid.appendChild(this.#items.renderInventoryItem(item, {
+          onActivate: () => onSocketItemActivate?.(socket, item),
+        }));
+      }
+      candidates.appendChild(grid);
+    } else {
+      const shop = this.#dom.button("inventory-action inventory-action--muted", this.#labels.shop);
+      shop.addEventListener("click", () => onWarning?.(this.#labels.shopInDevelopment));
+      candidates.appendChild(shop);
+    }
+    return candidates;
   }
 
   // A tap shows the tab's parameters and brings the tab row to the top of the editor, as far as the content allows.
@@ -155,6 +183,15 @@ export class InventoryEditorTabsRenderer {
       else node.removeAttribute("aria-current");
     });
     this.#current.pages.forEach((page, position) => { page.hidden = position !== index; });
+    // Only the visible empty cell needs a candidate grid; multiple hook slots must not multiply the inventory DOM.
+    const tab = this.#current.tabs[index];
+    const candidateKey = !tab.item && tab.socket?.canSelectCompatibleItem ? tab.key : null;
+    if (candidateKey !== this.#current.candidateKey) {
+      this.#current.candidates?.remove();
+      this.#current.candidates = candidateKey ? this.#renderCandidates(tab.socket, this.#current) : null;
+      this.#current.candidateKey = candidateKey;
+      if (this.#current.candidates) this.#current.pages[index].appendChild(this.#current.candidates);
+    }
     this.#current.panel.classList.toggle("inventory-editor-tabs__panel--first-active", index === 0);
     // A growing active last tab reaches the row's right edge; a lone root tab keeps half the width (spec 091).
     this.#current.panel.classList.toggle("inventory-editor-tabs__panel--last-active",

@@ -159,6 +159,7 @@ export class InventoryItemCardRenderer {
       showMetadata = true,
       showResourceMeter = true,
       showTooltip = true,
+      wholeArt = false,
     } = {},
   ) {
     const card = this.#dom.button(
@@ -169,7 +170,7 @@ export class InventoryItemCardRenderer {
     card.dataset.instanceId = String(item.instanceId || "");
     card.setAttribute("aria-label", String(item.name || "Предмет"));
     const content = this.#dom.element("span", "inventory-item-card__content");
-    this.#renderMainVisual(content, item);
+    this.#renderMainVisual(content, item, { wholeArt });
     if (showAttachments) this.#attachmentRenderer.render(content, item.attachments);
     card.appendChild(content);
     if (showMetadata) this.#renderMetadata(card, item);
@@ -191,16 +192,20 @@ export class InventoryItemCardRenderer {
     return card;
   }
 
-  // A skin's thumbnail shows only its lower part, bottom-aligned; an equipment cell may show the whole artwork (spec 071).
-  #renderMainVisual(card, item) {
+  // A skin's thumbnail shows only its lower part, bottom-aligned (anchor "top": its upper part, top-aligned); an
+  // equipment cell may show the whole artwork (spec 071), and so may the editor preview (wholeArt) for a thumbnail
+  // with editorPreview "whole".
+  #renderMainVisual(card, item, { wholeArt = false } = {}) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
-    const thumbnail = item.equipmentArtUrl ? null : item.skin?.thumbnail;
+    const art = item.skin?.thumbnail;
+    const thumbnail = item.equipmentArtUrl || (wholeArt && art?.editorPreview === "whole") ? null : art;
     const image = this.#dom.image(
-      item.equipmentArtUrl || thumbnail?.src || item.iconUrl || item.imageUrl || item.src,
+      item.equipmentArtUrl || art?.src || item.iconUrl || item.imageUrl || item.src,
       "",
     );
     if (thumbnail && image) {
       visual.classList.add("inventory-item-card__visual--cropped");
+      visual.classList.toggle("inventory-item-card__visual--cropped-top", thumbnail.anchor === "top");
       visual.style.setProperty("--inventory-item-art-visible-height", String(thumbnail.visibleHeight));
       visual.style.setProperty("--inventory-item-art-focus-x", String(thumbnail.focusX));
     }

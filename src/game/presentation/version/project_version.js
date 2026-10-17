@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.38.3";
+export const CURRENT_PROJECT_VERSION = "0.38.7";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,11 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "inventory-artwork",
   updatedAt: "2026-10-17",
   notes: Object.freeze([
+    "Portrait editor cells list compatible items inline; landscape and desktop highlight them in the item list beside the editor",
+    "Landing-net miniatures and the toolbar net show the upper 40%, the editor shows the whole net; rod condition sits under the rod",
+    "The backpack backdrop is restored and toolbar artwork stays inside its button",
+    "The day float uses optimized WebP artwork in inventory cards, equipment, editor tabs and the DEV free shop",
+    "The basic landing net uses optimized WebP artwork in the inventory, equipment, DEV free shop and HUD",
     "Perch artwork and fish thumbnails use WebP; backpack artwork is available as a catalog item in the DEV free shop",
     "Keepnet artwork follows occupied capacity in six preloaded stages without reloading unchanged images",
     "The open backpack is a faint background centred in the item panel in landscape and portrait",

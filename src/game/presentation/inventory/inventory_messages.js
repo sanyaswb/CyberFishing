@@ -25,6 +25,7 @@ export const INVENTORY_MESSAGES = Object.freeze({
   unknownRarity: "Невідома рідкість предмета.",
   itemIncompatible: "Предмет несумісний.",
   socketNotFound: "Комірку не знайдено.",
+  socketAlreadyFilled: "Комірка вже зайнята. Оберіть порожню комірку знову.",
   consumableSlotUnavailable: "Спочатку спорядіть гачок або снасть із коміркою прикормки.",
   linePreparationFailed: "Не вдалося підготувати ліску.",
   reelLineIncompatibleWithRod: "Ліска в котушці несумісна з вудилищем.",

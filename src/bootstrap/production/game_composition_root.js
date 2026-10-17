@@ -834,6 +834,7 @@ export class GameCompositionRoot {
           }], ["dispose"],
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS,
+          landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail,
           fullscreenControl: own(new FullscreenControl({ documentRef: this.#documentTarget,
             mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body, label: HUD_LABELS.fullscreen,
             onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),

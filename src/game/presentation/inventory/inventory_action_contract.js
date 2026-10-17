@@ -63,6 +63,8 @@ export class InventoryActionContract {
         this.#requireId(action.instanceId, "instanceId");
         break;
       case types.ASSEMBLY_SOCKET_ACTIVATE:
+      case types.ASSEMBLY_SOCKET_ITEM_ACTIVATE:
+        if (action.type === types.ASSEMBLY_SOCKET_ITEM_ACTIVATE) this.#requireId(action.instanceId, "instanceId");
         this.#requireId(action.rootInstanceId, "rootInstanceId");
         this.#requireId(action.socketId, "socketId");
         this.#requireId(action.slotId, "slotId");

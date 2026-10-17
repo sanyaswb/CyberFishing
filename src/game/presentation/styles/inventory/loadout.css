@@ -175,14 +175,27 @@
   border-radius: var(--inventory-slot-radius);
 }
 
-.inventory-field--rod > .inventory-loadout-panel__rod-condition {
+/* The rod column: the rod cell takes the free height above its stats container. */
+.inventory-loadout-panel__rod {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--inventory-equipment-gap);
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The condition's stats container under the rod cell, styled like the backpack's stats container (an inventory-panel
+   with the meter inside), scaled by the equipment unit; the cell colour separates it from the primary panel. */
+.inventory-loadout-panel__rod-stats {
+  --inventory-panel: var(--inventory-equipment-cell);
+  --inventory-panel-border: transparent;
+  --inventory-panel-radius: var(--inventory-slot-radius);
+  padding: calc(var(--inventory-equipment-unit) * 0.08) calc(var(--inventory-equipment-unit) * 0.07);
+}
+
+.inventory-loadout-panel__rod-condition {
   --inventory-parameter-meter-height: calc(var(--inventory-equipment-unit) * 0.1);
-  position: absolute;
-  z-index: 20;
-  right: calc(var(--inventory-equipment-unit) * 0.07);
-  bottom: calc(var(--inventory-equipment-unit) * 0.1);
-  left: calc(var(--inventory-equipment-unit) * 0.07);
-  width: auto;
+  width: 100%;
 }
 
 .inventory-loadout-panel__rod-condition .inventory-resource-meter__track {

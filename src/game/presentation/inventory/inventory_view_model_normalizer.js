@@ -282,6 +282,8 @@ export class InventoryViewModelNormalizer {
                 : "",
           ),
           highlighted: slot.highlighted === true,
+          compatibleItems: Object.freeze(this.#array(slot.compatibleItems)),
+          canSelectCompatibleItem: slot.canSelectCompatibleItem === true,
         });
       });
   }

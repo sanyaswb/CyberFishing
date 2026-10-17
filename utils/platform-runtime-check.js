@@ -195,7 +195,13 @@ function checkBrowserWidgets() {
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
   assert(!button.classList.contains('draggable-control--dragging'),'releasing clears drag feedback');
   const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS,logger:{warn(){}},
+    landingNetArt:{src:'assets/items/nets/net--1.webp',visibleHeight:0.4,focusX:0.5,anchor:'top'},
     fullscreenControl:new c.FullscreenControl({documentRef:document,mountNode:document.body,label:c.HUD_LABELS.fullscreen})});
+  const netButton=document.body.children.find(node=>node.className.split(' ').includes('game-control--net'));
+  const netArt=netButton.children[0],netImage=netArt.children[0];
+  assert.equal(netImage.src,'assets/items/nets/net--1.webp','the landing-net HUD uses the injected optimized artwork');
+  assert(netArt.className.split(' ').includes('game-toolbar-button__art--cropped-top')&&
+    netArt.style['--game-toolbar-art-visible-height']==='0.4','the HUD net shows the upper 40% like its inventory card');
   const fullscreen=document.body.children.find(node=>node.className.split(' ').includes('game-control--fullscreen'));
   fullscreen.emit('click');document.emit('fullscreenchange');
   assert(fullscreen.classList.contains('game-control--fullscreen-hidden')&&fullscreen.disabled,

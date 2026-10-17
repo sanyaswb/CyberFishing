@@ -66,9 +66,11 @@ export class InventoryLoadoutPanelRenderer {
     return shell;
   }
 
-  // The equipped rod's condition is a meter inside its cell; an empty rod cell has none.
+  // The rod column: its cell, then the equipped rod's condition meter in a stats container under it (like the
+  // backpack's stats); an empty rod cell has none.
   #renderRod(slot, handlers) {
-    const field = this.#renderSlot(slot, "rod", handlers);
+    const column = this.#dom.element("div", "inventory-loadout-panel__rod");
+    column.appendChild(this.#renderSlot(slot, "rod", handlers));
     const condition = slot.item?.condition;
     const percent = Number(condition?.percent);
     if (condition?.available && Number.isFinite(percent)) {
@@ -78,9 +80,11 @@ export class InventoryLoadoutPanelRenderer {
         { variant: "parameter", showIcon: false },
       );
       meter.classList.add("inventory-loadout-panel__rod-condition");
-      field.appendChild(meter);
+      const stats = this.#dom.element("div", "inventory-loadout-panel__rod-stats inventory-panel");
+      stats.appendChild(meter);
+      column.appendChild(stats);
     }
-    return field;
+    return column;
   }
 
   #renderSlot(

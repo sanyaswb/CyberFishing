@@ -1,4 +1,5 @@
 import { getBrowserStartupEnvironment } from "../../platform/browser/runtime/browser_startup_environment.js";
+import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
@@ -186,6 +187,7 @@ export function startUiCatalog() {
         const catalogClock = new GameTimeClock({ anchorHours: 12, anchorMs: 0, timeScale: 240, now: () => 0 });
         const timeDisplay = own(composeDevTimeDisplay({ documentRef: scope, mount: surface.mountRoot, clock: catalogClock, config: clockConfig, uiSurface: surface }));
         const gameControls = own(new GameControls(CONFIG, null, { labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot, frameScheduler: scheduler,
+          landingNetArt: ITEM_DB.nets.net_basic.skin.thumbnail,
           toolbarMountNode: toolbar.element,
           fullscreenControl: own(new FullscreenControl({ documentRef: scope, mountNode: surface.mountRoot, label: HUD_LABELS.fullscreen })) }));
         gameControls.onNetClick = () => { status.textContent = UI_CATALOG_LABELS.hudNet; };

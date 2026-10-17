@@ -1911,6 +1911,51 @@ vm.runInContext(
   assertIntegration(editorState().panelMode === "assembly" && editorState().editingRootInstanceId === "pick-rod",
     "switching sections keeps the open editor");
 
+  // Inline mobile choices ignore backpack UI filters and fill the exact empty address in one command.
+  const inlinePick = makeComposition({
+    items: [raw("inline-rod", "rodPole"), raw("inline-float-a", "floatDay"), raw("inline-float-b", "floatDay"),
+      raw("inline-net", "net"), raw("inline-hook", "hook")],
+    equipment: { ...emptyEquipment(), rod: "inline-rod" },
+  });
+  dispatch(inlinePick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod" });
+  dispatch(inlinePick, InventoryActionType.CATEGORY_SELECT, { categoryId: "nets" });
+  const inlineFloat = inlinePick.facade.getViewModel().panel.assembly.sockets.find((slot) => slot.slotId === "float");
+  assertIntegration(inlineFloat.canSelectCompatibleItem && inlineFloat.compatibleItems.length === 2 &&
+    inlineFloat.compatibleItems.every((item) => item.itemType === "float"),
+  "an empty float offers only its compatible inventory items regardless of backpack category");
+  const inlineAction = { type: InventoryActionType.ASSEMBLY_SOCKET_ITEM_ACTIVATE, rootInstanceId: "inline-rod",
+    socketId: "float", slotId: "float", slotIndex: 0, parentInstanceId: "inline-rod", instanceId: "inline-float-b" };
+  const inlineUiBefore = JSON.stringify(inlinePick.commands.getUiState());
+  assertIntegration(!inlinePick.facade.dispatch({ ...inlineAction, instanceId: "inline-net" }).success &&
+    JSON.stringify(inlinePick.commands.getUiState()) === inlineUiBefore,
+  "an incompatible stale inline candidate is rejected before changing navigation");
+  dispatch(inlinePick, inlineAction.type, inlineAction);
+  assertIntegration(inlinePick.equipmentState.getRootInstanceId("float") === "inline-float-b" &&
+    inlinePick.commands.getUiState().panelMode === "assembly" &&
+    inlinePick.commands.getUiState().editingRootInstanceId === "inline-rod" &&
+    inlinePick.commands.getUiState().activeSectionId === "equipment" &&
+    !inlinePick.commands.getUiState().highlightedEquipmentSlotId,
+  "one inline selection equips the chosen item and keeps the same editor without visiting the backpack");
+  assertIntegration(!inlinePick.facade.dispatch({ ...inlineAction, instanceId: "inline-float-a" }).success &&
+    inlinePick.equipmentState.getRootInstanceId("float") === "inline-float-b",
+  "a newly occupied target cannot be overwritten by a stale inline card");
+  const inlineAssembly = makeComposition({ items: [raw("inline-rig", "spring"), raw("inline-hooks", "hook", 2)] });
+  const inlineRoot = dispatch(inlineAssembly, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "inline-rig" }).rootInstanceId;
+  const inlineSockets = inlineAssembly.facade.getViewModel().panel.assembly.sockets;
+  const secondHook = inlineSockets.find((slot) => slot.slotId === "hook" && slot.slotIndex === 1);
+  assertIntegration(secondHook.compatibleItems.some((item) => item.instanceId === "inline-hooks") &&
+    inlineSockets.find((slot) => slot.slotId === "chum").compatibleItems.length === 0,
+  "each assembly address exposes its own candidates and an empty list when stock is absent");
+  dispatch(inlineAssembly, InventoryActionType.ASSEMBLY_SOCKET_ITEM_ACTIVATE, {
+    rootInstanceId: inlineRoot, socketId: secondHook.socketId, parentInstanceId: secondHook.parentInstanceId,
+    slotId: secondHook.slotId, slotIndex: secondHook.slotIndex, instanceId: "inline-hooks",
+  });
+  assertIntegration(Boolean(inlineAssembly.assemblyReader.getChild(inlineRoot, "hook", 1)) &&
+    !inlineAssembly.assemblyReader.getChild(inlineRoot, "hook", 0) &&
+    inlineAssembly.repository.require("inline-hooks").quantity === 1 &&
+    inlineAssembly.commands.getUiState().pickedSocketId === null,
+  "the second of multiple equal sockets receives one stack unit without filling the first socket");
+
   const looseStackCycles = makeComposition({
     items: [raw("stacked-pole-rods", "rodPole", 2)],
   });

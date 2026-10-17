@@ -439,6 +439,7 @@ async function main() {
   }
 }
 
+// --top-fraction 0.3 keeps the upper 30% before the ordinary contain resize (full image by default).
 async function createThumbnails(args) {
   const option = (name, fallback) => {
     const index = args.indexOf(name);
@@ -447,7 +448,9 @@ async function createThumbnails(args) {
   const input = path.resolve(BASE_DIR, option('--input', 'assets/fish'));
   const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-thumbnails'));
   const size = Number(option('--size', '128'));
+  const topFraction = Number(option('--top-fraction', '1'));
   if (!Number.isSafeInteger(size) || size < 1 || size > 1024 || input === output ||
+    !Number.isFinite(topFraction) || topFraction <= 0 || topFraction > 1 ||
     path.relative(BASE_DIR, output).startsWith('..')) throw new Error('Invalid thumbnail options');
   const files = glob.sync('**/*.{png,jpg,jpeg,webp,avif}', { cwd: input, nodir: true });
   for (const relative of files) {
@@ -455,7 +458,13 @@ async function createThumbnails(args) {
     const target = path.join(output, relative.replace(/\.[^.]+$/, '.webp'));
     if (source === target) throw new Error('Thumbnail must not overwrite source');
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    await sharp(source).resize(size, size, { fit: 'inside', withoutEnlargement: true })
+    const pipeline = sharp(source);
+    if (topFraction < 1) {
+      const metadata = await pipeline.metadata();
+      pipeline.extract({ left: 0, top: 0, width: metadata.width,
+        height: Math.max(1, Math.floor(metadata.height * topFraction)) });
+    }
+    await pipeline.resize(size, size, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 80 }).toFile(target);
   }
   console.log(`Created ${files.length} thumbnails at max ${size}px in ${path.relative(BASE_DIR, output)}`);

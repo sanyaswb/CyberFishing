@@ -6,4 +6,7 @@ export const INVENTORY_EDITOR_TABS_LABELS = Object.freeze({
   view: (name) => `${name} · лише параметри`,
   emptyCell: (label) => `${label}: комірка порожня`,
   noParameters: (name) => `${name}: параметрів немає`,
+  compatibleItems: (label) => `${label}: сумісні предмети з інвентаря`,
+  shop: "В магазин",
+  shopInDevelopment: "Магазин у розробці.",
 });

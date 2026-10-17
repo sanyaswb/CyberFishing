@@ -14,15 +14,18 @@ export class GameControls {
   #document;
   #frameScheduler;
   #pendingFrames = new Set();
+  #landingNetArt;
 
   constructor(config, lifecycle, { labels, documentRef = document,
-    mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null } = {}) {
+    mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null,
+    landingNetArt = null } = {}) {
     this.#labels = labels;
     this.#mount = mountNode;
     this.#toolbarMount = toolbarMountNode;
     this.#document = documentRef;
     this.#frameScheduler = frameScheduler;
     this.#fullscreenControl = fullscreenControl;
+    this.#landingNetArt = landingNetArt;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("GameControls requires devTools");
     }
@@ -40,11 +43,28 @@ export class GameControls {
     }
   }
 
+  // The item's thumbnail crop (skin.thumbnail: visibleHeight, focusX, anchor "top"), as in its inventory card.
+  #createCroppedArt({ src, visibleHeight = 1, focusX = 0.5, anchor = "bottom" }) {
+    const frame = this.#document.createElement("span");
+    frame.className = anchor === "top" ? "game-toolbar-button__art game-toolbar-button__art--cropped-top"
+      : "game-toolbar-button__art";
+    frame.style.setProperty("--game-toolbar-art-visible-height", String(visibleHeight));
+    frame.style.setProperty("--game-toolbar-art-focus-x", String(focusX));
+    const image = this.#document.createElement("img");
+    image.className = "game-toolbar-button__image";
+    image.src = src;
+    image.alt = "";
+    image.draggable = false;
+    frame.appendChild(image);
+    return frame;
+  }
+
   #initNetBtn() {
     this.#netBtn = this.#document.createElement("button");
     this.#netBtn.className = "game-control game-control--net game-toolbar-button game-toolbar-button--net";
     this.#netBtn.type = "button";
-    this.#netBtn.innerHTML = "🕸️";
+    if (this.#landingNetArt?.src) this.#netBtn.appendChild(this.#createCroppedArt(this.#landingNetArt));
+    else this.#netBtn.textContent = "🕸️";
     this.#netBtn.setAttribute("aria-label", this.#labels.landingNet);
     this.#netBtn.title = this.#labels.landingNet;
     UiEventShield.makeSolid(this.#netBtn);

@@ -62,7 +62,6 @@
   grid-template-rows: minmax(0, 1fr);
   grid-template-areas: "left right";
   gap: 0 var(--inventory-content-gap);
-  padding-top: 18px;
   overflow: hidden;
 }
 
@@ -116,26 +115,15 @@
   grid-area: tabs;
 }
 
-/* An open item editor beside the section tabs (wide and landscape layouts, spec 095): the editor runs to the bottom of
-   the column and the tab bar lies over its bottom edge, so the parameters scroll under the tabs and are clipped only by
-   the column itself, as on phones; the gaps between the tabs show the content and pass touches to it. The editor's
-   last content clears the bar (its height is 15% of the column width, section-tabs.css). Portrait phones hide the
-   tabs instead (spec 091). */
-.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar > .inventory-main__tabs {
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  pointer-events: none;
+/* The visible editor owns navigation in every orientation. Leaving equipment restores the section tabs. */
+.inventory-modal--section-equipment:has(.inventory-assembly-editor)
+  .inventory-main__tabs {
+  display: none;
 }
 
-.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs .inventory-section-tabs__tab {
-  pointer-events: auto;
-}
-
-.inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar .inventory-assembly-editor {
-  padding-bottom: calc(var(--inventory-container-gap) + 100cqi * 0.15);
+.inventory-modal--section-equipment:has(.inventory-assembly-editor)
+  .inventory-main {
+  --inventory-swipe: off;
 }
 
 /* Every section keeps its hosts; only the active section's hosts are visible (spec 067). */
@@ -154,7 +142,10 @@
 @container ui-surface (max-width: 820px) {
   .inventory-modal {
     /* 320px: reserve panel borders/padding, three equal gaps and both scrolling surfaces. */
-    --inventory-card-size: min(82px, calc((var(--ui-logical-width, 100vw) - 72px) / 4));
+    --inventory-card-size: min(
+      82px,
+      calc((var(--ui-logical-width, 100vw) - 72px) / 4)
+    );
     --inventory-socket-size: min(66px, var(--inventory-card-size));
     --inventory-mobile-gap: 6px;
     --inventory-mobile-inset: 10px;
@@ -247,22 +238,6 @@
     .inventory-modal--section-backpack .inventory-main__left,
     .inventory-modal--section-keepnet .inventory-main__left {
       display: none;
-    }
-
-    /* Visible item editor (spec 091, replacing spec 089's content under the tabs): the section tabs are gone — no row,
-       no hit testing, no focus — and the section swipe is off; the editor's own tabs switch its parameters. A pick that
-       opens the backpack leaves the equipment section, so the tabs come back there. */
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__tabs {
-      display: none;
-    }
-
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main {
-      --inventory-swipe: off;
-    }
-
-    /* No tab bar to clear here (spec 095). */
-    .inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar .inventory-assembly-editor {
-      padding-bottom: var(--inventory-container-gap);
     }
   }
 }

@@ -34,6 +34,19 @@ to a reusable block. For example, an assembly action mixes `inventory-assembly-e
 (placement) with `inventory-action inventory-action--primary` (appearance). Assembly, loadout,
 saved-preview and list surfaces mix in `inventory-panel`.
 
+Editor tab thumbnails use the same skin `visibleHeight`/`focusX` scaling and bottom crop as backpack item cards,
+owned by `item-cards.css`; their placement inside the tab belongs to `assembly-editor.css`.
+The active empty socket's page in every layout adds `inventory-editor-tabs__candidates` (reused from spec 096): four columns of
+the existing inventory cards in the editor's scroll flow, or the shared shop action. Its layout belongs to
+`assembly-editor.css`; inventory card artwork, quantities and meters retain their existing owners.
+Empty and filled cell taps use the same tab-opening handler. Only choosing a compatible card starts the existing
+equipment command; viewing the tab never starts a backpack pick. No separate wide-screen picker is composed.
+The editor's nearest vertical scroller declares `touch-action: pan-y` in every layout. `modal.css` hides section
+navigation while the equipment editor is visible in either orientation. Re-rendering the same root retains its
+scroll position; another editor starts at the top. `INVENTORY_EDITOR_CONFIG.scrollbar.enabled` defaults to `false`;
+bootstrap injects it into the renderer, whose modifier lets `shared-controls.css` hide the scrollbar without
+disabling scrolling. Enabling the setting restores the existing shared scrollbar appearance.
+
 ## Pointer interaction and resize ownership
 
 Inventory behavior is defined in [inventory-behavior.md](inventory-behavior.md) and spec 072.
@@ -75,6 +88,13 @@ Backpack item and control miniatures use the full-size 2048px WebP with `contain
 the list backdrop and the toolbar; the existing capacity read model supplies the percentage.
 `toolbar.css` owns `game-toolbar-button__image`, `list-and-filters.css` owns the category image,
 and `dev-tools.css` owns the free-shop image and label. Numeric updates keep their image nodes.
+Landing-net miniatures crop the full artwork `assets/items/nets/net--1.webp` in CSS: its skin thumbnail has
+`visibleHeight: 0.4`, `focusX: 0.5` and `anchor: "top"` (`inventory-item-card__visual--cropped-top`), so the upper 40%
+fills the card height, centred and top-aligned. `editorPreview: "whole"` makes the item editor preview
+(`renderItem` with `wholeArt`) show the whole artwork; editor tabs, cells and backpack cards stay cropped.
+The toolbar net button (`GameControls` `landingNetArt`, injected from the same skin thumbnail) applies that crop in
+`toolbar.css` (`game-toolbar-button__art`, `--cropped-top`) inside the 85% image box of the other toolbar buttons. Explicit bounded toolbar grid tracks keep image intrinsic dimensions
+from expanding the button's contents; thumbnail images fit within their track.
 The backpack collection also shows its faint open-backpack background in landscape, centred
 inside the items panel. `shared-controls.css` owns its shared backdrop geometry and the landscape placement.
 

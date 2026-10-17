@@ -330,9 +330,10 @@ export class InventoryViewModelFactory {
     );
     let sockets = targets.filter((target) => target.slotId !== "bait")
       .map((target) => {
-        const hasCompatibleItem = accessibleRawItems.some((candidate) =>
+        const compatibleItems = accessibleRawItems.filter((candidate) =>
           this.#attachmentTargetResolver.accepts(target, candidate),
         );
+        const hasCompatibleItem = compatibleItems.length > 0;
         return {
           socketId: target.socketId,
           slotId: target.slotId,
@@ -351,6 +352,8 @@ export class InventoryViewModelFactory {
             ? ""
             : "В інвентарі немає відповідного доступного предмета.",
           highlighted: highlightedSocketIds.has(target.socketId),
+          compatibleItems: target.occupied ? [] : this.#createItemViews(compatibleItems),
+          canSelectCompatibleItem: !target.occupied,
         };
       });
     const equipped = Object.values(this.#equipmentState.snapshot()).includes(
@@ -372,6 +375,11 @@ export class InventoryViewModelFactory {
           state: id ? "filled" : availability ? this.#slotState(availability.state) : "unavailable",
           warning: availability ? availability.warning || "" : "Спочатку спорядіть це вудилище.",
           highlighted: false,
+          compatibleItems: !id && equipped ? itemViews.filter((item) => this.#compatibilityPolicy.isCompatible({
+            slotId, item, equipmentState: this.#equipmentState, rod: equipmentReadModel.rod, enforceReadiness: false,
+          })) : [],
+          canSelectCompatibleItem: !id && equipped && availability?.state !== EquipmentSlotAvailabilityState.LOCKED &&
+            availability?.state !== EquipmentSlotAvailabilityState.UNSUPPORTED,
         };
       });
     }

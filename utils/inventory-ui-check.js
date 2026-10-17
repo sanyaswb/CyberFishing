@@ -37,6 +37,7 @@ const UI_SCRIPT_ORDER = Object.freeze([
   ["inventory_load_meter_config.js", "src/game/presentation/inventory/inventory_load_meter_config.js"],
   ["inventory_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js"],
   ["inventory_editor_tabs_labels.js", "src/game/presentation/inventory/inventory_editor_tabs_labels.js"],
+  ["inventory_editor_config.js", "src/game/presentation/inventory/inventory_editor_config.js"],
   ["inventory_editor_tabs_resolver.js", "src/game/presentation/inventory/inventory_editor_tabs_resolver.js"],
   ["inventory_editor_tabs_renderer.js", "src/game/presentation/inventory/inventory_editor_tabs_renderer.js"],
   ["inventory_assembly_editor_renderer.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js"],
@@ -573,23 +574,23 @@ class InventoryStaticContractCheck {
       "equipping flashes twice, the second time slower");
     assert.match(style, /\.inventory-assembly-editor__actions\s*\{\s*display:\s*flex;\s*gap:\s*8px;/,
       "editor actions share one row in every layout (spec 094)");
-    // Spec 091 (replacing 089): a visible portrait item editor hides the section tabs and turns the section swipe off;
-    // the editor's own parameter swipe has its own flag. The editor's tab block is shown only on portrait phones.
+    // A visible editor hides section navigation in every layout, with its own parameter swipe flag.
     const visibleEditor = ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
     for (const [selector, rule] of [[" .inventory-main__tabs", /^\s*display:\s*none;\s*$/],
       [" .inventory-main", /^\s*--inventory-swipe:\s*off;\s*$/]]) {
-      const block = portraitModal.split(visibleEditor + selector + " {")[1]?.split("}")[0] || "";
-      assert.match(block, rule, "portrait item editor rule " + selector.trim());
+      // Formatters may wrap a long selector: compare with collapsed whitespace.
+      const block = style.replace(/\s+/g, " ").split(visibleEditor + selector + " {")[1]?.split("}")[0] || "";
+      assert.match(block, rule, "item editor rule in every layout " + selector.trim());
+      assert.ok(!mobileModal.includes(visibleEditor + selector + " {"), "editor navigation is not portrait-only");
     }
     assert.doesNotMatch(portraitModal, /grid-row:\s*2 \/ 4;/, "the editor no longer scrolls under the section tabs");
-    // Spec 095: beside the section tabs (wide, landscape) an open editor runs to the column's bottom under the tab bar,
-    // which passes touches through its gaps; the editor's last content clears the bar.
-    const besideTabs = ".inventory-modal--section-equipment:has(.inventory-assembly-editor) .inventory-main__sidebar";
-    assert.match(style.split(besideTabs + " > .inventory-main__tabs {")[1]?.split("}")[0] || "",
-      /position:\s*absolute;[^]*z-index:\s*1;[^]*bottom:\s*0;[^]*pointer-events:\s*none;/, "the tab bar lies over the editor");
-    assert.match(style.split(besideTabs + " .inventory-assembly-editor {")[1]?.split("}")[0] || "",
-      /padding-bottom:\s*calc\(var\(--inventory-container-gap\) \+ 100cqi \* 0\.15\);/, "the editor's last content clears the bar");
-    assert.match(style, /\.inventory-main__sidebar\s*\{\s*position:\s*relative;/, "the column positions its tab bar");
+    assert.doesNotMatch(style, /padding-bottom:\s*calc\(var\(--inventory-container-gap\) \+ 100cqi \* 0\.15\);/,
+      "the editor reserves no space for the hidden section tabs");
+    assert.match(style, /\.inventory-assembly-editor\s*\{[^}]*touch-action:\s*pan-y;/,
+      "the editor scroller leaves horizontal gestures to its pager in landscape too");
+    assert.match(style, /\.inventory-assembly-editor\.inventory-assembly-editor--scrollbar-hidden\s*\{\s*scrollbar-width:\s*none;/);
+    assert.match(style, /\.inventory-assembly-editor\.inventory-assembly-editor--scrollbar-hidden::-webkit-scrollbar\s*\{\s*display:\s*none;/);
+    assert.doesNotMatch(style, /cursor:\s*help;/, "inventory uses no question-mark cursor");
     // Spec 094: the editor uses its tabs in every layout; wide layouts no longer hide them or keep a cell grid.
     assert.match(style, /\/\* --inventory-editor-swipe[^*]*\*\/\s*\.inventory-modal\s*\{[^}]*--inventory-editor-swipe:\s*on;/,
       "the editor swipe is on in every layout");
@@ -1349,6 +1350,8 @@ class InventoryStaticContractCheck {
     "the backpack list is a filters panel and a two-page items pager");
     assert.strictEqual(this.#findByClass(itemsPage, "inventory-collection__backdrop").src,
       "assets/items/briefcases/briefcase--1--open.webp");
+    assert.ok(fs.existsSync(path.join(ROOT, this.#findByClass(itemsPage, "inventory-collection__backdrop").src)),
+      "the configured backpack backdrop must exist after source-master cleanup");
     // Spec 076 follow-up: the scrolling list must keep a bounded height. Every node from the panel to the grid is a
     // height-passing flex/grid box (min-height: 0); an unstyled wrapper let the grid grow with its cards and stopped all
     // vertical scrolling.
@@ -1469,7 +1472,7 @@ class InventoryStaticContractCheck {
       assert.strictEqual(this.#findByClass(capacity, "inventory-scale__value").textContent, "7 / 100");
       assert.strictEqual(this.#findByClass(capacity, "inventory-resource-meter").style.getPropertyValue("--inventory-resource-percent"), "7%");
       assert.strictEqual(this.#findByClass(capacity, "inventory-scale__icon").src,
-        "assets/items/briefcases/briefcase--1--close.webp");
+        "assets/ui/inventory/backpack.svg", "a scale icon is the SVG interface icon, not item artwork");
     }
     ui.render(sectionView("keepnet"));
     assert.deepStrictEqual(visibleSections(), [false, false, true, false, true], "keepnet: parameters left, fish right");
@@ -1517,7 +1520,11 @@ class InventoryStaticContractCheck {
     ui.render(conditionView);
     const rodCondition = this.#findAllByClass(ui.rootNode, "inventory-loadout-panel__rod-condition");
     assert.strictEqual(rodCondition.length, 1);
-    assert.ok(this.#field(ui.rootNode, "rod").contains(rodCondition[0]), "the meter sits inside the rod cell");
+    const rodStats = this.#findByClass(ui.rootNode, "inventory-loadout-panel__rod-stats");
+    assert.ok(rodStats.classList.contains("inventory-panel") && rodStats.contains(rodCondition[0]) &&
+      !this.#field(ui.rootNode, "rod").contains(rodCondition[0]) &&
+      this.#findByClass(ui.rootNode, "inventory-loadout-panel__rod").contains(this.#field(ui.rootNode, "rod")),
+      "the meter sits in a stats container under the rod cell");
     assert.ok(rodCondition[0].classList.contains("inventory-resource-meter"), "the shared resource meter renders the condition");
     assert.strictEqual(rodCondition[0].getAttribute("aria-valuenow"), "64");
     const noRodView = this.#loadoutViewModel();
@@ -2368,6 +2375,23 @@ class InventoryStaticContractCheck {
       .contains("inventory-item-card__visual--cropped") &&
       this.#findByClass(skinnedCell, "inventory-item-card__image").src === "rod-line.png",
       "The equipment cell shows the whole artwork");
+    // The landing net: miniatures show the upper 40% top-aligned; the editor preview shows the whole artwork.
+    const netSkin = { thumbnail: { src: "net.webp", visibleHeight: 0.4, focusX: 0.5, anchor: "top", editorPreview: "whole" } };
+    const netVisual = this.#findByClass(isolatedItemRenderer.renderInventoryItem({ instanceId: "net", name: "Net",
+      icon: "N", skin: netSkin }), "inventory-item-card__visual");
+    assert.ok(netVisual.classList.contains("inventory-item-card__visual--cropped-top") &&
+      netVisual.style.getPropertyValue("--inventory-item-art-visible-height") === "0.4",
+      "a top-anchored thumbnail shows the upper share of its artwork");
+    const netPreview = isolatedItemRenderer.renderItem({ instanceId: "net", name: "Net", icon: "N", skin: netSkin },
+      { variant: "assembly-root", wholeArt: true });
+    assert.ok(!this.#findByClass(netPreview, "inventory-item-card__visual").classList
+      .contains("inventory-item-card__visual--cropped") &&
+      this.#findByClass(netPreview, "inventory-item-card__image").src === "net.webp",
+      "the editor preview shows the whole net");
+    const rodPreview = isolatedItemRenderer.renderItem({ instanceId: "skin-rod", name: "Rod", icon: "R", skin },
+      { variant: "assembly-root", wholeArt: true });
+    assert.ok(this.#findByClass(rodPreview, "inventory-item-card__visual").classList
+      .contains("inventory-item-card__visual--cropped"), "without editorPreview the editor keeps the crop");
     assert.match(this.#reader.readStyle(), /\.inventory-item-card__visual--cropped \.inventory-item-card__image\s*\{[^}]*height:\s*calc\(100cqh \/ var\(--inventory-item-art-visible-height, 1\)\);/,
       "The cropped thumbnail scales its artwork by the visible height share");
     const attachedInventoryItem = isolatedItemRenderer.renderItem({
@@ -2648,6 +2672,13 @@ class InventoryStaticContractCheck {
       ui.rootNode,
       "inventory-assembly-editor",
     );
+    assert.ok(editor.classList.contains("inventory-assembly-editor--scrollbar-hidden"), "the editor scrollbar defaults to disabled");
+    const visibleScrollbarEditor = new sandbox.InventoryAssemblyEditorRenderer({
+      domFactory: new sandbox.InventoryDomFactory(document), scrollbarEnabled: true,
+      rodRemovalRenderer: { render: () => document.createElement("div") },
+    }).render({ rodRemovalStep: "choice" });
+    assert.ok(!visibleScrollbarEditor.classList.contains("inventory-assembly-editor--scrollbar-hidden"),
+      "enabling the presentation setting restores the shared native scrollbar");
     const editorActions = this.#findByClass(
       editor,
       "inventory-assembly-editor__actions",
@@ -2763,20 +2794,7 @@ class InventoryStaticContractCheck {
       ["inventory-assembly-editor__actions", "inventory-assembly-editor__workspace", "inventory-editor-tabs"],
     );
     assert.deepStrictEqual(assemblyWorkspace.children.map((node) => node.className), ["inventory-assembly-editor__visual"]);
-    const socket = this.#field(ui.rootNode, "hook");
-    this.#findByClass(socket, "inventory-slot__empty-button").click();
-    this.#assertLast(dispatched, {
-      type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE,
-      rootInstanceId: "assembly-active",
-      socketId: "hook[0]",
-      slotId: "hook",
-      slotIndex: 0,
-      parentInstanceId: "assembly-active",
-      listVisible: false,
-    });
-
-    // Spec 091: phone editor tabs — the root first, one tab per cell, the active page only; a cell keeps its tap action,
-    // the root tab, Left/Right and a panel swipe only switch the page and dispatch nothing.
+    // The shared editor tabs open every cell in place; only choosing an item or removing one dispatches a command.
     const editorTabs = this.#findByClass(ui.rootNode, "inventory-editor-tabs");
     const [tabRow, tabPanel] = editorTabs.children;
     const tabNodes = tabRow.children;
@@ -2790,13 +2808,11 @@ class InventoryStaticContractCheck {
     assert.deepStrictEqual([activeTab(), ...visiblePages()], [0, 0], "the editor opens on its root item's page only");
     assert.strictEqual(tabNodes[0].getAttribute("aria-current"), "true");
     const hookTab = socketTabs.find((node) => node.dataset.tabKey.includes(":hook[0]:"));
-    this.#findByClass(hookTab, "inventory-slot__empty-button").click();
-    this.#assertLast(dispatched, {
-      type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId: "assembly-active", socketId: "hook[0]",
-      slotId: "hook", slotIndex: 0, parentInstanceId: "assembly-active", listVisible: false,
-    });
-    assert.strictEqual(activeTab(), 0, "a tap on a cell runs its own action, it does not switch the page");
     const dispatchedBeforeViewing = dispatched.length;
+    this.#findByClass(hookTab, "inventory-slot__empty-button").click();
+    assert.deepStrictEqual([activeTab(), ...visiblePages()], [1, 1], "a tap opens the empty cell's parameter page");
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "viewing an empty cell never starts a backpack pick");
+    tabRow.emit("keydown", { key: "Home" });
     tabRow.emit("keydown", { key: "ArrowRight" });
     assert.deepStrictEqual([activeTab(), ...visiblePages()], [1, 1], "Right shows the next tab's page");
     assert.strictEqual(JSON.stringify(tabNodes[1].scrolledIntoView), JSON.stringify({ block: "nearest", inline: "nearest" }));
@@ -2993,6 +3009,76 @@ class InventoryStaticContractCheck {
     this.#findByClass(removalForm, "inventory-loadout-save__input").value = "";
     removalForm.emit("submit");
     this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LOADOUT_SAVE, name: "" });
+    // Inline choices belong to the viewed empty socket, use inventory cards, and dispatch one addressed action.
+    currentView = this.#editorViewModel();
+    const inlineSocket = currentView.panel.assembly.sockets.find((slot) => !slot.item);
+    inlineSocket.canSelectCompatibleItem = true;
+    inlineSocket.compatibleItems = [{ instanceId: "inline-hook", name: "Inline hook", itemType: "hook", icon: "H", quantity: 3 }];
+    ui.render(currentView);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-editor-tabs__candidates").length, 0,
+      "the root page does not build hidden grids for empty sockets");
+    const inlineTabs = this.#findByClass(ui.rootNode, "inventory-editor-tabs");
+    const beforeInlineView = dispatched.length;
+    this.#findByClass(inlineTabs.children[0].children[1], "inventory-slot__empty-button").click();
+    assert.strictEqual(dispatched.length, beforeInlineView, "opening choices neither filters the backpack nor selects equipment");
+    const inlineGrid = this.#findByClass(ui.rootNode, "inventory-editor-tabs__candidate-grid");
+    assert.strictEqual(this.#findByClass(inlineGrid, "inventory-item-card__quantity").textContent, "3",
+      "inline choices retain inventory quantities");
+    this.#findByClass(inlineGrid, "inventory-item-card").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ITEM_ACTIVATE,
+      rootInstanceId: "assembly-active", instanceId: "inline-hook", socketId: inlineSocket.socketId,
+      slotId: inlineSocket.slotId, slotIndex: inlineSocket.slotIndex, parentInstanceId: inlineSocket.parentInstanceId });
+    inlineTabs.children[0].emit("keydown", { key: "Home" });
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-editor-tabs__candidates").length, 0,
+      "leaving an empty cell releases its candidate cards");
+    // Landscape/desktop: beside a visible item list the empty cell starts the pick that highlights compatible items.
+    const inlineListHost = this.#findByClass(ui.rootNode, "inventory-main__section--items");
+    inlineListHost.layoutVisible = true;
+    this.#findByClass(inlineTabs.children[0].children[1], "inventory-slot__empty-button").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE,
+      rootInstanceId: "assembly-active", socketId: inlineSocket.socketId, slotId: inlineSocket.slotId,
+      slotIndex: inlineSocket.slotIndex, parentInstanceId: inlineSocket.parentInstanceId, listVisible: true });
+    assert.strictEqual(dispatched.length, beforeInlineView + 2, "one pick beside the visible list");
+    inlineListHost.layoutVisible = false;
+    inlineTabs.children[0].emit("keydown", { key: "Home" });
+    inlineSocket.compatibleItems = [];
+    inlineSocket.state = "unavailable";
+    inlineSocket.warning = "В інвентарі немає відповідного доступного предмета.";
+    ui.render(currentView);
+    this.#findByClass(ui.rootNode, "inventory-slot__empty-button").click();
+    assert.strictEqual(dispatched.length, beforeInlineView + 2, "an empty unavailable cell still opens its shop page without a command");
+    const beforeShop = dispatched.length;
+    this.#findByText(this.#findByClass(ui.rootNode, "inventory-editor-tabs__candidates"), "В магазин").click();
+    assert.strictEqual(dispatched.length, beforeShop, "the shop stub never performs an inventory command");
+    assert.strictEqual(this.#findByClass(this.#findByClass(ui.rootNode, "inventory-warning"), "ui-hint__text").textContent,
+      "Магазин у розробці.", "the shop stub uses the existing top hint region");
+    const scrolledEditor = this.#findByClass(ui.rootNode, "inventory-assembly-editor");
+    scrolledEditor.scrollTop = 240;
+    this.#findByClass(ui.rootNode, "inventory-slot__empty-button").click();
+    ui.render(currentView);
+    const refreshedEditor = this.#findByClass(ui.rootNode, "inventory-assembly-editor");
+    assert.notStrictEqual(refreshedEditor, scrolledEditor, "an explicit refresh can rebuild its editor");
+    assert.strictEqual(refreshedEditor.scrollTop, 240, "refreshing the same editor retains the user's scroll position");
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-editor-tabs__row").children[1].getAttribute("aria-current"), "true",
+      "refreshing the editor also retains the selected parameter page");
+    inlineSocket.canSelectCompatibleItem = false;
+    inlineSocket.state = "locked";
+    inlineSocket.warning = "Спочатку спорядіть це вудилище.";
+    ui.render(currentView);
+    this.#findByClass(ui.rootNode, "inventory-editor-tabs__row").emit("keydown", { key: "Home" });
+    this.#findByClass(ui.rootNode, "inventory-slot__empty-button").click();
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-editor-tabs__candidates").length, 0,
+      "locked prerequisites cannot offer inline equipment choices");
+    assert.strictEqual(this.#findByClass(this.#findByClass(ui.rootNode, "inventory-warning"), "ui-hint__text").textContent,
+      inlineSocket.warning, "locked cells retain their existing warning");
+    currentView.panel.assembly.rootInstanceId = "another-root";
+    ui.render(currentView);
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-assembly-editor").scrollTop, 0,
+      "another root item starts at the top of its editor");
+    ui.render(this.#loadoutViewModel());
+    ui.render(currentView);
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-assembly-editor").scrollTop, 0,
+      "reopening an editor starts at the top");
     const observedTypes = new Set(observed.map((action) => action.type));
     Object.values(sandbox.InventoryActionType).forEach((type) => {
       assert.ok(observedTypes.has(type), `Missing interaction action: ${type}`);
@@ -3034,6 +3120,8 @@ class InventoryStaticContractCheck {
         slotIndex: 0,
         parentInstanceId: "rig",
       },
+      { type: actions.ASSEMBLY_SOCKET_ITEM_ACTIVATE, rootInstanceId: "rig", socketId: "hook[1]",
+        slotId: "hook", slotIndex: 1, parentInstanceId: "rig", instanceId: "source-hook" },
       ...[
         actions.ASSEMBLY_EQUIP,
         actions.ASSEMBLY_UNEQUIP,

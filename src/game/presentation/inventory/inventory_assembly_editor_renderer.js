@@ -6,6 +6,7 @@ export class InventoryAssemblyEditorRenderer {
   #parametersRenderer;
   #rodRemovalRenderer;
   #tabsRenderer;
+  #scrollbarEnabled;
 
   constructor({
     domFactory,
@@ -13,12 +14,14 @@ export class InventoryAssemblyEditorRenderer {
     parametersRenderer = null,
     rodRemovalRenderer,
     tabsRenderer,
+    scrollbarEnabled = false,
   } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#parametersRenderer = parametersRenderer;
     this.#rodRemovalRenderer = rodRemovalRenderer;
     this.#tabsRenderer = tabsRenderer;
+    this.#scrollbarEnabled = scrollbarEnabled;
   }
 
   render(
@@ -33,6 +36,8 @@ export class InventoryAssemblyEditorRenderer {
       onRodRemovalChoice = null,
       onRodRemovalSave = null,
       onSocketLongPress = null,
+      onSocketItemActivate = null,
+      inlineChoices = () => true,
     } = {},
   ) {
     const editor = this.#dom.element(
@@ -43,6 +48,7 @@ export class InventoryAssemblyEditorRenderer {
       "div",
       "inventory-assembly-editor__workspace",
     );
+    editor.classList.toggle("inventory-assembly-editor--scrollbar-hidden", !this.#scrollbarEnabled);
     if (model.rodRemovalStep) {
       editor.appendChild(this.#rodRemovalRenderer.render(model, {
         onChoice: onRodRemovalChoice, onSave: onRodRemovalSave,
@@ -59,7 +65,8 @@ export class InventoryAssemblyEditorRenderer {
       onWarning,
     }), workspace);
     // The preview swipes the tabs too (spec 092).
-    const tabs = this.#tabsRenderer.render(model, { onSocketActivate, onSocketLongPress, onWarning },
+    const tabs = this.#tabsRenderer.render(model,
+      { onSocketActivate, onSocketLongPress, onSocketItemActivate, onWarning, inlineChoices },
       { swipeSurfaces: [visual] });
     if (tabs) editor.appendChild(tabs);
     return editor;
@@ -84,6 +91,7 @@ export class InventoryAssemblyEditorRenderer {
     visual.appendChild(this.#itemRenderer.renderItem(model.root, {
       variant: "assembly-root",
       frameless: true,
+      wholeArt: true,
       showAttachments: false,
       showMetadata: false,
       showResourceMeter: false,
