@@ -6,7 +6,9 @@ export must provide. This spec changes the order of [spec 083](../083-preloader-
 adapter and bundle loading are delivered by the rod (this spec), the loading screen reuses them afterwards. Contracts
 of [spec 047](../047-smart-asset-preloader/contracts/runtime-assets.md) ("Spine Surface Contract") still apply.
 Tasks: [tasks.md](tasks.md). Status: **all decisions D1–D9 answered 2026-10-17; Phase 1 committed (7288d624), Phase 2 committed (621dc589);
-Phase 3 (rod in the game) done, checks green, owner dev.html check passed 2026-10-17; Phase 4 (DEV tools) next.**
+Phase 3 (rod in the game) committed (224221ee), owner dev.html check passed 2026-10-17; Phase 4 (DevTools "SPINE
+ВУДКА", owner's five points) and 4b (critical tremble, bend from the tension bar) done, owner checked dev.html
+2026-10-17; Pages check and the preloader (Phase 6) remain.**
 
 ## Starting point (verified 2026-10-17)
 
@@ -148,8 +150,19 @@ and clipping. It stays a rejected option unless D1 says otherwise.
 | no float (before the cast) | rod not drawn, as today (D3) | — | — |
 | casting / waiting / biting | idle by wind (D4): direction −1 → `rod_idle-1--left`, +1 → `rod_idle-1--right`, 0 (calm) → `rod_idle-2`; a wind change mixes over `windMixSec` (default 1.0 s) | — | — |
 | playing | idle faded out (mix `idleToFightSec`) | `rod_fighting-1--front`, ratio = bend, alpha = 1 − abs(side) | side clip (`--left` / `--right` by fish side), ratio = bend, alpha = abs(side) |
+| playing, critical (owner 2026-10-17: while the tackle STRESS bar shows) | as playing | as playing | as playing; plus track 3: `rod_fight--left-critical` / `--right-critical` by fish side, looping, additive (tremble only), mixed in and out over `criticalMixSec` (0.15 s) |
 | landing / victory / game over / line lost | idle by wind, fight tracks cleared (mix `fightToIdleSec`) | — | — |
 
+- Critical: `TackleStressBarVisibility.isVisible` (`stressRatio > 0` or tension ≥ break threshold − 0.1) is the
+  HUD's own rule for the second bar, shared by `FightHudFrameBuilder` and `FishingRenderFrameBuilder`, so the bar and
+  the tremble switch in the same frame. Owner, 2026-10-17: the tremble is added to the current bend, never a pose of
+  its own. The critical clips hold a near-full bend with a ±0.1° per bone tremble, so `SpineScene.setLoop(..., true)`
+  turns them into their change from their first frame (single-value timelines, keys and Bezier samples) and plays
+  them as an additive track (4.3 `TrackEntry.additive`). The bar can show before the bend is full without the rod
+  jumping.
+- Bend source (owner, 2026-10-17): `bendSource: "tension"` (default) samples the ramps by the tension bar's fill
+  (`tension / 100`, as the HUD draws it), so a full bar is the full bend including the base's counter-rotation
+  (`bone1` −17°). `"rodStress"` keeps the earlier rule (the rod's own load).
 - Wind (D4, owner 2026-10-17): the `--left` / `--right` idles are the rod swaying in a wind blowing that way. The
   mapping of direction to clip is config (`ui.rod.spine.windClips` with keys `left` / `calm` / `right` for −1 / 0 / +1), so the owner can swap the
   sides after the browser check if the sign reads the other way. Optional `windRainTimeScale` (default off): the idle

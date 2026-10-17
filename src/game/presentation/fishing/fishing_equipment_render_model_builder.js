@@ -10,8 +10,8 @@ export class FishingEquipmentRenderModelBuilder {
   #rodBaseX = 0;
   #rodBaseY = 0;
   #advanceContext = {
-    dtSec: 0, state: "", stressRatio: 0, fishScreenX: 0, baseX: 0, baseY: 0, canvasWidth: 0, canvasHeight: 0,
-    windDirection: 0, rainMultiplier: 1,
+    dtSec: 0, state: "", stressRatio: 0, tensionRatio: 0, fishScreenX: 0, baseX: 0, baseY: 0, canvasWidth: 0, canvasHeight: 0,
+    windDirection: 0, rainMultiplier: 1, critical: false,
   };
 
   constructor({
@@ -43,7 +43,9 @@ export class FishingEquipmentRenderModelBuilder {
 
   // Once per frame before the line: rod base, the rod picture's step (spec 099) and its anchor, whose tip is where
   // the line starts. Without an animated skin the tip is today's rectangle top (base - 200 px).
-  prepareRod({ state, equipment, fightFrame, floatScreenX }) {
+  // tension: the tension bar's value (0..100, its fill is tension / 100); critical: the tackle STRESS bar shows this
+  // frame (the rod's tremble clip plays).
+  prepareRod({ state, equipment, fightFrame, floatScreenX, tension = 0, critical = false }) {
     const rodConfig = this.#config.ui?.rod || {};
     const configuredX =
       rodConfig.x === "center"
@@ -63,6 +65,7 @@ export class FishingEquipmentRenderModelBuilder {
     context.dtSec = Math.max(0, Number(this.#clock.delta) || 0) / 1000;
     context.state = state;
     context.stressRatio = fightFrame?.rodStressRatio ?? 0;
+    context.tensionRatio = Math.max(0, Math.min(1, (Number(tension) || 0) / 100));
     context.fishScreenX = floatScreenX;
     context.baseX = this.#rodBaseX;
     context.baseY = this.#rodBaseY;
@@ -70,6 +73,7 @@ export class FishingEquipmentRenderModelBuilder {
     context.canvasHeight = this.#canvasMetrics.height;
     context.windDirection = wind?.direction ?? 0;
     context.rainMultiplier = wind?.rainMult ?? 1;
+    context.critical = critical === true;
     this.#anchor = this.#rodAnimation.advance(context);
     return this.#anchor;
   }

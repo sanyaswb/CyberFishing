@@ -243,6 +243,7 @@
 │  │  ├── 2026-10-08-finalization-review.md
 │  │  ├── 2026-10-08-stage7-post-closure.md
 │  │  └── 2026-10-14-inventory-resize.md
+│  ├── cast_rod_control.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
 │  ├── gameplay_backlog.md
@@ -250,6 +251,10 @@
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
 │  ├── refactoring_remaining.md
+│  ├── rod_animation_reference.md
+│  ├── rod_control_ownership.md
+│  ├── rod_lateral_movement.md
+│  ├── rod_tension_compensation.md
 │  ├── runtime_config_overrides.md
 │  ├── simplified_fight_physics_model.md
 │  ├── stats_and_balance_spec.md
@@ -463,6 +468,12 @@
 │  ├── 099-spine-rod-animation
 │  │  ├── spec.md
 │  │  └── tasks.md
+│  ├── 100-cast-rod-control
+│  │  └── spec.md
+│  ├── 101-rod-side-tension
+│  │  └── spec.md
+│  ├── 102-cast-line-speed
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -631,7 +642,8 @@
 │  │  ├── tools
 │  │  │  ├── dev_tools.js
 │  │  │  ├── dev_tools_parameter_tooltip_provider.js
-│  │  │  └── dev_tools_ui.js
+│  │  │  ├── dev_tools_ui.js
+│  │  │  └── spine_rod_dev_section.js
 │  │  └── ui_catalog
 │  │     ├── ui_catalog_controls_example.js
 │  │     ├── ui_catalog_definitions.js
@@ -692,6 +704,7 @@
 │  │  │  │  ├── bite_environment_service.js
 │  │  │  │  ├── bite_system.js
 │  │  │  │  ├── cast_penalty.js
+│  │  │  │  ├── cast_rod_control.js
 │  │  │  │  ├── cast_service.js
 │  │  │  │  ├── catch_resolution_service.js
 │  │  │  │  ├── drag_control_service.js
@@ -713,6 +726,7 @@
 │  │  │  │  ├── game_fishing_facade.js
 │  │  │  │  ├── mutable_fight_frame_context.js
 │  │  │  │  ├── reel_service.js
+│  │  │  │  ├── rod_visual_offset_system.js
 │  │  │  │  └── tension_service.js
 │  │  │  ├── house
 │  │  │  │  └── room_upgrade_service.js
@@ -847,6 +861,7 @@
 │  │  │  │  ├── locations
 │  │  │  │  │  └── location_database.js
 │  │  │  │  ├── physics
+│  │  │  │  │  ├── cast_rod_control_config.js
 │  │  │  │  │  ├── environment_physics.js
 │  │  │  │  │  ├── fight_physics.js
 │  │  │  │  │  ├── physics_units_and_naming.js
@@ -911,6 +926,8 @@
 │  │  │  │  ├── fish_rarity_resolver.js
 │  │  │  │  └── fish_stamina_points_calculator.js
 │  │  │  ├── fishing
+│  │  │  │  ├── cast_rod_bite_policy.js
+│  │  │  │  ├── cast_rod_line_constraint.js
 │  │  │  │  ├── drag_force_calculator.js
 │  │  │  │  ├── endurance
 │  │  │  │  │  └── endurance_movement_debuff_calculator.js
@@ -967,6 +984,7 @@
 │  │  │  │  ├── rod_pull_calculator.js
 │  │  │  │  ├── rod_pull_state.js
 │  │  │  │  ├── rod_pull_system.js
+│  │  │  │  ├── rod_side_tension_compensation.js
 │  │  │  │  ├── rod_stroke_capacity_resolver.js
 │  │  │  │  ├── rod_stroke_distance_tracker.js
 │  │  │  │  ├── rod_stroke_state.js
@@ -1106,8 +1124,7 @@
 │  │     │  ├── rod_animation_state_resolver.js
 │  │     │  ├── rod_line_renderer.js
 │  │     │  ├── rod_spine_renderer.js
-│  │     │  ├── rod_static_renderer.js
-│  │     │  └── rod_visual_offset_system.js
+│  │     │  └── rod_static_renderer.js
 │  │     ├── house
 │  │     │  ├── aquarium_feed_picker.js
 │  │     │  ├── aquarium_fish_motion.js
@@ -1129,7 +1146,8 @@
 │  │     │  ├── hold_charges_renderer.js
 │  │     │  ├── hud_bar_renderer.js
 │  │     │  ├── hud_labels.js
-│  │     │  └── player_pressure_fatigue_indicator_renderer.js
+│  │     │  ├── player_pressure_fatigue_indicator_renderer.js
+│  │     │  └── tackle_stress_bar_visibility.js
 │  │     ├── input
 │  │     │  └── victory_action_gesture_resolver.js
 │  │     ├── inventory
@@ -1365,6 +1383,7 @@
 │  ├── asset-preloader-check.js
 │  ├── bait-effectiveness-check.js
 │  ├── build-pages-release.js
+│  ├── cast-rod-control-check.js
 │  ├── check-js.js
 │  ├── clean-artifacts.js
 │  ├── config-runtime-check.js
@@ -1412,6 +1431,7 @@
 │  ├── player-inventory-check.js
 │  ├── project-structure.js
 │  ├── rarity-production-check.js
+│  ├── rod-side-tension-check.js
 │  ├── run-checks.js
 │  ├── scouting-input-check.js
 │  ├── service-artifacts-check.js

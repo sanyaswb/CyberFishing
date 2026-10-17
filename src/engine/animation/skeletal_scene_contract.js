@@ -13,6 +13,9 @@ export const SKELETAL_SCENE_METHODS = Object.freeze([
   "hasClip",
   "clipDuration",
   "getMissingClips",
+  "getClips",
+  "getBones",
+  "setBoneSetup",
   "restoreContext",
   "dispose",
 ]);

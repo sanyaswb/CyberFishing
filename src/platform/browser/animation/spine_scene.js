@@ -4,6 +4,7 @@
 // its origin at the surface's bottom left, so a surface resize must happen before update().
 const SAMPLES_PER_CLIP = 24;
 const EMPTY_ANIMATION = "<empty>";
+const BONE_SETUP_KEYS = Object.freeze(["x", "y", "rotation", "scaleX", "scaleY"]);
 
 export class SpineScene {
   #spine;
@@ -18,6 +19,7 @@ export class SpineScene {
   #localBounds;
   #points = new Map();
   #missingClips = new Set();
+  #deltaClips = new Set();
   #unsubscribe;
   #disposed = false;
 
@@ -73,13 +75,16 @@ export class SpineScene {
     this.#placement.scale = Number(scale) > 0 ? Number(scale) : 1;
   }
 
-  // Looping clip; the same clip keeps playing. From an empty track the clip fades in over mixSec.
-  setLoop(track, clipName, mixSec = 0) {
+  // Looping clip; the same clip keeps playing. From an empty track the clip fades in over mixSec. additive: the clip
+  // plays as its change from its own first frame, added to the pose below (the critical tremble over the bend); the
+  // clip is converted once for this scene.
+  setLoop(track, clipName, mixSec = 0, additive = false) {
     const animation = this.#animation(clipName);
     if (!animation) {
       this.clearTrack(track, mixSec);
       return false;
     }
+    if (additive) this.#toFirstFrameDelta(animation);
     const current = this.#state.getTrack(track);
     if (current && current.animation === animation && current.loop) return true;
     let entry;
@@ -90,6 +95,7 @@ export class SpineScene {
       entry = this.#state.setAnimation(track, animation, true);
     }
     entry.mixDuration = Math.max(0, mixSec);
+    entry.additive = additive;
     return true;
   }
 
@@ -193,6 +199,38 @@ export class SpineScene {
     return [...this.#missingClips];
   }
 
+  // DEV inspection (spec 099 Phase 4). Clips of the skeleton with their durations.
+  getClips() {
+    return this.#data.animations.map((animation) => ({ name: animation.name, duration: animation.duration }));
+  }
+
+  // Bones with their setup values (bone space) and world position in surface pixels (y down) for the last update().
+  getBones() {
+    const height = this.#surface.height;
+    return this.#skeleton.bones.map((bone) => {
+      const setup = bone.data.setupPose;
+      const pose = bone.appliedPose;
+      return {
+        name: bone.data.name, parent: bone.parent?.data.name ?? null,
+        x: setup.x, y: setup.y, rotation: setup.rotation, scaleX: setup.scaleX, scaleY: setup.scaleY,
+        worldX: pose.worldX, worldY: height - pose.worldY,
+      };
+    });
+  }
+
+  // Changes a bone's setup pose live (x, y, rotation, scaleX, scaleY; other keys are ignored) and re-measures the
+  // bounds. Returns false for an unknown bone.
+  setBoneSetup(name, values) {
+    const data = this.#data.findBone(name);
+    if (!data) return false;
+    for (const key of BONE_SETUP_KEYS) {
+      const value = Number(values?.[key]);
+      if (values?.[key] !== undefined && Number.isFinite(value)) data.setupPose[key] = value;
+    }
+    this.#localBounds = this.#measureBounds(this.#skeleton.skin);
+    return true;
+  }
+
   restoreContext() {
     if (!this.#disposed) this.#graphics.restore();
   }
@@ -210,6 +248,21 @@ export class SpineScene {
     const animation = this.#data.findAnimation(clipName);
     if (!animation) this.#missingClips.add(String(clipName));
     return animation;
+  }
+
+  // Single-value timelines (rotate, translate x/y, scale x/y, ...) lose their first frame's value from every key and
+  // every Bezier sample, so the clip starts at zero change; other timelines are left as they are.
+  #toFirstFrameDelta(animation) {
+    if (this.#deltaClips.has(animation)) return;
+    this.#deltaClips.add(animation);
+    for (const timeline of animation.timelines) {
+      if (!(timeline instanceof this.#spine.CurveTimeline1)) continue;
+      const frames = timeline.frames;
+      const base = frames[1];
+      for (let index = 1; index < frames.length; index += 2) frames[index] -= base;
+      const curves = timeline.curves;
+      for (let index = timeline.getFrameCount() + 1; index < curves.length; index += 2) curves[index] -= base;
+    }
   }
 
   #resolvePoint(name) {

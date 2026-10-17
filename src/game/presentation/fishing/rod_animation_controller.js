@@ -16,7 +16,10 @@ export class RodAnimationController {
   #resolver;
   #getConfig;
   #isReducedMotion;
-  #forceStatic;
+  #readSetupPose;
+  #spineEnabled = true;
+  #disabledClips = new Set();
+  #boneEdits = new Map();
   #snapshot;
   #bend = new ScalarSmoother({ timeConstantSec: 0.12 });
   #descriptor = { skeleton: "", atlas: "", skin: "", linePoint: "" };
@@ -31,8 +34,8 @@ export class RodAnimationController {
   #localBounds = { x: 0, y: 0, width: 0, height: 0 };
   #point = { x: 0, y: 0 };
   #resolveInput = {
-    state: "", stressRatio: 0, fishScreenX: 0, rodBaseX: 0, canvasWidth: 0, windDirection: 0, rainMultiplier: 1,
-    reducedMotion: false,
+    state: "", stressRatio: 0, tensionRatio: 0, fishScreenX: 0, rodBaseX: 0, canvasWidth: 0, windDirection: 0,
+    rainMultiplier: 1, reducedMotion: false, critical: false,
   };
   #anchor = {
     mode: "rectangle", baseX: 0, baseY: 0, tipX: 0, tipY: 0, scale: 1, destX: 0, destY: 0,
@@ -40,12 +43,16 @@ export class RodAnimationController {
   };
   #disposed = false;
 
+  // readSetupPose(skeletonJson, atlas, descriptor) recomputes the static picture after a DEV bone edit.
   constructor({
-    loadBundle, loadRuntime, glSurface, resolver, getConfig, isReducedMotion = () => false, forceStatic = () => false,
+    loadBundle, loadRuntime, glSurface, resolver, getConfig, isReducedMotion = () => false, readSetupPose = null,
   }) {
-    const functions = { loadBundle, loadRuntime, getConfig, isReducedMotion, forceStatic };
+    const functions = { loadBundle, loadRuntime, getConfig, isReducedMotion };
     for (const [name, value] of Object.entries(functions)) {
       if (typeof value !== "function") throw new TypeError(`RodAnimationController requires ${name}`);
+    }
+    if (readSetupPose !== null && typeof readSetupPose !== "function") {
+      throw new TypeError("RodAnimationController requires readSetupPose to be a function");
     }
     if (typeof resolver?.resolve !== "function") throw new TypeError("RodAnimationController requires resolver");
     if (typeof glSurface?.ensureContext !== "function") throw new TypeError("RodAnimationController requires glSurface");
@@ -55,7 +62,7 @@ export class RodAnimationController {
     this.#resolver = resolver;
     this.#getConfig = getConfig;
     this.#isReducedMotion = isReducedMotion;
-    this.#forceStatic = forceStatic;
+    this.#readSetupPose = readSetupPose;
     this.#snapshot = resolver.createSnapshot();
   }
 
@@ -78,6 +85,7 @@ export class RodAnimationController {
     this.#load?.release();
     this.#load = null;
     this.#reason = null;
+    this.#boneEdits.clear();
     if (!skeleton || !atlas) {
       this.#replaceScene(null);
       this.#bundle = null;
@@ -88,8 +96,8 @@ export class RodAnimationController {
     load.result.then((outcome) => this.#onBundle(generation, outcome));
   }
 
-  // context: { dtSec, state, stressRatio, fishScreenX, baseX, baseY, canvasWidth, canvasHeight, windDirection,
-  // rainMultiplier }. Returns the RodAnchorFrame.
+  // context: { dtSec, state, stressRatio, tensionRatio, fishScreenX, baseX, baseY, canvasWidth, canvasHeight,
+  // windDirection, rainMultiplier, critical }. Returns the RodAnchorFrame.
   advance(context) {
     const anchor = this.#anchor;
     anchor.baseX = context.baseX;
@@ -106,7 +114,7 @@ export class RodAnimationController {
     anchor.region = pose.region;
     anchor.bounds = pose.bounds;
     const scene = this.#scene;
-    if (scene && !this.#forceStatic() && !this.#glSurface.isContextLost()) {
+    if (scene && this.#spineEnabled && !this.#glSurface.isContextLost()) {
       this.#advanceScene(scene, context, config, anchor);
       return anchor;
     }
@@ -142,6 +150,59 @@ export class RodAnimationController {
     };
   }
 
+  // DEV port (spec 099 Phase 4, DevTools "SPINE ВУДКА"); production never calls it.
+  setSpineEnabled(enabled) {
+    this.#spineEnabled = enabled !== false;
+  }
+
+  isSpineEnabled() {
+    return this.#spineEnabled;
+  }
+
+  // Clips of the loaded skeleton: [{ name, duration, enabled }]; empty until the scene exists.
+  getClips() {
+    return (this.#scene?.getClips() ?? []).map((clip) => ({ ...clip, enabled: !this.#disabledClips.has(clip.name) }));
+  }
+
+  // A disabled clip is not played: its track stays empty, so the setup pose shows there.
+  setClipEnabled(clipName, enabled) {
+    if (enabled === false) this.#disabledClips.add(String(clipName));
+    else this.#disabledClips.delete(String(clipName));
+  }
+
+  // Bones with setup values and their position on the game canvas (Spine mode, last frame); empty without a scene.
+  getBones() {
+    const anchor = this.#anchor;
+    return (this.#scene?.getBones() ?? []).map((bone) => ({
+      ...bone, canvasX: anchor.destX + bone.worldX, canvasY: anchor.destY + bone.worldY,
+    }));
+  }
+
+  // Live setup edit of one bone (x, y, rotation, scaleX, scaleY), remembered for the export; the static picture's
+  // line point follows when readSetupPose is composed.
+  setBoneSetup(boneName, values) {
+    if (!this.#scene?.setBoneSetup(boneName, values)) return false;
+    const bone = this.#scene.getBones().find((entry) => entry.name === boneName);
+    this.#boneEdits.set(boneName, { x: bone.x, y: bone.y, rotation: bone.rotation, scaleX: bone.scaleX, scaleY: bone.scaleY });
+    if (this.#readSetupPose && this.#bundle) {
+      const descriptor = { skin: this.#descriptor.skin || null, linePoint: this.#descriptor.linePoint || null };
+      this.#bundle = { ...this.#bundle, staticPose: this.#readSetupPose(this.#editedSkeleton(), this.#bundle.atlas, descriptor) };
+    }
+    return true;
+  }
+
+  getBoneEdits() {
+    return Object.fromEntries(this.#boneEdits);
+  }
+
+  // The whole skeleton JSON of the loaded file with the bone edits written in, for Import Data in the Spine editor:
+  // { fileName, text } or null without a bundle. Default values are omitted, as Spine writes them.
+  exportSkeleton() {
+    if (!this.#bundle) return null;
+    const path = this.#descriptor.skeleton;
+    return { fileName: path.slice(path.lastIndexOf("/") + 1), text: JSON.stringify(this.#editedSkeleton()) };
+  }
+
   dispose() {
     if (this.#disposed) return;
     this.#disposed = true;
@@ -157,12 +218,14 @@ export class RodAnimationController {
     const input = this.#resolveInput;
     input.state = context.state;
     input.stressRatio = context.stressRatio;
+    input.tensionRatio = context.tensionRatio;
     input.fishScreenX = context.fishScreenX;
     input.rodBaseX = context.baseX;
     input.canvasWidth = context.canvasWidth;
     input.windDirection = context.windDirection;
     input.rainMultiplier = context.rainMultiplier;
     input.reducedMotion = this.#isReducedMotion();
+    input.critical = context.critical === true;
     const snapshot = this.#resolver.resolve(input, config, this.#snapshot);
     this.#bend.setTimeConstant(config.bendSmoothingSec);
     const bend = this.#bend.step(snapshot.bendTarget, context.dtSec);
@@ -170,6 +233,8 @@ export class RodAnimationController {
       this.#side = snapshot.side;
       this.#sideClip = snapshot.sideClip;
       if (!this.#wasFighting) scene.clearTrack(0, config.idleToFightSec);
+    } else if (this.#disabledClips.has(snapshot.idleClip)) {
+      scene.clearTrack(0, config.windMixSec);
     } else {
       scene.setLoop(0, snapshot.idleClip, this.#wasFighting ? config.fightToIdleSec : config.windMixSec);
       scene.setTrackTimeScale(0, snapshot.idleTimeScale);
@@ -178,12 +243,22 @@ export class RodAnimationController {
     // After a fight the bend relaxes on the last side, so the rod springs back instead of jumping to the front.
     if (snapshot.fighting || bend > BEND_CLEAR_EPSILON) {
       const sideAlpha = Math.abs(this.#side);
-      scene.setSampled(1, snapshot.frontClip, bend, 1 - sideAlpha);
-      scene.setSampled(2, this.#sideClip || snapshot.sideClip, bend, sideAlpha);
+      const sideClip = this.#sideClip || snapshot.sideClip;
+      if (this.#disabledClips.has(snapshot.frontClip)) scene.clearTrack(1, 0);
+      else scene.setSampled(1, snapshot.frontClip, bend, 1 - sideAlpha);
+      if (this.#disabledClips.has(sideClip)) scene.clearTrack(2, 0);
+      else scene.setSampled(2, sideClip, bend, sideAlpha);
     } else {
       scene.clearTrack(1, 0);
       scene.clearTrack(2, 0);
       this.#side = 0;
+    }
+    // Track 3: while the tackle STRESS bar shows, the critical clip's tremble (its change from its first frame) is
+    // added to whatever bend the rod has, so the pose never jumps.
+    if (snapshot.critical && !this.#disabledClips.has(snapshot.criticalClip)) {
+      scene.setLoop(3, snapshot.criticalClip, config.criticalMixSec, true);
+    } else {
+      scene.clearTrack(3, config.criticalMixSec);
     }
     const bounds = scene.getLocalBounds(this.#localBounds);
     const surface = this.#glSurface;
@@ -203,6 +278,21 @@ export class RodAnimationController {
       anchor.tipX = context.baseX;
       anchor.tipY = context.baseY - (anchor.bounds.y + anchor.bounds.height) * anchor.scale;
     }
+  }
+
+  // A copy of the loaded skeleton JSON with the DEV bone edits in its bones entries.
+  #editedSkeleton() {
+    const json = JSON.parse(JSON.stringify(this.#bundle.skeleton));
+    const defaults = { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
+    for (const [boneName, values] of this.#boneEdits) {
+      const bone = json.bones?.find((entry) => entry.name === boneName);
+      if (!bone) continue;
+      for (const [key, value] of Object.entries(values)) {
+        if (value === defaults[key]) delete bone[key];
+        else bone[key] = value;
+      }
+    }
+    return json;
   }
 
   #rectangle(anchor) {

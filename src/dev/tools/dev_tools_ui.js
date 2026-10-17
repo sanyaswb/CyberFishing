@@ -232,6 +232,27 @@ export class DevToolsUI {
     parentElement.appendChild(row);
   }
 
+  // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
+  createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const select = document.createElement("select");
+    select.className = "devtools__input devtools__input--text";
+    select.setAttribute("aria-label", labelStr);
+    for (const option of optionsArray) {
+      const element = document.createElement("option");
+      element.value = option;
+      element.textContent = option;
+      select.appendChild(element);
+    }
+    select.value = currentValue;
+    select.addEventListener("change", (event) => onChangeCallback(event.target.value));
+    row.appendChild(select);
+    parentElement.appendChild(row);
+  }
+
   createEnumToggleRow(
     key,
     optionsArray,

@@ -9,7 +9,7 @@ Free-alignment rod motion toward the fish now reduces real tension while the rod
 | Visual property | Authoritative input | Meaning |
 | --- | --- | --- |
 | Horizontal rod-base position | `GameApplication.getRodScreenX()` through `GameViewportFacade` / `RodVisualOffsetSystem` | Player aim offset, already filtered and clamped. |
-| Fight bend amount | `TackleStressSystem.getFightFrame().rodStressRatio` | Effective stress tension divided by the rod's effective load limit; clamped to 0..1 by the animation resolver. |
+| Fight bend amount | `TackleStressSystem.getTension() / 100` by default; optional `rodStressRatio` | `ui.rod.spine.bendSource = "tension"` follows the visible tension bar. `"rodStress"` follows the rod's effective load ratio. |
 | Fight bend side | Fish/hook screen X minus displayed rod-base X | Left/front/right pose weights, independent from the pressed direction. |
 | Idle sway | Wind direction | Left, calm or right idle clip. |
 | Visible line start | `RodAnimationController` anchor `tipX`, `tipY` | Animated Spine point/bone, static-pose point or rectangle top. |
@@ -104,7 +104,8 @@ Default configuration: `ui.rod.spine` in [game_config.js](../src/game/config/run
 side = clamp((fishScreenX - rodBaseX) / max(1, canvasWidth * 0.35), -1, 1)
 frontAlpha = 1 - abs(side)
 sideAlpha = abs(side)
-bendTarget = clamp01(rodStressRatio)
+bendTarget = clamp01(tensionPercent / 100)  // default bendSource = "tension"
+// Optional bendSource = "rodStress": clamp01(rodStressRatio)
 bend += (bendTarget - bend) * (1 - exp(-dtSec / 0.12))
 sampleTime = bend * clipDuration
 ```

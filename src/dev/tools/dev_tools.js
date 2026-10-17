@@ -2,6 +2,7 @@ import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_t
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
+import { SpineRodDevSection } from "./spine_rod_dev_section.js";
 
 export class DevTools {
   #config;
@@ -22,6 +23,7 @@ export class DevTools {
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
   #grantCatalogItem;
+  #rodSpine;
   #storageCache;
   #openHouse;
   #openUiCatalog;
@@ -60,6 +62,7 @@ export class DevTools {
       itemProgressionDebugProvider = null,
       itemProgressionResolver = null,
       grantCatalogItem = null,
+      rodSpine = null,
       configRuntime = null,
       configValidation = null,
       catalogs,
@@ -97,6 +100,7 @@ export class DevTools {
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
+    this.#rodSpine = rodSpine;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
     tooltipProvider.ready.then(() => {
@@ -203,6 +207,7 @@ export class DevTools {
     const debugContent = this.#renderConfigDebugSection(body);
     this.#renderLocationDebugSection(debugContent);
     this.#renderItemGrantSection(body);
+    this.#renderSpineRodSection(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof this.#catalogs.items !== "undefined") {
@@ -507,6 +512,17 @@ export class DevTools {
         }, false, iconUrl);
       }
     }
+  }
+
+  // DEV Spine rod section (spec 099 Phase 4) over the rod controller's DEV port.
+  #renderSpineRodSection(body) {
+    if (!this.#rodSpine) return;
+    new SpineRodDevSection({
+      ui: this.#ui,
+      controller: this.#rodSpine,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (parent) => this.#buildTree(this.#config.ui.rod.spine, parent, ["CONFIG", "ui", "rod", "spine"]),
+    }).render(body);
   }
 
   #createSectionWithCache(labelStr, parentElement, path = null) {

@@ -384,7 +384,8 @@ export class GameCompositionRoot {
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
     }));
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
-      ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "dispose"]);
+      ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
+        "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
       rarityVisualResolver, rodAnimation: rodAnimation.controller,
@@ -425,7 +426,7 @@ export class GameCompositionRoot {
       projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-      gameTimeClock,
+      gameTimeClock, rodAnimation: rodAnimation.controller,
     });
     this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
@@ -835,7 +836,7 @@ export class GameCompositionRoot {
     projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-    gameTimeClock,
+    gameTimeClock, rodAnimation,
   }) {
     const uiLogger = new ConsoleLogger();
     const systems = {
@@ -867,6 +868,8 @@ export class GameCompositionRoot {
             itemProgressionResolver,
             // DEV item grant; DevTools exist only in Development, so production never calls it.
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
+            // DEV Spine section (spec 099 Phase 4): the rod controller's DEV port.
+            rodSpine: rodAnimation,
           }], ["dispose"],
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS,

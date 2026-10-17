@@ -11,7 +11,7 @@ const { pathToFileURL } = require("node:url");
 const ROOT_DIR = path.resolve(__dirname, "..");
 const EXPORT_DIR = "assets/animations/rods/bamboo-rod-v1";
 const DESCRIPTOR = Object.freeze({
-  skeleton: `${EXPORT_DIR}/rod.json`, atlas: `${EXPORT_DIR}/rod.atlas`, skin: "rod-1", linePoint: "line-tip",
+  skeleton: `${EXPORT_DIR}/rod.json`, atlas: `${EXPORT_DIR}/rod.atlas`, skin: "default", linePoint: "line-tip",
 });
 const near = (actual, expected, tolerance, label) =>
   assert(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} is not within ${tolerance} of ${expected}`);
@@ -81,7 +81,7 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   const result = await load.result;
   assert.equal(result.status, "ready");
   assert.equal(result.bundle.version, "4.3.26");
-  assert.equal(result.bundle.skin, "rod-1");
+  assert.equal(result.bundle.skin, "default", "the skin named by the rod's config");
   assert.equal(result.bundle.linePoint, "line-tip");
   assert.deepEqual([...transport.calls].sort(), [DESCRIPTOR.atlas, `${EXPORT_DIR}/rod.webp`, DESCRIPTOR.skeleton].sort(),
     "one request per resource");
@@ -170,45 +170,67 @@ async function checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle) {
   scene.setPlacement(0, surface.height, 1);
   scene.update(0);
   assert(scene.getPoint("line-tip", point));
-  near(point.x, 1.21, 0.01, "setup line-tip x");
-  near(point.y, surface.height - 466.06, 0.01, "setup line-tip y (surface y down)");
+  near(point.x, 1.16, 0.01, "setup line-tip x");
+  near(point.y, surface.height - 466.10, 0.01, "setup line-tip y (surface y down)");
   scene.setPlacement(100, 500, 0.5);
   scene.update(0);
   scene.getPoint("line-tip", point);
-  near(point.x, 100 + 1.21 * 0.5, 0.01, "placed x");
-  near(point.y, 500 - 466.06 * 0.5, 0.01, "placed y");
+  near(point.x, 100 + 1.16 * 0.5, 0.01, "placed x");
+  near(point.y, 500 - 466.10 * 0.5, 0.01, "placed y");
 
   scene.setPlacement(0, surface.height, 1);
   scene.setSampled(1, "rod_fighting-1--front", 1, 1);
   scene.update(0.016);
   scene.getPoint("line-tip", point);
-  near(point.x, 1.27, 0.02, "full front bend x");
-  near(surface.height - point.y, 328.27, 0.02, "full front bend height");
+  near(point.x, 1.23, 0.02, "full front bend x");
+  near(surface.height - point.y, 325.83, 0.02, "full front bend height");
   const front = { ...point };
   // Front keys only scale, the sides only rotation, so front alpha 1 - |side| and side alpha |side| blend exactly.
   scene.setSampled(1, "rod_fighting-1--front", 1, 0);
   scene.setSampled(2, "rod_fighting-1--left", 1, 1);
   scene.update(0.016);
   scene.getPoint("line-tip", point);
-  near(point.x, -237.54, 0.02, "full side weight is the pure left bend x");
-  near(surface.height - point.y, 326.65, 0.02, "full side weight is the pure left bend height");
+  near(point.x, -93.68, 0.02, "full side weight is the pure left bend x");
+  near(surface.height - point.y, 388.16, 0.02, "full side weight is the pure left bend height");
   scene.setSampled(1, "rod_fighting-1--front", 1, 0.5);
   scene.setSampled(2, "rod_fighting-1--left", 1, 0.5);
   scene.update(0.016);
   scene.getPoint("line-tip", point);
-  assert(point.x < front.x && point.x > -237.54, "half side weight lies between front and left");
+  assert(point.x < front.x && point.x > -93.68, "half side weight lies between front and left");
+  // The critical clip plays additively as its change from its first frame: no jump at its start, a small tremble.
+  scene.setSampled(1, "rod_fighting-1--front", 1, 0);
+  scene.setSampled(2, "rod_fighting-1--left", 1, 1);
+  scene.update(0);
+  scene.getPoint("line-tip", point);
+  const fullLeft = { x: point.x, y: point.y };
+  scene.setLoop(3, "rod_fight--left-critical", 0, true);
+  scene.update(0);
+  scene.getPoint("line-tip", point);
+  near(point.x, fullLeft.x, 1e-6, "the additive tremble starts at zero change (x)");
+  near(point.y, fullLeft.y, 1e-6, "the additive tremble starts at zero change (y)");
+  let largest = 0;
+  for (let frame = 0; frame < 9; frame += 1) {
+    scene.update(1 / 60);
+    scene.getPoint("line-tip", point);
+    largest = Math.max(largest, Math.hypot(point.x - fullLeft.x, point.y - fullLeft.y));
+  }
+  assert(largest > 0.05 && largest < 10, `the tremble moves the tip a little over the bend: ${largest} units`);
+  scene.clearTrack(3, 0);
+  scene.update(0);
+  scene.getPoint("line-tip", point);
+  near(point.x, fullLeft.x, 1e-6, "clearing the tremble returns to the bend");
   scene.setSampled(1, "rod_fighting-1--front", 0, 1);
   scene.setSampled(2, "rod_fighting-1--left", 0, 1);
   scene.update(0.016);
   scene.getPoint("line-tip", point);
-  near(point.x, 1.21, 0.01, "zero bend is the setup pose again (no build-up between frames)");
+  near(point.x, 1.16, 0.01, "zero bend is the setup pose again (no build-up between frames)");
   scene.clearTrack(1);
   scene.clearTrack(2);
 
   scene.setLoop(0, "rod_idle-2");
   scene.update(1.3333334);
   scene.getPoint("line-tip", point);
-  assert(Math.abs(point.x - 1.21) > 0.05, "the idle clip moves the tip");
+  assert(Math.abs(point.x - 1.16) > 0.05, "the idle clip moves the tip");
   const swayed = point.x;
   scene.setLoop(0, "rod_idle-2");
   scene.update(0);
@@ -221,11 +243,11 @@ async function checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle) {
 
   assert.equal(scene.setLoop(3, "rod_cast-1"), false);
   assert.deepEqual(scene.getMissingClips(), ["rod_cast-1"], "a missing clip is recorded, not thrown");
-  assert(scene.getPoint("bone30", point), "a bone name is a point");
+  assert(scene.getPoint("bone29", point), "a bone name is a point");
   assert(scene.getPoint("no-such-point", point), "an unknown point falls back to the deepest bone tip");
 
   const bounds = scene.getLocalBounds({});
-  assert(bounds.x <= -237.54 && bounds.x + bounds.width >= 10 && bounds.y <= -2 && bounds.y + bounds.height >= 466,
+  assert(bounds.x <= -93.68 && bounds.x + bounds.width >= 10 && bounds.y <= -2 && bounds.y + bounds.height >= 466,
     `bounds cover the setup pose and the full bends: ${JSON.stringify(bounds)}`);
 
   surface.emit(true);
@@ -312,10 +334,10 @@ function checkSmoother(ScalarSmoother) {
 function checkSetupPose(SpineSetupPoseReader, bundle) {
   const pose = bundle.staticPose;
   assert(pose, "the bundle carries the static setup pose");
-  near(pose.bounds.x, -6.404351, 1e-6, "header bounds x");
-  near(pose.bounds.height, 468.857, 1e-6, "header bounds height");
-  near(pose.linePoint.x, 1.21, 0.01, "setup line-tip x without the runtime");
-  near(pose.linePoint.y, 466.06, 0.01, "setup line-tip y without the runtime");
+  near(pose.bounds.x, -6.404347, 1e-6, "header bounds x");
+  near(pose.bounds.height, 468.8618, 1e-6, "header bounds height");
+  near(pose.linePoint.x, 1.16, 0.01, "setup line-tip x without the runtime");
+  near(pose.linePoint.y, 466.10, 0.01, "setup line-tip y without the runtime");
   assert.deepEqual([pose.region.pageName, pose.region.name, pose.region.rotate, pose.region.width, pose.region.height],
     ["rod.webp", "bamboo_rod--1", 90, 85, 2735], "the one drawn region");
   const atlas = { pages: [{ name: "p.webp", regions: [{ name: "a", x: 0, y: 0, width: 4, height: 8, rotate: 0 }] }] };
@@ -350,14 +372,23 @@ function checkResolver(RodAnimationStateResolver, config) {
   assert.equal(out.idleTimeScale, 1.5, "rain speeds the sway only when enabled");
   resolver.resolve(input({ rainMultiplier: 1.5 }), config, out);
   assert.equal(out.idleTimeScale, 1);
-  resolver.resolve(input({ state: "playing", fishScreenX: 640 - 350 * 0.5, stressRatio: 1.4 }), config, out);
+  resolver.resolve(input({ state: "playing", fishScreenX: 640 - 350 * 0.5, tensionRatio: 1.4 }), config, out);
   assert.equal(out.fighting, true);
   assert.equal(out.sideClip, config.fightClips.left, "a fish left of the rod bends it left");
   near(out.side, -0.5, 1e-12, "side is the offset over sideRangeRatio of the width");
   near(out.frontAlpha + out.sideAlpha, 1, 1e-12, "front and side weights sum to one");
-  assert.equal(out.bendTarget, 1, "rod stress is clamped to 0..1");
+  assert.equal(out.bendTarget, 1, "the tension bar's fill is clamped to 0..1");
+  resolver.resolve(input({ state: "playing", tensionRatio: 1, stressRatio: 0.25 }), { ...config, bendSource: "rodStress" }, out);
+  assert.equal(out.bendTarget, 0.25, "bendSource rodStress follows the rod's own load");
   resolver.resolve(input({ state: "playing", fishScreenX: 5000 }), config, out);
   assert.deepEqual([out.sideClip, out.side, out.frontAlpha], [config.fightClips.right, 1, 0], "far right is the pure side");
+  assert.equal(out.critical, false);
+  resolver.resolve(input({ state: "playing", fishScreenX: 5000, critical: true }), config, out);
+  assert.deepEqual([out.critical, out.criticalClip], [true, config.criticalClips.right], "critical on the fish's side");
+  resolver.resolve(input({ state: "playing", fishScreenX: 0, critical: true }), config, out);
+  assert.equal(out.criticalClip, config.criticalClips.left);
+  resolver.resolve(input({ state: "waiting", critical: true }), config, out);
+  assert.equal(out.critical, false, "no tremble outside the fight");
 }
 
 function recordingSurface() {
@@ -374,13 +405,13 @@ function recordingSurface() {
   };
 }
 
-async function checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, spine, bundle, config }) {
+async function checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, SpineSetupPoseReader,
+  spine, bundle, config }) {
   const surface = fakeSurface();
   const runtimeOutcome = { available: true, reason: null, runtime: { version: "4.3.13",
     createScene: (sceneBundle, glSurface) => SpineScene.create({ spine, bundle: sceneBundle, surface: glSurface,
       graphics: fakeGraphics(), runtimeVersion: "4.3.13" }) } };
   let runtime = runtimeOutcome;
-  let forceStatic = false;
   const loads = [];
   const controller = new RodAnimationController({
     loadBundle: (descriptor) => {
@@ -393,7 +424,7 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
     glSurface: surface,
     resolver: new RodAnimationStateResolver(),
     getConfig: () => config,
-    forceStatic: () => forceStatic,
+    readSetupPose: (json, atlas, descriptor) => SpineSetupPoseReader.read(json, atlas, descriptor),
   });
   const context = (overrides = {}) => ({ dtSec: 1 / 60, state: "waiting", stressRatio: 0, fishScreenX: 640, baseX: 640,
     baseY: 800, canvasWidth: 1280, canvasHeight: 800, windDirection: 0, rainMultiplier: 1, ...overrides });
@@ -403,7 +434,7 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   let anchor = controller.advance(context());
   assert.deepEqual([anchor.mode, anchor.tipX, anchor.tipY], ["rectangle", 640, 600], "no animated skin: today's rectangle top");
 
-  const animation = { skeleton: DESCRIPTOR.skeleton, atlas: DESCRIPTOR.atlas, skin: "rod-1", linePoint: "line-tip" };
+  const animation = { skeleton: DESCRIPTOR.skeleton, atlas: DESCRIPTOR.atlas, skin: "default", linePoint: "line-tip" };
   runtime = { available: false, runtime: null, reason: "import-failed" };
   controller.setSkin(animation);
   controller.setSkin({ ...animation });
@@ -414,8 +445,8 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   assert.equal(anchor.mode, "static", "an unavailable runtime keeps the static picture");
   assert.equal(controller.getStatus().reason, "import-failed");
   const scale = (800 * config.heightRatio) / bundle.staticPose.bounds.height;
-  near(anchor.tipX, 640 + 1.21 * scale, 0.01, "static tip x from the setup pose");
-  near(anchor.tipY, 800 - 466.06 * scale, 0.01, "static tip y from the setup pose");
+  near(anchor.tipX, 640 + 1.16 * scale, 0.01, "static tip x from the setup pose");
+  near(anchor.tipY, 800 - 466.10 * scale, 0.01, "static tip y from the setup pose");
   const staticTip = { x: anchor.tipX, y: anchor.tipY };
 
   runtime = runtimeOutcome;
@@ -432,7 +463,7 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   assert(originX > 0 && originX < surface.width && originY > 0 && originY <= surface.height,
     `the rod base lies inside the GL surface: origin ${originX},${originY} in ${surface.width}x${surface.height}`);
   for (let frame = 0; frame < 60; frame += 1) {
-    anchor = controller.advance(context({ state: "playing", stressRatio: 1, fishScreenX: 0 }));
+    anchor = controller.advance(context({ state: "playing", tensionRatio: 1, fishScreenX: 0 }));
   }
   assert(anchor.tipX < staticTip.x - 50 * scale, "a loaded rod bends toward a fish on its left");
   assert(controller.getStatus().bend > 0.99, "the bend reaches the load after many time constants");
@@ -444,10 +475,12 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   surface.lost = true;
   assert.equal(controller.advance(context()).mode, "static", "a lost context shows the static picture");
   surface.lost = false;
-  forceStatic = true;
-  assert.equal(controller.advance(context()).mode, "static", "DEV spine=off forces the static picture");
-  forceStatic = false;
+  controller.setSpineEnabled(false);
+  assert.equal(controller.advance(context()).mode, "static", "the DEV switch shows the static picture");
+  controller.setSpineEnabled(true);
   assert.equal(controller.advance(context()).mode, "spine");
+  checkDevPort(controller, context, staticTip, scale);
+  checkCritical(controller, context);
   controller.setSkin(null);
   assert.equal(controller.advance(context()).mode, "rectangle", "removing the skin returns to the rectangle");
   controller.setSkin(animation);
@@ -456,6 +489,74 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   assert.equal(controller.advance(context()).mode, "rectangle", "a stale load does not come back");
   controller.dispose();
   controller.dispose();
+}
+
+// Critical load (the tackle STRESS bar shows): the side's tremble loop plays over the full bend; disabled, it does not.
+function checkCritical(controller, context) {
+  const fight = (critical, seconds = 1) => {
+    let anchor = null;
+    for (let frame = 0; frame < Math.round(seconds * 60); frame += 1) {
+      anchor = controller.advance(context({ state: "playing", tensionRatio: 1, fishScreenX: 0, critical }));
+    }
+    return { x: anchor.tipX, y: anchor.tipY };
+  };
+  const calm = fight(false, 3);
+  const trembling = fight(true, 0.5);
+  const shift = Math.hypot(trembling.x - calm.x, trembling.y - calm.y);
+  const back = fight(false, 0.5);
+  near(back.x, calm.x, 0.01, "leaving critical mixes the tremble out");
+  controller.setClipEnabled("rod_fight--left-critical", false);
+  const disabled = fight(true, 0.5);
+  near(disabled.x, calm.x, 0.01, "a disabled critical clip does not play");
+  controller.setClipEnabled("rod_fight--left-critical", true);
+  fight(false, 2);
+  for (let frame = 0; frame < 120; frame += 1) controller.advance(context());
+}
+
+// The DevTools port (spec 099 Phase 4): clips with switches, bone setup edits (scene and static picture), export.
+function checkDevPort(controller, context, staticTip, scale) {
+  const clips = controller.getClips();
+  assert.deepEqual(clips.map((clip) => clip.name), ["rod_fight--left-critical", "rod_fight--right-critical", "rod_fighting-1--front", "rod_fighting-1--left",
+    "rod_fighting-1--right", "rod_idle-1--left", "rod_idle-1--right", "rod_idle-2"], "every clip of the skeleton");
+  assert(clips.every((clip) => clip.enabled && clip.duration > 0));
+  const advanceFor = (seconds) => {
+    let anchor = null;
+    for (let frame = 0; frame < Math.round(seconds * 60); frame += 1) anchor = controller.advance(context());
+    return anchor;
+  };
+  let anchor = advanceFor(1.3);
+  assert(Math.abs(anchor.tipX - staticTip.x) > 0.01, "the calm idle sways the tip");
+  controller.setClipEnabled("rod_idle-2", false);
+  assert.equal(controller.getClips().find((clip) => clip.name === "rod_idle-2").enabled, false);
+  anchor = advanceFor(1.5);
+  near(anchor.tipX, staticTip.x, 0.02, "a disabled idle leaves the setup pose");
+  assert.deepEqual(controller.getStatus().missingClips, [], "a disabled clip is not reported as missing");
+  controller.setClipEnabled("rod_idle-2", true);
+
+  const rod = controller.getBones().find((bone) => bone.name === "rod");
+  assert.deepEqual([rod.parent, rod.x, rod.y], ["root", 0, 0], "the rod bone's setup values");
+  assert.equal(controller.setBoneSetup("no-such-bone", { x: 1 }), false);
+  controller.setClipEnabled("rod_idle-2", false);
+  advanceFor(1.5);
+  assert(controller.setBoneSetup("rod", { x: 50 }));
+  anchor = controller.advance(context({ dtSec: 0 }));
+  near(anchor.tipX, staticTip.x + 50 * scale, 0.02, "a bone edit moves the Spine tip");
+  controller.setSpineEnabled(false);
+  near(controller.advance(context()).tipX, staticTip.x + 50 * scale, 0.02, "the static picture's line point follows");
+  controller.setSpineEnabled(true);
+  assert.deepEqual(Object.keys(controller.getBoneEdits()), ["rod"]);
+
+  const original = JSON.parse(read(DESCRIPTOR.skeleton));
+  let exported = controller.exportSkeleton();
+  assert.equal(exported.fileName, "rod.json", "the export keeps the file's own name");
+  const edited = JSON.parse(exported.text);
+  assert.equal(edited.bones.find((bone) => bone.name === "rod").x, 50, "the edit is written into the bones entry");
+  delete edited.bones.find((bone) => bone.name === "rod").x;
+  assert.deepEqual(edited, original, "everything else in the file is unchanged");
+  controller.setBoneSetup("rod", { x: 0 });
+  exported = controller.exportSkeleton();
+  assert.deepEqual(JSON.parse(exported.text), original, "default values are omitted, as Spine writes them");
+  controller.setClipEnabled("rod_idle-2", true);
 }
 
 function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
@@ -555,9 +656,18 @@ async function main() {
   const config = CONFIG.ui.rod.spine;
   assert.deepEqual({ ...ITEM_DB.rods.rod_test_float.skin.animation }, { ...DESCRIPTOR },
     "the bamboo rod skin names the tracked export");
+  const { TackleStressBarVisibility } = await importSource("src/game/presentation/hud/tackle_stress_bar_visibility.js");
+  // The HUD rule before it was shared: stressRatio > 0 || tension >= (breakThreshold || 100) - 0.1.
+  for (const [stressRatio, tension, breakThreshold, visible] of [[0, 50, 100, false], [0.01, 0, 100, true],
+    [0, 99.9, 100, true], [0, 99.89, 100, false], [0, 99.9, undefined, true], [0, 79.9, 80, true]]) {
+    assert.equal(TackleStressBarVisibility.isVisible({ stressRatio, tension, breakThreshold }), visible,
+      `STRESS bar for stress ${stressRatio}, tension ${tension}, threshold ${breakThreshold}`);
+  }
+  for (const clip of Object.values(config.criticalClips)) assert(bundle.skeleton.animations[clip], `${clip} is in the export`);
   checkSetupPose(SpineSetupPoseReader, bundle);
   checkResolver(RodAnimationStateResolver, config);
-  await checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, spine, bundle, config });
+  await checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, SpineSetupPoseReader, spine,
+    bundle, config });
   checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
     RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `
@@ -566,7 +676,9 @@ async function main() {
     + "transport and frame-rate independent smoothing; setup pose without the runtime, pose resolver (wind, reduced "
     + "motion, rain, side weights), controller modes rectangle -> static -> spine (unavailable runtime, context loss, "
     + "DEV static, stale loads, spring-back), static/Spine/line renderers and the bit-for-bit rod line model without a "
-    + "skin.");
+    + "skin; DEV port (clip list and switches, bone setup edits in the scene and the static picture, skeleton JSON "
+    + "export with edits only); critical tremble while the tackle STRESS bar shows (shared HUD rule, side clip, mix out, "
+    + "disabled clip).");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -157,7 +157,9 @@ imports it. The rod (presentation, `game/presentation/fishing`): `RodAnimationSt
 `RodAnimationController` (modes rectangle → static → spine, the `RodAnchorFrame` whose tip starts the line) are
 advanced by `FishingEquipmentRenderModelBuilder.prepareRod` while the fishing frame is built. `RodStaticRenderer`,
 `RodSpineRenderer` and `RodLineRenderer` draw from the frame model. `bootstrap/production/rod_animation_composition.js`
-wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime.
+wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime. DEV:
+`SpineRodDevSection` (DevTools "SPINE ВУДКА") uses only the controller's DEV port: Spine on/off, clip switches, live
+bone setup edits and the export of the edited skeleton JSON.
 
 ## Migration history
 

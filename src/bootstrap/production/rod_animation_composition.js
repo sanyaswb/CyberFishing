@@ -5,10 +5,11 @@ import { RodAnimationStateResolver } from "../../game/presentation/fishing/rod_a
 import { SpineBundleLoader } from "../../platform/browser/animation/spine_bundle_loader.js";
 import { SpineGlSurface } from "../../platform/browser/animation/spine_gl_surface.js";
 import { SpineRuntimeProvider } from "../../platform/browser/animation/spine_runtime_provider.js";
+import { SpineSetupPoseReader } from "../../platform/browser/animation/spine_setup_pose_reader.js";
 
 // The Spine rod (spec 099): one load queue, bundle loader, lazily imported runtime and offscreen GL surface for the
-// session, and the controller the rod renderers and the line builder share. forceStatic is the DEV "?spine=off" switch.
-export function composeRodAnimation({ windowTarget, documentTarget, config, forceStatic = () => false }) {
+// session, and the controller the rod renderers, the line builder and the DEV Spine section share.
+export function composeRodAnimation({ windowTarget, documentTarget, config }) {
   const queue = new AssetLoadQueue({
     scheduler: {
       setTimeout: (callback, delayMs) => windowTarget.setTimeout(callback, delayMs),
@@ -26,7 +27,7 @@ export function composeRodAnimation({ windowTarget, documentTarget, config, forc
     resolver: new RodAnimationStateResolver(),
     getConfig: () => config.ui.rod.spine,
     isReducedMotion: () => reducedMotion?.matches === true,
-    forceStatic,
+    readSetupPose: (skeletonJson, atlas, descriptor) => SpineSetupPoseReader.read(skeletonJson, atlas, descriptor),
   });
   return {
     controller,

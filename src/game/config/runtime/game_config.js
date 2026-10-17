@@ -481,10 +481,26 @@ export const CONFIG = {
       yOffset: 0,
       // Spine rod (spec 099), presentation only: screen height share, clips by wind and fight side, blend and timing.
       spine: {
-        heightRatio: 0.25,
+        heightRatio: 0.5,
         sideRangeRatio: 0.35,
-        windClips: { left: "rod_idle-1--left", calm: "rod_idle-2", right: "rod_idle-1--right" },
-        fightClips: { front: "rod_fighting-1--front", left: "rod_fighting-1--left", right: "rod_fighting-1--right" },
+        // Full bend at: "tension" (the tension bar is full) or "rodStress" (the rod's own load reaches its maximum).
+        bendSource: "tension",
+        windClips: {
+          left: "rod_idle-1--left",
+          calm: "rod_idle-2",
+          right: "rod_idle-1--right",
+        },
+        fightClips: {
+          front: "rod_fighting-1--front",
+          left: "rod_fighting-1--left",
+          right: "rod_fighting-1--right",
+        },
+        // Looping tremble while the tackle STRESS bar shows (critical load), on the fish's side.
+        criticalClips: {
+          left: "rod_fight--left-critical",
+          right: "rod_fight--right-critical",
+        },
+        criticalMixSec: 0.15,
         windMixSec: 1,
         idleToFightSec: 0.25,
         fightToIdleSec: 0.4,

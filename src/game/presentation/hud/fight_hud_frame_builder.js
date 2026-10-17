@@ -1,4 +1,5 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
+import { TackleStressBarVisibility } from "./tackle_stress_bar_visibility.js";
 
 export class FightHudFrameBuilder {
   #config;
@@ -120,9 +121,9 @@ export class FightHudFrameBuilder {
         : 0;
 
     const stressRatio = RenderMath.clamp(tensionMeter.getStressRatio());
-    const shouldShow =
-      stressRatio > 0 ||
-      tension >= (this.#config.tension?.breakThreshold || 100) - 0.1;
+    const shouldShow = TackleStressBarVisibility.isVisible({
+      stressRatio, tension, breakThreshold: this.#config.tension?.breakThreshold,
+    });
     if (!shouldShow) return;
     const reason =
       tensionMeter.getBreakTargetReason() ||

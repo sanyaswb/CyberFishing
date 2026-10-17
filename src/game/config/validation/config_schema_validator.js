@@ -487,13 +487,17 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
     this.#requireFiniteNumber(`${path}.heightRatio`, cfg.heightRatio, { min: 0.01, max: 2 });
     this.#requireFiniteNumber(`${path}.sideRangeRatio`, cfg.sideRangeRatio, { min: 0.01, max: 2 });
-    for (const key of ["windMixSec", "idleToFightSec", "fightToIdleSec", "bendSmoothingSec"]) {
+    for (const key of ["windMixSec", "idleToFightSec", "fightToIdleSec", "bendSmoothingSec", "criticalMixSec"]) {
       this.#requireFiniteNumber(`${path}.${key}`, cfg[key], { min: 0, max: 10 });
     }
-    for (const [group, keys] of [["windClips", ["left", "calm", "right"]], ["fightClips", ["front", "left", "right"]]]) {
+    for (const [group, keys] of [["windClips", ["left", "calm", "right"]], ["fightClips", ["front", "left", "right"]],
+      ["criticalClips", ["left", "right"]]]) {
       for (const key of keys) this.#requireNonEmptyString(`${path}.${group}.${key}`, cfg[group]?.[key]);
     }
     if (typeof cfg.windRainTimeScale !== "boolean") this.#error(`${path}.windRainTimeScale`, "expected boolean");
+    if (!["tension", "rodStress"].includes(cfg.bendSource)) {
+      this.#error(`${path}.bendSource`, `expected "tension" or "rodStress", got ${cfg.bendSource}`);
+    }
   }
 
   // A skin's Spine bundle: project-relative skeleton JSON and atlas paths, optional skin and line point names.

@@ -17,6 +17,7 @@ function checkRenderFrameComposition() {
     ["src/game/presentation/rendering/game_render_frame_builder.js",'GameRenderFrameBuilder'],["src/game/presentation/rendering/landing_area_render_frame_builder.js",'LandingAreaRenderFrameBuilder'],
     ["src/game/presentation/screens/outcome_render_frame_builder.js",'OutcomeRenderFrameBuilder'],["src/game/presentation/rendering/world_render_frame_builder.js",'WorldRenderFrameBuilder'],["src/game/presentation/rendering/game_render_intent.js",'GameRenderIntent'],["src/game/presentation/rendering/game_render_coordinator.js",'GameRenderCoordinator']];
   runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
+  runtime.load('src/game/presentation/hud/tackle_stress_bar_visibility.js',{expose:['TackleStressBarVisibility']});
   for(const [file,name]of definitions)runtime.load(file,{expose:[name]});
   const c=runtime.context,metrics={width:800,height:600},clock={now:1000,realNow:1000};
   const projector={getScale:()=>1,getPerspective:()=>({scale:1,squashY:0.5}),virtualToScreen(x,y,out){out.x=x;out.y=y;return out;},screenToVirtual(x,y,out){out.x=x;out.y=y;return out;}};

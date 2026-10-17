@@ -133,30 +133,67 @@ measured), WebGL drawing itself and the look. Owner browser check in dev.html, 2
 
 ## Phase 4: DEV tools
 
-- [ ] T023 `src/dev/fishing/rod_animation_dev_section.js` in DevTools: runtime/scene status and reason, current
-  mode/clips/weights/bend, overrides (clip, bend 0..1, side −1..1, wind −1/0/+1 for the rod only, without touching
-  `EnvironmentSystem`), live `ui.rod.spine` edits, anchor dot + bounds box
-  overlay, "Lose context" / "Restore context" (`WEBGL_lose_context`), reload bundle, and a texture filter switch
-  "atlas (Linear) | mipmaps" (D7): the scene re-sets the page filters and generates mipmaps; on WebGL 1 with a
-  non-power-of-two page the switch is disabled with the reason shown.
-- [ ] T024 DEV flag `?spine=off` forces mode `static` (DevFlagsProvider), to see the static picture.
+Owner request, 2026-10-17. A DevTools section "🎣 SPINE ВУДКА" (`src/dev/tools/spine_rod_dev_section.js`) over a DEV
+port of the controller, injected like the item grant. Production composes the controller but never calls the port.
+
+- [X] T023 (owner 1) Spine on/off switch: `RodAnimationController.setSpineEnabled(false)` shows the static picture, so
+  the fallback can be checked live. Replaces the planned `?spine=off` flag (old T024); the constructor's
+  `forceStatic` goes away. A status row shows the mode and the last unavailability reason.
+- [X] T024 (owner 2) Every clip of the loaded skeleton with its duration and an on/off switch. A disabled clip is not
+  played (its track stays empty, so the setup pose shows there) and is not reported as missing.
+- [X] T025 (owner 3) Scale and the other `CONFIG.ui.rod.spine` values (heightRatio, sideRangeRatio, mixes, smoothing,
+  wind clips) edited live through the runtime override store, so "Export overrides" keeps them.
+- [X] T026 (owner 4) Bone editor: a bone picker (default `rod`), setup x / y / rotation / scaleX / scaleY editable live
+  (`SpineScene.setBoneSetup` changes the bone data, re-measures the bounds); world position on the game canvas for
+  the bone and for `line-tip`, refreshed on demand. Edits also update the static picture's line point
+  (`SpineSetupPoseReader` injected into the controller).
+- [X] T027 (owner 5) "Export rod.json": downloads the whole skeleton JSON of the file that changed, the loaded export
+  with the bone edits written into its `bones` entries (defaults omitted as Spine writes them), under its own file
+  name, for Import Data in the Spine editor. One section and one export per Spine file: a later background or loader
+  scene gets its own.
+- [ ] T028 Still open from the plan, not in the owner's list: texture filter switch Linear | mipmaps (D7), lose/restore
+  context buttons, anchor overlay. Added only if the owner asks.
+
+**Checkpoint** (2026-10-17): `SpineRodDevSection` (src/dev/tools) over the controller's DEV port
+(`setSpineEnabled`, `getClips`/`setClipEnabled`, `getBones`/`setBoneSetup`/`getBoneEdits`, `exportSkeleton`);
+`SpineScene.getClips/getBones/setBoneSetup`; `DevToolsUI.createSelectRow`; `forceStatic` removed. Canvas coordinates
+are those of the last drawn frame and refresh with ↻. The clip list and bones appear once the scene is loaded (after
+the cast). Owner's dev.html check 2026-10-17, performed by the owner: accepted ("Чудово").
+
+## Phase 4b: critical clips and bend source (owner, 2026-10-17)
+
+- [X] T035 Owner re-export: `rod_fight--left-critical` / `--right-critical` (0.15 s loops, near-full bend with a ±0.1°
+  per bone tremble), `bone30` removed (`line-tip` on `bone29`), skin `default` (the config keeps `skin: "default"`
+  at the owner's request). New check values: line-tip (1.16, 466.10) at setup, (−93.68, 388.16) full left,
+  (1.23, 325.83) full front.
+- [X] T036 Critical = the HUD's second bar (tackle STRESS): `TackleStressBarVisibility` shared by
+  `FightHudFrameBuilder` and `FishingRenderFrameBuilder`; config `criticalClips { left, right }`, `criticalMixSec 0.15`.
+- [X] T037 Owner report: entering critical made the rod jump to full bend and twist. The critical clip now plays on
+  track 3 as an additive tremble, its change from its own first frame (`SpineScene.setLoop(..., additive)` rewrites
+  single-value timeline keys and Bezier samples once; 4.3 `TrackEntry.additive`). No jump at its start.
+- [X] T038 Owner: a full tension bar is the full bend. `bendSource: "tension"` (default, `tension / 100` as the HUD
+  bar) or `"rodStress"` (the rod's own load, the earlier rule); validated by the config schema.
+- [X] T039 Owner tuning kept: `heightRatio 0.5`. `docs/rod_animation_reference.md` (owner's/other tool's reference)
+  updated for the bend source.
+
+Checks after 4b, over develop with ad1796f9/58f3ec84: Architecture 4/4 (729 modules; production 564 / 865),
+Quick 29/29, Full 55/55, game-cycle baseline unchanged (SHA-256 7b9baea3…). The owner checked the
+fight bend and the critical tremble in dev.html, 2026-10-17.
 
 ## Phase 5: Checks and acceptance
 
-- [ ] T025 `utils/spine-rod-check.js` in the Quick suite (`utils/testing/suites/check_manifest.js`): every case listed
-  in spec "Verification", including the zero-allocation count, the static picture geometry and the bit-for-bit
-  model for rods without an animated skin.
-- [ ] T026 Every runtime path (vendor file, bundle json/atlas/page) is in `git ls-files`; `release:pages` dry run lists
+- [X] T029 `spine-rod` covers the DEV port: spine off/on, clip disable, bone edit (scene tip, static tip, bounds),
+  export JSON (edits written, everything else byte-equal after parse, file name).
+- [ ] T030 Every runtime path (vendor file, bundle json/atlas/page) is in `git ls-files`; `release:pages` dry run lists
   them.
-- [ ] T027 Architecture + Quick + Full green; game-cycle digest unchanged; update `docs/architecture.md`
-  (`engine/animation`, platform Spine modules, vendor rule) and `project-structure.txt` (`npm run struct`).
-- [ ] T028 Owner browser check in dev.html and on Pages (list in spec "Verification"); performedBy = owner, recorded in
-  spec.md with the date.
-- [ ] T029 CHANGELOG line and version bump only on the owner's command; commit + push develop and gh-pages together
+- [ ] T031 Architecture + Quick + Full green; game-cycle digest unchanged; `docs/architecture.md` and
+  `project-structure.txt` updated.
+- [ ] T032 Owner browser check in dev.html (DEV section) and on Pages; recorded in spec.md with the date.
+- [ ] T033 CHANGELOG line and version bump only on the owner's command; commit + push develop and gh-pages together
   after the owner agrees.
 
 ## Phase 6 (after this spec): preloader on the same Spine
 
-- [ ] T030 New spec for the 083 remainder: store and facade (reusing T010), the `index.html` loading layer +
+- [ ] T034 New spec for the 083 remainder: store and facade (reusing T010), the `index.html` loading layer +
   `StartupLoaderView`, a loader Spine scene on its own `SpineGlSurface` through `SpineBundleLoader` after the minimum
   barrier, poster fallback, disposal on fade-out. The owner provides the loader export under the same export rules.

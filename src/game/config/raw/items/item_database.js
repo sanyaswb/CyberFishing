@@ -137,11 +137,12 @@ export const ITEM_DB = {
           withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
           withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.webp",
         },
-        // Spine rod in the scene (spec 099): the line hangs from the line-tip bone.
+        // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
+        // hangs from the line-tip bone.
         animation: {
           skeleton: "assets/animations/rods/bamboo-rod-v1/rod.json",
           atlas: "assets/animations/rods/bamboo-rod-v1/rod.atlas",
-          skin: "rod-1",
+          skin: "default",
           linePoint: "line-tip",
         },
       },

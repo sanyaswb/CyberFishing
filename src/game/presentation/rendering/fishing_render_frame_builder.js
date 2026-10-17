@@ -1,4 +1,5 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { TackleStressBarVisibility } from "../hud/tackle_stress_bar_visibility.js";
 
 export class FishingRenderFrameBuilder {
   #inventory;
@@ -41,6 +42,8 @@ export class FishingRenderFrameBuilder {
     equipment: null,
     fightFrame: null,
     floatScreenX: 0,
+    tension: 0,
+    critical: false,
   };
   #floatContext = {
     target: null,
@@ -166,6 +169,11 @@ export class FishingRenderFrameBuilder {
     rodContext.equipment = equipment;
     rodContext.fightFrame = fightDebug;
     rodContext.floatScreenX = screenPosition.x;
+    rodContext.tension = tension;
+    // The same rule as the HUD's tackle STRESS bar, so the rod trembles exactly while that bar shows.
+    rodContext.critical = intent.state === "playing" && hasTensionMeter && TackleStressBarVisibility.isVisible({
+      stressRatio: tensionMeter.getStressRatio(), tension, breakThreshold: this.#config.tension?.breakThreshold,
+    });
     const rodAnchor = this.#equipmentModelBuilder.prepareRod(rodContext);
     const lineFrame = this.#resolveLineFrame(
       intent,
@@ -260,7 +268,7 @@ export class FishingRenderFrameBuilder {
   }
 
   #assertTensionMeter(tensionMeter) {
-    const methods = ["getFightFrame", "getTension"];
+    const methods = ["getFightFrame", "getTension", "getStressRatio"];
     for (let index = 0; index < methods.length; index += 1) {
       const method = methods[index];
       if (!tensionMeter || typeof tensionMeter[method] !== "function") {
