@@ -251,6 +251,12 @@
       height: auto;
     }
 
+    /* The item editor scrolls itself here as in landscape, so its actions bar can stick to its top: the section holding
+       it takes the content row's height instead of growing with the editor. */
+    .inventory-main__section--equipment:has(> .inventory-assembly-editor) {
+      height: 100%;
+    }
+
     .inventory-main__right {
       padding: 0 var(--inventory-mobile-inset) var(--inventory-container-gap);
     }
