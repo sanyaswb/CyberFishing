@@ -58,7 +58,7 @@ const canvas = eventTarget();
 const input = new InputController(canvas, null, { runtimeConfig: config, listeners: new EventLifecycle() });
 input.setPointerPanEnabled(true);
 const pans = [];
-const viewport = new GameViewportFacade({ config, world: { pan: (x, y) => pans.push([x, y]) } });
+const viewport = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(), config, world: { pan: (x, y) => pans.push([x, y]) } });
 function frame() {
   const state = input.getState();
   viewport.applyPan(state, "scouting", false);

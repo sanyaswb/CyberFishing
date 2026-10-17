@@ -309,7 +309,7 @@ function checkVisualFrames() {
     ['src/game/presentation/screens/victory_theme_resolver.js','VictoryThemeResolver'],
     ['src/game/presentation/screens/victory_layout_resolver.js','VictoryLayoutResolver'],
     ['src/game/presentation/fishing/line_visual_state_controller.js','LineVisualStateController'],
-    ['src/game/presentation/fishing/rod_visual_offset_system.js','RodVisualOffsetSystem'],
+    ['src/game/application/fishing/rod_visual_offset_system.js','RodVisualOffsetSystem'],
   ];
   for(const [path,name] of definitions) runtime.load(path,{expose:[name]});
   const c=runtime.context;

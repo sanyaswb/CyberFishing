@@ -63,6 +63,7 @@ import { FishVisualVariantResolver } from "../../game/presentation/fish/fish_vis
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
 import { GameApplication } from "../../game/application/session/game_application.js";
 import { GameViewportFacade } from "../../game/presentation/viewport/game_viewport_facade.js";
+import { RodVisualOffsetSystem } from "../../game/application/fishing/rod_visual_offset_system.js";
 import { GameClock } from "../../platform/browser/time/game_clock.js";
 import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
 import { HoldCharges } from "../../platform/browser/ui/hold_charges.js";
@@ -1057,6 +1058,7 @@ export class GameCompositionRoot {
     );
 
     const viewportFacade = new GameViewportFacade({
+      rodVisualOffsetSystem: new RodVisualOffsetSystem(),
       world: runtime.world,
       projector: runtime.projector,
       canvasMetrics,

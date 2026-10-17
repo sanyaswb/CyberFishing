@@ -179,7 +179,7 @@ const stripConfig = { baseResolution: { width: 1000, height: 800 }, cameraFocusY
 const stripProjector = new ViewportProjector(stripConfig, "lake", () => ({ scale: 1 }));
 const metrics = { width: 640, height: 360 };
 stripProjector.update(metrics.width, metrics.height);
-const facade = new GameViewportFacade({ world: { pan: (dx, dy) => stripProjector.pan(dx, dy) }, projector: stripProjector,
+const facade = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(), world: { pan: (dx, dy) => stripProjector.pan(dx, dy) }, projector: stripProjector,
   canvasMetrics: metrics, config: { ui: { rod: { x: "center" } } }, biteEnvironmentService: {} });
 const castRodX = 500;
 const rodWorldX = facade.rodAnchorVirtualX(castRodX);

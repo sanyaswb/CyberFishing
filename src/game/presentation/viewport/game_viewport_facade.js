@@ -1,4 +1,3 @@
-import { RodVisualOffsetSystem } from "../fishing/rod_visual_offset_system.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class GameViewportFacade {
@@ -12,7 +11,7 @@ export class GameViewportFacade {
   #screenScratch = new Vector2(0, 0);
   #playableScratch = new Vector2(0, 0);
   #viewportSize = { width: 0, height: 0 };
-  #rodVisualOffsetSystem = new RodVisualOffsetSystem();
+  #rodVisualOffsetSystem;
 
   constructor({
     world,
@@ -20,7 +19,11 @@ export class GameViewportFacade {
     canvasMetrics,
     config,
     biteEnvironmentService,
+    rodVisualOffsetSystem,
   }) {
+    if (typeof rodVisualOffsetSystem?.update !== "function") {
+      throw new TypeError("GameViewportFacade requires rodVisualOffsetSystem");
+    }
     try {
 
     this.#world = world;
@@ -28,6 +31,7 @@ export class GameViewportFacade {
     this.#canvasMetrics = canvasMetrics;
     this.#config = config;
     this.#biteEnvironmentService = biteEnvironmentService;
+    this.#rodVisualOffsetSystem = rodVisualOffsetSystem;
   
     } catch (error) { this.dispose(); throw error; }
 }
@@ -209,4 +213,6 @@ export class GameViewportFacade {
     this.#viewportSize.height = this.#canvasMetrics.height;
     return this.#viewportSize;
   }
+  getRodAimFrame() { return this.#rodVisualOffsetSystem.getFrame(); }
+
 }
