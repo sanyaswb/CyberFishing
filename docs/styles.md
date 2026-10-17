@@ -97,7 +97,8 @@ The toolbar net button (`GameControls` `landingNetArt`, injected from the same s
 from expanding the button's contents; thumbnail images fit within their track.
 Landscape split inventory ([spec 098](../specs/098-landscape-split-inventory/spec.md), DEV switch `CONFIG.debug.inventorySplit`):
 `GameStageLayout` sets the inline values; `game-shell.css` owns `game-shell__canvas--staged` (the canvas as the game strip),
-`modal.css` owns `inventory-modal--split`/`--split-left`/`--split-right` (`--inventory-split-width`). Edge-anchored HUD follows the
+`modal.css` owns `inventory-surface` (the inventory's own `ui-surface` size container: its breakpoints and
+orientation queries measure it) and `inventory-surface--split`/`--split-left`/`--split-right` (`--inventory-split-width`). Edge-anchored HUD follows the
 `--ui-edge-*` values set on the UI surface root (content and portals, `UiSurfaceAdapter.setLayoutProperty`); centred HUD uses `--ui-stage-center-x` (default 50%).
 The backpack collection also shows its faint open-backpack background in landscape, centred
 inside the items panel. `shared-controls.css` owns its shared backdrop geometry and the landscape placement.

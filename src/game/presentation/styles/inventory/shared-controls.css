@@ -145,7 +145,7 @@
   pointer-events: none;
 }
 
-@media (orientation: landscape) {
+@container ui-surface (orientation: landscape) {
   .inventory-list-panel .inventory-collection__backdrop {
     display: block;
   }
@@ -174,7 +174,7 @@
     gap: 16px;
   }
 
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     .inventory-collection__list {
       scrollbar-width: none;
     }

@@ -21,7 +21,8 @@
   width: var(--ui-logical-width, 320px);
   height: var(--ui-logical-height, 100%);
   transform-origin: top left;
-  container-type: inline-size;
+  /* Size, not inline-size: inventory layouts query the surface's orientation as well (spec 098). */
+  container-type: size;
   container-name: ui-surface;
 }
 .ui-surface--scaled { transform: scale(var(--ui-scale, 1)); }

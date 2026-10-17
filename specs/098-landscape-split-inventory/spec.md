@@ -17,8 +17,14 @@ stays a fully playable game. The current full-screen inventory stays the default
 ## Behavior
 
 - `CONFIG.debug.inventorySplit = { enabled: false, inventoryShare: 0.7, defaultSide: "right" }`, edited live in
-  DevTools (CONFIG.debug; `defaultSide` is a right/left toggle). `inventoryShare` is clamped to 0.5..0.85; the game
-  strip is the rest.
+  DevTools (CONFIG.debug; `defaultSide` is a right/left toggle). `inventoryShare` is clamped to 0.2..0.85 with a
+  320px floor; the game strip is the rest.
+- The inventory lays out by its own box (owner, 2026-10-17): `InventoryUI` wraps the modal in `inventory-surface`,
+  a size container named `ui-surface` (the whole surface, or the share in the split, with its own
+  `--ui-logical-width`). Every inventory breakpoint and the inventory's orientation rules
+  (`@container ui-surface (orientation: …)` instead of `@media`) measure it, so a share under 821px gets the mobile
+  layout: portrait when the share is taller than wide. The main `.ui-surface` became a size container for the same
+  orientation queries outside the inventory (UI catalog previews).
 - The split applies while the inventory is open, the switch is on, the UI surface is wider than 820 logical px and
   the window is landscape. Otherwise the inventory is full-screen, as before.
 - Side: on opening with a cast rod, the inventory takes the side opposite to the rod's screen position; a rod at or
@@ -40,7 +46,7 @@ stays a fully playable game. The current full-screen inventory stays the default
 - `InventorySplitLayoutPolicy` (game/presentation/viewport) is pure: settings, viewport, orientation, open state and
   side in, one frozen layout out.
 - `GameStageLayout` (platform/browser/ui) owns the DOM: canvas position, the UI surface edge variables and the
-  inventory modal's split classes; it notifies one listener when the stage rectangle changes.
+  inventory surface's split classes and logical width; it notifies one listener when the stage rectangle changes.
 - `DevInventorySplitSource` (dev/runtime) reads the CONFIG values and the `config-updated` event.
 - `GameApplication` handles the stage change in its update step (resize, then rod recentring through
   `GameViewportFacade.recenterRod`). Production passes no stage: no new listener, allocation or behavior.

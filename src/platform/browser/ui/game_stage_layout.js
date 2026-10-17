@@ -1,6 +1,7 @@
 // Landscape split inventory (spec 098): applies InventorySplitLayoutPolicy to the page. The canvas is sized to the game
 // strip (getViewport for CanvasMetricsProvider) and placed on its side (originX for world input); HUD anchored to the
-// screen edges follows the --ui-edge-* variables, centred HUD the strip centre; the inventory modal takes its share.
+// screen edges follows the --ui-edge-* variables, centred HUD the strip centre; the inventory surface takes its share
+// and reports it as its logical width, so a share under 821px gets the inventory's mobile layout.
 // The game is told once per split change (open, close, side or share), not on a plain window resize, so it can keep
 // the rod's world position. Only DEV composes it; production has no stage.
 export class GameStageLayout {
@@ -14,7 +15,7 @@ export class GameStageLayout {
   #layout = null;
   #open = false;
   #side = null;
-  #inventoryRoot = null;
+  #inventorySurface = null;
   #getRodScreenX = () => null;
   #onSplitChange = null;
   #removeVisibilityListener = null;
@@ -48,7 +49,7 @@ export class GameStageLayout {
   }
 
   attachInventory(inventoryUI) {
-    this.#inventoryRoot = inventoryUI.rootNode;
+    this.#inventorySurface = inventoryUI.surfaceNode;
     this.#removeVisibilityListener?.();
     this.#removeVisibilityListener = inventoryUI.onVisibilityChange((open) => {
       this.#open = open;
@@ -106,13 +107,16 @@ export class GameStageLayout {
       surface.setLayoutProperty("--ui-stage-center-x",
         layout.active ? `${layout.stageLeft + layout.stageWidth / 2}px` : null);
     }
-    const modal = this.#inventoryRoot;
-    if (modal) {
-      modal.classList.toggle("inventory-modal--split", layout.active);
-      modal.classList.toggle("inventory-modal--split-left", layout.active && layout.side === "left");
-      modal.classList.toggle("inventory-modal--split-right", layout.active && layout.side === "right");
-      if (layout.active) modal.style.setProperty("--inventory-split-width", `${layout.inventoryWidth}px`);
-      else modal.style.removeProperty("--inventory-split-width");
+    const inventory = this.#inventorySurface;
+    if (inventory) {
+      inventory.classList.toggle("inventory-surface--split", layout.active);
+      inventory.classList.toggle("inventory-surface--split-left", layout.active && layout.side === "left");
+      inventory.classList.toggle("inventory-surface--split-right", layout.active && layout.side === "right");
+      for (const [name, value] of [["--inventory-split-width", `${layout.inventoryWidth}px`],
+        ["--ui-logical-width", `${layout.inventoryWidth}px`]]) {
+        if (layout.active) inventory.style.setProperty(name, value);
+        else inventory.style.removeProperty(name);
+      }
     }
   }
 }

@@ -342,7 +342,7 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     /* Portrait (spec 068): the collection hides the scrollbar; the grid drops its reserved gutter. */
     .inventory-list-grid {
       scrollbar-gutter: auto;

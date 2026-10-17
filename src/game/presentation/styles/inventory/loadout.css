@@ -302,7 +302,7 @@
 }
 
 @container ui-surface (max-width: 820px) {
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     /* Portrait regions size from their contents. The loadout keeps the base unit, min(100cqi / 3.66, 100cqb / 4.56):
        the equipment host is a size container in portrait (modal.css), so the composition always fits the real row
        between the header and the tabs (spec 078; the former viewport estimate broke when the header grew). */

@@ -498,9 +498,9 @@ class InventoryStaticContractCheck {
     const mobileList = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/list-and-filters.css"), "utf8")
       .split("@container ui-surface (max-width: 820px)")[1];
     // Spec 068: portrait fills the screen — summary, the scrolling content row, tabs always at the bottom.
-    const portraitModal = mobileModal.split("@media (orientation: portrait)")[1];
-    const portraitLoadout = mobileLoadout.split("@media (orientation: portrait)")[1];
-    const portraitList = mobileList.split("@media (orientation: portrait)")[1];
+    const portraitModal = mobileModal.split("@container ui-surface (orientation: portrait)")[1];
+    const portraitLoadout = mobileLoadout.split("@container ui-surface (orientation: portrait)")[1];
+    const portraitList = mobileList.split("@container ui-surface (orientation: portrait)")[1];
     assert.ok(portraitModal && portraitLoadout && portraitList, "the stacked layout applies only in portrait");
     assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*overflow:\s*hidden;/, "the portrait inventory never scrolls as a page");
     assert.match(portraitModal, /grid-template-rows:\s*auto\s+minmax\(0,\s*1fr\)\s+auto;/,
@@ -523,7 +523,7 @@ class InventoryStaticContractCheck {
     const sharedControls = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/shared-controls.css"), "utf8");
     assert.match(sharedControls, /\.inventory-collection\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*gap:\s*var\(--inventory-container-gap, 10px\);[^}]*height:\s*100%;/,
       "a collection is a filters row, a gap and the items row filling the section");
-    const portraitCollection = sharedControls.split("@media (orientation: portrait)")[1];
+    const portraitCollection = sharedControls.split("@container ui-surface (orientation: portrait)")[1];
     assert.match(portraitCollection, /\.inventory-collection__list\s*\{\s*scrollbar-width:\s*none;/,
       "the portrait item list scrolls without a visible scrollbar");
     assert.match(sharedControls, /\.inventory-collection__backdrop\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.12;[^}]*pointer-events:\s*none;/,
@@ -532,7 +532,7 @@ class InventoryStaticContractCheck {
       "portrait shows the faded backdrop inside the items panel");
     assert.match(sharedControls, /\.inventory-collection__backdrop\s*\{[^}]*top:\s*15%;[^}]*left:\s*15%;[^}]*width:\s*70%;[^}]*height:\s*70%;[^}]*object-position:\s*center;/,
       "the backdrop is centred within the items panel in both orientations");
-    assert.match(sharedControls, /@media \(orientation: landscape\)\s*\{\s*\.inventory-list-panel \.inventory-collection__backdrop\s*\{\s*display:\s*block;\s*\}/,
+    assert.match(sharedControls, /@container ui-surface \(orientation: landscape\)\s*\{\s*\.inventory-list-panel \.inventory-collection__backdrop\s*\{\s*display:\s*block;\s*\}/,
       "landscape enables the backpack backdrop without overriding its centred placement");
     assert.ok(portraitList.includes(".inventory-list-grid"), "the portrait list keeps its gutter rule");
     // Spec 069: one full-screen dark container; equipment owns the content row; the header is a rounded mini panel.
@@ -543,7 +543,7 @@ class InventoryStaticContractCheck {
     assert.match(portraitModal, /\.inventory-modal--section-equipment \.inventory-main__left\s*\{\s*grid-area:\s*right;/,
       "portrait equipment fills the content row");
     const mobileHeader = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/header.css"), "utf8")
-      .split("@media (orientation: portrait)")[1];
+      .split("@container ui-surface (orientation: portrait)")[1];
     assert.match(mobileHeader, /\.inventory-header\s*\{[^}]*border-radius:\s*var\(--inventory-header-radius\);[^}]*background:\s*var\(--inventory-equipment-panel\);/,
       "the portrait header is a rounded mini panel");
     // Spec 075: only visible filter rows take space; one container gap token; the portrait pager slides its track.
@@ -554,7 +554,7 @@ class InventoryStaticContractCheck {
     assert.doesNotMatch(style, /\.keepnet-section__controls\s*\{/, "the keepnet controls panel has no layout of its own");
     assert.match(style, /--inventory-container-gap:\s*var\(--inventory-content-gap\);/, "wide layouts space containers by the column gap");
     assert.match(mobileModal, /--inventory-container-gap:\s*var\(--inventory-mobile-inset\);/, "phones space containers by the mobile inset");
-    const portraitPager = mobileList.split("@media (orientation: portrait)")[1];
+    const portraitPager = mobileList.split("@container ui-surface (orientation: portrait)")[1];
     assert.match(portraitPager, /\.inventory-pager__track\s*\{\s*transform:\s*translateX\(calc\(var\(--inventory-pager-position, var\(--inventory-pager-index, 0\)\)/,
       "portrait pages follow the drag position and settle on the page index");
     assert.match(portraitPager, /\.inventory-pager__viewport\s*\{[^}]*touch-action:\s*pan-y;/, "vertical list scrolling stays native");
@@ -743,7 +743,7 @@ class InventoryStaticContractCheck {
       /\.inventory-main__section--equipment \.inventory-loadout-panel:has\(> \.inventory-loadout-panel__primary--single\)\s*\{\s*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+max-content;/,
       "Without a rod the rod cell grows into the free height of the equipment section",
     );
-    assert.match(mobileLoadout.split("@media (orientation: portrait)")[1],
+    assert.match(mobileLoadout.split("@container ui-surface (orientation: portrait)")[1],
       /\.inventory-main__section--equipment:has\(\.inventory-loadout-panel__primary--single\) \.inventory-loadout-shell\s*\{\s*height:\s*100%;/,
       "A rodless portrait equipment section fills the content row");
     assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(style), "The rod cell no longer keeps a fixed 9:16 proportion");
@@ -1455,6 +1455,11 @@ class InventoryStaticContractCheck {
     const modalCss = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/modal.css"), "utf8");
     assert.match(modalCss, /orientation: portrait\)[\s\S]*\.inventory-modal\s*\{[^}]*--inventory-swipe:\s*on;/,
       "only portrait turns the swipes on");
+    // Spec 098: a container is no containing block for fixed boxes, and the split modifiers must win over the inset.
+    assert.match(modalCss, /\.inventory-surface > \.inventory-modal\s*\{[^}]*position:\s*absolute;/,
+      "the modal fills its inventory surface, not the window");
+    assert.match(modalCss, /\.ui-surface__content > \.inventory-surface\s*\{\s*pointer-events:\s*none;\s*\}/,
+      "the surface's content rule sets no inset that would override the split side");
     assert.match(modalCss, /\.inventory-main,\s*\.inventory-main__left,[^{]*\{\s*touch-action:\s*pan-y;/,
       "horizontal touch swipes reach the section swipe");
     assert.match(listCss, /\.inventory-pager__viewport\s*\{\s*border-color:\s*var\(--inventory-equipment-tab-border\);\s*border-top-width:\s*0;/,

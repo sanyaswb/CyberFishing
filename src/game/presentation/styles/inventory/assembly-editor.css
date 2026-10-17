@@ -146,7 +146,7 @@
 
 /* Landscape (spec 094, owner): the open tab's artwork keeps the cell square at the tab's left edge; portrait centres
    it in the wider tab. */
-@media (orientation: landscape) {
+@container ui-surface (orientation: landscape) {
   .inventory-editor-tabs__tab--active > .inventory-item-card,
   .inventory-editor-tabs__tab--active > .inventory-field {
     width: calc(var(--inventory-socket-size) - 2 * var(--inventory-editor-tab-inset));
@@ -221,7 +221,7 @@
     gap: var(--inventory-mobile-gap);
   }
 
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     .inventory-editor-tabs__candidates {
       display: block;
     }

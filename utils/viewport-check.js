@@ -60,7 +60,11 @@ for (const [label, input] of [["switch off", { ...wide, settings: { enabled: fal
   assert.equal(layout.stageWidth, input.width, label + " keeps the whole viewport for the game");
 }
 assert.equal(policy.share({ inventoryShare: 0.95 }), 0.85);
-assert.equal(policy.share({ inventoryShare: 0.2 }), 0.5);
+assert.equal(policy.share({ inventoryShare: 0.1 }), 0.2);
+assert.equal(policy.resolve({ ...wide, settings: { enabled: true, inventoryShare: 0.3 } }).inventoryWidth, 384,
+  "a share under 821px still narrows the inventory (its mobile layout)");
+assert.equal(policy.resolve({ ...wide, width: 1000, height: 700, settings: { enabled: true, inventoryShare: 0.2 } })
+  .inventoryWidth, 320, "the mobile design's 320px is the floor");
 assert.equal(policy.share({ inventoryShare: "x" }), 0.7, "an invalid share uses the default");
 assert.equal(policy.sideForRod(300, 1280), "right", "a rod left of the centre sends the inventory right");
 assert.equal(policy.sideForRod(640, 1280), "left", "a centred rod sends the inventory left");
@@ -70,7 +74,7 @@ assert.equal(policy.sideForRod(null, 1280, "left"), "left", "the default side ca
 assert.equal(policy.sideForRod(null, 1280, "up"), "right", "an invalid default side is right");
 assert.equal(policy.sideForRod(300, 1280, "left"), "right", "a cast rod decides over the default side");
 
-// Spec 098: the page stage applies the policy to the canvas, the HUD edges and the inventory modal.
+// Spec 098: the page stage applies the policy to the canvas, the HUD edges and the inventory surface.
 const { GameStageLayout } = runtime.importModule("src/platform/browser/ui/game_stage_layout.js");
 const makeNode = () => {
   const value = { classes: new Set(), props: new Map() };
@@ -91,7 +95,7 @@ const stageListeners = [];
 let listenersDisposed = 0;
 const lifecycle = { add(target, type, handler) { stageListeners.push({ target, type, handler }); }, dispose() { listenersDisposed++; } };
 let visibility = null;
-const inventoryUI = { rootNode: modal, isOpen: false,
+const inventoryUI = { surfaceNode: modal, isOpen: false,
   onVisibilityChange(listener) { visibility = listener; return () => { visibility = null; }; } };
 const stage = new GameStageLayout({ canvas: stageCanvas, windowRef: stageWindow, uiSurface: surface, source, policy,
   listeners: lifecycle });
@@ -109,8 +113,9 @@ assert.equal(surface.props.get("--ui-edge-right"), "calc(896px + max(12px, var(-
   "HUD anchored to the right edge moves to the strip");
 assert(!surface.props.has("--ui-edge-left"));
 assert.equal(surface.props.get("--ui-stage-center-x"), "192px");
-assert(modal.classes.has("inventory-modal--split") && modal.classes.has("inventory-modal--split-right") &&
-  modal.props.get("--inventory-split-width") === "896px");
+assert(modal.classes.has("inventory-surface--split") && modal.classes.has("inventory-surface--split-right") &&
+  modal.props.get("--inventory-split-width") === "896px" && modal.props.get("--ui-logical-width") === "896px",
+  "the inventory surface takes its share and reports it as its logical width");
 settings = { enabled: true, inventoryShare: 0.6 };
 sourceListener();
 assert.equal(splitChanges, 2, "a live share edit is a split change");
@@ -125,13 +130,13 @@ rodX = 1000;
 visibility(false);
 assert.equal(splitChanges, 3, "closing tells the game");
 assert(!stage.layout.active && !stageCanvas.classes.has("game-shell__canvas--staged") && stageCanvas.props.size === 0 &&
-  surface.props.size === 0 && modal.props.size === 0 && !modal.classes.has("inventory-modal--split"),
+  surface.props.size === 0 && modal.props.size === 0 && !modal.classes.has("inventory-surface--split"),
   "closing restores the full-screen page");
 stageCanvas.width = 1400;
 visibility(true);
 assert.deepEqual([stage.layout.side, stage.originX], ["left", 840], "a rod right of the centre keeps the strip on the right");
 assert(surface.props.has("--ui-edge-left") && !surface.props.has("--ui-edge-right"));
-assert(modal.classes.has("inventory-modal--split-left"));
+assert(modal.classes.has("inventory-surface--split-left"));
 visibility(false);
 rodX = null;
 settings = { enabled: true, inventoryShare: 0.7, defaultSide: "left" };
