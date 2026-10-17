@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "name": "@esotericsoftware/spine-webgl",
+      "version": "4.3.13",
+      "integrity": "sha512-VdMtDU03HcoUfLlt0FXBzSvh53nLS7Hej0ibJ3kCuDf5hftAsDAiwZhhS6Ze+5nDCGrkNzPmssZcT+96FoOjIQ==",
+      "bundles": [
+        "@esotericsoftware/spine-core@4.3.13"
+      ],
+      "source": "dist/esm/spine-webgl.min.mjs",
+      "file": "vendor/spine-webgl/4.3.13/spine-webgl.js",
+      "sha256": "8612097ee22b9e800d8671a6bf4dedd0a80ddd5ae6e7ccffdafbaa10db353d7a",
+      "license": "vendor/spine-webgl/4.3.13/LICENSE",
+      "licenseSha256": "435774fb793b0f67892899fc934f98009e64fd90ad3ab964117274e279a0f50e",
+      "importer": "src/platform/browser/animation/spine_runtime_module.js"
+    }
+  ]
+}

@@ -72,13 +72,17 @@ image converter never rewrites a page alone.
 
 ## Next steps (each its own spec and commit)
 
-1. Store and facade: `AssetResourceStore` (leases, pinning, eviction under the soft budget), browser image transport
-   and decoder, `GameAssetPreloadFacade` replacing `AssetPreloadCoordinator` with identical results; a catalog
-   generated from the current assets (legacy tier only) so behavior and the game-cycle report stay the same.
-2. Loading screen: markup/CSS in `index.html`, `StartupLoaderView`, progress from `StartupLoadProgress`, fade-out and
-   disposal after the minimum barrier.
-3. Spine: pinned runtime build behind `spine_runtime_module.js`, the platform adapter (atlas import above, WebGL surface,
-   context loss), one real exported fixture, then the owner's loader animation.
+Reordered by the owner on 2026-10-17: Spine comes first, through the rod animation
+([spec 099](../099-spine-rod-animation/spec.md)). The loading screen follows and reuses its runtime.
+
+1. Spine (spec 099): pinned runtime build behind `spine_runtime_module.js`, browser transport/decoder, bundle loader
+   over `AssetLoadQueue`, the platform scene adapter (atlas import above, WebGL surface, context loss), the real
+   export (the owner's bamboo rod) as the fixture, the animated rod in the game.
+2. Store and facade: `AssetResourceStore` (leases, pinning, eviction under the soft budget), `GameAssetPreloadFacade`
+   replacing `AssetPreloadCoordinator` with identical results over the transport from step 1; a catalog generated
+   from the current assets (legacy tier only) so behavior and the game-cycle report stay the same.
+3. Loading screen: markup/CSS in `index.html`, `StartupLoaderView`, progress from `StartupLoadProgress`, the owner's
+   loader animation on its own Spine surface, fade-out and disposal after the minimum barrier.
 4. Quality: `l`/`h` variants from the masters in `asset-sources/` (converter profiles), Auto/Low/High, upgrades after
    the barrier, diagnostics in DEV.
 

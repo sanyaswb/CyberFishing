@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const espree = require("espree");
@@ -68,8 +69,16 @@ const ENTRIES = Object.freeze({
   catalog: { page: "ui-catalog.html", entry: "src/entrypoints/dev/ui_catalog.entry.js" },
 });
 
+// Third-party modules (spec 099): pinned bytes listed in the manifest, each importable by exactly one named module.
+// They are not held to the project's own rules, so the manifest hash and the single importer are what is enforced.
+const VENDOR_PREFIX = "vendor/";
+const VENDOR_MANIFEST = "vendor/manifest.json";
+const VENDOR_MODULE_TYPE = "vendor/package.json";
+
 // Analyses an authored source set ({ "src/...js": text, "index.html": text }) and lists rule violations.
 class ArchitectureRules {
+  #vendorImporters = new Map();
+
   constructor(files) {
     this.files = files;
     this.violations = [];
@@ -77,6 +86,7 @@ class ArchitectureRules {
   }
 
   analyse() {
+    this.#checkVendor();
     for (const [file, source] of Object.entries(this.files)) {
       if (file.startsWith("src/") && file.endsWith(".js")) this.#analyseModule(file, source);
     }
@@ -182,6 +192,9 @@ class ArchitectureRules {
       const target = this.#resolve(file, specifier);
       if (!target) continue;
       targets.push(target);
+      if (target.startsWith(VENDOR_PREFIX) && this.#vendorImporters.get(target) !== file) {
+        this.#fail(`${file} imports vendor module ${target}; only ${this.#vendorImporters.get(target) ?? "its manifest importer"} may`);
+      }
       const targetLayer = ArchitectureRules.layerOf(target);
       if (layer && targetLayer && !ALLOWED_IMPORTS[layer].includes(targetLayer)) {
         this.#fail(`${file} (${layer}) imports ${target} (${targetLayer})`);
@@ -237,6 +250,68 @@ class ArchitectureRules {
     return target;
   }
 
+  // Every vendor file is listed in the manifest with its SHA-256 and licence; a vendor module imports nothing.
+  #checkVendor() {
+    const vendorFiles = Object.keys(this.files).filter((file) => file.startsWith(VENDOR_PREFIX) &&
+      file !== VENDOR_MANIFEST && file !== VENDOR_MODULE_TYPE);
+    if (!Object.hasOwn(this.files, VENDOR_MANIFEST)) {
+      if (vendorFiles.length > 0) this.#fail(`${VENDOR_MANIFEST} is missing for ${vendorFiles.join(", ")}`);
+      return;
+    }
+    let manifest;
+    try {
+      manifest = JSON.parse(this.files[VENDOR_MANIFEST]);
+    } catch (error) {
+      this.#fail(`${VENDOR_MANIFEST} does not parse: ${error.message}`);
+      return;
+    }
+    if (manifest?.schemaVersion !== 1 || !Array.isArray(manifest.packages)) {
+      this.#fail(`${VENDOR_MANIFEST} must have schemaVersion 1 and a packages list`);
+      return;
+    }
+    let moduleType = null;
+    try {
+      moduleType = JSON.parse(this.files[VENDOR_MODULE_TYPE] ?? "null")?.type ?? null;
+    } catch {
+      moduleType = null;
+    }
+    if (moduleType !== "module") this.#fail(`${VENDOR_MODULE_TYPE} must declare "type": "module"`);
+    const listed = new Set();
+    for (const entry of manifest.packages) {
+      const label = `${VENDOR_MANIFEST} ${entry?.name ?? "entry"}@${entry?.version ?? "?"}`;
+      for (const [key, hashKey] of [["file", "sha256"], ["license", "licenseSha256"]]) {
+        const file = entry?.[key];
+        if (typeof file !== "string" || !file.startsWith(VENDOR_PREFIX)) {
+          this.#fail(`${label} needs a ${key} under ${VENDOR_PREFIX}`);
+          continue;
+        }
+        listed.add(file);
+        if (!Object.hasOwn(this.files, file)) this.#fail(`${label} lists missing ${file}`);
+        else if (ArchitectureRules.sha256(this.files[file]) !== entry[hashKey]) this.#fail(`${file} does not match its manifest ${hashKey}`);
+      }
+      const file = entry?.file;
+      if (typeof file !== "string" || !Object.hasOwn(this.files, file)) continue;
+      if (!file.endsWith(".js")) this.#fail(`${file} must be a .js module`);
+      if (typeof entry.importer !== "string" || !entry.importer.startsWith("src/")) {
+        this.#fail(`${label} needs its one importer under src/`);
+      } else {
+        this.#vendorImporters.set(file, entry.importer);
+      }
+      try {
+        const ast = espree.parse(this.files[file], { ecmaVersion: "latest", sourceType: "module" });
+        if (ArchitectureRules.#specifiers(ast).length > 0) this.#fail(`${file} has imports; a vendor module must be self-contained`);
+      } catch (error) {
+        this.#fail(`${file} does not parse as a module: ${error.message}`);
+      }
+      this.graph.set(file, []);
+    }
+    for (const file of vendorFiles) if (!listed.has(file)) this.#fail(`${file} is not listed in ${VENDOR_MANIFEST}`);
+  }
+
+  static sha256(text) {
+    return crypto.createHash("sha256").update(Buffer.from(text, "utf8")).digest("hex");
+  }
+
   #checkCycles() {
     const state = new Map();
     const stack = [];
@@ -274,14 +349,16 @@ class ArchitectureRules {
 class ProjectSources {
   static read(projectRoot) {
     const files = {};
-    const walk = (directory) => {
+    const walk = (directory, accept) => {
       for (const entry of fs.readdirSync(path.join(projectRoot, directory), { withFileTypes: true })) {
         const relative = `${directory}/${entry.name}`;
-        if (entry.isDirectory()) walk(relative);
-        else if (relative.endsWith(".js")) files[relative] = fs.readFileSync(path.join(projectRoot, relative), "utf8");
+        if (entry.isDirectory()) walk(relative, accept);
+        else if (accept(relative)) files[relative] = fs.readFileSync(path.join(projectRoot, relative), "utf8");
       }
     };
-    walk("src");
+    walk("src", (file) => file.endsWith(".js"));
+    // Every vendor file, so an unlisted one is reported.
+    if (fs.existsSync(path.join(projectRoot, "vendor"))) walk("vendor", () => true);
     for (const { page } of Object.values(ENTRIES)) files[page] = fs.readFileSync(path.join(projectRoot, page), "utf8");
     return files;
   }
@@ -338,6 +415,45 @@ function checkFixtures() {
     const violations = new ArchitectureRules({ ...base, ...overrides }).analyse();
     assert(violations.some((violation) => expected.test(violation)), `${name} fixture is rejected: ${violations.join("; ")}`);
   }
+  return cases.length + checkVendorFixtures(base);
+}
+
+function checkVendorFixtures(base) {
+  const runtime = "export const run = () => 1;";
+  const license = "Licence text";
+  const importer = "src/platform/runtime_module.js";
+  const vendorSet = (overrides = {}) => {
+    const module = overrides.module ?? runtime;
+    const entry = {
+      name: "lib", version: "1.0.0", file: "vendor/lib/lib.js", sha256: ArchitectureRules.sha256(module),
+      license: "vendor/lib/LICENSE", licenseSha256: ArchitectureRules.sha256(license), importer, ...overrides.entry,
+    };
+    return {
+      ...base,
+      [VENDOR_MANIFEST]: JSON.stringify({ schemaVersion: 1, packages: [entry] }),
+      [VENDOR_MODULE_TYPE]: '{ "type": "module" }',
+      "vendor/lib/lib.js": overrides.storedModule ?? module,
+      "vendor/lib/LICENSE": license,
+      [importer]: 'export const load = () => import("../../vendor/lib/lib.js");',
+    };
+  };
+  assert.deepEqual(new ArchitectureRules(vendorSet()).analyse(), [], "valid vendor fixture passes");
+  const without = (files, key) => Object.fromEntries(Object.entries(files).filter(([file]) => file !== key));
+  const cases = [
+    ["vendor wrong importer", { ...vendorSet(), "src/platform/other.js": 'import "../../vendor/lib/lib.js";' },
+      /src\/platform\/other\.js imports vendor module vendor\/lib\/lib\.js; only src\/platform\/runtime_module\.js may/u],
+    ["vendor hash mismatch", vendorSet({ storedModule: "export const run = () => 2;" }), /lib\.js does not match its manifest sha256/u],
+    ["vendor module with imports", vendorSet({ module: 'import "./dep.js"; export const run = () => 1;' }),
+      /lib\.js has imports; a vendor module must be self-contained/u],
+    ["vendor manifest missing", without(vendorSet(), VENDOR_MANIFEST), /vendor\/manifest\.json is missing/u],
+    ["vendor file unlisted", { ...vendorSet(), "vendor/lib/extra.js": "" }, /vendor\/lib\/extra\.js is not listed/u],
+    ["vendor licence missing", without(vendorSet(), "vendor/lib/LICENSE"), /lists missing vendor\/lib\/LICENSE/u],
+    ["vendor module type missing", without(vendorSet(), VENDOR_MODULE_TYPE), /vendor\/package\.json must declare "type": "module"/u],
+  ];
+  for (const [name, files, expected] of cases) {
+    const violations = new ArchitectureRules(files).analyse();
+    assert(violations.some((violation) => expected.test(violation)), `${name} fixture is rejected: ${violations.join("; ")}`);
+  }
   return cases.length;
 }
 
@@ -352,4 +468,5 @@ const production = new Set(rules.reachable(ENTRIES.production.entry));
 const development = rules.reachable(ENTRIES.development.entry);
 console.log(`Architecture passed: ${rules.graph.size} modules; production ${production.size} modules / ` +
   `${rules.edgeCount(production)} imports, DEV ${development.size} / ${rules.edgeCount(development)}; ` +
-  `no forbidden layer edge, cycle, host global outside platform/dev, production DEV import or player text outside presentation; ${fixtures} negative fixtures.`);
+  `no forbidden layer edge, cycle, host global outside platform/dev, production DEV import, player text outside presentation ` +
+  `or vendor file off its manifest hash/importer; ${fixtures} negative fixtures.`);

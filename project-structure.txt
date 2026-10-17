@@ -56,6 +56,10 @@
 ├── DEVELOPMENT_RULES.md
 ├── README.md
 ├── asset-sources
+│  ├── animations
+│  │  └── rods
+│  │     └── bamboo-rod-v1
+│  │        └── bamboo_rod--1.png
 │  ├── house
 │  │  └── room-1
 │  │     ├── lvl-1
@@ -88,6 +92,12 @@
 │     └── loader
 │        └── loader-poster.png
 ├── assets
+│  ├── animations
+│  │  └── rods
+│  │     └── bamboo-rod-v1
+│  │        ├── rod.atlas
+│  │        ├── rod.json
+│  │        └── rod.webp
 │  ├── audio
 │  │  └── bell_ring.mp3
 │  ├── fish
@@ -450,6 +460,9 @@
 │  │  └── spec.md
 │  ├── 098-landscape-split-inventory
 │  │  └── spec.md
+│  ├── 099-spine-rod-animation
+│  │  ├── spec.md
+│  │  └── tasks.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1333,97 +1346,105 @@
 │           ├── hold_charges.js
 │           └── time_display.js
 ├── ui-catalog.html
-└── utils
-   ├── architecture-check.js
-   ├── asset-preloader-check.js
-   ├── bait-effectiveness-check.js
-   ├── build-pages-release.js
-   ├── check-js.js
-   ├── clean-artifacts.js
-   ├── config-runtime-check.js
-   ├── config-schema-check.js
-   ├── consumable-event-identity-check.js
-   ├── convert-images.js
-   ├── create-version-copy.js
-   ├── css-usage-check.js
-   ├── degradation-color-check.js
-   ├── dev-server.js
-   ├── dev-time-check.js
-   ├── dev-tools-linked-parameter-check.js
-   ├── embedded-page-overlay-check.js
-   ├── fish-rarity-check.js
-   ├── float-depth-cast-check.js
-   ├── game-application-composition-check.js
-   ├── game-cycle-check.js
-   ├── git-version-copy.js
-   ├── hook-domain-semantics-check.js
-   ├── house-check.js
-   ├── house-navigation-check.js
-   ├── inventory-auto-refill-stock-check.js
-   ├── inventory-cast-and-lure-check.js
-   ├── inventory-equipment-check.js
-   ├── inventory-equipment-hydration-check.js
-   ├── inventory-integration-check.js
-   ├── inventory-line-allocation-check.js
-   ├── inventory-migration-check.js
-   ├── inventory-save-round-trip-check.js
-   ├── inventory-transaction-check.js
-   ├── inventory-ui-check.js
-   ├── item-assembly-domain-check.js
-   ├── item-condition-check.js
-   ├── item-freshness-gameplay-check.js
-   ├── item-progression-check.js
-   ├── item-rarity-check.js
-   ├── item-rarity-roundtrip-check.js
-   ├── item-stat-contract-check.js
-   ├── item-state-hardening-check.js
-   ├── keepnet-check.js
-   ├── line-allocation-check.js
-   ├── live-bait-check.js
-   ├── pages-release-check.js
-   ├── platform-runtime-check.js
-   ├── player-inventory-check.js
-   ├── project-structure.js
-   ├── rarity-production-check.js
-   ├── run-checks.js
-   ├── scouting-input-check.js
-   ├── service-artifacts-check.js
-   ├── testing
-   │  ├── README.md
-   │  ├── baselines
-   │  │  └── game-cycle.txt
-   │  ├── core
-   │  │  ├── check_assertion.js
-   │  │  ├── house_markup_source.js
-   │  │  ├── output_baseline.js
-   │  │  └── source_runtime.js
-   │  ├── doubles
-   │  │  └── delegating_inventory_capacity_policy.js
-   │  ├── keepnet
-   │  │  └── test_document.js
-   │  ├── live_bait
-   │  │  ├── feed_loading_scenarios.js
-   │  │  ├── feed_picker_scenarios.js
-   │  │  ├── inventory_feed_scenarios.js
-   │  │  ├── keepnet_lifecycle_scenarios.js
-   │  │  └── shared_feed_scenarios.js
-   │  ├── runtime
-   │  │  ├── chum_test_composition.js
-   │  │  ├── config_test_composition.js
-   │  │  ├── constructor_defaults.js
-   │  │  ├── game_application_test_composition.js
-   │  │  ├── game_facade_test_composition.js
-   │  │  ├── item_rarity_test_composition.js
-   │  │  ├── item_stat_test_composition.js
-   │  │  ├── native_esm_test_loader.js
-   │  │  └── render_frame_test_composition.js
-   │  ├── styles
-   │  │  └── page_stylesheet_reader.js
-   │  └── suites
-   │     └── check_manifest.js
-   ├── ui-catalog-check.js
-   ├── ui-components-check.js
-   ├── ui-surface-check.js
-   ├── victory-input-check.js
-   ├── viewport-check.js
-   └── water-metric-check.js
+├── utils
+│  ├── architecture-check.js
+│  ├── asset-preloader-check.js
+│  ├── bait-effectiveness-check.js
+│  ├── build-pages-release.js
+│  ├── check-js.js
+│  ├── clean-artifacts.js
+│  ├── config-runtime-check.js
+│  ├── config-schema-check.js
+│  ├── consumable-event-identity-check.js
+│  ├── convert-images.js
+│  ├── create-version-copy.js
+│  ├── css-usage-check.js
+│  ├── degradation-color-check.js
+│  ├── dev-server.js
+│  ├── dev-time-check.js
+│  ├── dev-tools-linked-parameter-check.js
+│  ├── embedded-page-overlay-check.js
+│  ├── fish-rarity-check.js
+│  ├── float-depth-cast-check.js
+│  ├── game-application-composition-check.js
+│  ├── game-cycle-check.js
+│  ├── git-version-copy.js
+│  ├── hook-domain-semantics-check.js
+│  ├── house-check.js
+│  ├── house-navigation-check.js
+│  ├── inventory-auto-refill-stock-check.js
+│  ├── inventory-cast-and-lure-check.js
+│  ├── inventory-equipment-check.js
+│  ├── inventory-equipment-hydration-check.js
+│  ├── inventory-integration-check.js
+│  ├── inventory-line-allocation-check.js
+│  ├── inventory-migration-check.js
+│  ├── inventory-save-round-trip-check.js
+│  ├── inventory-transaction-check.js
+│  ├── inventory-ui-check.js
+│  ├── item-assembly-domain-check.js
+│  ├── item-condition-check.js
+│  ├── item-freshness-gameplay-check.js
+│  ├── item-progression-check.js
+│  ├── item-rarity-check.js
+│  ├── item-rarity-roundtrip-check.js
+│  ├── item-stat-contract-check.js
+│  ├── item-state-hardening-check.js
+│  ├── keepnet-check.js
+│  ├── line-allocation-check.js
+│  ├── live-bait-check.js
+│  ├── pages-release-check.js
+│  ├── platform-runtime-check.js
+│  ├── player-inventory-check.js
+│  ├── project-structure.js
+│  ├── rarity-production-check.js
+│  ├── run-checks.js
+│  ├── scouting-input-check.js
+│  ├── service-artifacts-check.js
+│  ├── testing
+│  │  ├── README.md
+│  │  ├── baselines
+│  │  │  └── game-cycle.txt
+│  │  ├── core
+│  │  │  ├── check_assertion.js
+│  │  │  ├── house_markup_source.js
+│  │  │  ├── output_baseline.js
+│  │  │  └── source_runtime.js
+│  │  ├── doubles
+│  │  │  └── delegating_inventory_capacity_policy.js
+│  │  ├── keepnet
+│  │  │  └── test_document.js
+│  │  ├── live_bait
+│  │  │  ├── feed_loading_scenarios.js
+│  │  │  ├── feed_picker_scenarios.js
+│  │  │  ├── inventory_feed_scenarios.js
+│  │  │  ├── keepnet_lifecycle_scenarios.js
+│  │  │  └── shared_feed_scenarios.js
+│  │  ├── runtime
+│  │  │  ├── chum_test_composition.js
+│  │  │  ├── config_test_composition.js
+│  │  │  ├── constructor_defaults.js
+│  │  │  ├── game_application_test_composition.js
+│  │  │  ├── game_facade_test_composition.js
+│  │  │  ├── item_rarity_test_composition.js
+│  │  │  ├── item_stat_test_composition.js
+│  │  │  ├── native_esm_test_loader.js
+│  │  │  └── render_frame_test_composition.js
+│  │  ├── styles
+│  │  │  └── page_stylesheet_reader.js
+│  │  └── suites
+│  │     └── check_manifest.js
+│  ├── ui-catalog-check.js
+│  ├── ui-components-check.js
+│  ├── ui-surface-check.js
+│  ├── vendor-spine.js
+│  ├── victory-input-check.js
+│  ├── viewport-check.js
+│  └── water-metric-check.js
+└── vendor
+   ├── manifest.json
+   ├── package.json
+   └── spine-webgl
+      └── 4.3.13
+         ├── LICENSE
+         └── spine-webgl.js
