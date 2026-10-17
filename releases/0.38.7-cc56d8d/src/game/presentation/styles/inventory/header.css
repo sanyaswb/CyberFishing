@@ -64,7 +64,7 @@
   }
 
   /* Portrait (spec 069): the header is a rounded mini panel inside the full-screen container. */
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     .inventory-header {
       --inventory-header-unit: clamp(1px, calc(100cqi / 320), 2px);
       margin: var(--inventory-mobile-inset) var(--inventory-mobile-inset) 0;

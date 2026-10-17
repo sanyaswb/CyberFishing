@@ -19,6 +19,8 @@ export class InventoryUI {
   #buttonMountNode;
   #backpackButtonNode;
   #rootNode;
+  // The inventory's own UI surface container (spec 098): the modal's breakpoints follow this box.
+  #surfaceNode;
   #headerHost;
   #headerNode = null;
   #lastEquipmentFeedbackRevision = 0;
@@ -146,6 +148,10 @@ export class InventoryUI {
     return this.#rootNode;
   }
 
+  get surfaceNode() {
+    return this.#surfaceNode;
+  }
+
   // Open/close notifications for the page layout (the landscape split, spec 098); returns the unsubscribe.
   onVisibilityChange(listener) {
     this.#visibilityListeners.add(listener);
@@ -155,7 +161,7 @@ export class InventoryUI {
   mount() {
     if (this.#isMounted) return this;
     this.#buttonMountNode.appendChild(this.#backpackButtonNode);
-    this.#mountNode.appendChild(this.#rootNode);
+    this.#mountNode.appendChild(this.#surfaceNode);
     this.#isMounted = true;
     if (typeof this.#facade.subscribe === "function") {
       const unsubscribe = this.#facade.subscribe((notification) =>
@@ -379,7 +385,7 @@ export class InventoryUI {
     this.#headerNode = null;
     this.#tooltipPresenter.dispose();
     this.#backpackButtonNode.remove();
-    this.#rootNode.remove();
+    this.#surfaceNode.remove();
     this.#isMounted = false;
     this.#isOpen = false;
     this.#dynamicRefreshElapsedMs = 0;
@@ -443,6 +449,8 @@ export class InventoryUI {
     this.#section("keepnet", "right", hostClass("keepnet"));
     this.#hintRegion.appendChild(this.#warningNode);
     this.#rootNode.append(this.#hintRegion, this.#headerHost, main);
+    this.#surfaceNode = this.#dom.element("div", "inventory-surface");
+    this.#surfaceNode.appendChild(this.#rootNode);
   }
 
   // One host per section and side; hidden hosts keep their DOM, scroll and the item-list render signature.

@@ -121,8 +121,9 @@ export const CONFIG = {
       biteSequenceMode: "guaranteed",
     },
 
-    // Spec 098, DEV only: in landscape wider than 820px the open inventory takes inventoryShare (0.5..0.85) of the
-    // width on the side without the rod; the rest stays a playable game strip. Production ignores it.
+    // Spec 098, DEV only: in landscape wider than 820px the open inventory takes inventoryShare (0.2..0.85, at least
+    // 320px) of the width on the side without the rod; under 821px it uses its mobile layout. The rest stays a playable
+    // game strip. Production ignores it.
     // defaultSide: the inventory's side while the rod is not cast ("right" | "left").
     inventorySplit: {
       enabled: false,

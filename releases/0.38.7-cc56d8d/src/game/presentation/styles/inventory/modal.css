@@ -2,7 +2,9 @@
 
 /* --inventory-editor-swipe: the item editor's tabs swipe in every layout (spec 094). */
 .inventory-modal {
-  --inventory-content-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
+  /* The sidebar keeps its minimum until both columns are equal; narrower, both share the width equally (half of the
+     row without the gap), so they shrink together instead of only the items column. */
+  --inventory-content-columns: minmax(min(430px, calc((100% - var(--inventory-content-gap)) / 2)), 0.92fr) minmax(0, 1.88fr);
   --inventory-editor-swipe: on;
   --inventory-content-gap: 20px;
   /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
@@ -24,17 +26,39 @@
   isolation: isolate;
 }
 
-/* Landscape split (spec 098, DEV switch): the modal takes its share of the width on the side without the rod; the
-   game strip beside it stays visible and playable. */
-.inventory-modal--split {
+/* The inventory's own UI surface container (spec 098): every inventory @container ui-surface query (width and
+   orientation) measures this box, the whole surface or the inventory's share in the landscape split, so a narrow
+   share gets the mobile layout. A container is no containing block for fixed boxes, so the modal is absolute inside
+   it; only the open modal takes pointer input. */
+.inventory-surface {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ui-layer-panel);
+  container: ui-surface / size;
+  pointer-events: none;
+}
+
+/* Only pointer-events here: the split modifiers below must keep overriding the surface's inset. */
+.ui-surface__content > .inventory-surface {
+  pointer-events: none;
+}
+
+.inventory-surface > .inventory-modal {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* Landscape split (DEV switch): the inventory takes its share on the side without the rod; the game strip beside it
+   stays visible and playable. */
+.inventory-surface--split {
   width: var(--inventory-split-width);
 }
 
-.inventory-modal--split-left {
+.inventory-surface--split-left {
   right: auto;
 }
 
-.inventory-modal--split-right {
+.inventory-surface--split-right {
   left: auto;
 }
 
@@ -149,7 +173,7 @@
 
 @container ui-surface (max-width: 1180px) {
   .inventory-modal {
-    --inventory-content-columns: minmax(370px, 0.9fr) minmax(0, 1.35fr);
+    --inventory-content-columns: minmax(min(370px, calc((100% - var(--inventory-content-gap)) / 2)), 0.9fr) minmax(0, 1.35fr);
   }
 }
 
@@ -170,7 +194,7 @@
 
   /* Portrait (spec 068): the inventory fills the screen, the tabs stay at the bottom and only lists scroll.
      Narrow landscape keeps the separate containers above. */
-  @media (orientation: portrait) {
+  @container ui-surface (orientation: portrait) {
     /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
     /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
     .inventory-modal {

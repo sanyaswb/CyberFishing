@@ -9,18 +9,22 @@
 }
 
 .inventory-loadout-panel {
-  /* One unit, the side cell, sizes the whole reference composition (spec 067): 3.66 units across, 4.56 down.
+  /* One unit, the side cell, sizes the whole reference composition (spec 067): 3.66 units across, 4.88 down
+     (outer 0.28, primary 3.52, gap 0.08, wells row 1.00: 0.7-unit wells with 0.15 padding).
      Separate containers have a definite height, so the composition fits it at the top of its column. */
-  --inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.56));
+  --inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.88));
   --inventory-equipment-gap: calc(var(--inventory-equipment-unit) * 0.11);
   --inventory-equipment-inset: calc(var(--inventory-equipment-unit) * 0.15);
   --inventory-equipment-outer: calc(var(--inventory-equipment-unit) * 0.14);
   --inventory-equipment-width: calc(var(--inventory-equipment-unit) * 3.38);
-  --inventory-equipment-well-size: calc(var(--inventory-equipment-unit) * 0.55);
-  --inventory-equipment-panel-radius: calc(var(--inventory-equipment-unit) * 0.11);
+  --inventory-equipment-well-size: calc(var(--inventory-equipment-unit) * 0.7);
+  --inventory-equipment-panel-radius: calc(
+    var(--inventory-equipment-unit) * 0.11
+  );
   --inventory-panel: var(--inventory-equipment-surface);
   --inventory-panel-border: var(--inventory-equipment-surface);
-  --inventory-panel-radius: var(--inventory-equipment-panel-radius) var(--inventory-equipment-panel-radius) 0 0;
+  --inventory-panel-radius: var(--inventory-equipment-panel-radius)
+    var(--inventory-equipment-panel-radius) 0 0;
   --inventory-slot-border: transparent;
   --inventory-slot-background: var(--inventory-equipment-cell);
   --inventory-slot-filled-background: var(--inventory-equipment-cell);
@@ -86,7 +90,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--inventory-equipment-unit);
   column-gap: calc(var(--inventory-equipment-unit) * 0.18);
-  height: calc(var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 + var(--inventory-equipment-inset) * 2);
+  height: calc(
+    var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 +
+      var(--inventory-equipment-inset) * 2
+  );
   padding: var(--inventory-equipment-inset);
 }
 
@@ -96,14 +103,18 @@
 
 /* Without a rod the single rod cell grows into the free height above the auxiliary row: a rod is taller than wide.
    The reference height stays its minimum, so the gaps between the panels are kept (spec 070 follow-up). */
-.inventory-main__section--equipment .inventory-loadout-panel:has(> .inventory-loadout-panel__primary--single) {
+.inventory-main__section--equipment
+  .inventory-loadout-panel:has(> .inventory-loadout-panel__primary--single) {
   grid-template-rows: minmax(0, 1fr) max-content;
   align-content: stretch;
 }
 
 .inventory-main__section--equipment .inventory-loadout-panel__primary--single {
   height: auto;
-  min-height: calc(var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 + var(--inventory-equipment-inset) * 2);
+  min-height: calc(
+    var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 +
+      var(--inventory-equipment-inset) * 2
+  );
 }
 
 .inventory-loadout-panel__cascade {
@@ -190,11 +201,14 @@
   --inventory-panel: var(--inventory-equipment-cell);
   --inventory-panel-border: transparent;
   --inventory-panel-radius: var(--inventory-slot-radius);
-  padding: calc(var(--inventory-equipment-unit) * 0.08) calc(var(--inventory-equipment-unit) * 0.07);
+  padding: calc(var(--inventory-equipment-unit) * 0.08)
+    calc(var(--inventory-equipment-unit) * 0.07);
 }
 
 .inventory-loadout-panel__rod-condition {
-  --inventory-parameter-meter-height: calc(var(--inventory-equipment-unit) * 0.1);
+  --inventory-parameter-meter-height: calc(
+    var(--inventory-equipment-unit) * 0.1
+  );
   width: 100%;
 }
 
@@ -209,7 +223,8 @@
   display: grid;
   grid-template-columns: repeat(4, var(--inventory-equipment-well-size));
   justify-content: space-between;
-  padding: calc(var(--inventory-equipment-unit) * 0.065) var(--inventory-equipment-inset);
+  padding: calc(var(--inventory-equipment-unit) * 0.15)
+    var(--inventory-equipment-inset);
 }
 
 .inventory-loadout-panel__auxiliary .inventory-field--auxiliary {
@@ -218,6 +233,39 @@
 
 .inventory-loadout-panel__auxiliary .inventory-slot {
   height: var(--inventory-equipment-well-size);
+}
+
+/* A container at least as wide as tall (wide and landscape layouts): the four auxiliary wells stand in a column left of
+   the primary panel and as tall as it, so the composition uses the width instead of shrinking to the height. The
+   column has the primary panel's inset as its padding and as its gap to the primary panel; its wells are 0.72 units,
+   the largest four that fit the primary height. One unit still sizes everything: 4.83 units across (outer 0.28,
+   column 1.02, gap 0.15, primary 3.38) and 3.80 down (outer 0.28, primary 3.52; divided by 3.81 so subpixel rounding
+   never scrolls the panel). Free width widens the column; its wells stay centred. A rodless primary stretches with it. */
+@container inventory-equipment (min-aspect-ratio: 1 / 1) {
+  .inventory-loadout-panel {
+    --inventory-equipment-unit: min(calc(100cqi / 4.83), calc(100cqb / 3.81));
+    --inventory-equipment-well-size: calc(
+      var(--inventory-equipment-unit) * 0.72
+    );
+    grid-template-columns: minmax(max-content, 1fr) max-content;
+    grid-template-areas: "auxiliary primary";
+    column-gap: var(--inventory-equipment-inset);
+  }
+
+  .inventory-loadout-panel__primary {
+    grid-area: primary;
+  }
+
+  .inventory-loadout-panel__auxiliary {
+    grid-area: auxiliary;
+    justify-self: stretch;
+    width: auto;
+    grid-template-columns: var(--inventory-equipment-well-size);
+    grid-template-rows: repeat(4, var(--inventory-equipment-well-size));
+    justify-content: center;
+    align-content: space-between;
+    padding: var(--inventory-equipment-inset);
+  }
 }
 
 .inventory-saved-loadout-preview {
@@ -278,7 +326,7 @@
 }
 
 .inventory-saved-loadout-preview__field.inventory-saved-loadout-preview__field--active
-.inventory-saved-loadout-preview__well {
+  .inventory-saved-loadout-preview__well {
   box-shadow: 0 0 0 1px rgba(var(--inventory-success-rgb), 0.55);
 }
 
@@ -302,11 +350,13 @@
 }
 
 @container ui-surface (max-width: 820px) {
-  @media (orientation: portrait) {
-    /* Portrait regions size from their contents. The loadout keeps the base unit, min(100cqi / 3.66, 100cqb / 4.56):
+  @container ui-surface (orientation: portrait) {
+    /* Portrait regions size from their contents. The loadout keeps the base unit, min(100cqi / 3.66, 100cqb / 4.88):
        the equipment host is a size container in portrait (modal.css), so the composition always fits the real row
        between the header and the tabs (spec 078; the former viewport estimate broke when the header grew). */
-    .inventory-loadout-shell { height: auto; }
+    .inventory-loadout-shell {
+      height: auto;
+    }
 
     .inventory-loadout-panel {
       display: grid;
@@ -316,12 +366,20 @@
     }
 
     /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */
-    .inventory-main__section--equipment:has(.inventory-loadout-panel__primary--single),
-    .inventory-main__section--equipment:has(.inventory-loadout-panel__primary--single) .inventory-loadout-shell {
+    .inventory-main__section--equipment:has(
+      .inventory-loadout-panel__primary--single
+    ),
+    .inventory-main__section--equipment:has(
+        .inventory-loadout-panel__primary--single
+      )
+      .inventory-loadout-shell {
       height: 100%;
     }
 
-    .inventory-main__section--equipment .inventory-loadout-panel:has(> .inventory-loadout-panel__primary--single) {
+    .inventory-main__section--equipment
+      .inventory-loadout-panel:has(
+        > .inventory-loadout-panel__primary--single
+      ) {
       flex: 1;
       min-height: 0;
     }
@@ -335,7 +393,6 @@
     gap: 12px var(--inventory-mobile-gap);
     justify-content: center;
   }
-
 }
 
 @container ui-surface (max-width: 520px) {
