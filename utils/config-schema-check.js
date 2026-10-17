@@ -67,6 +67,22 @@ function checkNegativeFixtures() {
   context.set("physics.fight.rodStroke.capacityByLineLengthRatio", "wide");
   assert(has(validate(), /capacityByLineLengthRatio: expected number like the base config, got string/u), "an invalid live override is reported");
   context.reset("physics.fight.rodStroke.capacityByLineLengthRatio");
+  for (const [key, value] of [["range.leftRatio", 1.1], ["range.rightRatio", -0.1],
+    ["speedPxPerSecond", -1], ["movingFloatBite.chance", 2], ["biteReaction.enabled", "yes"],
+    ["lineTension.enabled", "yes"], ["floatTilt.enabled", 1],
+    ["speedMultipliers.stationaryFloat", -1], ["speedMultipliers.movingFloat", -1],
+    ["speedMultipliers.stationaryFloat", "3"], ["speedMultipliers.movingFloat", Infinity]]) {
+    const path = "physics.castRodControl." + key;
+    context.set(path, value);
+    assert(validate().errors.some(issue => issue.path === path), "invalid cast control setting is rejected: " + key);
+    context.reset(path);
+  }
+  for (const [key, value] of [["enabled", 1], ["ratePerSecond", -1], ["loadCurvePower", -1], ["movementEpsilonPx", -1]]) {
+    const path = "physics.fight.rodControl.tension.towardFishCompensation." + key;
+    context.set(path, value);
+    assert(validate().errors.some(issue => issue.path === path), "invalid side compensation setting is rejected: " + key);
+    context.reset(path);
+  }
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");

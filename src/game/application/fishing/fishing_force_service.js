@@ -40,6 +40,7 @@ export class FishingForceService {
         floatEntity,
         bounds: plane.bounds,
         input,
+        rodMotion: context.rodMotion,
         env,
         checkWater: plane.checkWater,
         rodTipPosition: groundPlane.point(0, rodTipPosition),

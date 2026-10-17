@@ -3,6 +3,12 @@
 // Single registry of checks and suite membership; every utils/*-check.js file appears exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
+    id: "rod-side-tension",
+    title: "Rod side tension compensation and pre-bite line visuals",
+    file: "utils/rod-side-tension-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "syntax",
     title: "JavaScript syntax",
     file: "utils/check-js.js",
@@ -222,6 +228,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     id: "game-cycle",
     title: "Full game cycle",
     file: "utils/game-cycle-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
+    id: "cast-rod-control",
+    title: "Cast rod movement, bite windows and moving-float probability",
+    file: "utils/cast-rod-control-check.js",
     suites: ["quick", "gameplay"],
   },
   {

@@ -4,6 +4,7 @@ import { ConfigProvider } from "../../config/runtime/config_provider.js";
 import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
+import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class GameApplication {
   #messages;
@@ -24,6 +25,7 @@ export class GameApplication {
   #viewportResizePending = false;
   #stageSplitPending = false;
   #stageLayout = null;
+  #rodResizePoint = new Vector2();
   #float;
   #net;
   #castPenalty;
@@ -68,6 +70,7 @@ export class GameApplication {
   #createLiveBaitMotion;
   #liveBaitCareElapsedMs = 0;
   #castRodScreenX = null;
+  #castRodControl;
   #removeInventoryChangedListener = null;
   // Reusable debug context object — allocated once, never recreated per frame.
   #debugContext;
@@ -104,7 +107,8 @@ export class GameApplication {
     rodControlAnchorX: 0,
     rodControlCurrentX: 0,
   };
-  #stateUpdateContext = { env: null, biteEnv: null, input: null };
+  #stateUpdateContext = { env: null, biteEnv: null, input: null, rodMotion: null };
+  #rodAimMotion = { deltaPx: 0, fishOffsetX: 0, drivenByInput: false, movementRatio: 0 };
   #biteEnvData = {
     locationId: "",
     hookDepth: 0,
@@ -230,6 +234,7 @@ export class GameApplication {
       },
       draw: () => this.draw(),
       getFloat: () => this.#float,
+      getCastRodMovement: () => this.#castRodControl.getFrame(),
       getLiveBaitMotion: () => this.#liveBaitMotion,
       getNet: () => this.#net,
       getCurrentHookDepth: () => this.currentHookDepth,
@@ -313,6 +318,7 @@ export class GameApplication {
     this.#stateMachine = services.stateMachine;
     this.#renderCoordinator = services.renderCoordinator;
     this.#viewportFacade = services.viewportFacade;
+    this.#castRodControl = services.castRodControl;
     this.#fishingFacade = new GameFishingFacade({
       inventory: this.#inventory,
       chum: this.#chum,
@@ -578,6 +584,11 @@ export class GameApplication {
     if (name === "scouting") {
       this.#castRodScreenX = null;
     }
+    if (name !== "waiting" && name !== "biting") {
+      const movedRodX = this.#castRodControl.getScreenX();
+      if (name === "playing" && Number.isFinite(movedRodX)) this.#castRodScreenX = movedRodX;
+      this.#castRodControl.reset();
+    }
     if (name === "playing") {
       this.#preloadFishingAssets(data?.fish || {});
     }
@@ -626,13 +637,20 @@ export class GameApplication {
     if (this.#viewportResizePending) {
       this.#viewportResizePending = false;
       // A split change keeps the rod's world position: the camera follows it into the new canvas (spec 098).
-      const rodAnchorX = this.#stageSplitPending ? this.#viewportFacade.rodAnchorVirtualX(this.#castRodScreenX) : null;
+      const castX = this.#castRodControl.getScreenX();
+      const movingCast = this.#stageSplitPending && Number.isFinite(castX);
+      const castBaseAnchorX = movingCast ? this.#viewportFacade.rodAnchorVirtualX(this.#castRodScreenX) : null;
+      const rodAnchorX = this.#stageSplitPending
+        ? this.#viewportFacade.rodAnchorVirtualX(movingCast ? castX : this.#castRodScreenX) : null;
       this.#stageSplitPending = false;
       this.#canvasMetrics.resizeToViewport();
       this.#refreshViewport();
       if (rodAnchorX !== null) {
         const rodScreenX = this.#viewportFacade.recenterRod(rodAnchorX);
-        if (this.#castRodScreenX !== null) this.#castRodScreenX = rodScreenX;
+        if (movingCast) {
+          this.#castRodScreenX = this.#projector.virtualToScreen(castBaseAnchorX, 0, this.#rodResizePoint).x;
+          this.#castRodControl.setViewportScreenX(rodScreenX);
+        } else if (this.#castRodScreenX !== null) this.#castRodScreenX = rodScreenX;
       }
     }
     this.#keepnetRefreshElapsedMs += Math.max(0, dt);
@@ -673,12 +691,32 @@ export class GameApplication {
     }
 
     const context = this.#stateUpdateContext;
+    const rodConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() || this.#config.physics?.fight?.rodControl;
+    const updateAimBeforeFight = this.#stateMachine.currentName === "playing" &&
+      rodConfig?.alignment?.enabled === false && rodConfig?.tension?.towardFishCompensation?.enabled === true;
+    context.rodMotion = null;
+    if (updateAimBeforeFight) {
+      // Measure the clamped screen position. Held input at a stop and the automatic return are not player motion.
+      const previousX = this.getRodScreenX(bounds);
+      const fish = this.#float.getPosition();
+      const fishX = this.#projector.virtualToScreen(fish.x, fish.y, this.#rodResizePoint).x;
+      const aimDt = Math.min(Math.max(0, dt), this.#config.physics?.simulation?.maxDtMs ?? 50);
+      this.#updateRodVisualOffset(aimDt, input, bounds);
+      const aim = this.#viewportFacade.getRodAimFrame();
+      const motion = this.#rodAimMotion;
+      motion.deltaPx = this.getRodScreenX(bounds) - previousX;
+      motion.fishOffsetX = fishX - previousX;
+      motion.drivenByInput = aim.drivenByInput;
+      const availableStep = aim.aimSpeedPxPerSecond * aimDt / 1000;
+      motion.movementRatio = availableStep > 0 ? Math.min(1, Math.abs(motion.deltaPx) / availableStep) : 0;
+      context.rodMotion = motion;
+    }
     context.input = input;
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
     this.#inventoryUI.updateDynamicProgression(dt);
-    this.#updateRodVisualOffset(dt, input, bounds);
+    if (!updateAimBeforeFight) this.#updateRodVisualOffset(dt, input, bounds);
 
     if (this.invalidCastMarker) {
       this.invalidCastMarker.timer -= dt;
@@ -790,6 +828,7 @@ export class GameApplication {
       ? options.rodScreenX
       : null;
     const result = this.#fishingFacade.castLine(vx, vy, cellDepth, options);
+    if (result?.success) this.#castRodControl.reset();
     if (result?.success && this.#liveBait) {
       const selected = this.#liveBait.getSelectedBait();
       const eq = this.#inventory.getEquipped();

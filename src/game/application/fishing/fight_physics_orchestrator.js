@@ -88,6 +88,7 @@ export class FightPhysicsOrchestrator {
     floatEntity,
     bounds,
     input,
+    rodMotion,
     env,
     checkWater,
     rodTipPosition,
@@ -272,6 +273,8 @@ export class FightPhysicsOrchestrator {
     const tensionPreview = pipelineFrame.run(
       "preview_tension",
       () => this.#landingTension.calculateTension({
+      dtSec,
+      rodMotion,
       tensionSystem,
       stressSystem,
       forceData,
@@ -411,6 +414,7 @@ export class FightPhysicsOrchestrator {
     const tensionResult = pipelineFrame.run(
       "update_final_tension",
       () => this.#landingTension.updateTension({
+      rodMotion,
       tensionSystem,
       stressSystem,
       forceData,
@@ -742,6 +746,9 @@ export class FightPhysicsOrchestrator {
     frame.poleFightSectorActive = poleFightSectorFrame?.active === true;
     frame.poleFightSectorLimitRadiusPx = Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0);
     frame.rawTensionKg = tensionResult.rawTensionKg;
+    frame.rodSideReliefKg = tensionResult.rodSideReliefKg;
+    frame.rodSideReliefActive = tensionResult.rodSideReliefActive;
+    frame.uncompensatedTensionKg = tensionResult.uncompensatedTensionKg;
     frame.reelSlip = releaseResult.didSlip;
     frame.rodControlActive = !!rodControlResult?.active;
     frame.rodControlBlockedReason = rodControlResult?.blockedReason || "none";

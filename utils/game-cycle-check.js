@@ -692,6 +692,8 @@ runTouchHoldControlBuildCheck();
 function runRodControlHoldStyleForceCheck() {
   const config = createConfig();
   const rodControlConfig = config.physics.fight.rodControl;
+  // This fixture exercises angle-based alignment, independently of the owner's live free-direction default.
+  rodControlConfig.alignment.enabled = true;
   assertApprox(
     rodControlConfig.alignment.maxEffectiveAngleDeg,
     20,

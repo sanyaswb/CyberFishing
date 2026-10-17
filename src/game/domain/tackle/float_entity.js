@@ -5,6 +5,7 @@ export class FloatEntity extends WaterEntity {
   _isSinking = false;
   _sinkingTotalTime = 0;
   _sinkingVisualElapsed = 0;
+  _lateralPullDirection = { x: 0, y: 0 };
   _sinkingDelayTimer = 0;
 
   cast(x, y, targetDepth, isOverDepth, ballastConfig, distanceRatio) {
@@ -65,7 +66,11 @@ export class FloatEntity extends WaterEntity {
       this._redirectSinkingAngleFromPull(pullDirection);
     }
 
-    this._updatePullImpulseTilt(dt, pullDirection, isPulling);
+    const lateralDirection = Math.sign(Number(input.castRodDeltaX) || 0);
+    this._lateralPullDirection.x = lateralDirection;
+    this._updatePullImpulseTilt(dt,
+      lateralDirection !== 0 ? this._lateralPullDirection : pullDirection,
+      isPulling || lateralDirection !== 0);
 
     if (isPulling) {
       this._advanceSinkingVisual(dt);

@@ -6,6 +6,7 @@ export class GameViewportFacade {
   #canvasMetrics;
   #config;
   #biteEnvironmentService;
+  #getCastRodScreenX;
   #rodVirtualPos = new Vector2(0, 0);
   #baseRodVirtualPos = new Vector2(0, 0);
   #screenScratch = new Vector2(0, 0);
@@ -20,6 +21,7 @@ export class GameViewportFacade {
     config,
     biteEnvironmentService,
     rodVisualOffsetSystem,
+    getCastRodScreenX = () => null,
   }) {
     if (typeof rodVisualOffsetSystem?.update !== "function") {
       throw new TypeError("GameViewportFacade requires rodVisualOffsetSystem");
@@ -31,6 +33,7 @@ export class GameViewportFacade {
     this.#canvasMetrics = canvasMetrics;
     this.#config = config;
     this.#biteEnvironmentService = biteEnvironmentService;
+    this.#getCastRodScreenX = getCastRodScreenX;
     this.#rodVisualOffsetSystem = rodVisualOffsetSystem;
   
     } catch (error) { this.dispose(); throw error; }
@@ -158,6 +161,8 @@ export class GameViewportFacade {
   }
 
   getRodScreenX(screenXOverride = null, bounds = null) {
+    const castX = this.#getCastRodScreenX();
+    if (Number.isFinite(castX)) return castX;
     const baseX = this.#resolveBaseRodScreenX(screenXOverride);
     const playable = this.#resolvePlayableScreenBounds(bounds);
     const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
@@ -213,6 +218,6 @@ export class GameViewportFacade {
     this.#viewportSize.height = this.#canvasMetrics.height;
     return this.#viewportSize;
   }
-  getRodAimFrame() { return this.#rodVisualOffsetSystem.getFrame(); }
 
+  getRodAimFrame() { return this.#rodVisualOffsetSystem.getFrame(); }
 }

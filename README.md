@@ -8,6 +8,9 @@ Browser fishing game (native ES modules, Canvas 2D). [Demo](https://sanyaswb.git
 - `npm run check` — syntax, architecture guard and behavior tests
 - `npm run clean:artifacts` — keep at most 50 meaningful records per service text file in temporary/log/archive folders; remove empty files and repetitive Git LF/CRLF warnings
 - Architecture: [docs/architecture.md](docs/architecture.md); rules: [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md)
+- Rod movement: [controls and gameplay](docs/rod_lateral_movement.md); [animation reference](docs/rod_animation_reference.md)
+- After casting: [lateral control, bite reactions and configuration](docs/cast_rod_control.md)
+- Rod tension: [dash compensation, line straightening and float tilt](docs/rod_tension_compensation.md)
 - Before UI/design work: [DESIGN_RULES.md](DESIGN_RULES.md); style ownership: [docs/styles.md](docs/styles.md)
 - `npm run copy:version` — copies the sources to `<versions dir>/scr_v<version>`; set `CYBER_FISHING_VERSIONS_DIR` (or pass
   `-- --versions-dir <dir>`)

@@ -20,6 +20,35 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-066 Post-cast rod speed and line feedback ignore remaining slack (P3, in progress)
+Found: 2026-10-17, owner request.
+Reproduce: cast off-center, move the rod toward the tackle to create slack, then move away until the free length ends.
+Expected: configurable x3 rod speed through slack and x1 after it ends; visible line tightening begins at the same boundary for any tackle.
+Actual: constant base speed and visible line tightening on every rod displacement, including movement through slack.
+Spec/evidence: [102](../specs/102-cast-line-speed/spec.md). Initial focused speed assertion failed with `405 !== 415`; speed/time partition and rendering regression coverage added. Implemented in v0.41.0: the exact staged gameplay snapshot passed Architecture (4), Quick (29) and Full (55), with unchanged game-cycle baseline. Visual testing and feel acceptance remain with the owner.
+
+### G-064 Rod motion toward the fish cannot compensate a dash (P2, in progress)
+Found: 2026-10-17, owner request.
+Reproduce: set fight rod alignment false; move the rod toward the fish's occupied side during high tension or a dash.
+Expected: progressively relieve real tension only during actual screen motion, faster at higher loads; stop/limits/return/reversal away immediately clear relief.
+Actual: existing same-direction multipliers can avoid added lateral tension, but do not relieve existing fish tension.
+Spec/evidence: [101](../specs/101-rod-side-tension/spec.md); focused deterministic check first failed at an unchanged 8 kg, now passes; Architecture 4, Quick 29, Full 55 and index/dev browser smoke passed; game-cycle baseline unchanged. Owner play acceptance remains pending.
+
+### G-065 Pre-bite rod motion lacks line and float feedback (P3, in progress)
+Found: 2026-10-17, owner request.
+Reproduce: cast a float, wait without a bite and move the rod left/right.
+Expected: tighten the line with its existing pull response and tilt the float opposite the rod's actual movement; stop releases the response without passive retrieval or depth rise.
+Actual: the cast line geometry can move the tackle, but lateral rod displacement does not feed either the line straighten state or the float's pull impulse.
+Spec/evidence: [101](../specs/101-rod-side-tension/spec.md); waiting, render-composition and float-impulse deterministic checks pass; Architecture/Quick/Full and index/dev browser smoke passed. Independent live settings default to enabled; owner play acceptance remains pending.
+
+### G-063 Cast rod lateral control and movement-sensitive bites (P2, in progress)
+Found: 2026-10-17, owner request, index/dev v0.38.7.
+Reproduce: cast, hold A/D while waiting or biting; also evaluate an eligible fish while rod-driven float movement occurred.
+Expected: configurable full-range cast control; normal bites release and guaranteed bites hook on actual rod motion; non-spinning rod-driven float motion gives a configurable absolute 0.1% bite chance on the next bite tick.
+Actual: lateral screen input is gated to playing; waiting/biting have no such rod-motion rules and bite probability ignores rod-driven float movement.
+Spec/evidence: [100](../specs/100-cast-rod-control/spec.md); deterministic `cast-rod-control` check, full validation and owner play acceptance tracked there.
+Implemented in v0.39.0: focused check, Architecture (4), Quick (28), Full (54) and index/dev browser smoke passed; game-cycle baseline unchanged. Owner play acceptance remains pending.
+
 ### G-061–G-062 Owner reports of 2026-10-15, evening (P2, done)
 - G-061 Equipment and keepnet sections collapsed on phones (equipment 0 px tall, tab bar at the top): spec 080 removed the warning row from the inventory modal but kept three grid row tracks, so the main area fell into a content-sized row. Fixed by the hint region row; rule and check: grid templates match the container's children ([spec 086](../specs/086-hint-regions/spec.md)).
 - G-062 Hints floated over content: every hint now has an in-flow region at the top of its container that pushes the content down ([spec 086](../specs/086-hint-regions/spec.md)).

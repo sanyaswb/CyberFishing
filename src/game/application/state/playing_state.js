@@ -77,6 +77,7 @@ export class PlayingState extends GameState {
     fightContext.bounds = bounds;
     fightContext.waterMetric = this.deps.world.getWaterMetric();
     fightContext.input = input;
+    fightContext.rodMotion = envData.rodMotion;
     fightContext.env = envData.env;
     fightContext.fishData = this.data.fish;
     fightContext.rodControlCastAnchor =

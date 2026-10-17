@@ -3,6 +3,7 @@ import { ENVIRONMENT_PHYSICS_CONFIG, WATER_PHYSICS_CONFIG } from "../raw/physics
 import { FIGHT_PHYSICS_CONFIG } from "../raw/physics/fight_physics.js";
 import { TACKLE_PHYSICS_CONFIG } from "../raw/physics/tackle_physics.js";
 import { TENSION_PHYSICS_CONFIG } from "../raw/physics/tension_physics.js";
+import { CAST_ROD_CONTROL_CONFIG } from "../raw/physics/cast_rod_control_config.js";
 
 export const SIMULATION_PHYSICS_CONFIG = {
   pixelsPerMeter: 50,
@@ -44,6 +45,7 @@ export const PHYSICS_CONFIG = {
   water: WATER_PHYSICS_CONFIG,
   environment: ENVIRONMENT_PHYSICS_CONFIG,
   fight: FIGHT_PHYSICS_CONFIG,
+  castRodControl: CAST_ROD_CONTROL_CONFIG,
   tackle: TACKLE_PHYSICS_CONFIG,
   tension: TENSION_PHYSICS_CONFIG,
   retrieve: {

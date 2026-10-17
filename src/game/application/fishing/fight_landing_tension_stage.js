@@ -1,6 +1,7 @@
 import { LandingLiftReadinessPolicy } from "../../domain/fishing/landing_lift_readiness_policy.js";
 import { LandingLiftTensionCalculator } from "../../domain/fishing/landing_lift_tension_calculator.js";
 import { hasLineReserve } from "../../domain/fishing/line_state_queries.js";
+import { RodSideTensionCompensation } from "../../domain/fishing/rod_side_tension_compensation.js";
 
 // Fight pipeline stages update_final_tension and resolve_landing_frame: the step's final tension including the
 // landing lift hold, and the landing frame with its lift readiness. Owns the lift hold of one fight session.
@@ -10,6 +11,8 @@ export class FightLandingTensionStage {
   #landingLiftReadinessPolicy = new LandingLiftReadinessPolicy();
   #config;
   #physicsConfig;
+  #sideCompensation = new RodSideTensionCompensation();
+  #sideReliefKg = 0;
 
   constructor({ config, physicsConfig }) {
     this.#config = config;
@@ -28,6 +31,7 @@ export class FightLandingTensionStage {
     hardLineLimit,
     dtSec,
     pullInput,
+    rodMotion,
   }) {
     const landingLift = this.#updateLandingLift({
       dtSec,
@@ -49,7 +53,10 @@ export class FightLandingTensionStage {
       dragContext,
       lineState,
       hardLineLimit,
+      dtSec,
+      rodMotion,
     });
+    this.#sideReliefKg = calculatedTension.rodSideReliefKg;
     const tensionResult = {
       ...calculatedTension,
       landingLift,
@@ -91,6 +98,8 @@ export class FightLandingTensionStage {
     dragContext,
     lineState,
     hardLineLimit,
+    dtSec,
+    rodMotion,
   }) {
     const lineHasReserve = hasLineReserve(lineState);
     const baseFishTensionKg =
@@ -103,16 +112,25 @@ export class FightLandingTensionStage {
     const baseTotalTensionKg =
       fishRetrieveResult.totalTensionKg ?? fishRetrieveResult.lineTensionKg;
     const landingLiftActive = !!landingLift?.active;
-    const fishTensionKg = landingLiftActive
+    const uncompensatedFishKg = landingLiftActive
       ? landingLift.fishTensionKg
       : baseFishTensionKg;
-    const playerHoldTensionKg = landingLiftActive
+    const uncompensatedHoldKg = landingLiftActive
       ? 0
       : basePlayerHoldTensionKg + lateralTensionKg;
-    const totalTensionKg = landingLiftActive
+    const uncompensatedTotalKg = landingLiftActive
       ? landingLift.totalTensionKg
       : Math.max(0, Number(baseTotalTensionKg) || 0) + lateralTensionKg;
-    return tensionSystem.calculate({
+    const rodSideReliefKg = this.#sideCompensation.calculate({
+      previousReliefKg: this.#sideReliefKg, tensionKg: uncompensatedTotalKg,
+      rodLimitKg: stressSystem.getEffectiveRodMaxLoadKg(), dtSec, rodMotion,
+      rodControlConfig: this.#physicsConfig.getRodControlConfig?.(),
+    });
+    const scale = uncompensatedTotalKg > 0 ? Math.max(0, 1 - rodSideReliefKg / uncompensatedTotalKg) : 1;
+    const totalTensionKg = uncompensatedTotalKg * scale;
+    const fishTensionKg = uncompensatedFishKg * scale;
+    const playerHoldTensionKg = uncompensatedHoldKg * scale;
+    const result = tensionSystem.calculate({
       totalTensionKg,
       fishForceKg: fishTensionKg,
       rodPullForceKg: playerHoldTensionKg,
@@ -130,6 +148,10 @@ export class FightLandingTensionStage {
       shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
       landingLift,
     });
+    result.rodSideReliefKg = rodSideReliefKg;
+    result.rodSideReliefActive = rodSideReliefKg > 0;
+    result.uncompensatedTensionKg = uncompensatedTotalKg;
+    return result;
   }
 
   #updateLandingLift({

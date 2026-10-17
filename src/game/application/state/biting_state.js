@@ -17,6 +17,7 @@ export class BitingState extends GameState {
   #guaranteedRingAccumulator = 0;
   #pullDirection = new Vector2(0, 0);
   #groundPlane = new GroundPlaneScope();
+  #effectiveInput = { isPulling: false, pullDirection: null };
 
   enter(data) {
     if (super.enter) super.enter();
@@ -63,7 +64,7 @@ export class BitingState extends GameState {
       return;
     }
 
-    const isPassiveStrikeInput = input.isPulling || input.clickPos;
+    const isPassiveStrikeInput = this.deps.castRodControl.isPulling(input) || input.clickPos;
     if (isPassiveStrikeInput && !isSpinning) {
       if (!this.deps.canPlayerCast()) return;
 
@@ -90,11 +91,31 @@ export class BitingState extends GameState {
   }
 
   update(dt, bounds, envData) {
+    const input = envData.input || this.deps.input.getState();
+    const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
+      floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
+      checkWater: this.deps.world.checkWater, retrieving: this.deps.castRodControl.isPulling(input),
+    });
+    const response = this.deps.castRodControl.resolveBiteResponse(this.deps.float.isGuaranteedBite());
+    if (castRodMovement.rodMoved && this.deps.float.isBiting() && response !== "none") {
+      if (response === "hook") {
+        this.deps.float.hook();
+        this.deps.commands.setState("playing", { fish: this.fish });
+      } else {
+        this.deps.float.stopBite();
+        this.deps.commands.setState("waiting");
+      }
+      return;
+    }
     this.deps.float.updateBite(dt, (vx, vy) =>
       this.deps.world.checkWater(vx, vy),
     );
 
-    const input = envData.input || this.deps.input.getState();
+    const effectiveInput = this.#effectiveInput;
+    effectiveInput.isPulling = this.deps.castRodControl.isPulling(input);
+    effectiveInput.castRodDeltaX = this.deps.config.physics?.castRodControl?.floatTilt?.enabled === true &&
+      castRodMovement.rodMoved ? castRodMovement.deltaPx : 0;
+    effectiveInput.pullDirection = input.pullDirection;
     const pos = this.deps.float.getPosition();
     this.deps.projector.focusOnVirtualPos(pos.y, dt, 0.05);
 
@@ -113,7 +134,7 @@ export class BitingState extends GameState {
     });
     try {
       let pullDirection = null;
-      if (input.isPulling) {
+      if (effectiveInput.isPulling) {
         const rodPos = groundPlane.point(0, this.deps.world.getRodVirtualPos(bounds));
         pullDirection = this.#pullDirection
           .set(rodPos.x - pos.x, rodPos.y - pos.y)
@@ -126,7 +147,7 @@ export class BitingState extends GameState {
         dt,
         envData.env,
         plane.checkWater,
-        input,
+        effectiveInput,
         reelPower,
         pullDirection,
       );
@@ -135,7 +156,7 @@ export class BitingState extends GameState {
     }
 
     const stepInfo = this.deps.float.getBiteStepInfo?.();
-    if (isSpinning && stepInfo && stepInfo.isGuaranteed && input.isPulling) {
+    if (isSpinning && stepInfo && stepInfo.isGuaranteed && effectiveInput.isPulling) {
       this.deps.float.hook();
       this.deps.commands.setState("playing", { fish: this.fish });
       return;

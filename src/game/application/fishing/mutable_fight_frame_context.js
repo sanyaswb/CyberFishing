@@ -4,6 +4,7 @@ export class MutableFightFrameContext {
     this.bounds = null;
     this.waterMetric = null;
     this.input = null;
+    this.rodMotion = null;
     this.env = null;
     this.getRodVirtualPos = null;
     this.getBaseRodVirtualPos = null;
@@ -15,6 +16,7 @@ export class MutableFightFrameContext {
   }
 
   reset() {
+    this.rodMotion = null;
     this.floatEntity = null;
     this.bounds = null;
     this.waterMetric = null;

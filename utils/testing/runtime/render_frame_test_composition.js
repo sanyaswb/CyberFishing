@@ -56,7 +56,8 @@ function checkRenderFrameComposition() {
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,getWind:()=>null}),/requires rodAnimation/);
   const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null});
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
-  const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});
+  let castRodMovement=null;
+  const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastRodMovement:()=>castRodMovement,getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});
   const victoryConfig={},layout={id:'layout'};
   const outcomeBuilder=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics,clock,styleResolver:{resolveVictory:()=>victoryConfig},layoutResolver:{resolve:()=>layout},assetIdForSource:(source,namespace)=>c.ImageAssetProvider.assetIdForSource(source,namespace)});
   const builder=new c.GameRenderFrameBuilder({canvasMetrics:metrics,projector,worldBuilder,castingBuilder,fishingBuilder,outcomeBuilder});
@@ -76,6 +77,17 @@ function checkRenderFrameComposition() {
     if(record){assert.equal(frame.world.boats.getAt(0),record);assert.equal(frame.outcome.victory.fish,fishRecord);assert.equal(frame.hud.holdCharges.restoreProgress,restoreProgress);assert.equal(frame,contextFrame);}else{record=frame.world.boats.getAt(0);fishRecord=frame.outcome.victory.fish;restoreProgress=frame.hud.holdCharges.restoreProgress;contextFrame=frame;}
   }
   for(const next of ['waiting','biting']){state=next;clock.now+=16;clock.realNow=clock.now;const frame=coordinator.render(0.016);assert.equal(frame.hud.visible,false);assert.equal(frame.fishing.visible,true);}
+  config.physics.castRodControl={enabled:true,lineTension:{enabled:true}};
+  castRodMovement={rodMoved:true,lineTensionActive:false,retrieving:false};state='waiting';clock.now+=16;coordinator.render(0.016);
+  assert.equal(lineContext.inputPulling,false,'rod motion through slack does not straighten the line');
+  castRodMovement.lineTensionActive=true;clock.now+=16;coordinator.render(0.016);
+  assert.equal(lineContext.inputPulling,true,'exhausted slack feeds the existing line straighten response');
+  castRodMovement.rodMoved=false;castRodMovement.lineTensionActive=false;clock.now+=16;coordinator.render(0.016);
+  assert.equal(lineContext.inputPulling,false,'held touch at the boundary no longer tightens the line');
+  castRodMovement.retrieving=true;clock.now+=16;coordinator.render(0.016);assert.equal(lineContext.inputPulling,true);
+  castRodMovement.retrieving=false;castRodMovement.rodMoved=true;castRodMovement.lineTensionActive=true;config.physics.castRodControl.lineTension.enabled=false;
+  clock.now+=16;coordinator.render(0.016);assert.equal(lineContext.inputPulling,false,'line motion setting is live');
+  delete config.physics.castRodControl;castRodMovement=null;
   aiming=true;state='playing';debug.playerPressureFatigueState='idle';clock.now+=16;const frame=coordinator.render(0.016);assert.equal(frame.casting.powerAim.mode,'chum');assert.equal(frame.hud.playerPressureFatigue.state.stateName,'recovered');
   coordinator.invalidateStyles();assert.equal(invalidations,1);
   for(const reason of ['line','rod','reel','leader','hook','net_escape']){frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'failed',reason}});assert(frame.outcome.gameOver.title);}

@@ -153,7 +153,7 @@ export const FIGHT_PHYSICS_CONFIG = {
     },
 
     alignment: {
-      enabled: true,
+      enabled: false,
       targetAnchorMode: "cast_base", // or "current_base"
       maxEffectiveAngleDeg: 20,
       alignedThresholdPx: 8,
@@ -165,6 +165,12 @@ export const FIGHT_PHYSICS_CONFIG = {
     },
 
     tension: {
+      towardFishCompensation: {
+        enabled: true,
+        ratePerSecond: 4,
+        loadCurvePower: 1,
+        movementEpsilonPx: 0.001,
+      },
       sameDirectionMultiplier: 0.0,
       sideMultiplier: 1.0,
       oppositeDirectionMultiplier: 2.5,

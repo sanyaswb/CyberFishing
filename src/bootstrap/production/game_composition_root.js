@@ -19,6 +19,7 @@ import { EquipmentRules } from "../../game/domain/rules/equipment_rules.js";
 import { PlayerCastRules } from "../../game/domain/rules/player_cast_rules.js";
 import { BiteEnvironmentService } from "../../game/application/fishing/bite_environment_service.js";
 import { BiteSystem } from "../../game/application/fishing/bite_system.js";
+import { CastRodControl } from "../../game/application/fishing/cast_rod_control.js";
 import { CastPenalty } from "../../game/application/fishing/cast_penalty.js";
 import { BitingState } from "../../game/application/state/biting_state.js";
 import { FailedState } from "../../game/application/state/failed_state.js";
@@ -1037,8 +1038,10 @@ export class GameCompositionRoot {
       runtime, appPorts, clock, biteEnvData, config,
     });
 
+    const castRodControl = new CastRodControl({ config, projector: runtime.projector, canvasMetrics,
+      getBaseRodVirtualPos: appPorts.getBaseRodVirtualPos });
     const { stateMachine, stateDepsFactory } = this.#composeStateMachine({
-      runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own,
+      runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own, castRodControl,
     });
 
     const { chumController } = this.#composeChumController({ own, runtime, clock, config, rng, appPorts });
@@ -1064,10 +1067,12 @@ export class GameCompositionRoot {
       canvasMetrics,
       config,
       biteEnvironmentService,
+      getCastRodScreenX: () => castRodControl.getScreenX(),
     });
 
     return {
       castService,
+      castRodControl,
       fightService,
       debugService,
       biteEnvironmentService,
@@ -1143,13 +1148,14 @@ export class GameCompositionRoot {
   }
 
   // Game states with their dependency factory.
-  #composeStateMachine({ runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own }) {
+  #composeStateMachine({ runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own, castRodControl }) {
     const stateFactoryRoot = {
       logger: new ConsoleLogger(),
       inventory: runtime.inventory,
       input: runtime.input,
       projector: runtime.projector,
       bite: runtime.bite,
+      castRodControl,
       ui: runtime.ui,
       config,
       equipmentRules: runtime.equipmentRules,

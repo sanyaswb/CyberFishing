@@ -307,6 +307,7 @@ export class GameRenderComposition {
       equipmentRules: runtime.equipmentRules,
       baitRules: runtime.baitRules,
       getFloat: appPorts.getFloat,
+      getCastRodMovement: appPorts.getCastRodMovement,
       getInputState: appPorts.getInputState,
       getCastDistanceRatio: appPorts.getCastDistanceRatio,
       getCurrentHookDepth: appPorts.getCurrentHookDepth,

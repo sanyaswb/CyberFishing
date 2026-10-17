@@ -1,5 +1,20 @@
 # CyberFishing changelog
 
+## v0.41.0 - Cast Line Speed
+
+- Post-cast lateral rod movement uses configurable speed multipliers: `physics.castRodControl.speedMultipliers.stationaryFloat = 3` while slack remains, and `movingFloat = 1` once the line must draw the tackle. Frames that exhaust slack split their time between those speeds.
+- Lateral line straightening starts at the same slack boundary for floats and all other tackle, including water-blocked tackle. Rod motion through slack no longer triggers it. Owner retains visual testing (spec 102).
+
+## v0.40.0 - Rod Side Tension Compensation
+
+- With fight rod alignment disabled, actual rod motion toward the fish's side progressively relieves tension. Higher loads receive faster compensation; stopping, reaching a boundary or moving away immediately clears the relief. Config: `physics.fight.rodControl.tension.towardFishCompensation` (enabled by default).
+- Before a bite, lateral rod motion uses the existing line straightening and opposite float tilt response, without adding retrieval. Both effects have independent enabled-by-default settings in `physics.castRodControl` (spec 101).
+
+## v0.39.0 - Cast Rod Lateral Control
+
+- Move a cast rod left/right while waiting or biting, with independent 100% ranges from its initial center to the green-zone edges. Position persists on release; taut line can drag the tackle after slack is used.
+- Actual rod motion releases a normal bite or hooks a guaranteed bite. Rod-driven float motion sets eligible non-spinning bite chance to an absolute 0.1% for the next bite tick. All new rules are enabled by default and configurable through `physics.castRodControl` and DEV labels (spec 100).
+
 ## v0.38.7 - Editor Choices and Equipment Polish
 
 - Portrait editor cells list compatible inventory items inline (spec 096); landscape and desktop again start a pick that highlights them in the item list. The rod condition meter sits in a stats container under the rod, and the backpack scale uses its SVG icon again.

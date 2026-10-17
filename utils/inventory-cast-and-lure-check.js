@@ -441,6 +441,7 @@ function checkFixedCatchBaitCompatibility() {
     const eq={rod:{variant:bait==='worm'?'float':'spinning'},reel:{effectiveStats:{basePower:1}}};
     const config={debug:{fixedCatch:{enabled,fishId:template.id,weight:0.8}},spawns:{fishes:[template]}};
     const state = new WaitingState({config,rng:{next:()=>0.5},getViewportSize:()=>({width:100,height:100}),
+      castRodControl: new (source.importModule('src/game/application/fishing/cast_rod_control.js').CastRodControl)({config}),
       projector:{focusOnVirtualPos(){}},commands:{panViewport(){},setState(name,data){assert.equal(name,'biting');biting=data.fish;}},
       float:{getPosition:()=>({x:0,y:0}),update(){},startBite(pulling,value){assert(value,'bite sequence must exist');sequence=value;}},
       inventory:{getEquipped:()=>eq},input:{getState:()=>({isPulling:false})},world:{getRodVirtualPos:()=>({x:0,y:1000}),getWaterMetric:()=>waterMetric,getBiteEnv:()=>({locationId:'lake'})},

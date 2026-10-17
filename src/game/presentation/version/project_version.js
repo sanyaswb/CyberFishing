@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.38.7";
+export const CURRENT_PROJECT_VERSION = "0.41.0";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-artwork",
+  codename: "cast-line-speed",
   updatedAt: "2026-10-17",
   notes: Object.freeze([
+    "Post-cast rod motion is x3 through slack and x1 once the line draws the tackle; visible line tightening starts at the same boundary",
+    "Moving the rod toward the fish compensates tension in free alignment mode; pre-bite lateral motion tightens the line and tilts the float",
+    "Cast rods move across configurable green-zone ranges; rod motion reacts to bite windows and moving floats reduce non-spinning bite chance",
     "Portrait editor cells list compatible items inline; landscape and desktop highlight them in the item list beside the editor",
     "Landing-net miniatures and the toolbar net show the upper 40%, the editor shows the whole net; rod condition sits under the rod",
     "The backpack backdrop is restored and toolbar artwork stays inside its button",

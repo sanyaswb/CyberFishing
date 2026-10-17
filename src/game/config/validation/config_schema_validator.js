@@ -155,9 +155,44 @@ export class ConfigSchemaValidator {
     }
 
     this.#validateMinMaxPairs(physics, "physics");
+    this.#validateCastRodControlConfig();
+    this.#validateRodSideCompensationConfig();
     this.#validatePlayerPressureFatigueConfig();
     this.#validatePlayerPressureGainConfig();
     this.#validatePlayerTensionBuildRateConfig();
+  }
+
+  #validateCastRodControlConfig() {
+    const cfg = this.config.physics?.castRodControl;
+    const path = "physics.castRodControl";
+    if (!cfg || typeof cfg !== "object") { this.#error(path, "missing cast rod control config"); return; }
+    for (const [key, value] of [["enabled", cfg.enabled], ["floatDrag.enabled", cfg.floatDrag?.enabled],
+      ["biteReaction.enabled", cfg.biteReaction?.enabled], ["biteReaction.releaseNormalBite", cfg.biteReaction?.releaseNormalBite],
+      ["biteReaction.hookGuaranteedBite", cfg.biteReaction?.hookGuaranteedBite],
+      ["movingFloatBite.enabled", cfg.movingFloatBite?.enabled], ["movingFloatBite.excludeSpinning", cfg.movingFloatBite?.excludeSpinning]]) {
+      this.#requireBooleanWithLabel(`${path}.${key}`, value);
+    }
+    this.#requireBooleanWithLabel(`${path}.lineTension.enabled`, cfg.lineTension?.enabled);
+    this.#requireBooleanWithLabel(`${path}.floatTilt.enabled`, cfg.floatTilt?.enabled);
+    for (const [key, value] of [["range.leftRatio", cfg.range?.leftRatio], ["range.rightRatio", cfg.range?.rightRatio],
+      ["movingFloatBite.chance", cfg.movingFloatBite?.chance]]) {
+      this.#requireFiniteNumberWithLabel(`${path}.${key}`, value, { min: 0, max: 1 });
+    }
+    for (const [key, value] of [["range.edgePaddingPx", cfg.range?.edgePaddingPx], ["speedPxPerSecond", cfg.speedPxPerSecond],
+      ["speedMultipliers.stationaryFloat", cfg.speedMultipliers?.stationaryFloat],
+      ["speedMultipliers.movingFloat", cfg.speedMultipliers?.movingFloat],
+      ["movementEpsilonPx", cfg.movementEpsilonPx], ["floatDrag.movementEpsilonMeters", cfg.floatDrag?.movementEpsilonMeters]]) {
+      this.#requireFiniteNumberWithLabel(`${path}.${key}`, value, { min: 0 });
+    }
+  }
+
+  #validateRodSideCompensationConfig() {
+    const path = "physics.fight.rodControl.tension.towardFishCompensation";
+    const cfg = this.config.physics?.fight?.rodControl?.tension?.towardFishCompensation;
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg?.enabled);
+    for (const key of ["ratePerSecond", "loadCurvePower", "movementEpsilonPx"]) {
+      this.#requireFiniteNumberWithLabel(`${path}.${key}`, cfg?.[key], { min: 0 });
+    }
   }
 
   #validatePlayerPressureGainConfig() {

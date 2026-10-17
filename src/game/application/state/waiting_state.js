@@ -80,11 +80,19 @@ export class WaitingState extends GameState {
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const effectiveInput = this.#effectiveInput;
-    effectiveInput.isPulling = this.#isRecastAiming ? false : input.isPulling;
+    effectiveInput.isPulling = !this.#isRecastAiming && this.deps.castRodControl.isPulling(input);
     effectiveInput.pullDirection = input.pullDirection;
     effectiveInput.idleRetrieveParams = effectiveInput.isPulling
       ? this.#getIdleRetrieveParams(eq)
       : null;
+
+    const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
+      floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
+      checkWater: this.deps.world.checkWater, retrieving: effectiveInput.isPulling,
+      aiming: this.#isRecastAiming || this.#pendingRecast !== null,
+    });
+    effectiveInput.castRodDeltaX = this.deps.config.physics?.castRodControl?.floatTilt?.enabled === true &&
+      castRodMovement.rodMoved ? castRodMovement.deltaPx : 0;
 
     // The tackle drifts, retrieves and sinks on the water metric's ground plane (see GroundPlaneScope).
     const groundPlane = this.#groundPlane;
@@ -149,6 +157,8 @@ export class WaitingState extends GameState {
         timeScale: this.deps.config.debug?.timeScale || 1,
       }),
       isPulling: effectiveInput.isPulling,
+      castRodFloatMoving: castRodMovement.floatMoved,
+      isSpinning,
     });
 
     // DEV balance tools may replace the naturally hooked fish (Fixed Catch); production composes none.

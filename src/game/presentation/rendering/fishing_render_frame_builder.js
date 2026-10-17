@@ -13,6 +13,7 @@ export class FishingRenderFrameBuilder {
   #getCastDistanceRatio;
   #getCurrentHookDepth;
   #getHoldState;
+  #getCastRodMovement;
   #lineVisualState;
   #fightAreaBuilder;
   #hudBuilder;
@@ -80,6 +81,7 @@ export class FishingRenderFrameBuilder {
     getCastDistanceRatio,
     getCurrentHookDepth,
     getHoldState,
+    getCastRodMovement = () => null,
     lineVisualState,
     fightAreaBuilder,
     hudBuilder,
@@ -132,6 +134,7 @@ export class FishingRenderFrameBuilder {
     this.#getCastDistanceRatio = getCastDistanceRatio;
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#getHoldState = getHoldState;
+    this.#getCastRodMovement = getCastRodMovement;
     this.#lineVisualState = lineVisualState;
     this.#fightAreaBuilder = fightAreaBuilder;
     this.#hudBuilder = hudBuilder;
@@ -224,7 +227,12 @@ export class FishingRenderFrameBuilder {
     lineFrameContext.state = intent.state;
     lineFrameContext.nowMs = this.#clock.now;
     lineFrameContext.castStartTime = intent.startTime;
-    lineFrameContext.inputPulling = this.#getInputState().isPulling === true;
+    const castMovement = this.#getCastRodMovement();
+    const castConfig = this.#config.physics?.castRodControl;
+    const castState = intent.state === "waiting" || intent.state === "biting";
+    lineFrameContext.inputPulling = castState && castConfig?.enabled === true && castMovement
+      ? castMovement.retrieving || (castConfig.lineTension?.enabled === true && castMovement.lineTensionActive === true)
+      : this.#getInputState().isPulling === true;
     lineFrameContext.hookDepth = this.#getCurrentHookDepth();
     lineFrameContext.castDistanceRatio = this.#getCastDistanceRatio();
     lineFrameContext.tensionRatio = tension / straightenThreshold;

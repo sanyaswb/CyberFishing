@@ -10,6 +10,9 @@ spec-kit work (029); Claude's specs start at 030.
 
 | Spec | Decision | Status | Release |
 | --- | --- | --- | --- |
+| [102](102-cast-line-speed/spec.md) | Post-cast x3/x1 rod speed and line tightening at exhausted slack | Implemented and automatically checked; owner visual tests pending | v0.41.0 |
+| [101](101-rod-side-tension/spec.md) | Rod motion toward the fish compensates tension; cast line and float feedback | Implemented and checked; owner play check pending | v0.40.0 |
+| [100](100-cast-rod-control/spec.md) | Cast rod lateral movement, bite-window response and moving-float chance | Implemented and checked; owner play check pending | v0.39.0 |
 | [020](020-production-console-noise/spec.md) | Production console carries no developer logs | Done | v0.31.0 |
 | [021](021-shared-number-normalization/spec.md) | 81 private numeric helpers → shared `engine/math` functions | Done | v0.31.0 |
 | [022](022-reuse-duplicates/spec.md) | Reuse instead of copied blocks (GodMode, equipment, gradients, …) | Done | v0.31.0 |

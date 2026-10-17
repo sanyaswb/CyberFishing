@@ -32,7 +32,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   let equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
   let lineEquipped=true;
   const net={updateConfig(value){this.config=value;}},rng={next:()=>0.5};
-  const projector={screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){out.x=x;out.y=y;return out;}};
+  const projector={screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){assert.equal(typeof out.set,'function','production projector requires a Vector2 output');return out.set(x,y);}};
   let resizeCalls=0;
   const canvasMetrics={width:800,height:600,resizeToViewport(){resizeCalls++;this.width=900;}};
   let appPorts,freshness,onInventory,stateContext,debugContext,locationFails=false,victoryFails=false,castResult={success:false,reason:'missing_rod'};
@@ -57,7 +57,9 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const compositionRoot={create(){throw new Error('Injected runtime must be reused');},createApplicationServices(options){appPorts=options.appPorts;assert.equal(options.runtime,runtime);assert.equal(options.runtimeConfig,config);assert.equal(options.clock,clock);assert.equal(options.rng,rng);return{loop,fightService,debugService:diagnostics === 'malformed' ? {} : diagnostics ? {update(context){debugContext??=context;assert.equal(context,debugContext);assert.equal(context.getEquipment(),equipment);assert.equal(context.getInputState(),input);events.push('debug');}} : null,chumController,stateMachine,renderCoordinator,
     viewportFacade:new source.context.GameViewportFacade({rodVisualOffsetSystem:new source.context.RodVisualOffsetSystem(),world:options.runtime.world,projector:options.runtime.projector,canvasMetrics:options.canvasMetrics,config:options.config,
       biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv}}),
+    castRodControl,
     biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv},castService:{cast(x,y,depth,options){assert.equal(options.equipment,equipment);return castResult;}}};}};
+  const castRodControl=new (source.importModule('src/game/application/fishing/cast_rod_control.js').CastRodControl)({config,projector,canvasMetrics,getBaseRodVirtualPos:(area)=>appPorts.getBaseRodVirtualPos(area)});
   const debugEvents={emit(type,detail){events.push([type,detail]);},on:()=>()=>{},clear(){disposed.push('debug');}};
   const devFlags={isDebugEnabled:()=>true,isEnabled:()=>false};
   // Session diagnostics as each startup composes them: GameDebugFacade in DEV, the inactive port in production.
@@ -104,10 +106,31 @@ async function checkGameApplicationComposition(diagnostics = true) {
   app.isAimingChum=true;Object.assign(input,{isPulling:true,pullDirection:'left',clickPos:{x:1,y:1},longPressPos:{x:1,y:1},isDoubleClick:true});events.length=0;app.update(16);assert.equal(events.includes('chum-aim'),true);assert.equal(events.includes('input'),false);assert.equal(input.isPulling,false);assert.equal(input.clickPos,null);assert.equal(input.longPressPos,null);assert.equal(input.isDoubleClick,false);app.isAimingChum=false;
   const boat={id:'boat'};app.activeBoat=boat;assert.equal(app.activeBoat,boat);app.activeBoat=null;app.handleChumClick();assert.equal(app.isAimingChum,true);app.toggleChumAim();assert.equal(app.isAimingChum,false);
   for(const reason of ['missing_rod','missing_reel','missing_line']){castResult={success:false,reason};assert.equal(app.castLine(100,200,2),castResult);}assert.equal(warnings.length,3);assert.match(warnings[1],/Test rod/);
-  const castFloat={id:'cast-float'};castResult={success:true,floatEntity:castFloat,castDistanceRatio:0.4,castStartTime:clock.now,currentHookDepth:2,nextState:'waiting'};
+  const castFloat={id:'cast-float',getPosition:()=>({x:500,y:300})};castResult={success:true,floatEntity:castFloat,castDistanceRatio:0.4,castStartTime:clock.now,currentHookDepth:2,nextState:'waiting'};
   app.castLine(100,200,2,{rodScreenX:250});assert.equal(app.float,castFloat);assert.equal(app.castDistanceRatio,0.4);assert.equal(app.currentHookDepth,2);assert.equal(app.gameStateName,'waiting');assert.equal(app.getBaseRodVirtualPos(bounds).x,250);assert.equal(inventory.locked,true);
   clock.now+=100;assert.equal(freshness({location:{kind:'ATTACHED'}}),200);assert.equal(freshness({location:{kind:'INVENTORY'}}),0);config.debug.timeScale=3;assert.equal(freshness({location:{kind:'ATTACHED'}}),300);config.debug.timeScale=2;
-  app.setState('playing',{fish:{id:'fish'}});app.update(16);assert.equal(Number.isFinite(fightDebug.rodVisualOffsetX),true);
+  castRodControl.setViewportScreenX(310);
+  app.setState('playing',{fish:{id:'fish'}});assert.equal(app.getBaseRodVirtualPos(bounds).x,310,'strike transfers the moved cast base into the fight');assert.equal(castRodControl.getScreenX(),null,'fight exit from cast control clears its old position');app.update(16);assert.equal(Number.isFinite(fightDebug.rodVisualOffsetX),true);
+  const originalRodConfig=config.physics.fight.rodControl;
+  config.physics.fight.rodControl={enabled:true,alignment:{enabled:false},tension:{towardFishCompensation:{enabled:true}}};
+  Object.assign(input,{rodControlActive:true,rodControlDirectionX:1,rodControlInputRatio:1});
+  Object.assign(fightDebug,{rodControlDirectionFactor:1,rodControlDirectionX:1});
+  const beforeAim=app.getRodScreenX(bounds);app.update(16);
+  assert(stateContext.rodMotion.deltaPx>0);assert.equal(stateContext.rodMotion.deltaPx,app.getRodScreenX(bounds)-beforeAim);
+  assert.equal(stateContext.rodMotion.fishOffsetX,500-beforeAim);assert.equal(stateContext.rodMotion.drivenByInput,true);
+  const motionIdentity=stateContext.rodMotion;
+  for(let frame=0;frame<120;frame++)app.update(16);
+  assert.equal(stateContext.rodMotion,motionIdentity);assert.equal(stateContext.rodMotion.deltaPx,0,'held edge is not actual motion');
+  input.rodControlActive=false;app.update(16);assert.equal(stateContext.rodMotion.drivenByInput,false,'automatic return cannot compensate');
+  config.physics.fight.rodControl.rodAim={fallbackMaxOffsetPx:1000,baseAimSpeedPxPerSecond:10000,
+    tightLineAimMultiplier:1,fishLoadMaxSpeedRatio:1};
+  input.rodControlActive=true;
+  for(let frame=0;frame<4;frame++)app.update(16);
+  assert.equal(app.getRodScreenX(bounds),bounds.right-16);
+  assert.equal(stateContext.rodMotion.deltaPx,0,'playable-zone clamp stops compensation before the internal aim stops');
+  assert(fightDebug.rodVisualDeltaX>0,'the check reaches a visible clamp while the internal offset still advances');
+  config.physics.fight.rodControl=originalRodConfig;app.update(16);assert.equal(stateContext.rodMotion,null);
+  delete input.rodControlActive;delete input.rodControlDirectionX;delete input.rodControlInputRatio;
   events.length=0;await app.setState('victory',{fish:{id:'fish'}});assert.equal(app.gameStateName,'victory');const retrieval=events.find(value=>Array.isArray(value)&&value[0]==='retrieved')[1];assert.equal(retrieval.equipment,equipment);assert.deepEqual(Array.from(retrieval.baitInstanceIds),['original-bait']);assert.equal(Object.isFrozen(retrieval),true);assert.equal(retrieval.exposureToken,'cast:'+app.castStartTime);
   app.setState('waiting');victoryFails=true;await app.setState('victory',{fish:{id:'fish'}});assert.equal(app.gameStateName,'failed');assert.equal(stateMachine.data.reason,'asset_load_failed');victoryFails=false;
   app.setState('scouting');assert.equal(inventory.locked,false);runtime.ui.onNetClick();runtime.ui.onContinueClick();onInventory({equipment});

@@ -1,5 +1,6 @@
 import { FishPhysicsProfile } from "../../domain/fish/fish_physics_profile.js";
 import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
+import { CastRodBitePolicy } from "../../domain/fishing/cast_rod_bite_policy.js";
 
 export class BiteSystem {
   #fishDatabase;
@@ -21,6 +22,9 @@ export class BiteSystem {
   #baitEffectivenessResolver;
   #devFlags;
   #tickIndex = 0;
+  #runtimeConfig;
+  #castRodBitePolicy = new CastRodBitePolicy();
+  #castRodFloatMoved = false;
 
   constructor(
     biteConfig,
@@ -61,6 +65,7 @@ export class BiteSystem {
       throw new TypeError("BiteSystem requires devFlags");
     }
     this.#devFlags = devFlags;
+    this.#runtimeConfig = runtimeConfig;
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
     this.#fishDatabase = this.#resolveFishDatabase(biteConfig);
@@ -95,6 +100,7 @@ export class BiteSystem {
     this.#timer = 0;
     this.#cooldownDebugTimer = 0;
     this.#tickIndex = 0;
+    this.#castRodFloatMoved = false;
   }
 
   #resolveFishDatabase(source) {
@@ -338,6 +344,11 @@ export class BiteSystem {
 
     chance *= this.#getDepthChanceMultiplier(hookDepth, dc);
 
+    chance = this.#castRodBitePolicy.resolveChance({ chance,
+      floatMoved: playerGear.castRodFloatMoving,
+      isSpinning: playerGear.isSpinning,
+      config: this.#runtimeConfig?.physics?.castRodControl,
+    });
     return this.#applyGodModeChanceOverride(chance);
   }
 
@@ -418,6 +429,7 @@ export class BiteSystem {
   }
 
   evaluateBite(dt, envData, playerGear) {
+    this.#castRodFloatMoved ||= playerGear.castRodFloatMoving === true;
     const cooldownBeforeMs = this.#guaranteedBiteCooldownRemaining;
     if (this.#updateGuaranteedBiteCooldown(dt)) {
       this.#cooldownDebugTimer += dt;
@@ -448,6 +460,8 @@ export class BiteSystem {
     this.#timer -= this.#tickRate;
     this.#tickIndex++;
 
+    if (this.#castRodFloatMoved) playerGear = { ...playerGear, castRodFloatMoving: true };
+    this.#castRodFloatMoved = false;
     this.#possibleBitesBuffer.length = 0;
     this.#possibleBiteChancesBuffer.length = 0;
 
