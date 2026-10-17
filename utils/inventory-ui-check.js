@@ -1147,6 +1147,20 @@ class InventoryStaticContractCheck {
       assert.strictEqual(JSON.stringify(calls), JSON.stringify([{ top: 500, behavior: reduced ? "auto" : "smooth" }]),
         "the tab row meets the scroller's top");
     }
+    {
+      // The editor's sticky actions bar keeps the scroller's top covered: the tab row stops below it and its gap.
+      const calls = [];
+      const bar = { getBoundingClientRect: () => ({ height: 60 }), contains: () => false };
+      const scroller = { parentElement: null, scrollHeight: 900, clientHeight: 600, scrollTop: 100, children: [bar],
+        getBoundingClientRect: () => ({ top: 106 }), scrollTo: (options) => calls.push(options) };
+      const row = { parentElement: scroller, getBoundingClientRect: () => ({ top: 506 }) };
+      bar.parentElement = scroller;
+      const styles = new Map([[scroller, { overflowY: "auto", rowGap: "10px" }], [bar, { position: "sticky", top: "0px" }]]);
+      new sandbox.ScrollContainerAligner({ windowRef: { getComputedStyle: (node) => styles.get(node) || {},
+        matchMedia: () => ({ matches: true }) } }).alignToTop(row);
+      assert.strictEqual(JSON.stringify(calls), JSON.stringify([{ top: 430, behavior: "auto" }]),
+        "the tab row stops below the sticky actions bar and the editor gap");
+    }
     let identities=0; for(const exports of runtime.moduleNamespaces) for(const [name,value]of Object.entries(exports)) if(Object.hasOwn(runtime.context,name)){if(runtime.context[name]!==value)throw new Error('UI export identity changed: '+name);identities++;}
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
     sandbox.InventoryItemParametersResolver = bindConstructorDefaults(sandbox.InventoryItemParametersResolver,
@@ -1473,6 +1487,9 @@ class InventoryStaticContractCheck {
       "the modal fills its inventory surface, not the window");
     assert.match(modalCss, /\.ui-surface__content > \.inventory-surface\s*\{\s*pointer-events:\s*none;\s*\}/,
       "the surface's content rule sets no inset that would override the split side");
+    assert.match(modalCss.split("@container ui-surface (orientation: portrait)")[1] || "",
+      /\.inventory-main__section--equipment:has\(> \.inventory-assembly-editor\)\s*\{\s*height:\s*100%;/,
+      "in portrait the editor scrolls itself, so its sticky actions bar has a scroller to stick in");
     assert.match(modalCss, /\.inventory-main,\s*\.inventory-main__left,[^{]*\{\s*touch-action:\s*pan-y;/,
       "horizontal touch swipes reach the section swipe");
     assert.match(listCss, /\.inventory-pager__viewport\s*\{\s*border-color:\s*var\(--inventory-equipment-tab-border\);\s*border-top-width:\s*0;/,
@@ -2394,7 +2411,7 @@ class InventoryStaticContractCheck {
       this.#findByClass(skinnedCell, "inventory-item-card__image").src === "rod-line.png",
       "The equipment cell shows the whole artwork");
     // The landing net: miniatures show the upper 40% top-aligned; the editor preview shows the whole artwork.
-    const netSkin = { thumbnail: { src: "net.webp", visibleHeight: 0.4, focusX: 0.5, anchor: "top", editorPreview: "whole" } };
+    const netSkin = { thumbnail: { src: "net.webp", visibleHeight: 0.4, focusX: 0.5, anchor: "top" } };
     const netVisual = this.#findByClass(isolatedItemRenderer.renderInventoryItem({ instanceId: "net", name: "Net",
       icon: "N", skin: netSkin }), "inventory-item-card__visual");
     assert.ok(netVisual.classList.contains("inventory-item-card__visual--cropped-top") &&
@@ -2408,8 +2425,10 @@ class InventoryStaticContractCheck {
       "the editor preview shows the whole net");
     const rodPreview = isolatedItemRenderer.renderItem({ instanceId: "skin-rod", name: "Rod", icon: "R", skin },
       { variant: "assembly-root", wholeArt: true });
-    assert.ok(this.#findByClass(rodPreview, "inventory-item-card__visual").classList
-      .contains("inventory-item-card__visual--cropped"), "without editorPreview the editor keeps the crop");
+    assert.ok(!this.#findByClass(rodPreview, "inventory-item-card__visual").classList
+      .contains("inventory-item-card__visual--cropped") &&
+      this.#findByClass(rodPreview, "inventory-item-card__image").src === "rod-thumb.png",
+      "the editor preview shows the whole rod too");
     assert.match(this.#reader.readStyle(), /\.inventory-item-card__visual--cropped \.inventory-item-card__image\s*\{[^}]*height:\s*calc\(100cqh \/ var\(--inventory-item-art-visible-height, 1\)\);/,
       "The cropped thumbnail scales its artwork by the visible height share");
     const attachedInventoryItem = isolatedItemRenderer.renderItem({
@@ -2829,6 +2848,11 @@ class InventoryStaticContractCheck {
     const dispatchedBeforeViewing = dispatched.length;
     this.#findByClass(hookTab, "inventory-slot__empty-button").click();
     assert.deepStrictEqual([activeTab(), ...visiblePages()], [1, 1], "a tap opens the empty cell's parameter page");
+    const emptyPage = tabPanel.children[1];
+    assert.ok(!this.#findAllByClass(emptyPage, "inventory-editor-tabs__empty")
+      .some((node) => String(node.textContent).includes("комірка порожня")) &&
+      String(emptyPage.getAttribute("aria-label")).includes("комірка порожня"),
+      "an empty cell's page shows no empty-cell line but keeps it as its accessible name");
     assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "viewing an empty cell never starts a backpack pick");
     tabRow.emit("keydown", { key: "Home" });
     tabRow.emit("keydown", { key: "ArrowRight" });

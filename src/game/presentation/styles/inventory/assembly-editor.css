@@ -26,10 +26,17 @@
   touch-action: pan-y;
 }
 
-/* One row of actions (equip/remove, disassemble, back) on its own panel; long labels end with an ellipsis. */
+/* One row of actions (equip/remove, disassemble, back) on its own panel; long labels end with an ellipsis. While the
+   editor scrolls, the bar sticks to its top edge (over the padding, so no content shows above it) above the preview
+   and tabs, and returns to its place when scrolled back; a tab tap aligns the tab row just below it
+   (ScrollContainerAligner). */
 .inventory-assembly-editor__actions {
   display: flex;
   gap: 8px;
+  position: sticky;
+  top: calc(-1 * var(--inventory-container-gap));
+  z-index: 3;
+  flex: none;
   padding: var(--inventory-container-gap);
   border-radius: var(--inventory-panel-radius);
   background: var(--inventory-equipment-panel);

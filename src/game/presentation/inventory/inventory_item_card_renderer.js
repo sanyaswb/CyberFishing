@@ -193,12 +193,11 @@ export class InventoryItemCardRenderer {
   }
 
   // A skin's thumbnail shows only its lower part, bottom-aligned (anchor "top": its upper part, top-aligned); an
-  // equipment cell may show the whole artwork (spec 071), and so may the editor preview (wholeArt) for a thumbnail
-  // with editorPreview "whole".
+  // equipment cell may show the whole artwork (spec 071), and the editor preview (wholeArt) always does.
   #renderMainVisual(card, item, { wholeArt = false } = {}) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
     const art = item.skin?.thumbnail;
-    const thumbnail = item.equipmentArtUrl || (wholeArt && art?.editorPreview === "whole") ? null : art;
+    const thumbnail = item.equipmentArtUrl || wholeArt ? null : art;
     const image = this.#dom.image(
       item.equipmentArtUrl || art?.src || item.iconUrl || item.imageUrl || item.src,
       "",

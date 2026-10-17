@@ -90,8 +90,8 @@ the list backdrop and the toolbar; the existing capacity read model supplies the
 and `dev-tools.css` owns the free-shop image and label. Numeric updates keep their image nodes.
 Landing-net miniatures crop the full artwork `assets/items/nets/net--1.webp` in CSS: its skin thumbnail has
 `visibleHeight: 0.4`, `focusX: 0.5` and `anchor: "top"` (`inventory-item-card__visual--cropped-top`), so the upper 40%
-fills the card height, centred and top-aligned. `editorPreview: "whole"` makes the item editor preview
-(`renderItem` with `wholeArt`) show the whole artwork; editor tabs, cells and backpack cards stay cropped.
+fills the card height, centred and top-aligned. The item editor preview (`renderItem` with `wholeArt`) always shows the whole artwork (net, rod); editor tabs,
+cells and backpack cards stay cropped.
 The toolbar net button (`GameControls` `landingNetArt`, injected from the same skin thumbnail) applies that crop in
 `toolbar.css` (`game-toolbar-button__art`, `--cropped-top`) inside the 85% image box of the other toolbar buttons. Explicit bounded toolbar grid tracks keep image intrinsic dimensions
 from expanding the button's contents; thumbnail images fit within their track.

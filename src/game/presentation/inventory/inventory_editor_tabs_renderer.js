@@ -117,8 +117,9 @@ export class InventoryEditorTabsRenderer {
     if (parameters) page.appendChild(parameters);
     else {
       const name = tab.label || tab.item?.name || "Предмет";
-      page.appendChild(this.#dom.element("p", "inventory-editor-tabs__empty",
-        tab.item ? this.#labels.noParameters(name) : this.#labels.emptyCell(name)));
+      // An empty cell shows no "<cell>: empty" line (owner, 2026-10-17); it stays the page's accessible name.
+      if (tab.item) page.appendChild(this.#dom.element("p", "inventory-editor-tabs__empty", this.#labels.noParameters(name)));
+      else page.setAttribute("aria-label", this.#labels.emptyCell(name));
       if (!tab.item && tab.socket?.warning) {
         page.appendChild(this.#dom.element("p", "inventory-editor-tabs__empty", tab.socket.warning));
       }
