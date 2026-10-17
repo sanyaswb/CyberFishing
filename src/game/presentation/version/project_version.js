@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.38.2";
+export const CURRENT_PROJECT_VERSION = "0.38.3";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -18,7 +18,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   notes: Object.freeze([
     "Perch artwork and fish thumbnails use WebP; backpack artwork is available as a catalog item in the DEV free shop",
     "Keepnet artwork follows occupied capacity in six preloaded stages without reloading unchanged images",
-    "The open backpack is a faint background in the right-hand item panel in landscape",
+    "The open backpack is a faint background centred in the item panel in landscape and portrait",
     "Editor tabs show centred artwork without scales; a tap on a tab scrolls the editor down to the tabs",
     "On phones the item editor shows actions, a preview and one row of item and cell tabs joined to the active tab's parameters; swipes switch tabs",
     "A tap on a filled editor cell shows its parameters, a long press removes the item; only the editor's buttons leave it",

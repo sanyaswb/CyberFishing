@@ -529,8 +529,10 @@ class InventoryStaticContractCheck {
       "collection artwork is a faint non-interactive background");
     assert.match(portraitCollection, /\.inventory-collection__backdrop\s*\{[^}]*display:\s*block;/,
       "portrait shows the faded backdrop inside the items panel");
-    assert.match(sharedControls, /@media \(orientation: landscape\)\s*\{\s*\.inventory-list-panel \.inventory-collection__backdrop\s*\{[^}]*right:\s*var\(--inventory-collection-inset\);[^}]*left:\s*auto;[^}]*display:\s*block;[^}]*object-position:\s*right center;/,
-      "landscape shows the backpack backdrop at the right of the item collection only");
+    assert.match(sharedControls, /\.inventory-collection__backdrop\s*\{[^}]*top:\s*15%;[^}]*left:\s*15%;[^}]*width:\s*70%;[^}]*height:\s*70%;[^}]*object-position:\s*center;/,
+      "the backdrop is centred within the items panel in both orientations");
+    assert.match(sharedControls, /@media \(orientation: landscape\)\s*\{\s*\.inventory-list-panel \.inventory-collection__backdrop\s*\{\s*display:\s*block;\s*\}/,
+      "landscape enables the backpack backdrop without overriding its centred placement");
     assert.ok(portraitList.includes(".inventory-list-grid"), "the portrait list keeps its gutter rule");
     // Spec 069: one full-screen dark container; equipment owns the content row; the header is a rounded mini panel.
     assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*padding:\s*env\(safe-area-inset-top, 0px\) 0 env\(safe-area-inset-bottom, 0px\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,

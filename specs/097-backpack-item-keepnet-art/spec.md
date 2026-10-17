@@ -10,7 +10,7 @@ use backpack artwork instead of emoji thumbnails, and select the supplied keepne
 - This adds an artwork item, with no new equipment slot, capacity limit, stat or save-schema change.
 - Backpack cards, the toolbar, the All filter and capacity icon use the original-size 2048px closed WebP.
   Existing large artwork remains closed; the decorative item-list backdrop remains open.
-  Landscape also shows the open backpack as a faint background aligned to the right inside the items panel;
+  Landscape also shows the open backpack as a faint background centred inside the items panel;
   it never becomes a separate item or a second foreground illustration.
   Images retain their aspect ratio with `contain`; no small thumbnail is enlarged or pixelated rendering enabled.
 - Keepnet artwork uses the same occupancy reading as the capacity meter, including stored catches,

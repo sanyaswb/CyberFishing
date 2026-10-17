@@ -75,7 +75,7 @@ Backpack item and control miniatures use the full-size 2048px WebP with `contain
 the list backdrop and the toolbar; the existing capacity read model supplies the percentage.
 `toolbar.css` owns `game-toolbar-button__image`, `list-and-filters.css` owns the category image,
 and `dev-tools.css` owns the free-shop image and label. Numeric updates keep their image nodes.
-The backpack collection also shows its faint open-backpack background in landscape, aligned to the right
+The backpack collection also shows its faint open-backpack background in landscape, centred
 inside the items panel. `shared-controls.css` owns its shared backdrop geometry and the landscape placement.
 
 `UiSurfaceAdapter` exposes `hoverEnabled` and adds `ui-surface--desktop-hover` only for a UI and

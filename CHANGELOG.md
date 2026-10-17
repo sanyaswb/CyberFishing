@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.38.3 - Centre the Backpack Backdrop
+
+- Centre the open-backpack background in the landscape item panel, matching portrait placement.
+
 ## v0.38.2 - Fish and Inventory Artwork
 
 - Integrate perch WebP artwork and thumbnails; add the backpack item to the DEV free shop and use full-resolution backpack miniatures.
