@@ -18,6 +18,9 @@ export class GameRenderFrame {
       // Every background image of the location (all time-of-day phases), so the WebGL scene can upload them together
       // before a phase first appears (spec 105 D2).
       backgroundAssetIds: [],
+      // The location's water current (environment.current) as a velocity in art pixels per second: the scene's water
+      // drifts with the same current that carries the tackle (spec 106 D9).
+      current: { x: 0, y: 0 },
       clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
       dynamicZones: new ReusableRenderList("world.dynamicZones", diagnostics),
@@ -84,6 +87,8 @@ export class GameRenderFrame {
     this.world.visible = false;
     this.world.backgroundLayers.reset();
     this.world.backgroundAssetIds.length = 0;
+    this.world.current.x = 0;
+    this.world.current.y = 0;
     this.world.clipRegions.reset();
     this.world.dynamicZones.reset();
     this.world.chumZones.reset();

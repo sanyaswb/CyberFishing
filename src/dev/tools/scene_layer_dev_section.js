@@ -49,7 +49,8 @@ export class SceneLayerDevSection {
     }
     if (status.water) {
       this.#ui.createInfoRow("вода", `${status.water.active ? "анімується" : "стоїть"} · карта ${status.water.mapWidth}×${
-        status.water.mapHeight} · крок ${status.water.stepMs.toFixed(2)} мс`, content, ["SCENE_LAYER", "water"]);
+        status.water.mapHeight} · крок ${status.water.stepMs.toFixed(2)} мс · течія ${
+        (status.water.driftSpeed ?? 0).toFixed(1)} пікс/с`, content, ["SCENE_LAYER", "water"]);
     }
     this.#ui.createInfoRow("сцена малює кадр", this.#router.rendersScene() ? "так" : "ні", content);
     for (const { kind, layer, sceneRenderer } of this.#router.getRouting()) {

@@ -193,7 +193,8 @@ kind (`PixiBackgroundRenderer`: the world model's time-of-day layers as two pool
 textures of the images the page's `ImageAssetProvider` loaded, presents a frame only when the background changed, and
 sets its pixel ratio from the art. Stage 3 ([spec 106](../specs/106-scene-water/spec.md)): `PixiWaterRenderer` draws
 ripples over the background inside the location's castable zones (a copy of the background's layers through Pixi's
-`DisplacementFilter`, its map refilled by `WaterWaveField` at `CONFIG.canvas.water.frameRate`). DEV: DevTools
+`DisplacementFilter`, its map refilled by `WaterWaveField` at `CONFIG.canvas.water.frameRate`, drifting with the location's
+current, `world.current`). DEV: DevTools
 "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`, with the live water settings). Rules:
 [docs/rendering.md](rendering.md).
 

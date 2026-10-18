@@ -10,7 +10,8 @@ const LAYER_SPRITES = 2;
 // through Pixi's DisplacementFilter, whose map (WaterWaveField) is refilled and uploaded at the water's own frame rate.
 // Between steps nothing changes, so the scene presents a frame only on a step or when the background itself changed
 // (spec 105 D3). The water area is the location's castable zones (world.clipRegions), clipped to the screen as the
-// filter area so only visible water is filtered. Settings are read every frame, so DEV edits apply at once.
+// filter area so only visible water is filtered. The pattern drifts with the location's current (world.current, times
+// currentScale, D9). Settings are read every frame, so DEV edits apply at once.
 export class PixiWaterRenderer {
   #textures;
   #getSettings;
@@ -28,6 +29,9 @@ export class PixiWaterRenderer {
   #visible = false;
   #lastStepAt = null;
   #stepMs = 0;
+  #driftX = 0;
+  #driftY = 0;
+  #driftSpeed = 0;
 
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
   // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water.
@@ -62,9 +66,10 @@ export class PixiWaterRenderer {
     stage.addChild(this.#mapSprite);
   }
 
-  // For DEV: whether the water animates, the map size and the last step's JavaScript time.
+  // For DEV: whether the water animates, the map size, the last step's JavaScript time and the drift speed (art px/s).
   get status() {
-    return { active: this.#visible, mapWidth: MAP_WIDTH, mapHeight: MAP_HEIGHT, stepMs: this.#stepMs };
+    return { active: this.#visible, mapWidth: MAP_WIDTH, mapHeight: MAP_HEIGHT, stepMs: this.#stepMs,
+      driftSpeed: this.#driftSpeed };
   }
 
   // world: the frame's world model, or null when the background is not on the scene; viewWidth / viewHeight: the
@@ -102,6 +107,7 @@ export class PixiWaterRenderer {
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
     const stepDue = this.#lastStepAt === null || nowMs - this.#lastStepAt >= 1000 / Math.max(1, Number(settings.frameRate) || 1);
     if (stepDue) {
+      this.#drift(world.current, settings, nowMs);
       this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale);
     }
     return stepDue || !wasVisible;
@@ -111,11 +117,23 @@ export class PixiWaterRenderer {
     this.#mapTexture.destroy(true);
   }
 
+  // The current carries the pattern by its velocity over the time since the last step, so a changed current or scale
+  // changes the speed from now on without a jump.
+  #drift(current, settings, nowMs) {
+    const scale = Math.max(0, Number(settings.currentScale) || 0);
+    const velocityX = (Number(current?.x) || 0) * scale;
+    const velocityY = (Number(current?.y) || 0) * scale;
+    const elapsedSec = this.#lastStepAt === null ? 0 : Math.max(0, nowMs - this.#lastStepAt) / 1000;
+    this.#driftX += velocityX * elapsedSec;
+    this.#driftY += velocityY * elapsedSec;
+    this.#driftSpeed = Math.hypot(velocityX, velocityY);
+  }
+
   #step(nowMs, settings, artWidth, artHeight) {
     const started = performance.now();
     this.#lastStepAt = nowMs;
     const pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight, wavelength: Number(settings.wavelength) || 1,
-      speed: Number(settings.speed) || 0 });
+      speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY });
     this.#mapImage.data.set(pixels);
     this.#mapContext.putImageData(this.#mapImage, 0, 0);
     this.#mapTexture.source.update();

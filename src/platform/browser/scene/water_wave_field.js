@@ -69,8 +69,9 @@ export class WaterWaveField {
   }
 
   // timeSec: the animation clock; artWidth / artHeight: the water's size in art pixels; wavelength: art pixels between
-  // crests at the near edge; speed: art pixels per second the crests travel.
-  write(timeSec, { artWidth, artHeight, wavelength, speed }) {
+  // crests at the near edge; speed: art pixels per second the crests travel; driftX / driftY: how far the current has
+  // carried the whole pattern, in art pixels at the near edge (the far water drifts slower on screen: perspective).
+  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0 }) {
     const width = this.#width;
     const height = this.#height;
     const pixels = this.#pixels;
@@ -85,8 +86,8 @@ export class WaterWaveField {
       const xScale = artWidth / (width * perspective);
       rowX.fill(0);
       rowY.fill(0);
-      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y, travel);
-      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y, travel);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, driftX, travel);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, driftX, travel);
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
         const envelope = this.#envelope[index];
@@ -101,11 +102,12 @@ export class WaterWaveField {
 
   // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that
   // step replaces a sine per pixel: two sines per wave and row instead of one per pixel.
-  static #addRow(waves, target, k, xScale, y, travel) {
+  static #addRow(waves, target, k, xScale, y, driftX, travel) {
     for (let index = 0; index < waves.length; index += 1) {
       const current = waves[index];
       const step = (k * current.dirX * xScale) / current.multiple;
-      const phase = (k * (0.5 * xScale * current.dirX + y * current.dirY) - travel) / current.multiple + current.phase;
+      const phase = (k * ((0.5 * xScale - driftX) * current.dirX + y * current.dirY) - travel) / current.multiple
+        + current.phase;
       const stepSin = Math.sin(step);
       const stepCos = Math.cos(step);
       let sin = Math.sin(phase);

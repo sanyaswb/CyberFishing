@@ -347,7 +347,8 @@ async function checkPixiSceneLayer() {
   const router = { drawsOnScene: (kind) => onScene && kind === "background" };
   const images = fakeImages([["day", 2560, 1440], ["evening", 2560, 1440], ["night", 2560, 1440]]);
   const clock = { now: 1000 };
-  const water = { enabled: true, frameRate: 30, amplitude: 8, verticalShare: 0.5, wavelength: 140, speed: 24 };
+  const water = { enabled: true, frameRate: 30, amplitude: 8, verticalShare: 0.5, wavelength: 140, speed: 24,
+    currentScale: 3 };
   const compose = (overrides = {}) => {
     const dom = fakeDom();
     const { pixi, apps, textures, canvasTextures } = fakePixi();
@@ -399,7 +400,8 @@ async function checkPixiSceneLayer() {
     "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
   assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
     textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
-    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0 } }, "no castable zones in this frame: still water");
+    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0 } },
+  "no castable zones in this frame: still water");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -485,6 +487,19 @@ async function checkWaterWaveField() {
   assert.notDeepEqual(Array.from(field.write(2.1, settings)), first, "the waves move with time");
   assert.deepEqual(Array.from(field.write(7, { ...settings, speed: 0 })), Array.from(field.write(0, { ...settings, speed: 0 })),
     "speed 0 holds the waves still");
+  // D9: the current carries the whole pattern. A drift of one texel's width of water on a row (art pixels per column
+  // over that row's perspective, 0.35 at the far edge to 1 at the near one) moves that row one texel along.
+  const still = { ...settings, speed: 0 };
+  const near = 47 - 4;
+  const perspective = 0.35 + 0.65 * ((near + 0.5) / 48);
+  const before = Array.from(field.write(0, still));
+  const after = Array.from(field.write(0, { ...still, driftX: 2560 / 192 / perspective }));
+  let shifted = 0;
+  for (let index = 10; index < 182; index += 1) { // inside the side fades, where neighbouring texels share an envelope
+    shifted = Math.max(shifted, Math.abs(after[(near * 192 + index) * 4] - before[(near * 192 + index - 1) * 4]));
+  }
+  assert(shifted <= 3, `a drift of one column at the near edge shifts the near pattern one texel (${shifted})`);
+  assert.notDeepEqual(Array.from(field.write(0, { ...still, driftY: 30 })), before, "the current can carry it along y too");
   const pixels = field.write(2, settings);
   const at = (column, row, channel) => pixels[(row * 192 + column) * 4 + channel];
   let edge = 0;
@@ -526,6 +541,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const dusk = { assetId: "evening", alpha: 0.4, x: -500, y: 0, width: 1451, height: 816 };
   const frame = worldModel({ layers: [base, dusk] });
   frame.world.clipRegions = { count: 1, getAt: (index) => regions[index] };
+  frame.world.current = { x: 5, y: 0.5 };
   wet.layer.render(frame);
   assert.equal(app.renders, 2, "the first water step presents with the background");
   assert.equal(waterContainer.visible, true);
@@ -549,28 +565,42 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.deepEqual([app.renders, map.updates], [3, 2], "30 steps per second: a step after 1/30 s presents one frame");
   const status = wet.layer.getStatus().water;
   assert.deepEqual([status.active, status.mapWidth, status.mapHeight, status.stepMs >= 0], [true, 192, 48, true]);
+  assert(Math.abs(status.driftSpeed - 3 * Math.hypot(5, 0.5)) < 1e-9, "the water drifts with the location's current × currentScale");
+  const mapBefore = Array.from(map.canvas.getContext("2d").last.data);
+  water.speed = 0;
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert.notDeepEqual(Array.from(map.canvas.getContext("2d").last.data), mapBefore,
+    "with still waves (speed 0) the current alone still moves the pattern");
+  water.currentScale = 0;
+  const heldStill = (() => { clock.now += 40; wet.layer.render(frame); return Array.from(map.canvas.getContext("2d").last.data); })();
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert.deepEqual(Array.from(map.canvas.getContext("2d").last.data), heldStill, "currentScale 0 and speed 0: still water");
+  assert.equal(wet.layer.getStatus().water.driftSpeed, 0);
+  Object.assign(water, { speed: 24, currentScale: 3 });
   water.frameRate = 60;
   clock.now += 17;
   wet.layer.render(frame);
-  assert.equal(app.renders, 4, "the settings are read every frame");
+  assert.equal(app.renders, 7, "the settings are read every frame");
   water.frameRate = 30;
 
   water.enabled = false;
   wet.layer.render(frame);
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [5, false], "disabled water is hidden once, then costs nothing");
+  assert.deepEqual([app.renders, waterContainer.visible], [8, false], "disabled water is hidden once, then costs nothing");
   water.enabled = true;
   clock.now += 40;
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [6, true]);
+  assert.deepEqual([app.renders, waterContainer.visible], [9, true]);
   regions[0].y = 900;
   clock.now += 40;
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [7, false], "water below the screen is not filtered");
+  assert.deepEqual([app.renders, waterContainer.visible], [10, false], "water below the screen is not filtered");
   regions[0].y = 300;
   frame.world.clipRegions = { count: 0, getAt: () => null };
   wet.layer.render(frame);
-  assert.equal(app.renders, 7, "no castable zone: no water");
+  assert.equal(app.renders, 10, "no castable zone: no water");
   wet.layer.dispose();
   assert.equal(map.destroyed, true, "the map's texture is released with the scene");
 }
@@ -700,14 +730,16 @@ async function checkDevWiring() {
   const content = { replaceChildren: () => { rows.length = 0; actions.clear(); } };
   const layerCalls = [];
   let status = { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76, textures: 3,
-    textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3, water: { active: true, mapWidth: 192, mapHeight: 48, stepMs: 0.123 } };
+    textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3, water: { active: true, mapWidth: 192, mapHeight: 48, stepMs: 0.123,
+      driftSpeed: 15.04 } };
   const layer = { getStatus: () => status, loseContext: () => layerCalls.push("lose"), restoreContext: () => layerCalls.push("restore") };
   const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
   router.update();
   const waterEditors = [];
   new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content,
     renderWaterConfig: (parent) => waterEditors.push(parent) }).render({});
-  assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс"), "the water's state and step cost are shown");
+  assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
+    "the water's state, step cost and drift are shown");
   assert.equal(waterEditors.length, 1, "the live editor of CONFIG.canvas.water sits in the section");
   assert.match(read("src/dev/tools/dev_tools.js"),
     /renderWaterConfig: \(parent\) => this\.#buildTree\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
