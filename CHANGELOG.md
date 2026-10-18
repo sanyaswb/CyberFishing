@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.41.1 - DEV Fresh Start
+
+- Remove the obsolete float and feeder DEV build templates and their catalog overlay. DEV uses the production item catalog, so a new player starts with loose items and no equipped tackle or builds (G-067).
+- Report failed DEV startup in the console with the original error and stack.
+
 ## v0.41.0 - Cast Line Speed
 
 - Post-cast lateral rod movement uses configurable speed multipliers: `physics.castRodControl.speedMultipliers.stationaryFloat = 3` while slack remains, and `movingFloat = 1` once the line must draw the tackle. Frames that exhaust slack split their time between those speeds.

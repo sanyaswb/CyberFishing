@@ -488,25 +488,11 @@ function checkNativeDevelopmentDisplays() {
   const {formatDebuffName} = require("../src/dev/formatting/debuff_name_formatter.js");
   for (const [state,label] of [[{active:false,type:"swimPull"},"Немає"],[{active:true,type:null},"Невідомий"],[{active:true,type:"dashPull"},"dashPull"]])
     assert.equal(formatDebuffName(state),label);
-  const {ITEM_DB} = require("../src/game/config/databases/item_catalog.js");
-  const {createDevItemCatalog,DEV_BUILD_TEMPLATES} = require("../src/dev/data/dev_item_catalog.js");
-  const catalog = createDevItemCatalog(ITEM_DB);
-  assert.equal(Object.keys(ITEM_DB.builds).length,0,"production contains no DEV templates");
-  assert.deepEqual(Object.keys(catalog.builds),["debug_float_build","debug_feeder_build"]);
-  assert.equal(catalog.rods,ITEM_DB.rods,"normal categories retain shared catalog identity");
-  assert.equal(catalog.builds.debug_float_build,DEV_BUILD_TEMPLATES.debug_float_build);
-  const {ConfiguredInventorySeeder} = require("../src/game/application/inventory/configured_inventory_seeder.js");
-  const items = new Map(), inventoryAdapter = {getInstance:id=>items.get(id),remove:id=>items.delete(id),addItem:item=>items.set(item.instanceId,item)};
-  new ConfiguredInventorySeeder({inventory:inventoryAdapter,itemDB:catalog,playerConfig:{}}).seed();
-  assert(items.has("debug_float_build_box") && items.has("debug_feeder_build_box"));
-  const previousItems=JSON.stringify([...items.values()]);
-  new ConfiguredInventorySeeder({inventory:inventoryAdapter,itemDB:ITEM_DB,playerConfig:{}}).seed();
-  assert.equal(JSON.stringify([...items.values()]),previousItems,"old DEV build IDs and serialized records survive production seeding");
   const {Fish,FishPhysicsProfile} = require("../src/game/domain/fish/fish.js");
   const fish = new Fish(1,1,{behaviors:{swim:{forceMultiplier:1}}});
   const facts = fish.getDebuffState();assert(Object.isFrozen(facts));assert.equal(facts,fish.getDebuffState());
   assert.equal(facts.active,false);assert.equal(formatDebuffName(facts),"Немає");assert.equal(formatDebuffName(null),"Немає");
-  console.log("Native DEV displays: 19 overlays, "+comparisons+" active renders, exact no-active/unknown/type labels, isolated catalog and stable Domain facts.");
+  console.log("Native DEV displays: 19 overlays, "+comparisons+" active renders, exact no-active/unknown/type labels and stable Domain facts.");
 }
 
 function checkLocationMapConfigChanges() {
@@ -590,6 +576,7 @@ function checkLocationMapConfigChanges() {
 }
 
 async function checkNativeDevelopmentLifecycle() {
+  const startupErrors = [];
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
   const listeners=new Map(), registered=new Map();
   const windowTarget={console,URLSearchParams,location:{origin:"https://game.example",search:""},
@@ -623,7 +610,7 @@ async function checkNativeDevelopmentLifecycle() {
     }
     dispose() { counts.surfaceDispose++; }
   }
-  const source=new SourceRuntime({moduleStubs:{
+  const source=new SourceRuntime({globals:{console:{...console,error:(...args)=>startupErrors.push(args)}},moduleStubs:{
     'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
     'src/platform/browser/dom/ui_surface_adapter.js':{UiSurfaceAdapter:Surface},
     'src/bootstrap/development/dev_time_composition.js':{composeDevTimeDisplay:()=>timeControl},
@@ -644,11 +631,24 @@ async function checkNativeDevelopmentLifecycle() {
   assert.notEqual(Game,new SourceRuntime().importModule('src/bootstrap/production/game.js').Game,'different VM realms retain isolated module identity');
   resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
   const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);
+  const { StartingInventorySnapshotFactory } = source.importModule('src/game/application/inventory/persistence/starting_inventory_snapshot_factory.js');
+  const { CONFIG: productionConfig } = new SourceRuntime().importModule('src/game/config/runtime/game_config.js');
+  const freshInventory = new StartingInventorySnapshotFactory({ itemSnapshotMapper: { toSnapshots: items => items } }).create({
+    items: productionConfig.player.inventory,
+    equipment: productionConfig.player.equipment,
+    settings: productionConfig.player.inventorySettings,
+    buildTemplates: rootPorts.itemDb.builds,
+  });
+  assert.equal(freshInventory.items.length, productionConfig.player.inventory.length, 'DEV can start without a save using only configured items');
+  assert.equal(freshInventory.assemblies.length, 0, 'DEV starts without assembled tackle');
+  assert.equal(freshInventory.loadouts.length, 0, 'DEV starts without saved builds');
+  assert.equal(rootPorts.itemDb, source.importModule('src/game/config/databases/item_catalog.js').ITEM_DB, 'DEV shares the production item catalog');
   assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
   assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'catalog return and page cleanup listeners are active');
   assert.equal(registered.get("message").size,1,"only the UI catalog overlay listens for a trusted return");
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
+  assert.equal(navigationTools.options.catalogs.items, rootPorts.itemDb, 'the free shop uses the same catalog without obsolete DEV builds');
   assert.equal(houseFactoryOptions.getSessionServices(),sessionServices,"the House screen reuses the session services");
   assert.equal(houseFactoryOptions.getGameTimeControl(),timeControl,"the game's DEV time control hands its rate to the House");
   assert.equal(houseFactoryOptions.getDevTools(),navigationTools,"the House header toggles the page DevTools");
@@ -687,7 +687,11 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
   assert.equal(config.debug.fixedCatch.enabled,false);
   assert.equal(counts.root,2);assert.equal(counts.start,4);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
-  resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
+  assert.equal(startupErrors.length, 0, 'successful startup reports no errors');
+  resetBuild();const failed=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(), failed);
+  const startupFailure = new Error('fixture build failure');rejectBuild(startupFailure);await assert.rejects(failed,/fixture build failure/);
+  assert.equal(startupErrors.length, 1, 'a failed shared startup reports once');
+  assert(startupErrors[0].includes(startupFailure), 'startup reports the original error with its stack');
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
   assert.equal(counts.start,4,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);

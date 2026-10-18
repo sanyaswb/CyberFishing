@@ -132,14 +132,9 @@ class ItemProgressionCheck {
     });
     Assertion.equal(issues.length, 0, `production validation: ${JSON.stringify(issues)}`);
 
-    const { createDevItemCatalog } = require("../src/dev/data/dev_item_catalog.js");
-    const devCatalog = createDevItemCatalog(this.#runtime.DB);
-    Assertion.equal(Object.keys(this.#runtime.DB.builds).length,0,"production has no DEV templates");
-    const devIssues = new this.#runtime.Validator().validate({ progressionConfig:this.#runtime.CONFIGURATION,itemDb:devCatalog });
-    Assertion.equal(devIssues.length,0,"DEV templates preserve validation");
     let gameplay = 0;
     let technical = 0;
-    for (const category of Object.values(devCatalog)) {
+    for (const category of Object.values(this.#runtime.DB)) {
       for (const item of Object.values(category || {})) {
         if (item.progressionProfile === null) technical += 1;
         else if (item.progressionProfile) gameplay += 1;
@@ -156,7 +151,7 @@ class ItemProgressionCheck {
       }
     }
     Assertion.equal(gameplay, 24, "all catalog items including live bait and backpack have explicit profiles");
-    Assertion.equal(technical, 3, "all technical records explicitly excluded");
+    Assertion.equal(technical, 1, "all technical records explicitly excluded");
     for (const [groupId, group] of Object.entries(
       this.#runtime.CONFIGURATION.groups,
     )) {
