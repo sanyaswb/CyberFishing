@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-068 A re-cast aim keeps the rod, line and tackle on screen (P3, done in v0.41.3)
+Found: 2026-10-18, owner, index (v0.41.2).
+Reproduce: cast, then long-press while the tackle is in the water and aim the re-cast.
+Expected: exactly the first aim: the CAST bar and the aim line, no rod, line, tackle or fight areas (spec 099 D3), also while the cast flies; the tackle shows again when it lands.
+Actual: `WaitingState.getRenderState` kept `fishing.visible` true and drew the aim over the old tackle; the aim population was duplicated in scouting and waiting.
+Notes: one rule `GameState.populateRodCast(target, bounds, aim, inFlight)` for both states, keyed on the aim's visual and the flight. `utils/recast-aim-check.js` failed first ("a re-cast aims exactly like the first cast: no rod") and passes now.
+
 ### G-066 Post-cast rod speed and line feedback ignore remaining slack (P3, in progress)
 Found: 2026-10-17, owner request.
 Reproduce: cast off-center, move the rod toward the tackle to create slack, then move away until the free length ends.

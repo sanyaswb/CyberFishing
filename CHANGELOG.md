@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.41.3 - Re-cast Aim
+
+- A long-press re-cast aims exactly like the first cast: only the CAST bar and the aim line show, the rod, line, tackle and fight areas hide until the new cast lands (G-068).
+
 ## v0.41.2 - WebGL Scene
 
 - The game world is drawn on a WebGL scene (PixiJS 8) under the 2D canvas: the background and time of day, rippling water that drifts with the location's current, the bait boats and chum zones, the fight areas, the line, the float and the Spine rod (spine-pixi-v8). Without WebGL, or after a lost context, the 2D canvas draws everything; `dev.html?scene=canvas` keeps the old path (specs 103–107).

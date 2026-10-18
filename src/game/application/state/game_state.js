@@ -52,6 +52,30 @@ export class GameState {
     );
   }
 
+  // One rule for aiming a rod cast, the first one (scouting) and a re-cast (waiting, G-068): while the cast is aimed
+  // or flying, the frame shows the CAST bar, the aim line and the accuracy preview, never the rod, line or tackle
+  // (spec 099 D3: no rod before the cast). Keyed on the aim's visual and the flight, so an aim lost without a release
+  // never hides the tackle. Returns whether a rod cast is in progress.
+  populateRodCast(target, bounds, aim, inFlight) {
+    const visual = aim.getVisualState();
+    if (!visual && !inFlight) return false;
+    target.fishing.visible = false;
+    if (!visual) return true;
+    const eq = this.deps.inventory.getEquipped();
+    const maxDistance = this.getEffectiveCastDistance(eq);
+    if (this.deps.config.debug?.casting?.showAccuracyArea) {
+      target.casting.accuracyPreview = aim.getAccuracyPreview(bounds, maxDistance, this.getRodAccuracyPx(eq),
+        this.getRodAccuracyPercent(eq), this.getRodAccuracyMultiplier(eq));
+    }
+    target.casting.visible = true;
+    target.casting.powerVisible = true;
+    target.casting.visual = visual;
+    target.casting.bounds = bounds;
+    target.casting.maxDistance = maxDistance;
+    target.casting.nowMs = this.deps.clock.now;
+    return true;
+  }
+
   // Where a released cast lands for the equipped rod (same order of reads as before).
   resolveCastTarget(aim, release, bounds, equipment) {
     const canCastAnywhere =

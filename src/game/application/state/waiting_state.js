@@ -180,18 +180,7 @@ export class WaitingState extends GameState {
     target.fishing.state = "waiting";
     target.fishing.bottom = bounds.bottom;
     target.fishing.startTime = this.deps.getCastStartTime();
-    const visual = this.#recastAim.getVisualState();
-    if (visual) {
-      const eq = this.deps.inventory.getEquipped();
-      const maxDistance = this.getEffectiveCastDistance(eq);
-      this.#populateRecastAccuracyPreview(target, bounds);
-      target.casting.visible = true;
-      target.casting.powerVisible = true;
-      target.casting.visual = visual;
-      target.casting.bounds = bounds;
-      target.casting.maxDistance = maxDistance;
-      target.casting.nowMs = this.deps.clock.now;
-    }
+    this.populateRodCast(target, bounds, this.#recastAim, this.#pendingRecast !== null);
   }
 
   #updatePowerRecast(dt, bounds, input, eq) {
@@ -334,20 +323,5 @@ export class WaitingState extends GameState {
       reel: eq?.reel,
       config: this.deps.config,
     });
-  }
-
-  #populateRecastAccuracyPreview(target, bounds) {
-    if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
-    const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.getEffectiveCastDistance(eq);
-    const accuracyPx = this.getRodAccuracyPx(eq);
-    const preview = this.#recastAim.getAccuracyPreview(
-      bounds,
-      maxDistance,
-      accuracyPx,
-      this.getRodAccuracyPercent(eq),
-      this.getRodAccuracyMultiplier(eq),
-    );
-    target.casting.accuracyPreview = preview;
   }
 }

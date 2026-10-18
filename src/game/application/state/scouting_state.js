@@ -141,20 +141,7 @@ export class ScoutingState extends GameState {
       this.#populateDepthCastLimit(target);
     }
     if (this.#usePowerCasting()) {
-      if (!this.deps.isAimingChum()) {
-        const visual = this.#castAim.getVisualState();
-        if (visual) {
-          const eq = this.deps.inventory.getEquipped();
-          const maxDistance = this.getEffectiveCastDistance(eq);
-          this.#populateAccuracyPreview(
-            target,
-            bounds,
-            this.#castAim,
-            visual,
-          );
-          this.#populatePowerAim(target, bounds, visual, maxDistance);
-        }
-      }
+      if (!this.deps.isAimingChum()) this.populateRodCast(target, bounds, this.#castAim, this.#pendingCast !== null);
       return;
     }
 
@@ -314,30 +301,6 @@ export class ScoutingState extends GameState {
     this.#isUiDimmed = isDimmed;
     // The page-level pointer feedback (body classes) belongs to the UI.
     this.deps.ui.setScoutingPointerDimmed(isDimmed);
-  }
-
-  #populateAccuracyPreview(target, bounds, aim, visual) {
-    if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
-    const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.getEffectiveCastDistance(eq);
-    const accuracyPx = this.getRodAccuracyPx(eq);
-    const preview = aim.getAccuracyPreview(
-      bounds,
-      maxDistance,
-      accuracyPx,
-      this.getRodAccuracyPercent(eq),
-      this.getRodAccuracyMultiplier(eq),
-    );
-    target.casting.accuracyPreview = preview;
-  }
-
-  #populatePowerAim(target, bounds, visual, maxDistance) {
-    target.casting.visible = true;
-    target.casting.powerVisible = true;
-    target.casting.visual = visual;
-    target.casting.bounds = bounds;
-    target.casting.maxDistance = maxDistance;
-    target.casting.nowMs = this.deps.clock.now;
   }
 
   // While the depth track is open: the farthest reachable cast at the selected depth (the same limit a full-power

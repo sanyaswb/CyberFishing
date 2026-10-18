@@ -237,6 +237,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "recast-aim",
+    title: "Re-cast aim hides the tackle like the first aim (G-068)",
+    file: "utils/recast-aim-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "live-bait",
     title: "Live bait, aquarium care and snapshot",
     file: "utils/live-bait-check.js",
