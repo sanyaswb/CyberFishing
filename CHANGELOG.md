@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.41.4 - Bait Boat Metres
+
+- The bait boat moves on the location's water metric: speed, acceleration, braking, arrival radii, sensors and current drift are ground metres everywhere, so far away it covers fewer pixels per second and no longer crosses far water up to several times faster than near the shore. Locations without a distance profile are unchanged (G-007, spec 054).
+
 ## v0.41.3 - Re-cast Aim
 
 - A long-press re-cast aims exactly like the first cast: only the CAST bar and the aim line show, the rod, line, tackle and fight areas hide until the new cast lands (G-068).

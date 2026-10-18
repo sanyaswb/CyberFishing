@@ -243,6 +243,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "bait-boat-water-metric",
+    title: "Bait boat moves in ground metres on the water metric (G-007)",
+    file: "utils/bait-boat-water-metric-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "live-bait",
     title: "Live bait, aquarium care and snapshot",
     file: "utils/live-bait-check.js",

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.41.3";
+export const CURRENT_PROJECT_VERSION = "0.41.4";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "webgl-scene",
   updatedAt: "2026-10-18",
   notes: Object.freeze([
+    "The bait boat keeps its speed in metres everywhere on the water: far away it moves fewer pixels per second, like the tackle",
     "A long-press re-cast aims like the first cast: the rod, line and tackle hide until the new cast lands",
     "The world is drawn on a WebGL scene (PixiJS): background, rippling water that drifts with the current, boats, fight areas, line, float and the Spine rod",
     "DEV starts without a saved game; obsolete debug builds are removed and startup failures are reported in the console",

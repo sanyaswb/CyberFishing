@@ -13,6 +13,7 @@ export class BaitBoat {
   #sensorInterval = 0.15;
   #cachedSensors = null;
   #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
+  #rayPoint = { x: 0, y: 0 };
 
   constructor(startX, startY, config, zoneId = null, initialEnergy = null) {
     this.startPos = new Vector2(startX, startY);
@@ -54,6 +55,21 @@ export class BaitBoat {
 
   get rootInstanceId() {
     return this.#rootInstanceId;
+  }
+
+  // Maps the sensor rays' end points in place (spec 054: BaitBoatGroundPlaneScope moves them between the map and the
+  // ground plane). map(x, y, out) writes out.x / out.y.
+  mapSensorRays(map) {
+    const point = this.#rayPoint;
+    for (let index = 0; index < this.#sensorRays.length; index += 1) {
+      const ray = this.#sensorRays[index];
+      map(ray.startX, ray.startY, point);
+      ray.startX = point.x;
+      ray.startY = point.y;
+      map(ray.endX, ray.endY, point);
+      ray.endX = point.x;
+      ray.endY = point.y;
+    }
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {

@@ -752,6 +752,7 @@
 │  │  │  │  └── cast_power_aim.js
 │  │  │  ├── chum
 │  │  │  │  ├── bait_boat.js
+│  │  │  │  ├── bait_boat_ground_plane_scope.js
 │  │  │  │  ├── chum_controller.js
 │  │  │  │  ├── chum_service.js
 │  │  │  │  └── chum_zone.js
@@ -1455,6 +1456,7 @@
 ├── utils
 │  ├── architecture-check.js
 │  ├── asset-preloader-check.js
+│  ├── bait-boat-water-metric-check.js
 │  ├── bait-effectiveness-check.js
 │  ├── build-pages-release.js
 │  ├── cast-rod-control-check.js

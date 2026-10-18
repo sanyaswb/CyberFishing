@@ -127,6 +127,7 @@ export class GameWorld {
       },
       locations.cellSize,
       { current: this.#location.currentEnvironment?.current },
+      this.getWaterMetric(),
     );
 
     return envSnapshot;

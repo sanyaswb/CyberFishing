@@ -1,6 +1,6 @@
 # Feature Specification: Bait boat on the water metric
 
-**Created**: 2026-10-11 · **Status**: Specified, not implemented · **Kind**: gameplay fix on the 053 metric
+**Created**: 2026-10-11 · **Status**: Implemented 2026-10-18 (v0.41.4) · **Kind**: gameplay fix on the 053 metric
 (backlog G-007)
 
 ## Owner request (2026-10-11)
@@ -87,6 +87,14 @@ Run each boat update on the metric's ground plane, converting the boat's own spa
   metric. The game-cycle report stays unchanged (SHA256 `7b9baea3…d5b6`). Architecture + Quick + Full green.
 - Owner play check on the test location: a level-1 boat slows down visibly far away and keeps the same speed in
   metres; delivery and return still finish (no stalls at the far edge).
+
+## Implementation notes (2026-10-18)
+- The registry is `utils/testing/suites/check_manifest.js` (Quick, gameplay), not `utils/run-checks.js`.
+- Converting velocity and headings both ways cancels between two updates at the same position, so the flat-lake
+  equivalence cannot see a skipped direction conversion; the map output check catches it instead (the renderer
+  rotates the sprite by `angle` on the map). Skipped waypoint conversion fails the equivalence.
+- Rays are synced before the boat moves (unchanged), so after `exit()` they start at the frame's start position.
+- Shipped as a patch (v0.41.4, owner rule: a patch per delivered fix).
 
 ## Process
 Gameplay change on the 053 metric: backlog G-007, this spec and one commit (the test location already has its profile

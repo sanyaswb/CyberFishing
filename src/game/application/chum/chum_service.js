@@ -1,10 +1,12 @@
 import { BaitBoat } from "./bait_boat.js";
+import { BaitBoatGroundPlaneScope } from "./bait_boat_ground_plane_scope.js";
 import { ChumZone } from "./chum_zone.js";
 
 export class ChumService {
   #chumConfig;
   #zones = [];
   #boats = [];
+  #groundPlane = new BaitBoatGroundPlaneScope();
   #storageKey;
   #locationMemoryKey;
   #memoryGrid = {};
@@ -187,11 +189,18 @@ export class ChumService {
     if (needsSave) this.saveToStorage();
   }
 
-  updateBoats(dt, checkPhysics, checkSensor, cellSize, env) {
+  // waterMetric: the location's metric; every boat update runs on its ground plane (spec 054), and drops and rays are
+  // back on the map before anything else reads them.
+  updateBoats(dt, checkPhysics, checkSensor, cellSize, env, waterMetric = null) {
     let needsSave = false;
     for (let i = this.#boats.length - 1; i >= 0; i--) {
       const boat = this.#boats[i];
-      boat.update(dt, checkPhysics, checkSensor, cellSize, env);
+      const plane = this.#groundPlane.enter({ metric: waterMetric, boat, checkPhysics, checkSensor, cellSize });
+      try {
+        boat.update(dt, plane.checkPhysics, plane.checkSensor, plane.cellSize, env);
+      } finally {
+        this.#groundPlane.exit();
+      }
       this.#boatEnergy = boat.energy;
 
       if (boat.isBaitDropped && boat.zoneId) {

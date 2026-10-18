@@ -367,7 +367,7 @@ Actual: "Огрузка light", "Кріплення fixed".
 Notes: `InventoryItemParametersResolver` first adds rows from the raw effective stats. The mapped `displayStats` row
 with the same parameter id is then skipped as already rendered.
 
-### G-007 Bait boat ignores the water metric (P2, open)
+### G-007 Bait boat ignores the water metric (P2, done in v0.41.4)
 Found: 2026-10-11, owner request after spec 053; verified by reading the code (develop b2aa5b1e).
 Reproduce: test location (30 m profile), send a bait boat to the far edge of the castable water.
 Expected: the boat keeps its speed in metres everywhere, so far away it covers fewer map pixels per second, like the
@@ -375,7 +375,10 @@ tackle since 053.
 Actual: `BaitBoat.update` integrates speed, braking, arrival radii, sensors and drift in map pixels; far away it is up
 to ≈ 6.4× faster in metres.
 Notes: task in [054](../specs/054-bait-boat-water-metric/spec.md) (ground plane scope around `boat.update`, like
-`GroundPlaneScope`).
+`GroundPlaneScope`). Done 2026-10-18: `BaitBoatGroundPlaneScope` wraps every boat update in `ChumService.updateBoats`.
+Before it, on a 40 m profile a level-1 boat crossed 18–22 m at 13.0 m/s against 3.0 m/s near the shore; now 3.0 m/s
+both. `utils/bait-boat-water-metric-check.js`: flat-lake equivalence there and back with a queued waypoint, uniform
+identity, map output; skipping the heading, avoidance heading, velocity or waypoint conversion each fails it.
 
 ## Owner play notes
 
