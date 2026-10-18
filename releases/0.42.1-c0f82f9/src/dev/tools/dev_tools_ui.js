@@ -1,0 +1,370 @@
+import { DevToolsControlBindingRegistry } from "../services/dev_tools_control_binding_registry.js";
+import { DraggableButton } from "../../platform/browser/dom/draggable_button.js";
+import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
+
+export class DevToolsUI {
+  #panel;
+  #body;
+  #btn;
+  #onToggleCallback;
+  #tooltipProvider;
+  #controlBindings = new DevToolsControlBindingRegistry();
+  #dragButton;
+  #storageCache;
+  #uiSurface;
+  #mountNode;
+  #toggleMountNode;
+
+  constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
+    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode) {
+    this.#storageCache = storageCache;
+    this.#uiSurface = uiSurface;
+    this.#mountNode = mountNode;
+    this.#toggleMountNode = toggleMountNode;
+    this.#onToggleCallback = onToggleCallback;
+    this.#tooltipProvider = tooltipProvider;
+    this.#initBtn(config);
+    this.#initPanel();
+  }
+
+  get body() {
+    return this.#body;
+  }
+
+  togglePanel(isOpen) {
+    if (isOpen) {
+      this.#panel.classList.add("devtools--open");
+    } else {
+      this.#panel.classList.remove("devtools--open");
+    }
+  }
+
+  // A second toggle inside another screen's header (the House screen, spec 084); the returned function removes it.
+  mountScreenToggle(mountNode) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hud-control hud-control--square";
+    button.textContent = "⚙️";
+    button.setAttribute("aria-label", "Параметри розробника");
+    const onClick = () => this.#onToggleCallback?.();
+    button.addEventListener("click", onClick);
+    mountNode.appendChild(button);
+    return () => { button.removeEventListener("click", onClick); button.remove(); };
+  }
+
+  dispose() {
+    this.#dragButton?.dispose();
+    this.#dragButton = null;
+    this.#tooltipProvider?.dispose();
+    this.#controlBindings.clear();
+    this.#btn?.removeEventListener("click", this.#onToggleCallback);
+    this.#btn?.remove();
+    this.#panel?.remove();
+    this.#btn = null;
+    this.#panel = null;
+    this.#body = null;
+    this.#onToggleCallback = null;
+  }
+
+  clearValueBindings() {
+    this.#controlBindings.clear();
+  }
+
+  syncValue(path, value) {
+    this.#controlBindings.sync(path, value);
+  }
+
+  releaseValueBindings(container) {
+    this.#controlBindings.releaseWithin(container);
+  }
+
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
+    const section = document.createElement("div");
+    section.className = "devtools__section";
+    this.#assignDevToolsPath(section, path);
+
+    const title = document.createElement("div");
+    title.className = "devtools__section-title";
+    this.#assignDevToolsPath(title, path);
+    title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
+
+    const content = document.createElement("div");
+    content.className = "devtools__section-content";
+    this.#assignDevToolsPath(content, path);
+    content.style.display = isExpanded ? "block" : "none";
+
+    title.addEventListener("click", () => {
+      const isHidden = content.style.display === "none";
+      content.style.display = isHidden ? "block" : "none";
+      title.innerHTML = `<span>${isHidden ? "▼" : "▶"}</span> ${labelStr}`;
+      if (onToggle) onToggle(isHidden);
+    });
+
+    section.appendChild(title);
+    section.appendChild(content);
+    parentElement.appendChild(section);
+
+    return content;
+  }
+
+  createInfoRow(labelStr, value, parentElement, path = null) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const valueEl = document.createElement("div");
+    valueEl.className = "devtools__value";
+    valueEl.innerText = value;
+    row.appendChild(valueEl);
+    parentElement.appendChild(row);
+    return valueEl;
+  }
+
+  createNavigation(pages, parentElement) {
+    const navigation = document.createElement("nav");
+    navigation.className = "devtools__pages";
+    navigation.setAttribute("aria-label", "Сторінки розробника");
+    for (const [label, activate] of pages) this.createButtonRow(label, navigation, activate, true);
+    parentElement.appendChild(navigation);
+  }
+
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "") {
+    const row = document.createElement("div");
+    row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "devtools__action";
+    btn.innerText = labelStr;
+    if (iconUrl) {
+      const image = document.createElement("img");
+      image.className = "devtools__action-image";
+      image.src = iconUrl;
+      image.alt = "";
+      image.draggable = false;
+      const label = document.createElement("span");
+      label.className = "devtools__action-label";
+      label.innerText = labelStr;
+      btn.replaceChildren(image, label);
+    }
+    btn.addEventListener("click", onClickCallback);
+    row.appendChild(btn);
+    parentElement.appendChild(row);
+  }
+
+  createSwitcherRow(
+    labelStr,
+    initialValue,
+    parentElement,
+    onChangeCallback,
+    path = null,
+    bindingPath = path,
+  ) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+
+    const label = this.#createLabelElement(labelStr, path);
+    row.appendChild(label);
+
+    const inputElement = document.createElement("label");
+    inputElement.className = "devtools__switch";
+
+    const cb = document.createElement("input");
+    cb.className = "devtools__switch-input";
+    cb.type = "checkbox";
+    cb.setAttribute("aria-label", labelStr);
+    cb.checked = initialValue;
+
+    const slider = document.createElement("span");
+    slider.className = "devtools__slider";
+
+    inputElement.appendChild(cb);
+    inputElement.appendChild(slider);
+    row.appendChild(inputElement);
+
+    cb.addEventListener("change", (e) => onChangeCallback(e.target.checked));
+    this.#controlBindings.register(bindingPath, (value) => {
+      cb.checked = value === true;
+    }, row);
+    parentElement.appendChild(row);
+  }
+
+  createInputRow(
+    key,
+    val,
+    parentElement,
+    type,
+    onChangeCallback,
+    path = null,
+    bindingPath = path,
+  ) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+
+    const label = this.#createLabelElement(key, path);
+    row.appendChild(label);
+
+    let inputElement;
+
+    if (type === "number") {
+      inputElement = document.createElement("input");
+      inputElement.type = "number";
+      inputElement.step = "any";
+      inputElement.className = "devtools__input devtools__input--number";
+      inputElement.value = val;
+      inputElement.addEventListener("change", (e) =>
+        onChangeCallback(parseFloat(e.target.value) || 0),
+      );
+    } else {
+      inputElement = document.createElement("input");
+      inputElement.type = "text";
+      inputElement.className = "devtools__input devtools__input--text";
+      inputElement.value = val;
+      inputElement.addEventListener("change", (e) => {
+        let newVal = e.target.value;
+        if (type === "array") {
+          newVal = newVal.split(",").map((n) => parseFloat(n.trim()) || 0);
+        }
+        onChangeCallback(newVal);
+      });
+    }
+
+    this.#controlBindings.register(bindingPath, (value) => {
+      inputElement.value = Array.isArray(value) ? value.join(", ") : value;
+    }, row);
+    row.appendChild(inputElement);
+    parentElement.appendChild(row);
+  }
+
+  // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
+  createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const select = document.createElement("select");
+    select.className = "devtools__input devtools__input--text";
+    select.setAttribute("aria-label", labelStr);
+    for (const option of optionsArray) {
+      const element = document.createElement("option");
+      element.value = option;
+      element.textContent = option;
+      select.appendChild(element);
+    }
+    select.value = currentValue;
+    select.addEventListener("change", (event) => onChangeCallback(event.target.value));
+    row.appendChild(select);
+    parentElement.appendChild(row);
+  }
+
+  createEnumToggleRow(
+    key,
+    optionsArray,
+    currentValue,
+    parentElement,
+    onChangeCallback,
+    path = null,
+    bindingPath = path,
+  ) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+
+    const label = this.#createLabelElement(key, path);
+    row.appendChild(label);
+
+    const btn = document.createElement("button");
+    btn.className = "devtools__enum";
+    btn.innerText = currentValue;
+
+    btn.addEventListener("click", () => {
+      let currentIndex = optionsArray.indexOf(btn.innerText);
+      let nextIndex = (currentIndex + 1) % optionsArray.length;
+      let newVal = optionsArray[nextIndex];
+      btn.innerText = newVal;
+      onChangeCallback(newVal);
+    });
+    this.#controlBindings.register(bindingPath, (value) => {
+      btn.innerText = String(value);
+    }, row);
+
+    row.appendChild(btn);
+    parentElement.appendChild(row);
+  }
+
+  #createLabelElement(rawLabel, path = null) {
+    const labelText = String(rawLabel);
+    const cleanLabelText = labelText.replace(/\s+\*$/u, "");
+    const label = document.createElement("div");
+    label.className = "devtools__label";
+    this.#assignDevToolsPath(label, path);
+    label.dataset.devtoolsKey = cleanLabelText;
+    label.innerText = labelText;
+    const tooltip = this.#getParameterTooltip(cleanLabelText);
+    const pathText = this.#normalizeDevToolsPath(path);
+    if (tooltip || pathText || labelText.length > 15) {
+      label.title = [pathText, tooltip || labelText].filter(Boolean).join("\n");
+    }
+    return label;
+  }
+
+  #assignDevToolsPath(element, path) {
+    const normalized = this.#normalizeDevToolsPath(path);
+    if (normalized) element.dataset.devtoolsPath = normalized;
+  }
+
+  #normalizeDevToolsPath(path) {
+    if (!path) return "";
+    if (Array.isArray(path)) return path.map(String).join(".");
+    return String(path);
+  }
+
+  #getParameterTooltip(labelText) {
+    return this.#tooltipProvider?.getTooltip(labelText) || "";
+  }
+
+  #initBtn(config) {
+    this.#btn = document.createElement("button");
+    this.#btn.innerHTML = "⚙️";
+    this.#btn.className = "hud-control hud-control--square devtools__toggle";
+    this.#btn.type = "button";
+    this.#btn.setAttribute("aria-label", "Параметри розробника");
+
+    UiEventShield.makeSolid(this.#btn);
+
+    if (this.#toggleMountNode !== this.#mountNode) {
+      this.#btn.addEventListener("click", this.#onToggleCallback);
+    } else this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
+      // Old saved coordinates were next to the clock; start the new corner layout at its CSS anchor.
+      id: "devtools_btn_corner",
+      cache: this.#storageCache,
+      noTransform: true,
+      uiSurface: this.#uiSurface,
+    });
+
+    this.#toggleMountNode.appendChild(this.#btn);
+  }
+
+  #initPanel() {
+    this.#panel = document.createElement("div");
+    this.#panel.className = "devtools";
+
+    this.#panel.innerHTML = `
+            <div class="devtools__header">
+                <h2 class="devtools__title">⚙️ DEV TOOLS</h2>
+                <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
+            </div>
+            <div class="devtools__body"></div>
+        `;
+
+    this.#mountNode.appendChild(this.#panel);
+    this.#body = this.#panel.querySelector(".devtools__body");
+
+    UiEventShield.makeSolid(this.#panel);
+
+    this.#panel
+      .querySelector(".devtools__close")
+      .addEventListener("click", this.#onToggleCallback);
+  }
+}
