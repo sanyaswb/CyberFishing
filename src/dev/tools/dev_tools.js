@@ -28,6 +28,8 @@ export class DevTools {
   #rodSpine;
   #scene;
   #zoneEditorState;
+  #getWaterMetric;
+  #createWaterMetric;
   #storageCache;
   #openHouse;
   #openUiCatalog;
@@ -69,6 +71,8 @@ export class DevTools {
       rodSpine = null,
       scene = null,
       zoneEditorState = null,
+      getWaterMetric = null,
+      createWaterMetric = null,
       configRuntime = null,
       configValidation = null,
       catalogs,
@@ -83,6 +87,8 @@ export class DevTools {
   ) {
     this.#storageCache = storageCache;
     this.#zoneEditorState = zoneEditorState;
+    this.#getWaterMetric = getWaterMetric;
+    this.#createWaterMetric = createWaterMetric;
     this.#openHouse = openHouse;
     this.#openUiCatalog = openUiCatalog;
     this.#openGame = openGame;
@@ -221,6 +227,11 @@ export class DevTools {
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
       renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
       updateConfig: (path, value) => this.#updateConfigValue(path, value),
+      getWaterMetric: this.#getWaterMetric,
+      createWaterMetric: this.#createWaterMetric,
+      resetPerspective: id => this.#resetLocationPerspective(id),
+      exportOverrides: () => this.#exportRuntimeOverrides(),
+      importOverrides: () => this.#importRuntimeOverrides(),
     }).render(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
@@ -881,31 +892,37 @@ export class DevTools {
       this.#populatePanel();
       this.#configValidation?.report("reset all overrides");
     });
-    this.#ui.createButtonRow("Export overrides", content, () => {
-      const json = JSON.stringify(
-        this.#configRuntime?.exportOverrides?.() || {},
-        null,
-        2,
-      );
-      console.log("[DevTools] Runtime overrides export:", json);
-      if (navigator?.clipboard?.writeText) {
-        navigator.clipboard.writeText(json).catch(() => {});
-      }
-      window.prompt?.("Copy runtime overrides JSON", json);
-    });
-    this.#ui.createButtonRow("Import overrides", content, () => {
-      const json = window.prompt?.("Paste runtime overrides JSON", "{}");
-      if (!json) return;
-      try {
-        this.#applyImportedOverrides(JSON.parse(json));
-        this.#configValidation?.report("import overrides");
-      } catch (error) {
-        console.warn("[DevTools] Failed to import runtime overrides", error);
-      }
-    });
+    this.#ui.createButtonRow("Export overrides", content, () => this.#exportRuntimeOverrides());
+    this.#ui.createButtonRow("Import overrides", content, () => this.#importRuntimeOverrides());
     if (this.#configValidation) {
       this.#ui.createButtonRow("Validate config", content, () => this.#configValidation.report("manual check"));
     }
+  }
+
+  #resetLocationPerspective(id) {
+    const path = ["CONFIG", "locations", "map", id, "distanceProfile"];
+    const initial = this.#configRuntime?.baseConfig.locations.map[id]?.distanceProfile;
+    // Keep the reset explicit in exports too, including when an imported ancestor override contains old values.
+    this.#updateConfigValue(path, initial ?? { ...this.#config.locations.map[id].distanceProfile, enabled: false });
+    for (const [key, value] of Object.entries(this.#config.locations.map[id].distanceProfile || {})) {
+      this.#ui.syncValue([...path, key], value);
+    }
+  }
+
+  #exportRuntimeOverrides() {
+    const json = JSON.stringify(this.#configRuntime?.exportOverrides?.() || {}, null, 2);
+    console.log("[DevTools] Runtime overrides export:", json);
+    if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(json).catch(() => {});
+    window.prompt?.("Copy runtime overrides JSON", json);
+  }
+
+  #importRuntimeOverrides() {
+    const json = window.prompt?.("Paste runtime overrides JSON", "{}");
+    if (!json) return;
+    try {
+      this.#applyImportedOverrides(JSON.parse(json));
+      this.#configValidation?.report("import overrides");
+    } catch (error) { console.warn("[DevTools] Failed to import runtime overrides", error); }
   }
 
   #resolveEditableRoot(rootName) {

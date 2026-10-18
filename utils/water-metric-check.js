@@ -85,6 +85,58 @@ function checkPerspectiveCurve() {
   assert(fish.x - 1280 < nearFish.x - 1280, "the same 2 m sideways spans fewer pixels far away");
 }
 
+function checkLocationTilt() {
+  const { WorldPerspective } = runtime.importModule("src/game/domain/locations/world_perspective.js");
+  const point = {}, back = {}, plane = {}, velocity = {}, restored = {}, shifted = {};
+  const close = (actual, expected, message, tolerance = 1e-7) =>
+    assert(Math.abs(actual - expected) < tolerance, `${message}: ${actual} != ${expected}`);
+  for (const tiltDegrees of [1, 15, 30, 45, 90]) {
+    for (const linearShare of [0, .5]) {
+      const metric = new WaterMetric({ ...LOCATION, maxMeters: 1000, linearShare, tiltDegrees });
+      const squash = Math.sin(tiltDegrees * Math.PI / 180);
+      close(metric.pixelsPerMeterY(LOCATION.shoreY) / metric.pixelsPerMeterX(LOCATION.shoreY), squash,
+        `G-073: ${tiltDegrees} degrees gives the selected shore tilt`);
+      close(metric.topMeters, 1000, "tilt preserves the configured far distance");
+      const perspective = new WorldPerspective({ getWaterMetric: () => metric });
+      close(perspective.getPerspective(LOCATION.shoreY).squashY, squash, "areas use the metric's angle");
+      for (const [x, y] of [[1280, 1200], [700, 1100], [1800, 900], [1000, 600], [1500, 450]]) {
+        metric.toGround(x, y, point); metric.toVirtual(point.x, point.y, back);
+        close(back.x, x, "tilted ground/map X round-trip"); close(back.y, y, "tilted ground/map Y round-trip");
+        metric.toBasePlane(x, y, plane); metric.fromBasePlane(plane.x, plane.y, back);
+        close(back.x, x, "tilted base/map X round-trip"); close(back.y, y, "tilted base/map Y round-trip");
+        metric.velocityFromBasePlane(x, y, 40, -30, velocity);
+        const dt = 1e-5;
+        metric.fromBasePlane(plane.x + 40 * dt, plane.y - 30 * dt, shifted);
+        close(velocity.x, (shifted.x - x) / dt, "tilted velocity X follows the position derivative", .002);
+        close(velocity.y, (shifted.y - y) / dt, "tilted velocity Y follows the position derivative", .002);
+        metric.velocityToBasePlane(x, y, velocity.x, velocity.y, restored);
+        close(restored.x, 40, "tilted velocity X round-trip"); close(restored.y, -30, "tilted velocity Y round-trip");
+      }
+    }
+  }
+  const minimum = (LOCATION.shoreY - LOCATION.topY) / (50 * Math.sin(Math.PI / 6));
+  const flatTilt = new WaterMetric({ ...LOCATION, maxMeters: minimum, tiltDegrees: 30 });
+  assert.equal(flatTilt.isUniform, false, "a constant-scale tilted plane still needs ground conversion");
+  close(flatTilt.pixelsPerMeterY(600), 25, "no distance compression still preserves the selected tilt");
+  assert.doesNotThrow(() => new WaterMetric({ ...LOCATION, maxMeters: 25.6, tiltDegrees: 30 }),
+    "the exact minimum is accepted despite sine's floating-point rounding");
+  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 20, tiltDegrees: 30 }), /below/u,
+    "an incompatible far distance cannot make metres grow larger away from shore");
+  for (const tiltDegrees of [0, -1, 91, NaN, Infinity]) {
+    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 1000, tiltDegrees }), /tiltDegrees/u);
+  }
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { error() {} } });
+  const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
+  const profile = { enabled: true, linearShare: 0, maxMeters: 40, tiltDegrees: 90 };
+  const overhead = resolver.resolve(bounds, profile);
+  profile.tiltDegrees = 30;
+  const tilted = resolver.resolve(bounds, profile);
+  assert.notEqual(tilted, overhead, "editing only this location's angle rebuilds its metric");
+  assert.equal(resolver.resolve(bounds, { ...profile }), tilted, "unchanged tilt keeps the cached metric");
+  profile.tiltDegrees = 1;
+  assert.equal(resolver.resolve(bounds, profile), tilted, "an incompatible live tilt keeps the previous valid metric");
+}
+
 function checkBasePixels() {
   const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
   const close = (actual, expected, message) =>
@@ -231,6 +283,11 @@ function checkPerspectiveStartsAtGreenZoneShore() {
   assert.equal(metric.metersFromShore(moved.bottom), 0, "moving the green zone moves its distance origin");
   assert(perspective.getPerspective(moved.bottom - 1).scale < 1,
     "perspective starts at the edited lower green edge, independently of screen centre");
+  metric = resolver.resolve(bounds, { ...map.distanceProfile, tiltDegrees: 30, maxMeters: 40 });
+  frame.reset(); chumBuilder.buildInto(frame.world);
+  const shoreArea = frame.world.chumZones.getAt(0);
+  assert(Math.abs(shoreArea.radiusY / shoreArea.radiusX - .5) < 1e-8,
+    "actual chum render geometry uses the 30-degree shore angle, independent of camera scale");
 }
 
 // The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
@@ -271,6 +328,7 @@ function checkValidation() {
 
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
+checkLocationTilt();
 checkBasePixels();
 checkGroundPlane();
 checkResolver();

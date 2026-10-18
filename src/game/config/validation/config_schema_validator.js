@@ -1006,9 +1006,11 @@ export class ConfigSchemaValidator {
     this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
     if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
     this.#requireFiniteNumber(`${path}.maxMeters`, profile.maxMeters, { min: Number.MIN_VALUE });
+    if (profile.tiltDegrees !== undefined) this.#requireFiniteNumber(`${path}.tiltDegrees`, profile.tiltDegrees, { min: 1, max: 90 });
     for (const key of ["enabled", "linearShare", "maxMeters"]) {
       this.#requireParameterLabel(`MAP_DB.distanceProfile.${key}`);
     }
+    this.#requireParameterLabel("MAP_DB.distanceProfile.tiltDegrees");
   }
 
   #validateFiniteNumberLeaves(object, basePath) {

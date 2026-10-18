@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-073 Location authors cannot set the water-plane tilt (P2, implemented in v0.42.0)
+Found: 2026-10-18, owner, Pages v0.41.8 and phone screenshot of the DEV editor.
+Reproduce: open the zone editor's perspective group and try setting a shore angle or locating export/reset controls beside it.
+Expected: each location has an editable angle in degrees, clear distance labels and nearby save/reset actions; all metre calculations and render areas agree with the selected tilt.
+Actual: the metric's shore squash is fixed at 1; raw fields `enabled/linearShare/maxMeters` cannot change tilt, labels are truncated and save actions are in another section.
+Resolution: [111](../specs/111-location-perspective-tilt/spec.md). Add per-location `tiltDegrees` (1–90; default 90 preserves existing profiles), extend the shared metric and its exact inverses/velocities, invalidate on angle edits and validate range. Labelled DEV controls reject incompatible angle/distance edits before mutation, show the needed minimum and expose export/import/local reset. Labels wrap instead of truncating.
+Evidence: first focused failure at a requested 1° shore ratio (actual 1); 1/15/30/45/90°, grid, actual chum geometry, live caching and reset/export round-trip covered. Real boat and idle-tackle checks include 30/45° water. Architecture 4, Quick 36, Full 62 pass with unchanged game-cycle baseline. Owner visual/phone acceptance pending.
+
 ### G-072 Perspective stays flat through the near half of the green zone (P2, done in v0.41.8)
 Found: 2026-10-18, owner, Pages v0.41.7.
 Reproduce: enable the DEV metre grid and compare equal chum areas 0, 1 and 2 m from the lower green-zone edge; repeat after pan/rotation.

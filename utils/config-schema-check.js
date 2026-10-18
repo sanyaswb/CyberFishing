@@ -93,6 +93,11 @@ function checkNegativeFixtures() {
     context.reset("canvas.water." + key);
   }
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
+  for (const value of [0, -1, 91, Infinity]) {
+    const tiltedMapDb = JSON.parse(JSON.stringify(options.mapDb));
+    tiltedMapDb.test.distanceProfile.tiltDegrees = value;
+    assert(has(validate({ mapDb: tiltedMapDb }), /distanceProfile\.tiltDegrees/u), "an invalid location tilt is reported");
+  }
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");
   const mapDb = JSON.parse(JSON.stringify(options.mapDb));
@@ -102,6 +107,25 @@ function checkNegativeFixtures() {
     has(profileResult, /distanceProfile\.linearShare: expected < 1/u) &&
     has(profileResult, /distanceProfile\.maxMeters: expected >=/u), "an invalid location distance profile is reported");
   assert.equal(config, context.runtimeConfig);
+}
+
+function checkReporterReadsLiveLocationProfiles() {
+  const runtime = new SourceRuntime({ moduleStubs: {
+    "src/dev/diagnostics/config_validation_reporter.js": { ConfigValidationReporter: class {
+      constructor({ createValidator }) { this.createValidator = createValidator; }
+    } },
+    "src/game/config/validation/config_schema_validator.js": { ConfigSchemaValidator: class {
+      constructor(options) { this.options = options; }
+    } },
+  } });
+  const { composeDevConfigValidation } = runtime.importModule("src/bootstrap/development/dev_config_validation_composition.js");
+  const configRuntime = { runtimeConfig: { locations: { map: { lake: { distanceProfile: { tiltDegrees: 90 } } } } } };
+  const reporter = composeDevConfigValidation({ configRuntime, itemCatalog: {} });
+  const first = reporter.createValidator(LABELS).options.mapDb;
+  configRuntime.runtimeConfig.locations.map = { lake: { distanceProfile: { tiltDegrees: 0 } } };
+  const next = reporter.createValidator(LABELS).options.mapDb;
+  assert.notEqual(first, next, "validation follows a replaced runtime map after an override");
+  assert.equal(next.lake.distanceProfile.tiltDegrees, 0, "the validator sees the current invalid angle, not the startup catalog");
 }
 
 async function checkDevelopmentReporter() {
@@ -142,6 +166,7 @@ async function checkDevelopmentReporter() {
 
 checkComposedConfigs();
 checkNegativeFixtures();
+checkReporterReadsLiveLocationProfiles();
 checkDevelopmentReporter().then(() => {
   console.log("Config schema passed: production and DEV configs validate with 0 errors/warnings and stay unchanged; " +
     "labels, frozen base, override store, fish data, live overrides and version are rejected when invalid; " +

@@ -1,5 +1,6 @@
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
+import { WaterMetric } from "../../game/domain/locations/water_metric.js";
 import { GameplayOverrideReader } from "../../dev/runtime/gameplay_override_reader.js";
 import { BrowserDebugAdapter } from "../../dev/runtime/browser_debug_adapter.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
@@ -106,7 +107,7 @@ async function startGame() {
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
   const mapCatalog = CONFIG.locations.map;
-  const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
+  const configValidation = composeDevConfigValidation({configRuntime, itemCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;
   let readLocationMetric = null;
   let timeControl = null;
@@ -176,6 +177,8 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
+        createWaterMetric: options => new WaterMetric(options),
+        getWaterMetric: () => readLocationMetric?.() ?? null,
         openHouse,
         openUiCatalog: () => pageOverlay.open(),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,

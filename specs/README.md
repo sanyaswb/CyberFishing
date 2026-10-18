@@ -10,6 +10,7 @@ spec-kit work (029); Claude's specs start at 030.
 
 | Spec | Decision | Status | Release |
 | --- | --- | --- | --- |
+| [111](111-location-perspective-tilt/spec.md) | Per-location water tilt, shared metric and readable DEV projection controls | Implemented; owner visual check pending | v0.42.0 |
 | [110](110-dev-zone-editor/spec.md) | DEV zone editor, black background, metre grid and cached WebGL annotations | Implemented; owner visual check pending | v0.41.7 |
 | [109](109-water-metric-perspective/spec.md) | Shared metric for world scale, physics and metre grid | Implemented; owner visual check pending | v0.41.6 |
 | [108](108-line-and-perspective-audit/spec.md) | Idle tackle line-budget constraint and physics audit | Implemented; owner play check pending | v0.41.5 |

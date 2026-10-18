@@ -47,6 +47,13 @@ for (let row = 0; row <= 40; row++) {
 for (let frame = 0; frame < 120; frame++) builder.buildInto(target);
 assert.equal(builder.rebuilds, 1, "120 unchanged frames produce zero geometry rebuilds");
 assert.equal(target.annotations, model); assert.equal(model.lines, lines); assert.equal(model.rects, rects);
+metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
+  maxMeters: 60, linearShare: .5, tiltDegrees: 30 });
+const beforeTilt = builder.rebuilds;
+builder.buildInto(target);
+assert.equal(builder.rebuilds, beforeTilt + 1, "a live angle change invalidates the cached grid");
+assert(Math.abs(model.lines[0].y1 - model.lines[1].y1 - 25) < 1e-8,
+  "one metre of depth near shore is 25 pixels at 30 degrees, matching area height and motion");
 state.setFlag("background", false); builder.buildInto(target); assert.equal(target.backgroundHidden, true);
 state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 3);
 assert.equal(config.locations.map.lake.zones.collisions.length, 1, "visibility never changes gameplay config");
@@ -95,14 +102,23 @@ assert.equal(frame.world.backgroundLayers.count, 0); assert.equal(frame.world.ba
 frame.reset(); assert.equal(frame.world.annotations, null); assert.equal(frame.world.backgroundHidden, false);
 
 const actions = new Map(), edits = [], trees = [];
-const synced = [];
+const synced = [], infoRows = new Map();
+const baseProfile = JSON.parse(JSON.stringify(config.locations.map.lake.distanceProfile));
+let exportCalls = 0, importCalls = 0, resetCalls = 0;
 const ui = { syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {}, createSwitcherRow(label, value, parent, callback) { actions.set(label, callback); },
-  createInputRow(label, value, parent, type, callback) { actions.set(label, callback); }, createInfoRow() {},
+  createInputRow(label, value, parent, type, callback) { actions.set(label, callback); },
+  createInfoRow(label, value) { const element = { innerText: value }; infoRows.set(label, element); return element; },
   createSelectRow(label, options, value, parent, callback) { actions.set(label, callback); },
   createButtonRow(label, parent, callback) { actions.set(label, callback); } };
 new ZoneEditorSection({ ui, state, config, createSection: () => ({ replaceChildren() {} }),
+  getWaterMetric: () => metric,
+  createWaterMetric: options => new WaterMetric(options),
+  exportOverrides: () => exportCalls++, importOverrides: () => importCalls++,
+  resetPerspective: id => { resetCalls++; config.locations.map[id].distanceProfile = JSON.parse(JSON.stringify(baseProfile)); },
   renderTree: (value, parent, path) => trees.push(path), updateConfig: (path, value) => {
-    edits.push(path); config.locations.map.lake.zones[path.at(-1)] = value; mapRevision++;
+    edits.push(path); let target = config;
+    for (const key of path.slice(1, -1)) target = target[key];
+    target[path.at(-1)] = value; mapRevision++;
   } }).render({});
 assert(trees.some(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable.0"));
 actions.get("Мін. крок сітки, м")(-1); assert.equal(synced.at(-1)[1], .25, "the displayed spacing matches the clamped setting");
@@ -113,6 +129,23 @@ assert.notEqual(config.locations.map.lake.zones.castable[0].bounds, config.locat
   "duplicated zones never share writable nested bounds");
 actions.get("Видалити вибрану зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 1);
 assert(edits.every(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable"));
+actions.get("Нахил біля берега, °")(45);
+assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 45, "readable angle control writes the location profile");
+assert.match(infoRows.get("Стан перспективи").innerText, /45°/u);
+const validEdits = edits.length;
+actions.get("Нахил біля берега, °")(1);
+assert.equal(edits.length, validEdits, "an incompatible angle does not mutate the runtime config");
+assert.equal(synced.at(-1)[1], 45, "the displayed rejected angle returns to the accepted value");
+assert.match(infoRows.get("Стан перспективи").innerText, /Не застосовано.*1145/u, "show the minimum distance needed for the requested angle");
+actions.get("Від берега до дальнього краю, м")(60);
+actions.get("Нахил біля берега, °")(30);
+assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 30);
+assert.equal(config.locations.map.lake.distanceProfile.maxMeters, 60);
+actions.get("Експорт правок (усі налаштування DEV)")();
+actions.get("Імпорт правок (усі налаштування DEV)")();
+actions.get("Скинути перспективу цієї локації")();
+assert.equal(exportCalls, 1); assert.equal(importCalls, 1); assert.equal(resetCalls, 1);
+assert.equal(config.locations.map.lake.distanceProfile.maxMeters, baseProfile.maxMeters);
 state.setFlag("enabled", false); builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(target.backgroundHidden, false);
 const bindings = new DevToolsControlBindingRegistry();
 const panel = { contains: element => element === "inside" };
@@ -124,4 +157,27 @@ for (let i = 0; i < 100; i++) {
 }
 bindings.register("same", () => insideCalls++, "inside"); bindings.sync("same", 1);
 assert.equal(outsideCalls, 1); assert.equal(insideCalls, 1, "repeated editor selections release detached bindings and preserve other controls");
+
+// Real DOM-control construction over the existing test document; the panel shell's two selectors are irrelevant
+// to this control contract and are supplied by the document adapter instead of parsing its fixed header HTML.
+const { TestDocument } = require("./testing/keepnet/test_document");
+const controlDocument = new TestDocument(), createElement = controlDocument.createElement.bind(controlDocument);
+controlDocument.createElement = tag => {
+  const element = createElement(tag);
+  element.querySelector = selector => {
+    const child = createElement("div"); child.className = selector.slice(1); element.appendChild(child); return child;
+  };
+  return element;
+};
+const controlRuntime = new SourceRuntime({ globals: { document: controlDocument } });
+const { DevToolsUI } = controlRuntime.importModule("src/dev/tools/dev_tools_ui.js");
+const controlUI = new DevToolsUI(() => {}, {}, null, null, null, controlDocument.body, createElement("div"));
+const fullLabel = "Від берега до дальнього краю, м";
+controlUI.createInputRow(fullLabel, 40, controlDocument.body, "number", () => {});
+assert.equal(controlDocument.byClass("devtools__label").at(-1).innerText, fullLabel,
+  "phone users see the complete parameter name instead of a 15-character truncation");
+const notice = controlUI.createInfoRow("Стан перспективи", "Ready", controlDocument.body);
+notice.innerText = "Rejected";
+assert.equal(controlDocument.byClass("devtools__value").at(-1).innerText, "Rejected");
+controlUI.dispose();
 console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, camera/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing.");

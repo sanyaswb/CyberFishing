@@ -1,7 +1,7 @@
 import { WaterMetric } from "./water_metric.js";
 
 // The water metric of the current location: the castable water bounds (shore line at the bottom edge, centre line
-// between the side edges) and the location's `distanceProfile: { enabled, linearShare, maxMeters }`. A missing or
+// between the side edges) and the location's `distanceProfile: { enabled, linearShare, maxMeters, tiltDegrees }`. A missing or
 // disabled profile gives a uniform metric. The metric is rebuilt only when its inputs change, so per-frame queries
 // allocate nothing.
 //
@@ -16,6 +16,7 @@ export class LocationWaterMetricResolver {
   #centerX = NaN;
   #maxMeters = null;
   #linearShare = null;
+  #tiltDegrees = 90;
 
   constructor({ pixelsPerMeter, logger }) {
     this.#pixelsPerMeter = pixelsPerMeter;
@@ -29,12 +30,14 @@ export class LocationWaterMetricResolver {
     const isProfiled = distanceProfile?.enabled === true;
     const maxMeters = isProfiled ? distanceProfile.maxMeters ?? null : null;
     const linearShare = isProfiled ? distanceProfile.linearShare ?? null : null;
+    const tiltDegrees = isProfiled ? distanceProfile.tiltDegrees ?? 90 : 90;
     if (
       shoreY === this.#shoreY &&
       topY === this.#topY &&
       centerX === this.#centerX &&
       maxMeters === this.#maxMeters &&
-      linearShare === this.#linearShare
+      linearShare === this.#linearShare &&
+      tiltDegrees === this.#tiltDegrees
     ) {
       return this.#metric;
     }
@@ -43,6 +46,7 @@ export class LocationWaterMetricResolver {
     this.#centerX = centerX;
     this.#maxMeters = maxMeters;
     this.#linearShare = linearShare;
+    this.#tiltDegrees = tiltDegrees;
     let metric;
     try {
       metric = new WaterMetric({
@@ -52,6 +56,7 @@ export class LocationWaterMetricResolver {
         centerX,
         maxMeters,
         linearShare: linearShare ?? undefined,
+        tiltDegrees,
       });
     } catch (error) {
       if (this.#metric === null) throw error;

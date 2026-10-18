@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.42.0 - Per-Location Water Tilt
+
+- Each location can set `distanceProfile.tiltDegrees`: 90° looks down, 45° is oblique, smaller angles look lower along the water. The shared metric applies it to distances, movement, grid and area shapes; the rod keeps its screen scale. Existing profiles default to 90° (G-073, spec 111).
+- The zone editor shows readable angle/distance controls, the minimum distance for the selected angle and export/import/local reset buttons. Incompatible edits are explained and rejected before changing config. Long DEV labels wrap instead of being cut off.
+
 ## v0.41.8 - Perspective from the Green-Zone Shore
 
 - Start perspective compression at the lower edge of the green castable zone, removing the flat near half of the location profile. Areas, metre grid, world scale and movement share that shore origin (G-072).

@@ -5,10 +5,15 @@ const LABELS = Object.freeze({ castable: "Закидання · зелений",
 export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
   #category = "castable"; #index = 0; #details = null;
+  #getMetric; #createMetric; #resetPerspective; #exportOverrides; #importOverrides;
 
-  constructor({ ui, state, config, createSection, renderTree, updateConfig }) {
+  constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
+    resetPerspective, exportOverrides, importOverrides }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
+    this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
+    this.#createMetric = createWaterMetric;
+    this.#exportOverrides = exportOverrides; this.#importOverrides = importOverrides;
   }
 
   render(parent) {
@@ -69,10 +74,62 @@ export class ZoneEditorSection {
       }
       this.#update(path, [...zones, zone]); this.#index = zones.length; this.#fill();
     });
-    if (location.distanceProfile) {
-      const profile = this.#createSection("Метри й перспектива", content);
-      this.#renderTree(location.distanceProfile, profile, ["CONFIG", "locations", "map", id, "distanceProfile"]);
+    this.#renderPerspective(content, id, location);
+  }
+
+  #renderPerspective(parent, id, location) {
+    const ui = this.#ui;
+    const content = this.#createSection("Метри й перспектива", parent);
+    const path = ["CONFIG", "locations", "map", id, "distanceProfile"];
+    if (!location.distanceProfile) {
+      ui.createButtonRow("Додати перспективу локації", content, () => {
+        const metric = this.#getMetric?.();
+        if (!metric) return;
+        this.#update(path, { enabled: true, tiltDegrees: 90, linearShare: 0, maxMeters: metric.topMeters });
+        this.#fill();
+      });
+      return;
     }
-    this.#ui.createInfoRow("Зберегти зміни", "Export overrides у RUNTIME OVERRIDES. Reset all overrides повертає конфігурацію.", content);
+    ui.createInfoRow("Кут", "90° — зверху, 45° — похило, менше — нижчий погляд. Відлік від нижньої зеленої грані.", content);
+    ui.createInfoRow("Відстань і глибина", "Дальній край — відстань уздовж води, не глибина водойми. Глибину задає карта глибин локації.", content);
+    const status = ui.createInfoRow("Стан перспективи", "", content);
+    const minimumText = value => (Math.ceil((value - Number.EPSILON * value * 8) * 100) / 100).toFixed(2);
+    const compile = profile => {
+      const metric = this.#getMetric?.();
+      if (!metric) throw new Error("Water metric is not ready");
+      return this.#createMetric({ pixelsPerMeter: metric.pixelsPerMeter, shoreY: metric.shoreY, topY: metric.topY,
+        maxMeters: profile.maxMeters, linearShare: profile.linearShare, tiltDegrees: profile.tiltDegrees ?? 90 });
+    };
+    const showStatus = () => {
+      try {
+        const profile = this.#config.locations.map[id].distanceProfile;
+        if (!profile.enabled) { if (status) status.innerText = "Вимкнено. Перспективне стиснення та нахил не застосовуються."; return; }
+        const metric = compile(profile);
+        if (status) status.innerText = `Увімкнено. Нахил ${metric.tiltDegrees}°. Мінімальна відстань до дальнього краю: ${minimumText(metric.minimumTopMeters)} м.`;
+      } catch (error) { reject(error); }
+    };
+    const reject = error => {
+      if (status) status.innerText = Number.isFinite(error.minimumTopMeters)
+        ? `Не застосовано: для цього кута дальній край має бути не ближче ${minimumText(error.minimumTopMeters)} м. Спочатку збільште відстань.`
+        : "Не застосовано: кут має бути 1–90°, частка — від 0 до менше 1, відстань — додатною. Дочекайтеся завантаження карти.";
+    };
+    const apply = (key, value) => {
+      const current = this.#config.locations.map[id].distanceProfile;
+      try { if (key !== "enabled" || value !== false) compile({ ...current, [key]: value }); }
+      catch (error) { ui.syncValue([...path, key], current[key] ?? (key === "tiltDegrees" ? 90 : undefined)); reject(error); return; }
+      this.#update([...path, key], value);
+      showStatus();
+    };
+    const profile = location.distanceProfile;
+    ui.createSwitcherRow("Перспектива відстаней", profile.enabled, content, value => apply("enabled", value), [...path, "enabled"]);
+    for (const [key, label] of [["tiltDegrees", "Нахил біля берега, °"], ["maxMeters", "Від берега до дальнього краю, м"],
+      ["linearShare", "Частка без подальшого стиснення (0–<1)"]]) {
+      ui.createInputRow(label, profile[key] ?? (key === "tiltDegrees" ? 90 : 0), content, "number", value => apply(key, value), [...path, key]);
+    }
+    ui.createInfoRow("Застосування", "Змінюється сітка, області, масштаб і рух предметів. Для меншого кута може знадобитися більша відстань. Правки діють у цій сесії; експорт скопіює JSON для повторного імпорту.", content);
+    if (this.#resetPerspective) ui.createButtonRow("Скинути перспективу цієї локації", content, () => { this.#resetPerspective(id); this.#fill(); });
+    if (this.#exportOverrides) ui.createButtonRow("Експорт правок (усі налаштування DEV)", content, this.#exportOverrides);
+    if (this.#importOverrides) ui.createButtonRow("Імпорт правок (усі налаштування DEV)", content, this.#importOverrides);
+    showStatus();
   }
 }

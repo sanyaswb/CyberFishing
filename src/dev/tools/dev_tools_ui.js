@@ -117,6 +117,7 @@ export class DevToolsUI {
     valueEl.innerText = value;
     row.appendChild(valueEl);
     parentElement.appendChild(row);
+    return valueEl;
   }
 
   createNavigation(pages, parentElement) {
@@ -299,7 +300,7 @@ export class DevToolsUI {
     label.className = "devtools__label";
     this.#assignDevToolsPath(label, path);
     label.dataset.devtoolsKey = cleanLabelText;
-    label.innerText = this.#formatLabelText(labelText);
+    label.innerText = labelText;
     const tooltip = this.#getParameterTooltip(cleanLabelText);
     const pathText = this.#normalizeDevToolsPath(path);
     if (tooltip || pathText || labelText.length > 15) {
@@ -317,10 +318,6 @@ export class DevToolsUI {
     if (!path) return "";
     if (Array.isArray(path)) return path.map(String).join(".");
     return String(path);
-  }
-
-  #formatLabelText(labelText) {
-    return labelText.length > 15 ? `${labelText.slice(0, 15)}...` : labelText;
   }
 
   #getParameterTooltip(labelText) {

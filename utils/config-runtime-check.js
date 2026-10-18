@@ -185,7 +185,7 @@ function checkDevelopmentInputs() {
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
-    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, WaterMetric: Renderer, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
@@ -221,7 +221,8 @@ function checkDevelopmentInputs() {
   const replacement = {};
   runtime.context.RenderAllocationDiagnostics = replacement;
   assert.equal(ports.getRenderDiagnostics(), replacement, "diagnostics lookup stays live at each cold call site");
-  const rendererOptions = { surface: {} }, synchronizer = {}, progression = {};
+  const locationMetric = {};
+  const rendererOptions = { surface: {}, getWaterMetric: () => locationMetric }, synchronizer = {}, progression = {};
   assert.equal(ports.createWorldDebugRenderer(rendererOptions).options, rendererOptions);
   const locationDebug = ports.createLocationDebugRenderFrameBuilder(rendererOptions).options;
   assert.equal(locationDebug.surface, rendererOptions.surface);
@@ -245,6 +246,8 @@ function checkDevelopmentInputs() {
   assert(sessionDiagnostics.options.listeners instanceof ListenerLifecycle, "DEV session diagnostics own their listener lifecycle");
   assert.equal(sessionDiagnostics.options.listeners.counter, listenerCounter, "DEV diagnostics listeners are counted");
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
+  assert.equal(tools.options.createWaterMetric(rendererOptions).options, rendererOptions, "bootstrap composes candidate metrics for DEV validation");
+  assert.equal(tools.options.getWaterMetric(), locationMetric, "editor controls read the same metric as grid/rendering");
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);
   assert.equal(tools.options.configRuntime, configRuntime);
@@ -542,13 +545,20 @@ function checkLocationMapConfigChanges() {
   const switches = new Map();
   const navigationButtons = new Map();
   let houseOpens = 0, catalogOpens = 0;
-  const ui = new Proxy({body:{},createSection:()=>({}),
+  const ui = new Proxy({body:{},createSection:()=>({replaceChildren(){}}),
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
     createButtonRow(label,parent,click){navigationButtons.set(label,click);},
-    createSwitcherRow(key,value,parent,change,path){switches.set(path.join('.'),change);}},
+    createSwitcherRow(key,value,parent,change,path){if(path)switches.set(path.join('.'),change);}},
     {get:(target,key)=>target[key] || (()=>{})});
   const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
+  const {ZoneEditorState} = source.importModule('src/dev/location/zone_editor_state.js');
+  const {LocationWaterMetricResolver} = source.importModule('src/game/domain/locations/location_water_metric_resolver.js');
+  const {WaterMetric} = source.importModule('src/game/domain/locations/water_metric.js');
+  const editorState = new ZoneEditorState(); editorState.locationId = locationId;
+  const editorMetric = new LocationWaterMetricResolver({pixelsPerMeter:50,logger:console});
   const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,storageCache:{get:()=>({}),set(){}},
+    createWaterMetric:options=>new WaterMetric(options),
+    zoneEditorState:editorState, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].distanceProfile),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
     openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
   tools.toggle();
@@ -566,6 +576,16 @@ function checkLocationMapConfigChanges() {
     change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
     map.update(16,12);verify(index+17,index+18);
   }
+  const perspectivePath = 'locations.map.'+locationId+'.distanceProfile';
+  context.set(perspectivePath+'.tiltDegrees',45);
+  const unrelatedFlag = config.locations.debugGrid;
+  navigationButtons.get('Скинути перспективу цієї локації')();
+  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,90,'the local reset restores the default angle');
+  assert.equal(config.locations.debugGrid,unrelatedFlag,'local reset preserves other DEV settings');
+  const resetSnapshot = JSON.parse(JSON.stringify(context.exportOverrides()));
+  context.set(perspectivePath+'.tiltDegrees',30);
+  context.importOverrides(resetSnapshot);
+  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,90,'export/import preserves the local reset, without resurrecting old child overrides');
   tools.dispose();
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];

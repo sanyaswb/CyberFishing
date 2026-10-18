@@ -12,6 +12,9 @@ version. There are no CSS imports, runtime style installers or build requirement
 DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches; it adds no markup
 or stylesheet. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
+Spec 111 adds labelled tilt/distance fields, explicit validation feedback and existing export/import/local-reset actions
+beside them. DEV labels keep their full text and wrap within a flexible column; info values have their own flexible
+column and numeric inputs/switches keep their control width. No per-frame DOM measurements or writes are added.
 
 | Owner | Responsibility |
 | --- | --- |
