@@ -1,5 +1,6 @@
 // Metres on the water plane of one location. The castable water runs from the shore line (its bottom edge, 0 m) to
-// its top edge. Near shore the depth scale is pixelsPerMeter * sin(tiltDegrees); lateral scale is pixelsPerMeter.
+// its top edge. Projection zoom fits the map height and maxMeters independently of tiltDegrees. Near shore the
+// depth/lateral scale ratio is sin(tiltDegrees). pixelsPerMeter stays the physical base-pixel unit, not the zoom.
 // The lower `linearShare` keeps those scales. Above it, the metres
 // per pixel grow linearly with height, so the scale changes without a kink and the top edge lies at `maxMeters`.
 // The lateral scale at a height is the square root of the depth-axis compression (pinhole camera: lateral pixels per
@@ -16,6 +17,7 @@ export class WaterMetric {
   #pixelsPerMeter;
   #metersPerPixel;
   #depthPixelsPerMeter;
+  #lateralPixelsPerMeter;
   #tiltDegrees;
   #shoreY;
   #heightPx;
@@ -33,9 +35,9 @@ export class WaterMetric {
 
   constructor({ pixelsPerMeter, shoreY, topY, centerX = 0, maxMeters = null, linearShare = 0.5, tiltDegrees = 90 }) {
     const scale = Number(pixelsPerMeter);
-    if (!(scale > 0)) throw new RangeError("WaterMetric requires a positive pixelsPerMeter");
+    if (!(scale > 0) || !Number.isFinite(scale)) throw new RangeError("WaterMetric requires a positive pixelsPerMeter");
     const heightPx = Number(shoreY) - Number(topY);
-    if (!(heightPx > 0)) throw new RangeError("WaterMetric requires the shore below the top edge");
+    if (!(heightPx > 0) || !Number.isFinite(heightPx)) throw new RangeError("WaterMetric requires the shore below the top edge");
     this.#pixelsPerMeter = scale;
     this.#shoreY = Number(shoreY);
     this.#heightPx = heightPx;
@@ -46,7 +48,13 @@ export class WaterMetric {
       throw new RangeError("WaterMetric tiltDegrees must be in [1, 90]");
     }
     this.#tiltDegrees = angle;
-    this.#depthPixelsPerMeter = scale * Math.sin(angle * Math.PI / 180);
+    const length = this.#isUniform ? null : Number(maxMeters);
+    if (!this.#isUniform && (!(length > 0) || !Number.isFinite(length))) {
+      throw new RangeError("WaterMetric maxMeters must be positive and finite");
+    }
+    this.#depthPixelsPerMeter = this.#isUniform ? scale : Math.max(scale, heightPx / length);
+    this.#lateralPixelsPerMeter = this.#depthPixelsPerMeter / Math.sin(angle * Math.PI / 180);
+    if (!Number.isFinite(this.#lateralPixelsPerMeter)) throw new RangeError("WaterMetric projection scale must be finite");
     this.#metersPerPixel = 1 / this.#depthPixelsPerMeter;
     if (this.#isUniform) {
       this.#joinHeightPx = heightPx;
@@ -58,16 +66,7 @@ export class WaterMetric {
       this.#joinHeightPx = heightPx * share;
       this.#curveHeightPx = heightPx - this.#joinHeightPx;
       const uniformTopMeters = heightPx / this.#depthPixelsPerMeter;
-      if (!Number.isFinite(Number(maxMeters))) throw new RangeError("WaterMetric maxMeters must be finite");
-      const extraMeters = Number(maxMeters) - uniformTopMeters;
-      const roundingTolerance = Number.EPSILON * Math.max(1, uniformTopMeters, Number(maxMeters)) * 8;
-      if (extraMeters < -roundingTolerance) {
-        const error = new RangeError(
-          `WaterMetric maxMeters ${maxMeters} is below the uniform ${uniformTopMeters.toFixed(2)} m of this water at ${angle} degrees`,
-        );
-        error.minimumTopMeters = uniformTopMeters;
-        throw error;
-      }
+      const extraMeters = length - uniformTopMeters;
       this.#curveCoefficient = Math.max(0, extraMeters) / (this.#curveHeightPx * this.#curveHeightPx);
     }
     this.#joinMeters = this.#joinHeightPx / this.#depthPixelsPerMeter;
@@ -94,10 +93,6 @@ export class WaterMetric {
 
   get tiltDegrees() {
     return this.#tiltDegrees;
-  }
-
-  get minimumTopMeters() {
-    return this.#heightPx / this.#depthPixelsPerMeter;
   }
 
   get topMeters() {
@@ -217,7 +212,7 @@ export class WaterMetric {
   // Pixels per metre sideways at height y.
   pixelsPerMeterX(y) {
     if (this.#isUniform) return this.#pixelsPerMeter;
-    return this.#pixelsPerMeter * Math.sqrt(this.#metersPerPixel / this.#metersPerPixelAt(y));
+    return this.#lateralPixelsPerMeter * Math.sqrt(this.#metersPerPixel / this.#metersPerPixelAt(y));
   }
 
   // Ground distance in metres between two virtual points.
@@ -247,7 +242,7 @@ export class WaterMetric {
     const lateralScale = this.pixelsPerMeterX(y);
     const curvePx = this.#shoreY - y - this.#joinHeightPx;
     const lateralScaleSlope = curvePx > 0 && curvePx < this.#curveHeightPx
-      ? this.#pixelsPerMeter * Math.sqrt(this.#metersPerPixel) * this.#curveCoefficient * metersPerPixel ** -1.5
+      ? this.#lateralPixelsPerMeter * Math.sqrt(this.#metersPerPixel) * this.#curveCoefficient * metersPerPixel ** -1.5
       : 0;
     this.#jacobianXX = lateralScale / this.#pixelsPerMeter;
     this.#jacobianYY = 1 / (metersPerPixel * this.#pixelsPerMeter);

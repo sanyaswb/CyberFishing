@@ -20,6 +20,21 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-075 DEV Overlay opens by default (P3, done in v0.42.1)
+Found: 2026-10-19, owner request during perspective testing.
+Reproduce: open DEV with base settings; diagnostic Overlay starts visible.
+Expected: Overlay starts off and can be enabled manually in DevTools.
+Actual: `CONFIG.debug.overlay` defaults to true.
+Resolution: set the existing master flag to false. Keep module selections and the manual toggle unchanged.
+
+### G-074 Perspective tilt forces a different location length (P2, done in v0.42.1)
+Found: 2026-10-19, owner, v0.42.0.
+Reproduce: keep a 30 m location and select 15°; the editor refuses unless the far distance grows to at least 49.46 m.
+Expected: angle and length are independent inputs; projection zoom fits the authored water rectangle. Restore the original 30° shore angle and 30 m far distance.
+Actual: near-shore projection scale was fixed to the physical base-pixel unit, imposing an angle-dependent minimum length.
+Resolution: [112](../specs/112-independent-location-projection/spec.md). Fit the shared metric automatically while retaining physical metre/base-pixel units, exact inverses and velocity derivatives. Remove the obsolete minimum getter and UI restriction. Retain compression from the lower green-zone edge.
+Evidence: first focused check rejected 1° at 0.1 m. Independent length/angle matrix, actual editor edits, grid/chum/landing geometry, boat and idle-tackle regressions cover the fitted mapping. Architecture 4, Quick 36, Full 62 pass; game-cycle baseline unchanged. Owner visual/phone check pending.
+
 ### G-073 Location authors cannot set the water-plane tilt (P2, implemented in v0.42.0)
 Found: 2026-10-18, owner, Pages v0.41.8 and phone screenshot of the DEV editor.
 Reproduce: open the zone editor's perspective group and try setting a shore angle or locating export/reset controls beside it.

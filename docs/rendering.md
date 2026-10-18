@@ -148,9 +148,10 @@ overdraw and texture memory, not from game code.
 
 Spec 109: world-object sizes and ground-area squash use the same WaterMetric as movement and metre-grid projection;
 do not add a second distance/angle scaling curve. Apply viewport camera scale once. The screen/Spine rod is excluded.
-Spec 111: the location's `distanceProfile.tiltDegrees` sets the near-shore depth scale to `pixelsPerMeter * sin(angle)`.
-The same metric owns the inverse and velocity Jacobian. A missing angle is 90° and preserves the previous curve.
-The far distance must fit the chosen angle; do not introduce a render-only squash to bypass that constraint.
+Specs 111/112: `distanceProfile.tiltDegrees` is independent of `maxMeters`. WaterMetric fits near-shore depth pixels/metre
+to `max(pixelsPerMeter, waterHeight / maxMeters)` and lateral pixels/metre to that scale divided by `sin(angle)`.
+Physical base pixels remain metres × pixelsPerMeter; they are not projection zoom. The same metric owns the inverse
+and velocity Jacobian. A missing angle is 90°; ordinary 90° profiles preserve the previous curve. Do not add a render-only squash.
 Spec 110: optional scene annotations use reusable geometry and separate cached static/moving Graphics, invalidated
 only by their own model revision. Moving zones never rebuild the static metre grid. Canvas consumes the same commands
 only on scene fallback. Diagnostic visibility never owns

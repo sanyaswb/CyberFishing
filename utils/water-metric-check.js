@@ -114,14 +114,11 @@ function checkLocationTilt() {
       }
     }
   }
-  const minimum = (LOCATION.shoreY - LOCATION.topY) / (50 * Math.sin(Math.PI / 6));
-  const flatTilt = new WaterMetric({ ...LOCATION, maxMeters: minimum, tiltDegrees: 30 });
+  const flatTilt = new WaterMetric({ ...LOCATION, maxMeters: 5, tiltDegrees: 30 });
   assert.equal(flatTilt.isUniform, false, "a constant-scale tilted plane still needs ground conversion");
-  close(flatTilt.pixelsPerMeterY(600), 25, "no distance compression still preserves the selected tilt");
-  assert.doesNotThrow(() => new WaterMetric({ ...LOCATION, maxMeters: 25.6, tiltDegrees: 30 }),
-    "the exact minimum is accepted despite sine's floating-point rounding");
-  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 20, tiltDegrees: 30 }), /below/u,
-    "an incompatible far distance cannot make metres grow larger away from shore");
+  close(flatTilt.pixelsPerMeterY(600), 128, "short water is fitted into the authored map height");
+  close(flatTilt.pixelsPerMeterY(600) / flatTilt.pixelsPerMeterX(600), .5,
+    "automatic fitting keeps the selected angle even on a short constant-scale plane");
   for (const tiltDegrees of [0, -1, 91, NaN, Infinity]) {
     assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 1000, tiltDegrees }), /tiltDegrees/u);
   }
@@ -133,8 +130,54 @@ function checkLocationTilt() {
   const tilted = resolver.resolve(bounds, profile);
   assert.notEqual(tilted, overhead, "editing only this location's angle rebuilds its metric");
   assert.equal(resolver.resolve(bounds, { ...profile }), tilted, "unchanged tilt keeps the cached metric");
-  profile.tiltDegrees = 1;
-  assert.equal(resolver.resolve(bounds, profile), tilted, "an incompatible live tilt keeps the previous valid metric");
+  profile.tiltDegrees = 0;
+  assert.equal(resolver.resolve(bounds, profile), tilted, "an out-of-range live tilt keeps the previous valid metric");
+}
+
+// G-074: angle and far distance are independent authoring inputs, with projection scale fitted automatically.
+function checkIndependentTiltAndLength() {
+  assert.doesNotThrow(() => new WaterMetric({ ...LOCATION, maxMeters: .1, tiltDegrees: 1 }),
+    "G-074: 1 degree at 0.1 m must be fitted without changing either setting");
+  const point = {}, back = {}, velocity = {}, restored = {}, plane = {}, shifted = {};
+  const close = (actual, expected, label, epsilon = 1e-7) =>
+    assert(Math.abs(actual - expected) < epsilon, `${label}: ${actual} != ${expected}`);
+  for (const maxMeters of [.1, 1, 5, 12.8, 30, 1000]) {
+    for (const linearShare of [0, .5]) {
+      const overhead = new WaterMetric({ ...LOCATION, maxMeters, linearShare, tiltDegrees: 90 });
+      for (const tiltDegrees of [1, 15, 30, 45, 90]) {
+        let metric;
+        assert.doesNotThrow(() => { metric = new WaterMetric({ ...LOCATION, maxMeters, linearShare, tiltDegrees }); },
+          `G-074: ${tiltDegrees} degrees must work at ${maxMeters} m without changing the length`);
+        close(metric.topMeters, maxMeters, "the far edge keeps its authored length");
+        close(metric.topBasePixels, maxMeters * 50, "physical base-pixel units stay independent of projection zoom");
+        close(metric.pixelsPerMeterY(1160) / metric.pixelsPerMeterX(1160), Math.sin(tiltDegrees * Math.PI / 180),
+          "the chosen shore angle survives automatic fitting");
+        let previousX = Infinity, previousY = Infinity;
+        for (const fraction of [0, .1, .4, .8, 1]) {
+          const meters = maxMeters * fraction;
+          const y = metric.yAtMeters(meters);
+          close(y, overhead.yAtMeters(meters), "editing only the angle does not alter depth-axis metre positions");
+          close(metric.metersFromShore(y), meters, "the fitted depth projection remains invertible");
+          metric.toVirtual(.25, meters, point); metric.toGround(point.x, point.y, back);
+          close(back.x, .25, "fitted lateral projection inverts"); close(back.y, meters, "fitted depth projection inverts");
+          const px = metric.pixelsPerMeterX(y), py = metric.pixelsPerMeterY(y);
+          assert(px <= previousX + 1e-7 && py <= previousY + 1e-7, "scale never grows away from shore");
+          previousX = px; previousY = py;
+        }
+        // At an off-centre point, verify the exact motion Jacobian on the fitted plane too.
+        metric.toVirtual(.2, maxMeters * .3, point);
+        metric.toBasePlane(point.x, point.y, plane);
+        metric.velocityFromBasePlane(point.x, point.y, 1, -.5, velocity);
+        const dt = Math.min(1e-5, maxMeters * 1e-5);
+        metric.fromBasePlane(plane.x + dt, plane.y - .5 * dt, shifted);
+        const tolerance = 1e-4 * Math.max(1, Math.abs(velocity.x), Math.abs(velocity.y));
+        close(velocity.x, (shifted.x - point.x) / dt, "fitted X velocity matches finite differences", tolerance);
+        close(velocity.y, (shifted.y - point.y) / dt, "fitted Y velocity matches finite differences", tolerance);
+        metric.velocityToBasePlane(point.x, point.y, velocity.x, velocity.y, restored);
+        close(restored.x, 1, "fitted X velocity round-trip"); close(restored.y, -.5, "fitted Y velocity round-trip");
+      }
+    }
+  }
 }
 
 function checkBasePixels() {
@@ -199,15 +242,15 @@ function checkResolver() {
   const edited = resolver.resolve(bounds, profile);
   assert(edited !== profiled && edited.metersFromShore(900) > 5.2 + 1e-6,
     "a live linearShare edit rebuilds the metric");
-  profile.maxMeters = 10;
+  profile.maxMeters = 0;
   assert.equal(resolver.resolve(bounds, profile), edited, "an invalid live edit keeps the previous metric");
   assert.equal(resolver.resolve(bounds, profile), edited, "the rejected input is not rebuilt every frame");
-  assert(errors.length === 1 && /below the uniform 12.80 m/u.test(errors[0]), "the rejection is logged once");
+  assert(errors.length === 1 && /positive and finite/u.test(errors[0]), "the rejection is logged once");
   profile.maxMeters = 30;
   assert.notEqual(resolver.resolve(bounds, profile), edited, "a valid edit after a rejection applies again");
   assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, profile), edited, "changed bounds rebuild the metric");
   assert.throws(() => new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: null })
-    .resolve(bounds, { enabled: true, linearShare: 0.5, maxMeters: 10 }), /below the uniform/u,
+    .resolve(bounds, { enabled: true, linearShare: 0.5, maxMeters: 0 }), /positive and finite/u,
   "an invalid profile at startup fails fast");
 }
 
@@ -222,6 +265,8 @@ function checkTestLocationProfile() {
   const metric = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter, logger: null })
     .resolve(bounds, map.distanceProfile);
   assert.equal(map.distanceProfile.enabled, true, "the test location has perspective metres enabled");
+  assert.equal(map.distanceProfile.tiltDegrees, 30, "restore the original authored shore angle");
+  assert.equal(map.distanceProfile.maxMeters, 30, "restore the original authored far distance");
   assert(Math.abs(metric.topMeters - map.distanceProfile.maxMeters) < 1e-9,
     "the far edge of the test location lies at maxMeters");
   assert(Math.abs(metric.metersFromShore(bounds.bottom - (bounds.bottom - bounds.top) * map.distanceProfile.linearShare) -
@@ -237,6 +282,7 @@ function checkPerspectiveStartsAtGreenZoneShore() {
   const { ViewportProjector } = runtime.importModule("src/game/application/viewport/viewport_projector.js");
   const { CastingRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/casting_render_frame_builder.js");
   const { BoatChumRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/boat_chum_render_frame_builder.js");
+  const { LandingAreaRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/landing_area_render_frame_builder.js");
   const { GameRenderFrame } = runtime.importModule("src/game/presentation/rendering/game_render_frame.js");
   const locations = CONFIG.locations, map = locations.map.test, zone = map.zones.castable[0], cell = locations.cellSize;
   const bounds = { left: zone.x * cell, right: (zone.x + zone.w) * cell,
@@ -281,13 +327,22 @@ function checkPerspectiveStartsAtGreenZoneShore() {
   const moved = { ...bounds, top: bounds.top + 170, bottom: bounds.bottom + 170 };
   metric = resolver.resolve(moved, map.distanceProfile);
   assert.equal(metric.metersFromShore(moved.bottom), 0, "moving the green zone moves its distance origin");
-  assert(perspective.getPerspective(moved.bottom - 1).scale < 1,
+  assert(perspective.getPerspective(moved.bottom - 1).scale < perspective.getPerspective(moved.bottom).scale,
     "perspective starts at the edited lower green edge, independently of screen centre");
   metric = resolver.resolve(bounds, { ...map.distanceProfile, tiltDegrees: 30, maxMeters: 40 });
   frame.reset(); chumBuilder.buildInto(frame.world);
   const shoreArea = frame.world.chumZones.getAt(0);
   assert(Math.abs(shoreArea.radiusY / shoreArea.radiusX - .5) < 1e-8,
     "actual chum render geometry uses the 30-degree shore angle, independent of camera scale");
+  const landingBuilder = new LandingAreaRenderFrameBuilder({ projector, getWaterMetric: () => metric,
+    config: { ...CONFIG, locations: { ...CONFIG.locations, showCatchZone: true } },
+    canvasMetrics, getRodScreenX: () => projector.virtualToScreen(centerX, bounds.bottom, shore).x,
+    getNet: () => null, landingPolicyResolver: { resolve: () => ({ getLandingDistanceMeters: () => 1 }) } });
+  landingBuilder.buildInto({ target: frame.fishing.fightAreas, bottom: bounds.bottom, debug: {}, equipment: {} });
+  assert.equal(frame.fishing.fightAreas.catchZone.visible, true, "the tested landing area is visible");
+  const landingRadius = frame.fishing.fightAreas.catchZone.radiusX / projector.getScale();
+  assert(Math.abs(metric.distanceMeters(centerX, bounds.bottom, centerX + landingRadius, bounds.bottom) - 1) < 1e-8,
+    "the actual landing area spans its physical metre after automatic projection zoom");
 }
 
 // The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
@@ -317,8 +372,10 @@ function checkAccuracyIndependentOfProfile() {
 }
 
 function checkValidation() {
-  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
-    "a maxMeters below the uniform distance is rejected");
+  for (const maxMeters of [0, -1, NaN, Infinity]) {
+    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters }), /positive and finite/u,
+      "non-positive or non-finite lengths are rejected");
+  }
   assert.throws(() => new WaterMetric({ ...LOCATION, pixelsPerMeter: 0 }), /positive pixelsPerMeter/u);
   assert.throws(() => new WaterMetric({ ...LOCATION, shoreY: 500 }), /shore below the top edge/u);
   assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 1 }), /linearShare/u);
@@ -328,6 +385,7 @@ function checkValidation() {
 
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
+checkIndependentTiltAndLength();
 checkLocationTilt();
 checkBasePixels();
 checkGroundPlane();
@@ -340,4 +398,4 @@ console.log("Water metric passed: the uniform metric equals the plain pixelsPerM
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
   "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
-  "the previous metric on an invalid live edit; the shipped profile compresses cast/chum areas from the green-zone shore through pan/rotation and edited bounds, and reaches maxMeters at its far edge; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");
+  "the previous metric on an invalid live edit; independent angles/lengths fit automatically with exact endpoints, inverses and velocity Jacobians; the shipped 30-degree/30-m profile compresses cast/chum areas from the green-zone shore through pan/rotation and edited bounds; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");

@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.42.1 - Independent Tilt and Length
+
+- Location tilt and length can be tuned independently: projection scale fits automatically, using the same metric for physics, grid and rendering. Restore the test location's original 30° shore angle and 30 m far distance; compression starts at the lower green-zone edge (G-074, spec 112).
+- DEV Overlay starts off by default and can still be enabled manually (G-075).
+
 ## v0.42.0 - Per-Location Water Tilt
 
 - Each location can set `distanceProfile.tiltDegrees`: 90° looks down, 45° is oblique, smaller angles look lower along the water. The shared metric applies it to distances, movement, grid and area shapes; the rod keeps its screen scale. Existing profiles default to 90° (G-073, spec 111).

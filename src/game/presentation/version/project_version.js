@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.42.0";
+export const CURRENT_PROJECT_VERSION = "0.42.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "location-water-tilt",
-  updatedAt: "2026-10-18",
+  codename: "independent-location-projection",
+  updatedAt: "2026-10-19",
   notes: Object.freeze([
+    "Tilt and location length are independent with automatic projection fitting; initial 30-degree/30-m defaults restored; DEV Overlay starts off",
     "Each location has an editable shore tilt in degrees; readable DEV controls show distance constraints and provide export/import/local reset",
     "Perspective compression starts at the lower green-zone edge for areas, metre grid, world scale and movement",
     "DEV zone editor shows exact metre grid and all zone geometry, hides the background to black, edits runtime geometry and caches WebGL annotations",

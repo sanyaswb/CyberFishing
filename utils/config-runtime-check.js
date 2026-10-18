@@ -580,12 +580,12 @@ function checkLocationMapConfigChanges() {
   context.set(perspectivePath+'.tiltDegrees',45);
   const unrelatedFlag = config.locations.debugGrid;
   navigationButtons.get('Скинути перспективу цієї локації')();
-  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,90,'the local reset restores the default angle');
+  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,30,'the local reset restores the original 30-degree angle');
   assert.equal(config.locations.debugGrid,unrelatedFlag,'local reset preserves other DEV settings');
   const resetSnapshot = JSON.parse(JSON.stringify(context.exportOverrides()));
-  context.set(perspectivePath+'.tiltDegrees',30);
+  context.set(perspectivePath+'.tiltDegrees',15);
   context.importOverrides(resetSnapshot);
-  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,90,'export/import preserves the local reset, without resurrecting old child overrides');
+  assert.equal(config.locations.map[locationId].distanceProfile.tiltDegrees,30,'export/import preserves the local reset, without resurrecting old child overrides');
   tools.dispose();
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];

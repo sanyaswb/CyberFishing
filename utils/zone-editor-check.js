@@ -52,8 +52,10 @@ metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 5
 const beforeTilt = builder.rebuilds;
 builder.buildInto(target);
 assert.equal(builder.rebuilds, beforeTilt + 1, "a live angle change invalidates the cached grid");
-assert(Math.abs(model.lines[0].y1 - model.lines[1].y1 - 25) < 1e-8,
-  "one metre of depth near shore is 25 pixels at 30 degrees, matching area height and motion");
+assert(Math.abs(model.lines[0].y1 - model.lines[1].y1 - 50) < 1e-8,
+  "angle edits keep depth-axis metre positions while fitting the lateral scale");
+assert(Math.abs(metric.pixelsPerMeterX(1000) - 100) < 1e-8,
+  "the fitted lateral scale gives the selected 30-degree shore ratio");
 state.setFlag("background", false); builder.buildInto(target); assert.equal(target.backgroundHidden, true);
 state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 3);
 assert.equal(config.locations.map.lake.zones.collisions.length, 1, "visibility never changes gameplay config");
@@ -134,9 +136,19 @@ assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 45, "readabl
 assert.match(infoRows.get("Стан перспективи").innerText, /45°/u);
 const validEdits = edits.length;
 actions.get("Нахил біля берега, °")(1);
-assert.equal(edits.length, validEdits, "an incompatible angle does not mutate the runtime config");
-assert.equal(synced.at(-1)[1], 45, "the displayed rejected angle returns to the accepted value");
-assert.match(infoRows.get("Стан перспективи").innerText, /Не застосовано.*1145/u, "show the minimum distance needed for the requested angle");
+assert.equal(edits.length, validEdits + 1, "a low angle is accepted without increasing the length");
+assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 1);
+assert.equal(config.locations.map.lake.distanceProfile.maxMeters, baseProfile.maxMeters, "editing the angle preserves the authored length");
+actions.get("Від берега до дальнього краю, м")(5);
+assert.equal(config.locations.map.lake.distanceProfile.maxMeters, 5, "a short location is accepted at the low angle");
+assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 1, "editing the length preserves the angle");
+const beforeInvalidEdits = edits.length;
+actions.get("Нахил біля берега, °")(0);
+assert.equal(edits.length, beforeInvalidEdits, "out-of-range angles still reject before a config write");
+assert.equal(synced.at(-1)[1], 1, "the displayed invalid angle returns to the accepted value");
+assert.match(infoRows.get("Стан перспективи").innerText, /Не застосовано/u);
+actions.get("Від берега до дальнього краю, м")(0);
+assert.equal(edits.length, beforeInvalidEdits, "non-positive distances still reject before a config write");
 actions.get("Від берега до дальнього краю, м")(60);
 actions.get("Нахил біля берега, °")(30);
 assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 30);

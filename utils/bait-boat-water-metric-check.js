@@ -166,7 +166,7 @@ function near(actual, expected, tolerance, label = "") {
 }
 
 const speeds = checkFlatLakeEquivalence();
-for (const tiltDegrees of [30, 45]) {
+for (const tiltDegrees of [1, 15, 30, 45]) {
   checkFlatLakeEquivalence(new WaterMetric({ pixelsPerMeter: 50, shoreY: 800, topY: 0, centerX: 1000,
     maxMeters: 40, linearShare: .5, tiltDegrees }));
 }
@@ -175,4 +175,4 @@ checkMapOutput();
 console.log(`Bait boat water metric passed: on a 40 m perspective water the boat moves in ground metres exactly like on `
   + `a flat lake there and back (cruise ${speeds.near.toFixed(2)} m/s near, ${speeds.far.toFixed(2)} m/s far), a uniform `
   + "metric leaves it bitwise unchanged, and its velocity, headings, target, waypoints, start and sensor rays come back on "
-  + "the map; 30/45-degree tilted locations keep the same ground motion.");
+  + "the map; 1/15/30/45-degree locations keep the same ground motion without extending the water.");

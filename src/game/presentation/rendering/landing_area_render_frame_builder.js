@@ -69,7 +69,7 @@ export class LandingAreaRenderFrameBuilder {
       bottom,
       catchY,
       width,
-      radiusBasePixels * scale,
+      radiusBasePixels * metric.pixelsPerMeterX(bottom) / metric.pixelsPerMeter * scale,
       (bottom - metric.yAtBasePixels(radiusBasePixels)) * scale,
     );
     this.#buildLastDashZone(
