@@ -108,6 +108,7 @@ import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
 import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
+import { InactiveSceneLayer, SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
 import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
 import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
 import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
@@ -159,6 +160,7 @@ export class GameCompositionRoot {
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
   #frameProbe;
+  #createSceneLayer;
   #storageCache;
   #rendering;
   #uiSurface;
@@ -190,6 +192,7 @@ export class GameCompositionRoot {
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
+    createSceneLayer,
     uiSurface = null,
     toolbarMountNode = null,
   } = {}) {
@@ -198,7 +201,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe,
+      createInventorySplitSource, createFrameProbe, createSceneLayer,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -246,6 +249,8 @@ export class GameCompositionRoot {
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
       this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
+    // WebGL scene layer (spec 103): the DEV Pixi layer behind dev.html?scene=webgl, inactive otherwise.
+    this.#createSceneLayer = createSceneLayer;
     this.#rendering = new GameRenderComposition({
       readRenderDiagnostics: () => this.#readRenderDiagnostics(),
       createOptionalDiagnostic: (factory, name, args, methods) =>
@@ -375,6 +380,9 @@ export class GameCompositionRoot {
     const {
       surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
     } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts });
+    const sceneLayer = own(this.#createSceneLayer == null ? new InactiveSceneLayer()
+      : this.#createSceneLayer({ canvas, canvasMetrics }));
+    contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
       outcomeStyleResolver,
@@ -475,6 +483,7 @@ export class GameCompositionRoot {
         assetPreloadCoordinator,
         locationAssetLoader,
         pipeline,
+        sceneLayer,
         locationDebugMapBuilder,
         hudStyleResolver,
         fightAreaStyleResolver,

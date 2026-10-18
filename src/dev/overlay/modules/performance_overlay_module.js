@@ -6,6 +6,7 @@ const BAR_SCALE_MS = 66;
 const SECTION_LABELS = Object.freeze({
   update: "update (логіка)",
   draw: "draw (рендер усього)",
+  scene: "  сцена WebGL (Pixi)",
   world: "  фон і світ",
   casting: "  закид",
   fishing: "  риболовля",
@@ -17,7 +18,7 @@ const SECTION_LABELS = Object.freeze({
 
 // DEV overlay "⚡ ПРОДУКТИВНІСТЬ" (spec 101): FPS, frame interval and game-loop CPU work per frame against the
 // 16.7 ms budget, the time per section, the freeze bar (one bar per frame: green within budget, orange jank,
-// red freeze), long tasks and memory, and the pixel load (canvas backing store and Spine GL surface).
+// red freeze), long tasks and memory, and the pixel load (canvas backing store, WebGL scene and Spine GL surface).
 export class PerformanceOverlayModule extends OverlayModule {
   #profiler;
   #readRenderInfo;
@@ -64,6 +65,8 @@ export class PerformanceOverlayModule extends OverlayModule {
         (info.backingWidth * info.backingHeight / 1e6).toFixed(2)} Мпікс`, { metricKey: "perf.canvas" });
       if (info.memoryMb !== null) html += this.metricRow("JS heap", `${info.memoryMb.toFixed(0)} МБ`, { metricKey: "perf.heap" });
     }
+    const scenePixels = snapshot.gauges["scene-pixels"];
+    if (scenePixels) html += this.metricRow("сцена WebGL (backing)", `${(scenePixels / 1e6).toFixed(2)} Мпікс`, { metricKey: "perf.scene" });
     const glPixels = snapshot.gauges["gl-pixels"];
     if (glPixels) html += this.metricRow("Spine GL поверхня", `${(glPixels / 1e6).toFixed(2)} Мпікс`, { metricKey: "perf.gl" });
     html += `<div class="debug-overlay__note debug-overlay__text debug-overlay__text--muted">GPU напряму не вимірюється сторінкою: великий «поза CPU гри» при малому CPU вказує на GPU/компоновку.</div>`;

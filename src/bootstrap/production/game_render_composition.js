@@ -372,6 +372,8 @@ export class GameRenderComposition {
       }),
       frameBuilder,
       pipeline: runtime.rendering.pipeline,
+      sceneLayer: runtime.rendering.sceneLayer,
+      probe: this.#frameProbe,
       getBounds: appPorts.getDynamicBounds,
       getInvalidCastMarker: appPorts.getInvalidCastMarker,
       isDebugEnabled: appPorts.isDebugEnabled,

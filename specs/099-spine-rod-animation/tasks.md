@@ -31,6 +31,8 @@ the owner agrees (UI change rule).
   with the package LICENSE, writes `vendor/manifest.json` (name, version, npm integrity, bundled spine-core, source
   path, SHA-256 of both files, importer) and `vendor/package.json` (`"type": "module"`, so Node imports the `.js` as
   ESM). `--check` compares vendor/ with what the installed package would produce; it passes after a write.
+  Spec 103 stage 0 replaced the script with `utils/vendor-libraries.js`, which writes this entry unchanged together with
+  the Pixi scene bundle's entry (`node utils/vendor-libraries.js`, `--check`).
 - [X] T007 [D2] `utils/architecture-check.js` `vendor` rule: vendor files are read, not held to project rules; each
   is listed in the manifest with matching SHA-256 (module and licence); a vendor module has no imports; only its
   manifest importer may import it; `vendor/package.json` declares the module type; unlisted vendor files fail. Seven

@@ -91,8 +91,8 @@ Remove code and files that are no longer needed (prove unreachability and review
 
 **Utils cleanup step (owner, 2026-10-18): every spec or stage that replaces a tool ends with removing the tools that
 are now certainly unused.** Before the commit, list the `utils/` scripts, test helpers, fixtures, vendor files and
-`package.json` scripts or devDependencies that the change made obsolete (example: `utils/vendor-spine.js` once
-`utils/vendor-libraries.js` writes the manifest). For each one:
+`package.json` scripts or devDependencies that the change made obsolete (example: spec 103 stage 0 removed
+`utils/vendor-spine.js` once `utils/vendor-libraries.js` wrote the whole manifest). For each one:
 - prove it has no consumer: grep the repository, `utils/testing/suites/check_manifest.js`, `package.json` scripts,
   docs and specs that tell people to run it;
 - delete it in the same change and update the docs that named it;

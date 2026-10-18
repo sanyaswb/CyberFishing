@@ -177,6 +177,7 @@ function checkDevelopmentInputs() {
   const openHouse = () => openedScreens.push("house");
   const catalogLabels = { pageTitle: "Catalog fixture" };
   const debugModules = { catchResolution: true };
+  const frameProfiler = {}, sceneFactoryCalls = [], createDevSceneLayerFactory = (options) => { sceneFactoryCalls.push(options); return null; };
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
@@ -191,7 +192,7 @@ function checkDevelopmentInputs() {
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; } },
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
-    pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance } });
+    pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance, frameProfiler, createDevSceneLayerFactory } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -201,6 +202,10 @@ function checkDevelopmentInputs() {
   assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
   assert.equal(ports.uiSurface, uiSurface, "Production DOM UI receives the composed browser coordinate port");
   assert.equal(ports.toolbarMountNode, toolbar.element, "DEV reuses the composed production toolbar row");
+  assert.equal(ports.createSceneLayer, null, "the scene layer factory comes from the DEV scene composition (spec 103)");
+  assert.equal(sceneFactoryCalls.length, 1);
+  assert.equal(sceneFactoryCalls[0].windowTarget, window); assert.equal(sceneFactoryCalls[0].documentTarget, document);
+  assert.equal(sceneFactoryCalls[0].probe, frameProfiler, "the scene layer reports into the DEV frame profiler");
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.godMode);

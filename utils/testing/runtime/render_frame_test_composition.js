@@ -70,7 +70,10 @@ function checkRenderFrameComposition() {
     Object.assign(intent.casting,{visible:true,zoneVisible:true,powerVisible:true,virtualBottomY:600,maxDistance:300,mode:'rod',nowMs:clock.now,bounds,accuracyPreview:{active:true,x:250,y:300,radiusX:10,radiusY:5},visual:{active:true,mode:'rod',screenX:250,power:0.5}});
     Object.assign(intent.fishing,{visible:true,state,bottom:600,startTime:0,tensionMeter:tension,fishCondition:{maxStamina:10,currentStamina:7,maxEndurance:10,currentExhaustion:2,phase:'stamina'}});
     Object.assign(intent.outcome,{visible:true,mode:'victory',fish:{id:'test',name:'Test Fish',level:2,weight:1,imagePath:'fish.png',rarity:{isResolved:true,halfSteps:3,maxHalfSteps:6},victoryStats:[{label:'Level 2'}]}});}};
-  const buffer=new c.RenderFrameBuffer(),coordinator=new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:buffer,frameBuilder:builder,pipeline,getBounds:()=>bounds,getInvalidCastMarker:()=>({x:250,y:300,timeLeft:1}),isDebugEnabled:()=>true,invalidateStyles:()=>invalidations++,beginFrame:()=>{frameStarts++;}});
+  const sceneFrames=[],sceneLayer={render:frame=>{assert.equal(passSections.at(-1),'+scene','the scene draws inside its probe section, before the 2D passes (spec 103)');sceneFrames.push(frame);}};
+  assert.throws(()=>new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:new c.RenderFrameBuffer(),frameBuilder:builder,pipeline,probe}),/requires sceneLayer/);
+  assert.throws(()=>new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:new c.RenderFrameBuffer(),frameBuilder:builder,pipeline,sceneLayer}),/requires a frame probe/);
+  const buffer=new c.RenderFrameBuffer(),coordinator=new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:buffer,frameBuilder:builder,pipeline,sceneLayer,probe,getBounds:()=>bounds,getInvalidCastMarker:()=>({x:250,y:300,timeLeft:1}),isDebugEnabled:()=>true,invalidateStyles:()=>invalidations++,beginFrame:()=>{frameStarts++;}});
   let record=null,fishRecord=null,restoreProgress=null,contextFrame=null;
   for(let index=1;index<=120;index++) {
     clock.now=clock.realNow=index*16;order.length=0;const frame=coordinator.render(0.016);assert.equal(frame,buffer.current);assert.equal(frame.dt,0.016);assert.equal(frame.viewport.width,800);assert.equal(frame.world.chumZones.count,1);assert.equal(frame.world.boats.count,1);assert.equal(frame.world.waypoints.count,2);assert.equal(frame.world.sensorRays.count,1);
@@ -92,8 +95,8 @@ function checkRenderFrameComposition() {
   delete config.physics.castRodControl;castRodMovement=null;
   aiming=true;state='playing';debug.playerPressureFatigueState='idle';clock.now+=16;const frame=coordinator.render(0.016);assert.equal(frame.casting.powerAim.mode,'chum');assert.equal(frame.hud.playerPressureFatigue.state.stateName,'recovered');
   coordinator.invalidateStyles();assert.equal(invalidations,1);assert.equal(frameStarts,frame.frameNumber,'every rendered frame starts the surface frame once (spec 100)');
-  assert.deepEqual(passSections.slice(0,10),['+world','-world','+casting','-casting','+fishing','-fishing','+hud','-hud','+outcome','-outcome'],'each pass is one probe section (spec 101)');
-  assert.equal(passSections.length,frame.frameNumber*10);
+  assert.deepEqual(passSections.slice(0,12),['+scene','-scene','+world','-world','+casting','-casting','+fishing','-fishing','+hud','-hud','+outcome','-outcome'],'the scene layer and each pass are probe sections (specs 101, 103)');
+  assert.equal(passSections.length,frame.frameNumber*12);assert.equal(sceneFrames.length,frame.frameNumber);assert.equal(sceneFrames.at(-1),frame,'the scene gets the built frame');
   for(const reason of ['line','rod','reel','leader','hook','net_escape']){frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'failed',reason}});assert(frame.outcome.gameOver.title);}
   const defaultOutcome=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics,clock,resolveFishImage:fish=>fish.imagePath,styleResolver:{resolveVictory:()=>victoryConfig},layoutResolver:{resolve:()=>layout}});
   for(const imagePath of [' spaced.png ','   ',42]){frame.reset();defaultOutcome.buildInto({target:frame.outcome,intent:{visible:true,mode:'victory',fish:{imagePath}}});assert.equal(frame.outcome.victory.spriteId,c.ImageAssetProvider.assetIdForSource(imagePath,'fish'),'old constructor default preserves source ID values');}

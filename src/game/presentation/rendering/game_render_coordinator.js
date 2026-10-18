@@ -1,3 +1,4 @@
+import { FRAME_SECTIONS } from "../../../engine/diagnostics/inactive_frame_probe.js";
 import { GameRenderIntent } from "./game_render_intent.js";
 
 export class GameRenderCoordinator {
@@ -5,6 +6,8 @@ export class GameRenderCoordinator {
   #frameBuffer;
   #frameBuilder;
   #pipeline;
+  #sceneLayer;
+  #probe;
   #getBounds;
   #getInvalidCastMarker;
   #isDebugEnabled;
@@ -24,6 +27,8 @@ export class GameRenderCoordinator {
     frameBuffer,
     frameBuilder,
     pipeline,
+    sceneLayer,
+    probe,
     getBounds,
     getInvalidCastMarker,
     isDebugEnabled,
@@ -44,6 +49,13 @@ export class GameRenderCoordinator {
     if (!pipeline || typeof pipeline.render !== "function") {
       throw new TypeError("GameRenderCoordinator requires pipeline");
     }
+    // sceneLayer: the WebGL scene under the 2D canvas (spec 103), inactive in production; probe: frame timing (spec 101).
+    if (typeof sceneLayer?.render !== "function") {
+      throw new TypeError("GameRenderCoordinator requires sceneLayer");
+    }
+    if (typeof probe?.begin !== "function" || typeof probe.end !== "function") {
+      throw new TypeError("GameRenderCoordinator requires a frame probe");
+    }
     // beginFrame: the surface's frame start (spec 100: base transform and smoothing before any pass draws).
     const ports = { getBounds, getInvalidCastMarker, isDebugEnabled, beginFrame };
     for (const [name, port] of Object.entries(ports)) {
@@ -55,6 +67,8 @@ export class GameRenderCoordinator {
     this.#frameBuffer = frameBuffer;
     this.#frameBuilder = frameBuilder;
     this.#pipeline = pipeline;
+    this.#sceneLayer = sceneLayer;
+    this.#probe = probe;
     this.#getBounds = getBounds;
     this.#getInvalidCastMarker = getInvalidCastMarker;
     this.#isDebugEnabled = isDebugEnabled;
@@ -78,6 +92,10 @@ export class GameRenderCoordinator {
     context.invalidCastMarker = this.#getInvalidCastMarker();
     context.debugEnabled = this.#isDebugEnabled();
     this.#frameBuilder.buildInto(context);
+    // The scene is under every 2D pass, so it draws first (docs/rendering.md rule 14).
+    this.#probe.begin(FRAME_SECTIONS.scene);
+    this.#sceneLayer.render(frame);
+    this.#probe.end(FRAME_SECTIONS.scene);
     this.#beginFrame();
     this.#pipeline.render(frame);
     return frame;

@@ -17,6 +17,17 @@
   background-color: #0f171e;
 }
 
+/* WebGL scene layer (spec 103): the game canvas's box, centred in the viewport like the flex-centred canvas, and
+   under it. A negative layer paints above the page background and below the in-flow game canvas. The layer sets its
+   logical size inline; input stays with the game canvas. */
+.game-shell__scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  margin: auto;
+  pointer-events: none;
+}
+
 /* Landscape split inventory (spec 098, DEV switch): the canvas is the game strip beside the inventory. */
 .game-shell__canvas--staged {
   position: fixed;

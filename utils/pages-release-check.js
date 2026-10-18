@@ -73,6 +73,14 @@ try {
       catalogPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`));
   }
   for (const file of tree.paths().filter((file) => file.startsWith("assets/"))) assert(files.has(file), `asset ${file} is released`);
+  // Specs 099, 103: every released vendor module ships with its manifest licence.
+  if (tree.has("vendor/manifest.json")) {
+    for (const entry of JSON.parse(tree.read("vendor/manifest.json").toString("utf8")).packages) {
+      if (!files.has(entry.file)) continue;
+      assert(files.has(entry.license), `${entry.license} is released with ${entry.file}`);
+      assert(fs.readFileSync(path.join(release.releaseDir, entry.license)).equals(tree.read(entry.license)));
+    }
+  }
   // The release is closed: every module it contains imports only released modules (dynamic imports included).
   const modules = [...files].filter((file) => file.endsWith(".js"));
   const resolvedTargets = new Set();

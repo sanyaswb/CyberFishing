@@ -1,7 +1,7 @@
 "use strict";
 
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
-//   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets
+//   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets, vendor licences
 //   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">
 // Files are the committed bytes. A published release directory is never overwritten. Retention (owner decision
 // 2026-10-15, spec 085): the site keeps the new release and, with keep 2 (default), the release that was live before
@@ -19,6 +19,7 @@ const CATALOG_PAGE = "ui-catalog.html";
 const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
 const DEV_METADATA_PREFIX = "src/dev/metadata/";
+const VENDOR_MANIFEST = "vendor/manifest.json";
 
 class GitCommitTree {
   #rootDir;
@@ -116,7 +117,21 @@ class ReleaseFileSet {
       if (file.startsWith(ASSETS_PREFIX) || (tree.has(DEV_PAGE) &&
         file.startsWith(DEV_METADATA_PREFIX) && file.endsWith(".json"))) files.add(file);
     }
+    for (const license of ReleaseFileSet.#vendorLicenses(tree, files)) files.add(license);
     return [...files].sort();
+  }
+
+  // A released vendor module ships with its licence from the manifest: the Spine Runtimes License and the MIT notices
+  // require it with every copy (specs 099, 103).
+  static #vendorLicenses(tree, files) {
+    if (!tree.has(VENDOR_MANIFEST)) return [];
+    const licenses = [];
+    for (const entry of JSON.parse(tree.read(VENDOR_MANIFEST).toString("utf8")).packages ?? []) {
+      if (!files.has(entry.file)) continue;
+      if (!tree.has(entry.license)) throw new Error(`${entry.file} is released without its committed licence ${entry.license}`);
+      licenses.push(entry.license);
+    }
+    return licenses;
   }
 
   static #attributeValues(html, tag, attribute, filter) {
