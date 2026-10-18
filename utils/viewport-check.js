@@ -45,6 +45,26 @@ assert(Math.abs(focusY() - 300 * 0.7) < 1e-9, "the game opens on the focus targe
 opening.focusOnVirtualPos(300, 16.66, 0.03);
 const eased = opening.virtualToScreen(0, 300, screen).y;
 assert(eased > 210 + 1 && eased < 300 - 40, "a later target is still followed smoothly: part of the way per frame");
+opening.update(400, 300);
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+const unchanged = opening.virtualToScreen(0, 300, screen).y;
+assert(unchanged < eased && unchanged > 210, "an unchanged canvas size keeps easing");
+opening.update(300, 200);
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+assert(Math.abs(opening.virtualToScreen(0, 300, screen).y - 200 * 0.7) < 1e-9,
+  "a resized canvas (a phone turned) opens on the focus target instead of easing toward it");
+opening.focusOnVirtualPos(250, 16.66, 0.03);
+assert(Math.abs(opening.virtualToScreen(0, 250, screen).y - 200 * 0.7) > 1, "after the resize the camera eases again");
+opening.update(400, 300);
+opening.pan(-1000);
+opening.pan(70);
+const centreX = opening.screenToVirtual(200, 0, virtual).x;
+opening.update(300, 200);
+assert(Math.abs(opening.virtualToScreen(centreX, 0, screen).x - 150) < 1e-9, "a resize keeps the scene point at the centre");
+opening.update(2000, 300);
+opening.update(300, 200);
+assert(Math.abs(opening.virtualToScreen(500, 0, screen).x - 150) < 1e-9,
+  "back from a layout that shows the whole width, the camera opens centred, not at the left edge");
 config.map.lake = { safeZone: { top: 300, bottom: 700 }, perspective: { angleTop: 0, angleBottom: 30 } };
 assert.equal(projector.getPerspective(300).scale, 0, "live location replacement reaches the existing perspective owner");
 assert.equal(projector.getPerspective(700).scale, 1);

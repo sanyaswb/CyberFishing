@@ -77,7 +77,8 @@
   left: 10px;
   background: rgba(var(--ui-surface-rgb), 0.95);
   color: var(--ui-text);
-  padding: 15px 15px 50px 15px;
+  padding: calc(15px * var(--debug-overlay-scale, 1)) calc(15px * var(--debug-overlay-scale, 1))
+    calc(50px * var(--debug-overlay-scale, 1));
   font-family: var(--ui-font-mono);
   font-size: 14px;
   border: 1px solid var(--ui-border);
@@ -85,8 +86,7 @@
   z-index: var(--ui-layer-panel);
   display: none;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-  min-width: 280px;
-  transform-origin: top left;
+  min-width: calc(280px * var(--debug-overlay-scale, 1));
   touch-action: none;
   pointer-events: all;
 }
@@ -100,6 +100,7 @@
   gap: 15px;
   z-index: var(--ui-layer-tooltip);
   pointer-events: all;
+  zoom: var(--debug-overlay-scale, 1);
 }
 
 .debug-overlay__scale-button {
@@ -121,4 +122,5 @@
 
 .debug-overlay__content {
   pointer-events: none;
+  zoom: var(--debug-overlay-scale, 1);
 }

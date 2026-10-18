@@ -19,8 +19,9 @@ Taken while implementing; the owner may revisit any of them.
 | D3 | When the scene presents a frame | Only when the background changed (layer, texture, position, size, alpha, clear colour), the scene was resized, or the context was restored (rules 13 and 22). A still camera at a steady time of day presents no WebGL frame; the browser keeps showing the last one. Changes too small to see do not count: under 0.05 logical px (a tenth of a backing pixel at ratio 2) or half an 8-bit opacity step, measured against the last drawn values so slow drift still adds up. Found while measuring: the camera follows the float with exponential easing, whose tail is many frames of ~0.03 px steps. |
 | D4 | "Portrait art 1:1" | There is no larger background art (the location art is 2560×1440 and `asset-sources/` holds no larger master), so the scene's resolution follows the art instead: scene pixel ratio = `min(CanvasMetricsProvider.pixelRatio, max(1, texture height / drawn height))`, rounded to 0.01 (spec 103 "Resolution per layer"). Portrait at ratio 2 draws the 1440 px art 1:1 into a ~1.76× backing store, and the compositor scales the canvas to the screen; landscape keeps ratio 2 and shrinks the art through mipmaps. A larger art variant can replace this later without changing the code. |
 | D5 | Texture size and memory | Each background is one 2560×1440 RGBA texture: 14.7 MB, 19.7 MB with mipmaps, **59 MB for the three phases** (rule 19: within the ~150 MB phone budget). 2560 px exceeds rule 20's 2048 px atlas page; it is a single full-screen image, not an atlas page, and WebGL devices that run the game report a maximum texture size of at least 4096. WebGL 1 cannot mipmap this non-power-of-two size and falls back to bilinear. |
-| D7 | The camera at startup | **Owner, 2026-10-18: open on the final framing.** `ViewportProjector`'s first `focusOnVirtualPos` after the camera is placed snaps to its target instead of easing into it; later focuses (following the float) ease as before. In landscape the camera used to ease for the first seconds, presenting about 30 scene frames; now the scene presents once. Both modes (2D and WebGL) open the same way. |
+| D7 | The camera at startup and after a resize | **Owner, 2026-10-18: open on the final framing**, and the same when the phone is turned: the camera moves only while it follows the float. `ViewportProjector`'s first `focusOnVirtualPos` after the camera is placed, and after any change of the canvas size (a turn, the browser bar shown or hidden, a split change), snaps to its target instead of easing into it; later focuses (following the float) ease as before. A resize also keeps the scene point at the centre of the screen horizontally: turning to landscape, where the whole width shows, and back used to leave the camera at the left edge of the scene. In landscape the camera used to ease for the first seconds, presenting about 30 scene frames; now the scene presents once. Both modes (2D and WebGL) behave the same way. |
 | D8 | Image decoding | `ImageAssetProvider` reports an image ready after `image.decode()`, so decoding happens off the main thread during loading instead of inside the first draw or texture upload (both modes). A failed decode still counts as loaded. |
+| D9 | The DEV overlay during the measurement | **Owner, 2026-10-18: 1.5 times smaller and as wide as its content** (it covered the screen). The window starts at scale 2/3. The scale is the `--debug-overlay-scale` property, which CSS applies as `zoom` to the content and the − / + buttons and as a factor on the window's padding, so the window's box is what is seen and dragging needs no transform correction; − / + step on a tenths grid (2/3 → 0.7 … 1.0). Explanatory notes wrap to the width of the rows (`contain: inline-size`) instead of widening the window to their line length. |
 | D6 | Production | Stays `"canvas"` (spec 104 D1) until the owner's phone measurement of `dev.html?scene=webgl` holds against `dev.html`. Switching is one config value, `CONFIG.canvas.scene`. |
 
 ## Record (2026-10-18)
@@ -71,5 +72,18 @@ Follow-up the same day (D2 order, D7, D8), headless Chromium:
 Owner's phone measurement (pending): `dev.html` against `dev.html?scene=webgl`, portrait and landscape, overlay
 "⚡ ПРОДУКТИВНІСТЬ" (FPS, "поза CPU гри", janks / freezes, the `scene` section). If it holds, D6 turns production to
 `"webgl"`.
+
+Owner's first phone run (2026-10-18, release 0.41.1-c67b7cf): 60 FPS in both orientations after the start; at a reload
+"CPU гри за кадр" shows up to 300% for 50–200 ms and FPS returns to green after 2–3 s; the camera still eased after a
+turn. Reading the overlay at startup: its numbers are means over the last 240 frames (about 4 s), so the few heavy first
+frames (WebGL: the three background uploads, D2; both modes: shader compilation, the Spine rod, unoptimised JavaScript)
+dominate the CPU mean while only a handful of frames exist, and their long intervals hold the FPS mean down until they
+leave the window. FPS is green (≥ 55) only once the extra startup milliseconds average below 1.5 ms per frame in the
+window. The freeze bar shows the frames themselves: a few red bars at the start, then green.
+
+Follow-up the same day (D7 after a turn, D9), headless Chromium 393×852 turned to 852×393 and back: before, 250 ms after
+the turn to landscape 17.3% of the pixels still differed from the frame 3 s later (0.8% at 700 ms); now 0.0% at 250 ms
+in both orientations, and portrait after the round trip opens centred as at a fresh start. The overlay window: 383×521
+→ about 270×290 px in portrait (DPR 1), 701×470 → about 270×290 px in landscape.
 
 Cleanup: nothing became unused (the 2D background path stays as the fallback until spec 103 stage 5).
