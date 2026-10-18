@@ -551,8 +551,6 @@
 │  │  │  ├── debug_context.js
 │  │  │  ├── debug_event_binder.js
 │  │  │  └── debug_module_registry.js
-│  │  ├── data
-│  │  │  └── dev_item_catalog.js
 │  │  ├── diagnostics
 │  │  │  ├── config_validation_reporter.js
 │  │  │  ├── frame_profiler.js

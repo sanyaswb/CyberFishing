@@ -1,7 +1,6 @@
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { GameplayOverrideReader } from "../../dev/runtime/gameplay_override_reader.js";
-import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserDebugAdapter } from "../../dev/runtime/browser_debug_adapter.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
@@ -57,7 +56,10 @@ export function startDevelopmentGame() {
   if (startup) return startup;
   const requested = startGame();
   startup = requested;
-  requested.catch(() => { if (startup === requested) startup = null; });
+  requested.catch((error) => {
+    if (startup === requested) startup = null;
+    new ConsoleLogger().error("[Bootstrap] CyberFishing DEV startup failed.", error);
+  });
   return requested;
 }
 
@@ -99,7 +101,7 @@ async function startGame() {
   // DEV window positions and section states share the game's storage prefix.
   const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
   const godMode = new GameplayOverrideReader(CONFIG);
-  const itemCatalog = createDevItemCatalog(ITEM_DB);
+  const itemCatalog = ITEM_DB;
   const mapCatalog = CONFIG.locations.map;
   const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;

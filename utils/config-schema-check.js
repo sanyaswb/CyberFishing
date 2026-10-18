@@ -21,9 +21,7 @@ function compose({ development }) {
     config.debug.godMode.enabled = true;
     config.debug.fixedCatch.enabled = true;
   } : null);
-  const itemDb = development
-    ? runtime.importModule("src/dev/data/dev_item_catalog.js").createDevItemCatalog(ITEM_DB) : ITEM_DB;
-  const options = { config: context.runtimeConfig, fishDb: FISH_DB, itemDb, mapDb: context.runtimeConfig.locations.map,
+  const options = { config: context.runtimeConfig, fishDb: FISH_DB, itemDb: ITEM_DB, mapDb: context.runtimeConfig.locations.map,
     parameterLabels: LABELS, baseConfig: context.baseConfig, overrideStore: context.overrideStore,
     projectVersion: PROJECT_VERSION_CONFIG };
   return { context, ConfigSchemaValidator, options, validate: (overrides = {}) =>
