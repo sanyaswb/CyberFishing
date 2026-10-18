@@ -3,6 +3,12 @@
 // Single registry of checks and suite membership; every utils/*-check.js file appears exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
+    id: "tackle-line-limit",
+    title: "Idle tackle obeys the equipped line budget",
+    file: "utils/tackle-line-limit-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "rod-side-tension",
     title: "Rod side tension compensation and pre-bite line visuals",
     file: "utils/rod-side-tension-check.js",

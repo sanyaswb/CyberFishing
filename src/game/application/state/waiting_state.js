@@ -122,6 +122,7 @@ export class WaitingState extends GameState {
         reelPower,
         pullDirection,
       );
+      this.constrainTackleToLine(groundPlane, bounds, eq);
     } finally {
       groundPlane.exit();
     }

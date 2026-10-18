@@ -522,6 +522,8 @@
 │  │  └── spec.md
 │  ├── 107-scene-entities-rod
 │  │  └── spec.md
+│  ├── 108-line-and-perspective-audit
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1058,6 +1060,7 @@
 │  │  │  │  │  └── stamina_transition_resolver.js
 │  │  │  │  ├── stamina_system.js
 │  │  │  │  ├── tackle_failure_selector.js
+│  │  │  │  ├── tackle_line_reach_constraint.js
 │  │  │  │  ├── tackle_stress_accumulator.js
 │  │  │  │  ├── tackle_stress_system.js
 │  │  │  │  └── weakest_tackle_limit_resolver.js
@@ -1516,6 +1519,7 @@
 │  ├── scouting-input-check.js
 │  ├── service-artifacts-check.js
 │  ├── spine-rod-check.js
+│  ├── tackle-line-limit-check.js
 │  ├── testing
 │  │  ├── README.md
 │  │  ├── baselines

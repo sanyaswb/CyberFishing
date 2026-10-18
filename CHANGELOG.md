@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.41.5 - Idle Tackle Line Limit
+
+- Waiting and biting tackle is constrained after all movement to the same ground-plane line budget as casts and fights. A fixed float at 1 m on 9 m line stops at 8 m; outward velocity is removed while inward retrieval and tangential motion remain available (G-069, spec 108).
+
 ## v0.41.4 - Bait Boat Metres
 
 - The bait boat moves on the location's water metric: speed, acceleration, braking, arrival radii, sensors and current drift are ground metres everywhere, so far away it covers fewer pixels per second and no longer crosses far water up to several times faster than near the shore. Locations without a distance profile are unchanged (G-007, spec 054).

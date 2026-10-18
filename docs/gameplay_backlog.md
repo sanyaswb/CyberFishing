@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-069 Current carries idle tackle beyond the equipped line (P2, done in v0.41.5)
+Found: 2026-10-18, owner, following the WebGL session.
+Reproduce: equip 9 m line and a fixed float at 1 m selected depth, cast and leave it drifting in a current; repeat while biting and on perspective water.
+Expected: at most 8 m of ground-plane reach from the current rod, the same depth-adjusted budget used by casting and fights; retrieval remains possible.
+Actual: waiting/biting integrate drift without a final line constraint, so the tackle can exceed its available line.
+Spec: [108](../specs/108-line-and-perspective-audit/spec.md). Re-cast G-068 and boat metres G-007 are already fixed in v0.41.3/v0.41.4.
+Evidence: deterministic actual-current regression first failed at an 8 m limit; waiting/biting, uniform/profiled water, fixed/sliding float, feeder/spinning and velocity/retrieval checks now pass. Full 61 checks; game-cycle baseline unchanged. Owner visual check pending.
+
 ### G-068 A re-cast aim keeps the rod, line and tackle on screen (P3, done in v0.41.3)
 Found: 2026-10-18, owner, index (v0.41.2).
 Reproduce: cast, then long-press while the tackle is in the water and aim the re-cast.

@@ -1,4 +1,7 @@
+import { TackleLineReachConstraint } from "../../domain/fishing/tackle_line_reach_constraint.js";
+
 export class GameState {
+  #tackleLineReach = new TackleLineReachConstraint();
   constructor(deps, data = {}) {
     this.deps = deps;
     this.data = data;
@@ -12,6 +15,17 @@ export class GameState {
 
   getSelectedHookDepthMeters() {
     return this.deps.currentHookDepthRef?.get?.() ?? null;
+  }
+
+  // Called after every source of idle tackle motion and before leaving GroundPlaneScope. Casting, the depth HUD,
+  // idle drift and FightSessionFactory all take their depth cost from EquipmentRules/CastDistanceCalculator.
+  constrainTackleToLine(groundPlane, bounds, equipment) {
+    if (!equipment?.line) return;
+    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(
+      equipment, Infinity, this.getSelectedHookDepthMeters(),
+    );
+    const rod = groundPlane.point(1, this.deps.world.getRodVirtualPos(bounds));
+    this.#tackleLineReach.apply(this.deps.float.getPosition(), this.deps.float.getVelocity(), rod, maxDistance);
   }
 
   getEffectiveCastDistance(
