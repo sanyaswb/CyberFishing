@@ -120,8 +120,14 @@ export class Canvas2DSurface {
 
   // Starts a frame (spec 100): the base transform (logical -> backing pixels). The render coordinator calls it before
   // every frame, so a resize in between never leaves a frame unscaled.
-  beginFrame() {
+  // clear: start from transparent pixels, for a transparent canvas whose bottom layer is drawn by the WebGL scene
+  // under it (spec 104 D6); otherwise the background pass paints every pixel.
+  beginFrame(clear = false) {
     const context = this.#context;
+    if (clear) {
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    }
     const ratio = this.pixelRatio;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.imageSmoothingEnabled = true;

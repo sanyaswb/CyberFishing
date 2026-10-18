@@ -16,7 +16,8 @@ const SECTION_LABELS = Object.freeze({
   overlay: "overlay (DEV, поза кадром)",
 });
 
-// DEV overlay "⚡ ПРОДУКТИВНІСТЬ" (spec 101): FPS, frame interval and game-loop CPU work per frame against the
+// DEV overlay "⚡ ПРОДУКТИВНІСТЬ" (spec 101): FPS over the last second, and over the profiler's 240 frames the frame
+// interval and game-loop CPU work per frame against the
 // 16.7 ms budget, the time per section, the freeze bar (one bar per frame: green within budget, orange jank,
 // red freeze), long tasks and memory, and the pixel load (canvas backing store, WebGL scene and Spine GL surface).
 export class PerformanceOverlayModule extends OverlayModule {
@@ -38,7 +39,7 @@ export class PerformanceOverlayModule extends OverlayModule {
     if (snapshot.frames === 0) return `${html}<div class="debug-overlay__line">Немає кадрів гри.</div>`;
     const ms = (value) => `${value.toFixed(1)} мс`;
     const fpsColor = snapshot.fps >= 55 ? "#00ff80" : snapshot.fps >= 40 ? "#ffaa00" : "#ff4444";
-    html += this.metricRow("FPS", snapshot.fps.toFixed(0), { color: fpsColor, metricKey: "perf.fps" });
+    html += this.metricRow("FPS (1 с)", snapshot.fps.toFixed(0), { color: fpsColor, metricKey: "perf.fps" });
     html += this.metricRow("кадр сер / p95 / макс",
       `${ms(snapshot.interval.mean)} / ${ms(snapshot.interval.p95)} / ${ms(snapshot.interval.max)}`,
       { metricKey: "perf.interval" });

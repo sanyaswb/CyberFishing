@@ -32,13 +32,38 @@ the role that is easiest to reach from the current code.
   kind that must be under it is already there (rule 14).
 - While the migration runs, the 2D path for a kind stays complete as the fallback (no WebGL, lost context) until
   spec 103 stage 5 is accepted.
+- Which layer draws a world kind is decided once per frame by `SceneLayerRouter` ([spec 104](../specs/104-scene-layer-infrastructure/spec.md)):
+  `SCENE_KINDS` lists the kinds bottom first; a kind is on the scene only while the mode is `"webgl"`, WebGL is active,
+  the scene has a renderer for it and every kind under it is there. A new world kind joins `SCENE_KINDS` at its depth
+  and gates its 2D component with `canvasVisibility`. HUD overlays are not kinds.
+- `CONFIG.canvas.scene` (`"canvas"` | `"webgl"`) is read once at startup: the 2D context's `alpha` follows it.
+  Production is `"webgl"` since [spec 105](../specs/105-scene-background/spec.md) D6 (the owner's phone run of stage 2);
+  `dev.html?scene=canvas` keeps the 2D-only comparison.
+- The scene presents a WebGL frame only while a kind is on it (rule 22). An unchanged empty scene presented every frame
+  made Chrome wait for the compositor inside the scene's render (up to 230 ms in software GL, spec 104).
+- A scene kind's renderer reports whether anything visible changed, and the scene presents a frame only then (rules 13
+  and 22, [spec 105](../specs/105-scene-background/spec.md)). Steps too small to see do not count (under 0.05 logical
+  px or half an 8-bit opacity step, against the last drawn values): eased cameras end in many such steps.
+- An animated scene effect changes at its own frame rate and presents one frame per step, nothing between steps: the
+  water ([spec 106](../specs/106-scene-water/spec.md)) steps `CONFIG.canvas.water.frameRate` times a second (30). Its
+  CPU part (the displacement map, ~0.15 ms) and the filtered area (the visible water only) are kept small; its cost on
+  the phone is measured with the effect on and off (DevTools toggles it live).
+- Scene textures come from the images `ImageAssetProvider` loaded and decoded (`decode()` during loading), through
+  `SceneTextureCache` (mipmaps, uploaded when created, released with the scene). A kind lists every image it may show
+  (the background: all time-of-day phases); startup uploads them under the loading screen (`prepare`), and an image
+  that loads later uploads one per frame, never in the middle of play.
+- The camera opens on its target: the first focus after it is placed snaps (spec 105 D7), so the scene does not
+  present a frame for every step of an opening ease.
+- The scene's pixel ratio follows its art (spec 105 D4): `min(canvas ratio, max(1, art pixels per drawn logical
+  pixel))`. Art that would be enlarged is drawn 1:1 into a smaller backing store and the compositor scales the canvas.
 - How "off" is done (stage 0): `pixi_runtime_module.js` stops `Ticker.system` and `Ticker.shared` (otherwise the
   renderer's scheduler runs its own `requestAnimationFrame` loop); `PixiSceneLayer` passes `autoStart: false`,
   `skipExtensionImports: true` (no event system, accessibility or DOM pipe), `autoDensity: false`,
   `preference: ["webgl"]` and `gcActive: false` (the scene releases its textures itself, rule 19). New Pixi features
   that need a browser extension or a ticker are registered or driven explicitly, never by turning these back on.
-- The first scene render compiles Pixi's shaders: one long frame (about 150 ms in software GL). A stage that makes the
-  scene visible warms it up before play starts.
+- The first scene render compiles Pixi's shaders: one long frame (about 90–150 ms in software GL). `PixiSceneLayer`
+  renders it during init, and startup waits for `whenReady()` (spec 104 D8). A stage that adds sprites or filters
+  includes them in that warm-up frame.
 
 ## Many layers and Spine-first art
 

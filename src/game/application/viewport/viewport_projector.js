@@ -17,6 +17,7 @@ export class ViewportProjector {
   #maxScrollY;
 
   #isFirstUpdate;
+  #snapNextFocus;
 
   constructor(locationsConfig, locationId, getPerspective) {
     this.#locationsConfig = locationsConfig;
@@ -35,6 +36,7 @@ export class ViewportProjector {
     this.#canvasWidth = 0;
     this.#canvasHeight = 0;
     this.#isFirstUpdate = true;
+    this.#snapNextFocus = false;
   }
 
   update(canvasWidth, canvasHeight) {
@@ -46,6 +48,10 @@ export class ViewportProjector {
       y: "safeZone",
     };
 
+    const resized = canvasWidth !== this.#canvasWidth || canvasHeight !== this.#canvasHeight;
+    // A resize keeps the scene point at the centre of the screen horizontally (spec 105 D7): a phone turned to
+    // landscape, where the whole width shows, and back opens centred instead of at the left edge.
+    const centreVirtualX = this.#scale > 0 ? (this.#canvasWidth / 2 - this.#offsetX) / this.#scale : 0;
     this.#canvasWidth = canvasWidth;
     this.#canvasHeight = canvasHeight;
 
@@ -85,6 +91,10 @@ export class ViewportProjector {
       }
 
       this.#isFirstUpdate = false;
+      this.#snapNextFocus = true;
+    } else if (resized) {
+      this.#cameraX = centreVirtualX * this.#scale - this.#canvasWidth / 2;
+      this.#snapNextFocus = true;
     }
 
     if (this.#maxScrollX > 0) {
@@ -124,8 +134,12 @@ export class ViewportProjector {
   }
 
 
-  // Follow the object smoothly along the Y axis only.
+  // Follow the object smoothly along the Y axis only. The first focus after the camera is placed, and after the canvas
+  // changes size (a phone turned, the browser bar shown), snaps to its target, so a new layout opens on the framing it
+  // would otherwise ease into over the next seconds (spec 105 D7).
   focusOnVirtualPos(vY, dt, lerpSpeed = 0.05) {
+    const snap = this.#snapNextFocus;
+    this.#snapNextFocus = false;
     if (this.#maxScrollY <= 0) return;
 
     const targetPixelY = vY * this.#scale;
@@ -138,7 +152,7 @@ export class ViewportProjector {
     desiredCameraY = Math.max(0, Math.min(desiredCameraY, this.#maxScrollY));
 
     const timeScale = dt / 16.66;
-    const currentLerp = 1 - Math.pow(1 - lerpSpeed, timeScale);
+    const currentLerp = snap ? 1 : 1 - Math.pow(1 - lerpSpeed, timeScale);
 
     this.#cameraY += (desiredCameraY - this.#cameraY) * currentLerp;
     this.#offsetY = -this.#cameraY;

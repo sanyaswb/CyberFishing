@@ -514,6 +514,12 @@
 │  │  └── spec.md
 │  ├── 103-webgl-scene-layer
 │  │  └── spec.md
+│  ├── 104-scene-layer-infrastructure
+│  │  └── spec.md
+│  ├── 105-scene-background
+│  │  └── spec.md
+│  ├── 106-scene-water
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -522,7 +528,6 @@
 │  │  │  ├── debug_overlay_bootstrap.js
 │  │  │  ├── dev_config_validation_composition.js
 │  │  │  ├── dev_house_screen_composition.js
-│  │  │  ├── dev_scene_layer_composition.js
 │  │  │  ├── dev_time_composition.js
 │  │  │  ├── development_game_startup.js
 │  │  │  └── ui_catalog_bootstrap.js
@@ -542,7 +547,8 @@
 │  │     ├── inventory_ui_bootstrap.js
 │  │     ├── live_bait_composition.js
 │  │     ├── player_inventory_composition.js
-│  │     └── rod_animation_composition.js
+│  │     ├── rod_animation_composition.js
+│  │     └── scene_layer_composition.js
 │  ├── dev
 │  │  ├── core
 │  │  │  ├── debug_console.js
@@ -684,6 +690,7 @@
 │  │  │  ├── dev_tools.js
 │  │  │  ├── dev_tools_parameter_tooltip_provider.js
 │  │  │  ├── dev_tools_ui.js
+│  │  │  ├── scene_layer_dev_section.js
 │  │  │  └── spine_rod_dev_section.js
 │  │  └── ui_catalog
 │  │     ├── ui_catalog_controls_example.js
@@ -1279,6 +1286,7 @@
 │  │     │  ├── outcome_render_pass.js
 │  │     │  ├── render_frame_buffer.js
 │  │     │  ├── reusable_render_list.js
+│  │     │  ├── scene_layer_router.js
 │  │     │  ├── world_render_frame_builder.js
 │  │     │  └── world_render_pass.js
 │  │     ├── screens
@@ -1403,8 +1411,12 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── scene
+│        │  ├── pixi_background_renderer.js
 │        │  ├── pixi_runtime_module.js
-│        │  └── pixi_scene_layer.js
+│        │  ├── pixi_scene_layer.js
+│        │  ├── pixi_water_renderer.js
+│        │  ├── scene_texture_cache.js
+│        │  └── water_wave_field.js
 │        ├── storage
 │        │  ├── browser_snapshot_transaction.js
 │        │  ├── game_time_local_store.js

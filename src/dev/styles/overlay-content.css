@@ -137,6 +137,12 @@
   font-size: 11px;
 }
 
+/* Explanatory prose wraps to the width of the rows instead of widening the window to its own line length. */
+.debug-overlay__note,
+.debug-overlay__notice {
+  contain: inline-size;
+}
+
 .debug-overlay__chance-card {
   margin-bottom: 8px;
   border-left: 3px solid #b066ff;

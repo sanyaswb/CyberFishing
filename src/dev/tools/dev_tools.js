@@ -3,6 +3,7 @@ import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_
 import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
+import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
 
 export class DevTools {
   #config;
@@ -24,6 +25,7 @@ export class DevTools {
   #itemProgressionResolver;
   #grantCatalogItem;
   #rodSpine;
+  #scene;
   #storageCache;
   #openHouse;
   #openUiCatalog;
@@ -63,6 +65,7 @@ export class DevTools {
       itemProgressionResolver = null,
       grantCatalogItem = null,
       rodSpine = null,
+      scene = null,
       configRuntime = null,
       configValidation = null,
       catalogs,
@@ -101,6 +104,7 @@ export class DevTools {
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
     this.#rodSpine = rodSpine;
+    this.#scene = scene;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
     tooltipProvider.ready.then(() => {
@@ -208,6 +212,7 @@ export class DevTools {
     this.#renderLocationDebugSection(debugContent);
     this.#renderItemGrantSection(body);
     this.#renderSpineRodSection(body);
+    this.#renderSceneLayerSection(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof this.#catalogs.items !== "undefined") {
@@ -522,6 +527,17 @@ export class DevTools {
       controller: this.#rodSpine,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
       renderConfigTree: (parent) => this.#buildTree(this.#config.ui.rod.spine, parent, ["CONFIG", "ui", "rod", "spine"]),
+    }).render(body);
+  }
+
+  // DEV WebGL scene section (spec 104 D5) over the scene layer's DEV methods and the router.
+  #renderSceneLayerSection(body) {
+    if (!this.#scene) return;
+    new SceneLayerDevSection({
+      ui: this.#ui,
+      scene: this.#scene,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderWaterConfig: (parent) => this.#buildTree(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
     }).render(body);
   }
 

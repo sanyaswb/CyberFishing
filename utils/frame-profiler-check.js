@@ -37,7 +37,7 @@ async function checkProfiler() {
   for (let index = 0; index < 60; index += 1) frame(timestamp += 16, 2, 4, 1);
   let snapshot = profiler.getSnapshot();
   assert.equal(snapshot.frames, 60);
-  near(snapshot.fps, 62.5, 1e-9, "fps from the mean frame interval");
+  near(snapshot.fps, 62.5, 1e-9, "fps from the frame intervals (fewer than a second of them: all)");
   near(snapshot.work.mean, 6, 1e-9, "game-loop work = update + draw");
   near(snapshot.sections.update.mean, 2, 1e-9, "update section");
   near(snapshot.sections["rod-spine"].mean, 1, 1e-9, "nested Spine section inside draw");
@@ -58,6 +58,14 @@ async function checkProfiler() {
   assert.equal(snapshot.frames, 240, "a ring of 240 frames");
   near(snapshot.interval.mean, 20, 1e-9, "old frames leave the ring");
   assert.equal(snapshot.recent.length, 50);
+  near(snapshot.fps, 50, 1e-9, "fps over the last second");
+
+  // Spec 105 D10: slow startup frames stay in the ring's statistics but leave FPS after a second.
+  for (let index = 0; index < 3; index += 1) frame(timestamp += 300, 1, 1);
+  for (let index = 0; index < 70; index += 1) frame(timestamp += 16, 1, 1);
+  snapshot = profiler.getSnapshot();
+  near(snapshot.fps, 62.5, 1e-9, "FPS shows the current second, not the slow start");
+  assert(1000 / snapshot.interval.mean < 50, "the ring's mean interval still includes the slow frames");
 
   profiler.gauge("gl-pixels", 1234);
   profiler.recordLongTask(120);

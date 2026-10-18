@@ -1,10 +1,12 @@
+// The overlay's − / + buttons: steps of 0.1 on a tenths grid, so a start between tenths (2/3) returns to 1.
 export class OverlayScaleControls {
   #documentTarget;
   #onScaleChanged;
-  #scale = 1;
+  #scale;
 
-  constructor({ documentTarget = document, onScaleChanged = null } = {}) {
+  constructor({ documentTarget = document, scale = 1, onScaleChanged = null } = {}) {
     this.#documentTarget = documentTarget;
+    this.#scale = scale;
     this.#onScaleChanged = onScaleChanged;
   }
 
@@ -33,7 +35,7 @@ export class OverlayScaleControls {
       (event) => {
         event.preventDefault();
         event.stopPropagation();
-        this.#scale = Math.max(0.3, Math.min(3.0, this.#scale + delta));
+        this.#scale = Math.max(0.3, Math.min(3.0, Math.round((this.#scale + delta) * 10) / 10));
         this.#onScaleChanged?.(this.#scale);
       },
       { capture: true },

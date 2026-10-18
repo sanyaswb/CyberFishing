@@ -67,9 +67,10 @@ export class GameRenderComposition {
   }
 
   // Renderers and the ordered render pipeline (world, casting, fishing, HUD, outcome).
+  // sceneRouter (spec 104): a world kind's 2D component draws only while the kind is on the 2D canvas.
   composePipeline({
     surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-    rarityVisualResolver, rodAnimation,
+    rarityVisualResolver, rodAnimation, sceneRouter,
   }) {
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -105,6 +106,7 @@ export class GameRenderComposition {
           order: GameRenderOrder.values.FIGHT_AREAS,
           renderer: fightAreaRenderer,
           selectModel: (model) => model.fightAreas,
+          isVisible: sceneRouter.canvasVisibility("fight-areas"),
         }),
         // Depth order (spec 100 D5): the line first, then the rod picture (static or Spine, spec 099), which is nearer
         // the camera and covers the line where it leaves the tip. The rectangle and the line stay one component.
@@ -113,24 +115,28 @@ export class GameRenderComposition {
           order: GameRenderOrder.values.FISHING_EQUIPMENT - 2,
           renderer: rodLineRenderer,
           selectModel: (model) => model.rodLine,
+          isVisible: sceneRouter.canvasVisibility("line"),
         }),
         new RenderComponent({
           id: "rod-static",
           order: GameRenderOrder.values.FISHING_EQUIPMENT - 1,
           renderer: rodStaticRenderer,
           selectModel: (model) => model.rodLine,
+          isVisible: sceneRouter.canvasVisibility("rod"),
         }),
         new RenderComponent({
           id: "rod-spine",
           order: GameRenderOrder.values.FISHING_EQUIPMENT,
           renderer: rodSpineRenderer,
           selectModel: (model) => model.rodLine,
+          isVisible: sceneRouter.canvasVisibility("rod"),
         }),
         new RenderComponent({
           id: "float",
           order: GameRenderOrder.values.FISHING_EQUIPMENT + 1,
           renderer: floatRenderer,
           selectModel: (model) => model.float,
+          isVisible: sceneRouter.canvasVisibility("float"),
         }),
       ],
     });
@@ -194,6 +200,7 @@ export class GameRenderComposition {
               order: GameRenderOrder.values.BACKGROUND,
               renderer: worldSceneRenderer,
               selectModel: (frame) => frame.world,
+              isVisible: sceneRouter.canvasVisibility("background"),
             }),
             ...(worldDebugRenderer == null ? [] : [new RenderComponent({
               id: "world-debug",
@@ -206,6 +213,7 @@ export class GameRenderComposition {
               order: GameRenderOrder.values.WORLD_ENTITIES,
               renderer: boatChumRenderer,
               selectModel: (frame) => frame.world,
+              isVisible: sceneRouter.canvasVisibility("world-entities"),
             }),
             new RenderComponent({
               id: "invalid-cast-marker",
@@ -373,11 +381,12 @@ export class GameRenderComposition {
       frameBuilder,
       pipeline: runtime.rendering.pipeline,
       sceneLayer: runtime.rendering.sceneLayer,
+      sceneRouter: runtime.rendering.sceneRouter,
       probe: this.#frameProbe,
       getBounds: appPorts.getDynamicBounds,
       getInvalidCastMarker: appPorts.getInvalidCastMarker,
       isDebugEnabled: appPorts.isDebugEnabled,
-      beginFrame: () => runtime.rendering.surface.beginFrame(),
+      beginFrame: () => runtime.rendering.surface.beginFrame(runtime.rendering.sceneRouter.clearsCanvas()),
       invalidateStyles: () => {
         runtime.rendering.hudStyleResolver.invalidate();
         runtime.rendering.fightAreaStyleResolver.invalidate();

@@ -81,6 +81,17 @@ function checkNegativeFixtures() {
     assert(validate().errors.some(issue => issue.path === path), "invalid side compensation setting is rejected: " + key);
     context.reset(path);
   }
+  // Spec 104 D1: the scene mode is "canvas" or "webgl".
+  context.set("canvas.scene", "gl");
+  assert(has(validate(), /CONFIG\.canvas\.scene: must be "canvas" or "webgl"/u), "an unknown scene mode is rejected");
+  context.reset("canvas.scene");
+  // Spec 106: the scene's water settings are bounded.
+  for (const [key, value, issuePath] of [["enabled", 1, "canvas.water.enabled"], ["frameRate", 0, "CONFIG.canvas.water.frameRate"],
+    ["amplitude", -1, "CONFIG.canvas.water.amplitude"], ["wavelength", 2, "CONFIG.canvas.water.wavelength"]]) {
+    context.set("canvas.water." + key, value);
+    assert(validate().errors.some(issue => issue.path === issuePath), "invalid water setting is rejected: " + key);
+    context.reset("canvas.water." + key);
+  }
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");

@@ -46,7 +46,6 @@ import { composeDevTimeDisplay } from "./dev_time_composition.js";
 import { ScreenHost } from "../../engine/screens/screen_host.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
 import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
-import { createDevSceneLayerFactory } from "./dev_scene_layer_composition.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -66,6 +65,8 @@ export function startDevelopmentGame() {
 
 async function startGame() {
   const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
+  // DEV page switches: ?screen=house opens the House after startup; ?scene=webgl|canvas picks the scene mode (spec 104).
+  const pageParams = new windowTarget.URLSearchParams(windowTarget.location.search);
   const configRuntime = createProductionConfigContext(config => {
     config.debug.godMode.enabled = true;
     config.debug.fixedCatch.enabled = true;
@@ -155,7 +156,7 @@ async function startGame() {
       toolbarMountNode: toolbar.element,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createFrameProbe: () => frameProfiler,
-      createSceneLayer: createDevSceneLayerFactory({ windowTarget, documentTarget, probe: frameProfiler }),
+      sceneMode: pageParams.get("scene"),
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
         new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
       createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
@@ -204,8 +205,7 @@ async function startGame() {
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);
     if (!started) windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
-    // dev.html?screen=house opens the House right after startup.
-    if (new windowTarget.URLSearchParams(windowTarget.location.search).get("screen") === "house") openHouse();
+    if (pageParams.get("screen") === "house") openHouse();
     compositionRoot.printStorageUsage();
     return game;
   } catch (error) { cleanup(); throw error; }

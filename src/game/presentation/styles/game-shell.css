@@ -17,7 +17,12 @@
   background-color: #0f171e;
 }
 
-/* WebGL scene layer (spec 103): the game canvas's box, centred in the viewport like the flex-centred canvas, and
+/* The 2D canvas over the WebGL scene (spec 104): transparent wherever the 2D passes draw nothing. */
+.game-shell__canvas--over-scene {
+  background-color: transparent;
+}
+
+/* WebGL scene layer (specs 103, 104): the game canvas's box, centred in the viewport like the flex-centred canvas, and
    under it. A negative layer paints above the page background and below the in-flow game canvas. The layer sets its
    logical size inline; input stays with the game canvas. */
 .game-shell__scene {
@@ -28,11 +33,16 @@
   pointer-events: none;
 }
 
-/* Landscape split inventory (spec 098, DEV switch): the canvas is the game strip beside the inventory. */
-.game-shell__canvas--staged {
+/* Landscape split inventory (spec 098, DEV switch): both canvases are the game strip beside the inventory. */
+.game-shell--staged .game-shell__canvas {
   position: fixed;
   top: 0;
   left: var(--game-stage-left, 0px);
+}
+
+.game-shell--staged .game-shell__scene {
+  inset: 0 auto auto var(--game-stage-left, 0px);
+  margin: 0;
 }
 
 .game-shell--outcome-active .game-shell__canvas {

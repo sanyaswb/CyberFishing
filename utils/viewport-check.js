@@ -35,6 +35,36 @@ for (let frame = 0; frame < 120; frame++) {
     "camera movement and viewport size do not own world perspective");
 }
 assert.equal(calls, 120, "one perspective query per frame; camera operations do not query perspective");
+// Spec 105: the first focus after the camera is placed snaps to its target; later focuses ease.
+config.map.tall = { safeZone: { top: 0, bottom: 300 }, initialAlignment: { x: "center", y: "top" } };
+const opening = new ViewportProjector({ ...config, cameraFocusY: 0.7 }, "tall", query);
+opening.update(400, 300);
+opening.focusOnVirtualPos(250, 16.66, 0.03);
+const focusY = () => opening.virtualToScreen(0, 250, screen).y;
+assert(Math.abs(focusY() - 300 * 0.7) < 1e-9, "the game opens on the focus target, not easing toward it");
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+const eased = opening.virtualToScreen(0, 300, screen).y;
+assert(eased > 210 + 1 && eased < 300 - 40, "a later target is still followed smoothly: part of the way per frame");
+opening.update(400, 300);
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+const unchanged = opening.virtualToScreen(0, 300, screen).y;
+assert(unchanged < eased && unchanged > 210, "an unchanged canvas size keeps easing");
+opening.update(300, 200);
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+assert(Math.abs(opening.virtualToScreen(0, 300, screen).y - 200 * 0.7) < 1e-9,
+  "a resized canvas (a phone turned) opens on the focus target instead of easing toward it");
+opening.focusOnVirtualPos(250, 16.66, 0.03);
+assert(Math.abs(opening.virtualToScreen(0, 250, screen).y - 200 * 0.7) > 1, "after the resize the camera eases again");
+opening.update(400, 300);
+opening.pan(-1000);
+opening.pan(70);
+const centreX = opening.screenToVirtual(200, 0, virtual).x;
+opening.update(300, 200);
+assert(Math.abs(opening.virtualToScreen(centreX, 0, screen).x - 150) < 1e-9, "a resize keeps the scene point at the centre");
+opening.update(2000, 300);
+opening.update(300, 200);
+assert(Math.abs(opening.virtualToScreen(500, 0, screen).x - 150) < 1e-9,
+  "back from a layout that shows the whole width, the camera opens centred, not at the left edge");
 config.map.lake = { safeZone: { top: 300, bottom: 700 }, perspective: { angleTop: 0, angleBottom: 30 } };
 assert.equal(projector.getPerspective(300).scale, 0, "live location replacement reaches the existing perspective owner");
 assert.equal(projector.getPerspective(700).scale, 1);
@@ -82,7 +112,7 @@ const makeNode = () => {
   value.style = { setProperty: (name, prop) => value.props.set(name, prop), removeProperty: (name) => value.props.delete(name) };
   return value;
 };
-const stageCanvas = Object.assign(makeNode(), { width: 1280 });
+const stageShell = makeNode();
 const stageWindow = { innerWidth: 1280, innerHeight: 800 };
 const surfaceProps = new Map();
 const surface = { props: surfaceProps,
@@ -97,7 +127,7 @@ const lifecycle = { add(target, type, handler) { stageListeners.push({ target, t
 let visibility = null;
 const inventoryUI = { surfaceNode: modal, isOpen: false,
   onVisibilityChange(listener) { visibility = listener; return () => { visibility = null; }; } };
-const stage = new GameStageLayout({ canvas: stageCanvas, windowRef: stageWindow, uiSurface: surface, source, policy,
+const stage = new GameStageLayout({ shell: stageShell, windowRef: stageWindow, uiSurface: surface, source, policy,
   listeners: lifecycle });
 let rodX = 300, splitChanges = 0;
 stage.attachInventory(inventoryUI);
@@ -108,7 +138,8 @@ visibility(true);
 assert.equal(splitChanges, 1, "opening the split tells the game once");
 assert.deepEqual([stage.layout.side, stage.originX, stage.getViewport().width], ["right", 0, 384],
   "a rod left of the centre keeps the game strip on the left");
-assert(stageCanvas.classes.has("game-shell__canvas--staged") && stageCanvas.props.get("--game-stage-left") === "0px");
+assert(stageShell.classes.has("game-shell--staged") && stageShell.props.get("--game-stage-left") === "0px",
+  "the page shell places both canvases in the strip (spec 104)");
 assert.equal(surface.props.get("--ui-edge-right"), "calc(896px + max(12px, var(--ui-safe-area-right, 0px)))",
   "HUD anchored to the right edge moves to the strip");
 assert(!surface.props.has("--ui-edge-left"));
@@ -129,10 +160,9 @@ assert.equal(stage.layout.inventoryWidth, 840);
 rodX = 1000;
 visibility(false);
 assert.equal(splitChanges, 3, "closing tells the game");
-assert(!stage.layout.active && !stageCanvas.classes.has("game-shell__canvas--staged") && stageCanvas.props.size === 0 &&
+assert(!stage.layout.active && !stageShell.classes.has("game-shell--staged") && stageShell.props.size === 0 &&
   surface.props.size === 0 && modal.props.size === 0 && !modal.classes.has("inventory-surface--split"),
   "closing restores the full-screen page");
-stageCanvas.width = 1400;
 visibility(true);
 assert.deepEqual([stage.layout.side, stage.originX], ["left", 840], "a rod right of the centre keeps the strip on the right");
 assert(surface.props.has("--ui-edge-left") && !surface.props.has("--ui-edge-right"));
@@ -149,7 +179,7 @@ assert.equal(stage.layout.side, "right", "the default side is right");
 stage.dispose();
 assert.deepEqual([sourceDisposed, listenersDisposed, sourceListener, visibility], [1, 1, null, null],
   "the stage disposes its source, listeners and subscriptions");
-assert(!stageCanvas.classes.has("game-shell__canvas--staged") && modal.props.size === 0);
+assert(!stageShell.classes.has("game-shell--staged") && modal.props.size === 0);
 
 // Spec 098: the DEV source reacts to CONFIG.debug edits only.
 const { DevInventorySplitSource } = runtime.importModule("src/dev/runtime/dev_inventory_split_source.js");

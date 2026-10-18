@@ -52,6 +52,7 @@ export class WorldRenderFrameBuilder {
     target.backgroundColor =
       this.#config.canvas?.backgroundColor || "#0f171e";
     this.#buildBackground(target);
+    this.#buildCurrent(target.current);
     this.#buildClipRegions(target.clipRegions);
     this.#debugBuilder?.buildInto(target, debugEnabled);
     this.#boatChumBuilder.buildInto(target);
@@ -61,6 +62,9 @@ export class WorldRenderFrameBuilder {
   #buildBackground(target) {
     const data = this.#map.getBackgroundRenderData();
     if (!data.loaded) return;
+    for (const phase in data.assetIds) {
+      if (data.assetIds[phase]) target.backgroundAssetIds.push(data.assetIds[phase]);
+    }
     const position = this.#projector.virtualToScreen(0, 0, this.#screenA);
     const scale = this.#projector.getScale();
     const width = data.width * scale;
@@ -93,6 +97,15 @@ export class WorldRenderFrameBuilder {
     record.y = position.y;
     record.width = width;
     record.height = height;
+  }
+
+  // The location's current, the one physics applies to the tackle and the boat (virtual pixels are art pixels).
+  #buildCurrent(target) {
+    const locations = this.#config.locations || {};
+    const current = locations.map?.[locations.currentLocationId || this.#locationId]?.environment?.current;
+    const speed = Number(current?.speedPxPerSec) || 0;
+    target.x = speed * (Number(current?.direction?.x) || 0);
+    target.y = speed * (Number(current?.direction?.y) || 0);
   }
 
   #buildClipRegions(target) {
