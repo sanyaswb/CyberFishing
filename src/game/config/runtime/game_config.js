@@ -14,8 +14,9 @@ export const CONFIG = {
     // today's fill cost instead of 9x. Applied on the next resize.
     maxPixelRatio: 2,
     // WebGL scene layer (spec 104 D1): "canvas" draws everything on the 2D canvas and never loads Pixi; "webgl" adds
-    // the Pixi scene under a transparent 2D canvas. Read once at startup (dev.html?scene= overrides it in DEV).
-    scene: "canvas",
+    // the Pixi scene under a transparent 2D canvas (production since spec 105 D6; without WebGL the 2D canvas draws
+    // everything). Read once at startup (dev.html?scene=canvas or ?scene=webgl overrides it in DEV).
+    scene: "webgl",
   },
 
   input: {

@@ -5,7 +5,7 @@ WebGL as a separate layer under today's 2D canvas, step by step, without rewriti
 windows stay 2D/DOM. The owner asks for a ready library rather than hand-written shaders. Status: **decisions taken
 2026-10-18 (below); stage 0 implemented 2026-10-18 (record below); stage 1 implemented 2026-10-18 in
 [spec 104](../104-scene-layer-infrastructure/spec.md); the owner's phone check of both passed; stage 2 implemented 2026-10-18 in
-[spec 105](../105-scene-background/spec.md), its phone measurement pending.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
+[spec 105](../105-scene-background/spec.md) and accepted on the phone: production runs the scene.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
 
 Owner, 2026-10-18: **option C (PixiJS)**, with the 2D canvas for HUD text and the rest. The art will be **many image
 layers, and almost all animation will be made in Spine**. The owner wants the most result for the least effort.

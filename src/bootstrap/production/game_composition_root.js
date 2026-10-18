@@ -467,8 +467,10 @@ export class GameCompositionRoot {
       castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
       physicsConfig, own, gameTimeClock,
     });
-    // Spec 104 D8: the scene's warm-up frame happens during loading, not in the first frames of play.
+    // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
+    // happen during loading, not in the first frames of play.
     await sceneLayer.whenReady();
+    sceneLayer.prepare(Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean));
     return {
       liveBait,
       liveBaitCandidate,

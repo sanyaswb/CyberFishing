@@ -3,8 +3,10 @@
 // reported section (render passes, the Spine rod) and gauges (GL surface pixels). Long tasks of the whole page come
 // from PerformanceObserver where the browser has it (Chromium). Intervals over a second (hidden tab) are not counted.
 // GPU time is not observable from a page: a frame whose interval is far above its CPU work points at GPU, compositor
-// or other page work, and that gap is reported as such.
+// or other page work, and that gap is reported as such. FPS counts only the last second of frames (spec 105 D10): the
+// other statistics span the ring (~4 s), where a few slow startup frames held FPS down long after play was smooth.
 const CAPACITY = 240;
+const FPS_WINDOW_MS = 1000;
 const HIDDEN_GAP_MS = 1000;
 const JANK_MS = 25;
 const FREEZE_MS = 50;
@@ -96,7 +98,7 @@ export class FrameProfiler {
     for (const [id, section] of this.#sections) sections[id] = FrameProfiler.#stats(this.#ordered(section.samples));
     return {
       frames: this.#count,
-      fps: intervalStats.mean > 0 ? 1000 / intervalStats.mean : 0,
+      fps: FrameProfiler.#recentFps(intervals),
       interval: intervalStats,
       work: workStats,
       budgetShare: intervalStats.mean > 0 ? workStats.mean / intervalStats.mean : 0,
@@ -139,6 +141,17 @@ export class FrameProfiler {
   #ordered(buffer) {
     if (this.#count < CAPACITY) return Array.from(buffer.subarray(0, this.#count));
     return [...buffer.subarray(this.#index), ...buffer.subarray(0, this.#index)];
+  }
+
+  // Frames per second over the latest intervals that fill one second (all of them while fewer were recorded).
+  static #recentFps(intervals) {
+    let sum = 0;
+    let count = 0;
+    for (let index = intervals.length - 1; index >= 0 && sum < FPS_WINDOW_MS; index -= 1) {
+      sum += intervals[index];
+      count += 1;
+    }
+    return sum > 0 ? (count * 1000) / sum : 0;
   }
 
   static #stats(values) {

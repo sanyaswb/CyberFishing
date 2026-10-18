@@ -32,6 +32,10 @@ export class DeferredSceneLayer {
     return this.#ready;
   }
 
+  prepare(assetIds) {
+    this.#layer?.prepare(assetIds);
+  }
+
   getStatus() {
     if (this.#layer) return this.#layer.getStatus();
     return { state: this.#disposed ? "disposed" : this.#failed ? "unavailable" : "loading" };

@@ -127,13 +127,14 @@ function recordingProbe() {
 async function checkPorts() {
   const { InactiveSceneLayer, SCENE_LAYER_METHODS } = await importSource("src/engine/scene/inactive_scene_layer.js");
   const { FRAME_SECTIONS, FRAME_GAUGES } = await importSource("src/engine/diagnostics/inactive_frame_probe.js");
-  assert.deepEqual(SCENE_LAYER_METHODS, ["render", "isActive", "whenReady", "getStatus", "loseContext", "restoreContext",
-    "dispose"]);
+  assert.deepEqual(SCENE_LAYER_METHODS, ["render", "isActive", "whenReady", "prepare", "getStatus", "loseContext",
+    "restoreContext", "dispose"]);
   const inactive = new InactiveSceneLayer();
   for (const method of SCENE_LAYER_METHODS) assert.equal(typeof inactive[method], "function", `inactive ${method}`);
   assert.equal(inactive.isActive(), false);
   assert.equal(await inactive.whenReady(), false, "the inactive layer never renders, so startup does not wait");
   assert.deepEqual(inactive.getStatus(), { state: "inactive" });
+  assert.equal(inactive.prepare(["day"]), undefined, "the inactive layer prepares nothing");
   assert.equal(FRAME_SECTIONS.scene, "scene");
   assert.equal(FRAME_GAUGES.scenePixels, "scene-pixels");
 
@@ -147,11 +148,12 @@ async function checkPorts() {
   const layerReady = deferred();
   const loaded = { render: (frame) => frames.push(frame), isActive: () => active, whenReady: () => layerReady.promise,
     getStatus: () => ({ state: "active" }), loseContext: () => calls.push("lose"), restoreContext: () => calls.push("restore"),
-    dispose: () => { disposals += 1; } };
+    prepare: (assetIds) => calls.push(`prepare ${assetIds}`), dispose: () => { disposals += 1; } };
   const gate = deferred();
   const unavailable = [];
   const layer = new DeferredSceneLayer({ load: () => gate.promise, onUnavailable: (error) => unavailable.push(error) });
   layer.render("before");
+  layer.prepare(["day"]);
   assert.deepEqual([layer.isActive(), layer.getStatus().state], [false, "loading"], "inactive while the runtime loads");
   let readyValue = null;
   const ready = layer.whenReady().then((value) => { readyValue = value; });
@@ -168,7 +170,9 @@ async function checkPorts() {
   assert.equal(layer.isActive(), false, "activity is the loaded layer's (a lost context)");
   layer.loseContext();
   layer.restoreContext();
-  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore"], "active"], "DEV methods reach the layer");
+  layer.prepare(["day", "night"]);
+  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore", "prepare day,night"], "active"],
+    "DEV methods and prepare reach the loaded layer; nothing before it arrives");
   layer.dispose();
   layer.render("after");
   assert.deepEqual([frames.length, disposals, layer.getStatus().state], [1, 1, "disposed"]);
@@ -405,6 +409,21 @@ async function checkPixiSceneLayer() {
     textures.every((texture) => texture.destroyed === true)], [true, 0, 0, "disposed", true],
   "dispose removes the canvas, its listeners, the game canvas modifier and every texture");
 
+  // Spec 105 D2: startup prepares every phase under the loading screen, so play starts without uploads.
+  const prepared = compose();
+  prepared.layer.prepare(["day", "evening", "night"]);
+  assert.equal(prepared.textures.length, 0, "nothing is prepared before the layer is ready");
+  prepared.apps[0].initCall.resolve();
+  assert.equal(await prepared.layer.whenReady(), true);
+  prepared.layer.prepare(["day", "evening", "night"]);
+  assert.deepEqual(prepared.textures.map((texture) => texture.resource.id), ["day", "evening", "night"],
+    "prepare uploads every listed phase at once");
+  prepared.layer.render(frame);
+  prepared.layer.render(frame);
+  assert.deepEqual([prepared.textures.length, prepared.apps[0].renders], [3, 2],
+    "the first frames of play upload nothing more; the first presents the picture");
+  prepared.layer.dispose();
+
   const failing = compose();
   failing.apps[0].initCall.reject(new Error("WebGL unsupported"));
   assert.equal(await failing.layer.whenReady(), false);
@@ -471,7 +490,7 @@ async function checkComposition() {
   const { InactiveSceneLayer } = await importSource("src/engine/scene/inactive_scene_layer.js");
   const { DeferredSceneLayer } = await importSource("src/engine/scene/deferred_scene_layer.js");
   const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
-  assert.equal(CONFIG.canvas.scene, "canvas", "production stays on the 2D canvas until stage 2 is measured (D1)");
+  assert.equal(CONFIG.canvas.scene, "webgl", "production draws the background on the scene (spec 105 D6)");
   const warnings = [];
   const options = (overrides) => {
     const dom = fakeDom();
@@ -510,7 +529,8 @@ async function checkComposition() {
   assert.match(renderComposition, /surface\.beginFrame\(runtime\.rendering\.sceneRouter\.clearsCanvas\(\)\)/u);
   const root = read("src/bootstrap/production/game_composition_root.js");
   assert.match(root, /contextAttributes: \{ alpha: transparentCanvas \}/u, "the scene mode decides the 2D canvas alpha");
-  assert.match(root, /await sceneLayer\.whenReady\(\);/u, "startup waits for the scene's warm-up frame");
+  assert.match(root, /await sceneLayer\.whenReady\(\);\n\s*sceneLayer\.prepare\(Object\.values\(systems\.map\.getBackgroundRenderData\(\)\.assetIds\)/u,
+    "startup waits for the scene's warm-up frame, then uploads every background phase during loading");
   assert.match(root, /shell: this\.#documentTarget\.body/u, "the split stage places both canvases through the shell");
 }
 

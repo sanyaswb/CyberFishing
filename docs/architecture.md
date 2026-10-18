@@ -173,10 +173,12 @@ bone setup edits and the export of the edited skeleton JSON.
 
 WebGL scene layer ([spec 103](../specs/103-webgl-scene-layer/spec.md); stages 0 and 1, the latter in
 [spec 104](../specs/104-scene-layer-infrastructure/spec.md)): `engine/scene` holds the port (`SCENE_LAYER_METHODS`:
-`render(frame)`, `isActive()`, `whenReady()`, the DEV `getStatus`/`loseContext`/`restoreContext`, `dispose()`),
+`render(frame)`, `isActive()`, `whenReady()`, `prepare(assetIds)` (uploads during loading, spec 105 D2), the DEV
+`getStatus`/`loseContext`/`restoreContext`, `dispose()`),
 `InactiveSceneLayer` and `DeferredSceneLayer` (the port at composition time while the runtime loads lazily).
-`bootstrap/production/scene_layer_composition.js` composes it from `CONFIG.canvas.scene` (`"canvas"` by default:
-inactive layer, opaque 2D canvas, no Pixi download; `"webgl"`: lazy Pixi layer, transparent 2D canvas); DEV overrides
+`bootstrap/production/scene_layer_composition.js` composes it from `CONFIG.canvas.scene` (`"canvas"`:
+inactive layer, opaque 2D canvas, no Pixi download; `"webgl"`, production since spec 105 D6: lazy Pixi layer,
+transparent 2D canvas); DEV overrides
 the mode with `dev.html?scene=`. `game/presentation/rendering/SceneLayerRouter` decides once per frame which layer draws
 each world kind (`SCENE_KINDS`, bottom first): a kind is on the scene only while WebGL is active, the scene has a
 renderer for it and every kind under it is there; otherwise its 2D component draws (`canvasVisibility`), so a lost

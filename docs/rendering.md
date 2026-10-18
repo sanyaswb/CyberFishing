@@ -36,8 +36,9 @@ the role that is easiest to reach from the current code.
   `SCENE_KINDS` lists the kinds bottom first; a kind is on the scene only while the mode is `"webgl"`, WebGL is active,
   the scene has a renderer for it and every kind under it is there. A new world kind joins `SCENE_KINDS` at its depth
   and gates its 2D component with `canvasVisibility`. HUD overlays are not kinds.
-- `CONFIG.canvas.scene` (`"canvas"` | `"webgl"`) is read once at startup: the 2D context's `alpha` follows it. Turning
-  production to `"webgl"` is a measured decision of the stage that first routes a kind.
+- `CONFIG.canvas.scene` (`"canvas"` | `"webgl"`) is read once at startup: the 2D context's `alpha` follows it.
+  Production is `"webgl"` since [spec 105](../specs/105-scene-background/spec.md) D6 (the owner's phone run of stage 2);
+  `dev.html?scene=canvas` keeps the 2D-only comparison.
 - The scene presents a WebGL frame only while a kind is on it (rule 22). An unchanged empty scene presented every frame
   made Chrome wait for the compositor inside the scene's render (up to 230 ms in software GL, spec 104).
 - A scene kind's renderer reports whether anything visible changed, and the scene presents a frame only then (rules 13

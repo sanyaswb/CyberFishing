@@ -98,6 +98,13 @@ export class PixiSceneLayer {
     return this.#app !== null && !this.#contextLost;
   }
 
+  // Spec 105 D2: startup uploads every background phase of the location under the loading screen; the staged order of
+  // render() remains for images that load later.
+  prepare(assetIds) {
+    if (this.#app === null || this.#contextLost) return;
+    for (const assetId of assetIds) this.#textures.get(assetId);
+  }
+
   // Resolves true once the warm-up frame has rendered, false when the layer never will (no WebGL, or disposed first).
   whenReady() {
     return this.#ready;
