@@ -1,6 +1,9 @@
 import { FRAME_GAUGES } from "../../../engine/diagnostics/inactive_frame_probe.js";
 import { PixiBackgroundRenderer } from "./pixi_background_renderer.js";
+import { PixiFightAreaRenderer } from "./pixi_fight_area_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
+import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
+import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
 
 // Pixi Application options (spec 103 D1): Pixi is a renderer behind the scene port, not a framework.
@@ -22,10 +25,11 @@ const APPLICATION_OPTIONS = Object.freeze({
 // The game canvas drops its CSS background while the scene is under it (spec 104 D6).
 const OVER_SCENE_CLASS = "game-shell__canvas--over-scene";
 
-// The WebGL scene layer (specs 103-106): a Pixi Application on its own canvas, inserted right before the game canvas
+// The WebGL scene layer (specs 103-107): a Pixi Application on its own canvas, inserted right before the game canvas
 // and drawn under it (game-shell.css). Init is async and ends with one warm-up render, so the first-frame cost (Pixi
 // compiling its shaders) falls into loading; until then render draws nothing and isActive() is false. Each render
-// updates the kinds the router puts on the scene (the background, with the water's ripples over it, spec 106),
+// updates the kinds the router puts on the scene, bottom first: the background with the water's ripples over it
+// (spec 106), the world entities (bait boats, chum zones) and the fight areas (spec 107),
 // resizes the renderer only when the logical size or the scene's pixel ratio changed, and presents a frame only when
 // something changed (spec 105 D3; the water changes at its own frame rate): the browser keeps showing the last one. The scene's pixel ratio follows the background art (D4): never more than the
 // game canvas's, never more than the art's own pixels per drawn pixel. A lost WebGL context makes the layer inactive
@@ -38,10 +42,14 @@ export class PixiSceneLayer {
   #router;
   #clock;
   #getWaterSettings;
+  #fightAreaStyles;
   #documentTarget;
   #textures = null;
+  #texts = null;
   #background = null;
   #water = null;
+  #worldEntities = null;
+  #fightAreas = null;
   #needsFrame = true;
   #metrics;
   #probe;
@@ -64,14 +72,16 @@ export class PixiSceneLayer {
   // pixi: the vendored namespace (pixi_runtime_module.js); gameCanvas: the 2D game canvas the scene goes under;
   // canvasMetrics: the logical size and pixel ratio owner; background: the clear colour (any Pixi colour input);
   // images: the loaded images ({ tryGet }); router: which kinds the scene draws this frame ({ drawsOnScene }); clock:
-  // the game clock ({ now }, the frame's time in ms); getWaterSettings: () => CONFIG.canvas.water (spec 106).
-  constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings, probe,
-    logger }) {
+  // the game clock ({ now }, the frame's time in ms); getWaterSettings: () => CONFIG.canvas.water (spec 106);
+  // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107).
+  constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
+    fightAreaStyles, probe, logger }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
     if (typeof router?.drawsOnScene !== "function") throw new TypeError("PixiSceneLayer requires the router");
     if (typeof getWaterSettings !== "function") throw new TypeError("PixiSceneLayer requires getWaterSettings");
+    if (typeof fightAreaStyles?.resolve !== "function") throw new TypeError("PixiSceneLayer requires fightAreaStyles");
     for (const [name, value] of Object.entries({ documentTarget, canvasMetrics, clock, probe, logger })) {
       if (value == null) throw new TypeError(`PixiSceneLayer requires ${name}`);
     }
@@ -81,6 +91,7 @@ export class PixiSceneLayer {
     this.#router = router;
     this.#clock = clock;
     this.#getWaterSettings = getWaterSettings;
+    this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
     this.#probe = probe;
@@ -98,9 +109,14 @@ export class PixiSceneLayer {
   render(frame) {
     const app = this.#app;
     if (app === null || this.#contextLost) return;
-    const world = this.#router.drawsOnScene("background") ? frame.world : null;
+    const router = this.#router;
+    const world = router.drawsOnScene("background") ? frame.world : null;
     let changed = this.#background.update(world);
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
+    const pixelRatio = this.#scenePixelRatio();
+    if (this.#worldEntities.update(router.drawsOnScene("world-entities") ? frame.world : null, pixelRatio)) changed = true;
+    const fightAreas = router.drawsOnScene("fight-areas") && frame.fishing.visible ? frame.fishing.fightAreas : null;
+    if (this.#fightAreas.update(fightAreas)) changed = true;
     if (this.#resizeIfChanged(app)) changed = true;
     if (!changed && !this.#needsFrame) return;
     this.#needsFrame = false;
@@ -151,6 +167,7 @@ export class PixiSceneLayer {
     this.#app?.destroy({ removeView: false }, { children: true });
     this.#app = null;
     this.#water?.dispose();
+    this.#texts?.dispose();
     this.#textures?.dispose();
     this.#canvas.remove();
     this.#gameCanvas.classList.remove(OVER_SCENE_CLASS);
@@ -173,6 +190,9 @@ export class PixiSceneLayer {
         renderer: app.renderer });
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings });
+      this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts });
+      this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
       this.#remember(app, width, height, resolution);
       app.render();
     } catch (error) {

@@ -30,8 +30,10 @@ function deferred() {
 
 // A 2D context for the water's map canvas: image data and the number of puts.
 function fakeContext2d() {
-  return { puts: 0, createImageData: (width, height) => ({ width, height, data: new Uint8ClampedArray(width * height * 4) }),
-    putImageData(image) { this.puts += 1; this.last = image; } };
+  return { puts: 0, texts: [], font: "", createImageData: (width, height) => ({ width, height, data: new Uint8ClampedArray(width * height * 4) }),
+    putImageData(image) { this.puts += 1; this.last = image; },
+    measureText(text) { return { width: String(text).length * (Number.parseFloat(this.font.match(/(\d+)px/u)?.[1]) || 10) * 0.6 }; },
+    fillText(text, x, y) { this.texts.push({ text, x, y, font: this.font, fillStyle: this.fillStyle }); } };
 }
 
 function fakeElement(tagName) {
@@ -66,12 +68,24 @@ function fakePixi() {
   const textures = [];
   const canvasTextures = [];
   class Container {
-    constructor() { this.children = []; }
+    constructor() { this.children = []; this.visible = true; }
 
-    addChild(child) { this.children.push(child); return child; }
+    addChild(...children) { this.children.push(...children); return children[0]; }
   }
   class Sprite {
-    constructor(texture = null) { Object.assign(this, { texture, x: 0, y: 0, width: 0, height: 0, alpha: 1, visible: true }); }
+    constructor(texture = null) {
+      Object.assign(this, { texture, x: 0, y: 0, width: 0, height: 0, alpha: 1, rotation: 0, visible: true });
+      this.anchor = { x: 0, y: 0, set: (x, y) => { this.anchor.x = x; this.anchor.y = y; } };
+    }
+  }
+  // Records its path and paint calls as [name, ...args]; clear() empties the record.
+  class Graphics {
+    constructor() { this.ops = []; this.mask = null; this.visible = true; }
+
+    clear() { this.ops = []; return this; }
+  }
+  for (const name of ["rect", "ellipse", "circle", "moveTo", "lineTo", "closePath", "fill", "stroke", "quadraticCurveTo"]) {
+    Graphics.prototype[name] = function record(...args) { this.ops.push([name, ...args]); return this; };
   }
   class DisplacementFilter {
     constructor({ sprite, scale }) {
@@ -127,7 +141,7 @@ function fakePixi() {
 
     destroy(...args) { this.destroyed = args; }
   }
-  return { pixi: { Application, Container, DisplacementFilter, Sprite, Texture }, apps, textures, canvasTextures };
+  return { pixi: { Application, Container, DisplacementFilter, Graphics, Sprite, Texture }, apps, textures, canvasTextures };
 }
 
 // Loaded images by asset id, as ImageAssetProvider.tryGet serves them.
@@ -349,12 +363,15 @@ async function checkPixiSceneLayer() {
   const clock = { now: 1000 };
   const water = { enabled: true, frameRate: 30, amplitude: 8, verticalShare: 0.5, wavelength: 140, speed: 24,
     currentScale: 3 };
+  const { FightAreaStyleResolver } = await importSource("src/game/presentation/styles/fight_area_style_resolver.js");
+  const fightAreaStyles = new FightAreaStyleResolver({ configProvider: () => ({}) });
   const compose = (overrides = {}) => {
     const dom = fakeDom();
     const { pixi, apps, textures, canvasTextures } = fakePixi();
     const probe = recordingProbe();
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
-      background: "#0f171e", images, router, clock, getWaterSettings: () => water, probe, logger, ...overrides };
+      background: "#0f171e", images, router, clock, getWaterSettings: () => water, fightAreaStyles, probe, logger,
+      ...overrides };
     return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe };
   };
   for (const [name, overrides, pattern] of [
@@ -364,6 +381,7 @@ async function checkPixiSceneLayer() {
     ["router", { router: {} }, /requires the router/u],
     ["water settings", { getWaterSettings: null }, /requires getWaterSettings/u],
     ["clock", { clock: null }, /requires clock/u],
+    ["fight area styles", { fightAreaStyles: null }, /requires fightAreaStyles/u],
     ["metrics", { canvasMetrics: null }, /requires canvasMetrics/u],
     ["probe", { probe: undefined }, /requires probe/u],
   ]) assert.throws(() => compose(overrides), pattern, `PixiSceneLayer validates ${name}`);
@@ -605,6 +623,113 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.equal(map.destroyed, true, "the map's texture is released with the scene");
 }
 
+// A reusable list as the frame models use it ({ count, getAt }).
+const list = (items) => ({ count: items.length, getAt: (index) => items[index] ?? null });
+
+// Spec 107 (stage 4a): change fingerprints, dashes, text textures, the world entities and the fight areas.
+async function checkSceneWorldKinds() {
+  const { SceneChangeFingerprint } = await importSource("src/platform/browser/scene/scene_change_fingerprint.js");
+  const print = new SceneChangeFingerprint();
+  const feed = (x, alpha, text) => { print.begin(); print.length(x); print.alpha(alpha); print.text(text); return print.finish(); };
+  assert.equal(feed(10, 0.5, "⛵"), true, "the first picture is a change");
+  assert.equal(feed(10.02, 0.5005, "⛵"), false, "steps under 0.05 px and half an 8-bit opacity step are not a change");
+  assert.equal(feed(10.2, 0.5, "⛵"), true);
+  assert.equal(feed(10.2, 0.5, "🚤"), true, "a different emoji is a change");
+  print.invalidate();
+  assert.equal(feed(10.2, 0.5, "🚤"), true, "after invalidate the same picture is drawn again");
+
+  const { appendDashedLine } = await importSource("src/platform/browser/scene/pixi_dashed_line.js");
+  const { pixi } = fakePixi();
+  const dashes = new pixi.Graphics();
+  appendDashedLine(dashes, 0, 5, 50, 5, [10, 10]);
+  assert.deepEqual(dashes.ops, [["moveTo", 0, 5], ["lineTo", 10, 5], ["moveTo", 20, 5], ["lineTo", 30, 5], ["moveTo", 40, 5],
+    ["lineTo", 50, 5]], "a [10, 10] dash over 50 px is three dashes, as Canvas 2D draws it");
+  dashes.clear();
+  appendDashedLine(dashes, 0, 0, 3, 4, []);
+  assert.deepEqual(dashes.ops, [["moveTo", 0, 0], ["lineTo", 3, 4]], "no pattern: a solid line");
+
+  const { SceneTextTextures } = await importSource("src/platform/browser/scene/scene_text_textures.js");
+  const dom = fakeDom();
+  const fake = fakePixi();
+  const texts = new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget });
+  const boat = texts.get("⛵", 20, 2);
+  assert.equal(texts.get("⛵", 20.2, 2), boat, "sizes that round to the same backing pixels share one texture");
+  assert.notEqual(texts.get("⛵", 24, 2), boat);
+  assert.equal(boat.height, boat.pixelHeight / 2, "drawn at logical size: backing pixels over the ratio");
+  const drawn = boat.texture.canvas.getContext("2d").texts[0];
+  assert.deepEqual([drawn.text, drawn.font], ["⛵", "40px sans-serif"], "drawn once at the scene's pixel ratio");
+  texts.dispose();
+  assert.equal(fake.canvasTextures.every((texture) => texture.destroyed === true), true, "released with the scene");
+
+  const { PixiWorldEntitiesRenderer } = await importSource("src/platform/browser/scene/pixi_world_entities_renderer.js");
+  const stage = new fake.pixi.Container();
+  const entities = new PixiWorldEntitiesRenderer({ pixi: fake.pixi,
+    stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }) });
+  const [container] = stage.children;
+  const [zones, zoneMask, overlay, boatLayer] = container.children;
+  const zone = { x: 200, y: 400, radiusX: 60, radiusY: 20, opacity: 0.5 };
+  const boatModel = { x: 150, y: 380, angle: 0.3, emoji: "⛵", fontSize: 24, energyRatio: 0.5, energyColor: "#00ff00",
+    barWidth: 40, barHeight: 4, barY: -16 };
+  const world = { visible: true, clipRegions: list([{ x: 0, y: 300, width: 400, height: 300 }]), chumZones: list([zone]),
+    waypoints: list([{ x: 100, y: 350, scale: 1, index: 2, showIndex: true }]), boats: list([boatModel]),
+    sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]) };
+  assert.equal(entities.update(world, 2), true);
+  assert.equal(container.visible, true);
+  assert.deepEqual(zones.ops, [["ellipse", 200, 400, 60, 20], ["fill", { color: 0xc8ff64, alpha: 0.1 }],
+    ["stroke", { width: 2, color: 0xc8ff64, alpha: 0.25 }]], "chum zones: BoatChumRenderer's colours and opacities");
+  assert.equal(zones.mask, zoneMask, "chum zones are clipped to the castable water");
+  assert.deepEqual(zoneMask.ops, [["rect", 0, 300, 400, 300], ["fill", 0xffffff]]);
+  const boatSprite = boatLayer.children.find((sprite) => sprite.texture?.canvas?.getContext("2d").texts[0]?.text === "⛵");
+  assert.deepEqual([boatSprite.x, boatSprite.y, boatSprite.rotation, boatSprite.anchor.x, boatSprite.anchor.y],
+    [150, 380, 0.3 + Math.PI, 0.5, 0.5], "the boat emoji turns with the boat around its centre");
+  assert(overlay.ops.some((op) => op[0] === "rect" && op[1] === 130 && op[2] === 364 && op[3] === 20),
+    "the energy bar fills its share");
+  assert(overlay.ops.some((op) => op[0] === "stroke" && op[1].color === 0xff0000), "a blocked sensor ray is red");
+  assert.equal(entities.update(world, 2), false, "an unchanged world presents nothing");
+  boatModel.x += 1;
+  assert.equal(entities.update(world, 2), true, "a moving boat is a change");
+  assert.equal(entities.update(null, 2), true, "off the scene it hides once");
+  assert.equal(container.visible, false);
+  assert.equal(entities.update(null, 2), false);
+  assert.equal(entities.update({ ...world, chumZones: list([]), waypoints: list([]), boats: list([]), sensorRays: list([]) }, 2),
+    false, "nothing to draw: hidden, no frame");
+
+  const { PixiFightAreaRenderer } = await importSource("src/platform/browser/scene/pixi_fight_area_renderer.js");
+  const { FightAreaStyleResolver } = await importSource("src/game/presentation/styles/fight_area_style_resolver.js");
+  const styles = new FightAreaStyleResolver({ configProvider: () => ({ lastDashDash: [5, 5] }) });
+  const areaStage = new fake.pixi.Container();
+  const areas = new PixiFightAreaRenderer({ pixi: fake.pixi, stage: areaStage, styles });
+  const [areaContainer] = areaStage.children;
+  const [shapes, areaMask] = areaContainer.children;
+  const style = styles.resolve();
+  const model = { visible: true, clipRegions: list([{ x: 0, y: 200, width: 400, height: 500 }]),
+    lastDashZone: { visible: true, y: 300, width: 20, height: 40 },
+    catchZone: { visible: true, kind: "ellipse", x: 200, y: 600, radiusX: 80, radiusY: 30 },
+    netZone: { visible: true, y: 650, width: 400, height: 50 },
+    showSector: true, sectorClamped: true, sectorPoints: list([{ x: 200, y: 700 }, { x: 100, y: 300 }, { x: 300, y: 300 }]),
+    apexX: 200, apexY: 700, axisEndX: 200, axisEndY: 686,
+    showLineRadius: true, lineRadiusPoints: list([{ x: 100, y: 400 }, { x: 300, y: 400 }]) };
+  assert.equal(areas.update(model), true);
+  const ops = shapes.ops;
+  assert.deepEqual(ops.slice(0, 2), [["rect", 0, 300, 20, 40], ["fill", style.lastDashFill]], "the last-dash band");
+  assert.deepEqual(ops.slice(2, 7), [["moveTo", 0, 300], ["lineTo", 5, 300], ["moveTo", 10, 300], ["lineTo", 15, 300],
+    ["stroke", { width: 2, color: style.lastDashStroke }]], "its line in the configured dash");
+  assert(ops.some((op) => op[0] === "ellipse" && op[3] === 80), "the catch ellipse");
+  assert(ops.some((op) => op[0] === "fill" && op[1] === style.sectorClampedFill), "a clamped sector uses its colours");
+  assert(ops.some((op) => op[0] === "stroke" && op[1].width === 3 && op[1].color === style.sectorClampedStroke));
+  const axis = ops.filter((op) => op[0] === "moveTo" && op[1] === 200 && op[2] >= 686 && op[2] <= 700);
+  assert.equal(axis.length, 2, "the sector axis is dashed [6, 8]: 14 px is one dash and the start of the next");
+  assert(ops.some((op) => op[0] === "stroke" && op[1].width === 4 && op[1].color === style.lineRadiusStroke));
+  assert.equal(shapes.mask, areaMask, "clipped to the fight's water");
+  assert.equal(areas.update(model), false);
+  model.showSector = false;
+  assert.equal(areas.update(model), true);
+  styles.invalidate();
+  assert.equal(areas.update(model), true, "a new style (config edit) redraws");
+  assert.equal(areas.update({ visible: false }), true);
+  assert.equal(areaContainer.visible, false);
+}
+
 async function checkCoordinator() {
   const { GameRenderCoordinator } = await importSource("src/game/presentation/rendering/game_render_coordinator.js");
   const order = [];
@@ -659,7 +784,7 @@ async function checkComposition() {
     const dom = fakeDom();
     return { dom, value: { config: { canvas: { scene: "canvas", backgroundColor: "#0f171e" } }, documentTarget: dom.documentTarget,
       gameCanvas: dom.gameCanvas, canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, images: fakeImages([]),
-      clock: { now: 0 }, probe: recordingProbe(),
+      clock: { now: 0 }, fightAreaStyles: { resolve: () => ({}) }, probe: recordingProbe(),
       logger: { warn: (...args) => warnings.push(args) }, ...overrides } };
   };
   const canvasMode = composeSceneLayer(options({}).value);
@@ -682,8 +807,12 @@ async function checkComposition() {
   assert.equal(warnings.length, 2, "the missing WebGL is reported once");
   webgl.sceneLayer.dispose();
 
-  assert.match(read(SCENE_COMPOSITION), /SCENE_RENDERED_KINDS = Object\.freeze\(\["background"\]\)/u,
-    "stage 2: the scene draws the background (spec 105)");
+  assert.match(read(SCENE_COMPOSITION),
+    /SCENE_RENDERED_KINDS = Object\.freeze\(\["background", "world-entities", "fight-areas"\]\)/u,
+    "stage 4a: the scene draws the background, the world entities and the fight areas (specs 105, 107)");
+  assert.match(read(SCENE_COMPOSITION), /fightAreaStyles, probe, logger,/u, "the scene gets the 2D fight area styles");
+  assert.match(read("src/bootstrap/production/game_composition_root.js"), /fightAreaStyles: fightAreaStyleResolver/u,
+    "one fight area style resolver for both layers");
   assert.match(read(SCENE_COMPOSITION), /clock, getWaterSettings: \(\) => config\.canvas\?\.water,/u,
     "the scene times its water with the game clock and reads the water settings live (spec 106)");
   assert.equal(CONFIG.canvas.water.enabled, true, "production animates the water (spec 106)");
@@ -841,6 +970,7 @@ async function main() {
   await checkRouter();
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
+  await checkSceneWorldKinds();
   await checkPixiSceneLayer();
   await checkCoordinator();
   await checkSurfaceClear();
@@ -854,6 +984,7 @@ async function main() {
   console.log(`Scene layer passed: port and lazy layer (warm-up wait, late arrival, failure), router (depth order, `
     + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, one more per frame, reload, release) and background `
     + `(phases, change detection, art density), water wave field (deterministic, moving, edge fade, perspective), `
+    + `change fingerprints, dashes, text textures, world entities and fight areas (2D colours, clips, frames only on change), `
     + `PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
     + `steps at its frame rate over the visible zone, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `

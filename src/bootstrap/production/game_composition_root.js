@@ -381,19 +381,21 @@ export class GameCompositionRoot {
     // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
     const imageAssets = new ImageAssetProvider();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
-    // The scene layer first: its mode decides whether the 2D canvas is transparent (spec 104 D6).
+    // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
+    const {
+      rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
+      outcomeStyleResolver,
+    } = this.#composeStyleResolvers();
+    // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
     const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
       modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
-      images: imageAssets, clock, probe: this.#frameProbe, logger: new ConsoleLogger() });
+      images: imageAssets, clock, fightAreaStyles: fightAreaStyleResolver, probe: this.#frameProbe,
+      logger: new ConsoleLogger() });
     own(sceneLayer);
     contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
       surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
     } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets });
-    const {
-      rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
-      outcomeStyleResolver,
-    } = this.#composeStyleResolvers();
     const {
       itemFreshnessResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver,
       itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter,

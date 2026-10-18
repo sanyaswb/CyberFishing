@@ -194,7 +194,10 @@ textures of the images the page's `ImageAssetProvider` loaded, presents a frame 
 sets its pixel ratio from the art. Stage 3 ([spec 106](../specs/106-scene-water/spec.md)): `PixiWaterRenderer` draws
 ripples over the background inside the location's castable zones (a copy of the background's layers through Pixi's
 `DisplacementFilter`, its map refilled by `WaterWaveField` at `CONFIG.canvas.water.frameRate`, drifting with the location's
-current, `world.current`). DEV: DevTools
+current, `world.current`). Stage 4 ([spec 107](../specs/107-scene-entities-rod/spec.md)): `PixiWorldEntitiesRenderer` and
+`PixiFightAreaRenderer` draw the bait boats, chum zones and fight areas with `Graphics` in the 2D renderers' colours
+(dashes as segments, clips as masks, emoji as `SceneTextTextures` sprites), rebuilt only when their
+`SceneChangeFingerprint` changes. DEV: DevTools
 "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`, with the live water settings). Rules:
 [docs/rendering.md](rendering.md).
 

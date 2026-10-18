@@ -520,6 +520,8 @@
 │  │  └── spec.md
 │  ├── 106-scene-water
 │  │  └── spec.md
+│  ├── 107-scene-entities-rod
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1412,9 +1414,14 @@
 │        │  └── game_loop.js
 │        ├── scene
 │        │  ├── pixi_background_renderer.js
+│        │  ├── pixi_dashed_line.js
+│        │  ├── pixi_fight_area_renderer.js
 │        │  ├── pixi_runtime_module.js
 │        │  ├── pixi_scene_layer.js
 │        │  ├── pixi_water_renderer.js
+│        │  ├── pixi_world_entities_renderer.js
+│        │  ├── scene_change_fingerprint.js
+│        │  ├── scene_text_textures.js
 │        │  ├── scene_texture_cache.js
 │        │  └── water_wave_field.js
 │        ├── storage
