@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-076 Automatic perspective zoom enlarges casting and chum areas (P2, implemented in v0.42.2)
+Found: 2026-10-19, owner, v0.42.1.
+Reproduce: open index/dev at the original 30° setting and compare casting spread, chum areas and near-field sizes with the earlier game.
+Expected: restore the original visual scaling and physical 50 px = 1 m base; retain the editor tools.
+Actual: shared physical/visual projection uses lateral pixels/metre divided by sin(30°), doubling near-field widths; fitting short lengths can enlarge the scale further.
+Resolution: [113](../specs/113-restore-original-scaling/spec.md). Restore archived sine/tangent visual formulas, original 0°/30° location angles and physical WaterMetric without tilt/autofit. Keep 30 m, compression from the green-zone shore, all editor tools and Overlay off. Visual angle edits never alter physical metres. This owner rollback supersedes G-070/G-073/G-074's projection model.
+Evidence: the initial regression returned visual scale 2.0000000000000004 instead of 1. Historical formula samples, actual chum render/gameplay boundaries, physical metric identity, boat/line limits and actual editor/reset/export/import checks pass. Automated suites and owner visual acceptance are recorded in spec 113.
+
 ### G-075 DEV Overlay opens by default (P3, done in v0.42.1)
 Found: 2026-10-19, owner request during perspective testing.
 Reproduce: open DEV with base settings; diagnostic Overlay starts visible.

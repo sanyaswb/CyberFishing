@@ -17,7 +17,8 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
 
 const state = new ZoneEditorState();
 const config = { locations: { cellSize: 40, baseResolution: { width: 1000, height: 1000 }, map: {
-  lake: { zones: { castable: [{ x: 0, y: 0, w: 25, h: 25 }], collisions: [{ x: 2, y: 3, w: 1, h: 2 }],
+  lake: { safeZone: { top: 0, bottom: 1000 }, perspective: { angleTop: 0, angleBottom: 30 },
+    zones: { castable: [{ x: 0, y: 0, w: 25, h: 25 }], collisions: [{ x: 2, y: 3, w: 1, h: 2 }],
     snags: [{ x: 4, y: 8, w: 2, h: 1 }], dynamic: [{ x: 5, y: 6, w: 1, h: 1 }] },
   distanceProfile: { enabled: true, maxMeters: 40, linearShare: .5 } } } } };
 let mapRevision = 1, scale = 1, cameraX = 0;
@@ -27,10 +28,10 @@ const map = { currentLocationId: "lake", getRevision: () => mapRevision, getDyna
   getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }),
   getBackgroundRenderData: () => ({ loaded: true, dynamic: false, assetIds: { default: "image" }, width: 1000, height: 1000 }) };
 let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500, maxMeters: 40, linearShare: .5 });
-const perspective = new WorldPerspective({ getWaterMetric: () => metric });
+const perspective = new WorldPerspective({ getLocation: () => config.locations.map.lake });
 const provider = new LocationDebugDataProvider({ configSource: () => config, perspectiveSource: y => perspective.getPerspective(y) });
-assert.equal(provider.getPerspective({}, 200).scale, metric.pixelsPerMeterX(200) / metric.pixelsPerMeter,
-  "DEV diagnostics read the actual session metric, not an angle copy");
+assert.equal(provider.getPerspective({}, 200).scale, Math.tan(6 * Math.PI / 180) / Math.tan(30 * Math.PI / 180),
+  "DEV diagnostics read the actual visual perspective query");
 const projector = { virtualToScreen: (x, y, out) => out.set(x * scale + cameraX, y * scale), getScale: () => scale,
   screenToVirtual: (x, y, out) => out.set((x - cameraX) / scale, y / scale) };
 const builder = new ZoneEditorGeometryBuilder({ state, map, projector, getWaterMetric: () => metric, config });
@@ -47,15 +48,18 @@ for (let row = 0; row <= 40; row++) {
 for (let frame = 0; frame < 120; frame++) builder.buildInto(target);
 assert.equal(builder.rebuilds, 1, "120 unchanged frames produce zero geometry rebuilds");
 assert.equal(target.annotations, model); assert.equal(model.lines, lines); assert.equal(model.rects, rects);
-metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
-  maxMeters: 60, linearShare: .5, tiltDegrees: 30 });
 const beforeTilt = builder.rebuilds;
+config.locations.map.lake.perspective.angleBottom = 15;
 builder.buildInto(target);
-assert.equal(builder.rebuilds, beforeTilt + 1, "a live angle change invalidates the cached grid");
+assert.equal(builder.rebuilds, beforeTilt, "visual angles do not change physical grid geometry");
 assert(Math.abs(model.lines[0].y1 - model.lines[1].y1 - 50) < 1e-8,
-  "angle edits keep depth-axis metre positions while fitting the lateral scale");
-assert(Math.abs(metric.pixelsPerMeterX(1000) - 100) < 1e-8,
-  "the fitted lateral scale gives the selected 30-degree shore ratio");
+  "angle edits keep depth-axis metre positions");
+assert.equal(metric.pixelsPerMeterX(1000), 50, "visual angles never enlarge the physical 50 px/m scale");
+config.locations.map.lake.perspective.angleBottom = 30;
+metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
+  maxMeters: 60, linearShare: .5 });
+builder.buildInto(target);
+assert.equal(builder.rebuilds, beforeTilt + 1, "a physical distance change invalidates the cached grid");
 state.setFlag("background", false); builder.buildInto(target); assert.equal(target.backgroundHidden, true);
 state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 3);
 assert.equal(config.locations.map.lake.zones.collisions.length, 1, "visibility never changes gameplay config");
@@ -106,6 +110,7 @@ frame.reset(); assert.equal(frame.world.annotations, null); assert.equal(frame.w
 const actions = new Map(), edits = [], trees = [];
 const synced = [], infoRows = new Map();
 const baseProfile = JSON.parse(JSON.stringify(config.locations.map.lake.distanceProfile));
+const baseAngles = { ...config.locations.map.lake.perspective };
 let exportCalls = 0, importCalls = 0, resetCalls = 0;
 const ui = { syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {}, createSwitcherRow(label, value, parent, callback) { actions.set(label, callback); },
   createInputRow(label, value, parent, type, callback) { actions.set(label, callback); },
@@ -116,7 +121,10 @@ new ZoneEditorSection({ ui, state, config, createSection: () => ({ replaceChildr
   getWaterMetric: () => metric,
   createWaterMetric: options => new WaterMetric(options),
   exportOverrides: () => exportCalls++, importOverrides: () => importCalls++,
-  resetPerspective: id => { resetCalls++; config.locations.map[id].distanceProfile = JSON.parse(JSON.stringify(baseProfile)); },
+  resetPerspective: id => {
+    resetCalls++; config.locations.map[id].distanceProfile = JSON.parse(JSON.stringify(baseProfile));
+    config.locations.map[id].perspective = { ...baseAngles };
+  },
   renderTree: (value, parent, path) => trees.push(path), updateConfig: (path, value) => {
     edits.push(path); let target = config;
     for (const key of path.slice(1, -1)) target = target[key];
@@ -132,16 +140,18 @@ assert.notEqual(config.locations.map.lake.zones.castable[0].bounds, config.locat
 actions.get("Видалити вибрану зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 1);
 assert(edits.every(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable"));
 actions.get("Нахил біля берега, °")(45);
-assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 45, "readable angle control writes the location profile");
+assert.equal(config.locations.map.lake.perspective.angleBottom, 45, "readable angle control writes the visual perspective");
 assert.match(infoRows.get("Стан перспективи").innerText, /45°/u);
 const validEdits = edits.length;
 actions.get("Нахил біля берега, °")(1);
 assert.equal(edits.length, validEdits + 1, "a low angle is accepted without increasing the length");
-assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 1);
+assert.equal(config.locations.map.lake.perspective.angleBottom, 1);
 assert.equal(config.locations.map.lake.distanceProfile.maxMeters, baseProfile.maxMeters, "editing the angle preserves the authored length");
 actions.get("Від берега до дальнього краю, м")(5);
-assert.equal(config.locations.map.lake.distanceProfile.maxMeters, 5, "a short location is accepted at the low angle");
-assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 1, "editing the length preserves the angle");
+assert.equal(config.locations.map.lake.distanceProfile.maxMeters, baseProfile.maxMeters,
+  "a location shorter than height / 50 is rejected without fitting a larger scale");
+assert.equal(config.locations.map.lake.perspective.angleBottom, 1, "editing the length preserves the angle");
+assert.match(infoRows.get("Стан перспективи").innerText, /20\.00 м/u);
 const beforeInvalidEdits = edits.length;
 actions.get("Нахил біля берега, °")(0);
 assert.equal(edits.length, beforeInvalidEdits, "out-of-range angles still reject before a config write");
@@ -149,15 +159,19 @@ assert.equal(synced.at(-1)[1], 1, "the displayed invalid angle returns to the ac
 assert.match(infoRows.get("Стан перспективи").innerText, /Не застосовано/u);
 actions.get("Від берега до дальнього краю, м")(0);
 assert.equal(edits.length, beforeInvalidEdits, "non-positive distances still reject before a config write");
+actions.get("Кут верхнього краю, °")(2);
+assert.equal(edits.length, beforeInvalidEdits, "a reversed angle pair is rejected before a config write");
+assert.equal(config.locations.map.lake.perspective.angleTop, 0);
 actions.get("Від берега до дальнього краю, м")(60);
 actions.get("Нахил біля берега, °")(30);
-assert.equal(config.locations.map.lake.distanceProfile.tiltDegrees, 30);
+assert.equal(config.locations.map.lake.perspective.angleBottom, 30);
 assert.equal(config.locations.map.lake.distanceProfile.maxMeters, 60);
 actions.get("Експорт правок (усі налаштування DEV)")();
 actions.get("Імпорт правок (усі налаштування DEV)")();
 actions.get("Скинути перспективу цієї локації")();
 assert.equal(exportCalls, 1); assert.equal(importCalls, 1); assert.equal(resetCalls, 1);
 assert.equal(config.locations.map.lake.distanceProfile.maxMeters, baseProfile.maxMeters);
+assert.deepEqual(config.locations.map.lake.perspective, baseAngles);
 state.setFlag("enabled", false); builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(target.backgroundHidden, false);
 const bindings = new DevToolsControlBindingRegistry();
 const panel = { contains: element => element === "inside" };

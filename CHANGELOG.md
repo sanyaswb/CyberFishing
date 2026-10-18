@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.42.2 - Restore Original Scaling
+
+- Restore the original sine/tangent visual scaling and 0°/30° location angles. Remove angle-dependent physical zoom and automatic fitting; keep the engine's 50 px/m base, the existing 30 m distance profile and gameplay settings (G-076, spec 113).
+- Retain the DEV zone editor, metre grid, black background, readable angle/distance controls and export/import/reset; Overlay stays off by default.
+
 ## v0.42.1 - Independent Tilt and Length
 
 - Location tilt and length can be tuned independently: projection scale fits automatically, using the same metric for physics, grid and rendering. Restore the test location's original 30° shore angle and 30 m far distance; compression starts at the lower green-zone edge (G-074, spec 112).

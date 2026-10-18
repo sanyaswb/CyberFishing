@@ -20,13 +20,16 @@ import { StaminaDebugModule } from "../../dev/modules/stamina_debug_module.js";
 import { TensionDebugModule } from "../../dev/modules/tension_debug_module.js";
 import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
 
-export function createDebugConsoleRuntime({config, debugModulesSource, documentTarget, windowTarget, logger, getWaterMetric = null}) {
+export function createDebugConsoleRuntime({config, debugModulesSource, documentTarget, windowTarget, logger}) {
   const configSource = () => config;
   const registry = new DebugModuleRegistry();
   const context = new DebugContext();
-  const perspective = getWaterMetric ? new WorldPerspective({ getWaterMetric }) : null;
+  const perspective = new WorldPerspective({ getLocation: () => {
+    const locations = config.locations;
+    return locations.map[locations.currentLocationId || Object.keys(locations.map)[0]];
+  } });
   const locationProvider = new LocationDebugDataProvider({configSource,
-    perspectiveSource: y => getWaterMetric?.() ? perspective.getPerspective(y) : null});
+    perspectiveSource: y => perspective.getPerspective(y)});
   const locationPrinter = new LocationDebugPrinter({provider: locationProvider, configSource, viewportSource: () => windowTarget, logger});
   const moduleOptions = {configSource};
   [new BiteTicksDebugModule(moduleOptions), new LocationDebugModule({provider: locationProvider}),

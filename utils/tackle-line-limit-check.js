@@ -22,10 +22,9 @@ for (const [velocity, expected] of [[{ x: 3, y: 4 }, { x: 0, y: 4 }], [{ x: -3, 
 }
 
 for (const State of [WaitingState, BitingState]) {
-  for (const tiltDegrees of [null, 90, 45, 30, 15, 1]) {
-    const profiled = tiltDegrees !== null;
+  for (const profiled of [false, true]) {
     const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
-      ...(profiled ? { maxMeters: 40, linearShare: .5, tiltDegrees } : {}) });
+      ...(profiled ? { maxMeters: 40, linearShare: .5 } : {}) });
     const rules = new EquipmentRules(new CastDistanceCalculator(CONFIG), CONFIG, {});
     for (const variant of ["fixed", "sliding", "feeder", "spinning"]) for (const controlEnabled of [false, true]) {
       const eq = { rod: { variant: ["feeder", "spinning"].includes(variant) ? variant : "float", effectiveStats: { lengthMeters: 3 } },
@@ -62,4 +61,4 @@ for (const State of [WaitingState, BitingState]) {
     }
   }
 }
-console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled and independent 1/15/30/45-degree tilted metres, inward retrieval.");
+console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval.");

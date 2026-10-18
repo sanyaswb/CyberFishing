@@ -992,6 +992,13 @@ export class ConfigSchemaValidator {
       if (map?.distanceProfile !== undefined) {
         this.#validateDistanceProfile(`${path}.distanceProfile`, map.distanceProfile);
       }
+      if (map?.perspective !== undefined) {
+        this.#requireFiniteNumber(`${path}.perspective.angleTop`, map.perspective?.angleTop, { min: 0, max: 90 });
+        this.#requireFiniteNumber(`${path}.perspective.angleBottom`, map.perspective?.angleBottom, { min: 1, max: 90 });
+        this.#requireMinLessOrEqualMax(`${path}.perspective.angleTop`, map.perspective?.angleTop,
+          `${path}.perspective.angleBottom`, map.perspective?.angleBottom);
+        for (const key of ["angleTop", "angleBottom"]) this.#requireParameterLabel(`MAP_DB.perspective.${key}`);
+      }
     }
   }
 
@@ -1006,11 +1013,9 @@ export class ConfigSchemaValidator {
     this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
     if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
     this.#requireFiniteNumber(`${path}.maxMeters`, profile.maxMeters, { min: Number.MIN_VALUE });
-    if (profile.tiltDegrees !== undefined) this.#requireFiniteNumber(`${path}.tiltDegrees`, profile.tiltDegrees, { min: 1, max: 90 });
     for (const key of ["enabled", "linearShare", "maxMeters"]) {
       this.#requireParameterLabel(`MAP_DB.distanceProfile.${key}`);
     }
-    this.#requireParameterLabel("MAP_DB.distanceProfile.tiltDegrees");
   }
 
   #validateFiniteNumberLeaves(object, basePath) {

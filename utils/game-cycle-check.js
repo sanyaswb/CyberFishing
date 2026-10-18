@@ -2227,8 +2227,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
     location.currentEnvironment === null, "location manager resolves the configured location");
   const metricResolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
-  const worldPerspective = new WorldPerspective({ getWaterMetric: () => metricResolver.resolve(
-    lake.getCastableBoundsVirtual(viewConfig.cellSize), location.config.distanceProfile) });
+  const worldPerspective = new WorldPerspective({ getLocation: () => viewConfig.map[location.id] });
   const projector = new ViewportProjector(viewConfig, location.id,
     worldPerspective.getPerspective.bind(worldPerspective));
   const gameConfig = createConfig();

@@ -147,8 +147,7 @@ async function startGame() {
     startup = null;
   };
   try {
-    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console,
-      getWaterMetric: () => readLocationMetric?.() ?? null});
+    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
       frameProfiler, readRenderInfo});
     compositionRoot = new GameCompositionRoot(CONFIG, {

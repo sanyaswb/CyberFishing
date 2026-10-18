@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.42.1";
+export const CURRENT_PROJECT_VERSION = "0.42.2";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "independent-location-projection",
+  codename: "restore-original-scaling",
   updatedAt: "2026-10-19",
   notes: Object.freeze([
-    "Tilt and location length are independent with automatic projection fitting; initial 30-degree/30-m defaults restored; DEV Overlay starts off",
-    "Each location has an editable shore tilt in degrees; readable DEV controls show distance constraints and provide export/import/local reset",
-    "Perspective compression starts at the lower green-zone edge for areas, metre grid, world scale and movement",
+    "Original sine/tangent visual scaling and 0/30-degree angles restored; physical metres keep the 50 px/m base without tilt zoom or automatic fitting",
+    "Readable location angle and physical-distance controls retain validation, export/import/local reset; DEV Overlay starts off",
+    "Physical distance compression starts at the lower green-zone edge for metre grid and movement; visual scale uses the original location safeZone",
     "DEV zone editor shows exact metre grid and all zone geometry, hides the background to black, edits runtime geometry and caches WebGL annotations",
-    "World sizes and ground-plane areas follow the same water metric as movement; camera scale applies once, the rod stays screen-relative",
+    "World sizes and areas follow the original visual angle curve; camera scale applies once, the rod stays screen-relative",
     "Idle tackle obeys the depth-adjusted line budget after current, bite and live-bait motion; inward retrieval remains available",
     "The bait boat keeps its speed in metres everywhere on the water: far away it moves fewer pixels per second, like the tackle",
     "A long-press re-cast aims like the first cast: the rod, line and tackle hide until the new cast lands",

@@ -900,12 +900,15 @@ export class DevTools {
   }
 
   #resetLocationPerspective(id) {
-    const path = ["CONFIG", "locations", "map", id, "distanceProfile"];
-    const initial = this.#configRuntime?.baseConfig.locations.map[id]?.distanceProfile;
-    // Keep the reset explicit in exports too, including when an imported ancestor override contains old values.
-    this.#updateConfigValue(path, initial ?? { ...this.#config.locations.map[id].distanceProfile, enabled: false });
-    for (const [key, value] of Object.entries(this.#config.locations.map[id].distanceProfile || {})) {
-      this.#ui.syncValue([...path, key], value);
+    for (const branch of ["perspective", "distanceProfile"]) {
+      const path = ["CONFIG", "locations", "map", id, branch];
+      const initial = this.#configRuntime?.baseConfig.locations.map[id]?.[branch];
+      const fallback = branch === "perspective" ? { angleTop: 5, angleBottom: 60 }
+        : { ...this.#config.locations.map[id].distanceProfile, enabled: false };
+      this.#updateConfigValue(path, initial ?? fallback);
+      for (const [key, value] of Object.entries(this.#config.locations.map[id][branch] || {})) {
+        this.#ui.syncValue([...path, key], value);
+      }
     }
   }
 
