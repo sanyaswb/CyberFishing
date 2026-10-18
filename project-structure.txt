@@ -516,6 +516,8 @@
 │  │  └── spec.md
 │  ├── 104-scene-layer-infrastructure
 │  │  └── spec.md
+│  ├── 105-scene-background
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1407,8 +1409,10 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── scene
+│        │  ├── pixi_background_renderer.js
 │        │  ├── pixi_runtime_module.js
-│        │  └── pixi_scene_layer.js
+│        │  ├── pixi_scene_layer.js
+│        │  └── scene_texture_cache.js
 │        ├── storage
 │        │  ├── browser_snapshot_transaction.js
 │        │  ├── game_time_local_store.js
