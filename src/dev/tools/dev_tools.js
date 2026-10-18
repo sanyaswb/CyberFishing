@@ -537,6 +537,7 @@ export class DevTools {
       ui: this.#ui,
       scene: this.#scene,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderWaterConfig: (parent) => this.#buildTree(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
     }).render(body);
   }
 

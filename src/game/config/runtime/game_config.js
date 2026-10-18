@@ -17,6 +17,16 @@ export const CONFIG = {
     // the Pixi scene under a transparent 2D canvas (production since spec 105 D6; without WebGL the 2D canvas draws
     // everything). Read once at startup (dev.html?scene=canvas or ?scene=webgl overrides it in DEV).
     scene: "webgl",
+    // Ripples on the water of the WebGL scene (spec 106); the 2D canvas has none. Lengths are art pixels (the location
+    // art's own pixels), so the look keeps its proportions at every screen size.
+    water: {
+      enabled: true,
+      frameRate: 30, // кроків анімації води за секунду; кожен крок малює кадр сцени
+      amplitude: 8, // зсув арту біля берега, пікселів арту; вдалині менше
+      verticalShare: 0.35, // частка вертикального зсуву від горизонтального
+      wavelength: 140, // відстань між гребенями біля берега, пікселів арту
+      speed: 24, // швидкість гребенів, пікселів арту за секунду
+    },
   },
 
   input: {

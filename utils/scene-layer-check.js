@@ -1,8 +1,9 @@
 "use strict";
 
-// Specs 103-105 (stages 0-2): the WebGL scene layer port (inactive in "canvas" mode), the lazy layer, the router
-// (depth order, mode, availability, fallback), the scene's texture cache and background renderer, PixiSceneLayer over
-// a fake Pixi namespace (warm-up, frames only on change, art-based resolution, context loss, DEV status, dispose), the
+// Specs 103-106 (stages 0-3): the WebGL scene layer port (inactive in "canvas" mode), the lazy layer, the router
+// (depth order, mode, availability, fallback), the scene's texture cache and background renderer, the water's wave field
+// and renderer, PixiSceneLayer over a fake Pixi namespace (warm-up, frames only on change, art-based resolution, water
+// steps, context loss, DEV status, dispose), the
 // coordinator's routing per frame, the 2D surface's clear, the production composition (config mode, DEV override,
 // transparent canvas, a real no-WebGL fallback in Node), the 2D gates, the DEV section, the runtime module, the CSS,
 // the vendored bundle and a production graph that loads Pixi only lazily.
@@ -27,11 +28,19 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
+// A 2D context for the water's map canvas: image data and the number of puts.
+function fakeContext2d() {
+  return { puts: 0, createImageData: (width, height) => ({ width, height, data: new Uint8ClampedArray(width * height * 4) }),
+    putImageData(image) { this.puts += 1; this.last = image; } };
+}
+
 function fakeElement(tagName) {
   const listeners = new Map();
   const classes = new Set();
+  const context = tagName === "canvas" ? fakeContext2d() : null;
   return {
     tagName, className: "", attributes: {}, style: {}, removed: false, width: 0, height: 0, listeners, classes,
+    getContext: (type) => (type === "2d" ? context : null),
     classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) },
     setAttribute(name, value) { this.attributes[name] = value; },
     addEventListener(type, listener) { listeners.set(type, listener); },
@@ -50,20 +59,35 @@ function fakeDom() {
 
 // A Pixi namespace whose Application records init options, renders, resizes and destroys; init is held open. Its GL
 // context has WEBGL_lose_context, which dispatches the canvas events like a browser would. Textures record their upload
-// and destruction; sprites and containers are plain records.
+// and destruction; a canvas texture (the water's map) counts its updates; sprites, containers and the displacement filter
+// are plain records.
 function fakePixi() {
   const apps = [];
   const textures = [];
+  const canvasTextures = [];
   class Container {
     constructor() { this.children = []; }
 
     addChild(child) { this.children.push(child); return child; }
   }
   class Sprite {
-    constructor() { Object.assign(this, { texture: null, x: 0, y: 0, width: 0, height: 0, alpha: 1, visible: true }); }
+    constructor(texture = null) { Object.assign(this, { texture, x: 0, y: 0, width: 0, height: 0, alpha: 1, visible: true }); }
+  }
+  class DisplacementFilter {
+    constructor({ sprite, scale }) {
+      this.sprite = sprite;
+      this.scale = { x: scale, y: scale };
+      sprite.renderable = false;
+    }
   }
   const Texture = {
     from(options, skipCache) {
+      if (options?.tagName === "canvas") {
+        const texture = { canvas: options, skipCache, updates: 0, destroyed: null,
+          source: { update: () => { texture.updates += 1; } }, destroy(destroySource) { this.destroyed = destroySource; } };
+        canvasTextures.push(texture);
+        return texture;
+      }
       const { naturalWidth: pixelWidth, naturalHeight: pixelHeight } = options.resource;
       const texture = { resource: options.resource, skipCache, uploaded: false, destroyed: null, width: pixelWidth,
         height: pixelHeight, source: { pixelWidth, pixelHeight, autoGenerateMipmaps: options.autoGenerateMipmaps },
@@ -103,7 +127,7 @@ function fakePixi() {
 
     destroy(...args) { this.destroyed = args; }
   }
-  return { pixi: { Application, Container, Sprite, Texture }, apps, textures };
+  return { pixi: { Application, Container, DisplacementFilter, Sprite, Texture }, apps, textures, canvasTextures };
 }
 
 // Loaded images by asset id, as ImageAssetProvider.tryGet serves them.
@@ -322,19 +346,23 @@ async function checkPixiSceneLayer() {
   let onScene = true;
   const router = { drawsOnScene: (kind) => onScene && kind === "background" };
   const images = fakeImages([["day", 2560, 1440], ["evening", 2560, 1440], ["night", 2560, 1440]]);
+  const clock = { now: 1000 };
+  const water = { enabled: true, frameRate: 30, amplitude: 8, verticalShare: 0.5, wavelength: 140, speed: 24 };
   const compose = (overrides = {}) => {
     const dom = fakeDom();
-    const { pixi, apps, textures } = fakePixi();
+    const { pixi, apps, textures, canvasTextures } = fakePixi();
     const probe = recordingProbe();
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
-      background: "#0f171e", images, router, probe, logger, ...overrides };
-    return { layer: new PixiSceneLayer(options), dom, apps, textures, probe };
+      background: "#0f171e", images, router, clock, getWaterSettings: () => water, probe, logger, ...overrides };
+    return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe };
   };
   for (const [name, overrides, pattern] of [
     ["pixi", { pixi: {} }, /requires the Pixi namespace/u],
     ["game canvas", { gameCanvas: {} }, /requires the game canvas/u],
     ["images", { images: {} }, /requires images/u],
     ["router", { router: {} }, /requires the router/u],
+    ["water settings", { getWaterSettings: null }, /requires getWaterSettings/u],
+    ["clock", { clock: null }, /requires clock/u],
     ["metrics", { canvasMetrics: null }, /requires canvasMetrics/u],
     ["probe", { probe: undefined }, /requires probe/u],
   ]) assert.throws(() => compose(overrides), pattern, `PixiSceneLayer validates ${name}`);
@@ -370,7 +398,8 @@ async function checkPixiSceneLayer() {
   assert.deepEqual(textures.map((texture) => texture.resource.id), ["day", "evening", "night"],
     "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
   assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
-    textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 });
+    textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
+    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0 } }, "no castable zones in this frame: still water");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -424,6 +453,8 @@ async function checkPixiSceneLayer() {
     "the first frames of play upload nothing more; the first presents the picture");
   prepared.layer.dispose();
 
+  await checkSceneWater(compose, clock, water, metrics);
+
   const failing = compose();
   failing.apps[0].initCall.reject(new Error("WebGL unsupported"));
   assert.equal(await failing.layer.whenReady(), false);
@@ -440,6 +471,108 @@ async function checkPixiSceneLayer() {
   assert.equal(await early.layer.whenReady(), false);
   assert.deepEqual([early.apps[0].destroyed !== null, early.apps[0].renders, warnings.length], [true, 0, 1],
     "an Application that finishes init after dispose is destroyed, silently");
+}
+
+// Spec 106: the water's displacement map.
+async function checkWaterWaveField() {
+  const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
+  assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
+  const field = new WaterWaveField({ width: 192, height: 48 });
+  const settings = { artWidth: 2560, artHeight: 640, wavelength: 140, speed: 24 };
+  const first = Array.from(field.write(2, settings));
+  assert.equal(first.length, 192 * 48 * 4);
+  assert.deepEqual(Array.from(field.write(2, settings)), first, "a moment of the animation is deterministic");
+  assert.notDeepEqual(Array.from(field.write(2.1, settings)), first, "the waves move with time");
+  assert.deepEqual(Array.from(field.write(7, { ...settings, speed: 0 })), Array.from(field.write(0, { ...settings, speed: 0 })),
+    "speed 0 holds the waves still");
+  const pixels = field.write(2, settings);
+  const at = (column, row, channel) => pixels[(row * 192 + column) * 4 + channel];
+  let edge = 0;
+  for (let row = 0; row < 48; row += 1) edge = Math.max(edge, Math.abs(at(0, row, 0) - 128), Math.abs(at(191, row, 0) - 128));
+  for (let column = 0; column < 192; column += 1) {
+    edge = Math.max(edge, Math.abs(at(column, 0, 0) - 128), Math.abs(at(column, 47, 0) - 128));
+  }
+  assert(edge <= 6, `the waves fade out at every edge, so the water meets the still art without a seam (${edge})`);
+  const meanShift = (fromRow, toRow) => {
+    let sum = 0;
+    for (let row = fromRow; row < toRow; row += 1) {
+      for (let column = 20; column < 172; column += 1) sum += Math.abs(at(column, row, 0) - 128);
+    }
+    return sum / ((toRow - fromRow) * 152);
+  };
+  assert(meanShift(10, 16) < meanShift(30, 36) * 0.75, "the far water moves less than the near water (perspective)");
+  for (let index = 0; index < pixels.length; index += 4) {
+    assert(pixels[index + 2] === 128 && pixels[index + 3] === 255, "blue is neutral and every texel opaque");
+  }
+}
+
+// Spec 106: the water over the background, stepping at its own frame rate.
+async function checkSceneWater(compose, clock, water, metrics) {
+  metrics.width = 400;
+  metrics.height = 816;
+  metrics.pixelRatio = 2;
+  const wet = compose();
+  const app = wet.apps[0];
+  app.initCall.resolve();
+  assert.equal(await wet.layer.whenReady(), true);
+  const [, waterContainer, mapSprite] = app.stage.children;
+  const filter = waterContainer.filters[0];
+  assert.equal(filter.sprite, mapSprite, "the filter's map sprite lives in the scene (it is not drawn)");
+  assert.equal(mapSprite.renderable, false);
+  const map = wet.canvasTextures[0];
+  assert.deepEqual([map.canvas.width, map.canvas.height, map.skipCache], [192, 48, true]);
+  const regions = [{ x: -100, y: 300, width: 1600, height: 400 }];
+  const base = { assetId: "day", alpha: 1, x: -500, y: 0, width: 1451, height: 816 };
+  const dusk = { assetId: "evening", alpha: 0.4, x: -500, y: 0, width: 1451, height: 816 };
+  const frame = worldModel({ layers: [base, dusk] });
+  frame.world.clipRegions = { count: 1, getAt: (index) => regions[index] };
+  wet.layer.render(frame);
+  assert.equal(app.renders, 2, "the first water step presents with the background");
+  assert.equal(waterContainer.visible, true);
+  assert.deepEqual({ ...waterContainer.filterArea }, { x: 0, y: 300, width: 400, height: 400 },
+    "only the visible water is filtered: the castable zone clipped to the screen");
+  assert.deepEqual([mapSprite.x, mapSprite.y, mapSprite.width, mapSprite.height], [-100, 300, 1600, 400],
+    "the map spans the whole zone, so the waves stay put on the water when the camera moves");
+  const copy = waterContainer.children;
+  assert.deepEqual(copy.map((sprite) => [sprite.texture.resource.id, sprite.alpha, sprite.x, sprite.visible]),
+    [["day", 1, -500, true], ["evening", 0.4, -500, true]], "the water draws the same phases as the background");
+  const artScale = 1451 / 2560;
+  assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "amplitude in art pixels, the filter shifts by half its scale");
+  assert(Math.abs(filter.scale.y - filter.scale.x * 0.5) < 1e-9, "vertical share of the shift");
+  assert.equal(map.updates, 1, "each step uploads the map once");
+  wet.layer.render(frame);
+  clock.now += 20;
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, map.updates], [2, 1], "between steps the scene presents nothing");
+  clock.now += 20;
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, map.updates], [3, 2], "30 steps per second: a step after 1/30 s presents one frame");
+  const status = wet.layer.getStatus().water;
+  assert.deepEqual([status.active, status.mapWidth, status.mapHeight, status.stepMs >= 0], [true, 192, 48, true]);
+  water.frameRate = 60;
+  clock.now += 17;
+  wet.layer.render(frame);
+  assert.equal(app.renders, 4, "the settings are read every frame");
+  water.frameRate = 30;
+
+  water.enabled = false;
+  wet.layer.render(frame);
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, waterContainer.visible], [5, false], "disabled water is hidden once, then costs nothing");
+  water.enabled = true;
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, waterContainer.visible], [6, true]);
+  regions[0].y = 900;
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, waterContainer.visible], [7, false], "water below the screen is not filtered");
+  regions[0].y = 300;
+  frame.world.clipRegions = { count: 0, getAt: () => null };
+  wet.layer.render(frame);
+  assert.equal(app.renders, 7, "no castable zone: no water");
+  wet.layer.dispose();
+  assert.equal(map.destroyed, true, "the map's texture is released with the scene");
 }
 
 async function checkCoordinator() {
@@ -496,7 +629,7 @@ async function checkComposition() {
     const dom = fakeDom();
     return { dom, value: { config: { canvas: { scene: "canvas", backgroundColor: "#0f171e" } }, documentTarget: dom.documentTarget,
       gameCanvas: dom.gameCanvas, canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, images: fakeImages([]),
-      probe: recordingProbe(),
+      clock: { now: 0 }, probe: recordingProbe(),
       logger: { warn: (...args) => warnings.push(args) }, ...overrides } };
   };
   const canvasMode = composeSceneLayer(options({}).value);
@@ -521,6 +654,9 @@ async function checkComposition() {
 
   assert.match(read(SCENE_COMPOSITION), /SCENE_RENDERED_KINDS = Object\.freeze\(\["background"\]\)/u,
     "stage 2: the scene draws the background (spec 105)");
+  assert.match(read(SCENE_COMPOSITION), /clock, getWaterSettings: \(\) => config\.canvas\?\.water,/u,
+    "the scene times its water with the game clock and reads the water settings live (spec 106)");
+  assert.equal(CONFIG.canvas.water.enabled, true, "production animates the water (spec 106)");
   const renderComposition = read("src/bootstrap/production/game_render_composition.js");
   const { SCENE_KINDS } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
   for (const kind of SCENE_KINDS) {
@@ -564,11 +700,17 @@ async function checkDevWiring() {
   const content = { replaceChildren: () => { rows.length = 0; actions.clear(); } };
   const layerCalls = [];
   let status = { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76, textures: 3,
-    textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 };
+    textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3, water: { active: true, mapWidth: 192, mapHeight: 48, stepMs: 0.123 } };
   const layer = { getStatus: () => status, loseContext: () => layerCalls.push("lose"), restoreContext: () => layerCalls.push("restore") };
   const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
   router.update();
-  new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content }).render({});
+  const waterEditors = [];
+  new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content,
+    renderWaterConfig: (parent) => waterEditors.push(parent) }).render({});
+  assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс"), "the water's state and step cost are shown");
+  assert.equal(waterEditors.length, 1, "the live editor of CONFIG.canvas.water sits in the section");
+  assert.match(read("src/dev/tools/dev_tools.js"),
+    /renderWaterConfig: \(parent\) => this\.#buildTree\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
   assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
   assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
   assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
@@ -666,6 +808,7 @@ async function main() {
   await checkPorts();
   await checkRouter();
   await checkTextureCacheAndBackground();
+  await checkWaterWaveField();
   await checkPixiSceneLayer();
   await checkCoordinator();
   await checkSurfaceClear();
@@ -678,8 +821,9 @@ async function main() {
   await settle();
   console.log(`Scene layer passed: port and lazy layer (warm-up wait, late arrival, failure), router (depth order, `
     + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, one more per frame, reload, release) and background `
-    + `(phases, change detection, art density), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only `
-    + `on change, portrait art 1:1, context loss and restore, DEV status, dispose), one routing decision per frame, `
+    + `(phases, change detection, art density), water wave field (deterministic, moving, edge fade, perspective), `
+    + `PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
+    + `steps at its frame rate over the visible zone, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `
     + `section, runtime ${entry.version} with stopped tickers, CSS, bundle (${size} bytes), ${productionModules} `
     + `production modules loading Pixi only lazily.`);

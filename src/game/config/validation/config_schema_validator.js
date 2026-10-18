@@ -480,10 +480,12 @@ export class ConfigSchemaValidator {
     }
   }
 
-  // Spine rod presentation settings (spec 099), the canvas backing-store cap (spec 100) and the scene mode (spec 104).
+  // Spine rod presentation settings (spec 099), the canvas backing-store cap (spec 100), the scene mode (spec 104) and
+  // the scene's water (spec 106).
   #validateRodSpineConfig() {
     this.#requireFiniteNumber("CONFIG.canvas.maxPixelRatio", this.config.canvas?.maxPixelRatio, { min: 1, max: 4 });
     this.#requirePattern("CONFIG.canvas.scene", this.config.canvas?.scene, /^(?:canvas|webgl)$/u, 'must be "canvas" or "webgl"');
+    this.#validateSceneWaterConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
@@ -1118,6 +1120,18 @@ export class ConfigSchemaValidator {
       this.#error(path, "expected boolean");
     }
     this.#requireParameterLabel(path);
+  }
+
+  // Ripples on the scene's water (spec 106); every value has a DEV label, since the owner tunes them live.
+  #validateSceneWaterConfig() {
+    const cfg = this.config.canvas?.water;
+    if (!cfg || typeof cfg !== "object") { this.#error("CONFIG.canvas.water", "missing scene water config"); return; }
+    this.#requireBooleanWithLabel("canvas.water.enabled", cfg.enabled);
+    for (const [key, min, max] of [["frameRate", 1, 60], ["amplitude", 0, 64], ["verticalShare", 0, 2],
+      ["wavelength", 8, 2048], ["speed", 0, 1024]]) {
+      this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });
+      this.#requireParameterLabel(`canvas.water.${key}`);
+    }
   }
 
   #requireParameterLabel(path) {

@@ -384,7 +384,7 @@ export class GameCompositionRoot {
     // The scene layer first: its mode decides whether the 2D canvas is transparent (spec 104 D6).
     const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
       modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
-      images: imageAssets, probe: this.#frameProbe, logger: new ConsoleLogger() });
+      images: imageAssets, clock, probe: this.#frameProbe, logger: new ConsoleLogger() });
     own(sceneLayer);
     contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
