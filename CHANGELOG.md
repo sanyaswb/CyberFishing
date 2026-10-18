@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.41.2 - WebGL Scene
+
+- The game world is drawn on a WebGL scene (PixiJS 8) under the 2D canvas: the background and time of day, rippling water that drifts with the location's current, the bait boats and chum zones, the fight areas, the line, the float and the Spine rod (spine-pixi-v8). Without WebGL, or after a lost context, the 2D canvas draws everything; `dev.html?scene=canvas` keeps the old path (specs 103–107).
+- The camera opens on its final framing at startup and after a resize or phone turn. Background phases upload under the loading screen.
+- DEV: the overlay is 1.5 times smaller and as wide as its content, FPS counts the last second, DevTools "СЦЕНА WebGL" shows the scene and edits the water live.
+
 ## v0.41.1 - DEV Fresh Start
 
 - Remove the obsolete float and feeder DEV build templates and their catalog overlay. DEV uses the production item catalog, so a new player starts with loose items and no equipped tackle or builds (G-067).

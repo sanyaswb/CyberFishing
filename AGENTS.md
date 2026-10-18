@@ -4,6 +4,17 @@ Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and 
 
 Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV interface components, read [DESIGN_RULES.md](DESIGN_RULES.md) and [docs/styles.md](docs/styles.md). These are mandatory design inputs, including reuse, BEM, tokens, the 320px logical layout and the current inventory/keepnet column counts. Follow the applicable feature spec and preserve unrelated changes.
 
+## Owner checks and versions
+
+- Visual checks in a browser (screenshots, side-by-side or pixel comparisons, clicking through the game to look at a
+  result) are the owner's: the owner does them faster and better. Run the automated checks (`npm run check` and the
+  focused checks) yourself, and end each delivered change with a short list of exactly what the owner should look at
+  and where (page, orientation, steps). Say plainly that no visual check was done.
+- Every delivered change bumps the patch version (`src/game/presentation/version/project_version.js`,
+  `package.json`/`package-lock.json`, the `?v=` links of `index.html`, `dev.html` and `ui-catalog.html`) with a short
+  `CHANGELOG.md` entry, so the owner can tell which build has which change. A new or changed mechanic bumps the minor
+  version instead (DEVELOPMENT_RULES).
+
 ## Generated artifacts
 
 Remove obsolete logs, execution transcripts, generated archives and temporary fixtures after their task is complete.
