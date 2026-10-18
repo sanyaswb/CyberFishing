@@ -1,7 +1,7 @@
 "use strict";
 
 // Spec 101: the frame probe port (inactive in production), the DEV FrameProfiler statistics and the overlay's
-// performance module.
+// performance module, with the scene layer section and pixels of spec 103.
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -17,7 +17,7 @@ async function checkInactiveProbe() {
   const probe = new InactiveFrameProbe();
   for (const method of FRAME_PROBE_METHODS) assert.equal(typeof probe[method], "function", `inactive probe has ${method}`);
   assert.equal(probe.beginFrame(1), undefined);
-  assert.deepEqual(Object.values(FRAME_SECTIONS), ["update", "draw", "rod-spine"]);
+  assert.deepEqual(Object.values(FRAME_SECTIONS), ["update", "draw", "scene", "rod-spine"]);
 }
 
 async function checkProfiler() {
@@ -83,12 +83,15 @@ async function checkOverlayModule(FrameProfiler) {
   const profiler = new FrameProfiler({ now: () => clock, observeLongTasks: false });
   const module = new PerformanceOverlayModule({ htmlBuilder, profiler, settingsStore: { isEnabled: () => true },
     readRenderInfo: () => ({ backingWidth: 1688, backingHeight: 780, pixelRatio: 2, memoryMb: 42 }) });
+  profiler.gauge("scene-pixels", 1688 * 780);
   assert.match(module.render(), /Немає кадрів гри/u);
   let timestamp = 0;
   for (const interval of [16, 16, 30, 90, 16]) {
     clock = timestamp += interval;
     profiler.beginFrame(timestamp);
-    profiler.begin("draw"); clock += 5; profiler.end("draw");
+    profiler.begin("draw");
+    profiler.begin("scene"); clock += 1; profiler.end("scene");
+    clock += 4; profiler.end("draw");
     profiler.endFrame();
   }
   const html = module.render();
@@ -98,6 +101,8 @@ async function checkOverlayModule(FrameProfiler) {
   assert.match(html, /fill="#ff4444"/u, "a freeze bar is red");
   assert.match(html, /fill="#ffaa00"/u, "a jank bar is orange");
   assert.match(html, /1688×780 @ 2×/u, "the backing store and pixel ratio");
+  assert.match(html, /сцена WebGL \(Pixi\)[\s\S]*1\.0 мс/u, "the scene layer section (spec 103)");
+  assert.match(html, /сцена WebGL \(backing\)[\s\S]*1\.32 Мпікс/u, "the scene backing pixels");
   assert.equal(module.isActive({}), true);
 }
 

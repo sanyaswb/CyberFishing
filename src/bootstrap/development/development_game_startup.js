@@ -47,6 +47,7 @@ import { composeDevTimeDisplay } from "./dev_time_composition.js";
 import { ScreenHost } from "../../engine/screens/screen_host.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
 import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
+import { createDevSceneLayerFactory } from "./dev_scene_layer_composition.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -152,6 +153,7 @@ async function startGame() {
       toolbarMountNode: toolbar.element,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createFrameProbe: () => frameProfiler,
+      createSceneLayer: createDevSceneLayerFactory({ windowTarget, documentTarget, probe: frameProfiler }),
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
         new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
       createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),

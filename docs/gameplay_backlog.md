@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-067 DEV page does not start on a fresh browser profile (P2, open)
+Found: 2026-10-18, spec 103 stage 0 browser smoke (dev.html, v0.41.0; the same on the unchanged commit 4327ca8).
+Reproduce: clear the site data (or use a new browser profile), open dev.html.
+Expected: DEV starts with the starting inventory, like index.html does for a new player.
+Actual: black canvas and no console output. Startup rejects with `TypeError: Starting inventory supports items and settings only (equipment: none; build templates: debug_float_build, debug_feeder_build)` from `StartingInventorySnapshotFactory`, and the DEV entry swallows the rejection. Opening index.html once (it writes the inventory save) lets dev.html start.
+Notes: `createDevItemCatalog` overlays `DEV_BUILD_TEMPLATES` onto `builds`, which the new-player path passes as starting build templates (spec 037 rejects them). The DEV entry should also report a failed startup.
+
 ### G-066 Post-cast rod speed and line feedback ignore remaining slack (P3, in progress)
 Found: 2026-10-17, owner request.
 Reproduce: cast off-center, move the rod toward the tackle to create slack, then move away until the free length ends.

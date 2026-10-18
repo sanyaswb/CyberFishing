@@ -161,15 +161,25 @@ Spine ([spec 099](../specs/099-spine-rod-animation/spec.md)): `engine/animation`
 import, version line), `spine_runtime_module.js` (the only importer of the pinned runtime), `SpineScene` (the only
 user of the Spine API), `SpineBundleLoader` (atlas, pages and skeleton through `AssetLoadQueue`), `SpineAtlasTextReader`
 and `SpineGlSurface` (offscreen WebGL canvas composited into the 2D game). Third-party code lives in `vendor/` and is
-pinned by `vendor/manifest.json`. `utils/vendor-spine.js` writes it from the exact npm devDependency. The
-architecture check verifies each vendor file's SHA-256, that it has no imports and that only its one named importer
-imports it. The rod (presentation, `game/presentation/fishing`): `RodAnimationStateResolver` (pure pose choice) and
+pinned by `vendor/manifest.json`. `utils/vendor-libraries.js` writes every entry from the exact npm devDependencies
+(`--check` compares). The architecture check verifies each vendor file's SHA-256, that it has no imports and that only
+its one named importer imports it. The rod (presentation, `game/presentation/fishing`): `RodAnimationStateResolver` (pure pose choice) and
 `RodAnimationController` (modes rectangle → static → spine, the `RodAnchorFrame` whose tip starts the line) are
 advanced by `FishingEquipmentRenderModelBuilder.prepareRod` while the fishing frame is built. `RodStaticRenderer`,
 `RodSpineRenderer` and `RodLineRenderer` draw from the frame model. `bootstrap/production/rod_animation_composition.js`
 wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime. DEV:
 `SpineRodDevSection` (DevTools "SPINE ВУДКА") uses only the controller's DEV port: Spine on/off, clip switches, live
 bone setup edits and the export of the edited skeleton JSON.
+
+WebGL scene layer ([spec 103](../specs/103-webgl-scene-layer/spec.md), stage 0): `engine/scene` holds the port
+(`SCENE_LAYER_METHODS`: `render(frame)`, `dispose()`), `InactiveSceneLayer` and `DeferredSceneLayer` (the port at
+composition time while the runtime loads lazily). `GameRenderCoordinator` renders the scene in the probe's `scene`
+section after the frame is built and before the 2D passes; the session disposes it. Production composes the inactive
+layer. DEV composes the Pixi layer only for `dev.html?scene=webgl` (`bootstrap/development/dev_scene_layer_composition.js`).
+`platform/browser/scene/pixi_runtime_module.js` is the only importer of the vendored Pixi 8 + spine-pixi-v8 esbuild
+bundle (`vendor/pixi/8.22.0/pixi-scene.js`) and keeps Pixi's tickers stopped. `PixiSceneLayer` puts an Application on
+a `game-shell__scene` canvas right before the game canvas, without ticker, event system, browser extensions, auto
+density or GC, sized from `CanvasMetricsProvider`. Rules: [docs/rendering.md](rendering.md).
 
 ## Migration history
 

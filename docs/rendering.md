@@ -32,6 +32,13 @@ the role that is easiest to reach from the current code.
   kind that must be under it is already there (rule 14).
 - While the migration runs, the 2D path for a kind stays complete as the fallback (no WebGL, lost context) until
   spec 103 stage 5 is accepted.
+- How "off" is done (stage 0): `pixi_runtime_module.js` stops `Ticker.system` and `Ticker.shared` (otherwise the
+  renderer's scheduler runs its own `requestAnimationFrame` loop); `PixiSceneLayer` passes `autoStart: false`,
+  `skipExtensionImports: true` (no event system, accessibility or DOM pipe), `autoDensity: false`,
+  `preference: ["webgl"]` and `gcActive: false` (the scene releases its textures itself, rule 19). New Pixi features
+  that need a browser extension or a ticker are registered or driven explicitly, never by turning these back on.
+- The first scene render compiles Pixi's shaders: one long frame (about 150 ms in software GL). A stage that makes the
+  scene visible warms it up before play starts.
 
 ## Many layers and Spine-first art
 

@@ -14,6 +14,45 @@
       "license": "vendor/spine-webgl/4.3.13/LICENSE",
       "licenseSha256": "435774fb793b0f67892899fc934f98009e64fd90ad3ab964117274e279a0f50e",
       "importer": "src/platform/browser/animation/spine_runtime_module.js"
+    },
+    {
+      "name": "pixi.js",
+      "version": "8.22.0",
+      "integrity": "sha512-QbTANHMZ751MIjLiLSUSM8a7LNMWwMIf0KbRCqlW+SPS9hNLfSVS+cl1O2SEp9g1K/wyLzj/OJHv+1TUfiPr/w==",
+      "bundles": [
+        "@esotericsoftware/spine-canvas@4.3.13",
+        "@esotericsoftware/spine-core@4.3.13",
+        "@esotericsoftware/spine-pixi-v8@4.3.13",
+        "@pixi/colord@2.9.6",
+        "earcut@3.2.4",
+        "eventemitter3@5.0.4",
+        "ismobilejs@1.1.1",
+        "parse-svg-path@0.2.0",
+        "tiny-lru@11.4.7"
+      ],
+      "source": "esbuild@0.28.2 bundle of the scene entry in utils/vendor-libraries.js",
+      "exports": [
+        "Application",
+        "AtlasAttachmentLoader",
+        "ColorMatrixFilter",
+        "Container",
+        "DisplacementFilter",
+        "Graphics",
+        "Physics",
+        "RenderTexture",
+        "SkeletonJson",
+        "Spine",
+        "SpineTexture",
+        "Sprite",
+        "Texture",
+        "TextureAtlas",
+        "Ticker"
+      ],
+      "file": "vendor/pixi/8.22.0/pixi-scene.js",
+      "sha256": "d843b9b2de612a8408a03345a91c31029a73806bed3cde4d5dd6cb415da731e5",
+      "license": "vendor/pixi/8.22.0/LICENSE",
+      "licenseSha256": "bf10ca389d05447b3554dc6d1ae202f42339bfaa8c9c5e0cde1f9e4abfc5d25f",
+      "importer": "src/platform/browser/scene/pixi_runtime_module.js"
     }
   ]
 }

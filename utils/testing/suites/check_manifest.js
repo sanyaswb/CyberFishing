@@ -315,6 +315,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick"],
   },
   {
+    id: "scene-layer",
+    title: "WebGL scene layer port, Pixi layer behind the DEV flag and the vendored scene bundle",
+    file: "utils/scene-layer-check.js",
+    suites: ["quick"],
+  },
+  {
     id: "viewport",
     title: "Camera and world perspective ownership",
     file: "utils/viewport-check.js",

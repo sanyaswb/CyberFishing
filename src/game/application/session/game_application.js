@@ -52,6 +52,7 @@ export class GameApplication {
   #assetPreloadCoordinator;
   #locationAssetLoader;
   #rodAnimation = null;
+  #sceneLayer = null;
   #fishingController;
   #chumController;
   #stateMachine;
@@ -217,6 +218,8 @@ export class GameApplication {
     }
     // The Spine rod's scene, GL surface and load queue (spec 099) live as long as the session.
     this.#rodAnimation = runtime.rendering.rodAnimation ?? null;
+    // The WebGL scene layer (spec 103) lives as long as the session.
+    this.#sceneLayer = runtime.rendering.sceneLayer ?? null;
     this.#fishingController = runtime.fishing;
     this.#liveBait = runtime.liveBait || null;
     this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
@@ -1006,6 +1009,7 @@ export class GameApplication {
     this.#timeUI?.dispose?.();
     this.#holdUI?.dispose?.();
     this.#rodAnimation?.dispose();
+    this.#sceneLayer?.dispose();
     if (this.#ui) {
       this.#ui.onNetClick = null;
       this.#ui.onContinueClick = null;

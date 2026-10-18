@@ -522,6 +522,7 @@
 │  │  │  ├── debug_overlay_bootstrap.js
 │  │  │  ├── dev_config_validation_composition.js
 │  │  │  ├── dev_house_screen_composition.js
+│  │  │  ├── dev_scene_layer_composition.js
 │  │  │  ├── dev_time_composition.js
 │  │  │  ├── development_game_startup.js
 │  │  │  └── ui_catalog_bootstrap.js
@@ -728,6 +729,9 @@
 │  │  │  ├── render_component.js
 │  │  │  ├── render_math.js
 │  │  │  └── render_pass.js
+│  │  ├── scene
+│  │  │  ├── deferred_scene_layer.js
+│  │  │  └── inactive_scene_layer.js
 │  │  └── screens
 │  │     └── screen_host.js
 │  ├── entrypoints
@@ -1400,6 +1404,9 @@
 │        │  ├── browser_startup_environment.js
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
+│        ├── scene
+│        │  ├── pixi_runtime_module.js
+│        │  └── pixi_scene_layer.js
 │        ├── storage
 │        │  ├── browser_snapshot_transaction.js
 │        │  ├── game_time_local_store.js
@@ -1480,6 +1487,7 @@
 │  ├── render-resolution-check.js
 │  ├── rod-side-tension-check.js
 │  ├── run-checks.js
+│  ├── scene-layer-check.js
 │  ├── scouting-input-check.js
 │  ├── service-artifacts-check.js
 │  ├── spine-rod-check.js
@@ -1519,13 +1527,17 @@
 │  ├── ui-catalog-check.js
 │  ├── ui-components-check.js
 │  ├── ui-surface-check.js
-│  ├── vendor-spine.js
+│  ├── vendor-libraries.js
 │  ├── victory-input-check.js
 │  ├── viewport-check.js
 │  └── water-metric-check.js
 └── vendor
    ├── manifest.json
    ├── package.json
+   ├── pixi
+   │  └── 8.22.0
+   │     ├── LICENSE
+   │     └── pixi-scene.js
    └── spine-webgl
       └── 4.3.13
          ├── LICENSE
