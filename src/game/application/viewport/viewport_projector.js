@@ -17,6 +17,7 @@ export class ViewportProjector {
   #maxScrollY;
 
   #isFirstUpdate;
+  #snapNextFocus;
 
   constructor(locationsConfig, locationId, getPerspective) {
     this.#locationsConfig = locationsConfig;
@@ -35,6 +36,7 @@ export class ViewportProjector {
     this.#canvasWidth = 0;
     this.#canvasHeight = 0;
     this.#isFirstUpdate = true;
+    this.#snapNextFocus = false;
   }
 
   update(canvasWidth, canvasHeight) {
@@ -85,6 +87,7 @@ export class ViewportProjector {
       }
 
       this.#isFirstUpdate = false;
+      this.#snapNextFocus = true;
     }
 
     if (this.#maxScrollX > 0) {
@@ -124,8 +127,11 @@ export class ViewportProjector {
   }
 
 
-  // Follow the object smoothly along the Y axis only.
+  // Follow the object smoothly along the Y axis only. The first focus after the camera is placed snaps to its target,
+  // so the game opens on the framing it would otherwise ease into over the first seconds (spec 105).
   focusOnVirtualPos(vY, dt, lerpSpeed = 0.05) {
+    const snap = this.#snapNextFocus;
+    this.#snapNextFocus = false;
     if (this.#maxScrollY <= 0) return;
 
     const targetPixelY = vY * this.#scale;
@@ -138,7 +144,7 @@ export class ViewportProjector {
     desiredCameraY = Math.max(0, Math.min(desiredCameraY, this.#maxScrollY));
 
     const timeScale = dt / 16.66;
-    const currentLerp = 1 - Math.pow(1 - lerpSpeed, timeScale);
+    const currentLerp = snap ? 1 : 1 - Math.pow(1 - lerpSpeed, timeScale);
 
     this.#cameraY += (desiredCameraY - this.#cameraY) * currentLerp;
     this.#offsetY = -this.#cameraY;

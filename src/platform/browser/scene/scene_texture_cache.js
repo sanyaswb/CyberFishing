@@ -1,6 +1,7 @@
-// GPU textures of the WebGL scene (spec 105 D2). Images that ImageAssetProvider already loaded become Pixi textures
-// with mipmaps (art drawn smaller than its size, docs/rendering.md rules 5 and 20) and are uploaded at once, so no
-// texture uploads in the middle of play. The cache owns them: dispose() releases every texture with the scene
+// GPU textures of the WebGL scene (spec 105 D2). Images that ImageAssetProvider already loaded (and decoded) become
+// Pixi textures with mipmaps (art drawn smaller than its size, docs/rendering.md rules 5 and 20) and are uploaded at
+// once. prepareNext uploads one more of the images a kind may show, so they upload one per frame right after the
+// visible ones instead of in the middle of play. The cache owns them: dispose() releases every texture with the scene
 // (rule 19). bytes estimates their GPU memory: RGBA, plus a third with mipmaps.
 export class SceneTextureCache {
   #pixi;
@@ -43,8 +44,15 @@ export class SceneTextureCache {
     return entry.texture;
   }
 
-  prepare(assetIds) {
-    for (let index = 0; index < assetIds.length; index += 1) this.get(assetIds[index]);
+  // Uploads the first listed image that is loaded but has no texture yet; returns whether it uploaded one.
+  prepareNext(assetIds) {
+    for (let index = 0; index < assetIds.length; index += 1) {
+      const assetId = assetIds[index];
+      if (this.#entries.has(assetId) || !this.#images.tryGet(assetId)) continue;
+      this.get(assetId);
+      return true;
+    }
+    return false;
   }
 
   dispose() {

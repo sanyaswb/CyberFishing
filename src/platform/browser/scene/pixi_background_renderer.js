@@ -7,8 +7,9 @@ const ALPHA_EPSILON = 1 / 510;
 
 // The background kind on the WebGL scene (spec 105 D1): the world model's background layers as pooled sprites over the
 // clear colour, in one render pass. update(world) reports whether anything visible changed, so the scene presents a
-// frame only then (D3). artDensity is the base texture's pixels per drawn logical pixel, which sets the scene's
-// resolution (D4); null while nothing is drawn.
+// frame only then (D3). The visible phases upload on the first frame; the location's other phases follow one per
+// frame that uploads nothing else (D2). artDensity is the base texture's pixels per drawn logical pixel, which sets the
+// scene's resolution (D4); null while nothing is drawn.
 export class PixiBackgroundRenderer {
   #textures;
   #renderer;
@@ -43,9 +44,9 @@ export class PixiBackgroundRenderer {
   // world: the frame's world model, or null when the background is not on the scene.
   update(world) {
     const visible = world?.visible === true;
+    const texturesBefore = this.#textures.size;
     let changed = false;
     if (visible) {
-      this.#textures.prepare(world.backgroundAssetIds);
       if (world.backgroundColor !== this.#color) {
         this.#renderer.background.color = world.backgroundColor;
         this.#color = world.backgroundColor;
@@ -59,6 +60,7 @@ export class PixiBackgroundRenderer {
       if (this.#apply(index, texture ? layer : null, texture)) changed = true;
       if (index === 0 && texture && layer.height > 0) this.#artDensity = texture.height / layer.height;
     }
+    if (visible && this.#textures.size === texturesBefore) this.#textures.prepareNext(world.backgroundAssetIds);
     return changed;
   }
 

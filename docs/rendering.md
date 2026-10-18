@@ -43,9 +43,12 @@ the role that is easiest to reach from the current code.
 - A scene kind's renderer reports whether anything visible changed, and the scene presents a frame only then (rules 13
   and 22, [spec 105](../specs/105-scene-background/spec.md)). Steps too small to see do not count (under 0.05 logical
   px or half an 8-bit opacity step, against the last drawn values): eased cameras end in many such steps.
-- Scene textures come from the images `ImageAssetProvider` loaded, through `SceneTextureCache` (mipmaps, uploaded when
-  created, released with the scene). A kind lists every image it may show (the background: all time-of-day phases),
-  so they upload together on its first frame and never in the middle of play.
+- Scene textures come from the images `ImageAssetProvider` loaded and decoded (`decode()` during loading), through
+  `SceneTextureCache` (mipmaps, uploaded when created, released with the scene). A kind lists every image it may show
+  (the background: all time-of-day phases): the visible ones upload on its first frame, the rest one per frame right
+  after, never in the middle of play.
+- The camera opens on its target: the first focus after it is placed snaps (spec 105 D7), so the scene does not
+  present a frame for every step of an opening ease.
 - The scene's pixel ratio follows its art (spec 105 D4): `min(canvas ratio, max(1, art pixels per drawn logical
   pixel))`. Art that would be enlarged is drawn 1:1 into a smaller backing store and the compositor scales the canvas.
 - How "off" is done (stage 0): `pixi_runtime_module.js` stops `Ticker.system` and `Ticker.shared` (otherwise the

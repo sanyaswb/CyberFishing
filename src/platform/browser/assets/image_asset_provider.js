@@ -65,11 +65,23 @@ export class ImageAssetProvider {
     };
     entry.promise = new Promise((resolve, reject) => {
       let settled = false;
+      let decoding = false;
       const markReady = () => {
         if (settled) return;
         settled = true;
         entry.status = "ready";
         resolve(image);
+      };
+      // Loaded is not decoded: the first draw or WebGL upload would decode a large image synchronously on the main
+      // thread. decode() does it off the main thread during loading (spec 105); a failed decode still counts as loaded.
+      const markLoaded = () => {
+        if (settled || decoding) return;
+        decoding = true;
+        if (typeof image.decode !== "function") {
+          markReady();
+          return;
+        }
+        image.decode().catch(() => {}).then(markReady);
       };
       const markFailed = (error) => {
         if (settled) return;
@@ -79,7 +91,7 @@ export class ImageAssetProvider {
         reject(entry.error);
       };
 
-      image.onload = markReady;
+      image.onload = markLoaded;
       image.onerror = markFailed;
       image.src = src;
 
@@ -87,7 +99,7 @@ export class ImageAssetProvider {
         image.complete === true &&
         Math.max(0, Number(image.naturalWidth) || 0) > 0
       ) {
-        markReady();
+        markLoaded();
       }
     });
     this.#entries.set(id, entry);

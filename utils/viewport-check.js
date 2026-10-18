@@ -35,6 +35,16 @@ for (let frame = 0; frame < 120; frame++) {
     "camera movement and viewport size do not own world perspective");
 }
 assert.equal(calls, 120, "one perspective query per frame; camera operations do not query perspective");
+// Spec 105: the first focus after the camera is placed snaps to its target; later focuses ease.
+config.map.tall = { safeZone: { top: 0, bottom: 300 }, initialAlignment: { x: "center", y: "top" } };
+const opening = new ViewportProjector({ ...config, cameraFocusY: 0.7 }, "tall", query);
+opening.update(400, 300);
+opening.focusOnVirtualPos(250, 16.66, 0.03);
+const focusY = () => opening.virtualToScreen(0, 250, screen).y;
+assert(Math.abs(focusY() - 300 * 0.7) < 1e-9, "the game opens on the focus target, not easing toward it");
+opening.focusOnVirtualPos(300, 16.66, 0.03);
+const eased = opening.virtualToScreen(0, 300, screen).y;
+assert(eased > 210 + 1 && eased < 300 - 40, "a later target is still followed smoothly: part of the way per frame");
 config.map.lake = { safeZone: { top: 300, bottom: 700 }, perspective: { angleTop: 0, angleBottom: 30 } };
 assert.equal(projector.getPerspective(300).scale, 0, "live location replacement reaches the existing perspective owner");
 assert.equal(projector.getPerspective(700).scale, 1);

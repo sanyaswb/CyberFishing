@@ -15,10 +15,12 @@ Taken while implementing; the owner may revisit any of them.
 | # | Question | Decision |
 | --- | --- | --- |
 | D1 | What the scene draws | The `background` kind: the world model's background layers (the opaque time-of-day base and at most one translucent phase, `timeOfDayLayers`) as two pooled Pixi sprites over the clear colour `world.backgroundColor`. One render pass, two draw calls (two textures). The 2D `world-background` component steps aside through the router, and the 2D canvas starts each frame cleared (spec 104 D6). Boats, chum zones, the DEV world debug drawing and everything above stay on the 2D canvas. |
-| D2 | Where textures come from | The images `ImageAssetProvider` already preloaded for the location (no Pixi loader). `SceneTextureCache` turns each into a texture with mipmaps and uploads it at once. The world model lists every background asset of the location (`backgroundAssetIds`: day, evening, night), so all three are uploaded on the first frame that shows the background, before the first frame is presented; a later dusk does not upload mid-play. Textures are released with the scene. |
+| D2 | Where textures come from | The images `ImageAssetProvider` already preloaded for the location (no Pixi loader). `SceneTextureCache` turns each into a texture with mipmaps and uploads it at once. The world model lists every background asset of the location (`backgroundAssetIds`: day, evening, night). **Owner, 2026-10-18: the visible phase first, the others after it one by one.** The first background frame uploads only the visible phase(s); each following frame that uploads nothing else uploads the next phase in the location's order (frames 2 and 3 at startup), so a later dusk never uploads mid-play. Total upload work is the same; the first picture comes sooner, and the steady frame rate does not change. Textures are released with the scene. |
 | D3 | When the scene presents a frame | Only when the background changed (layer, texture, position, size, alpha, clear colour), the scene was resized, or the context was restored (rules 13 and 22). A still camera at a steady time of day presents no WebGL frame; the browser keeps showing the last one. Changes too small to see do not count: under 0.05 logical px (a tenth of a backing pixel at ratio 2) or half an 8-bit opacity step, measured against the last drawn values so slow drift still adds up. Found while measuring: the camera follows the float with exponential easing, whose tail is many frames of ~0.03 px steps. |
 | D4 | "Portrait art 1:1" | There is no larger background art (the location art is 2560×1440 and `asset-sources/` holds no larger master), so the scene's resolution follows the art instead: scene pixel ratio = `min(CanvasMetricsProvider.pixelRatio, max(1, texture height / drawn height))`, rounded to 0.01 (spec 103 "Resolution per layer"). Portrait at ratio 2 draws the 1440 px art 1:1 into a ~1.76× backing store, and the compositor scales the canvas to the screen; landscape keeps ratio 2 and shrinks the art through mipmaps. A larger art variant can replace this later without changing the code. |
 | D5 | Texture size and memory | Each background is one 2560×1440 RGBA texture: 14.7 MB, 19.7 MB with mipmaps, **59 MB for the three phases** (rule 19: within the ~150 MB phone budget). 2560 px exceeds rule 20's 2048 px atlas page; it is a single full-screen image, not an atlas page, and WebGL devices that run the game report a maximum texture size of at least 4096. WebGL 1 cannot mipmap this non-power-of-two size and falls back to bilinear. |
+| D7 | The camera at startup | **Owner, 2026-10-18: open on the final framing.** `ViewportProjector`'s first `focusOnVirtualPos` after the camera is placed snaps to its target instead of easing into it; later focuses (following the float) ease as before. In landscape the camera used to ease for the first seconds, presenting about 30 scene frames; now the scene presents once. Both modes (2D and WebGL) open the same way. |
+| D8 | Image decoding | `ImageAssetProvider` reports an image ready after `image.decode()`, so decoding happens off the main thread during loading instead of inside the first draw or texture upload (both modes). A failed decode still counts as loaded. |
 | D6 | Production | Stays `"canvas"` (spec 104 D1) until the owner's phone measurement of `dev.html?scene=webgl` holds against `dev.html`. Switching is one config value, `CONFIG.canvas.scene`. |
 
 ## Record (2026-10-18)
@@ -43,7 +45,8 @@ WebGL present wait for a software compositor):
 | Landscape 816×400 | `dev.html` | 20 | — | — |
 | Landscape 816×400 | `dev.html?scene=webgl` | 17 | 5.0 / 229 ms | 1632×800 @ 2 |
 
-- The max is the first background frame, which creates and uploads the three phases (59 MB with mipmaps).
+- The max is the first background frame, which then created and uploaded the three phases (59 MB with mipmaps; see the
+  follow-up below for the staged order).
 - Portrait: the background is static after the first frame, so the scene presents once, and the 2D canvas no longer
   redraws a full-screen image every frame. Landscape: the camera eases into place during the first seconds, and each
   WebGL present waits for the software compositor; then the scene almost stops presenting (a 12 s run: 30 changed
@@ -51,6 +54,19 @@ WebGL present wait for a software compositor):
   frame (11 FPS).
 - Visual: in portrait, the world area of both modes has the same geometry and sharpness; the remaining difference is the
   animated fog and the DEV overlay's height. In landscape the visible world strip differs by 0.05% of pixels.
+
+Follow-up the same day (D2 order, D7, D8), headless Chromium:
+- Camera: in 6 s, the background changed once in portrait and once in landscape (was 30 changed frames in 4 s).
+- Upload of one 2560×1440 phase with mipmaps, measured alone (15 uploads each, synchronous part only):
+
+| Image state before upload | Median | Worst |
+| --- | --- | --- |
+| loaded, not decoded (before D8) | 79 ms | 490 ms |
+| `decode()` done (D8) | 45 ms | 125 ms |
+| `createImageBitmap` (not used: a further ~15 ms off the median, but irregular and asynchronous) | 30 ms | 190 ms |
+
+- In the running game, software GL makes those frames far noisier (36 ms to 1 s per upload, with or without D8), so
+  the phone measurement decides; the staged order bounds the worst case to one phase per frame.
 
 Owner's phone measurement (pending): `dev.html` against `dev.html?scene=webgl`, portrait and landscape, overlay
 "⚡ ПРОДУКТИВНІСТЬ" (FPS, "поза CPU гри", janks / freezes, the `scene` section). If it holds, D6 turns production to

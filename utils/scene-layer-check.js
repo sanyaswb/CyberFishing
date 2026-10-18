@@ -259,7 +259,8 @@ async function checkTextureCacheAndBackground() {
   assert.equal(cache.get("day"), day, "one texture per image");
   assert.deepEqual([day.skipCache, day.source.autoGenerateMipmaps, day.uploaded], [true, true, true],
     "mipmapped, outside Pixi's global cache and uploaded at once (spec 105 D2)");
-  cache.prepare(["day", "evening", "night"]);
+  assert.equal(cache.prepareNext(["day", "evening", "night"]), true, "the next missing image uploads: evening");
+  assert.equal(cache.prepareNext(["day", "evening", "night"]), false, "night is still loading: nothing to upload");
   const phaseBytes = 2560 * 1440 * 4 * 4 / 3;
   assert.deepEqual([cache.size, cache.bytes], [2, 2 * phaseBytes], "RGBA plus a third for mipmaps");
   images.images.set("day", { id: "day", naturalWidth: 2560, naturalHeight: 1440 });
@@ -282,9 +283,11 @@ async function checkTextureCacheAndBackground() {
   assert.deepEqual(sprites.map(({ texture, x, y, width, height, alpha, visible }) => [texture.resource.id, x, y, width, height,
     alpha, visible]), [["day", -12, 0, 1451, 816, 1, true], ["evening", -12, 0, 1451, 816, 0.4, true]],
   "the base phase and one translucent phase, as the model places them");
-  assert.equal(sceneTextures.size, 2, "every loaded phase is uploaded on first sight, not only the visible ones");
+  assert.equal(sceneTextures.size, 2, "the visible phases upload on the first frame");
   assert.equal(background.artDensity, 1440 / 816, "art pixels per drawn logical pixel");
+  images.images.set("night", { id: "night", naturalWidth: 2560, naturalHeight: 1440 });
   assert.equal(background.update(frame.world), false, "an unchanged background presents nothing (D3)");
+  assert.equal(sceneTextures.size, 3, "a frame without other uploads uploads the next phase of the location (D2)");
   base.y = overlay.y = 0.04;
   overlay.alpha = 0.4015;
   assert.equal(background.update(frame.world), false, "steps too small to see present nothing (the camera's easing tail)");
@@ -357,11 +360,13 @@ async function checkPixiSceneLayer() {
     "portrait: the scene drops to the art's 1440 / 816 = 1.76 pixels per logical pixel, so the art is drawn 1:1 (D4)");
   assert.deepEqual([canvas.style.width, canvas.style.height, canvas.width, canvas.height], ["400px", "816px", 704, 1436],
     "the CSS size stays logical; the compositor scales the smaller backing store");
-  assert.equal(textures.length, 3, "every phase of the location is uploaded with the first background frame");
-  assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
-    textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 });
+  assert.equal(textures.length, 1, "the first frame uploads only the visible phase");
   for (let index = 0; index < 3; index += 1) layer.render(frame);
   assert.deepEqual([app.renders, app.resizes.length], [2, 1], "a still background presents no frame and resizes nothing (D3)");
+  assert.deepEqual(textures.map((texture) => texture.resource.id), ["day", "evening", "night"],
+    "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
+  assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
+    textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 });
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -652,7 +657,7 @@ async function main() {
   checkCss();
   await settle();
   console.log(`Scene layer passed: port and lazy layer (warm-up wait, late arrival, failure), router (depth order, `
-    + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, reload, release) and background `
+    + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, one more per frame, reload, release) and background `
     + `(phases, change detection, art density), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only `
     + `on change, portrait art 1:1, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `

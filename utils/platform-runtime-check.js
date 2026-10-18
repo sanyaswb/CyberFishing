@@ -678,6 +678,22 @@ async function main() {
   assert.equal(images.length,4,"failed assets must remain retryable");
   images[3].onload();
   await retried;
+  // Spec 105: an image is ready once decoded, so the first draw or WebGL upload does not decode on the main thread.
+  let decodeImage = null, finishDecode = null;
+  const decodingAssets = new ImageAssetProvider({imageFactory:()=>(decodeImage={decode:()=>new Promise((resolve,reject)=>{
+    finishDecode={resolve,reject};})})});
+  const decodedPreload = decodingAssets.preload({art:"art.webp"});
+  decodeImage.onload();
+  await new Promise((resolve)=>setImmediate(resolve));
+  assert.equal(decodingAssets.isReady("art"),false,"loaded but still decoding is not ready");
+  finishDecode.resolve();
+  await decodedPreload;
+  assert.equal(decodingAssets.tryGet("art"),decodeImage,"ready after decode()");
+  const oddPreload = decodingAssets.preload({odd:"odd.webp"});
+  decodeImage.onload();
+  finishDecode.reject(new Error("EncodingError"));
+  await oddPreload;
+  assert.equal(decodingAssets.isReady("odd"),true,"a failed decode still counts as loaded");
 
   let diagnosticCalls=0;
   const pending=[],ready=new Set();
