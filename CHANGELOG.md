@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.41.8 - Perspective from the Green-Zone Shore
+
+- Start perspective compression at the lower edge of the green castable zone, removing the flat near half of the location profile. Areas, metre grid, world scale and movement share that shore origin (G-072).
+
 ## v0.41.7 - DEV Zone Editor
 
 - DevTools → РЕДАКТОР ЗОН combines metre grid, independent zone visibility, black background, live geometry/profile editing and add/remove controls. Changes use the existing validated runtime overrides and export/reset flow (spec 110).

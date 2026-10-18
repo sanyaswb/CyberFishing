@@ -177,6 +177,62 @@ function checkTestLocationProfile() {
   "the near share of the test location keeps the base scale");
 }
 
+// G-072: exercise the shipped profile, not a separately authored perspective fixture. Equal areas must already
+// shrink within the first half of the green zone; the shore stays at its lower map edge through camera changes.
+function checkPerspectiveStartsAtGreenZoneShore() {
+  const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const { WorldPerspective } = runtime.importModule("src/game/domain/locations/world_perspective.js");
+  const { ViewportProjector } = runtime.importModule("src/game/application/viewport/viewport_projector.js");
+  const { CastingRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/casting_render_frame_builder.js");
+  const { BoatChumRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/boat_chum_render_frame_builder.js");
+  const { GameRenderFrame } = runtime.importModule("src/game/presentation/rendering/game_render_frame.js");
+  const locations = CONFIG.locations, map = locations.map.test, zone = map.zones.castable[0], cell = locations.cellSize;
+  const bounds = { left: zone.x * cell, right: (zone.x + zone.w) * cell,
+    top: zone.y * cell, bottom: (zone.y + zone.h) * cell };
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter });
+  let metric = resolver.resolve(bounds, map.distanceProfile);
+  assert(metric.pixelsPerMeterY(bounds.bottom - 1) < metric.pixelsPerMeter,
+    "G-072: perspective starts immediately above the lower green-zone edge");
+  const perspective = new WorldPerspective({ getWaterMetric: () => metric });
+  const projector = new ViewportProjector(locations, "test", y => perspective.getPerspective(y));
+  const centerX = (bounds.left + bounds.right) / 2;
+  const zones = [0, 1, 2].map(meters => ({ x: centerX, y: metric.yAtMeters(meters), baseRadius: 20,
+    isDelivered: true, isExpired: false, currentBonus: 2, baitConfig: { minBonus: 1, maxBonus: 2 } }));
+  const chumBuilder = new BoatChumRenderFrameBuilder({ projector, config: CONFIG,
+    chum: { getZones: () => zones, getBoats: () => [] } });
+  const chumSource = { isAiming: () => false, getEquipment: () => ({}), getGameStateName: () => "scouting",
+    getCastDistance: () => metric.pixelsPerMeter, getPowerAimVisual: () => null, getAccuracyPreview: () => null,
+    getBounds: () => bounds, getNow: () => 0 };
+  const canvasMetrics = { width: 0, height: 0 };
+  const castingBuilder = new CastingRenderFrameBuilder({ projector, getWaterMetric: () => metric, config: CONFIG,
+    canvasMetrics, hudStyleResolver: { resolveBarStyle: () => ({}) }, chumSource });
+  const frame = new GameRenderFrame(), shore = { set(x, y) { this.x = x; this.y = y; return this; } };
+  for (const [width, height] of [[390, 844], [844, 390]]) {
+    canvasMetrics.width = width; canvasMetrics.height = height;
+    projector.update(width, height); projector.pan(73, 91); frame.reset();
+    chumBuilder.buildInto(frame.world);
+    const rendered = frame.world.chumZones;
+    assert(rendered.getAt(1).radiusX < rendered.getAt(0).radiusX,
+      "G-072: a chum area already shrinks 1 m from the lower green-zone edge, before mid-water");
+    assert(rendered.getAt(2).radiusY < rendered.getAt(1).radiusY,
+      "G-072: ground-area height keeps shrinking immediately away from shore");
+    castingBuilder.buildInto({ target: frame.casting, clipRegions: [], intent: { casting: {
+      visible: true, zoneVisible: true, virtualBottomY: bounds.bottom, maxDistance: metric.pixelsPerMeter, mode: "rod",
+      depthLimit: { visible: false } } } });
+    projector.virtualToScreen(centerX, bounds.bottom, shore);
+    const aim = frame.casting.aimingZone;
+    assert(Math.abs(aim.lineY + aim.fillHeight - shore.y) < 1e-8,
+      "the cast area starts at the lower green-zone edge after pan/rotation");
+    assert(Math.abs(metric.metersFromShore((aim.lineY - shore.y) / projector.getScale() + bounds.bottom) - 1) < 1e-8,
+      "the cast boundary and chum centre use the same metre from the green-zone shore");
+  }
+  const moved = { ...bounds, top: bounds.top + 170, bottom: bounds.bottom + 170 };
+  metric = resolver.resolve(moved, map.distanceProfile);
+  assert.equal(metric.metersFromShore(moved.bottom), 0, "moving the green zone moves its distance origin");
+  assert(perspective.getPerspective(moved.bottom - 1).scale < 1,
+    "perspective starts at the edited lower green edge, independently of screen centre");
+}
+
 // The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
 // same with and without a distance profile (the owner keeps accuracy apart from perspective metres).
 function checkAccuracyIndependentOfProfile() {
@@ -219,10 +275,11 @@ checkBasePixels();
 checkGroundPlane();
 checkResolver();
 checkTestLocationProfile();
+checkPerspectiveStartsAtGreenZoneShore();
 checkAccuracyIndependentOfProfile();
 checkValidation();
 console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
   "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
-  "the previous metric on an invalid live edit; the test location reaches maxMeters at its far edge; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");
+  "the previous metric on an invalid live edit; the shipped profile compresses cast/chum areas from the green-zone shore through pan/rotation and edited bounds, and reaches maxMeters at its far edge; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");

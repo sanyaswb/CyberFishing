@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.41.7";
+export const CURRENT_PROJECT_VERSION = "0.41.8";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "metric-zone-editor",
+  codename: "shore-perspective",
   updatedAt: "2026-10-18",
   notes: Object.freeze([
+    "Perspective compression starts at the lower green-zone edge for areas, metre grid, world scale and movement",
     "DEV zone editor shows exact metre grid and all zone geometry, hides the background to black, edits runtime geometry and caches WebGL annotations",
     "World sizes and ground-plane areas follow the same water metric as movement; camera scale applies once, the rod stays screen-relative",
     "Idle tackle obeys the depth-adjusted line budget after current, bite and live-bait motion; inward retrieval remains available",

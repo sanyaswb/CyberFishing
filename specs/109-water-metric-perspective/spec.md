@@ -16,3 +16,8 @@ Checks: metric scale equals finite differences of ground->map mapping (near/far,
 same live metric identity for world and renderer, projector pan/resize does not own perspective; Architecture,
 Quick, Full and unchanged game-cycle report. Owner: compare near/far float and boat sizes with the metre grid in
 the editor, both phone orientations. No visual check by the agent. No utility becomes obsolete.
+
+Owner correction, G-072 / v0.41.8: the test location's distance profile must compress from the lower green-zone edge.
+Set `linearShare` to zero; the previous 0.5 left the near half flat. Keep this same profile for physical distances,
+world sizes, areas and grid. The actual cast/chum render models are covered near shore in both viewport orientations,
+after pan and with edited green-zone bounds. No utilities, fixtures, scripts or dependencies become obsolete.

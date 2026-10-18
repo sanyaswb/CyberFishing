@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-072 Perspective stays flat through the near half of the green zone (P2, done in v0.41.8)
+Found: 2026-10-18, owner, Pages v0.41.7.
+Reproduce: enable the DEV metre grid and compare equal chum areas 0, 1 and 2 m from the lower green-zone edge; repeat after pan/rotation.
+Expected: perspective compression begins immediately at that lower edge, shared by areas, world scale and physical distances; moving the green zone moves the origin.
+Actual: the shipped `linearShare: 0.5` leaves the near half of the water uniform. After G-070 shared that metric with rendering, nearby areas keep the same size and the perspective appears to start mid-water.
+Resolution: the location profile uses `linearShare: 0`; the existing shore-based metric, 30 m far edge and shared rendering/physics mapping remain authoritative. No additional projection curve or tool is introduced.
+Evidence: `water-metric-check` first failed on an actual chum render radius 1 m from shore; covers cast-area boundaries, equal chum radii, edited bounds and both viewport orientations. Architecture 4, Quick 36, Full 62 pass with unchanged game-cycle baseline. Owner visual/phone checks pending.
+
 ### G-071 DEV zones lack a shared metric-grid editor (P3, done in v0.41.7)
 Found: 2026-10-18, owner's WebGL/physics follow-up.
 Reproduce: inspect all zone categories, compare near/far metre sizes and edit geometry while keeping the scene running.
