@@ -186,7 +186,10 @@ and runs the 2D passes. `platform/browser/scene/pixi_runtime_module.js` is the o
 spine-pixi-v8 esbuild bundle (`vendor/pixi/8.22.0/pixi-scene.js`) and keeps Pixi's tickers stopped. `PixiSceneLayer`
 puts an Application on a `game-shell__scene` canvas right before the game canvas (without ticker, event system,
 browser extensions, auto density or GC, sized from `CanvasMetricsProvider`) and renders a warm-up frame during loading;
-startup waits for it. DEV: DevTools "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`). Rules:
+startup waits for it. Stage 2 ([spec 105](../specs/105-scene-background/spec.md)): the scene draws the `background`
+kind (`PixiBackgroundRenderer`: the world model's time-of-day layers as two pooled sprites) from `SceneTextureCache`
+textures of the images the page's `ImageAssetProvider` loaded, presents a frame only when the background changed, and
+sets its pixel ratio from the art. DEV: DevTools "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`). Rules:
 [docs/rendering.md](rendering.md).
 
 ## Migration history

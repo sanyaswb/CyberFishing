@@ -4,8 +4,8 @@ Owner request, 2026-10-18: move the scene (background and parallax, water, float
 WebGL as a separate layer under today's 2D canvas, step by step, without rewriting everything at once. HUD and
 windows stay 2D/DOM. The owner asks for a ready library rather than hand-written shaders. Status: **decisions taken
 2026-10-18 (below); stage 0 implemented 2026-10-18 (record below); stage 1 implemented 2026-10-18 in
-[spec 104](../104-scene-layer-infrastructure/spec.md); the owner's phone measurements of both are pending; stage 2
-next.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
+[spec 104](../104-scene-layer-infrastructure/spec.md); the owner's phone check of both passed; stage 2 implemented 2026-10-18 in
+[spec 105](../105-scene-background/spec.md), its phone measurement pending.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
 
 Owner, 2026-10-18: **option C (PixiJS)**, with the 2D canvas for HUD text and the rest. The art will be **many image
 layers, and almost all animation will be made in Spine**. The owner wants the most result for the least effort.
@@ -96,9 +96,9 @@ bootstrap/production/scene_layer_composition.js
 | --- | --- | --- |
 | 0 | **Spike:** pinned vendor bundle of Pixi + spine-pixi-v8 + the needed filters (D2), guard rule, size measured; an empty scene canvas under the 2D canvas behind a DEV flag | Empty-scene cost on the phone (both orientations) measured and within budget; bundle size recorded |
 | 1 | **Scene layer infrastructure** ([spec 104](../104-scene-layer-infrastructure/spec.md)): composition, resolution owner for both canvases, loop-driven render, router, fallback, DEV switch, transparent 2D canvas | Game unchanged visually with everything still routed to 2D; switch and fallback work |
-| 2 | **Background and time of day** in the scene, with background variants sized for the screen (spec 102 next step 1) and day/night blended in one pass (`ColorMatrixFilter` or two sprites) | Background routed to the scene; portrait art 1:1; FPS ≥ today |
+| 2 | **Background and time of day** ([spec 105](../105-scene-background/spec.md)) in the scene, with background variants sized for the screen (spec 102 next step 1) and day/night blended in one pass (`ColorMatrixFilter` or two sprites) | Background routed to the scene; portrait art 1:1; FPS ≥ today |
 | 3 | **Water:** ripple displacement (`DisplacementFilter`), reflections or glow where the art needs them | Effects within budget on the phone |
-| 4 | **Line, float and rod together:** line as Pixi `Graphics` (same curve model), float sprite, rod through spine-pixi-v8 behind the existing scene port (controller, tracks, anchor and DEV tools unchanged) | WebGL → 2D copy gone; rod covers the line's start; Spine DEV section works |
+| 4 | **Line, float and rod together:** line as Pixi `Graphics` (same curve model), float sprite, rod through spine-pixi-v8 behind the existing scene port (controller, tracks, anchor and DEV tools unchanged). **Owner, 2026-10-18:** the fight areas and the boats/chum zones lie between the background and the line and must not be drawn over the rod, so they move to the scene first (within this stage or before it) | WebGL → 2D copy gone; rod covers the line's start; fight areas, boats and chum zones stay under the rod; Spine DEV section works |
 | 5 | **Parallax and Spine background, Spine fish** | Parallax layers cached and redrawn only on offset change; budget holds |
 | 6 | **Adaptive scene resolution** (spec 102 next step 3): pixel ratio steps down/up from measured frame time; Auto / Low / High setting (spec 047) | Weak phones keep the target frame rate |
 
@@ -261,14 +261,9 @@ page keeps one `requestAnimationFrame` loop. With the game canvas hidden, the sc
 with it visible the page looks the same as plain `dev.html`. The first scene render took about 150 ms (Pixi compiles
 its shaders): a one-off long frame, recorded in docs/rendering.md for the stage that makes the scene visible.
 
-Owner's phone measurement (pending): `dev.html` against `dev.html?scene=webgl`, DevTools overlay "⚡ ПРОДУКТИВНІСТЬ".
-
-| Page | Orientation | FPS | game CPU | `scene` | "поза CPU гри" | janks / freezes |
-| --- | --- | --- | --- | --- | --- | --- |
-| dev.html | portrait | | | — | | |
-| dev.html?scene=webgl | portrait | | | | | |
-| dev.html | landscape | | | — | | |
-| dev.html?scene=webgl | landscape | | | | | |
+Owner's phone check (2026-10-18, after stage 1): `dev.html` and `dev.html?scene=webgl`, portrait and landscape: the
+game starts, animations are smooth, no freezes. No numbers were recorded; stage 2 is the first stage with a visible
+scene, and its spec asks for the overlay readings.
 
 Note for the measurement: on a browser profile without a saved game `dev.html` does not start
 ([G-067](../../docs/gameplay_backlog.md), found during this smoke, also on the commit before stage 0); opening

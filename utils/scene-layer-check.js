@@ -1,10 +1,11 @@
 "use strict";
 
-// Specs 103 and 104 (stages 0 and 1): the WebGL scene layer port (inactive in "canvas" mode), the lazy layer, the
-// router (depth order, mode, availability, fallback), PixiSceneLayer over a fake Pixi namespace (warm-up, activity,
-// context loss, DEV status, dispose), the coordinator's routing per frame, the 2D surface's clear, the production
-// composition (config mode, DEV override, transparent canvas, a real no-WebGL fallback in Node), the 2D gates, the
-// DEV section, the runtime module, the CSS, the vendored bundle and a production graph that loads Pixi only lazily.
+// Specs 103-105 (stages 0-2): the WebGL scene layer port (inactive in "canvas" mode), the lazy layer, the router
+// (depth order, mode, availability, fallback), the scene's texture cache and background renderer, PixiSceneLayer over
+// a fake Pixi namespace (warm-up, frames only on change, art-based resolution, context loss, DEV status, dispose), the
+// coordinator's routing per frame, the 2D surface's clear, the production composition (config mode, DEV override,
+// transparent canvas, a real no-WebGL fallback in Node), the 2D gates, the DEV section, the runtime module, the CSS,
+// the vendored bundle and a production graph that loads Pixi only lazily.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -48,15 +49,36 @@ function fakeDom() {
 }
 
 // A Pixi namespace whose Application records init options, renders, resizes and destroys; init is held open. Its GL
-// context has WEBGL_lose_context, which dispatches the canvas events like a browser would.
+// context has WEBGL_lose_context, which dispatches the canvas events like a browser would. Textures record their upload
+// and destruction; sprites and containers are plain records.
 function fakePixi() {
   const apps = [];
+  const textures = [];
+  class Container {
+    constructor() { this.children = []; }
+
+    addChild(child) { this.children.push(child); return child; }
+  }
+  class Sprite {
+    constructor() { Object.assign(this, { texture: null, x: 0, y: 0, width: 0, height: 0, alpha: 1, visible: true }); }
+  }
+  const Texture = {
+    from(options, skipCache) {
+      const { naturalWidth: pixelWidth, naturalHeight: pixelHeight } = options.resource;
+      const texture = { resource: options.resource, skipCache, uploaded: false, destroyed: null, width: pixelWidth,
+        height: pixelHeight, source: { pixelWidth, pixelHeight, autoGenerateMipmaps: options.autoGenerateMipmaps },
+        destroy(destroySource) { this.destroyed = destroySource; } };
+      textures.push(texture);
+      return texture;
+    },
+  };
   class Application {
     constructor() {
       this.initCall = deferred();
       this.renders = 0;
       this.resizes = [];
       this.destroyed = null;
+      this.stage = new Container();
       apps.push(this);
     }
 
@@ -71,7 +93,9 @@ function fakePixi() {
       const loseContext = { loseContext: () => canvas.dispatch("webglcontextlost"),
         restoreContext: () => canvas.dispatch("webglcontextrestored") };
       this.renderer = { canvas, context: { webGLVersion: 2 }, resize: (...args) => { this.resizes.push(args); size(...args); },
-        gl: { getExtension: (name) => (name === "WEBGL_lose_context" ? loseContext : null) } };
+        gl: { getExtension: (name) => (name === "WEBGL_lose_context" ? loseContext : null) },
+        texture: { initSource: (source) => { textures.find((texture) => texture.source === source).uploaded = true; } },
+        background: { color: options.background } };
       return this.initCall.promise;
     }
 
@@ -79,7 +103,19 @@ function fakePixi() {
 
     destroy(...args) { this.destroyed = args; }
   }
-  return { pixi: { Application }, apps };
+  return { pixi: { Application, Container, Sprite, Texture }, apps, textures };
+}
+
+// Loaded images by asset id, as ImageAssetProvider.tryGet serves them.
+function fakeImages(entries) {
+  const images = new Map(entries.map(([id, width, height]) => [id, { id, naturalWidth: width, naturalHeight: height }]));
+  return { images, tryGet: (id) => images.get(id) ?? null };
+}
+
+// A world model like WorldRenderFrameBuilder's: the location's phases and the drawn layers.
+function worldModel({ layers, assets = ["day", "evening", "night"], color = "#0f171e" }) {
+  return { world: { visible: true, backgroundColor: color, backgroundAssetIds: assets,
+    backgroundLayers: { count: layers.length, getAt: (index) => layers[index] } } };
 }
 
 function recordingProbe() {
@@ -208,79 +244,161 @@ async function checkRouter() {
   assert.equal(canvasMode.rendersScene(), false);
 }
 
+async function checkTextureCacheAndBackground() {
+  const { SceneTextureCache } = await importSource("src/platform/browser/scene/scene_texture_cache.js");
+  const { PixiBackgroundRenderer } = await importSource("src/platform/browser/scene/pixi_background_renderer.js");
+  const { pixi, textures } = fakePixi();
+  const app = new pixi.Application();
+  app.init({ canvas: fakeElement("canvas"), width: 1, height: 1, resolution: 1, background: 0 });
+  const images = fakeImages([["day", 2560, 1440], ["evening", 2560, 1440]]);
+  assert.throws(() => new SceneTextureCache({ pixi, images: {}, renderer: app.renderer }), /requires images/u);
+  assert.throws(() => new SceneTextureCache({ pixi, images, renderer: {} }), /requires a renderer/u);
+  const cache = new SceneTextureCache({ pixi, images, renderer: app.renderer });
+  assert.equal(cache.get("night"), null, "an image still loading has no texture yet");
+  const day = cache.get("day");
+  assert.equal(cache.get("day"), day, "one texture per image");
+  assert.deepEqual([day.skipCache, day.source.autoGenerateMipmaps, day.uploaded], [true, true, true],
+    "mipmapped, outside Pixi's global cache and uploaded at once (spec 105 D2)");
+  cache.prepare(["day", "evening", "night"]);
+  const phaseBytes = 2560 * 1440 * 4 * 4 / 3;
+  assert.deepEqual([cache.size, cache.bytes], [2, 2 * phaseBytes], "RGBA plus a third for mipmaps");
+  images.images.set("day", { id: "day", naturalWidth: 2560, naturalHeight: 1440 });
+  assert.notEqual(cache.get("day"), day, "a reloaded image gets a new texture");
+  assert.deepEqual([day.destroyed, cache.size, cache.bytes], [true, 2, 2 * phaseBytes], "and releases the old one");
+  cache.dispose();
+  assert.deepEqual([cache.size, cache.bytes, textures.every((texture) => texture.destroyed === true)], [0, 0, true],
+    "dispose releases every texture with its source (rule 19)");
+
+  const stage = new pixi.Container();
+  const sceneTextures = new SceneTextureCache({ pixi, images, renderer: app.renderer });
+  assert.throws(() => new PixiBackgroundRenderer({ pixi, stage, textures: {}, renderer: app.renderer }), /requires textures/u);
+  const background = new PixiBackgroundRenderer({ pixi, stage, textures: sceneTextures, renderer: app.renderer });
+  const sprites = stage.children[0].children;
+  assert.deepEqual(sprites.map((sprite) => sprite.visible), [false, false], "two pooled sprites, hidden until drawn");
+  const base = { assetId: "day", alpha: 1, x: -12, y: 0, width: 1451, height: 816 };
+  const overlay = { assetId: "evening", alpha: 0.4, x: -12, y: 0, width: 1451, height: 816 };
+  let frame = worldModel({ layers: [base, overlay] });
+  assert.equal(background.update(frame.world), true);
+  assert.deepEqual(sprites.map(({ texture, x, y, width, height, alpha, visible }) => [texture.resource.id, x, y, width, height,
+    alpha, visible]), [["day", -12, 0, 1451, 816, 1, true], ["evening", -12, 0, 1451, 816, 0.4, true]],
+  "the base phase and one translucent phase, as the model places them");
+  assert.equal(sceneTextures.size, 2, "every loaded phase is uploaded on first sight, not only the visible ones");
+  assert.equal(background.artDensity, 1440 / 816, "art pixels per drawn logical pixel");
+  assert.equal(background.update(frame.world), false, "an unchanged background presents nothing (D3)");
+  base.y = overlay.y = 0.04;
+  overlay.alpha = 0.4015;
+  assert.equal(background.update(frame.world), false, "steps too small to see present nothing (the camera's easing tail)");
+  base.y = overlay.y = 0.06;
+  assert.equal(background.update(frame.world), true, "they add up: drift past a tenth of a backing pixel is a change");
+  assert.equal(sprites[0].y, 0.06, "and the sprite takes the exact position");
+  overlay.alpha = 0.5;
+  assert.equal(background.update(frame.world), true, "a time-of-day blend step is a change");
+  base.x = overlay.x = -20;
+  assert.equal(background.update(frame.world), true, "a camera move is a change");
+  frame = worldModel({ layers: [base] });
+  assert.equal(background.update(frame.world), true);
+  assert.deepEqual(sprites.map((sprite) => sprite.visible), [true, false], "a single phase hides the overlay sprite");
+  assert.equal(background.update(frame.world), false);
+  frame = worldModel({ layers: [base], color: "#112233" });
+  assert.deepEqual([background.update(frame.world), app.renderer.background.color], [true, "#112233"], "the clear colour");
+  assert.deepEqual([background.update(null), background.artDensity, sprites[0].visible], [true, null, false],
+    "off the scene the background hides");
+  assert.equal(background.update(null), false);
+  sceneTextures.dispose();
+}
+
 async function checkPixiSceneLayer() {
   const { PixiSceneLayer } = await importSource("src/platform/browser/scene/pixi_scene_layer.js");
-  const metrics = { width: 400, height: 800, pixelRatio: 2 };
+  const metrics = { width: 400, height: 816, pixelRatio: 2 };
   const warnings = [];
   const logger = { warn: (...args) => warnings.push(args) };
+  let onScene = true;
+  const router = { drawsOnScene: (kind) => onScene && kind === "background" };
+  const images = fakeImages([["day", 2560, 1440], ["evening", 2560, 1440], ["night", 2560, 1440]]);
   const compose = (overrides = {}) => {
     const dom = fakeDom();
-    const { pixi, apps } = fakePixi();
+    const { pixi, apps, textures } = fakePixi();
     const probe = recordingProbe();
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
-      background: "#0f171e", probe, logger, ...overrides };
-    return { layer: new PixiSceneLayer(options), dom, apps, probe };
+      background: "#0f171e", images, router, probe, logger, ...overrides };
+    return { layer: new PixiSceneLayer(options), dom, apps, textures, probe };
   };
   for (const [name, overrides, pattern] of [
     ["pixi", { pixi: {} }, /requires the Pixi namespace/u],
     ["game canvas", { gameCanvas: {} }, /requires the game canvas/u],
+    ["images", { images: {} }, /requires images/u],
+    ["router", { router: {} }, /requires the router/u],
     ["metrics", { canvasMetrics: null }, /requires canvasMetrics/u],
     ["probe", { probe: undefined }, /requires probe/u],
   ]) assert.throws(() => compose(overrides), pattern, `PixiSceneLayer validates ${name}`);
 
-  const { layer, dom, apps, probe } = compose();
+  const { layer, dom, apps, textures, probe } = compose();
   const canvas = dom.inserted[0];
   assert.equal(dom.inserted.length, 1, "one scene canvas, inserted right before the game canvas");
   assert.deepEqual([canvas.tagName, canvas.className, canvas.attributes["aria-hidden"]], ["canvas", "game-shell__scene", "true"]);
   assert(dom.gameCanvas.classes.has("game-shell__canvas--over-scene"), "the game canvas drops its CSS background");
-  assert.deepEqual([...canvas.listeners.keys()].sort(), ["webglcontextlost", "webglcontextrestored"]);
   const app = apps[0];
   assert.deepEqual({ ...app.options, preference: [...app.options.preference] }, {
     autoStart: false, sharedTicker: false, skipExtensionImports: true, eventMode: "none", autoDensity: false,
-    preference: ["webgl"], gcActive: false, canvas, width: 400, height: 800, resolution: 2, background: "#0f171e",
+    preference: ["webgl"], gcActive: false, canvas, width: 400, height: 816, resolution: 2, background: "#0f171e",
   }, "no ticker, events, browser extensions, auto density, WebGPU or GC; size and ratio from the metrics owner");
-  layer.render({});
+  const base = { assetId: "day", alpha: 1, x: -12, y: 0, width: 1451, height: 816 };
+  const frame = worldModel({ layers: [base] });
+  layer.render(frame);
   assert.deepEqual([app.renders, layer.isActive(), layer.getStatus()], [0, false, { state: "starting" }],
     "nothing renders and the router sees no scene before init resolves");
   app.initCall.resolve();
   assert.equal(await layer.whenReady(), true);
   assert.equal(app.renders, 1, "one warm-up render before the layer reports ready (spec 104 D8)");
-  assert.deepEqual([canvas.style.width, canvas.style.height], ["400px", "800px"], "CSS size = logical size");
-  assert.deepEqual(probe.calls, [["gauge", "scene-pixels", 800 * 1600]], "the backing pixels reach the frame probe");
-  assert.deepEqual([layer.isActive(), layer.getStatus()],
-    [true, { state: "active", webglVersion: 2, width: 400, height: 800, pixelRatio: 2 }]);
+  assert.deepEqual(probe.calls, [["gauge", "scene-pixels", 800 * 1632]], "the backing pixels reach the frame probe");
 
-  for (let frame = 0; frame < 3; frame += 1) layer.render({});
-  assert.deepEqual([app.renders, app.resizes.length], [4, 0], "one render per frame, no resize while nothing changes");
-  metrics.width = 800;
+  layer.render(frame);
+  assert.deepEqual([app.renders, app.resizes], [2, [[400, 816, 1.76]]],
+    "portrait: the scene drops to the art's 1440 / 816 = 1.76 pixels per logical pixel, so the art is drawn 1:1 (D4)");
+  assert.deepEqual([canvas.style.width, canvas.style.height, canvas.width, canvas.height], ["400px", "816px", 704, 1436],
+    "the CSS size stays logical; the compositor scales the smaller backing store");
+  assert.equal(textures.length, 3, "every phase of the location is uploaded with the first background frame");
+  assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
+    textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 });
+  for (let index = 0; index < 3; index += 1) layer.render(frame);
+  assert.deepEqual([app.renders, app.resizes.length], [2, 1], "a still background presents no frame and resizes nothing (D3)");
+  base.x = -20;
+  layer.render(frame);
+  assert.equal(app.renders, 3, "a camera move presents one frame");
+
+  metrics.width = 816;
   metrics.height = 400;
-  layer.render({});
-  layer.render({});
-  assert.deepEqual(app.resizes, [[800, 400, 2]], "a rotation resizes once, in logical pixels with the ratio");
-  assert.deepEqual([canvas.style.width, canvas.style.height, canvas.width, canvas.height], ["800px", "400px", 1600, 800]);
+  Object.assign(base, { width: 816, height: 459 });
+  layer.render(frame);
+  assert.deepEqual(app.resizes.at(-1), [816, 400, 2], "landscape: the art is shrunk, so the scene keeps the canvas ratio");
   metrics.pixelRatio = 1.5;
-  layer.render({});
-  assert.deepEqual(app.resizes.at(-1), [800, 400, 1.5], "a pixel ratio change resizes too");
-  assert.deepEqual(probe.calls.at(-1), ["gauge", "scene-pixels", 1200 * 600]);
+  layer.render(frame);
+  assert.deepEqual(app.resizes.at(-1), [816, 400, 1.5], "never above the game canvas's ratio");
+  assert.equal(app.renders, 5);
 
   layer.loseContext();
-  layer.render({});
-  assert.deepEqual([app.renders, layer.isActive(), layer.getStatus().state], [7, false, "context-lost"],
+  layer.render(frame);
+  assert.deepEqual([app.renders, layer.isActive(), layer.getStatus().state], [5, false, "context-lost"],
     "a lost context skips rendering and makes the layer inactive, so the router falls back to the 2D canvas");
   layer.restoreContext();
-  layer.render({});
-  assert.deepEqual([app.renders, layer.isActive()], [8, true], "rendering resumes when the context is restored");
-  canvas.dispatch("webglcontextlost");
-  assert.equal(layer.isActive(), false, "a context lost by the browser counts the same");
-  canvas.dispatch("webglcontextrestored");
+  layer.render(frame);
+  assert.deepEqual([app.renders, layer.isActive()], [6, true], "a restored context presents a frame although nothing moved");
+  layer.render(frame);
+  assert.equal(app.renders, 6);
+  onScene = false;
+  layer.render(frame);
+  layer.render(frame);
+  assert.equal(app.renders, 7, "a background sent back to the 2D canvas is hidden once");
+  onScene = true;
 
   layer.dispose();
   layer.dispose();
-  layer.render({});
-  assert.equal(app.renders, 8);
+  layer.render(frame);
+  assert.equal(app.renders, 7);
   assert.deepEqual(app.destroyed, [{ removeView: false }, { children: true }]);
-  assert.deepEqual([canvas.removed, canvas.listeners.size, dom.gameCanvas.classes.size, layer.getStatus().state],
-    [true, 0, 0, "disposed"], "dispose removes the canvas, its listeners and the game canvas modifier");
+  assert.deepEqual([canvas.removed, canvas.listeners.size, dom.gameCanvas.classes.size, layer.getStatus().state,
+    textures.every((texture) => texture.destroyed === true)], [true, 0, 0, "disposed", true],
+  "dispose removes the canvas, its listeners, the game canvas modifier and every texture");
 
   const failing = compose();
   failing.apps[0].initCall.reject(new Error("WebGL unsupported"));
@@ -353,7 +471,8 @@ async function checkComposition() {
   const options = (overrides) => {
     const dom = fakeDom();
     return { dom, value: { config: { canvas: { scene: "canvas", backgroundColor: "#0f171e" } }, documentTarget: dom.documentTarget,
-      gameCanvas: dom.gameCanvas, canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, probe: recordingProbe(),
+      gameCanvas: dom.gameCanvas, canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, images: fakeImages([]),
+      probe: recordingProbe(),
       logger: { warn: (...args) => warnings.push(args) }, ...overrides } };
   };
   const canvasMode = composeSceneLayer(options({}).value);
@@ -376,6 +495,8 @@ async function checkComposition() {
   assert.equal(warnings.length, 2, "the missing WebGL is reported once");
   webgl.sceneLayer.dispose();
 
+  assert.match(read(SCENE_COMPOSITION), /SCENE_RENDERED_KINDS = Object\.freeze\(\["background"\]\)/u,
+    "stage 2: the scene draws the background (spec 105)");
   const renderComposition = read("src/bootstrap/production/game_render_composition.js");
   const { SCENE_KINDS } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
   for (const kind of SCENE_KINDS) {
@@ -417,12 +538,14 @@ async function checkDevWiring() {
   };
   const content = { replaceChildren: () => { rows.length = 0; actions.clear(); } };
   const layerCalls = [];
-  let status = { state: "active", webglVersion: 2, width: 400, height: 800, pixelRatio: 2 };
+  let status = { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76, textures: 3,
+    textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3 };
   const layer = { getStatus: () => status, loseContext: () => layerCalls.push("lose"), restoreContext: () => layerCalls.push("restore") };
   const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
   router.update();
   new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content }).render({});
-  assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×800 @ 2×"));
+  assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
+  assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
   assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
   switchHandler(false);
   assert.equal(router.mode, "canvas", "the switch flips the router without a reload");
@@ -517,6 +640,7 @@ function checkVendor() {
 async function main() {
   await checkPorts();
   await checkRouter();
+  await checkTextureCacheAndBackground();
   await checkPixiSceneLayer();
   await checkCoordinator();
   await checkSurfaceClear();
@@ -528,8 +652,9 @@ async function main() {
   checkCss();
   await settle();
   console.log(`Scene layer passed: port and lazy layer (warm-up wait, late arrival, failure), router (depth order, `
-    + `mode switch, fallback on a lost context, 2D clear), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, `
-    + `resize only on change, context loss and restore, DEV status, dispose), one routing decision per frame, `
+    + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, reload, release) and background `
+    + `(phases, change detection, art density), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only `
+    + `on change, portrait art 1:1, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `
     + `section, runtime ${entry.version} with stopped tickers, CSS, bundle (${size} bytes), ${productionModules} `
     + `production modules loading Pixi only lazily.`);

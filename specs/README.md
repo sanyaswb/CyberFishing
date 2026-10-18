@@ -10,8 +10,9 @@ spec-kit work (029); Claude's specs start at 030.
 
 | Spec | Decision | Status | Release |
 | --- | --- | --- | --- |
-| [104](104-scene-layer-infrastructure/spec.md) | WebGL scene layer stage 1: config mode, router with 2D fallback, transparent 2D canvas, DEV switch | Implemented and checked; owner phone measurement pending | — |
-| [103](103-webgl-scene-layer/spec.md) | WebGL scene layer (PixiJS) in stages; stage 0: vendored bundle, empty scene behind `dev.html?scene=webgl` | Stage 0 implemented; owner phone measurement pending | — |
+| [105](105-scene-background/spec.md) | WebGL scene layer stage 2: background and time of day on the scene, art-based scene resolution, frames only on change | Implemented and checked; owner phone measurement pending | — |
+| [104](104-scene-layer-infrastructure/spec.md) | WebGL scene layer stage 1: config mode, router with 2D fallback, transparent 2D canvas, DEV switch | Implemented; owner phone check passed | — |
+| [103](103-webgl-scene-layer/spec.md) | WebGL scene layer (PixiJS) in stages; stage 0: vendored bundle, empty scene behind `dev.html?scene=webgl` | Stages 0–2 implemented (stage 2 in spec 105) | — |
 | [102](102-cast-line-speed/spec.md) | Post-cast x3/x1 rod speed and line tightening at exhausted slack | Implemented and automatically checked; owner visual tests pending | v0.41.0 |
 | [101](101-rod-side-tension/spec.md) | Rod motion toward the fish compensates tension; cast line and float feedback | Implemented and checked; owner play check pending | v0.40.0 |
 | [100](100-cast-rod-control/spec.md) | Cast rod lateral movement, bite-window response and moving-float chance | Implemented and checked; owner play check pending | v0.39.0 |

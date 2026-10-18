@@ -378,15 +378,18 @@ export class GameCompositionRoot {
       stage: "bootstrap",
       consumer: "GameCompositionRoot.create",
     });
+    // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
+    const imageAssets = new ImageAssetProvider();
+    contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     // The scene layer first: its mode decides whether the 2D canvas is transparent (spec 104 D6).
     const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
       modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
-      probe: this.#frameProbe, logger: new ConsoleLogger() });
+      images: imageAssets, probe: this.#frameProbe, logger: new ConsoleLogger() });
     own(sceneLayer);
     contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
-      surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
-    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas });
+      surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
+    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets });
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
       outcomeStyleResolver,
@@ -536,14 +539,12 @@ export class GameCompositionRoot {
 }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.
-  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas }) {
+  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets }) {
     const surface = new Canvas2DSurface(canvas, {
       contextAttributes: { alpha: transparentCanvas },
       resolution: canvasMetrics,
     });
     const primitives = new CanvasPrimitives(surface);
-    const imageAssets = new ImageAssetProvider();
-    contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     const canvasFactory = new OffscreenCanvasFactory();
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
@@ -567,7 +568,7 @@ export class GameCompositionRoot {
     const locationDebugMapBuilder = this.#createOptionalDiagnostic(
       this.#createLocationDebugMapBuilder, "locationDebugMapBuilder", [{ canvasFactory }], ["build"],
     );
-    return { surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder };
+    return { surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder };
   }
 
   // Config-driven HUD, fight area, outcome, rarity and degradation styles.

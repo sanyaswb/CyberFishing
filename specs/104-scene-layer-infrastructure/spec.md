@@ -2,7 +2,7 @@
 
 Stage 1 of [spec 103](../103-webgl-scene-layer/spec.md) (owner, 2026-10-18: "Переходь на Етап 1"). Rules:
 [docs/rendering.md](../../docs/rendering.md) (mandatory). Status: **implemented 2026-10-18 (record below); the
-owner's phone measurement is pending.**
+owner's phone check passed (smooth, no freezes, both orientations).**
 
 Spec 103's stage table: "composition, resolution owner for both canvases, loop-driven render, router, fallback, DEV
 switch, transparent 2D canvas. Done when: game unchanged visually with everything still routed to 2D; switch and
@@ -29,7 +29,7 @@ Taken while implementing, as the safe defaults spec 103 recommends; the owner ma
 
 - No kind moves to the scene (stage 2: background and time of day).
 - Rule 14 consequence for stage 4: `fight-areas` and `world-entities` lie between the background and the line, so the
-  line, rod and float can move only after them, or after the owner decides they may be drawn above the rod.
+  line, rod and float can move only after them. **Owner, 2026-10-18: so be it; they must not be drawn over the rod.**
 
 ## Record (2026-10-18)
 
@@ -65,14 +65,8 @@ Measurements in headless Chromium (SwiftShader software GL, 400×800 CSS px at r
   WebGL-контекст" turns the state into "контекст втрачено → усе на 2D" and "Відновити" back to "активний", with the
   game running and no console errors.
 
-Owner's phone measurement (pending), DevTools overlay "⚡ ПРОДУКТИВНІСТЬ", portrait and landscape:
-
-| Page | Orientation | FPS | game CPU | "поза CPU гри" | janks / freezes |
-| --- | --- | --- | --- | --- | --- |
-| dev.html | portrait | | | | |
-| dev.html?scene=webgl | portrait | | | | |
-| dev.html | landscape | | | | |
-| dev.html?scene=webgl | landscape | | | | |
+Owner's phone check (2026-10-18): `dev.html` and `dev.html?scene=webgl` in portrait and landscape: the game starts,
+animations are smooth, no freezes.
 
 What `?scene=webgl` costs now, with nothing routed: the Pixi download and init during loading, one more composited
 layer under a transparent 2D canvas, and on desktop Chromium the 2D text loses LCD (subpixel) antialiasing, which it

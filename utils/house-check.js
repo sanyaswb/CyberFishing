@@ -351,10 +351,12 @@ async function checkSharedTimeOfDayLayers() {
     timeOfDayLayers(evening, night, layers);
     assert.equal([`${layers.base}:1`, layers.overlay && `${layers.overlay}:${layers.overlayOpacity}`].filter(Boolean).join(" "), expected);
     const records = [];
+    const backgroundAssetIds = [];
     data.eveningOpacity = evening; data.nightOpacity = night;
     builder.buildInto({ target: { backgroundLayers: { acquire: () => { const record = {}; records.push(record); return record; } },
-      clipRegions: {}, invalidCastMarker: {} }, invalidCastMarker: null, debugEnabled: false });
+      backgroundAssetIds, clipRegions: {}, invalidCastMarker: {} }, invalidCastMarker: null, debugEnabled: false });
     assert.equal(records.map((record) => `${record.assetId}:${record.alpha}`).join(" "), expected, `map layers at ${evening}/${night}`);
+    assert.deepEqual(backgroundAssetIds, ["day", "evening", "night"], "every phase is listed for the WebGL scene (spec 105)");
   }
 }
 

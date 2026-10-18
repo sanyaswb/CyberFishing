@@ -40,6 +40,14 @@ the role that is easiest to reach from the current code.
   production to `"webgl"` is a measured decision of the stage that first routes a kind.
 - The scene presents a WebGL frame only while a kind is on it (rule 22). An unchanged empty scene presented every frame
   made Chrome wait for the compositor inside the scene's render (up to 230 ms in software GL, spec 104).
+- A scene kind's renderer reports whether anything visible changed, and the scene presents a frame only then (rules 13
+  and 22, [spec 105](../specs/105-scene-background/spec.md)). Steps too small to see do not count (under 0.05 logical
+  px or half an 8-bit opacity step, against the last drawn values): eased cameras end in many such steps.
+- Scene textures come from the images `ImageAssetProvider` loaded, through `SceneTextureCache` (mipmaps, uploaded when
+  created, released with the scene). A kind lists every image it may show (the background: all time-of-day phases),
+  so they upload together on its first frame and never in the middle of play.
+- The scene's pixel ratio follows its art (spec 105 D4): `min(canvas ratio, max(1, art pixels per drawn logical
+  pixel))`. Art that would be enlarged is drawn 1:1 into a smaller backing store and the compositor scales the canvas.
 - How "off" is done (stage 0): `pixi_runtime_module.js` stops `Ticker.system` and `Ticker.shared` (otherwise the
   renderer's scheduler runs its own `requestAnimationFrame` loop); `PixiSceneLayer` passes `autoStart: false`,
   `skipExtensionImports: true` (no event system, accessibility or DOM pipe), `autoDensity: false`,

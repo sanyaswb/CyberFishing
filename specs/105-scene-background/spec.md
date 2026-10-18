@@ -1,0 +1,59 @@
+# WebGL scene layer, stage 2: background and time of day
+
+Stage 2 of [spec 103](../103-webgl-scene-layer/spec.md) (owner, 2026-10-18: "займайся вже наступним кроком"). Builds on
+[spec 104](../104-scene-layer-infrastructure/spec.md). Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
+Status: **implemented 2026-10-18 (record below); the owner's phone measurement is pending.**
+
+Spec 103's stage table: "Background and time of day in the scene, with background variants sized for the screen
+(spec 102 next step 1) and day/night blended in one pass. Done when: background routed to the scene; portrait art
+1:1; FPS ≥ today."
+
+## Decisions
+
+Taken while implementing; the owner may revisit any of them.
+
+| # | Question | Decision |
+| --- | --- | --- |
+| D1 | What the scene draws | The `background` kind: the world model's background layers (the opaque time-of-day base and at most one translucent phase, `timeOfDayLayers`) as two pooled Pixi sprites over the clear colour `world.backgroundColor`. One render pass, two draw calls (two textures). The 2D `world-background` component steps aside through the router, and the 2D canvas starts each frame cleared (spec 104 D6). Boats, chum zones, the DEV world debug drawing and everything above stay on the 2D canvas. |
+| D2 | Where textures come from | The images `ImageAssetProvider` already preloaded for the location (no Pixi loader). `SceneTextureCache` turns each into a texture with mipmaps and uploads it at once. The world model lists every background asset of the location (`backgroundAssetIds`: day, evening, night), so all three are uploaded on the first frame that shows the background, before the first frame is presented; a later dusk does not upload mid-play. Textures are released with the scene. |
+| D3 | When the scene presents a frame | Only when the background changed (layer, texture, position, size, alpha, clear colour), the scene was resized, or the context was restored (rules 13 and 22). A still camera at a steady time of day presents no WebGL frame; the browser keeps showing the last one. Changes too small to see do not count: under 0.05 logical px (a tenth of a backing pixel at ratio 2) or half an 8-bit opacity step, measured against the last drawn values so slow drift still adds up. Found while measuring: the camera follows the float with exponential easing, whose tail is many frames of ~0.03 px steps. |
+| D4 | "Portrait art 1:1" | There is no larger background art (the location art is 2560×1440 and `asset-sources/` holds no larger master), so the scene's resolution follows the art instead: scene pixel ratio = `min(CanvasMetricsProvider.pixelRatio, max(1, texture height / drawn height))`, rounded to 0.01 (spec 103 "Resolution per layer"). Portrait at ratio 2 draws the 1440 px art 1:1 into a ~1.76× backing store, and the compositor scales the canvas to the screen; landscape keeps ratio 2 and shrinks the art through mipmaps. A larger art variant can replace this later without changing the code. |
+| D5 | Texture size and memory | Each background is one 2560×1440 RGBA texture: 14.7 MB, 19.7 MB with mipmaps, **59 MB for the three phases** (rule 19: within the ~150 MB phone budget). 2560 px exceeds rule 20's 2048 px atlas page; it is a single full-screen image, not an atlas page, and WebGL devices that run the game report a maximum texture size of at least 4096. WebGL 1 cannot mipmap this non-power-of-two size and falls back to bilinear. |
+| D6 | Production | Stays `"canvas"` (spec 104 D1) until the owner's phone measurement of `dev.html?scene=webgl` holds against `dev.html`. Switching is one config value, `CONFIG.canvas.scene`. |
+
+## Record (2026-10-18)
+
+| Item | Where |
+| --- | --- |
+| Model (D2) | `world.backgroundAssetIds` in `GameRenderFrame`, filled by `WorldRenderFrameBuilder` from the map's phases |
+| Textures (D2, D5) | `platform/browser/scene/scene_texture_cache.js` (`SceneTextureCache`: `Texture.from({ resource, autoGenerateMipmaps: true }, skipCache)`, upload through `renderer.texture.initSource`, release with the scene, byte count) |
+| Background (D1, D3) | `platform/browser/scene/pixi_background_renderer.js` (`PixiBackgroundRenderer`: two pooled sprites, change detection with the visibility thresholds, clear colour, art density) |
+| Layer (D3, D4) | `PixiSceneLayer.render(frame)` draws the kinds the router puts on the scene, resizes to the art-based ratio, presents only on change or after a context restore; `getStatus()` reports textures and bytes |
+| Composition | `SCENE_RENDERED_KINDS = ["background"]`; the scene gets the page's `ImageAssetProvider` (now created before the scene) and the router |
+| DEV | DevTools "🖼️ СЦЕНА WebGL" shows the scene's resolution and "текстури сцени: 3 · 56.3 МБ" |
+| Checks | `scene-layer` (texture cache, background, frames only on change, portrait 1:1, landscape ratio, context restore, router gating), `house` (the world model lists every phase) |
+
+Headless Chromium, SwiftShader software GL, ratio 2, after D3's thresholds (not a phone result; software GL makes every
+WebGL present wait for a software compositor):
+
+| Viewport | Page | FPS | `scene` section mean / max | Scene backing |
+| --- | --- | --- | --- | --- |
+| Portrait 400×816 | `dev.html` | 35 | — | — |
+| Portrait 400×816 | `dev.html?scene=webgl` | 53 | 1.2 / 258 ms | 704×1436 @ 1.76 (the 1440 px art 1:1) |
+| Landscape 816×400 | `dev.html` | 20 | — | — |
+| Landscape 816×400 | `dev.html?scene=webgl` | 17 | 5.0 / 229 ms | 1632×800 @ 2 |
+
+- The max is the first background frame, which creates and uploads the three phases (59 MB with mipmaps).
+- Portrait: the background is static after the first frame, so the scene presents once, and the 2D canvas no longer
+  redraws a full-screen image every frame. Landscape: the camera eases into place during the first seconds, and each
+  WebGL present waits for the software compositor; then the scene almost stops presenting (a 12 s run: 30 changed
+  frames in the first 4 s, 3 in the next 8 s). Before the thresholds the easing tail kept the scene presenting every
+  frame (11 FPS).
+- Visual: in portrait, the world area of both modes has the same geometry and sharpness; the remaining difference is the
+  animated fog and the DEV overlay's height. In landscape the visible world strip differs by 0.05% of pixels.
+
+Owner's phone measurement (pending): `dev.html` against `dev.html?scene=webgl`, portrait and landscape, overlay
+"⚡ ПРОДУКТИВНІСТЬ" (FPS, "поза CPU гри", janks / freezes, the `scene` section). If it holds, D6 turns production to
+`"webgl"`.
+
+Cleanup: nothing became unused (the 2D background path stays as the fallback until spec 103 stage 5).

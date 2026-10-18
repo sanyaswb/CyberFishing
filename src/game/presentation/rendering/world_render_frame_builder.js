@@ -61,6 +61,9 @@ export class WorldRenderFrameBuilder {
   #buildBackground(target) {
     const data = this.#map.getBackgroundRenderData();
     if (!data.loaded) return;
+    for (const phase in data.assetIds) {
+      if (data.assetIds[phase]) target.backgroundAssetIds.push(data.assetIds[phase]);
+    }
     const position = this.#projector.virtualToScreen(0, 0, this.#screenA);
     const scale = this.#projector.getScale();
     const width = data.width * scale;
