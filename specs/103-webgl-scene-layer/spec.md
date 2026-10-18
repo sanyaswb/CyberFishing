@@ -228,6 +228,10 @@ Decisions made while implementing (owner may revisit):
   `@pixi/colord` the upstream MIT notice; both are listed in `LICENCE_FALLBACKS`. `pixi-filters` is pinned but no stage
   0 export uses it, so neither its code nor its licence is in the bundle yet; both join when a stage exports one of its
   filters (glow, bloom, god rays).
+- **Licences on Pages.** A Pages release copied only the pages, module graphs and assets, so neither
+  `vendor/spine-webgl/4.3.13/LICENSE` (since spec 099) nor the new Pixi licence reached the site, although the Spine
+  Runtimes License and the MIT notices require them with every copy. `utils/build-pages-release.js` now adds the
+  manifest licence of every released vendor module (check `pages-release`).
 - **Placement.** The scene canvas is `position: fixed; inset: 0; margin: auto; z-index: -1`: the same box as the
   flex-centred game canvas, above the page background and below the game canvas, without pointer events. Its CSS size
   and backing store follow `CanvasMetricsProvider` (resized only on change). The clear colour is the game canvas's CSS
