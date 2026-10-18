@@ -1,6 +1,6 @@
 {
   "name": "cyber-fishing",
-  "version": "0.41.5",
+  "version": "0.41.6",
   "private": true,
   "description": "CyberFishing browser game",
   "engines": {

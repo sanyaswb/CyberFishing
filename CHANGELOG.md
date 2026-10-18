@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.41.6 - Metric World Perspective
+
+- World-object sizes and ground-area squash now follow the same water metric as movement, replacing the independent angle curve. Float, boat indicators and waypoints apply camera scale once; the rod keeps its screen/Spine scale (G-070, spec 109).
+
 ## v0.41.5 - Idle Tackle Line Limit
 
 - Waiting and biting tackle is constrained after all movement to the same ground-plane line budget as casts and fights. A fixed float at 1 m on 9 m line stops at 8 m; outward velocity is removed while inward retrieval and tangential motion remain available (G-069, spec 108).

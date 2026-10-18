@@ -5,20 +5,26 @@ const runtime = new SourceRuntime();
 const { WorldPerspective } = runtime.importModule("src/game/domain/locations/world_perspective.js");
 const { ViewportProjector } = runtime.importModule("src/game/application/viewport/viewport_projector.js");
 const { Vector2 } = runtime.importModule("src/engine/math/vector2.js");
+const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_metric.js");
 const config = {
   baseResolution: { width: 1000, height: 800 },
   cameraFocusY: 0.7,
   map: { lake: { safeZone: { top: 100, bottom: 500 }, perspective: { angleTop: 0, angleBottom: 45 } } },
 };
-const perspective = new WorldPerspective(config, "lake");
+let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, linearShare: .2 });
+const perspective = new WorldPerspective({ getWaterMetric: () => metric });
 let calls = 0;
 const query = (y) => { calls++; return perspective.getPerspective(y); };
 const projector = new ViewportProjector(config, "lake", query);
 assert.equal(projector.getPerspective, query, "the injected query is used without a wrapper");
-assert.equal(projector.getPerspective(0).scale, 0, "positions above the horizon clamp to the horizon");
+assert(projector.getPerspective(0).scale > 0, "finite metres above the water never collapse objects to zero size");
 assert.equal(projector.getPerspective(600).scale, 1, "positions below the shore clamp to shore scale");
-assert(Math.abs(projector.getPerspective(300).scale - 0.414213562373095) < 1e-12,
-  "the midpoint has the calibrated perspective scale");
+for (const y of [0, 100, 300, 500, 600]) {
+  const sample = projector.getPerspective(y);
+  assert.equal(sample.scale, metric.pixelsPerMeterX(y) / 50, "world width follows the physical metre grid");
+  assert(Math.abs(sample.scale * sample.squashY - metric.pixelsPerMeterY(y) / 50) < 1e-12,
+    "world ground height follows the same metric, without another angle curve");
+}
 const screen = new Vector2();
 const virtual = new Vector2();
 const expected = JSON.stringify(projector.getPerspective(300));
@@ -65,11 +71,9 @@ opening.update(2000, 300);
 opening.update(300, 200);
 assert(Math.abs(opening.virtualToScreen(500, 0, screen).x - 150) < 1e-9,
   "back from a layout that shows the whole width, the camera opens centred, not at the left edge");
-config.map.lake = { safeZone: { top: 300, bottom: 700 }, perspective: { angleTop: 0, angleBottom: 30 } };
-assert.equal(projector.getPerspective(300).scale, 0, "live location replacement reaches the existing perspective owner");
-assert.equal(projector.getPerspective(700).scale, 1);
-delete config.map.lake.perspective;
-assert(projector.getPerspective(300).squashY > 0, "missing perspective uses the original default angles");
+metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 700, topY: 300 });
+assert.equal(projector.getPerspective(300).scale, 1, "a live uniform metric replacement reaches the existing perspective query");
+assert.equal(projector.getPerspective(300).squashY, 1, "uniform ground has uniform world-object size");
 
 // Spec 098: the landscape split inventory policy.
 const { InventorySplitLayoutPolicy } = runtime.importModule("src/game/presentation/viewport/inventory_split_layout_policy.js");

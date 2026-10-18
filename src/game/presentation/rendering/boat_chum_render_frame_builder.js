@@ -90,8 +90,8 @@ export class BoatChumRenderFrameBuilder {
           : energyRatio > 0.2
             ? "#ffaa00"
             : "#ff4444";
-      record.barWidth = 40 * scale;
-      record.barHeight = 4 * scale;
+      record.barWidth = 40 * scale * this.#projector.getScale();
+      record.barHeight = 4 * scale * this.#projector.getScale();
       record.barY = -fontSize / 1.5;
       this.#buildSensors(target, boat);
     }
@@ -121,7 +121,7 @@ export class BoatChumRenderFrameBuilder {
     const record = target.waypoints.acquire();
     record.x = position.x;
     record.y = position.y;
-    record.scale = this.#projector.getPerspective(point.y).scale;
+    record.scale = this.#projector.getPerspective(point.y).scale * this.#projector.getScale();
     record.index = index;
     record.showIndex = boat.config.manualControl !== true;
   }

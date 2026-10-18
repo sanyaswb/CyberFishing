@@ -2226,7 +2226,9 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const location = new CurrentLocation(viewConfig);
   verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
     location.currentEnvironment === null, "location manager resolves the configured location");
-  const worldPerspective = new WorldPerspective(viewConfig, location.id);
+  const metricResolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
+  const worldPerspective = new WorldPerspective({ getWaterMetric: () => metricResolver.resolve(
+    lake.getCastableBoundsVirtual(viewConfig.cellSize), location.config.distanceProfile) });
   const projector = new ViewportProjector(viewConfig, location.id,
     worldPerspective.getPerspective.bind(worldPerspective));
   const gameConfig = createConfig();
@@ -2236,7 +2238,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const canvasMetrics = { width: 100, height: 60 };
   const clock = { now: 0, realNow: 0 };
   const gameWorld = new GameWorld({ map: lake, env: environment, chum, projector, location, canvasMetrics, clock,
-    locationConfig: viewConfig, waterMetricResolver: new LocationWaterMetricResolver({ pixelsPerMeter: 50 }) });
+    locationConfig: viewConfig, waterMetricResolver: metricResolver });
   gameWorld.refreshViewport(true);
   const frameContext = new MutableFightFrameContext();
   const floatEntity = { getPosition: () => ({ x: 35, y: 35 }), getCurrentHookDepth: () => 2 };

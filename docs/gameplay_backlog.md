@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-070 World scale and metre distances use different perspective curves (P2, done in v0.41.6)
+Found: 2026-10-18, owner's physics/grid audit.
+Reproduce: compare the size of equal ground distances and world objects near/far; pan or resize the viewport.
+Expected: one water metric for movement, world scale and metre grid; camera zoom applies once, the rod keeps its screen scale.
+Actual: WorldPerspective used a separate tangent/angle curve; float, boat bars and waypoint sizes applied different camera factors.
+Resolution: shared LocationMap/LocationWaterMetricResolver instances, metric-derived WorldPerspective and consistent world-size camera scale. Spec 109; owner visual acceptance pending.
+
 ### G-069 Current carries idle tackle beyond the equipped line (P2, done in v0.41.5)
 Found: 2026-10-18, owner, following the WebGL session.
 Reproduce: equip 9 m line and a fixed float at 1 m selected depth, cast and leave it drifting in a current; repeat while biting and on perspective water.

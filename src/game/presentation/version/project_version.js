@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.41.5";
+export const CURRENT_PROJECT_VERSION = "0.41.6";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "webgl-scene",
   updatedAt: "2026-10-18",
   notes: Object.freeze([
+    "World sizes and ground-plane areas follow the same water metric as movement; camera scale applies once, the rod stays screen-relative",
     "Idle tackle obeys the depth-adjusted line budget after current, bite and live-bait motion; inward retrieval remains available",
     "The bait boat keeps its speed in metres everywhere on the water: far away it moves fewer pixels per second, like the tackle",
     "A long-press re-cast aims like the first cast: the rod, line and tackle hide until the new cast lands",

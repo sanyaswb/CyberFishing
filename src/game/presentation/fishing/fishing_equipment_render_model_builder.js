@@ -152,7 +152,7 @@ export class FishingEquipmentRenderModelBuilder {
     const visual = floatEntity.getVisualState();
     const scale = this.#projector.getPerspective(
       floatEntity.getPosition().y,
-    ).scale;
+    ).scale * this.#projector.getScale();
     const rodType = equipment.rod?.variant || "float";
     let kind = "";
     if (floatEntity.isHooked()) kind = "hooked";
