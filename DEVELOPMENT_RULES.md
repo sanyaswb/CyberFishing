@@ -65,6 +65,10 @@ Rendering — **mandatory reading before any rendering work**: [docs/rendering.m
 renderers, render passes, the canvas or its size, image assets and their sizes, Spine, the HUD over the canvas and the
 frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; portrait phones at 10–17 FPS from
 `imageSmoothingQuality = "high"`, spec 102) and the rules that prevent them:
+- three render roles: the WebGL scene through PixiJS (world, Spine, effects), a 2D canvas (HUD text) and DOM
+  (windows); Pixi stays a renderer behind our ports (spec 103);
+- many image layers and Spine-first animation are paid in draw calls, overdraw and texture memory: atlases, cached
+  static layers, trimmed layers, a texture budget;
 - logical (CSS) pixels everywhere, backing pixels only in their owners;
 - the image filter is chosen per draw by the surface, never `"high"`;
 - art sized close to 1:1 with the screen;
@@ -84,6 +88,18 @@ Avoid overengineering. Every abstraction must solve a real problem in ownership,
 If information is missing, state safe engineering assumptions and continue. Never invent architecture-critical facts that should be verified from the code.
 
 Remove code and files that are no longer needed (prove unreachability and review every consumer), and optimize only with evidence (unchanged game-cycle output and save bytes). Removing a live check or renaming a public API is an explicit owner decision.
+
+**Utils cleanup step (owner, 2026-10-18): every spec or stage that replaces a tool ends with removing the tools that
+are now certainly unused.** Before the commit, list the `utils/` scripts, test helpers, fixtures, vendor files and
+`package.json` scripts or devDependencies that the change made obsolete (example: `utils/vendor-spine.js` once
+`utils/vendor-libraries.js` writes the manifest). For each one:
+- prove it has no consumer: grep the repository, `utils/testing/suites/check_manifest.js`, `package.json` scripts,
+  docs and specs that tell people to run it;
+- delete it in the same change and update the docs that named it;
+- record what was removed in the spec.
+
+Removing a live check (an entry in the check manifest) stays an owner decision: list it in the spec as a proposal
+instead of deleting it. Tools kept "just in case" are not allowed: history keeps them (`git show`, tags).
 
 For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, performance and tests. Use P0/P1/P2/P3 only when useful.
 

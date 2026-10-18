@@ -59,4 +59,5 @@ display-sized fish variants. The rod and the fish are always drawn smaller than 
   `canvas_2d_surface.js` and no `"high"` value in `src/`.
 - Architecture + Quick + Full green; game-cycle baseline unchanged.
 - The owner measures on the phone in both orientations through Pages (docs/rendering.md rule 10). Expected: 60 FPS
-  in portrait as in landscape, with the same rod and fish quality.
+  in portrait as in landscape, with the same rod and fish quality. **Owner's phone check, 2026-10-17, Pages
+  0.41.0-64a4c61, performed by the owner: "працює" (portrait performance restored).**

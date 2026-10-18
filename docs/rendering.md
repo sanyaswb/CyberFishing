@@ -1,8 +1,10 @@
 # Rendering rules (mandatory before any rendering work)
 
-Read this file before changing anything that draws: renderers, render passes, the canvas or its size, image assets
-and their sizes, Spine, the HUD over the canvas, or the frame loop. It records what went wrong and the rules that
-prevent it. [DEVELOPMENT_RULES.md](../DEVELOPMENT_RULES.md) and the local CLAUDE.md point here.
+Read this file before changing anything that draws: renderers, render passes, the canvas or its size, the WebGL
+scene layer (PixiJS), image assets and their sizes, Spine exports and skeletons, the HUD over the canvas, or the
+frame loop. It records what went wrong and the rules that prevent it. [DEVELOPMENT_RULES.md](../DEVELOPMENT_RULES.md)
+and the local CLAUDE.md point here. Numbered rules 1–15 apply to all layers; rules 16–23 to the scene layer and
+Spine-first art.
 
 ## Incidents
 
@@ -10,6 +12,55 @@ prevent it. [DEVELOPMENT_RULES.md](../DEVELOPMENT_RULES.md) and the local CLAUDE
 | --- | --- | --- | --- |
 | 2026-10-17 | On phones everything on the canvas was blurred; the rod and the victory fish were pixelated | The canvas backing store had one pixel per CSS pixel and the phone stretched it 2.6–3×. A 2735 px rod texture and 2752 px fish art were shrunk 10–14× in one bilinear step | [spec 100](../specs/100-render-resolution-and-image-quality/spec.md): backing store at the device pixel ratio (cap 2), mipmapped Spine pages, display-sized fish variants |
 | 2026-10-17 | Right after spec 100, portrait phones ran at 10–17 FPS, landscape at 60. Game CPU was only 2–4 ms per frame; 55–100 ms per frame went to the GPU | Spec 100 set `imageSmoothingQuality = "high"` for the whole canvas. At pixel ratio 2 the portrait background is **enlarged** (1440 px of art over 1632 px of screen), and Chromium samples enlarged images bicubically: 16 texture reads per screen pixel, on the full screen, two layers at dusk and dawn, every frame. Landscape shrinks the same art, which uses cheap mipmaps. The quality fix itself never needed `"high"` | [spec 102](../specs/102-render-quality-policy/spec.md): filter chosen per draw by its scale |
+
+## Scene layer and roles (spec 103, owner 2026-10-18)
+
+The game renders in three roles, each with its own technology. A new visual goes to the role that fits it, not to
+the role that is easiest to reach from the current code.
+
+| Role | Technology | Holds |
+| --- | --- | --- |
+| **Scene** (bottom) | WebGL through PixiJS 8 (`src/platform/browser/scene/`), Spine through spine-pixi-v8 | Background and parallax layers, water, float, line, rod, fish, effects (filters), particles: everything in the world, and all Spine animation |
+| **HUD canvas** (middle) | Canvas 2D (`Canvas2DSurface`) | HUD bars and text, fight zones until moved, overlays drawn per frame with text |
+| **Windows** (top) | DOM | Inventory, House, victory and game-over panels, DevTools |
+
+- Pixi is a renderer behind our ports, not a framework. Its ticker, event system and auto resize stay off. Our
+  `GameLoop` renders it once per frame, `InputController` owns input, `CanvasMetricsProvider` owns resolution, and
+  `AssetLoadQueue` loads images. Pixi types never leave `src/platform/browser/scene/`. Presentation builds render
+  models; the scene renderer turns them into display objects.
+- Everything in the scene is under everything in the HUD canvas. An object kind moves to the scene only when every
+  kind that must be under it is already there (rule 14).
+- While the migration runs, the 2D path for a kind stays complete as the fallback (no WebGL, lost context) until
+  spec 103 stage 5 is accepted.
+
+## Many layers and Spine-first art
+
+The owner's art is many image layers, with almost all animation made in Spine. Cost then comes from draw calls,
+overdraw and texture memory, not from game code.
+
+16. **Batching:** consecutive sprites from the same texture (atlas page) and blend mode draw in one call. Pack the
+    layers of one scene or one Spine skeleton into atlases. Each texture or blend-mode switch is a new draw call.
+    Keep special blend modes (additive glow) grouped, not interleaved with normal layers.
+17. **Overdraw:** every full-screen transparent layer costs a full-screen fill. Trim transparent margins in the
+    export, so a layer is only as big as its visible content. Budget about 4 full-screen layers per frame on a phone;
+    more needs a measurement in its spec.
+18. **Static layers are cached:** a group that does not change between frames (background parts, distant parallax
+    depth between offset changes) is rendered once to a texture (`cacheAsTexture` / render texture), and the frame
+    draws one sprite.
+19. **Texture memory:** an RGBA texture costs width × height × 4 bytes, plus a third more with mipmaps. A 2048² page
+    is 16 MB with mipmaps. Keep the scene's live textures within about 150 MB on phones, load per location or screen,
+    and release when it closes. Record the total of a new location or skeleton in its spec.
+20. **Atlas pages:** at most 2048 px per side (4096 only with a measured reason). Size the art for its largest
+    on-screen use × the pixel-ratio cap (rule 6). Mipmaps on for anything drawn smaller than its texture.
+    Premultiplied alpha exported (`pma: true`) and used as exported.
+21. **Spine performance:** prefer region attachments to meshes, and weighted meshes only where deformation is
+    needed. Avoid clipping attachments (CPU per vertex, per frame). Keep the bone count proportional to what moves.
+    Use one skeleton per independent object; many small skeletons batch only when they share an atlas page.
+22. **Per-frame work only for what changes:** animation `update` runs only for visible skeletons. Off-screen or
+    paused objects do not update. Nothing creates textures, filters or display objects per frame (pool and reuse).
+23. **Filters are full-screen passes:** a filter on a container renders that container to a texture and back.
+    Apply filters to the smallest container that needs them, never stack several on full-screen layers without a
+    measurement, and prefer a Spine or atlas animation where it gives the same look.
 
 ## Units and resolution
 
