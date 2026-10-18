@@ -3,6 +3,12 @@
 // Single registry of checks and suite membership; every utils/*-check.js file appears exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
+    id: "zone-editor",
+    title: "DEV zone editor, metre grid and bounded annotation redraw",
+    file: "utils/zone-editor-check.js",
+    suites: ["quick", "tools"],
+  },
+  {
     id: "tackle-line-limit",
     title: "Idle tackle obeys the equipped line budget",
     file: "utils/tackle-line-limit-check.js",

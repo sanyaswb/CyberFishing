@@ -74,6 +74,10 @@ export class DevToolsUI {
     this.#controlBindings.sync(path, value);
   }
 
+  releaseValueBindings(container) {
+    this.#controlBindings.releaseWithin(container);
+  }
+
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
     const section = document.createElement("div");
     section.className = "devtools__section";
@@ -180,7 +184,7 @@ export class DevToolsUI {
     cb.addEventListener("change", (e) => onChangeCallback(e.target.checked));
     this.#controlBindings.register(bindingPath, (value) => {
       cb.checked = value === true;
-    });
+    }, row);
     parentElement.appendChild(row);
   }
 
@@ -227,7 +231,7 @@ export class DevToolsUI {
 
     this.#controlBindings.register(bindingPath, (value) => {
       inputElement.value = Array.isArray(value) ? value.join(", ") : value;
-    });
+    }, row);
     row.appendChild(inputElement);
     parentElement.appendChild(row);
   }
@@ -282,7 +286,7 @@ export class DevToolsUI {
     });
     this.#controlBindings.register(bindingPath, (value) => {
       btn.innerText = String(value);
-    });
+    }, row);
 
     row.appendChild(btn);
     parentElement.appendChild(row);

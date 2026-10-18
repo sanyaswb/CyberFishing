@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.41.7 - DEV Zone Editor
+
+- DevTools → РЕДАКТОР ЗОН combines metre grid, independent zone visibility, black background, live geometry/profile editing and add/remove controls. Changes use the existing validated runtime overrides and export/reset flow (spec 110).
+- WebGL annotations cache static and moving Graphics separately, so moving zones do not rebuild the metre grid. Geometry/camera/settings changes redraw only the affected cache, with a bounded grid and the same Canvas fallback. Editor selection releases obsolete UI bindings. DEV perspective diagnostics now read the actual water metric.
+
 ## v0.41.6 - Metric World Perspective
 
 - World-object sizes and ground-area squash now follow the same water metric as movement, replacing the independent angle curve. Float, boat indicators and waypoints apply camera scale once; the rod keeps its screen/Spine scale (G-070, spec 109).

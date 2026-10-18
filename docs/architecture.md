@@ -128,6 +128,17 @@ change that changes the report re-baselines it (`npm run baseline:game-cycle`) i
 
 ## Screens
 
+World movement and render scale share one `LocationWaterMetricResolver` per location (spec 109). Bootstrap creates
+it beside the `LocationMap`; `GameWorld` and `WorldPerspective` read those same instances. World X scale and ground
+Y squash come from metric pixels/metre; the camera scale applies once, and the rod keeps its screen-space contract.
+Waiting/biting constrain final tackle position and outward velocity on the metric plane using the same line-depth
+budget as casting and fights (spec 108).
+
+DEV's zone editor (spec 110) owns only diagnostic visibility and cached annotation geometry. Its metre grid projects
+through the actual water metric; config edits use the existing runtime overrides. The production frame supports an
+optional generic annotation model, drawn by one cached `PixiAnnotationRenderer` or by DEV's Canvas fallback, never
+both. A hidden background clears black and removes the water's copied background layers. No additional frame loop.
+
 One page, several screens (spec 084). `engine/screens/ScreenHost` keeps one active screen above the base game:
 opening suspends the game loop, a lazy factory creates the screen, closing disposes it and resumes the game. The House
 is such a screen: `bootstrap/production/house_screen_composition.js` mounts `HOUSE_SCREEN_MARKUP` into the page's UI

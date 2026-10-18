@@ -9,6 +9,10 @@ version. There are no CSS imports, runtime style installers or build requirement
 
 ## Ownership
 
+DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches; it adds no markup
+or stylesheet. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
+Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
+
 | Owner | Responsibility |
 | --- | --- |
 | `src/game/presentation/styles/tokens.css` | Shared DOM palette, font, radii and stacking roles |

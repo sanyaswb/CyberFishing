@@ -1,10 +1,10 @@
-import { clampUnitFinite } from "../../engine/math/number_normalization.js";
-
 export class LocationDebugDataProvider {
   #configSource;
+  #perspectiveSource;
 
-  constructor({ configSource } = {}) {
+  constructor({ configSource, perspectiveSource = null } = {}) {
     this.#configSource = configSource;
+    this.#perspectiveSource = perspectiveSource;
   }
 
   getActiveData() {
@@ -62,27 +62,12 @@ export class LocationDebugDataProvider {
         y: Number(sample.y).toFixed(2),
         scale: perspective.scale.toFixed(4),
         squashY: perspective.squashY.toFixed(4),
-        angleDeg: perspective.angleDeg.toFixed(2),
       };
     });
   }
 
-  getPerspective(map, virtualY) {
-    const pConfig = map.perspective || { angleTop: 5, angleBottom: 60 };
-    const topY = Number(map.safeZone?.top) || 0;
-    const bottomY = Number(map.safeZone?.bottom) || 1;
-    const distRatio = clampUnitFinite(
-      (virtualY - topY) / Math.max(1, bottomY - topY),
-    );
-    const angleDeg =
-      pConfig.angleTop + (pConfig.angleBottom - pConfig.angleTop) * distRatio;
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const bottomAngleRad = ((pConfig.angleBottom || 1) * Math.PI) / 180;
-    return {
-      angleDeg,
-      squashY: Math.sin(angleRad),
-      scale: Math.tan(angleRad) / Math.max(0.0001, Math.tan(bottomAngleRad)),
-    };
+  getPerspective(_map, virtualY) {
+    return this.#perspectiveSource?.(virtualY) || { scale: NaN, squashY: NaN };
   }
 
   normalizePercent(value) {

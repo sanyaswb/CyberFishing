@@ -27,6 +27,8 @@ import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_pro
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
+import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
+import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
 import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
 import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
@@ -102,9 +104,11 @@ async function startGame() {
   const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = ITEM_DB;
+  const zoneEditorState = new ZoneEditorState();
   const mapCatalog = CONFIG.locations.map;
   const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;
+  let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
   let compositionRoot = null;
@@ -142,7 +146,8 @@ async function startGame() {
     startup = null;
   };
   try {
-    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
+    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console,
+      getWaterMetric: () => readLocationMetric?.() ?? null});
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
       frameProfiler, readRenderInfo});
     compositionRoot = new GameCompositionRoot(CONFIG, {
@@ -170,7 +175,7 @@ async function startGame() {
       createDebugService: config => new DebugService(config, debugModulesSource),
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
-      createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
+      createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
         openHouse,
         openUiCatalog: () => pageOverlay.open(),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
@@ -182,7 +187,11 @@ async function startGame() {
         timeControl = composeDevTimeDisplay({ ...options, config: CONFIG, uiSurface });
         return timeControl;
       },
-      createLocationDebugRenderFrameBuilder: options => new LocationDebugRenderFrameBuilder(options),
+      createLocationDebugRenderFrameBuilder: options => {
+        readLocationMetric = options.getWaterMetric;
+        return new LocationDebugRenderFrameBuilder({ ...options,
+          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }) });
+      },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,
     });

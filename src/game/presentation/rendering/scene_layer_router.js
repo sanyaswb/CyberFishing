@@ -3,8 +3,8 @@ import { RenderComponent } from "../../../engine/rendering/render_component.js";
 export const SCENE_MODES = Object.freeze(["canvas", "webgl"]);
 
 // World object kinds in depth order, bottom first (spec 104 D4, docs/rendering.md rule 14). HUD overlays (casting
-// guides, the invalid-cast marker, HUD bars, outcome screens, DEV debug drawing) are not kinds: they stay on the 2D
-// canvas, above every scene kind.
+// guides, the invalid-cast marker, HUD bars, outcome screens) are not kinds: they stay on the 2D canvas. Optional
+// scene annotations are composed above world kinds by the active scene renderer and use 2D only on fallback.
 export const SCENE_KINDS = Object.freeze(["background", "world-entities", "fight-areas", "line", "rod", "float"]);
 
 // Which layer draws each world kind (spec 104 D3): the WebGL scene or the 2D canvas. update() decides once per frame,

@@ -526,6 +526,8 @@
 │  │  └── spec.md
 │  ├── 109-water-metric-perspective
 │  │  └── spec.md
+│  ├── 110-dev-zone-editor
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -583,7 +585,9 @@
 │  │  │  ├── location_debug_data_provider.js
 │  │  │  ├── location_debug_map_builder.js
 │  │  │  ├── location_debug_printer.js
-│  │  │  └── location_debug_render_frame_builder.js
+│  │  │  ├── location_debug_render_frame_builder.js
+│  │  │  ├── zone_editor_geometry_builder.js
+│  │  │  └── zone_editor_state.js
 │  │  ├── metadata
 │  │  │  ├── dev_tool_parameter_descriptions.json
 │  │  │  ├── overlay_metric_descriptions.json
@@ -697,7 +701,8 @@
 │  │  │  ├── dev_tools_parameter_tooltip_provider.js
 │  │  │  ├── dev_tools_ui.js
 │  │  │  ├── scene_layer_dev_section.js
-│  │  │  └── spine_rod_dev_section.js
+│  │  │  ├── spine_rod_dev_section.js
+│  │  │  └── zone_editor_section.js
 │  │  └── ui_catalog
 │  │     ├── ui_catalog_controls_example.js
 │  │     ├── ui_catalog_definitions.js
@@ -1419,6 +1424,7 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── scene
+│        │  ├── pixi_annotation_renderer.js
 │        │  ├── pixi_background_renderer.js
 │        │  ├── pixi_dashed_line.js
 │        │  ├── pixi_fight_area_renderer.js
@@ -1561,7 +1567,8 @@
 │  ├── vendor-libraries.js
 │  ├── victory-input-check.js
 │  ├── viewport-check.js
-│  └── water-metric-check.js
+│  ├── water-metric-check.js
+│  └── zone-editor-check.js
 └── vendor
    ├── manifest.json
    ├── package.json

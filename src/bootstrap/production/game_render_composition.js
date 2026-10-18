@@ -78,7 +78,7 @@ export class GameRenderComposition {
       assets: imageAssets,
     });
     const worldDebugRenderer = this.#createOptionalDiagnostic(
-      this.#createWorldDebugRenderer, "worldDebugRenderer", [{ surface }], ["render"],
+      this.#createWorldDebugRenderer, "worldDebugRenderer", [{ surface, sceneRouter }], ["render"],
     );
     const boatChumRenderer = new BoatChumRenderer({
       surface,
@@ -270,6 +270,7 @@ export class GameRenderComposition {
           projector: runtime.projector,
           config,
           debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
+          getWaterMetric: appPorts.getWaterMetric,
         }], ["buildInto"],
       ),
     });

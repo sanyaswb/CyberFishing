@@ -4,6 +4,7 @@ import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
 import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
+import { ZoneEditorSection } from "./zone_editor_section.js";
 
 export class DevTools {
   #config;
@@ -26,6 +27,7 @@ export class DevTools {
   #grantCatalogItem;
   #rodSpine;
   #scene;
+  #zoneEditorState;
   #storageCache;
   #openHouse;
   #openUiCatalog;
@@ -66,6 +68,7 @@ export class DevTools {
       grantCatalogItem = null,
       rodSpine = null,
       scene = null,
+      zoneEditorState = null,
       configRuntime = null,
       configValidation = null,
       catalogs,
@@ -79,6 +82,7 @@ export class DevTools {
     } = {},
   ) {
     this.#storageCache = storageCache;
+    this.#zoneEditorState = zoneEditorState;
     this.#openHouse = openHouse;
     this.#openUiCatalog = openUiCatalog;
     this.#openGame = openGame;
@@ -213,6 +217,11 @@ export class DevTools {
     this.#renderItemGrantSection(body);
     this.#renderSpineRodSection(body);
     this.#renderSceneLayerSection(body);
+    if (this.#zoneEditorState) new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
+      updateConfig: (path, value) => this.#updateConfigValue(path, value),
+    }).render(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof this.#catalogs.items !== "undefined") {

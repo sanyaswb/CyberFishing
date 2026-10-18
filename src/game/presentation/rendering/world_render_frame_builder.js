@@ -55,6 +55,10 @@ export class WorldRenderFrameBuilder {
     this.#buildCurrent(target.current);
     this.#buildClipRegions(target.clipRegions);
     this.#debugBuilder?.buildInto(target, debugEnabled);
+    if (target.backgroundHidden) {
+      target.backgroundLayers.reset();
+      target.backgroundColor = "#000000";
+    }
     this.#boatChumBuilder.buildInto(target);
     this.#buildInvalidMarker(target.invalidCastMarker, invalidCastMarker);
   }

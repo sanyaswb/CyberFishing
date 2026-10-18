@@ -1,16 +1,22 @@
 export class WorldDebugRenderer {
   #surface;
+  #sceneRouter;
 
-  constructor({ surface }) {
+  constructor({ surface, sceneRouter = null }) {
     if (!surface || typeof surface.drawImage !== "function") {
       throw new TypeError("WorldDebugRenderer requires surface");
     }
     this.#surface = surface;
+    this.#sceneRouter = sceneRouter;
   }
 
   render(model) {
     if (!model.visible) return;
     const surface = this.#surface;
+    const annotations = model.annotations;
+    if (annotations && !this.#sceneRouter?.drawsOnScene("background")) {
+      this.#renderAnnotations(annotations);
+    }
     if (model.debugImage.visible && model.debugImage.image) {
       const previousAlpha = surface.globalAlpha;
       surface.globalAlpha = model.debugImage.alpha;
@@ -42,5 +48,28 @@ export class WorldDebugRenderer {
       surface.lineWidth = 2;
       surface.strokeRect(zone.x, zone.y, zone.width, zone.height);
     }
+  }
+
+  #renderAnnotations(model) {
+    const surface = this.#surface;
+    for (let i = 0; i < model.rectCount; i++) {
+      const r = model.rects[i];
+      surface.strokeStyle = `#${r.color.toString(16).padStart(6, "0")}`;
+      surface.lineWidth = 1;
+      const alpha = surface.globalAlpha;
+      surface.globalAlpha = alpha * .12;
+      surface.fillStyle = surface.strokeStyle;
+      surface.fillRect(r.x, r.y, r.width, r.height);
+      surface.globalAlpha = alpha;
+      surface.strokeRect(r.x, r.y, r.width, r.height);
+    }
+    surface.strokeStyle = "rgba(136, 221, 255, 0.5)";
+    surface.lineWidth = 1; surface.beginPath();
+    for (let i = 0; i < model.lineCount; i++) {
+      const l = model.lines[i];
+      surface.moveTo(l.x1, l.y1); surface.lineTo(l.x2, l.y2);
+    }
+    surface.stroke();
+    if (model.overlay) this.#renderAnnotations(model.overlay);
   }
 }

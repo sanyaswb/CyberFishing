@@ -790,7 +790,7 @@ export class GameCompositionRoot {
       pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter, logger: new ConsoleLogger(),
     });
     const worldPerspective = new WorldPerspective({ getWaterMetric: () => waterMetricResolver.resolve(
-      locationMap.getCastableBoundsVirtual(this.#config.locations.cellSize), location.config.distanceProfile,
+      locationMap.getCastableBoundsVirtual(this.#config.locations.cellSize), this.#config.locations.map[locId]?.distanceProfile,
     ) });
     const projector = new ViewportProjector(
       this.#config.locations,

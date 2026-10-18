@@ -10,6 +10,10 @@ spec-kit work (029); Claude's specs start at 030.
 
 | Spec | Decision | Status | Release |
 | --- | --- | --- | --- |
+| [110](110-dev-zone-editor/spec.md) | DEV zone editor, black background, metre grid and cached WebGL annotations | Implemented; owner visual check pending | v0.41.7 |
+| [109](109-water-metric-perspective/spec.md) | Shared metric for world scale, physics and metre grid | Implemented; owner visual check pending | v0.41.6 |
+| [108](108-line-and-perspective-audit/spec.md) | Idle tackle line-budget constraint and physics audit | Implemented; owner play check pending | v0.41.5 |
+
 | [107](107-scene-entities-rod/spec.md) | WebGL scene layer stage 4: world entities, fight areas, line, float and the Spine rod (spine-pixi-v8) on the scene | Implemented and checked; owner phone check and spine-webgl cleanup pending | — |
 | [106](106-scene-water/spec.md) | WebGL scene layer stage 3: ripples on the water (`DisplacementFilter`, procedural wave map, live DEV settings) | Implemented and checked; owner look and phone measurement pending | — |
 | [105](105-scene-background/spec.md) | WebGL scene layer stage 2: background and time of day on the scene, art-based scene resolution, frames only on change | Implemented, accepted on the phone; production on the scene (D6) | — |

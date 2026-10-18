@@ -146,6 +146,13 @@ overdraw and texture memory, not from game code.
 
 ## Draw order
 
+Spec 109: world-object sizes and ground-area squash use the same WaterMetric as movement and metre-grid projection;
+do not add a second distance/angle scaling curve. Apply viewport camera scale once. The screen/Spine rod is excluded.
+Spec 110: optional scene annotations use reusable geometry and separate cached static/moving Graphics, invalidated
+only by their own model revision. Moving zones never rebuild the static metre grid. Canvas consumes the same commands
+only on scene fallback. Diagnostic visibility never owns
+gameplay zones or their enable flags; hiding background also hides its displaced water copy and clears black.
+
 14. Draw order follows depth: nearer objects are drawn later. When a component gains a new picture (the rod over
     the line's start), review its order instead of inheriting it.
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

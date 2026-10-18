@@ -185,7 +185,7 @@ function checkDevelopmentInputs() {
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
-    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
@@ -223,7 +223,9 @@ function checkDevelopmentInputs() {
   assert.equal(ports.getRenderDiagnostics(), replacement, "diagnostics lookup stays live at each cold call site");
   const rendererOptions = { surface: {} }, synchronizer = {}, progression = {};
   assert.equal(ports.createWorldDebugRenderer(rendererOptions).options, rendererOptions);
-  assert.equal(ports.createLocationDebugRenderFrameBuilder(rendererOptions).options, rendererOptions);
+  const locationDebug = ports.createLocationDebugRenderFrameBuilder(rendererOptions).options;
+  assert.equal(locationDebug.surface, rendererOptions.surface);
+  assert.equal(locationDebug.zoneEditor.options.state, runtime.context.zoneEditorState, "editor UI and geometry share their session state");
   assert.equal(ports.createLocationDebugMapBuilder(rendererOptions).options, rendererOptions);
   assert.equal(ports.createItemProgressionDebugSnapshotProvider(rendererOptions).options, rendererOptions);
   const hookDeps = { config, biteRules: {}, devFlags: {}, fishRarityResolver: {}, fishAnomalyVariantResolver: {}, fishVisualVariantResolver: {} };

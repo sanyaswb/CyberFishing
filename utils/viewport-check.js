@@ -9,7 +9,7 @@ const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_me
 const config = {
   baseResolution: { width: 1000, height: 800 },
   cameraFocusY: 0.7,
-  map: { lake: { safeZone: { top: 100, bottom: 500 }, perspective: { angleTop: 0, angleBottom: 45 } } },
+  map: { lake: { safeZone: { top: 100, bottom: 500 } } },
 };
 let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, linearShare: .2 });
 const perspective = new WorldPerspective({ getWaterMetric: () => metric });
@@ -24,6 +24,17 @@ for (const y of [0, 100, 300, 500, 600]) {
   assert.equal(sample.scale, metric.pixelsPerMeterX(y) / 50, "world width follows the physical metre grid");
   assert(Math.abs(sample.scale * sample.squashY - metric.pixelsPerMeterY(y) / 50) < 1e-12,
     "world ground height follows the same metric, without another angle curve");
+}
+for (const y of [150, 300, 450]) {
+  const sample = projector.getPerspective(y), point = { x: 0, y: 0 }, epsilon = 1e-5;
+  const meters = metric.metersFromShore(y);
+  metric.toVirtual(epsilon, meters, point); const right = point.x;
+  metric.toVirtual(-epsilon, meters, point); const left = point.x;
+  metric.toVirtual(0, meters - epsilon, point); const near = point.y;
+  metric.toVirtual(0, meters + epsilon, point); const far = point.y;
+  assert(Math.abs((right - left) / (2 * epsilon * 50) - sample.scale) < 1e-8, "render width equals measured ground-to-map width");
+  assert(Math.abs((near - far) / (2 * epsilon * 50) - sample.scale * sample.squashY) < 1e-8,
+    "render ground height equals measured ground-to-map height");
 }
 const screen = new Vector2();
 const virtual = new Vector2();

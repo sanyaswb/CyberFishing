@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-071 DEV zones lack a shared metric-grid editor (P3, done in v0.41.7)
+Found: 2026-10-18, owner's WebGL/physics follow-up.
+Reproduce: inspect all zone categories, compare near/far metre sizes and edit geometry while keeping the scene running.
+Expected: one DEV section with optional black background, actual metre grid, independent visibility, live zone/profile edits and bounded cached WebGL redraw; the rod keeps its screen scale.
+Actual: controls were scattered, diagnostic zones were raster-only and no metre grid shared the physical metric.
+Resolution: [110](../specs/110-dev-zone-editor/spec.md); cached static/moving annotations, the same Canvas fallback and existing runtime override/validation/export flow. Owner phone/visual acceptance pending.
+
 ### G-070 World scale and metre distances use different perspective curves (P2, done in v0.41.6)
 Found: 2026-10-18, owner's physics/grid audit.
 Reproduce: compare the size of equal ground distances and world objects near/far; pan or resize the viewport.

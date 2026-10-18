@@ -8,8 +8,9 @@ export class LocationDebugRenderFrameBuilder {
   #screen = new Vector2(0, 0);
   #debugCanvas = null;
   #lastDebugKey = "";
+  #zoneEditor;
 
-  constructor({ map, projector, config, debugMapBuilder }) {
+  constructor({ map, projector, config, debugMapBuilder, zoneEditor = null }) {
     if (!debugMapBuilder || typeof debugMapBuilder.build !== "function") {
       throw new TypeError(
         "LocationDebugRenderFrameBuilder requires debugMapBuilder",
@@ -19,9 +20,12 @@ export class LocationDebugRenderFrameBuilder {
     this.#projector = projector;
     this.#config = config;
     this.#debugMapBuilder = debugMapBuilder;
+    this.#zoneEditor = zoneEditor;
   }
 
   buildInto(target, debugEnabled) {
+    this.#zoneEditor?.buildInto(target);
+    if (target.annotations) return;
     const locations = this.#config.locations || {};
     if (!debugEnabled || !locations.debugVisuals) return;
     const debugCanvas = this.#getDebugCanvas(locations);

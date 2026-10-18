@@ -11,6 +11,7 @@ const { WaterMetric } = load("src/game/domain/locations/water_metric.js");
 const { CastDistanceCalculator } = load("src/game/domain/casting/cast_distance_calculator.js");
 const { EquipmentRules } = load("src/game/domain/rules/equipment_rules.js");
 const { TackleLineReachConstraint } = load("src/game/domain/fishing/tackle_line_reach_constraint.js");
+const { CastRodControl } = load("src/game/application/fishing/cast_rod_control.js");
 const { CONFIG } = load("src/game/config/runtime/game_config.js");
 
 const constraint = new TackleLineReachConstraint();
@@ -25,17 +26,23 @@ for (const State of [WaitingState, BitingState]) {
     const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
       ...(profiled ? { maxMeters: 40, linearShare: .5 } : {}) });
     const rules = new EquipmentRules(new CastDistanceCalculator(CONFIG), CONFIG, {});
-    for (const variant of ["fixed", "sliding", "feeder", "spinning"]) {
+    for (const variant of ["fixed", "sliding", "feeder", "spinning"]) for (const controlEnabled of [false, true]) {
       const eq = { rod: { variant: ["feeder", "spinning"].includes(variant) ? variant : "float", effectiveStats: { lengthMeters: 3 } },
         line: { effectiveStats: { lengthMeters: 9 } }, float: { effectiveStats: { mount: variant } } };
       const entity = new FloatEntity(500, 750, CONFIG.float || {}, 10, { next: () => .5 }, null, null, null, CONFIG);
       const rod = { x: 420, y: 1000 };
+      const localConfig = { ...CONFIG, physics: { ...CONFIG.physics,
+        castRodControl: { ...CONFIG.physics.castRodControl, enabled: controlEnabled } } };
+      const projector = { focusOnVirtualPos() {}, virtualToScreen: (x, y, out) => out.set(x, y),
+        screenToVirtual: (x, y, out) => out.set(x, y) };
+      const control = new CastRodControl({ config: localConfig, projector, canvasMetrics: { width: 1000, height: 1000 },
+        getBaseRodVirtualPos: () => rod });
       // Real entity physics with deterministic current, no wind or a naturally ending bite.
       entity.isBiting = () => true; entity.isGuaranteedBite = () => false; entity.updateBite = () => {};
-      const deps = { float: entity, config: CONFIG, projector: { focusOnVirtualPos() {} }, getViewportSize: () => ({ width: 1000, height: 1000 }),
+      const deps = { float: entity, config: localConfig, projector, getViewportSize: () => ({ width: 1000, height: 1000 }),
         inventory: { getEquipped: () => eq }, currentHookDepthRef: { get: () => 1 },
         world: { getWaterMetric: () => metric, getRodVirtualPos: () => rod, checkWater: () => ({ depth: 5 }), getBiteEnv: () => ({}) },
-        rules: { equipment: rules }, castRodControl: { isPulling: () => false, update: () => ({ rodMoved: false }), resolveBiteResponse: () => "none" },
+        rules: { equipment: rules }, castRodControl: control,
         commands: { setState() {} }, input: { getState: () => ({}) }, clock: { now: 1000 }, getCastStartTime: () => 0,
         biteSystem: { reset() {}, evaluateBite: () => null }, fishing: { collectAvailableBaits() {} } };
       const state = new State(deps);

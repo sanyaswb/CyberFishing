@@ -18,12 +18,15 @@ import { PredictionDebugModule } from "../../dev/modules/prediction_debug_module
 import { RodStrokeDebugModule } from "../../dev/modules/rod_stroke_debug_module.js";
 import { StaminaDebugModule } from "../../dev/modules/stamina_debug_module.js";
 import { TensionDebugModule } from "../../dev/modules/tension_debug_module.js";
+import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
 
-export function createDebugConsoleRuntime({config, debugModulesSource, documentTarget, windowTarget, logger}) {
+export function createDebugConsoleRuntime({config, debugModulesSource, documentTarget, windowTarget, logger, getWaterMetric = null}) {
   const configSource = () => config;
   const registry = new DebugModuleRegistry();
   const context = new DebugContext();
-  const locationProvider = new LocationDebugDataProvider({configSource});
+  const perspective = getWaterMetric ? new WorldPerspective({ getWaterMetric }) : null;
+  const locationProvider = new LocationDebugDataProvider({configSource,
+    perspectiveSource: y => getWaterMetric?.() ? perspective.getPerspective(y) : null});
   const locationPrinter = new LocationDebugPrinter({provider: locationProvider, configSource, viewportSource: () => windowTarget, logger});
   const moduleOptions = {configSource};
   [new BiteTicksDebugModule(moduleOptions), new LocationDebugModule({provider: locationProvider}),

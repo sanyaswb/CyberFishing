@@ -1,5 +1,6 @@
 import { FRAME_GAUGES } from "../../../engine/diagnostics/inactive_frame_probe.js";
 import { PixiBackgroundRenderer } from "./pixi_background_renderer.js";
+import { PixiAnnotationRenderer } from "./pixi_annotation_renderer.js";
 import { PixiFightAreaRenderer } from "./pixi_fight_area_renderer.js";
 import { PixiFloatRenderer } from "./pixi_float_renderer.js";
 import { PixiLineRenderer } from "./pixi_line_renderer.js";
@@ -39,6 +40,8 @@ const OVER_SCENE_CLASS = "game-shell__canvas--over-scene";
 // game canvas's, never more than the art's own pixels per drawn pixel. A lost WebGL context makes the layer inactive
 // (the router sends every kind back to the 2D canvas) until the browser restores it; Pixi restores its GPU resources.
 export class PixiSceneLayer {
+  #annotations;
+  #clearColor = null;
   #pixi;
   #canvas;
   #gameCanvas;
@@ -127,6 +130,12 @@ export class PixiSceneLayer {
     if (this.#line.update(fishing && router.drawsOnScene("line") ? fishing.rodLine : null)) changed = true;
     if (this.#rod.update(fishing && router.drawsOnScene("rod") ? fishing.rodLine : null)) changed = true;
     if (this.#float.update(fishing && router.drawsOnScene("float") ? fishing.float : null)) changed = true;
+    if (this.#annotations.update(world?.annotations ?? null)) changed = true;
+    if (this.#clearColor !== frame.world.backgroundColor) {
+      this.#clearColor = frame.world.backgroundColor;
+      app.renderer.background.color = this.#clearColor;
+      changed = true;
+    }
     if (this.#resizeIfChanged(app)) changed = true;
     if (!changed && !this.#needsFrame) return;
     this.#needsFrame = false;
@@ -208,6 +217,8 @@ export class PixiSceneLayer {
       this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#float = new PixiFloatRenderer({ pixi: this.#pixi, stage: app.stage, documentTarget: this.#documentTarget });
+      this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
+      this.#clearColor = background;
       this.#remember(app, width, height, resolution);
       app.render();
     } catch (error) {

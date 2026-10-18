@@ -2222,7 +2222,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
 {
   const verify = (condition, message) => { if (!condition) throw new Error(message); };
   const viewConfig = { ...worldConfig, map: { lake: { ...worldConfig.map.lake, initialAlignment: { x: "center", y: "center" },
-    safeZone: { top: 0, bottom: 60 }, perspective: { angleTop: 0, angleBottom: 30 } } } };
+    safeZone: { top: 0, bottom: 60 } } } };
   const location = new CurrentLocation(viewConfig);
   verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
     location.currentEnvironment === null, "location manager resolves the configured location");

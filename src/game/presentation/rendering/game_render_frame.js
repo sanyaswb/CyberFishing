@@ -23,6 +23,8 @@ export class GameRenderFrame {
       current: { x: 0, y: 0 },
       clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
+      annotations: null,
+      backgroundHidden: false,
       dynamicZones: new ReusableRenderList("world.dynamicZones", diagnostics),
       chumZones: new ReusableRenderList("world.chumZones", diagnostics),
       waypoints: new ReusableRenderList("world.waypoints", diagnostics),
@@ -96,6 +98,8 @@ export class GameRenderFrame {
     this.world.boats.reset();
     this.world.sensorRays.reset();
     this.world.debugImage.visible = false;
+    this.world.annotations = null;
+    this.world.backgroundHidden = false;
     this.world.invalidCastMarker.visible = false;
     this.casting.visible = false;
     this.casting.aimingZone.visible = false;
