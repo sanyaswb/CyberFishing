@@ -480,9 +480,10 @@ export class ConfigSchemaValidator {
     }
   }
 
-  // Spine rod presentation settings (spec 099) and the canvas backing-store cap (spec 100).
+  // Spine rod presentation settings (spec 099), the canvas backing-store cap (spec 100) and the scene mode (spec 104).
   #validateRodSpineConfig() {
     this.#requireFiniteNumber("CONFIG.canvas.maxPixelRatio", this.config.canvas?.maxPixelRatio, { min: 1, max: 4 });
+    this.#requirePattern("CONFIG.canvas.scene", this.config.canvas?.scene, /^(?:canvas|webgl)$/u, 'must be "canvas" or "webgl"');
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }

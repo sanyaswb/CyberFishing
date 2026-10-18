@@ -13,6 +13,9 @@ export const CONFIG = {
     // Backing-store cap (spec 100): pixels per CSS pixel are min(devicePixelRatio, this); 2 keeps 3x phones at 4x
     // today's fill cost instead of 9x. Applied on the next resize.
     maxPixelRatio: 2,
+    // WebGL scene layer (spec 104 D1): "canvas" draws everything on the 2D canvas and never loads Pixi; "webgl" adds
+    // the Pixi scene under a transparent 2D canvas. Read once at startup (dev.html?scene= overrides it in DEV).
+    scene: "canvas",
   },
 
   input: {

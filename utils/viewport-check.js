@@ -82,7 +82,7 @@ const makeNode = () => {
   value.style = { setProperty: (name, prop) => value.props.set(name, prop), removeProperty: (name) => value.props.delete(name) };
   return value;
 };
-const stageCanvas = Object.assign(makeNode(), { width: 1280 });
+const stageShell = makeNode();
 const stageWindow = { innerWidth: 1280, innerHeight: 800 };
 const surfaceProps = new Map();
 const surface = { props: surfaceProps,
@@ -97,7 +97,7 @@ const lifecycle = { add(target, type, handler) { stageListeners.push({ target, t
 let visibility = null;
 const inventoryUI = { surfaceNode: modal, isOpen: false,
   onVisibilityChange(listener) { visibility = listener; return () => { visibility = null; }; } };
-const stage = new GameStageLayout({ canvas: stageCanvas, windowRef: stageWindow, uiSurface: surface, source, policy,
+const stage = new GameStageLayout({ shell: stageShell, windowRef: stageWindow, uiSurface: surface, source, policy,
   listeners: lifecycle });
 let rodX = 300, splitChanges = 0;
 stage.attachInventory(inventoryUI);
@@ -108,7 +108,8 @@ visibility(true);
 assert.equal(splitChanges, 1, "opening the split tells the game once");
 assert.deepEqual([stage.layout.side, stage.originX, stage.getViewport().width], ["right", 0, 384],
   "a rod left of the centre keeps the game strip on the left");
-assert(stageCanvas.classes.has("game-shell__canvas--staged") && stageCanvas.props.get("--game-stage-left") === "0px");
+assert(stageShell.classes.has("game-shell--staged") && stageShell.props.get("--game-stage-left") === "0px",
+  "the page shell places both canvases in the strip (spec 104)");
 assert.equal(surface.props.get("--ui-edge-right"), "calc(896px + max(12px, var(--ui-safe-area-right, 0px)))",
   "HUD anchored to the right edge moves to the strip");
 assert(!surface.props.has("--ui-edge-left"));
@@ -129,10 +130,9 @@ assert.equal(stage.layout.inventoryWidth, 840);
 rodX = 1000;
 visibility(false);
 assert.equal(splitChanges, 3, "closing tells the game");
-assert(!stage.layout.active && !stageCanvas.classes.has("game-shell__canvas--staged") && stageCanvas.props.size === 0 &&
+assert(!stage.layout.active && !stageShell.classes.has("game-shell--staged") && stageShell.props.size === 0 &&
   surface.props.size === 0 && modal.props.size === 0 && !modal.classes.has("inventory-surface--split"),
   "closing restores the full-screen page");
-stageCanvas.width = 1400;
 visibility(true);
 assert.deepEqual([stage.layout.side, stage.originX], ["left", 840], "a rod right of the centre keeps the strip on the right");
 assert(surface.props.has("--ui-edge-left") && !surface.props.has("--ui-edge-right"));
@@ -149,7 +149,7 @@ assert.equal(stage.layout.side, "right", "the default side is right");
 stage.dispose();
 assert.deepEqual([sourceDisposed, listenersDisposed, sourceListener, visibility], [1, 1, null, null],
   "the stage disposes its source, listeners and subscriptions");
-assert(!stageCanvas.classes.has("game-shell__canvas--staged") && modal.props.size === 0);
+assert(!stageShell.classes.has("game-shell--staged") && modal.props.size === 0);
 
 // Spec 098: the DEV source reacts to CONFIG.debug edits only.
 const { DevInventorySplitSource } = runtime.importModule("src/dev/runtime/dev_inventory_split_source.js");

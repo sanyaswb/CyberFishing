@@ -96,7 +96,7 @@ The toolbar net button (`GameControls` `landingNetArt`, injected from the same s
 `toolbar.css` (`game-toolbar-button__art`, `--cropped-top`) inside the 85% image box of the other toolbar buttons. Explicit bounded toolbar grid tracks keep image intrinsic dimensions
 from expanding the button's contents; thumbnail images fit within their track.
 Landscape split inventory ([spec 098](../specs/098-landscape-split-inventory/spec.md), DEV switch `CONFIG.debug.inventorySplit`):
-`GameStageLayout` sets the inline values; `game-shell.css` owns `game-shell__canvas--staged` (the canvas as the game strip),
+`GameStageLayout` sets the inline values; `game-shell.css` owns `game-shell--staged` (on the page shell, so the game canvas and the WebGL scene canvas under it are both the game strip; spec 104),
 `modal.css` owns `inventory-surface` (the inventory's own `ui-surface` size container: its breakpoints and
 orientation queries measure it) and `inventory-surface--split`/`--split-left`/`--split-right` (`--inventory-split-width`). Edge-anchored HUD follows the
 `--ui-edge-*` values set on the UI surface root (content and portals, `UiSurfaceAdapter.setLayoutProperty`); centred HUD uses `--ui-stage-center-x` (default 50%).

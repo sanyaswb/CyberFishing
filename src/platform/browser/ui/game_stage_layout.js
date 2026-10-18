@@ -1,11 +1,12 @@
 // Landscape split inventory (spec 098): applies InventorySplitLayoutPolicy to the page. The canvas is sized to the game
-// strip (getViewport for CanvasMetricsProvider) and placed on its side (originX for world input); HUD anchored to the
-// screen edges follows the --ui-edge-* variables, centred HUD the strip centre; the inventory surface takes its share
-// and reports it as its logical width, so a share under 821px gets the inventory's mobile layout.
+// strip (getViewport for CanvasMetricsProvider) and placed on its side (originX for world input) through the page
+// shell's state, so the WebGL scene canvas under it follows (spec 104 D7); HUD anchored to the screen edges follows
+// the --ui-edge-* variables, centred HUD the strip centre; the inventory surface takes its share and reports it as its
+// logical width, so a share under 821px gets the inventory's mobile layout.
 // The game is told once per split change (open, close, side or share), not on a plain window resize, so it can keep
 // the rod's world position. Only DEV composes it; production has no stage.
 export class GameStageLayout {
-  #canvas;
+  #shell;
   #window;
   #surface;
   #source;
@@ -21,8 +22,9 @@ export class GameStageLayout {
   #removeVisibilityListener = null;
   #removeSourceListener = null;
 
-  constructor({ canvas, windowRef, uiSurface, source, policy, listeners }) {
-    this.#canvas = canvas;
+  // shell: the page's game-shell element (body), parent of the game and scene canvases.
+  constructor({ shell, windowRef, uiSurface, source, policy, listeners }) {
+    this.#shell = shell;
     this.#window = windowRef;
     this.#surface = uiSurface || null;
     this.#source = source;
@@ -94,10 +96,10 @@ export class GameStageLayout {
 
   #apply(layout) {
     this.#layout = layout;
-    const canvas = this.#canvas;
-    canvas.classList.toggle("game-shell__canvas--staged", layout.active);
-    if (layout.active) canvas.style.setProperty("--game-stage-left", `${layout.stageLeft}px`);
-    else canvas.style.removeProperty("--game-stage-left");
+    const shell = this.#shell;
+    shell.classList.toggle("game-shell--staged", layout.active);
+    if (layout.active) shell.style.setProperty("--game-stage-left", `${layout.stageLeft}px`);
+    else shell.style.removeProperty("--game-stage-left");
     // On the surface root, so content and portal layers (the DEV tools toggle) follow the strip alike.
     const surface = this.#surface;
     if (surface) {

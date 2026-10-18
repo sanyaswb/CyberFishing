@@ -108,7 +108,8 @@ import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
 import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
-import { InactiveSceneLayer, SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
+import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
+import { composeSceneLayer } from "./scene_layer_composition.js";
 import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
 import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
 import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
@@ -160,7 +161,7 @@ export class GameCompositionRoot {
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
   #frameProbe;
-  #createSceneLayer;
+  #sceneMode;
   #storageCache;
   #rendering;
   #uiSurface;
@@ -192,7 +193,7 @@ export class GameCompositionRoot {
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
-    createSceneLayer,
+    sceneMode = null,
     uiSurface = null,
     toolbarMountNode = null,
   } = {}) {
@@ -201,7 +202,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe, createSceneLayer,
+      createInventorySplitSource, createFrameProbe,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -249,8 +250,8 @@ export class GameCompositionRoot {
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
       this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
-    // WebGL scene layer (spec 103): the DEV Pixi layer behind dev.html?scene=webgl, inactive otherwise.
-    this.#createSceneLayer = createSceneLayer;
+    // WebGL scene mode for this page load (spec 104 D1): DEV's ?scene= value; production reads CONFIG.canvas.scene.
+    this.#sceneMode = sceneMode;
     this.#rendering = new GameRenderComposition({
       readRenderDiagnostics: () => this.#readRenderDiagnostics(),
       createOptionalDiagnostic: (factory, name, args, methods) =>
@@ -292,7 +293,7 @@ export class GameCompositionRoot {
   async build(canvasId) {
     const canvas = this.#documentTarget.getElementById(canvasId);
     const stageLayout = this.#createInventorySplitSource == null ? null : new GameStageLayout({
-      canvas, windowRef: this.#windowTarget, uiSurface: this.#uiSurface,
+      shell: this.#documentTarget.body, windowRef: this.#windowTarget, uiSurface: this.#uiSurface,
       source: this.#createInventorySplitSource({ documentTarget: this.#documentTarget,
         listeners: new EventLifecycle(this.#listenerCounter) }),
       policy: new InventorySplitLayoutPolicy(), listeners: new EventLifecycle(this.#listenerCounter),
@@ -377,12 +378,15 @@ export class GameCompositionRoot {
       stage: "bootstrap",
       consumer: "GameCompositionRoot.create",
     });
+    // The scene layer first: its mode decides whether the 2D canvas is transparent (spec 104 D6).
+    const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
+      modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
+      probe: this.#frameProbe, logger: new ConsoleLogger() });
+    own(sceneLayer);
+    contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
       surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
-    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts });
-    const sceneLayer = own(this.#createSceneLayer == null ? new InactiveSceneLayer()
-      : this.#createSceneLayer({ canvas, canvasMetrics }));
-    contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
+    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas });
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
       outcomeStyleResolver,
@@ -408,7 +412,7 @@ export class GameCompositionRoot {
         "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver, rodAnimation: rodAnimation.controller,
+      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
     });
     const { projector, locId, rng, locationResources, locCfg, location } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
@@ -446,7 +450,7 @@ export class GameCompositionRoot {
       projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-      gameTimeClock, rodAnimation: rodAnimation.controller,
+      gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter },
     });
     this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
@@ -460,6 +464,8 @@ export class GameCompositionRoot {
       castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
       physicsConfig, own, gameTimeClock,
     });
+    // Spec 104 D8: the scene's warm-up frame happens during loading, not in the first frames of play.
+    await sceneLayer.whenReady();
     return {
       liveBait,
       liveBaitCandidate,
@@ -484,6 +490,7 @@ export class GameCompositionRoot {
         locationAssetLoader,
         pipeline,
         sceneLayer,
+        sceneRouter,
         locationDebugMapBuilder,
         hudStyleResolver,
         fightAreaStyleResolver,
@@ -529,9 +536,9 @@ export class GameCompositionRoot {
 }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.
-  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts }) {
+  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas }) {
     const surface = new Canvas2DSurface(canvas, {
-      contextAttributes: { alpha: false },
+      contextAttributes: { alpha: transparentCanvas },
       resolution: canvasMetrics,
     });
     const primitives = new CanvasPrimitives(surface);
@@ -860,7 +867,7 @@ export class GameCompositionRoot {
     projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-    gameTimeClock, rodAnimation,
+    gameTimeClock, rodAnimation, scene,
   }) {
     const uiLogger = new ConsoleLogger();
     const systems = {
@@ -894,6 +901,8 @@ export class GameCompositionRoot {
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
             // DEV Spine section (spec 099 Phase 4): the rod controller's DEV port.
             rodSpine: rodAnimation,
+            // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
+            scene,
           }], ["dispose"],
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS,

@@ -1,9 +1,10 @@
 "use strict";
 
-// Spec 103 stage 0: the WebGL scene layer port (inactive in production), the lazy DEV layer, PixiSceneLayer over a fake
-// Pixi namespace (async init, one render per frame, resize only on change, context loss, dispose), the coordinator
-// drawing the scene before the 2D passes, the real runtime module (version, stopped tickers), the DEV flag, the scene
-// canvas CSS, the vendor manifest entry and the self-contained bundle, and a production graph without Pixi.
+// Specs 103 and 104 (stages 0 and 1): the WebGL scene layer port (inactive in "canvas" mode), the lazy layer, the
+// router (depth order, mode, availability, fallback), PixiSceneLayer over a fake Pixi namespace (warm-up, activity,
+// context loss, DEV status, dispose), the coordinator's routing per frame, the 2D surface's clear, the production
+// composition (config mode, DEV override, transparent canvas, a real no-WebGL fallback in Node), the 2D gates, the
+// DEV section, the runtime module, the CSS, the vendored bundle and a production graph that loads Pixi only lazily.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -13,6 +14,7 @@ const acorn = require("acorn");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const RUNTIME_MODULE = "src/platform/browser/scene/pixi_runtime_module.js";
+const SCENE_COMPOSITION = "src/bootstrap/production/scene_layer_composition.js";
 const importSource = (file) => import(pathToFileURL(path.join(ROOT_DIR, file)).href);
 const read = (file) => fs.readFileSync(path.join(ROOT_DIR, file), "utf8");
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -26,8 +28,10 @@ function deferred() {
 
 function fakeElement(tagName) {
   const listeners = new Map();
+  const classes = new Set();
   return {
-    tagName, className: "", attributes: {}, style: {}, removed: false, width: 0, height: 0, listeners,
+    tagName, className: "", attributes: {}, style: {}, removed: false, width: 0, height: 0, listeners, classes,
+    classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) },
     setAttribute(name, value) { this.attributes[name] = value; },
     addEventListener(type, listener) { listeners.set(type, listener); },
     removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); },
@@ -39,11 +43,12 @@ function fakeElement(tagName) {
 function fakeDom() {
   const inserted = [];
   const documentTarget = { createElement: (tagName) => fakeElement(tagName) };
-  const gameCanvas = { before: (element) => inserted.push(element) };
+  const gameCanvas = Object.assign(fakeElement("canvas"), { before: (element) => inserted.push(element) });
   return { documentTarget, gameCanvas, inserted };
 }
 
-// A Pixi namespace whose Application records init options, renders, resizes and destroys; init is held open.
+// A Pixi namespace whose Application records init options, renders, resizes and destroys; init is held open. Its GL
+// context has WEBGL_lose_context, which dispatches the canvas events like a browser would.
 function fakePixi() {
   const apps = [];
   class Application {
@@ -63,7 +68,10 @@ function fakePixi() {
         canvas.height = Math.round(height * resolution);
       };
       size(options.width, options.height, options.resolution);
-      this.renderer = { canvas, resize: (...args) => { this.resizes.push(args); size(...args); } };
+      const loseContext = { loseContext: () => canvas.dispatch("webglcontextlost"),
+        restoreContext: () => canvas.dispatch("webglcontextrestored") };
+      this.renderer = { canvas, context: { webGLVersion: 2 }, resize: (...args) => { this.resizes.push(args); size(...args); },
+        gl: { getExtension: (name) => (name === "WEBGL_lose_context" ? loseContext : null) } };
       return this.initCall.promise;
     }
 
@@ -83,9 +91,13 @@ function recordingProbe() {
 async function checkPorts() {
   const { InactiveSceneLayer, SCENE_LAYER_METHODS } = await importSource("src/engine/scene/inactive_scene_layer.js");
   const { FRAME_SECTIONS, FRAME_GAUGES } = await importSource("src/engine/diagnostics/inactive_frame_probe.js");
-  assert.deepEqual(SCENE_LAYER_METHODS, ["render", "dispose"]);
+  assert.deepEqual(SCENE_LAYER_METHODS, ["render", "isActive", "whenReady", "getStatus", "loseContext", "restoreContext",
+    "dispose"]);
   const inactive = new InactiveSceneLayer();
-  for (const method of SCENE_LAYER_METHODS) assert.equal(inactive[method]({}), undefined, `inactive ${method} does nothing`);
+  for (const method of SCENE_LAYER_METHODS) assert.equal(typeof inactive[method], "function", `inactive ${method}`);
+  assert.equal(inactive.isActive(), false);
+  assert.equal(await inactive.whenReady(), false, "the inactive layer never renders, so startup does not wait");
+  assert.deepEqual(inactive.getStatus(), { state: "inactive" });
   assert.equal(FRAME_SECTIONS.scene, "scene");
   assert.equal(FRAME_GAUGES.scenePixels, "scene-pixels");
 
@@ -93,34 +105,107 @@ async function checkPorts() {
   assert.throws(() => new DeferredSceneLayer({ onUnavailable() {} }), /requires load/u);
   assert.throws(() => new DeferredSceneLayer({ load() {} }), /requires onUnavailable/u);
   const frames = [];
+  const calls = [];
   let disposals = 0;
-  const loaded = { render: (frame) => frames.push(frame), dispose: () => { disposals += 1; } };
+  let active = true;
+  const layerReady = deferred();
+  const loaded = { render: (frame) => frames.push(frame), isActive: () => active, whenReady: () => layerReady.promise,
+    getStatus: () => ({ state: "active" }), loseContext: () => calls.push("lose"), restoreContext: () => calls.push("restore"),
+    dispose: () => { disposals += 1; } };
   const gate = deferred();
   const unavailable = [];
   const layer = new DeferredSceneLayer({ load: () => gate.promise, onUnavailable: (error) => unavailable.push(error) });
   layer.render("before");
+  assert.deepEqual([layer.isActive(), layer.getStatus().state], [false, "loading"], "inactive while the runtime loads");
+  let readyValue = null;
+  const ready = layer.whenReady().then((value) => { readyValue = value; });
   gate.resolve(loaded);
-  assert.equal(await layer.ready, true);
+  await settle();
+  assert.equal(readyValue, null, "whenReady waits for the loaded layer's warm-up, not only for the import");
+  layerReady.resolve(true);
+  await ready;
+  assert.equal(readyValue, true);
   layer.render("frame-1");
   assert.deepEqual(frames, ["frame-1"], "nothing is drawn before the layer arrives, every frame after");
+  assert.equal(layer.isActive(), true);
+  active = false;
+  assert.equal(layer.isActive(), false, "activity is the loaded layer's (a lost context)");
+  layer.loseContext();
+  layer.restoreContext();
+  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore"], "active"], "DEV methods reach the layer");
   layer.dispose();
   layer.render("after");
-  assert.deepEqual([frames.length, disposals], [1, 1], "dispose reaches the loaded layer once and stops drawing");
+  assert.deepEqual([frames.length, disposals, layer.getStatus().state], [1, 1, "disposed"]);
 
   const late = deferred();
   const early = new DeferredSceneLayer({ load: () => late.promise, onUnavailable: (error) => unavailable.push(error) });
   early.dispose();
   late.resolve(loaded);
-  assert.equal(await early.ready, false);
+  assert.equal(await early.whenReady(), false);
   assert.equal(disposals, 2, "a layer that arrives after dispose is disposed at once");
 
   const failed = new DeferredSceneLayer({ load: () => Promise.reject(new Error("no bundle")), onUnavailable: (error) => unavailable.push(error) });
-  assert.equal(await failed.ready, false);
+  assert.equal(await failed.whenReady(), false);
+  assert.deepEqual([failed.isActive(), failed.getStatus().state], [false, "unavailable"]);
   const invalid = new DeferredSceneLayer({ load: () => ({ render() {} }), onUnavailable: (error) => unavailable.push(error) });
-  assert.equal(await invalid.ready, false);
-  assert.deepEqual(unavailable.map((error) => error.message), ["no bundle", "DeferredSceneLayer: the loaded layer lacks dispose"]);
+  assert.equal(await invalid.whenReady(), false);
+  assert.deepEqual(unavailable.map((error) => error.message), ["no bundle", "DeferredSceneLayer: the loaded layer lacks isActive"]);
   failed.render("frame");
+  failed.loseContext();
   failed.dispose();
+}
+
+async function checkRouter() {
+  const { SceneLayerRouter, SCENE_KINDS, SCENE_MODES } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
+  assert.deepEqual(SCENE_KINDS, ["background", "world-entities", "fight-areas", "line", "rod", "float"],
+    "world kinds in depth order, bottom first");
+  assert.deepEqual(SCENE_MODES, ["canvas", "webgl"]);
+  let active = true;
+  const create = (options) => new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => active,
+    mode: "webgl", ...options });
+  assert.throws(() => create({ kinds: ["a", "a"] }), /unique kinds/u);
+  assert.throws(() => create({ sceneKinds: ["water"] }), /scene kinds from its kinds/u);
+  assert.throws(() => create({ isSceneActive: null }), /requires isSceneActive/u);
+  assert.throws(() => create({ mode: "gl" }), /mode must be one of canvas, webgl/u);
+  const onCanvas = (router) => SCENE_KINDS.filter((kind) => !router.drawsOnScene(kind));
+
+  const stageOne = create();
+  stageOne.update();
+  assert.equal(stageOne.rendersScene(), false, "an active scene with no kind on it keeps its warm-up frame (rule 22)");
+  assert.deepEqual(onCanvas(stageOne), SCENE_KINDS, "stage 1: no scene renderer, every kind on the 2D canvas");
+  assert.equal(stageOne.clearsCanvas(), false, "the 2D background still paints every pixel: no clear");
+
+  const router = create({ sceneKinds: ["background", "line"] });
+  const visibility = router.canvasVisibility("background");
+  assert.equal(router.canvasVisibility("background"), visibility, "one visibility function per kind");
+  assert.throws(() => router.canvasVisibility("hud"), /has no kind hud/u);
+  assert.equal(visibility({ visible: true }), true, "before the first update everything is on the 2D canvas");
+  router.update();
+  assert.equal(router.rendersScene(), true, "a kind on the scene makes it draw every frame");
+  assert.deepEqual(router.getRouting().filter((entry) => entry.layer === "scene").map((entry) => entry.kind), ["background"],
+    "the line stays on the 2D canvas while world entities and fight areas under it do (rule 14)");
+  assert.deepEqual(router.getRouting()[3], { kind: "line", layer: "canvas", sceneRenderer: true });
+  assert.equal(visibility({ visible: true }), false, "the background's 2D component steps aside");
+  assert.equal(router.canvasVisibility("line")({ visible: true }), true);
+  assert.equal(router.canvasVisibility("line")({ visible: false }), false, "the component's own visibility still counts");
+  assert.equal(router.clearsCanvas(), true, "with the background on the scene the 2D canvas starts cleared");
+
+  active = false;
+  assert.equal(router.drawsOnScene("background"), true, "a decision holds for the whole frame");
+  router.update();
+  assert.deepEqual([router.rendersScene(), onCanvas(router), router.clearsCanvas()], [false, SCENE_KINDS, false],
+    "a lost context sends every kind back to the 2D canvas at the next frame (fallback)");
+  active = true;
+  router.setMode("canvas");
+  router.update();
+  assert.deepEqual([router.mode, router.rendersScene(), onCanvas(router)], ["canvas", false, SCENE_KINDS],
+    "the DEV switch draws everything on the 2D canvas and stops the scene");
+  router.setMode("webgl");
+  router.update();
+  assert.equal(router.drawsOnScene("background"), true, "and back");
+  const canvasMode = create({ sceneKinds: ["background"], mode: "canvas" });
+  canvasMode.update();
+  assert.equal(canvasMode.rendersScene(), false);
 }
 
 async function checkPixiSceneLayer() {
@@ -133,7 +218,7 @@ async function checkPixiSceneLayer() {
     const { pixi, apps } = fakePixi();
     const probe = recordingProbe();
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
-      background: "rgb(15, 23, 30)", probe, logger, ...overrides };
+      background: "#0f171e", probe, logger, ...overrides };
     return { layer: new PixiSceneLayer(options), dom, apps, probe };
   };
   for (const [name, overrides, pattern] of [
@@ -147,21 +232,26 @@ async function checkPixiSceneLayer() {
   const canvas = dom.inserted[0];
   assert.equal(dom.inserted.length, 1, "one scene canvas, inserted right before the game canvas");
   assert.deepEqual([canvas.tagName, canvas.className, canvas.attributes["aria-hidden"]], ["canvas", "game-shell__scene", "true"]);
+  assert(dom.gameCanvas.classes.has("game-shell__canvas--over-scene"), "the game canvas drops its CSS background");
   assert.deepEqual([...canvas.listeners.keys()].sort(), ["webglcontextlost", "webglcontextrestored"]);
   const app = apps[0];
   assert.deepEqual({ ...app.options, preference: [...app.options.preference] }, {
     autoStart: false, sharedTicker: false, skipExtensionImports: true, eventMode: "none", autoDensity: false,
-    preference: ["webgl"], gcActive: false, canvas, width: 400, height: 800, resolution: 2, background: "rgb(15, 23, 30)",
+    preference: ["webgl"], gcActive: false, canvas, width: 400, height: 800, resolution: 2, background: "#0f171e",
   }, "no ticker, events, browser extensions, auto density, WebGPU or GC; size and ratio from the metrics owner");
   layer.render({});
-  assert.equal(app.renders, 0, "nothing renders before init resolves");
+  assert.deepEqual([app.renders, layer.isActive(), layer.getStatus()], [0, false, { state: "starting" }],
+    "nothing renders and the router sees no scene before init resolves");
   app.initCall.resolve();
-  assert.equal(await layer.ready, true);
+  assert.equal(await layer.whenReady(), true);
+  assert.equal(app.renders, 1, "one warm-up render before the layer reports ready (spec 104 D8)");
   assert.deepEqual([canvas.style.width, canvas.style.height], ["400px", "800px"], "CSS size = logical size");
   assert.deepEqual(probe.calls, [["gauge", "scene-pixels", 800 * 1600]], "the backing pixels reach the frame probe");
+  assert.deepEqual([layer.isActive(), layer.getStatus()],
+    [true, { state: "active", webglVersion: 2, width: 400, height: 800, pixelRatio: 2 }]);
 
   for (let frame = 0; frame < 3; frame += 1) layer.render({});
-  assert.deepEqual([app.renders, app.resizes.length], [3, 0], "one render per frame, no resize while nothing changes");
+  assert.deepEqual([app.renders, app.resizes.length], [4, 0], "one render per frame, no resize while nothing changes");
   metrics.width = 800;
   metrics.height = 400;
   layer.render({});
@@ -173,57 +263,129 @@ async function checkPixiSceneLayer() {
   assert.deepEqual(app.resizes.at(-1), [800, 400, 1.5], "a pixel ratio change resizes too");
   assert.deepEqual(probe.calls.at(-1), ["gauge", "scene-pixels", 1200 * 600]);
 
+  layer.loseContext();
+  layer.render({});
+  assert.deepEqual([app.renders, layer.isActive(), layer.getStatus().state], [7, false, "context-lost"],
+    "a lost context skips rendering and makes the layer inactive, so the router falls back to the 2D canvas");
+  layer.restoreContext();
+  layer.render({});
+  assert.deepEqual([app.renders, layer.isActive()], [8, true], "rendering resumes when the context is restored");
   canvas.dispatch("webglcontextlost");
-  layer.render({});
-  assert.equal(app.renders, 6, "a lost context skips rendering; the 2D game is untouched");
+  assert.equal(layer.isActive(), false, "a context lost by the browser counts the same");
   canvas.dispatch("webglcontextrestored");
-  layer.render({});
-  assert.equal(app.renders, 7, "rendering resumes when the browser restores the context");
 
   layer.dispose();
   layer.dispose();
   layer.render({});
-  assert.equal(app.renders, 7);
+  assert.equal(app.renders, 8);
   assert.deepEqual(app.destroyed, [{ removeView: false }, { children: true }]);
-  assert.equal(canvas.removed, true);
-  assert.equal(canvas.listeners.size, 0, "dispose removes the context listeners");
+  assert.deepEqual([canvas.removed, canvas.listeners.size, dom.gameCanvas.classes.size, layer.getStatus().state],
+    [true, 0, 0, "disposed"], "dispose removes the canvas, its listeners and the game canvas modifier");
 
   const failing = compose();
   failing.apps[0].initCall.reject(new Error("WebGL unsupported"));
-  assert.equal(await failing.layer.ready, false);
+  assert.equal(await failing.layer.whenReady(), false);
   assert.equal(warnings.length, 1, "no WebGL is reported once");
   assert.match(warnings[0][0], /2D canvas stays alone/u);
-  assert.equal(failing.dom.inserted[0].removed, true, "a layer that cannot render leaves no canvas behind");
-  failing.layer.render({});
+  assert.deepEqual([failing.dom.inserted[0].removed, failing.dom.gameCanvas.classes.size, failing.layer.getStatus().state],
+    [true, 0, "unavailable"], "a layer that cannot render leaves no canvas or modifier behind");
+  failing.layer.dispose();
+  assert.equal(failing.layer.getStatus().state, "unavailable");
 
   const early = compose();
   early.layer.dispose();
   early.apps[0].initCall.resolve();
-  assert.equal(await early.layer.ready, false);
+  assert.equal(await early.layer.whenReady(), false);
   assert.deepEqual([early.apps[0].destroyed !== null, early.apps[0].renders, warnings.length], [true, 0, 1],
     "an Application that finishes init after dispose is destroyed, silently");
-  return metrics;
 }
 
-async function checkCoordinatorOrder() {
+async function checkCoordinator() {
   const { GameRenderCoordinator } = await importSource("src/game/presentation/rendering/game_render_coordinator.js");
   const order = [];
   const frame = { id: "frame" };
+  let rendersScene = true;
   const ports = {
     stateMachine: { getRenderState() {} },
     frameBuffer: { acquire: () => frame },
     frameBuilder: { buildInto: () => order.push("build") },
     pipeline: { render: (value) => { assert.equal(value, frame); order.push("2d"); } },
     sceneLayer: { render: (value) => { assert.equal(value, frame); order.push("scene"); } },
+    sceneRouter: { update: () => order.push("route"), rendersScene: () => rendersScene },
     probe: { begin: (id) => order.push(`+${id}`), end: (id) => order.push(`-${id}`) },
     getBounds: () => ({}), getInvalidCastMarker: () => null, isDebugEnabled: () => false,
     beginFrame: () => order.push("begin-2d"),
   };
   assert.throws(() => new GameRenderCoordinator({ ...ports, sceneLayer: {} }), /requires sceneLayer/u);
+  assert.throws(() => new GameRenderCoordinator({ ...ports, sceneRouter: {} }), /requires sceneRouter/u);
   assert.throws(() => new GameRenderCoordinator({ ...ports, probe: undefined }), /requires a frame probe/u);
-  assert.equal(new GameRenderCoordinator(ports).render(0.016), frame);
-  assert.deepEqual(order, ["build", "+scene", "scene", "-scene", "begin-2d", "2d"],
-    "the scene draws after the frame is built and before every 2D pass, inside its probe section");
+  const coordinator = new GameRenderCoordinator(ports);
+  assert.equal(coordinator.render(0.016), frame);
+  assert.deepEqual(order, ["build", "route", "+scene", "scene", "-scene", "begin-2d", "2d"],
+    "one routing decision, then the scene inside its probe section, then every 2D pass");
+  order.length = 0;
+  rendersScene = false;
+  coordinator.render(0.016);
+  assert.deepEqual(order, ["build", "route", "begin-2d", "2d"], "no scene work while the router keeps it off");
+}
+
+async function checkSurfaceClear() {
+  const { Canvas2DSurface } = await importSource("src/platform/browser/canvas/canvas_2d_surface.js");
+  const calls = [];
+  const context = { setTransform: (...args) => calls.push(["setTransform", ...args]),
+    clearRect: (...args) => calls.push(["clearRect", ...args]), set imageSmoothingEnabled(value) {} };
+  const canvas = { width: 800, height: 1600, getContext: (type, attributes) => { calls.push(["getContext", attributes]); return context; } };
+  const surface = new Canvas2DSurface(canvas, { contextAttributes: { alpha: true }, resolution: { width: 400, height: 800, pixelRatio: 2 } });
+  surface.beginFrame();
+  surface.beginFrame(true);
+  assert.deepEqual(calls, [["getContext", { alpha: true }], ["setTransform", 2, 0, 0, 2, 0, 0],
+    ["setTransform", 1, 0, 0, 1, 0, 0], ["clearRect", 0, 0, 800, 1600], ["setTransform", 2, 0, 0, 2, 0, 0]],
+    "a cleared frame clears the whole backing store, then applies the base transform");
+}
+
+async function checkComposition() {
+  const { composeSceneLayer } = await importSource(SCENE_COMPOSITION);
+  const { InactiveSceneLayer } = await importSource("src/engine/scene/inactive_scene_layer.js");
+  const { DeferredSceneLayer } = await importSource("src/engine/scene/deferred_scene_layer.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  assert.equal(CONFIG.canvas.scene, "canvas", "production stays on the 2D canvas until stage 2 is measured (D1)");
+  const warnings = [];
+  const options = (overrides) => {
+    const dom = fakeDom();
+    return { dom, value: { config: { canvas: { scene: "canvas", backgroundColor: "#0f171e" } }, documentTarget: dom.documentTarget,
+      gameCanvas: dom.gameCanvas, canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, probe: recordingProbe(),
+      logger: { warn: (...args) => warnings.push(args) }, ...overrides } };
+  };
+  const canvasMode = composeSceneLayer(options({}).value);
+  assert(canvasMode.sceneLayer instanceof InactiveSceneLayer);
+  assert.deepEqual([canvasMode.sceneRouter.mode, canvasMode.transparentCanvas], ["canvas", false],
+    "\"canvas\": inactive layer, opaque 2D canvas, no Pixi download");
+  const typo = composeSceneLayer(options({ modeOverride: "gl" }).value);
+  assert.deepEqual([typo.sceneRouter.mode, warnings.length], ["canvas", 1], "an unknown ?scene= keeps the config and warns");
+  assert.match(warnings[0][0], /Unknown scene mode "gl"/u);
+
+  const { dom, value } = options({ modeOverride: "webgl" });
+  const webgl = composeSceneLayer(value);
+  assert(webgl.sceneLayer instanceof DeferredSceneLayer);
+  assert.deepEqual([webgl.sceneRouter.mode, webgl.transparentCanvas], ["webgl", true]);
+  // The real runtime module and Pixi bundle in Node: no WebGL, so the layer never becomes active.
+  assert.equal(await webgl.sceneLayer.whenReady(), false, "startup does not hang without WebGL");
+  webgl.sceneRouter.update();
+  assert.deepEqual([webgl.sceneRouter.rendersScene(), webgl.sceneLayer.getStatus().state, dom.inserted[0].removed],
+    [false, "unavailable", true], "without WebGL every kind stays on the 2D canvas and no scene canvas is left");
+  assert.equal(warnings.length, 2, "the missing WebGL is reported once");
+  webgl.sceneLayer.dispose();
+
+  const renderComposition = read("src/bootstrap/production/game_render_composition.js");
+  const { SCENE_KINDS } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
+  for (const kind of SCENE_KINDS) {
+    assert(renderComposition.includes(`sceneRouter.canvasVisibility("${kind}")`), `the ${kind} 2D component is gated`);
+  }
+  assert.match(renderComposition, /surface\.beginFrame\(runtime\.rendering\.sceneRouter\.clearsCanvas\(\)\)/u);
+  const root = read("src/bootstrap/production/game_composition_root.js");
+  assert.match(root, /contextAttributes: \{ alpha: transparentCanvas \}/u, "the scene mode decides the 2D canvas alpha");
+  assert.match(root, /await sceneLayer\.whenReady\(\);/u, "startup waits for the scene's warm-up frame");
+  assert.match(root, /shell: this\.#documentTarget\.body/u, "the split stage places both canvases through the shell");
 }
 
 async function checkRuntimeModule(manifestEntry) {
@@ -236,45 +398,61 @@ async function checkRuntimeModule(manifestEntry) {
     assert.equal(pixi.Ticker[name].started, false);
   }
   assert.deepEqual(Object.keys(pixi).sort(), manifestEntry.exports, "the bundle exports exactly the manifest's list");
-  const { PixiSceneLayer } = await importSource("src/platform/browser/scene/pixi_scene_layer.js");
-  const dom = fakeDom();
-  const warnings = [];
-  const layer = runtime.createSceneLayer({ documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas,
-    canvasMetrics: { width: 4, height: 4, pixelRatio: 1 }, background: 0, probe: recordingProbe(),
-    logger: { warn: (...args) => warnings.push(args) } });
-  assert(layer instanceof PixiSceneLayer, "createSceneLayer binds PixiSceneLayer to the vendored namespace");
-  assert.equal(await layer.ready, false, "without WebGL (Node) the real Application never renders");
-  assert.equal(warnings.length, 1);
-  assert.equal(dom.inserted[0].removed, true);
 }
 
-async function checkDevComposition() {
-  const { createDevSceneLayerFactory } = await importSource("src/bootstrap/development/dev_scene_layer_composition.js");
-  const windowFor = (search) => ({ URLSearchParams, location: { search } });
-  assert.equal(createDevSceneLayerFactory({ windowTarget: windowFor(""), documentTarget: {}, probe: {} }), null,
-    "plain dev.html keeps the inactive layer");
-  assert.equal(createDevSceneLayerFactory({ windowTarget: windowFor("?scene=canvas"), documentTarget: {}, probe: {} }), null);
-  const factory = createDevSceneLayerFactory({ windowTarget: windowFor("?scene=webgl"), documentTarget: {}, probe: {} });
-  assert.equal(typeof factory, "function", "dev.html?scene=webgl composes the Pixi layer");
+async function checkDevWiring() {
   const startup = read("src/bootstrap/development/development_game_startup.js");
-  assert.match(startup, /createSceneLayer: createDevSceneLayerFactory\(\{ windowTarget, documentTarget, probe: frameProfiler \}\)/u);
-  assert.doesNotMatch(read("src/bootstrap/production/game.js") + read("src/entrypoints/game.entry.js"), /createSceneLayer/u,
-    "production composes the inactive layer");
+  assert.match(startup, /sceneMode: pageParams\.get\("scene"\)/u, "dev.html?scene= picks the mode for the page load");
+  assert.doesNotMatch(read("src/bootstrap/production/game.js") + read("src/entrypoints/game.entry.js"), /sceneMode/u,
+    "production reads CONFIG.canvas.scene only");
+  const { SceneLayerDevSection } = await importSource("src/dev/tools/scene_layer_dev_section.js");
+  const { SceneLayerRouter, SCENE_KINDS } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
+  const rows = [];
+  const actions = new Map();
+  let switchHandler = null;
+  const ui = {
+    createInfoRow: (label, value) => rows.push(`${label}: ${value}`),
+    createSwitcherRow: (label, value, parent, onChange) => { rows.push(`${label}: ${value}`); switchHandler = onChange; },
+    createButtonRow: (label, parent, onClick) => { rows.push(label); actions.set(label, onClick); },
+  };
+  const content = { replaceChildren: () => { rows.length = 0; actions.clear(); } };
+  const layerCalls = [];
+  let status = { state: "active", webglVersion: 2, width: 400, height: 800, pixelRatio: 2 };
+  const layer = { getStatus: () => status, loseContext: () => layerCalls.push("lose"), restoreContext: () => layerCalls.push("restore") };
+  const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
+  router.update();
+  new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content }).render({});
+  assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×800 @ 2×"));
+  assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
+  switchHandler(false);
+  assert.equal(router.mode, "canvas", "the switch flips the router without a reload");
+  actions.get("Втратити WebGL-контекст")();
+  actions.get("Відновити WebGL-контекст")();
+  assert.deepEqual(layerCalls, ["lose", "restore"]);
+  status = { state: "inactive" };
+  actions.get("↻ Оновити")();
+  assert(rows[0].startsWith("шар WebGL: немає: режим canvas"));
+  assert(!rows.some((row) => row.startsWith("Сцена WebGL")) && !actions.has("Втратити WebGL-контекст"),
+    "\"canvas\" mode shows no switch and no context buttons");
 }
 
-// The production page's static and dynamic imports never reach the Pixi modules or the bundle.
+// The production page reaches Pixi only through the lazy import in the scene composition ("webgl" mode).
 function checkProductionGraph() {
-  const seen = new Set();
-  const queue = ["src/entrypoints/game.entry.js"];
+  const staticGraph = new Set();
+  const lazyImporters = [];
+  const queue = [["src/entrypoints/game.entry.js", false]];
   while (queue.length > 0) {
-    const file = queue.pop();
-    if (seen.has(file) || !file.endsWith(".js")) continue;
-    seen.add(file);
+    const [file, lazy] = queue.pop();
+    if (!file.endsWith(".js") || staticGraph.has(file)) continue;
+    if (!lazy) staticGraph.add(file);
+    if (lazy || file.startsWith("vendor/")) continue;
     const visit = (node) => {
       if (!node || typeof node.type !== "string") return;
-      const source = node.type === "ImportExpression" ? node.source : node.source ?? null;
+      const source = node.source ?? null;
       if (source?.type === "Literal" && typeof source.value === "string" && source.value.startsWith(".")) {
-        queue.push(path.posix.normalize(path.posix.join(path.posix.dirname(file), source.value)));
+        const target = path.posix.normalize(path.posix.join(path.posix.dirname(file), source.value));
+        if (node.type === "ImportExpression") lazyImporters.push([file, target]);
+        else queue.push([target, false]);
       }
       for (const value of Object.values(node)) {
         if (Array.isArray(value)) value.forEach(visit);
@@ -283,18 +461,24 @@ function checkProductionGraph() {
     };
     visit(acorn.parse(read(file), { ecmaVersion: "latest", sourceType: "module" }));
   }
-  assert(seen.has("src/game/presentation/rendering/game_render_coordinator.js"), "the walk reaches the renderer");
-  assert(seen.has("src/engine/scene/inactive_scene_layer.js"), "production composes the inactive layer");
-  const pixi = [...seen].filter((file) => file.includes("/scene/pixi_") || file.startsWith("vendor/pixi/"));
-  assert.deepEqual(pixi, [], "index.html never loads Pixi in stage 0");
-  return seen.size;
+  assert(staticGraph.has(SCENE_COMPOSITION) && staticGraph.has("src/game/presentation/rendering/scene_layer_router.js"));
+  assert.deepEqual([...staticGraph].filter((file) => file.includes("/scene/pixi_") || file.startsWith("vendor/pixi/")), [],
+    "index.html loads no Pixi module statically");
+  assert.deepEqual(lazyImporters.filter(([, target]) => target.includes("/scene/pixi_")), [[SCENE_COMPOSITION, RUNTIME_MODULE]],
+    "the only way to Pixi is the scene composition's lazy import");
+  return staticGraph.size;
 }
 
 function checkCss() {
   const css = read("src/game/presentation/styles/game-shell.css");
-  const rule = css.match(/\.game-shell__scene \{([^}]*)\}/u)?.[1] ?? "";
-  for (const declaration of ["position: fixed;", "inset: 0;", "z-index: -1;", "margin: auto;", "pointer-events: none;"]) {
-    assert(rule.includes(declaration), `.game-shell__scene declares ${declaration}`);
+  const rule = (selector) => css.match(new RegExp(`${selector.replace(/[.]/gu, "\\.")} \\{([^}]*)\\}`, "u"))?.[1] ?? "";
+  for (const [selector, declarations] of [
+    [".game-shell__scene", ["position: fixed;", "inset: 0;", "z-index: -1;", "margin: auto;", "pointer-events: none;"]],
+    [".game-shell__canvas--over-scene", ["background-color: transparent;"]],
+    [".game-shell--staged .game-shell__canvas", ["position: fixed;", "top: 0;", "left: var(--game-stage-left, 0px);"]],
+    [".game-shell--staged .game-shell__scene", ["inset: 0 auto auto var(--game-stage-left, 0px);", "margin: 0;"]],
+  ]) {
+    for (const declaration of declarations) assert(rule(selector).includes(declaration), `${selector} declares ${declaration}`);
   }
 }
 
@@ -332,19 +516,23 @@ function checkVendor() {
 
 async function main() {
   await checkPorts();
+  await checkRouter();
   await checkPixiSceneLayer();
-  await checkCoordinatorOrder();
+  await checkCoordinator();
+  await checkSurfaceClear();
   const { entry, size } = checkVendor();
+  await checkComposition();
   await checkRuntimeModule(entry);
-  await checkDevComposition();
+  await checkDevWiring();
   const productionModules = checkProductionGraph();
   checkCss();
   await settle();
-  console.log(`Scene layer passed: inactive port and lazy DEV layer (late arrival, failure, invalid layer), PixiSceneLayer `
-    + `over a fake Pixi (no ticker/events/extensions/GC, async init, one render per frame, resize only on change, `
-    + `context loss, dispose, no-WebGL fallback), scene before the 2D passes, runtime ${entry.version} with stopped `
-    + `tickers, dev.html?scene=webgl flag, scene canvas CSS, self-contained bundle (${size} bytes) and licence, `
-    + `${productionModules} production modules without Pixi.`);
+  console.log(`Scene layer passed: port and lazy layer (warm-up wait, late arrival, failure), router (depth order, `
+    + `mode switch, fallback on a lost context, 2D clear), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, `
+    + `resize only on change, context loss and restore, DEV status, dispose), one routing decision per frame, `
+    + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `
+    + `section, runtime ${entry.version} with stopped tickers, CSS, bundle (${size} bytes), ${productionModules} `
+    + `production modules loading Pixi only lazily.`);
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

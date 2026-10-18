@@ -32,13 +32,22 @@ the role that is easiest to reach from the current code.
   kind that must be under it is already there (rule 14).
 - While the migration runs, the 2D path for a kind stays complete as the fallback (no WebGL, lost context) until
   spec 103 stage 5 is accepted.
+- Which layer draws a world kind is decided once per frame by `SceneLayerRouter` ([spec 104](../specs/104-scene-layer-infrastructure/spec.md)):
+  `SCENE_KINDS` lists the kinds bottom first; a kind is on the scene only while the mode is `"webgl"`, WebGL is active,
+  the scene has a renderer for it and every kind under it is there. A new world kind joins `SCENE_KINDS` at its depth
+  and gates its 2D component with `canvasVisibility`. HUD overlays are not kinds.
+- `CONFIG.canvas.scene` (`"canvas"` | `"webgl"`) is read once at startup: the 2D context's `alpha` follows it. Turning
+  production to `"webgl"` is a measured decision of the stage that first routes a kind.
+- The scene presents a WebGL frame only while a kind is on it (rule 22). An unchanged empty scene presented every frame
+  made Chrome wait for the compositor inside the scene's render (up to 230 ms in software GL, spec 104).
 - How "off" is done (stage 0): `pixi_runtime_module.js` stops `Ticker.system` and `Ticker.shared` (otherwise the
   renderer's scheduler runs its own `requestAnimationFrame` loop); `PixiSceneLayer` passes `autoStart: false`,
   `skipExtensionImports: true` (no event system, accessibility or DOM pipe), `autoDensity: false`,
   `preference: ["webgl"]` and `gcActive: false` (the scene releases its textures itself, rule 19). New Pixi features
   that need a browser extension or a ticker are registered or driven explicitly, never by turning these back on.
-- The first scene render compiles Pixi's shaders: one long frame (about 150 ms in software GL). A stage that makes the
-  scene visible warms it up before play starts.
+- The first scene render compiles Pixi's shaders: one long frame (about 90–150 ms in software GL). `PixiSceneLayer`
+  renders it during init, and startup waits for `whenReady()` (spec 104 D8). A stage that adds sprites or filters
+  includes them in that warm-up frame.
 
 ## Many layers and Spine-first art
 

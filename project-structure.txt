@@ -522,7 +522,6 @@
 │  │  │  ├── debug_overlay_bootstrap.js
 │  │  │  ├── dev_config_validation_composition.js
 │  │  │  ├── dev_house_screen_composition.js
-│  │  │  ├── dev_scene_layer_composition.js
 │  │  │  ├── dev_time_composition.js
 │  │  │  ├── development_game_startup.js
 │  │  │  └── ui_catalog_bootstrap.js

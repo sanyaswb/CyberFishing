@@ -171,15 +171,23 @@ wires them for the session. `SpineSetupPoseReader` (platform) gives the static p
 `SpineRodDevSection` (DevTools "SPINE ВУДКА") uses only the controller's DEV port: Spine on/off, clip switches, live
 bone setup edits and the export of the edited skeleton JSON.
 
-WebGL scene layer ([spec 103](../specs/103-webgl-scene-layer/spec.md), stage 0): `engine/scene` holds the port
-(`SCENE_LAYER_METHODS`: `render(frame)`, `dispose()`), `InactiveSceneLayer` and `DeferredSceneLayer` (the port at
-composition time while the runtime loads lazily). `GameRenderCoordinator` renders the scene in the probe's `scene`
-section after the frame is built and before the 2D passes; the session disposes it. Production composes the inactive
-layer. DEV composes the Pixi layer only for `dev.html?scene=webgl` (`bootstrap/development/dev_scene_layer_composition.js`).
-`platform/browser/scene/pixi_runtime_module.js` is the only importer of the vendored Pixi 8 + spine-pixi-v8 esbuild
-bundle (`vendor/pixi/8.22.0/pixi-scene.js`) and keeps Pixi's tickers stopped. `PixiSceneLayer` puts an Application on
-a `game-shell__scene` canvas right before the game canvas, without ticker, event system, browser extensions, auto
-density or GC, sized from `CanvasMetricsProvider`. Rules: [docs/rendering.md](rendering.md).
+WebGL scene layer ([spec 103](../specs/103-webgl-scene-layer/spec.md); stages 0 and 1, the latter in
+[spec 104](../specs/104-scene-layer-infrastructure/spec.md)): `engine/scene` holds the port (`SCENE_LAYER_METHODS`:
+`render(frame)`, `isActive()`, `whenReady()`, the DEV `getStatus`/`loseContext`/`restoreContext`, `dispose()`),
+`InactiveSceneLayer` and `DeferredSceneLayer` (the port at composition time while the runtime loads lazily).
+`bootstrap/production/scene_layer_composition.js` composes it from `CONFIG.canvas.scene` (`"canvas"` by default:
+inactive layer, opaque 2D canvas, no Pixi download; `"webgl"`: lazy Pixi layer, transparent 2D canvas); DEV overrides
+the mode with `dev.html?scene=`. `game/presentation/rendering/SceneLayerRouter` decides once per frame which layer draws
+each world kind (`SCENE_KINDS`, bottom first): a kind is on the scene only while WebGL is active, the scene has a
+renderer for it and every kind under it is there; otherwise its 2D component draws (`canvasVisibility`), so a lost
+context falls back to the 2D canvas. `GameRenderCoordinator` updates the router, renders the scene in the probe's
+`scene` section only while a kind is on it, then starts the 2D frame (cleared only when the background is on the scene)
+and runs the 2D passes. `platform/browser/scene/pixi_runtime_module.js` is the only importer of the vendored Pixi 8 +
+spine-pixi-v8 esbuild bundle (`vendor/pixi/8.22.0/pixi-scene.js`) and keeps Pixi's tickers stopped. `PixiSceneLayer`
+puts an Application on a `game-shell__scene` canvas right before the game canvas (without ticker, event system,
+browser extensions, auto density or GC, sized from `CanvasMetricsProvider`) and renders a warm-up frame during loading;
+startup waits for it. DEV: DevTools "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`). Rules:
+[docs/rendering.md](rendering.md).
 
 ## Migration history
 

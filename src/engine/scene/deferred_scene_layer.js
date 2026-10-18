@@ -1,17 +1,20 @@
 import { SCENE_LAYER_METHODS } from "./inactive_scene_layer.js";
 
-// A scene layer whose implementation loads lazily (spec 103): the session gets this port at composition time, it
-// draws nothing until load() resolves the real layer, and a layer that arrives after dispose() is disposed at once.
-// A failed load or an invalid layer leaves it inactive (the 2D game is unchanged) and reports the error to onUnavailable.
+// A scene layer whose implementation loads lazily (specs 103, 104): the session gets this port at composition time, it
+// draws nothing and reports inactive until load() resolves the real layer, and a layer that arrives after dispose() is
+// disposed at once. A failed load or an invalid layer leaves it inactive (the 2D game is unchanged) and reports the
+// error to onUnavailable. whenReady() waits for the loaded layer's own readiness (its warm-up frame).
 export class DeferredSceneLayer {
   #layer = null;
   #disposed = false;
+  #failed = false;
+  #ready;
 
   constructor({ load, onUnavailable }) {
     if (typeof load !== "function") throw new TypeError("DeferredSceneLayer requires load");
     if (typeof onUnavailable !== "function") throw new TypeError("DeferredSceneLayer requires onUnavailable");
-    // Resolves true once the loaded layer is attached, false when it never will be.
-    this.ready = Promise.resolve().then(load).then((layer) => this.#attach(layer)).catch((error) => {
+    this.#ready = Promise.resolve().then(load).then((layer) => this.#attach(layer)).catch((error) => {
+      this.#failed = true;
       onUnavailable(error);
       return false;
     });
@@ -19,6 +22,27 @@ export class DeferredSceneLayer {
 
   render(frame) {
     this.#layer?.render(frame);
+  }
+
+  isActive() {
+    return this.#layer?.isActive() === true;
+  }
+
+  whenReady() {
+    return this.#ready;
+  }
+
+  getStatus() {
+    if (this.#layer) return this.#layer.getStatus();
+    return { state: this.#disposed ? "disposed" : this.#failed ? "unavailable" : "loading" };
+  }
+
+  loseContext() {
+    this.#layer?.loseContext();
+  }
+
+  restoreContext() {
+    this.#layer?.restoreContext();
   }
 
   dispose() {
@@ -36,6 +60,6 @@ export class DeferredSceneLayer {
       return false;
     }
     this.#layer = layer;
-    return true;
+    return layer.whenReady();
   }
 }

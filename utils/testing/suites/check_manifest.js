@@ -316,7 +316,7 @@ const CHECK_DEFINITIONS = Object.freeze([
   },
   {
     id: "scene-layer",
-    title: "WebGL scene layer port, Pixi layer behind the DEV flag and the vendored scene bundle",
+    title: "WebGL scene layer: port, router and fallback, Pixi layer, composition and the vendored bundle",
     file: "utils/scene-layer-check.js",
     suites: ["quick"],
   },

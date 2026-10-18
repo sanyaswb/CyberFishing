@@ -83,6 +83,10 @@ function checkNegativeFixtures() {
     assert(validate().errors.some(issue => issue.path === path), "invalid side compensation setting is rejected: " + key);
     context.reset(path);
   }
+  // Spec 104 D1: the scene mode is "canvas" or "webgl".
+  context.set("canvas.scene", "gl");
+  assert(has(validate(), /CONFIG\.canvas\.scene: must be "canvas" or "webgl"/u), "an unknown scene mode is rejected");
+  context.reset("canvas.scene");
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");

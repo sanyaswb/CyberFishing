@@ -3,7 +3,8 @@
 Owner request, 2026-10-18: move the scene (background and parallax, water, float, line, the Spine rod and fish) to
 WebGL as a separate layer under today's 2D canvas, step by step, without rewriting everything at once. HUD and
 windows stay 2D/DOM. The owner asks for a ready library rather than hand-written shaders. Status: **decisions taken
-2026-10-18 (below); stage 0 implemented 2026-10-18 (record below), waiting for the owner's phone measurement; stage 1
+2026-10-18 (below); stage 0 implemented 2026-10-18 (record below); stage 1 implemented 2026-10-18 in
+[spec 104](../104-scene-layer-infrastructure/spec.md); the owner's phone measurements of both are pending; stage 2
 next.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
 
 Owner, 2026-10-18: **option C (PixiJS)**, with the 2D canvas for HUD text and the rest. The art will be **many image
@@ -94,7 +95,7 @@ bootstrap/production/scene_layer_composition.js
 | # | Stage | Done when |
 | --- | --- | --- |
 | 0 | **Spike:** pinned vendor bundle of Pixi + spine-pixi-v8 + the needed filters (D2), guard rule, size measured; an empty scene canvas under the 2D canvas behind a DEV flag | Empty-scene cost on the phone (both orientations) measured and within budget; bundle size recorded |
-| 1 | **Scene layer infrastructure:** composition, resolution owner for both canvases, loop-driven render, router, fallback, DEV switch, transparent 2D canvas | Game unchanged visually with everything still routed to 2D; switch and fallback work |
+| 1 | **Scene layer infrastructure** ([spec 104](../104-scene-layer-infrastructure/spec.md)): composition, resolution owner for both canvases, loop-driven render, router, fallback, DEV switch, transparent 2D canvas | Game unchanged visually with everything still routed to 2D; switch and fallback work |
 | 2 | **Background and time of day** in the scene, with background variants sized for the screen (spec 102 next step 1) and day/night blended in one pass (`ColorMatrixFilter` or two sprites) | Background routed to the scene; portrait art 1:1; FPS ≥ today |
 | 3 | **Water:** ripple displacement (`DisplacementFilter`), reflections or glow where the art needs them | Effects within budget on the phone |
 | 4 | **Line, float and rod together:** line as Pixi `Graphics` (same curve model), float sprite, rod through spine-pixi-v8 behind the existing scene port (controller, tracks, anchor and DEV tools unchanged) | WebGL → 2D copy gone; rod covers the line's start; Spine DEV section works |
@@ -273,8 +274,8 @@ Note for the measurement: on a browser profile without a saved game `dev.html` d
 ([G-067](../../docs/gameplay_backlog.md), found during this smoke, also on the commit before stage 0); opening
 `index.html` once first works around it.
 
-Open for stage 1: the DEV landscape split inventory (spec 098) moves the game canvas (`game-shell__canvas--staged`); the
-scene canvas does not follow it yet (invisible while the 2D canvas is opaque). Stage 1 also adds the production
+Open for stage 1 (all done in [spec 104](../104-scene-layer-infrastructure/spec.md)): the DEV landscape split inventory
+(spec 098) moves the game canvas (`game-shell__canvas--staged`) and the scene canvas did not follow it; the production
 composition (`scene_layer_composition.js`), the transparent 2D canvas and the shader warm-up.
 
 Cleanup (DEVELOPMENT_RULES "Utils cleanup step"):
