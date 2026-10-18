@@ -134,6 +134,8 @@ export class FishingEquipmentRenderModelBuilder {
     target.rodImage = anchor.image;
     target.rodRegion = anchor.region;
     target.rodBounds = anchor.bounds;
+    target.rodView = anchor.view;
+    target.rodViewScale = anchor.viewScale;
     target.lineStartX = lineStartX;
     target.lineStartY = lineStartY;
     target.lineVisible = lineConfig.visible !== false;

@@ -33,7 +33,9 @@ function fakeContext2d() {
   return { puts: 0, texts: [], font: "", createImageData: (width, height) => ({ width, height, data: new Uint8ClampedArray(width * height * 4) }),
     putImageData(image) { this.puts += 1; this.last = image; },
     measureText(text) { return { width: String(text).length * (Number.parseFloat(this.font.match(/(\d+)px/u)?.[1]) || 10) * 0.6 }; },
-    fillText(text, x, y) { this.texts.push({ text, x, y, font: this.font, fillStyle: this.fillStyle }); } };
+    fillText(text, x, y) { this.texts.push({ text, x, y, font: this.font, fillStyle: this.fillStyle }); },
+    createRadialGradient: () => ({ stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } }),
+    fillRect() {} };
 }
 
 function fakeElement(tagName) {
@@ -70,7 +72,17 @@ function fakePixi() {
   class Container {
     constructor() { this.children = []; this.visible = true; }
 
-    addChild(...children) { this.children.push(...children); return children[0]; }
+    addChild(...children) {
+      for (const child of children) child.parent = this;
+      this.children.push(...children);
+      return children[0];
+    }
+
+    removeChild(child) {
+      this.children = this.children.filter((entry) => entry !== child);
+      child.parent = null;
+      return child;
+    }
   }
   class Sprite {
     constructor(texture = null) {
@@ -94,8 +106,13 @@ function fakePixi() {
       sprite.renderable = false;
     }
   }
-  const Texture = {
-    from(options, skipCache) {
+  class Texture {
+    // A sub-texture: a frame of another texture's source (the static rod's atlas region).
+    constructor({ source, frame }) { Object.assign(this, { source, frame, destroyed: null }); }
+
+    destroy(destroySource) { this.destroyed = destroySource; }
+
+    static from(options, skipCache) {
       if (options?.tagName === "canvas") {
         const texture = { canvas: options, skipCache, updates: 0, destroyed: null,
           source: { update: () => { texture.updates += 1; } }, destroy(destroySource) { this.destroyed = destroySource; } };
@@ -108,8 +125,11 @@ function fakePixi() {
         destroy(destroySource) { this.destroyed = destroySource; } };
       textures.push(texture);
       return texture;
-    },
-  };
+    }
+  }
+  class Rectangle {
+    constructor(x, y, width, height) { Object.assign(this, { x, y, width, height }); }
+  }
   class Application {
     constructor() {
       this.initCall = deferred();
@@ -141,7 +161,8 @@ function fakePixi() {
 
     destroy(...args) { this.destroyed = args; }
   }
-  return { pixi: { Application, Container, DisplacementFilter, Graphics, Sprite, Texture }, apps, textures, canvasTextures };
+  return { pixi: { Application, Container, DisplacementFilter, Graphics, Rectangle, Sprite, Texture }, apps, textures,
+    canvasTextures };
 }
 
 // Loaded images by asset id, as ImageAssetProvider.tryGet serves them.
@@ -730,6 +751,81 @@ async function checkSceneWorldKinds() {
   assert.equal(areaContainer.visible, false);
 }
 
+// Spec 107 part B: the line, the rod (static picture and Spine view) and the float on the scene.
+async function checkSceneTackle() {
+  const fake = fakePixi();
+  const dom = fakeDom();
+  const stage = new fake.pixi.Container();
+  const { PixiLineRenderer } = await importSource("src/platform/browser/scene/pixi_line_renderer.js");
+  const { PixiRodRenderer } = await importSource("src/platform/browser/scene/pixi_rod_renderer.js");
+  const { PixiFloatRenderer } = await importSource("src/platform/browser/scene/pixi_float_renderer.js");
+  const line = new PixiLineRenderer({ pixi: fake.pixi, stage });
+  const rod = new PixiRodRenderer({ pixi: fake.pixi, stage });
+  const float = new PixiFloatRenderer({ pixi: fake.pixi, stage, documentTarget: dom.documentTarget });
+  const [lineGraphics, rodContainer, floatContainer] = stage.children;
+  const model = { visible: true, rodMode: "rectangle", rodBaseX: 200, rodBaseY: 700, rodTopY: 500, rodWidth: 3,
+    rodHeight: 200, lineVisible: true, lineStartX: 200, lineStartY: 500, controlX: 210, controlY: 560, targetX: 220,
+    targetY: 300, lineColor: "rgba(255, 255, 255, 0.3)", lineWidth: 1 };
+  assert.equal(line.update(model), true);
+  assert.deepEqual(lineGraphics.ops, [["rect", 198.5, 500, 3, 200], ["fill", 0x000000], ["moveTo", 200, 500],
+    ["quadraticCurveTo", 210, 560, 220, 300], ["stroke", { width: 1, color: "rgba(255, 255, 255, 0.3)" }]],
+    "RodLineRenderer's bar and curve, in the model's colour and width");
+  assert.equal(line.update(model), false, "an unchanged line presents nothing");
+  model.targetX += 1;
+  assert.equal(line.update(model), true);
+  assert.equal(rod.update(model), false, "the rectangle bar is the line's");
+  assert.equal(rodContainer.visible, false);
+
+  const image = { id: "rod-page", naturalWidth: 2739, naturalHeight: 89 };
+  Object.assign(model, { rodMode: "static", rodImage: image, rodScale: 0.5,
+    rodRegion: { x: 2, y: 2, width: 85, height: 2735, rotate: 90 }, rodBounds: { x: -40, y: 0, width: 85, height: 2735 } });
+  assert.equal(rod.update(model), true);
+  const [sprite] = rodContainer.children;
+  assert.deepEqual([sprite.texture.frame.x, sprite.texture.frame.y, sprite.texture.frame.width, sprite.texture.frame.height],
+    [2, 2, 2735, 85], "a region stored rotated is cut with its sides swapped");
+  assert.equal(sprite.texture.source.pixelWidth, 2739, "from the atlas page");
+  assert.deepEqual([sprite.x, sprite.y, sprite.rotation, sprite.width, sprite.height],
+    [200 + (-40 + 85) * 0.5, 700 - 2735 * 0.5, Math.PI / 2, 2735 * 0.5, 85 * 0.5],
+    "turned back over the setup bounds, as RodStaticRenderer draws it");
+  assert.equal(rod.update(model), false, "a still static rod presents nothing");
+  assert.equal(fake.textures.length, 1, "one page texture, reused");
+
+  const view = new fake.pixi.Container();
+  view.scale = { set: (x, y) => { view.scaleX = x; view.scaleY = y; } };
+  Object.assign(model, { rodMode: "spine", rodView: view, rodViewScale: 0.5, rodDestX: 80, rodDestY: 250 });
+  assert.equal(rod.update(model), true);
+  assert.equal(view.parent, rodContainer, "the scene's Spine view is drawn at the rod's depth");
+  assert.deepEqual([view.x, view.y, view.scaleX, sprite.visible], [80, 250, 0.5, false],
+    "placed where the GL surface used to be copied, surface pixels scaled to logical ones");
+  assert.equal(rod.update(model), true, "a Spine pose moves every frame");
+  const next = new fake.pixi.Container();
+  next.scale = view.scale;
+  model.rodView = next;
+  rod.update(model);
+  assert.deepEqual([view.parent, next.parent], [null, rodContainer], "a new skin's view replaces the old one");
+  assert.equal(rod.update(null), true, "off the scene it hides once");
+  assert.equal(next.parent, null);
+  rod.dispose();
+  assert.deepEqual([fake.textures[0].destroyed], [true], "the page texture is released with the scene");
+
+  const floatModel = { visible: true, kind: "float", x: 300, y: 400, color: "#ff3300", glow: true, glowBlur: 8, width: 3,
+    height: 15, radius: 2.5, radiusX: 6, radiusY: 3, rotationRad: 0.2 };
+  assert.equal(float.update(floatModel), true);
+  const [glow, shape] = floatContainer.children;
+  assert.deepEqual([floatContainer.x, floatContainer.y, shape.rotation], [300, 400, 0.2]);
+  assert.deepEqual(shape.ops, [["rect", -1.5, -15, 3, 15], ["fill", "#ff3300"]], "FloatRenderer's float body");
+  assert.deepEqual([glow.visible, glow.tint, glow.width, glow.height], [true, "#ff3300", 3 + 24, 15 + 24],
+    "the glow is a halo in the tackle's colour over the shape plus the blur's reach");
+  assert.equal(float.update(floatModel), false);
+  floatModel.kind = "lure";
+  floatModel.glow = false;
+  assert.equal(float.update(floatModel), true);
+  assert.deepEqual([shape.ops[0], glow.visible, shape.rotation], [["circle", 0, 0, 2.5], false, 0]);
+  assert.equal(float.update({ visible: false }), true);
+  assert.equal(floatContainer.visible, false);
+  float.dispose();
+}
+
 async function checkCoordinator() {
   const { GameRenderCoordinator } = await importSource("src/game/presentation/rendering/game_render_coordinator.js");
   const order = [];
@@ -808,8 +904,15 @@ async function checkComposition() {
   webgl.sceneLayer.dispose();
 
   assert.match(read(SCENE_COMPOSITION),
-    /SCENE_RENDERED_KINDS = Object\.freeze\(\["background", "world-entities", "fight-areas"\]\)/u,
-    "stage 4a: the scene draws the background, the world entities and the fight areas (specs 105, 107)");
+    /SCENE_RENDERED_KINDS = Object\.freeze\(\["background", "world-entities", "fight-areas", "line", "rod", "float"\]\)/u,
+    "stage 4: the scene draws every world kind (specs 105, 107)");
+  const rodComposition = read("src/bootstrap/production/rod_animation_composition.js");
+  assert.match(rodComposition, /drawsRod: \(\) => scene\.router\.drawsOnScene\("rod"\)/u,
+    "with the WebGL scene the rod's surface is the scene's (spec 107 D6)");
+  assert.match(rodComposition, /scene\.layer\.whenReady\(\)\.then[\s\S]*import\("\.\.\/\.\.\/platform\/browser\/scene\/pixi_runtime_module\.js"\)/u,
+    "the Spine runtime is the scene's own bundle, once the scene is ready");
+  assert.match(read("src/bootstrap/production/game_composition_root.js"),
+    /scene: \{ layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas \}/u);
   assert.match(read(SCENE_COMPOSITION), /fightAreaStyles, probe, logger,/u, "the scene gets the 2D fight area styles");
   assert.match(read("src/bootstrap/production/game_composition_root.js"), /fightAreaStyles: fightAreaStyleResolver/u,
     "one fight area style resolver for both layers");
@@ -915,8 +1018,9 @@ function checkProductionGraph() {
   assert(staticGraph.has(SCENE_COMPOSITION) && staticGraph.has("src/game/presentation/rendering/scene_layer_router.js"));
   assert.deepEqual([...staticGraph].filter((file) => file.includes("/scene/pixi_") || file.startsWith("vendor/pixi/")), [],
     "index.html loads no Pixi module statically");
-  assert.deepEqual(lazyImporters.filter(([, target]) => target.includes("/scene/pixi_")), [[SCENE_COMPOSITION, RUNTIME_MODULE]],
-    "the only way to Pixi is the scene composition's lazy import");
+  assert.deepEqual(lazyImporters.filter(([, target]) => target.includes("/scene/pixi_")).sort(),
+    [["src/bootstrap/production/rod_animation_composition.js", RUNTIME_MODULE], [SCENE_COMPOSITION, RUNTIME_MODULE]],
+    "Pixi is reached only lazily: by the scene composition, and by the rod's Spine runtime once the scene is ready");
   return staticGraph.size;
 }
 
@@ -971,6 +1075,7 @@ async function main() {
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
   await checkSceneWorldKinds();
+  await checkSceneTackle();
   await checkPixiSceneLayer();
   await checkCoordinator();
   await checkSurfaceClear();
@@ -985,6 +1090,7 @@ async function main() {
     + `mode switch, fallback on a lost context, 2D clear), texture cache (mipmaps, upload, one more per frame, reload, release) and background `
     + `(phases, change detection, art density), water wave field (deterministic, moving, edge fade, perspective), `
     + `change fingerprints, dashes, text textures, world entities and fight areas (2D colours, clips, frames only on change), `
+    + `line, rod (static region, Spine view at the rod's depth) and float (shapes, glow halo), `
     + `PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
     + `steps at its frame rate over the visible zone, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `

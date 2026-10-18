@@ -31,11 +31,13 @@ const SPINE_WEBGL = Object.freeze({
 
 // The scene layer's library surface (spec 103): only what the scene uses, extended per stage.
 // Ticker: the runtime module keeps Pixi's own tickers stopped, so GameLoop stays the only frame driver.
+// Stage 4 (spec 107): Rectangle (texture frames of the static rod) and the spine-core classes SpineScene drives, from
+// the same copy of spine-core that spine-pixi-v8 renders.
 const SCENE_EXPORTS = Object.freeze({
-  "pixi.js": ["Application", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "RenderTexture",
-    "Sprite", "Texture", "Ticker"],
-  "@esotericsoftware/spine-pixi-v8": ["AtlasAttachmentLoader", "Physics", "SkeletonJson", "Spine", "SpineTexture",
-    "TextureAtlas"],
+  "pixi.js": ["Application", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "Rectangle",
+    "RenderTexture", "Sprite", "Texture", "Ticker"],
+  "@esotericsoftware/spine-pixi-v8": ["AnimationState", "AnimationStateData", "AtlasAttachmentLoader", "CurveTimeline1",
+    "Physics", "PointAttachment", "Skeleton", "SkeletonJson", "Spine", "SpineTexture", "TextureAtlas", "TextureFilter"],
 });
 // The layer passes skipExtensionImports, so Pixi's browser extensions (events, accessibility, DOM) never register;
 // the filter system is the one of them the scene needs, so the entry registers it.

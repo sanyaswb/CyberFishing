@@ -6,8 +6,8 @@ windows stay 2D/DOM. The owner asks for a ready library rather than hand-written
 2026-10-18 (below); stage 0 implemented 2026-10-18 (record below); stage 1 implemented 2026-10-18 in
 [spec 104](../104-scene-layer-infrastructure/spec.md); the owner's phone check of both passed; stage 2 implemented 2026-10-18 in
 [spec 105](../105-scene-background/spec.md) and accepted on the phone: production runs the scene; stage 3 implemented
-2026-10-18 in [spec 106](../106-scene-water/spec.md), its phone check pending; stage 4 in
-[spec 107](../107-scene-entities-rod/spec.md), part A implemented.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
+2026-10-18 in [spec 106](../106-scene-water/spec.md), its phone check pending; stage 4 implemented 2026-10-18 in
+[spec 107](../107-scene-entities-rod/spec.md), its phone check and the spine-webgl cleanup pending.** Rules: [docs/rendering.md](../../docs/rendering.md) (mandatory).
 
 Owner, 2026-10-18: **option C (PixiJS)**, with the 2D canvas for HUD text and the rest. The art will be **many image
 layers, and almost all animation will be made in Spine**. The owner wants the most result for the least effort.

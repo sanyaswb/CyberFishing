@@ -2,9 +2,9 @@ import { DeferredSceneLayer } from "../../engine/scene/deferred_scene_layer.js";
 import { InactiveSceneLayer } from "../../engine/scene/inactive_scene_layer.js";
 import { SCENE_KINDS, SCENE_MODES, SceneLayerRouter } from "../../game/presentation/rendering/scene_layer_router.js";
 
-// The kinds the Pixi scene can draw: the background and its time of day (spec 105), the world entities and the fight
-// areas (spec 107).
-const SCENE_RENDERED_KINDS = Object.freeze(["background", "world-entities", "fight-areas"]);
+// The kinds the Pixi scene can draw: the background and its time of day (spec 105), then the world entities, the fight
+// areas, the line, the rod and the float (spec 107): every world kind.
+const SCENE_RENDERED_KINDS = Object.freeze(["background", "world-entities", "fight-areas", "line", "rod", "float"]);
 
 // The page's WebGL scene layer and router (spec 104 D1, D2). Mode: CONFIG.canvas.scene, or DEV's ?scene= value for
 // this page load (an unknown value keeps the config and warns).

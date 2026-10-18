@@ -10,7 +10,7 @@ spec-kit work (029); Claude's specs start at 030.
 
 | Spec | Decision | Status | Release |
 | --- | --- | --- | --- |
-| [107](107-scene-entities-rod/spec.md) | WebGL scene layer stage 4: world entities and fight areas on the scene (part A), then line, float and Spine rod (part B) | Part A implemented and checked; part B in progress | — |
+| [107](107-scene-entities-rod/spec.md) | WebGL scene layer stage 4: world entities, fight areas, line, float and the Spine rod (spine-pixi-v8) on the scene | Implemented and checked; owner phone check and spine-webgl cleanup pending | — |
 | [106](106-scene-water/spec.md) | WebGL scene layer stage 3: ripples on the water (`DisplacementFilter`, procedural wave map, live DEV settings) | Implemented and checked; owner look and phone measurement pending | — |
 | [105](105-scene-background/spec.md) | WebGL scene layer stage 2: background and time of day on the scene, art-based scene resolution, frames only on change | Implemented, accepted on the phone; production on the scene (D6) | — |
 | [104](104-scene-layer-infrastructure/spec.md) | WebGL scene layer stage 1: config mode, router with 2D fallback, transparent 2D canvas, DEV switch | Implemented; owner phone check passed | — |

@@ -1,6 +1,9 @@
 import { FRAME_GAUGES } from "../../../engine/diagnostics/inactive_frame_probe.js";
 import { PixiBackgroundRenderer } from "./pixi_background_renderer.js";
 import { PixiFightAreaRenderer } from "./pixi_fight_area_renderer.js";
+import { PixiFloatRenderer } from "./pixi_float_renderer.js";
+import { PixiLineRenderer } from "./pixi_line_renderer.js";
+import { PixiRodRenderer } from "./pixi_rod_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
@@ -29,7 +32,8 @@ const OVER_SCENE_CLASS = "game-shell__canvas--over-scene";
 // and drawn under it (game-shell.css). Init is async and ends with one warm-up render, so the first-frame cost (Pixi
 // compiling its shaders) falls into loading; until then render draws nothing and isActive() is false. Each render
 // updates the kinds the router puts on the scene, bottom first: the background with the water's ripples over it
-// (spec 106), the world entities (bait boats, chum zones) and the fight areas (spec 107),
+// (spec 106), the world entities (bait boats, chum zones), the fight areas, the line, the rod (Spine or its static
+// picture) and the float (spec 107),
 // resizes the renderer only when the logical size or the scene's pixel ratio changed, and presents a frame only when
 // something changed (spec 105 D3; the water changes at its own frame rate): the browser keeps showing the last one. The scene's pixel ratio follows the background art (D4): never more than the
 // game canvas's, never more than the art's own pixels per drawn pixel. A lost WebGL context makes the layer inactive
@@ -50,6 +54,9 @@ export class PixiSceneLayer {
   #water = null;
   #worldEntities = null;
   #fightAreas = null;
+  #line = null;
+  #rod = null;
+  #float = null;
   #needsFrame = true;
   #metrics;
   #probe;
@@ -115,8 +122,11 @@ export class PixiSceneLayer {
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
     const pixelRatio = this.#scenePixelRatio();
     if (this.#worldEntities.update(router.drawsOnScene("world-entities") ? frame.world : null, pixelRatio)) changed = true;
-    const fightAreas = router.drawsOnScene("fight-areas") && frame.fishing.visible ? frame.fishing.fightAreas : null;
-    if (this.#fightAreas.update(fightAreas)) changed = true;
+    const fishing = frame.fishing?.visible ? frame.fishing : null;
+    if (this.#fightAreas.update(fishing && router.drawsOnScene("fight-areas") ? fishing.fightAreas : null)) changed = true;
+    if (this.#line.update(fishing && router.drawsOnScene("line") ? fishing.rodLine : null)) changed = true;
+    if (this.#rod.update(fishing && router.drawsOnScene("rod") ? fishing.rodLine : null)) changed = true;
+    if (this.#float.update(fishing && router.drawsOnScene("float") ? fishing.float : null)) changed = true;
     if (this.#resizeIfChanged(app)) changed = true;
     if (!changed && !this.#needsFrame) return;
     this.#needsFrame = false;
@@ -167,6 +177,8 @@ export class PixiSceneLayer {
     this.#app?.destroy({ removeView: false }, { children: true });
     this.#app = null;
     this.#water?.dispose();
+    this.#rod?.dispose();
+    this.#float?.dispose();
     this.#texts?.dispose();
     this.#textures?.dispose();
     this.#canvas.remove();
@@ -193,6 +205,9 @@ export class PixiSceneLayer {
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts });
       this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
+      this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
+      this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
+      this.#float = new PixiFloatRenderer({ pixi: this.#pixi, stage: app.stage, documentTarget: this.#documentTarget });
       this.#remember(app, width, height, resolution);
       app.render();
     } catch (error) {

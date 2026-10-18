@@ -37,9 +37,11 @@ export class RodAnimationController {
     state: "", stressRatio: 0, tensionRatio: 0, fishScreenX: 0, rodBaseX: 0, canvasWidth: 0, windDirection: 0,
     rainMultiplier: 1, reducedMotion: false, critical: false,
   };
+  // view / viewScale: the scene's display object of the skeleton (a runtime that draws inside the WebGL scene, spec
+  // 107) and its surface-to-logical scale; null when the skeleton is drawn into the GL surface or not at all.
   #anchor = {
     mode: "rectangle", baseX: 0, baseY: 0, tipX: 0, tipY: 0, scale: 1, destX: 0, destY: 0, destWidth: 0, destHeight: 0,
-    image: null, region: null, bounds: null,
+    image: null, region: null, bounds: null, view: null, viewScale: 1,
   };
   #pixelRatio = 1;
   #disposed = false;
@@ -121,6 +123,7 @@ export class RodAnimationController {
       return anchor;
     }
     anchor.mode = "static";
+    anchor.view = null;
     const tipX = pose.linePoint ? pose.linePoint.x : pose.bounds.x + pose.bounds.width / 2;
     const tipY = pose.linePoint ? pose.linePoint.y : pose.bounds.y + pose.bounds.height;
     anchor.tipX = context.baseX + tipX * anchor.scale;
@@ -282,6 +285,8 @@ export class RodAnimationController {
     anchor.destY = context.baseY - originY / ratio;
     anchor.destWidth = surface.width / ratio;
     anchor.destHeight = surface.height / ratio;
+    anchor.view = scene.getView?.() ?? null;
+    anchor.viewScale = 1 / ratio;
     const point = this.#point;
     if (scene.getPoint(this.#descriptor.linePoint || "line-tip", point)) {
       anchor.tipX = anchor.destX + point.x / ratio;
@@ -309,6 +314,7 @@ export class RodAnimationController {
 
   #rectangle(anchor) {
     anchor.mode = "rectangle";
+    anchor.view = null;
     anchor.scale = 1;
     anchor.image = null;
     anchor.region = null;

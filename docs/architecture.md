@@ -197,7 +197,10 @@ ripples over the background inside the location's castable zones (a copy of the 
 current, `world.current`). Stage 4 ([spec 107](../specs/107-scene-entities-rod/spec.md)): `PixiWorldEntitiesRenderer` and
 `PixiFightAreaRenderer` draw the bait boats, chum zones and fight areas with `Graphics` in the 2D renderers' colours
 (dashes as segments, clips as masks, emoji as `SceneTextTextures` sprites), rebuilt only when their
-`SceneChangeFingerprint` changes. DEV: DevTools
+`SceneChangeFingerprint` changes; `PixiLineRenderer`, `PixiRodRenderer` and `PixiFloatRenderer` draw the line, the rod and the
+tackle. The Spine rod runs on spine-pixi-v8 inside the scene: `SpineScene` drives a Pixi `Spine` view
+(`createPixiSpineRuntime`, y-down world) over a `SceneSkeletalSurface`, and `composeRodAnimation` picks that runtime and
+surface when the scene is WebGL (spine-webgl with its offscreen GL surface otherwise). DEV: DevTools
 "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`, with the live water settings). Rules:
 [docs/rendering.md](rendering.md).
 

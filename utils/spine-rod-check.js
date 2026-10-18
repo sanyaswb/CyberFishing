@@ -657,6 +657,78 @@ function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationCont
     "each Spine frame is one timed section (spec 101), static frames none");
 }
 
+// Spec 107 D6: the same scene on spine-pixi-v8's spine-core (y down, a Pixi Spine view) and on spine-webgl gives the
+// same line tip, bounds and bones for the same placement and tracks; the view is the scene's, updated by the scene.
+async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
+  const pixi = await importSource("vendor/pixi/8.22.0/pixi-scene.js");
+  const { createPixiSpineRuntime } = await importSource("src/platform/browser/scene/pixi_spine_runtime.js");
+  const { SceneSkeletalSurface } = await importSource("src/platform/browser/scene/scene_skeletal_surface.js");
+  assert.throws(() => createPixiSpineRuntime({}), /requires pixi\.Spine/u);
+  let onScene = true;
+  let webglVersion = 2;
+  const sceneSurface = new SceneSkeletalSurface({ drawsRod: () => onScene, getWebGLVersion: () => webglVersion });
+  assert.deepEqual([sceneSurface.canvas, sceneSurface.isContextLost(), sceneSurface.ensureContext(),
+    sceneSurface.canMipmap(2739, 89)], [null, false, true, true], "a coordinate space: no canvas, mipmaps on WebGL 2");
+  onScene = false;
+  assert.equal(sceneSurface.isContextLost(), true, "while the scene does not draw the rod the controller shows the static picture");
+  webglVersion = 1;
+  assert.deepEqual([sceneSurface.canMipmap(2739, 89), sceneSurface.canMipmap(256, 64)], [false, true]);
+  webglVersion = null;
+  assert.equal(sceneSurface.ensureContext(), false);
+  assert.equal(createPixiSpineRuntime(pixi).createScene(bundle, sceneSurface).reason, "context-unavailable");
+  sceneSurface.resize(120.2, 300.7);
+  assert.deepEqual([sceneSurface.width, sceneSurface.height], [121, 301], "sized like the GL surface (whole pixels)");
+
+  const views = { updated: 0, disposed: 0 };
+  const pixiGraphics = { ...fakeGraphics(), yDown: true,
+    createView: (data) => { const view = new pixi.Spine({ skeletonData: data, autoUpdate: false });
+      return { view, skeleton: view.skeleton, state: view.state }; },
+    viewUpdated: () => { views.updated += 1; },
+    disposeView: (view) => { views.disposed += 1; view.destroy(); } };
+  const onPixi = SpineScene.create({ spine: pixi, bundle, surface: fakeSurface(), graphics: pixiGraphics, runtimeVersion: "4.3.13" });
+  const onWebgl = SpineScene.create({ spine, bundle, surface: fakeSurface(), graphics: fakeGraphics(), runtimeVersion: "4.3.13" });
+  assert(onPixi.scene && onWebgl.scene, "both runtimes build the bamboo rod");
+  const view = onPixi.scene.getView();
+  assert(view instanceof pixi.Spine, "the Pixi scene exposes its Spine display object");
+  assert.equal(view.autoUpdate, false, "the view never runs its own update (Pixi's ticker is stopped anyway)");
+  assert.equal(onWebgl.scene.getView(), null, "spine-webgl draws into its surface");
+  const boundsA = onPixi.scene.getLocalBounds({});
+  const boundsB = onWebgl.scene.getLocalBounds({});
+  for (const key of ["x", "y", "width", "height"]) {
+    near(boundsA[key], boundsB[key], 1e-9, `bounds ${key} in skeleton units with y up from a y-down world`);
+  }
+  const steps = [
+    () => {},
+    (scene) => scene.setSampled(1, "rod_fighting-1--front", 0.8, 0.6),
+    (scene) => scene.setSampled(2, "rod_fighting-1--left", 0.8, 0.4),
+    (scene) => scene.setLoop(3, "rod_fight--left-critical", 0, true),
+    (scene) => scene.setLoop(0, "rod_idle-2", 0.2),
+  ];
+  const a = { x: 0, y: 0 };
+  const b = { x: 0, y: 0 };
+  for (const step of steps) {
+    for (const scene of [onPixi.scene, onWebgl.scene]) {
+      step(scene);
+      scene.setPlacement(40, 520, 0.75);
+      scene.update(1 / 30);
+    }
+    assert(onPixi.scene.getPoint("line-tip", a) && onWebgl.scene.getPoint("line-tip", b));
+    near(a.x, b.x, 1e-6, "line tip x on both runtimes");
+    near(a.y, b.y, 1e-6, "line tip y on both runtimes (surface pixels, y down)");
+    const bonesA = onPixi.scene.getBones();
+    const bonesB = onWebgl.scene.getBones();
+    for (let index = 0; index < bonesB.length; index += 1) {
+      near(bonesA[index].worldX, bonesB[index].worldX, 1e-6, `${bonesB[index].name} x`);
+      near(bonesA[index].worldY, bonesB[index].worldY, 1e-6, `${bonesB[index].name} y`);
+    }
+  }
+  assert.equal(views.updated, steps.length, "each update marks the view changed once");
+  assert.equal(onPixi.scene.render(), true, "the view draws itself in the scene's render");
+  onPixi.scene.dispose();
+  onWebgl.scene.dispose();
+  assert.equal(views.disposed, 1, "the view is destroyed with its scene");
+}
+
 async function main() {
   const version = checkVendorManifest();
   const spine = await importSource("vendor/spine-webgl/4.3.13/spine-webgl.js");
@@ -677,6 +749,7 @@ async function main() {
   checkAtlasReader(SpineAtlasTextReader);
   await checkBundleLoader(SpineBundleLoader, AssetLoadQueue);
   await checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle);
+  await checkPixiRuntimeParity(spine, SpineScene, bundle);
   checkSurface(SpineGlSurface);
   await checkTransport(BrowserAssetTransport);
   checkSmoother(ScalarSmoother);
@@ -710,7 +783,8 @@ async function main() {
     RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `
     + "queue (shared jobs, failures, release), scene from the real export (failures, placement, line-tip at setup and full "
-    + "bends, side blend, idle loop and time scale, missing clips, bounds, context restore, dispose), GL surface lifecycle, "
+    + "bends, side blend, idle loop and time scale, missing clips, bounds, context restore, dispose), the same scene on "
+    + "spine-pixi-v8 (y down, Spine view, line tip, bounds and bones equal to spine-webgl), GL and scene surfaces, "
     + "transport and frame-rate independent smoothing; setup pose without the runtime, pose resolver (wind, reduced "
     + "motion, rain, side weights), controller modes rectangle -> static -> spine (unavailable runtime, context loss, "
     + "DEV static, stale loads, spring-back), static/Spine/line renderers and the bit-for-bit rod line model without a "

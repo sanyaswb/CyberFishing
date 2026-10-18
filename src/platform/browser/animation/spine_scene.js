@@ -1,7 +1,10 @@
 // The only module that drives the Spine API (spec 099, "Scene port"; Spine 4.3 bone poses). The runtime namespace
-// and the graphics (GL textures, renderer, restore) are injected by spine_runtime_module.js, so checks build scenes
-// in Node with fake textures. Placement and points are surface pixels with y down; the skeleton world is y up with
-// its origin at the surface's bottom left, so a surface resize must happen before update().
+// and the graphics (textures, drawing, restore) are injected by a runtime module, so checks build scenes in Node with
+// fake textures. Two runtimes use it: spine-webgl (spine_runtime_module.js: the scene draws into its own GL surface,
+// skeleton world y up with its origin at the surface's bottom left, so a surface resize must happen before update())
+// and spine-pixi-v8 (pixi_spine_runtime.js, spec 107: graphics.yDown, the skeleton world is y down like the surface,
+// and graphics.createView gives the Pixi display object that draws the skeleton inside the WebGL scene). Placement
+// and points are surface pixels with y down in both.
 const SAMPLES_PER_CLIP = 24;
 const EMPTY_ANIMATION = "<empty>";
 const BONE_SETUP_KEYS = Object.freeze(["x", "y", "rotation", "scaleX", "scaleY"]);
@@ -15,6 +18,8 @@ export class SpineScene {
   #skeleton;
   #state;
   #renderer = null;
+  #view = null;
+  #yDown;
   #placement = { x: 0, y: 0, scale: 1 };
   #localBounds;
   #points = new Map();
@@ -66,10 +71,14 @@ export class SpineScene {
     this.#graphics = graphics;
     this.#atlas = atlas;
     this.#data = data;
-    this.#skeleton = new spine.Skeleton(data);
+    this.#yDown = graphics.yDown === true;
+    // A view-drawing runtime owns the skeleton and state its display object draws; the scene drives them.
+    const view = graphics.createView?.(data) ?? null;
+    this.#view = view?.view ?? null;
+    this.#skeleton = view?.skeleton ?? new spine.Skeleton(data);
     if (skin) this.#skeleton.setSkin(skin);
     this.#skeleton.setupPose();
-    this.#state = new spine.AnimationState(new spine.AnimationStateData(data));
+    this.#state = view?.state ?? new spine.AnimationState(new spine.AnimationStateData(data));
     this.#localBounds = this.#measureBounds(skin);
     this.#unsubscribe = surface.onContextChange((lost) => {
       if (!lost) this.restoreContext();
@@ -143,18 +152,26 @@ export class SpineScene {
     // Bones start from the setup pose every frame, so blended tracks never build on the previous frame.
     skeleton.setupPoseBones();
     skeleton.x = this.#placement.x;
-    skeleton.y = this.#surface.height - this.#placement.y;
+    skeleton.y = this.#yDown ? this.#placement.y : this.#surface.height - this.#placement.y;
     skeleton.scaleX = this.#placement.scale;
     skeleton.scaleY = this.#placement.scale;
     this.#state.apply(skeleton);
     skeleton.update(dt);
     skeleton.updateWorldTransform(this.#spine.Physics.update);
+    if (this.#view) this.#graphics.viewUpdated(this.#view);
   }
 
-  // Clears the surface and draws the skeleton; false while the context is lost.
+  // The display object that draws the skeleton in the WebGL scene (spine-pixi-v8), or null (spine-webgl draws into
+  // its surface through render()).
+  getView() {
+    return this.#view;
+  }
+
+  // Clears the surface and draws the skeleton; false while the context is lost. A view is drawn by its own renderer.
   render() {
     const surface = this.#surface;
     if (this.#disposed || surface.isContextLost()) return false;
+    if (this.#view) return true;
     const renderer = this.#renderer ??= this.#graphics.createRenderer();
     const gl = surface.gl;
     const width = surface.width;
@@ -182,7 +199,8 @@ export class SpineScene {
     if (!point) return false;
     const pose = point.bone.appliedPose;
     out.x = pose.a * point.x + pose.b * point.y + pose.worldX;
-    out.y = this.#surface.height - (pose.c * point.x + pose.d * point.y + pose.worldY);
+    const worldY = pose.c * point.x + pose.d * point.y + pose.worldY;
+    out.y = this.#yDown ? worldY : this.#surface.height - worldY;
     return true;
   }
 
@@ -220,13 +238,14 @@ export class SpineScene {
   // Bones with their setup values (bone space) and world position in surface pixels (y down) for the last update().
   getBones() {
     const height = this.#surface.height;
+    const yDown = this.#yDown;
     return this.#skeleton.bones.map((bone) => {
       const setup = bone.data.setupPose;
       const pose = bone.appliedPose;
       return {
         name: bone.data.name, parent: bone.parent?.data.name ?? null,
         x: setup.x, y: setup.y, rotation: setup.rotation, scaleX: setup.scaleX, scaleY: setup.scaleY,
-        worldX: pose.worldX, worldY: height - pose.worldY,
+        worldX: pose.worldX, worldY: yDown ? pose.worldY : height - pose.worldY,
       };
     });
   }
@@ -253,6 +272,7 @@ export class SpineScene {
     this.#disposed = true;
     this.#unsubscribe();
     this.#renderer?.dispose();
+    if (this.#view) this.#graphics.disposeView(this.#view);
     this.#atlas.dispose();
     this.#graphics.dispose();
   }
@@ -311,14 +331,17 @@ export class SpineScene {
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
+    // Bounds are skeleton units with y up; a y-down world mirrors them.
+    const yDown = this.#yDown;
     const measure = () => {
       skeleton.updateWorldTransform(spine.Physics.update);
       const rect = skeleton.getBoundsRect();
       if (!(rect.width > 0 || rect.height > 0)) return;
+      const bottom = yDown ? -(rect.y + rect.height) : rect.y;
       minX = Math.min(minX, rect.x);
-      minY = Math.min(minY, rect.y);
+      minY = Math.min(minY, bottom);
       maxX = Math.max(maxX, rect.x + rect.width);
-      maxY = Math.max(maxY, rect.y + rect.height);
+      maxY = Math.max(maxY, bottom + rect.height);
     };
     skeleton.setupPose();
     measure();

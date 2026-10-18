@@ -411,6 +411,7 @@ export class GameCompositionRoot {
     } = this.#composeFishModels({ contracts, itemFreshnessResolver });
     const rodAnimation = own(composeRodAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
+      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas },
     }));
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
       ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
