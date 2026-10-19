@@ -25,7 +25,7 @@ export class UiHintRenderer {
   }
 
   // Page markup that already has the ui-hint structure (the House page) gets the same behavior.
-  adopt(hint, { text, close, tone = "info", onClose = null }) {
+  adopt(hint, { text, close, tone = "info", onClose = null, onLayoutChange = null }) {
     const activate = () => {
       this.hide(hint);
       onClose?.();
@@ -33,12 +33,12 @@ export class UiHintRenderer {
     close.addEventListener("click", activate);
     let handle = null;
     if (this.#sheet) {
-      hint.classList.add("ui-hint--sheet");
       handle = this.#dom.button("ui-sheet-handle ui-hint__handle", "", { title: close.getAttribute("aria-label") });
+      handle.hidden = true;
       handle.setAttribute("aria-label", close.getAttribute("aria-label"));
       hint.appendChild(handle);
       handle.addEventListener("click", activate);
-      this.#sheet.attach(hint, { text, close, handle, onDismiss: activate });
+      this.#sheet.attach(hint, { text, close, handle, onDismiss: activate, onLayoutChange });
     }
     this.#parts.set(hint, { text, close, handle, activate, tone: null });
     this.#setTone(hint, tone);

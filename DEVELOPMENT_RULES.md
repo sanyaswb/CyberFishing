@@ -27,7 +27,7 @@ Gameplay changes (bug fixes, mechanics, balance) are tracked in `docs/gameplay_b
 - when the game-cycle report changes, re-baseline (`npm run baseline:game-cycle`) in the same commit; the commit message says which behavior changed and why;
 - balance values live in configuration, not in formulas; a save format change needs an explicit migration decision;
 - evidence: focused check, Architecture + Quick + Full, index/dev browser smoke of the changed flow, and the owner's play check for anything that changes feel;
-- a bug fix is a backlog entry plus the commit; a new or changed mechanic also gets a spec; releases bump the patch version for fixes and the minor version for mechanics, with a short CHANGELOG line.
+- a bug fix is a backlog entry plus the commit; a new or changed mechanic also gets a spec; delivered changes bump only the patch version with a short CHANGELOG line. The minor (middle) version must stay unchanged until the owner explicitly requests its change, including for new/changed mechanics (owner instruction, 2026-10-20; supersedes automatic minor bumps).
 
 The runtime is native ESM: every page loads one module entry. Do not add globals, compatibility bridges or classic scripts.
 

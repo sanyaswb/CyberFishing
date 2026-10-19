@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.43.1";
+export const CURRENT_PROJECT_VERSION = "0.45.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,14 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "wide-inventory-section-swipes",
+  codename: "full-container-equip-feedback",
   updatedAt: "2026-10-19",
   notes: Object.freeze([
+    "Successful equipping flashes the entire item field or editor tab with one rounded overlay, including active-tab free width; timing and feedback revisions are unchanged",
+    "The centred 80px pointer-aim lead activates only at the corresponding location camera limit; free camera travel follows raw pointer X and edge-pan/release recheck actual limits",
+    "Notice sheets apply only up to 820 logical UI pixels with no bottom border or top footprint; wider inventory/House notices retain top flow, full frames and original inline timers",
+    "Pointer aim recentres at the game viewport midpoint independently of the contact point; symmetric lead is capped at 80 logical pixels over the existing 100px smooth ramp",
+    "TK-008 radial inventory selector documented with reference images, classic UI preservation, live DevTools switching, hover and touch-release contracts; implementation pending",
     "Wide backpack and keepnet mouse/touch swipes switch sections directly; gesture thresholds follow the touched column and hidden portrait pages never consume the swipe",
     "TK-001 through TK-007 implemented: bottom notices, pointer aim lead, editor navigation/highlights, wide gestures, bare-line speed and double-activation clock phases",
     "TK-001 through TK-007 documented against current code with implementation boundaries, acceptance criteria and checks; gameplay unchanged",

@@ -1,5 +1,25 @@
 # CyberFishing changelog
 
+## v0.45.1 - Full-Container Equip Feedback
+
+- Extend TK-003.3 to the two success flashes after equipping: cover the entire field/editor tab, including the expanded active area and inset, with one rounded overlay. Preserve timing, reduced motion and one-time feedback; keep the owner's editor acceptance open (G-091).
+
+## v0.45.0 - Camera-Edge Pointer Aim
+
+- Restrict TK-002's centred 80px pointer lead to the corresponding location camera limit. Free camera travel uses raw pointer aim; reaching/leaving an edge is reflected after the pan step and on release. Reuse the projector's authoritative camera bounds for casting, recasting and hand chum (G-090).
+
+## v0.44.1 - Phone-Only Notice Sheets
+
+- Limit TK-001 bottom sheets to UI surfaces up to 820px; restore wide inventory/House top notices, full borders and original inline timers. Remove border-bottom only on phone sheets and prevent the empty top hint region from shifting mobile content. Resize safely switches the same notice between modes (G-089).
+
+## v0.44.0 - Viewport-Centred Pointer Aim
+
+- Amend TK-002: pointer aim recentres at the game viewport midpoint regardless of the initial contact. Keep the shared preview/edge-pan/release mapping and 100px smooth ramp, reduce the maximum lead from 100px to 80px, and preserve keyboard aiming and vertical power (G-088).
+
+## v0.43.2 - Radial Inventory Selector Brief
+
+- Document TK-008 in `tasks.md` with the owner's open/closed references: preserve classic UI, add a live DevTools mode switch, and define radial geometry, animated sectors, desktop hover retention, touch hold/move/release, accessibility and acceptance checks. Implementation is pending; gameplay is unchanged.
+
 ## v0.43.1 - Wide Inventory Section Swipes
 
 - Complete TK-007: mouse/touch swipes on the wide backpack and keepnet switch sections directly, without selecting hidden portrait pages. Use the touched column's width for the gesture threshold; preserve editor and filter gesture ownership.

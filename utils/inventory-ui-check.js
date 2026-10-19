@@ -1043,7 +1043,7 @@ class InventoryStaticContractCheck {
     const parameterSegmentsRule = style.match(
       /\.inventory-parameter__segments\s*\{[\s\S]*?\n\}/,
     )?.[0];
-    // Spec 086: hints have an in-flow region at the top of the inventory; nothing overlays the sections.
+    // Wide hints retain the spec 086 flow; only the mobile sheet child is absolutely positioned.
     assert.ok(
       hintRegionRule && !/position:\s*(absolute|fixed)/.test(hintRegionRule),
       "The hint region stays in the flow",
@@ -1051,8 +1051,12 @@ class InventoryStaticContractCheck {
     assert.ok(
       !/\.inventory-warning\b/.test(style) &&
         !/\.keepnet-section__help-text\s*\{/.test(style),
-      "Hints are not positioned over the inventory",
+      "Notice placement belongs to the shared region/sheet variant instead of individual warning/help classes",
     );
+    const hintFootprintRules = [...style.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter(([, selector, body]) => selector.includes(".inventory-modal__hints") && /(?:padding|margin-bottom)\s*:/.test(body));
+    assert.ok(hintFootprintRules.length > 0 && hintFootprintRules.every(([, selector]) => selector.includes(":not(.ui-hint--sheet)")),
+      "G-089: a phone bottom sheet never enables top-region padding or margin and pushes the header down");
     assert.ok(
       !style.includes("inventory-warning--visible"),
       "Warning visibility belongs to the ui-hint hidden state",
@@ -2636,13 +2640,18 @@ class InventoryStaticContractCheck {
     };
     ui.render(feedbackView);
     assert.strictEqual(
-      this.#findAllByClass(ui.rootNode, "inventory-slot--equipped-flash")
+      this.#findAllByClass(ui.rootNode, "inventory-equipment-feedback")
         .length,
       1,
+      "G-091: the equip flash belongs to the complete field container",
     );
+    const flashedField = this.#findByClass(ui.rootNode, "inventory-equipment-feedback");
+    assert.ok(flashedField.classList.contains("inventory-field"));
+    assert.strictEqual(this.#findByClass(flashedField, "inventory-equipment-feedback__overlay").parentNode, flashedField);
+    assert.strictEqual(this.#findAllByClass(flashedField, "inventory-slot--equipped-flash").length, 0);
     ui.render(feedbackView);
     assert.strictEqual(
-      this.#findAllByClass(ui.rootNode, "inventory-slot--equipped-flash")
+      this.#findAllByClass(ui.rootNode, "inventory-equipment-feedback")
         .length,
       0,
       "an unchanged equipment event never replays its one-time green feedback",
@@ -4526,6 +4535,35 @@ class InventoryStaticContractCheck {
     const highlightedTab = this.#findByClass(ui.rootNode, "inventory-editor-tabs__tab--highlighted");
     assert.ok(highlightedTab.contains(baitSocket), "the compatible socket's entire tab is highlighted for replacement");
     assert.ok(this.#findByClass(highlightedTab, "inventory-editor-tabs__highlight"), "a rounded layer covers the whole tab");
+
+    this.#findByClass(baitWell, "inventory-item-card").click();
+    const editorFeedbackView = { ...currentView,
+      equipmentFeedback: { revision: 2, slotId: "bait", instanceId: "bait-active" } };
+    ui.render(editorFeedbackView);
+    const flashedTab = this.#findByClass(ui.rootNode, "inventory-equipment-feedback");
+    assert.ok(flashedTab.classList.contains("inventory-editor-tabs__tab") &&
+      flashedTab.classList.contains("inventory-editor-tabs__tab--active"),
+      "the equipped item's whole expanded tab flashes, including its free width and inset");
+    const tabFeedback = this.#findByClass(flashedTab, "inventory-equipment-feedback__overlay");
+    assert.strictEqual(tabFeedback.parentNode, flashedTab);
+    assert.strictEqual(tabFeedback.getAttribute("aria-hidden"), "true");
+    assert.strictEqual(this.#findAllByClass(flashedTab, "inventory-editor-tabs__highlight").length, 1,
+      "a selected target reuses its existing full-tab layer instead of stacking another green pulse");
+    assert.strictEqual(this.#findAllByClass(flashedTab, "inventory-slot--equipped-flash").length, 0);
+    ui.render(editorFeedbackView);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-equipment-feedback").length, 0,
+      "a timer/model refresh does not replay the consumed equipment revision");
+    const plainFeedbackView = { ...editorFeedbackView,
+      panel: { ...currentView.panel, assembly: { ...currentView.panel.assembly,
+        sockets: currentView.panel.assembly.sockets.map(socket => ({ ...socket, highlighted: false })) } },
+      equipmentFeedback: { revision: 3, slotId: "bait", instanceId: "bait-active" } };
+    ui.render(plainFeedbackView);
+    const plainFlashedTab = this.#findByClass(ui.rootNode, "inventory-equipment-feedback");
+    assert.ok(plainFlashedTab.classList.contains("inventory-editor-tabs__tab"));
+    assert.strictEqual(this.#findByClass(plainFlashedTab, "inventory-equipment-feedback__overlay").parentNode, plainFlashedTab,
+      "a tab without a compatible-target pulse still gets a full-container equip overlay");
+    assert.strictEqual(this.#findAllByClass(plainFlashedTab, "inventory-editor-tabs__highlight").length, 0);
+    ui.render(currentView);
 
     assert.strictEqual(
       this.#walk(ui.rootNode).filter(

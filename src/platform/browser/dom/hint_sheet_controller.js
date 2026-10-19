@@ -1,26 +1,29 @@
-// Transient bottom-sheet input, timers and motion. The renderer owns markup and the visible message.
+// Responsive transient-notice input, timers and sheet motion. The renderer owns markup and the visible message.
 export class HintSheetController {
   #timers;
   #surface;
   #config;
   #motionPreference;
+  #inlineDurationMs;
   #bindings = new WeakMap();
 
-  constructor({ timers, uiSurface = null, config, motionPreference = null }) {
+  constructor({ timers, uiSurface = null, config, motionPreference = null, inlineDurationMs = config.durationMs }) {
     this.#timers = timers;
     this.#surface = uiSurface;
     this.#config = config;
     this.#motionPreference = motionPreference;
+    this.#inlineDurationMs = inlineDurationMs;
   }
 
-  attach(node, { text, close, handle, onDismiss }) {
+  attach(node, { text, close, handle, onDismiss, onLayoutChange = null }) {
     this.dispose(node);
-    const state = { node, text, onDismiss, timer: null, pointerId: null, height: 0, x: 0, y: 0,
+    const state = { node, text, handle, onDismiss, onLayoutChange, sheet: null, timer: null, pointerId: null, height: 0, x: 0, y: 0,
       distance: 0, moved: false, scrolling: false, scrollTop: 0, suppressed: false, revision: 0 };
     const stop = event => event.stopPropagation?.();
     const handlers = {
       pointerdown: event => {
         stop(event);
+        if (!state.sheet) return;
         if (state.pointerId !== null || event.isPrimary === false || (event.button !== undefined && event.button !== 0)) return;
         this.#clear(state);
         state.pointerId = event.pointerId;
@@ -88,11 +91,14 @@ export class HintSheetController {
     node.addEventListener("click", state.clickGuard, true);
     state.handlers = handlers;
     this.#bindings.set(node, state);
+    this.#syncLayout(state);
+    state.unsubscribe = this.#surface?.subscribe?.(() => this.#syncLayout(state));
   }
 
   show(node) {
     const state = this.#bindings.get(node);
     if (!state) return;
+    this.#syncLayout(state);
     this.#clear(state); this.#release(state);
     state.suppressed = false;
     node.classList.remove("ui-hint--closing");
@@ -109,10 +115,25 @@ export class HintSheetController {
   dispose(node) {
     const state = this.#bindings.get(node);
     if (!state) return;
+    state.unsubscribe?.();
     this.hide(node);
     for (const [type, handler] of Object.entries(state.handlers)) node.removeEventListener(type, handler);
     node.removeEventListener("click", state.clickGuard, true);
     this.#bindings.delete(node);
+  }
+
+  #syncLayout(state) {
+    const width = this.#surface?.getMetrics?.()?.logicalWidth;
+    const sheet = width > 0 && width <= this.#config.sheetMaxWidth;
+    if (state.sheet === sheet) return;
+    this.#clear(state); this.#release(state);
+    state.suppressed = false;
+    state.node.classList.remove("ui-hint--closing");
+    state.sheet = sheet;
+    state.node.classList.toggle("ui-hint--sheet", sheet);
+    state.handle.hidden = !sheet;
+    state.onLayoutChange?.(sheet);
+    if (!state.node.hidden) this.#arm(state);
   }
 
   #clear(state) {
@@ -127,12 +148,12 @@ export class HintSheetController {
     state.timer = this.#timers.setTimeout(() => {
       if (state.revision !== revision) return;
       state.timer = null; this.#dismiss(state);
-    }, this.#config.durationMs);
+    }, state.sheet ? this.#config.durationMs : this.#inlineDurationMs);
   }
 
   #dismiss(state) {
     this.#clear(state);
-    if (this.#motionPreference?.matches) { state.onDismiss(); return; }
+    if (!state.sheet || this.#motionPreference?.matches) { state.onDismiss(); return; }
     state.node.classList.add("ui-hint--closing");
     const revision = state.revision;
     state.timer = this.#timers.setTimeout(() => {

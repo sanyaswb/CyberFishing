@@ -401,7 +401,7 @@ export class InventoryUI {
       "div",
       "inventory-modal__header-host",
     );
-    // Persistent help uses this flow region; transient warnings are anchored at the modal's bottom by CSS.
+    // Wide notices and persistent help use this flow region; phone warnings overlay the bottom without a footprint.
     this.#hintRegion = this.#dom.element("div", "inventory-modal__hints");
     this.#warningNode = this.#hintRenderer.create({ className: "inventory-warning", tone: "warning", role: "alert",
       closeLabel: "Закрити попередження" });
@@ -516,8 +516,15 @@ export class InventoryUI {
     if (!this.#isOpen || this.#activeSectionId !== "equipment") return;
     const field = this.#nodesByClass(this.#equipmentHost, "inventory-field")
       .find((node) => node.dataset.slotId === feedback.slotId);
-    const slot = this.#firstNodeByClass(field, "inventory-slot");
-    slot?.classList.add("inventory-slot--equipped-flash");
+    const parent = field?.parentNode;
+    const container = parent?.classList.contains("inventory-editor-tabs__tab") ? parent : field;
+    if (!container) return;
+    container.classList.add("inventory-equipment-feedback");
+    const overlay = this.#firstNodeByClass(container, "inventory-editor-tabs__highlight") ||
+      this.#dom.element("span", "inventory-equipment-feedback__overlay");
+    overlay.classList.add("inventory-equipment-feedback__overlay");
+    overlay.setAttribute("aria-hidden", "true");
+    if (overlay.parentNode !== container) container.appendChild(overlay);
   }
 
   #renderLeftPanel(panel) {

@@ -13,7 +13,8 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 - Every delivered change bumps the patch version (`src/game/presentation/version/project_version.js`,
   `package.json`/`package-lock.json`, the `?v=` links of `index.html`, `dev.html` and `ui-catalog.html`) with a short
   `CHANGELOG.md` entry, so the owner can tell which build has which change. A new or changed mechanic bumps the minor
-  version instead (DEVELOPMENT_RULES).
+  version only after the owner's explicit instruction. Until then, increment only the patch, including for new or
+  changed mechanics (owner instruction, 2026-10-20; overrides the former automatic minor-bump rule).
 
 ## Generated artifacts
 

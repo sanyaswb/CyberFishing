@@ -80,6 +80,12 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   const colorResolver = new DegradationColorResolver({ configProvider: () => degradationColors });
   const motionPreference = { matches: false };
   const timers = new Map(); let timerId = 0;
+  let lastTimerDelay = null;
+  let noticeWidth = 600;
+  const noticeSubscribers = new Set();
+  const noticeSurface = { getMetrics: () => ({ logicalWidth: noticeWidth }),
+    subscribe(callback) { noticeSubscribers.add(callback); return () => noticeSubscribers.delete(callback); } };
+  const resizeNotice = width => { noticeWidth = width; for (const callback of noticeSubscribers) callback(); };
   const frames = new Map(); let frameId = 0;
   const flushFrames = () => { const pending = [...frames.values()]; frames.clear(); for (const callback of pending) callback(); };
   for (const panel of documentRef.querySelectorAll("[data-house-panel]")) {
@@ -90,10 +96,10 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     requestAnimationFrame: callback => { frames.set(++frameId, callback); return frameId; }, cancelAnimationFrame: id => frames.delete(id),
     getComputedStyle: () => ({ maxHeight: "690px", borderTopWidth: "1px",
       getPropertyValue: name => ["--ui-sheet-handle-size", "--house-dock-collapsed-height"].includes(name) ? "44px" : "0px" }),
-    setTimeout: callback => { timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id),
+    setTimeout: (callback, delay) => { lastTimerDelay = delay; timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id),
     matchMedia: () => motionPreference };
   const actions = [], returns = [];
-  const createView = () => composeHouseView({ documentRef, windowTarget, domFactory,
+  const createView = () => composeHouseView({ documentRef, windowTarget, domFactory, uiSurface: noticeSurface,
     sheetHeights: new SheetHeightController({ windowTarget, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, rootNode: documentRef.body, onReturn: () => returns.push("return"),
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
@@ -218,15 +224,14 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert.equal(documentRef.byClass("ui-sheet-handle").length, 5, "menu, sheets and the transient notice reuse the shared handle");
   assert.equal(documentRef.byClass("ui-modal-close").filter((node) => !node.classList.contains("ui-hint__close")).length, 0,
     "House sheets have no cross buttons");
-  // Spec 086: the notice takes the hint region at the top of its container and pushes the content below it down: the
-  // open sheet's region, otherwise the header's (which is revealed). Booleans keep failures readable (no DOM diffs).
+  // TK-001.1: phones have no top footprint; wider layouts retain the original spec 086 flow regions.
   const notice = documentRef.querySelector("[data-house-notice]");
   const headerHints = documentRef.querySelector("[data-house-header-hints]");
   assert(notice.hidden && notice.classList.contains("ui-hint--sheet") && notice.parentNode !== headerHints,
     "the notice starts hidden at the screen root, outside header flow");
   const aquariumContent = documentRef.querySelector('[data-house-panel="aquarium"]').querySelector(".house__sheet-content");
   const aquariumHints = aquariumContent.querySelector("[data-house-sheet-hints]");
-  assert.equal(aquariumHints, null, "obsolete top notice regions no longer reserve sheet content space");
+  assert(aquariumHints && aquariumHints.children.length === 0, "the empty wide-notice host reserves no phone space");
   view.setNavigationState({ panel: "aquarium" });
   view.announce("Готово");
   assert(notice.parentNode !== aquariumHints, "a sheet action uses the same bottom notice without shifting content");
@@ -243,6 +248,24 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert(notice.classList.contains("ui-hint--error"));
   view.announce("");
   assert(notice.hidden, "an empty message hides the notice");
+  resizeNotice(821);
+  view.setNavigationState({ panel: "aquarium" });
+  view.announce("Wide panel notice");
+  assert(!notice.classList.contains("ui-hint--sheet") && notice.parentNode === aquariumHints,
+    "above 820px House restores the notice to the active panel's top flow");
+  assert.equal(lastTimerDelay, 4000, "wide House preserves its original notice duration");
+  assert(notice.querySelector(".ui-hint__handle").hidden);
+  view.setNavigationState({ panel: null });
+  header.classList.remove("house__header--visible");
+  view.announce("Wide header notice", true);
+  assert.equal(notice.parentNode, headerHints);
+  assert(header.classList.contains("house__header--visible"), "a wide notice without a panel reveals the header");
+  resizeNotice(820);
+  assert.equal(notice.parentNode, documentRef.body, "resize moves the same notice out of the header flow on phones");
+  assert.equal(lastTimerDelay, 5000);
+  assert.equal(headerHints.children.length, 0);
+  assert(notice.classList.contains("ui-hint--sheet") && !notice.querySelector(".ui-hint__handle").hidden);
+  view.announce("");
   view.handleSceneGesture(-30);
   assert(!header.classList.contains("house__header--visible"), "the revealed header closes with the usual gesture");
   // Spec 084: the return control is a button that closes the House screen.
@@ -303,6 +326,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   model.aquarium.feed = null; view.render(model);
   assert.equal(documentRef.querySelector("[data-house-feed-bar]").hidden, true);
   view.dispose();
+  assert.equal(noticeSubscribers.size, 0, "disposing the notice releases its responsive subscription");
   assert.equal(dock.listeners.get("pointerover").size, 0); assert.equal(dock.listeners.get("pointerleave").size, 0);
   assert.equal(documentRef.body.listeners.get("keydown").size, 0);
   assert.equal(documentRef.byClass("ui-sheet-handle").length, 0);

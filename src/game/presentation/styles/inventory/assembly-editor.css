@@ -95,6 +95,7 @@
 
 /* The inset keeps the artwork clear of the tab's edges (spec 093). */
 .inventory-editor-tabs__tab {
+  --inventory-equipment-feedback-radius: var(--inventory-panel-radius);
   --inventory-editor-tab-inset: calc(var(--inventory-socket-size) * 0.14);
   position: relative;
   flex: 0 0 var(--inventory-socket-size);

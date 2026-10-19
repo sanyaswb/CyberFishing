@@ -229,7 +229,7 @@
     }
 
     /* The full-screen portrait container has no outer padding: the region keeps the containers' inset. */
-    .inventory-modal__hints:has(> :not([hidden])) {
+    .inventory-modal__hints:has(> :not([hidden]):not(.ui-hint--sheet)) {
       margin-bottom: 0;
       padding: var(--inventory-container-gap) var(--inventory-container-gap) 0;
     }

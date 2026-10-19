@@ -55,15 +55,29 @@
   pointer-events: none;
   animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite;
 }
-.inventory-slot--equipped-flash::after {
+/* Successful equipping flashes the whole field or editor tab; its inner well never owns a second flash. */
+.inventory-equipment-feedback {
+  position: relative;
+  isolation: isolate;
+}
+
+.inventory-field.inventory-equipment-feedback {
+  --inventory-equipment-feedback-radius: var(--inventory-slot-radius, 0);
+}
+
+.inventory-equipment-feedback > .inventory-equipment-feedback__overlay {
   position: absolute;
   z-index: 18;
   inset: 0;
-  border-radius: inherit;
+  border-radius: var(--inventory-equipment-feedback-radius, inherit);
   background: var(--inventory-success);
-  content: "";
   pointer-events: none;
   animation: inventory-equipped-flash calc(var(--ui-duration-normal) * 4.6) var(--ui-ease-standard) 1 both;
+}
+
+.inventory-equipment-feedback .inventory-slot--highlighted::after {
+  animation: none;
+  opacity: 0;
 }
 /* Two flashes (spec 090): the first as before (2 x normal), the second 1.3 times slower (2.6 x normal); each peaks at
    30% of its own time. */
@@ -136,7 +150,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inventory-slot--equipped-flash::after { animation: none; opacity: 0; }
+  .inventory-equipment-feedback > .inventory-equipment-feedback__overlay { animation: none; opacity: 0; }
   .inventory-slot.inventory-slot--highlighted::after {
     opacity: 0.35;
     animation: none;

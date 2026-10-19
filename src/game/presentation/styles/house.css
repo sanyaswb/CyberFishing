@@ -639,11 +639,25 @@
   font-size: clamp(1.7rem, 4cqw, 3rem);
 }
 
-.house > .house__notice {
+.house > .house__notice.ui-hint--sheet {
   position: fixed;
   inset-inline: var(--house-panel-inline-padding);
   bottom: 0;
   z-index: var(--ui-layer-tooltip);
+}
+
+/* Wide notices retain the original top flow; empty regions, including on phones, reserve no space. */
+.house__hints {
+  display: grid;
+  min-width: 0;
+}
+
+.house__hints--sheet:has(> :not([hidden])) {
+  margin-bottom: 14px;
+}
+
+.house__hints--header:has(> :not([hidden])) {
+  margin-top: 12px;
 }
 
 .house__feed-list {

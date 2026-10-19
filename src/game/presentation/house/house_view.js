@@ -20,6 +20,7 @@ export class HouseView {
   #keepnetList;
   #hints;
   #notice;
+  #noticeRoom;
 
   constructor({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
     resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
@@ -49,8 +50,9 @@ export class HouseView {
       onChange: () => this.#perform("toggleAutoFeeder") });
     this.#nodes.get("auto-switch-mount").appendChild(this.#autoSwitch);
     this.#notice = this.#nodes.get("notice");
-    hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close") });
-    rootNode.appendChild(this.#notice);
+    this.#noticeRoom = documentRef.querySelector("[data-house-header-hints]");
+    hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close"),
+      onLayoutChange: sheet => this.#placeNotice(sheet) });
     this.#root.addEventListener("click", this.#handleClick);
   }
 
@@ -68,11 +70,19 @@ export class HouseView {
     this.#keepnetList.dispose();
   }
 
-  // One transient notice at the screen bottom; its shared controller owns timers and dismissal.
+  // Phone notices overlay the bottom; wider layouts retain the active panel/header flow from spec 086.
   announce(message, failed = false) {
     const node = this.#notice;
     if (!message) { this.#hints.hide(node); return; }
     this.#hints.show(node, message, failed ? "error" : "info");
+    this.#placeNotice(node.classList.contains("ui-hint--sheet"));
+  }
+
+  #placeNotice(sheet) {
+    const content = this.#navigation.activeSheetContent();
+    const host = sheet ? this.#root : content?.querySelector("[data-house-sheet-hints]") ?? this.#noticeRoom;
+    if (this.#notice.parentNode !== host) host.appendChild(this.#notice);
+    if (!sheet && !content && !this.#notice.hidden) this.#navigation.revealHeader();
   }
 
   handleSceneGesture(deltaY) {

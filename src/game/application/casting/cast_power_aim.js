@@ -17,7 +17,7 @@ export class CastPowerAim {
   #keyboardActive = false;
   #leadSource;
   #rampSource;
-  #maxLeadPx = 100;
+  #maxLeadPx = 80;
   #rampDistancePx = 100;
   #release = {
     active: false,
@@ -79,7 +79,9 @@ export class CastPowerAim {
       this.#screenY = input.pointerCurrent.y;
       this.#updateStartY(this.#screenY, dt);
       this.#power = this.#calculatePower(this.#screenY);
-      this.#applyEdgeScroll(this.#screenX, dt);
+      if (this.#applyEdgeScroll(this.#screenX, dt)) {
+        this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
+      }
       this.#updateVisual(mode);
       return null;
     }
@@ -443,6 +445,7 @@ export class CastPowerAim {
     const delta =
       direction * maxSpeed * Math.pow(this.#clamp(edgeRatio, 0, 1), easePower) * dtSec;
     this.#panViewport(delta);
+    return delta !== 0;
   }
 
   #sampleAccuracy(centerX, centerY, radiusX, radiusY) {
@@ -573,18 +576,21 @@ export class CastPowerAim {
 
   #pointerScreenX(value) {
     const cfg = this.#cfg().pointerAim;
-    const lead = cfg?.maxLeadPx ?? 100;
+    const lead = cfg?.maxLeadPx ?? 80;
     const ramp = cfg?.rampDistancePx ?? 100;
     if (!Object.is(lead, this.#leadSource) || !Object.is(ramp, this.#rampSource)) {
       this.#leadSource = lead;
       this.#rampSource = ramp;
-      this.#maxLeadPx = Number.isFinite(lead) ? Math.max(0, lead) : 100;
+      this.#maxLeadPx = Number.isFinite(lead) ? Math.max(0, lead) : 80;
       this.#rampDistancePx = Number.isFinite(ramp) ? Math.max(1, ramp) : 100;
     }
+    const viewport = this.#getViewportSize?.();
+    const width = Math.max(1, viewport?.width || 1);
     const pointerX = Number.isFinite(value) ? value : this.#startX;
-    const dx = pointerX - this.#startX;
+    const dx = pointerX - width / 2;
+    if (!this.#projector?.isAtHorizontalEdge?.(Math.sign(dx))) return this.#clamp(pointerX, 0, width);
     const q = Math.min(1, Math.abs(dx) / this.#rampDistancePx);
-    return this.#clampScreenX(pointerX + Math.sign(dx) * this.#maxLeadPx * q * q * (3 - 2 * q));
+    return this.#clamp(pointerX + Math.sign(dx) * this.#maxLeadPx * q * q * (3 - 2 * q), 0, width);
   }
 
   #cfg() {

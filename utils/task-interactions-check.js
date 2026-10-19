@@ -51,24 +51,158 @@ for (const pointerType of ["mouse", "touch"]) {
   assert.equal([...preview.listeners.values()].reduce((n, set) => n + set.size, 0), 0);
 }
 const { CastPowerAim } = require("../src/game/application/casting/cast_power_aim.js");
-const aimConfig = { casting: { pointerAim: { maxLeadPx: 100, rampDistancePx: 100 }, edgeScrollCenterRatio: 1 } };
-const aim = new CastPowerAim({ config: aimConfig, getViewportSize: () => ({ width: 400, height: 600 }) });
-const start = { x: 200, y: 200 };
+const aimConfig = { casting: { pointerAim: { maxLeadPx: 80, rampDistancePx: 100 }, edgeScrollCenterRatio: 1 } };
+const aimViewport = { width: 400, height: 600 };
+const aimPans = [];
+const aimBounds = { left: 0, right: 400, top: 0, bottom: 1000 };
+const aimEdges = { left: true, right: true };
+const aimProjector = {
+  virtualToScreen: (x, y, out) => Object.assign(out, { x, y }),
+  screenToVirtual: (x, y, out) => Object.assign(out, { x, y }),
+  getScale: () => 1,
+  isAtHorizontalEdge: direction => direction < 0 ? aimEdges.left : direction > 0 && aimEdges.right,
+};
+const aimMetric = { topBasePixels: 1000, virtualPixelsFromShore: value => value,
+  yAtBasePixels: value => 1000 - value, distanceBasePixels: (x, y, ox, oy) => Math.hypot(x - ox, y - oy) };
+const aim = new CastPowerAim({ config: aimConfig, getViewportSize: () => aimViewport,
+  projector: aimProjector, getWaterMetric: () => aimMetric, panViewport: delta => aimPans.push(delta),
+  rng: { next: () => 0.5 } });
+const start = { x: 40, y: 200 };
 function aimAt(x) {
   aim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x, y: 200 } }, null, 16);
   return aim.getVisualState().screenX;
 }
+aimEdges.left = aimEdges.right = false;
+assert.equal(aimAt(250), 250, "G-090: pointer aim has no lead while the viewport can still pan right");
+assert.equal(aimAt(150), 150, "pointer aim has no lead while the viewport can still pan left");
+aimEdges.right = true;
+assert.equal(aimAt(250), 290, "the right camera edge enables the existing right-half lead curve");
+assert.equal(aimAt(150), 150, "the right camera edge does not enable left-half lead");
 assert.equal(aimAt(200), 200);
-assert.equal(aimAt(250), 300, "half ramp leads the finger by 50 logical pixels");
-assert.equal(aimAt(300), 400);
-assert.equal(aimAt(150), 100);
-assert.equal(aimAt(100), 0);
-assert.equal(aimAt(200), 200);
+aimEdges.right = false;
+aimEdges.left = true;
+assert.equal(aimAt(150), 110, "the left camera edge enables only left-half lead");
+assert.equal(aimAt(250), 250);
+aimEdges.left = false;
+assert.equal(aimAt(150), 150, "moving the camera away from an edge disables its lead immediately");
+aimEdges.right = true;
+aimAt(250);
+aimEdges.right = false;
+assert.equal(aim.update({ pointerReleased: true, pointerRelease: { x: 250, y: 300 } }, null, 16).screenX, 250,
+  "release rechecks the real edge instead of retaining a previous lead");
+aim.reset();
+aimEdges.left = aimEdges.right = true;
+aimAt(40);
+assert.equal(aimAt(300), 380);
+assert.equal(aimAt(200), 200, "G-088: returning from the right edge recentres at viewport midpoint after a left-side start");
+for (const [startX, initialAimX] of [[40, 0], [150, 110], [200, 200], [250, 290], [360, 400]]) {
+  aim.reset();
+  start.x = startX;
+  assert.equal(aimAt(startX), initialAimX, "the first pointerdown already uses the viewport-centred mapping");
+  for (const [pointerX, aimX] of [[200, 200], [250, 290], [300, 380], [320, 400], [400, 400],
+    [250, 290], [200, 200], [150, 110], [100, 20], [80, 0], [0, 0], [200, 200]]) {
+    assert.equal(aimAt(pointerX), aimX, `start ${startX}: viewport-centred mapping at ${pointerX}`);
+  }
+}
+for (const offset of [0.01, 1, 25, 50, 99]) {
+  const left = aimAt(200 - offset), right = aimAt(200 + offset);
+  assert(Math.abs(left + right - 400) < 1e-9, "lead stays symmetric and continuous through centre on reversal");
+  assert(right >= 200 + offset && right <= 200 + offset + 80);
+}
+aimAt(250);
+const centreRelease = aim.update({ pointerReleased: true, pointerRelease: { x: 200, y: 300 } }, null, 16);
+assert.equal(centreRelease.screenX, 200, "release at centre recentres without a final move event");
+assert.equal(centreRelease.power, 0.5, "vertical power keeps its existing formula");
+aim.reset();
+start.x = 40;
+aimAt(200);
 const release = aim.update({ pointerReleased: true, pointerRelease: { x: 250, y: 300 } }, null, 16);
-assert.equal(release.screenX, 300, "release uses the same mapping without a final move event");
+assert.equal(release.screenX, 290, "release uses the same mapping without a final move event");
+assert.equal(release.startX, 40, "contact metadata is preserved without owning horizontal lead");
+const target = aim.resolveTarget(release, { bounds: aimBounds, maxDistance: 600, accuracyPx: 0,
+  accuracyPercent: 0, checkWater: () => ({ depth: 2 }) });
+aim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x: 250, y: 300 } }, null, 16);
+const preview = aim.getAccuracyPreview(aimBounds, 600, 0, 0);
+assert.equal(preview.x, release.screenX, "accuracy preview shares the release coordinate");
+assert.equal(target.success, true);
+assert.equal(target.x, preview.x);
+assert.equal(target.rodScreenX, preview.x, "resolved cast target and rod origin agree with preview");
+aim.reset();
+aimConfig.casting.edgeScrollCenterRatio = 0.3;
+assert.equal(aimAt(250), 290);
+assert(Math.abs(aimPans.at(-1) - 900 * Math.pow(30 / 140, 1.6) * 0.016) < 1e-9,
+  "edge pan follows the led coordinate rather than the contact or raw pointer");
+aimConfig.casting.edgeScrollCenterRatio = 1;
+aimViewport.width = 640;
+assert.equal(aimAt(320), 320, "an active gesture follows the resized game viewport centre");
+assert.equal(aimAt(370), 410);
+aimViewport.width = 320;
+assert.equal(aimAt(160), 160, "a narrow playable viewport uses its own midpoint");
+assert.equal(aimAt(210), 250);
+aimViewport.width = 400;
 aim.reset();
 aimConfig.casting.pointerAim.maxLeadPx = 0;
 assert.equal(aimAt(250), 250, "a live zero lead restores the original pointer mapping");
+delete aimConfig.casting.pointerAim;
+assert.equal(aimAt(250), 290, "the default is 80 logical pixels when pointer configuration is absent");
+aim.reset();
+aim.update({ isPulling: true, aimRight: true }, null, 16);
+assert(Math.abs(aim.getVisualState().screenX - 206.72) < 1e-9, "keyboard keeps its 420px/s aim without pointer lead");
+assert(Math.abs(aim.update({}, null, 16).screenX - 206.72) < 1e-9);
+
+const { ViewportProjector } = require("../src/game/application/viewport/viewport_projector.js");
+const edgeViewport = { width: 400, height: 600 };
+const edgeProjector = new ViewportProjector({ baseResolution: { width: 1000, height: 1000 },
+  map: { lake: { safeZone: { top: 0, bottom: 600 } } } }, "lake", () => ({ scale: 1, squashY: 1 }));
+edgeProjector.update(edgeViewport.width, edgeViewport.height);
+const edgeAim = new CastPowerAim({ config: { casting: { edgeScrollCenterRatio: 0.3 } }, projector: edgeProjector,
+  getViewportSize: () => edgeViewport, panViewport: delta => edgeProjector.pan(delta) });
+function edgeAimAt(x) {
+  edgeAim.update({ pointerDown: true, pointerStart: { x: 200, y: 200 }, pointerCurrent: { x, y: 200 } }, null, 16);
+  return edgeAim.getVisualState().screenX;
+}
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
+assert.equal(edgeProjector.isAtHorizontalEdge(0), false);
+assert.equal(edgeAimAt(300), 300, "real camera movement keeps raw pointer aim before reaching a limit");
+edgeProjector.pan(1e6);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
+assert.equal(edgeAimAt(250), 290);
+assert.equal(edgeAimAt(150), 150, "the actual right stop never enables a left lead");
+assert.equal(edgeAimAt(200), 200);
+assert.equal(edgeAimAt(100), 100, "pan away from the right stop uses raw left-half aim");
+assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
+assert.equal(edgeAimAt(250), 250, "no stale lead survives departure from the stop");
+edgeProjector.pan(-1e6);
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
+assert.equal(edgeAimAt(150), 110);
+assert.equal(edgeAimAt(250), 250);
+assert.equal(edgeAimAt(300), 300);
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
+assert.equal(edgeAimAt(150), 150);
+edgeProjector.pan(1e6); edgeProjector.pan(-1);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
+assert.equal(edgeAimAt(350), 400, "the same update that reaches the real right camera limit enables its lead");
+assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
+edgeProjector.pan(-1e6); edgeProjector.pan(1);
+assert.equal(edgeAimAt(50), 0, "the same update that reaches the left limit enables left lead");
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
+edgeViewport.width = 1600;
+edgeProjector.update(edgeViewport.width, edgeViewport.height);
+assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
+assert.equal(edgeAimAt(750), 710, "a whole-location view has both limits and keeps the centred curve");
+assert.equal(edgeAimAt(850), 890);
+edgeViewport.width = 320;
+edgeProjector.update(edgeViewport.width, edgeViewport.height);
+assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
+assert.equal(edgeAimAt(210), 210, "a resized narrow game strip uses its real camera limits, without viewport-width guesses");
+const unknownEdgeAim = new CastPowerAim({ config: {}, getViewportSize: () => edgeViewport });
+unknownEdgeAim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x: 250, y: 200 } }, null, 16);
+assert.equal(unknownEdgeAim.getVisualState().screenX, 250, "missing camera-edge information never enables lead");
+
 class Timers {
   now = 0;
   next = 0;
@@ -88,8 +222,17 @@ class Timers {
 
 const { InventoryDomFactory } = require("../src/platform/browser/dom/inventory_dom_factory.js");
 const { composeHintRenderer } = require("../src/bootstrap/production/hint_renderer_composition.js");
+function hintSurface(initialWidth = 600) {
+  let width = initialWidth;
+  const subscribers = new Set();
+  return { subscribers, getMetrics: () => ({ logicalWidth: Math.max(320, width) }),
+    physicalToLogicalDelta: ({ y }) => ({ y }),
+    subscribe(callback) { subscribers.add(callback); return () => subscribers.delete(callback); },
+    resize(nextWidth) { width = nextWidth; for (const callback of subscribers) callback(); } };
+}
 const sheetTimers = new Timers();
-const hints = composeHintRenderer({ domFactory: new InventoryDomFactory(documentRef), timers: sheetTimers });
+const mobileHintSurface = hintSurface();
+const hints = composeHintRenderer({ domFactory: new InventoryDomFactory(documentRef), timers: sheetTimers, uiSurface: mobileHintSurface });
 const hint = hints.create({ closeLabel: "Close" });
 documentRef.body.append(hint);
 hint.getBoundingClientRect = () => ({ height: 200 });
@@ -117,7 +260,7 @@ hints.dispose(hint); assert.equal(sheetTimers.jobs.size, 0);
 assert.equal([...hint.listeners.values()].reduce((n, set) => n + set.size, 0), 0);
 
 const scaledHints = composeHintRenderer({ domFactory: new InventoryDomFactory(documentRef), timers: sheetTimers,
-  uiSurface: { physicalToLogicalDelta: ({ y }) => ({ y: y * 2 }) } });
+  uiSurface: { ...hintSurface(240), physicalToLogicalDelta: ({ y }) => ({ y: y * 2 }) } });
 const scaledHint = scaledHints.create({ closeLabel: "Close scaled" });
 scaledHint.getBoundingClientRect = () => ({ height: 100 });
 scaledHints.show(scaledHint, "Scaled");
@@ -127,6 +270,40 @@ assert.equal(scaledHint.style.getPropertyValue("--ui-hint-drag-y"), "20px");
 scaledHint.fire("pointerup", { pointerId: 4, clientX: 0, clientY: 10 });
 sheetTimers.advance(200); assert(scaledHint.hidden, "the same 10% threshold survives UI surface scaling");
 scaledHints.dispose(scaledHint);
+
+const responsiveSurface = hintSurface(820);
+const responsiveHints = composeHintRenderer({ domFactory: new InventoryDomFactory(documentRef), timers: sheetTimers,
+  uiSurface: responsiveSurface, inlineDurationMs: 4000 });
+const responsiveHint = responsiveHints.create({ closeLabel: "Responsive close" });
+responsiveHint.getBoundingClientRect = () => ({ height: 200 });
+responsiveHints.show(responsiveHint, "Boundary message");
+assert(responsiveHint.classList.contains("ui-hint--sheet"), "820px retains the mobile bottom sheet");
+responsiveHint.fire("pointerdown", { pointerId: 8, clientX: 0, clientY: 0 });
+responsiveHint.fire("pointermove", { pointerId: 8, clientX: 0, clientY: 30 });
+responsiveSurface.resize(821);
+assert(!responsiveHint.classList.contains("ui-hint--sheet"), "G-089: above 820px the notice returns to its original inline mode");
+assert(responsiveHint.children.find(node => node.classList.contains("ui-hint__handle")).hidden,
+  "the desktop notice has no visible or focusable sheet handle");
+assert.equal(responsiveHint.style.getPropertyValue("--ui-hint-drag-y"), "");
+responsiveHint.fire("pointerup", { pointerId: 8, clientX: 0, clientY: 30 });
+responsiveHint.fire("pointerdown", { pointerId: 9, clientX: 0, clientY: 0 });
+responsiveHint.fire("pointermove", { pointerId: 9, clientX: 0, clientY: 100 });
+responsiveHint.fire("pointerup", { pointerId: 9, clientX: 0, clientY: 100 });
+assert(!responsiveHint.hidden && !responsiveHint.classList.contains("ui-hint--closing"), "desktop drag never dismisses a notice");
+sheetTimers.advance(3999); assert(!responsiveHint.hidden);
+sheetTimers.advance(1); assert(responsiveHint.hidden, "desktop House duration stays 4000ms without a sheet exit animation");
+responsiveSurface.resize(820);
+responsiveHints.show(responsiveHint, "Mobile again");
+sheetTimers.advance(4999); assert(!responsiveHint.hidden);
+sheetTimers.advance(1); assert(responsiveHint.classList.contains("ui-hint--closing"));
+const responsiveStaleClose = [...sheetTimers.jobs.values()][0].callback;
+responsiveSurface.resize(1280);
+responsiveStaleClose();
+assert(!responsiveHint.hidden && !responsiveHint.classList.contains("ui-hint--closing"), "resize cancels a stale mobile exit");
+responsiveHints.dispose(responsiveHint);
+assert.equal(responsiveSurface.subscribers.size, 0);
+assert.equal(mobileHintSurface.subscribers.size, 0);
+assert.equal(sheetTimers.jobs.size, 0);
 
 const { InventoryUiState } = require("../src/game/application/inventory/inventory_ui_state.js");
 const route = new InventoryUiState();

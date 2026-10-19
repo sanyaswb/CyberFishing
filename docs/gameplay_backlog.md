@@ -20,6 +20,38 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-091 Newly equipped item feedback flashes only the inner well (P3, implemented in v0.45.1)
+Found: 2026-10-19, owner declines TK-003 editor acceptance in v0.45.0.
+Reproduce: equip a component in the editor and inspect the green success flashes on its expanded tab; compare the feedback footprint with the whole tab container and its inset.
+Expected: both success flashes cover the entire item field/tab, with matching rounded edges, including the active tab's free width. One event, one overlay; preserve timing, input and reduced motion.
+Actual before fix: InventoryUI adds inventory-slot--equipped-flash to the small inner well; the editor's outer padding and widened tab remain unlit.
+Resolution: resolve the outer field/editor tab as the feedback host and reuse a shared inert overlay, including an existing compatible-target layer when present. Remove the obsolete inner-well flash style; no gameplay/state/timer change or replaced tools.
+Evidence: failing-before inventory-ui regression expects a full-container feedback host but finds none; it passes after the fix for loadout fields, expanded editor tabs, reused/new overlays and revision deduplication. Focused inventory UI/integration, Architecture 4/4, Quick 37/37 and Full 63/63 pass; game-cycle/save bytes unchanged. The owner's declined editor acceptance stays open in tasks.md.
+
+### G-090 Pointer aim leads before the viewport reaches the location edge (P3, implemented in v0.45.0)
+Found: 2026-10-19, owner correction to TK-002.1, index/dev in v0.44.1.
+Reproduce: while the camera can still pan right, hold the pointer at X=250 in a 400px viewport.
+Expected: aim stays at X=250 until the right camera limit is reached; left-half lead is enabled only at the left limit. Preserve 80px maximum, centred return and shared release/preview mapping.
+Actual before change: the centred curve applies unconditionally, so aim is X=290 despite available camera travel.
+Resolution: amend spec 114, read the authoritative directional limits from ViewportProjector, gate the existing curve in CastPowerAim and recalculate after edge-pan steps. No new camera state, renderer offset, save field or obsolete tool.
+Evidence: task-interactions fails before the change with 290 versus 250, passes after it; real-projector free/edge/wrong-side, same-update arrival/departure, release, resize and whole-map cases covered. Focused checks, Architecture 4/4, Quick 37/37 and Full 63/63 pass; game-cycle baseline/save bytes unchanged. Owner visual acceptance remains pending in tasks.md.
+
+### G-089 Mobile notice sheets also replace desktop top notices and leave a top gap (P2, implemented in v0.44.1)
+Found: 2026-10-19, owner correction to TK-001, inventory/House and UI catalog in v0.44.0.
+Reproduce: show a notice above 820px; it incorrectly overlays the bottom. On a phone, show an inventory warning; the old portrait hint-region padding also shifts the header/content down.
+Expected: <=820 logical UI-surface px gets a bottom sheet without top footprint or bottom border; >820 keeps the original top-flow notice, full border, close behavior and timer (inventory 5000ms, House 4000ms).
+Actual before fix: the sheet modifier/gesture was unconditional, House's top regions were removed, and the mobile top-region padding matched the visible absolute sheet.
+Resolution: subscribe to injected UI-surface metrics; toggle sheet state/handle/drag, restore House's panel/header flow and inline duration, exclude sheet children from top padding/margins, remove border-bottom only in the sheet modifier. One timer/message owner, no game/save changes or obsolete tools.
+Evidence: failing-before task-interactions regression at 820→821px; focused resize/cancel/stale-exit/timer, House host/header, inventory footprint, catalog and CSS checks pass. Architecture 4/4, Quick 37/37, Full 63/63; game-cycle/save bytes unchanged. Owner browser acceptance remains pending in tasks.md.
+
+### G-088 Pointer aim recentres at the contact instead of the viewport midpoint (P3, implemented in v0.44.0)
+Found: 2026-10-19, owner correction to TK-002, index/dev in v0.43.1–v0.43.2.
+Reproduce: start aiming at X=40 in a 400px viewport, move right to X=300, then return the pointer to X=200.
+Expected: the line coincides with the pointer at viewport centre, regardless of the starting contact; a symmetric positional lead grows to 80px on either side over the existing 100px ramp.
+Actual before fix: the mapping uses pointerStart.x; even with the requested 80px maximum, returning to X=200 leaves the line at X=280. The initial default maximum was 100px.
+Resolution: amend [114](../specs/114-pointer-aim-lead/spec.md); use the injected game viewport midpoint in CastPowerAim, preserve the shared preview/edge-pan/release path and reduce the configurable default maximum to 80px. No new renderer state or save migration.
+Evidence: failing-before `task-interactions` regression (280 versus 200), passing after the fix; off-centre starts, reversal, release/preview/target, edge pan, resize and keyboard covered. Focused checks, Architecture 4/4, Quick 37/37 and Full 63/63 pass; game-cycle baseline and save bytes unchanged. No obsolete tools. Owner visual/play acceptance pending in tasks.md.
+
 ### G-087 Wide backpack gestures do not switch inventory sections (P2, implemented in v0.43.1)
 Found: 2026-10-19, owner follow-up to TK-007, wide index/dev inventory in v0.43.0.
 Reproduce: open Backpack in landscape/desktop and drag left/right across its overview or item list.
