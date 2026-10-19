@@ -32,7 +32,9 @@ import { FightStatusBarsRenderer } from "../../game/presentation/hud/fight_statu
 import { DepthSelector } from "../../platform/browser/ui/depth_selector.js";
 import { HoldCharges } from "../../platform/browser/ui/hold_charges.js";
 import { ChumControls } from "../../platform/browser/ui/chum_controls.js";
-import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
+import { composeTimeDisplay } from "../production/time_display_composition.js";
+import { TimePhaseControl } from "../../game/application/world/time_phase_control.js";
+import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
 import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
@@ -115,7 +117,10 @@ export function startUiCatalog() {
         surface.mountRoot.append(root);
         const scope = own(scopeFor(root));
         const scheduler = own(new UiCatalogFrameScheduler({ windowTarget }));
-        const timeDisplay = own(new TimeDisplay({ documentRef: scope, mount: scope.querySelector("[data-house-time-mount]") }));
+        const gameTime = new GameTimeClock({ anchorHours: 12, anchorMs: 0, timeScale: 1, now: () => 0 });
+        const phaseControl = new TimePhaseControl({ clock: gameTime, phaseHours: GAME_TIME_CONFIG.phaseHours });
+        const timeDisplay = own(composeTimeDisplay({ documentRef: scope, mount: scope.querySelector("[data-house-time-mount]"),
+          clock: gameTime, timers: warningTimers, onDoubleActivate: () => example?.advanceTime() }));
         scope.documentElement = { requestFullscreen: async () => { status.textContent = UI_CATALOG_LABELS.houseFullscreen; } };
         const fullscreenControl = own(new FullscreenControl({ documentRef: scope, mountNode: scope.querySelector("[data-house-fullscreen-mount]"), label: HUD_LABELS.fullscreen }));
         const headerSizer = own(new HudRowSizer({ row: scope.querySelector("[data-house-header-row]"), uiSurface: surface, windowTarget }));
@@ -156,7 +161,7 @@ export function startUiCatalog() {
           addEventListener: (type, listener, options) => { windowBindings.push([type, listener, options]); windowTarget.addEventListener(type, listener, options); },
           removeEventListener: (type, listener, options) => windowTarget.removeEventListener(type, listener, options) };
         const sheetHeights = own(new SheetHeightController({ windowTarget, uiSurface: surface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }));
-        view = own(composeHouseView({ documentRef: scope, rootNode: root, windowTarget: houseWindow, domFactory: dom, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
+        view = own(composeHouseView({ documentRef: scope, rootNode: root, windowTarget: houseWindow, domFactory: dom, sheetHeights, uiSurface: surface, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
           fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
           resourceMeters: meters, autoSwitchRenderer: auto,
           sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController({ uiSurface: surface,
@@ -164,7 +169,7 @@ export function startUiCatalog() {
           onReturn: () => { status.textContent = UI_CATALOG_LABELS.houseReturn; },
           perform: (action, fishId) => example.perform(action, fishId) }));
         example = new UiCatalogHouseExample({ view, fishView, feedPicker, frameScheduler: scheduler, documentScope: scope, roomConfig: HOUSE_CONFIG.room, timeDisplay, status,
-          fullscreenControl, sceneDetachers, headerSizer, sheetHeights, aquariumCapacities: CONFIG.liveBait.capacities,
+          fullscreenControl, sceneDetachers, headerSizer, sheetHeights, gameTime, phaseControl, aquariumCapacities: CONFIG.liveBait.capacities,
           feedCalculator: new AquariumCareCalculator(CONFIG.liveBait), feedCatalog: CONFIG.liveBait.aquariumFeeds });
         return example;
       }

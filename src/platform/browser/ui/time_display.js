@@ -2,22 +2,33 @@ import { UiEventShield } from "../dom/ui_event_shield.js";
 
 export class TimeDisplay {
   #onActivate;
+  #onDoubleActivate;
+  #activation;
   #labels;
   #enabled = null;
   #multiplier = null;
   #speedSpan;
-  constructor({ documentRef = document, mount = documentRef.body, onActivate = null, labels = {} } = {}) {
+  constructor({ documentRef = document, mount = documentRef.body, onActivate = null, onDoubleActivate = null,
+    activationController = null, labels = {} } = {}) {
     this.#onActivate = onActivate;
+    this.#onDoubleActivate = onDoubleActivate;
+    this.#activation = activationController;
     this.#labels = labels;
-    this.container = documentRef.createElement(onActivate ? "button" : "div");
+    this.container = documentRef.createElement(onActivate || onDoubleActivate ? "button" : "div");
     this.container.className = "hud-control time-display";
     UiEventShield.makeSolid(this.container);
     this.container.style.pointerEvents = "";
     this.container.style.touchAction = "";
-    if (onActivate) {
+    if (onActivate || onDoubleActivate) {
       this.container.type = "button";
-      this.container.disabled = true;
-      this.container.addEventListener("click", onActivate);
+      this.container.disabled = !onDoubleActivate;
+      this.container.classList.toggle("time-display--interactive", Boolean(onDoubleActivate));
+      if (activationController) activationController.attach(this.container, { onSingle: () => {
+        if (this.#enabled) onActivate?.();
+      }, onDouble: () => this.#onDoubleActivate?.() });
+      else if (onActivate) this.container.addEventListener("click", onActivate);
+    }
+    if (onActivate) {
       this.#speedSpan = documentRef.createElement("span");
       this.#speedSpan.className = "time-display__speed";
       this.#speedSpan.setAttribute("aria-hidden", "true");
@@ -38,8 +49,8 @@ export class TimeDisplay {
     if (!this.#onActivate) return;
     if (enabled === this.#enabled && multiplier === this.#multiplier) return;
     if (enabled !== this.#enabled) {
-      this.container.disabled = !enabled;
-      this.container.classList.toggle("time-display--interactive", enabled);
+      this.container.disabled = !enabled && !this.#onDoubleActivate;
+      this.container.classList.toggle("time-display--interactive", enabled || Boolean(this.#onDoubleActivate));
       this.#enabled = enabled;
     }
     if (multiplier !== this.#multiplier) {
@@ -53,7 +64,8 @@ export class TimeDisplay {
 
   #updateLabel() {
     const description = this.#labels.timeAcceleration?.(this.#multiplier, this.#enabled);
-    const label = description ? `${this.timeSpan.innerText || ""} · ${description}` : "";
+    const phase = this.#onDoubleActivate ? this.#labels.timePhase : "";
+    const label = [this.timeSpan.innerText || "", description, phase].filter(Boolean).join(" · ");
     if (label && this.container.getAttribute("aria-label") !== label) this.container.setAttribute("aria-label", label);
   }
 
@@ -74,13 +86,17 @@ export class TimeDisplay {
     if (this.timeSpan.innerText !== timeStr) {
       this.timeSpan.innerText = timeStr;
       this.emojiSpan.innerText = emoji;
-      if (this.#onActivate) this.#updateLabel();
+      if (this.#onActivate || this.#onDoubleActivate) this.#updateLabel();
     }
   }
 
+  cancelActivation() { this.#activation?.cancel(this.container); }
+
   dispose() {
+    this.#activation?.detach(this.container);
     if (this.#onActivate) this.container?.removeEventListener("click", this.#onActivate);
     this.#onActivate = null;
+    this.#onDoubleActivate = null;
     this.#speedSpan = null;
     this.container?.remove();
     this.container = null;

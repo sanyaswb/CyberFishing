@@ -282,6 +282,11 @@ class ProductionShapedEquipmentHydrationCheck {
       capabilityResolver: { resolve: () => ({ supportsFeederRig: false }) },
     });
     const equipment = factory.create({ rod: canonicalRod });
+    Assertion.equal(equipment.hasTerminalLoad, false, "a rod without terminal gear projects no water load");
+    Assertion.equal(factory.create({ rod: canonicalRod, float: canonicalRod }).hasTerminalLoad, true,
+      "equipped terminal gear projects load independent of backpack stock or its display name");
+    Assertion.equal(factory.create({ rod: canonicalRod, tackle: canonicalRod }).hasTerminalLoad, true,
+      "a tackle root counts even when it has no hydrated hook children");
     Assertion.equal(
       equipment.rod,
       canonicalRod,

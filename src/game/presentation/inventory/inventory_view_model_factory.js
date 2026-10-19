@@ -197,6 +197,7 @@ export class InventoryViewModelFactory {
           selectedRaw,
           equipmentReadModel,
           uiState.rodRemovalStep,
+          uiState.highlightedEquipmentSlotId,
         ),
       },
       inventory: {
@@ -301,6 +302,7 @@ export class InventoryViewModelFactory {
     selectedRaw,
     equipmentReadModel,
     rodRemovalStep = null,
+    highlightedSlotId = null,
   ) {
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
@@ -374,7 +376,10 @@ export class InventoryViewModelFactory {
           item: id ? this.#itemViews.create(id) : null,
           state: id ? "filled" : availability ? this.#slotState(availability.state) : "unavailable",
           warning: availability ? availability.warning || "" : "Спочатку спорядіть це вудилище.",
-          highlighted: false,
+          highlighted: highlightedSlotId === slotId || (Boolean(selectedRaw) && this.#compatibilityPolicy.isCompatible({
+            slotId, item: this.#itemViews.create(selectedRaw.instanceId), equipmentState: this.#equipmentState,
+            rod: equipmentReadModel.rod, enforceReadiness: false,
+          })),
           compatibleItems: !id && equipped ? itemViews.filter((item) => this.#compatibilityPolicy.isCompatible({
             slotId, item, equipmentState: this.#equipmentState, rod: equipmentReadModel.rod, enforceReadiness: false,
           })) : [],

@@ -26,7 +26,7 @@ without fitting a larger scale. No per-frame DOM measurements or writes are adde
 | `styles/modal-controls.css`, `auto-switch.css` | Shared close/switch appearance, the transient `ui-hint` (spec 080), documented custom properties and native interactive states |
 | `styles/game-shell.css`, `version-badge.css`, `styles/hud/toolbar.css` | Page interaction policy, canvas stacking, badge and common bottom action row |
 | `styles/inventory/theme.css` | Inventory palette and shared dimensions; portal scrollbar tokens |
-| `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout: the hint region above the header (spec 086), the `inventory-main__sidebar` parent (section content + tab bar, the only painter of the left column's background and frame; `display: contents` in portrait, spec 077) and the right content area; portrait's `--inventory-swipe: on` flag and `pan-y` touch axis for the section swipe ([spec 087](../specs/087-portrait-section-swipe/spec.md)) |
+| `styles/inventory/modal.css` | Backpack, modal lifecycle and layout: persistent-help flow region and bottom-anchored transient warnings (TK-001); the `inventory-main__sidebar` parent (section content + tab bar, the only painter of the left column's background and frame; `display: contents` in portrait, spec 077) and the right content area; portrait collection paging (`--inventory-swipe`) and all-layout section navigation (`--inventory-section-swipe`), with native `pan-y` ownership |
 | `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the transparent section tab bar (spec 067, 077); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
 | `styles/inventory/shared-controls.css` | Reusable panels/actions, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet, and the lists' `inventory-vertical-scroll` drag state (spec 076) ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
 | `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the `inventory-scale` icon/meter/reading composition (load, backpack and keepnet capacity, `InventoryScaleRenderer`; sprite icons via `inventory-scale__icon--sprite`, spec 088); header placement belongs to `header.css` |
@@ -166,7 +166,29 @@ The dock handle opts out of the shared handle's hover background through
 the button-container height until the pointer leaves the dock; gaps/handle areas never start the hold.
 HouseNavigationController owns this transient UI state and disposes its two pointer bindings. CSS uses the adapter's
 desktop-hover policy and shared motion tokens; touch gestures and selected-sheet states retain their behavior.
-The production clock remains passive. See [DEV time/House contract](../specs/058-dev-time-controls/spec.md).
+The production and DEV clocks support double activation to cycle day 12:00 → evening 19:00 → night 00:00.
+`DoubleActivationController` separates the pair from delayed DEV single-click acceleration; `TimePhaseControl`
+changes the shared `GameTimeClock` anchor without simulating elapsed time. Hours/rate persistence stays v1.
+Production composition is reused by the House and isolated catalog clocks. See [spec 116](../specs/116-clock-phase-switch/spec.md),
+which supersedes the passive production-clock portion of spec 058.
+
+TK-001 transient notices use `ui-hint--sheet` and the shared `ui-sheet-handle`; `HintSheetController` owns a
+5000ms timer, drag/cancel/capture and exit cleanup. Inventory and House own bottom placement; persistent help
+keeps its flow region. Long text is scrollable; a downward gesture from its top dismisses at 10% of the measured
+initial height. Catalog House normal/error/long and inventory long states exercise the same production view.
+The old House top notice regions, independent notice timer and its unused `noticeDurationMs` setting are removed.
+
+TK-003 editor navigation stores one temporary return context in `InventoryUiState`, including backpack filters/sort,
+and reveals equipment-host when opening an editor. Updates to the same root retain the route; Back restores it.
+Whole socket tabs own their rounded highlight layer; their inner wells do not duplicate it. Parameter-list top
+dividers are removed only in editor pages. Sticky action children are clipped to the panel radius. Native artwork
+dragging is suppressed on scroll/pager surfaces, and a child losing capture never cancels its parent scroller.
+
+TK-007 owner clarification (v0.43.1): section navigation works in wide/landscape inventory too. Internal collection
+pages remain portrait-only; in wide layouts `InventoryCollectionPagerRenderer` forwards its gesture directly to
+the neighbouring section instead of selecting a hidden page. Filter rows retain horizontal scrolling and the visible
+editor disables section navigation. `SwipePagerController.getGestureSurface` measures the touched column at
+start/end so the 20% commit threshold is relative to that column, with no geometry reads on pointermove.
 
 Resize bursts share one pending measurement; unchanged measurements do not rewrite layout variables
 or notify subscribers. The game applies a pending Canvas/viewport resize before its next update,

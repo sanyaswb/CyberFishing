@@ -120,7 +120,7 @@ import { RarityVisualResolver } from "../../game/presentation/styles/rarity_visu
 import { ReelRetrieveSpeedCalculator } from "../../game/domain/fishing/reel_retrieve_speed_calculator.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
-import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
+import { composeTimeDisplay } from "./time_display_composition.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
 import { GameStageLayout } from "../../platform/browser/ui/game_stage_layout.js";
@@ -1042,7 +1042,7 @@ export class GameCompositionRoot {
     const depthUI = own(new DepthSelector({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
-      : new TimeDisplay({ documentRef: this.#documentTarget, mount: mountNode }));
+      : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));
     const holdUI = own(new HoldCharges({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
     return { world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules, castRules, biteRules, chumRules, boatRules, playerCastRules };
   }

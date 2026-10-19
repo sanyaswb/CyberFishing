@@ -159,8 +159,57 @@
     transform: none;
   }
 }
+
+/* TK-001: the container anchors a transient sheet. The component owns its surface and motion. */
+.ui-hint--sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0 8px;
+  max-height: calc(var(--ui-logical-height, 100dvh) * 0.5);
+  padding: 0 10px calc(12px + var(--ui-safe-area-bottom, 0px));
+  overflow: hidden;
+  border-radius: var(--ui-hint-radius) var(--ui-hint-radius) 0 0;
+  touch-action: pan-x;
+  transform: translateY(var(--ui-hint-drag-y, 0px));
+  transition: transform var(--ui-duration-fast) var(--ui-ease-standard);
+  animation: ui-hint-sheet-enter var(--ui-duration-fast) var(--ui-ease-standard);
+}
+
+.ui-hint--sheet .ui-hint__handle {
+  grid-row: 1;
+  grid-column: 1 / -1;
+}
+
+.ui-hint--sheet .ui-hint__text {
+  grid-row: 2;
+  min-height: 0;
+  max-height: calc(var(--ui-logical-height, 100dvh) * 0.5 - var(--ui-sheet-handle-size) - 24px);
+  overflow-y: auto;
+  touch-action: none;
+}
+
+.ui-hint--sheet .ui-hint__close {
+  grid-row: 2;
+}
+
+.ui-hint--dragging {
+  animation: none;
+  transition: none;
+}
+
+.ui-hint--closing {
+  transform: translateY(100%);
+  animation: none;
+}
+
+@keyframes ui-hint-sheet-enter {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
 @media (prefers-reduced-motion: reduce) {
   .ui-hint {
     animation: none;
+    transition: none;
   }
 }

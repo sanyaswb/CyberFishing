@@ -639,19 +639,11 @@
   font-size: clamp(1.7rem, 4cqw, 3rem);
 }
 
-/* Hint regions (spec 086): at the top of each sheet's content and under the header row. No height while empty; a shown
-   notice takes its own space and pushes the content below it down. */
-.house__hints {
-  display: grid;
-  min-width: 0;
-}
-
-.house__hints--sheet:has(> :not([hidden])) {
-  margin-bottom: 14px;
-}
-
-.house__hints--header:has(> :not([hidden])) {
-  margin-top: 12px;
+.house > .house__notice {
+  position: fixed;
+  inset-inline: var(--house-panel-inline-padding);
+  bottom: 0;
+  z-index: var(--ui-layer-tooltip);
 }
 
 .house__feed-list {

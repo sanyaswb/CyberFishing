@@ -40,6 +40,8 @@
   padding: var(--inventory-container-gap);
   border-radius: var(--inventory-panel-radius);
   background: var(--inventory-equipment-panel);
+  overflow: clip;
+  isolation: isolate;
 }
 
 .inventory-assembly-editor__actions > .inventory-action {
@@ -101,6 +103,25 @@
   padding: var(--inventory-editor-tab-inset);
   border-radius: var(--inventory-panel-radius);
   background: var(--inventory-equipment-cell);
+}
+
+.inventory-editor-tabs__tab--highlighted {
+  isolation: isolate;
+}
+
+.inventory-editor-tabs__highlight {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-success);
+  opacity: 0.2;
+  pointer-events: none;
+  animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-editor-tabs__highlight { animation: none; }
 }
 
 /* A root item without cells: its tab takes half of the row, the panel below keeps the full width. */
@@ -193,6 +214,10 @@
   border: 0;
   background: none;
   box-shadow: none;
+}
+
+.inventory-editor-tabs__page .inventory-parameters-list {
+  border-top: 0;
 }
 
 .inventory-editor-tabs__empty {

@@ -7,7 +7,7 @@ import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
 import { RoomUpgradeService } from "../../game/application/house/room_upgrade_service.js";
 import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
-import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
+import { composeTimeDisplay } from "./time_display_composition.js";
 import { GameMinuteTicker } from "../../platform/browser/time/game_minute_ticker.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
@@ -45,7 +45,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   const room = new RoomUpgradeService({ config: HOUSE_CONFIG.room,
     store: new RoomProgressLocalStore(windowTarget.localStorage), now: () => clock.nowMs() });
   const timeOptions = { documentRef: documentTarget, mount: node("[data-house-time-mount]"), clock: gameTime, uiSurface };
-  const timeDisplay = createTimeDisplay ? createTimeDisplay(timeOptions) : new TimeDisplay(timeOptions);
+  const timeDisplay = createTimeDisplay ? createTimeDisplay(timeOptions) : composeTimeDisplay(timeOptions);
   const headerRow = node("[data-house-header-row]");
   const removeHeaderControl = mountHeaderControl?.(node("[data-house-dev-mount]")) ?? null;
   if (removeHeaderControl) headerRow.classList.add("house__header-row--with-leading-control");
@@ -82,7 +82,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
     preview: node("[data-house-next-feed]"), hint: node("[data-house-feed-hint]"),
     labels: HOUSE_LABELS.feedPicker, onFeed: (id, quantity) => presenter.perform("feed", id, quantity) });
   const sheetHeights = new SheetHeightController({ windowTarget, uiSurface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs });
-  view = composeHouseView({ documentRef: documentTarget, rootNode: root, windowTarget, domFactory, sheetHeights,
+  view = composeHouseView({ documentRef: documentTarget, rootNode: root, windowTarget, domFactory, sheetHeights, uiSurface,
     resourceMeters, sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory,
       dismissController: new SheetDismissController({ uiSurface, dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }),
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }),

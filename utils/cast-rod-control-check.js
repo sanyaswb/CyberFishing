@@ -228,5 +228,12 @@ function checkStates() {
   }
 }
 
+const bare = fixture();
+const bareFrame = bare.step(right, { hasTerminalLoad: false });
+assert.equal(bare.control.getScreenX(), 415, "a bare line keeps x3 speed while taut");
+assert.equal(bareFrame.lineTensionActive, true, "bare line keeps its geometric constraint");
+assert.equal(bareFrame.floatMoved, true, "the technical line end still follows the rod within the line budget");
+bare.step(right, { hasTerminalLoad: true });
+assert.equal(bare.control.getScreenX(), 420, "a loaded line retains x1 speed without stale bare-line state");
 checkSpeedMultipliers(); checkMovement(); checkLine(); checkProbability(); checkStates();
 console.log("Cast rod control passed: green-zone ranges, analog input, x3 slack/x1 taut speed and same-frame time splitting, line-pull activation, zero/live multipliers, delta/release/reset and viewport ownership; perspective/water geometry; touch hold isolation; bite windows/identity/boundary holds; tick-latched absolute probability and spinning exceptions; waiting integration.");

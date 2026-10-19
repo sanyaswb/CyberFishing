@@ -55,7 +55,11 @@ export class HorizontalScrollController {
       wheel: (event) => this.#onWheel(element, state, event),
       pointerDown: (event) => this.#onPointerDown(element, state, event),
       pointerMove: (event) => this.#onPointerMove(element, state, event),
-      pointerEnd: (event) => this.#onPointerEnd(element, state, event),
+      pointerEnd: (event) => {
+        // A child card losing capture to this scroller is not the scroller losing its own capture.
+        if (event.type === "lostpointercapture" && event.target !== element) return;
+        this.#onPointerEnd(element, state, event);
+      },
       click: (event) => this.#onClick(state, event),
       dragStart: (event) => event.preventDefault(),
     };
@@ -67,7 +71,7 @@ export class HorizontalScrollController {
     element.addEventListener("pointercancel", handlers.pointerEnd);
     element.addEventListener("lostpointercapture", handlers.pointerEnd);
     element.addEventListener("click", handlers.click, true);
-    if (this.#manualTouch) element.addEventListener("dragstart", handlers.dragStart);
+    element.addEventListener("dragstart", handlers.dragStart);
     this.#bindings.set(element, { ...handlers, state });
     return () => this.detach(element);
   }
@@ -83,7 +87,7 @@ export class HorizontalScrollController {
     element.removeEventListener("pointercancel", handlers.pointerEnd);
     element.removeEventListener("lostpointercapture", handlers.pointerEnd);
     element.removeEventListener("click", handlers.click, true);
-    if (this.#manualTouch) element.removeEventListener("dragstart", handlers.dragStart);
+    element.removeEventListener("dragstart", handlers.dragStart);
     element.classList?.remove(
       this.#className,
       this.#dragClassName,

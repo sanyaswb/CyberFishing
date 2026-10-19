@@ -458,6 +458,7 @@ class FakeDocument {
     // Computed custom properties shared by every element; portrait turns the inventory swipes on (spec 087).
     this.cssProperties = {
       "--inventory-swipe": "on",
+      "--inventory-section-swipe": "on",
       "--inventory-editor-swipe": "on",
     };
     this.defaultView = {
@@ -880,7 +881,7 @@ class InventoryStaticContractCheck {
       ".inventory-modal--section-equipment:has(.inventory-assembly-editor)";
     for (const [selector, rule] of [
       [" .inventory-main__tabs", /^\s*display:\s*none;\s*$/],
-      [" .inventory-main", /^\s*--inventory-swipe:\s*off;\s*$/],
+      [" .inventory-main", /^\s*--inventory-swipe:\s*off;\s*--inventory-section-swipe:\s*off;\s*$/],
     ]) {
       // Formatters may wrap a long selector: compare with collapsed whitespace.
       const block =
@@ -2242,24 +2243,24 @@ class InventoryStaticContractCheck {
     );
     pagerTabButtons[0].click();
     pagerViewport.layoutWidth = 300;
-    const swipe = (fromX, toX, end = "pointerup") => {
+    const swipe = (fromX, toX, end = "pointerup", pointerType = "touch") => {
       pagerViewport.emit("pointerdown", {
-        pointerType: "touch",
+        pointerType, button: 0,
         clientX: fromX,
         clientY: 100,
       });
       pagerViewport.emit("pointermove", {
-        pointerType: "touch",
+        pointerType,
         clientX: (fromX + toX) / 2,
         clientY: 101,
       });
       pagerViewport.emit("pointermove", {
-        pointerType: "touch",
+        pointerType,
         clientX: toX,
         clientY: 101,
       });
       return pagerViewport.emit(end, {
-        pointerType: "touch",
+        pointerType,
         clientX: toX,
         clientY: 101,
       });
@@ -2396,21 +2397,21 @@ class InventoryStaticContractCheck {
     ui.render(sectionView("keepnet"));
     const mainArea = this.#findByClass(ui.rootNode, "inventory-main");
     mainArea.layoutWidth = 300;
-    const swipeMain = (fromX, toX, target = mainArea) => {
+    const swipeMain = (fromX, toX, target = mainArea, pointerType = "touch") => {
       mainArea.emit("pointerdown", {
-        pointerType: "touch",
+        pointerType, button: 0,
         clientX: fromX,
         clientY: 100,
         target,
       });
       mainArea.emit("pointermove", {
-        pointerType: "touch",
+        pointerType,
         clientX: toX,
         clientY: 101,
         target,
       });
       return mainArea.emit("pointerup", {
-        pointerType: "touch",
+        pointerType,
         clientX: toX,
         clientY: 101,
         target,
@@ -2444,16 +2445,42 @@ class InventoryStaticContractCheck {
     swipe(50, 250);
     assert.strictEqual(pagerIndex(), "0");
     document.cssProperties["--inventory-swipe"] = "";
-    assert.deepStrictEqual(
-      selectsDuring(() => {
-        swipe(50, 250);
-        swipe(250, 50);
-        swipeMain(50, 250);
-      }),
-      [],
-      "wide layouts keep neither page nor section swipes",
-    );
-    assert.strictEqual(pagerIndex(), "0");
+    for (const pointerType of ["mouse", "touch"]) {
+      ui.render(sectionView("backpack"));
+      const beforePage = pagerIndex();
+      assert.deepStrictEqual(selectsDuring(() => swipe(250, 50, "pointerup", pointerType)), ["keepnet"],
+        "a wide list swipe opens keepnet immediately: " + pointerType);
+      assert.strictEqual(pagerIndex(), beforePage, "wide swipes never select the hidden backpack page");
+      ui.render(sectionView("backpack"));
+      assert.deepStrictEqual(selectsDuring(() => swipe(50, 250, "pointerup", pointerType)), ["equipment"],
+        "a wide list swipe opens equipment immediately: " + pointerType);
+      ui.render(sectionView("backpack"));
+      const overview = this.#findByClass(mainArea, "inventory-main__left");
+      overview.layoutWidth = 300;
+      mainArea.layoutWidth = 1200;
+      assert.deepStrictEqual(selectsDuring(() => swipeMain(220, 140, overview, pointerType)), ["keepnet"],
+        "wide overview swipes use the touched column width: " + pointerType);
+      ui.render(sectionView("keepnet"));
+      assert.deepStrictEqual(selectsDuring(() => swipeMain(140, 220, overview, pointerType)), ["backpack"],
+        "the keepnet overview swipes back to backpack: " + pointerType);
+      document.cssProperties["--inventory-swipe"] = "on";
+      pagerTabButtons[1].click();
+      document.cssProperties["--inventory-swipe"] = "";
+      ui.render(sectionView("backpack"));
+      assert.deepStrictEqual(selectsDuring(() => swipe(50, 250, "pointerup", pointerType)), ["equipment"],
+        "returning from portrait's last page still forwards a wide right swipe");
+      assert.strictEqual(pagerIndex(), "1", "wide forwarding preserves the remembered portrait page");
+      ui.render(sectionView("backpack"));
+      assert.deepStrictEqual(selectsDuring(() => swipe(250, 50, "pointerup", pointerType)), ["keepnet"],
+        "a wide left swipe forwards even from the remembered last page");
+      pagerTabButtons[0].click();
+    }
+    ui.render(sectionView("backpack"));
+    document.cssProperties["--inventory-section-swipe"] = "off";
+    assert.deepStrictEqual(selectsDuring(() => { swipe(250, 50); swipeMain(250, 50); }), [],
+      "an editor disables both collection forwarding and outer section swipes");
+    document.cssProperties["--inventory-section-swipe"] = "on";
+    mainArea.layoutWidth = 300;
     document.cssProperties["--inventory-swipe"] = "on";
     const modalCss = fs.readFileSync(
       path.join(ROOT, "src/game/presentation/styles/inventory/modal.css"),
@@ -2462,8 +2489,10 @@ class InventoryStaticContractCheck {
     assert.match(
       modalCss,
       /orientation: portrait\)[\s\S]*\.inventory-modal\s*\{[^}]*--inventory-swipe:\s*on;/,
-      "only portrait turns the swipes on",
+      "only portrait turns internal collection paging on",
     );
+    assert.match(modalCss, /\.inventory-modal\s*\{[^}]*--inventory-section-swipe:\s*on;/,
+      "section swipes are available before all layout queries");
     // Spec 098: a container is no containing block for fixed boxes, and the split modifiers must win over the inset.
     assert.match(
       modalCss,
@@ -4493,10 +4522,10 @@ class InventoryStaticContractCheck {
     );
     const baitWell = this.#findByClass(baitSocket, "inventory-slot");
     assert.ok(baitWell.classList.contains("inventory-slot--filled"));
-    assert.ok(
-      baitWell.classList.contains("inventory-slot--highlighted"),
-      "A filled compatible socket must be highlighted for replacement",
-    );
+    assert.ok(!baitWell.classList.contains("inventory-slot--highlighted"), "editor wells do not duplicate the tab pulse");
+    const highlightedTab = this.#findByClass(ui.rootNode, "inventory-editor-tabs__tab--highlighted");
+    assert.ok(highlightedTab.contains(baitSocket), "the compatible socket's entire tab is highlighted for replacement");
+    assert.ok(this.#findByClass(highlightedTab, "inventory-editor-tabs__highlight"), "a rounded layer covers the whole tab");
 
     assert.strictEqual(
       this.#walk(ui.rootNode).filter(

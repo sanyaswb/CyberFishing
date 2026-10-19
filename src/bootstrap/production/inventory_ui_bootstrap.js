@@ -47,6 +47,7 @@ import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.j
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
 import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
+import { composeHintRenderer } from "./hint_renderer_composition.js";
 
 export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
@@ -84,14 +85,15 @@ export class InventoryUiBootstrap {
         horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
       pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
         tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: pagerConfig }),
-        swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom) }),
+        isPagingEnabled: InventoryUiBootstrap.#swipeEnabled(dom),
+        swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-section-swipe") }),
         config: pagerConfig }),
       cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
       hintRenderer: new UiHintRenderer({ domFactory: dom }),
       listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
   }
 
-  // Pages and sections swipe only where CSS turns the flag on (portrait, spec 087).
+  // CSS owns separate flags for portrait collection paging and all-layout section/editor navigation.
   static #swipeEnabled(dom, property = "--inventory-swipe") {
     return (node) => dom.view.getComputedStyle(node).getPropertyValue(property).trim() === "on";
   }
@@ -135,6 +137,7 @@ export class InventoryUiBootstrap {
     resourceMeterResolver,
     resourceMeterRenderer,
     degradationColorResolver,
+    warningTimers,
   }) {
     const LongPressController = InventoryLongPressController;
     const dom = new InventoryDomFactory(documentRef);
@@ -234,6 +237,7 @@ export class InventoryUiBootstrap {
         parameterSectionResolver: new InventoryAssemblyParameterSectionResolver(),
       });
     const swipeEnabled = InventoryUiBootstrap.#swipeEnabled(dom);
+    const sectionSwipeEnabled = InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-section-swipe");
     const resolvedInventoryRenderer =
       inventoryRenderer ||
       new InventoryGridRenderer({
@@ -244,7 +248,8 @@ export class InventoryUiBootstrap {
         backdropImage: INVENTORY_SECTIONS.backpackBackdropImage,
         pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
           tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),
-          swipeController: new SwipePagerController({ isEnabled: swipeEnabled }), config: INVENTORY_SECTIONS.backpackPager }),
+          isPagingEnabled: swipeEnabled,
+          swipeController: new SwipePagerController({ isEnabled: sectionSwipeEnabled }), config: INVENTORY_SECTIONS.backpackPager }),
       });
     return {
       dom,
@@ -258,11 +263,11 @@ export class InventoryUiBootstrap {
       resolvedSavedLoadoutRenderer,
       resolvedInventoryRenderer,
       sections: INVENTORY_SECTIONS,
-      sectionSwipeController: new SwipePagerController({ isEnabled: swipeEnabled, positionProperty: null,
+      sectionSwipeController: new SwipePagerController({ isEnabled: sectionSwipeEnabled, positionProperty: null,
         draggingClassName: "inventory-main--swiping" }),
       sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
       backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS, scaleRenderer }),
-      hintRenderer: new UiHintRenderer({ domFactory: dom }),
+      hintRenderer: composeHintRenderer({ domFactory: dom, uiSurface, timers: warningTimers }),
     };
   }
 }

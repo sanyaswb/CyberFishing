@@ -1,12 +1,9 @@
 // House screen: aquarium status and actions; composes navigation, room art and fish lists injected by bootstrap.
 export class HouseView {
-  #window;
   #root;
   #nodes = new Map();
   #perform;
-  #uiConfig;
   #onReturn;
-  #noticeTimer = null;
   #fishView;
   #feedPicker;
   #resourceMeters;
@@ -23,14 +20,11 @@ export class HouseView {
   #keepnetList;
   #hints;
   #notice;
-  #noticeRoom;
 
   constructor({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
     resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
-    this.#window = windowTarget;
     this.#root = rootNode;
     this.#perform = perform;
-    this.#uiConfig = uiConfig;
     this.#onReturn = onReturn;
     this.#fishView = fishView;
     this.#feedPicker = feedPicker;
@@ -55,15 +49,13 @@ export class HouseView {
       onChange: () => this.#perform("toggleAutoFeeder") });
     this.#nodes.get("auto-switch-mount").appendChild(this.#autoSwitch);
     this.#notice = this.#nodes.get("notice");
-    this.#noticeRoom = documentRef.querySelector("[data-house-header-hints]");
-    hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close"),
-      onClose: () => this.#clearNoticeTimer() });
+    hintRenderer.adopt(this.#notice, { text: this.#nodes.get("notice-text"), close: this.#nodes.get("notice-close") });
+    rootNode.appendChild(this.#notice);
     this.#root.addEventListener("click", this.#handleClick);
   }
 
   dispose() {
     this.#navigation.dispose();
-    this.#clearNoticeTimer();
     this.#hints.dispose(this.#notice);
     this.#root.removeEventListener("click", this.#handleClick);
     this.#autoSwitchRenderer.dispose(this.#autoSwitch);
@@ -76,27 +68,11 @@ export class HouseView {
     this.#keepnetList.dispose();
   }
 
-  // The notice takes the hint region at the top of its container (spec 086) and pushes the content below it down:
-  // the open sheet whose action it reports, otherwise the header, which is revealed.
+  // One transient notice at the screen bottom; its shared controller owns timers and dismissal.
   announce(message, failed = false) {
     const node = this.#notice;
-    this.#clearNoticeTimer();
     if (!message) { this.#hints.hide(node); return; }
-    const sheet = this.#navigation.activeSheetContent();
-    const host = sheet?.querySelector("[data-house-sheet-hints]") ?? this.#noticeRoom;
-    if (node.parentNode !== host) host.appendChild(node);
-    if (!sheet) this.#navigation.revealHeader();
     this.#hints.show(node, message, failed ? "error" : "info");
-    this.#noticeTimer = this.#window.setTimeout(() => {
-      this.#hints.hide(node);
-      this.#noticeTimer = null;
-    }, this.#uiConfig.noticeDurationMs);
-  }
-
-  #clearNoticeTimer() {
-    if (this.#noticeTimer === null) return;
-    this.#window.clearTimeout(this.#noticeTimer);
-    this.#noticeTimer = null;
   }
 
   handleSceneGesture(deltaY) {

@@ -58,6 +58,7 @@ export class EquipmentReadModelFactory {
       line,
       leader,
       float,
+      hasTerminalLoad: Boolean(tackle || float),
       feederRig,
       hooks: Object.freeze(hooks),
       baits: Object.freeze(baits),

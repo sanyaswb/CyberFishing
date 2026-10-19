@@ -86,8 +86,9 @@ export class InventoryEditorTabsRenderer {
     node.dataset.tabKey = tab.key;
     if (tab.kind === "socket") {
       const filled = Boolean(tab.item);
+      node.classList.toggle("inventory-editor-tabs__tab--highlighted", tab.socket.highlighted === true);
       // Tabs show only the item; its scales live in the parameters (spec 093).
-      node.appendChild(this.#items.renderSlot(tab.socket, { variant: "socket", showAttachments: false,
+      node.appendChild(this.#items.renderSlot({ ...tab.socket, highlighted: false }, { variant: "socket", showAttachments: false,
         showResourceMeter: false, showTooltip: false,
         onActivate: filled ? () => this.#showByTap(tab.key) : () => {
           this.#showByTap(tab.key);
@@ -99,6 +100,11 @@ export class InventoryEditorTabsRenderer {
         // beside the item list, retain their warning.
         onUnavailable: (warning) => tab.socket.canSelectCompatibleItem && inlineChoices()
           ? this.#showByTap(tab.key) : onWarning?.(warning) }));
+      if (tab.socket.highlighted) {
+        const highlight = this.#dom.element("span", "inventory-editor-tabs__highlight");
+        highlight.setAttribute("aria-hidden", "true");
+        node.appendChild(highlight);
+      }
       return node;
     }
     const card = this.#items.renderItem(tab.item, { variant: "socket", showAttachments: false, showMetadata: false,

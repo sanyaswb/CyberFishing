@@ -30,6 +30,14 @@ export class GameTimeClock {
 
   getRateMultiplier() { return this.#rateMultiplier; }
 
+  setHours(hours) {
+    if (!Number.isFinite(hours) || hours < 0 || hours >= 24) return false;
+    this.#anchorHours = hours;
+    this.#anchorMs = this.#now();
+    this.#save?.({ anchorHours: hours, anchorMs: this.#anchorMs, timeScale: this.#timeScale });
+    return true;
+  }
+
   setRateMultiplier(multiplier) {
     if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier === this.#rateMultiplier) return;
     this.checkpoint();
@@ -54,7 +62,7 @@ export class GameTimeClock {
 
   sync() {
     const value = this.#load?.();
-    if (!value || (value.anchorMs === this.#anchorMs && value.timeScale === this.#timeScale)) return;
+    if (!value || (value.anchorMs === this.#anchorMs && value.anchorHours === this.#anchorHours && value.timeScale === this.#timeScale)) return;
     this.#anchorHours = value.anchorHours;
     this.#anchorMs = value.anchorMs;
     this.#timeScale = value.timeScale;

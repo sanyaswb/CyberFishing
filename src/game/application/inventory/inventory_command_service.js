@@ -191,6 +191,7 @@ export class InventoryCommandService {
     }
     const picking = this.#uiState.isPicking;
     const editorRootInstanceId = this.#uiState.panelMode === "assembly" ? this.#uiState.editingRootInstanceId : null;
+    const editorReturnContext = this.#uiState.editorReturnContext;
     const result = this.#activateInventoryItemInPanel(instanceId);
     if (picking && result.success && !result.requiresSocketChoice) {
       this.#uiState.completePick();
@@ -199,7 +200,7 @@ export class InventoryCommandService {
     // cell or a list card) returns to that editor instead of the equipment panel.
     if (editorRootInstanceId && result.success && this.#uiState.panelMode === "loadout" &&
         this.#repository.has(editorRootInstanceId)) {
-      this.#uiState.showAssemblyEditor(editorRootInstanceId);
+      this.#uiState.showAssemblyEditor(editorRootInstanceId, { returnContext: editorReturnContext });
     }
     return result;
   }
@@ -677,9 +678,9 @@ export class InventoryCommandService {
 
   #backFromItem(rootInstanceId) {
     const item = this.#repository.get(rootInstanceId);
-    if (InventoryItemLocation.isLoadout(item?.location)) {
-      this.#uiState.showSavedLoadoutPreview(item.location.loadoutId);
-    } else this.#uiState.showLoadoutPanel();
+    const loadoutId = InventoryItemLocation.isLoadout(item?.location) && this.#loadouts.has(item.location.loadoutId)
+      ? item.location.loadoutId : null;
+    this.#uiState.backFromAssemblyEditor(loadoutId);
   }
 
   // Every first-level cell the rod shows (reel, line, tackle, float as its capabilities allow) is filled.

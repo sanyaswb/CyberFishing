@@ -19,8 +19,8 @@ const root = documentRef.createElement("div"); root.append(mount); documentRef.b
 const control = composeDevTimeDisplay({ documentRef, mount, clock, config, uiSurface: { mountRoot: mount } });
 const button = documentRef.byClass("time-display")[0];
 assert.equal(button.tagName, "button");
-assert.equal(button.disabled, true);
-button.click(); assert.equal(clock.getRateMultiplier(), 1, "disabled acceleration cannot change the calendar rate");
+assert.equal(button.disabled, false, "phase switching remains available without DEV acceleration");
+control.advance(); assert.equal(clock.getRateMultiplier(), 1, "disabled acceleration cannot change the calendar rate");
 config.debug.timeAccelerationEnabled = true;
 control.update(clock.getHours());
 assert.equal(button.disabled, false);
@@ -29,7 +29,7 @@ for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 1]) {
   expected = (expected + clock.getRateMultiplier()) % 24;
   now += 15000;
   assert.equal(clock.getHours(), expected);
-  button.click();
+  control.advance();
   assert.equal(clock.getRateMultiplier(), multiplier);
   assert.equal(clock.getHours(), expected, "rate changes settle elapsed time without a jump");
   const prefix = documentRef.byClass("time-display__speed")[0];
@@ -41,7 +41,7 @@ for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 1]) {
 
 const env = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 }, environment: {} },
   12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
-button.click(); button.click(); // ×2
+control.advance(); control.advance(); // ×2; click recognition has separate deterministic coverage.
 now += 15000;
 env.update(16, 240);
 let hours = clock.getHours();
@@ -67,12 +67,12 @@ assert.equal(writes, priorWrites); assert.equal(classWrites, 0); assert.equal(at
 config.debug.timeAccelerationEnabled = false;
 control.update(clock.getHours());
 assert.equal(clock.getRateMultiplier(), 1);
-assert.equal(button.disabled, true);
+assert.equal(button.disabled, false, "the phase command remains interactive");
 assert.equal(clock.getHours(), hours, "disabling keeps reached time");
 now += 15000; assert.equal(clock.getHours(), (hours + 1) % 24);
 
 config.debug.timeAccelerationEnabled = true;
-control.update(clock.getHours()); button.click(); button.click();
+control.update(clock.getHours()); control.advance(); control.advance();
 const handoff = control.suspend();
 assert.equal(handoff.multiplier, 2); assert.equal(clock.getRateMultiplier(), 1);
 const houseClock = composeGameTime({ storage, now: () => now, initialHours: 3, timeScale: 240 });
@@ -82,7 +82,7 @@ const houseControl = composeDevTimeDisplay({ documentRef: houseDocument, mount: 
 houseControl.resume(handoff);
 assert.equal(houseClock.getHours(), clock.getHours());
 assert.equal(houseClock.getRateMultiplier(), 2);
-houseDocument.byClass("time-display")[0].click();
+houseControl.advance();
 now += 15000;
 const reachedHouseHours = houseClock.getHours();
 const returned = houseControl.suspend();

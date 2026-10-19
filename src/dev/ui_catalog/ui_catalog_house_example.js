@@ -1,4 +1,5 @@
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
+import { backgroundTimeBlend } from "../../game/domain/time/background_time_blend.js";
 
 export class UiCatalogHouseExample {
   #view;
@@ -18,8 +19,12 @@ export class UiCatalogHouseExample {
   #feedCalculator;
   #feedCatalog;
   #value = 67;
+  #gameTime;
+  #phaseControl;
+  #blend = { evening: 0, night: 0 };
   constructor({ view, fishView, feedPicker, frameScheduler, documentScope, roomConfig, timeDisplay, status,
-    fullscreenControl = null, sceneDetachers = [], headerSizer = null, sheetHeights = null, aquariumCapacities, feedCalculator, feedCatalog }) {
+    fullscreenControl = null, sceneDetachers = [], headerSizer = null, sheetHeights = null, aquariumCapacities, feedCalculator, feedCatalog,
+    gameTime = null, phaseControl = null }) {
     this.#view = view; this.#fishView = fishView; this.#feedPicker = feedPicker;
     this.#scheduler = frameScheduler; this.#scope = documentScope; this.#roomConfig = roomConfig; this.#status = status;
     this.#timeDisplay = timeDisplay;
@@ -28,6 +33,7 @@ export class UiCatalogHouseExample {
     this.#headerSizer = headerSizer;
     this.#sheetHeights = sheetHeights; this.#capacities = aquariumCapacities;
     this.#feedCalculator = feedCalculator; this.#feedCatalog = feedCatalog;
+    this.#gameTime = gameTime; this.#phaseControl = phaseControl;
   }
   setState(state) {
     const owned = state !== "unowned";
@@ -55,14 +61,29 @@ export class UiCatalogHouseExample {
         remainingMs: this.#roomConfig.upgradeDurationMs[2] / 2, eveningOpacity: state === "evening" ? .5 : state === "night" ? 1 : 0, nightOpacity: state === "night" ? 1 : 0 },
       error: state === "error" ? "контрольна помилка" : null,
     };
-    this.#timeDisplay.update(state === "evening" ? 18 : state === "night" ? 22 : 12);
+    const hours = state === "evening" ? 19 : state === "night" ? 0 : 12;
+    this.#gameTime?.setHours(hours);
+    this.#timeDisplay.update(hours);
     this.#render();
     this.#view.setNavigationState({ expanded: state === "menu-expanded", panel: state === "section-open" ? "aquarium" : null });
+    if (state !== "error") this.#view.announce(state === "long"
+      ? "Довге повідомлення: прокрутіть текст, а з його початку потягніть униз для закриття. ".repeat(30)
+      : "Коротке повідомлення знизу. Потягніть униз або натисніть ручку.");
     this.#status.textContent = "Угору — назви всіх трьох кнопок. Натискання відкриває розділ; мініатюри перемикають плашки. Свайп униз по фону або верхня ручка вниз — закриття. Hover діє лише на desktop.";
   }
   setValue(value) {
     this.#value = Math.max(0, Math.min(100, Number(value) || 0));
     if (this.#model.aquarium.feed) this.#model.aquarium.feed.remainingMs = this.#model.aquarium.feed.durationMs * this.#value / 100;
+    this.#render();
+  }
+  advanceTime() {
+    if (!this.#gameTime || !this.#phaseControl) return;
+    this.#phaseControl.advance();
+    const hours = this.#gameTime.getHours();
+    backgroundTimeBlend(hours, this.#blend);
+    this.#model.room.eveningOpacity = this.#blend.evening;
+    this.#model.room.nightOpacity = this.#blend.night;
+    this.#timeDisplay.update(hours);
     this.#render();
   }
   perform(action, id, quantity = 1) {

@@ -216,10 +216,10 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__group").length, 2);
   // Spec 088: the fish pager swipes like the backpack's and hands swipes past its edges to the inventory.
   keepnetItems.layoutWidth = 300;
-  const swipe = (fromX, toX) => {
-    keepnetItems.fire("pointerdown", { pointerType: "touch", pointerId: 1, clientX: fromX, clientY: 100 });
-    keepnetItems.fire("pointermove", { pointerType: "touch", pointerId: 1, clientX: toX, clientY: 101 });
-    keepnetItems.fire("pointerup", { type: "pointerup", pointerType: "touch", pointerId: 1, clientX: toX, clientY: 101 });
+  const swipe = (fromX, toX, pointerType = "touch", end = "pointerup") => {
+    keepnetItems.fire("pointerdown", { pointerType, button: 0, pointerId: 1, clientX: fromX, clientY: 100 });
+    keepnetItems.fire("pointermove", { pointerType, pointerId: 1, clientX: toX, clientY: 101 });
+    keepnetItems.fire(end, { type: end, pointerType, pointerId: 1, clientX: toX, clientY: 101 });
   };
   swipe(250, 50);
   assert.equal(pagerIndex(), "1", "a left swipe shows the keepnet view");
@@ -228,6 +228,19 @@ async function main() {
   swipe(50, 250); swipe(50, 250);
   assert.equal(pagerIndex(), "0");
   assert.deepEqual(inventory.swiped, [1, -1], "a right swipe on the fish list returns to the backpack");
+  const portraitStyle = documentRef.defaultView.getComputedStyle;
+  documentRef.defaultView.getComputedStyle = (node) => ({ getPropertyValue: name => name === "--inventory-swipe"
+    ? "" : portraitStyle(node).getPropertyValue(name) });
+  for (const pointerType of ["mouse", "touch"]) {
+    const before = inventory.swiped.length;
+    swipe(50, 250, pointerType);
+    assert.deepEqual(inventory.swiped.slice(before), [-1], "wide keepnet returns to backpack in one swipe: " + pointerType);
+    assert.equal(pagerIndex(), "0", "wide swipes leave the hidden summary unselected");
+    assert(keepnetItems.fire("click", { detail: 1 }).prevented, "a wide swipe suppresses its follow-up click");
+    swipe(250, 50, pointerType, "pointercancel");
+    assert.equal(inventory.swiped.length, before + 1, "cancelled wide gestures do not navigate");
+  }
+  documentRef.defaultView.getComputedStyle = portraitStyle;
   assert.equal(documentRef.byClass("keepnet-section__badge")[0].textContent, "3");
   const group = documentRef.byKey("species:crucian_stalker");
   content.scrollTop = 200;

@@ -15,6 +15,10 @@ export class CastPowerAim {
   #screenY = 0;
   #power = 0;
   #keyboardActive = false;
+  #leadSource;
+  #rampSource;
+  #maxLeadPx = 100;
+  #rampDistancePx = 100;
   #release = {
     active: false,
     screenX: 0,
@@ -71,7 +75,7 @@ export class CastPowerAim {
         this.#active = true;
       }
 
-      this.#screenX = this.#clampScreenX(input.pointerCurrent.x);
+      this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
       this.#updateStartY(this.#screenY, dt);
       this.#power = this.#calculatePower(this.#screenY);
@@ -81,7 +85,7 @@ export class CastPowerAim {
     }
 
     if (this.#active && input?.pointerReleased) {
-      this.#screenX = this.#clampScreenX(input.pointerRelease.x);
+      this.#screenX = this.#pointerScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
       this.#updateStartY(this.#screenY, 0);
       this.#power = this.#calculatePower(this.#screenY);
@@ -565,6 +569,22 @@ export class CastPowerAim {
     const viewport = this.#getViewportSize?.();
     const width = Math.max(1, viewport?.width || 1);
     return this.#clamp(Number(value) || 0, 0, width);
+  }
+
+  #pointerScreenX(value) {
+    const cfg = this.#cfg().pointerAim;
+    const lead = cfg?.maxLeadPx ?? 100;
+    const ramp = cfg?.rampDistancePx ?? 100;
+    if (!Object.is(lead, this.#leadSource) || !Object.is(ramp, this.#rampSource)) {
+      this.#leadSource = lead;
+      this.#rampSource = ramp;
+      this.#maxLeadPx = Number.isFinite(lead) ? Math.max(0, lead) : 100;
+      this.#rampDistancePx = Number.isFinite(ramp) ? Math.max(1, ramp) : 100;
+    }
+    const pointerX = Number.isFinite(value) ? value : this.#startX;
+    const dx = pointerX - this.#startX;
+    const q = Math.min(1, Math.abs(dx) / this.#rampDistancePx);
+    return this.#clampScreenX(pointerX + Math.sign(dx) * this.#maxLeadPx * q * q * (3 - 2 * q));
   }
 
   #cfg() {

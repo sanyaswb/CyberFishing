@@ -17,6 +17,7 @@ export class UiCatalogInventoryExample {
     this.#fixture.reset(state);
     this.#ui.open();
     this.#ui.refresh();
+    if (state === "long") this.#ui.showWarning("Довге попередження інвентаря. Текст можна прокручувати, а шторку закрити рухом униз. ".repeat(30));
     this.#status.textContent = state === "error" ? "Будь-яка дія показує production warning. Дані гри не змінюються." : "Числові значення та дії належать лише цьому прикладу.";
     this.#surface.measure();
   }

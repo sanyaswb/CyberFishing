@@ -1,7 +1,7 @@
 const BASE = "assets/house/room-1";
 
 export const HOUSE_CONFIG = Object.freeze({
-  ui: Object.freeze({ noticeDurationMs: 4000, sheetCloseDurationMs: 280, sheetDismissDistancePx: 24,
+  ui: Object.freeze({ sheetCloseDurationMs: 280, sheetDismissDistancePx: 24,
     sceneWheelGestureGapMs: 180 }),
   room: Object.freeze({
     initialLevel: 1,

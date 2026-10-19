@@ -215,21 +215,21 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     assert.equal(meter.style.getPropertyValue("--inventory-resource-percent"), `${expected}%`);
     assert.equal(meter.getAttribute("aria-valuenow"), String(expected));
   }
-  assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "the compact menu and all sheets reuse the shared tap/swipe handle");
+  assert.equal(documentRef.byClass("ui-sheet-handle").length, 5, "menu, sheets and the transient notice reuse the shared handle");
   assert.equal(documentRef.byClass("ui-modal-close").filter((node) => !node.classList.contains("ui-hint__close")).length, 0,
     "House sheets have no cross buttons");
   // Spec 086: the notice takes the hint region at the top of its container and pushes the content below it down: the
   // open sheet's region, otherwise the header's (which is revealed). Booleans keep failures readable (no DOM diffs).
   const notice = documentRef.querySelector("[data-house-notice]");
   const headerHints = documentRef.querySelector("[data-house-header-hints]");
-  assert(notice.hidden && notice.classList.contains("ui-hint") && notice.parentNode === headerHints,
-    "the notice starts hidden in the header's hint region");
+  assert(notice.hidden && notice.classList.contains("ui-hint--sheet") && notice.parentNode !== headerHints,
+    "the notice starts hidden at the screen root, outside header flow");
   const aquariumContent = documentRef.querySelector('[data-house-panel="aquarium"]').querySelector(".house__sheet-content");
   const aquariumHints = aquariumContent.querySelector("[data-house-sheet-hints]");
-  assert(aquariumContent.children.indexOf(aquariumHints) === 1, "each sheet's hint region follows its handle, above the content");
+  assert.equal(aquariumHints, null, "obsolete top notice regions no longer reserve sheet content space");
   view.setNavigationState({ panel: "aquarium" });
   view.announce("Готово");
-  assert(notice.parentNode === aquariumHints, "a notice about a sheet action lies in that sheet's hint region");
+  assert(notice.parentNode !== aquariumHints, "a sheet action uses the same bottom notice without shifting content");
   assert(!notice.hidden && notice.classList.contains("ui-hint--info"));
   assert.equal(documentRef.querySelector("[data-house-notice-text]").textContent, "Готово");
   documentRef.querySelector("[data-house-notice-close]").click();
@@ -238,8 +238,8 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   // header: the House header from the zone checks above.
   header.classList.remove("house__header--visible");
   view.announce("Помилка", true);
-  assert(notice.parentNode === headerHints, "without an open sheet the notice uses the header's hint region");
-  assert(header.classList.contains("house__header--visible"), "the header is revealed for its notice");
+  assert(notice.parentNode !== headerHints, "the bottom notice remains independent of header navigation");
+  assert(!header.classList.contains("house__header--visible"), "showing a notice does not force the header open");
   assert(notice.classList.contains("ui-hint--error"));
   view.announce("");
   assert(notice.hidden, "an empty message hides the notice");
@@ -312,7 +312,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   model.aquarium.feed = { name: "Feed", quantity: 1, imagePath: "feed.svg", percentage: 50 };
   const remounted = createView(); remounted.render(model);
   assert.equal(dock.listeners.get("pointerover").size, 1); assert.equal(dock.listeners.get("pointerleave").size, 1);
-  assert.equal(documentRef.byClass("ui-sheet-handle").length, 4, "remount creates one handle for the compact menu and each sheet");
+  assert.equal(documentRef.byClass("ui-sheet-handle").length, 5, "remount creates one handle for menu, each sheet and notice");
   assert.equal(documentRef.byClass("inventory-toggle").length, 1);
   assert.equal(documentRef.byClass("inventory-resource-meter").length, 2);
   assert.equal(documentRef.byClass("house__fish").length, 1);

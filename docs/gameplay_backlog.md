@@ -20,6 +20,89 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-087 Wide backpack gestures do not switch inventory sections (P2, implemented in v0.43.1)
+Found: 2026-10-19, owner follow-up to TK-007, wide index/dev inventory in v0.43.0.
+Reproduce: open Backpack in landscape/desktop and drag left/right across its overview or item list.
+Expected: one swipe selects Keepnet/Equipment; Keepnet swipes back to Backpack. No hidden portrait page consumes the gesture.
+Actual before fix: section navigation shared the portrait-only paging flag, while the outer controller ignored the nested list pager even when its paging was off. TK-007 had been scoped too narrowly to editor tabs.
+Resolution: separate all-layout section and portrait collection flags; wide nested collections forward to the section command. The parent measures the touched column once at start/end; editor navigation remains disabled and horizontal filters retain their own scroll.
+Evidence: failing-before wide-list mouse regression; mouse/touch, overview/list, both remembered portrait pages, keepnet return, cancel/click suppression and editor blocking. Focused inventory/keepnet checks pass; Architecture/Quick/Full and owner visual acceptance recorded in tasks.md. No obsolete tools or baseline changes.
+
+### G-086 Double activation changes the calendar phase (P2, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-005, index/dev/House.
+Reproduce: double activate the clock; previously production was passive and DEV performed two acceleration clicks.
+Expected: one day/evening/night transition, with DEV single speed still available and no fabricated simulation time.
+Resolution: [116](../specs/116-clock-phase-switch/spec.md), GameTimeClock anchor command and injected activation controller.
+Evidence: 299/300/301ms, rate isolation, calendar continuation, DEV handoff/environment and unchanged v1 format; full 63 checks pass. Owner browser acceptance pending.
+
+### G-085 Bare line slows down after exhausting slack (P2, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-006, cast rod control.
+Reproduce: cast with only rod/reel/line and move laterally across the taut boundary.
+Expected: retain configured free-motion speed for a bare line; retain x3/x1 with terminal load.
+Actual before fix: the controller had no equipment-load reading and always selected x1 while taut.
+Resolution: [115](../specs/115-bare-line-rod-speed/spec.md); canonical read-model flag, passed by Waiting/Biting.
+Evidence: failing-before 405 versus 415 at 50ms; loaded transition, geometry, line limits and unchanged game-cycle pass. Owner play acceptance pending.
+
+### G-084 Aiming stays under the finger at viewport edges (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-002, pointer casting/recasting/chum.
+Reproduce: start aiming centrally, move horizontally toward an edge and release.
+Expected: smooth additional lead up to 100 logical pixels; preview and target use the same coordinate.
+Actual before fix: pointer X was clamped and copied directly, without lead.
+Resolution: [114](../specs/114-pointer-aim-lead/spec.md), shared CastPowerAim mapping and injected configuration.
+Evidence: failing-before half-ramp 250 versus 300; symmetry, clamp, return, release and disabling pass. Owner phone/play/performance acceptance pending.
+
+### G-083 Transient notices occupy the top content flow (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-001, inventory and House.
+Reproduce: trigger a warning or notice; previously it appeared above controls and moved them down.
+Expected: bottom sheet, shared handle, five-second lifetime, downward dismissal at 10% of initial height.
+Resolution: injected HintSheetController; one timer owner, text scrolling, capture/cancel and stale-callback guards.
+Evidence: 19/20px boundary at 200px height, paused timer, replacement during exit, scrolling and disposal; inventory/House/catalog and full checks pass. Owner visual acceptance pending.
+
+### G-082 Artwork drag interrupts wide editor gestures (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-007, wide inventory editor.
+Reproduce: drag artwork in a tab row/preview; native image dragging or a child's lost capture can cancel the owner gesture.
+Expected: mouse/touch horizontal scroll or page swipe, without accidental activation or stuck capture.
+Resolution: shared scroll/pager dragstart suppression, capture ownership filtering and cleanup; resize invalidates swipe commit.
+Evidence: failing-before native drag regression, mouse/touch drag and listener/capture disposal, inventory and House contracts pass. Owner browser reproduction/acceptance pending.
+
+### G-081 Sticky action children may paint beyond rounded corners (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-004, item editor.
+Reproduce: scroll a long editor until its action row sticks; inspect the lower corners.
+Expected: one rounded panel surface before/during/after sticking.
+Actual before fix: radius existed but children were not clipped to its outline; the reported visual contour was not browser-verified.
+Resolution: local overflow clip and isolation, keeping existing radius/sticky geometry and ScrollContainerAligner.
+Evidence: inventory UI and CSS guards pass. Owner visual verification pending.
+
+### G-080 Socket selection highlights only the inner well (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-003.3, item editor.
+Reproduce: select a compatible item for an editor socket; the wider tab area remains unlit.
+Expected: full rounded tab highlight, with no second inner pulse.
+Resolution: project canonical pick state for rod sockets and paint a tab-owned highlight layer.
+Evidence: inventory UI verifies the enclosing tab and absence of inner highlight; integration/CSS checks pass. Owner visual acceptance pending.
+
+### G-079 Redundant divider above editor parameters (P3, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-003.1, editor parameter page.
+Reproduce: view root/filled-cell parameters in the editor.
+Expected: no extra top divider above the first parameter; other parameter views retain their borders.
+Resolution: editor-scoped border override; no global parameter redesign.
+Evidence: CSS usage and inventory UI checks pass. Owner visual acceptance pending.
+
+### G-078 Opening a boat editor leaves the backpack visible (P2, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-003.2, portrait inventory.
+Reproduce: activate an editable boat from the backpack.
+Expected: reveal that instance's editor immediately after successful preparation.
+Actual before fix: panelMode changed, activeSectionId stayed backpack.
+Resolution: the UI-state editor transition reveals equipment-host and preserves entry context.
+Evidence: integration scenario fails before the change and passes after; component editing and inventory UI contracts pass. Owner visual acceptance pending.
+
+### G-077 Editor Back loses the entry section (P2, implemented in v0.43.0)
+Found: 2026-10-19, owner TK-003.4, inventory editor.
+Reproduce: enter from backpack or equipment, change/view a component and press Back.
+Expected: restore the originating section and backpack category/filter/sort; retain saved-loadout return route.
+Actual before fix: there was no stored editor origin.
+Resolution: transient InventoryUiState return context, retained across same-editor component commands and cleared on exit.
+Evidence: backpack/equipment integration routes, existing saved-loadout contracts and byte-identical save round-trip pass. Owner visual acceptance pending.
+
 ### G-076 Automatic perspective zoom enlarges casting and chum areas (P2, implemented in v0.42.2)
 Found: 2026-10-19, owner, v0.42.1.
 Reproduce: open index/dev at the original 30° setting and compare casting spread, chum areas and near-field sizes with the earlier game.

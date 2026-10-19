@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.42.2";
+export const CURRENT_PROJECT_VERSION = "0.43.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "restore-original-scaling",
+  codename: "wide-inventory-section-swipes",
   updatedAt: "2026-10-19",
   notes: Object.freeze([
+    "Wide backpack and keepnet mouse/touch swipes switch sections directly; gesture thresholds follow the touched column and hidden portrait pages never consume the swipe",
+    "TK-001 through TK-007 implemented: bottom notices, pointer aim lead, editor navigation/highlights, wide gestures, bare-line speed and double-activation clock phases",
+    "TK-001 through TK-007 documented against current code with implementation boundaries, acceptance criteria and checks; gameplay unchanged",
     "Original sine/tangent visual scaling and 0/30-degree angles restored; physical metres keep the 50 px/m base without tilt zoom or automatic fitting",
     "Readable location angle and physical-distance controls retain validation, export/import/local reset; DEV Overlay starts off",
     "Physical distance compression starts at the lower green-zone edge for metre grid and movement; visual scale uses the original location safeZone",

@@ -56,8 +56,9 @@ class TestElement {
 class TestDocument {
   constructor() {
     this.body = new TestElement(this, "body"); this.activeElement = this.body; this.listeners = new Map();
-    // Computed style for the portrait swipe flag (spec 087): swipes are on, as in portrait.
-    this.defaultView = { getComputedStyle: () => ({ getPropertyValue: (name) => name === "--inventory-swipe" ? "on" : "" }) };
+    // Portrait collections plus all-layout section/editor gestures, matching the inventory CSS defaults.
+    this.defaultView = { getComputedStyle: () => ({ getPropertyValue: (name) =>
+      ["--inventory-swipe", "--inventory-section-swipe", "--inventory-editor-swipe"].includes(name) ? "on" : "" }) };
   }
   addEventListener(type, listener) {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());

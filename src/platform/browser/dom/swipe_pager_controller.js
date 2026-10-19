@@ -25,22 +25,23 @@ export class SwipePagerController {
   }
 
   // ignoreSelector: gestures that start inside a matching element belong to a nested pager or scroller.
-  attach(viewport, { pageCount, getIndex, onSelect, onEdge = null, ignoreSelector = "" }) {
+  attach(viewport, { pageCount, getIndex, onSelect, onEdge = null, ignoreSelector = "", getGestureSurface = null }) {
     this.detach(viewport);
-    const options = { pageCount, getIndex, onSelect, onEdge, ignoreSelector };
-    const state = { pointerId: null, startX: 0, startY: 0, width: 0, dragging: false, suppressClickUntil: -Infinity };
+    const options = { pageCount, getIndex, onSelect, onEdge, ignoreSelector, getGestureSurface };
+    const state = { pointerId: null, startX: 0, startY: 0, width: 0, surface: null, dragging: false, suppressClickUntil: -Infinity };
     const handlers = {
       pointerdown: (event) => this.#down(viewport, state, options, event),
       pointermove: (event) => this.#move(viewport, state, options, event),
       pointerup: (event) => this.#end(viewport, state, options, event),
       pointercancel: (event) => this.#end(viewport, state, options, event),
+      dragstart: (event) => event.preventDefault(),
       // A card losing its capture to the viewport bubbles here too; only the viewport's own loss ends the drag.
       lostpointercapture: (event) => { if (event.target === viewport) this.#end(viewport, state, options, event); },
     };
     const click = (event) => this.#click(state, event);
     for (const [type, handler] of Object.entries(handlers)) viewport.addEventListener(type, handler);
     viewport.addEventListener("click", click, true);
-    this.#bindings.set(viewport, { handlers, click });
+    this.#bindings.set(viewport, { handlers, click, state });
   }
 
   detach(viewport) {
@@ -48,6 +49,7 @@ export class SwipePagerController {
     if (!binding) return;
     for (const [type, handler] of Object.entries(binding.handlers)) viewport.removeEventListener(type, handler);
     viewport.removeEventListener("click", binding.click, true);
+    this.#reset(viewport, binding.state);
     this.#bindings.delete(viewport);
   }
 
@@ -58,7 +60,8 @@ export class SwipePagerController {
     state.pointerId = event.pointerId;
     state.startX = event.clientX;
     state.startY = event.clientY;
-    state.width = viewport.getBoundingClientRect().width;
+    state.surface = options.getGestureSurface?.(event.target) || viewport;
+    state.width = state.surface.getBoundingClientRect().width;
     state.dragging = false;
   }
 
@@ -83,18 +86,28 @@ export class SwipePagerController {
 
   #end(viewport, state, options, event) {
     if (event.pointerId !== state.pointerId) return;
-    state.pointerId = null;
-    if (!state.dragging) return;
-    state.dragging = false;
-    viewport.classList.remove(this.#draggingClassName);
-    if (this.#positionProperty) viewport.style.removeProperty(this.#positionProperty);
+    const dragging = state.dragging;
+    const surface = state.surface || viewport;
+    this.#reset(viewport, state);
+    if (!dragging) return;
     state.suppressClickUntil = this.#nowMs() + this.#clickSuppressionMs;
     const dx = event.clientX - state.startX;
-    const step = event.type === "pointerup" && Math.abs(dx) >= state.width * this.#commitShare ? Math.sign(-dx) : 0;
+    const sameWidth = surface.getBoundingClientRect().width === state.width;
+    const step = event.type === "pointerup" && sameWidth && Math.abs(dx) >= state.width * this.#commitShare ? Math.sign(-dx) : 0;
     if (!step) return;
     const next = options.getIndex() + step;
     if (next >= 0 && next < options.pageCount) options.onSelect(next);
     else options.onEdge?.(step);
+  }
+
+  #reset(viewport, state) {
+    const pointerId = state.pointerId;
+    state.pointerId = null;
+    state.dragging = false;
+    state.surface = null;
+    viewport.classList.remove(this.#draggingClassName);
+    if (this.#positionProperty) viewport.style.removeProperty(this.#positionProperty);
+    if (pointerId !== null && viewport.hasPointerCapture?.(pointerId)) viewport.releasePointerCapture(pointerId);
   }
 
   #click(state, event) {

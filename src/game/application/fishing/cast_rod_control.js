@@ -67,7 +67,7 @@ export class CastRodControl {
     });
   }
 
-  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, aiming = false }) {
+  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, aiming = false, hasTerminalLoad = true }) {
     this.#clearFrame();
     const cfg = this.#settings();
     if (cfg?.enabled !== true || !floatEntity || !bounds) { this.reset(); return this.#frame; }
@@ -103,7 +103,7 @@ export class CastRodControl {
     const ratio = clampUnitFinite(action?.inputRatio ?? input.rodControlInputRatio);
     const target = baseX + (direction < 0 ? left - baseX : right - baseX) * ratio;
     const dtSec = Math.min(nonNegativeOr(dtMs), this.#config.physics.simulation.maxDtMs) / 1000;
-    const step = this.#resolveMovementStep({ previousX, target, dtSec, cfg, bounds, waterMetric });
+    const step = this.#resolveMovementStep({ previousX, target, dtSec, cfg, bounds, waterMetric, hasTerminalLoad });
     this.#screenX = previousX + Math.sign(target - previousX) * Math.min(Math.abs(target - previousX), step);
     this.#frame.deltaPx = this.#screenX - previousX;
     this.#frame.rodMoved = Math.abs(this.#frame.deltaPx) > nonNegativeOr(cfg.movementEpsilonPx);
@@ -119,10 +119,10 @@ export class CastRodControl {
     return this.#frame;
   }
 
-  #resolveMovementStep({ previousX, target, dtSec, cfg, bounds, waterMetric }) {
+  #resolveMovementStep({ previousX, target, dtSec, cfg, bounds, waterMetric, hasTerminalLoad }) {
     const speed = nonNegativeOr(cfg.speedPxPerSecond);
     const stationarySpeed = speed * nonNegativeOr(cfg.speedMultipliers?.stationaryFloat, 1);
-    const movingSpeed = speed * nonNegativeOr(cfg.speedMultipliers?.movingFloat, 1);
+    const movingSpeed = hasTerminalLoad ? speed * nonNegativeOr(cfg.speedMultipliers?.movingFloat, 1) : stationarySpeed;
     const distance = Math.abs(target - previousX);
     const stationaryStep = Math.min(distance, stationarySpeed * dtSec);
     if (distance === 0 || dtSec <= 0) return 0;

@@ -3008,6 +3008,25 @@ vm.runInContext(
   assertIntegration(restoredClockFlow.loadouts.require(clockSaved.loadoutId).createdAt === createdClockKit.createdAt,
     "snapshot composition carries clock without rewriting stored dates");
 
+  // TK-003: entering a real editor reveals it and Back restores the entry route, including list filters.
+  const editorRoute = makeComposition({ items: [raw("route-boat", "boat")] });
+  dispatch(editorRoute, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+  dispatch(editorRoute, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+  const routeBefore = editorRoute.commands.getUiState();
+  const routeRoot = dispatch(editorRoute, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "route-boat" }).rootInstanceId;
+  assertIntegration(editorRoute.commands.getUiState().panelMode === "assembly" &&
+    editorRoute.commands.getUiState().activeSectionId === "equipment", "opening a boat from the backpack reveals its editor");
+  dispatch(editorRoute, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: routeRoot });
+  const routeAfter = editorRoute.commands.getUiState();
+  assertIntegration(routeAfter.activeSectionId === "backpack" && routeAfter.panelMode === "loadout" &&
+    routeAfter.activeCategoryId === routeBefore.activeCategoryId &&
+    JSON.stringify(routeAfter.sortCriterionIds) === JSON.stringify(routeBefore.sortCriterionIds),
+    "Back restores the backpack route and its list settings");
+  dispatch(editorRoute, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
+  dispatch(editorRoute, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: routeRoot });
+  dispatch(editorRoute, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: routeRoot });
+  assertIntegration(editorRoute.commands.getUiState().activeSectionId === "equipment", "equipment entry returns to equipment");
+
   console.log("Inventory integration checks passed.");
   `,
   context,

@@ -5,9 +5,12 @@ const TONES = Object.freeze(["info", "warning", "error"]);
 export class UiHintRenderer {
   #dom;
   #parts = new WeakMap();
+  #sheet;
+  #visible = null;
 
-  constructor({ domFactory }) {
+  constructor({ domFactory, sheetController = null }) {
     this.#dom = domFactory;
+    this.#sheet = sheetController;
   }
 
   create({ className = "", closeLabel, tone = "info", role = "status", onClose = null }) {
@@ -28,7 +31,16 @@ export class UiHintRenderer {
       onClose?.();
     };
     close.addEventListener("click", activate);
-    this.#parts.set(hint, { text, close, activate, tone: null });
+    let handle = null;
+    if (this.#sheet) {
+      hint.classList.add("ui-hint--sheet");
+      handle = this.#dom.button("ui-sheet-handle ui-hint__handle", "", { title: close.getAttribute("aria-label") });
+      handle.setAttribute("aria-label", close.getAttribute("aria-label"));
+      hint.appendChild(handle);
+      handle.addEventListener("click", activate);
+      this.#sheet.attach(hint, { text, close, handle, onDismiss: activate });
+    }
+    this.#parts.set(hint, { text, close, handle, activate, tone: null });
     this.#setTone(hint, tone);
     return hint;
   }
@@ -36,13 +48,18 @@ export class UiHintRenderer {
   show(hint, message, tone = null) {
     const parts = this.#parts.get(hint);
     if (!parts) return;
+    if (this.#visible && this.#visible !== hint) this.hide(this.#visible);
+    this.#visible = hint;
     if (parts.text.textContent !== message) parts.text.textContent = message;
     if (tone) this.#setTone(hint, tone);
     hint.hidden = false;
+    this.#sheet?.show(hint);
   }
 
   hide(hint) {
+    this.#sheet?.hide(hint);
     if (hint && !hint.hidden) hint.hidden = true;
+    if (this.#visible === hint) this.#visible = null;
   }
 
   isVisible(hint) {
@@ -56,7 +73,12 @@ export class UiHintRenderer {
   dispose(hint) {
     const parts = this.#parts.get(hint);
     if (!parts) return;
+    this.hide(hint);
     parts.close.removeEventListener("click", parts.activate);
+    parts.handle?.removeEventListener("click", parts.activate);
+    parts.handle?.remove();
+    this.#sheet?.dispose(hint);
+    if (this.#visible === hint) this.#visible = null;
     this.#parts.delete(hint);
   }
 
@@ -64,7 +86,7 @@ export class UiHintRenderer {
     const parts = this.#parts.get(hint);
     const next = TONES.includes(tone) ? tone : "info";
     if (parts.tone === next) return;
-    if (parts.tone) hint.classList.remove(`ui-hint--${parts.tone}`);
+    for (const candidate of TONES) if (candidate !== next) hint.classList.remove(`ui-hint--${candidate}`);
     hint.classList.add(`ui-hint--${next}`);
     parts.tone = next;
   }

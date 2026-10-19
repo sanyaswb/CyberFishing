@@ -6,6 +6,7 @@
      row without the gap), so they shrink together instead of only the items column. */
   --inventory-content-columns: minmax(min(430px, calc((100% - var(--inventory-content-gap)) / 2)), 0.92fr) minmax(0, 1.88fr);
   --inventory-editor-swipe: on;
+  --inventory-section-swipe: on;
   --inventory-content-gap: 20px;
   /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
   --inventory-container-gap: var(--inventory-content-gap);
@@ -77,12 +78,20 @@
   min-width: 0;
 }
 
-.inventory-modal__hints:has(> :not([hidden])) {
+.inventory-modal__hints:has(> :not([hidden]):not(.ui-hint--sheet)) {
   margin-bottom: var(--inventory-container-gap);
 }
 
 .inventory-modal__hints > .ui-hint {
   max-height: calc(var(--ui-logical-height, 100dvh) * 0.3);
+}
+
+.inventory-modal__hints > .ui-hint--sheet {
+  position: absolute;
+  inset-inline: var(--inventory-container-gap);
+  bottom: 0;
+  z-index: var(--ui-layer-tooltip);
+  max-height: 50%;
 }
 
 .inventory-modal *,
@@ -149,6 +158,19 @@
   grid-area: right;
 }
 
+/* Every layout leaves horizontal gestures to section navigation; vertical lists keep native vertical panning. */
+.inventory-main,
+.inventory-main__left,
+.inventory-main .inventory-loadout-panel,
+.inventory-main .inventory-assembly-editor,
+.inventory-main .inventory-saved-loadout-preview {
+  touch-action: pan-y;
+}
+
+.inventory-main.inventory-main--swiping {
+  user-select: none;
+}
+
 .inventory-main__tabs {
   grid-area: tabs;
 }
@@ -162,6 +184,7 @@
 .inventory-modal--section-equipment:has(.inventory-assembly-editor)
   .inventory-main {
   --inventory-swipe: off;
+  --inventory-section-swipe: off;
 }
 
 /* Every section keeps its hosts; only the active section's hosts are visible (spec 067). */
@@ -196,7 +219,7 @@
      Narrow landscape keeps the separate containers above. */
   @container ui-surface (orientation: portrait) {
     /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
-    /* --inventory-swipe turns on the backpack page swipe and the section swipe (spec 087, SwipePagerController). */
+    /* Internal collection pages are portrait-only; section navigation has its own all-layout flag. */
     .inventory-modal {
       --inventory-content-columns: minmax(0, 1fr);
       --inventory-swipe: on;
@@ -216,21 +239,6 @@
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
       padding-top: var(--inventory-container-gap);
-    }
-
-    /* Horizontal swipes switch sections (spec 087). touch-action is resolved only up to the nearest scroller, so the
-       main area and each vertical scroller inside it keep only vertical native panning; filter rows and lists declare
-       their own axes (spec 079). */
-    .inventory-main,
-    .inventory-main__left,
-    .inventory-main .inventory-loadout-panel,
-    .inventory-main .inventory-assembly-editor,
-    .inventory-main .inventory-saved-loadout-preview {
-      touch-action: pan-y;
-    }
-
-    .inventory-main.inventory-main--swiping {
-      user-select: none;
     }
 
     /* The sidebar keeps no box in portrait (spec 077): content, items and tabs keep their own grid areas, and the

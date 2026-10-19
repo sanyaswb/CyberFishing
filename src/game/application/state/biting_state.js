@@ -93,6 +93,7 @@ export class BitingState extends GameState {
   update(dt, bounds, envData) {
     const input = envData.input || this.deps.input.getState();
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
+      hasTerminalLoad: this.deps.inventory.getEquipped()?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
       checkWater: this.deps.world.checkWater, retrieving: this.deps.castRodControl.isPulling(input),
     });

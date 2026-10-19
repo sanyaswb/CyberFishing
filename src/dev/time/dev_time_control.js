@@ -5,15 +5,17 @@ export class DevTimeControl {
   #isEnabled;
   #baseScale;
   #reserveWidth;
+  #changePhase;
   #expanded = false;
   #disposed = false;
   #suspended = false;
-  constructor({ clock, view, isEnabled, reserveWidth, baseScale = null }) {
+  constructor({ clock, view, isEnabled, reserveWidth, baseScale = null, changePhase = null }) {
     this.#clock = clock;
     this.#view = view;
     this.#isEnabled = isEnabled;
     this.#baseScale = baseScale;
     this.#reserveWidth = reserveWidth;
+    this.#changePhase = changePhase;
     this.update(clock.getHours());
   }
   get container() { return this.#view.container; }
@@ -37,7 +39,13 @@ export class DevTimeControl {
   getSnapshot() {
     return { enabled: this.#isEnabled() === true, multiplier: this.#clock.getRateMultiplier(), timeScale: this.#baseScale?.() };
   }
+  advancePhase() {
+    if (this.#disposed || this.#suspended) return;
+    this.#changePhase?.();
+    this.update(this.#clock.getHours());
+  }
   suspend() {
+    this.#view.cancelActivation?.();
     const snapshot = this.getSnapshot();
     if (this.#disposed || this.#suspended) return snapshot;
     if (snapshot.multiplier === 1) this.#clock.checkpoint();

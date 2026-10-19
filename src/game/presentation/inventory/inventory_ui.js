@@ -48,8 +48,6 @@ export class InventoryUI {
   #editorRootInstanceId = null;
   #unsubscribe = null;
   #visibilityListeners = new Set();
-  #warningTimer = null;
-  #warningTimers;
   #isOpen = false;
   #isMounted = false;
   #dynamicRefreshElapsedMs = 0;
@@ -101,10 +99,10 @@ export class InventoryUI {
     this.#onWarning = onWarning;
     this.#mountNode = mountNode;
     this.#buttonMountNode = buttonMountNode;
-    this.#warningTimers = warningTimers;
     const presentation = createPresentation({
       documentRef,
       uiSurface,
+      warningTimers,
       rarityDomAdapter,
       rarityVisualResolver,
       progressionDomAdapter,
@@ -223,6 +221,7 @@ export class InventoryUI {
     this.#keepnetSection?.setVisible(false);
     this.#longPressController.clear();
     this.#tooltipPresenter.hide();
+    this.#hintRenderer.hide(this.#warningNode);
     this.#dynamicRefreshElapsedMs = 0;
     this.#dispatch({ type: this.#actionTypes.CLOSE });
     this.#notifyVisibility();
@@ -360,25 +359,13 @@ export class InventoryUI {
     const text = typeof message === "string" ? message.trim() : "";
     if (!text) return;
     this.#hintRenderer.show(this.#warningNode, text);
-    this.#clearWarningTimer();
-    this.#warningTimer = this.#warningTimers.setTimeout(() => {
-      this.#hintRenderer.hide(this.#warningNode);
-      this.#warningTimer = null;
-    }, 5000);
     this.#onWarning?.(text);
-  }
-
-  #clearWarningTimer() {
-    if (this.#warningTimer === null) return;
-    this.#warningTimers.clearTimeout(this.#warningTimer);
-    this.#warningTimer = null;
   }
 
   dispose() {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
     this.#visibilityListeners.clear();
-    this.#clearWarningTimer();
     this.#hintRenderer.dispose(this.#warningNode);
     this.#longPressController.dispose();
     this.#headerRenderer.dispose?.();
@@ -414,11 +401,10 @@ export class InventoryUI {
       "div",
       "inventory-modal__header-host",
     );
-    // Hints have their own region at the top of the inventory (spec 086): it has no height while empty and pushes the
-    // header and the sections down when a hint appears.
+    // Persistent help uses this flow region; transient warnings are anchored at the modal's bottom by CSS.
     this.#hintRegion = this.#dom.element("div", "inventory-modal__hints");
     this.#warningNode = this.#hintRenderer.create({ className: "inventory-warning", tone: "warning", role: "alert",
-      closeLabel: "Закрити попередження", onClose: () => this.#clearWarningTimer() });
+      closeLabel: "Закрити попередження" });
     const main = this.#dom.element("main", "inventory-main");
     this.#leftHost = this.#dom.element(
       "div",
@@ -438,6 +424,8 @@ export class InventoryUI {
     // The backpack pager and the filter rows own their own horizontal gestures; the pager hands its edges back here.
     this.#sectionSwipeController.attach(main, { pageCount: this.#sections.items.length,
       getIndex: () => this.#sectionIndex(), onSelect: (index) => this.swipeSection(index - this.#sectionIndex()),
+      getGestureSurface: (target) => this.#leftHost.contains(target) ? this.#leftHost
+        : this.#rightHost.contains(target) ? this.#rightHost : main,
       ignoreSelector: ".inventory-pager__viewport, .inventory-horizontal-scroll" });
     const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
     this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));

@@ -1,5 +1,18 @@
 # CyberFishing changelog
 
+## v0.43.1 - Wide Inventory Section Swipes
+
+- Complete TK-007: mouse/touch swipes on the wide backpack and keepnet switch sections directly, without selecting hidden portrait pages. Use the touched column's width for the gesture threshold; preserve editor and filter gesture ownership.
+
+## v0.43.0 - Interaction Refinements
+
+- Implement TK-001–TK-007: bottom notice sheets with drag dismissal, pointer aim lead, editor return routes and full-tab highlights, clipped sticky corners, reliable artwork swipes, bare-line rod speed and double-activation day/evening/night clocks.
+- Track completed work and owner acceptance in `tasks.md`; preserve save formats and the game-cycle baseline.
+
+## v0.42.3 - Implementation-Ready Task Briefs
+
+- Replace `tasks.txt` with `tasks.md`: clarify TK-001–TK-007 against current code, with implementation boundaries, acceptance criteria, checks and explicit working assumptions. Gameplay is unchanged.
+
 ## v0.42.2 - Restore Original Scaling
 
 - Restore the original sine/tangent visual scaling and 0°/30° location angles. Remove angle-dependent physical zoom and automatic fitting; keep the engine's 50 px/m base, the existing 30 m distance profile and gameplay settings (G-076, spec 113).

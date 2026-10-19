@@ -87,6 +87,7 @@ export class WaitingState extends GameState {
       : null;
 
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
+      hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
       checkWater: this.deps.world.checkWater, retrieving: effectiveInput.isPulling,
       aiming: this.#isRecastAiming || this.#pendingRecast !== null,

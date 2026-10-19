@@ -19,6 +19,7 @@ export class InventoryUiState {
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
   #rodRemovalStep = null;
+  #editorReturnContext = null;
   // Equipment, backpack or keepnet (spec 067). It survives closing for the rest of the session.
   #activeSectionId = "equipment";
 
@@ -61,6 +62,7 @@ export class InventoryUiState {
   get placementOrderKey() { return this.#placementOrderKey; }
   get rodRemovalStep() { return this.#rodRemovalStep; }
   get activeSectionId() { return this.#activeSectionId; }
+  get editorReturnContext() { return this.#editorReturnContext; }
 
   selectSection(sectionId) {
     this.#activeSectionId = sectionId;
@@ -107,6 +109,8 @@ export class InventoryUiState {
     this.#rodRemovalStep = null;
     this.#isOpen = false;
     if (this.isPicking) this.completePick();
+    if (this.#panelMode === "assembly") this.showLoadoutPanel();
+    this.#editorReturnContext = null;
     this.clearPlacementOrder();
   }
 
@@ -174,9 +178,32 @@ export class InventoryUiState {
     this.#placementOrderKey = null;
   }
 
-  showAssemblyEditor(rootInstanceId) {
+  showAssemblyEditor(rootInstanceId, { returnContext = null } = {}) {
+    this.#editorReturnContext = returnContext || this.#editorReturnContext || Object.freeze({
+      sectionId: this.#activeSectionId,
+      categoryId: this.#activeCategoryId,
+      subfilterIds: Object.freeze([...this.#activeSubfilterIds]),
+      rarityFilterIds: Object.freeze([...this.#activeRarityFilterIds]),
+      sortCriterionIds: Object.freeze([...this.#sortCriterionIds]),
+      sortDirectionId: this.#sortDirectionId,
+    });
     this.#showPanel("assembly", rootInstanceId, null);
+    this.#activeSectionId = "equipment";
     this.focusCompatibleCategory();
+  }
+
+  backFromAssemblyEditor(loadoutId = null) {
+    const context = this.#editorReturnContext;
+    if (loadoutId) this.showSavedLoadoutPreview(loadoutId);
+    else this.showLoadoutPanel();
+    this.#activeSectionId = loadoutId ? "equipment" : context?.sectionId || "equipment";
+    if (context?.sectionId === "backpack" && !loadoutId) {
+      this.#activeCategoryId = context.categoryId;
+      this.#activeSubfilterIds = [...context.subfilterIds];
+      this.#activeRarityFilterIds = [...context.rarityFilterIds];
+      this.#sortCriterionIds = [...context.sortCriterionIds];
+      this.#sortDirectionId = context.sortDirectionId;
+    }
   }
 
   showLoadoutPanel() {
@@ -193,6 +220,7 @@ export class InventoryUiState {
   }
 
   #showPanel(panelMode, editingRootInstanceId, viewingLoadoutId) {
+    if (panelMode !== "assembly") this.#editorReturnContext = null;
     this.#panelMode = panelMode;
     this.#rodRemovalStep = null;
     this.#editingRootInstanceId = editingRootInstanceId;

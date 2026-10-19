@@ -1,6 +1,6 @@
 // Two-page pager of the portrait backpack (spec 075): tabs in the main tab style above a viewport whose track holds
 // the pages. The page index is presentation state kept here across list re-renders; CSS decides where the pager is
-// active (portrait) and otherwise shows only the first page.
+// active (portrait) and otherwise shows only the first page; wide gestures go straight to the section edge callback.
 export class InventoryCollectionPagerRenderer {
   #dom;
   #tabs;
@@ -8,12 +8,14 @@ export class InventoryCollectionPagerRenderer {
   #config;
   #index = 0;
   #current = null;
+  #isPagingEnabled;
 
-  constructor({ domFactory, tabsRenderer, swipeController, config }) {
+  constructor({ domFactory, tabsRenderer, swipeController, config, isPagingEnabled = () => true }) {
     this.#dom = domFactory;
     this.#tabs = tabsRenderer;
     this.#swipe = swipeController;
     this.#config = config;
+    this.#isPagingEnabled = isPagingEnabled;
   }
 
   // pages: the nodes of each page; they become the page's direct children, so the page (a flex column) bounds them.
@@ -33,7 +35,12 @@ export class InventoryCollectionPagerRenderer {
     viewport.appendChild(track);
     pager.append(tabs, viewport);
     if (this.#current) this.#swipe.detach(this.#current.viewport);
-    this.#swipe.attach(viewport, { pageCount: pages.length, getIndex: () => this.#index, onSelect: (index) => this.select(index),
+    this.#swipe.attach(viewport, { pageCount: pages.length, getIndex: () => this.#index, onSelect: (index) => {
+      // Wide layouts render only the list page. Its gesture goes directly to the neighbouring section instead of
+      // selecting the hidden portrait summary, including when the remembered portrait index is the last page.
+      if (this.#isPagingEnabled(viewport)) this.select(index);
+      else onEdge?.(index - this.#index);
+    },
       onEdge });
     this.#current = { tabs, viewport };
     this.#apply();
