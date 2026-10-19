@@ -58,6 +58,7 @@ export class ConfigSchemaValidator {
     this.#validateRarityConfig();
     this.#validateLiveBaitConfig();
     this.#validateRodSpineConfig();
+    this.#validateInventorySelectorConfig();
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();
@@ -502,6 +503,16 @@ export class ConfigSchemaValidator {
     if (!["tension", "rodStress"].includes(cfg.bendSource)) {
       this.#error(`${path}.bendSource`, `expected "tension" or "rodStress", got ${cfg.bendSource}`);
     }
+  }
+
+  #validateInventorySelectorConfig() {
+    const cfg = this.config.ui?.inventorySelector;
+    const path = "CONFIG.ui.inventorySelector";
+    if (!cfg || typeof cfg !== "object") {
+      this.#error(path, "missing inventory selector config");
+      return;
+    }
+    this.#requireBooleanWithLabel("ui.inventorySelector.radialEnabled", cfg.radialEnabled);
   }
 
   // A skin's Spine bundle: project-relative skeleton JSON and atlas paths, optional skin and line point names.

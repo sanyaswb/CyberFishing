@@ -1,0 +1,200 @@
+/* Radial inventory selector appearance (TK-008). Placement and sizing follow design tokens. */
+.inventory-radial-selector {
+  position: fixed;
+  right: var(--ui-edge-right);
+  bottom: var(--ui-edge-bottom);
+  z-index: var(--ui-layer-controls);
+  width: 112px;
+  height: 112px;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  order: 4;
+}
+
+.game-toolbar .inventory-radial-selector {
+  position: relative;
+  flex: 0 0 var(--ui-toolbar-size);
+  width: var(--ui-toolbar-size);
+  height: var(--ui-toolbar-size);
+  order: 4;
+}
+
+.inventory-radial-selector[hidden] {
+  display: none !important;
+}
+
+/* Central quarter-circle trigger button */
+.inventory-radial-selector__trigger {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--ui-toolbar-size);
+  height: var(--ui-toolbar-size);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ui-text);
+  cursor: pointer;
+  touch-action: none;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.inventory-radial-selector__trigger:focus-visible {
+  outline: 2px solid var(--ui-info);
+  outline-offset: 2px;
+}
+
+.inventory-radial-selector__trigger-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.inventory-radial-selector__trigger-bg {
+  fill: rgba(var(--ui-surface-rgb), 0.94);
+  stroke: var(--ui-control-border-color);
+  stroke-width: var(--ui-control-border-width);
+  stroke-linejoin: round;
+  transition: fill var(--ui-duration-control) var(--ui-ease-standard), stroke var(--ui-duration-control) var(--ui-ease-standard);
+}
+
+.ui-surface--desktop-hover .inventory-radial-selector__trigger:hover .inventory-radial-selector__trigger-bg {
+  border-color: var(--ui-accent);
+  fill: rgba(var(--ui-accent-rgb), 0.16);
+  stroke: var(--ui-accent);
+}
+
+.inventory-radial-selector__trigger-icon {
+  position: absolute;
+  right: 13px;
+  bottom: 13px;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  color: var(--ui-text);
+  pointer-events: none;
+}
+
+/* Fan menu overlay containing annular sectors */
+.inventory-radial-selector__fan {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 112px;
+  height: 112px;
+  pointer-events: none;
+  transform-origin: bottom right;
+  transform: scale(0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform var(--ui-duration-fast) var(--ui-ease-standard), opacity var(--ui-duration-fast) var(--ui-ease-standard), visibility 0s linear var(--ui-duration-fast);
+}
+
+.inventory-radial-selector--open .inventory-radial-selector__fan {
+  transform: scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform var(--ui-duration-fast) var(--ui-ease-standard), opacity var(--ui-duration-fast) var(--ui-ease-standard), visibility 0s linear 0s;
+}
+
+/* SVG backdrop for fan sectors and keep-open area */
+.inventory-radial-selector__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.inventory-radial-selector__keep-open {
+  fill: transparent;
+  pointer-events: auto;
+}
+
+/* Sector items */
+.inventory-radial-selector__sector {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+  outline: none;
+}
+
+.inventory-radial-selector__sector--equipment {
+  z-index: 1;
+}
+
+.inventory-radial-selector__sector--backpack {
+  z-index: 1;
+}
+
+.inventory-radial-selector__sector--keepnet {
+  z-index: 1;
+}
+
+.inventory-radial-selector__sector-bg {
+  fill: rgba(var(--ui-surface-rgb), 0.94);
+  stroke: var(--ui-control-border-color);
+  stroke-width: var(--ui-control-border-width);
+  stroke-linejoin: round;
+  transition: fill var(--ui-duration-control) var(--ui-ease-standard), stroke var(--ui-duration-control) var(--ui-ease-standard);
+}
+
+.inventory-radial-selector__sector:focus-visible .inventory-radial-selector__sector-bg {
+  stroke: var(--ui-info);
+  stroke-width: 2px;
+}
+
+.inventory-radial-selector__sector--highlighted .inventory-radial-selector__sector-bg {
+  fill: rgba(var(--ui-accent-rgb), 0.28);
+  stroke: var(--ui-accent);
+}
+
+.ui-surface--desktop-hover .inventory-radial-selector__sector:hover .inventory-radial-selector__sector-bg {
+  fill: rgba(var(--ui-accent-rgb), 0.28);
+  stroke: var(--ui-accent);
+}
+
+/* Content/icon within each sector */
+.inventory-radial-selector__sector-content {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.inventory-radial-selector__sector-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  color: var(--ui-text);
+  fill: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-radial-selector__fan,
+  .inventory-radial-selector__trigger-bg,
+  .inventory-radial-selector__sector-bg {
+    transition: none !important;
+  }
+}

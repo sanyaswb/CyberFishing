@@ -375,4 +375,261 @@ phaseView.container.fire("pointerdown", { pointerId: 6, clientX: 0, clientY: 0 }
 phaseView.container.fire("pointercancel", { pointerId: 6 });
 phaseView.container.fire("click", { detail: 1 }); assert.equal(phaseTimers.jobs.size, 0);
 phaseView.dispose();
-console.log("Task interactions passed: wide gestures, pointer aiming, sheet thresholds/timers/scrolling and clock double activation.");
+
+// TK-008: Alternative radial inventory selector checks
+const {
+  calculateRadialSelectorGeometry,
+  RADIAL_SECTOR_IDS,
+} = require("../src/game/presentation/inventory/inventory_radial_selector_geometry.js");
+const { InventoryRadialSelectorRenderer } = require("../src/game/presentation/inventory/inventory_radial_selector_renderer.js");
+const { InventoryRadialSelectorController } = require("../src/platform/browser/dom/inventory_radial_selector_controller.js");
+const { InventoryRadialSelectorCoordinator } = require("../src/game/presentation/inventory/inventory_radial_selector_coordinator.js");
+
+// 1. Geometry and hit-testing
+const geo = calculateRadialSelectorGeometry(48);
+assert.equal(geo.sectors.length, 3);
+assert.deepEqual(geo.sectors.map(s => s.id), ["equipment", "backpack", "keepnet"]);
+assert.equal(geo.r0, 48);
+assert.equal(geo.rIn, 48 * 1.15);
+assert.equal(geo.rOut, 48 * 2.1);
+
+const cx = geo.center.x;
+const cy = geo.center.y;
+const rMid = (geo.rIn + geo.rOut) / 2;
+
+assert.equal(geo.hitTest(cx - 20, cy - 20).type, "trigger");
+for (const sector of geo.sectors) {
+  const testX = cx - rMid * Math.cos(sector.midAngle);
+  const testY = cy - rMid * Math.sin(sector.midAngle);
+  const hit = geo.hitTest(testX, testY);
+  assert.equal(hit.type, "sector");
+  assert.equal(hit.id, sector.id);
+  assert.equal(geo.isInsideKeepOpenArea(testX, testY), true);
+}
+assert.equal(geo.hitTest(cx + 10, cy - 50), null);
+assert.equal(geo.isInsideKeepOpenArea(cx + 10, cy - 50), false);
+assert.equal(geo.hitTest(cx - 150, cy - 50), null);
+assert.equal(geo.isInsideKeepOpenArea(cx - 150, cy - 50), false);
+
+const gapAngle = (geo.sectors[0].endAngle + geo.sectors[1].startAngle) / 2;
+const gapX = cx - rMid * Math.cos(gapAngle);
+const gapY = cy - rMid * Math.sin(gapAngle);
+assert.equal(geo.hitTest(gapX, gapY).type, "gap");
+assert.equal(geo.isInsideKeepOpenArea(gapX, gapY), true, "keep-open disk covers gaps");
+
+// 2. DOM Renderer
+const selectorDoc = new TestDocument();
+const selectorDom = new InventoryDomFactory(selectorDoc);
+const renderer = new InventoryRadialSelectorRenderer({ domFactory: selectorDom });
+assert(renderer.element.classList.contains("inventory-radial-selector"));
+assert.equal(renderer.triggerElement.getAttribute("aria-haspopup"), "true");
+assert.equal(renderer.triggerElement.getAttribute("aria-expanded"), "false");
+assert.equal(renderer.isOpen, false);
+
+renderer.setOpen(true, { animated: false });
+assert.equal(renderer.isOpen, true);
+assert.equal(renderer.triggerElement.getAttribute("aria-expanded"), "true");
+assert(renderer.element.classList.contains("inventory-radial-selector--open"));
+
+renderer.setHighlightedSector("backpack");
+assert(renderer.getSectorButton("backpack").classList.contains("inventory-radial-selector__sector--highlighted"));
+renderer.setHighlightedSector("equipment");
+assert(!renderer.getSectorButton("backpack").classList.contains("inventory-radial-selector__sector--highlighted"));
+assert(renderer.getSectorButton("equipment").classList.contains("inventory-radial-selector__sector--highlighted"));
+
+renderer.updateKeepnetArt("assets/items/equipment/keepnet/keepnet--2.webp");
+renderer.setOpen(false, { animated: false });
+assert.equal(renderer.isOpen, false);
+assert(!renderer.element.classList.contains("inventory-radial-selector--open"));
+renderer.dispose();
+
+// 3. Touch gesture & desktop hover controller interactions
+const touchDoc = new TestDocument();
+const touchDom = new InventoryDomFactory(touchDoc);
+const touchRenderer = new InventoryRadialSelectorRenderer({ domFactory: touchDom });
+let selectedSection = null;
+const selectedCalls = [];
+let mockHoverEnabled = false;
+const mockSurface = {
+  getMetrics: () => ({ hoverEnabled: mockHoverEnabled }),
+  subscribe: () => () => {},
+  physicalToLogicalPoint: (p) => p,
+};
+
+const controller = new InventoryRadialSelectorController({
+  renderer: touchRenderer,
+  uiSurface: mockSurface,
+  windowRef: touchDoc.defaultView,
+  onSelect: (id) => {
+    selectedSection = id;
+    selectedCalls.push(id);
+  },
+});
+
+touchDoc.body.appendChild(touchRenderer.element);
+
+// Pointerdown on trigger opens fan and captures pointer
+touchRenderer.triggerElement.fire("pointerdown", { pointerId: 10, button: 0, clientX: 48, clientY: 48 });
+assert.equal(touchRenderer.isOpen, true);
+assert.equal(controller.activePointerId, 10);
+
+// Drag to backpack coordinates
+const bpClientX = 48 - rMid * Math.cos(geo.sectors[1].midAngle);
+const bpClientY = 48 - rMid * Math.sin(geo.sectors[1].midAngle);
+touchRenderer.element.fire("pointermove", { pointerId: 10, clientX: bpClientX, clientY: bpClientY });
+assert.equal(controller.candidateSectionId, "backpack");
+assert.equal(touchRenderer.highlightedSectionId, "backpack");
+
+// Drag to gap
+const gapClientX = 48 - rMid * Math.cos(gapAngle);
+const gapClientY = 48 - rMid * Math.sin(gapAngle);
+touchRenderer.element.fire("pointermove", { pointerId: 10, clientX: gapClientX, clientY: gapClientY });
+assert.equal(controller.candidateSectionId, null);
+assert.equal(touchRenderer.highlightedSectionId, null);
+
+// Drag back to equipment
+const eqClientX = 48 - rMid * Math.cos(geo.sectors[0].midAngle);
+const eqClientY = 48 - rMid * Math.sin(geo.sectors[0].midAngle);
+touchRenderer.element.fire("pointermove", { pointerId: 10, clientX: eqClientX, clientY: eqClientY });
+assert.equal(controller.candidateSectionId, "equipment");
+
+// Release in equipment
+touchRenderer.element.fire("pointerup", { pointerId: 10, clientX: eqClientX, clientY: eqClientY });
+assert.equal(selectedSection, "equipment");
+assert.equal(selectedCalls.length, 1);
+assert.equal(touchRenderer.isOpen, false);
+assert.equal(controller.activePointerId, null);
+
+// Synthetic click suppression
+touchRenderer.triggerElement.fire("click");
+assert.equal(touchRenderer.isOpen, false, "synthetic click right after release does not toggle open");
+
+// Release in gap cancels without selection
+touchRenderer.triggerElement.fire("pointerdown", { pointerId: 11, button: 0, clientX: 48, clientY: 48 });
+touchRenderer.element.fire("pointermove", { pointerId: 11, clientX: gapClientX, clientY: gapClientY });
+touchRenderer.element.fire("pointerup", { pointerId: 11, clientX: gapClientX, clientY: gapClientY });
+assert.equal(selectedCalls.length, 1, "release in gap does not select");
+assert.equal(touchRenderer.isOpen, false);
+
+// Pointercancel resets gesture
+touchRenderer.triggerElement.fire("pointerdown", { pointerId: 12, button: 0, clientX: 48, clientY: 48 });
+touchRenderer.element.fire("pointermove", { pointerId: 12, clientX: bpClientX, clientY: bpClientY });
+touchRenderer.element.fire("pointercancel", { pointerId: 12 });
+assert.equal(selectedCalls.length, 1, "cancel does not select");
+assert.equal(touchRenderer.isOpen, false);
+
+// Keyboard navigation
+touchRenderer.triggerElement.focus();
+touchRenderer.triggerElement.fire("keydown", { key: "Enter" });
+assert.equal(touchRenderer.isOpen, true, "Enter on trigger opens selector");
+assert.equal(touchDoc.activeElement, touchRenderer.getSectorButton("equipment"), "focuses first sector");
+
+touchRenderer.getSectorButton("keepnet").focus();
+touchRenderer.getSectorButton("keepnet").fire("keydown", { key: "Enter" });
+assert.equal(selectedSection, "keepnet", "Enter on sector selects");
+assert.equal(touchRenderer.isOpen, false);
+
+touchRenderer.triggerElement.fire("keydown", { key: " " });
+assert.equal(touchRenderer.isOpen, true, "Space opens selector");
+touchRenderer.getSectorButton("backpack").focus();
+touchRenderer.getSectorButton("backpack").fire("keydown", { key: "Escape" });
+assert.equal(touchRenderer.isOpen, false, "Escape closes selector");
+assert.equal(touchDoc.activeElement, touchRenderer.triggerElement, "Escape returns focus to trigger");
+
+controller.dispose();
+touchRenderer.dispose();
+
+// 4. Mode coordinator: live switching, classic buttons hiding, and reset
+const coordDoc = new TestDocument();
+const coordDom = new InventoryDomFactory(coordDoc);
+const coordRenderer = new InventoryRadialSelectorRenderer({ domFactory: coordDom });
+const coordController = new InventoryRadialSelectorController({
+  renderer: coordRenderer,
+  uiSurface: mockSurface,
+  windowRef: coordDoc.defaultView,
+  onSelect: () => {},
+});
+
+const mockInventoryUI = {
+  shortcutVisible: true,
+  visibilityListeners: new Set(),
+  isOpen: false,
+  setShortcutVisible(v) { this.shortcutVisible = v; },
+  onVisibilityChange(l) { this.visibilityListeners.add(l); return () => this.visibilityListeners.delete(l); },
+  open() {
+    this.isOpen = true;
+    for (const l of this.visibilityListeners) l(true);
+  },
+};
+
+const mockKeepnetView = {
+  shortcutVisible: true,
+  artworkListeners: new Set(),
+  artworkPath: "assets/keepnet/stage0.webp",
+  setShortcutVisible(v) { this.shortcutVisible = v; },
+  onArtworkChange(l) { this.artworkListeners.add(l); return () => this.artworkListeners.delete(l); },
+  updateArt(path) {
+    this.artworkPath = path;
+    for (const l of this.artworkListeners) l(path);
+  },
+};
+
+const mockConfig = {
+  ui: {
+    inventorySelector: {
+      radialEnabled: false,
+    },
+  },
+};
+
+const coordinator = new InventoryRadialSelectorCoordinator({
+  inventoryUI: mockInventoryUI,
+  keepnetView: mockKeepnetView,
+  renderer: coordRenderer,
+  controller: coordController,
+  config: mockConfig,
+  documentRef: coordDoc,
+});
+
+assert.equal(coordinator.isRadial, false);
+assert.equal(mockInventoryUI.shortcutVisible, true);
+assert.equal(mockKeepnetView.shortcutVisible, true);
+assert.equal(coordRenderer.element.hidden, true);
+
+mockConfig.ui.inventorySelector.radialEnabled = true;
+coordDoc.fire("config-updated", {
+  detail: {
+    path: ["CONFIG", "ui", "inventorySelector", "radialEnabled"],
+    value: true,
+  },
+});
+
+assert.equal(coordinator.isRadial, true);
+assert.equal(mockInventoryUI.shortcutVisible, false);
+assert.equal(mockKeepnetView.shortcutVisible, false);
+assert.equal(coordRenderer.element.hidden, false);
+
+mockKeepnetView.updateArt("assets/keepnet/stage3.webp");
+
+coordRenderer.setOpen(true, { animated: false });
+assert.equal(coordRenderer.isOpen, true);
+mockInventoryUI.open();
+assert.equal(coordRenderer.isOpen, false, "opening inventory folds radial fan");
+
+mockConfig.ui.inventorySelector.radialEnabled = false;
+coordDoc.fire("config-updated", {
+  detail: {
+    path: ["CONFIG"],
+    resetAll: true,
+  },
+});
+
+assert.equal(coordinator.isRadial, false);
+assert.equal(mockInventoryUI.shortcutVisible, true);
+assert.equal(mockKeepnetView.shortcutVisible, true);
+assert.equal(coordRenderer.element.hidden, true);
+
+coordinator.dispose();
+
+console.log("Task interactions passed: wide gestures, pointer aiming, sheet thresholds/timers/scrolling, clock double activation and TK-008 radial inventory selector.");
+

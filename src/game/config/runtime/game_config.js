@@ -22,11 +22,11 @@ export const CONFIG = {
     water: {
       enabled: true,
       frameRate: 30, // кроків анімації води за секунду; кожен крок малює кадр сцени
-      amplitude: 8, // зсув арту біля берега, пікселів арту; вдалині менше
-      verticalShare: 0.35, // частка вертикального зсуву від горизонтального
-      wavelength: 140, // відстань між гребенями біля берега, пікселів арту
-      speed: 24, // швидкість гребенів, пікселів арту за секунду
-      currentScale: 3, // множник течії локації (environment.current) для вигляду води; 1 = як у фізиці, 0 = без течії
+      amplitude: 20, // зсув арту біля берега, пікселів арту; вдалині менше
+      verticalShare: 1, // частка вертикального зсуву від горизонтального
+      wavelength: 200, // відстань між гребенями біля берега, пікселів арту
+      speed: 40, // швидкість гребенів, пікселів арту за секунду
+      currentScale: 1, // множник течії локації (environment.current) для вигляду води; 1 = як у фізиці, 0 = без течії
     },
   },
 
@@ -490,6 +490,10 @@ export const CONFIG = {
   ui: {
     draggableButtons: true,
     dragHoldTimeMs: 1000,
+
+    inventorySelector: {
+      radialEnabled: false,
+    },
 
     audio: {
       feederBite: "assets/audio/bell_ring.mp3",

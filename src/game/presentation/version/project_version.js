@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.1";
+export const CURRENT_PROJECT_VERSION = "0.45.3";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,11 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "full-container-equip-feedback",
-  updatedAt: "2026-10-19",
+  codename: "radial-inventory-selector",
+  updatedAt: "2026-10-20",
   notes: Object.freeze([
+    "Alternative radial inventory selector (TK-008): quarter-circle trigger, 3 annular sectors (equipment, backpack, keepnet), desktop hover, mobile touch hold/release, keyboard focus, and live DevTools switcher without page reload",
+    "Completed TK tasks removed from tasks.md; the pending radial selector specification and outstanding owner acceptance remain",
     "Successful equipping flashes the entire item field or editor tab with one rounded overlay, including active-tab free width; timing and feedback revisions are unchanged",
     "The centred 80px pointer-aim lead activates only at the corresponding location camera limit; free camera travel follows raw pointer X and edge-pan/release recheck actual limits",
     "Notice sheets apply only up to 820 logical UI pixels with no bottom border or top footprint; wider inventory/House notices retain top flow, full frames and original inline timers",

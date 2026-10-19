@@ -59,6 +59,15 @@ export const UI_CATALOG_DEFINITIONS = Object.freeze([
     sources: ["src/platform/browser/ui/depth_selector.js", "src/platform/browser/ui/hold_charges.js", "src/platform/browser/ui/time_display.js", "src/platform/browser/ui/chum_controls.js", "src/platform/browser/ui/game_controls.js", "src/game/presentation/hud/fight_status_bars_renderer.js", "src/game/presentation/hud/hud_bar_renderer.js", "src/game/presentation/styles/hud_style_resolver.js", "src/game/presentation/styles/three_band_gradient_color.js"],
     styles: ["src/game/presentation/styles/hud/depth-selector.css", "src/game/presentation/styles/hud/hold-charges.css", "src/game/presentation/styles/hud/time-display.css", "src/game/presentation/styles/hud/chum-control.css", "src/game/presentation/styles/hud/game-controls.css"],
   },
+  {
+    id: "selector", name: "Радіальний селектор інвентарю",
+    families: ["buttons", "selector", "radial", "inventory"], height: 260,
+    description: "Альтернативний радіальний селектор інвентарю (TK-008): чвертькругла кнопка тригера та три округлені кільцеві сектори (екіпіровка, рюкзак, садок). Desktop hover з областю утримання, touch hold-and-drag вибір, фокус та клавіатурна навігація.",
+    contract: "InventoryRadialSelectorRenderer + InventoryRadialSelectorController. Closed/open, highlighted-секції, classic/radial, reduced motion та вибір розділу через onSelect.",
+    states: [["normal", "Закритий"], ["open", "Розкритий"], ["equipment", "Підсвічена: екіпіровка"], ["backpack", "Підсвічена: рюкзак"], ["keepnet", "Підсвічена: садок"], ["reduced-motion", "Без анімації"], ["classic", "Режим classic"]],
+    sources: ["src/game/presentation/inventory/inventory_radial_selector_renderer.js", "src/platform/browser/dom/inventory_radial_selector_controller.js", "src/game/presentation/inventory/inventory_radial_selector_geometry.js"],
+    styles: ["src/game/presentation/styles/inventory/radial-selector.css"],
+  },
 ]);
 
 export const UI_CATALOG_WIDTHS = Object.freeze([240, 280, 319, 320, 520, 521, 600, 640, 740, 820, 821, 960, 1280]);

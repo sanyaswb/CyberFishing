@@ -997,6 +997,15 @@ export class GameCompositionRoot {
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
+    const radialSelector = InventoryUiBootstrap.createRadialSelector({
+      documentRef: this.#documentTarget,
+      buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      inventoryUI: systems.inventoryUI,
+      keepnetView: keepnetUI,
+      uiSurface: this.#uiSurface,
+      config: this.#config,
+    });
+    if (radialSelector) systems.inventoryRadialSelector = own(radialSelector);
     return {  };
   }
 

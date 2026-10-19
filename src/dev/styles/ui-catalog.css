@@ -76,6 +76,7 @@
 .ui-catalog-preview__clock { position: absolute; top: 300px; }
 .ui-catalog-preview__fullscreen { position: absolute; top: 300px; }
 .ui-catalog-preview__charges { position: absolute; top: 500px; bottom: auto; }
+.ui-catalog-preview__selector { position: absolute; right: var(--ui-edge-right); bottom: var(--ui-edge-bottom); }
 .ui-catalog-preview__status--error { color: var(--ui-danger); }
 .ui-catalog-preview__select:focus-visible,
 .ui-catalog-preview__range:focus-visible,

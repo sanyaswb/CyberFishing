@@ -56,6 +56,7 @@ import { UiCatalogKeepnetFixture } from "../../dev/ui_catalog/ui_catalog_keepnet
 import { UiCatalogKeepnetExample } from "../../dev/ui_catalog/ui_catalog_keepnet_example.js";
 import { UiCatalogHouseExample } from "../../dev/ui_catalog/ui_catalog_house_example.js";
 import { UiCatalogHudExample } from "../../dev/ui_catalog/ui_catalog_hud_example.js";
+import { UiCatalogSelectorExample } from "../../dev/ui_catalog/ui_catalog_selector_example.js";
 import { GameTimeClock } from "../../game/domain/time/game_time_clock.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
 
@@ -87,6 +88,7 @@ export function startUiCatalog() {
       const own = (resource) => { owned.push(resource); return resource; };
       try {
       if (id === "controls") return new UiCatalogControlsExample({ domFactory: dom, closeButtonRenderer: close, autoSwitchRenderer: auto, surface, status });
+      if (id === "selector") return own(new UiCatalogSelectorExample({ domFactory: dom, surface, status }));
       if (id === "meters") return new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer: meters, resourceMeterResolver, surface, status });
       if (id === "inventory") {
         const scope = own(scopeFor(surface.mountRoot));

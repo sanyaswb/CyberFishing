@@ -171,6 +171,12 @@ export class InventoryUI {
     return this;
   }
 
+  setShortcutVisible(visible) {
+    if (this.#backpackButtonNode) {
+      this.#backpackButtonNode.hidden = !visible;
+    }
+  }
+
   open() {
     if (!this.#isMounted) this.mount();
     this.#isOpen = true;

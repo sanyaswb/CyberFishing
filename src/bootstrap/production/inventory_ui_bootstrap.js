@@ -48,8 +48,58 @@ import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_butto
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
 import { UiHintRenderer } from "../../game/presentation/ui/ui_hint_renderer.js";
 import { composeHintRenderer } from "./hint_renderer_composition.js";
+import { InventoryRadialSelectorGeometry, calculateRadialSelectorGeometry } from "../../game/presentation/inventory/inventory_radial_selector_geometry.js";
+import { INVENTORY_RADIAL_SELECTOR_LABELS } from "../../game/presentation/inventory/inventory_radial_selector_labels.js";
+import { InventoryRadialSelectorRenderer } from "../../game/presentation/inventory/inventory_radial_selector_renderer.js";
+import { InventoryRadialSelectorCoordinator } from "../../game/presentation/inventory/inventory_radial_selector_coordinator.js";
+import { InventoryRadialSelectorController } from "../../platform/browser/dom/inventory_radial_selector_controller.js";
 
 export class InventoryUiBootstrap {
+  // Alternative radial inventory selector (TK-008).
+  static createRadialSelector({
+    documentRef,
+    buttonMountNode,
+    inventoryUI,
+    keepnetView = null,
+    uiSurface = null,
+    config = null,
+    imageResolver = null,
+    labels = INVENTORY_RADIAL_SELECTOR_LABELS,
+    geometry = null,
+  }) {
+    if (!documentRef?.body?.append || typeof documentRef.createElement !== "function" || !inventoryUI) {
+      return null;
+    }
+    const domFactory = new InventoryDomFactory(documentRef);
+    const resolvedImageResolver =
+      imageResolver || new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
+    const renderer = new InventoryRadialSelectorRenderer({
+      domFactory,
+      labels,
+      geometry,
+      imageResolver: resolvedImageResolver,
+      backpackImage: INVENTORY_SECTIONS.backpackImage,
+    });
+    const controller = new InventoryRadialSelectorController({
+      renderer,
+      uiSurface,
+      windowRef: domFactory.view,
+      onSelect: (sectionId) => inventoryUI.openSection(sectionId),
+    });
+
+    if (buttonMountNode?.appendChild) {
+      buttonMountNode.appendChild(renderer.element);
+    }
+
+    return new InventoryRadialSelectorCoordinator({
+      inventoryUI,
+      keepnetView,
+      renderer,
+      controller,
+      config,
+      documentRef,
+    });
+  }
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
     buttonMountNode = documentRef?.body, showHelp = false }) {

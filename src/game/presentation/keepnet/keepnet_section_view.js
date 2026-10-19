@@ -38,6 +38,7 @@ export class KeepnetSectionView {
   #signature = "";
   #rendered = new Map();
   #cardFocusables = [];
+  #artworkListeners = new Set();
 
   constructor({ documentRef, liveBait, model, cards, labels, overviewRenderer, filtersRenderer, pagerRenderer,
     hintRenderer, imageResolver, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null }) {
@@ -114,6 +115,16 @@ export class KeepnetSectionView {
   // The help hint; its host places it in its hint region (the inventory's, spec 086).
   get helpNode() { return this.#helpText; }
   get contentNode() { return this.#content; }
+  get artworkPath() { return this.#imagePath; }
+  onArtworkChange(listener) {
+    this.#artworkListeners.add(listener);
+    return () => this.#artworkListeners.delete(listener);
+  }
+  setShortcutVisible(visible) {
+    if (this.#button) {
+      this.#button.hidden = !visible;
+    }
+  }
   // Game timers refresh the keepnet only while its section is visible.
   get isOpen() { return this.#visible; }
   setVisible(visible) {
@@ -160,6 +171,9 @@ export class KeepnetSectionView {
       this.#buttonImage.src = imagePath;
       this.#backdrop.src = imagePath;
       this.#imagePath = imagePath;
+      for (const listener of this.#artworkListeners) {
+        listener(imagePath);
+      }
     }
     this.#detail.hidden = !group;
     this.#back.hidden = !group;
@@ -202,6 +216,7 @@ export class KeepnetSectionView {
     this.#content.removeEventListener("keydown", this.#handleKey);
     this.#button.remove(); this.#summary.remove(); this.#content.remove(); this.#helpText.remove();
     this.#rendered.clear(); this.#cardFocusables = [];
+    this.#artworkListeners.clear();
   }
   #activeKind() { return this.#filtersRenderer.activeKind(this.#filters); }
   #openSpecies = (id) => {
