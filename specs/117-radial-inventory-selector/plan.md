@@ -8,7 +8,7 @@ InventoryUI creates/mounts its backpack shortcut and exposes openSection/onVisib
 
 Presentation owns InventorySelectorRenderer, InventorySelectorGeometry, config/labels and inventory-selector.css. Geometry constructs the same rounded polygon for SVG, clipping and hit tests. Browser InventorySelectorController owns pointer capture, keyboard, cached coordinate transforms and lifecycle. Bootstrap composes these, preloads existing art, binds injected configuration and visibility, and releases subscriptions. Production never imports DEV.
 
-Runtime CONFIG.ui.inventorySelector.radialEnabled defaults false; existing override flow and metadata expose the switch. Schema validates the setting. Selector mode does not enter saves. Classic callbacks retain toggleSection; radial uses openSection.
+Runtime CONFIG.ui.inventorySelector.radialEnabled defaults true (owner v0.45.17); existing override flow and metadata expose the switch. Schema validates the setting. Selector mode does not enter saves. Classic callbacks retain toggleSection; radial uses openSection.
 
 Owner added CONFIG.ui.inventorySelector.size (1/2/3), default 1. DevTools uses an explicit three-choice control; renderer receives an injected preset scale (1/1.35/1.7) and toolbar caps it to the available logical width/height. Live changes cancel selection and only update a component custom property. Schema rejects other values. Both selector settings reset to their defaults when importing an older set without them.
 
@@ -106,3 +106,7 @@ class/variables after searching consumers. Existing checks plus one short input 
 GameToolbar adds one dedicated depth mount inside its existing transparent tackle group. This flexible slot shares its unused width with the badge and has a permanent minimum for the float plus a usable slider. The ordinary DepthSelector frame is absolutely right-anchored within it; native width transition affects paint/children only, never the flow footprint. Row-reverse keeps the button fixed on the right. The panel flexes to the slot edge without the old fixed-width cap. Production/DEV composition and catalogue inject that same mount. Slot visibility and badge yielding use CSS state, with no sibling measurement or new runtime work. Existing drag readiness/lifecycle remain unchanged.
 
 Cleanup: removed the superseded depth-panel-width custom property and inline-expansion sizing. No tools, helpers, fixtures, vendor files, package scripts or dependencies became obsolete; existing live checks remain.
+
+## v0.45.17 equipped rod and default mode
+
+Inject PlayerInventory as an optional equipment source into selector composition. One event-driven read of its cached hydrated equipment supplies thumbnail metadata. Preload changes with a revision/disposal guard, then update the renderer's retained artwork node; no per-frame reads or extra gameplay state. The renderer reuses the toolbar image crop and preserves its SVG fallback. The catalogue injects a static existing rod through the same port. Runtime config defaults to radial and existing overrides retain explicit classic preference.

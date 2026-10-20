@@ -1,7 +1,7 @@
 # Feature Specification: Radial inventory selector (TK-008)
 
 **Created**: 2026-10-20
-**Status**: Implemented v0.45.2; owner refinements through v0.45.16, visual acceptance pending
+**Status**: Implemented v0.45.2; owner refinements through v0.45.17, visual acceptance pending
 **Input**: Owner authorized specification and implementation of TK-008, with closed/open references in `docs/references/inventory-selector/`. Detailed acceptance source: root `tasks.md`, TK-008.1–TK-008.5.
 
 ## User Scenarios & Testing
@@ -23,9 +23,9 @@ The owner switches between the existing controls and the radial control during p
 **Why this priority**: The old interface remains available for comparison and compatibility.
 **Independent Test**: Switch modes ten times with an editor open and confirm its state and scroll remain.
 **Acceptance Scenarios**:
-1. Classic is the default on production and development pages; the development switch applies immediately without reload.
+1. Radial is the default on production and development pages (owner v0.45.17); the development switch applies immediately without reload.
 2. Switching cancels only the selector interaction and preserves editor, filters, inventory and gameplay state.
-3. Export/import/reset use existing overrides; reset restores classic, old override sets without this setting use the default, and invalid selector settings are rejected.
+3. Export/import/reset use existing overrides; reset restores radial, old override sets without this setting use the default, and invalid selector settings are rejected.
 
 ### User Story 3 — Accessible, responsive selection (Priority: P2)
 
@@ -185,3 +185,11 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
 - Share that free slot with the version badge so its label cannot consume the slider's left reach. Hide the badge without changing geometry while depth is open; keep the compact-width badge rule and restore it on close. Hidden depth and transparent reserve must never block scene input.
 - Production, DEV and catalogue inject the same depth mount. Keep the settled-coordinate drag guard, single cached rect, range/step, keyboard/wheel and reduced-motion behavior. No layout measurement, observer, timer or frame loop added.
 - Owner performs visual acceptance on index/dev, classic/radial, phone portrait/landscape and desktop. Keep tests short and focused on mount/input/lifecycle contracts; no screenshots.
+
+## Owner equipped rod/default refinement — 2026-10-20 / v0.45.17
+
+- Enable CONFIG.ui.inventorySelector.radialEnabled by default in production and DEV. Reset and imports without a mode use radial; explicit false overrides still select classic. Preserve independent sizes 1 -> 3, all interactions and gameplay saves.
+- Show the currently equipped rod in the equipment sector, using its existing optimized thumbnail and crop metadata through the shared toolbar artwork style. Keep artwork upright and the central inventory symbol distinct. Without an equipped rod or usable artwork, show the existing equipment SVG.
+- Read the authoritative PlayerInventory equipment model and subscribe once to inventory changes through bootstrap. Update after equipment changes, including while inventory is closed; unchanged art retains its node and causes no preload request. Preload before display, fall back on failure, and reject late results after replacement, removal or disposal. Release the subscription with the selector.
+- Catalogue uses the same production composition with an injected existing bamboo-rod fixture. Add only focused default-mode, live-artwork, node/cache, stale-load and lifecycle assertions; owner performs browser/phone visual acceptance.
+- Cleanup: no tools, helpers, fixtures, vendor files, scripts or dependencies become obsolete. Reuse existing WebP files; no new generated artwork or runtime asset source.

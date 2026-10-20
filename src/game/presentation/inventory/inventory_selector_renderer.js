@@ -4,6 +4,9 @@ export class InventorySelectorRenderer {
   #open = false;
   #candidate = -1;
   #enabled = false;
+  #equipmentFallback;
+  #equipmentArt;
+  #equipmentImage;
 
   constructor({ domFactory, geometry, sections, labels, keepnetImage, id }) {
     this.#dom = domFactory;
@@ -42,6 +45,17 @@ export class InventorySelectorRenderer {
       image.classList.add("inventory-selector__art");
       image.setAttribute("aria-hidden", "true");
       button.append(svg, image);
+      if (section.id === "equipment") {
+        this.#equipmentFallback = image;
+        this.#equipmentArt = this.#dom.element("span", "game-toolbar-button__art inventory-selector__art");
+        this.#equipmentArt.hidden = true;
+        this.#equipmentArt.setAttribute("aria-hidden", "true");
+        this.#equipmentImage = this.#dom.element("img", "game-toolbar-button__image");
+        this.#equipmentImage.alt = "";
+        this.#equipmentImage.draggable = false;
+        this.#equipmentArt.appendChild(this.#equipmentImage);
+        button.appendChild(this.#equipmentArt);
+      }
       button.tabIndex = -1;
       this.group.appendChild(button);
       return button;
@@ -62,6 +76,18 @@ export class InventorySelectorRenderer {
 
   get expanded() { return this.#open; }
   get enabled() { return this.#enabled; }
+
+  setEquipmentArtwork(thumbnail) {
+    const src = this.#dom.safeImageSource(thumbnail?.src);
+    if (src) this.#equipmentFallback.setAttribute("hidden", "");
+    else this.#equipmentFallback.removeAttribute("hidden");
+    this.#equipmentArt.hidden = !src;
+    if (!src) return;
+    if (this.#equipmentImage.getAttribute("src") !== src) this.#equipmentImage.setAttribute("src", src);
+    this.#equipmentArt.style.setProperty("--game-toolbar-art-visible-height", String(thumbnail.visibleHeight || 1));
+    this.#equipmentArt.style.setProperty("--game-toolbar-art-focus-x", String(thumbnail.focusX ?? 0.5));
+    this.#equipmentArt.classList.toggle("game-toolbar-button__art--cropped-top", thumbnail.anchor === "top");
+  }
 
   setEnabled(enabled) {
     this.#enabled = enabled;

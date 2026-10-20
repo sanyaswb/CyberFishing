@@ -4,6 +4,7 @@ const { TestDocument } = require("./testing/keepnet/test_document.js");
 const { InventorySelectorGeometry } = require("../src/game/presentation/inventory/inventory_selector_geometry.js");
 const { INVENTORY_SELECTOR_CONFIG } = require("../src/game/presentation/inventory/inventory_selector_config.js");
 const { CONFIG } = require("../src/game/config/runtime/game_config.js");
+assert.equal(CONFIG.ui.inventorySelector.radialEnabled, true, "radial design is enabled by default");
 assert.equal(CONFIG.ui.inventorySelector.size, 1, "initial size defaults to standard");
 assert.equal(CONFIG.ui.inventorySelector.openSize, 3, "open size defaults independently to large");
 
@@ -286,20 +287,39 @@ for (const index of [0, 1, 2]) {
 async function checkComposition() {
   const s = scenario(); s.controller.dispose(); s.view.dispose();
   const editor = { scroll: 123, filters: "rods" };
-  const config = { ui: { inventorySelector: { radialEnabled: false, size: 1, openSize: 3 } } };
+  const config = { ui: { inventorySelector: { ...CONFIG.ui.inventorySelector } } };
   const ctx = createRuntimeConfigContext(config, { validateOverrides: InventorySelectorConfigValidator.validateOverrides,
     resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize"] });
-  let classic, keepnet, listener;
+  let classic, keepnet, listener, equipmentListener, finishArtwork, artworkLoads = 0;
+  const equipped = { rod: null };
   const inventory = { editor, rootNode: s.doc.createElement("div"),
     setShortcutVisible: value => { classic = value; }, onVisibilityChange: fn => { listener = fn; return () => { listener = null; }; },
     openSection: id => { s.selected.push(id); listener(true); } };
   const binding = composeInventorySelector({ documentRef: s.doc, windowRef: s.doc.defaultView,
     uiSurface: s.surface, mountNode: s.doc.body, inventoryUI: inventory,
     keepnetUI: { setShortcutVisible: value => { keepnet = value; } }, config,
-    imageAssets: { preload: async records => { assert.equal(records.length, 3); } }, logger: { warn: assert.fail } });
+    equipmentSource: { getEquipped: () => equipped,
+      onInventoryChanged: fn => { equipmentListener = fn; return () => { equipmentListener = null; }; } },
+    imageAssets: { preload: records => {
+      if (records.length === 3) return Promise.resolve();
+      artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; });
+    } }, logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
   await binding.ready;
-  assert(classic && keepnet && !binding.view.enabled);
+  assert(!classic && !keepnet && binding.view.enabled);
+  const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
+  assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
+  equipped.rod = { skin: { thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp", visibleHeight: 0.5, focusX: 0.31 } } };
+  equipmentListener(); finishArtwork(); await Promise.resolve();
+  const rodImage = art.children[0];
+  assert.equal(rodImage.getAttribute("src"), equipped.rod.skin.thumbnail.src);
+  assert.equal(fallback.getAttribute("hidden"), ""); assert(!art.hidden && rodImage.draggable === false);
+  equipmentListener(); assert.equal(artworkLoads, 1, "unchanged inventory never reloads rod art");
+  assert.equal(art.children[0], rodImage, "rod updates retain the image node");
+  equipped.rod = null; equipmentListener(); assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
+  equipped.rod = { imageUrl: "assets/items/rods/bamboo-rod-unecip-v1.webp" }; equipmentListener();
+  equipped.rod = null; equipmentListener(); finishArtwork(); await Promise.resolve();
+  assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden, "a late preload cannot restore a removed rod");
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-expansion"), "1.7");
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-closed-scale"), String(1 / 1.7));
   for (let i = 0; i < 10; i++) {
@@ -320,11 +340,11 @@ async function checkComposition() {
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-open-scale"), String(1 / 1.7));
   binding.controller.openKeyboard(); listener(true); assert(!binding.view.expanded);
   const exported = ctx.exportOverrides();
-  ctx.resetAll(); s.doc.fire("config-updated"); assert(classic && !binding.view.enabled);
+  ctx.resetAll(); s.doc.fire("config-updated"); assert(!classic && binding.view.enabled);
   ctx.importOverrides(exported); s.doc.fire("config-updated"); assert(binding.view.enabled);
   assert.equal(config.ui.inventorySelector.size, 3);
   assert.equal(config.ui.inventorySelector.openSize, 1, "both sizes survive export/import");
-  ctx.importOverrides({}); s.doc.fire("config-updated"); assert(classic);
+  ctx.importOverrides({}); s.doc.fire("config-updated"); assert(!classic && binding.view.enabled);
   assert.equal(config.ui.inventorySelector.size, 1);
   assert.equal(config.ui.inventorySelector.openSize, 3);
   ctx.importOverrides({ "ui.inventorySelector.size": 2 });
@@ -336,7 +356,7 @@ async function checkComposition() {
     assert.throws(() => ctx.importOverrides(data), /ui.inventorySelector/);
     assert.equal(config.ui.inventorySelector.size, 1, "invalid imports are atomic");
   }
-  binding.dispose(); binding.dispose(); assert.equal(listener, null);
+  binding.dispose(); binding.dispose(); assert.equal(listener, null); assert.equal(equipmentListener, null);
   assert(classic && keepnet);
   for (const listeners of s.doc.listeners.values()) assert.equal(listeners.size, 0);
 }

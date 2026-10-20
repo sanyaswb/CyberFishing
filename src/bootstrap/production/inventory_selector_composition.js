@@ -8,7 +8,8 @@ import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_
 import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_config.js";
 
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
-  inventoryUI, keepnetUI, config, imageAssets, logger, id = "inventory-selector-sections", onSelect = null }) {
+  inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
+  id = "inventory-selector-sections", onSelect = null }) {
   const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(documentRef),
     geometry: new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG), sections: INVENTORY_SECTIONS,
     labels: INVENTORY_SELECTOR_LABELS, keepnetImage: KEEPNET_ART_STAGES[0].imagePath, id });
@@ -20,6 +21,24 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     }) });
   mountNode.appendChild(view.element);
   let disposed = false, loaded = false, radial = null, size = null, openSize = null;
+  let artworkKey = "", artworkRevision = 0;
+  const syncEquipment = () => {
+    if (disposed) return;
+    const rod = equipmentSource?.getEquipped()?.rod;
+    const thumbnail = rod?.skin?.thumbnail ? { ...rod.skin.thumbnail }
+      : { src: rod?.iconUrl || rod?.imageUrl || rod?.src };
+    const key = JSON.stringify([thumbnail.src || "", thumbnail.visibleHeight, thumbnail.focusX, thumbnail.anchor]);
+    if (key === artworkKey) return;
+    artworkKey = key;
+    const revision = ++artworkRevision;
+    view.setEquipmentArtwork(null);
+    if (!thumbnail.src) return;
+    imageAssets.preload([{ id: thumbnail.src, src: thumbnail.src }]).then(() => {
+      if (!disposed && revision === artworkRevision) view.setEquipmentArtwork(thumbnail);
+    }).catch(error => {
+      if (!disposed && revision === artworkRevision) logger.warn("[InventorySelector] Rod artwork preload failed; retaining SVG", error);
+    });
+  };
   const sync = () => {
     if (disposed) return;
     const settings = config.ui?.inventorySelector;
@@ -36,6 +55,8 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     radial = nextRadial; size = nextSize; openSize = nextOpenSize;
   };
   const unsubscribe = inventoryUI.onVisibilityChange(open => { if (open) controller.cancel(); });
+  const unsubscribeEquipment = equipmentSource?.onInventoryChanged(syncEquipment);
+  syncEquipment();
   documentRef.addEventListener("config-updated", sync);
   sync();
   const sources = [INVENTORY_SECTIONS.iconSprite, INVENTORY_SECTIONS.backpackImage, KEEPNET_ART_STAGES[0].imagePath];
@@ -47,7 +68,7 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
       if (disposed) return;
       disposed = true;
       documentRef.removeEventListener("config-updated", sync);
-      unsubscribe(); controller.dispose(); view.dispose();
+      unsubscribe(); unsubscribeEquipment?.(); controller.dispose(); view.dispose();
       inventoryUI.setShortcutVisible(true); keepnetUI?.setShortcutVisible(true);
     } };
 }

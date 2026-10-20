@@ -98,6 +98,7 @@
   pointer-events: none;
   user-select: none;
 }
+.inventory-selector__art[hidden] { display: none; }
 .inventory-selector__section--highlighted .inventory-selector__shape,
 .inventory-selector__section:focus-visible .inventory-selector__shape { fill: rgba(var(--ui-accent-rgb), 0.3); stroke: var(--ui-focus-color); stroke-width: 0.09; }
 .inventory-selector--reduced-motion .inventory-selector__section,

@@ -231,7 +231,7 @@ rows above the bottom actions; bottom alignment keeps their baseline fixed as th
 available logical width/height and safe areas. The shared UI surface
 applies the only below-320 scale and desktop-hover policy. Existing inventory/keepnet shortcuts remain mounted
 and are hidden only by the composed activation mode; their views and gameplay state are not reconstructed.
-`CONFIG.ui.inventorySelector` has `radialEnabled=false`, initial `size=1` and expanded `openSize=3` by default.
+`CONFIG.ui.inventorySelector` has `radialEnabled=true`, initial `size=1` and expanded `openSize=3` by default.
 DEV switches the mode and both independent sizes 1/2/3 (scale 1/1.35/1.7) live.
 Existing overrides own persistence/export/import/reset; invalid selector settings
 are rejected before mutation. Opening readiness follows computed motion duration, with instant reduced motion;
@@ -252,6 +252,12 @@ the original footprint and the full padded fan, including gaps. Unrelated/unchan
 cancel it. Real visibility or cached geometry changes do. v0.45.4 removes global cursor tracking and the
 coordinate-only pointerleave override: the actual obstacle was the depth control's transparent hit region.
 The catalogue reuses the production composition for closed/open/highlighted/classic/reduced-motion and size states.
+Since v0.45.17 the equipment sector uses the equipped rod's existing thumbnail metadata through the shared toolbar
+art crop; artwork remains upright. Bootstrap reads PlayerInventory.getEquipped() and subscribes to its inventory
+change port. Unchanged artwork does not reload; a revision rejects late preload results after rod replacement,
+removal or disposal. The renderer keeps one image node and the SVG fallback; hidden artwork cannot receive input.
+Empty/unillustrated rods and failed preloads retain the SVG. The main inventory symbol stays distinct. Fresh/reset
+configuration enables radial; explicit classic overrides remain supported and no gameplay save format changes.
 
 v0.45.16 supersedes depth's normal-flow width expansion. The transparent `game-toolbar__tackle` uses
 `display: contents`; its `game-toolbar__depth` child is a permanent flexible left slot shared by float and badge.

@@ -106,6 +106,7 @@ export function startUiCatalog() {
         const selector = own(composeInventorySelector({ documentRef: scope, windowRef: windowTarget, uiSurface: surface,
           mountNode: toolbar.element, inventoryUI: ui, keepnetUI: keepnet, config,
           imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }), logger: new ConsoleLogger(),
+          equipmentSource: { getEquipped: () => ({ rod: ITEM_DB.rods.rod_test_float }), onInventoryChanged: () => () => {} },
           id: "catalog-inventory-selector-sections" }));
         await selector.ready;
         return new UiCatalogSelectorExample({ selector, config, documentScope: scope, inventoryUI: ui, owned });
