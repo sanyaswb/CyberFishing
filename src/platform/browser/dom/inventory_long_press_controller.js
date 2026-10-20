@@ -1,7 +1,7 @@
 export class InventoryLongPressController {
   static DURATION_MS = 200;
   static EQUIPPED_DURATION_MS = InventoryLongPressController.DURATION_MS;
-  static ACTIVATION_DELAY_MS = 0;
+  static ACTIVATION_DELAY_MS = 300;
   static MOVEMENT_TOLERANCE_PX = 8;
 
   #durationMs;

@@ -1869,7 +1869,7 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(frames.size, 0);
   assert.equal(timers.size, 0);
 
-  // Every default cell hold starts feedback at pointerdown and shares the 200ms deadline clock.
+  // Every cell first distinguishes a click from a hold, then fills progress in 200ms.
   let mountedProgress = null;
   const progressHost = { ownerDocument: document, appendChild(node) { mountedProgress = node; } };
   controller.bind(element, {
@@ -1879,17 +1879,21 @@ function checkLongPressFrames(usePerformance) {
   assert(mountedProgress, "the supplied artwork host owns the feedback node");
   const startTime = now;
   listeners.get("pointerdown")(pointer);
-  assert.equal(classes.has("inventory-press--pressing"), true, "all default holds start feedback without an activation delay");
+  assert.equal(classes.has("inventory-press--pressing"), false);
+  assert.equal(timers.size, 1);
+  assert.equal(frames.size, 0, "short click classification schedules no progress frames");
+  runTimeout(300);
+  assert.equal(classes.has("inventory-press--pressing"), true, "progress starts after the activation delay");
   assert.equal(styles.get("--inventory-long-press-angle"), "0deg");
   assert.equal(timers.size, 1);
   assert.equal(frames.size, 1);
-  now = startTime + 100;
+  now = startTime + 400;
   const [frameId, advanceProgress] = frames.entries().next().value;
   frames.delete(frameId);
   advanceProgress();
   assert.equal(styles.get("--inventory-long-press-angle"), "180deg");
   assert.equal(fired, 1, "halfway feedback cannot remove the item");
-  now = startTime;
+  now = startTime + 300;
   runTimeout(200);
   assert.equal(fired, 2);
   assert.equal(styles.get("--inventory-long-press-angle"), "360deg");

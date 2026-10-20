@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.37";
+export const CURRENT_PROJECT_VERSION = "0.45.38";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,13 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stable-inventory-selector-startup",
+  codename: "inventory-hold-recognition-delay",
   updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "Inventory cells wait 300ms to distinguish a click from a hold, then fill the removal progress in 200ms; cancel either phase without changing green-pick cancellation",
     "TK-014: pending radial artwork no longer reveals classic shortcuts; explicit classic mode, failure fallback and late preload disposal remain supported",
-    "All inventory cell holds use one 200ms duration from pointerdown, with zero activation delay across backpack, saved kits, equipment, editor and header bait",
-    "Header bait removal fills a thin shadow-free ring immediately and detaches at 200ms; preserve cancellation and release-click suppression",
+    "Backpack, saved kits, equipment, editor and header bait share the same activation delay and 200ms progress duration",
+    "Header bait removal uses a thin shadow-free ring; preserve cancellation and release-click suppression",
     "Hold an equipped header bait icon to detach only its portion; preserve hook/A and consume the release click, while green pick targets keep cancellation priority",
     "Fix TK-011 acceptance: repeated equipment-cell picks initialize attachment state so hooks accept bait and feeder rigs accept chum; repair old loose-equipped roots atomically on header activation",
     "TK-013: grouped Inventory, root Overlay/CONFIG/DEBUG, Database and Spine; top shop button, bottom Service tools, collapsed descriptions and background-only hover with visible keyboard focus",

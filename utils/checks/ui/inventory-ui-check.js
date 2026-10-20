@@ -2032,8 +2032,13 @@ class InventoryUiBehaviorCheck {
     inventoryCard.emit("pointerdown", { pointerId: 7 });
     assert.strictEqual(
       inventoryCard.classList.contains("inventory-press--pressing"),
-      true,
+      false,
     );
+    timers.advance(299);
+    assert.strictEqual(inventoryCard.classList.contains("inventory-press--pressing"), false);
+    assert.strictEqual(dispatched.length, 0, "the activation delay cannot trigger the long press");
+    timers.advance(1);
+    assert.strictEqual(inventoryCard.classList.contains("inventory-press--pressing"), true);
     timers.advance(199);
     assert.strictEqual(dispatched.length, 0, "Long press fired too early");
     timers.advance(1);
@@ -2052,6 +2057,7 @@ class InventoryUiBehaviorCheck {
       clientX: 8,
       clientY: 0,
     });
+    timers.advance(300);
     for (let elapsed = 0; elapsed < 200; elapsed += 50) {
       timers.advance(50);
       ui.updateDynamicProgression(50);
@@ -2096,11 +2102,11 @@ class InventoryUiBehaviorCheck {
     });
     dispatched.length = 0;
     savedLoadoutCard.emit("pointerdown", { pointerId: 11 });
-    timers.advance(199);
+    timers.advance(499);
     assert.strictEqual(
       dispatched.length,
       0,
-      "Saved loadout disassembly fired before the shared 200ms deadline",
+      "Saved loadout disassembly fired before the 300ms delay and 200ms countdown",
     );
     timers.advance(1);
     this.#assertLast(dispatched, {
@@ -2135,7 +2141,7 @@ class InventoryUiBehaviorCheck {
     );
     assert.strictEqual(rodCard.dataset.longPressDuration, "200");
     rodCard.emit("pointerdown", { pointerId: 12 });
-    timers.advance(199);
+    timers.advance(499);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     rodCard.emit("pointerup", { pointerId: 12 });
@@ -2154,7 +2160,7 @@ class InventoryUiBehaviorCheck {
     );
     assert.strictEqual(tackleCard.dataset.longPressDuration, "200");
     tackleCard.emit("pointerdown", { pointerId: 9 });
-    timers.advance(199);
+    timers.advance(499);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     tackleCard.emit("pointerup", { pointerId: 9 });
@@ -3214,7 +3220,9 @@ class InventoryUiBehaviorCheck {
       button: 0,
     });
     timers.advance(199);
-    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "editor hold cannot fire before 200ms");
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "editor hold cannot fire during the activation delay");
+    timers.advance(300);
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "editor hold cannot fire before the complete 500ms hold");
     timers.advance(1);
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE,
@@ -3718,12 +3726,12 @@ class InventoryUiBehaviorCheck {
     ui.render(heldHeaderView);
     assert.strictEqual(this.#findByClass(heldHeaderButton, "inventory-press__progress"), heldProgress,
       "an artwork refresh must retain the active feedback and its deadline");
-    timers.advance(199);
+    timers.advance(499);
     assert.strictEqual(dispatched.length, beforeHold);
     timers.advance(1);
     this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
       kind: "bait", slotIndex: 0, instanceId: "held-header-bait" });
-    assert.strictEqual(dispatched.length, beforeHold + 1, "header bait is removed exactly once at 200ms from pointerdown");
+    assert.strictEqual(dispatched.length, beforeHold + 1, "header bait is removed exactly once after 300ms delay plus 200ms progress");
     // The real facade clears the item synchronously while retaining the same header button.
     heldHeaderView.header.baitSlots[0].item = null;
     ui.render(heldHeaderView);
@@ -3748,17 +3756,17 @@ class InventoryUiBehaviorCheck {
     heldHeaderButton = this.#findAllByClass(ui.rootNode, "inventory-toggle__item")[0];
     const afterReopen = dispatched.length;
     heldHeaderButton.emit("pointerdown", { pointerId: 75 });
-    timers.advance(200);
+    timers.advance(500);
     assert.strictEqual(dispatched.length, afterReopen + 1, "header removal bindings are restored after close/open");
     assert.strictEqual(dispatched.at(-1).instanceId, "held-header-replacement");
     const afterSecondHold = dispatched.length;
     heldHeaderButton.emit("pointerdown", { pointerId: 76 });
-    timers.advance(100);
+    timers.advance(400);
     heldHeaderButton.emit("pointercancel", { pointerId: 76 });
     timers.advance(2000);
     assert.strictEqual(dispatched.length, afterSecondHold, "pointer cancel leaves bait equipped");
     heldHeaderButton.emit("pointerdown", { pointerId: 77 });
-    timers.advance(199);
+    timers.advance(299);
     heldHeaderButton.emit("pointerup", { pointerId: 77 });
     heldHeaderButton.click();
     assert.strictEqual(dispatched.at(-1).type, sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,

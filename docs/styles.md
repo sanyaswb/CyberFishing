@@ -82,8 +82,9 @@ shared owner in `auto-switch.css`, including the House's compact variant.
 The header bait hold (v0.45.35) reuses the `inventory-press` block from `inventory/shared-controls.css`.
 Its artwork host supplies full-circle size, a thin radial mask and no shadow through documented
 `--inventory-long-press-size` / `--inventory-long-press-mask` / `--inventory-long-press-shadow` properties.
-Since v0.45.36 the controller starts progress immediately for every inventory cell and fires at 200ms,
-including backpack cards, saved kits, equipment and editor cells. Artwork-only updates preserve the
+Since v0.45.38 every inventory cell waits 300ms to distinguish a click from a hold, then fills progress
+for 200ms and fires at 500ms, including backpack cards, saved kits, equipment and editor cells.
+The delay schedules no progress frames and keeps the indicator hidden. Artwork-only updates preserve the
 mounted progress node and deadline. Card appearance retains its existing owner.
 The pill, its track and close button share `--inventory-header-control-height`: all are 36px at 320px, with
 a 26px thumb and 22px artwork circle. There is no separate outer height or vertical pill padding; the track's

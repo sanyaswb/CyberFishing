@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.45.38 - Inventory Hold Recognition Delay
+
+- Restore a shared 300ms recognition delay before every inventory cell's 200ms hold countdown (500ms total). Keep progress hidden and avoid animation frames during recognition; preserve short clicks, movement/cancel and the separate green-pick cancellation. Full: 65/65, including focused UI/platform, Quick and Architecture. Owner timing acceptance pending.
+
 ## v0.45.37 - Stable Inventory Selector Startup
 
 - TK-014: pending selector artwork incorrectly enabled classic backpack/keepnet shortcuts before radial readiness. Separate pending, ready and failed preload so radial startup never flashes classic controls; preserve explicit classic mode, failure fallback and disposal. Committed release Full: 65/65 including selector regressions, Architecture, Quick and Pages; the pick-cancel controller is included. Owner startup acceptance pending.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.29 - Repeat Header Consumable Selection
 
 - TK-010: repeat a highlighted bait/chum icon to equip exactly one first currently displayed compatible item. Respect list order, validate live target/custody/reservation, preserve manual confirmation and make an empty list a no-op. Inventory UI/integration regressions pass; Full and owner acceptance pending.
-
-## v0.45.28 - Landscape Inventory Header Panel
-
-- TK-009: reuse the portrait header panel background, radius and proportional inner padding in landscape and desktop layouts, preserving column composition and portrait insets. Owner visual acceptance pending.

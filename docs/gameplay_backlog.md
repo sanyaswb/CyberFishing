@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-109 Distinguish normal clicks before the 200ms inventory hold countdown (P3, implemented in v0.45.38)
+Found: 2026-10-21, owner timing correction after v0.45.37.
+Reproduce: hold any filled inventory cell slightly longer than a normal click.
+Expected: a recognition delay before the 200ms action countdown, shared by all cells.
+Actual: feedback started immediately and the action fired 200ms after pointerdown, making normal clicks too easy to turn into holds.
+Resolution: restore the shared 300ms activation delay, retain 200ms progress (500ms total). No progress/RAF during recognition; short click and movement/cancel keep their behavior. Green pick cancellation stays separate at 200ms.
+Evidence: delayed-feedback regression failed before the change; UI scenarios cover delay/499–500ms boundaries across backpack, kits, equipment, touch editor and header, cancellation during both phases and short release. Platform clocks/progress/cleanup pass. Owner acceptance pending.
+
 ### G-108 TK-014 classic backpack flashes before the radial selector on startup (P3, implemented in v0.45.37)
 Found: 2026-10-21, owner, first game load in index/dev.
 Reproduce: start in radial mode with selector artwork preload still pending.
