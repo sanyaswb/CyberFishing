@@ -22,7 +22,7 @@ const domFactory = new InventoryDomFactory(documentRef);
   const { GameControls } = require("../src/platform/browser/ui/game_controls.js");
   const { HUD_LABELS } = require("../src/game/presentation/hud/hud_labels.js");
   const toolbar = new GameToolbar({ documentRef, mountNode: documentRef.body });
-  const depth = new DepthSelector({ documentRef, mountNode: toolbar.tackleMountNode, domFactory,
+  const depth = new DepthSelector({ documentRef, mountNode: toolbar.depthMountNode, domFactory,
     labels: HUD_LABELS, iconImages: { F: "assets/items/floats/float-day.webp" } });
   const controls = new GameControls({}, null, { documentRef, labels: HUD_LABELS,
     toolbarMountNode: toolbar.element, netMountNode: toolbar.tackleMountNode });
@@ -32,7 +32,8 @@ const domFactory = new InventoryDomFactory(documentRef);
   const panel = documentRef.byClass("depth-selector__panel")[0];
   const net = documentRef.byClass("game-toolbar-button--net")[0];
   const image = icon.children[0];
-  assert.equal(root.parentNode, toolbar.tackleMountNode);
+  assert.equal(root.parentNode, toolbar.depthMountNode);
+  assert.equal(toolbar.depthMountNode.parentNode, toolbar.tackleMountNode);
   assert.equal(net.parentNode, toolbar.tackleMountNode);
   assert(panel.hidden && panel.inert);
   assert.notEqual(root.style.pointerEvents, "all", "the depth root has no solid input override");

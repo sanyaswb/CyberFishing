@@ -100,3 +100,9 @@ animation state/timer is needed. Before accepting pointerdown, inspect only the 
 wait while running so the unchanged one-read drag geometry stays valid. Reduced motion has no running transition.
 Return auto-switch.css/renderer to their original single-consumer frame and remove the obsolete ui-control-pill
 class/variables after searching consumers. Existing checks plus one short input regression; no visual snapshots.
+
+## v0.45.16 stationary leftward expansion
+
+GameToolbar adds one dedicated depth mount inside its existing transparent tackle group. This flexible slot shares its unused width with the badge and has a permanent minimum for the float plus a usable slider. The ordinary DepthSelector frame is absolutely right-anchored within it; native width transition affects paint/children only, never the flow footprint. Row-reverse keeps the button fixed on the right. The panel flexes to the slot edge without the old fixed-width cap. Production/DEV composition and catalogue inject that same mount. Slot visibility and badge yielding use CSS state, with no sibling measurement or new runtime work. Existing drag readiness/lifecycle remain unchanged.
+
+Cleanup: removed the superseded depth-panel-width custom property and inline-expansion sizing. No tools, helpers, fixtures, vendor files, package scripts or dependencies became obsolete; existing live checks remain.

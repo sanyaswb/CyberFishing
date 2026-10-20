@@ -160,6 +160,7 @@ async function startGame() {
       uiSurface,
       toolbarMountNode: toolbar.element,
       tackleMountNode: toolbar.tackleMountNode,
+      depthMountNode: toolbar.depthMountNode,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createFrameProbe: () => frameProfiler,
       sceneMode: pageParams.get("scene"),

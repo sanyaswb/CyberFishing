@@ -17,6 +17,8 @@
 - [x] T015 Owner follow-up: reuse the bait switcher's pill frame for the open float/button and horizontal slider, with one outer frame and no duplicated inner frames. Existing focused input and UI contracts remain the verification scope.
 - [x] T016 Owner correction v0.45.15: ordinary toolbar frame on one float/slider container, smooth native width/reveal and reduced motion; gate drag starts during moving geometry, remove obsolete pill mix, add one short input regression.
 
+- [x] T017 Owner correction v0.45.16: permanent flexible left depth slot, stationary right-anchored float/button, full left-edge reach, shared badge space, same composition in production/DEV/catalogue; retain focused input and lifecycle checks.
+
 ## Evidence
 
 - v0.45.9: after the owner's undo, the default-open-size regression failed (undefined versus 3), then passed after restoration. Checks cover 1->3 / 2->3 / 3->1 / 2->2 at 240/280/319/320/820/1280 with and without reduced motion, 120 moves without layout reads, mouse clicks at final open bounds, live cancellation and independent export/import/reset. Focused selector/config checks, Architecture 4/4, Quick 39/39 and Full 65/65 passed. The unused single-scale setter was removed; no tools, fixtures or dependencies became obsolete. Visual and phone performance acceptance remain owner-run; no browser visual check performed.

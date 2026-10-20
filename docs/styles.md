@@ -253,26 +253,30 @@ cancel it. Real visibility or cached geometry changes do. v0.45.4 removes global
 coordinate-only pointerleave override: the actual obstacle was the depth control's transparent hit region.
 The catalogue reuses the production composition for closed/open/highlighted/classic/reduced-motion and size states.
 
-v0.45.14 supersedes the earlier depth/badge placement attempts: `game-toolbar__tackle` uses `display: contents`
-at every width, placing the float before chum and other actions. The horizontal depth panel opens after its
-button in normal flow. Toolbar supplies `--depth-panel-width` (40–200px), reserving room for the float/chum/net
-row; additional controls wrap naturally instead of being overlaid. Depth reuses `game-toolbar-button`, the same
-size/frame and native optimized artwork, with min-left/max-right and X-based selection. The closed panel is hidden/inert;
-the root and layout gaps have pointer-events none. `UiEventShield.blockEvents` shields actual descendant input
-without imposing a solid rectangle; existing makeSolid consumers retain their behavior. Canvas owns pointer
-gestures that start on the scene through release/cancel, so aiming continues over HUD. No section image rotates.
-The catalogue uses the production depth composition and toolbar mounts, without its former depth placement rule.
-Since v0.45.15, the float and its horizontal track form one `game-toolbar-frame` container, sharing the ordinary
-button frame/background/radius/shadow in toolbar.css. The inner float button and panel have no independent frame.
-Width expands/contracts over `--ui-duration-normal`; the panel's fade/clip reveal follows the same timing and gap.
-Reduced motion disables both effects. Drag starts wait until the native width transition stops, so the existing
-single cached track rect never describes moving geometry. No timer, frame loop or per-move layout reads added.
-The superseded `ui-control-pill` mix is removed; the bait switch retains its original appearance in auto-switch.css.
-Painted container gaps shield game input, while hidden content and transparent toolbar slots do not receive input.
-The version badge is hidden at toolbar widths <=820 logical px; wider rows retain its shrinking, clipped label.
-There is one CSS layout owner: DepthSelector and selector bootstrap do not enumerate sibling buttons, resize or
-hide the badge, cache badge widths, dispatch layout events or set upward-placement classes. Resize cancels a depth
-drag so its cached pointer bounds cannot become stale. No added observer or continuous layout loop.
+v0.45.16 supersedes depth's normal-flow width expansion. The transparent `game-toolbar__tackle` uses
+`display: contents`; its `game-toolbar__depth` child is a permanent flexible left slot shared by float and badge.
+The slot's minimum reserves the float, shared gap and a usable 40px slider in both states. Native wrapping depends
+on viewport/visible actions, never depth open/close. A hidden float with no visible badge consumes no row space.
+Toolbar anchors the actual depth frame to the slot's right/bottom edges. The closed float sits left of all actions;
+opening grows its frame left to the toolbar edge, using the same UI-surface/safe-area inset as the rightmost action.
+The panel has no 200px cap and flexes to the available width. The button stays on the frame's right through both
+transitions. The badge uses free slot width while closed and becomes invisible while open without changing flow;
+it remains hidden at toolbar widths <=820 logical px. Production, DEV and catalogue inject the same depth mount.
+
+The float and horizontal track form one `game-toolbar-frame` container, sharing ordinary button appearance in
+toolbar.css. Its inner button/panel have no independent frame. Width expands/contracts over `--ui-duration-normal`;
+the panel fades/reveals leftwards with matching timing. Reduced motion disables both effects. Drag starts wait
+until the native width transition stops, so the existing single cached track rect never describes moving geometry.
+Resize cancels depth capture. No timer, observer, frame loop or per-move layout reads added. The removed
+`ui-control-pill` mix stays removed; the bait switch retains its original auto-switch.css appearance.
+
+Depth keeps horizontal min-left/max-right and X-based selection, ordinary button size and upright optimized art.
+Closed content is hidden/inert; only the painted frame receives input. Transparent slots/gaps never shield Canvas.
+`UiEventShield.blockEvents` shields descendant input without imposing a solid rectangle; existing makeSolid
+consumers retain their behavior. Scene gestures started on Canvas keep pointer ownership through release/cancel,
+including over HUD. Catalogue reuses production depth composition and toolbar mounts. No section image rotates.
+There is one CSS placement owner: depth/selector bootstrap do not enumerate siblings, measure badge/free widths,
+dispatch layout events or set upward-placement classes. The UI surface remains the only below-320px scale owner.
 
 JavaScript creates markup, applies BEM state classes and supplies dynamic values such as position,
 progress, resource percentage and injected rarity/configuration colors. Static layout, typography,

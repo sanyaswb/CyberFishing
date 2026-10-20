@@ -48,6 +48,7 @@ async function startGame() {
     uiSurface,
     toolbarMountNode: toolbar.element,
     tackleMountNode: toolbar.tackleMountNode,
+    depthMountNode: toolbar.depthMountNode,
     createDevFlags: () => new InactiveDevFlags(),
   });
   const game = new Game("gameCanvas", compositionRoot);

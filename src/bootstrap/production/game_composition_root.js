@@ -168,6 +168,7 @@ export class GameCompositionRoot {
   #uiSurface;
   #toolbarMountNode;
   #tackleMountNode;
+  #depthMountNode;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -199,6 +200,7 @@ export class GameCompositionRoot {
     uiSurface = null,
     toolbarMountNode = null,
     tackleMountNode = toolbarMountNode,
+    depthMountNode = tackleMountNode,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
@@ -250,6 +252,7 @@ export class GameCompositionRoot {
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
     this.#tackleMountNode = tackleMountNode;
+    this.#depthMountNode = depthMountNode;
     // Frame timing port (spec 101): the DEV FrameProfiler when Development composes one, inactive otherwise.
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
@@ -1049,7 +1052,7 @@ export class GameCompositionRoot {
     const castPenalty = new CastPenalty();
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
     const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
-      mountNode: this.#tackleMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets }));
+      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
       : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));

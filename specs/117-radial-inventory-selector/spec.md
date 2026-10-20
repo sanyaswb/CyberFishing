@@ -1,7 +1,7 @@
 # Feature Specification: Radial inventory selector (TK-008)
 
 **Created**: 2026-10-20
-**Status**: Implemented v0.45.2; owner refinements through v0.45.15, visual acceptance pending
+**Status**: Implemented v0.45.2; owner refinements through v0.45.16, visual acceptance pending
 **Input**: Owner authorized specification and implementation of TK-008, with closed/open references in `docs/references/inventory-selector/`. Detailed acceptance source: root `tasks.md`, TK-008.1–TK-008.5.
 
 ## User Scenarios & Testing
@@ -177,3 +177,11 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
   range, capture/cancel, outside dismissal and saves remain unchanged. No timers or extra animation loop.
 - Add only one short regression for the important input contract: moving bounds are not cached, settled slider
   accepts a drag. Remove the now single-use pill mix and return the bait switch to its original style owner.
+
+## Owner stationary float correction — 2026-10-20 / v0.45.16
+
+- Float opening must never change the width reserved in toolbar flow, move the float button, shift right-hand actions or trigger another wrap. Reserve the same flexible left slot in both states, with enough width for the minimum horizontal slider; responsive wrapping happens only when viewport/configuration/visible actions change.
+- Anchor the ordinary shared float frame at the slot's right edge; keep its button on the right and expand/contract left over the existing normal motion duration. At full expansion the frame reaches the toolbar's left edge, using the same injected screen/safe-area inset as the rightmost action. Remove the former 200px cap.
+- Share that free slot with the version badge so its label cannot consume the slider's left reach. Hide the badge without changing geometry while depth is open; keep the compact-width badge rule and restore it on close. Hidden depth and transparent reserve must never block scene input.
+- Production, DEV and catalogue inject the same depth mount. Keep the settled-coordinate drag guard, single cached rect, range/step, keyboard/wheel and reduced-motion behavior. No layout measurement, observer, timer or frame loop added.
+- Owner performs visual acceptance on index/dev, classic/radial, phone portrait/landscape and desktop. Keep tests short and focused on mount/input/lifecycle contracts; no screenshots.

@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.45.16 - Stable Leftward Float Expansion
+
+- Keep a permanent flexible depth slot to the left of toolbar actions. Anchor the float button at its right edge and expand the shared slider frame left to the same screen inset as the rightmost action, without shifting or rewrapping neighbours. Remove the 200px panel cap; the version badge shares the free slot and yields while it is open. Retain smooth width/reveal, reduced motion and cached drag geometry.
+
 ## v0.45.15 - Smooth Unified Float Control
 
 - Restore the ordinary toolbar background, border and rounded corners around one shared float/slider container. Expand its width over the shared normal motion duration while the horizontal slider fades and reveals inside the frame; keep reduced motion instant. Ignore drag starts while the container is moving so cached slider coordinates stay correct. Remove the superseded shared bait-pill frame after checking its consumers.
