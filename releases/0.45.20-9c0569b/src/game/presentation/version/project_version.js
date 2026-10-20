@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.16";
+export const CURRENT_PROJECT_VERSION = "0.45.20";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stable-leftward-float-expansion",
+  codename: "production-project-structure",
   updatedAt: "2026-10-20",
   notes: Object.freeze([
+    "Radial inventory selection is enabled by default; its equipment sector follows the equipped rod thumbnail with SVG fallback and race-safe preloading",
     "Float opens left to the toolbar edge in a permanent flexible slot; the button and right-hand actions stay fixed through open/close, and the badge yields without reflow",
     "Float and slider share the ordinary toolbar frame with smooth width/reveal; drag starts wait for stable geometry and reduced motion stays instant",
     "Bottom controls use permanent radial reserve and native row wrapping; compact layouts hide the version badge and fit the horizontal float panel without competing JavaScript layout owners",

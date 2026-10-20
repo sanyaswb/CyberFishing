@@ -17,7 +17,7 @@ export class InventorySelectorConfigValidator {
       if (path === prefix) selector = value;
       else if (path.startsWith(prefix + ".")) {
         const key = path.slice(prefix.length + 1);
-        selector = { radialEnabled: false, size: 1, openSize: 3, [key]: value };
+        selector = { radialEnabled: true, size: 1, openSize: 3, [key]: value };
       } else if (path === "ui" && Object.prototype.hasOwnProperty.call(value || {}, "inventorySelector")) selector = value.inventorySelector;
       else continue;
       const issues = InventorySelectorConfigValidator.issues(selector);

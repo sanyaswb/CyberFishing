@@ -488,7 +488,7 @@ export const CONFIG = {
   },
 
   ui: {
-    inventorySelector: { radialEnabled: false, size: 1, openSize: 3 },
+    inventorySelector: { radialEnabled: true, size: 1, openSize: 3 },
     draggableButtons: true,
     dragHoldTimeMs: 1000,
 

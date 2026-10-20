@@ -1007,7 +1007,8 @@ export class GameCompositionRoot {
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger() }));
+      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
+      equipmentSource: inventory }));
     await selector.ready;
     return {  };
   }
