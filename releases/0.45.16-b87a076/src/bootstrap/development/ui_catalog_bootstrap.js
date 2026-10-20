@@ -208,7 +208,7 @@ export function startUiCatalog() {
         const holdCharges = own(new HoldCharges({ labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot }));
         const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
         toolbar.element.classList.add("ui-catalog-preview__toolbar-row");
-        const depthSelector = own(composeDepthSelector({ documentRef: scope, mountNode: toolbar.tackleMountNode,
+        const depthSelector = own(composeDepthSelector({ documentRef: scope, mountNode: toolbar.depthMountNode,
           uiSurface: surface, itemDb: ITEM_DB, imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }) }));
         const chumControls = own(new ChumControls(() => { status.textContent = UI_CATALOG_LABELS.hudChum; }, { labels: HUD_LABELS, documentRef: scope, mountNode: toolbar.element }));
         const clockConfig = { debug: { timeScale: 240, timeAccelerationEnabled: false } };

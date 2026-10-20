@@ -8,9 +8,12 @@ export class GameToolbar {
     this.element.className = "game-toolbar";
     this.tackleMountNode = documentRef.createElement("div");
     this.tackleMountNode.className = "game-toolbar__tackle";
+    this.depthMountNode = documentRef.createElement("div");
+    this.depthMountNode.className = "game-toolbar__depth";
     this.#badge = versionBadge;
     this.#badgeParent = versionBadge?.parentNode;
-    if (versionBadge) this.element.appendChild(versionBadge);
+    if (versionBadge) this.depthMountNode.appendChild(versionBadge);
+    this.tackleMountNode.appendChild(this.depthMountNode);
     this.element.appendChild(this.tackleMountNode);
     mountNode.appendChild(this.element);
   }

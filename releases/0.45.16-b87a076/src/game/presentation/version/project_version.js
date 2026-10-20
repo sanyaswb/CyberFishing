@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.14";
+export const CURRENT_PROJECT_VERSION = "0.45.16";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,11 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "responsive-toolbar-reserve",
+  codename: "stable-leftward-float-expansion",
   updatedAt: "2026-10-20",
   notes: Object.freeze([
+    "Float opens left to the toolbar edge in a permanent flexible slot; the button and right-hand actions stay fixed through open/close, and the badge yields without reflow",
+    "Float and slider share the ordinary toolbar frame with smooth width/reveal; drag starts wait for stable geometry and reduced motion stays instant",
     "Bottom controls use permanent radial reserve and native row wrapping; compact layouts hide the version badge and fit the horizontal float panel without competing JavaScript layout owners",
     "Version badge is constrained in CSS by min-width: var(--ui-toolbar-size) to prevent narrowing below a 1:1 square aspect ratio",
     "Toolbar elements transfer upward only when all bottom row space is completely exhausted: stage 1 keeps full badge and bottom controls; stage 2 shrinks badge to 1:1 square; stage 3 hides badge and narrows open float panel; stage 4 transfers upward only when space < 40px/footprint and restores badge in bottom row",

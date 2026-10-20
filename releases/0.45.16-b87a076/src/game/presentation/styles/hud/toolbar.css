@@ -17,14 +17,30 @@
   container-type: inline-size;
   container-name: game-toolbar;
 }
-/* Tackle group (depth and net). display: contents places float at order 0 (left of all other buttons) and net at order 2. */
+/* Tackle mounts participate in the same row; only the depth slot grows into free space. */
 .game-toolbar__tackle {
   display: contents;
 }
-.game-toolbar__tackle > .depth-selector {
-  --depth-panel-width: clamp(40px, calc(100cqi - 3 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))), 200px);
+.game-toolbar__depth {
+  --depth-panel-min-width: 40px;
+  position: relative;
+  display: none;
   order: 0;
-  flex: none;
+  flex: 1 0 0;
+  min-width: 0;
+  pointer-events: none;
+}
+.game-toolbar__depth:has(> .game-version-badge),
+.game-toolbar__depth:has(> .depth-selector:not([hidden])) { display: block; }
+.game-toolbar__depth:has(> .depth-selector:not([hidden])) {
+  min-width: calc(var(--ui-toolbar-size) + var(--ui-toolbar-gap) + var(--depth-panel-min-width));
+  height: var(--ui-toolbar-size);
+}
+/* The slot never changes width on toggle. Its frame grows left from a fixed right edge. */
+.game-toolbar__depth > .depth-selector {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 .game-toolbar__tackle > .game-toolbar-button--net {
   order: 2;
@@ -45,33 +61,38 @@
   align-self: flex-start;
 }
 
+.game-toolbar-frame,
+.game-toolbar-button {
+  box-sizing: border-box;
+  border: var(--ui-control-border-width) solid var(--ui-control-border-color);
+  border-radius: var(--ui-radius-panel);
+  background: rgba(var(--ui-surface-rgb), 0.94);
+  color: var(--ui-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
 .game-toolbar-button {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   place-items: center;
-  box-sizing: border-box;
   width: var(--ui-toolbar-size);
   height: var(--ui-toolbar-size);
   min-width: 0;
   min-height: 0;
   margin: 0;
   padding: 0;
-  border: var(--ui-control-border-width) solid var(--ui-control-border-color);
-  border-radius: var(--ui-radius-panel);
-  background: rgba(var(--ui-surface-rgb), 0.94);
-  color: var(--ui-text);
   font: 24px/1 system-ui, sans-serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   touch-action: manipulation;
   transition: border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard), opacity var(--ui-duration-control) var(--ui-ease-standard);
 }
-.ui-surface--desktop-hover .game-toolbar-button:hover:not(:disabled) {
+.ui-surface--desktop-hover .game-toolbar-button:hover:not(:disabled),
+.ui-surface--desktop-hover .game-toolbar-frame:hover {
   border-color: var(--ui-accent);
   background: rgba(var(--ui-accent-rgb), 0.16);
 }
-.ui-surface--desktop-hover .game-toolbar-button:active:not(:disabled) { background: rgba(var(--ui-accent-rgb), 0.24); }
+.ui-surface--desktop-hover .game-toolbar-button:active:not(:disabled),
+.ui-surface--desktop-hover .game-toolbar-frame:active { background: rgba(var(--ui-accent-rgb), 0.24); }
 .game-toolbar-button:disabled { opacity: 0.46; cursor: not-allowed; }
 .game-toolbar-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .game-toolbar-button[hidden] { display: none; }
@@ -123,6 +144,10 @@
 .game-toolbar-button--keepnet { right: calc(var(--ui-edge-right) + var(--ui-toolbar-size) + var(--ui-toolbar-gap)); }
 .game-toolbar-button--net { right: calc(var(--ui-edge-right) + 2 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))); }
 .game-toolbar-button--chum { right: calc(var(--ui-edge-right) + 3 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))); }
+
+@container game-toolbar (max-width: 820px) {
+  .game-toolbar__depth:not(:has(> .depth-selector:not([hidden]))) { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .game-toolbar-button { transition: none; }
