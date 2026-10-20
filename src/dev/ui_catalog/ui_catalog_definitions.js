@@ -1,6 +1,15 @@
 // This inventory is explicit: each entry names the production renderer and its style owner.
 export const UI_CATALOG_DEFINITIONS = Object.freeze([
   {
+    id: "inventory-selector", name: "Радіальний вибір інвентарю",
+    families: ["buttons", "icons", "inventory"], height: 480,
+    description: "Одна кнопка й три округлені сектори. На ПК — наведення та клік; на телефоні — утримання, рух і відпускання. Клавіатура: Enter/Space, Tab, Escape. Classic повертає чинні кнопки.",
+    contract: "Production InventorySelectorRenderer/Controller та чинні InventoryUI/KeepnetSectionView; каталог змінює лише ізольовані параметри прикладу.",
+    states: [["normal", "Закрито"], ["open", "Відкрито"], ["equipment", "Екіпіровка: виділено"], ["backpack", "Рюкзак: виділено"], ["keepnet", "Садок: виділено"], ["classic", "Classic"], ["reduced-motion", "Без анімації"], ["medium", "Розмір 2 — середній"], ["large", "Розмір 3 — великий"]],
+    sources: ["src/game/presentation/inventory/inventory_selector_renderer.js", "src/game/presentation/inventory/inventory_selector_geometry.js", "src/platform/browser/dom/inventory_selector_controller.js"],
+    styles: ["src/game/presentation/styles/inventory/inventory-selector.css", "src/game/presentation/styles/hud/toolbar.css"],
+  },
+  {
     id: "controls", name: "Кнопки, іконки та автоматичний режим",
     families: ["buttons", "icons", "switches"], height: 220,
     description: "Спільна кнопка закриття та перемикач A. Hover, active і focus-visible перевіряються вказівником та клавіатурою. Вимкнений контроль не виконує дію.",
@@ -52,7 +61,7 @@ export const UI_CATALOG_DEFINITIONS = Object.freeze([
   {
     id: "hud", name: "HUD: глибина, заряди, час, прикормка та Canvas-шкали",
     families: ["hud", "canvas"], height: 700,
-    description: "Справжні HUD-контроли: клавіші, wheel і pointer drag глибини; заряди, час, прикормка, підсака та продовження. Canvas читає чинні descriptors HUD та трикольоровий gradient натягу. Світових координат гри в прикладі немає.",
+    description: "Справжні HUD-контроли: горизонтальна глибина з float-art і кнопкою у стилі підсаки; на вузькому toolbar поплавок над підсакою зі спільним відступом. Клавіші, wheel і pointer drag; заряди, час, прикормка та продовження. Canvas читає чинні descriptors HUD. Світових координат гри в прикладі немає.",
     contract: "DepthSelector.show/updateMax/setIcon/open/close; FightStatusBarsRenderer.render з production HudBarRenderer і HudStyleResolver. Canvas перерисовується подією, без нового frame loop.",
     states: [["normal", "Звичайний / день"], ["time-speed", "DEV час: ×1.5..×5"], ["open", "Глибина відкрита"], ["active", "Активне керування"], ["boundary", "Граничний натяг"], ["disabled", "Прикормка недоступна"], ["empty", "Прикормка закінчилась"], ["aiming", "Прицілювання"], ["moving", "Кораблик у русі"], ["boat", "Кораблик готовий"], ["charges-empty", "Заряди вичерпано"], ["dawn", "Світанок"], ["evening", "Вечір"], ["night", "Ніч"], ["hidden", "HUD прихований"]],
     reading: { min: 0, max: 100, value: 67, label: "Натяг / контроль, %" },

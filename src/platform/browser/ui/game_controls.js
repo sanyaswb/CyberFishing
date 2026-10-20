@@ -10,7 +10,7 @@ export class GameControls {
   #lifecycle;
   #labels;
   #mount;
-  #toolbarMount;
+  #netMount;
   #document;
   #frameScheduler;
   #pendingFrames = new Set();
@@ -18,10 +18,10 @@ export class GameControls {
 
   constructor(config, lifecycle, { labels, documentRef = document,
     mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null,
-    landingNetArt = null } = {}) {
+    landingNetArt = null, netMountNode = toolbarMountNode } = {}) {
     this.#labels = labels;
     this.#mount = mountNode;
-    this.#toolbarMount = toolbarMountNode;
+    this.#netMount = netMountNode;
     this.#document = documentRef;
     this.#frameScheduler = frameScheduler;
     this.#fullscreenControl = fullscreenControl;
@@ -72,7 +72,7 @@ export class GameControls {
       if (this.#isNetReady) this.onNetClick?.();
     });
 
-    this.#toolbarMount.appendChild(this.#netBtn);
+    this.#netMount.appendChild(this.#netBtn);
   }
 
   updateNetButtonState(hasNet, isReady) {

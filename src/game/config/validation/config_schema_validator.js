@@ -3,6 +3,7 @@ import { ConfigValidationResult } from "./config_validation_result.js";
 import { FISH_CATEGORIES } from "../databases/fish/fish_categories.js";
 import { PHYSICS_UNITS_AND_NAMING } from "../raw/physics/physics_units_and_naming.js";
 import { RarityConfigValidator } from "./rarity_config_validator.js";
+import { InventorySelectorConfigValidator } from "./inventory_selector_config_validator.js";
 
 export class ConfigSchemaValidator {
   static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
@@ -58,6 +59,9 @@ export class ConfigSchemaValidator {
     this.#validateRarityConfig();
     this.#validateLiveBaitConfig();
     this.#validateRodSpineConfig();
+    for (const issue of InventorySelectorConfigValidator.issues(this.config.ui?.inventorySelector)) {
+      this.#error("CONFIG.ui.inventorySelector", issue);
+    }
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();

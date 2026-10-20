@@ -132,6 +132,7 @@ assert.equal(canvas.captured, null);
 equipment = { rod: {} };
 input.setPointerPanEnabled(false);
 canvas.emit("pointerdown");
+assert.equal(canvas.captured, 1, "equipped aiming owns its pointer across HUD buttons");
 now += 200;
 assert.equal(input.getState().isPulling, true, "equipped pointer holds preserve fight input");
 windowTarget.emit("pointerup"); input.getState();

@@ -72,7 +72,6 @@
 .ui-catalog-preview__meter-row { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
 .ui-catalog-preview__reading { font-size: 12px; }
 .ui-catalog-preview__canvas { display: block; width: 320px; height: 280px; }
-.ui-catalog-preview__depth { position: absolute; top: 370px; right: var(--ui-edge-right); }
 .ui-catalog-preview__clock { position: absolute; top: 300px; }
 .ui-catalog-preview__fullscreen { position: absolute; top: 300px; }
 .ui-catalog-preview__charges { position: absolute; top: 500px; bottom: auto; }

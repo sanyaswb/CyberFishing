@@ -754,6 +754,11 @@ export class DevTools {
   }) {
     const onChange = (newValue) =>
       this.#updateConfigValue(canonicalPath, newValue);
+    if (["CONFIG.ui.inventorySelector.size", "CONFIG.ui.inventorySelector.openSize"].includes(canonicalPath.join("."))) {
+      this.#ui.createEnumToggleRow(key, ["1", "2", "3"], String(value), parentElement,
+        next => onChange(Number(next)), displayPath, canonicalPath);
+      return;
+    }
     if (typeof value === "boolean") {
       this.#ui.createSwitcherRow(
         key,

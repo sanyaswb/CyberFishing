@@ -3,7 +3,7 @@ import { deepCloneConfig } from "../../platform/browser/config/deep_clone_config
 import { deepFreezeConfig } from "../../game/config/runtime/immutable_config.js";
 import { ResolvedConfigProvider } from "../../game/config/runtime/resolved_config_provider.js";
 
-export function createRuntimeConfigContext(runtimeConfig = {}, {catalogs = {}} = {}) {
+export function createRuntimeConfigContext(runtimeConfig = {}, {catalogs = {}, validateOverrides = null, resetOnImport = []} = {}) {
   const baseConfig = deepFreezeConfig(deepCloneConfig(runtimeConfig));
   const overrideStore = new ConfigOverrideStore(deepCloneConfig);
   const resolvedProvider = new ResolvedConfigProvider(baseConfig,overrideStore,catalogs);
@@ -11,11 +11,20 @@ export function createRuntimeConfigContext(runtimeConfig = {}, {catalogs = {}} =
   const normalized = path => Array.isArray(path) && path[0] === "CONFIG" ? path.slice(1) : path;
   const refresh = () => configView.refresh();
   const context = Object.freeze({baseConfig,overrideStore,resolvedProvider,runtimeConfig,
-    set(path,value) { overrideStore.set(normalized(path),value); refresh(); },
+    set(path,value) {
+      const key = normalized(path);
+      validateOverrides?.({[Array.isArray(key) ? key.join(".") : key]: value});
+      overrideStore.set(key,value); refresh();
+    },
     reset(path) { resolvedProvider.resetOverride(normalized(path)); refresh(); },
     resetAll() { resolvedProvider.resetAllOverrides(); refresh(); },
     exportOverrides() { return overrideStore.toJSON(); },
-    importOverrides(data) { resolvedProvider.importOverrides(data); refresh(); },
+    importOverrides(data) {
+      const values = typeof data === "string" ? JSON.parse(data) : data;
+      validateOverrides?.(values);
+      for (const path of resetOnImport) resolvedProvider.resetOverride(path);
+      resolvedProvider.importOverrides(values); refresh();
+    },
   });
   configView = createRuntimeConfigView(runtimeConfig,resolvedProvider,(path,value) => context.set(path,value));
   refresh();

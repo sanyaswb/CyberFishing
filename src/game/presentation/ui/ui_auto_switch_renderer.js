@@ -10,7 +10,7 @@ export class UiAutoSwitchRenderer {
     slots = null, onSlotActivate = null,
     disabled = false, stock = 0, onChange = null, className = "", variant = "equipment" }) {
     const compact = variant === "control";
-    const label = this.#dom.element(compact ? "label" : "div", `inventory-toggle ${compact ? "inventory-toggle--control " : ""}${className}`.trim());
+    const label = this.#dom.element(compact ? "label" : "div", `ui-control-pill inventory-toggle ${compact ? "inventory-toggle--control " : ""}${className}`.trim());
     const content = this.#dom.element("span", "inventory-toggle__items");
     content.setAttribute("aria-label", name);
     const input = this.#dom.element("input", "inventory-toggle__input");

@@ -46,7 +46,7 @@ import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger
 import { DegradationColorConfigValidator } from "../../game/presentation/visual/degradation_color_config_validator.js";
 import { DegradationColorResolver } from "../../game/presentation/styles/degradation_color_resolver.js";
 import { DependencyContractValidator } from "../../engine/di/dependency_contract_validator.js";
-import { DepthSelector } from "../../platform/browser/ui/depth_selector.js";
+import { composeDepthSelector } from "./depth_selector_composition.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
@@ -78,6 +78,7 @@ import { ItemDatabase } from "../../game/application/inventory/item_database.js"
 import { LineCompatibilityRules } from "../../game/application/inventory/line_compatibility_rules.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryUiBootstrap } from "./inventory_ui_bootstrap.js";
+import { composeInventorySelector } from "./inventory_selector_composition.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
@@ -166,6 +167,7 @@ export class GameCompositionRoot {
   #rendering;
   #uiSurface;
   #toolbarMountNode;
+  #tackleMountNode;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -196,6 +198,7 @@ export class GameCompositionRoot {
     sceneMode = null,
     uiSurface = null,
     toolbarMountNode = null,
+    tackleMountNode = toolbarMountNode,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
@@ -246,6 +249,7 @@ export class GameCompositionRoot {
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
+    this.#tackleMountNode = tackleMountNode;
     // Frame timing port (spec 101): the DEV FrameProfiler when Development composes one, inactive otherwise.
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
@@ -458,17 +462,17 @@ export class GameCompositionRoot {
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
       gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter },
     });
-    this.#composeInventoryUi({
+    await this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-      physicsConfig, liveBait,
+      physicsConfig, liveBait, imageAssets,
     });
     const {
       world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules,
       castRules, biteRules, chumRules, boatRules, playerCastRules,
     } = this.#composeRulesAndWorld({
       castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
-      physicsConfig, own, gameTimeClock,
+      physicsConfig, own, gameTimeClock, imageAssets,
     });
     // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
     // happen during loading, not in the first frames of play.
@@ -918,6 +922,7 @@ export class GameCompositionRoot {
             onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),
           mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
           toolbarMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+          netMountNode: this.#tackleMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
           documentRef: this.#documentTarget, frameScheduler: this.#windowTarget },
       )),
       chum: own(new ChumService(locId, chumConfigObj, projector, {
@@ -962,10 +967,10 @@ export class GameCompositionRoot {
   }
 
   // Inventory UI over the composed facade and item read-model adapters.
-  #composeInventoryUi({
+  async #composeInventoryUi({
     inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
     itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-    physicsConfig, liveBait,
+    physicsConfig, liveBait, imageAssets,
   }) {
     const inventoryFacade = inventory.inventoryFacade;
     if (!inventoryFacade) {
@@ -997,13 +1002,17 @@ export class GameCompositionRoot {
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
+    const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
+      uiSurface: this.#uiSurface, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger() }));
+    await selector.ready;
     return {  };
   }
 
   // Gameplay rules, the game world, fishing controller and HUD widgets.
   #composeRulesAndWorld({
     castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq, physicsConfig, gameTimeClock,
-    own,
+    own, imageAssets,
   }) {
     const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
     const baitRules = new BaitRules();
@@ -1039,7 +1048,8 @@ export class GameCompositionRoot {
     );
     const castPenalty = new CastPenalty();
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
-    const depthUI = own(new DepthSelector({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
+    const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
+      mountNode: this.#tackleMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
       : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));

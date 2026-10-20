@@ -1,4 +1,4 @@
-// A single screen-anchored row lets the version label shrink beside visible actions.
+// Screen anchoring and wrapping belong to the shared toolbar CSS.
 export class GameToolbar {
   #badge;
   #badgeParent;
@@ -6,9 +6,12 @@ export class GameToolbar {
   constructor({ documentRef, mountNode, versionBadge = null }) {
     this.element = documentRef.createElement("div");
     this.element.className = "game-toolbar";
+    this.tackleMountNode = documentRef.createElement("div");
+    this.tackleMountNode.className = "game-toolbar__tackle";
     this.#badge = versionBadge;
     this.#badgeParent = versionBadge?.parentNode;
     if (versionBadge) this.element.appendChild(versionBadge);
+    this.element.appendChild(this.tackleMountNode);
     mountNode.appendChild(this.element);
   }
 

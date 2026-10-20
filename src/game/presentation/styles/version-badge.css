@@ -29,3 +29,7 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+@container game-toolbar (max-width: 820px) {
+  .game-toolbar .game-version-badge { display: none; }
+}

@@ -3,6 +3,12 @@
 // Single registry of checks and suite membership; every utils/*-check.js file appears exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
+    id: "inventory-selector",
+    title: "Radial inventory selector geometry and interaction",
+    file: "utils/inventory-selector-check.js",
+    suites: ["quick", "inventory"],
+  },
+  {
     id: "task-interactions",
     title: "Task interaction regressions",
     file: "utils/task-interactions-check.js",

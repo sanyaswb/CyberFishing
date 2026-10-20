@@ -6,18 +6,44 @@
   bottom: var(--ui-edge-bottom);
   z-index: var(--ui-layer-controls);
   display: flex;
-  align-items: center;
+  /* wrap-reverse starts at the bottom; flex-start keeps button bottoms aligned. */
+  align-items: flex-start;
+  flex-wrap: wrap-reverse;
   justify-content: flex-end;
   gap: var(--ui-toolbar-gap);
-  height: var(--ui-toolbar-size);
+  height: auto;
   min-width: 0;
   pointer-events: none;
+  container-type: inline-size;
+  container-name: game-toolbar;
 }
-.game-toolbar .game-toolbar-button { position: static; flex: 0 0 var(--ui-toolbar-size); pointer-events: auto; }
+/* Tackle group (depth and net). display: contents places float at order 0 (left of all other buttons) and net at order 2. */
+.game-toolbar__tackle {
+  display: contents;
+}
+.game-toolbar__tackle > .depth-selector {
+  --depth-panel-width: clamp(40px, calc(100cqi - 3 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))), 200px);
+  order: 0;
+  flex: none;
+}
+.game-toolbar__tackle > .game-toolbar-button--net {
+  order: 2;
+  flex: 0 0 var(--ui-toolbar-size);
+}
+.game-toolbar > .game-toolbar-button,
+.game-toolbar__tackle > .game-toolbar-button { position: static; flex: 0 0 var(--ui-toolbar-size); pointer-events: auto; }
 .game-toolbar-button--chum { order: 1; }
 .game-toolbar-button--net { order: 2; }
 .game-toolbar-button--keepnet { order: 3; }
 .game-toolbar-button--inventory { order: 4; }
+/* Permanent reserve for the open selector footprint so adjacent actions to the left do not shift. */
+.game-toolbar > .inventory-selector {
+  --inventory-selector-unit: min(calc(var(--ui-toolbar-size) * var(--inventory-selector-scale, 1)), calc((var(--ui-logical-height, 320px) - var(--ui-edge-top) - var(--ui-edge-bottom) - var(--ui-toolbar-size) - var(--ui-toolbar-gap)) / var(--inventory-selector-retention-radius)), calc((var(--ui-logical-width, 320px) - var(--ui-edge-left) - var(--ui-edge-right) - 2 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))) / var(--inventory-selector-retention-radius)));
+  flex: 0 0 calc(var(--inventory-selector-unit) * var(--inventory-selector-current-scale));
+  order: 4;
+  margin-left: calc((var(--inventory-selector-retention-radius) * var(--inventory-selector-open-scale, 1) - var(--inventory-selector-current-scale)) * var(--inventory-selector-unit));
+  align-self: flex-start;
+}
 
 .game-toolbar-button {
   display: grid;

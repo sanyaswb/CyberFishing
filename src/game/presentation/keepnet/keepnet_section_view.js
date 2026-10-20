@@ -111,6 +111,7 @@ export class KeepnetSectionView {
     this.refresh();
   }
   get summaryNode() { return this.#summary; }
+  setShortcutVisible(visible) { this.#button.hidden = !visible; }
   // The help hint; its host places it in its hint region (the inventory's, spec 086).
   get helpNode() { return this.#helpText; }
   get contentNode() { return this.#content; }

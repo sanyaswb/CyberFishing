@@ -238,19 +238,25 @@ function checkBrowserWidgets() {
 // 0.1 m grid, a canvas press only closes it, and nothing runs after dispose.
 function checkDepthSelector(c,document,depth,root) {
   const floatButton=root.children[0],track=root.children[1].children[1],changes=[];
+  assert.equal(track.attrs['aria-orientation'],'horizontal','the depth slider runs left to right');
+  assert.notEqual(root.style.pointerEvents,'all','the transparent depth wrapper must never shield the game');
+  assert(floatButton.className.includes('game-toolbar-button'),'the float reuses the landing-net button appearance');
   depth.show(5,1.5,value=>changes.push(value));
-  assert.equal(root.style.display,'block');assert.equal(depth.isOpen,false,'the map stays clean until the float is pressed');
-  track.emit('pointerdown',{clientY:40});assert.equal(changes.length,0,'a closed track ignores presses');
+  assert.equal(root.hidden,false);assert.equal(depth.isOpen,false,'the map stays clean until the float is pressed');
+  assert(root.children[1].hidden&&root.children[1].inert,'closed panel has no layout, input or accessibility footprint');
+  track.emit('pointerdown',{clientX:40});assert.equal(changes.length,0,'a closed track ignores presses');
   floatButton.emit('click');
   assert(depth.isOpen&&root.classList.contains('depth-selector--open'));assert.equal(floatButton.attrs['aria-expanded'],'true');
-  track.emit('pointerdown',{clientY:40});assert.equal(depth.value,2.6,'the track maps its height to min..max');
-  track.emit('pointermove',{clientY:60});track.emit('pointermove',{clientY:0});assert.equal(depth.value,0.1);
-  track.emit('pointerup',{});track.emit('pointermove',{clientY:60});assert.equal(depth.value,0.1,'moves after release do not drag');
+  track.emit('pointerdown',{clientX:40});assert.equal(depth.value,2.6,'the track maps its width to min..max');
+  track.emit('pointermove',{clientX:60});track.emit('pointermove',{clientX:0});assert.equal(depth.value,0.1);
+  track.emit('pointerup',{});track.emit('pointermove',{clientX:60});assert.equal(depth.value,0.1,'moves after release do not drag');
   track.emit('keydown',{key:'End'});track.emit('keydown',{key:'ArrowUp'});track.emit('keydown',{key:'PageUp'});
   assert.equal(depth.value,3.9);track.emit('keydown',{key:'Home'});root.emit('wheel',{deltaY:120});
   assert.deepEqual(changes,[2.6,5,0.1,5,4.9,3.9,0.1,0.2],'every change on the 0.1 m grid reaches the game once');
   assert.equal(track.attrs['aria-valuenow'],'0.2');assert.equal(track.attrs['aria-valuemax'],'5.0');assert.equal(floatButton.children[1].textContent,'0.2 м');
   assert.equal(root.children[1].children[2].textContent,'5.0 м','the track shows its deepest depth');
+  track.emit('keydown',{key:'ArrowRight'});assert.equal(depth.value,0.3);
+  track.emit('keydown',{key:'ArrowLeft'});assert.equal(depth.value,0.2);
   let consumed=0;const press=target=>document.emit('pointerdown',{target,stopPropagation(){consumed++;}});
   press(track);assert(depth.isOpen,'presses inside the control keep it open');
   press({tagName:'CANVAS'});assert.equal(depth.isOpen,false);assert.equal(consumed,1,'a canvas press only closes the track');
@@ -260,7 +266,7 @@ function checkDepthSelector(c,document,depth,root) {
   floatButton.emit('click');floatButton.emit('click');assert.equal(depth.isOpen,false,'the float closes the track again');
   depth.updateMax(3);floatButton.emit('click');track.emit('keydown',{key:'End'});assert.equal(depth.value,3);
   depth.updateMax(2);assert.equal(depth.value,2);assert.equal(changes.at(-1),2,'a lower maximum clamps and reports the depth');
-  depth.hide();assert.equal(depth.isOpen,false);assert.equal(root.style.display,'none');
+  depth.hide();assert.equal(depth.isOpen,false);assert.equal(root.hidden,true);
   const listeners=document.listeners.get('pointerdown').length;
   depth.dispose();depth.dispose();
   assert(root.removed);assert.equal(document.listeners.get('pointerdown').length,listeners-1,'dispose removes the document listener');

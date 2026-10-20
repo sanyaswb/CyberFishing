@@ -1,0 +1,165 @@
+# Feature Specification: Radial inventory selector (TK-008)
+
+**Created**: 2026-10-20
+**Status**: Implemented v0.45.2; owner refinements through v0.45.14, visual acceptance pending
+**Input**: Owner authorized specification and implementation of TK-008, with closed/open references in `docs/references/inventory-selector/`. Detailed acceptance source: root `tasks.md`, TK-008.1–TK-008.5.
+
+## User Scenarios & Testing
+
+### User Story 1 — Choose an inventory section (Priority: P1)
+
+The player uses one bottom-right inventory control to choose equipment, backpack or keepnet.
+**Why this priority**: Direct access to the existing inventory is the purpose of the feature.
+**Independent Test**: Enable radial mode and open each of the three existing sections.
+**Acceptance Scenarios**:
+1. Given desktop hover is allowed, entering the central button expands three sectors; passing through gaps retains them; clicking one opens exactly that section once.
+2. Given touch or a device without hover, pressing the central button immediately expands the sectors; moving highlights the current sector; releasing in it opens that section once.
+3. Given a previously highlighted sector, releasing in the centre, a gap or outside closes without choosing it.
+4. Given an already open section, choosing it again does not close the inventory.
+
+### User Story 2 — Compare modes without losing work (Priority: P2)
+
+The owner switches between the existing controls and the radial control during play.
+**Why this priority**: The old interface remains available for comparison and compatibility.
+**Independent Test**: Switch modes ten times with an editor open and confirm its state and scroll remain.
+**Acceptance Scenarios**:
+1. Classic is the default on production and development pages; the development switch applies immediately without reload.
+2. Switching cancels only the selector interaction and preserves editor, filters, inventory and gameplay state.
+3. Export/import/reset use existing overrides; reset restores classic, old override sets without this setting use the default, and invalid selector settings are rejected.
+
+### User Story 3 — Accessible, responsive selection (Priority: P2)
+
+Players can select sections using the keyboard and on narrow or rotated screens.
+**Why this priority**: The replacement must remain usable with all supported inputs.
+**Independent Test**: Open with Enter/Space, select with the keyboard, cancel with Escape; repeat at 280 and 320 px.
+**Acceptance Scenarios**:
+1. Opening moves focus to the first section; Tab traverses sections, Escape returns focus and leaving the component closes it.
+2. Resize, orientation, loss of capture, blur, screen changes and disposal cancel an unfinished choice.
+3. Reduced motion changes state immediately. Hidden controls cannot receive input or focus.
+
+### Edge Cases
+
+- Extra pointers, secondary mouse buttons, synthetic clicks and native image dragging never duplicate selection or trigger the game beneath.
+- Release during opening cannot select an invisible sector.
+- Hover requires the existing desktop policy; a touch laptop uses the press/move/release flow.
+- Safe areas, short landscape and split layouts do not clip the fan or prevent other toolbar actions.
+- Below 320 px the shared UI scale applies exactly once; inventory remains four columns and keepnet two.
+
+## Requirements
+
+### Functional Requirements
+
+- **FR-001**: Preserve classic controls and add a live alternative with one authoritative mode setting outside gameplay saves.
+- **FR-002**: Match the reference quarter-circle button and three equally spaced rounded annular sectors over 90 degrees. Use game colours and recognizable section illustrations.
+- **FR-003**: Animate expansion/retraction, support interruption and reduced motion, and preload all artwork.
+- **FR-004**: Keep the desktop fan open throughout its transparent quarter-disc retention area; select only by explicit activation.
+- **FR-005**: Touch selection uses the current release position, including rounded boundaries, and never a remembered candidate.
+- **FR-006**: Provide named semantic controls, visible focus and the keyboard flow above without another modal focus trap.
+- **FR-007**: Preserve inventory content, editor behavior, catch-result flow, state ownership, save format and gameplay output.
+- **FR-008**: Repeated opening and mode switching must not accumulate listeners, scheduled work or selection commands.
+- **FR-009**: Demonstrate closed/open, each highlight, both modes and reduced motion in the existing component catalogue using production components.
+- **FR-010**: The owner can change selector size live in DevTools: 1 standard, 2 medium, 3 large. Scale the whole composition proportionally; constrain it to available screen space. Export/import/reset preserve this setting through existing overrides; default is 1.
+
+### Key Entities
+
+- Selector mode: classic or radial, owned by existing runtime configuration.
+- Section: existing equipment/backpack/keepnet identity and labels.
+- Interaction: temporary expansion, active pointer and candidate; no gameplay data.
+
+## Success Criteria
+
+### Measurable Outcomes
+
+- **SC-001**: All three sections open exactly once for every supported selection flow; cancelled flows open zero sections.
+- **SC-002**: Ten consecutive mode switches retain the same inventory/editor state and produce one command per later gesture.
+- **SC-003**: Selection remains aligned at 240/280/319/320 px and at desktop hover boundaries 1024/1025 px.
+- **SC-004**: Keyboard users can reach every section and cancel; reduced-motion users see no selector travel animation.
+- **SC-005**: Save round-trip and game-cycle output remain unchanged; automated checks pass and owner visual acceptance is recorded separately.
+
+## Assumptions
+
+- Sector order from left to top is equipment, backpack, keepnet, as specified in TK-008.
+- Initial dimensions used inner radius 1.15D. Owner refinement v0.45.3: a true quarter-disk central button of radius D, derived inner sector radius D + shared gap 0.1D, outer radius 2.1D and rounding 0.06D. All painted boundaries use the same geometry and border treatment; artwork is centred within its painted shape.
+- Owner correction v0.45.4: all section artwork keeps its native upright orientation, without rotation. The central inventory symbol is distinct from equipment.
+- Hit testing starts only after expansion completes; early release cancels safely.
+- Existing optimized backpack and keepnet assets are reused. Reference PNGs remain design sources.
+- Owner performs browser visual checks and phone performance acceptance; the agent runs automated checks.
+- Owner clarification during implementation: add size presets 1/2/3. Initial scale factors are 1, 1.35 and 1.7; actual displayed size is bounded by the available toolbar space. Resizing cancels an unfinished choice without altering inventory state.
+
+## Owner refinement — 2026-10-20 / v0.45.3
+
+- Replace the square-looking central control with a complete circular quarter arc; use one shared gap between centre/sectors and neighbouring sectors.
+- Retain hover when moving upward, through the centre or through inter-sector gaps at any radius. Child hit-region changes and unrelated ancestor classes must not dismiss the menu. Leaving the full retention region, real hiding, layout invalidation or lifecycle cancellation still closes it without selection.
+- Highlighting a candidate by mouse, touch hold/move or keyboard focus moves the section outward by 0.12D with existing motion timing. Moving to another candidate smoothly returns the previous section. Release/click selects the current visible translated shape; hovering also retains its original footprint to prevent feedback oscillation. Reduced motion applies the offset immediately.
+- The transparent retention envelope includes outward movement and the shared gap. Toolbar reserves this envelope so other actions remain accessible. No delayed opening command or additional animation loop.
+
+## Owner root-cause correction — 2026-10-20 / v0.45.4
+
+The float/depth control, including its invisible closed-panel footprint, overlapped radial selection and blocked
+aiming. Fix the overlapping control instead of tracking the cursor globally through another UI target.
+
+- Move depth into the bottom toolbar and reuse the landing-net button size/appearance. On the mobile toolbar
+  (available width <=820 logical px), place the float directly above the net with the shared button gap. On wider
+  toolbars place it in the bottom action row. Owner refinement v0.45.5: the desktop float is left of all action
+  buttons, before chum, independently of the net. Its horizontal slider sits to its left, inside available toolbar
+  space, outside the row flow. Neither showing the float nor opening its slider displaces chum or other actions.
+- Use min depth at the left and max depth at the right. Preserve the 0.1m step, range, wheel, Home/End/Page and
+  callbacks; support Left/Right keys. Closed content has no layout/input/focus footprint. Only visible controls
+  shield input; transparent layout containers never become solid hit regions.
+- Scene gestures that start on Canvas retain pointer ownership over HUD until release/cancel/blur/dispose.
+- Remove the previous global document pointermove selector workaround and coordinate-only internal leave override.
+  The selector's own retention surface handles gaps, and a real DOM exit closes it normally. Keep valid lifecycle
+  cancellation, native candidate motion and animation-aware selection.
+- Keep all artwork upright, including sector equipment/backpack/keepnet and the depth float. Reuse optimized
+  float art with native proportions, no image drag or CSS rotation. Catalogue uses the production toolbar grouping.
+
+## Owner shape experiment — 2026-10-20 / v0.45.6
+
+- Closed radial control reuses the ordinary toolbar button's rounded-square frame, border, background and shadow.
+  Existing size presets remain available; standard size matches neighbouring controls.
+- Opening via allowed desktop hover, touch press or keyboard morphs the upper-left corner into a full quarter
+  circle using native border-radius interpolation (`100% 0 0 0` at the open endpoint). The inventory symbol moves
+  smoothly from the square centre to the quarter-disk centroid, staying upright. Closing reverses both transitions,
+  including when an opening transition is interrupted.
+- Shape, symbol and sector reveal share the existing fast motion duration/easing. OS reduced motion and the
+  catalogue's reduced-motion state change the shape instantly. Native border geometry receives central pointer
+  events; no permanent quarter-disk clip may cut off the closed square's upper-left corner.
+- Sector geometry, gaps, retention, release selection, toolbar footprint and gameplay remain unchanged. Remove
+  the superseded central SVG/polygon generation after checking its consumers; no tool or fixture becomes obsolete.
+
+## Owner correction after undo — 2026-10-20 / v0.45.9
+
+- Keep the closed shared rounded-square shape. When open, preserve the large upper-left circular arc and round
+  only the bottom-right small corner; upper-right and lower-left corners stay sharp. Native border-radius uses
+  `100% 0 var(--ui-radius-panel) 0`. This supersedes the rejected all-small-corners-rounded variant.
+- Restore independent live DevTools enums: initial `CONFIG.ui.inventorySelector.size=1` and expanded
+  `openSize=3` by default, each using presets 1/2/3 (1/1.35/1.7). Scale button, artwork and sectors together,
+  anchored at bottom right. Closing reverses the animation. Equal-size and shrinking combinations work too.
+- Owner permits toolbar reflow: the closed control occupies its button slot; opening makes room for the final
+  fan, moving adjacent actions left. Limits still fit the available UI surface, including below-320 scaling.
+- The layout root takes its final open slot immediately while its inner visual stage animates. Measure the root
+  once after expansion and gate pointer selection until the reveal/scale duration ends. Reduced motion changes
+  instantly; config edits cancel stale gestures. No per-move layout reads, global hover workaround or new loop.
+- Validate/export/import/reset both sizes through the existing config owner. Older scalar overrides without
+  openSize use default 3. Gameplay/save semantics and sector geometry remain unchanged.
+
+## Owner responsive toolbar correction — 2026-10-20 / v0.45.14
+
+- Supersede moving neighbours on radial expansion: permanently reserve the open fan's footprint to the left,
+  using the existing unit/open-scale/retention data in CSS. Closed and open total inline footprints are identical.
+- Keep bottom controls reachable at narrow widths. Use native reverse row wrapping, with overflow rows above
+  bottom actions and consistent bottom alignment. Leave height for an action row when capping the fan on short
+  screens. Preserve the one UI-surface scale below 320px.
+- Hide the version badge at <=820 logical toolbar px so it cannot force controls offscreen. Wider layouts keep
+  the normal shrinking label. Remove the square/hidden badge stages and competing layout code from depth and
+  selector composition; no global layout events, sibling enumeration, badge-width cache or upward-position hacks.
+- The float remains the leftmost action. Its horizontal panel expands in normal flow after the icon, using a
+  toolbar-owned width capped at 200px and at least 40px. Reserve room for the float/chum/net row; overflow wraps
+  above instead of overlapping controls or the radial fan. Closed panel stays hidden/inert and transparent gaps
+  remain transparent to game input. Resize cancels stale depth capture.
+- Keep automated checks focused on existing input, config, geometry and lifecycle contracts. Owner performs
+  visual acceptance of narrow/wide layouts, both phone orientations and the expanded float; add no visual snapshots.
+- Commit and publish only selector-related changes. G-095 and unrelated untracked assets/helpers stay local.
+- Owner follow-up: the expanded float icon/button and horizontal slider share one outer pill, styled like the
+  bait auto-switch container. Reuse the `ui-control-pill` frame in auto-switch.css for both consumers; remove
+  the inner button/panel frames while open. The closed float keeps the standard toolbar appearance.

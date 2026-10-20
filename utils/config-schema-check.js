@@ -50,6 +50,12 @@ function checkNegativeFixtures() {
   const { context, validate, options } = compose({ development: false });
   const config = context.runtimeConfig;
   const has = (result, pattern) => result.errors.some((issue) => pattern.test(`${issue.path}: ${issue.message}`));
+  for (const selector of [{ radialEnabled: "true", size: 1, openSize: 3 }, { radialEnabled: true, size: 4, openSize: 3 },
+    { radialEnabled: true, size: 1, openSize: 4 }, { radialEnabled: true, size: 1, openSize: "3" },
+    { radialEnabled: false, size: 2, openSize: 3, typo: true }]) {
+    assert(has(validate({ config: { ...config, ui: { ...config.ui, inventorySelector: selector } } }), /inventorySelector/u),
+      "selector booleans, size presets and unknown fields are schema validated");
+  }
   const labels = { ...LABELS };
   delete labels["physics.fight.rodStroke.capacityByLineLengthRatio"];
   assert(has(validate({ parameterLabels: labels }), /capacityByLineLengthRatio: missing parameter label/u),

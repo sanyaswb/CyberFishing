@@ -20,6 +20,21 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-093 Closed depth control blocks radial selection and aiming (P2, implemented in v0.45.4)
+Found: 2026-10-20, owner's follow-up to G-092/TK-008, dev.html with an equipped float.
+Reproduce: show the depth control with its track closed; move through its transparent vertical footprint while selecting radial sections or aiming an equipped rod. Move an active aim over the float/HUD itself.
+Expected: only visible depth controls receive presses; radial selection and an already-owned world aim continue without an invisible input wall.
+Actual: DepthSelector retained the vertical panel's flow footprint and UiEventShield.makeSolid forced pointerEvents=all on its wrapper. Canvas captured map navigation only, so equipped aiming lost pointer movement over HUD targets.
+Notes: new platform regression failed with vertical orientation; the equipped-aim capture check failed null vs pointer 1 before the fix. The toolbar now owns a common depth/net group, with horizontal slider and mobile depth row above the net. Closed content is hidden/inert; event shielding no longer turns layout into a solid hit region. Canvas owns every pointer gesture started on it. Previous document-wide selector pointermove tracking and coordinate-only leave retention were removed; the selector's own transparent retention handles internal routes. Owner requested upright art in all sections; rotations were removed. Existing depth step/range/callback and gameplay/save semantics preserved. Owner visual/performance acceptance pending.
+
+### G-092 Radial selector closes while crossing its fan (P3, implemented in v0.45.3)
+Owner root-cause correction (v0.45.4): the visible interference was the float depth control's transparent hit region, addressed in G-093. The previous global tracking workaround was removed; lifecycle and animation geometry checks remain valid.
+Found: 2026-10-20, owner review of TK-008 in v0.45.2, dev.html desktop hover.
+Reproduce: enable radial mode and move from its central button upward, through the centre and between sections; repeat across child hit regions or after an unrelated ancestor class update.
+Expected: the fan remains open throughout its retention region; only leaving the whole region or a real visibility/layout change cancels it.
+Actual: root pointerleave and the unconditional ancestor MutationObserver cancelled the fan even while pointer coordinates remained within its region.
+Notes: pointerleave is now coordinate/related-target aware, document pointermove bridges hit-region changes, and ancestor changes compare visibility and cached geometry. Focused checks cover these cases, real hide/layout cancellation, translated outer-edge selection mid-animation, reduced motion and disposal. Owner also requested a full quarter-disk central button, equal gaps and outward candidate movement for mouse/touch; recorded in spec 117. Visual and phone performance acceptance pending.
+
 ### G-091 Newly equipped item feedback flashes only the inner well (P3, implemented in v0.45.1)
 Found: 2026-10-19, owner declines TK-003 editor acceptance in v0.45.0.
 Reproduce: equip a component in the editor and inspect the green success flashes on its expanded tab; compare the feedback footprint with the whole tab container and its inset.

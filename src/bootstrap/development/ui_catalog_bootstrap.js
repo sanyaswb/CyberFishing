@@ -5,6 +5,10 @@ import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { ItemRarityDomAdapter } from "../../platform/browser/dom/item_rarity_dom_adapter.js";
 import { InventoryUiBootstrap } from "../production/inventory_ui_bootstrap.js";
+import { composeInventorySelector } from "../production/inventory_selector_composition.js";
+import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
+import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
+import { UiCatalogSelectorExample } from "../../dev/ui_catalog/ui_catalog_selector_example.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryResourceMeterRenderer } from "../../game/presentation/inventory/inventory_resource_meter_renderer.js";
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
@@ -29,7 +33,7 @@ import { RarityAnimationResolver } from "../../game/presentation/screens/rarity_
 import { HudStyleResolver } from "../../game/presentation/styles/hud_style_resolver.js";
 import { HudBarRenderer } from "../../game/presentation/hud/hud_bar_renderer.js";
 import { FightStatusBarsRenderer } from "../../game/presentation/hud/fight_status_bars_renderer.js";
-import { DepthSelector } from "../../platform/browser/ui/depth_selector.js";
+import { composeDepthSelector } from "../production/depth_selector_composition.js";
 import { HoldCharges } from "../../platform/browser/ui/hold_charges.js";
 import { ChumControls } from "../../platform/browser/ui/chum_controls.js";
 import { composeTimeDisplay } from "../production/time_display_composition.js";
@@ -88,6 +92,24 @@ export function startUiCatalog() {
       try {
       if (id === "controls") return new UiCatalogControlsExample({ domFactory: dom, closeButtonRenderer: close, autoSwitchRenderer: auto, surface, status });
       if (id === "meters") return new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer: meters, resourceMeterResolver, surface, status });
+      if (id === "inventory-selector") {
+        const scope = own(scopeFor(surface.mountRoot));
+        const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
+        toolbar.element.classList.add("ui-catalog-preview__toolbar-row");
+        const fixture = new UiCatalogInventoryFixture({ actionTypes: InventoryActionType, rarityVisualResolver: rarity });
+        const ui = own(InventoryUiBootstrap.create({ documentRef: scope, mountNode: surface.mountRoot,
+          buttonMountNode: toolbar.element, uiSurface: surface, facade: fixture, degradationColorResolver: colors,
+          rarityVisualResolver: rarity, rarityDomAdapter: new ItemRarityDomAdapter({ visualResolver: rarity }), warningTimers }));
+        const keepnet = own(InventoryUiBootstrap.createKeepnet({ documentRef: scope, liveBait: new UiCatalogKeepnetFixture(),
+          inventoryUI: ui, degradationColorResolver: colors, uiSurface: surface, buttonMountNode: toolbar.element }));
+        const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3 } } };
+        const selector = own(composeInventorySelector({ documentRef: scope, windowRef: windowTarget, uiSurface: surface,
+          mountNode: toolbar.element, inventoryUI: ui, keepnetUI: keepnet, config,
+          imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }), logger: new ConsoleLogger(),
+          id: "catalog-inventory-selector-sections" }));
+        await selector.ready;
+        return new UiCatalogSelectorExample({ selector, config, documentScope: scope, inventoryUI: ui, owned });
+      }
       if (id === "inventory") {
         const scope = own(scopeFor(surface.mountRoot));
         const fixture = new UiCatalogInventoryFixture({ actionTypes: InventoryActionType, rarityVisualResolver: rarity });
@@ -183,10 +205,11 @@ export function startUiCatalog() {
         const hudBarRenderer = new HudBarRenderer(context);
         const statusBarsRenderer = new FightStatusBarsRenderer({ surface: context, hudBarRenderer,
           styleResolver: new HudStyleResolver({ hudStylesProvider: () => CONFIG.ui.hudStyles }) });
-        const depthSelector = own(new DepthSelector({ labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot }));
         const holdCharges = own(new HoldCharges({ labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot }));
         const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
         toolbar.element.classList.add("ui-catalog-preview__toolbar-row");
+        const depthSelector = own(composeDepthSelector({ documentRef: scope, mountNode: toolbar.tackleMountNode,
+          uiSurface: surface, itemDb: ITEM_DB, imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }) }));
         const chumControls = own(new ChumControls(() => { status.textContent = UI_CATALOG_LABELS.hudChum; }, { labels: HUD_LABELS, documentRef: scope, mountNode: toolbar.element }));
         const clockConfig = { debug: { timeScale: 240, timeAccelerationEnabled: false } };
         const catalogClock = new GameTimeClock({ anchorHours: 12, anchorMs: 0, timeScale: 240, now: () => 0 });
@@ -194,6 +217,7 @@ export function startUiCatalog() {
         const gameControls = own(new GameControls(CONFIG, null, { labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot, frameScheduler: scheduler,
           landingNetArt: ITEM_DB.nets.net_basic.skin.thumbnail,
           toolbarMountNode: toolbar.element,
+          netMountNode: toolbar.tackleMountNode,
           fullscreenControl: own(new FullscreenControl({ documentRef: scope, mountNode: surface.mountRoot, label: HUD_LABELS.fullscreen })) }));
         gameControls.onNetClick = () => { status.textContent = UI_CATALOG_LABELS.hudNet; };
         gameControls.onContinueClick = () => { status.textContent = UI_CATALOG_LABELS.hudContinue; };

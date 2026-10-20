@@ -1,5 +1,52 @@
 # CyberFishing changelog
 
+## v0.45.14 - Responsive Bottom Toolbar
+
+- Keep a permanent reserve for the open radial fan, so buttons to its left stay in place on open/close. Use native row wrapping when the row is full, hide the version badge at compact toolbar widths, and fit the horizontal float panel in normal flow. The open float and slider share one pill frame reused from the bait switcher. Remove competing badge/upward-placement calculations, global layout events and duplicate resize handlers from the float and selector composition.
+
+## v0.45.12 - Accurate Toolbar Free Space Allocation and Coordinated Upward Transfer
+
+- Rework toolbar free space calculation: elements transfer upward only when all free space in the bottom row has been completely exhausted and there is nowhere left to compress or shift.
+- Implement unified 4-stage allocation for both float depth selector and radial inventory selector:
+  1. Ample space: Full version badge + bottom controls fit comfortably without transfer.
+  2. Tight space: Version badge compresses to a 1:1 square ratio, keeping controls in the bottom row.
+  3. Space tightens further: Version badge disappears to free its space, and open float panel narrows from 200px down to 20% (40px) while staying in the bottom row.
+  4. Space exhausted: Control shifts upward to the second row only when bottom space is < 40px (float) or cannot fit the selector footprint.
+- When a control moves to the upper row, bottom row space is freed, dynamically restoring the version badge (full or 1:1 square) if space permits.
+- Remove obsolete static 380px container query in favor of dynamic visible-button space measurement.
+- Synchronize depth selector open/close and inventory selector upward adjustments via coordinated toolbar layout events.
+
+## v0.45.11 - Adaptive Toolbar Overflow and Upward Layouts
+
+- Hide version badge whenever space is insufficient for other elements (e.g. open float panel or radial selector), and keep it at minimum 1:1 square ratio when visible.
+- When the open float section lacks space in the bottom toolbar, it narrows down to 20% (40px); below 20% it shifts upward into the upper row and stretches across 100% of the available width.
+- When radial selector mode is enabled and buttons to the left cannot fit due to the reserved space, the selector button shifts upward into the upper row to clear bottom toolbar space.
+- Ensure UI elements never overflow container bounds by rearranging into upper rows and relying on proportional UI scaling below 320px baseline.
+
+## v0.45.9 - Radial Bottom-Right Corner and Open Size
+
+- Preserve the large upper-left arc and round only the bottom-right small corner when the radial button opens. Restore independent initial/open sizes in DevTools, default 1 -> 3, whole-composition scaling, final-open pointer geometry and reduced motion. The open toolbar makes room for the fan and moves adjacent actions aside.
+
+## v0.45.6 - Animated Radial Button Shape
+
+- Give the closed radial selector the shared rounded-square toolbar button style. On hover, touch press or keyboard opening, smoothly morph it into a quarter disk and move its upright icon to the shape's centre; reverse on close. Reuse existing motion timing and reduced-motion behavior; remove the obsolete central SVG and permanent clip.
+
+## v0.45.5 - Leftmost Desktop Float
+
+- Place the desktop float before every action button, independently of the landing net. Keep its horizontal slider out of the toolbar flow so showing the float or opening its slider leaves chum and the other buttons in place. Preserve the mobile float-above-net layout and shared spacing.
+
+## v0.45.4 - Bottom Horizontal Depth Control
+
+- Fix the actual TK-008 blocker: the closed depth control's solid transparent wrapper covered the world and radial selector. Move depth into the shared bottom toolbar/net group, with the same button appearance, horizontal range and mobile placement directly above the net. Separate event shielding from hit-region styling; hide/inert the closed panel and retain Canvas pointer ownership across HUD during aiming. Remove the previous global hover-tracking workaround and all radial artwork rotation. Reuse/preload the optimized float artwork and production composition in the catalogue (G-093).
+
+## v0.45.3 - Radial Selector Hover and Motion
+
+- Refine TK-008/spec 117 after owner review: a true rounded quarter-disk central button with the same gap as neighbouring sectors, coordinate-based hover retention through centre/top/gaps, and selective ancestor invalidation. Highlighted sectors move outward on mouse, touch and keyboard; hit testing follows native animation progress without a second loop or per-move layout reads. Preserve size presets, exactly-once release selection and reduced motion (G-092).
+
+## v0.45.2 - Radial Inventory Selector
+
+- Implement TK-008/spec 117: optional rounded SVG sector selector with desktop hover retention, press/move/release, keyboard and reduced motion. Preserve classic buttons by default and existing inventory/catch flows. DevTools applies mode and size 1/2/3 live through validated overrides; add production-component catalogue states. Save format and gameplay baseline stay unchanged; owner visual and phone performance acceptance is pending.
+
 ## v0.45.1 - Full-Container Equip Feedback
 
 - Extend TK-003.3 to the two success flashes after equipping: cover the entire field/editor tab, including the expanded active area and inset, with one rounded overlay. Preserve timing, reduced motion and one-time feedback; keep the owner's editor acceptance open (G-091).

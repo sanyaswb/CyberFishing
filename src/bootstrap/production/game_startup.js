@@ -47,6 +47,7 @@ async function startGame() {
     gameLoopGuard,
     uiSurface,
     toolbarMountNode: toolbar.element,
+    tackleMountNode: toolbar.tackleMountNode,
     createDevFlags: () => new InactiveDevFlags(),
   });
   const game = new Game("gameCanvas", compositionRoot);

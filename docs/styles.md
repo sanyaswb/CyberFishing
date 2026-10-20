@@ -2,7 +2,7 @@
 
 Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
 
-Native HTML pages compose the stylesheet order. `index.html` loads 29 production assets;
+Native HTML pages compose the stylesheet order. `index.html` loads 30 production assets;
 `dev.html` reuses that exact prefix, appends the House stylesheet for the House screen it opens (spec 084) and three DEV assets. `ui-catalog.html` reuses the
 same prefix, appends the House component styles, catalog stylesheet and shared DEV clock/navigation styles. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.
@@ -221,6 +221,55 @@ has a different meaning. Shared button/panel rules are defined once, rather than
 component files. Component-specific structure remains explicit.
 
 ## Runtime boundary
+
+TK-008/spec 117 adds `inventory-selector.css`: a morphing central toolbar control and three rounded annular sectors.
+`InventorySelectorGeometry` supplies one polygon per sector to SVG, CSS clipping and coordinate hit testing.
+`InventorySelectorRenderer` owns DOM/expansion/highlight; the injected browser controller owns pointer capture,
+keyboard, readiness and cancellation. Since v0.45.14 toolbar placement permanently reserves the open fan's width,
+including while closed, so neighbouring actions do not move on expansion. Native `wrap-reverse` places overflow
+rows above the bottom actions; bottom alignment keeps their baseline fixed as the selector grows. Its unit is capped to
+available logical width/height and safe areas. The shared UI surface
+applies the only below-320 scale and desktop-hover policy. Existing inventory/keepnet shortcuts remain mounted
+and are hidden only by the composed activation mode; their views and gameplay state are not reconstructed.
+`CONFIG.ui.inventorySelector` has `radialEnabled=false`, initial `size=1` and expanded `openSize=3` by default.
+DEV switches the mode and both independent sizes 1/2/3 (scale 1/1.35/1.7) live.
+Existing overrides own persistence/export/import/reset; invalid selector settings
+are rejected before mutation. Opening readiness follows computed motion duration, with instant reduced motion;
+coordinate bounds are cached per interaction. Ancestor lifecycle attributes are observed only while expanded.
+Owner refinement v0.45.3 introduced a true quarter-disk centre. v0.45.6 replaces its SVG/clip with the shared
+`game-toolbar-button` frame: closed it has the common rounded-square shape; the open modifier animates
+the large upper-left arc and moves its upright symbol from the square centre to the quarter-disk centroid.
+Owner correction v0.45.9 keeps only the small bottom-right corner rounded: the open endpoint is
+`100% 0 var(--ui-radius-panel) 0`, with sharp upper-right and lower-left corners. The inner visual stage scales the
+whole composition between independent initial/open presets, anchored at bottom right. The layout root takes its
+final slot immediately; the controller caches its final open bounds once and waits for scaling/reveal before
+pointer selection, without layout reads on movement. Both directions reuse `--ui-duration-fast` and reduced motion, including the catalogue
+modifier. Native border geometry owns central hit testing, including the closed upper-left corner; browser
+transitions reverse smoothly without a frame loop. The outer sector arc remains derived from centre radius and gap.
+Highlighting translates a candidate outward through a native animation. Its cached animation timing supplies the
+current translation to release hit tests, without frame loops or per-move layout reads. Hover additionally retains
+the original footprint and the full padded fan, including gaps. Unrelated/unchanged ancestor attributes do not
+cancel it. Real visibility or cached geometry changes do. v0.45.4 removes global cursor tracking and the
+coordinate-only pointerleave override: the actual obstacle was the depth control's transparent hit region.
+The catalogue reuses the production composition for closed/open/highlighted/classic/reduced-motion and size states.
+
+v0.45.14 supersedes the earlier depth/badge placement attempts: `game-toolbar__tackle` uses `display: contents`
+at every width, placing the float before chum and other actions. The horizontal depth panel opens after its
+button in normal flow. Toolbar supplies `--depth-panel-width` (40–200px), reserving room for the float/chum/net
+row; additional controls wrap naturally instead of being overlaid. Depth reuses `game-toolbar-button`, the same
+size/frame and native optimized artwork, with min-left/max-right and X-based selection. The closed panel is hidden/inert;
+the root and layout gaps have pointer-events none. `UiEventShield.blockEvents` shields actual descendant input
+without imposing a solid rectangle; existing makeSolid consumers retain their behavior. Canvas owns pointer
+gestures that start on the scene through release/cancel, so aiming continues over HUD. No section image rotates.
+The catalogue uses the production depth composition and toolbar mounts, without its former depth placement rule.
+The expanded float and its horizontal track form one `ui-control-pill` container. Its frame/background/radius
+are shared with `UiAutoSwitchRenderer` in `auto-switch.css`; the float button and panel have no separate outer
+background/frame while expanded. The closed float retains the standard toolbar button. Painted open-container
+gaps shield game input, while hidden content and transparent toolbar slots do not receive input.
+The version badge is hidden at toolbar widths <=820 logical px; wider rows retain its shrinking, clipped label.
+There is one CSS layout owner: DepthSelector and selector bootstrap do not enumerate sibling buttons, resize or
+hide the badge, cache badge widths, dispatch layout events or set upward-placement classes. Resize cancels a depth
+drag so its cached pointer bounds cannot become stale. No added observer or continuous layout loop.
 
 JavaScript creates markup, applies BEM state classes and supplies dynamic values such as position,
 progress, resource percentage and injected rarity/configuration colors. Static layout, typography,

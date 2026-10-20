@@ -1,6 +1,16 @@
 export class UiEventShield {
   static makeSolid(element) {
     if (!element) return;
+    UiEventShield.blockEvents(element);
+    element.style.touchAction = "auto";
+    element.style.pointerEvents = "all";
+  }
+
+  // Event bubbling and hit-region ownership are separate: transparent layouts
+  // shield their actual child controls without becoming a solid rectangle.
+  static blockEvents(element) {
+    if (!element) return () => {};
+    const bindings = [];
 
     const eventsToBlock = [
       "pointerdown",
@@ -19,20 +29,17 @@ export class UiEventShield {
     eventsToBlock.forEach((evt) => {
       // Bubble so child controls and drag handlers can run first.
 
-      element.addEventListener(
-        evt,
-        (e) => {
-          e.stopPropagation();
-          // Allow other handlers on this element to run as well.
-
-        },
-        { capture: false },
-      );
+      const listener = e => e.stopPropagation();
+      element.addEventListener(evt, listener, { capture: false });
+      bindings.push([evt, listener]);
     });
 
-    element.addEventListener("contextmenu", (e) => e.preventDefault());
-    element.style.touchAction = "auto";
-    element.style.pointerEvents = "all";
+    const onContext = e => e.preventDefault();
+    element.addEventListener("contextmenu", onContext);
+    return () => {
+      for (const [type, listener] of bindings) element.removeEventListener(type, listener, { capture: false });
+      element.removeEventListener("contextmenu", onContext);
+    };
   }
 }
 

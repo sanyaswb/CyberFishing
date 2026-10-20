@@ -10,6 +10,7 @@ export class UiCatalogDocumentScope {
     this.documentElement = root;
   }
   get activeElement() { return this.#document.activeElement; }
+  get visibilityState() { return this.#document.visibilityState; }
   get fullscreenElement() { return null; }
   createElement(tag) { return this.#document.createElement(tag); }
   createElementNS(namespace, tag) { return this.#document.createElementNS(namespace, tag); }

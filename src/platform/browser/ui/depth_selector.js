@@ -4,7 +4,7 @@ const DEPTH_STEP_METERS = 0.1;
 const DEPTH_PAGE_METERS = 1;
 
 // Depth control of a float or jig rig: a tackle button that shows the selected depth and, when pressed, slides out a
-// vertical depth track below it (surface at the top, the deepest reachable depth at the bottom). The track follows
+// horizontal depth track beside it (surface at the left, the deepest reachable depth at the right). The track follows
 // pointer drags, the wheel and the keyboard. While it is open, a press on the game canvas only closes it.
 export class DepthSelector {
   #labels;
@@ -28,19 +28,31 @@ export class DepthSelector {
   #dragPointerId = null;
   #isOpen = false;
   #disposed = false;
+  #uiSurface;
+  #dom;
+  #iconImages;
+  #dragRect = null;
+  #unsubscribe;
+  #removeShield;
+  #bindings = [];
   #onDocumentPointerDown = (event) => this.#closeOnOutsidePress(event);
   #onDocumentKeyDown = (event) => {
     if (this.#isOpen && event.key === "Escape") this.close();
   };
 
-  constructor({ labels, documentRef = document, mountNode = documentRef.body } = {}) {
+  constructor({ labels, documentRef = document, mountNode = documentRef.body, uiSurface = null,
+    domFactory = null, iconImages = null } = {}) {
     this.#labels = labels;
     this.#document = documentRef;
     this.#mount = mountNode;
+    this.#uiSurface = uiSurface;
+    this.#dom = domFactory;
+    this.#iconImages = iconImages;
     this.onChange = null;
     this.isActive = false;
     this.#build();
     this.#bindEvents();
+    this.#unsubscribe = uiSurface?.subscribe(() => this.close());
   }
 
   get isOpen() {
@@ -58,7 +70,7 @@ export class DepthSelector {
     this.onChange = changeCallback;
     this.#setRange(maxDepth);
     this.#value = this.#clamp(currentDepth);
-    this.#root.style.display = "block";
+    this.#root.hidden = false;
     this.#render();
   }
 
@@ -75,27 +87,43 @@ export class DepthSelector {
     this.#render();
   }
 
-  // The tackle icon on the button (the equipped float or jig); an image can replace the emoji later.
+  // Artwork is supplied by composition; legacy callers retain the text fallback.
   setIcon(icon) {
     if (this.#disposed) return;
     const text = icon || "";
     if (text === this.#iconText) return;
     this.#iconText = text;
-    this.#icon.textContent = text;
+    this.#icon.textContent = "";
+    const source = this.#iconImages?.[text];
+    if (source) {
+      const image = this.#document.createElement("img");
+      image.className = "game-toolbar-button__image";
+      image.src = source; image.alt = ""; image.draggable = false;
+      this.#icon.appendChild(image);
+    } else if (this.#dom) this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
+    else this.#icon.textContent = text;
   }
 
   open() {
     if (this.#disposed || !this.isActive || this.#isOpen) return;
     this.#isOpen = true;
+    this.#panel.hidden = false;
+    this.#panel.inert = false;
+    this.#track.tabIndex = 0;
     this.#root.classList.add("depth-selector--open");
+    this.#root.classList.add("ui-control-pill");
     this.#button.setAttribute("aria-expanded", "true");
   }
 
   close() {
     if (this.#disposed || !this.#isOpen) return;
     this.#isOpen = false;
-    this.#dragPointerId = null;
+    this.#endDrag();
+    this.#panel.hidden = true;
+    this.#panel.inert = true;
+    this.#track.tabIndex = -1;
     this.#root.classList.remove("depth-selector--open");
+    this.#root.classList.remove("ui-control-pill");
     this.#button.setAttribute("aria-expanded", "false");
   }
 
@@ -108,7 +136,7 @@ export class DepthSelector {
     if (this.#disposed) return;
     this.close();
     this.isActive = false;
-    this.#root.style.display = "none";
+    this.#root.hidden = true;
   }
 
   dispose() {
@@ -117,6 +145,10 @@ export class DepthSelector {
     this.#disposed = true;
     this.isActive = false;
     this.onChange = null;
+    this.#unsubscribe?.();
+    this.#removeShield?.();
+    for (const [node, type, listener, options] of this.#bindings) node.removeEventListener(type, listener, options);
+    this.#bindings.length = 0;
     this.#document.removeEventListener("pointerdown", this.#onDocumentPointerDown, true);
     this.#document.removeEventListener("keydown", this.#onDocumentKeyDown);
     this.#root.remove();
@@ -130,9 +162,9 @@ export class DepthSelector {
       return node;
     };
     this.#root = element("div", "depth-selector");
-    this.#root.style.display = "none";
+    this.#root.hidden = true;
 
-    this.#button = element("button", "depth-selector__float");
+    this.#button = element("button", "depth-selector__float game-toolbar-button");
     this.#button.type = "button";
     this.#button.setAttribute("aria-expanded", "false");
     this.#button.setAttribute("aria-label", this.#labels.depthToggle);
@@ -142,10 +174,12 @@ export class DepthSelector {
     this.#button.appendChild(this.#buttonValue);
 
     this.#panel = element("div", "depth-selector__panel");
+    this.#panel.hidden = true;
+    this.#panel.inert = true;
     this.#track = element("div", "depth-selector__track");
-    this.#track.tabIndex = 0;
+    this.#track.tabIndex = -1;
     this.#track.setAttribute("role", "slider");
-    this.#track.setAttribute("aria-orientation", "vertical");
+    this.#track.setAttribute("aria-orientation", "horizontal");
     this.#track.setAttribute("aria-label", this.#labels.depthTrack);
     this.#line = element("div", "depth-selector__line");
     this.#marker = element("div", "depth-selector__marker");
@@ -161,40 +195,48 @@ export class DepthSelector {
 
     this.#root.appendChild(this.#button);
     this.#root.appendChild(this.#panel);
-    UiEventShield.makeSolid(this.#root);
+    this.#removeShield = UiEventShield.blockEvents(this.#root);
     this.#mount.appendChild(this.#root);
   }
 
   #bindEvents() {
-    this.#button.addEventListener("click", () => {
+    this.#listen(this.#button, "click", () => {
       if (!this.#disposed) this.toggle();
     });
-    this.#track.addEventListener("pointerdown", (event) => {
-      if (this.#disposed || !this.#isOpen || event.button > 0) return;
+    this.#listen(this.#track, "pointerdown", (event) => {
+      if (this.#disposed || !this.#isOpen || event.button > 0 || event.isPrimary === false || this.#dragPointerId !== null) return;
       this.#dragPointerId = event.pointerId;
+      this.#dragRect = this.#track.getBoundingClientRect();
       this.#track.setPointerCapture?.(event.pointerId);
-      this.#selectAt(event.clientY);
+      this.#selectAt(event.clientX);
       event.preventDefault?.();
     });
-    this.#track.addEventListener("pointermove", (event) => {
+    this.#listen(this.#track, "pointermove", (event) => {
       if (this.#disposed || event.pointerId !== this.#dragPointerId) return;
-      this.#selectAt(event.clientY);
+      this.#selectAt(event.clientX);
     });
     const endDrag = (event) => {
       if (event.pointerId !== this.#dragPointerId) return;
-      this.#dragPointerId = null;
-      this.#track.releasePointerCapture?.(event.pointerId);
+      this.#endDrag();
     };
-    this.#track.addEventListener("pointerup", endDrag);
-    this.#track.addEventListener("pointercancel", endDrag);
-    this.#root.addEventListener("wheel", (event) => {
+    this.#listen(this.#track, "pointerup", endDrag);
+    this.#listen(this.#track, "pointercancel", endDrag);
+    this.#listen(this.#track, "lostpointercapture", endDrag);
+    this.#listen(this.#root, "keydown", event => {
+      event.stopPropagation();
+      if (event.key === "Escape") this.close();
+    });
+    this.#listen(this.#root, "keyup", event => event.stopPropagation());
+    this.#listen(this.#root, "wheel", (event) => {
       if (this.#disposed || !this.#isOpen) return;
       event.preventDefault?.();
       this.#select(this.#value + (event.deltaY > 0 ? DEPTH_STEP_METERS : -DEPTH_STEP_METERS));
     }, { passive: false });
-    this.#track.addEventListener("keydown", (event) => {
+    this.#listen(this.#track, "keydown", (event) => {
       if (this.#disposed || !this.#isOpen) return;
       const delta = {
+        ArrowRight: DEPTH_STEP_METERS,
+        ArrowLeft: -DEPTH_STEP_METERS,
         ArrowDown: DEPTH_STEP_METERS,
         ArrowUp: -DEPTH_STEP_METERS,
         PageDown: DEPTH_PAGE_METERS,
@@ -208,6 +250,22 @@ export class DepthSelector {
     });
     this.#document.addEventListener("pointerdown", this.#onDocumentPointerDown, true);
     this.#document.addEventListener("keydown", this.#onDocumentKeyDown);
+    this.#listen(this.#document, "config-updated", () => this.close());
+    this.#listen(this.#document.defaultView, "blur", () => this.close());
+    this.#listen(this.#document.defaultView, "resize", () => this.close());
+  }
+
+  #listen(node, type, listener, options) {
+    if (!node?.addEventListener) return;
+    node.addEventListener(type, listener, options);
+    this.#bindings.push([node, type, listener, options]);
+  }
+
+  #endDrag() {
+    const pointerId = this.#dragPointerId;
+    this.#dragPointerId = null;
+    this.#dragRect = null;
+    if (pointerId !== null && this.#track.hasPointerCapture?.(pointerId)) this.#track.releasePointerCapture(pointerId);
   }
 
   // A press outside the control closes the open track; on the game canvas the press is consumed so it starts no cast.
@@ -220,9 +278,9 @@ export class DepthSelector {
     }
   }
 
-  #selectAt(clientY) {
-    const rect = this.#track.getBoundingClientRect();
-    const ratio = rect.height > 0 ? (clientY - rect.top) / rect.height : 0;
+  #selectAt(clientX) {
+    const rect = this.#dragRect;
+    const ratio = rect?.width > 0 ? (clientX - rect.left) / rect.width : 0;
     const clampedRatio = Math.max(0, Math.min(1, ratio));
     this.#select(this.#minDepth + clampedRatio * (this.#maxDepth - this.#minDepth));
   }

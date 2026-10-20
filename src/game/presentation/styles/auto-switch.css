@@ -1,4 +1,12 @@
+.ui-control-pill {
+  border: 1px solid #56636b;
+  border-radius: var(--ui-control-pill-radius, 999px);
+  background: var(--ui-control-pill-background, #333333);
+}
+
 .inventory-toggle {
+  --ui-control-pill-radius: var(--inventory-toggle-radius);
+  --ui-control-pill-background: var(--inventory-toggle-background);
   --inventory-toggle-height: var(--inventory-header-control-height, 44px);
   --inventory-toggle-thumb: 36px;
   --inventory-toggle-item-size: 28px;
@@ -23,9 +31,6 @@
   min-width: 0;
   height: var(--inventory-toggle-height);
   padding: var(--inventory-toggle-padding);
-  border: 1px solid #56636b;
-  border-radius: var(--inventory-toggle-radius);
-  background: var(--inventory-toggle-background);
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;

@@ -308,10 +308,34 @@ let selectedDepth;
 depth.show(10.1, 1, value => { selectedDepth = value; });
 depth.open();
 const track = dragEnv.document.byClass("depth-selector__track")[0];
-track.getBoundingClientRect = () => ({ top: 60, height: 150 });
-track.fire("pointerdown", { clientY: 135, pointerId: 3, button: 0 });
+track.getBoundingClientRect = () => ({ left: 60, width: 150 });
+track.fire("pointerdown", { clientX: 135, pointerId: 3, button: 0 });
 assert.equal(selectedDepth, 5.1);
 depth.dispose();
+
+for (const width of [240, 280, 319, 320, 820, 1025]) {
+  const env = environment(width);
+  const selector = new DepthSelector({ documentRef: env.document, mountNode: env.surface.mountRoot,
+    uiSurface: env.surface, labels: { depthToggle: "Depth", depthTrack: "Track", depthValue: value => value } });
+  let value, reads = 0;
+  selector.show(10.1, 1, next => { value = next; }); selector.open();
+  const rail = env.document.byClass("depth-selector__track")[0];
+  const scale = env.surface.getMetrics().scale;
+  rail.getBoundingClientRect = () => { reads++; return { left: 60 * scale, width: 150 * scale }; };
+  let capture = null;
+  rail.setPointerCapture = id => { capture = id; };
+  rail.hasPointerCapture = id => capture === id;
+  rail.releasePointerCapture = () => { capture = null; };
+  rail.fire("pointerdown", { clientX: 135 * scale, pointerId: 3, button: 0 });
+  assert.equal(value, 5.1, "horizontal physical ratios apply the surface scale once");
+  for (let i = 0; i < 120; i++) rail.fire("pointermove", { clientX: 135 * scale, pointerId: 3 });
+  assert.equal(reads, 1, "depth drag caches its physical track bounds");
+  rail.fire("pointerdown", { clientX: 60 * scale, pointerId: 4, button: 0 });
+  assert.equal(capture, 3, "a second pointer never steals the depth drag");
+  selector.close(); assert.equal(capture, null);
+  assert.equal(env.document.byClass("depth-selector__panel")[0].hidden, true);
+  selector.dispose(); env.surface.dispose();
+}
 
 const overlay = dragEnv.document.createElement("div");
 overlay.getBoundingClientRect = () => {

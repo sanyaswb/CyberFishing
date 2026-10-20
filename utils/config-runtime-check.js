@@ -170,7 +170,7 @@ function checkDevelopmentInputs() {
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
   const godModeInstance = { enabled: true }, gameLoopGuard = {}, listenerCounter = {};
-  const uiSurface = { mountRoot: {} }, developmentMount = {}, toolbar = { element: {} };
+  const uiSurface = { mountRoot: {} }, developmentMount = {}, toolbar = { element: {}, tackleMountNode: {} };
   const openedPages = [];
   const pageOverlay = { open: options => openedPages.push(options) };
   const openedScreens = [];
@@ -202,6 +202,7 @@ function checkDevelopmentInputs() {
   assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
   assert.equal(ports.uiSurface, uiSurface, "Production DOM UI receives the composed browser coordinate port");
   assert.equal(ports.toolbarMountNode, toolbar.element, "DEV reuses the composed production toolbar row");
+  assert.equal(ports.tackleMountNode, toolbar.tackleMountNode, "DEV injects the shared float/net group");
   assert.equal(ports.sceneMode, "webgl", "dev.html?scene= picks the scene mode for this page load (spec 104)");
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
@@ -358,6 +359,7 @@ async function checkNativeProductionStartup() {
     const visual = {}, degradation = {}, version = {}, windowListeners = new Map(), documentListeners = new Map();
     let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, surfaces = 0, surfaceDisposals = 0, toolbars = 0, toolbarDisposals = 0;
     const toolbarElement = {};
+    const tackleMountNode = {};
     const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
       CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
@@ -377,11 +379,13 @@ async function checkNativeProductionStartup() {
         toolbars++; assert.equal(options.documentRef, documentTarget);
         assert(options.mountNode?.appendChild); assert.equal(options.versionBadge, null);
         this.element = toolbarElement;
+        this.tackleMountNode = tackleMountNode;
       }
       dispose() { toolbarDisposals++; }
     }
     class Adapter extends FightPhysicsConfigAdapter { constructor(owner) { super(owner);adapters++;assert.equal(owner, config); } }
     const composition = evaluate("src/bootstrap/production/game_config_composition.js", ["createProductionConfigContext"], {
+      ...require("../src/game/config/validation/inventory_selector_config_validator.js"),
       CONFIG: config, RARITY_VISUAL_CONFIG: visual, DEGRADATION_COLOR_CONFIG: degradation, FightPhysicsConfigAdapter: Adapter,
       createRuntimeConfigContext(owner, options) { contexts++;assert.equal(owner, config);assert.equal(owner.rarity.visual, visual);
         assert.equal(owner.degradationColors, degradation);assert(owner.fightPhysicsConfig instanceof FightPhysicsConfigAdapter);return createRuntimeConfigContext(owner, options); },
@@ -396,8 +400,9 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "uiSurface", "toolbarMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "uiSurface", "toolbarMountNode", "tackleMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
         assert.equal(ports.toolbarMountNode, toolbarElement, "startup injects the shared toolbar mount");
+        assert.equal(ports.tackleMountNode, tackleMountNode, "startup injects the shared float/net group");
         assert(ports.uiSurface instanceof Surface, "startup injects one browser coordinate surface into production composition");
         assert(ports.gameLoopGuard instanceof ActiveGameLoopGuard, "startup composes the page loop guard");
         this.ports = ports;
@@ -616,7 +621,7 @@ async function checkNativeDevelopmentLifecycle() {
   let houseFactoryOptions = null, closeHouse = null, houseScreens = 0, houseDisposals = 0;
   const documentTarget = { body: { appendChild() {} }, getElementById() { return null; },
     createElement(tag) {
-      if(tag!=="iframe")return{remove(){this.removed=true;}};
+      if(tag!=="iframe")return{children:[],appendChild(node){this.children.push(node);},remove(){this.removed=true;}};
       const frame={contentWindow:{},addEventListener(type,callback){this[type]=callback;},remove(){this.removed=true;}};
       frames.push(frame);return frame;
     }, addEventListener() {}, removeEventListener() {} };

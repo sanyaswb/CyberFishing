@@ -170,7 +170,9 @@ export class InputController {
       this.#activePointerId = e.pointerId ?? null;
       this.#pointerPanGesture = this.#pointerPanEnabled;
       this.#panGestureX = 0;
-      if (this.#pointerPanGesture && this.#activePointerId !== null) {
+      // A gesture that starts on the scene keeps its pointer over HUD controls,
+      // for aiming and fighting as well as map navigation.
+      if (this.#activePointerId !== null) {
         this.#canvas.setPointerCapture?.(this.#activePointerId);
       }
       this.#pointerGestureId += 1;

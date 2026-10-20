@@ -150,6 +150,9 @@ export class InventoryUI {
     return this.#surfaceNode;
   }
 
+  // The composed activation mode owns visibility; the inventory tree stays mounted.
+  setShortcutVisible(visible) { this.#backpackButtonNode.hidden = !visible; }
+
   // Open/close notifications for the page layout (the landscape split, spec 098); returns the unsubscribe.
   onVisibilityChange(listener) {
     this.#visibilityListeners.add(listener);

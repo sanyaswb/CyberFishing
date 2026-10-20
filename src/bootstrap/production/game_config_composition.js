@@ -3,6 +3,7 @@ import { FightPhysicsConfigAdapter } from "../../game/config/physics/fight_physi
 import { RARITY_VISUAL_CONFIG } from "../../game/presentation/rarity/rarity_visual_config.js";
 import { DEGRADATION_COLOR_CONFIG } from "../../game/presentation/visual/degradation_color_config.js";
 import { createRuntimeConfigContext } from "./config_context.js";
+import { InventorySelectorConfigValidator } from "../../game/config/validation/inventory_selector_config_validator.js";
 
 let configRuntime;
 
@@ -17,6 +18,10 @@ export function createProductionConfigContext(initializeBase = null) {
     enumerable: false,
     configurable: true,
   });
-  configRuntime = createRuntimeConfigContext(CONFIG, {catalogs: {"locations.map": CONFIG.locations.map, "rarity.visual": CONFIG.rarity.visual, "degradationColors": CONFIG.degradationColors, "spawns.fishes": CONFIG.spawns.fishes}});
+  configRuntime = createRuntimeConfigContext(CONFIG, {
+    catalogs: {"locations.map": CONFIG.locations.map, "rarity.visual": CONFIG.rarity.visual, "degradationColors": CONFIG.degradationColors, "spawns.fishes": CONFIG.spawns.fishes},
+    validateOverrides: InventorySelectorConfigValidator.validateOverrides,
+    resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize"],
+  });
   return configRuntime;
 }

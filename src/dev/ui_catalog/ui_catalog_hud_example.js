@@ -21,9 +21,6 @@ export class UiCatalogHudExample {
     this.#gameControls = gameControls; this.#frameScheduler = frameScheduler; this.#documentScope = documentScope;
     this.#toolbar = toolbar;
     this.#setClockState = setClockState;
-    this.#depth.setIcon("🎈");
-    const node = surface.mountRoot.querySelector(".depth-selector");
-    node?.classList.add("ui-catalog-preview__depth");
     holdCharges.container.classList.add("ui-catalog-preview__charges");
     timeDisplay.container.classList.add("ui-catalog-preview__clock");
     for (const node of surface.mountRoot.querySelectorAll(".game-control")) node.classList.add("ui-catalog-preview__toolbar");
@@ -42,7 +39,6 @@ export class UiCatalogHudExample {
     this.#clock.container.hidden = hidden;
     this.#clock.update(state === "dawn" ? 6 : state === "evening" ? 18 : state === "night" || state === "active" ? 22 : 12);
     this.#chum.setState(["disabled", "empty", "aiming", "moving"].includes(state) ? state : "ready", state === "boat" || state === "moving" ? "boat" : "hand", 12, true, !hidden);
-    this.#chum.button.classList.add("ui-catalog-preview__toolbar");
     this.#gameControls.updateNetButtonState(!hidden, state === "active");
     this.#gameControls.updateContinueButtonState(state === "boundary");
     this.#frameScheduler.flush();

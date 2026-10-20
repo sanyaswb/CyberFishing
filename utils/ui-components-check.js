@@ -14,6 +14,37 @@ const { InventoryItemParametersRenderer } = require("../src/game/presentation/in
 
 const documentRef = new TestDocument();
 const domFactory = new InventoryDomFactory(documentRef);
+// The float and landing net share one transparent toolbar group. Closed depth
+// content is removed from interaction, rather than masking a tall game region.
+{
+  const { GameToolbar } = require("../src/platform/browser/ui/game_toolbar.js");
+  const { DepthSelector } = require("../src/platform/browser/ui/depth_selector.js");
+  const { GameControls } = require("../src/platform/browser/ui/game_controls.js");
+  const { HUD_LABELS } = require("../src/game/presentation/hud/hud_labels.js");
+  const toolbar = new GameToolbar({ documentRef, mountNode: documentRef.body });
+  const depth = new DepthSelector({ documentRef, mountNode: toolbar.tackleMountNode, domFactory,
+    labels: HUD_LABELS, iconImages: { F: "assets/items/floats/float-day.webp" } });
+  const controls = new GameControls({}, null, { documentRef, labels: HUD_LABELS,
+    toolbarMountNode: toolbar.element, netMountNode: toolbar.tackleMountNode });
+  depth.show(10, 2, () => {}); depth.setIcon("F");
+  const root = documentRef.byClass("depth-selector")[0];
+  const icon = documentRef.byClass("depth-selector__icon")[0];
+  const panel = documentRef.byClass("depth-selector__panel")[0];
+  const net = documentRef.byClass("game-toolbar-button--net")[0];
+  const image = icon.children[0];
+  assert.equal(root.parentNode, toolbar.tackleMountNode);
+  assert.equal(net.parentNode, toolbar.tackleMountNode);
+  assert(panel.hidden && panel.inert);
+  assert.notEqual(root.style.pointerEvents, "all", "the depth root has no solid input override");
+  assert.equal(image.src, "assets/items/floats/float-day.webp");
+  for (let i = 0; i < 120; i++) depth.setIcon("F");
+  assert.equal(icon.children[0], image, "unchanged equipped float retains the optimized image node");
+  assert.equal(image.draggable, false);
+  assert.equal((documentRef.listeners.get("pointermove") || new Set()).size, 0,
+    "the moved float needs no global pointermove workaround");
+  depth.dispose(); controls.dispose(); toolbar.dispose();
+  assert.equal([...root.listeners.values()].reduce((count, listeners) => count + listeners.size, 0), 0);
+}
 const closeButtons = new UiCloseButtonRenderer({ domFactory });
 let closed = 0;
 const close = closeButtons.create({ label: "Close example", className: "example__close", onClose: () => closed++ });
