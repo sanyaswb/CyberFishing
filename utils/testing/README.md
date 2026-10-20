@@ -1,33 +1,23 @@
-# Test checks
+# Shared test infrastructure
 
-```text
-utils/
-  run-checks.js                 runner: --list | --check ID | --suite NAME, --jobs N (default 4)
-  *-check.js                    one scenario file per domain contract
-  architecture-check.js         layer/import/global guard (see docs/architecture.md)
-  testing/
-    doubles/                    test-only implementations of production contracts
-    core/                       CheckAssertion, SourceRuntime (Node VM over native ESM sources), OutputBaseline
-    baselines/                  tracked expected output of behavior-reference checks (game-cycle.txt)
-    runtime/                    native ESM test loader and test compositions
-    suites/check_manifest.js    single registry of checks and suite membership
-```
+Read [UTILS_RULES.md](../UTILS_RULES.md) for the test selection policy, folder responsibilities and commands.
 
-Every check runs in its own Node process; output is printed in catalog order. The runner refuses a
-`utils/*-check.js` file that is missing from the manifest.
+Tests live in utils/checks/{architecture,gameplay,inventory,items,ui,platform,tooling}/.
+suites/check_manifest.js is the only registry of stable check IDs and suite membership. The runner rejects missing,
+duplicate and unregistered files, including nested folders. Root utils/*.js files remain user-facing tools.
 
-## Adding a check
+| Folder | Responsibility |
+| --- | --- |
+| core/ | SourceRuntime, safe source loading and output-baseline comparison |
+| runtime/ | Native ESM loading and production-shaped test compositions |
+| doubles/, keepnet/ | Shared contract doubles and DOM double |
+| live_bait/ | Feed/care/lifecycle scenarios shared by live-bait checks |
+| styles/ | Stylesheet reading for ownership and essential input contracts |
+| baselines/ | Tracked behavior reference output |
 
-Keep the scenario in a domain-named `utils/*-check.js` file and add one descriptor to
-`check_manifest.js`; suite membership belongs only there. Reuse `CheckAssertion`, `SourceRuntime` and
-the compositions in `runtime/`. Inject test doubles through constructors (`constructor_defaults.js`)
-instead of globals. A check must not write project files.
+Inject doubles through constructors; do not add production globals. Each check runs in a separate Node process.
+Extend an existing scenario when possible. Source/markup regex assertions are reserved for safety, architecture
+or input contracts that cannot be exercised through the relevant adapter.
 
-## Behavior baseline
-
-`game-cycle-check.js` compares its report with `baselines/game-cycle.txt`. Structural changes keep the file
-unchanged. A gameplay change that changes the report re-baselines with `npm run baseline:game-cycle` and commits
-the file diff together with the change and its reason.
-
-Do not duplicate a scenario across files; a focused unit check and a broader integration check may
-both stay when they protect different contracts.
+The game-cycle report is compared with baselines/game-cycle.txt. Structural/test-only changes leave it unchanged.
+An intended gameplay change updates it through npm run baseline:game-cycle with its documented reason.

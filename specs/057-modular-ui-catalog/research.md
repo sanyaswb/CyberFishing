@@ -72,6 +72,6 @@
 
 **Decision**: Зареєструвати нову DEV page у guards, посилити negative fixtures. Fixtures memory-only; production reachability/whitelists не послаблювати.
 
-**Rationale**: `utils/architecture-check.js` має явні entry/page maps; `utils/testing/styles/page_stylesheet_reader.js` дозволяє три pages й DEV CSS лише для `dev.html`. `utils/build-pages-release.js` пакує явний перелік pages. Нову сторінку додати до контрактів без bypass.
+**Rationale**: `utils/checks/architecture/architecture-check.js` має явні entry/page maps; `utils/testing/styles/page_stylesheet_reader.js` дозволяє три pages й DEV CSS лише для `dev.html`. `utils/build-pages-release.js` пакує явний перелік pages. Нову сторінку додати до контрактів без bypass.
 
 **Alternatives considered**: Пропуск guard, inline module/CSS або full game bootstrap порушують межі й ізоляцію.

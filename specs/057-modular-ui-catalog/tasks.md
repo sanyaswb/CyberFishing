@@ -25,13 +25,13 @@
 - [X] T011 [US1] Показати справжні close/switch/resource/Inventory/Keepnet renderers із memory fixtures у `src/dev/ui_catalog/`; збереження й ігрові команди недоступні.
 - [X] T012 [US1] Перевикористати production house markup та `HouseView`, `AquariumFeedPicker`, `AquariumFishView` у `src/dev/ui_catalog/ui_catalog_house_example.js`; one-shot frame scheduler без care/game clock.
 - [X] T013 [US1] Показати production DOM DepthSelector та Canvas `FightStatusBarsRenderer` у `src/dev/ui_catalog/ui_catalog_hud_example.js`; зберегти реальну кольорову логіку.
-- [X] T014 [US1] Перевірити re-mount, callbacks, numeric node/image identity, focus/scroll й dispose через `utils/ui-catalog-check.js`, `utils/ui-components-check.js`.
+- [X] T014 [US1] Перевірити re-mount, callbacks, numeric node/image identity, focus/scroll й dispose через `utils/checks/ui/ui-catalog-check.js`, `utils/checks/ui/ui-components-check.js`.
 
 ## Phase 4: Meter semantics (US3)
 
 - [X] T015 [US3] Замінити власну feed-gradient палітру House на injected `InventoryResourceMeterRenderer` + runtime `DegradationColorResolver` у `house/house_view.js`, `src/bootstrap/production/house_startup.js`.
-- [X] T016 [US3] Нормалізувати лише graphical/ARIA fill 0..100 у `inventory/inventory_resource_meter_renderer.js`; accessible text лишає вихідне reading. Перевірити negative/over/missing values та п'ять кольорових меж у `utils/ui-components-check.js`, `utils/ui-catalog-check.js`.
-- [X] T017 [US3] Зберегти occupancy count+hook reservation незалежно від фільтра й напрям safety як remaining free capacity у `keepnet/keepnet_ui.js`; перевірити `utils/keepnet-check.js`.
+- [X] T016 [US3] Нормалізувати лише graphical/ARIA fill 0..100 у `inventory/inventory_resource_meter_renderer.js`; accessible text лишає вихідне reading. Перевірити negative/over/missing values та п'ять кольорових меж у `utils/checks/ui/ui-components-check.js`, `utils/checks/ui/ui-catalog-check.js`.
+- [X] T017 [US3] Зберегти occupancy count+hook reservation незалежно від фільтра й напрям safety як remaining free capacity у `keepnet/keepnet_ui.js`; перевірити `utils/checks/inventory/keepnet-check.js`.
 
 ## Phase 5: Logical surface and composition (US4)
 
@@ -41,15 +41,15 @@
 - [X] T021 [US4] Перевести responsive layout на named surface container queries та logical dimensions у `styles/inventory/*.css`, `styles/keepnet.css`, `styles/house.css`, HUD/DEV styles; великі композиції Grid, internal groups Flex.
 - [X] T022 [US4] Закріпити чотири equal inventory item columns і дві keepnet columns, rod 9:16 та intrinsic portrait keepnet growth у production styles; нижче320 layout320 масштабується один раз.
 - [X] T023 [US4] Усунути native top-layer quantity dialog scale escape; зберегти modal focus/Enter/Escape/restore у `house/aquarium_feed_picker.js`.
-- [X] T024 [US4] Перевірити widths240/280/319/320/740/1280, pointer/rect/delta, safe-area, zero/restore, scrolling, drag string save boundary і disposal у `utils/ui-surface-check.js`.
+- [X] T024 [US4] Перевірити widths240/280/319/320/740/1280, pointer/rect/delta, safe-area, zero/restore, scrolling, drag string save boundary і disposal у `utils/checks/ui/ui-surface-check.js`.
 
 ## Phase 6: Guards and evidence
 
-- [X] T025 Зареєструвати сторінку в `utils/architecture-check.js`, `utils/testing/styles/page_stylesheet_reader.js`, `utils/css-usage-check.js`; додати negative production→catalog, second-script та catalog-CSS-in-production fixtures без guard bypass.
-- [X] T026 Додати packaging каталогу в `utils/build-pages-release.js` й focused working-tree closure evidence до `utils/pages-release-check.js`; публікація/commit/push поза запитом.
+- [X] T025 Зареєструвати сторінку в `utils/checks/architecture/architecture-check.js`, `utils/testing/styles/page_stylesheet_reader.js`, `utils/checks/architecture/css-usage-check.js`; додати negative production→catalog, second-script та catalog-CSS-in-production fixtures без guard bypass.
+- [X] T026 Додати packaging каталогу в `utils/build-pages-release.js` й focused working-tree closure evidence до `utils/checks/tooling/pages-release-check.js`; публікація/commit/push поза запитом.
 - [X] T027 Виконати focused checks, Architecture + Quick + Full; звірити незмінний game-cycle та inventory-save output. Записати результати в `specs/057-modular-ui-catalog/quickstart.md`.
 - [ ] T028 Візуальне приймання власником на 240/280/319/320px і desktop: proportions, long/error/empty states, keyboard, transformed hit areas, drag, touch scrolling, help/portal boundaries, repeated mount/close. У цьому чаті browser automation не дозволено `spec.md`; пункт не позначається виконаним автоматично.
-- [X] T029 [US2] Виправити виявлені під час інтеграційного аудиту stale available/active/restoring класи вичерпаних зарядів у `src/platform/browser/ui/hold_charges.js`; перевірити переходи та незмінну ідентичність DOM-вузлів через `utils/ui-components-check.js`.
+- [X] T029 [US2] Виправити виявлені під час інтеграційного аудиту stale available/active/restoring класи вичерпаних зарядів у `src/platform/browser/ui/hold_charges.js`; перевірити переходи та незмінну ідентичність DOM-вузлів через `utils/checks/ui/ui-components-check.js`.
 
 ## Dependencies and parallel work
 
@@ -57,11 +57,11 @@ T001–T002 перед реалізацією; T003–T008 shared contracts пе
 
 ## Phase 7: Mobile overlap and resize correction (owner report, 2026-10-14)
 
-- [X] T030 Відтворити невідповідний sizing contract мобільної екіпіровки та підтвердити окремих DOM-власників equipment/items у `utils/inventory-ui-check.js`; записати причину в `docs/audits/2026-10-14-inventory-resize.md`.
+- [X] T030 Відтворити невідповідний sizing contract мобільної екіпіровки та підтвердити окремих DOM-власників equipment/items у `utils/checks/ui/inventory-ui-check.js`; записати причину в `docs/audits/2026-10-14-inventory-resize.md`.
 - [X] T031 Виправити mobile intrinsic Grid rows, percentage heights і shrink у `styles/inventory/modal.css`, `loadout.css`, `list-and-filters.css`; зберегти4 mobile columns, rod9:16 та окрему прокрутку предметів.
-- [X] T032 Виміряти duplicate resize work детермінованими лічильниками в `utils/ui-surface-check.js`, `utils/platform-runtime-check.js`, `utils/testing/runtime/game_application_test_composition.js`: усі regression assertions провалилися до виправлення.
+- [X] T032 Виміряти duplicate resize work детермінованими лічильниками в `utils/checks/ui/ui-surface-check.js`, `utils/checks/platform/platform-runtime-check.js`, `utils/testing/runtime/game_application_test_composition.js`: усі regression assertions провалилися до виправлення.
 - [X] T033 Зберігати один pending viewport resize в `game/application/session/game_application.js`, застосувати останній розмір перед наступним world/input update; `CanvasMetricsProvider` не перевстановлює незмінні bitmap dimensions.
-- [X] T034 Прибрати unchanged CSS writes/content observation у fixed `UiSurfaceAdapter`; flow preview зберігає observation/scroll footprint. Перевірити burst coalescing, resize feedback settlement і lifecycle у `utils/ui-surface-check.js`.
+- [X] T034 Прибрати unchanged CSS writes/content observation у fixed `UiSurfaceAdapter`; flow preview зберігає observation/scroll footprint. Перевірити burst coalescing, resize feedback settlement і lifecycle у `utils/checks/ui/ui-surface-check.js`.
 - [X] T035 Виконати Architecture + Quick + Full та незмінні game-cycle/save checks після виправлення; Architecture4/4, Quick21/21, Full47/47 passed; результати в `docs/audits/2026-10-14-inventory-resize.md`.
 - [ ] T036 Owner acceptance: відкритий інвентар на240/280/319/320/740px, populated/empty/locked slots, long names, repeated resize, focus і вертикальна/горизонтальна прокрутка. Browser profiling FPS/frame time та візуальні rectangles тут не виконувалися.
 

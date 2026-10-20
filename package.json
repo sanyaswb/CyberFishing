@@ -1,6 +1,6 @@
 {
   "name": "cyber-fishing",
-  "version": "0.45.17",
+  "version": "0.45.20",
   "private": true,
   "description": "CyberFishing browser game",
   "engines": {
@@ -23,7 +23,7 @@
     "check:gameplay": "node utils/run-checks.js --suite gameplay",
     "check:tools": "node utils/run-checks.js --suite tools",
     "check:js": "node utils/run-checks.js --check syntax",
-    "baseline:game-cycle": "node utils/game-cycle-check.js --update-baseline",
+    "baseline:game-cycle": "node utils/checks/gameplay/game-cycle-check.js --update-baseline",
     "struct": "node utils/project-structure.js",
     "git:add": "npm run struct && git add .",
     "git:version-copy": "node utils/git-version-copy.js"

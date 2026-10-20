@@ -63,7 +63,7 @@ Source: [cast_rod_control_config.js](../src/game/config/raw/physics/cast_rod_con
 
 - [Cast position and line orchestration](../src/game/application/fishing/cast_rod_control.js), [line geometry](../src/game/domain/fishing/cast_rod_line_constraint.js), [bite policy](../src/game/domain/fishing/cast_rod_bite_policy.js).
 - [Waiting](../src/game/application/state/waiting_state.js), [biting](../src/game/application/state/biting_state.js), [bite probability and tick accumulator](../src/game/application/fishing/bite_system.js).
-- [Feature spec](../specs/100-cast-rod-control/spec.md), [focused deterministic check](../utils/cast-rod-control-check.js).
+- [Feature spec](../specs/100-cast-rod-control/spec.md), [focused deterministic check](../utils/checks/gameplay/cast-rod-control-check.js).
 - [Slack speed and line feedback spec](../specs/102-cast-line-speed/spec.md). `CastRodControl.getFrame().lineTensionActive` is a derived observation for the existing line response; actual `floatMoved` remains the bite-disturbance signal.
 
 Run `node utils/run-checks.js --check cast-rod-control` for the focused check. Wider validation follows the development rules. Save format is unchanged. Owner play acceptance is recorded separately from automated/browser checks.

@@ -22,7 +22,7 @@ Owner request: 2026-10-17. Status: implemented in v0.39.0; automated and browser
 
 ## Validation
 
-- Before implementation, `node utils/cast-rod-control-check.js` failed with `0.5 !== 0.001`, reproducing the missing moving-float rule.
+- Before implementation, `node utils/checks/gameplay/cast-rod-control-check.js` failed with `0.5 !== 0.001`, reproducing the missing moving-float rule.
 - Focused deterministic check passes: asymmetric green-zone ranges, analog/composed input, release, zero speed, delta cap, disabled/live settings, reused frame, viewport reads/resize, slack/taut line, uniform/perspective ground geometry, water rejection, actual displacement versus held boundary input, touch hold isolation, normal/guaranteed bite windows, same-fish identity, tick accumulation/reset, hook/depth/zero-chance eligibility and spinning exception.
 - Game application composition checks verify transfer of the moved cast base into the fight and removal of the cast session position. Stage split reprojects the moved rod and original base independently; camera changes do not count as player rod motion.
 - `npm run check:architecture`: 4 checks passed. `npm run check:quick`: 28 checks passed. `npm run check`: 54 checks passed. Windows filesystem fixture suites ran outside the restricted sandbox to permit temporary junctions/renames.

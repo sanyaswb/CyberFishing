@@ -97,10 +97,7 @@ class GitCommitTree {
 
 // What the published pages need: their stylesheets, module graphs and the assets that gameplay addresses by path.
 class ReleaseFileSet {
-  static collect(tree) {
-    const pages = [PAGE];
-    if (tree.has(DEV_PAGE)) pages.push(DEV_PAGE);
-    if (tree.has(CATALOG_PAGE)) pages.push(CATALOG_PAGE);
+  static collect(tree, { pages = [PAGE, ...[DEV_PAGE, CATALOG_PAGE].filter(page => tree.has(page))] } = {}) {
     const files = new Set(pages);
     for (const pageName of pages) {
       const page = tree.read(pageName).toString("utf8");
@@ -114,7 +111,7 @@ class ReleaseFileSet {
       }
     }
     for (const file of tree.paths()) {
-      if (file.startsWith(ASSETS_PREFIX) || (tree.has(DEV_PAGE) &&
+      if (file.startsWith(ASSETS_PREFIX) || (pages.includes(DEV_PAGE) &&
         file.startsWith(DEV_METADATA_PREFIX) && file.endsWith(".json"))) files.add(file);
     }
     for (const license of ReleaseFileSet.#vendorLicenses(tree, files)) files.add(license);

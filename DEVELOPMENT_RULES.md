@@ -26,7 +26,7 @@ Gameplay changes (bug fixes, mechanics, balance) are tracked in `docs/gameplay_b
 - if the fix needs a structural change, commit that first on its own with an unchanged game-cycle baseline, then the gameplay commit;
 - when the game-cycle report changes, re-baseline (`npm run baseline:game-cycle`) in the same commit; the commit message says which behavior changed and why;
 - balance values live in configuration, not in formulas; a save format change needs an explicit migration decision;
-- evidence: focused check, Architecture + Quick + Full, index/dev browser smoke of the changed flow, and the owner's play check for anything that changes feel;
+- evidence: focused check and one Full run (includes Architecture and Quick), index/dev browser smoke of the changed flow, and the owner's play check for anything that changes feel;
 - a bug fix is a backlog entry plus the commit; a new or changed mechanic also gets a spec; delivered changes bump only the patch version with a short CHANGELOG line. The minor (middle) version must stay unchanged until the owner explicitly requests its change, including for new/changed mechanics (owner instruction, 2026-10-20; supersedes automatic minor bumps).
 
 The runtime is native ESM: every page loads one module entry. Do not add globals, compatibility bridges or classic scripts.
@@ -81,7 +81,7 @@ Before creating or changing any design/UI element, read and follow [DESIGN_RULES
 
 For large structural changes: first inspect actual dependencies/consumers, define target boundary and folder structure, then implement. For small changes, do not redesign unrelated architecture.
 
-Layer rules are enforced by `utils/architecture-check.js` (see `docs/architecture.md`). Do not weaken it just to make tests green. Validate relevant changes with focused checks + `npm run check` + browser smoke of `index.html` and `dev.html` when the change is visible in the game.
+Layer rules are enforced by `utils/checks/architecture/architecture-check.js` (see `docs/architecture.md`). Do not weaken it just to make tests green. Validate relevant changes with focused checks + `npm run check` + browser smoke of `index.html` and `dev.html` when the change is visible in the game.
 
 Avoid overengineering. Every abstraction must solve a real problem in ownership, dependency direction, substitution, platform isolation, lifecycle, state isolation, testability or extension.
 
@@ -98,8 +98,28 @@ are now certainly unused.** Before the commit, list the `utils/` scripts, test h
 - delete it in the same change and update the docs that named it;
 - record what was removed in the spec.
 
-Removing a live check (an entry in the check manifest) stays an owner decision: list it in the spec as a proposal
-instead of deleting it. Tools kept "just in case" are not allowed: history keeps them (`git show`, tags).
+Removing a live functional check (an entry in the check manifest) stays an owner decision. The owner's utils audit
+request (2026-10-20) explicitly authorizes removing visual and duplicate implementation assertions; preserve useful
+behavioral simulations and architecture/safety guards. Tools kept "just in case" are not allowed: history keeps them.
+
+## Tools and test policy
+
+Read [utils/UTILS_RULES.md](utils/UTILS_RULES.md) before changing utils or tests. Automate hard-to-reproduce behavior:
+equipment combinations, casting/fishing outcomes, state transitions, persistence, input, async failures and cleanup.
+The owner checks pixels, spacing, colors and other appearance. Extend existing deterministic scenarios before adding
+a check; avoid tests that merely mirror CSS, markup or implementation spelling. Keep production boundaries and guards.
+
+During iteration run the affected checks. Before delivery run `npm run check` once; it includes the Quick and
+Architecture subsets, so separate unchanged reruns are unnecessary. Rerun after meaningful changes or failures.
+
+## Development history and changelog retention
+
+Keep active development documents concise and focused on current rules and work. Move superseded chronological history to its archive instead of accumulating long histories in active documents.
+
+- CHANGELOG.md keeps only the latest **10 release entries**, including the current release.
+- Whenever adding a release, move every older complete entry to the canonical [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>) specified by the owner. Keep the archive link in CHANGELOG.md.
+- Sort both files by numeric version components, newest first; for example, 0.24.100 comes before 0.24.99. Preserve historical four-part version numbers. Merge identical entries by version without duplicates and preserve their complete text. Reconcile differing text for one version without losing information.
+- During ordinary work read the recent changelog; consult archived versions only when the task needs that history. The archive retains the full history and is not a disposable generated service artifact.
 
 For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, performance and tests. Use P0/P1/P2/P3 only when useful.
 

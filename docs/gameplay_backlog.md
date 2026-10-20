@@ -216,7 +216,7 @@ Found: 2026-10-18, owner, index (v0.41.2).
 Reproduce: cast, then long-press while the tackle is in the water and aim the re-cast.
 Expected: exactly the first aim: the CAST bar and the aim line, no rod, line, tackle or fight areas (spec 099 D3), also while the cast flies; the tackle shows again when it lands.
 Actual: `WaitingState.getRenderState` kept `fishing.visible` true and drew the aim over the old tackle; the aim population was duplicated in scouting and waiting.
-Notes: one rule `GameState.populateRodCast(target, bounds, aim, inFlight)` for both states, keyed on the aim's visual and the flight. `utils/recast-aim-check.js` failed first ("a re-cast aims exactly like the first cast: no rod") and passes now.
+Notes: one rule `GameState.populateRodCast(target, bounds, aim, inFlight)` for both states, keyed on the aim's visual and the flight. `utils/checks/gameplay/recast-aim-check.js` failed first ("a re-cast aims exactly like the first cast: no rod") and passes now.
 
 ### G-066 Post-cast rod speed and line feedback ignore remaining slack (P3, in progress)
 Found: 2026-10-17, owner request.
@@ -502,7 +502,7 @@ Found: 2026-10-14, owner request, Fisherman's House v0.34.4.
 Reproduce: open the separate House page on a portrait viewport and drag or wheel over the room artwork.
 Expected: pan through the full room with the map's inversion/sensitivity/distance settings; HUD and lower panels retain their screen positions.
 Actual: the artboard is centred in a clipped scene; gestures only toggle the header/dock.
-Fix/evidence: `utils/house-navigation-check.js` failed on touch movement before the fix. House composes the existing horizontal scroll adapter with manual scene gestures, physical/logical coordinate conversion and `input.mapPan`. Horizontal gestures pan the room; vertical gestures reveal header/menu, and background clicks toggle the zones. See [House navigation contract](../specs/060-house-navigation-header/spec.md). Commit and owner input acceptance pending.
+Fix/evidence: `utils/checks/ui/house-navigation-check.js` failed on touch movement before the fix. House composes the existing horizontal scroll adapter with manual scene gestures, physical/logical coordinate conversion and `input.mapPan`. Horizontal gestures pan the room; vertical gestures reveal header/menu, and background clicks toggle the zones. See [House navigation contract](../specs/060-house-navigation-header/spec.md). Commit and owner input acceptance pending.
 
 ### G-019 House header duplicates and relocates shared HUD controls (P3, done in v0.35.0)
 Found: 2026-10-14, owner request, House/test comparison v0.34.4.
@@ -516,7 +516,7 @@ Found: 2026-10-14, owner request, index/dev v0.34.4.
 Reproduce: with no equipped rod, press the map and drag horizontally with a finger or mouse.
 Expected: distinguish a completed click from navigation; allow map exploration without opening Inventory. Equipped casting/fight and chum aiming keep their gestures.
 Actual: power casting warns on pointerdown, and the viewport rejects panning while the pointer is held.
-Fix/evidence: `utils/scouting-input-check.js` failed on the early warning before the fix. Pointer navigation is latched per gesture, accumulates movement between frames and supports injected inversion, sensitivity, distance and wheel settings. See [map input contract](../specs/059-map-navigation-input/spec.md). Commit and owner feel acceptance pending.
+Fix/evidence: `utils/checks/ui/scouting-input-check.js` failed on the early warning before the fix. Pointer navigation is latched per gesture, accumulates movement between frames and supports injected inversion, sensitivity, distance and wheel settings. See [map input contract](../specs/059-map-navigation-input/spec.md). Commit and owner feel acceptance pending.
 
 ### G-017 Clock clicks fall through to fishing input (P2, done in v0.35.0)
 Found: 2026-10-14, owner request, HUD clock in index/dev v0.34.4.
@@ -568,7 +568,7 @@ to ≈ 6.4× faster in metres.
 Notes: task in [054](../specs/054-bait-boat-water-metric/spec.md) (ground plane scope around `boat.update`, like
 `GroundPlaneScope`). Done 2026-10-18: `BaitBoatGroundPlaneScope` wraps every boat update in `ChumService.updateBoats`.
 Before it, on a 40 m profile a level-1 boat crossed 18–22 m at 13.0 m/s against 3.0 m/s near the shore; now 3.0 m/s
-both. `utils/bait-boat-water-metric-check.js`: flat-lake equivalence there and back with a queued waypoint, uniform
+both. `utils/checks/gameplay/bait-boat-water-metric-check.js`: flat-lake equivalence there and back with a queued waypoint, uniform
 identity, map output; skipping the heading, avoidance heading, velocity or waypoint conversion each fails it.
 
 ## Owner play notes

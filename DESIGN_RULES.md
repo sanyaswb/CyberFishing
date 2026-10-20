@@ -100,7 +100,7 @@ Use equal gaps between cards. Internal spacing and icon dimensions should be con
 - On mobile, the keepnet illustration container is at least as tall as it is wide. The image fits the available width and preserves its intrinsic proportions; portrait images increase the container height.
 - **Text glyphs (emoji) are icons, not text** ([spec 073](specs/073-glyph-ink-centring/spec.md)). Fonts draw them outside their layout boxes: Segoe UI Emoji is 1.373em wide and its ink sits 0.06em below a `line-height: 1` box centre; other platforms differ. Create every emoji icon with `InventoryDomFactory.glyph(text, className)`. The consumer class only sizes its square box (`width`/`height`) and may set `--ui-glyph-scale` (share of the box, default 1) or `--ui-glyph-max-size`; `ui-glyph.css` owns centring, font and line height, and the measured ink shift corrects the font. Never:
   - centre a glyph with Grid in a box narrower than its advance (the implicit `auto` column grows to the advance and starts at the box's left edge, so `place-items: center` shifts the ink right);
-  - size the font as the box (`font: <box>/1 …`) and expect the ink to fit, or set `display`, `font`, `line-height` or alignment on a glyph consumer class (the UI components check rejects it);
+  - size the font as the box (`font: <box>/1 …`) and expect the ink to fit, or set `display`, `font`, `line-height` or alignment on a glyph consumer class;
   - correct a misaligned glyph with pixel offsets or per-glyph constants: find the layout cause and measure the ink instead.
   Inline symbols inside a sentence (tooltip titles, labels) stay text. Item artwork and SVG icons remain the preferred visuals; glyphs are their fallback.
 - Add permanent text only when it communicates useful state, quantity or action consequences. The keepnet occupancy counter uses `0 / 100` above the meter.
@@ -138,7 +138,7 @@ Adopt SCSS only through a separate justified decision. Then shared mixins belong
 
 The future [UI catalog](specs/057-modular-ui-catalog/spec.md) demonstrates the same production components and styles used by the game. Catalog-specific styles only arrange examples. Editing a component's source updates its consumers and catalog examples. The catalog belongs to DEV; game-specific UI does not belong in engine.
 
-Before finishing a change, validate relevant contracts, CSS usage/BEM, Architecture, Quick and Full. Cover empty, populated, long-content and boundary states. Responsive changes require planned checks at 240, 280, 319, 320px and wider widths, including illustration proportions, input and scrolling. When the owner performs visual acceptance, do not open a browser and explicitly report that visual verification was not performed.
+Before finishing a change, run relevant behavioral checks and one Full suite (includes CSS ownership/BEM, Architecture and Quick). Follow utils/UTILS_RULES.md; appearance is owner-checked. Cover empty, populated, long-content and boundary states. Responsive changes require planned checks at 240, 280, 319, 320px and wider widths, including illustration proportions, input and scrolling. When the owner performs visual acceptance, do not open a browser and explicitly report that visual verification was not performed.
 
 ## 13. UI performance and resize
 

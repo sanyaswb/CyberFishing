@@ -1,0 +1,186 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const { SourceRuntime } = require("../../testing/core/source_runtime");
+
+const ROOT = path.resolve(__dirname, "../../..");
+const LABELS = JSON.parse(fs.readFileSync(path.join(ROOT, "src/dev/metadata/parameter_labels.json"), "utf8"));
+
+// Composes the configuration exactly as a page does (each composition gets its own VM realm, because the
+// production config context is a per-page singleton) and returns a validator factory over it.
+function compose({ development }) {
+  const runtime = new SourceRuntime();
+  const { createProductionConfigContext } = runtime.importModule("src/bootstrap/production/game_config_composition.js");
+  const { ConfigSchemaValidator } = ({ ...runtime.importModule("src/game/config/validation/config_validation_result.js"), ...runtime.importModule("src/game/config/validation/config_schema_validator.js") });
+  const { FISH_DB } = runtime.importModule("src/game/config/databases/fish_database.js");
+  const { ITEM_DB } = runtime.importModule("src/game/config/databases/item_catalog.js");
+  const { PROJECT_VERSION_CONFIG } = runtime.importModule("src/game/presentation/version/project_version.js");
+  const context = createProductionConfigContext(development ? (config) => {
+    config.debug.godMode.enabled = true;
+    config.debug.fixedCatch.enabled = true;
+  } : null);
+  const options = { config: context.runtimeConfig, fishDb: FISH_DB, itemDb: ITEM_DB, mapDb: context.runtimeConfig.locations.map,
+    parameterLabels: LABELS, baseConfig: context.baseConfig, overrideStore: context.overrideStore,
+    projectVersion: PROJECT_VERSION_CONFIG };
+  return { context, ConfigSchemaValidator, options, validate: (overrides = {}) =>
+    new ConfigSchemaValidator({ ...options, ...overrides }).validate() };
+}
+
+const describe = (issues) => issues.map((issue) => `${issue.path}: ${issue.message}`).join("; ");
+
+function checkComposedConfigs() {
+  for (const development of [false, true]) {
+    const name = development ? "DEV" : "production";
+    const { context, validate } = compose({ development });
+    const before = JSON.stringify(context.runtimeConfig);
+    const result = validate();
+    assert.equal(result.errors.length, 0, `${name} config has no validation errors: ${describe(result.errors)}`);
+    assert.equal(result.warnings.length, 0, `${name} config has no validation warnings: ${describe(result.warnings)}`);
+    assert(result.summary.physicsLeaves > 100 && result.summary.fishCount > 0 && result.summary.itemCount > 0 &&
+      result.summary.mapCount > 0, `${name} validation covers physics, fish, items and maps`);
+    assert.equal(JSON.stringify(context.runtimeConfig), before, `${name} validation leaves the config unchanged`);
+    assert.equal(Object.keys(context.exportOverrides()).length, 0,
+      `${name} validation writes no overrides`);
+  }
+}
+
+function checkNegativeFixtures() {
+  const { context, validate, options } = compose({ development: false });
+  const config = context.runtimeConfig;
+  const has = (result, pattern) => result.errors.some((issue) => pattern.test(`${issue.path}: ${issue.message}`));
+  for (const selector of [{ radialEnabled: "true", size: 1, openSize: 3 }, { radialEnabled: true, size: 4, openSize: 3 },
+    { radialEnabled: true, size: 1, openSize: 4 }, { radialEnabled: true, size: 1, openSize: "3" },
+    { radialEnabled: false, size: 2, openSize: 3, typo: true }]) {
+    assert(has(validate({ config: { ...config, ui: { ...config.ui, inventorySelector: selector } } }), /inventorySelector/u),
+      "selector booleans, size presets and unknown fields are schema validated");
+  }
+  const labels = { ...LABELS };
+  delete labels["physics.fight.rodStroke.capacityByLineLengthRatio"];
+  assert(has(validate({ parameterLabels: labels }), /capacityByLineLengthRatio: missing parameter label/u),
+    "a physics parameter without a DEV label is reported");
+  assert(has(validate({ baseConfig: { physics: {} } }), /BASE_CONFIG: base config must be frozen/u),
+    "a mutable base config is reported");
+  assert(has(validate({ overrideStore: null }), /CONFIG_OVERRIDE_STORE: missing runtime override store/u),
+    "a missing override store is reported");
+  assert(has(validate({ fishDb: [] }), /FISH_DB: must be a non-empty array/u), "an empty fish database is reported");
+  const fish = JSON.parse(JSON.stringify(options.fishDb[0]));
+  delete fish.physics;
+  assert(has(validate({ fishDb: [fish] }), /physics: missing fish physics object/u), "a fish without physics is reported");
+  context.set("physics.fight.rodStroke.capacityByLineLengthRatio", "wide");
+  assert(has(validate(), /capacityByLineLengthRatio: expected number like the base config, got string/u), "an invalid live override is reported");
+  context.reset("physics.fight.rodStroke.capacityByLineLengthRatio");
+  for (const [key, value] of [["range.leftRatio", 1.1], ["range.rightRatio", -0.1],
+    ["speedPxPerSecond", -1], ["movingFloatBite.chance", 2], ["biteReaction.enabled", "yes"],
+    ["lineTension.enabled", "yes"], ["floatTilt.enabled", 1],
+    ["speedMultipliers.stationaryFloat", -1], ["speedMultipliers.movingFloat", -1],
+    ["speedMultipliers.stationaryFloat", "3"], ["speedMultipliers.movingFloat", Infinity]]) {
+    const path = "physics.castRodControl." + key;
+    context.set(path, value);
+    assert(validate().errors.some(issue => issue.path === path), "invalid cast control setting is rejected: " + key);
+    context.reset(path);
+  }
+  for (const [key, value] of [["enabled", 1], ["ratePerSecond", -1], ["loadCurvePower", -1], ["movementEpsilonPx", -1]]) {
+    const path = "physics.fight.rodControl.tension.towardFishCompensation." + key;
+    context.set(path, value);
+    assert(validate().errors.some(issue => issue.path === path), "invalid side compensation setting is rejected: " + key);
+    context.reset(path);
+  }
+  // Spec 104 D1: the scene mode is "canvas" or "webgl".
+  context.set("canvas.scene", "gl");
+  assert(has(validate(), /CONFIG\.canvas\.scene: must be "canvas" or "webgl"/u), "an unknown scene mode is rejected");
+  context.reset("canvas.scene");
+  // Spec 106: the scene's water settings are bounded.
+  for (const [key, value, issuePath] of [["enabled", 1, "canvas.water.enabled"], ["frameRate", 0, "CONFIG.canvas.water.frameRate"],
+    ["amplitude", -1, "CONFIG.canvas.water.amplitude"], ["wavelength", 2, "CONFIG.canvas.water.wavelength"]]) {
+    context.set("canvas.water." + key, value);
+    assert(validate().errors.some(issue => issue.path === issuePath), "invalid water setting is rejected: " + key);
+    context.reset("canvas.water." + key);
+  }
+  assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
+  for (const value of [0, -1, 91, Infinity]) {
+    const tiltedMapDb = JSON.parse(JSON.stringify(options.mapDb));
+    tiltedMapDb.test.perspective.angleBottom = value;
+    assert(has(validate({ mapDb: tiltedMapDb }), /perspective\.angleBottom/u), "an invalid location tilt is reported");
+  }
+  const reversedAngles = JSON.parse(JSON.stringify(options.mapDb));
+  reversedAngles.test.perspective = { angleTop: 40, angleBottom: 30 };
+  assert(has(validate({ mapDb: reversedAngles }), /perspective\.angleTop/u), "reversed visual angles are reported");
+  assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
+    "an invalid project version is reported");
+  const mapDb = JSON.parse(JSON.stringify(options.mapDb));
+  mapDb.test.distanceProfile = { enabled: "yes", linearShare: 1, maxMeters: 0 };
+  const profileResult = validate({ mapDb });
+  assert(has(profileResult, /distanceProfile\.enabled: expected boolean/u) &&
+    has(profileResult, /distanceProfile\.linearShare: expected < 1/u) &&
+    has(profileResult, /distanceProfile\.maxMeters: expected >=/u), "an invalid location distance profile is reported");
+  assert.equal(config, context.runtimeConfig);
+}
+
+function checkReporterReadsLiveLocationProfiles() {
+  const runtime = new SourceRuntime({ moduleStubs: {
+    "src/dev/diagnostics/config_validation_reporter.js": { ConfigValidationReporter: class {
+      constructor({ createValidator }) { this.createValidator = createValidator; }
+    } },
+    "src/game/config/validation/config_schema_validator.js": { ConfigSchemaValidator: class {
+      constructor(options) { this.options = options; }
+    } },
+  } });
+  const { composeDevConfigValidation } = runtime.importModule("src/bootstrap/development/dev_config_validation_composition.js");
+  const configRuntime = { runtimeConfig: { locations: { map: { lake: { perspective: { angleBottom: 90 } } } } } };
+  const reporter = composeDevConfigValidation({ configRuntime, itemCatalog: {} });
+  const first = reporter.createValidator(LABELS).options.mapDb;
+  configRuntime.runtimeConfig.locations.map = { lake: { perspective: { angleBottom: 0 } } };
+  const next = reporter.createValidator(LABELS).options.mapDb;
+  assert.notEqual(first, next, "validation follows a replaced runtime map after an override");
+  assert.equal(next.lake.perspective.angleBottom, 0, "the validator sees the current invalid angle, not the startup catalog");
+}
+
+async function checkDevelopmentReporter() {
+  const { ConfigValidationReporter } = require(path.join(ROOT, "src/dev/diagnostics/config_validation_reporter.js"));
+  const { validate, ConfigSchemaValidator, options } = compose({ development: true });
+  const logs = [];
+  const fetches = [];
+  const originals = { fetch: globalThis.fetch, info: console.info, warn: console.warn };
+  globalThis.fetch = async (url) => { fetches.push(url); return { ok: true, json: async () => LABELS }; };
+  console.info = (...args) => logs.push(["info", ...args]);
+  console.warn = (...args) => logs.push(["warn", ...args]);
+  try {
+    let labelsOverride = null;
+    const reporter = new ConfigValidationReporter({ createValidator: (parameterLabels) =>
+      new ConfigSchemaValidator({ ...options, parameterLabels: labelsOverride || parameterLabels }) });
+    assert.equal((await reporter.report("edit physics.x", { quietWhenValid: true })).errors.length, 0);
+    assert.equal(logs.length, 0, "a valid edit stays quiet");
+    await reporter.report("manual check");
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0][0], "info");
+    assert.match(logs[0][1], /\[ConfigValidation\] manual check: 0 errors, 0 warnings/u);
+    labelsOverride = {};
+    await reporter.report("import overrides");
+    assert.equal(logs[1][0], "warn", "problems are reported as warnings");
+    assert.match(logs[1][1], /import overrides: [1-9]\d* errors/u);
+    assert.equal(fetches.length, 1, "parameter labels are fetched once");
+    globalThis.fetch = async () => ({ ok: false, status: 404 });
+    const failing = new ConfigValidationReporter({ createValidator: () => { throw new Error("unreachable"); } });
+    assert.equal(await failing.report("manual check"), null, "missing labels make validation unavailable, not fatal");
+    assert.match(logs[2][1], /validation unavailable/u);
+    assert.equal(validate().errors.length, 0);
+  } finally {
+    globalThis.fetch = originals.fetch;
+    console.info = originals.info;
+    console.warn = originals.warn;
+  }
+}
+
+checkComposedConfigs();
+checkNegativeFixtures();
+checkReporterReadsLiveLocationProfiles();
+checkDevelopmentReporter().then(() => {
+  console.log("Config schema passed: production and DEV configs validate with 0 errors/warnings and stay unchanged; " +
+    "labels, frozen base, override store, fish data, live overrides and version are rejected when invalid; " +
+    "the DEV reporter is quiet for valid edits, warns on problems and survives unavailable labels.");
+}).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

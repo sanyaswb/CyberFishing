@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.17";
+export const CURRENT_PROJECT_VERSION = "0.45.20";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "equipped-rod-default-radial",
+  codename: "production-project-structure",
   updatedAt: "2026-10-20",
   notes: Object.freeze([
     "Radial inventory selection is enabled by default; its equipment sector follows the equipped rod thumbnail with SVG fallback and race-safe preloading",

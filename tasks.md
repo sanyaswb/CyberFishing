@@ -146,7 +146,7 @@
 - [ ] Заміна повідомлення, повторне відкриття екрана, reduced motion, Escape/кнопка закриття та скасування pointer не залишають завислого стану або timer.
 - [ ] У каталозі показано той самий production-компонент у короткому, довгому та warning/error станах.
 
-**Перевірки:** розширити `utils/ui-components-check.js`, `utils/inventory-ui-check.js`, `utils/house-check.js`, `utils/platform-runtime-check.js`, `utils/ui-catalog-check.js`; пороги й timers перевіряти керованим часом. Власник: `index.html` → інвентар → викликати попередження; `dev.html` → House → тимчасове повідомлення; portrait і landscape.
+**Перевірки:** розширити `utils/checks/ui/ui-components-check.js`, `utils/checks/ui/inventory-ui-check.js`, `utils/checks/gameplay/house-check.js`, `utils/checks/platform/platform-runtime-check.js`, `utils/checks/ui/ui-catalog-check.js`; пороги й timers перевіряти керованим часом. Власник: `index.html` → інвентар → викликати попередження; `dev.html` → House → тимчасове повідомлення; portrait і landscape.
 
 ## TK-002. Плавне горизонтальне випередження прицілу
 
@@ -174,7 +174,7 @@
 - [ ] Відпускання без останнього pointermove використовує актуальну координату; відображений preview і ціль release узгоджені за фіксованого RNG.
 - [ ] Перший cast, long-press recast і прикормка мають однаковий pointer-контракт; keyboard та вертикальна сила працюють як раніше.
 
-**Перевірки:** `utils/task-interactions-check.js` — вільна/крайова реальна камера, дозвіл лише відповідного боку, досягнення/відхід у тому самому кадрі, різні стартові X, центр, 80px cap, clamp, release/preview/target, resize, live/default config і keyboard; `viewport`, `water-metric`, `recast-aim`, `platform-runtime`, game-cycle. Власник: `index.html` / `dev.html`, pan до обох меж і повернення в центр у portrait/landscape, touch/mouse та split-layout.
+**Перевірки:** `utils/checks/ui/task-interactions-check.js` — вільна/крайова реальна камера, дозвіл лише відповідного боку, досягнення/відхід у тому самому кадрі, різні стартові X, центр, 80px cap, clamp, release/preview/target, resize, live/default config і keyboard; `viewport`, `water-metric`, `recast-aim`, `platform-runtime`, game-cycle. Власник: `index.html` / `dev.html`, pan до обох меж і повернення в центр у portrait/landscape, touch/mouse та split-layout.
 
 ## TK-003. Поведінка й оформлення редактора предмета
 
@@ -212,7 +212,7 @@
 - [ ] Те саме працює для вудилища та складного предмета; помилка/блокування зміни оснащення не відкриває неіснуючий редактор.
 - [ ] Успішний вибір компонента зберігає root, активну вкладку й прокрутку чинного редактора; `Назад` використовує початкове джерело входу.
 
-**Перевірки:** додати сценарії до `utils/inventory-integration-check.js` і `utils/inventory-ui-check.js`. Власник: `index.html`/`dev.html`, рюкзак → кораблик → редактор → вибір компонента, portrait і landscape.
+**Перевірки:** додати сценарії до `utils/checks/inventory/inventory-integration-check.js` і `utils/checks/ui/inventory-ui-check.js`. Власник: `index.html`/`dev.html`, рюкзак → кораблик → редактор → вибір компонента, portrait і landscape.
 
 ### TK-003.3. Підсвічування всієї вкладки комірки
 
@@ -305,7 +305,7 @@
 - [ ] Новий час узгоджено відображається на локації та в House, продовжує йти й зберігається після reload без нового формату save.
 - [ ] Стрибок через північ не видає real-time прогрес і не змінює активну риболовлю через штучно великий dt.
 
-**Перевірки:** розширити `utils/dev-time-check.js` та time-сценарії `utils/house-check.js`, `utils/platform-runtime-check.js`; перевірити environment/background, persistence й game-cycle фіксованим `now`. Власник: `index.html` → годинник на локації; `dev.html` → локація та House, із прискоренням і без нього, portrait/landscape.
+**Перевірки:** розширити `utils/checks/tooling/dev-time-check.js` та time-сценарії `utils/checks/gameplay/house-check.js`, `utils/checks/platform/platform-runtime-check.js`; перевірити environment/background, persistence й game-cycle фіксованим `now`. Власник: `index.html` → годинник на локації; `dev.html` → локація та House, із прискоренням і без нього, portrait/landscape.
 
 ## TK-006. Рух вудки без кінцевого оснащення
 
@@ -330,7 +330,7 @@
 - [ ] Кінець ліски не виходить за воду/бюджет довжини, release зупиняє рух, повторний cast очищає попередній профіль.
 - [ ] Одягнений компонент та такий самий компонент лише в рюкзаку дають різну класифікацію; вкладений компонент не помилково вважається порожнім оснащенням.
 
-**Перевірки:** розширити `utils/cast-rod-control-check.js`, `utils/tackle-line-limit-check.js`, `utils/rod-side-tension-check.js` та inventory cast contracts; gameplay suite й game-cycle. Власник: `index.html`/`dev.html` → cast без оснащення → рух вудки до натягу й назад; повторити зі спорядженою снастю, portrait і landscape. Оцінку відчуття руху виконує власник.
+**Перевірки:** розширити `utils/checks/gameplay/cast-rod-control-check.js`, `utils/checks/gameplay/tackle-line-limit-check.js`, `utils/checks/gameplay/rod-side-tension-check.js` та inventory cast contracts; gameplay suite й game-cycle. Власник: `index.html`/`dev.html` → cast без оснащення → рух вудки до натягу й назад; повторити зі спорядженою снастю, portrait і landscape. Оцінку відчуття руху виконує власник.
 
 ## TK-007. Горизонтальні жести вкладок у широкому інвентарі
 
@@ -366,7 +366,7 @@
 - [x] Вертикальний scroll, click, long press та keyboard-навігація залишаються працездатними; випадкового спорядження після swipe немає.
 - [x] Після cancel, resize та п'яти повторних відкриттів один жест обробляється один раз.
 
-**Перевірки:** розширити `utils/inventory-ui-check.js` (широкий layout, обидва pointerType), `utils/platform-runtime-check.js`; за зміни спільного controller — також House/navigation та UI-components checks. Власник: широкий viewport `index.html`/`dev.html` → редактор із переповненим рядом вкладок → mouse-drag рядка, swipe прев'ю, вертикальний scroll; повторити пальцем у landscape.
+**Перевірки:** розширити `utils/checks/ui/inventory-ui-check.js` (широкий layout, обидва pointerType), `utils/checks/platform/platform-runtime-check.js`; за зміни спільного controller — також House/navigation та UI-components checks. Власник: широкий viewport `index.html`/`dev.html` → редактор із переповненим рядом вкладок → mouse-drag рядка, swipe прев'ю, вертикальний scroll; повторити пальцем у landscape.
 
 ## TK-008. Альтернативний радіальний селектор інвентарю
 
@@ -452,7 +452,7 @@
 
 **Рекомендовані межі файлів:** окремі presentation renderer/config/labels і CSS селектора; browser gesture controller у `src/platform/browser/dom/`; композиція в `inventory_ui_bootstrap.js` та за потреби окремому bootstrap-модулі. Локально змінюються shortcut-частини `InventoryUI`/`KeepnetSectionView`, toolbar placement, runtime config/schema/DEV metadata, preload і catalog composition. Назви нових файлів — після перевірки існуючих відповідників; не створювати catch-all UI manager чи загальну систему радіальних меню заради одного компонента.
 
-**Перевірки реалізації:** розширити `inventory-ui`, `inventory-integration`, `keepnet`, `ui-components`, `ui-catalog`, `config-runtime`, `config-schema`, `devtools-links`, `asset-preloader`, `css-usage` з чинного manifest. Додати focused interaction check, якщо сценарії селектора не вкладаються в наявні; підключити до manifest. Далі Architecture + Quick + Full, save round-trip та game-cycle без неочікуваних змін. На цьому етапі документації ці UI-перевірки є планом, а не доказом реалізації.
+**Перевірки реалізації:** розширити `inventory-ui`, `inventory-integration`, `keepnet`, `ui-components`, `ui-catalog`, `config-runtime`, `config-schema`, `devtools-links`, `asset-preloader`, `css-usage` з чинного manifest. Додати focused interaction check, якщо сценарії селектора не вкладаються в наявні; підключити до manifest. Далі один Full (включає Architecture та Quick), save round-trip та game-cycle без неочікуваних змін. На цьому етапі документації ці UI-перевірки є планом, а не доказом реалізації.
 
 **Власницьке приймання після реалізації:**
 
@@ -464,7 +464,7 @@
 ## Перевірки й визначення готовності кожної зміни
 
 1. Написати/уточнити відтворення та цільові критерії конкретної задачі. Наявний check, який описує навмисно змінений контракт, оновлювати разом із вимогами, а не видаляти перевірку.
-2. Запустити перелічені в задачі focused checks, потім `npm run check:architecture`, `npm run check:quick` і `npm run check` (повний набір). Для inventory-сценаріїв доступний `npm run check:inventory`, для gameplay — `npm run check:gameplay`. Один check запускається як `node utils/run-checks.js --check <id>`; ідентифікатори дивитися через `npm run check:list` у чинному manifest.
+2. Запускати relevant focused checks під час роботи; перед передачею виконати один `npm run check` (Full включає Architecture і Quick, тому повторювати їх без змін не потрібно). Дотримуватися `utils/UTILS_RULES.md`. Для inventory-сценаріїв доступний `npm run check:inventory`, для gameplay — `npm run check:gameplay`. Один check запускається як `node utils/run-checks.js --check <id>`; ідентифікатори дивитися через `npm run check:list` у чинному manifest.
 3. Перевірити save round-trip та відсутність неочікуваних game-cycle змін. Для навмисної зміни звіту задокументувати причину й оновити baseline у тому самому коміті; DOM-зміни самі по собі не є причиною міняти gameplay-baseline.
 4. Перевірити всі реальні споживачі зміненого спільного компонента, а приклади каталогу будувати з production-компонентів. Не залишати замінені мертві tools/fixtures; перед видаленням довести відсутність consumers. Live checks без рішення власника не видаляти.
 5. Синхронізувати версію у `project_version.js`, `package.json`, `package-lock.json`, `?v=` трьох HTML-сторінок та додати CHANGELOG. Нові service-артефакти зберігати лише в `utils/tmp/` або `utils/generated/`, після роботи виконати `npm run clean:artifacts`.

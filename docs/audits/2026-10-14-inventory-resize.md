@@ -10,7 +10,7 @@ Mobile overrides now reserve separate `max-content` rows, size both shells indep
 
 The item panel's categories, filters, sorting and items have explicit row placement. Hiding a filter/sort control no longer moves the item grid into an auto row and leaves its allocated scrolling track empty.
 
-Evidence: `utils/inventory-ui-check.js` checks mobile ownership/height contracts and real renderer DOM ancestry for all four auxiliary slots versus the item grid. The new mobile contract failed before the fix. Browser geometry/visual acceptance is pending; these checks do not claim to measure a real rendered rectangle.
+Evidence: `utils/checks/ui/inventory-ui-check.js` checks mobile ownership/height contracts and real renderer DOM ancestry for all four auxiliary slots versus the item grid. The new mobile contract failed before the fix. Browser geometry/visual acceptance is pending; these checks do not claim to measure a real rendered rectangle.
 
 ## Resize findings and deterministic measurements
 
@@ -25,7 +25,7 @@ Evidence: `utils/inventory-ui-check.js` checks mobile ownership/height contracts
 
 The assertion that Inventory is fully rebuilt hundreds of times each second is **not established**. The actual normal path updates dynamic Inventory readings every250ms. `GameLoop` draws once per supplied animation frame and refuses a second active loop. Its existing deterministic120-frame check still verifies120 updates/120 draws, one continuation and stop/disposal. DOM/CSS/bitmap resize work was excessive independently of the Canvas draw frequency.
 
-Reproductions failed before the corresponding fixes in `utils/ui-surface-check.js`, `utils/platform-runtime-check.js` and `utils/testing/runtime/game_application_test_composition.js`; they pass afterwards. Counts are deterministic test measurements, not browser profiler data or measured FPS. User-device frame time, browser hang severity and visual hit areas have not been measured here: the existing owner contract leaves browser/visual verification to the owner.
+Reproductions failed before the corresponding fixes in `utils/checks/ui/ui-surface-check.js`, `utils/checks/platform/platform-runtime-check.js` and `utils/testing/runtime/game_application_test_composition.js`; they pass afterwards. Counts are deterministic test measurements, not browser profiler data or measured FPS. User-device frame time, browser hang severity and visual hit areas have not been measured here: the existing owner contract leaves browser/visual verification to the owner.
 
 ## Validation
 

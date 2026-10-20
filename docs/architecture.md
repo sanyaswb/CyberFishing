@@ -80,7 +80,7 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 
 ## Guard
 
-`utils/architecture-check.js` (Quick and Architecture suites) parses every `src/**/*.js` module and fails on:
+`utils/checks/architecture/architecture-check.js` (Quick and Architecture suites) parses every `src/**/*.js` module and fails on:
 
 - an import not allowed by the table above, a non-relative or extensionless specifier, an unresolved
   import or a non-literal dynamic import;

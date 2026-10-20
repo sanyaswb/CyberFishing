@@ -2,6 +2,10 @@
 
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
+Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional
+scenarios; the owner checks appearance. The final Full check includes Quick and Architecture: do not repeat the
+same suites on unchanged code.
+
 Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV interface components, read [DESIGN_RULES.md](DESIGN_RULES.md) and [docs/styles.md](docs/styles.md). These are mandatory design inputs, including reuse, BEM, tokens, the 320px logical layout and the current inventory/keepnet column counts. Follow the applicable feature spec and preserve unrelated changes.
 
 ## Owner checks and versions
@@ -15,6 +19,10 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   `CHANGELOG.md` entry, so the owner can tell which build has which change. A new or changed mechanic bumps the minor
   version only after the owner's explicit instruction. Until then, increment only the patch, including for new or
   changed mechanics (owner instruction, 2026-10-20; overrides the former automatic minor-bump rule).
+
+## Development history
+
+Keep active development history concise. CHANGELOG.md retains only the latest 10 release entries; move older complete entries to [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>) in numeric descending version order, merging identical entries without duplicates. Follow the retention policy in DEVELOPMENT_RULES.md.
 
 ## Generated artifacts
 

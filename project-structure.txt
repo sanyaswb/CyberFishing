@@ -1,96 +1,3 @@
-├── .agents
-│  └── skills
-│     ├── speckit-analyze
-│     │  └── SKILL.md
-│     ├── speckit-checklist
-│     │  └── SKILL.md
-│     ├── speckit-clarify
-│     │  └── SKILL.md
-│     ├── speckit-constitution
-│     │  └── SKILL.md
-│     ├── speckit-converge
-│     │  └── SKILL.md
-│     ├── speckit-implement
-│     │  └── SKILL.md
-│     ├── speckit-plan
-│     │  └── SKILL.md
-│     ├── speckit-specify
-│     │  └── SKILL.md
-│     ├── speckit-tasks
-│     │  └── SKILL.md
-│     └── speckit-taskstoissues
-│        └── SKILL.md
-├── .gitattributes
-├── .gitignore
-├── .specify
-│  ├── .gitignore
-│  ├── init-options.json
-│  ├── integration.json
-│  ├── integrations
-│  │  ├── codex.manifest.json
-│  │  └── speckit.manifest.json
-│  ├── memory
-│  │  ├── .constitution-template.json
-│  │  └── constitution.md
-│  ├── scripts
-│  │  └── powershell
-│  │     ├── check-prerequisites.ps1
-│  │     ├── common.ps1
-│  │     ├── create-new-feature.ps1
-│  │     ├── resolve-template.ps1
-│  │     ├── setup-plan.ps1
-│  │     └── setup-tasks.ps1
-│  ├── templates
-│  │  ├── checklist-template.md
-│  │  ├── constitution-template.md
-│  │  ├── plan-template.md
-│  │  ├── spec-template.md
-│  │  └── tasks-template.md
-│  └── workflows
-│     ├── speckit
-│     │  └── workflow.yml
-│     └── workflow-registry.json
-├── AGENTS.md
-├── CHANGELOG.md
-├── DESIGN_RULES.md
-├── DEVELOPMENT_RULES.md
-├── README.md
-├── asset-sources
-│  ├── animations
-│  │  └── rods
-│  │     └── bamboo-rod-v1
-│  │        └── bamboo_rod--1.png
-│  ├── house
-│  │  └── room-1
-│  │     ├── lvl-1
-│  │     │  ├── room--1-day-lvl--1.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--1.jpg
-│  │     │  └── room--1-nightLight--on-lvl--1.jpg
-│  │     ├── lvl-2
-│  │     │  ├── room--1-day-lvl--2.jpg
-│  │     │  ├── room--1-eveningLight--off-lvl--2.jpg
-│  │     │  └── room--1-nightLight--on-lvl--2.jpg
-│  │     ├── lvl-3
-│  │     │  ├── room--1-day-lvl--3.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--3.jpg
-│  │     │  └── room--1-nightLight--on-lvl--3.jpg
-│  │     ├── lvl-4
-│  │     │  ├── room--1-day-lvl--4.jpg
-│  │     │  ├── room--1-eveningLight--off-lvl--4.jpg
-│  │     │  └── room--1-nightLight--off-lvl--4.jpg
-│  │     ├── lvl-5
-│  │     │  ├── room--1-day-lvl--5.jpg
-│  │     │  ├── room--1-eveningLight--on-lvl--5.jpg
-│  │     │  └── room--1-nightLight--on-lvl--5.jpg
-│  │     ├── room--1_aqua.png
-│  │     └── under-renovation.png
-│  ├── items
-│  │  └── rods
-│  │     ├── bamboo-rod-ecip-v1.png
-│  │     └── bamboo-rod-unecip-v1.png
-│  └── ui
-│     └── loader
-│        └── loader-poster.png
 ├── assets
 │  ├── animations
 │  │  └── rods
@@ -263,284 +170,12 @@
 │     ├── loader
 │     │  └── loader-poster.webp
 │     └── status-icons.svg
-├── dev.html
-├── docs
-│  ├── architecture.md
-│  ├── art-prompts
-│  │  └── rods
-│  │     ├── bamboo-rod-ecip-v1.prompt.md
-│  │     └── bamboo-rod-unecip-v1.prompt.md
-│  ├── audits
-│  │  ├── 2026-10-08-finalization-review.md
-│  │  ├── 2026-10-08-stage7-post-closure.md
-│  │  └── 2026-10-14-inventory-resize.md
-│  ├── cast_rod_control.md
-│  ├── fish_config_architecture.md
-│  ├── fishing_physics_formula_map.md
-│  ├── gameplay_backlog.md
-│  ├── inventory-behavior.md
-│  ├── line_and_rod_stroke_debug.md
-│  ├── physics_units_and_naming.md
-│  ├── refactoring_remaining.md
-│  ├── rendering.md
-│  ├── rod_animation_reference.md
-│  ├── rod_control_ownership.md
-│  ├── rod_lateral_movement.md
-│  ├── rod_tension_compensation.md
-│  ├── runtime_config_overrides.md
-│  ├── simplified_fight_physics_model.md
-│  ├── stats_and_balance_spec.md
-│  └── styles.md
 ├── index.html
-├── package-lock.json
-├── package.json
-├── project-structure.txt
-├── specs
-│  ├── 020-production-console-noise
-│  │  └── spec.md
-│  ├── 021-shared-number-normalization
-│  │  └── spec.md
-│  ├── 022-reuse-duplicates
-│  │  └── spec.md
-│  ├── 023-fight-frame
-│  │  └── spec.md
-│  ├── 024-fish-physics-normalization
-│  │  └── spec.md
-│  ├── 025-fixed-catch-dev-only
-│  │  └── spec.md
-│  ├── 026-config-composed-once
-│  │  └── spec.md
-│  ├── 027-physics-config-cache
-│  │  └── spec.md
-│  ├── 028-session-out-of-bootstrap
-│  │  └── spec.md
-│  ├── 029-backend-foundation
-│  │  ├── checklists
-│  │  │  └── requirements.md
-│  │  ├── contracts
-│  │  │  ├── client-sync.md
-│  │  │  ├── http-api.md
-│  │  │  └── progress-format.md
-│  │  ├── data-model.md
-│  │  ├── follow-up-decisions.md
-│  │  ├── plan.md
-│  │  ├── quickstart.md
-│  │  ├── research.md
-│  │  └── spec.md
-│  ├── 030-storage-cache-instance
-│  │  └── spec.md
-│  ├── 031-composition-root-split
-│  │  └── spec.md
-│  ├── 032-direct-calls
-│  │  └── spec.md
-│  ├── 033-platform-singletons
-│  │  └── spec.md
-│  ├── 034-inactive-dev-flags
-│  │  └── spec.md
-│  ├── 035-inactive-diagnostics
-│  │  └── spec.md
-│  ├── 036-listener-counter
-│  │  └── spec.md
-│  ├── 037-starting-inventory
-│  │  └── spec.md
-│  ├── 038-pages-release
-│  │  └── spec.md
-│  ├── 039-version-copy-path
-│  │  └── spec.md
-│  ├── 040-shared-clamp
-│  │  └── spec.md
-│  ├── 041-direct-calls-inventory
-│  │  └── spec.md
-│  ├── 042-src-module-type
-│  │  └── spec.md
-│  ├── 043-fight-diagnostics-builder
-│  │  └── spec.md
-│  ├── 044-fight-stages-pressure-landing-stamina
-│  │  └── spec.md
-│  ├── 045-fight-stages-motion-line
-│  │  └── spec.md
-│  ├── 046-fight-direct-calls
-│  │  └── spec.md
-│  ├── 047-smart-asset-preloader
-│  │  ├── checklists
-│  │  │  └── requirements.md
-│  │  ├── contracts
-│  │  │  ├── dev-image-tools.md
-│  │  │  └── runtime-assets.md
-│  │  ├── data-model.md
-│  │  ├── plan.md
-│  │  ├── quickstart.md
-│  │  ├── research.md
-│  │  └── spec.md
-│  ├── 048-game-cycle-baseline
-│  │  └── spec.md
-│  ├── 049-fishing-services-composition
-│  │  └── spec.md
-│  ├── 050-sliding-float
-│  │  └── spec.md
-│  ├── 051-dev-item-grant
-│  │  └── spec.md
-│  ├── 052-depth-selector-ux
-│  │  └── spec.md
-│  ├── 053-water-metric
-│  │  └── spec.md
-│  ├── 054-bait-boat-water-metric
-│  │  └── spec.md
-│  ├── 055-live-bait-aquarium
-│  │  ├── checklists
-│  │  │  └── requirements.md
-│  │  ├── contracts
-│  │  │  ├── live-bait-actions.md
-│  │  │  └── local-save-and-assets.md
-│  │  ├── data-model.md
-│  │  ├── plan.md
-│  │  ├── quickstart.md
-│  │  ├── research.md
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 056-inventory-icon-design
-│  │  ├── checklists
-│  │  │  └── requirements.md
-│  │  └── spec.md
-│  ├── 057-modular-ui-catalog
-│  │  ├── checklists
-│  │  │  └── requirements.md
-│  │  ├── contracts
-│  │  │  └── ui-components.md
-│  │  ├── coverage.md
-│  │  ├── data-model.md
-│  │  ├── plan.md
-│  │  ├── quickstart.md
-│  │  ├── research.md
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 058-dev-time-controls
-│  │  └── spec.md
-│  ├── 059-map-navigation-input
-│  │  └── spec.md
-│  ├── 060-house-navigation-header
-│  │  └── spec.md
-│  ├── 061-aquarium-feed-loading
-│  │  └── spec.md
-│  ├── 062-house-feed-preview
-│  │  └── spec.md
-│  ├── 063-house-time-of-day
-│  │  └── spec.md
-│  ├── 064-house-dev-config
-│  │  └── spec.md
-│  ├── 065-dev-house-override-handoff
-│  │  └── spec.md
-│  ├── 066-house-review-cleanup
-│  │  └── spec.md
-│  ├── 067-inventory-sections
-│  │  └── spec.md
-│  ├── 068-portrait-inventory-screen
-│  │  └── spec.md
-│  ├── 069-portrait-inventory-container
-│  │  └── spec.md
-│  ├── 070-inventory-slot-pick
-│  │  └── spec.md
-│  ├── 071-bamboo-rod-skin
-│  │  └── spec.md
-│  ├── 072-inventory-consumable-controls
-│  │  └── spec.md
-│  ├── 073-glyph-ink-centring
-│  │  └── spec.md
-│  ├── 074-header-sections-and-collections
-│  │  └── spec.md
-│  ├── 075-backpack-pager-and-capacity
-│  │  └── spec.md
-│  ├── 076-scroll-input-fixes
-│  │  └── spec.md
-│  ├── 077-inventory-sidebar-parent
-│  │  └── spec.md
-│  ├── 078-portrait-equipment-real-size
-│  │  └── spec.md
-│  ├── 079-pager-touch-axis
-│  │  └── spec.md
-│  ├── 080-hints-in-containers
-│  │  └── spec.md
-│  ├── 081-house-clock-every-minute
-│  │  └── spec.md
-│  ├── 082-webp-art
-│  │  └── spec.md
-│  ├── 083-preloader-foundation
-│  │  └── spec.md
-│  ├── 084-house-screen
-│  │  └── spec.md
-│  ├── 085-pages-release-retention
-│  │  └── spec.md
-│  ├── 086-hint-regions
-│  │  └── spec.md
-│  ├── 087-portrait-section-swipe
-│  │  └── spec.md
-│  ├── 088-keepnet-like-backpack
-│  │  └── spec.md
-│  ├── 089-inventory-polish-rod-removal
-│  │  └── spec.md
-│  ├── 090-inventory-cards-and-editor-polish
-│  │  └── spec.md
-│  ├── 091-mobile-editor-parameter-tabs
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 092-editor-tabs-first-fixes
-│  │  └── spec.md
-│  ├── 093-editor-tabs-second-fixes
-│  │  └── spec.md
-│  ├── 094-editor-tabs-every-layout
-│  │  └── spec.md
-│  ├── 095-editor-under-section-tabs
-│  │  └── spec.md
-│  ├── 096-mobile-empty-socket-choices
-│  │  └── spec.md
-│  ├── 097-backpack-item-keepnet-art
-│  │  └── spec.md
-│  ├── 098-landscape-split-inventory
-│  │  └── spec.md
-│  ├── 099-spine-rod-animation
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 100-cast-rod-control
-│  │  └── spec.md
-│  ├── 100-render-resolution-and-image-quality
-│  │  └── spec.md
-│  ├── 101-frame-profiler-overlay
-│  │  └── spec.md
-│  ├── 101-rod-side-tension
-│  │  └── spec.md
-│  ├── 102-cast-line-speed
-│  │  └── spec.md
-│  ├── 102-render-quality-policy
-│  │  └── spec.md
-│  ├── 103-webgl-scene-layer
-│  │  └── spec.md
-│  ├── 104-scene-layer-infrastructure
-│  │  └── spec.md
-│  ├── 105-scene-background
-│  │  └── spec.md
-│  ├── 106-scene-water
-│  │  └── spec.md
-│  ├── 107-scene-entities-rod
-│  │  └── spec.md
-│  ├── 108-line-and-perspective-audit
-│  │  └── spec.md
-│  ├── 109-water-metric-perspective
-│  │  └── spec.md
-│  ├── 110-dev-zone-editor
-│  │  └── spec.md
-│  └── README.md
 ├── src
 │  ├── bootstrap
-│  │  ├── development
-│  │  │  ├── debug_console_bootstrap.js
-│  │  │  ├── debug_overlay_bootstrap.js
-│  │  │  ├── dev_config_validation_composition.js
-│  │  │  ├── dev_house_screen_composition.js
-│  │  │  ├── dev_time_composition.js
-│  │  │  ├── development_game_startup.js
-│  │  │  └── ui_catalog_bootstrap.js
 │  │  └── production
 │  │     ├── config_context.js
+│  │     ├── depth_selector_composition.js
 │  │     ├── fishing_services_composition.js
 │  │     ├── game.js
 │  │     ├── game_composition_root.js
@@ -549,190 +184,27 @@
 │  │     ├── game_startup.js
 │  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
-│  │     ├── house_screen_composition.js
-│  │     ├── house_view_composition.js
+│  │     ├── hint_renderer_composition.js
 │  │     ├── inventory_composition_root.js
+│  │     ├── inventory_selector_composition.js
 │  │     ├── inventory_ui_bootstrap.js
 │  │     ├── live_bait_composition.js
 │  │     ├── player_inventory_composition.js
 │  │     ├── rod_animation_composition.js
-│  │     └── scene_layer_composition.js
-│  ├── dev
-│  │  ├── core
-│  │  │  ├── debug_console.js
-│  │  │  ├── debug_context.js
-│  │  │  ├── debug_event_binder.js
-│  │  │  └── debug_module_registry.js
-│  │  ├── diagnostics
-│  │  │  ├── config_validation_reporter.js
-│  │  │  ├── frame_profiler.js
-│  │  │  └── render_allocation_diagnostics.js
-│  │  ├── fishing
-│  │  │  ├── active_fish_dev_tools_visibility_policy.js
-│  │  │  ├── fight_diagnostics_snapshot_builder.js
-│  │  │  ├── fixed_catch_fish_factory.js
-│  │  │  ├── fixed_catch_hook.js
-│  │  │  ├── hooked_fish_profile_synchronizer.js
-│  │  │  └── worst_case_force_debug_selector.js
-│  │  ├── formatting
-│  │  │  ├── bite_log_labels.js
-│  │  │  ├── debuff_name_formatter.js
-│  │  │  ├── debug_formatters.js
-│  │  │  └── fish_movement_labels.js
-│  │  ├── items
-│  │  │  └── item_progression_debug_snapshot_provider.js
-│  │  ├── location
-│  │  │  ├── location_debug_data_provider.js
-│  │  │  ├── location_debug_map_builder.js
-│  │  │  ├── location_debug_printer.js
-│  │  │  ├── location_debug_render_frame_builder.js
-│  │  │  ├── zone_editor_geometry_builder.js
-│  │  │  └── zone_editor_state.js
-│  │  ├── metadata
-│  │  │  ├── dev_tool_parameter_descriptions.json
-│  │  │  ├── overlay_metric_descriptions.json
-│  │  │  └── parameter_labels.json
-│  │  ├── modules
-│  │  │  ├── base_debug_module.js
-│  │  │  ├── bite_sequence_log_printer.js
-│  │  │  ├── bite_tick_log_printer.js
-│  │  │  ├── bite_ticks_debug_module.js
-│  │  │  ├── catch_time_debug_module.js
-│  │  │  ├── console_table_debug_module.js
-│  │  │  ├── deviations_debug_module.js
-│  │  │  ├── exhaustion_debug_module.js
-│  │  │  ├── forces_debug_module.js
-│  │  │  ├── location_debug_module.js
-│  │  │  ├── map_debug_module.js
-│  │  │  ├── net_debug_module.js
-│  │  │  ├── prediction_debug_module.js
-│  │  │  ├── rod_stroke_debug_module.js
-│  │  │  ├── stamina_debug_module.js
-│  │  │  └── tension_debug_module.js
-│  │  ├── overlay
-│  │  │  ├── config
-│  │  │  │  └── overlay_modules_config.js
-│  │  │  ├── core
-│  │  │  │  ├── overlay_controller.js
-│  │  │  │  ├── overlay_module_registry.js
-│  │  │  │  └── overlay_update_loop.js
-│  │  │  ├── dom
-│  │  │  │  ├── overlay_dom_adapter.js
-│  │  │  │  ├── overlay_interaction_bridge.js
-│  │  │  │  ├── overlay_metric_info_bridge.js
-│  │  │  │  ├── overlay_scale_controls.js
-│  │  │  │  └── overlay_window_drag_controller.js
-│  │  │  ├── fight_physics
-│  │  │  │  ├── fight_auto_recovery_section.js
-│  │  │  │  ├── fight_drag_section.js
-│  │  │  │  ├── fight_fish_section.js
-│  │  │  │  ├── fight_line_section.js
-│  │  │  │  ├── fight_movement_section.js
-│  │  │  │  ├── fight_reel_hold_section.js
-│  │  │  │  ├── fight_rod_control_force_section.js
-│  │  │  │  ├── fight_rod_control_geometry_section.js
-│  │  │  │  ├── fight_rod_control_input_section.js
-│  │  │  │  ├── fight_rod_control_section.js
-│  │  │  │  ├── fight_rod_control_visual_section.js
-│  │  │  │  ├── fight_rod_hold_section.js
-│  │  │  │  ├── fight_rod_stroke_section.js
-│  │  │  │  ├── fight_section_base.js
-│  │  │  │  └── fight_tension_section.js
-│  │  │  ├── fight_summary
-│  │  │  │  ├── fight_summary_overlay_module.js
-│  │  │  │  ├── fish_movement_summary_overlay_module.js
-│  │  │  │  ├── line_and_drag_summary_overlay_module.js
-│  │  │  │  └── rod_control_summary_overlay_module.js
-│  │  │  ├── fish_balance
-│  │  │  │  ├── fish_current_force_overlay_module.js
-│  │  │  │  ├── fish_debuffs_summary_overlay_module.js
-│  │  │  │  ├── fish_live_force_summary_section.js
-│  │  │  │  ├── fish_state_force_preview_section.js
-│  │  │  │  └── fish_summary_overlay_module.js
-│  │  │  ├── modules
-│  │  │  │  ├── behavior_overlay_module.js
-│  │  │  │  ├── chances_detail_overlay_module.js
-│  │  │  │  ├── chum_overlay_module.js
-│  │  │  │  ├── debuffs_overlay_module.js
-│  │  │  │  ├── echo_overlay_module.js
-│  │  │  │  ├── fight_physics
-│  │  │  │  │  └── fight_physics_overlay_module.js
-│  │  │  │  ├── fish_balance_overlay_module.js
-│  │  │  │  ├── fish_power_overlay_module.js
-│  │  │  │  ├── live_forces_overlay_module.js
-│  │  │  │  ├── performance_overlay_module.js
-│  │  │  │  ├── player_max_overlay_module.js
-│  │  │  │  ├── stamina_balance_overlay_module.js
-│  │  │  │  └── worst_case_overlay_module.js
-│  │  │  ├── overlay_console_metric_inspector.js
-│  │  │  ├── overlay_metric_resolver.js
-│  │  │  ├── overlay_module.js
-│  │  │  ├── overlay_settings_store.js
-│  │  │  └── services
-│  │  │     ├── overlay_html_builder.js
-│  │  │     ├── overlay_metric_catalog.js
-│  │  │     ├── overlay_value_formatter.js
-│  │  │     └── overlay_view_state_store.js
-│  │  ├── rendering
-│  │  │  └── world_debug_renderer.js
-│  │  ├── runtime
-│  │  │  ├── browser_debug_adapter.js
-│  │  │  ├── debug_service.js
-│  │  │  ├── dev_flags_provider.js
-│  │  │  ├── dev_inventory_split_source.js
-│  │  │  ├── game_debug_facade.js
-│  │  │  └── gameplay_override_reader.js
-│  │  ├── services
-│  │  │  ├── debug_data_selectors.js
-│  │  │  ├── dev_tools_control_binding_registry.js
-│  │  │  ├── dev_tools_parameter_alias_registry.js
-│  │  │  ├── location_dev_tools_schema.js
-│  │  │  ├── managed_listener_counter.js
-│  │  │  └── memory_leak_watchdog.js
-│  │  ├── styles
-│  │  │  ├── dev-tools.css
-│  │  │  ├── overlay-content.css
-│  │  │  ├── overlay.css
-│  │  │  └── ui-catalog.css
-│  │  ├── time
-│  │  │  └── dev_time_control.js
-│  │  ├── tools
-│  │  │  ├── dev_tools.js
-│  │  │  ├── dev_tools_parameter_tooltip_provider.js
-│  │  │  ├── dev_tools_ui.js
-│  │  │  ├── scene_layer_dev_section.js
-│  │  │  ├── spine_rod_dev_section.js
-│  │  │  └── zone_editor_section.js
-│  │  └── ui_catalog
-│  │     ├── ui_catalog_controls_example.js
-│  │     ├── ui_catalog_definitions.js
-│  │     ├── ui_catalog_document_scope.js
-│  │     ├── ui_catalog_frame_scheduler.js
-│  │     ├── ui_catalog_house_example.js
-│  │     ├── ui_catalog_hud_example.js
-│  │     ├── ui_catalog_inventory_example.js
-│  │     ├── ui_catalog_inventory_fixture.js
-│  │     ├── ui_catalog_keepnet_example.js
-│  │     ├── ui_catalog_keepnet_fixture.js
-│  │     ├── ui_catalog_meters_example.js
-│  │     └── ui_catalog_page.js
+│  │     ├── scene_layer_composition.js
+│  │     └── time_display_composition.js
 │  ├── engine
 │  │  ├── animation
-│  │  │  ├── scalar_smoother.js
-│  │  │  └── skeletal_scene_contract.js
+│  │  │  └── scalar_smoother.js
 │  │  ├── assets
-│  │  │  ├── asset_catalog.js
 │  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
-│  │  │  ├── asset_manifest.js
-│  │  │  ├── asset_variant_selector.js
-│  │  │  └── startup_load_progress.js
+│  │  │  └── asset_manifest.js
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── diagnostics
 │  │  │  └── inactive_frame_probe.js
 │  │  ├── events
-│  │  │  ├── event_bus.js
 │  │  │  └── event_lifecycle.js
 │  │  ├── math
 │  │  │  ├── normalize_distance.js
@@ -745,15 +217,10 @@
 │  │  │  ├── render_component.js
 │  │  │  ├── render_math.js
 │  │  │  └── render_pass.js
-│  │  ├── scene
-│  │  │  ├── deferred_scene_layer.js
-│  │  │  └── inactive_scene_layer.js
-│  │  └── screens
-│  │     └── screen_host.js
+│  │  └── scene
+│  │     ├── deferred_scene_layer.js
+│  │     └── inactive_scene_layer.js
 │  ├── entrypoints
-│  │  ├── dev
-│  │  │  └── ui_catalog.entry.js
-│  │  ├── dev.entry.js
 │  │  └── game.entry.js
 │  ├── game
 │  │  ├── application
@@ -793,8 +260,6 @@
 │  │  │  │  ├── reel_service.js
 │  │  │  │  ├── rod_visual_offset_system.js
 │  │  │  │  └── tension_service.js
-│  │  │  ├── house
-│  │  │  │  └── room_upgrade_service.js
 │  │  │  ├── input
 │  │  │  │  ├── fight_input_action_composer.js
 │  │  │  │  └── pull_input_mapper.js
@@ -894,7 +359,8 @@
 │  │  │     ├── current_location.js
 │  │  │     ├── environment_system.js
 │  │  │     ├── game_world.js
-│  │  │     └── ground_plane_scope.js
+│  │  │     ├── ground_plane_scope.js
+│  │  │     └── time_phase_control.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish
@@ -914,8 +380,6 @@
 │  │  │  │  │  ├── peaceful_fish.js
 │  │  │  │  │  ├── predator_fish.js
 │  │  │  │  │  └── rare_fish.js
-│  │  │  │  ├── house
-│  │  │  │  │  └── house_config.js
 │  │  │  │  ├── inventory
 │  │  │  │  │  └── item_assembly_profiles.js
 │  │  │  │  ├── items
@@ -929,7 +393,6 @@
 │  │  │  │  │  ├── cast_rod_control_config.js
 │  │  │  │  │  ├── environment_physics.js
 │  │  │  │  │  ├── fight_physics.js
-│  │  │  │  │  ├── physics_units_and_naming.js
 │  │  │  │  │  ├── retrieve_physics.js
 │  │  │  │  │  ├── tackle_physics.js
 │  │  │  │  │  └── tension_physics.js
@@ -942,9 +405,7 @@
 │  │  │  │  ├── immutable_config.js
 │  │  │  │  └── resolved_config_provider.js
 │  │  │  └── validation
-│  │  │     ├── aquarium_visual_issues.js
-│  │  │     ├── config_schema_validator.js
-│  │  │     ├── config_validation_result.js
+│  │  │     ├── inventory_selector_config_validator.js
 │  │  │     ├── item_progression_config_validator.js
 │  │  │     ├── item_rarity_config_validator.js
 │  │  │     └── rarity_config_validator.js
@@ -1071,8 +532,6 @@
 │  │  │  │  ├── tackle_stress_accumulator.js
 │  │  │  │  ├── tackle_stress_system.js
 │  │  │  │  └── weakest_tackle_limit_resolver.js
-│  │  │  ├── house
-│  │  │  │  └── room_progress.js
 │  │  │  ├── inventory
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
@@ -1193,19 +652,7 @@
 │  │     │  ├── rod_spine_renderer.js
 │  │     │  └── rod_static_renderer.js
 │  │     ├── house
-│  │     │  ├── aquarium_feed_picker.js
-│  │     │  ├── aquarium_fish_motion.js
-│  │     │  ├── aquarium_fish_view.js
-│  │     │  ├── aquarium_fish_view_style.js
-│  │     │  ├── fish_thumbnail_path.js
-│  │     │  ├── house_fish_list_view.js
-│  │     │  ├── house_labels.js
-│  │     │  ├── house_level_card.js
-│  │     │  ├── house_navigation_controller.js
-│  │     │  ├── house_presenter.js
-│  │     │  ├── house_room_view.js
-│  │     │  ├── house_screen_markup.js
-│  │     │  └── house_view.js
+│  │     │  └── fish_thumbnail_path.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
 │  │     │  ├── fight_hud_renderer.js
@@ -1256,6 +703,10 @@
 │  │     │  ├── inventory_scale_renderer.js
 │  │     │  ├── inventory_section_tabs_renderer.js
 │  │     │  ├── inventory_sections.js
+│  │     │  ├── inventory_selector_config.js
+│  │     │  ├── inventory_selector_geometry.js
+│  │     │  ├── inventory_selector_labels.js
+│  │     │  ├── inventory_selector_renderer.js
 │  │     │  ├── inventory_slot_icons.js
 │  │     │  ├── inventory_sort_config.js
 │  │     │  ├── inventory_subfilter_resolver.js
@@ -1315,7 +766,6 @@
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── game-shell.css
-│  │     │  ├── house.css
 │  │     │  ├── hud
 │  │     │  │  ├── chum-control.css
 │  │     │  │  ├── depth-selector.css
@@ -1329,6 +779,7 @@
 │  │     │  │  ├── assembly-editor.css
 │  │     │  │  ├── attachments.css
 │  │     │  │  ├── header.css
+│  │     │  │  ├── inventory-selector.css
 │  │     │  │  ├── item-cards.css
 │  │     │  │  ├── item-parameters.css
 │  │     │  │  ├── list-and-filters.css
@@ -1354,8 +805,8 @@
 │  │     ├── ui
 │  │     │  ├── ui_auto_switch_renderer.js
 │  │     │  ├── ui_close_button_renderer.js
-│  │     │  ├── ui_hint_renderer.js
-│  │     │  └── ui_sheet_handle_renderer.js
+│  │     │  ├── ui_hint_config.js
+│  │     │  └── ui_hint_renderer.js
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── viewport
@@ -1367,7 +818,6 @@
 │  │     └── world
 │  │        ├── boat_chum_renderer.js
 │  │        └── world_scene_renderer.js
-│  ├── package.json
 │  └── platform
 │     └── browser
 │        ├── animation
@@ -1391,19 +841,18 @@
 │        ├── diagnostics
 │        │  └── console_logger.js
 │        ├── dom
-│        │  ├── draggable_button.js
+│        │  ├── double_activation_controller.js
 │        │  ├── engine_interface.js
 │        │  ├── glyph_ink_metrics.js
+│        │  ├── hint_sheet_controller.js
 │        │  ├── horizontal_scroll_controller.js
-│        │  ├── hud_row_sizer.js
 │        │  ├── inventory_dom_factory.js
 │        │  ├── inventory_long_press_controller.js
+│        │  ├── inventory_selector_controller.js
 │        │  ├── item_condition_dom_adapter.js
 │        │  ├── item_progression_dom_adapter.js
 │        │  ├── item_rarity_dom_adapter.js
 │        │  ├── scroll_container_aligner.js
-│        │  ├── sheet_dismiss_controller.js
-│        │  ├── sheet_height_controller.js
 │        │  ├── swipe_pager_controller.js
 │        │  ├── ui_event_shield.js
 │        │  └── ui_surface_adapter.js
@@ -1446,132 +895,21 @@
 │        │  ├── game_time_local_store.js
 │        │  ├── inventory_snapshot_local_store.js
 │        │  ├── live_bait_local_store.js
-│        │  ├── local_storage_cache.js
-│        │  └── room_progress_local_store.js
+│        │  └── local_storage_cache.js
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js
-│        │  ├── game_clock.js
-│        │  └── game_minute_ticker.js
+│        │  └── game_clock.js
 │        └── ui
 │           ├── chum_controls.js
 │           ├── depth_selector.js
-│           ├── embedded_page_overlay.js
 │           ├── fullscreen_control.js
 │           ├── game_controls.js
 │           ├── game_stage_layout.js
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
 │           └── time_display.js
-├── ui-catalog.html
-├── utils
-│  ├── architecture-check.js
-│  ├── asset-preloader-check.js
-│  ├── bait-boat-water-metric-check.js
-│  ├── bait-effectiveness-check.js
-│  ├── build-pages-release.js
-│  ├── cast-rod-control-check.js
-│  ├── check-js.js
-│  ├── clean-artifacts.js
-│  ├── config-runtime-check.js
-│  ├── config-schema-check.js
-│  ├── consumable-event-identity-check.js
-│  ├── convert-images.js
-│  ├── create-version-copy.js
-│  ├── css-usage-check.js
-│  ├── degradation-color-check.js
-│  ├── dev-server.js
-│  ├── dev-time-check.js
-│  ├── dev-tools-linked-parameter-check.js
-│  ├── embedded-page-overlay-check.js
-│  ├── fish-rarity-check.js
-│  ├── float-depth-cast-check.js
-│  ├── frame-profiler-check.js
-│  ├── game-application-composition-check.js
-│  ├── game-cycle-check.js
-│  ├── git-version-copy.js
-│  ├── hook-domain-semantics-check.js
-│  ├── house-check.js
-│  ├── house-navigation-check.js
-│  ├── inventory-auto-refill-stock-check.js
-│  ├── inventory-cast-and-lure-check.js
-│  ├── inventory-equipment-check.js
-│  ├── inventory-equipment-hydration-check.js
-│  ├── inventory-integration-check.js
-│  ├── inventory-line-allocation-check.js
-│  ├── inventory-migration-check.js
-│  ├── inventory-save-round-trip-check.js
-│  ├── inventory-transaction-check.js
-│  ├── inventory-ui-check.js
-│  ├── item-assembly-domain-check.js
-│  ├── item-condition-check.js
-│  ├── item-freshness-gameplay-check.js
-│  ├── item-progression-check.js
-│  ├── item-rarity-check.js
-│  ├── item-rarity-roundtrip-check.js
-│  ├── item-stat-contract-check.js
-│  ├── item-state-hardening-check.js
-│  ├── keepnet-check.js
-│  ├── line-allocation-check.js
-│  ├── live-bait-check.js
-│  ├── pages-release-check.js
-│  ├── platform-runtime-check.js
-│  ├── player-inventory-check.js
-│  ├── project-structure.js
-│  ├── rarity-production-check.js
-│  ├── recast-aim-check.js
-│  ├── render-resolution-check.js
-│  ├── rod-side-tension-check.js
-│  ├── run-checks.js
-│  ├── scene-layer-check.js
-│  ├── scouting-input-check.js
-│  ├── service-artifacts-check.js
-│  ├── spine-rod-check.js
-│  ├── tackle-line-limit-check.js
-│  ├── testing
-│  │  ├── README.md
-│  │  ├── baselines
-│  │  │  └── game-cycle.txt
-│  │  ├── core
-│  │  │  ├── check_assertion.js
-│  │  │  ├── house_markup_source.js
-│  │  │  ├── output_baseline.js
-│  │  │  └── source_runtime.js
-│  │  ├── doubles
-│  │  │  └── delegating_inventory_capacity_policy.js
-│  │  ├── keepnet
-│  │  │  └── test_document.js
-│  │  ├── live_bait
-│  │  │  ├── feed_loading_scenarios.js
-│  │  │  ├── feed_picker_scenarios.js
-│  │  │  ├── inventory_feed_scenarios.js
-│  │  │  ├── keepnet_lifecycle_scenarios.js
-│  │  │  └── shared_feed_scenarios.js
-│  │  ├── runtime
-│  │  │  ├── chum_test_composition.js
-│  │  │  ├── config_test_composition.js
-│  │  │  ├── constructor_defaults.js
-│  │  │  ├── game_application_test_composition.js
-│  │  │  ├── game_facade_test_composition.js
-│  │  │  ├── item_rarity_test_composition.js
-│  │  │  ├── item_stat_test_composition.js
-│  │  │  ├── native_esm_test_loader.js
-│  │  │  └── render_frame_test_composition.js
-│  │  ├── styles
-│  │  │  └── page_stylesheet_reader.js
-│  │  └── suites
-│  │     └── check_manifest.js
-│  ├── ui-catalog-check.js
-│  ├── ui-components-check.js
-│  ├── ui-surface-check.js
-│  ├── vendor-libraries.js
-│  ├── victory-input-check.js
-│  ├── viewport-check.js
-│  ├── water-metric-check.js
-│  └── zone-editor-check.js
 └── vendor
-   ├── manifest.json
-   ├── package.json
    ├── pixi
    │  └── 8.22.0
    │     ├── LICENSE

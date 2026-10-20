@@ -7,7 +7,7 @@ const { CHECK_DEFINITIONS } = require("./testing/suites/check_manifest");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 
-// Registry of checks; every utils/*-check.js file must be registered exactly once.
+// Registry of stable scenario IDs; discover checks recursively to reject orphaned tests.
 class CheckCatalog {
   constructor(definitions, projectRoot) {
     this.checks = Object.freeze(definitions.map((definition) => Object.freeze({ ...definition })));
@@ -35,13 +35,20 @@ class CheckCatalog {
     for (const check of this.checks) {
       if (!check.id || !check.title || !check.file) throw new Error("Every check requires id, title and file");
       if (ids.has(check.id)) throw new Error(`Duplicate check id: ${check.id}`);
+      if (files.has(check.file)) throw new Error(`Duplicate check file: ${check.file}`);
       if (!fs.existsSync(path.join(projectRoot, check.file))) throw new Error(`Check file does not exist: ${check.file}`);
       ids.add(check.id);
       files.add(check.file);
     }
-    for (const name of fs.readdirSync(path.join(projectRoot, "utils"))) {
-      if (name.endsWith("-check.js") && !files.has(`utils/${name}`)) {
-        throw new Error(`Check is missing from the manifest: utils/${name}`);
+    const utilsRoot = path.join(projectRoot, "utils");
+    const candidates = [
+      ...fs.readdirSync(utilsRoot).map(name => `utils/${name}`),
+      ...fs.readdirSync(path.join(utilsRoot, "checks"), { recursive: true })
+        .map(name => `utils/checks/${name.replaceAll("\\", "/")}`),
+    ];
+    for (const file of candidates) {
+      if ((file.endsWith("-check.js") || file.endsWith("/check-js.js")) && !files.has(file)) {
+        throw new Error(`Check is missing from the manifest: ${file}`);
       }
     }
   }

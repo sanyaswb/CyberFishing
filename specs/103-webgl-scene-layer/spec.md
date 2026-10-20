@@ -205,7 +205,7 @@ and draw exactly as before (game-cycle baseline unchanged).
 | 4. Engine port | `src/engine/scene/inactive_scene_layer.js` (`SCENE_LAYER_METHODS`, `InactiveSceneLayer`), composed in `GameCompositionRoot` from the optional `createSceneLayer` factory like the frame probe; `GameRenderCoordinator` renders it in the `scene` probe section after the frame is built and before the 2D passes; the session disposes it |
 | 5. Platform | `pixi_runtime_module.js` (`createPixiRuntime()` → `{ version, createSceneLayer(options) }`), `PixiSceneLayer` (`pixi_scene_layer.js`), `.game-shell__scene` in `game-shell.css` |
 | 6. DEV flag | `src/bootstrap/development/dev_scene_layer_composition.js` |
-| 7. Check | `utils/scene-layer-check.js` (`scene-layer`, Quick) |
+| 7. Check | `utils/checks/platform/scene-layer-check.js` (`scene-layer`, Quick) |
 | 8. Cleanup | see below |
 
 Decisions made while implementing (owner may revisit):

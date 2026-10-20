@@ -306,11 +306,11 @@ one reproducible build and must never be edited independently from SCSS.
 
 ## Validation
 
-`utils/css-usage-check.js` validates native composition, ownership, linked assets, class reachability,
+`utils/checks/architecture/css-usage-check.js` validates native composition, ownership, linked assets, class reachability,
 BEM naming, invalid inherited-font shorthand, forced focus removal, ungated hover/press decoration
 and static style injection. It contains 18 negative fixtures. Inventory/item/platform tests preserve interaction, rendering,
-cached DOM/frame identity and disposal contracts. Architecture, Quick and Full checks remain
-required, along with browser smoke for affected production/DEV UI and responsive layouts.
+cached DOM/frame identity and disposal contracts. One Full run includes Architecture and Quick; use focused
+checks while iterating. Follow utils/UTILS_RULES.md: appearance and browser acceptance belong to the owner.
 
 The earlier migration record (spec 018, archived at the `specs-archive-001-019` tag) is historical; this document
 describes the current styling boundaries.

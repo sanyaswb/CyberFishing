@@ -13,12 +13,12 @@ House/каталог мають один active embedded frame; previews кат�
 ## Automated checks after implementation
 
 ```powershell
-node utils/ui-catalog-check.js
-node utils/ui-components-check.js
-node utils/ui-surface-check.js
-node utils/keepnet-check.js
-node utils/inventory-ui-check.js
-node utils/degradation-color-check.js
+node utils/checks/ui/ui-catalog-check.js
+node utils/checks/ui/ui-components-check.js
+node utils/checks/ui/ui-surface-check.js
+node utils/checks/inventory/keepnet-check.js
+node utils/checks/ui/inventory-ui-check.js
+node utils/checks/items/degradation-color-check.js
 npm run check:architecture
 npm run check:quick
 npm run check

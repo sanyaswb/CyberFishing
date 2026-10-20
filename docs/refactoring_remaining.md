@@ -7,7 +7,7 @@ This is the single refactoring checklist. It replaces the open list of the
 Owner decisions for releases, legacy saves and DEV isolation:
 [follow-up decisions](../specs/029-backend-foundation/follow-up-decisions.md).
 Each step is a separate spec (new specs start at 033) with unchanged gameplay, saves and timing; evidence is
-focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and index/dev browser smoke.
+focused checks and one Full run (includes Architecture and Quick), the unchanged game-cycle digest and index/dev browser smoke.
 
 ## Open, in the agreed order
 

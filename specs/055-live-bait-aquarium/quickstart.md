@@ -4,8 +4,8 @@ This guide records implementation checks for the local live-bait feature and the
 
 ## Starting evidence (2026-10-11, before code changes)
 
-- `node utils/game-cycle-check.js`: passed; victory peak line stress 1.3%, line-break peak 262.5%, and the existing report matched its baseline.
-- `node utils/inventory-save-round-trip-check.js`: passed; 15 items, 3 assemblies, 1 loadout, with schema 3/2 byte-identical after upgrade.
+- `node utils/checks/gameplay/game-cycle-check.js`: passed; victory peak line stress 1.3%, line-break peak 262.5%, and the existing report matched its baseline.
+- `node utils/checks/inventory/inventory-save-round-trip-check.js`: passed; 15 items, 3 assemblies, 1 loadout, with schema 3/2 byte-identical after upgrade.
 - Preserved the owner's untracked `fisherman-house.html`, `src/entrypoints/house.entry.js`, and `src/game/presentation/house/{house_presenter.js,house_labels.js}`. The page's current image references were unresolved and the entry's startup import did not exist.
 
 ## Prerequisites
@@ -17,8 +17,8 @@ This guide records implementation checks for the local live-bait feature and the
 ## Checks
 
 ```powershell
-node utils/live-bait-check.js
-node utils/house-check.js
+node utils/checks/gameplay/live-bait-check.js
+node utils/checks/gameplay/house-check.js
 npm run check:architecture
 npm run check:quick
 npm run check
@@ -29,19 +29,19 @@ Record the game-cycle output before this gameplay change and rebaseline only del
 
 ## Implementation evidence (2026-10-11)
 
-- `node utils/live-bait-check.js`: passed eligibility, exactly-once outcomes, individual hook identity, local save conflicts and corruption, clock-driven death, feed priority, all 10 capacities, automatic feeder, third victory action, and source `swim` at configured 50% speed.
+- `node utils/checks/gameplay/live-bait-check.js`: passed eligibility, exactly-once outcomes, individual hook identity, local save conflicts and corruption, clock-driven death, feed priority, all 10 capacities, automatic feeder, third victory action, and source `swim` at configured 50% speed.
 - `npm run check:architecture`, `npm run check:quick`, and `npm run check`: passed; the full suite reported 40 checks. `git diff --check` passed.
-- `node utils/game-cycle-check.js`: unchanged baseline. `node utils/inventory-save-round-trip-check.js`: unchanged inventory bytes (15 items, 3 assemblies, 1 loadout; schema 3/2 byte-identical).
+- `node utils/checks/gameplay/game-cycle-check.js`: unchanged baseline. `node utils/checks/inventory/inventory-save-round-trip-check.js`: unchanged inventory bytes (15 items, 3 assemblies, 1 loadout; schema 3/2 byte-identical).
 - Browser smoke on `dev.html`, `index.html`, and `fisherman-house.html`: both game pages loaded; Keepnet and Inventory opened separately and switched without overlapping; the DevTools house button navigated; two room buttons worked; the transparent aquarium aligned with the table; aquarium installation, one-step upgrade, free feed acquisition, feeder installation, and reload persistence worked. A DEV-only startup crash exposed a missing `ConfigProvider.liveBait` getter and was fixed before this record.
-- `utils/pages-release-check.js` passed for the last committed release. Its new house-page path can only be exercised by this check after this work is committed; the working-tree house page and both supplied PNGs were verified in the browser.
-- Manual catch-to-victory and live-bait cast feel remain for the owner's play check before release. The deterministic acceptance paths are covered by `utils/live-bait-check.js`.
+- `utils/checks/tooling/pages-release-check.js` passed for the last committed release. Its new house-page path can only be exercised by this check after this work is committed; the working-tree house page and both supplied PNGs were verified in the browser.
+- Manual catch-to-victory and live-bait cast feel remain for the owner's play check before release. The deterministic acceptance paths are covered by `utils/checks/gameplay/live-bait-check.js`.
 
 ## House revision evidence (2026-10-12)
 
-- `node utils/house-check.js`: passed shared persisted game time, live time-scale edits, the exact location blend curve, all fifteen level/phase backgrounds, both transparent overlays, room upgrade durations, reload continuity, automatic elapsed completion, free finish, maximum level and corrupt-save recovery.
+- `node utils/checks/gameplay/house-check.js`: passed shared persisted game time, live time-scale edits, the exact location blend curve, all fifteen level/phase backgrounds, both transparent overlays, room upgrade durations, reload continuity, automatic elapsed completion, free finish, maximum level and corrupt-save recovery.
 - `npm run check`: passed 41 checks, including unchanged game-cycle and inventory round-trip checks. Architecture and CSS checks passed.
 - Browser smoke: `index.html` and `dev.html` loaded with the shared time display and the DEV house button; the house loaded all three light layers for level 1. The bottom sheet opened, renovation showed a countdown over the undimmed supplied art, reload preserved the timer, free finish selected level 2 art, aquarium installation worked, and the header appeared on downward scroll and hid on upward scroll.
-- The immutable Pages release checker still tests committed HEAD; its updated room-asset assertions will run against the new house only after these uncommitted files are committed. Working-tree art presence is checked by `utils/house-check.js`.
+- The immutable Pages release checker still tests committed HEAD; its updated room-asset assertions will run against the new house only after these uncommitted files are committed. Working-tree art presence is checked by `utils/checks/gameplay/house-check.js`.
 
 ## Manual browser scenarios
 
@@ -59,7 +59,7 @@ The owner should play-check motion and feeding feel before release, as `DEVELOPM
 ## Implementation audit (2026-10-12)
 
 - `tasks.md` has 45 tasks marked complete and 7 open after convergence. The remaining work is T039–T040 and T048–T052. T040 is partially done: `CHANGELOG.md`, the project version (`0.33.0`), and the spec-029 cloud-contract note are present; the owner's movement/care play check is still pending.
-- Current working-tree checks passed: `node utils/live-bait-check.js`, `node utils/house-check.js`, `npm run check:architecture`, `npm run check:quick`, `npm run check` (42 checks), and `git diff --check`. The Full suite's Pages check exercises committed `0.32.1-b974601`; it has not validated the uncommitted house page and art in a `0.33.0` release.
+- Current working-tree checks passed: `node utils/checks/gameplay/live-bait-check.js`, `node utils/checks/gameplay/house-check.js`, `npm run check:architecture`, `npm run check:quick`, `npm run check` (42 checks), and `git diff --check`. The Full suite's Pages check exercises committed `0.32.1-b974601`; it has not validated the uncommitted house page and art in a `0.33.0` release.
 - The house page currently contains one `data-house-room` viewport. Navigation controls are hidden when fewer than two rooms exist, so T048 and the multi-room part of FR-014 remain open.
 - `deathOrder` is sampled and saved but is not read by care settlement. A persisted random tie order for simultaneous starvation deaths remains open (T050).
 - A full aquarium falls back to the keepnet as specified, but the successful victory action closes without showing that reason (T051).
@@ -72,7 +72,7 @@ This supersedes the preceding audit for T049/T051 and Keepnet behavior. 53 tasks
 - Added species cards and count badges, same-dialog individual details, exact caught artwork/weight/rarity, existing fish actions with release confirmation, keyboard navigation and stable timer refresh. UI grouping never creates a second writable fish collection.
 - Reproduced rarity loss with a failing assertion before the fix. Snapshot v2 captures the numeric rating, validates v1 migration, retains unknown old rarity as null, and protects corrupt bytes. Live bait now includes its exact image and rating in the read model.
 - Regression checks cover expired candidates between care ticks, mixed aquarium/keepnet fish of one species, read-only auto-feed projection, nonzero feeder threshold, elapsed care on rejected commands, hook capacity reservations, and recovery of surviving interrupted casts without reviving expired fish.
-- `utils/live-bait-check.js` includes 100 eligible/ineligible outcomes and exactly-once hook loss/reload cycles; a 24-hour absence produces the same full read model before and after reload. `utils/keepnet-check.js` exercises production Keepnet composition with a DOM test double, including distinct individual images/ratings, missing images, filters, countdown focus/scroll retention, command actions, release confirmation, expiry, Back/Escape/Tab and victory failure/fallback notifications.
+- `utils/checks/gameplay/live-bait-check.js` includes 100 eligible/ineligible outcomes and exactly-once hook loss/reload cycles; a 24-hour absence produces the same full read model before and after reload. `utils/checks/inventory/keepnet-check.js` exercises production Keepnet composition with a DOM test double, including distinct individual images/ratings, missing images, filters, countdown focus/scroll retention, command actions, release confirmation, expiry, Back/Escape/Tab and victory failure/fallback notifications.
 - Architecture and Quick passed; Full passed 43 checks. The unchanged game-cycle baseline and existing inventory save checks pass. Full's release check before commit tested the prior committed release; publication must use the new commit.
 - Browser visual checks were not run at the owner's explicit request. Owner acceptance: open `dev.html`, retain two fish of one species with different weights/ratings, verify card count and thumbnails, inspect details, use filters/Back, select a live bait and test the mobile layout.
 - Remaining care gap: `deathOrder` is persisted but simultaneous starvation deaths still have no per-episode random tie ordering (T050). This update preserves the existing lifetime/death balance; it does not claim that requirement complete. Multi-room work (T048) and owner visual/feel acceptance remain separate.

@@ -20,7 +20,7 @@
 
 **Storage**: Відсутнє у каталозі. Демонстраційний стан у пам’яті; доступ до live saves, ігрових команд, care-сервісів та реального clock заборонений.
 
-**Testing**: Focused component/catalog/scale contracts, `utils/css-usage-check.js`, `utils/architecture-check.js`, Architecture + Quick + Full, незмінний game-cycle/save baseline. Візуальне приймання виконує власник.
+**Testing**: Focused component/catalog/scale contracts, `utils/checks/architecture/css-usage-check.js`, `utils/checks/architecture/architecture-check.js`, Architecture + Quick + Full, незмінний game-cycle/save baseline. Візуальне приймання виконує власник.
 
 **Target Platform**: Поточні браузерні DOM/Canvas адаптери; логічна ширина 320px, фізичні перевірки 240, 280, 319, 320, 740px і ширші. Список підтримуваних браузерів не розширюється цим планом.
 
@@ -87,9 +87,9 @@ src/game/presentation/styles/auto-switch.css
 src/game/presentation/styles/ui-surface.css
 src/game/presentation/styles/inventory/resource-meters.css
 src/game/presentation/styles/tokens.css
-utils/ui-catalog-check.js
-utils/ui-components-check.js
-utils/ui-surface-check.js
+utils/checks/ui/ui-catalog-check.js
+utils/checks/ui/ui-components-check.js
+utils/checks/ui/ui-surface-check.js
 ```
 
 **Structure Decision**: UI-спільні шаблони розміщуються у presentation. Каталог і контрольні дані — DEV; будь-які factory/strategy з host/config залежностями створює development bootstrap. Scale adapter — platform із вузьким інжектованим контрактом. Уже спільний `InventoryResourceMeterRenderer` повторно використовується без перейменування або нового wrapper лише заради каталогу. Стилі не переносяться масово: зберігати їхніх наявних власників і native порядок завантаження.
