@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.45.27 - Authoritative Node.js TypeScript Backend Architecture
+
+- Formulate architecture rules for authoritative Node.js TypeScript backend, client-server separation (60 FPS Vanilla client without heavy frameworks), and post-v1.0.0 client TypeScript migration roadmap in DEVELOPMENT_RULES.md and docs/architecture.md.
+
 ## v0.45.26 - Radial Selector Native-Size Artwork and Open Border
 
 - Match the open central button's border width with the visible border of the expanded sectors (`calc(0.025 * var(--inventory-selector-drawing-unit))`), keeping uniform border thickness across expansion and presets.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.17 - Equipped Rod and Default Radial Selector
 
 - Enable the radial selector by default in production and DEV, retaining the explicit classic override. Its equipment sector follows the equipped rod thumbnail through the existing inventory change source, reusing toolbar artwork cropping without rotation. Use the SVG for an empty/unillustrated rod or a failed load; reject stale preload results and release the subscription on disposal. Reuse the production composition in the catalogue.
-
-## v0.45.16 - Stable Leftward Float Expansion
-
-- Keep a permanent flexible depth slot to the left of toolbar actions. Anchor the float button at its right edge and expand the shared slider frame left to the same screen inset as the rightmost action, without shifting or rewrapping neighbours. Remove the 200px panel cap; the version badge shares the free slot and yields while it is open. Retain smooth width/reveal, reduced motion and cached drag geometry.

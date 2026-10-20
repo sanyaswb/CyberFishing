@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.26";
+export const CURRENT_PROJECT_VERSION = "0.45.27";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "selector-native-size-artwork",
+  codename: "backend-architecture-typescript-roadmap",
   updatedAt: "2026-10-20",
   notes: Object.freeze([
+    "Document authoritative Node.js TypeScript backend architecture, client-server responsibilities, and post-v1.0.0 client TypeScript roadmap",
     "Radial selector draws at its largest preset and scales down, preserving its frame and hit geometry; finished highlight animations release their effect to CSS",
     "Radial selector open central button border width matches the expanded sectors (0.025 of drawing unit), keeping uniform border thickness across expansion and size presets",
     "Depth slider panel is capped at 200 logical pixels; endpoint labels sit below the centred rail, midway between its lower edge and the container bottom while the float and neighbouring actions stay fixed",

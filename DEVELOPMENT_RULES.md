@@ -17,6 +17,15 @@ Boundaries:
 
 Domain/Application must not directly depend on DOM, Canvas, localStorage, Audio API, browser globals or DEV. Runtime config must be injected through constructors/factories/composition; Domain must not directly import raw config globals.
 
+Client-server architecture and backend boundaries:
+```text
+CLIENT (Browser) ↔ [WebSocket / REST] ↔ BACKEND (Node.js / TypeScript)
+```
+- Authoritative backend (Node.js & TypeScript): the backend is implemented in TypeScript on Node.js (Fastify for REST/HTTP, ws/uWebSockets for real-time game traffic). Critical gameplay math, RNG seed handling, fish generation, bite chances, loot tables, catch weight/size, fight outcome validation, shop purchases, and inventory persistence live exclusively on the backend. The client never dictates catch results or currency grants.
+- Shared domain: pure Domain and Engine logic (`src/game/domain/`, `src/engine/`) remains platform-agnostic (zero DOM/Canvas dependencies) so calculation models, physics formulas, tackle stress budgets, and rules can be evaluated identically on the Node.js backend.
+- Client-server separation and framework policy: the client is strictly a rendering (Canvas 2D / WebGL PixiJS, Spine), animation, HUD, audio, and input layer running a 60 FPS game loop. Heavy enterprise frameworks (such as Angular) and reactive Virtual DOM frameworks (such as Vue) are prohibited on the client: they introduce change-detection/Zone.js game-loop conflicts, GC pause stuttering, and unnecessary overhead in real-time 60 FPS rendering. Real-time gameplay synchronization uses WebSockets; account, persistence, and transactional inventory actions use REST/RPC (Fastify).
+- TypeScript roadmap: the backend is written 100% in TypeScript from day one. The client codebase remains on zero-build native ESM in Vanilla JavaScript prior to version 1.0.0 for maximum iteration speed, instant browser refresh, and transparent debugging; after version 1.0.0, the entire client codebase will undergo a planned migration to TypeScript.
+
 Single Source of Truth does NOT mean one giant GameState. Each mutable fact must have one authoritative owner. Do not duplicate writable state or let UI/debug/render become gameplay state owners.
 
 Structural refactoring must not be mixed with gameplay changes. Preserve behavior, formulas, APIs, state semantics, save format, timing and performance (the game-cycle output must stay identical). Do not opportunistically rebalance, rename APIs or redesign state unless explicitly requested.

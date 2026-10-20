@@ -215,6 +215,33 @@ surface when the scene is WebGL (spine-webgl with its offscreen GL surface other
 "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`, with the live water settings). Rules:
 [docs/rendering.md](rendering.md).
 
+## Client-server architecture and TypeScript roadmap
+
+```text
+CLIENT (Browser Vanilla JS / 60 FPS) ↔ [WebSocket / REST Fastify] ↔ BACKEND (Node.js TypeScript)
+```
+
+### 1. Authoritative Backend (Node.js & TypeScript)
+- **Backend Stack**: The backend runs on Node.js and is written entirely in **TypeScript** from the start. Recommended frameworks: Fastify for high-performance HTTP/REST endpoints and `ws`/`uWebSockets.js` for real-time game traffic.
+- **Authoritative Server Model (Anti-Cheat & Integrity)**: Critical calculations, probabilities, and chances live authoritatively on the backend:
+  - Random Number Generation (RNG), bite chances and drop tables;
+  - Fish weight, species generation, and bite timing;
+  - Validation of fight legitimacy, tackle tension, and landing physics;
+  - Authoritative inventory state, transactions, shop validation, and coin balance;
+  - Game persistence and database storage (PostgreSQL / Redis).
+  - The client never decides or dictates catch outcomes or currency grants.
+- **Isomorphic / Shared Domain**: Pure Domain and Engine layers (`src/game/domain/`, `src/engine/`) contain zero DOM, Canvas or browser global dependencies. This enables mathematical and policy models (tackle load limits, stress models, gear integrity, formulas) to run or be shared directly on the TypeScript backend without duplicating logic.
+
+### 2. Client-Server Separation & Framework Policy
+- **Client Responsibilities**: The client is strictly a rendering, animation, audio, and input layer. It executes a 60 FPS frame loop (Canvas 2D / WebGL PixiJS), Spine skeletal models, HUD updates, DOM inventory/dialog layout (BEM, CSS tokens, 320px responsive baseline), and pointer/gesture input.
+- **No Heavy Frameworks**: Heavy enterprise frameworks (such as Angular) and reactive Virtual DOM frameworks (such as Vue) are prohibited on the client to avoid game-loop interference, Zone.js change-detection overhead, GC pause stutter, and unnecessary abstraction layers.
+- **Communication Protocols**: Real-time gameplay events (casting confirmation, bite triggers, fight synchronization, time-of-day phases) use WebSockets; account, persistence, and transactional inventory actions use REST/RPC (Fastify).
+
+### 3. Language and TypeScript Roadmap
+- **Backend**: 100% written in TypeScript from inception.
+- **Client prior to version 1.0.0**: The browser client codebase remains on zero-build native ESM in Vanilla JavaScript for maximum iteration speed, instant browser refresh, and transparent debugging.
+- **Client after version 1.0.0**: A planned migration of the entire client codebase to TypeScript will take place, establishing an end-to-end type-safe TypeScript codebase with shared type contracts across client and backend.
+
 ## Migration history
 
 The classic-script → ESM migration (Stages 1–7.1) and all of its records, evidence, Manifest and
