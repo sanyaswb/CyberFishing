@@ -506,7 +506,7 @@ function checkNativeDevelopmentDisplays() {
 }
 
 function checkLocationMapConfigChanges() {
-  const source = new SourceRuntime({globals:{document:{addEventListener(){},removeEventListener(){},dispatchEvent(){}},
+  const source = new SourceRuntime({globals:{window:{},document:{addEventListener(){},removeEventListener(){},dispatchEvent(){}},
     CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}}, console:{...console,log(){}}},
   });
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
@@ -552,11 +552,14 @@ function checkLocationMapConfigChanges() {
   map.update(16,12);verify(14,15);
   const switches = new Map();
   const navigationButtons = new Map();
-  let houseOpens = 0, catalogOpens = 0;
-  const ui = new Proxy({body:{},createSection:()=>({replaceChildren(){}}),
+  const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {};
+  let houseOpens = 0, catalogOpens = 0, itemGrants = 0, overlayEdits = 0;
+  const ui = new Proxy({body:panelBody,createSection(label,parent,expanded,onToggle,path,options){
+      const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section); return section;
+    },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
     createButtonRow(label,parent,click){navigationButtons.set(label,click);},
-    createSwitcherRow(key,value,parent,change,path){if(path)switches.set(path.join('.'),change);}},
+    createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,parent);controlCounts.set(id,(controlCounts.get(id)||0)+1);}}},
     {get:(target,key)=>target[key] || (()=>{})});
   const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
   const {ZoneEditorState} = source.importModule('src/dev/location/zone_editor_state.js');
@@ -564,12 +567,47 @@ function checkLocationMapConfigChanges() {
   const {WaterMetric} = source.importModule('src/game/domain/locations/water_metric.js');
   const editorState = new ZoneEditorState(); editorState.locationId = locationId;
   const editorMetric = new LocationWaterMetricResolver({pixelsPerMeter:50,logger:console});
-  const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,storageCache:{get:()=>({}),set(){}},
+  const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,
+    catalogs:{items:{rods:{testRod:{itemType:'rod',name:'Test rod',strength:4}}},fishes:[],maps:{}},
+    settingsStore:{getSnapshot:()=>({player:true}),keys:()=>['player'],isEnabled:()=>true,setEnabled:()=>overlayEdits++},
+    grantCatalogItem:()=>{itemGrants++;return {success:true};},
+    itemProgressionDebugProvider:{getSnapshots:()=>[{itemId:'testRod',capacity:'N/A',breakdown:[]}]},
+    rodSpine:{getStatus:()=>({mode:'rectangle',missingClips:[],pixelRatio:1}),exportSkeleton:()=>({fileName:'test-rod.json',text:'{}'}),
+      isSpineEnabled:()=>true,getClips:()=>[],getBones:()=>[]},
+    storageCache:{get:()=>({}),set(){}},
     createWaterMetric:options=>new WaterMetric(options),
     zoneEditorState:editorState, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].distanceProfile),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
     openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
   tools.toggle();
+  const overlaySection = sections.find(section => section.path?.join('.') === 'OVERLAY');
+  assert.equal(overlaySection?.parent, panelBody, 'Overlay is a root section');
+  assert.equal(controlParents.get('CONFIG.debug.overlay'), overlaySection, 'overlay enable keeps its canonical path in Overlay');
+  const inventorySection = sections.find(section => section.path?.join('.') === 'DEBUG_INVENTORY');
+  assert.equal(controlParents.get('CONFIG.debug.inventory.showEffectiveStats'), inventorySection,
+    'inventory diagnostics live in the combined Inventory section');
+  assert.equal(controlParents.get('CONFIG.debug.inventorySplit.enabled')?.parent, inventorySection,
+    'inventory split controls live under Inventory without changing their runtime paths');
+  const rootPaths = sections.filter(section => section.parent === panelBody).map(section => section.path?.join('.'));
+  assert.deepEqual(rootPaths.slice(rootPaths.indexOf('OVERLAY'), rootPaths.indexOf('OVERLAY') + 3),
+    ['OVERLAY','CONFIG','CONFIG.debug'], 'CONFIG then DEBUG immediately follow Overlay');
+  assert.equal(rootPaths.at(-1), 'DEV_SERVICE', 'service controls stay at the bottom');
+  const byPath = path => sections.find(section => section.path?.join('.') === path);
+  assert.equal(byPath('ITEM_SHOP').parent,panelBody,'the shop is accessible at the top');
+  assert.equal(byPath('ITEM_SHOP').options.buttonTitle,true,'the shop has a button disclosure');
+  assert(rootPaths.indexOf('ITEM_SHOP') < rootPaths.indexOf('OVERLAY'),'the shop precedes the settings');
+  for(const path of ['MAP_DB','FISH_DB','ITEM_DB']) assert.equal(byPath(path).parent,byPath('DATABASE'),'database editors share one root');
+  assert.equal(byPath('SPINE_ROD').parent,byPath('SPINE'),'the rod editor lives in the Spine root');
+  assert.equal(byPath('SPINE_ROD').label,'test-rod','the Spine editor uses the skeleton file name');
+  for(const path of ['CONFIG_OVERRIDES','ITEM_PROGRESSION']) assert.equal(byPath(path).parent,byPath('DEV_SERVICE'),'service tools share the bottom root');
+  assert.equal(byPath('OVERLAY_MODULES').parent,overlaySection,'overlay modules live under Overlay');
+  for(const path of ['CONFIG.debug.overlay','CONFIG.debug.inventory.showEffectiveStats','CONFIG.debug.inventorySplit.enabled'])
+    assert.equal(controlCounts.get(path),1,'relocation does not leave a duplicate writable control: '+path);
+  switches.get('OVERLAY_MODULES.player')(false);assert.equal(overlayEdits,1,'moved module controls still edit the settings store');
+  const grantTarget = {innerText:''};
+  navigationButtons.get('Test rod · Безкоштовно')({currentTarget:grantTarget});
+  assert.equal(itemGrants,1,'the top shop retains its real grant action');
+  assert.match(grantTarget.innerText,/✓×1$/,'grant confirmation stays with the selected item');
   assert.equal(typeof navigationButtons.get("Каталог UI 🧩"), "function", "DEV menu exposes the UI catalog");
   navigationButtons.get("Каталог UI 🧩")();
   assert.equal(catalogOpens, 1); assert.equal(houseOpens, 0, "Catalog navigation must not open the House");

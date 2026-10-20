@@ -31,6 +31,8 @@ import { InventorySectionTabsRenderer } from "../../game/presentation/inventory/
 import { InventoryBackpackSummaryRenderer } from "../../game/presentation/inventory/inventory_backpack_summary_renderer.js";
 import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { InventoryLongPressController } from "../../platform/browser/dom/inventory_long_press_controller.js";
+import { InventoryPickCancelController } from "../../platform/browser/dom/inventory_pick_cancel_controller.js";
+import { BrowserTimeoutScheduler } from "../../platform/browser/time/browser_timeout_scheduler.js";
 import { InventoryResourceMeterRenderer } from "../../game/presentation/inventory/inventory_resource_meter_renderer.js";
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
 import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/inventory/inventory_saved_loadout_preview_renderer.js";
@@ -199,7 +201,9 @@ export class InventoryUiBootstrap {
       headerRenderer ||
       new InventoryHeaderRenderer({ domFactory: dom,
         closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: dom }),
-        autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }),
+        autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom,
+          longPressController: resolvedLongPressController, longPressDurationMs: LongPressController.DURATION_MS,
+          longPressActivationDelayMs: LongPressController.ACTIVATION_DELAY_MS }),
         loadRenderer: new InventoryLoadRenderer({ scaleRenderer, config: INVENTORY_LOAD_METER_CONFIG }),
       });
     const resolvedLoadoutRenderer =
@@ -255,6 +259,10 @@ export class InventoryUiBootstrap {
       dom,
       resolvedNormalizer,
       resolvedLongPressController,
+      pickCancelController: new InventoryPickCancelController({
+        timers: warningTimers || new BrowserTimeoutScheduler(dom.view), holdMs: 200,
+        moveTolerancePx: InventoryLongPressController.MOVEMENT_TOLERANCE_PX,
+      }),
       resolvedTooltipPresenter,
       resolvedItemRenderer,
       resolvedHeaderRenderer,

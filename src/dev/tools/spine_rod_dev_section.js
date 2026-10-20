@@ -26,7 +26,8 @@ export class SpineRodDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("🎣 SPINE ВУДКА", parent, ["SPINE_ROD"]);
+    const skeletonName = this.#controller.exportSkeleton()?.fileName?.replace(/\.json$/i, "") || "rod";
+    this.#content = this.#createSection(skeletonName, parent, ["SPINE_ROD"]);
     this.#fill();
   }
 

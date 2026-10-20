@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.27";
+export const CURRENT_PROJECT_VERSION = "0.45.37";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,20 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "backend-architecture-typescript-roadmap",
-  updatedAt: "2026-10-20",
+  codename: "stable-inventory-selector-startup",
+  updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "TK-014: pending radial artwork no longer reveals classic shortcuts; explicit classic mode, failure fallback and late preload disposal remain supported",
+    "All inventory cell holds use one 200ms duration from pointerdown, with zero activation delay across backpack, saved kits, equipment, editor and header bait",
+    "Header bait removal fills a thin shadow-free ring immediately and detaches at 200ms; preserve cancellation and release-click suppression",
+    "Hold an equipped header bait icon to detach only its portion; preserve hook/A and consume the release click, while green pick targets keep cancellation priority",
+    "Fix TK-011 acceptance: repeated equipment-cell picks initialize attachment state so hooks accept bait and feeder rigs accept chum; repair old loose-equipped roots atomically on header activation",
+    "TK-013: grouped Inventory, root Overlay/CONFIG/DEBUG, Database and Spine; top shop button, bottom Service tools, collapsed descriptions and background-only hover with visible keyboard focus",
+    "TK-012: touch/non-hover controls use native press-only feedback with the existing component colors; release/cancel clears it and desktop hover remains gated",
+    "TK-011: empty equipment/editor targets open Compatible with only that target's items and every matching subtype selected; manual filters and sort remain available",
+    "TK-010 includes all empty equipment/editor repeat picks, 200ms/right-click cancellation, and missing consumable warnings with full-field red feedback; browser context menus are disabled",
+    "TK-010: repeating a highlighted bait/chum header icon equips one first displayed compatible item, respecting the current list and validating its live target",
+    "TK-009: the inventory header shares the portrait panel background, radius and inset in landscape and desktop layouts",
     "Document authoritative Node.js TypeScript backend architecture, client-server responsibilities, and post-v1.0.0 client TypeScript roadmap",
     "Radial selector draws at its largest preset and scales down, preserving its frame and hit geometry; finished highlight animations release their effect to CSS",
     "Radial selector open central button border width matches the expanded sectors (0.025 of drawing unit), keeping uniform border thickness across expansion and size presets",

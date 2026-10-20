@@ -115,6 +115,13 @@ export class InventoryViewModelFactory {
     }
   }
 
+  // Pick defaults use the same target matching and group catalogue as the rendered list.
+  createPickSubfilterIds(uiState) {
+    const inventory = this.create({ ...uiState, activeCategoryId: "compatible",
+      activeSubfilterIds: [], activeRarityFilterIds: [] }).inventory;
+    return inventory.subfilters.map(group => group.id);
+  }
+
   create(uiState = {}) {
     const equipmentReadModel = this.#equipmentReadModelFactory.create(
       this.#equipmentState,
@@ -198,6 +205,7 @@ export class InventoryViewModelFactory {
           equipmentReadModel,
           uiState.rodRemovalStep,
           uiState.highlightedEquipmentSlotId,
+          uiState.pickedSocketId,
         ),
       },
       inventory: {
@@ -303,6 +311,7 @@ export class InventoryViewModelFactory {
     equipmentReadModel,
     rodRemovalStep = null,
     highlightedSlotId = null,
+    pickedSocketId = null,
   ) {
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
@@ -353,7 +362,7 @@ export class InventoryViewModelFactory {
           warning: hasCompatibleItem
             ? ""
             : "В інвентарі немає відповідного доступного предмета.",
-          highlighted: highlightedSocketIds.has(target.socketId),
+          highlighted: target.socketId === pickedSocketId || highlightedSocketIds.has(target.socketId),
           compatibleItems: target.occupied ? [] : this.#createItemViews(compatibleItems),
           canSelectCompatibleItem: !target.occupied,
         };
@@ -575,24 +584,21 @@ export class InventoryViewModelFactory {
       ? accessibleRawItems.filter((item) => this.#attachmentTargetResolver.accepts(pickedTarget, item))
           .map((item) => item.instanceId)
       : []);
+    const isTargetPick = Boolean(highlightedSlotId || pickedTarget);
+    const matchesPick = item => pickedTarget
+      ? pickedSocketInstanceIds.has(item.instanceId)
+      : Boolean(highlightedSlotId) && this.#compatibilityPolicy.isCompatible({
+          slotId: highlightedSlotId, item, equipmentState: this.#equipmentState, rod, enforceReadiness: false,
+        });
     const categoryItems = itemViews
       .filter((item) =>
         categoryId === "compatible"
-          ? compatibleInstanceIds.has(item.instanceId)
+          ? isTargetPick ? matchesPick(item) : compatibleInstanceIds.has(item.instanceId)
           : this.#matchesCategory(item, categoryId),
       )
       .map((item) => ({
         ...item,
-        compatibleWithHighlightedSlot:
-          pickedSocketInstanceIds.has(item.instanceId) ||
-          (Boolean(highlightedSlotId) &&
-          this.#compatibilityPolicy.isCompatible({
-            slotId: highlightedSlotId,
-            item,
-            equipmentState: this.#equipmentState,
-            rod,
-            enforceReadiness: false,
-          })),
+        compatibleWithHighlightedSlot: matchesPick(item),
       }));
     if (!contextFiltered) {
       for (const loadout of this.#loadouts.list()) {

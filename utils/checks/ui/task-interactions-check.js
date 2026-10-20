@@ -368,6 +368,35 @@ for (const interval of [299, 300, 301]) {
 
 const { composeTimeDisplay } = require("../../../src/bootstrap/production/time_display_composition.js");
 const phaseTimers = new Timers();
+const { InventoryPickCancelController } = require("../../../src/platform/browser/dom/inventory_pick_cancel_controller.js");
+for (const pointerType of ["mouse", "touch"]) {
+  const timers = new Timers(), doc = new TestDocument();
+  const root = doc.createElement("div"), target = doc.createElement("button");
+  target.classList.add("inventory-slot--highlighted"); root.appendChild(target); doc.body.appendChild(root);
+  let cancelled = 0;
+  const controller = new InventoryPickCancelController({ timers, holdMs: 200, moveTolerancePx: 8 });
+  controller.attach(root, { windowRef: doc, onCancel: () => { cancelled++; } });
+  const down = fields => root.fire("pointerdown", { target, pointerType, button: 0, isPrimary: true,
+    pointerId: 1, clientX: 10, clientY: 10, ...fields });
+  down(); timers.advance(199); assert.equal(cancelled, 0);
+  timers.advance(1); assert.equal(cancelled, 1, "pick cancellation fires at 200ms without the removal delay");
+  assert(root.fire("click", { target }).prevented, "the hold consumes its following equip click");
+  down(); root.fire("pointermove", { pointerId: 1, clientX: 20, clientY: 10 });
+  timers.advance(300); assert.equal(cancelled, 1, "drag never cancels a pick");
+  down(); root.fire("pointerup", { pointerId: 1 }); timers.advance(300);
+  assert.equal(cancelled, 1, "short presses keep their normal activation");
+  down(); root.fire("pointercancel", { pointerId: 1 }); timers.advance(300); assert.equal(cancelled, 1);
+  down(); doc.fire("blur"); timers.advance(300); assert.equal(cancelled, 1);
+  down({ isPrimary: false }); timers.advance(300); assert.equal(cancelled, 1);
+  if (pointerType === "mouse") {
+    assert(down({ button: 2 }).prevented); assert.equal(cancelled, 2, "right-click cancels immediately");
+  }
+  const before = cancelled;
+  down(); target.remove(); timers.advance(300); assert.equal(cancelled, before, "stale target cannot cancel another selection");
+  root.appendChild(target); down(); controller.dispose(); timers.advance(300); assert.equal(cancelled, before);
+  assert.equal(timers.jobs.size, 0);
+  assert.equal([...root.listeners.values()].reduce((total, handlers) => total + handlers.size, 0), 0);
+}
 let phaseSave = { anchorHours: 12, anchorMs: 0, timeScale: 1 };
 const phaseClock = new GameTimeClock({ ...phaseSave, now: () => 0, save: value => { phaseSave = value; } });
 const peerClock = new GameTimeClock({ ...phaseSave, now: () => 0, load: () => phaseSave });

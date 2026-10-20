@@ -676,8 +676,8 @@ vm.runInContext(
     )?.compatibleWithHighlightedSlot === true &&
       highlightedView.inventory.items.find(
         (item) => item.instanceId === "highlight-net",
-      )?.compatibleWithHighlightedSlot === false,
-    "only compatible inventory cards are highlighted for the selected slot",
+      ) === undefined,
+    "only the selected slot's compatible inventory cards remain visible and highlighted",
   );
   dispatch(highlightedSelection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "highlight-float",
@@ -720,7 +720,147 @@ vm.runInContext(
   const pick = makeComposition({
     items: [raw("pick-rod", "rodFeeder"), raw("pick-reel", "reel"), raw("pick-line", "line")],
   });
+  const repeatedRoot = makeComposition({ items: [raw("repeat-root", "rodPole")] });
+  const headerRemoval = makeComposition({ items: [raw("remove-rod", "rodFeeder"), raw("remove-rig", "spring"),
+    ...[0,1].flatMap(index => [raw("remove-hook-" + index, "hook", 1, { location: InventoryItemLocation.attached("remove-rig", "hook", index) }),
+      raw("remove-bait-" + index, index === 0 ? "bait" : "bread", 1, { location: InventoryItemLocation.attached("remove-hook-" + index, "bait", 0) })])],
+    equipment: { ...emptyEquipment(), rod: "remove-rod", tackle: "remove-rig" }, settings: { autoBait: true },
+    assemblies: [{ rootInstanceId: "remove-rig", profileId: "feeder_spring_basic", status: "PREPARED" }] });
+  const beforeStaleRemoval = JSON.stringify(headerRemoval.snapshotFactory.create());
+  assertIntegration(!headerRemoval.facade.dispatch({ type: InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
+    kind: "bait", slotIndex: 1, instanceId: "old-replaced-bait" }).success &&
+    JSON.stringify(headerRemoval.snapshotFactory.create()) === beforeStaleRemoval,
+    "a stale held header item cannot remove its replacement");
+  dispatch(headerRemoval, InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS, { kind: "bait", slotIndex: 1, instanceId: "remove-bait-1" });
+  assertIntegration(!headerRemoval.assemblyReader.getChild("remove-hook-1", "bait", 0) &&
+    headerRemoval.assemblyReader.getChild("remove-hook-0", "bait", 0)?.instanceId === "remove-bait-0" &&
+    headerRemoval.repository.require("remove-bait-1").location.kind === "INVENTORY" &&
+    headerRemoval.settings.snapshot().autoBait && headerRemoval.equipmentState.getRootInstanceId("tackle") === "remove-rig",
+    "holding header bait returns only its addressed portion to inventory, preserving the other hook, tackle and A switch");
+  // A quick root pick must initialize attachment slots just like the normal item path.
+  for (const listVisible of [false, true]) for (const quantity of [1, 3]) {
+    const quickHook = makeComposition({ items: [raw("quick-hook-rod", "rodPole"), raw("quick-hooks", "hook", quantity),
+      raw("quick-hook-bait", "bait", 3)], equipment: { ...emptyEquipment(), rod: "quick-hook-rod" } });
+    dispatch(quickHook, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle", listVisible });
+    dispatch(quickHook, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE,
+      { slotId: "tackle", listVisible, candidateInstanceId: "quick-hooks" });
+    const hookId = quickHook.equipmentState.getRootInstanceId("tackle");
+    assertIntegration(quickHook.facade.getViewModel().header.baitSlots.length === 1 &&
+      quickHook.assemblyStates.get(hookId)?.isPrepared,
+      "a repeated green hook cell equips a hook with its real bait socket, for a single item or stack");
+    dispatch(quickHook, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 0, listVisible });
+    dispatch(quickHook, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+      { kind: "bait", slotIndex: 0, listVisible, candidateInstanceId: "quick-hook-bait" });
+    assertIntegration(quickHook.assemblyReader.getChild(hookId, "bait", 0)?.itemId === "bait" &&
+      quickHook.repository.list().filter(item => item.itemId === "hook").reduce((sum,item) => sum + item.quantity, 0) === quantity,
+      "header bait equips after the quick hook pick without losing or duplicating hooks");
+  }
+  const quickRig = makeComposition({ items: [raw("quick-rig-rod", "rodFeeder"), raw("quick-rig", "spring"), raw("quick-rig-chum", "chum", 2)],
+    equipment: { ...emptyEquipment(), rod: "quick-rig-rod" } });
+  dispatch(quickRig, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle" });
+  dispatch(quickRig, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle", candidateInstanceId: "quick-rig" });
+  assertIntegration(quickRig.facade.getViewModel().header.chumSlots.length === 1,
+    "the same quick path exposes a feeder rig's chum socket");
+  dispatch(quickRig, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "chum", slotIndex: 0 });
+  dispatch(quickRig, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+    { kind: "chum", slotIndex: 0, candidateInstanceId: "quick-rig-chum" });
+  assertIntegration(quickRig.assemblyReader.getChild(quickRig.equipmentState.getRootInstanceId("tackle"), "chum", 0)?.itemId === "chum",
+    "the feeder's quick-selected root accepts header chum");
+  const oldQuickHook = makeComposition({ items: [raw("old-quick-rod", "rodPole"), raw("old-quick-hook", "hook"), raw("old-quick-bait", "bait", 2)],
+    equipment: { ...emptyEquipment(), rod: "old-quick-rod", tackle: "old-quick-hook" } });
+  dispatch(oldQuickHook, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 0 });
+  dispatch(oldQuickHook, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+    { kind: "bait", slotIndex: 0, candidateInstanceId: "old-quick-bait" });
+  assertIntegration(oldQuickHook.equipmentState.getRootInstanceId("tackle") === "old-quick-hook" &&
+    oldQuickHook.assemblyReader.getChild("old-quick-hook", "bait", 0)?.itemId === "bait",
+    "an already saved quick-equipped hook repairs its missing assembly on header activation without changing identity");
+  const reloadedQuickHook = makeComposition(oldQuickHook.snapshotFactory.create());
+  assertIntegration(reloadedQuickHook.facade.getViewModel().header.baitSlots[0]?.item?.itemId === "bait" &&
+    reloadedQuickHook.equipmentState.getRootInstanceId("tackle") === "old-quick-hook",
+    "repaired hook state and its bait survive a save/reload");
+  for (const repairing of [false, true]) {
+    let rejectPersist = false;
+    const rollbackQuickHook = makeComposition({ items: [raw("rollback-quick-rod", "rodPole"), raw("rollback-quick-hook", "hook", repairing ? 1 : 3)],
+      equipment: { ...emptyEquipment(), rod: "rollback-quick-rod", tackle: repairing ? "rollback-quick-hook" : null },
+      onPersist() { if (rejectPersist) throw new Error("quick hook persist failed"); } });
+    if (!repairing) dispatch(rollbackQuickHook, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle" });
+    const beforeQuickFailure = JSON.stringify(rollbackQuickHook.snapshotFactory.create());
+    rejectPersist = true;
+    const failedQuickHook = rollbackQuickHook.facade.dispatch(repairing
+      ? { type: InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 0 }
+      : { type: InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, slotId: "tackle", candidateInstanceId: "rollback-quick-hook" });
+    assertIntegration(!failedQuickHook.success && JSON.stringify(rollbackQuickHook.snapshotFactory.create()) === beforeQuickFailure,
+      "failed persistence rolls back assembly creation, stack split and the equipped reservation for new picks and old-state repair");
+  }
+  const targetFilters = makeComposition({ items: [raw("filter-pole", "rodPole"), raw("filter-feeder", "rodFeeder"),
+    raw("filter-boat", "boat"), raw("filter-net", "net"), raw("filter-chum", "chum")] });
+  dispatch(targetFilters, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod" });
+  let targetList = targetFilters.facade.getViewModel().inventory;
+  assertIntegration(targetList.activeCategoryId === "compatible" && targetList.items.length === 2 &&
+    targetList.items.every(item => item.itemType === "rod") && targetList.subfilters.every(group => group.selected) &&
+    targetFilters.commands.getUiState().activeSubfilterIds.length === 2,
+    "rod pick filters to that cell and selects every available rod subtype, without boat/net/chum cards");
+  dispatch(targetFilters, InventoryActionType.SUBFILTER_TOGGLE, { filterId: "pole-rods", enabled: false });
+  targetList = targetFilters.facade.getViewModel().inventory;
+  assertIntegration(targetList.items.length === 1 && targetList.items[0].instanceId === "filter-feeder",
+    "automatically selected subfilters can be narrowed manually");
+  dispatch(targetFilters, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "delivery" });
+  targetList = targetFilters.facade.getViewModel().inventory;
+  assertIntegration(targetList.items.length === 1 && targetList.items[0].instanceId === "filter-boat" &&
+    targetList.activeSubfilterIds.join() === "boats",
+    "another empty cell replaces the previous target's subtype selection");
+  dispatch(targetFilters, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+  assertIntegration(targetFilters.facade.getViewModel().inventory.items.length === 5,
+    "explicit category browsing remains available during a pick");
+  dispatch(repeatedRoot, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod" });
+  dispatch(repeatedRoot, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod", candidateInstanceId: "repeat-root" });
+  assertIntegration(repeatedRoot.equipmentState.getRootInstanceId("rod") === "repeat-root" &&
+    repeatedRoot.commands.getUiState().highlightedEquipmentSlotId === null,
+    "repeating an active empty equipment cell equips the displayed candidate");
+  dispatch(repeatedRoot, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle" });
+  dispatch(repeatedRoot, InventoryActionType.PICK_CANCEL);
+  assertIntegration(repeatedRoot.commands.getUiState().highlightedEquipmentSlotId === null &&
+    repeatedRoot.commands.getUiState().pickedSocketId === null &&
+    repeatedRoot.equipmentState.getRootInstanceId("rod") === "repeat-root",
+    "cancel ends the pick without removing equipment");
+  for (const kind of ["bait", "chum"]) for (const withRod of [false, true]) {
+    const missingTackle = makeComposition({ items: withRod ? [raw("missing-tackle-rod", "rodFeeder")] : [],
+      equipment: { ...emptyEquipment(), rod: withRod ? "missing-tackle-rod" : null } });
+    const before = JSON.stringify(missingTackle.snapshotFactory.create());
+    const result = missingTackle.facade.dispatch({ type: InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex: 0 });
+    const feedback = missingTackle.facade.getViewModel().equipmentFeedback;
+    assertIntegration(!result.success && result.warning && feedback?.tone === "error" &&
+      feedback.slotId === (withRod ? "tackle" : "rod") &&
+      missingTackle.commands.getUiState().activeSectionId === "equipment" &&
+      JSON.stringify(missingTackle.snapshotFactory.create()) === before,
+      "a missing consumable prerequisite warns and identifies its red feedback cell without a gameplay mutation");
+  }
   const pickUi = () => pick.commands.getUiState();
+  const inlineRepeat = makeComposition({ items: [raw("repeat-rod", "rodFeeder"),
+    raw("repeat-reel", "reel"), raw("repeat-line", "line")],
+    equipment: { ...emptyEquipment(), rod: "repeat-rod" } });
+  dispatch(inlineRepeat, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "reel" });
+  const repeatReelRoot = dispatch(inlineRepeat, InventoryActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "repeat-reel" }).rootInstanceId;
+  const repeatSocket = inlineRepeat.facade.getViewModel().panel.assembly.sockets.find(socket => socket.slotId === "line");
+  const repeatAction = { type: InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId: repeatReelRoot,
+    socketId: repeatSocket.socketId, slotId: repeatSocket.slotId, parentInstanceId: repeatSocket.parentInstanceId,
+    slotIndex: repeatSocket.slotIndex, inlineChoices: true };
+  dispatch(inlineRepeat, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, repeatAction);
+  assertIntegration(inlineRepeat.commands.getUiState().activeSectionId === "equipment" &&
+    inlineRepeat.facade.getViewModel().panel.assembly.sockets.find(socket => socket.socketId === repeatSocket.socketId).highlighted,
+    "an inline editor target starts a highlighted pick without leaving the editor");
+  dispatch(inlineRepeat, InventoryActionType.PICK_CANCEL);
+  assertIntegration(inlineRepeat.commands.getUiState().editingRootInstanceId === repeatReelRoot &&
+    inlineRepeat.commands.getUiState().pickedSocketId === null,
+    "cancelling an inline choice preserves its editor");
+  dispatch(inlineRepeat, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, repeatAction);
+  dispatch(inlineRepeat, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE,
+    { ...repeatAction, candidateInstanceId: "repeat-line" });
+  assertIntegration(Boolean(inlineRepeat.assemblyReader.getChild(repeatSocket.parentInstanceId, "line", repeatSocket.slotIndex)) &&
+    inlineRepeat.commands.getUiState().pickedSocketId === null &&
+    inlineRepeat.commands.getUiState().editingRootInstanceId === repeatReelRoot,
+    "a repeated inline socket equips its addressed candidate and preserves the editor");
   const pickCard = (instanceId) => pick.facade.getViewModel().inventory.items.find((item) => item.instanceId === instanceId);
   dispatch(pick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-rod" });
   dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod" });
@@ -749,7 +889,9 @@ vm.runInContext(
     socketId: pickLineSocket.socketId, slotId: pickLineSocket.slotId, slotIndex: pickLineSocket.slotIndex,
     parentInstanceId: pickLineSocket.parentInstanceId });
   assertIntegration(pickUi().activeSectionId === "backpack" && pickUi().pickedSocketId === pickLineSocket.socketId &&
-    pickCard("pick-line")?.compatibleWithHighlightedSlot === true,
+    pickCard("pick-line")?.compatibleWithHighlightedSlot === true &&
+    pick.facade.getViewModel().inventory.items.every(item => item.itemType === "fishing_line") &&
+    pickUi().activeSubfilterIds.join() === "fishing-lines",
     "an empty craft socket opens the backpack with the cards it accepts highlighted");
   dispatch(pick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-line" });
   assertIntegration(pickUi().activeSectionId === "equipment" && pickUi().pickedSocketId === null &&
@@ -842,6 +984,50 @@ vm.runInContext(
   dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "keepnet" });
   assertIntegration(consumableUi().consumableKind === null && consumableUi().pickedSocketId === null,
     "section navigation cancels the consumable pick");
+
+  // TK-010: repeating a highlighted header icon equips the first currently displayed candidate.
+  for (const kind of ["bait", "chum"]) for (const listVisible of [false, true]) {
+    const quick = makeComposition({
+      items: [raw("quick-rod", "rodFeeder"), raw("quick-spring", "spring"),
+        raw("quick-worms", "bait", 3), raw("quick-bread", "bread", 2), raw("quick-chum", "chum", 3),
+        ...[0, 1].map(index => raw("quick-hook-" + index, "hook", 1, {
+          location: InventoryItemLocation.attached("quick-spring", "hook", index),
+        }))],
+      equipment: { ...emptyEquipment(), rod: "quick-rod", tackle: "quick-spring" },
+      assemblies: [{ rootInstanceId: "quick-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+    });
+    const beforePick = JSON.stringify(quick.snapshotFactory.create());
+    const activate = (slotIndex, candidateInstanceId) => dispatch(quick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+      { kind, slotIndex, listVisible, candidateInstanceId });
+    activate(0);
+    assertIntegration(JSON.stringify(quick.snapshotFactory.create()) === beforePick,
+      "the first header activation only highlights candidates");
+    const candidate = quick.facade.getViewModel().inventory.items.find(item => item.compatibleWithHighlightedSlot);
+    assertIntegration(Boolean(candidate), "the active header has a displayed compatible candidate");
+    const slotIndex = kind === "bait" ? 1 : 0;
+    if (kind === "bait") {
+      activate(slotIndex, candidate.instanceId);
+      assertIntegration(JSON.stringify(quick.snapshotFactory.create()) === beforePick,
+        "moving to another header icon only changes the pick target");
+    }
+    const missing = quick.facade.dispatch({ type: InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+      kind, slotIndex, listVisible, candidateInstanceId: "missing-quick-candidate" });
+    assertIntegration(!missing.success && JSON.stringify(quick.snapshotFactory.create()) === beforePick,
+      "a stale candidate cannot equip an item or mutate inventory");
+    const source = quick.repository.require(candidate.instanceId);
+    const quantity = source.quantity;
+    const equipped = activate(slotIndex, candidate.instanceId);
+    const child = quick.assemblyReader.getChild(kind === "bait" ? "quick-hook-1" : "quick-spring", kind, 0);
+    assertIntegration(equipped.success && child?.itemId === source.itemId &&
+      quick.repository.require(candidate.instanceId).quantity === quantity - 1 &&
+      quick.facade.getViewModel().header[kind === "bait" ? "baitSlots" : "chumSlots"].every(slot => !slot.highlighted),
+      "a repeated header activation equips one displayed item into the chosen slot and ends highlighting");
+    activate(slotIndex);
+    const beforeEmpty = JSON.stringify(quick.snapshotFactory.create());
+    activate(slotIndex);
+    assertIntegration(JSON.stringify(quick.snapshotFactory.create()) === beforeEmpty,
+      "a repeated header without a displayed candidate is a no-op");
+  }
 
   const extraHooks = makeComposition({
     items: [raw("extra-rod", "rodFeeder"), raw("extra-spring", "spring"), raw("extra-bait", "bait", 6),

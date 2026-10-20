@@ -33,6 +33,7 @@ export class InventoryCommandService {
   #itemRemoval;
   #consumableTargets;
   #slotVisibility;
+  #pickSubfilterIds;
 
   constructor({
     messages,
@@ -64,6 +65,7 @@ export class InventoryCommandService {
     itemRemoval,
     consumableTargets,
     slotVisibilityPolicy,
+    pickSubfilterIds,
   } = {}) {
     this.#messages = messages;
     this.#repository = repository;
@@ -93,6 +95,7 @@ export class InventoryCommandService {
     this.#itemRemoval = itemRemoval;
     this.#consumableTargets = consumableTargets;
     this.#slotVisibility = slotVisibilityPolicy;
+    this.#pickSubfilterIds = pickSubfilterIds;
     this.#assertDependencies();
   }
 
@@ -128,7 +131,12 @@ export class InventoryCommandService {
         this.#uiState.selectSection(action.sectionId);
         return this.#success();
       case InventoryActionType.CONSUMABLE_SLOT_ACTIVATE:
-        return this.#pickConsumable(action.kind, action.slotIndex, action.listVisible === true);
+        return this.#pickConsumable(action.kind, action.slotIndex, action.listVisible === true, action.candidateInstanceId);
+      case InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS:
+        return this.#removeConsumable(action.kind, action.slotIndex, action.instanceId);
+      case InventoryActionType.PICK_CANCEL:
+        this.#uiState.cancelPick();
+        return this.#success();
       case InventoryActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
       case InventoryActionType.SORT_CRITERION_SELECT:
@@ -142,7 +150,7 @@ export class InventoryCommandService {
       case InventoryActionType.INVENTORY_ITEM_LONG_PRESS:
         return this.#longPressInventoryItem(action.instanceId);
       case InventoryActionType.EQUIPMENT_SLOT_ACTIVATE:
-        return this.#activateEquipmentSlot(action.slotId, action.listVisible === true);
+        return this.#activateEquipmentSlot(action);
       case InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS:
         return this.#unequipSlot(action.slotId);
       case InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE:
@@ -342,7 +350,7 @@ export class InventoryCommandService {
   }
 
   // listVisible: the item list is already on screen (landscape), so the pick keeps the section (spec 074).
-  #activateEquipmentSlot(slotId, listVisible = false) {
+  #activateEquipmentSlot({ slotId, listVisible = false, inlineChoices = false, candidateInstanceId = null }) {
     const equippedId = this.#equipmentState.getRootInstanceId(slotId);
     if (equippedId) {
       this.#uiState.clearHighlightedSlot();
@@ -350,27 +358,85 @@ export class InventoryCommandService {
       return this.#success({ rootInstanceId: equippedId });
     }
 
+    if (this.#uiState.highlightedEquipmentSlotId === slotId && !this.#uiState.selectedInstanceId) {
+      if (!candidateInstanceId) return this.#success({ highlightedSlotId: slotId });
+      return this.#equipLooseRoot(this.#pickCandidate(candidateInstanceId).instanceId, slotId);
+    }
     const selectedId = this.#uiState.selectedInstanceId;
     if (!selectedId || !this.#repository.has(selectedId)) {
-      this.#uiState.pickForSlot(slotId, { showBackpack: !listVisible });
+      this.#uiState.pickForSlot(slotId, { showBackpack: !listVisible && !inlineChoices });
+      this.#selectPickSubfilters();
       return this.#success({ highlightedSlotId: slotId });
     }
     return this.#equipLooseRoot(selectedId, slotId);
   }
 
   // A header slot applies a backpack item waiting for confirmation at the first press, on the proposed slot or another
-  // one (spec 074); without one it opens the pick for that slot.
-  #pickConsumable(kind, slotIndex, listVisible) {
+  // one (spec 074); repeating the active target applies the displayed candidate (TK-010).
+  #pickConsumable(kind, slotIndex, listVisible, candidateInstanceId) {
+    this.#repairLooseEquippedTackle();
     const target = this.#consumableTargets.resolve(kind, slotIndex);
-    if (!target) return this.#failure(this.#messages.consumableSlotUnavailable);
+    if (!target) {
+      this.#uiState.equipmentRejected(this.#equipmentState.getRootInstanceId("rod") ? "tackle" : "rod");
+      return this.#failure(this.#messages.consumableSlotUnavailable);
+    }
     const pending = this.#uiState.consumableKind === kind && this.#repository.get(this.#uiState.selectedInstanceId);
     if (pending && this.#attachmentTargetResolver.accepts(target, pending)) {
       const result = this.#fillAssemblyTarget(target.rootInstanceId, pending, target);
       if (result.success) this.#uiState.pickForConsumable(kind);
       return result;
     }
+    if (this.#uiState.consumableKind === kind && this.#uiState.pickedSocketId === target.socketId) {
+      if (!candidateInstanceId) return this.#success({ pickedSocketId: target.socketId });
+      const candidate = this.#pickCandidate(candidateInstanceId);
+      if (!this.#attachmentTargetResolver.accepts(target, candidate)) return this.#failure(this.#messages.itemIncompatible);
+      const result = this.#fillAssemblyTarget(target.rootInstanceId, candidate, target);
+      if (result.success) this.#uiState.pickForConsumable(kind);
+      return result;
+    }
     this.#uiState.pickForConsumable(kind, target.socketId, { showBackpack: !listVisible });
+    this.#selectPickSubfilters();
     return this.#success({ pickedSocketId: target.socketId });
+  }
+
+  #pickCandidate(instanceId) {
+    const candidate = this.#repository.get(instanceId);
+    if (!candidate || !InventoryItemLocation.isInventory(candidate.location) ||
+        this.#reservationPolicy?.isReserved?.(candidate)) {
+      throw new InventoryApplicationError("PICK_ITEM_UNAVAILABLE", this.#messages.itemNotFound);
+    }
+    return candidate;
+  }
+
+  #removeConsumable(kind, slotIndex, instanceId) {
+    const target = this.#consumableTargets.resolve(kind, slotIndex);
+    if (!target?.occupied || target.occupied.instanceId !== instanceId) return this.#failure(this.#messages.itemNotFound);
+    this.#transaction.runAtomic(() => this.#assemblyService.detach({
+      rootInstanceId: target.rootInstanceId, parentInstanceId: target.parentInstanceId,
+      slotId: target.slotId, slotIndex: target.slotIndex,
+    }));
+    return this.#success({ detached: true });
+  }
+
+  // Old quick picks could save a loose equipped tackle without its attachment state.
+  // Repair only that missing state through the normal transaction before resolving a header socket.
+  #repairLooseEquippedTackle() {
+    const instanceId = this.#equipmentState.getRootInstanceId("tackle");
+    const source = this.#repository.get(instanceId);
+    if (source && !this.#assemblyStates.has(instanceId) && InventoryItemLocation.isInventory(source.location) &&
+        source.quantity === 1 && this.#isAssemblyCapable(source)) {
+      this.#transaction.runAtomic(() => {
+        // Release the equipment reservation only inside this transaction; rollback restores it on any failure.
+        this.#equipmentState.clear("tackle");
+        const rootInstanceId = this.#assemblyService.startAssembly(instanceId);
+        this.#assemblyService.prepare(rootInstanceId);
+        this.#equipRootWithinTransaction(rootInstanceId, "tackle");
+      });
+    }
+  }
+
+  #selectPickSubfilters() {
+    this.#uiState.selectPickSubfilters(this.#pickSubfilterIds(this.#uiState.snapshot()));
   }
 
   #equipHook(source, slotId) {
@@ -484,7 +550,7 @@ export class InventoryCommandService {
       if (this.#equipmentState.getRootInstanceId("rod") !== rootInstanceId) {
         return this.#failure(this.#messages.equipRodBeforeComponents);
       }
-      return this.#activateEquipmentSlot(action.slotId, action.listVisible === true);
+      return this.#activateEquipmentSlot(action);
     }
     if (!rootInstanceId || !this.#assemblyStates.has(rootInstanceId)) {
       return this.#failure(this.#messages.assemblyNotFound);
@@ -497,6 +563,15 @@ export class InventoryCommandService {
       slotIndex,
     );
     const selectedId = this.#uiState.selectedInstanceId;
+    if (!occupied && this.#uiState.pickedSocketId === action.socketId && !selectedId) {
+      if (!action.candidateInstanceId) return this.#success({ pickedSocketId: action.socketId });
+      const candidate = this.#pickCandidate(action.candidateInstanceId);
+      const target = this.#attachmentTargetResolver.listTargets(rootInstanceId).find(entry => entry.socketId === action.socketId);
+      if (!target || !this.#attachmentTargetResolver.accepts(target, candidate)) {
+        return this.#failure(this.#messages.itemIncompatible);
+      }
+      return this.#activateInventoryItem(candidate.instanceId);
+    }
     if (selectedId && this.#repository.has(selectedId)) {
       return this.#fillAssemblyTarget(
         rootInstanceId,
@@ -510,7 +585,8 @@ export class InventoryCommandService {
       );
     }
     if (!occupied) {
-      this.#uiState.pickForSocket(action.socketId, { showBackpack: action.listVisible !== true });
+      this.#uiState.pickForSocket(action.socketId, { showBackpack: action.listVisible !== true && action.inlineChoices !== true });
+      this.#selectPickSubfilters();
       return this.#success({ pickedSocketId: action.socketId });
     }
 
@@ -807,6 +883,11 @@ export class InventoryCommandService {
       const savedRoot = InventoryItemLocation.isLoadout(source.location);
       const preparedLine = savedRoot ? null : this.#prepareLooseLineForEquipment(source, slotId);
       const root = preparedLine || (savedRoot ? source : this.#repository.splitOne(source.instanceId));
+      // Every equipped root that owns sockets needs its assembly profile, even when picked by repeating a cell.
+      if (!savedRoot && this.#isAssemblyCapable(root)) {
+        this.#assemblyService.startAssembly(root.instanceId);
+        this.#assemblyService.prepare(root.instanceId);
+      }
       equippedInstanceId = root.instanceId;
       this.#equipRootWithinTransaction(root.instanceId, slotId);
     });
@@ -1127,6 +1208,9 @@ export class InventoryCommandService {
   }
 
   #assertDependencies() {
+    if (typeof this.#pickSubfilterIds !== "function") {
+      throw new TypeError("InventoryCommandService requires pickSubfilterIds");
+    }
     const dependencies = [
       [this.#repository, "repository"],
       [this.#assemblyStates, "assemblyStates"],

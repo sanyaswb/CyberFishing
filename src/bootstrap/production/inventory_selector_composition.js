@@ -20,7 +20,7 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
       inventoryUI.rootNode.focus();
     }) });
   mountNode.appendChild(view.element);
-  let disposed = false, loaded = false, radial = null, size = null, openSize = null;
+  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null;
   let artworkKey = "", artworkRevision = 0;
   const syncEquipment = () => {
     if (disposed) return;
@@ -42,17 +42,20 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   const sync = () => {
     if (disposed) return;
     const settings = config.ui?.inventorySelector;
-    const nextRadial = loaded && settings?.radialEnabled === true;
+    const requestedRadial = settings?.radialEnabled === true;
+    const nextRadial = loadState === "ready" && requestedRadial;
+    // Pending artwork is not a request for classic mode. Only a real failure needs that fallback.
+    const nextClassicVisible = !requestedRadial || loadState === "failed";
     const nextSize = settings?.size ?? 1;
     const nextOpenSize = settings?.openSize ?? 3;
-    if (radial === nextRadial && size === nextSize && openSize === nextOpenSize) return;
+    if (radial === nextRadial && classicVisible === nextClassicVisible && size === nextSize && openSize === nextOpenSize) return;
     controller.cancel();
     view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[nextSize] || 1,
       INVENTORY_SELECTOR_CONFIG.sizeScales[nextOpenSize] || INVENTORY_SELECTOR_CONFIG.sizeScales[3]);
     controller.setEnabled(nextRadial);
-    inventoryUI.setShortcutVisible(!nextRadial);
-    keepnetUI?.setShortcutVisible(!nextRadial);
-    radial = nextRadial; size = nextSize; openSize = nextOpenSize;
+    inventoryUI.setShortcutVisible(nextClassicVisible);
+    keepnetUI?.setShortcutVisible(nextClassicVisible);
+    radial = nextRadial; classicVisible = nextClassicVisible; size = nextSize; openSize = nextOpenSize;
   };
   const unsubscribe = inventoryUI.onVisibilityChange(open => { if (open) controller.cancel(); });
   const unsubscribeEquipment = equipmentSource?.onInventoryChanged(syncEquipment);
@@ -61,8 +64,12 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   sync();
   const sources = [INVENTORY_SECTIONS.iconSprite, INVENTORY_SECTIONS.backpackImage, KEEPNET_ART_STAGES[0].imagePath];
   const ready = imageAssets.preload(sources.map(src => ({ id: src, src }))).then(() => {
-    loaded = true; sync(); return true;
-  }).catch(error => { logger.warn("[InventorySelector] Artwork preload failed; retaining classic controls", error); return false; });
+    loadState = "ready"; sync(); return true;
+  }).catch(error => {
+    loadState = "failed"; sync();
+    if (!disposed) logger.warn("[InventorySelector] Artwork preload failed; retaining classic controls", error);
+    return false;
+  });
   return { view, controller, ready,
     dispose() {
       if (disposed) return;

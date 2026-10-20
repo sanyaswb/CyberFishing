@@ -227,3 +227,15 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
   are replaced, and no gameplay/save/baseline change is expected.
 - Owner checks index/dev/catalog: opening, settled hover, outward selection of rod/backpack/keepnet, preset
   combinations 1->3 / 3->1 / equal sizes, below-320 scaling and reduced motion. Visual sharpness is owner-checked.
+
+## TK-014 startup correction (v0.45.37)
+
+- Root cause: the composition treated pending artwork as classic mode through `loaded && radialEnabled`,
+  then switched controls after asynchronous preload. The inventory mount itself does not wait to paint.
+- Distinguish pending/ready/failed preload. Pending radial hides classic shortcuts and keeps radial inert;
+  ready activates radial. Explicit classic is available immediately; a real preload failure restores it.
+  Keep the existing awaited readiness port and dynamic overrides, with no timer, frame loop or CSS workaround.
+- Extend the existing selector scenario with deferred resolution/rejection: no transient classic controls,
+  mode changes during preload, successful readiness, failure fallback, disposal before late success/failure.
+- Owner: cold reload index/dev in portrait/landscape; compare radial and persisted classic mode, then toggle
+  in DEV. No agent browser visual check. No tool, helper, fixture or dependency becomes obsolete.

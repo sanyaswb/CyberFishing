@@ -1,6 +1,6 @@
 // Item editor tabs in every layout: taps, swipes and Left/Right/Home/End share one active parameter page.
-// Empty cells: without a visible item list (portrait) the page shows inline compatible choices and no pick starts;
-// beside a visible list (landscape, desktop) the tap also starts the pick that highlights compatible items there.
+// Empty cells start a cancellable pick in every layout. Portrait retains the editor's inline choices;
+// landscape/desktop highlights compatible items in the visible list. Repeating the target equips its first candidate.
 // CSS shows the inline choices only in portrait. A long press on a filled cell keeps its removal action. Taps align the tab row (spec 093). Another root, a removed address or resetView() resets
 // the active page to the root item.
 export class InventoryEditorTabsRenderer {
@@ -92,7 +92,7 @@ export class InventoryEditorTabsRenderer {
         showResourceMeter: false, showTooltip: false,
         onActivate: filled ? () => this.#showByTap(tab.key) : () => {
           this.#showByTap(tab.key);
-          if (!inlineChoices()) onSocketActivate?.(tab.socket);
+          onSocketActivate?.(tab.socket);
         },
         onLongPress: filled ? () => onSocketLongPress?.(tab.socket) : null,
         longPressDurationMs: this.#longPressDurationMs,

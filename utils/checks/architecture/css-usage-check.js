@@ -83,7 +83,10 @@ function stylePolicyViolations(css) {
   }
   for (const rule of source.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
     for (const selector of rule[1].split(",").map((value) => value.trim())) {
-      if (/:(?:hover|active)\b/.test(selector) && !selector.startsWith(".ui-surface--desktop-hover ")) {
+      const desktopPointer = selector.startsWith(".ui-surface--desktop-hover ");
+      const pressOnly = selector.startsWith(".ui-surface:not(.ui-surface--desktop-hover) ") &&
+        /:active\b/.test(selector) && !/:hover\b/.test(selector);
+      if (/:(?:hover|active)\b/.test(selector) && !desktopPointer && !pressOnly) {
         violations.push(`Ungated pointer decoration: ${selector}`);
       }
     }
@@ -148,6 +151,9 @@ assert.equal(stylePolicyViolations('.link:active { background: red; }').length, 
 assert.equal(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .other:hover {}').length, 1);
 assert.equal(stylePolicyViolations('.control:not(:hover) {}').length, 1);
 assert.deepEqual(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .control:focus-visible, .control--selected {}'), []);
+assert.deepEqual(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:active:not(:disabled) {}'), []);
+assert.equal(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:hover {}').length, 1);
+assert.equal(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:active:hover {}').length, 1);
 assert.equal(staticStyleViolations('document.createElement("style");').length, 1);
 assert.equal(staticStyleViolations('el.style.cssText = "color: red";').length, 1);
 assert.equal(staticStyleViolations('`<span style="color:red">text</span>`').length, 1);
@@ -166,4 +172,4 @@ for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
   assert.deepEqual(unused, [], `${file} styles classes that no code uses: ${unused.join(", ")}`);
 }
 assert.equal(vocabulary.injected.length, 0, "static presentation styles belong in native CSS assets");
-console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and no injected blocks; native order/version/ownership/reachability and BEM/focus/font/pointer policy valid; 18 negative fixtures rejected.`);
+console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and no injected blocks; native order/version/ownership/reachability and BEM/focus/font/pointer policy valid; 20 negative fixtures rejected.`);

@@ -89,6 +89,9 @@
   background: transparent;
   box-shadow: none;
 }
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-item-card:active:not(:disabled) {
+  border-color: var(--inventory-accent);
+}
 
 .inventory-item-card:focus-visible {
   outline: 2px solid var(--inventory-accent);
@@ -204,37 +207,7 @@
   top: 12px;
 }
 
-.inventory-item-card__press-progress {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 30;
-  width: clamp(42px, 58%, 72px);
-  aspect-ratio: 1;
-  border: 1px solid rgba(235, 241, 243, 0.34);
-  border-radius: 50%;
-  opacity: 0;
-  background: conic-gradient(
-    from -90deg,
-    var(--inventory-long-press-color, transparent) 0deg,
-    var(--inventory-long-press-color, transparent)
-    var(--inventory-long-press-angle, 0deg),
-    rgba(4, 8, 10, 0.12) var(--inventory-long-press-angle, 0deg),
-    rgba(4, 8, 10, 0.12) 360deg
-  );
-  box-shadow:
-    0 0 12px var(--inventory-long-press-glow-color, transparent),
-    inset 0 0 8px rgba(255, 255, 255, 0.12);
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-}
-
-.inventory-item-card.inventory-item-card--pressing > .inventory-item-card__press-progress,
-.inventory-item-card.inventory-item-card--press-fired > .inventory-item-card__press-progress {
-  opacity: 1;
-}
-
-.inventory-item-card.inventory-item-card--press-fired {
+.inventory-item-card.inventory-press--fired {
   filter: brightness(1.32);
 }
 

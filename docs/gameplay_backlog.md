@@ -20,6 +20,94 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-108 TK-014 classic backpack flashes before the radial selector on startup (P3, implemented in v0.45.37)
+Found: 2026-10-21, owner, first game load in index/dev.
+Reproduce: start in radial mode with selector artwork preload still pending.
+Expected: the selected control mode appears once its assets are ready, with no temporary classic shortcut.
+Actual: composeInventorySelector computed radial as loaded AND configured, then made classic controls visible whenever radial was false. Pending preload therefore enabled classic, and completion replaced it with radial.
+Resolution: distinguish pending, ready and failed preload. Pending radial keeps both shortcuts hidden; ready reveals radial; only explicit classic mode or a real preload failure reveals classic. Config changes during preload use the current mode; late completion after disposal cannot change controls.
+Evidence: the deferred-preload regression failed before the fix; existing selector scenarios now cover pending mode switches, ready, explicit classic, failure fallback and late success/failure disposal. Owner startup acceptance pending.
+
+### G-107 The 200ms hold speed was applied only to header bait (P3, implemented in v0.45.36)
+Found: 2026-10-21, owner correction after v0.45.35.
+Reproduce: hold a backpack card, equipped rod/tackle or filled editor cell, then compare to header bait.
+Expected: every cell uses 200ms from pointerdown, without an activation delay.
+Actual: header bait used 200ms while other cells kept 300ms delay plus 800/1500ms countdown.
+Resolution: make 200ms/zero delay the controller defaults; equipped and header consumers share this duration.
+Evidence: the backpack timing regression failed before the fix; existing UI scenarios now verify 199/200ms boundaries for backpack, saved kit, rod/tackle and touch editor, plus header cancellation. Platform clocks/progress/cleanup pass. Owner acceptance pending.
+
+### G-106 Header bait hold has no progress feedback and takes too long (P3, implemented in v0.45.35)
+Found: 2026-10-21, owner, header bait removal in v0.45.34.
+Reproduce: hold LMB on an equipped, unhighlighted bait icon in index/dev inventory.
+Expected: an animated circular indicator without a shadow; remove the portion after 200ms from pointerdown.
+Actual: compact-header progress was disabled, and card defaults delayed removal by 300 + 800ms.
+Resolution: reuse shared hold feedback in the artwork host with a thin mask and no shadow; inject zero activation delay and 200ms duration only for header bait. Keep card timing, green-target cancellation and stale/release-click protections.
+Evidence: the existing UI deadline scenario failed before the fix and passes after it; platform performance/Date-clock scenarios verify immediate progress, half-fill at 100ms and cleanup. Owner visual acceptance pending.
+
+### G-105 Header bait cannot be removed by an equipped-item hold (P3, implemented in v0.45.34)
+Found: 2026-10-21, owner addition to the TK-011 acceptance fix.
+Reproduce: hold LMB on an equipped bait icon in the inventory header switcher.
+Expected: return only that portion to the backpack; preserve the hook, other bait slots and automatic-mode switch.
+Actual: the header supported only click-to-pick and had no removal command/gesture.
+Resolution: reuse the equipped-item hold controller without card progress decoration, with explicit expected item identity and atomic detach. Consume the release click across in-place slot rebinding; green pick targets keep 200ms cancellation priority.
+Evidence: existing UI/integration scenarios cover deadline, RMB, movement/cancel, stale bait, close/reopen, short click, pick cancellation and exact-slot removal. Spec 123; Full 64/65 (the prior uncommitted controller still blocks Pages), owner acceptance pending.
+
+### G-104 Repeated equipment-cell selection leaves hooks without bait sockets (P2, implemented in v0.45.34)
+Found: 2026-10-21, owner TK-011 acceptance, index/dev inventory.
+Reproduce: activate the empty tackle cell, repeat the green cell to equip a hook, then press the bait header icon.
+Expected: the equipped hook owns its bait socket and accepts bait immediately.
+Actual: the quick path equips a loose root without assembly state; the header resolver finds no socket and reports missing tackle.
+Resolution: initialize and prepare attachment-capable roots inside the existing equip transaction. Header commands repair an already equipped loose single root missing that state, keeping its identity and releasing its equipment reservation only within the atomic transaction. Saved loadout roots keep their existing handling; no schema changes or read-model mutation.
+Evidence: inventory-integration failed before the fix; covers single/stack hooks in both list visibility modes, feeder chum, old-state repair, save/reload and persistence rollback without item loss. Full 64/65 (the prior uncommitted controller still blocks Pages), owner acceptance pending.
+
+### G-103 Touch buttons lack transient hold feedback (P3, implemented in v0.45.32)
+Found: 2026-10-20, owner TK-012, index/dev touch/non-hover surfaces.
+Reproduce: hold a HUD/toolbar/menu or inventory button on a touch device, then release.
+Expected: reuse the component's hover feedback during the press only; no remaining hover after release/cancel.
+Actual: the previous policy disabled both hover and decorative active states on touch surfaces.
+Resolution: native scoped active styles in component owners; keep desktop capability gating, keyboard focus and semantic states.
+Evidence: CSS policy and UI checks pass; Full 64/65 (Pages needs the prior pair's new controller committed). Spec 121; appearance/release acceptance belongs to the owner.
+
+### G-102 Empty-cell pick shows compatible items for unrelated cells (P3, implemented in v0.45.31)
+Found: 2026-10-20, owner TK-011, index/dev inventory.
+Reproduce: with rods, a boat and a net in the backpack, activate the empty rod cell.
+Expected: Compatible contains only matching rods with every available rod subtype selected; other cells/sockets behave likewise.
+Actual: the global compatible category also includes items for other equipment slots.
+Resolution: scope Compatible to the exact pick target; initialize the existing subtype IDs through an injected projection query.
+Evidence: inventory-integration reproduced the failure and passes rod families, narrowing, changed cell and exact editor socket. Spec 120; owner acceptance pending.
+
+### G-101 Missing consumable prerequisites cannot be explained from the header (P3, implemented in v0.45.30)
+Found: 2026-10-20, owner amendment to TK-010.
+Reproduce: press the grey bait/chum icon without an equipped supporting tackle.
+Expected: existing warning and red whole-field feedback on the missing rod/tackle; no inventory change.
+Actual: native disabled buttons swallowed the activation.
+Resolution: header-only opt-in for unavailable activation; application emits authoritative rejection feedback using the existing overlay/revision contract.
+Evidence: UI and inventory-integration cover actionable unavailable icons, warning, error tone/slot, and unchanged gameplay snapshot; owner visual acceptance pending.
+
+### G-100 Empty equipment/editor targets lack the header repeat-pick behavior (P3, implemented in v0.45.30)
+Found: 2026-10-20, owner TK-010-1.
+Reproduce: repeat an active empty equipment cell or editor socket.
+Expected: one first displayed compatible item is equipped; portrait retains its inline editor.
+Actual: commands restarted the pick, and portrait editor tabs never entered a pick.
+Resolution: extend the same candidate intent and current repository validation to equipment/editor targets; project the active socket highlight and preserve the editor.
+Evidence: inventory-integration failed before the change, now covers equipment and inline-editor repeats/cancellation; existing UI scenarios cover all action dispatch and editor routes. Spec 119; Full/owner acceptance pending.
+
+### G-099 Active inventory picks cannot be cancelled by hold/right-click (P3, implemented in v0.45.30)
+Found: 2026-10-20, owner TK-010-2.
+Reproduce: start a pick and hold its active target for 200ms or right-click it.
+Expected: clear the pick without equipping/removing or leaving the page; no browser context menu anywhere in the game.
+Actual: no cancellation command; browser input controls retained context-menu exceptions.
+Resolution: authoritative pick-cancel command, delegated browser hold/right-click controller, complete input cleanup and global context-menu suppression.
+Evidence: task-interactions covers 199/200ms, mouse/touch, move/cancel/blur, stale DOM, click suppression and disposal; platform-runtime covers editable-control context menus. Spec 119; Full/owner acceptance pending.
+
+### G-098 Repeating a highlighted consumable header icon does not equip (P3, implemented in v0.45.29)
+Found: 2026-10-20, owner TK-010, index/dev inventory.
+Reproduce: activate a bait/chum header icon to highlight compatible items, then repeat that same icon.
+Expected: equip one first displayed compatible item using current filtering/sorting; another icon changes only the target.
+Actual: the repeated icon restarted the pick without equipping.
+Resolution: presentation submits the first displayed candidate ID only for the highlighted icon; the application rechecks target, custody, reservation and compatibility, then uses the existing atomic attachment path. Preserve manual confirmation priority, A settings and save semantics.
+Evidence: inventory-integration and inventory-ui failed before the change and pass after it, covering both kinds/layouts, current order, stale candidates, empty selection and one-time consumption. Spec 119; owner acceptance and final Full pending (automatic approval review usage limit).
+
 ### G-097 Clock phase switching skips midnight after evening advances (P2, implemented in v0.45.22)
 Found: 2026-10-20, owner declines clock acceptance in v0.45.21, DEV location/House.
 Reproduce: double activate at 12:00 to reach 19:00, let calendar time advance, then double activate again.

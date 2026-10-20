@@ -1,7 +1,7 @@
 export class InventoryLongPressController {
-  static DURATION_MS = 1500;
-  static EQUIPPED_DURATION_MS = 800;
-  static ACTIVATION_DELAY_MS = 300;
+  static DURATION_MS = 200;
+  static EQUIPPED_DURATION_MS = InventoryLongPressController.DURATION_MS;
+  static ACTIVATION_DELAY_MS = 0;
   static MOVEMENT_TOLERANCE_PX = 8;
 
   #durationMs;
@@ -27,7 +27,8 @@ export class InventoryLongPressController {
 
   bind(
     element,
-    { onClick = null, onLongPress = null, durationMs = this.#durationMs } = {},
+    { onClick = null, onLongPress = null, durationMs = this.#durationMs, showProgress = true,
+      activationDelayMs = InventoryLongPressController.ACTIVATION_DELAY_MS, progressHost = element } = {},
   ) {
     if (!element?.addEventListener) return () => {};
 
@@ -36,6 +37,7 @@ export class InventoryLongPressController {
       onClick,
       onLongPress,
       durationMs: Math.max(1, Number(durationMs) || this.#durationMs),
+      activationDelayMs: Math.max(0, Number(activationDelayMs) || 0),
       timerId: null,
       animationFrameId: null,
       startedAt: 0,
@@ -45,7 +47,8 @@ export class InventoryLongPressController {
       fired: false,
       disposed: false,
     };
-    const progress = this.#createProgressElement(element);
+    const progress = showProgress ? this.#createProgressElement(progressHost) : null;
+    element.classList.add("inventory-press");
     const pointerDown = (event) => this.#start(binding, event);
     const pointerMove = (event) => this.#move(binding, event);
     const pointerUp = (event) => this.#finish(binding, event);
@@ -97,21 +100,23 @@ export class InventoryLongPressController {
     binding.startY = Number(event.clientY) || 0;
     binding.fired = false;
     binding.element.setPointerCapture?.(event.pointerId);
-    binding.timerId = globalThis.setTimeout(() => {
+    const begin = () => {
       binding.startedAt = this.#now();
       this.#updateProgressVisual(binding, 0);
-      binding.element.classList.add("inventory-item-card--pressing");
+      if (binding.progress) binding.element.classList.add("inventory-press--pressing");
       this.#scheduleProgressUpdate(binding);
       binding.timerId = globalThis.setTimeout(() => {
         binding.timerId = null;
         binding.fired = true;
         this.#stopProgressUpdate(binding);
         this.#updateProgressVisual(binding, 1);
-        binding.element.classList.remove("inventory-item-card--pressing");
-        binding.element.classList.add("inventory-item-card--press-fired");
+        binding.element.classList.remove("inventory-press--pressing");
+        if (binding.progress) binding.element.classList.add("inventory-press--fired");
         binding.onLongPress?.(event);
       }, binding.durationMs);
-    }, InventoryLongPressController.ACTIVATION_DELAY_MS);
+    };
+    if (binding.activationDelayMs === 0) begin();
+    else binding.timerId = globalThis.setTimeout(begin, binding.activationDelayMs);
   }
 
   #move(binding, event) {
@@ -148,7 +153,7 @@ export class InventoryLongPressController {
       event.stopPropagation();
       event.stopImmediatePropagation?.();
       binding.fired = false;
-      binding.element.classList.remove("inventory-item-card--press-fired");
+      binding.element.classList.remove("inventory-press--fired");
       return;
     }
     binding.onClick?.(event);
@@ -161,11 +166,11 @@ export class InventoryLongPressController {
     }
     this.#stopProgressUpdate(binding);
     this.#updateProgressVisual(binding, 0);
-    binding.element.classList.remove("inventory-item-card--pressing");
+    binding.element.classList.remove("inventory-press--pressing");
   }
 
   #scheduleProgressUpdate(binding) {
-    if (typeof globalThis.requestAnimationFrame !== "function") return;
+    if (!binding.progress || typeof globalThis.requestAnimationFrame !== "function") return;
     const update = () => {
       if (binding.disposed || binding.timerId === null) return;
       const elapsed = Math.max(0, this.#now() - binding.startedAt);
@@ -185,6 +190,7 @@ export class InventoryLongPressController {
   }
 
   #updateProgressVisual(binding, ratio) {
+    if (!binding.progress) return;
     const normalized = Math.max(0, Math.min(1, Number(ratio) || 0));
     binding.progress?.style?.setProperty(
       "--inventory-long-press-angle",
@@ -224,7 +230,7 @@ export class InventoryLongPressController {
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return null;
     const progress = documentRef.createElement("span");
-    progress.className = "inventory-item-card__press-progress";
+    progress.className = "inventory-press__progress";
     progress.setAttribute("aria-hidden", "true");
     element.appendChild(progress);
     return progress;
@@ -245,8 +251,9 @@ export class InventoryLongPressController {
     binding.element.removeEventListener("click", binding.click);
     binding.element.removeEventListener("contextmenu", binding.contextMenu);
     binding.element.classList.remove(
-      "inventory-item-card--pressing",
-      "inventory-item-card--press-fired",
+      "inventory-press",
+      "inventory-press--pressing",
+      "inventory-press--fired",
     );
     binding.progress?.remove();
     this.#bindings.delete(binding);

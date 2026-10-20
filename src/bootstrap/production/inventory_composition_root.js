@@ -437,6 +437,7 @@ export class InventoryCompositionRoot {
       uiState: new InventoryUiState({ sortConfig: INVENTORY_SORT_CONFIG }),
       itemRemoval,
       slotVisibilityPolicy: visibilityPolicy,
+      pickSubfilterIds: uiState => viewModels.createPickSubfilterIds(uiState),
     });
     const gameplayCommands = new InventoryGameplayCommands({
       messages: INVENTORY_MESSAGES,

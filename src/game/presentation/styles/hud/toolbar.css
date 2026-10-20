@@ -89,7 +89,9 @@
   transition: border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard), opacity var(--ui-duration-control) var(--ui-ease-standard);
 }
 .ui-surface--desktop-hover .game-toolbar-button:hover:not(:disabled),
-.ui-surface--desktop-hover .game-toolbar-frame:hover {
+.ui-surface:not(.ui-surface--desktop-hover) .game-toolbar-button:active:not(:disabled),
+.ui-surface--desktop-hover .game-toolbar-frame:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .game-toolbar-frame:active {
   border-color: var(--ui-accent);
   background: rgba(var(--ui-accent-rgb), 0.16);
 }

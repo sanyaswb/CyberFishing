@@ -1046,7 +1046,6 @@ function checkBrowserWidgets() {
   const definitions = [
     [
       "src/platform/browser/dom/engine_interface.js",
-      "UI_EXCEPTIONS",
       "initEngineInterface",
     ],
     ["src/platform/browser/dom/ui_event_shield.js", "UiEventShield"],
@@ -1090,7 +1089,7 @@ function checkBrowserWidgets() {
       blocked = true;
     },
   });
-  assert(!blocked);
+  assert(blocked, "browser context menus are disabled throughout the game, including input controls");
   const button = makeNode(),
     cache = {
       get: (key) => saved.get(key),
@@ -1737,8 +1736,8 @@ function checkLongPressFrames(usePerformance) {
       add(name) {
         classes.add(name);
       },
-      remove(name) {
-        classes.delete(name);
+      remove(...names) {
+        for (const name of names) classes.delete(name);
       },
     },
     appendChild() {},
@@ -1751,6 +1750,9 @@ function checkLongPressFrames(usePerformance) {
     },
   };
   controller.bind(element, {
+    // Explicit slow binding provides enough frames for allocation/clock regression coverage.
+    durationMs: 1500,
+    activationDelayMs: 300,
     onLongPress() {
       fired++;
     },
@@ -1778,7 +1780,7 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(controller.hasActivePress, true);
   assert.equal(timers.size, 1);
   assert.equal(frames.size, 0);
-  assert.equal(classes.has("inventory-item-card--pressing"), false);
+  assert.equal(classes.has("inventory-press--pressing"), false);
   assert.equal(styleWrites, 0);
   now = 299;
   listeners.get("pointerup")(pointer);
@@ -1797,7 +1799,7 @@ function checkLongPressFrames(usePerformance) {
     "the activation delay does not sample the progress clock",
   );
   runTimeout(300);
-  assert.equal(classes.has("inventory-item-card--pressing"), true);
+  assert.equal(classes.has("inventory-press--pressing"), true);
   assert.equal(fired, 0);
   const callback = frames.values().next().value;
   const before = { clockReads, frameRequests, styleWrites, createdNodes };
@@ -1850,7 +1852,7 @@ function checkLongPressFrames(usePerformance) {
     assert.equal(controller.hasActivePress, false);
     assert.equal(timers.size, 0);
     assert.equal(frames.size, 0);
-    assert.equal(classes.has("inventory-item-card--pressing"), false);
+    assert.equal(classes.has("inventory-press--pressing"), false);
   }
   listeners.get("pointerdown")(pointer);
   runTimeout(300);
@@ -1859,13 +1861,44 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(timers.size, 0);
   assert.equal(frames.size, 0);
   assert.equal(controller.hasActivePress, false);
-  assert.equal(classes.has("inventory-item-card--pressing"), false);
+  assert.equal(classes.has("inventory-press--pressing"), false);
   listeners.get("pointerdown")(pointer);
   controller.dispose();
   assert.equal(listeners.size, 0);
   assert.equal(removedNodes, 1);
   assert.equal(frames.size, 0);
   assert.equal(timers.size, 0);
+
+  // Every default cell hold starts feedback at pointerdown and shares the 200ms deadline clock.
+  let mountedProgress = null;
+  const progressHost = { ownerDocument: document, appendChild(node) { mountedProgress = node; } };
+  controller.bind(element, {
+    progressHost,
+    onLongPress() { fired++; },
+  });
+  assert(mountedProgress, "the supplied artwork host owns the feedback node");
+  const startTime = now;
+  listeners.get("pointerdown")(pointer);
+  assert.equal(classes.has("inventory-press--pressing"), true, "all default holds start feedback without an activation delay");
+  assert.equal(styles.get("--inventory-long-press-angle"), "0deg");
+  assert.equal(timers.size, 1);
+  assert.equal(frames.size, 1);
+  now = startTime + 100;
+  const [frameId, advanceProgress] = frames.entries().next().value;
+  frames.delete(frameId);
+  advanceProgress();
+  assert.equal(styles.get("--inventory-long-press-angle"), "180deg");
+  assert.equal(fired, 1, "halfway feedback cannot remove the item");
+  now = startTime;
+  runTimeout(200);
+  assert.equal(fired, 2);
+  assert.equal(styles.get("--inventory-long-press-angle"), "360deg");
+  assert.equal(frames.size, 0);
+  controller.dispose();
+  assert.equal(listeners.size, 0);
+  assert.equal(removedNodes, 2);
+  assert.equal(timers.size, 0);
+  assert.equal(classes.size, 0);
 }
 
 // Game loop frames and the browser runtime adapters (cluster 019): one reused frame callback, the clock's deltaTime

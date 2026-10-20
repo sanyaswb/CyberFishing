@@ -40,7 +40,8 @@
   cursor: pointer;
   touch-action: manipulation;
 }
-.ui-surface--desktop-hover .keepnet-section__help:hover { background: var(--inventory-equipment-tab-active); }
+.ui-surface--desktop-hover .keepnet-section__help:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__help:active { background: var(--inventory-equipment-tab-active); }
 .keepnet-section__help:focus-visible,
 .keepnet-section__group:focus-visible,
 .keepnet-section__back:focus-visible,
@@ -66,7 +67,12 @@
   overflow-wrap: anywhere;
 }
 .keepnet-section__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
-.ui-surface--desktop-hover .keepnet-section__group:hover { background: var(--inventory-equipment-tab-active); border-color: var(--inventory-equipment-tab-border); }
+.ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__back:active:not(:disabled),
+.ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__action:active:not(:disabled) {
+  background: var(--inventory-equipment-tab-active);
+}
+.ui-surface--desktop-hover .keepnet-section__group:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__group:active { background: var(--inventory-equipment-tab-active); border-color: var(--inventory-equipment-tab-border); }
 .keepnet-section__group .keepnet-section__thumbnail { position: relative; flex: 1; min-height: 0; }
 .keepnet-section__group .keepnet-section__image { position: absolute; inset: 0; height: 100%; max-height: none; }
 .keepnet-section__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: var(--inventory-equipment-cell); border-radius: 5px; overflow: hidden; }

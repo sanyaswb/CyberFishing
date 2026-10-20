@@ -7,6 +7,7 @@ export class InventoryUI {
   #dom;
   #normalizer;
   #longPressController;
+  #pickCancelController;
   #itemRenderer;
   #headerRenderer;
   #loadoutRenderer;
@@ -123,6 +124,7 @@ export class InventoryUI {
     this.#dom = presentation.dom;
     this.#normalizer = presentation.resolvedNormalizer;
     this.#longPressController = presentation.resolvedLongPressController;
+    this.#pickCancelController = presentation.pickCancelController;
     this.#tooltipPresenter = presentation.resolvedTooltipPresenter;
     this.#itemRenderer = presentation.resolvedItemRenderer;
     this.#headerRenderer = presentation.resolvedHeaderRenderer;
@@ -136,6 +138,8 @@ export class InventoryUI {
     this.#sections = presentation.sections;
     this.#sectionSwipeController = presentation.sectionSwipeController;
     this.#buildShell();
+    this.#pickCancelController.attach(this.#rootNode, { windowRef: this.#dom.view,
+      onCancel: () => this.#dispatch({ type: this.#actionTypes.PICK_CANCEL }) });
   }
 
   get isOpen() {
@@ -223,6 +227,9 @@ export class InventoryUI {
     this.#rootNode.setAttribute("aria-hidden", "true");
     this.#keepnetSection?.setVisible(false);
     this.#longPressController.clear();
+    this.#headerRenderer.dispose?.(this.#headerNode);
+    this.#headerNode = null;
+    this.#pickCancelController.cancel();
     this.#tooltipPresenter.hide();
     this.#hintRenderer.hide(this.#warningNode);
     this.#dynamicRefreshElapsedMs = 0;
@@ -371,6 +378,7 @@ export class InventoryUI {
     this.#visibilityListeners.clear();
     this.#hintRenderer.dispose(this.#warningNode);
     this.#longPressController.dispose();
+    this.#pickCancelController.dispose();
     this.#headerRenderer.dispose?.();
     this.#headerNode = null;
     this.#tooltipPresenter.dispose();
@@ -494,9 +502,19 @@ export class InventoryUI {
       viewModel.settings,
       {
         onClose: () => this.close(),
-        onConsumableActivate: (kind, slotIndex) => this.#dispatch({
-          type: this.#actionTypes.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex, listVisible: this.#isItemListVisible(),
+        onConsumableLongPress: (kind, slotIndex, instanceId) => this.#dispatch({
+          type: this.#actionTypes.CONSUMABLE_SLOT_LONG_PRESS, kind, slotIndex, instanceId,
         }),
+        onConsumableActivate: (kind, slotIndex) => {
+          const current = this.#facade.getViewModel();
+          const slot = current.header[kind === "bait" ? "baitSlots" : "chumSlots"]?.[slotIndex];
+          const candidate = slot?.highlighted
+            ? current.inventory.items.find(item => item.compatibleWithHighlightedSlot) : null;
+          this.#dispatch({
+            type: this.#actionTypes.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex, listVisible: this.#isItemListVisible(),
+            ...(candidate ? { candidateInstanceId: candidate.instanceId } : {}),
+          });
+        },
         onAutoBaitChange: (enabled) =>
           this.#dispatch({
             type: this.#actionTypes.AUTO_BAIT_CHANGE,
@@ -523,6 +541,7 @@ export class InventoryUI {
     const container = parent?.classList.contains("inventory-editor-tabs__tab") ? parent : field;
     if (!container) return;
     container.classList.add("inventory-equipment-feedback");
+    container.classList.toggle("inventory-equipment-feedback--error", feedback.tone === "error");
     const overlay = this.#firstNodeByClass(container, "inventory-editor-tabs__highlight") ||
       this.#dom.element("span", "inventory-equipment-feedback__overlay");
     overlay.classList.add("inventory-equipment-feedback__overlay");
@@ -545,13 +564,13 @@ export class InventoryUI {
       const editor = this.#assemblyRenderer.render(panel.assembly, {
         onRodRemovalChoice: (choice) => this.#dispatch({ type: this.#actionTypes.ROD_REMOVAL_CHOICE, choice }),
         onRodRemovalSave: (name) => this.#dispatch({ type: this.#actionTypes.LOADOUT_SAVE, name }),
-        // Beside a visible item list (landscape, desktop) an empty cell starts the pick that highlights compatible
-        // items there; portrait offers the inline choices instead (spec 096).
+        // Portrait keeps its inline choices in the editor while starting the same cancellable pick as wide layouts.
         inlineChoices: () => !this.#isItemListVisible(),
         onSocketActivate: (socket) => this.#dispatch({
           type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId, socketId: socket.socketId,
           slotId: socket.slotId, slotIndex: socket.slotIndex, parentInstanceId: socket.parentInstanceId,
           listVisible: this.#isItemListVisible(),
+          ...(!this.#isItemListVisible() ? { inlineChoices: true } : {}),
         }),
         onSocketItemActivate: (socket, item) => this.#dispatch({
           type: this.#actionTypes.ASSEMBLY_SOCKET_ITEM_ACTIVATE, rootInstanceId, instanceId: item.instanceId,
@@ -692,6 +711,20 @@ export class InventoryUI {
   #dispatch(action) {
     let result;
     try {
+      if (action.type === this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE || action.type === this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE) {
+        const current = this.#facade.getViewModel();
+        const socket = current.panel?.assembly?.sockets?.find(entry => action.socketId
+          ? entry.socketId === action.socketId && entry.parentInstanceId === action.parentInstanceId
+          : entry.slotId === action.slotId);
+        const slot = current.panel?.mode === "assembly" ? socket :
+          [...(current.panel?.loadout?.mainSlots || []), ...(current.panel?.loadout?.auxiliarySlots || [])]
+            .find(entry => entry.slotId === action.slotId);
+        if (slot?.highlighted && !slot.item) {
+          const candidate = action.inlineChoices ? socket?.compatibleItems?.[0]
+            : current.inventory.items.find(item => item.compatibleWithHighlightedSlot);
+          if (candidate) action = { ...action, candidateInstanceId: candidate.instanceId };
+        }
+      }
       this.#actionContract.assert(action);
       result = this.#actionDispatcher(action);
     } catch (error) {

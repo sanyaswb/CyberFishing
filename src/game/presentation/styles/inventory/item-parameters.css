@@ -132,10 +132,14 @@
   cursor: default;
   transition: all 0.2s ease;
 }
-.ui-surface--desktop-hover .inventory-parameter__help:hover {
+.ui-surface--desktop-hover .inventory-parameter__help:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-parameter__help:active {
   background: var(--inventory-accent);
   color: #000;
   box-shadow: 0 0 8px rgba(var(--inventory-accent-rgb), 0.8);
+}
+@media (prefers-reduced-motion: reduce) {
+  .inventory-parameter__help { transition: none; }
 }
 
 .inventory-parameter__value {

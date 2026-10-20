@@ -66,7 +66,8 @@
   outline-offset: -4px;
 }
 
-.ui-surface--desktop-hover .inventory-section-tabs__tab:not(.inventory-section-tabs__tab--active):hover {
+.ui-surface--desktop-hover .inventory-section-tabs__tab:not(.inventory-section-tabs__tab--active):hover,
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-section-tabs__tab:not(.inventory-section-tabs__tab--active):active {
   color: var(--inventory-equipment-tab-icon-active);
 }
 

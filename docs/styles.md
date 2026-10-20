@@ -9,6 +9,14 @@ version. There are no CSS imports, runtime style installers or build requirement
 
 ## Ownership
 
+TK-013 (v0.45.33) groups DEV controls without changing config/override paths: top navigation and shop button,
+then Overlay → CONFIG → DEBUG (one Inventory with Split), scene/zone editors, Database (locations/fish/items),
+Spine (the skeleton name) and the final Service group (Runtime overrides / Item progression).
+`DevToolsUI.createInfoRow` groups read-only rows in a collapsed `Опис` disclosure per parent. Its weak cache
+preserves local expansion across refresh and rejects detached groups; editable controls remain in their original
+parent and keep their bindings. Section titles are semantic buttons with `aria-expanded`. Hover/press on action
+buttons changes only the background; keyboard focus keeps its outline. No polling or new global state.
+
 DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches; it adds no markup
 or stylesheet. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
@@ -56,6 +64,8 @@ scroll position; another editor starts at the top. `INVENTORY_EDITOR_CONFIG.scro
 bootstrap injects it into the renderer, whose modifier lets `shared-controls.css` hide the scrollbar without
 disabling scrolling. Enabling the setting restores the existing shared scrollbar appearance.
 
+Since TK-009/v0.45.28 the inventory header itself owns the shared grey panel background, 14px radius and proportional inner padding in all orientations. Landscape and desktop keep their existing column layout; portrait retains its inset and gap. The header owns its spacing below the panel rather than painting that gap.
+
 ## Pointer interaction and resize ownership
 
 Inventory behavior is defined in [inventory-behavior.md](inventory-behavior.md) and spec 072.
@@ -69,6 +79,12 @@ The item artwork has a square 22px circle at the 320px baseline; transparent bor
 the selected item or keyboard focus. Counts sit outside/below this circle, and images use `contain` without clipping.
 The pill, track and thumb keep opaque background colors in both modes. Their geometry/state rules have one
 shared owner in `auto-switch.css`, including the House's compact variant.
+The header bait hold (v0.45.35) reuses the `inventory-press` block from `inventory/shared-controls.css`.
+Its artwork host supplies full-circle size, a thin radial mask and no shadow through documented
+`--inventory-long-press-size` / `--inventory-long-press-mask` / `--inventory-long-press-shadow` properties.
+Since v0.45.36 the controller starts progress immediately for every inventory cell and fires at 200ms,
+including backpack cards, saved kits, equipment and editor cells. Artwork-only updates preserve the
+mounted progress node and deadline. Card appearance retains its existing owner.
 The pill, its track and close button share `--inventory-header-control-height`: all are 36px at 320px, with
 a 26px thumb and 22px artwork circle. There is no separate outer height or vertical pill padding; the track's
 border aligns with the pill border. The same compact geometry applies in both phone orientations.
@@ -115,8 +131,11 @@ inside the items panel. `shared-controls.css` owns its shared backdrop geometry 
 `UiSurfaceAdapter` exposes `hoverEnabled` and adds `ui-surface--desktop-hover` only for a UI and
 landscape viewport wider than 1024px with a fine hover-capable pointer and no touch/coarse input.
 Phones, tablets, portrait layouts and hybrid touch laptops have no hover effects. Every CSS
-`:hover`/decorative `:active` selector uses this ancestor; inventory hover hints and DEV metric
-hover help follow the same policy. Keyboard focus and actual selected/expanded states remain visible.
+`:hover` selector uses this ancestor; inventory hover hints and DEV metric hover help follow the same policy.
+TK-012 permits native `:active` under `.ui-surface:not(.ui-surface--desktop-hover)` for equivalent feedback
+only while pressing a control. Component owners share declarations with their desktop hover states;
+release/cancel restores the base style without timers, synthetic hover classes or extra input listeners.
+Press decoration does not resize controls. Keyboard focus and actual selected/expanded states remain visible.
 UI roots disable the browser tap highlight, including the catalog's outer navigation.
 
 DEV injects the calendar control through a bootstrap factory. Its active root reserves clock width,
@@ -195,6 +214,12 @@ adds the `inventory-equipment-feedback` mix to the complete field or outer edito
 an existing tab highlight layer is reused. `slots.css` owns its unchanged two-flash animation and reduced-motion
 behavior; field/tab owners supply their radius. The active tab's free width and inset are included. Inner wells
 never receive an additional flash, and the existing feedback revision prevents replay on ordinary refresh.
+TK-010/v0.45.30 reuses this same whole-field overlay for missing consumable prerequisites through the error
+modifier and `--inventory-danger`; warning sheets keep their existing behavior. Header placeholders accept an
+explanatory press while retaining aria-disabled and their unavailable appearance. Empty editor tabs start the
+same cancellable pick in portrait without leaving their inline page. The delegated cancellation controller uses
+a 200ms hold or right-click only on a highlighted target, consuming the following click and freeing timers/listeners
+on cancellation/disposal. The browser's context menu is disabled globally, including on editable controls.
 
 TK-007 owner clarification (v0.43.1): section navigation works in wide/landscape inventory too. Internal collection
 pages remain portrait-only; in wide layouts `InventoryCollectionPagerRenderer` forwards its gesture directly to
@@ -234,6 +259,10 @@ rows above the bottom actions; bottom alignment keeps their baseline fixed as th
 available logical width/height and safe areas. The shared UI surface
 applies the only below-320 scale and desktop-hover policy. Existing inventory/keepnet shortcuts remain mounted
 and are hidden only by the composed activation mode; their views and gameplay state are not reconstructed.
+TK-014/v0.45.37 separates pending, ready and failed artwork preload in that composition. Pending radial
+keeps classic shortcuts hidden until radial is ready. Explicit classic mode is immediately available;
+an actual preload failure restores classic controls. Pending mode changes use the latest configuration,
+and late success/failure after disposal never changes control visibility.
 `CONFIG.ui.inventorySelector` has `radialEnabled=true`, initial `size=1` and expanded `openSize=3` by default.
 DEV switches the mode and both independent sizes 1/2/3 (scale 1/1.35/1.7) live.
 Existing overrides own persistence/export/import/reset; invalid selector settings
@@ -322,7 +351,7 @@ one reproducible build and must never be edited independently from SCSS.
 
 `utils/checks/architecture/css-usage-check.js` validates native composition, ownership, linked assets, class reachability,
 BEM naming, invalid inherited-font shorthand, forced focus removal, ungated hover/press decoration
-and static style injection. It contains 18 negative fixtures. Inventory/item/platform tests preserve interaction, rendering,
+and static style injection. It contains 20 negative fixtures, including rejection of touch-branch hover. Inventory/item/platform tests preserve interaction, rendering,
 cached DOM/frame identity and disposal contracts. One Full run includes Architecture and Quick; use focused
 checks while iterating. Follow utils/UTILS_RULES.md: appearance and browser acceptance belong to the owner.
 

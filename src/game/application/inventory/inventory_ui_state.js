@@ -94,6 +94,19 @@ export class InventoryUiState {
     this.#clearPick();
   }
 
+  cancelPick() {
+    this.#clearPick();
+    this.clearSelection();
+    this.clearPlacementOrder();
+  }
+
+  equipmentRejected(slotId) {
+    this.showLoadoutPanel();
+    this.#activeSectionId = "equipment";
+    this.#equipmentFeedback = Object.freeze({ revision: ++this.#equipmentFeedbackRevision,
+      slotId, instanceId: null, tone: "error" });
+  }
+
   equipmentEquipped(slotId, instanceId) {
     this.showLoadoutPanel();
     this.#activeSectionId = "equipment";
@@ -126,6 +139,10 @@ export class InventoryUiState {
     this.#activeCategoryId = "compatible";
     this.#activeSubfilterIds = [];
     this.clearPlacementOrder();
+  }
+
+  selectPickSubfilters(filterIds) {
+    this.#activeSubfilterIds = [...new Set(filterIds)];
   }
 
   toggleSubfilter(filterId, enabled) {

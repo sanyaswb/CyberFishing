@@ -38,7 +38,8 @@
 .ui-modal-close::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
-.ui-surface--desktop-hover .ui-modal-close:hover:not(:disabled) {
+.ui-surface--desktop-hover .ui-modal-close:hover:not(:disabled),
+.ui-surface:not(.ui-surface--desktop-hover) .ui-modal-close:active:not(:disabled) {
   background: var(
     --ui-close-hover-background,
     rgba(var(--ui-danger-rgb), 0.24)
@@ -87,7 +88,8 @@
   outline: 2px solid var(--ui-focus-color);
   outline-offset: -2px;
 }
-.ui-surface--desktop-hover .ui-sheet-handle:hover {
+.ui-surface--desktop-hover .ui-sheet-handle:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .ui-sheet-handle:active {
   background: var(
     --ui-sheet-handle-hover-background,
     rgba(var(--ui-accent-rgb), 0.08)

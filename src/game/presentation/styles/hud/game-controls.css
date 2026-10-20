@@ -24,7 +24,8 @@
 .hud-control--square { width: calc(var(--ui-hud-control-size) * var(--ui-hud-scale, 1)); }
 .hud-control--borderless { border: 0; }
 .hud-control:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 3px; }
-.ui-surface--desktop-hover .hud-control:hover { background: var(--hud-control-hover-background, rgba(var(--ui-accent-rgb), 0.2)); }
+.ui-surface--desktop-hover .hud-control:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .hud-control:active { background: var(--hud-control-hover-background, rgba(var(--ui-accent-rgb), 0.2)); }
 
 .game-control--fullscreen,
 .game-control--continue {
@@ -75,12 +76,16 @@
   box-shadow: 0 0 15px rgba(var(--ui-accent-rgb), 0.4);
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
-.ui-surface--desktop-hover .game-control--fullscreen:hover {
+.ui-surface--desktop-hover .game-control--fullscreen:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .game-control--fullscreen:active {
   background: var(--hud-control-hover-background);
 }
 .ui-surface--desktop-hover .game-control--continue:hover {
   background-color: rgba(var(--ui-accent-rgb), 1);
   transform: translate(-50%, -50%) scale(1.05);
+}
+.ui-surface:not(.ui-surface--desktop-hover) .game-control--continue:active {
+  background-color: rgba(var(--ui-accent-rgb), 1);
 }
 .ui-surface--desktop-hover .game-control--continue:active:not(:hover) {
   transform: translate(-50%, -50%);

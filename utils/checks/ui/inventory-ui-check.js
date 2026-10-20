@@ -895,6 +895,23 @@ class InventoryUiBehaviorCheck {
       listVisible: true,
     });
     listHost.layoutVisible = false;
+    const previousCandidateView = currentView;
+    baitPickView.header.baitSlots[1].highlighted = true;
+    currentView = { ...baitPickView, inventory: { ...baitPickView.inventory, items: [
+      { instanceId: "not-compatible", compatibleWithHighlightedSlot: false },
+      { instanceId: "first-visible", compatibleWithHighlightedSlot: true },
+      { instanceId: "second-visible", compatibleWithHighlightedSlot: true },
+    ] } };
+    baitButtons[1].click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 1,
+      listVisible: false, candidateInstanceId: "first-visible",
+    });
+    currentView.inventory.items.reverse();
+    baitButtons[1].click();
+    assert.strictEqual(dispatched.at(-1).candidateInstanceId, "second-visible",
+      "header repeat follows current displayed order rather than its initial render");
+    currentView = previousCandidateView;
     assert.strictEqual(
       this.#findById(ui.rootNode, "inventory-auto-bait").checked,
       false,
@@ -1948,9 +1965,9 @@ class InventoryUiBehaviorCheck {
     });
 
     const inventoryCard = this.#inventoryCard(ui.rootNode, "assembly-bag");
-    assert.strictEqual(inventoryCard.dataset.longPressDuration, "1500");
+    assert.strictEqual(inventoryCard.dataset.longPressDuration, "200");
     assert.strictEqual(
-      this.#findAllByClass(inventoryCard, "inventory-item-card__press-progress")
+      this.#findAllByClass(inventoryCard, "inventory-press__progress")
         .length,
       1,
       "Long press must render one centered circular progress overlay",
@@ -2014,21 +2031,10 @@ class InventoryUiBehaviorCheck {
     dispatched.length = 0;
     inventoryCard.emit("pointerdown", { pointerId: 7 });
     assert.strictEqual(
-      inventoryCard.classList.contains("inventory-item-card--pressing"),
-      false,
-    );
-    timers.advance(299);
-    assert.strictEqual(
-      inventoryCard.classList.contains("inventory-item-card--pressing"),
-      false,
-    );
-    assert.strictEqual(dispatched.length, 0);
-    timers.advance(1);
-    assert.strictEqual(
-      inventoryCard.classList.contains("inventory-item-card--pressing"),
+      inventoryCard.classList.contains("inventory-press--pressing"),
       true,
     );
-    timers.advance(1499);
+    timers.advance(199);
     assert.strictEqual(dispatched.length, 0, "Long press fired too early");
     timers.advance(1);
     this.#assertLast(dispatched, {
@@ -2046,10 +2052,9 @@ class InventoryUiBehaviorCheck {
       clientX: 8,
       clientY: 0,
     });
-    timers.advance(300);
-    for (let elapsed = 0; elapsed < 1500; elapsed += 250) {
-      timers.advance(250);
-      ui.updateDynamicProgression(250);
+    for (let elapsed = 0; elapsed < 200; elapsed += 50) {
+      timers.advance(50);
+      ui.updateDynamicProgression(50);
     }
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.INVENTORY_ITEM_LONG_PRESS,
@@ -2091,11 +2096,11 @@ class InventoryUiBehaviorCheck {
     });
     dispatched.length = 0;
     savedLoadoutCard.emit("pointerdown", { pointerId: 11 });
-    timers.advance(1799);
+    timers.advance(199);
     assert.strictEqual(
       dispatched.length,
       0,
-      "Saved loadout disassembly fired before the activation delay and 1500ms countdown",
+      "Saved loadout disassembly fired before the shared 200ms deadline",
     );
     timers.advance(1);
     this.#assertLast(dispatched, {
@@ -2117,16 +2122,20 @@ class InventoryUiBehaviorCheck {
       slotId: "reel",
       instanceId: null,
       listVisible: false,
+      candidateInstanceId: "assembly-bag",
     });
+    ui.rootNode.emit("pointerdown", { target: this.#findByClass(reelField, "inventory-slot__empty-button"),
+      pointerType: "mouse", button: 2, pointerId: 30 });
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.PICK_CANCEL });
 
     dispatched.length = 0;
     const rodCard = this.#findByClass(
       this.#field(ui.rootNode, "rod"),
       "inventory-item-card",
     );
-    assert.strictEqual(rodCard.dataset.longPressDuration, "800");
+    assert.strictEqual(rodCard.dataset.longPressDuration, "200");
     rodCard.emit("pointerdown", { pointerId: 12 });
-    timers.advance(1099);
+    timers.advance(199);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     rodCard.emit("pointerup", { pointerId: 12 });
@@ -2143,9 +2152,9 @@ class InventoryUiBehaviorCheck {
       this.#field(ui.rootNode, "tackle"),
       "inventory-item-card",
     );
-    assert.strictEqual(tackleCard.dataset.longPressDuration, "800");
+    assert.strictEqual(tackleCard.dataset.longPressDuration, "200");
     tackleCard.emit("pointerdown", { pointerId: 9 });
-    timers.advance(1099);
+    timers.advance(199);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     tackleCard.emit("pointerup", { pointerId: 9 });
@@ -3093,7 +3102,7 @@ class InventoryUiBehaviorCheck {
     const hookTab = socketTabs.find((node) =>
       node.dataset.tabKey.includes(":hook[0]:"),
     );
-    const dispatchedBeforeViewing = dispatched.length;
+    let dispatchedBeforeViewing = dispatched.length;
     this.#findByClass(hookTab, "inventory-slot__empty-button").click();
     assert.deepStrictEqual(
       [activeTab(), ...visiblePages()],
@@ -3112,9 +3121,11 @@ class InventoryUiBehaviorCheck {
     );
     assert.strictEqual(
       dispatched.length,
-      dispatchedBeforeViewing,
-      "viewing an empty cell never starts a backpack pick",
+      dispatchedBeforeViewing + 1,
+      "an empty inline cell starts a pick while retaining its editor",
     );
+    assert.strictEqual(dispatched.at(-1).inlineChoices, true);
+    dispatchedBeforeViewing = dispatched.length;
     tabRow.emit("keydown", { key: "Home" });
     tabRow.emit("keydown", { key: "ArrowRight" });
     assert.deepStrictEqual(
@@ -3202,7 +3213,9 @@ class InventoryUiBehaviorCheck {
       clientY: 10,
       button: 0,
     });
-    timers.advance(1200);
+    timers.advance(199);
+    assert.strictEqual(dispatched.length, dispatchedBeforeViewing, "editor hold cannot fire before 200ms");
+    timers.advance(1);
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE,
       rootInstanceId: "assembly-active",
@@ -3529,8 +3542,8 @@ class InventoryUiBehaviorCheck {
     ).click();
     assert.strictEqual(
       dispatched.length,
-      beforeInlineView,
-      "opening choices neither filters the backpack nor selects equipment",
+      beforeInlineView + 1,
+      "opening inline choices starts one cancellable pick without equipping",
     );
     const inlineGrid = this.#findByClass(
       ui.rootNode,
@@ -3580,7 +3593,7 @@ class InventoryUiBehaviorCheck {
     });
     assert.strictEqual(
       dispatched.length,
-      beforeInlineView + 2,
+      beforeInlineView + 3,
       "one pick beside the visible list",
     );
     inlineListHost.layoutVisible = false;
@@ -3593,7 +3606,7 @@ class InventoryUiBehaviorCheck {
     this.#findByClass(ui.rootNode, "inventory-slot__empty-button").click();
     assert.strictEqual(
       dispatched.length,
-      beforeInlineView + 2,
+      beforeInlineView + 3,
       "an empty unavailable cell still opens its shop page without a command",
     );
     const beforeShop = dispatched.length;
@@ -3680,6 +3693,85 @@ class InventoryUiBehaviorCheck {
       0,
       "reopening an editor starts at the top",
     );
+    currentView = this.#loadoutViewModel();
+    currentView.header.baitSlots = [{ available: false, item: null }];
+    ui.render(currentView);
+    const unavailableHeaderItem = this.#findByClass(this.#findByClass(ui.rootNode, "inventory-auto-settings"), "inventory-toggle__item");
+    assert.strictEqual(unavailableHeaderItem.disabled, false, "an unavailable header icon can explain its missing prerequisite");
+    assert.strictEqual(unavailableHeaderItem.getAttribute("aria-disabled"), "true");
+    unavailableHeaderItem.click();
+    assert.strictEqual(dispatched.at(-1).type, sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE);
+    const heldHeaderView = this.#loadoutViewModel();
+    heldHeaderView.header.baitSlots = [{ available: true, item: { instanceId: "held-header-bait", name: "Worm" } }];
+    currentView = heldHeaderView;
+    ui.render(currentView);
+    ui.open();
+    let heldHeaderButton = this.#findAllByClass(ui.rootNode, "inventory-toggle__item")[0];
+    const beforeHold = dispatched.length;
+    heldHeaderButton.emit("pointerdown", { pointerId: 71, button: 2 });
+    timers.advance(2000);
+    assert.strictEqual(dispatched.length, beforeHold, "right mouse does not remove header bait");
+    heldHeaderButton.emit("pointerdown", { pointerId: 72, button: 0 });
+    const heldProgress = this.#findByClass(heldHeaderButton, "inventory-press__progress");
+    assert(heldProgress, "header removal has circular hold feedback");
+    heldHeaderView.header.baitSlots[0].item.iconUrl = "/changed-header-bait.webp";
+    ui.render(heldHeaderView);
+    assert.strictEqual(this.#findByClass(heldHeaderButton, "inventory-press__progress"), heldProgress,
+      "an artwork refresh must retain the active feedback and its deadline");
+    timers.advance(199);
+    assert.strictEqual(dispatched.length, beforeHold);
+    timers.advance(1);
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
+      kind: "bait", slotIndex: 0, instanceId: "held-header-bait" });
+    assert.strictEqual(dispatched.length, beforeHold + 1, "header bait is removed exactly once at 200ms from pointerdown");
+    // The real facade clears the item synchronously while retaining the same header button.
+    heldHeaderView.header.baitSlots[0].item = null;
+    ui.render(heldHeaderView);
+    heldHeaderButton.emit("pointerup", { pointerId: 72 });
+    assert(heldHeaderButton.click().defaultPrevented, "the release click is consumed even after removing/rebinding the slot");
+    assert.strictEqual(dispatched.length, beforeHold + 1);
+    heldHeaderView.header.baitSlots[0].item = { instanceId: "held-header-next", name: "Worm" };
+    ui.render(heldHeaderView);
+    heldHeaderButton.emit("pointerdown", { pointerId: 73 });
+    timers.advance(100);
+    heldHeaderButton.emit("pointermove", { pointerId: 73, clientX: 20 });
+    timers.advance(1000);
+    assert.strictEqual(dispatched.length, beforeHold + 1, "moving cancels removal");
+    heldHeaderButton.emit("pointerup", { pointerId: 73 });
+    heldHeaderButton.emit("pointerdown", { pointerId: 74 });
+    timers.advance(100);
+    heldHeaderView.header.baitSlots[0].item = { instanceId: "held-header-replacement", name: "Bread" };
+    ui.render(heldHeaderView);
+    timers.advance(1200);
+    assert.strictEqual(dispatched.length, beforeHold + 1, "a changed bait invalidates a stale hold");
+    ui.close(); ui.open();
+    heldHeaderButton = this.#findAllByClass(ui.rootNode, "inventory-toggle__item")[0];
+    const afterReopen = dispatched.length;
+    heldHeaderButton.emit("pointerdown", { pointerId: 75 });
+    timers.advance(200);
+    assert.strictEqual(dispatched.length, afterReopen + 1, "header removal bindings are restored after close/open");
+    assert.strictEqual(dispatched.at(-1).instanceId, "held-header-replacement");
+    const afterSecondHold = dispatched.length;
+    heldHeaderButton.emit("pointerdown", { pointerId: 76 });
+    timers.advance(100);
+    heldHeaderButton.emit("pointercancel", { pointerId: 76 });
+    timers.advance(2000);
+    assert.strictEqual(dispatched.length, afterSecondHold, "pointer cancel leaves bait equipped");
+    heldHeaderButton.emit("pointerdown", { pointerId: 77 });
+    timers.advance(199);
+    heldHeaderButton.emit("pointerup", { pointerId: 77 });
+    heldHeaderButton.click();
+    assert.strictEqual(dispatched.at(-1).type, sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+      "a short press retains ordinary header selection");
+    heldHeaderView.header.baitSlots[0].highlighted = true;
+    ui.render(heldHeaderView);
+    const beforeCancelPick = dispatched.length;
+    ui.rootNode.emit("pointerdown", { target: heldHeaderButton, pointerId: 78 });
+    heldHeaderButton.emit("pointerdown", { pointerId: 78 });
+    timers.advance(200);
+    assert.strictEqual(dispatched.at(-1).type, sandbox.InventoryActionType.PICK_CANCEL);
+    timers.advance(1200);
+    assert.strictEqual(dispatched.length, beforeCancelPick + 1, "a green active target cancels its pick without removing bait");
     const observedTypes = new Set(observed.map((action) => action.type));
     Object.values(sandbox.InventoryActionType).forEach((type) => {
       assert.ok(observedTypes.has(type), `Missing interaction action: ${type}`);
@@ -3692,6 +3784,7 @@ class InventoryUiBehaviorCheck {
       { type: actions.OPEN },
       { type: actions.CLOSE },
       { type: actions.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 0 },
+      { type: actions.CONSUMABLE_SLOT_LONG_PRESS, kind: "bait", slotIndex: 0, instanceId: "bait" },
       { type: actions.CATEGORY_SELECT, categoryId: "all" },
       { type: actions.SUBFILTER_TOGGLE, filterId: "hooks", enabled: true },
       { type: actions.SORT_CRITERION_SELECT, criterionId: "rarity" },

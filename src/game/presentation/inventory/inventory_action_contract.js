@@ -13,10 +13,13 @@ export class InventoryActionContract {
 
     switch (action.type) {
       case types.CONSUMABLE_SLOT_ACTIVATE:
+      case types.CONSUMABLE_SLOT_LONG_PRESS:
         if (!["bait", "chum"].includes(action.kind) || !Number.isInteger(action.slotIndex) || action.slotIndex < 0) {
           throw new TypeError("Invalid inventory consumable slot");
         }
         this.#optionalBoolean(action.listVisible, "listVisible");
+        this.#optionalId(action.candidateInstanceId, "candidateInstanceId");
+        if (action.type === types.CONSUMABLE_SLOT_LONG_PRESS) this.#requireId(action.instanceId, "instanceId");
         break;
       case types.ROD_REMOVAL_CHOICE:
         if (!["save", "disassemble", "cancel"].includes(action.choice)) {
@@ -57,6 +60,8 @@ export class InventoryActionContract {
         this.#requireId(action.slotId, "slotId");
         this.#optionalId(action.instanceId, "instanceId");
         this.#optionalBoolean(action.listVisible, "listVisible");
+        this.#optionalBoolean(action.inlineChoices, "inlineChoices");
+        this.#optionalId(action.candidateInstanceId, "candidateInstanceId");
         break;
       case types.EQUIPMENT_SLOT_LONG_PRESS:
         this.#requireId(action.slotId, "slotId");
@@ -73,6 +78,8 @@ export class InventoryActionContract {
           throw new TypeError("Inventory action slotIndex must be >= 0");
         }
         this.#optionalBoolean(action.listVisible, "listVisible");
+        this.#optionalBoolean(action.inlineChoices, "inlineChoices");
+        this.#optionalId(action.candidateInstanceId, "candidateInstanceId");
         break;
       case types.ASSEMBLY_EQUIP:
       case types.ASSEMBLY_UNEQUIP:

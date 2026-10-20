@@ -847,6 +847,7 @@
 │        │  ├── horizontal_scroll_controller.js
 │        │  ├── inventory_dom_factory.js
 │        │  ├── inventory_long_press_controller.js
+│        │  ├── inventory_pick_cancel_controller.js
 │        │  ├── inventory_selector_controller.js
 │        │  ├── item_condition_dom_adapter.js
 │        │  ├── item_progression_dom_adapter.js

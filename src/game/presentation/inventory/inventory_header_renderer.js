@@ -17,12 +17,13 @@ export class InventoryHeaderRenderer {
   render(
     header,
     settings,
-    { onClose = null, onAutoBaitChange = null, onAutoChumChange = null, onConsumableActivate = null } = {},
+    { onClose = null, onAutoBaitChange = null, onAutoChumChange = null, onConsumableActivate = null,
+      onConsumableLongPress = null } = {},
   ) {
     const top = this.#dom.element("header", "inventory-header");
     const row = this.#dom.element("div", "inventory-header__controls");
     const controls = this.#renderSettings(header, settings, {
-      onAutoBaitChange, onAutoChumChange, onConsumableActivate,
+      onAutoBaitChange, onAutoChumChange, onConsumableActivate, onConsumableLongPress,
     });
     const close = this.#closeButtons.create({
       className: "inventory-header__close", label: "Закрити інвентар", onClose,
@@ -62,20 +63,22 @@ export class InventoryHeaderRenderer {
     if (binding) this.#loadRenderer.update(binding.load, header);
   }
 
-  #renderSettings(header, settings, { onAutoBaitChange, onAutoChumChange, onConsumableActivate }) {
+  #renderSettings(header, settings, { onAutoBaitChange, onAutoChumChange, onConsumableActivate, onConsumableLongPress }) {
     const container = this.#dom.element("div", "inventory-auto-settings");
     container.append(
       this.#createToggle("inventory-auto-bait", "bait", "Наживка", "Автонаживляння",
-        header.baitSlots || header.activeBaits.map((item) => ({ item, available: true })), settings.autoBait, header.baitStock, onAutoBaitChange, onConsumableActivate),
+        header.baitSlots || header.activeBaits.map((item) => ({ item, available: true })), settings.autoBait, header.baitStock, onAutoBaitChange, onConsumableActivate, onConsumableLongPress),
       this.#createToggle("inventory-auto-chum", "chum", "Прикормка", "Автоприкормка",
         header.chumSlots || header.activeChums.map((item) => ({ item, available: true })), settings.autoChum, header.chumStock, onAutoChumChange, onConsumableActivate),
     );
     return container;
   }
 
-  #createToggle(id, slotId, name, modeLabel, slots, checked, stock = 0, onChange, onActivate) {
-    return this.#autoSwitches.create({ id, name, modeLabel, slots, checked, stock, onChange,
+  #createToggle(id, slotId, name, modeLabel, slots, checked, stock = 0, onChange, onActivate, onLongPress = null) {
+    return this.#autoSwitches.create({ id, name, modeLabel, slots, checked, stock, onChange, activateUnavailable: true,
       onSlotActivate: (slotIndex) => onActivate?.(slotId, slotIndex),
+      onSlotLongPress: slotId === "bait" && onLongPress
+        ? (slotIndex, instanceId) => onLongPress(slotId, slotIndex, instanceId) : null,
       placeholderUrl: inventorySlotIconPath(slotId) });
   }
 

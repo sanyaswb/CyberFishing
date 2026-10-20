@@ -55,7 +55,21 @@
   background: transparent;
   cursor: pointer;
 }
-.inventory-toggle__artwork { display: grid; place-items: center; flex: none; width: var(--inventory-toggle-item-size); height: var(--inventory-toggle-item-size); padding: 0; border: 1px solid transparent; border-radius: 50%; }
+.inventory-toggle__artwork {
+  --inventory-long-press-size: 100%;
+  --inventory-long-press-color: var(--ui-accent);
+  --inventory-long-press-shadow: none;
+  --inventory-long-press-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--inventory-toggle-item-size);
+  height: var(--inventory-toggle-item-size);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+}
 .inventory-toggle__item-count { color: var(--inventory-muted-text, var(--ui-muted)); font-size: var(--inventory-toggle-item-count-size); line-height: 1; font-variant-numeric: tabular-nums; }
 .inventory-toggle__item:disabled { cursor: default; }
 .inventory-toggle__placeholder { opacity: var(--inventory-consumable-placeholder-muted, 0.32); }
@@ -161,12 +175,14 @@
   outline: 2px solid var(--inventory-accent, var(--ui-accent));
   outline-offset: 3px;
 }
-.ui-surface--desktop-hover .inventory-toggle:hover:not(.inventory-toggle--disabled):not(.inventory-toggle--control) { border-color: var(--inventory-accent, var(--ui-accent)); }
+.ui-surface--desktop-hover .inventory-toggle:hover:not(.inventory-toggle--disabled):not(.inventory-toggle--control),
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-toggle:active:not(.inventory-toggle--disabled):not(.inventory-toggle--control) { border-color: var(--inventory-accent, var(--ui-accent)); }
 .ui-surface--desktop-hover .inventory-toggle:active:not(.inventory-toggle--disabled):not(.inventory-toggle--control) { background: #29343a; }
 .inventory-toggle--disabled { opacity: 0.46; cursor: not-allowed; }
 .inventory-toggle--disabled .inventory-toggle__input { cursor: not-allowed; }
 .inventory-toggle--control { --inventory-toggle-control-width: 104px; width: var(--inventory-toggle-control-width); height: var(--inventory-toggle-height); padding: 0; border: 0; background: transparent; }
-.ui-surface--desktop-hover .inventory-toggle--control:hover:not(.inventory-toggle--disabled) .inventory-toggle__control { border-color: var(--inventory-accent, var(--ui-accent)); }
+.ui-surface--desktop-hover .inventory-toggle--control:hover:not(.inventory-toggle--disabled) .inventory-toggle__control,
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-toggle--control:active:not(.inventory-toggle--disabled) .inventory-toggle__control { border-color: var(--inventory-accent, var(--ui-accent)); }
 /* One compact geometry in both phone orientations. The header supplies the shared row height. */
 @container ui-surface (max-width: 820px) {
   .inventory-toggle:not(.inventory-toggle--control) {

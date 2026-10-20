@@ -2,6 +2,7 @@
 .game-shell__dev-ui { display: contents; }
 .ui-surface--time-accelerated { --ui-clock-width: 196px; }
 .devtools__action {
+  box-sizing: border-box;
   width: 100%;
   min-height: 44px;
   padding: 8px 10px;
@@ -13,8 +14,12 @@
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ui-duration-control) var(--ui-ease-standard);
 }
 .ui-surface--desktop-hover .devtools__action:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__action:active {
+  background: rgba(var(--ui-accent-rgb), 0.2);
+}
 .devtools__action:focus-visible {
   background: rgba(var(--ui-accent-rgb), 0.24);
   outline: 2px solid var(--ui-success);
@@ -100,6 +105,12 @@
 }
 
 .devtools__section-title {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  text-align: left;
   font-size: 14px;
   color: var(--ui-accent);
   cursor: pointer;
@@ -114,10 +125,12 @@
   display: flex;
   gap: 8px;
 }
-.ui-surface--desktop-hover .devtools__section-title:hover {
+.ui-surface--desktop-hover .devtools__section-title:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__section-title:active {
   background: rgba(var(--ui-accent-rgb), 0.2);
   color: var(--ui-text);
 }
+.devtools__section-title:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
 
 .devtools__section-content {
   padding-left: 15px;
@@ -220,7 +233,7 @@
 .devtools__switch-input:focus-visible + .devtools__slider { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .devtools__input:focus-visible, .devtools__enum:focus-visible, .devtools__toggle:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  .devtools, .devtools__section-title, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
+  .devtools, .devtools__action, .devtools__section-title, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
 }
 
 .devtools__enum {

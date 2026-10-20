@@ -103,6 +103,19 @@
   color: var(--inventory-success);
 }
 
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-categories__button:active:not(:disabled),
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-categories__toggle:active:not(:disabled),
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-sort-options__button:active:not(:disabled) {
+  background: rgba(var(--ui-accent-rgb), 0.24);
+  border-color: var(--ui-accent);
+}
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-subfilters__option:active {
+  color: var(--inventory-accent);
+}
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-sort-options__rarity:active:not(:disabled) {
+  border-color: var(--ui-text);
+}
+
 .inventory-categories__sort-toggle::before {
   width: 18px;
   height: 18px;

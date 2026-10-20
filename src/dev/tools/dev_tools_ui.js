@@ -14,6 +14,7 @@ export class DevToolsUI {
   #uiSurface;
   #mountNode;
   #toggleMountNode;
+  #descriptions = new WeakMap();
 
   constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
     mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode) {
@@ -78,13 +79,15 @@ export class DevToolsUI {
     this.#controlBindings.releaseWithin(container);
   }
 
-  createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null, { buttonTitle = false } = {}) {
     const section = document.createElement("div");
     section.className = "devtools__section";
     this.#assignDevToolsPath(section, path);
 
-    const title = document.createElement("div");
-    title.className = "devtools__section-title";
+    const title = document.createElement("button");
+    title.className = buttonTitle ? "devtools__action" : "devtools__section-title";
+    title.type = "button";
+    title.setAttribute("aria-expanded", String(isExpanded));
     this.#assignDevToolsPath(title, path);
     title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
 
@@ -97,6 +100,7 @@ export class DevToolsUI {
       const isHidden = content.style.display === "none";
       content.style.display = isHidden ? "block" : "none";
       title.innerHTML = `<span>${isHidden ? "▼" : "▶"}</span> ${labelStr}`;
+      title.setAttribute("aria-expanded", String(isHidden));
       if (onToggle) onToggle(isHidden);
     });
 
@@ -108,6 +112,14 @@ export class DevToolsUI {
   }
 
   createInfoRow(labelStr, value, parentElement, path = null) {
+    let description = this.#descriptions.get(parentElement);
+    if (!description || description.content.parentNode?.parentNode !== parentElement) {
+      const record = { expanded: description?.expanded || false, content: null };
+      record.content = this.createSection("Опис", parentElement, record.expanded,
+        expanded => { record.expanded = expanded; });
+      this.#descriptions.set(parentElement, record);
+      description = record;
+    }
     const row = document.createElement("div");
     row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
@@ -116,7 +128,7 @@ export class DevToolsUI {
     valueEl.className = "devtools__value";
     valueEl.innerText = value;
     row.appendChild(valueEl);
-    parentElement.appendChild(row);
+    description.content.appendChild(row);
     return valueEl;
   }
 

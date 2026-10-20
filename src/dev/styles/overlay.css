@@ -38,6 +38,7 @@
   touch-action: manipulation;
 }
 .ui-surface--desktop-hover .debug-overlay__tab:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__tab:active,
 .debug-overlay__tab:focus-visible {
   background: rgba(120, 190, 255, 0.16);
   border-color: rgba(120, 190, 255, 0.45);
@@ -61,6 +62,7 @@
   transition: background 80ms ease, color 80ms ease;
 }
 .ui-surface--desktop-hover .debug-overlay__metric-label:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__metric-label:active,
 .debug-overlay__metric-label:focus-visible {
   color: var(--ui-text);
   background: rgba(115, 194, 251, 0.16);
@@ -118,6 +120,13 @@
   justify-content: center;
   align-items: center;
   touch-action: none;
+}
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__scale-button:active:not(:disabled) {
+  background-color: rgba(var(--ui-accent-rgb), 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debug-overlay__metric-label { transition: none; }
 }
 
 .debug-overlay__content {

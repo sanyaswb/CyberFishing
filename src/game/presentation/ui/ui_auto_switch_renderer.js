@@ -1,14 +1,20 @@
 export class UiAutoSwitchRenderer {
   #dom;
   #bindings = new WeakMap();
+  #longPressController;
+  #longPressDurationMs;
+  #longPressActivationDelayMs;
 
-  constructor({ domFactory }) {
+  constructor({ domFactory, longPressController = null, longPressDurationMs = null, longPressActivationDelayMs }) {
     this.#dom = domFactory;
+    this.#longPressController = longPressController;
+    this.#longPressDurationMs = longPressDurationMs;
+    this.#longPressActivationDelayMs = longPressActivationDelayMs;
   }
 
   create({ id, name, modeLabel, items = [], placeholderUrl, checked = false,
-    slots = null, onSlotActivate = null,
-    disabled = false, stock = 0, onChange = null, className = "", variant = "equipment" }) {
+    slots = null, onSlotActivate = null, onSlotLongPress = null,
+    disabled = false, stock = 0, onChange = null, className = "", variant = "equipment", activateUnavailable = false }) {
     const compact = variant === "control";
     const label = this.#dom.element(compact ? "label" : "div", `inventory-toggle ${compact ? "inventory-toggle--control " : ""}${className}`.trim());
     const content = this.#dom.element("span", "inventory-toggle__items");
@@ -33,7 +39,7 @@ export class UiAutoSwitchRenderer {
     switchHost.append(input, control);
     if (!compact) label.append(switchHost);
     this.#bindings.set(label, { input, count, change, modeLabel, compact, content,
-      name, placeholderUrl, onSlotActivate, stock: 0, slots: [], slotBindings: [] });
+      name, placeholderUrl, onSlotActivate, onSlotLongPress, activateUnavailable, stock: 0, slots: [], slotBindings: [] });
     this.update(label, { checked, disabled, stock, slots: slots || items.map((item) => ({ item, available: true })) });
     return label;
   }
@@ -61,8 +67,10 @@ export class UiAutoSwitchRenderer {
   #updateSlots(label, binding, slots) {
     const source = slots.length ? slots : [{ item: null, available: false }];
     while (binding.slotBindings.length > source.length) {
-      const { media, click } = binding.slotBindings.pop();
+      const { media, click, pointerDown, unbindHold } = binding.slotBindings.pop();
+      unbindHold?.();
       media.removeEventListener("click", click);
+      media.removeEventListener("pointerdown", pointerDown);
       media.remove();
     }
     source.forEach((slot, index) => {
@@ -71,21 +79,42 @@ export class UiAutoSwitchRenderer {
         const media = this.#dom.button("inventory-toggle__item", "");
         const artwork = this.#dom.element("span", "inventory-toggle__artwork");
         const count = this.#dom.element("span", "inventory-toggle__item-count");
-        const click = () => { if (!media.disabled) binding.onSlotActivate?.(index); };
+        const click = event => {
+          if (nodes.suppressClick && event.detail !== 0) {
+            nodes.suppressClick = false;
+            event.preventDefault(); event.stopImmediatePropagation?.(); event.stopPropagation(); return;
+          }
+          if (!media.disabled) binding.onSlotActivate?.(index);
+        };
+        const pointerDown = event => { if (event.isPrimary !== false && event.button === 0) nodes.suppressClick = false; };
         media.addEventListener("click", click);
+        media.addEventListener("pointerdown", pointerDown);
         media.append(artwork, count);
         binding.content.appendChild(media);
-        nodes = { media, artwork, count, click, image: null, source: undefined, icon: undefined };
+        nodes = { media, artwork, count, click, pointerDown, suppressClick: false, holdItemId: undefined,
+          unbindHold: null, image: null, source: undefined, icon: undefined };
         binding.slotBindings.push(nodes);
       }
       const item = slot.item;
+      const holdItemId = binding.onSlotLongPress && slot.available && !slot.highlighted && !binding.input.disabled
+        ? item?.instanceId || null : null;
+      if (nodes.holdItemId !== holdItemId) {
+        nodes.unbindHold?.();
+        nodes.holdItemId = holdItemId;
+        nodes.unbindHold = holdItemId ? this.#longPressController?.bind(nodes.media, {
+          durationMs: this.#longPressDurationMs, activationDelayMs: this.#longPressActivationDelayMs,
+          progressHost: nodes.artwork,
+          onLongPress: () => { nodes.suppressClick = true; binding.onSlotLongPress(index, holdItemId); },
+        }) : null;
+      }
       const stock = Math.max(0, Math.floor(Number(slot.stock) || 0));
       const title = `${binding.name} ${index + 1}${item ? `: ${item.name || binding.name}. Доступно в інвентарі: ${stock}` : ""}`;
       if (nodes.media.title !== title) {
         nodes.media.title = title;
         nodes.media.setAttribute("aria-label", title);
       }
-      nodes.media.disabled = !slot.available;
+      nodes.media.disabled = !slot.available && !binding.activateUnavailable;
+      nodes.media.setAttribute("aria-disabled", String(!slot.available));
       nodes.media.classList.toggle("inventory-toggle__item--available", slot.available === true);
       nodes.media.classList.toggle("inventory-toggle__item--highlighted", slot.highlighted === true);
       nodes.media.setAttribute("aria-pressed", String(slot.highlighted === true));
@@ -95,7 +124,9 @@ export class UiAutoSwitchRenderer {
         nodes.image = this.#dom.image(imageSource, "");
         const visual = nodes.image || this.#dom.glyph(icon, "inventory-toggle__glyph");
         visual.setAttribute("aria-hidden", "true");
-        this.#dom.replaceChildren(nodes.artwork, visual);
+        nodes.visual?.remove();
+        nodes.artwork.appendChild(visual);
+        nodes.visual = visual;
         nodes.source = imageSource;
         nodes.icon = icon;
       }
@@ -114,7 +145,11 @@ export class UiAutoSwitchRenderer {
   dispose(label) {
     const binding = this.#bindings.get(label);
     if (binding) binding.input.removeEventListener("change", binding.change);
-    for (const { media, click } of binding?.slotBindings || []) media.removeEventListener("click", click);
+    for (const { media, click, pointerDown, unbindHold } of binding?.slotBindings || []) {
+      unbindHold?.();
+      media.removeEventListener("click", click);
+      media.removeEventListener("pointerdown", pointerDown);
+    }
     this.#bindings.delete(label);
   }
 }

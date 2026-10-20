@@ -286,7 +286,7 @@ async function checkComposition() {
   const config = { ui: { inventorySelector: { ...CONFIG.ui.inventorySelector } } };
   const ctx = createRuntimeConfigContext(config, { validateOverrides: InventorySelectorConfigValidator.validateOverrides,
     resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize"] });
-  let classic, keepnet, listener, equipmentListener, finishArtwork, artworkLoads = 0;
+  let classic, keepnet, listener, equipmentListener, finishArtwork, finishSelector, artworkLoads = 0;
   const equipped = { rod: null };
   const inventory = { editor, rootNode: s.doc.createElement("div"),
     setShortcutVisible: value => { classic = value; }, onVisibilityChange: fn => { listener = fn; return () => { listener = null; }; },
@@ -297,10 +297,18 @@ async function checkComposition() {
     equipmentSource: { getEquipped: () => equipped,
       onInventoryChanged: fn => { equipmentListener = fn; return () => { equipmentListener = null; }; } },
     imageAssets: { preload: records => {
-      if (records.length === 3) return Promise.resolve();
+      if (records.length === 3) return new Promise(resolve => { finishSelector = resolve; });
       artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; });
     } }, logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
+  assert.equal(classic, false, "radial startup must never expose the classic backpack while artwork is pending");
+  assert.equal(keepnet, false, "the classic keepnet must also stay hidden during radial preload");
+  assert(!binding.view.enabled, "the radial control waits for its artwork");
+  config.ui.inventorySelector.radialEnabled = false; s.doc.fire("config-updated");
+  assert(classic && keepnet && !binding.view.enabled, "classic mode remains usable while preload is pending");
+  config.ui.inventorySelector.radialEnabled = true; s.doc.fire("config-updated");
+  assert(!classic && !keepnet && !binding.view.enabled, "returning to radial hides classic controls before readiness");
+  finishSelector();
   await binding.ready;
   assert(!classic && !keepnet && binding.view.enabled);
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
@@ -360,5 +368,43 @@ async function checkComposition() {
   assert.ok(css.includes("border-width: calc(0.025 * var(--inventory-selector-drawing-unit))"),
     "open central button matches the visible border width of the expanded sectors");
 }
-checkComposition().then(() => console.log("Inventory selector passed: geometry, all release targets, hover, keyboard, capture, motion, coordinates, live sizes, overrides and disposal."))
+async function checkPreloadOutcomes() {
+  for (const options of [
+    { radial: false, fail: false, disposeEarly: false },
+    { radial: true, fail: true, disposeEarly: false },
+    { radial: true, fail: false, disposeEarly: true },
+    { radial: true, fail: true, disposeEarly: true },
+  ]) {
+    const s = scenario(); s.controller.dispose(); s.view.dispose();
+    const config = { ui: { inventorySelector: { radialEnabled: options.radial } } };
+    let finish, fail, classic, keepnet, visibilityWrites = 0, warnings = 0;
+    const binding = composeInventorySelector({
+      documentRef: s.doc, windowRef: s.doc.defaultView, uiSurface: s.surface, mountNode: s.doc.body, config,
+      inventoryUI: { setShortcutVisible: value => { classic = value; visibilityWrites++; },
+        onVisibilityChange: () => () => {} },
+      keepnetUI: { setShortcutVisible: value => { keepnet = value; visibilityWrites++; } },
+      imageAssets: { preload: () => new Promise((resolve, reject) => { finish = resolve; fail = reject; }) },
+      logger: { warn: () => { warnings++; } },
+    });
+    assert.equal(classic, !options.radial); assert.equal(keepnet, classic);
+    assert(!binding.view.enabled);
+    if (options.disposeEarly) binding.dispose();
+    const beforeCompletion = visibilityWrites;
+    if (options.fail) fail(new Error("deterministic preload failure"));
+    else finish();
+    assert.equal(await binding.ready, !options.fail);
+    if (options.disposeEarly) {
+      assert.equal(visibilityWrites, beforeCompletion, "late preload completion cannot alter disposed controls");
+      assert.equal(warnings, 0);
+    } else {
+      assert(classic && keepnet && !binding.view.enabled, "explicit classic or failed artwork leaves usable classic shortcuts");
+      assert.equal(warnings, Number(options.fail));
+      s.doc.fire("config-updated");
+      assert(classic && keepnet && !binding.view.enabled, "config refresh preserves the failed-artwork fallback");
+    }
+    binding.dispose();
+    for (const listeners of s.doc.listeners.values()) assert.equal(listeners.size, 0);
+  }
+}
+checkComposition().then(checkPreloadOutcomes).then(() => console.log("Inventory selector passed: geometry, all release targets, hover, keyboard, capture, motion, coordinates, live sizes, overrides, pending preload/fallback and disposal."))
   .catch(error => { console.error(error); process.exitCode = 1; });

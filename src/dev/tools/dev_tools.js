@@ -163,10 +163,38 @@ export class DevTools {
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 
-    this.#renderRuntimeOverrideControls(body);
-    this.#renderItemProgressionSection(body);
+    this.#renderItemGrantSection(body);
+    this.#renderOverlaySection(body);
+    this.#renderConfigSection(body);
+    const debugContent = this.#renderConfigDebugSection(body);
+    this.#renderLocationDebugSection(debugContent);
+    this.#renderSceneLayerSection(body);
+    if (this.#zoneEditorState) new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
+      updateConfig: (path, value) => this.#updateConfigValue(path, value),
+      getWaterMetric: this.#getWaterMetric,
+      createWaterMetric: this.#createWaterMetric,
+      resetPerspective: id => this.#resetLocationPerspective(id),
+      exportOverrides: () => this.#exportRuntimeOverrides(),
+      importOverrides: () => this.#importRuntimeOverrides(),
+    }).render(body);
 
-    // 1. OVERLAY MODULES
+    this.#renderDatabaseSection(body);
+    if (this.#rodSpine) this.#renderSpineRodSection(this.#createSectionWithCache("SPINE", body, ["SPINE"]));
+    this.#renderActiveFishSection(body);
+    const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
+    this.#renderRuntimeOverrideControls(service);
+    this.#renderItemProgressionSection(service);
+  }
+
+  #renderOverlaySection(body) {
+    const overlayContent = this.#createSectionWithCache("OVERLAY", body, ["OVERLAY"]);
+    for (const key of Object.keys(this.#config.debug || {}).filter(key => key.startsWith("overlay"))) {
+      const path = ["CONFIG", "debug", key];
+      this.#renderScalarValue({ key: key === "overlay" ? "enabled" : key, value: this.#config.debug[key],
+        parentElement: overlayContent, displayPath: path, canonicalPath: path });
+    }
     const overlaySettings = this.#settingsStore;
     const overlayModules = overlaySettings?.getSnapshot?.();
     const overlayKeys =
@@ -174,7 +202,7 @@ export class DevTools {
     if (overlayModules && overlayKeys.length > 0) {
       const content = this.#createSectionWithCache(
         "OVERLAY MODULES (В live time)",
-        body,
+        overlayContent,
         ["OVERLAY_MODULES"],
       );
       const renderedKeys = new Set();
@@ -217,64 +245,14 @@ export class DevTools {
 
       overlayKeys.forEach((key) => renderSwitcher(key, content));
     }
+  }
 
-    const debugContent = this.#renderConfigDebugSection(body);
-    this.#renderLocationDebugSection(debugContent);
-    this.#renderItemGrantSection(body);
-    this.#renderSpineRodSection(body);
-    this.#renderSceneLayerSection(body);
-    if (this.#zoneEditorState) new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
-      updateConfig: (path, value) => this.#updateConfigValue(path, value),
-      getWaterMetric: this.#getWaterMetric,
-      createWaterMetric: this.#createWaterMetric,
-      resetPerspective: id => this.#resetLocationPerspective(id),
-      exportOverrides: () => this.#exportRuntimeOverrides(),
-      importOverrides: () => this.#importRuntimeOverrides(),
-    }).render(body);
-
-    // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
-    if (typeof this.#catalogs.items !== "undefined") {
-      const dbContent = this.#createSectionWithCache(
-        "📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)",
-        body,
-        ["ITEM_DB"],
-      );
-      for (const key of Object.keys(this.#catalogs.items)) {
-        if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, dbContent, [
-          "ITEM_DB",
-          key,
-        ]);
-        // Шлях тепер починається з "ITEM_DB"
-        this.#buildTree(this.#catalogs.items[key], sectionContent, ["ITEM_DB", key]);
-      }
-    }
-
-    // 4. FISH_DB (БАЗА РИБИ)
-    if (typeof this.#catalogs.fishes !== "undefined") {
-      const fishDbContent = this.#createSectionWithCache(
-        "🐟 БАЗА РИБИ (FISH_DB)",
-        body,
-        ["FISH_DB"],
-      );
-      this.#catalogs.fishes.forEach((fish, index) => {
-        const fishLabel = fish?.id || fish?.name || `Fish [${index}]`;
-        const sectionContent = this.#createSectionWithCache(
-          fishLabel,
-          fishDbContent,
-          ["FISH_DB", index],
-        );
-        this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
-      });
-    }
-
-    // 5. MAP_DB (БАЗА ЛОКАЦІЙ)
+  #renderDatabaseSection(body) {
+    const database = this.#createSectionWithCache("БАЗА ДАНИХ", body, ["DATABASE"]);
     if (typeof this.#catalogs.maps !== "undefined") {
       const mapDbContent = this.#createSectionWithCache(
         "🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)",
-        body,
+        database,
         ["MAP_DB"],
       );
       for (const key of Object.keys(this.#catalogs.maps)) {
@@ -289,7 +267,42 @@ export class DevTools {
       }
     }
 
-    // 6. CONFIG (НАЛАШТУВАННЯ ГРИ)
+    if (typeof this.#catalogs.fishes !== "undefined") {
+      const fishDbContent = this.#createSectionWithCache(
+        "🐟 БАЗА РИБИ (FISH_DB)",
+        database,
+        ["FISH_DB"],
+      );
+      this.#catalogs.fishes.forEach((fish, index) => {
+        const fishLabel = fish?.id || fish?.name || `Fish [${index}]`;
+        const sectionContent = this.#createSectionWithCache(
+          fishLabel,
+          fishDbContent,
+          ["FISH_DB", index],
+        );
+        this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
+      });
+    }
+
+    if (typeof this.#catalogs.items !== "undefined") {
+      const dbContent = this.#createSectionWithCache(
+        "📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)",
+        database,
+        ["ITEM_DB"],
+      );
+      for (const key of Object.keys(this.#catalogs.items)) {
+        if (this.#excludeKeys.includes(key)) continue;
+        const sectionContent = this.#createSectionWithCache(key, dbContent, [
+          "ITEM_DB",
+          key,
+        ]);
+        // Шлях тепер починається з "ITEM_DB"
+        this.#buildTree(this.#catalogs.items[key], sectionContent, ["ITEM_DB", key]);
+      }
+    }
+  }
+
+  #renderConfigSection(body) {
     if (typeof this.#config !== "undefined") {
       const configContent = this.#createSectionWithCache(
         "⚙️ НАЛАШТУВАННЯ (CONFIG)",
@@ -307,8 +320,6 @@ export class DevTools {
         this.#buildTree(this.#config[key], sectionContent, ["CONFIG", key]);
       }
     }
-
-    this.#renderActiveFishSection(body);
   }
 
   #renderConfigDebugSection(body) {
@@ -319,7 +330,13 @@ export class DevTools {
       body,
       ["CONFIG", "debug"],
     );
-    this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"]);
+    this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"], { groupedDebug: true });
+    const inventory = this.#createSectionWithCache("Inventory", debugContent, ["DEBUG_INVENTORY"]);
+    if (this.#config.debug.inventory) this.#buildTree(this.#config.debug.inventory, inventory, ["CONFIG", "debug", "inventory"]);
+    if (this.#config.debug.inventorySplit) {
+      const splitPath = ["CONFIG", "debug", "inventorySplit"];
+      this.#buildTree(this.#config.debug.inventorySplit, this.#createSectionWithCache("Split", inventory, splitPath), splitPath);
+    }
     return debugContent;
   }
 
@@ -468,6 +485,8 @@ export class DevTools {
   }
 
   #shouldSkipKey(path, key, options = {}) {
+    if (options.groupedDebug && path.join(".") === "CONFIG.debug" &&
+        (key.startsWith("overlay") || key === "inventory" || key === "inventorySplit")) return true;
     if (!options.visibilityPolicy && this.#excludeKeys.includes(key)) return true;
     if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
       return true;
@@ -516,7 +535,7 @@ export class DevTools {
   // One button per catalog item adds it to the player's inventory, so catalog-only items can be tested in game.
   #renderItemGrantSection(body) {
     if (typeof this.#grantCatalogItem !== "function" || typeof this.#catalogs.items === "undefined") return;
-    const content = this.#createSectionWithCache("🎁 БЕЗКОШТОВНИЙ МАГАЗИН", body);
+    const content = this.#createSectionWithCache("🎁 БЕЗКОШТОВНИЙ МАГАЗИН", body, ["ITEM_SHOP"], { buttonTitle: true });
     const labels = { rods: "🎣 Вудки", reels: "🧵 Котушки", lines: "🧶 Ліски", hooks: "🪝 Гачки",
       leaders: "🪢 Поводки", floats: "🥢 Поплавки", nets: "🕸️ Підсаки", misc: "☣️ Інше",
       baits: "🪱 Наживки та снасті", chums: "🍞 Прикормки для риболовлі",
@@ -561,7 +580,7 @@ export class DevTools {
     }).render(body);
   }
 
-  #createSectionWithCache(labelStr, parentElement, path = null) {
+  #createSectionWithCache(labelStr, parentElement, path = null, options = {}) {
     let savedStates = this.#storageCache.get("dev_tools_sections_state", {});
     let isExpanded = savedStates[labelStr] || false;
 
@@ -575,6 +594,7 @@ export class DevTools {
         this.#storageCache.set("dev_tools_sections_state", savedStates);
       },
       path,
+      options,
     );
   }
 

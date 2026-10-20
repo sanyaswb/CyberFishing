@@ -60,6 +60,7 @@
   position: relative;
   isolation: isolate;
 }
+.inventory-equipment-feedback--error { --inventory-equipment-feedback-color: var(--inventory-danger); }
 
 .inventory-field.inventory-equipment-feedback {
   --inventory-equipment-feedback-radius: var(--inventory-slot-radius, 0);
@@ -70,7 +71,7 @@
   z-index: 18;
   inset: 0;
   border-radius: var(--inventory-equipment-feedback-radius, inherit);
-  background: var(--inventory-success);
+  background: var(--inventory-equipment-feedback-color, var(--inventory-success));
   pointer-events: none;
   animation: inventory-equipped-flash calc(var(--ui-duration-normal) * 4.6) var(--ui-ease-standard) 1 both;
 }
@@ -107,6 +108,9 @@
   padding: 0;
   background: transparent;
   cursor: pointer;
+}
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-slot__empty-button:active:not(:disabled) {
+  background: rgba(var(--ui-accent-rgb), 0.16);
 }
 
 .inventory-slot-icon {

@@ -2,44 +2,44 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
-## v0.45.27 - Authoritative Node.js TypeScript Backend Architecture
+## v0.45.37 - Stable Inventory Selector Startup
 
-- Formulate architecture rules for authoritative Node.js TypeScript backend, client-server separation (60 FPS Vanilla client without heavy frameworks), and post-v1.0.0 client TypeScript migration roadmap in DEVELOPMENT_RULES.md and docs/architecture.md.
+- TK-014: pending selector artwork incorrectly enabled classic backpack/keepnet shortcuts before radial readiness. Separate pending, ready and failed preload so radial startup never flashes classic controls; preserve explicit classic mode, failure fallback and disposal. Committed release Full: 65/65 including selector regressions, Architecture, Quick and Pages; the pick-cancel controller is included. Owner startup acceptance pending.
 
-## v0.45.26 - Radial Selector Native-Size Artwork and Open Border
+## v0.45.36 - Uniform Inventory Hold Speed
 
-- Match the open central button's border width with the visible border of the expanded sectors (`calc(0.025 * var(--inventory-selector-drawing-unit))`), keeping uniform border thickness across expansion and presets.
-- Radial selector draws at its largest preset and scales down, preserving its frame and hit geometry; finished highlight animations release their effect to CSS.
+- Apply 200ms holds from pointerdown to all inventory cells: backpack, saved kits, equipment, editor and header bait. Remove the activation delay through shared defaults; preserve existing cell actions, cancellation and click suppression. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner acceptance pending.
 
-## v0.45.24 - Depth Labels Below Centred Rail
+## v0.45.35 - Header Bait Hold Ring
 
-- Return depth min/max labels below the stripe, vertically centred between its lower edge and the container bottom. Keep the rail and thumb at the frame midpoint, the 200px panel cap and existing input behavior.
+- Restore animated header bait hold feedback as a thin ring without a shadow. Remove bait at 200ms from pointerdown with no activation delay; preserve cancellation, release-click suppression, artwork refresh and other item timings. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner visual acceptance pending.
 
-## v0.45.23 - Bounded Centred Depth Slider
+## v0.45.34 - Quick Tackle Attachment State
 
-- Cap the depth slider panel at 200 logical pixels while keeping its fixed right anchor, narrow-width fit and smooth left expansion. Put min/max labels above the vertically centred stripe and thumb, with the current-value bubble clear of the labels. Preserve input, permanent toolbar reserve and reduced motion.
+- Fix TK-011 acceptance: repeated equipment-cell picks initialize/prepare attachment-capable roots, so an equipped hook immediately accepts bait and a feeder rig accepts chum. Header activation repairs a previously saved loose equipped root missing that state without changing its identity or save format. Cover single/stack hooks, both list layouts, chum, repaired reload and persistence rollback. Owner acceptance pending.
+- Hold an equipped bait header icon to return its portion to the backpack using normal equipped-item timing. Preserve hook/siblings/A, cancel stale holds and consume the release click across slot updates; active green targets retain 200ms pick cancellation. Full: 64/65; the prior uncommitted pick-cancel controller still blocks Pages.
 
-## v0.45.22 - Guarded Clock Night Cycle
+## v0.45.33 - Organized DevTools Sections
 
-- Require DEV timeAccelerationEnabled for both clock actions in the location and House; disable/cancel pending activation when off and restore passive production clocks (G-096).
-- Keep a partial dusk/night blend in the evening step, so elapsed time after 19:00 advances to 00:00 before returning to day. Cover night environment, House, reload, live flag changes and input cancellation in existing deterministic checks (G-097).
+- Complete TK-013 and all eight subpoints: one Inventory group, root Overlay → CONFIG → DEBUG, grouped databases and Spine by skeleton name, top free-shop button and bottom Service tools. Collapse read-only descriptions per section and use background-only action hover with visible keyboard focus. Preserve live setting paths, module toggles and shop grants. Full: 64/65; the prior uncommitted pick-cancel controller still blocks Pages. Owner visual acceptance pending.
 
-## v0.45.21 - Pending Acceptance Cleanup
+## v0.45.32 - Transient Touch Button Feedback
 
-- Remove completed TK-001–TK-008 specifications and implementation history from tasks.md; retain only nine outstanding owner acceptance scenarios, updated for the current radial selector and toolbar behavior.
+- TK-012: touch/non-hover controls reuse component hover colors only during native active presses across HUD, toolbar, inventory, keepnet, House and DEV. Preserve desktop hover, keyboard focus, disabled/selected states and hit geometry; no extra input listeners. Full: 64/65 pass; Pages release awaits the prior pair's new controller being committed. Owner visual acceptance pending.
 
-## v0.45.20 - Production Project Structure
+## v0.45.31 - Targeted Inventory Pick Subfilters
 
-- Generate project-structure.txt only from the index.html production release closure: reachable modules, linked styles, shipped assets and vendor licences. Reuse release file selection with explicit page roots; omit DEV pages/code, tools, tests, docs and repository metadata. Regenerate the tree from current tracked working files and retain the existing Pages release behavior.
+- TK-011: empty equipment/editor cells open Compatible scoped to the exact target and select every available matching subtype. Preserve explicit browsing, sorting and repeated picks. Deterministic integration regression passes; owner acceptance pending.
 
-## v0.45.19 - Behavior-First Utils
+## v0.45.30 - Complete Inventory Pick Interactions
 
-- Organize all checks by responsibility under utils/checks and document UTILS_RULES.md. Remove 233 visual/duplicate implementation assertions while retaining all functional simulations, architecture/safety guards and the game-cycle baseline. Reduce Quick from 39 to 12 scenarios; one final Full run includes its subsets. Keep stable check IDs, update consumers and reject duplicate/unregistered nested check files.
+- Complete TK-010 including equipment/editor repeat selection and 200ms hold/right-click cancellation. Keep portrait inline choices, use the first displayed compatible candidate, suppress the click after cancellation and disable browser context menus.
+- Missing bait/chum prerequisites show the existing warning and flash the responsible rod/tackle cell red through the shared full-cell feedback. Focused, Architecture and save checks pass; Full and owner acceptance remain pending.
 
-## v0.45.18 - Concise Changelog History
+## v0.45.29 - Repeat Header Consumable Selection
 
-- Keep only the latest ten releases in CHANGELOG.md. Move older complete entries into the owner-specified CHANGELOG_ARCHIVE.md, merge identical versions without duplicates and retain numeric descending version order. Document the retention policy in development rules.
+- TK-010: repeat a highlighted bait/chum icon to equip exactly one first currently displayed compatible item. Respect list order, validate live target/custody/reservation, preserve manual confirmation and make an empty list a no-op. Inventory UI/integration regressions pass; Full and owner acceptance pending.
 
-## v0.45.17 - Equipped Rod and Default Radial Selector
+## v0.45.28 - Landscape Inventory Header Panel
 
-- Enable the radial selector by default in production and DEV, retaining the explicit classic override. Its equipment sector follows the equipped rod thumbnail through the existing inventory change source, reusing toolbar artwork cropping without rotation. Use the SVG for an empty/unillustrated rod or a failed load; reject stale preload results and release the subscription on disposal. Reuse the production composition in the catalogue.
+- TK-009: reuse the portrait header panel background, radius and proportional inner padding in landscape and desktop layouts, preserving column composition and portrait insets. Owner visual acceptance pending.
