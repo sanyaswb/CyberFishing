@@ -28,7 +28,6 @@ export class DepthSelector {
   #dragPointerId = null;
   #isOpen = false;
   #disposed = false;
-  #uiSurface;
   #dom;
   #iconImages;
   #dragRect = null;
@@ -45,7 +44,6 @@ export class DepthSelector {
     this.#labels = labels;
     this.#document = documentRef;
     this.#mount = mountNode;
-    this.#uiSurface = uiSurface;
     this.#dom = domFactory;
     this.#iconImages = iconImages;
     this.onChange = null;
@@ -111,7 +109,6 @@ export class DepthSelector {
     this.#panel.inert = false;
     this.#track.tabIndex = 0;
     this.#root.classList.add("depth-selector--open");
-    this.#root.classList.add("ui-control-pill");
     this.#button.setAttribute("aria-expanded", "true");
   }
 
@@ -123,7 +120,6 @@ export class DepthSelector {
     this.#panel.inert = true;
     this.#track.tabIndex = -1;
     this.#root.classList.remove("depth-selector--open");
-    this.#root.classList.remove("ui-control-pill");
     this.#button.setAttribute("aria-expanded", "false");
   }
 
@@ -161,10 +157,10 @@ export class DepthSelector {
       node.className = className;
       return node;
     };
-    this.#root = element("div", "depth-selector");
+    this.#root = element("div", "depth-selector game-toolbar-frame");
     this.#root.hidden = true;
 
-    this.#button = element("button", "depth-selector__float game-toolbar-button");
+    this.#button = element("button", "depth-selector__float");
     this.#button.type = "button";
     this.#button.setAttribute("aria-expanded", "false");
     this.#button.setAttribute("aria-label", this.#labels.depthToggle);
@@ -205,6 +201,9 @@ export class DepthSelector {
     });
     this.#listen(this.#track, "pointerdown", (event) => {
       if (this.#disposed || !this.#isOpen || event.button > 0 || event.isPrimary === false || this.#dragPointerId !== null) return;
+      // Cache coordinates only after the container stops moving. Reduced motion
+      // has no running width transition and stays immediately interactive.
+      if (this.#root.getAnimations?.().some(animation => animation.transitionProperty === "width" && animation.playState === "running")) return;
       this.#dragPointerId = event.pointerId;
       this.#dragRect = this.#track.getBoundingClientRect();
       this.#track.setPointerCapture?.(event.pointerId);

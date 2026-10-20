@@ -42,6 +42,17 @@ const domFactory = new InventoryDomFactory(documentRef);
   assert.equal(image.draggable, false);
   assert.equal((documentRef.listeners.get("pointermove") || new Set()).size, 0,
     "the moved float needs no global pointermove workaround");
+  depth.open();
+  const rail = documentRef.byClass("depth-selector__track")[0];
+  let boundsReads = 0;
+  rail.getBoundingClientRect = () => { boundsReads++; return { left: 0, width: 100 }; };
+  root.getAnimations = () => [{ transitionProperty: "width", playState: "running" }];
+  rail.fire("pointerdown", { pointerId: 9, button: 0, clientX: 50 });
+  assert.equal(boundsReads, 0, "a drag must not cache moving bounds during expansion");
+  root.getAnimations = () => [];
+  rail.fire("pointerdown", { pointerId: 9, button: 0, clientX: 50 });
+  assert.equal(boundsReads, 1, "the settled slider accepts a drag");
+  depth.close();
   depth.dispose(); controls.dispose(); toolbar.dispose();
   assert.equal([...root.listeners.values()].reduce((count, listeners) => count + listeners.size, 0), 0);
 }

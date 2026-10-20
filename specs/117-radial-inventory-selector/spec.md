@@ -1,7 +1,7 @@
 # Feature Specification: Radial inventory selector (TK-008)
 
 **Created**: 2026-10-20
-**Status**: Implemented v0.45.2; owner refinements through v0.45.14, visual acceptance pending
+**Status**: Implemented v0.45.2; owner refinements through v0.45.15, visual acceptance pending
 **Input**: Owner authorized specification and implementation of TK-008, with closed/open references in `docs/references/inventory-selector/`. Detailed acceptance source: root `tasks.md`, TK-008.1–TK-008.5.
 
 ## User Scenarios & Testing
@@ -163,3 +163,17 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
 - Owner follow-up: the expanded float icon/button and horizontal slider share one outer pill, styled like the
   bait auto-switch container. Reuse the `ui-control-pill` frame in auto-switch.css for both consumers; remove
   the inner button/panel frames while open. The closed float keeps the standard toolbar appearance.
+
+## Owner float style and reveal correction — 2026-10-20 / v0.45.15
+
+- Supersede the bait-switch pill style. Keep one common float/button and slider container with the same border,
+  background, corner radius and shadow as ordinary toolbar buttons. Reuse the appearance through
+  `game-toolbar-frame`; internal controls paint no second outer frame. Closed dimensions remain one toolbar slot.
+- Expand/contract the frame width smoothly over the existing normal motion duration (280ms); fade and reveal
+  the horizontal panel with matching timing. Repeated toggles reverse the native width transition. Reduced
+  motion changes width and content instantly. Keep current responsive widths, reserve and wrapping.
+- Never cache slider coordinates during the width transition. Ignore drag starts while its native width
+  transition is running, then keep the existing single track measurement for an accepted drag. Keyboard/wheel,
+  range, capture/cancel, outside dismissal and saves remain unchanged. No timers or extra animation loop.
+- Add only one short regression for the important input contract: moving bounds are not cached, settled slider
+  accepts a drag. Remove the now single-use pill mix and return the bait switch to its original style owner.

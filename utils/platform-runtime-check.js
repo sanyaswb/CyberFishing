@@ -226,7 +226,7 @@ function checkBrowserWidgets() {
   }
   assert.equal(queries,initialQueries,'updates use cached DOM references');assert.equal(depth.lastChange,2);assert.equal(time.emojiSpan.innerText,'🌇');
   assert.equal(clicks,61,'only enabled chum states dispatch clicks');assert.equal(hold.circles.length,4);
-  assert.equal(hold.textLabel.innerText,'УТРИМАННЯ');const depthRoot=document.body.children.find(node=>node.className==='depth-selector');
+  assert.equal(hold.textLabel.innerText,'УТРИМАННЯ');const depthRoot=document.body.children.find(node=>node.className.split(' ').includes('depth-selector'));
   assert.equal(depthRoot.children[0].children[1].textContent,'2.0 м','injected HUD labels reach the widgets');assert.equal(depthRoot.children[0].children[0].textContent,'🪶');
   controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);drainFrames();
   controls.hideNetButton();depth.hide();hold.update(null);assert.equal(hold.container.style.display,'none');
@@ -240,7 +240,7 @@ function checkDepthSelector(c,document,depth,root) {
   const floatButton=root.children[0],track=root.children[1].children[1],changes=[];
   assert.equal(track.attrs['aria-orientation'],'horizontal','the depth slider runs left to right');
   assert.notEqual(root.style.pointerEvents,'all','the transparent depth wrapper must never shield the game');
-  assert(floatButton.className.includes('game-toolbar-button'),'the float reuses the landing-net button appearance');
+  assert(root.className.includes('game-toolbar-frame'),'the shared float container reuses the toolbar frame appearance');
   depth.show(5,1.5,value=>changes.push(value));
   assert.equal(root.hidden,false);assert.equal(depth.isOpen,false,'the map stays clean until the float is pressed');
   assert(root.children[1].hidden&&root.children[1].inert,'closed panel has no layout, input or accessibility footprint');

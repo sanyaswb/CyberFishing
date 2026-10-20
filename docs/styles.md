@@ -262,10 +262,13 @@ the root and layout gaps have pointer-events none. `UiEventShield.blockEvents` s
 without imposing a solid rectangle; existing makeSolid consumers retain their behavior. Canvas owns pointer
 gestures that start on the scene through release/cancel, so aiming continues over HUD. No section image rotates.
 The catalogue uses the production depth composition and toolbar mounts, without its former depth placement rule.
-The expanded float and its horizontal track form one `ui-control-pill` container. Its frame/background/radius
-are shared with `UiAutoSwitchRenderer` in `auto-switch.css`; the float button and panel have no separate outer
-background/frame while expanded. The closed float retains the standard toolbar button. Painted open-container
-gaps shield game input, while hidden content and transparent toolbar slots do not receive input.
+Since v0.45.15, the float and its horizontal track form one `game-toolbar-frame` container, sharing the ordinary
+button frame/background/radius/shadow in toolbar.css. The inner float button and panel have no independent frame.
+Width expands/contracts over `--ui-duration-normal`; the panel's fade/clip reveal follows the same timing and gap.
+Reduced motion disables both effects. Drag starts wait until the native width transition stops, so the existing
+single cached track rect never describes moving geometry. No timer, frame loop or per-move layout reads added.
+The superseded `ui-control-pill` mix is removed; the bait switch retains its original appearance in auto-switch.css.
+Painted container gaps shield game input, while hidden content and transparent toolbar slots do not receive input.
 The version badge is hidden at toolbar widths <=820 logical px; wider rows retain its shrinking, clipped label.
 There is one CSS layout owner: DepthSelector and selector bootstrap do not enumerate sibling buttons, resize or
 hide the badge, cache badge widths, dispatch layout events or set upward-placement classes. Resize cancels a depth

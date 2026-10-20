@@ -90,3 +90,13 @@ using release:pages, retaining the previous live release. No tools/fixtures/depe
 Owner follow-up: extract only the existing bait switcher's frame into `ui-control-pill` in auto-switch.css.
 Both the existing switch renderer and expanded depth root mix that shared appearance block. Keep one painted
 outer frame and unframed inner button/track; preserve closed button dimensions and input/capture behavior.
+
+## v0.45.15 ordinary frame and smooth expansion
+
+The owner supersedes the pill appearance. Share only the ordinary frame declarations between toolbar buttons
+and `game-toolbar-frame` in toolbar.css; use that frame on the persistent depth root and keep the inner button
+unframed. Native width transition and matching panel fade/clip use the existing normal duration; no JavaScript
+animation state/timer is needed. Before accepting pointerdown, inspect only the root's native width transitions;
+wait while running so the unchanged one-read drag geometry stays valid. Reduced motion has no running transition.
+Return auto-switch.css/renderer to their original single-consumer frame and remove the obsolete ui-control-pill
+class/variables after searching consumers. Existing checks plus one short input regression; no visual snapshots.

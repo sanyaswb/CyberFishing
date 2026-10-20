@@ -15,6 +15,7 @@
 - [x] T013 Owner correction v0.45.9 after undo: keep the large upper-left arc and round only bottom-right; restore independent initial size 1 / open size 3, whole-stage scaling and owner-approved toolbar reflow. Cache final open geometry once, preserve reduced motion and config cancellation.
 - [x] T014 Owner responsive refinement v0.45.14: permanent reserve, native reverse wrapping, compact badge hidden, inline horizontal float panel; remove competing placement code/events. Reuse focused input/config checks and leave visual acceptance to owner.
 - [x] T015 Owner follow-up: reuse the bait switcher's pill frame for the open float/button and horizontal slider, with one outer frame and no duplicated inner frames. Existing focused input and UI contracts remain the verification scope.
+- [x] T016 Owner correction v0.45.15: ordinary toolbar frame on one float/slider container, smooth native width/reveal and reduced motion; gate drag starts during moving geometry, remove obsolete pill mix, add one short input regression.
 
 ## Evidence
 

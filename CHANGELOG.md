@@ -1,5 +1,9 @@
 # CyberFishing changelog
 
+## v0.45.15 - Smooth Unified Float Control
+
+- Restore the ordinary toolbar background, border and rounded corners around one shared float/slider container. Expand its width over the shared normal motion duration while the horizontal slider fades and reveals inside the frame; keep reduced motion instant. Ignore drag starts while the container is moving so cached slider coordinates stay correct. Remove the superseded shared bait-pill frame after checking its consumers.
+
 ## v0.45.14 - Responsive Bottom Toolbar
 
 - Keep a permanent reserve for the open radial fan, so buttons to its left stay in place on open/close. Use native row wrapping when the row is full, hide the version badge at compact toolbar widths, and fit the horizontal float panel in normal flow. The open float and slider share one pill frame reused from the bait switcher. Remove competing badge/upward-placement calculations, global layout events and duplicate resize handlers from the float and selector composition.
