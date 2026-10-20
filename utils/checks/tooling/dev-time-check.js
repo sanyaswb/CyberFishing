@@ -19,7 +19,9 @@ const root = documentRef.createElement("div"); root.append(mount); documentRef.b
 const control = composeDevTimeDisplay({ documentRef, mount, clock, config, uiSurface: { mountRoot: mount } });
 const button = documentRef.byClass("time-display")[0];
 assert.equal(button.tagName, "button");
-assert.equal(button.disabled, false, "phase switching remains available without DEV acceleration");
+control.advancePhase();
+assert.equal(clock.getHours(), 12, "disabled acceleration cannot change the calendar phase");
+assert.equal(button.disabled, true, "clock interaction requires DEV acceleration");
 control.advance(); assert.equal(clock.getRateMultiplier(), 1, "disabled acceleration cannot change the calendar rate");
 config.debug.timeAccelerationEnabled = true;
 control.update(clock.getHours());
@@ -67,7 +69,7 @@ assert.equal(writes, priorWrites); assert.equal(classWrites, 0); assert.equal(at
 config.debug.timeAccelerationEnabled = false;
 control.update(clock.getHours());
 assert.equal(clock.getRateMultiplier(), 1);
-assert.equal(button.disabled, false, "the phase command remains interactive");
+assert.equal(button.disabled, true, "disabling acceleration also disables phase switching");
 assert.equal(clock.getHours(), hours, "disabling keeps reached time");
 now += 15000; assert.equal(clock.getHours(), (hours + 1) % 24);
 
@@ -82,6 +84,11 @@ const houseControl = composeDevTimeDisplay({ documentRef: houseDocument, mount: 
 houseControl.resume(handoff);
 assert.equal(houseClock.getHours(), clock.getHours());
 assert.equal(houseClock.getRateMultiplier(), 2);
+houseClock.setHours(19.001);
+houseControl.advancePhase();
+assert.equal(houseClock.getHours(), 0, "the House evening command reaches midnight after elapsed time");
+assert.equal(backgroundTimeBlend(houseClock.getHours(), { evening: 0, night: 0 }).night, 1);
+assert.equal(houseClock.getRateMultiplier(), 2, "House phase switching preserves its active speed");
 houseControl.advance();
 now += 15000;
 const reachedHouseHours = houseClock.getHours();

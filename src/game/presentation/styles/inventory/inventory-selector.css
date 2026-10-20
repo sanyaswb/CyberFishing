@@ -11,27 +11,31 @@
 .inventory-selector[hidden] { display: none; }
 .inventory-selector--open { --inventory-selector-current-scale: var(--inventory-selector-open-scale, 1); }
 .inventory-selector__stage {
-  --inventory-selector-drawing-unit: calc(var(--inventory-selector-unit) * var(--inventory-selector-closed-scale, 1));
+  --inventory-selector-drawing-unit: var(--inventory-selector-unit);
   position: absolute;
   right: 0;
   bottom: 0;
   width: var(--inventory-selector-drawing-unit);
   height: var(--inventory-selector-drawing-unit);
-  transform: scale(1);
+  transform: scale(var(--inventory-selector-closed-scale, 1));
   transform-origin: right bottom;
   transition: transform var(--ui-duration-fast) var(--ui-ease-standard);
 }
-.inventory-selector--open .inventory-selector__stage { transform: scale(var(--inventory-selector-expansion, 1)); }
+.inventory-selector--open .inventory-selector__stage { transform: scale(var(--inventory-selector-open-scale, 1)); }
 .inventory-selector__central {
+  --game-toolbar-render-scale: var(--inventory-selector-closed-scale, 1);
   position: relative;
   width: 100%;
   height: 100%;
   pointer-events: auto;
   touch-action: none;
-  transition: border-radius var(--ui-duration-fast) var(--ui-ease-standard), border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard);
+  transition: border-radius var(--ui-duration-fast) var(--ui-ease-standard), border-width var(--ui-duration-fast) var(--ui-ease-standard), border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard);
 }
 /* Preserve the large upper-left arc; only the bottom-right small corner stays soft. */
-.inventory-selector--open .inventory-selector__central { border-radius: 100% 0 var(--ui-radius-panel) 0; }
+.inventory-selector--open .inventory-selector__central {
+  border-radius: 100% 0 calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) 0;
+  border-width: calc(0.025 * var(--inventory-selector-drawing-unit));
+}
 .inventory-selector__icon {
   position: absolute;
   left: 50%;

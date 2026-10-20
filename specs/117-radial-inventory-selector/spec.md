@@ -193,3 +193,37 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
 - Read the authoritative PlayerInventory equipment model and subscribe once to inventory changes through bootstrap. Update after equipment changes, including while inventory is closed; unchanged art retains its node and causes no preload request. Preload before display, fall back on failure, and reject late results after replacement, removal or disposal. Release the subscription with the selector.
 - Catalogue uses the same production composition with an injected existing bamboo-rod fixture. Add only focused default-mode, live-artwork, node/cache, stale-load and lifecycle assertions; owner performs browser/phone visual acceptance.
 - Cleanup: no tools, helpers, fixtures, vendor files, scripts or dependencies become obsolete. Reuse existing WebP files; no new generated artwork or runtime asset source.
+
+## Owner depth width and alignment correction — 2026-10-20 / v0.45.23–v0.45.24
+
+- Supersede the unbounded left expansion from v0.45.16: cap the slider panel at 200 logical px, plus the
+  ordinary float-button width and shared gap for the complete frame. Shrink to available slot width on
+  narrow layouts; retain the fixed right anchor, permanent flow reserve and native width transition.
+- Owner follow-up v0.45.24: place the minimum/maximum labels below the stripe, centred vertically between
+  its lower edge and the frame's inner bottom edge. Keep the track's full-height interaction area and centre
+  the stripe and marker at exactly half the frame height. Labels use the lower space without shifting the
+  track or intercepting input; the current-value bubble stays above the frame.
+- Keep mouse/touch/keyboard depth selection, cached settled coordinates, resize cancellation, shared
+  frame, reduced motion and production/DEV/catalog reuse. No JavaScript layout logic or new visual tests.
+- Owner checks index/dev, narrow/wide, portrait/landscape, open/close with radial/classic and reduced motion.
+  No tools, fixtures or dependencies become obsolete.
+
+## Owner radial selector open border width correction — 2026-10-20 / v0.45.25
+
+- Match the open central button's border width with the visible border of the expanded sectors (`calc(0.025 * var(--inventory-selector-drawing-unit))`).
+- The central button transitions its border width alongside its border-radius over the shared fast duration, preventing the border from expanding to 3.4px when scaled by the open factor. Instant change in reduced motion.
+- Owner checks: index/dev/ui-catalog, radial selector open/close, size presets 1/2/3.
+
+## Owner selector sharpness correction — 2026-10-20 / v0.45.26
+
+- Draw the composition at the larger closed/open preset size. Animate between the existing normalized
+  closed/open scales, both <=1, instead of enlarging a layer drawn at the small closed size. Preserve actual
+  bounds, toolbar reservation, sector geometry, timing, central frame appearance and open border matching.
+- Let CSS own the highlighted sector's final translation. Outward native animations have no filling effect
+  after completion; retain visible-offset hit testing during motion and at finished/null timing, cancellation,
+  reduced motion and disposal. Add no observer, frame loop, per-move layout read or image reload.
+- Remove the unused expansion-ratio CSS property and its obsolete assertion. Extend the existing mouse/touch
+  release scenario to cover completed native movement as well as mid-animation selection. No tools or assets
+  are replaced, and no gameplay/save/baseline change is expected.
+- Owner checks index/dev/catalog: opening, settled hover, outward selection of rod/backpack/keepnet, preset
+  combinations 1->3 / 3->1 / equal sizes, below-320 scaling and reduced motion. Visual sharpness is owner-checked.

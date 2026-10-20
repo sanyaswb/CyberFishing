@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.20";
+export const CURRENT_PROJECT_VERSION = "0.45.26";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,13 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "production-project-structure",
+  codename: "selector-native-size-artwork",
   updatedAt: "2026-10-20",
   notes: Object.freeze([
+    "Radial selector draws at its largest preset and scales down, preserving its frame and hit geometry; finished highlight animations release their effect to CSS",
+    "Radial selector open central button border width matches the expanded sectors (0.025 of drawing unit), keeping uniform border thickness across expansion and size presets",
+    "Depth slider panel is capped at 200 logical pixels; endpoint labels sit below the centred rail, midway between its lower edge and the container bottom while the float and neighbouring actions stay fixed",
+    "Clock actions require DEV time acceleration; passive production clocks and pending-gesture cancellation preserve the flag boundary, and elapsed evening time no longer skips midnight",
     "Radial inventory selection is enabled by default; its equipment sector follows the equipped rod thumbnail with SVG fallback and race-safe preloading",
     "Float opens left to the toolbar edge in a permanent flexible slot; the button and right-hand actions stay fixed through open/close, and the badge yields without reflow",
     "Float and slider share the ordinary toolbar frame with smooth width/reveal; drag starts wait for stable geometry and reduced motion stays instant",
@@ -23,6 +27,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
     "Version badge is constrained in CSS by min-width: var(--ui-toolbar-size) to prevent narrowing below a 1:1 square aspect ratio",
     "Toolbar elements transfer upward only when all bottom row space is completely exhausted: stage 1 keeps full badge and bottom controls; stage 2 shrinks badge to 1:1 square; stage 3 hides badge and narrows open float panel; stage 4 transfers upward only when space < 40px/footprint and restores badge in bottom row",
     "Version badge disappears whenever space is insufficient for other elements (e.g. open float or radial selector), and keeps min 1:1 square when visible; open float section narrows down to 20% (40px) before shifting upward to stretch 100% width; radial selector shifts upward when buttons do not fit; full responsive scaling below 320px baseline",
+    "Hand chum selection immediately displays reachable cast area (dashed line) before and during pointer aim (G-095)",
     "Permanent toolbar reserve for open radial selector footprint keeps neighbouring buttons stationary on open/close",
     "Independent closed/open radial sizes default to 1 -> 3, retain soft open corners, scale the full composition and let the open footprint move neighbouring toolbar actions",
     "Radial selector starts as the shared rounded-square toolbar button and smoothly morphs into a quarter disk on opening, with upright icon centring and reduced motion",

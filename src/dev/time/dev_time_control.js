@@ -40,7 +40,7 @@ export class DevTimeControl {
     return { enabled: this.#isEnabled() === true, multiplier: this.#clock.getRateMultiplier(), timeScale: this.#baseScale?.() };
   }
   advancePhase() {
-    if (this.#disposed || this.#suspended) return;
+    if (this.#disposed || this.#suspended || this.#isEnabled() !== true) return;
     this.#changePhase?.();
     this.update(this.#clock.getHours());
   }

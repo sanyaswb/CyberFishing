@@ -359,8 +359,7 @@
 │  │  │     ├── current_location.js
 │  │  │     ├── environment_system.js
 │  │  │     ├── game_world.js
-│  │  │     ├── ground_plane_scope.js
-│  │  │     └── time_phase_control.js
+│  │  │     └── ground_plane_scope.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish

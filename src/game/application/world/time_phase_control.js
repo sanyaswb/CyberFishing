@@ -8,7 +8,8 @@ export class TimePhaseControl {
   constructor({ clock, phaseHours }) { this.#clock = clock; this.#hours = phaseHours; }
   advance() {
     backgroundTimeBlend(this.#clock.getHours(), this.#blend);
-    const hours = this.#blend.night > 0 ? this.#hours.day : this.#blend.evening > 0 ? this.#hours.night : this.#hours.evening;
+    // A dusk transition already contains some night artwork; it is still the evening phase.
+    const hours = this.#blend.night >= 1 ? this.#hours.day : this.#blend.evening > 0 ? this.#hours.night : this.#hours.evening;
     this.#clock.setHours(hours);
   }
 }

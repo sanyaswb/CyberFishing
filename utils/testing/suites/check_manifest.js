@@ -267,6 +267,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "chum-aim-zone",
+    title: "Hand chum aim immediately displays reachable cast area (G-095)",
+    file: "utils/checks/gameplay/chum-aim-zone-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-water-metric",
     title: "Bait boat moves in ground metres on the water metric (G-007)",
     file: "utils/checks/gameplay/bait-boat-water-metric-check.js",

@@ -100,7 +100,6 @@ export class InventorySelectorRenderer {
     this.element.style.setProperty("--inventory-selector-scale", String(largest));
     this.element.style.setProperty("--inventory-selector-closed-scale", String(closed / largest));
     this.element.style.setProperty("--inventory-selector-open-scale", String(open / largest));
-    this.element.style.setProperty("--inventory-selector-expansion", String(open / closed));
   }
 
   setExpanded(open) {

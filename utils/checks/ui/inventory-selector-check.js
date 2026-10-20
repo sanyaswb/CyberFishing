@@ -84,7 +84,9 @@ function scenario({ width = 320, size = 1, openSize = size, hover = false, reduc
   for (const button of view.buttons) button.animate = (frames, options) => {
     const start = time;
     const animation = { frames, options, cancelled: false,
-      effect: { getComputedTiming: () => ({ progress: Math.min(1, Math.max(0, (time - start) / options.duration)) }) },
+      get playState() { return this.cancelled ? "idle" : time - start >= options.duration ? "finished" : "running"; },
+      effect: { getComputedTiming: () => ({ progress: time - start >= options.duration && options.fill === "none"
+        ? null : Math.min(1, Math.max(0, (time - start) / options.duration)) }) },
       cancel() { this.cancelled = true; } };
     animations.push(animation);
     return animation;
@@ -160,7 +162,7 @@ for (const [size, openSize] of [[1, 3], [3, 1]]) {
   s.mutate([{ target: s.doc.body, attributeName: "style", oldValue: "" }]);
   assert(!s.view.expanded, "a real ancestor layout change invalidates cached coordinates"); s.dispose();
 }
-for (const pointerType of ["mouse", "touch"]) {
+for (const pointerType of ["mouse", "touch"]) for (const elapsed of [100, 250]) {
   const s = scenario({ hover: pointerType === "mouse", width: 1280 });
   if (pointerType === "mouse") s.view.central.fire("pointerenter", { pointerType });
   else s.fire("pointerdown");
@@ -172,7 +174,7 @@ for (const pointerType of ["mouse", "touch"]) {
   const angle = Math.PI / 12;
   const tip = { x: -geometry.radius * Math.cos(angle), y: -geometry.radius * Math.sin(angle) };
   const offset = geometry.sectors[0].shift;
-  s.advance(100);
+  s.advance(elapsed);
   const visible = { x: tip.x + offset.x * 0.25, y: tip.y + offset.y * 0.25 };
   const invisible = { x: tip.x + offset.x * 0.9, y: tip.y + offset.y * 0.9 };
   assert.equal(s.view.hitTest(visible.x, visible.y, [0.5, 0, 0]), 0,
@@ -314,7 +316,6 @@ async function checkComposition() {
   equipped.rod = { imageUrl: "assets/items/rods/bamboo-rod-unecip-v1.webp" }; equipmentListener();
   equipped.rod = null; equipmentListener(); finishArtwork(); await Promise.resolve();
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden, "a late preload cannot restore a removed rod");
-  assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-expansion"), "1.7");
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-closed-scale"), String(1 / 1.7));
   for (let i = 0; i < 10; i++) {
     ctx.set("ui.inventorySelector.radialEnabled", i % 2 === 0); s.doc.fire("config-updated");
@@ -353,6 +354,11 @@ async function checkComposition() {
   binding.dispose(); binding.dispose(); assert.equal(listener, null); assert.equal(equipmentListener, null);
   assert(classic && keepnet);
   for (const listeners of s.doc.listeners.values()) assert.equal(listeners.size, 0);
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const css = fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/styles/inventory/inventory-selector.css"), "utf8");
+  assert.ok(css.includes("border-width: calc(0.025 * var(--inventory-selector-drawing-unit))"),
+    "open central button matches the visible border width of the expanded sectors");
 }
 checkComposition().then(() => console.log("Inventory selector passed: geometry, all release targets, hover, keyboard, capture, motion, coordinates, live sizes, overrides and disposal."))
   .catch(error => { console.error(error); process.exitCode = 1; });

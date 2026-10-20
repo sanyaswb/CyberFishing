@@ -20,6 +20,29 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-097 Clock phase switching skips midnight after evening advances (P2, implemented in v0.45.22)
+Found: 2026-10-20, owner declines clock acceptance in v0.45.21, DEV location/House.
+Reproduce: double activate at 12:00 to reach 19:00, let calendar time advance, then double activate again.
+Expected: 12:00 -> 19:00 -> 00:00 -> 12:00, with night environment/background and unchanged acceleration/save schema.
+Actual: any positive night blend during dusk was classified as night, so the next command returned 12:00.
+Resolution: TimePhaseControl distinguishes fully reached night from partial dusk blending; reuse existing blend thresholds and the shared clock anchor.
+Evidence: task-interactions failed 12 versus 0 after 100ms of elapsed calendar time; passing regression now covers the cycle, environment phase, rate isolation and storage. dev-time covers the House jump from 19.001 to 0 and its night background. See spec 116; owner acceptance pending in tasks.md.
+
+### G-096 Clock phase command bypasses the DEV acceleration flag (P2, implemented in v0.45.22)
+Found: 2026-10-20, owner correction to TK-005, DEV location/House.
+Reproduce: turn off debug.timeAccelerationEnabled and double activate the clock, or turn it off between the two clicks before the next UI update.
+Expected: no phase or speed change while disabled; ordinary production clocks remain passive. Enabling restores both DEV actions.
+Actual: only single acceleration checked the flag; double activation remained enabled and production composition installed its own phase command.
+Resolution: guard DevTimeControl.advancePhase with the live injected flag; disable both view actions and cancel pending activation on control-state changes; remove the default production phase command and the passive House catalog callback.
+Evidence: dev-time failed 19 versus 12 with the flag off; task-interactions now covers production isolation, disabled mouse/keyboard clicks, disable/re-enable, pending cancellation, live flag races, and existing disposal/movement scenarios. See spec 116; owner acceptance pending in tasks.md.
+
+### G-095 Hand chum selection immediately shows reachable cast area (P3, implemented in v0.45.10)
+Found: 2026-10-20, owner instruction.
+Reproduce: with hand chum equipped, click the chum button on the toolbar without pressing/dragging the water.
+Expected: immediately upon clicking the button, the accessible cast range (dashed line and shaded area) appears on the water, before any pointer drag starts, and stays visible while aiming.
+Actual: the accessible cast area was hidden until the pointer drag began (and only if debug.casting.showChumDistanceLine was true); clicking the hand chum button alone showed no cast range boundary.
+Notes: `CastingRenderFrameBuilder.#buildChumAim` now builds `aimingZone` immediately whenever hand chum aim is active, before and during pointer dragging, and keeps it hidden for boat delivery or when aim is idle. Focused check `chum-aim-zone-check.js` covers idle aim, active power aim, boat chum exclusion and idle dismissal. Architecture, Quick and Full checks pass; game-cycle baseline and save format unchanged. Owner visual acceptance pending.
+
 ### G-093 Closed depth control blocks radial selection and aiming (P2, implemented in v0.45.4)
 Found: 2026-10-20, owner's follow-up to G-092/TK-008, dev.html with an equipped float.
 Reproduce: show the depth control with its track closed; move through its transparent vertical footprint while selecting radial sections or aiming an equipped rod. Move an active aim over the float/HUD itself.

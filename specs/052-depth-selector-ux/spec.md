@@ -3,7 +3,9 @@
 **Created**: 2026-10-11 · **Status**: Implemented (owner checks the visuals) · **Kind**: UX (backlog G-005)
 
 ## Owner request (2026-10-11)
+
 The vertical depth slider and the horizontal cast bar are replaced:
+
 - A float button (emoji now, a float image later) shows the selected depth.
 - Pressing it slides a vertical depth track down from under the float, with min and max marks.
 - While the track is open, a dashed horizontal line across the map marks the farthest cast at the selected depth.
@@ -17,6 +19,7 @@ limit itself was invisible: a full-power cast always looked the same. The old ba
 coefficient, while the cast uses it.
 
 ## Change
+
 - `DepthSelector` (platform/browser/ui) is rebuilt with DOM nodes instead of `innerHTML` and ids:
   - The float button shows the tackle icon and the depth value. `setIcon` takes the equipped float, or the jig on a
     spinning rod. An image can replace the emoji later.
@@ -32,13 +35,14 @@ coefficient, while the cast uses it.
     location, plus the distance in metres.
   - The old cast bar sync is removed.
 - `CastingRenderFrameBuilder` eases the displayed line toward the target (`casting.depthLimit.easeMs`, default 70 ms)
-  and fades it in (`fadeInMs`, 180 ms). The label "закид до X м" is rebuilt only when the shown 0.1 m value changes.
+  and fades it in (`fadeInMs`, 180 ms). The label "X м" is rebuilt only when the shown 0.1 m value changes.
   `CastSceneRenderer` dims the water above the line, draws the dashed line and the label, clipped to the castable
   water.
 - `HUD_LABELS`: `depthValue`, `depthToggle`, `depthTrack`, `castLimit`; the cast bar labels are removed.
 - `depth-selector.css` is rewritten (slide-down via clip-path/opacity/transform; `prefers-reduced-motion` respected).
 
 ## Evidence
+
 - `platform-runtime` check rewritten for the control's behavior (owner rule 2026-10-11: no visual assertions):
   - closed after show, a closed track ignores presses, the float toggles;
   - drag, keys and wheel give the 0.1 m changes `[2.6, 5, 0.1, 5, 4.9, 3.9, 0.1, 0.2]`;

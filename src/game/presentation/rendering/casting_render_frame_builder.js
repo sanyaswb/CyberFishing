@@ -103,20 +103,21 @@ export class CastingRenderFrameBuilder {
     if (!this.#chumSource.isAiming()) return;
     const equipment = this.#chumSource.getEquipment();
     if (equipment.delivery) return;
-    const castingEnabled = this.#config.casting?.enabled !== false;
     const distance = this.#chumSource.getCastDistance();
+    const bounds = this.#chumSource.getBounds();
+    const showDistanceLine = this.#config.debug?.casting?.showChumDistanceLine !== false;
+    if (showDistanceLine) {
+      this.#buildAimingZone(
+        target,
+        bounds.bottom,
+        distance,
+        "chum",
+        clipRegions,
+      );
+    }
+    const castingEnabled = this.#config.casting?.enabled !== false;
     const visual = this.#chumSource.getPowerAimVisual();
     if (visual && castingEnabled) {
-      if (this.#config.debug?.casting?.showChumDistanceLine) {
-        const bounds = this.#chumSource.getBounds();
-        this.#buildAimingZone(
-          target,
-          bounds.bottom,
-          distance,
-          "chum",
-          clipRegions,
-        );
-      }
       if (this.#config.debug?.casting?.showAccuracyArea) {
         this.#buildAccuracy(
           target,
@@ -126,23 +127,9 @@ export class CastingRenderFrameBuilder {
       this.#buildPowerAim(
         target,
         visual,
-        this.#chumSource.getBounds(),
+        bounds,
         distance,
         this.#chumSource.getNow(),
-      );
-      return;
-    }
-    if (
-      this.#chumSource.getGameStateName() !== "scouting" &&
-      !castingEnabled &&
-      this.#config.locations?.showAimingZone !== false
-    ) {
-      this.#buildAimingZone(
-        target,
-        this.#chumSource.getBounds().bottom,
-        distance,
-        "chum",
-        clipRegions,
       );
     }
   }

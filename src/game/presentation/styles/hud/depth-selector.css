@@ -1,6 +1,7 @@
 /* Internal geometry; toolbar owns placement. Only visible controls receive input. */
 .depth-selector {
   --depth-ratio: 0%;
+  --depth-track-size: 6px;
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -52,7 +53,7 @@
   pointer-events: none;
 }
 .depth-selector--open {
-  width: 100%;
+  width: var(--depth-selector-open-width, 100%);
 }
 .depth-selector__panel {
   position: relative;
@@ -60,7 +61,7 @@
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) var(--depth-track-size) minmax(0, 1fr);
   align-items: center;
   box-sizing: border-box;
   height: calc(var(--ui-toolbar-size) - 2 * var(--ui-control-border-width));
@@ -71,7 +72,7 @@
 .depth-selector__track {
   position: relative;
   grid-column: 1 / -1;
-  grid-row: 1;
+  grid-row: 1 / -1;
   min-width: 0;
   height: 100%;
   cursor: ew-resize;
@@ -81,7 +82,7 @@
   content: "";
   position: absolute;
   inset: 50% 0 auto;
-  height: 6px;
+  height: var(--depth-track-size);
   transform: translateY(-50%);
   border-radius: var(--ui-radius-control);
   background: linear-gradient(to right, rgba(115, 194, 251, 0.55), rgba(0, 34, 51, 0.95));
@@ -114,7 +115,8 @@
 .depth-selector__marker-value {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 4px);
+  /* The current value stays above the frame. */
+  bottom: calc(50% + var(--ui-toolbar-size) / 2 + 4px);
   transform: translateX(-50%);
   padding: 2px 4px;
   border: 1px solid var(--ui-control-border-color);
@@ -123,7 +125,16 @@
   font-size: 11px;
   white-space: nowrap;
 }
-.depth-selector__limit { grid-row: 2; min-width: 0; font-size: 9px; color: var(--ui-muted); white-space: nowrap; }
+.depth-selector__limit {
+  grid-row: 3;
+  align-self: center;
+  min-width: 0;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--ui-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
 .depth-selector__limit--min { grid-column: 1; text-align: left; }
 .depth-selector__limit--max { grid-column: 2; text-align: right; }
 @keyframes depth-selector-reveal {

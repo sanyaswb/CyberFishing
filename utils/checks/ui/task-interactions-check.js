@@ -323,6 +323,7 @@ route.showAssemblyEditor("another"); route.backFromAssemblyEditor();
 assert.equal(route.activeSectionId, "equipment", "closing ends the old route");
 
 const { GameTimeClock } = require("../../../src/game/domain/time/game_time_clock.js");
+const { EnvironmentSystem } = require("../../../src/game/application/world/environment_system.js");
 const { composeDevTimeDisplay } = require("../../../src/bootstrap/development/dev_time_composition.js");
 for (const interval of [299, 300, 301]) {
   const timers = new Timers();
@@ -333,13 +334,26 @@ for (const interval of [299, 300, 301]) {
   const doc = new TestDocument();
   const config = { debug: { timeAccelerationEnabled: true, timeScale: 1 } };
   const control = composeDevTimeDisplay({ documentRef: doc, mount: doc.body, clock, config, timers, nowMs: () => timers.now });
+  const environment = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 }, environment: {} },
+    12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
   const button = control.container;
   button.click(); timers.advance(interval); button.click();
   if (interval <= 300) {
     assert.equal(clock.getHours(), 19); assert.equal(clock.getRateMultiplier(), 1);
     timers.advance(1000);
     assert.equal(clock.getRateMultiplier(), 1, "double activation never performs single acceleration");
-    for (const expected of [0, 12]) { button.click(); timers.advance(100); button.click(); assert.equal(clock.getHours(), expected); timers.advance(1000); }
+    for (const expected of [0, 12]) {
+      calendarNow += 100;
+      button.click(); timers.advance(100); button.click();
+      assert.equal(clock.getHours(), expected, "elapsed time after evening must not skip midnight");
+      environment.update(16, 1);
+      assert.equal(environment.getSnapshot().phase, expected === 0 ? "night" : "day", "environment follows the phase anchor");
+      if (expected === 0) {
+        const reloadedNight = new GameTimeClock({ ...saved, now: () => calendarNow + 3600000 });
+        assert.equal(reloadedNight.getHours(), 1, "reload continues from the persisted midnight anchor");
+      }
+      timers.advance(1000);
+    }
     assert.equal(saved.timeScale, 1);
     assert.deepEqual(Object.keys(saved).sort(), ["anchorHours", "anchorMs", "timeScale"]);
     calendarNow += 3600000; assert.equal(clock.getHours(), 13);
@@ -358,8 +372,35 @@ let phaseSave = { anchorHours: 12, anchorMs: 0, timeScale: 1 };
 const phaseClock = new GameTimeClock({ ...phaseSave, now: () => 0, save: value => { phaseSave = value; } });
 const peerClock = new GameTimeClock({ ...phaseSave, now: () => 0, load: () => phaseSave });
 const phaseDoc = new TestDocument();
-const phaseView = composeTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock,
+const passiveView = composeTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock,
   timers: phaseTimers, nowMs: () => phaseTimers.now });
+passiveView.container.fire("click", { detail: 1 }); passiveView.container.fire("click", { detail: 1 });
+assert.equal(phaseClock.getHours(), 12, "production composition has no phase-changing capability");
+assert.equal(phaseTimers.jobs.size, 0);
+passiveView.dispose();
+const phaseConfig = { debug: { timeAccelerationEnabled: false, timeScale: 1 } };
+const phaseControl = composeDevTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock,
+  config: phaseConfig, timers: phaseTimers, nowMs: () => phaseTimers.now });
+const phaseView = phaseControl;
+phaseControl.advancePhase();
+phaseView.container.fire("click", { detail: 0 }); phaseView.container.fire("click", { detail: 0 });
+assert.equal(phaseClock.getHours(), 12, "disabled DEV double activation cannot change hours");
+assert.equal(phaseTimers.jobs.size, 0);
+phaseConfig.debug.timeAccelerationEnabled = true;
+phaseControl.update(phaseClock.getHours());
+phaseView.container.fire("click", { detail: 1 });
+phaseConfig.debug.timeAccelerationEnabled = false;
+phaseControl.update(phaseClock.getHours());
+assert.equal(phaseTimers.jobs.size, 0, "disabling cancels a pending single/double activation");
+phaseConfig.debug.timeAccelerationEnabled = true;
+phaseControl.update(phaseClock.getHours());
+phaseView.container.fire("click", { detail: 0 }); phaseTimers.advance(100);
+phaseConfig.debug.timeAccelerationEnabled = false;
+phaseView.container.fire("click", { detail: 0 });
+assert.equal(phaseClock.getHours(), 12, "the command rechecks the live flag before the next display update");
+phaseControl.update(phaseClock.getHours());
+phaseConfig.debug.timeAccelerationEnabled = true;
+phaseControl.update(phaseClock.getHours());
 phaseView.container.fire("click", { detail: 0 }); phaseTimers.advance(100);
 phaseView.container.fire("click", { detail: 0 }); assert.equal(phaseClock.getHours(), 19, "keyboard click pairs share the production command");
 peerClock.sync(); assert.equal(peerClock.getHours(), 19, "phase anchors synchronize even in the same millisecond");

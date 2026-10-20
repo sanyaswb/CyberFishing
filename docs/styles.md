@@ -166,11 +166,14 @@ The dock handle opts out of the shared handle's hover background through
 the button-container height until the pointer leaves the dock; gaps/handle areas never start the hold.
 HouseNavigationController owns this transient UI state and disposes its two pointer bindings. CSS uses the adapter's
 desktop-hover policy and shared motion tokens; touch gestures and selected-sheet states retain their behavior.
-The production and DEV clocks support double activation to cycle day 12:00 → evening 19:00 → night 00:00.
-`DoubleActivationController` separates the pair from delayed DEV single-click acceleration; `TimePhaseControl`
-changes the shared `GameTimeClock` anchor without simulating elapsed time. Hours/rate persistence stays v1.
-Production composition is reused by the House and isolated catalog clocks. See [spec 116](../specs/116-clock-phase-switch/spec.md),
-which supersedes the passive production-clock portion of spec 058.
+Production clocks are passive. DEV injects single-click acceleration and double activation for
+day 12:00 → evening 19:00 → night 00:00 → day only while `debug.timeAccelerationEnabled` is true,
+including in the House. Disabling cancels pending activation and hides the phase-action hint; the command
+also rechecks the live flag. `DoubleActivationController` separates the pair from delayed single acceleration;
+`TimePhaseControl` treats a partial dusk/night blend as evening until night is fully reached, so elapsed time
+after 19:00 cannot skip midnight. It changes the shared `GameTimeClock` anchor without simulating elapsed time.
+Hours/rate persistence stays v1. House/catalog use the passive production view unless DEV injects a control.
+See [spec 116](../specs/116-clock-phase-switch/spec.md), owner correction 2026-10-20.
 
 TK-001.1 limits `ui-hint--sheet` and its shared handle to UI-surface widths <=820 logical px, in either orientation.
 `HintSheetController` reads the injected surface metrics and subscribes to width changes; no per-frame DOM reads.
@@ -241,13 +244,18 @@ Owner refinement v0.45.3 introduced a true quarter-disk centre. v0.45.6 replaces
 the large upper-left arc and moves its upright symbol from the square centre to the quarter-disk centroid.
 Owner correction v0.45.9 keeps only the small bottom-right corner rounded: the open endpoint is
 `100% 0 var(--ui-radius-panel) 0`, with sharp upper-right and lower-left corners. The inner visual stage scales the
-whole composition between independent initial/open presets, anchored at bottom right. The layout root takes its
+whole composition between independent initial/open presets, anchored at bottom right. Since v0.45.26 it is drawn
+at the larger of the two sizes and scaled down for each state; neither endpoint enlarges a smaller painted layer.
+The shared toolbar frame's `--game-toolbar-render-scale` compensates border/radius/shadow for the central button,
+preserving its original appearance and the open border's match with the sectors. The layout root takes its
 final slot immediately; the controller caches its final open bounds once and waits for scaling/reveal before
 pointer selection, without layout reads on movement. Both directions reuse `--ui-duration-fast` and reduced motion, including the catalogue
 modifier. Native border geometry owns central hit testing, including the closed upper-left corner; browser
 transitions reverse smoothly without a frame loop. The outer sector arc remains derived from centre radius and gap.
 Highlighting translates a candidate outward through a native animation. Its cached animation timing supplies the
-current translation to release hit tests, without frame loops or per-move layout reads. Hover additionally retains
+current translation to release hit tests, without frame loops or per-move layout reads. Finished movement no longer
+fills a compositor effect; the highlighted CSS state owns its final translation, and hit tests retain the final
+offset even when finished native animation timing reports null progress. Hover additionally retains
 the original footprint and the full padded fan, including gaps. Unrelated/unchanged ancestor attributes do not
 cancel it. Real visibility or cached geometry changes do. v0.45.4 removes global cursor tracking and the
 coordinate-only pointerleave override: the actual obstacle was the depth control's transparent hit region.
@@ -264,8 +272,9 @@ v0.45.16 supersedes depth's normal-flow width expansion. The transparent `game-t
 The slot's minimum reserves the float, shared gap and a usable 40px slider in both states. Native wrapping depends
 on viewport/visible actions, never depth open/close. A hidden float with no visible badge consumes no row space.
 Toolbar anchors the actual depth frame to the slot's right/bottom edges. The closed float sits left of all actions;
-opening grows its frame left to the toolbar edge, using the same UI-surface/safe-area inset as the rightmost action.
-The panel has no 200px cap and flexes to the available width. The button stays on the frame's right through both
+opening grows its frame left within the slot. Since v0.45.23 the toolbar caps the slider panel at 200 logical px;
+the full frame adds the ordinary button width and shared gap, and shrinks to available slot width on small screens.
+The width transition animates to the capped width itself. The button stays on the frame's right through both
 transitions. The badge uses free slot width while closed and becomes invisible while open without changing flow;
 it remains hidden at toolbar widths <=820 logical px. Production, DEV and catalogue inject the same depth mount.
 
@@ -277,6 +286,11 @@ Resize cancels depth capture. No timer, observer, frame loop or per-move layout 
 `ui-control-pill` mix stays removed; the bait switch retains its original auto-switch.css appearance.
 
 Depth keeps horizontal min-left/max-right and X-based selection, ordinary button size and upright optimized art.
+The rail occupies the panel's full height, placing its stripe and thumb at the frame's vertical midpoint.
+Endpoint labels sit below the stripe, vertically centred between its lower edge and the frame's inner bottom
+edge (owner correction v0.45.24). The track spans the whole panel; the stripe-thickness row separates equal
+upper/lower spaces, so the labels neither shift the stripe nor intercept pointer input. The current-value bubble
+sits above the frame.
 Closed content is hidden/inert; only the painted frame receives input. Transparent slots/gaps never shield Canvas.
 `UiEventShield.blockEvents` shields descendant input without imposing a solid rectangle; existing makeSolid
 consumers retain their behavior. Scene gestures started on Canvas keep pointer ownership through release/cancel,

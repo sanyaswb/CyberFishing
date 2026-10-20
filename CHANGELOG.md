@@ -2,13 +2,35 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.45.26 - Radial Selector Native-Size Artwork and Open Border
+
+- Match the open central button's border width with the visible border of the expanded sectors (`calc(0.025 * var(--inventory-selector-drawing-unit))`), keeping uniform border thickness across expansion and presets.
+- Radial selector draws at its largest preset and scales down, preserving its frame and hit geometry; finished highlight animations release their effect to CSS.
+
+## v0.45.24 - Depth Labels Below Centred Rail
+
+- Return depth min/max labels below the stripe, vertically centred between its lower edge and the container bottom. Keep the rail and thumb at the frame midpoint, the 200px panel cap and existing input behavior.
+
+## v0.45.23 - Bounded Centred Depth Slider
+
+- Cap the depth slider panel at 200 logical pixels while keeping its fixed right anchor, narrow-width fit and smooth left expansion. Put min/max labels above the vertically centred stripe and thumb, with the current-value bubble clear of the labels. Preserve input, permanent toolbar reserve and reduced motion.
+
+## v0.45.22 - Guarded Clock Night Cycle
+
+- Require DEV timeAccelerationEnabled for both clock actions in the location and House; disable/cancel pending activation when off and restore passive production clocks (G-096).
+- Keep a partial dusk/night blend in the evening step, so elapsed time after 19:00 advances to 00:00 before returning to day. Cover night environment, House, reload, live flag changes and input cancellation in existing deterministic checks (G-097).
+
+## v0.45.21 - Pending Acceptance Cleanup
+
+- Remove completed TK-001–TK-008 specifications and implementation history from tasks.md; retain only nine outstanding owner acceptance scenarios, updated for the current radial selector and toolbar behavior.
+
 ## v0.45.20 - Production Project Structure
 
 - Generate project-structure.txt only from the index.html production release closure: reachable modules, linked styles, shipped assets and vendor licences. Reuse release file selection with explicit page roots; omit DEV pages/code, tools, tests, docs and repository metadata. Regenerate the tree from current tracked working files and retain the existing Pages release behavior.
 
 ## v0.45.19 - Behavior-First Utils
 
-- Organize all checks by responsibility under utils/checks and document UTILS_RULES.md. Remove 233 visual/duplicate implementation assertions while retaining all functional simulations, architecture/safety guards and the game-cycle baseline. Reduce Quick from 38 to 12 scenarios; one final Full run includes its subsets. Keep stable check IDs, update consumers and reject duplicate/unregistered nested check files.
+- Organize all checks by responsibility under utils/checks and document UTILS_RULES.md. Remove 233 visual/duplicate implementation assertions while retaining all functional simulations, architecture/safety guards and the game-cycle baseline. Reduce Quick from 39 to 12 scenarios; one final Full run includes its subsets. Keep stable check IDs, update consumers and reject duplicate/unregistered nested check files.
 
 ## v0.45.18 - Concise Changelog History
 
@@ -21,34 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.16 - Stable Leftward Float Expansion
 
 - Keep a permanent flexible depth slot to the left of toolbar actions. Anchor the float button at its right edge and expand the shared slider frame left to the same screen inset as the rightmost action, without shifting or rewrapping neighbours. Remove the 200px panel cap; the version badge shares the free slot and yields while it is open. Retain smooth width/reveal, reduced motion and cached drag geometry.
-
-## v0.45.15 - Smooth Unified Float Control
-
-- Restore the ordinary toolbar background, border and rounded corners around one shared float/slider container. Expand its width over the shared normal motion duration while the horizontal slider fades and reveals inside the frame; keep reduced motion instant. Ignore drag starts while the container is moving so cached slider coordinates stay correct. Remove the superseded shared bait-pill frame after checking its consumers.
-
-## v0.45.14 - Responsive Bottom Toolbar
-
-- Keep a permanent reserve for the open radial fan, so buttons to its left stay in place on open/close. Use native row wrapping when the row is full, hide the version badge at compact toolbar widths, and fit the horizontal float panel in normal flow. The open float and slider share one pill frame reused from the bait switcher. Remove competing badge/upward-placement calculations, global layout events and duplicate resize handlers from the float and selector composition.
-
-## v0.45.12 - Accurate Toolbar Free Space Allocation and Coordinated Upward Transfer
-
-- Rework toolbar free space calculation: elements transfer upward only when all free space in the bottom row has been completely exhausted and there is nowhere left to compress or shift.
-- Implement unified 4-stage allocation for both float depth selector and radial inventory selector:
-  1. Ample space: Full version badge + bottom controls fit comfortably without transfer.
-  2. Tight space: Version badge compresses to a 1:1 square ratio, keeping controls in the bottom row.
-  3. Space tightens further: Version badge disappears to free its space, and open float panel narrows from 200px down to 20% (40px) while staying in the bottom row.
-  4. Space exhausted: Control shifts upward to the second row only when bottom space is < 40px (float) or cannot fit the selector footprint.
-- When a control moves to the upper row, bottom row space is freed, dynamically restoring the version badge (full or 1:1 square) if space permits.
-- Remove obsolete static 380px container query in favor of dynamic visible-button space measurement.
-- Synchronize depth selector open/close and inventory selector upward adjustments via coordinated toolbar layout events.
-
-## v0.45.11 - Adaptive Toolbar Overflow and Upward Layouts
-
-- Hide version badge whenever space is insufficient for other elements (e.g. open float panel or radial selector), and keep it at minimum 1:1 square ratio when visible.
-- When the open float section lacks space in the bottom toolbar, it narrows down to 20% (40px); below 20% it shifts upward into the upper row and stretches across 100% of the available width.
-- When radial selector mode is enabled and buttons to the left cannot fit due to the reserved space, the selector button shifts upward into the upper row to clear bottom toolbar space.
-- Ensure UI elements never overflow container bounds by rearranging into upper rows and relying on proportional UI scaling below 320px baseline.
-
-## v0.45.9 - Radial Bottom-Right Corner and Open Size
-
-- Preserve the large upper-left arc and round only the bottom-right small corner when the radial button opens. Restore independent initial/open sizes in DevTools, default 1 -> 3, whole-composition scaling, final-open pointer geometry and reduced motion. The open toolbar makes room for the fan and moves adjacent actions aside.

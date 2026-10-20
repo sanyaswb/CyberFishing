@@ -23,6 +23,8 @@
 }
 .game-toolbar__depth {
   --depth-panel-min-width: 40px;
+  --depth-panel-max-width: 200px;
+  --depth-selector-open-width: min(100%, calc(var(--ui-toolbar-size) + var(--ui-toolbar-gap) + var(--depth-panel-max-width)));
   position: relative;
   display: none;
   order: 0;
@@ -64,11 +66,11 @@
 .game-toolbar-frame,
 .game-toolbar-button {
   box-sizing: border-box;
-  border: var(--ui-control-border-width) solid var(--ui-control-border-color);
-  border-radius: var(--ui-radius-panel);
+  border: calc(var(--ui-control-border-width) / var(--game-toolbar-render-scale, 1)) solid var(--ui-control-border-color);
+  border-radius: calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale, 1));
   background: rgba(var(--ui-surface-rgb), 0.94);
   color: var(--ui-text);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 calc(4px / var(--game-toolbar-render-scale, 1)) calc(12px / var(--game-toolbar-render-scale, 1)) rgba(0, 0, 0, 0.35);
 }
 .game-toolbar-button {
   display: grid;
@@ -94,7 +96,10 @@
 .ui-surface--desktop-hover .game-toolbar-button:active:not(:disabled),
 .ui-surface--desktop-hover .game-toolbar-frame:active { background: rgba(var(--ui-accent-rgb), 0.24); }
 .game-toolbar-button:disabled { opacity: 0.46; cursor: not-allowed; }
-.game-toolbar-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.game-toolbar-button:focus-visible {
+  outline: calc(2px / var(--game-toolbar-render-scale, 1)) solid var(--ui-info);
+  outline-offset: calc(3px / var(--game-toolbar-render-scale, 1));
+}
 .game-toolbar-button[hidden] { display: none; }
 /* Item artwork cropped like its inventory card's skin thumbnail (the landing net: the upper 40%, centred, top-aligned).
    The frame is the image's 85% box; the image is scaled so its visible-height share fills the frame's height. */

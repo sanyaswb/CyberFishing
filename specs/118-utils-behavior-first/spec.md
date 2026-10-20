@@ -33,8 +33,8 @@ The shared stylesheet reader remains consumed by CSS safety and input-axis check
 package script or dependency is removed without proving its remaining consumers. Retain unrelated local helpers.
 
 Audit result: removed 233 visual/duplicate implementation assertions and 1,492 lines across inventory UI, House,
-shared UI, catalogue, profiler, palette snapshots, decorative item frames and scene placement checks. All 64 registered functional scenarios remain;
-Quick is reduced from 38 to 12. Check files occupy seven responsibility folders; root commands and IDs are stable.
+shared UI, catalogue, profiler, palette snapshots, decorative item frames and scene placement checks. All 65 registered functional scenarios remain;
+Quick is reduced from 39 to 12. Check files occupy seven responsibility folders; root commands and IDs are stable.
 
-Validation: final Full 64/64 passed after the additional decorative-assertion sweep. Registry IDs and unique paths
+Validation: final Full 65/65 passed after the additional decorative-assertion sweep. Registry IDs and unique paths
 were verified, all check files parse, and the game-cycle baseline is byte-identical. No browser visual check performed.

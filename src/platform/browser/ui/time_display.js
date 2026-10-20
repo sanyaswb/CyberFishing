@@ -21,11 +21,10 @@ export class TimeDisplay {
     this.container.style.touchAction = "";
     if (onActivate || onDoubleActivate) {
       this.container.type = "button";
-      this.container.disabled = !onDoubleActivate;
-      this.container.classList.toggle("time-display--interactive", Boolean(onDoubleActivate));
+      this.container.disabled = true;
       if (activationController) activationController.attach(this.container, { onSingle: () => {
         if (this.#enabled) onActivate?.();
-      }, onDouble: () => this.#onDoubleActivate?.() });
+      }, onDouble: () => { if (this.#enabled) this.#onDoubleActivate?.(); } });
       else if (onActivate) this.container.addEventListener("click", onActivate);
     }
     if (onActivate) {
@@ -46,16 +45,19 @@ export class TimeDisplay {
   }
 
   setControlState(enabled, multiplier) {
-    if (!this.#onActivate) return;
+    if (!this.#onActivate && !this.#onDoubleActivate) return;
     if (enabled === this.#enabled && multiplier === this.#multiplier) return;
     if (enabled !== this.#enabled) {
-      this.container.disabled = !enabled && !this.#onDoubleActivate;
-      this.container.classList.toggle("time-display--interactive", enabled || Boolean(this.#onDoubleActivate));
+      this.cancelActivation();
+      this.container.disabled = !enabled;
+      this.container.classList.toggle("time-display--interactive", enabled);
       this.#enabled = enabled;
     }
     if (multiplier !== this.#multiplier) {
-      this.#speedSpan.hidden = multiplier === 1;
-      this.#speedSpan.textContent = multiplier === 1 ? "" : `⏩ ×${multiplier}`;
+      if (this.#speedSpan) {
+        this.#speedSpan.hidden = multiplier === 1;
+        this.#speedSpan.textContent = multiplier === 1 ? "" : `⏩ ×${multiplier}`;
+      }
       this.container.classList.toggle("time-display--accelerated", multiplier > 1);
       this.#multiplier = multiplier;
     }
@@ -64,7 +66,7 @@ export class TimeDisplay {
 
   #updateLabel() {
     const description = this.#labels.timeAcceleration?.(this.#multiplier, this.#enabled);
-    const phase = this.#onDoubleActivate ? this.#labels.timePhase : "";
+    const phase = this.#enabled && this.#onDoubleActivate ? this.#labels.timePhase : "";
     const label = [this.timeSpan.innerText || "", description, phase].filter(Boolean).join(" · ");
     if (label && this.container.getAttribute("aria-label") !== label) this.container.setAttribute("aria-label", label);
   }

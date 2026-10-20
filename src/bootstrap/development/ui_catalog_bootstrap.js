@@ -143,7 +143,7 @@ export function startUiCatalog() {
         const gameTime = new GameTimeClock({ anchorHours: 12, anchorMs: 0, timeScale: 1, now: () => 0 });
         const phaseControl = new TimePhaseControl({ clock: gameTime, phaseHours: GAME_TIME_CONFIG.phaseHours });
         const timeDisplay = own(composeTimeDisplay({ documentRef: scope, mount: scope.querySelector("[data-house-time-mount]"),
-          clock: gameTime, timers: warningTimers, onDoubleActivate: () => example?.advanceTime() }));
+          clock: gameTime, timers: warningTimers }));
         scope.documentElement = { requestFullscreen: async () => { status.textContent = UI_CATALOG_LABELS.houseFullscreen; } };
         const fullscreenControl = own(new FullscreenControl({ documentRef: scope, mountNode: scope.querySelector("[data-house-fullscreen-mount]"), label: HUD_LABELS.fullscreen }));
         const headerSizer = own(new HudRowSizer({ row: scope.querySelector("[data-house-header-row]"), uiSurface: surface, windowTarget }));

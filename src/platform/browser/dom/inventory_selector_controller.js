@@ -77,7 +77,7 @@ export class InventorySelectorController {
         ? this.#view.buttons[i].animate([
           { translate: this.#view.motionTranslation(i, from) },
           { translate: this.#view.motionTranslation(i, to) },
-        ], { duration: this.#motionDuration, easing: this.#motionEasing, fill: "both" }) : null;
+        ], { duration: this.#motionDuration, easing: this.#motionEasing, fill: "none" }) : null;
     });
   }
 
