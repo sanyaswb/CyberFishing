@@ -112,6 +112,9 @@ function fakePixi() {
 
     destroy(destroySource) { this.destroyed = destroySource; }
 
+    // After a frame change (an image float's waterline crop): counts the uv updates.
+    update() { this.updates = (this.updates || 0) + 1; }
+
     static from(options, skipCache) {
       if (options?.tagName === "canvas") {
         const texture = { canvas: options, skipCache, updates: 0, destroyed: null,
@@ -121,7 +124,8 @@ function fakePixi() {
       }
       const { naturalWidth: pixelWidth, naturalHeight: pixelHeight } = options.resource;
       const texture = { resource: options.resource, skipCache, uploaded: false, destroyed: null, width: pixelWidth,
-        height: pixelHeight, source: { pixelWidth, pixelHeight, autoGenerateMipmaps: options.autoGenerateMipmaps },
+        height: pixelHeight, source: { pixelWidth, pixelHeight, width: pixelWidth, height: pixelHeight,
+          autoGenerateMipmaps: options.autoGenerateMipmaps },
         destroy(destroySource) { this.destroyed = destroySource; } };
       textures.push(texture);
       return texture;
@@ -845,6 +849,37 @@ async function checkSceneTackle() {
   assert.equal(float.update({ visible: false }), true);
   assert.equal(floatContainer.visible, false);
   float.dispose();
+
+  // Spec 127: an image float shows the top visibleShare of its art through its own texture frame (no mask, no
+  // stretching); a night float adds its tip glow additively, cropped the same way.
+  const art = fake.pixi.Texture.from({ resource: { naturalWidth: 33, naturalHeight: 384 }, autoGenerateMipmaps: true }, true);
+  const glowArt = fake.pixi.Texture.from({ resource: { naturalWidth: 49, naturalHeight: 392 }, autoGenerateMipmaps: true }, true);
+  const sceneTextures = { get: (id) => ({ "float.webp": art, "glow.webp": glowArt })[id] ?? null };
+  const imageFloat = new PixiFloatRenderer({ pixi: fake.pixi, stage, documentTarget: dom.documentTarget,
+    textures: sceneTextures });
+  const imageContainer = stage.children.at(-1);
+  const [, imageShape, body, tipGlow] = imageContainer.children;
+  const imageModel = { visible: true, kind: "float", x: 10, y: 20, color: "#ffffff", glow: false, glowBlur: 8, width: 6,
+    height: 30, radius: 2.5, radiusX: 6, radiusY: 3, rotationRad: -0.3, imageId: "float.webp", tipGlowId: "",
+    tipGlowPad: 8, bodyHeight: 100, visibleShare: 0.3 };
+  assert.equal(imageFloat.update(imageModel), true);
+  assert.deepEqual([body.visible, body.texture.frame.height, body.texture.source, body.width, body.height, body.rotation,
+    body.anchor.x, body.anchor.y], [true, 384 * 0.3, art.source, 100 * 33 / 384, 30, -0.3, 0.5, 1],
+  "the body shows the art's top 30 % from the waterline up, in the art's proportions, turned by the roll");
+  assert.deepEqual([tipGlow.visible, imageShape.ops.length], [false, 0], "a day float has no glow and no bar");
+  const frameTexture = body.texture;
+  imageModel.visibleShare = 0.1;
+  assert.equal(imageFloat.update(imageModel), true);
+  assert.equal(body.texture, frameTexture, "a dip reuses the frame texture");
+  assert.deepEqual([body.texture.frame.height, body.height], [384 * 0.1, 10], "sinking crops the art, never stretches it");
+  imageModel.tipGlowId = "glow.webp";
+  assert.equal(imageFloat.update(imageModel), true);
+  const toScreen = 100 / 384;
+  assert.deepEqual([tipGlow.visible, tipGlow.blendMode, tipGlow.texture.frame.height, tipGlow.height, tipGlow.width],
+    [true, "add", 8 + 384 * 0.1, 10 + 8 * toScreen, 100 * 33 / 384 + 16 * toScreen],
+    "the night tip glow adds light over the same visible part, plus its blur margin");
+  assert.equal(imageFloat.update(imageModel), false, "an unchanged image float presents nothing");
+  imageFloat.dispose();
 }
 
 async function checkCoordinator() {
@@ -948,8 +983,8 @@ async function checkComposition() {
   assert.match(renderComposition, /surface\.beginFrame\(runtime\.rendering\.sceneRouter\.clearsCanvas\(\)\)/u);
   const root = read("src/bootstrap/production/game_composition_root.js");
   assert.match(root, /contextAttributes: \{ alpha: transparentCanvas \}/u, "the scene mode decides the 2D canvas alpha");
-  assert.match(root, /await sceneLayer\.whenReady\(\);\n\s*sceneLayer\.prepare\(Object\.values\(systems\.map\.getBackgroundRenderData\(\)\.assetIds\)/u,
-    "startup waits for the scene's warm-up frame, then uploads every background phase during loading");
+  assert.match(root, /await sceneLayer\.whenReady\(\);\n\s*sceneLayer\.prepare\(\[\.\.\.Object\.values\(systems\.map\.getBackgroundRenderData\(\)\.assetIds\)\.filter\(Boolean\), \.\.\.floatArt\]\)/u,
+    "startup waits for the scene's warm-up frame, then uploads every background phase and the float art during loading");
   assert.match(root, /shell: this\.#documentTarget\.body/u, "the split stage places both canvases through the shell");
 }
 

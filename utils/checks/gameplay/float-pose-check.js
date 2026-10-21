@@ -1,0 +1,173 @@
+"use strict";
+
+// Spec 127: the float's drawn pose comes from one spring model fed by forces, not from hand-written angles. Catches
+// wrong lean directions (pull, fish, diagonal retrieve), sideways lean from motion toward the player, distance-
+// dependent lean, jumps on state changes or reversals, frame-rate dependence and a stretched instead of sunk float.
+const assert = require("node:assert/strict");
+const { SourceRuntime } = require("../../testing/core/source_runtime");
+
+const runtime = new SourceRuntime();
+const load = (path) => runtime.importModule(path);
+const { FloatPoseAnimator } = load("src/game/presentation/fishing/float_pose_animator.js");
+const { FloatEntity } = load("src/game/domain/tackle/float_entity.js");
+const { WaterMetric } = load("src/game/domain/locations/water_metric.js");
+const { FLOAT_POSE_PHYSICS_CONFIG: CONFIG } = load("src/game/config/physics/physics_config.js");
+
+const flat = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
+const signals = (overrides = {}) => ({
+  castSerial: 1, angleDeg: 0, scaleY: 1, isBiteTilt: false, load: 1, lyingSide: 1, restDraft: 0, windDeg: 0,
+  lineX: 0, lineY: 0, waterX: 0, waterY: 0, ...overrides,
+});
+
+// Runs an animator for `seconds` at `fps`; move(t) gives the float's map position, input(t) its signals.
+function run({ seconds = 1.5, fps = 60, metric = flat, config = CONFIG, move = () => ({ x: 500, y: 500 }),
+  input = () => signals(), animator = new FloatPoseAnimator({ getConfig: () => config }), onFrame = null } = {}) {
+  const dt = 1 / fps;
+  const frames = Math.round(seconds * fps);
+  let previous = null;
+  for (let frame = 0; frame <= frames; frame += 1) {
+    const t = frame * dt;
+    const pose = animator.advance({ signals: input(t), position: move(t), metric, dtSec: dt });
+    onFrame?.(pose, previous, t);
+    previous = { rollDeg: pose.rollDeg, pitchDeg: pose.pitchDeg, draft: pose.draft };
+  }
+  return animator.pose;
+}
+
+// Criterion 2: the line or the fish pulls the bottom; the tip leans the other way.
+assert(run({ input: () => signals({ lineX: -1 }) }).rollDeg > 3, "line pulling the bottom left turns the tip right");
+assert(run({ input: () => signals({ lineX: 1 }) }).rollDeg < -3, "line pulling the bottom right turns the tip left");
+assert(run({ move: (t) => ({ x: 500 - 60 * t, y: 500 }) }).rollDeg > 3, "dragged left, the tip lags to the right");
+assert(run({ move: (t) => ({ x: 500 + 60 * t, y: 500 }) }).rollDeg < -3, "dragged right, the tip lags to the left");
+const fishLeft = run({ input: () => signals({ angleDeg: 20, isBiteTilt: true }), move: (t) => ({ x: 500 - 4 * t, y: 500 }) });
+assert(fishLeft.rollDeg > 20, "a bite step that drags the float left leans the tip right, with the motion adding to it");
+
+// Criterion 1: a diagonal retrieve toward the player (rod at the bottom right) leans the tip away along both axes;
+// pulling straight in never turns the float sideways.
+const diagonal = run({ move: (t) => ({ x: 500 + 40 * t, y: 500 + 40 * t }),
+  input: () => signals({ lineX: Math.SQRT1_2, lineY: Math.SQRT1_2 }) });
+assert(diagonal.rollDeg < -3 && diagonal.pitchDeg < -3 && diagonal.foreshortening < 0.99,
+  "diagonal retrieve: tip left and away from the player, drawn shorter");
+const straight = run({ move: (t) => ({ x: 500, y: 500 + 60 * t }), input: () => signals({ lineY: 1 }) });
+assert.equal(straight.rollDeg, 0, "a pull straight toward the player turns no sideways lean");
+assert(straight.foreshortening < 0.95, "the lean toward the player shows as a shorter float (pseudo-distance)");
+
+// Ground metres: the same ground speed leans the float the same near the shore and far away.
+const perspective = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
+  maxMeters: 30, farScale: 0.3, lateralContraction: true });
+const groundMove = (metres) => {
+  const point = { x: 0, y: 0 };
+  return (t) => perspective.toVirtual(1 * t, metres, point) && { x: point.x, y: point.y };
+};
+const nearLean = run({ metric: perspective, move: groundMove(3) }).rollDeg;
+const farLean = run({ metric: perspective, move: groundMove(27) }).rollDeg;
+assert(nearLean < -3 && Math.abs(nearLean - farLean) < 0.2, `1 m/s leans alike near and far (${nearLean} / ${farLean})`);
+
+// Criterion 4: a sharp reversal, a bite step and its end only move the target; the pose never jumps.
+let largestStep = 0;
+const track = (pose, previous) => {
+  if (previous) largestStep = Math.max(largestStep, Math.abs(pose.rollDeg - previous.rollDeg));
+};
+run({ seconds: 2, input: (t) => signals({ lineX: t < 1 ? 1 : -1 }), onFrame: track });
+assert(largestStep < 3, `a full left-right reversal moves at most ${largestStep.toFixed(2)}° per frame`);
+largestStep = 0;
+run({ seconds: 2, input: (t) => signals({ angleDeg: t > 0.5 && t < 1.2 ? 25 : 0, isBiteTilt: t > 0.5 && t < 1.2 }),
+  onFrame: track });
+assert(largestStep < 0.25 * 25, `a 25° bite step and its end move at most ${largestStep.toFixed(2)}° per frame`);
+
+// Frame rate: 30, 60 and 144 FPS reach the same pose.
+const atFps = (fps) => run({ seconds: 0.4, fps, input: (t) => signals({ lineX: t < 0.2 ? 1 : -1 }) }).rollDeg;
+assert(Math.abs(atFps(30) - atFps(144)) < 0.5 && Math.abs(atFps(60) - atFps(144)) < 0.2,
+  `frame-rate independent (${atFps(30)} / ${atFps(60)} / ${atFps(144)})`);
+
+// Criterion 6: the body sinks, never stretches; heavier ballast rides deeper; a lifting bite lays the float down.
+assert(run({ input: () => signals({ scaleY: 0 }) }).visibleShare < 0.02, "a full sink hides the body");
+assert(Math.abs(run({ input: () => signals({ restDraft: 0.3 }) }).visibleShare - 0.7) < 0.01, "rest draft 0.3 shows 70 %");
+const lifted = run({ input: () => signals({ scaleY: 1.5 }) });
+assert(lifted.rollDeg > 40 && lifted.visibleShare === 1, "a 50 % lift takes the load off: the float leans to lying, nothing stretches");
+assert(run({ input: () => signals({ lineY: 1, restDraft: 0 }) }).visibleShare < 0.85, "the line pull sinks the float a little");
+
+// Lying and standing up from the real float rig; over-depth keeps it lying. The rig's own sinking rules are reused.
+const floatConfig = { getFloatPoseConfig: () => CONFIG, getMaxDtMs: () => 50 };
+const rig = new FloatEntity(500, 500, { sinkingDelayMs: 0, sinkingDurationMs: 400 }, 10, { next: () => 0.25 }, null,
+  null, null, { fightPhysicsConfig: floatConfig });
+const ballast = { effectiveStats: { ballastWeight: "heavy", ballastProfiles: { heavy: { speedMult: 2, restDraft: 0.3 } } } };
+rig.cast(500, 500, 1, false, ballast);
+const rigAnimator = new FloatPoseAnimator({ getConfig: () => CONFIG });
+const bounds = { left: 0, right: 1000, top: 0, bottom: 1000 };
+const step = () => {
+  rig.update(bounds, 16, null, null, {}, 0, null);
+  return rigAnimator.advance({ signals: rig.getPoseSignals(), position: rig.getPosition(), metric: flat, dtSec: 0.016 });
+};
+assert.equal(step().rollDeg, 90, "a new cast starts lying on its side, placed without a transition");
+let standing;
+for (let frame = 0; frame < 120; frame += 1) standing = step();
+assert(Math.abs(standing.rollDeg) < 1 && Math.abs(standing.visibleShare - 0.7) < 0.02,
+  "after the shot sinks the float stands, heavy ballast rides 30 % deeper");
+rig.cast(500, 500, 1, true, ballast);
+let lying;
+for (let frame = 0; frame < 120; frame += 1) lying = step();
+assert(Math.abs(Math.abs(lying.rollDeg) - 90) < 1, "over-depth keeps the float lying");
+assert.equal(rig.getVisualState().angle, undefined, "the rig no longer writes a drawn angle");
+
+// Line and current reach the pose from the rig's update; records are reused (no allocation per frame).
+rig.cast(500, 500, 1, false, ballast);
+const pull = { x: 0.6, y: 0.8 };
+rig.update(bounds, 16, { current: { speedPxPerSec: 10, direction: { x: 1, y: 0 } } }, null,
+  { isPulling: true, idleRetrieveParams: null }, 0, pull);
+const recorded = rig.getPoseSignals();
+assert(recorded.lineX === 0.6 && recorded.lineY === 0.8 && recorded.waterX === 10 && recorded.waterY === 0,
+  "the rig records the line pull and the water's velocity for the pose");
+assert.equal(rig.getPoseSignals(), recorded, "the signals record is reused");
+const reused = new FloatPoseAnimator({ getConfig: () => CONFIG });
+const first = reused.advance({ signals: signals(), position: { x: 1, y: 1 }, metric: flat, dtSec: 0.016 });
+assert.equal(reused.advance({ signals: signals(), position: { x: 1, y: 1 }, metric: flat, dtSec: 0.016 }), first,
+  "the pose record is reused");
+
+// Disabled: only the intended lean, no forces and no transition.
+const off = run({ config: { ...CONFIG, enabled: false }, input: () => signals({ angleDeg: 12, lineX: 1, windDeg: 20 }) });
+assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the intended lean only");
+
+// Image float (stage 3): the render model and the Canvas fallback. The item length is the antenna above the art's
+// waterline at ui.float.displayScale; only the top visible share of the art is drawn; only a night float's tip glows.
+{
+  const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
+  const { FloatRenderer } = load("src/game/presentation/fishing/float_renderer.js");
+  const builder = new FishingEquipmentRenderModelBuilder({
+    projector: { getPerspective: () => ({ scale: 1 }), getScale: () => 1 }, canvasMetrics: { width: 800, height: 600 },
+    clock: { delta: 16 }, config: { ui: { float: { displayScale: 2 } } }, getRodScreenX: () => 400,
+    rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null,
+    floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => flat,
+  });
+  const skin = { scene: { src: "float.webp", waterline: 0.3, glow: { src: "glow.webp", pad: 8 } } };
+  const entity = { getVisualState: () => ({ color: "#00ff80" }), getPosition: () => ({ x: 500, y: 500 }),
+    isHooked: () => false, getPoseSignals: () => signals({ castSerial: 7 }) };
+  const model = {};
+  const build = (variant) => builder.buildFloat({ target: model, screenPosition: { x: 50, y: 60 }, floatEntity: entity,
+    equipment: { rod: { variant: "float" }, float: { variant, skin, effectiveStats: { width: 3, length: 15 } } } });
+  build("day");
+  assert(Math.abs(model.bodyHeight - 15 * 2 / 0.3) < 1e-9 && Math.abs(model.visibleShare - 0.3) < 1e-9 &&
+    model.imageId === "float.webp" && model.tipGlowId === "", "a day image float: doubled size, antenna above water, no glow");
+  build("night");
+  assert.equal(model.tipGlowId, "glow.webp", "the night float gets its tip glow");
+  const draws = [], states = [];
+  const surface = { save() {}, restore() {}, translate() {}, rotate() {}, fillRect: () => draws.push("bar"),
+    drawImage: (...args) => draws.push(args), setState: (state) => states.push(state) };
+  const images = { tryGet: (id) => ({ "float.webp": { naturalWidth: 33, naturalHeight: 384 },
+    "glow.webp": { naturalWidth: 49, naturalHeight: 392 } })[id] ?? null };
+  new FloatRenderer({ surface, images }).render(model);
+  const [bodyDraw, glowDraw] = draws;
+  assert(Math.abs(bodyDraw[4] - 384 * 0.3) < 1e-9 && Math.abs(bodyDraw[8] - model.bodyHeight * 0.3) < 1e-9 &&
+    Math.abs(bodyDraw[7] / model.bodyHeight - 33 / 384) < 1e-9, "Canvas draws the art's top 30 % in its proportions");
+  assert(glowDraw && states[0].globalCompositeOperation === "lighter", "the tip glow is added with additive light");
+  draws.length = 0;
+  build("day");
+  new FloatRenderer({ surface, images }).render(model);
+  assert.equal(draws.length, 1, "a day float draws only its body");
+  model.imageId = "missing.webp";
+  draws.length = 0;
+  new FloatRenderer({ surface, images }).render(model);
+  assert.deepEqual(draws, ["bar"], "without its art the float stays a bar");
+}
+
+console.log("Float pose passed: line/fish/motion lean the tip away from the pull, diagonal retrieve splits sideways lean from foreshortening, same ground speed same lean near and far, smooth reversals and bite steps, 30/60/144 FPS alike, sinking without stretching, ballast draft, lying/standing/over-depth, reused records; image float crop, doubled size, night-only tip glow, bar fallback.");

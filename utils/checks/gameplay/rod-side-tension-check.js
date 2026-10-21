@@ -71,20 +71,34 @@ assert.equal(stopped.rodSideReliefKg, 0); assert.equal(stopped.tensionKg, 8);
 assert.equal(stress.getDiagnostics().effectiveTensionKg, 8);
 near(finalStage.updateTension(frameArgs).tensionKg, final.tensionKg, "new motion starts a new compensation interval");
 
-// A sideways impulse uses the float's existing tilt response without retrieving or changing hook depth.
+// A sideways rod move pulls the line, and with it the float's bottom, to that side without retrieving or changing
+// hook depth; the drawn pose leans the tip the other way and settles when the rod stops (spec 127).
 const { FloatEntity } = runtime.importModule("src/game/domain/tackle/float_entity.js");
+const { FloatPoseAnimator } = runtime.importModule("src/game/presentation/fishing/float_pose_animator.js");
+const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_metric.js");
+const { FLOAT_POSE_PHYSICS_CONFIG } = runtime.importModule("src/game/config/physics/physics_config.js");
 const float = new FloatEntity(100, 100, {}, 10, { next: () => 0.5 }, null, null, null, {
-  fightPhysicsConfig: { getFloatMotionConfig: () => ({ enabled: true }) },
+  fightPhysicsConfig: { getFloatPoseConfig: () => FLOAT_POSE_PHYSICS_CONFIG },
 });
+const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0 });
+const animator = new FloatPoseAnimator({ getConfig: () => FLOAT_POSE_PHYSICS_CONFIG });
 const position = { ...float.getPosition() }, depth = float.getCurrentHookDepth();
-float._processMechanics(50, { castRodDeltaX: 2 }, 0, null);
-assert.ok(float.getVisualState().angle < 0, "moving rod right tilts float left");
-float._processMechanics(200, { castRodDeltaX: -2 }, 0, null);
-assert.ok(float.getVisualState().angle > 0, "moving rod left tilts float right");
-const tilted = float.getVisualState().angle;
-float._processMechanics(200, { castRodDeltaX: 0 }, 0, null);
-assert.ok(float.getVisualState().angle < tilted, "tilt settles after motion stops");
+const pose = (input, frames) => {
+  for (let frame = 0; frame < frames; frame += 1) {
+    float._recordPoseInputs(input, null);
+    float._processMechanics(16, input, 0, null);
+    animator.advance({ signals: float.getPoseSignals(), position: float.getPosition(), metric, dtSec: 0.016 });
+  }
+  return animator.pose.rollDeg;
+};
+pose({ castRodDeltaX: 0 }, 1);
+assert.ok(pose({ castRodDeltaX: 2 }, 20) < 0, "moving rod right pulls the bottom right: the tip leans left");
+assert.equal(float.getPoseSignals().lineX, 1);
+assert.ok(pose({ castRodDeltaX: -2 }, 40) > 0, "moving rod left pulls the bottom left: the tip leans right");
+const tilted = animator.pose.rollDeg;
+assert.ok(Math.abs(pose({ castRodDeltaX: 0 }, 60)) < tilted, "tilt settles after motion stops");
+assert.equal(float.getPoseSignals().lineX, 0);
 assert.equal(float.getPosition().x, position.x); assert.equal(float.getPosition().y, position.y);
 assert.equal(float.getCurrentHookDepth(), depth);
 assert.equal(float.getVelocity().x, 0); assert.equal(float.getVelocity().y, 0);
-console.log("Rod side tension passed: both fish sides, dash scaling, frame-rate independence, partial strokes, stop/boundary/return/disabled modes, pure preview, continuous relief and real tackle stress; float tilt reuses pull impulse without retrieval.");
+console.log("Rod side tension passed: both fish sides, dash scaling, frame-rate independence, partial strokes, stop/boundary/return/disabled modes, pure preview, continuous relief and real tackle stress; a sideways rod move leans the float through the line pull without retrieval.");

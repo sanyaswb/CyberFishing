@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.0 - Float Pose and Image Float
+
+- G-113 / spec 127: the float's lean comes from forces (motion through the water in ground metres, line pull, fish, wind) scaled by CONFIG.physics.floatPose gains and followed by damped springs for roll, pitch (foreshortening) and draft. Diagonal retrieve leans the right way, pulling straight in never turns it sideways, no jumps at bite start/end, hook or reversals, same at any frame rate; bites and ballast sink the float instead of stretching it. Bite timing and random numbers unchanged.
+- The float is drawn from its item art (scene variant 33×384 px) at ui.float.displayScale 2: only the part above the waterline (30 % of the body at rest) shows, cropped by texture frame / source rectangle. New night float: only its red tip glows green (additive, pre-blurred glow art, no filter pass); the day float does not glow. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner play check and phone performance pending.
+
 ## v0.45.45 - Surface-Scaled Water Waves
 
 - Spec 126 R4: water waves are a surface pattern. Far crests are farScale times as far apart and as high in both axes, whether or not the grid contracts sideways; rows follow calibrated ground metres. The wave field maps over the clip regions it actually covers. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance acceptance pending.
@@ -37,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.37 - Stable Inventory Selector Startup
 
 - TK-014: pending selector artwork incorrectly enabled classic backpack/keepnet shortcuts before radial readiness. Separate pending, ready and failed preload so radial startup never flashes classic controls; preserve explicit classic mode, failure fallback and disposal. Committed release Full: 65/65 including selector regressions, Architecture, Quick and Pages; the pick-cancel controller is included. Owner startup acceptance pending.
-
-## v0.45.36 - Uniform Inventory Hold Speed
-
-- Apply 200ms holds from pointerdown to all inventory cells: backpack, saved kits, equipment, editor and header bait. Remove the activation delay through shared defaults; preserve existing cell actions, cancellation and click suppression. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner acceptance pending.

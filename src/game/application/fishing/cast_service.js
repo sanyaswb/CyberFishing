@@ -107,7 +107,6 @@ export class CastService {
         currentHookDepth,
         currentHookDepth > cellDepth,
         physicsConfig,
-        castDistanceRatio,
       );
     } else {
       floatEntity.setPosition(vx, vy);

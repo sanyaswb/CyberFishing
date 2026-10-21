@@ -6,7 +6,7 @@ export class FeederEntity extends WaterEntity {
   _sinkingTotalTime = 0;
   _sinkingStartAngle = 90;
 
-  cast(x, y, targetDepth, isOverDepth, rigConfig, distanceRatio) {
+  cast(x, y, targetDepth, isOverDepth, rigConfig) {
     this._position.set(x, y);
     this._velocity.set(0, 0);
     this._isHooked = false;
@@ -21,8 +21,6 @@ export class FeederEntity extends WaterEntity {
     const weightCfg =
       stats.weights && stats.weight ? stats.weights[stats.weight] : stats;
     const speedMult = weightCfg.speedMult || stats.speedMult || 1.5;
-    this._weightedTackleHeightScale =
-      weightCfg.heightScale || stats.heightScale || 1.0;
     this._isSinking = true;
     this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
     this._sinkingTimer = this._sinkingTotalTime;

@@ -11,6 +11,7 @@ import { FightHudFrameBuilder } from "../../game/presentation/hud/fight_hud_fram
 import { FightHudRenderer } from "../../game/presentation/hud/fight_hud_renderer.js";
 import { FightStatusBarsRenderer } from "../../game/presentation/hud/fight_status_bars_renderer.js";
 import { FishingEquipmentRenderModelBuilder } from "../../game/presentation/fishing/fishing_equipment_render_model_builder.js";
+import { FloatPoseAnimator } from "../../game/presentation/fishing/float_pose_animator.js";
 import { FishingRenderFrameBuilder } from "../../game/presentation/rendering/fishing_render_frame_builder.js";
 import { FishingRenderPass } from "../../game/presentation/rendering/fishing_render_pass.js";
 import { FishingSceneRenderer } from "../../game/presentation/fishing/fishing_scene_renderer.js";
@@ -98,7 +99,7 @@ export class GameRenderComposition {
     const rodLineRenderer = new RodLineRenderer({ surface });
     const rodStaticRenderer = new RodStaticRenderer({ surface });
     const rodSpineRenderer = new RodSpineRenderer({ surface, controller: rodAnimation, probe: this.#frameProbe });
-    const floatRenderer = new FloatRenderer({ surface });
+    const floatRenderer = new FloatRenderer({ surface, images: imageAssets });
     const fishingSceneRenderer = new FishingSceneRenderer({
       components: [
         new RenderComponent({
@@ -340,6 +341,8 @@ export class GameRenderComposition {
         getRodScreenX: appPorts.getRodScreenX,
         rodAnimation: runtime.rendering.rodAnimation.controller,
         getWind: () => runtime.env.getSnapshot()?.wind ?? null,
+        floatPose: new FloatPoseAnimator({ getConfig: () => config.physics?.floatPose }),
+        getWaterMetric: appPorts.getWaterMetric,
       }),
     });
     const outcomeBuilder = new OutcomeRenderFrameBuilder({

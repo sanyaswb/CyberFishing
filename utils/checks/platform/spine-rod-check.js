@@ -598,6 +598,7 @@ function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationCont
   const builder = new FishingEquipmentRenderModelBuilder({
     projector: {}, canvasMetrics: { width: 1280, height: 800 }, clock: { now: 1000, delta: 16 }, config: gameConfig,
     getRodScreenX: () => 610.5, rodAnimation: controller, getWind: () => ({ direction: 1, rainMult: 1 }),
+    floatPose: { advance: () => null }, getWaterMetric: () => null,
   });
   const lineFrame = { renderRatio: 0.73, renderDrop: 4.5, straightFactor: 0.4 };
   const floatPosition = { x: 900.25, y: 333.5 };

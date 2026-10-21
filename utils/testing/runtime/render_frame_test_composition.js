@@ -16,6 +16,8 @@ function checkRenderFrameComposition() {
     ["src/game/presentation/fishing/fishing_equipment_render_model_builder.js",'FishingEquipmentRenderModelBuilder'],["src/game/presentation/rendering/fishing_render_frame_builder.js",'FishingRenderFrameBuilder'],
     ["src/game/presentation/rendering/game_render_frame_builder.js",'GameRenderFrameBuilder'],["src/game/presentation/rendering/landing_area_render_frame_builder.js",'LandingAreaRenderFrameBuilder'],
     ["src/game/presentation/screens/outcome_render_frame_builder.js",'OutcomeRenderFrameBuilder'],["src/game/presentation/rendering/world_render_frame_builder.js",'WorldRenderFrameBuilder'],["src/game/presentation/rendering/game_render_intent.js",'GameRenderIntent'],["src/game/presentation/rendering/game_render_coordinator.js",'GameRenderCoordinator']];
+  runtime.load('src/engine/animation/damped_spring.js',{expose:['DampedSpring']});
+  runtime.load('src/game/presentation/fishing/float_pose_animator.js',{expose:['FloatPoseAnimator']});
   runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
   runtime.load('src/game/presentation/hud/tackle_stress_bar_visibility.js',{expose:['TackleStressBarVisibility']});
   for(const [file,name]of definitions)runtime.load(file,{expose:[name]});
@@ -29,7 +31,8 @@ function checkRenderFrameComposition() {
   const debug={poleFightSectorActive:true,poleFightSectorOriginX:400,poleFightSectorOriginY:600,poleFightSectorApexX:400,poleFightSectorApexY:600,poleFightSectorMaxAngleDeg:30,poleFightSectorLimitRadiusPx:300,poleFightSectorLeftBoundaryRadiusIntersectionX:250,poleFightSectorLeftBoundaryRadiusIntersectionY:340,poleFightSectorRightBoundaryRadiusIntersectionX:550,poleFightSectorRightBoundaryRadiusIntersectionY:340,lastDash:{triggerDistanceMeters:1},rodStrokeRatio:0.5,rodStrokeCapacityMeters:2,rodStrokeUnrecoveredMeters:1,rodControlInputRatio:0.5,rodControlInputDirectionX:1,rodControlActive:true,dragSupported:true,dragLimitKg:1,playerPressureFatigueEnabled:true,playerPressureFatigueState:'recovering',playerPressureFatigueProgress:0.5};
   const tension={getFightFrame:()=>debug,getTension:()=>50,getTensionKg:()=>1,getEffectiveMaxTackleLoadKg:()=>2,getPulseIntensity:()=>0.2,getStressRatio:()=>0.3,getBreakTargetReason:()=>null,getBreakReason:()=>null};
   const equipment={rod:{variant:'float'},reel:{},float:{effectiveStats:{width:3,length:15}},baits:[{}],feederRig:{}};
-  const float={getPosition:()=>({x:250,y:300}),getVisualState:()=>({color:'#f00',scaleY:1,angle:10}),isHooked:()=>false};
+  const poseSignals={castSerial:1,angleDeg:10,scaleY:1,isBiteTilt:false,load:1,lyingSide:1,restDraft:0,windDeg:0,lineX:0,lineY:0,waterX:0,waterY:0};
+  const float={getPosition:()=>({x:250,y:300}),getVisualState:()=>({color:'#f00'}),getPoseSignals:()=>poseSignals,isHooked:()=>false};
   const holdState={hasHold:true,max:3,current:1,isActive:true,restoring:[500],restoreMaxTime:1000};
   const chum={getZones:()=>[{isDelivered:true,isExpired:false,x:100,y:100,baseRadius:40,currentBonus:0.5,baitConfig:{minBonus:0,maxBonus:1}}],getBoats:()=>[{pos:{x:200,y:200},angle:0,energy:50,stats:{maxEnergy:100},config:{emoji:'boat'},state:'deploying',target:{x:300,y:300},waypoints:[{x:350,y:350}],sensorRays:[{startX:200,startY:200,endX:300,endY:300,isBlocked:false}]}]};
   const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:600,topY:0});
@@ -55,7 +58,9 @@ function checkRenderFrameComposition() {
   const rodAnchor={mode:'rectangle',baseX:0,baseY:0,tipX:0,tipY:0,scale:1,destX:0,destY:0,image:null,region:null,bounds:null};
   const rodAnimation={setSkin(){},advance(context){rodAnchor.baseX=rodAnchor.tipX=context.baseX;rodAnchor.baseY=context.baseY;rodAnchor.tipY=context.baseY-200;return rodAnchor;}};
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,getWind:()=>null}),/requires rodAnimation/);
-  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null});
+  const floatPose=new c.FloatPoseAnimator({getConfig:()=>({})});
+  assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,getWaterMetric:()=>waterMetric}),/requires floatPose/);
+  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,getWaterMetric:()=>waterMetric});
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
   let castRodMovement=null;
   const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastRodMovement:()=>castRodMovement,getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});

@@ -1,4 +1,5 @@
 {
+  "ui.float.displayScale": { "label": "Масштаб поплавка", "description": "Множник розміру поплавка на воді: 2 — удвічі більший за довжину й ширину предмета. Поплавок із картинкою зберігає її пропорції. Застосовується одразу." },
   "ui.inventorySelector": { "label": "Селектор інвентарю", "description": "Альтернативні кнопки відкриття чинних розділів інвентарю." },
   "ui.inventorySelector.radialEnabled": { "label": "Радіальний вибір інвентарю", "description": "Вимкнено — класичні кнопки рюкзака й садка. Увімкнено — одна кнопка та три сектори. За замовчуванням увімкнено. Застосовується одразу." },
   "ui.inventorySelector.size": { "label": "Початковий розмір", "description": "Розмір закритої кнопки: 1 — стандартний, 2 — середній, 3 — великий. За замовчуванням 1. Застосовується одразу." },
@@ -525,77 +526,69 @@
     "label": "Бонус закидання від підшипників котушки",
     "description": "Скільки коефіцієнта дальності додають підшипники/якість котушки."
   },
-  "physics.floatMotion.enabled": {
-    "label": "Увімкнути motion поплавка",
-    "description": "Вмикає нахил/реакцію поплавка на рух, занурення і pull impulse."
+  "physics.floatPose.enabled": {
+    "label": "Фізика пози поплавка",
+    "description": "Вмикає нахил від сил (рух, ліска, риба, вітер) і пружини. Вимкнено: поплавок показує лише задуманий нахил (лежить, встає, кльов) без сил і переходів."
   },
-  "physics.floatMotion.minSpeedPxPerSec": {
-    "label": "Мінімальна швидкість нахилу поплавка",
-    "description": "Нижній поріг швидкості, після якого motion-нахил поплавка стає помітним."
+  "physics.floatPose.lyingAngleDeg": {
+    "label": "Кут лежачого поплавка, °",
+    "description": "Нахил після закиду, поки грузило не потонуло, і при перевищенні глибини. Також межа нахилу."
   },
-  "physics.floatMotion.speedForMaxTiltPxPerSec": {
-    "label": "Швидкість максимального нахилу поплавка",
-    "description": "Швидкість, на якій поплавок досягає maxAngleDeg."
+  "physics.floatPose.minStandUpDurationMs": {
+    "label": "Мінімальний час підйому, мс",
+    "description": "Поплавок встає не швидше за цей час, навіть на малій глибині."
   },
-  "physics.floatMotion.maxAngleDeg": {
-    "label": "Максимальний кут нахилу поплавка",
-    "description": "Найбільший кут нахилу поплавка від motion."
+  "physics.floatPose.pullLateralDeadZone": {
+    "label": "Мертва зона бічної тяги",
+    "description": "Частка бічної складової тяги, нижче якої лежачий поплавок не перекидається на інший бік."
   },
-  "physics.floatMotion.sinkingStartAngleDeg": {
-    "label": "Кут початку занурення",
-    "description": "Кут, з якого візуально починається стан занурення/переходу поплавка."
+  "physics.floatPose.naturalFrequencyHz": {
+    "label": "Частота пружини нахилу, Гц",
+    "description": "Як швидко поплавок вирівнюється й відповідає на сили. Більше — швидше і жорсткіше."
   },
-  "physics.floatMotion.minStandUpDurationMs": {
-    "label": "Мінімальний час вирівнювання поплавка",
-    "description": "Мінімальна тривалість повернення поплавка до вертикального стану."
+  "physics.floatPose.dampingRatio": {
+    "label": "Загасання нахилу",
+    "description": "Менше 1 — невелике погойдування після ривка; 1 — без перехльосту."
   },
-  "physics.floatMotion.responseSpeed": {
-    "label": "Швидкість реакції поплавка",
-    "description": "Наскільки швидко поплавок реагує на зміну цільового нахилу."
+  "physics.floatPose.stabilityMin": {
+    "label": "Стійкість без навантаження",
+    "description": "Частка жорсткості поплавка, який не тримає грузило (лежить або піднятий рибою)."
   },
-  "physics.floatMotion.settleSpeed": {
-    "label": "Швидкість заспокоєння поплавка",
-    "description": "Наскільки швидко поплавок стабілізується після руху/імпульсу."
+  "physics.floatPose.maxForceTiltDeg": {
+    "label": "Максимальний нахил від сил, °",
+    "description": "М'яка межа суми сил: нахил наближається до неї плавно, без стрибка."
   },
-  "physics.floatMotion.pullTiltMultiplier": {
-    "label": "Множник нахилу від pull",
-    "description": "Множить нахил поплавка під час активного підтягування."
+  "physics.floatPose.maxInputSpeedMetersPerSec": {
+    "label": "Максимальна швидкість для нахилу, м/с",
+    "description": "Швидкість руху у воді вище цієї не збільшує нахил; утричі більша вважається стрибком позиції."
   },
-  "physics.floatMotion.pullImpulseOvershootDeg": {
-    "label": "Overshoot імпульсу pull",
-    "description": "Додатковий кутовий overshoot при різкому pull-імпульсі."
+  "physics.floatPose.gains.motion": {
+    "label": "Множник руху, °/(м/с)",
+    "description": "Градусів нахилу на 1 м/с руху відносно води. Кінчик відстає від руху."
   },
-  "physics.floatMotion.pullImpulseResponseSpeed": {
-    "label": "Швидкість реакції pull-імпульсу",
-    "description": "Як швидко поплавок набирає імпульсний нахил від pull."
+  "physics.floatPose.gains.line": {
+    "label": "Множник ліски, °",
+    "description": "Нахил при повній тязі ліски до вудки або бічному русі вудки. Кінчик відхиляється від тяги."
   },
-  "physics.floatMotion.pullImpulseDecaySpeed": {
-    "label": "Згасання pull-імпульсу",
-    "description": "Як швидко згасає додатковий pull-імпульс поплавка."
+  "physics.floatPose.gains.fish": {
+    "label": "Множник риби",
+    "description": "Множить нахил кроків кльову з даних риби (1 — як задано)."
   },
-  "physics.floatMotion.pullImpulseLateralDeadZone": {
-    "label": "Deadzone бокового pull-імпульсу",
-    "description": "Мертва зона бокового компонента pull-імпульсу."
+  "physics.floatPose.gains.wind": {
+    "label": "Множник вітру",
+    "description": "Множить нахил від бризу й поривів локації (1 — як задано)."
   },
-  "physics.floatMotion.pullImpulseDepthDeadZone": {
-    "label": "Deadzone глибинного pull-імпульсу",
-    "description": "Мертва зона вертикального/глибинного компонента pull-імпульсу."
+  "physics.floatPose.draft.naturalFrequencyHz": {
+    "label": "Частота занурення, Гц",
+    "description": "Як швидко поплавок занурюється й спливає."
   },
-  "physics.floatMotion.pullImpulseDepthScaleDrop": {
-    "label": "Зменшення pull-імпульсу за глибиною",
-    "description": "Наскільки глибина зменшує видимий pull-імпульс поплавка."
+  "physics.floatPose.draft.dampingRatio": {
+    "label": "Загасання занурення",
+    "description": "Менше 1 — поплавок трохи пружинить після занурення."
   },
-  "physics.floatMotion.lateralInfluence": {
-    "label": "Боковий вплив на нахил поплавка",
-    "description": "Вага бокового руху у формуванні нахилу поплавка."
-  },
-  "physics.floatMotion.verticalInfluence": {
-    "label": "Вертикальний вплив на нахил поплавка",
-    "description": "Вага вертикального руху у формуванні нахилу поплавка."
-  },
-  "physics.floatMotion.verticalTiltSign": {
-    "label": "Знак вертикального нахилу",
-    "description": "Напрямок, у який вертикальний рух нахиляє поплавок."
+  "physics.floatPose.draft.linePull": {
+    "label": "Занурення від тяги ліски",
+    "description": "Частка тіла, на яку повна тяга ліски притоплює поплавок."
   },
   "fish.physics.forceProfile.basePower": {
     "label": "Базова сила виду риби",

@@ -496,6 +496,12 @@ export const CONFIG = {
       feederBite: "assets/audio/bell_ring.mp3",
     },
 
+    // The float on the water (spec 127), presentation only: displayScale multiplies its drawn size (2 = twice the
+    // item's length and width; an image float keeps its art's proportions).
+    float: {
+      displayScale: 2,
+    },
+
     rod: {
       x: "center",
       yOffset: 0,

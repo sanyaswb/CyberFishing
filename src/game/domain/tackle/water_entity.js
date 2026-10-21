@@ -18,10 +18,11 @@ export class WaterEntity {
 
   _currentColor;
   _baseColor;
+  // The tackle's intended lean and height share: lying after the cast, standing up, bite steps (eased). The drawn
+  // float pose adds the forces to these (FloatPoseAnimator, spec 127); they also tell the wind that a bite is active.
   _currentAngle = 0;
   _currentScaleY = 1.0;
-  _perspectiveScale = 1.0;
-  _weightedTackleHeightScale = 1.0;
+  _visualState = { color: "" };
 
   _sequenceQueue = [];
   _animTimer = 0;
@@ -36,15 +37,12 @@ export class WaterEntity {
   _stepId = 0;
   _isOverDepth = false;
 
-  _windAngleOffset = 0;
+  // The wind's lean on the float's antenna in degrees (gust schedule below); the drawn pose smooths it.
   _targetWindAngle = 0;
   _windTimer = 0;
   _windFluctuationTimer = 0;
-  _motionTiltEnabled = false;
-  _motionTiltAngle = 0;
-  _pullImpulseAngle = 0;
-  _pullImpulseScaleY = 1;
-  _pullImpulseSign = 0;
+  // The water's own velocity under the tackle this frame (the location current), in update-plane pixels per second.
+  _waterVelocity;
   _weightedTackleConfig = null;
   _sinkingStartAngle = 90;
   _isPlayerPullingThisFrame = false;
@@ -71,6 +69,7 @@ export class WaterEntity {
     this._velocity = new Vector2(0, 0);
     this._currentBiteMoveVelocity = new Vector2(0, 0);
     this._forceScratch = new Vector2(0, 0);
+    this._waterVelocity = new Vector2(0, 0);
     this._config = config;
     this._rng = rng || { next: () => Math.random() };
     this._debugEvents = debugEvents || null;
@@ -240,7 +239,7 @@ export class WaterEntity {
     // Do not run the generic WaterEntity damping on this movement frame.
     this._velocity.set(targetVelocityX, targetVelocityY);
 
-    this._resetPassiveWindMotion(dt);
+    this._resetPassiveWindMotion();
 
     const prevX = this._position.x;
     const prevY = this._position.y;
@@ -272,7 +271,6 @@ export class WaterEntity {
 
     const movedX = this._position.x - prevX;
     const movedY = this._position.y - prevY;
-    this._updateMotionTilt(dt, movedX, movedY);
     this._afterPhysicsUpdate(checkWater);
 
     if (this._isBiting && typeof this.updateBite === "function") {
@@ -311,6 +309,8 @@ export class WaterEntity {
       if (cell) bottomDepth = cell.depth;
     }
 
+    this._recordPoseInputs(input, pullDirection);
+
     if (!this._isHooked) {
       if (!this._isBiting || isSpinningLure) {
         this._processMechanics(
@@ -334,6 +334,9 @@ export class WaterEntity {
 
   _processMechanics(dt, input, reelPower, pullDirection) {}
 
+  // Every frame of update(), whatever the state: the inputs a drawn pose reads (FloatEntity records the line pull).
+  _recordPoseInputs(input, pullDirection) {}
+
   _afterPhysicsUpdate(checkWater) {}
 
   // The composition passes the live runtime config object; its adapter is read on every call, so
@@ -346,13 +349,8 @@ export class WaterEntity {
     return this._fightPhysicsConfig()?.getPassiveRetrieveConfig?.() || {};
   }
 
-  _floatMotionConfig() {
-    const physicsConfig = this._fightPhysicsConfig();
-    return (
-      physicsConfig?.getFloatMotionConfig?.() ||
-      (physicsConfig?.getDistanceConfig?.() || {}).floatMotion ||
-      {}
-    );
+  _floatPoseConfig() {
+    return this._fightPhysicsConfig()?.getFloatPoseConfig?.() || {};
   }
 
   _lureRetrieveConfig() {
@@ -388,15 +386,10 @@ export class WaterEntity {
     };
   }
 
-  _resetPassiveWindMotion(dt) {
+  _resetPassiveWindMotion() {
     this._targetWindAngle = 0;
     this._windTimer = 0;
     this._windFluctuationTimer = 0;
-    this._windAngleOffset = this._lerp(
-      this._windAngleOffset,
-      this._targetWindAngle,
-      dt * 0.005,
-    );
   }
 
   _applyPhysics(boundsRect, checkWater, dt, environment) {
@@ -404,6 +397,11 @@ export class WaterEntity {
     const drift = this._calculateEnvironmentDrift(dtSec, environment);
     const driftDx = drift.x;
     const driftDy = drift.y;
+    const current = environment?.current;
+    this._waterVelocity.set(
+      current ? current.direction.x * current.speedPxPerSec : 0,
+      current ? current.direction.y * current.speedPxPerSec : 0,
+    );
 
     if (!this._isHooked && environment) {
       const isActivelyPulling =
@@ -455,24 +453,15 @@ export class WaterEntity {
       this._windFluctuationTimer = 0;
     }
 
-    this._windAngleOffset = this._lerp(
-      this._windAngleOffset,
-      this._targetWindAngle,
-      dt * 0.005,
-    );
-
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
       this._config.type,
     );
 
     if (this._isBiting && !isSpinningLure) {
       this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
-      this._updateMotionTilt(dt, 0, 0);
       return;
     }
 
-    const prevX = this._position.x;
-    const prevY = this._position.y;
     let nextX = this._position.x + this._velocity.x * dtSec + driftDx;
     let nextY = this._position.y + this._velocity.y * dtSec + driftDy;
 
@@ -492,74 +481,14 @@ export class WaterEntity {
       Math.max(boundsRect.top, Math.min(boundsRect.bottom, nextY)),
     );
 
-    this._updateMotionTilt(
-      dt,
-      this._position.x - prevX,
-      this._position.y - prevY,
-    );
-
     this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
   }
 
-  _updateMotionTilt(dt, moveX, moveY) {
-    if (!this._motionTiltEnabled) return;
-
-    const cfg = this._floatMotionConfig();
-    if (cfg.enabled === false) {
-      this._motionTiltAngle = 0;
-      return;
-    }
-
-    const dtSec = Math.max(0.001, dt / 1000);
-    const speed = Math.hypot(moveX, moveY) / dtSec;
-    const minSpeed = cfg.minSpeedPxPerSec ?? 2;
-    let targetAngle = 0;
-
-    if (speed >= minSpeed) {
-      const lateralInfluence = cfg.lateralInfluence ?? 1.0;
-      const verticalInfluence = cfg.verticalInfluence ?? 0.35;
-      const verticalTiltSign = cfg.verticalTiltSign ?? 1;
-      const tiltAxis =
-        moveX * lateralInfluence + moveY * verticalInfluence * verticalTiltSign;
-
-      if (Math.abs(tiltAxis) > 0.001) {
-        const maxAngle = cfg.maxAngleDeg ?? 24;
-        const speedForMax = Math.max(1, cfg.speedForMaxTiltPxPerSec ?? 120);
-        const speedRatio = Math.min(1, speed / speedForMax);
-        const pullMultiplier = this._isPlayerPullingThisFrame
-          ? (cfg.pullTiltMultiplier ?? 1.2)
-          : 1.0;
-
-        targetAngle =
-          -Math.sign(tiltAxis) *
-          Math.min(maxAngle, maxAngle * speedRatio * pullMultiplier);
-      }
-    }
-
-    const isGrowing = Math.abs(targetAngle) > Math.abs(this._motionTiltAngle);
-    const smoothing = isGrowing
-      ? (cfg.responseSpeed ?? 12)
-      : (cfg.settleSpeed ?? 7);
-    const alpha = 1 - Math.exp(-Math.max(0, smoothing) * dtSec);
-    this._motionTiltAngle += (targetAngle - this._motionTiltAngle) * alpha;
-  }
-
+  // The colour of the tackle (bite colours included), in a reused record. The float's lean and submersion come from
+  // FloatEntity.getPoseSignals() through FloatPoseAnimator (spec 127).
   getVisualState() {
-    let finalAngle = this._currentAngle;
-    if (!this._isHooked && !this._isBiting) {
-      finalAngle += this._windAngleOffset;
-      finalAngle += this._motionTiltAngle;
-      finalAngle += this._pullImpulseAngle;
-    }
-    return {
-      color: this._currentColor,
-      angle: finalAngle,
-      scaleY:
-        this._currentScaleY *
-        this._weightedTackleHeightScale *
-        this._pullImpulseScaleY,
-      perspectiveScale: this._perspectiveScale,
-    };
+    this._visualState.color = this._currentColor;
+    return this._visualState;
   }
 
   isGuaranteedBite() {
@@ -604,8 +533,6 @@ export class WaterEntity {
     this._isBiting = false;
     this._velocity.set(0, 0);
     this._currentBiteMoveVelocity.set(0, 0);
-    this._pullImpulseAngle = 0;
-    this._pullImpulseScaleY = 1;
     this._biteMoveTimer = 0;
   }
 
@@ -674,8 +601,6 @@ export class WaterEntity {
     this._currentAngle = this._isOverDepth ? this._sinkingStartAngle : 0;
     this._currentScaleY = 1.0;
     this._currentColor = this._baseColor;
-    this._pullImpulseAngle = 0;
-    this._pullImpulseScaleY = 1;
     this._biteMoveTimer = 0;
   }
 

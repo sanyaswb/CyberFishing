@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-113 The float leans by hand-written angles: wrong sideways lean, jumps, stretching (P2, implemented in v0.46.0)
+Found: 2026-10-21, owner, float review.
+Reproduce: retrieve straight toward the player (the float turns sideways: `moveY` mixed into roll); the same ground speed near and far leans differently (pixels per second); bite start/end, hook and stop snap the angle; a rise bite or heavy ballast stretches/shrinks the bar.
+Expected: the tip leans away from the line or fish pull and lags the motion; sideways components turn roll, the depth component foreshortens; smooth springs at any frame rate; the body sinks, never stretches; a few general multipliers.
+Resolution: [127](../specs/127-float-pose-physics/spec.md). `FloatPoseAnimator` (presentation) sums motion through the water in ground metres, line pull, fish and wind with `CONFIG.physics.floatPose` gains into damped springs for roll, pitch and draft; the rig's intended lean, bite timing and random numbers are unchanged. Ballast `heightScale` became `restDraft`.
+Evidence: `float-pose` check (signs, diagonal, metric independence, continuity, 30/60/144 FPS, draft, lying/standing/over-depth, reuse) and migrated `rod-side-tension`; Full 66/66, game-cycle baseline unchanged. Owner play check and phone performance pending.
+
 ### G-112 Exact water length is replaced by confusing camera-dependent metres (P2, implemented in v0.45.43)
 Found: 2026-10-21, owner, v0.45.42 screenshot.
 Reproduce: enter 30 m water and tilt 30 degrees; camera distance 30 reports 112 m, distance 900 reports 61.7 m. The 10 m aim line sits near shore and the overhead-reference control changes the meaning of length.

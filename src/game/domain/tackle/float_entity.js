@@ -1,24 +1,31 @@
 import { WaterEntity } from "./water_entity.js";
 
+// The float rig: after the cast it lies on the water and stands up as the shot sinks to the selected depth; over the
+// bottom (over-depth) it keeps lying. Its drawn lean and submersion are not written here: getPoseSignals() hands the
+// intended lean, the load and the forces to FloatPoseAnimator (spec 127), which adds them up through damped springs.
 export class FloatEntity extends WaterEntity {
-  _motionTiltEnabled = true;
   _isSinking = false;
   _sinkingTotalTime = 0;
   _sinkingVisualElapsed = 0;
-  _lateralPullDirection = { x: 0, y: 0 };
   _sinkingDelayTimer = 0;
+  _castSerial = 0;
+  _restDraft = 0;
+  _linePull = { x: 0, y: 0 };
+  _poseSignals = {
+    castSerial: 0, angleDeg: 0, scaleY: 1, isBiteTilt: false, load: 1, lyingSide: 1, restDraft: 0, windDeg: 0,
+    lineX: 0, lineY: 0, waterX: 0, waterY: 0,
+  };
 
-  cast(x, y, targetDepth, isOverDepth, ballastConfig, distanceRatio) {
+  cast(x, y, targetDepth, isOverDepth, ballastConfig) {
     this._position.set(x, y);
     this._velocity.set(0, 0);
-    this._motionTiltAngle = 0;
-    this._pullImpulseAngle = 0;
-    this._pullImpulseScaleY = 1;
-    this._pullImpulseSign = 0;
     this._sinkingVisualElapsed = 0;
     this._isHooked = false;
     this._isBiting = false;
     this.stopBite();
+    this._castSerial += 1;
+    this._linePull.x = 0;
+    this._linePull.y = 0;
 
     this._targetHookDepth = Math.max(
       this._lureRetrieveConfig().defaultSurfaceDepthMeters ?? 0.1,
@@ -35,11 +42,8 @@ export class FloatEntity extends WaterEntity {
         : stats;
 
     const speedMult = weightCfg.speedMult || 1.0;
-    this._weightedTackleHeightScale = weightCfg.heightScale || 1.0;
-
-    const pRange = this._config.perspectiveScaleRange || [1.3, 0.7];
-    this._perspectiveScale =
-      pRange[0] + distanceRatio * (pRange[1] - pRange[0]);
+    // Share of the body under water at rest: heavier ballast sinks the same float deeper (spec 127).
+    this._restDraft = Math.max(0, Math.min(1, Number(weightCfg.restDraft) || 0));
 
     this._isSinking = true;
     this._sinkingDelayTimer = this._config.sinkingDelayMs || 500;
@@ -54,25 +58,45 @@ export class FloatEntity extends WaterEntity {
 
     this._sinkingTotalTime = baseSinkingTime / speedMult;
 
-    const startAngle = this._floatMotionConfig().sinkingStartAngleDeg ?? 90;
+    const startAngle = this._floatPoseConfig().lyingAngleDeg ?? 90;
     this._sinkingStartAngle = this._chance(0.5) ? startAngle : -startAngle;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
+  }
+
+  // The intended lean and submersion, the load and the forces of this frame, in a reused record. Line pull and water
+  // velocity are in the update plane (ground base pixels on a perspective water; spec 053), x sideways, y toward the
+  // shore; the line pull is a unit share along the line toward the rod.
+  getPoseSignals() {
+    const signals = this._poseSignals;
+    signals.castSerial = this._castSerial;
+    signals.angleDeg = this._currentAngle;
+    signals.scaleY = this._currentScaleY;
+    signals.isBiteTilt = this._isBiting && !this._isOverDepth;
+    signals.load = this._isOverDepth ? 0 : this._isSinking ? this._getSinkingDepthProgress() : 1;
+    signals.lyingSide = this._sinkingStartAngle < 0 ? -1 : 1;
+    signals.restDraft = this._restDraft;
+    signals.windDeg = this._isHooked ? 0 : this._targetWindAngle;
+    signals.lineX = this._linePull.x;
+    signals.lineY = this._linePull.y;
+    signals.waterX = this._waterVelocity.x;
+    signals.waterY = this._waterVelocity.y;
+    return signals;
+  }
+
+  // The line pulls the float's bottom toward the rod while the player retrieves; a sideways rod move pulls it to
+  // that side (spec 100 floatTilt).
+  _recordPoseInputs(input, pullDirection) {
+    const lateral = Math.sign(Number(input?.castRodDeltaX) || 0);
+    const isPulling = !!(input?.isPulling && pullDirection);
+    this._linePull.x = lateral !== 0 ? lateral : isPulling ? pullDirection.x : 0;
+    this._linePull.y = lateral !== 0 ? 0 : isPulling ? pullDirection.y : 0;
   }
 
   _processMechanics(dt, input, reelPower, pullDirection) {
     const isPulling = !!(input.isPulling && pullDirection);
     if (isPulling) {
       this._redirectSinkingAngleFromPull(pullDirection);
-    }
-
-    const lateralDirection = Math.sign(Number(input.castRodDeltaX) || 0);
-    this._lateralPullDirection.x = lateralDirection;
-    this._updatePullImpulseTilt(dt,
-      lateralDirection !== 0 ? this._lateralPullDirection : pullDirection,
-      isPulling || lateralDirection !== 0);
-
-    if (isPulling) {
       this._advanceSinkingVisual(dt);
       this._applyPassiveRetrieve(dt, pullDirection, input.idleRetrieveParams);
       this._syncSinkingAngleToDepth();
@@ -116,13 +140,15 @@ export class FloatEntity extends WaterEntity {
     }
   }
 
+  // A pull turns a lying float to the side away from the pull, as the line drags its bottom.
   _redirectSinkingAngleFromPull(pullDirection) {
     if (!this._isSinking && !this._isOverDepth) return;
-    const impulseSign = this._getPullImpulseSign(pullDirection);
+    const pullX = pullDirection?.x || 0;
+    const deadZone = this._floatPoseConfig().pullLateralDeadZone ?? 0.02;
+    const impulseSign = Math.abs(pullX) > deadZone ? -Math.sign(pullX) : 0;
     if (impulseSign !== 0) {
       this._sinkingStartAngle =
         impulseSign * Math.abs(this._sinkingStartAngle || 90);
-      this._pullImpulseSign = impulseSign;
     }
 
     if (this._isOverDepth) {
@@ -160,7 +186,7 @@ export class FloatEntity extends WaterEntity {
           );
 
     const minDuration =
-      this._floatMotionConfig().minStandUpDurationMs ?? 400;
+      this._floatPoseConfig().minStandUpDurationMs ?? 400;
     if (minDuration <= 0) return depthProgress;
 
     const timeProgress = Math.max(
@@ -168,47 +194,5 @@ export class FloatEntity extends WaterEntity {
       Math.min(1, this._sinkingVisualElapsed / minDuration),
     );
     return Math.min(depthProgress, timeProgress);
-  }
-
-  _updatePullImpulseTilt(dt, pullDirection, isPulling) {
-    const cfg = this._floatMotionConfig();
-    if (cfg.enabled === false) {
-      this._pullImpulseAngle = 0;
-      return;
-    }
-
-    const dtSec = Math.max(0.001, dt / 1000);
-    let targetAngle = 0;
-    let targetScaleY = 1;
-
-    if (isPulling) {
-      const impulseSign = this._getPullImpulseSign(pullDirection);
-      if (impulseSign !== 0) {
-        this._pullImpulseSign = impulseSign;
-        targetAngle = impulseSign * (cfg.pullImpulseOvershootDeg ?? 14);
-      }
-
-      const pullDepth = Math.abs(pullDirection?.y || 0);
-      const depthDeadZone = cfg.pullImpulseDepthDeadZone ?? 0.02;
-      if (pullDepth > depthDeadZone) {
-        const maxDrop = cfg.pullImpulseDepthScaleDrop ?? 0.45;
-        targetScaleY = Math.max(0.2, 1 - pullDepth * maxDrop);
-      }
-    }
-
-    const speed = isPulling
-      ? (cfg.pullImpulseResponseSpeed ?? 32)
-      : (cfg.pullImpulseDecaySpeed ?? 8);
-    const alpha = 1 - Math.exp(-Math.max(0, speed) * dtSec);
-    this._pullImpulseAngle += (targetAngle - this._pullImpulseAngle) * alpha;
-    this._pullImpulseScaleY +=
-      (targetScaleY - this._pullImpulseScaleY) * alpha;
-  }
-
-  _getPullImpulseSign(pullDirection) {
-    const cfg = this._floatMotionConfig();
-    const pullX = pullDirection?.x || 0;
-    const deadZone = cfg.pullImpulseLateralDeadZone ?? 0.02;
-    return Math.abs(pullX) > deadZone ? -Math.sign(pullX) : 0;
   }
 }

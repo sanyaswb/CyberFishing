@@ -6,6 +6,8 @@ export class FishingEquipmentRenderModelBuilder {
   #getRodScreenX;
   #rodAnimation;
   #getWind;
+  #floatPose;
+  #getWaterMetric;
   #anchor = null;
   #rodBaseX = 0;
   #rodBaseY = 0;
@@ -22,6 +24,8 @@ export class FishingEquipmentRenderModelBuilder {
     getRodScreenX,
     rodAnimation,
     getWind,
+    floatPose,
+    getWaterMetric,
   }) {
     if (typeof getRodScreenX !== "function") {
       throw new TypeError(
@@ -32,6 +36,12 @@ export class FishingEquipmentRenderModelBuilder {
       throw new TypeError("FishingEquipmentRenderModelBuilder requires rodAnimation");
     }
     if (typeof getWind !== "function") throw new TypeError("FishingEquipmentRenderModelBuilder requires getWind");
+    if (typeof floatPose?.advance !== "function") {
+      throw new TypeError("FishingEquipmentRenderModelBuilder requires floatPose");
+    }
+    if (typeof getWaterMetric !== "function") {
+      throw new TypeError("FishingEquipmentRenderModelBuilder requires getWaterMetric");
+    }
     this.#projector = projector;
     this.#canvasMetrics = canvasMetrics;
     this.#clock = clock;
@@ -39,6 +49,8 @@ export class FishingEquipmentRenderModelBuilder {
     this.#getRodScreenX = getRodScreenX;
     this.#rodAnimation = rodAnimation;
     this.#getWind = getWind;
+    this.#floatPose = floatPose;
+    this.#getWaterMetric = getWaterMetric;
   }
 
   // Once per frame before the line: rod base, the rod picture's step (spec 099) and its anchor, whose tip is where
@@ -148,11 +160,14 @@ export class FishingEquipmentRenderModelBuilder {
     target.lineWidth = lineWidth;
   }
 
+  // The float's body is drawn up from the waterline point: rotated by its roll, shortened by a lean toward or away
+  // from the viewer and by the share under water, never stretched (spec 127). An image float draws its art's top
+  // visibleShare (the part above the water) and, at night, an additive green glow of the tip. ui.float.displayScale
+  // multiplies its size. Other tackle keeps its shapes.
   buildFloat({ target, screenPosition, floatEntity, equipment }) {
     const visual = floatEntity.getVisualState();
-    const scale = this.#projector.getPerspective(
-      floatEntity.getPosition().y,
-    ).scale * this.#projector.getScale();
+    const position = floatEntity.getPosition();
+    const scale = this.#projector.getPerspective(position.y).scale * this.#projector.getScale();
     const rodType = equipment.rod?.variant || "float";
     let kind = "";
     if (floatEntity.isHooked()) kind = "hooked";
@@ -161,8 +176,11 @@ export class FishingEquipmentRenderModelBuilder {
     else if (equipment.float) kind = "float";
     if (!kind) return;
     const floatConfig = equipment.float || {};
-    const width = floatConfig.effectiveStats?.width || 3;
-    const length = floatConfig.effectiveStats?.length || 15;
+    const displayScale = Math.max(0, Number(this.#config.ui?.float?.displayScale) || 1);
+    const width = (floatConfig.effectiveStats?.width || 3) * displayScale;
+    const length = (floatConfig.effectiveStats?.length || 15) * displayScale;
+    const art = kind === "float" ? floatConfig.skin?.scene : null;
+    const waterline = Math.max(0.01, Math.min(1, Number(art?.waterline) || 1));
     target.visible = true;
     target.kind = kind;
     target.x = screenPosition.x;
@@ -171,14 +189,28 @@ export class FishingEquipmentRenderModelBuilder {
     target.glow =
       visual.color !== "#ffffff" && visual.color !== "#00ff80";
     target.glowBlur = 8 * scale;
+    target.imageId = art?.src || "";
+    target.tipGlowId = floatConfig.variant === "night" && art?.glow?.src ? art.glow.src : "";
+    target.tipGlowPad = Math.max(0, Number(art?.glow?.pad) || 0);
+    let rotationDeg = 0;
+    let foreshortening = 1;
+    let visibleShare = 1;
+    if (kind === "float" && typeof floatEntity.getPoseSignals === "function") {
+      const pose = this.#floatPose.advance({ signals: floatEntity.getPoseSignals(), position,
+        metric: this.#getWaterMetric(), dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
+        artDraft: art ? 1 - waterline : 0 });
+      rotationDeg = pose.rollDeg;
+      foreshortening = pose.foreshortening;
+      visibleShare = pose.visibleShare;
+    }
+    // The whole body: for an image float the item length is the antenna above the art's waterline.
+    target.bodyHeight = length / waterline * scale * foreshortening;
+    target.visibleShare = visibleShare;
     target.width = kind === "hooked" ? 3 * scale : width * scale;
-    target.height =
-      kind === "hooked"
-        ? 3 * scale
-        : length * scale * (visual.scaleY ?? 1);
+    target.height = kind === "hooked" ? 3 * scale : target.bodyHeight * visibleShare;
     target.radius = 2.5 * scale;
     target.radiusX = 6 * scale;
     target.radiusY = 3 * scale;
-    target.rotationRad = ((visual.angle || 0) * Math.PI) / 180;
+    target.rotationRad = (rotationDeg * Math.PI) / 180;
   }
 }

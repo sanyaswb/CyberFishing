@@ -216,6 +216,9 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
       "float.day": {
         quality: quality("EnvironmentalCompensationModifier"),
       },
+      "float.night": {
+        quality: quality("EnvironmentalCompensationModifier"),
+      },
       "net.landing": {
         rating: numeric("effectiveStats.maxWeight", 1, 10, {
           metricLabel: "Макс. вага",

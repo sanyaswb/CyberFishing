@@ -33,6 +33,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "float-pose",
+    title: "Float pose: lean from forces, springs, foreshortening and submersion (spec 127)",
+    file: "utils/checks/gameplay/float-pose-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "syntax",
     title: "JavaScript syntax",
     file: "utils/checks/architecture/check-js.js",

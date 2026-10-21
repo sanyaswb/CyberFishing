@@ -572,8 +572,8 @@ export class FightPhysicsConfigAdapter {
     };
   }
 
-  getFloatMotionConfig() {
-    return this.#physics().floatMotion || {};
+  getFloatPoseConfig() {
+    return this.#physics().floatPose || {};
   }
 
   getRodAnglePenaltyConfig() {

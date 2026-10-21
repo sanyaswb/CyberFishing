@@ -680,6 +680,15 @@ export const ITEM_DB = {
       variant: "day",
       icon: "🥢",
       iconUrl: "assets/items/floats/float-day.webp",
+      // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
+      // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
+      skin: {
+        id: "float-v1",
+        scene: {
+          src: "assets/items/floats-scene/float-day.webp",
+          waterline: 0.3,
+        },
+      },
       rarityProfile: {
         mode: "authored",
         tier: 4,
@@ -720,10 +729,76 @@ export const ITEM_DB = {
         sinkingReferenceDepthMeters: 10.0,
         currentCompensation: [0.1, 1.0],
         ballastWeight: "light",
+        // restDraft: share of the float under water at rest; heavier ballast sinks it deeper (spec 127).
         ballastProfiles: {
-          light: { speedMult: 1.0, heightScale: 1.0 },
-          medium: { speedMult: 1.5, heightScale: 0.85 },
-          heavy: { speedMult: 2.0, heightScale: 0.7 },
+          light: { speedMult: 1.0, restDraft: 0 },
+          medium: { speedMult: 1.5, restDraft: 0.15 },
+          heavy: { speedMult: 2.0, restDraft: 0.3 },
+        },
+      },
+    },
+    float_night: {
+      id: "float_night",
+      name: "Нічний поплавок",
+      itemType: "float",
+      variant: "night",
+      icon: "🥢",
+      iconUrl: "assets/items/floats/float-day.webp",
+      // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
+      // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
+      skin: {
+        id: "float-v1",
+        scene: {
+          src: "assets/items/floats-scene/float-day.webp",
+          waterline: 0.3,
+          glow: { src: "assets/items/floats-scene/float-day-glow.webp", pad: 8 },
+        },
+      },
+      rarityProfile: {
+        mode: "authored",
+        tier: 4,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "float.night" },
+      requiresTag: "float",
+      displayStats: {
+        variant: {
+          key: "variant",
+          label: "Тип",
+          map: { day: "Денний", night: "Нічний" },
+        },
+        windCompensation: "Компенсація:",
+        mount: {
+          label: "Кріплення",
+          map: { fixed: "Глухий", sliding: "Ковзний" },
+        },
+        ballastWeight: {
+          label: "Огрузка",
+          map: { light: "Легка", medium: "Середня", heavy: "Важка" },
+        },
+        width: "Ширина: мм",
+        length: "Довжина: см",
+      },
+
+      gameplayStats: {
+        // fixed: the selected depth hangs below the float and shortens the cast by that much line.
+        mount: "fixed",
+        width: 3,
+        length: 15,
+        quality: 10.0,
+        windCompensation: [0.1, 1.0],
+        overDepthPenaltyMult: 0.5,
+        sinkingDelayMs: 500,
+        sinkingDurationMs: 4000,
+        sinkingReferenceDepthMeters: 10.0,
+        currentCompensation: [0.1, 1.0],
+        ballastWeight: "light",
+        // restDraft: share of the float under water at rest; heavier ballast sinks it deeper (spec 127).
+        ballastProfiles: {
+          light: { speedMult: 1.0, restDraft: 0 },
+          medium: { speedMult: 1.5, restDraft: 0.15 },
+          heavy: { speedMult: 2.0, restDraft: 0.3 },
         },
       },
     },
@@ -733,6 +808,15 @@ export const ITEM_DB = {
       itemType: "float",
       variant: "day",
       icon: "🪶",
+      // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
+      // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
+      skin: {
+        id: "float-v1",
+        scene: {
+          src: "assets/items/floats-scene/float-day.webp",
+          waterline: 0.3,
+        },
+      },
       rarityProfile: {
         mode: "authored",
         tier: 4,
@@ -773,10 +857,11 @@ export const ITEM_DB = {
         sinkingReferenceDepthMeters: 10.0,
         currentCompensation: [0.1, 1.0],
         ballastWeight: "light",
+        // restDraft: share of the float under water at rest; heavier ballast sinks it deeper (spec 127).
         ballastProfiles: {
-          light: { speedMult: 1.0, heightScale: 1.0 },
-          medium: { speedMult: 1.5, heightScale: 0.85 },
-          heavy: { speedMult: 2.0, heightScale: 0.7 },
+          light: { speedMult: 1.0, restDraft: 0 },
+          medium: { speedMult: 1.5, restDraft: 0.15 },
+          heavy: { speedMult: 2.0, restDraft: 0.3 },
         },
       },
     },

@@ -216,7 +216,8 @@ export class PixiSceneLayer {
       this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
       this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
-      this.#float = new PixiFloatRenderer({ pixi: this.#pixi, stage: app.stage, documentTarget: this.#documentTarget });
+      this.#float = new PixiFloatRenderer({ pixi: this.#pixi, stage: app.stage, documentTarget: this.#documentTarget,
+        textures: this.#textures });
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);

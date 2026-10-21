@@ -11,25 +11,30 @@ export const SIMULATION_PHYSICS_CONFIG = {
   maxDtMs: 50,
 };
 
-export const FLOAT_MOTION_PHYSICS_CONFIG = {
+// The float's pose (spec 127). The tackle rules read lyingAngleDeg, minStandUpDurationMs and pullLateralDeadZone (when
+// the float lies, stands up and which side a pull turns it to); FloatPoseAnimator draws the pose from the rest: one
+// damped spring per axis toward the summed lean of the forces, each force scaled by its gain.
+export const FLOAT_POSE_PHYSICS_CONFIG = {
   enabled: true,
-  minSpeedPxPerSec: 2,
-  speedForMaxTiltPxPerSec: 120,
-  maxAngleDeg: 24,
-  sinkingStartAngleDeg: 90,
+  lyingAngleDeg: 90,
   minStandUpDurationMs: 400,
-  responseSpeed: 12,
-  settleSpeed: 7,
-  pullTiltMultiplier: 1.2,
-  pullImpulseOvershootDeg: 0,
-  pullImpulseResponseSpeed: 32,
-  pullImpulseDecaySpeed: 8,
-  pullImpulseLateralDeadZone: 0.02,
-  pullImpulseDepthDeadZone: 0.02,
-  pullImpulseDepthScaleDrop: 0.45,
-  lateralInfluence: 1.0,
-  verticalInfluence: 0.35,
-  verticalTiltSign: 1,
+  pullLateralDeadZone: 0.02,
+  naturalFrequencyHz: 2.5,
+  dampingRatio: 0.55,
+  stabilityMin: 0.35,
+  maxForceTiltDeg: 60,
+  maxInputSpeedMetersPerSec: 4,
+  gains: {
+    motion: 12,
+    line: 8,
+    fish: 1,
+    wind: 1,
+  },
+  draft: {
+    naturalFrequencyHz: 4,
+    dampingRatio: 0.8,
+    linePull: 0.2,
+  },
 };
 
 export const CASTING_POWER_PHYSICS_CONFIG = {
@@ -54,6 +59,6 @@ export const PHYSICS_CONFIG = {
     poleIdle: POLE_IDLE_RETRIEVE_PHYSICS_CONFIG,
     biteFallback: BITE_FALLBACK_PHYSICS_CONFIG,
   },
-  floatMotion: FLOAT_MOTION_PHYSICS_CONFIG,
+  floatPose: FLOAT_POSE_PHYSICS_CONFIG,
   castingPower: CASTING_POWER_PHYSICS_CONFIG,
 };

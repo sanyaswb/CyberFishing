@@ -480,8 +480,13 @@ export class GameCompositionRoot {
     });
     // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
     // happen during loading, not in the first frames of play.
+    // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too; an image that fails
+    // to load leaves that float a bar.
+    const floatArt = [...new Set(Object.values(this.#itemDb?.floats || {}).flatMap((float) =>
+      [float.skin?.scene?.src, float.skin?.scene?.glow?.src]).filter(Boolean))];
+    await imageAssets.preload(floatArt.map((src) => ({ id: src, src }))).catch(() => null);
     await sceneLayer.whenReady();
-    sceneLayer.prepare(Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean));
+    sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
     return {
       liveBait,
       liveBaitCandidate,
