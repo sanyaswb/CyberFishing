@@ -1,3 +1,6 @@
+// The night float's halo, the green of its tip glow art.
+const NIGHT_HALO_COLOR = "#46ff8c";
+
 export class FishingEquipmentRenderModelBuilder {
   #projector;
   #canvasMetrics;
@@ -186,11 +189,17 @@ export class FishingEquipmentRenderModelBuilder {
     target.x = screenPosition.x;
     target.y = screenPosition.y;
     target.color = visual.color;
-    target.glow =
-      visual.color !== "#ffffff" && visual.color !== "#00ff80";
+    // Halo around the tackle (ui.float, DEV switches): the bite colours' halo is off by default (owner, v0.46.2); a
+    // night float has a green halo of the same style and its tip glow.
+    const floatUi = this.#config.ui?.float || {};
+    const isNight = kind === "float" && floatConfig.variant === "night";
+    const biteHalo = floatUi.biteHalo === true && visual.color !== "#ffffff" && visual.color !== "#00ff80";
+    const nightHalo = isNight && floatUi.nightHalo !== false;
+    target.glow = biteHalo || nightHalo;
+    target.glowColor = biteHalo ? visual.color : NIGHT_HALO_COLOR;
     target.glowBlur = 8 * scale;
     target.imageId = art?.src || "";
-    target.tipGlowId = floatConfig.variant === "night" && art?.glow?.src ? art.glow.src : "";
+    target.tipGlowId = isNight && floatUi.nightTipGlow !== false && art?.glow?.src ? art.glow.src : "";
     target.tipGlowPad = Math.max(0, Number(art?.glow?.pad) || 0);
     let rotationDeg = 0;
     let foreshortening = 1;
@@ -199,7 +208,7 @@ export class FishingEquipmentRenderModelBuilder {
       const pose = this.#floatPose.advance({ signals: floatEntity.getPoseSignals(), position,
         metric: this.#getWaterMetric(), dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
         artDraft: art ? 1 - waterline : 0 });
-      rotationDeg = pose.rollDeg;
+      rotationDeg = pose.rotationDeg;
       foreshortening = pose.foreshortening;
       visibleShare = pose.visibleShare;
     }

@@ -91,7 +91,7 @@ export class PixiFloatRenderer {
     glow.visible = model.glow === true && model.glowBlur > 0 && height > 0;
     if (glow.visible) {
       const reach = model.glowBlur * GLOW_REACH * 2;
-      glow.tint = model.color;
+      glow.tint = model.glowColor || model.color;
       glow.rotation = shape.rotation;
       glow.x = -Math.sin(shape.rotation) * centerY;
       glow.y = Math.cos(shape.rotation) * centerY;
@@ -167,7 +167,8 @@ export class PixiFloatRenderer {
   #fingerprintOf(model, image, tipGlow) {
     const print = this.#fingerprint;
     print.begin();
-    print.text(model.kind); print.text(model.color); print.flag(model.glow); print.length(model.glowBlur);
+    print.text(model.kind); print.text(model.color); print.flag(model.glow); print.text(model.glowColor || "");
+    print.length(model.glowBlur);
     print.length(model.x); print.length(model.y); print.length(model.width); print.length(model.height);
     print.length(model.radius); print.length(model.radiusX); print.length(model.radiusY);
     print.length(model.rotationRad * 100);

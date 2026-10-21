@@ -21,7 +21,7 @@ export class FloatRenderer {
     surface.translate(model.x, model.y);
     surface.fillStyle = model.color;
     if (model.glow) {
-      surface.shadowColor = model.color;
+      surface.shadowColor = model.glowColor || model.color;
       surface.shadowBlur = model.glowBlur;
     }
     if (model.kind === "hooked") {

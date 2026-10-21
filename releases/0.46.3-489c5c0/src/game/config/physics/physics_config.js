@@ -35,6 +35,10 @@ export const FLOAT_POSE_PHYSICS_CONFIG = {
     dampingRatio: 0.8,
     linePull: 0.2,
   },
+  // A lying float is towed by its bottom: its tip trails this far behind (spec 127 stage 4).
+  lying: {
+    trailLengthMeters: 0.25,
+  },
 };
 
 export const CASTING_POWER_PHYSICS_CONFIG = {
