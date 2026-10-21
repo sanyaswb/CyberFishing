@@ -121,6 +121,25 @@ a check; avoid tests that merely mirror CSS, markup or implementation spelling. 
 During iteration run the affected checks. Before delivery run `npm run check` once; it includes the Quick and
 Architecture subsets, so separate unchanged reruns are unnecessary. Rerun after meaningful changes or failures.
 
+**Library contracts and their test doubles (incident v0.46.0, TK-024).** A check that replaces a library (PixiJS,
+Spine, the Canvas context, the DOM) with a fake proves only that our code calls the fake the way we expect. If the fake
+is simpler than the library, the check passes while the real library behaves differently. In v0.46.0 the float sprite
+was cropped by changing its texture frame in place; real Pixi recalculates a sprite's bounds only when the texture is
+replaced or a `dynamic` texture emits `update`, so the cropped art stretched on every phone, while the fake sprite
+(plain fields) passed. Rules:
+- Before relying on a library behaviour that involves **caching or invalidation** (cached bounds, textures, layout,
+  uploaded buffers, change events, dirty flags), read it in the vendored source (`vendor/…`) and name the exact rule in
+  a comment next to the call (e.g. "Pixi 8 sprites follow frame changes only for `dynamic` textures").
+- **Prefer replacing over mutating** library objects whose consumers cache derived data; mutate in place only through
+  the library's documented update path, and then make that path explicit (`dynamic: true` plus `update()`).
+- A fake used by a check reproduces **every part of the library contract the code depends on**, including the
+  invalidation rule: what is recalculated, when, and what stays stale. Assert the observable result the library
+  would produce (for example the rendered size = cached bounds × scale), not only the values our code assigned.
+- When a fake is extended for new code, first make the check fail on the code without the library's update path, then
+  fix the code. A fake that cannot fail for the real defect is not a check of that defect.
+- Visual results stay the owner's check; a rendering change that mutates library state names this risk in the owner's
+  check list (the device and the frame where it would show).
+
 ## Development history and changelog retention
 
 Keep active development documents concise and focused on current rules and work. Move superseded chronological history to its archive instead of accumulating long histories in active documents.

@@ -84,10 +84,48 @@ function fakePixi() {
       return child;
     }
   }
+  // Pixi 8's sprite contract (vendor/pixi/8.22.0): local bounds come from texture.orig and are cached; they are
+  // recalculated only when the texture is replaced or a `dynamic` texture emits "update" (the sprite subscribes to
+  // dynamic textures only). The height setter scales against the orig height at the time of the call, so the rendered
+  // height is the cached bounds height x scale.y (DEVELOPMENT_RULES "Library contracts and their test doubles").
   class Sprite {
+    #texture = null;
+    #height = 0;
+    #boundsDirty = true;
+    #boundsHeight = 0;
+    #onTextureUpdate = () => { this.#boundsDirty = true; };
+
     constructor(texture = null) {
-      Object.assign(this, { texture, x: 0, y: 0, width: 0, height: 0, alpha: 1, rotation: 0, visible: true });
+      Object.assign(this, { x: 0, y: 0, width: 0, alpha: 1, rotation: 0, visible: true, scaleY: 1 });
+      this.texture = texture;
       this.anchor = { x: 0, y: 0, set: (x, y) => { this.anchor.x = x; this.anchor.y = y; } };
+    }
+
+    get texture() { return this.#texture; }
+
+    set texture(value) {
+      if (value === this.#texture) return;
+      this.#texture?.off?.("update", this.#onTextureUpdate);
+      if (value?.dynamic) value.on("update", this.#onTextureUpdate);
+      this.#texture = value;
+      this.#boundsDirty = true;
+    }
+
+    get height() { return this.#height; }
+
+    set height(value) {
+      this.#height = value;
+      const origHeight = this.#texture?.orig?.height ?? this.#texture?.height;
+      this.scaleY = origHeight ? value / origHeight : 1;
+    }
+
+    // What the GPU draws: the cached bounds (refreshed lazily when dirty, as at render) times the scale.
+    get renderedHeight() {
+      if (this.#boundsDirty) {
+        this.#boundsHeight = this.#texture?.orig?.height ?? this.#texture?.height ?? 0;
+        this.#boundsDirty = false;
+      }
+      return this.#boundsHeight * this.scaleY;
     }
   }
   // Records its path and paint calls as [name, ...args]; clear() empties the record.
@@ -108,12 +146,22 @@ function fakePixi() {
   }
   class Texture {
     // A sub-texture: a frame of another texture's source (the static rod's atlas region).
-    constructor({ source, frame }) { Object.assign(this, { source, frame, destroyed: null }); }
+    // Like Pixi: orig is the frame object itself when none is given, so a frame change moves orig too.
+    constructor({ source, frame, dynamic = false }) {
+      Object.assign(this, { source, frame, orig: frame, dynamic, destroyed: null, listeners: [] });
+    }
 
     destroy(destroySource) { this.destroyed = destroySource; }
 
-    // After a frame change (an image float's waterline crop): counts the uv updates.
-    update() { this.updates = (this.updates || 0) + 1; }
+    on(event, listener) { if (event === "update") this.listeners.push(listener); }
+
+    off(event, listener) { this.listeners = this.listeners.filter((entry) => entry !== listener); }
+
+    // After a frame change: Pixi recalculates the uvs and emits "update" to its (dynamic) subscribers.
+    update() {
+      this.updates = (this.updates || 0) + 1;
+      for (const listener of this.listeners) listener(this);
+    }
 
     static from(options, skipCache) {
       if (options?.tagName === "canvas") {
@@ -867,9 +915,16 @@ async function checkSceneTackle() {
     body.anchor.x, body.anchor.y], [true, 384 * 0.3, art.source, 100 * 33 / 384, 30, -0.3, 0.5, 1],
   "the body shows the art's top 30 % from the waterline up, in the art's proportions, turned by the roll");
   assert.deepEqual([tipGlow.visible, imageShape.ops.length], [false, 0], "a day float has no glow and no bar");
+  const near = (actual, expected) => Math.abs(actual - expected) < 1e-9;
+  assert(near(body.renderedHeight, 30), "the drawn body is the visible part's height");
   const frameTexture = body.texture;
-  imageModel.visibleShare = 0.1;
-  assert.equal(imageFloat.update(imageModel), true);
+  // TK-024: the frame shrinks in place while the float sinks; Pixi redraws the sprite at the new frame's size only if
+  // the sprite hears the texture's update (a dynamic texture). The rendered height must follow, never stretch.
+  for (const share of [0.25, 0.18, 0.1]) {
+    imageModel.visibleShare = share;
+    assert.equal(imageFloat.update(imageModel), true);
+    assert(near(body.renderedHeight, 100 * share), `at ${share} the drawn body is ${body.renderedHeight}, not stretched`);
+  }
   assert.equal(body.texture, frameTexture, "a dip reuses the frame texture");
   assert.deepEqual([body.texture.frame.height, body.height], [384 * 0.1, 10], "sinking crops the art, never stretches it");
   imageModel.tipGlowId = "glow.webp";
@@ -878,6 +933,12 @@ async function checkSceneTackle() {
   assert.deepEqual([tipGlow.visible, tipGlow.blendMode, tipGlow.texture.frame.height, tipGlow.height, tipGlow.width],
     [true, "add", 8 + 384 * 0.1, 10 + 8 * toScreen, 100 * 33 / 384 + 16 * toScreen],
     "the night tip glow adds light over the same visible part, plus its blur margin");
+  for (const share of [0.3, 0.05]) {
+    imageModel.visibleShare = share;
+    imageFloat.update(imageModel);
+    assert(near(tipGlow.renderedHeight, 100 * share + 8 * toScreen) && near(body.renderedHeight, 100 * share),
+      `the tip glow follows the body at ${share}`);
+  }
   assert.equal(imageFloat.update(imageModel), false, "an unchanged image float presents nothing");
   imageFloat.dispose();
 }

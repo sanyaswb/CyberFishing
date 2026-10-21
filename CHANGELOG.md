@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.1 - Image Float Without Stretching
+
+- TK-024: on the WebGL scene the image float's red antenna stretched while the float stood up and sank. Its cropped textures were not dynamic, so Pixi sprites kept bounds from the old frame. Crop textures are dynamic now; the scene-layer fake Pixi reproduces Pixi's cached sprite bounds (the check failed before the fix); new DEVELOPMENT_RULES section on library contracts and test doubles, rendering incident recorded. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
+
 ## v0.46.0 - Float Pose and Image Float
 
 - G-113 / spec 127: the float's lean comes from forces (motion through the water in ground metres, line pull, fish, wind) scaled by CONFIG.physics.floatPose gains and followed by damped springs for roll, pitch (foreshortening) and draft. Diagonal retrieve leans the right way, pulling straight in never turns it sideways, no jumps at bite start/end, hook or reversals, same at any frame rate; bites and ballast sink the float instead of stretching it. Bite timing and random numbers unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.38 - Inventory Hold Recognition Delay
 
 - Restore a shared 300ms recognition delay before every inventory cell's 200ms hold countdown (500ms total). Keep progress hidden and avoid animation frames during recognition; preserve short clicks, movement/cancel and the separate green-pick cancellation. Full: 65/65, including focused UI/platform, Quick and Architecture. Owner timing acceptance pending.
-
-## v0.45.37 - Stable Inventory Selector Startup
-
-- TK-014: pending selector artwork incorrectly enabled classic backpack/keepnet shortcuts before radial readiness. Separate pending, ready and failed preload so radial startup never flashes classic controls; preserve explicit classic mode, failure fallback and disposal. Committed release Full: 65/65 including selector regressions, Architecture, Quick and Pages; the pick-cancel controller is included. Owner startup acceptance pending.

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.0";
+export const CURRENT_PROJECT_VERSION = "0.46.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "image-float",
+  codename: "float-crop-dynamic",
   updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "Image float no longer stretches on the WebGL scene while sinking (dynamic crop textures)",
     "Image float from the item art at twice the size: only the part above the waterline is drawn, so it sinks without stretching; the night float's red tip glows green (additive, pre-blurred), the day float does not glow",
     "The float leans from forces through damped springs (ground-metre motion, line, fish, wind with general multipliers); it sinks instead of stretching",
     "Water waves shrink toward the far edge in both axes with the far scale, independent of the grid-width switch",

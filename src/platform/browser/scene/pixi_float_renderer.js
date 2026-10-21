@@ -138,13 +138,15 @@ export class PixiFloatRenderer {
     return width;
   }
 
-  // A texture over the source's top `frameHeight` pixels, reused while the source stays the same.
+  // A texture over the source's top `frameHeight` pixels, reused while the source stays the same. It is `dynamic`:
+  // Pixi 8 sprites subscribe to a texture's "update" only for dynamic textures, and without it a sprite keeps its
+  // bounds from the old frame while its height scales against the new one, which stretched the float (TK-024).
   #cropTo(current, source, frameHeight) {
     let crop = current;
     if (!crop || crop.source !== source) {
       crop?.texture.destroy(false);
       const frame = new this.#pixi.Rectangle(0, 0, source.source.width, source.source.height);
-      crop = { source, texture: new this.#pixi.Texture({ source: source.source, frame }) };
+      crop = { source, texture: new this.#pixi.Texture({ source: source.source, frame, dynamic: true }) };
     }
     const height = Math.max(1, Math.min(source.source.height, frameHeight));
     if (crop.texture.frame.height !== height) {
