@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.3 - Lying Float Towed by Its Bottom
+
+- Spec 127 stage 4 (TK-025…TK-029): the float's lean is one vector on the water plane; a lying float is towed by its bottom (the tip trails at physics.floatPose.lying.trailLengthMeters, swings around through the player side, keeps its direction at rest, ignores drift with the water); the body is projected with the water's tilt, so a float lying toward the player is shorter but visible and a lean away draws slightly longer. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone check pending.
+
 ## v0.46.2 - Night Float Halo Switches
 
 - The yellow/red bite-colour halo around the tackle is off by default (owner); the night float gets a green halo in the same style. DevTools switches: ui.float.biteHalo, ui.float.nightHalo, ui.float.nightTipGlow. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual check pending.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.40 - DEV Zone Editor Camera Tilt Diagram
 
 - Add toggleable schematic SVG diagram visualizing camera view angle, tilt arc/right-angle marker and water distance ruler in DevTools zone editor under perspective controls. Full: 65/65, including diagram builder regressions, Quick and Architecture. Owner acceptance pending.
-
-## v0.45.39 - Configurable Water Metric Lateral Expansion
-
-- Add lateralExpansion parameter to location distanceProfile and DEV zone editor to toggle cone-shaped lateral perspective expansion on the water plane. When disabled, transverse scale remains uniform (50 px = 1 m) while depth compression is preserved. Full: 65/65, including water metric and zone editor regressions, Quick and Architecture. Owner acceptance pending.

@@ -208,7 +208,7 @@ export class FishingEquipmentRenderModelBuilder {
       const pose = this.#floatPose.advance({ signals: floatEntity.getPoseSignals(), position,
         metric: this.#getWaterMetric(), dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
         artDraft: art ? 1 - waterline : 0 });
-      rotationDeg = pose.rollDeg;
+      rotationDeg = pose.rotationDeg;
       foreshortening = pose.foreshortening;
       visibleShare = pose.visibleShare;
     }

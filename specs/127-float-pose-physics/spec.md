@@ -299,3 +299,88 @@ glows green (additive over the colour, a little blur); the day float must not gl
   (`sceneLayer.prepare`); a failed load leaves that float a bar.
 - Checks: `float-pose` (model size, day/night glow, Canvas crop and additive glow, bar fallback) and `scene-layer`
   (texture-frame crop, reuse, additive glow sprite, no change without a change). Item progression count 24 → 25.
+
+## Stage 4 (planned): the lying float is towed by its bottom
+
+Owner, 2026-10-21, after v0.46.2: when the float lies and moves at the same time (bite slides, retrieve while lying,
+current), the whole body shifts at once, which looks wrong. The motion must start at the bottom end, where the line is
+attached; the top must follow the bottom by inertia. Owner agreed this is the better model; status: implemented in
+v0.46.3 (see "Stage 4 implementation").
+
+### Why the current model cannot do it
+
+Roll and pitch are two independent axes: roll is drawn as rotation, pitch as `cos(pitch)` foreshortening. A lying
+float always lies to the left or right (the side drawn at the cast, turned only by a pull's sign), and its body is
+drawn as a rigid bar hanging on the attachment point. When the attachment point moves, the bar translates with it; the
+direction it lies in never follows the motion. A lean toward or away from the player is drawn shorter by `cos`, which
+reaches 0 at 90°: a float lying toward the player would vanish.
+
+### Model
+
+1. **Lean as one vector.** The pose is a lean vector on the water plane `(leanX, leanZ)` in degrees (X sideways,
+   Z toward the player); its length is the angle from upright (0 standing, `lyingAngleDeg` lying), its direction is
+   where the tip points. The two existing springs move its components (no new state); the force lean is soft-limited
+   on the vector's length (tanh), and the total is clamped to `lyingAngleDeg` as a vector, so a diagonal lean is not
+   larger than a straight one. A standing float behaves exactly as now.
+2. **The lying direction is towed (tractrix follower).** The animator keeps the tip's ground position of a lying
+   body: `tip = bottom − ℓ · normalize(bottom − tipPrevious)`, in ground metres (WaterMetric), with `ℓ =
+   lying.trailLengthMeters`. When the attachment point (the bottom) moves, the tip is dragged along the line between
+   them: the bottom leads, the top swings behind and lines up with the motion after about ℓ of travel. This is the
+   classic follower of a towed stick: it depends on the distance travelled, not on the frame rate, has no extra
+   state beyond the tip point, and reverses smoothly (a 180° turn swings the tip around, never flips it). At rest the
+   direction stays. The cast places the tip on the cast side (the existing `lyingSide`, so the random draw is
+   unchanged); a pull's sign no longer flips it, the tow turns it.
+3. **Inertia.** The lean springs follow the target `direction × lyingAngle × (1 − load)` plus the forces, so the top
+   overshoots a little after a sharp turn (`dampingRatio < 1`) and settles: "the top moves relative to the bottom by
+   inertia". Between lying and standing the lying part fades with the load, as now.
+4. **Projection with the water's tilt.** The body direction in 3D is `d = (sin θ · ux, cos θ, sin θ · uz)` (θ the
+   lean angle, `u` the lean direction, y up). On screen the vertical part keeps its length and the part along the
+   water toward the player is flattened by the surface tilt (`metric.surfaceSquashY`, the spec 126 surface ellipse):
+   `screen = L · (d.x, −d.y + d.z · squash)`. Rotation = `atan2(screen.x, −screen.y)`, drawn length = `|screen|`.
+   A float lying toward the player is shorter by the tilt but never disappears; one lying sideways keeps its full
+   length; a standing float is unchanged. This replaces `cos(pitch)` (criterion 5 keeps its meaning).
+5. **Attachment point.** The drawn body already hangs on the line's point (its bottom on the waterline, the art
+   anchored at its bottom centre), so the bottom is where the motion starts in both renderers; the renderers keep
+   reading rotation and length from the model and need no change.
+
+### Configuration
+
+`CONFIG.physics.floatPose.lying.trailLengthMeters` (default 0.25: the body lines up after about 25 cm of tow; larger is
+lazier). Label and validation like the other floatPose values. No gameplay value, timing or random draw changes.
+
+### Checks
+
+Extend `float-pose`:
+- bottom leads: towing a lying float sideways, the tip ends behind the bottom (opposite to the motion) and the angle
+  between them converges within about 3 ℓ of travel; the first frames turn the body gradually;
+- a 180° reversal swings the tip around without any frame changing the direction by more than the follower allows;
+- distance-based: the same path at 30, 60 and 144 FPS gives the same direction;
+- every direction stays visible: lying toward or away from the player is drawn at `squash` of the sideways length,
+  never 0;
+- the diagonal lean vector is clamped by length; a standing float, the stand-up after the cast and over-depth lying
+  keep their current results; at rest a lying float keeps its direction;
+- the render model's rotation and length match the projection; scene-layer and Canvas consumers unchanged.
+
+Owner acceptance: `index.html` / `dev.html`, both orientations: a lying float during bites with movement and during a
+retrieve moves from its bottom, the top follows and settles; sharp side changes swing smoothly; a float lying toward
+the player is shorter but visible; standing behaviour unchanged. Phone performance overlay in both orientations.
+
+### Stage 4 implementation (v0.46.3)
+
+- `FloatPoseAnimator`: the two springs now hold the lean vector's components (`rollDeg` = X, `pitchDeg` = Z); forces
+  are soft-limited by the vector's length and the target is clamped by length to `lyingAngleDeg` (TK-025).
+- Outside bites the rig's intended lean (`angleDeg`) is not read as a side any more: its value equals
+  `lyingAngleDeg × (1 − load)` and the animator lays that magnitude along the towed direction; in a bite the fish's
+  step stays a sideways lean (`gains.fish`). With `enabled: false` the old intended lean is shown as before.
+- Towing (TK-026): the bottom's ground position (`WaterMetric.toGround`) and the tip point in metres; the tip moves
+  with the water, then is placed `trailLengthMeters` from the bottom along their line. Correction found while testing:
+  dragged head first (toward its own tip) the follower leaves that balance only after a long tow, so the tip is turned
+  toward the player in proportion to how head first the move is; a full head-first reversal lines up after about
+  4–6 trail lengths, swinging through the side toward the player (visible, shorter), never flipping.
+- Projection (TK-027): `rotationDeg` and `foreshortening` (drawn length share) come from projecting the body; the
+  builder uses them. Correction to stage 1: with the camera looking down at the water, a lean **away** from the player
+  draws slightly longer and a lean **toward** the player shorter (the old `cos(pitch)` shortened both). A float lying
+  toward the player points down the screen at `surfaceSquashY` of its length.
+- Config `physics.floatPose.lying.trailLengthMeters` 0.25 with its DEV label. Checks: `float-pose` stage 4 block
+  (first-frame turn, trailing after the tow, swing through the player side, smooth steps, rest, 30/60/144 FPS,
+  drift, lying toward the player visible, vector clamp, sideways rotation at full length).

@@ -46,11 +46,15 @@ assert(fishLeft.rollDeg > 20, "a bite step that drags the float left leans the t
 // pulling straight in never turns the float sideways.
 const diagonal = run({ move: (t) => ({ x: 500 + 40 * t, y: 500 + 40 * t }),
   input: () => signals({ lineX: Math.SQRT1_2, lineY: Math.SQRT1_2 }) });
-assert(diagonal.rollDeg < -3 && diagonal.pitchDeg < -3 && diagonal.foreshortening < 0.99,
-  "diagonal retrieve: tip left and away from the player, drawn shorter");
+assert(diagonal.rollDeg < -3 && diagonal.pitchDeg < -3 && diagonal.rotationDeg < -3,
+  "diagonal retrieve: tip left and away from the player, drawn turned left");
 const straight = run({ move: (t) => ({ x: 500, y: 500 + 60 * t }), input: () => signals({ lineY: 1 }) });
-assert.equal(straight.rollDeg, 0, "a pull straight toward the player turns no sideways lean");
-assert(straight.foreshortening < 0.95, "the lean toward the player shows as a shorter float (pseudo-distance)");
+assert(straight.rollDeg === 0 && straight.rotationDeg === 0, "a pull straight toward the player turns no sideways lean");
+// TK-027 projection: the camera looks down at the water, so a lean away from the player draws a little longer and a
+// lean toward the player shorter (the part along the water is flattened by the surface tilt).
+assert(straight.foreshortening > 1, "leaning away from the player draws longer");
+const toward = run({ move: (t) => ({ x: 500, y: 500 - 60 * t }), input: () => signals({ lineY: -1 }) });
+assert(toward.pitchDeg > 3 && toward.foreshortening < 0.95, "leaning toward the player draws shorter (pseudo-distance)");
 
 // Ground metres: the same ground speed leans the float the same near the shore and far away.
 const perspective = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
@@ -128,6 +132,48 @@ assert.equal(reused.advance({ signals: signals(), position: { x: 1, y: 1 }, metr
 const off = run({ config: { ...CONFIG, enabled: false }, input: () => signals({ angleDeg: 12, lineX: 1, windDeg: 20 }) });
 assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the intended lean only");
 
+// Stage 4 (TK-025…TK-028): a lying float is towed by its bottom. Lying on its right side (cast side +1) and dragged
+// right at 0.5 m/s, the bottom moves first and the tip swings around behind it; it ends trailing left.
+{
+  const lyingSignals = (overrides = {}) => signals({ angleDeg: 90, load: 0, lyingSide: 1, ...overrides });
+  const towRight = (t) => ({ x: 500 + 25 * Math.min(t, 3), y: 500 });
+  let firstStep = null;
+  let largestLeanStep = 0;
+  let largestPitch = 0;
+  const towed = run({ seconds: 4, move: towRight, input: () => lyingSignals(), onFrame: (pose, previous, t) => {
+    if (previous && firstStep === null && t > 0) firstStep = Math.abs(pose.rollDeg - previous.rollDeg);
+    if (previous) largestLeanStep = Math.max(largestLeanStep,
+      Math.hypot(pose.rollDeg - previous.rollDeg, pose.pitchDeg - previous.pitchDeg));
+    largestPitch = Math.max(largestPitch, pose.pitchDeg);
+  } });
+  assert(firstStep < 2, `the first frame of the tow turns the body only a little (${firstStep}°)`);
+  assert(towed.rollDeg < -80, `after 1.5 m of tow (6 trail lengths) the tip trails behind the bottom, lying left (${towed.rollDeg}°)`);
+  assert(largestPitch > 30, "the tip swings around through the side toward the player, it never flips");
+  assert(largestLeanStep < 6, `the swing is smooth (largest step ${largestLeanStep.toFixed(2)}° per frame)`);
+  const rest = run({ seconds: 5, move: (t) => ({ x: 500 + 25 * Math.min(t, 3), y: 500 }), input: () => lyingSignals() });
+  assert(rest.rollDeg < -80, "at rest the lying float keeps the direction it was towed into");
+  const atFps = (fps) => run({ seconds: 2, fps, move: towRight, input: () => lyingSignals() }).rollDeg;
+  assert(Math.abs(atFps(30) - atFps(144)) < 2 && Math.abs(atFps(60) - atFps(144)) < 1,
+    `the tow depends on the path, not the frame rate (${atFps(30)} / ${atFps(60)} / ${atFps(144)})`);
+  const drifting = run({ seconds: 2, move: (t) => ({ x: 500 + 20 * t, y: 500 }),
+    input: () => lyingSignals({ waterX: 20 }) });
+  assert(drifting.rollDeg > 80, "drifting with the water does not turn a lying float");
+  // Lying toward the player (towed away from the player): shorter by the surface tilt, never invisible.
+  const tilted = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500, maxMeters: 20,
+    tiltDegrees: 30, farScale: 1 });
+  const away = run({ seconds: 3, metric: tilted, move: (t) => ({ x: 500, y: 500 - 25 * Math.min(t, 1.5) }),
+    input: () => lyingSignals() });
+  assert(away.pitchDeg > 80 && Math.abs(Math.abs(away.rotationDeg) - 180) < 15 && Math.abs(away.foreshortening - 0.5) < 0.1,
+    `a float lying toward the player points down the screen at the tilt's share of its length (${away.foreshortening})`);
+  // The lean is one vector: lying plus strong forces on both axes stays within the lying angle.
+  const clamped = run({ input: () => lyingSignals({ lineX: -1, lineY: -1, windDeg: 40 }) });
+  assert(Math.hypot(clamped.rollDeg, clamped.pitchDeg) <= 90 + 1e-6, "the lean vector never exceeds the lying angle");
+  // A standing float leaning sideways is a plain rotation of full length.
+  const side = run({ input: () => signals({ lineX: -1 }) });
+  assert(Math.abs(side.rotationDeg - side.rollDeg) < 1e-9 && Math.abs(side.foreshortening - 1) < 1e-9,
+    "a sideways lean draws as rotation at full length");
+}
+
 // Image float (stage 3): the render model and the Canvas fallback. The item length is the antenna above the art's
 // waterline at ui.float.displayScale; only the top visible share of the art is drawn; only a night float's tip glows.
 {
@@ -188,4 +234,4 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   assert.deepEqual(draws, ["bar"], "without its art the float stays a bar");
 }
 
-console.log("Float pose passed: line/fish/motion lean the tip away from the pull, diagonal retrieve splits sideways lean from foreshortening, same ground speed same lean near and far, smooth reversals and bite steps, 30/60/144 FPS alike, sinking without stretching, ballast draft, lying/standing/over-depth, reused records; image float crop, doubled size, night-only tip glow, bar fallback.");
+console.log("Float pose passed: line/fish/motion lean the tip away from the pull, diagonal retrieve splits sideways lean from foreshortening, same ground speed same lean near and far, smooth reversals and bite steps, 30/60/144 FPS alike, sinking without stretching, ballast draft, lying/standing/over-depth, reused records; lying float towed by its bottom (swing, rest, path-based, drift, visible toward the player, lean vector clamp); image float crop, doubled size, night-only tip glow, bar fallback.");
