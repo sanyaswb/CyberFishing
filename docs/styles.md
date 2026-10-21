@@ -252,6 +252,21 @@ component files. Component-specific structure remains explicit.
 
 ## Runtime boundary
 
+TK-032/033 (v0.46.6): toolbar buttons and selector sector shapes share `--ui-control-background`,
+`--ui-control-hover-background` and `--ui-control-active-background` from tokens.css. Sector highlight
+uses the toolbar accent border at its normal width; keyboard focus uses `--ui-info`, with no yellow
+stroke or highlight-only stroke widening. The sprite's inventory symbol is a four-square outline menu
+with softer outer corners. The suitcase source is archived under asset-sources/ui/archive and has no
+runtime consumer. Section symbols, measured geometry, motion and pointer ownership are unchanged.
+
+TK-031/v0.46.5 supersedes the shared mobile selector/action row below: `GameToolbar.selectorMountNode`
+owns a separate transparent selector host. At toolbar widths <=820 logical px, a visible radial selector's
+host occupies a full-width last flex item; existing wrap-reverse flow places it above the bottom actions.
+Depth keeps order 0 to the left of chum/net as those actions appear. Only the host stretches: the selector's
+own measured bounds, fan reservation and input coordinates stay intact. Empty/classic hosts contribute
+no row; wider layouts use display:contents and preserve the existing row. Production, DEV and catalog
+inject the same mount. No polling, resize handler or gameplay-owned layout state is added.
+
 TK-008/spec 117 adds `inventory-selector.css`: a morphing central toolbar control and three rounded annular sectors.
 `InventorySelectorGeometry` supplies one polygon per sector to SVG, CSS clipping and coordinate hit testing.
 `InventorySelectorRenderer` owns DOM/expansion/highlight; the injected browser controller owns pointer capture,

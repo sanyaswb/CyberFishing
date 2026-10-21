@@ -341,6 +341,7 @@ export class GameRenderComposition {
         getRodScreenX: appPorts.getRodScreenX,
         rodAnimation: runtime.rendering.rodAnimation.controller,
         getWind: () => runtime.env.getSnapshot()?.wind ?? null,
+        getTimeOfDay: () => runtime.env.getSnapshot().time,
         floatPose: new FloatPoseAnimator({ getConfig: () => config.physics?.floatPose }),
         getWaterMetric: appPorts.getWaterMetric,
       }),

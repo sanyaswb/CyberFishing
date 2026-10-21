@@ -133,6 +133,9 @@
 │  │  │  └── briefcase--1--open.webp
 │  │  ├── floats
 │  │  │  └── float-day.webp
+│  │  ├── floats-scene
+│  │  │  ├── float-day-glow.webp
+│  │  │  └── float-day.webp
 │  │  ├── keepnet
 │  │  │  ├── keepnet--0.webp
 │  │  │  ├── keepnet--100.webp
@@ -195,6 +198,7 @@
 │  │     └── time_display_composition.js
 │  ├── engine
 │  │  ├── animation
+│  │  │  ├── damped_spring.js
 │  │  │  └── scalar_smoother.js
 │  │  ├── assets
 │  │  │  ├── asset_load_queue.js
@@ -604,8 +608,10 @@
 │  │  │  ├── locations
 │  │  │  │  ├── dynamic_zone.js
 │  │  │  │  ├── grid_cell.js
+│  │  │  │  ├── illustrated_depth_profile.js
 │  │  │  │  ├── location_map.js
 │  │  │  │  ├── location_water_metric_resolver.js
+│  │  │  │  ├── location_water_metric_source.js
 │  │  │  │  ├── water_metric.js
 │  │  │  │  └── world_perspective.js
 │  │  │  ├── rules
@@ -643,6 +649,7 @@
 │  │     │  ├── fishing_equipment_render_model_builder.js
 │  │     │  ├── fishing_messages.js
 │  │     │  ├── fishing_scene_renderer.js
+│  │     │  ├── float_pose_animator.js
 │  │     │  ├── float_renderer.js
 │  │     │  ├── line_visual_state_controller.js
 │  │     │  ├── rod_animation_controller.js
@@ -750,6 +757,7 @@
 │  │     │  ├── render_frame_buffer.js
 │  │     │  ├── reusable_render_list.js
 │  │     │  ├── scene_layer_router.js
+│  │     │  ├── water_circle_projection.js
 │  │     │  ├── world_render_frame_builder.js
 │  │     │  └── world_render_pass.js
 │  │     ├── screens

@@ -49,6 +49,7 @@ async function startGame() {
     toolbarMountNode: toolbar.element,
     tackleMountNode: toolbar.tackleMountNode,
     depthMountNode: toolbar.depthMountNode,
+    selectorMountNode: toolbar.selectorMountNode,
     createDevFlags: () => new InactiveDevFlags(),
   });
   const game = new Game("gameCanvas", compositionRoot);

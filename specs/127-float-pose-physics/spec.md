@@ -384,3 +384,14 @@ the player is shorter but visible; standing behaviour unchanged. Phone performan
 - Config `physics.floatPose.lying.trailLengthMeters` 0.25 with its DEV label. Checks: `float-pose` stage 4 block
   (first-frame turn, trailing after the tow, swing through the player side, smooth steps, rest, 30/60/144 FPS,
   drift, lying toward the player visible, vector clamp, sideways rotation at full length).
+
+### TK-030 daylight correction (v0.46.4)
+
+The night float's outer halo and additive tip overlay are enabled only when the shared
+`backgroundTimeBlend` has a night layer. Bootstrap injects `EnvironmentSystem.getSnapshot().time`;
+the render-model builder reuses one blend record. The same original red-tipped body remains visible by day,
+with no glow even if the optional bite halo is enabled. Existing night/DEV behavior, geometry, state, random
+numbers and game-cycle baseline remain unchanged. The already cast float follows sunset and dawn in both
+WebGL and Canvas. Existing float-pose and scene-layer scenarios cover these transitions and the switches.
+Owner: index/dev, portrait/landscape, night float at noon and midnight, dawn/sunset and live switches;
+phone performance overlay in both orientations. No agent visual check or new tool/asset/fixture/dependency.

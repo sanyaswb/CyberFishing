@@ -162,6 +162,7 @@ async function startGame() {
       toolbarMountNode: toolbar.element,
       tackleMountNode: toolbar.tackleMountNode,
       depthMountNode: toolbar.depthMountNode,
+      selectorMountNode: toolbar.selectorMountNode,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createFrameProbe: () => frameProfiler,
       sceneMode: pageParams.get("scene"),

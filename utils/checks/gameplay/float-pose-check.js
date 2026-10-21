@@ -180,10 +180,11 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
   const { FloatRenderer } = load("src/game/presentation/fishing/float_renderer.js");
   const floatUi = { displayScale: 2 };
+  let timeOfDay = 12;
   const builder = new FishingEquipmentRenderModelBuilder({
     projector: { getPerspective: () => ({ scale: 1 }), getScale: () => 1 }, canvasMetrics: { width: 800, height: 600 },
     clock: { delta: 16 }, config: { ui: { float: floatUi } }, getRodScreenX: () => 400,
-    rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null,
+    rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null, getTimeOfDay: () => timeOfDay,
     floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => flat,
   });
   const skin = { scene: { src: "float.webp", waterline: 0.3, glow: { src: "glow.webp", pad: 8 } } };
@@ -197,14 +198,35 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   assert(Math.abs(model.bodyHeight - 15 * 2 / 0.3) < 1e-9 && Math.abs(model.visibleShare - 0.3) < 1e-9 &&
     model.imageId === "float.webp" && model.tipGlowId === "", "a day image float: doubled size, antenna above water, no glow");
   build("night");
+  assert.equal(model.glow, false, "the night float has no outside halo in daylight");
+  assert.equal(model.tipGlowId, "", "daylight draws the red-tipped body without its green glow overlay");
+  timeOfDay = 0;
+  build("night");
   assert.equal(model.tipGlowId, "glow.webp", "the night float gets its tip glow");
   assert(model.glow === true && model.glowColor === "#46ff8c", "the night float has a green halo by default");
+  const nightGeometry = [model.bodyHeight, model.visibleShare, model.width, model.height, model.rotationRad];
+  // Reuse the same cast/read model through sunset, night and dawn, following the background's exact boundaries.
+  for (const [hour, shouldGlow] of [[12, false], [18, false], [19, false], [19.01, true],
+    [21, true], [23.99, true], [0, true], [5, true], [6.99, true], [7, false], [9, false]]) {
+    timeOfDay = hour;
+    build("night");
+    assert.equal(model.glow, shouldGlow, `outside halo follows location light at ${hour}`);
+    assert.equal(model.tipGlowId, shouldGlow ? "glow.webp" : "", `tip overlay follows location light at ${hour}`);
+    assert.equal(model.imageId, "float.webp", "daylight retains the original red-tipped artwork");
+    assert.deepEqual([model.bodyHeight, model.visibleShare, model.width, model.height, model.rotationRad], nightGeometry,
+      "lighting changes cannot change float geometry or submersion");
+  }
+  timeOfDay = 0;
   colour = "#ff0000";
   build("day");
   assert.equal(model.glow, false, "the bite colours' halo is off by default and a day float has none");
   floatUi.biteHalo = true;
   build("day");
   assert(model.glow === true && model.glowColor === "#ff0000", "the DEV switch brings the bite halo back");
+  timeOfDay = 12;
+  build("night");
+  assert(model.glow === false && model.tipGlowId === "", "DEV halo switches cannot light a night float in daylight");
+  timeOfDay = 0;
   floatUi.biteHalo = false;
   floatUi.nightHalo = false;
   floatUi.nightTipGlow = false;
@@ -225,9 +247,14 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     Math.abs(bodyDraw[7] / model.bodyHeight - 33 / 384) < 1e-9, "Canvas draws the art's top 30 % in its proportions");
   assert(glowDraw && states[0].globalCompositeOperation === "lighter", "the tip glow is added with additive light");
   draws.length = 0;
-  build("day");
+  states.length = 0;
+  surface.shadowBlur = 0;
+  timeOfDay = 12;
+  build("night");
   new FloatRenderer({ surface, images }).render(model);
-  assert.equal(draws.length, 1, "a day float draws only its body");
+  assert.equal(draws.length, 1, "a night float in daylight draws only its red-tipped body");
+  assert.equal(surface.shadowBlur, 0, "daylight adds no external shadow glow");
+  assert.equal(states.length, 0, "daylight never selects additive tip light");
   model.imageId = "missing.webp";
   draws.length = 0;
   new FloatRenderer({ surface, images }).render(model);

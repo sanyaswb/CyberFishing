@@ -170,6 +170,7 @@ export class GameCompositionRoot {
   #toolbarMountNode;
   #tackleMountNode;
   #depthMountNode;
+  #selectorMountNode;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -202,6 +203,7 @@ export class GameCompositionRoot {
     toolbarMountNode = null,
     tackleMountNode = toolbarMountNode,
     depthMountNode = tackleMountNode,
+    selectorMountNode = toolbarMountNode,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
@@ -254,6 +256,7 @@ export class GameCompositionRoot {
     this.#toolbarMountNode = toolbarMountNode;
     this.#tackleMountNode = tackleMountNode;
     this.#depthMountNode = depthMountNode;
+    this.#selectorMountNode = selectorMountNode;
     // Frame timing port (spec 101): the DEV FrameProfiler when Development composes one, inactive otherwise.
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
@@ -1015,7 +1018,7 @@ export class GameCompositionRoot {
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
-      uiSurface: this.#uiSurface, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
       equipmentSource: inventory }));
     await selector.ready;

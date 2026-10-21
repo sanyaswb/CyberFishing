@@ -32,6 +32,8 @@ const domFactory = new InventoryDomFactory(documentRef);
   const image = icon.children[0];
   assert.equal(root.parentNode, toolbar.depthMountNode);
   assert.equal(toolbar.depthMountNode.parentNode, toolbar.tackleMountNode);
+  assert.notEqual(toolbar.selectorMountNode, toolbar.tackleMountNode, "selector layout is independent of the tackle actions");
+  assert.equal(toolbar.selectorMountNode.parentNode, toolbar.element, "the shared toolbar owns both mounts");
   assert.equal(net.parentNode, toolbar.tackleMountNode);
   assert(panel.hidden && panel.inert);
   assert.notEqual(root.style.pointerEvents, "all", "the depth root has no solid input override");

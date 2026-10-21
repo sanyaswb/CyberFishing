@@ -239,3 +239,29 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
   mode changes during preload, successful readiness, failure fallback, disposal before late success/failure.
 - Owner: cold reload index/dev in portrait/landscape; compare radial and persisted classic mode, then toggle
   in DEV. No agent browser visual check. No tool, helper, fixture or dependency becomes obsolete.
+
+## TK-031 mobile depth row (v0.46.5)
+
+- At <=820 logical toolbar px, radial selector has a dedicated upper row; float/depth remains the first
+  action on the left of appearing chum/net controls in the lower row. Wide layouts keep the current row.
+- `GameToolbar` owns a transparent selector mount; production/DEV inject it into GameCompositionRoot,
+  and catalog uses that same mount. The host alone becomes a full-width final item in wrap-reverse flow.
+  The selector root never stretches, preserving cached pointer geometry. Classic/hidden selectors reserve
+  no row. Shared depth expansion, 200px panel cap, safe areas and below-320 scaling remain owned as before.
+- Extend existing startup input checks for the distinct mount; retain selector gesture/depth control and
+  disposal checks. Owner checks mobile portrait/landscape, 280/320/820 px, chum/net appearing, slider
+  expansion, classic/radial, wide layouts and reduced motion. No agent visual check or new helper/asset/tool.
+
+## TK-032/033 selector appearance (2026-10-22, v0.46.6)
+
+- Record each owner development task in root tasks.md before implementation (persistent rule in AGENTS.md).
+- Remove the highlighted sectors' separate yellow `--ui-focus-color` stroke and thicker 0.09 width.
+  Use the main toolbar's shared normal/hover/active background tokens and accent border, retaining the
+  ordinary sector stroke width. Keyboard focus uses the toolbar's info color and stays visible.
+- Replace only the inventory symbol in the existing sprite with four symmetric outlined squares;
+  outer corners are slightly softer. Preserve the symbol id/viewBox, central button size and movement.
+  Archive the suitcase's original geometry in asset-sources/ui/archive/inventory-suitcase-v0.46.5.svg,
+  never under runtime assets. Other section/pager symbols and gameplay actions remain unchanged.
+- Reuse existing selector gesture and CSS/asset/architecture checks; no pixel/color/shape assertions.
+  Owner checks index/dev/catalog, hover/touch/keyboard focus, all sectors, closed/open presets and
+  reduced motion. No agent visual check, bitmap generation, replacement tool/helper or extra frame work.

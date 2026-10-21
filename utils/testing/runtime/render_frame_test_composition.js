@@ -60,7 +60,7 @@ function checkRenderFrameComposition() {
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,getWind:()=>null}),/requires rodAnimation/);
   const floatPose=new c.FloatPoseAnimator({getConfig:()=>({})});
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,getWaterMetric:()=>waterMetric}),/requires floatPose/);
-  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,getWaterMetric:()=>waterMetric});
+  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,getWaterMetric:()=>waterMetric,getTimeOfDay:()=>12});
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
   let castRodMovement=null;
   const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastRodMovement:()=>castRodMovement,getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});

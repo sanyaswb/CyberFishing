@@ -2,6 +2,18 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.6 - Selector Menu Icon and Shared Feedback
+
+- TK-032/033: selector sectors share the main toolbar button's background/accent states without the extra yellow thick border; keyboard focus keeps the toolbar info color. Replace the central suitcase with a symmetric four-square SVG menu and retain the original in asset-sources/ui/archive/inventory-suitcase-v0.46.5.svg outside runtime assets. Interaction geometry and gestures unchanged. Full 66/66 incl. Quick/Architecture; owner visual acceptance pending.
+
+## v0.46.5 - Mobile Float Below Inventory Selector
+
+- TK-031 / G-115: at mobile toolbar widths <=820 logical px, place the radial selector in a dedicated upper row and keep float/depth below, left of appearing chum/net actions. Preserve measured selector bounds, slider expansion, wide/classic layout and shared production/DEV/catalog composition. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner responsive acceptance pending.
+
+## v0.46.4 - Night Float Without Daylight Glow
+
+- TK-030 / G-114: night-float halo and additive tip light now follow the location's night lighting instead of the item variant alone. Daylight renders only the original red-tipped body in WebGL and Canvas, including after dawn on an existing cast; preserve DEV switches and all float geometry/gameplay. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
+
 ## v0.46.3 - Lying Float Towed by Its Bottom
 
 - Spec 127 stage 4 (TK-025…TK-029): the float's lean is one vector on the water plane; a lying float is towed by its bottom (the tip trails at physics.floatPose.lying.trailLengthMeters, swings around through the player side, keeps its direction at rest, ignores drift with the water); the body is projected with the water's tilt, so a float lying toward the player is shorter but visible and a lean away draws slightly longer. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone check pending.
@@ -30,15 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.43 - Simple Illustrated Water Perspective
 
 - G-112 / spec 126: replace camera distance and overhead reference with exact water length, artistic tilt and a far-size ratio. Defaults: 30 m, 30 degrees, 0.3. Preserve full grid/water bounds and exact aim metres; one metric owns surface sizing and matching chum containment. Remove the camera-ray diagram and obsolete controls; optional grid-width contraction defaults off. Full 65/65, including Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
-
-## v0.45.42 - Stable Water Width Across Camera Angles
-
-- G-111: remove camera-driven X zoom and default lateral expansion off. Parallel-X chum widths stay stable across tilt edits; the green zone, metre grid and animated water retain their full authored bounds/height. Tilt warps internal spacing and visible metres; DEV distinguishes overhead reference length from actual far distance. Add near/far rays and their shaded sector from the shared metric; overhead rays are parallel at 90°. Full 65/65, including Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
-
-## v0.45.41 - Unified Water Plane Projection
-
-- G-110: one fitted camera projection for metres, movement, sprites, waves, chum and landing contours. Overhead water stays uniform and circular; authored bounds/length and the 50 px/m engine unit are preserved. DEV exposes camera tilt/distance and fitted scale; ground chum influence retains save format and timing. Full 65/65, including Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
-
-## v0.45.40 - DEV Zone Editor Camera Tilt Diagram
-
-- Add toggleable schematic SVG diagram visualizing camera view angle, tilt arc/right-angle marker and water distance ruler in DevTools zone editor under perspective controls. Full: 65/65, including diagram builder regressions, Quick and Architecture. Owner acceptance pending.

@@ -27,6 +27,9 @@
   --ui-radius-panel: 8px;
   --ui-control-border-width: 2px;
   --ui-control-border-color: rgba(var(--ui-accent-rgb), 0.65);
+  --ui-control-background: rgba(var(--ui-surface-rgb), 0.94);
+  --ui-control-hover-background: rgba(var(--ui-accent-rgb), 0.16);
+  --ui-control-active-background: rgba(var(--ui-accent-rgb), 0.24);
   --ui-edge-top: max(12px, env(safe-area-inset-top, 0px));
   --ui-edge-right: max(12px, env(safe-area-inset-right, 0px));
   --ui-edge-bottom: max(12px, env(safe-area-inset-bottom, 0px));

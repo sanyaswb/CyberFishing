@@ -20,6 +20,30 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-116 Selector sectors gain a thick yellow border during interaction (P3, implemented in v0.46.6)
+Found: 2026-10-22, owner, radial selector.
+Reproduce: expand the selector and highlight or focus equipment/backpack/keepnet.
+Expected: the main toolbar button's feedback style, without an extra yellow outline or thicker sector border.
+Actual: highlighted and focused shapes used --ui-focus-color plus stroke-width 0.09 instead of ordinary 0.05.
+Resolution: shared toolbar background tokens, accent border at normal width and info-colored keyboard focus. No gesture, geometry, animation or state changes; TK-032. Companion cosmetic task TK-033 replaces the central icon with four squares, preserving the suitcase source outside runtime.
+Evidence: existing selector interaction and CSS ownership checks pass; appearance remains owner-checked, with no pixel assertions.
+
+### G-115 Mobile float/depth button shares the radial selector row (P3, implemented in v0.46.5)
+Found: 2026-10-21, owner, mobile bottom controls.
+Reproduce: use a float on a narrow screen, then show the chum/net actions.
+Expected: selector in an upper row, float/depth below it and left of the other actions; expanding the slider keeps those actions stable.
+Actual: one wrapping toolbar row mixes the selector reserve with tackle actions; row placement depends on their available width.
+Resolution: toolbar owns a separate selector host. At <=820 logical toolbar px its full-width last flex item wraps above actions; depth retains first order. The selector's measured root is unchanged; wide/classic layouts and depth expansion keep existing behavior.
+Evidence: existing startup input regression failed before mount injection; production/DEV/catalog share the mount and UI component/selector checks pass. Owner responsive visual acceptance pending.
+
+### G-114 Night float keeps glowing in daylight (P3, implemented in v0.46.4)
+Found: 2026-10-21, owner, after v0.46.3.
+Reproduce: equip a night float and cast during the day; observe both the green outside halo and additive light over its red antenna.
+Expected: no outside/inside glow in daylight; the original red tip stays red. Night lighting and DEV glow switches keep working, including day/night changes on an existing cast.
+Actual: FishingEquipmentRenderModelBuilder selected both effects from variant=night alone, without reading location time.
+Resolution: inject the cached EnvironmentSystem snapshot time through bootstrap and reuse backgroundTimeBlend into one retained record. Gate both effects by the same night-light condition; daylight also excludes the optional bite halo on this night float. Renderers consume the same model, unchanged art and geometry; no gameplay/config/save/baseline changes.
+Evidence: float-pose daylight regression failed before the fix; tests cover 12/18/19/19.01/21/midnight/5/6.99/7/9, unchanged geometry, DEV switches, Canvas body-only rendering and WebGL dawn clearing both layers. Owner visual/phone acceptance pending.
+
 ### G-113 The float leans by hand-written angles: wrong sideways lean, jumps, stretching (P2, implemented in v0.46.0)
 Found: 2026-10-21, owner, float review.
 Reproduce: retrieve straight toward the player (the float turns sideways: `moveY` mixed into roll); the same ground speed near and far leans differently (pixels per second); bite start/end, hook and stop snap the angle; a rise bite or heavy ballast stretches/shrinks the bar.

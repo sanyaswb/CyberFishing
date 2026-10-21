@@ -928,7 +928,9 @@ async function checkSceneTackle() {
   assert.equal(body.texture, frameTexture, "a dip reuses the frame texture");
   assert.deepEqual([body.texture.frame.height, body.height], [384 * 0.1, 10], "sinking crops the art, never stretches it");
   imageModel.tipGlowId = "glow.webp";
+  imageModel.glow = true;
   assert.equal(imageFloat.update(imageModel), true);
+  assert.equal(imageContainer.children[0].visible, true, "night lighting can show the outside halo");
   const toScreen = 100 / 384;
   assert.deepEqual([tipGlow.visible, tipGlow.blendMode, tipGlow.texture.frame.height, tipGlow.height, tipGlow.width],
     [true, "add", 8 + 384 * 0.1, 10 + 8 * toScreen, 100 * 33 / 384 + 16 * toScreen],
@@ -940,6 +942,13 @@ async function checkSceneTackle() {
       `the tip glow follows the body at ${share}`);
   }
   assert.equal(imageFloat.update(imageModel), false, "an unchanged image float presents nothing");
+  imageModel.tipGlowId = "";
+  imageModel.glow = false;
+  assert.equal(imageFloat.update(imageModel), true, "daylight updates an already visible night float");
+  assert.equal(imageContainer.children[0].visible, false, "the outside halo is hidden after dawn");
+  assert.equal(tipGlow.visible, false, "the inner tip light is hidden after dawn");
+  assert.equal(body.visible, true, "the original red-tipped body remains visible after dawn");
+  assert.equal(imageFloat.update(imageModel), false, "unchanged daylight does not redraw the float");
   imageFloat.dispose();
 }
 

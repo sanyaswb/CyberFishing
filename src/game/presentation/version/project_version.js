@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.3";
+export const CURRENT_PROJECT_VERSION = "0.46.6";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "towed-lying-float",
-  updatedAt: "2026-10-21",
+  codename: "selector-menu-shared-feedback",
+  updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "Selector sectors share toolbar feedback without the extra yellow thick border; the central control uses a four-square menu SVG and the suitcase is archived",
+    "Mobile toolbar puts the radial selector above float/depth and other actions; float stays left of appearing buttons without stretching selector hit geometry",
+    "Night float has a red tip without halo or additive light in daylight; both glow layers follow the location's shared night lighting",
     "A lying float is towed by its bottom: the top trails, swings around and settles; the body is projected with the water's tilt",
     "Bite-colour halo off by default; green halo for the night float; DevTools switches for the bite halo, night halo and tip glow",
     "Image float no longer stretches on the WebGL scene while sinking (dynamic crop textures)",

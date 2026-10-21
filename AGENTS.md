@@ -1,5 +1,8 @@
 # CyberFishing workspace instructions
 
+Record each new development task from the owner in `tasks.md` before implementation. Keep completed
+implementation marked `[x]` separately from pending owner visual checks (owner instruction, 2026-10-22).
+
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
 Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional

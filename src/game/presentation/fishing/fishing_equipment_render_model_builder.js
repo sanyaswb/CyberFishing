@@ -1,3 +1,5 @@
+import { backgroundTimeBlend } from "../../domain/time/background_time_blend.js";
+
 // The night float's halo, the green of its tip glow art.
 const NIGHT_HALO_COLOR = "#46ff8c";
 
@@ -11,6 +13,8 @@ export class FishingEquipmentRenderModelBuilder {
   #getWind;
   #floatPose;
   #getWaterMetric;
+  #getTimeOfDay;
+  #timeBlend = { evening: 0, night: 0 };
   #anchor = null;
   #rodBaseX = 0;
   #rodBaseY = 0;
@@ -29,6 +33,7 @@ export class FishingEquipmentRenderModelBuilder {
     getWind,
     floatPose,
     getWaterMetric,
+    getTimeOfDay,
   }) {
     if (typeof getRodScreenX !== "function") {
       throw new TypeError(
@@ -45,6 +50,9 @@ export class FishingEquipmentRenderModelBuilder {
     if (typeof getWaterMetric !== "function") {
       throw new TypeError("FishingEquipmentRenderModelBuilder requires getWaterMetric");
     }
+    if (typeof getTimeOfDay !== "function") {
+      throw new TypeError("FishingEquipmentRenderModelBuilder requires getTimeOfDay");
+    }
     this.#projector = projector;
     this.#canvasMetrics = canvasMetrics;
     this.#clock = clock;
@@ -54,6 +62,7 @@ export class FishingEquipmentRenderModelBuilder {
     this.#getWind = getWind;
     this.#floatPose = floatPose;
     this.#getWaterMetric = getWaterMetric;
+    this.#getTimeOfDay = getTimeOfDay;
   }
 
   // Once per frame before the line: rod base, the rod picture's step (spec 099) and its anchor, whose tip is where
@@ -190,10 +199,11 @@ export class FishingEquipmentRenderModelBuilder {
     target.y = screenPosition.y;
     target.color = visual.color;
     // Halo around the tackle (ui.float, DEV switches): the bite colours' halo is off by default (owner, v0.46.2); a
-    // night float has a green halo of the same style and its tip glow.
+    // night float has a green halo and tip glow only while the location's night lighting is present.
     const floatUi = this.#config.ui?.float || {};
-    const isNight = kind === "float" && floatConfig.variant === "night";
-    const biteHalo = floatUi.biteHalo === true && visual.color !== "#ffffff" && visual.color !== "#00ff80";
+    const nightFloat = kind === "float" && floatConfig.variant === "night";
+    const isNight = nightFloat && backgroundTimeBlend(this.#getTimeOfDay(), this.#timeBlend).night > 0;
+    const biteHalo = (!nightFloat || isNight) && floatUi.biteHalo === true && visual.color !== "#ffffff" && visual.color !== "#00ff80";
     const nightHalo = isNight && floatUi.nightHalo !== false;
     target.glow = biteHalo || nightHalo;
     target.glowColor = biteHalo ? visual.color : NIGHT_HALO_COLOR;

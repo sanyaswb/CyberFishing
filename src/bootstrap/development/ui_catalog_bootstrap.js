@@ -104,7 +104,7 @@ export function startUiCatalog() {
           inventoryUI: ui, degradationColorResolver: colors, uiSurface: surface, buttonMountNode: toolbar.element }));
         const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3 } } };
         const selector = own(composeInventorySelector({ documentRef: scope, windowRef: windowTarget, uiSurface: surface,
-          mountNode: toolbar.element, inventoryUI: ui, keepnetUI: keepnet, config,
+          mountNode: toolbar.selectorMountNode, inventoryUI: ui, keepnetUI: keepnet, config,
           imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }), logger: new ConsoleLogger(),
           equipmentSource: { getEquipped: () => ({ rod: ITEM_DB.rods.rod_test_float }), onInventoryChanged: () => () => {} },
           id: "catalog-inventory-selector-sections" }));
