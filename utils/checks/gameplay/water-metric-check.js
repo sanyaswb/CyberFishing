@@ -413,6 +413,10 @@ function checkUnifiedWaterAreas() {
           "landing contours continue to show actual ground range, including off-centre shear");
       }
       frame.reset(); worldBuilder.buildInto({ target: frame.world });
+      const waterPlane = frame.world.waterPlane;
+      assert(waterPlane.metric === metric && waterPlane.left === 0 && waterPlane.right === 2560 &&
+        waterPlane.top === 520 && waterPlane.bottom === 1160,
+        "R4: the wave field gets the metric and the virtual bounds its clip regions cover");
       const region = frame.world.clipRegions.getAt(0);
       assert(Math.abs(region.height / projector.getScale() - (bounds.bottom - bounds.top)) < 1e-8,
         "water animation/clipping always spans the full castable height");

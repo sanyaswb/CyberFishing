@@ -25,7 +25,6 @@ export class WaterWaveField {
   #height;
   #pixels;
   #envelope;
-  #ground = { x: 0, y: 0 };
   #rowX;
   #rowY;
 
@@ -66,6 +65,12 @@ export class WaterWaveField {
   // timeSec: the animation clock; artWidth / artHeight: the water's size in art pixels; wavelength: art pixels between
   // crests at the near edge; speed: art pixels per second the crests travel; driftX / driftY: how far the current has
   // carried the whole pattern, in art pixels at the near edge (the far water drifts slower on screen: perspective).
+  // plane: the location's water metric and the virtual bounds this field covers (GameRenderFrame world.waterPlane).
+  //
+  // The waves are a surface pattern (spec 126 R4): on a row whose surface size is s (1 at the shore, farScale at the
+  // far edge) crests are s times as far apart and s times as high in both axes, whether or not the grid contracts
+  // sideways. Rows run in calibrated ground metres (near-edge art pixels per metre), columns in surface units about
+  // the field's centre line.
   write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null }) {
     const width = this.#width;
     const height = this.#height;
@@ -74,27 +79,31 @@ export class WaterWaveField {
     const travel = k * speed * timeSec;
     const rowX = this.#rowX;
     const rowY = this.#rowY;
-    const metric = plane?.metric;
+    const metric = plane?.metric ?? null;
+    const artPerVirtual = metric ? artWidth / (plane.right - plane.left) : 1;
+    const nearArtPerMeter = metric ? metric.pixelsPerMeterY(metric.shoreY) * artPerVirtual : 0;
     for (let row = 0; row < height; row += 1) {
       const v = (row + .5) / height;
-      const mapY = metric ? metric.topY + v * (metric.shoreY - metric.topY) : v * artHeight;
-      if (metric) metric.toBasePlane(plane.left, mapY, this.#ground);
-      const y = metric ? this.#ground.y : mapY;
-      const originX = metric ? this.#ground.x : 0;
-      const xScale = metric ? (plane.right - plane.left) / width * metric.pixelsPerMeter / metric.pixelsPerMeterX(mapY)
-        : artWidth / width;
-      const scaleX = metric ? metric.pixelsPerMeterX(mapY) / metric.pixelsPerMeterX(metric.shoreY) : 1;
-      const scaleY = metric ? metric.pixelsPerMeterY(mapY) / metric.pixelsPerMeterY(metric.shoreY) : 1;
+      let y = v * artHeight;
+      let scale = 1;
+      if (metric) {
+        const mapY = plane.top + v * (plane.bottom - plane.top);
+        scale = metric.surfaceScaleAt(mapY);
+        y = -metric.metersFromShore(mapY) * nearArtPerMeter;
+      }
+      const xScale = artWidth / width / scale;
+      // Column 0's surface position is (0.5 * xScale - driftX); centre the surface units on the field's middle.
+      const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
       rowX.fill(0);
       rowY.fill(0);
-      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, driftX - originX, travel);
-      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, driftX - originX, travel);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, travel);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, travel);
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
-        const envelope = this.#envelope[index];
+        const envelope = this.#envelope[index] * scale;
         const offset = index * 4;
-        pixels[offset] = 128 + 127 * envelope * scaleX * rowX[column];
-        pixels[offset + 1] = 128 + 127 * envelope * scaleY * rowY[column];
+        pixels[offset] = 128 + 127 * envelope * rowX[column];
+        pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
         pixels[offset + 2] = 128;
       }
     }

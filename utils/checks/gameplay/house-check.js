@@ -379,7 +379,7 @@ async function checkSharedTimeOfDayLayers() {
     const current = { x: 0, y: 0 };
     data.eveningOpacity = evening; data.nightOpacity = night;
     builder.buildInto({ target: { backgroundLayers: { acquire: () => { const record = {}; records.push(record); return record; } },
-      backgroundAssetIds, current, clipRegions: {}, invalidCastMarker: {} }, invalidCastMarker: null, debugEnabled: false });
+      backgroundAssetIds, current, clipRegions: {}, waterPlane: {}, invalidCastMarker: {} }, invalidCastMarker: null, debugEnabled: false });
     assert.deepEqual(current, { x: -5, y: 1 }, "the world model carries the location's current for the scene's water (spec 106 D9)");
     assert.equal(records.map((record) => `${record.assetId}:${record.alpha}`).join(" "), expected, `map layers at ${evening}/${night}`);
     assert.deepEqual(backgroundAssetIds, ["day", "evening", "night"], "every phase is listed for the WebGL scene (spec 105)");

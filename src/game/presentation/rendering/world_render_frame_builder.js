@@ -56,13 +56,8 @@ export class WorldRenderFrameBuilder {
       this.#config.canvas?.backgroundColor || "#0f171e";
     this.#buildBackground(target);
     this.#buildCurrent(target.current);
-    if (this.#getWaterMetric) {
-      const plane = target.waterPlane;
-      plane.metric = this.#getWaterMetric();
-      const bounds = this.#map.getCastableBoundsVirtual(this.#config.locations.cellSize);
-      plane.left = bounds.left; plane.right = bounds.right;
-    }
-    this.#buildClipRegions(target.clipRegions);
+    this.#buildClipRegions(target.clipRegions, target.waterPlane);
+    if (this.#getWaterMetric) target.waterPlane.metric = this.#getWaterMetric();
     this.#debugBuilder?.buildInto(target, debugEnabled);
     if (target.backgroundHidden) {
       target.backgroundLayers.reset();
@@ -121,12 +116,14 @@ export class WorldRenderFrameBuilder {
     target.y = speed * (Number(current?.direction?.y) || 0);
   }
 
-  #buildClipRegions(target) {
+  // Also writes the virtual bounds the regions cover into `plane`, so the wave field maps over the water it fills.
+  #buildClipRegions(target, plane) {
     const locations = this.#config.locations || {};
     const maps = locations.map || {};
     const locationId = locations.currentLocationId || this.#locationId;
     const zones = maps[locationId]?.zones?.castable || [];
     const cellSize = Math.max(1, Number(locations.cellSize) || 40);
+    plane.left = Infinity; plane.right = -Infinity; plane.top = Infinity; plane.bottom = -Infinity;
     for (let index = 0; index < zones.length; index += 1) {
       const zone = zones[index];
       let left = Number(zone.x) * cellSize;
@@ -145,6 +142,8 @@ export class WorldRenderFrameBuilder {
       }
       const top = Number(zone.y) * cellSize;
       const bottom = (Number(zone.y) + Number(zone.h)) * cellSize;
+      plane.left = Math.min(plane.left, left); plane.right = Math.max(plane.right, right);
+      plane.top = Math.min(plane.top, top); plane.bottom = Math.max(plane.bottom, bottom);
       const first = this.#projector.virtualToScreen(
         left,
         top,

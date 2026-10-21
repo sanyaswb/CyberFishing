@@ -523,7 +523,7 @@ async function checkWaterWaveField() {
   const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
     maxMeters: 30, tiltDegrees: 45, farScale: .3, lateralContraction: true });
   const settings = { artWidth: 2560, artHeight: 640, wavelength: 140, speed: 24,
-    plane: { metric, left: 0, right: 2560 } };
+    plane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
   const first = Array.from(field.write(2, settings));
   assert.equal(first.length, 192 * 48 * 4);
   assert.deepEqual(Array.from(field.write(2, settings)), first, "a moment of the animation is deterministic");
@@ -531,10 +531,10 @@ async function checkWaterWaveField() {
   assert.deepEqual(Array.from(field.write(7, { ...settings, speed: 0 })), Array.from(field.write(0, { ...settings, speed: 0 })),
     "speed 0 holds the waves still");
   // D9: the current carries the whole pattern. A drift of one texel's width of water on a row (art pixels per column
-  // over that row's perspective, 0.35 at the far edge to 1 at the near one) moves that row one texel along.
+  // over that row's surface size, farScale at the far edge to 1 at the near one) moves that row one texel along.
   const still = { ...settings, speed: 0 };
   const near = 47 - 4;
-  const perspective = metric.pixelsPerMeterX(metric.topY + (metric.shoreY - metric.topY) * (near + .5) / 48) / metric.pixelsPerMeter;
+  const perspective = metric.surfaceScaleAt(metric.topY + (metric.shoreY - metric.topY) * (near + .5) / 48);
   const before = Array.from(field.write(0, still));
   const after = Array.from(field.write(0, { ...still, driftX: 2560 / 192 / perspective }));
   let shifted = 0;
@@ -555,12 +555,28 @@ async function checkWaterWaveField() {
     assert(pixels[index + 2] === 128 && pixels[index + 3] === 255, "blue is neutral and every texel opaque");
   }
   const tiltedPixels = Array.from(pixels);
+  const meanShift = (values, fromRow, toRow) => {
+    let sum = 0;
+    for (let row = fromRow; row < toRow; row += 1) {
+      for (let column = 20; column < 172; column += 1) sum += Math.abs(values[(row * 192 + column) * 4] - 128);
+    }
+    return sum / ((toRow - fromRow) * 152);
+  };
+  assert(meanShift(tiltedPixels, 10, 16) < meanShift(tiltedPixels, 30, 36) * 0.75,
+    "the far water moves less than the near water (surface size)");
+  // R4 (spec 126): the waves are a surface pattern, so the optional grid contraction does not change them.
+  const parallel = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
+    maxMeters: 30, tiltDegrees: 45, farScale: .3, lateralContraction: false });
+  assert.deepEqual(Array.from(field.write(2, { ...settings, plane: { ...settings.plane, metric: parallel } })), tiltedPixels,
+    "far waves shrink in both axes with or without lateral grid contraction");
   const overhead = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
     maxMeters: 30, tiltDegrees: 90, farScale: 1, lateralContraction: true });
   const overheadPixels = field.write(2, { ...settings, plane: { ...settings.plane, metric: overhead } });
   assert.equal(overheadPixels, pixels, "projection edits reuse the same fixed-size displacement field");
   assert.notDeepEqual(Array.from(overheadPixels), tiltedPixels,
     "wave spacing and displacement consume the changed shared projection instead of an independent far-scale curve");
+  const evenNear = meanShift(overheadPixels, 18, 24), evenFar = meanShift(overheadPixels, 30, 36);
+  assert(Math.abs(evenNear - evenFar) < 0.25 * evenFar, "without a far scale the waves keep one size over the water");
 }
 
 // Spec 106: the water over the background, stepping at its own frame rate.

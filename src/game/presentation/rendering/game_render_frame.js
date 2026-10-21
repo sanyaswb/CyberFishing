@@ -21,7 +21,8 @@ export class GameRenderFrame {
       // The location's water current (environment.current) as a velocity in art pixels per second: the scene's water
       // drifts with the same current that carries the tackle (spec 106 D9).
       current: { x: 0, y: 0 },
-      waterPlane: { metric: null, left: 0, right: 0 },
+      // The location's water metric and the virtual bounds the water's clip regions cover (the wave field's area).
+      waterPlane: { metric: null, left: 0, right: 0, top: 0, bottom: 0 },
       clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
       annotations: null,

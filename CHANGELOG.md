@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.45.45 - Surface-Scaled Water Waves
+
+- Spec 126 R4: water waves are a surface pattern. Far crests are farScale times as far apart and as high in both axes, whether or not the grid contracts sideways; rows follow calibrated ground metres. The wave field maps over the clip regions it actually covers. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance acceptance pending.
+
 ## v0.45.44 - One Water Projection Source
 
 - Spec 126 review corrections R1–R3, R5, S1–S3: one location branch waterProjection {maxMeters, tiltDegrees, farScale, lateralContraction} replaces perspective + distanceProfile; IllustratedDepthProfile behind WaterMetric with one set of ranges for schema, metric and DEV editor; the legacy linearShare profile removed; LocationWaterMetricSource is the only metric query. A projection without its length is rejected instead of crashing; the editor shows near/far px per metre and an add action for uniform water. Untracked registered checks now fail the runner. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.36 - Uniform Inventory Hold Speed
 
 - Apply 200ms holds from pointerdown to all inventory cells: backpack, saved kits, equipment, editor and header bait. Remove the activation delay through shared defaults; preserve existing cell actions, cancellation and click suppression. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner acceptance pending.
-
-## v0.45.35 - Header Bait Hold Ring
-
-- Restore animated header bait hold feedback as a thin ring without a shadow. Remove bait at 200ms from pointerdown with no activation delay; preserve cancellation, release-click suppression, artwork refresh and other item timings. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner visual acceptance pending.

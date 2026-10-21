@@ -229,3 +229,17 @@ gh-pages publication.
   - Utils cleanup: no tool, script, fixture or devDependency became unused; legacy-only assertions inside the
     water-metric check were replaced by projection scenarios, no check ID removed.
   - Full 65/65 (Quick and Architecture included), game-cycle baseline file unchanged.
+- v0.45.45 (R4, visual change):
+  - `WaterWaveField` writes the waves as a surface pattern: on a row of surface size s the crests are s times as far
+    apart and s times as high in both axes; rows run in calibrated ground metres (near-edge art pixels per metre),
+    columns in surface units about the field's centre, so the grid contraction switch no longer changes the waves.
+    Drift stays in near-edge art pixels (far water drifts slower on screen).
+  - `WorldRenderFrameBuilder` writes `world.waterPlane.{left,right,top,bottom}` from the clip regions the field
+    actually covers (adaptiveX zones included), not from the castable bounds.
+  - Reproduction: the scene-layer assertion "far waves shrink in both axes with or without lateral grid
+    contraction" fails on the v0.45.44 field and passes now; "far water moves less" and "no far scale keeps one
+    size" restored/added; water-metric check asserts the plane bounds.
+  - Per-row CPU work is smaller than before (no base-plane conversion); phone measurement in both orientations with
+    "⚡ ПРОДУКТИВНІСТЬ" is the owner's, as is the visual check.
+  - The house check's partial world model gains `waterPlane` (now part of the world model the builder writes).
+  - Full 65/65 (Quick and Architecture included), game-cycle baseline file unchanged.
