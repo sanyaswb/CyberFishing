@@ -2,7 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { spawn } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const { CHECK_DEFINITIONS } = require("./testing/suites/check_manifest");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
@@ -39,6 +39,14 @@ class CheckCatalog {
       if (!fs.existsSync(path.join(projectRoot, check.file))) throw new Error(`Check file does not exist: ${check.file}`);
       ids.add(check.id);
       files.add(check.file);
+    }
+    // A registered but untracked check passes locally and fails on every clean checkout (v0.45.26..v0.45.43).
+    const tracked = spawnSync("git", ["ls-files", "-z", "--", ...files], { cwd: projectRoot, encoding: "utf8" });
+    if (tracked.status === 0) {
+      const trackedFiles = new Set(tracked.stdout.split("\0"));
+      for (const file of files) {
+        if (!trackedFiles.has(file)) throw new Error(`Check file is not tracked by Git (stage it): ${file}`);
+      }
     }
     const utilsRoot = path.join(projectRoot, "utils");
     const candidates = [

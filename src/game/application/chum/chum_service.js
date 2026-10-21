@@ -143,8 +143,9 @@ export class ChumService {
       isDeliveredNow,
     );
 
+    const waterMetric = this.#getWaterMetric();
     const overlappingIndex = this.#zones.findIndex(
-      (z) => z.isDelivered && z.checkOverlap(newZone, this.#getWaterMetric()),
+      (z) => z.isDelivered && z.checkOverlap(newZone, waterMetric),
     );
 
     if (overlappingIndex !== -1) {
@@ -241,6 +242,7 @@ export class ChumService {
   getChumDataAt(floatX, floatY) {
     let bestBonus = 1.0;
     let bestTargets = [];
+    const waterMetric = this.#getWaterMetric();
 
     for (const zone of this.#zones) {
       if (!zone.isDelivered || zone.isExpired) continue;
@@ -249,7 +251,7 @@ export class ChumService {
         floatX,
         floatY,
         null,
-        this.#getWaterMetric(),
+        waterMetric,
       );
 
       if (zoneMult > bestBonus) {

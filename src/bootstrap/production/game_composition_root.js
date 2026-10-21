@@ -53,6 +53,7 @@ import { EnvironmentSystem } from "../../game/application/world/environment_syst
 import { composeGameTime } from "./game_time_composition.js";
 import { GameWorld } from "../../game/application/world/game_world.js";
 import { LocationWaterMetricResolver } from "../../game/domain/locations/location_water_metric_resolver.js";
+import { LocationWaterMetricSource } from "../../game/domain/locations/location_water_metric_source.js";
 import { CurrentLocation } from "../../game/application/world/current_location.js";
 import { EquipmentService } from "../../game/application/inventory/equipment_service.js";
 import { FightAreaStyleResolver } from "../../game/presentation/styles/fight_area_style_resolver.js";
@@ -427,7 +428,7 @@ export class GameCompositionRoot {
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
       rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
     });
-    const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver, getWaterMetric } = await this.#composeLocation({
+    const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
     });
     const {
@@ -460,7 +461,7 @@ export class GameCompositionRoot {
     });
     this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
     const { systems } = this.#composeWorldSystems({
-      projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
+      projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
       gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter },
@@ -796,18 +797,16 @@ export class GameCompositionRoot {
     const waterMetricResolver = new LocationWaterMetricResolver({
       pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter, logger: new ConsoleLogger(),
     });
-    const getWaterMetric = () => {
-      const config = this.#config.locations;
-      return waterMetricResolver.resolve(locationMap.getCastableBoundsVirtual(config.cellSize),
-        config.map[locId].distanceProfile, config.map[locId].perspective);
-    };
+    const waterMetricSource = new LocationWaterMetricSource({ map: locationMap, getLocations: () => this.#config.locations,
+      resolver: waterMetricResolver });
+    const getWaterMetric = () => waterMetricSource.current();
     const worldPerspective = new WorldPerspective({ getWaterMetric });
     const projector = new ViewportProjector(
       this.#config.locations,
       locId,
       worldPerspective.getPerspective.bind(worldPerspective),
     );
-    return { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver, getWaterMetric };
+    return { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric };
   }
 
   // Physics-backed line and cast rules and the player's inventory.
@@ -886,7 +885,7 @@ export class GameCompositionRoot {
 
   // Map, environment, input, game controls, chum service and bite system; the inventory reads boat charge from the chum service.
   #composeWorldSystems({
-    projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
+    projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
     gameTimeClock, rodAnimation, scene,
@@ -895,7 +894,7 @@ export class GameCompositionRoot {
     const systems = {
       projector,
       map: locationMap,
-      waterMetricResolver,
+      waterMetricSource,
       env: new EnvironmentSystem(
         locCfg,
         this.#config.debug?.initialTime ?? 12,
@@ -1039,7 +1038,7 @@ export class GameCompositionRoot {
       canvasMetrics,
       clock,
       locationConfig: this.#config.locations,
-      waterMetricResolver: systems.waterMetricResolver,
+      waterMetricSource: systems.waterMetricSource,
     });
     const equipment = new EquipmentService(systems.inventory);
     const fishing = new FishingController({

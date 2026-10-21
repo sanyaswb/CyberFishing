@@ -4,8 +4,9 @@ const SEGMENTS = 64;
 const CIRCLE = Array.from({ length: SEGMENTS * 2 }, (_, index) => index % 2 === 0
   ? Math.cos(index / 2 * Math.PI * 2 / SEGMENTS) : Math.sin((index - 1) / 2 * Math.PI * 2 / SEGMENTS));
 
-// A ground circle's actual boundary, shared by both scene paths. Geometry and scratch vectors belong to the
-// render record; unchanged metric/centre/radius/viewport readings perform no projection work or buffer writes.
+// A ground circle's actual boundary in exact metres (the landing range, spec 126 D-R2), for both scene paths.
+// Geometry and scratch vectors belong to the render record; unchanged metric/centre/radius/viewport readings
+// perform no projection work or buffer writes.
 export function projectWaterCircle(target, metric, projector, x, y, radiusBasePixels) {
   const cache = target.projectionCache ||= { ground: new Vector2(), map: new Vector2(), screen: new Vector2() };
   projector.virtualToScreen(x, y, cache.screen);

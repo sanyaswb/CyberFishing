@@ -34,8 +34,10 @@ the optional hooked-fish override of the waiting state, and production composes 
 snapshot is likewise composed only for DEV (`createFightDiagnosticsBuilder` → `dev/fishing/FightDiagnosticsSnapshotBuilder`);
 gameplay, HUD and render read the fight frame.
 
-Water distances come from one `WaterMetric` per location (`GameWorld.getWaterMetric()`, built by
-`LocationWaterMetricResolver` from the castable bounds and `MAP_DB.<id>.distanceProfile`). Casting converts its base
+Water distances come from one `WaterMetric` per location: `LocationWaterMetricSource` is the only query (GameWorld,
+chum, perspective, render and DEV receive it), and `LocationWaterMetricResolver` builds the metric from the castable
+bounds and `MAP_DB.<id>.waterProjection` (spec 126; an `IllustratedDepthProfile` maps height to exact metres, no
+branch means uniform water). Casting converts its base
 pixels (ground metres × pixelsPerMeter) through it. `GroundPlaneScope` runs a tackle update on the metric's ground
 plane (the tackle's vectors are converted in place and back): `FishingForceService` wraps the fight step in it and
 the waiting and biting states wrap the tackle update, so every stage measures ground metres. A uniform metric

@@ -195,3 +195,37 @@ Owner acceptance in addition to the list above: dev.html zone editor with latera
 scale 0.3/0.6/1 — far waves shrink in both axes; status values; reset removes old perspective/distanceProfile
 overrides; landing circle vs chum ellipse near the shore (D-R2). Phone performance overlay in both orientations
 after R4. No browser appearance or phone performance check is performed by the agent.
+
+### Implementation, 2026-10-21
+
+Owner decisions: D-R1 remove the legacy profile; D-R2 keep landing in exact ground metres. Owner: commit, no
+gh-pages publication.
+
+- 89b5bb75 (v0.45.43 base): the spec 124–126 work committed as it was, with R2 (chum-aim-zone check tracked) and
+  R6 (CHANGELOG.md and zone_editor_section.js back to LF without BOM).
+- v0.45.44 (structural, game-cycle baseline unchanged):
+  - R2 guard: `CheckCatalog` fails when a registered check file is not in `git ls-files` (proved by removing the
+    file from the index: the runner reports it).
+  - S1: `IllustratedDepthProfile` (`illustrated_depth_profile.js`) holds d(h), its inverse, metres per pixel and the
+    surface size with the original arithmetic; `WATER_PROJECTION_RANGES` there is the one set of ranges/defaults
+    for the schema validator, the metric and the zone editor. `WaterMetric` keeps only the shared parts (tangents,
+    base plane, Jacobian, surface distance, tilt); `WaterMetric.illustrated(...)` builds it from a projection.
+  - S2: `MAP_DB.<id>.waterProjection: { maxMeters, tiltDegrees, farScale, lateralContraction }`; no branch means
+    uniform water. The schema reports a missing length, unknown fields and the retired `perspective` /
+    `distanceProfile` branches; labels moved to `MAP_DB.waterProjection.*`. The location reset restores the branch
+    and drops exported overrides of the retired branches; such overrides never reach the metric (checked).
+  - S3: the legacy `linearShare` profile, its square-root lateral scale and `enabled` are gone. Chum zones are
+    always the surface ellipse record (a uniform metric draws a circle), so the chum polygon path in Canvas/WebGL
+    was removed; the ground-contour projector stays for the landing range only (D-R2). Check scenarios migrated
+    to projections of the same lengths: game-cycle flat (16 m, farScale 1) and 40 m equivalence, bait boat,
+    cast-rod-control, tackle-line-limit, viewport, scene layer, zone editor, config runtime/schema.
+  - R1: covered by S2 plus checks: a projection without `maxMeters` fails fast with a RangeError; the editor shows
+    "Вода рівномірна" and "Додати перспективу води" (uniform length, documented defaults) for such a location.
+  - R3: `LocationWaterMetricSource` (map + live locations config + resolver) is the only metric query; GameWorld
+    delegates to it, the composition root passes the same function to chum, perspective, render and DEV.
+    Checked: switching the current location keeps every consumer on the same instance.
+  - R5: ChumService reads the metric once per lookup/deployment (checked: one query with several zones).
+  - Editor status shows near/far depth and lateral pixels per metre (D-R2 visibility).
+  - Utils cleanup: no tool, script, fixture or devDependency became unused; legacy-only assertions inside the
+    water-metric check were replaced by projection scenarios, no check ID removed.
+  - Full 65/65 (Quick and Architecture included), game-cycle baseline file unchanged.

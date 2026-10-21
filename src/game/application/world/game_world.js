@@ -9,7 +9,7 @@ export class GameWorld {
   #canvasMetrics;
   #clock;
   #locationConfig;
-  #waterMetricResolver;
+  #waterMetricSource;
   #bounds = { left: 0, right: 0, top: 0, bottom: 0 };
   #virtualTopLeft = new Vector2(0, 0);
   #virtualBottomRight = new Vector2(0, 0);
@@ -23,7 +23,7 @@ export class GameWorld {
     canvasMetrics,
     clock,
     locationConfig,
-    waterMetricResolver,
+    waterMetricSource,
   }) {
     this.#map = map;
     this.#env = env;
@@ -33,7 +33,7 @@ export class GameWorld {
     this.#canvasMetrics = canvasMetrics;
     this.#clock = clock;
     this.#locationConfig = locationConfig;
-    this.#waterMetricResolver = waterMetricResolver;
+    this.#waterMetricSource = waterMetricSource;
   }
 
   refreshLocationConfig(locationConfig, locationResources) {
@@ -79,12 +79,7 @@ export class GameWorld {
 
   // Metres on the castable water of the current location (one metric for every gameplay distance).
   getWaterMetric() {
-    const locations = this.#locationConfig;
-    return this.#waterMetricResolver.resolve(
-      this.#map.getCastableBoundsVirtual(locations.cellSize),
-      locations.map[this.#map.currentLocationId]?.distanceProfile,
-      locations.map[this.#map.currentLocationId]?.perspective,
-    );
+    return this.#waterMetricSource.current();
   }
 
   pan(deltaX, deltaY = 0) {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.43";
+export const CURRENT_PROJECT_VERSION = "0.45.44";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "simple-water-perspective",
+  codename: "water-projection-structure",
   updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "Water projection is one location branch (waterProjection) with one depth profile and one metric source; legacy distance profile removed, gameplay unchanged",
     "Simple 2D water: exact 30 m length, artistic 30-degree surface tilt and a 0.3 far-size ratio; no camera distance or overhead-reference controls",
     "One WaterMetric owns metre positions, motion and illustrated area factors; chum ellipses match their bonus boundary while grid/water keep complete authored bounds",
     "Optional lateral grid contraction defaults off; local reset/export/import retain one injected config owner",

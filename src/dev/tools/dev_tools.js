@@ -924,15 +924,23 @@ export class DevTools {
     }
   }
 
+  // Restores this location's waterProjection and drops exported overrides of the branches spec 126 retired, so
+  // they are neither saved nor exported again (they never reach the metric).
   #resetLocationPerspective(id) {
-    for (const branch of ["perspective", "distanceProfile"]) {
-      const path = ["CONFIG", "locations", "map", id, branch];
-      const initial = this.#configRuntime?.baseConfig.locations.map[id]?.[branch];
-      if (initial === undefined) continue;
-      this.#updateConfigValue(path, initial);
-      for (const [key, value] of Object.entries(this.#config.locations.map[id][branch] || {})) {
-        this.#ui.syncValue([...path, key], value);
-      }
+    const location = ["locations", "map", id];
+    const retired = ["perspective", "distanceProfile"].map(branch => [...location, branch].join("."));
+    for (const [key] of Object.entries(this.#configRuntime?.exportOverrides?.() || {})) {
+      if (retired.some(prefix => key === prefix || key.startsWith(prefix + "."))) this.#configRuntime.reset(key);
+    }
+    const path = ["CONFIG", ...location, "waterProjection"];
+    const initial = this.#configRuntime?.baseConfig.locations.map[id]?.waterProjection;
+    if (initial === undefined) {
+      if (this.#config.locations.map[id]?.waterProjection !== undefined) this.#configRuntime?.reset?.(path);
+      return;
+    }
+    this.#updateConfigValue(path, initial);
+    for (const [key, value] of Object.entries(this.#config.locations.map[id].waterProjection || {})) {
+      this.#ui.syncValue([...path, key], value);
     }
   }
 

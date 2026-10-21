@@ -36,8 +36,9 @@ const left = { ...right, rodControlDirectionX: -1 };
 function fixture({ floatX = 400, perspective = false } = {}) {
   const config = { physics: { simulation: { pixelsPerMeter: 50, maxDtMs: 50 }, castRodControl: clone(CAST_ROD_CONTROL_CONFIG) }, ui: {} };
   const bounds = { left: 100, right: 900, top: 0, bottom: 1000 };
-  const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 400,
-    ...(perspective ? { maxMeters: 40, linearShare: 0.5 } : {}) });
+  const water = { pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 400 };
+  const metric = perspective ? WaterMetric.illustrated({ ...water, maxMeters: 40, lateralContraction: true })
+    : new WaterMetric(water);
   const projector = { virtualToScreen(x, y, out) { return out.set(x, y); },
     screenToVirtual(x, y, out) { return out.set(x, y); }, focusOnVirtualPos() {} };
   const metrics = { width: 1000, height: 1000 };

@@ -101,20 +101,30 @@ function checkNegativeFixtures() {
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   for (const value of [0, -1, 91, Infinity]) {
     const tiltedMapDb = JSON.parse(JSON.stringify(options.mapDb));
-    tiltedMapDb.test.perspective.tiltDegrees = value;
-    assert(has(validate({ mapDb: tiltedMapDb }), /perspective\.tiltDegrees/u), "an invalid location tilt is reported");
+    tiltedMapDb.test.waterProjection.tiltDegrees = value;
+    assert(has(validate({ mapDb: tiltedMapDb }), /waterProjection\.tiltDegrees/u), "an invalid location tilt is reported");
   }
-  const reversedAngles = JSON.parse(JSON.stringify(options.mapDb));
-  reversedAngles.test.distanceProfile.farScale = 0;
-  assert(has(validate({ mapDb: reversedAngles }), /distanceProfile\.farScale/u), "invalid far size is reported");
+  for (const value of [0, .01, 1.1, NaN]) {
+    const farMapDb = JSON.parse(JSON.stringify(options.mapDb));
+    farMapDb.test.waterProjection.farScale = value;
+    assert(has(validate({ mapDb: farMapDb }), /waterProjection\.farScale/u), "invalid far size is reported");
+  }
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");
+  // R1 (spec 126): a projection without its length, unknown fields and the retired branches are reported.
   const mapDb = JSON.parse(JSON.stringify(options.mapDb));
-  mapDb.test.distanceProfile = { enabled: "yes", linearShare: 1, maxMeters: 0 };
+  mapDb.test.waterProjection = { tiltDegrees: 30, lateralContraction: "yes", linearShare: .5 };
+  mapDb.test.perspective = { tiltDegrees: 30 };
+  mapDb.test.distanceProfile = { enabled: true, maxMeters: 30 };
   const profileResult = validate({ mapDb });
-  assert(has(profileResult, /distanceProfile\.enabled: expected boolean/u) &&
-    has(profileResult, /distanceProfile\.linearShare: expected < 1/u) &&
-    has(profileResult, /distanceProfile\.maxMeters: expected >=/u), "an invalid location distance profile is reported");
+  assert(has(profileResult, /waterProjection\.maxMeters: expected finite number/u) &&
+    has(profileResult, /waterProjection\.lateralContraction: expected boolean/u) &&
+    has(profileResult, /waterProjection\.linearShare: unknown field/u) &&
+    has(profileResult, /test\.perspective: retired by spec 126/u) &&
+    has(profileResult, /test\.distanceProfile: retired by spec 126/u), "an invalid location water projection is reported");
+  const uniformMapDb = JSON.parse(JSON.stringify(options.mapDb));
+  delete uniformMapDb.test.waterProjection;
+  assert(!has(validate({ mapDb: uniformMapDb }), /waterProjection/u), "a location without a projection is valid uniform water");
   assert.equal(config, context.runtimeConfig);
 }
 
@@ -128,13 +138,13 @@ function checkReporterReadsLiveLocationProfiles() {
     } },
   } });
   const { composeDevConfigValidation } = runtime.importModule("src/bootstrap/development/dev_config_validation_composition.js");
-  const configRuntime = { runtimeConfig: { locations: { map: { lake: { perspective: { tiltDegrees: 90 } } } } } };
+  const configRuntime = { runtimeConfig: { locations: { map: { lake: { waterProjection: { maxMeters: 30, tiltDegrees: 90 } } } } } };
   const reporter = composeDevConfigValidation({ configRuntime, itemCatalog: {} });
   const first = reporter.createValidator(LABELS).options.mapDb;
-  configRuntime.runtimeConfig.locations.map = { lake: { perspective: { tiltDegrees: 0 } } };
+  configRuntime.runtimeConfig.locations.map = { lake: { waterProjection: { maxMeters: 30, tiltDegrees: 0 } } };
   const next = reporter.createValidator(LABELS).options.mapDb;
   assert.notEqual(first, next, "validation follows a replaced runtime map after an override");
-  assert.equal(next.lake.perspective.tiltDegrees, 0, "the validator sees the current invalid angle, not the startup catalog");
+  assert.equal(next.lake.waterProjection.tiltDegrees, 0, "the validator sees the current invalid angle, not the startup catalog");
 }
 
 async function checkDevelopmentReporter() {

@@ -9,7 +9,7 @@ const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_me
 // G-110: world sizes read the same metric; viewport pan/resize never owns its projection.
 const config = { baseResolution: { width: 1000, height: 800 }, cameraFocusY: 0.7,
   map: { lake: { safeZone: { top: 100, bottom: 500 } } } };
-let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20,
+let metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20,
   tiltDegrees: 45, farScale: .3 });
 const perspective = new WorldPerspective({ getWaterMetric: () => metric });
 let calls = 0;
@@ -30,7 +30,7 @@ for (let frame = 0; frame < 120; frame++) {
 }
 assert.equal(calls, 120, "camera operations add no perspective queries");
 for (const tiltDegrees of [1, 30, 45, 90]) {
-  metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, tiltDegrees, farScale: .3 });
+  metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, tiltDegrees, farScale: .3 });
   for (const y of [0, 100, 300, 500, 600]) {
     const sample = projector.getPerspective(y);
     assert.equal(sample.scale, metric.surfaceScaleAt(y), "viewport forwards the shared surface size");

@@ -1,6 +1,5 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
-import { projectWaterCircle } from "./water_circle_projection.js";
 
 export class BoatChumRenderFrameBuilder {
   #chum;
@@ -50,15 +49,11 @@ export class BoatChumRenderFrameBuilder {
       }
       const record = target.chumZones.acquire();
       record.opacity = opacity;
-      if (metric.tiltDegrees === null) {
-        projectWaterCircle(record, metric, this.#projector, source.x, source.y, source.baseRadius);
-      } else {
-        this.#projector.virtualToScreen(source.x, source.y, this.#screenA);
-        record.x = this.#screenA.x; record.y = this.#screenA.y;
-        record.radiusX = source.baseRadius * metric.surfaceScaleAt(source.y) * this.#projector.getScale();
-        record.radiusY = record.radiusX * metric.surfaceSquashY;
-        record.pointCount = 0;
-      }
+      // The surface ellipse that ChumZone's containment inverts (spec 126); a uniform metric draws a circle.
+      this.#projector.virtualToScreen(source.x, source.y, this.#screenA);
+      record.x = this.#screenA.x; record.y = this.#screenA.y;
+      record.radiusX = source.baseRadius * metric.surfaceScaleAt(source.y) * this.#projector.getScale();
+      record.radiusY = record.radiusX * metric.surfaceSquashY;
     }
   }
 

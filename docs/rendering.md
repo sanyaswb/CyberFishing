@@ -151,10 +151,11 @@ WaterMetric owns one calibrated mapping, velocity derivatives and local surface-
 Length 30 always maps the same complete green rectangle to 0–30 m. Angle edits flatten surface ellipses without
 recalibrating length or zooming their width. farScale=0.3 means 30% far/near size and depth motion; 1 is linear.
 Engine base units remain 50 pixels/metre; vertical map calibration fits the authored height and exact length.
-Grid X contraction is optional and defaults off; surface sprites/areas shrink with farScale in either mode.
+Grid X contraction (`waterProjection.lateralContraction`) is optional and defaults off; surface sprites/areas
+shrink with farScale in either mode.
 WorldPerspective forwards the shared surface readings. Chum ellipse containment and rendering use these same
 factors, retaining catalog radii, delivered state, bonus schedules and save schema. Canvas/WebGL consume reused
-ellipse records for modern chum; the ground-contour projector remains live for landing and legacy profiles.
+ellipse records for chum; the ground-contour projector remains live for the landing range only.
 Exact inverse/Jacobian queries drive metre grids, aiming, movement and wave phase inside the full fixed water
 mask. No camera distance, overhead reference or second far-angle calculation exists. Specs 124/125 are historical.
 Spec 110: optional scene annotations use reusable geometry and separate cached static/moving Graphics, invalidated

@@ -23,8 +23,9 @@ for (const [velocity, expected] of [[{ x: 3, y: 4 }, { x: 0, y: 4 }], [{ x: -3, 
 
 for (const State of [WaitingState, BitingState]) {
   for (const profiled of [false, true]) {
-    const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500,
-      ...(profiled ? { maxMeters: 40, linearShare: .5 } : {}) });
+    const water = { pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 };
+    const metric = profiled ? WaterMetric.illustrated({ ...water, maxMeters: 40, lateralContraction: true })
+      : new WaterMetric(water);
     const rules = new EquipmentRules(new CastDistanceCalculator(CONFIG), CONFIG, {});
     for (const variant of ["fixed", "sliding", "feeder", "spinning"]) for (const controlEnabled of [false, true]) {
       const eq = { rod: { variant: ["feeder", "spinning"].includes(variant) ? variant : "float", effectiveStats: { lengthMeters: 3 } },

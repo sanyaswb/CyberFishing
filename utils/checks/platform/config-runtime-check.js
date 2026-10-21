@@ -185,7 +185,7 @@ function checkDevelopmentInputs() {
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
-    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, WaterMetric: Renderer, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
@@ -575,8 +575,8 @@ function checkLocationMapConfigChanges() {
     rodSpine:{getStatus:()=>({mode:'rectangle',missingClips:[],pixelRatio:1}),exportSkeleton:()=>({fileName:'test-rod.json',text:'{}'}),
       isSpineEnabled:()=>true,getClips:()=>[],getBones:()=>[]},
     storageCache:{get:()=>({}),set(){}},
-    createWaterMetric:options=>new WaterMetric(options),
-    zoneEditorState:editorState, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].distanceProfile),
+    createWaterMetric:options=>WaterMetric.illustrated(options),
+    zoneEditorState:editorState, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
     openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
   tools.toggle();
@@ -622,23 +622,28 @@ function checkLocationMapConfigChanges() {
     change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
     map.update(16,12);verify(index+17,index+18);
   }
-  const perspectivePath = 'locations.map.'+locationId+'.perspective';
-  context.set(perspectivePath+'.tiltDegrees',45);
-  context.set(perspectivePath+'.cameraDistanceMeters',10);
-  context.set(perspectivePath+'.angleTop',0);
+  const projectionPath = 'locations.map.'+locationId+'.waterProjection';
+  const metricBefore = editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection);
+  // Overrides of the branches spec 126 retired, as an old local store may still hold them.
+  context.set('locations.map.'+locationId+'.perspective.tiltDegrees',10);
+  context.set('locations.map.'+locationId+'.distanceProfile',{enabled:true,linearShare:.5,maxMeters:90});
+  assert.equal(editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
+    metricBefore,'retired perspective/distanceProfile overrides never reach the metric');
+  context.set(projectionPath+'.tiltDegrees',45);
+  context.set(projectionPath+'.farScale',.6);
   const unrelatedFlag = config.locations.debugGrid;
   navigationButtons.get('Скинути перспективу цієї локації')();
-  assert.equal(config.locations.map[locationId].perspective.tiltDegrees,30,'the local reset restores the original 30-degree angle');
+  assert.equal(config.locations.map[locationId].waterProjection.tiltDegrees,30,'the local reset restores the original 30-degree angle');
   assert.equal(config.locations.debugGrid,unrelatedFlag,'local reset preserves other DEV settings');
-  assert.equal(Object.hasOwn(config.locations.map[locationId].perspective,'cameraDistanceMeters'),false,'reset removes retired camera distance');
-  assert.equal(config.locations.map[locationId].distanceProfile.maxMeters,30,'reset restores exact 30 m length');
-  assert.equal(config.locations.map[locationId].distanceProfile.farScale,.3,'reset restores the simple far-size ratio');
-  assert.equal(config.locations.map[locationId].distanceProfile.lateralExpansion,false,'local reset defaults width expansion off');
-  assert.equal(Object.hasOwn(config.locations.map[locationId].perspective,'angleTop'),false,'reset removes obsolete angle overrides');
+  assert.equal(config.locations.map[locationId].waterProjection.maxMeters,30,'reset restores exact 30 m length');
+  assert.equal(config.locations.map[locationId].waterProjection.farScale,.3,'reset restores the simple far-size ratio');
+  assert.equal(config.locations.map[locationId].waterProjection.lateralContraction,false,'local reset defaults width contraction off');
+  assert.deepEqual(Object.keys(context.exportOverrides()).filter(key=>/\.(perspective|distanceProfile)(\.|$)/u.test(key)),[],
+    'reset drops exported overrides of the retired branches');
   const resetSnapshot = JSON.parse(JSON.stringify(context.exportOverrides()));
-  context.set(perspectivePath+'.tiltDegrees',15);
+  context.set(projectionPath+'.tiltDegrees',15);
   context.importOverrides(resetSnapshot);
-  assert.equal(config.locations.map[locationId].perspective.tiltDegrees,30,'export/import preserves the local reset, without resurrecting old child overrides');
+  assert.equal(config.locations.map[locationId].waterProjection.tiltDegrees,30,'export/import preserves the local reset, without resurrecting old child overrides');
   tools.dispose();
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];

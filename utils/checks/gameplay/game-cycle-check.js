@@ -170,8 +170,10 @@ const GAMEPLAY_FILES = [
   "src/game/domain/locations/world_perspective.js",
   "src/game/application/world/current_location.js",
   "src/game/application/world/environment_system.js",
+  "src/game/domain/locations/illustrated_depth_profile.js",
   "src/game/domain/locations/water_metric.js",
   "src/game/domain/locations/location_water_metric_resolver.js",
+  "src/game/domain/locations/location_water_metric_source.js",
   "src/game/application/world/game_world.js",
   "src/game/application/fishing/mutable_fight_frame_context.js",
   "src/game/application/fishing/bite_environment_service.js",
@@ -458,7 +460,7 @@ function createCast({
   equipment,
   distanceMeters,
   currentHookDepth = 1,
-  distanceProfile = null,
+  waterProjection = null,
   bounds = { left: 0, right: 1000, top: 0, bottom: 800 },
 }) {
   const rng = createRng();
@@ -466,8 +468,8 @@ function createCast({
   const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config), CONFIG);
   const baitRules = new BaitRules();
   const rodVirtualPos = { x: 500, y: bounds.bottom };
-  // The metric over the check's own water, as GameWorld composes one per location (uniform without a profile).
-  const waterMetric = new LocationWaterMetricResolver({ pixelsPerMeter: 50 }).resolve(bounds, distanceProfile);
+  // The metric over the check's own water, as GameWorld composes one per location (uniform without a projection).
+  const waterMetric = new LocationWaterMetricResolver({ pixelsPerMeter: 50 }).resolve(bounds, waterProjection);
   const { castService } = composeProductionFishingServices({
     config,
     rng,
@@ -1847,17 +1849,17 @@ function runFightFrameModeParityCheck() {
 }
 runFightFrameModeParityCheck();
 
-// Fights on a water metric with a distance profile run on the ground plane (FightGroundPlane). Silent: the reported
-// list stays the behavior reference. A profile equal to the uniform scale takes the plane path and must follow the
+// Fights on a water metric with a water projection run on the ground plane (FightGroundPlane). Silent: the reported
+// list stays the behavior reference. A projection equal to the uniform scale (farScale 1) takes the plane path and must follow the
 // direct path. On a 40 m profile the fight, measured in ground metres, must be the fight on a flat lake 40 m tall,
 // and the line length equals the metric's ground distance on every frame.
 function runGroundPlaneFightCheck() {
   const recorded = checks.length;
-  const run = (distanceProfile, distanceMeters, frames, bounds = undefined) => {
+  const run = (waterProjection, distanceMeters, frames, bounds = undefined) => {
     const equipment = createTestBuild({ rodMaxLoadKg: 50, reelMaxLoadKg: 50, lineMaxLoadKg: 50, hookMaxLoadKg: 50 });
     const fishData = createFish({ weightKg: 2, basePower: 1.5, baseSpeed: 1, forceMultiplier: 1, speedMultiplier: 1 });
     const config = createConfig();
-    const cast = createCast({ config, equipment, distanceMeters, distanceProfile, bounds });
+    const cast = createCast({ config, equipment, distanceMeters, waterProjection, bounds });
     const fight = createFightService({ config, rng: createRng(), fightDiagnostics: false });
     fight.startFight(fishData, equipment);
     const trace = [];
@@ -1888,7 +1890,7 @@ function runGroundPlaneFightCheck() {
     return { trace, metric: cast.waterMetric };
   };
   const direct = run(null, 12, 300).trace;
-  const flat = run({ enabled: true, linearShare: 0.5, maxMeters: 16 }, 12, 300);
+  const flat = run({ maxMeters: 16, farScale: 1, lateralContraction: true }, 12, 300);
   if (flat.metric.isUniform || flat.trace.length !== direct.length || direct.length < 100) {
     throw new Error("the flat-profile fight must take the plane path and last as long as the direct fight");
   }
@@ -1899,7 +1901,7 @@ function runGroundPlaneFightCheck() {
       throw new Error("the plane path differs from the direct fight at frame " + frame);
     }
   });
-  const far = run({ enabled: true, linearShare: 0.5, maxMeters: 40 }, 25, 300);
+  const far = run({ maxMeters: 40, farScale: 0.3, lateralContraction: true }, 25, 300);
   if (Math.abs(far.trace[0].lineMeters - 25) > 0.5) {
     throw new Error("a fish cast to 25 m on the 40 m profile starts 25 m away, got " + far.trace[0].lineMeters);
   }
@@ -1923,10 +1925,10 @@ runGroundPlaneFightCheck();
 // drifts with the current and is pulled toward the rod moves, in ground metres, exactly as on a flat lake 40 m tall.
 function runGroundPlaneWaitingCheck() {
   const recorded = checks.length;
-  const run = (distanceProfile, bounds) => {
+  const run = (waterProjection, bounds) => {
     const config = createConfig();
     const equipment = createTestBuild({});
-    const cast = createCast({ config, equipment, distanceMeters: 25, distanceProfile, bounds });
+    const cast = createCast({ config, equipment, distanceMeters: 25, waterProjection, bounds });
     const scope = new GroundPlaneScope();
     const float = cast.floatEntity;
     const pull = { x: 0, y: 0 };
@@ -1956,7 +1958,7 @@ function runGroundPlaneWaitingCheck() {
     }
     return trace;
   };
-  const far = run({ enabled: true, linearShare: 0.5, maxMeters: 40 }, undefined);
+  const far = run({ maxMeters: 40, farScale: 0.3, lateralContraction: true }, undefined);
   const lake = run(null, { left: 0, right: 1000, top: 0, bottom: 2000 });
   const moved = Math.hypot(far[far.length - 1].x - far[0].x, far[far.length - 1].y - far[0].y);
   if (moved < 0.5) throw new Error("the waiting float must move on the 40 m profile, moved " + moved + " m");
@@ -2236,8 +2238,10 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const chum = { update() {}, updateBoats() {}, getChumDataAt() { return null; } };
   const canvasMetrics = { width: 100, height: 60 };
   const clock = { now: 0, realNow: 0 };
+  const waterMetricSource = new LocationWaterMetricSource({ map: lake, getLocations: () => viewConfig,
+    resolver: metricResolver });
   const gameWorld = new GameWorld({ map: lake, env: environment, chum, projector, location, canvasMetrics, clock,
-    locationConfig: viewConfig, waterMetricResolver: metricResolver });
+    locationConfig: viewConfig, waterMetricSource });
   gameWorld.refreshViewport(true);
   const frameContext = new MutableFightFrameContext();
   const floatEntity = { getPosition: () => ({ x: 35, y: 35 }), getCurrentHookDepth: () => 2 };

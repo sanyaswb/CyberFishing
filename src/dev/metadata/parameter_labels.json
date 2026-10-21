@@ -1285,25 +1285,21 @@
     "label": "Show fight line radius",
     "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
   },
-  "MAP_DB.distanceProfile.enabled": {
-    "label": "Старий профіль відстаней увімкнено",
-    "description": "Лише для старих локацій без нахилу площини. Проста 2D-модель завжди використовує задану дальність."
-  },
-  "MAP_DB.distanceProfile.linearShare": {
-    "label": "Лінійна частка старого профілю",
-    "description": "Лише старий профіль відстаней. Проста 2D-модель це поле не використовує."
-  },
-  "MAP_DB.distanceProfile.farScale": {
-    "label": "Масштаб вдалині",
-    "description": "0.05–1. Частка ближнього розміру й руху вглиб на дальньому краї: 0.3 — 30%, 1 — без зменшення. Дальність води залишається точно заданою."
-  },
-  "MAP_DB.distanceProfile.maxMeters": {
+  "MAP_DB.waterProjection.maxMeters": {
     "label": "Дальність води, м",
-    "description": "Точна відстань від нижнього до верхнього краю зеленої зони. Нахил і масштаб вдалині її не змінюють."
+    "description": "Точна відстань від нижнього до верхнього краю зеленої зони. Нахил і масштаб вдалині її не змінюють. Без гілки waterProjection вода рівномірна: physics.simulation.pixelsPerMeter по всій зоні."
   },
-  "MAP_DB.distanceProfile.lateralExpansion": {
+  "MAP_DB.waterProjection.tiltDegrees": {
+    "label": "Нахил площини, °",
+    "description": "1–90°, типово 30. Художнє сплющення поверхневих зон під фон: 90° — коло, 30° — половина висоти. Не змінює метри або ширину зон."
+  },
+  "MAP_DB.waterProjection.farScale": {
+    "label": "Масштаб вдалині",
+    "description": "0.05–1, типово 0.3. Частка ближнього розміру й руху вглиб на дальньому краї: 0.3 — 30%, 1 — без зменшення. Дальність води залишається точно заданою."
+  },
+  "MAP_DB.waterProjection.lateralContraction": {
     "label": "Звужувати сітку по ширині",
-    "description": "Початково вимкнено: вертикальні лінії паралельні. Увімкнено: координати X звужуються вдалину. Розміри зон та об’єктів зменшуються в обох режимах."
+    "description": "Типово вимкнено: вертикальні лінії паралельні, 1 м упоперек — physics.simulation.pixelsPerMeter. Увімкнено: координати X звужуються вдалину за масштабом вдалині. Розміри зон та об’єктів зменшуються в обох режимах."
   },
   "stamina.mechanics.powerDebuff.enabled": {
     "label": "Frame power debuff enabled",
@@ -1436,9 +1432,5 @@
   "CONFIG.liveBait.visual.zone.height": {
     "label": "Зона акваріума: height",
     "description": "Координата або розмір як частка зображення акваріума (0–1)."
-  },
-  "MAP_DB.perspective.tiltDegrees": {
-    "label": "Нахил площини, °",
-    "description": "Художнє сплющення поверхневих зон під фон. 90° — коло, 30° — половина висоти. Не змінює метри або ширину зон."
   }
 }

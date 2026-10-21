@@ -25,13 +25,12 @@ const water = () => ({ depth: 2 });
 const noCollision = () => false;
 
 // A 40 m water painted over 800 map pixels (shore at y 800), and a flat 40 m lake whose map is its own plane.
-const legacyPerspective = new WaterMetric({ pixelsPerMeter: 50, shoreY: 800, topY: 0, centerX: 1000, maxMeters: 40,
-  linearShare: 0.5 });
-const perspective = legacyPerspective;
+const perspective = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 800, topY: 0, centerX: 1000, maxMeters: 40,
+  farScale: .3, lateralContraction: true });
 const flat = new WaterMetric({ pixelsPerMeter: 50, shoreY: 800, topY: -1200, centerX: 1000 });
 assert.equal(flat.isUniform, true);
 
-function checkFlatLakeEquivalence(perspective = legacyPerspective) {
+function checkFlatLakeEquivalence(perspective) {
   const startMap = perspective.fromBasePlane(1000, 790, new Vector2());
   const targetMap = perspective.fromBasePlane(1300, 800 - 25 * 50, new Vector2(0, 0));
   const onPerspective = new BaitBoat(startMap.x, startMap.y, STATS);
@@ -165,10 +164,11 @@ function near(actual, expected, tolerance, label = "") {
   assert(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} vs ${expected}`);
 }
 
-const speeds = checkFlatLakeEquivalence();
-for (const lateralExpansion of [false, true]) for (const tiltDegrees of [1, 30, 45, 90]) checkFlatLakeEquivalence(new WaterMetric({
-  pixelsPerMeter: 50, shoreY: 800, topY: 0, centerX: 1000, maxMeters: 40,
-  tiltDegrees, farScale: .3, lateralExpansion }));
+const speeds = checkFlatLakeEquivalence(perspective);
+for (const lateralContraction of [false, true]) for (const tiltDegrees of [1, 30, 45, 90]) {
+  checkFlatLakeEquivalence(WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 800, topY: 0, centerX: 1000,
+    maxMeters: 40, tiltDegrees, farScale: .3, lateralContraction }));
+}
 checkUniformIdentity();
 checkMapOutput();
 console.log(`Bait boat water metric passed: on a 40 m perspective water the boat moves in ground metres exactly like on `

@@ -5,16 +5,20 @@ const { SourceRuntime } = require("../../testing/core/source_runtime");
 
 const runtime = new SourceRuntime();
 const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_metric.js");
+const { IllustratedDepthProfile } = runtime.importModule("src/game/domain/locations/illustrated_depth_profile.js");
 const { LocationWaterMetricResolver } = runtime.importModule(
   "src/game/domain/locations/location_water_metric_resolver.js");
+const { LocationWaterMetricSource } = runtime.importModule(
+  "src/game/domain/locations/location_water_metric_source.js");
 
 // Test location: castable water 520..1160 virtual px, 50 px per metre (12.8 m uniform).
 const LOCATION = Object.freeze({ pixelsPerMeter: 50, shoreY: 1160, topY: 520, centerX: 1280 });
+const illustrated = (options) => WaterMetric.illustrated({ ...LOCATION, ...options });
 
-// G-112: authored metres are exact, independent of artistic perspective and retired camera overrides.
-for (const tiltDegrees of [17, 30, 53, 90]) for (const cameraDistanceMeters of [30, 900]) {
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees, farScale: .3, cameraDistanceMeters });
-  assert.equal(metric.topMeters, 30, 'G-112: 30 m stays exactly 30 m after angle/camera edits');
+// G-112: authored metres are exact, independent of the artistic tilt.
+for (const tiltDegrees of [17, 30, 53, 90]) {
+  const metric = illustrated({ maxMeters: 30, tiltDegrees, farScale: .3 });
+  assert.equal(metric.topMeters, 30, 'G-112: 30 m stays exactly 30 m after angle edits');
   assert.equal(metric.yAtMeters(30), LOCATION.topY, 'G-112: the 30 m aim reaches the authored far edge');
 }
 
@@ -23,8 +27,8 @@ function checkSimpleWaterProjection() {
   const point = {}, ground = {}, velocity = {}, restored = {}, shifted = {};
   const close = (a,b,message,tolerance=1e-7) => assert(Math.abs(a-b) <= tolerance * Math.max(1,Math.abs(b)),message);
   for (const tiltDegrees of [1,17,30,53,90]) for (const maxMeters of [.1,30,1000])
-    for (const farScale of [.05,.3,1]) for (const lateralExpansion of [false,true]) {
-    const metric = new WaterMetric({...LOCATION,maxMeters,tiltDegrees,farScale,lateralExpansion});
+    for (const farScale of [.05,.3,1]) for (const lateralContraction of [false,true]) {
+    const metric = illustrated({maxMeters,tiltDegrees,farScale,lateralContraction});
     assert.equal(metric.topMeters,maxMeters,'authored length is exact at every angle and far scale');
     assert.equal(metric.topY,LOCATION.topY,'full authored height is retained');
     assert.equal(metric.yAtMeters(maxMeters),LOCATION.topY,'far metres reach the upper edge');
@@ -41,7 +45,8 @@ function checkSimpleWaterProjection() {
       close(ground.x,2,'lateral inverse');close(ground.y,depth,'depth inverse');
       assert(Number.isFinite(point.x+point.y)&&metric.pixelsPerMeterY(point.y)>0&&metric.surfaceScaleAt(point.y)>0,
         'positive finite scales throughout and outside water');
-      if(!lateralExpansion)assert.equal(metric.pixelsPerMeterX(point.y),50,'parallel grid never changes its X unit');
+      if(!lateralContraction)assert.equal(metric.pixelsPerMeterX(point.y),50,'parallel grid never changes its X unit');
+      else close(metric.pixelsPerMeterX(point.y),50*metric.surfaceScaleAt(point.y),'contraction follows the surface size');
       if(share>0&&share<1) {
         metric.velocityFromBasePlane(point.x,point.y,30,-20,velocity);
         metric.velocityToBasePlane(point.x,point.y,velocity.x,velocity.y,restored);
@@ -57,14 +62,13 @@ function checkSimpleWaterProjection() {
   }
   const resolver=new LocationWaterMetricResolver({pixelsPerMeter:50});
   const bounds={left:0,right:2560,top:LOCATION.topY,bottom:LOCATION.shoreY};
-  const profile={maxMeters:30,farScale:.3};
-  const metric=resolver.resolve(bounds,profile,{tiltDegrees:30,cameraDistanceMeters:30});
-  assert.equal(metric.lateralExpansion,false,'omitted grid-width settings default off');
-  assert.equal(resolver.resolve(bounds,{...profile,linearShare:.9},{tiltDegrees:30,cameraDistanceMeters:900}),metric,
-    'retired camera and legacy-only controls cannot alter the modern metric');
+  const metric=resolver.resolve(bounds,{maxMeters:30,farScale:.3,tiltDegrees:30});
+  assert.equal(metric.lateralContraction,false,'omitted grid-width settings default off');
+  assert.equal(resolver.resolve(bounds,{maxMeters:30,farScale:.3,tiltDegrees:30,linearShare:.9,cameraDistanceMeters:900}),metric,
+    'retired camera and legacy-only fields cannot alter the metric');
   const {CONFIG}=runtime.importModule('src/game/config/runtime/game_config.js');
-  assert.equal(CONFIG.locations.map.test.distanceProfile.lateralExpansion,false,'reset/default grid width is off');
-  assert.equal(CONFIG.locations.map.test.distanceProfile.farScale,.3,'the simple default is 30% at the far edge');
+  assert.equal(CONFIG.locations.map.test.waterProjection.lateralContraction,false,'reset/default grid width is off');
+  assert.equal(CONFIG.locations.map.test.waterProjection.farScale,.3,'the simple default is 30% at the far edge');
   const {CastingRenderFrameBuilder}=runtime.importModule('src/game/presentation/rendering/casting_render_frame_builder.js');
   const {GameRenderFrame}=runtime.importModule('src/game/presentation/rendering/game_render_frame.js');
   const projector={virtualToScreen:(x,y,out)=>{out.x=x;out.y=y;return out;},getScale:()=>1};
@@ -86,7 +90,7 @@ checkSimpleWaterProjection();
 
 function checkGroundChumPersistence() {
   const { ChumService } = runtime.importModule("src/game/application/chum/chum_service.js");
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees: 45, farScale: .3 });
+  const metric = illustrated({ maxMeters: 30, tiltDegrees: 45, farScale: .3 });
   const cacheData = new Map();
   const cache = { get: (key, fallback) => cacheData.has(key) ? JSON.parse(cacheData.get(key)) : fallback,
     set: (key, value) => cacheData.set(key, JSON.stringify(value)) };
@@ -95,7 +99,8 @@ function checkGroundChumPersistence() {
   let now = 0;
   const services = { cache, now: () => now, rng: { next: () => .5 } };
   const point = {};
-  const service = new ChumService("projection-test", config, () => metric, services);
+  let metricReads = 0;
+  const service = new ChumService("projection-test", config, () => (metricReads++, metric), services);
   metric.toVirtual(2, 10, point); service.deployBait(point.x, point.y, "mix");
   service.update(1000, 1);
   assert.equal(service.getChumDataAt(point.x, point.y).bonus, 2, "the delivered centre receives the peak bonus");
@@ -104,10 +109,13 @@ function checkGroundChumPersistence() {
   const saved = cacheData.get("chum_active_projection-test");
   assert.deepEqual(Object.keys(JSON.parse(saved)[0]).sort(), ["baitId", "deployRealTimeMs", "id", "isDelivered", "x", "y"],
     "the existing save shape is unchanged");
-  const reloaded = new ChumService("projection-test", config, () => metric, services);
+  const reloaded = new ChumService("projection-test", config, () => (metricReads++, metric), services);
   reloaded.update(2000, 1);
   assert.equal(reloaded.getChumDataAt(point.x, point.y).bonus, 2, "reload restores the same ground influence and timing");
   reloaded.saveToStorage(); assert.equal(cacheData.get("chum_active_projection-test"), saved, "reload/save preserves bytes");
+  metric.toVirtual(-6, 20, point); reloaded.deployBait(point.x, point.y, "mix"); reloaded.update(3000, 1);
+  metricReads = 0; reloaded.getChumDataAt(point.x, point.y);
+  assert.equal(metricReads, 1, "R5: one metric query per chum lookup, however many zones are delivered");
   reloaded.update(9000, 1); assert.equal(reloaded.getZones().length, 0, "expiry still removes persisted zones");
   service.dispose(); reloaded.dispose();
 }
@@ -127,6 +135,8 @@ function checkUniformMatchesPlainArithmetic() {
     assert(Object.is(metric.yAtMeters(meters), 1160 - meters * 50));
     assert(Object.is(metric.distanceBasePixels(x1, y1, x2, y2), Math.hypot(x1 - x2, y1 - y2)),
       "uniform base pixels are the plain virtual pixel distance");
+    assert(Object.is(metric.surfaceDistanceBasePixels(x1, y1, x2, y2), Math.hypot(x1 - x2, y1 - y2)),
+      "uniform surface areas are plain circles");
     const basePixels = next() * 900;
     assert(Object.is(metric.yAtBasePixels(basePixels), 1160 - basePixels), "uniform base pixels map 1:1 to height");
     assert(Object.is(metric.virtualPixelsFromShore(basePixels), basePixels), "uniform base pixels are map pixels");
@@ -144,61 +154,56 @@ function checkUniformMatchesPlainArithmetic() {
   assert.equal(metric.pixelsPerMeterX(520), 50);
   assert.equal(metric.pixelsPerMeterY(520), 50);
   assert.equal(metric.topMeters, 12.8);
+  assert.equal(metric.surfaceScaleAt(520), 1);
+  assert.equal(metric.surfaceSquashY, 1);
+  assert.equal(metric.tiltDegrees, null);
+  assert.equal(metric.farScale, null);
 }
 
 function checkPerspectiveCurve() {
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
   const close = (actual, expected, message, epsilon = 1e-9) =>
     assert(Math.abs(actual - expected) <= epsilon, `${message}: expected ${expected}, received ${actual}`);
-  close(metric.metersFromShore(1160), 0, "the shore line is 0 m");
-  close(metric.metersFromShore(1000), 3.2, "the lower half keeps 50 px per metre");
-  close(metric.metersFromShore(840), 6.4, "the join lies at half the water height");
-  close(metric.metersFromShore(520), 30, "the top edge lies at maxMeters");
-  close(metric.topMeters, 30, "topMeters");
-  close(metric.pixelsPerMeterY(841), 50, "below the join the depth scale is the base scale");
-  close(metric.pixelsPerMeterY(839.999), 50, "the scale has no kink at the join", 1e-3);
-  assert(metric.pixelsPerMeterY(520) < 8, "far water is strongly compressed");
-  close(metric.pixelsPerMeterX(1000), 50, "lateral scale is the base scale near the shore");
-  close(metric.pixelsPerMeterX(520), 50 * Math.sqrt(metric.pixelsPerMeterY(520) / 50),
-    "lateral compression is the square root of the depth compression");
-  let previous = -Infinity, previousScale = Infinity;
-  for (let y = 1300; y >= 300; y -= 5) {
-    const meters = metric.metersFromShore(y);
-    assert(meters > previous, "metres grow monotonically away from the shore");
-    const scale = metric.pixelsPerMeterY(y);
-    assert(scale <= previousScale + 1e-12, "pixels per metre never grow with distance");
-    close(metric.yAtMeters(meters), y, `yAtMeters inverts metersFromShore at y=${y}`, 1e-7);
-    previous = meters;
-    previousScale = scale;
+  for (const lateralContraction of [false, true]) {
+    const metric = illustrated({ maxMeters: 30, farScale: .3, lateralContraction });
+    close(metric.metersFromShore(1160), 0, "the shore line is 0 m");
+    close(metric.metersFromShore(520), 30, "the top edge lies at maxMeters");
+    let previous = -Infinity, previousScale = Infinity;
+    for (let y = 1300; y >= 300; y -= 5) {
+      const meters = metric.metersFromShore(y);
+      assert(meters > previous, "metres grow monotonically away from the shore");
+      const scale = metric.pixelsPerMeterY(y);
+      assert(scale <= previousScale + 1e-12, "pixels per metre never grow with distance");
+      close(metric.yAtMeters(meters), y, `yAtMeters inverts metersFromShore at y=${y}`, 1e-7);
+      previous = meters;
+      previousScale = scale;
+    }
+    close(metric.metersFromShore(1170) * metric.pixelsPerMeterY(1160), -10,
+      "below the shore the profile continues along its near tangent", 1e-9);
+    close((metric.metersFromShore(510) - 30) * metric.pixelsPerMeterY(520), 10,
+      "above the far edge the profile continues along its far tangent", 1e-9);
+    close(metric.distanceMeters(1280, 1160, 1280, 520), 30, "straight out from the shore to the top is 30 m");
+    close(metric.distanceMeters(1280, 520, 1380, 520), 100 / metric.pixelsPerMeterX(520),
+      "a sideways distance uses the lateral scale at its height");
+    const ground = { x: 0, y: 0 }, back = { x: 0, y: 0 };
+    for (const [x, y] of [[1280, 1160], [100, 900], [2400, 600], [1500, 450]]) {
+      metric.toVirtual(metric.toGround(x, y, ground).x, ground.y, back);
+      close(back.x, x, "toVirtual inverts toGround (x)", 1e-7);
+      close(back.y, y, "toVirtual inverts toGround (y)", 1e-7);
+    }
+    const fish = { x: 0, y: 0 }, nearFish = { x: 0, y: 0 };
+    metric.toVirtual(2, 25, fish);
+    metric.toVirtual(2, 2, nearFish);
+    if (lateralContraction) {
+      assert(fish.x - 1280 < nearFish.x - 1280, "with contraction the same 2 m sideways spans fewer pixels far away");
+    } else {
+      close(fish.x - 1280, 100, "without contraction 2 m sideways is always 100 virtual px");
+      close(nearFish.x - 1280, 100, "near and far lateral offsets match");
+    }
   }
-  close(metric.distanceMeters(1280, 1160, 1280, 520), 30, "straight out from the shore to the top is 30 m");
-  close(metric.distanceMeters(1280, 520, 1380, 520), 100 / metric.pixelsPerMeterX(520),
-    "a sideways distance uses the lateral scale at its height");
-  const ground = { x: 0, y: 0 }, back = { x: 0, y: 0 };
-  for (const [x, y] of [[1280, 1160], [100, 900], [2400, 600], [1500, 450]]) {
-    metric.toVirtual(metric.toGround(x, y, ground).x, ground.y, back);
-    close(back.x, x, "toVirtual inverts toGround (x)", 1e-7);
-    close(back.y, y, "toVirtual inverts toGround (y)", 1e-7);
-  }
-  const fish = { x: 0, y: 0 };
-  metric.toVirtual(2, 25, fish);
-  const nearFish = { x: 0, y: 0 };
-  metric.toVirtual(2, 2, nearFish);
-  assert(fish.x - 1280 < nearFish.x - 1280, "the same 2 m sideways spans fewer pixels far away");
-
-  const flatLateral = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5, lateralExpansion: false });
-  assert.equal(flatLateral.lateralExpansion, false);
-  close(flatLateral.pixelsPerMeterX(520), 50, "without lateral expansion the far lateral scale stays 50 px/m");
-  close(flatLateral.pixelsPerMeterX(1000), 50, "near lateral scale stays 50 px/m");
-  const farFishFlat = { x: 0, y: 0 }, nearFishFlat = { x: 0, y: 0 };
-  flatLateral.toVirtual(2, 25, farFishFlat);
-  flatLateral.toVirtual(2, 2, nearFishFlat);
-  close(farFishFlat.x - 1280, 100, "without lateral expansion 2 m sideways is always 100 virtual px");
-  close(nearFishFlat.x - 1280, 100, "near and far lateral offsets match");
 }
 
 function checkBasePixels() {
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
+  const metric = illustrated({ maxMeters: 30 });
   const close = (actual, expected, message) =>
     assert(Math.abs(actual - expected) <= 1e-7, `${message}: expected ${expected}, received ${actual}`);
   close(metric.topBasePixels, 1500, "the top edge lies at maxMeters x pixelsPerMeter base pixels");
@@ -207,61 +212,39 @@ function checkBasePixels() {
   }
   close(metric.distanceBasePixels(1280, 1160, 1400, 600), metric.distanceMeters(1280, 1160, 1400, 600) * 50,
     "distanceBasePixels is the ground distance in base pixels");
-  close(metric.virtualPixelsFromShore(160), 160, "near the shore base pixels are map pixels");
+  close(metric.virtualPixelsFromShore(0), 0, "the shore is at 0 map pixels");
   close(metric.virtualPixelsFromShore(1500), 640, "the far edge is the full map height of the water");
 }
 
 function checkGroundPlane() {
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
   const close = (actual, expected, message, epsilon) =>
     assert(Math.abs(actual - expected) <= epsilon, `${message}: expected ${expected}, received ${actual}`);
   const plane = { x: 0, y: 0 }, back = { x: 0, y: 0 }, velocity = { x: 0, y: 0 }, velocityBack = { x: 0, y: 0 };
   const shifted = { x: 0, y: 0 };
-  for (const [x, y] of [[1280, 1160], [100, 1100], [2400, 900], [300, 700], [2000, 530], [1500, 450]]) {
-    metric.toBasePlane(x, y, plane);
-    close(metric.distanceBasePixels(1280, 1160, x, y), Math.hypot(plane.x - 1280, plane.y - 1160),
-      `plane distance from the shore centre equals the ground distance at (${x}, ${y})`, 1e-7);
-    metric.fromBasePlane(plane.x, plane.y, back);
-    close(back.x, x, "fromBasePlane inverts toBasePlane (x)", 1e-7);
-    close(back.y, y, "fromBasePlane inverts toBasePlane (y)", 1e-7);
-    for (const [vx, vy] of [[120, 0], [0, -80], [-60, 45]]) {
-      metric.velocityFromBasePlane(x, y, vx, vy, velocity);
-      const h = 1e-4;
-      metric.fromBasePlane(plane.x + vx * h, plane.y + vy * h, shifted);
-      close(velocity.x, (shifted.x - x) / h, `velocity x is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
-      close(velocity.y, (shifted.y - y) / h, `velocity y is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
-      metric.velocityToBasePlane(x, y, velocity.x, velocity.y, velocityBack);
-      close(velocityBack.x, vx, "velocityToBasePlane inverts velocityFromBasePlane (x)", 1e-9);
-      close(velocityBack.y, vy, "velocityToBasePlane inverts velocityFromBasePlane (y)", 1e-9);
+  for (const lateralContraction of [false, true]) {
+    const metric = illustrated({ maxMeters: 30, farScale: .3, lateralContraction });
+    for (const [x, y] of [[1280, 1160], [100, 1100], [2400, 900], [300, 700], [2000, 530], [1500, 450]]) {
+      metric.toBasePlane(x, y, plane);
+      close(metric.distanceBasePixels(1280, 1160, x, y), Math.hypot(plane.x - 1280, plane.y - 1160),
+        `plane distance from the shore centre equals the ground distance at (${x}, ${y})`, 1e-7);
+      metric.fromBasePlane(plane.x, plane.y, back);
+      close(back.x, x, "fromBasePlane inverts toBasePlane (x)", 1e-7);
+      close(back.y, y, "fromBasePlane inverts toBasePlane (y)", 1e-7);
+      for (const [vx, vy] of [[120, 0], [0, -80], [-60, 45]]) {
+        metric.velocityFromBasePlane(x, y, vx, vy, velocity);
+        const h = 1e-4;
+        metric.fromBasePlane(plane.x + vx * h, plane.y + vy * h, shifted);
+        close(velocity.x, (shifted.x - x) / h, `velocity x is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
+        close(velocity.y, (shifted.y - y) / h, `velocity y is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
+        metric.velocityToBasePlane(x, y, velocity.x, velocity.y, velocityBack);
+        close(velocityBack.x, vx, "velocityToBasePlane inverts velocityFromBasePlane (x)", 1e-9);
+        close(velocityBack.y, vy, "velocityToBasePlane inverts velocityFromBasePlane (y)", 1e-9);
+      }
     }
-  }
-  metric.velocityFromBasePlane(1280, 600, 0, -100, velocity);
-  assert(velocity.y > -100 / 5 && velocity.y < 0, "far away 2 m/s away from the shore covers few virtual pixels");
-}
-
-function checkGroundPlaneWithoutLateralExpansion() {
-  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5, lateralExpansion: false });
-  const close = (actual, expected, message, epsilon) =>
-    assert(Math.abs(actual - expected) <= epsilon, `${message}: expected ${expected}, received ${actual}`);
-  const plane = { x: 0, y: 0 }, back = { x: 0, y: 0 }, velocity = { x: 0, y: 0 }, velocityBack = { x: 0, y: 0 };
-  const shifted = { x: 0, y: 0 };
-  for (const [x, y] of [[1280, 1160], [100, 1100], [2400, 900], [300, 700], [2000, 530], [1500, 450]]) {
-    metric.toBasePlane(x, y, plane);
-    close(metric.distanceBasePixels(1280, 1160, x, y), Math.hypot(plane.x - 1280, plane.y - 1160),
-      `plane distance equals ground distance without lateral expansion at (${x}, ${y})`, 1e-7);
-    metric.fromBasePlane(plane.x, plane.y, back);
-    close(back.x, x, "fromBasePlane inverts toBasePlane without lateral expansion (x)", 1e-7);
-    close(back.y, y, "fromBasePlane inverts toBasePlane without lateral expansion (y)", 1e-7);
-    for (const [vx, vy] of [[120, 0], [0, -80], [-60, 45]]) {
-      metric.velocityFromBasePlane(x, y, vx, vy, velocity);
-      const h = 1e-4;
-      metric.fromBasePlane(plane.x + vx * h, plane.y + vy * h, shifted);
-      close(velocity.x, (shifted.x - x) / h, `velocity x is derivative without lateral expansion at (${x}, ${y})`, 1e-2);
-      close(velocity.y, (shifted.y - y) / h, `velocity y is derivative without lateral expansion at (${x}, ${y})`, 1e-2);
-      metric.velocityToBasePlane(x, y, velocity.x, velocity.y, velocityBack);
-      close(velocityBack.x, vx, "velocityToBasePlane inverts velocityFromBasePlane without lateral expansion (x)", 1e-9);
-      close(velocityBack.y, vy, "velocityToBasePlane inverts velocityFromBasePlane without lateral expansion (y)", 1e-9);
-    }
+    metric.velocityFromBasePlane(1280, 1159, 0, -100, velocity);
+    const near = velocity.y;
+    metric.velocityFromBasePlane(1280, 521, 0, -100, velocity);
+    close(velocity.y / near, .3, "far away the same ground speed covers farScale of the near virtual pixels", 1e-2);
   }
 }
 
@@ -270,40 +253,58 @@ function checkResolver() {
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { error: (message) => errors.push(message) } });
   const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
   const uniform = resolver.resolve(bounds, undefined);
-  assert.equal(uniform.isUniform, true, "a location without distanceProfile gets a uniform metric");
+  assert.equal(uniform.isUniform, true, "a location without waterProjection gets a uniform metric");
   assert.equal(uniform.shoreY, 1160, "the shore line is the bottom edge of the castable water");
   assert.equal(resolver.resolve({ ...bounds }, null), uniform, "unchanged inputs return the same metric");
-  const profile = { enabled: false, linearShare: 0.5, maxMeters: 30 };
-  assert.equal(resolver.resolve(bounds, profile), uniform, "a disabled profile keeps the uniform metric");
-  profile.enabled = true;
-  const profiled = resolver.resolve(bounds, profile);
-  assert.notEqual(profiled, uniform, "enabling the profile rebuilds the metric");
-  assert(Math.abs(profiled.topMeters - 30) < 1e-9, "the profile reaches maxMeters at the top edge");
-  assert.equal(resolver.resolve(bounds, { ...profile }), profiled, "an equal profile object keeps the metric");
+  const projection = { maxMeters: 30, tiltDegrees: 30, farScale: .3 };
+  const profiled = resolver.resolve(bounds, projection);
+  assert.notEqual(profiled, uniform, "adding a projection rebuilds the metric");
+  assert.equal(profiled.topMeters, 30, "the projection reaches maxMeters at the top edge");
+  assert.equal(resolver.resolve(bounds, { ...projection }), profiled, "an equal projection object keeps the metric");
   assert.equal(profiled.toGround(1280, 520, { x: NaN, y: NaN }).x, 0, "the centre line is between the side edges");
-  profile.linearShare = 0.25;
-  const edited = resolver.resolve(bounds, profile);
-  assert(edited !== profiled && edited.metersFromShore(900) > 5.2 + 1e-6,
-    "a live linearShare edit rebuilds the metric");
-  profile.maxMeters = 10;
-  assert.equal(resolver.resolve(bounds, profile), edited, "an invalid live edit keeps the previous metric");
-  assert.equal(resolver.resolve(bounds, profile), edited, "the rejected input is not rebuilt every frame");
-  assert(errors.length === 1 && /below the uniform 12.80 m/u.test(errors[0]), "the rejection is logged once");
-  profile.maxMeters = 30;
-  assert.notEqual(resolver.resolve(bounds, profile), edited, "a valid edit after a rejection applies again");
-  profile.lateralExpansion = false;
-  const noLateral = resolver.resolve(bounds, profile);
-  assert.notEqual(noLateral, edited, "toggling lateralExpansion rebuilds the metric");
-  assert.equal(noLateral.lateralExpansion, false);
-  assert.equal(noLateral.pixelsPerMeterX(520), 50);
-  profile.lateralExpansion = true;
-  const withLateral = resolver.resolve(bounds, profile);
-  assert.notEqual(withLateral, noLateral, "re-enabling lateralExpansion rebuilds the metric");
-  assert.equal(withLateral.lateralExpansion, true);
-  assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, profile), edited, "changed bounds rebuild the metric");
+  projection.tiltDegrees = 60;
+  const edited = resolver.resolve(bounds, projection);
+  assert(edited !== profiled && edited.tiltDegrees === 60, "a live tilt edit rebuilds the metric");
+  projection.farScale = 0;
+  assert.equal(resolver.resolve(bounds, projection), edited, "an invalid live edit keeps the previous metric");
+  assert.equal(resolver.resolve(bounds, projection), edited, "the rejected input is not rebuilt every frame");
+  assert(errors.length === 1 && /farScale/u.test(errors[0]), "the rejection is logged once");
+  projection.farScale = .6;
+  assert.notEqual(resolver.resolve(bounds, projection), edited, "a valid edit after a rejection applies again");
+  projection.lateralContraction = true;
+  const contracted = resolver.resolve(bounds, projection);
+  assert.equal(contracted.lateralContraction, true, "toggling lateralContraction rebuilds the metric");
+  assert(contracted.pixelsPerMeterX(520) < 50);
+  assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, projection), contracted, "changed bounds rebuild the metric");
+  // R1 (spec 126): a projection without its length fails fast with a range error, never a TypeError.
   assert.throws(() => new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: null })
-    .resolve(bounds, { enabled: true, linearShare: 0.5, maxMeters: 10 }), /below the uniform/u,
-  "an invalid profile at startup fails fast");
+    .resolve(bounds, { tiltDegrees: 30 }), (error) => error.name === "RangeError" && /maxMeters/u.test(error.message),
+  "a projection without maxMeters is rejected at startup");
+  assert.throws(() => new WaterMetric({ ...LOCATION, tiltDegrees: 30,
+    depthProfile: new IllustratedDepthProfile({ heightPx: 100, maxMeters: 30, farScale: .3 }) }), /height differs/u,
+  "a depth profile of another water is rejected");
+}
+
+// R3 (spec 126): one metric source for every consumer, following the map's current location.
+function checkSingleMetricSource() {
+  const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
+  const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
+  const map = { currentLocationId: "lake", getCastableBoundsVirtual: () => bounds };
+  const locations = { cellSize: 40, map: { lake: { waterProjection: { maxMeters: 30 } },
+    river: { waterProjection: { maxMeters: 60, farScale: .5 } }, pond: {} } };
+  let resolves = 0;
+  const countingResolver = { resolve: (...args) => (resolves++, resolver.resolve(...args)) };
+  const source = new LocationWaterMetricSource({ map, getLocations: () => locations, resolver: countingResolver });
+  const world = new GameWorld({ map, locationConfig: locations, waterMetricSource: source });
+  for (const [id, meters] of [["lake", 30], ["river", 60], ["pond", 12.8], ["lake", 30]]) {
+    map.currentLocationId = id;
+    const metric = world.getWaterMetric();
+    assert.equal(metric.topMeters, meters, "the metric follows the current location: " + id);
+    assert.equal(source.current(), metric, "GameWorld and the other consumers share the same metric instance");
+    assert.equal(source.current(), metric, "repeated queries keep the instance");
+  }
+  assert.equal(resolves, 12, "every query goes through the one resolver");
 }
 
 // The production test location: castable zone rows 13..29 of 40 px cells (520..1160 virtual px).
@@ -315,14 +316,13 @@ function checkTestLocationProfile() {
   const bounds = { left: zone.x * locations.cellSize, right: (zone.x + zone.w) * locations.cellSize,
     top: zone.y * locations.cellSize, bottom: (zone.y + zone.h) * locations.cellSize };
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter });
-  const metric = resolver.resolve(bounds, map.distanceProfile, map.perspective);
-  assert.equal(metric.tiltDegrees, map.perspective.tiltDegrees, "the shipped location actually composes its camera profile");
-  assert.equal(metric.topY, bounds.top, "the shipped camera never crops the green zone");
+  const metric = resolver.resolve(bounds, map.waterProjection);
+  assert.equal(metric.tiltDegrees, map.waterProjection.tiltDegrees, "the shipped location composes its projection");
+  assert.equal(metric.topY, bounds.top, "the shipped projection never crops the green zone");
   assert.equal(metric.shoreY, bounds.bottom);
-  assert.equal(metric.topMeters, map.distanceProfile.maxMeters, "the production 30 m stays exactly 30 m");
-  const overhead = resolver.resolve(bounds, map.distanceProfile, { ...map.perspective, tiltDegrees: 90 });
-  assert(Math.abs(overhead.topMeters - map.distanceProfile.maxMeters) < 1e-9,
-    "angle edits preserve the authored length");
+  assert.equal(metric.topMeters, map.waterProjection.maxMeters, "the production 30 m stays exactly 30 m");
+  const overhead = resolver.resolve(bounds, { ...map.waterProjection, tiltDegrees: 90 });
+  assert.equal(overhead.topMeters, map.waterProjection.maxMeters, "angle edits preserve the authored length");
   assert.equal(metric.pixelsPerMeterX(bounds.bottom), overhead.pixelsPerMeterX(bounds.bottom),
     "the production tilt preserves reference width");
 }
@@ -340,9 +340,8 @@ function checkUnifiedWaterAreas() {
   const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
   const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
-  const profile = { maxMeters: 30, farScale: .3, lateralExpansion: true };
-  let camera = { tiltDegrees: 90 };
-  const getWaterMetric = () => resolver.resolve(bounds, profile, camera);
+  let projection = { maxMeters: 30, farScale: .3, tiltDegrees: 90, lateralContraction: true };
+  const getWaterMetric = () => resolver.resolve(bounds, projection);
   const perspective = new WorldPerspective({ getWaterMetric });
   const projector = new ViewportProjector(CONFIG.locations, "test", y => perspective.getPerspective(y));
   const stableWidths = new Map();
@@ -357,16 +356,16 @@ function checkUnifiedWaterAreas() {
     canvasMetrics: { width: 1000, height: 1000 }, getNet: () => null,
     getRodScreenX: () => projector.virtualToScreen(1500, bounds.bottom, rodPoint).x,
     landingPolicyResolver: { resolve: () => ({ getLandingDistanceMeters: () => 1 }) } });
-  for (const lateralExpansion of [false, true]) for (const tiltDegrees of [17, 53, 90, 1, 45]) {
-    profile.lateralExpansion = lateralExpansion;
-    camera = { ...camera, tiltDegrees };
+  for (const lateralContraction of [false, true]) for (const tiltDegrees of [17, 53, 90, 1, 45]) {
+    projection = { ...projection, lateralContraction, tiltDegrees };
     const metric = getWaterMetric();
     const waterCell = { isCastable: true, hasCollision: false };
     const map = { currentLocationId: "test", getCastableBoundsVirtual: () => bounds,
       getCellAtVirtualPos: (_x, y) => y >= bounds.top && y <= bounds.bottom ? waterCell : null, getBackgroundRenderData: () => ({ loaded: false }) };
     const config = { ...CONFIG, locations: { ...CONFIG.locations, lockZoneXToScreen: false,
-      map: { test: { ...CONFIG.locations.map.test, distanceProfile: profile, perspective: camera } } } };
-    const world = new GameWorld({ map, projector, locationConfig: config.locations, waterMetricResolver: resolver,
+      map: { test: { ...CONFIG.locations.map.test, waterProjection: projection } } } };
+    const waterMetricSource = new LocationWaterMetricSource({ map, getLocations: () => config.locations, resolver });
+    const world = new GameWorld({ map, projector, locationConfig: config.locations, waterMetricSource,
       canvasMetrics: { width: 1000, height: 1000 } });
     assert.equal(world.getWaterMetric(), metric, "runtime, visual projection and clipping retain one metric instance");
     assert.equal(world.getDynamicBounds().top, metric.topY, "casting bounds retain the fixed authored water edge");
@@ -390,7 +389,6 @@ function checkUnifiedWaterAreas() {
       projector.update(width, height); projector.pan(73, 91); frame.reset(); builder.buildInto(frame.world);
       for (let i = 0; i < zones.length; i++) {
         const rendered = frame.world.chumZones.getAt(i), source = zones[i];
-        assert.equal(rendered.pointCount,0,'modern areas use the existing allocation-free ellipse record');
         for(const angle of [0,Math.PI/4,Math.PI/2,Math.PI]) for(const fraction of [.99,1.01]) {
           projector.screenToVirtual(rendered.x+Math.cos(angle)*rendered.radiusX*fraction,
             rendered.y+Math.sin(angle)*rendered.radiusY*fraction,screenPoint);
@@ -430,14 +428,14 @@ function checkUnifiedWaterAreas() {
     original.isExpired = false; original.isDelivered = false;
     assert.equal(original.getMultiplierAt(original.x, original.y, null, metric), 1);
   }
-  const before=getWaterMetric(); profile.farScale=.6;
+  const before=getWaterMetric(); projection={...projection,farScale:.6};
   assert.notEqual(getWaterMetric(),before,"far scale edits invalidate the shared metric");
-  const last = getWaterMetric(); camera = { ...camera, tiltDegrees: 0 };
-  assert.equal(getWaterMetric(), last, "invalid live camera edits retain the previous metric");
+  const last = getWaterMetric(); projection = { ...projection, tiltDegrees: 0 };
+  assert.equal(getWaterMetric(), last, "invalid live tilt edits retain the previous metric");
 }
 
 // The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
-// same with and without a distance profile (the owner keeps accuracy apart from perspective metres).
+// same with and without a water projection (the owner keeps accuracy apart from perspective metres).
 function checkAccuracyIndependentOfProfile() {
   const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
   const projector = {
@@ -452,43 +450,43 @@ function checkAccuracyIndependentOfProfile() {
     aim.update({ pointerDown: true, pointerStart: { x: 1280, y: 100 }, pointerCurrent: { x: 1280, y: 300 } }, null, 16);
     return aim.getAccuracyPreview({ left: 0, right: 2560, top: 520, bottom: 1160 }, maxDistance, 80, null, 1);
   };
-  const curve = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
+  const curve = illustrated({ maxMeters: 30 });
   const mapHeight = curve.virtualPixelsFromShore(750);
   const curved = preview(curve, 750);
   const flat = preview(new WaterMetric(LOCATION), mapHeight);
   assert(Math.abs(curved.radiusPx - mapHeight * 0.1 / 2) < 1e-9, "the spread is a share of the map height of the cast");
   for (const key of ["radiusPx", "radiusX", "radiusY", "x", "y"]) {
-    assert(Math.abs(curved[key] - flat[key]) < 1e-9, `accuracy ${key} is the same with and without the profile`);
+    assert(Math.abs(curved[key] - flat[key]) < 1e-9, `accuracy ${key} is the same with and without the projection`);
   }
 }
 
 function checkValidation() {
   for (const tiltDegrees of [0, -1, 91, Infinity, NaN]) {
-    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees }), /tiltDegrees/u);
+    assert.throws(() => illustrated({ maxMeters: 30, tiltDegrees }), /tiltDegrees/u);
   }
   for (const farScale of [0, .01, -1, 1.1, Infinity, NaN]) {
-    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters:30, tiltDegrees:30, farScale }), /farScale/u);
+    assert.throws(() => illustrated({ maxMeters:30, tiltDegrees:30, farScale }), /farScale/u);
   }
-  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
-    "a maxMeters below the uniform distance is rejected");
+  for (const maxMeters of [0, -1, Infinity, NaN, undefined]) {
+    assert.throws(() => illustrated({ maxMeters }), /positive and finite/u);
+  }
   assert.throws(() => new WaterMetric({ ...LOCATION, pixelsPerMeter: 0 }), /positive pixelsPerMeter/u);
   assert.throws(() => new WaterMetric({ ...LOCATION, shoreY: 500 }), /shore below the top edge/u);
-  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 1 }), /linearShare/u);
   assert.throws(() => new WaterMetric({ ...LOCATION, pixelsPerMeter: Infinity }), /positive pixelsPerMeter/u);
   assert.throws(() => new WaterMetric({ ...LOCATION, shoreY: Infinity }), /shore below the top edge/u);
-  assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: Infinity }), /positive and finite/u);
-  const uniformTop = new WaterMetric({ ...LOCATION, maxMeters: 12.8 });
-  assert.equal(uniformTop.pixelsPerMeterY(520), 50, "maxMeters equal to the uniform distance keeps the base scale");
+  const defaults = illustrated({ maxMeters: 5 });
+  assert(defaults.tiltDegrees === 30 && defaults.farScale === .3 && defaults.lateralContraction === false,
+    "omitted fields take the documented defaults; water shorter than its uniform 12.8 m is allowed");
 }
 
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
 checkBasePixels();
 checkGroundPlane();
-checkGroundPlaneWithoutLateralExpansion();
 checkResolver();
+checkSingleMetricSource();
 checkTestLocationProfile();
 checkUnifiedWaterAreas();
 checkAccuracyIndependentOfProfile();
 checkValidation();
-console.log("Water metric passed: exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities, save timing and buffer reuse; legacy contracts preserved.");
+console.log("Water metric passed: exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities/tangents, one metric source per location, save timing and buffer reuse.");

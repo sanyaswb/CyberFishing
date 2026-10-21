@@ -179,7 +179,7 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
-        createWaterMetric: options => new WaterMetric(options),
+        createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
         openHouse,
         openUiCatalog: () => pageOverlay.open(),

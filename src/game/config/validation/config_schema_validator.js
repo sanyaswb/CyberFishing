@@ -4,6 +4,7 @@ import { FISH_CATEGORIES } from "../databases/fish/fish_categories.js";
 import { PHYSICS_UNITS_AND_NAMING } from "../raw/physics/physics_units_and_naming.js";
 import { RarityConfigValidator } from "./rarity_config_validator.js";
 import { InventorySelectorConfigValidator } from "./inventory_selector_config_validator.js";
+import { WATER_PROJECTION_RANGES } from "../../domain/locations/illustrated_depth_profile.js";
 
 export class ConfigSchemaValidator {
   static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
@@ -993,37 +994,35 @@ export class ConfigSchemaValidator {
       if (map?.environment?.current) {
         this.#requireFiniteNumber(`${path}.environment.current.speedPxPerSec`, map.environment.current.speedPxPerSec, { min: 0 });
       }
-      if (map?.distanceProfile !== undefined) {
-        this.#validateDistanceProfile(`${path}.distanceProfile`, map.distanceProfile);
+      if (map?.waterProjection !== undefined) {
+        this.#validateWaterProjection(`${path}.waterProjection`, map.waterProjection);
       }
-      if (map?.perspective !== undefined) {
-        this.#requireFiniteNumber(`${path}.perspective.tiltDegrees`, map.perspective?.tiltDegrees, { min: 1, max: 90 });
-        this.#requireParameterLabel("MAP_DB.perspective.tiltDegrees");
+      for (const retired of ["perspective", "distanceProfile"]) {
+        if (map?.[retired] !== undefined) this.#error(`${path}.${retired}`, "retired by spec 126, use waterProjection");
       }
     }
   }
 
-  // Exact distance + far-size ratio for illustrated water; optional legacy fields retain their range checks.
-  #validateDistanceProfile(path, profile) {
-    if (!profile || typeof profile !== "object") {
+  // Exact water length, surface tilt, far-size ratio and optional grid contraction (spec 126). The ranges are
+  // the water metric's own; omitted optional fields take its defaults. Labels are shared by all locations.
+  #validateWaterProjection(path, projection) {
+    if (!projection || typeof projection !== "object") {
       this.#error(path, "must be an object");
       return;
     }
-    if (profile.enabled !== undefined && typeof profile.enabled !== "boolean") this.#error(`${path}.enabled`, "expected boolean");
-    if (profile.lateralExpansion !== undefined && typeof profile.lateralExpansion !== "boolean") {
-      this.#error(`${path}.lateralExpansion`, "expected boolean");
+    const ranges = WATER_PROJECTION_RANGES;
+    this.#requireFiniteNumber(`${path}.maxMeters`, projection.maxMeters, { min: Number.MIN_VALUE });
+    for (const key of ["tiltDegrees", "farScale"]) {
+      if (projection[key] !== undefined) this.#requireFiniteNumber(`${path}.${key}`, projection[key], ranges[key]);
     }
-    if (profile.linearShare !== undefined) {
-      this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
-      if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
+    if (projection.lateralContraction !== undefined && typeof projection.lateralContraction !== "boolean") {
+      this.#error(`${path}.lateralContraction`, "expected boolean");
     }
-    if (profile.farScale !== undefined) this.#requireFiniteNumber(`${path}.farScale`, profile.farScale, { min: .05, max: 1 });
-    this.#requireFiniteNumber(`${path}.maxMeters`, profile.maxMeters, { min: Number.MIN_VALUE });
-    for (const key of ["enabled", "linearShare", "maxMeters", "farScale"]) {
-      this.#requireParameterLabel(`MAP_DB.distanceProfile.${key}`);
+    for (const key of Object.keys(projection)) {
+      if (key !== "maxMeters" && !Object.hasOwn(ranges, key)) this.#error(`${path}.${key}`, "unknown field");
     }
-    if (profile.lateralExpansion !== undefined) {
-      this.#requireParameterLabel("MAP_DB.distanceProfile.lateralExpansion");
+    for (const key of ["maxMeters", "tiltDegrees", "farScale", "lateralContraction"]) {
+      this.#requireParameterLabel(`MAP_DB.waterProjection.${key}`);
     }
   }
 

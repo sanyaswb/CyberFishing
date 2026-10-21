@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.45.44 - One Water Projection Source
+
+- Spec 126 review corrections R1–R3, R5, S1–S3: one location branch waterProjection {maxMeters, tiltDegrees, farScale, lateralContraction} replaces perspective + distanceProfile; IllustratedDepthProfile behind WaterMetric with one set of ranges for schema, metric and DEV editor; the legacy linearShare profile removed; LocationWaterMetricSource is the only metric query. A projection without its length is rejected instead of crashing; the editor shows near/far px per metre and an add action for uniform water. Untracked registered checks now fail the runner. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
+
 ## v0.45.43 - Simple Illustrated Water Perspective
 
 - G-112 / spec 126: replace camera distance and overhead reference with exact water length, artistic tilt and a far-size ratio. Defaults: 30 m, 30 degrees, 0.3. Preserve full grid/water bounds and exact aim metres; one metric owns surface sizing and matching chum containment. Remove the camera-ray diagram and obsolete controls; optional grid-width contraction defaults off. Full 65/65, including Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
@@ -37,8 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.35 - Header Bait Hold Ring
 
 - Restore animated header bait hold feedback as a thin ring without a shadow. Remove bait at 200ms from pointerdown with no activation delay; preserve cancellation, release-click suppression, artwork refresh and other item timings. Full: 64/65, including UI/platform, Architecture and Quick; Pages still requires the prior uncommitted pick-cancel controller. Owner visual acceptance pending.
-
-## v0.45.34 - Quick Tackle Attachment State
-
-- Fix TK-011 acceptance: repeated equipment-cell picks initialize/prepare attachment-capable roots, so an equipped hook immediately accepts bait and a feeder rig accepts chum. Header activation repairs a previously saved loose equipped root missing that state without changing its identity or save format. Cover single/stack hooks, both list layouts, chum, repaired reload and persistence rollback. Owner acceptance pending.
-- Hold an equipped bait header icon to return its portion to the backpack using normal equipped-item timing. Preserve hook/siblings/A, cancel stale holds and consume the release click across slot updates; active green targets retain 200ms pick cancellation. Full: 64/65; the prior uncommitted pick-cancel controller still blocks Pages.
