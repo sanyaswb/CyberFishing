@@ -881,7 +881,7 @@ async function checkSceneTackle() {
   rod.dispose();
   assert.deepEqual([fake.textures[0].destroyed], [true], "the page texture is released with the scene");
 
-  const floatModel = { visible: true, kind: "float", x: 300, y: 400, color: "#ff3300", glow: true, glowBlur: 8, width: 3,
+  const floatModel = { visible: true, kind: "float", x: 300, y: 400, color: "#ff3300", glow: true, glowColor: "#ff3300", glowBlur: 8, width: 3,
     height: 15, radius: 2.5, radiusX: 6, radiusY: 3, rotationRad: 0.2 };
   assert.equal(float.update(floatModel), true);
   const [glow, shape] = floatContainer.children;

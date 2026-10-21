@@ -133,14 +133,16 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
 {
   const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
   const { FloatRenderer } = load("src/game/presentation/fishing/float_renderer.js");
+  const floatUi = { displayScale: 2 };
   const builder = new FishingEquipmentRenderModelBuilder({
     projector: { getPerspective: () => ({ scale: 1 }), getScale: () => 1 }, canvasMetrics: { width: 800, height: 600 },
-    clock: { delta: 16 }, config: { ui: { float: { displayScale: 2 } } }, getRodScreenX: () => 400,
+    clock: { delta: 16 }, config: { ui: { float: floatUi } }, getRodScreenX: () => 400,
     rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null,
     floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => flat,
   });
   const skin = { scene: { src: "float.webp", waterline: 0.3, glow: { src: "glow.webp", pad: 8 } } };
-  const entity = { getVisualState: () => ({ color: "#00ff80" }), getPosition: () => ({ x: 500, y: 500 }),
+  let colour = "#00ff80";
+  const entity = { getVisualState: () => ({ color: colour }), getPosition: () => ({ x: 500, y: 500 }),
     isHooked: () => false, getPoseSignals: () => signals({ castSerial: 7 }) };
   const model = {};
   const build = (variant) => builder.buildFloat({ target: model, screenPosition: { x: 50, y: 60 }, floatEntity: entity,
@@ -150,6 +152,22 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     model.imageId === "float.webp" && model.tipGlowId === "", "a day image float: doubled size, antenna above water, no glow");
   build("night");
   assert.equal(model.tipGlowId, "glow.webp", "the night float gets its tip glow");
+  assert(model.glow === true && model.glowColor === "#46ff8c", "the night float has a green halo by default");
+  colour = "#ff0000";
+  build("day");
+  assert.equal(model.glow, false, "the bite colours' halo is off by default and a day float has none");
+  floatUi.biteHalo = true;
+  build("day");
+  assert(model.glow === true && model.glowColor === "#ff0000", "the DEV switch brings the bite halo back");
+  floatUi.biteHalo = false;
+  floatUi.nightHalo = false;
+  floatUi.nightTipGlow = false;
+  build("night");
+  assert(model.glow === false && model.tipGlowId === "", "DEV switches turn the night halo and tip glow off");
+  delete floatUi.nightHalo;
+  delete floatUi.nightTipGlow;
+  colour = "#00ff80";
+  build("night");
   const draws = [], states = [];
   const surface = { save() {}, restore() {}, translate() {}, rotate() {}, fillRect: () => draws.push("bar"),
     drawImage: (...args) => draws.push(args), setState: (state) => states.push(state) };

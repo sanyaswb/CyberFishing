@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.1";
+export const CURRENT_PROJECT_VERSION = "0.46.2";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "float-crop-dynamic",
+  codename: "float-halo-switches",
   updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "Bite-colour halo off by default; green halo for the night float; DevTools switches for the bite halo, night halo and tip glow",
     "Image float no longer stretches on the WebGL scene while sinking (dynamic crop textures)",
     "Image float from the item art at twice the size: only the part above the waterline is drawn, so it sinks without stretching; the night float's red tip glows green (additive, pre-blurred), the day float does not glow",
     "The float leans from forces through damped springs (ground-metre motion, line, fish, wind with general multipliers); it sinks instead of stretching",

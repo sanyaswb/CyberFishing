@@ -500,6 +500,9 @@ export const CONFIG = {
     // item's length and width; an image float keeps its art's proportions).
     float: {
       displayScale: 2,
+      biteHalo: false, // жовтий/червоний ореол кольорів кльову навколо снасті
+      nightHalo: true, // зелений ореол нічного поплавка
+      nightTipGlow: true, // зелене світіння червоного кінчика нічного поплавка
     },
 
     rod: {
