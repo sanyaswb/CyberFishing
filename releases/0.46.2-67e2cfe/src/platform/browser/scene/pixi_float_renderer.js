@@ -91,7 +91,7 @@ export class PixiFloatRenderer {
     glow.visible = model.glow === true && model.glowBlur > 0 && height > 0;
     if (glow.visible) {
       const reach = model.glowBlur * GLOW_REACH * 2;
-      glow.tint = model.color;
+      glow.tint = model.glowColor || model.color;
       glow.rotation = shape.rotation;
       glow.x = -Math.sin(shape.rotation) * centerY;
       glow.y = Math.cos(shape.rotation) * centerY;
@@ -138,13 +138,15 @@ export class PixiFloatRenderer {
     return width;
   }
 
-  // A texture over the source's top `frameHeight` pixels, reused while the source stays the same.
+  // A texture over the source's top `frameHeight` pixels, reused while the source stays the same. It is `dynamic`:
+  // Pixi 8 sprites subscribe to a texture's "update" only for dynamic textures, and without it a sprite keeps its
+  // bounds from the old frame while its height scales against the new one, which stretched the float (TK-024).
   #cropTo(current, source, frameHeight) {
     let crop = current;
     if (!crop || crop.source !== source) {
       crop?.texture.destroy(false);
       const frame = new this.#pixi.Rectangle(0, 0, source.source.width, source.source.height);
-      crop = { source, texture: new this.#pixi.Texture({ source: source.source, frame }) };
+      crop = { source, texture: new this.#pixi.Texture({ source: source.source, frame, dynamic: true }) };
     }
     const height = Math.max(1, Math.min(source.source.height, frameHeight));
     if (crop.texture.frame.height !== height) {
@@ -165,7 +167,8 @@ export class PixiFloatRenderer {
   #fingerprintOf(model, image, tipGlow) {
     const print = this.#fingerprint;
     print.begin();
-    print.text(model.kind); print.text(model.color); print.flag(model.glow); print.length(model.glowBlur);
+    print.text(model.kind); print.text(model.color); print.flag(model.glow); print.text(model.glowColor || "");
+    print.length(model.glowBlur);
     print.length(model.x); print.length(model.y); print.length(model.width); print.length(model.height);
     print.length(model.radius); print.length(model.radiusX); print.length(model.radiusY);
     print.length(model.rotationRad * 100);
