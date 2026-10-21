@@ -94,11 +94,14 @@ export class ZoneEditorGeometryBuilder {
     const spacing = this.#state.spacingMeters;
     const step = Math.ceil(Math.max(spacing, metric.topMeters / MAX_GRID_STEPS, (right - left) / MAX_GRID_STEPS) / spacing) * spacing;
     const end = metric.topMeters;
+    let lastMeters = -Infinity;
     for (let meters = 0, i = 0; meters <= end + 1e-8 && i < MAX_GRID_STEPS; meters += step, i++) {
       const y = metric.yAtMeters(meters);
       // Keep grid edges on the water rectangle; vertical lines curve through the same ground->map mapping.
       this.#line(bounds.left, y, bounds.right, y);
+      lastMeters = meters;
     }
+    if (Math.abs(lastMeters - end) > 1e-8) this.#line(bounds.left, bounds.top, bounds.right, bounds.top);
     for (let lateral = Math.ceil(left / step) * step, i = 0; lateral <= right && i < MAX_GRID_STEPS; lateral += step, i++) {
       let lastX = 0, lastY = 0;
       for (let j = 0; j <= CURVE_SEGMENTS; j++) {

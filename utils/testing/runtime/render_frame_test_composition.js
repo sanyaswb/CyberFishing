@@ -32,7 +32,8 @@ function checkRenderFrameComposition() {
   const float={getPosition:()=>({x:250,y:300}),getVisualState:()=>({color:'#f00',scaleY:1,angle:10}),isHooked:()=>false};
   const holdState={hasHold:true,max:3,current:1,isActive:true,restoring:[500],restoreMaxTime:1000};
   const chum={getZones:()=>[{isDelivered:true,isExpired:false,x:100,y:100,baseRadius:40,currentBonus:0.5,baitConfig:{minBonus:0,maxBonus:1}}],getBoats:()=>[{pos:{x:200,y:200},angle:0,energy:50,stats:{maxEnergy:100},config:{emoji:'boat'},state:'deploying',target:{x:300,y:300},waypoints:[{x:350,y:350}],sensorRays:[{startX:200,startY:200,endX:300,endY:300,isBlocked:false}]}]};
-  const boatBuilder=new c.BoatChumRenderFrameBuilder({chum,projector,config});
+  const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:600,topY:0});
+  const boatBuilder=new c.BoatChumRenderFrameBuilder({chum,projector,config,getWaterMetric:()=>waterMetric});
   const worldBuilder=new c.WorldRenderFrameBuilder({map:{getBackgroundRenderData:()=>background},projector,config,canvasMetrics:metrics,boatChumBuilder:boatBuilder,debugBuilder:{buildInto(){}},locationId:'test'});
   const worldOptions={map:{getBackgroundRenderData:()=>background},projector,config,canvasMetrics:metrics,boatChumBuilder:boatBuilder,locationId:'test'};
   for(const debugBuilder of [{},false]) assert.throws(()=>new c.WorldRenderFrameBuilder({...worldOptions,debugBuilder}),/requires debugBuilder/);
@@ -46,7 +47,6 @@ function checkRenderFrameComposition() {
   }
   const styles={resolveBarStyle:()=>({})},bounds={top:0,bottom:600};let aiming=false;
   const chumSource={isAiming:()=>aiming,getEquipment:()=>({}),getGameStateName:()=> 'casting',getCastDistance:()=>300,getPowerAimVisual:()=>({active:true,mode:'chum',screenX:250,power:0.5}),getAccuracyPreview:()=>({active:true,x:250,y:300,radiusX:10,radiusY:5}),getBounds:()=>bounds,getNow:()=>clock.now};
-  const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top});
   const castingBuilder=new c.CastingRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,hudStyleResolver:styles,chumSource});
   const landingBuilder=new c.LandingAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,getNet:()=>({isActive:true,getTriggerVirtualY:metric=>metric.shoreY-100}),landingPolicyResolver:{resolve:()=>({getLandingDistanceMeters:()=>1})}});
   const areaBuilder=new c.FightAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,landingAreaBuilder:landingBuilder,sectorGeometry:{resolve:()=>geometry}});

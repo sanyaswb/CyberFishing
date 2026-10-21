@@ -1,4 +1,7 @@
-// Metres on the water plane of one location. The castable water runs from the shore line (its bottom edge, 0 m) to
+// Illustrated 2D water (spec 126): exact authored metres, one far-size ratio and an independent surface tilt.
+// Ground positions/velocities and local surface-area footprints share this immutable metric owner.
+// The unconfigured plane and legacy distance-only profile retain their existing arithmetic contracts below.
+// Legacy distance-only mode: the castable water runs from the shore line (its bottom edge, 0 m) to
 // its top edge. The lower `linearShare` of that height keeps the base scale (pixelsPerMeter). Above it, the metres
 // per pixel grow linearly with height, so the scale changes without a kink and the top edge lies at `maxMeters`.
 // The lateral scale at a height is the square root of the depth-axis compression (pinhole camera: lateral pixels per
@@ -24,11 +27,19 @@ export class WaterMetric {
   #topMeters;
   #topMetersPerPixel;
   #isUniform;
+  #lateralExpansion;
+  #tiltDegrees = null;
+  #farScale = null;
+  #surfaceSquashY = 1;
+  #depthCurve = 0;
+  #shoreDepthScale = 0;
+  #shoreLateralScale = 0;
   #jacobianXX = 1;
   #jacobianXY = 0;
   #jacobianYY = 1;
 
-  constructor({ pixelsPerMeter, shoreY, topY, centerX = 0, maxMeters = null, linearShare = 0.5 }) {
+  constructor({ pixelsPerMeter, shoreY, topY, centerX = 0, maxMeters = null, linearShare = 0.5, lateralExpansion,
+    tiltDegrees = null, farScale = 0.3 }) {
     const scale = Number(pixelsPerMeter);
     if (!(scale > 0) || !Number.isFinite(scale)) throw new RangeError("WaterMetric requires a positive pixelsPerMeter");
     const heightPx = Number(shoreY) - Number(topY);
@@ -39,6 +50,28 @@ export class WaterMetric {
     this.#heightPx = heightPx;
     this.#centerX = Number(centerX) || 0;
     this.#isUniform = maxMeters === null || maxMeters === undefined;
+    this.#lateralExpansion = tiltDegrees === null ? lateralExpansion !== false : lateralExpansion === true;
+    if (tiltDegrees !== null && !this.#isUniform) {
+      const tilt = Number(tiltDegrees), ratio = Number(farScale), length = Number(maxMeters);
+      if (!Number.isFinite(tilt) || tilt < 1 || tilt > 90) throw new RangeError("WaterMetric tiltDegrees must be in [1, 90]");
+      if (!Number.isFinite(ratio) || ratio < .05 || ratio > 1) throw new RangeError("WaterMetric farScale must be in [0.05, 1]");
+      if (!Number.isFinite(length) || length <= 0) throw new RangeError("WaterMetric maxMeters must be positive and finite");
+      this.#tiltDegrees = tilt;
+      this.#farScale = ratio;
+      this.#surfaceSquashY = Math.sin(tilt * Math.PI / 180);
+      const curve = (1 - ratio) / (2 * ratio);
+      this.#shoreLateralScale = scale;
+      this.#shoreDepthScale = heightPx / length * (1 + curve);
+      this.#depthCurve = curve / (this.#shoreDepthScale * heightPx);
+      this.#topMeters = length;
+      this.#topMetersPerPixel = 1 / (ratio * this.#shoreDepthScale);
+      if (!Number.isFinite(this.#topMeters + this.#heightPx + this.#topMetersPerPixel +
+        this.#shoreDepthScale + this.#depthCurve) ||
+        this.#heightPx <= 0 || this.#topMeters <= 0 || this.#topMetersPerPixel <= 0) {
+        throw new RangeError("WaterMetric projection is outside the representable range");
+      }
+      return;
+    }
     if (this.#isUniform) {
       this.#joinHeightPx = heightPx;
       this.#curveHeightPx = 0;
@@ -68,6 +101,27 @@ export class WaterMetric {
 
   get isUniform() {
     return this.#isUniform;
+  }
+
+  get lateralExpansion() {
+    return this.#lateralExpansion;
+  }
+
+  get tiltDegrees() { return this.#tiltDegrees; }
+  get farScale() { return this.#farScale; }
+  get surfaceSquashY() { return this.#surfaceSquashY; }
+
+  // Local illustrated area scale, also used for sprite sizes. Tilt never recalibrates ground metres.
+  surfaceScaleAt(y) {
+    if (this.#tiltDegrees === null) return this.pixelsPerMeterX(y) / this.#pixelsPerMeter;
+    return 1 / (1 + 2 * this.#depthCurve * this.#shoreDepthScale * this.#waterHeightAt(y));
+  }
+
+  // Inverse of the rendered local ellipse; default samples its centre, overlap may sample the midpoint.
+  surfaceDistanceBasePixels(x1, y1, x2, y2, sampleY = y1) {
+    if (this.#tiltDegrees === null) return this.distanceBasePixels(x1, y1, x2, y2);
+    const scale = this.surfaceScaleAt(sampleY);
+    return Math.hypot((x1 - x2) / scale, (y1 - y2) / (scale * this.#surfaceSquashY));
   }
 
   get pixelsPerMeter() {
@@ -168,6 +222,11 @@ export class WaterMetric {
   metersFromShore(y) {
     if (this.#isUniform) return (this.#shoreY - y) / this.#pixelsPerMeter;
     const heightPx = this.#shoreY - y;
+    if (this.#tiltDegrees !== null) {
+      if (heightPx <= 0) return heightPx / this.#shoreDepthScale;
+      if (heightPx >= this.#heightPx) return this.#topMeters + (heightPx - this.#heightPx) * this.#topMetersPerPixel;
+      return heightPx / this.#shoreDepthScale + this.#depthCurve * heightPx * heightPx;
+    }
     if (heightPx <= this.#joinHeightPx) return heightPx / this.#pixelsPerMeter;
     const curvePx = heightPx - this.#joinHeightPx;
     if (curvePx <= this.#curveHeightPx) {
@@ -179,6 +238,13 @@ export class WaterMetric {
   // Virtual height y at the given metres from the shore (inverse of metersFromShore).
   yAtMeters(meters) {
     if (this.#isUniform) return this.#shoreY - meters * this.#pixelsPerMeter;
+    if (this.#tiltDegrees !== null) {
+      if (meters <= 0) return this.#shoreY - meters * this.#shoreDepthScale;
+      if (meters >= this.#topMeters) return this.topY - (meters - this.#topMeters) / this.#topMetersPerPixel;
+      const a = 1 / this.#shoreDepthScale;
+      const height = 2 * meters / (a + Math.sqrt(a * a + 4 * this.#depthCurve * meters));
+      return this.#shoreY - height;
+    }
     if (meters <= this.#joinMeters) return this.#shoreY - meters * this.#pixelsPerMeter;
     if (meters <= this.#topMeters) {
       const extra = meters - this.#joinMeters;
@@ -198,7 +264,11 @@ export class WaterMetric {
 
   // Pixels per metre sideways at height y.
   pixelsPerMeterX(y) {
-    if (this.#isUniform) return this.#pixelsPerMeter;
+    if (this.#tiltDegrees !== null) {
+      if (!this.#lateralExpansion) return this.#shoreLateralScale;
+      return this.#shoreLateralScale * this.surfaceScaleAt(y);
+    }
+    if (this.#isUniform || !this.#lateralExpansion) return this.#pixelsPerMeter;
     return this.#pixelsPerMeter * Math.sqrt(this.#metersPerPixel / this.#metersPerPixelAt(y));
   }
 
@@ -228,7 +298,10 @@ export class WaterMetric {
     const metersPerPixel = this.#metersPerPixelAt(y);
     const lateralScale = this.pixelsPerMeterX(y);
     const curvePx = this.#shoreY - y - this.#joinHeightPx;
-    const lateralScaleSlope = curvePx > 0 && curvePx < this.#curveHeightPx
+    const lateralScaleSlope = this.#tiltDegrees !== null
+      ? (this.#lateralExpansion && y > this.topY && y < this.#shoreY
+        ? this.#shoreLateralScale * 2 * this.#depthCurve * this.#shoreDepthScale * this.surfaceScaleAt(y) ** 2 : 0)
+      : this.#lateralExpansion && curvePx > 0 && curvePx < this.#curveHeightPx
       ? this.#pixelsPerMeter * Math.sqrt(this.#metersPerPixel) * this.#curveCoefficient * metersPerPixel ** -1.5
       : 0;
     this.#jacobianXX = lateralScale / this.#pixelsPerMeter;
@@ -238,9 +311,16 @@ export class WaterMetric {
 
   #metersPerPixelAt(y) {
     if (this.#isUniform) return this.#metersPerPixel;
+    if (this.#tiltDegrees !== null) {
+      return 1 / this.#shoreDepthScale + 2 * this.#depthCurve * this.#waterHeightAt(y);
+    }
     const curvePx = this.#shoreY - y - this.#joinHeightPx;
     if (curvePx <= 0) return this.#metersPerPixel;
     if (curvePx >= this.#curveHeightPx) return this.#topMetersPerPixel;
     return this.#metersPerPixel + 2 * this.#curveCoefficient * curvePx;
+  }
+
+  #waterHeightAt(y) {
+    return Math.max(0, Math.min(this.#heightPx, this.#shoreY - y));
   }
 }

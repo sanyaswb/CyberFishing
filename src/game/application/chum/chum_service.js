@@ -11,7 +11,7 @@ export class ChumService {
   #locationMemoryKey;
   #memoryGrid = {};
   #boatEnergy = null;
-  #projector;
+  #getWaterMetric;
   #onConfigUpdateBind;
   #onBoatReturned;
   #rng;
@@ -19,10 +19,10 @@ export class ChumService {
   #cache;
   #configEvents;
 
-  constructor(locationId, chumConfig, projector, services = {}) {
+  constructor(locationId, chumConfig, getWaterMetric, services = {}) {
     this.#chumConfig = chumConfig;
     this.#cache = services.cache;
-    this.#projector = projector;
+    this.#getWaterMetric = getWaterMetric;
     this.#rng = services.rng || { next: () => Math.random() };
     this.#now = services.now || (() => Date.now());
     this.#onBoatReturned =
@@ -144,7 +144,7 @@ export class ChumService {
     );
 
     const overlappingIndex = this.#zones.findIndex(
-      (z) => z.isDelivered && z.checkOverlap(newZone, this.#projector),
+      (z) => z.isDelivered && z.checkOverlap(newZone, this.#getWaterMetric()),
     );
 
     if (overlappingIndex !== -1) {
@@ -249,7 +249,7 @@ export class ChumService {
         floatX,
         floatY,
         null,
-        this.#projector,
+        this.#getWaterMetric(),
       );
 
       if (zoneMult > bestBonus) {

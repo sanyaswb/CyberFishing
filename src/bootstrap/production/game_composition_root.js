@@ -427,7 +427,7 @@ export class GameCompositionRoot {
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
       rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
     });
-    const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver } = await this.#composeLocation({
+    const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver, getWaterMetric } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
     });
     const {
@@ -460,7 +460,7 @@ export class GameCompositionRoot {
     });
     this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
     const { systems } = this.#composeWorldSystems({
-      projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, own, canvas, hookedFishProfileSynchronizer,
+      projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
       gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter },
@@ -796,13 +796,18 @@ export class GameCompositionRoot {
     const waterMetricResolver = new LocationWaterMetricResolver({
       pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter, logger: new ConsoleLogger(),
     });
-    const worldPerspective = new WorldPerspective({ getLocation: () => this.#config.locations.map[locId] });
+    const getWaterMetric = () => {
+      const config = this.#config.locations;
+      return waterMetricResolver.resolve(locationMap.getCastableBoundsVirtual(config.cellSize),
+        config.map[locId].distanceProfile, config.map[locId].perspective);
+    };
+    const worldPerspective = new WorldPerspective({ getWaterMetric });
     const projector = new ViewportProjector(
       this.#config.locations,
       locId,
       worldPerspective.getPerspective.bind(worldPerspective),
     );
-    return { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver };
+    return { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricResolver, getWaterMetric };
   }
 
   // Physics-backed line and cast rules and the player's inventory.
@@ -881,7 +886,7 @@ export class GameCompositionRoot {
 
   // Map, environment, input, game controls, chum service and bite system; the inventory reads boat charge from the chum service.
   #composeWorldSystems({
-    projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, own, canvas, hookedFishProfileSynchronizer,
+    projector, locId, rng, locationResources, locCfg, locationMap, waterMetricResolver, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
     gameTimeClock, rodAnimation, scene,
@@ -928,7 +933,7 @@ export class GameCompositionRoot {
           netMountNode: this.#tackleMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
           documentRef: this.#documentTarget, frameScheduler: this.#windowTarget },
       )),
-      chum: own(new ChumService(locId, chumConfigObj, projector, {
+      chum: own(new ChumService(locId, chumConfigObj, getWaterMetric, {
         cache: this.#storageCache,
         configEvents: this.#documentTarget,
         rng,

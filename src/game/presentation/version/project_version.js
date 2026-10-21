@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.45.38";
+export const CURRENT_PROJECT_VERSION = "0.45.43";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-hold-recognition-delay",
+  codename: "simple-water-perspective",
   updatedAt: "2026-10-21",
   notes: Object.freeze([
+    "Simple 2D water: exact 30 m length, artistic 30-degree surface tilt and a 0.3 far-size ratio; no camera distance or overhead-reference controls",
+    "One WaterMetric owns metre positions, motion and illustrated area factors; chum ellipses match their bonus boundary while grid/water keep complete authored bounds",
+    "Optional lateral grid contraction defaults off; local reset/export/import retain one injected config owner",
     "Inventory cells wait 300ms to distinguish a click from a hold, then fill the removal progress in 200ms; cancel either phase without changing green-pick cancellation",
     "TK-014: pending radial artwork no longer reveals classic shortcuts; explicit classic mode, failure fallback and late preload disposal remain supported",
     "Backpack, saved kits, equipment, editor and header bait share the same activation delay and 200ms progress duration",
@@ -55,11 +58,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
     "Wide backpack and keepnet mouse/touch swipes switch sections directly; gesture thresholds follow the touched column and hidden portrait pages never consume the swipe",
     "TK-001 through TK-007 implemented: bottom notices, pointer aim lead, editor navigation/highlights, wide gestures, bare-line speed and double-activation clock phases",
     "TK-001 through TK-007 documented against current code with implementation boundaries, acceptance criteria and checks; gameplay unchanged",
-    "Original sine/tangent visual scaling and 0/30-degree angles restored; physical metres keep the 50 px/m base without tilt zoom or automatic fitting",
     "Readable location angle and physical-distance controls retain validation, export/import/local reset; DEV Overlay starts off",
-    "Physical distance compression starts at the lower green-zone edge for metre grid and movement; visual scale uses the original location safeZone",
+    "Overhead reference length fixes the transverse map scale independently of angle/distance; engine base pixels remain ground metres times 50",
     "DEV zone editor shows exact metre grid and all zone geometry, hides the background to black, edits runtime geometry and caches WebGL annotations",
-    "World sizes and areas follow the original visual angle curve; camera scale applies once, the rod stays screen-relative",
+    "World sizes, area boundaries and water effects use the same metric; viewport scale applies once, the rod stays screen-relative",
     "Idle tackle obeys the depth-adjusted line budget after current, bite and live-bait motion; inward retrieval remains available",
     "The bait boat keeps its speed in metres everywhere on the water: far away it moves fewer pixels per second, like the tackle",
     "A long-press re-cast aims like the first cast: the rod, line and tackle hide until the new cast lands",

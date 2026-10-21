@@ -9,6 +9,7 @@ export class WorldRenderFrameBuilder {
   #boatChumBuilder;
   #debugBuilder;
   #locationId;
+  #getWaterMetric;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
@@ -21,6 +22,7 @@ export class WorldRenderFrameBuilder {
     boatChumBuilder,
     debugBuilder,
     locationId,
+    getWaterMetric,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -45,6 +47,7 @@ export class WorldRenderFrameBuilder {
     this.#boatChumBuilder = boatChumBuilder;
     this.#debugBuilder = debugBuilder;
     this.#locationId = locationId;
+    this.#getWaterMetric = getWaterMetric;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -53,6 +56,12 @@ export class WorldRenderFrameBuilder {
       this.#config.canvas?.backgroundColor || "#0f171e";
     this.#buildBackground(target);
     this.#buildCurrent(target.current);
+    if (this.#getWaterMetric) {
+      const plane = target.waterPlane;
+      plane.metric = this.#getWaterMetric();
+      const bounds = this.#map.getCastableBoundsVirtual(this.#config.locations.cellSize);
+      plane.left = bounds.left; plane.right = bounds.right;
+    }
     this.#buildClipRegions(target.clipRegions);
     this.#debugBuilder?.buildInto(target, debugEnabled);
     if (target.backgroundHidden) {

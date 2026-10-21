@@ -255,12 +255,14 @@ export class GameRenderComposition {
   composeFrameBuilders({ runtime, config, canvasMetrics, appPorts, clock, contracts, fightService }) {
     const worldBuilder = new WorldRenderFrameBuilder({
       map: runtime.map,
+      getWaterMetric: appPorts.getWaterMetric,
       projector: runtime.projector,
       config,
       canvasMetrics,
       locationId: runtime.location.id,
       boatChumBuilder: new BoatChumRenderFrameBuilder({
         chum: runtime.chum,
+        getWaterMetric: appPorts.getWaterMetric,
         projector: runtime.projector,
         config,
       }),

@@ -32,15 +32,13 @@ export class BoatChumRenderer {
       const surface = this.#surface;
       surface.save();
       surface.beginPath();
-      surface.ellipse(
-        zone.x,
-        zone.y,
-        zone.radiusX,
-        zone.radiusY,
-        0,
-        0,
-        Math.PI * 2,
-      );
+      if (zone.pointCount > 0) {
+        surface.moveTo(zone.points[0], zone.points[1]);
+        for (let point = 1; point < zone.pointCount; point++) surface.lineTo(zone.points[point * 2], zone.points[point * 2 + 1]);
+      } else {
+        surface.ellipse(zone.x, zone.y, zone.radiusX, zone.radiusY, 0, 0, Math.PI * 2);
+      }
+      surface.closePath();
       surface.fillStyle = `rgba(200, 255, 100, ${zone.opacity * 0.2})`;
       surface.fill();
       surface.strokeStyle = `rgba(200, 255, 100, ${zone.opacity * 0.5})`;

@@ -75,6 +75,10 @@ export class PixiFightAreaRenderer {
     print.flag(zone.visible);
     if (zone.visible) {
       print.text(zone.kind);
+      if (zone.kind === "polygon") {
+        print.length(zone.pointCount);
+        for (let point = 0; point < zone.pointCount * 2; point++) print.length(zone.points[point]);
+      }
       print.length(zone.x); print.length(zone.y); print.length(zone.radiusX); print.length(zone.radiusY);
       print.length(zone.width); print.length(zone.height); print.length(zone.lineY);
     }
@@ -111,6 +115,12 @@ export class PixiFightAreaRenderer {
   #drawCatch(model, style) {
     if (!model.visible) return;
     const shapes = this.#shapes;
+    if (model.kind === "polygon") {
+      shapes.moveTo(model.points[0], model.points[1]);
+      for (let point = 1; point < model.pointCount; point++) shapes.lineTo(model.points[point * 2], model.points[point * 2 + 1]);
+      shapes.closePath().fill(style.catchFill).stroke({ width: 2, color: style.catchStroke });
+      return;
+    }
     if (model.kind === "ellipse") {
       shapes.ellipse(model.x, model.y, model.radiusX, model.radiusY).fill(style.catchFill)
         .stroke({ width: 2, color: style.catchStroke });

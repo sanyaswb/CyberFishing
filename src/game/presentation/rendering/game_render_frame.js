@@ -21,6 +21,7 @@ export class GameRenderFrame {
       // The location's water current (environment.current) as a velocity in art pixels per second: the scene's water
       // drifts with the same current that carries the tackle (spec 106 D9).
       current: { x: 0, y: 0 },
+      waterPlane: { metric: null, left: 0, right: 0 },
       clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
       annotations: null,
@@ -91,6 +92,7 @@ export class GameRenderFrame {
     this.world.backgroundAssetIds.length = 0;
     this.world.current.x = 0;
     this.world.current.y = 0;
+    this.world.waterPlane.metric = null;
     this.world.clipRegions.reset();
     this.world.dynamicZones.reset();
     this.world.chumZones.reset();

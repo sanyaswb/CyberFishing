@@ -1,4 +1,5 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { projectWaterCircle } from "./water_circle_projection.js";
 
 export class LandingAreaRenderFrameBuilder {
   #projector;
@@ -35,7 +36,6 @@ export class LandingAreaRenderFrameBuilder {
   buildInto({ target, bottom, debug, equipment }) {
     const metric = this.#getWaterMetric();
     const locations = this.#config.locations || {};
-    const scale = this.#projector.getScale();
     const catchY = this.#projector.virtualToScreen(
       0,
       bottom,
@@ -69,8 +69,8 @@ export class LandingAreaRenderFrameBuilder {
       bottom,
       catchY,
       width,
-      radiusBasePixels * scale,
-      (bottom - metric.yAtBasePixels(radiusBasePixels)) * scale,
+      radiusBasePixels,
+      metric,
     );
     this.#buildLastDashZone(
       target.lastDashZone,
@@ -98,21 +98,13 @@ export class LandingAreaRenderFrameBuilder {
     catchY,
     width,
     radius,
-    radiusY,
+    metric,
   ) {
     if (locations.showCatchZone === false) return;
     target.visible = true;
     if (radius > 0) {
-      const center = this.#projector.virtualToScreen(
-        rodVirtualX,
-        bottom,
-        this.#screenA,
-      );
-      target.kind = "ellipse";
-      target.x = center.x;
-      target.y = center.y;
-      target.radiusX = radius;
-      target.radiusY = radiusY;
+      target.kind = "polygon";
+      projectWaterCircle(target, metric, this.#projector, rodVirtualX, bottom, radius);
       return;
     }
     target.kind = "band";

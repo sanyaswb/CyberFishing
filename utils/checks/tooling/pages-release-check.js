@@ -129,7 +129,9 @@ try {
   };
   const authoredFiles = new Set(ReleaseFileSet.collect(authoredTree));
   const { productionFiles } = require("../../project-structure.js");
-  const production = productionFiles({ rootDir: workspace, files: tree.paths() });
+  // The structure command reads tracked working files, including staged additions (UTILS_RULES.md).
+  // HEAD remains the immutable release input above; using its path list here rejects every new imported module.
+  const production = productionFiles({ rootDir: workspace });
   assert(production.includes("index.html") && production.some(file => file.startsWith("assets/")),
     "production structure includes the game page and shipped assets");
   assert(production.every(file => authoredFiles.has(file)), "production structure uses the release file selection");

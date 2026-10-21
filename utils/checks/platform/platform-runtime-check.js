@@ -223,7 +223,7 @@ function checkCanvasScenes() {
     ]),
     clipRegions: empty,
     chumZones: list([
-      { x: 100, y: 100, radiusX: 20, radiusY: 10, opacity: 0.5 },
+      { points: [120, 100, 100, 110, 80, 100, 100, 90], pointCount: 4, opacity: 0.5 },
     ]),
     waypoints: list([{ x: 200, y: 200, scale: 1, showIndex: true, index: 2 }]),
     boats: list([

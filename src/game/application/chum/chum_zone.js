@@ -46,7 +46,7 @@ export class ChumZone {
   }
 
 
-  getMultiplierAt(targetX, targetY, targetFishId, projector) {
+  getMultiplierAt(targetX, targetY, targetFishId, waterMetric) {
     if (this.isExpired || !this.isDelivered) return 1.0;
 
     if (
@@ -57,20 +57,7 @@ export class ChumZone {
     }
 
 
-    const perspective = projector.getPerspective(this.y);
-
-    // Use the same projected radius as the renderer.
-    // Scale the physical radius with distance and flatten it vertically.
-    const currentRadX = this.baseRadius * perspective.scale;
-    const currentRadY = currentRadX * perspective.squashY;
-
-    const dx = targetX - this.x;
-    const dy = targetY - this.y;
-
-    const isInside =
-      (dx * dx) / (currentRadX * currentRadX) +
-        (dy * dy) / (currentRadY * currentRadY) <=
-      1;
+    const isInside = waterMetric.surfaceDistanceBasePixels(this.x, this.y, targetX, targetY) <= this.baseRadius;
 
     if (isInside) {
       return this.currentBonus;
@@ -79,18 +66,10 @@ export class ChumZone {
   }
 
 
-  checkOverlap(otherZone, projector) {
-    const perspective = projector.getPerspective(this.y);
-
-    const dx = this.x - otherZone.x;
-    // Undo the vertical squash to test the ellipse as a circle.
-    const dy = (this.y - otherZone.y) / perspective.squashY;
-
-    const dist = Math.hypot(dx, dy);
-
-    // Perspective scale determines the apparent physical size of the zone.
-    const effectiveRadius =
-      Math.max(this.baseRadius, otherZone.baseRadius) * perspective.scale;
+  checkOverlap(otherZone, waterMetric) {
+    const dist = waterMetric.surfaceDistanceBasePixels(this.x, this.y, otherZone.x, otherZone.y,
+      (this.y + otherZone.y) / 2);
+    const effectiveRadius = Math.max(this.baseRadius, otherZone.baseRadius);
 
     return dist < effectiveRadius * 0.6;
   }

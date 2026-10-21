@@ -83,6 +83,7 @@ export class GameWorld {
     return this.#waterMetricResolver.resolve(
       this.#map.getCastableBoundsVirtual(locations.cellSize),
       locations.map[this.#map.currentLocationId]?.distanceProfile,
+      locations.map[this.#map.currentLocationId]?.perspective,
     );
   }
 

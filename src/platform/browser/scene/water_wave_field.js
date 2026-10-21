@@ -4,8 +4,6 @@ const wave = (multiple, angle, share, phase) =>
   Object.freeze({ multiple, dirX: Math.cos(angle), dirY: Math.sin(angle), share, phase });
 const WAVES_X = Object.freeze([wave(1, 0.17, 0.5, 0), wave(0.58, -0.44, 0.3, 1.7), wave(0.34, 1.05, 0.2, 4.1)]);
 const WAVES_Y = Object.freeze([wave(0.8, 0.52, 0.6, 0.9), wave(0.45, -0.87, 0.4, 2.6)]);
-// The far edge of the water is drawn this much smaller than the near edge: waves shrink and calm toward it.
-const FAR_SCALE = 0.35;
 // Shares of the map over which the waves fade to nothing, so the displaced water meets the still art without a seam.
 const FADE_TOP = 0.18;
 const FADE_BOTTOM = 0.08;
@@ -27,7 +25,7 @@ export class WaterWaveField {
   #height;
   #pixels;
   #envelope;
-  #perspective;
+  #ground = { x: 0, y: 0 };
   #rowX;
   #rowY;
 
@@ -39,14 +37,11 @@ export class WaterWaveField {
     this.#height = height;
     this.#pixels = new Uint8ClampedArray(width * height * 4);
     this.#envelope = new Float32Array(width * height);
-    this.#perspective = new Float32Array(height);
     this.#rowX = new Float64Array(width);
     this.#rowY = new Float64Array(width);
     for (let row = 0; row < height; row += 1) {
       const v = (row + 0.5) / height;
-      const perspective = FAR_SCALE + (1 - FAR_SCALE) * v;
-      this.#perspective[row] = perspective;
-      const vertical = perspective * smoothstep(v / FADE_TOP) * smoothstep((1 - v) / FADE_BOTTOM);
+      const vertical = smoothstep(v / FADE_TOP) * smoothstep((1 - v) / FADE_BOTTOM);
       for (let column = 0; column < width; column += 1) {
         const u = (column + 0.5) / width;
         this.#envelope[row * width + column] = vertical * smoothstep(u / FADE_SIDE) * smoothstep((1 - u) / FADE_SIDE);
@@ -71,7 +66,7 @@ export class WaterWaveField {
   // timeSec: the animation clock; artWidth / artHeight: the water's size in art pixels; wavelength: art pixels between
   // crests at the near edge; speed: art pixels per second the crests travel; driftX / driftY: how far the current has
   // carried the whole pattern, in art pixels at the near edge (the far water drifts slower on screen: perspective).
-  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0 }) {
+  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null }) {
     const width = this.#width;
     const height = this.#height;
     const pixels = this.#pixels;
@@ -79,21 +74,27 @@ export class WaterWaveField {
     const travel = k * speed * timeSec;
     const rowX = this.#rowX;
     const rowY = this.#rowY;
+    const metric = plane?.metric;
     for (let row = 0; row < height; row += 1) {
-      const perspective = this.#perspective[row];
-      // Positions on the water plane: the far rows cover more water per art pixel.
-      const y = (((row + 0.5) / height) * artHeight) / perspective;
-      const xScale = artWidth / (width * perspective);
+      const v = (row + .5) / height;
+      const mapY = metric ? metric.topY + v * (metric.shoreY - metric.topY) : v * artHeight;
+      if (metric) metric.toBasePlane(plane.left, mapY, this.#ground);
+      const y = metric ? this.#ground.y : mapY;
+      const originX = metric ? this.#ground.x : 0;
+      const xScale = metric ? (plane.right - plane.left) / width * metric.pixelsPerMeter / metric.pixelsPerMeterX(mapY)
+        : artWidth / width;
+      const scaleX = metric ? metric.pixelsPerMeterX(mapY) / metric.pixelsPerMeterX(metric.shoreY) : 1;
+      const scaleY = metric ? metric.pixelsPerMeterY(mapY) / metric.pixelsPerMeterY(metric.shoreY) : 1;
       rowX.fill(0);
       rowY.fill(0);
-      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, driftX, travel);
-      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, driftX, travel);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, driftX - originX, travel);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, driftX - originX, travel);
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
         const envelope = this.#envelope[index];
         const offset = index * 4;
-        pixels[offset] = 128 + 127 * envelope * rowX[column];
-        pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
+        pixels[offset] = 128 + 127 * envelope * scaleX * rowX[column];
+        pixels[offset + 1] = 128 + 127 * envelope * scaleY * rowY[column];
         pixels[offset + 2] = 128;
       }
     }

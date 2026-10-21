@@ -275,9 +275,9 @@ vm.runInContext(
   const zoneConfig = { id: "probe_mix", radius: 100, targetFishes: ["carp"], rampUpTimeMs: 1000, peakDurationMs: 1000,
     totalBonusTimeMs: 4000, minBonusDurationHours: 0.001, maxBonus: 2, minBonus: 1.2 };
   // Zones are created by their owner (ChumZone has no global of its own once migrated).
-  const flatProjector = { getPerspective: () => ({ scale: 1, squashY: 0.5 }) };
+  const flatProjector = new WaterMetric({ pixelsPerMeter: 50, shoreY: 600, topY: 0 });
   const zoneManager = new ChumService("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
-    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
+    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, () => flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
     now: () => 0 });
   zoneManager.deployBait(50, 50, "probe_mix");
   zoneManager.deployBait(400, 50, "probe_mix");

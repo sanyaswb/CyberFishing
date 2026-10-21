@@ -11,6 +11,108 @@ const { LocationWaterMetricResolver } = runtime.importModule(
 // Test location: castable water 520..1160 virtual px, 50 px per metre (12.8 m uniform).
 const LOCATION = Object.freeze({ pixelsPerMeter: 50, shoreY: 1160, topY: 520, centerX: 1280 });
 
+// G-112: authored metres are exact, independent of artistic perspective and retired camera overrides.
+for (const tiltDegrees of [17, 30, 53, 90]) for (const cameraDistanceMeters of [30, 900]) {
+  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees, farScale: .3, cameraDistanceMeters });
+  assert.equal(metric.topMeters, 30, 'G-112: 30 m stays exactly 30 m after angle/camera edits');
+  assert.equal(metric.yAtMeters(30), LOCATION.topY, 'G-112: the 30 m aim reaches the authored far edge');
+}
+
+// G-111/G-112: angle edits flatten surface markers without zooming X or changing metres.
+function checkSimpleWaterProjection() {
+  const point = {}, ground = {}, velocity = {}, restored = {}, shifted = {};
+  const close = (a,b,message,tolerance=1e-7) => assert(Math.abs(a-b) <= tolerance * Math.max(1,Math.abs(b)),message);
+  for (const tiltDegrees of [1,17,30,53,90]) for (const maxMeters of [.1,30,1000])
+    for (const farScale of [.05,.3,1]) for (const lateralExpansion of [false,true]) {
+    const metric = new WaterMetric({...LOCATION,maxMeters,tiltDegrees,farScale,lateralExpansion});
+    assert.equal(metric.topMeters,maxMeters,'authored length is exact at every angle and far scale');
+    assert.equal(metric.topY,LOCATION.topY,'full authored height is retained');
+    assert.equal(metric.yAtMeters(maxMeters),LOCATION.topY,'far metres reach the upper edge');
+    assert.equal(metric.pixelsPerMeterX(metric.shoreY),50,'near X keeps the original 50 px per metre');
+    close(metric.surfaceScaleAt(metric.topY),farScale,'far size means exactly the chosen share of near size');
+    close(metric.pixelsPerMeterY(metric.topY) / metric.pixelsPerMeterY(metric.shoreY),farScale,
+      'far depth motion has the same configured compression');
+    if(tiltDegrees===30)close(metric.surfaceSquashY,.5,'30 degrees gives half-height surface ellipses');
+    if(tiltDegrees===90)assert.equal(metric.surfaceSquashY,1,'90 degrees makes surface areas circular');
+    assert.equal(metric.pixelsPerMeter,50,'base engine/catalog units stay unchanged');
+    for(const share of [-.1,0,.1,.5,.9,1,1.1]) {
+      const depth=maxMeters*share;
+      metric.toVirtual(2,depth,point);metric.toGround(point.x,point.y,ground);
+      close(ground.x,2,'lateral inverse');close(ground.y,depth,'depth inverse');
+      assert(Number.isFinite(point.x+point.y)&&metric.pixelsPerMeterY(point.y)>0&&metric.surfaceScaleAt(point.y)>0,
+        'positive finite scales throughout and outside water');
+      if(!lateralExpansion)assert.equal(metric.pixelsPerMeterX(point.y),50,'parallel grid never changes its X unit');
+      if(share>0&&share<1) {
+        metric.velocityFromBasePlane(point.x,point.y,30,-20,velocity);
+        metric.velocityToBasePlane(point.x,point.y,velocity.x,velocity.y,restored);
+        close(restored.x,30,'lateral velocity inverse');close(restored.y,-20,'depth velocity inverse');
+        metric.toBasePlane(point.x,point.y,ground);
+        const dt=1e-5;
+        metric.fromBasePlane(ground.x+30*dt,ground.y-20*dt,shifted);
+        metric.fromBasePlane(ground.x-30*dt,ground.y+20*dt,restored);
+        close((shifted.x-restored.x)/(2*dt),velocity.x,'off-centre lateral derivative',1e-4);
+        close((shifted.y-restored.y)/(2*dt),velocity.y,'depth derivative',1e-4);
+      }
+    }
+  }
+  const resolver=new LocationWaterMetricResolver({pixelsPerMeter:50});
+  const bounds={left:0,right:2560,top:LOCATION.topY,bottom:LOCATION.shoreY};
+  const profile={maxMeters:30,farScale:.3};
+  const metric=resolver.resolve(bounds,profile,{tiltDegrees:30,cameraDistanceMeters:30});
+  assert.equal(metric.lateralExpansion,false,'omitted grid-width settings default off');
+  assert.equal(resolver.resolve(bounds,{...profile,linearShare:.9},{tiltDegrees:30,cameraDistanceMeters:900}),metric,
+    'retired camera and legacy-only controls cannot alter the modern metric');
+  const {CONFIG}=runtime.importModule('src/game/config/runtime/game_config.js');
+  assert.equal(CONFIG.locations.map.test.distanceProfile.lateralExpansion,false,'reset/default grid width is off');
+  assert.equal(CONFIG.locations.map.test.distanceProfile.farScale,.3,'the simple default is 30% at the far edge');
+  const {CastingRenderFrameBuilder}=runtime.importModule('src/game/presentation/rendering/casting_render_frame_builder.js');
+  const {GameRenderFrame}=runtime.importModule('src/game/presentation/rendering/game_render_frame.js');
+  const projector={virtualToScreen:(x,y,out)=>{out.x=x;out.y=y;return out;},getScale:()=>1};
+  const source={};
+  for(const method of ['isAiming','getEquipment','getGameStateName','getCastDistance','getPowerAimVisual',
+    'getAccuracyPreview','getBounds','getNow'])source[method]=()=>false;
+  const builder=new CastingRenderFrameBuilder({projector,getWaterMetric:()=>metric,config:{},
+    canvasMetrics:{width:2560,height:1440},hudStyleResolver:{resolveBarStyle:()=>({})},chumSource:source,labels:{}});
+  const frame=new GameRenderFrame();
+  for(const metres of [10,20,30]) {
+    frame.reset();
+    builder.buildInto({target:frame.casting,intent:{casting:{depthLimit:{visible:false},visible:true,zoneVisible:true,
+      virtualBottomY:LOCATION.shoreY,maxDistance:metres*50,mode:'rod'}},clipRegions:[]});
+    close(metric.metersFromShore(frame.casting.aimingZone.lineY),metres,
+      'real 10/20/30 m aiming line agrees with calibrated metres');
+  }
+}
+checkSimpleWaterProjection();
+
+function checkGroundChumPersistence() {
+  const { ChumService } = runtime.importModule("src/game/application/chum/chum_service.js");
+  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees: 45, farScale: .3 });
+  const cacheData = new Map();
+  const cache = { get: (key, fallback) => cacheData.has(key) ? JSON.parse(cacheData.get(key)) : fallback,
+    set: (key, value) => cacheData.set(key, JSON.stringify(value)) };
+  const config = { baits: { mix: { id: "mix", radius: 50, targetFishes: ["carp"], rampUpTimeMs: 1000,
+    peakDurationMs: 1000, totalBonusTimeMs: 4000, minBonusDurationHours: .001, maxBonus: 2, minBonus: 1.2 } } };
+  let now = 0;
+  const services = { cache, now: () => now, rng: { next: () => .5 } };
+  const point = {};
+  const service = new ChumService("projection-test", config, () => metric, services);
+  metric.toVirtual(2, 10, point); service.deployBait(point.x, point.y, "mix");
+  service.update(1000, 1);
+  assert.equal(service.getChumDataAt(point.x, point.y).bonus, 2, "the delivered centre receives the peak bonus");
+  metric.toVirtual(2.1, 10, point); now = 1000; service.deployBait(point.x, point.y, "mix");
+  assert.equal(service.getZones().length, 1, "nearby ground zones retain replacement behavior");
+  const saved = cacheData.get("chum_active_projection-test");
+  assert.deepEqual(Object.keys(JSON.parse(saved)[0]).sort(), ["baitId", "deployRealTimeMs", "id", "isDelivered", "x", "y"],
+    "the existing save shape is unchanged");
+  const reloaded = new ChumService("projection-test", config, () => metric, services);
+  reloaded.update(2000, 1);
+  assert.equal(reloaded.getChumDataAt(point.x, point.y).bonus, 2, "reload restores the same ground influence and timing");
+  reloaded.saveToStorage(); assert.equal(cacheData.get("chum_active_projection-test"), saved, "reload/save preserves bytes");
+  reloaded.update(9000, 1); assert.equal(reloaded.getZones().length, 0, "expiry still removes persisted zones");
+  service.dispose(); reloaded.dispose();
+}
+checkGroundChumPersistence();
+
 function checkUniformMatchesPlainArithmetic() {
   const metric = new WaterMetric(LOCATION);
   assert.equal(metric.isUniform, true);
@@ -83,6 +185,16 @@ function checkPerspectiveCurve() {
   const nearFish = { x: 0, y: 0 };
   metric.toVirtual(2, 2, nearFish);
   assert(fish.x - 1280 < nearFish.x - 1280, "the same 2 m sideways spans fewer pixels far away");
+
+  const flatLateral = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5, lateralExpansion: false });
+  assert.equal(flatLateral.lateralExpansion, false);
+  close(flatLateral.pixelsPerMeterX(520), 50, "without lateral expansion the far lateral scale stays 50 px/m");
+  close(flatLateral.pixelsPerMeterX(1000), 50, "near lateral scale stays 50 px/m");
+  const farFishFlat = { x: 0, y: 0 }, nearFishFlat = { x: 0, y: 0 };
+  flatLateral.toVirtual(2, 25, farFishFlat);
+  flatLateral.toVirtual(2, 2, nearFishFlat);
+  close(farFishFlat.x - 1280, 100, "without lateral expansion 2 m sideways is always 100 virtual px");
+  close(nearFishFlat.x - 1280, 100, "near and far lateral offsets match");
 }
 
 function checkBasePixels() {
@@ -127,6 +239,32 @@ function checkGroundPlane() {
   assert(velocity.y > -100 / 5 && velocity.y < 0, "far away 2 m/s away from the shore covers few virtual pixels");
 }
 
+function checkGroundPlaneWithoutLateralExpansion() {
+  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5, lateralExpansion: false });
+  const close = (actual, expected, message, epsilon) =>
+    assert(Math.abs(actual - expected) <= epsilon, `${message}: expected ${expected}, received ${actual}`);
+  const plane = { x: 0, y: 0 }, back = { x: 0, y: 0 }, velocity = { x: 0, y: 0 }, velocityBack = { x: 0, y: 0 };
+  const shifted = { x: 0, y: 0 };
+  for (const [x, y] of [[1280, 1160], [100, 1100], [2400, 900], [300, 700], [2000, 530], [1500, 450]]) {
+    metric.toBasePlane(x, y, plane);
+    close(metric.distanceBasePixels(1280, 1160, x, y), Math.hypot(plane.x - 1280, plane.y - 1160),
+      `plane distance equals ground distance without lateral expansion at (${x}, ${y})`, 1e-7);
+    metric.fromBasePlane(plane.x, plane.y, back);
+    close(back.x, x, "fromBasePlane inverts toBasePlane without lateral expansion (x)", 1e-7);
+    close(back.y, y, "fromBasePlane inverts toBasePlane without lateral expansion (y)", 1e-7);
+    for (const [vx, vy] of [[120, 0], [0, -80], [-60, 45]]) {
+      metric.velocityFromBasePlane(x, y, vx, vy, velocity);
+      const h = 1e-4;
+      metric.fromBasePlane(plane.x + vx * h, plane.y + vy * h, shifted);
+      close(velocity.x, (shifted.x - x) / h, `velocity x is derivative without lateral expansion at (${x}, ${y})`, 1e-2);
+      close(velocity.y, (shifted.y - y) / h, `velocity y is derivative without lateral expansion at (${x}, ${y})`, 1e-2);
+      metric.velocityToBasePlane(x, y, velocity.x, velocity.y, velocityBack);
+      close(velocityBack.x, vx, "velocityToBasePlane inverts velocityFromBasePlane without lateral expansion (x)", 1e-9);
+      close(velocityBack.y, vy, "velocityToBasePlane inverts velocityFromBasePlane without lateral expansion (y)", 1e-9);
+    }
+  }
+}
+
 function checkResolver() {
   const errors = [];
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { error: (message) => errors.push(message) } });
@@ -153,6 +291,15 @@ function checkResolver() {
   assert(errors.length === 1 && /below the uniform 12.80 m/u.test(errors[0]), "the rejection is logged once");
   profile.maxMeters = 30;
   assert.notEqual(resolver.resolve(bounds, profile), edited, "a valid edit after a rejection applies again");
+  profile.lateralExpansion = false;
+  const noLateral = resolver.resolve(bounds, profile);
+  assert.notEqual(noLateral, edited, "toggling lateralExpansion rebuilds the metric");
+  assert.equal(noLateral.lateralExpansion, false);
+  assert.equal(noLateral.pixelsPerMeterX(520), 50);
+  profile.lateralExpansion = true;
+  const withLateral = resolver.resolve(bounds, profile);
+  assert.notEqual(withLateral, noLateral, "re-enabling lateralExpansion rebuilds the metric");
+  assert.equal(withLateral.lateralExpansion, true);
   assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, profile), edited, "changed bounds rebuild the metric");
   assert.throws(() => new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: null })
     .resolve(bounds, { enabled: true, linearShare: 0.5, maxMeters: 10 }), /below the uniform/u,
@@ -167,92 +314,126 @@ function checkTestLocationProfile() {
   const zone = map.zones.castable[0];
   const bounds = { left: zone.x * locations.cellSize, right: (zone.x + zone.w) * locations.cellSize,
     top: zone.y * locations.cellSize, bottom: (zone.y + zone.h) * locations.cellSize };
-  const metric = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter, logger: null })
-    .resolve(bounds, map.distanceProfile);
-  assert.equal(map.distanceProfile.enabled, true, "the test location has perspective metres enabled");
-  assert(Math.abs(metric.topMeters - map.distanceProfile.maxMeters) < 1e-9,
-    "the far edge of the test location lies at maxMeters");
-  assert(Math.abs(metric.metersFromShore(bounds.bottom - (bounds.bottom - bounds.top) * map.distanceProfile.linearShare) -
-    (bounds.bottom - bounds.top) * map.distanceProfile.linearShare / CONFIG.physics.simulation.pixelsPerMeter) < 1e-9,
-  "the near share of the test location keeps the base scale");
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter });
+  const metric = resolver.resolve(bounds, map.distanceProfile, map.perspective);
+  assert.equal(metric.tiltDegrees, map.perspective.tiltDegrees, "the shipped location actually composes its camera profile");
+  assert.equal(metric.topY, bounds.top, "the shipped camera never crops the green zone");
+  assert.equal(metric.shoreY, bounds.bottom);
+  assert.equal(metric.topMeters, map.distanceProfile.maxMeters, "the production 30 m stays exactly 30 m");
+  const overhead = resolver.resolve(bounds, map.distanceProfile, { ...map.perspective, tiltDegrees: 90 });
+  assert(Math.abs(overhead.topMeters - map.distanceProfile.maxMeters) < 1e-9,
+    "angle edits preserve the authored length");
+  assert.equal(metric.pixelsPerMeterX(bounds.bottom), overhead.pixelsPerMeterX(bounds.bottom),
+    "the production tilt preserves reference width");
 }
 
-// The physical metric keeps the green-zone shore; G-076 restores the archived visual angles and area sizes.
-function checkShoreMetricAndHistoricalAreas() {
+// G-112: actual illustrated chum containment and calibrated landing range through each viewport.
+function checkUnifiedWaterAreas() {
   const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
   const { WorldPerspective } = runtime.importModule("src/game/domain/locations/world_perspective.js");
   const { ViewportProjector } = runtime.importModule("src/game/application/viewport/viewport_projector.js");
-  const { CastingRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/casting_render_frame_builder.js");
   const { BoatChumRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/boat_chum_render_frame_builder.js");
   const { GameRenderFrame } = runtime.importModule("src/game/presentation/rendering/game_render_frame.js");
   const { ChumZone } = runtime.importModule("src/game/application/chum/chum_zone.js");
-  const locations = CONFIG.locations, map = locations.map.test, zone = map.zones.castable[0], cell = locations.cellSize;
-  const bounds = { left: zone.x * cell, right: (zone.x + zone.w) * cell,
-    top: zone.y * cell, bottom: (zone.y + zone.h) * cell };
-  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter });
-  let metric = resolver.resolve(bounds, map.distanceProfile);
-  assert(metric.pixelsPerMeterY(bounds.bottom - 1) < metric.pixelsPerMeter,
-    "G-072: perspective starts immediately above the lower green-zone edge");
-  const perspective = new WorldPerspective({ getLocation: () => map });
-  const projector = new ViewportProjector(locations, "test", y => perspective.getPerspective(y));
-  const centerX = (bounds.left + bounds.right) / 2;
-  const zones = [0, 1, 2, 10, 30].map((meters, index) => {
-    const chum = new ChumZone(index, centerX, metric.yAtMeters(meters),
-      { id: "test-bait", radius: 20, minBonus: 1, maxBonus: 2 }, 0, true);
-    chum.currentBonus = 2;
-    return chum;
-  });
-  const chumBuilder = new BoatChumRenderFrameBuilder({ projector, config: CONFIG,
-    chum: { getZones: () => zones, getBoats: () => [] } });
-  const chumSource = { isAiming: () => false, getEquipment: () => ({}), getGameStateName: () => "scouting",
-    getCastDistance: () => metric.pixelsPerMeter, getPowerAimVisual: () => null, getAccuracyPreview: () => null,
-    getBounds: () => bounds, getNow: () => 0 };
-  const canvasMetrics = { width: 0, height: 0 };
-  const castingBuilder = new CastingRenderFrameBuilder({ projector, getWaterMetric: () => metric, config: CONFIG,
-    canvasMetrics, hudStyleResolver: { resolveBarStyle: () => ({}) }, chumSource });
-  const frame = new GameRenderFrame(), shore = { set(x, y) { this.x = x; this.y = y; return this; } };
-  for (const [width, height] of [[390, 844], [844, 390]]) {
-    canvasMetrics.width = width; canvasMetrics.height = height;
-    projector.update(width, height); projector.pan(73, 91); frame.reset();
-    chumBuilder.buildInto(frame.world);
-    const rendered = frame.world.chumZones;
-    for (const [index, source] of zones.entries()) {
-      const ratio = Math.max(0, Math.min(1, (source.y - map.safeZone.top) / (map.safeZone.bottom - map.safeZone.top)));
-      const angle = (map.perspective.angleTop + (map.perspective.angleBottom - map.perspective.angleTop) * ratio) * Math.PI / 180;
-      const radiusX = source.baseRadius * Math.tan(angle) / Math.tan(map.perspective.angleBottom * Math.PI / 180);
-      const radiusY = radiusX * Math.sin(angle);
-      assert(Math.abs(rendered.getAt(index).radiusX - radiusX * projector.getScale()) < 1e-9,
-        "G-076: the actual chum width matches the historical tangent formula through pan/rotation");
-      assert(Math.abs(rendered.getAt(index).radiusY - radiusY * projector.getScale()) < 1e-9,
-        "G-076: the actual chum height matches the historical sine formula");
-      assert.equal(source.getMultiplierAt(source.x + radiusX * .99, source.y, null, projector), 2);
-      assert.equal(source.getMultiplierAt(source.x + radiusX * 1.01, source.y, null, projector), 1,
-        "G-076: the gameplay chum boundary shrinks together with the visible ellipse");
+  const { LandingAreaRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/landing_area_render_frame_builder.js");
+  const { WorldRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/world_render_frame_builder.js");
+  const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
+  const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
+  const profile = { maxMeters: 30, farScale: .3, lateralExpansion: true };
+  let camera = { tiltDegrees: 90 };
+  const getWaterMetric = () => resolver.resolve(bounds, profile, camera);
+  const perspective = new WorldPerspective({ getWaterMetric });
+  const projector = new ViewportProjector(CONFIG.locations, "test", y => perspective.getPerspective(y));
+  const stableWidths = new Map();
+  const metricPoint = {}, screenPoint = { set(x, y) { this.x = x; this.y = y; return this; } };
+  const zones = [];
+  const chum = { getZones: () => zones, getBoats: () => [] };
+  const builder = new BoatChumRenderFrameBuilder({ projector, config: CONFIG, chum, getWaterMetric });
+  const frame = new GameRenderFrame();
+  const rodPoint = { set(x, y) { this.x = x; this.y = y; return this; } };
+  const landing = new LandingAreaRenderFrameBuilder({ projector, getWaterMetric,
+    config: { ...CONFIG, locations: { ...CONFIG.locations, showCatchZone: true } },
+    canvasMetrics: { width: 1000, height: 1000 }, getNet: () => null,
+    getRodScreenX: () => projector.virtualToScreen(1500, bounds.bottom, rodPoint).x,
+    landingPolicyResolver: { resolve: () => ({ getLandingDistanceMeters: () => 1 }) } });
+  for (const lateralExpansion of [false, true]) for (const tiltDegrees of [17, 53, 90, 1, 45]) {
+    profile.lateralExpansion = lateralExpansion;
+    camera = { ...camera, tiltDegrees };
+    const metric = getWaterMetric();
+    const waterCell = { isCastable: true, hasCollision: false };
+    const map = { currentLocationId: "test", getCastableBoundsVirtual: () => bounds,
+      getCellAtVirtualPos: (_x, y) => y >= bounds.top && y <= bounds.bottom ? waterCell : null, getBackgroundRenderData: () => ({ loaded: false }) };
+    const config = { ...CONFIG, locations: { ...CONFIG.locations, lockZoneXToScreen: false,
+      map: { test: { ...CONFIG.locations.map.test, distanceProfile: profile, perspective: camera } } } };
+    const world = new GameWorld({ map, projector, locationConfig: config.locations, waterMetricResolver: resolver,
+      canvasMetrics: { width: 1000, height: 1000 } });
+    assert.equal(world.getWaterMetric(), metric, "runtime, visual projection and clipping retain one metric instance");
+    assert.equal(world.getDynamicBounds().top, metric.topY, "casting bounds retain the fixed authored water edge");
+    assert.equal(world.checkWater(1280, metric.topY + .01), waterCell);
+    assert.equal(world.checkWater(1280, metric.topY - .01), null,
+      "points above the fixed castable zone remain unavailable to physics");
+    const worldBuilder = new WorldRenderFrameBuilder({ map, projector, config, getWaterMetric,
+      canvasMetrics: { width: 1000, height: 1000 }, locationId: "test", boatChumBuilder: builder });
+    assert.equal(getWaterMetric(), metric, "unchanged projection reuses the exact runtime metric");
+    zones.length = 0;
+    for (const share of [.1, .5, .9]) {
+      const depth = metric.topMeters * share;
+      metric.toVirtual(3, depth, metricPoint);
+      const zone = new ChumZone(depth, metricPoint.x, metricPoint.y,
+        { id: "test", radius: 50, minBonus: 1, maxBonus: 2, targetFishes: ["carp"] }, 0, true);
+      zone.currentBonus = 2; zones.push(zone);
+      assert.equal(zone.getMultiplierAt(zone.x, zone.y, "pike", metric), 1, "species filtering stays intact");
+      assert.equal(zone.getMultiplierAt(zone.x, zone.y, null, metric), 2, "centre always receives the bonus");
     }
-    assert(rendered.getAt(1).radiusX < rendered.getAt(0).radiusX,
-      "G-072: a chum area already shrinks 1 m from the lower green-zone edge, before mid-water");
-    assert(rendered.getAt(2).radiusY < rendered.getAt(1).radiusY,
-      "G-072: ground-area height keeps shrinking immediately away from shore");
-    castingBuilder.buildInto({ target: frame.casting, clipRegions: [], intent: { casting: {
-      visible: true, zoneVisible: true, virtualBottomY: bounds.bottom, maxDistance: metric.pixelsPerMeter, mode: "rod",
-      depthLimit: { visible: false } } } });
-    projector.virtualToScreen(centerX, bounds.bottom, shore);
-    const aim = frame.casting.aimingZone;
-    assert(Math.abs(aim.lineY + aim.fillHeight - shore.y) < 1e-8,
-      "the cast area starts at the lower green-zone edge after pan/rotation");
-    assert(Math.abs(metric.metersFromShore((aim.lineY - shore.y) / projector.getScale() + bounds.bottom) - 1) < 1e-8,
-      "the cast boundary and chum centre use the same metre from the green-zone shore");
+    for (const [width, height] of [[390, 844], [844, 390]]) {
+      projector.update(width, height); projector.pan(73, 91); frame.reset(); builder.buildInto(frame.world);
+      for (let i = 0; i < zones.length; i++) {
+        const rendered = frame.world.chumZones.getAt(i), source = zones[i];
+        assert.equal(rendered.pointCount,0,'modern areas use the existing allocation-free ellipse record');
+        for(const angle of [0,Math.PI/4,Math.PI/2,Math.PI]) for(const fraction of [.99,1.01]) {
+          projector.screenToVirtual(rendered.x+Math.cos(angle)*rendered.radiusX*fraction,
+            rendered.y+Math.sin(angle)*rendered.radiusY*fraction,screenPoint);
+          assert.equal(source.getMultiplierAt(screenPoint.x,screenPoint.y,'carp',metric),fraction<1?2:1,
+            'near/far/off-centre rendered ellipses and actual chum bonus have the same boundary');
+        }
+        const widthKey=width+'/'+height+'/'+i;
+        if(!stableWidths.has(widthKey))stableWidths.set(widthKey,rendered.radiusX);
+        assert(Math.abs(rendered.radiusX-stableWidths.get(widthKey))<1e-7,
+          'tilt and grid width do not zoom an existing surface marker');
+        if(tiltDegrees===90)assert.equal(rendered.radiusX,rendered.radiusY,'90-degree areas are circular');
+      }
+      const record=frame.world.chumZones.getAt(0);
+      frame.reset();builder.buildInto(frame.world);
+      assert.equal(frame.world.chumZones.getAt(0),record,'unchanged areas reuse their frame record');
+      landing.buildInto({ target: frame.fishing.fightAreas, bottom: bounds.bottom, debug: {}, equipment: {} });
+      const catchZone = frame.fishing.fightAreas.catchZone;
+      assert.equal(catchZone.kind, "polygon");
+      for (let j = 0; j < catchZone.pointCount; j++) {
+        projector.screenToVirtual(catchZone.points[j*2], catchZone.points[j*2+1], screenPoint);
+        assert(Math.abs(metric.distanceBasePixels(1500, bounds.bottom, screenPoint.x, screenPoint.y) - 50) < 1e-7,
+          "landing contours continue to show actual ground range, including off-centre shear");
+      }
+      frame.reset(); worldBuilder.buildInto({ target: frame.world });
+      const region = frame.world.clipRegions.getAt(0);
+      assert(Math.abs(region.height / projector.getScale() - (bounds.bottom - bounds.top)) < 1e-8,
+        "water animation/clipping always spans the full castable height");
+      projector.screenToVirtual(region.x, region.y, screenPoint);
+      assert(Math.abs(metric.metersFromShore(screenPoint.y) - metric.topMeters) < 1e-7,
+        "render/wave clipping and gameplay bounds agree on the visible far distance");
+    }
+    const original = zones[0];
+    const other=new ChumZone('other',original.x+metric.surfaceScaleAt(original.y)*20,original.y,{radius:50},0,true);
+    assert(original.checkOverlap(other,metric)&&other.checkOverlap(original,metric),'surface overlap is symmetric');
+    original.isExpired = true;
+    assert.equal(original.getMultiplierAt(original.x, original.y, null, metric), 1);
+    original.isExpired = false; original.isDelivered = false;
+    assert.equal(original.getMultiplierAt(original.x, original.y, null, metric), 1);
   }
-  const moved = { ...bounds, top: bounds.top + 170, bottom: bounds.bottom + 170 };
-  metric = resolver.resolve(moved, map.distanceProfile);
-  assert.equal(metric.metersFromShore(moved.bottom), 0, "moving the green zone moves its distance origin");
-  assert(perspective.getPerspective(moved.bottom - 1).scale < 1,
-    "visual scaling stays bounded by its original safeZone normalization");
-  map.perspective.angleBottom = 15;
-  assert.equal(resolver.resolve(moved, map.distanceProfile), metric,
-    "G-076: a visual angle edit cannot invalidate or enlarge the physical metric");
-  assert.equal(metric.pixelsPerMeterX(moved.bottom), 50);
-  map.perspective.angleBottom = 30;
+  const before=getWaterMetric(); profile.farScale=.6;
+  assert.notEqual(getWaterMetric(),before,"far scale edits invalidate the shared metric");
+  const last = getWaterMetric(); camera = { ...camera, tiltDegrees: 0 };
+  assert.equal(getWaterMetric(), last, "invalid live camera edits retain the previous metric");
 }
 
 // The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
@@ -282,6 +463,12 @@ function checkAccuracyIndependentOfProfile() {
 }
 
 function checkValidation() {
+  for (const tiltDegrees of [0, -1, 91, Infinity, NaN]) {
+    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 30, tiltDegrees }), /tiltDegrees/u);
+  }
+  for (const farScale of [0, .01, -1, 1.1, Infinity, NaN]) {
+    assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters:30, tiltDegrees:30, farScale }), /farScale/u);
+  }
   assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
     "a maxMeters below the uniform distance is rejected");
   assert.throws(() => new WaterMetric({ ...LOCATION, pixelsPerMeter: 0 }), /positive pixelsPerMeter/u);
@@ -298,13 +485,10 @@ checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
 checkBasePixels();
 checkGroundPlane();
+checkGroundPlaneWithoutLateralExpansion();
 checkResolver();
 checkTestLocationProfile();
-checkShoreMetricAndHistoricalAreas();
+checkUnifiedWaterAreas();
 checkAccuracyIndependentOfProfile();
 checkValidation();
-console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
-  "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
-  "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
-  "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
-  "the previous metric on an invalid live edit; the shipped physical profile starts at the green-zone shore and reaches maxMeters; actual chum sizes and gameplay boundaries match historical visual formulas through pan/rotation without angle-driven physical zoom; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");
+console.log("Water metric passed: exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities, save timing and buffer reuse; legacy contracts preserved.");

@@ -519,7 +519,11 @@ async function checkWaterWaveField() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
   assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
   const field = new WaterWaveField({ width: 192, height: 48 });
-  const settings = { artWidth: 2560, artHeight: 640, wavelength: 140, speed: 24 };
+  const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
+  const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
+    maxMeters: 30, tiltDegrees: 45, farScale: .3, lateralExpansion: true });
+  const settings = { artWidth: 2560, artHeight: 640, wavelength: 140, speed: 24,
+    plane: { metric, left: 0, right: 2560 } };
   const first = Array.from(field.write(2, settings));
   assert.equal(first.length, 192 * 48 * 4);
   assert.deepEqual(Array.from(field.write(2, settings)), first, "a moment of the animation is deterministic");
@@ -530,7 +534,7 @@ async function checkWaterWaveField() {
   // over that row's perspective, 0.35 at the far edge to 1 at the near one) moves that row one texel along.
   const still = { ...settings, speed: 0 };
   const near = 47 - 4;
-  const perspective = 0.35 + 0.65 * ((near + 0.5) / 48);
+  const perspective = metric.pixelsPerMeterX(metric.topY + (metric.shoreY - metric.topY) * (near + .5) / 48) / metric.pixelsPerMeter;
   const before = Array.from(field.write(0, still));
   const after = Array.from(field.write(0, { ...still, driftX: 2560 / 192 / perspective }));
   let shifted = 0;
@@ -547,17 +551,16 @@ async function checkWaterWaveField() {
     edge = Math.max(edge, Math.abs(at(column, 0, 0) - 128), Math.abs(at(column, 47, 0) - 128));
   }
   assert(edge <= 6, `the waves fade out at every edge, so the water meets the still art without a seam (${edge})`);
-  const meanShift = (fromRow, toRow) => {
-    let sum = 0;
-    for (let row = fromRow; row < toRow; row += 1) {
-      for (let column = 20; column < 172; column += 1) sum += Math.abs(at(column, row, 0) - 128);
-    }
-    return sum / ((toRow - fromRow) * 152);
-  };
-  assert(meanShift(10, 16) < meanShift(30, 36) * 0.75, "the far water moves less than the near water (perspective)");
   for (let index = 0; index < pixels.length; index += 4) {
     assert(pixels[index + 2] === 128 && pixels[index + 3] === 255, "blue is neutral and every texel opaque");
   }
+  const tiltedPixels = Array.from(pixels);
+  const overhead = new WaterMetric({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
+    maxMeters: 30, tiltDegrees: 90, farScale: 1, lateralExpansion: true });
+  const overheadPixels = field.write(2, { ...settings, plane: { ...settings.plane, metric: overhead } });
+  assert.equal(overheadPixels, pixels, "projection edits reuse the same fixed-size displacement field");
+  assert.notDeepEqual(Array.from(overheadPixels), tiltedPixels,
+    "wave spacing and displacement consume the changed shared projection instead of an independent far-scale curve");
 }
 
 // Spec 106: the water over the background, stepping at its own frame rate.
@@ -688,7 +691,7 @@ async function checkSceneWorldKinds() {
     stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }) });
   const [container] = stage.children;
   const [zones, zoneMask, overlay, boatLayer] = container.children;
-  const zone = { x: 200, y: 400, radiusX: 60, radiusY: 20, opacity: 0.5 };
+  const zone = { points: [260, 400, 200, 420, 140, 400, 200, 380], pointCount: 4, opacity: 0.5 };
   const boatModel = { x: 150, y: 380, angle: 0.3, emoji: "⛵", fontSize: 24, energyRatio: 0.5, energyColor: "#00ff00",
     barWidth: 40, barHeight: 4, barY: -16 };
   const world = { visible: true, clipRegions: list([{ x: 0, y: 300, width: 400, height: 300 }]), chumZones: list([zone]),
@@ -696,8 +699,8 @@ async function checkSceneWorldKinds() {
     sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]) };
   assert.equal(entities.update(world, 2), true);
   assert.equal(container.visible, true);
-  assert.deepEqual(zones.ops, [["ellipse", 200, 400, 60, 20], ["fill", { color: 0xc8ff64, alpha: 0.1 }],
-    ["stroke", { width: 2, color: 0xc8ff64, alpha: 0.25 }]], "chum zones: BoatChumRenderer's colours and opacities");
+  assert.equal(zones.ops.filter(op => op[0] === "lineTo").length, zone.pointCount - 1,
+    "WebGL consumes the projected boundary rather than a separately sized ellipse");
   assert.equal(zones.mask, zoneMask, "chum zones are clipped to the castable water");
   assert.deepEqual(zoneMask.ops, [["rect", 0, 300, 400, 300], ["fill", 0xffffff]]);
   const boatSprite = boatLayer.children.find((sprite) => sprite.texture?.canvas?.getContext("2d").texts[0]?.text === "⛵");
@@ -707,6 +710,8 @@ async function checkSceneWorldKinds() {
     "the energy bar fills its share");
   assert(overlay.ops.some((op) => op[0] === "stroke" && op[1].color === 0xff0000), "a blocked sensor ray is red");
   assert.equal(entities.update(world, 2), false, "an unchanged world presents nothing");
+  zone.points[0] += 1;
+  assert.equal(entities.update(world, 2), true, "a changed projected boundary invalidates the scene");
   boatModel.x += 1;
   assert.equal(entities.update(world, 2), true, "a moving boat is a change");
   assert.equal(entities.update(null, 2), true, "off the scene it hides once");

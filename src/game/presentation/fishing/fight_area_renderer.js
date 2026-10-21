@@ -58,6 +58,17 @@ export class FightAreaRenderer {
   #drawCatch(model, style) {
     if (!model.visible) return;
     const surface = this.#surface;
+    if (model.kind === "polygon") {
+      surface.save();
+      surface.beginPath();
+      surface.moveTo(model.points[0], model.points[1]);
+      for (let point = 1; point < model.pointCount; point++) surface.lineTo(model.points[point * 2], model.points[point * 2 + 1]);
+      surface.closePath();
+      surface.fillStyle = style.catchFill; surface.fill();
+      surface.strokeStyle = style.catchStroke; surface.lineWidth = 2; surface.stroke();
+      surface.restore();
+      return;
+    }
     if (model.kind === "ellipse") {
       surface.save();
       surface.beginPath();

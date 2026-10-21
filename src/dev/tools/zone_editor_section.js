@@ -77,68 +77,50 @@ export class ZoneEditorSection {
     this.#renderPerspective(content, id, location);
   }
 
-  #renderPerspective(parent, id, location) {
+  #renderPerspective(parent, id) {
     const ui = this.#ui;
     const content = this.#createSection("Метри й перспектива", parent);
-    const path = ["CONFIG", "locations", "map", id, "distanceProfile"];
-    const anglePath = ["CONFIG", "locations", "map", id, "perspective"];
-    const readAngles = () => this.#config.locations.map[id].perspective || { angleTop: 5, angleBottom: 60 };
-    ui.createInfoRow("Кути", "Попередня логіка: синус сплющує області, тангенс зменшує їх із віддаленням. Кути задані на верхній і нижній межах safeZone локації.", content);
-    ui.createInfoRow("Відстань і глибина", "Метри рахуються окремо від кутів. Дальній край — відстань уздовж води, не глибина водойми.", content);
-    const status = ui.createInfoRow("Стан перспективи", "", content);
-    const compile = profile => {
-      const metric = this.#getMetric?.();
-      if (!metric) throw new Error("Water metric is not ready");
-      return this.#createMetric({ pixelsPerMeter: metric.pixelsPerMeter, shoreY: metric.shoreY, topY: metric.topY,
-        maxMeters: profile.maxMeters, linearShare: profile.linearShare });
-    };
+    const root = ["CONFIG", "locations", "map", id];
+    const readLocation = () => this.#config.locations.map[id];
+    ui.createInfoRow("Налаштування", "Дальність — точні метри від нижнього до верхнього краю зеленої зони. Нахил сплющує кола під фон: 90° — коло, 30° — половина висоти. Масштаб вдалині 0.3 означає 30% ближнього розміру; 1 — без зменшення. Сітка й вода завжди заповнюють всю зелену зону.", content);
+    const status = ui.createInfoRow("Стан", "", content);
     const showStatus = () => {
-      const metric = this.#getMetric?.(), angles = readAngles();
-      const profile = this.#config.locations.map[id].distanceProfile;
-      if (status) status.innerText = `Кути ${angles.angleTop}° / ${angles.angleBottom}°. База двигуна: ${metric?.pixelsPerMeter ?? "—"} px = 1 м. ${profile?.enabled ? `Дальній край ${profile.maxMeters} м.` : "Профіль відстаней вимкнено."}`;
-    };
-    const reject = () => {
       const metric = this.#getMetric?.();
-      const minimum = metric ? ((metric.shoreY - metric.topY) / metric.pixelsPerMeter).toFixed(2) : "—";
-      if (status) status.innerText = `Не застосовано: перевірте частку (0–<1) і відстань (не менше ${minimum} м за базовим масштабом). Кут на цей мінімум не впливає.`;
+      if (status && metric) status.innerText = "Вода: 0–" + Number(metric.topMeters.toFixed(2)) + " м. Нахил: " +
+        (metric.tiltDegrees ?? 90) + "°. Розмір вдалині: " + Math.round(metric.surfaceScaleAt(metric.topY) * 100) + "%.";
     };
-    for (const [key, label] of [["angleTop", "Кут верхнього краю, °"], ["angleBottom", "Нахил біля берега, °"]]) {
-      ui.createInputRow(label, readAngles()[key], content, "number", value => {
-        const previous = readAngles(), next = { ...previous, [key]: value };
-        if (!Number.isFinite(value) || next.angleTop < 0 || next.angleTop > next.angleBottom || next.angleBottom < 1 || next.angleBottom > 90) {
-          ui.syncValue([...anglePath, key], previous[key]);
-          if (status) status.innerText = "Не застосовано: верхній кут має бути 0–90°, нижній — 1–90° і не меншим за верхній.";
-          return;
-        }
-        this.#update(anglePath, next);
-        for (const [name, angle] of Object.entries(next)) ui.syncValue([...anglePath, name], angle);
-        showStatus();
-      }, [...anglePath, key]);
-    }
-    const apply = (key, value) => {
-      const current = this.#config.locations.map[id].distanceProfile;
+    const apply = (branch, key, value) => {
+      const location = readLocation();
+      const current = location[branch];
+      const metric = this.#getMetric?.();
+      const profile = { farScale: metric?.farScale, ...location.distanceProfile, ...(branch === "distanceProfile" ? { [key]: value } : {}) };
+      const perspective = { ...location.perspective, ...(branch === "perspective" ? { [key]: value } : {}) };
       try {
-        const next = { ...current, [key]: value };
-        if (!Number.isFinite(next.maxMeters) || next.maxMeters <= 0) throw new RangeError("Invalid distance");
-        if (key !== "enabled" || value !== false) compile(next);
-      } catch { ui.syncValue([...path, key], current[key]); reject(); return; }
-      this.#update([...path, key], value);
+        if (!Number.isFinite(profile.maxMeters) || profile.maxMeters <= 0 || !Number.isFinite(perspective.tiltDegrees) ||
+          perspective.tiltDegrees < 1 || perspective.tiltDegrees > 90 || !Number.isFinite(profile.farScale) ||
+          profile.farScale < .05 || profile.farScale > 1) throw new RangeError("Invalid projection");
+        if (!metric) throw new Error("Water metric is not ready");
+        this.#createMetric({ pixelsPerMeter: metric.pixelsPerMeter, shoreY: metric.shoreY, topY: metric.topY,
+          maxMeters: profile.maxMeters, lateralExpansion: profile.lateralExpansion,
+          tiltDegrees: perspective.tiltDegrees, farScale: profile.farScale });
+      } catch {
+        ui.syncValue([...root, branch, key], current[key]);
+        if (status) status.innerText = "Не застосовано: дальність > 0 м, нахил 1–90°, масштаб вдалині 0.05–1. Значення мають бути скінченними.";
+        return;
+      }
+      this.#update([...root, branch, key], value);
       showStatus();
     };
-    const profile = location.distanceProfile;
-    if (profile) {
-      ui.createSwitcherRow("Профіль відстаней", profile.enabled, content, value => apply("enabled", value), [...path, "enabled"]);
-      for (const [key, label] of [["maxMeters", "Від берега до дальнього краю, м"], ["linearShare", "Частка звичайної шкали (0–<1)"]]) {
-        ui.createInputRow(label, profile[key], content, "number", value => apply(key, value), [...path, key]);
-      }
-    } else {
-      ui.createButtonRow("Додати перспективу локації", content, () => {
-        const metric = this.#getMetric?.();
-        if (!metric) return;
-        this.#update(path, { enabled: true, linearShare: 0, maxMeters: metric.topMeters }); this.#fill();
-      });
-    }
-    ui.createInfoRow("Застосування", "Кути змінюють попередній візуальний масштаб; сітка показує фізичні метри. Автоматичного збільшення немає. Правки діють у цій сесії; експорт скопіює JSON.", content);
+    const location = readLocation();
+    for (const [branch, key, label, value] of [
+      ["distanceProfile", "maxMeters", "Дальність води, м", location.distanceProfile.maxMeters],
+      ["perspective", "tiltDegrees", "Нахил площини, °", location.perspective.tiltDegrees],
+      ["distanceProfile", "farScale", "Масштаб вдалині", location.distanceProfile.farScale ?? this.#getMetric?.()?.farScale],
+    ]) ui.createInputRow(label, value, content, "number", next => apply(branch, key, next), [...root, branch, key]);
+    ui.createSwitcherRow("Звужувати сітку по ширині", location.distanceProfile.lateralExpansion === true, content,
+      value => apply("distanceProfile", "lateralExpansion", value), [...root, "distanceProfile", "lateralExpansion"]);
+    ui.createInfoRow("Ширина сітки", "Початково вимкнено: вертикальні лінії паралельні. Увімкнено: сітка додатково звужується вдалину. Зони й об’єкти зменшуються за параметром «Масштаб вдалині» в обох режимах.", content);
+    ui.createInfoRow("Застосування", "Правки діють одразу. Нахил і масштаб не змінюють задану дальність води. Експорт копіює всі правки DEV у JSON.", content);
     if (this.#resetPerspective) ui.createButtonRow("Скинути перспективу цієї локації", content, () => { this.#resetPerspective(id); this.#fill(); });
     if (this.#exportOverrides) ui.createButtonRow("Експорт правок (усі налаштування DEV)", content, this.#exportOverrides);
     if (this.#importOverrides) ui.createButtonRow("Імпорт правок (усі налаштування DEV)", content, this.#importOverrides);

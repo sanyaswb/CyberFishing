@@ -928,9 +928,8 @@ export class DevTools {
     for (const branch of ["perspective", "distanceProfile"]) {
       const path = ["CONFIG", "locations", "map", id, branch];
       const initial = this.#configRuntime?.baseConfig.locations.map[id]?.[branch];
-      const fallback = branch === "perspective" ? { angleTop: 5, angleBottom: 60 }
-        : { ...this.#config.locations.map[id].distanceProfile, enabled: false };
-      this.#updateConfigValue(path, initial ?? fallback);
+      if (initial === undefined) continue;
+      this.#updateConfigValue(path, initial);
       for (const [key, value] of Object.entries(this.#config.locations.map[id][branch] || {})) {
         this.#ui.syncValue([...path, key], value);
       }

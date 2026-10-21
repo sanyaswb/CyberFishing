@@ -73,7 +73,12 @@ export class PixiWorldEntitiesRenderer {
     }
     for (let index = 0; index < world.chumZones.count; index += 1) {
       const zone = world.chumZones.getAt(index);
-      print.length(zone.x); print.length(zone.y); print.length(zone.radiusX); print.length(zone.radiusY);
+      print.length(zone.pointCount);
+      if (zone.pointCount > 0) {
+        for (let point = 0; point < zone.pointCount * 2; point++) print.length(zone.points[point]);
+      } else {
+        print.length(zone.x); print.length(zone.y); print.length(zone.radiusX); print.length(zone.radiusY);
+      }
       print.alpha(zone.opacity);
     }
     for (let index = 0; index < world.waypoints.count; index += 1) {
@@ -103,8 +108,14 @@ export class PixiWorldEntitiesRenderer {
     mask.clear();
     for (let index = 0; index < world.chumZones.count; index += 1) {
       const zone = world.chumZones.getAt(index);
-      zones.ellipse(zone.x, zone.y, zone.radiusX, zone.radiusY)
-        .fill({ color: CHUM_COLOR, alpha: zone.opacity * 0.2 })
+      if (zone.pointCount > 0) {
+        zones.moveTo(zone.points[0], zone.points[1]);
+        for (let point = 1; point < zone.pointCount; point++) zones.lineTo(zone.points[point * 2], zone.points[point * 2 + 1]);
+        zones.closePath();
+      } else {
+        zones.ellipse(zone.x, zone.y, zone.radiusX, zone.radiusY);
+      }
+      zones.fill({ color: CHUM_COLOR, alpha: zone.opacity * 0.2 })
         .stroke({ width: 2, color: CHUM_COLOR, alpha: zone.opacity * 0.5 });
     }
     if (world.clipRegions.count > 0) {

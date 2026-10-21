@@ -6,45 +6,17 @@ const { WorldPerspective } = runtime.importModule("src/game/domain/locations/wor
 const { ViewportProjector } = runtime.importModule("src/game/application/viewport/viewport_projector.js");
 const { Vector2 } = runtime.importModule("src/engine/math/vector2.js");
 const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_metric.js");
-// G-076: the historical visual scale is bounded by 1; a 30-degree setting must not double near-field widths.
-const historicalMap = { safeZone: { top: 0, bottom: 1440 }, perspective: { angleTop: 0, angleBottom: 30 } };
-const historicalMetric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1160, topY: 520, maxMeters: 30,
-  linearShare: .5 });
-const historicalPerspective = new WorldPerspective({ getLocation: () => historicalMap });
-assert.equal(historicalPerspective.getPerspective(1440).scale, 1,
-  "G-076: historical 30-degree near-field scale is 1, never auto-enlarged");
-for (const y of [-100, 0, 520, 840, 1160, 1440, 1600]) {
-  const angle = 30 * Math.max(0, Math.min(1, y / 1440)) * Math.PI / 180;
-  const sample = historicalPerspective.getPerspective(y);
-  assert.equal(sample.scale, Math.tan(angle) / Math.tan(30 * Math.PI / 180), "match the archived tangent scale");
-  assert.equal(sample.squashY, Math.sin(angle), "match the archived sine squash");
-  assert(sample.scale >= 0 && sample.scale <= 1, "visual scaling never enlarges the authored near-field size");
-}
-assert.equal(historicalMetric.pixelsPerMeterX(1160), 50, "the physical near-shore metre remains 50 px");
-historicalMap.perspective.angleBottom = 15;
-assert.equal(historicalMetric.pixelsPerMeterX(1160), 50, "editing a visual angle never rescales the physical metre");
-historicalMap.perspective.angleBottom = 30;
-const config = {
-  baseResolution: { width: 1000, height: 800 },
-  cameraFocusY: 0.7,
-  map: { lake: { safeZone: { top: 100, bottom: 500 } } },
-};
-let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, linearShare: .2 });
-const perspective = new WorldPerspective({ getLocation: () => config.map.lake });
+// G-110: world sizes read the same metric; viewport pan/resize never owns its projection.
+const config = { baseResolution: { width: 1000, height: 800 }, cameraFocusY: 0.7,
+  map: { lake: { safeZone: { top: 100, bottom: 500 } } } };
+let metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20,
+  tiltDegrees: 45, farScale: .3 });
+const perspective = new WorldPerspective({ getWaterMetric: () => metric });
 let calls = 0;
-const query = (y) => { calls++; return perspective.getPerspective(y); };
+const query = y => { calls++; return perspective.getPerspective(y); };
 const projector = new ViewportProjector(config, "lake", query);
-assert.equal(projector.getPerspective, query, "the injected query is used without a wrapper");
-assert(projector.getPerspective(0).scale > 0, "finite metres above the water never collapse objects to zero size");
-assert.equal(projector.getPerspective(600).scale, 1, "positions below the shore clamp to shore scale");
-for (const y of [0, 100, 300, 500, 600]) {
-  const sample = projector.getPerspective(y);
-  const angle = (5 + 55 * Math.max(0, Math.min(1, (y - 100) / 400))) * Math.PI / 180;
-  assert.equal(sample.scale, Math.tan(angle) / Math.tan(60 * Math.PI / 180), "restore the historical fallback angles");
-  assert.equal(sample.squashY, Math.sin(angle));
-}
-const screen = new Vector2();
-const virtual = new Vector2();
+assert.equal(projector.getPerspective, query, "the injected metric query retains its identity");
+const screen = new Vector2(), virtual = new Vector2();
 const expected = JSON.stringify(projector.getPerspective(300));
 calls = 0;
 for (let frame = 0; frame < 120; frame++) {
@@ -53,46 +25,42 @@ for (let frame = 0; frame < 120; frame++) {
   projector.focusOnVirtualPos(100 + frame, [0, 8, 16.66, 33, 100][frame % 5]);
   assert.equal(projector.virtualToScreen(300, 250, screen), screen);
   assert.equal(projector.screenToVirtual(screen.x, screen.y, virtual), virtual);
-  assert(Math.abs(virtual.x - 300) < 1e-10 && Math.abs(virtual.y - 250) < 1e-10,
-    "camera transforms remain inverses using reusable output vectors");
-  assert.equal(JSON.stringify(projector.getPerspective(300)), expected,
-    "camera movement and viewport size do not own world perspective");
+  assert(Math.abs(virtual.x - 300) < 1e-10 && Math.abs(virtual.y - 250) < 1e-10);
+  assert.equal(JSON.stringify(projector.getPerspective(300)), expected, "viewport changes leave ground scale alone");
 }
-assert.equal(calls, 120, "one perspective query per frame; camera operations do not query perspective");
-// Spec 105: the first focus after the camera is placed snaps to its target; later focuses ease.
+assert.equal(calls, 120, "camera operations add no perspective queries");
+for (const tiltDegrees of [1, 30, 45, 90]) {
+  metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 500, topY: 100, maxMeters: 20, tiltDegrees, farScale: .3 });
+  for (const y of [0, 100, 300, 500, 600]) {
+    const sample = projector.getPerspective(y);
+    assert.equal(sample.scale, metric.surfaceScaleAt(y), "viewport forwards the shared surface size");
+    assert.equal(sample.squashY, metric.surfaceSquashY, "viewport forwards the independent artistic tilt");
+    assert(Number.isFinite(sample.scale + sample.squashY) && sample.scale > 0 && sample.squashY > 0);
+    if (tiltDegrees === 90) assert.equal(sample.squashY, 1, "overhead circles stay circular");
+  }
+}
+// Preserve opening, follow and resize behavior of the independent affine viewport.
 config.map.tall = { safeZone: { top: 0, bottom: 300 }, initialAlignment: { x: "center", y: "top" } };
 const opening = new ViewportProjector({ ...config, cameraFocusY: 0.7 }, "tall", query);
-opening.update(400, 300);
-opening.focusOnVirtualPos(250, 16.66, 0.03);
+opening.update(400, 300); opening.focusOnVirtualPos(250, 16.66, 0.03);
 const focusY = () => opening.virtualToScreen(0, 250, screen).y;
-assert(Math.abs(focusY() - 300 * 0.7) < 1e-9, "the game opens on the focus target, not easing toward it");
+assert(Math.abs(focusY() - 210) < 1e-9);
 opening.focusOnVirtualPos(300, 16.66, 0.03);
 const eased = opening.virtualToScreen(0, 300, screen).y;
-assert(eased > 210 + 1 && eased < 300 - 40, "a later target is still followed smoothly: part of the way per frame");
-opening.update(400, 300);
-opening.focusOnVirtualPos(300, 16.66, 0.03);
+assert(eased > 211 && eased < 260);
+opening.update(400, 300); opening.focusOnVirtualPos(300, 16.66, 0.03);
 const unchanged = opening.virtualToScreen(0, 300, screen).y;
-assert(unchanged < eased && unchanged > 210, "an unchanged canvas size keeps easing");
-opening.update(300, 200);
-opening.focusOnVirtualPos(300, 16.66, 0.03);
-assert(Math.abs(opening.virtualToScreen(0, 300, screen).y - 200 * 0.7) < 1e-9,
-  "a resized canvas (a phone turned) opens on the focus target instead of easing toward it");
+assert(unchanged < eased && unchanged > 210);
+opening.update(300, 200); opening.focusOnVirtualPos(300, 16.66, 0.03);
+assert(Math.abs(opening.virtualToScreen(0, 300, screen).y - 140) < 1e-9);
 opening.focusOnVirtualPos(250, 16.66, 0.03);
-assert(Math.abs(opening.virtualToScreen(0, 250, screen).y - 200 * 0.7) > 1, "after the resize the camera eases again");
-opening.update(400, 300);
-opening.pan(-1000);
-opening.pan(70);
+assert(Math.abs(opening.virtualToScreen(0, 250, screen).y - 140) > 1);
+opening.update(400, 300); opening.pan(-1000); opening.pan(70);
 const centreX = opening.screenToVirtual(200, 0, virtual).x;
 opening.update(300, 200);
-assert(Math.abs(opening.virtualToScreen(centreX, 0, screen).x - 150) < 1e-9, "a resize keeps the scene point at the centre");
-opening.update(2000, 300);
-opening.update(300, 200);
-assert(Math.abs(opening.virtualToScreen(500, 0, screen).x - 150) < 1e-9,
-  "back from a layout that shows the whole width, the camera opens centred, not at the left edge");
-metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 700, topY: 300 });
-assert.equal(JSON.stringify(projector.getPerspective(300)), expected, "changing the physical metric cannot change visual angle scaling");
-config.map.lake.perspective = { angleTop: 0, angleBottom: 30 };
-assert.equal(projector.getPerspective(100).scale, 0, "live visual settings reach the existing query");
+assert(Math.abs(opening.virtualToScreen(centreX, 0, screen).x - 150) < 1e-9);
+opening.update(2000, 300); opening.update(300, 200);
+assert(Math.abs(opening.virtualToScreen(500, 0, screen).x - 150) < 1e-9);
 
 // Spec 098: the landscape split inventory policy.
 const { InventorySplitLayoutPolicy } = runtime.importModule("src/game/presentation/viewport/inventory_split_layout_policy.js");

@@ -20,11 +20,12 @@ buttons changes only the background; keyboard focus keeps its outline. No pollin
 DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches; it adds no markup
 or stylesheet. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
-Spec 113 retains readable controls and export/import/local-reset actions while restoring the historical visual
-angles separately from physical distance fields. DEV labels keep their full text and wrap within a flexible column;
-info values have their own flexible column and numeric inputs/switches keep their control width. Status shows the
-selected angles, the fixed physical base and distance profile; rejected distance edits explain the original minimum
-without fitting a larger scale. No per-frame DOM measurements or writes are added.
+Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
+far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional
+grid-width contraction switch remains off by default. Remove the camera-distance/reference controls and the ray
+schematic, its state and styles. Status reports the configured water length and far-size percentage. Local reset
+uses injected base config, with no second DEV default owner; export/import retain their existing override paths.
+All rows reuse DevToolsUI and its collapsed descriptions. No per-frame DOM work or extra stylesheet is added.
 
 | Owner | Responsibility |
 | --- | --- |

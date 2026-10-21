@@ -1,8 +1,8 @@
 import { WaterMetric } from "./water_metric.js";
 
 // The water metric of the current location: the castable water bounds (shore line at the bottom edge, centre line
-// between the side edges) and the location's `distanceProfile: { enabled, linearShare, maxMeters }`. A missing or
-// disabled profile gives a uniform metric. The metric is rebuilt only when its inputs change, so per-frame queries
+// between the side edges), exact distance profile and illustrated surface tilt. Missing/disabled legacy profiles
+// give a uniform metric. The metric is rebuilt only when its inputs change, so per-frame queries
 // allocate nothing.
 //
 // An invalid profile fails fast when there is no metric yet (startup). A live config edit that makes the profile
@@ -16,25 +16,36 @@ export class LocationWaterMetricResolver {
   #centerX = NaN;
   #maxMeters = null;
   #linearShare = null;
+  #lateralExpansion = true;
+  #tiltDegrees = null;
+  #farScale = null;
 
   constructor({ pixelsPerMeter, logger }) {
     this.#pixelsPerMeter = pixelsPerMeter;
     this.#logger = logger;
   }
 
-  resolve(castableBounds, distanceProfile = null) {
+  resolve(castableBounds, distanceProfile = null, perspective = null) {
     const shoreY = castableBounds.bottom;
     const topY = castableBounds.top;
     const centerX = (castableBounds.left + castableBounds.right) / 2;
-    const isProfiled = distanceProfile?.enabled === true;
+    const isModern = perspective?.tiltDegrees !== undefined;
+    const isProfiled = isModern || distanceProfile?.enabled === true;
     const maxMeters = isProfiled ? distanceProfile.maxMeters ?? null : null;
-    const linearShare = isProfiled ? distanceProfile.linearShare ?? null : null;
+    const linearShare = isProfiled && !isModern ? distanceProfile.linearShare ?? null : null;
+    const tiltDegrees = isProfiled ? perspective?.tiltDegrees ?? null : null;
+    const lateralExpansion = isProfiled
+      ? (tiltDegrees === null ? distanceProfile.lateralExpansion !== false : distanceProfile.lateralExpansion === true)
+      : true;
+    const farScale = tiltDegrees === null ? null : distanceProfile.farScale ?? null;
     if (
       shoreY === this.#shoreY &&
       topY === this.#topY &&
       centerX === this.#centerX &&
       maxMeters === this.#maxMeters &&
-      linearShare === this.#linearShare
+      linearShare === this.#linearShare &&
+      lateralExpansion === this.#lateralExpansion && tiltDegrees === this.#tiltDegrees &&
+      farScale === this.#farScale
     ) {
       return this.#metric;
     }
@@ -43,6 +54,9 @@ export class LocationWaterMetricResolver {
     this.#centerX = centerX;
     this.#maxMeters = maxMeters;
     this.#linearShare = linearShare;
+    this.#lateralExpansion = lateralExpansion;
+    this.#tiltDegrees = tiltDegrees;
+    this.#farScale = farScale;
     let metric;
     try {
       metric = new WaterMetric({
@@ -52,10 +66,13 @@ export class LocationWaterMetricResolver {
         centerX,
         maxMeters,
         linearShare: linearShare ?? undefined,
+        lateralExpansion,
+        tiltDegrees,
+        farScale: farScale ?? undefined,
       });
     } catch (error) {
       if (this.#metric === null) throw error;
-      this.#logger.error(`[Location] distanceProfile rejected, the previous water metric stays: ${error.message}`);
+      this.#logger?.error(`[Location] distanceProfile rejected, the previous water metric stays: ${error.message}`);
       return this.#metric;
     }
     this.#metric = metric;

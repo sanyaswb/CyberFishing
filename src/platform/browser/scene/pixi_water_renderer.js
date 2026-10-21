@@ -32,6 +32,7 @@ export class PixiWaterRenderer {
   #driftX = 0;
   #driftY = 0;
   #driftSpeed = 0;
+  #metric = null;
 
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
   // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water.
@@ -105,10 +106,13 @@ export class PixiWaterRenderer {
     const artScale = base.width / baseTexture.width;
     this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * artScale;
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
-    const stepDue = this.#lastStepAt === null || nowMs - this.#lastStepAt >= 1000 / Math.max(1, Number(settings.frameRate) || 1);
+    const metric = world.waterPlane?.metric ?? null;
+    const stepDue = this.#lastStepAt === null || metric !== this.#metric ||
+      nowMs - this.#lastStepAt >= 1000 / Math.max(1, Number(settings.frameRate) || 1);
     if (stepDue) {
+      this.#metric = metric;
       this.#drift(world.current, settings, nowMs);
-      this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale);
+      this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale, world.waterPlane);
     }
     return stepDue || !wasVisible;
   }
@@ -129,11 +133,11 @@ export class PixiWaterRenderer {
     this.#driftSpeed = Math.hypot(velocityX, velocityY);
   }
 
-  #step(nowMs, settings, artWidth, artHeight) {
+  #step(nowMs, settings, artWidth, artHeight, plane) {
     const started = performance.now();
     this.#lastStepAt = nowMs;
     const pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight, wavelength: Number(settings.wavelength) || 1,
-      speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY });
+      speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane });
     this.#mapImage.data.set(pixels);
     this.#mapContext.putImageData(this.#mapImage, 0, 0);
     this.#mapTexture.source.update();

@@ -146,14 +146,17 @@ overdraw and texture memory, not from game code.
 
 ## Draw order
 
-Owner rollback, spec 113: restore the original visual sine/tangent formulas. WorldPerspective interpolates
-`perspective.angleTop/angleBottom` between the location's safeZone bounds; scale is `tan(angle) / tan(angleBottom)`
-and ground-area squash is `sin(angle)`. The test location uses its original 0° / 30° settings. Visual scale is bounded
-by 1 and never enlarges the authored near-field size. Apply viewport camera scale once; the screen/Spine rod is excluded.
-WaterMetric separately owns physical distances, grid projection, inverses and velocity derivatives. Its physical
-base pixels remain metres × pixelsPerMeter (50); visual angle edits never enlarge this unit. The physical profile
-retains the green-zone shore, linearShare and maxMeters, with the original height / pixelsPerMeter minimum distance.
-No automatic projection fitting or angle-dependent zoom. Specs 109/111/112 record the superseded implementation.
+Owner correction, spec 126 (2026-10-21): this is an illustrated 2D plane with exact authored water metres.
+WaterMetric owns one calibrated mapping, velocity derivatives and local surface-area size/tilt queries.
+Length 30 always maps the same complete green rectangle to 0–30 m. Angle edits flatten surface ellipses without
+recalibrating length or zooming their width. farScale=0.3 means 30% far/near size and depth motion; 1 is linear.
+Engine base units remain 50 pixels/metre; vertical map calibration fits the authored height and exact length.
+Grid X contraction is optional and defaults off; surface sprites/areas shrink with farScale in either mode.
+WorldPerspective forwards the shared surface readings. Chum ellipse containment and rendering use these same
+factors, retaining catalog radii, delivered state, bonus schedules and save schema. Canvas/WebGL consume reused
+ellipse records for modern chum; the ground-contour projector remains live for landing and legacy profiles.
+Exact inverse/Jacobian queries drive metre grids, aiming, movement and wave phase inside the full fixed water
+mask. No camera distance, overhead reference or second far-angle calculation exists. Specs 124/125 are historical.
 Spec 110: optional scene annotations use reusable geometry and separate cached static/moving Graphics, invalidated
 only by their own model revision. Moving zones never rebuild the static metre grid. Canvas consumes the same commands
 only on scene fallback. Diagnostic visibility never owns

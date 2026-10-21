@@ -997,28 +997,33 @@ export class ConfigSchemaValidator {
         this.#validateDistanceProfile(`${path}.distanceProfile`, map.distanceProfile);
       }
       if (map?.perspective !== undefined) {
-        this.#requireFiniteNumber(`${path}.perspective.angleTop`, map.perspective?.angleTop, { min: 0, max: 90 });
-        this.#requireFiniteNumber(`${path}.perspective.angleBottom`, map.perspective?.angleBottom, { min: 1, max: 90 });
-        this.#requireMinLessOrEqualMax(`${path}.perspective.angleTop`, map.perspective?.angleTop,
-          `${path}.perspective.angleBottom`, map.perspective?.angleBottom);
-        for (const key of ["angleTop", "angleBottom"]) this.#requireParameterLabel(`MAP_DB.perspective.${key}`);
+        this.#requireFiniteNumber(`${path}.perspective.tiltDegrees`, map.perspective?.tiltDegrees, { min: 1, max: 90 });
+        this.#requireParameterLabel("MAP_DB.perspective.tiltDegrees");
       }
     }
   }
 
-  // Ranges only: whether maxMeters reaches past the uniform distance depends on the castable zone and is checked
-  // when the water metric is built. Labels are shared by all locations (MAP_DB.distanceProfile.*).
+  // Exact distance + far-size ratio for illustrated water; optional legacy fields retain their range checks.
   #validateDistanceProfile(path, profile) {
     if (!profile || typeof profile !== "object") {
       this.#error(path, "must be an object");
       return;
     }
-    if (typeof profile.enabled !== "boolean") this.#error(`${path}.enabled`, "expected boolean");
-    this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
-    if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
+    if (profile.enabled !== undefined && typeof profile.enabled !== "boolean") this.#error(`${path}.enabled`, "expected boolean");
+    if (profile.lateralExpansion !== undefined && typeof profile.lateralExpansion !== "boolean") {
+      this.#error(`${path}.lateralExpansion`, "expected boolean");
+    }
+    if (profile.linearShare !== undefined) {
+      this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
+      if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
+    }
+    if (profile.farScale !== undefined) this.#requireFiniteNumber(`${path}.farScale`, profile.farScale, { min: .05, max: 1 });
     this.#requireFiniteNumber(`${path}.maxMeters`, profile.maxMeters, { min: Number.MIN_VALUE });
-    for (const key of ["enabled", "linearShare", "maxMeters"]) {
+    for (const key of ["enabled", "linearShare", "maxMeters", "farScale"]) {
       this.#requireParameterLabel(`MAP_DB.distanceProfile.${key}`);
+    }
+    if (profile.lateralExpansion !== undefined) {
+      this.#requireParameterLabel("MAP_DB.distanceProfile.lateralExpansion");
     }
   }
 

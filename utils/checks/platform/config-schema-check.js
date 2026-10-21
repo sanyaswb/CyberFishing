@@ -101,12 +101,12 @@ function checkNegativeFixtures() {
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   for (const value of [0, -1, 91, Infinity]) {
     const tiltedMapDb = JSON.parse(JSON.stringify(options.mapDb));
-    tiltedMapDb.test.perspective.angleBottom = value;
-    assert(has(validate({ mapDb: tiltedMapDb }), /perspective\.angleBottom/u), "an invalid location tilt is reported");
+    tiltedMapDb.test.perspective.tiltDegrees = value;
+    assert(has(validate({ mapDb: tiltedMapDb }), /perspective\.tiltDegrees/u), "an invalid location tilt is reported");
   }
   const reversedAngles = JSON.parse(JSON.stringify(options.mapDb));
-  reversedAngles.test.perspective = { angleTop: 40, angleBottom: 30 };
-  assert(has(validate({ mapDb: reversedAngles }), /perspective\.angleTop/u), "reversed visual angles are reported");
+  reversedAngles.test.distanceProfile.farScale = 0;
+  assert(has(validate({ mapDb: reversedAngles }), /distanceProfile\.farScale/u), "invalid far size is reported");
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");
   const mapDb = JSON.parse(JSON.stringify(options.mapDb));
@@ -128,13 +128,13 @@ function checkReporterReadsLiveLocationProfiles() {
     } },
   } });
   const { composeDevConfigValidation } = runtime.importModule("src/bootstrap/development/dev_config_validation_composition.js");
-  const configRuntime = { runtimeConfig: { locations: { map: { lake: { perspective: { angleBottom: 90 } } } } } };
+  const configRuntime = { runtimeConfig: { locations: { map: { lake: { perspective: { tiltDegrees: 90 } } } } } };
   const reporter = composeDevConfigValidation({ configRuntime, itemCatalog: {} });
   const first = reporter.createValidator(LABELS).options.mapDb;
-  configRuntime.runtimeConfig.locations.map = { lake: { perspective: { angleBottom: 0 } } };
+  configRuntime.runtimeConfig.locations.map = { lake: { perspective: { tiltDegrees: 0 } } };
   const next = reporter.createValidator(LABELS).options.mapDb;
   assert.notEqual(first, next, "validation follows a replaced runtime map after an override");
-  assert.equal(next.lake.perspective.angleBottom, 0, "the validator sees the current invalid angle, not the startup catalog");
+  assert.equal(next.lake.perspective.tiltDegrees, 0, "the validator sees the current invalid angle, not the startup catalog");
 }
 
 async function checkDevelopmentReporter() {

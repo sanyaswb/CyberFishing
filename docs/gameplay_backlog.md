@@ -20,6 +20,30 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-112 Exact water length is replaced by confusing camera-dependent metres (P2, implemented in v0.45.43)
+Found: 2026-10-21, owner, v0.45.42 screenshot.
+Reproduce: enter 30 m water and tilt 30 degrees; camera distance 30 reports 112 m, distance 900 reports 61.7 m. The 10 m aim line sits near shore and the overhead-reference control changes the meaning of length.
+Expected: author exact 30 m water, artistic ellipse tilt and one understandable far-size ratio; fixed grid/water bounds, coherent aiming/motion/area bonus.
+Resolution: [126](../specs/126-simple-water-perspective/spec.md), replacing the camera/reference models. Defaults 30 m / 30 degrees / 0.3; no camera distance or ray sector. WaterMetric owns exact positions, velocities and illustrated area footprint queries; chum rendering and containment agree. Grid-width contraction remains optional/off. Save schema, bonus timing and engine base units remain.
+Evidence: exact-length regression fails before the fix (270.42 instead of 30 m at 17 degrees); exact endpoints, 10/20/30 m aiming, inverse/Jacobian, near/far ratio, area containment, save/reload, reset/import and boat scenarios pass. Full and owner acceptance are recorded in spec 126.
+
+
+### G-111 Camera tilt greatly changes chum width even with lateral expansion disabled (P2, implemented in v0.45.42)
+Found: 2026-10-21, owner screenshots after spec 124.
+Reproduce: 30 m maximum and 30 m camera distance, width switch off; compare 17 and 53 degrees.
+Expected: stable transverse scale and ground-circle width between angles; lateral expansion defaults off.
+Actual: automatic fitting changes X scale from 142.74 to 42.79 map px/m (3.34x width).
+Resolution: [125](../specs/125-stable-water-width/spec.md). Keep the full authored green-zone bounds and fix the transverse scale using the overhead reference length. Tilt changes internal metre spacing/actual far distance; grid and animated water always fill the same complete rectangle. DEV distinguishes overhead reference from actual metres and shows near/far rays with a shaded sector from the same metric (parallel at 90°). Modern omitted/fresh/reset width settings default off; explicit true still contracts with distance.
+Evidence: the new fixed-scale regression fails before the fix. The full-height regression also fails before the final correction. Actual contour widths, 17/53/90-degree edits, projection inverses/velocities, unchanged runtime boundaries/full clipping, default/reset/import, boat equivalence and save/timing scenarios pass. Full and owner acceptance are recorded in spec 125.
+
+### G-110 Visual perspective collapses at a 90-degree shore and disagrees with physical water (P2, implemented in v0.45.41)
+Found: 2026-10-21, owner, map/perspective review.
+Reproduce: angleTop=0, angleBottom=90; chum at mid-water receives visual scale about 6.12e-17. The same curve also shrinks its influence, independently of the metre grid.
+Expected: one finite water projection; overhead circles and grid remain uniform, ground radius agrees with drawn boundary.
+Actual: tangent normalization collapses zones; independent visual/physical curves disagree.
+Resolution: [124](../specs/124-unified-water-projection/spec.md). Owner chooses exact bounds/metres and automatic fitting, with camera distance controlling perspective strength. Ground chum influence, overlap, wave spacing and shared chum/landing contours use the authoritative metric. Engine units, chum save format and bonus timing stay unchanged.
+Evidence: the initial short-water matrix fails under the old minimum-length restriction. Camera matrix/inverses/velocities, off-centre boundary points, viewport transforms, save/reload/expiry, boat flat-lake equivalence and bounded geometry reuse pass. Full and owner phone/visual acceptance are recorded in spec 124.
+
 ### G-109 Distinguish normal clicks before the 200ms inventory hold countdown (P3, implemented in v0.45.38)
 Found: 2026-10-21, owner timing correction after v0.45.37.
 Reproduce: hold any filled inventory cell slightly longer than a normal click.

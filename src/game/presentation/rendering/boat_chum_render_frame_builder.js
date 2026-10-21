@@ -1,14 +1,16 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { projectWaterCircle } from "./water_circle_projection.js";
 
 export class BoatChumRenderFrameBuilder {
   #chum;
   #projector;
   #config;
+  #getWaterMetric;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
 
-  constructor({ chum, projector, config }) {
+  constructor({ chum, projector, config, getWaterMetric }) {
     if (!chum || typeof chum.getBoats !== "function") {
       throw new TypeError(
         "BoatChumRenderFrameBuilder requires chum",
@@ -22,6 +24,8 @@ export class BoatChumRenderFrameBuilder {
     this.#chum = chum;
     this.#projector = projector;
     this.#config = config;
+    if (typeof getWaterMetric !== "function") throw new TypeError("BoatChumRenderFrameBuilder requires getWaterMetric");
+    this.#getWaterMetric = getWaterMetric;
   }
 
   buildInto(target) {
@@ -32,6 +36,7 @@ export class BoatChumRenderFrameBuilder {
   #buildChumZones(target) {
     if (this.#config.locations?.showChumZones === false) return;
     const zones = this.#chum.getZones();
+    const metric = this.#getWaterMetric();
     for (let index = 0; index < zones.length; index += 1) {
       const source = zones[index];
       if (!source.isDelivered || source.isExpired) continue;
@@ -43,22 +48,17 @@ export class BoatChumRenderFrameBuilder {
           (0.7 * (source.currentBonus - bait.minBonus)) /
             Math.max(0.01, bait.maxBonus - bait.minBonus);
       }
-      const perspective = this.#projector.getPerspective(source.y);
-      const position = this.#projector.virtualToScreen(
-        source.x,
-        source.y,
-        this.#screenA,
-      );
-      const radius =
-        source.baseRadius *
-        perspective.scale *
-        this.#projector.getScale();
       const record = target.chumZones.acquire();
-      record.x = position.x;
-      record.y = position.y;
-      record.radiusX = radius;
-      record.radiusY = radius * perspective.squashY;
       record.opacity = opacity;
+      if (metric.tiltDegrees === null) {
+        projectWaterCircle(record, metric, this.#projector, source.x, source.y, source.baseRadius);
+      } else {
+        this.#projector.virtualToScreen(source.x, source.y, this.#screenA);
+        record.x = this.#screenA.x; record.y = this.#screenA.y;
+        record.radiusX = source.baseRadius * metric.surfaceScaleAt(source.y) * this.#projector.getScale();
+        record.radiusY = record.radiusX * metric.surfaceSquashY;
+        record.pointCount = 0;
+      }
     }
   }
 
