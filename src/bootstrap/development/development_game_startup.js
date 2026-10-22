@@ -187,7 +187,10 @@ async function startGame() {
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
-          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount)};
+          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount);
+          // Phones hide the toolbar's version badge; the panel's footer shows the same version text.
+          new GameVersionBadge({ element: ui.footer }).render();
+          return {tooltipProvider, ui};
         }}),
       createTimeDisplay: options => {
         timeControl = composeDevTimeDisplay({ ...options, config: CONFIG, uiSurface });

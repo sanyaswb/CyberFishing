@@ -1,52 +1,86 @@
-// Unit coordinates are relative to the central button's bottom-right corner.
-// Sector SVG, CSS clipping and selection consume these same rounded polygons.
+// Unit coordinates are relative to the fan centre: the layout's `origin`, a share of the central button's box
+// (the corner fan's bottom-right corner, the compact fans' bottom centre or box centre).
+// Sector SVG, CSS clipping and selection consume these same rounded polygons; each outline is drawn in its own
+// bounding box (`box`, relative to the origin), which the renderer places over the central button's box.
 export class InventorySelectorGeometry {
-  constructor(config) {
-    this.radius = config.outerRadius;
-    this.centralRadius = config.centralRadius;
-    this.innerRadius = config.centralRadius + config.gap;
-    this.retentionRadius = config.outerRadius + config.highlightDistance + config.gap;
+  constructor(config, layout = "corner") {
+    const fan = config.layouts[layout];
+    this.layout = layout;
+    this.origin = fan.origin;
+    this.radius = fan.outerRadius;
+    this.centralRadius = fan.centralRadius;
+    this.innerRadius = fan.centralRadius + config.gap;
+    this.retentionRadius = fan.outerRadius + config.highlightDistance + config.gap;
     this.retentionPadding = config.gap;
-    const centroid = -4 * this.centralRadius / (3 * Math.PI);
-    this.central = { center: { x: centroid, y: centroid } };
+    this.startAngle = fan.startAngle * Math.PI / 180;
+    this.endAngle = fan.endAngle * Math.PI / 180;
+    this.box = this.#arcBounds([this.innerRadius, this.radius]);
+    const centralBox = { minX: -fan.origin.x, minY: -fan.origin.y, maxX: 1 - fan.origin.x, maxY: 1 - fan.origin.y };
+    // The open central button: a disk (centred art) or the disk sector under the fan (art at its centroid).
+    const half = (this.endAngle - this.startAngle) / 2, middle = this.startAngle + half;
+    const centroid = fan.centralDisk ? 0 : 2 * this.centralRadius * Math.sin(half) / (3 * half);
+    this.central = { center: this.#point(centroid, middle),
+      box: fan.centralDisk ? centralBox : this.#arcBounds([0, this.centralRadius]) };
     const retention = [];
-    for (let i = 0; i <= config.arcSteps * 3; i++) {
-      const angle = i / (config.arcSteps * 3) * Math.PI / 2;
-      retention.push({ x: -this.retentionRadius * Math.cos(angle), y: -this.retentionRadius * Math.sin(angle) });
-    }
-    retention.push({ x: this.retentionPadding, y: -this.retentionRadius },
-      { x: this.retentionPadding, y: this.retentionPadding }, { x: -this.retentionRadius, y: this.retentionPadding });
-    this.retention = this.#outline(retention, this.retentionRadius, this.retentionRadius + this.retentionPadding);
+    const steps = config.arcSteps * 3;
+    for (let i = 0; i <= steps; i++) retention.push(this.#point(this.retentionRadius, this.startAngle + (this.endAngle - this.startAngle) * i / steps));
+    const start = retention[0], end = retention[retention.length - 1];
+    const right = Math.max(end.x, centralBox.maxX + this.retentionPadding);
+    const left = Math.min(start.x, centralBox.minX - this.retentionPadding);
+    const bottom = centralBox.maxY + this.retentionPadding;
+    if (right !== end.x) retention.push({ x: right, y: end.y });
+    retention.push({ x: right, y: bottom }, { x: left, y: bottom });
+    if (left !== start.x) retention.push({ x: left, y: start.y });
+    this.retentionPoints = retention;
+    const top = Math.min(...retention.map(({ y }) => y));
+    this.retentionBox = { minX: left, minY: top, maxX: right, maxY: bottom };
+    // The open fan's footprint in units: full width, and height above the central button's bottom edge.
+    this.extent = { width: right - left, height: centralBox.maxY - top };
+    this.retention = this.#outline(retention, this.retentionBox);
     this.sectors = Array.from({ length: config.sectorCount }, (_, index) => this.#sector(config, index));
   }
 
   contains(x, y) {
-    return x <= this.retentionPadding && y <= this.retentionPadding &&
-      Math.min(x, 0) ** 2 + Math.min(y, 0) ** 2 <= this.retentionRadius ** 2;
+    return this.#inside(this.retentionPoints, x, y);
   }
 
   hitTest(x, y, offsets = null) {
     if (!this.contains(x, y)) return -1;
-    return this.sectors.findIndex(({ points, shift }, index) => {
-      const px = x - shift.x * (offsets?.[index] || 0), py = y - shift.y * (offsets?.[index] || 0);
-      let inside = false;
-      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-        const a = points[i], b = points[j];
-        if ((a.y > py) !== (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x) inside = !inside;
-      }
-      return inside;
-    });
+    return this.sectors.findIndex(({ points, shift }, index) =>
+      this.#inside(points, x - shift.x * (offsets?.[index] || 0), y - shift.y * (offsets?.[index] || 0)));
+  }
+
+  #inside(points, px, py) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const a = points[i], b = points[j];
+      if ((a.y > py) !== (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x) inside = !inside;
+    }
+    return inside;
+  }
+
+  #point(r, angle) { return { x: -r * Math.cos(angle), y: -r * Math.sin(angle) }; }
+
+  // Bounding box of the arcs at the given radii between the fan's angles, including their axis extremes.
+  #arcBounds(radii) {
+    const angles = [this.startAngle, this.endAngle];
+    for (let k = 0; k <= 4; k++) if (k * Math.PI / 2 > this.startAngle && k * Math.PI / 2 < this.endAngle) angles.push(k * Math.PI / 2);
+    const points = radii.flatMap(r => angles.map(angle => this.#point(r, angle)));
+    const round = value => Math.abs(value) < 1e-12 ? 0 : value;
+    return { minX: round(Math.min(...points.map(({ x }) => x))), minY: round(Math.min(...points.map(({ y }) => y))),
+      maxX: round(Math.max(...points.map(({ x }) => x))), maxY: round(Math.max(...points.map(({ y }) => y))) };
   }
 
   #sector(config, index) {
-    const { outerRadius: outer, gap, rounding, arcSteps, cornerSteps, sectorCount } = config;
-    const inner = this.innerRadius;
-    const step = Math.PI / 2 / sectorCount;
-    const point = (r, angle) => ({ x: -r * Math.cos(angle), y: -r * Math.sin(angle) });
+    const { gap, rounding, arcSteps, cornerSteps, sectorCount } = config;
+    const outer = this.radius, inner = this.innerRadius;
+    const step = (this.endAngle - this.startAngle) / sectorCount;
+    const point = (r, angle) => this.#point(r, angle);
     const points = [];
     const outerInset = Math.asin(gap / 2 / outer), innerInset = Math.asin(gap / 2 / inner);
-    const a0 = index * step + outerInset, a1 = (index + 1) * step - outerInset;
-    const b0 = index * step + innerInset, b1 = (index + 1) * step - innerInset;
+    const first = this.startAngle + index * step, last = this.startAngle + (index + 1) * step;
+    const a0 = first + outerInset, a1 = last - outerInset;
+    const b0 = first + innerInset, b1 = last - innerInset;
     const outerStart = point(outer, a0), outerEnd = point(outer, a1);
     const innerStart = point(inner, b0), innerEnd = point(inner, b1);
     const trim = (corner, neighbour) => {
@@ -72,15 +106,16 @@ export class InventorySelectorGeometry {
     corner(innerStart, trim(innerStart, outerStart));
     points.push(trim(outerStart, innerStart));
     corner(outerStart, points[0]);
-    return { points, center: point((inner + outer) / 2, (index + 0.5) * step),
-      shift: point(config.highlightDistance, (index + 0.5) * step),
-      ...this.#outline(points, outer) };
+    return { points, center: point((inner + outer) / 2, first + step / 2),
+      shift: point(config.highlightDistance, first + step / 2),
+      ...this.#outline(points, this.box) };
   }
 
-  #outline(points, origin, size = origin) {
+  #outline(points, box) {
+    const width = box.maxX - box.minX, height = box.maxY - box.minY;
     return {
-      path: `M${points.map(({ x, y }) => `${(x + origin).toFixed(6)},${(y + origin).toFixed(6)}`).join(" L")} Z`,
-      clip: `polygon(${points.map(({ x, y }) => `${((x + origin) / size * 100).toFixed(5)}% ${((y + origin) / size * 100).toFixed(5)}%`).join(",")})`,
+      path: `M${points.map(({ x, y }) => `${(x - box.minX).toFixed(6)},${(y - box.minY).toFixed(6)}`).join(" L")} Z`,
+      clip: `polygon(${points.map(({ x, y }) => `${((x - box.minX) / width * 100).toFixed(5)}% ${((y - box.minY) / height * 100).toFixed(5)}%`).join(",")})`,
     };
   }
 }

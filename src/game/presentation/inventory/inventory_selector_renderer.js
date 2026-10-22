@@ -1,21 +1,26 @@
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
 export class InventorySelectorRenderer {
   #dom;
-  #geometry;
+  #geometries;
+  #geometry = null;
+  #compact = null;
   #open = false;
   #candidate = -1;
   #enabled = false;
   #equipmentFallback;
   #equipmentArt;
   #equipmentImage;
+  #paths = [];
 
-  constructor({ domFactory, geometry, sections, labels, keepnetImage, id }) {
+  // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars and the compact
+  // fans (`half`, `arc`) centred above the button on toolbars up to 820 logical px.
+  constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetImage, id }) {
     this.#dom = domFactory;
-    this.#geometry = geometry;
+    this.#geometries = geometries;
     this.element = this.#dom.element("div", "inventory-selector");
-    this.element.style.setProperty("--inventory-selector-radius", String(geometry.radius));
-    this.element.style.setProperty("--inventory-selector-retention-radius", String(geometry.retentionRadius));
-    this.element.style.setProperty("--inventory-selector-retention-padding", String(geometry.retentionPadding));
-    this.element.style.setProperty("--inventory-selector-retention-clip", geometry.retention.clip);
+    // The wide toolbar reserves the corner fan's footprint.
+    this.element.style.setProperty("--inventory-selector-retention-radius", String(geometries.corner.retentionRadius));
     this.element.hidden = true;
     this.retention = this.#dom.element("div", "inventory-selector__retention");
     this.retention.setAttribute("aria-hidden", "true");
@@ -23,23 +28,15 @@ export class InventorySelectorRenderer {
     this.group.id = id;
     this.group.setAttribute("role", "group");
     this.group.setAttribute("aria-label", labels.sections);
-    this.buttons = sections.items.map((section, index) => {
-      const shape = geometry.sectors[index];
+    this.buttons = sections.items.map(section => {
       const button = this.#dom.button("inventory-selector__section", "");
       button.setAttribute("aria-label", section.label);
       button.dataset.sectionId = section.id;
-      button.style.setProperty("--inventory-selector-clip", shape.clip);
-      button.style.setProperty("--inventory-selector-shift-x", `${shape.shift.x / geometry.radius * 100}%`);
-      button.style.setProperty("--inventory-selector-shift-y", `${shape.shift.y / geometry.radius * 100}%`);
-      button.style.setProperty("--inventory-selector-art-x", `${(shape.center.x + geometry.radius) / geometry.radius * 100}%`);
-      button.style.setProperty("--inventory-selector-art-y", `${(shape.center.y + geometry.radius) / geometry.radius * 100}%`);
-      button.style.setProperty("--inventory-selector-travel-x", `${-shape.center.x * 0.65 / geometry.radius * 100}%`);
-      button.style.setProperty("--inventory-selector-travel-y", `${-shape.center.y * 0.65 / geometry.radius * 100}%`);
       const svg = this.#svg("svg");
       svg.setAttribute("class", "inventory-selector__shape");
-      svg.setAttribute("viewBox", `0 0 ${geometry.radius} ${geometry.radius}`);
       svg.setAttribute("aria-hidden", "true");
-      const path = this.#svg("path"); path.setAttribute("d", shape.path); svg.appendChild(path);
+      const path = this.#svg("path"); svg.appendChild(path);
+      this.#paths.push({ svg, path });
       const image = section.id === "equipment" ? this.#dom.svgIcon(`${sections.iconSprite}#${section.icon}`, "inventory-selector__art")
         : this.#dom.image(section.id === "backpack" ? sections.backpackImage : keepnetImage, "");
       image.classList.add("inventory-selector__art");
@@ -61,8 +58,6 @@ export class InventorySelectorRenderer {
       return button;
     });
     this.central = this.#dom.button("game-toolbar-button inventory-selector__central", "");
-    this.central.style.setProperty("--inventory-selector-central-art-x", `${(geometry.central.center.x + geometry.centralRadius) / geometry.centralRadius * 100}%`);
-    this.central.style.setProperty("--inventory-selector-central-art-y", `${(geometry.central.center.y + geometry.centralRadius) / geometry.centralRadius * 100}%`);
     this.central.setAttribute("aria-label", labels.inventory);
     this.central.setAttribute("aria-controls", id);
     this.central.setAttribute("aria-expanded", "false");
@@ -72,10 +67,31 @@ export class InventorySelectorRenderer {
     const stage = this.#dom.element("div", "inventory-selector__stage");
     stage.append(this.retention, this.group, this.central);
     this.element.appendChild(stage);
+    this.setCompactLayout(compactLayout);
+    this.#apply(geometries.corner);
   }
 
   get expanded() { return this.#open; }
   get enabled() { return this.#enabled; }
+  get layout() { return this.#geometry.layout; }
+  // The fan centre as a share of the central button's box.
+  get origin() { return this.#geometry.origin; }
+
+  // The compact fan shape chosen in configuration; its extent sizes the compact toolbar slot.
+  setCompactLayout(layout) {
+    const geometry = this.#geometries[layout];
+    if (!geometry || geometry === this.#compact) return;
+    const active = this.#geometry !== null && this.#geometry === this.#compact;
+    this.#compact = geometry;
+    this.element.style.setProperty("--inventory-selector-compact-width", String(geometry.extent.width));
+    this.element.style.setProperty("--inventory-selector-compact-height", String(geometry.extent.height));
+    if (active) this.#apply(geometry);
+  }
+
+  // The toolbar slot decides between the corner fan and the compact fan. Returns true when the geometry changed.
+  setCompact(compact) {
+    return this.#apply(compact ? this.#compact : this.#geometries.corner);
+  }
 
   setEquipmentArtwork(thumbnail) {
     const src = this.#dom.safeImageSource(thumbnail?.src);
@@ -125,9 +141,50 @@ export class InventorySelectorRenderer {
   containsRetention(x, y) { return this.#geometry.contains(x, y); }
   hitTest(x, y, offsets = null) { return this.#geometry.hitTest(x, y, offsets); }
   motionTranslation(index, progress) {
-    const shift = this.#geometry.sectors[index].shift;
-    return `${shift.x * progress / this.#geometry.radius * 100}% ${shift.y * progress / this.#geometry.radius * 100}%`;
+    const { box, sectors } = this.#geometry, shift = sectors[index].shift;
+    return `${shift.x * progress / (box.maxX - box.minX) * 100}% ${shift.y * progress / (box.maxY - box.minY) * 100}%`;
   }
   dispose() { this.setEnabled(false); this.element.remove(); }
-  #svg(tag) { return this.#dom.document.createElementNS("http://www.w3.org/2000/svg", tag); }
+
+  // Layout geometry in central-button units; the stylesheet multiplies them by the drawing unit.
+  #apply(geometry) {
+    if (geometry === this.#geometry) return false;
+    if (this.#geometry) this.element.classList.remove(`inventory-selector--${this.#geometry.layout}`);
+    this.#geometry = geometry;
+    this.element.classList.add(`inventory-selector--${geometry.layout}`);
+    const { box, retentionBox, origin, central } = geometry;
+    const width = box.maxX - box.minX, height = box.maxY - box.minY;
+    const percent = (value, size) => `${value / size * 100}%`;
+    const root = this.element.style;
+    root.setProperty("--inventory-selector-box-left", String(origin.x + box.minX));
+    root.setProperty("--inventory-selector-box-top", String(origin.y + box.minY));
+    root.setProperty("--inventory-selector-box-width", String(width));
+    root.setProperty("--inventory-selector-box-height", String(height));
+    root.setProperty("--inventory-selector-fan-origin", `${percent(-box.minX, width)} ${percent(-box.minY, height)}`);
+    root.setProperty("--inventory-selector-art-width", percent(geometry.radius / 4, width));
+    root.setProperty("--inventory-selector-art-height", percent(geometry.radius / 4, height));
+    root.setProperty("--inventory-selector-retention-left", String(origin.x + retentionBox.minX));
+    root.setProperty("--inventory-selector-retention-top", String(origin.y + retentionBox.minY));
+    root.setProperty("--inventory-selector-retention-width", String(retentionBox.maxX - retentionBox.minX));
+    root.setProperty("--inventory-selector-retention-height", String(retentionBox.maxY - retentionBox.minY));
+    root.setProperty("--inventory-selector-retention-clip", geometry.retention.clip);
+    const centralWidth = central.box.maxX - central.box.minX, centralHeight = central.box.maxY - central.box.minY;
+    this.central.style.setProperty("--inventory-selector-central-art-x", percent(central.center.x - central.box.minX, centralWidth));
+    this.central.style.setProperty("--inventory-selector-central-art-y", percent(central.center.y - central.box.minY, centralHeight));
+    this.buttons.forEach((button, index) => {
+      const shape = geometry.sectors[index], { svg, path } = this.#paths[index];
+      button.style.setProperty("--inventory-selector-clip", shape.clip);
+      button.style.setProperty("--inventory-selector-shift-x", percent(shape.shift.x, width));
+      button.style.setProperty("--inventory-selector-shift-y", percent(shape.shift.y, height));
+      button.style.setProperty("--inventory-selector-art-x", percent(shape.center.x - box.minX, width));
+      button.style.setProperty("--inventory-selector-art-y", percent(shape.center.y - box.minY, height));
+      button.style.setProperty("--inventory-selector-travel-x", percent(-shape.center.x * 0.65, width));
+      button.style.setProperty("--inventory-selector-travel-y", percent(-shape.center.y * 0.65, height));
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      path.setAttribute("d", shape.path);
+    });
+    return true;
+  }
+
+  #svg(tag) { return this.#dom.document.createElementNS(SVG_NAMESPACE, tag); }
 }

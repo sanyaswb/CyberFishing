@@ -5,6 +5,7 @@ import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 export class DevToolsUI {
   #panel;
   #body;
+  #footer;
   #btn;
   #onToggleCallback;
   #tooltipProvider;
@@ -30,6 +31,11 @@ export class DevToolsUI {
 
   get body() {
     return this.#body;
+  }
+
+  // The panel's last row, below the scrolling sections (the project version on phones, TK-035).
+  get footer() {
+    return this.#footer;
   }
 
   togglePanel(isOpen) {
@@ -64,6 +70,7 @@ export class DevToolsUI {
     this.#btn = null;
     this.#panel = null;
     this.#body = null;
+    this.#footer = null;
     this.#onToggleCallback = null;
   }
 
@@ -368,10 +375,12 @@ export class DevToolsUI {
                 <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
             </div>
             <div class="devtools__body"></div>
+            <div class="devtools__footer"></div>
         `;
 
     this.#mountNode.appendChild(this.#panel);
     this.#body = this.#panel.querySelector(".devtools__body");
+    this.#footer = this.#panel.querySelector(".devtools__footer");
 
     UiEventShield.makeSolid(this.#panel);
 

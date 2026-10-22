@@ -41,7 +41,7 @@ export class InventorySelectorController {
     this.#listen(root, "focusout", this.#focusOut);
     for (const type of ["mousedown", "mouseup", "touchstart", "touchmove", "touchend", "wheel", "dblclick"]) this.#listen(root, type, this.#stop);
     for (const type of ["contextmenu", "dragstart"]) this.#listen(root, type, this.#prevent);
-    this.#listen(documentRef, "pointerdown", this.#outside, true);
+    this.#listen(documentRef, "pointerdown", this.#outsidePress, true);
     this.#listen(documentRef, "focusin", this.#outside);
     this.#listen(root, "focusin", this.#focusIn);
     this.#listen(documentRef, "visibilitychange", this.#visibility);
@@ -124,6 +124,15 @@ export class InventorySelectorController {
   #cancel = () => this.cancel();
   #visibility = () => { if (this.#document.visibilityState === "hidden") this.cancel(); };
   #outside = event => { if (!this.#view.element.contains(event.target)) this.cancel(); };
+  // The compact fan covers its neighbours, which stay inactive while it is open: a press elsewhere only closes it.
+  #outsidePress = event => {
+    if (this.#view.element.contains(event.target)) return;
+    const consume = this.#view.expanded && this.#view.layout !== "corner";
+    this.cancel();
+    if (!consume) return;
+    event.stopPropagation();
+    event.preventDefault?.();
+  };
   #focusOut = event => { if (this.#mode === "keyboard" && !this.#view.element.contains(event.relatedTarget)) this.cancel(); };
   #focusIn = event => {
     const index = this.#view.buttons.findIndex(button => button.contains(event.target));
@@ -162,14 +171,20 @@ export class InventorySelectorController {
   #open(mode) {
     if (this.#disposed || !this.#view.enabled) return false;
     if (this.#view.expanded) return true;
+    // The toolbar slot names its layout through a custom property (compact up to 820 logical px).
+    // A changed geometry is committed as the closed style before opening, so sectors travel from it.
+    const compact = this.#window.getComputedStyle(this.#view.element).getPropertyValue("--inventory-selector-layout").trim() === "compact";
+    if (this.#view.setCompact(compact)) this.#window.getComputedStyle(this.#view.buttons[0]).getPropertyValue("transform");
     // The root takes its final slot immediately; only the inner stage animates.
     // Cache final open bounds once instead of measuring an in-flight transform.
     this.#view.setExpanded(true);
     const rect = this.#view.element.getBoundingClientRect();
     if (!(rect.width > 0)) { this.#view.setExpanded(false); return false; }
-    const origin = this.#point(rect.left + rect.width, rect.top + rect.height);
+    const corner = this.#point(rect.left + rect.width, rect.top + rect.height);
     const edge = this.#point(rect.left, rect.top);
-    this.#frame = { x: origin.x, y: origin.y, unit: origin.x - edge.x, rect };
+    const unit = corner.x - edge.x, { origin } = this.#view;
+    this.#frame = { x: origin.x === 1 ? corner.x : edge.x + unit * origin.x,
+      y: origin.y === 1 ? corner.y : edge.y + unit * origin.y, unit, rect };
     this.#mode = mode;
     const style = this.#window.getComputedStyle(this.#view.buttons[0]);
     const durations = (style.transitionDuration || "0s").split(",").map(value => Number.parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000));

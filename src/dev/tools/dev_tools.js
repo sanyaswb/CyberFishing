@@ -779,6 +779,10 @@ export class DevTools {
         next => onChange(Number(next)), displayPath, canonicalPath);
       return;
     }
+    if (canonicalPath.join(".") === "CONFIG.ui.inventorySelector.compactShape") {
+      this.#ui.createEnumToggleRow(key, ["half", "arc"], value, parentElement, onChange, displayPath, canonicalPath);
+      return;
+    }
     if (typeof value === "boolean") {
       this.#ui.createSwitcherRow(
         key,

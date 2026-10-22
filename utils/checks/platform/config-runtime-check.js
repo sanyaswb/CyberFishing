@@ -184,12 +184,14 @@ function checkDevelopmentInputs() {
   class DebugAdapter { constructor(target, isEnabled, bus) { Object.assign(this, { target, isEnabled, bus }); } }
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
-  const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
+  const renderedVersions = [];
+  class VersionBadge { constructor({ element }) { this.element = element; } render() { renderedVersions.push(this.element); } }
+  const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
     LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
-    DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; } },
+    DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; this.footer = {}; } },
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
     pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance, pageParams } });
@@ -265,6 +267,7 @@ function checkDevelopmentInputs() {
   assert.equal(toolsUi.args[0], toggle);
   assert.equal(toolsUi.args[4], uiSurface, "DEV dragging shares the production logical coordinate space");
   assert.equal(toolsUi.args[5], developmentMount, "DEV controls retain their independent outcome visibility branch");
+  assert.deepEqual(renderedVersions, [toolsUi.footer], "the DevTools footer shows the project version badge (TK-035)");
 }
 checkDevelopmentInputs();
 

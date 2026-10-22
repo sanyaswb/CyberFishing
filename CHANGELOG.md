@@ -2,6 +2,14 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.8 - Version in the DevTools Footer on Phones
+
+- TK-035: at UI widths <=820 logical px, where the toolbar's version badge is hidden, the DevTools panel shows the project version (the same badge text from PROJECT_VERSION_CONFIG) in a fixed last row below the scrolling sections. Wider screens keep the toolbar badge. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
+
+## v0.46.7 - Centred Selector Fan on Compact Toolbars
+
+- TK-034: at toolbar widths <=820 logical px the radial selector stands centred in the bottom row without a reserve and opens a symmetric fan over its neighbours: half circle (half-disk central button, three 60° petals) or 120° arc (round central button, three 40° petals), switched live by CONFIG.ui.inventorySelector.compactShape. The landing net stands right of it, the depth control further right with its track opening rightwards; the chum and other actions stand left, balanced around the selector. While the fan is open the other actions fade and a press beside it only closes it. Wider toolbars keep the corner fan. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
+
 ## v0.46.6 - Selector Menu Icon and Shared Feedback
 
 - TK-032/033: selector sectors share the main toolbar button's background/accent states without the extra yellow thick border; keyboard focus keeps the toolbar info color. Replace the central suitcase with a symmetric four-square SVG menu and retain the original in asset-sources/ui/archive/inventory-suitcase-v0.46.5.svg outside runtime assets. Interaction geometry and gestures unchanged. Full 66/66 incl. Quick/Architecture; owner visual acceptance pending.
@@ -34,11 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.45.45 - Surface-Scaled Water Waves
 
 - Spec 126 R4: water waves are a surface pattern. Far crests are farScale times as far apart and as high in both axes, whether or not the grid contracts sideways; rows follow calibrated ground metres. The wave field maps over the clip regions it actually covers. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance acceptance pending.
-
-## v0.45.44 - One Water Projection Source
-
-- Spec 126 review corrections R1–R3, R5, S1–S3: one location branch waterProjection {maxMeters, tiltDegrees, farScale, lateralContraction} replaces perspective + distanceProfile; IllustratedDepthProfile behind WaterMetric with one set of ranges for schema, metric and DEV editor; the legacy linearShare profile removed; LocationWaterMetricSource is the only metric query. A projection without its length is rejected instead of crashing; the editor shows near/far px per metre and an add action for uniform water. Untracked registered checks now fail the runner. Full 65/65 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
-
-## v0.45.43 - Simple Illustrated Water Perspective
-
-- G-112 / spec 126: replace camera distance and overhead reference with exact water length, artistic tilt and a far-size ratio. Defaults: 30 m, 30 degrees, 0.3. Preserve full grid/water bounds and exact aim metres; one metric owns surface sizing and matching chum containment. Remove the camera-ray diagram and obsolete controls; optional grid-width contraction defaults off. Full 65/65, including Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.

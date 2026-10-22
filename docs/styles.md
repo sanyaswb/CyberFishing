@@ -12,6 +12,8 @@ version. There are no CSS imports, runtime style installers or build requirement
 TK-013 (v0.45.33) groups DEV controls without changing config/override paths: top navigation and shop button,
 then Overlay → CONFIG → DEBUG (one Inventory with Split), scene/zone editors, Database (locations/fish/items),
 Spine (the skeleton name) and the final Service group (Runtime overrides / Item progression).
+TK-035: the panel's last grid row `devtools__footer` (outside the scrolling body) shows the
+`GameVersionBadge` text at UI-surface widths <=820 px, where the toolbar badge is hidden.
 `DevToolsUI.createInfoRow` groups read-only rows in a collapsed `Опис` disclosure per parent. Its weak cache
 preserves local expansion across refresh and rejects detached groups; editable controls remain in their original
 parent and keep their bindings. Section titles are semantic buttons with `aria-expanded`. Hover/press on action
@@ -259,13 +261,29 @@ stroke or highlight-only stroke widening. The sprite's inventory symbol is a fou
 with softer outer corners. The suitcase source is archived under asset-sources/ui/archive and has no
 runtime consumer. Section symbols, measured geometry, motion and pointer ownership are unchanged.
 
-TK-031/v0.46.5 supersedes the shared mobile selector/action row below: `GameToolbar.selectorMountNode`
-owns a separate transparent selector host. At toolbar widths <=820 logical px, a visible radial selector's
-host occupies a full-width last flex item; existing wrap-reverse flow places it above the bottom actions.
-Depth keeps order 0 to the left of chum/net as those actions appear. Only the host stretches: the selector's
-own measured bounds, fan reservation and input coordinates stay intact. Empty/classic hosts contribute
-no row; wider layouts use display:contents and preserve the existing row. Production, DEV and catalog
-inject the same mount. No polling, resize handler or gameplay-owned layout state is added.
+TK-034/v0.46.7 supersedes TK-031's separate selector row. `GameToolbar.dock` (`game-toolbar-dock`) owns
+fixed screen anchoring and is the `game-toolbar` width container; the action row `game-toolbar` (the mount
+for actions) can therefore change its own layout by that width. At toolbar widths <=820 logical px with a
+visible radial selector, `toolbar.css` turns the row into a seven-column grid: free | left-2 | left-1 |
+selector | right-1 | right-2 | free. Slot tracks (button + gap) are reserved symmetrically, one per side for
+one or two visible actions and two for three, so the selector stays exactly centred without a reserve for
+its open fan. The net stands right of the selector, the depth slot after it runs to the right edge; the chum
+and other actions stand left. With net and depth only, the net moves left; a single action stands right.
+`:has()` on the visible actions decides placement; no JS enumerates or measures siblings. The selector host
+sets `--inventory-selector-layout: compact`; the controller reads it once per opening and the renderer
+applies the configured compact fan (`CONFIG.ui.inventorySelector.compactShape`: `half` or `arc`, DevTools
+toggle, existing override paths). The root keeps its closed footprint through negative margins and grows
+centred and upwards over its neighbours (`z-index` on the host); its drawing unit is capped by the toolbar
+width (`100cqw`) and the fan's extent. While the fan is open the other actions take
+`--game-toolbar-inactive-opacity` and no pointer input, and a press beside the fan only closes it.
+The depth slot sets `--depth-selector-direction: row` and `--depth-selector-reveal: depth-selector-reveal-end`
+(documented in `depth-selector.css`): the float keeps its place and the track opens rightwards; with less than
+the shortest track to the edge, the open frame shifts left just enough. Wider toolbars keep the corner fan,
+its reserve and the existing row unchanged.
+`InventorySelectorGeometry` builds one geometry per layout (`corner`, `half`, `arc` in
+`INVENTORY_SELECTOR_CONFIG.layouts`: fan origin as a share of the central box, angles, radii); the renderer
+writes each layout's boxes, clip paths and art positions as custom properties and a block modifier
+(`inventory-selector--corner|half|arc`) that shapes the open central button (quarter disk, half disk, disk).
 
 TK-008/spec 117 adds `inventory-selector.css`: a morphing central toolbar control and three rounded annular sectors.
 `InventorySelectorGeometry` supplies one polygon per sector to SVG, CSS clipping and coordinate hit testing.

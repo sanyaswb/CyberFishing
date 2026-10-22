@@ -48,7 +48,7 @@
   z-index: var(--ui-layer-panel);
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   font-family: var(--ui-font-mono);
   color: var(--ui-text);
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
@@ -76,6 +76,24 @@
 
 .devtools__close {
   flex: 0 0 var(--ui-close-size);
+}
+
+/* TK-035: phones hide the toolbar's version badge, so the panel shows the version in its last row. */
+.devtools__footer {
+  display: none;
+  padding: 8px 15px;
+  border-top: 1px solid var(--ui-accent);
+  background: #0b1520;
+  color: rgba(210, 245, 255, 0.82);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+@container ui-surface (max-width: 820px) {
+  .devtools__footer { display: block; }
 }
 
 .devtools__body {

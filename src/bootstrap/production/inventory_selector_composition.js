@@ -10,8 +10,10 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
   id = "inventory-selector-sections", onSelect = null }) {
+  const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
+    .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
   const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(documentRef),
-    geometry: new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG), sections: INVENTORY_SECTIONS,
+    geometries, sections: INVENTORY_SECTIONS,
     labels: INVENTORY_SELECTOR_LABELS, keepnetImage: KEEPNET_ART_STAGES[0].imagePath, id });
   const controller = new InventorySelectorController({ view, uiSurface, documentRef, windowRef,
     onSelect: onSelect || (sectionId => {
@@ -20,7 +22,7 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
       inventoryUI.rootNode.focus();
     }) });
   mountNode.appendChild(view.element);
-  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null;
+  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null, compactShape = null;
   let artworkKey = "", artworkRevision = 0;
   const syncEquipment = () => {
     if (disposed) return;
@@ -48,14 +50,19 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     const nextClassicVisible = !requestedRadial || loadState === "failed";
     const nextSize = settings?.size ?? 1;
     const nextOpenSize = settings?.openSize ?? 3;
-    if (radial === nextRadial && classicVisible === nextClassicVisible && size === nextSize && openSize === nextOpenSize) return;
+    const nextCompactShape = INVENTORY_SELECTOR_CONFIG.compactLayouts.includes(settings?.compactShape)
+      ? settings.compactShape : INVENTORY_SELECTOR_CONFIG.compactLayouts[0];
+    if (radial === nextRadial && classicVisible === nextClassicVisible && size === nextSize && openSize === nextOpenSize
+      && compactShape === nextCompactShape) return;
     controller.cancel();
     view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[nextSize] || 1,
       INVENTORY_SELECTOR_CONFIG.sizeScales[nextOpenSize] || INVENTORY_SELECTOR_CONFIG.sizeScales[3]);
+    view.setCompactLayout(nextCompactShape);
     controller.setEnabled(nextRadial);
     inventoryUI.setShortcutVisible(nextClassicVisible);
     keepnetUI?.setShortcutVisible(nextClassicVisible);
     radial = nextRadial; classicVisible = nextClassicVisible; size = nextSize; openSize = nextOpenSize;
+    compactShape = nextCompactShape;
   };
   const unsubscribe = inventoryUI.onVisibilityChange(open => { if (open) controller.cancel(); });
   const unsubscribeEquipment = equipmentSource?.onInventoryChanged(syncEquipment);

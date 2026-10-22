@@ -1,11 +1,13 @@
-/* Internal geometry; toolbar owns placement. Only visible controls receive input. */
+/* Internal geometry; toolbar owns placement. Only visible controls receive input.
+   The placing slot may set --depth-selector-direction: row (float left, track opening rightwards) with
+   --depth-selector-reveal: depth-selector-reveal-end; the default keeps the float right of a leftward track. */
 .depth-selector {
   --depth-ratio: 0%;
   --depth-track-size: 6px;
   position: relative;
   box-sizing: border-box;
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: var(--depth-selector-direction, row-reverse);
   align-items: center;
   gap: var(--ui-toolbar-gap);
   width: var(--ui-toolbar-size);
@@ -14,7 +16,7 @@
   color: var(--ui-text);
   font-family: var(--ui-font-mono);
   pointer-events: auto;
-  transition: width var(--ui-duration-normal) var(--ui-ease-standard), border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard);
+  transition: width var(--ui-duration-normal) var(--ui-ease-standard), border-color var(--ui-duration-control) var(--ui-ease-standard), background-color var(--ui-duration-control) var(--ui-ease-standard), opacity var(--ui-duration-control) var(--ui-ease-standard);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -67,7 +69,7 @@
   height: calc(var(--ui-toolbar-size) - 2 * var(--ui-control-border-width));
   padding-inline: 9px;
   pointer-events: auto;
-  animation: depth-selector-reveal var(--ui-duration-normal) var(--ui-ease-standard);
+  animation: var(--depth-selector-reveal, depth-selector-reveal) var(--ui-duration-normal) var(--ui-ease-standard);
 }
 .depth-selector__track {
   position: relative;
@@ -139,6 +141,10 @@
 .depth-selector__limit--max { grid-column: 2; text-align: right; }
 @keyframes depth-selector-reveal {
   from { opacity: 0; clip-path: inset(-100% 0 -100% calc(100% + var(--ui-toolbar-gap))); }
+  to { opacity: 1; clip-path: inset(-100% 0 -100% 0); }
+}
+@keyframes depth-selector-reveal-end {
+  from { opacity: 0; clip-path: inset(-100% calc(100% + var(--ui-toolbar-gap)) -100% 0); }
   to { opacity: 1; clip-path: inset(-100% 0 -100% 0); }
 }
 @media (prefers-reduced-motion: reduce) {

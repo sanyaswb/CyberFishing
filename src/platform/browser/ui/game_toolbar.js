@@ -1,9 +1,12 @@
-// Screen anchoring and wrapping belong to the shared toolbar CSS.
+// Screen anchoring and wrapping belong to the shared toolbar CSS. The dock anchors the toolbar to the screen
+// and measures its width (container `game-toolbar`), so the action row itself can change layout by that width.
 export class GameToolbar {
   #badge;
   #badgeParent;
 
   constructor({ documentRef, mountNode, versionBadge = null }) {
+    this.dock = documentRef.createElement("div");
+    this.dock.className = "game-toolbar-dock";
     this.element = documentRef.createElement("div");
     this.element.className = "game-toolbar";
     this.tackleMountNode = documentRef.createElement("div");
@@ -18,13 +21,16 @@ export class GameToolbar {
     this.tackleMountNode.appendChild(this.depthMountNode);
     this.element.appendChild(this.tackleMountNode);
     this.element.appendChild(this.selectorMountNode);
-    mountNode.appendChild(this.element);
+    this.dock.appendChild(this.element);
+    mountNode.appendChild(this.dock);
   }
 
   dispose() {
     if (!this.element) return;
     if (this.#badgeParent) this.#badgeParent.appendChild(this.#badge);
     this.element.remove();
+    this.dock.remove();
+    this.dock = null;
     this.element = null;
   }
 }

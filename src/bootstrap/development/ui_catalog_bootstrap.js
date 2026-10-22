@@ -95,14 +95,14 @@ export function startUiCatalog() {
       if (id === "inventory-selector") {
         const scope = own(scopeFor(surface.mountRoot));
         const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
-        toolbar.element.classList.add("ui-catalog-preview__toolbar-row");
+        toolbar.dock.classList.add("ui-catalog-preview__toolbar-row");
         const fixture = new UiCatalogInventoryFixture({ actionTypes: InventoryActionType, rarityVisualResolver: rarity });
         const ui = own(InventoryUiBootstrap.create({ documentRef: scope, mountNode: surface.mountRoot,
           buttonMountNode: toolbar.element, uiSurface: surface, facade: fixture, degradationColorResolver: colors,
           rarityVisualResolver: rarity, rarityDomAdapter: new ItemRarityDomAdapter({ visualResolver: rarity }), warningTimers }));
         const keepnet = own(InventoryUiBootstrap.createKeepnet({ documentRef: scope, liveBait: new UiCatalogKeepnetFixture(),
           inventoryUI: ui, degradationColorResolver: colors, uiSurface: surface, buttonMountNode: toolbar.element }));
-        const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3 } } };
+        const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half" } } };
         const selector = own(composeInventorySelector({ documentRef: scope, windowRef: windowTarget, uiSurface: surface,
           mountNode: toolbar.selectorMountNode, inventoryUI: ui, keepnetUI: keepnet, config,
           imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }), logger: new ConsoleLogger(),
@@ -208,7 +208,7 @@ export function startUiCatalog() {
           styleResolver: new HudStyleResolver({ hudStylesProvider: () => CONFIG.ui.hudStyles }) });
         const holdCharges = own(new HoldCharges({ labels: HUD_LABELS, documentRef: scope, mountNode: surface.mountRoot }));
         const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
-        toolbar.element.classList.add("ui-catalog-preview__toolbar-row");
+        toolbar.dock.classList.add("ui-catalog-preview__toolbar-row");
         const depthSelector = own(composeDepthSelector({ documentRef: scope, mountNode: toolbar.depthMountNode,
           uiSurface: surface, itemDb: ITEM_DB, imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }) }));
         const chumControls = own(new ChumControls(() => { status.textContent = UI_CATALOG_LABELS.hudChum; }, { labels: HUD_LABELS, documentRef: scope, mountNode: toolbar.element }));

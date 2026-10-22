@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.6";
+export const CURRENT_PROJECT_VERSION = "0.46.8";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,11 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "selector-menu-shared-feedback",
+  codename: "devtools-version-footer",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "On phones (UI up to 820 px) the DevTools panel shows the project version in its last row, where the toolbar badge is hidden",
+    "Toolbars up to 820 px: the radial selector sits centred in the bottom row and opens a symmetric fan over its neighbours (half circle or 120-degree arc, DevTools switch); the net stands right of it, then the depth control whose track opens rightwards; other actions fade and take no input while the fan is open",
     "Selector sectors share toolbar feedback without the extra yellow thick border; the central control uses a four-square menu SVG and the suitcase is archived",
     "Mobile toolbar puts the radial selector above float/depth and other actions; float stays left of appearing buttons without stretching selector hit geometry",
     "Night float has a red tip without halo or additive light in daylight; both glow layers follow the location's shared night lighting",

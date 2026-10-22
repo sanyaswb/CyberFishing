@@ -1,21 +1,27 @@
 /* Shared appearance. Screen anchoring belongs to the consumer's slot modifier. */
-.game-toolbar {
+/* The dock anchors the toolbar to the screen; it is the width container of every toolbar query (TK-034). */
+.game-toolbar-dock {
   position: fixed;
   left: var(--ui-edge-left);
   right: var(--ui-edge-right);
   bottom: var(--ui-edge-bottom);
   z-index: var(--ui-layer-controls);
+  min-width: 0;
+  pointer-events: none;
+  container-type: inline-size;
+  container-name: game-toolbar;
+}
+.game-toolbar {
+  --game-toolbar-slot: calc(var(--ui-toolbar-size) + var(--ui-toolbar-gap));
+  --game-toolbar-inactive-opacity: 0.35;
   display: flex;
   /* wrap-reverse starts at the bottom; flex-start keeps button bottoms aligned. */
   align-items: flex-start;
   flex-wrap: wrap-reverse;
   justify-content: flex-end;
   gap: var(--ui-toolbar-gap);
-  height: auto;
   min-width: 0;
   pointer-events: none;
-  container-type: inline-size;
-  container-name: game-toolbar;
 }
 /* Tackle mounts participate in the same row; only the depth slot grows into free space. */
 .game-toolbar__tackle,
@@ -55,7 +61,7 @@
 .game-toolbar-button--net { order: 2; }
 .game-toolbar-button--keepnet { order: 3; }
 .game-toolbar-button--inventory { order: 4; }
-/* Permanent reserve for the open selector footprint so adjacent actions to the left do not shift. */
+/* Wide toolbars: permanent reserve for the open corner fan so adjacent actions to the left do not shift. */
 .game-toolbar__selector > .inventory-selector {
   --inventory-selector-unit: min(calc(var(--ui-toolbar-size) * var(--inventory-selector-scale, 1)), calc((var(--ui-logical-height, 320px) - var(--ui-edge-top) - var(--ui-edge-bottom) - var(--ui-toolbar-size) - var(--ui-toolbar-gap)) / var(--inventory-selector-retention-radius)), calc((var(--ui-logical-width, 320px) - var(--ui-edge-left) - var(--ui-edge-right) - 2 * (var(--ui-toolbar-size) + var(--ui-toolbar-gap))) / var(--inventory-selector-retention-radius)));
   flex: 0 0 calc(var(--inventory-selector-unit) * var(--inventory-selector-current-scale));
@@ -155,14 +161,88 @@
 
 @container game-toolbar (max-width: 820px) {
   .game-toolbar__depth:not(:has(> .depth-selector:not([hidden]))) { display: none; }
-  /* A full-width last flex item wraps above the bottom action row in wrap-reverse flow.
-     Only the mount stretches; the selector keeps its actual width for pointer coordinates. */
-  .game-toolbar__selector:has(> .inventory-selector:not([hidden])) {
-    display: flex;
-    flex: 0 0 100%;
-    order: 5;
-    justify-content: flex-end;
+  /* TK-034: the radial selector sits exactly in the middle of the bottom row, without a reserve for its open fan.
+     Symmetric slot tracks (button + gap) keep it centred: one per side for one or two actions, two for three.
+     Columns: 1 free | 2 left-2 | 3 left-1 | 4 selector | 5 right-1 | 6 right-2 | 7 free. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--game-toolbar-slot-2, 0px) var(--game-toolbar-slot-1, 0px) auto var(--game-toolbar-slot-1, 0px) var(--game-toolbar-slot-2, 0px) minmax(0, 1fr);
+    /* A row wider than the toolbar (large closed button and three actions) overflows evenly on both sides. */
+    justify-content: center;
+    align-items: end;
+    gap: 0;
+  }
+  .game-toolbar:has(> .game-toolbar-button--chum:not([hidden]), > .game-toolbar__tackle > .game-control--net-visible, > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector:not([hidden])) {
+    --game-toolbar-slot-1: var(--game-toolbar-slot);
+  }
+  .game-toolbar:has(> .game-toolbar-button--chum:not([hidden])):has(> .game-toolbar__tackle > .game-control--net-visible):has(> .game-toolbar__tackle > .game-toolbar__depth > .depth-selector:not([hidden])) {
+    --game-toolbar-slot-2: var(--game-toolbar-slot);
+  }
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__selector {
+    --inventory-selector-layout: compact;
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-column: 4;
+    grid-row: 1;
     min-width: 0;
+    pointer-events: none;
+  }
+  /* The open root grows around the closed footprint: centred, upwards from the bottom row, over its neighbours. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__selector > .inventory-selector {
+    --inventory-selector-unit: min(calc(var(--ui-toolbar-size) * var(--inventory-selector-scale, 1)), calc((var(--ui-logical-height, 320px) - var(--ui-edge-top) - var(--ui-edge-bottom)) / var(--inventory-selector-compact-height)), calc(100cqw / var(--inventory-selector-compact-width)));
+    margin: calc((var(--inventory-selector-closed-scale, 1) - var(--inventory-selector-current-scale)) * var(--inventory-selector-unit)) calc((var(--inventory-selector-closed-scale, 1) - var(--inventory-selector-current-scale)) * var(--inventory-selector-unit) / 2) 0;
+  }
+  /* Left of the selector: the chum and other actions; right: the net beside it, then the depth control. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar-button {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: start;
+  }
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__tackle > .game-toolbar-button--net {
+    grid-column: 5;
+    grid-row: 1;
+    justify-self: end;
+  }
+  /* The depth slot runs to the right edge; its frame keeps the float in place and opens the track rightwards. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__tackle > .game-toolbar__depth {
+    --depth-selector-direction: row;
+    --depth-selector-reveal: depth-selector-reveal-end;
+    --depth-selector-open-width: max(calc(var(--ui-toolbar-size) + var(--ui-toolbar-gap) + var(--depth-panel-min-width)), min(100%, calc(var(--ui-toolbar-size) + var(--ui-toolbar-gap) + var(--depth-panel-max-width))));
+    grid-column: 5 / -1;
+    grid-row: 1;
+    min-width: var(--ui-toolbar-size);
+    margin-left: var(--ui-toolbar-gap);
+  }
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector {
+    left: 0;
+    right: auto;
+  }
+  /* Too little room to the right edge for the shortest track: the frame shifts left just enough. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector--open {
+    left: min(0px, calc(100% - var(--depth-selector-open-width)));
+  }
+  /* Net and depth both visible: without the chum the net moves left, with it the depth moves one slot right. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])):has(> .game-toolbar__tackle > .game-toolbar__depth > .depth-selector:not([hidden])):not(:has(> .game-toolbar-button--chum:not([hidden]))) > .game-toolbar__tackle > .game-toolbar-button--net {
+    grid-column: 3;
+    justify-self: start;
+  }
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])):has(> .game-toolbar-button--chum:not([hidden])):has(> .game-toolbar__tackle > .game-control--net-visible) > .game-toolbar__tackle > .game-toolbar__depth {
+    grid-column: 6 / -1;
+  }
+  /* A single action stands right of the selector. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])):not(:has(> .game-toolbar__tackle > .game-control--net-visible, > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector:not([hidden]))) > .game-toolbar-button {
+    grid-column: 5;
+    justify-self: end;
+  }
+  /* While the fan is open the other actions are faded and take no input; the fan paints over them. */
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar-button,
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar-button,
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector {
+    opacity: var(--game-toolbar-inactive-opacity);
+    pointer-events: none;
+  }
+  .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth .depth-selector__panel {
     pointer-events: none;
   }
 }

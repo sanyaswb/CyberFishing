@@ -265,3 +265,22 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
 - Reuse existing selector gesture and CSS/asset/architecture checks; no pixel/color/shape assertions.
   Owner checks index/dev/catalog, hover/touch/keyboard focus, all sectors, closed/open presets and
   reduced motion. No agent visual check, bitmap generation, replacement tool/helper or extra frame work.
+
+## TK-034 centred compact fan (2026-10-22, v0.46.7)
+
+- Owner: at <=820 logical toolbar px the selector moves to the bottom centre and its petals are symmetric;
+  net right of it without a reserve, depth further right; equal sides where possible, depth always right
+  (3 actions: chum | selector | net, depth; 2: net | selector | depth; 1: selector | action). The open fan
+  covers its neighbours, which fade and take no input. Owner decisions: fixed right side, depth track opens
+  rightwards to the edge, both fan shapes with a DevTools switch (`compactShape`: `half` default, `arc`),
+  wider toolbars unchanged.
+- One geometry class per layout (corner/half/arc): origin share of the central box, angle range, radii;
+  shared gap/rounding/highlight. Corner output is the former geometry. Retention is a polygon around the
+  arc down to the central box; extent sizes the compact slot.
+- The toolbar gains a dock (fixed anchoring + width container) so the row itself becomes a symmetric grid
+  by width; placement is CSS-only via `:has()`. The host names the compact layout through a custom property
+  read once per opening; outside presses are consumed only while the compact fan is open.
+- Checks extend inventory-selector: mirror symmetry, petal/gap/central hit tests for both shapes, compact
+  selection at 240/320/820 px and all size pairs, layout switch back to corner, outside-press consumption,
+  live shape switch with export/import/reset and invalid shape rejection. No visual assertions; owner checks
+  appearance. No tool, helper, fixture or dependency becomes obsolete.
