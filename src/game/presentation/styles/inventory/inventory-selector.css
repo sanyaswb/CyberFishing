@@ -40,10 +40,12 @@
 .inventory-selector--corner.inventory-selector--open .inventory-selector__central {
   border-radius: 100% 0 calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) 0;
 }
-/* Half fan: the lower half becomes a half disk; both bottom corners stay soft. */
+/* Half fan: the lower half becomes an exact half disk, concentric with the petals' inner arc, so its gap equals
+   the gap between petals. Its vertical radii fill the whole height: any bottom rounding would make CSS shrink
+   every radius and flatten the top. */
 .inventory-selector--half.inventory-selector--open .inventory-selector__central {
   height: 50%;
-  border-radius: 50% 50% calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) / 100% 100% calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale));
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
 /* Arc fan: the central button becomes a disk under the arc. */
 .inventory-selector--arc.inventory-selector--open .inventory-selector__central { border-radius: 50%; }

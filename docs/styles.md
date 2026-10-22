@@ -264,22 +264,23 @@ runtime consumer. Section symbols, measured geometry, motion and pointer ownersh
 TK-034/v0.46.7 supersedes TK-031's separate selector row. `GameToolbar.dock` (`game-toolbar-dock`) owns
 fixed screen anchoring and is the `game-toolbar` width container; the action row `game-toolbar` (the mount
 for actions) can therefore change its own layout by that width. At toolbar widths <=820 logical px with a
-visible radial selector, `toolbar.css` turns the row into a seven-column grid: free | left-2 | left-1 |
-selector | right-1 | right-2 | free. Slot tracks (button + gap) are reserved symmetrically, one per side for
-one or two visible actions and two for three, so the selector stays exactly centred without a reserve for
-its open fan. The net stands right of the selector, the depth slot after it runs to the right edge; the chum
-and other actions stand left. With net and depth only, the net moves left; a single action stands right.
+visible radial selector, `toolbar.css` turns the row into a grid (TK-036/v0.46.9): columns free | selector |
+actions, rows 1-3 above the bottom row 4, the row's gap between rows. The selector stays centred in the bottom
+row without a reserve for its open fan. Every other action stands in one column at the right edge, packed up
+from the bottom corner: the float/depth slot spans the bottom row (float in the right corner, its track opening
+leftwards over the selector, which fades out while the track is open), then the net, then the chum and other
+actions; each drops a row when an action below is absent.
 `:has()` on the visible actions decides placement; no JS enumerates or measures siblings. The selector host
 sets `--inventory-selector-layout: compact`; the controller reads it once per opening and the renderer
 applies the configured compact fan (`CONFIG.ui.inventorySelector.compactShape`: `half` or `arc`, DevTools
 toggle, existing override paths). The root keeps its closed footprint through negative margins and grows
 centred and upwards over its neighbours (`z-index` on the host); its drawing unit is capped by the toolbar
-width (`100cqw`) and the fan's extent. While the fan is open the other actions take
-`--game-toolbar-inactive-opacity` and no pointer input, and a press beside the fan only closes it.
-The depth slot sets `--depth-selector-direction: row` and `--depth-selector-reveal: depth-selector-reveal-end`
-(documented in `depth-selector.css`): the float keeps its place and the track opens rightwards; with less than
-the shortest track to the edge, the open frame shifts left just enough. Wider toolbars keep the corner fan,
-its reserve and the existing row unchanged.
+width (`100cqw`) and the fan's extent. While the fan is open the other actions fade out completely and take
+no pointer input, and a press beside the fan only closes it. While the player aims a cast (body
+`game-shell--pointer-hold`) the whole compact toolbar fades out. Fades animate opacity and then drop
+visibility over `--game-toolbar-fade` (0s with reduced motion). The open half-disk central button keeps
+vertical radii equal to its height (no bottom rounding), so it stays concentric with the petals' inner arc and
+every gap is equal. Wider toolbars keep the corner fan, its reserve and the existing row unchanged.
 `InventorySelectorGeometry` builds one geometry per layout (`corner`, `half`, `arc` in
 `INVENTORY_SELECTOR_CONFIG.layouts`: fan origin as a share of the central box, angles, radii); the renderer
 writes each layout's boxes, clip paths and art positions as custom properties and a block modifier

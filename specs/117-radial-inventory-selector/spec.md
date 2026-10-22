@@ -284,3 +284,15 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
   selection at 240/320/820 px and all size pairs, layout switch back to corner, outside-press consumption,
   live shape switch with export/import/reset and invalid shape rejection. No visual assertions; owner checks
   appearance. No tool, helper, fixture or dependency becomes obsolete.
+
+## TK-036 compact toolbar column (2026-10-22, v0.46.9)
+
+- Owner corrections at <=820 px: the open central button is an exact half circle with equal gaps to all
+  petals (its bottom-corner rounding made CSS scale every radius down and flatten the top); every other action
+  fades out completely while the fan is open; all actions stand in one right-hand column with the row gap;
+  the float sits in the bottom-right corner and its track opens leftwards while the selector fades out;
+  aiming a cast (scouting pointer hold) fades out the whole toolbar; every fade is smooth.
+- Supersedes TK-034's left/right balance and rightward track; the depth reveal mirror and direction property
+  are removed again (no consumer). Placement stays CSS-only (`:has()`); fades are opacity plus delayed
+  visibility over `--game-toolbar-fade` (0s with reduced motion). Existing selector checks unchanged;
+  appearance is the owner's check. No tool, helper, fixture or dependency becomes obsolete.
