@@ -198,7 +198,6 @@
 │  │     └── time_display_composition.js
 │  ├── engine
 │  │  ├── animation
-│  │  │  ├── crossing_wave_pattern.js
 │  │  │  ├── damped_spring.js
 │  │  │  └── scalar_smoother.js
 │  │  ├── assets

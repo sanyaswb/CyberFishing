@@ -595,23 +595,6 @@ async function checkWaterWaveField() {
   }
   assert(shifted <= 3, `a drift of one column at the near edge shifts the near pattern one texel (${shifted})`);
   assert.notDeepEqual(Array.from(field.write(0, { ...still, driftY: 30 })), before, "the current can carry it along y too");
-  // Spec 128: the float samples the same pattern at one point. On a flat plane the middle texel (envelope 1) is the
-  // point sample of its place: x = column centre minus the drift, y = row centre.
-  const { CrossingWavePattern } = await importSource("src/engine/animation/crossing_wave_pattern.js");
-  const flatSettings = { artWidth: 1920, artHeight: 480, wavelength: 160, speed: 30, driftX: 11, driftY: 0 };
-  const k = 2 * Math.PI / flatSettings.wavelength;
-  for (const time of [0, 3.4, 9.1]) {
-    const flatPixels = field.write(time, flatSettings);
-    for (const [column, row] of [[96, 24], [60, 20], [130, 30]]) {
-      const x = (column + .5) * 1920 / 192 - flatSettings.driftX;
-      const y = (row + .5) * 480 / 48;
-      const travel = k * flatSettings.speed * time;
-      const offset = (row * 192 + column) * 4;
-      assert(Math.abs(flatPixels[offset] - (128 + 127 * CrossingWavePattern.sampleAt(CrossingWavePattern.WAVES_X, k, x, y, travel))) <= 1
-        && Math.abs(flatPixels[offset + 1] - (128 + 127 * CrossingWavePattern.sampleAt(CrossingWavePattern.WAVES_Y, k, x, y, travel))) <= 1,
-        "a point sample equals the water map's texel at that place");
-    }
-  }
   const pixels = field.write(2, settings);
   const at = (column, row, channel) => pixels[(row * 192 + column) * 4 + channel];
   let edge = 0;

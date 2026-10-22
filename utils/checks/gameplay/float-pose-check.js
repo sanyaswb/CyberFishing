@@ -263,61 +263,81 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   assert.deepEqual(draws, ["bar"], "without its art the float stays a bar");
 }
 
-// Spec 128: the float rides the water's waves (a function of time and place, the water's own settings).
+// Spec 128 (simplified, v0.46.12): the float rocks with a strength that follows the water's wave amplitude.
 {
   const { CONFIG: GAME } = load("src/game/config/runtime/game_config.js");
   const water = JSON.parse(JSON.stringify(GAME.canvas.water));
+  const settings = water.floatRocking;
   const rocking = new FloatWaveRocking({ getSettings: () => water });
   const standing = { rollDeg: 0, pitchDeg: 0 };
   const lyingPose = { rollDeg: 90, pitchDeg: 0 };
-  const ask = (overrides = {}) => ({ ...rocking.compute({ nowMs: 0, position: { x: 500, y: 600 }, metric: flat,
-    screenScale: 1.5, pose: standing, lyingAngleDeg: 90, visibleLength: 30, rotationRad: 0, ...overrides }) });
-  const across = (overrides = {}, seconds = 6) => {
+  const epoch = 1761234567890;
+  const ask = (overrides = {}) => ({ ...rocking.compute({ nowMs: epoch, position: { x: 500, y: 600 }, metric: null,
+    pose: standing, lyingAngleDeg: 90, ...overrides }) });
+  const across = (overrides = {}, seconds = 8) => {
     const peaks = { dx: 0, dy: 0, turn: 0 };
-    for (let ms = 0; ms <= seconds * 1000; ms += 25) {
-      const r = ask({ nowMs: ms, ...overrides });
+    for (let ms = 0; ms <= seconds * 1000; ms += 20) {
+      const r = ask({ nowMs: epoch + ms, ...overrides });
       peaks.dx = Math.max(peaks.dx, Math.abs(r.dx));
       peaks.dy = Math.max(peaks.dy, Math.abs(r.dy));
       peaks.turn = Math.max(peaks.turn, Math.abs(r.turnRad));
     }
     return peaks;
   };
-  const amplitude = water.amplitude * 1.5;
   const still = across();
-  assert(still.dy > amplitude * 0.2 && still.dy <= amplitude * water.verticalShare * water.floatRocking.bobShare + 1e-9,
-    `a standing float bobs with the water under it (${still.dy.toFixed(2)} of ${amplitude})`);
-  assert(still.dx > 0 && still.dx <= amplitude * water.floatRocking.swayShare + 1e-9 && still.dx < still.dy,
-    "and sways a little sideways");
+  assert(still.dy > settings.bobPx * 0.7 && still.dy <= settings.bobPx + 1e-9, `a standing float bobs about bobPx (${still.dy.toFixed(2)})`);
+  assert(still.dx > settings.swayPx * 0.7 && still.dx <= settings.swayPx + 1e-9, "and sways about swayPx");
   assert.equal(still.turn, 0, "a standing float does not turn");
-  assert.deepEqual(ask({ nowMs: 1234 }), ask({ nowMs: 1234 }), "the same moment gives the same rocking (no frame state)");
-  const lying = across({ pose: lyingPose, rotationRad: Math.PI / 2 });
-  assert(lying.turn > 0 && lying.turn <= water.floatRocking.maxRotationDeg * Math.PI / 180 + 1e-12, "a lying float tilts within its limit");
+  assert.deepEqual(ask({ nowMs: epoch + 1234 }), ask({ nowMs: epoch + 1234 }), "the same moment gives the same rocking (no frame state)");
+  assert.notDeepEqual(ask({ nowMs: epoch + 300 }), ask({ nowMs: epoch + 900 }), "it moves with time at epoch-sized clocks");
+  const lying = across({ pose: lyingPose });
+  assert(lying.turn > settings.lyingTurnDeg * Math.PI / 180 * 0.6 && lying.turn <= settings.lyingTurnDeg * Math.PI / 180 + 1e-12,
+    "a lying float turns about lyingTurnDeg");
   assert(lying.dx === 0 && lying.dy > 0, "a lying float bobs without swaying");
-  const half = across({ pose: { rollDeg: 45, pitchDeg: 0 }, rotationRad: Math.PI / 4 });
-  assert(half.turn > 0 && half.turn < lying.turn + 1e-12 && half.dx > 0 && half.dx < still.dx, "a leaning float mixes both");
-  for (const [path, value] of [["enabled", false], ["bobShare", 0]]) {
-    const saved = water.floatRocking[path];
-    water.floatRocking[path] = value;
-    const off = across({}, 2);
-    assert.equal(off.dy, 0, `floatRocking.${path} = ${value} stops the bob`);
-    water.floatRocking[path] = saved;
-  }
-  water.enabled = false;
-  assert.deepEqual(across({}, 2), { dx: 0, dy: 0, turn: 0 }, "still water: no rocking (D1)");
-  water.enabled = true;
-  const amplitudeSaved = water.amplitude;
+  const half = across({ pose: { rollDeg: 45, pitchDeg: 0 } });
+  assert(half.turn > 0 && half.turn < lying.turn && half.dx > 0 && half.dx < still.dx, "a leaning float mixes both");
+  const doubled = (() => { water.amplitude *= 2; const peaks = across(); water.amplitude /= 2; return peaks; })();
+  assert(Math.abs(doubled.dy - 2 * still.dy) < 1e-9, "stronger waves rock the float more (amplitude x2 = rocking x2)");
   water.amplitude = 0;
-  assert.deepEqual(across({ pose: lyingPose, rotationRad: Math.PI / 2 }, 2), { dx: 0, dy: 0, turn: 0 }, "amplitude 0: no rocking");
-  water.amplitude = amplitudeSaved;
+  assert.deepEqual(across({ pose: lyingPose }, 2), { dx: 0, dy: 0, turn: 0 }, "amplitude 0: no rocking");
+  assert.equal(rocking.status.state, "still");
+  water.amplitude = GAME.canvas.water.amplitude;
+  settings.enabled = false;
+  assert.deepEqual(across({}, 2), { dx: 0, dy: 0, turn: 0 }, "the switch turns rocking off");
+  assert.equal(rocking.status.state, "off");
+  settings.enabled = true;
+  across({}, 1);
+  assert(rocking.status.state === "active" && rocking.status.frames > 0, "DEV status counts frames and shows the state");
   const bite = across({ biting: true });
-  assert(Math.abs(bite.dy - still.dy * water.floatRocking.biteShare) < 1e-9, "a bite step rocks at biteShare");
+  assert(Math.abs(bite.dy - still.dy * settings.biteShare) < 1e-9, "a bite step rocks at biteShare");
   // Far water moves less (surface size, spec 126).
   const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500, maxMeters: 30,
     tiltDegrees: 30, farScale: 0.3, lateralContraction: false });
   const near = across({ metric, position: { x: 500, y: 950 } });
   const far = across({ metric, position: { x: 500, y: 60 } });
   assert(far.dy < near.dy * 0.6, `a far float rocks less than a near one (${far.dy.toFixed(2)} < ${near.dy.toFixed(2)})`);
-
+  // The production chain: the builder with the real rocking moves the drawn float frame by frame.
+  {
+    const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
+    const clock = { delta: 16, realNow: epoch };
+    const builder = new FishingEquipmentRenderModelBuilder({
+      projector: { getPerspective: () => ({ scale: 1 }), getScale: () => 0.5 }, canvasMetrics: { width: 800, height: 600 },
+      clock, config: { ui: { float: {} }, physics: { floatPose: CONFIG } }, getRodScreenX: () => 400,
+      rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null, getTimeOfDay: () => 12,
+      floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => metric, floatRocking: rocking,
+    });
+    const entity = { getVisualState: () => ({ color: "#00ff80" }), getPosition: () => ({ x: 500, y: 900 }),
+      isHooked: () => false, getPoseSignals: () => signals({ castSerial: 21 }) };
+    const model = {};
+    const ys = [];
+    for (let frame = 0; frame < 120; frame += 1) {
+      clock.realNow += 16;
+      builder.buildFloat({ target: model, screenPosition: { x: 50, y: 60 }, floatEntity: entity,
+        equipment: { rod: { variant: "float" }, float: { variant: "day", effectiveStats: { width: 3, length: 15 } } } });
+      ys.push(model.y);
+    }
+    assert(Math.max(...ys) - Math.min(...ys) > 4, `the drawn float moves up and down (${(Math.max(...ys) - Math.min(...ys)).toFixed(2)} px)`);
+  }
   // The builder turns a lying body about the middle of its visible part and moves it with the water.
   const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
   const clock = { delta: 16, realNow: 0 };
@@ -341,7 +361,7 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   const restRotation = model.rotationRad;
   assert(Math.abs(Math.abs(restRotation) - Math.PI / 2) < 0.05, "the test float lies on the water");
   turning.rocking = (input) => {
-    assert(input.pose && input.visibleLength === model.height && input.biting === false, "rocking gets the drawn body");
+    assert(input.pose && input.biting === false && input.nowMs === clock.realNow, "rocking gets the pose and the frame time");
     return { dx: 0, dy: -2.5, turnRad: 0.1 };
   };
   build();

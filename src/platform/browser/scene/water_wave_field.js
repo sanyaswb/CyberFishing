@@ -1,6 +1,9 @@
-import { CrossingWavePattern } from "../../../engine/animation/crossing_wave_pattern.js";
-
-// Spec 106 D2: crossing waves per axis on the water plane, shared with the float's rocking (spec 128).
+// Spec 106 D2: crossing waves per axis on the water plane. Each: wavelength multiple, direction (radians from the
+// horizontal), share of the amplitude (an axis's shares add up to 1) and phase.
+const wave = (multiple, angle, share, phase) =>
+  Object.freeze({ multiple, dirX: Math.cos(angle), dirY: Math.sin(angle), share, phase });
+const WAVES_X = Object.freeze([wave(1, 0.17, 0.5, 0), wave(0.58, -0.44, 0.3, 1.7), wave(0.34, 1.05, 0.2, 4.1)]);
+const WAVES_Y = Object.freeze([wave(0.8, 0.52, 0.6, 0.9), wave(0.45, -0.87, 0.4, 2.6)]);
 // Shares of the map over which the waves fade to nothing, so the displaced water meets the still art without a seam.
 const FADE_TOP = 0.18;
 const FADE_BOTTOM = 0.08;
@@ -93,9 +96,8 @@ export class WaterWaveField {
       const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
       rowX.fill(0);
       rowY.fill(0);
-      const x0 = 0.5 * xScale - columnDrift;
-      CrossingWavePattern.addRow(CrossingWavePattern.WAVES_X, rowX, k, x0, xScale, y - driftY, travel);
-      CrossingWavePattern.addRow(CrossingWavePattern.WAVES_Y, rowY, k, x0, xScale, y - driftY, travel);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, travel);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, travel);
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
         const envelope = this.#envelope[index] * scale;
@@ -106,5 +108,26 @@ export class WaterWaveField {
       }
     }
     return pixels;
+  }
+
+  // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that
+  // step replaces a sine per pixel: two sines per wave and row instead of one per pixel.
+  static #addRow(waves, target, k, xScale, y, driftX, travel) {
+    for (let index = 0; index < waves.length; index += 1) {
+      const current = waves[index];
+      const step = (k * current.dirX * xScale) / current.multiple;
+      const phase = (k * ((0.5 * xScale - driftX) * current.dirX + y * current.dirY) - travel) / current.multiple
+        + current.phase;
+      const stepSin = Math.sin(step);
+      const stepCos = Math.cos(step);
+      let sin = Math.sin(phase);
+      let cos = Math.cos(phase);
+      for (let column = 0; column < target.length; column += 1) {
+        target[column] += current.share * sin;
+        const next = sin * stepCos + cos * stepSin;
+        cos = cos * stepCos - sin * stepSin;
+        sin = next;
+      }
+    }
   }
 }

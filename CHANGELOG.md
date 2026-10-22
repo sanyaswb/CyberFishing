@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.12 - Simpler Float Rocking
+
+- TK-038 / spec 128, owner correction: in v0.46.11 the float did not move on the phone. Rocking is now simple and not synchronised with the waves: slow sines with unrelated frequencies, strength = water amplitude / 20 × surface size (far calmer). Standing bobs (bobPx 8) and sways (swayPx 3); lying bobs and turns about the middle of its visible body (lyingTurnDeg 10); periodSec 2; biteShare 0.5; its own switch, independent of the water switch. The water field is back to its v0.46.10 code (the shared pattern module removed). DevTools → "🖼️ СЦЕНА WebGL" → "покачування поплавка" shows frames, state and current offsets. A check drives the real builder with the real rocking. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
+
 ## v0.46.11 - Float Rocking on the Waves
 
 - TK-038 / spec 128: the float rocks on the water's waves with the water's own amplitude, wavelength, speed and vertical share, calmer far away. A standing float bobs with the water under it and sways a little; a lying one bobs with the mean of the water under its ends and tilts about the middle of its visible body by the wave slope (up to 12°); a lean between mixes both, bite steps rock at half strength, a hooked fish stops it. The line ends at the rocked point. The water's sine pattern moved to the engine (CrossingWavePattern), its map byte-identical. DevTools: canvas.water.floatRocking (enabled, bobShare, swayShare, rotationGain, maxRotationDeg, biteShare), both renderers, off with still water. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance check pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.3 - Lying Float Towed by Its Bottom
 
 - Spec 127 stage 4 (TK-025…TK-029): the float's lean is one vector on the water plane; a lying float is towed by its bottom (the tip trails at physics.floatPose.lying.trailLengthMeters, swings around through the player side, keeps its direction at rest, ignores drift with the water); the body is projected with the water's tilt, so a float lying toward the player is shorter but visible and a lean away draws slightly longer. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone check pending.
-
-## v0.46.2 - Night Float Halo Switches
-
-- The yellow/red bite-colour halo around the tackle is off by default (owner); the night float gets a green halo in the same style. DevTools switches: ui.float.biteHalo, ui.float.nightHalo, ui.float.nightTipGlow. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual check pending.

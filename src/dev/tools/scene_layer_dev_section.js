@@ -12,10 +12,13 @@ const STATE_LABELS = Object.freeze({
   disposed: "закрито",
 });
 
+const ROCKING_STATES = Object.freeze({ off: "вимкнено", still: "сила 0", active: "гойдається" });
+
 export class SceneLayerDevSection {
   #ui;
   #layer;
   #router;
+  #floatRocking;
   #createSection;
   #renderWaterConfig;
   #content = null;
@@ -26,6 +29,7 @@ export class SceneLayerDevSection {
     this.#ui = ui;
     this.#layer = scene.layer;
     this.#router = scene.router;
+    this.#floatRocking = scene.floatRocking ?? null;
     this.#createSection = createSection;
     this.#renderWaterConfig = renderWaterConfig;
   }
@@ -53,6 +57,14 @@ export class SceneLayerDevSection {
         (status.water.driftSpeed ?? 0).toFixed(1)} пікс/с`, content, ["SCENE_LAYER", "water"]);
     }
     this.#ui.createInfoRow("сцена малює кадр", this.#router.rendersScene() ? "так" : "ні", content);
+    // Spec 128: the float's rocking as the render model last asked for it (frames count up while a float shows).
+    const rocking = this.#floatRocking?.status;
+    if (rocking) {
+      this.#ui.createInfoRow("покачування поплавка", `${ROCKING_STATES[rocking.state] ?? rocking.state} · кадрів ${
+        rocking.frames} · вгору-вниз ${rocking.dy.toFixed(1)} px · убік ${rocking.dx.toFixed(1)} px · нахил ${
+        rocking.turnDeg.toFixed(1)}° · сила ${rocking.strength.toFixed(2)} · лежить ${Math.round(rocking.lying * 100)}%`,
+      content, ["SCENE_LAYER", "floatRocking"]);
+    }
     for (const { kind, layer, sceneRenderer } of this.#router.getRouting()) {
       this.#ui.createInfoRow(kind, layer === "scene" ? "WebGL" : sceneRenderer ? "2D" : "2D (рендерера сцени ще немає)",
         content, ["SCENE_LAYER", "routing", kind]);

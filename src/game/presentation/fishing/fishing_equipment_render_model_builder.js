@@ -245,12 +245,11 @@ export class FishingEquipmentRenderModelBuilder {
     if (pose) this.#rock(target, position, metric, pose, biting);
   }
 
-  // Spec 128: the float rides the water's waves. The waterline point moves with the water; a lying body also turns
-  // about the middle of its visible part, so that middle keeps its place while both ends follow the water.
+  // Spec 128: the float rocks on the water. The waterline point moves; a lying body also turns about the middle of
+  // its visible part, so that middle only bobs.
   #rock(target, position, metric, pose, biting) {
-    const rocking = this.#floatRocking.compute({ nowMs: this.#clock.realNow, position, metric,
-      screenScale: this.#projector.getScale(), pose, lyingAngleDeg: this.#config.physics?.floatPose?.lyingAngleDeg,
-      visibleLength: target.height, rotationRad: target.rotationRad, biting });
+    const rocking = this.#floatRocking.compute({ nowMs: this.#clock.realNow, position, metric, pose,
+      lyingAngleDeg: this.#config.physics?.floatPose?.lyingAngleDeg, biting });
     if (rocking.turnRad !== 0) {
       const half = target.height / 2;
       const turned = target.rotationRad + rocking.turnRad;

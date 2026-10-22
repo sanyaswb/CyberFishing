@@ -1,7 +1,8 @@
 # Float rocking on the water waves
 
-Owner request, 2026-10-22 (TK-038). Status: implemented in v0.46.11 (owner: "let's try", decisions D1–D4 as
-recommended); owner visual and phone performance check pending.
+Owner request, 2026-10-22 (TK-038). Status: v0.46.11 implemented the wave-pattern model below; the owner saw no
+motion and asked for a simpler one, implemented in v0.46.12 (see "Simplified model" at the end, which supersedes the
+Model, Drawing details about sampling, Settings and D1/D2/D4). Owner visual and phone check pending.
 
 The float stands motionless on animated water. It must rock with the waves, with the strength and amplitude of the
 water's own wave settings, so the scene feels alive:
@@ -161,3 +162,27 @@ the performance overlay.
   switches, still water, amplitude 0, bite share, far water calmer, stateless; the builder's middle-pivot turn and
   bob), scene-layer (point sample = texel), render-frame composition (the line ends at the rocked float point,
   builder requires floatRocking). No tool, helper, fixture or dependency became obsolete.
+
+## Simplified model (owner, v0.46.12)
+
+Owner test of v0.46.11 on a phone: the float did not move, even with `bobShare` 9; the cause stayed unknown (a probe
+of the published builder with the real config moved the model by ±45 px, and every link of the frame chain reads the
+moved point). The owner asked for a simpler model without synchrony with the waves: the stronger the waves, the
+stronger the rocking. It replaces the wave-pattern model above (TK-038.1 reverted: the water field is back to its
+v0.46.10 bytes and the engine pattern module is removed; D2 and D4 no longer apply; D1 changes, see below).
+
+- Motion: a few slow sines of time with unrelated frequencies, so it never looks mechanical. Standing: up/down
+  `bobPx` (0.7/0.3 mix of two sines) and sideways `swayPx`; lying: the same up/down and a turn `lyingTurnDeg` about
+  the middle of the visible body; a lean between mixes them by the lying share.
+- Strength = water `amplitude` / 20 (the default amplitude rocks at the written sizes, 40 twice as much) × the surface
+  size at the float (far water calmer) × `biteShare` during a bite step. Logical pixels, independent of the zoom.
+- D1 now: rocking has its own switch and does not follow `canvas.water.enabled` (one fewer reason for no motion).
+- Settings `canvas.water.floatRocking`: `enabled` true, `bobPx` 8, `swayPx` 3, `lyingTurnDeg` 10, `periodSec` 2,
+  `biteShare` 0.5 (ranges 0–60 px, 0–45°, 0.2–20 s, 0–1).
+- Diagnosis: `FloatWaveRocking.status` (frames asked, state off/still/active, last offsets, strength, lying share) is
+  shown in DevTools → "🖼️ СЦЕНА WebGL" → "покачування поплавка" (↻ refreshes). The rocking is created once in the
+  composition root and shared by the render model and the DEV section, so the row shows exactly what the frame used.
+- Checks: float-pose (bob/sway/turn sizes, stateless, moves at epoch-sized clocks, mixed lean, amplitude ×2 = rocking
+  ×2, amplitude 0, switch, bite share, far calmer, DEV status, and the real builder + real rocking moving the drawn
+  float over 120 frames); render-frame composition (line ends at the rocked point). The scene-layer point-sample
+  assertion went with the engine module.
