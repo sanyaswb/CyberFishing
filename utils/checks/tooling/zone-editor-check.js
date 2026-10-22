@@ -118,7 +118,7 @@ frame.reset(); assert.equal(frame.world.annotations, null); assert.equal(frame.w
 const actions = new Map(), edits = [], trees = [], candidateInputs = [];
 const synced = [], infoRows = new Map();
 const baseProjection = JSON.parse(JSON.stringify(config.locations.map.lake.waterProjection));
-let exportCalls = 0, importCalls = 0, resetCalls = 0;
+let resetCalls = 0;
 const refreshMetric = () => {
   metric = lakeMetric(config.locations.map.lake.waterProjection);
 };
@@ -136,7 +136,6 @@ const stubSection = (label) => ({ label, replaceChildren() {} });
 new ZoneEditorSection({ ui, state, config, createSection: stubSection,
   getWaterMetric: () => metric,
   createWaterMetric: options => { candidateInputs.push(options); return WaterMetric.illustrated(options); },
-  exportOverrides: () => exportCalls++, importOverrides: () => importCalls++,
   resetPerspective: id => {
     resetCalls++; config.locations.map[id].waterProjection = JSON.parse(JSON.stringify(baseProjection)); refreshMetric();
   },
@@ -203,10 +202,9 @@ for (const angle of [17, 53, 90, 17]) {
 assert.equal(metric.topY, firstTop, "repeated angle edits preserve the same full-height edge");
 assert.equal(JSON.stringify(config.locations.map.lake.zones), beforeWidthEdits, "camera edits preserve authored geometry");
 assert(candidateInputs.every(input => input.topY === 0), "candidate validation uses the full authored bounds");
-actions.get("Експорт правок (усі налаштування DEV)")();
-actions.get("Імпорт правок (усі налаштування DEV)")();
+assert(!actions.has("Експорт правок (усі налаштування DEV)"), "spec 130: the editor exports the location's zones, not every override");
 actions.get("Скинути перспективу цієї локації")();
-assert.equal(exportCalls, 1); assert.equal(importCalls, 1); assert.equal(resetCalls, 1);
+assert.equal(resetCalls, 1);
 assert.equal(config.locations.map.lake.waterProjection.maxMeters, baseProjection.maxMeters);
 assert.deepEqual(config.locations.map.lake.waterProjection, baseProjection);
 assert.match(infoRows.get("Стан").innerText, /біля берега 54\.2 \/ 50, вдалині 16\.3 \/ 50/u,
@@ -395,8 +393,9 @@ controlUI.dispose();
     let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
   createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
   renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
-  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Зони для редагування", "Зони", "Ігрова область (закидання)",
-    "Перешкоди", "Зачепи", "Рухомі зони", "Сітка клітинок", "Сітка перспективи", "Оверлеї гри"], "the editor's sections in order");
+  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР", "Локація", "Редактор", "Зони для редагування", "Зони", "Ігрова область (закидання)",
+    "Перешкоди", "Зачепи", "Рухомі зони", "Сітка перспективи", "Збереження", "Сітка клітинок (спільне для всіх локацій)",
+    "Оверлеї гри (спільне для всіх локацій)"], "the editor's sections in order");
   assert(rows.has("Редактор/Увімкнути") && !rows.has("Редактор/Показати редактор") && !rows.has("Редактор/Перетягувати межі обраної зони"),
     "one enable switch");
   const physics = rows.get("Зачепи/Фізика зони");
@@ -414,12 +413,12 @@ controlUI.dispose();
   rows.get("Перешкоди/Фізика зони").args[2](true);
   assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
   for (const label of ["Показати сітку", "Непрозорість сітки", "Крок ліній, клітинок", "Прилипання, клітинок", "Розмір клітинки, px",
-    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`Сітка клітинок/${label}`), `cell grid: ${label}`);
-  assert.equal(rows.get("Сітка клітинок/Непрозорість сітки").kind, "range");
-  rows.get("Сітка клітинок/Розмір клітинки, px").args[3](1000);
+    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`Сітка клітинок (спільне для всіх локацій)/${label}`), `cell grid: ${label}`);
+  assert.equal(rows.get("Сітка клітинок (спільне для всіх локацій)/Непрозорість сітки").kind, "range");
+  rows.get("Сітка клітинок (спільне для всіх локацій)/Розмір клітинки, px").args[3](1000);
   assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 200], "the cell size is clamped and written to the game config");
   locations.cellSize = 40;
-  rows.get("Сітка клітинок/Непрозорість глибини").args[2](40);
+  rows.get("Сітка клітинок (спільне для всіх локацій)/Непрозорість глибини").args[2](40);
   assert.equal(state.depthOpacity, 0.4, "the depth slider sets 0..1");
   state.setNumber("depthOpacity", 0.7);
   for (const label of ["Показати сітку", "Фізика перспективи", "Крок сітки, м", "Дальність води, м", "Нахил площини, °",
@@ -428,7 +427,7 @@ controlUI.dispose();
   assert.deepEqual(written.at(-1), ["CONFIG.locations.map.lake.waterProjection", null], "physics off writes no projection");
   assert(!rows.has("Сітка перспективи/Дальність води, м"), "uniform water has no projection controls");
   lake.waterProjection = JSON.parse(JSON.stringify(baseProjection));
-  assert.equal(rows.get("Оверлеї гри/Показувати оверлеї гри").args[3].join("."), "CONFIG.locations.debugVisuals");
+  assert.equal(rows.get("Оверлеї гри (спільне для всіх локацій)/Показувати оверлеї гри").args[3].join("."), "CONFIG.locations.debugVisuals");
   assert(![...rows.keys()].some(key => /debugGrid|debugDepthText|debugZones|Налагоджувальна|Категорії в редакторі|Зони в грі/u.test(key)),
     "no old debug-map or category sections remain");
   delete locations.enableCollisions; delete locations.enableSnags;
@@ -546,4 +545,93 @@ controlUI.dispose();
   unsubscribe(); drag.dispose();
 }
 
-console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone inside the window (not drawn), smallest hovered zone taken.");
+// Spec 130: the editor works on a chosen location; only the loaded one is drawn; its zone file is exported,
+// imported into the session and reset to the code, and reopening another location warns about unexported edits.
+(async () => {
+  const format = load("src/dev/location/zone_export_format.js");
+  const { createHash } = require("node:crypto");
+  const hashText = text => createHash("sha256").update(text, "utf8").digest("hex");
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const settle = () => new Promise(resolve => setImmediate(resolve));
+  const baseZones = { lake: { castable: [{ x: 0, y: 0, w: 10, h: 10 }], collisions: [], snags: [], dynamic: [] },
+    pond: { castable: [{ x: 1, y: 1, w: 2, h: 2 }] } };
+  const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 },
+    map: { lake: { name: "Lake", zones: clone(baseZones.lake) }, pond: { name: "Pond", zones: clone(baseZones.pond) } } } };
+  const st = new ZoneEditorState();
+  const shownMap = { currentLocationId: "lake", getRevision: () => 1, getDynamicZones: () => [],
+    getLocationZones: () => cfg.locations.map.lake.zones, getCastableBoundsVirtual: () => ({ left: 0, right: 2560, top: 0, bottom: 1440 }) };
+  const geometry = new ZoneEditorGeometryBuilder({ state: st, map: shownMap, projector, getWaterMetric: () => metric, config: cfg });
+  assert(st.loadedLocationId === "lake" && st.locationId === "lake", "the editor starts on the location on screen");
+  const rows = new Map(), info = new Map();
+  const record = (kind) => (label, ...args) => {
+    const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
+    rows.set(`${parent?.label}/${label}`, { kind, args });
+  };
+  const ui = { syncValue() {}, releaseValueBindings(parent) {
+    for (const map of [rows, info]) for (const key of [...map.keys()]) if (key.startsWith(`${parent.label}/`)) map.delete(key);
+  }, createInfoRow: (label, value, parent) => { const element = { innerText: value }; info.set(`${parent?.label}/${label}`, element); return element; },
+  createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
+  createSelectRow: record("select"), createSwitcherRow: record("switch") };
+  const downloads = [], confirms = [], opened = [], writes = [], resets = [];
+  let picked = null, confirmAnswer = false;
+  const files = { download: (name, text) => downloads.push({ name, text }), pickFile: async () => picked,
+    confirm: (message) => { confirms.push(message); return confirmAnswer; }, openLocation: id => opened.push(id), hashText };
+  new ZoneEditorSection({ ui, state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
+    updateConfig: (path, value) => { writes.push(path.join(".")); let node = cfg; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
+    getWaterMetric: () => metric, createWaterMetric: options => WaterMetric.illustrated(options), files,
+    getBaseZones: id => baseZones[id], resetZones: (id) => { resets.push(id); cfg.locations.map[id].zones = clone(baseZones[id]); },
+    gameVersion: "0.46.22" }).render({});
+  const status = () => info.get("Збереження/Стан зон").innerText;
+  const press = label => rows.get(label).args[1]();
+  let select = rows.get("Локація/Локація");
+  assert.deepEqual([...select.args[0]], ["Lake (lake)", "Pond (pond)"]); assert.equal(select.args[1], "Lake (lake)");
+  assert(!rows.has("Локація/Відкрити локацію") && status() === "Зони збігаються з кодом.", "the location on screen, unchanged");
+
+  // Export: the chosen location's full zones, the code's hash, a dated file name.
+  cfg.locations.map.lake.zones.castable[0].x = 3; st.zonesEdited();
+  assert.match(status(), /Змінено \(ще не в коді\): Ігрова область/u, "the status names the changed categories");
+  press("Збереження/Експорт зон"); await settle();
+  const file = JSON.parse(downloads[0].text);
+  assert.match(downloads[0].name, /^zones-lake-v0\.46\.22-\d{8}-\d{4}\.json$/u);
+  assert(file.locationId === "lake" && file.zones.castable[0].x === 3 && file.zones.snags.length === 0 &&
+    file.baseHash === await format.zoneHash(baseZones.lake, hashText) && format.validateZoneFile(file, cfg.locations).length === 0,
+    "the file holds the location's current zones, the code's hash and passes the importer's validation");
+  assert(!("pond" in file.zones) && !("locations" in file), "only this location's zones, not the config");
+
+  // Reset to the code, then import the file back into the session.
+  st.setEditable("castable", 0, true);
+  press("Збереження/Скинути зміни зон до коду");
+  assert(resets.join() === "lake" && st.editable.size === 0 && status() === "Зони збігаються з кодом.", "reset returns to the code");
+  picked = downloads[0].text; press("Збереження/Імпорт зон"); await settle();
+  assert(writes.at(-1) === "CONFIG.locations.map.lake.zones" && cfg.locations.map.lake.zones.castable[0].x === 3,
+    "an imported file becomes the session's zones of the location");
+  const before = writes.length;
+  picked = JSON.stringify({ ...file, locationId: "pond" }); press("Збереження/Імпорт зон"); await settle();
+  assert(writes.length === before && /Файл для локації pond/u.test(status()), "a file of another location is refused");
+  picked = "{"; press("Збереження/Імпорт зон"); await settle();
+  assert.equal(status(), "Файл не є JSON.");
+  picked = JSON.stringify({ ...file, zones: { castable: [{ x: 0, y: 0, w: -1, h: 1 }] } }); press("Збереження/Імпорт зон"); await settle();
+  assert(writes.length === before && /не прийнято: zones\.castable\.0/u.test(status()), "a broken zone is refused with its path");
+
+  // Another location: lists only, nothing drawn or dragged, reopening warns about unexported edits.
+  st.setEditable("castable", 0, true);
+  select.args[3]("Pond (pond)");
+  select = rows.get("Локація/Локація");
+  assert(st.locationId === "pond" && st.editable.size === 0 && select.args[1] === "Pond (pond)", "choosing a location starts it clean");
+  assert(/На екрані: Lake \(lake\)/u.test(info.get("Локація/На екрані").innerText) && rows.has("Зони для редагування/Ігрова область (закидання) 1"),
+    "the lists follow the chosen location and the screen is named");
+  st.setFlag("enabled", true); const frame = {}; geometry.buildInto(frame);
+  assert.equal(frame.annotations, null, "the editor draws nothing for a location that is not on screen");
+  press("Локація/Відкрити локацію");
+  assert(confirms.length === 1 && opened.length === 0, "unexported edits ask before the page reloads");
+  confirmAnswer = true; press("Локація/Відкрити локацію");
+  assert.deepEqual(opened, ["pond"], "confirmed, the page reopens on the chosen location");
+  cfg.locations.map.lake.zones = clone(baseZones.lake); confirms.length = 0; opened.length = 0;
+  press("Локація/Відкрити локацію");
+  assert(confirms.length === 0 && opened.join() === "pond", "without edits it reopens at once");
+  st.setFlag("enabled", false);
+  console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone inside the window (not drawn), smallest hovered zone taken; spec 130: location select and on-screen binding, zone file export/import/reset and status, reopen with confirmation.");
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

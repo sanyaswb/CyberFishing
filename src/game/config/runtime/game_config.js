@@ -1,7 +1,7 @@
 import { FISH_DB } from "../databases/fish_database.js";
 import { ITEM_PROGRESSION_CONFIG } from "../items/item_progression_config.js";
 import { ITEM_STAT_OVERRIDE_CONFIG } from "../raw/items/item_stat_overrides.js";
-import { MAP_DB } from "../raw/locations/location_database.js";
+import { MAP_DB } from "../databases/location_catalog.js";
 import { PHYSICS_CONFIG } from "../physics/physics_config.js";
 import { LIVE_BAIT_CONFIG } from "../raw/live_bait/live_bait_config.js";
 

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.22 - Location Editor and Zone Files
+
+- DevTools "Редактор": choose a location first; export, import and reset its zones as a file; npm run apply:zones moves a zone file into the code with checks, confirmation and a backup.
+
 ## v0.46.21 - Zone Move Stays in the Window
 
 - Zone editor: the move area is no longer drawn; a zone moved by its middle stays inside the game window.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.13 - Float Rocking Stage 2
 
 - TK-039 / spec 128 stage 2 (owner): right after landing the float rocks ×3 and settles over 1.5 s; the float's wind tilt (breeze and gusts, already reduced by its wind compensation) and the rain make it livelier, swelling smoothly (0.6 s); heavy ballast rocks half as much and 30% slower; the tempo follows the waves' speed / wavelength. The phase is integrated, so tempo edits never make the float jump; 30/60/144 FPS rock alike. New DevTools settings in canvas.water.floatRocking (landingBoost, landingSettleSec, windShare, rainShare, ballastCalm, ballastSlow, waveTempoShare); the DEV status row shows each multiplier. Visual only. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
-
-## v0.46.12 - Simpler Float Rocking
-
-- TK-038 / spec 128, owner correction: in v0.46.11 the float did not move on the phone. Rocking is now simple and not synchronised with the waves: slow sines with unrelated frequencies, strength = water amplitude / 20 × surface size (far calmer). Standing bobs (bobPx 8) and sways (swayPx 3); lying bobs and turns about the middle of its visible body (lyingTurnDeg 10); periodSec 2; biteShare 0.5; its own switch, independent of the water switch. The water field is back to its v0.46.10 code (the shared pattern module removed). DevTools → "🖼️ СЦЕНА WebGL" → "покачування поплавка" shows frames, state and current offsets. A check drives the real builder with the real rocking. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.

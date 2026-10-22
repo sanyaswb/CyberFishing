@@ -141,6 +141,15 @@ through the actual water metric; config edits use the existing runtime overrides
 optional generic annotation model, drawn by one cached `PixiAnnotationRenderer` or by DEV's Canvas fallback, never
 both. A hidden background clears black and removes the water's copied background layers. No additional frame loop.
 
+Location zones (spec 130) are data-only modules `src/game/config/raw/locations/zones/<locationId>.js` (`ZONES`), which
+`game/config/databases/location_catalog.js` joins to the raw `MAP_DB` (raw data imports nothing); `src/dev/location/zone_export_format.js` owns their canonical form (key order, JSON, SHA-256 hash,
+file envelope, validation, diff, module source). The DevTools "Редактор" works on one chosen location
+(`ZoneEditorState.locationId`) and draws and drags only the location on screen (`loadedLocationId`); another one is
+opened by reloading `dev.html?location=<id>`. Its "Збереження" exports that location's zones as a file, imports such a
+file into the session's overrides and resets them to the code. `npm run apply:zones -- <file>` (`utils/apply-zones.js`)
+writes a file into the module after validation, a clean-target and conflict check, confirmation and a backup under the
+Git directory; it never commits.
+
 One page, several screens (spec 084). `engine/screens/ScreenHost` keeps one active screen above the base game:
 opening suspends the game loop, a lazy factory creates the screen, closing disposes it and resumes the game. The House
 is such a screen: `bootstrap/production/house_screen_composition.js` mounts `HOUSE_SCREEN_MARKUP` into the page's UI

@@ -15,6 +15,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["inventory"],
   },
   {
+    id: "apply-zones",
+    title: "Zone file import into the code: validation, conflicts, confirmation and backup",
+    file: "utils/checks/tooling/apply-zones-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "zone-editor",
     title: "DEV zone editor, metre grid and bounded annotation redraw",
     file: "utils/checks/tooling/zone-editor-check.js",

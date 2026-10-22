@@ -1,5 +1,6 @@
 // Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
-// enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone whose
+// locationId: the location the editor works on (spec 130 D1); loadedLocationId: the one on screen, the only one the
+// editor draws and drags (D2). enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone whose
 // parameter tree the lists show; editable: the zones the drag tool may take, keys "<category>:<index>" (Revision 3);
 // hovered: the editable zones under the pointer, filled while it stays; grid: the perspective (metre) grid, off until
 // switched on (TK-050); cellGrid*/snapCells: the map's cells; depth*: the depth numbers in the cells.
@@ -9,6 +10,7 @@ export const MOVE_SHARE = 0.3;
 export class ZoneEditorState {
   revision = 0;
   locationId = null;
+  loadedLocationId = null;
   enabled = false;
   background = true;
   grid = false;
@@ -47,6 +49,27 @@ export class ZoneEditorState {
     if (this.selection.category === category && this.selection.index === next) return;
     this.selection.category = category;
     this.selection.index = next;
+    this.revision++;
+  }
+
+  // Choosing another location starts it clean: no checked or hovered zones, the first zone selected.
+  setLocation(id) {
+    if (typeof id !== "string" || !id) throw new TypeError("Unknown location");
+    if (this.locationId === id) return;
+    this.locationId = id;
+    this.clearZoneMarks();
+  }
+
+  get editsLoadedLocation() {
+    return this.locationId === this.loadedLocationId;
+  }
+
+  // Zone indices changed as a whole (import, reset, location): checks, hover and selection start over.
+  clearZoneMarks() {
+    this.editable.clear();
+    this.hovered.clear();
+    this.selection.category = "castable";
+    this.selection.index = 0;
     this.revision++;
   }
 

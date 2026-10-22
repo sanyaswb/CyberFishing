@@ -163,7 +163,8 @@ export class ZoneEditorDragController {
   // that offers its middle or an edge, or null.
   #scan(event, hovered) {
     const locations = this.#config.locations;
-    const id = this.#state.locationId || this.#map.currentLocationId;
+    if (!this.#state.editsLoadedLocation) return null;
+    const id = this.#state.locationId;
     const location = locations.map?.[id];
     if (!location) return null;
     const cell = locations.designCellSize || locations.cellSize;

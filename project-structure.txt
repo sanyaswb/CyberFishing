@@ -369,7 +369,8 @@
 │  │  │  │  ├── fish
 │  │  │  │  │  └── fish_categories.js
 │  │  │  │  ├── fish_database.js
-│  │  │  │  └── item_catalog.js
+│  │  │  │  ├── item_catalog.js
+│  │  │  │  └── location_catalog.js
 │  │  │  ├── inventory
 │  │  │  │  └── inventory_composition_config.js
 │  │  │  ├── items
@@ -391,7 +392,9 @@
 │  │  │  │  ├── live_bait
 │  │  │  │  │  └── live_bait_config.js
 │  │  │  │  ├── locations
-│  │  │  │  │  └── location_database.js
+│  │  │  │  │  ├── location_database.js
+│  │  │  │  │  └── zones
+│  │  │  │  │     └── test.js
 │  │  │  │  ├── physics
 │  │  │  │  │  ├── cast_rod_control_config.js
 │  │  │  │  │  ├── environment_physics.js

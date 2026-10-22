@@ -36,14 +36,16 @@ export class ZoneEditorGeometryBuilder {
 
   constructor({ state, map, projector, getWaterMetric, config }) {
     this.#state = state; this.#map = map; this.#projector = projector; this.#getMetric = getWaterMetric; this.#config = config;
-    state.locationId = map.currentLocationId;
+    state.loadedLocationId = map.currentLocationId;
+    state.locationId ??= map.currentLocationId;
   }
 
   buildInto(target) {
     target.annotations = null;
     target.backgroundHidden = false;
     const state = this.#state;
-    if (!state.enabled) return;
+    // Only the location on screen is drawn (spec 130 D2); another chosen location is edited in the lists only.
+    if (!state.enabled || !state.editsLoadedLocation) return;
     const metric = this.#getMetric();
     const origin = this.#projector.virtualToScreen(0, 0, this.#origin);
     const scale = this.#projector.getScale();
@@ -105,7 +107,7 @@ export class ZoneEditorGeometryBuilder {
         }
         if (zone.bounds) {
           for (const b of Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) {
-            this.#rect(b.x, b.y, b.w, b.h, color, this.#model, 1, fill, SHOWN.stroke);
+            this.#rect(b.x * cell, b.y * cell, b.w * cell, b.h * cell, color, this.#model, 1, fill, SHOWN.stroke);
           }
         }
       }

@@ -26,6 +26,8 @@ export class DevTools {
   #rodSpine;
   #scene;
   #zoneEditorState;
+  #zoneEditorFiles;
+  #gameVersion;
   #getWaterMetric;
   #createWaterMetric;
   #storageCache;
@@ -69,6 +71,8 @@ export class DevTools {
       rodSpine = null,
       scene = null,
       zoneEditorState = null,
+      zoneEditorFiles = null,
+      gameVersion = "",
       getWaterMetric = null,
       createWaterMetric = null,
       configRuntime = null,
@@ -85,6 +89,8 @@ export class DevTools {
   ) {
     this.#storageCache = storageCache;
     this.#zoneEditorState = zoneEditorState;
+    this.#zoneEditorFiles = zoneEditorFiles;
+    this.#gameVersion = gameVersion;
     this.#getWaterMetric = getWaterMetric;
     this.#createWaterMetric = createWaterMetric;
     this.#openHouse = openHouse;
@@ -177,8 +183,10 @@ export class DevTools {
       getWaterMetric: this.#getWaterMetric,
       createWaterMetric: this.#createWaterMetric,
       resetPerspective: id => this.#resetLocationPerspective(id),
-      exportOverrides: () => this.#exportRuntimeOverrides(),
-      importOverrides: () => this.#importRuntimeOverrides(),
+      files: this.#zoneEditorFiles,
+      getBaseZones: id => this.#configRuntime?.baseConfig.locations.map[id]?.zones ?? null,
+      resetZones: this.#configRuntime ? id => this.#resetLocationZones(id) : null,
+      gameVersion: this.#gameVersion,
     }).render(body);
 
     this.#renderDatabaseSection(body);
@@ -915,6 +923,20 @@ export class DevTools {
     for (const [key, value] of Object.entries(this.#config.locations.map[id].waterProjection || {})) {
       this.#ui.syncValue([...path, key], value);
     }
+  }
+
+  // Spec 130 D5: drops the session's overrides of a location's zones (the whole list and every child path), so the
+  // zones are the code's again, and tells the game to reload the location's map.
+  #resetLocationZones(id) {
+    const prefix = ["locations", "map", id, "zones"].join(".");
+    for (const key of Object.keys(this.#configRuntime.exportOverrides?.() || {})) {
+      if (key === prefix || key.startsWith(prefix + ".")) this.#configRuntime.reset(key);
+    }
+    const path = ["CONFIG", "locations", "map", id, "zones"];
+    console.log(`[DevTools] Зони ${id} скинуто до коду`);
+    document.dispatchEvent(new CustomEvent("config-updated", {
+      detail: { path, value: this.#config.locations.map[id]?.zones, override: true },
+    }));
   }
 
   #exportRuntimeOverrides() {

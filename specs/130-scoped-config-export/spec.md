@@ -1,6 +1,6 @@
 # Location editor: zones bound to a location, scoped export and a confirmed import into the code
 
-Owner request, 2026-10-22. Status: specified; owner approval of the decisions below pending, not implemented.
+Owner request, 2026-10-22. Status: owner accepted Q1–Q6 as recommended (2026-10-22); implemented in v0.46.22; owner check pending.
 DEV and tooling only: production never composes the editor, the export or the import, and the game reads the same
 zone data as before.
 
@@ -35,9 +35,11 @@ zone data as before.
   the lists would silently follow whatever location the page started with.
 - `MAP_DB` holds one location today (`test`, "Test Waters"). DEV page parameters today: `scene`, `screen`.
 - Zones are authored in design cells (`CONFIG.locations.designCellSize` 40, `baseResolution` 2560 x 1440); dynamic
-  zones also carry `id`, `type`, `multiplier`, `moving`, `speedX/Y` and `bounds` in map pixels.
+  zones also carry `id`, `type`, `multiplier`, `moving`, `speedX/Y` and `bounds` (also design cells:
+  `LocationMap.#scaleZones` scales them with the zones; the editor's "bounds — пікселі карти" note and its bounds
+  outline, drawn unscaled, were wrong and are fixed here).
 
-## Decisions (recommended; owner approval pending)
+## Decisions (owner: Q1–Q6 as recommended, 2026-10-22)
 
 - **D1 Location-bound editor.** The DevTools section "🗺️ РЕДАКТОР ЗОН" becomes "🗺️ РЕДАКТОР". Its first row is
   "Локація", a select of every `MAP_DB` location (`<name> (<id>)`). The chosen id is `ZoneEditorState.locationId`, the
@@ -58,7 +60,7 @@ zone data as before.
   `waterProjection`) can be added to the same registry later without changing the zone format. Owner question Q1.
 - **D4 Zone data module.** Each location's zones move into a data-only module
   `src/game/config/raw/locations/zones/<locationId>.js` (`export const ZONES = { castable: [...], collisions: [...],
-  snags: [...], dynamic: [...] };` with a fixed header comment). `location_database.js` imports it as `zones: ZONES`.
+  snags: [...], dynamic: [...] };` with a fixed header comment). `location_database.js` imports it as `zones: ZONES` (implemented through a catalog, see Implementation).
   The bytes the game reads do not change, so the game-cycle report stays the same. The module stays editable by hand;
   the script reads it by importing it (no regex) and writes it whole in one canonical form (two-space indent, LF,
   fixed key order `id, type, multiplier, x, y, w, h, adaptiveX, moving, speedX, speedY, bounds`, then any other keys
@@ -163,3 +165,19 @@ zone data as before.
   storage until exported or reset?
 - **Q6** Choosing another location: reload the DEV page with `?location=<id>` after the confirmation (recommended;
   only one location exists today), or a runtime location switch without reload (a separate, larger spec)?
+
+## Implementation (v0.46.22)
+
+- T1: `ZoneEditorState.locationId/loadedLocationId/setLocation/clearZoneMarks`; the section "🗺️ РЕДАКТОР" starts with
+  "Локація" (select, "На екрані", "Відкрити локацію" with the unsaved-edits confirmation); the geometry builder and the
+  drag tool work only while `editsLoadedLocation`; DEV `?location=<id>` sets `CONFIG.locations.currentLocationId`.
+- T2: `src/dev/location/zone_export_format.js`. T3: `zones/test.js` (same bytes; game-cycle unchanged). Raw config may
+  import nothing (architecture guard), so `game/config/databases/location_catalog.js` joins the zone modules to the raw
+  `MAP_DB` (same identity, like `ITEM_DB`); `game_config.js` imports the catalog.
+- T4: "Збереження" (status, "Експорт зон", "Імпорт зон", "Скинути зміни зон до коду"); `ZoneEditorBrowserPort`
+  (Blob download, file pick, confirm, reload, Web Crypto); `DevTools.#resetLocationZones`. The editor no longer shows
+  the whole-config override export (it stays in "Сервіс").
+- T5: `utils/apply-zones.js`, `npm run apply:zones`. A new, untracked or edited module counts as dirty.
+- T6: `zone-editor` spec 130 block; new check `apply-zones` (scratch directory in the OS temp folder).
+- T7: docs/architecture.md. Found on the way: dynamic `bounds` are design cells; the editor drew them unscaled and
+  called them map pixels — both fixed.

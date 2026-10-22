@@ -1,5 +1,7 @@
 import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated_depth_profile.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "../location/zone_category_colors.js";
+import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
+  from "../location/zone_export_format.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
@@ -10,28 +12,39 @@ const OVERLAYS = Object.freeze([["showChumZones", "Зони прикормки"]
   ["showPoleFightSector", "Сектор виважування"], ["showFightLineRadius", "Радіус ліски"]]);
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 
-// The zone editor in DevTools (spec 129, Revision 2): Редактор (one switch), Зони (one list per category: the switch
-// turns the zone's physics on, then its items appear), Сітка клітинок, Сітка перспективи and the game's overlays.
-// Config edits go through the injected validated runtime override path; editor settings live in ZoneEditorState.
+// The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
+// location — then Редактор (one switch), Зони (one list per category: the switch turns the zone's physics on, then
+// its items appear), Сітка перспективи, Збереження (the location's zone file), and the sections shared by every
+// location: Сітка клітинок and the game's overlays. Config edits go through the injected validated runtime override
+// path; editor settings live in ZoneEditorState.
 export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
   #lists = new Map();
+  #location = null;
   #perspective = null;
   #editable = null;
+  #saving = null;
+  #savingStatus = null;
   #unsubscribe = null;
-  #getMetric; #createMetric; #resetPerspective; #exportOverrides; #importOverrides;
+  #getMetric; #createMetric; #resetPerspective;
+  #files; #getBaseZones; #resetZones; #gameVersion;
 
+  // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
+  // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
-    resetPerspective, exportOverrides, importOverrides }) {
+    resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "" }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
     this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
     this.#createMetric = createWaterMetric;
-    this.#exportOverrides = exportOverrides; this.#importOverrides = importOverrides;
+    this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
   }
 
   render(parent) {
-    const content = this.#createSection("🗺️ РЕДАКТОР ЗОН", parent, ["ZONE_EDITOR"]);
+    const content = this.#createSection("🗺️ РЕДАКТОР", parent, ["ZONE_EDITOR"]);
+    if (!this.#state.locationId) this.#state.setLocation(this.#locationId());
+    this.#location = this.#createSection("Локація", content, ["ZONE_EDITOR", "location"]);
+    this.#fillLocation();
     this.#renderEditor(this.#createSection("Редактор", content, ["ZONE_EDITOR", "editor"]));
     const zones = this.#createSection("Зони", content, ["ZONE_EDITOR", "zones"]);
     this.#lists.clear();
@@ -40,12 +53,117 @@ export class ZoneEditorSection {
       this.#lists.set(category, list);
       this.#fillCategory(category);
     }
-    this.#renderCellGrid(this.#createSection("Сітка клітинок", content, ["ZONE_EDITOR", "cells"]));
     this.#perspective = this.#createSection("Сітка перспективи", content, ["ZONE_EDITOR", "perspective"]);
     this.#fillPerspective();
-    this.#renderOverlays(this.#createSection("Оверлеї гри", content, ["ZONE_EDITOR", "overlays"]));
+    this.#saving = this.#createSection("Збереження", content, ["ZONE_EDITOR", "saving"]);
+    this.#fillSaving();
+    this.#renderCellGrid(this.#createSection("Сітка клітинок (спільне для всіх локацій)", content, ["ZONE_EDITOR", "cells"]));
+    this.#renderOverlays(this.#createSection("Оверлеї гри (спільне для всіх локацій)", content, ["ZONE_EDITOR", "overlays"]));
     this.#unsubscribe?.();
     this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#refreshZones()) ?? null;
+  }
+
+  // D1/D2: the location select; the editor draws on the map only for the location on screen, another one is opened
+  // by reloading the DEV page with it, after a warning when zone edits would be lost.
+  #fillLocation() {
+    const list = this.#location;
+    if (!list) return;
+    const ui = this.#ui, state = this.#state, maps = this.#config.locations.map;
+    ui.releaseValueBindings(list);
+    list.replaceChildren();
+    const ids = Object.keys(maps);
+    const labelOf = id => `${maps[id]?.name || id} (${id})`;
+    ui.createSelectRow("Локація", ids.map(labelOf), labelOf(state.locationId), list, (label) => {
+      const id = ids.find(candidate => labelOf(candidate) === label);
+      if (!id || id === state.locationId) return;
+      state.setLocation(id);
+      this.#refreshLocation();
+    }, ["ZONE_EDITOR", "locationId"]);
+    const loaded = state.loadedLocationId;
+    if (!loaded || state.editsLoadedLocation) return;
+    ui.createInfoRow("На екрані", `На екрані: ${labelOf(loaded)}. Відкрийте цю локацію, щоб редагувати на мапі.`, list);
+    if (this.#files) ui.createButtonRow("Відкрити локацію", list, () => this.#openLocation(state.locationId));
+  }
+
+  #openLocation(id) {
+    const unsaved = Object.keys(this.#config.locations.map).some(location => this.#changedCategories(location).length);
+    if (unsaved && !this.#files.confirm("Незбережені зміни зон буде втрачено. Експортуйте їх спочатку. Продовжити?")) return;
+    this.#files.openLocation(id);
+  }
+
+  // Everything that belongs to the chosen location is rebuilt for it.
+  #refreshLocation() {
+    this.#fillLocation();
+    this.#refreshZones();
+    this.#fillPerspective();
+    this.#fillSaving();
+  }
+
+  // D5: the chosen location's zone file — export, import into the session, reset to the code, and a status line.
+  #fillSaving() {
+    const list = this.#saving;
+    if (!list) return;
+    const ui = this.#ui;
+    ui.releaseValueBindings(list);
+    list.replaceChildren();
+    this.#savingStatus = ui.createInfoRow("Стан зон", "", list);
+    this.#showSavingStatus();
+    if (this.#files) {
+      ui.createButtonRow("Експорт зон", list, () => { void this.#exportZones(); });
+      ui.createButtonRow("Імпорт зон", list, () => { void this.#importZones(); });
+    }
+    if (this.#resetZones) ui.createButtonRow("Скинути зміни зон до коду", list, () => {
+      this.#resetZones(this.#locationId());
+      this.#state.clearZoneMarks();
+      this.#refreshZones();
+    });
+    ui.createInfoRow("Збереження", "Експорт зон завантажує файл зон цієї локації. У код його переносить команда npm run apply:zones -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни зон до коду. Імпорт зон відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.", list);
+  }
+
+  #changedCategories(id) {
+    const base = this.#getBaseZones?.(id);
+    return base ? changedCategories(base, this.#config.locations.map[id]?.zones) : [];
+  }
+
+  #showSavingStatus(message = null) {
+    const status = this.#savingStatus;
+    if (!status) return;
+    if (message) { status.innerText = message; return; }
+    const changed = this.#changedCategories(this.#locationId());
+    status.innerText = changed.length
+      ? `Змінено (ще не в коді): ${changed.map(category => LABELS[category]).join(", ")}.`
+      : "Зони збігаються з кодом.";
+  }
+
+  async #exportZones() {
+    const id = this.#locationId(), locations = this.#config.locations;
+    try {
+      const baseHash = await zoneHash(this.#getBaseZones?.(id) || {}, text => this.#files.hashText(text));
+      const file = buildZoneFile({ locationId: id, zones: locations.map[id]?.zones, baseHash, gameVersion: this.#gameVersion,
+        locations, exportedAt: new Date().toISOString() });
+      const name = zoneFileName(id, this.#gameVersion, new Date());
+      this.#files.download(name, `${JSON.stringify(file, null, 2)}\n`);
+      this.#showSavingStatus(`Збережено файл ${name}.`);
+    } catch (error) {
+      this.#showSavingStatus(`Експорт не вдався: ${error?.message || error}`);
+    }
+  }
+
+  async #importZones() {
+    const text = await this.#files.pickFile();
+    if (text === null) return;
+    const id = this.#locationId();
+    let file;
+    try { file = JSON.parse(text); } catch { this.#showSavingStatus("Файл не є JSON."); return; }
+    if (file?.locationId && file.locationId !== id) {
+      this.#showSavingStatus(`Файл для локації ${file.locationId}; оберіть її у списку «Локація».`);
+      return;
+    }
+    const errors = validateZoneFile(file, this.#config.locations);
+    if (errors.length) { this.#showSavingStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`); return; }
+    this.#update(["CONFIG", "locations", "map", id, "zones"], canonicalZones(file.zones));
+    this.#state.clearZoneMarks();
+    this.#refreshZones();
   }
 
   #renderEditor(section) {
@@ -81,12 +199,14 @@ export class ZoneEditorSection {
       }
     }
     if (!count) ui.createInfoRow("Зони", "Немає зон з увімкненою фізикою.", list);
+    this.#showSavingStatus();
   }
 
   #refreshZones() {
     for (const category of CATEGORIES) this.#fillCategory(category);
     this.#fillEditable();
   }
+
 
   // One category's list: the physics switch first; the items only while the physics is on.
   #fillCategory(category) {
@@ -118,7 +238,7 @@ export class ZoneEditorSection {
     if (zones.length) {
       ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), list,
         value => { this.#select(category, Number(value) - 1); });
-      ui.createInfoRow("Координати", "x/y/w/h — клітинки designCellSize; bounds — пікселі карти. Без зон закидання закинути вудку не можна.", list);
+      ui.createInfoRow("Координати", "x/y/w/h і bounds — клітинки designCellSize. Без зон закидання закинути вудку не можна.", list);
       this.#renderTree(zones[index], list, [...path, index]);
       // Any zone can go, the last one too (TK-051); the refilled list then has no delete button.
       ui.createButtonRow("Видалити вибрану зону", list, () => {
@@ -244,8 +364,6 @@ export class ZoneEditorSection {
     }
     ui.createInfoRow("Перспектива", "Фізика перспективи: увімкнено — метри води рахуються з дальністю, нахилом і масштабом вдалині; вимкнено — вода рівномірна. Дальність — точні метри від нижнього до верхнього краю зеленої зони; нахил сплющує кола (90° — коло); масштаб вдалині 0.3 — 30% ближнього розміру; звуження по ширині — вертикальні лінії сходяться вдалину. Правки діють одразу.", content);
     if (this.#resetPerspective) ui.createButtonRow("Скинути перспективу цієї локації", content, () => { this.#resetPerspective(id); this.#fillPerspective(); });
-    if (this.#exportOverrides) ui.createButtonRow("Експорт правок (усі налаштування DEV)", content, this.#exportOverrides);
-    if (this.#importOverrides) ui.createButtonRow("Імпорт правок (усі налаштування DEV)", content, this.#importOverrides);
     showStatus();
   }
 
@@ -264,6 +382,7 @@ export class ZoneEditorSection {
   }
 
   #locationId() {
-    return this.#state.locationId || this.#config.locations.currentLocationId || Object.keys(this.#config.locations.map)[0];
+    return this.#state.locationId || this.#state.loadedLocationId || this.#config.locations.currentLocationId ||
+      Object.keys(this.#config.locations.map)[0];
   }
 }

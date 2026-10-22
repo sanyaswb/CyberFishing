@@ -29,6 +29,7 @@ import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
 import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
+import { ZoneEditorBrowserPort } from "../../dev/location/zone_editor_browser_port.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
@@ -69,9 +70,12 @@ export function startDevelopmentGame() {
 
 async function startGame() {
   const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
-  // DEV page switches: ?screen=house opens the House after startup; ?scene=webgl|canvas picks the scene mode (spec 104).
+  // DEV page switches: ?screen=house opens the House after startup; ?scene=webgl|canvas picks the scene mode (spec 104);
+  // ?location=<id> starts on that location (spec 130 D2: the location editor's "Відкрити локацію").
   const pageParams = new windowTarget.URLSearchParams(windowTarget.location.search);
+  const requestedLocation = pageParams.get("location");
   const configRuntime = createProductionConfigContext(config => {
+    if (requestedLocation && Object.hasOwn(config.locations.map, requestedLocation)) config.locations.currentLocationId = requestedLocation;
     config.debug.godMode.enabled = true;
     config.debug.fixedCatch.enabled = true;
     config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
@@ -183,6 +187,7 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
+        zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
         openHouse,

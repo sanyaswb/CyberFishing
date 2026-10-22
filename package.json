@@ -1,6 +1,6 @@
 {
   "name": "cyber-fishing",
-  "version": "0.46.21",
+  "version": "0.46.22",
   "private": true,
   "description": "CyberFishing browser game",
   "engines": {
@@ -13,6 +13,7 @@
     "dev": "node utils/dev-server.js",
     "copy:version": "node utils/create-version-copy.js",
     "release:pages": "node utils/build-pages-release.js",
+    "apply:zones": "node utils/apply-zones.js",
     "clean:artifacts": "node utils/clean-artifacts.js",
     "check": "node utils/run-checks.js",
     "check:list": "node utils/run-checks.js --list",

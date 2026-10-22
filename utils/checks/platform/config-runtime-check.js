@@ -187,7 +187,7 @@ function checkDevelopmentInputs() {
   const renderedVersions = [];
   class VersionBadge { constructor({ element }) { this.element = element; } render() { renderedVersions.push(this.element); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
-    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
