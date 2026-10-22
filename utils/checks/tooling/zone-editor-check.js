@@ -322,10 +322,8 @@ controlUI.dispose();
   const hoverBefore = builder.rebuilds;
   state.setHovered(["snags:0"]); builder.buildInto(geometry);
   rects = drawn(); snag = rects.filter(rect => rect.color === snagColor);
-  const moveArea = snag.find(rect => rect.lineWidth === 1 && rect.fillAlpha === 0);
-  assert(snag[0].fillAlpha === 0.35 && snag.filter(rect => rect.fillAlpha === 0.9).length === 4 && moveArea &&
-    Math.abs(moveArea.x - 188) < 1e-9 && Math.abs(moveArea.width - 24) < 1e-9 && Math.abs(moveArea.y - 334) < 1e-9,
-    "the hovered zone fills and shows its handles and its middle 30% move area");
+  assert(snag[0].fillAlpha === 0.35 && snag.filter(rect => rect.fillAlpha === 0.9).length === 4 && snag.length === 5,
+    "the hovered zone fills and shows its handles; its move area is not drawn (TK-057)");
   state.setHovered(["snags:0"]); builder.buildInto(geometry);
   assert.equal(builder.rebuilds, hoverBefore + 1, "an unchanged hover set rebuilds nothing");
   state.setHovered([]); builder.buildInto(geometry);
@@ -494,13 +492,27 @@ controlUI.dispose();
   pointer("pointermove", 500, 400); pointer("pointerup", 500, 400);
   assert.deepEqual([lake.zones.castable[0].y, lake.zones.castable[0].h], [2, 8], "the bottom edge follows the cells");
   // TK-056: the middle 30% moves the whole zone, snapped, without resizing.
+  // TK-058: the window is 1000 x 1000 logical px = 25 x 25 cells; a moved zone stays inside it.
   lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
-  pointer("pointermove", 500, 500);
+  pointer("pointerdown", 500, 500); pointer("pointermove", 585, 618); pointer("pointerup", 585, 618);
+  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 0, y: 0, w: 25, h: 25 }),
+    "a zone as large as the window cannot be moved out of it");
+  lake.zones.castable = [{ x: 0, y: 0, w: 10, h: 10 }];
+  pointer("pointermove", 200, 200);
   assert(layer.classes.has("zone-editor-drag-layer--move") && state.isHovered("castable", 0), "the middle shows the move cursor and hovers");
-  assert.equal(pointer("pointerdown", 500, 500), true, "the middle takes the zone");
-  pointer("pointermove", 585, 618); pointer("pointerup", 585, 618);
-  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 25, h: 25 }),
+  assert.equal(pointer("pointerdown", 200, 200), true, "the middle takes the zone");
+  pointer("pointermove", 285, 318); pointer("pointerup", 285, 318);
+  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 10, h: 10 }),
     "the zone moves by whole cells (85 px, 118 px -> 2, 3 cells) and keeps its size");
+  pointer("pointerdown", 280, 320); pointer("pointermove", 3000, -3000); pointer("pointerup", 3000, -3000);
+  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 15, y: 0, w: 10, h: 10 }),
+    "dragged past the window's right and top edges, the zone stops at them");
+  lake.zones.castable = [{ x: 0, y: 0, w: 30, h: 10, id: "wide" }];
+  pointer("pointerdown", 600, 200); pointer("pointermove", 800, 200);
+  assert.equal(lake.zones.castable[0].x, 0, "a zone wider than the window never uncovers its left edge");
+  pointer("pointermove", 400, 200); pointer("pointerup", 400, 200);
+  assert.equal(lake.zones.castable[0].x, -5, "it slides left until its right side meets the window's right edge");
+  lake.zones.castable = [{ x: 2, y: 3, w: 10, h: 10 }];
   // TK-055: a small editable zone inside a large one hovers both; the smallest is taken and selected.
   lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
   state.setEditable("snags", 0, true);
@@ -534,4 +546,4 @@ controlUI.dispose();
   unsubscribe(); drag.dispose();
 }
 
-console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone, smallest hovered zone taken.");
+console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone inside the window (not drawn), smallest hovered zone taken.");

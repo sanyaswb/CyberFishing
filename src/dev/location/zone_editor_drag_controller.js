@@ -120,9 +120,15 @@ export class ZoneEditorDragController {
     const { zone } = drag;
     let { x, y, w, h } = zone;
     if (drag.move) {
-      // The whole zone follows the pointer's snapped travel; its size never changes.
-      if (!zone.adaptiveX) x = zone.x + Math.round((point.x - drag.startX) / design / step) * step;
-      y = zone.y + Math.round((point.y - drag.startY) / design / step) * step;
+      // The whole zone follows the pointer's snapped travel; its size never changes, and it stays in the window.
+      const travelX = Math.round((point.x - drag.startX) / design / step) * step;
+      const travelY = Math.round((point.y - drag.startY) / design / step) * step;
+      const topLeft = this.#projector.screenToVirtual(0, 0, this.#point);
+      const left = topLeft.x / design, top = topLeft.y / design;
+      const bottomRight = this.#projector.screenToVirtual(this.#canvasMetrics.width, this.#canvasMetrics.height, this.#point);
+      const right = bottomRight.x / design, bottom = bottomRight.y / design;
+      if (!zone.adaptiveX) x = zone.x + this.#windowTravel(travelX, zone.x, zone.w, left, right, step);
+      y = zone.y + this.#windowTravel(travelY, zone.y, zone.h, top, bottom, step);
     }
     if (drag.left) { x = Math.min(cellX, zone.x + zone.w - step); w = zone.x + zone.w - x; }
     if (drag.right) w = Math.max(step, cellX - zone.x);
@@ -133,6 +139,16 @@ export class ZoneEditorDragController {
     written.x = x; written.y = y; written.w = w; written.h = h;
     const zones = drag.zones.map((entry, index) => index === drag.index ? { ...entry, x, y, w, h } : entry);
     this.#writeZones(drag.path, zones);
+  }
+
+  // TK-058: the snapped travel along one axis, limited so the zone [start, start + size] stays inside the window
+  // [low, high] (design cells); a zone larger than the window only slides while it still covers the whole window.
+  // The limits are whole steps from the start, so the zone keeps its offset to the cell grid.
+  #windowTravel(travel, start, size, low, high, step) {
+    const fits = size <= high - low;
+    const min = Math.ceil(((fits ? low : high - size) - start) / step - 1e-9) * step;
+    const max = Math.floor(((fits ? high - size : low) - start) / step + 1e-9) * step;
+    return min > max ? 0 : Math.max(min, Math.min(max, travel));
   }
 
   #up(event) {

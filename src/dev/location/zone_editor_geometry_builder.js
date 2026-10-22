@@ -1,11 +1,10 @@
 import { Vector2 } from "../../engine/math/vector2.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
-import { MOVE_SHARE } from "./zone_editor_state.js";
 
 const COLORS = Object.freeze(Object.fromEntries(Object.entries(ZONE_CATEGORY_COLORS)
   .map(([category, hex]) => [category, Number.parseInt(hex.slice(1), 16)])));
 // Revision 3 (R3-2): an editable zone keeps a 2 px outline of its colour; while the pointer is over it, it is filled
-// and shows its corner handles (HANDLE_PX logical pixels) and its move area (the middle MOVE_SHARE). "Показати зону"
+// and shows its corner handles (HANDLE_PX logical pixels); its move area is not drawn (TK-057). "Показати зону"
 // fills a category permanently (SHOWN). Zones neither editable nor shown are not drawn.
 const EDITABLE_LINE_WIDTH = 2;
 const EDITABLE_STROKE = 0.95;
@@ -102,11 +101,7 @@ export class ZoneEditorGeometryBuilder {
           const x = zone.adaptiveX ? 0 : zone.x * cell;
           const w = zone.adaptiveX ? width : zone.w * cell, y = zone.y * cell, h = zone.h * cell;
           this.#rect(x, y, w, h, color, this.#model, lineWidth, fill, stroke);
-          if (hovered) {
-            this.#handles(x, y, w, h, color);
-            const mw = w * MOVE_SHARE, mh = h * MOVE_SHARE;
-            this.#rect(x + (w - mw) / 2, y + (h - mh) / 2, mw, mh, color, this.#model, 1, 0, SHOWN.stroke);
-          }
+          if (hovered) this.#handles(x, y, w, h, color);
         }
         if (zone.bounds) {
           for (const b of Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) {

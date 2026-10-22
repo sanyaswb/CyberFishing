@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.20";
+export const CURRENT_PROJECT_VERSION = "0.46.21";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "zone-editor-rev3",
+  codename: "zone-move-window",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "TK-057, TK-058: move area hidden, moves stay in the window.",
     "TK-054..056: editable zones, hover, move.",
     "TK-053: DevTools from the left edge in the zone editor.",
     "TK-051, TK-052: zone deletion and editor screen.",

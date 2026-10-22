@@ -200,3 +200,10 @@ Implementation (v0.46.20): ZoneEditorState.editable/hovered (keys "<category>:<i
 setHovered rebuilds only on change), MOVE_SHARE; geometry builder draws editable/hovered/shown looks; drag controller
 scans editable zones (smallest hit wins, middle before edges, pointerleave clears the hover, the taken zone is selected);
 ZONE_PHYSICS_KEYS shared in zone_category_colors.js; CSS hides every .ui-surface__content descendant.
+
+## TK-057, TK-058 (v0.46.21)
+
+Owner 2026-10-22: the move area is not drawn (it distracted); the middle still moves the zone. A zone moved by its
+middle stays inside the game window (the canvas in map coordinates); a zone larger than the window along an axis only
+slides while it still covers the window. Travel is limited in whole snap steps from the start, so the zone keeps its
+offset to the cell grid. Resizing by the edges is not limited.
