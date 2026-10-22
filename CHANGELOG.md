@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.20 - Zone Editor Revision 3
+
+- Zone editor: check the zones to edit (2 px outline, fill under the pointer), move a whole zone from its middle 30%; the fullscreen button hides with the game UI.
+
 ## v0.46.19 - DevTools from the Left Edge
 
 - While the zone editor is on, the DevTools button hides too; the panel opens from the left screen edge (mouse hover or swipe right).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.11 - Float Rocking on the Waves
 
 - TK-038 / spec 128: the float rocks on the water's waves with the water's own amplitude, wavelength, speed and vertical share, calmer far away. A standing float bobs with the water under it and sways a little; a lying one bobs with the mean of the water under its ends and tilts about the middle of its visible body by the wave slope (up to 12°); a lean between mixes both, bite steps rock at half strength, a hooked fish stops it. The line ends at the rocked point. The water's sine pattern moved to the engine (CrossingWavePattern), its map byte-identical. DevTools: canvas.water.floatRocking (enabled, bobShare, swayShare, rotationGain, maxRotationDeg, biteShare), both renderers, off with still water. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance check pending.
-
-## v0.46.10 - Selector Placement Choice
-
-- TK-037 (toolbars <=820 logical px): DevTools places the radial selector in the centre (default, the TK-036 layout), the right bottom corner (quarter fan) or the left bottom corner (mirrored fan), via CONFIG.ui.inventorySelector.compactPlacement. A corner selector puts the action column on the other side; a centred one follows compactActionsSide (right by default, or left). The float always ends the column in its corner and its track opens across the row while the selector fades out; the fan and aiming fades apply to every placement. Wider toolbars unchanged. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.

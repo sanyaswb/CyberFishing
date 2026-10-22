@@ -1,7 +1,11 @@
 // Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
-// enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone the
-// drag tool resizes; grid: the perspective (metre) grid, off until switched on (TK-050); cellGrid*/snapCells: the map's cells; depth*: the depth
-// numbers in the cells.
+// enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone whose
+// parameter tree the lists show; editable: the zones the drag tool may take, keys "<category>:<index>" (Revision 3);
+// hovered: the editable zones under the pointer, filled while it stays; grid: the perspective (metre) grid, off until
+// switched on (TK-050); cellGrid*/snapCells: the map's cells; depth*: the depth numbers in the cells.
+// The middle share of a zone (of its width and height) that moves the whole zone (Revision 3, R3-3).
+export const MOVE_SHARE = 0.3;
+
 export class ZoneEditorState {
   revision = 0;
   locationId = null;
@@ -17,6 +21,8 @@ export class ZoneEditorState {
   snapCells = 1;
   categories = { castable: false, collisions: false, snags: false, dynamic: false };
   selection = { category: "castable", index: 0 };
+  editable = new Set();
+  hovered = new Set();
   #zoneListeners = new Set();
 
   setFlag(key, value) {
@@ -41,6 +47,50 @@ export class ZoneEditorState {
     if (this.selection.category === category && this.selection.index === next) return;
     this.selection.category = category;
     this.selection.index = next;
+    this.revision++;
+  }
+
+  static zoneKey(category, index) {
+    return `${category}:${index}`;
+  }
+
+  isEditable(category, index) {
+    return this.editable.has(ZoneEditorState.zoneKey(category, index));
+  }
+
+  isHovered(category, index) {
+    return this.hovered.has(ZoneEditorState.zoneKey(category, index));
+  }
+
+  setEditable(category, index, value) {
+    if (!Object.hasOwn(this.categories, category)) throw new TypeError("Unknown zone category");
+    const key = ZoneEditorState.zoneKey(category, index);
+    if (this.editable.has(key) === (value === true)) return;
+    if (value === true) this.editable.add(key); else { this.editable.delete(key); this.hovered.delete(key); }
+    this.revision++;
+  }
+
+  // A deleted zone takes its check with it; the later zones of its category keep theirs at their new indices.
+  zoneRemoved(category, index) {
+    for (const keys of [this.editable, this.hovered]) {
+      const shifted = [];
+      for (const key of [...keys]) {
+        const [owner, number] = key.split(":");
+        if (owner !== category || Number(number) < index) continue;
+        keys.delete(key);
+        if (Number(number) > index) shifted.push(ZoneEditorState.zoneKey(category, Number(number) - 1));
+      }
+      for (const key of shifted) keys.add(key);
+    }
+    this.revision++;
+  }
+
+  // keys: the editable zones under the pointer; an unchanged set changes nothing (no rebuild).
+  setHovered(keys) {
+    const hovered = this.hovered;
+    if (keys.length === hovered.size && keys.every(key => hovered.has(key))) return;
+    hovered.clear();
+    for (const key of keys) hovered.add(key);
     this.revision++;
   }
 

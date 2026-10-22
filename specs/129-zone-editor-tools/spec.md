@@ -173,3 +173,30 @@ Owner 2026-10-22: while the editor is on, the DevTools button hides too; the pan
 left screen edge (`DevToolsEdgeOpener`, owned by DevToolsUI): a mouse entering it with no button held, a mouse press,
 or a finger swiping right at least 24 px. The strip is shown only under `game-shell--zone-editor` and sits under the
 open panel. Note: it also covers zone edges within 16 px of the screen's left side.
+
+## Revision 3 (owner, 2026-10-22, after v0.46.19)
+
+Owner: "кнопка на весь екран не клікабельна під час редагування - її прибери теж"; an invisible selected zone could be
+dragged ("я тільки що невидимі зони порухав"), which is not intuitive; the whole zone should move from its middle.
+
+- **R3-1 (TK-054) Fullscreen button.** Hidden with the rest of the game UI while the editor is on. Cause: its own
+  rule sets `visibility: visible`, which overrides the hidden `.ui-surface__content`; the editor rule now hides every
+  descendant.
+- **R3-2 (TK-055) Editable zones and hover.** The "Редактор" section lists, right after "Увімкнути", every zone of each
+  category whose physics is on ("Зони для редагування": one switch per zone, the category colour, "<category> N").
+  A checked zone is editable: it always shows a 2 px outline of its colour, and only editable zones can be dragged.
+  The pointer over an editable zone (inside it or within the edge band) fills it while it stays there; every hovered
+  editable zone fills, so a small zone inside a large one fills together with it; leaving clears the fill. A permanent
+  fill is the category's "Показати зону". Zones neither editable nor shown are not drawn. By default no zone is
+  checked; a zone added with "Додати зону" is checked; deleting a zone shifts the checks of the later ones. When several
+  editable zones are under the pointer, the smallest one that offers an edge or its middle is taken, and the drag
+  selects it in its list. The "Редагувати цю зону на мапі" button is removed (the list's "Номер зони" picks the
+  parameter tree).
+- **R3-3 (TK-056) Move.** The middle 30% of a zone (30% of its width and height, centred) takes the whole zone: it
+  moves snapped to the cell step without changing its size (an adaptive-width zone moves only vertically). The middle
+  wins over the edges, so even a small zone can be moved. A hovered editable zone shows its move area and corner handles.
+
+Implementation (v0.46.20): ZoneEditorState.editable/hovered (keys "<category>:<index>", zoneRemoved shifts them,
+setHovered rebuilds only on change), MOVE_SHARE; geometry builder draws editable/hovered/shown looks; drag controller
+scans editable zones (smallest hit wins, middle before edges, pointerleave clears the hover, the taken zone is selected);
+ZONE_PHYSICS_KEYS shared in zone_category_colors.js; CSS hides every .ui-surface__content descendant.

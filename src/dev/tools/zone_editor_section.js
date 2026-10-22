@@ -1,11 +1,10 @@
 import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated_depth_profile.js";
-import { ZONE_CATEGORY_COLORS } from "../location/zone_category_colors.js";
+import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "../location/zone_category_colors.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
   dynamic: "Рухомі зони" });
-const PHYSICS_KEYS = Object.freeze({ castable: "enableCastable", collisions: "enableCollisions", snags: "enableSnags",
-  dynamic: "enableDynamicZones" });
+const PHYSICS_KEYS = ZONE_PHYSICS_KEYS;
 const OVERLAYS = Object.freeze([["showChumZones", "Зони прикормки"], ["showCatchZone", "Зона підведення"],
   ["showLastDashZone", "Зона останнього ривка"], ["showNetZone", "Зона підсаки"], ["showAimingZone", "Зона прицілювання"],
   ["showPoleFightSector", "Сектор виважування"], ["showFightLineRadius", "Радіус ліски"]]);
@@ -18,6 +17,7 @@ export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
   #lists = new Map();
   #perspective = null;
+  #editable = null;
   #unsubscribe = null;
   #getMetric; #createMetric; #resetPerspective; #exportOverrides; #importOverrides;
 
@@ -45,7 +45,7 @@ export class ZoneEditorSection {
     this.#fillPerspective();
     this.#renderOverlays(this.#createSection("Оверлеї гри", content, ["ZONE_EDITOR", "overlays"]));
     this.#unsubscribe?.();
-    this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#fillCategory(this.#state.selection.category)) ?? null;
+    this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#refreshZones()) ?? null;
   }
 
   #renderEditor(section) {
@@ -54,9 +54,38 @@ export class ZoneEditorSection {
       state.setFlag("enabled", value);
       ui.syncValue(["ZONE_EDITOR", "cellGrid"], state.cellGrid);
     }, ["ZONE_EDITOR", "enabled"]);
+    this.#editable = this.#createSection("Зони для редагування", section, ["ZONE_EDITOR", "editable"]);
+    this.#fillEditable();
     ui.createSwitcherRow("Показати фон (інакше чорний)", state.background, section,
       value => state.setFlag("background", value), ["ZONE_EDITOR", "background"]);
-    ui.createInfoRow("Редактор", "Увімкнений редактор показує зони, вмикає сітку клітинок і перетягування: візьміть мишею чи пальцем край обраної зони (кут — два краї), він прилипає до клітинок. Поки редактор увімкнено, гра не отримує дотиків, а її кнопки й вікна приховані; кнопки DevTools теж немає — підведіть курсор до лівого краю екрана або проведіть пальцем від нього вправо. Обрана зона залита яскраво, інші приглушені.", section);
+    ui.createInfoRow("Редактор", "Увімкнений редактор вмикає сітку клітинок і перетягування зон, позначених у «Зони для редагування»: у них рамка їхнього кольору, під курсором вони заливаються. Середина зони (30%) пересуває всю зону, край — змінює розмір (кут — два краї); усе прилипає до клітинок. Постійна заливка — «Показати зону» в списку категорії. Поки редактор увімкнено, гра не отримує дотиків, а її кнопки й вікна приховані; кнопки DevTools теж немає — підведіть курсор до лівого краю екрана або проведіть пальцем від нього вправо.", section);
+  }
+
+  // Revision 3 (R3-2): one switch per zone of every category whose physics is on; a checked zone is outlined, fills
+  // under the pointer and is the only kind the drag tool takes.
+  #fillEditable() {
+    const list = this.#editable;
+    if (!list) return;
+    const ui = this.#ui, state = this.#state;
+    ui.releaseValueBindings(list);
+    list.replaceChildren();
+    const location = this.#config.locations.map[this.#locationId()];
+    let count = 0;
+    for (const category of CATEGORIES) {
+      if (this.#config.locations[PHYSICS_KEYS[category]] === false) continue;
+      const zones = location?.zones?.[category] || [];
+      for (let index = 0; index < zones.length; index++, count++) {
+        const path = ["ZONE_EDITOR", "editable", category, String(index)];
+        ui.createSwitcherRow(`${LABELS[category]} ${index + 1}`, state.isEditable(category, index), list,
+          value => state.setEditable(category, index, value), path, path, { swatch: ZONE_CATEGORY_COLORS[category] });
+      }
+    }
+    if (!count) ui.createInfoRow("Зони", "Немає зон з увімкненою фізикою.", list);
+  }
+
+  #refreshZones() {
+    for (const category of CATEGORIES) this.#fillCategory(category);
+    this.#fillEditable();
   }
 
   // One category's list: the physics switch first; the items only while the physics is on.
@@ -71,6 +100,7 @@ export class ZoneEditorSection {
     ui.createSwitcherRow("Фізика зони", physicsOn, list, (value) => {
       this.#update(physicsPath, value);
       this.#fillCategory(category);
+      this.#fillEditable();
     }, physicsPath, physicsPath, { swatch: ZONE_CATEGORY_COLORS[category] });
     if (!physicsOn) {
       ui.createInfoRow("Фізика", "Вимкнено: цих зон немає в грі й у редакторі. Увімкніть, щоб показати й редагувати їх.", list);
@@ -88,11 +118,11 @@ export class ZoneEditorSection {
     if (zones.length) {
       ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), list,
         value => { this.#select(category, Number(value) - 1); });
-      if (!selected) ui.createButtonRow("Редагувати цю зону на мапі", list, () => this.#select(category, index));
       ui.createInfoRow("Координати", "x/y/w/h — клітинки designCellSize; bounds — пікселі карти. Без зон закидання закинути вудку не можна.", list);
       this.#renderTree(zones[index], list, [...path, index]);
       // Any zone can go, the last one too (TK-051); the refilled list then has no delete button.
       ui.createButtonRow("Видалити вибрану зону", list, () => {
+        this.#state.zoneRemoved(category, index);
         this.#update(path, zones.filter((_, number) => number !== index));
         this.#select(category, Math.max(0, index - 1));
       });
@@ -105,6 +135,8 @@ export class ZoneEditorSection {
         zone.id = `zone_${suffix}`;
       }
       this.#update(path, [...zones, zone]);
+      // A new zone is ready to drag (R3-2).
+      this.#state.setEditable(category, zones.length, true);
       this.#select(category, zones.length);
     });
   }
@@ -115,6 +147,7 @@ export class ZoneEditorSection {
     this.#state.select(category, index);
     if (previous !== category) this.#fillCategory(previous);
     this.#fillCategory(category);
+    this.#fillEditable();
   }
 
   #renderCellGrid(section) {

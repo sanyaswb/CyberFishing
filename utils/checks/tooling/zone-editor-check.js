@@ -45,7 +45,7 @@ const target = {};
 builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(builder.rebuilds, 0);
 state.setFlag("enabled", true); builder.buildInto(target);
 const model = target.annotations, lines = model.lines, rects = model.rects;
-assert.equal(model.rectCount + model.overlay.rectCount, 8, "all configured zones, including physically disabled categories, are visible (plus the selected zone's 4 handles)");
+assert.equal(model.rectCount + model.overlay.rectCount, 4, "every shown zone is drawn; nothing is hovered, so no handles (Revision 3)");
 assert(model.lineCount > 40 && model.lineCount <= 96 * 24 + 97, "grid work is bounded");
 const gridStep = metric.metersFromShore(lines[1].y1);
 assert(gridStep + 1e-8 >= state.spacingMeters, "adaptive rows retain the selected minimum metre spacing");
@@ -69,7 +69,7 @@ metric = lakeMetric({ ...config.locations.map.lake.waterProjection, maxMeters: 6
 builder.buildInto(target);
 assert.equal(builder.rebuilds, beforeTilt + 2, "distance changes invalidate the grid too");
 state.setFlag("background", false); builder.buildInto(target); assert.equal(target.backgroundHidden, true);
-state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 7);
+state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 3);
 assert.equal(config.locations.map.lake.zones.collisions.length, 1, "visibility never changes gameplay config");
 const beforeMove = builder.rebuilds, beforeOverlay = builder.overlayRebuilds;
 moving[0].x++; builder.buildInto(target); assert.equal(builder.rebuilds, beforeMove, "moving zones never rebuild the static grid");
@@ -302,18 +302,40 @@ controlUI.dispose();
   state.setFlag("enabled", true);
   assert.equal(state.cellGrid, true, "enabling the editor shows the cell grid");
 
-  // TK-046: the selected zone is filled and outlined brightly with handles; the others are muted.
+  // TK-055 (R3-2): an editable zone keeps a 2 px outline; hovered, it fills and shows handles and its move area;
+  // shown zones are filled lightly; zones neither editable nor shown are not drawn.
   const geometry = {};
-  state.select("snags", 0); builder.buildInto(geometry);
-  let rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
   const snagColor = Number.parseInt(ZONE_CATEGORY_COLORS.snags.slice(1), 16);
   const castColor = Number.parseInt(ZONE_CATEGORY_COLORS.castable.slice(1), 16);
-  const selected = rects.filter(rect => rect.color === snagColor && rect.lineWidth === 3);
-  const handles = rects.filter(rect => rect.color === snagColor && rect.fillAlpha === 0.9);
-  assert(selected.length === 1 && selected[0].x === 160 && selected[0].y === 320 && selected[0].fillAlpha === 0.35 &&
-    selected[0].strokeAlpha === 0.95 && handles.length === 4, "the selected zone is filled, outlined and has handles");
+  const drawn = () => geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
+  state.setEditable("snags", 0, true); builder.buildInto(geometry);
+  let rects = drawn();
+  let snag = rects.filter(rect => rect.color === snagColor);
+  assert(snag.length === 1 && snag[0].x === 160 && snag[0].y === 320 && snag[0].lineWidth === 2 && snag[0].strokeAlpha === 0.95 &&
+    snag[0].fillAlpha === 0.15, "an editable shown zone: 2 px outline, the shown fill");
   const castable = rects.find(rect => rect.color === castColor);
-  assert(castable.fillAlpha === 0.04 && castable.strokeAlpha === 0.35 && castable.lineWidth === 1, "other zones are muted");
+  assert(castable.fillAlpha === 0.15 && castable.strokeAlpha === 0.6 && castable.lineWidth === 1, "a shown zone that is not editable");
+  state.setCategory("snags", false); state.setCategory("castable", false); builder.buildInto(geometry);
+  rects = drawn(); snag = rects.filter(rect => rect.color === snagColor);
+  assert(snag.length === 1 && snag[0].fillAlpha === 0 && snag[0].lineWidth === 2 && !rects.some(rect => rect.color === castColor),
+    "without \"Показати зону\" an editable zone is only outlined and the others are not drawn");
+  const hoverBefore = builder.rebuilds;
+  state.setHovered(["snags:0"]); builder.buildInto(geometry);
+  rects = drawn(); snag = rects.filter(rect => rect.color === snagColor);
+  const moveArea = snag.find(rect => rect.lineWidth === 1 && rect.fillAlpha === 0);
+  assert(snag[0].fillAlpha === 0.35 && snag.filter(rect => rect.fillAlpha === 0.9).length === 4 && moveArea &&
+    Math.abs(moveArea.x - 188) < 1e-9 && Math.abs(moveArea.width - 24) < 1e-9 && Math.abs(moveArea.y - 334) < 1e-9,
+    "the hovered zone fills and shows its handles and its middle 30% move area");
+  state.setHovered(["snags:0"]); builder.buildInto(geometry);
+  assert.equal(builder.rebuilds, hoverBefore + 1, "an unchanged hover set rebuilds nothing");
+  state.setHovered([]); builder.buildInto(geometry);
+  assert.equal(drawn().filter(rect => rect.color === snagColor)[0].fillAlpha, 0, "leaving clears the fill");
+  state.setCategory("snags", true); state.setCategory("castable", true);
+  // Deleting a zone shifts the checks of the later ones; unchecking clears the hover.
+  state.setEditable("snags", 2, true); state.zoneRemoved("snags", 1);
+  assert(state.isEditable("snags", 0) && state.isEditable("snags", 1) && !state.isEditable("snags", 2), "checks follow the deletion");
+  state.zoneRemoved("snags", 0); assert(state.isEditable("snags", 0) && !state.isEditable("snags", 1));
+  state.setEditable("snags", 0, true);
   // TK-048: a zone category whose physics is off is not drawn.
   locations.enableSnags = false; mapRevision++; builder.buildInto(geometry);
   rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
@@ -375,7 +397,7 @@ controlUI.dispose();
     let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
   createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
   renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
-  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Зони", "Ігрова область (закидання)",
+  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Зони для редагування", "Зони", "Ігрова область (закидання)",
     "Перешкоди", "Зачепи", "Рухомі зони", "Сітка клітинок", "Сітка перспективи", "Оверлеї гри"], "the editor's sections in order");
   assert(rows.has("Редактор/Увімкнути") && !rows.has("Редактор/Показати редактор") && !rows.has("Редактор/Перетягувати межі обраної зони"),
     "one enable switch");
@@ -383,6 +405,13 @@ controlUI.dispose();
   assert.deepEqual([physics.args[3].join("."), physics.args[5].swatch], ["CONFIG.locations.enableSnags", ZONE_CATEGORY_COLORS.snags],
     "each list's first switch is the zone's physics, with its colour");
   assert(rows.has("Зачепи/Показати зону") && rows.has("Зачепи/Номер зони") && rows.has("Зачепи/Додати зону"), "items while on");
+  assert(!rows.has("Зачепи/Редагувати цю зону на мапі"), "the drag tool takes the checked zones, not the selected one");
+  // TK-055: the editable list has one switch per zone of every category with physics, in the category's colour.
+  const editableSnag = rows.get("Зони для редагування/Зачепи 1");
+  assert(editableSnag && rows.has("Зони для редагування/Ігрова область (закидання) 1") && !rows.has("Зони для редагування/Перешкоди 1") &&
+    editableSnag.args[5].swatch === ZONE_CATEGORY_COLORS.snags, "one coloured switch per zone with physics");
+  editableSnag.args[2](false); assert.equal(state.isEditable("snags", 0), false, "the switch unchecks the zone");
+  editableSnag.args[2](true); assert.equal(state.isEditable("snags", 0), true);
   assert(!rows.has("Перешкоди/Показати зону") && !rows.has("Перешкоди/Додати зону"), "no items while the physics is off");
   rows.get("Перешкоди/Фізика зони").args[2](true);
   assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
@@ -429,8 +458,8 @@ controlUI.dispose();
   const pointer = (type, x, y, id = 1) => { let prevented = false;
     layer.listeners.get(type)({ clientX: x / 2, clientY: y / 2, pointerId: id, preventDefault: () => { prevented = true; } });
     return prevented; };
-  state.select("castable", 0);
-  assert.equal(pointer("pointerdown", 500, 500), false, "inside the zone, away from its edges, nothing is taken");
+  state.setEditable("castable", 0, true);
+  assert.equal(pointer("pointerdown", 300, 500), false, "inside the zone, away from its edges and middle, nothing is taken");
   pointer("pointermove", 1000, 500);
   assert(layer.classes.has("zone-editor-drag-layer--x"), "hovering an edge shows the resize cursor");
   assert.equal(pointer("pointerdown", 1000, 500), true, "the right edge is taken");
@@ -464,6 +493,27 @@ controlUI.dispose();
   assert.equal(pointer("pointerdown", 500, 200), true, "its bottom edge is taken");
   pointer("pointermove", 500, 400); pointer("pointerup", 500, 400);
   assert.deepEqual([lake.zones.castable[0].y, lake.zones.castable[0].h], [2, 8], "the bottom edge follows the cells");
+  // TK-056: the middle 30% moves the whole zone, snapped, without resizing.
+  lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
+  pointer("pointermove", 500, 500);
+  assert(layer.classes.has("zone-editor-drag-layer--move") && state.isHovered("castable", 0), "the middle shows the move cursor and hovers");
+  assert.equal(pointer("pointerdown", 500, 500), true, "the middle takes the zone");
+  pointer("pointermove", 585, 618); pointer("pointerup", 585, 618);
+  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 25, h: 25 }),
+    "the zone moves by whole cells (85 px, 118 px -> 2, 3 cells) and keeps its size");
+  // TK-055: a small editable zone inside a large one hovers both; the smallest is taken and selected.
+  lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
+  state.setEditable("snags", 0, true);
+  pointer("pointermove", 200, 340);
+  assert(state.isHovered("castable", 0) && state.isHovered("snags", 0), "a small zone inside a large one hovers both");
+  pointer("pointerdown", 200, 340); pointer("pointermove", 240, 340); pointer("pointerup", 240, 340);
+  assert(lake.zones.snags[0].x === 5 && lake.zones.snags[0].w === 2 && lake.zones.castable[0].x === 2 && state.selection.category === "snags",
+    "the smallest zone under the pointer is moved and becomes the selected one");
+  pointer("pointermove", 1900, 1900); assert.equal(state.hovered.size, 0, "away from every zone nothing is hovered");
+  pointer("pointermove", 500, 500); layer.listeners.get("pointerleave")();
+  assert.equal(state.hovered.size, 0, "leaving the layer clears the hover");
+  state.setEditable("castable", 0, false);
+  assert.equal(pointer("pointerdown", 600, 600), false, "an unchecked zone is never taken");
   state.setFlag("enabled", false); drag.sync();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
   assert(!body.classes.has("game-shell--zone-editor"), "TK-052: switching the editor off brings the game's UI back");
@@ -484,4 +534,4 @@ controlUI.dispose();
   unsubscribe(); drag.dispose();
 }
 
-console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, selected fill and muted zones, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap.");
+console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone, smallest hovered zone taken.");

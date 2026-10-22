@@ -1,17 +1,19 @@
 import { Vector2 } from "../../engine/math/vector2.js";
-import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
+import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
+import { MOVE_SHARE } from "./zone_editor_state.js";
 
 const COLORS = Object.freeze(Object.fromEntries(Object.entries(ZONE_CATEGORY_COLORS)
   .map(([category, hex]) => [category, Number.parseInt(hex.slice(1), 16)])));
-// The selected zone (spec 129 D4, Revision 2 R2) is filled and outlined brightly with corner handles of HANDLE_PX
-// logical pixels; the other visible zones are muted.
-const SELECTED_LINE_WIDTH = 3;
-const SELECTED = Object.freeze({ fill: 0.35, stroke: 0.95 });
-const MUTED = Object.freeze({ fill: 0.04, stroke: 0.35 });
-// A zone category is drawn only while its physics is on (Revision 2: the "Зони" lists).
-const PHYSICS_KEYS = Object.freeze({ castable: "enableCastable", collisions: "enableCollisions", snags: "enableSnags",
-  dynamic: "enableDynamicZones" });
+// Revision 3 (R3-2): an editable zone keeps a 2 px outline of its colour; while the pointer is over it, it is filled
+// and shows its corner handles (HANDLE_PX logical pixels) and its move area (the middle MOVE_SHARE). "Показати зону"
+// fills a category permanently (SHOWN). Zones neither editable nor shown are not drawn.
+const EDITABLE_LINE_WIDTH = 2;
+const EDITABLE_STROKE = 0.95;
+const HOVER_FILL = 0.35;
+const SHOWN = Object.freeze({ fill: 0.15, stroke: 0.6 });
 const HANDLE_PX = 8;
+// A zone category is drawn only while its physics is on (Revision 2: the "Зони" lists).
+const PHYSICS_KEYS = ZONE_PHYSICS_KEYS;
 // The map's cell lines (D5): at most this many per axis.
 const MAX_CELL_LINES = 400;
 const MAX_GRID_STEPS = 96;
@@ -82,25 +84,33 @@ export class ZoneEditorGeometryBuilder {
     const zones = this.#map.getLocationZones();
     const cell = this.#config.locations.cellSize;
     const width = this.#config.locations.baseResolution.width;
-    const selection = this.#state.selection;
-    if (this.#state.cellGrid) this.#cellGrid(cell);
+    const state = this.#state;
+    if (state.cellGrid) this.#cellGrid(cell);
     for (const category of CATEGORIES) {
-      if (!this.#state.categories[category] || this.#config.locations[PHYSICS_KEYS[category]] === false) continue;
+      if (this.#config.locations[PHYSICS_KEYS[category]] === false) continue;
+      const shown = state.categories[category];
       const records = zones[category] || EMPTY_ZONES;
       for (let index = 0; index < records.length; index++) {
-        const zone = records[index];
-        const x = zone.adaptiveX ? 0 : zone.x * cell;
-        const selected = selection.category === category && selection.index === index;
-        if (category !== "dynamic" || !moving.length || selected) {
+        const editable = state.isEditable(category, index);
+        if (!editable && !shown) continue;
+        const hovered = editable && state.isHovered(category, index);
+        const zone = records[index], color = COLORS[category];
+        const fill = hovered ? HOVER_FILL : shown ? SHOWN.fill : 0;
+        const lineWidth = editable ? EDITABLE_LINE_WIDTH : 1, stroke = editable ? EDITABLE_STROKE : SHOWN.stroke;
+        // A moving zone's live position is the overlay; its authored rectangle shows while it is being edited.
+        if (category !== "dynamic" || !moving.length || editable) {
+          const x = zone.adaptiveX ? 0 : zone.x * cell;
           const w = zone.adaptiveX ? width : zone.w * cell, y = zone.y * cell, h = zone.h * cell;
-          const look = selected ? SELECTED : MUTED;
-          this.#rect(x, y, w, h, COLORS[category], this.#model, selected ? SELECTED_LINE_WIDTH : 1, look.fill, look.stroke);
-          if (selected) this.#handles(x, y, w, h, COLORS[category]);
+          this.#rect(x, y, w, h, color, this.#model, lineWidth, fill, stroke);
+          if (hovered) {
+            this.#handles(x, y, w, h, color);
+            const mw = w * MOVE_SHARE, mh = h * MOVE_SHARE;
+            this.#rect(x + (w - mw) / 2, y + (h - mh) / 2, mw, mh, color, this.#model, 1, 0, SHOWN.stroke);
+          }
         }
         if (zone.bounds) {
-          const look = selected ? SELECTED : MUTED;
           for (const b of Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) {
-            this.#rect(b.x, b.y, b.w, b.h, COLORS[category], this.#model, 1, look.fill, look.stroke);
+            this.#rect(b.x, b.y, b.w, b.h, color, this.#model, 1, fill, SHOWN.stroke);
           }
         }
       }
@@ -118,7 +128,7 @@ export class ZoneEditorGeometryBuilder {
     for (let y = 0, i = 0; y <= height + 1e-6 && i < MAX_CELL_LINES; y += step, i++) this.#line(0, y, width, y, this.#model.cellLines, "cellLineCount");
   }
 
-  // Corner squares of HANDLE_PX logical pixels, filled, so the selected zone shows where it can be taken.
+  // Corner squares of HANDLE_PX logical pixels, filled, so a hovered editable zone shows where it can be taken.
   #handles(x, y, w, h, color) {
     const size = HANDLE_PX / this.#scale;
     for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) {
