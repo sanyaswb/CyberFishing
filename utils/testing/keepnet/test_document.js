@@ -25,6 +25,14 @@ class TestElement {
   get textContent() { return this.text + this.children.map((child) => child.textContent).join(""); }
   append(...children) { for (const child of children) { child.remove(); child.parentNode = this; this.children.push(child); } }
   appendChild(child) { this.append(child); return child; }
+  insertBefore(child, reference) {
+    if (reference == null) return this.appendChild(child);
+    if (reference.parentNode !== this) throw new Error("insertBefore reference is not a child");
+    if (child === reference) return child;
+    child.remove(); child.parentNode = this;
+    this.children.splice(this.children.indexOf(reference), 0, child);
+    return child;
+  }
   replaceChildren(...children) { for (const child of [...this.children]) child.remove(); this.text = ""; this.append(...children); }
   remove() {
     if (this.contains(this.document.activeElement)) this.document.activeElement = this.document.body;

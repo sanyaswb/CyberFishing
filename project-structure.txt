@@ -148,6 +148,8 @@
 │  │  └── rods
 │  │     ├── bamboo-rod-ecip-v1.webp
 │  │     └── bamboo-rod-unecip-v1.webp
+│  ├── lobby
+│  │  └── lobby-background.png
 │  ├── locations
 │  │  └── test
 │  │     ├── bg_test--day.webp
@@ -213,6 +215,7 @@
 │  │  ├── math
 │  │  │  ├── normalize_distance.js
 │  │  │  ├── number_normalization.js
+│  │  │  ├── rectangle_bounds.js
 │  │  │  └── vector2.js
 │  │  ├── random
 │  │  │  └── seeded_rng.js

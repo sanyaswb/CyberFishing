@@ -5,7 +5,7 @@ import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
 export const ZONE_FILE_FORMAT = "cyber-fishing/zones";
 export const ZONE_FILE_VERSION = 1;
 export const ZONE_CATEGORIES = Object.freeze(Object.keys(ZONE_CATEGORY_COLORS));
-const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "x", "y", "w", "h", "adaptiveX", "moving", "speedX", "speedY",
+const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "shape", "x", "y", "w", "h", "adaptiveX", "moving", "speedX", "speedY",
   "bounds"]);
 const RECT_KEYS = Object.freeze(["x", "y", "w", "h"]);
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
@@ -116,6 +116,8 @@ export function validateZones(zones) {
         if (zone[key] !== undefined && !finite(zone[key])) errors.push(`${path}.${key}: a finite number`);
       }
       if (category === "dynamic") {
+        if (zone.shape !== undefined && zone.shape !== "circle" && zone.shape !== "square") errors.push(`${path}.shape: circle or square`);
+        if (zone.shape !== undefined && zone.w !== zone.h) errors.push(`${path}: shaped bodies require equal w and h`);
         if (typeof zone.id !== "string" || !zone.id) errors.push(`${path}.id: a non-empty name`);
         else if (ids.has(zone.id)) errors.push(`${path}.id: "${zone.id}" is used twice`);
         else ids.add(zone.id);

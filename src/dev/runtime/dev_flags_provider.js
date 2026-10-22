@@ -5,18 +5,24 @@ export class DevFlagsProvider {
   #config;
   #godModeSource;
   #debugModulesSource;
+  #zoneEditorState;
 
   constructor({
     config,
     godModeSource,
     debugModulesSource,
+    zoneEditorState = null,
   } = {}) {
     this.#config = config || {};
     this.#godModeSource = godModeSource;
     this.#debugModulesSource = debugModulesSource;
+    this.#zoneEditorState = zoneEditorState;
   }
 
   isEnabled(flag) {
+    if (flag === "pauseDynamicZones") return this.#zoneEditorState?.enabled === true &&
+      this.#zoneEditorState.editsLoadedLocation && this.#zoneEditorState.isEditable("dynamic") &&
+      this.#config.locations?.enableDynamicZones !== false;
     const source = this.#godModeSource?.();
     return !!(source && source[flag] === true);
   }

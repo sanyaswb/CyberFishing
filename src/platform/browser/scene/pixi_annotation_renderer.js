@@ -35,7 +35,9 @@ export class PixiAnnotationRenderer {
     if (model.cellLineCount) graphics.stroke({ color: 0xffffff, alpha: model.cellLineAlpha ?? .2, width: 1 });
     for (let i = 0; i < model.rectCount; i++) {
       const r = model.rects[i];
-      graphics.rect(r.x, r.y, r.width, r.height).fill({ color: r.color, alpha: r.fillAlpha ?? .12 })
+      if (r.shape === "ellipse") graphics.ellipse(r.x + r.width / 2, r.y + r.height / 2, r.width / 2, r.height / 2);
+      else graphics.rect(r.x, r.y, r.width, r.height);
+      graphics.fill({ color: r.color, alpha: r.fillAlpha ?? .12 })
         .stroke({ color: r.color, alpha: r.strokeAlpha ?? .9, width: r.lineWidth ?? 1 });
     }
     for (let i = 0; i < model.lineCount; i++) {

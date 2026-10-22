@@ -10,6 +10,7 @@ export class GameWorld {
   #clock;
   #locationConfig;
   #waterMetricSource;
+  #isZoneMotionPaused;
   #bounds = { left: 0, right: 0, top: 0, bottom: 0 };
   #virtualTopLeft = new Vector2(0, 0);
   #virtualBottomRight = new Vector2(0, 0);
@@ -24,6 +25,7 @@ export class GameWorld {
     clock,
     locationConfig,
     waterMetricSource,
+    isZoneMotionPaused = null,
   }) {
     this.#map = map;
     this.#env = env;
@@ -34,6 +36,7 @@ export class GameWorld {
     this.#clock = clock;
     this.#locationConfig = locationConfig;
     this.#waterMetricSource = waterMetricSource;
+    this.#isZoneMotionPaused = isZoneMotionPaused;
   }
 
   refreshLocationConfig(locationConfig, locationResources) {
@@ -101,7 +104,7 @@ export class GameWorld {
 
     this.#env.update(dt, timeScale);
     const envSnapshot = this.#env.getSnapshot();
-    this.#map.update(dt, envSnapshot.time);
+    this.#map.update(dt, envSnapshot.time, this.#isZoneMotionPaused?.() === true);
     this.#chum.update(this.#clock.realNow, timeScale);
 
     this.#chum.updateBoats(

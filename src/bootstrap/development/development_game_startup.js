@@ -12,6 +12,8 @@ import { DevInventorySplitSource } from "../../dev/runtime/dev_inventory_split_s
 import { DevTools } from "../../dev/tools/dev_tools.js";
 import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
 import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
+import { DevToolsDependencyFeedback } from "../../dev/services/dev_tools_dependency_feedback.js";
+import { BrowserTimeoutScheduler } from "../../platform/browser/time/browser_timeout_scheduler.js";
 import { EventBus } from "../../engine/events/event_bus.js";
 import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
@@ -29,6 +31,7 @@ import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
 import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
+import { ZoneEditorConfigEdits } from "../../dev/location/zone_editor_config_edits.js";
 import { ZoneEditorBrowserPort } from "../../dev/location/zone_editor_browser_port.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
@@ -111,6 +114,8 @@ async function startGame() {
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
+  let editorMap = null;
+  const zoneEdits = new ZoneEditorConfigEdits({ config: CONFIG, getMap: () => editorMap });
   const mapCatalog = CONFIG.locations.map;
   const configValidation = composeDevConfigValidation({configRuntime, itemCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;
@@ -170,7 +175,7 @@ async function startGame() {
       tackleMountNode: toolbar.tackleMountNode,
       depthMountNode: toolbar.depthMountNode,
       selectorMountNode: toolbar.selectorMountNode,
-      createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
+      createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource, zoneEditorState}),
       createFrameProbe: () => frameProfiler,
       sceneMode: pageParams.get("scene"),
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
@@ -187,6 +192,8 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
+        prepareZoneEdit: (path, value) => zoneEdits.prepare(path, value),
+        readDynamicZones: id => zoneEdits.readDynamicZones(id),
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
@@ -195,7 +202,8 @@ async function startGame() {
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
-          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount);
+          const feedback = new DevToolsDependencyFeedback({ scheduler: new BrowserTimeoutScheduler(windowTarget), durationMs: 3000 });
+          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount, developmentMount, feedback);
           // Phones hide the toolbar's version badge; the panel's footer shows the same version text.
           new GameVersionBadge({ element: ui.footer }).render();
           return {tooltipProvider, ui};
@@ -205,6 +213,7 @@ async function startGame() {
         return timeControl;
       },
       createLocationDebugRenderFrameBuilder: options => {
+        editorMap = options.map;
         readLocationMetric = options.getWaterMetric;
         zoneEditorDrag?.dispose();
         zoneEditorDrag = new ZoneEditorDragController({ ...options, state: zoneEditorState, documentTarget,

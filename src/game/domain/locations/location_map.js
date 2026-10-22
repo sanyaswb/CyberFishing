@@ -33,7 +33,7 @@ export class LocationMap {
   };
   #rng;
 
-  constructor(locationId, locationsConfig, rng = null, resources = null) {
+  constructor(locationId, locationsConfig, rng = null, resources = null, startRng = rng) {
     if (!resources || typeof resources !== "object") {
       throw new TypeError("LocationMap requires ready location resources");
     }
@@ -62,7 +62,9 @@ export class LocationMap {
       this.#config.zones.dynamic
     ) {
       for (const dzConfig of this.#config.zones.dynamic) {
-        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
+        const zone = new DynamicZone(dzConfig, this.#rng);
+        zone.randomizeStart(startRng || this.#rng);
+        this.#dynamicZones.push(zone);
       }
     }
   }
@@ -101,9 +103,9 @@ export class LocationMap {
   // Scales design-grid zone coordinates to the actual cell size (in place on the map's own config copy).
   #scaleZones(ratio) {
     if (ratio !== 1) {
-      const scaleZone = (z) => {
-        if (z.x !== undefined) z.x = Math.round(z.x * ratio);
-        if (z.y !== undefined) z.y = Math.round(z.y * ratio);
+      const scaleZone = (z, continuousPosition = false) => {
+        if (z.x !== undefined) z.x = continuousPosition ? z.x * ratio : Math.round(z.x * ratio);
+        if (z.y !== undefined) z.y = continuousPosition ? z.y * ratio : Math.round(z.y * ratio);
         if (z.w !== undefined) z.w = Math.round(z.w * ratio);
         if (z.h !== undefined) z.h = Math.round(z.h * ratio);
 
@@ -118,12 +120,12 @@ export class LocationMap {
         }
       };
       if (this.#config.zones.castable)
-        this.#config.zones.castable.forEach(scaleZone);
+        this.#config.zones.castable.forEach(zone => scaleZone(zone));
       if (this.#config.zones.collisions)
-        this.#config.zones.collisions.forEach(scaleZone);
-      if (this.#config.zones.snags) this.#config.zones.snags.forEach(scaleZone);
+        this.#config.zones.collisions.forEach(zone => scaleZone(zone));
+      if (this.#config.zones.snags) this.#config.zones.snags.forEach(zone => scaleZone(zone));
       if (this.#config.zones.dynamic)
-        this.#config.zones.dynamic.forEach(scaleZone);
+        this.#config.zones.dynamic.forEach(zone => scaleZone(zone, true));
     }
   }
 
@@ -286,7 +288,7 @@ export class LocationMap {
     return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows;
   }
 
-  update(dt, gameTimeHours) {
+  update(dt, gameTimeHours, pauseDynamicMotion = false) {
     const locCfg = this.#locationsConfig;
     if (
       !this.#debugStateInitialized ||
@@ -307,7 +309,7 @@ export class LocationMap {
     // Backgrounds follow game time only (spec 081): GameWorld passes the environment's clock reading every frame.
     if (this.#isDynamicBg) backgroundTimeBlend(gameTimeHours, this.#bgOpacities);
 
-    if (locCfg.enableDynamicZones !== false) {
+    if (locCfg.enableDynamicZones !== false && !pauseDynamicMotion) {
       for (const dz of this.#dynamicZones) {
         dz.update(dt);
       }

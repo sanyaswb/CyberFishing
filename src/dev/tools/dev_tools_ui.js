@@ -17,11 +17,15 @@ export class DevToolsUI {
   #mountNode;
   #toggleMountNode;
   #descriptions = new WeakMap();
+  #treeOrder = new WeakMap();
+  #controlGroups = new WeakMap();
+  #dependencyFeedback;
   #edgeOpener = null;
   #isOpen = false;
 
   constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
-    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode) {
+    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode, dependencyFeedback = null) {
+    this.#dependencyFeedback = dependencyFeedback;
     this.#storageCache = storageCache;
     this.#uiSurface = uiSurface;
     this.#mountNode = mountNode;
@@ -49,6 +53,7 @@ export class DevToolsUI {
     if (isOpen) {
       this.#panel.classList.add("devtools--open");
     } else {
+      this.#dependencyFeedback?.clear();
       this.#panel.classList.remove("devtools--open");
     }
   }
@@ -67,6 +72,7 @@ export class DevToolsUI {
   }
 
   dispose() {
+    this.#dependencyFeedback?.dispose();
     this.#edgeOpener?.dispose();
     this.#edgeOpener = null;
     this.#dragButton?.dispose();
@@ -84,15 +90,37 @@ export class DevToolsUI {
   }
 
   clearValueBindings() {
+    this.#dependencyFeedback?.clear();
     this.#controlBindings.clear();
   }
 
   syncValue(path, value) {
     this.#controlBindings.sync(path, value);
+    if (value === true) this.#dependencyFeedback?.resolve(path);
   }
 
   releaseValueBindings(container) {
+    this.#dependencyFeedback?.releaseWithin(container);
     this.#controlBindings.releaseWithin(container);
+    const group = this.#controlGroups.get(container);
+    if (group) {
+      for (const row of group.infoRows) {
+        const content = row.parentNode;
+        row.remove();
+        if (content && content.children.length === 0) content.parentNode?.remove();
+      }
+      group.infoRows.length = 0;
+    }
+  }
+
+  // Independently refreshed controls without another disclosure or layout box.
+  createControlGroup(parentElement, path = null) {
+    const group = document.createElement("div");
+    group.className = "devtools__control-group";
+    this.#assignDevToolsPath(group, path);
+    this.#controlGroups.set(group, { parent: parentElement, infoRows: [] });
+    this.#insertTreeNode(parentElement, group, 0);
+    return group;
   }
 
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null, { buttonTitle = false } = {}) {
@@ -122,17 +150,21 @@ export class DevToolsUI {
 
     section.appendChild(title);
     section.appendChild(content);
-    parentElement.appendChild(section);
+    this.#insertTreeNode(parentElement, section, 1);
 
     return content;
   }
 
   createInfoRow(labelStr, value, parentElement, path = null) {
+    const group = this.#controlGroups.get(parentElement);
+    if (group) parentElement = group.parent;
     let description = this.#descriptions.get(parentElement);
     if (!description || description.content.parentNode?.parentNode !== parentElement) {
       const record = { expanded: description?.expanded || false, content: null };
       record.content = this.createSection("Опис", parentElement, record.expanded,
         expanded => { record.expanded = expanded; });
+      this.#treeOrder.set(record.content.parentNode, 2);
+      parentElement.appendChild(record.content.parentNode);
       this.#descriptions.set(parentElement, record);
       description = record;
     }
@@ -145,6 +177,7 @@ export class DevToolsUI {
     valueEl.innerText = value;
     row.appendChild(valueEl);
     description.content.appendChild(row);
+    group?.infoRows.push(row);
     return valueEl;
   }
 
@@ -153,7 +186,7 @@ export class DevToolsUI {
     navigation.className = "devtools__pages";
     navigation.setAttribute("aria-label", "Сторінки розробника");
     for (const [label, activate] of pages) this.createButtonRow(label, navigation, activate, true);
-    parentElement.appendChild(navigation);
+    this.#insertTreeNode(parentElement, navigation, 0);
   }
 
   createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "") {
@@ -176,7 +209,7 @@ export class DevToolsUI {
     }
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
   }
 
   // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).
@@ -187,7 +220,7 @@ export class DevToolsUI {
     onChangeCallback,
     path = null,
     bindingPath = path,
-    { swatch = null } = {},
+    { swatch = null, requires = [] } = {},
   ) {
     const row = document.createElement("div");
     row.className = "devtools__row";
@@ -212,11 +245,24 @@ export class DevToolsUI {
     inputElement.appendChild(slider);
     row.appendChild(inputElement);
 
-    cb.addEventListener("change", (e) => onChangeCallback(e.target.checked));
+    let currentValue = initialValue === true;
+    cb.addEventListener("change", (e) => {
+      const next = e.target.checked;
+      const blocker = next ? requires.find(requirement => !requirement.isEnabled()) : null;
+      if (blocker) {
+        cb.checked = currentValue;
+        this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
+        return;
+      }
+      onChangeCallback(next);
+      currentValue = next;
+      if (next) this.#dependencyFeedback?.resolve(bindingPath);
+    });
     this.#controlBindings.register(bindingPath, (value) => {
-      cb.checked = value === true;
+      currentValue = value === true;
+      cb.checked = currentValue;
     }, row);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
   }
 
   createInputRow(
@@ -264,7 +310,7 @@ export class DevToolsUI {
       inputElement.value = Array.isArray(value) ? value.join(", ") : value;
     }, row);
     row.appendChild(inputElement);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
   }
 
   // A 0..100 slider with its value beside it (spec 129 Revision 2: grid and depth opacity); onChangeCallback receives
@@ -295,7 +341,7 @@ export class DevToolsUI {
       output.textContent = String(Math.round(next));
     }, row);
     row.append(range, output);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
   }
 
   // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
@@ -323,7 +369,7 @@ export class DevToolsUI {
       onChangeCallback(event.target.value);
     });
     row.appendChild(select);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
   }
 
   createEnumToggleRow(
@@ -358,7 +404,14 @@ export class DevToolsUI {
     }, row);
 
     row.appendChild(btn);
-    parentElement.appendChild(row);
+    this.#insertTreeNode(parentElement, row, 0);
+  }
+
+  // Keep DOM and keyboard order together: controls, nested sections, then the parent's description.
+  #insertTreeNode(parent, node, order) {
+    this.#treeOrder.set(node, order);
+    const before = Array.from(parent.children).find(child => (this.#treeOrder.get(child) ?? 0) > order);
+    parent.insertBefore(node, before ?? null);
   }
 
   #createLabelElement(rawLabel, path = null, swatch = null) {

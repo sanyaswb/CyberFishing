@@ -20,8 +20,7 @@ const state = new ZoneEditorState();
 // TK-049: zone areas start hidden (and the depth numbers off); the checks below show every category explicitly.
 assert(Object.values(state.categories).every(shown => shown === false) && state.depth === false, "zones and depth start hidden");
 state.setFlag("enabled", true); assert(state.grid === false && state.cellGrid === true, "TK-050: enabling the editor shows the cell grid, not the perspective grid");
-state.setFlag("enabled", false); state.setFlag("grid", true);
-for (const category of Object.keys(state.categories)) state.setCategory(category, true);
+state.setFlag("enabled", false); state.setFlag("cellGrid", false);
 const config = { locations: { cellSize: 40, baseResolution: { width: 1000, height: 1000 }, map: {
   lake: { safeZone: { top: 0, bottom: 1000 }, waterProjection: { maxMeters: 40, tiltDegrees: 30, farScale: .3 },
     zones: { castable: [{ x: 0, y: 0, w: 25, h: 25 }], collisions: [{ x: 2, y: 3, w: 1, h: 2 }],
@@ -29,7 +28,13 @@ const config = { locations: { cellSize: 40, baseResolution: { width: 1000, heigh
 let mapRevision = 1, scale = 1, cameraX = 0;
 const moving = [{ x: 5, y: 6, w: 1, h: 1 }];
 const map = { currentLocationId: "lake", getRevision: () => mapRevision, getDynamicZones: () => moving,
-  getLocationZones: () => config.locations.map.lake.zones,
+  getLocationZones: () => {
+    const zones = config.locations.map.lake.zones, ratio = (config.locations.designCellSize || config.locations.cellSize) / config.locations.cellSize;
+    if (ratio === 1) return zones;
+    return Object.fromEntries(Object.entries(zones).map(([category, entries]) => [category,
+      entries.map(zone => ({ ...zone, x: Math.round(zone.x * ratio), y: Math.round(zone.y * ratio),
+        w: Math.round(zone.w * ratio), h: Math.round(zone.h * ratio) }))]));
+  },
   getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }),
   getBackgroundRenderData: () => ({ loaded: true, dynamic: false, assetIds: { default: "image" }, width: 1000, height: 1000 }) };
 const lakeMetric = projection => WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500, ...projection });
@@ -43,7 +48,9 @@ const projector = { virtualToScreen: (x, y, out) => out.set(x * scale + cameraX,
 const builder = new ZoneEditorGeometryBuilder({ state, map, projector, getWaterMetric: () => metric, config });
 const target = {};
 builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(builder.rebuilds, 0);
-state.setFlag("enabled", true); builder.buildInto(target);
+state.setFlag("enabled", true); state.setFlag("grid", true);
+for (const category of Object.keys(state.categories)) state.setCategory(category, true);
+builder.buildInto(target);
 const model = target.annotations, lines = model.lines, rects = model.rects;
 assert.equal(model.rectCount + model.overlay.rectCount, 4, "every shown zone is drawn; nothing is hovered, so no handles (Revision 3)");
 assert(model.lineCount > 40 && model.lineCount <= 96 * 24 + 97, "grid work is bounded");
@@ -87,7 +94,7 @@ class Graphics {
   visible = true; clears = 0; operations = [];
   clear() { this.clears++; this.operations.length = 0; return this; }
 }
-for (const name of ["rect", "fill", "stroke", "moveTo", "lineTo"]) Graphics.prototype[name] = function (...args) {
+for (const name of ["rect", "ellipse", "fill", "stroke", "moveTo", "lineTo"]) Graphics.prototype[name] = function (...args) {
   this.operations.push([name, ...args]); return this;
 };
 let graphics, overlayGraphics;
@@ -125,7 +132,7 @@ const refreshMetric = () => {
 // Rows of the per-category zone lists are keyed "<list>/<label>" (their labels repeat in every list).
 const ZONE_LISTS = new Set(["Ігрова область (закидання)", "Перешкоди", "Зачепи", "Рухомі зони"]);
 const keyOf = (label, parent) => ZONE_LISTS.has(parent?.label) ? `${parent.label}/${label}` : label;
-const ui = { syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {},
+const ui = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }), syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {},
   createSwitcherRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
   createInputRow(label, value, parent, type, callback) { actions.set(keyOf(label, parent), callback); },
   createRangeRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
@@ -230,7 +237,7 @@ assert.match(infoRows.get("Стан").innerText, /біля берега 54\.2 \/
     "adding a projection keeps the uniform length and takes the documented defaults");
   assert.equal(typeof actions.get("Нахил площини, °"), "function", "the added projection is editable at once");
 }
-state.setFlag("enabled", false); builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(target.backgroundHidden, false);
+state.setFlag("enabled", false); builder.buildInto(target); assert(target.annotations, "explicit visibility survives leaving edit mode"); assert.equal(target.backgroundHidden, false);
 const bindings = new DevToolsControlBindingRegistry();
 const panel = { contains: element => element === "inside" };
 let outsideCalls = 0, insideCalls = 0;
@@ -280,7 +287,82 @@ controlUI.createInfoRow('Before refresh', '1', refreshParent);
 refreshParent.replaceChildren();
 const refreshedNotice = controlUI.createInfoRow('After refresh', '2', refreshParent);
 assert.equal(refreshParent.contains(refreshedNotice), true, 'refresh never reuses a detached description');
+// TK-064: insertion order must also be the keyboard/reading order, including late controls and partial refreshes.
+const ordered = createElement('div'); controlDocument.body.appendChild(ordered);
+const firstInfo = controlUI.createInfoRow('First info', '1', ordered);
+const nested = controlUI.createSection('Nested', ordered, true, () => {});
+const orderGroup = controlUI.createControlGroup(ordered);
+controlUI.createSelectRow('Location', ['A', 'B'], 'A', orderGroup, () => {});
+const groupInfo = controlUI.createInfoRow('Group status', 'ready', orderGroup);
+let controlChanges = 0;
+controlUI.createSwitcherRow('Direct', false, ordered, () => controlChanges++, ['order', 'direct']);
+const direct = ordered.children.find(node => node.classList.contains('devtools__row'));
+const lastInfo = controlUI.createInfoRow('Last info', '2', ordered);
+const secondNested = controlUI.createSection('Second nested', ordered, false, () => {});
+const infoSection = firstInfo.parentNode.parentNode.parentNode;
+assert.deepEqual(ordered.children, [orderGroup, direct, nested.parentNode, secondNested.parentNode, infoSection],
+  'controls precede nested sections; the one description is last even when created first');
+assert(lastInfo.parentNode.parentNode === firstInfo.parentNode.parentNode, 'late descriptions share the same bottom disclosure');
+assert(groupInfo.parentNode.parentNode === firstInfo.parentNode.parentNode, 'transparent control groups keep descriptions at their logical parent');
+const checkbox = direct.children[1].children[0];
+controlUI.syncValue(['order', 'direct'], true); checkbox.fire('change');
+assert(checkbox.checked && controlChanges === 1, 'ordered insertion preserves binding identity and callbacks');
+controlUI.releaseValueBindings(orderGroup); orderGroup.replaceChildren();
+controlUI.createSelectRow('Location', ['B'], 'B', orderGroup, () => {});
+controlUI.createInfoRow('New group status', 'updated', orderGroup);
+assert(!ordered.contains(groupInfo) && ordered.contains(firstInfo), 'group refresh removes its own status without deleting sibling descriptions');
+assert.equal(ordered.children.at(-1), infoSection, 'partial refresh leaves the description last');
 controlUI.dispose();
+// Spec 131: dependencies are live conditions, not inferred from section nesting; fake clock, real controls.
+{
+  const { DevToolsDependencyFeedback } = controlRuntime.importModule("src/dev/services/dev_tools_dependency_feedback.js");
+  let now = 0, nextTimer = 0;
+  const timers = new Map();
+  const scheduler = {
+    setTimeout(fn, delay) { const id = ++nextTimer; timers.set(id, { at: now + delay, fn }); return id; },
+    clearTimeout(id) { timers.delete(id); },
+  };
+  const advance = ms => {
+    now += ms;
+    for (const [id, timer] of [...timers]) if (timer.at <= now) { timers.delete(id); timer.fn(); }
+  };
+  const feedback = new DevToolsDependencyFeedback({ scheduler, durationMs: 3000 });
+  const mount = createElement('div'); controlDocument.body.appendChild(mount);
+  const ui = new DevToolsUI(() => {}, {}, null, null, null, mount, mount, feedback);
+  const body = ui.body;
+  const parentSection = ui.createSection('Parent', body, false, () => {});
+  let parentOn = false, childOn = false, writes = 0;
+  const parentPath = ['test', 'parent'];
+  ui.createSwitcherRow('Parent enabled', false, parentSection, value => { parentOn = value; }, parentPath);
+  ui.createSwitcherRow('Child enabled', false, body, value => { childOn = value; writes++; }, ['test', 'child'], ['test', 'child'],
+    { requires: [{ path: parentPath, isEnabled: () => parentOn }] });
+  const parentRow = parentSection.children[0];
+  const childRow = body.children.find(node => node.classList.contains('devtools__row'));
+  const parentControl = parentRow.children[1].children[0], childControl = childRow.children[1].children[0];
+  const attempt = () => { childControl.checked = true; childControl.fire('change'); };
+  attempt();
+  assert(!childControl.checked && !childOn && writes === 0, 'blocked activation restores the checkbox without calling the command');
+  assert(parentRow.getAttribute('aria-invalid') === 'true' && parentSection.style.display === 'block', 'the actual blocking parent is revealed and identified');
+  advance(2999); assert.equal(parentRow.getAttribute('aria-invalid'), 'true');
+  attempt(); assert.equal(timers.size, 1, 'repeated attempts restart one timer');
+  advance(1); assert.equal(parentRow.getAttribute('aria-invalid'), 'true');
+  advance(2999); assert.equal(parentRow.getAttribute('aria-invalid'), null, 'the highlight ends after 3000 ms from the last attempt');
+  attempt(); parentControl.checked = true; parentControl.fire('change');
+  assert(parentOn && timers.size === 0 && parentRow.getAttribute('aria-invalid') === null, 'enabling the blocker clears feedback immediately');
+  attempt(); assert(childOn && childControl.checked && writes === 1, 'the child succeeds once the prerequisite is met');
+  parentOn = false; childControl.checked = false; childControl.fire('change');
+  assert(!childOn && writes === 2, 'turning a child off remains allowed with the parent off');
+  attempt(); ui.syncValue(parentPath, true);
+  assert.equal(timers.size, 0, 'a bound parent update also clears feedback');
+  attempt(); ui.releaseValueBindings(parentSection);
+  assert(timers.size === 0 && parentRow.getAttribute('aria-invalid') === null, 'releasing blocker controls cancels feedback');
+  ui.createSwitcherRow('Parent enabled again', false, parentSection, () => {}, parentPath);
+  attempt(); ui.releaseValueBindings(childRow); assert.equal(timers.size, 0, 'rebuilding the dependent control cancels feedback too');
+  attempt(); ui.togglePanel(false); assert.equal(timers.size, 0, 'closing the panel cancels feedback');
+  attempt(); ui.clearValueBindings(); assert.equal(timers.size, 0, 'rebuilding controls cancels feedback');
+  ui.createSwitcherRow('Parent after rebuild', false, parentSection, () => {}, parentPath);
+  attempt(); ui.dispose(); assert.equal(timers.size, 0, 'disposal leaves no feedback work');
+}
 // Spec 129, Revision 2 (TK-044…TK-048): one enable switch, the selected zone filled and the others muted, zone lists
 // gated by their physics, the cell grid's step/opacity/snap/size, the editor's depth map, the perspective's physics
 // and dragging the selected zone's edges.
@@ -306,7 +388,7 @@ controlUI.dispose();
   const snagColor = Number.parseInt(ZONE_CATEGORY_COLORS.snags.slice(1), 16);
   const castColor = Number.parseInt(ZONE_CATEGORY_COLORS.castable.slice(1), 16);
   const drawn = () => geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
-  state.setEditable("snags", 0, true); builder.buildInto(geometry);
+  state.setEditing("snags", true); builder.buildInto(geometry);
   let rects = drawn();
   let snag = rects.filter(rect => rect.color === snagColor);
   assert(snag.length === 1 && snag[0].x === 160 && snag[0].y === 320 && snag[0].lineWidth === 2 && snag[0].strokeAlpha === 0.95 &&
@@ -327,11 +409,8 @@ controlUI.dispose();
   state.setHovered([]); builder.buildInto(geometry);
   assert.equal(drawn().filter(rect => rect.color === snagColor)[0].fillAlpha, 0, "leaving clears the fill");
   state.setCategory("snags", true); state.setCategory("castable", true);
-  // Deleting a zone shifts the checks of the later ones; unchecking clears the hover.
-  state.setEditable("snags", 2, true); state.zoneRemoved("snags", 1);
-  assert(state.isEditable("snags", 0) && state.isEditable("snags", 1) && !state.isEditable("snags", 2), "checks follow the deletion");
-  state.zoneRemoved("snags", 0); assert(state.isEditable("snags", 0) && !state.isEditable("snags", 1));
-  state.setEditable("snags", 0, true);
+  // Category permissions cover every current/new zone without per-index state.
+  state.setEditing("snags", true);
   // TK-048: a zone category whose physics is off is not drawn.
   locations.enableSnags = false; mapRevision++; builder.buildInto(geometry);
   rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
@@ -379,12 +458,14 @@ controlUI.dispose();
   assert(strokes.length === 0 && texts.join() === "2.5", "the map writes only the water cells' depths");
 
   // TK-044…TK-048: the sections, the zone lists gated by physics, the moved controls.
-  const sections = [], rows = new Map();
+  const sections = [], rows = new Map(), controlValues = new Map();
   const record = (kind) => (label, ...args) => {
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const structureUi = { syncValue() {}, releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
+  const structureUi = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }),
+    syncValue(path, value) { controlValues.set(path.join("."), value); },
+    releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
     createInfoRow: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
     createSelectRow: record("select"), createSwitcherRow: record("switch") };
   const written = [];
@@ -393,22 +474,49 @@ controlUI.dispose();
     let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
   createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
   renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
-  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР", "Локація", "Редактор", "Зони для редагування", "Зони", "Ігрова область (закидання)",
-    "Перешкоди", "Зачепи", "Рухомі зони", "Сітка перспективи", "Збереження", "Сітка клітинок (спільне для всіх локацій)",
-    "Оверлеї гри (спільне для всіх локацій)"], "the editor's sections in order");
-  assert(rows.has("Редактор/Увімкнути") && !rows.has("Редактор/Показати редактор") && !rows.has("Редактор/Перетягувати межі обраної зони"),
-    "one enable switch");
+  const enable = rows.get("🗺️ РЕДАКТОР/Увімкнути");
+  enable.args[2](true);
+  assert(state.enabled && state.cellGrid, "the top-level enable control still enables editing and the cell grid");
+  enable.args[2](false);
+  assert(!state.enabled, "the same control disables editing");
+  const shownBefore = { ...state.categories }, writesBeforeShow = written.length;
+  rows.get("Зони/Показати всі").args[2](true);
+  assert(Object.values(state.categories).every(Boolean) && !state.enabled, "show all changes visibility without enabling editing");
+  rows.get("Зачепи/Показати зону").args[2](false);
+  assert(!state.categories.snags && state.categories.castable, "individual category visibility remains independent");
+  assert.equal(controlValues.get("ZONE_EDITOR.showAll"), false, "individual visibility updates the aggregate control");
+  rows.get("Зачепи/Показати зону").args[2](true);
+  assert.equal(controlValues.get("ZONE_EDITOR.showAll"), true, "the final shown category checks show all again");
+  rows.get("Зони/Показати всі").args[2](false);
+  assert(Object.values(state.categories).every(value => !value) && written.length === writesBeforeShow,
+    "hide all never changes gameplay physics or config");
+  for (const [category, shown] of Object.entries(shownBefore)) state.setCategory(category, shown);
+  rows.get("Сітка перспективи/Показати сітку").args[2](true);
+  assert(controlValues.get("ZONE_EDITOR.grid") && !controlValues.get("ZONE_EDITOR.cellGrid"), "perspective synchronizes both grid controls");
+  rows.get("Сітка клітинок (спільне для всіх локацій)/Показати сітку").args[2](true);
+  assert(!controlValues.get("ZONE_EDITOR.grid") && controlValues.get("ZONE_EDITOR.cellGrid"), "map grid synchronizes both controls");
   const physics = rows.get("Зачепи/Фізика зони");
+  const editableDependency = rows.get("Зони/Редагувати ігрову").args[5].requires[0];
+  const depthDependency = rows.get("Сітка клітинок (спільне для всіх локацій)/Глибина в клітинках").args[5].requires[0];
+  assert.equal(editableDependency.path.join('.'), 'ZONE_EDITOR.enabled');
+  assert(!editableDependency.isEnabled() && !depthDependency.isEnabled(), 'editable zones and depth numbers declare the editor prerequisite');
+  state.setFlag('enabled', true);
+  assert(editableDependency.isEnabled() && depthDependency.isEnabled(), 'prerequisites read current editor state');
+  state.setFlag('enabled', false);
   assert.deepEqual([physics.args[3].join("."), physics.args[5].swatch], ["CONFIG.locations.enableSnags", ZONE_CATEGORY_COLORS.snags],
     "each list's first switch is the zone's physics, with its colour");
   assert(rows.has("Зачепи/Показати зону") && rows.has("Зачепи/Номер зони") && rows.has("Зачепи/Додати зону"), "items while on");
   assert(!rows.has("Зачепи/Редагувати цю зону на мапі"), "the drag tool takes the checked zones, not the selected one");
-  // TK-055: the editable list has one switch per zone of every category with physics, in the category's colour.
-  const editableSnag = rows.get("Зони для редагування/Зачепи 1");
-  assert(editableSnag && rows.has("Зони для редагування/Ігрова область (закидання) 1") && !rows.has("Зони для редагування/Перешкоди 1") &&
-    editableSnag.args[5].swatch === ZONE_CATEGORY_COLORS.snags, "one coloured switch per zone with physics");
-  editableSnag.args[2](false); assert.equal(state.isEditable("snags", 0), false, "the switch unchecks the zone");
-  editableSnag.args[2](true); assert.equal(state.isEditable("snags", 0), true);
+  const editableSnag = rows.get("Зони/Редагувати зачепи");
+  assert(editableSnag.args[5].swatch === ZONE_CATEGORY_COLORS.snags, "category editing keeps its color");
+  editableSnag.args[2](false); assert.equal(state.isEditable("snags"), false);
+  editableSnag.args[2](true); assert.equal(state.isEditable("snags"), true);
+  rows.get("Зони/Редагувати всі").args[2](true);
+  assert(Object.values(state.editing).every(Boolean), "edit all enables the category choices");
+  editableSnag.args[2](false);
+  assert.equal(controlValues.get("ZONE_EDITOR.editAll"), false, "individual editing updates the aggregate");
+  rows.get("Зони/Редагувати всі").args[2](false);
+  assert(Object.values(state.editing).every(value => !value), "edit all off clears all categories");
   assert(!rows.has("Перешкоди/Показати зону") && !rows.has("Перешкоди/Додати зону"), "no items while the physics is off");
   rows.get("Перешкоди/Фізика зони").args[2](true);
   assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
@@ -455,7 +563,7 @@ controlUI.dispose();
   const pointer = (type, x, y, id = 1) => { let prevented = false;
     layer.listeners.get(type)({ clientX: x / 2, clientY: y / 2, pointerId: id, preventDefault: () => { prevented = true; } });
     return prevented; };
-  state.setEditable("castable", 0, true);
+  state.setEditing("castable", true);
   assert.equal(pointer("pointerdown", 300, 500), false, "inside the zone, away from its edges and middle, nothing is taken");
   pointer("pointermove", 1000, 500);
   assert(layer.classes.has("zone-editor-drag-layer--x"), "hovering an edge shows the resize cursor");
@@ -514,16 +622,43 @@ controlUI.dispose();
   lake.zones.castable = [{ x: 2, y: 3, w: 10, h: 10 }];
   // TK-055: a small editable zone inside a large one hovers both; the smallest is taken and selected.
   lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
-  state.setEditable("snags", 0, true);
+  state.setEditing("snags", true);
   pointer("pointermove", 200, 340);
   assert(state.isHovered("castable", 0) && state.isHovered("snags", 0), "a small zone inside a large one hovers both");
   pointer("pointerdown", 200, 340); pointer("pointermove", 240, 340); pointer("pointerup", 240, 340);
   assert(lake.zones.snags[0].x === 5 && lake.zones.snags[0].w === 2 && lake.zones.castable[0].x === 2 && state.selection.category === "snags",
     "the smallest zone under the pointer is moved and becomes the selected one");
   pointer("pointermove", 1900, 1900); assert.equal(state.hovered.size, 0, "away from every zone nothing is hovered");
+  // TK-065: only the dropdown's index can be hovered/taken, even with overlapping bodies.
+  lake.zones.castable = [{ x: 1, y: 1, w: 2, h: 2 }, { x: 4, y: 4, w: 4, h: 4 }];
+  state.setEditing("snags", false); state.select("castable", 1);
+  const beforeSelectionWrites = writes.length;
+  pointer("pointermove", 80, 80);
+  assert(!state.isHovered("castable", 0) && !pointer("pointerdown", 80, 80), "zone 1 ignores hover/down while zone 2 is selected");
+  pointer("pointermove", 120, 80); pointer("pointerup", 120, 80);
+  assert.equal(writes.length, beforeSelectionWrites, "unselected zone never writes geometry");
+  pointer("pointermove", 240, 240);
+  assert(state.isHovered("castable", 1), "selected zone 2 receives hover");
+  pointer("pointerdown", 240, 240);
+  let releases = 0; layer.releasePointerCapture = () => { releases++; };
+  state.select("castable", 0);
+  assert.equal(state.hovered.size, 0, "changing the dropdown immediately clears previous hover");
+  drag.sync();
+  pointer("pointermove", 280, 240); pointer("pointerup", 280, 240);
+  assert(releases === 1 && writes.length === beforeSelectionWrites, "selection change cancels capture and forbids the previous drag write");
+  assert(pointer("pointerdown", 80, 80), "zone 1 becomes clickable after explicit selection");
+  pointer("pointermove", 120, 80); pointer("pointerup", 120, 80);
+  assert.equal(lake.zones.castable[0].x, 2, "the explicitly selected body is edited");
+  state.select("castable", 1); state.select("snags", 0);
+  assert.equal(state.selectedIndex("castable"), 1, "category changes retain the dropdown's chosen index");
+  lake.zones.castable[0] = { x: 5, y: 5, w: 2, h: 2 };
+  pointer("pointermove", 240, 240);
+  assert(!state.isHovered("castable", 0) && state.isHovered("castable", 1), "overlap cannot give hover to the smaller unselected body");
+  pointer("pointerdown", 240, 240); pointer("pointerup", 240, 240);
+  assert.equal(state.selectedIndex("castable"), 1, "overlapping clicks never steal selection");
   pointer("pointermove", 500, 500); layer.listeners.get("pointerleave")();
   assert.equal(state.hovered.size, 0, "leaving the layer clears the hover");
-  state.setEditable("castable", 0, false);
+  state.setEditing("castable", false);
   assert.equal(pointer("pointerdown", 600, 600), false, "an unchecked zone is never taken");
   state.setFlag("enabled", false); drag.sync();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
@@ -547,6 +682,285 @@ controlUI.dispose();
 
 // Spec 130: the editor works on a chosen location; only the loaded one is drawn; its zone file is exported,
 // imported into the session and reset to the code, and reopening another location warns about unexported edits.
+// TK-061..063: passive visibility never enables interaction; grids have one authoritative choice.
+{
+  const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
+  const passive = new ZoneEditorState();
+  assert(!passive.cellGrid && !passive.grid, "both grids start hidden");
+  const passiveBuilder = new ZoneEditorGeometryBuilder({ state: passive, map, projector, config, getWaterMetric: () => metric });
+  const passiveFrame = {};
+  passiveBuilder.buildInto(passiveFrame); assert.equal(passiveFrame.annotations, null);
+  passive.setEditing("castable", true); passive.setHovered(["castable:0"]); passive.setFlag("background", false);
+  passive.setCategory("castable", true); passiveBuilder.buildInto(passiveFrame);
+  assert(passiveFrame.annotations.rectCount > 0 && passiveFrame.annotations.rects.slice(0, passiveFrame.annotations.rectCount)
+    .every(rect => rect.lineWidth === 1 && rect.fillAlpha === .15), "passive zones have no edit handles or hover feedback");
+  assert.equal(passiveFrame.backgroundHidden, false, "passive viewing preserves the game background");
+  let attached = 0;
+  const passiveTool = new ZoneEditorDragController({ state: passive, map, projector, config, canvasMetrics: { width: 1000, height: 1000 },
+    getCanvas() {}, documentTarget: { createElement() { attached++; } }, mountNode: {}, writeZones() {} });
+  passiveTool.sync(); assert(!passiveTool.active && attached === 0, "passive viewing does not intercept game input");
+  passive.setCategory("castable", false); passiveBuilder.buildInto(passiveFrame); assert.equal(passiveFrame.annotations, null);
+  passive.setFlag("cellGrid", true); passiveBuilder.buildInto(passiveFrame);
+  assert(passive.cellGrid && !passive.grid && passiveFrame.annotations.cellLineCount > 0, "map grid visible without editing");
+  passive.setFlag("grid", true); passiveBuilder.buildInto(passiveFrame);
+  assert(passive.grid && !passive.cellGrid && passiveFrame.annotations.cellLineCount === 0 && passiveFrame.annotations.lineCount > 0,
+    "perspective replaces the map grid without editing");
+  passive.setFlag("cellGrid", true); assert(passive.cellGrid && !passive.grid, "map grid replaces perspective");
+  passive.setFlag("cellGrid", false); assert(!passive.cellGrid && !passive.grid, "both grids may be off");
+  passive.setFlag("grid", true); passive.setFlag("enabled", true);
+  assert(passive.cellGrid && !passive.grid, "entering edit mode selects the map grid exclusively");
+  passiveTool.dispose();
+}
+
+// Spec 133 / G-119: reflect the entire body at every edge, without centre-only overflow.
+{
+  const { DynamicZone } = load("src/game/domain/locations/dynamic_zone.js");
+  const { containsRectangle } = load("src/engine/math/rectangle_bounds.js");
+  const bounds = { x: 0, y: 0, w: 10, h: 10 };
+  const moving = (x, y, sx, sy, area = bounds) => {
+    const zone = new DynamicZone({ id: 'edge', x, y, w: 2, h: 2, moving: true, speedX: sx, speedY: sy, bounds: area }, { next: () => 0 });
+    zone.speedX = sx; zone.speedY = sy; zone.dirTimer = 1e9;
+    return zone;
+  };
+  for (const [x, y, sx, sy] of [[8, 2, 1, 0], [0, 2, -1, 0], [2, 8, 0, 1], [2, 0, 0, -1], [8, 8, 1, 1]]) {
+    const zone = moving(x, y, sx, sy); zone.update(100);
+    assert(containsRectangle(bounds, zone), 'the body never overflows by half its width/height');
+    if (sx) assert.equal(zone.speedX, -sx, 'horizontal edge contact reflects horizontal speed');
+    if (sy) assert.equal(zone.speedY, -sy, 'vertical edge contact reflects vertical speed');
+  }
+  const contact = moving(7, 3, 1, .5); contact.update(1000);
+  assert(contact.x === 8 && contact.speedX === -1 && contact.speedY === .5, 'exact contact reflects only the colliding axis');
+  const huge = moving(3, 3, 9, 7); huge.update(100000);
+  assert(containsRectangle(bounds, huge) && Math.abs(huge.speedX) === 9 && Math.abs(huge.speedY) === 7, 'large steps reflect without escaping or losing configured speed');
+  const escaped = moving(9, -1, 1, -1); escaped.update(100);
+  assert(containsRectangle(bounds, escaped), 'old centre-only placements are recovered into the nearest fitting area');
+  const invalid = moving(2, 2, 1, 0, { x: 0, y: 0, w: 1, h: 1 }); invalid.update(100);
+  assert(invalid.x === 2 && invalid.w === 2, 'an impossible body is frozen, never silently resized');
+  const gap = moving(1, 1, 1, 0, [bounds, { x: 30, y: 0, w: 10, h: 10 }]); gap.update(50000);
+  assert(containsRectangle(bounds, gap), 'disjoint areas are never joined into a permissive bounding box');
+}
+
+// Spec 132: real live zones, one body each, pause/current-position edits/resume and untouched siblings.
+{
+  const { LocationMap } = load("src/game/domain/locations/location_map.js");
+  const { GameWorld } = load("src/game/application/world/game_world.js");
+  const { DevFlagsProvider } = load("src/dev/runtime/dev_flags_provider.js");
+  const { ZoneEditorConfigEdits } = load("src/dev/location/zone_editor_config_edits.js");
+  const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
+  const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 400, height: 400 }, enableDynamicZones: true,
+    map: { live: { depthBounds: { min: 1, max: 5 }, zones: { castable: [], collisions: [], snags: [], dynamic: [
+      { id: 'a', x: 1, y: 1, w: 1, h: 1, moving: true, speedX: 1, speedY: 0, bounds: [{ x: 0, y: 0, w: 10, h: 10 }] },
+      { id: 'b', x: 4, y: 4, w: 1, h: 1, moving: true, speedX: 1, speedY: 0, bounds: [{ x: 0, y: 0, w: 10, h: 10 }] },
+    ] } } } } };
+  const liveMap = new LocationMap('live', cfg.locations, { next: () => 0 }, {}), st = new ZoneEditorState();
+  // Spec 134: controlled fresh starts reach both grid extrema; config refresh never randomizes.
+  assert.deepEqual([liveMap.getDynamicZones()[0].x, liveMap.getDynamicZones()[0].y], [0, 0], 'low random draw selects first legal grid start');
+  const highMap = new LocationMap('live', cfg.locations, { next: () => .999999 }, {});
+  assert.deepEqual([highMap.getDynamicZones()[0].x, highMap.getDynamicZones()[0].y], [9, 9], 'high draw selects last full-body grid start');
+  let gameplayDraws = 0;
+  new LocationMap('live', cfg.locations, { next: () => { gameplayDraws++; return 0; } }, {}, { next: () => .75 });
+  assert.equal(gameplayDraws, 0, 'injected start sampling leaves gameplay RNG untouched');
+  const { DynamicZone } = load('src/game/domain/locations/dynamic_zone.js');
+  const single = new DynamicZone({ x: 99, y: 99, w: 2, h: 2, moving: true,
+    bounds: [{ x: .5, y: .5, w: .5, h: .5 }, { x: 7, y: 8, w: 2, h: 2 }] });
+  single.randomizeStart({ next: () => .5 });
+  assert.deepEqual([single.x, single.y], [7, 8], 'disjoint bounds skip non-fitting regions and support a single legal start');
+  const noStart = new DynamicZone({ x: .2, y: .3, w: 1, h: 1, moving: true, bounds: { x: .2, y: .3, w: 1, h: 1 } });
+  noStart.randomizeStart({ next() { throw new Error('no legal grid start must not sample'); } });
+  assert.deepEqual([noStart.x, noStart.y], [.2, .3], 'no legal grid point retains authored geometry');
+  const stationary = new DynamicZone({ x: 2, y: 3, w: 1, h: 1, moving: false, bounds: { x: 0, y: 0, w: 10, h: 10 } });
+  stationary.randomizeStart({ next() { throw new Error('stationary zone must not sample'); } });
+  assert.deepEqual([stationary.x, stationary.y], [2, 3]);
+  const fineConfig = JSON.parse(JSON.stringify(cfg.locations));
+  fineConfig.cellSize = 20;
+  fineConfig.map.live.zones.dynamic[0].x = 1.125;
+  fineConfig.map.live.zones.dynamic[0].y = 1.375;
+  const fineMap = new LocationMap('live', fineConfig, { next: () => .5 }, {});
+  assert(Number.isInteger(fineMap.getDynamicZones()[0].x) && Number.isInteger(fineMap.getDynamicZones()[0].y), 'start uses active map cells');
+  fineMap.refreshConfig(fineConfig, {});
+  assert.deepEqual([fineMap.getDynamicZones()[0].x, fineMap.getDynamicZones()[0].y], [2.25, 2.75], 'fine-grid refresh preserves exact fractional design position');
+  liveMap.refreshConfig(cfg.locations, {}); // Existing edit/resume scenario starts from deliberate authored geometry.
+  const proj = { update() {}, getScale: () => 1, getCanvasWidth: () => 400,
+    virtualToScreen: (x, y, out) => out ? out.set(x, y) : { x, y }, screenToVirtual: (x, y, out) => out ? out.set(x, y) : { x, y } };
+  const geo = new ZoneEditorGeometryBuilder({ state: st, map: liveMap, projector: proj, config: cfg, getWaterMetric: () => null });
+  const flags = new DevFlagsProvider({ config: cfg, zoneEditorState: st });
+  const world = new GameWorld({ map: liveMap, projector: proj, env: { update() {}, getSnapshot: () => ({ time: 12 }) },
+    chum: { update() {}, updateBoats() {} }, location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
+    locationConfig: cfg.locations, waterMetricSource: { current: () => null }, isZoneMotionPaused: () => flags.isEnabled('pauseDynamicZones') });
+  const step = dt => world.update(dt, 1, { left: 0, top: 0, right: 400, bottom: 400 });
+  step(1000); assert.equal(liveMap.getDynamicZones()[0].x, 2, 'zone moves away from its authored start');
+  st.setFlag('enabled', true); st.setEditing('dynamic', true); st.setCategory('dynamic', true);
+  step(1000); assert.equal(liveMap.getDynamicZones()[0].x, 2, 'enabling category editing pauses actual game motion');
+  const frame = {}; geo.buildInto(frame);
+  assert.equal(frame.annotations.overlay.rectCount, 2, 'one live body per dynamic zone with editing and visibility together');
+  assert(!frame.annotations.rects.slice(0, frame.annotations.rectCount).some(rect => rect.lineWidth === 2), 'no static editable copies');
+  assert.equal(frame.annotations.overlay.rects[0].x, 80, 'drawing uses the current game position');
+  const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => liveMap });
+  assert.equal(commands.readDynamicZones('live')[0].x, 2, 'parameter fields read current coordinates');
+  commands.prepare(['CONFIG', 'locations', 'map', 'live', 'zones', 'dynamic', '0', 'bounds', '0', 'x'], -1);
+  assert.equal(cfg.locations.map.live.zones.dynamic[0].bounds[0].x, 0, 'preparing nested edits never mutates authored data before validation');
+  let writes = 0;
+  const write = (path, value) => {
+    const command = commands.prepare(path, value); writes++;
+    let target = cfg; for (const key of command.path.slice(1, -1)) target = target[key]; target[command.path.at(-1)] = command.value;
+    world.refreshLocationConfig(cfg.locations, {});
+  };
+  write(['CONFIG', 'locations', 'map', 'live', 'zones', 'dynamic', '0', 'w'], 2);
+  assert(liveMap.getDynamicZones()[0].x === 2 && liveMap.getDynamicZones()[1].x === 5, 'a size edit preserves both live positions');
+  let layer;
+  const makeElement = () => ({ listeners: new Map(), classList: { add() {}, remove() {} },
+    addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener() {}, remove() {} });
+  const tool = new ZoneEditorDragController({ state: st, map: liveMap, projector: proj, config: cfg, canvasMetrics: { width: 400, height: 400 },
+    getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 400 }) }),
+    documentTarget: { createElement: makeElement, body: makeElement() }, mountNode: { prepend: node => { layer = node; } }, writeZones: write });
+  tool.sync();
+  const pointer = (type, x, y) => { let taken = false; layer.listeners.get(type)({ clientX: x, clientY: y, pointerId: 1,
+    preventDefault() { taken = true; } }); return taken; };
+  assert(!pointer('pointerdown', 60, 60), 'the old authored position is not a drag target');
+  assert(pointer('pointerdown', 120, 60), 'the current live body is the drag target');
+  pointer('pointermove', 160, 100); pointer('pointerup', 160, 100);
+  const moved = liveMap.getDynamicZones()[0];
+  assert(moved.x === 3 && moved.y === 2 && moved.w === 2 && liveMap.getDynamicZones()[1].x === 5, 'drag updates the game body and preserves its sibling');
+  st.setNumber('snapCells', 3);
+  pointer('pointerdown', 160, 100); pointer('pointermove', 165, 103); pointer('pointerup', 165, 103);
+  assert.deepEqual([liveMap.getDynamicZones()[0].x, liveMap.getDynamicZones()[0].y], [3.125, 2.075], 'dynamic translation ignores multi-cell snapping and survives config refresh');
+  pointer('pointerdown', 165, 103); pointer('pointermove', 160, 100); pointer('pointerup', 160, 100);
+  st.setNumber('snapCells', 1);
+  // Spec 133: body selection exposes its own bounds; area and body edits cannot exclude each other.
+  assert(st.boundsEditing && st.selection.category === 'dynamic' && st.selection.index === 0, 'body press selects its movement area');
+  geo.buildInto(frame);
+  assert.equal(frame.annotations.rects.slice(0, frame.annotations.rectCount).filter(rect => rect.fillAlpha === .9).length, 4,
+    'only the selected area exposes its four handles');
+  pointer('pointerdown', 400, 200); pointer('pointermove', 160, 200); pointer('pointerup', 160, 200);
+  let bounded = liveMap.getDynamicZones()[0];
+  assert(bounded.bounds[0].w === 5 && bounded.x === 3 && bounded.w === 2, 'shrinking the area stops at the body edge');
+  pointer('pointerdown', 160, 100); pointer('pointermove', 2000, 2000); pointer('pointerup', 2000, 2000);
+  bounded = liveMap.getDynamicZones()[0];
+  assert(bounded.x === 3 && bounded.y === 9, 'body movement intersects window and movement-area constraints');
+  pointer('pointerdown', 200, 380); pointer('pointermove', 1200, 380); pointer('pointerup', 1200, 380);
+  bounded = liveMap.getDynamicZones()[0];
+  assert(bounded.x + bounded.w <= 5, 'body resize cannot extend beyond its area');
+  const coordinateEdit = commands.prepare(['CONFIG', 'locations', 'map', 'live', 'zones', 'dynamic', '0', 'x'], 1000);
+  assert(coordinateEdit.value[0].x + coordinateEdit.value[0].w <= 5, 'direct coordinate edits obey containment too');
+  const numericArea = commands.prepare(['CONFIG', 'locations', 'map', 'live', 'zones', 'dynamic', '0', 'bounds', '0', 'w'], 1);
+  assert(numericArea.value[0].bounds[0].w >= bounded.w, 'numeric area size cannot become smaller than its body');
+  pointer('pointerdown', 100, 200); pointer('pointermove', 140, 200); pointer('pointerup', 140, 200);
+  bounded = liveMap.getDynamicZones()[0];
+  assert(bounded.bounds[0].x === 1 && bounded.x === 3, 'the area middle moves its bounds while retaining the body');
+  pointer('pointerdown', 40, 0); pointer('pointermove', 1000, 1000); pointer('pointerup', 1000, 1000);
+  bounded = liveMap.getDynamicZones()[0];
+  assert(bounded.bounds[0].x <= bounded.x && bounded.bounds[0].y <= bounded.y && bounded.bounds[0].w >= bounded.w && bounded.bounds[0].h >= bounded.h,
+    'area corner resize cannot exclude the body');
+  const separateConfig = JSON.parse(JSON.stringify(cfg));
+  separateConfig.locations.map.live.zones.dynamic[0].bounds.push({ x: 30, y: 0, w: 10, h: 10 });
+  const separateCommands = new ZoneEditorConfigEdits({ config: separateConfig, getMap: () => liveMap });
+  const separateArea = separateCommands.prepare(['CONFIG', 'locations', 'map', 'live', 'zones', 'dynamic', '0', 'bounds', '0', 'w'], 1);
+  assert.equal(separateArea.value[0].bounds[1].x, 30, 'editing the containing area never moves a separate allowed region');
+  const before = bounded.x; step(1000); assert.equal(bounded.x, before, 'edited zone remains paused');
+  st.setEditing('dynamic', false); step(100);
+  assert(bounded.x !== before, 'motion resumes and bounces from the edited area edge');
+  const untouched = commands.prepare(['CONFIG', 'ui', 'x'], 7);
+  assert.equal(untouched.value, 7, 'unrelated config edits are unchanged');
+  assert(writes >= 7 && writes <= 8, 'only accepted geometry gestures write coordinates');
+  st.setEditing('dynamic', true);
+  pointer('pointerdown', 220, 180); pointer('pointerup', 220, 180);
+  assert.equal(st.selectedIndex('dynamic'), 0, 'clicking another body never changes the dropdown selection');
+  st.select('dynamic', 1);
+  pointer('pointerdown', 220, 180); pointer('pointerup', 220, 180);
+  assert(st.boundsEditing && st.selection.index === 1, 'explicit selection permits that body and its own bounds');
+  geo.buildInto(frame);
+  assert.equal(frame.annotations.rects.slice(0, frame.annotations.rectCount).filter(rect => rect.fillAlpha === .9).length, 4,
+    'switching the selection removes the previous area handles');
+  const beforeIdChange = writes;
+  pointer('pointerdown', 220, 180);
+  cfg.locations.map.live.zones.dynamic[1].id = 'replacement';
+  pointer('pointermove', 260, 180); pointer('pointerup', 260, 180);
+  assert.equal(writes, beforeIdChange, 'replacing an ID at the same index cancels the old target instead of editing its replacement');
+  cfg.locations.map.live.zones.dynamic[1].id = 'b';
+  st.setFlag('enabled', false);
+  assert(!st.boundsEditing && st.hoveredBound === -1, 'leaving editing clears bounds selection and hover');
+  assert(!flags.isEnabled('pauseDynamicZones'), 'leaving editor mode always releases motion');
+  tool.dispose();
+}
+
+// Spec 135: actual map/command/creation pipeline, circle input and shared renderer commands.
+{
+  const { LocationMap } = load('src/game/domain/locations/location_map.js');
+  const { ZoneEditorConfigEdits } = load('src/dev/location/zone_editor_config_edits.js');
+  const { ZoneEditorDragController } = load('src/dev/location/zone_editor_drag_controller.js');
+  const format = load('src/dev/location/zone_export_format.js');
+  const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 400, height: 400 },
+    map: { shapes: { depthBounds: { min: 1, max: 5 }, zones: { castable: [], collisions: [], snags: [], dynamic: [] } } } } };
+  const map = new LocationMap('shapes', cfg.locations, { next: () => 0 }, {});
+  const st = new ZoneEditorState(); st.loadedLocationId = 'shapes'; st.locationId = 'shapes';
+  const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => map });
+  const write = (path, value) => {
+    const command = commands.prepare(path, value);
+    let target = cfg; for (const key of command.path.slice(1, -1)) target = target[key]; target[command.path.at(-1)] = command.value;
+    map.refreshConfig(cfg.locations, {});
+  };
+  const rows = new Map();
+  const ui = { createControlGroup: () => ({ label: 'Локація', replaceChildren() {} }), releaseValueBindings() {}, syncValue() {}, createInfoRow() {},
+    createSelectRow: (label, options, value, parent, action) => rows.set(`${parent.label}/${label}`, action),
+    createInputRow: (label, value, parent, type, action) => rows.set(`${parent.label}/${label}`, action),
+    createSwitcherRow() {}, createRangeRow() {}, createButtonRow: (label, parent, action) => rows.set(`${parent.label}/${label}`, action) };
+  const section = new ZoneEditorSection({ ui, state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }),
+    renderTree() {}, updateConfig: write, readDynamicZones: id => commands.readDynamicZones(id), getWaterMetric: () => metric,
+    createWaterMetric: options => WaterMetric.illustrated(options) });
+  section.render({});
+  const action = label => rows.get(`Рухомі зони/${label}`);
+  action('Форма нової зони')('Коло'); action('Додати зону')();
+  const first = cfg.locations.map.shapes.zones.dynamic[0];
+  assert(first.shape === 'circle' && first.w === first.h && first.moving && first.bounds.length === 1, 'empty-list circle creation has valid motion and bounds');
+  action('Форма нової зони')('Квадрат'); action('Додати зону')();
+  const second = cfg.locations.map.shapes.zones.dynamic[1];
+  assert(second.shape === 'square' && second.w === second.h && second.id !== first.id, 'creation choice overrides copied shape and gives a fresh identity');
+  action('Видалити вибрану зону')();
+  const path = ['CONFIG', 'locations', 'map', 'shapes', 'zones', 'dynamic'];
+  write(path, [{ ...first, x: 2, y: 2, w: 4, h: 4 }]); st.zonesEdited();
+  action('Діаметр, клітинок')(3);
+  assert.deepEqual([map.getDynamicZones()[0].w, map.getDynamicZones()[0].h], [3, 3], 'numeric diameter updates both live dimensions');
+  write([...path, 0, 'h'], 4);
+  st.setFlag('enabled', true); st.setEditing('dynamic', true); st.setCategory('dynamic', true);
+  const proj = { getScale: () => 1, virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y) };
+  let layer;
+  const element = () => ({ classList: { add() {}, remove() {} }, listeners: new Map(), addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener() {}, remove() {} });
+  const drag = new ZoneEditorDragController({ state: st, map, projector: proj, config: cfg, canvasMetrics: { width: 400, height: 400 },
+    documentTarget: { createElement: element, body: element() }, mountNode: { prepend: node => { layer = node; } },
+    getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 400 }) }), writeZones: write });
+  drag.sync();
+  const pointer = (type, x, y) => { let taken = false; layer.listeners.get(type)({ clientX: x, clientY: y, pointerId: 1, preventDefault() { taken = true; } }); return taken; };
+  pointer('pointermove', 80, 80);
+  assert(!st.isHovered('dynamic', 0) && !pointer('pointerdown', 80, 80), 'circle bounding-box corner neither hovers nor selects the body');
+  assert(pointer('pointerdown', 160, 160), 'circle centre is movable');
+  pointer('pointermove', 165, 163); pointer('pointerup', 165, 163);
+  assert.deepEqual([map.getDynamicZones()[0].x, map.getDynamicZones()[0].y], [2.125, 2.075], 'circle translation stays continuous');
+  pointer('pointerdown', 245, 163); pointer('pointermove', 1000, 163); pointer('pointerup', 1000, 163);
+  const body = map.getDynamicZones()[0];
+  assert(body.w === body.h && body.x + body.w <= 10 && body.y + body.h <= 10, 'contour resizing stays round and inside its movement area');
+  const geo = new ZoneEditorGeometryBuilder({ state: st, map, projector: proj, config: cfg, getWaterMetric: () => metric });
+  const frame = {}; geo.buildInto(frame);
+  assert.equal(frame.annotations.overlay.rects[0].shape, 'ellipse', 'live circle emits the shared ellipse primitive');
+  const movingBuilds = geo.overlayRebuilds;
+  geo.buildInto(frame); assert.equal(geo.overlayRebuilds, movingBuilds, 'unchanged circle has no geometry rebuild');
+  let overlay;
+  const render = new PixiAnnotationRenderer({ pixi: { Graphics }, stage: { addChild: (a, b) => { overlay = b; } } });
+  render.update(frame.annotations);
+  assert(overlay.operations.some(entry => entry[0] === 'ellipse'), 'WebGL consumes the ellipse command');
+  let canvasEllipses = 0;
+  const canvas = { ...surface, ellipse() { canvasEllipses++; }, fill() {} };
+  new WorldDebugRenderer({ surface: canvas }).render({ visible: true, annotations: frame.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
+  assert.equal(canvasEllipses, 1, 'Canvas fallback consumes the same circular body once');
+  const zones = cfg.locations.map.shapes.zones;
+  assert.equal(format.validateZones(zones).length, 0);
+  const source = format.zoneModuleSource('shapes', zones);
+  assert(source.includes('shape: "circle"'), 'code serialization retains circle shape');
+  assert(format.validateZones({ dynamic: [{ ...zones.dynamic[0], shape: 'triangle' }] }).length > 0, 'unknown imported shape refused');
+  assert(format.validateZones({ dynamic: [{ ...zones.dynamic[0], h: 1 }] }).length > 0, 'unequal circle size refused');
+  assert.equal(format.validateZones({ dynamic: [{ id: 'old', x: 0, y: 0, w: 2, h: 3 }] }).length, 0, 'legacy rectangle remains accepted');
+  drag.dispose(); section.dispose();
+}
+
 (async () => {
   const format = load("src/dev/location/zone_export_format.js");
   const { createHash } = require("node:crypto");
@@ -567,7 +981,7 @@ controlUI.dispose();
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const ui = { syncValue() {}, releaseValueBindings(parent) {
+  const ui = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }), syncValue() {}, releaseValueBindings(parent) {
     for (const map of [rows, info]) for (const key of [...map.keys()]) if (key.startsWith(`${parent.label}/`)) map.delete(key);
   }, createInfoRow: (label, value, parent) => { const element = { innerText: value }; info.set(`${parent?.label}/${label}`, element); return element; },
   createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
@@ -589,6 +1003,7 @@ controlUI.dispose();
 
   // Export: the chosen location's full zones, the code's hash, a dated file name.
   cfg.locations.map.lake.zones.castable[0].x = 3; st.zonesEdited();
+  cfg.locations.map.lake.zones.dynamic.push({ id: 'roundtrip-circle', shape: 'circle', x: 1, y: 2, w: 2, h: 2, moving: true });
   assert.match(status(), /Змінено \(ще не в коді\): Ігрова область/u, "the status names the changed categories");
   press("Збереження/Експорт зон"); await settle();
   const file = JSON.parse(downloads[0].text);
@@ -599,12 +1014,13 @@ controlUI.dispose();
   assert(!("pond" in file.zones) && !("locations" in file), "only this location's zones, not the config");
 
   // Reset to the code, then import the file back into the session.
-  st.setEditable("castable", 0, true);
+  st.setEditing("castable", true);
   press("Збереження/Скинути зміни зон до коду");
-  assert(resets.join() === "lake" && st.editable.size === 0 && status() === "Зони збігаються з кодом.", "reset returns to the code");
+  assert(resets.join() === "lake" && Object.values(st.editing).every(value => !value) && status() === "Зони збігаються з кодом.", "reset returns to the code");
   picked = downloads[0].text; press("Збереження/Імпорт зон"); await settle();
   assert(writes.at(-1) === "CONFIG.locations.map.lake.zones" && cfg.locations.map.lake.zones.castable[0].x === 3,
     "an imported file becomes the session's zones of the location");
+  assert.equal(cfg.locations.map.lake.zones.dynamic[0].shape, 'circle', 'browser export/reset/import retains the circular body');
   const before = writes.length;
   picked = JSON.stringify({ ...file, locationId: "pond" }); press("Збереження/Імпорт зон"); await settle();
   assert(writes.length === before && /Файл для локації pond/u.test(status()), "a file of another location is refused");
@@ -614,11 +1030,11 @@ controlUI.dispose();
   assert(writes.length === before && /не прийнято: zones\.castable\.0/u.test(status()), "a broken zone is refused with its path");
 
   // Another location: lists only, nothing drawn or dragged, reopening warns about unexported edits.
-  st.setEditable("castable", 0, true);
+  st.setEditing("castable", true);
   select.args[3]("Pond (pond)");
   select = rows.get("Локація/Локація");
-  assert(st.locationId === "pond" && st.editable.size === 0 && select.args[1] === "Pond (pond)", "choosing a location starts it clean");
-  assert(/На екрані: Lake \(lake\)/u.test(info.get("Локація/На екрані").innerText) && rows.has("Зони для редагування/Ігрова область (закидання) 1"),
+  assert(st.locationId === "pond" && Object.values(st.editing).every(value => !value) && select.args[1] === "Pond (pond)", "choosing a location starts it clean");
+  assert(/На екрані: Lake \(lake\)/u.test(info.get("Локація/На екрані").innerText) && rows.has("Зони/Редагувати ігрову"),
     "the lists follow the chosen location and the screen is named");
   st.setFlag("enabled", true); const frame = {}; geometry.buildInto(frame);
   assert.equal(frame.annotations, null, "the editor draws nothing for a location that is not on screen");

@@ -1,5 +1,11 @@
 /* DEV Tools panel, editor fields, switches and scrollbars. */
 .game-shell__dev-ui { display: contents; }
+.devtools__control-group { display: contents; }
+.devtools__row--blocked-prerequisite {
+  outline: 2px solid var(--ui-danger);
+  outline-offset: -2px;
+  border-radius: var(--ui-radius-control);
+}
 .ui-surface--time-accelerated { --ui-clock-width: 196px; }
 .devtools__action {
   box-sizing: border-box;

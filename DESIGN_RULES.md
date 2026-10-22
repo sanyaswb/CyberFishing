@@ -4,6 +4,15 @@ Read this file before creating or changing any UI: markup, CSS, SVG, components,
 
 The owner's current explicit instructions take precedence. This file is the current source of design rules; completed `specs/` preserve historical decisions. Adding a rule for future changes does not automatically authorize redesigning every existing screen.
 
+## Intuitive interaction (owner, 2026-10-22)
+
+Every interface, including DEV tools, must make its meaning and result clear from the control and the object it affects.
+The object the user sees, selects and edits must be the same current object used by the system. Do not draw an
+unlabelled editable copy beside a live object, or expose a switch that appears effective while a prerequisite blocks it.
+Group related actions with their objects, avoid duplicate controls and representations, and show blocking dependencies
+at the responsible control. Explanatory text complements understandable behavior; it must not compensate for misleading
+behavior. Check each change against the user's expected action and visible result, including editing and visibility.
+
 ## 1. Reuse components and styles
 
 - Prefer an existing component, BEM block, token or renderer. Do not copy a button, meter or declaration group merely because another page needs it.

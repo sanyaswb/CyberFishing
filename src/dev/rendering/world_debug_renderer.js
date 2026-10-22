@@ -68,9 +68,14 @@ export class WorldDebugRenderer {
       const alpha = surface.globalAlpha;
       surface.globalAlpha = alpha * (r.fillAlpha ?? .12);
       surface.fillStyle = surface.strokeStyle;
-      surface.fillRect(r.x, r.y, r.width, r.height);
+      if (r.shape === "ellipse") {
+        surface.beginPath();
+        surface.ellipse(r.x + r.width / 2, r.y + r.height / 2, r.width / 2, r.height / 2, 0, 0, Math.PI * 2);
+        surface.fill();
+      } else surface.fillRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha * (r.strokeAlpha ?? 1);
-      surface.strokeRect(r.x, r.y, r.width, r.height);
+      if (r.shape === "ellipse") surface.stroke();
+      else surface.strokeRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha;
     }
     surface.strokeStyle = "rgba(136, 221, 255, 0.5)";

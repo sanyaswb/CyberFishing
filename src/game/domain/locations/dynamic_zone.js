@@ -1,3 +1,5 @@
+import { clampRectanglePosition, findRectangleContainer } from "../../../engine/math/rectangle_bounds.js";
+
 export class DynamicZone {
   #rng;
 
@@ -5,6 +7,7 @@ export class DynamicZone {
     this.#rng = rng || { next: () => Math.random() };
     this.id = config.id;
     this.type = config.type;
+    this.shape = config.shape;
     this.multiplier = config.multiplier;
     this.x = config.x;
     this.y = config.y;
@@ -26,6 +29,30 @@ export class DynamicZone {
       : min + this.#rng.next() * (max - min);
   }
 
+  // Fresh-map initialization only. Choose a legal grid point without enumerating all cells.
+  randomizeStart(rng = this.#rng) {
+    if (!this.moving || !this.bounds) return;
+    const regions = Array.isArray(this.bounds) ? this.bounds : [this.bounds];
+    let total = 0;
+    const choices = [];
+    for (const region of regions) {
+      const x = Math.ceil(region.x), y = Math.ceil(region.y);
+      const cols = Math.floor(region.x + region.w - this.w) - x + 1;
+      const rows = Math.floor(region.y + region.h - this.h) - y + 1;
+      if (cols <= 0 || rows <= 0 || !Number.isFinite(cols * rows)) continue;
+      choices.push({ x, y, cols, count: cols * rows });
+      total += cols * rows;
+    }
+    if (!total) return;
+    let index = Math.min(total - 1, Math.floor(rng.next() * total));
+    for (const choice of choices) {
+      if (index >= choice.count) { index -= choice.count; continue; }
+      this.x = choice.x + index % choice.cols;
+      this.y = choice.y + Math.floor(index / choice.cols);
+      return;
+    }
+  }
+
   update(dt) {
     if (!this.moving) return;
 
@@ -45,46 +72,32 @@ export class DynamicZone {
       this.x = 10;
       this.y = 15;
     }
-
-
-    const isInside = (px, py) => {
-      if (!this.bounds) return true;
-      const bArr = Array.isArray(this.bounds) ? this.bounds : [this.bounds];
-      const cx = px + this.w / 2;
-      const cy = py + this.h / 2;
-
-      for (const b of bArr) {
-        if (b.x !== undefined && !isNaN(b.x)) {
-          if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
-
-    let bounced = false;
-
-
-    const nextX = this.x + this.speedX * timeScale;
-    if (isInside(nextX, this.y)) {
-      this.x = nextX;
-    } else {
-      this.speedX *= -1;
-      bounced = true;
+    if (!this.bounds) {
+      this.x += this.speedX * timeScale;
+      this.y += this.speedY * timeScale;
+      return;
     }
-
-
-    const nextY = this.y + this.speedY * timeScale;
-    if (isInside(this.x, nextY)) {
-      this.y = nextY;
-    } else {
-      this.speedY *= -1;
-      bounced = true;
-    }
+    const region = findRectangleContainer(this, this.bounds);
+    if (!region) return; // Invalid-sized data has no legal position; never silently resize gameplay state.
+    clampRectanglePosition(this, region);
+    const bouncedX = this.#moveAxis("x", "speedX", region.x, region.x + region.w - this.w, timeScale);
+    const bouncedY = this.#moveAxis("y", "speedY", region.y, region.y + region.h - this.h, timeScale);
+    const bounced = bouncedX || bouncedY;
 
     if (bounced) {
       this.dirTimer = Math.max(this.dirTimer, 1000);
     }
+  }
+
+  #moveAxis(positionKey, speedKey, low, high, seconds) {
+    if (seconds === 0) return false;
+    const speed = this[speedKey], next = this[positionKey] + speed * seconds;
+    if (!(high > low)) { this[positionKey] = low; return false; }
+    if ((next > low && next < high) || speed === 0) { this[positionKey] = next; return false; }
+    const span = high - low, period = span * 2;
+    const phase = ((next - low) % period + period) % period;
+    this[positionKey] = low + (phase <= span ? phase : period - phase);
+    this[speedKey] = phase === 0 ? Math.abs(speed) : phase === span ? -Math.abs(speed) : speed * (phase < span ? 1 : -1);
+    return true;
   }
 }

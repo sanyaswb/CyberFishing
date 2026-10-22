@@ -2,42 +2,42 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.31 - Selected Zone Input
+
+- Zone hover and editing follow the selected number in each category. Other bodies cannot steal the selection; changing it clears hover and cancels stale dragging, with an additional ID check for moving zones.
+
+## v0.46.30 - Moving-Zone Shapes
+
+- Choose Circle or Square before adding a moving zone, or change the selected body shape. Circular contours, uniform resizing and numeric diameter edits agree across WebGL, Canvas and pointer input; export/import and apply:zones preserve shape while legacy rectangles remain compatible.
+
+## v0.46.29 - Free Moving-Zone Placement
+
+- Dynamic bodies translate continuously in the editor. Fresh locations choose random grid-aligned starts inside movement bounds; editing retains exact positions and gameplay RNG stays independent.
+
+## v0.46.28 - Whole-Zone Movement Bounds
+
+- Moving zones bounce with their full body inside their allowed area. In DEV, click a body to edit its movement bounds; body and area move/resize edits keep containment and use the same config/export path.
+
+## v0.46.27 - Edit the Live Zones
+
+- DevTools Zones groups category editing and visibility controls, draws each moving zone only once at its current position, pauses it for editing, and resumes from the edited position. Config edits preserve current positions; design rules require intuitive, unambiguous interaction.
+
+## v0.46.26 - Explain Blocked DevTools Switches
+
+- Dependent switches reject activation while a declared prerequisite is off and outline the blocker for three seconds or until enabled. Editable zones and depth numbers require the editor; visibility and grids stay independent.
+
+## v0.46.25 - Consistent DevTools Tree Order
+
+- Every DevTools section shows direct controls first, nested sections next and its description last, preserving keyboard order and partial refresh behavior.
+
+## v0.46.24 - Independent Zone Visibility
+
+- DevTools: show zones without editing, toggle all zone categories together, and keep the map and perspective grids mutually exclusive with synchronized switches.
+
+## v0.46.23 - Editor Controls at the Top
+
+- DevTools «РЕДАКТОР»: location is the first dropdown, followed directly by the editor controls; removed the nested location and editor disclosures.
+
 ## v0.46.22 - Location Editor and Zone Files
 
 - DevTools "Редактор": choose a location first; export, import and reset its zones as a file; npm run apply:zones moves a zone file into the code with checks, confirmation and a backup.
-
-## v0.46.21 - Zone Move Stays in the Window
-
-- Zone editor: the move area is no longer drawn; a zone moved by its middle stays inside the game window.
-
-## v0.46.20 - Zone Editor Revision 3
-
-- Zone editor: check the zones to edit (2 px outline, fill under the pointer), move a whole zone from its middle 30%; the fullscreen button hides with the game UI.
-
-## v0.46.19 - DevTools from the Left Edge
-
-- While the zone editor is on, the DevTools button hides too; the panel opens from the left screen edge (mouse hover or swipe right).
-
-## v0.46.18 - Zone Delete and Editor Screen
-
-- The zone editor deletes any zone, the last one too; while it is on, the game's buttons and windows are hidden.
-
-## v0.46.17 - Perspective Grid Off
-
-- Turning the zone editor on shows the cell grid only; the perspective grid stays off until switched on.
-
-## v0.46.16 - Zone defaults
-
-- Zone physics of every category is on by default (obstacles, snags, moving fish school); the zone editor starts with zone areas and depth numbers hidden.
-
-## v0.46.15 - Zone Editor Revision 2
-
-- Spec 129 Revision 2 (TK-044…TK-048, DEV only): one "Увімкнути" switch (zones, cell grid, dragging); per-category zone lists whose first switch is the zone's physics; the selected zone filled, others muted; "Сітка клітинок" (opacity sliders, line step, snap, cell size, depth numbers) and "Сітка перспективи" (show, projection physics, step, projection values) sections; old debug-map config keys removed. Full 66/66; game-cycle baseline unchanged. Owner check pending.
-
-## v0.46.14 - Zone Editor Tools
-
-- Spec 129 (TK-040…TK-043, DEV only): colour squares for zone categories; the location debug map (grid, depth numbers, zone fills) follows its own switches, also under the open editor, with a visible grid; "Locations / Zones" moved into the zone editor in six sections; the selected zone is outlined with handles over a map cell grid and its edges can be dragged with snapping to cells. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner check pending.
-
-## v0.46.13 - Float Rocking Stage 2
-
-- TK-039 / spec 128 stage 2 (owner): right after landing the float rocks ×3 and settles over 1.5 s; the float's wind tilt (breeze and gusts, already reduced by its wind compensation) and the rain make it livelier, swelling smoothly (0.6 s); heavy ballast rocks half as much and 30% slower; the tempo follows the waves' speed / wavelength. The phase is integrated, so tempo edits never make the float jump; 30/60/144 FPS rock alike. New DevTools settings in canvas.water.floatRocking (landingBoost, landingSettleSec, windShare, rainShare, ballastCalm, ballastSlow, waveTempoShare); the DEV status row shows each multiplier. Visual only. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.

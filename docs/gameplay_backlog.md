@@ -20,6 +20,30 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-121 Circle or square moving-zone bodies (P3, done in v0.46.31)
+Found: 2026-10-23, owner, spec 135.
+Reproduce: adding a dynamic zone always produces rectangular geometry without a shape choice.
+Expected: circle/square creation choice, round body selection and shape-preserving editing/export.
+Actual: rectangular body only.
+Notes: existing movement bounds stay rectangular; no new buff/collision mechanic.
+Verified: deterministic creation, numeric/contour editing, shape hit tests, WebGL/Canvas and browser/CLI round-trips pass. Full 66/67, only known committed PNG release failure; game-cycle baseline unchanged. Owner visual and phone performance acceptance pending.
+
+### G-120 Random grid-aligned moving-zone starts (P3, done in v0.46.31)
+Found: 2026-10-23, owner, spec 134.
+Reproduce: create maps with different controlled random draws; starts always equal authored x/y.
+Expected: moving zones start at random legal grid positions; editing refresh preserves live positions.
+Actual: fixed authored start at each load.
+Notes: LocationMap fresh creation / DynamicZone; zone-editor deterministic scenarios.
+Verified: pre-fix controlled low draw failed; legal extreme starts, fine-grid refresh, independent start RNG and no-fit/stationary cases pass. Full 66/67, known committed lobby PNG failure; game-cycle unchanged. Owner visual acceptance pending.
+
+### G-119 Moving zone crosses its allowed area by half its size (P2, done in v0.46.31)
+Found: 2026-10-23, owner, moving-zone editing and runtime motion (spec 133).
+Reproduce: body x=8, w=2 inside bounds x=0, w=10, positive horizontal velocity; advance a fixed step.
+Expected: its right edge stays at or below 10 and horizontal velocity reverses at the edge.
+Actual: DynamicZone checks x+w/2, so its right edge may reach 11. Editor drag/resize has no movement-area constraint.
+Scope: full-rectangle runtime bounce and shared DEV containment, without changing RNG scheduling or save format.
+Resolution: full-body edge reflection, including exact contact/large steps; shared rectangle constraints also limit DEV movement/resize and numeric edits. Fixed-clock regression scenarios pass. Full 66/67: only pre-existing pages-release PNG failure; game-cycle unchanged, no rebaseline. Owner visual acceptance pending.
+
 ### G-116 Selector sectors gain a thick yellow border during interaction (P3, implemented in v0.46.6)
 Found: 2026-10-22, owner, radial selector.
 Reproduce: expand the selector and highlight or focus equipment/backpack/keepnet.

@@ -9,6 +9,10 @@ version. There are no CSS imports, runtime style installers or build requirement
 
 ## Ownership
 
+TK-065/v0.46.31: each zone-category dropdown retains its selected number. Only that number receives map hover/body input; clicking another body never selects it. Selection changes clear hover and cancel stale captures, including dynamic bounds; live targets also check their authored ID before writing.
+
+Spec 135/v0.46.30: moving-zone creation reuses the existing select row for Circle/Square; the selected shape has one diameter/side input. Legacy unequal rectangles retain their dimensions and an explicit rectangle label. Circle annotations use the shared reusable geometry and native ellipse primitives in WebGL/Canvas; cardinal contour handles and input hit testing match the live body. No new CSS component or texture is introduced.
+
 TK-013 (v0.45.33) groups DEV controls without changing config/override paths: top navigation and shop button,
 then Overlay → CONFIG → DEBUG (one Inventory with Split), scene/zone editors, Database (locations/fish/items),
 Spine (the skeleton name) and the final Service group (Runtime overrides / Item progression).
@@ -18,6 +22,42 @@ TK-035: the panel's last grid row `devtools__footer` (outside the scrolling body
 preserves local expansion across refresh and rejects detached groups; editable controls remain in their original
 parent and keep their bindings. Section titles are semantic buttons with `aria-expanded`. Hover/press on action
 buttons changes only the background; keyboard focus keeps its outline. No polling or new global state.
+
+TK-059: the location select is the first control in «РЕДАКТОР», followed by the editor controls without nested
+«Локація»/«Редактор» disclosures. `DevToolsUI.createControlGroup` provides a `display: contents` refresh boundary
+for location controls, so changing the location cannot remove the editor switches or other sections.
+
+TK-061…063: «Зони → Показати всі» updates the existing category visibility flags; its value is derived from all
+four flags, with no separate stored state. Zone visibility and the two grids work outside edit mode without a drag
+layer or hidden game controls. Entering edit mode selects the cell grid; enabling either grid disables the other
+and synchronizes both switches. Both grids start off and may be off together. Physics flags remain independent.
+
+TK-064: `DevToolsUI` inserts each parent's controls/actions first, nested sections next, and its single «Опис»
+disclosure last. Relative order within each category follows creation order. DOM order is also keyboard/reading
+order; CSS does not reorder it. Transparent control groups share their parent's description and release only
+their own info rows during refresh. Automatic CONFIG trees and custom sections use this same insertion owner.
+
+Spec 131: switch prerequisites are declared explicitly, never inferred from tree nesting. Rejected activation
+restores the bound value and outlines the first unmet prerequisite with `devtools__row--blocked-prerequisite`
+and `--ui-danger` without changing geometry or keyboard focus decoration. The injected DEV feedback owner
+reveals collapsed sections and owns one 3000ms timer, cleared on parent activation or control lifecycle changes.
+Editable zones and depth numbers require editor enablement; zone visibility and grids remain independent.
+
+Spec 132 supersedes the separate editable-zone checklist: «Зони» starts with «Редагувати ігрову», «Редагувати
+перешкоди», «Редагувати зачепи», «Редагувати рухомі», «Редагувати всі», «Показати всі», then the existing category
+subsections. A category owns one editing flag for all its zones; no per-zone permission set remains. Editing
+requires the editor and the category's physics (all four for edit-all), using spec 131 blocker feedback.
+Dynamic zone bodies/handles and pointer selection use current map geometry, never an additional authored-start
+rectangle. Category editing pauses dynamic motion at its current position and releases it on exit. Coordinate
+fields read current snapshots on refresh; accepted config edits snapshot the category's positions so config reload
+cannot reset untouched moving zones to their original starts. Movement boundaries retain their separate outlines.
+
+Spec 133: pressing an editable dynamic body selects its movement area and reveals that area's handles only.
+Areas use an unfilled outline, with a light fill only while their own drag target is hovered; body hover no longer
+fills a large movement rectangle. The body remains the primary hit target inside its actual rectangle; selected
+area targets take priority over unrelated static zones. Move/resize gestures snap and obey full-rectangle
+containment; the containing area cannot exclude its body. Leaving editing, changing location or clearing selection
+removes the area-editing context. Geometry writes keep the established config/export path and shared ownership.
 
 DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches. Spec 129 adds two DEV
 elements in `src/dev/styles/dev-tools.css`: `devtools__swatch` (a category colour square before a label or beside a

@@ -155,14 +155,24 @@ async function checkHouseToolsComposition() {
   assert.equal(houseOptions.mountHeaderControl(doc.body), null, "no DevTools, no header toggle");
 
   const uiDocument = new TestDocument();
+  const createUiElement = uiDocument.createElement.bind(uiDocument);
+  uiDocument.createElement = tag => {
+    const element = createUiElement(tag);
+    // The test document does not parse the panel header's fixed innerHTML.
+    element.querySelector = selector => {
+      const child = createUiElement("div"); child.className = selector.slice(1); element.appendChild(child); return child;
+    };
+    return element;
+  };
   const runtime = new SourceRuntime({ globals: { document: uiDocument } });
   const { DevToolsUI } = runtime.importModule("src/dev/tools/dev_tools_ui.js");
-  const ui = Object.create(DevToolsUI.prototype);
+  const ui = new DevToolsUI(() => {}, {}, null, null, null, uiDocument.body, createUiElement("div"));
   let opened = 0;
   ui.createNavigation([["Catalog", () => opened++]], uiDocument.body);
   const row = uiDocument.byClass("devtools__row--navigation")[0];
   const navigationButton = row.children[0];
   assert.equal(navigationButton.type, "button"); navigationButton.click(); assert.equal(opened, 1);
+  ui.dispose();
 }
 
 checkHouseToolsComposition().then(() => console.log("DEV time passed: 1.5..5/reset, disabled/production isolation, continuous hours/phase, normal saved rate, House screen rate transfer/tools, compact navigation, tablet/orientation and bounded work."))

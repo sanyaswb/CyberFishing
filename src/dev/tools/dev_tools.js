@@ -27,6 +27,9 @@ export class DevTools {
   #scene;
   #zoneEditorState;
   #zoneEditorFiles;
+  #prepareZoneEdit;
+  #readDynamicZones;
+  #zoneEditorSection = null;
   #gameVersion;
   #getWaterMetric;
   #createWaterMetric;
@@ -72,6 +75,8 @@ export class DevTools {
       scene = null,
       zoneEditorState = null,
       zoneEditorFiles = null,
+      prepareZoneEdit = null,
+      readDynamicZones = null,
       gameVersion = "",
       getWaterMetric = null,
       createWaterMetric = null,
@@ -90,6 +95,8 @@ export class DevTools {
     this.#storageCache = storageCache;
     this.#zoneEditorState = zoneEditorState;
     this.#zoneEditorFiles = zoneEditorFiles;
+    this.#prepareZoneEdit = prepareZoneEdit;
+    this.#readDynamicZones = readDynamicZones;
     this.#gameVersion = gameVersion;
     this.#getWaterMetric = getWaterMetric;
     this.#createWaterMetric = createWaterMetric;
@@ -156,10 +163,13 @@ export class DevTools {
       this.#onDebugLiveUpdate,
     );
     this.#liveData = null;
+    this.#zoneEditorSection?.dispose();
     this.#ui.dispose();
   }
 
   #populatePanel() {
+    this.#zoneEditorSection?.dispose();
+    this.#zoneEditorSection = null;
     const body = this.#ui.body;
     this.#ui.clearValueBindings();
     body.innerHTML = "";
@@ -176,7 +186,8 @@ export class DevTools {
     this.#renderConfigSection(body);
     const debugContent = this.#renderConfigDebugSection(body);
     this.#renderSceneLayerSection(body);
-    if (this.#zoneEditorState) new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
+    if (this.#zoneEditorState) {
+      this.#zoneEditorSection = new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
       renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
       updateConfig: (path, value) => this.#updateConfigValue(path, value),
@@ -187,7 +198,10 @@ export class DevTools {
       getBaseZones: id => this.#configRuntime?.baseConfig.locations.map[id]?.zones ?? null,
       resetZones: this.#configRuntime ? id => this.#resetLocationZones(id) : null,
       gameVersion: this.#gameVersion,
-    }).render(body);
+      readDynamicZones: this.#readDynamicZones,
+      });
+      this.#zoneEditorSection.render(body);
+    }
 
     this.#renderDatabaseSection(body);
     if (this.#rodSpine) this.#renderSpineRodSection(this.#createSectionWithCache("SPINE", body, ["SPINE"]));
@@ -796,6 +810,8 @@ export class DevTools {
 
   #updateConfigValue(path, newValue) {
     path = this.#parameterAliases?.resolveCanonicalPath(path) || path;
+    const displayPath = path;
+    if (this.#prepareZoneEdit) ({ path, value: newValue } = this.#prepareZoneEdit(path, newValue));
     const root = this.#resolveEditableRoot(path[0]);
     if (!root) return;
 
@@ -812,6 +828,11 @@ export class DevTools {
     }
 
     this.#ui.syncValue(path, newValue);
+    if (displayPath !== path) {
+      let displayedValue = newValue;
+      for (const key of displayPath.slice(path.length)) displayedValue = displayedValue?.[key];
+      this.#ui.syncValue(displayPath, displayedValue);
+    }
 
     this.#syncDebugConsoleModule(path, newValue);
     this.#syncHookedFishProfileAliases(path, newValue, root);

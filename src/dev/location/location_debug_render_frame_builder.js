@@ -1,8 +1,8 @@
 import { Vector2 } from "../../engine/math/vector2.js";
 
 // The zone editor's world layer (spec 129, Revision 2): the editor's geometry, its drag layer and, while the editor
-// is on with the depth numbers switched on, the location's depth map at the editor's depth opacity. Without the
-// editor nothing is drawn: zones, fills and cell lines are the editor's own geometry.
+// is on with the depth numbers switched on, the location's depth map at the editor's depth opacity. Outside
+// editing, explicitly shown zones and either grid still come from the geometry builder without a drag layer.
 export class LocationDebugRenderFrameBuilder {
   #map;
   #projector;
@@ -14,6 +14,7 @@ export class LocationDebugRenderFrameBuilder {
   #zoneEditor;
   #zoneEditorTool;
   #editorState;
+  #notifiedMapRevision = -1;
 
   // zoneEditor: { buildInto(target) } geometry; zoneEditorTool: optional { sync() } kept in step with the editor's
   // switches once per frame (the drag layer); editorState: ZoneEditorState (enabled, depth, depthOpacity).
@@ -36,6 +37,12 @@ export class LocationDebugRenderFrameBuilder {
     this.#zoneEditor?.buildInto(target);
     this.#zoneEditorTool?.sync();
     const state = this.#editorState;
+    // Config reload is asynchronous: refresh paused live-coordinate fields only after the map accepted its revision.
+    const revision = this.#map.getRevision();
+    if (revision !== this.#notifiedMapRevision) {
+      this.#notifiedMapRevision = revision;
+      if (state?.enabled && state.editsLoadedLocation && state.isEditable("dynamic")) state.zonesEdited();
+    }
     if (!state?.enabled || !state.depth || !(state.depthOpacity > 0)) return;
     const debugCanvas = this.#getDebugCanvas(this.#config.locations || {});
     if (!debugCanvas) return;

@@ -38,6 +38,7 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     const moved = JSON.parse(JSON.stringify(ZONES));
     moved.collisions[0].x = 14;
     moved.snags.push({ x: 1, y: 2, w: 3, h: 1 });
+    moved.dynamic[0].shape = "circle";
 
     // Hash: key order never matters, and the browser and the script hash the same text.
     const shuffled = { dynamic: ZONES.dynamic.map(zone => Object.fromEntries(Object.entries(zone).reverse())), snags: ZONES.snags,
@@ -67,7 +68,9 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     asked = 0;
     for (const [text, reason] of [["{", "not JSON"], [exported(moved, { locationId: "lake" }), "unknown location"],
       [exported(moved, { designCellSize: 20 }), "another design grid"], [exported({ ...moved, castable: [{ x: 0, y: 0, w: 0, h: 1 }] }), "an empty zone"],
-      [exported({ ...moved, dynamic: [{ ...moved.dynamic[0] }, { ...moved.dynamic[0] }] }), "a repeated dynamic id"]]) {
+      [exported({ ...moved, dynamic: [{ ...moved.dynamic[0] }, { ...moved.dynamic[0] }] }), "a repeated dynamic id"],
+      [exported({ ...moved, dynamic: [{ ...moved.dynamic[0], shape: "triangle" }] }), "an unknown shape"],
+      [exported({ ...moved, dynamic: [{ ...moved.dynamic[0], h: 2 }] }), "an unequal circle"]]) {
       assert.equal(await applier.apply(text, { yes: true }), "refused", reason); untouched();
     }
     assert.equal(await applier.apply(exported(moved, { locationId: "pond" }), { yes: true }), "refused", "a location without a module");

@@ -805,7 +805,8 @@ export class GameCompositionRoot {
       locCfg,
       this.#config.locations,
     );
-    const locationMap = new LocationMap(locId, this.#config.locations, rng, locationResources);
+    // Session starts vary even when gameplay uses a fixed seed; sampling never advances gameplay RNG.
+    const locationMap = new LocationMap(locId, this.#config.locations, rng, locationResources, { next: () => Math.random() });
     const waterMetricResolver = new LocationWaterMetricResolver({
       pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter, logger: new ConsoleLogger(),
     });
@@ -1051,6 +1052,7 @@ export class GameCompositionRoot {
       clock,
       locationConfig: this.#config.locations,
       waterMetricSource: systems.waterMetricSource,
+      isZoneMotionPaused: () => devFlags.isEnabled("pauseDynamicZones"),
     });
     const equipment = new EquipmentService(systems.inventory);
     const fishing = new FishingController({

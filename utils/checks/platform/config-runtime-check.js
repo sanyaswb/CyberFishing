@@ -192,6 +192,8 @@ function checkDevelopmentInputs() {
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; this.footer = {}; } },
+    DevToolsDependencyFeedback: Renderer, BrowserTimeoutScheduler: class { constructor(host) { this.host = host; } },
+    zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null,
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
     pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance, pageParams } });
@@ -263,6 +265,8 @@ function checkDevelopmentInputs() {
   assert.equal(tools.synchronizer, synchronizer);
   assert.equal(tools.options.configRuntime, configRuntime);
   assert.equal(tools.options.configValidation, configValidation, "DEV tools validate the live config after edits");
+  assert.equal(tools.options.readDynamicZones("live")[0].id, "live", "zone fields use the composed live coordinate source");
+  assert.equal(tools.options.prepareZoneEdit(["CONFIG"], 42).value, 42, "zone commands use the composed edit projector");
   assert.equal(tools.options.itemProgressionResolver, progression);
   tools.options.openHouse();
   tools.options.openUiCatalog();
@@ -273,6 +277,8 @@ function checkDevelopmentInputs() {
   assert.equal(toolsUi.args[0], toggle);
   assert.equal(toolsUi.args[4], uiSurface, "DEV dragging shares the production logical coordinate space");
   assert.equal(toolsUi.args[5], developmentMount, "DEV controls retain their independent outcome visibility branch");
+  assert.equal(toolsUi.args[7].options.scheduler.host, window, "dependency feedback uses the composed browser scheduler");
+  assert.equal(toolsUi.args[7].options.durationMs, 3000, "bootstrap owns the three-second feedback duration");
   assert.deepEqual(renderedVersions, [toolsUi.footer], "the DevTools footer shows the project version badge (TK-035)");
 }
 checkDevelopmentInputs();

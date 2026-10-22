@@ -45,40 +45,56 @@ export class ZoneEditorGeometryBuilder {
     target.backgroundHidden = false;
     const state = this.#state;
     // Only the location on screen is drawn (spec 130 D2); another chosen location is edited in the lists only.
-    if (!state.enabled || !state.editsLoadedLocation) return;
+    if (!state.editsLoadedLocation) return;
+    if (!state.enabled && !state.cellGrid && !state.grid && !this.#hasShownCategory()) return;
     const metric = this.#getMetric();
     const origin = this.#projector.virtualToScreen(0, 0, this.#origin);
     const scale = this.#projector.getScale();
-    const moving = state.categories.dynamic && this.#config.locations.enableDynamicZones !== false
+    const moving = (state.categories.dynamic || state.enabled && state.isEditable("dynamic")) && this.#config.locations.enableDynamicZones !== false
       ? this.#map.getDynamicZones() : EMPTY_ZONES;
-    const topologyChanged = this.#dynamic.length !== moving.length * 4;
+    const topologyChanged = this.#dynamic.length !== moving.length * 5;
     let dirty = topologyChanged;
     for (let i = 0; i < moving.length; i++) {
-      const zone = moving[i], offset = i * 4;
+      const zone = moving[i], offset = i * 5;
       if (this.#dynamic[offset] !== zone.x || this.#dynamic[offset + 1] !== zone.y ||
-        this.#dynamic[offset + 2] !== zone.w || this.#dynamic[offset + 3] !== zone.h) dirty = true;
+        this.#dynamic[offset + 2] !== zone.w || this.#dynamic[offset + 3] !== zone.h || this.#dynamic[offset + 4] !== zone.shape) dirty = true;
       this.#dynamic[offset] = zone.x; this.#dynamic[offset + 1] = zone.y;
       this.#dynamic[offset + 2] = zone.w; this.#dynamic[offset + 3] = zone.h;
+      this.#dynamic[offset + 4] = zone.shape;
     }
-    this.#dynamic.length = moving.length * 4;
+    this.#dynamic.length = moving.length * 5;
     const staticDirty = topologyChanged || metric !== this.#metric || state.revision !== this.#revision || this.#mapRevision !== this.#map.getRevision() ||
       scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y;
     if (staticDirty) {
       this.#metric = metric; this.#revision = state.revision; this.#mapRevision = this.#map.getRevision();
       this.#scale = scale; this.#x = origin.x; this.#y = origin.y;
-      this.#rebuild(moving);
+      this.#rebuild();
     }
     if (dirty || staticDirty) {
       this.overlayRebuilds++; this.#movingModel.revision++; this.#movingModel.rectCount = 0;
       const cell = this.#config.locations.cellSize;
-      for (const zone of moving) this.#rect(zone.x * cell, zone.y * cell, zone.w * cell, zone.h * cell, COLORS.dynamic, this.#movingModel);
+      for (let index = 0; index < moving.length; index++) {
+        const zone = moving[index], editable = state.enabled && state.isEditable("dynamic");
+        const hovered = editable && state.isHovered("dynamic", index);
+        const x = zone.x * cell, y = zone.y * cell, w = zone.w * cell, h = zone.h * cell;
+        this.#rect(x, y, w, h, COLORS.dynamic, this.#movingModel, editable ? EDITABLE_LINE_WIDTH : 1,
+          hovered ? HOVER_FILL : state.categories.dynamic ? SHOWN.fill : 0, editable ? EDITABLE_STROKE : SHOWN.stroke, zone.shape === "circle");
+        if (hovered) this.#handles(x, y, w, h, COLORS.dynamic, this.#movingModel, zone.shape === "circle");
+      }
     }
     this.#model.overlay = moving.length ? this.#movingModel : null;
     target.annotations = this.#model;
-    target.backgroundHidden = !state.background;
+    target.backgroundHidden = state.enabled && !state.background;
   }
 
-  #rebuild(moving) {
+  #hasShownCategory() {
+    for (const category of CATEGORIES) {
+      if (this.#state.categories[category] && this.#config.locations[PHYSICS_KEYS[category]] !== false) return true;
+    }
+    return false;
+  }
+
+  #rebuild() {
     this.rebuilds++; this.#model.revision++; this.#model.lineCount = 0; this.#model.rectCount = 0;
     this.#model.cellLineCount = 0;
     this.#model.cellLineAlpha = this.#state.cellGridOpacity;
@@ -92,22 +108,27 @@ export class ZoneEditorGeometryBuilder {
       const shown = state.categories[category];
       const records = zones[category] || EMPTY_ZONES;
       for (let index = 0; index < records.length; index++) {
-        const editable = state.isEditable(category, index);
+        const editable = state.enabled && state.isEditable(category);
         if (!editable && !shown) continue;
         const hovered = editable && state.isHovered(category, index);
         const zone = records[index], color = COLORS[category];
         const fill = hovered ? HOVER_FILL : shown ? SHOWN.fill : 0;
         const lineWidth = editable ? EDITABLE_LINE_WIDTH : 1, stroke = editable ? EDITABLE_STROKE : SHOWN.stroke;
-        // A moving zone's live position is the overlay; its authored rectangle shows while it is being edited.
-        if (category !== "dynamic" || !moving.length || editable) {
+        // Dynamic bodies and handles exist only in the live overlay; authored positions are never a second body.
+        if (category !== "dynamic") {
           const x = zone.adaptiveX ? 0 : zone.x * cell;
           const w = zone.adaptiveX ? width : zone.w * cell, y = zone.y * cell, h = zone.h * cell;
           this.#rect(x, y, w, h, color, this.#model, lineWidth, fill, stroke);
           if (hovered) this.#handles(x, y, w, h, color);
         }
         if (zone.bounds) {
-          for (const b of Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) {
-            this.#rect(b.x * cell, b.y * cell, b.w * cell, b.h * cell, color, this.#model, 1, fill, SHOWN.stroke);
+          const bounds = Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds];
+          const selected = category === "dynamic" && editable && state.boundsEditing && state.selection.category === "dynamic" && state.selection.index === index;
+          for (let boundIndex = 0; boundIndex < bounds.length; boundIndex++) {
+            const b = bounds[boundIndex], active = selected && state.hoveredBound === boundIndex;
+            const x = b.x * cell, y = b.y * cell, w = b.w * cell, h = b.h * cell;
+            this.#rect(x, y, w, h, color, this.#model, selected ? EDITABLE_LINE_WIDTH : 1, active ? SHOWN.fill : 0, selected ? EDITABLE_STROKE : SHOWN.stroke);
+            if (selected) this.#handles(x, y, w, h, color);
           }
         }
       }
@@ -126,10 +147,12 @@ export class ZoneEditorGeometryBuilder {
   }
 
   // Corner squares of HANDLE_PX logical pixels, filled, so a hovered editable zone shows where it can be taken.
-  #handles(x, y, w, h, color) {
+  #handles(x, y, w, h, color, target = this.#model, circular = false) {
     const size = HANDLE_PX / this.#scale;
-    for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) {
-      this.#rect(cx - size / 2, cy - size / 2, size, size, color, this.#model, 1, 0.9, 0.95);
+    const points = circular ? [[x, y + h / 2], [x + w, y + h / 2], [x + w / 2, y], [x + w / 2, y + h]]
+      : [[x, y], [x + w, y], [x, y + h], [x + w, y + h]];
+    for (const [cx, cy] of points) {
+      this.#rect(cx - size / 2, cy - size / 2, size, size, color, target, 1, 0.9, 0.95);
     }
   }
 
@@ -175,11 +198,12 @@ export class ZoneEditorGeometryBuilder {
     this.#projector.virtualToScreen(x2, y2, this.#point); record.x2 = this.#point.x; record.y2 = this.#point.y;
   }
 
-  #rect(x, y, w, h, color, target = this.#model, lineWidth = 1, fillAlpha = 0.12, strokeAlpha = 0.9) {
+  #rect(x, y, w, h, color, target = this.#model, lineWidth = 1, fillAlpha = 0.12, strokeAlpha = 0.9, circular = false) {
     const index = target.rectCount++;
     const record = target.rects[index] ||= {};
     this.#projector.virtualToScreen(x, y, this.#point); record.x = this.#point.x; record.y = this.#point.y;
     record.width = w * this.#scale; record.height = h * this.#scale; record.color = color;
     record.lineWidth = lineWidth; record.fillAlpha = fillAlpha; record.strokeAlpha = strokeAlpha;
+    record.shape = circular ? "ellipse" : "rect";
   }
 }

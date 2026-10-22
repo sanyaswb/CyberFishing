@@ -16,6 +16,11 @@ export class DevToolsControlBindingRegistry {
     for (const binding of bindings) binding.applyValue(value);
   }
 
+  elements(path) {
+    return (this.#bindingsByPath.get(this.#normalizePath(path)) || [])
+      .map(binding => binding.element).filter(element => element?.parentNode);
+  }
+
   releaseWithin(container) {
     for (const [path, bindings] of this.#bindingsByPath) {
       const retained = bindings.filter(binding => !binding.element || !container.contains(binding.element));
