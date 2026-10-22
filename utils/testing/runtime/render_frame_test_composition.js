@@ -60,7 +60,12 @@ function checkRenderFrameComposition() {
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,getWind:()=>null}),/requires rodAnimation/);
   const floatPose=new c.FloatPoseAnimator({getConfig:()=>({})});
   assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,getWaterMetric:()=>waterMetric}),/requires floatPose/);
-  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,getWaterMetric:()=>waterMetric,getTimeOfDay:()=>12});
+  // Spec 128: a rocking float moves its waterline point; the line must end at that moved point.
+  const floatRocking={compute:()=>({dx:4,dy:-3,turnRad:0})};
+  assert.throws(()=>new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,getWaterMetric:()=>waterMetric,getTimeOfDay:()=>12}),/requires floatRocking/);
+  const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400,rodAnimation,getWind:()=>null,floatPose,floatRocking,getWaterMetric:()=>waterMetric,getTimeOfDay:()=>12});
+  const lineEnd={x:NaN,y:NaN},buildRodLine=equipmentBuilder.buildRodLine.bind(equipmentBuilder);
+  equipmentBuilder.buildRodLine=context=>{lineEnd.x=context.floatPosition.x;lineEnd.y=context.floatPosition.y;buildRodLine(context);};
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
   let castRodMovement=null;
   const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastRodMovement:()=>castRodMovement,getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});
@@ -84,7 +89,7 @@ function checkRenderFrameComposition() {
   let record=null,fishRecord=null,restoreProgress=null,contextFrame=null;
   for(let index=1;index<=120;index++) {
     clock.now=clock.realNow=index*16;order.length=0;const frame=coordinator.render(0.016);assert.equal(frame,buffer.current);assert.equal(frame.dt,0.016);assert.equal(frame.viewport.width,800);assert.equal(frame.world.chumZones.count,1);assert.equal(frame.world.boats.count,1);assert.equal(frame.world.waypoints.count,2);assert.equal(frame.world.sensorRays.count,1);
-    assert.equal(frame.fishing.float.kind,'float');assert.equal(frame.fishing.fightAreas.netZone.visible,true);assert.equal(frame.fishing.fightAreas.sectorPoints.count,66);assert.equal(frame.fishing.fightAreas.lineRadiusPoints.count,65);assert.equal(frame.hud.fishCondition.staminaRatio,0.7);assert.equal(frame.hud.holdCharges.restoreProgress[0],0.5);
+    assert.equal(frame.fishing.float.kind,'float');assert(lineEnd.x===frame.fishing.float.x&&lineEnd.y===frame.fishing.float.y,'the line ends at the rocked float point');assert.equal(frame.fishing.fightAreas.netZone.visible,true);assert.equal(frame.fishing.fightAreas.sectorPoints.count,66);assert.equal(frame.fishing.fightAreas.lineRadiusPoints.count,65);assert.equal(frame.hud.fishCondition.staminaRatio,0.7);assert.equal(frame.hud.holdCharges.restoreProgress[0],0.5);
     assert.equal(frame.outcome.victory.spriteId,'fish:fish.png');assert.equal(frame.outcome.victory.stats.count,4);assert.equal(frame.outcome.victory.layout,layout);assert.deepEqual(order,['world','casting','fishing','hud','outcome']);
     if(record){assert.equal(frame.world.boats.getAt(0),record);assert.equal(frame.outcome.victory.fish,fishRecord);assert.equal(frame.hud.holdCharges.restoreProgress,restoreProgress);assert.equal(frame,contextFrame);}else{record=frame.world.boats.getAt(0);fishRecord=frame.outcome.victory.fish;restoreProgress=frame.hud.holdCharges.restoreProgress;contextFrame=frame;}
   }

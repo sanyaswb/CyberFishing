@@ -194,20 +194,21 @@ export class FishingRenderFrameBuilder {
     fightAreaContext.floatVirtualPosition = floatPosition;
     this.#fightAreaBuilder.buildInto(fightAreaContext);
 
-    const rodLineContext = this.#rodLineContext;
-    rodLineContext.target = fishingTarget.rodLine;
-    rodLineContext.floatPosition = screenPosition;
-    rodLineContext.state = intent.state;
-    rodLineContext.tension = tension;
-    rodLineContext.lineFrame = lineFrame;
-    this.#equipmentModelBuilder.buildRodLine(rodLineContext);
-
+    // The float first: rocking on the waves (spec 128) moves its waterline point, and the line ends there.
     const floatContext = this.#floatContext;
     floatContext.target = fishingTarget.float;
     floatContext.screenPosition = screenPosition;
     floatContext.floatEntity = floatEntity;
     floatContext.equipment = equipment;
     this.#equipmentModelBuilder.buildFloat(floatContext);
+
+    const rodLineContext = this.#rodLineContext;
+    rodLineContext.target = fishingTarget.rodLine;
+    rodLineContext.floatPosition = fishingTarget.float.visible ? fishingTarget.float : screenPosition;
+    rodLineContext.state = intent.state;
+    rodLineContext.tension = tension;
+    rodLineContext.lineFrame = lineFrame;
+    this.#equipmentModelBuilder.buildRodLine(rodLineContext);
 
     if (intent.state === "playing") {
       const hudContext = this.#hudContext;

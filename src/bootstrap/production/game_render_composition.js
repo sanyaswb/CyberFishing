@@ -12,6 +12,7 @@ import { FightHudRenderer } from "../../game/presentation/hud/fight_hud_renderer
 import { FightStatusBarsRenderer } from "../../game/presentation/hud/fight_status_bars_renderer.js";
 import { FishingEquipmentRenderModelBuilder } from "../../game/presentation/fishing/fishing_equipment_render_model_builder.js";
 import { FloatPoseAnimator } from "../../game/presentation/fishing/float_pose_animator.js";
+import { FloatWaveRocking } from "../../game/presentation/fishing/float_wave_rocking.js";
 import { FishingRenderFrameBuilder } from "../../game/presentation/rendering/fishing_render_frame_builder.js";
 import { FishingRenderPass } from "../../game/presentation/rendering/fishing_render_pass.js";
 import { FishingSceneRenderer } from "../../game/presentation/fishing/fishing_scene_renderer.js";
@@ -343,6 +344,7 @@ export class GameRenderComposition {
         getWind: () => runtime.env.getSnapshot()?.wind ?? null,
         getTimeOfDay: () => runtime.env.getSnapshot().time,
         floatPose: new FloatPoseAnimator({ getConfig: () => config.physics?.floatPose }),
+        floatRocking: new FloatWaveRocking({ getSettings: () => config.canvas?.water }),
         getWaterMetric: appPorts.getWaterMetric,
       }),
     });

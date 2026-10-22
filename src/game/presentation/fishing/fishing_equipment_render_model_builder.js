@@ -12,6 +12,7 @@ export class FishingEquipmentRenderModelBuilder {
   #rodAnimation;
   #getWind;
   #floatPose;
+  #floatRocking;
   #getWaterMetric;
   #getTimeOfDay;
   #timeBlend = { evening: 0, night: 0 };
@@ -32,6 +33,7 @@ export class FishingEquipmentRenderModelBuilder {
     rodAnimation,
     getWind,
     floatPose,
+    floatRocking,
     getWaterMetric,
     getTimeOfDay,
   }) {
@@ -47,6 +49,9 @@ export class FishingEquipmentRenderModelBuilder {
     if (typeof floatPose?.advance !== "function") {
       throw new TypeError("FishingEquipmentRenderModelBuilder requires floatPose");
     }
+    if (typeof floatRocking?.compute !== "function") {
+      throw new TypeError("FishingEquipmentRenderModelBuilder requires floatRocking");
+    }
     if (typeof getWaterMetric !== "function") {
       throw new TypeError("FishingEquipmentRenderModelBuilder requires getWaterMetric");
     }
@@ -61,6 +66,7 @@ export class FishingEquipmentRenderModelBuilder {
     this.#rodAnimation = rodAnimation;
     this.#getWind = getWind;
     this.#floatPose = floatPose;
+    this.#floatRocking = floatRocking;
     this.#getWaterMetric = getWaterMetric;
     this.#getTimeOfDay = getTimeOfDay;
   }
@@ -214,9 +220,14 @@ export class FishingEquipmentRenderModelBuilder {
     let rotationDeg = 0;
     let foreshortening = 1;
     let visibleShare = 1;
+    let pose = null;
+    let biting = false;
+    const metric = this.#getWaterMetric();
     if (kind === "float" && typeof floatEntity.getPoseSignals === "function") {
-      const pose = this.#floatPose.advance({ signals: floatEntity.getPoseSignals(), position,
-        metric: this.#getWaterMetric(), dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
+      const signals = floatEntity.getPoseSignals();
+      biting = signals.isBiteTilt === true;
+      pose = this.#floatPose.advance({ signals, position,
+        metric, dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
         artDraft: art ? 1 - waterline : 0 });
       rotationDeg = pose.rotationDeg;
       foreshortening = pose.foreshortening;
@@ -231,5 +242,23 @@ export class FishingEquipmentRenderModelBuilder {
     target.radiusX = 6 * scale;
     target.radiusY = 3 * scale;
     target.rotationRad = (rotationDeg * Math.PI) / 180;
+    if (pose) this.#rock(target, position, metric, pose, biting);
+  }
+
+  // Spec 128: the float rides the water's waves. The waterline point moves with the water; a lying body also turns
+  // about the middle of its visible part, so that middle keeps its place while both ends follow the water.
+  #rock(target, position, metric, pose, biting) {
+    const rocking = this.#floatRocking.compute({ nowMs: this.#clock.realNow, position, metric,
+      screenScale: this.#projector.getScale(), pose, lyingAngleDeg: this.#config.physics?.floatPose?.lyingAngleDeg,
+      visibleLength: target.height, rotationRad: target.rotationRad, biting });
+    if (rocking.turnRad !== 0) {
+      const half = target.height / 2;
+      const turned = target.rotationRad + rocking.turnRad;
+      target.x += half * (Math.sin(target.rotationRad) - Math.sin(turned));
+      target.y += half * (Math.cos(turned) - Math.cos(target.rotationRad));
+      target.rotationRad = turned;
+    }
+    target.x += rocking.dx;
+    target.y += rocking.dy;
   }
 }

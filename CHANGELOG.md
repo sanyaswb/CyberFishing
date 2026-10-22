@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.11 - Float Rocking on the Waves
+
+- TK-038 / spec 128: the float rocks on the water's waves with the water's own amplitude, wavelength, speed and vertical share, calmer far away. A standing float bobs with the water under it and sways a little; a lying one bobs with the mean of the water under its ends and tilts about the middle of its visible body by the wave slope (up to 12°); a lean between mixes both, bite steps rock at half strength, a hooked fish stops it. The line ends at the rocked point. The water's sine pattern moved to the engine (CrossingWavePattern), its map byte-identical. DevTools: canvas.water.floatRocking (enabled, bobShare, swayShare, rotationGain, maxRotationDeg, biteShare), both renderers, off with still water. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone performance check pending.
+
 ## v0.46.10 - Selector Placement Choice
 
 - TK-037 (toolbars <=820 logical px): DevTools places the radial selector in the centre (default, the TK-036 layout), the right bottom corner (quarter fan) or the left bottom corner (mirrored fan), via CONFIG.ui.inventorySelector.compactPlacement. A corner selector puts the action column on the other side; a centred one follows compactActionsSide (right by default, or left). The float always ends the column in its corner and its track opens across the row while the selector fades out; the fan and aiming fades apply to every placement. Wider toolbars unchanged. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.2 - Night Float Halo Switches
 
 - The yellow/red bite-colour halo around the tackle is off by default (owner); the night float gets a green halo in the same style. DevTools switches: ui.float.biteHalo, ui.float.nightHalo, ui.float.nightTipGlow. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual check pending.
-
-## v0.46.1 - Image Float Without Stretching
-
-- TK-024: on the WebGL scene the image float's red antenna stretched while the float stood up and sank. Its cropped textures were not dynamic, so Pixi sprites kept bounds from the old frame. Crop textures are dynamic now; the scene-layer fake Pixi reproduces Pixi's cached sprite bounds (the check failed before the fix); new DEVELOPMENT_RULES section on library contracts and test doubles, rendering incident recorded. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.

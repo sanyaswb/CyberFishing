@@ -198,6 +198,7 @@
 │  │     └── time_display_composition.js
 │  ├── engine
 │  │  ├── animation
+│  │  │  ├── crossing_wave_pattern.js
 │  │  │  ├── damped_spring.js
 │  │  │  └── scalar_smoother.js
 │  │  ├── assets
@@ -651,6 +652,7 @@
 │  │     │  ├── fishing_scene_renderer.js
 │  │     │  ├── float_pose_animator.js
 │  │     │  ├── float_renderer.js
+│  │     │  ├── float_wave_rocking.js
 │  │     │  ├── line_visual_state_controller.js
 │  │     │  ├── rod_animation_controller.js
 │  │     │  ├── rod_animation_state_resolver.js
