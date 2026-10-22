@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.15 - Zone Editor Revision 2
+
+- Spec 129 Revision 2 (TK-044…TK-048, DEV only): one "Увімкнути" switch (zones, cell grid, dragging); per-category zone lists whose first switch is the zone's physics; the selected zone filled, others muted; "Сітка клітинок" (opacity sliders, line step, snap, cell size, depth numbers) and "Сітка перспективи" (show, projection physics, step, projection values) sections; old debug-map config keys removed. Full 66/66; game-cycle baseline unchanged. Owner check pending.
+
 ## v0.46.14 - Zone Editor Tools
 
 - Spec 129 (TK-040…TK-043, DEV only): colour squares for zone categories; the location debug map (grid, depth numbers, zone fills) follows its own switches, also under the open editor, with a visible grid; "Locations / Zones" moved into the zone editor in six sections; the selected zone is outlined with handles over a map cell grid and its edges can be dragged with snapping to cells. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner check pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.6 - Selector Menu Icon and Shared Feedback
 
 - TK-032/033: selector sectors share the main toolbar button's background/accent states without the extra yellow thick border; keyboard focus keeps the toolbar info color. Replace the central suitcase with a symmetric four-square SVG menu and retain the original in asset-sources/ui/archive/inventory-suitcase-v0.46.5.svg outside runtime assets. Interaction geometry and gestures unchanged. Full 66/66 incl. Quick/Architecture; owner visual acceptance pending.
-
-## v0.46.5 - Mobile Float Below Inventory Selector
-
-- TK-031 / G-115: at mobile toolbar widths <=820 logical px, place the radial selector in a dedicated upper row and keep float/depth below, left of appearing chum/net actions. Preserve measured selector bounds, slider expansion, wide/classic layout and shared production/DEV/catalog composition. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner responsive acceptance pending.

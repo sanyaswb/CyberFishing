@@ -258,6 +258,37 @@ export class DevToolsUI {
     parentElement.appendChild(row);
   }
 
+  // A 0..100 slider with its value beside it (spec 129 Revision 2: grid and depth opacity); onChangeCallback receives
+  // the whole number while dragging.
+  createRangeRow(labelStr, value, parentElement, onChangeCallback, path = null) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const range = document.createElement("input");
+    range.type = "range";
+    range.min = "0";
+    range.max = "100";
+    range.step = "1";
+    range.className = "devtools__range";
+    range.setAttribute("aria-label", labelStr);
+    range.value = String(Math.round(value));
+    const output = document.createElement("span");
+    output.className = "devtools__range-value";
+    output.textContent = String(Math.round(value));
+    range.addEventListener("input", (event) => {
+      const next = Number(event.target.value);
+      output.textContent = String(next);
+      onChangeCallback(next);
+    });
+    this.#controlBindings.register(path, (next) => {
+      range.value = String(Math.round(next));
+      output.textContent = String(Math.round(next));
+    }, row);
+    row.append(range, output);
+    parentElement.appendChild(row);
+  }
+
   // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
   // swatches: an optional { value: "#rrggbb" } map; the colour of the chosen value shows beside the drop-down.
   createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null,

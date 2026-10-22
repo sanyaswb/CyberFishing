@@ -1,12 +1,5 @@
-import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
-
-// The category colour with an alpha, for the translucent map fills.
-const fill = (category, alpha) => {
-  const value = Number.parseInt(ZONE_CATEGORY_COLORS[category].slice(1), 16);
-  return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
-};
-const FILLS = Object.freeze({ castable: fill("castable", 0.15), snags: fill("snags", 0.3), collisions: fill("collisions", 0.4) });
-
+// The location's depth numbers, one per water cell, on a data canvas of the map's base resolution (spec 129,
+// Revision 2: zones, fills and cell lines are the zone editor's own geometry; this map keeps only the depths).
 export class LocationDebugMapBuilder {
   #canvasFactory;
   #canvas = null;
@@ -26,8 +19,7 @@ export class LocationDebugMapBuilder {
     this.#ensureSurface(width, height);
     const surface = this.#surface;
     surface.clearRect(0, 0, width, height);
-    this.#drawZones(surface, map.getLocationZones(), locationsConfig, cellSize, width);
-    this.#drawGrid(surface, map, locationsConfig, cellSize);
+    this.#drawDepths(surface, map, cellSize);
     return this.#canvas;
   }
 
@@ -40,48 +32,17 @@ export class LocationDebugMapBuilder {
     }
   }
 
-  #drawZones(surface, zones, locationsConfig, cellSize, width) {
-    if (locationsConfig.debugZones !== true) return;
-    if (locationsConfig.enableCastable !== false) {
-      this.#fillZones(surface, zones.castable, FILLS.castable, cellSize, width);
-    }
-    if (locationsConfig.enableSnags !== false) {
-      this.#fillZones(surface, zones.snags, FILLS.snags, cellSize, width);
-    }
-    if (locationsConfig.enableCollisions !== false) {
-      this.#fillZones(surface, zones.collisions, FILLS.collisions, cellSize, width);
-    }
-  }
-
-  #fillZones(surface, zones, color, cellSize, width) {
-    if (!zones) return;
-    surface.fillStyle = color;
-    for (let index = 0; index < zones.length; index += 1) {
-      const zone = zones[index];
-      const zoneWidth = zone.adaptiveX ? width : zone.w * cellSize;
-      const startX = zone.adaptiveX ? 0 : zone.x * cellSize;
-      surface.fillRect(startX, zone.y * cellSize, zoneWidth, zone.h * cellSize);
-    }
-  }
-
-  #drawGrid(surface, map, locationsConfig, cellSize) {
+  #drawDepths(surface, map, cellSize) {
     surface.font = "10px monospace";
     surface.textAlign = "center";
     surface.textBaseline = "middle";
+    surface.fillStyle = "rgba(255, 255, 255, 1)";
     const grid = map.getGrid();
     for (let col = 0; col < map.getCols(); col += 1) {
       for (let row = 0; row < map.getRows(); row += 1) {
         const cell = grid[col][row];
-        const x = cell.x * cellSize;
-        const y = cell.y * cellSize;
-        if (locationsConfig.debugGrid) {
-          surface.strokeStyle = "rgba(255, 255, 255, 0.35)";
-          surface.strokeRect(x, y, cellSize, cellSize);
-        }
-        if (locationsConfig.debugDepthText && cell.isWater) {
-          surface.fillStyle = "rgba(255, 255, 255, 0.7)";
-          surface.fillText(cell.depth.toFixed(1), x + cellSize / 2, y + cellSize / 2);
-        }
+        if (!cell.isWater) continue;
+        surface.fillText(cell.depth.toFixed(1), cell.x * cellSize + cellSize / 2, cell.y * cellSize + cellSize / 2);
       }
     }
   }

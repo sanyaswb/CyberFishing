@@ -994,7 +994,8 @@ export class ConfigSchemaValidator {
       if (map?.environment?.current) {
         this.#requireFiniteNumber(`${path}.environment.current.speedPxPerSec`, map.environment.current.speedPxPerSec, { min: 0 });
       }
-      if (map?.waterProjection !== undefined) {
+      // null: no projection (uniform water), as the DEV zone editor's "Фізика перспективи" switch writes it.
+      if (map?.waterProjection !== undefined && map.waterProjection !== null) {
         this.#validateWaterProjection(`${path}.waterProjection`, map.waterProjection);
       }
       for (const retired of ["perspective", "distanceProfile"]) {

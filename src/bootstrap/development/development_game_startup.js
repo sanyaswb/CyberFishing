@@ -206,7 +206,8 @@ async function startGame() {
           mountNode: developmentMount, getCanvas: () => documentTarget.getElementById("gameCanvas"),
           writeZones: (path, zones) => devTools?.updateConfig(path, zones) });
         return new LocationDebugRenderFrameBuilder({ ...options,
-          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }), zoneEditorTool: zoneEditorDrag });
+          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }), zoneEditorTool: zoneEditorDrag,
+          editorState: zoneEditorState });
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,

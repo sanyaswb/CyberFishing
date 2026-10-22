@@ -22,8 +22,9 @@ buttons changes only the background; keyboard focus keeps its outline. No pollin
 DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches. Spec 129 adds two DEV
 elements in `src/dev/styles/dev-tools.css`: `devtools__swatch` (a category colour square before a label or beside a
 select, colour from `--devtools-swatch`) and `zone-editor-drag-layer` (a transparent fixed layer under the DevTools
-panel while edge dragging is on; `--x`, `--y`, `--xy` cursor modifiers). The editor also holds the former
-"Locations / Zones" switches. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
+panel while the editor is on; `--x`, `--y`, `--xy` cursor modifiers), and Revision 2 `devtools__range` /
+`devtools__range-value` (`DevToolsUI.createRangeRow`, a 0..100 slider for grid and depth opacity). The editor holds the
+zone, cell-grid, perspective and overlay controls. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

@@ -524,7 +524,7 @@ function checkLocationMapConfigChanges() {
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
   const {createRuntimeConfigContext} = source.importModule('src/bootstrap/production/config_context.js');
   const {LocationMap} = ({ ...source.importModule('src/game/domain/locations/grid_cell.js'), ...source.importModule('src/game/domain/locations/dynamic_zone.js'), ...source.importModule('src/game/domain/locations/location_map.js') });
-  const fields = ['debugGrid','debugDepthText','debugZones','enableCastable','enableCollisions','enableSnags','enableDynamicZones'];
+  const fields = ['enableCastable','enableCollisions','enableSnags','enableDynamicZones'];
   const config = JSON.parse(JSON.stringify(CONFIG));
   const context = createRuntimeConfigContext(config);
   const resources = {background:{dynamic:false},loaded:true};
@@ -549,19 +549,19 @@ function checkLocationMapConfigChanges() {
   const exported = JSON.parse(JSON.stringify(context.exportOverrides()));
   context.set('debug.godMode.enabled',!config.debug.godMode.enabled);
   context.set('physics.enabled',!config.physics.enabled);
-  map.update(16,12);verify(8,9);
-  context.resetAll();map.update(16,12);verify(9,10);
-  context.importOverrides(exported);map.update(16,12);verify(10,11);
-  context.importOverrides(exported);map.update(16,12);verify(10,11);
+  map.update(16,12);verify(5,6);
+  context.resetAll();map.update(16,12);verify(6,7);
+  context.importOverrides(exported);map.update(16,12);verify(7,8);
+  context.importOverrides(exported);map.update(16,12);verify(7,8);
   const replacement = JSON.parse(JSON.stringify(config.locations));
-  map.refreshConfig(replacement,resources);verify(11,12);
-  map.update(16,12);verify(11,12);
-  replacement.debugGrid = !replacement.debugGrid;
-  map.update(16,12);verify(12,13);
+  map.refreshConfig(replacement,resources);verify(8,9);
+  map.update(16,12);verify(8,9);
+  replacement.enableCollisions = !replacement.enableCollisions;
+  map.update(16,12);verify(9,10);
   const changedReplacement = JSON.parse(JSON.stringify(replacement));
   changedReplacement.enableSnags = !changedReplacement.enableSnags;
-  map.refreshConfig(changedReplacement,resources);verify(13,14);
-  map.update(16,12);verify(14,15);
+  map.refreshConfig(changedReplacement,resources);verify(10,11);
+  map.update(16,12);verify(11,12);
   const switches = new Map();
   const navigationButtons = new Map();
   const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {};
@@ -626,13 +626,13 @@ function checkLocationMapConfigChanges() {
   navigationButtons.get("Будинок рибалки 🏠")();
   assert.equal(houseOpens, 1);
   // The map receives the same live view that actual checkbox callbacks write through the authoritative store.
-  map.refreshConfig(config.locations,resources);verify(15,16);
-  map.update(16,12);verify(16,17);
+  map.refreshConfig(config.locations,resources);verify(12,13);
+  map.update(16,12);verify(13,14);
   for(const [index,field] of fields.entries()) {
     const change = switches.get('CONFIG.locations.'+field);
     assert.equal(typeof change,'function','location checkbox exists: '+field);
-    change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
-    map.update(16,12);verify(index+17,index+18);
+    change(!config.locations[field]);map.update(16,12);verify(index+14,index+15);
+    map.update(16,12);verify(index+14,index+15);
   }
   const projectionPath = 'locations.map.'+locationId+'.waterProjection';
   const metricBefore = editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection);
@@ -643,10 +643,10 @@ function checkLocationMapConfigChanges() {
     metricBefore,'retired perspective/distanceProfile overrides never reach the metric');
   context.set(projectionPath+'.tiltDegrees',45);
   context.set(projectionPath+'.farScale',.6);
-  const unrelatedFlag = config.locations.debugGrid;
+  const unrelatedFlag = config.locations.showChumZones;
   navigationButtons.get('Скинути перспективу цієї локації')();
   assert.equal(config.locations.map[locationId].waterProjection.tiltDegrees,30,'the local reset restores the original 30-degree angle');
-  assert.equal(config.locations.debugGrid,unrelatedFlag,'local reset preserves other DEV settings');
+  assert.equal(config.locations.showChumZones,unrelatedFlag,'local reset preserves other DEV settings');
   assert.equal(config.locations.map[locationId].waterProjection.maxMeters,30,'reset restores exact 30 m length');
   assert.equal(config.locations.map[locationId].waterProjection.farScale,.3,'reset restores the simple far-size ratio');
   assert.equal(config.locations.map[locationId].waterProjection.lateralContraction,false,'local reset defaults width contraction off');

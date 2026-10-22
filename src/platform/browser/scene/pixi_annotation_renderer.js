@@ -32,11 +32,11 @@ export class PixiAnnotationRenderer {
       const l = model.cellLines[i];
       graphics.moveTo(l.x1, l.y1).lineTo(l.x2, l.y2);
     }
-    if (model.cellLineCount) graphics.stroke({ color: 0xffffff, alpha: .2, width: 1 });
+    if (model.cellLineCount) graphics.stroke({ color: 0xffffff, alpha: model.cellLineAlpha ?? .2, width: 1 });
     for (let i = 0; i < model.rectCount; i++) {
       const r = model.rects[i];
       graphics.rect(r.x, r.y, r.width, r.height).fill({ color: r.color, alpha: r.fillAlpha ?? .12 })
-        .stroke({ color: r.color, alpha: .9, width: r.lineWidth ?? 1 });
+        .stroke({ color: r.color, alpha: r.strokeAlpha ?? .9, width: r.lineWidth ?? 1 });
     }
     for (let i = 0; i < model.lineCount; i++) {
       const l = model.lines[i];

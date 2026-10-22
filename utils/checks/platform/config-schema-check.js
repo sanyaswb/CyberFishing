@@ -125,6 +125,8 @@ function checkNegativeFixtures() {
   const uniformMapDb = JSON.parse(JSON.stringify(options.mapDb));
   delete uniformMapDb.test.waterProjection;
   assert(!has(validate({ mapDb: uniformMapDb }), /waterProjection/u), "a location without a projection is valid uniform water");
+  uniformMapDb.test.waterProjection = null;
+  assert(!has(validate({ mapDb: uniformMapDb }), /waterProjection/u), "null (the zone editor's projection physics off) is uniform water");
   assert.equal(config, context.runtimeConfig);
 }
 

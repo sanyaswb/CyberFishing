@@ -5,10 +5,10 @@ const EDGE_PX = 10;
 const CURSORS = Object.freeze({ x: "zone-editor-drag-layer--x", y: "zone-editor-drag-layer--y",
   xy: "zone-editor-drag-layer--xy" });
 
-// Drags the edges of the selected zone with the mouse or a finger (spec 129 D6). A transparent layer over the game
-// canvas exists only while the editor and "drag editing" are on, so the game gets no input meanwhile; DevTools stays
-// above it. A pointer within EDGE_PX of an edge takes it (a corner takes both); the edge follows the pointer snapped
-// to whole map cells, the zone keeps at least one cell, and an adaptive-width zone moves only its top and bottom.
+// Drags the edges of the selected zone with the mouse or a finger (spec 129 D6, Revision 2 R4). A transparent layer
+// over the game canvas exists while the editor is on, so the game gets no input meanwhile; DevTools stays above it.
+// A pointer within EDGE_PX of an edge takes it (a corner takes both); the edge follows the pointer snapped to
+// snapCells map cells, the zone keeps at least that much, and an adaptive-width zone moves only its top and bottom.
 // Every change of the snapped value writes the category's zone array once through the injected config path.
 export class ZoneEditorDragController {
   #state; #map; #projector; #config; #getCanvas; #canvasMetrics; #documentTarget; #mountNode; #writeZones;
@@ -35,7 +35,7 @@ export class ZoneEditorDragController {
 
   // Once per frame from the location debug builder: shows or removes the layer when the switches change.
   sync() {
-    const wanted = this.#state.enabled && this.#state.dragEdit;
+    const wanted = this.#state.enabled;
     if (wanted && !this.#layer) this.#attach();
     else if (!wanted && this.#layer) this.#detach();
   }
@@ -83,16 +83,20 @@ export class ZoneEditorDragController {
     }
     if (event.pointerId !== drag.pointerId) return;
     event.preventDefault();
-    const cell = this.#config.locations.cellSize;
+    // Edges snap to the visible map grid (cellSize x snapCells pixels); zones are stored in design cells
+    // (designCellSize), so a finer map grid gives fractional design coordinates.
+    const locations = this.#config.locations;
+    const design = locations.designCellSize || locations.cellSize;
+    const step = locations.cellSize * Math.max(1, this.#state.snapCells || 1) / design;
     const point = this.#toVirtual(event);
-    const cellX = Math.round(point.x / cell);
-    const cellY = Math.round(point.y / cell);
+    const cellX = Math.round(point.x / design / step) * step;
+    const cellY = Math.round(point.y / design / step) * step;
     const { zone } = drag;
     let { x, y, w, h } = zone;
-    if (drag.left) { x = Math.min(cellX, zone.x + zone.w - 1); w = zone.x + zone.w - x; }
-    if (drag.right) w = Math.max(1, cellX - zone.x);
-    if (drag.top) { y = Math.min(cellY, zone.y + zone.h - 1); h = zone.y + zone.h - y; }
-    if (drag.bottom) h = Math.max(1, cellY - zone.y);
+    if (drag.left) { x = Math.min(cellX, zone.x + zone.w - step); w = zone.x + zone.w - x; }
+    if (drag.right) w = Math.max(step, cellX - zone.x);
+    if (drag.top) { y = Math.min(cellY, zone.y + zone.h - step); h = zone.y + zone.h - y; }
+    if (drag.bottom) h = Math.max(step, cellY - zone.y);
     const written = drag.written;
     if (x === written.x && y === written.y && w === written.w && h === written.h) return;
     written.x = x; written.y = y; written.w = w; written.h = h;
@@ -115,7 +119,7 @@ export class ZoneEditorDragController {
     const zones = locations.map?.[id]?.zones?.[category];
     const zone = zones?.[index];
     if (!zone) return null;
-    const cell = locations.cellSize;
+    const cell = locations.designCellSize || locations.cellSize;
     const left = zone.adaptiveX ? 0 : zone.x * cell;
     const right = zone.adaptiveX ? locations.baseResolution.width : (zone.x + zone.w) * cell;
     const pointer = this.#toScreen(event);

@@ -116,12 +116,18 @@ let exportCalls = 0, importCalls = 0, resetCalls = 0;
 const refreshMetric = () => {
   metric = lakeMetric(config.locations.map.lake.waterProjection);
 };
-const ui = { syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {}, createSwitcherRow(label, value, parent, callback) { actions.set(label, callback); },
-  createInputRow(label, value, parent, type, callback) { actions.set(label, callback); },
+// Rows of the per-category zone lists are keyed "<list>/<label>" (their labels repeat in every list).
+const ZONE_LISTS = new Set(["Ігрова область (закидання)", "Перешкоди", "Зачепи", "Рухомі зони"]);
+const keyOf = (label, parent) => ZONE_LISTS.has(parent?.label) ? `${parent.label}/${label}` : label;
+const ui = { syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {},
+  createSwitcherRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
+  createInputRow(label, value, parent, type, callback) { actions.set(keyOf(label, parent), callback); },
+  createRangeRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
   createInfoRow(label, value) { const element = { innerText: value }; infoRows.set(label, element); return element; },
-  createSelectRow(label, options, value, parent, callback) { actions.set(label, callback); },
-  createButtonRow(label, parent, callback) { actions.set(label, callback); } };
-new ZoneEditorSection({ ui, state, config, createSection: () => ({ replaceChildren() {} }),
+  createSelectRow(label, options, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
+  createButtonRow(label, parent, callback) { actions.set(keyOf(label, parent), callback); } };
+const stubSection = (label) => ({ label, replaceChildren() {} });
+new ZoneEditorSection({ ui, state, config, createSection: stubSection,
   getWaterMetric: () => metric,
   createWaterMetric: options => { candidateInputs.push(options); return WaterMetric.illustrated(options); },
   exportOverrides: () => exportCalls++, importOverrides: () => importCalls++,
@@ -134,13 +140,14 @@ new ZoneEditorSection({ ui, state, config, createSection: () => ({ replaceChildr
     target[path.at(-1)] = value; mapRevision++; refreshMetric();
   } }).render({});
 assert(trees.some(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable.0"));
-actions.get("Мін. крок сітки, м")(-1); assert.equal(synced.at(-1)[1], .25, "the displayed spacing matches the clamped setting");
-actions.get("Видалити вибрану зону")(); assert.equal(edits.length, 0, "keep at least one castable zone");
+actions.get("Крок сітки, м")(-1); assert.equal(synced.at(-1)[1], .25, "the displayed spacing matches the clamped setting");
+const castableAction = (label) => actions.get(`Ігрова область (закидання)/${label}`);
+castableAction("Видалити вибрану зону")(); assert.equal(edits.length, 0, "keep at least one castable zone");
 config.locations.map.lake.zones.castable[0].bounds = { x: 10, y: 20, w: 30, h: 40 };
-actions.get("Додати зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 2);
+castableAction("Додати зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 2);
 assert.notEqual(config.locations.map.lake.zones.castable[0].bounds, config.locations.map.lake.zones.castable[1].bounds,
   "duplicated zones never share writable nested bounds");
-actions.get("Видалити вибрану зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 1);
+castableAction("Видалити вибрану зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 1);
 assert(edits.every(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable"));
 actions.get("Нахил площини, °")(45);
 assert.equal(config.locations.map.lake.waterProjection.tiltDegrees, 45);
@@ -196,7 +203,7 @@ assert.match(infoRows.get("Стан").innerText, /біля берега 54\.2 \/
   const uniformState = new ZoneEditorState(); uniformState.locationId = "pond";
   let pondMetric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
   infoRows.clear(); actions.clear();
-  new ZoneEditorSection({ ui, state: uniformState, config: uniformConfig, createSection: () => ({ replaceChildren() {} }),
+  new ZoneEditorSection({ ui, state: uniformState, config: uniformConfig, createSection: stubSection,
     getWaterMetric: () => pondMetric, createWaterMetric: options => WaterMetric.illustrated(options),
     renderTree() {}, updateConfig: (path, value) => {
       let target = uniformConfig;
@@ -205,7 +212,7 @@ assert.match(infoRows.get("Стан").innerText, /біля берега 54\.2 \/
     } }).render({});
   assert.match(infoRows.get("Стан").innerText, /рівномірна/u, "uniform water says so");
   assert.equal(actions.has("Нахил площини, °"), false, "no projection controls without a projection");
-  actions.get("Додати перспективу води")();
+  actions.get("Фізика перспективи")(true);
   assert.equal(JSON.stringify(uniformConfig.locations.map.pond.waterProjection),
     JSON.stringify({ maxMeters: 20, tiltDegrees: 30, farScale: .3, lateralContraction: false }),
     "adding a projection keeps the uniform length and takes the documented defaults");
@@ -262,8 +269,9 @@ refreshParent.replaceChildren();
 const refreshedNotice = controlUI.createInfoRow('After refresh', '2', refreshParent);
 assert.equal(refreshParent.contains(refreshedNotice), true, 'refresh never reuses a detached description');
 controlUI.dispose();
-// Spec 129 (TK-040…TK-043): colours, selection, the map cell grid, the debug map's own switches, the editor's
-// structure and dragging the selected zone's edges.
+// Spec 129, Revision 2 (TK-044…TK-048): one enable switch, the selected zone filled and the others muted, zone lists
+// gated by their physics, the cell grid's step/opacity/snap/size, the editor's depth map, the perspective's physics
+// and dragging the selected zone's edges.
 {
   const { ZONE_CATEGORY_COLORS } = load("src/dev/location/zone_category_colors.js");
   const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
@@ -271,96 +279,120 @@ controlUI.dispose();
   const { LocationDebugMapBuilder } = load("src/dev/location/location_debug_map_builder.js");
   scale = 1; cameraX = 0; mapRevision++;
   const lake = config.locations.map.lake;
+  const locations = config.locations;
   lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
   lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
-  state.setFlag("enabled", true); state.setFlag("grid", false);
+  state.setFlag("enabled", false); state.setFlag("cellGrid", false); state.setFlag("grid", false);
   for (const category of ["castable", "collisions", "snags", "dynamic"]) state.setCategory(category, true);
+  // TK-044: turning the editor on turns the cell grid on.
+  state.setFlag("enabled", true);
+  assert.equal(state.cellGrid, true, "enabling the editor shows the cell grid");
 
-  // TK-040: one colour table for the editor outlines (and the debug map, the swatches).
+  // TK-046: the selected zone is filled and outlined brightly with handles; the others are muted.
   const geometry = {};
   state.select("snags", 0); builder.buildInto(geometry);
-  const rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
+  let rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
   const snagColor = Number.parseInt(ZONE_CATEGORY_COLORS.snags.slice(1), 16);
-  assert(rects.some(rect => rect.color === Number.parseInt(ZONE_CATEGORY_COLORS.castable.slice(1), 16)), "castable uses the shared colour");
-  // TK-043 (D4): the selected zone is outlined thicker with four filled corner handles.
+  const castColor = Number.parseInt(ZONE_CATEGORY_COLORS.castable.slice(1), 16);
   const selected = rects.filter(rect => rect.color === snagColor && rect.lineWidth === 3);
   const handles = rects.filter(rect => rect.color === snagColor && rect.fillAlpha === 0.9);
-  assert(selected.length === 1 && selected[0].x === 160 && selected[0].y === 320 && handles.length === 4,
-    "the selected zone is outlined with handles");
-  assert(rects.filter(rect => rect.lineWidth === 3).length === 1, "only the selected zone is outlined");
-  // D5: the map cell grid (1000 / 40 = 25 cells: 26 lines per axis); off draws none; unchanged frames reuse it.
-  assert.equal(geometry.annotations.cellLineCount, 52, "the map's cell lines");
+  assert(selected.length === 1 && selected[0].x === 160 && selected[0].y === 320 && selected[0].fillAlpha === 0.35 &&
+    selected[0].strokeAlpha === 0.95 && handles.length === 4, "the selected zone is filled, outlined and has handles");
+  const castable = rects.find(rect => rect.color === castColor);
+  assert(castable.fillAlpha === 0.04 && castable.strokeAlpha === 0.35 && castable.lineWidth === 1, "other zones are muted");
+  // TK-048: a zone category whose physics is off is not drawn.
+  locations.enableSnags = false; mapRevision++; builder.buildInto(geometry);
+  rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
+  assert.equal(rects.some(rect => rect.color === snagColor), false, "zones without physics are not drawn");
+  locations.enableSnags = true; mapRevision++;
+
+  // TK-047: the cell grid's line step and opacity; an unchanged grid is reused.
+  builder.buildInto(geometry);
+  assert(geometry.annotations.cellLineCount === 52 && geometry.annotations.cellLineAlpha === state.cellGridOpacity,
+    "every cell line at the section's opacity");
   const before = builder.rebuilds;
   builder.buildInto(geometry); assert.equal(builder.rebuilds, before, "an unchanged cell grid is not rebuilt");
-  state.setFlag("cellGrid", false); builder.buildInto(geometry);
-  assert.equal(geometry.annotations.cellLineCount, 0, "the cell grid switch hides it");
-  state.setFlag("cellGrid", true);
+  state.setNumber("cellLineStep", 2); builder.buildInto(geometry);
+  assert.equal(geometry.annotations.cellLineCount, 26, "every second cell line");
+  state.setNumber("cellGridOpacity", 0); builder.buildInto(geometry);
+  assert.equal(geometry.annotations.cellLineCount, 0, "opacity 0 draws no lines");
+  state.setNumber("cellGridOpacity", 0.25); state.setNumber("cellLineStep", 1);
+  for (const [key, value, expected] of [["cellGridOpacity", 3, 1], ["depthOpacity", -1, 0], ["snapCells", 2.6, 3], ["cellLineStep", 99, 10]]) {
+    state.setNumber(key, value); assert.equal(state[key], expected, `${key} is clamped`);
+  }
+  state.setNumber("cellGridOpacity", 0.25); state.setNumber("depthOpacity", 0.7); state.setNumber("snapCells", 1); state.setNumber("cellLineStep", 1);
 
-  // TK-041 (D2): the debug map follows its own switches, also under the open editor and without the DEV debug flag.
+  // TK-047: depth numbers come from the location's depth map while the editor shows them, at their own opacity.
   let builds = 0;
-  const debugMap = { build: () => { builds++; return { width: 1000, height: 1000 }; } };
-  const debugMapFrame = new LocationDebugRenderFrameBuilder({ map: { ...map, getDynamicZones: () => [{ x: 1, y: 1, w: 1, h: 1 }] },
-    projector, config, debugMapBuilder: debugMap, zoneEditor: builder });
-  const debugTarget = () => ({ debugImage: { visible: false }, dynamicZones: { count: 0, acquire() { this.count++; return {}; } } });
-  const locations = config.locations;
-  Object.assign(locations, { debugVisuals: true, debugZones: false, debugGrid: false, debugDepthText: false });
-  let frame = debugTarget(); debugMapFrame.buildInto(frame, false);
-  assert(frame.debugImage.visible === false && builds === 0, "with every map switch off nothing is built");
-  for (const key of ["debugGrid", "debugDepthText", "debugZones"]) {
-    Object.assign(locations, { debugGrid: false, debugDepthText: false, debugZones: false, [key]: true });
-    frame = debugTarget(); debugMapFrame.buildInto(frame, false);
-    assert.equal(frame.debugImage.visible, true, `${key} shows the map without the DEV debug flag and under the editor`);
-  }
-  assert.equal(frame.dynamicZones.count, 0, "moving zones stay off while the editor draws its own");
-  state.setFlag("enabled", false); frame = debugTarget(); debugMapFrame.buildInto(frame, false);
-  assert.equal(frame.dynamicZones.count, 1, "moving zones follow debugZones without the editor");
-  locations.debugVisuals = false; frame = debugTarget(); debugMapFrame.buildInto(frame, false);
-  assert.equal(frame.debugImage.visible, false, "debugVisuals is still the master switch");
-  locations.debugVisuals = true; state.setFlag("enabled", true);
-  // The map draws a visible grid (35 %) and the depth numbers.
+  const depthMap = { build: () => { builds++; return { width: 1000, height: 1000 }; } };
+  const depthFrame = new LocationDebugRenderFrameBuilder({ map, projector, config, debugMapBuilder: depthMap, zoneEditor: builder,
+    editorState: state });
+  const frameTarget = () => ({ debugImage: { visible: false } });
+  let frame = frameTarget(); depthFrame.buildInto(frame);
+  assert(frame.debugImage.visible === false && builds === 0, "no depth numbers until they are switched on");
+  state.setFlag("depth", true); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert(frame.debugImage.visible === true && frame.debugImage.alpha === 0.7 && builds === 1, "depth numbers at their opacity");
+  frame = frameTarget(); depthFrame.buildInto(frame); assert.equal(builds, 1, "the depth map is reused");
+  state.setNumber("depthOpacity", 0); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert.equal(frame.debugImage.visible, false, "opacity 0 hides the depth numbers");
+  state.setNumber("depthOpacity", 0.7); state.setFlag("enabled", false); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert.equal(frame.debugImage.visible, false, "without the editor nothing is drawn");
+  state.setFlag("enabled", true); state.setFlag("depth", false);
   const strokes = [], texts = [];
-  const surface = { canvas: { width: 1000, height: 1000 }, clearRect() {}, fillRect() {}, strokeRect() { strokes.push(this.strokeStyle); },
+  const surface = { canvas: { width: 1000, height: 1000 }, clearRect() {}, fillRect() {}, strokeRect: () => strokes.push(1),
     fillText: (text) => texts.push(text) };
-  const realMap = new LocationDebugMapBuilder({ canvasFactory: { createSurface: () => surface } });
-  const cells = [[{ x: 0, y: 0, isWater: true, depth: 2.5 }]];
-  realMap.build({ map: { getLocationZones: () => ({}), getGrid: () => cells, getCols: () => 1, getRows: () => 1 },
-    locationsConfig: { ...locations, debugGrid: true, debugDepthText: true } });
-  assert(strokes[0] === "rgba(255, 255, 255, 0.35)" && texts[0] === "2.5", "grid lines are visible and depths are written");
-  Object.assign(locations, { debugZones: false, debugGrid: false, debugDepthText: false });
+  new LocationDebugMapBuilder({ canvasFactory: { createSurface: () => surface } }).build({
+    map: { getGrid: () => [[{ x: 0, y: 0, isWater: true, depth: 2.5 }, { x: 0, y: 1, isWater: false, depth: 0 }]],
+      getCols: () => 1, getRows: () => 2 }, locationsConfig: locations });
+  assert(strokes.length === 0 && texts.join() === "2.5", "the map writes only the water cells' depths");
 
-  // TK-042 (D3): one structured place; switches keep their config paths and appear once.
-  const sections = [], switches = new Map();
-  let structureDone = false;
-  const structureUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createInputRow() {}, createButtonRow() {},
-    createSelectRow(label, options, value, parent, callback, path, extra) { switches.set(label, { swatches: extra?.swatches }); },
-    createSwitcherRow(label, value, parent, callback, path, bindingPath, extra) {
-      const key = path ? path.join(".") : `${parent.label}/${label}`;
-      // A drag's refresh rebuilds the geometry rows later; during the first render every switch appears once.
-      assert(structureDone || !switches.has(key), `one control per switch: ${key}`);
-      switches.set(key, { parent: parent.label, swatch: extra?.swatch, callback });
-    } };
-  new ZoneEditorSection({ ui: structureUi, state, config, updateConfig: (path, value) => { let node = config;
-    for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
-  createSection: (label, parent) => { const section = { label, parent: parent?.label, replaceChildren() {} }; sections.push(section); return section; },
-  renderTree() {}, getWaterMetric: () => metric, createWaterMetric: () => metric }).render({});
-  structureDone = true;
-  assert.deepEqual(sections.slice(0, 7).map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Категорії в редакторі",
-    "Зони в грі", "Оверлеї гри", "Налагоджувальна карта", "Геометрія й перспектива"], "the editor's sections in order");
-  for (const key of ["enableCastable", "enableCollisions", "enableSnags", "enableDynamicZones"]) {
-    assert.equal(switches.get(`CONFIG.locations.${key}`).parent, "Зони в грі");
-  }
-  assert.equal(switches.get("CONFIG.locations.enableSnags").swatch, ZONE_CATEGORY_COLORS.snags, "gameplay zone switches carry the colour");
-  for (const key of ["debugVisuals", "debugZones", "debugGrid", "debugDepthText"]) {
-    assert.equal(switches.get(`CONFIG.locations.${key}`).parent, "Налагоджувальна карта");
-  }
-  assert.equal(switches.get("CONFIG.locations.showChumZones").parent, "Оверлеї гри");
-  assert.equal(switches.get("Категорії в редакторі/Зачепи · жовтий").swatch, ZONE_CATEGORY_COLORS.snags, "editor categories carry the colour");
-  assert.equal(switches.get("Категорія зони").swatches, ZONE_CATEGORY_COLORS, "the category select shows the colour");
-  switches.get("CONFIG.locations.debugGrid").callback(true);
-  assert.equal(locations.debugGrid, true, "the moved switch still writes CONFIG.locations.debugGrid");
-  locations.debugGrid = false;
+  // TK-044…TK-048: the sections, the zone lists gated by physics, the moved controls.
+  const sections = [], rows = new Map();
+  const record = (kind) => (label, ...args) => {
+    const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
+    rows.set(`${parent?.label}/${label}`, { kind, args });
+  };
+  const structureUi = { syncValue() {}, releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
+    createInfoRow: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
+    createSelectRow: record("select"), createSwitcherRow: record("switch") };
+  const written = [];
+  locations.enableCollisions = false;
+  new ZoneEditorSection({ ui: structureUi, state, config, updateConfig: (path, value) => { written.push([path.join("."), value]);
+    let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
+  createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
+  renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
+  assert.deepEqual(sections.map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Зони", "Ігрова область (закидання)",
+    "Перешкоди", "Зачепи", "Рухомі зони", "Сітка клітинок", "Сітка перспективи", "Оверлеї гри"], "the editor's sections in order");
+  assert(rows.has("Редактор/Увімкнути") && !rows.has("Редактор/Показати редактор") && !rows.has("Редактор/Перетягувати межі обраної зони"),
+    "one enable switch");
+  const physics = rows.get("Зачепи/Фізика зони");
+  assert.deepEqual([physics.args[3].join("."), physics.args[5].swatch], ["CONFIG.locations.enableSnags", ZONE_CATEGORY_COLORS.snags],
+    "each list's first switch is the zone's physics, with its colour");
+  assert(rows.has("Зачепи/Показати зону") && rows.has("Зачепи/Номер зони") && rows.has("Зачепи/Додати зону"), "items while on");
+  assert(!rows.has("Перешкоди/Показати зону") && !rows.has("Перешкоди/Додати зону"), "no items while the physics is off");
+  rows.get("Перешкоди/Фізика зони").args[2](true);
+  assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
+  for (const label of ["Показати сітку", "Непрозорість сітки", "Крок ліній, клітинок", "Прилипання, клітинок", "Розмір клітинки, px",
+    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`Сітка клітинок/${label}`), `cell grid: ${label}`);
+  assert.equal(rows.get("Сітка клітинок/Непрозорість сітки").kind, "range");
+  rows.get("Сітка клітинок/Розмір клітинки, px").args[3](1000);
+  assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 200], "the cell size is clamped and written to the game config");
+  locations.cellSize = 40;
+  rows.get("Сітка клітинок/Непрозорість глибини").args[2](40);
+  assert.equal(state.depthOpacity, 0.4, "the depth slider sets 0..1");
+  state.setNumber("depthOpacity", 0.7);
+  for (const label of ["Показати сітку", "Фізика перспективи", "Крок сітки, м", "Дальність води, м", "Нахил площини, °",
+    "Масштаб вдалині", "Звужувати сітку по ширині"]) assert(rows.has(`Сітка перспективи/${label}`), `perspective: ${label}`);
+  rows.get("Сітка перспективи/Фізика перспективи").args[2](false);
+  assert.deepEqual(written.at(-1), ["CONFIG.locations.map.lake.waterProjection", null], "physics off writes no projection");
+  assert(!rows.has("Сітка перспективи/Дальність води, м"), "uniform water has no projection controls");
+  lake.waterProjection = JSON.parse(JSON.stringify(baseProjection));
+  assert.equal(rows.get("Оверлеї гри/Показувати оверлеї гри").args[3].join("."), "CONFIG.locations.debugVisuals");
+  assert(![...rows.keys()].some(key => /debugGrid|debugDepthText|debugZones|Налагоджувальна|Категорії в редакторі|Зони в грі/u.test(key)),
+    "no old debug-map or category sections remain");
+  delete locations.enableCollisions; delete locations.enableSnags;
 
-  // TK-043 (D6): drag the selected zone's edges, snapped to cells, through one config write per cell.
+  // TK-044 / R4: with the editor on, drag the selected zone's edges, snapped to the map's cells.
   const makeElement = () => { const listeners = new Map(), classes = new Set();
     return { listeners, classes, removed: false, addEventListener: (type, fn) => listeners.set(type, fn),
       removeEventListener: (type) => listeners.delete(type), remove() { this.removed = true; },
@@ -374,10 +406,10 @@ controlUI.dispose();
     documentTarget: { createElement: makeElement }, mountNode: { prepend: (element) => mounted.push(element) },
     writeZones: (path, zones) => { writes.push({ path: path.join("."), zones });
       lake.zones[path.at(-1)] = zones; } });
-  drag.sync(); assert.equal(drag.active, false, "no layer without drag editing");
-  state.setFlag("dragEdit", true); drag.sync();
+  state.setFlag("enabled", false); drag.sync(); assert.equal(drag.active, false, "no layer without the editor");
+  state.setFlag("enabled", true); drag.sync();
   const layer = mounted[0];
-  assert(drag.active && layer && layer.listeners.has("pointerdown"), "drag editing puts a layer over the canvas");
+  assert(drag.active && layer && layer.listeners.has("pointerdown"), "the editor puts a layer over the canvas");
   const pointer = (type, x, y, id = 1) => { let prevented = false;
     layer.listeners.get(type)({ clientX: x / 2, clientY: y / 2, pointerId: id, preventDefault: () => { prevented = true; } });
     return prevented; };
@@ -401,14 +433,24 @@ controlUI.dispose();
   assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 23, h: 22, id: "keep" }),
     "a corner moves two edges; other fields stay");
   pointer("pointerup", 85, 125);
+  state.setNumber("snapCells", 2);
+  lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
+  pointer("pointerdown", 1000, 500); pointer("pointermove", 830, 500); pointer("pointerup", 830, 500);
+  assert.equal(lake.zones.castable[0].w, 20, "the edge snaps to every second cell (830 px -> 20 cells)");
+  state.setNumber("snapCells", 1);
+  locations.designCellSize = 20;
+  lake.zones.castable = [{ x: 0, y: 0, w: 50, h: 50 }];
+  pointer("pointerdown", 1000, 500); pointer("pointermove", 870, 500); pointer("pointerup", 870, 500);
+  assert.equal(lake.zones.castable[0].w, 44, "zones keep design cells; the edge snaps to the visible 40 px grid (880 px)");
+  delete locations.designCellSize;
   lake.zones.castable = [{ x: 0, y: 2, w: 1, h: 3, adaptiveX: true }];
   assert.equal(pointer("pointerdown", 0, 100), false, "an adaptive-width zone has no side edges");
   assert.equal(pointer("pointerdown", 500, 200), true, "its bottom edge is taken");
   pointer("pointermove", 500, 400); pointer("pointerup", 500, 400);
   assert.deepEqual([lake.zones.castable[0].y, lake.zones.castable[0].h], [2, 8], "the bottom edge follows the cells");
-  state.setFlag("dragEdit", false); drag.sync();
-  assert(layer.removed && !drag.active, "switching drag editing off removes the layer");
-  unsubscribe(); drag.dispose(); state.setFlag("enabled", false);
+  state.setFlag("enabled", false); drag.sync();
+  assert(layer.removed && !drag.active, "switching the editor off removes the layer");
+  unsubscribe(); drag.dispose();
 }
 
-console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 colours, selection outline, map cell grid, debug map switches, structure and edge dragging with cell snap.");
+console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, selected fill and muted zones, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap.");

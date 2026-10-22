@@ -216,6 +216,19 @@
   width: 110px;
 }
 
+/* A 0..100 slider row (spec 129 Revision 2): the slider takes the control width, the number follows it. */
+.devtools__range {
+  flex: 0 1 120px;
+  min-width: 60px;
+  accent-color: var(--ui-accent);
+}
+.devtools__range-value {
+  flex: 0 0 32px;
+  text-align: right;
+  font-size: 12px;
+  color: #ccc;
+}
+
 .devtools__switch {
   flex-shrink: 0;
   position: relative;

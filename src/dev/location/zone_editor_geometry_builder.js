@@ -3,8 +3,14 @@ import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
 
 const COLORS = Object.freeze(Object.fromEntries(Object.entries(ZONE_CATEGORY_COLORS)
   .map(([category, hex]) => [category, Number.parseInt(hex.slice(1), 16)])));
-// The selected zone (spec 129 D4): a thicker outline and corner handles of this many logical pixels.
+// The selected zone (spec 129 D4, Revision 2 R2) is filled and outlined brightly with corner handles of HANDLE_PX
+// logical pixels; the other visible zones are muted.
 const SELECTED_LINE_WIDTH = 3;
+const SELECTED = Object.freeze({ fill: 0.35, stroke: 0.95 });
+const MUTED = Object.freeze({ fill: 0.04, stroke: 0.35 });
+// A zone category is drawn only while its physics is on (Revision 2: the "Зони" lists).
+const PHYSICS_KEYS = Object.freeze({ castable: "enableCastable", collisions: "enableCollisions", snags: "enableSnags",
+  dynamic: "enableDynamicZones" });
 const HANDLE_PX = 8;
 // The map's cell lines (D5): at most this many per axis.
 const MAX_CELL_LINES = 400;
@@ -21,7 +27,8 @@ export class ZoneEditorGeometryBuilder {
   #metric = null;
   #revision = -1; #mapRevision = -1; #scale = NaN; #x = NaN; #y = NaN;
   #dynamic = [];
-  #model = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0, cellLines: [], cellLineCount: 0, overlay: null };
+  #model = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0, cellLines: [], cellLineCount: 0, cellLineAlpha: 0,
+    overlay: null };
   #movingModel = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0 };
   rebuilds = 0;
   overlayRebuilds = 0;
@@ -71,13 +78,14 @@ export class ZoneEditorGeometryBuilder {
   #rebuild(moving) {
     this.rebuilds++; this.#model.revision++; this.#model.lineCount = 0; this.#model.rectCount = 0;
     this.#model.cellLineCount = 0;
+    this.#model.cellLineAlpha = this.#state.cellGridOpacity;
     const zones = this.#map.getLocationZones();
     const cell = this.#config.locations.cellSize;
     const width = this.#config.locations.baseResolution.width;
     const selection = this.#state.selection;
     if (this.#state.cellGrid) this.#cellGrid(cell);
     for (const category of CATEGORIES) {
-      if (!this.#state.categories[category]) continue;
+      if (!this.#state.categories[category] || this.#config.locations[PHYSICS_KEYS[category]] === false) continue;
       const records = zones[category] || EMPTY_ZONES;
       for (let index = 0; index < records.length; index++) {
         const zone = records[index];
@@ -85,13 +93,15 @@ export class ZoneEditorGeometryBuilder {
         const selected = selection.category === category && selection.index === index;
         if (category !== "dynamic" || !moving.length || selected) {
           const w = zone.adaptiveX ? width : zone.w * cell, y = zone.y * cell, h = zone.h * cell;
-          this.#rect(x, y, w, h, COLORS[category], this.#model, selected ? SELECTED_LINE_WIDTH : 1);
+          const look = selected ? SELECTED : MUTED;
+          this.#rect(x, y, w, h, COLORS[category], this.#model, selected ? SELECTED_LINE_WIDTH : 1, look.fill, look.stroke);
           if (selected) this.#handles(x, y, w, h, COLORS[category]);
         }
         if (zone.bounds) {
-          if (Array.isArray(zone.bounds)) {
-            for (const b of zone.bounds) this.#rect(b.x, b.y, b.w, b.h, COLORS[category]);
-          } else { const b = zone.bounds; this.#rect(b.x, b.y, b.w, b.h, COLORS[category]); }
+          const look = selected ? SELECTED : MUTED;
+          for (const b of Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) {
+            this.#rect(b.x, b.y, b.w, b.h, COLORS[category], this.#model, 1, look.fill, look.stroke);
+          }
         }
       }
     }
@@ -99,18 +109,20 @@ export class ZoneEditorGeometryBuilder {
   }
 
   // The map's cells (locations.cellSize) over the whole picture: what a dragged edge snaps to.
+  // Every cellLineStep-th cell line (Revision 2, "Сітка клітинок"), at the section's opacity.
   #cellGrid(cell) {
     const { width, height } = this.#config.locations.baseResolution;
-    if (!(cell > 0)) return;
-    for (let x = 0, i = 0; x <= width + 1e-6 && i < MAX_CELL_LINES; x += cell, i++) this.#line(x, 0, x, height, this.#model.cellLines, "cellLineCount");
-    for (let y = 0, i = 0; y <= height + 1e-6 && i < MAX_CELL_LINES; y += cell, i++) this.#line(0, y, width, y, this.#model.cellLines, "cellLineCount");
+    const step = cell * this.#state.cellLineStep;
+    if (!(step > 0) || !(this.#state.cellGridOpacity > 0)) return;
+    for (let x = 0, i = 0; x <= width + 1e-6 && i < MAX_CELL_LINES; x += step, i++) this.#line(x, 0, x, height, this.#model.cellLines, "cellLineCount");
+    for (let y = 0, i = 0; y <= height + 1e-6 && i < MAX_CELL_LINES; y += step, i++) this.#line(0, y, width, y, this.#model.cellLines, "cellLineCount");
   }
 
   // Corner squares of HANDLE_PX logical pixels, filled, so the selected zone shows where it can be taken.
   #handles(x, y, w, h, color) {
     const size = HANDLE_PX / this.#scale;
     for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) {
-      this.#rect(cx - size / 2, cy - size / 2, size, size, color, this.#model, 1, 0.9);
+      this.#rect(cx - size / 2, cy - size / 2, size, size, color, this.#model, 1, 0.9, 0.95);
     }
   }
 
@@ -156,11 +168,11 @@ export class ZoneEditorGeometryBuilder {
     this.#projector.virtualToScreen(x2, y2, this.#point); record.x2 = this.#point.x; record.y2 = this.#point.y;
   }
 
-  #rect(x, y, w, h, color, target = this.#model, lineWidth = 1, fillAlpha = 0.12) {
+  #rect(x, y, w, h, color, target = this.#model, lineWidth = 1, fillAlpha = 0.12, strokeAlpha = 0.9) {
     const index = target.rectCount++;
     const record = target.rects[index] ||= {};
     this.#projector.virtualToScreen(x, y, this.#point); record.x = this.#point.x; record.y = this.#point.y;
     record.width = w * this.#scale; record.height = h * this.#scale; record.color = color;
-    record.lineWidth = lineWidth; record.fillAlpha = fillAlpha;
+    record.lineWidth = lineWidth; record.fillAlpha = fillAlpha; record.strokeAlpha = strokeAlpha;
   }
 }

@@ -92,3 +92,60 @@ game does not react meanwhile. No visual check is done by the agent.
   session and when the builder is rebuilt.
 - Checks: `zone-editor` spec 129 block, `config-runtime` (drag tool wiring and disposal). Full 66/66, game-cycle
   unchanged. Utils cleanup: nothing became unused.
+
+## Revision 2 (owner, 2026-10-22, after v0.46.14)
+
+Owner's corrections (TK-044…TK-048), DEV only:
+
+1. **Редактор → Увімкнути** is the first item: on means the editor shows the zones, their edges can be dragged and the
+   cell grid turns on; "Показати редактор" and "Перетягувати межі" disappear as separate switches. "Показати фон"
+   stays.
+2. **Сітка перспективи** (was "Метрова сітка") becomes its own section holding everything of "Геометрія й
+   перспектива" for the water: show the grid, the projection's physics (on = the location has `waterProjection`,
+   off = uniform water), grid step, water length, tilt, far scale, width contraction, status, reset/export/import.
+3. **Several zones at once:** the selected zone is filled, the other visible zones are muted (faint fill and outline).
+   The zone fill is no longer a separate switch: it works under the hood (`debugZones` is removed).
+4. **Сітка клітинок** is its own section: show, opacity slider 0–100, line step (every N-th cell), snap step in cells,
+   cell size in px (`locations.cellSize`, which defines the map grid of the game), and the depth numbers with their own
+   opacity slider (`debugGrid`, `debugDepthText`, `debugOpacity` are removed from the config: the editor owns them).
+5. **Зони** (was "Категорії в редакторі"): one collapsible list per category with its colour square: "Ігрова область
+   (закидання)", "Перешкоди", "Зачепи", "Рухомі зони". The list's first switch turns the zone's physics on
+   (`enableCastable`…); only then its items appear: show the zone in the editor, the zone number (selecting it for
+   dragging), its coordinates (x/y/w/h, bounds), add and remove. "Зони в грі" disappears.
+
+"Оверлеї гри" keeps its switches; its first one is the master `debugVisuals` ("Показувати оверлеї гри").
+
+### Decisions
+
+- **R1** `ZoneEditorState`: `enabled` (one switch, also enables dragging and turns `cellGrid` on), `background`,
+  `grid` (perspective grid), `cellGrid`, `cellGridOpacity` (0..1), `cellLineStep` (1..10 cells), `snapCells`
+  (1..10), `depth`, `depthOpacity` (0..1), `categories`, `selection`. `dragEdit` is removed.
+- **R2** Geometry: every zone rect carries `fillAlpha` and `strokeAlpha`; the selected one 0.35 / 0.95 with handles,
+  the others 0.04 / 0.35. Cell lines carry the model's `cellLineAlpha` and are drawn every `cellLineStep` cells.
+- **R3** Depth numbers come from the location debug map built with the editor's state (depth only, its opacity) while
+  the editor is on; without the editor nothing is drawn. `LocationMap` stops tracking the removed debug flags.
+- **R4** Drag snaps to `snapCells` cells; it is active whenever the editor is on.
+- **R5** Projection physics off writes `waterProjection: null` through the config path; the schema and the resolver
+  treat `null` as "no projection" (uniform water); on adds the projection with the current uniform length and defaults.
+- **R6** "Розмір клітинки" writes `locations.cellSize` (5..200 px) and says it changes the game's map grid.
+
+### Revision 2 implementation (v0.46.15)
+
+- `ZoneEditorState`: `enabled` (also turns `cellGrid` on), `depth`, `cellGridOpacity`, `depthOpacity`, `cellLineStep`,
+  `snapCells` with `setNumber()` clamping; `dragEdit` removed.
+- `ZoneEditorGeometryBuilder`: selected zone fill 0.35 / stroke 0.95 / width 3 with handles, others 0.04 / 0.35; a
+  category is drawn only while its `enable*` physics is on; cell lines every `cellLineStep` cells at
+  `cellLineAlpha`. Both annotation renderers read `strokeAlpha` and `cellLineAlpha`.
+- `LocationDebugRenderFrameBuilder` draws only the editor (geometry, drag layer sync) and, with `depth`, the depth
+  map at `depthOpacity`; `LocationDebugMapBuilder` writes only the water cells' depths. Moving zones are the editor's
+  overlay.
+- `ZoneEditorDragController` is active whenever the editor is on; it snaps to `cellSize × snapCells` pixels and stores
+  design cells (`designCellSize`).
+- `ZoneEditorSection` rewritten: Редактор, Зони (four lists, physics switch first, items only while on), Сітка
+  клітинок, Сітка перспективи (show, projection physics → `waterProjection: null` when off, step, projection values,
+  status, reset/export/import), Оверлеї гри (`debugVisuals` first). `DevToolsUI.createRangeRow` (0..100 slider,
+  `devtools__range`).
+- Removed `locations.debugZones`, `debugGrid`, `debugDepthText`, `debugOpacity` from the config and their tracking in
+  `LocationMap`; the schema accepts `waterProjection: null`.
+- Checks: `zone-editor` Revision 2 block, `config-runtime` (map flags), `config-schema` (null projection).
+  Full 66/66, game-cycle unchanged.

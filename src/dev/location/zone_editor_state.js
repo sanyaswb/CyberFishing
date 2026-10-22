@@ -1,6 +1,7 @@
-// Session-owned diagnostic settings. Visibility never changes the gameplay's zone-enable switches.
-// selection: the zone the editor shows and the drag tool resizes (spec 129 D4); cellGrid: the map's cell lines the
-// drag snaps to (D5); dragEdit: pointer editing of the selected zone's edges (D6).
+// Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
+// enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone the
+// drag tool resizes; grid: the perspective (metre) grid; cellGrid*/snapCells: the map's cells; depth*: the depth
+// numbers in the cells.
 export class ZoneEditorState {
   revision = 0;
   locationId = null;
@@ -8,16 +9,24 @@ export class ZoneEditorState {
   background = true;
   grid = true;
   cellGrid = true;
-  dragEdit = false;
+  depth = false;
   spacingMeters = 1;
+  cellGridOpacity = 0.25;
+  depthOpacity = 0.7;
+  cellLineStep = 1;
+  snapCells = 1;
   categories = { castable: true, collisions: true, snags: true, dynamic: true };
   selection = { category: "castable", index: 0 };
   #zoneListeners = new Set();
 
   setFlag(key, value) {
-    if (!["enabled", "background", "grid", "cellGrid", "dragEdit"].includes(key)) throw new TypeError("Unknown editor flag");
+    if (!["enabled", "background", "grid", "cellGrid", "depth"].includes(key)) throw new TypeError("Unknown editor flag");
     const next = value === true;
-    if (this[key] !== next) { this[key] = next; this.revision++; }
+    if (this[key] === next) return;
+    this[key] = next;
+    // Turning the editor on shows the cell grid the edges snap to (owner, Revision 2).
+    if (key === "enabled" && next) this.cellGrid = true;
+    this.revision++;
   }
 
   setCategory(key, value) {
@@ -35,7 +44,19 @@ export class ZoneEditorState {
     this.revision++;
   }
 
-  // The drag tool changed a zone in the config: the section rebuilds its geometry rows (spec 129 D6).
+  // Opacities are shares 0..1; steps are whole cells 1..10.
+  setNumber(key, value) {
+    const limits = { cellGridOpacity: [0, 1, false], depthOpacity: [0, 1, false], cellLineStep: [1, 10, true],
+      snapCells: [1, 10, true] }[key];
+    if (!limits) throw new TypeError("Unknown editor value");
+    const [min, max, whole] = limits;
+    let next = Math.max(min, Math.min(max, Number(value)));
+    if (!Number.isFinite(next)) return;
+    if (whole) next = Math.round(next);
+    if (next !== this[key]) { this[key] = next; this.revision++; }
+  }
+
+  // The drag tool changed a zone in the config: the section rebuilds its rows (spec 129 D6).
   subscribeZonesEdited(listener) {
     this.#zoneListeners.add(listener);
     return () => this.#zoneListeners.delete(listener);

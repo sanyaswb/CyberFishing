@@ -15,9 +15,6 @@ export class LocationMap {
   #isDynamicBg = false;
   #bgLoaded = false;
   #debugStateInitialized = false;
-  #lastDebugGrid;
-  #lastDebugDepthText;
-  #lastDebugZones;
   #lastEnableCastable;
   #lastEnableCollisions;
   #lastEnableSnags;
@@ -285,17 +282,11 @@ export class LocationMap {
     const locCfg = this.#locationsConfig;
     if (
       !this.#debugStateInitialized ||
-      this.#lastDebugGrid !== locCfg.debugGrid ||
-      this.#lastDebugDepthText !== locCfg.debugDepthText ||
-      this.#lastDebugZones !== locCfg.debugZones ||
       this.#lastEnableCastable !== locCfg.enableCastable ||
       this.#lastEnableCollisions !== locCfg.enableCollisions ||
       this.#lastEnableSnags !== locCfg.enableSnags ||
       this.#lastEnableDynamicZones !== locCfg.enableDynamicZones
     ) {
-      this.#lastDebugGrid = locCfg.debugGrid;
-      this.#lastDebugDepthText = locCfg.debugDepthText;
-      this.#lastDebugZones = locCfg.debugZones;
       this.#lastEnableCastable = locCfg.enableCastable;
       this.#lastEnableCollisions = locCfg.enableCollisions;
       this.#lastEnableSnags = locCfg.enableSnags;

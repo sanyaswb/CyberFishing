@@ -53,7 +53,7 @@ export class WorldDebugRenderer {
   #renderAnnotations(model) {
     const surface = this.#surface;
     if (model.cellLineCount) {
-      surface.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      surface.strokeStyle = `rgba(255, 255, 255, ${model.cellLineAlpha ?? 0.2})`;
       surface.lineWidth = 1; surface.beginPath();
       for (let i = 0; i < model.cellLineCount; i++) {
         const l = model.cellLines[i];
@@ -69,8 +69,9 @@ export class WorldDebugRenderer {
       surface.globalAlpha = alpha * (r.fillAlpha ?? .12);
       surface.fillStyle = surface.strokeStyle;
       surface.fillRect(r.x, r.y, r.width, r.height);
-      surface.globalAlpha = alpha;
+      surface.globalAlpha = alpha * (r.strokeAlpha ?? 1);
       surface.strokeRect(r.x, r.y, r.width, r.height);
+      surface.globalAlpha = alpha;
     }
     surface.strokeStyle = "rgba(136, 221, 255, 0.5)";
     surface.lineWidth = 1; surface.beginPath();

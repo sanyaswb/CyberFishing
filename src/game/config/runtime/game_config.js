@@ -210,10 +210,7 @@ export const CONFIG = {
   },
 
   locations: {
-    debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
-    debugZones: false, // Показувати кольорові квадрати (зелені, червоні)
-    debugGrid: false, // Показувати лінії сітки
-    debugDepthText: false, // Показувати цифри глибини
+    debugVisuals: true, // Головний вимикач оверлеїв гри (зони виважування, прицілювання тощо)
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: false, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: false, // Динамічні зони (наприклад, косяк риби)
@@ -226,7 +223,6 @@ export const CONFIG = {
     showPoleFightSector: false, // Відображення допустимого сектора руху риби
     showFightLineRadius: false, // Відображення повної радіальної межі випущеної ліски
 
-    debugOpacity: 1.0,
     baseResolution: { width: 2560, height: 1440 },
     designCellSize: 40,
     cellSize: 40,
