@@ -708,9 +708,42 @@ async function checkSceneWater(compose, clock, water, metrics) {
   wet.layer.render(frame);
   assert.deepEqual([app.renders, waterContainer.visible], [10, false], "water below the screen is not filtered");
   regions[0].y = 300;
+  // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
+  // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
+  const zoneMask = app.stage.children[3];
+  const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
+  frame.world.clipRegions = list(two);
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert.equal(waterContainer.mask, zoneMask, "several zones clip the water to their outline");
+  assert.deepEqual(zoneMask.ops, [["rect", -100, 100, 1600, 200], ["rect", -100, 500, 1600, 200], ["fill", 0xffffff]]);
+  assert.deepEqual({ ...waterContainer.filterArea }, { x: 0, y: 100, width: 400, height: 600 },
+    "the filter still covers only the visible bounding box");
+  const pixelsAt = (row) => Array.from(map.canvas.getContext("2d").last.data.slice(row * 192 * 4, (row + 1) * 192 * 4));
+  // The map spans 100..700: the gap 300..500 is rows 16..31 of 48; their middle rows carry no shift at all.
+  for (let row = 17; row <= 30; row += 1) {
+    assert(pixelsAt(row).every((value, index) => index % 4 === 3 || value === 128), `no waves in the gap (row ${row})`);
+  }
+  assert(pixelsAt(8).some((value, index) => index % 4 < 2 && value !== 128) &&
+    pixelsAt(40).some((value, index) => index % 4 < 2 && value !== 128), "both zones still have waves");
+  const updatesBefore = map.updates;
+  for (const zone of two) zone.x += 10;
+  wet.layer.render(frame);
+  assert.deepEqual(zoneMask.ops[0], ["rect", -90, 100, 1600, 200], "a camera move redraws the mask");
+  assert.equal(map.updates, updatesBefore, "the zones' shares of the box are unchanged: no extra wave step");
+  const opsBefore = zoneMask.ops;
+  wet.layer.render(frame);
+  assert.equal(zoneMask.ops, opsBefore, "unchanged zones keep the mask as it is");
+  frame.world.clipRegions = { count: 1, getAt: (index) => regions[index] };
+  clock.now += 40;
+  wet.layer.render(frame);
+  assert(waterContainer.mask === null && zoneMask.ops.length === 0,
+    "one zone is the whole box: no mask, and the unused mask draws nothing");
+  const rendersWithWater = app.renders;
   frame.world.clipRegions = { count: 0, getAt: () => null };
   wet.layer.render(frame);
-  assert.equal(app.renders, 10, "no castable zone: no water");
+  wet.layer.render(frame);
+  assert.deepEqual([app.renders, waterContainer.visible], [rendersWithWater + 1, false], "no castable zone: no water (hidden once)");
   wet.layer.dispose();
   assert.equal(map.destroyed, true, "the map's texture is released with the scene");
 }

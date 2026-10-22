@@ -9,8 +9,9 @@ const LAYER_SPRITES = 2;
 // Ripples on the water (spec 106): a copy of the background's layers inside the water area, drawn over the background
 // through Pixi's DisplacementFilter, whose map (WaterWaveField) is refilled and uploaded at the water's own frame rate.
 // Between steps nothing changes, so the scene presents a frame only on a step or when the background itself changed
-// (spec 105 D3). The water area is the location's castable zones (world.clipRegions), clipped to the screen as the
-// filter area so only visible water is filtered. The pattern drifts with the location's current (world.current, times
+// (spec 105 D3). The water area is the location's castable zones (world.clipRegions): their bounding box, clipped to the
+// screen, is the filter area, so only visible water is filtered; with several zones a mask of the zones clips the
+// filtered copy and the waves fade at each zone's edges, so the art between zones stays still (TK-066). The pattern drifts with the location's current (world.current, times
 // currentScale, D9). Settings are read every frame, so DEV edits apply at once.
 export class PixiWaterRenderer {
   #textures;
@@ -26,6 +27,9 @@ export class PixiWaterRenderer {
   #filter;
   #filterArea = { x: 0, y: 0, width: 0, height: 0 };
   #area = { left: 0, top: 0, right: 0, bottom: 0 };
+  #mask;
+  #maskRects = [];
+  #shares = [];
   #visible = false;
   #lastStepAt = null;
   #stepMs = 0;
@@ -65,6 +69,10 @@ export class PixiWaterRenderer {
     // The filter reads the map sprite's world transform, so the sprite lives in the scene (the filter makes it
     // non-renderable).
     stage.addChild(this.#mapSprite);
+    // TK-066: the zones' outline. Pixi applies a container's masks before its filters (effect priority 0 < 1), so the
+    // mask clips the filtered result; the mask lives in the scene for its transform and bounds and is not drawn itself.
+    this.#mask = new pixi.Graphics();
+    stage.addChild(this.#mask);
   }
 
   // For DEV: whether the water animates, the map size, the last step's JavaScript time and the drift speed (art px/s).
@@ -86,6 +94,7 @@ export class PixiWaterRenderer {
     const width = area ? Math.min(viewWidth, area.right) - left : 0;
     const height = area ? Math.min(viewHeight, area.bottom) - top : 0;
     if (!(width > 0 && height > 0)) return this.#hide();
+    const reshaped = this.#clipToZones(world.clipRegions, area);
     const wasVisible = this.#visible;
     this.#visible = true;
     this.#container.visible = true;
@@ -107,7 +116,7 @@ export class PixiWaterRenderer {
     this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * artScale;
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
     const metric = world.waterPlane?.metric ?? null;
-    const stepDue = this.#lastStepAt === null || metric !== this.#metric ||
+    const stepDue = this.#lastStepAt === null || metric !== this.#metric || reshaped ||
       nowMs - this.#lastStepAt >= 1000 / Math.max(1, Number(settings.frameRate) || 1);
     if (stepDue) {
       this.#metric = metric;
@@ -164,6 +173,49 @@ export class PixiWaterRenderer {
     sprite.height = layer.height;
     sprite.alpha = layer.alpha;
     sprite.visible = true;
+  }
+
+  // Several zones: the mask is rebuilt only when their screen rectangles change (a camera move), and the wave field's
+  // regions (shares of the bounding box, which a camera move keeps) only when the zones themselves change. One zone is
+  // the whole box: no mask, the field's default region. Returns whether the field's regions changed.
+  #clipToZones(regions, area) {
+    const count = regions.count;
+    const shares = this.#shares;
+    shares.length = count * 4;
+    const spanX = area.right - area.left, spanY = area.bottom - area.top;
+    for (let index = 0; index < count; index += 1) {
+      const region = regions.getAt(index);
+      shares[index * 4] = (region.x - area.left) / spanX;
+      shares[index * 4 + 1] = (region.y - area.top) / spanY;
+      shares[index * 4 + 2] = (region.x + region.width - area.left) / spanX;
+      shares[index * 4 + 3] = (region.y + region.height - area.top) / spanY;
+    }
+    const reshaped = this.#field.setRegions(shares, count);
+    if (count < 2) {
+      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
+      if (this.#container.mask) { this.#container.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
+      return reshaped;
+    }
+    const rects = this.#maskRects;
+    let same = rects.length === count * 4;
+    for (let index = 0; same && index < count; index += 1) {
+      const region = regions.getAt(index), offset = index * 4;
+      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
+        rects[offset + 3] === region.height;
+    }
+    if (!same) {
+      rects.length = count * 4;
+      const mask = this.#mask;
+      mask.clear();
+      for (let index = 0; index < count; index += 1) {
+        const region = regions.getAt(index), offset = index * 4;
+        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
+        mask.rect(region.x, region.y, region.width, region.height);
+      }
+      mask.fill(0xffffff);
+    }
+    if (this.#container.mask !== this.#mask) this.#container.mask = this.#mask;
+    return reshaped;
   }
 
   // The bounding box of the castable zones (reused), or null when there are none.

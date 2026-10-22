@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.31";
+export const CURRENT_PROJECT_VERSION = "0.46.32";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "location-editor",
+  codename: "water-in-zones",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-066: water only within castable zones.",
     "Moving zones: circle/square creation, uniform size and shape-preserving export.",
     "Spec 130: location-bound editor, zone files, apply:zones.",
     "TK-057, TK-058: move area hidden, moves stay in the window.",

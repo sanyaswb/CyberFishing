@@ -18,8 +18,8 @@ const smoothstep = (value) => {
 // The water's displacement map (spec 106 D2): a small RGBA image whose red channel shifts the art horizontally and green
 // vertically (128 = no shift), stretched over the water by DisplacementFilter. write(time, settings) refills it for a
 // moment of the animation: crossing sine waves on the water plane, smaller and calmer toward the far edge (perspective)
-// and fading out at the edges. The image is small (the filter interpolates it), so one step costs a fraction of a
-// millisecond and uploads a few kilobytes.
+// and fading out at the edges of every water region (TK-066: each castable zone; the whole map by default). The image is
+// small (the filter interpolates it), so one step costs a fraction of a millisecond and uploads a few kilobytes.
 export class WaterWaveField {
   #width;
   #height;
@@ -27,6 +27,7 @@ export class WaterWaveField {
   #envelope;
   #rowX;
   #rowY;
+  #regions = [0, 0, 1, 1];
 
   constructor({ width, height }) {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || height < 2) {
@@ -38,15 +39,42 @@ export class WaterWaveField {
     this.#envelope = new Float32Array(width * height);
     this.#rowX = new Float64Array(width);
     this.#rowY = new Float64Array(width);
+    this.#buildEnvelope();
+    for (let index = 3; index < this.#pixels.length; index += 4) this.#pixels[index] = 255;
+  }
+
+  // regions: count rectangles as shares of the map, flat [u0, v0, u1, v1, ...]; the waves live inside them only and fade
+  // out at each one's own edges (the shares FADE_* of that region). One region (0, 0, 1, 1) is the whole map. Called
+  // when the regions change, not per step.
+  setRegions(regions, count) {
+    const next = this.#regions;
+    let same = next.length === count * 4;
+    for (let index = 0; same && index < count * 4; index += 1) same = next[index] === regions[index];
+    if (same) return false;
+    next.length = count * 4;
+    for (let index = 0; index < count * 4; index += 1) next[index] = regions[index];
+    this.#buildEnvelope();
+    return true;
+  }
+
+  #buildEnvelope() {
+    const width = this.#width, height = this.#height, regions = this.#regions;
     for (let row = 0; row < height; row += 1) {
       const v = (row + 0.5) / height;
-      const vertical = smoothstep(v / FADE_TOP) * smoothstep((1 - v) / FADE_BOTTOM);
       for (let column = 0; column < width; column += 1) {
         const u = (column + 0.5) / width;
-        this.#envelope[row * width + column] = vertical * smoothstep(u / FADE_SIDE) * smoothstep((1 - u) / FADE_SIDE);
+        let value = 0;
+        for (let index = 0; index < regions.length; index += 4) {
+          const u0 = regions[index], v0 = regions[index + 1], u1 = regions[index + 2], v1 = regions[index + 3];
+          if (u < u0 || u > u1 || v < v0 || v > v1) continue;
+          const lu = (u - u0) / (u1 - u0), lv = (v - v0) / (v1 - v0);
+          const inside = smoothstep(lv / FADE_TOP) * smoothstep((1 - lv) / FADE_BOTTOM) *
+            smoothstep(lu / FADE_SIDE) * smoothstep((1 - lu) / FADE_SIDE);
+          if (inside > value) value = inside;
+        }
+        this.#envelope[row * width + column] = value;
       }
     }
-    for (let index = 3; index < this.#pixels.length; index += 4) this.#pixels[index] = 255;
   }
 
   get width() {

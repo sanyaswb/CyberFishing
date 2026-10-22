@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.32 - Water Only in Castable Zones
+
+- The water animates only inside the castable zones: with several zones a mask clips it and the waves fade at each zone's edges.
+
 ## v0.46.31 - Selected Zone Input
 
 - Zone hover and editing follow the selected number in each category. Other bodies cannot steal the selection; changing it clears hover and cancels stale dragging, with an additional ID check for moving zones.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.23 - Editor Controls at the Top
 
 - DevTools «РЕДАКТОР»: location is the first dropdown, followed directly by the editor controls; removed the nested location and editor disclosures.
-
-## v0.46.22 - Location Editor and Zone Files
-
-- DevTools "Редактор": choose a location first; export, import and reset its zones as a file; npm run apply:zones moves a zone file into the code with checks, confirmation and a backup.

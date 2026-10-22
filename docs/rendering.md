@@ -48,7 +48,10 @@ the role that is easiest to reach from the current code.
 - An animated scene effect changes at its own frame rate and presents one frame per step, nothing between steps: the
   water ([spec 106](../specs/106-scene-water/spec.md)) steps `CONFIG.canvas.water.frameRate` times a second (30). Its
   CPU part (the displacement map, ~0.15 ms) and the filtered area (the visible water only) are kept small; its cost on
-  the phone is measured with the effect on and off (DevTools toggles it live).
+  the phone is measured with the effect on and off (DevTools toggles it live). The water is the castable zones, not
+  their bounding box (TK-066): the filter covers the visible box, a stencil mask of the zones clips its result when
+  there are several (Pixi applies a container's masks before its filters: effect priority 0 < 1), and the wave map
+  fades at every zone's edges. One zone needs no mask.
 - Scene textures come from the images `ImageAssetProvider` loaded and decoded (`decode()` during loading), through
   `SceneTextureCache` (mipmaps, uploaded when created, released with the scene). A kind lists every image it may show
   (the background: all time-of-day phases); startup uploads them under the loading screen (`prepare`), and an image
