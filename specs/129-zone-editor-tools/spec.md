@@ -166,3 +166,10 @@ Owner 2026-10-22: deleting a zone removes it even when it is the last one, and t
 zones left (LocationMap keeps whole-map bounds without castable zones, G-118). While the editor is on, the game's UI
 (`.ui-surface__content`: toolbar, controls, windows) is hidden through the body class `game-shell--zone-editor`;
 DevTools, its toggle and DEV overlays stay.
+
+## TK-053 DevTools from the left edge (v0.46.19)
+
+Owner 2026-10-22: while the editor is on, the DevTools button hides too; the panel opens from a 16 px strip at the
+left screen edge (`DevToolsEdgeOpener`, owned by DevToolsUI): a mouse entering it with no button held, a mouse press,
+or a finger swiping right at least 24 px. The strip is shown only under `game-shell--zone-editor` and sits under the
+open panel. Note: it also covers zone edges within 16 px of the screen's left side.

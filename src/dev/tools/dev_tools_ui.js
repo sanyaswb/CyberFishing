@@ -1,6 +1,7 @@
 import { DevToolsControlBindingRegistry } from "../services/dev_tools_control_binding_registry.js";
 import { DraggableButton } from "../../platform/browser/dom/draggable_button.js";
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
+import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 
 export class DevToolsUI {
   #panel;
@@ -16,6 +17,8 @@ export class DevToolsUI {
   #mountNode;
   #toggleMountNode;
   #descriptions = new WeakMap();
+  #edgeOpener = null;
+  #isOpen = false;
 
   constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
     mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode) {
@@ -26,6 +29,9 @@ export class DevToolsUI {
     this.#onToggleCallback = onToggleCallback;
     this.#tooltipProvider = tooltipProvider;
     this.#initBtn(config);
+    // Before the panel, so the open panel paints over the strip (TK-053).
+    this.#edgeOpener = new DevToolsEdgeOpener({ documentRef: document, mountNode: this.#mountNode,
+      open: () => { if (!this.#isOpen) this.#onToggleCallback?.(); } });
     this.#initPanel();
   }
 
@@ -39,6 +45,7 @@ export class DevToolsUI {
   }
 
   togglePanel(isOpen) {
+    this.#isOpen = isOpen === true;
     if (isOpen) {
       this.#panel.classList.add("devtools--open");
     } else {
@@ -60,6 +67,8 @@ export class DevToolsUI {
   }
 
   dispose() {
+    this.#edgeOpener?.dispose();
+    this.#edgeOpener = null;
     this.#dragButton?.dispose();
     this.#dragButton = null;
     this.#tooltipProvider?.dispose();

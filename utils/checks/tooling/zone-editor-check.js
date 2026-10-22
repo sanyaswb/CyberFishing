@@ -6,6 +6,7 @@ const load = path => runtime.importModule(path);
 const { ZoneEditorState } = load("src/dev/location/zone_editor_state.js");
 const { ZoneEditorGeometryBuilder } = load("src/dev/location/zone_editor_geometry_builder.js");
 const { ZoneEditorSection } = load("src/dev/tools/zone_editor_section.js");
+const { DevToolsEdgeOpener } = load("src/dev/tools/dev_tools_edge_opener.js");
 const { PixiAnnotationRenderer } = load("src/platform/browser/scene/pixi_annotation_renderer.js");
 const { WorldDebugRenderer } = load("src/dev/rendering/world_debug_renderer.js");
 const { WaterMetric } = load("src/game/domain/locations/water_metric.js");
@@ -466,6 +467,20 @@ controlUI.dispose();
   state.setFlag("enabled", false); drag.sync();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
   assert(!body.classes.has("game-shell--zone-editor"), "TK-052: switching the editor off brings the game's UI back");
+
+  // TK-053: the left-edge strip opens the panel on mouse hover (no button held), a mouse press, or a right swipe.
+  let opens = 0;
+  const edgeMount = [];
+  const opener = new DevToolsEdgeOpener({ documentRef: { createElement: makeElement },
+    mountNode: { appendChild: element => edgeMount.push(element) }, open: () => opens++ });
+  const edge = edgeMount[0], fire = (type, fields) => edge.listeners.get(type)({ preventDefault() {}, ...fields });
+  fire("pointerenter", { pointerType: "mouse", buttons: 1 }); assert.equal(opens, 0, "no opening while a drag holds a button");
+  fire("pointerenter", { pointerType: "mouse", buttons: 0 }); assert.equal(opens, 1, "a mouse at the left edge opens DevTools");
+  fire("pointerdown", { pointerType: "touch", pointerId: 7, clientX: 2 });
+  fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 20 }); assert.equal(opens, 1, "a short touch move does not open");
+  fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 30 }); assert.equal(opens, 2, "a swipe right from the edge opens");
+  fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 90 }); assert.equal(opens, 2, "one swipe opens once");
+  opener.dispose(); assert(edge.removed && edge.listeners.size === 0, "the strip leaves with DevTools");
   unsubscribe(); drag.dispose();
 }
 

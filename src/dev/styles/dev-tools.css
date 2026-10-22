@@ -324,3 +324,16 @@
 /* TK-052: while the zone editor is on, the game's buttons and windows (the ui-surface content) are hidden; DevTools,
    its toggle and the DEV overlays live in the portals and stay. */
 .game-shell--zone-editor .ui-surface__content { visibility: hidden; }
+/* TK-053: the DevTools button hides too; a strip along the left edge opens the panel (hover or swipe right). */
+.game-shell--zone-editor .devtools__toggle { visibility: hidden; }
+.devtools__edge {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: var(--ui-logical-height, 100dvh);
+  z-index: var(--ui-layer-panel);
+  touch-action: none;
+}
+.game-shell--zone-editor .devtools__edge { display: block; }
