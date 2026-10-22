@@ -4,9 +4,12 @@ import { Vector2 } from "../../engine/math/vector2.js";
 const EDGE_PX = 10;
 const CURSORS = Object.freeze({ x: "zone-editor-drag-layer--x", y: "zone-editor-drag-layer--y",
   xy: "zone-editor-drag-layer--xy" });
+// Body class while the editor is on: dev-tools.css hides the game's own UI (TK-052); DevTools stays.
+const EDITING_CLASS = "game-shell--zone-editor";
 
 // Drags the edges of the selected zone with the mouse or a finger (spec 129 D6, Revision 2 R4). A transparent layer
-// over the game canvas exists while the editor is on, so the game gets no input meanwhile; DevTools stays above it.
+// over the game canvas exists while the editor is on, so the game gets no input meanwhile; DevTools stays above it
+// and the game's buttons and windows are hidden (TK-052).
 // A pointer within EDGE_PX of an edge takes it (a corner takes both); the edge follows the pointer snapped to
 // snapCells map cells, the zone keeps at least that much, and an adaptive-width zone moves only its top and bottom.
 // Every change of the snapped value writes the category's zone array once through the injected config path.
@@ -52,6 +55,7 @@ export class ZoneEditorDragController {
     for (const [type, listener] of listeners) layer.addEventListener(type, listener);
     this.#listeners = listeners;
     this.#mountNode.prepend(layer);
+    this.#documentTarget.body?.classList.add(EDITING_CLASS);
     this.#layer = layer;
   }
 
@@ -60,6 +64,7 @@ export class ZoneEditorDragController {
     if (!layer) return;
     for (const [type, listener] of this.#listeners) layer.removeEventListener(type, listener);
     layer.remove();
+    this.#documentTarget.body?.classList.remove(EDITING_CLASS);
     this.#layer = null;
     this.#listeners = null;
     this.#drag = null;

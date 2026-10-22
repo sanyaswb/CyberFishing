@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.18 - Zone Delete and Editor Screen
+
+- The zone editor deletes any zone, the last one too; while it is on, the game's buttons and windows are hidden.
+
 ## v0.46.17 - Perspective Grid Off
 
 - Turning the zone editor on shows the cell grid only; the perspective grid stays off until switched on.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.9 - Compact Toolbar Column and Fades
 
 - TK-036 (toolbars <=820 logical px with the radial selector): the open half-disk central button is an exact half circle (its rounded bottom corners made CSS shrink every radius and flatten the top), so the gap to every petal equals the gap between petals. Every other action stands in one column at the right edge, packed up from the bottom corner: float/depth in the corner with its track opening leftwards while the selector fades out, then the net, then the chum and others. Opening the fan fades every other action out completely; aiming a cast fades out the whole toolbar; all fades are smooth (instant with reduced motion). Wider toolbars unchanged. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
-
-## v0.46.8 - Version in the DevTools Footer on Phones
-
-- TK-035: at UI widths <=820 logical px, where the toolbar's version badge is hidden, the DevTools panel shows the project version (the same badge text from PROJECT_VERSION_CONFIG) in a fixed last row below the scrolling sections. Wider screens keep the toolbar badge. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.17";
+export const CURRENT_PROJECT_VERSION = "0.46.18";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "perspective-grid-off",
+  codename: "zone-delete-editor-ui",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "TK-051, TK-052: zone deletion and editor screen.",
     "TK-050: perspective grid off by default.",
     "TK-049: zone physics on by default, editor zone display off.",
     "DEV zone editor revision 2: one enable switch, zone lists by physics, cell grid and perspective sections",

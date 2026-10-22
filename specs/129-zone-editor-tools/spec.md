@@ -159,3 +159,10 @@ Owner 2026-10-22: zone physics of every category is on by default (`CONFIG.locat
 
 Owner 2026-10-22: turning the editor on must not show the perspective grid. `ZoneEditorState.grid` defaults to false;
 enabling still turns the cell grid on.
+
+## TK-051, TK-052 (v0.46.18)
+
+Owner 2026-10-22: deleting a zone removes it even when it is the last one, and the delete button disappears with no
+zones left (LocationMap keeps whole-map bounds without castable zones, G-118). While the editor is on, the game's UI
+(`.ui-surface__content`: toolbar, controls, windows) is hidden through the body class `game-shell--zone-editor`;
+DevTools, its toggle and DEV overlays stay.

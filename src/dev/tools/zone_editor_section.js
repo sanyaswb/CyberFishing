@@ -56,7 +56,7 @@ export class ZoneEditorSection {
     }, ["ZONE_EDITOR", "enabled"]);
     ui.createSwitcherRow("Показати фон (інакше чорний)", state.background, section,
       value => state.setFlag("background", value), ["ZONE_EDITOR", "background"]);
-    ui.createInfoRow("Редактор", "Увімкнений редактор показує зони, вмикає сітку клітинок і перетягування: візьміть мишею чи пальцем край обраної зони (кут — два краї), він прилипає до клітинок. Поки редактор увімкнено, гра не отримує дотиків. Обрана зона залита яскраво, інші приглушені.", section);
+    ui.createInfoRow("Редактор", "Увімкнений редактор показує зони, вмикає сітку клітинок і перетягування: візьміть мишею чи пальцем край обраної зони (кут — два краї), він прилипає до клітинок. Поки редактор увімкнено, гра не отримує дотиків, а її кнопки й вікна приховані. Обрана зона залита яскраво, інші приглушені.", section);
   }
 
   // One category's list: the physics switch first; the items only while the physics is on.
@@ -89,10 +89,10 @@ export class ZoneEditorSection {
       ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), list,
         value => { this.#select(category, Number(value) - 1); });
       if (!selected) ui.createButtonRow("Редагувати цю зону на мапі", list, () => this.#select(category, index));
-      ui.createInfoRow("Координати", "x/y/w/h — клітинки designCellSize; bounds — пікселі карти. Останню зону закидання видалити не можна.", list);
+      ui.createInfoRow("Координати", "x/y/w/h — клітинки designCellSize; bounds — пікселі карти. Без зон закидання закинути вудку не можна.", list);
       this.#renderTree(zones[index], list, [...path, index]);
+      // Any zone can go, the last one too (TK-051); the refilled list then has no delete button.
       ui.createButtonRow("Видалити вибрану зону", list, () => {
-        if (category === "castable" && zones.length <= 1) return;
         this.#update(path, zones.filter((_, number) => number !== index));
         this.#select(category, Math.max(0, index - 1));
       });

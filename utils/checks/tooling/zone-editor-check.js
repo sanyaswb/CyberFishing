@@ -147,12 +147,20 @@ new ZoneEditorSection({ ui, state, config, createSection: stubSection,
 assert(trees.some(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable.0"));
 actions.get("Крок сітки, м")(-1); assert.equal(synced.at(-1)[1], .25, "the displayed spacing matches the clamped setting");
 const castableAction = (label) => actions.get(`Ігрова область (закидання)/${label}`);
-castableAction("Видалити вибрану зону")(); assert.equal(edits.length, 0, "keep at least one castable zone");
 config.locations.map.lake.zones.castable[0].bounds = { x: 10, y: 20, w: 30, h: 40 };
 castableAction("Додати зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 2);
 assert.notEqual(config.locations.map.lake.zones.castable[0].bounds, config.locations.map.lake.zones.castable[1].bounds,
   "duplicated zones never share writable nested bounds");
 castableAction("Видалити вибрану зону")(); assert.equal(config.locations.map.lake.zones.castable.length, 1);
+// TK-051: the last zone can be deleted too; the refilled list then offers no delete button.
+const lastCastable = config.locations.map.lake.zones.castable;
+const deleteLast = castableAction("Видалити вибрану зону");
+actions.delete("Ігрова область (закидання)/Видалити вибрану зону");
+deleteLast();
+assert.equal(config.locations.map.lake.zones.castable.length, 0, "the only castable zone is deleted");
+assert(!actions.has("Ігрова область (закидання)/Видалити вибрану зону") && actions.has("Ігрова область (закидання)/Додати зону"),
+  "with no zones left the delete button is gone and adding stays");
+config.locations.map.lake.zones.castable = lastCastable;
 assert(edits.every(path => path.join(".") === "CONFIG.locations.map.lake.zones.castable"));
 actions.get("Нахил площини, °")(45);
 assert.equal(config.locations.map.lake.waterProjection.tiltDegrees, 45);
@@ -404,17 +412,19 @@ controlUI.dispose();
       setPointerCapture() {}, releasePointerCapture() {},
       classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) } }; };
   const mounted = [], writes = [];
+  const body = makeElement();
   let edited = 0;
   const unsubscribe = state.subscribeZonesEdited(() => edited++);
   const drag = new ZoneEditorDragController({ state, map, projector, config, canvasMetrics: { width: 1000, height: 1000 },
     getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 }) }),
-    documentTarget: { createElement: makeElement }, mountNode: { prepend: (element) => mounted.push(element) },
+    documentTarget: { createElement: makeElement, body }, mountNode: { prepend: (element) => mounted.push(element) },
     writeZones: (path, zones) => { writes.push({ path: path.join("."), zones });
       lake.zones[path.at(-1)] = zones; } });
   state.setFlag("enabled", false); drag.sync(); assert.equal(drag.active, false, "no layer without the editor");
   state.setFlag("enabled", true); drag.sync();
   const layer = mounted[0];
   assert(drag.active && layer && layer.listeners.has("pointerdown"), "the editor puts a layer over the canvas");
+  assert(body.classes.has("game-shell--zone-editor"), "TK-052: the editor hides the game's UI");
   const pointer = (type, x, y, id = 1) => { let prevented = false;
     layer.listeners.get(type)({ clientX: x / 2, clientY: y / 2, pointerId: id, preventDefault: () => { prevented = true; } });
     return prevented; };
@@ -455,6 +465,7 @@ controlUI.dispose();
   assert.deepEqual([lake.zones.castable[0].y, lake.zones.castable[0].h], [2, 8], "the bottom edge follows the cells");
   state.setFlag("enabled", false); drag.sync();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
+  assert(!body.classes.has("game-shell--zone-editor"), "TK-052: switching the editor off brings the game's UI back");
   unsubscribe(); drag.dispose();
 }
 

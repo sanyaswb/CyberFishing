@@ -2219,6 +2219,16 @@ const cell = lake.getCellAtVirtualPos(35, 35, 10);
 assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   Number.isFinite(castable.left + castable.right + castable.top + castable.bottom),
   "location map exposes its grid and castable bounds");
+// TK-051 (silent): a location whose castable zones were all deleted keeps whole-map water bounds and no castable cell.
+{
+  const dryConfig = { ...worldConfig, map: { lake: { ...worldConfig.map.lake, zones: { ...worldConfig.map.lake.zones, castable: [] } } } };
+  const dry = new WorldMap("lake", dryConfig, worldRng, { background: { dynamic: false, assetIds: { day: "day" } }, loaded: true });
+  const bounds = dry.getCastableBoundsVirtual(10);
+  const anyCastable = dry.getGrid().some(column => column.some(cell => cell.isCastable));
+  if (!(bounds.left === 0 && bounds.top === 0 && bounds.right === 100 && bounds.bottom === 60 && !anyCastable)) {
+    throw new Error("a location without castable zones keeps whole-map bounds and refuses every cast");
+  }
+}
 
 // World services over the same lake map (silent: hot-loop evidence for Stage 4 cluster 026, output unchanged).
 {

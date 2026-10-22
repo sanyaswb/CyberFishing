@@ -802,6 +802,11 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-118 Deleting the last castable zone breaks the game (P2, done)
+Found: 2026-10-22, owner (TK-051): the zone editor silently refused to delete the only castable zone, because `LocationMap.getCastableBoundsVirtual` returned null without castable zones and the water metric, camera and rod read its bounds every frame.
+Resolution (v0.46.18): without castable zones the bounds span the whole map grid and no cell is castable, so every cast is refused; the editor deletes any zone. Production locations always author castable zones, so play is unchanged.
+Evidence: silent game-cycle assertion (whole-map bounds, no castable cell); game-cycle report unchanged.
+
 ### G-117 Zone physics on by default (P2, done)
 Found: 2026-10-22, owner (TK-049, spec 129): the lake's obstacles, snags and moving fish school were authored but switched off by default.
 Expected: every zone category takes part in the game by default; the zone editor starts with the zone areas and depth numbers hidden.

@@ -321,3 +321,6 @@
 .zone-editor-drag-layer--x { cursor: ew-resize; }
 .zone-editor-drag-layer--y { cursor: ns-resize; }
 .zone-editor-drag-layer--xy { cursor: move; }
+/* TK-052: while the zone editor is on, the game's buttons and windows (the ui-surface content) are hidden; DevTools,
+   its toggle and the DEV overlays live in the portals and stay. */
+.game-shell--zone-editor .ui-surface__content { visibility: hidden; }

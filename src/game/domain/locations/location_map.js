@@ -133,7 +133,15 @@ export class LocationMap {
       maxX = -Infinity,
       maxY = -Infinity;
     const castableZones = this.#config.zones.castable;
-    if (!castableZones || castableZones.length === 0) return null;
+    // Without castable zones (all deleted in the DEV zone editor, TK-051) the water spans the whole map; no cell is
+    // castable, so every cast is refused, while the metric, the camera and the rod keep valid bounds.
+    if (!castableZones || castableZones.length === 0) {
+      this.#castableBounds.left = 0;
+      this.#castableBounds.right = this.#cols * cellSize;
+      this.#castableBounds.top = 0;
+      this.#castableBounds.bottom = this.#rows * cellSize;
+      return this.#castableBounds;
+    }
     for (const z of castableZones) {
       minX = Math.min(minX, z.x * cellSize);
       minY = Math.min(minY, z.y * cellSize);
