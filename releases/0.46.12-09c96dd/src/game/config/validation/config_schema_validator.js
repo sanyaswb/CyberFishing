@@ -1147,6 +1147,16 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`canvas.water.${key}`);
     }
+    // The float's rocking on these waves (spec 128).
+    const rocking = cfg.floatRocking;
+    if (!rocking || typeof rocking !== "object") { this.#error("CONFIG.canvas.water.floatRocking", "missing float rocking config"); return; }
+    this.#requireParameterLabel("canvas.water.floatRocking");
+    this.#requireBooleanWithLabel("canvas.water.floatRocking.enabled", rocking.enabled);
+    for (const [key, min, max] of [["bobPx", 0, 60], ["swayPx", 0, 60], ["lyingTurnDeg", 0, 45],
+      ["periodSec", 0.2, 20], ["biteShare", 0, 1]]) {
+      this.#requireFiniteNumber(`CONFIG.canvas.water.floatRocking.${key}`, rocking[key], { min, max });
+      this.#requireParameterLabel(`canvas.water.floatRocking.${key}`);
+    }
   }
 
   #requireParameterLabel(path) {

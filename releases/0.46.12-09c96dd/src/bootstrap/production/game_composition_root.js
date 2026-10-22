@@ -2,6 +2,7 @@ import { GameRenderComposition } from "./game_render_composition.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { ITEM_PROGRESSION_LABELS } from "../../game/presentation/inventory/item_progression_labels.js";
 import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
+import { FloatWaveRocking } from "../../game/presentation/fishing/float_wave_rocking.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
@@ -463,11 +464,13 @@ export class GameCompositionRoot {
       timeScale: this.#config.debug?.timeScale || 1,
     });
     this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
+    // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
+    const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({
       projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-      gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter },
+      gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
     await this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
@@ -522,6 +525,7 @@ export class GameCompositionRoot {
         rarityVisualResolver,
         victoryLayoutResolver,
         rodAnimation,
+        floatRocking,
       },
       interaction: {
         victoryActionGestureResolver,
