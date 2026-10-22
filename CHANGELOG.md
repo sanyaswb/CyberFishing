@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.17 - Perspective Grid Off
+
+- Turning the zone editor on shows the cell grid only; the perspective grid stays off until switched on.
+
 ## v0.46.16 - Zone defaults
 
 - Zone physics of every category is on by default (obstacles, snags, moving fish school); the zone editor starts with zone areas and depth numbers hidden.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.8 - Version in the DevTools Footer on Phones
 
 - TK-035: at UI widths <=820 logical px, where the toolbar's version badge is hidden, the DevTools panel shows the project version (the same badge text from PROJECT_VERSION_CONFIG) in a fixed last row below the scrolling sections. Wider screens keep the toolbar badge. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
-
-## v0.46.7 - Centred Selector Fan on Compact Toolbars
-
-- TK-034: at toolbar widths <=820 logical px the radial selector stands centred in the bottom row without a reserve and opens a symmetric fan over its neighbours: half circle (half-disk central button, three 60° petals) or 120° arc (round central button, three 40° petals), switched live by CONFIG.ui.inventorySelector.compactShape. The landing net stands right of it, the depth control further right with its track opening rightwards; the chum and other actions stand left, balanced around the selector. While the fan is open the other actions fade and a press beside it only closes it. Wider toolbars keep the corner fan. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.

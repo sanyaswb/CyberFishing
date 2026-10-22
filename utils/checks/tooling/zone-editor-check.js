@@ -18,6 +18,8 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
 const state = new ZoneEditorState();
 // TK-049: zone areas start hidden (and the depth numbers off); the checks below show every category explicitly.
 assert(Object.values(state.categories).every(shown => shown === false) && state.depth === false, "zones and depth start hidden");
+state.setFlag("enabled", true); assert(state.grid === false && state.cellGrid === true, "TK-050: enabling the editor shows the cell grid, not the perspective grid");
+state.setFlag("enabled", false); state.setFlag("grid", true);
 for (const category of Object.keys(state.categories)) state.setCategory(category, true);
 const config = { locations: { cellSize: 40, baseResolution: { width: 1000, height: 1000 }, map: {
   lake: { safeZone: { top: 0, bottom: 1000 }, waterProjection: { maxMeters: 40, tiltDegrees: 30, farScale: .3 },

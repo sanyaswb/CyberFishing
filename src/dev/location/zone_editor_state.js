@@ -1,13 +1,13 @@
 // Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
 // enabled: one switch for the editor — zones shown, edges draggable, the cell grid turned on; selection: the zone the
-// drag tool resizes; grid: the perspective (metre) grid; cellGrid*/snapCells: the map's cells; depth*: the depth
+// drag tool resizes; grid: the perspective (metre) grid, off until switched on (TK-050); cellGrid*/snapCells: the map's cells; depth*: the depth
 // numbers in the cells.
 export class ZoneEditorState {
   revision = 0;
   locationId = null;
   enabled = false;
   background = true;
-  grid = true;
+  grid = false;
   cellGrid = true;
   depth = false;
   spacingMeters = 1;

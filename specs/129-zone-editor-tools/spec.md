@@ -154,3 +154,8 @@ Owner's corrections (TK-044…TK-048), DEV only:
 
 Owner 2026-10-22: zone physics of every category is on by default (`CONFIG.locations.enable*` = true), the editor's
 "Показати зону" switches and the depth numbers start off. Gameplay entry G-117; game-cycle report unchanged.
+
+## TK-050 perspective grid default (v0.46.17)
+
+Owner 2026-10-22: turning the editor on must not show the perspective grid. `ZoneEditorState.grid` defaults to false;
+enabling still turns the cell grid on.
