@@ -270,6 +270,14 @@ row without a reserve for its open fan. Every other action stands in one column 
 from the bottom corner: the float/depth slot spans the bottom row (float in the right corner, its track opening
 leftwards over the selector, which fades out while the track is open), then the net, then the chum and other
 actions; each drops a row when an action below is absent.
+TK-037/v0.46.10 makes the placement a DevTools choice (`ui.inventorySelector.compactPlacement`: `center`
+default, `right` or `left` bottom corner with the quarter fan, the left one mirrored as the `corner-left`
+layout) and, for the centre, the column side (`compactActionsSide`: `right` default, `left`). A corner
+selector always puts the column on the other side. The renderer names both on the selector root
+(`inventory-selector--slot-*`, `inventory-selector--actions-*`); `toolbar.css` reads them with `:has()`.
+A left column puts the float in the left corner with its track opening rightwards (`--depth-selector-direction:
+row`, `--depth-selector-reveal: depth-selector-reveal-end`, documented in `depth-selector.css`); a corner fan
+grows from its corner. The fades apply to every placement.
 `:has()` on the visible actions decides placement; no JS enumerates or measures siblings. The selector host
 sets `--inventory-selector-layout: compact`; the controller reads it once per opening and the renderer
 applies the configured compact fan (`CONFIG.ui.inventorySelector.compactShape`: `half` or `arc`, DevTools

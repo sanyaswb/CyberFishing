@@ -296,3 +296,17 @@ aiming. Fix the overlapping control instead of tracking the cursor globally thro
   are removed again (no consumer). Placement stays CSS-only (`:has()`); fades are opacity plus delayed
   visibility over `--game-toolbar-fade` (0s with reduced motion). Existing selector checks unchanged;
   appearance is the owner's check. No tool, helper, fixture or dependency becomes obsolete.
+
+## TK-037 placement choice (2026-10-22, v0.46.10)
+
+- Owner keeps the TK-036 centred layout as the mobile default and asks for DevTools choices: selector in the
+  right bottom corner (quarter fan, as before) or the left one (mirrored); the action column on the opposite
+  side of a corner selector, and left or right by choice for the centred one; the fades for every placement.
+- `compactPlacement` (center/right/left) and `compactActionsSide` (right/left) join `compactShape`; the
+  validator, reset-on-import and DevTools toggles cover them. A `corner-left` layout (origin bottom-left,
+  90-180 degrees, petals numbered from the end so the same section stays beside the ground) mirrors `corner`.
+  The renderer tracks compact mode apart from the geometry (the corner geometry serves both widths) and names
+  the placement on its root; toolbar CSS places the selector, column and float from those modifiers.
+- Checks: mirror of the corner fan, selection in all four compact layouts and sizes, consumed outside presses
+  for a compact corner fan, placement switching with class/extent results, export/import/reset and invalid
+  placement/side rejection. No tool, helper, fixture or dependency becomes obsolete.

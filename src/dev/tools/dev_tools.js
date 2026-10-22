@@ -779,8 +779,13 @@ export class DevTools {
         next => onChange(Number(next)), displayPath, canonicalPath);
       return;
     }
-    if (canonicalPath.join(".") === "CONFIG.ui.inventorySelector.compactShape") {
-      this.#ui.createEnumToggleRow(key, ["half", "arc"], value, parentElement, onChange, displayPath, canonicalPath);
+    const selectorChoices = {
+      "CONFIG.ui.inventorySelector.compactShape": ["half", "arc"],
+      "CONFIG.ui.inventorySelector.compactPlacement": ["center", "right", "left"],
+      "CONFIG.ui.inventorySelector.compactActionsSide": ["right", "left"],
+    }[canonicalPath.join(".")];
+    if (selectorChoices) {
+      this.#ui.createEnumToggleRow(key, selectorChoices, value, parentElement, onChange, displayPath, canonicalPath);
       return;
     }
     if (typeof value === "boolean") {

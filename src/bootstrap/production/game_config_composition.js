@@ -22,7 +22,7 @@ export function createProductionConfigContext(initializeBase = null) {
     catalogs: {"locations.map": CONFIG.locations.map, "rarity.visual": CONFIG.rarity.visual, "degradationColors": CONFIG.degradationColors, "spawns.fishes": CONFIG.spawns.fishes},
     validateOverrides: InventorySelectorConfigValidator.validateOverrides,
     resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize",
-      "ui.inventorySelector.compactShape"],
+      "ui.inventorySelector.compactShape", "ui.inventorySelector.compactPlacement", "ui.inventorySelector.compactActionsSide"],
   });
   return configRuntime;
 }

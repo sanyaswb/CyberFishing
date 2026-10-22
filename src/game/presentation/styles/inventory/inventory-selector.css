@@ -40,6 +40,10 @@
 .inventory-selector--corner.inventory-selector--open .inventory-selector__central {
   border-radius: 100% 0 calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale)) 0;
 }
+/* Left corner fan (TK-037): the mirror, the large upper-right arc and a soft bottom-left corner. */
+.inventory-selector--corner-left.inventory-selector--open .inventory-selector__central {
+  border-radius: 0 100% 0 calc(var(--ui-radius-panel) / var(--game-toolbar-render-scale));
+}
 /* Half fan: the lower half becomes an exact half disk, concentric with the petals' inner arc, so its gap equals
    the gap between petals. Its vertical radii fill the whole height: any bottom rounding would make CSS shrink
    every radius and flatten the top. */

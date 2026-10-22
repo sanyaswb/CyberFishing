@@ -488,7 +488,7 @@ export const CONFIG = {
   },
 
   ui: {
-    inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half" },
+    inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half", compactPlacement: "center", compactActionsSide: "right" },
     draggableButtons: true,
     dragHoldTimeMs: 1000,
 

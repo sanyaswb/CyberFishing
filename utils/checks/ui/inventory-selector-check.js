@@ -71,6 +71,21 @@ assert.deepEqual(geometries.arc.central.box, { minX: -0.5, minY: -0.5, maxX: 0.5
 assert(Math.abs(geometries.half.extent.height - geometries.half.retentionRadius) < 1e-12, "half: the fan rises from the toolbar bottom");
 assert(Math.abs(geometries.arc.extent.height - geometries.arc.retentionRadius - 0.5) < 1e-12, "arc: the fan rises from the button centre");
 assert(geometries.arc.extent.width < geometries.half.extent.width, "the arc is narrower than the half fan");
+// TK-037: the left corner fan mirrors the corner fan petal by petal (the same section stays beside the ground).
+{
+  const left = geometries["corner-left"];
+  for (let index = 0; index < 3; index++) {
+    const a = geometry.sectors[index], b = left.sectors[index];
+    assert(Math.abs(a.center.x + b.center.x) < 1e-12 && Math.abs(a.center.y - b.center.y) < 1e-12, `petal ${index} is mirrored`);
+    for (const point of a.points) {
+      assert(b.points.some(other => Math.abs(point.x + other.x) < 1e-9 && Math.abs(point.y - other.y) < 1e-9), "mirrored outline");
+    }
+    assert.equal(left.hitTest(b.center.x, b.center.y), index);
+  }
+  assert(Math.abs(left.central.center.x + geometry.central.center.x) < 1e-12, "the open central quarter disk is mirrored");
+  assert(left.contains(0.7, -0.7) && !left.contains(-0.7, -0.7) && !left.contains(2.1, -2.1), "retention covers only the mirrored quarter");
+  assert(Math.abs(left.extent.width - geometry.extent.width) < 1e-12 && Math.abs(left.extent.height - geometry.extent.height) < 1e-12);
+}
 const { InventorySelectorRenderer } = require("../../../src/game/presentation/inventory/inventory_selector_renderer.js");
 const { InventorySelectorController } = require("../../../src/platform/browser/dom/inventory_selector_controller.js");
 const { InventoryDomFactory } = require("../../../src/platform/browser/dom/inventory_dom_factory.js");
@@ -80,9 +95,10 @@ const { composeInventorySelector } = require("../../../src/bootstrap/production/
 const { InventorySelectorConfigValidator } = require("../../../src/game/config/validation/inventory_selector_config_validator.js");
 const { createRuntimeConfigContext } = require("../../../src/bootstrap/production/config_context.js");
 
-function scenario({ width = 320, size = 1, openSize = size, hover = false, reduced = false, layout = "corner" } = {}) {
+function scenario({ width = 320, size = 1, openSize = size, hover = false, reduced = false, layout = "corner",
+  compact = layout !== "corner" } = {}) {
   const doc = new TestDocument(), windowEvents = new TestDocument(), motion = new TestDocument();
-  const slot = { layout: layout === "corner" ? "" : "compact" };
+  const slot = { layout: compact ? "compact" : "" };
   let time = 0, reads = 0, captured = null, mutationCallback, moved = 0;
   const animations = [];
   doc.body.nodeType = 1;
@@ -106,7 +122,7 @@ function scenario({ width = 320, size = 1, openSize = size, hover = false, reduc
     physicalToLogicalPoint: ({ x, y }) => ({ x: (x - 17) / scale, y: (y - 29) / scale }),
     subscribe: listener => { subscriptions.add(listener); return () => subscriptions.delete(listener); } };
   const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(doc), geometries,
-    compactLayout: layout === "corner" ? "half" : layout,
+    compactLayout: compact ? layout : "half",
     sections: INVENTORY_SECTIONS, labels: INVENTORY_SELECTOR_LABELS, keepnetImage: "assets/items/keepnet/keepnet--0.webp", id: "test-sections" });
   view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[size], INVENTORY_SELECTOR_CONFIG.sizeScales[openSize]);
   doc.body.appendChild(view.element);
@@ -320,14 +336,16 @@ for (const index of [0, 1, 2]) {
   assert(!s.view.expanded); s.dispose();
 }
 
-// TK-034: compact toolbars (<=820 px) centre the fan above the button; release selects in both shapes and sizes.
-for (const layout of ["half", "arc"]) for (const width of [240, 320, 820]) for (const [size, openSize] of [[1, 3], [3, 1], [2, 2]]) {
+// TK-034/037: compact toolbars (<=820 px) place the fan in the centre or a bottom corner; release selects in
+// every compact layout and size pair.
+for (const layout of ["half", "arc", "corner", "corner-left"]) for (const width of [240, 320, 820]) for (const [size, openSize] of [[1, 3], [3, 1], [2, 2]]) {
   for (let index = 0; index < 3; index++) {
-    const s = scenario({ width, size, openSize, layout });
+    const s = scenario({ width, size, openSize, layout, compact: true });
     const fan = geometries[layout];
     s.fire("pointerdown"); s.advance();
     assert.equal(s.view.layout, layout, "the toolbar slot selects the compact fan on opening");
-    assert(s.view.element.classList.contains(`inventory-selector--${layout}`) && !s.view.element.classList.contains("inventory-selector--corner"));
+    assert(s.view.compact, "the selector knows it opened in the compact slot");
+    assert(s.view.element.classList.contains(`inventory-selector--${layout}`));
     s.fire("pointermove", fan.sectors[(index + 1) % 3].center);
     s.fire("pointermove", fan.sectors[index].center);
     assert(s.view.buttons[index].classList.contains("inventory-selector__section--highlighted"));
@@ -362,6 +380,15 @@ for (const layout of ["half", "arc"]) for (const width of [240, 320, 820]) for (
   assert(!s.view.expanded && !outside.stopped, "wide toolbars keep their outside presses");
   s.dispose();
 }
+{
+  const s = scenario({ layout: "corner", compact: true }); s.fire("pointerdown"); s.advance();
+  const outside = s.doc.fire("pointerdown", { target: s.doc.body });
+  assert(!s.view.expanded && outside.stopped, "a compact corner fan also makes its neighbours inactive");
+  s.slot.layout = ""; s.fire("pointerdown"); s.advance();
+  assert(!s.view.compact && s.view.layout === "corner", "the same corner geometry is wide again on a wide toolbar");
+  assert(!s.doc.fire("pointerdown", { target: s.doc.body }).stopped);
+  s.dispose();
+}
 
 async function checkComposition() {
   const s = scenario(); s.controller.dispose(); s.view.dispose();
@@ -369,7 +396,7 @@ async function checkComposition() {
   const config = { ui: { inventorySelector: { ...CONFIG.ui.inventorySelector } } };
   const ctx = createRuntimeConfigContext(config, { validateOverrides: InventorySelectorConfigValidator.validateOverrides,
     resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize",
-      "ui.inventorySelector.compactShape"] });
+      "ui.inventorySelector.compactShape", "ui.inventorySelector.compactPlacement", "ui.inventorySelector.compactActionsSide"] });
   let classic, keepnet, listener, equipmentListener, finishArtwork, finishSelector, artworkLoads = 0;
   const equipped = { rod: null };
   const inventory = { editor, rootNode: s.doc.createElement("div"),
@@ -432,24 +459,43 @@ async function checkComposition() {
   ctx.set("ui.inventorySelector.compactShape", "arc"); s.doc.fire("config-updated");
   assert(!binding.view.expanded, "a shape edit cancels stale geometry");
   assert.equal(compactWidth(), geometries.arc.extent.width, "DevTools switches the compact fan live");
+  // TK-037: placement and action column; a corner selector always puts the column on the other side.
+  const classes = () => binding.view.element.className.split(" ").filter(name => /--(slot|actions)-/.test(name)).sort();
+  assert.deepEqual(classes(), ["inventory-selector--actions-right", "inventory-selector--slot-center"]);
+  for (const [placement, side, expected, layout] of [
+    ["right", "right", ["inventory-selector--actions-left", "inventory-selector--slot-right"], "corner"],
+    ["left", "left", ["inventory-selector--actions-right", "inventory-selector--slot-left"], "corner-left"],
+    ["center", "left", ["inventory-selector--actions-left", "inventory-selector--slot-center"], "arc"],
+  ]) {
+    binding.controller.openKeyboard();
+    ctx.set("ui.inventorySelector.compactPlacement", placement); ctx.set("ui.inventorySelector.compactActionsSide", side);
+    s.doc.fire("config-updated");
+    assert(!binding.view.expanded, "a placement edit cancels stale geometry");
+    assert.deepEqual(classes(), expected, `${placement}/${side}: selector and column placement`);
+    assert.equal(compactWidth(), geometries[layout].extent.width, `${placement}: the slot is sized for its fan`);
+  }
   const exported = ctx.exportOverrides();
   ctx.resetAll(); s.doc.fire("config-updated"); assert(!classic && binding.view.enabled);
   ctx.importOverrides(exported); s.doc.fire("config-updated"); assert(binding.view.enabled);
   assert.equal(config.ui.inventorySelector.size, 3);
   assert.equal(config.ui.inventorySelector.openSize, 1, "both sizes survive export/import");
   assert.equal(config.ui.inventorySelector.compactShape, "arc", "the compact shape survives export/import");
+  assert.equal(config.ui.inventorySelector.compactActionsSide, "left", "the column side survives export/import");
   ctx.importOverrides({}); s.doc.fire("config-updated"); assert(!classic && binding.view.enabled);
   assert.equal(config.ui.inventorySelector.size, 1);
   assert.equal(config.ui.inventorySelector.openSize, 3);
   assert.equal(config.ui.inventorySelector.compactShape, "half");
   assert.equal(compactWidth(), geometries.half.extent.width, "reset restores the half fan");
+  assert.equal(config.ui.inventorySelector.compactPlacement, "center");
+  assert.deepEqual(classes(), ["inventory-selector--actions-right", "inventory-selector--slot-center"], "reset restores the centre and right column");
   ctx.importOverrides({ "ui.inventorySelector.size": 2 });
   assert.equal(config.ui.inventorySelector.openSize, 3, "older scalar overrides retain the open default");
   ctx.resetAll();
   for (const data of [{ "ui.inventorySelector.size": 4 }, { "ui.inventorySelector.openSize": 0 },
     { "ui.inventorySelector.openSize": "3" }, { "ui.inventorySelector.radialEnabled": "true" },
     { "ui.inventorySelector.typo": true }, { "ui.inventorySelector": { radialEnabled: true, size: 2, openSize: 3, typo: 1 } },
-    { "ui.inventorySelector.compactShape": "circle" }]) {
+    { "ui.inventorySelector.compactShape": "circle" }, { "ui.inventorySelector.compactPlacement": "top" },
+    { "ui.inventorySelector.compactActionsSide": "center" }]) {
     assert.throws(() => ctx.importOverrides(data), /ui.inventorySelector/);
     assert.equal(config.ui.inventorySelector.size, 1, "invalid imports are atomic");
   }

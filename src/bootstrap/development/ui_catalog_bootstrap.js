@@ -102,7 +102,7 @@ export function startUiCatalog() {
           rarityVisualResolver: rarity, rarityDomAdapter: new ItemRarityDomAdapter({ visualResolver: rarity }), warningTimers }));
         const keepnet = own(InventoryUiBootstrap.createKeepnet({ documentRef: scope, liveBait: new UiCatalogKeepnetFixture(),
           inventoryUI: ui, degradationColorResolver: colors, uiSurface: surface, buttonMountNode: toolbar.element }));
-        const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half" } } };
+        const config = { ui: { inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half", compactPlacement: "center", compactActionsSide: "right" } } };
         const selector = own(composeInventorySelector({ documentRef: scope, windowRef: windowTarget, uiSurface: surface,
           mountNode: toolbar.selectorMountNode, inventoryUI: ui, keepnetUI: keepnet, config,
           imageAssets: new ImageAssetProvider({ imageFactory: () => scope.createElement("img") }), logger: new ConsoleLogger(),

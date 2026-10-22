@@ -1,5 +1,5 @@
 // Unit coordinates are relative to the fan centre: the layout's `origin`, a share of the central button's box
-// (the corner fan's bottom-right corner, the compact fans' bottom centre or box centre).
+// (the corner fans' bottom corner, the centred fans' bottom centre or box centre).
 // Sector SVG, CSS clipping and selection consume these same rounded polygons; each outline is drawn in its own
 // bounding box (`box`, relative to the origin), which the renderer places over the central button's box.
 export class InventorySelectorGeometry {
@@ -38,6 +38,7 @@ export class InventorySelectorGeometry {
     this.extent = { width: right - left, height: centralBox.maxY - top };
     this.retention = this.#outline(retention, this.retentionBox);
     this.sectors = Array.from({ length: config.sectorCount }, (_, index) => this.#sector(config, index));
+    if (fan.reverse) this.sectors.reverse();
   }
 
   contains(x, y) {

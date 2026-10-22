@@ -22,7 +22,8 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
       inventoryUI.rootNode.focus();
     }) });
   mountNode.appendChild(view.element);
-  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null, compactShape = null;
+  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null, compactKey = null;
+  const pick = (list, value) => list.includes(value) ? value : list[0];
   let artworkKey = "", artworkRevision = 0;
   const syncEquipment = () => {
     if (disposed) return;
@@ -50,19 +51,25 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     const nextClassicVisible = !requestedRadial || loadState === "failed";
     const nextSize = settings?.size ?? 1;
     const nextOpenSize = settings?.openSize ?? 3;
-    const nextCompactShape = INVENTORY_SELECTOR_CONFIG.compactLayouts.includes(settings?.compactShape)
-      ? settings.compactShape : INVENTORY_SELECTOR_CONFIG.compactLayouts[0];
+    // Compact toolbars: a corner selector puts the action column on the other side; a centred one follows the setting.
+    const placement = pick(INVENTORY_SELECTOR_CONFIG.compactPlacements, settings?.compactPlacement);
+    const actionsSide = placement === "right" ? "left" : placement === "left" ? "right"
+      : pick(INVENTORY_SELECTOR_CONFIG.compactActionSides, settings?.compactActionsSide);
+    const compactLayout = placement === "center" ? pick(INVENTORY_SELECTOR_CONFIG.compactLayouts, settings?.compactShape)
+      : placement === "left" ? "corner-left" : "corner";
+    const nextCompactKey = `${compactLayout} ${placement} ${actionsSide}`;
     if (radial === nextRadial && classicVisible === nextClassicVisible && size === nextSize && openSize === nextOpenSize
-      && compactShape === nextCompactShape) return;
+      && compactKey === nextCompactKey) return;
     controller.cancel();
     view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[nextSize] || 1,
       INVENTORY_SELECTOR_CONFIG.sizeScales[nextOpenSize] || INVENTORY_SELECTOR_CONFIG.sizeScales[3]);
-    view.setCompactLayout(nextCompactShape);
+    view.setCompactLayout(compactLayout);
+    view.setCompactPlacement(placement, actionsSide);
     controller.setEnabled(nextRadial);
     inventoryUI.setShortcutVisible(nextClassicVisible);
     keepnetUI?.setShortcutVisible(nextClassicVisible);
     radial = nextRadial; classicVisible = nextClassicVisible; size = nextSize; openSize = nextOpenSize;
-    compactShape = nextCompactShape;
+    compactKey = nextCompactKey;
   };
   const unsubscribe = inventoryUI.onVisibilityChange(open => { if (open) controller.cancel(); });
   const unsubscribeEquipment = equipmentSource?.onInventoryChanged(syncEquipment);

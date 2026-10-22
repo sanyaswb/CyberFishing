@@ -5,6 +5,8 @@ export class InventorySelectorRenderer {
   #geometries;
   #geometry = null;
   #compact = null;
+  #isCompact = false;
+  #placement = "";
   #open = false;
   #candidate = -1;
   #enabled = false;
@@ -13,8 +15,8 @@ export class InventorySelectorRenderer {
   #equipmentImage;
   #paths = [];
 
-  // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars and the compact
-  // fans (`half`, `arc`) centred above the button on toolbars up to 820 logical px.
+  // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars; toolbars up to 820
+  // logical px use the configured compact one (`half`/`arc` centred, `corner`/`corner-left` in a bottom corner).
   constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetImage, id }) {
     this.#dom = domFactory;
     this.#geometries = geometries;
@@ -68,28 +70,44 @@ export class InventorySelectorRenderer {
     stage.append(this.retention, this.group, this.central);
     this.element.appendChild(stage);
     this.setCompactLayout(compactLayout);
+    this.setCompactPlacement("center", "right");
     this.#apply(geometries.corner);
   }
 
   get expanded() { return this.#open; }
   get enabled() { return this.#enabled; }
   get layout() { return this.#geometry.layout; }
+  get compact() { return this.#isCompact; }
   // The fan centre as a share of the central button's box.
   get origin() { return this.#geometry.origin; }
 
-  // The compact fan shape chosen in configuration; its extent sizes the compact toolbar slot.
+  // The compact fan chosen in configuration; its extent sizes the compact toolbar slot.
   setCompactLayout(layout) {
     const geometry = this.#geometries[layout];
     if (!geometry || geometry === this.#compact) return;
-    const active = this.#geometry !== null && this.#geometry === this.#compact;
     this.#compact = geometry;
     this.element.style.setProperty("--inventory-selector-compact-width", String(geometry.extent.width));
     this.element.style.setProperty("--inventory-selector-compact-height", String(geometry.extent.height));
-    if (active) this.#apply(geometry);
+    if (this.#isCompact) this.#apply(geometry);
   }
 
-  // The toolbar slot decides between the corner fan and the compact fan. Returns true when the geometry changed.
+  // Where the compact toolbar places the selector (center, right, left) and its action column (right, left).
+  setCompactPlacement(placement, actionsSide) {
+    const key = `${placement} ${actionsSide}`;
+    if (key === this.#placement) return;
+    const [previousPlacement, previousSide] = this.#placement.split(" ");
+    if (previousPlacement) {
+      this.element.classList.remove(`inventory-selector--slot-${previousPlacement}`);
+      this.element.classList.remove(`inventory-selector--actions-${previousSide}`);
+    }
+    this.#placement = key;
+    this.element.classList.add(`inventory-selector--slot-${placement}`);
+    this.element.classList.add(`inventory-selector--actions-${actionsSide}`);
+  }
+
+  // The toolbar slot decides between the wide corner fan and the compact fan. Returns true when the geometry changed.
   setCompact(compact) {
+    this.#isCompact = compact;
     return this.#apply(compact ? this.#compact : this.#geometries.corner);
   }
 

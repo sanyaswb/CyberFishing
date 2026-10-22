@@ -127,7 +127,7 @@ export class InventorySelectorController {
   // The compact fan covers its neighbours, which stay inactive while it is open: a press elsewhere only closes it.
   #outsidePress = event => {
     if (this.#view.element.contains(event.target)) return;
-    const consume = this.#view.expanded && this.#view.layout !== "corner";
+    const consume = this.#view.expanded && this.#view.compact;
     this.cancel();
     if (!consume) return;
     event.stopPropagation();

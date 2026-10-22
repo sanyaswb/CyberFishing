@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.9";
+export const CURRENT_PROJECT_VERSION = "0.46.10";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "compact-toolbar-column",
+  codename: "selector-placement-choice",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "Compact toolbar: DevTools places the selector in the centre (default), the right or the left bottom corner; the action column stands on the other side (for the centre, left or right by choice); fades apply everywhere",
     "Compact toolbar: exact half-disk central button with equal gaps to all petals; other actions in one right-hand column above the float in the corner, its track opening left while the selector fades; everything fades out while the fan is open or a cast is aimed",
     "On phones (UI up to 820 px) the DevTools panel shows the project version in its last row, where the toolbar badge is hidden",
     "Toolbars up to 820 px: the radial selector sits centred in the bottom row and opens a symmetric fan over its neighbours (half circle or 120-degree arc, DevTools switch); the net stands right of it, then the depth control whose track opens rightwards; other actions fade and take no input while the fan is open",
