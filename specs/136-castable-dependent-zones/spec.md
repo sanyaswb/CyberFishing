@@ -1,7 +1,7 @@
 # Zones measured from the castable area, edited in the location editor
 
-Owner request, 2026-10-23; revised the same day after the owner's answers. Status: specified; owner answers R-Q1–R-Q3
-pending, not implemented. DEV editor work: no game value changes unless a drag writes one (R-Q1).
+Owner request, 2026-10-23; revised the same day after the owner's answers. Status: owner answered R-Q1–R-Q3; implemented in v0.46.34 (fight sector: later, R-Q2);
+owner check pending. DEV editor work: no game value changes unless a drag writes one (R-Q1).
 
 ## Request
 
@@ -86,3 +86,34 @@ pending, not implemented. DEV editor work: no game value changes unless a drag w
   sector to the two anchors only?
 - **R-Q3** "Останній ривок" depends on the fish: choose the fish in a select under its block (recommended), or show it
   only while a fish is hooked?
+
+## Owner answers to R-Q1–R-Q3 (2026-10-23)
+
+- **R-Q1:** show the real data; item physics is never changed for display. So the dependent zones are read-only
+  previews of the values the game uses, with one exception: **hand chum** is a location setting
+  (`MAP_DB.<id>.chumCastDistance`), so its zone is shown at once, even without hand chum equipped, and its far line is
+  dragged like a zone edge. The **net zone** is shown from the equipped net. This replaces D6: nothing else writes.
+- **R-Q2:** the fight sector needs its own work later; here it keeps only its show switch (no preview, no anchors).
+- **R-Q3:** "останній ривок" shows the fish chosen in a select under its block.
+- Consequence for D5: half-circle zones (підведення, радіус ліски) keep the base anchor on the bottom edge (moves the
+  preview along it); their length is the real value, so the length anchor is drawn as a marker, not dragged.
+- **Net (owner, later the same day):** like the fish, the net zone shows the net chosen in a select of the catalog's
+  nets, not the equipped one.
+
+## Implementation (v0.46.34)
+
+- `src/dev/location/castable_zone_readings.js`: the real values through the game's own code — `EquipmentRules`
+  (rod cast with the selected depth), the location's `chumCastDistance` (300 when unset, as `CurrentLocation`), `Net`
+  over a catalog net's base stats, `LandingPolicyResolver` (equipped rod and reel), the fish's `lastDashTrigger`
+  through `FishPhysicsProfile` and `FishBehavior.lastDashTriggerDistanceMeters` (the fight's own formula, now static),
+  the equipped line's length. Production passes `getEquipment`, `equipmentRules` and the hook depth to the DEV builder.
+- `src/dev/location/castable_dependent_zones.js`: the dependent zones' editor state (editing, hover, chosen net and
+  fish, half-circle anchors per location), previews (bands from the bottom edge; water half-circles in perspective as
+  polygons), hit-testing and drags. Only the hand chum far line writes (`MAP_DB.<id>.chumCastDistance`, snapped to the
+  cell step); anchors stay in the editor. The drag controller tries its handles first; the geometry builder redraws it
+  only when its revision changes (real values are re-read each frame while the editor is on).
+- Annotation records gain `shape: "polygon"` (screen `points`), drawn by `PixiAnnotationRenderer` (`poly`) and the
+  Canvas fallback.
+- The castable list: "Показувати оверлеї гри", the game's show switches (hand chum shares the aiming switch),
+  "Редагувати ручну прикормку / зону підведення / радіус ліски", the net and fish selects; "Оверлеї гри" is removed.
+- Known limit: `chumCastDistance` is a session override; the zone file (spec 130) carries only zones.

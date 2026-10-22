@@ -33,6 +33,8 @@ import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_b
 import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
 import { ZoneEditorConfigEdits } from "../../dev/location/zone_editor_config_edits.js";
 import { ZoneEditorBrowserPort } from "../../dev/location/zone_editor_browser_port.js";
+import { CastableDependentZones } from "../../dev/location/castable_dependent_zones.js";
+import { CastableZoneReadings } from "../../dev/location/castable_zone_readings.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
@@ -115,6 +117,7 @@ async function startGame() {
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
   let editorMap = null;
+  let dependentZones = null;
   const zoneEdits = new ZoneEditorConfigEdits({ config: CONFIG, getMap: () => editorMap });
   const mapCatalog = CONFIG.locations.map;
   const configValidation = composeDevConfigValidation({configRuntime, itemCatalog});
@@ -194,6 +197,7 @@ async function startGame() {
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
         prepareZoneEdit: (path, value) => zoneEdits.prepare(path, value),
         readDynamicZones: id => zoneEdits.readDynamicZones(id),
+        getDependentZones: () => dependentZones,
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
@@ -216,11 +220,14 @@ async function startGame() {
         editorMap = options.map;
         readLocationMetric = options.getWaterMetric;
         zoneEditorDrag?.dispose();
+        const writeConfig = (path, value) => devTools?.updateConfig(path, value);
+        dependentZones = new CastableDependentZones({ ...options, state: zoneEditorState, writeConfig,
+          readings: new CastableZoneReadings({ ...options, nets: itemCatalog.nets, fishes: FISH_DB }) });
         zoneEditorDrag = new ZoneEditorDragController({ ...options, state: zoneEditorState, documentTarget,
           mountNode: developmentMount, getCanvas: () => documentTarget.getElementById("gameCanvas"),
-          writeZones: (path, zones) => devTools?.updateConfig(path, zones) });
+          writeZones: writeConfig, dependentZones });
         return new LocationDebugRenderFrameBuilder({ ...options,
-          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }), zoneEditorTool: zoneEditorDrag,
+          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState, dependentZones }), zoneEditorTool: zoneEditorDrag,
           editorState: zoneEditorState });
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,

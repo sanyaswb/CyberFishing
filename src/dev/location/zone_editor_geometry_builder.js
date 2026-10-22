@@ -22,7 +22,9 @@ const CATEGORIES = Object.freeze(Object.keys(COLORS));
 
 // Builds the same reusable logical-pixel geometry for WebGL and Canvas; no rendering, physics or mutable config.
 export class ZoneEditorGeometryBuilder {
-  #state; #map; #projector; #getMetric; #config;
+  #state; #map; #projector; #getMetric; #config; #dependent;
+  #dependentRevision = -1;
+  #drawDependent;
   #point = new Vector2();
   #origin = new Vector2();
   #metric = null;
@@ -34,8 +36,23 @@ export class ZoneEditorGeometryBuilder {
   rebuilds = 0;
   overlayRebuilds = 0;
 
-  constructor({ state, map, projector, getWaterMetric, config }) {
+  // dependentZones: optional CastableDependentZones (spec 136), drawn with the static geometry.
+  constructor({ state, map, projector, getWaterMetric, config, dependentZones = null }) {
     this.#state = state; this.#map = map; this.#projector = projector; this.#getMetric = getWaterMetric; this.#config = config;
+    this.#dependent = dependentZones;
+    const look = (zone) => [Number.parseInt(zone.color.slice(1), 16), zone.editable ? EDITABLE_LINE_WIDTH : 1,
+      zone.hovered ? HOVER_FILL : SHOWN.fill, zone.editable ? EDITABLE_STROKE : SHOWN.stroke];
+    this.#drawDependent = {
+      band: (left, top, right, bottom, zone) => {
+        const [color, lineWidth, fill, stroke] = look(zone);
+        this.#rect(left, top, right - left, bottom - top, color, this.#model, lineWidth, fill, stroke);
+      },
+      polygon: (points, zone) => this.#polygon(points, ...look(zone)),
+      handle: (x, y, zone) => {
+        const size = HANDLE_PX / this.#scale;
+        this.#rect(x - size / 2, y - size / 2, size, size, Number.parseInt(zone.color.slice(1), 16), this.#model, 1, 0.9, 0.95);
+      },
+    };
     state.loadedLocationId = map.currentLocationId;
     state.locationId ??= map.currentLocationId;
   }
@@ -63,9 +80,11 @@ export class ZoneEditorGeometryBuilder {
       this.#dynamic[offset + 4] = zone.shape;
     }
     this.#dynamic.length = moving.length * 5;
+    const dependentRevision = state.enabled && this.#dependent ? this.#dependent.refresh() : -1;
     const staticDirty = topologyChanged || metric !== this.#metric || state.revision !== this.#revision || this.#mapRevision !== this.#map.getRevision() ||
-      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y;
+      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision;
     if (staticDirty) {
+      this.#dependentRevision = dependentRevision;
       this.#metric = metric; this.#revision = state.revision; this.#mapRevision = this.#map.getRevision();
       this.#scale = scale; this.#x = origin.x; this.#y = origin.y;
       this.#rebuild();
@@ -133,6 +152,7 @@ export class ZoneEditorGeometryBuilder {
         }
       }
     }
+    if (state.enabled) this.#dependent?.buildInto(this.#drawDependent);
     if (this.#state.grid) this.#grid();
   }
 
@@ -196,6 +216,24 @@ export class ZoneEditorGeometryBuilder {
     const record = lines[index] ||= {};
     this.#projector.virtualToScreen(x1, y1, this.#point); record.x1 = this.#point.x; record.y1 = this.#point.y;
     this.#projector.virtualToScreen(x2, y2, this.#point); record.x2 = this.#point.x; record.y2 = this.#point.y;
+  }
+
+  // A closed outline of map points (spec 136: water half-circles in perspective), as screen points with its bounding box.
+  #polygon(points, color, lineWidth, fillAlpha, strokeAlpha) {
+    const index = this.#model.rectCount++;
+    const record = this.#model.rects[index] ||= {};
+    const screen = record.points ||= [];
+    screen.length = points.length;
+    let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+    for (let offset = 0; offset < points.length; offset += 2) {
+      this.#projector.virtualToScreen(points[offset], points[offset + 1], this.#point);
+      screen[offset] = this.#point.x; screen[offset + 1] = this.#point.y;
+      left = Math.min(left, this.#point.x); right = Math.max(right, this.#point.x);
+      top = Math.min(top, this.#point.y); bottom = Math.max(bottom, this.#point.y);
+    }
+    record.x = left; record.y = top; record.width = right - left; record.height = bottom - top;
+    record.color = color; record.lineWidth = lineWidth; record.fillAlpha = fillAlpha; record.strokeAlpha = strokeAlpha;
+    record.shape = "polygon";
   }
 
   #rect(x, y, w, h, color, target = this.#model, lineWidth = 1, fillAlpha = 0.12, strokeAlpha = 0.9, circular = false) {

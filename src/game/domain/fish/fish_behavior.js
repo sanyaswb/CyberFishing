@@ -448,6 +448,12 @@ export class FishBehavior {
   }
 
   #resolveLastDashTriggerDistance(trigger, landingDistanceMeters) {
+    return FishBehavior.lastDashTriggerDistanceMeters(trigger, landingDistanceMeters);
+  }
+
+  // The distance from the shore at which a fish's last dash may start: an absolute distance, or the landing distance
+  // times the trigger's multiplier (1.1 by default) plus its extra metres. Also read by the DEV location editor.
+  static lastDashTriggerDistanceMeters(trigger, landingDistanceMeters) {
     const absolute = Number(trigger.distanceMeters ?? trigger.triggerDistanceMeters);
     if (Number.isFinite(absolute)) return Math.max(0, absolute);
 

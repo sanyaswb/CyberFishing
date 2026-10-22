@@ -72,9 +72,17 @@ export class WorldDebugRenderer {
         surface.beginPath();
         surface.ellipse(r.x + r.width / 2, r.y + r.height / 2, r.width / 2, r.height / 2, 0, 0, Math.PI * 2);
         surface.fill();
+      } else if (r.shape === "polygon") {
+        surface.beginPath();
+        for (let point = 0; point < r.points.length; point += 2) {
+          if (point === 0) surface.moveTo(r.points[point], r.points[point + 1]);
+          else surface.lineTo(r.points[point], r.points[point + 1]);
+        }
+        surface.closePath();
+        surface.fill();
       } else surface.fillRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha * (r.strokeAlpha ?? 1);
-      if (r.shape === "ellipse") surface.stroke();
+      if (r.shape === "ellipse" || r.shape === "polygon") surface.stroke();
       else surface.strokeRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha;
     }

@@ -20,9 +20,10 @@ const EDITING_CLASS = "game-shell--zone-editor";
 // pointer within EDGE_PX of an edge takes it (a corner takes both). Dynamic-body translation is continuous;
 // other positions snap to snapCells map cells, a resized
 // zone keeps at least that much, and an adaptive-width zone moves only vertically. Every change of the snapped value
-// writes the category's zone array once through the injected config path.
+// writes the category's zone array once through the injected config path. The castable area's dependent zones (spec
+// 136) own their handles: they are tried first and take their own drag.
 export class ZoneEditorDragController {
-  #state; #map; #projector; #config; #getCanvas; #canvasMetrics; #documentTarget; #mountNode; #writeZones;
+  #state; #map; #projector; #config; #getCanvas; #canvasMetrics; #documentTarget; #mountNode; #writeZones; #dependent;
   #layer = null;
   #drag = null;
   #cursor = "";
@@ -31,14 +32,14 @@ export class ZoneEditorDragController {
   #hovered = [];
 
   // writeZones(path, zones): the validated runtime config write (DevTools); getCanvas: the game canvas element.
-  constructor({ state, map, projector, config, getCanvas, canvasMetrics, documentTarget, mountNode, writeZones }) {
+  constructor({ state, map, projector, config, getCanvas, canvasMetrics, documentTarget, mountNode, writeZones, dependentZones = null }) {
     for (const [name, value] of Object.entries({ getCanvas, writeZones })) {
       if (typeof value !== "function") throw new TypeError(`ZoneEditorDragController requires ${name}`);
     }
     if (typeof documentTarget?.createElement !== "function") throw new TypeError("ZoneEditorDragController requires documentTarget");
     this.#state = state; this.#map = map; this.#projector = projector; this.#config = config;
     this.#getCanvas = getCanvas; this.#canvasMetrics = canvasMetrics; this.#documentTarget = documentTarget;
-    this.#mountNode = mountNode; this.#writeZones = writeZones;
+    this.#mountNode = mountNode; this.#writeZones = writeZones; this.#dependent = dependentZones;
   }
 
   get active() {
@@ -63,7 +64,7 @@ export class ZoneEditorDragController {
     const listeners = [["pointerdown", (event) => this.#down(event)], ["pointermove", (event) => this.#move(event)],
       ["pointerup", (event) => this.#up(event)], ["pointercancel", (event) => this.#up(event)],
       ["pointerleave", () => {
-        if (!this.#drag) { this.#state.setHovered(NO_ZONES); this.#state.setHoveredBound(-1); }
+        if (!this.#drag) { this.#state.setHovered(NO_ZONES); this.#state.setHoveredBound(-1); this.#dependent?.clearHover(); }
       }]];
     for (const [type, listener] of listeners) layer.addEventListener(type, listener);
     this.#listeners = listeners;
@@ -80,6 +81,7 @@ export class ZoneEditorDragController {
     this.#documentTarget.body?.classList.remove(EDITING_CLASS);
     this.#state.setHovered(NO_ZONES);
     this.#state.setHoveredBound(-1);
+    this.#dependent?.clearHover();
     this.#layer = null;
     this.#listeners = null;
     this.#drag = null;
@@ -90,6 +92,11 @@ export class ZoneEditorDragController {
     const hit = this.#scan(event, null);
     if (!hit) return;
     event.preventDefault();
+    if (hit.dependent) {
+      this.#layer.setPointerCapture?.(event.pointerId);
+      this.#drag = { dependent: hit.dependent, pointerId: event.pointerId };
+      return;
+    }
     if (hit.category === "dynamic" && hit.kind !== "bounds") {
       this.#state.setHoveredBound(-1);
       this.#state.selectBounds(hit.index);
@@ -109,6 +116,8 @@ export class ZoneEditorDragController {
     hovered.length = 0;
     const hit = this.#scan(event, hovered);
     this.#state.setHovered(hovered);
+    if (this.#dependent) { const screen = this.#toScreen(event); this.#dependent.hover(screen.x, screen.y); }
+    if (hit?.dependent) { this.#state.setHoveredBound(-1); this.#setCursor(hit.dependent.cursor); return; }
     this.#state.setHoveredBound(hit?.kind === "bounds" ? hit.boundIndex : -1);
     this.#setCursor(!hit || hit.selectOnly ? "" : hit.move ? "move" : (hit.left || hit.right) && (hit.top || hit.bottom)
       ? (hit.left === hit.top ? "xy" : "yx") : hit.left || hit.right ? "x" : "y");
@@ -123,6 +132,11 @@ export class ZoneEditorDragController {
     if (event.pointerId !== drag.pointerId) return;
     if (!this.#dragAllowed(drag)) { this.#cancelDrag(); return; }
     event.preventDefault();
+    if (drag.dependent) {
+      const point = this.#toVirtual(event);
+      this.#dependent.drag(drag.dependent, point.x, point.y);
+      return;
+    }
     // Edges snap to the visible map grid (cellSize x snapCells pixels); zones are stored in design cells
     // (designCellSize), so a finer map grid gives fractional design coordinates.
     const locations = this.#config.locations;
@@ -220,6 +234,7 @@ export class ZoneEditorDragController {
 
   #dragAllowed(drag) {
     const state = this.#state;
+    if (drag.dependent) return state.enabled && this.#dependent.allowed(drag.dependent);
     if (!state.enabled || !state.editsLoadedLocation || state.locationId !== drag.path[3] ||
       !state.isEditable(drag.category) || state.selectedIndex(drag.category) !== drag.index ||
       this.#config.locations[ZONE_PHYSICS_KEYS[drag.category]] === false) return false;
@@ -248,6 +263,8 @@ export class ZoneEditorDragController {
     const toDesign = cell / (locations.designCellSize || cell);
     const pointer = this.#toScreen(event);
     const px = pointer.x, py = pointer.y;
+    const dependent = this.#dependent?.hit(px, py);
+    if (dependent) return { dependent };
     let best = null, bestArea = Infinity;
     for (const category of CATEGORIES) {
       if (locations[ZONE_PHYSICS_KEYS[category]] === false) continue;

@@ -36,6 +36,7 @@ export class PixiAnnotationRenderer {
     for (let i = 0; i < model.rectCount; i++) {
       const r = model.rects[i];
       if (r.shape === "ellipse") graphics.ellipse(r.x + r.width / 2, r.y + r.height / 2, r.width / 2, r.height / 2);
+      else if (r.shape === "polygon") graphics.poly(r.points, true);
       else graphics.rect(r.x, r.y, r.width, r.height);
       graphics.fill({ color: r.color, alpha: r.fillAlpha ?? .12 })
         .stroke({ color: r.color, alpha: r.strokeAlpha ?? .9, width: r.lineWidth ?? 1 });

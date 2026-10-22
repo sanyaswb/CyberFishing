@@ -148,7 +148,7 @@ file envelope, validation, diff, module source). The DevTools "Редактор"
 opened by reloading `dev.html?location=<id>`. Its "Збереження" exports that location's zones as a file, imports such a
 file into the session's overrides and resets them to the code. `npm run apply:zones -- <file>` (`utils/apply-zones.js`)
 writes a file into the module after validation, a clean-target and conflict check, confirmation and a backup under the
-Git directory; it never commits.
+Git directory; it never commits. The castable list also holds the zones measured from its bottom edge (spec 136): `CastableZoneReadings` reads their real values through the game's own rules and classes (equipment, location, a chosen net and fish), `CastableDependentZones` previews them and owns their hover, anchors and the hand-chum far line (the only value it writes, the location's `chumCastDistance`).
 
 One page, several screens (spec 084). `engine/screens/ScreenHost` keeps one active screen above the base game:
 opening suspends the game loop, a lazy factory creates the screen, closing disposes it and resumes the game. The House

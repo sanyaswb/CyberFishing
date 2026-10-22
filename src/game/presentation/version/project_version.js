@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.33";
+export const CURRENT_PROJECT_VERSION = "0.46.34";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "lobby-webp",
+  codename: "castable-dependent-zones",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "Spec 136: castable-dependent zones in the editor.",
     "TK-067: lobby background in WebP.",
     "TK-066: water only within castable zones.",
     "Moving zones: circle/square creation, uniform size and shape-preserving export.",

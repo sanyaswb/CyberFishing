@@ -1,5 +1,6 @@
 import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated_depth_profile.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "../location/zone_category_colors.js";
+import { DEPENDENT_ZONES } from "../location/castable_dependent_zones.js";
 import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
   from "../location/zone_export_format.js";
 
@@ -7,16 +8,19 @@ const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic"])
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
   dynamic: "Рухомі зони" });
 const PHYSICS_KEYS = ZONE_PHYSICS_KEYS;
-const OVERLAYS = Object.freeze([["showChumZones", "Зони прикормки"], ["showCatchZone", "Зона підведення"],
-  ["showLastDashZone", "Зона останнього ривка"], ["showNetZone", "Зона підсаки"], ["showAimingZone", "Зона прицілювання"],
-  ["showPoleFightSector", "Сектор виважування"], ["showFightLineRadius", "Радіус ліски"]]);
+// Spec 136: the rows of the castable area's dependent zones (hand chum shares the aiming zone's show switch).
+const DEPENDENT_SHOW_LABELS = Object.freeze({ aiming: "Показати зону прицілювання", net: "Показати зону підсаки",
+  lastDash: "Показати зону останнього ривка", catch: "Показати зону підведення", sector: "Показати сектор виважування",
+  line: "Показати радіус ліски", chum: "Показати зони прикормки" });
+const DEPENDENT_EDIT_LABELS = Object.freeze({ handChum: "Редагувати ручну прикормку", catch: "Редагувати зону підведення",
+  line: "Редагувати радіус ліски" });
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
 // location — then the editor controls directly, Зони (one list per category: the switch turns the zone's physics on, then
 // its items appear), Сітка перспективи, Збереження (the location's zone file), and the sections shared by every
-// location: Сітка клітинок and the game's overlays. Config edits go through the injected validated runtime override
-// path; editor settings live in ZoneEditorState.
+// location: Сітка клітинок. The game's overlays measured from the castable area live in its list (spec 136). Config
+// edits go through the injected validated runtime override path; editor settings live in ZoneEditorState.
 export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
   #lists = new Map();
@@ -28,17 +32,19 @@ export class ZoneEditorSection {
   #savingStatus = null;
   #unsubscribe = null;
   #getMetric; #createMetric; #resetPerspective;
-  #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones;
+  #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones; #getDependentZones;
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
-    resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "", readDynamicZones = null }) {
+    resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "", readDynamicZones = null,
+    getDependentZones = null }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
     this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
     this.#createMetric = createWaterMetric;
     this.#readDynamicZones = readDynamicZones;
+    this.#getDependentZones = getDependentZones;
     this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
   }
 
@@ -68,7 +74,6 @@ export class ZoneEditorSection {
     this.#saving = this.#createSection("Збереження", content, ["ZONE_EDITOR", "saving"]);
     this.#fillSaving();
     this.#renderCellGrid(this.#createSection("Сітка клітинок (спільне для всіх локацій)", content, ["ZONE_EDITOR", "cells"]));
-    this.#renderOverlays(this.#createSection("Оверлеї гри (спільне для всіх локацій)", content, ["ZONE_EDITOR", "overlays"]));
     this.#unsubscribe?.();
     this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#refreshZones()) ?? null;
   }
@@ -251,6 +256,7 @@ export class ZoneEditorSection {
     }
     ui.createSwitcherRow("Показати зону", state.categories[category], list,
       value => { state.setCategory(category, value); this.#syncAllZonesShown(); }, ["ZONE_EDITOR", "show", category]);
+    if (category === "castable") this.#fillDependent(list);
     const id = this.#locationId();
     const location = this.#config.locations.map[id];
     if (!location) return;
@@ -436,10 +442,32 @@ export class ZoneEditorSection {
     for (const key of ["cellGrid", "grid"]) this.#ui.syncValue(["ZONE_EDITOR", key], this.#state[key]);
   }
 
-  #renderOverlays(section) {
-    this.#configSwitch(section, "debugVisuals", "Показувати оверлеї гри");
-    for (const [key, label] of OVERLAYS) this.#configSwitch(section, key, label, { defaultOn: true });
-    this.#ui.createInfoRow("Оверлеї", "Перший перемикач гасить усі оверлеї гри. Фізику не змінюють; зони снасті й виважування показуються після закидання.", section);
+  // Spec 136: the zones measured from the castable area's bottom edge, right under its "Показати зону": the game's own
+  // show switches (they apply in the game too), editing for hand chum (its far line) and the half-circles (their base
+  // anchor), and the net and fish whose real values are previewed. Item, fish and physics values are never changed.
+  #fillDependent(list) {
+    const ui = this.#ui, dependent = this.#getDependentZones?.() ?? null;
+    this.#configSwitch(list, "debugVisuals", "Показувати оверлеї гри");
+    for (const zone of DEPENDENT_ZONES) {
+      if (DEPENDENT_SHOW_LABELS[zone.id]) {
+        this.#configSwitch(list, zone.show, DEPENDENT_SHOW_LABELS[zone.id], { swatch: zone.color, defaultOn: zone.defaultOn });
+      }
+      if (!dependent) continue;
+      if (zone.edit) {
+        const path = ["ZONE_EDITOR", "dependent", zone.id];
+        ui.createSwitcherRow(DEPENDENT_EDIT_LABELS[zone.id], dependent.isEditing(zone.id), list,
+          value => dependent.setEditing(zone.id, value), path, path, { swatch: zone.color });
+      }
+      const choices = zone.id === "net" ? ["Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id)]
+        : zone.id === "lastDash" ? ["Риба", dependent.readings.fishes, dependent.fishId, id => dependent.setFish(id)] : null;
+      if (choices) {
+        const [label, options, current, choose] = choices;
+        ui.createSelectRow(label, options.map(([, name]) => name), options.find(([key]) => key === current)?.[1] ?? "", list,
+          name => { const option = options.find(([, candidate]) => candidate === name); if (option) choose(option[0]); },
+          ["ZONE_EDITOR", "dependent", zone.id, "choice"]);
+      }
+    }
+    ui.createInfoRow("Оверлеї", "Ці зони рахуються від нижньої грані ігрової області. Поки редактор увімкнено, показані зони малюються з реальних значень: прицілювання — з дальності закидання спорядження, ручна прикормка — з налаштування локації (її дальню лінію можна тягнути), підсака й останній ривок — для вибраних підсаки й риби, підведення й радіус ліски — зі спорядження (центр-анкер на нижній грані можна тягнути). Сектор виважування й зони прикормки видно лише в грі. Перший перемикач гасить усі оверлеї гри.", list);
   }
 
   // A switch over CONFIG.locations.<key> through the validated runtime override path.

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.34 - Zones Measured from the Castable Area
+
+- Location editor: the game's overlays measured from the castable bottom edge live in its list and preview the real values; hand chum's far line and the half-circles' anchors are dragged like zones; net and fish are chosen from lists.
+
 ## v0.46.33 - Lobby Background in WebP
 
 - The lobby background ships as WebP (15.4 MB PNG -> 0.56 MB); the PNG master moved to asset-sources.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.25 - Consistent DevTools Tree Order
 
 - Every DevTools section shows direct controls first, nested sections next and its description last, preserving keyboard order and partial refresh behavior.
-
-## v0.46.24 - Independent Zone Visibility
-
-- DevTools: show zones without editing, toggle all zone categories together, and keep the map and perspective grids mutually exclusive with synchronized switches.
