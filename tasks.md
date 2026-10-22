@@ -1,5 +1,9 @@
 # Невиконане CyberFishing
 
+## Spec 136 — зона «Вудка» і зони оверлеїв у «Зони»
+
+- [ ] Велика зміна: [specs/136-rod-zone-and-overlay-zones/spec.md](specs/136-rod-zone-and-overlay-zones/spec.md). Чекає рішень власника Q1–Q5 (де живе зона вудки; які параметри редагує кожен оверлей; риба для «останнього ривка»; крок; етапи), потім реалізація.
+
 ## TK-067 — фон лобі у WebP
 
 - Запит власника 2026-10-23: «переведи в WebP». `assets/lobby/lobby-background.png` (15.4 MB, 3840×3840) ламав перевірку pages-release («released raster assets are WebP», spec 082).
