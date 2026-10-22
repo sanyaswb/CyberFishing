@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.33 - Lobby Background in WebP
+
+- The lobby background ships as WebP (15.4 MB PNG -> 0.56 MB); the PNG master moved to asset-sources.
+
 ## v0.46.32 - Water Only in Castable Zones
 
 - The water animates only inside the castable zones: with several zones a mask clips it and the waves fade at each zone's edges.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.24 - Independent Zone Visibility
 
 - DevTools: show zones without editing, toggle all zone categories together, and keep the map and perspective grids mutually exclusive with synchronized switches.
-
-## v0.46.23 - Editor Controls at the Top
-
-- DevTools «РЕДАКТОР»: location is the first dropdown, followed directly by the editor controls; removed the nested location and editor disclosures.

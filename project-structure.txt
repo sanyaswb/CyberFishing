@@ -149,7 +149,7 @@
 │  │     ├── bamboo-rod-ecip-v1.webp
 │  │     └── bamboo-rod-unecip-v1.webp
 │  ├── lobby
-│  │  └── lobby-background.png
+│  │  └── lobby-background.webp
 │  ├── locations
 │  │  └── test
 │  │     ├── bg_test--day.webp

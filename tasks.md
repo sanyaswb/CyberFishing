@@ -1,5 +1,11 @@
 # Невиконане CyberFishing
 
+## TK-067 — фон лобі у WebP
+
+- Запит власника 2026-10-23: «переведи в WebP». `assets/lobby/lobby-background.png` (15.4 MB, 3840×3840) ламав перевірку pages-release («released raster assets are WebP», spec 082).
+- [x] `node utils/convert-images.js --batch --quality middle --format webp --input assets/lobby` (WebP 80): `assets/lobby/lobby-background.webp` 0.56 MB; PNG-майстер перенесено в `asset-sources/lobby/` (не публікується). Код на фон ще не посилається. v0.46.33.
+- [ ] Власник: коли лобі підключатиметься — 3840×3840 це ~59 MB GPU-пам'яті без mipmap; за правилами рендерингу 19–20 варто варіант до 2048 px.
+
 ## TK-066 — анімація води тільки в межах зон закидання
 
 - Запит власника 2026-10-23: дві зони закидання на всю ширину (згори і знизу) — між ними все одно анімується вода.
