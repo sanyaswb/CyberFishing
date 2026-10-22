@@ -221,11 +221,10 @@ export class FishingEquipmentRenderModelBuilder {
     let foreshortening = 1;
     let visibleShare = 1;
     let pose = null;
-    let biting = false;
+    let signals = null;
     const metric = this.#getWaterMetric();
     if (kind === "float" && typeof floatEntity.getPoseSignals === "function") {
-      const signals = floatEntity.getPoseSignals();
-      biting = signals.isBiteTilt === true;
+      signals = floatEntity.getPoseSignals();
       pose = this.#floatPose.advance({ signals, position,
         metric, dtSec: Math.max(0, Number(this.#clock.delta) || 0) / 1000,
         artDraft: art ? 1 - waterline : 0 });
@@ -242,14 +241,14 @@ export class FishingEquipmentRenderModelBuilder {
     target.radiusX = 6 * scale;
     target.radiusY = 3 * scale;
     target.rotationRad = (rotationDeg * Math.PI) / 180;
-    if (pose) this.#rock(target, position, metric, pose, biting);
+    if (pose) this.#rock(target, position, metric, pose, signals);
   }
 
   // Spec 128: the float rocks on the water. The waterline point moves; a lying body also turns about the middle of
-  // its visible part, so that middle only bobs.
-  #rock(target, position, metric, pose, biting) {
+  // its visible part, so that middle only bobs. The weather's rain makes it livelier (stage 2).
+  #rock(target, position, metric, pose, signals) {
     const rocking = this.#floatRocking.compute({ nowMs: this.#clock.realNow, position, metric, pose,
-      lyingAngleDeg: this.#config.physics?.floatPose?.lyingAngleDeg, biting });
+      lyingAngleDeg: this.#config.physics?.floatPose?.lyingAngleDeg, signals, rainMult: this.#getWind()?.rainMult ?? 1 });
     if (rocking.turnRad !== 0) {
       const half = target.height / 2;
       const turned = target.rotationRad + rocking.turnRad;

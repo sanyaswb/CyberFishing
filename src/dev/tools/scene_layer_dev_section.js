@@ -62,7 +62,9 @@ export class SceneLayerDevSection {
     if (rocking) {
       this.#ui.createInfoRow("покачування поплавка", `${ROCKING_STATES[rocking.state] ?? rocking.state} · кадрів ${
         rocking.frames} · вгору-вниз ${rocking.dy.toFixed(1)} px · убік ${rocking.dx.toFixed(1)} px · нахил ${
-        rocking.turnDeg.toFixed(1)}° · сила ${rocking.strength.toFixed(2)} · лежить ${Math.round(rocking.lying * 100)}%`,
+        rocking.turnDeg.toFixed(1)}° · сила ${rocking.strength.toFixed(2)} · лежить ${Math.round(rocking.lying * 100)}% · закид ×${
+        rocking.landing.toFixed(2)} · погода ×${rocking.weather.toFixed(2)} · огрузка ×${rocking.ballast.toFixed(2)} · темп ×${
+        rocking.tempo.toFixed(2)}`,
       content, ["SCENE_LAYER", "floatRocking"]);
     }
     for (const { kind, layer, sceneRenderer } of this.#router.getRouting()) {

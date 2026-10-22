@@ -263,68 +263,135 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   assert.deepEqual(draws, ["bar"], "without its art the float stays a bar");
 }
 
-// Spec 128 (simplified, v0.46.12): the float rocks with a strength that follows the water's wave amplitude.
+// Spec 128: the float rocks with the water's strength; stage 2 adds landing, weather, ballast and wave tempo.
 {
   const { CONFIG: GAME } = load("src/game/config/runtime/game_config.js");
-  const water = JSON.parse(JSON.stringify(GAME.canvas.water));
-  const settings = water.floatRocking;
-  const rocking = new FloatWaveRocking({ getSettings: () => water });
+  const base = GAME.canvas.water;
+  const epoch = 1761234567890;
   const standing = { rollDeg: 0, pitchDeg: 0 };
   const lyingPose = { rollDeg: 90, pitchDeg: 0 };
-  const epoch = 1761234567890;
-  const ask = (overrides = {}) => ({ ...rocking.compute({ nowMs: epoch, position: { x: 500, y: 600 }, metric: null,
-    pose: standing, lyingAngleDeg: 90, ...overrides }) });
-  const across = (overrides = {}, seconds = 8) => {
-    const peaks = { dx: 0, dy: 0, turn: 0 };
-    for (let ms = 0; ms <= seconds * 1000; ms += 20) {
-      const r = ask({ nowMs: epoch + ms, ...overrides });
-      peaks.dx = Math.max(peaks.dx, Math.abs(r.dx));
-      peaks.dy = Math.max(peaks.dy, Math.abs(r.dy));
-      peaks.turn = Math.max(peaks.turn, Math.abs(r.turnRad));
+  const waterWith = (rockingOverrides = {}, waterOverrides = {}) =>
+    ({ ...JSON.parse(JSON.stringify(base)), ...waterOverrides, floatRocking: { ...base.floatRocking, landingBoost: 1, ...rockingOverrides } });
+  // Runs a fresh rocking for `seconds` at `fps`; input(t) overrides the frame's inputs. Peaks are taken from `from`.
+  const run = ({ water = waterWith(), seconds = 10, fps = 60, from = 0, input = () => ({}), rocking = new FloatWaveRocking({ getSettings: () => water }) } = {}) => {
+    const peaks = { dx: 0, dy: 0, turn: 0, crossings: 0, maxStep: 0, series: [] };
+    let previous = null;
+    for (let frame = 0; frame <= seconds * fps; frame += 1) {
+      const t = frame / fps;
+      const r = rocking.compute({ nowMs: epoch + t * 1000, position: { x: 500, y: 600 }, metric: null, pose: standing,
+        lyingAngleDeg: 90, signals: signals({ castSerial: 1 }), rainMult: 1, ...input(t) });
+      peaks.series.push({ t, dy: r.dy });
+      if (previous !== null) peaks.maxStep = Math.max(peaks.maxStep, Math.abs(r.dy - previous));
+      if (t >= from) {
+        peaks.dx = Math.max(peaks.dx, Math.abs(r.dx));
+        peaks.dy = Math.max(peaks.dy, Math.abs(r.dy));
+        peaks.turn = Math.max(peaks.turn, Math.abs(r.turnRad));
+        if (previous !== null && Math.sign(r.dy) !== Math.sign(previous) && r.dy !== 0) peaks.crossings += 1;
+      }
+      previous = r.dy;
     }
     return peaks;
   };
-  const still = across();
+  const settings = base.floatRocking;
+  const still = run();
   assert(still.dy > settings.bobPx * 0.7 && still.dy <= settings.bobPx + 1e-9, `a standing float bobs about bobPx (${still.dy.toFixed(2)})`);
   assert(still.dx > settings.swayPx * 0.7 && still.dx <= settings.swayPx + 1e-9, "and sways about swayPx");
   assert.equal(still.turn, 0, "a standing float does not turn");
-  assert.deepEqual(ask({ nowMs: epoch + 1234 }), ask({ nowMs: epoch + 1234 }), "the same moment gives the same rocking (no frame state)");
-  assert.notDeepEqual(ask({ nowMs: epoch + 300 }), ask({ nowMs: epoch + 900 }), "it moves with time at epoch-sized clocks");
-  const lying = across({ pose: lyingPose });
+  const lying = run({ input: () => ({ pose: lyingPose }) });
   assert(lying.turn > settings.lyingTurnDeg * Math.PI / 180 * 0.6 && lying.turn <= settings.lyingTurnDeg * Math.PI / 180 + 1e-12,
     "a lying float turns about lyingTurnDeg");
   assert(lying.dx === 0 && lying.dy > 0, "a lying float bobs without swaying");
-  const half = across({ pose: { rollDeg: 45, pitchDeg: 0 } });
+  const half = run({ input: () => ({ pose: { rollDeg: 45, pitchDeg: 0 } }) });
   assert(half.turn > 0 && half.turn < lying.turn && half.dx > 0 && half.dx < still.dx, "a leaning float mixes both");
-  const doubled = (() => { water.amplitude *= 2; const peaks = across(); water.amplitude /= 2; return peaks; })();
-  assert(Math.abs(doubled.dy - 2 * still.dy) < 1e-9, "stronger waves rock the float more (amplitude x2 = rocking x2)");
-  water.amplitude = 0;
-  assert.deepEqual(across({ pose: lyingPose }, 2), { dx: 0, dy: 0, turn: 0 }, "amplitude 0: no rocking");
-  assert.equal(rocking.status.state, "still");
-  water.amplitude = GAME.canvas.water.amplitude;
-  settings.enabled = false;
-  assert.deepEqual(across({}, 2), { dx: 0, dy: 0, turn: 0 }, "the switch turns rocking off");
-  assert.equal(rocking.status.state, "off");
-  settings.enabled = true;
-  across({}, 1);
-  assert(rocking.status.state === "active" && rocking.status.frames > 0, "DEV status counts frames and shows the state");
-  const bite = across({ biting: true });
+  assert(Math.abs(run({ water: waterWith({}, { amplitude: base.amplitude * 2 }) }).dy - 2 * still.dy) < 1e-9,
+    "stronger waves rock the float more (amplitude x2 = rocking x2)");
+  assert.equal(run({ water: waterWith({}, { amplitude: 0 }) }).dy, 0, "amplitude 0: no rocking");
+  assert.equal(run({ water: waterWith({ enabled: false }) }).dy, 0, "the switch turns rocking off");
+  const bite = run({ input: () => ({ signals: signals({ castSerial: 1, isBiteTilt: true }) }) });
   assert(Math.abs(bite.dy - still.dy * settings.biteShare) < 1e-9, "a bite step rocks at biteShare");
-  // Far water moves less (surface size, spec 126).
   const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500, maxMeters: 30,
     tiltDegrees: 30, farScale: 0.3, lateralContraction: false });
-  const near = across({ metric, position: { x: 500, y: 950 } });
-  const far = across({ metric, position: { x: 500, y: 60 } });
+  const near = run({ input: () => ({ metric, position: { x: 500, y: 950 } }) });
+  const far = run({ input: () => ({ metric, position: { x: 500, y: 60 } }) });
   assert(far.dy < near.dy * 0.6, `a far float rocks less than a near one (${far.dy.toFixed(2)} < ${near.dy.toFixed(2)})`);
+  // The same inputs at 30/60/144 FPS rock alike (integrated phase, exponential weather, landing by time).
+  {
+    const gusty = (t) => ({ signals: signals({ castSerial: 1, windDeg: t > 2 ? 30 : 0 }), rainMult: t > 4 ? 2 : 1 });
+    const water = waterWith({ landingBoost: 3 });
+    const at = (fps) => run({ water, fps, seconds: 6, input: gusty }).series.find((point) => Math.abs(point.t - 5.5) < 1e-9).dy;
+    const reference = at(60);
+    for (const fps of [30, 144]) {
+      assert(Math.abs(at(fps) - reference) < 0.02 * settings.bobPx, `${fps} FPS rocks like 60 FPS (${at(fps).toFixed(3)} vs ${reference.toFixed(3)})`);
+    }
+  }
+  // Stage 2. Landing: a new cast rocks landingBoost times as much and settles over landingSettleSec.
+  {
+    const water = waterWith({ landingBoost: 3, landingSettleSec: 1.5 });
+    const rocking = new FloatWaveRocking({ getSettings: () => water });
+    let serial = 1;
+    run({ water, rocking, seconds: 0.2, input: () => ({ signals: signals({ castSerial: serial }) }) });
+    const earlyStrength = rocking.status.strength;
+    assert(Math.abs(rocking.status.landing - (1 + 2 * (1 - 0.2 / 1.5) ** 2)) < 1e-9,
+      `right after the cast the float rocks harder (×${rocking.status.landing.toFixed(2)})`);
+    run({ water, rocking, seconds: 3, input: () => ({ signals: signals({ castSerial: serial }) }) });
+    assert.equal(rocking.status.landing, 1, "after landingSettleSec it is back to normal");
+    assert(earlyStrength > rocking.status.strength * 2, "the landing swing is stronger than the settled rocking");
+    serial = 2;
+    run({ water, rocking, seconds: 0.05, input: () => ({ signals: signals({ castSerial: serial }) }) });
+    assert(rocking.status.landing > 2.5, "the next cast boosts again");
+  }
+  // Weather: the float's wind tilt and the rain make it livelier, smoothly.
+  {
+    const windy = run({ from: 5, input: () => ({ signals: signals({ castSerial: 1, windDeg: 30 }) }) });
+    assert(Math.abs(windy.dy / still.dy - (1 + settings.windShare)) < 0.05, `30° of wind tilt rocks ×${(1 + settings.windShare)}`);
+    const rainy = run({ from: 5, input: () => ({ rainMult: 2 }) });
+    assert(Math.abs(rainy.dy / still.dy - (1 + settings.rainShare)) < 0.05, "rain multiplier 2 rocks ×(1 + rainShare)");
+    const rocking = new FloatWaveRocking({ getSettings: () => waterWith() });
+    run({ rocking, seconds: 3 });
+    run({ rocking, seconds: 0.02, input: () => ({ signals: signals({ castSerial: 1, windDeg: 40 }) }) });
+    assert(rocking.status.weather < 1.1, `a gust swells instead of jumping (×${rocking.status.weather.toFixed(3)} after one frame)`);
+    run({ rocking, seconds: 4, input: () => ({ signals: signals({ castSerial: 1, windDeg: 40 }) }) });
+    assert(rocking.status.weather > 1 + settings.windShare * 40 / 30 - 0.01, "and reaches its strength");
+  }
+  // Ballast: a heavier float (more of it under water) rocks less and slower.
+  {
+    const heavy = run({ seconds: 30, input: () => ({ signals: signals({ castSerial: 1, restDraft: 0.3 }) }) });
+    const light = run({ seconds: 30 });
+    assert(Math.abs(heavy.dy / light.dy - (1 - settings.ballastCalm)) < 0.02, "heavy ballast rocks (1 - ballastCalm) as much");
+    assert(heavy.crossings < light.crossings * 0.85, `and slower (${heavy.crossings} < ${light.crossings} crossings)`);
+  }
+  // Wave tempo: faster waves rock faster; a tempo change never jumps.
+  {
+    const slow = run({ seconds: 30 });
+    const fast = run({ seconds: 30, water: waterWith({}, { speed: base.speed * 2 }) });
+    assert(fast.crossings > slow.crossings * 1.6, `faster waves rock faster (${fast.crossings} > ${slow.crossings})`);
+    const flat = run({ seconds: 30, water: waterWith({ waveTempoShare: 0 }, { speed: base.speed * 2 }) });
+    assert(Math.abs(flat.crossings - slow.crossings) <= 2, "waveTempoShare 0 keeps periodSec");
+    const water = waterWith();
+    const rocking = new FloatWaveRocking({ getSettings: () => water });
+    const before = run({ water, rocking, seconds: 4 });
+    water.speed = base.speed * 3;
+    const after = run({ water, rocking, seconds: 0.05 });
+    assert(after.maxStep <= Math.max(before.maxStep, 0.01) * 4, "changing the tempo does not jump the float");
+  }
+  // DEV status.
+  {
+    const rocking = new FloatWaveRocking({ getSettings: () => waterWith() });
+    run({ rocking, seconds: 0.5 });
+    assert(rocking.status.state === "active" && rocking.status.frames > 0 && rocking.status.tempo === 1 && rocking.status.ballast === 1,
+      "DEV status counts frames and shows the state and multipliers");
+  }
   // The production chain: the builder with the real rocking moves the drawn float frame by frame.
   {
     const { FishingEquipmentRenderModelBuilder } = load("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
     const clock = { delta: 16, realNow: epoch };
+    const water = waterWith();
     const builder = new FishingEquipmentRenderModelBuilder({
       projector: { getPerspective: () => ({ scale: 1 }), getScale: () => 0.5 }, canvasMetrics: { width: 800, height: 600 },
       clock, config: { ui: { float: {} }, physics: { floatPose: CONFIG } }, getRodScreenX: () => 400,
-      rodAnimation: { setSkin() {}, advance() {} }, getWind: () => null, getTimeOfDay: () => 12,
-      floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => metric, floatRocking: rocking,
+      rodAnimation: { setSkin() {}, advance() {} }, getWind: () => ({ direction: 1, rainMult: 1 }), getTimeOfDay: () => 12,
+      floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => metric,
+      floatRocking: new FloatWaveRocking({ getSettings: () => water }),
     });
     const entity = { getVisualState: () => ({ color: "#00ff80" }), getPosition: () => ({ x: 500, y: 900 }),
       isHooked: () => false, getPoseSignals: () => signals({ castSerial: 21 }) };
@@ -361,7 +428,8 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   const restRotation = model.rotationRad;
   assert(Math.abs(Math.abs(restRotation) - Math.PI / 2) < 0.05, "the test float lies on the water");
   turning.rocking = (input) => {
-    assert(input.pose && input.biting === false && input.nowMs === clock.realNow, "rocking gets the pose and the frame time");
+    assert(input.pose && input.signals?.castSerial === 11 && input.nowMs === clock.realNow && input.rainMult === 1,
+      "rocking gets the pose, the float's signals, the frame time and the rain");
     return { dx: 0, dy: -2.5, turnRad: 0.1 };
   };
   build();
@@ -371,4 +439,4 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     "the middle of the visible body stays put while it turns, and bobs with the water");
 }
 
-console.log("Float pose passed: line/fish/motion lean the tip away from the pull, diagonal retrieve splits sideways lean from foreshortening, same ground speed same lean near and far, smooth reversals and bite steps, 30/60/144 FPS alike, sinking without stretching, ballast draft, lying/standing/over-depth, reused records; lying float towed by its bottom (swing, rest, path-based, drift, visible toward the player, lean vector clamp); image float crop, doubled size, night-only tip glow, bar fallback; wave rocking (bob, sway, lying turn about the body's middle, limits, switches, bite share, far water calmer, stateless).");
+console.log("Float pose passed: line/fish/motion lean the tip away from the pull, diagonal retrieve splits sideways lean from foreshortening, same ground speed same lean near and far, smooth reversals and bite steps, 30/60/144 FPS alike, sinking without stretching, ballast draft, lying/standing/over-depth, reused records; lying float towed by its bottom (swing, rest, path-based, drift, visible toward the player, lean vector clamp); image float crop, doubled size, night-only tip glow, bar fallback; wave rocking (bob, sway, lying turn about the body's middle, switches, bite share, far water calmer, 30/60/144 FPS alike; landing settle, smooth wind/rain, ballast calmer and slower, wave tempo without jumps, DEV status, real builder).");

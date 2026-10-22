@@ -1153,7 +1153,8 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel("canvas.water.floatRocking");
     this.#requireBooleanWithLabel("canvas.water.floatRocking.enabled", rocking.enabled);
     for (const [key, min, max] of [["bobPx", 0, 60], ["swayPx", 0, 60], ["lyingTurnDeg", 0, 45],
-      ["periodSec", 0.2, 20], ["biteShare", 0, 1]]) {
+      ["periodSec", 0.2, 20], ["biteShare", 0, 1], ["landingBoost", 1, 10], ["landingSettleSec", 0, 10],
+      ["windShare", 0, 5], ["rainShare", 0, 5], ["ballastCalm", 0, 1], ["ballastSlow", 0, 2], ["waveTempoShare", 0, 2]]) {
       this.#requireFiniteNumber(`CONFIG.canvas.water.floatRocking.${key}`, rocking[key], { min, max });
       this.#requireParameterLabel(`canvas.water.floatRocking.${key}`);
     }

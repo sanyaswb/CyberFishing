@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.13 - Float Rocking Stage 2
+
+- TK-039 / spec 128 stage 2 (owner): right after landing the float rocks ×3 and settles over 1.5 s; the float's wind tilt (breeze and gusts, already reduced by its wind compensation) and the rain make it livelier, swelling smoothly (0.6 s); heavy ballast rocks half as much and 30% slower; the tempo follows the waves' speed / wavelength. The phase is integrated, so tempo edits never make the float jump; 30/60/144 FPS rock alike. New DevTools settings in canvas.water.floatRocking (landingBoost, landingSettleSec, windShare, rainShare, ballastCalm, ballastSlow, waveTempoShare); the DEV status row shows each multiplier. Visual only. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
+
 ## v0.46.12 - Simpler Float Rocking
 
 - TK-038 / spec 128, owner correction: in v0.46.11 the float did not move on the phone. Rocking is now simple and not synchronised with the waves: slow sines with unrelated frequencies, strength = water amplitude / 20 × surface size (far calmer). Standing bobs (bobPx 8) and sways (swayPx 3); lying bobs and turns about the middle of its visible body (lyingTurnDeg 10); periodSec 2; biteShare 0.5; its own switch, independent of the water switch. The water field is back to its v0.46.10 code (the shared pattern module removed). DevTools → "🖼️ СЦЕНА WebGL" → "покачування поплавка" shows frames, state and current offsets. A check drives the real builder with the real rocking. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.4 - Night Float Without Daylight Glow
 
 - TK-030 / G-114: night-float halo and additive tip light now follow the location's night lighting instead of the item variant alone. Daylight renders only the original red-tipped body in WebGL and Canvas, including after dawn on an existing cast; preserve DEV switches and all float geometry/gameplay. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.
-
-## v0.46.3 - Lying Float Towed by Its Bottom
-
-- Spec 127 stage 4 (TK-025…TK-029): the float's lean is one vector on the water plane; a lying float is towed by its bottom (the tip trails at physics.floatPose.lying.trailLengthMeters, swings around through the player side, keeps its direction at rest, ignores drift with the water); the body is projected with the water's tilt, so a float lying toward the player is shorter but visible and a lean away draws slightly longer. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual and phone check pending.
