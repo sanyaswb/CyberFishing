@@ -1,4 +1,5 @@
 import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated_depth_profile.js";
+import { ZONE_CATEGORY_COLORS } from "../location/zone_category_colors.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic"]);
 const LABELS = Object.freeze({ castable: "Закидання · зелений", collisions: "Перешкоди · червоний", snags: "Зачепи · жовтий", dynamic: "Рухомі · рожевий" });
@@ -6,7 +7,7 @@ const LABELS = Object.freeze({ castable: "Закидання · зелений",
 // Composes existing DevTools controls; geometry edits go through the same validated runtime override path.
 export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
-  #category = "castable"; #index = 0; #details = null;
+  #details = null; #unsubscribe = null;
   #getMetric; #createMetric; #resetPerspective; #exportOverrides; #importOverrides;
 
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
@@ -18,32 +19,71 @@ export class ZoneEditorSection {
     this.#exportOverrides = exportOverrides; this.#importOverrides = importOverrides;
   }
 
+  // One place for zones (spec 129 D3): the editor, its categories, the gameplay zone switches, the game overlays,
+  // the location debug map, then the selected zone's geometry and the water's metres and perspective.
   render(parent) {
     const ui = this.#ui, state = this.#state;
     const content = this.#createSection("🗺️ РЕДАКТОР ЗОН", parent, ["ZONE_EDITOR"]);
-    for (const [key, label] of [["enabled", "Показати редактор"], ["background", "Показати фон (інакше чорний)"], ["grid", "Метрова сітка"]]) {
-      ui.createSwitcherRow(label, state[key], content, value => state.setFlag(key, value));
+    const editor = this.#createSection("Редактор", content, ["ZONE_EDITOR", "editor"]);
+    for (const [key, label] of [["enabled", "Показати редактор"], ["background", "Показати фон (інакше чорний)"],
+      ["grid", "Метрова сітка"], ["cellGrid", "Сітка клітинок мапи"], ["dragEdit", "Перетягувати межі обраної зони"]]) {
+      ui.createSwitcherRow(label, state[key], editor, value => state.setFlag(key, value));
     }
     const spacingPath = ["ZONE_EDITOR", "spacingMeters"];
-    ui.createInputRow("Мін. крок сітки, м", state.spacingMeters, content, "number", value => {
+    ui.createInputRow("Мін. крок сітки, м", state.spacingMeters, editor, "number", value => {
       state.setSpacing(value); ui.syncValue(spacingPath, state.spacingMeters);
     }, spacingPath);
-    ui.createInfoRow("Сітка", "WaterMetric показує фізичні метри від берега. До 96 ліній на вісь; дрібний крок автоматично збільшується.", content);
+    ui.createInfoRow("Сітка", "Метрова сітка — фізичні метри води від берега (до 96 ліній на вісь; дрібний крок збільшується). Сітка клітинок — клітинки мапи, до яких прилипають межі зон.", editor);
+    ui.createInfoRow("Перетягування", "Увімкніть і перетягніть мишею чи пальцем край обраної зони (кут — два краї). Край прилипає до клітинок, мінімум одна клітинка; адаптивні за шириною зони — лише верх і низ. Поки увімкнено, гра не отримує дотиків.", editor);
+
+    const categories = this.#createSection("Категорії в редакторі", content, ["ZONE_EDITOR", "categories"]);
     for (const category of CATEGORIES) {
-      ui.createSwitcherRow(LABELS[category], state.categories[category], content, value => state.setCategory(category, value));
+      ui.createSwitcherRow(LABELS[category], state.categories[category], categories,
+        value => state.setCategory(category, value), null, null, { swatch: ZONE_CATEGORY_COLORS[category] });
     }
-    ui.createInfoRow("Видимість", "Ці перемикачі не змінюють фізику зон. Зони снасті й виважування показуються після закидання.", content);
+    ui.createInfoRow("Видимість", "Лише показ у редакторі: фізику зон не змінюють.", categories);
+
+    const game = this.#createSection("Зони в грі", content, ["ZONE_EDITOR", "gameZones"]);
+    for (const [key, category, label] of [["enableCastable", "castable", "Закидання"], ["enableCollisions", "collisions", "Перешкоди"],
+      ["enableSnags", "snags", "Зачепи"], ["enableDynamicZones", "dynamic", "Рухомі зони"]]) {
+      this.#configSwitch(game, key, label, { swatch: ZONE_CATEGORY_COLORS[category] });
+    }
+    ui.createInfoRow("Геймплей", "Ці перемикачі вмикають і вимикають зони в самій грі: закидання, колізії, зачепи, рухомі косяки.", game);
+
+    const overlays = this.#createSection("Оверлеї гри", content, ["ZONE_EDITOR", "overlays"]);
     for (const [key, label] of [["showChumZones", "Зони прикормки"], ["showCatchZone", "Зона підведення"],
       ["showLastDashZone", "Зона останнього ривка"], ["showNetZone", "Зона підсаки"], ["showAimingZone", "Зона прицілювання"],
       ["showPoleFightSector", "Сектор виважування"], ["showFightLineRadius", "Радіус ліски"]]) {
-      const path = ["CONFIG", "locations", key];
-      ui.createSwitcherRow(label, this.#config.locations[key] !== false, content, value => this.#update(path, value), path);
+      this.#configSwitch(overlays, key, label, { defaultOn: true });
     }
-    ui.createSelectRow("Категорія зони", CATEGORIES, this.#category, content, value => {
-      this.#category = value; this.#index = 0; this.#fill();
-    });
+    ui.createInfoRow("Видимість", "Не змінюють фізику. Зони снасті й виважування показуються після закидання.", overlays);
+
+    const debugMap = this.#createSection("Налагоджувальна карта", content, ["ZONE_EDITOR", "debugMap"]);
+    for (const [key, label] of [["debugVisuals", "Головний вимикач оверлеїв"], ["debugZones", "Заливка зон і рухомі зони"],
+      ["debugGrid", "Сітка клітинок"], ["debugDepthText", "Глибина в клітинках"]]) {
+      this.#configSwitch(debugMap, key, label);
+    }
+    const opacityPath = ["CONFIG", "locations", "debugOpacity"];
+    ui.createInputRow("Прозорість карти", this.#config.locations.debugOpacity ?? 0.7, debugMap, "number",
+      value => this.#update(opacityPath, Math.max(0, Math.min(1, value))), opacityPath);
+    ui.createInfoRow("Карта", "Малюється поверх води, також під відкритим редактором. Головний вимикач гасить і оверлеї виважування в грі.", debugMap);
+
+    const selection = state.selection;
+    ui.createSelectRow("Категорія зони", CATEGORIES, selection.category, content, value => {
+      state.select(value, 0); this.#fill();
+    }, null, { swatches: ZONE_CATEGORY_COLORS });
     this.#details = this.#createSection("Геометрія й перспектива", content, ["ZONE_EDITOR", "geometry"]);
+    this.#unsubscribe?.();
+    this.#unsubscribe = state.subscribeZonesEdited?.(() => this.#fill()) ?? null;
     this.#fill();
+  }
+
+  // A switch over CONFIG.locations.<key> through the validated runtime override path.
+  #configSwitch(parent, key, label, { swatch = null, defaultOn = false } = {}) {
+    const path = ["CONFIG", "locations", key];
+    const value = this.#config.locations[key];
+    this.#ui.createSwitcherRow(label, defaultOn ? value !== false : value === true, parent,
+      next => this.#update(path, next), path, path, { swatch });
   }
 
   #fill() {
@@ -53,28 +93,30 @@ export class ZoneEditorSection {
     const id = this.#state.locationId || this.#config.locations.currentLocationId || Object.keys(this.#config.locations.map)[0];
     const location = this.#config.locations.map[id];
     if (!location) return;
-    const zones = location.zones?.[this.#category] || [];
-    this.#index = Math.max(0, Math.min(this.#index, zones.length - 1));
+    const { category } = this.#state.selection;
+    const zones = location.zones?.[category] || [];
+    this.#state.select(category, Math.max(0, Math.min(this.#state.selection.index, zones.length - 1)));
+    const index = this.#state.selection.index;
     this.#ui.createInfoRow("Локація", id, content);
     this.#ui.createInfoRow("Координати", "x/y/w/h — клітинки designCellSize; bounds — пікселі карти. Останню зону закидання видалити не можна.", content);
-    const path = ["CONFIG", "locations", "map", id, "zones", this.#category];
+    const path = ["CONFIG", "locations", "map", id, "zones", category];
     if (zones.length) {
-      this.#ui.createSelectRow("Номер зони", zones.map((_, index) => String(index + 1)), String(this.#index + 1), content,
-        value => { this.#index = Number(value) - 1; this.#fill(); });
-      this.#renderTree(zones[this.#index], content, [...path, this.#index]);
+      this.#ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), content,
+        value => { this.#state.select(category, Number(value) - 1); this.#fill(); });
+      this.#renderTree(zones[index], content, [...path, index]);
       this.#ui.createButtonRow("Видалити вибрану зону", content, () => {
-        if (this.#category === "castable" && zones.length <= 1) return;
-        this.#update(path, zones.filter((_, index) => index !== this.#index)); this.#fill();
+        if (category === "castable" && zones.length <= 1) return;
+        this.#update(path, zones.filter((_, number) => number !== index)); this.#fill();
       });
     }
     this.#ui.createButtonRow("Додати зону", content, () => {
-      const zone = zones[this.#index] ? JSON.parse(JSON.stringify(zones[this.#index])) : { x: 0, y: 0, w: 1, h: 1 };
-      if (this.#category === "dynamic") {
+      const zone = zones[index] ? JSON.parse(JSON.stringify(zones[index])) : { x: 0, y: 0, w: 1, h: 1 };
+      if (category === "dynamic") {
         let suffix = zones.length + 1;
         while (zones.some(existing => existing.id === `zone_${suffix}`)) suffix++;
         zone.id = `zone_${suffix}`;
       }
-      this.#update(path, [...zones, zone]); this.#index = zones.length; this.#fill();
+      this.#update(path, [...zones, zone]); this.#state.select(category, zones.length); this.#fill();
     });
     this.#renderPerspective(content, id);
   }

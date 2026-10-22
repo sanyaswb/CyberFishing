@@ -1,3 +1,12 @@
+import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
+
+// The category colour with an alpha, for the translucent map fills.
+const fill = (category, alpha) => {
+  const value = Number.parseInt(ZONE_CATEGORY_COLORS[category].slice(1), 16);
+  return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+};
+const FILLS = Object.freeze({ castable: fill("castable", 0.15), snags: fill("snags", 0.3), collisions: fill("collisions", 0.4) });
+
 export class LocationDebugMapBuilder {
   #canvasFactory;
   #canvas = null;
@@ -32,15 +41,15 @@ export class LocationDebugMapBuilder {
   }
 
   #drawZones(surface, zones, locationsConfig, cellSize, width) {
-    if (locationsConfig.debugZones === false) return;
+    if (locationsConfig.debugZones !== true) return;
     if (locationsConfig.enableCastable !== false) {
-      this.#fillZones(surface, zones.castable, "rgba(0, 255, 0, 0.15)", cellSize, width);
+      this.#fillZones(surface, zones.castable, FILLS.castable, cellSize, width);
     }
     if (locationsConfig.enableSnags !== false) {
-      this.#fillZones(surface, zones.snags, "rgba(255, 255, 0, 0.3)", cellSize, width);
+      this.#fillZones(surface, zones.snags, FILLS.snags, cellSize, width);
     }
     if (locationsConfig.enableCollisions !== false) {
-      this.#fillZones(surface, zones.collisions, "rgba(255, 0, 0, 0.4)", cellSize, width);
+      this.#fillZones(surface, zones.collisions, FILLS.collisions, cellSize, width);
     }
   }
 
@@ -66,7 +75,7 @@ export class LocationDebugMapBuilder {
         const x = cell.x * cellSize;
         const y = cell.y * cellSize;
         if (locationsConfig.debugGrid) {
-          surface.strokeStyle = "rgba(255, 255, 255, 0.05)";
+          surface.strokeStyle = "rgba(255, 255, 255, 0.35)";
           surface.strokeRect(x, y, cellSize, cellSize);
         }
         if (locationsConfig.debugDepthText && cell.isWater) {

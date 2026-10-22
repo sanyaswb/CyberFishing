@@ -1,6 +1,5 @@
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
-import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
 import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
@@ -20,7 +19,6 @@ export class DevTools {
   #configValidation = null;
   #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
-  #locationSchema;
   #parameterAliases;
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
@@ -108,7 +106,6 @@ export class DevTools {
     this.#configRuntime = configRuntime;
     this.#configValidation = configValidation;
     this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
-    this.#locationSchema = new LocationDevToolsSchema();
     this.#parameterAliases = new DevToolsParameterAliasRegistry();
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
@@ -128,6 +125,11 @@ export class DevTools {
 
   mountScreenToggle(mountNode) {
     return this.#isDisposed ? () => {} : this.#ui.mountScreenToggle(mountNode);
+  }
+
+  // A config edit from another DEV tool (the zone editor's drag, spec 129) through the same validated path as the panel.
+  updateConfig(path, value) {
+    this.#updateConfigValue(path, value);
   }
 
   toggle() {
@@ -167,7 +169,6 @@ export class DevTools {
     this.#renderOverlaySection(body);
     this.#renderConfigSection(body);
     const debugContent = this.#renderConfigDebugSection(body);
-    this.#renderLocationDebugSection(debugContent);
     this.#renderSceneLayerSection(body);
     if (this.#zoneEditorState) new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
@@ -338,43 +339,6 @@ export class DevTools {
       this.#buildTree(this.#config.debug.inventorySplit, this.#createSectionWithCache("Split", inventory, splitPath), splitPath);
     }
     return debugContent;
-  }
-
-  #renderLocationDebugSection(debugContent) {
-    if (
-      !debugContent ||
-      typeof this.#config === "undefined" ||
-      !this.#config?.locations ||
-      !this.#locationSchema
-    ) {
-      return;
-    }
-
-    const rootPath = ["CONFIG", "locations"];
-    const rootContent = this.#createSectionWithCache(
-      this.#locationSchema.rootTitle,
-      debugContent,
-      rootPath,
-    );
-
-    for (const group of this.#locationSchema.getGroups()) {
-      const groupContent = this.#createSectionWithCache(
-        group.title,
-        rootContent,
-      );
-      for (const key of group.keys) {
-        const value = this.#config.locations[key];
-        if (typeof value !== "boolean") continue;
-        const path = [...rootPath, key];
-        this.#ui.createSwitcherRow(
-          this.#formatDevToolsKey(key, path),
-          value,
-          groupContent,
-          (newValue) => this.#updateConfigValue(path, newValue),
-          path,
-        );
-      }
-    }
   }
 
   #renderActiveFishSection(body) {

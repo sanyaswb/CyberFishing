@@ -9,8 +9,10 @@ export class LocationDebugRenderFrameBuilder {
   #debugCanvas = null;
   #lastDebugKey = "";
   #zoneEditor;
+  #zoneEditorTool;
 
-  constructor({ map, projector, config, debugMapBuilder, zoneEditor = null }) {
+  // zoneEditorTool: optional { sync() } kept in step with the editor's switches once per frame (the drag layer).
+  constructor({ map, projector, config, debugMapBuilder, zoneEditor = null, zoneEditorTool = null }) {
     if (!debugMapBuilder || typeof debugMapBuilder.build !== "function") {
       throw new TypeError(
         "LocationDebugRenderFrameBuilder requires debugMapBuilder",
@@ -21,14 +23,18 @@ export class LocationDebugRenderFrameBuilder {
     this.#config = config;
     this.#debugMapBuilder = debugMapBuilder;
     this.#zoneEditor = zoneEditor;
+    this.#zoneEditorTool = zoneEditorTool;
   }
 
-  buildInto(target, debugEnabled) {
+  // The location debug map follows its own switches (spec 129 D2): debugVisuals and at least one of debugZones /
+  // debugGrid / debugDepthText, also under the open zone editor; the global DEV debug flag no longer hides it.
+  buildInto(target) {
     this.#zoneEditor?.buildInto(target);
-    if (target.annotations) return;
+    this.#zoneEditorTool?.sync();
     const locations = this.#config.locations || {};
-    if (!debugEnabled || !locations.debugVisuals) return;
-    const debugCanvas = this.#getDebugCanvas(locations);
+    if (!locations.debugVisuals) return;
+    const mapShown = locations.debugZones === true || locations.debugGrid === true || locations.debugDepthText === true;
+    const debugCanvas = mapShown ? this.#getDebugCanvas(locations) : null;
     if (debugCanvas) {
       const position = this.#projector.virtualToScreen(
         0,
@@ -44,6 +50,7 @@ export class LocationDebugRenderFrameBuilder {
       target.debugImage.height = debugCanvas.height * scale;
       target.debugImage.alpha = locations.debugOpacity || 0.7;
     }
+    if (locations.debugZones !== true || target.annotations) return;
     const cellSize = locations.cellSize;
     const scale = this.#projector.getScale();
     const zones = this.#map.getDynamicZones();

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.14 - Zone Editor Tools
+
+- Spec 129 (TK-040…TK-043, DEV only): colour squares for zone categories; the location debug map (grid, depth numbers, zone fills) follows its own switches, also under the open editor, with a visible grid; "Locations / Zones" moved into the zone editor in six sections; the selected zone is outlined with handles over a map cell grid and its edges can be dragged with snapping to cells. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner check pending.
+
 ## v0.46.13 - Float Rocking Stage 2
 
 - TK-039 / spec 128 stage 2 (owner): right after landing the float rocks ×3 and settles over 1.5 s; the float's wind tilt (breeze and gusts, already reduced by its wind compensation) and the rain make it livelier, swelling smoothly (0.6 s); heavy ballast rocks half as much and 30% slower; the tempo follows the waves' speed / wavelength. The phase is integrated, so tempo edits never make the float jump; 30/60/144 FPS rock alike. New DevTools settings in canvas.water.floatRocking (landingBoost, landingSettleSec, windShare, rainShare, ballastCalm, ballastSlow, waveTempoShare); the DEV status row shows each multiplier. Visual only. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner phone check pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.5 - Mobile Float Below Inventory Selector
 
 - TK-031 / G-115: at mobile toolbar widths <=820 logical px, place the radial selector in a dedicated upper row and keep float/depth below, left of appearing chum/net actions. Preserve measured selector bounds, slider expansion, wide/classic layout and shared production/DEV/catalog composition. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner responsive acceptance pending.
-
-## v0.46.4 - Night Float Without Daylight Glow
-
-- TK-030 / G-114: night-float halo and additive tip light now follow the location's night lighting instead of the item variant alone. Daylight renders only the original red-tipped body in WebGL and Canvas, including after dawn on an existing cast; preserve DEV switches and all float geometry/gameplay. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual/phone acceptance pending.

@@ -170,6 +170,7 @@ export class DevToolsUI {
     parentElement.appendChild(row);
   }
 
+  // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).
   createSwitcherRow(
     labelStr,
     initialValue,
@@ -177,12 +178,13 @@ export class DevToolsUI {
     onChangeCallback,
     path = null,
     bindingPath = path,
+    { swatch = null } = {},
   ) {
     const row = document.createElement("div");
     row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
 
-    const label = this.#createLabelElement(labelStr, path);
+    const label = this.#createLabelElement(labelStr, path, swatch);
     row.appendChild(label);
 
     const inputElement = document.createElement("label");
@@ -257,11 +259,15 @@ export class DevToolsUI {
   }
 
   // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
-  createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null) {
+  // swatches: an optional { value: "#rrggbb" } map; the colour of the chosen value shows beside the drop-down.
+  createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null,
+    { swatches = null } = {}) {
     const row = document.createElement("div");
     row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
     row.appendChild(this.#createLabelElement(labelStr, path));
+    const swatch = swatches ? this.#createSwatch(swatches[currentValue]) : null;
+    if (swatch) row.appendChild(swatch);
     const select = document.createElement("select");
     select.className = "devtools__input devtools__input--text";
     select.setAttribute("aria-label", labelStr);
@@ -272,7 +278,10 @@ export class DevToolsUI {
       select.appendChild(element);
     }
     select.value = currentValue;
-    select.addEventListener("change", (event) => onChangeCallback(event.target.value));
+    select.addEventListener("change", (event) => {
+      if (swatch) swatch.style.setProperty("--devtools-swatch", swatches[event.target.value] || "transparent");
+      onChangeCallback(event.target.value);
+    });
     row.appendChild(select);
     parentElement.appendChild(row);
   }
@@ -312,7 +321,7 @@ export class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  #createLabelElement(rawLabel, path = null) {
+  #createLabelElement(rawLabel, path = null, swatch = null) {
     const labelText = String(rawLabel);
     const cleanLabelText = labelText.replace(/\s+\*$/u, "");
     const label = document.createElement("div");
@@ -320,12 +329,21 @@ export class DevToolsUI {
     this.#assignDevToolsPath(label, path);
     label.dataset.devtoolsKey = cleanLabelText;
     label.innerText = labelText;
+    if (swatch) label.prepend(this.#createSwatch(swatch));
     const tooltip = this.#getParameterTooltip(cleanLabelText);
     const pathText = this.#normalizeDevToolsPath(path);
     if (tooltip || pathText || labelText.length > 15) {
       label.title = [pathText, tooltip || labelText].filter(Boolean).join("\n");
     }
     return label;
+  }
+
+  #createSwatch(color) {
+    const swatch = document.createElement("span");
+    swatch.className = "devtools__swatch";
+    swatch.setAttribute("aria-hidden", "true");
+    swatch.style.setProperty("--devtools-swatch", color || "transparent");
+    return swatch;
   }
 
   #assignDevToolsPath(element, path) {

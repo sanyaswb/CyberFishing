@@ -3,6 +3,16 @@
 Record each new development task from the owner in `tasks.md` before implementation. Keep completed
 implementation marked `[x]` separately from pending owner visual checks (owner instruction, 2026-10-22).
 
+Small tasks and large changes (owner instruction, 2026-10-22):
+- A **small task** (a fix, a control, a label, a contained change in one module or screen) is written as a `TK-NNN`
+  entry in `tasks.md`: what the owner asked, what was found, what will change, how it is checked, and the owner's
+  check. It is implemented directly from that entry.
+- A **large change** (a new or changed mechanic, a new input, render or data path, a change across several modules or
+  layers, a new DEV tool, anything that needs owner decisions) is developed through a specification first:
+  `specs/NNN-name/spec.md` with the problem, the decisions (owner questions marked), the model, the checks and the
+  owner's acceptance. `tasks.md` then lists its tasks, each referring to the spec, and the spec records what was
+  implemented. When unsure, treat the change as large.
+
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
 Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional

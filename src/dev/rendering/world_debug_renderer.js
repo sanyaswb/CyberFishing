@@ -52,12 +52,21 @@ export class WorldDebugRenderer {
 
   #renderAnnotations(model) {
     const surface = this.#surface;
+    if (model.cellLineCount) {
+      surface.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      surface.lineWidth = 1; surface.beginPath();
+      for (let i = 0; i < model.cellLineCount; i++) {
+        const l = model.cellLines[i];
+        surface.moveTo(l.x1, l.y1); surface.lineTo(l.x2, l.y2);
+      }
+      surface.stroke();
+    }
     for (let i = 0; i < model.rectCount; i++) {
       const r = model.rects[i];
       surface.strokeStyle = `#${r.color.toString(16).padStart(6, "0")}`;
-      surface.lineWidth = 1;
+      surface.lineWidth = r.lineWidth ?? 1;
       const alpha = surface.globalAlpha;
-      surface.globalAlpha = alpha * .12;
+      surface.globalAlpha = alpha * (r.fillAlpha ?? .12);
       surface.fillStyle = surface.strokeStyle;
       surface.fillRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha;

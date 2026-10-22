@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.13";
+export const CURRENT_PROJECT_VERSION = "0.46.14";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "float-rocking-stage-2",
+  codename: "zone-editor-tools",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "DEV zone editor: category colours, working debug grid/depth, one structured place, drag zone edges snapped to map cells",
     "Float rocking stage 2: livelier right after landing then settles, stronger with the float's wind tilt and the rain (smoothly), calmer and slower with heavy ballast, tempo follows the waves' speed / wavelength without jumps",
     "Simpler float rocking: slow unrelated sines whose strength follows the water amplitude (bobPx, swayPx, lyingTurnDeg, periodSec); own switch; DevTools scene section shows its live status",
     "The float rocks on the water's waves (same pattern and settings as the water): standing bobs and sways a little, lying bobs and tilts about its middle; DevTools canvas.water.floatRocking",

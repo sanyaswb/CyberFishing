@@ -273,6 +273,7 @@ export class GameRenderComposition {
           config,
           debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
           getWaterMetric: appPorts.getWaterMetric,
+          canvasMetrics,
         }], ["buildInto"],
       ),
     });

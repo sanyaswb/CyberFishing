@@ -30,6 +30,7 @@ import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progr
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
 import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
+import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
 import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
 import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
@@ -112,6 +113,7 @@ async function startGame() {
   let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
+  let zoneEditorDrag = null;
   let compositionRoot = null;
   let catalogTimeSnapshot = null;
   const resumeGame = () => { void game?.start().catch((error) => windowTarget.console.error(error)); };
@@ -135,6 +137,7 @@ async function startGame() {
     browserLifecycle.removePagehideListener(cleanup);
     screens.dispose();
     pageOverlay.dispose();
+    zoneEditorDrag?.dispose();
     watchdog?.dispose();
     overlayRuntime?.dispose();
     frameProfiler.dispose();
@@ -198,8 +201,12 @@ async function startGame() {
       },
       createLocationDebugRenderFrameBuilder: options => {
         readLocationMetric = options.getWaterMetric;
+        zoneEditorDrag?.dispose();
+        zoneEditorDrag = new ZoneEditorDragController({ ...options, state: zoneEditorState, documentTarget,
+          mountNode: developmentMount, getCanvas: () => documentTarget.getElementById("gameCanvas"),
+          writeZones: (path, zones) => devTools?.updateConfig(path, zones) });
         return new LocationDebugRenderFrameBuilder({ ...options,
-          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }) });
+          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState }), zoneEditorTool: zoneEditorDrag });
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,

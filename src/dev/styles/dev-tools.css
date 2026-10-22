@@ -178,6 +178,19 @@
   color: #ccc;
 }
 
+/* A category colour square before a label or beside a select (spec 129: zone colours); JS sets --devtools-swatch. */
+.devtools__swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 2px;
+  background: var(--devtools-swatch, transparent);
+  vertical-align: middle;
+}
+
 .devtools__value {
   flex: 2 1 0;
   min-width: 0;
@@ -281,3 +294,17 @@
   border: 0;
   background: #081110;
 }
+
+/* Spec 129 D6: the zone editor's drag layer over the game canvas, under the DevTools panel; it exists only while
+   "drag editing" is on, so the game receives no pointer input meanwhile. */
+.zone-editor-drag-layer {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--ui-layer-panel) - 1);
+  background: transparent;
+  touch-action: none;
+  cursor: crosshair;
+}
+.zone-editor-drag-layer--x { cursor: ew-resize; }
+.zone-editor-drag-layer--y { cursor: ns-resize; }
+.zone-editor-drag-layer--xy { cursor: move; }

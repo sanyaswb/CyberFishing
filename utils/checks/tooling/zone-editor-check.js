@@ -39,7 +39,7 @@ const target = {};
 builder.buildInto(target); assert.equal(target.annotations, null); assert.equal(builder.rebuilds, 0);
 state.setFlag("enabled", true); builder.buildInto(target);
 const model = target.annotations, lines = model.lines, rects = model.rects;
-assert.equal(model.rectCount + model.overlay.rectCount, 4, "all configured zones, including physically disabled categories, are visible");
+assert.equal(model.rectCount + model.overlay.rectCount, 8, "all configured zones, including physically disabled categories, are visible (plus the selected zone's 4 handles)");
 assert(model.lineCount > 40 && model.lineCount <= 96 * 24 + 97, "grid work is bounded");
 const gridStep = metric.metersFromShore(lines[1].y1);
 assert(gridStep + 1e-8 >= state.spacingMeters, "adaptive rows retain the selected minimum metre spacing");
@@ -63,7 +63,7 @@ metric = lakeMetric({ ...config.locations.map.lake.waterProjection, maxMeters: 6
 builder.buildInto(target);
 assert.equal(builder.rebuilds, beforeTilt + 2, "distance changes invalidate the grid too");
 state.setFlag("background", false); builder.buildInto(target); assert.equal(target.backgroundHidden, true);
-state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 3);
+state.setCategory("collisions", false); builder.buildInto(target); assert.equal(model.rectCount + model.overlay.rectCount, 7);
 assert.equal(config.locations.map.lake.zones.collisions.length, 1, "visibility never changes gameplay config");
 const beforeMove = builder.rebuilds, beforeOverlay = builder.overlayRebuilds;
 moving[0].x++; builder.buildInto(target); assert.equal(builder.rebuilds, beforeMove, "moving zones never rebuild the static grid");
@@ -262,4 +262,153 @@ refreshParent.replaceChildren();
 const refreshedNotice = controlUI.createInfoRow('After refresh', '2', refreshParent);
 assert.equal(refreshParent.contains(refreshedNotice), true, 'refresh never reuses a detached description');
 controlUI.dispose();
-console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing.");
+// Spec 129 (TK-040…TK-043): colours, selection, the map cell grid, the debug map's own switches, the editor's
+// structure and dragging the selected zone's edges.
+{
+  const { ZONE_CATEGORY_COLORS } = load("src/dev/location/zone_category_colors.js");
+  const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
+  const { LocationDebugRenderFrameBuilder } = load("src/dev/location/location_debug_render_frame_builder.js");
+  const { LocationDebugMapBuilder } = load("src/dev/location/location_debug_map_builder.js");
+  scale = 1; cameraX = 0; mapRevision++;
+  const lake = config.locations.map.lake;
+  lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
+  lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
+  state.setFlag("enabled", true); state.setFlag("grid", false);
+  for (const category of ["castable", "collisions", "snags", "dynamic"]) state.setCategory(category, true);
+
+  // TK-040: one colour table for the editor outlines (and the debug map, the swatches).
+  const geometry = {};
+  state.select("snags", 0); builder.buildInto(geometry);
+  const rects = geometry.annotations.rects.slice(0, geometry.annotations.rectCount);
+  const snagColor = Number.parseInt(ZONE_CATEGORY_COLORS.snags.slice(1), 16);
+  assert(rects.some(rect => rect.color === Number.parseInt(ZONE_CATEGORY_COLORS.castable.slice(1), 16)), "castable uses the shared colour");
+  // TK-043 (D4): the selected zone is outlined thicker with four filled corner handles.
+  const selected = rects.filter(rect => rect.color === snagColor && rect.lineWidth === 3);
+  const handles = rects.filter(rect => rect.color === snagColor && rect.fillAlpha === 0.9);
+  assert(selected.length === 1 && selected[0].x === 160 && selected[0].y === 320 && handles.length === 4,
+    "the selected zone is outlined with handles");
+  assert(rects.filter(rect => rect.lineWidth === 3).length === 1, "only the selected zone is outlined");
+  // D5: the map cell grid (1000 / 40 = 25 cells: 26 lines per axis); off draws none; unchanged frames reuse it.
+  assert.equal(geometry.annotations.cellLineCount, 52, "the map's cell lines");
+  const before = builder.rebuilds;
+  builder.buildInto(geometry); assert.equal(builder.rebuilds, before, "an unchanged cell grid is not rebuilt");
+  state.setFlag("cellGrid", false); builder.buildInto(geometry);
+  assert.equal(geometry.annotations.cellLineCount, 0, "the cell grid switch hides it");
+  state.setFlag("cellGrid", true);
+
+  // TK-041 (D2): the debug map follows its own switches, also under the open editor and without the DEV debug flag.
+  let builds = 0;
+  const debugMap = { build: () => { builds++; return { width: 1000, height: 1000 }; } };
+  const debugMapFrame = new LocationDebugRenderFrameBuilder({ map: { ...map, getDynamicZones: () => [{ x: 1, y: 1, w: 1, h: 1 }] },
+    projector, config, debugMapBuilder: debugMap, zoneEditor: builder });
+  const debugTarget = () => ({ debugImage: { visible: false }, dynamicZones: { count: 0, acquire() { this.count++; return {}; } } });
+  const locations = config.locations;
+  Object.assign(locations, { debugVisuals: true, debugZones: false, debugGrid: false, debugDepthText: false });
+  let frame = debugTarget(); debugMapFrame.buildInto(frame, false);
+  assert(frame.debugImage.visible === false && builds === 0, "with every map switch off nothing is built");
+  for (const key of ["debugGrid", "debugDepthText", "debugZones"]) {
+    Object.assign(locations, { debugGrid: false, debugDepthText: false, debugZones: false, [key]: true });
+    frame = debugTarget(); debugMapFrame.buildInto(frame, false);
+    assert.equal(frame.debugImage.visible, true, `${key} shows the map without the DEV debug flag and under the editor`);
+  }
+  assert.equal(frame.dynamicZones.count, 0, "moving zones stay off while the editor draws its own");
+  state.setFlag("enabled", false); frame = debugTarget(); debugMapFrame.buildInto(frame, false);
+  assert.equal(frame.dynamicZones.count, 1, "moving zones follow debugZones without the editor");
+  locations.debugVisuals = false; frame = debugTarget(); debugMapFrame.buildInto(frame, false);
+  assert.equal(frame.debugImage.visible, false, "debugVisuals is still the master switch");
+  locations.debugVisuals = true; state.setFlag("enabled", true);
+  // The map draws a visible grid (35 %) and the depth numbers.
+  const strokes = [], texts = [];
+  const surface = { canvas: { width: 1000, height: 1000 }, clearRect() {}, fillRect() {}, strokeRect() { strokes.push(this.strokeStyle); },
+    fillText: (text) => texts.push(text) };
+  const realMap = new LocationDebugMapBuilder({ canvasFactory: { createSurface: () => surface } });
+  const cells = [[{ x: 0, y: 0, isWater: true, depth: 2.5 }]];
+  realMap.build({ map: { getLocationZones: () => ({}), getGrid: () => cells, getCols: () => 1, getRows: () => 1 },
+    locationsConfig: { ...locations, debugGrid: true, debugDepthText: true } });
+  assert(strokes[0] === "rgba(255, 255, 255, 0.35)" && texts[0] === "2.5", "grid lines are visible and depths are written");
+  Object.assign(locations, { debugZones: false, debugGrid: false, debugDepthText: false });
+
+  // TK-042 (D3): one structured place; switches keep their config paths and appear once.
+  const sections = [], switches = new Map();
+  let structureDone = false;
+  const structureUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createInputRow() {}, createButtonRow() {},
+    createSelectRow(label, options, value, parent, callback, path, extra) { switches.set(label, { swatches: extra?.swatches }); },
+    createSwitcherRow(label, value, parent, callback, path, bindingPath, extra) {
+      const key = path ? path.join(".") : `${parent.label}/${label}`;
+      // A drag's refresh rebuilds the geometry rows later; during the first render every switch appears once.
+      assert(structureDone || !switches.has(key), `one control per switch: ${key}`);
+      switches.set(key, { parent: parent.label, swatch: extra?.swatch, callback });
+    } };
+  new ZoneEditorSection({ ui: structureUi, state, config, updateConfig: (path, value) => { let node = config;
+    for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
+  createSection: (label, parent) => { const section = { label, parent: parent?.label, replaceChildren() {} }; sections.push(section); return section; },
+  renderTree() {}, getWaterMetric: () => metric, createWaterMetric: () => metric }).render({});
+  structureDone = true;
+  assert.deepEqual(sections.slice(0, 7).map(section => section.label), ["🗺️ РЕДАКТОР ЗОН", "Редактор", "Категорії в редакторі",
+    "Зони в грі", "Оверлеї гри", "Налагоджувальна карта", "Геометрія й перспектива"], "the editor's sections in order");
+  for (const key of ["enableCastable", "enableCollisions", "enableSnags", "enableDynamicZones"]) {
+    assert.equal(switches.get(`CONFIG.locations.${key}`).parent, "Зони в грі");
+  }
+  assert.equal(switches.get("CONFIG.locations.enableSnags").swatch, ZONE_CATEGORY_COLORS.snags, "gameplay zone switches carry the colour");
+  for (const key of ["debugVisuals", "debugZones", "debugGrid", "debugDepthText"]) {
+    assert.equal(switches.get(`CONFIG.locations.${key}`).parent, "Налагоджувальна карта");
+  }
+  assert.equal(switches.get("CONFIG.locations.showChumZones").parent, "Оверлеї гри");
+  assert.equal(switches.get("Категорії в редакторі/Зачепи · жовтий").swatch, ZONE_CATEGORY_COLORS.snags, "editor categories carry the colour");
+  assert.equal(switches.get("Категорія зони").swatches, ZONE_CATEGORY_COLORS, "the category select shows the colour");
+  switches.get("CONFIG.locations.debugGrid").callback(true);
+  assert.equal(locations.debugGrid, true, "the moved switch still writes CONFIG.locations.debugGrid");
+  locations.debugGrid = false;
+
+  // TK-043 (D6): drag the selected zone's edges, snapped to cells, through one config write per cell.
+  const makeElement = () => { const listeners = new Map(), classes = new Set();
+    return { listeners, classes, removed: false, addEventListener: (type, fn) => listeners.set(type, fn),
+      removeEventListener: (type) => listeners.delete(type), remove() { this.removed = true; },
+      setPointerCapture() {}, releasePointerCapture() {},
+      classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) } }; };
+  const mounted = [], writes = [];
+  let edited = 0;
+  const unsubscribe = state.subscribeZonesEdited(() => edited++);
+  const drag = new ZoneEditorDragController({ state, map, projector, config, canvasMetrics: { width: 1000, height: 1000 },
+    getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 }) }),
+    documentTarget: { createElement: makeElement }, mountNode: { prepend: (element) => mounted.push(element) },
+    writeZones: (path, zones) => { writes.push({ path: path.join("."), zones });
+      lake.zones[path.at(-1)] = zones; } });
+  drag.sync(); assert.equal(drag.active, false, "no layer without drag editing");
+  state.setFlag("dragEdit", true); drag.sync();
+  const layer = mounted[0];
+  assert(drag.active && layer && layer.listeners.has("pointerdown"), "drag editing puts a layer over the canvas");
+  const pointer = (type, x, y, id = 1) => { let prevented = false;
+    layer.listeners.get(type)({ clientX: x / 2, clientY: y / 2, pointerId: id, preventDefault: () => { prevented = true; } });
+    return prevented; };
+  state.select("castable", 0);
+  assert.equal(pointer("pointerdown", 500, 500), false, "inside the zone, away from its edges, nothing is taken");
+  pointer("pointermove", 1000, 500);
+  assert(layer.classes.has("zone-editor-drag-layer--x"), "hovering an edge shows the resize cursor");
+  assert.equal(pointer("pointerdown", 1000, 500), true, "the right edge is taken");
+  pointer("pointermove", 870, 500);
+  assert.deepEqual(writes.map(write => [write.path, write.zones[0].w]), [["CONFIG.locations.map.lake.zones.castable", 22]],
+    "the edge snaps to the nearest cell (870 px -> 22 cells)");
+  pointer("pointermove", 875, 500);
+  assert.equal(writes.length, 1, "no write while the snapped cell stays the same");
+  pointer("pointermove", -200, 500);
+  assert.equal(lake.zones.castable[0].w, 1, "a zone keeps at least one cell");
+  pointer("pointerup", -200, 500);
+  assert.equal(edited, 1, "releasing tells the section to refresh its rows");
+  lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25, id: "keep" }];
+  assert.equal(pointer("pointerdown", 0, 0), true, "a corner is taken");
+  pointer("pointermove", 85, 125);
+  assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 23, h: 22, id: "keep" }),
+    "a corner moves two edges; other fields stay");
+  pointer("pointerup", 85, 125);
+  lake.zones.castable = [{ x: 0, y: 2, w: 1, h: 3, adaptiveX: true }];
+  assert.equal(pointer("pointerdown", 0, 100), false, "an adaptive-width zone has no side edges");
+  assert.equal(pointer("pointerdown", 500, 200), true, "its bottom edge is taken");
+  pointer("pointermove", 500, 400); pointer("pointerup", 500, 400);
+  assert.deepEqual([lake.zones.castable[0].y, lake.zones.castable[0].h], [2, 8], "the bottom edge follows the cells");
+  state.setFlag("dragEdit", false); drag.sync();
+  assert(layer.removed && !drag.active, "switching drag editing off removes the layer");
+  unsubscribe(); drag.dispose(); state.setFlag("enabled", false);
+}
+
+console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 colours, selection outline, map cell grid, debug map switches, structure and edge dragging with cell snap.");

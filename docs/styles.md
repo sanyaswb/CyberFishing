@@ -19,8 +19,11 @@ preserves local expansion across refresh and rejects detached groups; editable c
 parent and keep their bindings. Section titles are semantic buttons with `aria-expanded`. Hover/press on action
 buttons changes only the background; keyboard focus keeps its outline. No polling or new global state.
 
-DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches; it adds no markup
-or stylesheet. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
+DEV's zone editor (spec 110) composes existing `DevToolsUI` sections, rows, selects and switches. Spec 129 adds two DEV
+elements in `src/dev/styles/dev-tools.css`: `devtools__swatch` (a category colour square before a label or beside a
+select, colour from `--devtools-swatch`) and `zone-editor-drag-layer` (a transparent fixed layer under the DevTools
+panel while edge dragging is on; `--x`, `--y`, `--xy` cursor modifiers). The editor also holds the former
+"Locations / Zones" switches. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional
