@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.15";
+export const CURRENT_PROJECT_VERSION = "0.46.16";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "zone-editor-revision-2",
+  codename: "zone-defaults",
   updatedAt: "2026-10-22",
   notes: Object.freeze([
+    "TK-049: zone physics on by default, editor zone display off.",
     "DEV zone editor revision 2: one enable switch, zone lists by physics, cell grid and perspective sections",
     "DEV zone editor: category colours, working debug grid/depth, one structured place, drag zone edges snapped to map cells",
     "Float rocking stage 2: livelier right after landing then settles, stronger with the float's wind tilt and the rain (smoothly), calmer and slower with heavy ballast, tempo follows the waves' speed / wavelength without jumps",

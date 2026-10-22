@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.16 - Zone defaults
+
+- Zone physics of every category is on by default (obstacles, snags, moving fish school); the zone editor starts with zone areas and depth numbers hidden.
+
 ## v0.46.15 - Zone Editor Revision 2
 
 - Spec 129 Revision 2 (TK-044…TK-048, DEV only): one "Увімкнути" switch (zones, cell grid, dragging); per-category zone lists whose first switch is the zone's physics; the selected zone filled, others muted; "Сітка клітинок" (opacity sliders, line step, snap, cell size, depth numbers) and "Сітка перспективи" (show, projection physics, step, projection values) sections; old debug-map config keys removed. Full 66/66; game-cycle baseline unchanged. Owner check pending.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.7 - Centred Selector Fan on Compact Toolbars
 
 - TK-034: at toolbar widths <=820 logical px the radial selector stands centred in the bottom row without a reserve and opens a symmetric fan over its neighbours: half circle (half-disk central button, three 60° petals) or 120° arc (round central button, three 40° petals), switched live by CONFIG.ui.inventorySelector.compactShape. The landing net stands right of it, the depth control further right with its track opening rightwards; the chum and other actions stand left, balanced around the selector. While the fan is open the other actions fade and a press beside it only closes it. Wider toolbars keep the corner fan. Full 66/66 incl. Quick/Architecture; game-cycle baseline unchanged. Owner visual acceptance pending.
-
-## v0.46.6 - Selector Menu Icon and Shared Feedback
-
-- TK-032/033: selector sectors share the main toolbar button's background/accent states without the extra yellow thick border; keyboard focus keeps the toolbar info color. Replace the central suitcase with a symmetric four-square SVG menu and retain the original in asset-sources/ui/archive/inventory-suitcase-v0.46.5.svg outside runtime assets. Interaction geometry and gestures unchanged. Full 66/66 incl. Quick/Architecture; owner visual acceptance pending.

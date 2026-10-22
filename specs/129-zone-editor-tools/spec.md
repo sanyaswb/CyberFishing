@@ -149,3 +149,8 @@ Owner's corrections (TK-044…TK-048), DEV only:
   `LocationMap`; the schema accepts `waterProjection: null`.
 - Checks: `zone-editor` Revision 2 block, `config-runtime` (map flags), `config-schema` (null projection).
   Full 66/66, game-cycle unchanged.
+
+## TK-049 defaults (v0.46.16)
+
+Owner 2026-10-22: zone physics of every category is on by default (`CONFIG.locations.enable*` = true), the editor's
+"Показати зону" switches and the depth numbers start off. Gameplay entry G-117; game-cycle report unchanged.

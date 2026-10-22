@@ -212,9 +212,9 @@ export const CONFIG = {
   locations: {
     debugVisuals: true, // Головний вимикач оверлеїв гри (зони виважування, прицілювання тощо)
     enableCastable: true, // Зони, де можна закидати вудку
-    enableCollisions: false, // Колізії з землею (червоні зони) - забороняють закидати.
-    enableSnags: false, // Динамічні зони (наприклад, косяк риби)
-    enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
+    enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
+    enableSnags: true, // Зачепи (жовті зони)
+    enableDynamicZones: true, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true, // Відображення зон прикормки (жовті)
     showCatchZone: false, // Відображення синьої зони
     showLastDashZone: false, // Відображення фіолетової lastDash trigger zone

@@ -15,7 +15,7 @@ export class ZoneEditorState {
   depthOpacity = 0.7;
   cellLineStep = 1;
   snapCells = 1;
-  categories = { castable: true, collisions: true, snags: true, dynamic: true };
+  categories = { castable: false, collisions: false, snags: false, dynamic: false };
   selection = { category: "castable", index: 0 };
   #zoneListeners = new Set();
 

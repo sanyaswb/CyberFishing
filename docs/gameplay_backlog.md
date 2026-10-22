@@ -802,6 +802,12 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-117 Zone physics on by default (P2, done)
+Found: 2026-10-22, owner (TK-049, spec 129): the lake's obstacles, snags and moving fish school were authored but switched off by default.
+Expected: every zone category takes part in the game by default; the zone editor starts with the zone areas and depth numbers hidden.
+Resolution (v0.46.16): `CONFIG.locations.enableCollisions`, `enableSnags`, `enableDynamicZones` default to true (`enableCastable` already was). Production effect on the lake: casting into the 3x2-cell obstacle is refused, the 14x8-cell snag area on the right is active, and the moving x1.5 fish school is live. The zone editor's "Показати зону" switches start off; the depth numbers stay off.
+Evidence: game-cycle report unchanged (its world scenario sets all four flags explicitly; the fight scenarios use no zones); zone-editor check asserts the hidden defaults. Owner play check pending.
+
 ### G-067 DEV page does not start on a fresh browser profile (P2, done)
 Found: 2026-10-18, spec 103 stage 0 browser smoke (dev.html, v0.41.0; the same on the unchanged commit 4327ca8).
 Reproduce: clear the site data (or use a new browser profile), open dev.html.
