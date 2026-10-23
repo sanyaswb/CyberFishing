@@ -69,7 +69,7 @@ export class UiCatalogHouseExample {
     if (state !== "error") this.#view.announce(state === "long"
       ? "Довге повідомлення: прокрутіть текст, а з його початку потягніть униз для закриття. ".repeat(30)
       : "Коротке повідомлення знизу. Потягніть униз або натисніть ручку.");
-    this.#status.textContent = "Угору — назви всіх трьох кнопок. Натискання відкриває розділ; мініатюри перемикають плашки. Свайп униз по фону або верхня ручка вниз — закриття. Hover діє лише на desktop.";
+    this.#status.textContent = "";
   }
   setValue(value) {
     this.#value = Math.max(0, Math.min(100, Number(value) || 0));

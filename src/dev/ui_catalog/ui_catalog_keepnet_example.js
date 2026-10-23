@@ -24,7 +24,7 @@ export class UiCatalogKeepnetExample {
       this.#illustrationSource = image.src;
       image.src = illustrations[state];
     }
-    this.#status.textContent = "Відкрийте вид риби, натисніть «Відпустити» для підтвердження. Escape закриває підказку, підтвердження, потім деталі.";
+    this.#status.textContent = "";
     this.#surface.measure();
   }
   setValue(value) { this.#fixture.setValue(value); this.#ui.refresh(); }

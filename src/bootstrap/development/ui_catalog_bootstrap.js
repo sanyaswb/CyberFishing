@@ -48,7 +48,7 @@ import { SheetHeightController } from "../../platform/browser/dom/sheet_height_c
 import { HudRowSizer } from "../../platform/browser/dom/hud_row_sizer.js";
 import { UiSheetHandleRenderer } from "../../game/presentation/ui/ui_sheet_handle_renderer.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
-import { UI_CATALOG_DEFINITIONS, UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
+import { UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { UiCatalogPage } from "../../dev/ui_catalog/ui_catalog_page.js";
 import { UiCatalogDocumentScope } from "../../dev/ui_catalog/ui_catalog_document_scope.js";
 import { UiCatalogFrameScheduler } from "../../dev/ui_catalog/ui_catalog_frame_scheduler.js";
@@ -82,8 +82,11 @@ export function startUiCatalog() {
   const auto = new UiAutoSwitchRenderer({ domFactory: dom });
   const scopeFor = (root) => new UiCatalogDocumentScope({ documentRef, root, windowTarget });
   const warningTimers = { setTimeout: (callback, ms) => windowTarget.setTimeout(callback, ms), clearTimeout: (id) => windowTarget.clearTimeout(id) };
-  const page = new UiCatalogPage({ documentRef, mountNode: documentRef.getElementById("uiCatalogExamples"), definitions: UI_CATALOG_DEFINITIONS,
-    returnLink: documentRef.getElementById("uiCatalogReturn"),
+  const page = new UiCatalogPage({ documentRef, mountNode: documentRef.getElementById("uiCatalogExamples"),
+    tabsNode: documentRef.getElementById("uiCatalogTabs"), groups: UI_CATALOG_GROUPS, definitions: UI_CATALOG_DEFINITIONS,
+    labels: UI_CATALOG_LABELS, returnLink: documentRef.getElementById("uiCatalogReturn"),
+    // The open group is the URL hash, replaced in place so tabs add no history entries.
+    onGroupChange: (groupId) => windowTarget.history.replaceState(null, "", `${windowTarget.location.search}#${groupId}`),
     onReturn: hostWindow ? () => hostWindow.postMessage({ type: EMBEDDED_PAGE_RETURN_MESSAGE }, windowTarget.location.origin) : null,
     createSurface: (hostElement) => new UiSurfaceAdapter({ hostElement, documentRef, windowRef: windowTarget }),
     createExample: async (id, { surface, status }) => {
@@ -91,7 +94,7 @@ export function startUiCatalog() {
       const own = (resource) => { owned.push(resource); return resource; };
       try {
       if (id === "controls") return new UiCatalogControlsExample({ domFactory: dom, closeButtonRenderer: close, autoSwitchRenderer: auto, surface, status });
-      if (id === "meters") return new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer: meters, resourceMeterResolver, surface, status });
+      if (id === "meters") return new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer: meters, resourceMeterResolver, surface });
       if (id === "inventory-selector") {
         const scope = own(scopeFor(surface.mountRoot));
         const toolbar = own(new GameToolbar({ documentRef: scope, mountNode: surface.mountRoot }));
@@ -234,6 +237,6 @@ export function startUiCatalog() {
     } });
   const dispose = () => { abort.abort(); page.dispose(); windowTarget.removeEventListener("pagehide", dispose); };
   windowTarget.addEventListener("pagehide", dispose, { once: true });
-  void page.mount();
+  void page.mount(windowTarget.location.hash.slice(1));
   return { dispose };
 }

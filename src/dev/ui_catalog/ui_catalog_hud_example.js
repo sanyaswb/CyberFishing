@@ -66,6 +66,5 @@ export class UiCatalogHudExample {
       tension: { visible: true, ratio, value: `${Math.round(ratio * 100)}%`, pulse: 0, dragMarkerVisible: true, dragMarkerRatio: .67 },
       tackleStress: { visible: true, ratio: .34, label: "TACKLE STRESS", value: "34%" } });
     this.#canvas.setAttribute("aria-label", `HUD: натяг ${Math.round(ratio * 100)}%, контроль ${Math.round(ratio * 100)}%, хід вудилища 50%, навантаження 34%`);
-    this.#status.textContent = "Натяг читає реальний HUD gradient. Відкрийте глибину, використайте Arrow/Home/End, wheel або перетягування маркера.";
   }
 }

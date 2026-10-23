@@ -46,7 +46,7 @@ async function main() {
     import("../../../src/game/presentation/keepnet/keepnet_view_model.js"),
     import("../../../src/platform/browser/dom/inventory_dom_factory.js"),
   ]);
-  const [{ UI_CATALOG_DEFINITIONS }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
+  const [{ UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
     { UiCatalogKeepnetFixture }, { UiCatalogMetersExample }, { InventoryActionType }, { InventoryResourceMeterRenderer },
     { InventoryResourceMeterResolver }, { DegradationColorResolver }, { DEGRADATION_COLOR_CONFIG }, { KeepnetViewModel }, { InventoryDomFactory }] = imports;
   const families = new Set(UI_CATALOG_DEFINITIONS.flatMap((definition) => definition.families));
@@ -54,7 +54,13 @@ async function main() {
     assert(families.has(family), `FR-002 family missing: ${family}`);
   }
   assert.equal(new Set(UI_CATALOG_DEFINITIONS.map(({ id }) => id)).size, UI_CATALOG_DEFINITIONS.length);
+  const groupIds = UI_CATALOG_GROUPS.map(({ id }) => id);
+  assert.equal(new Set(groupIds).size, groupIds.length);
+  for (const id of groupIds) assert(UI_CATALOG_DEFINITIONS.some(({ group }) => group === id), `group without examples: ${id}`);
   for (const definition of UI_CATALOG_DEFINITIONS) {
+    assert(groupIds.includes(definition.group), `${definition.id}: unknown group ${definition.group}`);
+    assert(definition.size.width >= 120 && definition.size.height >= 48, `${definition.id}: default frame size`);
+    if (definition.reading) assert(definition.reading.max > definition.reading.min && definition.reading.unit, definition.id);
     assert(definition.states.some(([id]) => id === "normal"), definition.id);
     assert(definition.contract && definition.description, definition.id);
     for (const source of [...definition.sources, ...definition.styles]) assert(fs.existsSync(source), `${definition.id}: missing owner ${source}`);
@@ -124,27 +130,144 @@ async function main() {
   const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver: colors });
   const resourceMeterResolver = new InventoryResourceMeterResolver();
   const host = dom.element("div");
-  const example = new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer, resourceMeterResolver, surface: { mountRoot: host }, status: dom.element("p") });
+  const example = new UiCatalogMetersExample({ domFactory: dom, resourceMeterRenderer, resourceMeterResolver, surface: { mountRoot: host } });
   example.setState("normal");
-  for (const row of host.children) {
-    const [, resource, condition, occupancy] = row.children;
+  assert.equal(host.children.length, 1, "the meters card shows one row driven by its slider (spec 140 D5)");
+  for (const value of [0, 50, 100]) {
+    example.setValue(value);
+    const [resource, condition, occupancy] = host.children[0].children;
     const color = resource.style.getPropertyValue("--inventory-resource-color");
     assert.equal(condition.style.getPropertyValue("--inventory-resource-color"), color);
     assert.equal(occupancy.style.getPropertyValue("--inventory-resource-color"), color, "same remaining resource/free capacity uses one production palette");
   }
-  const last = host.children.at(-1); const resourceNode = last.children[1];
+  const last = host.children.at(-1); const resourceNode = last.children[0];
   example.setValue(-10);
-  assert.equal(last.children[1], resourceNode, "reading update keeps production meter node");
+  assert.equal(last.children[0], resourceNode, "reading update keeps production meter node");
   assert.equal(resourceNode.getAttribute("aria-valuenow"), "0");
   example.setValue(110); assert.equal(resourceNode.getAttribute("aria-valuenow"), "100");
   example.setState("missing"); assert(resourceNode.hidden, "missing reading is visibly unavailable");
   example.dispose(); assert.equal(host.children.length, 0);
 
   await checkHouseExample();
+  await checkGroupsAndCards(UiCatalogPage);
+  await checkFrameResizer();
 
   // Importing the entry's composition is side-effect-free until startUiCatalog.
   await import("../../../src/bootstrap/development/ui_catalog_bootstrap.js");
-  console.log("UI catalog passed: FR-002 coverage, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
+  console.log("UI catalog passed: FR-002 coverage, groups mounted once per tab, three-step readings, edge resizing within bounds, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
+}
+
+// Spec 140: tabs mount a group's cards once, readings have three positions and re-apply after a state change.
+async function checkGroupsAndCards(UiCatalogPage) {
+  const documentRef = new TestDocument();
+  const mountNode = documentRef.createElement("main");
+  const tabsNode = documentRef.createElement("nav");
+  const created = [], calls = [], disposed = [], groupsSeen = [];
+  let measures = 0;
+  const definitions = [
+    { id: "a", group: "one", name: "A", description: "a", families: [], states: [["normal", "N"], ["other", "O"]], size: { width: 320, height: 72 } },
+    { id: "b", group: "two", name: "B", description: "b", families: [], states: [["normal", "N"], ["other", "O"]], size: { width: 360, height: 400 },
+      reading: { min: 0, max: 600, unit: "с", label: "t" } },
+  ];
+  const page = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions,
+    labels: { stateLabel: "Стан", resizeWidth: "w", resizeHeight: "h", resizeBoth: "wh" },
+    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], onGroupChange: (id) => groupsSeen.push(id),
+    createSurface: () => ({ subscribe: () => () => {}, measure: () => {}, requestMeasure: () => { measures++; },
+      dispose: () => disposed.push("surface") }),
+    createExample: async (id) => {
+      created.push(id);
+      return { setState: (state) => calls.push([id, "state", state]), setValue: (value) => calls.push([id, "value", value]),
+        dispose: () => disposed.push(id) };
+    } });
+  await page.mount("two");
+  assert.deepEqual(created, ["b"], "only the opened group is mounted");
+  assert.deepEqual(groupsSeen, ["two"]);
+  const [groupOne, groupTwo] = mountNode.children;
+  assert.equal(groupOne.hidden, true);
+  assert.equal(groupTwo.hidden, false);
+  assert.deepEqual(calls, [["b", "state", "normal"], ["b", "value", 300]], "a reading starts in the middle and follows the state");
+  const card = groupTwo.children[0];
+  const [, select, range, output, size] = card.children[0].children;
+  assert.equal(range.step, "300");
+  assert.equal(range.min, "0");
+  assert.equal(range.max, "600");
+  assert.equal(output.textContent, "300 с");
+  assert.equal(size.textContent, "360 × 400");
+  calls.length = 0;
+  select.value = "other";
+  select.fire("change");
+  assert.deepEqual(calls, [["b", "state", "other"], ["b", "value", 300]], "a state change re-applies the slider value");
+  range.value = "600";
+  range.fire("input");
+  assert.equal(output.textContent, "600 с");
+  assert.deepEqual(calls.at(-1), ["b", "value", 600]);
+  const [tabOne, tabTwo] = tabsNode.children;
+  assert.equal(tabTwo.getAttribute("aria-selected"), "true");
+  tabOne.fire("click");
+  await page.selectGroup("one");
+  assert.equal(groupOne.hidden, false);
+  assert.equal(groupTwo.hidden, true);
+  tabTwo.fire("click");
+  await page.selectGroup("two");
+  assert.deepEqual(created, ["b", "a"], "returning to a group keeps its examples");
+  assert(measures >= 2, "a frame size change asks the surface to measure");
+  page.dispose();
+  page.dispose();
+  assert.deepEqual(disposed.filter((entry) => entry !== "surface").sort(), ["a", "b"]);
+  assert.equal(mountNode.children.length, 0);
+  assert.equal(tabsNode.children.length, 0);
+  const fallback = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions: [], groups: [{ id: "one", name: "One" }],
+    createSurface: () => null, createExample: async () => null });
+  await fallback.mount("unknown");
+  assert.equal(fallback.activeGroupId, "one", "an unknown hash opens the first group");
+  fallback.dispose();
+}
+
+// Spec 140 D3: edge handles resize only their axis within bounds, write only changes and release their listeners.
+async function checkFrameResizer() {
+  const { UiCatalogFrameResizer } = await import("../../../src/dev/ui_catalog/ui_catalog_frame_resizer.js");
+  const documentRef = new TestDocument();
+  const frame = documentRef.createElement("div");
+  const writes = [];
+  const setProperty = frame.style.setProperty;
+  frame.style.setProperty = (name, value) => { writes.push([name, value]); setProperty(name, value); };
+  const changes = [];
+  const resizer = new UiCatalogFrameResizer({ documentRef, frame, size: { width: 320, height: 72 }, getMaxWidth: () => 900,
+    labels: { resizeWidth: "w", resizeHeight: "h", resizeBoth: "wh" }, onChange: (size) => changes.push(size) });
+  assert.deepEqual(writes, [["--ui-catalog-frame-width", "320px"], ["--ui-catalog-frame-height", "72px"]]);
+  const [x, y, xy] = frame.children;
+  const drag = (handle, dx, dy) => {
+    handle.fire("pointerdown", { button: 0, pointerId: 1, clientX: 100, clientY: 100 });
+    handle.fire("pointermove", { pointerId: 1, clientX: 100 + dx, clientY: 100 + dy });
+    handle.fire("pointerup", { pointerId: 1 });
+  };
+  writes.length = 0;
+  drag(x, 80, 500);
+  assert.deepEqual(resizer.size, { width: 400, height: 72 }, "the right edge changes only the width");
+  assert.deepEqual(writes, [["--ui-catalog-frame-width", "400px"]]);
+  drag(y, -500, 40);
+  assert.deepEqual(resizer.size, { width: 400, height: 112 }, "the bottom edge changes only the height");
+  drag(xy, 2000, -500);
+  assert.deepEqual(resizer.size, { width: 900, height: 48 }, "the corner is bounded by the page width and the minimum height");
+  writes.length = 0;
+  xy.fire("pointermove", { pointerId: 1, clientX: 0, clientY: 0 });
+  assert.equal(writes.length, 0, "a move after release does nothing");
+  drag(xy, 0, 0);
+  assert.equal(writes.length, 0, "an unchanged size writes nothing");
+  xy.fire("pointerdown", { button: 2, pointerId: 2, clientX: 0, clientY: 0 });
+  xy.fire("pointermove", { pointerId: 2, clientX: -300, clientY: 0 });
+  assert.equal(writes.length, 0, "only the primary button drags");
+  const before = changes.length;
+  x.fire("keydown", { key: "ArrowLeft" });
+  y.fire("keydown", { key: "ArrowDown" });
+  x.fire("keydown", { key: "ArrowDown" });
+  assert.deepEqual(resizer.size, { width: 890, height: 58 });
+  assert.equal(changes.length, before + 2);
+  x.fire("dblclick");
+  assert.deepEqual(resizer.size, { width: 320, height: 72 }, "double click restores the default size");
+  resizer.dispose();
+  assert.equal(frame.children.length, 0);
+  assert([x, y, xy].every((handle) => [...handle.listeners.values()].every((set) => set.size === 0)));
 }
 
 // Parse the actual production shell into the existing deterministic DOM double.
