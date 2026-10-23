@@ -72,7 +72,20 @@
 }
 
 .ui-catalog__main { padding: 16px; }
-.ui-catalog__group { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+/* One open card, centred, under the open group's card tabs (spec 140 Revision 2). */
+.ui-catalog__group { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.ui-catalog__cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.ui-catalog__card-tab {
+  padding: 4px 10px;
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.18);
+  border-radius: 999px;
+  color: var(--ui-muted);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ui-catalog__card-tab--active { color: var(--ui-text); border-color: rgba(var(--ui-accent-rgb), 0.55); }
 
 .ui-catalog-card {
   display: grid;
@@ -99,16 +112,30 @@
 .ui-catalog-card__range { width: 72px; accent-color: var(--ui-accent); }
 .ui-catalog-card__value { min-width: 5ch; color: var(--ui-info); font-size: 12px; font-variant-numeric: tabular-nums; }
 .ui-catalog-card__size { color: var(--ui-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+/* The window; the stage inside is the surface at the resizable size. A cropped window takes one block's rectangle
+   and shifts the stage so only that block shows (UiCatalogBlockCrop). */
 .ui-catalog-card__frame {
   position: relative;
+  justify-self: center;
   width: var(--ui-catalog-frame-width, 320px);
   max-width: 100%;
-  height: var(--ui-catalog-frame-height, 240px);
+  height: var(--ui-catalog-frame-height, 640px);
   overflow: hidden;
   isolation: isolate;
   border-radius: var(--ui-radius-control);
   outline: 1px dashed rgba(var(--ui-accent-rgb), 0.22);
   background: rgba(0, 0, 0, 0.22);
+}
+.ui-catalog-card__frame--cropped {
+  width: var(--ui-catalog-crop-width, var(--ui-catalog-frame-width, 320px));
+  height: var(--ui-catalog-crop-height, var(--ui-catalog-frame-height, 640px));
+}
+.ui-catalog-card__stage {
+  position: absolute;
+  top: calc(-1 * var(--ui-catalog-crop-y, 0px));
+  left: calc(-1 * var(--ui-catalog-crop-x, 0px));
+  width: var(--ui-catalog-frame-width, 320px);
+  height: var(--ui-catalog-frame-height, 640px);
 }
 .ui-catalog-card__handle {
   position: absolute;
@@ -135,6 +162,7 @@
 .ui-catalog-card__status--error { color: var(--ui-danger); }
 .ui-catalog__back:focus-visible,
 .ui-catalog__tab:focus-visible,
+.ui-catalog__card-tab:focus-visible,
 .ui-catalog-card__select:focus-visible,
 .ui-catalog-card__range:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
 
@@ -150,17 +178,3 @@
 .ui-catalog-preview__clock { position: absolute; top: 300px; }
 .ui-catalog-preview__fullscreen { position: absolute; top: 300px; }
 .ui-catalog-preview__charges { position: absolute; top: 500px; bottom: auto; }
-
-/* The keepnet section's two halves, as the inventory places them. */
-.ui-catalog-preview__keepnet {
-  display: grid;
-  grid-template-columns: minmax(240px, .85fr) minmax(0, 1.9fr);
-  gap: 18px;
-  height: 100%;
-  padding: 12px;
-}
-
-@container ui-surface (max-width: 820px) {
-  .ui-catalog-preview__keepnet { grid-template-columns: minmax(0, 1fr); align-content: start; overflow-y: auto; }
-}
-.ui-catalog-preview__keepnet > .keepnet-section__help-text { grid-column: 1 / -1; }

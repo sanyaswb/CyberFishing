@@ -48,7 +48,7 @@ import { SheetHeightController } from "../../platform/browser/dom/sheet_height_c
 import { HudRowSizer } from "../../platform/browser/dom/hud_row_sizer.js";
 import { UiSheetHandleRenderer } from "../../game/presentation/ui/ui_sheet_handle_renderer.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
-import { UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
+import { UI_CATALOG_DEFINITIONS, UI_CATALOG_FRAME_SIZE, UI_CATALOG_GROUPS, UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { UiCatalogPage } from "../../dev/ui_catalog/ui_catalog_page.js";
 import { UiCatalogDocumentScope } from "../../dev/ui_catalog/ui_catalog_document_scope.js";
 import { UiCatalogFrameScheduler } from "../../dev/ui_catalog/ui_catalog_frame_scheduler.js";
@@ -57,7 +57,6 @@ import { UiCatalogMetersExample } from "../../dev/ui_catalog/ui_catalog_meters_e
 import { UiCatalogInventoryFixture } from "../../dev/ui_catalog/ui_catalog_inventory_fixture.js";
 import { UiCatalogInventoryExample } from "../../dev/ui_catalog/ui_catalog_inventory_example.js";
 import { UiCatalogKeepnetFixture } from "../../dev/ui_catalog/ui_catalog_keepnet_fixture.js";
-import { UiCatalogKeepnetExample } from "../../dev/ui_catalog/ui_catalog_keepnet_example.js";
 import { UiCatalogHouseExample } from "../../dev/ui_catalog/ui_catalog_house_example.js";
 import { UiCatalogHudExample } from "../../dev/ui_catalog/ui_catalog_hud_example.js";
 import { GameTimeClock } from "../../game/domain/time/game_time_clock.js";
@@ -82,14 +81,14 @@ export function startUiCatalog() {
   const auto = new UiAutoSwitchRenderer({ domFactory: dom });
   const scopeFor = (root) => new UiCatalogDocumentScope({ documentRef, root, windowTarget });
   const warningTimers = { setTimeout: (callback, ms) => windowTarget.setTimeout(callback, ms), clearTimeout: (id) => windowTarget.clearTimeout(id) };
-  const page = new UiCatalogPage({ documentRef, mountNode: documentRef.getElementById("uiCatalogExamples"),
+  const page = new UiCatalogPage({ documentRef, windowTarget, mountNode: documentRef.getElementById("uiCatalogExamples"),
     tabsNode: documentRef.getElementById("uiCatalogTabs"), groups: UI_CATALOG_GROUPS, definitions: UI_CATALOG_DEFINITIONS,
-    labels: UI_CATALOG_LABELS, returnLink: documentRef.getElementById("uiCatalogReturn"),
-    // The open group is the URL hash, replaced in place so tabs add no history entries.
-    onGroupChange: (groupId) => windowTarget.history.replaceState(null, "", `${windowTarget.location.search}#${groupId}`),
+    labels: UI_CATALOG_LABELS, frameSize: UI_CATALOG_FRAME_SIZE, returnLink: documentRef.getElementById("uiCatalogReturn"),
+    // The open group and card are the URL hash, replaced in place so tabs add no history entries.
+    onSelect: (groupId, cardId) => windowTarget.history.replaceState(null, "", `${windowTarget.location.search}#${groupId}/${cardId}`),
     onReturn: hostWindow ? () => hostWindow.postMessage({ type: EMBEDDED_PAGE_RETURN_MESSAGE }, windowTarget.location.origin) : null,
     createSurface: (hostElement) => new UiSurfaceAdapter({ hostElement, documentRef, windowRef: windowTarget }),
-    createExample: async (id, { surface, status }) => {
+    createExample: async (id, { surface, status, definition }) => {
       const owned = [];
       const own = (resource) => { owned.push(resource); return resource; };
       try {
@@ -115,26 +114,17 @@ export function startUiCatalog() {
         return new UiCatalogSelectorExample({ selector, config, documentScope: scope, inventoryUI: ui, owned });
       }
       if (id === "inventory") {
+        // The whole inventory with its keepnet section, as in the game (spec 140 R2-D4); block cards crop it.
         const scope = own(scopeFor(surface.mountRoot));
         const fixture = new UiCatalogInventoryFixture({ actionTypes: InventoryActionType, rarityVisualResolver: rarity });
+        const keepnetFixture = new UiCatalogKeepnetFixture();
         const ui = own(InventoryUiBootstrap.create({ autoMount: false, documentRef: scope, mountNode: surface.mountRoot, uiSurface: surface,
           facade: fixture, degradationColorResolver: colors, rarityVisualResolver: rarity,
           rarityDomAdapter: new ItemRarityDomAdapter({ visualResolver: rarity }), warningTimers }));
-        return new UiCatalogInventoryExample({ fixture, ui, documentScope: scope, surface, status });
-      }
-      if (id === "keepnet") {
-        const scope = own(scopeFor(surface.mountRoot));
-        const fixture = new UiCatalogKeepnetFixture();
-        // The production section view without an inventory: the catalog places its two halves side by side.
-        let ui;
-        ui = own(InventoryUiBootstrap.createKeepnetView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
-          uiSurface: surface, degradationColorResolver: colors,
-          openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen) }));
-        const layout = dom.element("div", "ui-catalog-preview__keepnet");
-        layout.append(ui.helpNode, ui.summaryNode, ui.contentNode);
-        surface.mountRoot.appendChild(layout);
-        own({ dispose: () => layout.remove() });
-        return new UiCatalogKeepnetExample({ fixture, ui, documentScope: scope, surface, status });
+        return new UiCatalogInventoryExample({ fixture, keepnetFixture, ui, documentScope: scope, surface, status,
+          section: definition?.section ?? null,
+          attachKeepnet: () => InventoryUiBootstrap.createKeepnet({ documentRef: scope, liveBait: keepnetFixture, inventoryUI: ui,
+            degradationColorResolver: colors, uiSurface: surface, buttonMountNode: surface.mountRoot }) });
       }
       if (id === "house") {
         // The House screen markup (spec 084); no production composition, timers, clock or storage run here.

@@ -46,7 +46,7 @@ async function main() {
     import("../../../src/game/presentation/keepnet/keepnet_view_model.js"),
     import("../../../src/platform/browser/dom/inventory_dom_factory.js"),
   ]);
-  const [{ UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
+  const [{ UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_FRAME_SIZE }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
     { UiCatalogKeepnetFixture }, { UiCatalogMetersExample }, { InventoryActionType }, { InventoryResourceMeterRenderer },
     { InventoryResourceMeterResolver }, { DegradationColorResolver }, { DEGRADATION_COLOR_CONFIG }, { KeepnetViewModel }, { InventoryDomFactory }] = imports;
   const families = new Set(UI_CATALOG_DEFINITIONS.flatMap((definition) => definition.families));
@@ -59,7 +59,6 @@ async function main() {
   for (const id of groupIds) assert(UI_CATALOG_DEFINITIONS.some(({ group }) => group === id), `group without examples: ${id}`);
   for (const definition of UI_CATALOG_DEFINITIONS) {
     assert(groupIds.includes(definition.group), `${definition.id}: unknown group ${definition.group}`);
-    assert(definition.size.width >= 120 && definition.size.height >= 48, `${definition.id}: default frame size`);
     if (definition.reading) assert(definition.reading.max > definition.reading.min && definition.reading.unit, definition.id);
     assert(definition.states.some(([id]) => id === "normal"), definition.id);
     assert(definition.states.length >= 3 && definition.states.length <= 5, `${definition.id}: 3-5 main states (spec 140 Q2)`);
@@ -150,50 +149,65 @@ async function main() {
   example.dispose(); assert.equal(host.children.length, 0);
 
   await checkHouseExample();
-  await checkGroupsAndCards(UiCatalogPage);
+  assert.deepEqual({ ...UI_CATALOG_FRAME_SIZE }, { width: 320, height: 640 }, "owner: windows start at 320 x 640");
+  const inventoryCards = UI_CATALOG_DEFINITIONS.filter(({ group }) => group === "inventory");
+  assert(inventoryCards.every(({ id, example }) => (example ?? id) === "inventory"), "every inventory card is the whole inventory");
+  assert.equal(inventoryCards.find(({ id }) => id === "keepnet")?.section, "keepnet", "the keepnet is a section of the inventory");
+  assert.deepEqual(inventoryCards.filter(({ focus }) => focus).map(({ focus }) => focus), [".inventory-main__sidebar",
+    ".inventory-section-tabs__list", ".inventory-list-panel__controls", ".inventory-list-panel__items", ".inventory-header"]);
+  assert(!fs.existsSync("src/dev/ui_catalog/ui_catalog_keepnet_example.js"), "no standalone keepnet example");
+  await checkGroupsAndCards(UiCatalogPage, UI_CATALOG_FRAME_SIZE);
+  await checkBlockCrop();
+  await checkInventoryWithKeepnet();
   await checkFrameResizer();
 
   // Importing the entry's composition is side-effect-free until startUiCatalog.
   await import("../../../src/bootstrap/development/ui_catalog_bootstrap.js");
-  console.log("UI catalog passed: FR-002 coverage, groups mounted once per tab, three-step readings, edge resizing within bounds, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
+  console.log("UI catalog passed: FR-002 coverage, two tab levels with one card at a time, inventory blocks cropped from the whole inventory with its keepnet, three-step readings, edge resizing within bounds, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
 }
 
-// Spec 140: tabs mount a group's cards once, readings have three positions and re-apply after a state change.
-async function checkGroupsAndCards(UiCatalogPage) {
+// Spec 140: two tab levels show one card at a time, mounted once; readings have three positions and re-apply after a
+// state change; every window starts at the shared frame size; a card names its example factory.
+async function checkGroupsAndCards(UiCatalogPage, UI_CATALOG_FRAME_SIZE) {
   const documentRef = new TestDocument();
   const mountNode = documentRef.createElement("main");
   const tabsNode = documentRef.createElement("nav");
-  const created = [], calls = [], disposed = [], groupsSeen = [];
+  const created = [], calls = [], disposed = [], selections = [];
   let measures = 0;
   const definitions = [
-    { id: "a", group: "one", name: "A", description: "a", families: [], states: [["normal", "N"], ["other", "O"]], size: { width: 320, height: 72 } },
-    { id: "b", group: "two", name: "B", description: "b", families: [], states: [["normal", "N"], ["other", "O"]], size: { width: 360, height: 400 },
+    { id: "a", group: "one", name: "A", description: "a", families: [], states: [["normal", "N"], ["other", "O"]] },
+    { id: "b", group: "two", name: "B", description: "b", families: [], states: [["normal", "N"], ["other", "O"]],
       reading: { min: 0, max: 600, unit: "с", label: "t" } },
+    { id: "c", group: "two", name: "C", description: "c", families: [], example: "b", section: "keepnet",
+      states: [["normal", "N"]] },
   ];
-  const page = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions,
+  const page = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions, frameSize: UI_CATALOG_FRAME_SIZE,
     labels: { stateLabel: "Стан", resizeWidth: "w", resizeHeight: "h", resizeBoth: "wh" },
-    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], onGroupChange: (id) => groupsSeen.push(id),
+    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], onSelect: (group, card) => selections.push(`${group}/${card}`),
     createSurface: () => ({ subscribe: () => () => {}, measure: () => {}, requestMeasure: () => { measures++; },
       dispose: () => disposed.push("surface") }),
-    createExample: async (id) => {
-      created.push(id);
-      return { setState: (state) => calls.push([id, "state", state]), setValue: (value) => calls.push([id, "value", value]),
-        dispose: () => disposed.push(id) };
+    createExample: async (id, { definition }) => {
+      created.push(`${id}:${definition.id}`);
+      return { setState: (state) => calls.push([definition.id, "state", state]),
+        setValue: (value) => calls.push([definition.id, "value", value]), dispose: () => disposed.push(definition.id) };
     } });
   await page.mount("two");
-  assert.deepEqual(created, ["b"], "only the opened group is mounted");
-  assert.deepEqual(groupsSeen, ["two"]);
+  assert.deepEqual(created, ["b:b"], "only the first card of the opened group is mounted");
+  assert.deepEqual(selections, ["two/b"]);
   const [groupOne, groupTwo] = mountNode.children;
   assert.equal(groupOne.hidden, true);
   assert.equal(groupTwo.hidden, false);
+  const [cardTabsOne] = groupOne.children;
+  const [cardTabs, cardB] = groupTwo.children;
+  assert.equal(cardTabsOne.hidden, true, "a group with one card has no card tabs");
+  assert.equal(cardTabs.hidden, false);
   assert.deepEqual(calls, [["b", "state", "normal"], ["b", "value", 300]], "a reading starts in the middle and follows the state");
-  const card = groupTwo.children[0];
-  const [, select, range, output, size] = card.children[0].children;
+  const [, select, range, output, size] = cardB.children[0].children;
   assert.equal(range.step, "300");
   assert.equal(range.min, "0");
   assert.equal(range.max, "600");
   assert.equal(output.textContent, "300 с");
-  assert.equal(size.textContent, "360 × 400");
+  assert.equal(size.textContent, `${UI_CATALOG_FRAME_SIZE.width} × ${UI_CATALOG_FRAME_SIZE.height}`, "windows start at 320 x 640");
   calls.length = 0;
   select.value = "other";
   select.fire("change");
@@ -202,26 +216,131 @@ async function checkGroupsAndCards(UiCatalogPage) {
   range.fire("input");
   assert.equal(output.textContent, "600 с");
   assert.deepEqual(calls.at(-1), ["b", "value", 600]);
+  const [, tabC] = cardTabs.children;
+  tabC.fire("click");
+  await page.select("two", "c");
+  const cardC = groupTwo.children[2];
+  assert.equal(cardB.hidden, true, "only the chosen card is on the page");
+  assert.equal(cardC.hidden, false);
+  assert.equal(tabC.getAttribute("aria-selected"), "true");
+  assert.deepEqual(created, ["b:b", "b:c"], "a card names its example factory and passes its definition");
   const [tabOne, tabTwo] = tabsNode.children;
-  assert.equal(tabTwo.getAttribute("aria-selected"), "true");
   tabOne.fire("click");
-  await page.selectGroup("one");
+  await page.select("one");
   assert.equal(groupOne.hidden, false);
   assert.equal(groupTwo.hidden, true);
   tabTwo.fire("click");
-  await page.selectGroup("two");
-  assert.deepEqual(created, ["b", "a"], "returning to a group keeps its examples");
-  assert(measures >= 2, "a frame size change asks the surface to measure");
+  await page.select("two");
+  assert.equal(page.activeCardId, "c", "a group reopens at its last card");
+  assert.deepEqual(created, ["b:b", "b:c", "a:a"], "returning to a card keeps its example");
+  assert(measures >= 3, "a frame size change asks the surface to measure");
   page.dispose();
   page.dispose();
-  assert.deepEqual(disposed.filter((entry) => entry !== "surface").sort(), ["a", "b"]);
+  assert.deepEqual(disposed.filter((entry) => entry !== "surface").sort(), ["a", "b", "c"]);
   assert.equal(mountNode.children.length, 0);
   assert.equal(tabsNode.children.length, 0);
-  const fallback = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions: [], groups: [{ id: "one", name: "One" }],
-    createSurface: () => null, createExample: async () => null });
-  await fallback.mount("unknown");
+  const fallback = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions: [definitions[0]],
+    groups: [{ id: "one", name: "One" }], createSurface: () => ({ subscribe: () => () => {}, measure() {}, requestMeasure() {}, dispose() {} }),
+    createExample: async () => ({ setState() {}, dispose() {} }) });
+  await fallback.mount("unknown/none");
   assert.equal(fallback.activeGroupId, "one", "an unknown hash opens the first group");
+  assert.equal(fallback.activeCardId, "a");
   fallback.dispose();
+}
+
+// Spec 140 R2-D4: the keepnet card is the production inventory opened at its keepnet section, with its own states.
+async function checkInventoryWithKeepnet() {
+  const { InventoryUiBootstrap } = await import("../../../src/bootstrap/production/inventory_ui_bootstrap.js");
+  const { UiCatalogInventoryExample } = await import("../../../src/dev/ui_catalog/ui_catalog_inventory_example.js");
+  const { UiCatalogInventoryFixture } = await import("../../../src/dev/ui_catalog/ui_catalog_inventory_fixture.js");
+  const { UiCatalogKeepnetFixture } = await import("../../../src/dev/ui_catalog/ui_catalog_keepnet_fixture.js");
+  const { InventoryActionType } = await import("../../../src/game/presentation/inventory/inventory_action_type.js");
+  const { DegradationColorResolver } = await import("../../../src/game/presentation/styles/degradation_color_resolver.js");
+  const { DEGRADATION_COLOR_CONFIG } = await import("../../../src/game/presentation/visual/degradation_color_config.js");
+  const documentRef = new TestDocument();
+  const mountRoot = documentRef.createElement("div");
+  documentRef.body.append(mountRoot);
+  mountRoot.querySelectorAll = (selector) => documentRef.all((node) => selector.split(",").some((part) =>
+    node.classList.contains(part.trim().slice(1))), mountRoot);
+  const surface = { mountRoot, portalRoot: mountRoot, measure() {}, subscribe: () => () => {},
+    getMetrics: () => ({ valid: true, logicalWidth: 320, logicalHeight: 640, scale: 1, safeArea: { top: 0, right: 0, bottom: 0, left: 0 } }),
+    physicalToLogicalDelta: (value) => value, physicalToLogicalRect: (value) => value };
+  const colors = new DegradationColorResolver({ configProvider: () => DEGRADATION_COLOR_CONFIG });
+  const rarity = { resolve: () => ({ cssColor: "red" }) };
+  const fixture = new UiCatalogInventoryFixture({ actionTypes: InventoryActionType, rarityVisualResolver: rarity });
+  const keepnetFixture = new UiCatalogKeepnetFixture();
+  const ui = InventoryUiBootstrap.create({ autoMount: false, documentRef, mountNode: mountRoot, uiSurface: surface, facade: fixture,
+    degradationColorResolver: colors, rarityVisualResolver: rarity, warningTimers: { setTimeout: () => 0, clearTimeout() {} } });
+  const example = new UiCatalogInventoryExample({ fixture, keepnetFixture, ui, documentScope: { dispose() {} }, surface,
+    status: documentRef.createElement("p"), section: "keepnet",
+    attachKeepnet: () => InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: keepnetFixture, inventoryUI: ui,
+      degradationColorResolver: colors, uiSurface: surface, buttonMountNode: mountRoot }) });
+  example.setState("reserved");
+  example.setValue(300);
+  const summary = documentRef.byClass("keepnet-section__summary")[0];
+  assert(summary && mountRoot.contains(summary), "the keepnet summary lives inside the inventory");
+  assert.equal(summary.parentNode.hidden, false, "the keepnet card opens the inventory at its keepnet section");
+  assert.equal(documentRef.byClass("inventory-section-tabs__list").length > 0, true, "the inventory's section tabs stay around it");
+  assert.equal(keepnetFixture.getView().liveBaits[0].remainingMs, 300000, "the card's value drives the keepnet fixture");
+  example.dispose();
+}
+
+// Spec 140 R2-D3: the window takes the first visible block's rectangle relative to the stage, writes only changes,
+// shows the whole stage without a block, coalesces requests into one frame and releases its observer.
+async function checkBlockCrop() {
+  const { UiCatalogBlockCrop } = await import("../../../src/dev/ui_catalog/ui_catalog_block_crop.js");
+  const documentRef = new TestDocument();
+  const frame = documentRef.createElement("div");
+  const stage = documentRef.createElement("div");
+  const rect = (left, top, width, height) => ({ left, top, width, height });
+  stage.getBoundingClientRect = () => rect(100, 50, 320, 640);
+  const hidden = documentRef.createElement("div");
+  hidden.getBoundingClientRect = () => rect(0, 0, 0, 0);
+  const block = documentRef.createElement("div");
+  let blockRect = rect(110, 90, 300, 120);
+  block.getBoundingClientRect = () => blockRect;
+  let matches = [hidden, block];
+  stage.querySelectorAll = (selector) => { assert.equal(selector, ".inventory-header"); return matches; };
+  const writes = [];
+  const setProperty = frame.style.setProperty;
+  frame.style.setProperty = (name, value) => { writes.push([name, value]); setProperty(name, value); };
+  const frames = new Map();
+  let frameId = 0;
+  const observed = new Set();
+  let disconnected = 0;
+  const windowTarget = {
+    requestAnimationFrame: (callback) => { frames.set(++frameId, callback); return frameId; },
+    cancelAnimationFrame: (id) => frames.delete(id),
+    ResizeObserver: class { observe(node) { observed.add(node); } unobserve(node) { observed.delete(node); } disconnect() { disconnected++; observed.clear(); } },
+  };
+  const flush = () => { const pending = [...frames.values()]; frames.clear(); for (const callback of pending) callback(); };
+  const crop = new UiCatalogBlockCrop({ frame, stage, selector: ".inventory-header", windowTarget });
+  assert(frame.classList.contains("ui-catalog-card__frame--cropped"));
+  crop.request(); crop.request(); crop.request();
+  assert.equal(frames.size, 1, "requests are coalesced into one frame");
+  flush();
+  assert.deepEqual(writes, [["--ui-catalog-crop-x", "10px"], ["--ui-catalog-crop-y", "40px"],
+    ["--ui-catalog-crop-width", "300px"], ["--ui-catalog-crop-height", "120px"]], "the first visible block is cropped");
+  assert(observed.has(block) && observed.has(stage), "the block and the stage are observed");
+  writes.length = 0;
+  crop.update();
+  assert.equal(writes.length, 0, "an unchanged block writes nothing");
+  blockRect = rect(110, 90, 300, 160);
+  crop.update();
+  assert.deepEqual(writes, [["--ui-catalog-crop-height", "160px"]]);
+  writes.length = 0;
+  matches = [hidden];
+  crop.update();
+  assert.deepEqual(writes, [["--ui-catalog-crop-x", "0px"], ["--ui-catalog-crop-y", "0px"],
+    ["--ui-catalog-crop-width", "320px"], ["--ui-catalog-crop-height", "640px"]], "without a visible block the whole stage shows");
+  assert(!observed.has(block), "a block that is gone is no longer observed");
+  crop.request();
+  crop.dispose();
+  crop.dispose();
+  assert.equal(frames.size, 0, "dispose cancels the pending frame");
+  assert.equal(disconnected, 1);
+  crop.request();
+  assert.equal(frames.size, 0, "a disposed crop schedules nothing");
 }
 
 // Spec 140 D3: edge handles resize only their axis within bounds, write only changes and release their listeners.

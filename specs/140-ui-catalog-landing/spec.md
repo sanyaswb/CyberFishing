@@ -1,7 +1,7 @@
 # Feature Specification: UI catalog as a compact landing page
 
 **Created**: 2026-10-23
-**Status**: Implemented in v0.47.7 (Q2 in v0.47.8); owner visual acceptance pending
+**Status**: Implemented in v0.47.7 (Q2 in v0.47.8, Revision 2 in v0.47.9); owner visual acceptance pending
 **Input**: Власник 2026-10-23: каталог UI виглядає жахливо. Оформити як стилізовану landing page, просту в реалізації
 й мінімалістичну: компоненти згруповані по секціях (кнопки окремо, інші групи окремо), сторінка не тягнеться донизу,
 мінімум тексту (повзунок, список, що випадає, зрозумілі без пояснень), значення лише 0 / 50 / 100 %, розмір вікна
@@ -44,6 +44,24 @@ Readings go through 0/1/34/67/100 % and free ranges (-10..110). Small controls s
   keepnet normal/empty/reserved/over/error; house normal/section-open/empty/renovating/night; HUD
   normal/open/active/aiming/night. The examples still handle the removed states (the house check drives them directly).
 
+## Revision 2 (owner 2026-10-23)
+
+Owner: still bad. Show only the chosen part, windows centred, default 320 x 640; the keepnet is not separate from the
+inventory; split the inventory into blocks (left panel, section tab row, filters, item list, header); the owner chose a
+crop window per block and one block at a time through a second tab level.
+
+- R2-D1 Second tab level: a group with several cards shows a row of card tabs; only the chosen card is on the page,
+  centred. The hash is `#group/card`.
+- R2-D2 Every frame starts at 320 x 640 (`UI_CATALOG_FRAME_SIZE`); the per-definition sizes are removed.
+- R2-D3 Block crop: a block card builds the whole production inventory on a surface of the resizable size; the window
+  takes the block's rectangle (the first visible match of the block selector) and the surface is shifted so only the
+  block shows. `UiCatalogBlockCrop` re-measures on surface, content and block size changes and after a state change,
+  and writes only changed values. Without a visible block the whole surface shows.
+- R2-D4 Inventory cards: Весь, Ліва панель (`.inventory-main__sidebar`: loadout panel or backpack plus the section
+  tabs), Вкладки (`.inventory-section-tabs__list`), Фільтри (`.inventory-list-panel__controls`), Список
+  (`.inventory-list-panel__items`), Заголовок (`.inventory-header`), Садок (the same inventory opened at its keepnet
+  section, keepnet states and live-bait time). The standalone keepnet view and its example are removed.
+
 ## Requirements
 
 - FR-001: Every definition belongs to exactly one known group; every group has at least one definition.
@@ -74,3 +92,8 @@ resizer's axis/bounds/no-op writes/reset/keyboard/disposal, three-step readings,
 - Meters example: one row driven by the slider. Inventory, keepnet, house and HUD examples write no explanatory status.
 - `ui-catalog.css` rewritten (sticky bar, pill tabs, cards, hidden scrollbars); the example placement rules are kept.
 - `ui-catalog-check`: groups coverage, lazy mounting/disposal, readings, resizer axis/bounds/no-op/keys/reset/disposal.
+- Revision 2 (v0.47.9): `UiCatalogPage.select(group, card)` with card tabs (`ui-catalog__cards`), one card shown and
+  mounted once; `UI_CATALOG_FRAME_SIZE` 320 x 640; `UiCatalogBlockCrop` (frame `--ui-catalog-crop-*`, stage
+  `ui-catalog-card__stage` at the surface size); inventory cards built by one factory (`example: "inventory"`,
+  `focus`, `section`) with the keepnet attached through `InventoryUiBootstrap.createKeepnet`; the standalone keepnet
+  example and its placement CSS removed. `ui-catalog-check`: tab levels, crop, inventory-with-keepnet scenario.

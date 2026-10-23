@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.9 - Catalog Blocks One at a Time
+
+- The UI catalog shows one centred 320 x 640 window at a time through a second tab level; inventory blocks (left panel, tabs, filters, list, header) are cropped from the whole inventory, and the keepnet is its section.
+
 ## v0.47.8 - Shorter Catalog State Lists
 
 - Each UI catalog card offers 3-5 main states instead of up to 15.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Owner-approved minor release: connected local masks, exact gameplay boundaries and shore-clipped Pixi waves, with mesh focus, painting/erasing, host-field locking and independent mask opacity.
 - Zone geometry stays put across grid-size changes; grid opacity is shared by cell, mesh and perspective grids. Editor controls and dependencies are simplified. Completed tasks move to the archive while owner acceptance remains pending.
-
-## v0.46.46 - Mesh Editing Controls and Opacity
-
-- Mesh editing disables host-zone fields and structural actions until exit/apply. A separate mask-fill opacity slider reveals the map texture; the editor grid-opacity control now applies to the cell, mesh and perspective grids together on Canvas/WebGL.
