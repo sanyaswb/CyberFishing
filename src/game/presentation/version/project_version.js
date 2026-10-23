@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.1";
+export const CURRENT_PROJECT_VERSION = "0.47.2";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "zone-cell-masks",
+  codename: "zone-number-noise",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-077: clean zone numbers.",
     "Panel rebuilds preserve mesh drafts; DEV keyboard commands are validated by the local server.",
     "0.47.0: owner-approved minor release of the zone editor.",
     "Connected local zone masks, exact boundaries and shore-clipped Pixi waves.",

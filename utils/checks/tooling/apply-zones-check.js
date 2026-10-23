@@ -45,6 +45,10 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     const shuffled = { dynamic: ZONES.dynamic.map(zone => Object.fromEntries(Object.entries(zone).reverse())), snags: ZONES.snags,
       collisions: ZONES.collisions, castable: ZONES.castable };
     assert.equal(await format.zoneHash(shuffled, sha256), baseHash, "the same zones in another key order give the same hash");
+    // TK-077: binary-fraction noise never reaches a file; exact fractions stay.
+    const noisy = format.canonicalZones({ castable: [{ x: 0.1 + 0.2, y: 11.700000000000001, w: 0.00703125, h: 17.12571864024948 }] }).castable[0];
+    assert.deepEqual([noisy.x, noisy.y, noisy.w, noisy.h], [0.3, 11.7, 0.00703125, 17.12571864024948],
+      "11.700000000000001 is written as 11.7; exact and genuinely long values stay");
     const shuffledMasks = JSON.parse(JSON.stringify(moved));
     shuffledMasks.castable[0].mask = { rects: [[0, 1, 1, 1], [0, 0, 2, 1]], cell: [.5, .5], enabled: true };
     assert.equal(await format.zoneHash(shuffledMasks, sha256), await format.zoneHash(moved, sha256), 'mask key/rectangle order does not change hashes');
@@ -54,6 +58,7 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     assert.equal(asked, 1, "the owner confirms the write");
     const written = (await import(`${pathToFileURL(target).href}?after=1`)).ZONES;
     assert.deepEqual(format.canonicalZones(written), format.canonicalZones(moved), "the module now holds the file's zones");
+    assert(!logs.some(line => line.includes("undefined")), "a missing field reads немає, not undefined");
     assert(logs.some(line => line.includes("collisions 1: x 12 -> 14")) && logs.some(line => line.includes("snags 2: додано")),
       "the change is shown per zone before the question");
     const [backup] = fs.readdirSync(backups);

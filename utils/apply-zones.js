@@ -75,7 +75,9 @@ class ZoneFileApplier {
     for (const change of changes) {
       const name = `${change.category} ${change.index + 1}`;
       if (change.kind !== "changed") { lines.push(`  ${name}: ${change.kind === "added" ? "додано" : "видалено"}`); continue; }
-      const fields = change.fields.map(field => `${field.key} ${JSON.stringify(field.from)} -> ${JSON.stringify(field.to)}`);
+      // A field the zone does not have yet (or no longer has) reads "немає", not "undefined" (TK-077).
+      const value = item => item === undefined ? "немає" : JSON.stringify(item);
+      const fields = change.fields.map(field => `${field.key} ${value(field.from)} -> ${value(field.to)}`);
       lines.push(`  ${name}: ${fields.join(", ")}`);
     }
     return `  (${direction})\n${lines.join("\n")}`;

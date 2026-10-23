@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.2 - Clean Zone Numbers
+
+- Zone files and npm run apply:zones write 11.7 instead of binary-fraction noise like 11.700000000000001; a field the code lacks reads немає.
+
 ## v0.47.1 - Persistent Mesh and Server-Owned DEV Shortcut
 
 - Reopening DevTools preserves the active painted mesh. A keyboard shortcut opens DevTools in DEV through local server validation; no code definition or offline matcher ships to the browser. Static Pages requires a backend for this shortcut.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.40 - Fight Sector Stays Drawn
 
 - The fight sector and the line radius stay drawn while a fish is on: built from the rod with the fight frame's radius.
-
-## v0.46.39 - One Look for the Fishing Zones
-
-- The game's fight-area zones take the editor's look (colours, thin solid outlines); with the equipment's values the editor's float anchor sits on the real float and moves it while waiting, within the line's reach.
