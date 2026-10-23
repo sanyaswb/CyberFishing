@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.38 - Float Stays on the Water
+
+- Location editor: the conditional float stays on the water when the equipped line is longer than it.
+
 ## v0.46.37 - Fishing Zones from the Equipment
 
 - Location editor: "Брати значення зі спорядження" takes the line length and the net from the game's equipment for the fishing zone previews.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.29 - Free Moving-Zone Placement
 
 - Dynamic bodies translate continuously in the editor. Fresh locations choose random grid-aligned starts inside movement bounds; editing retains exact positions and gameplay RNG stays independent.
-
-## v0.46.28 - Whole-Zone Movement Bounds
-
-- Moving zones bounce with their full body inside their allowed area. In DEV, click a body to edit its movement bounds; body and area move/resize edits keep containment and use the same config/export path.

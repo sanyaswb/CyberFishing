@@ -1177,6 +1177,12 @@ controlUI.dispose();
   assert.equal(byColor(drawn.bands, "#33dd88").top, 1000 - new Net({ active: true, length: 6 }, {}).getReachPixels(),
     "the equipped net's reach, not the selected one");
   assert(Math.hypot(drawn.handles[0].x - 500, drawn.handles[0].y - 1000) <= 6 * 50 + 1e-6, "a dragged float is pulled in by the shorter line");
+  // A line longer than the water keeps the float on it: at the water's far edge (owner: it vanished with a 50 m line).
+  equipment = { ...equipment, line: { effectiveStats: { lengthMeters: 50 } } };
+  const typed = zones.lineMeters;
+  zones.setLineMeters(typed + 1); zones.setLineMeters(typed); // a new typed length resets a dragged float to straight ahead
+  drawn = draw();
+  assert(Math.abs(drawn.handles[0].y - 0) < 1e-9 && drawn.handles[0].x === 500, "50 m of line over 20 m of water: the float at the far edge");
   zones.setFromEquipment(false);
   equipment = { rod: equipment.rod, reel: equipment.reel };
   // Choices, live values and the game's show switches.

@@ -312,12 +312,16 @@ export class CastableDependentZones {
     return frame.metric.toBasePlane(this.#values[4], frame.shore, this.#origin);
   }
 
-  // The float on the base plane: straight ahead at the line length unless dragged (kept as an offset from the rod).
+  // The float on the base plane: straight ahead at the line length unless dragged (kept as an offset from the rod). It
+  // stays on the water like a real float: a shorter line pulls it in, and a line longer than the water (TK-069: an
+  // equipped 50 m line over 30 m of water) stops it at the water's far edge, both along its direction.
   #floatPlane(frame, origin) {
     const limit = this.effectiveLineMeters * this.#readings.pixelsPerMeter;
     const offset = this.#float ?? { dx: 0, dy: -limit };
-    // A shorter line (another equipped line) pulls a dragged float in along its direction.
-    const length = Math.hypot(offset.dx, offset.dy), shrink = length > limit ? limit / length : 1;
+    const length = Math.hypot(offset.dx, offset.dy);
+    let shrink = length > limit ? limit / length : 1;
+    const far = frame.metric.toBasePlane(origin.x, frame.top, this.#screen).y;
+    if (offset.dy * shrink < far - origin.y) shrink = (far - origin.y) / offset.dy;
     this.#plane.x = origin.x + offset.dx * shrink;
     this.#plane.y = origin.y + offset.dy * shrink;
     return this.#plane;
