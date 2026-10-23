@@ -38,6 +38,7 @@ import { CastableZoneReadings } from "../../dev/location/castable_zone_readings.
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
 import { ZoneMaskEditor } from "../../dev/location/zone_mask_editor.js";
+import { DevCheatInput } from "../../dev/tools/dev_cheat_input.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
 import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
 import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
@@ -126,6 +127,9 @@ async function startGame() {
   let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
+  const cheatInput = new DevCheatInput({ target: windowTarget, scheduler: windowTarget,
+    fetchCommand: (...args) => windowTarget.fetch(...args), createAbortController: () => new windowTarget.AbortController(),
+    open: () => devTools?.open() });
   const maskEditor = new ZoneMaskEditor({ state: zoneEditorState, config: CONFIG, getMap: () => editorMap,
     writeConfig: (path, value) => devTools?.updateConfig(path, value) });
   let zoneEditorDrag = null;
@@ -149,6 +153,7 @@ async function startGame() {
   const cleanup = () => {
     if (disposed) return;
     disposed = true;
+    cheatInput.dispose();
     browserLifecycle.removePagehideListener(cleanup);
     screens.dispose();
     pageOverlay.dispose();
