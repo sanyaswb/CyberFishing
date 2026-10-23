@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.4";
+export const CURRENT_PROJECT_VERSION = "0.47.5";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "test-zones-applied",
+  codename: "agent-workflow-rules",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-080: agent workflow rules.",
     "TK-079: owner's test zones; water-metric reads real edges.",
     "TK-078: zone backups in local time.",
     "TK-077: clean zone numbers.",

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.5 - Agent Workflow Rules
+
+- AGENTS.md records the version, commit and push rules (patch per task, minor only with the owner's approval, push on command with Pages and task archiving) and working rules learned in practice.
+
 ## v0.47.4 - Test Location Zones Applied
 
 - The test location's castable zone is the owner's edited one (11.7..29.7 cells with a painted mask); water-metric follows the authored water edges.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.43 - Editor Grid and Unavailable Switches
 
 - Turning the editor off also hides its grids. Switches blocked by dependencies look dimmed and expose their unavailable state, updating as prerequisites change while keeping the blocking-control highlight on attempted activation.
-
-## v0.46.42 - Independent Depth Display
-
-- Depth numbers and opacity work with editing off, retaining the cached map and the editing controls' prerequisites. Tasks now require archiving completed work before every push while retaining pending owner checks.
