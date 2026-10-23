@@ -339,7 +339,11 @@ function checkUnifiedWaterAreas() {
   const { WorldRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/world_render_frame_builder.js");
   const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
-  const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
+  // TK-079: the real water edges of the test location: its castable zones in map pixels, as WorldRenderFrameBuilder
+  // reads them, so the check follows the authored castable area.
+  const cell = CONFIG.locations.cellSize, castable = CONFIG.locations.map.test.zones.castable;
+  const bounds = { left: Math.min(...castable.map(zone => zone.x * cell)), right: Math.max(...castable.map(zone => (zone.x + zone.w) * cell)),
+    top: Math.min(...castable.map(zone => zone.y * cell)), bottom: Math.max(...castable.map(zone => (zone.y + zone.h) * cell)) };
   let projection = { maxMeters: 30, farScale: .3, tiltDegrees: 90, lateralContraction: true };
   const getWaterMetric = () => resolver.resolve(bounds, projection);
   const perspective = new WorldPerspective({ getWaterMetric });
@@ -415,12 +419,15 @@ function checkUnifiedWaterAreas() {
       frame.reset(); worldBuilder.buildInto({ target: frame.world });
       const waterPlane = frame.world.waterPlane;
       assert(waterPlane.metric === metric && waterPlane.left === 0 && waterPlane.right === 2560 &&
-        waterPlane.top === 520 && waterPlane.bottom === 1160,
+        waterPlane.top === bounds.top && waterPlane.bottom === bounds.bottom,
         "R4: the wave field gets the metric and the virtual bounds its clip regions cover");
-      const region = frame.world.clipRegions.getAt(0);
-      assert(Math.abs(region.height / projector.getScale() - (bounds.bottom - bounds.top)) < 1e-8,
+      // A masked zone clips by several rectangles (TK-079): their union spans the castable height.
+      const clips = Array.from({ length: frame.world.clipRegions.count }, (_, index) => frame.world.clipRegions.getAt(index));
+      const clipTop = Math.min(...clips.map(clip => clip.y)), clipBottom = Math.max(...clips.map(clip => clip.y + clip.height));
+      const clipLeft = Math.min(...clips.map(clip => clip.x));
+      assert(Math.abs((clipBottom - clipTop) / projector.getScale() - (bounds.bottom - bounds.top)) < 1e-8,
         "water animation/clipping always spans the full castable height");
-      projector.screenToVirtual(region.x, region.y, screenPoint);
+      projector.screenToVirtual(clipLeft, clipTop, screenPoint);
       assert(Math.abs(metric.metersFromShore(screenPoint.y) - metric.topMeters) < 1e-7,
         "render/wave clipping and gameplay bounds agree on the visible far distance");
     }

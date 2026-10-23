@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.4 - Test Location Zones Applied
+
+- The test location's castable zone is the owner's edited one (11.7..29.7 cells with a painted mask); water-metric follows the authored water edges.
+
 ## v0.47.3 - Zone Backups in Local Time
 
 - npm run apply:zones names its backups in the machine's local time.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.42 - Independent Depth Display
 
 - Depth numbers and opacity work with editing off, retaining the cached map and the editing controls' prerequisites. Tasks now require archiving completed work before every push while retaining pending owner checks.
-
-## v0.46.41 - Cell Grid Under Editor
-
-- Cell-grid and depth controls sit directly after background visibility in the editor. Removed line-step and snap controls and their variable logic: grid lines and snapped editing use one map cell, while moving-body and float translation stay continuous.

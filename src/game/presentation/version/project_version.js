@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.3";
+export const CURRENT_PROJECT_VERSION = "0.47.4";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "zone-backup-local-time",
+  codename: "test-zones-applied",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-079: owner's test zones; water-metric reads real edges.",
     "TK-078: zone backups in local time.",
     "TK-077: clean zone numbers.",
     "Panel rebuilds preserve mesh drafts; DEV keyboard commands are validated by the local server.",
