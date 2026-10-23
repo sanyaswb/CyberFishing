@@ -1,6 +1,7 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const { handleDevCheat } = require("./server/dev_cheat_endpoint.js");
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 4173;
@@ -57,6 +58,9 @@ class StaticFileResolver {
     const filePath = path.resolve(this.#rootDir, relativePath);
 
     if (!this.#isInsideRoot(filePath)) return null;
+    const relative = path.relative(this.#rootDir, filePath).split(path.sep);
+    if (!(relative.length === 1 && ['index.html', 'dev.html', 'ui-catalog.html'].includes(relative[0])) &&
+      !['src', 'styles', 'assets', 'vendor'].includes(relative[0])) return null;
     return filePath;
   }
 
@@ -87,6 +91,7 @@ class StaticFileServer {
 
   createServer() {
     return http.createServer((request, response) => {
+      if (request.url?.split('?')[0] === '/__dev/command') { handleDevCheat(request, response); return; }
       if (request.method !== "GET" && request.method !== "HEAD") {
         this.#sendText(response, 405, "Method Not Allowed");
         return;

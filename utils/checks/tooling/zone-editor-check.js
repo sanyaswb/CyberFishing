@@ -222,7 +222,14 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
   assert(!outerGroups.get('castable').disabled, 'applying restores host controls');
   st.setCategory('castable', true); editor.setOpacity(.47); focusGeometry.buildInto(focused);
   assert(focused.annotations.rects.slice(0, focused.annotations.rectCount).some(r => r.fillAlpha === .47), 'shown applied masks use the same view opacity');
-  section.dispose(); assert.equal(editor.draft, null, 'panel disposal releases its draft and focus');
+  rows.get('Ігрова область (закидання)/Меш маски')(true);
+  editor.paint(5, 5); editor.endStroke();
+  const reopeningDraft = editor.draft, reopeningPreview = editor.preview;
+  section.dispose({ preserveDraft: true }); section.render({});
+  assert.equal(editor.draft, reopeningDraft, 'panel rebuild keeps the exact painted draft');
+  assert.equal(editor.preview, reopeningPreview);
+  assert.equal(editor.opacity, .47);
+  section.dispose(); assert.equal(editor.draft, null, 'final disposal releases its draft and focus');
   const meshState = new ZoneEditorState(); meshState.setCategory('castable', true);
   zones.castable[0].mask = ring; map.refreshConfig(cfg.locations, resources);
   const geometry = new ZoneEditorGeometryBuilder({ state: meshState, map, projector: proj, config: cfg, getWaterMetric: () => null });

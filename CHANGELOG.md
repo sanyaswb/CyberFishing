@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.1 - Persistent Mesh and Server-Owned DEV Shortcut
+
+- Reopening DevTools preserves the active painted mesh. A keyboard shortcut opens DevTools in DEV through local server validation; no code definition or offline matcher ships to the browser. Static Pages requires a backend for this shortcut.
+
 ## v0.47.0 - Zone Editor and Connected Masks
 
 - Owner-approved minor release: connected local masks, exact gameplay boundaries and shore-clipped Pixi waves, with mesh focus, painting/erasing, host-field locking and independent mask opacity.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.39 - One Look for the Fishing Zones
 
 - The game's fight-area zones take the editor's look (colours, thin solid outlines); with the equipment's values the editor's float anchor sits on the real float and moves it while waiting, within the line's reach.
-
-## v0.46.38 - Float Stays on the Water
-
-- Location editor: the conditional float stays on the water when the equipped line is longer than it.

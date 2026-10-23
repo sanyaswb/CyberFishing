@@ -9,6 +9,10 @@ version. There are no CSS imports, runtime style installers or build requirement
 
 ## Ownership
 
+Spec 139/v0.47.1: rebuilding/reopening DevTools releases section subscriptions while retaining the active mesh draft.
+Final tool disposal still stops it. DEV bootstrap alone attaches the bounded keyboard command transport; a local
+server verifies commands and opens the panel idempotently. No code dictionary or offline matcher is shipped to the browser.
+
 TK-075/v0.46.46: active mesh mode puts host geometry/shape/bounds and add/delete controls in the existing transparent
 control group, using a disabled native fieldset with dimmed rows; mesh/number/opacity controls remain outside it.
 Exiting/applying rebuilds the enabled group. A shared DEV mask-fill opacity (0–100%, default 30%) affects draft and

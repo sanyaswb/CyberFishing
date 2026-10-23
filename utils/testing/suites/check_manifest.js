@@ -3,6 +3,12 @@
 // One registry of stable scenario IDs; every check file is registered exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
+    id: "dev-cheat",
+    title: "Server-owned DEV command and keyboard lifecycle",
+    file: "utils/checks/tooling/dev-cheat-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "inventory-selector",
     title: "Radial inventory selector geometry and interaction",
     file: "utils/checks/ui/inventory-selector-check.js",

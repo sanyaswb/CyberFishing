@@ -80,8 +80,8 @@ export class ZoneEditorSection {
     this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#refreshZones()) ?? null;
   }
 
-  dispose() {
-    this.#maskEditor?.stop();
+  dispose({ preserveDraft = false } = {}) {
+    if (!preserveDraft) this.#maskEditor?.stop();
     this.#unsubscribe?.();
     this.#unsubscribe = null;
   }

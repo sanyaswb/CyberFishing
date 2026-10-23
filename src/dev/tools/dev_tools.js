@@ -161,6 +161,10 @@ export class DevTools {
     }
   }
 
+  open() {
+    if (!this.#isDisposed && !this.#isOpen) this.toggle();
+  }
+
   dispose() {
     if (this.#isDisposed) return;
     this.#isDisposed = true;
@@ -174,7 +178,7 @@ export class DevTools {
   }
 
   #populatePanel() {
-    this.#zoneEditorSection?.dispose();
+    this.#zoneEditorSection?.dispose({ preserveDraft: true });
     this.#zoneEditorSection = null;
     const body = this.#ui.body;
     this.#ui.clearValueBindings();

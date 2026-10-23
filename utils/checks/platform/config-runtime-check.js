@@ -586,6 +586,8 @@ function checkLocationMapConfigChanges() {
   const {LocationWaterMetricResolver} = source.importModule('src/game/domain/locations/location_water_metric_resolver.js');
   const {WaterMetric} = source.importModule('src/game/domain/locations/water_metric.js');
   const editorState = new ZoneEditorState(); editorState.locationId = locationId;
+  let draftStops = 0;
+  const maskEditor = { isActive: () => false, stop: () => draftStops++, opacity: .3 };
   const editorMetric = new LocationWaterMetricResolver({pixelsPerMeter:50,logger:console});
   const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,
     catalogs:{items:{rods:{testRod:{itemType:'rod',name:'Test rod',strength:4}}},fishes:[],maps:{}},
@@ -596,7 +598,7 @@ function checkLocationMapConfigChanges() {
       isSpineEnabled:()=>true,getClips:()=>[],getBones:()=>[]},
     storageCache:{get:()=>({}),set(){}},
     createWaterMetric:options=>WaterMetric.illustrated(options),
-    zoneEditorState:editorState, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
+    zoneEditorState:editorState, maskEditor, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
     openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
   tools.toggle();
@@ -664,7 +666,12 @@ function checkLocationMapConfigChanges() {
   context.set(projectionPath+'.tiltDegrees',15);
   context.importOverrides(resetSnapshot);
   assert.equal(config.locations.map[locationId].waterProjection.tiltDegrees,30,'export/import preserves the local reset, without resurrecting old child overrides');
+  tools.toggle(); tools.open();
+  assert.equal(draftStops, 0, 'reopening the panel must not end mask editing');
+  const openSections = sections.length; tools.open();
+  assert.equal(sections.length, openSections, 'server open action is idempotent');
   tools.dispose();
+  assert.equal(draftStops, 1, 'final disposal still releases mask editing');
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];
   const first = new LocationMap(locationId,missingFlags,{next:()=>0.5},resources);
@@ -676,7 +683,7 @@ async function checkNativeDevelopmentLifecycle() {
   const startupErrors = [];
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
   const listeners=new Map(), registered=new Map();
-  const windowTarget={console,URLSearchParams,location:{origin:"https://game.example",search:""},
+  const windowTarget={console,URLSearchParams,setTimeout,clearTimeout,location:{origin:"https://game.example",search:""},
     addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
     removeEventListener(type,fn){registered.get(type)?.delete(fn);const remaining=[...(registered.get(type)||[])];if(remaining.length)listeners.set(type,remaining.at(-1));else listeners.delete(type);}};
   const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{timeScale:240,timeAccelerationEnabled:false,godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
@@ -741,7 +748,7 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(freshInventory.loadouts.length, 0, 'DEV starts without saved builds');
   assert.equal(rootPorts.itemDb, source.importModule('src/game/config/databases/item_catalog.js').ITEM_DB, 'DEV shares the production item catalog');
   assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
-  assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'catalog return and page cleanup listeners are active');
+  assert.deepEqual([...listeners.keys()].sort(),['blur','keydown','message','pagehide'],'DEV cheat, catalog return and page cleanup listeners are active');
   assert.equal(registered.get("message").size,1,"only the UI catalog overlay listens for a trusted return");
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
