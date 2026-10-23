@@ -39,11 +39,15 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     moved.collisions[0].x = 14;
     moved.snags.push({ x: 1, y: 2, w: 3, h: 1 });
     moved.dynamic[0].shape = "circle";
+    moved.castable[0].mask = { enabled: true, cell: [.5, .5], rects: [[0, 0, 2, 1], [0, 1, 1, 1]] };
 
     // Hash: key order never matters, and the browser and the script hash the same text.
     const shuffled = { dynamic: ZONES.dynamic.map(zone => Object.fromEntries(Object.entries(zone).reverse())), snags: ZONES.snags,
       collisions: ZONES.collisions, castable: ZONES.castable };
     assert.equal(await format.zoneHash(shuffled, sha256), baseHash, "the same zones in another key order give the same hash");
+    const shuffledMasks = JSON.parse(JSON.stringify(moved));
+    shuffledMasks.castable[0].mask = { rects: [[0, 1, 1, 1], [0, 0, 2, 1]], cell: [.5, .5], enabled: true };
+    assert.equal(await format.zoneHash(shuffledMasks, sha256), await format.zoneHash(moved, sha256), 'mask key/rectangle order does not change hashes');
 
     reset();
     assert.equal(await applier.apply(exported(moved)), "applied");
@@ -74,6 +78,15 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
       assert.equal(await applier.apply(text, { yes: true }), "refused", reason); untouched();
     }
     assert.equal(await applier.apply(exported(moved, { locationId: "pond" }), { yes: true }), "refused", "a location without a module");
+    for (const badMask of [
+      { enabled: true, cell: [.5, .5], rects: [[0, 0, 1, 1], [1, 1, 1, 1]] },
+      { enabled: true, cell: [.5, .5], rects: [] },
+      { enabled: true, cell: [.5, .5], rects: [[0, 0, 3, 1]] },
+      { enabled: true, cell: [0, .5], rects: [[0, 0, 1, 1]] },
+    ]) {
+      const file = JSON.parse(exported(moved)); file.zones.castable[0].mask = badMask;
+      assert.equal(await applier.apply(JSON.stringify(file), { yes: true }), 'refused', 'invalid saved mask is rejected before write'); untouched();
+    }
     dirty = true;
     assert.equal(await applier.apply(exported(moved), { yes: true }), "refused", "uncommitted changes in the target are kept");
     untouched(); dirty = false;

@@ -1,6 +1,13 @@
 /* DEV Tools panel, editor fields, switches and scrollbars. */
 .game-shell__dev-ui { display: contents; }
 .devtools__control-group { display: contents; }
+.devtools__control-group--disabled .devtools__row { opacity: 0.46; }
+.devtools__control-group--disabled :is(input, select, button),
+.devtools__control-group--disabled .devtools__slider { cursor: not-allowed; }
+.devtools__row--dependency-disabled .devtools__label,
+.devtools__row--dependency-disabled .devtools__switch { opacity: 0.46; }
+.devtools__row--dependency-disabled,
+.devtools__row--dependency-disabled .devtools__slider { cursor: not-allowed; }
 .devtools__row--blocked-prerequisite {
   outline: 2px solid var(--ui-danger);
   outline-offset: -2px;

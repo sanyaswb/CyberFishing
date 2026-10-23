@@ -5,6 +5,7 @@ import { PHYSICS_UNITS_AND_NAMING } from "../raw/physics/physics_units_and_namin
 import { RarityConfigValidator } from "./rarity_config_validator.js";
 import { InventorySelectorConfigValidator } from "./inventory_selector_config_validator.js";
 import { WATER_PROJECTION_RANGES } from "../../domain/locations/illustrated_depth_profile.js";
+import { validateGridMask } from "../../../engine/geometry/grid_mask.js";
 
 export class ConfigSchemaValidator {
   static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
@@ -430,6 +431,17 @@ export class ConfigSchemaValidator {
 
   #validateLocationDebugConfig() {
     const locations = this.config.locations || {};
+    for (const [id, location] of Object.entries(locations.map || {})) {
+      for (const category of ["castable", "collisions", "snags", "dynamic"]) {
+        const zones = location?.zones?.[category];
+        if (!Array.isArray(zones)) continue;
+        zones.forEach((zone, index) => {
+          if (zone?.mask === undefined) return;
+          const error = validateGridMask(zone.mask);
+          if (error) this.#error(`CONFIG.locations.map.${id}.zones.${category}.${index}.mask`, error);
+        });
+      }
+    }
     const keys = [
       "showPoleFightSector",
       "showFightLineRadius",

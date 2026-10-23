@@ -1,8 +1,7 @@
 import { Vector2 } from "../../engine/math/vector2.js";
 
-// The zone editor's world layer (spec 129, Revision 2): the editor's geometry, its drag layer and, while the editor
-// is on with the depth numbers switched on, the location's depth map at the editor's depth opacity. Outside
-// editing, explicitly shown zones and either grid still come from the geometry builder without a drag layer.
+// The zone editor's world layer: geometry, its optional drag layer and independently shown depth numbers.
+// Depth visibility/opacity do not require editing; the cached map still comes from the live location.
 export class LocationDebugRenderFrameBuilder {
   #map;
   #projector;
@@ -47,7 +46,7 @@ export class LocationDebugRenderFrameBuilder {
       this.#notifiedMapRevision = revision;
       if (state?.enabled && state.editsLoadedLocation && state.isEditable("dynamic")) state.zonesEdited();
     }
-    if (!state?.enabled || !state.depth || !(state.depthOpacity > 0)) return;
+    if (!state?.depth || !(state.depthOpacity > 0)) return;
     const debugCanvas = this.#getDebugCanvas(this.#config.locations || {});
     if (!debugCanvas) return;
     const position = this.#projector.virtualToScreen(0, 0, this.#screen);
@@ -62,12 +61,13 @@ export class LocationDebugRenderFrameBuilder {
   }
 
   #getDebugCanvas(locations) {
-    const key = `${this.#map.getRevision()}|${locations.cellSize}`;
+    const cellSize = this.#map.getCellSize?.() ?? locations.cellSize;
+    const key = `${this.#map.getRevision()}|${cellSize}`;
     if (key !== this.#lastDebugKey || !this.#debugCanvas) {
       this.#lastDebugKey = key;
       this.#debugCanvas = this.#debugMapBuilder.build({
         map: this.#map,
-        locationsConfig: locations,
+        locationsConfig: cellSize === locations.cellSize ? locations : { ...locations, cellSize },
       });
     }
     return this.#debugCanvas;

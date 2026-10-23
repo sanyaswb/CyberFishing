@@ -1,5 +1,6 @@
 import { containsRectangle, findRectangleContainer } from "../../engine/math/rectangle_bounds.js";
 import { Vector2 } from "../../engine/math/vector2.js";
+import { gridMaskBounds, gridMaskContains } from "../../engine/geometry/grid_mask.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
 import { MOVE_SHARE, ZoneEditorState } from "./zone_editor_state.js";
 
@@ -18,7 +19,7 @@ const EDITING_CLASS = "game-shell--zone-editor";
 // Only each enabled category's explicitly selected number is eligible for hover and input. Of those eligible
 // zones under the pointer the smallest that offers a hit is taken: its middle MOVE_SHARE moves the whole zone, a
 // pointer within EDGE_PX of an edge takes it (a corner takes both). Dynamic-body translation is continuous;
-// other positions snap to snapCells map cells, a resized
+// other positions snap to one map cell, a resized
 // zone keeps at least that much, and an adaptive-width zone moves only vertically. Every change of the snapped value
 // writes the category's zone array once through the injected config path. The castable area's dependent zones (spec
 // 136) own their handles: they are tried first and take their own drag.
@@ -30,9 +31,10 @@ export class ZoneEditorDragController {
   #point = new Vector2();
   #listeners = null;
   #hovered = [];
+  #maskEditor;
 
   // writeZones(path, zones): the validated runtime config write (DevTools); getCanvas: the game canvas element.
-  constructor({ state, map, projector, config, getCanvas, canvasMetrics, documentTarget, mountNode, writeZones, dependentZones = null }) {
+  constructor({ state, map, projector, config, getCanvas, canvasMetrics, documentTarget, mountNode, writeZones, dependentZones = null, maskEditor = null }) {
     for (const [name, value] of Object.entries({ getCanvas, writeZones })) {
       if (typeof value !== "function") throw new TypeError(`ZoneEditorDragController requires ${name}`);
     }
@@ -40,6 +42,7 @@ export class ZoneEditorDragController {
     this.#state = state; this.#map = map; this.#projector = projector; this.#config = config;
     this.#getCanvas = getCanvas; this.#canvasMetrics = canvasMetrics; this.#documentTarget = documentTarget;
     this.#mountNode = mountNode; this.#writeZones = writeZones; this.#dependent = dependentZones;
+    this.#maskEditor = maskEditor;
   }
 
   get active() {
@@ -48,6 +51,7 @@ export class ZoneEditorDragController {
 
   // Once per frame from the location debug builder: shows or removes the layer when the switches change.
   sync() {
+    this.#maskEditor?.sync();
     const wanted = this.#state.enabled;
     if (wanted && !this.#layer) this.#attach();
     else if (!wanted && this.#layer) this.#detach();
@@ -62,6 +66,7 @@ export class ZoneEditorDragController {
     const layer = this.#documentTarget.createElement("div");
     layer.className = "zone-editor-drag-layer";
     const listeners = [["pointerdown", (event) => this.#down(event)], ["pointermove", (event) => this.#move(event)],
+      ["contextmenu", event => { if (this.#maskEditor?.draft) event.preventDefault(); }],
       ["pointerup", (event) => this.#up(event)], ["pointercancel", (event) => this.#up(event)],
       ["pointerleave", () => {
         if (!this.#drag) { this.#state.setHovered(NO_ZONES); this.#state.setHoveredBound(-1); this.#dependent?.clearHover(); }
@@ -85,10 +90,23 @@ export class ZoneEditorDragController {
     this.#layer = null;
     this.#listeners = null;
     this.#drag = null;
+    this.#maskEditor?.stop();
     this.#cursor = "";
   }
 
   #down(event) {
+    if (this.#maskEditor?.draft) {
+      if ((event.button ?? 0) !== 0 && event.button !== 2) return;
+      event.preventDefault();
+      const point = this.#toVirtual(event), erase = event.button === 2;
+      this.#maskEditor.endStroke();
+      if (this.#maskEditor.paint(point.x, point.y, erase)) {
+        this.#layer.setPointerCapture?.(event.pointerId);
+        this.#drag = { mask: this.#maskEditor.draft, erase, pointerId: event.pointerId };
+      }
+      return;
+    }
+    if ((event.button ?? 0) !== 0) return;
     const hit = this.#scan(event, null);
     if (!hit) return;
     event.preventDefault();
@@ -112,6 +130,7 @@ export class ZoneEditorDragController {
   }
 
   #hover(event) {
+    if (this.#maskEditor?.draft) { this.#setCursor(""); return; }
     const hovered = this.#hovered;
     hovered.length = 0;
     const hit = this.#scan(event, hovered);
@@ -132,23 +151,30 @@ export class ZoneEditorDragController {
     if (event.pointerId !== drag.pointerId) return;
     if (!this.#dragAllowed(drag)) { this.#cancelDrag(); return; }
     event.preventDefault();
+    if (drag.mask) {
+      const point = this.#toVirtual(event);
+      this.#maskEditor.paint(point.x, point.y, drag.erase);
+      return;
+    }
     if (drag.dependent) {
       const point = this.#toVirtual(event);
       this.#dependent.drag(drag.dependent, point.x, point.y);
       return;
     }
-    // Edges snap to the visible map grid (cellSize x snapCells pixels); zones are stored in design cells
+    // Edges snap to the visible map grid (cellSize pixels); zones are stored in design cells
     // (designCellSize), so a finer map grid gives fractional design coordinates.
     const locations = this.#config.locations;
     const design = locations.designCellSize || locations.cellSize;
-    const step = locations.cellSize * Math.max(1, this.#state.snapCells || 1) / design;
+    const step = (this.#map.getCellSize?.() ?? locations.cellSize) / design;
     const point = this.#toVirtual(event);
     const cellX = Math.round(point.x / design / step) * step;
     const cellY = Math.round(point.y / design / step) * step;
     const { zone } = drag;
+    const occupied = gridMaskBounds(zone.mask, zone.x, zone.y, zone.w, zone.h, {});
+    const contained = drag.containedBody || drag.body;
     const containBody = drag.kind === "bounds" && drag.mustContainBody;
     const region = drag.category === "dynamic" && drag.kind !== "bounds" && drag.movementBounds
-      ? findRectangleContainer(zone, drag.movementBounds) : null;
+      ? findRectangleContainer(occupied, drag.movementBounds) : null;
     if (drag.category === "dynamic" && drag.kind !== "bounds" && drag.movementBounds && !region) return;
     let { x, y, w, h } = zone;
     if (drag.move) {
@@ -160,19 +186,19 @@ export class ZoneEditorDragController {
       const left = topLeft.x / design, top = topLeft.y / design;
       const bottomRight = this.#projector.screenToVirtual(this.#canvasMetrics.width, this.#canvasMetrics.height, this.#point);
       const right = bottomRight.x / design, bottom = bottomRight.y / design;
-      const lowX = containBody ? drag.body.x + drag.body.w - zone.w : region?.x;
-      const highX = containBody ? drag.body.x : region ? region.x + region.w - zone.w : undefined;
-      const lowY = containBody ? drag.body.y + drag.body.h - zone.h : region?.y;
-      const highY = containBody ? drag.body.y : region ? region.y + region.h - zone.h : undefined;
-      if (!zone.adaptiveX) x = zone.x + this.#windowTravel(travelX, zone.x, zone.w, left, right, free ? 0 : step, lowX, highX);
-      y = zone.y + this.#windowTravel(travelY, zone.y, zone.h, top, bottom, free ? 0 : step, lowY, highY);
+      const lowX = containBody ? contained.x + contained.w - zone.w : region?.x;
+      const highX = containBody ? contained.x : region ? region.x + region.w - occupied.w : undefined;
+      const lowY = containBody ? contained.y + contained.h - zone.h : region?.y;
+      const highY = containBody ? contained.y : region ? region.y + region.h - occupied.h : undefined;
+      if (!zone.adaptiveX) x = zone.x + this.#windowTravel(travelX, occupied.x, occupied.w, left, right, free ? 0 : step, lowX, highX);
+      y = zone.y + this.#windowTravel(travelY, occupied.y, occupied.h, top, bottom, free ? 0 : step, lowY, highY);
     }
     if (drag.left) { x = Math.min(cellX, zone.x + zone.w - step); w = zone.x + zone.w - x; }
     if (drag.right) w = Math.max(step, cellX - zone.x);
     if (drag.top) { y = Math.min(cellY, zone.y + zone.h - step); h = zone.y + zone.h - y; }
     if (drag.bottom) h = Math.max(step, cellY - zone.y);
     if (!drag.move && (region || drag.kind === "bounds")) {
-      const body = drag.body;
+      const body = contained;
       const minX = region?.x ?? -Infinity, minY = region?.y ?? -Infinity;
       const maxX = region ? region.x + region.w : Infinity, maxY = region ? region.y + region.h : Infinity;
       if (drag.left) x = Math.max(Math.ceil(minX / step) * step, Math.min(x, containBody ? Math.floor(body.x / step) * step : zone.x + zone.w - step));
@@ -195,8 +221,8 @@ export class ZoneEditorDragController {
       y = drag.top ? zone.y + zone.h - side : zone.y;
     }
     const candidate = { x, y, w, h };
-    if (region && !containsRectangle(region, candidate)) return;
-    if (containBody && !containsRectangle(candidate, drag.body)) return;
+    if (region && !containsRectangle(region, gridMaskBounds(zone.mask, x, y, w, h, {}))) return;
+    if (containBody && !containsRectangle(candidate, contained)) return;
     const written = drag.written;
     if (x === written.x && y === written.y && w === written.w && h === written.h) return;
     written.x = x; written.y = y; written.w = w; written.h = h;
@@ -228,11 +254,13 @@ export class ZoneEditorDragController {
     if (!this.#drag || event.pointerId !== this.#drag.pointerId) return;
     this.#layer?.releasePointerCapture?.(event.pointerId);
     this.#drag = null;
+    this.#maskEditor?.endStroke();
     this.#state.zonesEdited();
     this.#hover(event);
   }
 
   #dragAllowed(drag) {
+    if (drag.mask) return this.#maskEditor?.draft === drag.mask;
     const state = this.#state;
     if (drag.dependent) return state.enabled && this.#dependent.allowed(drag.dependent);
     if (!state.enabled || !state.editsLoadedLocation || state.locationId !== drag.path[3] ||
@@ -246,6 +274,7 @@ export class ZoneEditorDragController {
   #cancelDrag() {
     this.#layer?.releasePointerCapture?.(this.#drag.pointerId);
     this.#drag = null;
+    this.#maskEditor?.endStroke();
     this.#state.setHovered(NO_ZONES);
     this.#state.setHoveredBound(-1);
     this.#setCursor("");
@@ -259,7 +288,7 @@ export class ZoneEditorDragController {
     const id = this.#state.locationId;
     const location = locations.map?.[id];
     if (!location) return null;
-    const cell = locations.cellSize;
+    const cell = this.#map.getCellSize?.() ?? locations.cellSize;
     const toDesign = cell / (locations.designCellSize || cell);
     const pointer = this.#toScreen(event);
     const px = pointer.x, py = pointer.y;
@@ -283,17 +312,17 @@ export class ZoneEditorDragController {
         const sx2 = bottomRight.x, sy2 = bottomRight.y;
         if (px < sx1 - EDGE_PX || px > sx2 + EDGE_PX || py < sy1 - EDGE_PX || py > sy2 + EDGE_PX) continue;
         const area = (sx2 - sx1) * (sy2 - sy1);
-        const inside = zone.shape === "circle"
+        const inside = zone.mask?.enabled ? gridMaskContains(zone.mask, (px - sx1) / (sx2 - sx1), (py - sy1) / (sy2 - sy1)) : zone.shape === "circle"
           ? Math.hypot((px - (sx1 + sx2) / 2) / ((sx2 - sx1) / 2), (py - (sy1 + sy2) / 2) / ((sy2 - sy1) / 2)) <= 1
           : px >= sx1 && px <= sx2 && py >= sy1 && py <= sy2;
-        const hit = this.#hitZone(zone, px, py, sx1, sy1, sx2, sy2) || (category === "dynamic" && inside ? { selectOnly: true } : null);
-        if (zone.shape !== "circle" || inside || hit) hovered?.push(ZoneEditorState.zoneKey(category, index));
+        const hit = zone.mask?.enabled ? inside ? { move: true } : null : this.#hitZone(zone, px, py, sx1, sy1, sx2, sy2) || (category === "dynamic" && inside ? { selectOnly: true } : null);
+        if (zone.mask?.enabled ? inside : zone.shape !== "circle" || inside || hit) hovered?.push(ZoneEditorState.zoneKey(category, index));
         if (!hit) continue;
         if (area >= bestArea) continue;
         const bounds = zone.bounds ? (Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds]) : null;
         best = { ...hit, inside, category, index, zones, zoneId: zones[index].id,
           movementBounds: bounds?.map(bound => ({ x: bound.x * toDesign, y: bound.y * toDesign, w: bound.w * toDesign, h: bound.h * toDesign })), path: ["CONFIG", "locations", "map", id, "zones", category],
-          zone: { x: zone.x * toDesign, y: zone.y * toDesign, w: zone.w * toDesign, h: zone.h * toDesign, shape: zone.shape, adaptiveX: zone.adaptiveX === true } };
+          zone: { x: zone.x * toDesign, y: zone.y * toDesign, w: zone.w * toDesign, h: zone.h * toDesign, shape: zone.shape, mask: zone.mask, adaptiveX: zone.adaptiveX === true } };
         bestArea = area;
       }
     }
@@ -307,6 +336,7 @@ export class ZoneEditorDragController {
     const body = this.#map.getDynamicZones().find(zone => zone.id === zones[index]?.id);
     if (!body?.bounds) return null;
     const bounds = Array.isArray(body.bounds) ? body.bounds : [body.bounds];
+    const occupied = gridMaskBounds(body.mask, body.x, body.y, body.w, body.h, {});
     for (let number = 0; number < bounds.length; number++) {
       const bound = bounds[number];
       const topLeft = this.#projector.virtualToScreen(bound.x * cell, bound.y * cell, this.#point);
@@ -314,9 +344,10 @@ export class ZoneEditorDragController {
       const bottomRight = this.#projector.virtualToScreen((bound.x + bound.w) * cell, (bound.y + bound.h) * cell, this.#point);
       const hit = this.#hitZone(bound, px, py, sx1, sy1, bottomRight.x, bottomRight.y);
       if (!hit) continue;
-      return { ...hit, category: "dynamic", index, zones, zoneId: zones[index].id, kind: "bounds", boundIndex: number, mustContainBody: containsRectangle(bound, body),
+      return { ...hit, category: "dynamic", index, zones, zoneId: zones[index].id, kind: "bounds", boundIndex: number, mustContainBody: containsRectangle(bound, occupied),
         path: ["CONFIG", "locations", "map", state.locationId, "zones", "dynamic"],
         body: { x: body.x * toDesign, y: body.y * toDesign, w: body.w * toDesign, h: body.h * toDesign },
+        containedBody: { x: occupied.x * toDesign, y: occupied.y * toDesign, w: occupied.w * toDesign, h: occupied.h * toDesign },
         zone: { x: bound.x * toDesign, y: bound.y * toDesign, w: bound.w * toDesign, h: bound.h * toDesign } };
     }
     return null;

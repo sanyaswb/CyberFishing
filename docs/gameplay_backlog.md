@@ -20,6 +20,22 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-123 Fine connected masks for ordinary coordinate zones (P2, done in v0.47.0; owner acceptance pending)
+Found: 2026-10-23, owner, spec 138.
+Reproduce: trace a stepped shore inside one coarse zone without refining the global grid.
+Expected: a local ×2/×4 side-connected mask controls real boundaries/contours, clipping Pixi waves to keep excluded shore still and preserving depth/the coarse water raster.
+Actual: ordinary rectangles/circles alone cannot represent that boundary.
+Notes: additive optional local mask data; no player-save change. LMB adds, RMB removes, inversion requires connectivity;
+mesh mode dims outside the host immediately. Deterministic input/query/file/movement/cache scenarios; owner visual/performance acceptance pending.
+
+### G-122 Grid-size edits move or resize existing zones (P2, done in v0.47.0; owner acceptance pending)
+Found: 2026-10-23, owner, spec 137.
+Reproduce: shrink cellSize 40→30/17 with fractional zones and a moving body away from its start.
+Expected: exact map-space layout and live positions remain; only the grid resolution changes.
+Actual: rounded geometry drifts, water clipping scales in the wrong units, moving bodies restart at authored coordinates.
+Notes: retain authored design units; derive integer raster coverage from exact geometry. No new mechanic or save-format change.
+Verified: pending-resize failure reproduced before fix; shrink/grow cycles, partial cells, live motion, water clip, next snapped edit and authored geometry invariance pass. Full 67/67; unchanged game-cycle baseline. Owner visual acceptance pending.
+
 ### G-121 Circle or square moving-zone bodies (P3, done in v0.46.31)
 Found: 2026-10-23, owner, spec 135.
 Reproduce: adding a dynamic zone always produces rectangular geometry without a shape choice.

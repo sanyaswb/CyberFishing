@@ -1,13 +1,16 @@
 import { clampRectanglePosition, findRectangleContainer } from "../../../engine/math/rectangle_bounds.js";
+import { gridMaskBounds } from "../../../engine/geometry/grid_mask.js";
 
 export class DynamicZone {
   #rng;
+  #occupied = {};
 
-  constructor(config, rng = null) {
+  constructor(config, rng = null, motionScale = 1) {
     this.#rng = rng || { next: () => Math.random() };
     this.id = config.id;
     this.type = config.type;
     this.shape = config.shape;
+    this.mask = config.mask;
     this.multiplier = config.multiplier;
     this.x = config.x;
     this.y = config.y;
@@ -17,9 +20,9 @@ export class DynamicZone {
     this.bounds = config.bounds || null;
 
     this.currentSpeed =
-      Math.hypot(config.speedX || 0, config.speedY || 0) || 1.5;
-    this.speedX = config.speedX || this.currentSpeed;
-    this.speedY = config.speedY || 0;
+      (Math.hypot(config.speedX || 0, config.speedY || 0) || 1.5) * motionScale;
+    this.speedX = config.speedX ? config.speedX * motionScale : this.currentSpeed;
+    this.speedY = (config.speedY || 0) * motionScale;
     this.dirTimer = 0;
   }
 
@@ -33,12 +36,13 @@ export class DynamicZone {
   randomizeStart(rng = this.#rng) {
     if (!this.moving || !this.bounds) return;
     const regions = Array.isArray(this.bounds) ? this.bounds : [this.bounds];
+    const occupied = gridMaskBounds(this.mask, 0, 0, this.w, this.h, this.#occupied);
     let total = 0;
     const choices = [];
     for (const region of regions) {
-      const x = Math.ceil(region.x), y = Math.ceil(region.y);
-      const cols = Math.floor(region.x + region.w - this.w) - x + 1;
-      const rows = Math.floor(region.y + region.h - this.h) - y + 1;
+      const x = Math.ceil(region.x - occupied.x), y = Math.ceil(region.y - occupied.y);
+      const cols = Math.floor(region.x + region.w - occupied.x - occupied.w) - x + 1;
+      const rows = Math.floor(region.y + region.h - occupied.y - occupied.h) - y + 1;
       if (cols <= 0 || rows <= 0 || !Number.isFinite(cols * rows)) continue;
       choices.push({ x, y, cols, count: cols * rows });
       total += cols * rows;
@@ -77,11 +81,14 @@ export class DynamicZone {
       this.y += this.speedY * timeScale;
       return;
     }
-    const region = findRectangleContainer(this, this.bounds);
+    const occupied = gridMaskBounds(this.mask, this.x, this.y, this.w, this.h, this.#occupied);
+    const offsetX = occupied.x - this.x, offsetY = occupied.y - this.y;
+    const region = findRectangleContainer(occupied, this.bounds);
     if (!region) return; // Invalid-sized data has no legal position; never silently resize gameplay state.
-    clampRectanglePosition(this, region);
-    const bouncedX = this.#moveAxis("x", "speedX", region.x, region.x + region.w - this.w, timeScale);
-    const bouncedY = this.#moveAxis("y", "speedY", region.y, region.y + region.h - this.h, timeScale);
+    clampRectanglePosition(occupied, region);
+    this.x = occupied.x - offsetX; this.y = occupied.y - offsetY;
+    const bouncedX = this.#moveAxis("x", "speedX", region.x - offsetX, region.x + region.w - occupied.w - offsetX, timeScale);
+    const bouncedY = this.#moveAxis("y", "speedY", region.y - offsetY, region.y + region.h - occupied.h - offsetY, timeScale);
     const bounced = bouncedX || bouncedY;
 
     if (bounced) {

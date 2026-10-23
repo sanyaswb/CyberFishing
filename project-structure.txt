@@ -212,6 +212,8 @@
 │  │  │  └── inactive_frame_probe.js
 │  │  ├── events
 │  │  │  └── event_lifecycle.js
+│  │  ├── geometry
+│  │  │  └── grid_mask.js
 │  │  ├── math
 │  │  │  ├── normalize_distance.js
 │  │  │  ├── number_normalization.js

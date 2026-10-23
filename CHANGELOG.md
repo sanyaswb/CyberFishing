@@ -2,6 +2,35 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.0 - Zone Editor and Connected Masks
+
+- Owner-approved minor release: connected local masks, exact gameplay boundaries and shore-clipped Pixi waves, with mesh focus, painting/erasing, host-field locking and independent mask opacity.
+- Zone geometry stays put across grid-size changes; grid opacity is shared by cell, mesh and perspective grids. Editor controls and dependencies are simplified. Completed tasks move to the archive while owner acceptance remains pending.
+
+## v0.46.46 - Mesh Editing Controls and Opacity
+
+- Mesh editing disables host-zone fields and structural actions until exit/apply. A separate mask-fill opacity slider reveals the map texture; the editor grid-opacity control now applies to the cell, mesh and perspective grids together on Canvas/WebGL.
+
+## v0.46.45 - Connected Zone Masks
+
+- Ordinary zones support local x2/x4 meshes: LMB paints, RMB erases, and connected masks bake to compact JSON with inversion and exact gameplay boundaries. Mesh editing dims the rest of the viewport immediately. Pixi waves follow the applied water mask, keeping excluded shore still; depth stays unchanged. Masks survive grid changes and file round-trips.
+
+## v0.46.44 - Zones Stay Put When Grid Changes
+
+- Changing cell size preserves exact zone sizes and positions, live moving bodies and bounds. Water clipping uses design coordinates; grid/depth coverage rebuilds from exact geometry, and subsequent editing snaps to the new grid.
+
+## v0.46.43 - Editor Grid and Unavailable Switches
+
+- Turning the editor off also hides its grids. Switches blocked by dependencies look dimmed and expose their unavailable state, updating as prerequisites change while keeping the blocking-control highlight on attempted activation.
+
+## v0.46.42 - Independent Depth Display
+
+- Depth numbers and opacity work with editing off, retaining the cached map and the editing controls' prerequisites. Tasks now require archiving completed work before every push while retaining pending owner checks.
+
+## v0.46.41 - Cell Grid Under Editor
+
+- Cell-grid and depth controls sit directly after background visibility in the editor. Removed line-step and snap controls and their variable logic: grid lines and snapped editing use one map cell, while moving-body and float translation stay continuous.
+
 ## v0.46.40 - Fight Sector Stays Drawn
 
 - The fight sector and the line radius stay drawn while a fish is on: built from the rod with the fight frame's radius.
@@ -13,31 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.38 - Float Stays on the Water
 
 - Location editor: the conditional float stays on the water when the equipped line is longer than it.
-
-## v0.46.37 - Fishing Zones from the Equipment
-
-- Location editor: "Брати значення зі спорядження" takes the line length and the net from the game's equipment for the fishing zone previews.
-
-## v0.46.36 - Show Switches Redraw
-
-- Location editor: fishing zones show at once and without the editor (editing still needs it); switches that need a parent (overlay master, editor, the zone shown) are blocked and name it; previews start at the canvas middle while no cast moved the rod.
-
-## v0.46.35 - Fishing Zones Tab
-
-- Location editor: Зони риболовлі — line length and a conditional float for the fight sector and line radius, hand chum zone, test chum zones that look like real ones.
-
-## v0.46.34 - Zones Measured from the Castable Area
-
-- Location editor: the game's overlays measured from the castable bottom edge live in its list and preview the real values; hand chum's far line and the half-circles' anchors are dragged like zones; net and fish are chosen from lists.
-
-## v0.46.33 - Lobby Background in WebP
-
-- The lobby background ships as WebP (15.4 MB PNG -> 0.56 MB); the PNG master moved to asset-sources.
-
-## v0.46.32 - Water Only in Castable Zones
-
-- The water animates only inside the castable zones: with several zones a mask clips it and the waves fade at each zone's edges.
-
-## v0.46.31 - Selected Zone Input
-
-- Zone hover and editing follow the selected number in each category. Other bodies cannot steal the selection; changing it clears hover and cancels stale dragging, with an additional ID check for moving zones.

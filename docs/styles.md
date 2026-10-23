@@ -9,6 +9,27 @@ version. There are no CSS imports, runtime style installers or build requirement
 
 ## Ownership
 
+TK-075/v0.46.46: active mesh mode puts host geometry/shape/bounds and add/delete controls in the existing transparent
+control group, using a disabled native fieldset with dimmed rows; mesh/number/opacity controls remain outside it.
+Exiting/applying rebuilds the enabled group. A shared DEV mask-fill opacity (0–100%, default 30%) affects draft and
+shown/hovered applied masks without changing topology/config. The editor's existing grid opacity drives cell,
+mesh and perspective grid lines on both renderer paths; mask contours and outside-host dimming stay independent.
+
+Spec 138: each ordinary zone has an optional applied mask and a separate DEV mesh draft (×2/×4).
+Existing switch/select/action rows own the controls; raw mask arrays are excluded from the parameter tree.
+LMB paints, RMB erases (click/drag), and only a side-connected nonempty draft can apply. Entering mesh mode immediately
+dims the viewport outside the host rectangle; exit/selection/dependency changes remove focus and stale input.
+Static, moving and mesh/focus annotation layers cache independently; the shared segment/fill commands serve WebGL and Canvas.
+Masks control coordinate acceptance/contours and preserve normalized geometry across global-grid changes; depth stays separate. Applied castable masks also clip Pixi waves so excluded shore stays still.
+
+Spec 137/v0.46.44: changing map cell size retains exact map-space zone rectangles, live moving-body positions and movement bounds. Authored coordinates remain in design cells; fractional runtime cell geometry is rasterized only for gameplay/depth queries. Water clipping uses design units. DEV geometry, pointer input, live-coordinate snapshots and depth overlays use the map's applied cell size while a config reload is pending. Subsequent snapped edits use one new cell; existing geometry is not snapped by a grid change.
+
+TK-074/v0.46.43: editor on enables the cell grid; editor off clears both grid switches, leaving the independent depth display unchanged. Switches with unmet `requires` use a dimmed label/control, a not-allowed cursor and `aria-disabled`; explanation clicks still highlight the blocker, and switching an already-on value off remains possible. Availability updates on control changes, bound synchronization and panel opening, without polling; dependency rows are released with bindings and unchanged availability does not rewrite DOM state.
+
+TK-073/v0.46.42: «Глибина в клітинках» is an independent display switch, usable while the editor is off. Its opacity and cached map do not depend on editing; enabling/disabling editing retains the chosen depth visibility. Editing controls keep their existing prerequisites.
+
+TK-072/v0.46.41: the cell-grid controls are direct children of «РЕДАКТОР», immediately after background visibility; the former cell-grid subsection is removed. Visibility, opacity, cell size and depth controls retain their bindings and prerequisite behavior. Grid lines and snapped editing use one map cell; configurable line skipping and snap multipliers are removed. Dynamic-body and float translation remain continuous.
+
 TK-065/v0.46.31: each zone-category dropdown retains its selected number. Only that number receives map hover/body input; clicking another body never selects it. Selection changes clear hover and cancel stale captures, including dynamic bounds; live targets also check their authored ID before writing.
 
 Spec 135/v0.46.30: moving-zone creation reuses the existing select row for Circle/Square; the selected shape has one diameter/side input. Legacy unequal rectangles retain their dimensions and an explicit rectangle label. Circle annotations use the shared reusable geometry and native ellipse primitives in WebGL/Canvas; cardinal contour handles and input hit testing match the live body. No new CSS component or texture is introduced.

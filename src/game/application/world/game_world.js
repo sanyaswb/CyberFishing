@@ -96,7 +96,8 @@ export class GameWorld {
       vy,
       this.#locationConfig.cellSize,
     );
-    return cell && cell.isCastable && !cell.hasCollision ? cell : null;
+    const accepted = this.#map.isCastableAt ? this.#map.isCastableAt(vx, vy) : cell?.isCastable && !cell.hasCollision;
+    return cell && accepted ? cell : null;
   }
 
   update(dt, timeScale, bounds) {
@@ -121,6 +122,7 @@ export class GameWorld {
         return this.checkWater(vx, vy);
       },
       (vx, vy) => {
+        if (this.#map.hasCollisionAt) return this.#map.hasCollisionAt(vx, vy);
         const cell = this.#map.getCellAtVirtualPos(vx, vy, locations.cellSize);
         return cell ? cell.hasCollision : false;
       },

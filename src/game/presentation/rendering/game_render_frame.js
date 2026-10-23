@@ -22,7 +22,7 @@ export class GameRenderFrame {
       // drifts with the same current that carries the tackle (spec 106 D9).
       current: { x: 0, y: 0 },
       // The location's water metric and the virtual bounds the water's clip regions cover (the wave field's area).
-      waterPlane: { metric: null, left: 0, right: 0, top: 0, bottom: 0 },
+      waterPlane: { metric: null, left: 0, right: 0, top: 0, bottom: 0, masked: false },
       clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
       annotations: null,
@@ -94,6 +94,7 @@ export class GameRenderFrame {
     this.world.current.x = 0;
     this.world.current.y = 0;
     this.world.waterPlane.metric = null;
+    this.world.waterPlane.masked = false;
     this.world.clipRegions.reset();
     this.world.dynamicZones.reset();
     this.world.chumZones.reset();

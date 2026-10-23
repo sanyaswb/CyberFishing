@@ -15,9 +15,9 @@ const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної п�
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
-// location — then the editor controls directly, Зони (one list per category: the switch turns the zone's physics on, then
-// its items appear), Сітка перспективи, Збереження (the location's zone file), and the sections shared by every
-// location: Сітка клітинок. The game's overlays measured from the castable area live in its list (spec 136). Config
+// location — then the editor and shared cell-grid controls directly, Зони (one list per category: the switch turns the
+// zone's physics on, then its items appear), Сітка перспективи, Збереження (the location's zone file).
+// The game's overlays measured from the castable area live in its list (spec 136). Config
 // edits go through the injected validated runtime override path; editor settings live in ZoneEditorState.
 export class ZoneEditorSection {
   #ui; #state; #config; #createSection; #renderTree; #update;
@@ -26,6 +26,7 @@ export class ZoneEditorSection {
   #perspective = null;
   #fishing = null;
   #newDynamicShape = "square";
+  #maskEditor;
 
   #saving = null;
   #savingStatus = null;
@@ -37,13 +38,14 @@ export class ZoneEditorSection {
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
     resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "", readDynamicZones = null,
-    getDependentZones = null }) {
+    getDependentZones = null, maskEditor = null }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
     this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
     this.#createMetric = createWaterMetric;
     this.#readDynamicZones = readDynamicZones;
     this.#getDependentZones = getDependentZones;
+    this.#maskEditor = maskEditor;
     this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
   }
 
@@ -74,12 +76,12 @@ export class ZoneEditorSection {
     this.#fillPerspective();
     this.#saving = this.#createSection("Збереження", content, ["ZONE_EDITOR", "saving"]);
     this.#fillSaving();
-    this.#renderCellGrid(this.#createSection("Сітка клітинок (спільне для всіх локацій)", content, ["ZONE_EDITOR", "cells"]));
     this.#unsubscribe?.();
     this.#unsubscribe = this.#state.subscribeZonesEdited?.(() => this.#refreshZones()) ?? null;
   }
 
   dispose() {
+    this.#maskEditor?.stop();
     this.#unsubscribe?.();
     this.#unsubscribe = null;
   }
@@ -196,6 +198,7 @@ export class ZoneEditorSection {
     }, ["ZONE_EDITOR", "enabled"]);
     ui.createSwitcherRow("Показати фон (інакше чорний)", state.background, section,
       value => state.setFlag("background", value), ["ZONE_EDITOR", "background"]);
+    this.#renderCellGrid(section);
     ui.createInfoRow("Редактор", "Увімкнений редактор вмикає сітку клітинок і перетягування зон, категорій, увімкнених у «Зони → Редагувати …»: у них рамка їхнього кольору, hover і перетягування працюють лише для вибраного «Номера зони» у відповідній категорії. Інший номер спочатку оберіть у списку. Середина зони (30%) пересуває всю зону, край — змінює розмір (кут — два краї); краї й статичні зони прилипають до клітинок, переміщення рухомого тіла плавне. Постійна заливка — «Показати зону» в списку категорії. Поки редактор увімкнено, гра не отримує дотиків, а її кнопки й вікна приховані; кнопки DevTools теж немає — підведіть курсор до лівого краю екрана або проведіть пальцем від нього вправо.", section);
   }
 
@@ -263,15 +266,22 @@ export class ZoneEditorSection {
     const zones = location.zones?.[category] || [];
     const path = ["CONFIG", "locations", "map", id, "zones", category];
     const index = Math.max(0, Math.min(state.selectedIndex(category), zones.length - 1));
+    let external = list;
     if (zones.length) {
       ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), list,
         value => { this.#select(category, Number(value) - 1); });
       ui.createInfoRow("Координати", "x/y/w/h і bounds — клітинки designCellSize. Без зон закидання закинути вудку не можна.", list);
       const displayed = category === "dynamic" ? this.#readDynamicZones?.(id)?.[index] ?? zones[index] : zones[index];
+      this.#fillMask(category, index, zones[index], list, path);
+      if (this.#maskEditor) {
+        const locked = this.#maskEditor.isActive(category, index);
+        external = ui.createControlGroup(list, ["ZONE_EDITOR", "outer", category], { disabled: locked });
+        if (locked) ui.createInfoRow("Зовнішня зона", "Параметри зовнішньої зони заблоковані, поки редагується її меш. Застосуйте маску або вимкніть «Меш маски», щоб змінити їх.", list);
+      }
       if (category === "dynamic") {
         const legacyRectangle = !displayed.shape && displayed.w !== displayed.h;
         ui.createSelectRow("Форма зони", legacyRectangle ? ["Прямокутник", "Квадрат", "Коло"] : ["Квадрат", "Коло"],
-          legacyRectangle ? "Прямокутник" : displayed.shape === "circle" ? "Коло" : "Квадрат", list, label => {
+          legacyRectangle ? "Прямокутник" : displayed.shape === "circle" ? "Коло" : "Квадрат", external, label => {
           if (label === "Прямокутник") return;
           const side = Math.min(displayed.w, displayed.h);
           this.#update(path, zones.map((zone, number) => number === index
@@ -280,24 +290,25 @@ export class ZoneEditorSection {
         }, [...path, index, "shape"]);
         const fields = { ...displayed };
         delete fields.shape;
+        delete fields.mask;
         if (displayed.shape) {
           delete fields.w; delete fields.h;
-          ui.createInputRow(displayed.shape === "circle" ? "Діаметр, клітинок" : "Сторона, клітинок", displayed.w, list, "number",
+          ui.createInputRow(displayed.shape === "circle" ? "Діаметр, клітинок" : "Сторона, клітинок", displayed.w, external, "number",
             value => this.#update(path, zones.map((zone, number) => number === index ? { ...displayed, w: value, h: value } : zone)),
             [...path, index, "w"]);
         }
-        this.#renderTree(fields, list, [...path, index]);
-      } else this.#renderTree(displayed, list, [...path, index]);
+        this.#renderTree(fields, external, [...path, index]);
+      } else { const fields = { ...displayed }; delete fields.mask; this.#renderTree(fields, external, [...path, index]); }
       if (category === "dynamic") ui.createInfoRow("Область руху", "Форма нової зони обирається перед додаванням. Для кола задається діаметр, для квадрата — сторона. Клацніть рухому зону на мапі, щоб показати ручки її області руху. Тягніть край, кут або середину області; вона завжди містить усе тіло зони.", list);
       // Any zone can go, the last one too (TK-051); the refilled list then has no delete button.
-      ui.createButtonRow("Видалити вибрану зону", list, () => {
+      ui.createButtonRow("Видалити вибрану зону", external, () => {
         this.#update(path, zones.filter((_, number) => number !== index));
         this.#select(category, Math.max(0, index - 1));
       });
     }
-    if (category === "dynamic") ui.createSelectRow("Форма нової зони", ["Квадрат", "Коло"], this.#newDynamicShape === "circle" ? "Коло" : "Квадрат", list,
+    if (category === "dynamic") ui.createSelectRow("Форма нової зони", ["Квадрат", "Коло"], this.#newDynamicShape === "circle" ? "Коло" : "Квадрат", external,
       label => { this.#newDynamicShape = label === "Коло" ? "circle" : "square"; }, ["ZONE_EDITOR", "newDynamicShape"]);
-    ui.createButtonRow("Додати зону", list, () => {
+    ui.createButtonRow("Додати зону", external, () => {
       const template = category === "dynamic" ? this.#readDynamicZones?.(id)?.[index] ?? zones[index] : zones[index];
       const zone = template ? JSON.parse(JSON.stringify(template)) : { x: 0, y: 0, w: 1, h: 1 };
       if (category === "dynamic") {
@@ -328,20 +339,42 @@ export class ZoneEditorSection {
     this.#showSavingStatus();
   }
 
+  #fillMask(category, index, zone, list, path) {
+    const editor = this.#maskEditor;
+    if (!editor) return;
+    const ui = this.#ui, refresh = () => this.#refreshZones();
+    if (zone.mask) ui.createSwitcherRow("Маска увімкнена", zone.mask.enabled, list, enabled => {
+      editor.stop(); this.#update([...path, index, "mask"], { ...zone.mask, enabled }); refresh();
+    }, [...path, index, "mask", "enabled"]);
+    const meshPath = ["ZONE_EDITOR", "mesh", category];
+    ui.createSwitcherRow("Меш маски", editor.isActive(category, index), list, enabled => {
+      if (enabled) editor.start(category, index); else editor.stop(); refresh();
+    }, meshPath, meshPath, { requires: [...this.#categoryPrerequisites([category]),
+      { path: ["ZONE_EDITOR", "editing", category], isEnabled: () => this.#state.isEditable(category) },
+      { path: ["ZONE_EDITOR", "locationId"], isEnabled: () => this.#state.editsLoadedLocation }] });
+    if (zone.mask || editor.isActive(category, index)) {
+      const opacityPath = ["ZONE_EDITOR", "maskOpacity"];
+      ui.createRangeRow("Непрозорість маски", editor.opacity * 100, list, value => {
+        ui.syncValue(opacityPath, editor.setOpacity(value / 100) * 100);
+      }, opacityPath);
+    }
+    if (editor.isActive(category, index)) {
+      ui.createSelectRow("Дроблення клітинки", ["×2", "×4"], `×${editor.subdivision}`, list,
+        label => { editor.setSubdivision(label === "×4" ? 4 : 2); refresh(); }, [...meshPath, "subdivision"]);
+      ui.createSwitcherRow("Інверсія маски", editor.draft.reversed, list, () => { editor.invert(); refresh(); }, [...meshPath, "reverse"]);
+      ui.createButtonRow("Застосувати маску", list, () => { editor.apply(); refresh(); });
+      ui.createInfoRow("Маска", editor.canApply ? "Готова до застосування." : "Виділіть одну непорожню фігуру, з’єднану сторонами. Роз’єднану маску застосувати не можна.", list);
+    }
+    if (editor.message) ui.createInfoRow("Стан маски", editor.message, list);
+    ui.createInfoRow("Редагування маски", "Меш працює лише для вибраного номера зони. ЛКМ додає клітинки, ПКМ видаляє; можна протягувати. До застосування це чернетка. Під час її редагування зовнішні параметри заблоковані. Непрозорість маски змінює лише заливку; контур і сітка лишаються видимими. Готова маска визначає реальні межі й контур та зберігається з експортом зон; маска ігрової зони обмежує Pixi-хвилі, глибина незмінна. Вимкнення маски повертає початкову форму. Зміна дроблення починає чисту чернетку, готову маску збережено.", list);
+  }
+
   #renderCellGrid(section) {
     const ui = this.#ui, state = this.#state, locations = this.#config.locations;
     ui.createSwitcherRow("Показати сітку", state.cellGrid, section, value => { state.setFlag("cellGrid", value); this.#syncGrids(); },
       ["ZONE_EDITOR", "cellGrid"]);
     ui.createRangeRow("Непрозорість сітки", state.cellGridOpacity * 100, section,
       value => state.setNumber("cellGridOpacity", value / 100), ["ZONE_EDITOR", "cellGridOpacity"]);
-    const stepPath = ["ZONE_EDITOR", "cellLineStep"];
-    ui.createInputRow("Крок ліній, клітинок", state.cellLineStep, section, "number", value => {
-      state.setNumber("cellLineStep", value); ui.syncValue(stepPath, state.cellLineStep);
-    }, stepPath);
-    const snapPath = ["ZONE_EDITOR", "snapCells"];
-    ui.createInputRow("Прилипання, клітинок", state.snapCells, section, "number", value => {
-      state.setNumber("snapCells", value); ui.syncValue(snapPath, state.snapCells);
-    }, snapPath);
     const cellPath = ["CONFIG", "locations", "cellSize"];
     ui.createInputRow("Розмір клітинки, px", locations.cellSize, section, "number", value => {
       const next = Math.round(Math.max(CELL_SIZE.min, Math.min(CELL_SIZE.max, Number(value) || locations.cellSize)));
@@ -349,9 +382,9 @@ export class ZoneEditorSection {
       if (next !== locations.cellSize) this.#update(cellPath, next);
     }, cellPath);
     const design = Number(locations.designCellSize) || locations.cellSize;
-    ui.createInfoRow("Клітинки", `Розмір клітинки — сітка мапи гри (${CELL_SIZE.min}–${CELL_SIZE.max} px): зміна перебудовує клітинки й глибини. Зони задані в клітинках дизайну ${design} px, множник ${(locations.cellSize / design).toFixed(2)}. Крок ліній — кожна N-та лінія; прилипання — на скільки клітинок пересувається край.`, section);
+    ui.createInfoRow("Клітинки", `Сітка клітинок спільна для всіх локацій. Непрозорість сітки керує клітинною сіткою, сіткою мешу й перспективи; заливка маски має окрему непрозорість. Розмір клітинки — сітка мапи гри (${CELL_SIZE.min}–${CELL_SIZE.max} px): зміна перебудовує клітинки й глибини, зберігаючи положення та розміри наявних зон. Зони задані в клітинках дизайну ${design} px, множник ${(locations.cellSize / design).toFixed(2)}. Лінії й прилипання — через одну клітинку; переміщення рухомого тіла плавне.`, section);
     ui.createSwitcherRow("Глибина в клітинках", state.depth, section, value => state.setFlag("depth", value),
-      ["ZONE_EDITOR", "depth"], ["ZONE_EDITOR", "depth"], { requires: this.#editingPrerequisites() });
+      ["ZONE_EDITOR", "depth"]);
     ui.createRangeRow("Непрозорість глибини", state.depthOpacity * 100, section,
       value => state.setNumber("depthOpacity", value / 100), ["ZONE_EDITOR", "depthOpacity"]);
   }

@@ -94,7 +94,7 @@ export class PixiWaterRenderer {
     const width = area ? Math.min(viewWidth, area.right) - left : 0;
     const height = area ? Math.min(viewHeight, area.bottom) - top : 0;
     if (!(width > 0 && height > 0)) return this.#hide();
-    const reshaped = this.#clipToZones(world.clipRegions, area);
+    const reshaped = this.#clipToZones(world.clipRegions, area, world.waterPlane?.masked === true);
     const wasVisible = this.#visible;
     this.#visible = true;
     this.#container.visible = true;
@@ -178,7 +178,7 @@ export class PixiWaterRenderer {
   // Several zones: the mask is rebuilt only when their screen rectangles change (a camera move), and the wave field's
   // regions (shares of the bounding box, which a camera move keeps) only when the zones themselves change. One zone is
   // the whole box: no mask, the field's default region. Returns whether the field's regions changed.
-  #clipToZones(regions, area) {
+  #clipToZones(regions, area, union) {
     const count = regions.count;
     const shares = this.#shares;
     shares.length = count * 4;
@@ -190,7 +190,7 @@ export class PixiWaterRenderer {
       shares[index * 4 + 2] = (region.x + region.width - area.left) / spanX;
       shares[index * 4 + 3] = (region.y + region.height - area.top) / spanY;
     }
-    const reshaped = this.#field.setRegions(shares, count);
+    const reshaped = this.#field.setRegions(shares, count, union);
     if (count < 2) {
       // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
       if (this.#container.mask) { this.#container.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }

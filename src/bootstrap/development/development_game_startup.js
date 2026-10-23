@@ -37,6 +37,7 @@ import { CastableDependentZones } from "../../dev/location/castable_dependent_zo
 import { CastableZoneReadings } from "../../dev/location/castable_zone_readings.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
 import { ZoneEditorDragController } from "../../dev/location/zone_editor_drag_controller.js";
+import { ZoneMaskEditor } from "../../dev/location/zone_mask_editor.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
 import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
 import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
@@ -125,6 +126,8 @@ async function startGame() {
   let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
+  const maskEditor = new ZoneMaskEditor({ state: zoneEditorState, config: CONFIG, getMap: () => editorMap,
+    writeConfig: (path, value) => devTools?.updateConfig(path, value) });
   let zoneEditorDrag = null;
   let compositionRoot = null;
   let catalogTimeSnapshot = null;
@@ -198,6 +201,7 @@ async function startGame() {
         prepareZoneEdit: (path, value) => zoneEdits.prepare(path, value),
         readDynamicZones: id => zoneEdits.readDynamicZones(id),
         getDependentZones: () => dependentZones,
+        maskEditor,
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
@@ -225,9 +229,9 @@ async function startGame() {
           readings: new CastableZoneReadings({ ...options, nets: itemCatalog.nets, fishes: FISH_DB }) });
         zoneEditorDrag = new ZoneEditorDragController({ ...options, state: zoneEditorState, documentTarget,
           mountNode: developmentMount, getCanvas: () => documentTarget.getElementById("gameCanvas"),
-          writeZones: writeConfig, dependentZones });
+          writeZones: writeConfig, dependentZones, maskEditor });
         return new LocationDebugRenderFrameBuilder({ ...options,
-          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState, dependentZones }), zoneEditorTool: zoneEditorDrag,
+          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState, dependentZones, maskEditor }), zoneEditorTool: zoneEditorDrag,
           chumPreview: dependentZones,
           editorState: zoneEditorState });
       },

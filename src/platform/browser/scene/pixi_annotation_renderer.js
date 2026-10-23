@@ -3,18 +3,22 @@
 export class PixiAnnotationRenderer {
   #primary;
   #overlay;
+  #foreground;
 
   constructor({ pixi, stage }) {
     this.#primary = { graphics: new pixi.Graphics(), model: null, revision: -1 };
     this.#overlay = { graphics: new pixi.Graphics(), model: null, revision: -1 };
+    this.#foreground = { graphics: new pixi.Graphics(), model: null, revision: -1 };
     this.#primary.graphics.visible = false; this.#overlay.graphics.visible = false;
-    stage.addChild(this.#primary.graphics, this.#overlay.graphics);
+    this.#foreground.graphics.visible = false;
+    stage.addChild(this.#primary.graphics, this.#overlay.graphics, this.#foreground.graphics);
   }
 
   update(model) {
     const primaryChanged = this.#updateLayer(this.#primary, model);
     const overlayChanged = this.#updateLayer(this.#overlay, model?.overlay ?? null);
-    return primaryChanged || overlayChanged;
+    const foregroundChanged = this.#updateLayer(this.#foreground, model?.foreground ?? null);
+    return primaryChanged || overlayChanged || foregroundChanged;
   }
 
   #updateLayer(layer, model) {
@@ -35,6 +39,10 @@ export class PixiAnnotationRenderer {
     if (model.cellLineCount) graphics.stroke({ color: 0xffffff, alpha: model.cellLineAlpha ?? .2, width: 1 });
     for (let i = 0; i < model.rectCount; i++) {
       const r = model.rects[i];
+      if (r.shape === "segment") {
+        graphics.moveTo(r.x, r.y).lineTo(r.x + r.width, r.y + r.height).stroke({ color: r.color, alpha: r.strokeAlpha, width: r.lineWidth });
+        continue;
+      }
       if (r.shape === "ellipse") graphics.ellipse(r.x + r.width / 2, r.y + r.height / 2, r.width / 2, r.height / 2);
       else if (r.shape === "polygon") graphics.poly(r.points, true);
       else graphics.rect(r.x, r.y, r.width, r.height);
@@ -45,7 +53,7 @@ export class PixiAnnotationRenderer {
       const l = model.lines[i];
       graphics.moveTo(l.x1, l.y1).lineTo(l.x2, l.y2);
     }
-    if (model.lineCount) graphics.stroke({ color: 0x88ddff, alpha: .5, width: 1 });
+    if (model.lineCount) graphics.stroke({ color: 0x88ddff, alpha: model.lineAlpha ?? .5, width: 1 });
     return true;
   }
 }

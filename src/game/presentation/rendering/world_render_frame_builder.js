@@ -1,5 +1,6 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
 import { timeOfDayLayers } from "../time/time_of_day_layers.js";
+import { compileGridMask } from "../../../engine/geometry/grid_mask.js";
 
 export class WorldRenderFrameBuilder {
   #map;
@@ -122,8 +123,10 @@ export class WorldRenderFrameBuilder {
     const maps = locations.map || {};
     const locationId = locations.currentLocationId || this.#locationId;
     const zones = maps[locationId]?.zones?.castable || [];
-    const cellSize = Math.max(1, Number(locations.cellSize) || 40);
+    // Authored rectangles use design cells; changing raster density must not resize the water mask.
+    const cellSize = Math.max(1, Number(locations.designCellSize || locations.cellSize) || 40);
     plane.left = Infinity; plane.right = -Infinity; plane.top = Infinity; plane.bottom = -Infinity;
+    plane.masked = false;
     for (let index = 0; index < zones.length; index += 1) {
       const zone = zones[index];
       let left = Number(zone.x) * cellSize;
@@ -142,6 +145,23 @@ export class WorldRenderFrameBuilder {
       }
       const top = Number(zone.y) * cellSize;
       const bottom = (Number(zone.y) + Number(zone.h)) * cellSize;
+      if (zone.mask?.enabled) {
+        plane.masked = true;
+        const hostLeft = zone.adaptiveX ? 0 : Number(zone.x) * cellSize;
+        const hostWidth = zone.adaptiveX ? locations.baseResolution.width : Number(zone.w) * cellSize;
+        const hostHeight = bottom - top;
+        for (const rect of compileGridMask(zone.mask).rects) {
+          const maskLeft = Math.max(left, hostLeft + rect[0] * hostWidth);
+          const maskRight = Math.min(right, hostLeft + (rect[0] + rect[2]) * hostWidth);
+          if (maskRight > maskLeft) this.#clipRect(target, plane, maskLeft, top + rect[1] * hostHeight, maskRight, top + (rect[1] + rect[3]) * hostHeight);
+        }
+        continue;
+      }
+      this.#clipRect(target, plane, left, top, right, bottom);
+    }
+  }
+
+  #clipRect(target, plane, left, top, right, bottom) {
       plane.left = Math.min(plane.left, left); plane.right = Math.max(plane.right, right);
       plane.top = Math.min(plane.top, top); plane.bottom = Math.max(plane.bottom, bottom);
       const first = this.#projector.virtualToScreen(
@@ -161,7 +181,6 @@ export class WorldRenderFrameBuilder {
       record.y = Math.min(y1, second.y);
       record.width = Math.abs(second.x - x1);
       record.height = Math.abs(second.y - y1);
-    }
   }
 
   #buildInvalidMarker(target, marker) {

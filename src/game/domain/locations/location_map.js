@@ -1,6 +1,7 @@
 import { DynamicZone } from "./dynamic_zone.js";
 import { GridCell } from "./grid_cell.js";
 import { backgroundTimeBlend } from "../time/background_time_blend.js";
+import { gridMaskContains } from "../../../engine/geometry/grid_mask.js";
 
 export class LocationMap {
   #locationsConfig;
@@ -32,6 +33,10 @@ export class LocationMap {
     height: 0,
   };
   #rng;
+  #cellSize;
+  #maskedCategories = {};
+  #visibleLeft = 0;
+  #visibleRight = 0;
 
   constructor(locationId, locationsConfig, rng = null, resources = null, startRng = rng) {
     if (!resources || typeof resources !== "object") {
@@ -46,6 +51,7 @@ export class LocationMap {
 
     const baseRes = locationsConfig.baseResolution;
     const actualCellSize = locationsConfig.cellSize;
+    this.#cellSize = actualCellSize;
     const designCellSize = locationsConfig.designCellSize || actualCellSize;
 
     this.#cols = Math.ceil(baseRes.width / actualCellSize);
@@ -62,7 +68,7 @@ export class LocationMap {
       this.#config.zones.dynamic
     ) {
       for (const dzConfig of this.#config.zones.dynamic) {
-        const zone = new DynamicZone(dzConfig, this.#rng);
+        const zone = new DynamicZone(dzConfig, this.#rng, ratio);
         zone.randomizeStart(startRng || this.#rng);
         this.#dynamicZones.push(zone);
       }
@@ -73,10 +79,13 @@ export class LocationMap {
     if (!resources || typeof resources !== "object") {
       throw new TypeError("LocationMap refreshConfig requires ready location resources");
     }
+    const previousCellSize = this.#cellSize;
+    const previousMoving = previousCellSize !== locationsConfig.cellSize ? this.#dynamicZones : null;
     this.#locationsConfig = locationsConfig;
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[this.#id]));
 
     const actualCellSize = locationsConfig.cellSize;
+    this.#cellSize = actualCellSize;
     const designCellSize = locationsConfig.designCellSize || actualCellSize;
     const ratio = designCellSize / actualCellSize;
 
@@ -88,7 +97,16 @@ export class LocationMap {
       this.#config.zones.dynamic
     ) {
       for (const dzConfig of this.#config.zones.dynamic) {
-        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
+        const zone = new DynamicZone(dzConfig, this.#rng, ratio);
+        const previous = previousMoving?.find(entry => entry.id === zone.id);
+        if (previous) {
+          const scale = previousCellSize / actualCellSize;
+          zone.x = previous.x * scale; zone.y = previous.y * scale;
+          zone.speedX = previous.speedX * scale; zone.speedY = previous.speedY * scale;
+          zone.currentSpeed = previous.currentSpeed * scale;
+          zone.dirTimer = previous.dirTimer;
+        }
+        this.#dynamicZones.push(zone);
       }
     }
 
@@ -102,20 +120,23 @@ export class LocationMap {
 
   // Scales design-grid zone coordinates to the actual cell size (in place on the map's own config copy).
   #scaleZones(ratio) {
+    for (const category of ["castable", "collisions", "snags"]) {
+      this.#maskedCategories[category] = this.#config.zones[category]?.some(zone => zone.mask?.enabled) === true;
+    }
     if (ratio !== 1) {
-      const scaleZone = (z, continuousPosition = false) => {
-        if (z.x !== undefined) z.x = continuousPosition ? z.x * ratio : Math.round(z.x * ratio);
-        if (z.y !== undefined) z.y = continuousPosition ? z.y * ratio : Math.round(z.y * ratio);
-        if (z.w !== undefined) z.w = Math.round(z.w * ratio);
-        if (z.h !== undefined) z.h = Math.round(z.h * ratio);
+      const scaleZone = (z) => {
+        if (z.x !== undefined) z.x *= ratio;
+        if (z.y !== undefined) z.y *= ratio;
+        if (z.w !== undefined) z.w *= ratio;
+        if (z.h !== undefined) z.h *= ratio;
 
         if (z.bounds) {
           const bArr = Array.isArray(z.bounds) ? z.bounds : [z.bounds];
           bArr.forEach((b) => {
-            if (b.x !== undefined) b.x = Math.round(b.x * ratio);
-            if (b.y !== undefined) b.y = Math.round(b.y * ratio);
-            if (b.w !== undefined) b.w = Math.round(b.w * ratio);
-            if (b.h !== undefined) b.h = Math.round(b.h * ratio);
+            if (b.x !== undefined) b.x *= ratio;
+            if (b.y !== undefined) b.y *= ratio;
+            if (b.w !== undefined) b.w *= ratio;
+            if (b.h !== undefined) b.h *= ratio;
           });
         }
       };
@@ -125,7 +146,7 @@ export class LocationMap {
         this.#config.zones.collisions.forEach(zone => scaleZone(zone));
       if (this.#config.zones.snags) this.#config.zones.snags.forEach(zone => scaleZone(zone));
       if (this.#config.zones.dynamic)
-        this.#config.zones.dynamic.forEach(zone => scaleZone(zone, true));
+        this.#config.zones.dynamic.forEach(zone => scaleZone(zone));
     }
   }
 
@@ -190,9 +211,9 @@ export class LocationMap {
     if (!this.#config.zones.castable) return;
 
     for (const z of this.#config.zones.castable) {
-      const startCol = z.adaptiveX ? 0 : z.x;
+      const startCol = z.adaptiveX ? 0 : Math.floor(z.x);
       const endCol = z.adaptiveX ? this.#cols : z.x + z.w;
-      const startRow = z.y;
+      const startRow = Math.floor(z.y);
       const endRow = z.y + z.h;
 
       for (let i = startCol; i < endCol; i++) {
@@ -226,24 +247,27 @@ export class LocationMap {
       }
     }
 
-    let visibleStartCol = 0;
-    let visibleEndCol = this.#cols;
+    let visibleLeft = 0;
+    let visibleRight = this.#locationsConfig.baseResolution.width / cellSize;
 
     if (proj) {
       const vLeft = proj.screenToVirtual(0, 0).x;
       const vRight = proj.screenToVirtual(proj.getCanvasWidth(), 0).x;
-      visibleStartCol = Math.max(0, Math.floor(vLeft / cellSize));
-      visibleEndCol = Math.min(this.#cols, Math.ceil(vRight / cellSize));
+      visibleLeft = Math.max(0, vLeft / cellSize);
+      visibleRight = Math.min(visibleRight, vRight / cellSize);
     }
+
+    const visibleStartCol = Math.floor(visibleLeft), visibleEndCol = Math.ceil(visibleRight);
+    this.#visibleLeft = visibleLeft; this.#visibleRight = visibleRight;
 
     const locCfg = this.#locationsConfig;
 
     if (locCfg.enableCastable !== false) {
       for (const z of this.#config.zones.castable) {
-        let startX = z.adaptiveX ? visibleStartCol : z.x;
-        let width = z.adaptiveX ? visibleEndCol - visibleStartCol : z.w;
-        for (let i = startX; i < startX + width; i++) {
-          for (let j = z.y; j < z.y + z.h; j++) {
+        const startX = z.adaptiveX ? visibleStartCol : Math.floor(z.x);
+        const endX = z.adaptiveX ? visibleEndCol : z.x + z.w;
+        for (let i = startX; i < endX; i++) {
+          for (let j = Math.floor(z.y); j < z.y + z.h; j++) {
             if (this.#isValid(i, j)) this.#grid[i][j].isCastable = true;
           }
         }
@@ -252,8 +276,8 @@ export class LocationMap {
 
     if (locCfg.enableCollisions !== false) {
       for (const z of this.#config.zones.collisions) {
-        for (let i = z.x; i < z.x + z.w; i++) {
-          for (let j = z.y; j < z.y + z.h; j++) {
+        for (let i = Math.floor(z.x); i < z.x + z.w; i++) {
+          for (let j = Math.floor(z.y); j < z.y + z.h; j++) {
             if (this.#isValid(i, j)) {
               this.#grid[i][j].hasCollision = true;
               this.#grid[i][j].isCastable = false;
@@ -265,8 +289,8 @@ export class LocationMap {
 
     if (locCfg.enableSnags !== false) {
       for (const z of this.#config.zones.snags) {
-        for (let i = z.x; i < z.x + z.w; i++) {
-          for (let j = z.y; j < z.y + z.h; j++) {
+        for (let i = Math.floor(z.x); i < z.x + z.w; i++) {
+          for (let j = Math.floor(z.y); j < z.y + z.h; j++) {
             if (this.#isValid(i, j)) this.#grid[i][j].hasSnag = true;
           }
         }
@@ -277,8 +301,8 @@ export class LocationMap {
     if (castableZone && castableZone.adaptiveX) {
       for (const dz of this.#dynamicZones) {
         if (dz.bounds && !Array.isArray(dz.bounds)) {
-          dz.bounds.x = visibleStartCol;
-          dz.bounds.w = visibleEndCol - visibleStartCol;
+          dz.bounds.x = visibleLeft;
+          dz.bounds.w = visibleRight - visibleLeft;
         }
       }
     }
@@ -324,6 +348,10 @@ export class LocationMap {
     return this.#cols;
   }
 
+  getCellSize() {
+    return this.#cellSize;
+  }
+
   getRows() {
     return this.#rows;
   }
@@ -338,6 +366,41 @@ export class LocationMap {
     const r = Math.floor(vY / cellSize);
     if (this.#isValid(c, r)) return this.#grid[c][r];
     return null;
+  }
+
+  // Fine coordinate constraints are separate from the depth/water raster. Unmasked categories retain legacy coverage.
+  isCastableAt(vX, vY) {
+    const cell = this.getCellAtVirtualPos(vX, vY, this.#cellSize);
+    if (!cell) return false;
+    if (!this.#maskedCategories.castable && !this.#maskedCategories.collisions) return cell.isCastable && !cell.hasCollision;
+    // isCastable in the raster has already subtracted coarse obstacles; recover castable coverage independently.
+    const castable = this.#locationsConfig.enableCastable !== false && this.#containsCategory("castable", vX, vY);
+    return castable && !this.hasCollisionAt(vX, vY);
+  }
+
+  hasCollisionAt(vX, vY) {
+    if (!this.#maskedCategories.collisions) return this.getCellAtVirtualPos(vX, vY, this.#cellSize)?.hasCollision === true;
+    return this.#locationsConfig.enableCollisions !== false && this.#containsCategory("collisions", vX, vY);
+  }
+
+  hasSnagAt(vX, vY) {
+    if (!this.#maskedCategories.snags) return this.getCellAtVirtualPos(vX, vY, this.#cellSize)?.hasSnag === true;
+    return this.#locationsConfig.enableSnags !== false && this.#containsCategory("snags", vX, vY);
+  }
+
+  #containsCategory(category, vX, vY) {
+    const x = vX / this.#cellSize, y = vY / this.#cellSize;
+    for (const zone of this.#config.zones[category] || []) {
+      const left = zone.adaptiveX ? this.#visibleLeft : zone.x;
+      const width = zone.adaptiveX ? this.#visibleRight - left : zone.w;
+      if (zone.mask?.enabled) {
+        const maskLeft = zone.adaptiveX ? 0 : left;
+        const maskWidth = zone.adaptiveX ? this.#locationsConfig.baseResolution.width / this.#cellSize : width;
+        if (gridMaskContains(zone.mask, (x - maskLeft) / maskWidth, (y - zone.y) / zone.h)) return true;
+      } else if (Math.floor(x) >= Math.floor(left) && Math.floor(x) < left + width &&
+        Math.floor(y) >= Math.floor(zone.y) && Math.floor(y) < zone.y + zone.h) return true;
+    }
+    return false;
   }
 
   get currentLocationId() {

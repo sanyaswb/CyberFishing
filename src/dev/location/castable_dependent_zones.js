@@ -293,11 +293,11 @@ export class CastableDependentZones {
   }
 
   // Moves a handle to a map point: hand chum's far line and test chum zones snap to the map's cell step like zone
-  // edges (cellSize x snapCells); the float follows the pointer within the line length over the water.
+  // edges (one cellSize); the float follows the pointer within the line length over the water.
   drag(handle, x, y) {
     const frame = this.#editingFrame();
     if (!frame) return;
-    const step = this.#config.locations.cellSize * Math.max(1, this.#state.snapCells || 1);
+    const step = this.#config.locations.cellSize;
     if (handle.kind === "chum") {
       this.#chum.drag(handle, this.#state.locationId, x, y, step, frame.metric);
       return;

@@ -66,6 +66,11 @@ export class WorldDebugRenderer {
       surface.strokeStyle = `#${r.color.toString(16).padStart(6, "0")}`;
       surface.lineWidth = r.lineWidth ?? 1;
       const alpha = surface.globalAlpha;
+      if (r.shape === "segment") {
+        surface.globalAlpha = alpha * r.strokeAlpha;
+        surface.beginPath(); surface.moveTo(r.x, r.y); surface.lineTo(r.x + r.width, r.y + r.height); surface.stroke();
+        surface.globalAlpha = alpha; continue;
+      }
       surface.globalAlpha = alpha * (r.fillAlpha ?? .12);
       surface.fillStyle = surface.strokeStyle;
       if (r.shape === "ellipse") {
@@ -86,7 +91,7 @@ export class WorldDebugRenderer {
       else surface.strokeRect(r.x, r.y, r.width, r.height);
       surface.globalAlpha = alpha;
     }
-    surface.strokeStyle = "rgba(136, 221, 255, 0.5)";
+    surface.strokeStyle = `rgba(136, 221, 255, ${model.lineAlpha ?? .5})`;
     surface.lineWidth = 1; surface.beginPath();
     for (let i = 0; i < model.lineCount; i++) {
       const l = model.lines[i];
@@ -94,5 +99,6 @@ export class WorldDebugRenderer {
     }
     surface.stroke();
     if (model.overlay) this.#renderAnnotations(model.overlay);
+    if (model.foreground) this.#renderAnnotations(model.foreground);
   }
 }

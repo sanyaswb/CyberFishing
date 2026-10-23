@@ -1,4 +1,5 @@
 import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
+import { bakeGridMask, readMaskCells, validateGridMask } from "../../engine/geometry/grid_mask.js";
 
 // The one canonical form of a location's zones (spec 130): the DevTools export, the browser import and
 // `npm run apply:zones` read and write it through this module, so a hash or a written module never depends on key order.
@@ -6,7 +7,7 @@ export const ZONE_FILE_FORMAT = "cyber-fishing/zones";
 export const ZONE_FILE_VERSION = 1;
 export const ZONE_CATEGORIES = Object.freeze(Object.keys(ZONE_CATEGORY_COLORS));
 const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "shape", "x", "y", "w", "h", "adaptiveX", "moving", "speedX", "speedY",
-  "bounds"]);
+  "bounds", "mask"]);
 const RECT_KEYS = Object.freeze(["x", "y", "w", "h"]);
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
 
@@ -24,6 +25,11 @@ function canonicalZone(zone) {
   const result = {};
   for (const key of ordered(zone, ZONE_KEYS)) {
     const value = zone[key];
+    if (key === "mask") {
+      const { cells } = readMaskCells(value);
+      result.mask = { ...bakeGridMask(value.cell, cells), enabled: value.enabled };
+      continue;
+    }
     result[key] = key !== "bounds" ? value : Array.isArray(value) ? value.map(canonicalRect) : canonicalRect(value);
   }
   return result;
@@ -112,6 +118,10 @@ export function validateZones(zones) {
       rectErrors(zone, path, errors);
       if (!zone || typeof zone !== "object") return;
       if (zone.adaptiveX !== undefined && typeof zone.adaptiveX !== "boolean") errors.push(`${path}.adaptiveX: true or false`);
+      if (zone.mask !== undefined) {
+        const error = validateGridMask(zone.mask);
+        if (error) errors.push(`${path}.mask: ${error}`);
+      }
       for (const key of ["multiplier", "speedX", "speedY"]) {
         if (zone[key] !== undefined && !finite(zone[key])) errors.push(`${path}.${key}: a finite number`);
       }

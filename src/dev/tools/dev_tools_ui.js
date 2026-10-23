@@ -20,6 +20,7 @@ export class DevToolsUI {
   #treeOrder = new WeakMap();
   #controlGroups = new WeakMap();
   #dependencyFeedback;
+  #dependentSwitches = new Map();
   #edgeOpener = null;
   #isOpen = false;
 
@@ -51,6 +52,7 @@ export class DevToolsUI {
   togglePanel(isOpen) {
     this.#isOpen = isOpen === true;
     if (isOpen) {
+      this.#refreshDependencies();
       this.#panel.classList.add("devtools--open");
     } else {
       this.#dependencyFeedback?.clear();
@@ -79,6 +81,7 @@ export class DevToolsUI {
     this.#dragButton = null;
     this.#tooltipProvider?.dispose();
     this.#controlBindings.clear();
+    this.#dependentSwitches.clear();
     this.#btn?.removeEventListener("click", this.#onToggleCallback);
     this.#btn?.remove();
     this.#panel?.remove();
@@ -92,16 +95,19 @@ export class DevToolsUI {
   clearValueBindings() {
     this.#dependencyFeedback?.clear();
     this.#controlBindings.clear();
+    this.#dependentSwitches.clear();
   }
 
   syncValue(path, value) {
     this.#controlBindings.sync(path, value);
     if (value === true) this.#dependencyFeedback?.resolve(path);
+    this.#refreshDependencies();
   }
 
   releaseValueBindings(container) {
     this.#dependencyFeedback?.releaseWithin(container);
     this.#controlBindings.releaseWithin(container);
+    for (const row of this.#dependentSwitches.keys()) if (container.contains(row)) this.#dependentSwitches.delete(row);
     const group = this.#controlGroups.get(container);
     if (group) {
       for (const row of group.infoRows) {
@@ -114,9 +120,15 @@ export class DevToolsUI {
   }
 
   // Independently refreshed controls without another disclosure or layout box.
-  createControlGroup(parentElement, path = null) {
-    const group = document.createElement("div");
+  createControlGroup(parentElement, path = null, { disabled = false } = {}) {
+    // A disabled fieldset blocks native mouse/keyboard editing of all descendants, including nested trees.
+    const group = document.createElement(disabled ? "fieldset" : "div");
     group.className = "devtools__control-group";
+    if (disabled) {
+      group.disabled = true;
+      group.setAttribute("aria-disabled", "true");
+      group.classList.add("devtools__control-group--disabled");
+    }
     this.#assignDevToolsPath(group, path);
     this.#controlGroups.set(group, { parent: parentElement, infoRows: [] });
     this.#insertTreeNode(parentElement, group, 0);
@@ -251,18 +263,40 @@ export class DevToolsUI {
       const blocker = next ? requires.find(requirement => !requirement.isEnabled()) : null;
       if (blocker) {
         cb.checked = currentValue;
+        this.#refreshDependencies();
         this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
         return;
       }
       onChangeCallback(next);
       currentValue = next;
       if (next) this.#dependencyFeedback?.resolve(bindingPath);
+      this.#refreshDependencies();
     });
     this.#controlBindings.register(bindingPath, (value) => {
       currentValue = value === true;
       cb.checked = currentValue;
     }, row);
     this.#insertTreeNode(parentElement, row, 0);
+    if (requires.length) {
+      let previousBlocked = null;
+      const refresh = () => {
+        const blocked = requires.some(requirement => !requirement.isEnabled());
+        if (blocked === previousBlocked) return;
+        previousBlocked = blocked;
+        row.classList.toggle("devtools__row--dependency-disabled", blocked);
+        // Keep explanation clicks and turning an already-on value off available; activation remains guarded.
+        cb.setAttribute("aria-disabled", String(blocked));
+      };
+      this.#dependentSwitches.set(row, refresh);
+      refresh();
+    }
+  }
+
+  #refreshDependencies() {
+    for (const [row, refresh] of this.#dependentSwitches) {
+      if (!row.parentNode) this.#dependentSwitches.delete(row);
+      else refresh();
+    }
   }
 
   createInputRow(

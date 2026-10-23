@@ -28,6 +28,8 @@ export class WaterWaveField {
   #rowX;
   #rowY;
   #regions = [0, 0, 1, 1];
+  #union = false;
+  #distance;
 
   constructor({ width, height }) {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || height < 2) {
@@ -37,6 +39,7 @@ export class WaterWaveField {
     this.#height = height;
     this.#pixels = new Uint8ClampedArray(width * height * 4);
     this.#envelope = new Float32Array(width * height);
+    this.#distance = new Float32Array(width * height);
     this.#rowX = new Float64Array(width);
     this.#rowY = new Float64Array(width);
     this.#buildEnvelope();
@@ -46,11 +49,12 @@ export class WaterWaveField {
   // regions: count rectangles as shares of the map, flat [u0, v0, u1, v1, ...]; the waves live inside them only and fade
   // out at each one's own edges (the shares FADE_* of that region). One region (0, 0, 1, 1) is the whole map. Called
   // when the regions change, not per step.
-  setRegions(regions, count) {
+  setRegions(regions, count, union = false) {
     const next = this.#regions;
-    let same = next.length === count * 4;
+    let same = this.#union === union && next.length === count * 4;
     for (let index = 0; same && index < count * 4; index += 1) same = next[index] === regions[index];
     if (same) return false;
+    this.#union = union;
     next.length = count * 4;
     for (let index = 0; index < count * 4; index += 1) next[index] = regions[index];
     this.#buildEnvelope();
@@ -58,6 +62,7 @@ export class WaterWaveField {
   }
 
   #buildEnvelope() {
+    if (this.#union) { this.#buildUnionEnvelope(); return; }
     const width = this.#width, height = this.#height, regions = this.#regions;
     for (let row = 0; row < height; row += 1) {
       const v = (row + 0.5) / height;
@@ -74,6 +79,33 @@ export class WaterWaveField {
         }
         this.#envelope[row * width + column] = value;
       }
+    }
+  }
+
+  // A baked mask is a union: internal rectangle seams must not become still lines in the waves.
+  // Rasterize only the small displacement map, then propagate distance from its exposed coastline in two passes.
+  #buildUnionEnvelope() {
+    const width = this.#width, height = this.#height, distance = this.#distance;
+    distance.fill(0);
+    for (let index = 0; index < this.#regions.length; index += 4) {
+      const left = Math.max(0, Math.ceil(this.#regions[index] * width - .5));
+      const right = Math.min(width - 1, Math.floor(this.#regions[index + 2] * width - .5));
+      const top = Math.max(0, Math.ceil(this.#regions[index + 1] * height - .5));
+      const bottom = Math.min(height - 1, Math.floor(this.#regions[index + 3] * height - .5));
+      for (let y = top; y <= bottom; y++) for (let x = left; x <= right; x++) distance[y * width + x] = Infinity;
+    }
+    const sideStep = 1 / (width * FADE_SIDE), topStep = 1 / (height * FADE_TOP), bottomStep = 1 / (height * FADE_BOTTOM);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      if (!distance[i]) continue;
+      distance[i] = Math.min(distance[i], x ? distance[i - 1] + sideStep : sideStep / 2,
+        y ? distance[i - width] + topStep : topStep / 2);
+    }
+    for (let y = height - 1; y >= 0; y--) for (let x = width - 1; x >= 0; x--) {
+      const i = y * width + x;
+      if (distance[i]) distance[i] = Math.min(distance[i], x < width - 1 ? distance[i + 1] + sideStep : sideStep / 2,
+        y < height - 1 ? distance[i + width] + bottomStep : bottomStep / 2);
+      this.#envelope[i] = smoothstep(distance[i]);
     }
   }
 

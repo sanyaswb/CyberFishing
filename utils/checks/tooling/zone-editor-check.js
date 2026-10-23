@@ -16,11 +16,231 @@ const { DevToolsControlBindingRegistry } = load("src/dev/services/dev_tools_cont
 const { LocationDebugDataProvider } = load("src/dev/location/location_debug_data_provider.js");
 const { WorldPerspective } = load("src/game/domain/locations/world_perspective.js");
 
+// Spec 138: topology, exact queries and real pointer/file commands (including the owner's RMB erase gesture).
+{
+  const maskMath = load('src/engine/geometry/grid_mask.js');
+  const { ZoneMaskEditor } = load('src/dev/location/zone_mask_editor.js');
+  const { LocationMap } = load('src/game/domain/locations/location_map.js');
+  const { DynamicZone } = load('src/game/domain/locations/dynamic_zone.js');
+  const { ZoneEditorDragController } = load('src/dev/location/zone_editor_drag_controller.js');
+  const { ZoneEditorConfigEdits } = load('src/dev/location/zone_editor_config_edits.js');
+  const format = load('src/dev/location/zone_export_format.js');
+  const cells = new Uint8Array(16).fill(1), cell = [.25, .25];
+  const full = maskMath.bakeGridMask(cell, cells);
+  assert.equal(JSON.stringify(full.rects), '[[0,0,4,4]]', 'a full mesh bakes to one rectangle');
+  assert.equal(maskMath.compileGridMask(full).edges.length, 4, 'no internal edges remain in baked contour');
+  assert.equal(maskMath.compileGridMask(full), maskMath.compileGridMask(full), 'topology is reused by identity');
+  cells.fill(0); cells[0] = cells[5] = 1;
+  assert.throws(() => maskMath.bakeGridMask(cell, cells), /connected/, 'diagonal contact cannot apply');
+  cells.fill(1); cells[5] = cells[6] = cells[9] = cells[10] = 0;
+  const ring = maskMath.bakeGridMask(cell, cells);
+  assert.equal(maskMath.compileGridMask(ring).edges.length, 8, 'connected holes retain inner and outer contours');
+  assert(!maskMath.gridMaskContains(ring, .5, .5));
+  assert(maskMath.validateGridMask({ ...full, rects: [[0, 0, 4, 4], [0, 0, 1, 1]] }));
+  assert(maskMath.validateGridMask({ ...full, cell: [1e-20, 1e-20] }));
+  assert(maskMath.validateGridMask({ ...full, rects: [[0, 0, Infinity, 1]] }));
+
+  const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 160, height: 160 },
+    map: { masks: { depthBounds: { min: 1, max: 5 }, zones: {
+      castable: [{ x: 0, y: 0, w: 2, h: 2 }], collisions: [], snags: [], dynamic: [] } } } } };
+  const resources = { depthReader: { getDepthAtPixel: () => 3 } };
+  const map = new LocationMap('masks', cfg.locations, { next: () => 0 }, resources);
+  map.recalculateZones(null, 40);
+  const st = new ZoneEditorState(); st.locationId = st.loadedLocationId = 'masks'; st.setFlag('enabled', true); st.setEditing('castable', true);
+  const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => map });
+  let writes = 0;
+  const write = (path, value) => {
+    writes++; const command = commands.prepare(path, value);
+    let object = cfg; for (const key of command.path.slice(1, -1)) object = object[key]; object[command.path.at(-1)] = command.value;
+    map.refreshConfig(cfg.locations, resources);
+  };
+  const editor = new ZoneMaskEditor({ state: st, config: cfg, getMap: () => map, writeConfig: write });
+  const proj = { getScale: () => 1, virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y) };
+  let layer, captures = 0;
+  const element = () => ({ classList: { add() {}, remove() {} }, listeners: new Map(),
+    addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener(type) { this.listeners.delete(type); }, remove() {},
+    setPointerCapture() { captures++; }, releasePointerCapture() { captures--; } });
+  const drag = new ZoneEditorDragController({ state: st, map, projector: proj, config: cfg, maskEditor: editor,
+    canvasMetrics: { width: 160, height: 160 }, getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 160, height: 160 }) }),
+    documentTarget: { createElement: element, body: element() }, mountNode: { prepend: node => { layer = node; } }, writeZones: write });
+  drag.sync();
+  const pointer = (type, x, y, button = 0) => { let prevented = false;
+    layer.listeners.get(type)({ clientX: x, clientY: y, button, pointerId: 1, preventDefault() { prevented = true; } }); return prevented; };
+  assert(editor.start('castable', 0));
+  const focusGeometry = new ZoneEditorGeometryBuilder({ state: st, map, projector: proj, config: cfg, maskEditor: editor,
+    canvasMetrics: { width: 160, height: 160 }, getWaterMetric: () => null });
+  const focused = {}; focusGeometry.buildInto(focused);
+  const foreground = focused.annotations.foreground;
+  const shades = foreground.rects.slice(0, foreground.rectCount).filter(r => r.color === 0 && r.fillAlpha > 0);
+  assert.equal(shades.reduce((area, r) => area + r.width * r.height, 0), 160 * 160 - 80 * 80,
+    'mesh mode immediately dims exactly the viewport outside the host');
+  const focusRevision = foreground.revision;
+  for (let i = 0; i < 120; i++) focusGeometry.buildInto(focused);
+  assert.equal(foreground.revision, focusRevision, 'unchanged focus/mesh commands are cached');
+  const layers = [];
+  const graphics = function () { this.operations = []; this.visible = false; this.clear = () => { this.operations.length = 0; return this; };
+    for (const method of ['moveTo', 'lineTo', 'stroke', 'fill', 'rect', 'ellipse']) this[method] = (...args) => { this.operations.push([method, ...args]); return this; }; };
+  const pixi = new PixiAnnotationRenderer({ pixi: { Graphics: graphics }, stage: { addChild: (...items) => layers.push(...items) } });
+  assert(pixi.update(focused.annotations));
+  assert(layers[2].visible && layers[2].operations.some(op => op[0] === 'lineTo'), 'WebGL paints foreground grid and dimming after other annotations');
+  let canvasSegments = 0, canvasShades = 0;
+  const canvas = { globalAlpha: 1, drawImage() {}, strokeRect() {}, fillRect() { if (this.globalAlpha === .7) canvasShades++; },
+    beginPath() {}, moveTo() {}, lineTo() { canvasSegments++; }, stroke() {} };
+  new WorldDebugRenderer({ surface: canvas }).render({ visible: true, annotations: focused.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
+  assert(canvasShades && canvasSegments, 'Canvas consumes the same foreground and segment commands');
+  pointer('pointerdown', 10, 10); pointer('pointermove', 70, 10); pointer('pointerup', 70, 10);
+  assert.equal(editor.draft.cells.slice(0, 4).reduce((a, b) => a + b, 0), 4, 'fast stroke fills intermediate cells');
+  assert.equal(writes, 0, 'painting only changes a draft');
+  pointer('pointerdown', 10, 30); pointer('pointermove', 10, 70); pointer('pointerup', 10, 70);
+  assert(pointer('contextmenu', 0, 0), 'RMB mesh input suppresses browser context menu');
+  pointer('pointerdown', 10, 70, 2); pointer('pointermove', 10, 50, 2); pointer('pointerup', 10, 50, 2);
+  assert(!editor.draft.cells[12] && !editor.draft.cells[8] && editor.draft.cells[4], 'RMB drag removes only traversed cells');
+  pointer('pointerdown', 10, 30, 2); pointer('pointerup', 10, 30, 2);
+  assert(editor.apply()); assert.equal(writes, 1); assert.equal(captures, 0);
+  focusGeometry.buildInto(focused); assert.equal(focused.annotations.foreground, null, 'applying leaves mesh mode and removes dimming');
+  pixi.update(focused.annotations); assert(!layers[2].visible);
+  const saved = cfg.locations.map.masks.zones.castable[0].mask;
+  assert(map.isCastableAt(10, 10) && !map.isCastableAt(10, 30), 'two points in one coarse cell obey the fine mask');
+  assert.equal(map.getCellAtVirtualPos(10, 30, 40).depth, 3, 'mask does not change depth');
+  assert.equal(map.getCellAtVirtualPos(10, 30, 40).isWater, true, 'mask does not change water raster');
+  const renderFrame = new GameRenderFrame();
+  const water = new WorldRenderFrameBuilder({ map, projector: proj, config: cfg, canvasMetrics: { width: 160 }, locationId: 'masks', boatChumBuilder: { buildInto() {} } });
+  water.buildInto({ target: renderFrame.world });
+  const clip = renderFrame.world.clipRegions.getAt(0);
+  assert.equal(JSON.stringify([clip.x, clip.y, clip.width, clip.height]), '[0,0,80,20]', 'water waves clip to the applied castable mask, excluding the shore');
+  assert(renderFrame.world.waterPlane.masked, 'water renderer receives union-mask semantics');
+  const json = format.canonicalZonesJson(cfg.locations.map.masks.zones);
+  const roundTrip = JSON.parse(json);
+  assert.equal(format.validateZones(roundTrip).length, 0);
+  assert.equal(format.canonicalZonesJson(roundTrip), json);
+  assert(format.zoneModuleSource('masks', roundTrip).includes('mask:'), 'apply:zones module keeps baked data');
+  for (const size of [17, 40]) {
+    cfg.locations.cellSize = size; map.refreshConfig(cfg.locations, resources);
+    assert(map.isCastableAt(10, 10) && !map.isCastableAt(10, 30), 'global grid changes preserve exact mask boundaries');
+  }
+  assert(editor.start('castable', 0)); editor.setSubdivision(4);
+  editor.paint(5, 5); editor.endStroke(); editor.paint(75, 75); editor.endStroke();
+  assert(!editor.apply() && cfg.locations.map.masks.zones.castable[0].mask === saved, 'invalid draft cannot replace saved geometry');
+  editor.setSubdivision(2);
+  editor.paint(30, 10); editor.paint(30, 70); editor.endStroke(); editor.invert();
+  assert(!editor.canApply && !editor.apply(), 'inversion cannot silently discard disconnected islands');
+  editor.invert(); assert(editor.canApply, 'reversing twice restores the actual occupied cells');
+  st.select('collisions', 0); editor.sync(); assert.equal(editor.draft, null, 'selection changes discard stale draft');
+  st.select('castable', 0); editor.start('castable', 0);
+  pointer('pointerdown', 10, 10); st.setEditing('castable', false); drag.sync();
+  assert.equal(captures, 0, 'dependency change releases painting capture');
+  assert.equal(editor.draft, null);
+  drag.dispose(); assert.equal(layer.listeners.size, 0, 'all mesh pointer/context listeners are released');
+
+  const zones = cfg.locations.map.masks.zones;
+  zones.castable[0].mask = { ...saved, enabled: false }; map.refreshConfig(cfg.locations, resources);
+  assert(map.isCastableAt(10, 30), 'disabled mask restores original shape');
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  assert.equal(renderFrame.world.clipRegions.getAt(0).height, 80, 'disabled mask restores ordinary wave area');
+  assert.equal(renderFrame.world.waterPlane.masked, false);
+  zones.collisions = [{ x: 0, y: 0, w: 1, h: 1, mask: { enabled: true, cell: [.5, .5], rects: [[0, 0, 1, 2]] } }];
+  zones.snags = JSON.parse(JSON.stringify(zones.collisions)); map.refreshConfig(cfg.locations, resources);
+  assert(!map.isCastableAt(10, 10) && map.isCastableAt(30, 10), 'empty obstacle-mask corner accepts casts despite coarse obstacle flag');
+  assert(map.hasSnagAt(10, 10) && !map.hasSnagAt(30, 10));
+  const maskedFile = JSON.parse(format.canonicalZonesJson(zones));
+  assert.equal(format.validateZones(maskedFile).length, 0);
+  const bodyMask = { enabled: true, cell: [.25, .25], rects: [[1, 1, 2, 2]] };
+  const moving = new DynamicZone({ id: 'mask', x: 0, y: 0, w: 4, h: 4, moving: true, speedX: 1, speedY: 0,
+    bounds: { x: 0, y: 0, w: 4, h: 4 }, mask: bodyMask });
+  moving.dirTimer = 10000; moving.update(3000);
+  assert.equal(moving.x, -1, 'occupied edge reflects from movement boundary; empty host margins do not constrain it');
+  assert(moving.speedX > 0);
+  zones.dynamic = [{ id: 'editable-mask', x: 0, y: 0, w: 4, h: 4, moving: true, mask: bodyMask, bounds: { x: 0, y: 0, w: 4, h: 4 } }];
+  map.refreshConfig(cfg.locations, resources);
+  write(['CONFIG', 'locations', 'map', 'masks', 'zones', 'dynamic', 0, 'x'], -100);
+  assert.equal(map.getDynamicZones()[0].x, -1, 'numeric editing constrains the occupied mask, not empty host margins');
+  assert.equal(map.getDynamicZones()[0].w, 4, 'mask editing does not shrink the host');
+  const rows = new Map(), maskSections = [], outerGroups = new Map(), treeParents = new Map(), controlParents = new Map();
+  const remember = (label, parent, action) => { const key = `${parent.label}/${label}`; rows.set(key, action); controlParents.set(key, parent); };
+  const ui = { createControlGroup(parent, path, { disabled = false } = {}) {
+    const group = { label: parent.label, disabled, replaceChildren() {} };
+    if (path?.[1] === 'outer') outerGroups.set(path[2], group);
+    return group;
+  }, syncValue() {}, releaseValueBindings() {}, createInfoRow() {},
+    createRangeRow(label, value, parent, action) { remember(label, parent, action); },
+    createSwitcherRow(label, value, parent, action) { remember(label, parent, action); if (label === 'Меш маски') maskSections.push(parent.label); },
+    createButtonRow(label, parent, action) { remember(label, parent, action); },
+    createInputRow(label, value, parent, type, action) { remember(label, parent, action); },
+    createSelectRow(label, options, value, parent, action) { remember(label, parent, action); } };
+  st.setFlag('enabled', true); st.setEditing('castable', true); st.select('castable', 0);
+  const section = new ZoneEditorSection({ ui, state: st, config: cfg, maskEditor: editor,
+    createSection: label => ({ label, replaceChildren() {} }), renderTree(value, parent, path) {
+      assert(!Object.hasOwn(value, 'mask'), 'raw mask arrays are not editable parameter trees'); treeParents.set(path[5], parent);
+    },
+    updateConfig: write, getWaterMetric: () => null });
+  section.render({});
+  assert.equal(maskSections.length, 4, 'only the four ordinary categories have mesh controls');
+  rows.get('Ігрова область (закидання)/Меш маски')(true);
+  assert(editor.isActive('castable', 0));
+  rows.get('Ігрова область (закидання)/Дроблення клітинки')('×4');
+  assert.equal(editor.subdivision, 4);
+  // TK-075: every host mutation belongs to the disabled group, while mesh/number controls remain usable.
+  for (const [category, label] of [['castable', 'Ігрова область (закидання)'], ['collisions', 'Перешкоди'], ['snags', 'Зачепи'], ['dynamic', 'Рухомі зони']]) {
+    st.setEditing(category, true);
+    rows.get(`${label}/Меш маски`)(true);
+    const group = outerGroups.get(category);
+    assert(group.disabled, `${category} host parameters lock when its mesh starts`);
+    assert.equal(treeParents.get(category), group, 'all nested coordinate/bounds fields share the lock');
+    assert.equal(controlParents.get(`${label}/Додати зону`), group);
+    assert.equal(controlParents.get(`${label}/Видалити вибрану зону`), group);
+    if (category === 'dynamic') assert.equal(controlParents.get(`${label}/Форма зони`), group);
+    assert(!controlParents.get(`${label}/Номер зони`).disabled && !controlParents.get(`${label}/Меш маски`).disabled);
+    rows.get(`${label}/Меш маски`)(false);
+    assert(!outerGroups.get(category).disabled, 'leaving mesh mode restores host controls');
+  }
+  rows.get('Ігрова область (закидання)/Меш маски')(true);
+  editor.paint(5, 5); editor.endStroke();
+  const beforeOpacity = { draft: editor.draft, preview: editor.preview, data: JSON.stringify(zones), writes };
+  rows.get('Ігрова область (закидання)/Непрозорість маски')(50);
+  assert.equal(editor.opacity, .5);
+  assert.equal(editor.draft, beforeOpacity.draft); assert.equal(editor.preview, beforeOpacity.preview, 'opacity retains compiled draft topology');
+  assert.equal(JSON.stringify(zones), beforeOpacity.data); assert.equal(writes, beforeOpacity.writes, 'view opacity cannot write zone config');
+  focusGeometry.buildInto(focused);
+  assert(focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).some(r => r.color !== 0 && r.fillAlpha === .5));
+  rows.get('Ігрова область (закидання)/Непрозорість маски')(0);
+  focusGeometry.buildInto(focused);
+  assert(!focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).some(r => r.color !== 0 && r.fillAlpha > 0));
+  assert(focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).some(r => r.shape === 'segment' && r.strokeAlpha > 0), 'transparent fill retains contour/grid input cues');
+  const viewRevision = editor.revision; editor.setOpacity(0); assert.equal(editor.revision, viewRevision, 'unchanged opacity invalidates nothing');
+  rows.get('Ігрова область (закидання)/Непрозорість маски')(100);
+  focusGeometry.buildInto(focused);
+  assert(focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).some(r => r.color !== 0 && r.fillAlpha === 1));
+  // One grid-opacity owner drives the coarse grid, fine mesh lines and perspective model, never the contour/fill.
+  for (const value of [0, .63, 1]) {
+    st.setNumber('cellGridOpacity', value); focusGeometry.buildInto(focused);
+    assert.equal(focused.annotations.cellLineAlpha, value); assert.equal(focused.annotations.lineAlpha, value);
+    const segments = focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).filter(r => r.shape === 'segment' && r.lineWidth === 1);
+    assert(segments.length && segments.every(r => r.strokeAlpha === value), 'mesh grid follows the editor opacity');
+    assert(focused.annotations.foreground.rects.slice(0, focused.annotations.foreground.rectCount).some(r => r.shape === 'segment' && r.lineWidth === 2 && r.strokeAlpha === 1), 'mask contour remains visible independently');
+  }
+  editor.apply(); st.zonesEdited();
+  assert(!outerGroups.get('castable').disabled, 'applying restores host controls');
+  st.setCategory('castable', true); editor.setOpacity(.47); focusGeometry.buildInto(focused);
+  assert(focused.annotations.rects.slice(0, focused.annotations.rectCount).some(r => r.fillAlpha === .47), 'shown applied masks use the same view opacity');
+  section.dispose(); assert.equal(editor.draft, null, 'panel disposal releases its draft and focus');
+  const meshState = new ZoneEditorState(); meshState.setCategory('castable', true);
+  zones.castable[0].mask = ring; map.refreshConfig(cfg.locations, resources);
+  const geometry = new ZoneEditorGeometryBuilder({ state: meshState, map, projector: proj, config: cfg, getWaterMetric: () => null });
+  const frame = {}; geometry.buildInto(frame);
+  assert(frame.annotations.rects.slice(0, frame.annotations.rectCount).some(r => r.shape === 'segment'), 'shared commands preserve mask hole contour');
+  const rebuilds = geometry.rebuilds;
+  for (let i = 0; i < 120; i++) geometry.buildInto(frame);
+  assert.equal(geometry.rebuilds, rebuilds, 'unchanged masked frames do no topology work');
+}
+
 const state = new ZoneEditorState();
 // TK-049: zone areas start hidden (and the depth numbers off); the checks below show every category explicitly.
 assert(Object.values(state.categories).every(shown => shown === false) && state.depth === false, "zones and depth start hidden");
 state.setFlag("enabled", true); assert(state.grid === false && state.cellGrid === true, "TK-050: enabling the editor shows the cell grid, not the perspective grid");
-state.setFlag("enabled", false); state.setFlag("cellGrid", false);
+state.setFlag("enabled", false);
+assert(!state.cellGrid && !state.grid, 'disabling the editor also disables its automatic grid');
+state.setFlag("enabled", true); state.setFlag("grid", true); state.setFlag("enabled", false);
+assert(!state.cellGrid && !state.grid, 'disabling editing also clears a perspective grid selected while editing');
 const config = { locations: { cellSize: 40, baseResolution: { width: 1000, height: 1000 }, map: {
   lake: { safeZone: { top: 0, bottom: 1000 }, waterProjection: { maxMeters: 40, tiltDegrees: 30, farScale: .3 },
     zones: { castable: [{ x: 0, y: 0, w: 25, h: 25 }], collisions: [{ x: 2, y: 3, w: 1, h: 2 }],
@@ -102,6 +322,9 @@ const renderer = new PixiAnnotationRenderer({ pixi: { Graphics }, stage: { addCh
 assert.equal(renderer.update(model), true); const clears = graphics.clears;
 for (let frame = 0; frame < 120; frame++) assert.equal(renderer.update(model), false);
 assert.equal(graphics.clears, clears, "unchanged WebGL annotations make no Graphics writes");
+state.setNumber('cellGridOpacity', .29); builder.buildInto(target); renderer.update(model);
+assert(graphics.operations.some(([operation, options]) => operation === 'stroke' && options.color === 0x88ddff && options.alpha === .29),
+  'WebGL perspective lines consume the shared grid opacity');
 model.overlay = { revision: 1, rectCount: 0, lineCount: 0, rects: [], lines: [] };
 renderer.update(model); const staticClears = graphics.clears, dynamicClears = overlayGraphics.clears;
 model.overlay.revision++; renderer.update(model);
@@ -110,12 +333,13 @@ model.overlay = null;
 assert.equal(renderer.update(null), true); assert.equal(renderer.update(null), false); assert.equal(renderer.update(model), true);
 const drawn = [];
 const surface = { globalAlpha: 1, drawImage() {}, strokeRect: (...args) => drawn.push(args), fillRect() {}, beginPath() {},
-  moveTo() {}, lineTo() {}, stroke() {} };
+  moveTo() {}, lineTo() {}, stroke() { this.lastStrokeStyle = this.strokeStyle; } };
 const debugModel = { visible: true, annotations: model, debugImage: { visible: false }, dynamicZones: { count: 0 } };
 new WorldDebugRenderer({ surface, sceneRouter: { drawsOnScene: () => true } }).render(debugModel);
 assert.equal(drawn.length, 0, "WebGL annotations are not also drawn on Canvas");
 new WorldDebugRenderer({ surface, sceneRouter: { drawsOnScene: () => false } }).render(debugModel);
 assert.equal(drawn.length, model.rectCount, "Canvas fallback consumes the exact same zone geometry");
+assert.equal(surface.lastStrokeStyle, 'rgba(136, 221, 255, 0.29)', 'Canvas perspective lines use the same opacity');
 const frame = new GameRenderFrame();
 new WorldRenderFrameBuilder({ map, projector, config, canvasMetrics: { width: 1000 }, locationId: "lake",
   boatChumBuilder: { buildInto() {} }, debugBuilder: builder }).buildInto({ target: frame.world, debugEnabled: true });
@@ -263,6 +487,22 @@ controlDocument.createElement = tag => {
 const controlRuntime = new SourceRuntime({ globals: { document: controlDocument } });
 const { DevToolsUI } = controlRuntime.importModule("src/dev/tools/dev_tools_ui.js");
 const controlUI = new DevToolsUI(() => {}, {}, null, null, null, controlDocument.body, createElement("div"));
+// TK-075: use native fieldset disabling, including controls created later inside nested parameter sections.
+{
+  const host = createElement('div'); controlDocument.body.appendChild(host);
+  const locked = controlUI.createControlGroup(host, ['test', 'locked'], { disabled: true });
+  const nested = controlUI.createSection('Bounds', locked, true, () => {});
+  controlUI.createInputRow('x', 1, nested, 'number', () => {}, ['test', 'x']);
+  assert(locked.tagName === 'fieldset' && locked.disabled === true && locked.getAttribute('aria-disabled') === 'true',
+    'native disabled semantics cover the entire outer-zone parameter tree');
+  assert(locked.contains(controlDocument.byClass('devtools__input').at(-1)));
+  controlUI.createRangeRow('Mask opacity', 30, host, () => {});
+  assert(!locked.contains(controlDocument.byClass('devtools__range').at(-1)), 'mask controls remain outside the host lock');
+  controlUI.releaseValueBindings(host); host.replaceChildren();
+  const unlocked = controlUI.createControlGroup(host, ['test', 'locked']);
+  assert(!unlocked.disabled, 'a rebuilt group restores native editing');
+  host.remove();
+}
 const fullLabel = "Дальність води, м";
 controlUI.createInputRow(fullLabel, 40, controlDocument.body, "number", () => {});
 assert.equal(controlDocument.byClass("devtools__label").at(-1).innerText, fullLabel,
@@ -339,6 +579,7 @@ controlUI.dispose();
   const parentRow = parentSection.children[0];
   const childRow = body.children.find(node => node.classList.contains('devtools__row'));
   const parentControl = parentRow.children[1].children[0], childControl = childRow.children[1].children[0];
+  assert.equal(childControl.getAttribute('aria-disabled'), 'true', 'unmet dependencies are unavailable immediately on creation');
   const attempt = () => { childControl.checked = true; childControl.fire('change'); };
   attempt();
   assert(!childControl.checked && !childOn && writes === 0, 'blocked activation restores the checkbox without calling the command');
@@ -349,8 +590,11 @@ controlUI.dispose();
   advance(2999); assert.equal(parentRow.getAttribute('aria-invalid'), null, 'the highlight ends after 3000 ms from the last attempt');
   attempt(); parentControl.checked = true; parentControl.fire('change');
   assert(parentOn && timers.size === 0 && parentRow.getAttribute('aria-invalid') === null, 'enabling the blocker clears feedback immediately');
+  assert.equal(childControl.getAttribute('aria-disabled'), 'false', 'parent input makes its child available without polling');
   attempt(); assert(childOn && childControl.checked && writes === 1, 'the child succeeds once the prerequisite is met');
-  parentOn = false; childControl.checked = false; childControl.fire('change');
+  parentOn = false; ui.syncValue(parentPath, false);
+  assert.equal(childControl.getAttribute('aria-disabled'), 'true', 'bound updates also mark an active child unavailable');
+  childControl.checked = false; childControl.fire('change');
   assert(!childOn && writes === 2, 'turning a child off remains allowed with the parent off');
   attempt(); ui.syncValue(parentPath, true);
   assert.equal(timers.size, 0, 'a bound parent update also clears feedback');
@@ -359,12 +603,26 @@ controlUI.dispose();
   ui.createSwitcherRow('Parent enabled again', false, parentSection, () => {}, parentPath);
   attempt(); ui.releaseValueBindings(childRow); assert.equal(timers.size, 0, 'rebuilding the dependent control cancels feedback too');
   attempt(); ui.togglePanel(false); assert.equal(timers.size, 0, 'closing the panel cancels feedback');
+  let secondParent = false, checks = 0;
+  ui.createSwitcherRow('Multiple prerequisites', false, body, () => {}, ['test', 'multi'], ['test', 'multi'],
+    { requires: [{ path: parentPath, isEnabled: () => { checks++; return parentOn; } },
+      { path: ['test', 'second'], isEnabled: () => secondParent }] });
+  const multiRow = body.children.find(node => node.dataset.devtoolsPath === 'test.multi');
+  const multiControl = multiRow.children[1].children[0];
+  parentOn = true; ui.syncValue(parentPath, true);
+  assert.equal(multiControl.getAttribute('aria-disabled'), 'true', 'one missing prerequisite keeps the control unavailable');
+  secondParent = true; ui.syncValue(['test', 'second'], true);
+  assert.equal(multiControl.getAttribute('aria-disabled'), 'false', 'all prerequisites restore availability');
+  ui.releaseValueBindings(multiRow);
+  const releasedChecks = checks; ui.syncValue(parentPath, false);
+  assert.equal(checks, releasedChecks, 'releasing a dependent row also removes its availability subscription');
+  parentOn = false;
   attempt(); ui.clearValueBindings(); assert.equal(timers.size, 0, 'rebuilding controls cancels feedback');
   ui.createSwitcherRow('Parent after rebuild', false, parentSection, () => {}, parentPath);
   attempt(); ui.dispose(); assert.equal(timers.size, 0, 'disposal leaves no feedback work');
 }
 // Spec 129, Revision 2 (TK-044…TK-048): one enable switch, the selected zone filled and the others muted, zone lists
-// gated by their physics, the cell grid's step/opacity/snap/size, the editor's depth map, the perspective's physics
+// gated by their physics, the cell grid's opacity/size and one-cell snapping, the editor's depth map, the perspective's physics
 // and dragging the selected zone's edges.
 {
   const { ZONE_CATEGORY_COLORS } = load("src/dev/location/zone_category_colors.js");
@@ -417,21 +675,19 @@ controlUI.dispose();
   assert.equal(rects.some(rect => rect.color === snagColor), false, "zones without physics are not drawn");
   locations.enableSnags = true; mapRevision++;
 
-  // TK-047: the cell grid's line step and opacity; an unchanged grid is reused.
+  // TK-072: every cell line uses the selected opacity; an unchanged grid is reused.
   builder.buildInto(geometry);
   assert(geometry.annotations.cellLineCount === 52 && geometry.annotations.cellLineAlpha === state.cellGridOpacity,
     "every cell line at the section's opacity");
   const before = builder.rebuilds;
   builder.buildInto(geometry); assert.equal(builder.rebuilds, before, "an unchanged cell grid is not rebuilt");
-  state.setNumber("cellLineStep", 2); builder.buildInto(geometry);
-  assert.equal(geometry.annotations.cellLineCount, 26, "every second cell line");
   state.setNumber("cellGridOpacity", 0); builder.buildInto(geometry);
   assert.equal(geometry.annotations.cellLineCount, 0, "opacity 0 draws no lines");
-  state.setNumber("cellGridOpacity", 0.25); state.setNumber("cellLineStep", 1);
-  for (const [key, value, expected] of [["cellGridOpacity", 3, 1], ["depthOpacity", -1, 0], ["snapCells", 2.6, 3], ["cellLineStep", 99, 10]]) {
+  state.setNumber("cellGridOpacity", 0.25);
+  for (const [key, value, expected] of [["cellGridOpacity", 3, 1], ["depthOpacity", -1, 0]]) {
     state.setNumber(key, value); assert.equal(state[key], expected, `${key} is clamped`);
   }
-  state.setNumber("cellGridOpacity", 0.25); state.setNumber("depthOpacity", 0.7); state.setNumber("snapCells", 1); state.setNumber("cellLineStep", 1);
+  state.setNumber("cellGridOpacity", 0.25); state.setNumber("depthOpacity", 0.7);
 
   // TK-047: depth numbers come from the location's depth map while the editor shows them, at their own opacity.
   let builds = 0;
@@ -441,13 +697,17 @@ controlUI.dispose();
   const frameTarget = () => ({ debugImage: { visible: false } });
   let frame = frameTarget(); depthFrame.buildInto(frame);
   assert(frame.debugImage.visible === false && builds === 0, "no depth numbers until they are switched on");
-  state.setFlag("depth", true); frame = frameTarget(); depthFrame.buildInto(frame);
-  assert(frame.debugImage.visible === true && frame.debugImage.alpha === 0.7 && builds === 1, "depth numbers at their opacity");
+  state.setFlag("enabled", false); state.setFlag("depth", true); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert(frame.debugImage.visible === true && frame.debugImage.alpha === 0.7 && builds === 1, "depth numbers display at their opacity without enabling editing");
   frame = frameTarget(); depthFrame.buildInto(frame); assert.equal(builds, 1, "the depth map is reused");
   state.setNumber("depthOpacity", 0); frame = frameTarget(); depthFrame.buildInto(frame);
   assert.equal(frame.debugImage.visible, false, "opacity 0 hides the depth numbers");
   state.setNumber("depthOpacity", 0.7); state.setFlag("enabled", false); frame = frameTarget(); depthFrame.buildInto(frame);
-  assert.equal(frame.debugImage.visible, false, "without the editor nothing is drawn");
+  assert(frame.debugImage.visible && builds === 1, "restoring opacity reuses the depth map with editing still off");
+  state.setFlag("enabled", true); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert(frame.debugImage.visible && builds === 1, "enabling editing leaves the depth display and cache intact");
+  state.setFlag("enabled", false); state.setFlag("depth", false); frame = frameTarget(); depthFrame.buildInto(frame);
+  assert.equal(frame.debugImage.visible, false, "the depth switch hides the display with editing off");
   state.setFlag("enabled", true); state.setFlag("depth", false);
   const strokes = [], texts = [];
   const surface = { canvas: { width: 1000, height: 1000 }, clearRect() {}, fillRect() {}, strokeRect: () => strokes.push(1),
@@ -478,7 +738,8 @@ controlUI.dispose();
   enable.args[2](true);
   assert(state.enabled && state.cellGrid, "the top-level enable control still enables editing and the cell grid");
   enable.args[2](false);
-  assert(!state.enabled, "the same control disables editing");
+  assert(!state.enabled && !state.cellGrid && !state.grid, "the same control disables editing and both grids");
+  assert(!controlValues.get('ZONE_EDITOR.cellGrid') && !controlValues.get('ZONE_EDITOR.grid'), 'editor off synchronizes both grid switches');
   const shownBefore = { ...state.categories }, writesBeforeShow = written.length;
   rows.get("Зони/Показати всі").args[2](true);
   assert(Object.values(state.categories).every(Boolean) && !state.enabled, "show all changes visibility without enabling editing");
@@ -493,15 +754,19 @@ controlUI.dispose();
   for (const [category, shown] of Object.entries(shownBefore)) state.setCategory(category, shown);
   rows.get("Сітка перспективи/Показати сітку").args[2](true);
   assert(controlValues.get("ZONE_EDITOR.grid") && !controlValues.get("ZONE_EDITOR.cellGrid"), "perspective synchronizes both grid controls");
-  rows.get("Сітка клітинок (спільне для всіх локацій)/Показати сітку").args[2](true);
+  rows.get("🗺️ РЕДАКТОР/Показати сітку").args[2](true);
   assert(!controlValues.get("ZONE_EDITOR.grid") && controlValues.get("ZONE_EDITOR.cellGrid"), "map grid synchronizes both controls");
   const physics = rows.get("Зачепи/Фізика зони");
   const editableDependency = rows.get("Зони/Редагувати ігрову").args[5].requires[0];
-  const depthDependency = rows.get("Сітка клітинок (спільне для всіх локацій)/Глибина в клітинках").args[5].requires[0];
+  const depthSwitch = rows.get("🗺️ РЕДАКТОР/Глибина в клітинках");
   assert.equal(editableDependency.path.join('.'), 'ZONE_EDITOR.enabled');
-  assert(!editableDependency.isEnabled() && !depthDependency.isEnabled(), 'editable zones and depth numbers declare the editor prerequisite');
+  assert(!editableDependency.isEnabled(), 'zone editing still requires the editor');
+  assert(!depthSwitch.args[5]?.requires?.length, 'depth visibility declares no editor prerequisite');
+  depthSwitch.args[2](true);
+  assert(state.depth && !state.enabled, 'depth switch activates without enabling editing');
+  depthSwitch.args[2](false);
   state.setFlag('enabled', true);
-  assert(editableDependency.isEnabled() && depthDependency.isEnabled(), 'prerequisites read current editor state');
+  assert(editableDependency.isEnabled(), 'editing prerequisite reads current editor state');
   state.setFlag('enabled', false);
   assert.deepEqual([physics.args[3].join("."), physics.args[5].swatch], ["CONFIG.locations.enableSnags", ZONE_CATEGORY_COLORS.snags],
     "each list's first switch is the zone's physics, with its colour");
@@ -520,13 +785,13 @@ controlUI.dispose();
   assert(!rows.has("Перешкоди/Показати зону") && !rows.has("Перешкоди/Додати зону"), "no items while the physics is off");
   rows.get("Перешкоди/Фізика зони").args[2](true);
   assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
-  for (const label of ["Показати сітку", "Непрозорість сітки", "Крок ліній, клітинок", "Прилипання, клітинок", "Розмір клітинки, px",
-    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`Сітка клітинок (спільне для всіх локацій)/${label}`), `cell grid: ${label}`);
-  assert.equal(rows.get("Сітка клітинок (спільне для всіх локацій)/Непрозорість сітки").kind, "range");
-  rows.get("Сітка клітинок (спільне для всіх локацій)/Розмір клітинки, px").args[3](1000);
+  for (const label of ["Показати сітку", "Непрозорість сітки", "Розмір клітинки, px",
+    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`🗺️ РЕДАКТОР/${label}`), `cell grid: ${label}`);
+  assert.equal(rows.get("🗺️ РЕДАКТОР/Непрозорість сітки").kind, "range");
+  rows.get("🗺️ РЕДАКТОР/Розмір клітинки, px").args[3](1000);
   assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 200], "the cell size is clamped and written to the game config");
   locations.cellSize = 40;
-  rows.get("Сітка клітинок (спільне для всіх локацій)/Непрозорість глибини").args[2](40);
+  rows.get("🗺️ РЕДАКТОР/Непрозорість глибини").args[2](40);
   assert.equal(state.depthOpacity, 0.4, "the depth slider sets 0..1");
   state.setNumber("depthOpacity", 0.7);
   for (const label of ["Показати сітку", "Фізика перспективи", "Крок сітки, м", "Дальність води, м", "Нахил площини, °",
@@ -591,11 +856,9 @@ controlUI.dispose();
   assert.equal(JSON.stringify(lake.zones.castable[0]), JSON.stringify({ x: 2, y: 3, w: 23, h: 22, id: "keep" }),
     "a corner moves two edges; other fields stay");
   pointer("pointerup", 85, 125);
-  state.setNumber("snapCells", 2);
   lake.zones.castable = [{ x: 0, y: 0, w: 25, h: 25 }];
   pointer("pointerdown", 1000, 500); pointer("pointermove", 830, 500); pointer("pointerup", 830, 500);
-  assert.equal(lake.zones.castable[0].w, 20, "the edge snaps to every second cell (830 px -> 20 cells)");
-  state.setNumber("snapCells", 1);
+  assert.equal(lake.zones.castable[0].w, 21, "the edge always snaps to one cell (830 px -> 21 cells)");
   locations.designCellSize = 20;
   lake.zones.castable = [{ x: 0, y: 0, w: 50, h: 50 }];
   pointer("pointerdown", 1000, 500); pointer("pointermove", 870, 500); pointer("pointerup", 870, 500);
@@ -829,11 +1092,9 @@ controlUI.dispose();
   pointer('pointermove', 160, 100); pointer('pointerup', 160, 100);
   const moved = liveMap.getDynamicZones()[0];
   assert(moved.x === 3 && moved.y === 2 && moved.w === 2 && liveMap.getDynamicZones()[1].x === 5, 'drag updates the game body and preserves its sibling');
-  st.setNumber('snapCells', 3);
   pointer('pointerdown', 160, 100); pointer('pointermove', 165, 103); pointer('pointerup', 165, 103);
-  assert.deepEqual([liveMap.getDynamicZones()[0].x, liveMap.getDynamicZones()[0].y], [3.125, 2.075], 'dynamic translation ignores multi-cell snapping and survives config refresh');
+  assert.deepEqual([liveMap.getDynamicZones()[0].x, liveMap.getDynamicZones()[0].y], [3.125, 2.075], 'dynamic translation stays continuous and survives config refresh');
   pointer('pointerdown', 165, 103); pointer('pointermove', 160, 100); pointer('pointerup', 160, 100);
-  st.setNumber('snapCells', 1);
   // Spec 133: body selection exposes its own bounds; area and body edits cannot exclude each other.
   assert(st.boundsEditing && st.selection.category === 'dynamic' && st.selection.index === 0, 'body press selects its movement area');
   geo.buildInto(frame);
@@ -889,6 +1150,88 @@ controlUI.dispose();
   assert(!st.boundsEditing && st.hoveredBound === -1, 'leaving editing clears bounds selection and hover');
   assert(!flags.isEnabled('pauseDynamicZones'), 'leaving editor mode always releases motion');
   tool.dispose();
+}
+
+// Spec 137: grid changes preserve map-space geometry, live motion and authored coordinates.
+{
+  const { LocationMap } = load('src/game/domain/locations/location_map.js');
+  const { ZoneEditorConfigEdits } = load('src/dev/location/zone_editor_config_edits.js');
+  const locations = { cellSize: 40, designCellSize: 40, baseResolution: { width: 400, height: 400 }, map: {
+    stable: { depthBounds: { min: 1, max: 5 }, zones: {
+      castable: [{ x: 1, y: 1, w: 8, h: 8 }], collisions: [{ x: 2, y: 2, w: 1, h: 1 }],
+      snags: [{ x: 6, y: 6, w: 1, h: 1 }, { x: 2.25, y: 3.25, w: .125, h: .125 }],
+      dynamic: [{ id: 'round', shape: 'circle', x: 2, y: 2, w: 1, h: 1, moving: true, speedX: .6, speedY: .8,
+        bounds: [{ x: 1, y: 1, w: 8, h: 8 }] }],
+    } } } };
+  const cfg = { locations }, resources = { depthReader: { getDepthAtPixel: () => 3 } };
+  let randomDraws = 0;
+  const map = new LocationMap('stable', locations, { next: () => { randomDraws++; return 0; } }, resources);
+  map.recalculateZones(null, 40);
+  const body = map.getDynamicZones()[0]; body.x = 3.125; body.y = 2.25; body.dirTimer = 5000;
+  const rect = (zone, size) => [zone.x * size, zone.y * size, zone.w * size, zone.h * size];
+  const equalRect = (a, b, label) => a.forEach((number, index) => assert(Math.abs(number - b[index]) < 1e-8, label));
+  const before = map.getLocationZones(), authored = JSON.stringify(locations.map.stable.zones);
+  const expected = Object.fromEntries(['castable', 'collisions', 'snags'].map(category => [category, rect(before[category][0], 40)]));
+  let liveX = 125, liveY = 90;
+  const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => map });
+  const proj = { virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y), getScale: () => 1 };
+  const st = new ZoneEditorState(); st.setCategory('castable', true); st.setCategory('dynamic', true);
+  const geo = new ZoneEditorGeometryBuilder({ state: st, map, projector: proj, config: cfg, getWaterMetric: () => null });
+  for (const size of [30, 17, 20, 100, 40]) {
+    locations.cellSize = size;
+    // Config changes before the async reload: snapshots must still interpret the old map's cells correctly.
+    equalRect(rect(commands.readDynamicZones('stable')[0], 40), [liveX, liveY, 40, 40], 'pending resize keeps live command units');
+    const pending = {}; geo.buildInto(pending);
+    equalRect([pending.annotations.overlay.rects[0].x, pending.annotations.overlay.rects[0].y,
+      pending.annotations.overlay.rects[0].width, pending.annotations.overlay.rects[0].height], [liveX, liveY, 40, 40], 'pending reload cannot reinterpret the existing map with new cells');
+    map.refreshConfig(locations, resources);
+    for (const category of ['castable', 'collisions', 'snags']) equalRect(rect(map.getLocationZones()[category][0], size), expected[category], `${category} stays put at cell size ${size}`);
+    equalRect(rect(map.getLocationZones().snags[1], size), [90, 130, 5, 5], 'a subcell zone stays nonzero on both finer and coarser grids');
+    const current = map.getDynamicZones()[0];
+    equalRect(rect(current, size), [liveX, liveY, 40, 40], 'moving circle keeps its current position and full diameter');
+    equalRect(rect(current.bounds[0], size), [40, 40, 320, 320], 'movement bounds stay put');
+    assert.equal(map.getCellAtVirtualPos(100, 100, size).hasCollision, true, 'collision coverage survives fractional grid coordinates');
+    assert.equal(map.getCellAtVirtualPos(260, 260, size).hasSnag, true, 'snag coverage survives fractional grid coordinates');
+    assert.equal(map.getCellAtVirtualPos(160, 160, size).depth, 3, 'depth reads use valid integer grid indices');
+    const frame = {}; geo.buildInto(frame);
+    equalRect([frame.annotations.overlay.rects[0].x, frame.annotations.overlay.rects[0].y,
+      frame.annotations.overlay.rects[0].width, frame.annotations.overlay.rects[0].height], [liveX, liveY, 40, 40], 'live annotations retain map-space geometry');
+    const worldFrame = new GameRenderFrame();
+    new WorldRenderFrameBuilder({ map, projector: proj, config: cfg, canvasMetrics: { width: 400 }, locationId: 'stable',
+      boatChumBuilder: { buildInto() {} } }).buildInto({ target: worldFrame.world });
+    const clip = worldFrame.world.clipRegions.getAt(0);
+    equalRect([clip.x, clip.y, clip.width, clip.height], [40, 40, 320, 320], 'water clip uses the same design geometry');
+    current.update(100); liveX += 2.4; liveY += 3.2;
+    equalRect(rect(current, size), [liveX, liveY, 40, 40], 'motion keeps its physical speed through grid changes');
+  }
+  assert.equal(JSON.stringify(locations.map.stable.zones), authored, 'grid refinement never rewrites authored/exported geometry');
+  assert.equal(randomDraws, 1, 'grid changes never randomize starts or reset direction scheduling');
+  // Subsequent static edits use the new 20px cell while storing fractional design coordinates.
+  locations.cellSize = 20; map.refreshConfig(locations, resources);
+  st.setFlag('enabled', true); st.setEditing('castable', true);
+  const { ZoneEditorDragController } = load('src/dev/location/zone_editor_drag_controller.js');
+  let layer;
+  const element = () => ({ classList: { add() {}, remove() {} }, listeners: new Map(), addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener() {}, remove() {} });
+  const drag = new ZoneEditorDragController({ state: st, map, projector: proj, config: cfg, canvasMetrics: { width: 400, height: 400 },
+    documentTarget: { createElement: element, body: element() }, mountNode: { prepend: node => { layer = node; } },
+    getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 400 }) }),
+    writeZones: (path, value) => { locations.map.stable.zones[path.at(-1)] = value; map.refreshConfig(locations, resources); } });
+  drag.sync();
+  for (const [type, x] of [['pointerdown', 200], ['pointermove', 220], ['pointerup', 220]]) {
+    layer.listeners.get(type)({ clientX: x, clientY: 200, pointerId: 1, preventDefault() {} });
+  }
+  assert.equal(locations.map.stable.zones.castable[0].x, 1.5, 'next drag advances exactly one 20px cell, stored as half a design cell');
+  equalRect(rect(map.getLocationZones().castable[0], 20), [60, 40, 320, 320], 'next drag retains the existing width and height');
+  drag.dispose();
+  // Adaptive bounds track exact viewport edges, not the raster's rounded outer columns.
+  locations.map.stable.zones.castable[0].adaptiveX = true;
+  locations.map.stable.zones.dynamic[0].bounds = { x: 0, y: 1, w: 10, h: 8 };
+  const viewport = { getCanvasWidth: () => 280, screenToVirtual: x => ({ x: x + 10.25 }) };
+  for (const size of [30, 17, 40]) {
+    locations.cellSize = size; map.refreshConfig(locations, resources); map.recalculateZones(viewport, size);
+    const bound = map.getDynamicZones()[0].bounds;
+    equalRect(rect(bound, size), [10.25, 40, 280, 320], 'adaptive movement bounds keep their viewport edges');
+  }
 }
 
 // Spec 135: actual map/command/creation pipeline, circle input and shared renderer commands.
@@ -1054,7 +1397,7 @@ controlUI.dispose();
   press("Локація/Відкрити локацію");
   assert(confirms.length === 0 && opened.join() === "pond", "without edits it reopens at once");
   st.setFlag("enabled", false);
-  console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid step/opacity/snap/size, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone inside the window (not drawn), smallest hovered zone taken; spec 130: location select and on-screen binding, zone file export/import/reset and status, reopen with confirmation.");
+  console.log("Zone editor passed: metre-grid projection, zone edits and visibility, black background, perspective/live changes, bounded and zero unchanged rebuilds, reused WebGL Graphics and Canvas fallback without duplicate drawing; spec 129 rev. 2: one enable switch, physics-gated zone lists, cell grid visibility/opacity/size and fixed one-cell snap, editor depth map, perspective physics, edge dragging with snap; rev. 3: editable zone list, outlines and hover fill, middle 30% moves the zone inside the window (not drawn), smallest hovered zone taken; spec 130: location select and on-screen binding, zone file export/import/reset and status, reopen with confirmation.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

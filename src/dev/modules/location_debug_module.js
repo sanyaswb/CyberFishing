@@ -19,7 +19,7 @@ export class LocationDebugModule extends ConsoleTableDebugModule {
 
     const castableBounds = this.#provider.getZoneBounds(
       map.zones?.castable || [],
-      cellSize,
+      designCellSize,
       baseRes,
     );
     const safeTop = Number(map.safeZone?.top) || 0;

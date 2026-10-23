@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.40";
+export const CURRENT_PROJECT_VERSION = "0.47.0";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fight-sector-drawn",
+  codename: "zone-cell-masks",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "0.47.0: owner-approved minor release of the zone editor.",
+    "Connected local zone masks, exact boundaries and shore-clipped Pixi waves.",
+    "Grid-stable geometry, mesh focus, locked host parameters and shared grid opacity.",
     "TK-071: fight sector in the fight.",
     "Spec 136 Revision 3: one look, real float.",
     "TK-070: the float stays on the water.",

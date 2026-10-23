@@ -34,7 +34,7 @@ export class LocationDebugPrinter {
     const safeCells = safeHeight / cellSize;
     const castableBounds = this.#provider.getZoneBounds(
       map.zones?.castable || [],
-      cellSize,
+      designCellSize,
       baseRes,
     );
     const accuracyPercent = this.#provider.normalizePercent(
@@ -106,15 +106,15 @@ export class LocationDebugPrinter {
       ]),
     );
 
-    this.#printZoneTable("castable", map.zones?.castable || [], cellSize, baseRes);
+    this.#printZoneTable("castable", map.zones?.castable || [], designCellSize, baseRes);
     this.#printZoneTable(
       "collisions",
       map.zones?.collisions || [],
-      cellSize,
+      designCellSize,
       baseRes,
     );
-    this.#printZoneTable("snags", map.zones?.snags || [], cellSize, baseRes);
-    this.#printZoneTable("dynamic", map.zones?.dynamic || [], cellSize, baseRes);
+    this.#printZoneTable("snags", map.zones?.snags || [], designCellSize, baseRes);
+    this.#printZoneTable("dynamic", map.zones?.dynamic || [], designCellSize, baseRes);
 
     this.#logger.groupEnd();
   }

@@ -1,4 +1,5 @@
 import { Vector2 } from "../../engine/math/vector2.js";
+import { compileGridMask } from "../../engine/geometry/grid_mask.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
 
 const COLORS = Object.freeze(Object.fromEntries(Object.entries(ZONE_CATEGORY_COLORS)
@@ -24,6 +25,8 @@ const CATEGORIES = Object.freeze(Object.keys(COLORS));
 export class ZoneEditorGeometryBuilder {
   #state; #map; #projector; #getMetric; #config; #dependent;
   #dependentRevision = -1;
+  #maskEditor; #maskRevision = -1;
+  #canvasMetrics; #viewportWidth = 0; #viewportHeight = 0;
   #drawDependent;
   #point = new Vector2();
   #origin = new Vector2();
@@ -33,13 +36,16 @@ export class ZoneEditorGeometryBuilder {
   #model = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0, cellLines: [], cellLineCount: 0, cellLineAlpha: 0,
     overlay: null };
   #movingModel = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0 };
+  #focusModel = { revision: 0, lines: [], lineCount: 0, rects: [], rectCount: 0 };
   rebuilds = 0;
   overlayRebuilds = 0;
 
   // dependentZones: optional CastableDependentZones (spec 136), drawn with the static geometry.
-  constructor({ state, map, projector, getWaterMetric, config, dependentZones = null }) {
+  constructor({ state, map, projector, getWaterMetric, config, dependentZones = null, maskEditor = null, canvasMetrics = null }) {
     this.#state = state; this.#map = map; this.#projector = projector; this.#getMetric = getWaterMetric; this.#config = config;
     this.#dependent = dependentZones;
+    this.#maskEditor = maskEditor;
+    this.#canvasMetrics = canvasMetrics;
     const look = (zone) => [Number.parseInt(zone.color.slice(1), 16), zone.editable ? EDITABLE_LINE_WIDTH : 1,
       zone.hovered ? HOVER_FILL : SHOWN.fill, zone.editable ? EDITABLE_STROKE : SHOWN.stroke];
     this.#drawDependent = {
@@ -58,6 +64,7 @@ export class ZoneEditorGeometryBuilder {
   }
 
   buildInto(target) {
+    this.#maskEditor?.sync();
     target.annotations = null;
     target.backgroundHidden = false;
     const state = this.#state;
@@ -82,27 +89,37 @@ export class ZoneEditorGeometryBuilder {
     this.#dynamic.length = moving.length * 5;
     // Shown castable zones (spec 136) draw with the editor off as well; only their editing needs it.
     const dependentRevision = this.#dependent ? this.#dependent.refresh() : -1;
+    const viewportWidth = this.#canvasMetrics?.width ?? this.#config.locations.baseResolution.width * scale;
+    const viewportHeight = this.#canvasMetrics?.height ?? this.#config.locations.baseResolution.height * scale;
     const staticDirty = topologyChanged || metric !== this.#metric || state.revision !== this.#revision || this.#mapRevision !== this.#map.getRevision() ||
-      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision;
+      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision || this.#maskRevision !== (this.#maskEditor?.revision ?? -1) || viewportWidth !== this.#viewportWidth || viewportHeight !== this.#viewportHeight;
     if (staticDirty) {
       this.#dependentRevision = dependentRevision;
+      this.#maskRevision = this.#maskEditor?.revision ?? -1;
+      this.#viewportWidth = viewportWidth; this.#viewportHeight = viewportHeight;
       this.#metric = metric; this.#revision = state.revision; this.#mapRevision = this.#map.getRevision();
       this.#scale = scale; this.#x = origin.x; this.#y = origin.y;
       this.#rebuild();
+      this.#focusModel.revision++; this.#focusModel.rectCount = 0; this.#mesh();
     }
     if (dirty || staticDirty) {
       this.overlayRebuilds++; this.#movingModel.revision++; this.#movingModel.rectCount = 0;
-      const cell = this.#config.locations.cellSize;
+      const cell = this.#map.getCellSize?.() ?? this.#config.locations.cellSize;
       for (let index = 0; index < moving.length; index++) {
         const zone = moving[index], editable = state.enabled && state.isEditable("dynamic");
+        if (this.#maskEditor?.isActive("dynamic", state.selectedIndex("dynamic")) && this.#maskEditor.draft.source.id === zone.id) continue;
         const hovered = editable && state.isHovered("dynamic", index);
         const x = zone.x * cell, y = zone.y * cell, w = zone.w * cell, h = zone.h * cell;
-        this.#rect(x, y, w, h, COLORS.dynamic, this.#movingModel, editable ? EDITABLE_LINE_WIDTH : 1,
-          hovered ? HOVER_FILL : state.categories.dynamic ? SHOWN.fill : 0, editable ? EDITABLE_STROKE : SHOWN.stroke, zone.shape === "circle");
-        if (hovered) this.#handles(x, y, w, h, COLORS.dynamic, this.#movingModel, zone.shape === "circle");
+        const fill = hovered ? HOVER_FILL : state.categories.dynamic ? SHOWN.fill : 0, stroke = editable ? EDITABLE_STROKE : SHOWN.stroke;
+        if (zone.mask?.enabled) this.#mask(zone.mask, x, y, w, h, COLORS.dynamic, this.#movingModel, editable ? EDITABLE_LINE_WIDTH : 1, fill, stroke);
+        else {
+          this.#rect(x, y, w, h, COLORS.dynamic, this.#movingModel, editable ? EDITABLE_LINE_WIDTH : 1, fill, stroke, zone.shape === "circle");
+          if (hovered) this.#handles(x, y, w, h, COLORS.dynamic, this.#movingModel, zone.shape === "circle");
+        }
       }
     }
     this.#model.overlay = moving.length ? this.#movingModel : null;
+    this.#model.foreground = this.#maskEditor?.draft ? this.#focusModel : null;
     target.annotations = this.#model;
     target.backgroundHidden = state.enabled && !state.background;
   }
@@ -118,8 +135,9 @@ export class ZoneEditorGeometryBuilder {
     this.rebuilds++; this.#model.revision++; this.#model.lineCount = 0; this.#model.rectCount = 0;
     this.#model.cellLineCount = 0;
     this.#model.cellLineAlpha = this.#state.cellGridOpacity;
+    this.#model.lineAlpha = this.#state.cellGridOpacity;
     const zones = this.#map.getLocationZones();
-    const cell = this.#config.locations.cellSize;
+    const cell = this.#map.getCellSize?.() ?? this.#config.locations.cellSize;
     const width = this.#config.locations.baseResolution.width;
     const state = this.#state;
     if (state.cellGrid) this.#cellGrid(cell);
@@ -138,8 +156,12 @@ export class ZoneEditorGeometryBuilder {
         if (category !== "dynamic") {
           const x = zone.adaptiveX ? 0 : zone.x * cell;
           const w = zone.adaptiveX ? width : zone.w * cell, y = zone.y * cell, h = zone.h * cell;
-          this.#rect(x, y, w, h, color, this.#model, lineWidth, fill, stroke);
-          if (hovered) this.#handles(x, y, w, h, color);
+          if (this.#maskEditor?.isActive(category, index)) continue;
+          if (zone.mask?.enabled) this.#mask(zone.mask, x, y, w, h, color, this.#model, lineWidth, fill, stroke);
+          else {
+            this.#rect(x, y, w, h, color, this.#model, lineWidth, fill, stroke);
+            if (hovered) this.#handles(x, y, w, h, color);
+          }
         }
         if (zone.bounds) {
           const bounds = Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds];
@@ -158,13 +180,12 @@ export class ZoneEditorGeometryBuilder {
   }
 
   // The map's cells (locations.cellSize) over the whole picture: what a dragged edge snaps to.
-  // Every cellLineStep-th cell line (Revision 2, "Сітка клітинок"), at the section's opacity.
+  // Every cell line, at the editor's selected opacity.
   #cellGrid(cell) {
     const { width, height } = this.#config.locations.baseResolution;
-    const step = cell * this.#state.cellLineStep;
-    if (!(step > 0) || !(this.#state.cellGridOpacity > 0)) return;
-    for (let x = 0, i = 0; x <= width + 1e-6 && i < MAX_CELL_LINES; x += step, i++) this.#line(x, 0, x, height, this.#model.cellLines, "cellLineCount");
-    for (let y = 0, i = 0; y <= height + 1e-6 && i < MAX_CELL_LINES; y += step, i++) this.#line(0, y, width, y, this.#model.cellLines, "cellLineCount");
+    if (!(cell > 0) || !(this.#state.cellGridOpacity > 0)) return;
+    for (let x = 0, i = 0; x <= width + 1e-6 && i < MAX_CELL_LINES; x += cell, i++) this.#line(x, 0, x, height, this.#model.cellLines, "cellLineCount");
+    for (let y = 0, i = 0; y <= height + 1e-6 && i < MAX_CELL_LINES; y += cell, i++) this.#line(0, y, width, y, this.#model.cellLines, "cellLineCount");
   }
 
   // Corner squares of HANDLE_PX logical pixels, filled, so a hovered editable zone shows where it can be taken.
@@ -179,7 +200,7 @@ export class ZoneEditorGeometryBuilder {
 
   #grid() {
     const metric = this.#metric;
-    const bounds = this.#map.getCastableBoundsVirtual(this.#config.locations.cellSize);
+    const bounds = this.#map.getCastableBoundsVirtual(this.#map.getCellSize?.() ?? this.#config.locations.cellSize);
     metric.toGround(bounds.left, bounds.top, this.#point);
     const left = this.#point.x;
     metric.toGround(bounds.right, bounds.top, this.#point);
@@ -244,5 +265,48 @@ export class ZoneEditorGeometryBuilder {
     record.width = w * this.#scale; record.height = h * this.#scale; record.color = color;
     record.lineWidth = lineWidth; record.fillAlpha = fillAlpha; record.strokeAlpha = strokeAlpha;
     record.shape = circular ? "ellipse" : "rect";
+  }
+
+  #mask(mask, x, y, w, h, color, target, lineWidth, fill, stroke) {
+    const geometry = compileGridMask(mask);
+    const fillAlpha = fill > 0 ? this.#maskEditor?.opacity ?? fill : 0;
+    if (fillAlpha > 0) for (const r of geometry.rects) this.#rect(x + r[0] * w, y + r[1] * h, r[2] * w, r[3] * h, color, target, 0, fillAlpha, 0);
+    for (const e of geometry.edges) this.#segment(x + e[0] * w, y + e[1] * h, x + e[2] * w, y + e[3] * h, color, target, lineWidth, stroke);
+  }
+
+  #segment(x1, y1, x2, y2, color, target, lineWidth = 1, strokeAlpha = .4) {
+    const record = target.rects[target.rectCount++] ||= {};
+    this.#projector.virtualToScreen(x1, y1, this.#point); record.x = this.#point.x; record.y = this.#point.y;
+    this.#projector.virtualToScreen(x2, y2, this.#point); record.width = this.#point.x - record.x; record.height = this.#point.y - record.y;
+    record.shape = "segment"; record.color = color; record.lineWidth = lineWidth; record.strokeAlpha = strokeAlpha; record.fillAlpha = 0;
+  }
+
+  #mesh() {
+    const draft = this.#maskEditor?.draft, g = this.#maskEditor?.geometry();
+    if (!draft || !g) return;
+    const color = COLORS[draft.category];
+    this.#projector.virtualToScreen(g.x, g.y, this.#point);
+    const width = this.#viewportWidth, height = this.#viewportHeight;
+    const left = Math.max(0, Math.min(width, this.#point.x)), top = Math.max(0, Math.min(height, this.#point.y));
+    this.#projector.virtualToScreen(g.x + g.w, g.y + g.h, this.#point);
+    const right = Math.max(left, Math.min(width, this.#point.x)), bottom = Math.max(top, Math.min(height, this.#point.y));
+    this.#shade(0, 0, width, top); this.#shade(0, bottom, width, height - bottom);
+    this.#shade(0, top, left, bottom - top); this.#shade(right, top, width - right, bottom - top);
+    this.#mask(this.#maskEditor.preview, g.x, g.y, g.w, g.h, color, this.#focusModel, 2, .3, 1);
+    for (let col = 0; col <= draft.cols; col++) {
+      const x = g.x + Math.min(1, col * draft.cell[0]) * g.w;
+      this.#segment(x, g.y, x, g.y + g.h, color, this.#focusModel, 1, this.#state.cellGridOpacity);
+    }
+    for (let row = 0; row <= draft.rows; row++) {
+      const y = g.y + Math.min(1, row * draft.cell[1]) * g.h;
+      this.#segment(g.x, y, g.x + g.w, y, color, this.#focusModel, 1, this.#state.cellGridOpacity);
+    }
+  }
+
+  #shade(x, y, width, height) {
+    if (!(width > 0 && height > 0)) return;
+    const record = this.#focusModel.rects[this.#focusModel.rectCount++] ||= {};
+    record.x = x; record.y = y; record.width = width; record.height = height;
+    record.shape = "rect"; record.color = 0; record.fillAlpha = .7; record.strokeAlpha = 0; record.lineWidth = 0;
   }
 }

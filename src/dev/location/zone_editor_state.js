@@ -4,7 +4,7 @@
 // parameter tree last focused; selectedIndex(category) owns each dropdown's number and hit-test eligibility;
 // editing: the categories the drag tool may take (spec 132);
 // hovered: the editable zones under the pointer, filled while it stays; grid: the perspective (metre) grid, off until
-// switched on (TK-050); cellGrid*/snapCells: the map's cells; depth*: the depth numbers in the cells.
+// switched on (TK-050); cellGrid*: the map's cells; depth*: the depth numbers in the cells.
 // The middle share of a zone (of its width and height) that moves the whole zone (Revision 3, R3-3).
 export const MOVE_SHARE = 0.3;
 
@@ -20,8 +20,6 @@ export class ZoneEditorState {
   spacingMeters = 1;
   cellGridOpacity = 0.25;
   depthOpacity = 0.7;
-  cellLineStep = 1;
-  snapCells = 1;
   categories = { castable: false, collisions: false, snags: false, dynamic: false };
   #selectedIndices = { castable: 0, collisions: 0, snags: 0, dynamic: 0 };
   selection;
@@ -47,8 +45,8 @@ export class ZoneEditorState {
     if (this[key] === next) return;
     this[key] = next;
     if (key === "enabled" && !next) { this.boundsEditing = false; this.hoveredBound = -1; }
-    // Turning the editor on shows the cell grid the edges snap to (owner, Revision 2).
-    if (key === "enabled" && next) { this.cellGrid = true; this.grid = false; }
+    // Editor transitions own the automatic grid: on = map cells, off = no grid.
+    if (key === "enabled") { this.cellGrid = next; this.grid = false; }
     if (key === "cellGrid" && next) this.grid = false;
     if (key === "grid" && next) this.cellGrid = false;
     this.revision++;
@@ -137,15 +135,11 @@ export class ZoneEditorState {
     this.revision++;
   }
 
-  // Opacities are shares 0..1; steps are whole cells 1..10.
+  // Opacities are shares 0..1.
   setNumber(key, value) {
-    const limits = { cellGridOpacity: [0, 1, false], depthOpacity: [0, 1, false], cellLineStep: [1, 10, true],
-      snapCells: [1, 10, true] }[key];
-    if (!limits) throw new TypeError("Unknown editor value");
-    const [min, max, whole] = limits;
-    let next = Math.max(min, Math.min(max, Number(value)));
+    if (!["cellGridOpacity", "depthOpacity"].includes(key)) throw new TypeError("Unknown editor value");
+    const next = Math.max(0, Math.min(1, Number(value)));
     if (!Number.isFinite(next)) return;
-    if (whole) next = Math.round(next);
     if (next !== this[key]) { this[key] = next; this.revision++; }
   }
 

@@ -629,6 +629,16 @@ async function checkWaterWaveField() {
     "wave spacing and displacement consume the changed shared projection instead of an independent far-scale curve");
   const evenNear = meanShift(overheadPixels, 18, 24), evenFar = meanShift(overheadPixels, 30, 36);
   assert(Math.abs(evenNear - evenFar) < 0.25 * evenFar, "without a far scale the waves keep one size over the water");
+  // Spec 138: baked rectangles form one water surface. Their shared edges are not coastline seams.
+  field.setRegions([0, 0, 1, 1], 1, true);
+  const unionFull = Array.from(field.write(2, settings));
+  assert(field.setRegions([0, 0, 1, .5, 0, .5, 1, 1], 2, true));
+  assert.deepEqual(Array.from(field.write(2, settings)), unionFull, 'splitting a mask into adjacent rectangles cannot create a still seam');
+  field.setRegions([0, 0, 1, .25, 0, .25, .25, 1], 2, true);
+  const shoreline = field.write(2, settings);
+  assert.equal(shoreline[(35 * 192 + 150) * 4], 128, 'no displacement in the excluded shore');
+  assert.equal(shoreline[(35 * 192 + 150) * 4 + 1], 128);
+  assert.equal(field.setRegions([0, 0, 1, .25, 0, .25, .25, 1], 2, true), false, 'unchanged masks do not rebuild the envelope');
 }
 
 // Spec 106: the water over the background, stepping at its own frame rate.
