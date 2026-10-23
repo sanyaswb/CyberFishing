@@ -6,6 +6,15 @@
 
 Правило роботи: кожну нову задачу власника спочатку записувати в цей файл, потім виконувати.
 
+## TK-081 — попередження «preloaded but not used» для іконок інвентаря
+
+- Власник 2026-10-23: розібратися, чому в консолі `The resource …/assets/ui/inventory/rod.svg was preloaded using link preload but not used within a few seconds`, і прогрівати іконки через ImageAssetProvider.
+- Знайдено: `index.html`/`dev.html` мають 12 `<link rel="preload" as="image">` для заглушок слотів (v0.34.3), а `<img>` з ними створюють лише рендерери відкритого інвентаря (`inventory_slot_icons.js`); інвентар закритий після `load` → Chrome попереджає для кожного файла.
+- Зміна: прибрати 12 link із HTML; `InventoryUiBootstrap.create` прогріває `inventorySlotIconPaths()` через `ImageAssetProvider` (як стадії садка), шляхи з одного джерела.
+- Перевірка: keepnet-check — HTML без preload іконок інвентаря, прогрів запитує кожну іконку рівно раз; падає на старому коді. Full.
+- [x] Реалізація: `inventorySlotIconPaths()` + `InventoryUiBootstrap.preloadSlotIcons`, 12 link прибрано; keepnet-check падав на старому HTML і старому bootstrap. v0.47.6.
+- [ ] Власник: dev.html та index.html — у консолі немає попереджень preload; перше відкриття інвентаря показує заглушки слотів одразу. Візуально агентом не перевіряється.
+
 ## Незавершені перевірки власника
 
 Архівування не означає візуального приймання. Усі наведені нижче перевірки залишаються невиконаними.

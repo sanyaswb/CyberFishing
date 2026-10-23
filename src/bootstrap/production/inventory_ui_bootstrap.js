@@ -15,6 +15,7 @@ import { InventoryBalanceParameterResolver } from "../../game/presentation/inven
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
+import { inventorySlotIconPaths } from "../../game/presentation/inventory/inventory_slot_icons.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
@@ -106,7 +107,16 @@ export class InventoryUiBootstrap {
       dragClassName: "inventory-vertical-scroll--dragging" });
   }
 
+  // The empty-slot placeholders appear only once the inventory opens; warming them here instead of <link preload>
+  // keeps them cached without the browser's "preloaded but not used" warning (TK-081).
+  static preloadSlotIcons(documentRef) {
+    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
+    return imagePreloader.preload(inventorySlotIconPaths().map((src) => ({ id: src, src })))
+      .catch((error) => new ConsoleLogger().warn("[Inventory] Slot icon preload failed", error));
+  }
+
   static create({ autoMount = true, autoOpen = false, ...options } = {}) {
+    InventoryUiBootstrap.preloadSlotIcons(options.documentRef);
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.6 - Inventory Icons Without Preload Warnings
+
+- The inventory warms its slot placeholder icons through the image loader instead of link preload in the page head, so the console no longer warns that they were preloaded but not used.
+
 ## v0.47.5 - Agent Workflow Rules
 
 - AGENTS.md records the version, commit and push rules (patch per task, minor only with the owner's approval, push on command with Pages and task archiving) and working rules learned in practice.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.44 - Zones Stay Put When Grid Changes
 
 - Changing cell size preserves exact zone sizes and positions, live moving bodies and bounds. Water clipping uses design coordinates; grid/depth coverage rebuilds from exact geometry, and subsequent editing snaps to the new grid.
-
-## v0.46.43 - Editor Grid and Unavailable Switches
-
-- Turning the editor off also hides its grids. Switches blocked by dependencies look dimmed and expose their unavailable state, updating as prerequisites change while keeping the blocking-control highlight on attempted activation.

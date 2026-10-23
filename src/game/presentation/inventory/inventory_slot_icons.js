@@ -21,3 +21,8 @@ const ICONS = Object.freeze({
 export function inventorySlotIconPath(slotId) {
   return ICONS[slotId] || "";
 }
+
+// Every distinct placeholder file, warmed when the inventory is composed (TK-081).
+export function inventorySlotIconPaths() {
+  return [...new Set(Object.values(ICONS))];
+}

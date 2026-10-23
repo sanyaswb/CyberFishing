@@ -330,6 +330,29 @@ async function main() {
   assert.deepEqual(transitions, ["scouting"]);
   assert.equal(outcomes, 2, "retry succeeds once after capacity is freed");
   assert.equal(notifications[1].notice, "aquarium_full");
-  console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation.");
+  await checkSlotIconWarmUp(InventoryUiBootstrap);
+  console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation; inventory slot icons warmed without link preload.");
+}
+
+// TK-081: the slot placeholders are drawn only by the open inventory, so a <link preload> in the page head is never
+// used within the browser's window and warns. The inventory composition warms each file once instead.
+async function checkSlotIconWarmUp(InventoryUiBootstrap) {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = path.resolve(__dirname, "../../..");
+  for (const page of ["index.html", "dev.html"]) {
+    const html = fs.readFileSync(path.join(root, page), "utf8");
+    assert(!/<link[^>]+rel="preload"[^>]+assets\/ui\/inventory\//u.test(html), `${page} has no inventory icon link preload`);
+  }
+  const { inventorySlotIconPaths } = await import("../../../src/game/presentation/inventory/inventory_slot_icons.js");
+  const images = [];
+  const documentRef = { createElement: (tag) => { const image = { tag, decode: () => Promise.resolve() }; images.push(image); return image; } };
+  const warmed = InventoryUiBootstrap.preloadSlotIcons(documentRef);
+  const expected = inventorySlotIconPaths();
+  assert.equal(expected.length, 12, "twelve distinct placeholder files");
+  assert.deepEqual(images.map((image) => image.src).sort(), [...expected].sort(), "each icon file is requested once");
+  assert(images.every((image) => image.tag === "img"));
+  images.forEach((image) => image.onload());
+  await warmed;
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
