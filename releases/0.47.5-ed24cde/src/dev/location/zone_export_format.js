@@ -11,6 +11,20 @@ const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "shape", "x", "y", 
 const RECT_KEYS = Object.freeze(["x", "y", "w", "h"]);
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
 
+// Binary-fraction noise from moving zones between grids (TK-077: 11.700000000000001) is replaced by the short decimal it
+// sits on (within one part in 10^12), so exports, hashes and written modules carry 11.7; genuinely long values from a
+// smooth drag (17.12571864024948) and exact ones (0.00703125) stay as they are.
+function clean(value) {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || Number.isInteger(value)) return value;
+    const short = Number(value.toPrecision(12));
+    return Math.abs(short - value) <= Math.abs(value) * 1e-12 ? short : value;
+  }
+  if (Array.isArray(value)) return value.map(clean);
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clean(item)]));
+  return value;
+}
+
 function ordered(record, first) {
   const keys = first.filter(key => Object.hasOwn(record, key));
   for (const key of Object.keys(record).sort()) if (!first.includes(key)) keys.push(key);
@@ -27,10 +41,10 @@ function canonicalZone(zone) {
     const value = zone[key];
     if (key === "mask") {
       const { cells } = readMaskCells(value);
-      result.mask = { ...bakeGridMask(value.cell, cells), enabled: value.enabled };
+      result.mask = clean({ ...bakeGridMask(value.cell, cells), enabled: value.enabled });
       continue;
     }
-    result[key] = key !== "bounds" ? value : Array.isArray(value) ? value.map(canonicalRect) : canonicalRect(value);
+    result[key] = clean(key !== "bounds" ? value : Array.isArray(value) ? value.map(canonicalRect) : canonicalRect(value));
   }
   return result;
 }
