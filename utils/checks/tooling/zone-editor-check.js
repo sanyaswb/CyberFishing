@@ -535,13 +535,13 @@ controlUI.dispose();
   assert.deepEqual(written.at(-1), ["CONFIG.locations.map.lake.waterProjection", null], "physics off writes no projection");
   assert(!rows.has("Сітка перспективи/Дальність води, м"), "uniform water has no projection controls");
   lake.waterProjection = JSON.parse(JSON.stringify(baseProjection));
-  // Spec 136: the game's overlays measured from the castable area live in its list, after "Показати зону".
-  assert.equal(rows.get("Ігрова область (закидання)/Показувати оверлеї гри").args[3].join("."), "CONFIG.locations.debugVisuals");
-  for (const [label, key] of [["Показати зону прицілювання", "showAimingZone"], ["Показати зону підсаки", "showNetZone"],
+  // Spec 136 (Revision 2): the zones inside the castable area live in their own section "Зони риболовлі".
+  assert.equal(rows.get("Зони риболовлі/Показувати оверлеї гри").args[3].join("."), "CONFIG.locations.debugVisuals");
+  for (const [label, key] of [["Зона ручної прикормки", "showAimingZone"], ["Показати зону підсаки", "showNetZone"],
     ["Показати зону останнього ривка", "showLastDashZone"], ["Показати зону підведення", "showCatchZone"],
     ["Показати сектор виважування", "showPoleFightSector"], ["Показати радіус ліски", "showFightLineRadius"],
     ["Показати зони прикормки", "showChumZones"]]) {
-    assert.equal(rows.get(`Ігрова область (закидання)/${label}`)?.args[3].join("."), `CONFIG.locations.${key}`, label);
+    assert.equal(rows.get(`Зони риболовлі/${label}`)?.args[3].join("."), `CONFIG.locations.${key}`, label);
   }
   assert(![...rows.keys()].some(key => key.startsWith("Оверлеї гри")), "the overlay section is gone");
   assert(![...rows.keys()].some(key => /debugGrid|debugDepthText|debugZones|Налагоджувальна|Категорії в редакторі|Зони в грі/u.test(key)),
@@ -1059,25 +1059,25 @@ controlUI.dispose();
   console.error(error);
   process.exitCode = 1;
 });
-// Spec 136: the castable area's dependent zones preview the real values (equipment, location, chosen net and fish)
-// from its bottom edge; only hand chum writes (the location's chumCastDistance), half-circles move only their anchor.
+// Spec 136, Revision 2: the zones inside the castable area preview the real values (location, equipment, chosen net
+// and fish) from the rod's real position; the sector and the line radius use the editor's line length and a draggable
+// conditional float; only hand chum writes (the location's chumCastDistance); test chum zones look like real ones.
 (async () => {
   const { CastableZoneReadings } = load("src/dev/location/castable_zone_readings.js");
   const { CastableDependentZones } = load("src/dev/location/castable_dependent_zones.js");
   const { Net } = load("src/game/domain/tackle/net.js");
   const { FISH_DB } = load("src/game/config/databases/fish_database.js");
   const physics = { getPixelsPerMeter: () => 50, getDistanceConfig: () => ({}),
-    getCatchZoneConfig: () => ({ reel: { landingDistanceMeters: 4 } }) };
-  const cfg = { fightPhysicsConfig: physics, locations: { cellSize: 40, enableCastable: true,
+    getCatchZoneConfig: () => ({ reel: { landingDistanceMeters: 4 } }),
+    getPoleFightSectorConfig: () => ({ enabled: true, maxAngleFromCenterDeg: 50, shoreOpeningWidthMeters: 3 }) };
+  const cfg = { fightPhysicsConfig: physics, locations: { cellSize: 40, enableCastable: true, baseResolution: { width: 2560, height: 1440 },
     showAimingZone: true, showNetZone: true, showLastDashZone: true, showCatchZone: true, showFightLineRadius: true,
-    showPoleFightSector: true, showChumZones: true, map: { lake: {}, pond: {} } } };
-  let equipment = { rod: { effectiveStats: {} }, reel: { effectiveStats: { basePower: 5 } }, line: { effectiveStats: { lengthMeters: 25 } } };
+    showPoleFightSector: true, showChumZones: true, map: { lake: { name: "Lake", zones: {} }, pond: { name: "Pond", zones: { castable: [{ x: 0, y: 0, w: 1, h: 1 }] } } } } };
+  let equipment = { rod: { effectiveStats: {} }, reel: { effectiveStats: { basePower: 5 } } };
   const nets = { net_small: { id: "net_small", name: "Мала", gameplayStats: { active: true, length: 3 } },
     net_big: { id: "net_big", name: "Велика", gameplayStats: { active: true, length: 6 } } };
   const fish = FISH_DB.find(entry => entry.physics?.movementProfile?.lastDashTrigger?.enabled === true);
-  const readings = new CastableZoneReadings({ config: cfg, getEquipment: () => equipment, nets, fishes: [fish],
-    equipmentRules: { getEffectiveCastDistance: (eq, fallback, power, depth) => eq.rod ? 600 : fallback },
-    getHookDepthMeters: () => 1.5 });
+  const readings = new CastableZoneReadings({ config: cfg, getEquipment: () => equipment, nets, fishes: [fish] });
   assert.equal(readings.netPx("net_big"), new Net(nets.net_big.gameplayStats, {}).getReachPixels(), "the game's own Net converts the reach");
   assert.equal(readings.lastDashMeters(fish.id), 4 * fish.physics.movementProfile.lastDashTrigger.catchZoneMultiplier,
     "the fish's trigger over the equipped landing distance, as the fight resolves it");
@@ -1086,8 +1086,10 @@ controlUI.dispose();
   const identity = { virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y), getScale: () => 1 };
   const flat = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
   const writes = [];
+  let rodScreenX = 500;
   const zones = new CastableDependentZones({ state: st, config: cfg, readings, projector: identity, getWaterMetric: () => flat,
-    map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) },
+    map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 },
+    getRodScreenX: () => rodScreenX,
     writeConfig: (path, value) => { writes.push([path.join("."), value]); cfg.locations.map.lake.chumCastDistance = value; } });
   const draw = () => {
     zones.refresh();
@@ -1096,62 +1098,88 @@ controlUI.dispose();
       polygon: (points, look) => drawn.polygons.push({ points, ...look }), handle: (x, y, look) => drawn.handles.push({ x, y, ...look }) });
     return drawn;
   };
+  const byColor = (list, color) => list.find(entry => entry.color === color);
   let drawn = draw();
-  assert.deepEqual(drawn.bands.map(band => [band.color, band.top, band.bottom]), [["#4da6ff", 400, 1000], ["#ffb347", 700, 1000],
-    ["#33dd88", 1000 - readings.netPx("net_small")], ["#b366ff", 1000 - readings.lastDashMeters(fish.id) * 50, 1000]]
-    .map(([color, top, bottom = 1000]) => [color, top, bottom]),
-    "bands from the bottom edge: rod cast 600 px, hand chum 300 px (no hand chum equipped), the first net, the fish");
-  assert.equal(drawn.polygons.length, 2, "half-circles for landing and the line; no sector or chum spots in the editor");
-  const landing = drawn.polygons[0].points;
-  assert(landing[0] === 700 && landing[1] === 1000 && Math.abs(landing[32] - 500) < 1e-9 && Math.abs(landing[33] - 800) < 1e-9,
-    "the landing half-circle: 4 m round the middle of the bottom edge");
-  assert.equal(zones.hit(500, 700), null, "nothing is dragged before its editing is on");
-  const revision = zones.revision;
-  draw(); assert.equal(zones.revision, revision, "unchanged real values redraw nothing");
+  assert.deepEqual(drawn.bands.map(band => [band.color, band.top]), [["#ffb347", 700], ["#33dd88", 1000 - readings.netPx("net_small")],
+    ["#b366ff", 1000 - readings.lastDashMeters(fish.id) * 50]], "hand chum 300 px (no rod aim band), the first net, the fish");
+  const landing = byColor(drawn.polygons, "#3388ff").points;
+  assert(landing[0] === 700 && Math.abs(landing[33] - 800) < 1e-9, "the landing half-circle: 4 m round the rod");
+  const line = byColor(drawn.polygons, "#dddddd").points;
+  assert(Math.abs(line[0] - 0) < 1e-9 && line[1] === 1000 && Math.abs(line[65] - 500) < 1e-9 && line[64] === 500,
+    "the line radius: the 10 m line length round the rod");
+  const sector = byColor(drawn.polygons, "#ff8844").points;
+  assert(sector.length === 2 * 66 && sector[1] > 1000, "the fight sector: its apex behind the shore, the arc at the float's distance");
+  assert.deepEqual([drawn.handles[0].x, drawn.handles[0].y, drawn.handles[0].color], [500, 500, "#ffffff"],
+    "the conditional float straight ahead at the line length");
+
+  // The line length drives the line radius and the sector; the float stays within it.
+  zones.setLineMeters(4); drawn = draw();
+  assert(Math.abs(byColor(drawn.polygons, "#dddddd").points[65] - 800) < 1e-9 && drawn.handles[0].y === 800, "4 m of line");
+  assert.equal(zones.hit(500, 800), null, "the float moves only while its switch is on");
+  zones.setMovingFloat(true);
+  const float = zones.hit(500, 805);
+  assert.deepEqual([float?.kind, float?.cursor], ["float", "move"]);
+  zones.drag(float, 650, 900); drawn = draw();
+  assert(Math.abs(drawn.handles[0].x - 650) < 1e-9 && Math.abs(drawn.handles[0].y - 900) < 1e-9, "the float follows the pointer");
+  const shortSector = byColor(drawn.polygons, "#ff8844").points;
+  assert(Math.abs(Math.hypot(shortSector[66] - 500, shortSector[67] - 1000) - Math.hypot(150, 100)) < 1e-6,
+    "the sector's radius is the rod-to-float distance, as in the game");
+  zones.drag(float, 500, 0); drawn = draw();
+  assert(Math.abs(drawn.handles[0].y - 800) < 1e-9, "the float cannot pull more line than the line length");
+  rodScreenX = 300; drawn = draw();
+  assert.equal(byColor(drawn.polygons, "#3388ff").points[0], 500, "previews follow the rod's real position");
+  rodScreenX = 500;
 
   // Hand chum: its far line is dragged like a zone edge, snapped to the cell step, into the location's setting.
-  zones.setEditing("handChum", true);
-  const line = zones.hit(500, 705);
-  assert.deepEqual([line?.id, line?.cursor], ["handChum", "y"]);
-  zones.drag(line, 500, 612);
+  assert.equal(zones.hit(500, 700), null, "nothing is dragged before its editing is on");
+  zones.setEditingChumLine(true);
+  const chumLine = zones.hit(500, 705);
+  assert.deepEqual([chumLine?.kind, chumLine?.cursor], ["line", "y"]);
+  zones.drag(chumLine, 500, 612);
   assert.deepEqual(writes.at(-1), ["CONFIG.locations.map.lake.chumCastDistance", 400], "612 px snaps to 600: 400 px from the shore");
-  drawn = draw(); assert.equal(drawn.bands[1].top, 600, "the preview follows the written setting");
-  zones.drag(line, 500, -50);
-  assert.equal(writes.at(-1)[1], 1000, "the far line stops at the castable area's far edge");
-
-  // Half-circles: the base anchor moves only along the bottom edge (snapped); their length is the real value.
-  zones.setEditing("catch", true);
-  drawn = draw();
-  assert.equal(drawn.handles.length, 2, "an edited half-circle shows its base anchor and its length marker");
-  const anchor = zones.hit(500, 1004);
-  assert.deepEqual([anchor?.id, anchor?.kind, anchor?.cursor], ["catch", "anchor", "x"]);
-  zones.drag(anchor, 623, 300);
-  drawn = draw();
-  assert(drawn.polygons[0].points[0] === 840 && drawn.polygons[0].points[1] === 1000, "the anchor snapped to 640 on the bottom edge");
-  zones.hover(650, 950); drawn = draw();
-  assert(drawn.polygons[0].hovered === true && zones.hovered === "catch", "the pointer inside the half-circle fills it");
+  drawn = draw(); assert.equal(drawn.bands[0].top, 600, "the preview follows the written setting");
+  zones.hover(500, 650); drawn = draw();
+  assert(drawn.bands[0].hovered === true && zones.hovered === "handChum", "the pointer inside the edited band fills it");
   zones.hover(50, 1100); assert.equal(zones.hovered, null, "below the shore nothing is hovered");
-  assert.equal(writes.length, 2, "anchors and selections never write a game value");
 
-  // Choices and live values.
+  // Test chum zones: drawn as the game's chum records; middle moves, edge resizes; nothing else changes.
+  const chumZones = zones.chumZones;
+  zones.addChumZone();
+  const frame = { chumZones: { records: [], acquire() { const record = {}; this.records.push(record); return record; } } };
+  zones.buildChumZonesInto(frame);
+  assert.deepEqual(frame.chumZones.records, [{ opacity: 1, x: 500, y: 500, radiusX: 100, radiusY: 100 }],
+    "a new test zone is a full-bonus chum record of 2 m in the middle of the water");
+  assert.equal(zones.hit(500, 500), null, "test zones are dragged only while their editing is on");
+  chumZones.setEditing(true);
+  const middle = zones.hit(510, 500);
+  assert.deepEqual([middle?.kind, middle?.move], ["chum", true]);
+  zones.drag(middle, 615, 430);
+  const edge = zones.hit(705, 440);
+  assert.deepEqual([edge?.kind, edge?.move], ["chum", false], "its rim takes the edge");
+  zones.drag(edge, 770, 440);
+  frame.chumZones.records.length = 0; zones.buildChumZonesInto(frame);
+  assert.deepEqual(frame.chumZones.records[0], { opacity: 1, x: 600, y: 440, radiusX: 160, radiusY: 160 },
+    "moved to the snapped 600/440 and resized to 160 px");
+  cfg.locations.showChumZones = false; frame.chumZones.records.length = 0; zones.buildChumZonesInto(frame);
+  assert.equal(frame.chumZones.records.length, 0, "the game's show switch hides the test zones too");
+  cfg.locations.showChumZones = true;
+  chumZones.remove("lake", 0);
+  assert.equal(chumZones.list("lake").length, 0);
+  assert.equal(writes.length, 1, "the float, the line length and test chum zones never write a game value");
+
+  // Choices, live values and the game's show switches.
   zones.setNet("net_big"); drawn = draw();
-  assert.equal(drawn.bands[2].top, 1000 - readings.netPx("net_big"), "the chosen net's reach");
-  equipment = { ...equipment, line: { effectiveStats: { lengthMeters: 10 } } };
-  const beforeLine = zones.revision; draw();
-  assert(zones.revision > beforeLine, "a changed equipment value redraws");
-  equipment = { line: equipment.line };
+  assert.equal(drawn.bands[1].top, 1000 - readings.netPx("net_big"), "the chosen net's reach");
+  equipment = {}; drawn = draw();
+  assert(!byColor(drawn.polygons, "#3388ff"), "without a rod: no landing half-circle");
+  cfg.locations.showFightLineRadius = false; cfg.locations.showPoleFightSector = false; cfg.locations.showAimingZone = false;
   drawn = draw();
-  assert(!drawn.bands.some(band => band.color === "#4da6ff") && drawn.polygons.length === 1,
-    "without a rod: no rod aim and no landing half-circle");
-  cfg.locations.showFightLineRadius = false; cfg.locations.showAimingZone = false;
-  drawn = draw();
-  assert(drawn.polygons.length === 0 && !drawn.bands.some(band => band.color === "#ffb347") && zones.hit(500, 605) === null,
+  // Without a rod the landing distance is unknown, so the fish's landing-based trigger is too: only the net band stays.
+  assert(drawn.polygons.length === 0 && drawn.handles.length === 0 && drawn.bands.length === 1 && zones.hit(500, 605) === null,
     "a zone the game hides is neither previewed nor dragged");
-  st.setLocation("pond"); st.loadedLocationId = "pond";
-  cfg.locations.showCatchZone = true; equipment = { rod: {}, reel: { effectiveStats: { basePower: 5 } } };
-  drawn = draw();
-  assert.equal(drawn.polygons[0].points[0], 700, "another location starts with its anchor in the middle again");
-  // The castable list holds the rows; the geometry builder draws the half-circles as polygons on both renderers.
+  cfg.locations.showFightLineRadius = true; cfg.locations.showCatchZone = true; cfg.locations.showAimingZone = true;
+
+  // The section: its own tab with the line length, float, hand chum, net, fish and test chum zone controls.
   const rows = new Map();
   const record = (kind) => (label, ...args) => {
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
@@ -1160,38 +1188,37 @@ controlUI.dispose();
   const sectionUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ label: "group", replaceChildren() {} }),
     createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"), createSelectRow: record("select"),
     createSwitcherRow: record("switch") };
-  cfg.locations.map.pond = { name: "Pond", zones: { castable: [{ x: 0, y: 0, w: 1, h: 1 }] } };
-  cfg.locations.baseResolution = { width: 2560, height: 1440 };
   new ZoneEditorSection({ ui: sectionUi, state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
     updateConfig() {}, getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options),
     getDependentZones: () => zones }).render({});
-  const castable = label => rows.get(`Ігрова область (закидання)/${label}`);
-  assert(castable("Редагувати ручну прикормку") && castable("Редагувати зону підведення") && castable("Редагувати радіус ліски") &&
-    !castable("Редагувати зону підсаки"), "editing only where something can be dragged");
-  const netSelect = castable("Підсака"), fishSelect = castable("Риба");
-  assert.deepEqual([...netSelect.args[0]], ["Мала", "Велика"]); assert.equal(netSelect.args[1], "Велика");
-  netSelect.args[3]("Мала"); assert.equal(zones.netId, "net_small", "the select chooses the previewed net");
-  assert.deepEqual([...fishSelect.args[0]], [fish.name]);
-  castable("Редагувати радіус ліски").args[2](true); assert.equal(zones.isEditing("line"), true);
-  const geometry = new ZoneEditorGeometryBuilder({ state: st, map: { currentLocationId: "pond", getRevision: () => 1, getDynamicZones: () => [],
+  const fishing = label => rows.get(`Зони риболовлі/${label}`);
+  assert(fishing("Довжина ліски, м") && fishing("Рухати поплавок") && fishing("Редагувати ручну прикормку") &&
+    fishing("Редагувати зони прикормки") && fishing("Додати зону прикормки") && fishing("Зона ручної прикормки"),
+    "the fishing zones' controls");
+  assert(!fishing("Показати зону прицілювання") && !fishing("Редагувати радіус ліски") && !fishing("Редагувати зону підведення") &&
+    !rows.has("Ігрова область (закидання)/Зона ручної прикормки"), "renamed aim, no anchors or line editing, nothing left in the castable list");
+  fishing("Довжина ліски, м").args[3](25); assert.equal(zones.lineMeters, 25, "the line length is typed in metres");
+  assert.deepEqual([...fishing("Підсака").args[0]], ["Мала", "Велика"]); assert.equal(fishing("Підсака").args[1], "Велика");
+  fishing("Додати зону прикормки").args[1]();
+  assert(chumZones.list("lake").length === 1 && rows.has("Зони риболовлі/Номер зони прикормки"), "adding a test zone lists its number");
+  const geometry = new ZoneEditorGeometryBuilder({ state: st, map: { currentLocationId: "lake", getRevision: () => 1, getDynamicZones: () => [],
     getLocationZones: () => ({}), getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) },
   projector: identity, getWaterMetric: () => flat, config: cfg, dependentZones: zones });
-  const frame = {}; geometry.buildInto(frame);
-  const polygon = frame.annotations.rects.slice(0, frame.annotations.rectCount).find(rect => rect.shape === "polygon");
-  assert(polygon && polygon.points.length === 66 && polygon.color === 0x3388ff && polygon.width === 400 && polygon.height === 200,
-    "the landing half-circle as a polygon record with its bounding box");
+  const annotationFrame = {}; geometry.buildInto(annotationFrame);
+  const polygon = annotationFrame.annotations.rects.slice(0, annotationFrame.annotations.rectCount).find(rect => rect.shape === "polygon");
+  assert(polygon && polygon.points.length === 130 && polygon.color === 0xdddddd, "the line radius as a polygon record");
   const polyOps = [];
   const fakeGraphics = { clear() { polyOps.length = 0; return this; }, visible: true };
-  for (const name of ["rect", "ellipse", "poly", "fill", "stroke", "moveTo", "lineTo"]) fakeGraphics[name] = function (...args) { polyOps.push(name); return this; };
-  new PixiAnnotationRenderer({ pixi: { Graphics: function () { return fakeGraphics; } }, stage: { addChild() {} } }).update(frame.annotations);
+  for (const name of ["rect", "ellipse", "poly", "fill", "stroke", "moveTo", "lineTo"]) fakeGraphics[name] = function () { polyOps.push(name); return this; };
+  new PixiAnnotationRenderer({ pixi: { Graphics: function () { return fakeGraphics; } }, stage: { addChild() {} } }).update(annotationFrame.annotations);
   assert(polyOps.includes("poly"), "WebGL draws the polygon");
   const canvasOps = [];
   const canvas = { globalAlpha: 1, drawImage() {}, strokeRect() {}, fillRect() {}, beginPath() {}, moveTo() { canvasOps.push("moveTo"); },
     lineTo() { canvasOps.push("lineTo"); }, closePath() { canvasOps.push("closePath"); }, fill() {}, stroke() {}, ellipse() {} };
   new WorldDebugRenderer({ surface: canvas, sceneRouter: { drawsOnScene: () => false } })
-    .render({ visible: true, annotations: frame.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
-  assert(canvasOps.includes("closePath") && canvasOps.filter(op => op === "lineTo").length >= 32, "the Canvas fallback draws the same polygon");
-  console.log("Castable dependent zones passed: real readings (rules, Net, landing policy, fish trigger, line), bands and half-circles from the bottom edge, hand chum far-line drag into chumCastDistance, anchors along the edge, hover, choices, game show switches, redraw only on change.");
+    .render({ visible: true, annotations: annotationFrame.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
+  assert(canvasOps.includes("closePath"), "the Canvas fallback draws the same polygon");
+  console.log("Castable fishing zones passed: real readings (Net, landing policy, fish trigger), hand chum band and far-line drag into chumCastDistance, line length for the line radius and the game's sector from a draggable conditional float, rod's real position, test chum zones as game chum records (move, resize), game show switches, own section, polygon on both renderers.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

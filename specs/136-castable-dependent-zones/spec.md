@@ -117,3 +117,41 @@ owner check pending. DEV editor work: no game value changes unless a drag writes
 - The castable list: "Показувати оверлеї гри", the game's show switches (hand chum shares the aiming switch),
   "Редагувати ручну прикормку / зону підведення / радіус ліски", the net and fish selects; "Оверлеї гри" is removed.
 - Known limit: `chumCastDistance` is a session override; the zone file (spec 130) carries only zones.
+
+## Revision 2 (owner, 2026-10-23, after v0.46.34)
+
+Owner: "всі сектори залежать від довжини ліски правильно?" — verified: in the game the fight sector and the line radius
+share one radius, the distance from the rod to the float (`FightAreaRenderFrameBuilder`: `limitRadiusPx` = |float −
+rod| on the base plane; the line radius is the "full radial limit of the released line"). The landing zone does not
+depend on the line (rod + reel landing distance).
+
+- **R2-1 Line length.** An editor value "Довжина ліски, м" (default 10 m, session only): the released line for every
+  line-dependent preview. The line radius is a half-circle of that length round the rod.
+- **R2-2 Float anchor.** Because nothing can be cast while editing, a conditional float anchor sits at the sector's edge
+  (straight ahead at the line length by default) and can be dragged within the line length over the water; the fight
+  sector is drawn as the game draws it from that float (`PoleFightSectorGeometry` on the base plane: radius = rod →
+  float, apex behind the shore, the configured half-angle). Its switch: "Рухати поплавок".
+- **R2-3 Origin.** All rod-based previews start at the rod's real position (the game's rod screen X on the shore line).
+  The base-anchor editing and the line-radius editing of v0.46.34 are removed (owner: not needed).
+- **R2-4 Hand chum.** "Показати зону прицілювання" is renamed "Зона ручної прикормки"; the rod-cast aim band is no
+  longer previewed. Its far line stays draggable ("Редагувати ручну прикормку", `chumCastDistance`).
+- **R2-5 Test chum zones.** "Додати зону прикормки" adds an editor-only chum zone (session, per location) drawn by the
+  game's own chum renderer (`world.chumZones`, full bonus), so it looks exactly like a thrown spot; like the other zones
+  it has a number select and delete, its middle (30 %) moves it and its edge resizes it (snapped to the cell step).
+  Item parameters are never changed.
+- **R2-6 Own tab.** Every zone inside the castable area (hand chum, net, last dash, landing, fight sector, line radius,
+  chum zones) moves from the castable list to its own section "Зони риболовлі" right after it.
+
+### Revision 2 implementation (v0.46.35)
+
+- `CastableDependentZones` now previews hand chum, net, last dash and landing (the rod-cast aim band is gone), and the
+  line radius and the fight sector from the editor's line length (default 10 m) and a conditional float (an offset
+  from the rod on the base plane, straight ahead at the line length by default, kept within it, "Рухати поплавок").
+  The sector is `PoleFightSectorGeometry` with radius rod → float and the arc between its boundary intersections, as
+  `FightAreaRenderFrameBuilder` draws it. Previews start at the rod's real position (the game's rod screen X); the
+  base anchors and line editing of v0.46.34 are removed. Production now passes `getRodScreenX` instead of the rules
+  and hook depth; `CastableZoneReadings` lost `rodCastPx` and `lineMeters`.
+- `src/dev/location/chum_test_zones.js`: editor-only chum zones per location; `LocationDebugRenderFrameBuilder` adds
+  them to `world.chumZones` (full bonus), so the game's chum renderer draws them; middle moves, rim resizes, both
+  snapped to the cell step; the game's `showChumZones` hides them too.
+- The section "Зони риболовлі" follows the category lists; the castable list no longer holds these rows.

@@ -14,11 +14,13 @@ export class LocationDebugRenderFrameBuilder {
   #zoneEditor;
   #zoneEditorTool;
   #editorState;
+  #chumPreview;
   #notifiedMapRevision = -1;
 
   // zoneEditor: { buildInto(target) } geometry; zoneEditorTool: optional { sync() } kept in step with the editor's
-  // switches once per frame (the drag layer); editorState: ZoneEditorState (enabled, depth, depthOpacity).
-  constructor({ map, projector, config, debugMapBuilder, zoneEditor = null, zoneEditorTool = null, editorState = null }) {
+  // switches once per frame (the drag layer); editorState: ZoneEditorState (enabled, depth, depthOpacity); chumPreview:
+  // optional { buildChumZonesInto(target) }, the editor's test chum zones in the world's chum list (spec 136 R2-5).
+  constructor({ map, projector, config, debugMapBuilder, zoneEditor = null, zoneEditorTool = null, editorState = null, chumPreview = null }) {
     if (!debugMapBuilder || typeof debugMapBuilder.build !== "function") {
       throw new TypeError(
         "LocationDebugRenderFrameBuilder requires debugMapBuilder",
@@ -31,10 +33,12 @@ export class LocationDebugRenderFrameBuilder {
     this.#zoneEditor = zoneEditor;
     this.#zoneEditorTool = zoneEditorTool;
     this.#editorState = editorState;
+    this.#chumPreview = chumPreview;
   }
 
   buildInto(target) {
     this.#zoneEditor?.buildInto(target);
+    this.#chumPreview?.buildChumZonesInto(target);
     this.#zoneEditorTool?.sync();
     const state = this.#editorState;
     // Config reload is asynchronous: refresh paused live-coordinate fields only after the map accepted its revision.

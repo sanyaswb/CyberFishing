@@ -10,14 +10,13 @@ const DEFAULT_CHUM_CAST_DISTANCE = 300;
 // classes; nothing here changes an item, fish or physics value for display. Distances are base pixels from the shore
 // line (the castable zones' bottom edge) or metres, as the game uses them; null when there is nothing to show.
 export class CastableZoneReadings {
-  #config; #getEquipment; #equipmentRules; #getHookDepthMeters; #nets; #fishes;
+  #config; #getEquipment; #nets; #fishes;
   #landing = new LandingPolicyResolver();
 
-  // getEquipment(): the equipped items; equipmentRules: the game's EquipmentRules; getHookDepthMeters(): the selected
-  // hook depth (casting costs it); nets: the item catalog's nets; fishes: FISH_DB.
-  constructor({ config, getEquipment, equipmentRules, getHookDepthMeters = () => null, nets = {}, fishes = [] }) {
-    this.#config = config; this.#getEquipment = getEquipment; this.#equipmentRules = equipmentRules;
-    this.#getHookDepthMeters = getHookDepthMeters; this.#nets = nets; this.#fishes = fishes;
+  // getEquipment(): the equipped items; nets: the item catalog's nets; fishes: FISH_DB. The line length is the
+  // editor's own value (Revision 2), not the equipped line.
+  constructor({ config, getEquipment, nets = {}, fishes = [] }) {
+    this.#config = config; this.#getEquipment = getEquipment; this.#nets = nets; this.#fishes = fishes;
   }
 
   // [id, name] of every catalog net and fish, for the editor's selects.
@@ -31,14 +30,6 @@ export class CastableZoneReadings {
 
   get pixelsPerMeter() {
     return this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() || 50;
-  }
-
-  // The scouting aim with the rod: the equipment's effective cast distance (the selected depth included).
-  rodCastPx() {
-    const equipment = this.#getEquipment?.();
-    if (!equipment?.rod || !this.#equipmentRules) return null;
-    const distance = this.#equipmentRules.getEffectiveCastDistance(equipment, Infinity, null, this.#getHookDepthMeters());
-    return Number.isFinite(distance) && distance > 0 ? distance : null;
   }
 
   // Hand chum is a location setting: shown with or without hand chum equipped (owner, R-Q1).
@@ -72,11 +63,5 @@ export class CastableZoneReadings {
     if (trigger?.enabled !== true) return null;
     const distance = FishBehavior.lastDashTriggerDistanceMeters(trigger, this.landingMeters() || 0);
     return distance > 0 ? distance : null;
-  }
-
-  // The equipped line's length: the most line the fight can release.
-  lineMeters() {
-    const length = Number(this.#getEquipment?.()?.line?.effectiveStats?.lengthMeters);
-    return Number.isFinite(length) && length > 0 ? length : null;
   }
 }

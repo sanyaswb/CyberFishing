@@ -8,12 +8,10 @@ const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic"])
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
   dynamic: "Рухомі зони" });
 const PHYSICS_KEYS = ZONE_PHYSICS_KEYS;
-// Spec 136: the rows of the castable area's dependent zones (hand chum shares the aiming zone's show switch).
-const DEPENDENT_SHOW_LABELS = Object.freeze({ aiming: "Показати зону прицілювання", net: "Показати зону підсаки",
+// Spec 136 (Revision 2): the show switches of the zones inside the castable area, in "Зони риболовлі".
+const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної прикормки", net: "Показати зону підсаки",
   lastDash: "Показати зону останнього ривка", catch: "Показати зону підведення", sector: "Показати сектор виважування",
   line: "Показати радіус ліски", chum: "Показати зони прикормки" });
-const DEPENDENT_EDIT_LABELS = Object.freeze({ handChum: "Редагувати ручну прикормку", catch: "Редагувати зону підведення",
-  line: "Редагувати радіус ліски" });
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
@@ -26,6 +24,7 @@ export class ZoneEditorSection {
   #lists = new Map();
   #location = null;
   #perspective = null;
+  #fishing = null;
   #newDynamicShape = "square";
 
   #saving = null;
@@ -69,6 +68,8 @@ export class ZoneEditorSection {
       this.#lists.set(category, list);
       this.#fillCategory(category);
     }
+    this.#fishing = this.#createSection("Зони риболовлі", zones, ["ZONE_EDITOR", "fishing"]);
+    this.#fillFishing();
     this.#perspective = this.#createSection("Сітка перспективи", content, ["ZONE_EDITOR", "perspective"]);
     this.#fillPerspective();
     this.#saving = this.#createSection("Збереження", content, ["ZONE_EDITOR", "saving"]);
@@ -256,7 +257,6 @@ export class ZoneEditorSection {
     }
     ui.createSwitcherRow("Показати зону", state.categories[category], list,
       value => { state.setCategory(category, value); this.#syncAllZonesShown(); }, ["ZONE_EDITOR", "show", category]);
-    if (category === "castable") this.#fillDependent(list);
     const id = this.#locationId();
     const location = this.#config.locations.map[id];
     if (!location) return;
@@ -442,32 +442,60 @@ export class ZoneEditorSection {
     for (const key of ["cellGrid", "grid"]) this.#ui.syncValue(["ZONE_EDITOR", key], this.#state[key]);
   }
 
-  // Spec 136: the zones measured from the castable area's bottom edge, right under its "Показати зону": the game's own
-  // show switches (they apply in the game too), editing for hand chum (its far line) and the half-circles (their base
-  // anchor), and the net and fish whose real values are previewed. Item, fish and physics values are never changed.
-  #fillDependent(list) {
+  // Spec 136, Revision 2: "Зони риболовлі", every zone inside the castable area. The game's own show switches (they apply
+  // in the game too), the editor's line length and conditional float (nothing can be cast while editing), hand chum's
+  // far line (the location's chumCastDistance), the net and fish whose real values are previewed, and test chum zones.
+  // Item, fish and physics values are never changed.
+  #fillFishing() {
+    const list = this.#fishing;
+    if (!list) return;
     const ui = this.#ui, dependent = this.#getDependentZones?.() ?? null;
+    ui.releaseValueBindings(list);
+    list.replaceChildren();
     this.#configSwitch(list, "debugVisuals", "Показувати оверлеї гри");
-    for (const zone of DEPENDENT_ZONES) {
-      if (DEPENDENT_SHOW_LABELS[zone.id]) {
-        this.#configSwitch(list, zone.show, DEPENDENT_SHOW_LABELS[zone.id], { swatch: zone.color, defaultOn: zone.defaultOn });
-      }
-      if (!dependent) continue;
-      if (zone.edit) {
-        const path = ["ZONE_EDITOR", "dependent", zone.id];
-        ui.createSwitcherRow(DEPENDENT_EDIT_LABELS[zone.id], dependent.isEditing(zone.id), list,
-          value => dependent.setEditing(zone.id, value), path, path, { swatch: zone.color });
-      }
-      const choices = zone.id === "net" ? ["Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id)]
-        : zone.id === "lastDash" ? ["Риба", dependent.readings.fishes, dependent.fishId, id => dependent.setFish(id)] : null;
-      if (choices) {
-        const [label, options, current, choose] = choices;
-        ui.createSelectRow(label, options.map(([, name]) => name), options.find(([key]) => key === current)?.[1] ?? "", list,
-          name => { const option = options.find(([, candidate]) => candidate === name); if (option) choose(option[0]); },
-          ["ZONE_EDITOR", "dependent", zone.id, "choice"]);
-      }
+    const show = (id) => {
+      const zone = DEPENDENT_ZONES.find(entry => entry.id === id);
+      this.#configSwitch(list, zone.show, FISHING_SHOW_LABELS[id], { swatch: zone.color, defaultOn: zone.defaultOn });
+      return zone;
+    };
+    const editorSwitch = (label, value, key, change, swatch) => {
+      const path = ["ZONE_EDITOR", "fishing", key];
+      ui.createSwitcherRow(label, value, list, change, path, path, { swatch });
+    };
+    const choose = (label, options, current, onChoose, key) => {
+      ui.createSelectRow(label, options.map(([, name]) => name), options.find(([id]) => id === current)?.[1] ?? "", list,
+        (name) => { const option = options.find(([, candidate]) => candidate === name); if (option) onChoose(option[0]); },
+        ["ZONE_EDITOR", "fishing", key]);
+    };
+    if (dependent) {
+      const linePath = ["ZONE_EDITOR", "fishing", "lineMeters"];
+      ui.createInputRow("Довжина ліски, м", dependent.lineMeters, list, "number",
+        value => ui.syncValue(linePath, dependent.setLineMeters(value)), linePath);
     }
-    ui.createInfoRow("Оверлеї", "Ці зони рахуються від нижньої грані ігрової області. Поки редактор увімкнено, показані зони малюються з реальних значень: прицілювання — з дальності закидання спорядження, ручна прикормка — з налаштування локації (її дальню лінію можна тягнути), підсака й останній ривок — для вибраних підсаки й риби, підведення й радіус ліски — зі спорядження (центр-анкер на нижній грані можна тягнути). Сектор виважування й зони прикормки видно лише в грі. Перший перемикач гасить усі оверлеї гри.", list);
+    const handChum = show("handChum");
+    if (dependent) editorSwitch("Редагувати ручну прикормку", dependent.editingChumLine, "handChum",
+      value => dependent.setEditingChumLine(value), handChum.color);
+    show("net");
+    if (dependent) choose("Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id), "net");
+    show("lastDash");
+    if (dependent) choose("Риба", dependent.readings.fishes, dependent.fishId, id => dependent.setFish(id), "fish");
+    show("catch");
+    show("sector");
+    show("line");
+    if (dependent) editorSwitch("Рухати поплавок", dependent.movingFloat, "float", value => dependent.setMovingFloat(value), "#ffffff");
+    const chum = show("chum");
+    if (dependent) {
+      const zones = dependent.chumZones, locationId = this.#locationId(), spots = zones.list(locationId);
+      editorSwitch("Редагувати зони прикормки", zones.isEditing, "chum", value => zones.setEditing(value), chum.color);
+      if (spots.length) {
+        ui.createSelectRow("Номер зони прикормки", spots.map((_, number) => String(number + 1)),
+          String(Math.min(zones.selected, spots.length - 1) + 1), list, value => zones.select(Number(value) - 1),
+          ["ZONE_EDITOR", "fishing", "chumIndex"]);
+        ui.createButtonRow("Видалити вибрану зону прикормки", list, () => { zones.remove(locationId, zones.selected); this.#fillFishing(); });
+      }
+      ui.createButtonRow("Додати зону прикормки", list, () => { dependent.addChumZone(); this.#fillFishing(); });
+    }
+    ui.createInfoRow("Зони риболовлі", "Зони всередині ігрової області. Поки редактор увімкнено, показані зони малюються з реальних значень від вудки на нижній грані: ручна прикормка — з налаштування локації (її дальню лінію можна тягнути), підсака й останній ривок — для вибраних підсаки й риби, підведення — зі спорядженої вудки й котушки. Сектор виважування й радіус ліски беруть довжину ліски з поля вище; умовний поплавок на краю сектора можна рухати в межах ліски. Зони прикормки тут — тестові: лише для вигляду, як справжні, без зміни предметів; середина пересуває, край змінює розмір. Перший перемикач гасить усі оверлеї гри.", list);
   }
 
   // A switch over CONFIG.locations.<key> through the validated runtime override path.

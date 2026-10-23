@@ -274,10 +274,9 @@ export class GameRenderComposition {
           debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
           getWaterMetric: appPorts.getWaterMetric,
           canvasMetrics,
-          // Spec 136: the real values the DEV editor previews the castable area's dependent zones from (read only).
+          // Spec 136: what the DEV editor previews the castable area's zones from (read only): equipment, the rod.
           getEquipment: () => runtime.inventory.getEquipped(),
-          equipmentRules: runtime.equipmentRules,
-          getHookDepthMeters: () => appPorts.currentHookDepthRef?.get?.() ?? null,
+          getRodScreenX: appPorts.getRodScreenX,
         }], ["buildInto"],
       ),
     });

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.35 - Fishing Zones Tab
+
+- Location editor: Зони риболовлі — line length and a conditional float for the fight sector and line radius, hand chum zone, test chum zones that look like real ones.
+
 ## v0.46.34 - Zones Measured from the Castable Area
 
 - Location editor: the game's overlays measured from the castable bottom edge live in its list and preview the real values; hand chum's far line and the half-circles' anchors are dragged like zones; net and fish are chosen from lists.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.26 - Explain Blocked DevTools Switches
 
 - Dependent switches reject activation while a declared prerequisite is off and outline the blocker for three seconds or until enabled. Editable zones and depth numbers require the editor; visibility and grids stay independent.
-
-## v0.46.25 - Consistent DevTools Tree Order
-
-- Every DevTools section shows direct controls first, nested sections next and its description last, preserving keyboard order and partial refresh behavior.

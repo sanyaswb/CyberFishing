@@ -228,6 +228,7 @@ async function startGame() {
           writeZones: writeConfig, dependentZones });
         return new LocationDebugRenderFrameBuilder({ ...options,
           zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState, dependentZones }), zoneEditorTool: zoneEditorDrag,
+          chumPreview: dependentZones,
           editorState: zoneEditorState });
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
