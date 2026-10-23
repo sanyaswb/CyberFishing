@@ -62,7 +62,10 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     assert(logs.some(line => line.includes("collisions 1: x 12 -> 14")) && logs.some(line => line.includes("snags 2: додано")),
       "the change is shown per zone before the question");
     const [backup] = fs.readdirSync(backups);
-    assert.equal(backup, "20261022-184005-test.js");
+    // TK-078: the local time of the moment, whatever the machine's zone (18:40:05 UTC is 21:40:05 in Kyiv).
+    const moment = new Date("2026-10-22T18:40:05Z"), pad = value => String(value).padStart(2, "0");
+    assert.equal(backup, `${moment.getFullYear()}${pad(moment.getMonth() + 1)}${pad(moment.getDate())}-${pad(moment.getHours())}${pad(moment.getMinutes())}${pad(moment.getSeconds())}-test.js`,
+      "the backup is named in local time");
     assert.equal(fs.readFileSync(path.join(backups, backup), "utf8"), real, "the replaced module is backed up byte for byte");
     assert.equal(checks, 1, "the config and game-cycle checks run after the write");
 

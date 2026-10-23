@@ -18,7 +18,11 @@ const ZONES_DIR = "src/game/config/raw/locations/zones";
 const FORMAT_MODULE = "src/dev/location/zone_export_format.js";
 const CONFIG_MODULE = "src/game/config/runtime/game_config.js";
 const sha256 = text => crypto.createHash("sha256").update(text, "utf8").digest("hex");
-const stamp = date => date.toISOString().replace(/[-:]/gu, "").replace("T", "-").slice(0, 15);
+// The backup's name in the machine's local time (TK-078), as the owner reads the clock: yyyymmdd-hhmmss.
+const stamp = (date) => {
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+};
 
 // The steps with every outside effect injected, so the tooling check runs them in a scratch directory.
 class ZoneFileApplier {

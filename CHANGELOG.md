@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.3 - Zone Backups in Local Time
+
+- npm run apply:zones names its backups in the machine's local time.
+
 ## v0.47.2 - Clean Zone Numbers
 
 - Zone files and npm run apply:zones write 11.7 instead of binary-fraction noise like 11.700000000000001; a field the code lacks reads немає.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.41 - Cell Grid Under Editor
 
 - Cell-grid and depth controls sit directly after background visibility in the editor. Removed line-step and snap controls and their variable logic: grid lines and snapped editing use one map cell, while moving-body and float translation stay continuous.
-
-## v0.46.40 - Fight Sector Stays Drawn
-
-- The fight sector and the line radius stay drawn while a fish is on: built from the rod with the fight frame's radius.
