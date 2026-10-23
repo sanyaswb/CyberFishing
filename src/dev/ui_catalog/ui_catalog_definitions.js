@@ -1,5 +1,5 @@
-// The catalog's tabs (spec 140): short names in page order; each definition names its group. A group with several
-// cards shows them one at a time through a second tab level.
+// The catalog's tabs (spec 140): short names in page order; each definition names its group. A tab shows all its
+// elements, each in its own row.
 export const UI_CATALOG_GROUPS = Object.freeze([
   Object.freeze({ id: "buttons", name: "Кнопки" }),
   Object.freeze({ id: "meters", name: "Шкали" }),
@@ -8,8 +8,12 @@ export const UI_CATALOG_GROUPS = Object.freeze([
   Object.freeze({ id: "house", name: "Будинок" }),
 ]);
 
-// Every window starts at this surface size in physical pixels (spec 140 Revision 2).
-export const UI_CATALOG_FRAME_SIZE = Object.freeze({ width: 320, height: 640 });
+// The header's viewport triggers (spec 140 R3-D2): phone, the compact/wide boundary (tablet portrait), wide desktop.
+export const UI_CATALOG_VIEWPORTS = Object.freeze([
+  Object.freeze({ width: 320, height: 640 }),
+  Object.freeze({ width: 820, height: 1180 }),
+  Object.freeze({ width: 2560, height: 1440 }),
+]);
 
 const INVENTORY_STATES = [["normal", "Заповнений"], ["empty", "Порожній"], ["locked", "Заблоковані слоти"], ["assembly", "Збірка та дії"], ["error", "Помилка дії"]];
 const INVENTORY_READING = { min: 0, max: 100, unit: "%", label: "Залишок ресурсу картки, %" };
@@ -17,7 +21,7 @@ const INVENTORY_CONTRACT = "InventoryUI отримує ізольований ge
 const INVENTORY_SOURCES = ["src/game/presentation/inventory/inventory_ui.js", "src/game/presentation/inventory/inventory_item_card_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_section_tabs_renderer.js", "src/game/presentation/inventory/inventory_grid_renderer.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js", "src/game/presentation/inventory/inventory_rod_removal_renderer.js", "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js", "src/game/presentation/inventory/inventory_tooltip_presenter.js", "src/game/presentation/inventory/inventory_load_renderer.js", "src/game/presentation/inventory/inventory_load_meter_config.js"];
 const INVENTORY_STYLES = ["src/game/presentation/styles/inventory/modal.css", "src/game/presentation/styles/inventory/loadout.css", "src/game/presentation/styles/inventory/section-tabs.css", "src/game/presentation/styles/inventory/slots.css", "src/game/presentation/styles/inventory/item-cards.css", "src/game/presentation/styles/inventory/list-and-filters.css", "src/game/presentation/styles/inventory/assembly-editor.css", "src/game/presentation/styles/inventory/tooltips.css", "src/game/presentation/styles/inventory/header.css", "src/game/presentation/styles/inventory/resource-meters.css"];
 
-// One block of the whole production inventory, shown through a crop window (spec 140 R2-D3).
+// One block of the whole production inventory, cropped from it (spec 140 R2-D3, R3-D3).
 function inventoryBlock(id, name, focus, description) {
   return { id, name, group: "inventory", example: "inventory", focus, families: ["inventory"], description,
     contract: INVENTORY_CONTRACT, states: INVENTORY_STATES, reading: INVENTORY_READING, sources: INVENTORY_SOURCES,
@@ -25,7 +29,7 @@ function inventoryBlock(id, name, focus, description) {
 }
 
 // This inventory is explicit: each entry names the production renderer and its style owner. example names the
-// factory when it differs from the id; focus is the block a crop window shows; a reading runs min..max in two steps.
+// factory when it differs from the id; focus is the block shown alone; a reading runs min..max in two steps.
 export const UI_CATALOG_DEFINITIONS = Object.freeze([
   {
     id: "controls", name: "Закриття та A", group: "buttons",
@@ -101,9 +105,6 @@ export const UI_CATALOG_DEFINITIONS = Object.freeze([
 export const UI_CATALOG_LABELS = Object.freeze({
   pageTitle: "Каталог UI CyberFishing",
   stateLabel: "Стан",
-  resizeWidth: "Ширина прикладу",
-  resizeHeight: "Висота прикладу",
-  resizeBoth: "Розмір прикладу",
   houseReturn: "Повернення працює лише в контрольному прикладі.",
   houseFullscreen: "Контрольна дія повного екрана.",
   hudFullscreen: "Повний екран: контрольний callback, сторінка лишається в каталозі.",

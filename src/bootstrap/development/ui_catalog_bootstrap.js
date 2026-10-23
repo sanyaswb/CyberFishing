@@ -48,7 +48,7 @@ import { SheetHeightController } from "../../platform/browser/dom/sheet_height_c
 import { HudRowSizer } from "../../platform/browser/dom/hud_row_sizer.js";
 import { UiSheetHandleRenderer } from "../../game/presentation/ui/ui_sheet_handle_renderer.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
-import { UI_CATALOG_DEFINITIONS, UI_CATALOG_FRAME_SIZE, UI_CATALOG_GROUPS, UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
+import { UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_LABELS, UI_CATALOG_VIEWPORTS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { UiCatalogPage } from "../../dev/ui_catalog/ui_catalog_page.js";
 import { UiCatalogDocumentScope } from "../../dev/ui_catalog/ui_catalog_document_scope.js";
 import { UiCatalogFrameScheduler } from "../../dev/ui_catalog/ui_catalog_frame_scheduler.js";
@@ -82,10 +82,11 @@ export function startUiCatalog() {
   const scopeFor = (root) => new UiCatalogDocumentScope({ documentRef, root, windowTarget });
   const warningTimers = { setTimeout: (callback, ms) => windowTarget.setTimeout(callback, ms), clearTimeout: (id) => windowTarget.clearTimeout(id) };
   const page = new UiCatalogPage({ documentRef, windowTarget, mountNode: documentRef.getElementById("uiCatalogExamples"),
-    tabsNode: documentRef.getElementById("uiCatalogTabs"), groups: UI_CATALOG_GROUPS, definitions: UI_CATALOG_DEFINITIONS,
-    labels: UI_CATALOG_LABELS, frameSize: UI_CATALOG_FRAME_SIZE, returnLink: documentRef.getElementById("uiCatalogReturn"),
-    // The open group and card are the URL hash, replaced in place so tabs add no history entries.
-    onSelect: (groupId, cardId) => windowTarget.history.replaceState(null, "", `${windowTarget.location.search}#${groupId}/${cardId}`),
+    tabsNode: documentRef.getElementById("uiCatalogTabs"), viewportsNode: documentRef.getElementById("uiCatalogViewports"),
+    groups: UI_CATALOG_GROUPS, definitions: UI_CATALOG_DEFINITIONS, viewports: UI_CATALOG_VIEWPORTS,
+    labels: UI_CATALOG_LABELS, returnLink: documentRef.getElementById("uiCatalogReturn"),
+    // The open group and viewport are the URL hash, replaced in place so tabs add no history entries.
+    onSelect: (groupId, width) => windowTarget.history.replaceState(null, "", `${windowTarget.location.search}#${groupId}/${width}`),
     onReturn: hostWindow ? () => hostWindow.postMessage({ type: EMBEDDED_PAGE_RETURN_MESSAGE }, windowTarget.location.origin) : null,
     createSurface: (hostElement) => new UiSurfaceAdapter({ hostElement, documentRef, windowRef: windowTarget }),
     createExample: async (id, { surface, status, definition }) => {

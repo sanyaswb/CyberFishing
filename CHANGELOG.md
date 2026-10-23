@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.10 - Catalog Rows and Viewport Triggers
+
+- The UI catalog shows every element of a tab alone in its own centred row, without frames or backgrounds; 320 / 820 / 2560 triggers in the header lay the elements out at that size, and switching a tab removes the others from the page.
+
 ## v0.47.9 - Catalog Blocks One at a Time
 
 - The UI catalog shows one centred 320 x 640 window at a time through a second tab level; inventory blocks (left panel, tabs, filters, list, header) are cropped from the whole inventory, and the keepnet is its section.
@@ -37,8 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.1 - Persistent Mesh and Server-Owned DEV Shortcut
 
 - Reopening DevTools preserves the active painted mesh. A keyboard shortcut opens DevTools in DEV through local server validation; no code definition or offline matcher ships to the browser. Static Pages requires a backend for this shortcut.
-
-## v0.47.0 - Zone Editor and Connected Masks
-
-- Owner-approved minor release: connected local masks, exact gameplay boundaries and shore-clipped Pixi waves, with mesh focus, painting/erasing, host-field locking and independent mask opacity.
-- Zone geometry stays put across grid-size changes; grid opacity is shared by cell, mesh and perspective grids. Editor controls and dependencies are simplified. Completed tasks move to the archive while owner acceptance remains pending.

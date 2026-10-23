@@ -1,4 +1,4 @@
-/* Catalog styles own the page, its cards and the external placement of examples (spec 140). Production
+/* Catalog styles own the page, its element rows and the external placement of examples (spec 140). Production
    buttons, meters, cards, dialogs and HUD retain their component styles. */
 
 /* D6: no scrollbars anywhere on the catalog page; wheel, touch and drag still scroll. */
@@ -25,6 +25,7 @@
   top: 0;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
@@ -71,36 +72,29 @@
   background: rgba(var(--ui-accent-rgb), 0.14);
 }
 
-.ui-catalog__main { padding: 16px; }
-/* One open card, centred, under the open group's card tabs (spec 140 Revision 2). */
-.ui-catalog__group { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.ui-catalog__cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
-.ui-catalog__card-tab {
-  padding: 4px 10px;
+.ui-catalog__viewports { display: flex; gap: 4px; margin-left: auto; flex: none; }
+.ui-catalog__viewport {
+  min-width: 52px;
+  padding: 6px 10px;
   border: 1px solid rgba(var(--ui-accent-rgb), 0.18);
-  border-radius: 999px;
+  border-radius: var(--ui-radius-control);
   color: var(--ui-muted);
   background: none;
   font: inherit;
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
-.ui-catalog__card-tab--active { color: var(--ui-text); border-color: rgba(var(--ui-accent-rgb), 0.55); }
+.ui-catalog__viewport--active { color: var(--ui-text); border-color: rgba(var(--ui-accent-rgb), 0.55); background: rgba(var(--ui-accent-rgb), 0.14); }
 
-.ui-catalog-card {
-  display: grid;
-  gap: 8px;
-  max-width: 100%;
-  padding: 10px;
-  border: 1px solid rgba(var(--ui-accent-rgb), 0.14);
-  border-radius: var(--ui-radius-panel);
-  background: rgba(255, 255, 255, 0.025);
-}
-.ui-catalog-card__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
-.ui-catalog-card__title { flex: 1 1 auto; margin: 0; font-size: 13px; font-weight: 600; white-space: nowrap; }
-.ui-catalog-card__select {
+/* The open tab's elements, each alone in its own centred row (spec 140 Revision 3). */
+.ui-catalog__main { display: grid; justify-items: center; gap: 32px; padding: 24px 16px; }
+.ui-catalog-item { display: grid; justify-items: center; gap: 8px; max-width: 100%; }
+.ui-catalog-item__bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.ui-catalog-item__title { margin: 0; color: var(--ui-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.ui-catalog-item__select {
   max-width: 180px;
-  height: 28px;
+  height: 26px;
   padding-inline: 6px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
@@ -109,64 +103,37 @@
   font: inherit;
   font-size: 12px;
 }
-.ui-catalog-card__range { width: 72px; accent-color: var(--ui-accent); }
-.ui-catalog-card__value { min-width: 5ch; color: var(--ui-info); font-size: 12px; font-variant-numeric: tabular-nums; }
-.ui-catalog-card__size { color: var(--ui-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-/* The window; the stage inside is the surface at the resizable size. A cropped window takes one block's rectangle
-   and shifts the stage so only that block shows (UiCatalogBlockCrop). */
-.ui-catalog-card__frame {
+.ui-catalog-item__range { width: 72px; accent-color: var(--ui-accent); }
+.ui-catalog-item__value { min-width: 5ch; color: var(--ui-info); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* The element alone: the view is its cropped rectangle at the preview scale; the stage inside lays the surface out at
+   the chosen viewport size and is shifted and scaled so only the element shows (UiCatalogBlockCrop). */
+.ui-catalog-item__view {
   position: relative;
-  justify-self: center;
-  width: var(--ui-catalog-frame-width, 320px);
-  max-width: 100%;
-  height: var(--ui-catalog-frame-height, 640px);
+  width: calc(var(--ui-catalog-crop-width, var(--ui-catalog-width, 320px)) * var(--ui-catalog-scale, 1));
+  height: calc(var(--ui-catalog-crop-height, var(--ui-catalog-height, 640px)) * var(--ui-catalog-scale, 1));
   overflow: hidden;
   isolation: isolate;
-  border-radius: var(--ui-radius-control);
-  outline: 1px dashed rgba(var(--ui-accent-rgb), 0.22);
-  background: rgba(0, 0, 0, 0.22);
 }
-.ui-catalog-card__frame--cropped {
-  width: var(--ui-catalog-crop-width, var(--ui-catalog-frame-width, 320px));
-  height: var(--ui-catalog-crop-height, var(--ui-catalog-frame-height, 640px));
-}
-.ui-catalog-card__stage {
+.ui-catalog-item__stage {
   position: absolute;
-  top: calc(-1 * var(--ui-catalog-crop-y, 0px));
-  left: calc(-1 * var(--ui-catalog-crop-x, 0px));
-  width: var(--ui-catalog-frame-width, 320px);
-  height: var(--ui-catalog-frame-height, 640px);
+  top: 0;
+  left: 0;
+  width: var(--ui-catalog-width, 320px);
+  height: var(--ui-catalog-height, 640px);
+  transform-origin: 0 0;
+  transform: scale(var(--ui-catalog-scale, 1))
+    translate(calc(-1 * var(--ui-catalog-crop-x, 0px)), calc(-1 * var(--ui-catalog-crop-y, 0px)));
 }
-.ui-catalog-card__handle {
-  position: absolute;
-  z-index: 30000;
-  touch-action: none;
-  background: transparent;
-  transition: background-color var(--ui-duration-control);
-}
-.ui-catalog-card__handle--x { top: 0; right: 0; width: 8px; height: 100%; cursor: ew-resize;
-  background: linear-gradient(to left, rgba(var(--ui-accent-rgb), 0.3) 2px, transparent 2px); }
-.ui-catalog-card__handle--y { left: 0; bottom: 0; width: 100%; height: 8px; cursor: ns-resize;
-  background: linear-gradient(to top, rgba(var(--ui-accent-rgb), 0.3) 2px, transparent 2px); }
-.ui-catalog-card__handle--xy {
-  right: 0;
-  bottom: 0;
-  width: 16px;
-  height: 16px;
-  cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 50%, rgba(var(--ui-accent-rgb), 0.55) 50%);
-}
-.ui-catalog-card__handle:focus-visible { background: rgba(var(--ui-accent-rgb), 0.45); outline: none; }
-.ui-catalog-card__status { margin: 0; color: var(--ui-muted); font-size: 12px; overflow-wrap: anywhere; }
-.ui-catalog-card__status:empty { display: none; }
-.ui-catalog-card__status--error { color: var(--ui-danger); }
+.ui-catalog-item__status { margin: 0; color: var(--ui-muted); font-size: 12px; overflow-wrap: anywhere; }
+.ui-catalog-item__status:empty { display: none; }
+.ui-catalog-item__status--error { color: var(--ui-danger); }
 .ui-catalog__back:focus-visible,
 .ui-catalog__tab:focus-visible,
-.ui-catalog__card-tab:focus-visible,
-.ui-catalog-card__select:focus-visible,
-.ui-catalog-card__range:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+.ui-catalog__viewport:focus-visible,
+.ui-catalog-item__select:focus-visible,
+.ui-catalog-item__range:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
 
-/* External placement of the examples inside their frames. */
+/* External placement of the examples inside their stages. */
 .ui-catalog-preview__overlay { position: absolute; inset: 0; }
 .ui-catalog-preview__toolbar { position: absolute; }
 .ui-catalog-preview__toolbar-row { position: absolute; }

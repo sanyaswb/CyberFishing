@@ -46,7 +46,7 @@ async function main() {
     import("../../../src/game/presentation/keepnet/keepnet_view_model.js"),
     import("../../../src/platform/browser/dom/inventory_dom_factory.js"),
   ]);
-  const [{ UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_FRAME_SIZE }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
+  const [{ UI_CATALOG_DEFINITIONS, UI_CATALOG_GROUPS, UI_CATALOG_VIEWPORTS }, { UiCatalogFrameScheduler }, { UiCatalogInventoryFixture },
     { UiCatalogKeepnetFixture }, { UiCatalogMetersExample }, { InventoryActionType }, { InventoryResourceMeterRenderer },
     { InventoryResourceMeterResolver }, { DegradationColorResolver }, { DEGRADATION_COLOR_CONFIG }, { KeepnetViewModel }, { InventoryDomFactory }] = imports;
   const families = new Set(UI_CATALOG_DEFINITIONS.flatMap((definition) => definition.families));
@@ -149,65 +149,73 @@ async function main() {
   example.dispose(); assert.equal(host.children.length, 0);
 
   await checkHouseExample();
-  assert.deepEqual({ ...UI_CATALOG_FRAME_SIZE }, { width: 320, height: 640 }, "owner: windows start at 320 x 640");
+  assert.deepEqual(UI_CATALOG_VIEWPORTS.map(({ width }) => width), [320, 820, 2560], "owner: three viewport triggers");
+  assert(!fs.existsSync("src/dev/ui_catalog/ui_catalog_frame_resizer.js"), "no resizable windows (spec 140 R3-D1)");
   const inventoryCards = UI_CATALOG_DEFINITIONS.filter(({ group }) => group === "inventory");
   assert(inventoryCards.every(({ id, example }) => (example ?? id) === "inventory"), "every inventory card is the whole inventory");
   assert.equal(inventoryCards.find(({ id }) => id === "keepnet")?.section, "keepnet", "the keepnet is a section of the inventory");
   assert.deepEqual(inventoryCards.filter(({ focus }) => focus).map(({ focus }) => focus), [".inventory-main__sidebar",
     ".inventory-section-tabs__list", ".inventory-list-panel__controls", ".inventory-list-panel__items", ".inventory-header"]);
   assert(!fs.existsSync("src/dev/ui_catalog/ui_catalog_keepnet_example.js"), "no standalone keepnet example");
-  await checkGroupsAndCards(UiCatalogPage, UI_CATALOG_FRAME_SIZE);
+  await checkGroupsAndRows(UiCatalogPage, UI_CATALOG_VIEWPORTS);
   await checkBlockCrop();
   await checkInventoryWithKeepnet();
-  await checkFrameResizer();
 
   // Importing the entry's composition is side-effect-free until startUiCatalog.
   await import("../../../src/bootstrap/development/ui_catalog_bootstrap.js");
-  console.log("UI catalog passed: FR-002 coverage, two tab levels with one card at a time, inventory blocks cropped from the whole inventory with its keepnet, three-step readings, edge resizing within bounds, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
+  console.log("UI catalog passed: FR-002 coverage, tabs with one row per element removed on switch, viewport triggers with fit scale, tight crops, inventory blocks from the whole inventory with its keepnet, three-step readings, production source/style reuse, isolated fixtures, reserved capacity, shared boundary colors, node identity, controlled frames and disposal.");
 }
 
-// Spec 140: two tab levels show one card at a time, mounted once; readings have three positions and re-apply after a
-// state change; every window starts at the shared frame size; a card names its example factory.
-async function checkGroupsAndCards(UiCatalogPage, UI_CATALOG_FRAME_SIZE) {
+// Spec 140 Revision 3: a tab shows all its elements in rows; switching removes the previous tab's elements from the
+// markup and disposes them; viewport triggers set the layout size and the fit scale; readings have three positions.
+async function checkGroupsAndRows(UiCatalogPage, UI_CATALOG_VIEWPORTS) {
   const documentRef = new TestDocument();
   const mountNode = documentRef.createElement("main");
+  mountNode.clientWidth = 1200;
   const tabsNode = documentRef.createElement("nav");
+  const viewportsNode = documentRef.createElement("div");
   const created = [], calls = [], disposed = [], selections = [];
   let measures = 0;
+  const frames = new Map();
+  let frameId = 0;
+  const windowListeners = new Map();
+  const windowTarget = {
+    requestAnimationFrame: (callback) => { frames.set(++frameId, callback); return frameId; },
+    cancelAnimationFrame: (id) => frames.delete(id),
+    addEventListener: (type, listener) => windowListeners.set(type, listener),
+    removeEventListener: (type, listener) => { if (windowListeners.get(type) === listener) windowListeners.delete(type); },
+  };
   const definitions = [
     { id: "a", group: "one", name: "A", description: "a", families: [], states: [["normal", "N"], ["other", "O"]] },
     { id: "b", group: "two", name: "B", description: "b", families: [], states: [["normal", "N"], ["other", "O"]],
       reading: { min: 0, max: 600, unit: "с", label: "t" } },
-    { id: "c", group: "two", name: "C", description: "c", families: [], example: "b", section: "keepnet",
+    { id: "c", group: "two", name: "C", description: "c", families: [], example: "b",
       states: [["normal", "N"]] },
   ];
-  const page = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions, frameSize: UI_CATALOG_FRAME_SIZE,
-    labels: { stateLabel: "Стан", resizeWidth: "w", resizeHeight: "h", resizeBoth: "wh" },
-    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], onSelect: (group, card) => selections.push(`${group}/${card}`),
-    createSurface: () => ({ subscribe: () => () => {}, measure: () => {}, requestMeasure: () => { measures++; },
-      dispose: () => disposed.push("surface") }),
+  const page = new UiCatalogPage({ documentRef, windowTarget, mountNode, tabsNode, viewportsNode, definitions,
+    viewports: UI_CATALOG_VIEWPORTS, labels: { stateLabel: "Стан" },
+    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], onSelect: (group, width) => selections.push(`${group}/${width}`),
+    createSurface: () => ({ mountRoot: documentRef.createElement("div"), subscribe: () => () => {}, measure: () => {},
+      requestMeasure: () => { measures++; }, dispose: () => disposed.push("surface") }),
     createExample: async (id, { definition }) => {
       created.push(`${id}:${definition.id}`);
       return { setState: (state) => calls.push([definition.id, "state", state]),
         setValue: (value) => calls.push([definition.id, "value", value]), dispose: () => disposed.push(definition.id) };
     } });
-  await page.mount("two");
-  assert.deepEqual(created, ["b:b"], "only the first card of the opened group is mounted");
-  assert.deepEqual(selections, ["two/b"]);
-  const [groupOne, groupTwo] = mountNode.children;
-  assert.equal(groupOne.hidden, true);
-  assert.equal(groupTwo.hidden, false);
-  const [cardTabsOne] = groupOne.children;
-  const [cardTabs, cardB] = groupTwo.children;
-  assert.equal(cardTabsOne.hidden, true, "a group with one card has no card tabs");
-  assert.equal(cardTabs.hidden, false);
-  assert.deepEqual(calls, [["b", "state", "normal"], ["b", "value", 300]], "a reading starts in the middle and follows the state");
-  const [, select, range, output, size] = cardB.children[0].children;
+  await page.mount("two/820");
+  assert.deepEqual(created, ["b:b", "b:c"], "the open tab mounts all its elements, each through its factory");
+  assert.deepEqual(selections, ["two/820"]);
+  assert.deepEqual(mountNode.children.map((node) => node.id), ["b", "c"], "one row per element, nothing else");
+  assert.equal(page.viewport.width, 820);
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-width"), "820px");
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-height"), "1180px");
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-scale"), "1", "a viewport narrower than the page is not scaled");
+  assert.deepEqual(calls, [["b", "state", "normal"], ["b", "value", 300], ["c", "state", "normal"]],
+    "a reading starts in the middle and follows the state");
+  const rowB = mountNode.children[0];
+  const [, select, range, output] = rowB.children[0].children;
   assert.equal(range.step, "300");
-  assert.equal(range.min, "0");
-  assert.equal(range.max, "600");
   assert.equal(output.textContent, "300 с");
-  assert.equal(size.textContent, `${UI_CATALOG_FRAME_SIZE.width} × ${UI_CATALOG_FRAME_SIZE.height}`, "windows start at 320 x 640");
   calls.length = 0;
   select.value = "other";
   select.fire("change");
@@ -215,37 +223,49 @@ async function checkGroupsAndCards(UiCatalogPage, UI_CATALOG_FRAME_SIZE) {
   range.value = "600";
   range.fire("input");
   assert.equal(output.textContent, "600 с");
-  assert.deepEqual(calls.at(-1), ["b", "value", 600]);
-  const [, tabC] = cardTabs.children;
-  tabC.fire("click");
-  await page.select("two", "c");
-  const cardC = groupTwo.children[2];
-  assert.equal(cardB.hidden, true, "only the chosen card is on the page");
-  assert.equal(cardC.hidden, false);
-  assert.equal(tabC.getAttribute("aria-selected"), "true");
-  assert.deepEqual(created, ["b:b", "b:c"], "a card names its example factory and passes its definition");
-  const [tabOne, tabTwo] = tabsNode.children;
+  const [w320, w820, w2560] = viewportsNode.children;
+  assert.equal(w820.getAttribute("aria-pressed"), "true");
+  const before = measures;
+  w2560.fire("click");
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-width"), "2560px");
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-scale"), String(1200 / 2560), "a wider viewport is scaled to the page");
+  assert.equal(measures, before + 2, "every element re-measures at the new viewport");
+  assert.deepEqual(selections.at(-1), "two/2560");
+  w2560.fire("click");
+  assert.equal(measures, before + 2, "the same viewport changes nothing");
+  mountNode.clientWidth = 640;
+  windowListeners.get("resize")();
+  windowListeners.get("resize")();
+  assert.equal(frames.size >= 1, true);
+  for (const callback of [...frames.values()]) callback();
+  frames.clear();
+  assert.equal(mountNode.style.getPropertyValue("--ui-catalog-scale"), String(640 / 2560), "a page resize refits the scale");
+  w320.fire("click");
+  const [tabOne] = tabsNode.children;
   tabOne.fire("click");
   await page.select("one");
-  assert.equal(groupOne.hidden, false);
-  assert.equal(groupTwo.hidden, true);
-  tabTwo.fire("click");
-  await page.select("two");
-  assert.equal(page.activeCardId, "c", "a group reopens at its last card");
-  assert.deepEqual(created, ["b:b", "b:c", "a:a"], "returning to a card keeps its example");
-  assert(measures >= 3, "a frame size change asks the surface to measure");
+  assert.deepEqual(mountNode.children.map((node) => node.id), ["a"], "switching a tab removes the other elements from the markup");
+  assert.deepEqual(disposed.filter((entry) => entry !== "surface"), ["c", "b"], "the left tab's examples are disposed");
+  assert.equal(tabOne.getAttribute("aria-selected"), "true");
+  // A tab left while its element is still loading disposes that element as soon as it arrives.
+  let release;
+  const slow = new UiCatalogPage({ documentRef, windowTarget, mountNode: documentRef.createElement("main"), definitions,
+    groups: [{ id: "one", name: "One" }, { id: "two", name: "Two" }], viewports: UI_CATALOG_VIEWPORTS,
+    createSurface: () => ({ mountRoot: documentRef.createElement("div"), subscribe: () => () => {}, measure() {}, requestMeasure() {}, dispose() {} }),
+    createExample: (id, { definition }) => definition.id === "a"
+      ? new Promise((resolve) => { release = () => resolve({ setState() {}, dispose: () => disposed.push("late") }); })
+      : Promise.resolve({ setState() {}, setValue() {}, dispose() {} }) });
+  const pending = slow.mount("one");
+  await slow.select("two");
+  release();
+  await pending;
+  assert(disposed.includes("late"), "a late element of a left tab is disposed");
+  slow.dispose();
   page.dispose();
   page.dispose();
-  assert.deepEqual(disposed.filter((entry) => entry !== "surface").sort(), ["a", "b", "c"]);
   assert.equal(mountNode.children.length, 0);
-  assert.equal(tabsNode.children.length, 0);
-  const fallback = new UiCatalogPage({ documentRef, mountNode, tabsNode, definitions: [definitions[0]],
-    groups: [{ id: "one", name: "One" }], createSurface: () => ({ subscribe: () => () => {}, measure() {}, requestMeasure() {}, dispose() {} }),
-    createExample: async () => ({ setState() {}, dispose() {} }) });
-  await fallback.mount("unknown/none");
-  assert.equal(fallback.activeGroupId, "one", "an unknown hash opens the first group");
-  assert.equal(fallback.activeCardId, "a");
-  fallback.dispose();
+  assert.equal(tabsNode.children.length + viewportsNode.children.length, 0);
+  assert.equal(windowListeners.has("resize"), false, "the resize listener is released");
 }
 
 // Spec 140 R2-D4: the keepnet card is the production inventory opened at its keepnet section, with its own states.
@@ -285,25 +305,12 @@ async function checkInventoryWithKeepnet() {
   example.dispose();
 }
 
-// Spec 140 R2-D3: the window takes the first visible block's rectangle relative to the stage, writes only changes,
-// shows the whole stage without a block, coalesces requests into one frame and releases its observer.
+// Spec 140 R3-D3: the element alone - the focus block, else the union of the visible top-level nodes - measured in
+// page pixels and divided by the preview scale; only changes are written, requests share one frame.
 async function checkBlockCrop() {
   const { UiCatalogBlockCrop } = await import("../../../src/dev/ui_catalog/ui_catalog_block_crop.js");
   const documentRef = new TestDocument();
-  const frame = documentRef.createElement("div");
-  const stage = documentRef.createElement("div");
   const rect = (left, top, width, height) => ({ left, top, width, height });
-  stage.getBoundingClientRect = () => rect(100, 50, 320, 640);
-  const hidden = documentRef.createElement("div");
-  hidden.getBoundingClientRect = () => rect(0, 0, 0, 0);
-  const block = documentRef.createElement("div");
-  let blockRect = rect(110, 90, 300, 120);
-  block.getBoundingClientRect = () => blockRect;
-  let matches = [hidden, block];
-  stage.querySelectorAll = (selector) => { assert.equal(selector, ".inventory-header"); return matches; };
-  const writes = [];
-  const setProperty = frame.style.setProperty;
-  frame.style.setProperty = (name, value) => { writes.push([name, value]); setProperty(name, value); };
   const frames = new Map();
   let frameId = 0;
   const observed = new Set();
@@ -314,80 +321,57 @@ async function checkBlockCrop() {
     ResizeObserver: class { observe(node) { observed.add(node); } unobserve(node) { observed.delete(node); } disconnect() { disconnected++; observed.clear(); } },
   };
   const flush = () => { const pending = [...frames.values()]; frames.clear(); for (const callback of pending) callback(); };
-  const crop = new UiCatalogBlockCrop({ frame, stage, selector: ".inventory-header", windowTarget });
-  assert(frame.classList.contains("ui-catalog-card__frame--cropped"));
-  crop.request(); crop.request(); crop.request();
+  const setup = (selector, scale) => {
+    const view = documentRef.createElement("div");
+    const stage = documentRef.createElement("div");
+    const content = documentRef.createElement("div");
+    stage.getBoundingClientRect = () => rect(100, 50, 320 * scale, 640 * scale);
+    const writes = [];
+    const setProperty = view.style.setProperty;
+    view.style.setProperty = (name, value) => { writes.push([name, value]); setProperty(name, value); };
+    const crop = new UiCatalogBlockCrop({ view, stage, contentRoot: content, selector, windowTarget, getScale: () => scale });
+    return { view, stage, content, writes, crop };
+  };
+  const node = (box) => { const element = documentRef.createElement("div"); element.getBoundingClientRect = () => box; return element; };
+  // Focus block at scale 1: the first visible match.
+  const focus = setup(".inventory-header", 1);
+  let blockRect = rect(110, 90, 300, 120);
+  const block = node(() => blockRect);
+  block.getBoundingClientRect = () => blockRect;
+  let matches = [node(rect(0, 0, 0, 0)), block];
+  focus.stage.querySelectorAll = (selector) => { assert.equal(selector, ".inventory-header"); return matches; };
+  focus.crop.request(); focus.crop.request(); focus.crop.request();
   assert.equal(frames.size, 1, "requests are coalesced into one frame");
   flush();
-  assert.deepEqual(writes, [["--ui-catalog-crop-x", "10px"], ["--ui-catalog-crop-y", "40px"],
+  assert.deepEqual(focus.writes, [["--ui-catalog-crop-x", "10px"], ["--ui-catalog-crop-y", "40px"],
     ["--ui-catalog-crop-width", "300px"], ["--ui-catalog-crop-height", "120px"]], "the first visible block is cropped");
-  assert(observed.has(block) && observed.has(stage), "the block and the stage are observed");
-  writes.length = 0;
-  crop.update();
-  assert.equal(writes.length, 0, "an unchanged block writes nothing");
+  assert(observed.has(block) && observed.has(focus.stage));
+  focus.writes.length = 0;
+  focus.crop.update();
+  assert.equal(focus.writes.length, 0, "an unchanged block writes nothing");
   blockRect = rect(110, 90, 300, 160);
-  crop.update();
-  assert.deepEqual(writes, [["--ui-catalog-crop-height", "160px"]]);
-  writes.length = 0;
-  matches = [hidden];
-  crop.update();
-  assert.deepEqual(writes, [["--ui-catalog-crop-x", "0px"], ["--ui-catalog-crop-y", "0px"],
+  focus.crop.update();
+  assert.deepEqual(focus.writes, [["--ui-catalog-crop-height", "160px"]]);
+  focus.writes.length = 0;
+  matches = [];
+  focus.crop.update();
+  assert.deepEqual(focus.writes, [["--ui-catalog-crop-x", "0px"], ["--ui-catalog-crop-y", "0px"],
     ["--ui-catalog-crop-width", "320px"], ["--ui-catalog-crop-height", "640px"]], "without a visible block the whole stage shows");
   assert(!observed.has(block), "a block that is gone is no longer observed");
-  crop.request();
-  crop.dispose();
-  crop.dispose();
+  focus.crop.request();
+  focus.crop.dispose();
+  focus.crop.dispose();
   assert.equal(frames.size, 0, "dispose cancels the pending frame");
   assert.equal(disconnected, 1);
-  crop.request();
+  focus.crop.request();
   assert.equal(frames.size, 0, "a disposed crop schedules nothing");
-}
-
-// Spec 140 D3: edge handles resize only their axis within bounds, write only changes and release their listeners.
-async function checkFrameResizer() {
-  const { UiCatalogFrameResizer } = await import("../../../src/dev/ui_catalog/ui_catalog_frame_resizer.js");
-  const documentRef = new TestDocument();
-  const frame = documentRef.createElement("div");
-  const writes = [];
-  const setProperty = frame.style.setProperty;
-  frame.style.setProperty = (name, value) => { writes.push([name, value]); setProperty(name, value); };
-  const changes = [];
-  const resizer = new UiCatalogFrameResizer({ documentRef, frame, size: { width: 320, height: 72 }, getMaxWidth: () => 900,
-    labels: { resizeWidth: "w", resizeHeight: "h", resizeBoth: "wh" }, onChange: (size) => changes.push(size) });
-  assert.deepEqual(writes, [["--ui-catalog-frame-width", "320px"], ["--ui-catalog-frame-height", "72px"]]);
-  const [x, y, xy] = frame.children;
-  const drag = (handle, dx, dy) => {
-    handle.fire("pointerdown", { button: 0, pointerId: 1, clientX: 100, clientY: 100 });
-    handle.fire("pointermove", { pointerId: 1, clientX: 100 + dx, clientY: 100 + dy });
-    handle.fire("pointerup", { pointerId: 1 });
-  };
-  writes.length = 0;
-  drag(x, 80, 500);
-  assert.deepEqual(resizer.size, { width: 400, height: 72 }, "the right edge changes only the width");
-  assert.deepEqual(writes, [["--ui-catalog-frame-width", "400px"]]);
-  drag(y, -500, 40);
-  assert.deepEqual(resizer.size, { width: 400, height: 112 }, "the bottom edge changes only the height");
-  drag(xy, 2000, -500);
-  assert.deepEqual(resizer.size, { width: 900, height: 48 }, "the corner is bounded by the page width and the minimum height");
-  writes.length = 0;
-  xy.fire("pointermove", { pointerId: 1, clientX: 0, clientY: 0 });
-  assert.equal(writes.length, 0, "a move after release does nothing");
-  drag(xy, 0, 0);
-  assert.equal(writes.length, 0, "an unchanged size writes nothing");
-  xy.fire("pointerdown", { button: 2, pointerId: 2, clientX: 0, clientY: 0 });
-  xy.fire("pointermove", { pointerId: 2, clientX: -300, clientY: 0 });
-  assert.equal(writes.length, 0, "only the primary button drags");
-  const before = changes.length;
-  x.fire("keydown", { key: "ArrowLeft" });
-  y.fire("keydown", { key: "ArrowDown" });
-  x.fire("keydown", { key: "ArrowDown" });
-  assert.deepEqual(resizer.size, { width: 890, height: 58 });
-  assert.equal(changes.length, before + 2);
-  x.fire("dblclick");
-  assert.deepEqual(resizer.size, { width: 320, height: 72 }, "double click restores the default size");
-  resizer.dispose();
-  assert.equal(frame.children.length, 0);
-  assert([x, y, xy].every((handle) => [...handle.listeners.values()].every((set) => set.size === 0)));
+  // No focus at scale 0.5: the union of the visible top-level nodes, in unscaled pixels.
+  const union = setup(null, 0.5);
+  union.content.append(node(rect(110, 60, 20, 10)), node(rect(0, 0, 0, 0)), node(rect(140, 55, 30, 40)));
+  union.crop.update();
+  assert.deepEqual(union.writes, [["--ui-catalog-crop-x", "20px"], ["--ui-catalog-crop-y", "10px"],
+    ["--ui-catalog-crop-width", "120px"], ["--ui-catalog-crop-height", "80px"]], "a small element is cropped tight, at the preview scale");
+  union.crop.dispose();
 }
 
 // Parse the actual production shell into the existing deterministic DOM double.

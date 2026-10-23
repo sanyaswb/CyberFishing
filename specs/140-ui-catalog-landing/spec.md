@@ -1,7 +1,7 @@
 # Feature Specification: UI catalog as a compact landing page
 
 **Created**: 2026-10-23
-**Status**: Implemented in v0.47.7 (Q2 in v0.47.8, Revision 2 in v0.47.9); owner visual acceptance pending
+**Status**: Implemented in v0.47.7 (Q2 in v0.47.8, Revision 2 in v0.47.9, Revision 3 in v0.47.10); owner visual acceptance pending
 **Input**: Власник 2026-10-23: каталог UI виглядає жахливо. Оформити як стилізовану landing page, просту в реалізації
 й мінімалістичну: компоненти згруповані по секціях (кнопки окремо, інші групи окремо), сторінка не тягнеться донизу,
 мінімум тексту (повзунок, список, що випадає, зрозумілі без пояснень), значення лише 0 / 50 / 100 %, розмір вікна
@@ -62,6 +62,25 @@ crop window per block and one block at a time through a second tab level.
   (`.inventory-list-panel__items`), Заголовок (`.inventory-header`), Садок (the same inventory opened at its keepnet
   section, keepnet states and live-bait time). The standalone keepnet view and its example are removed.
 
+## Revision 3 (owner 2026-10-23)
+
+Owner: not good either. No resizable windows; each element alone, without backgrounds or frames. The page is for
+viewing HTML elements and their states, not for testing responsiveness. Three triggers in the header (320, 820,
+2560 px) change how the elements below look at that size. All elements of a tab in a grid, each in its own row,
+centred. Switching a tab removes the other elements from the markup (before, the hidden cards stayed visible because
+the card/group CSS `display` overrode `hidden`, so cards appeared below and the page had to be scrolled).
+
+- R3-D1 The resizer is removed (`ui_catalog_frame_resizer.js`), and so are the card tabs: a group tab shows all its
+  elements, each in its own centred row. Opening a tab disposes the previous tab's examples and removes their nodes;
+  a late example of a tab that was left is disposed at once.
+- R3-D2 Viewport triggers `UI_CATALOG_VIEWPORTS`: 320 x 640 (phone), 820 x 1180 (the compact/wide boundary,
+  tablet portrait), 2560 x 1440 (wide desktop). Every surface lays out at the chosen size; when it is wider than the
+  page, the whole preview is scaled down to fit (`--ui-catalog-scale`), so 2560 shows the 2560 layout. Coordinate-based
+  gestures inside a scaled preview are approximate; the page is for viewing. The hash is `#group/width`.
+- R3-D3 Every element is cropped tight: a definition's `focus` block, otherwise the union of the visible top-level
+  nodes the example mounted. No border, background or outline around an element.
+- R3-D4 Each row keeps a one-line bar above the element: name, state list, three-step slider.
+
 ## Requirements
 
 - FR-001: Every definition belongs to exactly one known group; every group has at least one definition.
@@ -97,3 +116,8 @@ resizer's axis/bounds/no-op writes/reset/keyboard/disposal, three-step readings,
   `ui-catalog-card__stage` at the surface size); inventory cards built by one factory (`example: "inventory"`,
   `focus`, `section`) with the keepnet attached through `InventoryUiBootstrap.createKeepnet`; the standalone keepnet
   example and its placement CSS removed. `ui-catalog-check`: tab levels, crop, inventory-with-keepnet scenario.
+- Revision 3 (v0.47.10): `UiCatalogPage.select(group)` disposes the previous tab's elements and removes their rows,
+  mounts the tab's elements in definition order (a late element of a left tab is disposed); `setViewport(width)` with
+  `UI_CATALOG_VIEWPORTS` writes `--ui-catalog-width/height` and the fit `--ui-catalog-scale` (re-fitted on window
+  resize, one frame); `UiCatalogBlockCrop` crops the focus block or the union of the visible top-level nodes, in
+  unscaled pixels. The resizer and the card tabs are removed. `ui-catalog-check`: rows, removal, viewports, scale, crop.

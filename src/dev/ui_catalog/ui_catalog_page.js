@@ -1,40 +1,48 @@
-import { UiCatalogFrameResizer } from "./ui_catalog_frame_resizer.js";
 import { UiCatalogBlockCrop } from "./ui_catalog_block_crop.js";
 
-// The catalog as two tab levels (spec 140): groups, then the cards of the open group. Only one card is on the page,
-// centred: a one-line bar (name, state, three-step value, size) over a resizable live window. A card is mounted the
-// first time it opens and kept afterwards; a card with a focus selector shows only that block (UiCatalogBlockCrop).
+// The catalog (spec 140 Revision 3): group tabs and viewport triggers in the header; the open group's elements in a
+// grid, each alone in its own centred row under a one-line bar (name, state, three-step value). Opening another tab
+// disposes the elements and removes them from the markup. Every surface lays out at the chosen viewport size and the
+// whole preview is scaled down when that size is wider than the page.
 export class UiCatalogPage {
   #document;
   #window;
   #mount;
   #tabsNode;
+  #viewportsNode;
   #groups;
   #definitions;
+  #viewports;
   #labels;
-  #frameSize;
   #createSurface;
   #createExample;
   #onSelect;
-  #groupViews = new Map();
-  #cards = new Map();
+  #tabs = new Map();
+  #viewportButtons = new Map();
+  #items = [];
   #activeGroupId = null;
-  #lifetimes = [];
+  #viewport;
+  #scale = NaN;
+  #generation = 0;
+  #ready = Promise.resolve();
+  #scaleFrame = null;
   #removals = [];
   #disposed = false;
   #returnLink;
   #onReturnClick = null;
-  constructor({ documentRef, windowTarget = null, mountNode, tabsNode = null, groups = [], definitions, labels = {},
-    frameSize = { width: 320, height: 640 }, createSurface, createExample, returnLink = null, onReturn = null,
-    onSelect = () => {} }) {
+  constructor({ documentRef, windowTarget, mountNode, tabsNode = null, viewportsNode = null, groups = [], definitions,
+    viewports = [{ width: 320, height: 640 }], labels = {}, createSurface, createExample, returnLink = null,
+    onReturn = null, onSelect = () => {} }) {
     this.#document = documentRef;
     this.#window = windowTarget;
     this.#mount = mountNode;
     this.#tabsNode = tabsNode;
+    this.#viewportsNode = viewportsNode;
     this.#groups = groups;
     this.#definitions = definitions;
+    this.#viewports = viewports;
+    this.#viewport = viewports[0];
     this.#labels = labels;
-    this.#frameSize = frameSize;
     this.#createSurface = createSurface;
     this.#createExample = createExample;
     this.#onSelect = onSelect;
@@ -45,88 +53,114 @@ export class UiCatalogPage {
     }
   }
   get activeGroupId() { return this.#activeGroupId; }
-  get activeCardId() { return this.#groupViews.get(this.#activeGroupId)?.activeCardId ?? null; }
-  // selection: "group" or "group/card" from the URL; unknown parts open the first group or card.
+  get viewport() { return this.#viewport; }
+  get scale() { return this.#scale; }
+  // selection: "group" or "group/width" from the URL; unknown parts open the first group and viewport.
   async mount(selection = "") {
     for (const group of this.#groups) {
-      const tab = this.#tab("ui-catalog__tab", group.name, () => { void this.select(group.id); });
+      const tab = this.#button("ui-catalog__tab", group.name, () => { void this.select(group.id); });
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-selected", "false");
       this.#tabsNode?.append(tab);
-      const panel = this.#element("section", "ui-catalog__group");
-      panel.id = group.id;
-      panel.setAttribute("role", "tabpanel");
-      panel.setAttribute("aria-label", group.name);
-      panel.hidden = true;
-      const definitions = this.#definitions.filter((definition) => definition.group === group.id);
-      const cardTabs = this.#element("nav", "ui-catalog__cards");
-      cardTabs.setAttribute("role", "tablist");
-      cardTabs.setAttribute("aria-label", group.name);
-      cardTabs.hidden = definitions.length < 2;
-      const cardTabNodes = new Map();
-      for (const definition of definitions) {
-        const cardTab = this.#tab("ui-catalog__card-tab", definition.name, () => { void this.select(group.id, definition.id); });
-        cardTabs.append(cardTab);
-        cardTabNodes.set(definition.id, cardTab);
-      }
-      panel.append(cardTabs);
-      this.#mount.append(panel);
-      this.#groupViews.set(group.id, { tab, panel, definitions, cardTabNodes, activeCardId: null });
+      this.#tabs.set(group.id, tab);
     }
-    const [groupId, cardId] = String(selection).split("/");
-    const group = this.#groupViews.has(groupId) ? groupId : this.#groups[0]?.id;
-    if (group) await this.select(group, cardId);
+    for (const viewport of this.#viewports) {
+      const button = this.#button("ui-catalog__viewport", String(viewport.width), () => this.setViewport(viewport.width));
+      button.setAttribute("aria-pressed", "false");
+      this.#viewportsNode?.append(button);
+      this.#viewportButtons.set(viewport.width, button);
+    }
+    const onResize = () => this.#requestScale();
+    this.#window?.addEventListener?.("resize", onResize);
+    this.#removals.push(() => this.#window?.removeEventListener?.("resize", onResize));
+    const [groupId, width] = String(selection).split("/");
+    this.#applyViewport(this.#viewports.find((viewport) => String(viewport.width) === width) ?? this.#viewports[0]);
+    const group = this.#tabs.has(groupId) ? groupId : this.#groups[0]?.id;
+    if (group) await this.select(group);
   }
-  // Opens a group and one of its cards (the last open one, else the first); a card is created only once.
-  select(groupId, cardId = null) {
-    const view = this.#groupViews.get(groupId);
-    if (this.#disposed || !view || view.definitions.length === 0) return Promise.resolve();
-    const definition = view.definitions.find(({ id }) => id === cardId) ??
-      view.definitions.find(({ id }) => id === view.activeCardId) ?? view.definitions[0];
-    if (this.#activeGroupId !== groupId) {
-      this.#activeGroupId = groupId;
-      for (const [id, other] of this.#groupViews) {
-        const active = id === groupId;
-        other.panel.hidden = !active;
-        this.#setSelected(other.tab, "ui-catalog__tab--active", active);
+  // Opens a group: the previous group's elements are disposed and removed, this group's are created in order.
+  select(groupId) {
+    if (this.#disposed || !this.#tabs.has(groupId)) return this.#ready;
+    if (groupId === this.#activeGroupId) return this.#ready;
+    this.#activeGroupId = groupId;
+    for (const [id, tab] of this.#tabs) {
+      tab.classList.toggle("ui-catalog__tab--active", id === groupId);
+      tab.setAttribute("aria-selected", String(id === groupId));
+    }
+    this.#disposeItems();
+    this.#notify();
+    const generation = ++this.#generation;
+    this.#ready = (async () => {
+      for (const definition of this.#definitions) {
+        if (generation !== this.#generation) return;
+        if (definition.group === groupId) await this.#mountItem(definition, generation);
       }
-    }
-    if (view.activeCardId !== definition.id) {
-      view.activeCardId = definition.id;
-      for (const [id, cardTab] of view.cardTabNodes) {
-        const active = id === definition.id;
-        this.#setSelected(cardTab, "ui-catalog__card-tab--active", active);
-        const card = this.#cards.get(id);
-        if (card) card.node.hidden = !active;
-      }
-    }
-    this.#onSelect(groupId, definition.id);
-    let card = this.#cards.get(definition.id);
-    if (!card) {
-      card = this.#mountCard(definition, view.panel);
-      this.#cards.set(definition.id, card);
-    }
-    return card.ready;
+    })();
+    return this.#ready;
+  }
+  setViewport(width) {
+    const viewport = this.#viewports.find((entry) => entry.width === width);
+    if (this.#disposed || !viewport || viewport === this.#viewport) return;
+    this.#applyViewport(viewport);
+    for (const item of this.#items) { item.surface.requestMeasure(); item.crop.request(); }
+    this.#notify();
   }
   dispose() {
     if (this.#disposed) return;
     this.#disposed = true;
+    this.#generation += 1;
     this.#returnLink?.removeEventListener("click", this.#onReturnClick);
     this.#returnLink = null;
     this.#onReturnClick = null;
+    if (this.#scaleFrame !== null) this.#window.cancelAnimationFrame(this.#scaleFrame);
+    this.#scaleFrame = null;
     for (const remove of this.#removals) remove();
     this.#removals = [];
-    for (const lifetime of this.#lifetimes.reverse()) lifetime.dispose();
-    this.#lifetimes = [];
+    this.#disposeItems();
     this.#mount.replaceChildren();
     this.#tabsNode?.replaceChildren();
+    this.#viewportsNode?.replaceChildren();
   }
-  #mountCard(definition, panel) {
-    const node = this.#element("article", "ui-catalog-card");
+  #applyViewport(viewport) {
+    this.#viewport = viewport;
+    this.#mount.style.setProperty("--ui-catalog-width", `${viewport.width}px`);
+    this.#mount.style.setProperty("--ui-catalog-height", `${viewport.height}px`);
+    for (const [width, button] of this.#viewportButtons) {
+      button.classList.toggle("ui-catalog__viewport--active", width === viewport.width);
+      button.setAttribute("aria-pressed", String(width === viewport.width));
+    }
+    this.#updateScale();
+  }
+  // The preview shrinks to the page width; written only when it changes.
+  #updateScale() {
+    const available = Number(this.#mount.clientWidth) || 0;
+    const scale = available > 0 ? Math.min(1, available / this.#viewport.width) : 1;
+    if (scale === this.#scale) return;
+    this.#scale = scale;
+    this.#mount.style.setProperty("--ui-catalog-scale", String(scale));
+    for (const item of this.#items) item.crop.request();
+  }
+  #requestScale() {
+    if (this.#disposed || this.#scaleFrame !== null) return;
+    this.#scaleFrame = this.#window.requestAnimationFrame(() => {
+      this.#scaleFrame = null;
+      this.#updateScale();
+    });
+  }
+  #notify() {
+    if (this.#activeGroupId) this.#onSelect(this.#activeGroupId, this.#viewport.width);
+  }
+  #disposeItems() {
+    for (const item of this.#items.splice(0).reverse()) item.dispose();
+  }
+  async #mountItem(definition, generation) {
+    const node = this.#element("article", "ui-catalog-item");
     node.id = definition.id;
     node.dataset.catalogFamilies = definition.families.join(" ");
-    const bar = this.#element("div", "ui-catalog-card__bar");
-    const title = this.#element("h2", "ui-catalog-card__title", definition.name);
+    const bar = this.#element("div", "ui-catalog-item__bar");
+    const title = this.#element("h2", "ui-catalog-item__title", definition.name);
     title.title = definition.description;
-    const state = this.#element("select", "ui-catalog-card__select");
+    const state = this.#element("select", "ui-catalog-item__select");
     state.setAttribute("aria-label", this.#labels.stateLabel ?? "");
     for (const [value, text] of definition.states) {
       const option = this.#element("option", "", text); option.value = value; state.append(option);
@@ -134,86 +168,77 @@ export class UiCatalogPage {
     bar.append(title, state);
     const reading = definition.reading ? this.#reading(definition.reading) : null;
     if (reading) bar.append(reading.range, reading.output);
-    const size = this.#element("output", "ui-catalog-card__size");
-    bar.append(size);
-    const frame = this.#element("div", "ui-catalog-card__frame");
-    const stage = this.#element("div", "ui-catalog-card__stage");
-    frame.append(stage);
-    const status = this.#element("p", "ui-catalog-card__status");
+    const view = this.#element("div", "ui-catalog-item__view");
+    const stage = this.#element("div", "ui-catalog-item__stage");
+    view.append(stage);
+    const status = this.#element("p", "ui-catalog-item__status");
     status.setAttribute("role", "status");
-    node.append(bar, frame, status);
-    panel.append(node);
+    node.append(bar, view, status);
+    this.#mount.append(node);
     const surface = this.#createSurface(stage);
-    const crop = definition.focus && this.#window
-      ? new UiCatalogBlockCrop({ frame, stage, selector: definition.focus, windowTarget: this.#window }) : null;
+    const crop = new UiCatalogBlockCrop({ view, stage, contentRoot: surface.mountRoot, selector: definition.focus ?? null,
+      windowTarget: this.#window, getScale: () => this.#scale });
     let example = null;
-    const resizer = new UiCatalogFrameResizer({ documentRef: this.#document, frame, size: this.#frameSize,
-      labels: this.#labels, getMaxWidth: () => this.#mount.clientWidth,
-      onChange: ({ width, height }) => { size.textContent = `${width} × ${height}`; surface.requestMeasure(); crop?.request(); } });
-    const unsubscribe = surface.subscribe((metrics) => { example?.resize?.(metrics); crop?.request(); });
+    const unsubscribe = surface.subscribe((metrics) => { example?.resize?.(metrics); crop.request(); });
     const removals = [];
     const listen = (target, type, callback) => {
       target.addEventListener(type, callback);
       removals.push(() => target.removeEventListener(type, callback));
     };
-    this.#lifetimes.push({ dispose: () => {
+    let disposed = false;
+    const item = { surface, crop, dispose: () => {
+      if (disposed) return;
+      disposed = true;
       for (const remove of removals) remove();
       unsubscribe();
-      crop?.dispose();
-      resizer.dispose();
+      crop.dispose();
       example?.dispose();
+      example = null;
       surface.dispose();
-    } });
-    const ready = (async () => {
-      try {
-        example = await this.#createExample(definition.example ?? definition.id, { surface, status, definition });
-        if (this.#disposed) { example.dispose(); example = null; return; }
-        const apply = () => {
-          example.setState(state.value);
-          if (reading) example.setValue(Number(reading.range.value));
-          crop?.request();
-        };
-        listen(state, "change", apply);
-        if (reading) {
-          listen(reading.range, "input", () => {
-            reading.output.textContent = reading.format(reading.range.value);
-            example.setValue(Number(reading.range.value));
-          });
-        }
-        state.value = "normal";
-        apply();
-        surface.measure();
-      } catch (error) {
-        status.textContent = error.message;
-        status.classList.add("ui-catalog-card__status--error");
-        example?.dispose();
-        example = null;
+      node.remove();
+    } };
+    this.#items.push(item);
+    try {
+      const created = await this.#createExample(definition.example ?? definition.id, { surface, status, definition });
+      if (disposed || generation !== this.#generation) { created.dispose(); item.dispose(); return; }
+      example = created;
+      const apply = () => {
+        example.setState(state.value);
+        if (reading) example.setValue(Number(reading.range.value));
+        crop.request();
+      };
+      listen(state, "change", apply);
+      if (reading) {
+        listen(reading.range, "input", () => {
+          reading.output.textContent = reading.format(reading.range.value);
+          example.setValue(Number(reading.range.value));
+          crop.request();
+        });
       }
-    })();
-    return { node, ready };
+      state.value = "normal";
+      apply();
+      surface.measure();
+    } catch (error) {
+      status.textContent = error.message;
+      status.classList.add("ui-catalog-item__status--error");
+    }
   }
   // Three positions: min, the middle and max (spec 140 D5).
   #reading({ min, max, unit, label }) {
-    const range = this.#element("input", "ui-catalog-card__range");
+    const range = this.#element("input", "ui-catalog-item__range");
     Object.assign(range, { type: "range", min: String(min), max: String(max), step: String((max - min) / 2),
       value: String((min + max) / 2) });
     range.setAttribute("aria-label", label);
     const format = (value) => `${value} ${unit}`;
-    const output = this.#element("output", "ui-catalog-card__value", format(range.value));
+    const output = this.#element("output", "ui-catalog-item__value", format(range.value));
     return { range, output, format };
   }
-  #tab(className, text, onClick) {
-    const tab = this.#element("button", className, text);
-    tab.type = "button";
-    tab.setAttribute("role", "tab");
-    tab.setAttribute("aria-selected", "false");
-    tab.addEventListener("click", onClick);
-    this.#removals.push(() => tab.removeEventListener("click", onClick));
-    return tab;
-  }
-  #setSelected(tab, activeClass, active) {
-    tab.classList.toggle(activeClass, active);
-    tab.setAttribute("aria-selected", String(active));
+  #button(className, text, onClick) {
+    const button = this.#element("button", className, text);
+    button.type = "button";
+    button.addEventListener("click", onClick);
+    this.#removals.push(() => button.removeEventListener("click", onClick));
+    return button;
   }
   #element(tag, className, text = null) {
     const node = this.#document.createElement(tag); node.className = className;
