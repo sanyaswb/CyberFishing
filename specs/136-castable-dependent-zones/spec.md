@@ -164,3 +164,34 @@ depend on the line (rod + reel landing distance).
   last dash, landing, sector, line radius) need `debugVisuals` as in the game, and their previews follow it; the
   editing switches need the editor and their zone shown.
 - Owner: showing needs no editor. Previews and test chum zones draw with the editor off; hover and drags need it.
+
+## Revision 3 (owner, 2026-10-23, after v0.46.38)
+
+Owner: after a real cast the game drew the same zones in other colours with thick outlines ("мені це не подобається");
+with "Брати значення зі спорядження" the zones must follow the real float, and in edit mode the anchor must sit on the
+real float and move it within the cast's real limits.
+
+- **R3-1 One look.** The game's fight-area overlays (landing, last dash, net, fight sector, line radius) take the
+  editor's look: one colour table (`game/presentation/styles/fishing_zone_colors.js`, shared by the game and the DEV
+  editor), fill alpha 0.15, outline alpha 0.6, 1 px, solid lines; the line radius is filled like the editor's half-circle.
+  The sector's axis and dashes are dropped; a clamped sector keeps its own (brighter) outline. Production visuals only:
+  no gameplay value changes.
+- **R3-2 Real float.** While "Брати значення зі спорядження" is on and a cast is out (waiting, biting or fighting), the
+  game draws these zones from the real float itself, so the editor does not draw its previews of them; the float anchor
+  is drawn on the real float.
+- **R3-3 Moving the real float.** With "Рухати поплавок" on (editor enabled) and the tackle waiting (no fish), dragging
+  the anchor moves the real float: it is placed on the water within the equipped line's reach (the same
+  `EquipmentRules.getMaxCastDistance` budget as `GameState.constrainTackleToLine`, on the base plane, the selected depth
+  included), its velocity is cleared, and the waiting state's own constraints apply from the next frame. While a fish is
+  on (biting, fighting) the anchor only shows the float.
+
+### Revision 3 implementation (v0.46.39)
+
+- `game/presentation/styles/fishing_zone_colors.js`: the shared colours and look; `FightAreaStyleResolver` builds the
+  game's styles from it (`lineWidth` 1, no default dash); `PixiFightAreaRenderer` and `FightAreaRenderer` use the
+  style's width, draw the net line solid, drop the sector axis and fill the line radius; `ui.catchZone`'s colour
+  overrides are removed from the game config. `DEPENDENT_ZONES` take the same colours.
+- `CastableDependentZones` reads the cast float (`getFloat`, `getGameStateName`: waiting, biting, playing). With the
+  equipment's values and a cast out it draws only the anchor on the real float (the game draws the overlays); while
+  waiting and "Рухати поплавок" is on, dragging moves the real float within `getMaxCastDistance` (selected depth) on the
+  base plane and on the water (`checkWater`), velocity cleared. Production passes these ports to the DEV builder.

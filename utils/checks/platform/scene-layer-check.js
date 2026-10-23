@@ -840,13 +840,19 @@ async function checkSceneWorldKinds() {
   const ops = shapes.ops;
   assert.deepEqual(ops.slice(0, 2), [["rect", 0, 300, 20, 40], ["fill", style.lastDashFill]], "the last-dash band");
   assert.deepEqual(ops.slice(2, 7), [["moveTo", 0, 300], ["lineTo", 5, 300], ["moveTo", 10, 300], ["lineTo", 15, 300],
-    ["stroke", { width: 2, color: style.lastDashStroke }]], "its line in the configured dash");
+    ["stroke", { width: 1, color: style.lastDashStroke }]], "its line in the configured dash, 1 px (spec 136 R3-1)");
   assert(ops.some((op) => op[0] === "ellipse" && op[3] === 80), "the catch ellipse");
   assert(ops.some((op) => op[0] === "fill" && op[1] === style.sectorClampedFill), "a clamped sector uses its colours");
-  assert(ops.some((op) => op[0] === "stroke" && op[1].width === 3 && op[1].color === style.sectorClampedStroke));
+  assert(ops.some((op) => op[0] === "stroke" && op[1].width === 1 && op[1].color === style.sectorClampedStroke));
   const axis = ops.filter((op) => op[0] === "moveTo" && op[1] === 200 && op[2] >= 686 && op[2] <= 700);
-  assert.equal(axis.length, 2, "the sector axis is dashed [6, 8]: 14 px is one dash and the start of the next");
-  assert(ops.some((op) => op[0] === "stroke" && op[1].width === 4 && op[1].color === style.lineRadiusStroke));
+  assert.equal(axis.length, 1, "one look with the editor: only the sector outline starts at the apex, no axis");
+  assert(ops.some((op) => op[0] === "fill" && op[1] === style.lineRadiusFill) &&
+    ops.some((op) => op[0] === "stroke" && op[1].width === 1 && op[1].color === style.lineRadiusStroke),
+    "the line radius is filled and outlined like the editor's half-circle");
+  assert(ops.filter((op) => op[0] === "stroke").every((op) => op[1].width === 1), "every outline is 1 px");
+  const solid = new FightAreaStyleResolver({ configProvider: () => ({}) }).resolve();
+  assert(solid.lastDashDash.length === 0 && solid.catchFill === "rgba(51, 136, 255, 0.15)" && solid.catchStroke === "rgba(51, 136, 255, 0.6)",
+    "the game's default look: the editor's colours, 0.15 fill, 0.6 solid outline");
   assert.equal(shapes.mask, areaMask, "clipped to the fight's water");
   assert.equal(areas.update(model), false);
   model.showSector = false;

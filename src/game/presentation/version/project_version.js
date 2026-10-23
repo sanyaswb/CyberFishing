@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.38";
+export const CURRENT_PROJECT_VERSION = "0.46.39";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "float-on-water",
+  codename: "one-zone-look",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "Spec 136 Revision 3: one look, real float.",
     "TK-070: the float stays on the water.",
     "TK-069: fishing zones from the equipment.",
     "TK-068: show switches redraw previews.",

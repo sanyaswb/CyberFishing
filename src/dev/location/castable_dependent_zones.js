@@ -1,19 +1,24 @@
 import { Vector2 } from "../../engine/math/vector2.js";
 import { PoleFightSectorGeometry } from "../../game/domain/fishing/pole_fight_sector_geometry.js";
+import { FISHING_ZONE_COLORS } from "../../game/presentation/styles/fishing_zone_colors.js";
 import { ChumTestZones } from "./chum_test_zones.js";
 
 // Spec 136: the zones inside the castable area, in the order of the "Зони риболовлі" section. show: the game's own
 // CONFIG.locations switch and its default (on unless false, or off unless true); overlay: the game draws it only while
 // CONFIG.locations.debugVisuals is on (FightAreaRenderFrameBuilder), so its switch and preview depend on that parent.
+// Colours: the fishing zones' one look shared with the game's own overlays (spec 136 R3-1).
 export const DEPENDENT_ZONES = Object.freeze([
-  Object.freeze({ id: "handChum", show: "showAimingZone", defaultOn: true, color: "#ffb347" }),
-  Object.freeze({ id: "net", show: "showNetZone", defaultOn: true, color: "#33dd88", overlay: true }),
-  Object.freeze({ id: "lastDash", show: "showLastDashZone", defaultOn: false, color: "#b366ff", overlay: true }),
-  Object.freeze({ id: "catch", show: "showCatchZone", defaultOn: true, color: "#3388ff", overlay: true }),
-  Object.freeze({ id: "sector", show: "showPoleFightSector", defaultOn: false, color: "#ff8844", overlay: true }),
-  Object.freeze({ id: "line", show: "showFightLineRadius", defaultOn: false, color: "#dddddd", overlay: true }),
-  Object.freeze({ id: "chum", show: "showChumZones", defaultOn: true, color: "#ffdd33" }),
+  Object.freeze({ id: "handChum", show: "showAimingZone", defaultOn: true, color: FISHING_ZONE_COLORS.handChum }),
+  Object.freeze({ id: "net", show: "showNetZone", defaultOn: true, color: FISHING_ZONE_COLORS.net, overlay: true }),
+  Object.freeze({ id: "lastDash", show: "showLastDashZone", defaultOn: false, color: FISHING_ZONE_COLORS.lastDash, overlay: true }),
+  Object.freeze({ id: "catch", show: "showCatchZone", defaultOn: true, color: FISHING_ZONE_COLORS.catch, overlay: true }),
+  Object.freeze({ id: "sector", show: "showPoleFightSector", defaultOn: false, color: FISHING_ZONE_COLORS.sector, overlay: true }),
+  Object.freeze({ id: "line", show: "showFightLineRadius", defaultOn: false, color: FISHING_ZONE_COLORS.line, overlay: true }),
+  Object.freeze({ id: "chum", show: "showChumZones", defaultOn: true, color: FISHING_ZONE_COLORS.chum }),
 ]);
+// The game states with a cast out: the game then draws the fight-area overlays from the real float (R3-2); only a
+// waiting float (no fish on) may be moved by the editor (R3-3).
+const CAST_STATES = new Set(["waiting", "biting", "playing"]);
 const BY_ID = new Map(DEPENDENT_ZONES.map(zone => [zone.id, zone]));
 const FLOAT_COLOR = "#ffffff";
 const EDGE_PX = 10;
@@ -29,6 +34,8 @@ const DEFAULT_LINE_METERS = 10;
 export class CastableDependentZones {
   #revision = 0;
   #state; #config; #readings; #map; #projector; #getMetric; #writeConfig; #getRodScreenX; #canvasMetrics;
+  #getFloat; #getGameStateName; #checkWater; #equipmentRules; #getHookDepthMeters; #getEquipment;
+  #realFloat = { x: 0, y: 0, movable: false };
   #sector = new PoleFightSectorGeometry();
   #chum = new ChumTestZones();
   #editingChumLine = false;
@@ -47,10 +54,27 @@ export class CastableDependentZones {
   #screen = new Vector2();
 
   // writeConfig(path, value): the validated runtime config write (DevTools); getRodScreenX(): the game's rod screen X.
-  constructor({ state, config, readings, map, projector, getWaterMetric, writeConfig, getRodScreenX = null, canvasMetrics }) {
+  // R3: getFloat(), getGameStateName(), checkWater(x, y), equipmentRules, getHookDepthMeters(), getEquipment(): the
+  // game's cast float and the limits it obeys (optional: without them the real float is never used).
+  constructor({ state, config, readings, map, projector, getWaterMetric, writeConfig, getRodScreenX = null, canvasMetrics,
+    getFloat = null, getGameStateName = null, checkWater = null, equipmentRules = null, getHookDepthMeters = () => null,
+    getEquipment = null }) {
     this.#state = state; this.#config = config; this.#readings = readings; this.#map = map;
     this.#projector = projector; this.#getMetric = getWaterMetric; this.#writeConfig = writeConfig;
     this.#getRodScreenX = getRodScreenX; this.#canvasMetrics = canvasMetrics;
+    this.#getFloat = getFloat; this.#getGameStateName = getGameStateName; this.#checkWater = checkWater;
+    this.#equipmentRules = equipmentRules; this.#getHookDepthMeters = getHookDepthMeters; this.#getEquipment = getEquipment;
+  }
+
+  // R3-2: the game's float while a cast is out and the zones take the equipment's values; null otherwise.
+  #castFloat() {
+    if (!this.#fromEquipment || !this.#getFloat || !this.#getGameStateName) return null;
+    const stateName = this.#getGameStateName();
+    if (!CAST_STATES.has(stateName)) return null;
+    const position = this.#getFloat()?.getPosition?.();
+    if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) return null;
+    this.#realFloat.x = position.x; this.#realFloat.y = position.y; this.#realFloat.movable = stateName === "waiting";
+    return this.#realFloat;
   }
 
   get revision() {
@@ -158,8 +182,10 @@ export class CastableDependentZones {
     if (this.#floatLocation !== locationId) { this.#floatLocation = locationId; this.#float = null; this.#hovered = null; this.#revision++; }
     const readings = this.#readings, values = this.#values;
     const net = this.#fromEquipment ? readings.equippedNetPx() : readings.netPx(this.netId);
+    const cast = this.#castFloat();
     const next = [readings.handChumPx(locationId), net, readings.lastDashMeters(this.fishId),
-      readings.landingMeters(), this.#rodX(), this.effectiveLineMeters];
+      readings.landingMeters(), this.#rodX(), this.effectiveLineMeters, cast ? cast.x : null, cast ? cast.y : null,
+      cast ? cast.movable : null];
     for (const zone of DEPENDENT_ZONES) next.push(this.isShown(zone.id));
     let changed = values.length !== next.length;
     for (let index = 0; index < next.length; index++) {
@@ -178,6 +204,14 @@ export class CastableDependentZones {
     const ppm = this.#readings.pixelsPerMeter;
     const look = (id, editable = false) => ({ color: BY_ID.get(id).color, editable, hovered: editable && this.#hovered === id });
     if (this.isShown("handChum")) draw.band(frame.left, this.#farY(frame, handChum), frame.right, frame.shore, look("handChum", this.#editingChumLine));
+    // R3-2: with a real cast the game draws these zones from the real float itself; the editor marks the float only.
+    const cast = this.#castFloat();
+    if (cast) {
+      if (this.isShown("sector") || this.isShown("line")) {
+        draw.handle(cast.x, cast.y, { color: FLOAT_COLOR, editable: this.#movingFloat && cast.movable, hovered: false });
+      }
+      return;
+    }
     if (this.isShown("net") && net !== null) draw.band(frame.left, this.#farY(frame, net), frame.right, frame.shore, look("net"));
     if (this.isShown("lastDash") && lastDash !== null) draw.band(frame.left, this.#farY(frame, lastDash * ppm), frame.right, frame.shore, look("lastDash"));
     if (this.isShown("catch") && landing !== null) draw.polygon(this.#landingCircle(frame, landing * ppm), look("catch"));
@@ -206,8 +240,12 @@ export class CastableDependentZones {
     const frame = this.#editingFrame();
     if (!frame) return null;
     if (this.#movingFloat && (this.isShown("sector") || this.isShown("line"))) {
-      const origin = this.#planeOrigin(frame), float = this.#floatPlane(frame, origin);
-      frame.metric.fromBasePlane(float.x, float.y, this.#point);
+      const cast = this.#castFloat();
+      if (cast && !cast.movable) return null;
+      if (cast) { this.#point.x = cast.x; this.#point.y = cast.y; } else {
+        const origin = this.#planeOrigin(frame), float = this.#floatPlane(frame, origin);
+        frame.metric.fromBasePlane(float.x, float.y, this.#point);
+      }
       this.#projector.virtualToScreen(this.#point.x, this.#point.y, this.#screen);
       if (Math.hypot(px - this.#screen.x, py - this.#screen.y) <= EDGE_PX) return { kind: "float", cursor: "move" };
     }
@@ -264,6 +302,10 @@ export class CastableDependentZones {
       this.#chum.drag(handle, this.#state.locationId, x, y, step, frame.metric);
       return;
     }
+    if (handle.kind === "float" && this.#castFloat()) {
+      this.#moveCastFloat(frame, x, y);
+      return;
+    }
     if (handle.kind === "float") {
       const origin = this.#planeOrigin(frame);
       frame.metric.toBasePlane(x, Math.min(y, frame.shore), this.#plane);
@@ -283,6 +325,26 @@ export class CastableDependentZones {
   }
 
   // Showing needs only the location on screen and the castable area; editing also needs the editor on.
+  // R3-3: the waiting float follows the pointer within the real limits of the cast: on the water (the game's
+  // checkWater), within the equipped line's reach from the rod on the base plane (the budget GameState.
+  // constrainTackleToLine applies, the selected depth included); its velocity is cleared and the game's own waiting
+  // constraints apply from the next frame.
+  #moveCastFloat(frame, x, y) {
+    const float = this.#getFloat?.();
+    if (!float || this.#getGameStateName?.() !== "waiting") return;
+    const metric = frame.metric, origin = this.#planeOrigin(frame);
+    metric.toBasePlane(x, Math.min(y, frame.shore), this.#plane);
+    const reach = this.#equipmentRules?.getMaxCastDistance?.(this.#getEquipment?.(), Infinity, this.#getHookDepthMeters());
+    let dx = this.#plane.x - origin.x, dy = this.#plane.y - origin.y;
+    const length = Math.hypot(dx, dy);
+    if (Number.isFinite(reach) && length > reach) { dx *= reach / length; dy *= reach / length; }
+    metric.fromBasePlane(origin.x + dx, origin.y + dy, this.#point);
+    if (this.#checkWater && !this.#checkWater(this.#point.x, this.#point.y)) return;
+    float.setPosition(this.#point.x, this.#point.y);
+    float.getVelocity?.()?.set?.(0, 0);
+    this.#revision++;
+  }
+
   #frame() {
     const state = this.#state;
     if (!state.editsLoadedLocation || this.#config.locations.enableCastable === false) return null;

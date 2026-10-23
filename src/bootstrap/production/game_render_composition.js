@@ -277,6 +277,12 @@ export class GameRenderComposition {
           // Spec 136: what the DEV editor previews the castable area's zones from (read only): equipment, the rod.
           getEquipment: () => runtime.inventory.getEquipped(),
           getRodScreenX: appPorts.getRodScreenX,
+          // Spec 136 R3: the cast float and the limits it obeys, for the editor's float anchor.
+          getFloat: appPorts.getFloat,
+          getGameStateName: appPorts.getGameStateName,
+          checkWater: appPorts.checkWater,
+          equipmentRules: runtime.equipmentRules,
+          getHookDepthMeters: () => appPorts.currentHookDepthRef?.get?.() ?? null,
         }], ["buildInto"],
       ),
     });

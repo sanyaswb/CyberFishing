@@ -1,6 +1,4 @@
 export const FIGHT_AREA_EMPTY_DASH = Object.freeze([]);
-export const FIGHT_AREA_NET_DASH = Object.freeze([10, 10]);
-export const FIGHT_AREA_AXIS_DASH = Object.freeze([6, 8]);
 
 export class FightAreaRenderer {
   #surface;
@@ -46,7 +44,7 @@ export class FightAreaRenderer {
       surface.fillRect(0, model.y, model.width, model.height);
     }
     surface.strokeStyle = style.lastDashStroke;
-    surface.lineWidth = 2;
+    surface.lineWidth = style.lineWidth;
     surface.setLineDash(style.lastDashDash);
     surface.beginPath();
     surface.moveTo(0, model.y);
@@ -65,7 +63,7 @@ export class FightAreaRenderer {
       for (let point = 1; point < model.pointCount; point++) surface.lineTo(model.points[point * 2], model.points[point * 2 + 1]);
       surface.closePath();
       surface.fillStyle = style.catchFill; surface.fill();
-      surface.strokeStyle = style.catchStroke; surface.lineWidth = 2; surface.stroke();
+      surface.strokeStyle = style.catchStroke; surface.lineWidth = style.lineWidth; surface.stroke();
       surface.restore();
       return;
     }
@@ -84,7 +82,7 @@ export class FightAreaRenderer {
       surface.fillStyle = style.catchFill;
       surface.fill();
       surface.strokeStyle = style.catchStroke;
-      surface.lineWidth = 2;
+      surface.lineWidth = style.lineWidth;
       surface.stroke();
       surface.restore();
       return;
@@ -94,7 +92,7 @@ export class FightAreaRenderer {
       surface.fillRect(0, model.y, model.width, model.height);
     }
     surface.strokeStyle = style.catchStroke;
-    surface.lineWidth = 2;
+    surface.lineWidth = style.lineWidth;
     surface.beginPath();
     surface.moveTo(0, model.lineY);
     surface.lineTo(model.width, model.lineY);
@@ -105,8 +103,7 @@ export class FightAreaRenderer {
     if (!model.visible) return;
     const surface = this.#surface;
     surface.strokeStyle = style.netStroke;
-    surface.lineWidth = 1;
-    surface.setLineDash(FIGHT_AREA_NET_DASH);
+    surface.lineWidth = style.lineWidth;
     surface.beginPath();
     surface.moveTo(0, model.y);
     surface.lineTo(model.width, model.y);
@@ -136,17 +133,9 @@ export class FightAreaRenderer {
     surface.strokeStyle = model.sectorClamped
       ? style.sectorClampedStroke
       : style.sectorStroke;
-    surface.lineWidth = 3;
+    surface.lineWidth = style.lineWidth;
     surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.stroke();
-    surface.beginPath();
-    surface.moveTo(model.apexX, model.apexY);
-    surface.lineTo(model.axisEndX, model.axisEndY);
-    surface.strokeStyle = style.sectorAxis;
-    surface.lineWidth = 2;
-    surface.setLineDash(FIGHT_AREA_AXIS_DASH);
-    surface.stroke();
-    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.restore();
   }
 
@@ -159,8 +148,12 @@ export class FightAreaRenderer {
       if (index === 0) surface.moveTo(point.x, point.y);
       else surface.lineTo(point.x, point.y);
     }
+    // Closed along the shore and filled, like the editor's line-radius half-circle.
+    surface.closePath();
+    surface.fillStyle = style.lineRadiusFill;
+    surface.fill();
     surface.strokeStyle = style.lineRadiusStroke;
-    surface.lineWidth = 4;
+    surface.lineWidth = style.lineWidth;
     surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.stroke();
   }

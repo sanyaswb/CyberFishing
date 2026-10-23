@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.39 - One Look for the Fishing Zones
+
+- The game's fight-area zones take the editor's look (colours, thin solid outlines); with the equipment's values the editor's float anchor sits on the real float and moves it while waiting, within the line's reach.
+
 ## v0.46.38 - Float Stays on the Water
 
 - Location editor: the conditional float stays on the water when the equipped line is longer than it.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.30 - Moving-Zone Shapes
 
 - Choose Circle or Square before adding a moving zone, or change the selected body shape. Circular contours, uniform resizing and numeric diameter edits agree across WebGL, Canvas and pointer input; export/import and apply:zones preserve shape while legacy rectangles remain compatible.
-
-## v0.46.29 - Free Moving-Zone Placement
-
-- Dynamic bodies translate continuously in the editor. Fresh locations choose random grid-aligned starts inside movement bounds; editing retains exact positions and gameplay RNG stays independent.

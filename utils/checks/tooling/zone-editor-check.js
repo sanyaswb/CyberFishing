@@ -1185,6 +1185,51 @@ controlUI.dispose();
   assert(Math.abs(drawn.handles[0].y - 0) < 1e-9 && drawn.handles[0].x === 500, "50 m of line over 20 m of water: the float at the far edge");
   zones.setFromEquipment(false);
   equipment = { rod: equipment.rod, reel: equipment.reel };
+  // R3-2/R3-3: with the equipment's values and a real cast, the game draws the overlays itself; the anchor sits on the
+  // real float and, while it waits, moves it within the equipped line's reach over the water.
+  const realFloat = { position: { x: 600, y: 700 }, velocity: { x: 3, y: -2, set(x, y) { this.x = x; this.y = y; } },
+    getPosition() { return this.position; }, getVelocity() { return this.velocity; }, setPosition(x, y) { this.position = { x, y }; } };
+  let gameState = "waiting", reachCalls = 0;
+  const castZones = new CastableDependentZones({ state: st, config: cfg, readings, projector: identity, getWaterMetric: () => flat,
+    map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 },
+    getRodScreenX: () => null, writeConfig() {}, getFloat: () => realFloat, getGameStateName: () => gameState,
+    checkWater: (x, y) => y < 1000 && x >= 0 && x <= 1000, getEquipment: () => equipment, getHookDepthMeters: () => 2,
+    equipmentRules: { getMaxCastDistance: (eq, fallback, depth) => { reachCalls++; return depth === 2 ? 400 : fallback; } } });
+  const drawCast = () => {
+    castZones.refresh();
+    const out = { bands: [], polygons: [], handles: [] };
+    castZones.buildInto({ band: (l, top, r, b, look) => out.bands.push({ top, ...look }), polygon: (points, look) => out.polygons.push(look),
+      handle: (x, y, look) => out.handles.push({ x, y, ...look }) });
+    return out;
+  };
+  let cast = drawCast();
+  assert(cast.polygons.length > 0 && cast.handles.every(handle => handle.x !== 600), "without the equipment's values the static anchor is used");
+  castZones.setFromEquipment(true);
+  cast = drawCast();
+  assert(cast.polygons.length === 0 && !cast.bands.some(band => band.color === "#33dd88") &&
+    cast.handles.length === 1 && cast.handles[0].x === 600 && cast.handles[0].y === 700,
+    "with a real cast the game draws the overlays; the editor marks the real float only");
+  assert.equal(castZones.hit(600, 700), null, "the real float is taken only while its moving switch is on");
+  castZones.setMovingFloat(true);
+  const real = castZones.hit(603, 702);
+  assert.deepEqual([real?.kind], ["float"]);
+  castZones.drag(real, 800, 750);
+  assert(realFloat.position.x === 800 && realFloat.position.y === 750 && realFloat.velocity.x === 0 && realFloat.velocity.y === 0,
+    "the waiting float moves to the pointer and stops");
+  castZones.drag(real, 500, 0);
+  assert(Math.abs(Math.hypot(realFloat.position.x - 500, realFloat.position.y - 1000) - 400) < 1e-9 && reachCalls > 0,
+    "the equipped line's reach (the selected depth included) limits it");
+  const before = { ...realFloat.position };
+  castZones.drag(real, 500, 1200);
+  assert.deepEqual(realFloat.position, before, "never onto the shore: a position off the water is refused");
+  gameState = "playing"; cast = drawCast();
+  assert(castZones.hit(realFloat.position.x, realFloat.position.y) === null && cast.handles[0].editable === false,
+    "with a fish on, the anchor only shows the float");
+  castZones.drag(real, 700, 700);
+  assert.deepEqual(realFloat.position, before, "and never moves it");
+  gameState = "scouting"; cast = drawCast();
+  assert(cast.polygons.length > 0, "no cast out: the previews are back");
+
   // Choices, live values and the game's show switches.
   zones.setNet("net_big"); drawn = draw();
   assert.equal(drawn.bands[1].top, 1000 - readings.netPx("net_big"), "the chosen net's reach");

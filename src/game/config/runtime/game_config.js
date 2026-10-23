@@ -671,14 +671,6 @@ export const CONFIG = {
       },
     },
 
-    catchZone: {
-      color: "rgba(0, 150, 255, 0.5)",
-      strokeColor: "rgba(0, 200, 255, 0.85)",
-      lastDashFillColor: "rgba(170, 80, 255, 0.12)",
-      lastDashStrokeColor: "rgba(190, 90, 255, 0.9)",
-      lastDashDash: [9, 7],
-    },
-
     victory: {
       panelWidth: 540,
       panelMinHeight: 560,

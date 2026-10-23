@@ -779,6 +779,7 @@
 │  │     │  ├── auto-switch.css
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
+│  │     │  ├── fishing_zone_colors.js
 │  │     │  ├── game-shell.css
 │  │     │  ├── hud
 │  │     │  │  ├── chum-control.css

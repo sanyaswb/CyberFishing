@@ -1,3 +1,9 @@
+import { FISHING_ZONE_COLORS, FISHING_ZONE_LOOK, fishingZoneRgba } from "./fishing_zone_colors.js";
+
+const fill = key => fishingZoneRgba(FISHING_ZONE_COLORS[key], FISHING_ZONE_LOOK.fillAlpha);
+const stroke = key => fishingZoneRgba(FISHING_ZONE_COLORS[key], FISHING_ZONE_LOOK.strokeAlpha);
+
+// The fight-area overlays' styles in the fishing zones' one look (spec 136 R3-1): light fill, thin solid outline.
 export class FightAreaStyleResolver {
   #configProvider;
   #cache = null;
@@ -13,25 +19,20 @@ export class FightAreaStyleResolver {
     if (this.#cache) return this.#cache;
     const config = this.#configProvider() || {};
     this.#cache = Object.freeze({
-      catchFill: config.color || "rgba(0, 150, 255, 0.3)",
-      catchStroke: config.strokeColor || "rgba(0, 200, 255, 0.8)",
-      lastDashFill:
-        config.lastDashFillColor || "rgba(170, 80, 255, 0.12)",
-      lastDashStroke:
-        config.lastDashStrokeColor || "rgba(190, 90, 255, 0.9)",
-      lastDashDash: Object.freeze(
-        Array.isArray(config.lastDashDash)
-          ? config.lastDashDash.slice()
-          : [9, 7],
-      ),
-      netFill: "rgba(0, 255, 128, 0.05)",
-      netStroke: "rgba(0, 255, 128, 0.5)",
-      sectorFill: "rgba(175, 0, 35, 0.28)",
-      sectorClampedFill: "rgba(210, 35, 25, 0.32)",
-      sectorStroke: "rgba(255, 70, 70, 0.98)",
-      sectorClampedStroke: "rgba(255, 145, 35, 1)",
-      sectorAxis: "rgba(255, 255, 255, 0.7)",
-      lineRadiusStroke: "rgba(255, 230, 0, 0.98)",
+      lineWidth: FISHING_ZONE_LOOK.lineWidth,
+      catchFill: config.color || fill("catch"),
+      catchStroke: config.strokeColor || stroke("catch"),
+      lastDashFill: config.lastDashFillColor || fill("lastDash"),
+      lastDashStroke: config.lastDashStrokeColor || stroke("lastDash"),
+      lastDashDash: Object.freeze(Array.isArray(config.lastDashDash) ? config.lastDashDash.slice() : []),
+      netFill: fill("net"),
+      netStroke: stroke("net"),
+      sectorFill: fill("sector"),
+      sectorClampedFill: fill("sectorClamped"),
+      sectorStroke: stroke("sector"),
+      sectorClampedStroke: stroke("sectorClamped"),
+      lineRadiusFill: fill("line"),
+      lineRadiusStroke: stroke("line"),
     });
     return this.#cache;
   }

@@ -1,9 +1,7 @@
 import { appendDashedLine } from "./pixi_dashed_line.js";
 import { SceneChangeFingerprint } from "./scene_change_fingerprint.js";
 
-// Dash patterns of FightAreaRenderer (logical px).
-const NET_DASH = Object.freeze([10, 10]);
-const AXIS_DASH = Object.freeze([6, 8]);
+// One look with FightAreaRenderer (spec 136 R3-1): thin solid outlines; the last dash line keeps an optional pattern.
 
 // The fight-areas kind on the scene (spec 107): the last-dash band, the catch zone (band or ellipse), the landing net
 // band, the pole sector with its axis and the line-radius arc, clipped to the fight's water (model.clipRegions), in
@@ -108,8 +106,9 @@ export class PixiFightAreaRenderer {
     if (!model.visible) return;
     const shapes = this.#shapes;
     if (model.height > 0) shapes.rect(0, model.y, model.width, model.height).fill(style.lastDashFill);
-    appendDashedLine(shapes, 0, model.y, model.width, model.y, style.lastDashDash);
-    shapes.stroke({ width: 2, color: style.lastDashStroke });
+    if (style.lastDashDash.length) appendDashedLine(shapes, 0, model.y, model.width, model.y, style.lastDashDash);
+    else shapes.moveTo(0, model.y).lineTo(model.width, model.y);
+    shapes.stroke({ width: style.lineWidth, color: style.lastDashStroke });
   }
 
   #drawCatch(model, style) {
@@ -118,25 +117,25 @@ export class PixiFightAreaRenderer {
     if (model.kind === "polygon") {
       shapes.moveTo(model.points[0], model.points[1]);
       for (let point = 1; point < model.pointCount; point++) shapes.lineTo(model.points[point * 2], model.points[point * 2 + 1]);
-      shapes.closePath().fill(style.catchFill).stroke({ width: 2, color: style.catchStroke });
+      shapes.closePath().fill(style.catchFill).stroke({ width: style.lineWidth, color: style.catchStroke });
       return;
     }
     if (model.kind === "ellipse") {
       shapes.ellipse(model.x, model.y, model.radiusX, model.radiusY).fill(style.catchFill)
-        .stroke({ width: 2, color: style.catchStroke });
+        .stroke({ width: style.lineWidth, color: style.catchStroke });
       return;
     }
     if (model.height > 0) shapes.rect(0, model.y, model.width, model.height).fill(style.catchFill);
     shapes.moveTo(0, model.lineY);
     shapes.lineTo(model.width, model.lineY);
-    shapes.stroke({ width: 2, color: style.catchStroke });
+    shapes.stroke({ width: style.lineWidth, color: style.catchStroke });
   }
 
   #drawNet(model, style) {
     if (!model.visible) return;
     const shapes = this.#shapes;
-    appendDashedLine(shapes, 0, model.y, model.width, model.y, NET_DASH);
-    shapes.stroke({ width: 1, color: style.netStroke });
+    shapes.moveTo(0, model.y).lineTo(model.width, model.y);
+    shapes.stroke({ width: style.lineWidth, color: style.netStroke });
     if (model.height > 0) shapes.rect(0, model.y, model.width, model.height).fill(style.netFill);
   }
 
@@ -150,9 +149,7 @@ export class PixiFightAreaRenderer {
     }
     shapes.closePath();
     shapes.fill(model.sectorClamped ? style.sectorClampedFill : style.sectorFill);
-    shapes.stroke({ width: 3, color: model.sectorClamped ? style.sectorClampedStroke : style.sectorStroke });
-    appendDashedLine(shapes, model.apexX, model.apexY, model.axisEndX, model.axisEndY, AXIS_DASH);
-    shapes.stroke({ width: 2, color: style.sectorAxis });
+    shapes.stroke({ width: style.lineWidth, color: model.sectorClamped ? style.sectorClampedStroke : style.sectorStroke });
   }
 
   #drawLineRadius(model, style) {
@@ -163,7 +160,8 @@ export class PixiFightAreaRenderer {
       if (index === 0) shapes.moveTo(point.x, point.y);
       else shapes.lineTo(point.x, point.y);
     }
-    shapes.stroke({ width: 4, color: style.lineRadiusStroke });
+    // Closed along the shore and filled, like the editor's line-radius half-circle.
+    shapes.closePath().fill(style.lineRadiusFill).stroke({ width: style.lineWidth, color: style.lineRadiusStroke });
   }
 
   // 2D: primitives.beginClip(model.clipRegions) — no regions, no clip.
