@@ -240,9 +240,23 @@ export class PixiSceneLayer {
     const height = this.#metrics.height;
     const pixelRatio = this.#scenePixelRatio();
     if (width === this.#width && height === this.#height && pixelRatio === this.#pixelRatio) return false;
+    this.#releaseFilterTextures(app.renderer);
     app.renderer.resize(width, height, pixelRatio);
     this.#remember(app, width, height, pixelRatio);
     return true;
+  }
+
+  // Pixi 8.22 keeps the last filter pass's input and back textures bound in the filter system's private bind group;
+  // a resize destroys those pooled screen-sized textures and Pixi warns "[BindGroup] ... destroyed while still bound"
+  // for each. Rebinding the empty texture first keeps the console clean; the next filter pass binds fresh ones.
+  // Private field: re-check after a Pixi update (utils/checks/platform/scene-layer-check.js covers it).
+  #releaseFilterTextures(renderer) {
+    const group = renderer?.filter?._globalFilterBindGroup;
+    const empty = this.#pixi.Texture?.EMPTY?.source;
+    if (typeof group?.setResource !== "function" || !empty) return;
+    if (group.resources?.[1]) group.setResource(empty, 1);
+    if (group.resources?.[2]) group.setResource(empty.style, 2);
+    if (group.resources?.[3]) group.setResource(empty, 3);
   }
 
   // Spec 105 D4: the art drawn 1:1 where it would be enlarged (portrait), the game canvas's ratio where it is shrunk.

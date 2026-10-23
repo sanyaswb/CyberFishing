@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.2 - Quiet Console
+
+- No more PixiJS "[BindGroup] … destroyed while still bound to a shader" warnings after a canvas resize: the scene releases the water filter's pooled textures before resizing. The inventory's empty-compartment icons load with the inventory instead of HTML preloads that Chrome reported as unused (TK-077).
+
 ## v0.47.0 - Zone Editor and Connected Masks
 
 - Owner-approved minor release: connected local masks, exact gameplay boundaries and shore-clipped Pixi waves, with mesh focus, painting/erasing, host-field locking and independent mask opacity.

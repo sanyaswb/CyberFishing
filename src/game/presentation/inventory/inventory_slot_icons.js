@@ -21,3 +21,8 @@ const ICONS = Object.freeze({
 export function inventorySlotIconPath(slotId) {
   return ICONS[slotId] || "";
 }
+
+// Every distinct icon file, for warming them when the inventory is created.
+export function inventorySlotIconPaths() {
+  return [...new Set(Object.values(ICONS))];
+}

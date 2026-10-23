@@ -15,6 +15,7 @@ import { InventoryBalanceParameterResolver } from "../../game/presentation/inven
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
+import { inventorySlotIconPaths } from "../../game/presentation/inventory/inventory_slot_icons.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
@@ -141,6 +142,10 @@ export class InventoryUiBootstrap {
     degradationColorResolver,
     warningTimers,
   }) {
+    // The empty-compartment icons load with the inventory (HTML preloads warned: unused for seconds after load).
+    new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") })
+      .preload(inventorySlotIconPaths().map((src) => ({ id: src, src })))
+      .catch((error) => new ConsoleLogger().warn("[Inventory] Icon preload failed", error));
     const LongPressController = InventoryLongPressController;
     const dom = new InventoryDomFactory(documentRef);
     const resolvedNormalizer =

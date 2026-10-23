@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.0";
+export const CURRENT_PROJECT_VERSION = "0.47.2";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "zone-cell-masks",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "The console stays clean: no PixiJS texture warnings after a resize and no unused preload warnings",
     "0.47.0: owner-approved minor release of the zone editor.",
     "Connected local zone masks, exact boundaries and shore-clipped Pixi waves.",
     "Grid-stable geometry, mesh focus, locked host parameters and shared grid opacity.",

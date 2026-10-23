@@ -163,6 +163,8 @@ function fakePixi() {
       for (const listener of this.listeners) listener(this);
     }
 
+    static EMPTY = { source: { empty: true, style: { emptyStyle: true } } };
+
     static from(options, skipCache) {
       if (options?.tagName === "canvas") {
         const texture = { canvas: options, skipCache, updates: 0, destroyed: null,
@@ -202,7 +204,14 @@ function fakePixi() {
       size(options.width, options.height, options.resolution);
       const loseContext = { loseContext: () => canvas.dispatch("webglcontextlost"),
         restoreContext: () => canvas.dispatch("webglcontextrestored") };
-      this.renderer = { canvas, context: { webGLVersion: 2 }, resize: (...args) => { this.resizes.push(args); size(...args); },
+      // The filter system's private bind group still holds the last pass's pooled textures (Pixi 8.22).
+      const filterGroup = { resources: { 0: "uniforms", 1: "pooled", 2: "pooledStyle", 3: "back" },
+        setResource(resource, index) { this.resources[index] = resource; } };
+      this.renderer = { canvas, context: { webGLVersion: 2 }, filter: { _globalFilterBindGroup: filterGroup },
+        resize: (...args) => {
+          this.releasedBeforeResize = [1, 2, 3].every((index) => typeof filterGroup.resources[index] === "object");
+          filterGroup.resources[1] = "pooled"; this.resizes.push(args); size(...args);
+        },
         gl: { getExtension: (name) => (name === "WEBGL_lose_context" ? loseContext : null) },
         texture: { initSource: (source) => { textures.find((texture) => texture.source === source).uploaded = true; } },
         background: { color: options.background } };
@@ -502,6 +511,8 @@ async function checkPixiSceneLayer() {
   Object.assign(base, { width: 816, height: 459 });
   layer.render(frame);
   assert.deepEqual(app.resizes.at(-1), [816, 400, 2], "landscape: the art is shrunk, so the scene keeps the canvas ratio");
+  assert.equal(app.releasedBeforeResize, true,
+    "before a resize the filter textures are released, so Pixi does not warn about destroyed bound textures");
   metrics.pixelRatio = 1.5;
   layer.render(frame);
   assert.deepEqual(app.resizes.at(-1), [816, 400, 1.5], "never above the game canvas's ratio");
