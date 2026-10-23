@@ -453,14 +453,22 @@ export class ZoneEditorSection {
     ui.releaseValueBindings(list);
     list.replaceChildren();
     this.#configSwitch(list, "debugVisuals", "Показувати оверлеї гри");
+    // Spec 131 prerequisites: a switch that cannot work while its parent is off is blocked, and the parent is shown.
+    const locations = this.#config.locations;
+    const overlays = { path: ["CONFIG", "locations", "debugVisuals"], isEnabled: () => locations.debugVisuals === true };
+    const shown = (id) => {
+      const zone = DEPENDENT_ZONES.find(entry => entry.id === id);
+      return { path: ["CONFIG", "locations", zone.show], isEnabled: () => dependent?.isShown(id) ?? false };
+    };
     const show = (id) => {
       const zone = DEPENDENT_ZONES.find(entry => entry.id === id);
-      this.#configSwitch(list, zone.show, FISHING_SHOW_LABELS[id], { swatch: zone.color, defaultOn: zone.defaultOn });
+      this.#configSwitch(list, zone.show, FISHING_SHOW_LABELS[id], { swatch: zone.color, defaultOn: zone.defaultOn,
+        requires: zone.overlay ? [overlays] : [] });
       return zone;
     };
-    const editorSwitch = (label, value, key, change, swatch) => {
+    const editorSwitch = (label, value, key, change, swatch, requires) => {
       const path = ["ZONE_EDITOR", "fishing", key];
-      ui.createSwitcherRow(label, value, list, change, path, path, { swatch });
+      ui.createSwitcherRow(label, value, list, change, path, path, { swatch, requires: [...this.#editingPrerequisites(), ...requires] });
     };
     const choose = (label, options, current, onChoose, key) => {
       ui.createSelectRow(label, options.map(([, name]) => name), options.find(([id]) => id === current)?.[1] ?? "", list,
@@ -474,7 +482,7 @@ export class ZoneEditorSection {
     }
     const handChum = show("handChum");
     if (dependent) editorSwitch("Редагувати ручну прикормку", dependent.editingChumLine, "handChum",
-      value => dependent.setEditingChumLine(value), handChum.color);
+      value => dependent.setEditingChumLine(value), handChum.color, [shown("handChum")]);
     show("net");
     if (dependent) choose("Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id), "net");
     show("lastDash");
@@ -482,11 +490,13 @@ export class ZoneEditorSection {
     show("catch");
     show("sector");
     show("line");
-    if (dependent) editorSwitch("Рухати поплавок", dependent.movingFloat, "float", value => dependent.setMovingFloat(value), "#ffffff");
+    // The float shapes the sector and sits on the line radius: either of them must be shown.
+    if (dependent) editorSwitch("Рухати поплавок", dependent.movingFloat, "float", value => dependent.setMovingFloat(value), "#ffffff",
+      [overlays, { path: ["CONFIG", "locations", "showPoleFightSector"], isEnabled: () => dependent.isShown("sector") || dependent.isShown("line") }]);
     const chum = show("chum");
     if (dependent) {
       const zones = dependent.chumZones, locationId = this.#locationId(), spots = zones.list(locationId);
-      editorSwitch("Редагувати зони прикормки", zones.isEditing, "chum", value => zones.setEditing(value), chum.color);
+      editorSwitch("Редагувати зони прикормки", zones.isEditing, "chum", value => zones.setEditing(value), chum.color, [shown("chum")]);
       if (spots.length) {
         ui.createSelectRow("Номер зони прикормки", spots.map((_, number) => String(number + 1)),
           String(Math.min(zones.selected, spots.length - 1) + 1), list, value => zones.select(Number(value) - 1),
@@ -495,15 +505,15 @@ export class ZoneEditorSection {
       }
       ui.createButtonRow("Додати зону прикормки", list, () => { dependent.addChumZone(); this.#fillFishing(); });
     }
-    ui.createInfoRow("Зони риболовлі", "Зони всередині ігрової області. Поки редактор увімкнено, показані зони малюються з реальних значень від вудки на нижній грані: ручна прикормка — з налаштування локації (її дальню лінію можна тягнути), підсака й останній ривок — для вибраних підсаки й риби, підведення — зі спорядженої вудки й котушки. Сектор виважування й радіус ліски беруть довжину ліски з поля вище; умовний поплавок на краю сектора можна рухати в межах ліски. Зони прикормки тут — тестові: лише для вигляду, як справжні, без зміни предметів; середина пересуває, край змінює розмір. Перший перемикач гасить усі оверлеї гри.", list);
+    ui.createInfoRow("Зони риболовлі", "Зони всередині ігрової області. Показані зони малюються з реальних значень від вудки на нижній грані, з редактором чи без нього (редагувати можна лише з увімкненим редактором): ручна прикормка — з налаштування локації (її дальню лінію можна тягнути), підсака й останній ривок — для вибраних підсаки й риби, підведення — зі спорядженої вудки й котушки. Сектор виважування й радіус ліски беруть довжину ліски з поля вище; умовний поплавок на краю сектора можна рухати в межах ліски. Підсаку, останній ривок, підведення, сектор і радіус ліски гра показує лише з «Показувати оверлеї гри»; перемикачі редагування працюють лише з увімкненим редактором і показаною зоною — що блокує, підсвічується. Зони прикормки тут — тестові: лише для вигляду, як справжні, без зміни предметів; середина пересуває, край змінює розмір. Перший перемикач гасить усі оверлеї гри.", list);
   }
 
   // A switch over CONFIG.locations.<key> through the validated runtime override path.
-  #configSwitch(parent, key, label, { swatch = null, defaultOn = false } = {}) {
+  #configSwitch(parent, key, label, { swatch = null, defaultOn = false, requires = [] } = {}) {
     const path = ["CONFIG", "locations", key];
     const value = this.#config.locations[key];
     this.#ui.createSwitcherRow(label, defaultOn ? value !== false : value === true, parent,
-      next => this.#update(path, next), path, path, { swatch });
+      next => this.#update(path, next), path, path, { swatch, requires });
   }
 
   #locationId() {

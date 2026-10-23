@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.36 - Show Switches Redraw
+
+- Location editor: fishing zones show at once and without the editor (editing still needs it); switches that need a parent (overlay master, editor, the zone shown) are blocked and name it; previews start at the canvas middle while no cast moved the rod.
+
 ## v0.46.35 - Fishing Zones Tab
 
 - Location editor: Зони риболовлі — line length and a conditional float for the fight sector and line radius, hand chum zone, test chum zones that look like real ones.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.27 - Edit the Live Zones
 
 - DevTools Zones groups category editing and visibility controls, draws each moving zone only once at its current position, pauses it for editing, and resumes from the edited position. Config edits preserve current positions; design rules require intuitive, unambiguous interaction.
-
-## v0.46.26 - Explain Blocked DevTools Switches
-
-- Dependent switches reject activation while a declared prerequisite is off and outline the blocker for three seconds or until enabled. Editable zones and depth numbers require the editor; visibility and grids stay independent.

@@ -1071,7 +1071,7 @@ controlUI.dispose();
     getCatchZoneConfig: () => ({ reel: { landingDistanceMeters: 4 } }),
     getPoleFightSectorConfig: () => ({ enabled: true, maxAngleFromCenterDeg: 50, shoreOpeningWidthMeters: 3 }) };
   const cfg = { fightPhysicsConfig: physics, locations: { cellSize: 40, enableCastable: true, baseResolution: { width: 2560, height: 1440 },
-    showAimingZone: true, showNetZone: true, showLastDashZone: true, showCatchZone: true, showFightLineRadius: true,
+    debugVisuals: true, showAimingZone: true, showNetZone: true, showLastDashZone: true, showCatchZone: true, showFightLineRadius: true,
     showPoleFightSector: true, showChumZones: true, map: { lake: { name: "Lake", zones: {} }, pond: { name: "Pond", zones: { castable: [{ x: 0, y: 0, w: 1, h: 1 }] } } } } };
   let equipment = { rod: { effectiveStats: {} }, reel: { effectiveStats: { basePower: 5 } } };
   const nets = { net_small: { id: "net_small", name: "Мала", gameplayStats: { active: true, length: 3 } },
@@ -1086,7 +1086,7 @@ controlUI.dispose();
   const identity = { virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y), getScale: () => 1 };
   const flat = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
   const writes = [];
-  let rodScreenX = 500;
+  let rodScreenX = null;
   const zones = new CastableDependentZones({ state: st, config: cfg, readings, projector: identity, getWaterMetric: () => flat,
     map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 },
     getRodScreenX: () => rodScreenX,
@@ -1128,7 +1128,7 @@ controlUI.dispose();
   assert(Math.abs(drawn.handles[0].y - 800) < 1e-9, "the float cannot pull more line than the line length");
   rodScreenX = 300; drawn = draw();
   assert.equal(byColor(drawn.polygons, "#3388ff").points[0], 500, "previews follow the rod's real position");
-  rodScreenX = 500;
+  rodScreenX = null;
 
   // Hand chum: its far line is dragged like a zone edge, snapped to the cell step, into the location's setting.
   assert.equal(zones.hit(500, 700), null, "nothing is dragged before its editing is on");
@@ -1177,6 +1177,19 @@ controlUI.dispose();
   // Without a rod the landing distance is unknown, so the fish's landing-based trigger is too: only the net band stays.
   assert(drawn.polygons.length === 0 && drawn.handles.length === 0 && drawn.bands.length === 1 && zones.hit(500, 605) === null,
     "a zone the game hides is neither previewed nor dragged");
+  // Showing needs no editor (owner): previews draw with it off, but nothing is hovered or dragged.
+  st.setFlag("enabled", false); drawn = draw();
+  assert(drawn.bands.length > 0 && zones.hit(500, 605) === null, "with the editor off the zones show but cannot be taken");
+  st.setFlag("enabled", true);
+  // The fight-area overlays follow the game's master switch, as FightAreaRenderFrameBuilder does.
+  cfg.locations.debugVisuals = false; drawn = draw();
+  assert(drawn.bands.length === 0 && zones.isShown("net") === false, "without the overlay master the net band is not previewed");
+  cfg.locations.debugVisuals = true;
+  // A show switch alone redraws: it changes what is drawn though no real value changed (owner: the hand chum switch
+  // did nothing until something else redrew).
+  const hidden = zones.revision;
+  cfg.locations.showAimingZone = true; draw();
+  assert(zones.revision > hidden, "switching a zone on redraws the preview at once");
   cfg.locations.showFightLineRadius = true; cfg.locations.showCatchZone = true; cfg.locations.showAimingZone = true;
 
   // The section: its own tab with the line length, float, hand chum, net, fish and test chum zone controls.
@@ -1198,6 +1211,18 @@ controlUI.dispose();
   assert(!fishing("Показати зону прицілювання") && !fishing("Редагувати радіус ліски") && !fishing("Редагувати зону підведення") &&
     !rows.has("Ігрова область (закидання)/Зона ручної прикормки"), "renamed aim, no anchors or line editing, nothing left in the castable list");
   fishing("Довжина ліски, м").args[3](25); assert.equal(zones.lineMeters, 25, "the line length is typed in metres");
+  // Spec 131 prerequisites: a switch that cannot work while its parent is off is blocked and names that parent.
+  const requires = label => [...fishing(label).args[5].requires].map(requirement => [...requirement.path].join("."));
+  assert.deepEqual(requires("Показати зону підсаки"), ["CONFIG.locations.debugVisuals"], "the game overlay master gates the net zone");
+  assert.deepEqual(requires("Зона ручної прикормки"), [], "hand chum's aim and chum zones do not depend on the overlay master");
+  assert.deepEqual(requires("Редагувати ручну прикормку"), ["ZONE_EDITOR.enabled", "CONFIG.locations.showAimingZone"]);
+  assert.deepEqual(requires("Рухати поплавок"), ["ZONE_EDITOR.enabled", "CONFIG.locations.debugVisuals", "CONFIG.locations.showPoleFightSector"]);
+  assert.deepEqual(requires("Редагувати зони прикормки"), ["ZONE_EDITOR.enabled", "CONFIG.locations.showChumZones"]);
+  const floatRequires = fishing("Рухати поплавок").args[5].requires;
+  cfg.locations.showPoleFightSector = false; cfg.locations.showFightLineRadius = false;
+  assert.equal(floatRequires[2].isEnabled(), false, "the float waits for the sector or the line radius");
+  cfg.locations.showFightLineRadius = true;
+  assert.equal(floatRequires[2].isEnabled(), true);
   assert.deepEqual([...fishing("Підсака").args[0]], ["Мала", "Велика"]); assert.equal(fishing("Підсака").args[1], "Велика");
   fishing("Додати зону прикормки").args[1]();
   assert(chumZones.list("lake").length === 1 && rows.has("Зони риболовлі/Номер зони прикормки"), "adding a test zone lists its number");

@@ -63,7 +63,7 @@ export class ZoneEditorGeometryBuilder {
     const state = this.#state;
     // Only the location on screen is drawn (spec 130 D2); another chosen location is edited in the lists only.
     if (!state.editsLoadedLocation) return;
-    if (!state.enabled && !state.cellGrid && !state.grid && !this.#hasShownCategory()) return;
+    if (!state.enabled && !state.cellGrid && !state.grid && !this.#hasShownCategory() && !this.#dependent?.hasShown) return;
     const metric = this.#getMetric();
     const origin = this.#projector.virtualToScreen(0, 0, this.#origin);
     const scale = this.#projector.getScale();
@@ -80,7 +80,8 @@ export class ZoneEditorGeometryBuilder {
       this.#dynamic[offset + 4] = zone.shape;
     }
     this.#dynamic.length = moving.length * 5;
-    const dependentRevision = state.enabled && this.#dependent ? this.#dependent.refresh() : -1;
+    // Shown castable zones (spec 136) draw with the editor off as well; only their editing needs it.
+    const dependentRevision = this.#dependent ? this.#dependent.refresh() : -1;
     const staticDirty = topologyChanged || metric !== this.#metric || state.revision !== this.#revision || this.#mapRevision !== this.#map.getRevision() ||
       scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision;
     if (staticDirty) {
@@ -152,7 +153,7 @@ export class ZoneEditorGeometryBuilder {
         }
       }
     }
-    if (state.enabled) this.#dependent?.buildInto(this.#drawDependent);
+    this.#dependent?.buildInto(this.#drawDependent);
     if (this.#state.grid) this.#grid();
   }
 

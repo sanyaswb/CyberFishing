@@ -155,3 +155,12 @@ depend on the line (rod + reel landing distance).
   them to `world.chumZones` (full bonus), so the game's chum renderer draws them; middle moves, rim resizes, both
   snapped to the cell step; the game's `showChumZones` hides them too.
 - The section "Зони риболовлі" follows the category lists; the castable list no longer holds these rows.
+
+### TK-068 (v0.46.36)
+
+- A show switch did not redraw the preview (refresh compared only real values); the switches now take part. The rod
+  port gives null while no cast moved the rod: that is the canvas middle, not `Number(null)` = 0.
+- Parent dependencies use the spec 131 prerequisites (blocked switch, highlighted parent): the fight-area overlays (net,
+  last dash, landing, sector, line radius) need `debugVisuals` as in the game, and their previews follow it; the
+  editing switches need the editor and their zone shown.
+- Owner: showing needs no editor. Previews and test chum zones draw with the editor off; hover and drags need it.

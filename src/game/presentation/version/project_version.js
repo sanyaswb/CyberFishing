@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.46.35";
+export const CURRENT_PROJECT_VERSION = "0.46.36";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fishing-zones-tab",
+  codename: "show-switch-redraw",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-068: show switches redraw previews.",
     "Spec 136 Revision 2: fishing zones tab.",
     "Spec 136: castable-dependent zones in the editor.",
     "TK-067: lobby background in WebP.",

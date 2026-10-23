@@ -3,14 +3,15 @@ import { PoleFightSectorGeometry } from "../../game/domain/fishing/pole_fight_se
 import { ChumTestZones } from "./chum_test_zones.js";
 
 // Spec 136: the zones inside the castable area, in the order of the "Зони риболовлі" section. show: the game's own
-// CONFIG.locations switch and its default (on unless false, or off unless true).
+// CONFIG.locations switch and its default (on unless false, or off unless true); overlay: the game draws it only while
+// CONFIG.locations.debugVisuals is on (FightAreaRenderFrameBuilder), so its switch and preview depend on that parent.
 export const DEPENDENT_ZONES = Object.freeze([
   Object.freeze({ id: "handChum", show: "showAimingZone", defaultOn: true, color: "#ffb347" }),
-  Object.freeze({ id: "net", show: "showNetZone", defaultOn: true, color: "#33dd88" }),
-  Object.freeze({ id: "lastDash", show: "showLastDashZone", defaultOn: false, color: "#b366ff" }),
-  Object.freeze({ id: "catch", show: "showCatchZone", defaultOn: true, color: "#3388ff" }),
-  Object.freeze({ id: "sector", show: "showPoleFightSector", defaultOn: false, color: "#ff8844" }),
-  Object.freeze({ id: "line", show: "showFightLineRadius", defaultOn: false, color: "#dddddd" }),
+  Object.freeze({ id: "net", show: "showNetZone", defaultOn: true, color: "#33dd88", overlay: true }),
+  Object.freeze({ id: "lastDash", show: "showLastDashZone", defaultOn: false, color: "#b366ff", overlay: true }),
+  Object.freeze({ id: "catch", show: "showCatchZone", defaultOn: true, color: "#3388ff", overlay: true }),
+  Object.freeze({ id: "sector", show: "showPoleFightSector", defaultOn: false, color: "#ff8844", overlay: true }),
+  Object.freeze({ id: "line", show: "showFightLineRadius", defaultOn: false, color: "#dddddd", overlay: true }),
   Object.freeze({ id: "chum", show: "showChumZones", defaultOn: true, color: "#ffdd33" }),
 ]);
 const BY_ID = new Map(DEPENDENT_ZONES.map(zone => [zone.id, zone]));
@@ -63,8 +64,15 @@ export class CastableDependentZones {
     return this.#chum;
   }
 
+  // Whether any of these zones is shown: the geometry builder then draws even with the editor off.
+  get hasShown() {
+    return DEPENDENT_ZONES.some(zone => this.isShown(zone.id));
+  }
+
+  // Shown as the game shows it: its own switch, and the overlay master for the fight-area overlays.
   isShown(id) {
-    const zone = BY_ID.get(id), value = this.#config.locations[zone.show];
+    const zone = BY_ID.get(id), locations = this.#config.locations, value = locations[zone.show];
+    if (zone.overlay && !locations.debugVisuals) return false;
     return zone.defaultOn ? value !== false : value === true;
   }
 
@@ -120,19 +128,21 @@ export class CastableDependentZones {
 
   addChumZone() {
     const frame = this.#frame();
+    // Adding works with the editor off too: the zone shows at once; moving and resizing it need the editor.
     if (!frame) return;
     const x = (frame.left + frame.right) / 2, y = (frame.top + frame.shore) / 2;
     this.#chum.add(this.#state.locationId, x, y);
   }
 
-  // Once per frame while the editor draws: re-reads the real values and the rod's position, bumping the revision only
-  // when something changed. Returns the revision.
+  // Once per frame while the editor draws: re-reads the real values, the rod's position and the game's show switches
+  // (a switch changes what is drawn too), bumping the revision only when something changed. Returns the revision.
   refresh() {
     const locationId = this.#state.locationId;
     if (this.#floatLocation !== locationId) { this.#floatLocation = locationId; this.#float = null; this.#hovered = null; this.#revision++; }
     const readings = this.#readings, values = this.#values;
     const next = [readings.handChumPx(locationId), readings.netPx(this.netId), readings.lastDashMeters(this.fishId),
       readings.landingMeters(), this.#rodX()];
+    for (const zone of DEPENDENT_ZONES) next.push(this.isShown(zone.id));
     let changed = values.length !== next.length;
     for (let index = 0; index < next.length; index++) {
       if (values[index] !== next[index]) { values[index] = next[index]; changed = true; }
@@ -175,7 +185,7 @@ export class CastableDependentZones {
 
   // The handle under a screen point, or null: the float, a test chum zone, or hand chum's far line.
   hit(px, py) {
-    const frame = this.#frame();
+    const frame = this.#editingFrame();
     if (!frame) return null;
     if (this.#movingFloat && (this.isShown("sector") || this.isShown("line"))) {
       const origin = this.#planeOrigin(frame), float = this.#floatPlane(frame, origin);
@@ -198,7 +208,7 @@ export class CastableDependentZones {
 
   // Hover fills the edited hand chum band or the selected test chum zone while the pointer is over it.
   hover(px, py) {
-    const frame = this.#frame();
+    const frame = this.#editingFrame();
     let next = null, chum = false;
     if (frame) {
       const point = this.#projector.screenToVirtual(px, py, this.#point);
@@ -220,7 +230,7 @@ export class CastableDependentZones {
   }
 
   allowed(handle) {
-    if (!this.#frame()) return false;
+    if (!this.#editingFrame()) return false;
     if (handle.kind === "float") return this.#movingFloat;
     if (handle.kind === "chum") return this.#chum.isEditing && this.isShown("chum");
     return this.#editingChumLine && this.isShown("handChum");
@@ -229,7 +239,7 @@ export class CastableDependentZones {
   // Moves a handle to a map point: hand chum's far line and test chum zones snap to the map's cell step like zone
   // edges (cellSize x snapCells); the float follows the pointer within the line length over the water.
   drag(handle, x, y) {
-    const frame = this.#frame();
+    const frame = this.#editingFrame();
     if (!frame) return;
     const step = this.#config.locations.cellSize * Math.max(1, this.#state.snapCells || 1);
     if (handle.kind === "chum") {
@@ -254,18 +264,25 @@ export class CastableDependentZones {
     }
   }
 
+  // Showing needs only the location on screen and the castable area; editing also needs the editor on.
   #frame() {
     const state = this.#state;
-    if (!state.enabled || !state.editsLoadedLocation || this.#config.locations.enableCastable === false) return null;
+    if (!state.editsLoadedLocation || this.#config.locations.enableCastable === false) return null;
     const metric = this.#getMetric();
     const bounds = this.#map.getCastableBoundsVirtual(this.#config.locations.cellSize);
     if (!metric || !bounds) return null;
     return { metric, left: bounds.left, right: bounds.right, top: bounds.top, shore: bounds.bottom };
   }
 
-  // The rod's map X: the game's rod screen X (the canvas middle unless the rod moved), as the landing zone uses it.
+  #editingFrame() {
+    return this.#state.enabled ? this.#frame() : null;
+  }
+
+  // The rod's map X: the game's rod screen X, or the canvas middle while no cast moved it (the port gives null then;
+  // Number(null) would be 0, the screen's left edge).
   #rodX() {
-    const screenX = Number(this.#getRodScreenX?.());
+    const reported = this.#getRodScreenX?.();
+    const screenX = reported === null || reported === undefined ? NaN : Number(reported);
     return this.#projector.screenToVirtual(Number.isFinite(screenX) ? screenX : this.#canvasMetrics.width / 2, 0, this.#screen).x;
   }
 
