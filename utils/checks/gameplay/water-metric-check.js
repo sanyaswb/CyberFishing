@@ -483,6 +483,31 @@ function checkValidation() {
     "omitted fields take the documented defaults; water shorter than its uniform 12.8 m is allowed");
 }
 
+// TK-071: in a fight the fight frame carries only the sector's switch and radius (the released line), no geometry
+// points; the fight sector and the line radius are built from the rod with that radius, so they stay drawn.
+function checkFightSectorDuringFight() {
+  const { FightAreaRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/fight_area_render_frame_builder.js");
+  const { PoleFightSectorGeometry } = runtime.importModule("src/game/domain/fishing/pole_fight_sector_geometry.js");
+  const { ReusableRenderList } = runtime.importModule("src/game/presentation/rendering/reusable_render_list.js");
+  const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
+  const projector = { virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y), getScale: () => 1 };
+  const config = { locations: { debugVisuals: true, showPoleFightSector: true, showFightLineRadius: true },
+    physics: { fight: { poleFightSector: { enabled: true, maxAngleFromCenterDeg: 50, shoreOpeningWidthMeters: 3 } } } };
+  const builder = new FightAreaRenderFrameBuilder({ projector, getWaterMetric: () => metric, config, canvasMetrics: { width: 1000, height: 1000 },
+    getRodScreenX: () => 500, landingAreaBuilder: { buildInto() {} }, sectorGeometry: new PoleFightSectorGeometry() });
+  const target = { visible: false, sectorPoints: new ReusableRenderList("sector"), lineRadiusPoints: new ReusableRenderList("line") };
+  const fightFrame = { poleFightSectorActive: true, poleFightSectorLimitRadiusPx: 300 };
+  builder.buildInto({ target, clipRegions: null, state: "playing", bottom: 1000, fightDebug: fightFrame, equipment: {},
+    floatVirtualPosition: { x: 520, y: 760 } });
+  const points = list => Array.from({ length: list.count }, (_, index) => list.getAt(index));
+  const sector = points(target.sectorPoints), line = points(target.lineRadiusPoints);
+  assert(sector.length > 3 && line.length > 3 && [...sector, ...line].every(point => Number.isFinite(point.x) && Number.isFinite(point.y)),
+    "the fight sector and line radius have finite points while a fish is on");
+  assert(line.every(point => Math.abs(Math.hypot(point.x - 500, point.y - 1000) - 300) < 1e-6),
+    "their radius is the fight frame's released line (300 px), round the rod on the shore");
+}
+
+checkFightSectorDuringFight();
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
 checkBasePixels();

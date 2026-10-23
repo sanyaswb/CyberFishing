@@ -164,14 +164,13 @@ export class FightAreaRenderFrameBuilder {
     }
   }
 
+  // The sector's geometry from the rod on the shore line: before a fight its radius is the rod-to-float distance; in a
+  // fight (TK-071) the fight frame gives only whether the sector is active and its radius (the released line), so the
+  // same geometry is built here with that radius. The fight frame carries no geometry points.
   #resolveGeometry(state, bottom, debug, floatPosition) {
-    if (
-      debug?.poleFightSectorActive === true &&
-      Number(debug.poleFightSectorLimitRadiusPx) > 0
-    ) {
-      return debug;
-    }
-    if (!floatPosition || state === "playing") return null;
+    const fightRadius = debug?.poleFightSectorActive === true ? Number(debug.poleFightSectorLimitRadiusPx) : 0;
+    const fighting = fightRadius > 0;
+    if (!fighting && (!floatPosition || state === "playing")) return null;
     const rodScreenX = Number(this.#getRodScreenX());
     const origin = this.#projector.screenToVirtual(
       Number.isFinite(rodScreenX)
@@ -181,11 +180,11 @@ export class FightAreaRenderFrameBuilder {
       this.#screenA,
     );
     this.#metric.toBasePlane(origin.x, bottom, this.#origin);
-    const floatPlane = this.#metric.toBasePlane(floatPosition.x, floatPosition.y, this.#plane);
-    const limitRadius = Math.hypot(
-      floatPlane.x - this.#origin.x,
-      floatPlane.y - this.#origin.y,
-    );
+    let limitRadius = fightRadius;
+    if (!fighting) {
+      const floatPlane = this.#metric.toBasePlane(floatPosition.x, floatPosition.y, this.#plane);
+      limitRadius = Math.hypot(floatPlane.x - this.#origin.x, floatPlane.y - this.#origin.y);
+    }
     const config =
       this.#config.fightPhysicsConfig?.getPoleFightSectorConfig?.() ||
       this.#config.physics?.fight?.poleFightSector ||

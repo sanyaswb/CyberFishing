@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.40 - Fight Sector Stays Drawn
+
+- The fight sector and the line radius stay drawn while a fish is on: built from the rod with the fight frame's radius.
+
 ## v0.46.39 - One Look for the Fishing Zones
 
 - The game's fight-area zones take the editor's look (colours, thin solid outlines); with the equipment's values the editor's float anchor sits on the real float and moves it while waiting, within the line's reach.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.31 - Selected Zone Input
 
 - Zone hover and editing follow the selected number in each category. Other bodies cannot steal the selection; changing it clears hover and cancels stale dragging, with an additional ID check for moving zones.
-
-## v0.46.30 - Moving-Zone Shapes
-
-- Choose Circle or Square before adding a moving zone, or change the selected body shape. Circular contours, uniform resizing and numeric diameter edits agree across WebGL, Canvas and pointer input; export/import and apply:zones preserve shape while legacy rectangles remain compatible.
