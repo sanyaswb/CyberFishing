@@ -62,6 +62,7 @@ async function main() {
     assert(definition.size.width >= 120 && definition.size.height >= 48, `${definition.id}: default frame size`);
     if (definition.reading) assert(definition.reading.max > definition.reading.min && definition.reading.unit, definition.id);
     assert(definition.states.some(([id]) => id === "normal"), definition.id);
+    assert(definition.states.length >= 3 && definition.states.length <= 5, `${definition.id}: 3-5 main states (spec 140 Q2)`);
     assert(definition.contract && definition.description, definition.id);
     for (const source of [...definition.sources, ...definition.styles]) assert(fs.existsSync(source), `${definition.id}: missing owner ${source}`);
   }

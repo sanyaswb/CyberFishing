@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.8 - Shorter Catalog State Lists
+
+- Each UI catalog card offers 3-5 main states instead of up to 15.
+
 ## v0.47.7 - Compact UI Catalog
 
 - The DEV UI catalog is a compact landing page: group tabs, one-line cards, frames resized by dragging their edge, readings at 0 / 50 / 100 %, no scrollbars and no explanatory text.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.46 - Mesh Editing Controls and Opacity
 
 - Mesh editing disables host-zone fields and structural actions until exit/apply. A separate mask-fill opacity slider reveals the map texture; the editor grid-opacity control now applies to the cell, mesh and perspective grids together on Canvas/WebGL.
-
-## v0.46.45 - Connected Zone Masks
-
-- Ordinary zones support local x2/x4 meshes: LMB paints, RMB erases, and connected masks bake to compact JSON with inversion and exact gameplay boundaries. Mesh editing dims the rest of the viewport immediately. Pixi waves follow the applied water mask, keeping excluded shore still; depth stays unchanged. Masks survive grid changes and file round-trips.

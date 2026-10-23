@@ -1,7 +1,7 @@
 # Feature Specification: UI catalog as a compact landing page
 
 **Created**: 2026-10-23
-**Status**: Implemented in v0.47.7; owner visual acceptance pending
+**Status**: Implemented in v0.47.7 (Q2 in v0.47.8); owner visual acceptance pending
 **Input**: Власник 2026-10-23: каталог UI виглядає жахливо. Оформити як стилізовану landing page, просту в реалізації
 й мінімалістичну: компоненти згруповані по секціях (кнопки окремо, інші групи окремо), сторінка не тягнеться донизу,
 мінімум тексту (повзунок, список, що випадає, зрозумілі без пояснень), значення лише 0 / 50 / 100 %, розмір вікна
@@ -39,7 +39,10 @@ Readings go through 0/1/34/67/100 % and free ranges (-10..110). Small controls s
 - D6 No scrollbars on the catalog page: scrolling still works (wheel, touch, drag), only the bars are hidden
   (`scrollbar-width: none` and `::-webkit-scrollbar`), for the page and inside previews. Catalog-only rule; production
   styles are not changed. **Owner question Q1:** keep hidden bars inside previews, or show the production bars there?
-- **Owner question Q2:** the state lists keep their current entries (up to 15 for inventory/HUD/house). Shorten them?
+- Q2 (owner 2026-10-23: shorten to 3-5 main states per card, v0.47.8): selector normal/open/equipment/classic;
+  controls normal/enabled/disabled/empty; meters normal/zero/missing; inventory normal/empty/locked/assembly/error;
+  keepnet normal/empty/reserved/over/error; house normal/section-open/empty/renovating/night; HUD
+  normal/open/active/aiming/night. The examples still handle the removed states (the house check drives them directly).
 
 ## Requirements
 
