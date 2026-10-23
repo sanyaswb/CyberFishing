@@ -37,6 +37,7 @@ export class CastableDependentZones {
   #netId = null;
   #fishId = null;
   #lineMeters = DEFAULT_LINE_METERS;
+  #fromEquipment = false;
   #float = null;
   #floatLocation = null;
   #values = [];
@@ -92,8 +93,24 @@ export class CastableDependentZones {
     if (this.#movingFloat !== (value === true)) { this.#movingFloat = value === true; this.#revision++; }
   }
 
+  // The editor's typed line length (the field's value).
   get lineMeters() {
     return this.#lineMeters;
+  }
+
+  // TK-069: take the line and the net from the game's equipment instead of the editor's field and select.
+  get fromEquipment() {
+    return this.#fromEquipment;
+  }
+
+  setFromEquipment(value) {
+    if (this.#fromEquipment !== (value === true)) { this.#fromEquipment = value === true; this.#revision++; }
+  }
+
+  // The line every line-dependent preview uses: the equipped line while taking the equipment (the typed length when
+  // nothing is equipped), else the typed length.
+  get effectiveLineMeters() {
+    return (this.#fromEquipment ? this.#readings.equippedLineMeters() : null) ?? this.#lineMeters;
   }
 
   // The released line in metres (R2-1); the float stays within it.
@@ -140,8 +157,9 @@ export class CastableDependentZones {
     const locationId = this.#state.locationId;
     if (this.#floatLocation !== locationId) { this.#floatLocation = locationId; this.#float = null; this.#hovered = null; this.#revision++; }
     const readings = this.#readings, values = this.#values;
-    const next = [readings.handChumPx(locationId), readings.netPx(this.netId), readings.lastDashMeters(this.fishId),
-      readings.landingMeters(), this.#rodX()];
+    const net = this.#fromEquipment ? readings.equippedNetPx() : readings.netPx(this.netId);
+    const next = [readings.handChumPx(locationId), net, readings.lastDashMeters(this.fishId),
+      readings.landingMeters(), this.#rodX(), this.effectiveLineMeters];
     for (const zone of DEPENDENT_ZONES) next.push(this.isShown(zone.id));
     let changed = values.length !== next.length;
     for (let index = 0; index < next.length; index++) {
@@ -249,7 +267,7 @@ export class CastableDependentZones {
     if (handle.kind === "float") {
       const origin = this.#planeOrigin(frame);
       frame.metric.toBasePlane(x, Math.min(y, frame.shore), this.#plane);
-      const limit = this.#lineMeters * this.#readings.pixelsPerMeter;
+      const limit = this.effectiveLineMeters * this.#readings.pixelsPerMeter;
       let dx = this.#plane.x - origin.x, dy = this.#plane.y - origin.y;
       const length = Math.hypot(dx, dy);
       if (length > limit) { dx *= limit / length; dy *= limit / length; }
@@ -296,10 +314,12 @@ export class CastableDependentZones {
 
   // The float on the base plane: straight ahead at the line length unless dragged (kept as an offset from the rod).
   #floatPlane(frame, origin) {
-    const limit = this.#lineMeters * this.#readings.pixelsPerMeter;
+    const limit = this.effectiveLineMeters * this.#readings.pixelsPerMeter;
     const offset = this.#float ?? { dx: 0, dy: -limit };
-    this.#plane.x = origin.x + offset.dx;
-    this.#plane.y = origin.y + offset.dy;
+    // A shorter line (another equipped line) pulls a dragged float in along its direction.
+    const length = Math.hypot(offset.dx, offset.dy), shrink = length > limit ? limit / length : 1;
+    this.#plane.x = origin.x + offset.dx * shrink;
+    this.#plane.y = origin.y + offset.dy * shrink;
     return this.#plane;
   }
 
@@ -318,7 +338,7 @@ export class CastableDependentZones {
 
   // The released line's limit: a half-circle of the line length round the rod on the base plane (the game's line radius).
   #lineCircle(frame, origin) {
-    const radius = this.#lineMeters * this.#readings.pixelsPerMeter, points = [];
+    const radius = this.effectiveLineMeters * this.#readings.pixelsPerMeter, points = [];
     for (let index = 0; index <= ARC_SEGMENTS; index++) {
       const angle = (-90 + 180 * index / ARC_SEGMENTS) * Math.PI / 180;
       frame.metric.fromBasePlane(origin.x + Math.sin(angle) * radius, origin.y - Math.cos(angle) * radius, this.#point);

@@ -1167,6 +1167,18 @@ controlUI.dispose();
   assert.equal(chumZones.list("lake").length, 0);
   assert.equal(writes.length, 1, "the float, the line length and test chum zones never write a game value");
 
+  // TK-069: with "Брати значення зі спорядження" the equipped line and net drive the previews; without them, the editor's.
+  const typedLine = zones.effectiveLineMeters;
+  zones.setFromEquipment(true);
+  assert.equal(zones.effectiveLineMeters, typedLine, "nothing equipped: the typed length still applies");
+  equipment = { ...equipment, line: { effectiveStats: { lengthMeters: 6 } }, net: { effectiveStats: { active: true, length: 6 } } };
+  drawn = draw();
+  assert(Math.abs(byColor(drawn.polygons, "#dddddd").points[65] - 700) < 1e-9, "the equipped 6 m line sets the line radius");
+  assert.equal(byColor(drawn.bands, "#33dd88").top, 1000 - new Net({ active: true, length: 6 }, {}).getReachPixels(),
+    "the equipped net's reach, not the selected one");
+  assert(Math.hypot(drawn.handles[0].x - 500, drawn.handles[0].y - 1000) <= 6 * 50 + 1e-6, "a dragged float is pulled in by the shorter line");
+  zones.setFromEquipment(false);
+  equipment = { rod: equipment.rod, reel: equipment.reel };
   // Choices, live values and the game's show switches.
   zones.setNet("net_big"); drawn = draw();
   assert.equal(drawn.bands[1].top, 1000 - readings.netPx("net_big"), "the chosen net's reach");
@@ -1211,6 +1223,11 @@ controlUI.dispose();
   assert(!fishing("Показати зону прицілювання") && !fishing("Редагувати радіус ліски") && !fishing("Редагувати зону підведення") &&
     !rows.has("Ігрова область (закидання)/Зона ручної прикормки"), "renamed aim, no anchors or line editing, nothing left in the castable list");
   fishing("Довжина ліски, м").args[3](25); assert.equal(zones.lineMeters, 25, "the line length is typed in metres");
+  assert.deepEqual([...fishing("Брати значення зі спорядження").args[5]?.requires ?? []], [], "taking the equipment needs no editor");
+  const takeEquipment = fishing("Брати значення зі спорядження").args[2];
+  rows.clear(); takeEquipment(true);
+  assert(zones.fromEquipment && !fishing("Довжина ліски, м") && !fishing("Підсака"), "with the equipment the field and the net select are gone");
+  rows.clear(); takeEquipment(false);
   // Spec 131 prerequisites: a switch that cannot work while its parent is off is blocked and names that parent.
   const requires = label => [...fishing(label).args[5].requires].map(requirement => [...requirement.path].join("."));
   assert.deepEqual(requires("Показати зону підсаки"), ["CONFIG.locations.debugVisuals"], "the game overlay master gates the net zone");

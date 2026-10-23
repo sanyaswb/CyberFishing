@@ -13,8 +13,8 @@ export class CastableZoneReadings {
   #config; #getEquipment; #nets; #fishes;
   #landing = new LandingPolicyResolver();
 
-  // getEquipment(): the equipped items; nets: the item catalog's nets; fishes: FISH_DB. The line length is the
-  // editor's own value (Revision 2), not the equipped line.
+  // getEquipment(): the equipped items; nets: the item catalog's nets; fishes: FISH_DB. The editor's own line length and
+  // net choice apply unless it takes the values from the equipment (TK-069).
   constructor({ config, getEquipment, nets = {}, fishes = [] }) {
     this.#config = config; this.#getEquipment = getEquipment; this.#nets = nets; this.#fishes = fishes;
   }
@@ -43,6 +43,19 @@ export class CastableZoneReadings {
     if (!item) return null;
     const net = new Net(item.gameplayStats || item, this.#config.fightPhysicsConfig?.getDistanceConfig?.() || {});
     return net.getReachPixels();
+  }
+
+  // TK-069: the equipped net's reach (its effective stats, as the game's Net gets them), or null without a net.
+  equippedNetPx() {
+    const net = this.#getEquipment?.()?.net;
+    if (!net) return null;
+    return new Net(net.effectiveStats || net, this.#config.fightPhysicsConfig?.getDistanceConfig?.() || {}).getReachPixels();
+  }
+
+  // TK-069: the equipped line's length in metres, or null without a line.
+  equippedLineMeters() {
+    const length = Number(this.#getEquipment?.()?.line?.effectiveStats?.lengthMeters);
+    return Number.isFinite(length) && length > 0 ? length : null;
   }
 
   // The landing policy of the equipped rod and reel.

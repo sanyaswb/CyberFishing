@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.46.37 - Fishing Zones from the Equipment
+
+- Location editor: "Брати значення зі спорядження" takes the line length and the net from the game's equipment for the fishing zone previews.
+
 ## v0.46.36 - Show Switches Redraw
 
 - Location editor: fishing zones show at once and without the editor (editing still needs it); switches that need a parent (overlay master, editor, the zone shown) are blocked and name it; previews start at the canvas middle while no cast moved the rod.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.46.28 - Whole-Zone Movement Bounds
 
 - Moving zones bounce with their full body inside their allowed area. In DEV, click a body to edit its movement bounds; body and area move/resize edits keep containment and use the same config/export path.
-
-## v0.46.27 - Edit the Live Zones
-
-- DevTools Zones groups category editing and visibility controls, draws each moving zone only once at its current position, pauses it for editing, and resumes from the edited position. Config edits preserve current positions; design rules require intuitive, unambiguous interaction.

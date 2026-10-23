@@ -476,15 +476,25 @@ export class ZoneEditorSection {
         ["ZONE_EDITOR", "fishing", key]);
     };
     if (dependent) {
-      const linePath = ["ZONE_EDITOR", "fishing", "lineMeters"];
-      ui.createInputRow("Довжина ліски, м", dependent.lineMeters, list, "number",
-        value => ui.syncValue(linePath, dependent.setLineMeters(value)), linePath);
+      // TK-069: the equipped line and net instead of the field and the select (refilled, so only the used rows show).
+      // A display choice: it needs no editor.
+      const equipmentPath = ["ZONE_EDITOR", "fishing", "fromEquipment"];
+      ui.createSwitcherRow("Брати значення зі спорядження", dependent.fromEquipment, list,
+        (value) => { dependent.setFromEquipment(value); this.#fillFishing(); }, equipmentPath, equipmentPath);
+      if (!dependent.fromEquipment) {
+        const linePath = ["ZONE_EDITOR", "fishing", "lineMeters"];
+        ui.createInputRow("Довжина ліски, м", dependent.lineMeters, list, "number",
+          value => ui.syncValue(linePath, dependent.setLineMeters(value)), linePath);
+      } else {
+        const line = dependent.readings.equippedLineMeters();
+        ui.createInfoRow("Ліска", line === null ? `Ліску не споряджено: діє ${dependent.lineMeters} м з поля.` : `Спорядженої ліски: ${line} м.`, list);
+      }
     }
     const handChum = show("handChum");
     if (dependent) editorSwitch("Редагувати ручну прикормку", dependent.editingChumLine, "handChum",
       value => dependent.setEditingChumLine(value), handChum.color, [shown("handChum")]);
     show("net");
-    if (dependent) choose("Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id), "net");
+    if (dependent && !dependent.fromEquipment) choose("Підсака", dependent.readings.nets, dependent.netId, id => dependent.setNet(id), "net");
     show("lastDash");
     if (dependent) choose("Риба", dependent.readings.fishes, dependent.fishId, id => dependent.setFish(id), "fish");
     show("catch");
