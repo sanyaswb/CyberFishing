@@ -2,6 +2,7 @@ import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "../location/zone_category_colors.js";
 import { DEPENDENT_ZONES } from "../location/castable_dependent_zones.js";
 import { snapZonesToGrid } from "../location/zone_grid_snap.js";
+import { zoneCellSizeWarning, zoneCellSizes } from "../location/zone_cell_sizes.js";
 import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
   from "../location/zone_export_format.js";
 
@@ -237,6 +238,11 @@ export class ZoneEditorSection {
     }
   }
 
+  #showGridWarning(sizes) {
+    const locations = this.#config.locations;
+    this.#files?.showWarning?.(zoneCellSizeWarning(locations.baseResolution, sizes, locations.cellSize, CELL_SIZE));
+  }
+
   #categoryPrerequisites(categories) {
     return [...this.#editingPrerequisites(), ...categories.map(category => ({
       path: ["CONFIG", "locations", PHYSICS_KEYS[category]],
@@ -392,14 +398,19 @@ export class ZoneEditorSection {
       ["ZONE_EDITOR", "cellGrid"]);
     ui.createRangeRow("Непрозорість сітки", state.cellGridOpacity * 100, section,
       value => state.setNumber("cellGridOpacity", value / 100), ["ZONE_EDITOR", "cellGridOpacity"]);
+    // TK-083: only sizes that cut the map into whole cells; a size that does not (an older session value) stays listed
+    // until changed, with the warning over the screen.
     const cellPath = ["CONFIG", "locations", "cellSize"];
-    ui.createInputRow("Розмір клітинки, px", locations.cellSize, section, "number", value => {
-      const next = Math.round(Math.max(CELL_SIZE.min, Math.min(CELL_SIZE.max, Number(value) || locations.cellSize)));
-      ui.syncValue(cellPath, next);
-      if (next !== locations.cellSize) { this.#update(cellPath, next); this.#snapToGrid(CATEGORIES); }
+    const sizes = zoneCellSizes(locations.baseResolution, CELL_SIZE);
+    const options = sizes.includes(locations.cellSize) ? sizes : [locations.cellSize, ...sizes];
+    ui.createSelectRow("Розмір клітинки, px", options.map(String), String(locations.cellSize), section, value => {
+      const next = Number(value);
+      if (next !== locations.cellSize && sizes.includes(next)) { this.#update(cellPath, next); this.#snapToGrid(CATEGORIES); }
+      this.#showGridWarning(sizes);
     }, cellPath);
+    this.#showGridWarning(sizes);
     const design = Number(locations.designCellSize) || locations.cellSize;
-    ui.createInfoRow("Клітинки", `Сітка клітинок спільна для всіх локацій. Непрозорість сітки керує клітинною сіткою, сіткою мешу й перспективи; заливка маски має окрему непрозорість. Розмір клітинки — сітка мапи гри (${CELL_SIZE.min}–${CELL_SIZE.max} px): зміна перебудовує клітинки й глибини, зберігаючи положення та розміри наявних зон. Зони задані в клітинках дизайну ${design} px, множник ${(locations.cellSize / design).toFixed(2)}. Лінії й прилипання — через одну клітинку; переміщення рухомого тіла плавне.`, section);
+    ui.createInfoRow("Клітинки", `Сітка клітинок спільна для всіх локацій. Непрозорість сітки керує клітинною сіткою, сіткою мешу й перспективи; заливка маски має окрему непрозорість. Розмір клітинки — сітка мапи гри: лише значення, що ділять локацію ${locations.baseResolution.width}×${locations.baseResolution.height} px на цілі клітинки (${sizes.join(", ") || "немає"} px); зміна перебудовує клітинки й глибини, зберігаючи положення та розміри наявних зон. Зони задані в клітинках дизайну ${design} px, множник ${(locations.cellSize / design).toFixed(2)}. Лінії й прилипання — через одну клітинку; переміщення рухомого тіла плавне.`, section);
     ui.createSwitcherRow("Глибина в клітинках", state.depth, section, value => state.setFlag("depth", value),
       ["ZONE_EDITOR", "depth"]);
     ui.createRangeRow("Непрозорість глибини", state.depthOpacity * 100, section,

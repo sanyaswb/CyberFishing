@@ -449,7 +449,7 @@ assert.match(infoRows.get("Стан").innerText, /біля берега 54\.2 \/
   "the status shows the derived near/far pixels per metre along and across the water");
 // R1 (spec 126): a location without waterProjection is uniform water with an "add" action, not a crash.
 {
-  const uniformConfig = { locations: { cellSize: 40, map: { pond: { zones: { castable: [] } } } } };
+  const uniformConfig = { locations: { cellSize: 40, baseResolution: { width: 1000, height: 1000 }, map: { pond: { zones: { castable: [] } } } } };
   const uniformState = new ZoneEditorState(); uniformState.locationId = "pond";
   let pondMetric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
   infoRows.clear(); actions.clear();
@@ -795,8 +795,15 @@ controlUI.dispose();
   for (const label of ["Показати сітку", "Непрозорість сітки", "Розмір клітинки, px",
     "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`🗺️ РЕДАКТОР/${label}`), `cell grid: ${label}`);
   assert.equal(rows.get("🗺️ РЕДАКТОР/Непрозорість сітки").kind, "range");
-  rows.get("🗺️ РЕДАКТОР/Розмір клітинки, px").args[3](1000);
-  assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 200], "the cell size is clamped and written to the game config");
+  // TK-083: only sizes that cut the map into whole cells are offered and written.
+  const cellRow = rows.get("🗺️ РЕДАКТОР/Розмір клітинки, px");
+  assert.equal(cellRow.kind, "select");
+  assert.deepEqual([...cellRow.args[0]], ["5", "8", "10", "20", "25", "40", "50", "100", "125", "200"], "a 1000 x 1000 map: its divisors in 5..200");
+  const writesBefore = written.length;
+  cellRow.args[3]("36");
+  assert.equal(written.length, writesBefore, "a size that does not divide the map is not written");
+  cellRow.args[3]("25");
+  assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 25], "an offered size is written to the game config");
   locations.cellSize = 40;
   rows.get("🗺️ РЕДАКТОР/Непрозорість глибини").args[2](40);
   assert.equal(state.depthOpacity, 0.4, "the depth slider sets 0..1");
@@ -987,10 +994,31 @@ controlUI.dispose();
   assert.deepEqual(snapWrites, [["CONFIG.locations.map.test.zones.collisions", [{ x: 11.7, y: 21.6, w: 3.6, h: 2.7 }]]],
     "editing the obstacles puts them on the 36 px grid; the castable zone is not touched");
   snapWrites.length = 0;
-  snapRows.get("Розмір клітинки, px").args[3](30);
+  assert.deepEqual([...snapRows.get("Розмір клітинки, px").args[0].slice(0, 2)], ["36", "5"],
+    "a session size that does not divide the map stays listed first until changed");
+  snapRows.get("Розмір клітинки, px").args[3]("32");
   assert.deepEqual(snapWrites.map(([path]) => path), ["CONFIG.locations.cellSize", "CONFIG.locations.map.test.zones.collisions"],
     "a new cell size while editing re-snaps the edited category only");
-  assert.deepEqual(snapWrites[1][1], [{ x: 12, y: 21.75, w: 3, h: 2.25 }], "onto the 30 px grid (0.75 design cells)");
+  assert.deepEqual(snapWrites[1][1], [{ x: 12, y: 21.6, w: 3.2, h: 2.4 }], "onto the 32 px grid (0.8 design cells)");
+  const { zoneCellSizes, zoneCellSizeWarning } = load("src/dev/location/zone_cell_sizes.js");
+  const range = { min: 5, max: 200 }, wide = { width: 2560, height: 1440 };
+  assert.deepEqual([...zoneCellSizes(wide, range)], [5, 8, 10, 16, 20, 32, 40, 80, 160]);
+  assert.equal(zoneCellSizeWarning(wide, zoneCellSizes(wide, range), 40, range), null, "40 px fits 2560 x 1440: no warning");
+  assert.match(zoneCellSizeWarning(wide, zoneCellSizes(wide, range), 36, range), /36 px не ділить.*5, 8, 10, 16, 20, 32, 40, 80, 160 px/);
+  const odd = { width: 2563, height: 1447 };
+  assert.equal(zoneCellSizes(odd, range).length, 0, "2563 x 1447 has no common divisor in range");
+  assert.match(zoneCellSizeWarning(odd, [], 40, range), /2563×1447 px некоректний/);
+  assert.equal(zoneCellSizes({ width: 2560.5, height: 1440 }, range).length, 0, "a fractional map size fits nothing");
+  const shown = [];
+  new ZoneEditorSection({ ui: snapUi, state: snapState, config: snapConfig, files: { showWarning: text => shown.push(text) },
+    createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, getWaterMetric: () => metric,
+    createWaterMetric: options => WaterMetric.illustrated(options), updateConfig() {} }).render({});
+  assert.equal(shown.at(-1), null, "the 32 px grid fits: the warning is removed");
+  snapConfig.locations.cellSize = 36;
+  new ZoneEditorSection({ ui: snapUi, state: snapState, config: snapConfig, files: { showWarning: text => shown.push(text) },
+    createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, getWaterMetric: () => metric,
+    createWaterMetric: options => WaterMetric.illustrated(options), updateConfig() {} }).render({});
+  assert.match(shown.at(-1), /36 px не ділить/, "a size that does not fit shows the warning over the screen");
 }
 
 // Spec 130: the editor works on a chosen location; only the loaded one is drawn; its zone file is exported,

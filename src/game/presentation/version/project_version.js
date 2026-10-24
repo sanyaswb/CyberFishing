@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.11";
+export const CURRENT_PROJECT_VERSION = "0.47.12";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "zones-snap-new-grid",
+  codename: "Whole Cells",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-083: cell sizes that divide the location; on-screen warning otherwise.",
     "TK-082: zones snap to the new grid.",
     "Spec 140 Revision 3: catalog rows per element, 320/820/2560 viewport triggers, tight crops.",
     "Spec 140 Revision 2: one catalog window at a time; inventory blocks cropped; keepnet inside the inventory.",

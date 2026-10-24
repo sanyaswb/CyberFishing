@@ -1,5 +1,5 @@
 // The browser side of the location editor's "Збереження" (spec 130): a file download, a file pick, a confirmation,
-// reopening the DEV page on another location (?location=<id>) and SHA-256 through Web Crypto.
+// reopening the DEV page on another location (?location=<id>), SHA-256 through Web Crypto and the grid warning (TK-083).
 export class ZoneEditorBrowserPort {
   #window;
   #document;
@@ -48,6 +48,19 @@ export class ZoneEditorBrowserPort {
     const url = new this.#window.URL(this.#window.location.href);
     url.searchParams.set("location", id);
     this.#window.location.assign(url.toString());
+  }
+
+  // TK-083: one warning in the middle of the screen; null removes it.
+  showWarning(text) {
+    let element = this.#document.querySelector(".zone-editor-warning");
+    if (!text) { element?.remove(); return; }
+    if (!element) {
+      element = this.#document.createElement("div");
+      element.className = "zone-editor-warning";
+      element.setAttribute("role", "alert");
+      this.#document.body.appendChild(element);
+    }
+    element.textContent = text;
   }
 
   async hashText(text) {

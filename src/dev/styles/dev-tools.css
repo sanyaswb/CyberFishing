@@ -354,3 +354,20 @@
   touch-action: none;
 }
 .game-shell--zone-editor .devtools__edge { display: block; }
+/* TK-083: the zone editor's grid warning (the map is not a whole number of cells), in the middle of the screen. */
+.zone-editor-warning {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: min(90vw, 560px);
+  padding: 16px 20px;
+  border: 2px solid #ff6b4a;
+  border-radius: 8px;
+  background: rgba(30, 8, 4, 0.92);
+  color: #ffe2d9;
+  font: 600 15px/1.4 system-ui, sans-serif;
+  text-align: center;
+  z-index: calc(var(--ui-layer-panel) + 1);
+  pointer-events: none;
+}
