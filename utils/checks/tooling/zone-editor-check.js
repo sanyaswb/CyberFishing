@@ -748,7 +748,7 @@ controlUI.dispose();
     let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
   createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
   renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
-  const enable = rows.get("🗺️ РЕДАКТОР/Увімкнути");
+  const enable = rows.get("🗺️ РЕДАКТОР/Увімкнути редагування");
   enable.args[2](true);
   assert(state.enabled && state.cellGrid, "the top-level enable control still enables editing and the cell grid");
   enable.args[2](false);
@@ -1741,6 +1741,31 @@ controlUI.dispose();
   new WorldDebugRenderer({ surface: canvas, sceneRouter: { drawsOnScene: () => false } })
     .render({ visible: true, annotations: annotationFrame.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
   assert(canvasOps.includes("closePath"), "the Canvas fallback draws the same polygon");
+  // TK-087: "Редагувати все" turns every editing switch on, with the parents it needs.
+  {
+    const allConfig = JSON.parse(JSON.stringify({ locations: cfg.locations }));
+    allConfig.fightPhysicsConfig = physics;
+    Object.assign(allConfig.locations, { designCellSize: 40, enableCollisions: false, debugVisuals: false, showAimingZone: false,
+      showChumZones: false, showPoleFightSector: false, showFightLineRadius: false });
+    const allState = new ZoneEditorState(); allState.loadedLocationId = "lake"; allState.setLocation("lake");
+    const all = new CastableDependentZones({ state: allState, config: allConfig, readings, projector: identity, getWaterMetric: () => flat,
+      map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 }, writeConfig() {} });
+    const allRows = new Map(), allWrites = [], allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
+    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+      createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
+      createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") },
+    state: allState, config: allConfig, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
+    updateConfig: (path, value) => { allWrites.push(path.join(".")); let node = allConfig; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
+    getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options), getDependentZones: () => all }).render({});
+    assert(allRows.has("Увімкнути редагування") && allRows.get("Редагувати все").kind === "button", "the renamed switch and the button under it");
+    allRows.get("Редагувати все").args[1]();
+    assert(allState.enabled && Object.values(allState.editing).every(Boolean), "the editor and every category's editing are on");
+    assert(all.editingChumLine && all.chumZones.isEditing && all.movingFloat, "hand chum, chum zones and the float are being edited");
+    assert.deepEqual(allWrites.sort(), ["CONFIG.locations.debugVisuals", "CONFIG.locations.enableCollisions", "CONFIG.locations.showAimingZone",
+      "CONFIG.locations.showChumZones", "CONFIG.locations.showPoleFightSector"], "only the parents that were off are turned on");
+    allWrites.length = 0; allRows.get("Редагувати все").args[1]();
+    assert.equal(allWrites.length, 0, "a second press changes nothing");
+  }
   console.log("Castable fishing zones passed: real readings (Net, landing policy, fish trigger), hand chum band and far-line drag into chumCastDistance, line length for the line radius and the game's sector from a draggable conditional float, rod's real position, test chum zones as game chum records (move, resize), game show switches, own section, polygon on both renderers.");
 })().catch((error) => {
   console.error(error);

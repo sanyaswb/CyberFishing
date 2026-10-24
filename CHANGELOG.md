@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.16 - Edit everything button
+
+- Zone editor: «Увімкнути» is now «Увімкнути редагування»; the «Редагувати все» button under it turns every editing switch on with the parents it needs (TK-087).
+
 ## v0.47.15 - Owner test zones in the code
 
 - Test location: the owner's new castable mask and masked obstacle are in the code; the checks read the real zones (TK-086).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.7 - Compact UI Catalog
 
 - The DEV UI catalog is a compact landing page: group tabs, one-line cards, frames resized by dragging their edge, readings at 0 / 50 / 100 %, no scrollbars and no explanatory text.
-
-## v0.47.6 - Inventory Icons Without Preload Warnings
-
-- The inventory warms its slot placeholder icons through the image loader instead of link preload in the page head, so the console no longer warns that they were preloaded but not used.

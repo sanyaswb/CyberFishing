@@ -194,11 +194,12 @@ export class ZoneEditorSection {
 
   #renderEditor(section) {
     const ui = this.#ui, state = this.#state;
-    ui.createSwitcherRow("Увімкнути", state.enabled, section, (value) => {
+    ui.createSwitcherRow("Увімкнути редагування", state.enabled, section, (value) => {
       state.setFlag("enabled", value);
       this.#syncGrids();
       this.#refreshZones();
     }, ["ZONE_EDITOR", "enabled"]);
+    ui.createButtonRow("Редагувати все", section, () => this.#editEverything());
     ui.createSwitcherRow("Показати фон (інакше чорний)", state.background, section,
       value => state.setFlag("background", value), ["ZONE_EDITOR", "background"]);
     this.#renderCellGrid(section);
@@ -223,6 +224,31 @@ export class ZoneEditorSection {
       this.#syncEditingControls();
       this.#refreshZones();
     }, path, path, { requires: this.#categoryPrerequisites(CATEGORIES) });
+  }
+
+  // TK-087: every editing switch that is off goes on, with the parents it needs (spec 131 prerequisites): the editor,
+  // each category's physics and editing, hand chum's far line, the chum zones and the conditional float with the game
+  // switches that show them.
+  #editEverything() {
+    const state = this.#state, locations = this.#config.locations, dependent = this.#getDependentZones?.() ?? null;
+    const turnOn = key => { if (locations[key] !== true) this.#update(["CONFIG", "locations", key], true); };
+    if (!state.enabled) { state.setFlag("enabled", true); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], true); this.#syncGrids(); }
+    for (const category of CATEGORIES) {
+      if (locations[PHYSICS_KEYS[category]] === false) this.#update(["CONFIG", "locations", PHYSICS_KEYS[category]], true);
+      state.setEditing(category, true);
+    }
+    this.#snapToGrid(CATEGORIES);
+    if (dependent) {
+      if (!dependent.isShown("handChum")) turnOn("showAimingZone");
+      dependent.setEditingChumLine(true);
+      if (!dependent.isShown("chum")) turnOn("showChumZones");
+      dependent.chumZones.setEditing(true);
+      turnOn("debugVisuals");
+      if (!dependent.isShown("sector") && !dependent.isShown("line")) turnOn("showPoleFightSector");
+      dependent.setMovingFloat(true);
+    }
+    this.#refreshZones();
+    this.#fillFishing();
   }
 
   // TK-082: the edited categories' zones move onto the current grid (whole map cells), so after a grid change they sit in
