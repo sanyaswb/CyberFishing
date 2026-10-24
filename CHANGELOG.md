@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.18 - All chum zones at once
+
+- Zone editor: «Всі» at the end of «Номер зони прикормки» lets any chum zone under the pointer be moved and resized (TK-089).
+
 ## v0.47.17 - Game chum zones in the editor
 
 - Zone editor: the game's own chum zones on the location are listed first in «Редагувати зони прикормки» (marked «гра») and can be moved and resized (TK-088).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.9 - Catalog Blocks One at a Time
 
 - The UI catalog shows one centred 320 x 640 window at a time through a second tab level; inventory blocks (left panel, tabs, filters, list, header) are cropped from the whole inventory, and the keepnet is its section.
-
-## v0.47.8 - Shorter Catalog State Lists
-
-- Each UI catalog card offers 3-5 main states instead of up to 15.

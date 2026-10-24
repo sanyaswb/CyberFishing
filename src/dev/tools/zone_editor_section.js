@@ -15,6 +15,7 @@ const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної п�
   lastDash: "Показати зону останнього ривка", catch: "Показати зону підведення", sector: "Показати сектор виважування",
   line: "Показати радіус ліски", chum: "Показати зони прикормки" });
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
+const ALL_CHUM = "Всі";
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
 // location — then the editor and shared cell-grid controls directly, Зони (one list per category: the switch turns the
@@ -613,10 +614,13 @@ export class ZoneEditorSection {
       if (spots.length) {
         // TK-088: the game's own chum zones come first, marked; they move and resize like test zones, only test zones go.
         const labelOf = number => `${number + 1}${zones.isGameZone(locationId, number) ? " (гра)" : ""}`;
+        // TK-089: the last option takes every zone, the one under the pointer.
         const selected = Math.min(zones.selected, spots.length - 1);
-        ui.createSelectRow("Номер зони прикормки", spots.map((_, number) => labelOf(number)), labelOf(selected), list,
-          value => { zones.select(parseInt(value, 10) - 1); this.#fillFishing(); }, ["ZONE_EDITOR", "fishing", "chumIndex"]);
-        if (zones.isGameZone(locationId, selected)) ui.createInfoRow("Зона прикормки гри", "Справжня прикормка гри: її можна рухати й міняти розмір; нове місце зберігається в стані прикормки гри, розмір — до перезавантаження (потім береться з прикормки). Зникає, коли закінчиться дія прикормки.", list);
+        ui.createSelectRow("Номер зони прикормки", [...spots.map((_, number) => labelOf(number)), ALL_CHUM], zones.selectsAll ? ALL_CHUM : labelOf(selected), list,
+          value => { if (value === ALL_CHUM) zones.selectAll(); else zones.select(parseInt(value, 10) - 1); this.#fillFishing(); },
+          ["ZONE_EDITOR", "fishing", "chumIndex"]);
+        if (zones.selectsAll) ui.createInfoRow("Усі зони прикормки", "Рухати й міняти розмір можна будь-яку зону прикормки під курсором. Щоб видалити тестову зону, оберіть її номер.", list);
+        else if (zones.isGameZone(locationId, selected)) ui.createInfoRow("Зона прикормки гри", "Справжня прикормка гри: її можна рухати й міняти розмір; нове місце зберігається в стані прикормки гри, розмір — до перезавантаження (потім береться з прикормки). Зникає, коли закінчиться дія прикормки.", list);
         else ui.createButtonRow("Видалити вибрану зону прикормки", list, () => { zones.remove(locationId, zones.selected); this.#fillFishing(); });
       }
       ui.createButtonRow("Додати зону прикормки", list, () => { dependent.addChumZone(); this.#fillFishing(); });

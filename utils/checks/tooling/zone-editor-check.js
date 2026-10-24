@@ -1772,10 +1772,26 @@ controlUI.dispose();
       createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
     state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
     getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options), getDependentZones: () => withGame }).render({});
-    assert.deepEqual([...listRows.get("Номер зони прикормки").args[0]], ["1 (гра)", "2"], "the game's zone is marked in the list");
+    assert.deepEqual([...listRows.get("Номер зони прикормки").args[0]], ["1 (гра)", "2", "Всі"], "the game's zone is marked in the list; «Всі» ends it");
     assert(listRows.has("Зона прикормки гри") && !listRows.has("Видалити вибрану зону прикормки"), "a game zone has no delete button");
     listRows.get("Номер зони прикормки").args[3]("2");
     assert(spots.selected === 1 && listRows.has("Видалити вибрану зону прикормки"), "the test zone can be removed");
+    // TK-089: «Всі» takes every zone, the one under the pointer; nothing is removed from there.
+    listRows.clear(); new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: listRecord("info"),
+      createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
+      createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
+    state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
+    getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options), getDependentZones: () => withGame }).render({});
+    const chooseAll = listRows.get("Номер зони прикормки").args[3]; listRows.clear(); chooseAll("Всі");
+    assert(spots.selectsAll && !listRows.has("Видалити вибрану зону прикормки") && listRows.has("Усі зони прикормки"), "«Всі» selected, no delete");
+    assert.equal(listRows.get("Номер зони прикормки").args[1], "Всі", "the list shows «Всі»");
+    const testHit = withGame.hit(505, 500), gameHit = withGame.hit(400, 285);
+    assert.deepEqual([testHit?.index, testHit?.move, gameHit?.index, gameHit?.move], [1, true, 0, true], "either zone is taken under the pointer");
+    withGame.hover(500, 560); withGame.drag(testHit, 520, 520);
+    const moved = spots.list("lake")[1];
+    assert.deepEqual([moved.x, moved.y], [520, 520], "the test zone moves without choosing its number");
+    spots.select(0);
+    assert(!spots.selectsAll && withGame.hit(505, 500) === null, "a number again takes only that zone");
   }
 
   // TK-087: "Редагувати все" turns every editing switch on, with the parents it needs.

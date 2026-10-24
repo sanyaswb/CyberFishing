@@ -20,6 +20,7 @@ export class ChumTestZones {
   #getGameZones;
   #saveGameZones;
   #selected = 0;
+  #all = false;
   #editing = false;
   #hovered = false;
 
@@ -65,7 +66,20 @@ export class ChumTestZones {
 
   select(index) {
     const next = Math.max(0, Math.floor(Number(index) || 0));
-    if (next !== this.#selected) { this.#selected = next; this.#hovered = false; this.revision++; }
+    if (next !== this.#selected || this.#all) { this.#selected = next; this.#all = false; this.#hovered = false; this.revision++; }
+  }
+
+  // TK-089: every zone (the game's and the test ones) is taken, the one under the pointer.
+  get selectsAll() {
+    return this.#all;
+  }
+
+  selectAll() {
+    if (!this.#all) { this.#all = true; this.#hovered = false; this.revision++; }
+  }
+
+  isSelected(index) {
+    return this.#all || index === this.#selected;
   }
 
   add(locationId, x, y) {
@@ -73,6 +87,7 @@ export class ChumTestZones {
     zones.push({ x, y, radius: DEFAULT_RADIUS });
     this.#zones.set(locationId, zones);
     this.#selected = this.#game(locationId).length + zones.length - 1;
+    this.#all = false;
     this.revision++;
   }
 
@@ -97,17 +112,33 @@ export class ChumTestZones {
     }
   }
 
-  // The selected zone's hit at a screen point: { move } in its middle, { edge } on its rim; null otherwise.
+  // The selected zone's hit at a screen point (with "Всі" the first zone hit): { move } in its middle, { edge } on its
+  // rim; null otherwise.
   hit(px, py, locationId, metric, projector, point) {
     if (!this.#editing) return null;
-    const zone = this.list(locationId)[this.#selected];
-    if (!zone) return null;
-    projector.virtualToScreen(zone.x, zone.y, point);
-    const rx = radiusOf(zone) * metric.surfaceScaleAt(zone.y) * projector.getScale(), ry = rx * metric.surfaceSquashY;
-    const distance = Math.hypot((px - point.x) / rx, (py - point.y) / ry);
-    if (distance <= MOVE_SHARE) return { kind: "chum", index: this.#selected, move: true, cursor: "move" };
-    if (Math.abs(distance - 1) * Math.min(rx, ry) <= EDGE_PX) return { kind: "chum", index: this.#selected, move: false, cursor: "xy" };
+    const zones = this.list(locationId);
+    for (let index = 0; index < zones.length; index++) {
+      if (!this.isSelected(index)) continue;
+      const zone = zones[index];
+      projector.virtualToScreen(zone.x, zone.y, point);
+      const rx = radiusOf(zone) * metric.surfaceScaleAt(zone.y) * projector.getScale(), ry = rx * metric.surfaceSquashY;
+      const distance = Math.hypot((px - point.x) / rx, (py - point.y) / ry);
+      if (distance <= MOVE_SHARE) return { kind: "chum", index, move: true, cursor: "move" };
+      if (Math.abs(distance - 1) * Math.min(rx, ry) <= EDGE_PX) return { kind: "chum", index, move: false, cursor: "xy" };
+    }
     return null;
+  }
+
+  // Whether a map point lies inside a selected zone (hover).
+  contains(x, y, locationId, metric) {
+    if (!this.#editing) return false;
+    const zones = this.list(locationId);
+    for (let index = 0; index < zones.length; index++) {
+      if (!this.isSelected(index)) continue;
+      const zone = zones[index], scale = metric.surfaceScaleAt(zone.y);
+      if (Math.hypot((x - zone.x) / scale, (y - zone.y) / (scale * metric.surfaceSquashY)) <= radiusOf(zone)) return true;
+    }
+    return false;
   }
 
   hover(inside) {

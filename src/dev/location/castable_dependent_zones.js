@@ -273,11 +273,7 @@ export class CastableDependentZones {
       const point = this.#projector.screenToVirtual(px, py, this.#point);
       if (this.#editingChumLine && this.isShown("handChum") && point.y <= frame.shore &&
         point.y >= this.#farY(frame, this.#values[0]) - EDGE_PX && point.x >= frame.left && point.x <= frame.right) next = "handChum";
-      const zone = this.#chum.isEditing && this.isShown("chum") ? this.#chum.list(this.#state.locationId)[this.#chum.selected] : null;
-      if (zone) {
-        const scale = frame.metric.surfaceScaleAt(zone.y);
-        chum = Math.hypot((point.x - zone.x) / scale, (point.y - zone.y) / (scale * frame.metric.surfaceSquashY)) <= (zone.radius ?? zone.baseRadius);
-      }
+      chum = this.isShown("chum") && this.#chum.contains(point.x, point.y, this.#state.locationId, frame.metric);
     }
     this.#chum.hover(chum);
     if (next !== this.#hovered) { this.#hovered = next; this.#revision++; }
