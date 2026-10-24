@@ -15,7 +15,8 @@ const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної п�
   lastDash: "Показати зону останнього ривка", catch: "Показати зону підведення", sector: "Показати сектор виважування",
   line: "Показати радіус ліски", chum: "Показати зони прикормки" });
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
-const ALL_CHUM = "Всі";
+// TK-089, TK-090: the last option of a zone number list takes every zone.
+const ALL_ZONES = "Всі";
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
 // location — then the editor and shared cell-grid controls directly, Зони (one list per category: the switch turns the
@@ -326,8 +327,11 @@ export class ZoneEditorSection {
     const index = Math.max(0, Math.min(state.selectedIndex(category), zones.length - 1));
     let external = list;
     if (zones.length) {
-      ui.createSelectRow("Номер зони", zones.map((_, number) => String(number + 1)), String(index + 1), list,
-        value => { this.#select(category, Number(value) - 1); });
+      // TK-090: «Всі» ends the list: every zone of the category under the pointer; the rows below show the one last taken.
+      const all = state.selectsAll(category);
+      ui.createSelectRow("Номер зони", [...zones.map((_, number) => String(number + 1)), ALL_ZONES], all ? ALL_ZONES : String(index + 1), list,
+        value => { if (value === ALL_ZONES) this.#selectAll(category); else this.#select(category, Number(value) - 1); });
+      if (all) ui.createInfoRow("Усі зони", `Рухати й міняти розмір можна будь-яку зону категорії під курсором. Нижче — параметри зони ${index + 1} (останньої взятої). Щоб видалити зону, оберіть її номер.`, list);
       ui.createInfoRow("Координати", "x/y/w/h і bounds — клітинки designCellSize. Без зон закидання закинути вудку не можна.", list);
       const displayed = category === "dynamic" ? this.#readDynamicZones?.(id)?.[index] ?? zones[index] : zones[index];
       this.#fillMask(category, index, zones[index], list, path);
@@ -358,8 +362,8 @@ export class ZoneEditorSection {
         this.#renderTree(fields, external, [...path, index]);
       } else { const fields = { ...displayed }; delete fields.mask; this.#renderTree(fields, external, [...path, index]); }
       if (category === "dynamic") ui.createInfoRow("Область руху", "Форма нової зони обирається перед додаванням. Для кола задається діаметр, для квадрата — сторона. Клацніть рухому зону на мапі, щоб показати ручки її області руху. Тягніть край, кут або середину області; вона завжди містить усе тіло зони.", list);
-      // Any zone can go, the last one too (TK-051); the refilled list then has no delete button.
-      ui.createButtonRow("Видалити вибрану зону", external, () => {
+      // Any zone can go, the last one too (TK-051); the refilled list then has no delete button. Not under «Всі».
+      if (!all) ui.createButtonRow("Видалити вибрану зону", external, () => {
         this.#update(path, zones.filter((_, number) => number !== index));
         this.#select(category, Math.max(0, index - 1));
       });
@@ -385,6 +389,14 @@ export class ZoneEditorSection {
       this.#update(path, [...zones, zone]);
       this.#select(category, zones.length);
     });
+  }
+
+  #selectAll(category) {
+    const previous = this.#state.selection.category;
+    this.#state.selectAll(category);
+    if (previous !== category) this.#fillCategory(previous);
+    this.#fillCategory(category);
+    this.#syncEditingControls();
   }
 
   // Selecting a zone makes it the one the editor fills and drags; the lists it leaves and joins are rebuilt.
@@ -616,8 +628,8 @@ export class ZoneEditorSection {
         const labelOf = number => `${number + 1}${zones.isGameZone(locationId, number) ? " (гра)" : ""}`;
         // TK-089: the last option takes every zone, the one under the pointer.
         const selected = Math.min(zones.selected, spots.length - 1);
-        ui.createSelectRow("Номер зони прикормки", [...spots.map((_, number) => labelOf(number)), ALL_CHUM], zones.selectsAll ? ALL_CHUM : labelOf(selected), list,
-          value => { if (value === ALL_CHUM) zones.selectAll(); else zones.select(parseInt(value, 10) - 1); this.#fillFishing(); },
+        ui.createSelectRow("Номер зони прикормки", [...spots.map((_, number) => labelOf(number)), ALL_ZONES], zones.selectsAll ? ALL_ZONES : labelOf(selected), list,
+          value => { if (value === ALL_ZONES) zones.selectAll(); else zones.select(parseInt(value, 10) - 1); this.#fillFishing(); },
           ["ZONE_EDITOR", "fishing", "chumIndex"]);
         if (zones.selectsAll) ui.createInfoRow("Усі зони прикормки", "Рухати й міняти розмір можна будь-яку зону прикормки під курсором. Щоб видалити тестову зону, оберіть її номер.", list);
         else if (zones.isGameZone(locationId, selected)) ui.createInfoRow("Зона прикормки гри", "Справжня прикормка гри: її можна рухати й міняти розмір; нове місце зберігається в стані прикормки гри, розмір — до перезавантаження (потім береться з прикормки). Зникає, коли закінчиться дія прикормки.", list);

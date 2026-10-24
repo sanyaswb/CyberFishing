@@ -126,7 +126,7 @@ export class ZoneEditorDragController {
     this.#drag = { ...hit, pointerId: event.pointerId, startX: start.x, startY: start.y,
       written: { x: hit.zone.x, y: hit.zone.y, w: hit.zone.w, h: hit.zone.h } };
     // The taken zone becomes the one whose parameters the lists show.
-    if (hit.kind !== "bounds" && hit.category !== "dynamic") this.#state.select(hit.category, hit.index);
+    if (hit.kind !== "bounds" && hit.category !== "dynamic") this.#state.select(hit.category, hit.index, { keepAll: true });
   }
 
   #hover(event) {
@@ -264,7 +264,7 @@ export class ZoneEditorDragController {
     const state = this.#state;
     if (drag.dependent) return state.enabled && this.#dependent.allowed(drag.dependent);
     if (!state.enabled || !state.editsLoadedLocation || state.locationId !== drag.path[3] ||
-      !state.isEditable(drag.category) || state.selectedIndex(drag.category) !== drag.index ||
+      !state.isEditable(drag.category) || !state.isZoneSelected(drag.category, drag.index) ||
       this.#config.locations[ZONE_PHYSICS_KEYS[drag.category]] === false) return false;
     if (drag.kind === "bounds" && (!state.boundsEditing || state.selection.category !== "dynamic")) return false;
     const current = this.#config.locations.map[state.locationId]?.zones?.[drag.category]?.[drag.index];
@@ -301,7 +301,7 @@ export class ZoneEditorDragController {
       if (!zones) continue;
       const live = category === "dynamic" ? this.#map.getDynamicZones() : this.#map.getLocationZones()[category] || NO_ZONES;
       for (let index = 0; index < zones.length; index++) {
-        if (!this.#state.isEditable(category) || this.#state.selectedIndex(category) !== index) continue;
+        if (!this.#state.isEditable(category) || !this.#state.isZoneSelected(category, index)) continue;
         const zone = category === "dynamic" ? live.find(entry => entry.id === zones[index].id) : live[index];
         if (!zone) continue;
         const left = zone.adaptiveX ? 0 : zone.x * cell;

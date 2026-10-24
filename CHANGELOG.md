@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.19 - All zones of a category
+
+- Zone editor: «Всі» at the end of every category's «Номер зони» lets any zone of the category under the pointer be moved and resized (TK-090).
+
 ## v0.47.18 - All chum zones at once
 
 - Zone editor: «Всі» at the end of «Номер зони прикормки» lets any chum zone under the pointer be moved and resized (TK-089).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.10 - Catalog Rows and Viewport Triggers
 
 - The UI catalog shows every element of a tab alone in its own centred row, without frames or backgrounds; 320 / 820 / 2560 triggers in the header lay the elements out at that size, and switching a tab removes the others from the page.
-
-## v0.47.9 - Catalog Blocks One at a Time
-
-- The UI catalog shows one centred 320 x 640 window at a time through a second tab level; inventory blocks (left panel, tabs, filters, list, header) are cropped from the whole inventory, and the keepnet is its section.

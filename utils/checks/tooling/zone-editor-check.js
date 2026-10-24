@@ -948,6 +948,20 @@ controlUI.dispose();
   assert(!state.isHovered("castable", 0) && state.isHovered("castable", 1), "overlap cannot give hover to the smaller unselected body");
   pointer("pointerdown", 240, 240); pointer("pointerup", 240, 240);
   assert.equal(state.selectedIndex("castable"), 1, "overlapping clicks never steal selection");
+  // TK-090: «Всі» lets any zone of the category under the pointer be taken; the taken one is shown, «Всі» stays.
+  const keptZones = lake.zones.castable;
+  lake.zones.castable = [{ x: 1, y: 1, w: 2, h: 2 }, { x: 10, y: 10, w: 2, h: 2 }];
+  state.selectAll("castable");
+  pointer("pointermove", 80, 80);
+  assert(state.selectsAll("castable") && state.isHovered("castable", 0), "with «Всі» zone 1 hovers although zone 2 was the number");
+  pointer("pointerdown", 80, 80); pointer("pointermove", 120, 80); pointer("pointerup", 120, 80);
+  assert(lake.zones.castable[0].x === 2 && state.selectedIndex("castable") === 0 && state.selectsAll("castable"),
+    "zone 1 moves and becomes the shown one, «Всі» stays");
+  pointer("pointerdown", 440, 440); pointer("pointermove", 480, 440); pointer("pointerup", 480, 440);
+  assert(lake.zones.castable[1].x === 11 && state.selectedIndex("castable") === 1, "zone 2 is taken the same way");
+  state.select("castable", 0);
+  assert(!state.selectsAll("castable") && !pointer("pointerdown", 440, 440), "a number again takes only that zone");
+  lake.zones.castable = keptZones; state.select("castable", 1);
   pointer("pointermove", 500, 500); layer.listeners.get("pointerleave")();
   assert.equal(state.hovered.size, 0, "leaving the layer clears the hover");
   state.setEditing("castable", false);
@@ -970,6 +984,30 @@ controlUI.dispose();
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 90 }); assert.equal(opens, 2, "one swipe opens once");
   opener.dispose(); assert(edge.removed && edge.listeners.size === 0, "the strip leaves with DevTools");
   unsubscribe(); drag.dispose();
+}
+
+// TK-090: «Всі» ends every category's «Номер зони» list.
+{
+  const allConfig = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 }, enableCollisions: true,
+    map: { test: { name: "Test", zones: { collisions: [{ x: 1, y: 1, w: 2, h: 2 }, { x: 5, y: 5, w: 2, h: 2 }] } } } } };
+  const allState = new ZoneEditorState(); allState.loadedLocationId = "test"; allState.setLocation("test");
+  const allRows = new Map(), allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
+  const allUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: allRecord("info"), createControlGroup: () => ({ replaceChildren() {} }),
+    createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
+    createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") };
+  const sections = new Map();
+  new ZoneEditorSection({ ui: allUi, state: allState, config: allConfig,
+    createSection: label => { const section = { label, replaceChildren() {} }; sections.set(label, section); return section; },
+    renderTree() {}, getWaterMetric: () => metric, createWaterMetric: options => WaterMetric.illustrated(options), updateConfig() {} }).render({});
+  // The four lists are filled in order; the obstacles' list is the one with zones here.
+  const number = allRows.get("Номер зони");
+  assert.deepEqual([...number.args[0]], ["1", "2", "Всі"], "«Всі» ends the list");
+  allRows.clear(); number.args[3]("Всі");
+  assert(allState.selectsAll("collisions") && allRows.get("Номер зони").args[1] === "Всі" && allRows.has("Усі зони") &&
+    !allRows.has("Видалити вибрану зону"), "«Всі» is chosen, explained, and has no delete button");
+  allRows.clear(); number.args[3]("2");
+  assert(!allState.selectsAll("collisions") && allState.selectedIndex("collisions") === 1 && allRows.has("Видалити вибрану зону"),
+    "a number again: that zone, with its delete button");
 }
 
 // TK-082: after a grid change (40 -> 36 px: 0.9 design cells) the edited categories' zones move into whole new cells.

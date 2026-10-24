@@ -1,7 +1,8 @@
 // Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
 // locationId: the location the editor works on (spec 130 D1); loadedLocationId: the one on screen, the only one the
 // editor draws and drags (D2). enabled: the editor input mode, with the cell grid turned on; selection: the zone whose
-// parameter tree last focused; selectedIndex(category) owns each dropdown's number and hit-test eligibility;
+// parameter tree last focused; selectedIndex(category) owns each dropdown's number and hit-test eligibility; with
+// «Всі» (TK-090, selectsAll) every zone of the category is eligible and the number is the zone last taken;
 // editing: the categories the drag tool may take (spec 132);
 // hovered: the editable zones under the pointer, filled while it stays; grid: the perspective (metre) grid, off until
 // switched on (TK-050); cellGrid*: the map's cells; depth*: the depth numbers in the cells.
@@ -22,6 +23,7 @@ export class ZoneEditorState {
   depthOpacity = 0.7;
   categories = { castable: false, collisions: false, snags: false, dynamic: false };
   #selectedIndices = { castable: 0, collisions: 0, snags: 0, dynamic: 0 };
+  #all = { castable: false, collisions: false, snags: false, dynamic: false };
   selection;
   editing = { castable: false, collisions: false, snags: false, dynamic: false };
   hovered = new Set();
@@ -37,6 +39,26 @@ export class ZoneEditorState {
 
   selectedIndex(category) {
     return this.#selectedIndices[category];
+  }
+
+  selectsAll(category) {
+    return this.#all[category] === true;
+  }
+
+  // Whether the drag tool may take this zone: the chosen number, or any with «Всі».
+  isZoneSelected(category, index) {
+    return this.#all[category] === true || this.#selectedIndices[category] === index;
+  }
+
+  selectAll(category) {
+    if (!Object.hasOwn(this.categories, category)) throw new TypeError("Unknown zone category");
+    if (this.#all[category] && this.selection.category === category) return;
+    this.#all[category] = true;
+    this.selection.category = category;
+    this.hovered.clear();
+    this.boundsEditing = false;
+    this.hoveredBound = -1;
+    this.revision++;
   }
 
   setFlag(key, value) {
@@ -58,10 +80,13 @@ export class ZoneEditorState {
     if (this.categories[key] !== next) { this.categories[key] = next; this.revision++; }
   }
 
-  select(category, index) {
+  // keepAll: a zone taken on the map under «Всі» becomes the shown one without leaving «Всі».
+  select(category, index, { keepAll = false } = {}) {
     if (!Object.hasOwn(this.categories, category)) throw new TypeError("Unknown zone category");
     const next = Math.max(0, Math.floor(Number(index) || 0));
-    if (this.selection.category === category && this.selection.index === next) return;
+    const leavesAll = this.#all[category] && !keepAll;
+    if (this.selection.category === category && this.selection.index === next && !leavesAll) return;
+    if (leavesAll) this.#all[category] = false;
     this.selection.category = category;
     this.#selectedIndices[category] = next;
     this.hovered.clear();
@@ -89,7 +114,7 @@ export class ZoneEditorState {
     this.boundsEditing = false;
     this.hoveredBound = -1;
     this.selection.category = "castable";
-    for (const category of Object.keys(this.#selectedIndices)) this.#selectedIndices[category] = 0;
+    for (const category of Object.keys(this.#selectedIndices)) { this.#selectedIndices[category] = 0; this.#all[category] = false; }
     this.revision++;
   }
 
@@ -116,7 +141,7 @@ export class ZoneEditorState {
   }
 
   selectBounds(index) {
-    this.select("dynamic", index);
+    this.select("dynamic", index, { keepAll: true });
     if (!this.boundsEditing) { this.boundsEditing = true; this.revision++; }
   }
 
