@@ -1741,6 +1741,43 @@ controlUI.dispose();
   new WorldDebugRenderer({ surface: canvas, sceneRouter: { drawsOnScene: () => false } })
     .render({ visible: true, annotations: annotationFrame.annotations, debugImage: { visible: false }, dynamicZones: { count: 0 } });
   assert(canvasOps.includes("closePath"), "the Canvas fallback draws the same polygon");
+  // TK-088: the game's own chum zones on the location on screen are listed first and edited like test zones.
+  {
+    const gameZone = { x: 300, y: 300, baseRadius: 100, isDelivered: true, isExpired: false };
+    const hidden = [{ x: 0, y: 0, baseRadius: 50, isDelivered: false, isExpired: false }, { x: 0, y: 0, baseRadius: 50, isDelivered: true, isExpired: true }];
+    let saves = 0;
+    const withGame = new CastableDependentZones({ state: st, config: cfg, readings, projector: identity, getWaterMetric: () => flat,
+      map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 },
+      writeConfig() {}, getChumZones: () => [gameZone, ...hidden], saveChumZones: () => { saves++; } });
+    const spots = withGame.chumZones;
+    withGame.addChumZone();
+    assert.equal(spots.list("lake").length, 2, "the delivered game zone and the test zone; undelivered and expired ones are not listed");
+    assert(spots.isGameZone("lake", 0) && !spots.isGameZone("lake", 1), "the game's zone comes first");
+    assert.equal(spots.selected, 1, "a new test zone is selected after the game's zones");
+    assert.equal(spots.list("pond").length, 0, "another location has none of the game's zones on screen");
+    spots.setEditing(true); spots.select(0);
+    withGame.drag(withGame.hit(305, 300), 410, 290);
+    assert.deepEqual([gameZone.x, gameZone.y], [400, 280], "the game's zone moves, snapped to the cell step");
+    withGame.drag(withGame.hit(500, 280), 560, 280);
+    assert.equal(gameZone.baseRadius, 160, "its rim resizes the game's zone");
+    assert.equal(saves, 2, "every change of the game's zone is saved to the game's chum state");
+    const game = { opacity: 0, records: [], acquire() { const record = {}; this.records.push(record); return record; } };
+    withGame.buildChumZonesInto({ chumZones: game });
+    assert.equal(game.records.length, 1, "only the test zone is drawn by the editor; the game draws its own");
+    spots.remove("lake", 0);
+    assert.equal(spots.list("lake").length, 2, "a game zone cannot be removed in the editor");
+    const listRows = new Map(), listRecord = kind => (label, ...args) => listRows.set(label, { kind, args });
+    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: listRecord("info"),
+      createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
+      createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
+    state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
+    getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options), getDependentZones: () => withGame }).render({});
+    assert.deepEqual([...listRows.get("Номер зони прикормки").args[0]], ["1 (гра)", "2"], "the game's zone is marked in the list");
+    assert(listRows.has("Зона прикормки гри") && !listRows.has("Видалити вибрану зону прикормки"), "a game zone has no delete button");
+    listRows.get("Номер зони прикормки").args[3]("2");
+    assert(spots.selected === 1 && listRows.has("Видалити вибрану зону прикормки"), "the test zone can be removed");
+  }
+
   // TK-087: "Редагувати все" turns every editing switch on, with the parents it needs.
   {
     const allConfig = JSON.parse(JSON.stringify({ locations: cfg.locations }));

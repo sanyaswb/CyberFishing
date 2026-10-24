@@ -283,6 +283,9 @@ export class GameRenderComposition {
           checkWater: appPorts.checkWater,
           equipmentRules: runtime.equipmentRules,
           getHookDepthMeters: () => appPorts.currentHookDepthRef?.get?.() ?? null,
+          // TK-088: the game's chum zones the editor lists and edits.
+          getChumZones: () => runtime.chum.getZones(),
+          saveChumZones: () => runtime.chum.saveToStorage(),
         }], ["buildInto"],
       ),
     });

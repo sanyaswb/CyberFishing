@@ -611,10 +611,13 @@ export class ZoneEditorSection {
       const zones = dependent.chumZones, locationId = this.#locationId(), spots = zones.list(locationId);
       editorSwitch("Редагувати зони прикормки", zones.isEditing, "chum", value => zones.setEditing(value), chum.color, [shown("chum")]);
       if (spots.length) {
-        ui.createSelectRow("Номер зони прикормки", spots.map((_, number) => String(number + 1)),
-          String(Math.min(zones.selected, spots.length - 1) + 1), list, value => zones.select(Number(value) - 1),
-          ["ZONE_EDITOR", "fishing", "chumIndex"]);
-        ui.createButtonRow("Видалити вибрану зону прикормки", list, () => { zones.remove(locationId, zones.selected); this.#fillFishing(); });
+        // TK-088: the game's own chum zones come first, marked; they move and resize like test zones, only test zones go.
+        const labelOf = number => `${number + 1}${zones.isGameZone(locationId, number) ? " (гра)" : ""}`;
+        const selected = Math.min(zones.selected, spots.length - 1);
+        ui.createSelectRow("Номер зони прикормки", spots.map((_, number) => labelOf(number)), labelOf(selected), list,
+          value => { zones.select(parseInt(value, 10) - 1); this.#fillFishing(); }, ["ZONE_EDITOR", "fishing", "chumIndex"]);
+        if (zones.isGameZone(locationId, selected)) ui.createInfoRow("Зона прикормки гри", "Справжня прикормка гри: її можна рухати й міняти розмір; нове місце зберігається в стані прикормки гри, розмір — до перезавантаження (потім береться з прикормки). Зникає, коли закінчиться дія прикормки.", list);
+        else ui.createButtonRow("Видалити вибрану зону прикормки", list, () => { zones.remove(locationId, zones.selected); this.#fillFishing(); });
       }
       ui.createButtonRow("Додати зону прикормки", list, () => { dependent.addChumZone(); this.#fillFishing(); });
     }

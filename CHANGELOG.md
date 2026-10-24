@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.17 - Game chum zones in the editor
+
+- Zone editor: the game's own chum zones on the location are listed first in «Редагувати зони прикормки» (marked «гра») and can be moved and resized (TK-088).
+
 ## v0.47.16 - Edit everything button
 
 - Zone editor: «Увімкнути» is now «Увімкнути редагування»; the «Редагувати все» button under it turns every editing switch on with the parents it needs (TK-087).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.8 - Shorter Catalog State Lists
 
 - Each UI catalog card offers 3-5 main states instead of up to 15.
-
-## v0.47.7 - Compact UI Catalog
-
-- The DEV UI catalog is a compact landing page: group tabs, one-line cards, frames resized by dragging their edge, readings at 0 / 50 / 100 %, no scrollbars and no explanatory text.

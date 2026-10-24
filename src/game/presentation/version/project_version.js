@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.16";
+export const CURRENT_PROJECT_VERSION = "0.47.17";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "Edit Everything",
+  codename: "Game Chum in the Editor",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-088: the game's chum zones are listed and edited in the zone editor.",
     "TK-087: Редагувати все turns every editing switch on.",
     "TK-086: owner's test zones committed; checks read the real zones.",
     "TK-085: a finer grid restores the zone shape after a coarse one.",

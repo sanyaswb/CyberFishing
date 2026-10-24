@@ -37,7 +37,7 @@ export class CastableDependentZones {
   #getFloat; #getGameStateName; #checkWater; #equipmentRules; #getHookDepthMeters; #getEquipment;
   #realFloat = { x: 0, y: 0, movable: false };
   #sector = new PoleFightSectorGeometry();
-  #chum = new ChumTestZones();
+  #chum;
   #editingChumLine = false;
   #movingFloat = false;
   #hovered = null;
@@ -56,9 +56,12 @@ export class CastableDependentZones {
   // writeConfig(path, value): the validated runtime config write (DevTools); getRodScreenX(): the game's rod screen X.
   // R3: getFloat(), getGameStateName(), checkWater(x, y), equipmentRules, getHookDepthMeters(), getEquipment(): the
   // game's cast float and the limits it obeys (optional: without them the real float is never used).
+  // TK-088: getChumZones(), saveChumZones(): the game's chum zones on the location on screen and their save.
   constructor({ state, config, readings, map, projector, getWaterMetric, writeConfig, getRodScreenX = null, canvasMetrics,
     getFloat = null, getGameStateName = null, checkWater = null, equipmentRules = null, getHookDepthMeters = () => null,
-    getEquipment = null }) {
+    getEquipment = null, getChumZones = null, saveChumZones = null }) {
+    this.#chum = new ChumTestZones({ saveGameZones: saveChumZones,
+      getGameZones: locationId => (getChumZones && locationId === state.loadedLocationId ? getChumZones() : []) });
     this.#state = state; this.#config = config; this.#readings = readings; this.#map = map;
     this.#projector = projector; this.#getMetric = getWaterMetric; this.#writeConfig = writeConfig;
     this.#getRodScreenX = getRodScreenX; this.#canvasMetrics = canvasMetrics;
@@ -273,7 +276,7 @@ export class CastableDependentZones {
       const zone = this.#chum.isEditing && this.isShown("chum") ? this.#chum.list(this.#state.locationId)[this.#chum.selected] : null;
       if (zone) {
         const scale = frame.metric.surfaceScaleAt(zone.y);
-        chum = Math.hypot((point.x - zone.x) / scale, (point.y - zone.y) / (scale * frame.metric.surfaceSquashY)) <= zone.radius;
+        chum = Math.hypot((point.x - zone.x) / scale, (point.y - zone.y) / (scale * frame.metric.surfaceSquashY)) <= (zone.radius ?? zone.baseRadius);
       }
     }
     this.#chum.hover(chum);
