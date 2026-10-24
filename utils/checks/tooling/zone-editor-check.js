@@ -1006,7 +1006,17 @@ controlUI.dispose();
   snapRows.get("Розмір клітинки, px").args[3]("32");
   assert.deepEqual(snapWrites.map(([path]) => path), ["CONFIG.locations.cellSize", "CONFIG.locations.map.test.zones.collisions"],
     "a new cell size while editing re-snaps the edited category only");
-  assert.deepEqual(snapWrites[1][1], [{ x: 12, y: 21.6, w: 3.2, h: 2.4 }], "onto the 32 px grid (0.8 design cells)");
+  assert.deepEqual(snapWrites[1][1], [{ x: 12, y: 22.4, w: 3.2, h: 1.6 }],
+    "onto the 32 px grid (0.8 design cells), snapped from the obstacle as drawn, not from its 36 px copy");
+  // TK-085: a coarse grid grows the obstacle to whole 160 px cells; the 40 px grid gives the drawn shape back.
+  const sizeRow = snapRows.get("Розмір клітинки, px");
+  sizeRow.args[3]("160");
+  assert.deepEqual(snapWrites.at(-1)[1], [{ x: 12, y: 24, w: 4, h: 4 }], "160 px (4 design cells): the obstacle fills one cell");
+  sizeRow.args[3]("40");
+  assert.deepEqual(snapWrites.at(-1)[1], [{ x: 12, y: 22, w: 3, h: 2 }], "back on 40 px the obstacle has its drawn shape again");
+  snapConfig.locations.map.test.zones.collisions = [{ x: 4, y: 4, w: 2, h: 2 }];
+  sizeRow.args[3]("160");
+  assert.deepEqual(snapWrites.at(-1)[1], [{ x: 4, y: 4, w: 4, h: 4 }], "an edit after snapping becomes the new source");
   const { zoneCellSizes, zoneCellSizeWarning } = load("src/dev/location/zone_cell_sizes.js");
   const range = { min: 5, max: 200 }, wide = { width: 2560, height: 1440 };
   assert.deepEqual([...zoneCellSizes(wide, range)], [5, 8, 10, 16, 20, 32, 40, 80, 160]);

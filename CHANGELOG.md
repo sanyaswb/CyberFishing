@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.14 - Finer grid restores the zone shape
+
+- Zone editor: snapping starts from the zones as they were before it, so after a coarse grid (160 px) a finer one gives the drawn shape back (TK-085).
+
 ## v0.47.13 - Delete a zone mask
 
 - Zone editor: an applied zone mask can be deleted (Видалити маску), not only switched off; the zone keeps its shape (TK-084).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.5 - Agent Workflow Rules
 
 - AGENTS.md records the version, commit and push rules (patch per task, minor only with the owner's approval, push on command with Pages and task archiving) and working rules learned in practice.
-
-## v0.47.4 - Test Location Zones Applied
-
-- The test location's castable zone is the owner's edited one (11.7..29.7 cells with a painted mask); water-metric follows the authored water edges.

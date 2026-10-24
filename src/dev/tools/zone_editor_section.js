@@ -28,6 +28,7 @@ export class ZoneEditorSection {
   #perspective = null;
   #fishing = null;
   #newDynamicShape = "square";
+  #snapSources = new Map();
   #maskEditor;
 
   #saving = null;
@@ -226,6 +227,9 @@ export class ZoneEditorSection {
 
   // TK-082: the edited categories' zones move onto the current grid (whole map cells), so after a grid change they sit in
   // the new squares and snap to them; zones of categories not being edited keep their exact geometry (spec 137).
+  // TK-085: snapping starts from the zones as they were before it, while nothing else has changed them since, so a
+  // coarse grid (160 px) that grew a zone to one cell gives the shape back on a finer grid; any other edit (drag,
+  // import, reset) makes the current zones the new source.
   #snapToGrid(categories) {
     const locations = this.#config.locations, id = this.#locationId(), zones = locations.map[id]?.zones;
     if (!zones) return;
@@ -233,8 +237,12 @@ export class ZoneEditorSection {
     const map = { w: locations.baseResolution.width / design, h: locations.baseResolution.height / design };
     for (const category of categories) {
       if (!this.#state.isEditable(category) || locations[PHYSICS_KEYS[category]] === false) continue;
-      const snapped = snapZonesToGrid(zones[category], category, step, map);
-      if (snapped) this.#update(["CONFIG", "locations", "map", id, "zones", category], snapped);
+      const key = `${id}/${category}`, current = zones[category], record = this.#snapSources.get(key);
+      const source = record && record.written === JSON.stringify(current) ? record.source : current;
+      const next = snapZonesToGrid(source, category, step, map) ?? source;
+      const written = JSON.stringify(next);
+      this.#snapSources.set(key, { source, written });
+      if (written !== JSON.stringify(current)) this.#update(["CONFIG", "locations", "map", id, "zones", category], next);
     }
   }
 

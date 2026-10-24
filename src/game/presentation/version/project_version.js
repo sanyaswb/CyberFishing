@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.13";
+export const CURRENT_PROJECT_VERSION = "0.47.14";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "Mask Delete",
+  codename: "Shape Comes Back",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "TK-085: a finer grid restores the zone shape after a coarse one.",
     "TK-084: delete an applied zone mask.",
     "TK-083: cell sizes that divide the location; on-screen warning otherwise.",
     "TK-082: zones snap to the new grid.",
