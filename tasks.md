@@ -23,6 +23,8 @@
 - Знайдено: прицілювання ставить `body.game-shell--pointer-hold` (`ScoutingState.#setUiDimmed` → `GameControls.setScoutingPointerDimmed`); зараз лише `.game-control` притухають до 0.18, а компактний тулбар (≤820 px) зникає. Годинник, бейдж версії, тулбар ширше 820 px, кнопка DevTools лишаються.
 - Зміна: під час `game-shell--pointer-hold` зникає (opacity, потім visibility) кожен дочірній елемент `ui-surface__content`, крім `inventory-surface` (бічний інвентар split-layout лишається); у DEV — і кнопка DevTools. Окремі правила притухання `.game-control` і тулбара ≤820 px прибираються як дублі. Після відпускання все повертається.
 - Перевірка: Full (CSS ownership); вигляд — власника.
+- [x] Реалізовано v0.47.23: правило в `game-shell.css` (діти `ui-surface__content`, крім `inventory-surface`, і всі їхні нащадки), кнопка DevTools у `dev-tools.css`; прибрано притухання `.game-control`, окреме правило тулбара ≤820 px і невикористаний клас `game-shell--pointer-release`; `docs/styles.md` оновлено.
+- [ ] Власник: телефон portrait/landscape і ПК, `index.html`/`dev.html` — потягнути вниз для закиду: годинник, кнопка на весь екран, тулбар (вузький і широкий), бейдж версії, кнопка DevTools плавно зникають; після відпускання чи скасування з'являються. Бічний інвентар (split-layout у DEV) лишається. Reduced motion — миттєво. Візуально агентом не перевіряється.
 
 ## Незавершені перевірки власника
 

@@ -354,7 +354,8 @@ toggle, existing override paths). The root keeps its closed footprint through ne
 centred and upwards over its neighbours (`z-index` on the host); its drawing unit is capped by the toolbar
 width (`100cqw`) and the fan's extent. While the fan is open the other actions fade out completely and take
 no pointer input, and a press beside the fan only closes it. While the player aims a cast (body
-`game-shell--pointer-hold`) the whole compact toolbar fades out. Fades animate opacity and then drop
+`game-shell--pointer-hold`) the whole game UI fades out, the toolbar with it (TK-092, `game-shell.css`: every
+child of `ui-surface__content` except the split inventory, plus the DevTools button). Fades animate opacity and then drop
 visibility over `--game-toolbar-fade` (0s with reduced motion). The open half-disk central button keeps
 vertical radii equal to its height (no bottom rounding), so it stays concentric with the petals' inner arc and
 every gap is equal. Wider toolbars keep the corner fan, its reserve and the existing row unchanged.

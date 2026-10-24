@@ -117,19 +117,9 @@ export class GameControls {
     this.#continueBtn.classList.toggle("game-control--continue-visible", isVisible);
   }
 
-  // Scouting pointer feedback: dims the page while the pointer is held, flashes the release class for one frame.
+  // Scouting pointer feedback: while a cast is aimed the page hides the game's UI (game-shell.css, TK-092).
   setScoutingPointerDimmed(isDimmed) {
     this.#document.body.classList.toggle("game-shell--pointer-hold", isDimmed);
-
-    if (isDimmed) {
-      this.#document.body.classList.remove("game-shell--pointer-release");
-      return;
-    }
-
-    this.#document.body.classList.add("game-shell--pointer-release");
-    this.#scheduleFrame(() => {
-      this.#document.body.classList.remove("game-shell--pointer-release");
-    });
   }
 
   setOutcomeOverlayActive(isActive) {

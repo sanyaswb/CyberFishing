@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.23 - Game UI hides while aiming
+
+- Casting aim: while a cast is aimed every game UI element (clock, fullscreen button, toolbar, version badge, DevTools button) fades out and returns on release; the split inventory stays (TK-092).
+
 ## v0.47.22 - No aim jump at the map edge
 
 - Casting aim: when the camera stops at the map edge, the aim line stays under the finger and the lead grows smoothly from there, instead of jumping (TK-091).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.14 - Finer grid restores the zone shape
 
 - Zone editor: snapping starts from the zones as they were before it, so after a coarse grid (160 px) a finer one gives the drawn shape back (TK-085).
-
-## v0.47.13 - Delete a zone mask
-
-- Zone editor: an applied zone mask can be deleted (Видалити маску), not only switched off; the zone keeps its shape (TK-084).
