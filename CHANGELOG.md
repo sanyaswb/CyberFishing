@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.24 - Aim lead in two edge zones
+
+- Casting aim: a 200 px zone along each screen edge leads the line towards it, smoothly from 0 at the zone border to 80 px at its middle and up to the edge, at any width and always; replaces the camera-edge lead (TK-093).
+
 ## v0.47.23 - Game UI hides while aiming
 
 - Casting aim: while a cast is aimed every game UI element (clock, fullscreen button, toolbar, version badge, DevTools button) fades out and returns on release; the split inventory stays (TK-092).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.15 - Owner test zones in the code
 
 - Test location: the owner's new castable mask and masked obstacle are in the code; the checks read the real zones (TK-086).
-
-## v0.47.14 - Finer grid restores the zone shape
-
-- Zone editor: snapping starts from the zones as they were before it, so after a coarse grid (160 px) a finer one gives the drawn shape back (TK-085).

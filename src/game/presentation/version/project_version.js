@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.23";
+export const CURRENT_PROJECT_VERSION = "0.47.24";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "Clear Aim",
+  codename: "Edge Zones",
   updatedAt: "2026-10-24",
   notes: Object.freeze([
+    "TK-093: aim lead in two 200 px edge zones.",
     "TK-092: the game UI hides while a cast is aimed.",
     "TK-091: aim lead starts where the camera stopped; no jump at the map edge.",
     "Spec 141 R2: cut/merge shapes, drawing lock, edit-all switch.",

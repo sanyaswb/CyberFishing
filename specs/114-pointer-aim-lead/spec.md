@@ -90,3 +90,24 @@ Preview, edge pan, release and target keep one coordinate; keyboard aiming is un
 Reproduction before the change: `task-interactions`, real `ViewportProjector`, the aim's pan reaching the right
 limit at pointer X=350 gave 400 instead of 350. Coverage adds growth from the stop point on both sides, reaching the
 screen edge, no lead inside the stop point and the width reset. Tools replaced or obsolete: none.
+
+## Owner amendment: two edge zones (TK-093, v0.47.24)
+
+Supersedes G-090 and TK-091 (the owner did not like the camera-gated lead). Owner 2026-10-24: a 200 px zone along the
+left and the right edge of the game viewport, at every width and whatever the camera does. When the line crosses the
+zone's inner border the lead grows smoothly from 0 (200 px from the edge) to 80 px (the zone's middle, 100 px from
+the edge) and stays 80 px up to the edge.
+
+`d` = the pointer's distance to the nearer viewport edge, `t = edgeZonePx - d`, `q = min(1, t / rampDistancePx)`,
+`aimX = clamp(pointerX + side * maxLeadPx * q * q * (3 - 2 * q), 0, width)`, side towards that edge.
+`CONFIG.casting.pointerAim { maxLeadPx: 80, edgeZonePx: 200, rampDistancePx: 100 }`, live. A viewport narrower than
+two zones (< 400 px) uses half its width as the zone and the same share of the ramp, so the centre has no lead and no
+jump (320 px: zone 160, ramp 80). At 400 px the zones meet at the centre and the mapping equals the former centred
+curve. The lead depends only on the current pointer; preview, edge pan, release and target share the coordinate;
+keyboard aiming is unchanged.
+
+Removed: the camera-edge gate and the TK-091 stop-point origin in `CastPowerAim`, and
+`ViewportProjector.isAtHorizontalEdge` (no other consumer). Check: `task-interactions` covers 800/400/320 px, both
+sides, zone border, middle, edge, continuity at the border and the centre, first pointerdown, release/preview/target,
+edge pan, live settings, defaults and keyboard; it fails on v0.47.23 (pointer 150 in an 800 px viewport: 150 instead
+of 110). Tools replaced or obsolete: none.

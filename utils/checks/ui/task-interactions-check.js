@@ -51,16 +51,16 @@ for (const pointerType of ["mouse", "touch"]) {
   assert.equal([...preview.listeners.values()].reduce((n, set) => n + set.size, 0), 0);
 }
 const { CastPowerAim } = require("../../../src/game/application/casting/cast_power_aim.js");
-const aimConfig = { casting: { pointerAim: { maxLeadPx: 80, rampDistancePx: 100 }, edgeScrollCenterRatio: 1 } };
-const aimViewport = { width: 400, height: 600 };
+// TK-093: an edge zone along each side of the game viewport (200 px) leads the line towards that edge, 0 at its inner
+// border, 80 px from its middle (100 px from the edge) up to the edge; always, whatever the camera does.
+const aimConfig = { casting: { pointerAim: { maxLeadPx: 80, edgeZonePx: 200, rampDistancePx: 100 }, edgeScrollCenterRatio: 1 } };
+const aimViewport = { width: 800, height: 600 };
 const aimPans = [];
-const aimBounds = { left: 0, right: 400, top: 0, bottom: 1000 };
-const aimEdges = { left: true, right: true };
+const aimBounds = { left: 0, right: 800, top: 0, bottom: 1000 };
 const aimProjector = {
   virtualToScreen: (x, y, out) => Object.assign(out, { x, y }),
   screenToVirtual: (x, y, out) => Object.assign(out, { x, y }),
   getScale: () => 1,
-  isAtHorizontalEdge: direction => direction < 0 ? aimEdges.left : direction > 0 && aimEdges.right,
 };
 const aimMetric = { topBasePixels: 1000, virtualPixelsFromShore: value => value,
   yAtBasePixels: value => 1000 - value, distanceBasePixels: (x, y, ox, oy) => Math.hypot(x - ox, y - oy) };
@@ -72,53 +72,44 @@ function aimAt(x) {
   aim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x, y: 200 } }, null, 16);
   return aim.getVisualState().screenX;
 }
-aimEdges.left = aimEdges.right = false;
-assert.equal(aimAt(250), 250, "G-090: pointer aim has no lead while the viewport can still pan right");
-assert.equal(aimAt(150), 150, "pointer aim has no lead while the viewport can still pan left");
-aimEdges.right = true;
-assert.equal(aimAt(250), 290, "the right camera edge enables the existing right-half lead curve");
-assert.equal(aimAt(150), 150, "the right camera edge does not enable left-half lead");
-assert.equal(aimAt(200), 200);
-aimEdges.right = false;
-aimEdges.left = true;
-assert.equal(aimAt(150), 110, "the left camera edge enables only left-half lead");
-assert.equal(aimAt(250), 250);
-aimEdges.left = false;
-assert.equal(aimAt(150), 150, "moving the camera away from an edge disables its lead immediately");
-aimEdges.right = true;
-aimAt(250);
-aimEdges.right = false;
-assert.equal(aim.update({ pointerReleased: true, pointerRelease: { x: 250, y: 300 } }, null, 16).screenX, 250,
-  "release rechecks the real edge instead of retaining a previous lead");
+for (const [pointerX, aimX] of [[400, 400], [300, 300], [200, 200], [150, 110], [100, 20], [60, 0], [0, 0],
+  [500, 500], [600, 600], [650, 690], [700, 780], [710, 790], [720, 800], [800, 800], [400, 400]]) {
+  assert.equal(aimAt(pointerX), aimX, `TK-093: 800 px viewport, pointer ${pointerX}`);
+}
+assert(Math.abs(aimAt(620) - (620 + 80 * 0.2 * 0.2 * (3 - 2 * 0.2))) < 1e-9, "the lead grows smoothly from the zone border");
+for (const offset of [0.01, 0.5, 1]) {
+  assert(Math.abs(aimAt(600 + offset) - (600 + offset)) < 1, "no jump when the line crosses into the right zone");
+  assert(Math.abs(aimAt(200 - offset) - (200 - offset)) < 1, "no jump when the line crosses into the left zone");
+}
 aim.reset();
-aimEdges.left = aimEdges.right = true;
-aimAt(40);
-assert.equal(aimAt(300), 380);
-assert.equal(aimAt(200), 200, "G-088: returning from the right edge recentres at viewport midpoint after a left-side start");
-for (const [startX, initialAimX] of [[40, 0], [150, 110], [200, 200], [250, 290], [360, 400]]) {
+for (const startX of [40, 400, 760]) {
   aim.reset();
   start.x = startX;
-  assert.equal(aimAt(startX), initialAimX, "the first pointerdown already uses the viewport-centred mapping");
-  for (const [pointerX, aimX] of [[200, 200], [250, 290], [300, 380], [320, 400], [400, 400],
-    [250, 290], [200, 200], [150, 110], [100, 20], [80, 0], [0, 0], [200, 200]]) {
-    assert.equal(aimAt(pointerX), aimX, `start ${startX}: viewport-centred mapping at ${pointerX}`);
-  }
+  assert.equal(aimAt(startX), startX < 200 ? 0 : startX > 600 ? 800 : startX, "the first pointerdown uses the same zones");
+  assert.equal(aimAt(650), 690, `start ${startX}: the mapping depends only on the current pointer`);
+  assert.equal(aimAt(150), 110);
+}
+start.x = 40;
+aimViewport.width = 400;
+for (const [pointerX, aimX] of [[200, 200], [250, 290], [300, 380], [320, 400], [150, 110], [100, 20], [80, 0]]) {
+  assert.equal(aimAt(pointerX), aimX, `400 px viewport: the two zones meet at the centre, pointer ${pointerX}`);
 }
 for (const offset of [0.01, 1, 25, 50, 99]) {
   const left = aimAt(200 - offset), right = aimAt(200 + offset);
   assert(Math.abs(left + right - 400) < 1e-9, "lead stays symmetric and continuous through centre on reversal");
-  assert(right >= 200 + offset && right <= 200 + offset + 80);
 }
-aimAt(250);
-const centreRelease = aim.update({ pointerReleased: true, pointerRelease: { x: 200, y: 300 } }, null, 16);
-assert.equal(centreRelease.screenX, 200, "release at centre recentres without a final move event");
-assert.equal(centreRelease.power, 0.5, "vertical power keeps its existing formula");
+aimViewport.width = 320;
+assert.equal(aimAt(160), 160, "a viewport narrower than two zones halves them, so its centre has no lead");
+assert(Math.abs(aimAt(160.01) - 160.01) < 0.01, "and no jump at its centre");
+assert.equal(aimAt(200), 240, "zone 160 px, ramp 80 px: 40 px into the zone gives half the lead");
+assert.equal(aimAt(240), 320);
+aimViewport.width = 400;
 aim.reset();
-start.x = 40;
 aimAt(200);
 const release = aim.update({ pointerReleased: true, pointerRelease: { x: 250, y: 300 } }, null, 16);
 assert.equal(release.screenX, 290, "release uses the same mapping without a final move event");
 assert.equal(release.startX, 40, "contact metadata is preserved without owning horizontal lead");
+assert.equal(release.power, 0.5, "vertical power keeps its existing formula");
 const target = aim.resolveTarget(release, { bounds: aimBounds, maxDistance: 600, accuracyPx: 0,
   accuracyPercent: 0, checkWater: () => ({ depth: 2 }) });
 aim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x: 250, y: 300 } }, null, 16);
@@ -133,81 +124,20 @@ assert.equal(aimAt(250), 290);
 assert(Math.abs(aimPans.at(-1) - 900 * Math.pow(30 / 140, 1.6) * 0.016) < 1e-9,
   "edge pan follows the led coordinate rather than the contact or raw pointer");
 aimConfig.casting.edgeScrollCenterRatio = 1;
-aimViewport.width = 640;
-assert.equal(aimAt(320), 320, "an active gesture follows the resized game viewport centre");
-assert.equal(aimAt(370), 410);
-aimViewport.width = 320;
-assert.equal(aimAt(160), 160, "a narrow playable viewport uses its own midpoint");
-assert.equal(aimAt(210), 250);
-aimViewport.width = 400;
 aim.reset();
+aimConfig.casting.pointerAim.edgeZonePx = 100;
+aimConfig.casting.pointerAim.rampDistancePx = 50;
+assert.equal(aimAt(250), 250, "live zone settings apply on the next update");
+assert.equal(aimAt(375), 400);
+assert.equal(aimAt(325), 365);
 aimConfig.casting.pointerAim.maxLeadPx = 0;
-assert.equal(aimAt(250), 250, "a live zero lead restores the original pointer mapping");
+assert.equal(aimAt(325), 325, "a live zero lead restores the original pointer mapping");
 delete aimConfig.casting.pointerAim;
-assert.equal(aimAt(250), 290, "the default is 80 logical pixels when pointer configuration is absent");
+assert.equal(aimAt(250), 290, "defaults are an 80 px lead, a 200 px zone and a 100 px ramp when configuration is absent");
 aim.reset();
 aim.update({ isPulling: true, aimRight: true }, null, 16);
 assert(Math.abs(aim.getVisualState().screenX - 206.72) < 1e-9, "keyboard keeps its 420px/s aim without pointer lead");
 assert(Math.abs(aim.update({}, null, 16).screenX - 206.72) < 1e-9);
-
-const { ViewportProjector } = require("../../../src/game/application/viewport/viewport_projector.js");
-const edgeViewport = { width: 400, height: 600 };
-const edgeProjector = new ViewportProjector({ baseResolution: { width: 1000, height: 1000 },
-  map: { lake: { safeZone: { top: 0, bottom: 600 } } } }, "lake", () => ({ scale: 1, squashY: 1 }));
-edgeProjector.update(edgeViewport.width, edgeViewport.height);
-const edgeAim = new CastPowerAim({ config: { casting: { edgeScrollCenterRatio: 0.3 } }, projector: edgeProjector,
-  getViewportSize: () => edgeViewport, panViewport: delta => edgeProjector.pan(delta) });
-function edgeAimAt(x) {
-  edgeAim.update({ pointerDown: true, pointerStart: { x: 200, y: 200 }, pointerCurrent: { x, y: 200 } }, null, 16);
-  return edgeAim.getVisualState().screenX;
-}
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
-assert.equal(edgeProjector.isAtHorizontalEdge(0), false);
-assert.equal(edgeAimAt(300), 300, "real camera movement keeps raw pointer aim before reaching a limit");
-edgeProjector.pan(1e6);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
-assert.equal(edgeAimAt(250), 290);
-assert.equal(edgeAimAt(150), 150, "the actual right stop never enables a left lead");
-assert.equal(edgeAimAt(200), 200);
-assert.equal(edgeAimAt(100), 100, "pan away from the right stop uses raw left-half aim");
-assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
-assert.equal(edgeAimAt(250), 250, "no stale lead survives departure from the stop");
-edgeProjector.pan(-1e6);
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
-assert.equal(edgeAimAt(150), 110);
-assert.equal(edgeAimAt(250), 250);
-assert.equal(edgeAimAt(300), 300);
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), false);
-assert.equal(edgeAimAt(150), 150);
-edgeProjector.pan(1e6); edgeProjector.pan(-1);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
-assert.equal(edgeAimAt(350), 350, "TK-091: the aim's own pan reaching the right limit leaves the line under the pointer");
-assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
-assert(Math.abs(edgeAimAt(360) - 362.24) < 1e-9, "the right lead grows from the pointer where the camera stopped");
-assert.equal(edgeAimAt(390), 400, "the lead still reaches the screen edge before the pointer");
-assert.equal(edgeAimAt(350), 350);
-assert.equal(edgeAimAt(250), 250, "inside the stop point there is no lead");
-edgeProjector.pan(-1e6); edgeProjector.pan(1);
-assert.equal(edgeAimAt(50), 50, "TK-091: the aim's own pan reaching the left limit leaves the line under the pointer");
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
-assert(Math.abs(edgeAimAt(40) - 37.76) < 1e-9, "the left lead grows from the pointer where the camera stopped");
-assert.equal(edgeAimAt(10), 0);
-edgeViewport.width = 1600;
-edgeProjector.update(edgeViewport.width, edgeViewport.height);
-assert.equal(edgeProjector.isAtHorizontalEdge(-1), true);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), true);
-assert.equal(edgeAimAt(750), 710, "a whole-location view has both limits and keeps the centred curve");
-assert.equal(edgeAimAt(850), 890);
-edgeViewport.width = 320;
-edgeProjector.update(edgeViewport.width, edgeViewport.height);
-assert.equal(edgeProjector.isAtHorizontalEdge(1), false);
-assert.equal(edgeAimAt(210), 210, "a resized narrow game strip uses its real camera limits, without viewport-width guesses");
-const unknownEdgeAim = new CastPowerAim({ config: {}, getViewportSize: () => edgeViewport });
-unknownEdgeAim.update({ pointerDown: true, pointerStart: start, pointerCurrent: { x: 250, y: 200 } }, null, 16);
-assert.equal(unknownEdgeAim.getVisualState().screenX, 250, "missing camera-edge information never enables lead");
 
 class Timers {
   now = 0;
