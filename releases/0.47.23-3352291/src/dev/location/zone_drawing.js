@@ -1,4 +1,5 @@
 import { ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
+import { cutZones, mergeTouchingZones } from "./zone_cell_shapes.js";
 
 const EPSILON = 1e-9;
 const near = value => Number(value.toPrecision(12));
@@ -7,8 +8,9 @@ const near = value => Number(value.toPrecision(12));
 // zones (moving zones keep their own add, D3); the new zones are appended to the category in the session config at
 // once, so they draw, list and move like any zone; zones that were there stay untouched (the drag tool takes only the
 // new ones, base and up). A LMB press on a cell starts a rectangle of whole grid cells that spans the press cell and
-// the pointer's cell along both axes until release; a RMB rectangle cuts its cells out of the new zones (a zone partly
-// covered splits into the rectangles left, D2). Cells are whole cells of the current grid inside the allowed area
+// the pointer's cell along both axes until release; a RMB rectangle cuts its cells out of the new zones (Revision 2: a
+// zone keeps its remaining shape, an L with a mask, and splits only into pieces that fall apart). New zones that overlap
+// or touch side by side merge on release; «Застосувати» merges them with the zones that were there. Cells are whole cells of the current grid inside the allowed area
 // (D1): the whole map for the castable area, the castable bounds for the others. «Застосувати» ends the mode keeping
 // the zones; «Скасувати» writes the category back as it was. The editor, its category or the location going away
 // ends the mode and keeps what was drawn.
@@ -49,7 +51,13 @@ export class ZoneDrawing {
     return true;
   }
 
-  apply() { this.#leave(); }
+  apply() {
+    const d = this.#draft, g = d && this.#grid();
+    this.#leave();
+    if (!g) return;
+    const merged = mergeTouchingZones(this.#zones(d.category, d.location), g.step);
+    if (merged) this.#write(this.#path(d), merged.zones);
+  }
 
   cancel() {
     const d = this.#draft;
@@ -105,10 +113,13 @@ export class ZoneDrawing {
     const d = this.#draft, gesture = this.#gesture, g = d && gesture && this.#grid();
     this.#gesture = null;
     if (!g) return;
+    const zones = this.#zones(d.category, d.location);
     if (gesture.erase) {
-      const cut = this.#rect(g, gesture), zones = this.#zones(d.category, d.location);
-      const next = [...zones.slice(0, d.base), ...zones.slice(d.base).flatMap(zone => subtractRect(zone, cut))];
-      if (JSON.stringify(next) !== JSON.stringify(zones)) this.#write(this.#path(d), next);
+      const next = cutZones(zones, d.base, this.#rect(g, gesture), g.step);
+      if (next.length !== zones.length || next.some((zone, index) => zone !== zones[index])) this.#write(this.#path(d), next);
+    } else {
+      const merged = mergeTouchingZones(zones, g.step, { base: d.base });
+      if (merged) this.#write(this.#path(d), merged.zones);
     }
     this.revision++;
   }
@@ -141,19 +152,4 @@ export class ZoneDrawing {
 
   #zones(category, location) { return this.#config.locations.map[location]?.zones?.[category] || []; }
   #path(d) { return ["CONFIG", "locations", "map", d.location, "zones", d.category]; }
-}
-
-// The parts of a rectangle zone outside cut: up to four rectangles (above, below, left, right of it); the zone itself
-// when they do not overlap.
-export function subtractRect(zone, cut) {
-  const left = Math.max(zone.x, cut.x), right = Math.min(zone.x + zone.w, cut.x + cut.w);
-  const top = Math.max(zone.y, cut.y), bottom = Math.min(zone.y + zone.h, cut.y + cut.h);
-  if (right - left <= EPSILON || bottom - top <= EPSILON) return [zone];
-  const parts = [], zoneRight = zone.x + zone.w, zoneBottom = zone.y + zone.h;
-  const add = (x, y, r, b) => { if (r - x > EPSILON && b - y > EPSILON) parts.push({ x: near(x), y: near(y), w: near(r - x), h: near(b - y) }); };
-  add(zone.x, zone.y, zoneRight, top);
-  add(zone.x, bottom, zoneRight, zoneBottom);
-  add(zone.x, top, left, bottom);
-  add(right, top, zoneRight, bottom);
-  return parts;
 }

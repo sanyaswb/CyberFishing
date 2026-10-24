@@ -343,6 +343,8 @@
 .game-shell--zone-editor .ui-surface__content * { visibility: hidden; }
 /* TK-053: the DevTools button hides too; a strip along the left edge opens the panel (hover or swipe right). */
 .game-shell--zone-editor .devtools__toggle { visibility: hidden; }
+/* TK-092: aiming a cast hides the game's UI (game-shell.css); the DevTools button lives in the portals, so it hides here. */
+.game-shell--pointer-hold .devtools__toggle { visibility: hidden; }
 .devtools__edge {
   display: none;
   position: fixed;
@@ -370,4 +372,15 @@
   text-align: center;
   z-index: calc(var(--ui-layer-panel) + 1);
   pointer-events: none;
+}
+/* Spec 141 Revision 2: while new zones are drawn, the editor's controls outside the drawn category's list are inactive. */
+.zone-editor--drawing .devtools__row,
+.zone-editor--drawing .devtools__section-title {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.zone-editor--drawing .zone-editor__drawing-list .devtools__row,
+.zone-editor--drawing .zone-editor__drawing-list .devtools__section-title {
+  opacity: 1;
+  pointer-events: auto;
 }

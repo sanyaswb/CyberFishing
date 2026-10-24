@@ -173,12 +173,6 @@
     gap: var(--ui-toolbar-gap) 0;
     transition: opacity var(--game-toolbar-fade) var(--ui-ease-standard), visibility 0s linear 0s;
   }
-  /* Aiming a cast (the scouting pointer hold) hides the whole toolbar. */
-  .game-shell--pointer-hold .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--game-toolbar-fade) var(--ui-ease-standard), visibility 0s linear var(--game-toolbar-fade);
-  }
   .game-toolbar:has(> .game-toolbar__selector > .inventory-selector:not([hidden])) > .game-toolbar__selector {
     --inventory-selector-layout: compact;
     position: relative;

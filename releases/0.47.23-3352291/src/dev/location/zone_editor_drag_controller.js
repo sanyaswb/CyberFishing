@@ -3,6 +3,7 @@ import { Vector2 } from "../../engine/math/vector2.js";
 import { gridMaskBounds, gridMaskContains } from "../../engine/geometry/grid_mask.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
 import { MOVE_SHARE, ZoneEditorState } from "./zone_editor_state.js";
+import { mergeTouchingZones } from "./zone_cell_shapes.js";
 
 // Logical pixels around an edge of an editable zone that take it.
 const EDGE_PX = 10;
@@ -250,6 +251,7 @@ export class ZoneEditorDragController {
       const bounds = (Array.isArray(entry.bounds) ? entry.bounds : [entry.bounds]).map((bound, number) => number === drag.boundIndex ? candidate : bound);
       return { ...entry, ...drag.body, bounds: Array.isArray(entry.bounds) ? bounds : bounds[0] };
     });
+    drag.changed = true;
     this.#writeZones(drag.path, zones);
   }
 
@@ -271,12 +273,29 @@ export class ZoneEditorDragController {
   #up(event) {
     if (!this.#drag || event.pointerId !== this.#drag.pointerId) return;
     this.#layer?.releasePointerCapture?.(event.pointerId);
-    const drawn = this.#drag.drawing;
+    const drag = this.#drag, drawn = drag.drawing;
     this.#drag = null;
     this.#maskEditor?.endStroke();
     if (drawn) this.#drawing.end();
+    else this.#mergeAfter(drag);
     this.#state.zonesEdited();
     this.#hover(event);
+  }
+
+  // Spec 141 Revision 2: a released zone that overlaps or touches zones of its category side by side merges with them
+  // (castable, obstacles, snags; moving zones and the castable area's fishing zones are not merged). While drawing only
+  // the new zones merge; the merged zone stays the shown one. A click that changed nothing merges nothing.
+  #mergeAfter(drag) {
+    if (!drag.changed || !drag.path || drag.kind === "bounds" || drag.category === "dynamic" || drag.mask || drag.dependent) return;
+    const locations = this.#config.locations, zones = locations.map[drag.path[3]]?.zones?.[drag.category];
+    if (!zones) return;
+    const design = locations.designCellSize || locations.cellSize;
+    const step = (this.#map.getCellSize?.() ?? locations.cellSize) / design;
+    const drawing = this.#drawing?.isActive(drag.category);
+    const merged = mergeTouchingZones(zones, step, { base: drawing ? this.#drawing.base : 0, keep: drag.index });
+    if (!merged) return;
+    this.#writeZones(drag.path, merged.zones);
+    if (merged.index >= 0) this.#state.select(drag.category, merged.index, { keepAll: true });
   }
 
   #dragAllowed(drag) {

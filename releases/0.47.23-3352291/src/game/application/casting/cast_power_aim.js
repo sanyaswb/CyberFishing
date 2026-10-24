@@ -19,6 +19,10 @@ export class CastPowerAim {
   #rampSource;
   #maxLeadPx = 80;
   #rampDistancePx = 100;
+  // TK-091: where the pointer was when this gesture's own edge pan stopped the camera at a limit; null = viewport centre.
+  #leftLeadOriginX = null;
+  #rightLeadOriginX = null;
+  #leadOriginWidth = 0;
   #release = {
     active: false,
     screenX: 0,
@@ -53,6 +57,7 @@ export class CastPowerAim {
     this.#power = 0;
     this.#release.active = false;
     this.#visual.active = false;
+    this.#clearLeadOrigins();
   }
 
   update(input, _bounds, dt, options = {}) {
@@ -70,6 +75,7 @@ export class CastPowerAim {
         this.#startX = input.pointerStart.x;
         this.#startY = input.pointerStart.y;
         this.#initialStartY = input.pointerStart.y;
+        this.#clearLeadOrigins();
         this.#screenX = this.#clampScreenX(input.pointerStart.x);
         this.#screenY = input.pointerStart.y;
         this.#active = true;
@@ -339,6 +345,7 @@ export class CastPowerAim {
     this.#startX = width / 2;
     this.#startY = height / 2;
     this.#initialStartY = this.#startY;
+    this.#clearLeadOrigins();
     this.#screenX = this.#clampScreenX(this.#startX);
     this.#screenY = this.#startY;
     this.#power = this.#clamp(Number(this.#cfg().keyboardInitialPower) || 0, 0, 1);
@@ -444,8 +451,26 @@ export class CastPowerAim {
     const dtSec = Math.min(0.1, Math.max(0, dt / 1000));
     const delta =
       direction * maxSpeed * Math.pow(this.#clamp(edgeRatio, 0, 1), easePower) * dtSec;
+    const wasAtEdge = this.#isAtEdge(direction);
     this.#panViewport(delta);
+    // TK-091: this pan stopped the camera at its limit, so the lead on that side starts from the pointer here (zero
+    // now, growing as the pointer goes on) instead of jumping to its value for the pointer's distance from the centre.
+    if (!wasAtEdge && this.#isAtEdge(direction)) {
+      const centreX = width / 2;
+      if (direction < 0) this.#leftLeadOriginX = Math.min(centreX, screenX);
+      else this.#rightLeadOriginX = Math.max(centreX, screenX);
+      this.#leadOriginWidth = width;
+    }
     return delta !== 0;
+  }
+
+  #isAtEdge(direction) {
+    return this.#projector?.isAtHorizontalEdge?.(direction) === true;
+  }
+
+  #clearLeadOrigins() {
+    this.#leftLeadOriginX = null;
+    this.#rightLeadOriginX = null;
   }
 
   #sampleAccuracy(centerX, centerY, radiusX, radiusY) {
@@ -587,10 +612,22 @@ export class CastPowerAim {
     const viewport = this.#getViewportSize?.();
     const width = Math.max(1, viewport?.width || 1);
     const pointerX = Number.isFinite(value) ? value : this.#startX;
-    const dx = pointerX - width / 2;
-    if (!this.#projector?.isAtHorizontalEdge?.(Math.sign(dx))) return this.#clamp(pointerX, 0, width);
-    const q = Math.min(1, Math.abs(dx) / this.#rampDistancePx);
-    return this.#clamp(pointerX + Math.sign(dx) * this.#maxLeadPx * q * q * (3 - 2 * q), 0, width);
+    const atLeft = this.#isAtEdge(-1);
+    const atRight = this.#isAtEdge(1);
+    if (!atLeft || width !== this.#leadOriginWidth) this.#leftLeadOriginX = null;
+    if (!atRight || width !== this.#leadOriginWidth) this.#rightLeadOriginX = null;
+    const centreX = width / 2;
+    const leftOriginX = this.#leftLeadOriginX ?? centreX;
+    const rightOriginX = this.#rightLeadOriginX ?? centreX;
+    let leadPx = 0;
+    if (atLeft && pointerX < leftOriginX) leadPx = -this.#leadFor(leftOriginX - pointerX);
+    else if (atRight && pointerX > rightOriginX) leadPx = this.#leadFor(pointerX - rightOriginX);
+    return this.#clamp(pointerX + leadPx, 0, width);
+  }
+
+  #leadFor(distancePx) {
+    const q = Math.min(1, distancePx / this.#rampDistancePx);
+    return this.#maxLeadPx * q * q * (3 - 2 * q);
   }
 
   #cfg() {
