@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.11 - Zones Snap to the New Grid
+
+- Location editor: turning on a category's editing (or changing the cell size while editing) moves its zones onto the current grid, so they snap to the new cells; other categories keep their exact geometry.
+
 ## v0.47.10 - Catalog Rows and Viewport Triggers
 
 - The UI catalog shows every element of a tab alone in its own centred row, without frames or backgrounds; 320 / 820 / 2560 triggers in the header lay the elements out at that size, and switching a tab removes the others from the page.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.2 - Clean Zone Numbers
 
 - Zone files and npm run apply:zones write 11.7 instead of binary-fraction noise like 11.700000000000001; a field the code lacks reads немає.
-
-## v0.47.1 - Persistent Mesh and Server-Owned DEV Shortcut
-
-- Reopening DevTools preserves the active painted mesh. A keyboard shortcut opens DevTools in DEV through local server validation; no code definition or offline matcher ships to the browser. Static Pages requires a backend for this shortcut.

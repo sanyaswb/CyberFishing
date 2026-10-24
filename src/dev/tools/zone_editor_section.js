@@ -1,6 +1,7 @@
 import { WATER_PROJECTION_RANGES } from "../../game/domain/locations/illustrated_depth_profile.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "../location/zone_category_colors.js";
 import { DEPENDENT_ZONES } from "../location/castable_dependent_zones.js";
+import { snapZonesToGrid } from "../location/zone_grid_snap.js";
 import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
   from "../location/zone_export_format.js";
 
@@ -208,6 +209,7 @@ export class ZoneEditorSection {
       const path = ["ZONE_EDITOR", "editing", category];
       this.#ui.createSwitcherRow(labels[category], this.#state.isEditable(category), parent, value => {
         this.#state.setEditing(category, value);
+        if (value) this.#snapToGrid([category]);
         this.#syncEditingControls();
         this.#refreshZones();
       }, path, path, { swatch: ZONE_CATEGORY_COLORS[category], requires: this.#categoryPrerequisites([category]) });
@@ -215,9 +217,24 @@ export class ZoneEditorSection {
     const path = ["ZONE_EDITOR", "editAll"];
     this.#ui.createSwitcherRow("Редагувати всі", CATEGORIES.every(category => this.#state.isEditable(category)), parent, value => {
       for (const category of CATEGORIES) this.#state.setEditing(category, value);
+      if (value) this.#snapToGrid(CATEGORIES);
       this.#syncEditingControls();
       this.#refreshZones();
     }, path, path, { requires: this.#categoryPrerequisites(CATEGORIES) });
+  }
+
+  // TK-082: the edited categories' zones move onto the current grid (whole map cells), so after a grid change they sit in
+  // the new squares and snap to them; zones of categories not being edited keep their exact geometry (spec 137).
+  #snapToGrid(categories) {
+    const locations = this.#config.locations, id = this.#locationId(), zones = locations.map[id]?.zones;
+    if (!zones) return;
+    const design = Number(locations.designCellSize) || locations.cellSize, step = locations.cellSize / design;
+    const map = { w: locations.baseResolution.width / design, h: locations.baseResolution.height / design };
+    for (const category of categories) {
+      if (!this.#state.isEditable(category) || locations[PHYSICS_KEYS[category]] === false) continue;
+      const snapped = snapZonesToGrid(zones[category], category, step, map);
+      if (snapped) this.#update(["CONFIG", "locations", "map", id, "zones", category], snapped);
+    }
   }
 
   #categoryPrerequisites(categories) {
@@ -379,7 +396,7 @@ export class ZoneEditorSection {
     ui.createInputRow("Розмір клітинки, px", locations.cellSize, section, "number", value => {
       const next = Math.round(Math.max(CELL_SIZE.min, Math.min(CELL_SIZE.max, Number(value) || locations.cellSize)));
       ui.syncValue(cellPath, next);
-      if (next !== locations.cellSize) this.#update(cellPath, next);
+      if (next !== locations.cellSize) { this.#update(cellPath, next); this.#snapToGrid(CATEGORIES); }
     }, cellPath);
     const design = Number(locations.designCellSize) || locations.cellSize;
     ui.createInfoRow("Клітинки", `Сітка клітинок спільна для всіх локацій. Непрозорість сітки керує клітинною сіткою, сіткою мешу й перспективи; заливка маски має окрему непрозорість. Розмір клітинки — сітка мапи гри (${CELL_SIZE.min}–${CELL_SIZE.max} px): зміна перебудовує клітинки й глибини, зберігаючи положення та розміри наявних зон. Зони задані в клітинках дизайну ${design} px, множник ${(locations.cellSize / design).toFixed(2)}. Лінії й прилипання — через одну клітинку; переміщення рухомого тіла плавне.`, section);

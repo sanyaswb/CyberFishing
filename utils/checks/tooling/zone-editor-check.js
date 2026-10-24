@@ -958,6 +958,41 @@ controlUI.dispose();
   unsubscribe(); drag.dispose();
 }
 
+// TK-082: after a grid change (40 -> 36 px: 0.9 design cells) the edited categories' zones move into whole new cells.
+{
+  const { snapZonesToGrid } = load("src/dev/location/zone_grid_snap.js");
+  const map = { w: 64, h: 36 };
+  const plain = value => JSON.parse(JSON.stringify(value));
+  assert.deepEqual(plain(snapZonesToGrid([{ x: 12, y: 22, w: 3, h: 2 }], "collisions", 0.9, map)), [{ x: 11.7, y: 21.6, w: 3.6, h: 2.7 }],
+    "an obstacle drawn on the 40 px grid (480 px = 13.33 x 36) lands on the nearest 36 px lines");
+  assert.equal(snapZonesToGrid([{ x: 0, y: 11.7, w: 64, h: 18 }], "castable", 0.9, map), null,
+    "a zone already on the grid, with its right edge on the map border (2560 px is no whole number of 36 px cells), stays");
+  assert.deepEqual(plain(snapZonesToGrid([{ x: 1, y: 1, w: 0.2, h: 0.2 }], "snags", 0.9, map)), [{ x: 0.9, y: 0.9, w: 0.9, h: 0.9 }],
+    "a zone never shrinks below one cell");
+  const moving = plain(snapZonesToGrid([{ id: "school", x: 17.13, y: 16.75, w: 1, h: 1, bounds: [{ x: 0, y: 13, w: 64, h: 16 }] }], "dynamic", 0.9, map));
+  assert.deepEqual(moving, [{ id: "school", x: 17.13, y: 16.75, w: 1, h: 1, bounds: [{ x: 0, y: 12.6, w: 64, h: 17.1 }] }],
+    "a moving zone keeps its smooth body; its bounds widen outward to grid lines inside the map");
+  const snapConfig = { locations: { cellSize: 36, designCellSize: 40, baseResolution: { width: 2560, height: 1440 }, enableCollisions: true,
+    map: { test: { name: "Test", zones: { castable: [{ x: 0, y: 11.7, w: 64, h: 18 }], collisions: [{ x: 12, y: 22, w: 3, h: 2 }] } } } } };
+  const snapState = new ZoneEditorState(); snapState.loadedLocationId = "test"; snapState.setLocation("test"); snapState.setFlag("enabled", true);
+  const snapRows = new Map(), snapWrites = [];
+  const snapRecord = kind => (label, ...args) => snapRows.set(label, { kind, args });
+  const snapUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+    createInputRow: snapRecord("input"), createRangeRow: snapRecord("range"), createButtonRow: snapRecord("button"),
+    createSelectRow: snapRecord("select"), createSwitcherRow: snapRecord("switch") };
+  new ZoneEditorSection({ ui: snapUi, state: snapState, config: snapConfig, createSection: label => ({ label, replaceChildren() {} }),
+    renderTree() {}, getWaterMetric: () => metric, createWaterMetric: options => WaterMetric.illustrated(options),
+    updateConfig: (path, value) => { snapWrites.push([path.join("."), plain(value)]); let node = snapConfig; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; } }).render({});
+  snapRows.get("Редагувати перешкоди").args[2](true);
+  assert.deepEqual(snapWrites, [["CONFIG.locations.map.test.zones.collisions", [{ x: 11.7, y: 21.6, w: 3.6, h: 2.7 }]]],
+    "editing the obstacles puts them on the 36 px grid; the castable zone is not touched");
+  snapWrites.length = 0;
+  snapRows.get("Розмір клітинки, px").args[3](30);
+  assert.deepEqual(snapWrites.map(([path]) => path), ["CONFIG.locations.cellSize", "CONFIG.locations.map.test.zones.collisions"],
+    "a new cell size while editing re-snaps the edited category only");
+  assert.deepEqual(snapWrites[1][1], [{ x: 12, y: 21.75, w: 3, h: 2.25 }], "onto the 30 px grid (0.75 design cells)");
+}
+
 // Spec 130: the editor works on a chosen location; only the loaded one is drawn; its zone file is exported,
 // imported into the session and reset to the code, and reopening another location warns about unexported edits.
 // TK-061..063: passive visibility never enables interaction; grids have one authoritative choice.
