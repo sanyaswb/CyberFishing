@@ -96,7 +96,7 @@ export const CONFIG = {
     keyboardInitialPower: 0,
     keyboardPowerChangePerSecond: 0.75,
     keyboardAimSpeedPxPerSecond: 420,
-    pointerAim: { maxLeadPx: 80, rampDistancePx: 100 },
+    pointerAim: { maxLeadPx: 80, edgeZonePx: 200, rampDistancePx: 100 },
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,

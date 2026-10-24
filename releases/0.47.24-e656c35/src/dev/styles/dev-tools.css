@@ -343,6 +343,8 @@
 .game-shell--zone-editor .ui-surface__content * { visibility: hidden; }
 /* TK-053: the DevTools button hides too; a strip along the left edge opens the panel (hover or swipe right). */
 .game-shell--zone-editor .devtools__toggle { visibility: hidden; }
+/* TK-092: aiming a cast hides the game's UI (game-shell.css); the DevTools button lives in the portals, so it hides here. */
+.game-shell--pointer-hold .devtools__toggle { visibility: hidden; }
 .devtools__edge {
   display: none;
   position: fixed;

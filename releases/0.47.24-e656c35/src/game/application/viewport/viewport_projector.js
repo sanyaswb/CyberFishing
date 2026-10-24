@@ -134,13 +134,6 @@ export class ViewportProjector {
   }
 
 
-  // The camera owns its pan limits; a location that fits horizontally has reached both edges.
-  isAtHorizontalEdge(direction) {
-    if (direction < 0) return this.#cameraX <= 0;
-    if (direction > 0) return this.#cameraX >= this.#maxScrollX;
-    return false;
-  }
-
   // Follow the object smoothly along the Y axis only. The first focus after the camera is placed, and after the canvas
   // changes size (a phone turned, the browser bar shown), snaps to its target, so a new layout opens on the framing it
   // would otherwise ease into over the next seconds (spec 105 D7).

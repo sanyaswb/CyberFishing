@@ -16,8 +16,10 @@ export class CastPowerAim {
   #power = 0;
   #keyboardActive = false;
   #leadSource;
+  #zoneSource;
   #rampSource;
   #maxLeadPx = 80;
+  #edgeZonePx = 200;
   #rampDistancePx = 100;
   #release = {
     active: false,
@@ -574,23 +576,32 @@ export class CastPowerAim {
     return this.#clamp(Number(value) || 0, 0, width);
   }
 
+  // TK-093: an edge zone along each side of the game viewport leads the line towards that edge. From the zone's inner
+  // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
+  // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
   #pointerScreenX(value) {
     const cfg = this.#cfg().pointerAim;
     const lead = cfg?.maxLeadPx ?? 80;
+    const zone = cfg?.edgeZonePx ?? 200;
     const ramp = cfg?.rampDistancePx ?? 100;
-    if (!Object.is(lead, this.#leadSource) || !Object.is(ramp, this.#rampSource)) {
+    if (!Object.is(lead, this.#leadSource) || !Object.is(zone, this.#zoneSource) || !Object.is(ramp, this.#rampSource)) {
       this.#leadSource = lead;
+      this.#zoneSource = zone;
       this.#rampSource = ramp;
       this.#maxLeadPx = Number.isFinite(lead) ? Math.max(0, lead) : 80;
-      this.#rampDistancePx = Number.isFinite(ramp) ? Math.max(1, ramp) : 100;
+      this.#edgeZonePx = Number.isFinite(zone) ? Math.max(1, zone) : 200;
+      this.#rampDistancePx = Number.isFinite(ramp) ? Math.max(1, Math.min(ramp, this.#edgeZonePx)) : 100;
     }
     const viewport = this.#getViewportSize?.();
     const width = Math.max(1, viewport?.width || 1);
     const pointerX = Number.isFinite(value) ? value : this.#startX;
-    const dx = pointerX - width / 2;
-    if (!this.#projector?.isAtHorizontalEdge?.(Math.sign(dx))) return this.#clamp(pointerX, 0, width);
-    const q = Math.min(1, Math.abs(dx) / this.#rampDistancePx);
-    return this.#clamp(pointerX + Math.sign(dx) * this.#maxLeadPx * q * q * (3 - 2 * q), 0, width);
+    const zonePx = Math.min(this.#edgeZonePx, width / 2);
+    const rampPx = this.#rampDistancePx * (zonePx / this.#edgeZonePx);
+    const side = pointerX < width / 2 ? -1 : 1;
+    const depthPx = zonePx - (side < 0 ? pointerX : width - pointerX);
+    if (depthPx <= 0) return this.#clamp(pointerX, 0, width);
+    const q = Math.min(1, depthPx / rampPx);
+    return this.#clamp(pointerX + side * this.#maxLeadPx * q * q * (3 - 2 * q), 0, width);
   }
 
   #cfg() {
