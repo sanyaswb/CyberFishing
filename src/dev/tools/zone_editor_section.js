@@ -32,6 +32,7 @@ export class ZoneEditorSection {
   #newDynamicShape = "square";
   #snapSources = new Map();
   #maskEditor;
+  #drawing;
 
   #saving = null;
   #savingStatus = null;
@@ -43,7 +44,7 @@ export class ZoneEditorSection {
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
     resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "", readDynamicZones = null,
-    getDependentZones = null, maskEditor = null }) {
+    getDependentZones = null, maskEditor = null, zoneDrawing = null }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
     this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
@@ -51,6 +52,7 @@ export class ZoneEditorSection {
     this.#readDynamicZones = readDynamicZones;
     this.#getDependentZones = getDependentZones;
     this.#maskEditor = maskEditor;
+    this.#drawing = zoneDrawing;
     this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
   }
 
@@ -324,6 +326,7 @@ export class ZoneEditorSection {
     if (!location) return;
     const zones = location.zones?.[category] || [];
     const path = ["CONFIG", "locations", "map", id, "zones", category];
+    if (this.#drawing?.isActive(category)) { this.#fillDrawing(category, zones, list, path); return; }
     const index = Math.max(0, Math.min(state.selectedIndex(category), zones.length - 1));
     let external = list;
     if (zones.length) {
@@ -371,6 +374,7 @@ export class ZoneEditorSection {
     if (category === "dynamic") ui.createSelectRow("Форма нової зони", ["Квадрат", "Коло"], this.#newDynamicShape === "circle" ? "Коло" : "Квадрат", external,
       label => { this.#newDynamicShape = label === "Коло" ? "circle" : "square"; }, ["ZONE_EDITOR", "newDynamicShape"]);
     ui.createButtonRow("Додати зону", external, () => {
+      if (category !== "dynamic" && this.#drawing) { this.#startDrawing(category); return; }
       const template = category === "dynamic" ? this.#readDynamicZones?.(id)?.[index] ?? zones[index] : zones[index];
       const zone = template ? JSON.parse(JSON.stringify(template)) : { x: 0, y: 0, w: 1, h: 1 };
       if (category === "dynamic") {
@@ -389,6 +393,30 @@ export class ZoneEditorSection {
       this.#update(path, [...zones, zone]);
       this.#select(category, zones.length);
     });
+  }
+
+  // Spec 141: «Додати зону» draws new zones on the grid. It turns on what drawing needs (the editor, the category's
+  // editing) like «Редагувати все»; drawing works only on the location on screen.
+  #startDrawing(category) {
+    const state = this.#state;
+    if (!state.enabled) { state.setFlag("enabled", true); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], true); this.#syncGrids(); }
+    if (!state.isEditable(category)) { state.setEditing(category, true); this.#snapToGrid([category]); }
+    this.#maskEditor?.stop();
+    this.#drawing.start(category);
+    this.#refreshZones();
+  }
+
+  // While drawing: «Застосувати», «Скасувати» and the new zones' coordinates only; no number list and no mask.
+  #fillDrawing(category, zones, list, path) {
+    const ui = this.#ui, drawing = this.#drawing, base = drawing.base;
+    ui.createButtonRow("Застосувати", list, () => { drawing.apply(); this.#selectAll(category); this.#refreshZones(); });
+    ui.createButtonRow("Скасувати", list, () => { drawing.cancel(); this.#state.selectAll(category); this.#refreshZones(); });
+    ui.createInfoRow("Малювання зон", "ЛКМ по клітинці створює нову зону; натисніть і тягніть, щоб замалювати прямокутник клітинок по обох осях (назад — зменшує). Кожне натискання — нова зона з новим номером. ПКМ так само вирізає клітинки з нових зон: зону, накриту частково, розділено на прямокутники. Нові зони можна рухати серединою й тягнути за край. Затемнене — де зону цієї категорії додати не можна. «Застосувати» зберігає зони й повертає вибір за номером і маску; «Скасувати» прибирає всі нові зони.", list);
+    if (zones.length <= base) ui.createInfoRow("Нові зони", "Ще немає: натисніть клітинку на мапі.", list);
+    for (let index = base; index < zones.length; index++) {
+      const section = this.#createSection(`Зона ${index + 1}`, list, ["ZONE_EDITOR", "drawing", category, index]);
+      this.#renderTree({ ...zones[index] }, section, [...path, index]);
+    }
   }
 
   #selectAll(category) {

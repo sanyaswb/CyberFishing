@@ -33,6 +33,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "zone-drawing",
+    title: "DEV zone editor: drawing new zones on the grid (spec 141)",
+    file: "utils/checks/tooling/zone-drawing-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "tackle-line-limit",
     title: "Idle tackle obeys the equipped line budget",
     file: "utils/checks/gameplay/tackle-line-limit-check.js",

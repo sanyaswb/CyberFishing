@@ -31,6 +31,7 @@ export class DevTools {
   #readDynamicZones;
   #getDependentZones;
   #maskEditor;
+  #zoneDrawing;
   #zoneEditorSection = null;
   #gameVersion;
   #getWaterMetric;
@@ -81,6 +82,7 @@ export class DevTools {
       readDynamicZones = null,
       getDependentZones = null,
       maskEditor = null,
+      zoneDrawing = null,
       gameVersion = "",
       getWaterMetric = null,
       createWaterMetric = null,
@@ -103,6 +105,7 @@ export class DevTools {
     this.#readDynamicZones = readDynamicZones;
     this.#getDependentZones = getDependentZones;
     this.#maskEditor = maskEditor;
+    this.#zoneDrawing = zoneDrawing;
     this.#gameVersion = gameVersion;
     this.#getWaterMetric = getWaterMetric;
     this.#createWaterMetric = createWaterMetric;
@@ -211,6 +214,7 @@ export class DevTools {
       readDynamicZones: this.#readDynamicZones,
       getDependentZones: this.#getDependentZones,
       maskEditor: this.#maskEditor,
+      zoneDrawing: this.#zoneDrawing,
       });
       this.#zoneEditorSection.render(body);
     }

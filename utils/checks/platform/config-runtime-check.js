@@ -193,7 +193,7 @@ function checkDevelopmentInputs() {
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; this.footer = {}; } },
     DevToolsDependencyFeedback: Renderer, BrowserTimeoutScheduler: class { constructor(host) { this.host = host; } },
-    zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null, maskEditor: {},
+    zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null, maskEditor: {}, zoneDrawing: {},
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
     pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance, pageParams } });
@@ -238,6 +238,8 @@ function checkDevelopmentInputs() {
   assert.equal(dragTool.options.state, runtime.context.zoneEditorState, "the drag tool shares the editor's state (spec 129)");
   assert.equal(dragTool.options.maskEditor, runtime.context.maskEditor, 'mesh input shares its composed draft owner');
   assert.equal(locationDebug.zoneEditor.options.maskEditor, runtime.context.maskEditor, 'mesh geometry shares the same draft owner');
+  assert(dragTool.options.zoneDrawing === runtime.context.zoneDrawing && locationDebug.zoneEditor.options.zoneDrawing === runtime.context.zoneDrawing,
+    'zone drawing (spec 141) is one owner for the drag tool and the geometry');
   assert.equal(dragTool.options.mountNode, developmentMount, "the drag layer mounts in the DEV interface");
   assert.equal(typeof dragTool.options.writeZones, "function");
   assert.equal(ports.createLocationDebugRenderFrameBuilder(rendererOptions).options.zoneEditorTool === dragTool, false);

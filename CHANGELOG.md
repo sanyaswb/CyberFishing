@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.20 - Draw new zones on the grid
+
+- Zone editor: «Додати зону» draws new zones on the grid (LMB rectangle, RMB cut, dimmed where a zone cannot go), «Застосувати»/«Скасувати» (spec 141).
+
 ## v0.47.19 - All zones of a category
 
 - Zone editor: «Всі» at the end of every category's «Номер зони» lets any zone of the category under the pointer be moved and resized (TK-090).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.11 - Zones Snap to the New Grid
 
 - Location editor: turning on a category's editing (or changing the cell size while editing) moves its zones onto the current grid, so they snap to the new cells; other categories keep their exact geometry.
-
-## v0.47.10 - Catalog Rows and Viewport Triggers
-
-- The UI catalog shows every element of a tab alone in its own centred row, without frames or backgrounds; 320 / 820 / 2560 triggers in the header lay the elements out at that size, and switching a tab removes the others from the page.

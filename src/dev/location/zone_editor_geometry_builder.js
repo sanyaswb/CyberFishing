@@ -26,6 +26,7 @@ export class ZoneEditorGeometryBuilder {
   #state; #map; #projector; #getMetric; #config; #dependent;
   #dependentRevision = -1;
   #maskEditor; #maskRevision = -1;
+  #drawing; #drawingRevision = -1;
   #canvasMetrics; #viewportWidth = 0; #viewportHeight = 0;
   #drawDependent;
   #point = new Vector2();
@@ -41,10 +42,13 @@ export class ZoneEditorGeometryBuilder {
   overlayRebuilds = 0;
 
   // dependentZones: optional CastableDependentZones (spec 136), drawn with the static geometry.
-  constructor({ state, map, projector, getWaterMetric, config, dependentZones = null, maskEditor = null, canvasMetrics = null }) {
+  // zoneDrawing: optional ZoneDrawing (spec 141): its allowed area stays clear, the rest is dimmed like the mesh's.
+  constructor({ state, map, projector, getWaterMetric, config, dependentZones = null, maskEditor = null, canvasMetrics = null,
+    zoneDrawing = null }) {
     this.#state = state; this.#map = map; this.#projector = projector; this.#getMetric = getWaterMetric; this.#config = config;
     this.#dependent = dependentZones;
     this.#maskEditor = maskEditor;
+    this.#drawing = zoneDrawing;
     this.#canvasMetrics = canvasMetrics;
     const look = (zone) => [Number.parseInt(zone.color.slice(1), 16), zone.editable ? EDITABLE_LINE_WIDTH : 1,
       zone.hovered ? HOVER_FILL : SHOWN.fill, zone.editable ? EDITABLE_STROKE : SHOWN.stroke];
@@ -65,6 +69,7 @@ export class ZoneEditorGeometryBuilder {
 
   buildInto(target) {
     this.#maskEditor?.sync();
+    this.#drawing?.sync();
     target.annotations = null;
     target.backgroundHidden = false;
     const state = this.#state;
@@ -92,15 +97,16 @@ export class ZoneEditorGeometryBuilder {
     const viewportWidth = this.#canvasMetrics?.width ?? this.#config.locations.baseResolution.width * scale;
     const viewportHeight = this.#canvasMetrics?.height ?? this.#config.locations.baseResolution.height * scale;
     const staticDirty = topologyChanged || metric !== this.#metric || state.revision !== this.#revision || this.#mapRevision !== this.#map.getRevision() ||
-      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision || this.#maskRevision !== (this.#maskEditor?.revision ?? -1) || viewportWidth !== this.#viewportWidth || viewportHeight !== this.#viewportHeight;
+      scale !== this.#scale || origin.x !== this.#x || origin.y !== this.#y || dependentRevision !== this.#dependentRevision || this.#maskRevision !== (this.#maskEditor?.revision ?? -1) || this.#drawingRevision !== (this.#drawing?.revision ?? -1) || viewportWidth !== this.#viewportWidth || viewportHeight !== this.#viewportHeight;
     if (staticDirty) {
       this.#dependentRevision = dependentRevision;
       this.#maskRevision = this.#maskEditor?.revision ?? -1;
+      this.#drawingRevision = this.#drawing?.revision ?? -1;
       this.#viewportWidth = viewportWidth; this.#viewportHeight = viewportHeight;
       this.#metric = metric; this.#revision = state.revision; this.#mapRevision = this.#map.getRevision();
       this.#scale = scale; this.#x = origin.x; this.#y = origin.y;
       this.#rebuild();
-      this.#focusModel.revision++; this.#focusModel.rectCount = 0; this.#mesh();
+      this.#focusModel.revision++; this.#focusModel.rectCount = 0; this.#mesh(); this.#drawingArea();
     }
     if (dirty || staticDirty) {
       this.overlayRebuilds++; this.#movingModel.revision++; this.#movingModel.rectCount = 0;
@@ -119,7 +125,7 @@ export class ZoneEditorGeometryBuilder {
       }
     }
     this.#model.overlay = moving.length ? this.#movingModel : null;
-    this.#model.foreground = this.#maskEditor?.draft ? this.#focusModel : null;
+    this.#model.foreground = this.#maskEditor?.draft || this.#drawing?.category ? this.#focusModel : null;
     target.annotations = this.#model;
     target.backgroundHidden = state.enabled && !state.background;
   }
@@ -285,13 +291,7 @@ export class ZoneEditorGeometryBuilder {
     const draft = this.#maskEditor?.draft, g = this.#maskEditor?.geometry();
     if (!draft || !g) return;
     const color = COLORS[draft.category];
-    this.#projector.virtualToScreen(g.x, g.y, this.#point);
-    const width = this.#viewportWidth, height = this.#viewportHeight;
-    const left = Math.max(0, Math.min(width, this.#point.x)), top = Math.max(0, Math.min(height, this.#point.y));
-    this.#projector.virtualToScreen(g.x + g.w, g.y + g.h, this.#point);
-    const right = Math.max(left, Math.min(width, this.#point.x)), bottom = Math.max(top, Math.min(height, this.#point.y));
-    this.#shade(0, 0, width, top); this.#shade(0, bottom, width, height - bottom);
-    this.#shade(0, top, left, bottom - top); this.#shade(right, top, width - right, bottom - top);
+    this.#dimOutside(g.x, g.y, g.x + g.w, g.y + g.h);
     this.#mask(this.#maskEditor.preview, g.x, g.y, g.w, g.h, color, this.#focusModel, 2, .3, 1);
     for (let col = 0; col <= draft.cols; col++) {
       const x = g.x + Math.min(1, col * draft.cell[0]) * g.w;
@@ -301,6 +301,27 @@ export class ZoneEditorGeometryBuilder {
       const y = g.y + Math.min(1, row * draft.cell[1]) * g.h;
       this.#segment(g.x, y, g.x + g.w, y, color, this.#focusModel, 1, this.#state.cellGridOpacity);
     }
+  }
+
+  // Spec 141: outside the area where a zone of the drawn category may be added is dimmed; a RMB rectangle shows dark
+  // with the category's outline.
+  #drawingArea() {
+    const drawing = this.#drawing, category = drawing?.category, area = category && drawing.allowedArea();
+    if (!area) return;
+    this.#dimOutside(area.left, area.top, area.right, area.bottom);
+    const cut = drawing.eraseArea();
+    if (cut) this.#rect(cut.left, cut.top, cut.right - cut.left, cut.bottom - cut.top, COLORS[category], this.#focusModel, EDITABLE_LINE_WIDTH, 0.45, EDITABLE_STROKE);
+  }
+
+  // Dims the viewport around a map rectangle.
+  #dimOutside(x1, y1, x2, y2) {
+    const width = this.#viewportWidth, height = this.#viewportHeight;
+    this.#projector.virtualToScreen(x1, y1, this.#point);
+    const left = Math.max(0, Math.min(width, this.#point.x)), top = Math.max(0, Math.min(height, this.#point.y));
+    this.#projector.virtualToScreen(x2, y2, this.#point);
+    const right = Math.max(left, Math.min(width, this.#point.x)), bottom = Math.max(top, Math.min(height, this.#point.y));
+    this.#shade(0, 0, width, top); this.#shade(0, bottom, width, height - bottom);
+    this.#shade(0, top, left, bottom - top); this.#shade(right, top, width - right, bottom - top);
   }
 
   #shade(x, y, width, height) {
