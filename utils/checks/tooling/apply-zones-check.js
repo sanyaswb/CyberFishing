@@ -36,7 +36,8 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     const exported = (zones, extra = {}) => JSON.stringify({ ...format.buildZoneFile({ locationId: "test", zones, baseHash,
       gameVersion: "0.46.21", locations, exportedAt: "2026-10-22T18:40:00.000Z" }), ...extra });
     const moved = JSON.parse(JSON.stringify(ZONES));
-    moved.collisions[0].x = 14;
+    const movedFrom = ZONES.collisions[0].x, movedTo = movedFrom + 2;
+    moved.collisions[0].x = movedTo;
     moved.snags.push({ x: 1, y: 2, w: 3, h: 1 });
     moved.dynamic[0].shape = "circle";
     moved.castable[0].mask = { enabled: true, cell: [.5, .5], rects: [[0, 0, 2, 1], [0, 1, 1, 1]] };
@@ -59,7 +60,7 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
     const written = (await import(`${pathToFileURL(target).href}?after=1`)).ZONES;
     assert.deepEqual(format.canonicalZones(written), format.canonicalZones(moved), "the module now holds the file's zones");
     assert(!logs.some(line => line.includes("undefined")), "a missing field reads немає, not undefined");
-    assert(logs.some(line => line.includes("collisions 1: x 12 -> 14")) && logs.some(line => line.includes("snags 2: додано")),
+    assert(logs.some(line => line.includes(`collisions 1: x ${movedFrom} -> ${movedTo}`)) && logs.some(line => line.includes("snags 2: додано")),
       "the change is shown per zone before the question");
     const [backup] = fs.readdirSync(backups);
     // TK-078: the local time of the moment, whatever the machine's zone (18:40:05 UTC is 21:40:05 in Kyiv).

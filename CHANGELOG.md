@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.15 - Owner test zones in the code
+
+- Test location: the owner's new castable mask and masked obstacle are in the code; the checks read the real zones (TK-086).
+
 ## v0.47.14 - Finer grid restores the zone shape
 
 - Zone editor: snapping starts from the zones as they were before it, so after a coarse grid (160 px) a finer one gives the drawn shape back (TK-085).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.6 - Inventory Icons Without Preload Warnings
 
 - The inventory warms its slot placeholder icons through the image loader instead of link preload in the page head, so the console no longer warns that they were preloaded but not used.
-
-## v0.47.5 - Agent Workflow Rules
-
-- AGENTS.md records the version, commit and push rules (patch per task, minor only with the owner's approval, push on command with Pages and task archiving) and working rules learned in practice.

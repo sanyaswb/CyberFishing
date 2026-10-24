@@ -418,15 +418,19 @@ function checkUnifiedWaterAreas() {
       }
       frame.reset(); worldBuilder.buildInto({ target: frame.world });
       const waterPlane = frame.world.waterPlane;
-      assert(waterPlane.metric === metric && waterPlane.left === 0 && waterPlane.right === 2560 &&
-        waterPlane.top === bounds.top && waterPlane.bottom === bounds.bottom,
-        "R4: the wave field gets the metric and the virtual bounds its clip regions cover");
-      // A masked zone clips by several rectangles (TK-079): their union spans the castable height.
+      // A masked zone clips by several rectangles (TK-079). The wave field covers their union, which lies inside the
+      // castable rectangles: an empty first or last mask row leaves that strip without waves (the owner's test mask has
+      // no water in its last 20 px row, 1180..1200).
       const clips = Array.from({ length: frame.world.clipRegions.count }, (_, index) => frame.world.clipRegions.getAt(index));
       const clipTop = Math.min(...clips.map(clip => clip.y)), clipBottom = Math.max(...clips.map(clip => clip.y + clip.height));
       const clipLeft = Math.min(...clips.map(clip => clip.x));
-      assert(Math.abs((clipBottom - clipTop) / projector.getScale() - (bounds.bottom - bounds.top)) < 1e-8,
-        "water animation/clipping always spans the full castable height");
+      const scale = projector.getScale(), close = (x, y) => Math.abs(x - y) < 1e-6;
+      assert(waterPlane.metric === metric && waterPlane.left === 0 && waterPlane.right === 2560 &&
+        close((clipBottom - clipTop) / scale, waterPlane.bottom - waterPlane.top),
+        "R4: the wave field gets the metric and the virtual bounds its clip regions cover");
+      assert(waterPlane.top >= bounds.top - 1e-6 && waterPlane.bottom <= bounds.bottom + 1e-6,
+        "water animation/clipping stays inside the castable rectangles");
+      assert(close(waterPlane.top, bounds.top), "the mask's first row has water: waves reach the far castable edge");
       projector.screenToVirtual(clipLeft, clipTop, screenPoint);
       assert(Math.abs(metric.metersFromShore(screenPoint.y) - metric.topMeters) < 1e-7,
         "render/wave clipping and gameplay bounds agree on the visible far distance");
