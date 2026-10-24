@@ -229,6 +229,13 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
   assert.equal(editor.draft, reopeningDraft, 'panel rebuild keeps the exact painted draft');
   assert.equal(editor.preview, reopeningPreview);
   assert.equal(editor.opacity, .47);
+  // TK-084: the applied mask can be deleted, not only switched off; the zone keeps its plain shape.
+  const hostBefore = { ...zones.castable[0] }; delete hostBefore.mask;
+  rows.get('Ігрова область (закидання)/Видалити маску')();
+  assert.equal(editor.draft, null, 'deleting the mask ends the mesh draft');
+  assert.equal(JSON.stringify(zones.castable[0]), JSON.stringify(hostBefore), 'the mask is gone from the zone; its shape stays');
+  assert.equal(map.getLocationZones().castable[0].mask, undefined, 'the live map has no mask for the zone');
+  zones.castable[0].mask = saved; map.refreshConfig(cfg.locations, resources);
   section.dispose(); assert.equal(editor.draft, null, 'final disposal releases its draft and focus');
   const meshState = new ZoneEditorState(); meshState.setCategory('castable', true);
   zones.castable[0].mask = ring; map.refreshConfig(cfg.locations, resources);

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.13 - Delete a zone mask
+
+- Zone editor: an applied zone mask can be deleted (Видалити маску), not only switched off; the zone keeps its shape (TK-084).
+
 ## v0.47.12 - Cell sizes that divide the map
 
 - Zone editor: the cell size is chosen only from sizes that cut the location into whole cells (2560x1440: 5-160 px); a warning in the middle of the screen when the size does not fit (TK-083).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.4 - Test Location Zones Applied
 
 - The test location's castable zone is the owner's edited one (11.7..29.7 cells with a painted mask); water-metric follows the authored water edges.
-
-## v0.47.3 - Zone Backups in Local Time
-
-- npm run apply:zones names its backups in the machine's local time.

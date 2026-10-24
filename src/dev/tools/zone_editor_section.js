@@ -369,6 +369,14 @@ export class ZoneEditorSection {
     if (zone.mask) ui.createSwitcherRow("Маска увімкнена", zone.mask.enabled, list, enabled => {
       editor.stop(); this.#update([...path, index, "mask"], { ...zone.mask, enabled }); refresh();
     }, [...path, index, "mask", "enabled"]);
+    // TK-084: removes the applied mask itself (not only switches it off); the zone keeps its plain shape. Export
+    // carries the removal into the code.
+    if (zone.mask) ui.createButtonRow("Видалити маску", list, () => {
+      if (this.#files && !this.#files.confirm("Видалити маску цієї зони? Зона повернеться до початкової форми.")) return;
+      const plain = { ...zone }; delete plain.mask;
+      const zones = this.#config.locations.map[this.#locationId()].zones[category];
+      editor.stop(); this.#update(path, zones.map((entry, number) => number === index ? plain : entry)); refresh();
+    });
     const meshPath = ["ZONE_EDITOR", "mesh", category];
     ui.createSwitcherRow("Меш маски", editor.isActive(category, index), list, enabled => {
       if (enabled) editor.start(category, index); else editor.stop(); refresh();
