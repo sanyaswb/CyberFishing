@@ -1,0 +1,147 @@
+/* Catalog styles own the page, its element rows and the external placement of examples (spec 140). Production
+   buttons, meters, cards, dialogs and HUD retain their component styles. */
+
+/* D6: no scrollbars anywhere on the catalog page; wheel, touch and drag still scroll. */
+:root:has(.ui-catalog),
+.ui-catalog,
+.ui-catalog * { scrollbar-width: none; }
+:root:has(.ui-catalog)::-webkit-scrollbar,
+.ui-catalog ::-webkit-scrollbar { display: none; }
+
+.ui-catalog {
+  -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  min-width: 0;
+  min-height: 100vh;
+  color: var(--ui-text);
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(var(--ui-accent-rgb), 0.12), transparent 60%),
+    rgb(var(--ui-surface-rgb));
+  font-family: var(--ui-font-body);
+}
+
+.ui-catalog__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(var(--ui-accent-rgb), 0.16);
+  background: rgba(var(--ui-surface-rgb), 0.86);
+  backdrop-filter: blur(8px);
+}
+.ui-catalog__back {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--ui-text);
+  text-decoration: none;
+  background: rgba(var(--ui-accent-rgb), 0.1);
+}
+.ui-catalog__title {
+  flex: none;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-muted);
+}
+.ui-catalog__tabs { display: flex; gap: 4px; min-width: 0; overflow-x: auto; }
+.ui-catalog__tab {
+  flex: none;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--ui-muted);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--ui-duration-control), background-color var(--ui-duration-control);
+}
+.ui-catalog__tab--active {
+  color: var(--ui-text);
+  border-color: rgba(var(--ui-accent-rgb), 0.55);
+  background: rgba(var(--ui-accent-rgb), 0.14);
+}
+
+.ui-catalog__viewports { display: flex; gap: 4px; margin-left: auto; flex: none; }
+.ui-catalog__viewport {
+  min-width: 52px;
+  padding: 6px 10px;
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.18);
+  border-radius: var(--ui-radius-control);
+  color: var(--ui-muted);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.ui-catalog__viewport--active { color: var(--ui-text); border-color: rgba(var(--ui-accent-rgb), 0.55); background: rgba(var(--ui-accent-rgb), 0.14); }
+
+/* The open tab's elements, each alone in its own centred row (spec 140 Revision 3). */
+.ui-catalog__main { display: grid; justify-items: center; gap: 32px; padding: 24px 16px; }
+.ui-catalog-item { display: grid; justify-items: center; gap: 8px; max-width: 100%; }
+.ui-catalog-item__bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.ui-catalog-item__title { margin: 0; color: var(--ui-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.ui-catalog-item__select {
+  max-width: 180px;
+  height: 26px;
+  padding-inline: 6px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  color: var(--ui-text);
+  background: rgb(var(--ui-surface-rgb));
+  font: inherit;
+  font-size: 12px;
+}
+.ui-catalog-item__range { width: 72px; accent-color: var(--ui-accent); }
+.ui-catalog-item__value { min-width: 5ch; color: var(--ui-info); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* The element alone: the view is its cropped rectangle at the preview scale; the stage inside lays the surface out at
+   the chosen viewport size and is shifted and scaled so only the element shows (UiCatalogBlockCrop). */
+.ui-catalog-item__view {
+  position: relative;
+  width: calc(var(--ui-catalog-crop-width, var(--ui-catalog-width, 320px)) * var(--ui-catalog-scale, 1));
+  height: calc(var(--ui-catalog-crop-height, var(--ui-catalog-height, 640px)) * var(--ui-catalog-scale, 1));
+  overflow: hidden;
+  isolation: isolate;
+}
+.ui-catalog-item__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ui-catalog-width, 320px);
+  height: var(--ui-catalog-height, 640px);
+  transform-origin: 0 0;
+  transform: scale(var(--ui-catalog-scale, 1))
+    translate(calc(-1 * var(--ui-catalog-crop-x, 0px)), calc(-1 * var(--ui-catalog-crop-y, 0px)));
+}
+.ui-catalog-item__status { margin: 0; color: var(--ui-muted); font-size: 12px; overflow-wrap: anywhere; }
+.ui-catalog-item__status:empty { display: none; }
+.ui-catalog-item__status--error { color: var(--ui-danger); }
+.ui-catalog__back:focus-visible,
+.ui-catalog__tab:focus-visible,
+.ui-catalog__viewport:focus-visible,
+.ui-catalog-item__select:focus-visible,
+.ui-catalog-item__range:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+
+/* External placement of the examples inside their stages. */
+.ui-catalog-preview__overlay { position: absolute; inset: 0; }
+.ui-catalog-preview__toolbar { position: absolute; }
+.ui-catalog-preview__toolbar-row { position: absolute; }
+.ui-catalog-preview__house { position: relative; min-height: var(--ui-logical-height); }
+.ui-catalog-preview__control-layout { display: flex; align-items: center; gap: var(--ui-toolbar-gap); padding: var(--ui-toolbar-gap); }
+.ui-catalog-preview__meter-layout { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); padding: var(--ui-toolbar-gap); }
+.ui-catalog-preview__meter-row { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
+.ui-catalog-preview__canvas { display: block; width: 320px; height: 280px; }
+.ui-catalog-preview__clock { position: absolute; top: 300px; }
+.ui-catalog-preview__fullscreen { position: absolute; top: 300px; }
+.ui-catalog-preview__charges { position: absolute; top: 500px; bottom: auto; }
