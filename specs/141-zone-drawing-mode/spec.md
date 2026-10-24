@@ -64,3 +64,31 @@ geometry builder (the viewport outside the allowed area dimmed like the mesh; th
 («Додати зону» turns on the editor and the category's editing, then draws; the list shows «Застосувати», «Скасувати» and a
 «Зона N» tree per new zone; no number list, mask or delete while drawing; «Застосувати» returns to «Всі»). Check
 `zone-drawing` (tools) on the real LocationMap and config edits.
+
+## Revision 2 (owner 2026-10-24)
+
+Owner: (1) a RMB cut that takes a few cells of a zone splits it into two zones lying against each other: a zone must not
+be split needlessly; zones of one type that overlap or touch side by side after a move merge into one (not the fishing
+zones); (2) while zones are drawn, controls that do not concern that zone are inactive; (3) «Редагувати все» is a
+switch: on makes everything editable, off puts everything back as it was.
+Decisions: after a cut the zone keeps its shape (a square with a corner cut is one L-shaped zone); only pieces that fall
+apart become separate zones. Merging happens on release, while drawing and in ordinary editing. Moving zones are not
+touched (owner will specify them separately).
+
+- R2-1: `src/dev/location/zone_cell_shapes.js`: zones as cells on a common unit (the map step, or a finer mask cell);
+  `cutZones` rebuilds each new zone from its remaining side-connected pieces (a full rectangle stays plain, any other
+  piece is its bounding rectangle with an automatic mask, so an L or a ring stays one zone); `mergeTouchingZones` joins
+  zones whose cells overlap or share a side (corners alone do not join) into one zone with the kept zone's other fields.
+  Adaptive-width zones, disabled masks and zones off the unit grid are left as they are. The automatic mask is the
+  zone's shape; the mesh is still not offered while drawing.
+- R2-2: merging on release: a new zone drawn or moved in drawing mode merges with the other new zones; «Застосувати»
+  merges the category as a whole; in ordinary editing a moved or resized castable/obstacle/snag zone merges with the
+  zones of its category it overlaps or touches (a click that changes nothing merges nothing). The merged zone stays the
+  shown one. Moving zones and the castable area's fishing zones are not merged.
+- R2-3: while drawing, the editor section gets `zone-editor--drawing` and the drawn category's list
+  `zone-editor__drawing-list`: every other row and section title is dimmed and takes no pointer input (dev-tools.css).
+- R2-4: «Редагувати все» is a switch; on records each value it changes (editor, category editing, physics, the game
+  show switches, hand chum, chum zones, float) and off writes exactly those back; what was on before stays on.
+- Checks: zone-drawing (cuts: L, ring, two halves, edge strip, missed/covered/below base; merges: side, overlap with the
+  kept fields, corners, base, adaptive, masked; drawing ring and join; ordinary drag merge and plain click; lock
+  classes), zone-editor (switch on/off restore).

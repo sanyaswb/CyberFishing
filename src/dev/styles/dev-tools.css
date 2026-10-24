@@ -371,3 +371,14 @@
   z-index: calc(var(--ui-layer-panel) + 1);
   pointer-events: none;
 }
+/* Spec 141 Revision 2: while new zones are drawn, the editor's controls outside the drawn category's list are inactive. */
+.zone-editor--drawing .devtools__row,
+.zone-editor--drawing .devtools__section-title {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.zone-editor--drawing .zone-editor__drawing-list .devtools__row,
+.zone-editor--drawing .zone-editor__drawing-list .devtools__section-title {
+  opacity: 1;
+  pointer-events: auto;
+}

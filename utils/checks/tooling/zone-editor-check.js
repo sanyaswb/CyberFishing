@@ -1848,14 +1848,25 @@ controlUI.dispose();
     state: allState, config: allConfig, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
     updateConfig: (path, value) => { allWrites.push(path.join(".")); let node = allConfig; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
     getWaterMetric: () => flat, createWaterMetric: options => WaterMetric.illustrated(options), getDependentZones: () => all }).render({});
-    assert(allRows.has("Увімкнути редагування") && allRows.get("Редагувати все").kind === "button", "the renamed switch and the button under it");
-    allRows.get("Редагувати все").args[1]();
+    assert(allRows.has("Увімкнути редагування") && allRows.get("Редагувати все").kind === "switch", "the renamed switch and the switch under it");
+    const editAll = allRows.get("Редагувати все").args[2];
+    allConfig.locations.enableCollisions = false;
+    editAll(true);
     assert(allState.enabled && Object.values(allState.editing).every(Boolean), "the editor and every category's editing are on");
     assert(all.editingChumLine && all.chumZones.isEditing && all.movingFloat, "hand chum, chum zones and the float are being edited");
     assert.deepEqual(allWrites.sort(), ["CONFIG.locations.debugVisuals", "CONFIG.locations.enableCollisions", "CONFIG.locations.showAimingZone",
       "CONFIG.locations.showChumZones", "CONFIG.locations.showPoleFightSector"], "only the parents that were off are turned on");
-    allWrites.length = 0; allRows.get("Редагувати все").args[1]();
-    assert.equal(allWrites.length, 0, "a second press changes nothing");
+    allWrites.length = 0; editAll(true);
+    assert.equal(allWrites.length, 0, "turning it on again changes nothing");
+    // Spec 141 Revision 2: off puts back exactly what it turned on.
+    editAll(false);
+    assert(!allState.enabled && Object.values(allState.editing).every(value => !value), "the editor and editing are back off");
+    assert(!all.editingChumLine && !all.chumZones.isEditing && !all.movingFloat, "hand chum, chum zones and the float are back off");
+    const l = allConfig.locations;
+    assert(l.enableCollisions === false && l.debugVisuals === false && l.showAimingZone === false && l.showChumZones === false &&
+      l.showPoleFightSector === false, "the game switches it turned on are off again");
+    allState.setFlag("enabled", true); allState.setEditing("snags", true); editAll(true); editAll(false);
+    assert(allState.enabled && allState.isEditable("snags") && !allState.isEditable("castable"), "what was on before stays on");
   }
   console.log("Castable fishing zones passed: real readings (Net, landing policy, fish trigger), hand chum band and far-line drag into chumCastDistance, line length for the line radius and the game's sector from a draggable conditional float, rod's real position, test chum zones as game chum records (move, resize), game show switches, own section, polygon on both renderers.");
 })().catch((error) => {

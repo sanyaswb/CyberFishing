@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.21 - Cut and merged zones keep one shape
+
+- Zone editor: a RMB cut keeps one shape (L, ring) and splits only pieces that fall apart; zones of a type that overlap or touch merge on release; other controls inactive while drawing; «Редагувати все» is a switch that restores (spec 141 R2).
+
 ## v0.47.20 - Draw new zones on the grid
 
 - Zone editor: «Додати зону» draws new zones on the grid (LMB rectangle, RMB cut, dimmed where a zone cannot go), «Застосувати»/«Скасувати» (spec 141).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.12 - Cell sizes that divide the map
 
 - Zone editor: the cell size is chosen only from sizes that cut the location into whole cells (2560x1440: 5-160 px); a warning in the middle of the screen when the size does not fit (TK-083).
-
-## v0.47.11 - Zones Snap to the New Grid
-
-- Location editor: turning on a category's editing (or changing the cell size while editing) moves its zones onto the current grid, so they snap to the new cells; other categories keep their exact geometry.

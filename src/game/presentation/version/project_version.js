@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.20";
+export const CURRENT_PROJECT_VERSION = "0.47.21";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "Draw Zones",
+  codename: "Whole Shapes",
   updatedAt: "2026-10-23",
   notes: Object.freeze([
+    "Spec 141 R2: cut/merge shapes, drawing lock, edit-all switch.",
     "Spec 141: new zones are drawn on the grid.",
     "TK-090: «Всі» in every category's zone number.",
     "TK-089: «Всі» in the chum zone number.",

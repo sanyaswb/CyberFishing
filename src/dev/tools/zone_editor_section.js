@@ -31,6 +31,8 @@ export class ZoneEditorSection {
   #fishing = null;
   #newDynamicShape = "square";
   #snapSources = new Map();
+  #editAllRestore = null;
+  #root = null;
   #maskEditor;
   #drawing;
 
@@ -58,6 +60,7 @@ export class ZoneEditorSection {
 
   render(parent) {
     const content = this.#createSection("🗺️ РЕДАКТОР", parent, ["ZONE_EDITOR"]);
+    this.#root = content;
     if (!this.#state.locationId) this.#state.setLocation(this.#locationId());
     this.#location = this.#ui.createControlGroup(content, ["ZONE_EDITOR", "location"]);
     this.#fillLocation();
@@ -203,7 +206,9 @@ export class ZoneEditorSection {
       this.#syncGrids();
       this.#refreshZones();
     }, ["ZONE_EDITOR", "enabled"]);
-    ui.createButtonRow("Редагувати все", section, () => this.#editEverything());
+    ui.createSwitcherRow("Редагувати все", this.#editAllRestore !== null, section, value => {
+      this.#editEverything(value); this.#ui.syncValue(["ZONE_EDITOR", "editEverything"], this.#editAllRestore !== null);
+    }, ["ZONE_EDITOR", "editEverything"]);
     ui.createSwitcherRow("Показати фон (інакше чорний)", state.background, section,
       value => state.setFlag("background", value), ["ZONE_EDITOR", "background"]);
     this.#renderCellGrid(section);
@@ -230,26 +235,47 @@ export class ZoneEditorSection {
     }, path, path, { requires: this.#categoryPrerequisites(CATEGORIES) });
   }
 
-  // TK-087: every editing switch that is off goes on, with the parents it needs (spec 131 prerequisites): the editor,
-  // each category's physics and editing, hand chum's far line, the chum zones and the conditional float with the game
-  // switches that show them.
-  #editEverything() {
+  // TK-087, spec 141 Revision 2: «Редагувати все» is a switch. On: every editing switch that is off goes on, with the
+  // parents it needs (spec 131 prerequisites): the editor, each category's physics and editing, hand chum's far line, the
+  // chum zones and the conditional float with the game switches that show them. Off: exactly what it turned on goes back.
+  #editEverything(on) {
+    if (!on) {
+      const restore = this.#editAllRestore ?? [];
+      this.#editAllRestore = null;
+      for (const undo of restore.reverse()) undo();
+      this.#refreshZones();
+      this.#fillFishing();
+      return;
+    }
+    if (this.#editAllRestore) return;
+    const restore = this.#editAllRestore = [];
     const state = this.#state, locations = this.#config.locations, dependent = this.#getDependentZones?.() ?? null;
-    const turnOn = key => { if (locations[key] !== true) this.#update(["CONFIG", "locations", key], true); };
-    if (!state.enabled) { state.setFlag("enabled", true); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], true); this.#syncGrids(); }
+    const setConfig = key => {
+      if (locations[key] === true) return;
+      const previous = locations[key] === true;
+      this.#update(["CONFIG", "locations", key], true);
+      restore.push(() => this.#update(["CONFIG", "locations", key], previous));
+    };
+    const setFlag = (read, write) => {
+      const previous = read();
+      if (previous) return;
+      write(true);
+      restore.push(() => write(previous));
+    };
+    setFlag(() => state.enabled, value => { state.setFlag("enabled", value); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], value); this.#syncGrids(); });
     for (const category of CATEGORIES) {
-      if (locations[PHYSICS_KEYS[category]] === false) this.#update(["CONFIG", "locations", PHYSICS_KEYS[category]], true);
-      state.setEditing(category, true);
+      if (locations[PHYSICS_KEYS[category]] === false) setConfig(PHYSICS_KEYS[category]);
+      setFlag(() => state.isEditable(category), value => state.setEditing(category, value));
     }
     this.#snapToGrid(CATEGORIES);
     if (dependent) {
-      if (!dependent.isShown("handChum")) turnOn("showAimingZone");
-      dependent.setEditingChumLine(true);
-      if (!dependent.isShown("chum")) turnOn("showChumZones");
-      dependent.chumZones.setEditing(true);
-      turnOn("debugVisuals");
-      if (!dependent.isShown("sector") && !dependent.isShown("line")) turnOn("showPoleFightSector");
-      dependent.setMovingFloat(true);
+      if (!dependent.isShown("handChum")) setConfig("showAimingZone");
+      setFlag(() => dependent.editingChumLine, value => dependent.setEditingChumLine(value));
+      if (!dependent.isShown("chum")) setConfig("showChumZones");
+      setFlag(() => dependent.chumZones.isEditing, value => dependent.chumZones.setEditing(value));
+      setConfig("debugVisuals");
+      if (!dependent.isShown("sector") && !dependent.isShown("line")) setConfig("showPoleFightSector");
+      setFlag(() => dependent.movingFloat, value => dependent.setMovingFloat(value));
     }
     this.#refreshZones();
     this.#fillFishing();
@@ -297,6 +323,15 @@ export class ZoneEditorSection {
     for (const category of CATEGORIES) this.#fillCategory(category);
     this.#syncEditingControls();
     this.#showSavingStatus();
+    this.#syncDrawingLock();
+  }
+
+  // Spec 141 Revision 2: while a category is drawn, every editor control but that category's list is inactive
+  // (dev-tools.css: .zone-editor--drawing).
+  #syncDrawingLock() {
+    const drawing = this.#drawing?.category ?? null;
+    this.#root?.classList?.toggle("zone-editor--drawing", drawing !== null);
+    for (const [category, list] of this.#lists) list?.classList?.toggle("zone-editor__drawing-list", category === drawing);
   }
 
 
