@@ -19,13 +19,21 @@ export class RadioStreamPlayer {
   #volume = 1;
   #gainScale = 1;
   #listeners = [];
+  #effects;
 
-  constructor({ documentRef, audioContexts, scheduler, config, onState }) {
+  // effects: an optional rack { attach(context, input, output), setEnabled(on), dispose() } between input and output.
+  constructor({ documentRef, audioContexts, scheduler, config, onState, effects = null }) {
     this.#documentRef = documentRef;
     this.#audioContexts = audioContexts;
     this.#scheduler = scheduler;
     this.#config = config;
     this.#onState = typeof onState === "function" ? onState : () => {};
+    this.#effects = effects;
+  }
+
+  // The walkie-talkie sound on or off (only streams played through Web Audio have it).
+  setEffectsEnabled(enabled) {
+    this.#effects?.setEnabled(enabled);
   }
 
   // The node streams feed (effects racks connect between it and the output); built on first use.
@@ -61,6 +69,7 @@ export class RadioStreamPlayer {
 
   dispose() {
     this.stop();
+    this.#effects?.dispose();
     this.#output?.disconnect?.();
     this.#input?.disconnect?.();
     this.#output = null;
@@ -108,7 +117,8 @@ export class RadioStreamPlayer {
     if (!context) return;
     this.#output = context.createGain();
     this.#input = context.createGain();
-    this.#input.connect(this.#output);
+    if (this.#effects) this.#effects.attach(context, this.#input, this.#output);
+    else this.#input.connect(this.#output);
     this.#output.connect(context.destination);
     this.#applyVolume();
   }

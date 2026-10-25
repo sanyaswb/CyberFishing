@@ -52,6 +52,7 @@ export class RadioReceiverService {
     };
     this.#prefs.country = this.#prefs.country || this.#region.resolve();
     this.#player.setVolume(this.#prefs.volume);
+    this.#player.setEffectsEnabled(this.#prefs.retroMode);
     this.#syncPreferences();
   }
 
@@ -121,6 +122,7 @@ export class RadioReceiverService {
     this.#prefs[key] = value;
     this.#save({ [key]: value });
     this.#set({ [key]: value });
+    if (key === "retroMode") this.#player.setEffectsEnabled(value);
     if (key === "playInBackground" && this.#hidden && !value && this.#status.powered) this.#player.stop();
   }
 

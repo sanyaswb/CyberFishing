@@ -344,6 +344,9 @@ export const CONFIG = {
     defaultVolume: 0.6,
     playInBackground: false,
     ducking: { enabled: true },
+    // Stage 3: the walkie-talkie rack (high-pass, low-pass, peaking, S-curve drive with make-up gain, switch ramp).
+    rack: { highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5, drive: 18, oversample: "4x",
+      rampSeconds: 0.03 },
     timeZoneCountries: {
       "Europe/Kyiv": "UA", "Europe/Kiev": "UA", "Europe/Warsaw": "PL", "Europe/Berlin": "DE", "Europe/London": "GB",
       "Europe/Paris": "FR", "Europe/Rome": "IT", "Europe/Madrid": "ES", "America/New_York": "US",

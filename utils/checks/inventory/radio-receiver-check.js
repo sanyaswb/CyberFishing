@@ -200,6 +200,7 @@ async function stageTwo() {
   const equippedState = { radio: { instanceId: "r" }, radioBattery: { instanceId: "b" } };
   let charge = 100;
   const played = [];
+  const effectsCalls = [];
   let stops = 0;
   const lists = { UA: [station("u1", "https://u1.example/live"), station("u2", "https://u2.example/live")],
     DE: [station("d1", "https://d1.example/live")], PL: [] };
@@ -207,7 +208,8 @@ async function stageTwo() {
     power: { read: () => ({ empty: charge <= 0 }) },
     stations: { listStations: async (code) => lists[code] || [], listCountries: async () => [
       { iso_3166_1: "UA", name: "Ukraine", stationcount: 2 }, { iso_3166_1: "DE", name: "Germany", stationcount: 1 }] },
-    player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {} },
+    player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {},
+      setEffectsEnabled: (enabled) => effectsCalls.push(enabled) },
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }),
     region: { resolve: () => "UA" }, config: () => ({ codecs: ["MP3"], defaultVolume: 0.5 }), secureOnly: true });
   assert.equal(service.getStatus().status, "off");
@@ -373,7 +375,68 @@ async function stageTwo() {
   indicator.dispose();
 }
 
-stageTwo().then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
+// ---- Stage 3: the walkie-talkie rack ----
+const { WalkieTalkieRack } = runtime.importModule("src/platform/browser/audio/walkie_talkie_rack.js");
+async function stageThree() {
+  const curve = WalkieTalkieRack.curve(18, 1001);
+  assert.equal(curve.length, 1001);
+  assert(Math.abs(curve[500]) < 1e-6, "the S-curve passes through zero");
+  assert(Math.abs(curve[0] + curve[1000]) < 1e-6, "it is odd-symmetric");
+  for (let index = 1; index < curve.length; index += 1) assert(curve[index] >= curve[index - 1], "and monotonic");
+  assert(Math.abs(curve[1000] - WalkieTalkieRack.peak(18)) < 1e-6);
+  assert(Math.abs(WalkieTalkieRack.peak(18) - 0.3467) < 0.001, "k = 18 peaks near 0.35, so the effect needs make-up gain");
+  assert.equal(WalkieTalkieRack.curve(18).length, 44100, "the curve has 44100 points (ToR 4.2)");
+
+  const made = [];
+  const node = (kind) => {
+    const entry = { kind, to: [], connect(target) { this.to.push(target); }, disconnect() { this.to = []; },
+      gain: { value: 1, targets: [], setTargetAtTime(value, at, constant) { this.targets.push([value, at, constant]); } },
+      frequency: { value: 0 }, Q: { value: 0 } };
+    made.push(entry);
+    return entry;
+  };
+  const context = { currentTime: 2, createBiquadFilter: () => node("biquad"), createWaveShaper: () => node("shaper"),
+    createGain: () => node("gain") };
+  const rackConfig = { highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5, drive: 18, oversample: "4x",
+    rampSeconds: 0.03 };
+  const rack = new WalkieTalkieRack({ config: () => rackConfig });
+  const input = node("input");
+  const output = node("output");
+  rack.attach(context, input, output);
+  const [highpass, lowpass, peaking, shaper, makeup, dry, wet] = made.slice(2, 9);
+  assert.deepEqual([highpass.type, lowpass.type, peaking.type], ["highpass", "lowpass", "peaking"]);
+  assert.deepEqual([highpass.frequency.value, lowpass.frequency.value, peaking.frequency.value, peaking.gain.value,
+    peaking.Q.value], [500, 3000, 1800, 8, 2.5], "the filters follow CONFIG.radio.rack");
+  assert.equal(shaper.oversample, "4x");
+  assert(Math.abs(makeup.gain.value - 1 / WalkieTalkieRack.peak(18)) < 1e-9, "make-up gain keeps both modes equally loud");
+  assert(input.to.includes(dry) && input.to.includes(highpass), "the input feeds the dry and the wet path");
+  assert(highpass.to.includes(lowpass) && lowpass.to.includes(peaking) && peaking.to.includes(shaper) &&
+    shaper.to.includes(makeup) && makeup.to.includes(wet), "the wet chain in order");
+  assert(dry.to.includes(output) && wet.to.includes(output));
+  assert.deepEqual([wet.gain.value, dry.gain.value], [1, 0], "the walkie-talkie sound is on by default");
+  rack.setEnabled(false);
+  assert.deepEqual([...wet.gain.targets.at(-1)], [0, 2, 0.03], "switching off ramps the wet gain");
+  assert.deepEqual([...dry.gain.targets.at(-1)], [1, 2, 0.03], "and the dry gain, without a click");
+  assert.equal(wet.gain.value, 1, "no instant jump");
+  rack.setEnabled(false);
+  assert.equal(wet.gain.targets.length, 1, "an unchanged switch does nothing");
+  rack.dispose();
+  assert(made.slice(2, 9).every((entry) => entry.to.length === 0), "dispose disconnects the rack");
+
+  // The service passes the «Звук рації» preference to the player.
+  const switched = [];
+  const service = new RadioReceiverService({ equipment: { getEquipped: () => ({}) }, power: { read: () => ({ empty: true }) },
+    stations: { listStations: async () => [], listCountries: async () => [] },
+    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled: (enabled) => switched.push(enabled) },
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => ({ retroMode: false }), set() {} } }),
+    region: { resolve: () => "UA" }, config: () => ({}), secureOnly: true });
+  assert.deepEqual(switched, [false], "a saved preference applies at start");
+  service.setPreference("retroMode", true);
+  assert.deepEqual(switched, [false, true], "the switch turns the rack on");
+}
+
+stageTwo().then(stageThree).then(() => console.log("Radio receiver stage 3 passed: S-curve (zero, odd, monotonic, 44100 "
+  + "points, peak 0.35), rack order and settings, make-up gain, ramped dry/wet switch, dispose, the preference.")).then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
   + "duplicates), region (language, time zone, default), mirrors and request timeout, validated preferences without power, "
   + "the service (battery gate, stations, skip, no-stations, next, no-effect, country, volume, hidden page, background, "
   + "unequip, empty battery), the stream player (context in the gesture, Web Audio for CORS, a new native element "

@@ -98,6 +98,7 @@ import { BrowserRegionResolver } from "../../platform/browser/radio/browser_regi
 import { RadioPreferencesLocalStore } from "../../platform/browser/storage/radio_preferences_local_store.js";
 import { SharedAudioContextProvider } from "../../platform/browser/audio/shared_audio_context_provider.js";
 import { RadioStreamPlayer } from "../../platform/browser/audio/radio_stream_player.js";
+import { WalkieTalkieRack } from "../../platform/browser/audio/walkie_talkie_rack.js";
 import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator.js";
 import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
@@ -1013,7 +1014,8 @@ export class GameCompositionRoot {
     let radio = null;
     const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
     const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
-      config, onState: (state, info) => radio?.handlePlayerState(state, info) }));
+      config, onState: (state, info) => radio?.handlePlayerState(state, info),
+      effects: new WalkieTalkieRack({ config: () => config().rack || {} }) }));
     radio = own(new RadioReceiverService({
       equipment: inventory,
       power: devicePower,

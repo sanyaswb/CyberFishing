@@ -249,3 +249,14 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - Checks: `radio-receiver` stage 2 (filter, region, mirrors and timeout, preferences, the service, the player over a
   fake Web Audio that keeps the browser contract, controls, indicator). No check composes the whole game: the owner's
   dev.html start is the first look.
+
+### Stage 3 (v0.47.30): the walkie-talkie sound
+
+- `WalkieTalkieRack` (platform/browser/audio) between the player's input and output: high-pass 500 Hz -> low-pass
+  3000 Hz -> peaking 1800 Hz +8 dB Q 2.5 -> WaveShaper (44100-point S-curve, k = 18, 4x) -> make-up gain
+  1 / f(1) ≈ 2.88 (f(1) ≈ 0.347), in parallel with the dry path; the switch ramps both gains (`setTargetAtTime`,
+  30 ms) and never jumps. `CONFIG.radio.rack` holds every value.
+- «Звук рації» (`retroMode`, on by default, remembered) switches it; streams on the no-CORS fallback play without it
+  («без ефекту»).
+- Checks: `radio-receiver` stage 3 (curve shape and peak, node order and settings, make-up gain, ramps, unchanged
+  switch, dispose, the preference at start and on change).
