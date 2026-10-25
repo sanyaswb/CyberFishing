@@ -15,6 +15,7 @@ const ICONS = Object.freeze({
   battery: "assets/ui/inventory/battery.svg",
   delivery: "assets/ui/inventory/boat.svg",
   gasMask: "assets/ui/inventory/gas-mask.svg",
+  radio: "assets/ui/inventory/radio.svg",
   bait: "assets/ui/inventory/bait.svg",
   weight: "assets/ui/inventory/weight.svg",
 });

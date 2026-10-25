@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.27";
+export const CURRENT_PROJECT_VERSION = "0.47.28";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,9 +13,10 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "Battery Power",
+  codename: "Field Radio",
   updatedAt: "2026-10-25",
   notes: Object.freeze([
+    "Spec 142 stage 1: radio item, slot, battery, scrolling wells.",
     "TK-095: battery shown as the device's charge bar.",
     "TK-094: battery and radio art.",
     "Spec 143: one power system, battery slot, boat on batteries.",

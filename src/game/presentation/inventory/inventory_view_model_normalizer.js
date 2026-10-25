@@ -17,6 +17,7 @@ export class InventoryViewModelNormalizer {
     "handChum",
     "delivery",
     "gasMask",
+    "radio",
   ]);
 
   constructor({

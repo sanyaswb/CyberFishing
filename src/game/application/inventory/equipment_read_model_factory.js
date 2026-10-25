@@ -31,6 +31,7 @@ export class EquipmentReadModelFactory {
     const net = this.#rootItem(equipmentState, "net");
     const delivery = this.#rootItem(equipmentState, "delivery");
     const handChum = this.#rootItem(equipmentState, "handChum");
+    const radio = this.#rootItem(equipmentState, "radio");
 
     const reelLine = reel
       ? this.#child(this.#instanceId(reel), "line", 0)
@@ -53,6 +54,8 @@ export class EquipmentReadModelFactory {
     );
     // Spec 143: the battery in the boat's battery slot.
     const deliveryBattery = delivery ? this.#child(this.#instanceId(delivery), "battery", 0) : null;
+    // Spec 142: the radio receiver and its battery.
+    const radioBattery = radio ? this.#child(this.#instanceId(radio), "battery", 0) : null;
 
     return Object.freeze({
       rod,
@@ -70,6 +73,8 @@ export class EquipmentReadModelFactory {
       deliveryChums: Object.freeze(deliveryChums),
       deliveryBattery,
       handChum,
+      radio,
+      radioBattery,
     });
   }
 

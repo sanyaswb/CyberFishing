@@ -53,6 +53,7 @@ export const INVENTORY_SORT_CONFIG = Object.freeze({
     "boat",
     "chum_delivery",
     "battery",
+    "radio",
     "net",
     "gas_mask",
     "equipment_loadout",

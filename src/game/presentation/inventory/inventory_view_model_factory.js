@@ -703,7 +703,7 @@ export class InventoryViewModelFactory {
       return ["boat", "chum_delivery"].includes(itemType);
     }
     if (categoryId === "nets") return itemType === "net";
-    return itemType === "gas_mask" || itemType === "backpack" || itemType === "battery";
+    return itemType === "gas_mask" || itemType === "backpack" || itemType === "battery" || itemType === "radio";
   }
 
   #itemType(item) {

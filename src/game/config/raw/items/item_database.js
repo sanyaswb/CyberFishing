@@ -1032,6 +1032,24 @@ export const ITEM_DB = {
     },
   },
 
+  // Spec 142: devices worn in the auxiliary equipment.
+  devices: {
+    radio_receiver_basic: {
+      id: "radio_receiver_basic",
+      name: "Польовий радіоприймач",
+      itemType: "radio",
+      iconUrl: "assets/items/radio/radio-receiver.webp",
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "device.radio" },
+      assemblyProfileId: "radio_receiver",
+      displayStats: {},
+      gameplayStats: {
+        // Spec 143 D-P5: 1 unit/s, so the 3600-unit ordinary battery plays for 1 hour.
+        batteryUse: { unitsPerSecond: 1 },
+      },
+    },
+  },
+
   misc: {
     backpack_basic: {
       id: "backpack_basic",

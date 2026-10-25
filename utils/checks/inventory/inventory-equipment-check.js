@@ -215,7 +215,7 @@ class InventoryEquipmentCheck {
   #checkStableSlotsAndVisibility() {
     const r = this.#runtime;
     Assertion.equal(r.EQUIPMENT_MAIN_SLOT_IDS.join(","), "rod,reel,terminalLine,tackle,float", "five main slot ids are stable");
-    Assertion.equal(r.EQUIPMENT_AUXILIARY_SLOT_IDS.join(","), "handChum,net,delivery,gasMask", "auxiliary slots are separate");
+    Assertion.equal(r.EQUIPMENT_AUXILIARY_SLOT_IDS.join(","), "handChum,net,delivery,gasMask,radio", "auxiliary slots are separate (radio, spec 142)");
 
     const visibility = new r.EquipmentSlotVisibilityPolicy();
     const pole = { equipmentCapabilities: { supportsReel: false, supportsFloat: true } };

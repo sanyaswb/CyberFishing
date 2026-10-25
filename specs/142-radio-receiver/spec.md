@@ -198,3 +198,27 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - Privacy: the stream is fetched from the station's own host, which sees the player's IP like any web radio; no other
   third party is contacted. Radio Browser click counting (`json/url/{uuid}`) is not used.
 - Appearance, sound and the iOS Safari behaviour of Web Audio with streams are the owner's phone checks.
+
+## Implementation
+
+### Stage 1 (v0.47.28): item, slot, battery, editor, scrolling wells
+
+- Catalog `devices.radio_receiver_basic` «Польовий радіоприймач» (`itemType: "radio"`, art
+  `assets/items/radio/radio-receiver.webp`, TK-094), group `device.radio` (no metric), `assemblyProfileId:
+  "radio_receiver"` with one `battery` slot, `gameplayStats.batteryUse.unitsPerSecond: 1` (stage 4 consumes it). DEV
+  shop section «📻 Пристрої»; the backpack lists radios under "other" with their own subfilter.
+- Equipment: auxiliary slot `EquipmentSlotId.RADIO = "radio"` (label «Радіо», placeholder
+  `assets/ui/inventory/radio.svg`); `EquipmentState` gives saves without it an empty slot. The equipment read model
+  has `radio` and `radioBattery`.
+- The charge bar on device thumbnails covers the radio: `setBoatChargeProvider` became `setDeviceChargeProvider`
+  (boat, chum delivery, radio); the battery has no cell of its own (TK-095).
+- The editor is the ordinary item editor: a tap on the filled radio well opens it with the radio's art and the battery
+  socket tab; the battery tab shows «Заряд». Radio controls arrive with stage 2.
+- Auxiliary wells: `inventory-loadout-panel__auxiliary` is an auto-sized grid; in the row layout more wells than fit
+  scroll left/right (`--inventory-scroll-axis: x`), in the column layout (container aspect >= 1) the column is as tall
+  as the primary panel and scrolls up/down (`--inventory-scroll-axis: y`, `touch-action: pan-y`). One
+  `HorizontalScrollController` with the new `resolveAxis(element)` option (read per gesture from the custom property)
+  gives mouse drag and click suppression on both axes; the section pager ignores gestures inside it.
+- Checks: new `radio-receiver` (catalog, slot, the player's path: well -> radio -> editor -> battery -> equip, power
+  port, editor art and socket, thumbnail bar without a cell, save and reload, row/column drag axes); equipment slot
+  list, progression and placeholder counts updated. Tools replaced or obsolete: none.

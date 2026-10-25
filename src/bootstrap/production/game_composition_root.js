@@ -984,9 +984,9 @@ export class GameCompositionRoot {
       ),
       inventory,
     };
-    // The boat card's charge is its battery's (null without a battery: no bar).
-    inventory.setBoatChargeProvider?.((boatItem) => {
-      const batteryId = devicePower.batteryOf(boatItem?.instanceId);
+    // A device card's charge is its battery's (null without a battery: no bar).
+    inventory.setDeviceChargeProvider?.((deviceItem) => {
+      const batteryId = devicePower.batteryOf(deviceItem?.instanceId);
       if (!batteryId) return null;
       return { current: devicePower.read(batteryId).percent, maximum: 100 };
     });

@@ -16,7 +16,7 @@ export class InventoryFacade {
       throw new TypeError("InventoryFacade requires InventoryViewModelFactory");
     }
     for (const method of ["setAfterMutation", "handleRodRetrieved", "handleHandChumUsed", "handleBoatReturned",
-      "setBoatChargeProvider"]) {
+      "setDeviceChargeProvider"]) {
       if (typeof gameplayBridge?.[method] !== "function") {
         throw new TypeError(`InventoryFacade requires InventoryGameplayBridge.${method}`);
       }
@@ -68,8 +68,8 @@ export class InventoryFacade {
     return this.#gameplayBridge.handleBoatReturned(context);
   }
 
-  setBoatChargeProvider(provider) {
-    this.#gameplayBridge.setBoatChargeProvider(provider);
+  setDeviceChargeProvider(provider) {
+    this.#gameplayBridge.setDeviceChargeProvider(provider);
     return this;
   }
 }

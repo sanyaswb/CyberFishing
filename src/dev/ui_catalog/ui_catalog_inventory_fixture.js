@@ -62,7 +62,7 @@ export class UiCatalogInventoryFixture {
         chumStock: fullConsumables ? 22 : selectedConsumables ? 14 : empty || consumables ? 0 : 12 },
       panel: { mode: ["assembly", "removal", "save"].includes(state) ? "assembly" : state === "saved" ? "saved-loadout" : "loadout",
         loadout: { mainSlots, auxiliarySlots: [slot("handChum", "Прикормка рукою", items[5], 0), slot("net", "Підсака", items[6], 0),
-          slot("delivery", "Кораблик", items[7], 0), slot("gasMask", "Протигаз", null, 0)] },
+          slot("delivery", "Кораблик", items[7], 0), slot("gasMask", "Протигаз", null, 0), slot("radio", "Радіо", null, 0)] },
         savedLoadout: { loadoutId: "catalog-loadout", name: "Контрольна збірка", slots: mainSlots, canEquipAll: false, equipWarning: "Контрольний стан: збірку не можна спорядити" },
         assembly: { root: items[0], rootInstanceId: items[0].instanceId,
           sockets: [slot("reel", "Котушка", items[1], 1)], equipped: false, canEquip: false,

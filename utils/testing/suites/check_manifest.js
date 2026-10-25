@@ -297,6 +297,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "radio-receiver",
+    title: "Field radio receiver: item, auxiliary slot, battery, editor, scrolling wells (spec 142)",
+    file: "utils/checks/inventory/radio-receiver-check.js",
+    suites: ["inventory"],
+  },
+  {
     id: "device-power",
     title: "One power system for devices: battery charge, boat consumption, tamper resistance (spec 143)",
     file: "utils/checks/gameplay/device-power-check.js",

@@ -1138,7 +1138,7 @@ vm.runInContext(
   const inventoryBoatCharge = makeComposition({
     items: [raw("charged-inventory-boat", "boat")],
   });
-  inventoryBoatCharge.gameplayBridge.setBoatChargeProvider(() => ({
+  inventoryBoatCharge.gameplayBridge.setDeviceChargeProvider(() => ({
     current: 64,
     maximum: 100,
   }));

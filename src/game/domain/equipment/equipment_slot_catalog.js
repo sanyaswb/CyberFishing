@@ -14,6 +14,7 @@ export const EquipmentSlotId = Object.freeze({
   NET: "net",
   DELIVERY: "delivery",
   GAS_MASK: "gasMask",
+  RADIO: "radio",
 });
 
 export const EQUIPMENT_MAIN_SLOT_IDS = Object.freeze([
@@ -29,6 +30,7 @@ export const EQUIPMENT_AUXILIARY_SLOT_IDS = Object.freeze([
   EquipmentSlotId.NET,
   EquipmentSlotId.DELIVERY,
   EquipmentSlotId.GAS_MASK,
+  EquipmentSlotId.RADIO,
 ]);
 
 export const EQUIPMENT_ALL_SLOT_IDS = Object.freeze([
@@ -95,5 +97,12 @@ export const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     visibility: "always",
     acceptTypes: Object.freeze(["gas_mask"]),
     locked: true,
+  }),
+  // Spec 142: the field radio receiver.
+  [EquipmentSlotId.RADIO]: Object.freeze({
+    id: EquipmentSlotId.RADIO,
+    group: "auxiliary",
+    visibility: "always",
+    acceptTypes: Object.freeze(["radio"]),
   }),
 });

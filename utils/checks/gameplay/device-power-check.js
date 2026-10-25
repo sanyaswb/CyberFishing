@@ -192,7 +192,7 @@ const thumbRepository = new FlatInventoryItemRepository({ items: [
 const thumbnails = new InventoryItemTreeViewFactory({ repository: thumbRepository, assemblyStates: { get: () => null },
   profileRegistry: new AssemblyProfileRegistry(ITEM_ASSEMBLY_PROFILE_CONFIG, { itemDefinitionResolver: (id) => definitions[id] }),
   hydrate: (raw) => ({ ...definitions[raw.itemId], ...raw, effectiveStats: { ...definitions[raw.itemId].gameplayStats } }),
-  boatChargeProvider: (boatItem) => {
+  deviceChargeProvider: (boatItem) => {
     const child = thumbRepository.getChild(boatItem.instanceId, "battery", 0);
     return child ? { current: child.chargeState?.percent ?? 100, maximum: 100 } : null;
   } });

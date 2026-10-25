@@ -94,7 +94,7 @@ export class InventoryCompositionRoot {
     itemViewFactory = null,
     instanceIdFactory = null,
     now = null,
-    boatChargeProvider = null,
+    deviceChargeProvider = null,
     loadValueProvider = null,
     warningSink = null,
     lineConfig = {},
@@ -381,7 +381,7 @@ export class InventoryCompositionRoot {
       completionPolicy,
       hydrate: (raw) =>
         itemViewFactory?.create?.(raw) || hydrator.hydrate(raw, repository),
-      boatChargeProvider,
+      deviceChargeProvider,
       consumableSlotIds: HEADER_CONSUMABLE_SLOT_IDS,
     });
     const subfilterResolver = new InventorySubfilterResolver();

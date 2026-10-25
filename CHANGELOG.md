@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.28 - Radio receiver in the equipment
+
+- Radio receiver stage 1: the field radio item with its art in its own auxiliary slot, a battery slot, the charge bar on its thumbnail and the item editor; the auxiliary wells scroll in a row or a column (spec 142).
+
 ## v0.47.27 - Battery as a charge bar
 
 - A battery inserted into a device shows as the device's charge bar in its thumbnail, without an attachment cell (TK-095).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.19 - All zones of a category
 
 - Zone editor: «Всі» at the end of every category's «Номер зони» lets any zone of the category under the pointer be moved and resized (TK-090).
-
-## v0.47.18 - All chum zones at once
-
-- Zone editor: «Всі» at the end of «Номер зони прикормки» lets any chum zone under the pointer be moved and resized (TK-089).

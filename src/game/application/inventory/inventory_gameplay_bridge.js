@@ -132,8 +132,8 @@ export class InventoryGameplayBridge {
     });
   }
 
-  setBoatChargeProvider(provider) {
-    this.#itemViews?.setBoatChargeProvider?.(provider);
+  setDeviceChargeProvider(provider) {
+    this.#itemViews?.setDeviceChargeProvider?.(provider);
     this.#afterMutation?.();
     return this;
   }

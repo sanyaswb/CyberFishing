@@ -81,8 +81,8 @@ export class PlayerInventory {
     return this.#facade.dispatch(action);
   }
 
-  setBoatChargeProvider(provider) {
-    this.#facade.setBoatChargeProvider(provider);
+  setDeviceChargeProvider(provider) {
+    this.#facade.setDeviceChargeProvider(provider);
   }
 
   setFreshnessExposureProvider(provider) {

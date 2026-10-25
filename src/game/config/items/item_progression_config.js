@@ -62,6 +62,7 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
     groups: {
       "storage.backpack": {}, // Artwork item; no capacity or upgrade gameplay contract yet.
       "aquarium.feed": {}, // Packs have authored rarity; no upgrade, condition or freshness metric.
+      "device.radio": {}, // Spec 142: the radio's power is its battery's charge; no condition or upgrade metric.
       // Spec 143: a battery's charge only falls while a device consumes it (DevicePowerService).
       "power.battery": {
         charge: {

@@ -18,4 +18,5 @@ export const EQUIPMENT_SLOT_PRESENTATION = Object.freeze({
     label: "Протигаз",
     lockedWarning: "Протигаз ще не розблоковано.",
   }),
+  radio: Object.freeze({ label: "Радіо" }),
 });

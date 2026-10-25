@@ -3,6 +3,7 @@ export const ITEM_ASSEMBLY_PROFILE_IDS = Object.freeze({
   FEEDER_RIG: "feeder_spring_basic",
   HOOK: "hook_standard",
   BAIT_BOAT: "bait_boat",
+  RADIO: "radio_receiver",
 });
 
 export const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
@@ -67,6 +68,20 @@ export const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
         refillable: true,
       }),
       // Spec 143: the boat runs on the battery in this slot (DevicePowerService).
+      Object.freeze({
+        id: "battery",
+        acceptedTypes: Object.freeze(["battery"]),
+        capacity: 1,
+        refillable: false,
+      }),
+    ]),
+  }),
+
+  // Spec 142: the radio receiver runs on the battery in its slot (spec 143).
+  [ITEM_ASSEMBLY_PROFILE_IDS.RADIO]: Object.freeze({
+    id: ITEM_ASSEMBLY_PROFILE_IDS.RADIO,
+    fallbackTypes: Object.freeze(["radio"]),
+    slots: Object.freeze([
       Object.freeze({
         id: "battery",
         acceptedTypes: Object.freeze(["battery"]),

@@ -4,7 +4,7 @@ export class InventoryItemTreeViewFactory {
   #profileRegistry;
   #completionPolicy;
   #hydrate;
-  #boatChargeProvider;
+  #deviceChargeProvider;
   #consumableSlotIds;
 
   constructor({
@@ -13,7 +13,7 @@ export class InventoryItemTreeViewFactory {
     profileRegistry,
     completionPolicy = null,
     hydrate,
-    boatChargeProvider = null,
+    deviceChargeProvider = null,
     consumableSlotIds = [],
   } = {}) {
     this.#repository = repository;
@@ -21,12 +21,12 @@ export class InventoryItemTreeViewFactory {
     this.#profileRegistry = profileRegistry;
     this.#completionPolicy = completionPolicy;
     this.#hydrate = hydrate;
-    this.#boatChargeProvider = boatChargeProvider;
+    this.#deviceChargeProvider = deviceChargeProvider;
     this.#consumableSlotIds = consumableSlotIds;
   }
 
-  setBoatChargeProvider(provider) {
-    this.#boatChargeProvider =
+  setDeviceChargeProvider(provider) {
+    this.#deviceChargeProvider =
       typeof provider === "function" ? provider : null;
   }
 
@@ -62,7 +62,7 @@ export class InventoryItemTreeViewFactory {
     }
     const reelLineCapacity = this.#createReelLineCapacity(view);
     if (reelLineCapacity) view.reelLineCapacity = reelLineCapacity;
-    const charge = this.#createBoatCharge(view);
+    const charge = this.#createDeviceCharge(view);
     if (charge) view.charge = charge;
     return view;
   }
@@ -171,14 +171,15 @@ export class InventoryItemTreeViewFactory {
     return "bottom";
   }
 
-  #createBoatCharge(item) {
+  #createDeviceCharge(item) {
     if (
-      !["boat", "chum_delivery"].includes(item?.itemType) ||
-      !this.#boatChargeProvider
+      // Devices with a battery slot (spec 143): the bait boat and the radio receiver (spec 142).
+      !["boat", "chum_delivery", "radio"].includes(item?.itemType) ||
+      !this.#deviceChargeProvider
     ) {
       return null;
     }
-    const reading = this.#boatChargeProvider(item);
+    const reading = this.#deviceChargeProvider(item);
     const current = Number(
       typeof reading === "number" ? reading : reading?.current,
     );

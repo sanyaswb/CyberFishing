@@ -223,6 +223,9 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         resourceMeterRenderer: resolvedResourceMeterRenderer,
         getEquippedLongPressDurationMs: () => LongPressController.EQUIPPED_DURATION_MS,
+        // Spec 142: the auxiliary wells scroll along the axis their layout declares (row: x, column: y).
+        auxiliaryScrollController: new HorizontalScrollController({ uiSurface,
+          resolveAxis: (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-scroll-axis").trim() }),
       });
     const resolvedAssemblyRenderer =
       assemblyRenderer ||

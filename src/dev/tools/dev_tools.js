@@ -541,7 +541,7 @@ export class DevTools {
     const labels = { rods: "🎣 Вудки", reels: "🧵 Котушки", lines: "🧶 Ліски", hooks: "🪝 Гачки",
       leaders: "🪢 Поводки", floats: "🥢 Поплавки", nets: "🕸️ Підсаки", misc: "☣️ Інше",
       baits: "🪱 Наживки та снасті", chums: "🍞 Прикормки для риболовлі",
-      aquariumFeeds: "🐟 Прикормки для акваріума", deliveryMethods: "🚤 Доставка", batteries: "🔋 Живлення", builds: "📦 Комплекти" };
+      aquariumFeeds: "🐟 Прикормки для акваріума", deliveryMethods: "🚤 Доставка", batteries: "🔋 Живлення", devices: "📻 Пристрої", builds: "📦 Комплекти" };
     for (const category of Object.keys(this.#catalogs.items)) {
       if (this.#excludeKeys.includes(category)) continue;
       const section = this.#createSectionWithCache(labels[category] || category, content);

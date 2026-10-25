@@ -3,12 +3,15 @@ export class InventoryLoadoutPanelRenderer {
   #itemRenderer;
   #resourceMeterRenderer;
   #getEquippedLongPressDurationMs;
+  #auxiliaryScrollController;
 
-  constructor({ domFactory, itemRenderer, resourceMeterRenderer, getEquippedLongPressDurationMs } = {}) {
+  constructor({ domFactory, itemRenderer, resourceMeterRenderer, getEquippedLongPressDurationMs,
+    auxiliaryScrollController = null } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#resourceMeterRenderer = resourceMeterRenderer;
     this.#getEquippedLongPressDurationMs = getEquippedLongPressDurationMs;
+    this.#auxiliaryScrollController = auxiliaryScrollController;
   }
 
   render(
@@ -60,6 +63,8 @@ export class InventoryLoadoutPanelRenderer {
       model.auxiliarySlots.forEach((slot) => {
         auxiliary.appendChild(this.#renderSlot(slot, "auxiliary", handlers));
       });
+      // More wells than fit scroll inside the block; a drag never activates the well under the pointer (spec 142).
+      this.#auxiliaryScrollController?.attach(auxiliary);
       panel.appendChild(auxiliary);
     }
     shell.appendChild(panel);

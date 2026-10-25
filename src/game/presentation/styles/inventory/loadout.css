@@ -216,15 +216,26 @@
   border-radius: calc(var(--inventory-parameter-meter-height) / 2);
 }
 
-/* Four equal wells span exactly the primary content width: first under the rod edge, last under the column edge. */
+/* Equal wells in one row under the primary panel: while they fit they span its content width (first under the rod
+   edge, last under the column edge); more wells than fit (spec 142: the radio is the fifth) scroll left and right inside
+   the row, by touch, wheel and mouse drag (HorizontalScrollController reads --inventory-scroll-axis per gesture). */
 .inventory-loadout-panel__auxiliary {
   --inventory-slot-background: var(--inventory-equipment-well);
   --inventory-slot-filled-background: var(--inventory-equipment-well);
+  --inventory-scroll-axis: x;
   display: grid;
-  grid-template-columns: repeat(4, var(--inventory-equipment-well-size));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--inventory-equipment-well-size);
   justify-content: space-between;
+  column-gap: var(--inventory-equipment-gap);
   padding: calc(var(--inventory-equipment-unit) * 0.15)
     var(--inventory-equipment-inset);
+  overflow: auto hidden;
+  scrollbar-width: none;
+}
+
+.inventory-loadout-panel__auxiliary::-webkit-scrollbar {
+  display: none;
 }
 
 .inventory-loadout-panel__auxiliary .inventory-field--auxiliary {
@@ -235,7 +246,7 @@
   height: var(--inventory-equipment-well-size);
 }
 
-/* A container at least as wide as tall (wide and landscape layouts): the four auxiliary wells stand in a column left of
+/* A container at least as wide as tall (wide and landscape layouts): the auxiliary wells stand in a column left of
    the primary panel and as tall as it, so the composition uses the width instead of shrinking to the height. The
    column has the primary panel's inset as its padding and as its gap to the primary panel; its wells are 0.72 units,
    the largest four that fit the primary height. One unit still sizes everything: 4.83 units across (outer 0.28,
@@ -256,15 +267,26 @@
     grid-area: primary;
   }
 
-  .inventory-loadout-panel__auxiliary {
+  /* The column is as tall as the primary panel; more wells than fit scroll up and down inside it (pan-y). */
+  .inventory-loadout-panel .inventory-loadout-panel__auxiliary {
+    --inventory-scroll-axis: y;
     grid-area: auxiliary;
     justify-self: stretch;
     width: auto;
+    max-height: calc(
+      var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 +
+        var(--inventory-equipment-inset) * 2
+    );
+    grid-auto-flow: row;
     grid-template-columns: var(--inventory-equipment-well-size);
-    grid-template-rows: repeat(4, var(--inventory-equipment-well-size));
+    grid-auto-rows: var(--inventory-equipment-well-size);
     justify-content: center;
     align-content: space-between;
+    row-gap: var(--inventory-equipment-gap);
     padding: var(--inventory-equipment-inset);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
   }
 }
 
