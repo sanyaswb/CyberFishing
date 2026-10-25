@@ -14,7 +14,7 @@ const { Vector2 } = runtime.importModule("src/engine/math/vector2.js");
 
 const STATS = {
   hasSonar: true, showSensors: true, manualControl: false, sections: 3, upgradeLevel: 1,
-  statsByLevel: { 1: { speedPxPerSec: 150, maxEnergy: 600, energyDrainPerSec: 1 } },
+  statsByLevel: { 1: { speedPxPerSec: 150 } },
   maneuver: { reverseTimeSec: 0.8, reverseThrustMult: 0.8, maneuverTimeSec: 1.5, maneuverThrustMult: 0.3,
     maneuverSpeedMult: 0.4 },
   sensorRangeFactor: 1.5, turnSpeedRad: 2.5, avoidancePersistenceMs: 300, avoidanceThrustMultiplier: 0.5,

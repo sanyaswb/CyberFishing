@@ -1,6 +1,7 @@
 import { ITEM_PROGRESSION_CONFIG } from "../../game/config/items/item_progression_config.js";
 import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_messages.js";
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
+import { ApplyBatteryDrainService } from "../../game/application/inventory/apply_battery_drain_service.js";
 import { AssemblyAttachmentTargetResolver } from "../../game/domain/assemblies/assembly_attachment_target_resolver.js";
 import { AssemblyCompletionPolicy } from "../../game/domain/assemblies/assembly_completion_policy.js";
 import { AssemblyInventoryContextFilterStrategy } from "../../game/application/inventory/assembly_inventory_context_filter_strategy.js";
@@ -469,6 +470,9 @@ export class InventoryCompositionRoot {
             hydrator,
             freshnessResolver: itemFreshnessResolver,
           })
+        : null,
+      batteryDrain: itemChargeResolver
+        ? new ApplyBatteryDrainService({ repository, hydrator, chargeResolver: itemChargeResolver })
         : null,
       hydrator,
     });

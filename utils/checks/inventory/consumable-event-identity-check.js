@@ -74,19 +74,20 @@ vm.runInContext(
       deliveryMethods: {
         boat: {
           level: 1,
-          statsByLevel: { 1: { maxEnergy: 100 } },
+          statsByLevel: { 1: {} },
         },
       },
     },
     {},
-    { cache: LocalStorageCache, configEvents: document, onBoatReturned: (event) => boatReturnEvents.push(event) },
+    { cache: LocalStorageCache, configEvents: document, onBoatReturned: (event) => boatReturnEvents.push(event),
+      devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } },
   );
   const tripBoat = chumManager.spawnIdleBoat(0, 0, {
     instanceId: "boat-trip-root",
     level: 1,
     sections: 1,
     statsByLevel: {
-      1: { maxEnergy: 100, energyDrainPerSec: 0, speedPxPerSec: 1 },
+      1: { speedPxPerSec: 1 },
     },
   });
   tripBoat.remainingSections = 0;
@@ -277,8 +278,8 @@ vm.runInContext(
   // Zones are created by their owner (ChumZone has no global of its own once migrated).
   const flatProjector = new WaterMetric({ pixelsPerMeter: 50, shoreY: 600, topY: 0 });
   const zoneManager = new ChumService("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
-    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, () => flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
-    now: () => 0 });
+    level: 1, statsByLevel: { 1: {} } } } }, () => flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
+    now: () => 0, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } });
   zoneManager.deployBait(50, 50, "probe_mix");
   zoneManager.deployBait(400, 50, "probe_mix");
   const [zone, other] = zoneManager.getZones();

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.25 - Batteries power the bait boat
+
+- Bait boat runs on a battery in its new slot: 5/7.5/10 min of motion per battery at levels 1/2/3, a third while waiting, nothing while idle; the charge is saved and only falls; one battery in the starting inventory and once for existing saves (spec 143).
+
 ## v0.47.24 - Aim lead in two edge zones
 
 - Casting aim: a 200 px zone along each screen edge leads the line towards it, smoothly from 0 at the zone border to 80 px at its middle and up to the edge, at any width and always; replaces the camera-edge lead (TK-093).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.16 - Edit everything button
 
 - Zone editor: «Увімкнути» is now «Увімкнути редагування»; the «Редагувати все» button under it turns every editing switch on with the parents it needs (TK-087).
-
-## v0.47.15 - Owner test zones in the code
-
-- Test location: the owner's new castable mask and masked obstacle are in the code; the checks read the real zones (TK-086).

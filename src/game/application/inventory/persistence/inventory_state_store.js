@@ -47,6 +47,7 @@ export class InventoryStateStore {
 
   save(snapshot) {
     const normalized = this.#normalize(snapshot);
+    this.#keepLowerCharge(normalized, this.#cache.get(this.#key, null));
     this.#cache.set(this.#key, normalized);
     return this.#clone(normalized);
   }
@@ -69,6 +70,25 @@ export class InventoryStateStore {
       },
       ...(grants.length > 0 ? { grants } : {}),
     };
+  }
+
+  // Spec 143: a battery's charge only falls. When another tab of the game has already saved a lower charge for the
+  // same battery, the lower one is kept (a missing chargeState is a full battery).
+  #keepLowerCharge(normalized, stored) {
+    if (!Array.isArray(stored?.items)) return;
+    const storedCharge = new Map();
+    for (const item of stored.items) {
+      if (item?.chargeState && Number.isFinite(Number(item.chargeState.percent))) {
+        storedCharge.set(item.instanceId, Number(item.chargeState.percent));
+      }
+    }
+    if (storedCharge.size === 0) return;
+    for (const item of normalized.items) {
+      if (!storedCharge.has(item.instanceId)) continue;
+      const current = Number(item.chargeState?.percent ?? 100);
+      const lower = storedCharge.get(item.instanceId);
+      if (lower < current) item.chargeState = { percent: lower };
+    }
   }
 
   // One-time grant ids (spec 143): unique non-empty strings, sorted.

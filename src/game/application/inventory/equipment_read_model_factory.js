@@ -51,6 +51,8 @@ export class EquipmentReadModelFactory {
       ["cargo", "bay"],
       "cargo",
     );
+    // Spec 143: the battery in the boat's battery slot.
+    const deliveryBattery = delivery ? this.#child(this.#instanceId(delivery), "battery", 0) : null;
 
     return Object.freeze({
       rod,
@@ -66,6 +68,7 @@ export class EquipmentReadModelFactory {
       net,
       delivery,
       deliveryChums: Object.freeze(deliveryChums),
+      deliveryBattery,
       handChum,
     });
   }

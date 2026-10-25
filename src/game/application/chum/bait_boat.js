@@ -15,7 +15,8 @@ export class BaitBoat {
   #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
   #rayPoint = { x: 0, y: 0 };
 
-  constructor(startX, startY, config, zoneId = null, initialEnergy = null) {
+  // batteryInstanceId: the battery in the boat's slot at launch (spec 143); ChumService consumes it.
+  constructor(startX, startY, config, zoneId = null, batteryInstanceId = null) {
     this.startPos = new Vector2(startX, startY);
     this.pos = new Vector2(startX, startY);
     this.target = null;
@@ -31,7 +32,9 @@ export class BaitBoat {
     this.zoneId = zoneId;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;
-    this.energy = initialEnergy !== null ? initialEnergy : this.stats.maxEnergy;
+    this.batteryInstanceId = batteryInstanceId;
+    // The battery's remaining share (0..1) for the boat's charge bar; written by ChumService.
+    this.powerRatio = 1;
     this.state = "idle";
     this.isBaitDropped = false;
     this.isFinished = false;
@@ -94,8 +97,6 @@ export class BaitBoat {
     this.persistenceTimer = Math.max(0, this.persistenceTimer - dtSec);
     this.maneuverTimer = Math.max(0, this.maneuverTimer - dtSec);
     const isManual = this.config.manualControl;
-
-    this.#updateEnergy(dtSec);
 
     this.#sensorTimer -= dtSec;
     if (this.#sensorTimer <= 0 || !this.#cachedSensors) {
@@ -172,15 +173,11 @@ export class BaitBoat {
     }
   }
 
-  #updateEnergy(dtSec) {
-    const drainMult = this.state === "waiting" ? 0.5 : 1;
-    if (this.state !== "drifting") {
-      this.energy -= this.stats.energyDrainPerSec * drainMult * dtSec;
-      if (this.energy <= 0) {
-        this.energy = 0;
-        this.state = "drifting";
-      }
-    }
+  // Spec 143: the battery is empty; the boat drifts with the current (as it did when its own energy ran out).
+  runOutOfPower() {
+    if (this.state === "idle" || this.isFinished) return;
+    this.powerRatio = 0;
+    this.state = "drifting";
   }
 
   #applyDrift(dtSec, checkPhysics, env) {

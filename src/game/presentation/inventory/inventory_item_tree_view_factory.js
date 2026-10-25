@@ -181,7 +181,7 @@ export class InventoryItemTreeViewFactory {
       typeof reading === "number" ? reading : reading?.current,
     );
     const maximum = Number(
-      reading?.maximum ?? item.effectiveStats?.maxEnergy,
+      reading?.maximum,
     );
     if (!Number.isFinite(current)) return null;
     const percent = Number.isFinite(maximum) && maximum > 0

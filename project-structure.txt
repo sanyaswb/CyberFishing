@@ -275,6 +275,7 @@
 │  │  │  │  └── pull_input_mapper.js
 │  │  │  ├── inventory
 │  │  │  │  ├── apply_bait_exposure_service.js
+│  │  │  │  ├── apply_battery_drain_service.js
 │  │  │  │  ├── assembly_inventory_context_filter_strategy.js
 │  │  │  │  ├── auto_refill_coordinator.js
 │  │  │  │  ├── auto_refill_port.js
@@ -349,6 +350,8 @@
 │  │  │  │  ├── live_bait_command_service.js
 │  │  │  │  ├── live_bait_motion_adapter.js
 │  │  │  │  └── live_bait_snapshot_store.js
+│  │  │  ├── power
+│  │  │  │  └── device_power_service.js
 │  │  │  ├── session
 │  │  │  │  ├── game_application.js
 │  │  │  │  ├── inactive_debug_events.js
@@ -576,6 +579,8 @@
 │  │  │  │  ├── metrics
 │  │  │  │  │  ├── item_bounded_metric_resolver.js
 │  │  │  │  │  └── item_percent_state_policy.js
+│  │  │  │  ├── power
+│  │  │  │  │  └── device_power_policy.js
 │  │  │  │  ├── progression
 │  │  │  │  │  ├── composite_metric_strategy.js
 │  │  │  │  │  ├── derived_stat_metric_strategy.js
@@ -629,6 +634,7 @@
 │  │  │  ├── rules
 │  │  │  │  ├── bait_rules.js
 │  │  │  │  ├── bite_rules.js
+│  │  │  │  ├── boat_power_rate_policy.js
 │  │  │  │  ├── boat_rules.js
 │  │  │  │  ├── cast_rules.js
 │  │  │  │  ├── chum_rules.js
@@ -891,6 +897,7 @@
 │        │  ├── browser_buffered_audio_player.js
 │        │  ├── browser_event_target_adapter.js
 │        │  ├── browser_game_lifecycle.js
+│        │  ├── browser_page_hide_listener.js
 │        │  ├── browser_startup_environment.js
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js

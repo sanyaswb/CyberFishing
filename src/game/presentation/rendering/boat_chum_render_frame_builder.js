@@ -69,9 +69,8 @@ export class BoatChumRenderFrameBuilder {
       );
       const scale = this.#projector.getPerspective(boat.pos.y).scale;
       const fontSize = 40 * this.#projector.getScale() * scale;
-      const energyRatio = RenderMath.clamp(
-        boat.energy / Math.max(0.001, boat.stats.maxEnergy),
-      );
+      // The battery's remaining share (spec 143), written on the boat by ChumService.
+      const energyRatio = RenderMath.clamp(boat.powerRatio);
       const record = target.boats.acquire();
       record.x = position.x;
       record.y = position.y;

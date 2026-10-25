@@ -112,6 +112,20 @@ export class InventoryGameplayBridge {
     return this.boatReturned(context);
   }
 
+  attachedBattery(deviceInstanceId) {
+    return this.#gameplayCommands.attachedBattery(deviceInstanceId);
+  }
+
+  readBattery(instanceId) {
+    return this.#gameplayCommands.readBattery(instanceId);
+  }
+
+  drainBattery(instanceId, units) {
+    const result = this.#gameplayCommands.drainBattery(instanceId, units);
+    if (result?.success) this.#afterMutation?.(result);
+    return result?.success ? result.reading : null;
+  }
+
   evaluateCastReadiness() {
     return this.#readinessPolicy.evaluateCast({
       equipmentState: this.#equipmentState,

@@ -1,5 +1,6 @@
 import { BaitBoat } from "./bait_boat.js";
 import { BaitBoatGroundPlaneScope } from "./bait_boat_ground_plane_scope.js";
+import { BoatPowerRatePolicy } from "../../domain/rules/boat_power_rate_policy.js";
 import { ChumZone } from "./chum_zone.js";
 
 export class ChumService {
@@ -10,7 +11,8 @@ export class ChumService {
   #storageKey;
   #locationMemoryKey;
   #memoryGrid = {};
-  #boatEnergy = null;
+  #power;
+  #powerRate = new BoatPowerRatePolicy();
   #getWaterMetric;
   #onConfigUpdateBind;
   #onBoatReturned;
@@ -25,6 +27,11 @@ export class ChumService {
     this.#getWaterMetric = getWaterMetric;
     this.#rng = services.rng || { next: () => Math.random() };
     this.#now = services.now || (() => Date.now());
+    // Spec 143: boats run on the battery in their slot; DevicePowerService consumes it.
+    if (typeof services.devicePower?.consume !== "function") {
+      throw new TypeError("ChumService requires devicePower");
+    }
+    this.#power = services.devicePower;
     this.#onBoatReturned =
       typeof services.onBoatReturned === "function"
         ? services.onBoatReturned
@@ -57,22 +64,9 @@ export class ChumService {
     }
   }
 
-  getBoatEnergy() {
-    if (this.#boatEnergy === null) {
-      const config = this.#chumConfig.deliveryMethods.boat;
-      const statsConfig = config.effectiveStats || config;
-      const stats =
-        statsConfig.statsByLevel[statsConfig.upgradeLevel] ||
-        statsConfig.statsByLevel[1];
-      this.#boatEnergy = stats.maxEnergy;
-    }
-    return this.#boatEnergy;
-  }
-
-  spawnIdleBoat(startX, startY, boatItem = {}) {
-    // Energy and performance come from the equipped boat item.
-    const currentEnergy = boatItem.maxEnergy || 100;
-    const boat = new BaitBoat(startX, startY, boatItem, null, currentEnergy);
+  // Performance comes from the equipped boat item, power from the battery in its slot (spec 143).
+  spawnIdleBoat(startX, startY, boatItem = {}, batteryInstanceId = null) {
+    const boat = new BaitBoat(startX, startY, boatItem, null, batteryInstanceId);
     this.#boats.push(boat);
     return boat;
   }
@@ -202,7 +196,7 @@ export class ChumService {
       } finally {
         this.#groundPlane.exit();
       }
-      this.#boatEnergy = boat.energy;
+      this.#consumePower(boat, dt);
 
       if (boat.isBaitDropped && boat.zoneId) {
         const zone = this.#zones.find((z) => z.id === boat.zoneId);
@@ -230,6 +224,18 @@ export class ChumService {
       }
     }
     if (needsSave) this.saveToStorage();
+  }
+
+  // Spec 143 D-P1: a boat in the water consumes its battery by state; an empty or missing battery stops it.
+  #consumePower(boat, dt) {
+    const reading = this.#power.consume({
+      deviceId: boat.rootInstanceId,
+      batteryInstanceId: boat.batteryInstanceId,
+      unitsPerSecond: this.#powerRate.unitsPerSecond(boat.state, boat.config),
+      seconds: Math.max(0, Number(dt) || 0) * 0.001,
+    });
+    boat.powerRatio = Math.max(0, Math.min(1, reading.percent / 100));
+    if (reading.empty) boat.runOutOfPower();
   }
 
   dispose() {

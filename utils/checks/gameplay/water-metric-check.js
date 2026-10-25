@@ -97,7 +97,7 @@ function checkGroundChumPersistence() {
   const config = { baits: { mix: { id: "mix", radius: 50, targetFishes: ["carp"], rampUpTimeMs: 1000,
     peakDurationMs: 1000, totalBonusTimeMs: 4000, minBonusDurationHours: .001, maxBonus: 2, minBonus: 1.2 } } };
   let now = 0;
-  const services = { cache, now: () => now, rng: { next: () => .5 } };
+  const services = { cache, now: () => now, rng: { next: () => .5 }, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } };
   const point = {};
   let metricReads = 0;
   const service = new ChumService("projection-test", config, () => (metricReads++, metric), services);

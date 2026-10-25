@@ -18,6 +18,7 @@ export class ChumController {
   #markInvalidCast;
   #canPlayerCast;
   #getGameStateName;
+  #devicePower;
   #ui;
   #activeHandChum = null;
   #isAiming = false;
@@ -48,6 +49,7 @@ export class ChumController {
     markInvalidCast,
     canPlayerCast,
     getGameStateName,
+    devicePower,
     createUi,
   }) {
     this.#messages = messages;
@@ -67,6 +69,7 @@ export class ChumController {
     this.#markInvalidCast = markInvalidCast;
     this.#canPlayerCast = canPlayerCast;
     this.#getGameStateName = getGameStateName;
+    this.#devicePower = devicePower;
     this.#handCastAim = new CastPowerAim({
       config,
       projector,
@@ -207,6 +210,8 @@ export class ChumController {
   }
 
   toggleAim() {
+    const launching = !this.#isAiming && this.#inventory.getEquipped().delivery;
+    if (launching && !this.#activeBoat && !this.#isBoatPowered(this.#inventory.getEquipped())) return;
     this.#isAiming = !this.#isAiming;
     this.#uiClickLockTime = this.#clock.now;
     this.#handCastAim?.reset();
@@ -227,6 +232,7 @@ export class ChumController {
         rodPos.x,
         bounds.bottom - 5,
         eq.delivery,
+        eq.deliveryBattery?.instanceId || null,
       );
 
       if (this.#activeBoat) {
@@ -547,6 +553,20 @@ export class ChumController {
     ) {
       this.#isAiming = false;
     }
+  }
+
+  // Spec 143: a boat starts only with a charged battery in its slot; otherwise the player is told why.
+  #isBoatPowered(eq) {
+    const batteryId = eq.deliveryBattery?.instanceId || null;
+    if (!batteryId) {
+      this.#warn(this.#messages.boatNeedsBattery);
+      return false;
+    }
+    if (this.#devicePower.read(batteryId).empty) {
+      this.#warn(this.#messages.boatBatteryEmpty);
+      return false;
+    }
+    return true;
   }
 
   #getLoadedChums(deliveryChums) {

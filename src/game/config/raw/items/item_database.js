@@ -983,10 +983,13 @@ export const ITEM_DB = {
         sections: 3,
         quality: 9,
         upgradeLevel: 3,
+        // Spec 143: power from the battery in its slot. Moving: unitsPerSecond × the level's powerFactor; waiting at the
+        // spot: idleShare of that. A 3600-unit battery = 5 / 7.5 / 10 min of motion at levels 1 / 2 / 3.
+        batteryUse: { unitsPerSecond: 12, idleShare: 1 / 3 },
         statsByLevel: {
-          1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
-          2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
-          3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
+          1: { speedPxPerSec: 150, powerFactor: 1 },
+          2: { speedPxPerSec: 200, powerFactor: 2 / 3 },
+          3: { speedPxPerSec: 250, powerFactor: 0.5 },
         },
 
         maneuver: {

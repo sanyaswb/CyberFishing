@@ -9,6 +9,8 @@ export const FISHING_MESSAGES = Object.freeze({
   equipLineToCast: "Спочатку споряди ліску для закидання.",
   noChumInInventory: "У вас немає прикормки в інвентарі!",
   loadChumIntoBoat: "Завантажте прикормку в бункери кораблика через інвентар!",
+  boatNeedsBattery: "Вставте батарейку в кораблик через інвентар!",
+  boatBatteryEmpty: "Батарейка кораблика розряджена. Замініть її в інвентарі.",
   selectedChumUnavailable: "Обрана прикормка більше недоступна.",
   tooFarForHandCast: "Занадто далеко для ручного закидання!",
 });

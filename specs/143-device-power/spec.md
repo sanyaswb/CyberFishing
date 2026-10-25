@@ -1,7 +1,7 @@
 # Feature Specification: One power system for devices, battery slot
 
 **Created**: 2026-10-25
-**Status**: Specified; Q8–Q14 answered 2026-10-25 (D-P1..D-P7); implementation in progress
+**Status**: Implemented in v0.47.25 (commits 9ce2687c, 46047ceb and the power commit); owner play check pending
 **Input**: Owner 2026-10-25 (with spec 142): "rework the discharge so the boat and the radio share one charge/discharge
 system, and add a separate slot for the battery". Spec 142 (radio) depends on this spec.
 
@@ -106,3 +106,35 @@ waiting = 2400 + 1200 = 3600 units, one battery.
 - **D-P6 (Q13) Equipped only:** a boat that is only equipped and not launched consumes nothing.
 - **D-P7 (Q14) Production:** one ordinary battery (not inserted) is in the starting inventory. Existing saves get one
   battery once, by a save migration step (the boat would otherwise be unusable on `index.html`).
+
+## Implementation (v0.47.25)
+
+- Structural first (9ce2687c): `ItemPercentStatePolicy` (domain/items/metrics) is the shared percent fact rule;
+  `ItemFreshnessStatePolicy` is its freshnessState instance; the battery uses it for chargeState.
+- Battery (46047ceb): `batteries.battery_basic` (3600 `capacityUnits`, «Батарейка», DEV shop «🔋 Живлення»),
+  progression group `power.battery` with the bounded metric `charge` (validator knows it), composed as an
+  `ItemBoundedMetricResolver` (`itemChargeResolver`) and shown as the «Заряд» parameter; `bait_boat` profile slot
+  `battery` (capacity 1, not refillable) with `assets/ui/inventory/battery.svg`; `chargeState` persisted by
+  `InventoryItemSnapshotMapper`; batteries sit in the backpack's "other" category with their own subfilter.
+- One-time grants: `InventoryGrantLedger` (domain, transaction participant) saved as `grants` with the inventory
+  (absent while empty, so earlier saves are byte-identical); `InventoryOneTimeGrantService` applies
+  `CONFIG.player.oneTimeGrants` once (only marks when the item is already held); new players hold `uuid-battery`
+  and the mark.
+- Power: `DevicePowerPolicy` (domain), `BoatPowerRatePolicy` (domain/rules), `ApplyBatteryDrainService` (the only
+  writer of chargeState, inside an inventory transaction), `DevicePowerService` (application/power: pending units per
+  battery, writes every `CONFIG.power.saveIntervalSeconds`, at empty and on `flush()`, `maxStepSeconds` clamp,
+  cached stored charge, reused readings, ledger per battery, nothing counted from an empty battery),
+  `BrowserPageHideListener` (platform) flushes on `visibilitychange` hidden and `pagehide`.
+  `InventoryStateStore.save` keeps the lower saved chargeState per battery (another tab).
+- Boat: catalog `gameplayStats.batteryUse { unitsPerSecond: 12, idleShare: 1/3 }` and `statsByLevel[n].powerFactor`
+  (`power` is a forbidden generic gameplayStats key, hence `batteryUse`); `ChumService` requires `devicePower` and
+  consumes after each boat step; `BaitBoat` keeps `batteryInstanceId`, `powerRatio` (the boat bar) and
+  `runOutOfPower()`; `ChumController.toggleAim` refuses a launch without a battery or with an empty one
+  («Вставте батарейку…», «Батарейка кораблика розряджена…»); the equipment read model has `deliveryBattery`; the
+  boat card's charge reads its battery.
+- Removed: `BaitBoat.energy`/`#updateEnergy`, `ChumService.#boatEnergy`/`getBoatEnergy`, `maxEnergy`/
+  `energyDrainPerSec` (catalog, parameter labels, checks).
+- Checks: new `device-power`; the chum controller scenario covers no battery, an empty battery and `setAiming`;
+  item-progression/keepnet counts; boat fixtures without energy fields. Full 70/70, game-cycle report unchanged.
+  Tools replaced or obsolete: none.
+- Not prevented on the client: editing localStorage by hand; the ledger is ready for the server (spec 029).

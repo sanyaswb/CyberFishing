@@ -341,13 +341,9 @@ export const INVENTORY_BALANCE_TOOLTIP_CONFIG = Object.freeze({
       unit: "px/с",
       direction: "higher_is_better",
     }),
-    maxEnergy: Object.freeze({
-      label: "Макс. заряд",
-      direction: "higher_is_better",
-    }),
-    energyDrainPerSec: Object.freeze({
-      label: "Витрата заряду",
-      unit: "/с",
+    powerFactor: Object.freeze({
+      label: "Витрата живлення",
+      unit: "×",
       direction: "lower_is_better",
     }),
     reverseTimeSec: Object.freeze({

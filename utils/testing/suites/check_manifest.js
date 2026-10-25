@@ -297,6 +297,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "device-power",
+    title: "One power system for devices: battery charge, boat consumption, tamper resistance (spec 143)",
+    file: "utils/checks/gameplay/device-power-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-water-metric",
     title: "Bait boat moves in ground metres on the water metric (G-007)",
     file: "utils/checks/gameplay/bait-boat-water-metric-check.js",

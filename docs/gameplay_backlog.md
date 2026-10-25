@@ -842,6 +842,12 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-119 The bait boat runs on a battery (P2, done)
+Found: 2026-10-25, owner (spec 143): the boat's energy lived only in the session (`BaitBoat.energy`, `ChumService.#boatEnergy`), a reload restored a full boat, and an idle boat started at `boatItem.maxEnergy || 100` whatever its level (the catalog authors 60/90/120 per level).
+Expected: one power system for devices; the boat consumes the battery in its slot while it is in the water (moving 12 units/s × level factor 1, 2/3, 1/2 = 5, 7.5, 10 min per 3600-unit battery; waiting at the spot a third; idle and drifting 0), the charge is saved and only falls, and the boat does not start without a charged battery.
+Resolution (v0.47.25): battery item and `battery` slot (commit 46047ceb), `DevicePowerService` + `BoatPowerRatePolicy`; `BaitBoat` drifts through `runOutOfPower()`; `maxEnergy`/`energyDrainPerSec` and `ChumService.getBoatEnergy` removed. Starting inventory and existing saves get one battery (not inserted); the boat starts without one (D-P4, D-P7).
+Evidence: `device-power` check (catalog rates, 300 s on 16 ms steps without the wall clock, writes, clamp, flush, tabs, grants, drift); the chum controller scenario refuses a boat without/with an empty battery; game-cycle report unchanged (it stubs the boats). Owner play check pending.
+
 ### G-118 Deleting the last castable zone breaks the game (P2, done)
 Found: 2026-10-22, owner (TK-051): the zone editor silently refused to delete the only castable zone, because `LocationMap.getCastableBoundsVirtual` returned null without castable zones and the water metric, camera and rod read its bounds every frame.
 Resolution (v0.46.18): without castable zones the bounds span the whole map grid and no cell is castable, so every cast is refused; the editor deletes any zone. Production locations always author castable zones, so play is unchanged.

@@ -14,6 +14,7 @@ export class InventoryGameplayCommands {
   #lineAllocationService;
   #autoRefillCoordinator;
   #baitExposureService;
+  #batteryDrain;
   #hydrator;
 
   constructor({
@@ -26,6 +27,7 @@ export class InventoryGameplayCommands {
     lineAllocationService,
     autoRefillCoordinator,
     baitExposureService = null,
+    batteryDrain = null,
     hydrator,
   }) {
     this.#messages = messages;
@@ -37,6 +39,7 @@ export class InventoryGameplayCommands {
     this.#lineAllocationService = lineAllocationService;
     this.#autoRefillCoordinator = autoRefillCoordinator;
     this.#baitExposureService = baitExposureService;
+    this.#batteryDrain = batteryDrain;
     this.#hydrator = hydrator;
   }
 
@@ -121,6 +124,27 @@ export class InventoryGameplayCommands {
         freshness: result.freshness,
         warning: result.report.warning,
       });
+    } catch (error) {
+      return this.#failure(error.message, error);
+    }
+  }
+
+  // Spec 143: the battery inserted into a device's battery slot, or null.
+  attachedBattery(deviceInstanceId) {
+    return deviceInstanceId ? this.#assemblyReader.getChild(deviceInstanceId, "battery", 0) || null : null;
+  }
+
+  readBattery(instanceId) {
+    return this.#batteryDrain?.read(instanceId) || null;
+  }
+
+  // The charge a device consumed, written in one inventory transaction (its commit saves the inventory).
+  drainBattery(instanceId, units) {
+    try {
+      const reading = this.#transaction.runAtomic(() => this.#batteryDrain?.drain(instanceId, units) || null);
+      return reading
+        ? inventoryCommandSuccess({ reading })
+        : this.#failure(this.#messages.itemMissingOrInsufficient);
     } catch (error) {
       return this.#failure(error.message, error);
     }

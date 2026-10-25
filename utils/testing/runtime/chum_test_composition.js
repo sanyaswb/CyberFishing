@@ -16,7 +16,9 @@ function checkChumComposition() {
   const bounds={left:0,right:800,top:0,bottom:600},clock={now:1000},boats=[],drops=[],consumed=[],warnings=[],invalid=[];
   const waterMetric=new runtime.context.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top,centerX:400});
   const hand={id:'hand',instanceId:'hand-1',quantity:3};
-  const equipped={handChum:hand,delivery:null,deliveryChums:[{id:'first'},null,{id:'second'}]};
+  const equipped={handChum:hand,delivery:null,deliveryChums:[{id:'first'},null,{id:'second'}],deliveryBattery:null};
+  // Spec 143: the boat starts only with a charged battery in its slot.
+  const charge={percent:100};const devicePower={read:(id)=>({hasBattery:!!id,percent:id?charge.percent:0,empty:!id||charge.percent<=0})};
   let state='waiting',water=true,canCast=true,hidden=0;
   const config={casting:{enabled:false,handChumAccuracyPx:0,travelDelayMinMs:10,travelDelayMaxMs:10}};
   const projector={screenToVirtual(x,y,out={}){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out={}){out.x=x;out.y=y;return out;},getScale:()=>1,getPerspective:()=>({scale:1,squashY:1})};
@@ -26,7 +28,7 @@ function checkChumComposition() {
   const controller=new runtime.context.ChumController({inventory:{getEquipped:()=>equipped},chum,projector,inventoryUI:{showWarning(message){warnings.push(message);}},
     fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);}},location:{chumCastDistance:300},clock,config,
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
-    getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,
+    getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,devicePower,
     createUi:(onClick)=>new runtime.context.ChumControls(onClick,{labels:runtime.context.HUD_LABELS})});
   assert.equal(controller.ui.button.hidden,true);
   const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞');assert.match(controller.ui.button.attributes['aria-label'],/3/);assert.equal(controller.ui.button.hidden,false);
@@ -57,6 +59,11 @@ function checkChumComposition() {
   controller.setAiming(true);clock.now+=250;controller.handleAiming({pointerDown:true,pointerStart:{x:400,y:550},pointerCurrent:{x:400,y:550}},bounds,16);
   controller.handleAiming({pointerReleased:true,pointerRelease:{x:400,y:550}},bounds,16);assert.equal(controller.isAiming,false);
   equipped.delivery={effectiveStats:{manualControl:true,sections:2,hasAutoReturn:true}};
+  controller.handleClick();assert.equal(controller.isAiming,false);assert.equal(boats.length,0);assert.equal(warnings.at(-1),runtime.context.FISHING_MESSAGES.boatNeedsBattery,'no battery: the boat stays on shore');
+  equipped.deliveryBattery={instanceId:'battery-1'};charge.percent=0;
+  controller.handleClick();assert.equal(controller.isAiming,false);assert.equal(boats.length,0);assert.equal(warnings.at(-1),runtime.context.FISHING_MESSAGES.boatBatteryEmpty,'an empty battery: the boat stays on shore');
+  controller.setAiming(true);assert.equal(controller.isAiming,false,'setAiming cannot bypass the battery');
+  charge.percent=40;
   controller.handleClick();const boat=controller.activeBoat;assert.equal(boat,boats[0]);assert.equal(boat.remainingSections,2);
   clock.now+=250;input.clickPos={x:300,y:400};controller.handleAiming(input,bounds,16);assert.equal(consumed.at(-1),0);
   controller.updateUI();assert.equal(controller.ui.currentState,'moving');assert.equal(controller.isAiming,false);

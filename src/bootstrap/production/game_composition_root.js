@@ -90,6 +90,8 @@ import { ItemConditionResolver } from "../../game/domain/items/condition/item_co
 import { ItemFreshnessDescriptor } from "../../game/presentation/inventory/item_freshness_descriptor.js";
 import { ItemFreshnessResolver } from "../../game/domain/items/freshness/item_freshness_resolver.js";
 import { ItemBoundedMetricResolver } from "../../game/domain/items/metrics/item_bounded_metric_resolver.js";
+import { DevicePowerService } from "../../game/application/power/device_power_service.js";
+import { BrowserPageHideListener } from "../../platform/browser/runtime/browser_page_hide_listener.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
 import { ItemProgressionConfigValidator } from "../../game/config/validation/item_progression_config_validator.js";
 import { ItemProgressionDomAdapter } from "../../platform/browser/dom/item_progression_dom_adapter.js";
@@ -506,6 +508,7 @@ export class GameCompositionRoot {
       input: systems.input,
       ui: systems.ui,
       chum: systems.chum,
+      devicePower: systems.devicePower,
       bite: systems.bite,
       inventory: systems.inventory,
       inventoryUI: systems.inventoryUI,
@@ -904,7 +907,8 @@ export class GameCompositionRoot {
     return { chumConfigObj, eq };
   }
 
-  // Map, environment, input, game controls, chum service and bite system; the inventory reads boat charge from the chum service.
+  // Map, environment, input, game controls, device power, chum service and bite system; the inventory reads the boat's
+  // charge from the battery in its slot (spec 143).
   #composeWorldSystems({
     projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
@@ -912,8 +916,13 @@ export class GameCompositionRoot {
     gameTimeClock, rodAnimation, scene,
   }) {
     const uiLogger = new ConsoleLogger();
+    // Spec 143: battery consumption; pending consumption is written when the page hides or closes.
+    const devicePower = own(new DevicePowerService({ batteries: inventory, config: () => this.#config.power || {} }));
+    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
+      onHide: () => devicePower.flush() }));
     const systems = {
       projector,
+      devicePower,
       map: locationMap,
       waterMetricSource,
       env: new EnvironmentSystem(
@@ -958,6 +967,7 @@ export class GameCompositionRoot {
         configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
+        devicePower,
         onBoatReturned: (context) =>
           inventory.handleBoatReturned?.(context),
       })),
@@ -974,22 +984,11 @@ export class GameCompositionRoot {
       ),
       inventory,
     };
+    // The boat card's charge is its battery's (null without a battery: no bar).
     inventory.setBoatChargeProvider?.((boatItem) => {
-      const current = systems.chum.getBoatEnergy();
-      const upgradeLevel = Number(
-        boatItem?.effectiveStats?.upgradeLevel,
-      ) || 1;
-      const statsByLevel =
-        boatItem?.effectiveStats?.statsByLevel || {};
-      const levelStats =
-        statsByLevel[upgradeLevel] || statsByLevel[1] || {};
-      return {
-        current,
-        maximum: Number(
-          boatItem?.effectiveStats?.maxEnergy ??
-            levelStats.maxEnergy,
-        ),
-      };
+      const batteryId = devicePower.batteryOf(boatItem?.instanceId);
+      if (!batteryId) return null;
+      return { current: devicePower.read(batteryId).percent, maximum: 100 };
     });
     return { systems };
   }
@@ -1343,6 +1342,7 @@ export class GameCompositionRoot {
       markInvalidCast: appPorts.markInvalidCast,
       canPlayerCast: appPorts.canPlayerCast,
       getGameStateName: appPorts.getGameStateName,
+      devicePower: runtime.devicePower,
       createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS,
         documentRef: this.#documentTarget, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body }),
       chumRules: runtime.chumRules,

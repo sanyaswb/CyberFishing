@@ -128,6 +128,20 @@ export class PlayerInventory {
   }
   synchronizeAquariumFeed(items) { this.#catalogItemSync?.synchronize(items); }
 
+  // Spec 143 battery port for DevicePowerService: the battery in a device's slot, its charge, and consumption (not
+  // blocked by the tackle lock: equipment does not change).
+  attachedBattery(deviceInstanceId) {
+    return this.#gameplayBridge.attachedBattery(deviceInstanceId);
+  }
+
+  readBattery(instanceId) {
+    return this.#gameplayBridge.readBattery(instanceId);
+  }
+
+  drainBattery(instanceId, units) {
+    return this.#gameplayBridge.drainBattery(instanceId, units);
+  }
+
   consumeHandChum() {
     return this.consumeEquipped("handChum", 1, true);
   }

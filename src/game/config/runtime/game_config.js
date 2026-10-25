@@ -320,6 +320,13 @@ export const CONFIG = {
     ],
   },
 
+  // Spec 143: battery consumption. One consumption step is at most maxStepSeconds (a sleep/wake gap adds no hours);
+  // pending consumption is written every saveIntervalSeconds, when a battery runs out and when the page hides.
+  power: {
+    maxStepSeconds: 1,
+    saveIntervalSeconds: 5,
+  },
+
   feederConfig: {
     volumeNormal: 0.1,
     volumeGuaranteed: 0.3,
