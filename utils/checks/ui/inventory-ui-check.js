@@ -997,8 +997,8 @@ class InventoryUiBehaviorCheck {
     });
     assert.deepStrictEqual(
       Array.from(bottomAuxiliary.children, (field) => field.dataset.slotId),
-      ["net", "handChum", "delivery", "gasMask"],
-      "Bottom equipment row must render net, hand chum, boat and gas mask in order",
+      ["delivery", "net", "handChum", "gasMask"],
+      "Bottom equipment row renders the worn boat first, then the empty net, hand chum and gas mask in slot order (TK-101)",
     );
     // Spec 067: the section tab bar sits in its own grid area below the equipment container.
     const sectionTabs = this.#findByClass(mainNode, "inventory-section-tabs");
