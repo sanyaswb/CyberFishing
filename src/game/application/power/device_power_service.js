@@ -58,10 +58,13 @@ export class DevicePowerService {
     return reading;
   }
 
-  // A device ran `seconds` at `unitsPerSecond` from a battery; returns the battery's reading.
-  consume({ deviceId, batteryInstanceId, unitsPerSecond, seconds }) {
+  // A device ran `seconds` at `unitsPerSecond` from a battery; returns the battery's reading. A device that runs in a
+  // hidden page (the radio's background play, whose timers the browser throttles to about a minute) may ask for a
+  // longer step, never beyond maxBackgroundStepSeconds.
+  consume({ deviceId, batteryInstanceId, unitsPerSecond, seconds, background = false }) {
     const cfg = this.#config() || {};
-    const step = Math.max(0, Math.min(Number(seconds) || 0, Number(cfg.maxStepSeconds) || 1));
+    const limit = background ? Number(cfg.maxBackgroundStepSeconds) || 65 : Number(cfg.maxStepSeconds) || 1;
+    const step = Math.max(0, Math.min(Number(seconds) || 0, limit));
     const rate = Math.max(0, Number(unitsPerSecond) || 0);
     if (!batteryInstanceId || step === 0 || rate === 0) return this.#current(batteryInstanceId);
     // An empty (or missing) battery gives nothing more.

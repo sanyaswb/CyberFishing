@@ -260,3 +260,23 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
   («без ефекту»).
 - Checks: `radio-receiver` stage 3 (curve shape and peak, node order and settings, make-up gain, ramps, unchanged
   switch, dispose, the preference at start and on change).
+
+### Stage 4 (v0.47.31): consumption, reception, dropouts, rain
+
+- Consumption: `RadioReceiverService.tick(seconds)` from a `MonotonicIntervalTicker` (platform/browser/time; 1 s,
+  `performance.now()` gaps, never the wall clock) consumes the radio's `batteryUse` (1 unit/s: an ordinary battery
+  plays 1 hour) through `DevicePowerService` while the radio sounds; nothing while it is stopped in a hidden page.
+  Background play reports the throttled timer's real gap: `consume({ background: true })` allows up to
+  `CONFIG.power.maxBackgroundStepSeconds` (65 s); a visible page keeps the 1 s clamp. An empty battery turns the radio
+  off («Немає зарядженої батарейки»).
+- Reception: domain `RadioSignalModel` (`CONFIG.radio.signal`): above 25 % no effect; below, w = 1 - charge / 25 raises
+  hiss (up to 0.3), crackle (up to 6/s) and volume sag (up to 35 %), dropouts with chance w² × 0.5 per second; rain adds
+  hiss 0.12 and crackle 2/s at full intensity (rainMult 1..2.5).
+- Sound: `RadioNoiseSource` (looped white noise -> hiss and crackle gains -> the player's output, crackles as
+  AudioParam events for the next second); the player's graph is input -> rack -> stream (dropout mute) -> output
+  (volume x sag); a dropout mutes the station for 150-900 ms with a crackle burst. The radio's own `SeededRng` (seeded
+  from `crypto.getRandomValues`) draws noise, crackle and dropouts; the gameplay RNG is untouched.
+- Status `signal` (0..1): the HUD indicator shows `--weak` (dashed wave) and the editor says «· слабкий сигнал».
+- The thunderstorm (D14) will be one more weather input of `RadioSignalModel`.
+- Checks: `radio-receiver` stage 4 (model numbers, 1 hour per battery with the source realm's Date.now blocked, clamped
+  visible steps, hidden stop, 65 s background steps, off at empty, sag, noise, rain, dropout and its end, ticker).

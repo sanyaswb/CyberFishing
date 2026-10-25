@@ -104,7 +104,9 @@ export class RadioControlsRenderer {
     const meta = [reading.country, reading.station?.bitrate ? labels.bitrate(reading.station.bitrate) : ""]
       .filter(Boolean).join(" · ");
     this.#text(nodes.meta, meta);
-    this.#text(nodes.status, labels.status[reading.status] || reading.status);
+    const statusText = labels.status[reading.status] || reading.status;
+    const weak = reading.powered && Number(reading.signal ?? 1) < 1;
+    this.#text(nodes.status, weak ? `${statusText} · ${labels.weakSignal}` : statusText);
     this.#text(nodes.power, reading.powered ? labels.powerOff : labels.powerOn);
     nodes.power.setAttribute("aria-pressed", String(reading.powered));
     const tuning = !reading.powered || reading.stationCount < 2;

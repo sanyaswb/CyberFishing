@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.47.30";
+export const CURRENT_PROJECT_VERSION = "0.47.31";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-25",
   notes: Object.freeze([
+    "Spec 142 stage 4: battery, reception, dropouts, rain.",
     "Spec 142 stage 3: walkie-talkie sound.",
     "Spec 142 stage 2: stations, playback, controls, HUD indicator.",
     "Spec 142 stage 1: radio item, slot, battery, scrolling wells.",

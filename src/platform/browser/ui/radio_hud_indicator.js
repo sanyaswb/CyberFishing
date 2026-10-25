@@ -48,8 +48,10 @@ export class RadioHudIndicator {
       this.#visible = visible;
       this.#button.hidden = !visible;
     }
+    const sounding = status.status === "playing" || status.status === "no-effect";
+    const weakSignal = Number(status.signal ?? 1) < 1;
     const state = status.status === "no-battery" ? "empty"
-      : status.status === "playing" || status.status === "no-effect" ? "playing"
+      : sounding && !weakSignal ? "playing"
         : status.powered ? "weak" : "off";
     if (state !== this.#state) {
       if (this.#state) this.#button.classList.remove(`hud-indicator--${this.#state}`);

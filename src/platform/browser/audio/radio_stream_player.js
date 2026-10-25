@@ -11,6 +11,8 @@ export class RadioStreamPlayer {
   #onState;
   #output = null;
   #input = null;
+  #stream = null;
+  #streamMuted = false;
   #element = null;
   #sourceNode = null;
   #timer = null;
@@ -42,6 +44,19 @@ export class RadioStreamPlayer {
     return this.#input;
   }
 
+  // The volume node everything the radio plays ends in (the stream and the noise, stage 4), or null before a context.
+  get output() {
+    this.#ensureGraph();
+    return this.#output;
+  }
+
+  // A dropout (stage 4): silences the station alone; the noise on the output stays.
+  setStreamMuted(muted) {
+    this.#streamMuted = muted === true;
+    if (this.#stream) this.#stream.gain.value = this.#streamMuted ? 0 : 1;
+    if (this.#element && this.#attempt === "native") this.#element.muted = this.#streamMuted;
+  }
+
   play(url) {
     this.stop();
     this.#url = String(url || "");
@@ -70,6 +85,7 @@ export class RadioStreamPlayer {
   dispose() {
     this.stop();
     this.#effects?.dispose();
+    this.#stream?.disconnect?.();
     this.#output?.disconnect?.();
     this.#input?.disconnect?.();
     this.#output = null;
@@ -94,6 +110,7 @@ export class RadioStreamPlayer {
       this.#sourceNode.connect(this.#input);
     }
     this.#applyVolume();
+    if (mode === "native") element.muted = this.#streamMuted;
     element.src = this.#url;
     this.#onState("loading", { effects: mode === "effects" });
     const timeout = Math.max(1, Number(this.#config()?.startTimeoutMs) || 5000);
@@ -117,8 +134,12 @@ export class RadioStreamPlayer {
     if (!context) return;
     this.#output = context.createGain();
     this.#input = context.createGain();
-    if (this.#effects) this.#effects.attach(context, this.#input, this.#output);
-    else this.#input.connect(this.#output);
+    // input -> [rack] -> stream (dropouts) -> output (volume, ducking) -> destination
+    this.#stream = context.createGain();
+    this.#stream.gain.value = this.#streamMuted ? 0 : 1;
+    if (this.#effects) this.#effects.attach(context, this.#input, this.#stream);
+    else this.#input.connect(this.#stream);
+    this.#stream.connect(this.#output);
     this.#output.connect(context.destination);
     this.#applyVolume();
   }

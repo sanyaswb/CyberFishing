@@ -324,6 +324,8 @@ export const CONFIG = {
   // pending consumption is written every saveIntervalSeconds, when a battery runs out and when the page hides.
   power: {
     maxStepSeconds: 1,
+    // A hidden page's timers run about once a minute (Chrome): the radio's background play may count that much at once.
+    maxBackgroundStepSeconds: 65,
     saveIntervalSeconds: 5,
   },
 
@@ -347,6 +349,10 @@ export const CONFIG = {
     // Stage 3: the walkie-talkie rack (high-pass, low-pass, peaking, S-curve drive with make-up gain, switch ramp).
     rack: { highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5, drive: 18, oversample: "4x",
       rampSeconds: 0.03 },
+    // Stage 4: reception from the battery and the rain (RadioSignalModel); dropouts are short silences with a crackle.
+    signal: { lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, rainMultMax: 2.5, maxCrackle: 6,
+      rainCrackle: 2, dropoutMax: 0.5, dropoutMs: [150, 900], maxVolumeSag: 0.35 },
+    tickMs: 1000,
     timeZoneCountries: {
       "Europe/Kyiv": "UA", "Europe/Kiev": "UA", "Europe/Warsaw": "PL", "Europe/Berlin": "DE", "Europe/London": "GB",
       "Europe/Paris": "FR", "Europe/Rome": "IT", "Europe/Madrid": "ES", "America/New_York": "US",

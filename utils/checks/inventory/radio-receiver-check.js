@@ -208,8 +208,10 @@ async function stageTwo() {
     power: { read: () => ({ empty: charge <= 0 }) },
     stations: { listStations: async (code) => lists[code] || [], listCountries: async () => [
       { iso_3166_1: "UA", name: "Ukraine", stationcount: 2 }, { iso_3166_1: "DE", name: "Germany", stationcount: 1 }] },
-    player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {},
-      setEffectsEnabled: (enabled) => effectsCalls.push(enabled) },
+    player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {}, setGainScale() {},
+      setStreamMuted() {}, setEffectsEnabled: (enabled) => effectsCalls.push(enabled) },
+    weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
+    scheduler: scheduler(),
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }),
     region: { resolve: () => "UA" }, config: () => ({ codecs: ["MP3"], defaultVolume: 0.5 }), secureOnly: true });
   assert.equal(service.getStatus().status, "off");
@@ -297,7 +299,7 @@ async function stageTwo() {
   elements.at(-1).settle();
   assert.deepEqual(states.at(-1), ["playing", true], "a CORS stream plays through Web Audio");
   assert.equal(elements.at(-1).crossOrigin, "anonymous");
-  assert.equal(stream.input.to[0].gain.value, 0.5, "volume is the output gain");
+  assert.equal(stream.output.gain.value, 0.5, "volume is the output gain");
   stream.play("https://nocors.example");
   const first = elements.at(-1);
   first.settle();
@@ -350,6 +352,10 @@ async function stageTwo() {
   listener(status);
   assert.equal(byClass(block, "radio-controls__station")[0].textContent, "Station <b>X</b>", "names are text, never markup");
   assert.equal(byClass(block, "radio-controls__status")[0].textContent, RADIO_LABELS.status.playing);
+  listener({ ...status, signal: 0.5 });
+  assert.equal(byClass(block, "radio-controls__status")[0].textContent,
+    RADIO_LABELS.status.playing + " · " + RADIO_LABELS.weakSignal, "a weak signal is said in the status");
+  listener(status);
   assert.equal(powerButton.textContent, RADIO_LABELS.powerOff);
   controls.render();
   assert(listener, "a new render keeps one subscription");
@@ -368,6 +374,8 @@ async function stageTwo() {
   indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing" });
   assert.equal(button.hidden, false);
   assert(button.classList.contains("hud-indicator--playing"));
+  indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing", signal: 0.4 });
+  assert(button.classList.contains("hud-indicator--weak"), "a weak signal shows as the broken wave");
   indicatorListener({ ...indicatorStatus, equipped: true, status: "no-battery" });
   assert(button.classList.contains("hud-indicator--empty") && !button.classList.contains("hud-indicator--playing"));
   button.click();
@@ -427,7 +435,10 @@ async function stageThree() {
   const switched = [];
   const service = new RadioReceiverService({ equipment: { getEquipped: () => ({}) }, power: { read: () => ({ empty: true }) },
     stations: { listStations: async () => [], listCountries: async () => [] },
-    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled: (enabled) => switched.push(enabled) },
+    player: { play() {}, stop() {}, setVolume() {}, setGainScale() {}, setStreamMuted() {},
+      setEffectsEnabled: (enabled) => switched.push(enabled) },
+    weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
+    scheduler: scheduler(),
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => ({ retroMode: false }), set() {} } }),
     region: { resolve: () => "UA" }, config: () => ({}), secureOnly: true });
   assert.deepEqual(switched, [false], "a saved preference applies at start");
@@ -435,7 +446,108 @@ async function stageThree() {
   assert.deepEqual(switched, [false, true], "the switch turns the rack on");
 }
 
-stageTwo().then(stageThree).then(() => console.log("Radio receiver stage 3 passed: S-curve (zero, odd, monotonic, 44100 "
+// ---- Stage 4: consumption, reception, dropouts, rain noise ----
+const vm = require("node:vm");
+const { RadioSignalModel } = runtime.importModule("src/game/domain/radio/radio_signal_model.js");
+const { DevicePowerService } = runtime.importModule("src/game/application/power/device_power_service.js");
+const { MonotonicIntervalTicker } = runtime.importModule("src/platform/browser/time/monotonic_interval_ticker.js");
+async function stageFour() {
+  const signalSettings = { lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, rainMultMax: 2.5,
+    maxCrackle: 6, rainCrackle: 2, dropoutMax: 0.5, maxVolumeSag: 0.35 };
+  const model = new RadioSignalModel();
+  const full = { ...model.read({ chargePercent: 80 }, signalSettings) };
+  assert.deepEqual([full.quality, full.noiseGain, full.crackleRate, full.dropoutChancePerSecond, full.volumeSag],
+    [1, 0.01, 0, 0, 0], "a charged battery does not touch reception");
+  const half = { ...model.read({ chargePercent: 12.5 }, signalSettings) };
+  assert.equal(half.quality, 0.5, "below the threshold quality follows the charge");
+  assert(Math.abs(half.noiseGain - 0.16) < 1e-9 && Math.abs(half.dropoutChancePerSecond - 0.125) < 1e-9 &&
+    Math.abs(half.volumeSag - 0.175) < 1e-9, "noise, dropouts (w²) and sag grow as it fades");
+  const rain = { ...model.read({ chargePercent: 80, isRaining: true, rainMult: 2.5 }, signalSettings) };
+  assert(Math.abs(rain.noiseGain - 0.13) < 1e-9 && rain.crackleRate === 2, "full rain adds its noise and crackle");
+  assert.equal(model.read({ chargePercent: 80, isRaining: false, rainMult: 2.5 }, signalSettings).rain, 0);
+
+  // The real power service over a battery port; the radio consumes 1 unit/s: one ordinary battery = 1 hour.
+  const stored = new Map([["bat", { percent: 100, capacityUnits: 3600 }]]);
+  const powerService = new DevicePowerService({ config: () => ({ maxStepSeconds: 1, maxBackgroundStepSeconds: 65,
+    saveIntervalSeconds: 5 }), batteries: { attachedBattery: () => ({ instanceId: "bat" }),
+    readBattery: (id) => stored.get(id) || null,
+    drainBattery: (id, units) => { const entry = stored.get(id);
+      entry.percent = Math.max(0, entry.percent - units / entry.capacityUnits * 100); return { ...entry }; } } });
+  const radioItem = { instanceId: "radio-1", effectiveStats: { batteryUse: { unitsPerSecond: 1 } } };
+  const equipment = { radio: radioItem, radioBattery: { instanceId: "bat" } };
+  const gains = []; const mutes = []; const noiseCalls = []; const bursts = []; let noiseStops = 0;
+  let next = 0.99;
+  const timers = scheduler();
+  let weather = { isRaining: false, wind: { rainMult: 1 } };
+  const service = new RadioReceiverService({ equipment: { getEquipped: () => equipment }, power: powerService,
+    stations: { listStations: async () => [station("s", "https://s.example/live")], listCountries: async () => [] },
+    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled() {}, setGainScale: (value) => gains.push(value),
+      setStreamMuted: (muted) => mutes.push(muted) },
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
+    config: () => ({ codecs: ["MP3"], signal: { ...signalSettings, dropoutMs: [200, 200] } }), secureOnly: true,
+    weather: { getSnapshot: () => weather },
+    noise: { update: (level, rate) => noiseCalls.push([level, rate]), burst: (s) => bursts.push(s), stop: () => { noiseStops += 1; } },
+    rng: { next: () => next }, scheduler: timers });
+  const SourceDate = vm.runInContext("Date", runtime.context);
+  const realNow = SourceDate.now;
+  SourceDate.now = () => { throw new Error("the radio's consumption must not read the wall clock"); };
+  try {
+    service.powerOn(); await settle();
+    service.handlePlayerState("playing", { effects: true });
+    service.tick(60);
+    assert(Math.abs(stored.get("bat").percent + (powerService.read("bat").percent - stored.get("bat").percent) - (100 - 100 / 3600)) < 1e-9,
+      "a visible page counts one clamped second per tick, whatever the gap");
+    service.setPreference("playInBackground", false);
+    service.setPageHidden(true);
+    const beforeHidden = powerService.read("bat").percent;
+    service.tick(60);
+    assert.equal(powerService.read("bat").percent, beforeHidden, "a stopped radio in a hidden page consumes nothing");
+    service.setPreference("playInBackground", true);
+    service.tick(600);
+    assert(Math.abs(beforeHidden - powerService.read("bat").percent - 65 * 100 / 3600) < 1e-9,
+      "background play counts the throttled timer's real gap, at most 65 s");
+    service.setPageHidden(false);
+    let seconds = 66;
+    while (service.getStatus().powered && seconds < 4000) { service.tick(1); seconds += 1; }
+    assert(Math.abs(seconds - 3600) <= 2, "one ordinary battery plays the radio for 1 hour: " + seconds);
+    assert.equal(service.getStatus().status, "no-battery", "an empty battery turns the radio off");
+    assert(noiseStops > 0, "and silences its noise");
+  } finally {
+    SourceDate.now = realNow;
+  }
+
+  // A weak battery: sag, noise, a dropout from the radio's RNG, rain.
+  stored.get("bat").percent = 12.5;
+  service.powerOn(); await settle();
+  service.handlePlayerState("playing", { effects: true });
+  next = 0;
+  weather = { isRaining: true, wind: { rainMult: 2.5 } };
+  service.tick(1);
+  assert(Math.abs(gains.at(-1) - (1 - 0.35 * (1 - (12.5 - 1 / 36) / 25))) < 1e-3, "the volume sags with the weak battery");
+  assert(noiseCalls.at(-1)[0] > 0.13 && noiseCalls.at(-1)[1] > 2, "noise and crackle from the battery and the rain");
+  assert.equal(mutes.at(-1), true, "a dropout silences the station");
+  assert(Math.abs(bursts.at(-1) - 0.2) < 1e-9, "with a crackle burst for its length");
+  assert(service.getStatus().signal < 1, "the status reports the weak signal");
+  timers.advance(200);
+  assert.equal(mutes.at(-1), false, "the station returns after the dropout");
+  service.powerOff();
+
+  // The ticker reports the monotonic gap.
+  let current = 1000;
+  const ticks = [];
+  let intervalHandler = null;
+  const ticker = new MonotonicIntervalTicker({ windowRef: { setInterval: (handler) => { intervalHandler = handler; return 7; },
+    clearInterval: () => { intervalHandler = null; } }, intervalMs: 1000, now: () => current, onTick: (s) => ticks.push(s) });
+  current = 61000; intervalHandler();
+  assert.deepEqual(ticks, [60], "the ticker reports the real elapsed seconds");
+  ticker.dispose();
+  assert.equal(intervalHandler, null);
+}
+
+stageTwo().then(stageThree).then(stageFour).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
+  + "threshold, w and w² terms, rain), 1 hour per battery at 1 unit/s without the wall clock, clamped visible steps, no "
+  + "consumption when stopped in a hidden page, 65 s background steps, off at empty with silence, sag, noise, a dropout "
+  + "and its end, the monotonic ticker.")).then(() => console.log("Radio receiver stage 3 passed: S-curve (zero, odd, monotonic, 44100 "
   + "points, peak 0.35), rack order and settings, make-up gain, ramped dry/wet switch, dispose, the preference.")).then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
   + "duplicates), region (language, time zone, default), mirrors and request timeout, validated preferences without power, "
   + "the service (battery gate, stations, skip, no-stations, next, no-effect, country, volume, hidden page, background, "

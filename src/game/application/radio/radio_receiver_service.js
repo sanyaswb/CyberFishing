@@ -1,4 +1,5 @@
 import { RadioStationFilter } from "../../domain/radio/radio_station_filter.js";
+import { RadioSignalModel } from "../../domain/radio/radio_signal_model.js";
 
 // Spec 142: the one owner of the radio receiver's runtime state. It plays the equipped radio only while it has a
 // charged battery (spec 143), loads the stations of the chosen country (first: the browser's region, D1), skips a
@@ -23,16 +24,25 @@ export class RadioReceiverService {
   #failures = 0;
   #hidden = false;
   #countries = null;
+  #weather;
+  #noise;
+  #rng;
+  #scheduler;
+  #signalModel;
+  #signalScale = 1;
+  #dropoutTimer = null;
   #status = {
-    status: "off", powered: false, equipped: false, station: null, country: "", stationCount: 0, effects: true,
+    status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
     volume: 0.6, retroMode: true, ducking: true, playInBackground: false,
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
   // listCountries() }; player: RadioStreamPlayer-like { play(url), stop(), setVolume(v) }; preferences: { load(),
-  // save(p) }; region: { resolve() }; config: () => CONFIG.radio; secureOnly: the page is https (mixed content).
-  constructor({ equipment, power, stations, player, preferences, region, config, secureOnly,
-    filter = new RadioStationFilter() }) {
+  // save(p) }; region: { resolve() }; config: () => CONFIG.radio; secureOnly: the page is https (mixed content);
+  // weather: { getSnapshot() } (isRaining, wind.rainMult); noise: RadioNoiseSource-like { update(level, rate, s),
+  // burst(s), stop() }; rng: the radio's own { next() }; scheduler: { setTimeout, clearTimeout } (dropouts).
+  constructor({ equipment, power, stations, player, preferences, region, config, secureOnly, weather, noise, rng,
+    scheduler, filter = new RadioStationFilter(), signalModel = new RadioSignalModel() }) {
     this.#equipment = equipment;
     this.#power = power;
     this.#stations = stations;
@@ -42,6 +52,11 @@ export class RadioReceiverService {
     this.#config = config;
     this.#secureOnly = secureOnly === true;
     this.#filter = filter;
+    this.#weather = weather;
+    this.#noise = noise;
+    this.#rng = rng;
+    this.#scheduler = scheduler;
+    this.#signalModel = signalModel;
     const cfg = this.#config() || {};
     this.#prefs = {
       volume: Number.isFinite(Number(cfg.defaultVolume)) ? Number(cfg.defaultVolume) : 0.6,
@@ -84,7 +99,11 @@ export class RadioReceiverService {
   powerOff(status = "off") {
     this.#requestSerial += 1;
     this.#player.stop();
-    this.#set({ powered: false, status });
+    this.#noise.stop();
+    this.#endDropout();
+    this.#signalScale = 1;
+    this.#applyGain();
+    this.#set({ powered: false, status, signal: 1 });
   }
 
   next() {
@@ -173,10 +192,61 @@ export class RadioReceiverService {
     else if (!this.#hasCharge()) this.powerOff("no-battery");
   }
 
+  // Stage 4, about once a second from a monotonic clock: the radio consumes its battery while it sounds (also in a
+  // hidden page with playInBackground; nothing while it is stopped there), its reception follows the charge and the
+  // rain, and a weak battery brings dropouts. An empty battery turns it off.
+  tick(seconds) {
+    if (!this.#status.powered) return;
+    const equipped = this.#equipment.getEquipped() || {};
+    if (!equipped.radio) return this.powerOff("no-radio");
+    const batteryId = equipped.radioBattery?.instanceId || null;
+    if (!batteryId) return this.powerOff("no-battery");
+    if (this.#hidden && !this.#prefs.playInBackground) return;
+    const reading = this.#power.consume({
+      deviceId: equipped.radio.instanceId,
+      batteryInstanceId: batteryId,
+      unitsPerSecond: Number(equipped.radio.effectiveStats?.batteryUse?.unitsPerSecond) || 0,
+      seconds,
+      background: this.#hidden,
+    });
+    if (reading.empty) return this.powerOff("no-battery");
+    const weather = this.#weather.getSnapshot() || {};
+    const signal = this.#signalModel.read({ chargePercent: reading.percent, isRaining: weather.isRaining === true,
+      rainMult: weather.wind?.rainMult }, this.#config()?.signal || {});
+    this.#signalScale = 1 - signal.volumeSag;
+    this.#applyGain();
+    const step = Math.max(0, Math.min(Number(seconds) || 0, 5));
+    this.#noise.update(signal.noiseGain, signal.crackleRate, step || 1);
+    const chance = 1 - Math.pow(1 - Math.min(1, signal.dropoutChancePerSecond), step);
+    if (this.#dropoutTimer === null && chance > 0 && this.#rng.next() < chance) this.#startDropout();
+    const quality = Math.round(signal.quality * 100) / 100;
+    if (quality !== this.#status.signal) this.#set({ signal: quality });
+  }
+
   dispose() {
     this.#requestSerial += 1;
     this.#player.stop();
+    this.#noise.stop();
+    this.#endDropout();
     this.#listeners.clear();
+  }
+
+  #startDropout() {
+    const [minimum, maximum] = this.#config()?.signal?.dropoutMs || [150, 900];
+    const length = minimum + this.#rng.next() * Math.max(0, maximum - minimum);
+    this.#player.setStreamMuted(true);
+    this.#noise.burst(length / 1000);
+    this.#dropoutTimer = this.#scheduler.setTimeout(() => this.#endDropout(), length);
+  }
+
+  #endDropout() {
+    if (this.#dropoutTimer !== null) this.#scheduler.clearTimeout(this.#dropoutTimer);
+    this.#dropoutTimer = null;
+    this.#player.setStreamMuted(false);
+  }
+
+  #applyGain() {
+    this.#player.setGainScale(this.#signalScale);
   }
 
   async #loadCountry(country, stationId) {

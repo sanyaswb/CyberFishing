@@ -11,6 +11,7 @@ export const RADIO_LABELS = Object.freeze({
   ducking: "Тихіше при кльові",
   playInBackground: "Грати у фоні",
   noStation: "Станцію не вибрано",
+  weakSignal: "слабкий сигнал",
   bitrate: (kbps) => `${kbps} кбіт/с`,
   status: Object.freeze({
     "off": "Вимкнено",

@@ -99,6 +99,8 @@ import { RadioPreferencesLocalStore } from "../../platform/browser/storage/radio
 import { SharedAudioContextProvider } from "../../platform/browser/audio/shared_audio_context_provider.js";
 import { RadioStreamPlayer } from "../../platform/browser/audio/radio_stream_player.js";
 import { WalkieTalkieRack } from "../../platform/browser/audio/walkie_talkie_rack.js";
+import { RadioNoiseSource } from "../../platform/browser/audio/radio_noise_source.js";
+import { MonotonicIntervalTicker } from "../../platform/browser/time/monotonic_interval_ticker.js";
 import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator.js";
 import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
@@ -931,11 +933,9 @@ export class GameCompositionRoot {
     const devicePower = own(new DevicePowerService({ batteries: inventory, config: () => this.#config.power || {} }));
     own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       onHide: () => devicePower.flush() }));
-    const radio = this.#composeRadio({ own, inventory, devicePower });
     const systems = {
       projector,
       devicePower,
-      radio,
       map: locationMap,
       waterMetricSource,
       env: new EnvironmentSystem(
@@ -997,6 +997,7 @@ export class GameCompositionRoot {
       ),
       inventory,
     };
+    systems.radio = this.#composeRadio({ own, inventory, devicePower, weather: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar).
     inventory.setDeviceChargeProvider?.((deviceItem) => {
       const batteryId = devicePower.batteryOf(deviceItem?.instanceId);
@@ -1008,7 +1009,7 @@ export class GameCompositionRoot {
 
   // Spec 142: the field radio receiver (stations, stream player, preferences, region), its HUD indicator under the
   // clock (a tap opens the radio's editor) and the page visibility policy.
-  #composeRadio({ own, inventory, devicePower }) {
+  #composeRadio({ own, inventory, devicePower, weather }) {
     const windowRef = this.#windowTarget;
     const config = () => this.#config.radio || {};
     let radio = null;
@@ -1016,6 +1017,11 @@ export class GameCompositionRoot {
     const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
       config, onState: (state, info) => radio?.handlePlayerState(state, info),
       effects: new WalkieTalkieRack({ config: () => config().rack || {} }) }));
+    // The radio's own random numbers (noise, crackle, dropouts); the gameplay RNG is never used (game-cycle report).
+    const seed = new Uint32Array(1);
+    windowRef.crypto?.getRandomValues?.(seed);
+    const radioRng = new SeededRng(seed[0] || 0x5eed);
+    const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, rng: radioRng }));
     radio = own(new RadioReceiverService({
       equipment: inventory,
       power: devicePower,
@@ -1026,7 +1032,13 @@ export class GameCompositionRoot {
         timeZone: () => windowRef.Intl?.DateTimeFormat?.().resolvedOptions?.().timeZone || "" }),
       config,
       secureOnly: windowRef.location?.protocol === "https:",
+      weather,
+      noise,
+      rng: radioRng,
+      scheduler: windowRef,
     }));
+    own(new MonotonicIntervalTicker({ windowRef, intervalMs: config().tickMs, now: () => windowRef.performance.now(),
+      onTick: (seconds) => radio.tick(seconds) }));
     own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef,
       onHide: () => radio.setPageHidden(true), onShow: () => radio.setPageHidden(false) }));
     const removeInventoryListener = inventory.onInventoryChanged(() => radio.update());

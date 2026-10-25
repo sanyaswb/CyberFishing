@@ -639,6 +639,7 @@
 │  │  │  │  ├── water_metric.js
 │  │  │  │  └── world_perspective.js
 │  │  │  ├── radio
+│  │  │  │  ├── radio_signal_model.js
 │  │  │  │  └── radio_station_filter.js
 │  │  │  ├── rules
 │  │  │  │  ├── bait_rules.js
@@ -874,6 +875,7 @@
 │        │  ├── browser_asset_transport.js
 │        │  └── image_asset_provider.js
 │        ├── audio
+│        │  ├── radio_noise_source.js
 │        │  ├── radio_stream_player.js
 │        │  ├── shared_audio_context_provider.js
 │        │  └── walkie_talkie_rack.js
@@ -950,7 +952,8 @@
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js
-│        │  └── game_clock.js
+│        │  ├── game_clock.js
+│        │  └── monotonic_interval_ticker.js
 │        └── ui
 │           ├── chum_controls.js
 │           ├── depth_selector.js
