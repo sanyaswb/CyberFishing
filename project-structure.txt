@@ -571,7 +571,8 @@
 │  │  │  │  │  └── hook_power_policy.js
 │  │  │  │  ├── item_stat_override_policy.js
 │  │  │  │  ├── metrics
-│  │  │  │  │  └── item_bounded_metric_resolver.js
+│  │  │  │  │  ├── item_bounded_metric_resolver.js
+│  │  │  │  │  └── item_percent_state_policy.js
 │  │  │  │  ├── progression
 │  │  │  │  │  ├── composite_metric_strategy.js
 │  │  │  │  │  ├── derived_stat_metric_strategy.js
