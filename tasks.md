@@ -8,6 +8,13 @@
 
 ## Задачі в роботі
 
+### TK-094 — арт батарейки й радіоприймача
+
+- Власник 2026-10-25: батарейку і радіо вже можна використовувати як асети.
+- Зроблено: майстри `battery-volt--1.webp` (1575×1303) і `radio-receiver.webp` (1811×1335) перенесено в `asset-sources/items/batteries` і `asset-sources/items/radio`; через `utils/convert-images.js --thumbnails` (WebP 80) — `assets/items/batteries/battery-volt--1.webp` 768×635 (63 KB) і `assets/items/radio/radio-receiver.webp` 1024×755 (170 KB). Батарейка показує свій арт (`iconUrl` замість 🔋); радіо підключиться з предметом на етапі 1 spec 142.
+- [x] Реалізовано v0.47.26. Full, game-cycle незмінний.
+- [ ] Власник: `dev.html` — «Батарейка» в рюкзаку, у DEV-магазині «🔋 Живлення» і у вкладці батарейки кораблика показує свій малюнок, не розтягнутий. Візуально агентом не перевіряється.
+
 ### Spec 142 — польовий радіоприймач
 
 [Spec](specs/142-radio-receiver/spec.md); початкове ТЗ власника — [source-tor.md](specs/142-radio-receiver/source-tor.md).

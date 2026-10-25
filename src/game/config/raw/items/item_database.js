@@ -1020,7 +1020,7 @@ export const ITEM_DB = {
       id: "battery_basic",
       name: "Батарейка",
       itemType: "battery",
-      icon: "🔋",
+      iconUrl: "assets/items/batteries/battery-volt--1.webp",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
