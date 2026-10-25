@@ -345,7 +345,8 @@ export const CONFIG = {
     startTimeoutMs: 5000,
     defaultVolume: 0.6,
     playInBackground: false,
-    ducking: { enabled: true },
+    // Stage 5: during a bite the radio drops to duckGain of its volume, easing over rampSeconds (the switch in its editor).
+    ducking: { enabled: true, duckGain: 0.25, rampSeconds: 0.15 },
     // Stage 3: the walkie-talkie rack (high-pass, low-pass, peaking, S-curve drive with make-up gain, switch ramp).
     rack: { highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5, drive: 18, oversample: "4x",
       rampSeconds: 0.03 },

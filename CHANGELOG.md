@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.0 - Field radio receiver
+
+- Field radio receiver (spec 142): a wearable radio with its own battery that plays live stations of your country through a walkie-talkie sound, with weak-battery noise and dropouts, rain crackle, quieter during a bite, a wave indicator under the clock and DevTools «РАДІО».
+
 ## v0.47.31 - Radio battery and reception
 
 - Radio receiver stage 4: the radio runs its battery down (1 hour), counted on a monotonic clock; below 25 % hiss, crackle, a quieter sound and dropouts; rain adds noise; an empty battery turns it off (spec 142).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.23 - Game UI hides while aiming
 
 - Casting aim: while a cast is aimed every game UI element (clock, fullscreen button, toolbar, version badge, DevTools button) fades out and returns on release; the split inventory stays (TK-092).
-
-## v0.47.22 - No aim jump at the map edge
-
-- Casting aim: when the camera stops at the map edge, the aim line stays under the finger and the lead grows smoothly from there, instead of jumping (TK-091).

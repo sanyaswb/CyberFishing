@@ -76,10 +76,13 @@ export class RadioStreamPlayer {
     this.#applyVolume();
   }
 
-  // A multiplier on the volume (ducking), 0..1.
+  // A multiplier on the volume (the weak signal's sag, ducking), 0..1, eased over CONFIG.radio.ducking.rampSeconds so a
+  // duck never clicks; the native fallback element takes it at once.
   setGainScale(scale) {
-    this.#gainScale = Math.max(0, Math.min(1, Number(scale) || 0));
-    this.#applyVolume();
+    const value = Math.max(0, Math.min(1, Number(scale) || 0));
+    if (value === this.#gainScale) return;
+    this.#gainScale = value;
+    this.#applyVolume(true);
   }
 
   dispose() {
@@ -144,9 +147,13 @@ export class RadioStreamPlayer {
     this.#applyVolume();
   }
 
-  #applyVolume() {
+  #applyVolume(eased = false) {
     const value = this.#volume * this.#gainScale;
-    if (this.#output) this.#output.gain.value = value;
+    const context = this.#audioContexts.peek();
+    const ramp = Math.max(0.001, Number(this.#config()?.ducking?.rampSeconds) || 0.15);
+    if (this.#output && eased && context) {
+      this.#output.gain.setTargetAtTime(value, Number(context.currentTime) || 0, ramp);
+    } else if (this.#output) this.#output.gain.value = value;
     if (this.#element && this.#attempt === "native") this.#element.volume = value;
   }
 

@@ -1,7 +1,7 @@
 # Feature Specification: Field radio receiver
 
 **Created**: 2026-10-25
-**Status**: Specified; Q1–Q7 answered 2026-10-25; depends on [spec 143](../143-device-power/spec.md) (battery, Q8–Q14 answered)
+**Status**: Implemented in v0.47.28–v0.48.0 (stages 1–5); owner acceptance pending; thunderstorm later (D14)
 **Input**: Owner 2026-10-25: a vintage field radio receiver, an inventory item that plays live internet radio
 (Radio Browser) through a "walkie-talkie" sound, with a battery that runs down and degrades the signal, rain noise,
 optional ducking on a bite, its own cell in the auxiliary equipment block and an item editor window. The owner's
@@ -280,3 +280,17 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - The thunderstorm (D14) will be one more weather input of `RadioSignalModel`.
 - Checks: `radio-receiver` stage 4 (model numbers, 1 hour per battery with the source realm's Date.now blocked, clamped
   visible steps, hidden stop, 65 s background steps, off at empty, sag, noise, rain, dropout and its end, ticker).
+
+### Stage 5 (v0.48.0): ducking and DevTools — the radio is complete
+
+- Ducking: the state machine's change hook tells `RadioReceiverService.setBiting(name === "biting")`; while
+  «Тихіше при кльові» is on, the gain scale is `sag x CONFIG.radio.ducking.duckGain` (0.25) and returns after the
+  bite; `RadioStreamPlayer.setGainScale` eases the output gain (`setTargetAtTime`, `ducking.rampSeconds` 0.15 s), so a
+  duck never clicks; unchanged values write nothing.
+- DevTools «📻 РАДІО» (`src/dev/tools/radio_dev_section.js`): status, station, country and station count, signal,
+  battery charge, «Розрядити до 20 / 5 / 0 %» through `DevicePowerService.consume` (DEV never raises a charge), and the
+  live `CONFIG.radio` tree. The radio item comes from «📻 Пристрої», batteries from «🔋 Живлення».
+- Version: owner 2026-10-25, "after the radio, add a minor": 0.48.0.
+- Checks: `radio-receiver` stage 5 (duck, switch off/on during a bite, recovery, unchanged state, eased gain, the
+  DevTools section). Full 71/71; game-cycle report unchanged across all stages.
+- Later (own spec): the thunderstorm weather state with its own crackles (D14).

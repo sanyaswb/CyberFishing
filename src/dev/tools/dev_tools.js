@@ -1,3 +1,4 @@
+import { RadioDevSection } from "./radio_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
@@ -24,6 +25,7 @@ export class DevTools {
   #itemProgressionResolver;
   #grantCatalogItem;
   #rodSpine;
+  #radio;
   #scene;
   #zoneEditorState;
   #zoneEditorFiles;
@@ -75,6 +77,7 @@ export class DevTools {
       itemProgressionResolver = null,
       grantCatalogItem = null,
       rodSpine = null,
+      radio = null,
       scene = null,
       zoneEditorState = null,
       zoneEditorFiles = null,
@@ -133,6 +136,7 @@ export class DevTools {
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
     this.#rodSpine = rodSpine;
+    this.#radio = radio;
     this.#scene = scene;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
@@ -221,6 +225,11 @@ export class DevTools {
 
     this.#renderDatabaseSection(body);
     if (this.#rodSpine) this.#renderSpineRodSection(this.#createSectionWithCache("SPINE", body, ["SPINE"]));
+    if (this.#radio) {
+      new RadioDevSection({ ui: this.#ui, radio: this.#radio,
+        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+        renderConfigTree: (parent) => this.#buildTree(this.#config.radio, parent, ["CONFIG", "radio"]) }).render(body);
+    }
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
     this.#renderRuntimeOverrideControls(service);

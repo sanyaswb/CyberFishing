@@ -275,7 +275,10 @@ async function stageTwo() {
     removeAttribute(key) { if (key === "src") this.src = ""; }
   }
   class FakeNode {
-    constructor() { this.to = []; this.gain = { value: 1 }; }
+    constructor() {
+      this.to = [];
+      this.gain = { value: 1, targets: [], setTargetAtTime(value, at, constant) { this.targets.push([value, at, constant]); } };
+    }
     connect(node) { this.to.push(node); }
     disconnect() { this.to = []; }
   }
@@ -544,7 +547,61 @@ async function stageFour() {
   assert.equal(intervalHandler, null);
 }
 
-stageTwo().then(stageThree).then(stageFour).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
+// ---- Stage 5: ducking on a bite, the DevTools section ----
+const { RadioDevSection } = runtime.importModule("src/dev/tools/radio_dev_section.js");
+async function stageFive() {
+  const gains = [];
+  const service = new RadioReceiverService({ equipment: { getEquipped: () => ({}) }, power: { read: () => ({ empty: true }) },
+    stations: { listStations: async () => [], listCountries: async () => [] },
+    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled() {}, setStreamMuted() {},
+      setGainScale: (value) => gains.push(value) },
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
+    config: () => ({ ducking: { enabled: true, duckGain: 0.25 } }), secureOnly: true,
+    weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
+    scheduler: scheduler() });
+  service.setBiting(true);
+  assert.equal(gains.at(-1), 0.25, "a bite ducks the radio to duckGain");
+  service.setBiting(false);
+  assert.equal(gains.at(-1), 1, "and the bite's end brings it back");
+  service.setPreference("ducking", false);
+  service.setBiting(true);
+  assert.equal(gains.at(-1), 1, "with «Тихіше при кльові» off a bite changes nothing");
+  service.setPreference("ducking", true);
+  assert.equal(gains.at(-1), 0.25, "turning it on during a bite ducks at once");
+  service.setBiting(true);
+  const count = gains.length;
+  service.setBiting(true);
+  assert.equal(gains.length, count, "an unchanged bite state writes nothing");
+
+  // The player eases the gain scale (no click) once Web Audio runs.
+  const targets = [];
+  const context = { state: "running", currentTime: 4, destination: { connect() {} },
+    createGain: () => ({ connect() {}, disconnect() {}, gain: { value: 1, setTargetAtTime: (v, at, c) => targets.push([v, at, c]) } }) };
+  const player = new RadioStreamPlayer({ documentRef: { createElement: () => ({}) },
+    audioContexts: new SharedAudioContextProvider({ windowRef: { AudioContext: function AudioContext() { return context; } } }),
+    scheduler: scheduler(), config: () => ({ ducking: { rampSeconds: 0.15 } }), onState() {} });
+  player.input;
+  player.setVolume(0.8);
+  player.setGainScale(0.25);
+  assert.deepEqual([...targets.at(-1)], [0.2, 4, 0.15], "ducking eases the output gain over rampSeconds");
+
+  // The DevTools section: status rows and discharge buttons through the given port.
+  const rows = [];
+  const buttons = new Map();
+  const discharged = [];
+  const ui = { createInfoRow: (label, value) => rows.push([label, value]),
+    createButtonRow: (label, parent, onClick) => buttons.set(label, onClick) };
+  const section = { replaceChildren() {} };
+  new RadioDevSection({ ui, radio: { getStatus: () => ({ powered: true, status: "playing", station: { name: "S" },
+    country: "UA", stationCount: 3, signal: 0.5 }), batteryPercent: () => 42, discharge: (target) => discharged.push(target) },
+  createSection: () => section, renderConfigTree() {} }).render({});
+  assert(rows.some(([label, value]) => label === "заряд батарейки" && value === "42.0%"));
+  buttons.get("Розрядити до 5%")();
+  assert.deepEqual(discharged, [5], "the DEV buttons discharge through the port");
+}
+
+stageTwo().then(stageThree).then(stageFour).then(stageFive).then(() => console.log("Radio receiver stage 5 passed: ducking "
+  + "on a bite with its switch and recovery, eased gain, the DevTools section.")).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
   + "threshold, w and w² terms, rain), 1 hour per battery at 1 unit/s without the wall clock, clamped visible steps, no "
   + "consumption when stopped in a hidden page, 65 s background steps, off at empty with silence, sag, noise, a dropout "
   + "and its end, the monotonic ticker.")).then(() => console.log("Radio receiver stage 3 passed: S-curve (zero, odd, monotonic, 44100 "

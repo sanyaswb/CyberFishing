@@ -522,6 +522,7 @@ export class GameCompositionRoot {
       ui: systems.ui,
       chum: systems.chum,
       devicePower: systems.devicePower,
+      radio: systems.radio,
       bite: systems.bite,
       inventory: systems.inventory,
       inventoryUI: systems.inventoryUI,
@@ -961,6 +962,24 @@ export class GameCompositionRoot {
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
             // DEV Spine section (spec 099 Phase 4): the rod controller's DEV port.
             rodSpine: rodAnimation,
+            // DEV radio section (spec 142): status and discharging through the ordinary consumption path.
+            radio: {
+              getStatus: () => systems.radio.getStatus(),
+              batteryPercent: () => {
+                const batteryId = inventory.getEquipped()?.radioBattery?.instanceId;
+                return batteryId ? systems.devicePower.read(batteryId).percent : null;
+              },
+              discharge: (target) => {
+                const equipped = inventory.getEquipped();
+                const batteryId = equipped?.radioBattery?.instanceId;
+                const stored = batteryId ? inventory.readBattery(batteryId) : null;
+                if (!stored) return;
+                const units = Math.max(0, (systems.devicePower.read(batteryId).percent - target) / 100 * stored.capacityUnits);
+                systems.devicePower.consume({ deviceId: "dev", batteryInstanceId: batteryId, unitsPerSecond: units, seconds: 1 });
+                systems.devicePower.flush();
+                systems.radio.update();
+              },
+            },
             // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
             scene,
           }], ["dispose"],
@@ -1373,7 +1392,11 @@ export class GameCompositionRoot {
         if (!StateClass) throw new Error(`Unknown game state: ${name}`);
         return new StateClass(stateDepsFactory.create(name));
       },
-      onStateChanged: appPorts.onStateChanged,
+      // Spec 142 stage 5: the radio gets quieter during a bite (its «Тихіше при кльові» switch).
+      onStateChanged: (name) => {
+        appPorts.onStateChanged(name);
+        runtime.radio.setBiting(name === "biting");
+      },
     }));
     return { stateMachine, stateDepsFactory };
   }

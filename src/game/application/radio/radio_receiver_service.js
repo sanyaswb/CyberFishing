@@ -30,6 +30,7 @@ export class RadioReceiverService {
   #scheduler;
   #signalModel;
   #signalScale = 1;
+  #biting = false;
   #dropoutTimer = null;
   #status = {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
@@ -142,6 +143,7 @@ export class RadioReceiverService {
     this.#save({ [key]: value });
     this.#set({ [key]: value });
     if (key === "retroMode") this.#player.setEffectsEnabled(value);
+    if (key === "ducking") this.#applyGain();
     if (key === "playInBackground" && this.#hidden && !value && this.#status.powered) this.#player.stop();
   }
 
@@ -155,6 +157,14 @@ export class RadioReceiverService {
         .filter((entry) => /^[A-Z]{2}$/u.test(entry.code) && entry.stationCount > 0);
     }
     return this.#countries;
+  }
+
+  // The fishing state became or stopped being a bite (stage 5).
+  setBiting(biting) {
+    const value = biting === true;
+    if (value === this.#biting) return;
+    this.#biting = value;
+    this.#applyGain();
   }
 
   // The page was hidden or shown (BrowserPageHideListener).
@@ -245,8 +255,10 @@ export class RadioReceiverService {
     this.#player.setStreamMuted(false);
   }
 
+  // Stage 5: a bite ducks the radio to CONFIG.radio.ducking.duckGain while «Тихіше при кльові» is on.
   #applyGain() {
-    this.#player.setGainScale(this.#signalScale);
+    const duck = this.#biting && this.#prefs.ducking ? Number(this.#config()?.ducking?.duckGain ?? 0.25) : 1;
+    this.#player.setGainScale(this.#signalScale * Math.max(0, Math.min(1, duck)));
   }
 
   async #loadCountry(country, stationId) {
