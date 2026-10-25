@@ -1,6 +1,9 @@
 /* Spec 142 D7: the radio receiver's controls under its preview in the item editor. The block is an inventory-panel;
    buttons are the shared inventory-action; country, volume and the switches are native controls laid out here. */
+/* TK-096: a flex item of the fixed-height, scrolling editor. inventory-panel sets min-height 0, so without flex: none the
+   block shrank to almost nothing, its buttons overflowed under the editor tabs' panel and could not be pressed. */
 .radio-controls {
+  flex: none;
   display: grid;
   gap: var(--inventory-container-gap);
   padding: var(--inventory-container-gap);

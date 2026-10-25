@@ -335,6 +335,10 @@ async function stageTwo() {
     setPreference: (key, value) => calls.push(key + ":" + value),
     listCountries: async () => [{ code: "UA", name: "Ukraine" }, { code: "DE", name: "Germany" }] };
   const controls = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS });
+  // TK-096: the block is a flex item of the scrolling editor; without flex: none (inventory-panel's min-height 0) it
+  // shrank and the editor tabs' panel covered its buttons. The DOM double has no layout, so the CSS contract guards it.
+  const controlsCss = runtime.read("src/game/presentation/styles/inventory/radio-controls.css").replace(/\s+/gu, " ");
+  assert(/\.radio-controls \{[^}]*flex: none;/u.test(controlsCss), "the radio controls keep their height in the editor");
   assert.equal(controls.supports({ itemType: "radio" }), true);
   assert.equal(controls.supports({ itemType: "boat" }), false);
   const block = controls.render();
