@@ -315,3 +315,15 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
   sound. DevTools «📻 РАДІО» → «Звукові ефекти»: «Платівка» and «Рація», each with «увімкнено»; parameters only while on.
 - Checks: `radio-receiver` (both stages over a fake Web Audio, live edits, density rebuild, disabling, the chain from the
   live config, two player switches only, the DevTools effects with hidden parameters and the live write).
+
+### TK-098 (v0.48.3): DEV sliders for the enabled effects
+
+- `RadioEffectTuning` (src/dev/radio): the main parameters of the enabled effects only (vinyl: crackle, pops, hiss, wow
+  depth, warmth, mix; walkie-talkie: drive, top, low cut, mix) with their ranges; writes go through the DEV config
+  runtime (`CONFIG.radio.effects.<effect>.<key>`, the same store as DevTools), unknown keys are ignored.
+- `RadioControlsRenderer` takes an optional `tuning` port and shows «DEV · ефекти звуку» sliders under the volume
+  (value at the end of each row); the group is rebuilt only when the set of enabled effects changes and hides when none
+  is on. Only the DEV page composes the port (`GameCompositionRoot` option `createRadioEffectTuning`, given by
+  `development_game_startup`); production has no sliders.
+- Checks: `radio-receiver` (enabled effects only, live writes of known keys, sliders, rebuild on DevTools changes,
+  none in production).

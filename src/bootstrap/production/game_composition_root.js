@@ -176,6 +176,7 @@ export class GameCompositionRoot {
   #sessionServices = null;
   // Opens the radio's editor once the inventory UI exists (spec 142: the HUD indicator's tap).
   #radioEditorOpener = null;
+  #createRadioEffectTuning = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
@@ -215,6 +216,8 @@ export class GameCompositionRoot {
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
+    // DEV (TK-098): ({ config }) -> the radio effects' tuning port shown in the radio's editor; absent in production.
+    createRadioEffectTuning = null,
     sceneMode = null,
     uiSurface = null,
     toolbarMountNode = null,
@@ -227,7 +230,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe,
+      createInventorySplitSource, createFrameProbe, createRadioEffectTuning,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -265,6 +268,7 @@ export class GameCompositionRoot {
     this.#createDebugEvents = createDebugEvents;
     this.#createGameDiagnostics = createGameDiagnostics;
     this.#createDevTools = createDevTools;
+    this.#createRadioEffectTuning = createRadioEffectTuning;
     this.#createTimeDisplay = createTimeDisplay;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
@@ -1082,6 +1086,8 @@ export class GameCompositionRoot {
     systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
       radio: systems.radio,
+      // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
+      radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio?.effects || {} }) || null,
       documentRef: this.#documentTarget,
       mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,

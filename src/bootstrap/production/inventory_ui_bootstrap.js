@@ -118,7 +118,8 @@ export class InventoryUiBootstrap {
   }
 
   // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
-  static create({ autoMount = true, autoOpen = false, radio = null, ...options } = {}) {
+  // radioTuning: DEV only, the enabled sound effects' main parameters as sliders (TK-098); null in production.
+  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, ...options } = {}) {
     InventoryUiBootstrap.preloadSlotIcons(options.documentRef);
     const ui = new InventoryUI({
       ...options,
@@ -126,7 +127,7 @@ export class InventoryUiBootstrap {
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
       createPresentation: (presentationOptions) =>
-        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio }),
+        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning }),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -138,6 +139,7 @@ export class InventoryUiBootstrap {
     documentRef,
     uiSurface,
     radio = null,
+    radioTuning = null,
     rarityDomAdapter,
     rarityVisualResolver,
     progressionDomAdapter,
@@ -239,7 +241,8 @@ export class InventoryUiBootstrap {
         scrollbarEnabled: INVENTORY_EDITOR_CONFIG.scrollbar.enabled,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
-        deviceControlsRenderer: radio ? new RadioControlsRenderer({ domFactory: dom, radio, labels: RADIO_LABELS }) : null,
+        deviceControlsRenderer: radio ? new RadioControlsRenderer({ domFactory: dom, radio, labels: RADIO_LABELS,
+          tuning: radioTuning }) : null,
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
         // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
         // off in the editor.

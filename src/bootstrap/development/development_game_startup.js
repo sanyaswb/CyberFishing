@@ -1,3 +1,4 @@
+import { RadioEffectTuning } from "../../dev/radio/radio_effect_tuning.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { WaterMetric } from "../../game/domain/locations/water_metric.js";
@@ -191,6 +192,8 @@ async function startGame() {
       selectorMountNode: toolbar.selectorMountNode,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource, zoneEditorState}),
       createFrameProbe: () => frameProfiler,
+      // TK-098: the radio's enabled effects tuned with sliders in its editor (DEV only).
+      createRadioEffectTuning: ({ config }) => new RadioEffectTuning({ config, configRuntime }),
       sceneMode: pageParams.get("scene"),
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
         new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),

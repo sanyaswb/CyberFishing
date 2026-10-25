@@ -70,7 +70,8 @@
   font: inherit;
 }
 
-.radio-controls__volume {
+.radio-controls__volume,
+.radio-controls__slider {
   width: 100%;
   min-width: 0;
   accent-color: var(--ui-accent);
@@ -92,4 +93,32 @@
 
 .radio-controls__switch-input {
   accent-color: var(--ui-success);
+}
+
+/* TK-098 (DEV only): the enabled effects' main parameters as sliders under the volume; a slider's value at its end. */
+.radio-controls__tuning {
+  display: grid;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #43525b;
+}
+
+.radio-controls__tuning[hidden] {
+  display: none;
+}
+
+.radio-controls__tuning .radio-controls__field {
+  grid-template-columns: minmax(0, 9em) minmax(0, 1fr) 3.5em;
+}
+
+.radio-controls__tuning-title {
+  margin: 0;
+  color: var(--ui-accent);
+  font-size: 11px;
+}
+
+.radio-controls__tuning-value {
+  color: var(--ui-text);
+  font-size: 11px;
+  text-align: right;
 }

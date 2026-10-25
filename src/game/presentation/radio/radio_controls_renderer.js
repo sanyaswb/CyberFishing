@@ -1,18 +1,22 @@
 // Spec 142 D7: the radio's controls among its editor parameters: the station display (name, country, bitrate,
-// status), power, previous/next, the country selector, volume and the ducking and background switches. One rendered block at a time: a new
-// render replaces the subscription of the previous one. Updates write only changed text and values (DESIGN_RULES §13).
-// Station names come from a foreign API and are written as text only.
+// status), power, previous/next, the country selector, volume and the ducking and background switches. In DEV a
+// tuning port (TK-098) adds the main parameters of the enabled sound effects as sliders under the volume; production
+// has none (the player never controls the sound quality). One rendered block at a time: a new render replaces the
+// subscription of the previous one. Updates write only changed text and values (DESIGN_RULES §13). Station names come
+// from a foreign API and are written as text only.
 export class RadioControlsRenderer {
   #dom;
   #radio;
   #labels;
+  #tuning;
   #unsubscribe = null;
 
-  // radio: RadioReceiverService-like port; labels: RADIO_LABELS.
-  constructor({ domFactory, radio, labels }) {
+  // radio: RadioReceiverService-like port; labels: RADIO_LABELS; tuning: DEV only, { list(), set(effect, key, value) }.
+  constructor({ domFactory, radio, labels, tuning = null }) {
     this.#dom = domFactory;
     this.#radio = radio;
     this.#labels = labels;
+    this.#tuning = tuning;
   }
 
   supports(item) {
@@ -59,10 +63,12 @@ export class RadioControlsRenderer {
       switches.append(label);
       toggles[key] = input;
     }
-    block.append(display, buttons, country.field, volume.field, switches);
+    const tuning = this.#tuning ? this.#dom.element("div", "radio-controls__tuning") : null;
+    block.append(display, buttons, country.field, volume.field, ...(tuning ? [tuning] : []), switches);
 
     const nodes = { block, station, meta, status, power, previous, next, country: country.control,
-      volume: volume.control, toggles, countryOptions: null };
+      volume: volume.control, toggles, countryOptions: null, tuning, tuningSignature: null };
+    this.#fillTuning(nodes);
     this.#fillCountries(nodes);
     this.#unsubscribe = this.#radio.subscribe((reading) => this.#update(nodes, reading));
     this.#update(nodes, this.#radio.getStatus());
@@ -99,7 +105,33 @@ export class RadioControlsRenderer {
     nodes.country.value = current;
   }
 
+  // DEV: one slider per main parameter of every enabled effect; rebuilt only when that set changes.
+  #fillTuning(nodes) {
+    if (!nodes.tuning) return;
+    const entries = this.#tuning.list();
+    const signature = entries.map((entry) => `${entry.effect}.${entry.key}`).join("|");
+    if (signature === nodes.tuningSignature) return;
+    nodes.tuningSignature = signature;
+    nodes.tuning.hidden = entries.length === 0;
+    const children = entries.length ? [this.#dom.element("p", "radio-controls__tuning-title", this.#labels.tuningTitle)] : [];
+    for (const entry of entries) {
+      const slider = this.#dom.element("input", "radio-controls__slider");
+      Object.assign(slider, { type: "range", min: String(entry.min), max: String(entry.max), step: String(entry.step) });
+      slider.value = String(entry.value);
+      const field = this.#field(entry.label, slider);
+      const value = this.#dom.element("span", "radio-controls__tuning-value", String(entry.value));
+      field.field.append(value);
+      slider.addEventListener("input", () => {
+        this.#tuning.set(entry.effect, entry.key, Number(slider.value));
+        this.#text(value, slider.value);
+      });
+      children.push(field.field);
+    }
+    nodes.tuning.replaceChildren(...children);
+  }
+
   #update(nodes, reading) {
+    this.#fillTuning(nodes);
     const labels = this.#labels;
     this.#text(nodes.station, reading.station?.name || labels.noStation);
     const meta = [reading.country, reading.station?.bitrate ? labels.bitrate(reading.station.bitrate) : ""]

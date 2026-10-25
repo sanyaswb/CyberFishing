@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.3 - Effect sliders in the radio (DEV)
+
+- DEV: the main parameters of the enabled radio effects (vinyl, walkie-talkie) as sliders under the volume in the radio's editor; production shows none (TK-098).
+
 ## v0.48.2 - Vinyl record sound
 
 - Radio: a vinyl record effect (crackle, pops, wavering pitch, warm tone, hiss, rumble) beside the walkie-talkie; every effect is tuned and switched in DevTools «РАДІО», the player no longer chooses the sound (TK-097).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.26 - Battery and radio art
 
 - Battery shows its own art (768 px WebP from the owner's master); the radio receiver's art is prepared for spec 142 (1024 px); masters in asset-sources (TK-094).
-
-## v0.47.25 - Batteries power the bait boat
-
-- Bait boat runs on a battery in its new slot: 5/7.5/10 min of motion per battery at levels 1/2/3, a third while waiting, nothing while idle; the charge is saved and only falls; one battery in the starting inventory and once for existing saves (spec 143).

@@ -689,7 +689,49 @@ async function stageFive() {
   assert(treePaths().includes("CONFIG.radio.effects.vinyl"), "turning it on shows its parameters");
 }
 
-stageTwo().then(stageThree).then(stageFour).then(stageFive).then(() => console.log("Radio receiver stage 5 passed: ducking "
+// ---- TK-098: DEV sliders for the enabled effects' main parameters ----
+const { RadioEffectTuning } = runtime.importModule("src/dev/radio/radio_effect_tuning.js");
+async function tuningSliders() {
+  const effects = { vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2,
+    warmthGainDb: 2.5, mix: 1 }, walkieTalkie: { enabled: false, drive: 18 } };
+  const sets = [];
+  const tuning = new RadioEffectTuning({ config: () => effects, configRuntime: { set: (path, value) => {
+    sets.push([path.join("."), value]); effects[path[3]][path[4]] = value; } } });
+  assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
+    ["crackleLevel", "popLevel", "hissLevel", "wowDepthMs", "warmthGainDb", "mix"], "only the enabled effect's main parameters");
+  tuning.set("vinyl", "crackleLevel", 0.3);
+  tuning.set("vinyl", "secretKey", 1);
+  assert.deepEqual(sets, [["CONFIG.radio.effects.vinyl.crackleLevel", 0.3]], "writes go to the live config, known keys only");
+
+  const doc = new TestDocument();
+  const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
+  let listener = null;
+  const status = { status: "off", powered: false, equipped: true, station: null, country: "UA", stationCount: 0, volume: 0.5,
+    ducking: true, playInBackground: false };
+  const port = { getStatus: () => status, subscribe: (handler) => { listener = handler; return () => {}; },
+    togglePower() {}, next() {}, previous() {}, setCountry() {}, setVolume() {}, setPreference() {}, listCountries: async () => [] };
+  const production = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS }).render();
+  assert.equal(byClass(production, "radio-controls__tuning").length, 0, "production has no effect sliders");
+  const block = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS, tuning }).render();
+  const sliders = byClass(block, "radio-controls__slider");
+  assert.equal(sliders.length, 6, "one slider per main parameter of the enabled effect");
+  assert.equal(sliders[0].value, "0.3");
+  sliders[0].value = "0.2"; sliders[0].fire("input");
+  assert.equal(effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
+  assert.equal(byClass(block, "radio-controls__tuning-value")[0].textContent, "0.2");
+  effects.vinyl.enabled = false;
+  effects.walkieTalkie.enabled = true;
+  listener(status);
+  assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max), ["40", "6000", "1200", "1"],
+    "switching the effects in DevTools changes the sliders on the next update");
+  effects.walkieTalkie.enabled = false;
+  listener(status);
+  assert.equal(byClass(block, "radio-controls__tuning")[0].hidden, true, "no enabled effect, no slider group");
+}
+
+stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(() => console.log("Radio receiver "
+  + "TK-098 passed: DEV tuning lists only enabled effects, writes known keys to the live config, sliders in the editor, "
+  + "rebuilt when the enabled set changes, none in production.")).then(() => console.log("Radio receiver stage 5 passed: ducking "
   + "on a bite with its switch and recovery, eased gain, the DevTools section.")).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
   + "threshold, w and w² terms, rain), 1 hour per battery at 1 unit/s without the wall clock, clamped visible steps, no "
   + "consumption when stopped in a hidden page, 65 s background steps, off at empty with silence, sag, noise, a dropout "
