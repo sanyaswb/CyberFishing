@@ -60,7 +60,12 @@ export class InventoryLoadoutPanelRenderer {
         "div",
         "inventory-loadout-panel__auxiliary",
       );
-      model.auxiliarySlots.forEach((slot) => {
+      // TK-101: filled wells first, empty ones after (the slot order holds within each), so a worn item is never hidden
+      // behind empty wells in the scrolling block.
+      const ordered = model.auxiliarySlots.map((slot, index) => ({ slot, index }))
+        .sort((left, right) => Number(!left.slot.item) - Number(!right.slot.item) || left.index - right.index)
+        .map((entry) => entry.slot);
+      ordered.forEach((slot) => {
         auxiliary.appendChild(this.#renderSlot(slot, "auxiliary", handlers));
       });
       // More wells than fit scroll inside the block; a drag never activates the well under the pointer (spec 142).

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.5";
+export const CURRENT_PROJECT_VERSION = "0.48.6";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-25",
   notes: Object.freeze([
+    "TK-101: worn auxiliary items first.",
     "TK-100: stations with the effect first.",
     "TK-099: interference switch, DEV switches, sound settings export/apply.",
     "TK-098: DEV sliders for the enabled radio effects.",

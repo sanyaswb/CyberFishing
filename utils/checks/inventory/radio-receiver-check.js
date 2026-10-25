@@ -815,6 +815,19 @@ async function tuningSliders() {
   assert.equal(remembered.length, 500, "the memory keeps at most 500 stations");
   assert.equal(remembered.at(-1), "s504", "the newest last, the oldest dropped");
 
+  // TK-101: filled auxiliary wells first, so a worn radio is never behind empty ones in the scrolling block.
+  const { InventoryLoadoutPanelRenderer } = runtime.importModule("src/game/presentation/inventory/inventory_loadout_panel_renderer.js");
+  const panelDoc = new TestDocument();
+  const panelDom = new InventoryDomFactory(panelDoc, { glyphMetrics: {} });
+  const panel = new InventoryLoadoutPanelRenderer({ domFactory: panelDom, resourceMeterRenderer: { create: () => panelDom.element("div") },
+    getEquippedLongPressDurationMs: () => 500, itemRenderer: { renderSlot: (slot) => {
+      const well = panelDom.element("div", "well"); well.dataset.slotId = slot.slotId; return well; } } });
+  const auxiliary = (slotId, item = null) => ({ slotId, item });
+  const shell = panel.render({ mainSlots: [], auxiliarySlots: [auxiliary("handChum"), auxiliary("net", { id: "net" }),
+    auxiliary("delivery"), auxiliary("gasMask"), auxiliary("radio", { id: "radio" })] });
+  assert.deepEqual(byClass(shell, "well").map((well) => well.dataset.slotId), ["net", "radio", "handChum", "delivery", "gasMask"],
+    "worn items first in slot order, empty wells after");
+
   // The signal model with the interference off: a clean signal.
   const clean = { ...new RadioSignalModel().read({ chargePercent: 5, isRaining: true, rainMult: 2.5 },
     { enabled: false, lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, maxCrackle: 6, rainCrackle: 2,
