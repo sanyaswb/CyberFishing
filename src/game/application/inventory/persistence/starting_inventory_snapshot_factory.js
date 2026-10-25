@@ -4,6 +4,7 @@ import { AutoRefillSettings } from "../../../domain/equipment/auto_refill_settin
 import { EquipmentLoadoutRepository } from "../../../domain/loadouts/equipment_loadout_repository.js";
 import { EquipmentState } from "../../../domain/equipment/equipment_state.js";
 import { FlatInventoryItemRepository } from "../../../domain/inventory/flat_inventory_item_repository.js";
+import { InventoryGrantLedger } from "../../../domain/inventory/inventory_grant_ledger.js";
 import { InventoryItemLocation } from "../../../domain/inventory/inventory_item_location.js";
 import { InventorySnapshotFactory } from "./inventory_snapshot_factory.js";
 
@@ -17,7 +18,8 @@ export class StartingInventorySnapshotFactory {
     this.#itemSnapshotMapper = itemSnapshotMapper;
   }
 
-  create({ items = [], equipment = {}, buildTemplates = {}, settings = {} } = {}) {
+  // grants: one-time grant ids a new player already has in the starting items (spec 143: the first battery).
+  create({ items = [], equipment = {}, buildTemplates = {}, settings = {}, grants = [] } = {}) {
     this.#assertFlatStart(equipment, buildTemplates);
     return new InventorySnapshotFactory({
       repository: new FlatInventoryItemRepository({
@@ -29,6 +31,7 @@ export class StartingInventorySnapshotFactory {
       settings: new AutoRefillSettings(settings),
       refillMemory: new AutoRefillMemory(),
       itemSnapshotMapper: this.#itemSnapshotMapper,
+      grantLedger: new InventoryGrantLedger(grants),
     }).create();
   }
 

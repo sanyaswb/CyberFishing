@@ -89,6 +89,7 @@ import { ItemConditionDomAdapter } from "../../platform/browser/dom/item_conditi
 import { ItemConditionResolver } from "../../game/domain/items/condition/item_condition_resolver.js";
 import { ItemFreshnessDescriptor } from "../../game/presentation/inventory/item_freshness_descriptor.js";
 import { ItemFreshnessResolver } from "../../game/domain/items/freshness/item_freshness_resolver.js";
+import { ItemBoundedMetricResolver } from "../../game/domain/items/metrics/item_bounded_metric_resolver.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
 import { ItemProgressionConfigValidator } from "../../game/config/validation/item_progression_config_validator.js";
 import { ItemProgressionDomAdapter } from "../../platform/browser/dom/item_progression_dom_adapter.js";
@@ -409,7 +410,7 @@ export class GameCompositionRoot {
       surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
     } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets });
     const {
-      itemFreshnessResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver,
+      itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver,
       itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter,
     } = this.#composeItemModels({
       rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
@@ -439,7 +440,7 @@ export class GameCompositionRoot {
       inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
     } = await this.#composePlayerInventory({
       own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
-      baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+      itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
     });
     const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
       config: this.#config.liveBait, fishDb: FISH_DB, rng,
@@ -643,6 +644,12 @@ export class GameCompositionRoot {
       profileProvider: metricCapabilityProvider("freshness"),
       descriptorFactory: (values) => new ItemFreshnessDescriptor(values),
     });
+    // Spec 143: a battery's charge, the bounded metric of its "power.battery" group.
+    const itemChargeResolver = new ItemBoundedMetricResolver({
+      capabilityId: "charge",
+      profileProvider: metricCapabilityProvider("charge"),
+      descriptorFactory: (values) => new ItemConditionDescriptor(values),
+    });
     const itemConditionDomAdapter = new ItemConditionDomAdapter();
     const itemMetricStrategyRegistry = new ItemMetricStrategyRegistry([
       new NumericStatMetricStrategy(),
@@ -719,7 +726,7 @@ export class GameCompositionRoot {
       "itemProgressionDomAdapter",
       ["apply", "clear"],
     );
-    return { itemFreshnessResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
+    return { itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
   }
 
   // Victory layout and the victory action gesture.
@@ -825,7 +832,7 @@ export class GameCompositionRoot {
   // Physics-backed line and cast rules and the player's inventory.
   async #composePlayerInventory({
     own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
-    baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+    itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
   }) {
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
@@ -854,6 +861,7 @@ export class GameCompositionRoot {
       itemProgressionResolver,
       itemConditionResolver,
       itemFreshnessResolver,
+      itemChargeResolver,
       baitEffectivenessCatalogResolver,
       effectiveStatsResolver: effectiveItemStatsResolver,
       itemStatOverridePolicy,

@@ -8,6 +8,7 @@ export class InventorySnapshotFactory {
   #settings;
   #refillMemory;
   #itemSnapshotMapper;
+  #grantLedger;
 
   constructor({
     repository,
@@ -17,6 +18,7 @@ export class InventorySnapshotFactory {
     settings,
     refillMemory,
     itemSnapshotMapper,
+    grantLedger = null,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -30,9 +32,11 @@ export class InventorySnapshotFactory {
       );
     }
     this.#itemSnapshotMapper = itemSnapshotMapper;
+    this.#grantLedger = grantLedger;
   }
 
   create() {
+    const grants = this.#grantLedger?.snapshot() || [];
     return {
       schemaVersion: INVENTORY_SCHEMA_VERSION,
       items: this.#itemSnapshotMapper.toSnapshots(this.#repository.list()),
@@ -43,6 +47,8 @@ export class InventorySnapshotFactory {
         ...this.#settings.snapshot(),
         refillMemory: this.#refillMemory?.snapshot?.() || {},
       },
+      // One-time grants already received (spec 143); absent while there are none.
+      ...(grants.length > 0 ? { grants } : {}),
     };
   }
 }

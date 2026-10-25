@@ -55,6 +55,7 @@ export class InventoryStateStore {
     if (!snapshot || typeof snapshot !== "object") {
       throw new TypeError("Inventory snapshot must be an object");
     }
+    const grants = this.#grants(snapshot.grants);
     return {
       schemaVersion: INVENTORY_SCHEMA_VERSION,
       items: this.#itemSnapshotMapper.toSnapshots(this.#array(snapshot.items)),
@@ -66,7 +67,14 @@ export class InventoryStateStore {
         autoChum: snapshot.settings?.autoChum === true,
         refillMemory: this.#object(snapshot.settings?.refillMemory),
       },
+      ...(grants.length > 0 ? { grants } : {}),
     };
+  }
+
+  // One-time grant ids (spec 143): unique non-empty strings, sorted.
+  #grants(value) {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.filter((id) => typeof id === "string" && id.length > 0))].sort();
   }
 
   #array(value) {

@@ -1,4 +1,5 @@
 import { ItemFreshnessStatePolicy } from "../../../domain/items/freshness/item_freshness_state_policy.js";
+import { ItemPercentStatePolicy } from "../../../domain/items/metrics/item_percent_state_policy.js";
 
 /**
  * Persistence DTO boundary for inventory item instances.
@@ -16,6 +17,7 @@ export class InventoryItemSnapshotMapper {
     "recipeVariant",
     "qualityGrade",
     "freshnessState",
+    "chargeState",
     "conditionState",
     "upgradeState",
     "resourceState",
@@ -28,12 +30,16 @@ export class InventoryItemSnapshotMapper {
   #overridePolicy;
   #freshnessStatePolicy;
   #freshnessCapabilityProvider;
+  #chargeStatePolicy;
+  #chargeCapabilityProvider;
 
   constructor({
     itemDefinitionResolver,
     overridePolicy,
     freshnessStatePolicy = new ItemFreshnessStatePolicy(),
     freshnessCapabilityProvider = null,
+    chargeStatePolicy = new ItemPercentStatePolicy({ stateName: "chargeState" }),
+    chargeCapabilityProvider = () => null,
   } = {}) {
     if (!itemDefinitionResolver) {
       throw new TypeError(
@@ -50,6 +56,9 @@ export class InventoryItemSnapshotMapper {
     this.#freshnessStatePolicy = freshnessStatePolicy;
     // freshnessCapabilityProvider(definition): the item's freshness capability or null; composition injects it.
     this.#freshnessCapabilityProvider = freshnessCapabilityProvider;
+    // chargeCapabilityProvider(definition): the battery's charge capability or null (spec 143); composition injects it.
+    this.#chargeStatePolicy = chargeStatePolicy;
+    this.#chargeCapabilityProvider = chargeCapabilityProvider;
   }
 
   toSnapshot(item) {
@@ -86,6 +95,14 @@ export class InventoryItemSnapshotMapper {
           omitDefault: true,
         });
         if (state) snapshot.freshnessState = this.#clone(state);
+        continue;
+      }
+      if (key === "chargeState") {
+        if (!this.#chargeCapabilityProvider(definition)) {
+          throw new TypeError(`chargeState is not supported by item ${item.itemId}`);
+        }
+        const state = this.#chargeStatePolicy.normalize(item[key], { omitDefault: true });
+        if (state) snapshot.chargeState = this.#clone(state);
         continue;
       }
       if (key === "rarity" && this.#matchesAuthoredRarity(item.rarity, definition)) {

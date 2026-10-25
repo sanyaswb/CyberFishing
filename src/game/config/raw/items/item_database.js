@@ -1011,6 +1011,24 @@ export const ITEM_DB = {
     },
   },
 
+  // Spec 143: batteries power devices (the bait boat, the radio) from their battery slot.
+  batteries: {
+    battery_basic: {
+      id: "battery_basic",
+      name: "Батарейка",
+      itemType: "battery",
+      icon: "🔋",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "power.battery" },
+      displayStats: {
+        capacityUnits: "Ємність:",
+      },
+      gameplayStats: {
+        capacityUnits: 3600,
+      },
+    },
+  },
+
   misc: {
     backpack_basic: {
       id: "backpack_basic",

@@ -66,6 +66,13 @@ export const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
         capacityProperty: "sections",
         refillable: true,
       }),
+      // Spec 143: the boat runs on the battery in this slot (DevicePowerService).
+      Object.freeze({
+        id: "battery",
+        acceptedTypes: Object.freeze(["battery"]),
+        capacity: 1,
+        refillable: false,
+      }),
     ]),
   }),
 });

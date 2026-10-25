@@ -703,7 +703,7 @@ export class InventoryViewModelFactory {
       return ["boat", "chum_delivery"].includes(itemType);
     }
     if (categoryId === "nets") return itemType === "net";
-    return itemType === "gas_mask" || itemType === "backpack";
+    return itemType === "gas_mask" || itemType === "backpack" || itemType === "battery";
   }
 
   #itemType(item) {
@@ -778,6 +778,7 @@ export class InventoryViewModelFactory {
       bait: "Наживка",
       chum: "Прикормка",
       cargo: "Бункер",
+      battery: "Батарейка",
     };
     const base = labels[slotId] || slotId;
     if (slotId === "bait" && parentContext?.slotId === "hook") {

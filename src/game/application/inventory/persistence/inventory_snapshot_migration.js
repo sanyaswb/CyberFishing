@@ -47,6 +47,9 @@ export class InventorySnapshotMigration {
         equipment: this.#cloneObject(snapshot.equipment),
         loadouts: this.#cloneArray(snapshot.loadouts),
         settings: this.#cloneObject(snapshot.settings),
+        ...(Array.isArray(snapshot.grants) && snapshot.grants.length > 0
+          ? { grants: this.#cloneArray(snapshot.grants) }
+          : {}),
       },
       warnings: Object.freeze([
         ...(migrated

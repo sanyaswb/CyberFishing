@@ -311,6 +311,12 @@ export const CONFIG = {
       { instanceId: "uuid-net", itemId: "net_basic" },
       { instanceId: "uuid-chum", itemId: "carp_mix_basic", quantity: 15 },
       { instanceId: "uuid-boat", itemId: "boat_lvl3" },
+      { instanceId: "uuid-battery", itemId: "battery_basic" },
+    ],
+
+    // Spec 143 D-P7: a save made before batteries existed gets one battery once (new players have it above).
+    oneTimeGrants: [
+      { id: "spec143-first-battery", itemId: "battery_basic", quantity: 1 },
     ],
   },
 

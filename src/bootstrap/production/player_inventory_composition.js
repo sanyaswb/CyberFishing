@@ -30,6 +30,7 @@ export function createPlayerInventory({
   itemProgressionResolver,
   itemConditionResolver,
   itemFreshnessResolver,
+  itemChargeResolver = null,
   baitEffectivenessCatalogResolver,
   effectiveStatsResolver,
   itemStatOverridePolicy,
@@ -52,6 +53,7 @@ export function createPlayerInventory({
     progressionResolver: itemProgressionResolver,
     conditionResolver: itemConditionResolver,
     freshnessResolver: itemFreshnessResolver,
+    chargeResolver: itemChargeResolver,
     baitEffectivenessCatalogResolver,
     effectiveRarityResolver,
     displayStatsResolver: new InventoryRuntimeDisplayStatsResolver(),
@@ -68,6 +70,8 @@ export function createPlayerInventory({
       equipment: playerConfig.equipment || {},
       buildTemplates: itemDB.builds || {},
       settings: playerConfig.inventorySettings || {},
+      // The starting items already hold what the one-time grants give an existing save.
+      grants: (playerConfig.oneTimeGrants || []).map((grant) => grant.id),
     },
     legacyStateProvider: () => {
       const legacySave = legacySaveSource.load();
@@ -89,6 +93,8 @@ export function createPlayerInventory({
     loadValueProvider: () => playerInventory.getMaxTackleLoadKg(),
     lineConfig: lineRules.config,
     itemFreshnessResolver,
+    itemChargeResolver,
+    oneTimeGrants: playerConfig.oneTimeGrants || [],
     itemStatOverridePolicy,
     effectiveStatsResolver,
     assemblyProfileConfig,

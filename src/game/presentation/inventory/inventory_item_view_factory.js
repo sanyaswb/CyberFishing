@@ -3,6 +3,7 @@ export class InventoryItemViewFactory {
   #progressionResolver;
   #conditionResolver;
   #freshnessResolver;
+  #chargeResolver;
   #displayStatsResolver;
   #runtimeContextProvider;
   #effectiveStatsResolver;
@@ -14,6 +15,7 @@ export class InventoryItemViewFactory {
     progressionResolver,
     conditionResolver = null,
     freshnessResolver = null,
+    chargeResolver = null,
     displayStatsResolver = null,
     runtimeContextProvider = () => ({}),
     effectiveStatsResolver,
@@ -42,6 +44,12 @@ export class InventoryItemViewFactory {
       );
     }
     this.#freshnessResolver = freshnessResolver;
+    if (chargeResolver && typeof chargeResolver.resolve !== "function") {
+      throw new TypeError(
+        "InventoryItemViewFactory chargeResolver must implement resolve",
+      );
+    }
+    this.#chargeResolver = chargeResolver;
     this.#displayStatsResolver = displayStatsResolver;
     this.#runtimeContextProvider = runtimeContextProvider;
     this.#effectiveStatsResolver = effectiveStatsResolver;
@@ -106,6 +114,8 @@ export class InventoryItemViewFactory {
       { exposureMs: runtimeContext.freshnessExposureMs },
     ) || null;
     if (freshness) hydrated.freshness = freshness;
+    const charge = this.#chargeResolver?.resolve(hydrated) || null;
+    if (charge) hydrated.charge = charge;
     const baitEffectiveness =
       this.#baitEffectivenessCatalogResolver?.resolve(hydrated, runtimeContext) ||
       null;

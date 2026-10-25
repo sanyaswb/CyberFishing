@@ -62,6 +62,17 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
     groups: {
       "storage.backpack": {}, // Artwork item; no capacity or upgrade gameplay contract yet.
       "aquarium.feed": {}, // Packs have authored rarity; no upgrade, condition or freshness metric.
+      // Spec 143: a battery's charge only falls while a device consumes it (DevicePowerService).
+      "power.battery": {
+        charge: {
+          instanceStatePath: "chargeState.percent",
+          defaultCurrent: 100,
+          minimum: 0,
+          maximum: 100,
+          metricLabel: "Заряд",
+          gameplayConsumer: "DevicePowerService",
+        },
+      },
       "rod.spinning": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",

@@ -160,6 +160,7 @@
 │     ├── inventory
 │     │  ├── backpack.svg
 │     │  ├── bait.svg
+│     │  ├── battery.svg
 │     │  ├── boat.svg
 │     │  ├── chum.svg
 │     │  ├── float.svg
@@ -308,6 +309,7 @@
 │  │  │  │  ├── inventory_item_view_context.js
 │  │  │  │  ├── inventory_line_allocation_service.js
 │  │  │  │  ├── inventory_loadout_adapter.js
+│  │  │  │  ├── inventory_one_time_grant_service.js
 │  │  │  │  ├── inventory_refill_inventory_port.js
 │  │  │  │  ├── inventory_refill_memory_transaction_participant.js
 │  │  │  │  ├── inventory_refill_target_writer.js
@@ -546,6 +548,7 @@
 │  │  │  ├── inventory
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
+│  │  │  │  ├── inventory_grant_ledger.js
 │  │  │  │  ├── inventory_item_location.js
 │  │  │  │  ├── inventory_item_reservation_policy.js
 │  │  │  │  ├── item_assembly_stacking_policy.js

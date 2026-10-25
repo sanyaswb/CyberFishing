@@ -6,6 +6,7 @@ export class ItemProgressionConfigValidator {
     "condition",
     "capacity",
     "freshness",
+    "charge",
   ]);
   static #strategies = new Set([
     "numeric_stat",
@@ -92,6 +93,9 @@ export class ItemProgressionConfigValidator {
       if (group.freshness !== undefined) {
         this.#validateBoundedMetric(`${path}.freshness`, group.freshness);
         this.#validateFreshness(`${path}.freshness`, group.freshness);
+      }
+      if (group.charge !== undefined) {
+        this.#validateBoundedMetric(`${path}.charge`, group.charge);
       }
     }
   }
@@ -404,6 +408,15 @@ export class ItemProgressionConfigValidator {
             effectiveItem,
             group.freshness,
             "freshness",
+            groupId,
+          );
+        }
+        if (group.charge) {
+          this.#validateItemBoundedMetric(
+            path,
+            effectiveItem,
+            group.charge,
+            "charge",
             groupId,
           );
         }

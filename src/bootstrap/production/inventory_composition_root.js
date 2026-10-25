@@ -54,6 +54,8 @@ import { InventoryRefillMemoryTransactionParticipant } from "../../game/applicat
 import { InventorySettingsTransactionParticipant } from "../../game/application/inventory/inventory_settings_transaction_participant.js";
 import { InventorySnapshotFactory } from "../../game/application/inventory/persistence/inventory_snapshot_factory.js";
 import { StartingInventorySnapshotFactory } from "../../game/application/inventory/persistence/starting_inventory_snapshot_factory.js";
+import { InventoryGrantLedger } from "../../game/domain/inventory/inventory_grant_ledger.js";
+import { InventoryOneTimeGrantService } from "../../game/application/inventory/inventory_one_time_grant_service.js";
 import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
 import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
 import { InventoryTransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
@@ -96,6 +98,8 @@ export class InventoryCompositionRoot {
     warningSink = null,
     lineConfig = {},
     itemFreshnessResolver = null,
+    itemChargeResolver = null,
+    oneTimeGrants = [],
     itemStatOverridePolicy,
     effectiveStatsResolver,
     assemblyProfileConfig,
@@ -106,6 +110,9 @@ export class InventoryCompositionRoot {
     const freshnessCapabilityProvider = (definition) =>
       ITEM_PROGRESSION_CONFIG?.groups?.[definition?.progressionProfile?.groupId]?.freshness || null;
     const itemStateMigration = new LegacyItemStateMigration({ overridePolicy, freshnessCapabilityProvider });
+    // Charge capability per item definition (spec 143: batteries).
+    const chargeCapabilityProvider = (definition) =>
+      ITEM_PROGRESSION_CONFIG?.groups?.[definition?.progressionProfile?.groupId]?.charge || null;
     const definitions = itemDefinitionResolver || null;
     const hydrator = new InventoryItemHydrator({
       itemDefinitionResolver: definitions,
@@ -116,6 +123,7 @@ export class InventoryCompositionRoot {
       itemDefinitionResolver: definitionLookup,
       overridePolicy,
       freshnessCapabilityProvider,
+      chargeCapabilityProvider,
     });
     const store =
       stateStore ||
@@ -192,6 +200,7 @@ export class InventoryCompositionRoot {
     const refillMemory = new AutoRefillMemory(
       snapshot.settings?.refillMemory || {},
     );
+    const grantLedger = new InventoryGrantLedger(snapshot.grants);
     const snapshotFactory = new InventorySnapshotFactory({
       repository,
       assemblyStates,
@@ -200,6 +209,7 @@ export class InventoryCompositionRoot {
       settings,
       refillMemory,
       itemSnapshotMapper,
+      grantLedger,
     });
     const transaction = new InventoryTransactionCoordinator({
       participants: [
@@ -209,9 +219,14 @@ export class InventoryCompositionRoot {
         loadouts,
         new InventorySettingsTransactionParticipant(settings),
         new InventoryRefillMemoryTransactionParticipant(refillMemory),
+        grantLedger,
       ],
       afterCommit: () => store.save(snapshotFactory.create()),
     });
+    // Spec 143 D-P7: a save made before an item existed receives it once.
+    new InventoryOneTimeGrantService({
+      ledger: grantLedger, repository, transaction, definitionLookup, instanceIdFactory,
+    }).apply(oneTimeGrants);
 
     const capabilityResolver = new RodCapabilityResolver();
     const visibilityPolicy = new EquipmentSlotVisibilityPolicy({

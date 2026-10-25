@@ -29,6 +29,10 @@ export const INVENTORY_ITEM_PARAMETER_CONFIG = Object.freeze({
     description:
       "Поточна свіжість предмета. Відображається лише для категорій із підтвердженою gameplay-механікою свіжості.",
   }),
+  charge: Object.freeze({
+    label: "Заряд",
+    description: "Заряд батарейки. Падає, лише поки пристрій працює від неї; порожня батарейка не живить пристрій.",
+  }),
   baitEffectiveness: Object.freeze({
     label: "Ефективність за видом риби",
     description:

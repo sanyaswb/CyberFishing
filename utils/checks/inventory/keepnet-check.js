@@ -349,7 +349,7 @@ async function checkSlotIconWarmUp(InventoryUiBootstrap) {
   const documentRef = { createElement: (tag) => { const image = { tag, decode: () => Promise.resolve() }; images.push(image); return image; } };
   const warmed = InventoryUiBootstrap.preloadSlotIcons(documentRef);
   const expected = inventorySlotIconPaths();
-  assert.equal(expected.length, 12, "twelve distinct placeholder files");
+  assert.equal(expected.length, 13, "thirteen distinct placeholder files (battery, spec 143)");
   assert.deepEqual(images.map((image) => image.src).sort(), [...expected].sort(), "each icon file is requested once");
   assert(images.every((image) => image.tag === "img"));
   images.forEach((image) => image.onload());

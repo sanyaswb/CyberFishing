@@ -12,6 +12,7 @@ const ICONS = Object.freeze({
   handChum: "assets/ui/inventory/chum.svg",
   chum: "assets/ui/inventory/chum.svg",
   cargo: "assets/ui/inventory/chum.svg",
+  battery: "assets/ui/inventory/battery.svg",
   delivery: "assets/ui/inventory/boat.svg",
   gasMask: "assets/ui/inventory/gas-mask.svg",
   bait: "assets/ui/inventory/bait.svg",
