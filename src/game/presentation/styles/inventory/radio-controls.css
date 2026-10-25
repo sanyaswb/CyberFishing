@@ -1,0 +1,92 @@
+/* Spec 142 D7: the radio receiver's controls under its preview in the item editor. The block is an inventory-panel;
+   buttons are the shared inventory-action; country, volume and the switches are native controls laid out here. */
+.radio-controls {
+  display: grid;
+  gap: var(--inventory-container-gap);
+  padding: var(--inventory-container-gap);
+  min-width: 0;
+}
+
+.radio-controls__display {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.radio-controls__station,
+.radio-controls__meta,
+.radio-controls__status {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-controls__station {
+  color: var(--ui-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.radio-controls__meta,
+.radio-controls__status {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.radio-controls--on .radio-controls__status {
+  color: var(--ui-success);
+}
+
+.radio-controls__buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--inventory-container-gap);
+}
+
+.radio-controls__button {
+  min-width: 0;
+}
+
+.radio-controls__field {
+  display: grid;
+  grid-template-columns: minmax(0, 7em) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--inventory-container-gap);
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.radio-controls__select {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #43525b;
+  border-radius: var(--ui-radius-control);
+  background: #09131b;
+  color: var(--ui-text);
+  font: inherit;
+}
+
+.radio-controls__volume {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--ui-accent);
+}
+
+.radio-controls__switches {
+  display: grid;
+  gap: 6px;
+}
+
+.radio-controls__switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.radio-controls__switch-input {
+  accent-color: var(--ui-success);
+}

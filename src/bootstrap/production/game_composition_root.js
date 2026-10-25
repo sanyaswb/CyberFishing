@@ -92,6 +92,14 @@ import { ItemFreshnessResolver } from "../../game/domain/items/freshness/item_fr
 import { ItemBoundedMetricResolver } from "../../game/domain/items/metrics/item_bounded_metric_resolver.js";
 import { DevicePowerService } from "../../game/application/power/device_power_service.js";
 import { BrowserPageHideListener } from "../../platform/browser/runtime/browser_page_hide_listener.js";
+import { RadioReceiverService } from "../../game/application/radio/radio_receiver_service.js";
+import { RadioBrowserStationSource } from "../../platform/browser/radio/radio_browser_station_source.js";
+import { BrowserRegionResolver } from "../../platform/browser/radio/browser_region_resolver.js";
+import { RadioPreferencesLocalStore } from "../../platform/browser/storage/radio_preferences_local_store.js";
+import { SharedAudioContextProvider } from "../../platform/browser/audio/shared_audio_context_provider.js";
+import { RadioStreamPlayer } from "../../platform/browser/audio/radio_stream_player.js";
+import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator.js";
+import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
 import { ItemProgressionConfigValidator } from "../../game/config/validation/item_progression_config_validator.js";
 import { ItemProgressionDomAdapter } from "../../platform/browser/dom/item_progression_dom_adapter.js";
@@ -163,6 +171,8 @@ export class GameCompositionRoot {
   #createDevTools;
   #createTimeDisplay;
   #sessionServices = null;
+  // Opens the radio's editor once the inventory UI exists (spec 142: the HUD indicator's tap).
+  #radioEditorOpener = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
@@ -920,9 +930,11 @@ export class GameCompositionRoot {
     const devicePower = own(new DevicePowerService({ batteries: inventory, config: () => this.#config.power || {} }));
     own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       onHide: () => devicePower.flush() }));
+    const radio = this.#composeRadio({ own, inventory, devicePower });
     const systems = {
       projector,
       devicePower,
+      radio,
       map: locationMap,
       waterMetricSource,
       env: new EnvironmentSystem(
@@ -993,6 +1005,37 @@ export class GameCompositionRoot {
     return { systems };
   }
 
+  // Spec 142: the field radio receiver (stations, stream player, preferences, region), its HUD indicator under the
+  // clock (a tap opens the radio's editor) and the page visibility policy.
+  #composeRadio({ own, inventory, devicePower }) {
+    const windowRef = this.#windowTarget;
+    const config = () => this.#config.radio || {};
+    let radio = null;
+    const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
+    const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
+      config, onState: (state, info) => radio?.handlePlayerState(state, info) }));
+    radio = own(new RadioReceiverService({
+      equipment: inventory,
+      power: devicePower,
+      stations: new RadioBrowserStationSource({ fetchRef: windowRef.fetch.bind(windowRef), config, scheduler: windowRef }),
+      player,
+      preferences: new RadioPreferencesLocalStore({ cache: this.#storageCache }),
+      region: new BrowserRegionResolver({ navigatorRef: windowRef.navigator, config,
+        timeZone: () => windowRef.Intl?.DateTimeFormat?.().resolvedOptions?.().timeZone || "" }),
+      config,
+      secureOnly: windowRef.location?.protocol === "https:",
+    }));
+    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef,
+      onHide: () => radio.setPageHidden(true), onShow: () => radio.setPageHidden(false) }));
+    const removeInventoryListener = inventory.onInventoryChanged(() => radio.update());
+    own({ dispose: () => removeInventoryListener?.() });
+    radio.update();
+    own(new RadioHudIndicator({ documentRef: this.#documentTarget, radio, labels: RADIO_LABELS,
+      mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      onActivate: () => this.#radioEditorOpener?.() }));
+    return radio;
+  }
+
   // Inventory UI over the composed facade and item read-model adapters.
   async #composeInventoryUi({
     inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
@@ -1005,6 +1048,7 @@ export class GameCompositionRoot {
     }
     systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
+      radio: systems.radio,
       documentRef: this.#documentTarget,
       mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
@@ -1025,6 +1069,7 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
+    this.#radioEditorOpener = () => systems.inventoryUI?.openSlotEditor("radio");
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });

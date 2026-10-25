@@ -222,3 +222,30 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - Checks: new `radio-receiver` (catalog, slot, the player's path: well -> radio -> editor -> battery -> equip, power
   port, editor art and socket, thumbnail bar without a cell, save and reload, row/column drag axes); equipment slot
   list, progression and placeholder counts updated. Tools replaced or obsolete: none.
+
+### Stage 2 (v0.47.29): stations, playback, controls, HUD indicator
+
+- `CONFIG.radio` (mirrors de1/de2/fi1, 60 stations, MP3/AAC/AAC+, default UA, 8 s request and 5 s start timeouts,
+  volume 0.6, `playInBackground` false, ducking on, a time-zone table).
+- Domain `RadioStationFilter` (`url_resolved`, https on an https page, no HLS, listed codecs, no duplicates).
+- Platform: `RadioBrowserStationSource` (mirrors in order with an aborted request after the timeout;
+  `bycountrycodeexact` by votes, `countries`), `BrowserRegionResolver` (language region, time zone, default; no
+  GeoIP), `RadioPreferencesLocalStore` (country, station, volume, switches; never the power),
+  `SharedAudioContextProvider` (created by the first play, inside the power gesture), `RadioStreamPlayer` (Web Audio
+  with crossOrigin "anonymous"; a NEW native element without CORS as the no-effect fallback; 5 s per attempt; volume
+  as the output gain or the element's volume; a gain scale for ducking), `RadioHudIndicator` (shared `hud-indicator`
+  40 x 40 circle under the clock, `--off/--playing/--weak/--empty`, CSS-only wave, a tap opens the radio's editor
+  through `InventoryUI.openSlotEditor("radio")`); `BrowserPageHideListener` gained `onShow`.
+- Application `RadioReceiverService`: power only with a worn radio and a charged battery, the country's stations, the
+  remembered station, skip on failure until every station failed («Немає станцій…»), next/previous, country, volume,
+  switches, hidden page stop/resume (or background play), off when the radio is taken off or the battery is empty
+  (checked on every inventory change; stage 4 adds per-frame consumption).
+- Presentation: `RADIO_LABELS`, `RadioControlsRenderer` (station, country and bitrate, status, power, previous/next,
+  country selector, volume, «Звук рації», «Тихіше при кльові», «Грати у фоні»; text only, in-place updates, one
+  subscription) under the preview of the radio's editor (`deviceControlsRenderer` of the editor renderer); styles
+  `inventory/radio-controls.css`, `hud/hud-indicator.css`.
+- Not yet: the walkie-talkie rack (stage 3; the switch is stored), consumption and the weak signal (stage 4), ducking
+  (stage 5; the switch is stored).
+- Checks: `radio-receiver` stage 2 (filter, region, mirrors and timeout, preferences, the service, the player over a
+  fake Web Audio that keeps the browser contract, controls, indicator). No check composes the whole game: the owner's
+  dev.html start is the first look.

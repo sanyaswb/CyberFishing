@@ -327,6 +327,30 @@ export const CONFIG = {
     saveIntervalSeconds: 5,
   },
 
+  // Spec 142: the field radio receiver. Stations come from the Radio Browser mirrors in order (the next one when a
+  // mirror fails); only streams in `codecs`, not HLS, playable on the page's protocol. A station that does not start
+  // within startTimeoutMs is skipped. Volume and the switches are the player's preferences (localStorage).
+  radio: {
+    apiServers: [
+      "https://de1.api.radio-browser.info",
+      "https://de2.api.radio-browser.info",
+      "https://fi1.api.radio-browser.info",
+    ],
+    stationLimit: 60,
+    codecs: ["MP3", "AAC", "AAC+"],
+    defaultCountry: "UA",
+    requestTimeoutMs: 8000,
+    startTimeoutMs: 5000,
+    defaultVolume: 0.6,
+    playInBackground: false,
+    ducking: { enabled: true },
+    timeZoneCountries: {
+      "Europe/Kyiv": "UA", "Europe/Kiev": "UA", "Europe/Warsaw": "PL", "Europe/Berlin": "DE", "Europe/London": "GB",
+      "Europe/Paris": "FR", "Europe/Rome": "IT", "Europe/Madrid": "ES", "America/New_York": "US",
+      "America/Chicago": "US", "America/Los_Angeles": "US", "Asia/Tokyo": "JP",
+    },
+  },
+
   feederConfig: {
     volumeNormal: 0.1,
     volumeGuaranteed: 0.3,

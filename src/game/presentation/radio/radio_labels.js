@@ -1,0 +1,26 @@
+// Player-facing text of the field radio receiver (spec 142), injected into its renderers.
+export const RADIO_LABELS = Object.freeze({
+  title: "Радіо",
+  powerOn: "Увімкнути",
+  powerOff: "Вимкнути",
+  previous: "◀ Попередня",
+  next: "Наступна ▶",
+  country: "Країна",
+  volume: "Гучність",
+  retroMode: "Звук рації",
+  ducking: "Тихіше при кльові",
+  playInBackground: "Грати у фоні",
+  noStation: "Станцію не вибрано",
+  bitrate: (kbps) => `${kbps} кбіт/с`,
+  status: Object.freeze({
+    "off": "Вимкнено",
+    "loading": "Налаштування…",
+    "playing": "В ефірі",
+    "no-effect": "В ефірі без ефекту (станція без CORS)",
+    "offline-retrying": "Станція мовчить — шукаю іншу…",
+    "no-battery": "Немає зарядженої батарейки",
+    "no-radio": "Радіо не споряджено",
+    "no-stations": "Немає станцій для цієї країни",
+  }),
+  indicator: (status, station) => `Радіо: ${status}${station ? ` · ${station}` : ""}`,
+});

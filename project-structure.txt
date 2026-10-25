@@ -357,6 +357,8 @@
 │  │  │  │  └── live_bait_snapshot_store.js
 │  │  │  ├── power
 │  │  │  │  └── device_power_service.js
+│  │  │  ├── radio
+│  │  │  │  └── radio_receiver_service.js
 │  │  │  ├── session
 │  │  │  │  ├── game_application.js
 │  │  │  │  ├── inactive_debug_events.js
@@ -636,6 +638,8 @@
 │  │  │  │  ├── location_water_metric_source.js
 │  │  │  │  ├── water_metric.js
 │  │  │  │  └── world_perspective.js
+│  │  │  ├── radio
+│  │  │  │  └── radio_station_filter.js
 │  │  │  ├── rules
 │  │  │  │  ├── bait_rules.js
 │  │  │  │  ├── bite_rules.js
@@ -760,6 +764,9 @@
 │  │     │  ├── keepnet_overview_renderer.js
 │  │     │  ├── keepnet_section_view.js
 │  │     │  └── keepnet_view_model.js
+│  │     ├── radio
+│  │     │  ├── radio_controls_renderer.js
+│  │     │  └── radio_labels.js
 │  │     ├── rarity
 │  │     │  └── rarity_visual_config.js
 │  │     ├── rendering
@@ -804,6 +811,7 @@
 │  │     │  │  ├── draggable-control.css
 │  │     │  │  ├── game-controls.css
 │  │     │  │  ├── hold-charges.css
+│  │     │  │  ├── hud-indicator.css
 │  │     │  │  ├── time-display.css
 │  │     │  │  └── toolbar.css
 │  │     │  ├── hud_style_resolver.js
@@ -817,6 +825,7 @@
 │  │     │  │  ├── list-and-filters.css
 │  │     │  │  ├── loadout.css
 │  │     │  │  ├── modal.css
+│  │     │  │  ├── radio-controls.css
 │  │     │  │  ├── resource-meters.css
 │  │     │  │  ├── section-tabs.css
 │  │     │  │  ├── shared-controls.css
@@ -864,6 +873,9 @@
 │        │  ├── asset_preload_coordinator.js
 │        │  ├── browser_asset_transport.js
 │        │  └── image_asset_provider.js
+│        ├── audio
+│        │  ├── radio_stream_player.js
+│        │  └── shared_audio_context_provider.js
 │        ├── canvas
 │        │  ├── canvas_2d_surface.js
 │        │  ├── canvas_primitives.js
@@ -896,6 +908,9 @@
 │        ├── location
 │        │  ├── depth_map_reader.js
 │        │  └── location_asset_loader.js
+│        ├── radio
+│        │  ├── browser_region_resolver.js
+│        │  └── radio_browser_station_source.js
 │        ├── runtime
 │        │  ├── active_game_loop_guard.js
 │        │  ├── browser_audio_adapter.js
@@ -929,7 +944,8 @@
 │        │  ├── game_time_local_store.js
 │        │  ├── inventory_snapshot_local_store.js
 │        │  ├── live_bait_local_store.js
-│        │  └── local_storage_cache.js
+│        │  ├── local_storage_cache.js
+│        │  └── radio_preferences_local_store.js
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js
@@ -942,6 +958,7 @@
 │           ├── game_stage_layout.js
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
+│           ├── radio_hud_indicator.js
 │           └── time_display.js
 └── vendor
    ├── pixi

@@ -1,4 +1,6 @@
 import { HorizontalScrollController } from "../../platform/browser/dom/horizontal_scroll_controller.js";
+import { RadioControlsRenderer } from "../../game/presentation/radio/radio_controls_renderer.js";
+import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
 import { InventoryActionContract } from "../../game/presentation/inventory/inventory_action_contract.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryFacadeContract } from "../../game/presentation/inventory/inventory_facade_contract.js";
@@ -115,14 +117,16 @@ export class InventoryUiBootstrap {
       .catch((error) => new ConsoleLogger().warn("[Inventory] Slot icon preload failed", error));
   }
 
-  static create({ autoMount = true, autoOpen = false, ...options } = {}) {
+  // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
+  static create({ autoMount = true, autoOpen = false, radio = null, ...options } = {}) {
     InventoryUiBootstrap.preloadSlotIcons(options.documentRef);
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
-      createPresentation: (presentationOptions) => InventoryUiBootstrap.#createPresentation(presentationOptions),
+      createPresentation: (presentationOptions) =>
+        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio }),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -133,6 +137,7 @@ export class InventoryUiBootstrap {
   static #createPresentation({
     documentRef,
     uiSurface,
+    radio = null,
     rarityDomAdapter,
     rarityVisualResolver,
     progressionDomAdapter,
@@ -234,6 +239,7 @@ export class InventoryUiBootstrap {
         scrollbarEnabled: INVENTORY_EDITOR_CONFIG.scrollbar.enabled,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
+        deviceControlsRenderer: radio ? new RadioControlsRenderer({ domFactory: dom, radio, labels: RADIO_LABELS }) : null,
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
         // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
         // off in the editor.

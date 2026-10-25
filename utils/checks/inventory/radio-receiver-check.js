@@ -116,6 +116,270 @@ drag(0, -80);
 assert.equal(element.scrollTop, 80, "the same wells in a column scroll vertically");
 assert.equal(element.scrollLeft, 60, "a column drag leaves the row offset alone");
 
+// ---- Stage 2: stations, region, preferences, the service, the stream player, the controls and the HUD indicator ----
+const { RadioStationFilter } = runtime.importModule("src/game/domain/radio/radio_station_filter.js");
+const { BrowserRegionResolver } = runtime.importModule("src/platform/browser/radio/browser_region_resolver.js");
+const { RadioBrowserStationSource } = runtime.importModule("src/platform/browser/radio/radio_browser_station_source.js");
+const { RadioPreferencesLocalStore } = runtime.importModule("src/platform/browser/storage/radio_preferences_local_store.js");
+const { RadioReceiverService } = runtime.importModule("src/game/application/radio/radio_receiver_service.js");
+const { RadioStreamPlayer } = runtime.importModule("src/platform/browser/audio/radio_stream_player.js");
+const { SharedAudioContextProvider } = runtime.importModule("src/platform/browser/audio/shared_audio_context_provider.js");
+const { RadioControlsRenderer } = runtime.importModule("src/game/presentation/radio/radio_controls_renderer.js");
+const { RADIO_LABELS } = runtime.importModule("src/game/presentation/radio/radio_labels.js");
+const { RadioHudIndicator } = runtime.importModule("src/platform/browser/ui/radio_hud_indicator.js");
+const { InventoryDomFactory } = runtime.importModule("src/platform/browser/dom/inventory_dom_factory.js");
+const { TestDocument } = require("../../testing/keepnet/test_document");
+const plain = (value) => JSON.parse(JSON.stringify(value));
+
+const station = (id, url, extra = {}) => ({ stationuuid: id, name: "Station " + id, url_resolved: url, codec: "MP3",
+  bitrate: 128, hls: 0, countrycode: "UA", ...extra });
+const rawStations = [station("a", "https://a.example/live"), station("b", "http://b.example/live"),
+  station("c", "https://c.example/live.m3u8"), station("d", "https://d.example/live", { hls: 1 }),
+  station("e", "https://e.example/live", { codec: "OGG" }), station("f", "https://f.example/live"),
+  station("a", "https://a.example/live"), station("g", "", { url: "https://g.example/list.pls" })];
+const stationFilter = new RadioStationFilter();
+assert.deepEqual(plain(stationFilter.filter(rawStations, { codecs: ["MP3", "AAC"], secureOnly: true })).map((entry) => entry.id),
+  ["a", "f"], "an https page keeps https url_resolved streams, no HLS, listed codecs, no duplicates");
+assert.deepEqual(plain(stationFilter.filter(rawStations, { codecs: ["MP3"], secureOnly: false })).map((entry) => entry.id),
+  ["a", "b", "f"], "a local http page also plays http streams");
+
+const zones = { timeZoneCountries: { "Europe/Kyiv": "UA" }, defaultCountry: "PL" };
+assert.equal(new BrowserRegionResolver({ navigatorRef: { languages: ["uk-UA"] }, timeZone: () => "", config: () => zones })
+  .resolve(), "UA", "the language region comes first");
+assert.equal(new BrowserRegionResolver({ navigatorRef: { languages: ["uk"] }, timeZone: () => "Europe/Kyiv",
+  config: () => zones }).resolve(), "UA", "then the time zone");
+assert.equal(new BrowserRegionResolver({ navigatorRef: { languages: ["en"] }, timeZone: () => "Mars/Base",
+  config: () => zones }).resolve(), "PL", "then the configured default");
+
+function scheduler() {
+  let now = 0; let next = 0; const jobs = new Map();
+  return { setTimeout: (callback, ms) => { const id = ++next; jobs.set(id, { callback, at: now + ms }); return id; },
+    clearTimeout: (id) => jobs.delete(id), get pending() { return jobs.size; },
+    advance(ms) { now += ms; for (const [id, job] of [...jobs]) if (job.at <= now) { jobs.delete(id); job.callback(); } } };
+}
+const settle = () => new Promise((resolve) => setImmediate(resolve));
+const byClass = (root, name) => {
+  const found = [];
+  const walk = (node) => { if (String(node.className).split(" ").includes(name)) found.push(node); node.children.forEach(walk); };
+  walk(root);
+  return found;
+};
+
+async function stageTwo() {
+  // Mirrors: the first failing server gives way to the next; the response is a JSON list.
+  const requested = [];
+  const source = new RadioBrowserStationSource({ config: () => ({ apiServers: ["https://one.example", "https://two.example/"],
+    stationLimit: 5, requestTimeoutMs: 100 }), scheduler: scheduler(), createAbortController: () => ({ signal: {}, abort() {} }),
+    fetchRef: async (url) => {
+      requested.push(url);
+      if (url.startsWith("https://one")) throw new Error("down");
+      return { ok: true, json: async () => [station("x", "https://x.example/live")] };
+    } });
+  assert.equal((await source.listStations("ua")).length, 1);
+  const query = "/json/stations/bycountrycodeexact/UA?hidebroken=true&order=votes&reverse=true&limit=5";
+  assert.deepEqual(requested, ["https://one.example" + query, "https://two.example" + query],
+    "mirrors in order with the country's stations by votes");
+  let aborted = 0;
+  const timers = scheduler();
+  const slow = new RadioBrowserStationSource({ config: () => ({ apiServers: ["https://slow.example"], requestTimeoutMs: 100 }),
+    scheduler: timers, createAbortController: () => ({ signal: {}, abort() { aborted += 1; } }),
+    fetchRef: () => new Promise(() => {}) });
+  slow.listCountries();
+  timers.advance(100);
+  assert.equal(aborted, 1, "a mirror that does not answer in time is aborted");
+
+  // Preferences: validated, merged, never the power.
+  const prefData = new Map();
+  const prefs = new RadioPreferencesLocalStore({ cache: {
+    get: (key, fallback) => prefData.has(key) ? JSON.parse(prefData.get(key)) : fallback,
+    set: (key, value) => prefData.set(key, JSON.stringify(value)) } });
+  prefs.save({ country: "DE", volume: 3, powered: true, ducking: false });
+  assert.deepEqual(plain(prefs.load()), { country: "DE", volume: 1, ducking: false }, "preferences are validated, power is never kept");
+
+  // The service over fakes.
+  const equippedState = { radio: { instanceId: "r" }, radioBattery: { instanceId: "b" } };
+  let charge = 100;
+  const played = [];
+  let stops = 0;
+  const lists = { UA: [station("u1", "https://u1.example/live"), station("u2", "https://u2.example/live")],
+    DE: [station("d1", "https://d1.example/live")], PL: [] };
+  const service = new RadioReceiverService({ equipment: { getEquipped: () => equippedState },
+    power: { read: () => ({ empty: charge <= 0 }) },
+    stations: { listStations: async (code) => lists[code] || [], listCountries: async () => [
+      { iso_3166_1: "UA", name: "Ukraine", stationcount: 2 }, { iso_3166_1: "DE", name: "Germany", stationcount: 1 }] },
+    player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {} },
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }),
+    region: { resolve: () => "UA" }, config: () => ({ codecs: ["MP3"], defaultVolume: 0.5 }), secureOnly: true });
+  assert.equal(service.getStatus().status, "off");
+  assert.equal(service.getStatus().country, "UA", "the first country is the browser's region (D1)");
+  charge = 0; service.powerOn();
+  assert.equal(service.getStatus().status, "no-battery", "an empty battery refuses power");
+  charge = 100; service.powerOn(); await settle();
+  assert.deepEqual(played, ["https://u1.example/live"], "power plays the country's first station");
+  service.handlePlayerState("playing", { effects: true });
+  assert.equal(service.getStatus().status, "playing");
+  service.handlePlayerState("failed");
+  assert.equal(played.at(-1), "https://u2.example/live", "a station that does not start gives way to the next");
+  service.handlePlayerState("failed");
+  assert.equal(service.getStatus().status, "no-stations", "when every station failed the radio says so");
+  service.next();
+  assert.equal(played.at(-1), "https://u1.example/live", "next wraps around");
+  service.handlePlayerState("playing", { effects: false });
+  assert.equal(service.getStatus().status, "no-effect", "a stream without CORS plays without effects");
+  service.setCountry("DE"); await settle();
+  assert.equal(played.at(-1), "https://d1.example/live", "another country loads its stations");
+  service.setVolume(0.8);
+  assert.equal(service.getStatus().volume, 0.8);
+  service.setPageHidden(true);
+  assert(stops > 0, "a hidden page stops the stream by default");
+  const beforeShow = played.length;
+  service.setPageHidden(false);
+  assert.equal(played.length, beforeShow + 1, "the stream resumes when the page is visible");
+  service.setPreference("playInBackground", true);
+  const stopsBefore = stops;
+  service.setPageHidden(true);
+  assert.equal(stops, stopsBefore, "playInBackground keeps playing in a hidden page");
+  service.setPageHidden(false);
+  assert.deepEqual(plain(await service.listCountries()).map((entry) => entry.code), ["UA", "DE"]);
+  equippedState.radio = null; service.update();
+  assert.equal(service.getStatus().powered, false, "taking the radio off turns it off");
+  assert.equal(service.getStatus().equipped, false);
+  equippedState.radio = { instanceId: "r" }; service.update();
+  service.powerOn(); await settle(); charge = 0; service.update();
+  assert.equal(service.getStatus().status, "no-battery", "an empty battery turns a playing radio off");
+  charge = 100; service.setCountry("PL"); service.powerOn(); await settle();
+  assert.equal(service.getStatus().status, "no-stations", "a country without stations says so");
+
+  // The stream player over fake Web Audio that keeps the browser contract: a stream without CORS fails to load with
+  // crossOrigin "anonymous"; an element connected to Web Audio cannot be connected again or go back to native output.
+  const streams = { "https://cors.example": { cors: true }, "https://nocors.example": { cors: false },
+    "https://dead.example": { dead: true } };
+  const elements = [];
+  class FakeAudio {
+    constructor() { this.listeners = {}; this.volume = 1; this.crossOrigin = null; this.connected = false; elements.push(this); }
+    addEventListener(type, handler) { (this.listeners[type] ||= new Set()).add(handler); }
+    removeEventListener(type, handler) { this.listeners[type]?.delete(handler); }
+    emit(type) { for (const handler of [...(this.listeners[type] || [])]) handler({}); }
+    play() {
+      const entry = streams[this.src] || {};
+      this.outcome = entry.dead ? "silent" : this.crossOrigin === "anonymous" && !entry.cors ? "error" : "playing";
+      return Promise.resolve();
+    }
+    settle() { if (this.outcome === "error") this.emit("error"); else if (this.outcome === "playing") this.emit("playing"); }
+    pause() {}
+    load() {}
+    removeAttribute(key) { if (key === "src") this.src = ""; }
+  }
+  class FakeNode {
+    constructor() { this.to = []; this.gain = { value: 1 }; }
+    connect(node) { this.to.push(node); }
+    disconnect() { this.to = []; }
+  }
+  const context = { state: "running", destination: new FakeNode(), createGain: () => new FakeNode(),
+    createMediaElementSource: (element) => {
+      if (element.connected) throw new Error("already connected");
+      element.connected = true;
+      const node = new FakeNode(); node.element = element; return node;
+    }, resume: async () => {} };
+  let contextsMade = 0;
+  const audioContexts = new SharedAudioContextProvider({ windowRef: { AudioContext: function AudioContext() {
+    contextsMade += 1; return context; } } });
+  assert.equal(audioContexts.peek(), null, "no audio context before the power gesture");
+  const states = [];
+  const playerTimers = scheduler();
+  const stream = new RadioStreamPlayer({ documentRef: { createElement: () => new FakeAudio() }, audioContexts,
+    scheduler: playerTimers, config: () => ({ startTimeoutMs: 5000 }), onState: (state, info) => states.push([state, info.effects]) });
+  stream.setVolume(0.5);
+  stream.play("https://cors.example");
+  assert.equal(contextsMade, 1, "the first play (in the gesture) makes the context");
+  elements.at(-1).settle();
+  assert.deepEqual(states.at(-1), ["playing", true], "a CORS stream plays through Web Audio");
+  assert.equal(elements.at(-1).crossOrigin, "anonymous");
+  assert.equal(stream.input.to[0].gain.value, 0.5, "volume is the output gain");
+  stream.play("https://nocors.example");
+  const first = elements.at(-1);
+  first.settle();
+  const fallback = elements.at(-1);
+  assert.notEqual(fallback, first, "the no-CORS fallback is a new element");
+  assert.equal(fallback.crossOrigin, null);
+  assert.equal(fallback.connected, false, "the fallback stays on the native output");
+  fallback.settle();
+  assert.deepEqual(states.at(-1), ["playing", false], "it plays without effects");
+  assert.equal(fallback.volume, 0.5, "the fallback's volume is the element's");
+  stream.play("https://dead.example");
+  playerTimers.advance(5000);
+  playerTimers.advance(5000);
+  assert.deepEqual(states.at(-1), ["failed", undefined], "a silent stream fails after both attempts time out");
+  stream.stop();
+  assert.equal(playerTimers.pending, 0, "stop clears the timers");
+  assert(elements.every((element) => Object.values(element.listeners).every((set) => set.size === 0)),
+    "stop and every attempt remove their listeners");
+
+  // The editor controls drive the service; status updates write in place, station names as text.
+  const doc = new TestDocument();
+  const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
+  const calls = [];
+  let listener = null;
+  const status = { status: "off", powered: false, equipped: true, station: null, country: "UA", stationCount: 2,
+    volume: 0.4, retroMode: true, ducking: true, playInBackground: false };
+  const port = { getStatus: () => status, subscribe: (handler) => { listener = handler; return () => { listener = null; }; },
+    togglePower: () => calls.push("power"), next: () => calls.push("next"), previous: () => calls.push("previous"),
+    setCountry: (code) => calls.push("country:" + code), setVolume: (value) => calls.push("volume:" + value),
+    setPreference: (key, value) => calls.push(key + ":" + value),
+    listCountries: async () => [{ code: "UA", name: "Ukraine" }, { code: "DE", name: "Germany" }] };
+  const controls = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS });
+  assert.equal(controls.supports({ itemType: "radio" }), true);
+  assert.equal(controls.supports({ itemType: "boat" }), false);
+  const block = controls.render();
+  await settle();
+  const [powerButton] = byClass(block, "radio-controls__button--power");
+  powerButton.click();
+  byClass(block, "radio-controls__button")[2].click();
+  const [select] = byClass(block, "radio-controls__select");
+  assert.equal(select.children.length, 2, "the country selector lists the countries");
+  select.value = "DE"; select.fire("change");
+  const [volume] = byClass(block, "radio-controls__volume");
+  assert.equal(volume.value, "40");
+  volume.value = "70"; volume.fire("input");
+  const ducking = byClass(block, "radio-controls__switch-input")[1];
+  ducking.checked = false; ducking.fire("change");
+  assert.deepEqual(calls, ["power", "next", "country:DE", "volume:0.7", "ducking:false"], "every control calls the radio");
+  Object.assign(status, { status: "playing", powered: true, station: { name: "Station <b>X</b>", bitrate: 128 } });
+  listener(status);
+  assert.equal(byClass(block, "radio-controls__station")[0].textContent, "Station <b>X</b>", "names are text, never markup");
+  assert.equal(byClass(block, "radio-controls__status")[0].textContent, RADIO_LABELS.status.playing);
+  assert.equal(powerButton.textContent, RADIO_LABELS.powerOff);
+  controls.render();
+  assert(listener, "a new render keeps one subscription");
+  controls.dispose();
+  assert.equal(listener, null, "dispose unsubscribes");
+
+  // The HUD indicator: shown while a radio is worn, state modifiers, a tap opens the editor.
+  let opened = 0;
+  let indicatorListener = null;
+  const indicatorStatus = { ...status, equipped: false, powered: false, status: "off" };
+  const indicator = new RadioHudIndicator({ documentRef: doc, mountNode: doc.body, labels: RADIO_LABELS,
+    radio: { getStatus: () => indicatorStatus, subscribe: (handler) => { indicatorListener = handler; return () => {}; } },
+    onActivate: () => { opened += 1; } });
+  const [button] = byClass(doc.body, "hud-indicator");
+  assert.equal(button.hidden, true, "hidden without a radio");
+  indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing" });
+  assert.equal(button.hidden, false);
+  assert(button.classList.contains("hud-indicator--playing"));
+  indicatorListener({ ...indicatorStatus, equipped: true, status: "no-battery" });
+  assert(button.classList.contains("hud-indicator--empty") && !button.classList.contains("hud-indicator--playing"));
+  button.click();
+  assert.equal(opened, 1, "a tap opens the radio's editor");
+  indicator.dispose();
+}
+
+stageTwo().then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
+  + "duplicates), region (language, time zone, default), mirrors and request timeout, validated preferences without power, "
+  + "the service (battery gate, stations, skip, no-stations, next, no-effect, country, volume, hidden page, background, "
+  + "unequip, empty battery), the stream player (context in the gesture, Web Audio for CORS, a new native element "
+  + "without CORS, timeouts, cleanup), the editor controls and the HUD indicator."))
+  .catch((error) => { console.error(error); process.exitCode = 1; });
+
 console.log("Radio receiver passed: catalog item with art and 1 unit/s, its own auxiliary slot (empty in old saves), "
   + "equip, battery in its own slot found by the power port, editor with the battery socket, thumbnail charge bar "
   + "without a battery cell, save and reload, and the auxiliary wells scrolling along x in a row and y in a column.");

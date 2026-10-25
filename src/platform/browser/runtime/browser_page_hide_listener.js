@@ -1,17 +1,19 @@
 // Calls back when the page is hidden (tab switched, app backgrounded) or closed: the moment to write pending state
-// before the browser may discard the page (spec 143: battery consumption).
+// before the browser may discard the page (spec 143: battery consumption). onShow (optional) runs when it is visible
+// again (spec 142: the radio resumes).
 export class BrowserPageHideListener {
   #documentRef;
   #windowRef;
   #onVisibility;
   #onPageHide;
 
-  constructor({ documentRef, windowRef, onHide }) {
+  constructor({ documentRef, windowRef, onHide, onShow = null }) {
     if (typeof onHide !== "function") throw new TypeError("BrowserPageHideListener requires onHide");
     this.#documentRef = documentRef;
     this.#windowRef = windowRef;
     this.#onVisibility = () => {
       if (this.#documentRef.visibilityState === "hidden") onHide();
+      else onShow?.();
     };
     this.#onPageHide = () => onHide();
     this.#documentRef.addEventListener("visibilitychange", this.#onVisibility);

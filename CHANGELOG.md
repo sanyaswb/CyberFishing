@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.29 - Radio receiver plays live stations
+
+- Radio receiver stage 2: live Radio Browser stations of your country (from the browser's language, changeable), power/next/previous/volume in the radio's editor, a wave indicator under the clock, pause in a hidden tab unless «Грати у фоні» (spec 142).
+
 ## v0.47.28 - Radio receiver in the equipment
 
 - Radio receiver stage 1: the field radio item with its art in its own auxiliary slot, a battery slot, the charge bar on its thumbnail and the item editor; the auxiliary wells scroll in a row or a column (spec 142).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.20 - Draw new zones on the grid
 
 - Zone editor: «Додати зону» draws new zones on the grid (LMB rectangle, RMB cut, dimmed where a zone cannot go), «Застосувати»/«Скасувати» (spec 141).
-
-## v0.47.19 - All zones of a category
-
-- Zone editor: «Всі» at the end of every category's «Номер зони» lets any zone of the category under the pointer be moved and resized (TK-090).

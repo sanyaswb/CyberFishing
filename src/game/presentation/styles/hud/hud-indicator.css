@@ -1,0 +1,53 @@
+/* HUD indicators (spec 142 D12): 40 x 40 circles in a column under the clock. The radio's is the first; its state
+   modifier colours the icon and only "playing" moves the wave. */
+.hud-indicator {
+  --hud-indicator-size: calc(40px * var(--ui-hud-scale, 1));
+  position: fixed;
+  top: calc(var(--ui-edge-top) + var(--ui-hud-control-size) * var(--ui-hud-scale, 1) + var(--ui-toolbar-gap));
+  right: var(--ui-edge-right);
+  z-index: var(--ui-layer-hud);
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--hud-indicator-size);
+  height: var(--hud-indicator-size);
+  padding: 0;
+  border: calc(var(--ui-control-border-width) * var(--ui-hud-scale, 1)) solid var(--ui-control-border-color);
+  border-radius: 50%;
+  color: var(--ui-muted);
+  background: rgba(var(--ui-surface-rgb), 0.85);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.hud-indicator[hidden] { display: none; }
+.hud-indicator:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 3px; }
+.hud-indicator__icon {
+  width: 70%;
+  height: 70%;
+  overflow: hidden;
+}
+.hud-indicator__wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.hud-indicator--playing { color: var(--ui-success); }
+.hud-indicator--playing .hud-indicator__wave { animation: hud-indicator-wave 1.2s linear infinite; }
+.hud-indicator--weak { color: var(--ui-accent); }
+.hud-indicator--weak .hud-indicator__wave { stroke-dasharray: 4 5; }
+.hud-indicator--empty { color: var(--ui-danger); }
+/* Off and empty: a flat line (the wave squashed onto its axis). */
+.hud-indicator--off .hud-indicator__wave,
+.hud-indicator--empty .hud-indicator__wave {
+  transform: scaleY(0.12);
+  transform-box: view-box;
+  transform-origin: center;
+}
+@keyframes hud-indicator-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-20px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-indicator--playing .hud-indicator__wave { animation: none; }
+}

@@ -214,6 +214,13 @@ export class InventoryUI {
     if (section) this.#selectSection(section.id, step);
   }
 
+  // Opens the equipment section on an equipped item's editor (spec 142: the radio indicator).
+  openSlotEditor(slotId) {
+    this.openSection("equipment");
+    this.#dispatch({ type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE, slotId });
+    this.refresh();
+  }
+
   toggleSection(sectionId) {
     if (this.#isOpen && this.#activeSectionId === sectionId) this.close();
     else this.openSection(sectionId);

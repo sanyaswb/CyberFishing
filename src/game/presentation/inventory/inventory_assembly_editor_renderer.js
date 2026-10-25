@@ -7,6 +7,7 @@ export class InventoryAssemblyEditorRenderer {
   #rodRemovalRenderer;
   #tabsRenderer;
   #scrollbarEnabled;
+  #deviceControlsRenderer;
 
   constructor({
     domFactory,
@@ -15,6 +16,7 @@ export class InventoryAssemblyEditorRenderer {
     rodRemovalRenderer,
     tabsRenderer,
     scrollbarEnabled = false,
+    deviceControlsRenderer = null,
   } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
@@ -22,6 +24,8 @@ export class InventoryAssemblyEditorRenderer {
     this.#rodRemovalRenderer = rodRemovalRenderer;
     this.#tabsRenderer = tabsRenderer;
     this.#scrollbarEnabled = scrollbarEnabled;
+    // A device's own controls under its preview (spec 142: the radio): { supports(item), render() }.
+    this.#deviceControlsRenderer = deviceControlsRenderer;
   }
 
   render(
@@ -64,6 +68,7 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
+    if (this.#deviceControlsRenderer?.supports(model.root)) editor.appendChild(this.#deviceControlsRenderer.render());
     // The preview swipes the tabs too (spec 092).
     const tabs = this.#tabsRenderer.render(model,
       { onSocketActivate, onSocketLongPress, onSocketItemActivate, onWarning, inlineChoices },
