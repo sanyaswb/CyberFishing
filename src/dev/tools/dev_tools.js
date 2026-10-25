@@ -230,7 +230,8 @@ export class DevTools {
         createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
         config: () => this.#config.radio,
         renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
-        setConfig: (path, value) => this.#updateConfigValue(path, value) }).render(body);
+        setConfig: (path, value) => this.#updateConfigValue(path, value),
+        files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
     }
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);

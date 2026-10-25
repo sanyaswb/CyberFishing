@@ -148,7 +148,11 @@ file envelope, validation, diff, module source). The DevTools "Редактор"
 opened by reloading `dev.html?location=<id>`. Its "Збереження" exports that location's zones as a file, imports such a
 file into the session's overrides and resets them to the code. `npm run apply:zones -- <file>` (`utils/apply-zones.js`)
 writes a file into the module after validation, a clean-target and conflict check, confirmation and a backup under the
-Git directory; it never commits. The section "Зони риболовлі" holds the zones inside the castable area (spec 136): `CastableZoneReadings` reads their real values through the game's own classes (location, equipment, a chosen net and fish), `CastableDependentZones` previews them from the rod's real position with the editor's line length and a conditional float, and owns their hover, the hand-chum far line (the only value it writes, the location's `chumCastDistance`) and the test chum zones (`ChumTestZones`, drawn as the game's own chum records).
+Git directory; it never commits. The radio's sound settings (TK-099) follow the same path: the data module
+`src/game/config/raw/radio/radio_sound_settings.js` (`RADIO_SOUND_SETTINGS`: `effects`, `signal`) feeds `CONFIG.radio`,
+`src/dev/radio/radio_sound_settings_format.js` owns its canonical form, DevTools «📻 РАДІО» exports the live values and
+`npm run apply:radio -- <file>` (`utils/apply-radio-sound.js`, shared steps in `utils/apply-module-helpers.js`) writes them
+back. The section "Зони риболовлі" holds the zones inside the castable area (spec 136): `CastableZoneReadings` reads their real values through the game's own classes (location, equipment, a chosen net and fish), `CastableDependentZones` previews them from the rod's real position with the editor's line length and a conditional float, and owns their hover, the hand-chum far line (the only value it writes, the location's `chumCastDistance`) and the test chum zones (`ChumTestZones`, drawn as the game's own chum records).
 
 One page, several screens (spec 084). `engine/screens/ScreenHost` keeps one active screen above the base game:
 opening suspends the game loop, a lazy factory creates the screen, closing disposes it and resumes the game. The House

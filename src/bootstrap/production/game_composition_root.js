@@ -1087,7 +1087,7 @@ export class GameCompositionRoot {
       facade: inventoryFacade,
       radio: systems.radio,
       // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
-      radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio?.effects || {} }) || null,
+      radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio || {} }) || null,
       documentRef: this.#documentTarget,
       mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,

@@ -1,11 +1,17 @@
 // Spec 142 stage 4: the radio's reception from the battery's charge and the weather. Above lowChargePercent the battery
 // does not affect it; below, the weak share w = 1 - charge / lowChargePercent raises the noise, the crackle and the
 // volume sag, and the chance of a dropout grows with w². Rain adds noise and crackle by its intensity (rainMult over
-// [1, rainMultMax]). Pure; read() fills one reused reading. Settings: CONFIG.radio.signal.
+// [1, rainMultMax]). settings.enabled false gives a clean signal. Pure; read() fills one reused reading. Settings:
+// CONFIG.radio.signal.
 export class RadioSignalModel {
   #reading = { quality: 1, noiseGain: 0, crackleRate: 0, dropoutChancePerSecond: 0, volumeSag: 0, rain: 0 };
 
   read({ chargePercent = 100, isRaining = false, rainMult = 1 } = {}, settings = {}) {
+    // TK-099: interference switched off (DevTools) — a clean signal: no hiss, crackle, dropouts or sag.
+    if (settings.enabled === false) {
+      Object.assign(this.#reading, { quality: 1, noiseGain: 0, crackleRate: 0, dropoutChancePerSecond: 0, volumeSag: 0, rain: 0 });
+      return this.#reading;
+    }
     const low = Math.max(1, Number(settings.lowChargePercent) || 25);
     const charge = Math.max(0, Math.min(100, Number(chargePercent) || 0));
     const quality = charge >= low ? 1 : charge / low;

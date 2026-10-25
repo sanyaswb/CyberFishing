@@ -91,20 +91,18 @@
   cursor: pointer;
 }
 
-.radio-controls__switch-input {
+.radio-controls__switch-input,
+.radio-controls__tuning-switch {
   accent-color: var(--ui-success);
 }
 
-/* TK-098 (DEV only): the enabled effects' main parameters as sliders under the volume; a slider's value at its end. */
+/* TK-098/099 (DEV only): a switch per sound part, then the main parameters of the parts that are on as sliders under
+   the volume; a slider's value at its end. */
 .radio-controls__tuning {
   display: grid;
   gap: 6px;
   padding-top: 6px;
   border-top: 1px dashed #43525b;
-}
-
-.radio-controls__tuning[hidden] {
-  display: none;
 }
 
 .radio-controls__tuning .radio-controls__field {

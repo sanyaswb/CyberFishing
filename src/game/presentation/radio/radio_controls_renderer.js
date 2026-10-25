@@ -106,14 +106,30 @@ export class RadioControlsRenderer {
   }
 
   // DEV: one slider per main parameter of every enabled effect; rebuilt only when that set changes.
+  // DEV: a switch per sound part (TK-099), then one slider per main parameter of the parts that are on; rebuilt only
+  // when that set changes.
   #fillTuning(nodes) {
     if (!nodes.tuning) return;
+    const groups = this.#tuning.groups();
     const entries = this.#tuning.list();
-    const signature = entries.map((entry) => `${entry.effect}.${entry.key}`).join("|");
+    const signature = [...groups.map((group) => `${group.group}:${group.enabled}`),
+      ...entries.map((entry) => `${entry.effect}.${entry.key}`)].join("|");
     if (signature === nodes.tuningSignature) return;
     nodes.tuningSignature = signature;
-    nodes.tuning.hidden = entries.length === 0;
-    const children = entries.length ? [this.#dom.element("p", "radio-controls__tuning-title", this.#labels.tuningTitle)] : [];
+    const children = [this.#dom.element("p", "radio-controls__tuning-title", this.#labels.tuningTitle)];
+    for (const group of groups) {
+      const label = this.#dom.element("label", "radio-controls__switch");
+      const input = this.#dom.element("input", "radio-controls__tuning-switch");
+      input.type = "checkbox";
+      input.setAttribute("role", "switch");
+      input.checked = group.enabled;
+      input.addEventListener("change", () => {
+        this.#tuning.setEnabled(group.group, input.checked);
+        this.#fillTuning(nodes);
+      });
+      label.append(input, this.#dom.element("span", "radio-controls__switch-label", group.label));
+      children.push(label);
+    }
     for (const entry of entries) {
       const slider = this.#dom.element("input", "radio-controls__slider");
       Object.assign(slider, { type: "range", min: String(entry.min), max: String(entry.max), step: String(entry.step) });

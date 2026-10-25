@@ -327,3 +327,24 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
   `development_game_startup`); production has no sliders.
 - Checks: `radio-receiver` (enabled effects only, live writes of known keys, sliders, rebuild on DevTools changes,
   none in production).
+
+### TK-099 (v0.48.4): interference switch, DEV switches in the radio's window, export and apply
+
+- The periodic noise left with both effects off was the signal's interference (stage 4: the constant hiss
+  `baseNoise`, rain crackle, and below 25 % charge crackle, dropouts and sag). `signal.enabled` (on by default) now
+  switches it; `RadioSignalModel` returns a clean reading when it is off.
+- The sound settings moved into the data module `src/game/config/raw/radio/radio_sound_settings.js`
+  (`RADIO_SOUND_SETTINGS { effects, signal }`, canonical form of `src/dev/radio/radio_sound_settings_format.js`);
+  `CONFIG.radio.effects/signal` read it.
+- DevTools «📻 РАДІО» → «Звук: ефекти й перешкоди»: Платівка, Рація, Перешкоди сигналу, each with «увімкнено» and its
+  parameters only while on; «⬇ Експорт налаштувань звуку» downloads `radio-sound-v<version>-<yyyymmdd-hhmm>.json`
+  (live values, the code's SHA-256 for the conflict check).
+- `npm run apply:radio -- <file> [--yes] [--force]` (`utils/apply-radio-sound.js`): validates the file against the
+  code's settings (same keys and types), refuses a dirty module, stops on a conflict unless --force, shows the changes,
+  asks, backs up under `.git/cyber-fishing-backups/radio`, writes the module and runs config-schema and radio-receiver.
+  The shared steps of apply:zones and apply:radio are in `utils/apply-module-helpers.js`.
+- DEV radio window: the «DEV · ефекти звуку» group has a switch per part (the three above) and the sliders of the parts
+  that are on (interference: hiss, rain, weak battery, dropouts, charge threshold). Production has none of it.
+- Checks: `radio-receiver` (clean signal, part switches and sliders, the DevTools part and the export file), new
+  `apply-radio-sound` (canonical module, CONFIG wiring, apply / unchanged / cancelled / invalid / dirty / conflict /
+  --force / --yes); `apply-zones` unchanged after the helper extraction.

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.4 - Radio sound export and interference switch
+
+- Radio: «Перешкоди сигналу» switch (the hiss and crackle left with the effects off), DEV switches for vinyl, walkie-talkie and interference in the radio's window, export of the sound settings and `npm run apply:radio` to write them into the code (TK-099).
+
 ## v0.48.3 - Effect sliders in the radio (DEV)
 
 - DEV: the main parameters of the enabled radio effects (vinyl, walkie-talkie) as sliders under the volume in the radio's editor; production shows none (TK-098).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.27 - Battery as a charge bar
 
 - A battery inserted into a device shows as the device's charge bar in its thumbnail, without an attachment cell (TK-095).
-
-## v0.47.26 - Battery and radio art
-
-- Battery shows its own art (768 px WebP from the owner's master); the radio receiver's art is prepared for spec 142 (1024 px); masters in asset-sources (TK-094).

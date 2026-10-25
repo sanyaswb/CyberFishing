@@ -1,3 +1,4 @@
+import { RADIO_SOUND_SETTINGS } from "../raw/radio/radio_sound_settings.js";
 import { FISH_DB } from "../databases/fish_database.js";
 import { ITEM_PROGRESSION_CONFIG } from "../items/item_progression_config.js";
 import { ITEM_STAT_OVERRIDE_CONFIG } from "../raw/items/item_stat_overrides.js";
@@ -347,20 +348,12 @@ export const CONFIG = {
     playInBackground: false,
     // Stage 5: during a bite the radio drops to duckGain of its volume, easing over rampSeconds (the switch in its editor).
     ducking: { enabled: true, duckGain: 0.25, rampSeconds: 0.15 },
-    // TK-097: the sound effects, input -> vinyl -> walkie-talkie -> output; each one only while enabled (DevTools; the
-    // player has no control). mix: wet share 0..1; outputGain: level after the make-up gain. Changes apply live.
-    effects: {
-      rampSeconds: 0.03,
-      walkieTalkie: { enabled: true, mix: 1, highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5,
-        drive: 18, oversample: "4x", outputGain: 1 },
-      vinyl: { enabled: false, mix: 1, highpassHz: 35, warmthHz: 150, warmthGainDb: 2.5, lowpassHz: 9000, drive: 3,
-        outputGain: 1, baseDelayMs: 6, wowHz: 0.55, wowDepthMs: 1.2, flutterHz: 6.5, flutterDepthMs: 0.15,
-        crackleRate: 6, crackleLevel: 0.12, crackleToneHz: 2500, popRate: 0.25, popLevel: 0.35, hissLevel: 0.006,
-        rumbleHz: 30, rumbleLevel: 0.02 },
-    },
-    // Stage 4: reception from the battery and the rain (RadioSignalModel); dropouts are short silences with a crackle.
-    signal: { lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, rainMultMax: 2.5, maxCrackle: 6,
-      rainCrackle: 2, dropoutMax: 0.5, dropoutMs: [150, 900], maxVolumeSag: 0.35 },
+    // TK-097..099: the sound effects (input -> vinyl -> walkie-talkie -> output) and the signal's interference live in
+    // their data module (DevTools export, `npm run apply:radio`); each part works only while enabled.
+    effects: RADIO_SOUND_SETTINGS.effects,
+    // Stage 4 / TK-099: reception from the battery and the rain (RadioSignalModel); signal.enabled false removes the hiss,
+    // crackle, sag and dropouts.
+    signal: RADIO_SOUND_SETTINGS.signal,
     tickMs: 1000,
     timeZoneCountries: {
       "Europe/Kyiv": "UA", "Europe/Kiev": "UA", "Europe/Warsaw": "PL", "Europe/Berlin": "DE", "Europe/London": "GB",

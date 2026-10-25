@@ -10,19 +10,13 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const readline = require("node:readline");
-const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
+const { stamp, gitDirectory, askYes, isDirty, runChecks } = require("./apply-module-helpers.js");
 
 const ZONES_DIR = "src/game/config/raw/locations/zones";
 const FORMAT_MODULE = "src/dev/location/zone_export_format.js";
 const CONFIG_MODULE = "src/game/config/runtime/game_config.js";
 const sha256 = text => crypto.createHash("sha256").update(text, "utf8").digest("hex");
-// The backup's name in the machine's local time (TK-078), as the owner reads the clock: yyyymmdd-hhmmss.
-const stamp = (date) => {
-  const pad = value => String(value).padStart(2, "0");
-  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
-};
 
 // The steps with every outside effect injected, so the tooling check runs them in a scratch directory.
 class ZoneFileApplier {
@@ -88,20 +82,6 @@ class ZoneFileApplier {
   }
 }
 
-function gitDirectory(root) {
-  const result = spawnSync("git", ["rev-parse", "--git-common-dir"], { cwd: root, encoding: "utf8" });
-  if (result.status !== 0) throw new Error("apply-zones needs a Git checkout");
-  return path.resolve(root, result.stdout.trim());
-}
-
-function askYes(question) {
-  const prompt = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => prompt.question(question, (answer) => {
-    prompt.close();
-    resolve(/^(y|yes|т|так)$/iu.test(answer.trim()));
-  }));
-}
-
 async function main(argv) {
   const root = path.resolve(__dirname, "..");
   const fileArgument = argv.find(argument => !argument.startsWith("--"));
@@ -114,19 +94,10 @@ async function main(argv) {
     modulePath: id => path.join(ZONES_DIR, `${id}.js`),
     // A fresh import each time: the module may have been rewritten in this process.
     readZones: async target => (await import(`${pathToFileURL(path.join(root, target)).href}?read=${Date.now()}`)).ZONES,
-    isDirty: target => {
-      const status = spawnSync("git", ["status", "--porcelain", "--", target], { cwd: root, encoding: "utf8" });
-      return status.status !== 0 || status.stdout.trim() !== "";
-    },
+    isDirty: target => isDirty(root, target),
     confirm: askYes,
-    backupDir: path.join(gitDirectory(root), "cyber-fishing-backups", "zones"),
-    runChecks: () => {
-      for (const check of ["config-schema", "game-cycle"]) {
-        const result = spawnSync(process.execPath, ["utils/run-checks.js", "--check", check], { cwd: root, encoding: "utf8" });
-        console.log(`Перевірка ${check}: ${result.status === 0 ? "пройшла" : "НЕ пройшла"}`);
-        if (result.status !== 0) console.log(`${result.stdout}${result.stderr}`.trim().split("\n").slice(-15).join("\n"));
-      }
-    },
+    backupDir: path.join(gitDirectory(root, "apply-zones"), "cyber-fishing-backups", "zones"),
+    runChecks: () => runChecks(root, ["config-schema", "game-cycle"]),
     log: message => console.log(message),
     now: () => new Date(),
   });

@@ -663,15 +663,33 @@ async function stageFive() {
   const ui = { createInfoRow: (label, value) => rows.push([label, value]),
     createButtonRow: (label, parent, onClick) => buttons.set(label, onClick),
     createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }) };
-  const radioConfig = { tickMs: 1000, effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 } } };
+  const radioConfig = { tickMs: 1000, effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 } },
+    signal: { enabled: true, baseNoise: 0.01 } };
   const trees = [];
   const writes = [];
-  new RadioDevSection({ ui, radio: { getStatus: () => ({ powered: true, status: "playing", station: { name: "S" },
+  const downloads = [];
+  const section = new RadioDevSection({ ui, radio: { getStatus: () => ({ powered: true, status: "playing", station: { name: "S" },
     country: "UA", stationCount: 3, signal: 0.5 }), batteryPercent: () => 42, discharge: (target) => discharged.push(target) },
   config: () => radioConfig, createSection: (label) => ({ label, replaceChildren() {} }),
   renderConfigTree: (value, parent, path, options) => trees.push({ path: path.join("."), options }),
-  setConfig: (path, value) => { writes.push([path.join("."), value]);
-    radioConfig.effects[path[3]][path[4]] = value; } }).render({});
+  setConfig: (path, value) => {
+    writes.push([path.join("."), value]);
+    let target = radioConfig;
+    for (const part of path.slice(2, -1)) target = target[part];
+    target[path.at(-1)] = value;
+  },
+  files: { download: (name, text) => downloads.push([name, JSON.parse(text)]), hashText: async (text) => "hash:" + text.length },
+  gameVersion: "0.48.4", now: () => new Date(2026, 9, 25, 21, 5) });
+  section.render({});
+  assert(trees.some((tree) => tree.path === "CONFIG.radio.signal"), "the signal's interference is a sound part with its parameters");
+  assert.equal(trees.find((tree) => tree.path === "CONFIG.radio").options.visibilityPolicy.isVisible(["CONFIG", "radio", "signal"]),
+    false, "and is not repeated in the rest of CONFIG.radio");
+  await section.exportSettings();
+  assert.equal(downloads[0][0], "radio-sound-v0.48.4-20261025-2105.json", "the export file is named by version and time");
+  assert.equal(downloads[0][1].format, "cyber-fishing-radio-sound");
+  assert.deepEqual(downloads[0][1].settings.signal, { baseNoise: 0.01, enabled: true }, "it carries the live settings");
+  assert(String(downloads[0][1].baseHash).startsWith("hash:"), "with the code's hash for the conflict check");
+  assert(buttons.has("⬇ Експорт налаштувань звуку (npm run apply:radio)"), "DevTools offers the export");
   assert(rows.some(([label, value]) => label === "заряд батарейки" && value === "42.0%"));
   buttons.get("Розрядити до 5%")();
   assert.deepEqual(discharged, [5], "the DEV buttons discharge through the port");
@@ -692,16 +710,30 @@ async function stageFive() {
 // ---- TK-098: DEV sliders for the enabled effects' main parameters ----
 const { RadioEffectTuning } = runtime.importModule("src/dev/radio/radio_effect_tuning.js");
 async function tuningSliders() {
-  const effects = { vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2,
-    warmthGainDb: 2.5, mix: 1 }, walkieTalkie: { enabled: false, drive: 18 } };
+  const radio = { effects: { vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2,
+    warmthGainDb: 2.5, mix: 1 }, walkieTalkie: { enabled: false, drive: 18 } },
+  signal: { enabled: false, baseNoise: 0.01, rainNoise: 0.12, maxNoise: 0.3, dropoutMax: 0.5, lowChargePercent: 25 } };
   const sets = [];
-  const tuning = new RadioEffectTuning({ config: () => effects, configRuntime: { set: (path, value) => {
-    sets.push([path.join("."), value]); effects[path[3]][path[4]] = value; } } });
+  const writeConfig = (path, value) => {
+    sets.push([path.join("."), value]);
+    let target = radio;
+    for (const part of path.slice(2, -1)) target = target[part];
+    target[path.at(-1)] = value;
+  };
+  const tuning = new RadioEffectTuning({ config: () => radio, configRuntime: { set: writeConfig } });
+  assert.deepEqual(plain(tuning.groups()), [{ group: "vinyl", label: "Платівка", enabled: true },
+    { group: "walkieTalkie", label: "Рація", enabled: false }, { group: "signal", label: "Перешкоди сигналу", enabled: false }],
+    "a switch per sound part: vinyl, walkie-talkie, the signal's interference");
   assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
-    ["crackleLevel", "popLevel", "hissLevel", "wowDepthMs", "warmthGainDb", "mix"], "only the enabled effect's main parameters");
+    ["crackleLevel", "popLevel", "hissLevel", "wowDepthMs", "warmthGainDb", "mix"], "only the enabled part's main parameters");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
-  assert.deepEqual(sets, [["CONFIG.radio.effects.vinyl.crackleLevel", 0.3]], "writes go to the live config, known keys only");
+  tuning.setEnabled("signal", true);
+  assert.deepEqual(sets, [["CONFIG.radio.effects.vinyl.crackleLevel", 0.3], ["CONFIG.radio.signal.enabled", true]],
+    "writes go to the live config, known keys only, the signal under CONFIG.radio.signal");
+  assert(plain(tuning.list()).some((entry) => entry.effect === "signal" && entry.key === "dropoutMax"),
+    "the interference's sliders appear once it is on");
+  tuning.setEnabled("signal", false);
 
   const doc = new TestDocument();
   const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
@@ -711,22 +743,35 @@ async function tuningSliders() {
   const port = { getStatus: () => status, subscribe: (handler) => { listener = handler; return () => {}; },
     togglePower() {}, next() {}, previous() {}, setCountry() {}, setVolume() {}, setPreference() {}, listCountries: async () => [] };
   const production = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS }).render();
-  assert.equal(byClass(production, "radio-controls__tuning").length, 0, "production has no effect sliders");
+  assert.equal(byClass(production, "radio-controls__tuning").length, 0, "production has no sound switches or sliders");
   const block = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS, tuning }).render();
+  const switches = byClass(block, "radio-controls__tuning-switch");
+  assert.deepEqual(switches.map((input) => input.checked), [true, false, false], "DEV shows the three part switches");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 6, "one slider per main parameter of the enabled effect");
+  assert.equal(sliders.length, 6, "one slider per main parameter of the enabled part");
   assert.equal(sliders[0].value, "0.3");
   sliders[0].value = "0.2"; sliders[0].fire("input");
-  assert.equal(effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
+  assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
   assert.equal(byClass(block, "radio-controls__tuning-value")[0].textContent, "0.2");
-  effects.vinyl.enabled = false;
-  effects.walkieTalkie.enabled = true;
+  switches[0].checked = false; switches[0].fire("change");
+  assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
+  assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");
+  byClass(block, "radio-controls__tuning-switch")[2].checked = true;
+  byClass(block, "radio-controls__tuning-switch")[2].fire("change");
+  assert.equal(radio.signal.enabled, true, "the interference switch");
+  assert.equal(byClass(block, "radio-controls__slider").length, 5, "the interference's sliders");
+  radio.signal.enabled = false;
+  radio.effects.walkieTalkie.enabled = true;
   listener(status);
   assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max), ["40", "6000", "1200", "1"],
-    "switching the effects in DevTools changes the sliders on the next update");
-  effects.walkieTalkie.enabled = false;
-  listener(status);
-  assert.equal(byClass(block, "radio-controls__tuning")[0].hidden, true, "no enabled effect, no slider group");
+    "switching the parts in DevTools changes the window on the next update");
+
+  // The signal model with the interference off: a clean signal.
+  const clean = { ...new RadioSignalModel().read({ chargePercent: 5, isRaining: true, rainMult: 2.5 },
+    { enabled: false, lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, maxCrackle: 6, rainCrackle: 2,
+      dropoutMax: 0.5, maxVolumeSag: 0.35 }) };
+  assert.deepEqual([clean.quality, clean.noiseGain, clean.crackleRate, clean.dropoutChancePerSecond, clean.volumeSag],
+    [1, 0, 0, 0, 0], "signal.enabled false: no hiss, crackle, dropouts or sag, even with an empty battery in the rain");
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(() => console.log("Radio receiver "
