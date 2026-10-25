@@ -179,7 +179,31 @@ near(frames * 0.1, 36 / 12, 0.2, "1 % of 3600 units lasts 3 s at 12 units/s");
 assert.equal(boat.powerRatio, 0);
 assert.equal(boatInventory.repository.get("boat-battery").chargeState.percent, 0);
 
+// TK-095: the boat's thumbnail shows the inserted battery as its charge bar, not as an attachment cell.
+const { InventoryItemTreeViewFactory } = runtime.importModule("src/game/presentation/inventory/inventory_item_tree_view_factory.js");
+const { AssemblyProfileRegistry } = runtime.importModule("src/game/domain/assemblies/assembly_profile_registry.js");
+const { ITEM_ASSEMBLY_PROFILE_CONFIG } = runtime.importModule("src/game/config/raw/inventory/item_assembly_profiles.js");
+const definitions = { boat_lvl3: ITEM_DB.deliveryMethods.boat_lvl3, battery_basic: battery };
+const thumbRepository = new FlatInventoryItemRepository({ items: [
+  { instanceId: "thumb-boat", itemId: "boat_lvl3", quantity: 1, location: InventoryItemLocation.inventory() },
+  { instanceId: "thumb-battery", itemId: "battery_basic", quantity: 1, chargeState: { percent: 40 },
+    location: InventoryItemLocation.attached("thumb-boat", "battery") },
+] });
+const thumbnails = new InventoryItemTreeViewFactory({ repository: thumbRepository, assemblyStates: { get: () => null },
+  profileRegistry: new AssemblyProfileRegistry(ITEM_ASSEMBLY_PROFILE_CONFIG, { itemDefinitionResolver: (id) => definitions[id] }),
+  hydrate: (raw) => ({ ...definitions[raw.itemId], ...raw, effectiveStats: { ...definitions[raw.itemId].gameplayStats } }),
+  boatChargeProvider: (boatItem) => {
+    const child = thumbRepository.getChild(boatItem.instanceId, "battery", 0);
+    return child ? { current: child.chargeState?.percent ?? 100, maximum: 100 } : null;
+  } });
+const boatThumb = thumbnails.create("thumb-boat");
+assert(boatThumb.attachments.every((attachment) => attachment.kind !== "battery"), "no battery cell in the boat thumbnail");
+assert(boatThumb.attachments.some((attachment) => attachment.kind === "cargo"), "other sockets keep their cells");
+assert.equal(boatThumb.charge.percent, 40, "the boat thumbnail shows its battery's charge");
+thumbRepository.setLocation("thumb-battery", InventoryItemLocation.inventory());
+assert.equal(thumbnails.create("thumb-boat").charge, undefined, "without a battery the boat has no charge bar");
+
 console.log("Device power passed: catalog boat rates (5/7.5/10 min moving, a third waiting, 0 idle/drifting), drain never "
   + "rises or goes below 0, 300 s per battery on 16 ms steps without the wall clock, writes every 5 s and at empty, "
   + "clamped steps, flush on hide, ledger, lower charge across tabs, one-time grants once, boat drifts on an empty "
-  + "battery and idle boats consume nothing.");
+  + "battery and idle boats consume nothing; the boat thumbnail shows the battery as its charge bar, not a cell.");

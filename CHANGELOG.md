@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.47.27 - Battery as a charge bar
+
+- A battery inserted into a device shows as the device's charge bar in its thumbnail, without an attachment cell (TK-095).
+
 ## v0.47.26 - Battery and radio art
 
 - Battery shows its own art (768 px WebP from the owner's master); the radio receiver's art is prepared for spec 142 (1024 px); masters in asset-sources (TK-094).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.47.18 - All chum zones at once
 
 - Zone editor: «Всі» at the end of «Номер зони прикормки» lets any chum zone under the pointer be moved and resized (TK-089).
-
-## v0.47.17 - Game chum zones in the editor
-
-- Zone editor: the game's own chum zones on the location are listed first in «Редагувати зони прикормки» (marked «гра») and can be moved and resized (TK-088).
