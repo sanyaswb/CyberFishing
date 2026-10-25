@@ -346,6 +346,8 @@ export const CONFIG = {
     startTimeoutMs: 5000,
     defaultVolume: 0.6,
     playInBackground: false,
+    // TK-100: skip stations whose servers send no CORS (they would play without the effects); DEV switch, off by default.
+    onlyEffectStations: false,
     // Stage 5: during a bite the radio drops to duckGain of its volume, easing over rampSeconds (the switch in its editor).
     ducking: { enabled: true, duckGain: 0.25, rampSeconds: 0.15 },
     // TK-097..099: the sound effects (input -> vinyl -> walkie-talkie -> output) and the signal's interference live in

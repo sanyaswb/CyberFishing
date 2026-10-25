@@ -722,7 +722,8 @@ async function tuningSliders() {
   };
   const tuning = new RadioEffectTuning({ config: () => radio, configRuntime: { set: writeConfig } });
   assert.deepEqual(plain(tuning.groups()), [{ group: "vinyl", label: "Платівка", enabled: true },
-    { group: "walkieTalkie", label: "Рація", enabled: false }, { group: "signal", label: "Перешкоди сигналу", enabled: false }],
+    { group: "walkieTalkie", label: "Рація", enabled: false }, { group: "signal", label: "Перешкоди сигналу", enabled: false },
+    { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false }],
     "a switch per sound part: vinyl, walkie-talkie, the signal's interference");
   assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
     ["crackleLevel", "popLevel", "hissLevel", "wowDepthMs", "warmthGainDb", "mix"], "only the enabled part's main parameters");
@@ -746,7 +747,8 @@ async function tuningSliders() {
   assert.equal(byClass(production, "radio-controls__tuning").length, 0, "production has no sound switches or sliders");
   const block = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS, tuning }).render();
   const switches = byClass(block, "radio-controls__tuning-switch");
-  assert.deepEqual(switches.map((input) => input.checked), [true, false, false], "DEV shows the three part switches");
+  assert.deepEqual(switches.map((input) => input.checked), [true, false, false, false],
+    "DEV shows the three part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
   assert.equal(sliders.length, 6, "one slider per main parameter of the enabled part");
   assert.equal(sliders[0].value, "0.3");
@@ -765,6 +767,53 @@ async function tuningSliders() {
   listener(status);
   assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max), ["40", "6000", "1200", "1"],
     "switching the parts in DevTools changes the window on the next update");
+
+  // TK-100: the DEV switch writes the plain flag.
+  tuning.setEnabled("onlyEffectStations", true);
+  assert.deepEqual(sets.at(-1), ["CONFIG.radio.onlyEffectStations", true], "«only stations with the effect» is a plain flag");
+  assert(!plain(tuning.list()).some((entry) => entry.effect === "onlyEffectStations"), "with no sliders");
+
+  // TK-100: stations remembered by whether they played with the effects; known ones first, native ones last or skipped.
+  const memory = new Map();
+  const memoryCache = { get: (key, fallback) => memory.has(key) ? JSON.parse(memory.get(key)) : fallback,
+    set: (key, value) => memory.set(key, JSON.stringify(value)) };
+  const store = new RadioPreferencesLocalStore({ cache: memoryCache });
+  const played = [];
+  const radioConfig = { codecs: ["MP3"], onlyEffectStations: false };
+  const makeService = () => new RadioReceiverService({ equipment: { getEquipped: () => ({ radio: { instanceId: "r" },
+    radioBattery: { instanceId: "b" } }) }, power: { read: () => ({ empty: false }) },
+    stations: { listStations: async () => [station("a", "https://a.example/live"), station("b", "https://b.example/live"),
+      station("c", "https://c.example/live")], listCountries: async () => [] },
+    player: { play: (url) => played.push(url.slice(8, 9)), stop() {}, setVolume() {}, setGainScale() {}, setStreamMuted() {},
+      refreshEffects() {} }, preferences: store, region: { resolve: () => "UA" }, config: () => radioConfig, secureOnly: true,
+    weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
+    scheduler: scheduler() });
+  let receiver = makeService();
+  receiver.powerOn(); await settle();
+  receiver.handlePlayerState("playing", { effects: false });
+  receiver.next();
+  receiver.handlePlayerState("playing", { effects: true });
+  assert.deepEqual(plain(store.loadStationEffects()), { a: false, b: true }, "both outcomes are remembered");
+  played.length = 0;
+  store.save({ stationId: "missing" });
+  receiver = makeService();
+  receiver.powerOn(); await settle();
+  assert.equal(played[0], "b", "a station known to play with the effects comes first");
+  receiver.next(); receiver.next();
+  assert.equal(played.at(-1), "a", "an untried one next, a native-only one last");
+  radioConfig.onlyEffectStations = true;
+  played.length = 0;
+  receiver = makeService();
+  receiver.powerOn(); await settle();
+  assert.equal(receiver.getStatus().stationCount, 2, "with onlyEffectStations known native stations are dropped");
+  receiver.next();
+  receiver.handlePlayerState("playing", { effects: false });
+  assert.equal(receiver.getStatus().status === "no-effect", false, "an untried station without CORS is skipped at once");
+  assert.equal(store.loadStationEffects().c, false, "and remembered");
+  for (let index = 0; index < 505; index += 1) store.saveStationEffect(`s${index}`, true);
+  const remembered = Object.keys(store.loadStationEffects());
+  assert.equal(remembered.length, 500, "the memory keeps at most 500 stations");
+  assert.equal(remembered.at(-1), "s504", "the newest last, the oldest dropped");
 
   // The signal model with the interference off: a clean signal.
   const clean = { ...new RadioSignalModel().read({ chargePercent: 5, isRaining: true, rainMult: 2.5 },

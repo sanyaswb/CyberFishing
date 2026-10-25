@@ -2,6 +2,9 @@
 // of them affects the battery. Power is never stored, so a reload never starts sound by itself (autoplay).
 export class RadioPreferencesLocalStore {
   static KEY = "radio_preferences";
+  // TK-100: whether a station played with the effects (its server sends CORS), at most STATION_LIMIT, newest last.
+  static STATIONS_KEY = "radio_station_effects";
+  static STATION_LIMIT = 500;
   #cache;
 
   constructor({ cache }) {
@@ -23,5 +26,22 @@ export class RadioPreferencesLocalStore {
 
   save(preferences) {
     this.#cache.set(RadioPreferencesLocalStore.KEY, { ...this.load(), ...preferences });
+  }
+
+  // { [stationId]: true (effects) | false (native only) }.
+  loadStationEffects() {
+    const raw = this.#cache.get(RadioPreferencesLocalStore.STATIONS_KEY, null);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+    return Object.fromEntries(Object.entries(raw).filter(([id, value]) => id && typeof value === "boolean"));
+  }
+
+  saveStationEffect(stationId, effects) {
+    if (!stationId) return;
+    const stations = this.loadStationEffects();
+    delete stations[stationId];
+    stations[stationId] = effects === true;
+    const ids = Object.keys(stations);
+    for (const id of ids.slice(0, Math.max(0, ids.length - RadioPreferencesLocalStore.STATION_LIMIT))) delete stations[id];
+    this.#cache.set(RadioPreferencesLocalStore.STATIONS_KEY, stations);
   }
 }

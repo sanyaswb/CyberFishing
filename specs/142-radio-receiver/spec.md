@@ -348,3 +348,15 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - Checks: `radio-receiver` (clean signal, part switches and sliders, the DevTools part and the export file), new
   `apply-radio-sound` (canonical module, CONFIG wiring, apply / unchanged / cancelled / invalid / dirty / conflict /
   --force / --yes); `apply-zones` unchanged after the helper extraction.
+
+### TK-100 (v0.48.5): stations remembered by whether they play with the effects
+
+- «В ефірі без ефекту» means the station's server sends no CORS: the browser lets the page play it but not process it,
+  so it plays on the native fallback without the effects (generated surface sounds still mix in).
+- `RadioPreferencesLocalStore` keeps `radio_station_effects` (station id -> played with effects, at most 500, newest
+  last); `RadioReceiverService` remembers every station's outcome and orders a country's list: known with effects
+  first, untried next, native-only last (source order within each group).
+- `CONFIG.radio.onlyEffectStations` (off; DEV switch «Лише станції з ефектом» in the radio window, also in DevTools)
+  drops known native-only stations and skips an untried one at once when it falls back.
+- Checks: `radio-receiver` (memory of both outcomes, order after a reload, the flag's drop and skip, the 500 limit, the
+  DEV switch).

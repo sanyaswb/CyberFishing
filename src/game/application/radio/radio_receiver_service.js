@@ -31,6 +31,7 @@ export class RadioReceiverService {
   #signalModel;
   #signalScale = 1;
   #biting = false;
+  #stationEffects;
   #dropoutTimer = null;
   #status = {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
@@ -66,6 +67,7 @@ export class RadioReceiverService {
       ...this.#preferences.load(),
     };
     this.#prefs.country = this.#prefs.country || this.#region.resolve();
+    this.#stationEffects = this.#preferences.loadStationEffects();
     this.#player.setVolume(this.#prefs.volume);
     this.#syncPreferences();
   }
@@ -176,11 +178,16 @@ export class RadioReceiverService {
   handlePlayerState(state, { effects = true } = {}) {
     if (!this.#status.powered) return;
     if (state === "playing") {
-      this.#failures = 0;
-      this.#set({ status: effects ? "playing" : "no-effect", effects });
+      this.#rememberStation(effects);
+      // TK-100: with onlyEffectStations a station without CORS is skipped like a silent one.
+      if (effects || this.#config()?.onlyEffectStations !== true) {
+        this.#failures = 0;
+        this.#set({ status: effects ? "playing" : "no-effect", effects });
+        return;
+      }
+    } else if (state === "loading") {
       return;
     }
-    if (state === "loading") return;
     // "failed": the next station, until every station of the list failed once.
     this.#failures += 1;
     if (this.#failures >= this.#list.length) return this.#set({ status: "no-stations" });
@@ -273,6 +280,7 @@ export class RadioReceiverService {
       list = [];
     }
     if (serial !== this.#requestSerial || !this.#status.powered) return;
+    list = this.#orderByEffects(list);
     this.#list = list;
     this.#failures = 0;
     if (list.length === 0) {
@@ -283,6 +291,25 @@ export class RadioReceiverService {
     this.#index = remembered >= 0 ? remembered : 0;
     this.#set({ stationCount: list.length });
     this.#playCurrent();
+  }
+
+  // TK-100: stations known to play with the effects first, untried ones next, native-only ones last (or dropped with
+  // onlyEffectStations); the source order holds within each group.
+  #orderByEffects(list) {
+    const only = this.#config()?.onlyEffectStations === true;
+    const rank = (station) => this.#stationEffects[station.id] === true ? 0 : this.#stationEffects[station.id] === false ? 2 : 1;
+    return list
+      .filter((station) => !only || this.#stationEffects[station.id] !== false)
+      .map((station, index) => ({ station, index }))
+      .sort((left, right) => rank(left.station) - rank(right.station) || left.index - right.index)
+      .map((entry) => entry.station);
+  }
+
+  #rememberStation(effects) {
+    const station = this.#list[this.#index];
+    if (!station || this.#stationEffects[station.id] === effects) return;
+    this.#stationEffects[station.id] = effects;
+    this.#preferences.saveStationEffect(station.id, effects);
   }
 
   #step(direction) {

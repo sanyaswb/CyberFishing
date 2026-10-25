@@ -1,5 +1,5 @@
-// DEV (TK-098, TK-099): the radio's sound parts tuned in its editor next to the volume: a switch per part (vinyl,
-// walkie-talkie, the signal's interference) and sliders for the main parameters of the parts that are on. Writes go to
+// DEV (TK-098..TK-100): the radio's sound parts tuned in its editor next to the volume: a switch per part (vinyl,
+// walkie-talkie, the signal's interference, «only stations with the effect») and sliders for the main parameters of the parts that are on. Writes go to
 // the live configuration through the same config runtime as DevTools, so both show one value. Production composes no
 // tuning port: the player never controls the sound quality.
 const GROUPS = Object.freeze([
@@ -25,6 +25,9 @@ const GROUPS = Object.freeze([
     Object.freeze({ key: "dropoutMax", label: "Перешкоди · розриви", min: 0, max: 1, step: 0.05 }),
     Object.freeze({ key: "lowChargePercent", label: "Перешкоди · поріг заряду, %", min: 0, max: 60, step: 1 }),
   ]) }),
+  // TK-100: a plain flag (CONFIG.radio.onlyEffectStations), no sliders.
+  Object.freeze({ group: "onlyEffectStations", label: "Лише станції з ефектом", flag: true,
+    path: Object.freeze(["onlyEffectStations"]), parameters: Object.freeze([]) }),
 ]);
 
 export class RadioEffectTuning {
@@ -39,12 +42,13 @@ export class RadioEffectTuning {
 
   // [{ group, label, enabled }]: one switch per sound part.
   groups() {
-    return GROUPS.map(({ group, label }) => ({ group, label, enabled: this.#settings(group)?.enabled === true }));
+    return GROUPS.map(({ group, label, flag }) => ({ group, label,
+      enabled: flag ? this.#settings(group) === true : this.#settings(group)?.enabled === true }));
   }
 
   setEnabled(group, enabled) {
     const entry = GROUPS.find((candidate) => candidate.group === group);
-    if (entry) this.#configRuntime.set(["CONFIG", "radio", ...entry.path, "enabled"], enabled === true);
+    if (entry) this.#configRuntime.set(["CONFIG", "radio", ...entry.path, ...(entry.flag ? [] : ["enabled"])], enabled === true);
   }
 
   // [{ effect, key, label, min, max, step, value }] for the parts that are on.
