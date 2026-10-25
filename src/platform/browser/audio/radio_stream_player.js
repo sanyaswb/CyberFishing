@@ -23,7 +23,7 @@ export class RadioStreamPlayer {
   #listeners = [];
   #effects;
 
-  // effects: an optional rack { attach(context, input, output), setEnabled(on), dispose() } between input and output.
+  // effects: an optional chain { attach(context, input, output), update(), dispose() } between input and output.
   constructor({ documentRef, audioContexts, scheduler, config, onState, effects = null }) {
     this.#documentRef = documentRef;
     this.#audioContexts = audioContexts;
@@ -33,9 +33,9 @@ export class RadioStreamPlayer {
     this.#effects = effects;
   }
 
-  // The walkie-talkie sound on or off (only streams played through Web Audio have it).
-  setEffectsEnabled(enabled) {
-    this.#effects?.setEnabled(enabled);
+  // Re-reads the effects' configuration (DevTools edits apply live; only streams played through Web Audio have them).
+  refreshEffects() {
+    this.#effects?.update();
   }
 
   // The node streams feed (effects racks connect between it and the output); built on first use.

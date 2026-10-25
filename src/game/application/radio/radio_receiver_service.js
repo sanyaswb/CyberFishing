@@ -34,7 +34,7 @@ export class RadioReceiverService {
   #dropoutTimer = null;
   #status = {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
-    volume: 0.6, retroMode: true, ducking: true, playInBackground: false,
+    volume: 0.6, ducking: true, playInBackground: false,
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
@@ -61,18 +61,16 @@ export class RadioReceiverService {
     const cfg = this.#config() || {};
     this.#prefs = {
       volume: Number.isFinite(Number(cfg.defaultVolume)) ? Number(cfg.defaultVolume) : 0.6,
-      retroMode: true,
       ducking: cfg.ducking?.enabled !== false,
       playInBackground: cfg.playInBackground === true,
       ...this.#preferences.load(),
     };
     this.#prefs.country = this.#prefs.country || this.#region.resolve();
     this.#player.setVolume(this.#prefs.volume);
-    this.#player.setEffectsEnabled(this.#prefs.retroMode);
     this.#syncPreferences();
   }
 
-  // { status, powered, station, country, stationCount, effects, volume, retroMode, ducking, playInBackground }; one
+  // { status, powered, equipped, signal, station, country, stationCount, effects, volume, ducking, playInBackground }; one
   // object, updated in place.
   getStatus() {
     return this.#status;
@@ -136,13 +134,12 @@ export class RadioReceiverService {
   }
 
   setPreference(key, enabled) {
-    if (!["retroMode", "ducking", "playInBackground"].includes(key)) return;
+    if (!["ducking", "playInBackground"].includes(key)) return;
     const value = enabled === true;
     if (this.#prefs[key] === value) return;
     this.#prefs[key] = value;
     this.#save({ [key]: value });
     this.#set({ [key]: value });
-    if (key === "retroMode") this.#player.setEffectsEnabled(value);
     if (key === "ducking") this.#applyGain();
     if (key === "playInBackground" && this.#hidden && !value && this.#status.powered) this.#player.stop();
   }
@@ -220,6 +217,8 @@ export class RadioReceiverService {
       background: this.#hidden,
     });
     if (reading.empty) return this.powerOff("no-battery");
+    // The sound effects follow CONFIG.radio.effects (DevTools); the player does not choose them (TK-097).
+    this.#player.refreshEffects();
     const weather = this.#weather.getSnapshot() || {};
     const signal = this.#signalModel.read({ chargePercent: reading.percent, isRaining: weather.isRaining === true,
       rainMult: weather.wind?.rainMult }, this.#config()?.signal || {});
@@ -316,8 +315,7 @@ export class RadioReceiverService {
 
   #syncPreferences() {
     Object.assign(this.#status, {
-      country: this.#prefs.country, volume: this.#prefs.volume, retroMode: this.#prefs.retroMode,
-      ducking: this.#prefs.ducking, playInBackground: this.#prefs.playInBackground,
+      country: this.#prefs.country, volume: this.#prefs.volume, ducking: this.#prefs.ducking, playInBackground: this.#prefs.playInBackground,
     });
   }
 

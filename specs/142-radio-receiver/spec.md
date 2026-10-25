@@ -294,3 +294,24 @@ Q1–Q7 are answered (D9–D15). Spec 143 Q8–Q14 are answered. Open: at stage 
 - Checks: `radio-receiver` stage 5 (duck, switch off/on during a bite, recovery, unchanged state, eased gain, the
   DevTools section). Full 71/71; game-cycle report unchanged across all stages.
 - Later (own spec): the thunderstorm weather state with its own crackles (D14).
+
+### TK-097 (v0.48.2): the vinyl record effect, tuning in DevTools, no player sound control
+
+- Owner 2026-10-25: a "music from an old record" effect; extra parameters to tune every effect; each can be switched off
+  in DevTools (`enabled`; a disabled effect's parameters disappear); the player must not control the sound quality in
+  production.
+- `RadioEffectsChain` (platform/browser/audio): input -> `VinylRack` -> `WalkieTalkieRack` -> output; both, one or none
+  can be on (a record heard over a walkie-talkie). `CONFIG.radio.effects { rampSeconds, walkieTalkie { enabled: true,
+  mix, highpassHz, lowpassHz, peakHz, peakGainDb, peakQ, drive, oversample, outputGain }, vinyl { enabled: false, mix,
+  highpassHz, warmthHz, warmthGainDb, lowpassHz, drive, outputGain, baseDelayMs, wowHz, wowDepthMs, flutterHz,
+  flutterDepthMs, crackleRate, crackleLevel, crackleToneHz, popRate, popLevel, hissLevel, rumbleHz, rumbleLevel } }`
+  (replaces `rack`). The radio's tick calls `player.refreshEffects()`, so DevTools edits apply within a second; only
+  changed values are written, enabling and mix ramp.
+- Vinyl: a 6 ms delay swayed by two sine oscillators (wow 0.55 Hz x 1.2 ms, flutter 6.5 Hz x 0.15 ms: wavering pitch),
+  high-pass 35 Hz, warm low shelf 150 Hz +2.5 dB, low-pass 9 kHz, soft saturation (drive 3, make-up gain), and looped
+  4 s surface buffers from the radio's RNG: crackle (6 clicks/s, band-passed at 2.5 kHz), pops (0.25/s), hiss and a
+  30 Hz rumble; a changed click density rebuilds only its buffer.
+- The player's «Звук рації» switch and the `retroMode` preference are removed: the configuration alone decides the
+  sound. DevTools «📻 РАДІО» → «Звукові ефекти»: «Платівка» and «Рація», each with «увімкнено»; parameters only while on.
+- Checks: `radio-receiver` (both stages over a fake Web Audio, live edits, density rebuild, disabling, the chain from the
+  live config, two player switches only, the DevTools effects with hidden parameters and the live write).

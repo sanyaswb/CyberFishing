@@ -1,20 +1,30 @@
-// DevTools «📻 РАДІО» (spec 142 stage 5): the radio's status (power, station, country, stations, signal, the battery's
-// charge), discharging its battery to 20 / 5 / 0 % through the ordinary consumption path (DEV never raises a charge:
-// a new battery comes from the free shop), and the live CONFIG.radio values (signal, rack, ducking, mirrors).
+// DevTools «📻 РАДІО» (spec 142 stage 5, TK-097): the radio's status (power, station, country, stations, signal, the
+// battery's charge), discharging its battery to 20 / 5 / 0 % through the ordinary consumption path (DEV never raises a
+// charge: a new battery comes from the free shop), the sound effects (each with its «увімкнено» switch; a disabled
+// effect hides its parameters, edited live) and the other CONFIG.radio values. The player has no sound controls.
+const EFFECTS = Object.freeze([
+  Object.freeze({ key: "vinyl", label: "Платівка" }),
+  Object.freeze({ key: "walkieTalkie", label: "Рація" }),
+]);
+
 export class RadioDevSection {
   #ui;
   #radio;
+  #config;
   #createSection;
   #renderConfigTree;
+  #setConfig;
   #content = null;
 
-  // radio: { getStatus(), batteryPercent(), discharge(percent) }; createSection(label, parent, path) and
-  // renderConfigTree(parent) come from DevTools.
-  constructor({ ui, radio, createSection, renderConfigTree }) {
+  // radio: { getStatus(), batteryPercent(), discharge(percent) }; config: () => CONFIG.radio; createSection(label,
+  // parent, path), renderConfigTree(value, parent, path, options) and setConfig(path, value) come from DevTools.
+  constructor({ ui, radio, config, createSection, renderConfigTree, setConfig }) {
     this.#ui = ui;
     this.#radio = radio;
+    this.#config = config;
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
+    this.#setConfig = setConfig;
   }
 
   render(parent) {
@@ -40,6 +50,26 @@ export class RadioDevSection {
         this.#fill();
       });
     }
-    this.#renderConfigTree(this.#createSection("Параметри (CONFIG.radio)", content, ["RADIO", "config"]));
+    this.#renderEffects(content);
+    const config = this.#config() || {};
+    this.#renderConfigTree(config, this.#createSection("Параметри (CONFIG.radio)", content, ["RADIO", "config"]),
+      ["CONFIG", "radio"], { visibilityPolicy: { isVisible: (path) => !(path.length === 3 && path[2] === "effects") } });
+  }
+
+  #renderEffects(parent) {
+    const effects = this.#createSection("Звукові ефекти", parent, ["RADIO", "effects"]);
+    const config = this.#config()?.effects || {};
+    for (const { key, label } of EFFECTS) {
+      const effect = config[key] || {};
+      const section = this.#createSection(label, effects, ["RADIO", "effects", key]);
+      const path = ["CONFIG", "radio", "effects", key];
+      this.#ui.createSwitcherRow("увімкнено", effect.enabled === true, section, (enabled) => {
+        this.#setConfig([...path, "enabled"], enabled);
+        this.#fill();
+      }, ["RADIO", "effects", key, "enabled"]);
+      if (effect.enabled !== true) continue;
+      this.#renderConfigTree(effect, section, path,
+        { visibilityPolicy: { isVisible: (entryPath) => entryPath[entryPath.length - 1] !== "enabled" } });
+    }
   }
 }

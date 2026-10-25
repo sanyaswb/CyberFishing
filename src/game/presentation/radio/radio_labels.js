@@ -7,7 +7,6 @@ export const RADIO_LABELS = Object.freeze({
   next: "Наступна ▶",
   country: "Країна",
   volume: "Гучність",
-  retroMode: "Звук рації",
   ducking: "Тихіше при кльові",
   playInBackground: "Грати у фоні",
   noStation: "Станцію не вибрано",

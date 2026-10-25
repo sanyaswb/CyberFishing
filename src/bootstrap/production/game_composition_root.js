@@ -98,7 +98,7 @@ import { BrowserRegionResolver } from "../../platform/browser/radio/browser_regi
 import { RadioPreferencesLocalStore } from "../../platform/browser/storage/radio_preferences_local_store.js";
 import { SharedAudioContextProvider } from "../../platform/browser/audio/shared_audio_context_provider.js";
 import { RadioStreamPlayer } from "../../platform/browser/audio/radio_stream_player.js";
-import { WalkieTalkieRack } from "../../platform/browser/audio/walkie_talkie_rack.js";
+import { RadioEffectsChain } from "../../platform/browser/audio/radio_effects_chain.js";
 import { RadioNoiseSource } from "../../platform/browser/audio/radio_noise_source.js";
 import { MonotonicIntervalTicker } from "../../platform/browser/time/monotonic_interval_ticker.js";
 import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator.js";
@@ -1032,14 +1032,14 @@ export class GameCompositionRoot {
     const windowRef = this.#windowTarget;
     const config = () => this.#config.radio || {};
     let radio = null;
-    const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
-    const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
-      config, onState: (state, info) => radio?.handlePlayerState(state, info),
-      effects: new WalkieTalkieRack({ config: () => config().rack || {} }) }));
-    // The radio's own random numbers (noise, crackle, dropouts); the gameplay RNG is never used (game-cycle report).
+    // The radio's own random numbers (noise, crackle, dropouts, the record's surface); never the gameplay RNG.
     const seed = new Uint32Array(1);
     windowRef.crypto?.getRandomValues?.(seed);
     const radioRng = new SeededRng(seed[0] || 0x5eed);
+    const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
+    const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
+      config, onState: (state, info) => radio?.handlePlayerState(state, info),
+      effects: new RadioEffectsChain({ config: () => config().effects || {}, rng: radioRng }) }));
     const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, rng: radioRng }));
     radio = own(new RadioReceiverService({
       equipment: inventory,

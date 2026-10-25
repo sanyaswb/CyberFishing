@@ -228,7 +228,9 @@ export class DevTools {
     if (this.#radio) {
       new RadioDevSection({ ui: this.#ui, radio: this.#radio,
         createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-        renderConfigTree: (parent) => this.#buildTree(this.#config.radio, parent, ["CONFIG", "radio"]) }).render(body);
+        config: () => this.#config.radio,
+        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
+        setConfig: (path, value) => this.#updateConfigValue(path, value) }).render(body);
     }
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);

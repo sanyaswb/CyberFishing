@@ -209,7 +209,7 @@ async function stageTwo() {
     stations: { listStations: async (code) => lists[code] || [], listCountries: async () => [
       { iso_3166_1: "UA", name: "Ukraine", stationcount: 2 }, { iso_3166_1: "DE", name: "Germany", stationcount: 1 }] },
     player: { play: (url) => played.push(url), stop: () => { stops += 1; }, setVolume() {}, setGainScale() {},
-      setStreamMuted() {}, setEffectsEnabled: (enabled) => effectsCalls.push(enabled) },
+      setStreamMuted() {}, refreshEffects: () => effectsCalls.push("refresh") },
     weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
     scheduler: scheduler(),
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }),
@@ -328,7 +328,7 @@ async function stageTwo() {
   const calls = [];
   let listener = null;
   const status = { status: "off", powered: false, equipped: true, station: null, country: "UA", stationCount: 2,
-    volume: 0.4, retroMode: true, ducking: true, playInBackground: false };
+    volume: 0.4, ducking: true, playInBackground: false };
   const port = { getStatus: () => status, subscribe: (handler) => { listener = handler; return () => { listener = null; }; },
     togglePower: () => calls.push("power"), next: () => calls.push("next"), previous: () => calls.push("previous"),
     setCountry: (code) => calls.push("country:" + code), setVolume: (value) => calls.push("volume:" + value),
@@ -352,7 +352,9 @@ async function stageTwo() {
   const [volume] = byClass(block, "radio-controls__volume");
   assert.equal(volume.value, "40");
   volume.value = "70"; volume.fire("input");
-  const ducking = byClass(block, "radio-controls__switch-input")[1];
+  const switchInputs = byClass(block, "radio-controls__switch-input");
+  assert.equal(switchInputs.length, 2, "the player's switches are ducking and background only, no sound effect");
+  const ducking = switchInputs[0];
   ducking.checked = false; ducking.fire("change");
   assert.deepEqual(calls, ["power", "next", "country:DE", "volume:0.7", "ducking:false"], "every control calls the radio");
   Object.assign(status, { status: "playing", powered: true, station: { name: "Station <b>X</b>", bitrate: 128 } });
@@ -402,55 +404,119 @@ async function stageThree() {
   assert(Math.abs(WalkieTalkieRack.peak(18) - 0.3467) < 0.001, "k = 18 peaks near 0.35, so the effect needs make-up gain");
   assert.equal(WalkieTalkieRack.curve(18).length, 44100, "the curve has 44100 points (ToR 4.2)");
 
+  // A fake Web Audio that records the graph and AudioParam writes.
   const made = [];
+  const param = (value = 0) => ({ value, targets: [], setTargetAtTime(v, at, c) { this.targets.push([v, at, c]); } });
   const node = (kind) => {
     const entry = { kind, to: [], connect(target) { this.to.push(target); }, disconnect() { this.to = []; },
-      gain: { value: 1, targets: [], setTargetAtTime(value, at, constant) { this.targets.push([value, at, constant]); } },
-      frequency: { value: 0 }, Q: { value: 0 } };
+      gain: param(1), frequency: param(), Q: param(), delayTime: param(), started: 0, stopped: 0,
+      start() { this.started += 1; }, stop() { this.stopped += 1; } };
     made.push(entry);
     return entry;
   };
-  const context = { currentTime: 2, createBiquadFilter: () => node("biquad"), createWaveShaper: () => node("shaper"),
-    createGain: () => node("gain") };
-  const rackConfig = { highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5, drive: 18, oversample: "4x",
-    rampSeconds: 0.03 };
-  const rack = new WalkieTalkieRack({ config: () => rackConfig });
-  const input = node("input");
-  const output = node("output");
-  rack.attach(context, input, output);
-  const [highpass, lowpass, peaking, shaper, makeup, dry, wet] = made.slice(2, 9);
+  const context = { currentTime: 2, sampleRate: 1000, createBiquadFilter: () => node("biquad"),
+    createWaveShaper: () => node("shaper"), createGain: () => node("gain"), createDelay: () => node("delay"),
+    createOscillator: () => node("oscillator"), createBufferSource: () => node("source"),
+    createBuffer: (channels, length) => { const data = new Float32Array(length); return { length, getChannelData: () => data }; } };
+
+  // The walkie-talkie stage: order, settings, make-up gain, ramped mix, live edits, disabled = dry.
+  const walkie = new WalkieTalkieRack().build(context);
+  const walkieSettings = { enabled: true, mix: 1, highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5,
+    drive: 18, oversample: "4x", outputGain: 1 };
+  walkie.update(walkieSettings, 0.03);
+  const [input, output, dry, wet, highpass, lowpass, peaking, shaper, makeup] = made.slice(0, 9);
   assert.deepEqual([highpass.type, lowpass.type, peaking.type], ["highpass", "lowpass", "peaking"]);
   assert.deepEqual([highpass.frequency.value, lowpass.frequency.value, peaking.frequency.value, peaking.gain.value,
-    peaking.Q.value], [500, 3000, 1800, 8, 2.5], "the filters follow CONFIG.radio.rack");
+    peaking.Q.value], [500, 3000, 1800, 8, 2.5], "the filters follow CONFIG.radio.effects.walkieTalkie");
   assert.equal(shaper.oversample, "4x");
-  assert(Math.abs(makeup.gain.value - 1 / WalkieTalkieRack.peak(18)) < 1e-9, "make-up gain keeps both modes equally loud");
-  assert(input.to.includes(dry) && input.to.includes(highpass), "the input feeds the dry and the wet path");
-  assert(highpass.to.includes(lowpass) && lowpass.to.includes(peaking) && peaking.to.includes(shaper) &&
-    shaper.to.includes(makeup) && makeup.to.includes(wet), "the wet chain in order");
+  assert(Math.abs(makeup.gain.value - 1 / WalkieTalkieRack.peak(18)) < 1e-9, "make-up gain keeps it as loud as dry");
+  assert(input.to.includes(dry) && input.to.includes(highpass) && highpass.to.includes(lowpass) && lowpass.to.includes(peaking)
+    && peaking.to.includes(shaper) && shaper.to.includes(makeup) && makeup.to.includes(wet), "the wet chain in order");
   assert(dry.to.includes(output) && wet.to.includes(output));
-  assert.deepEqual([wet.gain.value, dry.gain.value], [1, 0], "the walkie-talkie sound is on by default");
-  rack.setEnabled(false);
-  assert.deepEqual([...wet.gain.targets.at(-1)], [0, 2, 0.03], "switching off ramps the wet gain");
-  assert.deepEqual([...dry.gain.targets.at(-1)], [1, 2, 0.03], "and the dry gain, without a click");
-  assert.equal(wet.gain.value, 1, "no instant jump");
-  rack.setEnabled(false);
-  assert.equal(wet.gain.targets.length, 1, "an unchanged switch does nothing");
-  rack.dispose();
-  assert(made.slice(2, 9).every((entry) => entry.to.length === 0), "dispose disconnects the rack");
+  assert.deepEqual([wet.gain.value, dry.gain.value], [1, 0], "an enabled stage starts wet");
+  walkie.update({ ...walkieSettings, lowpassHz: 2500, outputGain: 0.5 }, 0.03);
+  assert.equal(lowpass.frequency.value, 2500, "a live edit applies");
+  assert(Math.abs(makeup.gain.value - 0.5 / WalkieTalkieRack.peak(18)) < 1e-9, "outputGain scales the make-up gain");
+  walkie.update({ ...walkieSettings, enabled: false }, 0.03);
+  assert.deepEqual([...wet.gain.targets.at(-1)], [0, 2, 0.03], "disabling ramps the wet gain out");
+  assert.deepEqual([...dry.gain.targets.at(-1)], [1, 2, 0.03], "and the dry gain in, without a click");
+  const targetCount = wet.gain.targets.length;
+  walkie.update({ ...walkieSettings, enabled: false }, 0.03);
+  assert.equal(wet.gain.targets.length, targetCount, "unchanged settings write nothing");
+  walkie.dispose();
+  assert(made.slice(0, 9).every((entry) => entry.to.length === 0), "dispose disconnects the stage");
 
-  // The service passes the «Звук рації» preference to the player.
-  const switched = [];
+  // The vinyl stage: wow/flutter on the delay, warm tone, surface sounds, live edits and disabling.
+  made.length = 0;
+  const { VinylRack } = runtime.importModule("src/platform/browser/audio/vinyl_rack.js");
+  let draw = 0;
+  const vinyl = new VinylRack({ rng: { next: () => { draw = (draw + 0.37) % 1; return draw; } } }).build(context);
+  const vinylSettings = { enabled: true, mix: 1, highpassHz: 35, warmthHz: 150, warmthGainDb: 2.5, lowpassHz: 9000,
+    drive: 3, outputGain: 1, baseDelayMs: 6, wowHz: 0.55, wowDepthMs: 1.2, flutterHz: 6.5, flutterDepthMs: 0.15,
+    crackleRate: 6, crackleLevel: 0.12, crackleToneHz: 2500, popRate: 0.25, popLevel: 0.35, hissLevel: 0.006,
+    rumbleHz: 30, rumbleLevel: 0.02 };
+  vinyl.update(vinylSettings, 0.03);
+  const byKind = (kind) => made.filter((entry) => entry.kind === kind);
+  const [delay] = byKind("delay");
+  const [wow, flutter] = byKind("oscillator");
+  assert.equal(delay.delayTime.value, 0.006, "the record plays through a short delay");
+  assert.deepEqual([wow.frequency.value, flutter.frequency.value], [0.55, 6.5], "wow and flutter rates");
+  const wowDepth = made.find((entry) => wow.to.includes(entry));
+  const flutterDepth = made.find((entry) => flutter.to.includes(entry));
+  assert(wowDepth.to.includes(delay.delayTime) && flutterDepth.to.includes(delay.delayTime), "both sway the delay time");
+  assert(Math.abs(wowDepth.gain.value - 0.0012) < 1e-12 && Math.abs(flutterDepth.gain.value - 0.00015) < 1e-12,
+    "by their depths in seconds");
+  assert(wow.started === 1 && flutter.started === 1, "the oscillators run");
+  const filters = byKind("biquad");
+  assert.deepEqual(filters.slice(0, 3).map((entry) => [entry.type, entry.frequency.value]),
+    [["highpass", 35], ["lowshelf", 150], ["lowpass", 9000]], "rumble filter, warmth, old top end");
+  assert.equal(filters[1].gain.value, 2.5, "the warm low shelf");
+  const sources = byKind("source");
+  assert.equal(sources.length, 4, "hiss, rumble, crackle and pops loop");
+  assert(sources.every((source) => source.loop === true && source.started === 1));
+  const crackleBuffer = sources[2].buffer.getChannelData(0);
+  assert(crackleBuffer.some((sample) => sample !== 0), "the crackle buffer holds clicks");
+  vinyl.update({ ...vinylSettings, crackleRate: 6, wowDepthMs: 2 }, 0.03);
+  assert.equal(byKind("source").length, 4, "an unchanged click density keeps its buffer");
+  assert(Math.abs(wowDepth.gain.value - 0.002) < 1e-12, "a live wow edit applies");
+  vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12 }, 0.03);
+  assert.equal(byKind("source").length, 5, "a new crackle density rebuilds only that buffer");
+  assert.equal(sources[2].stopped, 1, "and stops the old one");
+  const vinylWet = made[3];
+  vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12, enabled: false }, 0.03);
+  assert.deepEqual([...vinylWet.gain.targets.at(-1)], [0, 2, 0.03], "a disabled record passes the sound dry (and silent surface)");
+  vinyl.dispose();
+  assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
+
+  // The chain: input -> vinyl -> walkie-talkie -> output, both read from CONFIG.radio.effects live.
+  made.length = 0;
+  const { RadioEffectsChain } = runtime.importModule("src/platform/browser/audio/radio_effects_chain.js");
+  const effectsConfig = { rampSeconds: 0.05, vinyl: { ...vinylSettings, enabled: false }, walkieTalkie: { ...walkieSettings } };
+  const chain = new RadioEffectsChain({ config: () => effectsConfig, rng: { next: () => 0.5 } });
+  const chainIn = node("in");
+  const chainOut = node("out");
+  chain.attach(context, chainIn, chainOut);
+  const stageInputs = made.filter((entry) => entry.kind === "gain" && chainIn.to.includes(entry));
+  assert.equal(stageInputs.length, 1, "the chain input feeds the vinyl stage");
+  assert(made.some((entry) => entry.to.includes(chainOut)), "the walkie-talkie stage feeds the output");
+  effectsConfig.vinyl.enabled = true;
+  chain.update();
+  assert(made.some((entry) => entry.gain.targets.some(([value, , constant]) => value === 1 && constant === 0.05)),
+    "enabling the record in the configuration ramps it in on the next update");
+  chain.dispose();
+
+  // The player re-reads the effects; the service never lets the player choose them.
+  let refreshed = 0;
   const service = new RadioReceiverService({ equipment: { getEquipped: () => ({}) }, power: { read: () => ({ empty: true }) },
     stations: { listStations: async () => [], listCountries: async () => [] },
-    player: { play() {}, stop() {}, setVolume() {}, setGainScale() {}, setStreamMuted() {},
-      setEffectsEnabled: (enabled) => switched.push(enabled) },
+    player: { play() {}, stop() {}, setVolume() {}, setGainScale() {}, setStreamMuted() {}, refreshEffects: () => { refreshed += 1; } },
     weather: { getSnapshot: () => ({}) }, noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 },
     scheduler: scheduler(),
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => ({ retroMode: false }), set() {} } }),
     region: { resolve: () => "UA" }, config: () => ({}), secureOnly: true });
-  assert.deepEqual(switched, [false], "a saved preference applies at start");
-  service.setPreference("retroMode", true);
-  assert.deepEqual(switched, [false, true], "the switch turns the rack on");
+  service.setPreference("retroMode", false);
+  assert.equal(service.getStatus().retroMode, undefined, "the player has no sound-effect preference");
+  assert.equal(refreshed, 0);
 }
 
 // ---- Stage 4: consumption, reception, dropouts, rain noise ----
@@ -488,7 +554,7 @@ async function stageFour() {
   let weather = { isRaining: false, wind: { rainMult: 1 } };
   const service = new RadioReceiverService({ equipment: { getEquipped: () => equipment }, power: powerService,
     stations: { listStations: async () => [station("s", "https://s.example/live")], listCountries: async () => [] },
-    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled() {}, setGainScale: (value) => gains.push(value),
+    player: { play() {}, stop() {}, setVolume() {}, refreshEffects() {}, setGainScale: (value) => gains.push(value),
       setStreamMuted: (muted) => mutes.push(muted) },
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
     config: () => ({ codecs: ["MP3"], signal: { ...signalSettings, dropoutMs: [200, 200] } }), secureOnly: true,
@@ -557,7 +623,7 @@ async function stageFive() {
   const gains = [];
   const service = new RadioReceiverService({ equipment: { getEquipped: () => ({}) }, power: { read: () => ({ empty: true }) },
     stations: { listStations: async () => [], listCountries: async () => [] },
-    player: { play() {}, stop() {}, setVolume() {}, setEffectsEnabled() {}, setStreamMuted() {},
+    player: { play() {}, stop() {}, setVolume() {}, refreshEffects() {}, setStreamMuted() {},
       setGainScale: (value) => gains.push(value) },
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
     config: () => ({ ducking: { enabled: true, duckGain: 0.25 } }), secureOnly: true,
@@ -593,23 +659,45 @@ async function stageFive() {
   const rows = [];
   const buttons = new Map();
   const discharged = [];
+  const switches = new Map();
   const ui = { createInfoRow: (label, value) => rows.push([label, value]),
-    createButtonRow: (label, parent, onClick) => buttons.set(label, onClick) };
-  const section = { replaceChildren() {} };
+    createButtonRow: (label, parent, onClick) => buttons.set(label, onClick),
+    createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }) };
+  const radioConfig = { tickMs: 1000, effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 } } };
+  const trees = [];
+  const writes = [];
   new RadioDevSection({ ui, radio: { getStatus: () => ({ powered: true, status: "playing", station: { name: "S" },
     country: "UA", stationCount: 3, signal: 0.5 }), batteryPercent: () => 42, discharge: (target) => discharged.push(target) },
-  createSection: () => section, renderConfigTree() {} }).render({});
+  config: () => radioConfig, createSection: (label) => ({ label, replaceChildren() {} }),
+  renderConfigTree: (value, parent, path, options) => trees.push({ path: path.join("."), options }),
+  setConfig: (path, value) => { writes.push([path.join("."), value]);
+    radioConfig.effects[path[3]][path[4]] = value; } }).render({});
   assert(rows.some(([label, value]) => label === "заряд батарейки" && value === "42.0%"));
   buttons.get("Розрядити до 5%")();
   assert.deepEqual(discharged, [5], "the DEV buttons discharge through the port");
+  const treePaths = () => trees.map((tree) => tree.path);
+  assert(treePaths().includes("CONFIG.radio.effects.walkieTalkie"), "an enabled effect shows its parameters");
+  assert(!treePaths().includes("CONFIG.radio.effects.vinyl"), "a disabled effect hides its parameters");
+  const effectTree = trees.find((tree) => tree.path === "CONFIG.radio.effects.walkieTalkie");
+  assert.equal(effectTree.options.visibilityPolicy.isVisible(["CONFIG", "radio", "effects", "walkieTalkie", "enabled"]), false,
+    "the enabled flag is the switch, not a parameter row");
+  const rest = trees.find((tree) => tree.path === "CONFIG.radio");
+  assert.equal(rest.options.visibilityPolicy.isVisible(["CONFIG", "radio", "effects"]), false, "the effects are not repeated");
+  trees.length = 0;
+  switches.get("RADIO.effects.vinyl.enabled").onChange(true);
+  assert.deepEqual(writes, [["CONFIG.radio.effects.vinyl.enabled", true]], "the switch writes the live configuration");
+  assert(treePaths().includes("CONFIG.radio.effects.vinyl"), "turning it on shows its parameters");
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(() => console.log("Radio receiver stage 5 passed: ducking "
   + "on a bite with its switch and recovery, eased gain, the DevTools section.")).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
   + "threshold, w and w² terms, rain), 1 hour per battery at 1 unit/s without the wall clock, clamped visible steps, no "
   + "consumption when stopped in a hidden page, 65 s background steps, off at empty with silence, sag, noise, a dropout "
-  + "and its end, the monotonic ticker.")).then(() => console.log("Radio receiver stage 3 passed: S-curve (zero, odd, monotonic, 44100 "
-  + "points, peak 0.35), rack order and settings, make-up gain, ramped dry/wet switch, dispose, the preference.")).then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
+  + "and its end, the monotonic ticker.")).then(() => console.log("Radio receiver stage 3 and TK-097 passed: S-curve (zero, odd, "
+  + "monotonic, 44100 points, peak 0.35); walkie-talkie stage (order, settings, make-up and output gain, live edits, ramped "
+  + "disable, unchanged writes nothing, dispose); vinyl stage (wow/flutter on the delay, warm tone, four looped surface "
+  + "sounds, live edits, density rebuilds only its buffer, disable, dispose); the chain vinyl -> walkie-talkie from the "
+  + "live config; no player sound control.")).then(() => console.log("Radio receiver stage 2 passed: station filter (url_resolved, https page, HLS, codecs, "
   + "duplicates), region (language, time zone, default), mirrors and request timeout, validated preferences without power, "
   + "the service (battery gate, stations, skip, no-stations, next, no-effect, country, volume, hidden page, background, "
   + "unequip, empty battery), the stream player (context in the gesture, Web Audio for CORS, a new native element "

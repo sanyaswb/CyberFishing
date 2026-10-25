@@ -1,20 +1,14 @@
-// Spec 142 stage 3: the "walkie-talkie" sound between a stream's input and output. Wet path: high-pass -> low-pass ->
-// peaking -> WaveShaper (f(x) = (3 + k)·x·20° / (π + k·|x|), 4x oversampling) -> make-up gain; dry path in parallel.
-// The S-curve peaks at f(1) ≈ 0.35 for k = 18, so the make-up gain 1 / f(1) keeps both modes equally loud. Switching
-// ramps both gains (setTargetAtTime) instead of jumping, so it never clicks. Settings: CONFIG.radio.rack.
+import { finiteOr } from "../../../engine/math/number_normalization.js";
+
+// Spec 142 / TK-097: the "walkie-talkie" stage of the radio's effects chain. Wet path: high-pass -> low-pass -> peaking
+// -> WaveShaper (f(x) = (3 + k)·x·20° / (π + k·|x|), oversampled) -> make-up gain 1 / f(1) x outputGain; a dry path in
+// parallel. update(settings) applies CONFIG.radio.effects.walkieTalkie live (only changed values are written); the
+// enabled flag and mix ramp the dry/wet gains (setTargetAtTime) and never jump.
 export class WalkieTalkieRack {
   static CURVE_LENGTH = 44100;
-  #config;
-  #enabled = true;
   #context = null;
-  #dry = null;
-  #wet = null;
-  #nodes = [];
-
-  // config: () => CONFIG.radio.rack.
-  constructor({ config }) {
-    this.#config = config;
-  }
+  #nodes = null;
+  #applied = {};
 
   static curve(drive, length = WalkieTalkieRack.CURVE_LENGTH) {
     const k = Math.max(0, Number(drive) || 0);
@@ -33,72 +27,95 @@ export class WalkieTalkieRack {
     return ((3 + k) * 20 * (Math.PI / 180)) / (Math.PI + k);
   }
 
-  // Wires input -> (dry | wet chain) -> output on the context (called once by the player when it builds its graph).
-  attach(context, input, output) {
-    const cfg = this.#config() || {};
+  get input() {
+    return this.#nodes?.input || null;
+  }
+
+  get output() {
+    return this.#nodes?.output || null;
+  }
+
+  // Builds the stage on a context; update(settings) then sets its values.
+  build(context) {
     this.#context = context;
+    const input = context.createGain();
+    const output = context.createGain();
+    const dry = context.createGain();
+    const wet = context.createGain();
     const highpass = context.createBiquadFilter();
     highpass.type = "highpass";
-    highpass.frequency.value = Number(cfg.highpassHz) || 500;
     const lowpass = context.createBiquadFilter();
     lowpass.type = "lowpass";
-    lowpass.frequency.value = Number(cfg.lowpassHz) || 3000;
     const peaking = context.createBiquadFilter();
     peaking.type = "peaking";
-    peaking.frequency.value = Number(cfg.peakHz) || 1800;
-    peaking.gain.value = Number.isFinite(Number(cfg.peakGainDb)) ? Number(cfg.peakGainDb) : 8;
-    peaking.Q.value = Number(cfg.peakQ) || 2.5;
     const shaper = context.createWaveShaper();
-    const drive = Number.isFinite(Number(cfg.drive)) ? Number(cfg.drive) : 18;
-    shaper.curve = WalkieTalkieRack.curve(drive);
-    shaper.oversample = cfg.oversample || "4x";
     const makeup = context.createGain();
-    makeup.gain.value = 1 / Math.max(1e-6, WalkieTalkieRack.peak(drive));
-    this.#dry = context.createGain();
-    this.#wet = context.createGain();
-    input.connect(this.#dry);
-    this.#dry.connect(output);
+    input.connect(dry);
+    dry.connect(output);
     input.connect(highpass);
     highpass.connect(lowpass);
     lowpass.connect(peaking);
     peaking.connect(shaper);
     shaper.connect(makeup);
-    makeup.connect(this.#wet);
-    this.#wet.connect(output);
-    this.#nodes = [highpass, lowpass, peaking, shaper, makeup, this.#dry, this.#wet];
-    this.#apply(true);
+    makeup.connect(wet);
+    wet.connect(output);
+    dry.gain.value = 1;
+    wet.gain.value = 0;
+    this.#nodes = { input, output, dry, wet, highpass, lowpass, peaking, shaper, makeup };
+    this.#applied = {};
+    return this;
   }
 
-  setEnabled(enabled) {
-    const value = enabled === true;
-    if (value === this.#enabled) return;
-    this.#enabled = value;
-    this.#apply(false);
-  }
-
-  get enabled() {
-    return this.#enabled;
+  update(settings = {}, rampSeconds = 0.03) {
+    const nodes = this.#nodes;
+    if (!nodes) return;
+    const drive = finiteOr(settings.drive, 18);
+    this.#param("highpassHz", nodes.highpass.frequency, finiteOr(settings.highpassHz, 500));
+    this.#param("lowpassHz", nodes.lowpass.frequency, finiteOr(settings.lowpassHz, 3000));
+    this.#param("peakHz", nodes.peaking.frequency, finiteOr(settings.peakHz, 1800));
+    this.#param("peakGainDb", nodes.peaking.gain, finiteOr(settings.peakGainDb, 8));
+    this.#param("peakQ", nodes.peaking.Q, finiteOr(settings.peakQ, 2.5));
+    if (this.#applied.drive !== drive) {
+      nodes.shaper.curve = WalkieTalkieRack.curve(drive);
+      this.#applied.drive = drive;
+    }
+    const oversample = settings.oversample || "4x";
+    if (this.#applied.oversample !== oversample) {
+      nodes.shaper.oversample = oversample;
+      this.#applied.oversample = oversample;
+    }
+    const makeup = (1 / Math.max(1e-6, WalkieTalkieRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1));
+    this.#param("makeup", nodes.makeup.gain, makeup);
+    const mix = settings.enabled === false ? 0 : Math.max(0, Math.min(1, finiteOr(settings.mix, 1)));
+    this.#ramp("mix", nodes.wet.gain, nodes.dry.gain, mix, rampSeconds);
   }
 
   dispose() {
-    for (const node of this.#nodes) node.disconnect?.();
-    this.#nodes = [];
-    this.#dry = null;
-    this.#wet = null;
+    for (const node of Object.values(this.#nodes || {})) node.disconnect?.();
+    this.#nodes = null;
     this.#context = null;
+    this.#applied = {};
   }
 
-  #apply(immediate) {
-    if (!this.#dry || !this.#wet) return;
-    const wet = this.#enabled ? 1 : 0;
-    if (immediate) {
-      this.#wet.gain.value = wet;
-      this.#dry.gain.value = 1 - wet;
-      return;
-    }
-    const now = Number(this.#context?.currentTime) || 0;
-    const ramp = Math.max(0.001, Number(this.#config()?.rampSeconds) || 0.03);
-    this.#wet.gain.setTargetAtTime(wet, now, ramp);
-    this.#dry.gain.setTargetAtTime(1 - wet, now, ramp);
+  #param(key, param, value) {
+    if (this.#applied[key] === value) return;
+    param.value = value;
+    this.#applied[key] = value;
   }
+
+  // The first value is set at once (a new stage starts in place); later ones ease, so a switch never clicks.
+  #ramp(key, wetParam, dryParam, mix, rampSeconds) {
+    if (this.#applied[key] === mix) return;
+    if (this.#applied[key] === undefined) {
+      wetParam.value = mix;
+      dryParam.value = 1 - mix;
+    } else {
+      const now = Number(this.#context?.currentTime) || 0;
+      const constant = Math.max(0.001, Number(rampSeconds) || 0.03);
+      wetParam.setTargetAtTime(mix, now, constant);
+      dryParam.setTargetAtTime(1 - mix, now, constant);
+    }
+    this.#applied[key] = mix;
+  }
+
 }

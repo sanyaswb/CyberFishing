@@ -1,5 +1,5 @@
 // Spec 142 D7: the radio's controls among its editor parameters: the station display (name, country, bitrate,
-// status), power, previous/next, the country selector, volume and the switches. One rendered block at a time: a new
+// status), power, previous/next, the country selector, volume and the ducking and background switches. One rendered block at a time: a new
 // render replaces the subscription of the previous one. Updates write only changed text and values (DESIGN_RULES §13).
 // Station names come from a foreign API and are written as text only.
 export class RadioControlsRenderer {
@@ -48,7 +48,8 @@ export class RadioControlsRenderer {
 
     const switches = this.#dom.element("div", "radio-controls__switches");
     const toggles = {};
-    for (const key of ["retroMode", "ducking", "playInBackground"]) {
+    // The player's switches; the sound effects are the configuration's, never the player's (TK-097).
+    for (const key of ["ducking", "playInBackground"]) {
       const label = this.#dom.element("label", "radio-controls__switch");
       const input = this.#dom.element("input", "radio-controls__switch-input");
       input.type = "checkbox";

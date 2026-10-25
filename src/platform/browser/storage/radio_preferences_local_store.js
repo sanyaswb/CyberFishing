@@ -15,7 +15,7 @@ export class RadioPreferencesLocalStore {
     if (/^[A-Z]{2}$/u.test(raw.country || "")) result.country = raw.country;
     if (typeof raw.stationId === "string" && raw.stationId) result.stationId = raw.stationId;
     if (Number.isFinite(Number(raw.volume))) result.volume = Math.max(0, Math.min(1, Number(raw.volume)));
-    for (const key of ["retroMode", "ducking", "playInBackground"]) {
+    for (const key of ["ducking", "playInBackground"]) {
       if (typeof raw[key] === "boolean") result[key] = raw[key];
     }
     return result;
