@@ -2,6 +2,165 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-112"></a>
+
+## TK-112 — однакова висота inventory-header та пропорційне вирівнювання ширини loadout у portrait
+
+- Власник 2026-10-26: зробити висоту блоку inventory-header з широких екранів однаковою і для розмірів вужче; прибрати зайві відступи у блоці екіпірування і вирівняти по ширині з header без сплющування та розтягування арту вудки та інших карток.
+- Причина:
+  1. У `header.css` під `@container ui-surface (max-width: 820px)` висота контролів зменшувалася через `--inventory-header-control-height: calc(var(--inventory-header-unit) * 36)` та масштабований unit, через що шапка ставала нижчою на вузьких екранах замість десктопних 44px контролів і висоти ~59px.
+  2. У `loadout.css` базова формула `--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.88))` розраховувала ширину під дільник 3.66 (3.38 панелі + 2 × 0.14 зовнішнього padding). Коли в portrait padding панелі було обнулено (TK-111), різниця 0.28 одиниць перетворилася на порожні бічні прогалини по ~13px з кожного боку (панель займала лише 92% ширини і виглядала звуженою відносно header).
+- Зміна:
+  1. У `header.css` у `@container ui-surface (max-width: 820px)` та portrait зафіксувати `--inventory-header-control-height: 44px;`, `--inventory-header-unit: calc(44px / 36);` та `padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);`, зберігаючи незмінну висоту шапки ~59px на всіх розмірах.
+  2. У `loadout.css` у `@container ui-surface (orientation: portrait)` для `.inventory-loadout-panel` встановити пропорційний дільник без зовнішнього padding: `--inventory-equipment-unit: min(calc(100cqi / 3.38), calc(100cqb / 4.60));`. Це розширює `--inventory-equipment-width = 3.38 * unit` рівно на 100cqi (без зайвих бічних відступів, врівень з header), при цьому зберігаючи точні пропорції комірки вудки (1.90 × 3.00 одиниці) без будь-якої деформації арту.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка `--inventory-header-control-height: 44px` для `inventory-header` та дільника `100cqi / 3.38` для `inventory-loadout-panel` у portrait; Full 72/72.
+- [x] Реалізовано v0.48.17; на старому коді перевірка падає.
+
+<a id="tk-111"></a>
+
+## TK-111 — обнулення padding для inventory-loadout-panel у portrait медіа-запиті
+
+- Власник 2026-10-26: тоді треба прибрати в цьому медіа запиті padding для inventory-loadout-panel inventory-panel і для верху і низу.
+- Причина: у базових стилях `loadout.css` `.inventory-loadout-panel` має `padding: var(--inventory-equipment-outer);` (~14px по всіх 4 сторонах). Оскільки у портретному режимі зовнішній контейнер `.inventory-main__left` тепер забезпечує бічні відступи 10px (`padding: 0 var(--inventory-mobile-inset);`), внутрішній padding панелі екіпірування створює зайвий внутрішній відступ, а також непотрібні відступи зверху і знизу.
+- Зміна: у `loadout.css` у `@container ui-surface (orientation: portrait)` для `.inventory-loadout-panel` задати `padding: 0;`, що повністю прибирає відступи панелі (зверху, знизу та по боках).
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка наявності `padding: 0` для `.inventory-loadout-panel` у portrait-секції `loadout.css`; Full 72/72.
+- [x] Реалізовано v0.48.16; на старому коді перевірка падає.
+
+<a id="tk-110"></a>
+
+## TK-110 — усунення горизонтального скролбара екіпірування та вирівнювання ширини inventory-loadout-panel у portrait
+
+- Власник 2026-10-26: виправити баг по дизайну (горизонтальна полоска/скролбар під панеллю екіпірування) та вирівняти контейнер inventory-loadout-panel по ширині: відступи повинні бути такі як в inventory-header для portrait екранів.
+- Причина:
+  1. У `loadout.css` клас `.inventory-loadout-panel` мав `overflow-y: auto;` без явного `overflow-x: hidden;`, а в `@container inventory-equipment (min-aspect-ratio: 1 / 1)` сума часток ширини складала рівно 4.83 без запасу на субпіксельне округлення браузера, через що при дробових значеннях ширини з'являвся горизонтальний скролбар.
+  2. У portrait-режимі (`@container ui-surface (orientation: portrait)`) у `modal.css` контейнер `.inventory-modal--section-equipment .inventory-main__left` не мав бічних відступів `var(--inventory-mobile-inset)`, на відміну від `.inventory-header` (`margin: var(--inventory-mobile-inset)`) та інших розділів (`.inventory-main__right { padding: 0 var(--inventory-mobile-inset) ... }`), через що панель екіпірування торкалася країв екрана й була ширшою за шапку.
+- Зміна:
+  1. У `loadout.css` для `.inventory-loadout-panel` змінити `overflow-y: auto;` на `overflow: hidden auto;` та в `@container inventory-equipment (min-aspect-ratio: 1 / 1)` змінити дільник ширини з `4.83` на `4.85` (запас на субпіксельне округлення).
+  2. У `modal.css` для `.inventory-modal--section-equipment .inventory-main__left` додати `padding: 0 var(--inventory-mobile-inset);`, щоб контейнер панелі екіпірування мав ідентичні бічні відступи як `inventory-header` та адаптував розрахунок `100cqi` під внутрішню ширину.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка стилів `overflow: hidden auto;` (відсутність горизонтального скролу) та перевірка наявності `padding: 0 var(--inventory-mobile-inset)` для `.inventory-modal--section-equipment .inventory-main__left`; Full 72/72.
+- [x] Реалізовано v0.48.15; на старому коді перевірка падає.
+
+<a id="tk-109"></a>
+
+## TK-109 — розмір фонового зображення відкритого рюкзака на весь контейнер з відступами 10 px
+
+- Власник 2026-10-26: розмір фонового зображення відкритого рюкзака повинен бути таким самим як inventory-backpack__visual inventory-panel; просто розмісти зображення на весь контейнер з відступами 10 px (padding).
+- Причина: у `shared-controls.css` клас `.inventory-collection__backdrop` мав жорсткі стилі `top: 15%; left: 15%; width: 70%; height: 70%;`, через що фонове зображення відкритого рюкзака займало лише 70% контейнера по центру й не відповідало повному розміру контейнера візуалу рюкзака.
+- Зміна: у `shared-controls.css` для `.inventory-collection__backdrop` замінити `top: 15%; left: 15%; width: 70%; height: 70%;` на `inset: 0; width: 100%; height: 100%; padding: 10px;` (із збереженням `object-fit: contain; object-position: center; pointer-events: none; opacity: 0.12`).
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка стилів `.inventory-collection__backdrop` (наявність `inset: 0`, `width: 100%`, `height: 100%`, `padding: 10px`); Full 72/72.
+- [x] Реалізовано v0.48.14; на старому коді перевірка падає.
+
+<a id="tk-108"></a>
+
+## TK-108 — варіанти банок черв'яка (25, 50, 75, 100 шт) у базі предметів та видача банок у DEV-магазині
+
+- Власник 2026-10-26: у магазині повинна бути можливість купити різні банки черв'яка: банка на 25 (2 банки по 25 — це 2 банки в рюкзаку), банка на 50 (1 банка в рюкзаку), банка на 75 (1 банка в рюкзаку), банка на 100 (1 банка в рюкзаку).
+- Причина:
+  1. У базі предметів `ITEM_DB.baits` був лише один загальний запис черв'яка без окремих варіантів банок на 25, 50, 75 та 100 шт із відповідними артами `oil-worms--*.webp`.
+  2. Безкоштовний DEV-магазин видавав фіксовану кількість `quantity: 1` для будь-якого обраного товару, замість номінальної кількості порцій у банці (`item.packSize` / `item.defaultQuantity`).
+- Зміна:
+  1. У `src/game/config/raw/items/item_database.js` додати записи для банок черв'яка `oil_worm_25`, `oil_worm_50`, `oil_worm_75`, `oil_worm_100` із відповідними артами `oil-worms--25.webp`, `oil-worms--50.webp`, `oil-worms--75.webp`, `oil-worms--100.webp`, розмірами банок (`packSize: 25/50/75/100`) та `baitId: "oil_worm"`; оновити базовий `oil_worm` (банка 50 шт для початкового сейву).
+  2. У `src/dev/tools/dev_tools.js` у безкоштовному магазині видавати кількість відповідно до розміру банки (`item.defaultQuantity || item.packSize || 1`).
+  3. У `src/game/domain/items/bait/bait_effectiveness_resolver.js` враховувати `value.baitId` для визначення харчових переваг риби, щоб усі варіанти банок мали ідентичну привабливість `oil_worm`.
+- Перевірка:
+  - Автоматичний тест: перевірка наявності товарів банок 25, 50, 75, 100 у каталозі, коректної видачі відповідної кількості черв'яків при покупці в DEV-магазині, розрахунку 1 місця в рюкзаку на 1 банку (навіть для 50, 75, 100 шт), а також збереження множників клювання риби (`baitId === "oil_worm"`); Full 72/72.
+- [x] Реалізовано v0.48.13; на старому коді перевірка падає.
+
+<a id="tk-107"></a>
+
+## TK-107 — наживки та прикормки як упаковки/банки для місткості рюкзака та відображення банки й черв'яка в світчері
+
+- Власник 2026-10-26: зараз предмети прикормки для риболовлі і наживки це стек який рахується в рюкзаку до загальної місткості, це не правильно; черв'як купується банкою де всередині 25 шт, для рюкзака це 1 шт, 50 черв'яків — 2 банки (2 одиниці до місткості рюкзака). Додати зображення банок та іконку черв'яка. У картці предмета показується банка без заміни (відповідає купленій банці), коли банка пустіє — зникає. При спорядженні для риболовлі в блоці світчер показується іконка черв'яка.
+- Причина:
+  1. `backpackItemCount` рахувався сумою сирих кількостей предметів (`Math.max(1, Number(item.quantity) || 1)`), через що витратні наживки/прикормки (50 черв'яків, 20 хліба, 15 прикормки) займали 85 слотів замість відповідної кількості банок/упаковок.
+  2. У базі предметів `oil_worm` не мав графічних ассетів для банки та черв'яка, а світчер наживок у шапці (`UiAutoSwitchRenderer`) не мав підтримки відокремленої іконки наживки для світчера (`switcherIconUrl`).
+- Зміна:
+  1. Перенести надані файли зображень до `assets/items/baits/`: `oil-worms--100.webp`, `oil-worms--75.webp`, `oil-worms--50.webp`, `oil-worms--25.webp`, `oil-worm_icon.webp`.
+  2. У `src/game/config/raw/items/item_database.js` для `oil_worm` додати `iconUrl: "assets/items/baits/oil-worms--100.webp"`, `switcherIconUrl: "assets/items/baits/oil-worm_icon.webp"`, `packSize: 25`, а також розміри упаковок для інших наживок/прикормок та варіанти банок черв'яка.
+  3. У `src/game/presentation/inventory/inventory_view_model_factory.js` при підрахунку `backpackItemCount` враховувати `packSize`: `Math.ceil(item.quantity / (packSize || 1))`.
+  4. У `src/game/presentation/ui/ui_auto_switch_renderer.js` використовувати `item.switcherIconUrl || item.iconUrl || item.imageUrl || ""`.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка підрахунку банок (50 черв'яків = 2, 25 = 1) для `backpackItemCount`, перевірка відображення банки `oil-worms--100.webp` на картці інвентарю та іконки черв'яка `oil-worm_icon.webp` у блоці світчера в шапці; Full 72/72.
+- [x] Реалізовано v0.48.12; на старому коді перевірка падає.
+
+<a id="tk-106"></a>
+
+## TK-106 — кількість колонок інвентарю для мобільних екранів до 820px за розмірами (1 -> 6, 2 -> 4, 3 -> 3)
+
+- Власник 2026-10-26: налаштувати кількість колонок карток інвентарю для мобільних екранів (до 820px): при розмірі 1 — 6 колонок, при 2 — 4 колонки (як є), при 3 — 3 колонки.
+- Причина: у `list-and-filters.css` для медіа-контейнера `@container ui-surface (max-width: 820px)` сітка `.inventory-list-grid` мала жорстко зафіксоване правило `grid-template-columns: repeat(4, minmax(0, 1fr))`, через що вибір розмірів 1, 2, 3 у налаштуваннях не змінював кількість колонок та розмір карток на мобільних пристроях.
+- Зміна:
+  1. У `inventory_grid_renderer.js` додати мапу колонок для мобільних екранів (`1: 6, 2: 4, 3: 3`), встановлення змінної `--inventory-grid-columns-mobile` та класів-модифікаторів `.inventory-list-grid--size-1` і `.inventory-list-grid--size-3` на елемент сітки при перемиканні розміру або першому рендері.
+  2. У `list-and-filters.css` для `@container ui-surface (max-width: 820px)` задати `grid-template-columns: repeat(var(--inventory-grid-columns-mobile, 4), minmax(0, 1fr))`, а також явні правила для `.inventory-list-grid--size-1` (6 колонок) та `.inventory-list-grid--size-3` (3 колонки).
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка встановлення `--inventory-grid-columns-mobile: "6"` і класу `.inventory-list-grid--size-1` при виборі 1, скидання до `"4"` при виборі 2, встановлення `"3"` і класу `.inventory-list-grid--size-3` при виборі 3; перевірка стилів у `list-and-filters.css`; на старому коді перевірка падає; Full 72/72.
+- [x] Реалізовано v0.48.11; на старому коді перевірка падає.
+
+<a id="tk-105"></a>
+
+## TK-105 — заокруглення карток інвентарю за зразком комірок екіпірування та налаштування розміру карток (1, 2, 3)
+
+- Власник 2026-10-26: ознайомитися зі стилями блоків `inventory-item-card inventory-item-card--auxiliary item-rarity inventory-press` та зробити їх ідентичними для `inventory-item-card inventory-item-card--inventory item-rarity item-rarity--unique item-condition`; в `inventory-list-panel__controls inventory-collection__controls inventory-panel` додати іконку налаштувань (стиль як `inventory-categories__toggle inventory-categories__sort-toggle`), де є текст «Розмір» і три розміри 1, 2, 3 (1 = 0.5 від поточного, 2 = поточний, 3 = 1.5; стиль кнопок як `inventory-sort-options__group inventory-sort-options__rarities`).
+- Причина:
+  1. Картки в допоміжних слотах екіпірування малювалися із заокругленими кутами (`border-radius: var(--inventory-slot-radius)`), тоді як базовий `.inventory-item-card` у рюкзаку (`inventory-item-card--inventory`) мав гострі прямі кути (`border-radius: 0`).
+  2. У списку інвентарю був відсутній контроль розміру карток і кнопка налаштувань відображення, через що гравець не міг регулювати щільність/масштаб сітки предметів.
+- Зміна:
+  1. У `item-cards.css` базовому `.inventory-item-card` задано `border-radius: var(--inventory-slot-radius, var(--ui-radius-control))`; рамка виділення/сумісності `.inventory-list-item--selected::after` та `.inventory-list-item--compatible::after` також отримує заокруглення `border-radius: inherit`.
+  2. У `inventory_grid_renderer.js` додано кнопку налаштувань `.inventory-categories__toggle.inventory-categories__settings-toggle` в навігацію категорій та випадаючу панель `.inventory-settings-options` з групою `.inventory-settings-options__group`, підписом `.inventory-settings-options__label` («Розмір») та трьома кнопками `.inventory-settings-options__size` («1», «2», «3»).
+  3. Кнопки розмірів перемикають масштаб карток у сітці списку (`--inventory-card-scale: 0.5 / 1 / 1.5`, за замовчуванням 2 = 1.0) зі збереженням активного стану, а в CSS додано підтримку `--inventory-card-scale` для масштабування `--inventory-card-size` у `.inventory-list-grid`.
+  4. У `list-and-filters.css` додано стилі для `.inventory-categories__settings-toggle`, `.inventory-settings-options`, `.inventory-settings-options__group`, `.inventory-settings-options__label`, `.inventory-settings-options__size` та її активного стану за зразком `inventory-sort-options__rarities`.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка наявності `border-radius` у `inventory-item-card` за правилами CSS; перевірка наявності кнопки `inventory-categories__settings-toggle`, відкриття/закриття `inventory-settings-options`, наявності трьох кнопок розміру 1, 2, 3 та зміни CSS-властивості масштабу `--inventory-card-scale` при кліку; перевірка валідності класів через `css-usage-check` (`npm run check:architecture`); повний запуск `npm run check`.
+- [x] Реалізовано v0.48.10; на старому коді перевірка падає.
+
+<a id="tk-104"></a>
+
+## TK-104 — колір шкали місткості рюкзака від залишкового вільного місця
+
+- Власник 2026-10-26: шкала місткості рюкзака показує інвертований колір (червоний коли порожній, зелений коли повний); виправити за правилами дизайну.
+- Причина: `InventoryBackpackSummaryRenderer.update` передавав лише прямий відсоток заповненості `percent`, не передаючи `remainingPercent`. `InventoryResourceMeterRenderer` через це вираховував колір деградації від прямої заповненості, через що майже порожній рюкзак вважався за критичний/небезпечний залишок і фарбувався у червоний, а повний — у зелений (порушення DESIGN_RULES §9).
+- Зміна: у `InventoryBackpackSummaryRenderer.update` передається `remainingPercent: Math.max(0, 100 - percent)`.
+- Перевірка: `inventory-ui` перевіряє передачу `degradationColorResolver` та підтверджує безпечний колір шкали рюкзака при 7/100 предметах (на старому коді без `remainingPercent` перевірка падає: очікувано `rgb(93, 0, 0)`, отримано `rgb(7, 0, 0)`); Full 72/72.
+- [x] Реалізовано v0.48.9; на старому коді перевірка падає.
+
+<a id="tk-103"></a>
+
+## TK-103 — уніфікація стилів шкал параметрів за зразком inventory-parameter\_\_bar-fill
+
+- Власник 2026-10-26: стилі шкал параметрів всюди повинні бути однакові, зразок — стиль `inventory-parameter` `inventory-parameter__bar-fill`.
+- Причина: шкали типу `resource` (`InventoryResourceMeterRenderer`, `.inventory-resource-meter--parameter`), на відміну від шкал типу `bar` (`.inventory-parameter__bar-track` / `.inventory-parameter__bar-fill`), малювалися без заокруглення треку (`border-radius: var(--ui-radius-control)`), без наслідування радіусу заливкою, без плавного переходу `clip-path` / `transition` та без медіа-правила `prefers-reduced-motion`.
+- Зміна: уніфіковано стилі у `resource-meters.css` та `item-parameters.css`:
+  1. `.inventory-resource-meter--parameter` та `.inventory-parameter .inventory-resource-meter`: трек отримує `border-radius: var(--ui-radius-control)`, фоновий колір `var(--inventory-resource-track, var(--ui-border))` та `overflow: hidden`.
+  2. Заливка `.inventory-resource-meter__fill` отримує `border-radius: inherit`, плавний перехід `transition: clip-path var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease)` та підтримку `prefers-reduced-motion: reduce`.
+  3. Треки мініатюр (`.inventory-resource-meter--thumbnail .inventory-resource-meter__track`) зберігають прямі краї `border-radius: 0`.
+- Перевірка: `device-power` перевіряє наявність правил уніфікації треків і заливок та reduced-motion у `resource-meters.css` та `item-parameters.css`; `css-usage`; Full 72/72.
+- [x] Реалізовано v0.48.8; на старому CSS перевірка падає.
+- [x] Власник: `dev.html` / `index.html` — відкрити інвентар, оглянути параметри батарейки («Заряд») та інших предметів зі шкалами («Міцність», «Свіжість» тощо): усі шкали параметрів виглядають однаково (однакова висота, заокруглені краї, плавний рух заливки). Візуально агентом не перевіряється.
+
+<a id="tk-102"></a>
+
+## TK-102 — стилі параметрів за дизайн-правилами, єдина шкала заряду та динамічна ємність батарейки
+
+- Власник 2026-10-26: виправити неузгодженості блока стилів параметрів з правилами дизайну; прибрати дублювання шкали заряду в картці батарейки; зробити блок `text|Ємність||v|` залежним від реального розряду: число 3600 плавно зменшується відповідно до розряджання.
+- Причина:
+  1. `InventoryItemParametersResolver.resolve` додає і `charge` (тип `bar`), і `resource:energy` (тип `resource`) для `item.charge` батарейки (через різні ідентифікатори в `renderedIds`), що дає дві шкали «Заряд» замість однієї ресурсної за spec 143 (D-P1) та DESIGN_RULES §9.
+  2. `displayStats.capacityUnits` («Ємність») читає лише статичне конфігураційне число 3600 (`gameplayStats.capacityUnits`) і не перераховується від поточного заряду батарейки (`DevicePowerPolicy.remainingUnits`).
+  3. `item-parameters.css` містить хардкод кольорів/радіусів/таймінгів, малює важкі картки рядків `.inventory-parameter` усередині вже обрамленої панелі вкладки редактора (порушення single visual frame, DESIGN_RULES §2), не підтримує `prefers-reduced-motion` для шкал і має жорстку 2-колонкову сітку без адаптивності для 320px.
+- Зміна:
+  1. Усунути дублювання шкали заряду в `InventoryItemParametersResolver`: заряд відображається виключно як єдиний ресурсний метр `resource:energy` (`InventoryResourceMeterRenderer`).
+  2. Додати перерахунок значення `capacityUnits` («Ємність») на основі реального залишкового заряду (`DevicePowerPolicy.remainingUnits(percent, capacityUnits)`) як під час первинного створення view model, так і при динамічному оновленні параметрів.
+  3. Оновити `item-parameters.css` за `DESIGN_RULES.md`: перевести кольори, радіуси й переходи на семантичні токени (`--ui-*`, `--inventory-*`), полегшити вигляд рядків параметрів усередині панелей, уніфікувати шкали, додати `@media (prefers-reduced-motion: reduce)`, оптимізувати для 320px.
+- Перевірка:
+  - Автоматичний тест: у картці батарейки присутній рівно один параметр заряду (`resource:energy`), дублюючий `bar` відсутній.
+  - Автоматичний тест: динамічне оновлення батарейки плавно зменшує значення `displayStats` «Ємність» від 3600 до 0 відповідно до залишку енергії.
+  - Автоматичний тест: перевірка валідності та використання CSS (`npm run check:quick`, BEM, відсутність невикористаних правил).
+- [x] Реалізовано v0.48.7; на старому коді перевірки падають.
+- [x] Власник: `dev.html` / `index.html` — в інвентарі відкрити радіо або кораблик із вставленою батарейкою (або саму батарейку в рюкзаку): у параметрах батарейки рівно одна шкала «Заряд»; під час увімкненого радіо «Ємність» плавно зменшується (3600 → 3599 → 3598...); стилі параметрів відповідають загальному дизайну без зайвих вкладених рамок. Візуально агентом не перевіряється.
+
 <a id="tk-101"></a>
 
 ## TK-101 — у блоці припасованих спершу заповнені клітинки
