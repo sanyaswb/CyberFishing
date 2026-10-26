@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.21 - Auxiliary loadout bottom margin in portrait and tile grid in landscape
+
+- Inventory: added bottom margin to auxiliary loadout panel in portrait mode and enabled multi-column tile grid layout in wide/square landscape mode (TK-116).
+
 ## v0.48.20 - Rodless loadout panel portrait alignment and layout fix
 
 - Inventory: fixed portrait loadout layout when no rod is equipped, preventing two-column split and full-height stretch, and keeping primary and auxiliary panels full-width with a centered proportional rod slot (TK-115).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.12 - Bait and chum packs in backpack and switcher worm icon
 
 - Inventory: bait and chum stacks count by pack/jar size towards backpack capacity (50 worms in jars of 25 = 2 items); worm item displays jar artwork in backpack and worm icon in header switcher (TK-107).
-
-## v0.48.11 - Mobile inventory card columns by display size
-
-- Inventory: mobile layout (<=820px) adapts grid column counts to the selected display size: 1 -> 6 columns, 2 -> 4 columns (standard), 3 -> 3 columns (TK-106).
 
 
 

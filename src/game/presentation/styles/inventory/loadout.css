@@ -267,7 +267,7 @@
     grid-area: primary;
   }
 
-  /* The column is as tall as the primary panel; more wells than fit scroll up and down inside it (pan-y). */
+  /* The auxiliary block forms a tile grid as tall as the primary panel; when widened or square, wells tile across columns (pan-y). */
   .inventory-loadout-panel .inventory-loadout-panel__auxiliary {
     --inventory-scroll-axis: y;
     grid-area: auxiliary;
@@ -278,11 +278,14 @@
         var(--inventory-equipment-inset) * 2
     );
     grid-auto-flow: row;
-    grid-template-columns: var(--inventory-equipment-well-size);
+    grid-template-columns: repeat(
+      auto-fill,
+      var(--inventory-equipment-well-size)
+    );
     grid-auto-rows: var(--inventory-equipment-well-size);
+    gap: var(--inventory-equipment-gap);
     justify-content: center;
-    align-content: space-between;
-    row-gap: var(--inventory-equipment-gap);
+    align-content: center;
     padding: var(--inventory-equipment-inset);
     overflow: hidden auto;
     overscroll-behavior: contain;
@@ -431,6 +434,7 @@
       column-gap: var(--inventory-equipment-gap);
       row-gap: 0;
       padding: var(--inventory-equipment-inset);
+      margin-bottom: var(--inventory-container-gap, 10px);
       overflow: auto hidden;
       overscroll-behavior: contain;
       touch-action: pan-x;
