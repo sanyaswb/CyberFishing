@@ -336,6 +336,7 @@
 
 .inventory-list-grid {
   --inventory-card-scale: 1;
+  --inventory-grid-columns-mobile: 4;
   --inventory-card-scaled-size: calc(var(--inventory-card-size) * var(--inventory-card-scale));
   display: grid;
   min-height: 0;
@@ -416,7 +417,13 @@
     font-size: 12px;
   }
   .inventory-list-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--inventory-grid-columns-mobile, 4), minmax(0, 1fr));
+  }
+  .inventory-list-grid--size-1 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .inventory-list-grid--size-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @container ui-surface (orientation: portrait) {

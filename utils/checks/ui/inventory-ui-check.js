@@ -1993,10 +1993,20 @@ class InventoryUiBehaviorCheck {
     assert.strictEqual(sizeButtons[0].classList.contains("inventory-settings-options__size--active"), true);
     assert.strictEqual(sizeButtons[1].classList.contains("inventory-settings-options__size--active"), false);
     assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-card-scale"), "0.5");
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-grid-columns-mobile"), "6");
+    assert.strictEqual(targetGrid.classList.contains("inventory-list-grid--size-1"), true);
+
+    sizeButtons[1].click();
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-card-scale"), "1");
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-grid-columns-mobile"), "4");
+    assert.strictEqual(targetGrid.classList.contains("inventory-list-grid--size-1"), false);
+    assert.strictEqual(targetGrid.classList.contains("inventory-list-grid--size-3"), false);
 
     sizeButtons[2].click();
     assert.strictEqual(sizeButtons[2].classList.contains("inventory-settings-options__size--active"), true);
     assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-card-scale"), "1.5");
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-grid-columns-mobile"), "3");
+    assert.strictEqual(targetGrid.classList.contains("inventory-list-grid--size-3"), true);
 
     settingsToggle.click();
     assert.strictEqual(settingsPanel.classList.contains("inventory-settings-options--open"), false);
@@ -2007,6 +2017,16 @@ class InventoryUiBehaviorCheck {
       itemCardsCss,
       /\.inventory-item-card\s*\{[^}]*border-radius:\s*var\(--inventory-slot-radius,\s*var\(--ui-radius-control\)\);/,
       "inventory-item-card has rounded corners matching slot radius or ui-radius-control",
+    );
+    assert.match(
+      itemCardsCss,
+      /\.inventory-list-grid--size-1\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\);/,
+      "inventory-list-grid--size-1 has 6 columns",
+    );
+    assert.match(
+      itemCardsCss,
+      /\.inventory-list-grid--size-3\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
+      "inventory-list-grid--size-3 has 3 columns",
     );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();

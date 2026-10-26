@@ -1,3 +1,9 @@
+const MOBILE_COLUMNS_BY_SCALE_ID = Object.freeze({
+  1: 6,
+  2: 4,
+  3: 3,
+});
+
 export class InventoryGridRenderer {
   #dom;
   #itemRenderer;
@@ -350,7 +356,7 @@ export class InventoryGridRenderer {
       button.addEventListener("click", () => {
         this.#selectedCardScaleId = id;
         this.#selectedCardScale = scale;
-        this.#gridElement?.style.setProperty("--inventory-card-scale", String(scale));
+        this.#applyGridScale(this.#gridElement);
         sizeButtons.forEach((btn) => {
           const active = btn.dataset.sizeId === String(id);
           btn.classList.toggle("inventory-settings-options__size--active", active);
@@ -365,6 +371,16 @@ export class InventoryGridRenderer {
     return container;
   }
 
+  #applyGridScale(grid) {
+    if (!grid) return;
+    const mobileColumns = MOBILE_COLUMNS_BY_SCALE_ID[this.#selectedCardScaleId] ?? 4;
+    grid.style.setProperty("--inventory-card-scale", String(this.#selectedCardScale));
+    grid.style.setProperty("--inventory-grid-columns-mobile", String(mobileColumns));
+    grid.dataset.sizeId = String(this.#selectedCardScaleId);
+    grid.classList.toggle("inventory-list-grid--size-1", this.#selectedCardScaleId === 1);
+    grid.classList.toggle("inventory-list-grid--size-3", this.#selectedCardScaleId === 3);
+  }
+
   #syncSettingsToggle(toggle) {
     toggle.setAttribute("aria-expanded", String(this.#settingsExpanded));
     toggle.classList.toggle("inventory-categories__toggle--active", this.#settingsExpanded);
@@ -373,9 +389,7 @@ export class InventoryGridRenderer {
   #renderItems(model, { onItemActivate, onItemLongPress }) {
     const grid = this.#dom.element("div", "inventory-list-grid inventory-collection__list");
     this.#gridElement = grid;
-    if (this.#selectedCardScale !== 1) {
-      grid.style.setProperty("--inventory-card-scale", String(this.#selectedCardScale));
-    }
+    this.#applyGridScale(grid);
     if (!model.items.length) {
       grid.appendChild(
         this.#dom.element(

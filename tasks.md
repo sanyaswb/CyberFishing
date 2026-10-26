@@ -8,6 +8,22 @@
 
 ## Задачі в роботі
 
+### TK-106 — кількість колонок інвентарю для мобільних екранів до 820px за розмірами (1 -> 6, 2 -> 4, 3 -> 3)
+
+- Власник 2026-10-26: налаштувати кількість колонок карток інвентарю для мобільних екранів (до 820px): при розмірі 1 — 6 колонок, при 2 — 4 колонки (як є), при 3 — 3 колонки.
+- Причина: у `list-and-filters.css` для медіа-контейнера `@container ui-surface (max-width: 820px)` сітка `.inventory-list-grid` мала жорстко зафіксоване правило `grid-template-columns: repeat(4, minmax(0, 1fr))`, через що вибір розмірів 1, 2, 3 у налаштуваннях не змінював кількість колонок та розмір карток на мобільних пристроях.
+- Зміна:
+  1. У `inventory_grid_renderer.js` додати мапу колонок для мобільних екранів (`1: 6, 2: 4, 3: 3`), встановлення змінної `--inventory-grid-columns-mobile` та класів-модифікаторів `.inventory-list-grid--size-1` і `.inventory-list-grid--size-3` на елемент сітки при перемиканні розміру або першому рендері.
+  2. У `list-and-filters.css` для `@container ui-surface (max-width: 820px)` задати `grid-template-columns: repeat(var(--inventory-grid-columns-mobile, 4), minmax(0, 1fr))`, а також явні правила для `.inventory-list-grid--size-1` (6 колонок) та `.inventory-list-grid--size-3` (3 колонки).
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка встановлення `--inventory-grid-columns-mobile: "6"` і класу `.inventory-list-grid--size-1` при виборі 1, скидання до `"4"` при виборі 2, встановлення `"3"` і класу `.inventory-list-grid--size-3` при виборі 3; перевірка стилів у `list-and-filters.css`; на старому коді перевірка падає; Full 72/72.
+- [x] Реалізовано v0.48.11; на старому коді перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` у мобільному режимі (ширина <= 820px або портретна орієнтація телефону):
+  1. Відкрити інвентар і розгорнути налаштування ⚙️.
+  2. Натиснути кнопку «1» — сітка перебудовується на 6 компактних колонок.
+  3. Натиснути кнопку «2» — сітка повертається до стандартних 4 колонок.
+  4. Натиснути кнопку «3» — сітка перебудовується на 3 великі колонки. Візуально агентом не перевіряється.
+
 ### TK-105 — заокруглення карток інвентарю за зразком комірок екіпірування та налаштування розміру карток (1, 2, 3)
 
 - Власник 2026-10-26: ознайомитися зі стилями блоків `inventory-item-card inventory-item-card--auxiliary item-rarity inventory-press` та зробити їх ідентичними для `inventory-item-card inventory-item-card--inventory item-rarity item-rarity--unique item-condition`; в `inventory-list-panel__controls inventory-collection__controls inventory-panel` додати іконку налаштувань (стиль як `inventory-categories__toggle inventory-categories__sort-toggle`), де є текст «Розмір» і три розміри 1, 2, 3 (1 = 0.5 від поточного, 2 = поточний, 3 = 1.5; стиль кнопок як `inventory-sort-options__group inventory-sort-options__rarities`).
