@@ -385,6 +385,7 @@
       flex: none;
       grid-template-rows: max-content max-content;
       align-content: start;
+      padding: 0;
     }
 
     /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */

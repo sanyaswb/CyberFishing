@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.16 - Zero padding for loadout panel in portrait
+
+- Inventory: removed top, bottom, and side padding on equipment panel in portrait mode to prevent redundant spacing inside padded container (TK-111).
+
 ## v0.48.15 - Loadout panel overflow fix and mobile portrait width alignment
 
 - Inventory: eliminated horizontal scrollbar under equipment panel and aligned loadout container width with header in portrait mode (TK-110).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.7 - Design token parameters, single charge meter and live battery capacity
 
 - Inventory: item parameters refactored to design tokens, duplicate battery charge bar removed in favor of resource meter, and battery capacity counts down dynamically with discharge (TK-102).
-
-## v0.48.6 - Worn items first among the auxiliary wells
-
-- Inventory: in the auxiliary block worn items come first and empty wells after, so the radio is no longer hidden behind empty wells (TK-101).

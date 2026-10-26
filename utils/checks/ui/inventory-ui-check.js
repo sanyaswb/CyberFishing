@@ -2043,6 +2043,11 @@ class InventoryUiBehaviorCheck {
       /\.inventory-modal--section-equipment\s+\.inventory-main__left\s*\{[^}]*padding:\s*0\s+var\(--inventory-mobile-inset\);/,
       "inventory-main__left in equipment section has portrait padding matching mobile inset",
     );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel\s*\{[^}]*padding:\s*0;/,
+      "inventory-loadout-panel removes padding in portrait mode",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {
