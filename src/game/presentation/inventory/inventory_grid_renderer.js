@@ -7,6 +7,10 @@ export class InventoryGridRenderer {
   #pager;
   #subfiltersExpanded = false;
   #sortExpanded = false;
+  #settingsExpanded = false;
+  #selectedCardScale = 1;
+  #selectedCardScaleId = 2;
+  #gridElement = null;
 
   constructor({
     domFactory,
@@ -51,6 +55,7 @@ export class InventoryGridRenderer {
       onSortDirectionSelect,
       onRarityFilterToggle,
     });
+    const settingsOptions = this.#renderSettingsOptions();
     const categories = this.#renderCategories(model, {
       onCategorySelect,
       onSubfiltersToggle: (toggle) => {
@@ -63,11 +68,17 @@ export class InventoryGridRenderer {
         sortOptions.classList.toggle("inventory-sort-options--open", this.#sortExpanded);
         this.#syncSortToggle(toggle);
       },
+      onSettingsToggle: (toggle) => {
+        this.#settingsExpanded = !this.#settingsExpanded;
+        settingsOptions.classList.toggle("inventory-settings-options--open", this.#settingsExpanded);
+        this.#syncSettingsToggle(toggle);
+      },
     });
     this.#horizontalScrollController.attach(categories);
     this.#horizontalScrollController.attach(subfilters);
     this.#horizontalScrollController.attach(sortOptions);
-    controls.append(categories, subfilters, sortOptions);
+    this.#horizontalScrollController.attach(settingsOptions);
+    controls.append(categories, subfilters, sortOptions, settingsOptions);
     // The item page holds the faded backpack and the grid directly: the pager page is the flex parent that bounds the
     // grid's height, so no wrapper may sit between them (spec 076 follow-up).
     const items = [];
@@ -101,7 +112,7 @@ export class InventoryGridRenderer {
 
   #renderCategories(
     model,
-    { onCategorySelect, onSubfiltersToggle, onSortToggle },
+    { onCategorySelect, onSubfiltersToggle, onSortToggle, onSettingsToggle },
   ) {
     const navigation = this.#dom.element(
       "nav",
@@ -132,6 +143,18 @@ export class InventoryGridRenderer {
     );
     sortToggle.addEventListener("click", () => onSortToggle?.(sortToggle));
     navigation.appendChild(sortToggle);
+    const settingsToggle = this.#dom.button(
+      "inventory-categories__toggle inventory-categories__settings-toggle",
+      "",
+      { title: "Налаштування відображення" },
+    );
+    this.#syncSettingsToggle(settingsToggle);
+    settingsToggle.setAttribute(
+      "aria-label",
+      "Показати або приховати налаштування відображення",
+    );
+    settingsToggle.addEventListener("click", () => onSettingsToggle?.(settingsToggle));
+    navigation.appendChild(settingsToggle);
     model.categories.forEach((category) => {
       const label = [category.iconUrl ? "" : category.icon, category.label].filter(Boolean).join(" ");
       const button = this.#dom.button(
@@ -287,8 +310,72 @@ export class InventoryGridRenderer {
     toggle.classList.toggle("inventory-categories__toggle--active", this.#sortExpanded);
   }
 
+  #renderSettingsOptions() {
+    const container = this.#dom.element("div", "inventory-settings-options");
+    container.classList.toggle("inventory-settings-options--open", this.#settingsExpanded);
+    container.setAttribute("aria-label", "Налаштування відображення інвентарю");
+
+    const group = this.#dom.element(
+      "div",
+      "inventory-settings-options__group",
+    );
+    const label = this.#dom.element(
+      "span",
+      "inventory-settings-options__label",
+      "Розмір",
+    );
+    group.appendChild(label);
+
+    const sizesGroup = this.#dom.element(
+      "div",
+      "inventory-settings-options__group inventory-settings-options__sizes",
+    );
+    const sizeButtons = [];
+    const sizes = [
+      { id: 1, scale: 0.5, label: "1" },
+      { id: 2, scale: 1.0, label: "2" },
+      { id: 3, scale: 1.5, label: "3" },
+    ];
+    sizes.forEach(({ id, scale, label: sizeLabel }) => {
+      const button = this.#dom.button(
+        "inventory-settings-options__size",
+        sizeLabel,
+        { title: `Розмір ${sizeLabel}` },
+      );
+      const isSelected = this.#selectedCardScaleId === id;
+      button.classList.toggle("inventory-settings-options__size--active", isSelected);
+      button.setAttribute("aria-pressed", String(isSelected));
+      button.dataset.scale = String(scale);
+      button.dataset.sizeId = String(id);
+      button.addEventListener("click", () => {
+        this.#selectedCardScaleId = id;
+        this.#selectedCardScale = scale;
+        this.#gridElement?.style.setProperty("--inventory-card-scale", String(scale));
+        sizeButtons.forEach((btn) => {
+          const active = btn.dataset.sizeId === String(id);
+          btn.classList.toggle("inventory-settings-options__size--active", active);
+          btn.setAttribute("aria-pressed", String(active));
+        });
+      });
+      sizeButtons.push(button);
+      sizesGroup.appendChild(button);
+    });
+    group.appendChild(sizesGroup);
+    container.appendChild(group);
+    return container;
+  }
+
+  #syncSettingsToggle(toggle) {
+    toggle.setAttribute("aria-expanded", String(this.#settingsExpanded));
+    toggle.classList.toggle("inventory-categories__toggle--active", this.#settingsExpanded);
+  }
+
   #renderItems(model, { onItemActivate, onItemLongPress }) {
     const grid = this.#dom.element("div", "inventory-list-grid inventory-collection__list");
+    this.#gridElement = grid;
+    if (this.#selectedCardScale !== 1) {
+      grid.style.setProperty("--inventory-card-scale", String(this.#selectedCardScale));
+    }
     if (!model.items.length) {
       grid.appendChild(
         this.#dom.element(

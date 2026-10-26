@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.9";
+export const CURRENT_PROJECT_VERSION = "0.48.10";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-26",
   notes: Object.freeze([
+    "TK-105: unified card rounded corners and inventory grid scale settings (1, 2, 3).",
     "TK-104: backpack capacity scale color derives from remaining free capacity.",
     "TK-103: unified parameter scale styles matching inventory-parameter__bar-fill.",
     "TK-102: item parameter design tokens, single battery charge meter, dynamic capacity.",

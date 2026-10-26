@@ -8,6 +8,25 @@
 
 ## Задачі в роботі
 
+### TK-105 — заокруглення карток інвентарю за зразком комірок екіпірування та налаштування розміру карток (1, 2, 3)
+
+- Власник 2026-10-26: ознайомитися зі стилями блоків `inventory-item-card inventory-item-card--auxiliary item-rarity inventory-press` та зробити їх ідентичними для `inventory-item-card inventory-item-card--inventory item-rarity item-rarity--unique item-condition`; в `inventory-list-panel__controls inventory-collection__controls inventory-panel` додати іконку налаштувань (стиль як `inventory-categories__toggle inventory-categories__sort-toggle`), де є текст «Розмір» і три розміри 1, 2, 3 (1 = 0.5 від поточного, 2 = поточний, 3 = 1.5; стиль кнопок як `inventory-sort-options__group inventory-sort-options__rarities`).
+- Причина:
+  1. Картки в допоміжних слотах екіпірування малювалися із заокругленими кутами (`border-radius: var(--inventory-slot-radius)`), тоді як базовий `.inventory-item-card` у рюкзаку (`inventory-item-card--inventory`) мав гострі прямі кути (`border-radius: 0`).
+  2. У списку інвентарю був відсутній контроль розміру карток і кнопка налаштувань відображення, через що гравець не міг регулювати щільність/масштаб сітки предметів.
+- Зміна:
+  1. У `item-cards.css` базовому `.inventory-item-card` задано `border-radius: var(--inventory-slot-radius, var(--ui-radius-control))`; рамка виділення/сумісності `.inventory-list-item--selected::after` та `.inventory-list-item--compatible::after` також отримує заокруглення `border-radius: inherit`.
+  2. У `inventory_grid_renderer.js` додано кнопку налаштувань `.inventory-categories__toggle.inventory-categories__settings-toggle` в навігацію категорій та випадаючу панель `.inventory-settings-options` з групою `.inventory-settings-options__group`, підписом `.inventory-settings-options__label` («Розмір») та трьома кнопками `.inventory-settings-options__size` («1», «2», «3»).
+  3. Кнопки розмірів перемикають масштаб карток у сітці списку (`--inventory-card-scale: 0.5 / 1 / 1.5`, за замовчуванням 2 = 1.0) зі збереженням активного стану, а в CSS додано підтримку `--inventory-card-scale` для масштабування `--inventory-card-size` у `.inventory-list-grid`.
+  4. У `list-and-filters.css` додано стилі для `.inventory-categories__settings-toggle`, `.inventory-settings-options`, `.inventory-settings-options__group`, `.inventory-settings-options__label`, `.inventory-settings-options__size` та її активного стану за зразком `inventory-sort-options__rarities`.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка наявності `border-radius` у `inventory-item-card` за правилами CSS; перевірка наявності кнопки `inventory-categories__settings-toggle`, відкриття/закриття `inventory-settings-options`, наявності трьох кнопок розміру 1, 2, 3 та зміни CSS-властивості масштабу `--inventory-card-scale` при кліку; перевірка валідності класів через `css-usage-check` (`npm run check:architecture`); повний запуск `npm run check`.
+- [x] Реалізовано v0.48.10; на старому коді перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` — відкрити інвентар:
+  1. Картки в рюкзаку мають м'які заокруглені кути, ідентичні до карток у комірках екіпірування ліворуч.
+  2. У верхній панелі категорій з'явилася кнопка налаштувань ⚙️ поруч із сортуванням; при натисканні відкривається рядок «Розмір» із кнопками 1, 2, 3.
+  3. Натискання 1 зменшує картки вдвічі (0.5×), 2 повертає стандартний розмір (1×), 3 збільшує в півтора рази (1.5×). Візуально агентом не перевіряється.
+
 ### TK-104 — колір шкали місткості рюкзака від залишкового вільного місця
 
 - Власник 2026-10-26: шкала місткості рюкзака показує інвертований колір (червоний коли порожній, зелений коли повний); виправити за правилами дизайну.

@@ -1969,6 +1969,46 @@ class InventoryUiBehaviorCheck {
       enabled: true,
     });
 
+    // TK-105: Settings toggle, display options panel with sizes 1, 2, 3, and card border-radius.
+    const settingsToggle = this.#findByClass(
+      ui.rootNode,
+      "inventory-categories__settings-toggle",
+    );
+    const settingsPanel = this.#findByClass(ui.rootNode, "inventory-settings-options");
+    assert.strictEqual(settingsToggle.getAttribute("aria-expanded"), "false");
+    settingsToggle.click();
+    assert.ok(settingsPanel.classList.contains("inventory-settings-options--open"));
+    assert.strictEqual(settingsToggle.getAttribute("aria-expanded"), "true");
+
+    const sizeLabel = this.#findByClass(settingsPanel, "inventory-settings-options__label");
+    assert.strictEqual(sizeLabel.textContent, "Розмір");
+
+    const sizeButtons = this.#findAllByClass(settingsPanel, "inventory-settings-options__size");
+    assert.strictEqual(sizeButtons.length, 3, "settings must offer 3 size options (1, 2, 3)");
+    assert.deepStrictEqual(sizeButtons.map((btn) => btn.textContent), ["1", "2", "3"]);
+    assert.strictEqual(sizeButtons[1].classList.contains("inventory-settings-options__size--active"), true, "size 2 is default active");
+
+    const targetGrid = this.#findByClass(ui.rootNode, "inventory-list-grid");
+    sizeButtons[0].click();
+    assert.strictEqual(sizeButtons[0].classList.contains("inventory-settings-options__size--active"), true);
+    assert.strictEqual(sizeButtons[1].classList.contains("inventory-settings-options__size--active"), false);
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-card-scale"), "0.5");
+
+    sizeButtons[2].click();
+    assert.strictEqual(sizeButtons[2].classList.contains("inventory-settings-options__size--active"), true);
+    assert.strictEqual(targetGrid.style.getPropertyValue("--inventory-card-scale"), "1.5");
+
+    settingsToggle.click();
+    assert.strictEqual(settingsPanel.classList.contains("inventory-settings-options--open"), false);
+    assert.strictEqual(settingsToggle.getAttribute("aria-expanded"), "false");
+
+    const itemCardsCss = this.#reader.readStyle();
+    assert.match(
+      itemCardsCss,
+      /\.inventory-item-card\s*\{[^}]*border-radius:\s*var\(--inventory-slot-radius,\s*var\(--ui-radius-control\)\);/,
+      "inventory-item-card has rounded corners matching slot radius or ui-radius-control",
+    );
+
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.CATEGORY_SELECT,
