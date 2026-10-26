@@ -729,6 +729,9 @@ class InventoryUiBehaviorCheck {
       },
       documentRef: document,
       mountNode: document.body,
+      degradationColorResolver: {
+        resolvePercent: (percent) => ({ cssColor: `rgb(${Math.round(percent)}, 0, 0)` }),
+      },
       warningTimers: new BrowserTimeoutScheduler(sandbox),
     });
     ui.open();
@@ -1490,6 +1493,14 @@ class InventoryUiBehaviorCheck {
           "inventory-resource-meter",
         ).style.getPropertyValue("--inventory-resource-percent"),
         "7%",
+      );
+      assert.strictEqual(
+        this.#findByClass(
+          capacity,
+          "inventory-resource-meter",
+        ).style.getPropertyValue("--inventory-resource-color"),
+        "rgb(93, 0, 0)",
+        "backpack capacity color reflects remaining free space (93% free when holding 7/100)",
       );
       assert.strictEqual(
         this.#findByClass(capacity, "inventory-scale__icon").src,

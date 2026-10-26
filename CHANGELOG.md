@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.9 - Backpack capacity scale color derives from remaining space
+
+- Inventory: backpack capacity scale color now derives from remaining free capacity, staying safe green when empty and turning red when full (TK-104).
+
 ## v0.48.8 - Unified parameter scale styles matching inventory-parameter bar fill
 
 - Inventory: parameter scale styles unified across resource and bar meters with rounded track corners, inherited fill radius and smooth transitions (TK-103).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.0 - Field radio receiver
 
 - Field radio receiver (spec 142): a wearable radio with its own battery that plays live stations of your country through a walkie-talkie sound, with weak-battery noise and dropouts, rain crackle, quieter during a bite, a wave indicator under the clock and DevTools «РАДІО».
-
-## v0.47.31 - Radio battery and reception
-
-- Radio receiver stage 4: the radio runs its battery down (1 hour), counted on a monotonic clock; below 25 % hiss, crackle, a quieter sound and dropouts; rain adds noise; an empty battery turns it off (spec 142).

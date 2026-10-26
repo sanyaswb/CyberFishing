@@ -31,8 +31,10 @@ export class InventoryBackpackSummaryRenderer {
 
   update(view, itemCount) {
     const { maxItems } = this.#sections.backpackCapacity;
+    const percent = (itemCount * 100) / maxItems;
     this.#scales.update(this.#capacities.get(view), {
-      percent: itemCount * 100 / maxItems,
+      percent,
+      remainingPercent: Math.max(0, 100 - percent),
       value: `${itemCount} / ${maxItems}`,
       label: this.#sections.labels.backpackItems(itemCount, maxItems),
     });
