@@ -1,0 +1,239 @@
+/* Parameter sections, bars, segments and bait effectiveness. */
+
+.inventory-item-parameters {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--inventory-parameter-tile-gap, 12px);
+  align-items: stretch;
+}
+
+.inventory-item-parameter-section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+  padding: var(--inventory-container-gap, 10px);
+  border: 1px solid var(--inventory-panel-border, var(--ui-border));
+  border-radius: var(--ui-radius-panel);
+  background: var(--inventory-panel, rgba(14, 20, 22, 0.92));
+}
+
+.inventory-item-parameters--single .inventory-item-parameter-section {
+  grid-column: 1 / -1;
+}
+
+.inventory-item-parameter-section--centered {
+  width: 100%;
+  max-width: 480px;
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+.inventory-item-parameter-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 0;
+  border-bottom: 1px solid rgba(var(--inventory-accent-rgb, var(--ui-accent-rgb)), 0.24);
+  border-radius: var(--ui-radius-control);
+  background: rgba(var(--ui-surface-rgb), 0.76);
+}
+
+.inventory-item-parameter-section__identity {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+/* A square ui-glyph box (DESIGN_RULES §8). */
+.inventory-item-parameter-section__icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.inventory-item-parameter-section__title {
+  overflow: hidden;
+  color: var(--ui-text);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-item-parameter-section__meta {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inventory-parameters-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 6px;
+  padding: 8px 0 0 0;
+  margin: 0;
+  list-style: none;
+  border-top: 1px solid var(--inventory-panel-border, rgba(201, 216, 218, 0.16));
+}
+
+.inventory-parameter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--inventory-panel-border, rgba(201, 216, 218, 0.15));
+  border-radius: var(--ui-radius-control);
+  background: rgba(var(--ui-surface-rgb), 0.35);
+}
+
+.inventory-parameter__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inventory-parameter__label {
+  display: flex;
+  align-items: center;
+  color: var(--ui-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inventory-parameter__help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  border: 1px solid rgba(var(--inventory-accent-rgb, var(--ui-accent-rgb)), 0.5);
+  border-radius: 50%;
+  background: rgba(var(--inventory-accent-rgb, var(--ui-accent-rgb)), 0.1);
+  color: var(--inventory-accent, var(--ui-accent));
+  font-size: 11px;
+  font-weight: 800;
+  cursor: help;
+  transition: all var(--ui-duration-fast, 200ms) var(--ui-ease-standard, ease);
+}
+.ui-surface--desktop-hover .inventory-parameter__help:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .inventory-parameter__help:active {
+  background: var(--inventory-accent, var(--ui-accent));
+  color: #000;
+  box-shadow: 0 0 8px rgba(var(--inventory-accent-rgb, var(--ui-accent-rgb)), 0.8);
+}
+@media (prefers-reduced-motion: reduce) {
+  .inventory-parameter__help,
+  .inventory-parameter__bar-fill,
+  .inventory-parameter__segment,
+  .inventory-parameter .inventory-resource-meter__fill {
+    transition: none;
+  }
+}
+
+.inventory-parameter__value {
+  color: var(--inventory-parameter-color, var(--ui-text));
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.inventory-parameter__bar,
+.inventory-parameter .inventory-resource-meter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inventory-parameter__bar-track,
+.inventory-parameter .inventory-resource-meter__track {
+  width: 100%;
+  height: var(--inventory-parameter-meter-height, 7px);
+  border-radius: var(--ui-radius-control);
+  background: var(--inventory-resource-track, var(--ui-border));
+  overflow: hidden;
+  border: 0;
+  position: relative;
+}
+
+.inventory-parameter__bar-fill {
+  height: 100%;
+  background-color: var(--inventory-parameter-color, var(--inventory-success, var(--ui-success)));
+  border-radius: inherit;
+  transition: width var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease);
+}
+
+.inventory-parameter .inventory-resource-meter__fill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background-color: var(--inventory-resource-color, var(--ui-border));
+  border-radius: inherit;
+  clip-path: inset(0 calc(100% - var(--inventory-resource-percent)) 0 0);
+  transition: clip-path var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease);
+}
+
+.inventory-parameter__segments {
+  display: flex;
+  width: 100%;
+  gap: 3px;
+  height: var(--inventory-parameter-meter-height, 7px);
+}
+
+.inventory-parameter__segment {
+  flex: 1;
+  background: var(--inventory-resource-track, var(--ui-border));
+  border-radius: 1px;
+  transition: background-color var(--ui-duration-fast, 200ms) var(--ui-ease-standard, ease);
+}
+
+.inventory-parameter__segment--filled,
+.inventory-parameter__segment.inventory-parameter__segment--filled {
+  background: var(--inventory-parameter-color, var(--inventory-accent, var(--ui-accent)));
+  border-color: transparent;
+}
+
+.inventory-parameter__segment--colored {
+  box-shadow: 0 0 6px var(--inventory-parameter-color);
+}
+
+.inventory-bait-effectiveness {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inventory-bait-effectiveness__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.inventory-bait-effectiveness__fish {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-bait-effectiveness__value {
+  flex: 0 0 auto;
+  color: var(--ui-warning, #f3c969);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
