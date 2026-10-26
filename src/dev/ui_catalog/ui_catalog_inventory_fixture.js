@@ -52,7 +52,7 @@ export class UiCatalogInventoryFixture {
         slot("terminalLine", "Ліска", items[2], 2), slot("tackle", "Оснастка", null, 3), slot("float", "Поплавок", items[3], 4)];
     this.#model = {
       isOpen: true, settings: { autoBait: true, autoChum: consumables },
-      sections: { activeId: this.#sectionId, backpackItemCount: empty ? 0 : items.reduce((total, item) => total + item.quantity, 0) },
+      sections: { activeId: this.#sectionId, backpackItemCount: empty ? 0 : items.reduce((total, item) => total + Math.ceil(Math.max(1, Number(item.quantity) || 1) / Math.max(1, Number(item.packSize) || 1)), 0) },
       header: { loadValue: selectedConsumables ? 1 : 4.5, loadUnit: "кг", activeBaits: baits, activeChums: chums,
         baitSlots: baits.map((item, index) => ({ item, available: true, highlighted: selectedConsumables && index === 0,
           showCount: consumables && !uniformBaits,

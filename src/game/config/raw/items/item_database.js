@@ -474,6 +474,9 @@ export const ITEM_DB = {
       name: "Масляний черв'як",
       itemType: "bait",
       icon: "🪱",
+      iconUrl: "assets/items/baits/oil-worms--100.webp",
+      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      packSize: 25,
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -497,6 +500,7 @@ export const ITEM_DB = {
       name: "Хліб",
       itemType: "bait",
       icon: "🍞",
+      packSize: 20,
       rarityProfile: {
         mode: "authored",
         tier: 1,
@@ -917,6 +921,7 @@ export const ITEM_DB = {
       name: "Базова коропова суміш",
       itemType: "chum_mix",
       icon: "🍞",
+      packSize: 15,
       rarityProfile: {
         mode: "authored",
         tier: 2,

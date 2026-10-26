@@ -118,7 +118,7 @@ export class UiAutoSwitchRenderer {
       nodes.media.classList.toggle("inventory-toggle__item--available", slot.available === true);
       nodes.media.classList.toggle("inventory-toggle__item--highlighted", slot.highlighted === true);
       nodes.media.setAttribute("aria-pressed", String(slot.highlighted === true));
-      const imageSource = item ? item.iconUrl || item.imageUrl || "" : binding.placeholderUrl;
+      const imageSource = item ? item.switcherIconUrl || item.iconUrl || item.imageUrl || "" : binding.placeholderUrl;
       const icon = String(item?.icon || item?.emoji || "");
       if (nodes.source !== imageSource || nodes.icon !== icon) {
         nodes.image = this.#dom.image(imageSource, "");

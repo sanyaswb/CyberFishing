@@ -121,14 +121,14 @@ try {
 
   // New uncommitted catalog code is checked too; the immutable release above still uses HEAD bytes.
   const workspace = path.resolve(__dirname, "../../..");
+  const { productionFiles, trackedFiles } = require("../../project-structure.js");
   const authoredTree = {
     has: (file) => fs.existsSync(path.join(workspace, file)),
     read: (file) => fs.readFileSync(path.join(workspace, file)),
     readAll: (requested) => new Map(requested.map((file) => [file, fs.readFileSync(path.join(workspace, file))])),
-    paths: () => tree.paths(),
+    paths: () => trackedFiles(workspace),
   };
   const authoredFiles = new Set(ReleaseFileSet.collect(authoredTree));
-  const { productionFiles } = require("../../project-structure.js");
   // The structure command reads tracked working files, including staged additions (UTILS_RULES.md).
   // HEAD remains the immutable release input above; using its path list here rejects every new imported module.
   const production = productionFiles({ rootDir: workspace });

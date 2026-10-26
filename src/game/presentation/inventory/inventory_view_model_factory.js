@@ -170,7 +170,11 @@ export class InventoryViewModelFactory {
       equipmentFeedback: uiState.equipmentFeedback || null,
       sections: {
         activeId: uiState.activeSectionId,
-        backpackItemCount: accessibleRawItems.reduce((total, item) => total + Math.max(1, Number(item.quantity) || 1), 0),
+        backpackItemCount: accessibleRawItems.reduce((total, item) => {
+          const packSize = Math.max(1, Number(this.#itemViews.create(item.instanceId)?.packSize) || 1);
+          const quantity = Math.max(1, Number(item.quantity) || 1);
+          return total + Math.ceil(quantity / packSize);
+        }, 0),
       },
       header: {
         baitSlots: this.#createConsumableSlots("bait", uiState),

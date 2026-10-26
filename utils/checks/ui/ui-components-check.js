@@ -132,6 +132,24 @@ switches.dispose(picker);
 pickerButtons[0].click(); assert.equal(baitSlot, 2, "disposed bait buttons cannot call their previous host");
 assert.equal(pickerButtons[0].listeners.get("click").size, 0);
 
+// TK-107: switcher prefers switcherIconUrl over iconUrl when equipped.
+const wormToggle = switches.create({
+  name: "Bait",
+  placeholderUrl: "assets/ui/inventory/bait.svg",
+  slots: [{
+    available: true,
+    item: {
+      name: "Масляний черв'як",
+      iconUrl: "assets/items/baits/oil-worms--100.webp",
+      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+    },
+  }],
+});
+documentRef.body.append(wormToggle);
+const wormImage = documentRef.byClass("inventory-toggle__image").pop();
+assert.equal(wormImage?.src, "assets/items/baits/oil-worm_icon.webp", "the switcher displays switcherIconUrl when available");
+switches.dispose(wormToggle);
+
 const compact = switches.create({ variant: "control", name: "Feeder", modeLabel: "Automatic feeder", checked: true });
 documentRef.body.append(compact);
 assert.equal(compact.children.length, 2, "control variant contains the input and control without equipment or stock");

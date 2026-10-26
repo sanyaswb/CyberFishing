@@ -266,6 +266,14 @@ vm.runInContext(
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       gameplayStats: {},
     },
+    oil_worm: {
+      id: "oil_worm",
+      name: "Масляний черв'як",
+      itemType: "bait",
+      packSize: 25,
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
     bread: { id: "bread", name: "Bread", itemType: "bait", gameplayStats: {} },
     pellet: { id: "pellet", name: "Pellet", itemType: "bait", gameplayStats: {} },
     chum: {
@@ -3212,6 +3220,35 @@ vm.runInContext(
   dispatch(editorRoute, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: routeRoot });
   dispatch(editorRoute, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: routeRoot });
   assertIntegration(editorRoute.commands.getUiState().activeSectionId === "equipment", "equipment entry returns to equipment");
+
+  // TK-107: backpackItemCount counts jars/packs (Math.ceil(quantity / packSize)).
+  const jarFlow50 = makeComposition({
+    items: [
+      raw("jar-worm-50", "oil_worm", 50),
+      raw("single-hook", "hook", 1),
+    ],
+  });
+  const vm50 = jarFlow50.facade.getViewModel();
+  assertIntegration(vm50.sections.backpackItemCount === 3,
+    "50 worms (packSize 25) plus 1 hook must count as 3 items in backpack");
+
+  const jarFlow25 = makeComposition({
+    items: [
+      raw("jar-worm-25", "oil_worm", 25),
+    ],
+  });
+  const vm25 = jarFlow25.facade.getViewModel();
+  assertIntegration(vm25.sections.backpackItemCount === 1,
+    "25 worms (packSize 25) must count as 1 item in backpack");
+
+  const jarFlow1 = makeComposition({
+    items: [
+      raw("jar-worm-1", "oil_worm", 1),
+    ],
+  });
+  const vm1 = jarFlow1.facade.getViewModel();
+  assertIntegration(vm1.sections.backpackItemCount === 1,
+    "1 worm (partially full jar) must count as 1 item in backpack");
 
   console.log("Inventory integration checks passed.");
   `,

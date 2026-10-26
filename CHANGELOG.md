@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.12 - Bait and chum packs in backpack and switcher worm icon
+
+- Inventory: bait and chum stacks count by pack/jar size towards backpack capacity (50 worms in jars of 25 = 2 items); worm item displays jar artwork in backpack and worm icon in header switcher (TK-107).
+
 ## v0.48.11 - Mobile inventory card columns by display size
 
 - Inventory: mobile layout (<=820px) adapts grid column counts to the selected display size: 1 -> 6 columns, 2 -> 4 columns (standard), 3 -> 3 columns (TK-106).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.3 - Effect sliders in the radio (DEV)
 
 - DEV: the main parameters of the enabled radio effects (vinyl, walkie-talkie) as sliders under the volume in the radio's editor; production shows none (TK-098).
-
-## v0.48.2 - Vinyl record sound
-
-- Radio: a vinyl record effect (crackle, pops, wavering pitch, warm tone, hiss, rumble) beside the walkie-talkie; every effect is tuned and switched in DevTools «РАДІО», the player no longer chooses the sound (TK-097).

@@ -128,6 +128,12 @@
 │  │  ├── aquarium-feed-good.svg
 │  │  ├── aquarium-feed-premium.svg
 │  │  ├── aquarium-feed-simple.svg
+│  │  ├── baits
+│  │  │  ├── oil-worm_icon.webp
+│  │  │  ├── oil-worms--100.webp
+│  │  │  ├── oil-worms--25.webp
+│  │  │  ├── oil-worms--50.webp
+│  │  │  └── oil-worms--75.webp
 │  │  ├── batteries
 │  │  │  └── battery-volt--1.webp
 │  │  ├── briefcases
