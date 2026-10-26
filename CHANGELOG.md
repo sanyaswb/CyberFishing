@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.17 - Fixed header height and proportional loadout width alignment in portrait
+
+- Inventory: header height preserved on narrow screens with 44px control height, and portrait loadout unit scaled with 3.38 divisor to eliminate side indents while keeping exact card proportions (TK-112).
+
 ## v0.48.16 - Zero padding for loadout panel in portrait
 
 - Inventory: removed top, bottom, and side padding on equipment panel in portrait mode to prevent redundant spacing inside padded container (TK-111).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.8 - Unified parameter scale styles matching inventory-parameter bar fill
 
 - Inventory: parameter scale styles unified across resource and bar meters with rounded track corners, inherited fill radius and smooth transitions (TK-103).
-
-## v0.48.7 - Design token parameters, single charge meter and live battery capacity
-
-- Inventory: item parameters refactored to design tokens, duplicate battery charge bar removed in favor of resource meter, and battery capacity counts down dynamically with discharge (TK-102).

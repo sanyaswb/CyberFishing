@@ -2048,6 +2048,16 @@ class InventoryUiBehaviorCheck {
       /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel\s*\{[^}]*padding:\s*0;/,
       "inventory-loadout-panel removes padding in portrait mode",
     );
+    assert.match(
+      itemCardsCss,
+      /max-width:\s*820px\)[\s\S]*\.inventory-header\s*\{[^}]*--inventory-header-control-height:\s*44px;/,
+      "inventory-header retains 44px control height on mobile screens",
+    );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel\s*\{[^}]*--inventory-equipment-unit:\s*min\(calc\(100cqi\s*\/\s*3\.38\),\s*calc\(100cqb\s*\/\s*4\.60\)\);/,
+      "inventory-loadout-panel sizes equipment unit with 3.38 divisor to match container width without padding",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {

@@ -8,6 +8,24 @@
 
 ## Задачі в роботі
 
+### TK-112 — однакова висота inventory-header та пропорційне вирівнювання ширини loadout у portrait
+
+- Власник 2026-10-26: зробити висоту блоку inventory-header з широких екранів однаковою і для розмірів вужче; прибрати зайві відступи у блоці екіпірування і вирівняти по ширині з header без сплющування та розтягування арту вудки та інших карток.
+- Причина:
+  1. У `header.css` під `@container ui-surface (max-width: 820px)` висота контролів зменшувалася через `--inventory-header-control-height: calc(var(--inventory-header-unit) * 36)` та масштабований unit, через що шапка ставала нижчою на вузьких екранах замість десктопних 44px контролів і висоти ~59px.
+  2. У `loadout.css` базова формула `--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.88))` розраховувала ширину під дільник 3.66 (3.38 панелі + 2 × 0.14 зовнішнього padding). Коли в portrait padding панелі було обнулено (TK-111), різниця 0.28 одиниць перетворилася на порожні бічні прогалини по ~13px з кожного боку (панель займала лише 92% ширини і виглядала звуженою відносно header).
+- Зміна:
+  1. У `header.css` у `@container ui-surface (max-width: 820px)` та portrait зафіксувати `--inventory-header-control-height: 44px;`, `--inventory-header-unit: calc(44px / 36);` та `padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);`, зберігаючи незмінну висоту шапки ~59px на всіх розмірах.
+  2. У `loadout.css` у `@container ui-surface (orientation: portrait)` для `.inventory-loadout-panel` встановити пропорційний дільник без зовнішнього padding: `--inventory-equipment-unit: min(calc(100cqi / 3.38), calc(100cqb / 4.60));`. Це розширює `--inventory-equipment-width = 3.38 * unit` рівно на 100cqi (без зайвих бічних відступів, врівень з header), при цьому зберігаючи точні пропорції комірки вудки (1.90 × 3.00 одиниці) без будь-якої деформації арту.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка `--inventory-header-control-height: 44px` для `inventory-header` та дільника `100cqi / 3.38` для `inventory-loadout-panel` у portrait; Full 72/72.
+- [x] Реалізовано v0.48.17; на старому коді перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` у портретній орієнтації телефону:
+  1. Шапка `.inventory-header` має ту саму висоту контролів (44px) і загальну висоту (~59px), що й на широких екранах.
+  2. Блок екіпірування `.inventory-loadout-panel` не має зайвих бічних порожнин і вирівняний по краях із шапкою `.inventory-header`.
+  3. Картка та арт вудки всередині зберігають природні пропорції, не сплющуються і не розтягуються. Візуально агентом не перевіряється.
+
+
 ### TK-111 — обнулення padding для inventory-loadout-panel у portrait медіа-запиті
 
 - Власник 2026-10-26: тоді треба прибрати в цьому медіа запиті padding для inventory-loadout-panel inventory-panel і для верху і низу.

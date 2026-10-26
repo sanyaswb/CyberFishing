@@ -381,6 +381,7 @@
     }
 
     .inventory-loadout-panel {
+      --inventory-equipment-unit: min(calc(100cqi / 3.38), calc(100cqb / 4.60));
       display: grid;
       flex: none;
       grid-template-rows: max-content max-content;
