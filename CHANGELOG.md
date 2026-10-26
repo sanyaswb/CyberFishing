@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.15 - Loadout panel overflow fix and mobile portrait width alignment
+
+- Inventory: eliminated horizontal scrollbar under equipment panel and aligned loadout container width with header in portrait mode (TK-110).
+
 ## v0.48.14 - Open backpack backdrop sizing and padding
 
 - Inventory: open backpack background image fills collection container with 10px padding (TK-109).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.6 - Worn items first among the auxiliary wells
 
 - Inventory: in the auxiliary block worn items come first and empty wells after, so the radio is no longer hidden behind empty wells (TK-101).
-
-## v0.48.5 - Radio prefers stations with the effect
-
-- Radio remembers which stations play with the effect (their servers allow it) and offers them first; DEV switch to skip stations without it (TK-100).

@@ -2033,6 +2033,16 @@ class InventoryUiBehaviorCheck {
       /\.inventory-collection__backdrop\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*padding:\s*10px;/,
       "inventory-collection__backdrop fills container with 10px padding",
     );
+    assert.match(
+      itemCardsCss,
+      /\.inventory-loadout-panel\s*\{[^}]*overflow:\s*hidden auto;/,
+      "inventory-loadout-panel disables horizontal overflow to prevent horizontal scrollbars",
+    );
+    assert.match(
+      itemCardsCss,
+      /\.inventory-modal--section-equipment\s+\.inventory-main__left\s*\{[^}]*padding:\s*0\s+var\(--inventory-mobile-inset\);/,
+      "inventory-main__left in equipment section has portrait padding matching mobile inset",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {

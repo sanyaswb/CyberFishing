@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.14";
+export const CURRENT_PROJECT_VERSION = "0.48.15";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-26",
   notes: Object.freeze([
+    "TK-110: equipment panel overflow-x hidden and portrait alignment with header.",
     "TK-109: open backpack backdrop fills container with 10px padding.",
     "TK-108: discrete worm jar sizes (25, 50, 75, 100) and DEV shop nominal quantities.",
     "TK-107: bait/chum pack capacity in backpack, jar card art, worm icon in switcher.",

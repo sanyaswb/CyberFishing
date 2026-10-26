@@ -245,7 +245,7 @@
       grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
-      padding-top: var(--inventory-container-gap);
+      /* padding-top: var(--inventory-container-gap); */
     }
 
     /* The sidebar keeps no box in portrait (spec 077): content, items and tabs keep their own grid areas, and the
@@ -282,6 +282,7 @@
       grid-area: right;
       max-height: none;
       container-type: size;
+      padding: 0 var(--inventory-mobile-inset);
     }
 
     .inventory-modal--section-equipment .inventory-main__right {

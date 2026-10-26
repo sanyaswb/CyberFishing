@@ -11,7 +11,7 @@
   gap: 8px var(--inventory-content-gap);
   align-items: center;
   margin-bottom: 12px;
-  padding: calc(var(--inventory-header-unit) * 6);
+  padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);
   border-radius: var(--inventory-header-radius);
   background: var(--inventory-equipment-panel);
 }
@@ -44,12 +44,15 @@
    controls group lends its children to the header grid, so the load meter never drops to a lower row. */
 @container ui-surface (max-width: 820px) {
   .inventory-header {
+    --inventory-header-radius: 8px;
+    --inventory-header-bottom-gap: 8px;
     --inventory-header-unit: clamp(1px, calc(100cqi / 320), calc(44px / 36));
     --inventory-header-control-height: calc(var(--inventory-header-unit) * 36);
     --inventory-scale-unit: var(--inventory-header-unit);
     grid-template-columns: minmax(0, 1fr) auto var(--ui-close-size);
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: var(--inventory-header-bottom-gap);
+    padding: var(--inventory-header-radius);
   }
   .inventory-header__controls {
     display: contents;
@@ -74,7 +77,7 @@
   @container ui-surface (orientation: portrait) {
     .inventory-header {
       --inventory-header-unit: clamp(1px, calc(100cqi / 320), 2px);
-      margin: var(--inventory-mobile-inset) var(--inventory-mobile-inset) 0;
+      margin: var(--inventory-mobile-inset);
       gap: calc(var(--inventory-header-unit) * 8);
       border-bottom: 0;
     }

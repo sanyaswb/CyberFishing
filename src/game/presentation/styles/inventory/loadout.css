@@ -39,7 +39,7 @@
   gap: calc(var(--inventory-equipment-unit) * 0.08);
   padding: var(--inventory-equipment-outer);
   border-bottom: 0;
-  overflow-y: auto;
+  overflow: hidden auto;
 }
 
 .inventory-loadout-save {
@@ -254,7 +254,7 @@
    never scrolls the panel). Free width widens the column; its wells stay centred. A rodless primary stretches with it. */
 @container inventory-equipment (min-aspect-ratio: 1 / 1) {
   .inventory-loadout-panel {
-    --inventory-equipment-unit: min(calc(100cqi / 4.83), calc(100cqb / 3.81));
+    --inventory-equipment-unit: min(calc(100cqi / 4.85), calc(100cqb / 3.81));
     --inventory-equipment-well-size: calc(
       var(--inventory-equipment-unit) * 0.72
     );

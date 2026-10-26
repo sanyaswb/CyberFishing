@@ -8,6 +8,23 @@
 
 ## Задачі в роботі
 
+### TK-110 — усунення горизонтального скролбара екіпірування та вирівнювання ширини inventory-loadout-panel у portrait
+
+- Власник 2026-10-26: виправити баг по дизайну (горизонтальна полоска/скролбар під панеллю екіпірування) та вирівняти контейнер inventory-loadout-panel по ширині: відступи повинні бути такі як в inventory-header для portrait екранів.
+- Причина:
+  1. У `loadout.css` клас `.inventory-loadout-panel` мав `overflow-y: auto;` без явного `overflow-x: hidden;`, а в `@container inventory-equipment (min-aspect-ratio: 1 / 1)` сума часток ширини складала рівно 4.83 без запасу на субпіксельне округлення браузера, через що при дробових значеннях ширини з'являвся горизонтальний скролбар.
+  2. У portrait-режимі (`@container ui-surface (orientation: portrait)`) у `modal.css` контейнер `.inventory-modal--section-equipment .inventory-main__left` не мав бічних відступів `var(--inventory-mobile-inset)`, на відміну від `.inventory-header` (`margin: var(--inventory-mobile-inset)`) та інших розділів (`.inventory-main__right { padding: 0 var(--inventory-mobile-inset) ... }`), через що панель екіпірування торкалася країв екрана й була ширшою за шапку.
+- Зміна:
+  1. У `loadout.css` для `.inventory-loadout-panel` змінити `overflow-y: auto;` на `overflow: hidden auto;` та в `@container inventory-equipment (min-aspect-ratio: 1 / 1)` змінити дільник ширини з `4.83` на `4.85` (запас на субпіксельне округлення).
+  2. У `modal.css` для `.inventory-modal--section-equipment .inventory-main__left` додати `padding: 0 var(--inventory-mobile-inset);`, щоб контейнер панелі екіпірування мав ідентичні бічні відступи як `inventory-header` та адаптував розрахунок `100cqi` під внутрішню ширину.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка стилів `overflow: hidden auto;` (відсутність горизонтального скролу) та перевірка наявності `padding: 0 var(--inventory-mobile-inset)` для `.inventory-modal--section-equipment .inventory-main__left`; Full 72/72.
+- [x] Реалізовано v0.48.15; на старому коді перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` у портретній орієнтації телефону (ширина <= 820px, наприклад 361x483):
+  1. Під панеллю екіпірування відсутня горизонтальна полоска (горизонтальний скролбар).
+  2. Панель екіпірування `.inventory-loadout-panel` вирівняна по ширині з шапкою `.inventory-header` (має однакові бічні відступи 10px). Візуально агентом не перевіряється.
+
+
 ### TK-109 — розмір фонового зображення відкритого рюкзака на весь контейнер з відступами 10 px
 
 - Власник 2026-10-26: розмір фонового зображення відкритого рюкзака повинен бути таким самим як inventory-backpack__visual inventory-panel; просто розмісти зображення на весь контейнер з відступами 10 px (padding).
