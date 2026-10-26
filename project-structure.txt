@@ -135,7 +135,10 @@
 │  │  │  ├── oil-worms--50.webp
 │  │  │  └── oil-worms--75.webp
 │  │  ├── batteries
-│  │  │  └── battery-volt--1.webp
+│  │  │  ├── battery-volt--1.webp
+│  │  │  ├── battery-volt--2.webp
+│  │  │  ├── battery-volt--3.webp
+│  │  │  └── battery-volt--4.webp
 │  │  ├── briefcases
 │  │  │  ├── briefcase--1--close.webp
 │  │  │  └── briefcase--1--open.webp

@@ -1138,7 +1138,7 @@ export const ITEM_DB = {
   batteries: {
     battery_basic: {
       id: "battery_basic",
-      name: "Батарейка",
+      name: "Батарейка Volt-1",
       itemType: "battery",
       iconUrl: "assets/items/batteries/battery-volt--1.webp",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
@@ -1148,6 +1148,51 @@ export const ITEM_DB = {
       },
       gameplayStats: {
         capacityUnits: 3600,
+      },
+    },
+
+    battery_volt_2: {
+      id: "battery_volt_2",
+      name: "Батарейка Volt-2",
+      itemType: "battery",
+      iconUrl: "assets/items/batteries/battery-volt--2.webp",
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "power.battery" },
+      displayStats: {
+        capacityUnits: "Ємність:",
+      },
+      gameplayStats: {
+        capacityUnits: 7200,
+      },
+    },
+
+    battery_volt_3: {
+      id: "battery_volt_3",
+      name: "Батарейка Volt-3",
+      itemType: "battery",
+      iconUrl: "assets/items/batteries/battery-volt--3.webp",
+      rarityProfile: { mode: "authored", tier: 3, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "power.battery" },
+      displayStats: {
+        capacityUnits: "Ємність:",
+      },
+      gameplayStats: {
+        capacityUnits: 10800,
+      },
+    },
+
+    battery_volt_4: {
+      id: "battery_volt_4",
+      name: "Батарейка Volt-4",
+      itemType: "battery",
+      iconUrl: "assets/items/batteries/battery-volt--4.webp",
+      rarityProfile: { mode: "authored", tier: 4, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "power.battery" },
+      displayStats: {
+        capacityUnits: "Ємність:",
+      },
+      gameplayStats: {
+        capacityUnits: 24000,
       },
     },
   },

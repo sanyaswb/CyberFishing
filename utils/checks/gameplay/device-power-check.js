@@ -248,6 +248,30 @@ const liveThumbBattery = thumbnails.create("thumb-battery");
 assert.equal(liveThumbBattery.charge.percent, 40, "battery gets live charge from provider");
 assert.equal(liveThumbBattery.displayStats["Ємність"], "1440", "live battery capacity reflects 40% of 3600 = 1440 units");
 
+// TK-114: battery variants Volt-2 (7200), Volt-3 (10800), Volt-4 (24000)
+assert(ITEM_DB.batteries.battery_volt_2, "battery_volt_2 exists in catalog");
+assert.equal(ITEM_DB.batteries.battery_volt_2.gameplayStats.capacityUnits, 7200, "battery_volt_2 capacity is 7200");
+assert.equal(ITEM_DB.batteries.battery_volt_2.iconUrl, "assets/items/batteries/battery-volt--2.webp", "battery_volt_2 icon is battery-volt--2.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_2.rarityProfile.tier, 2, "battery_volt_2 is tier 2");
+
+assert(ITEM_DB.batteries.battery_volt_3, "battery_volt_3 exists in catalog");
+assert.equal(ITEM_DB.batteries.battery_volt_3.gameplayStats.capacityUnits, 10800, "battery_volt_3 capacity is 10800");
+assert.equal(ITEM_DB.batteries.battery_volt_3.iconUrl, "assets/items/batteries/battery-volt--3.webp", "battery_volt_3 icon is battery-volt--3.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_3.rarityProfile.tier, 3, "battery_volt_3 is tier 3");
+
+assert(ITEM_DB.batteries.battery_volt_4, "battery_volt_4 exists in catalog");
+assert.equal(ITEM_DB.batteries.battery_volt_4.gameplayStats.capacityUnits, 24000, "battery_volt_4 capacity is 24000");
+assert.equal(ITEM_DB.batteries.battery_volt_4.iconUrl, "assets/items/batteries/battery-volt--4.webp", "battery_volt_4 icon is battery-volt--4.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_4.rarityProfile.tier, 4, "battery_volt_4 is tier 4");
+
+const bat2Half = batteryViewFactory.create({ instanceId: "bat-2h", itemId: "battery_volt_2", chargeState: { percent: 50 } });
+assert.equal(bat2Half.displayStats["Ємність"], "3600", "50% battery_volt_2 capacity drops to 3600");
+const bat3Half = batteryViewFactory.create({ instanceId: "bat-3h", itemId: "battery_volt_3", chargeState: { percent: 50 } });
+assert.equal(bat3Half.displayStats["Ємність"], "5400", "50% battery_volt_3 capacity drops to 5400");
+const bat4Half = batteryViewFactory.create({ instanceId: "bat-4h", itemId: "battery_volt_4", chargeState: { percent: 50 } });
+assert.equal(bat4Half.displayStats["Ємність"], "12000", "50% battery_volt_4 capacity drops to 12000");
+
+
 // TK-102 & TK-103: item-parameters.css and resource-meters.css unified meter design rules
 const paramsCss = runtime.read("src/game/presentation/styles/inventory/item-parameters.css");
 assert(!/#e8f7f8|#83a2aa|#0a1114/u.test(paramsCss), "item-parameters.css uses design tokens instead of legacy hardcoded colors");

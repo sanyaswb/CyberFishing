@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.19 - Added battery variants Volt-2, Volt-3 and Volt-4
+
+- Inventory: added three battery variants to the catalog: Volt-2 (7200 units, tier 2), Volt-3 (10800 units, tier 3), and Volt-4 (24000 units, tier 4) with dedicated assets, dynamic capacity readout, and DEV shop availability (TK-114).
+
 ## v0.48.18 - Full-width portrait loadout panels with centered proportional rod and cascade
 
 - Inventory: primary and auxiliary loadout panels expand to 100% width matching header, with rod and cascade columns centered and strictly preserving proportional aspect ratio without distortion (TK-113).
@@ -38,7 +42,4 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Inventory: item cards in backpack unified with rounded corners matching equipment wells, and added display settings toggle with 1 (0.5×), 2 (1×), 3 (1.5×) scale buttons (TK-105).
 
-## v0.48.9 - Backpack capacity scale color derives from remaining space
-
-- Inventory: backpack capacity scale color now derives from remaining free capacity, staying safe green when empty and turning red when full (TK-104).
 
