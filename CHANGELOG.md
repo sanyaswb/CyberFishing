@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.18 - Full-width portrait loadout panels with centered proportional rod and cascade
+
+- Inventory: primary and auxiliary loadout panels expand to 100% width matching header, with rod and cascade columns centered and strictly preserving proportional aspect ratio without distortion (TK-113).
+
 ## v0.48.17 - Fixed header height and proportional loadout width alignment in portrait
 
 - Inventory: header height preserved on narrow screens with 44px control height, and portrait loadout unit scaled with 3.38 divisor to eliminate side indents while keeping exact card proportions (TK-112).
@@ -38,6 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Inventory: backpack capacity scale color now derives from remaining free capacity, staying safe green when empty and turning red when full (TK-104).
 
-## v0.48.8 - Unified parameter scale styles matching inventory-parameter bar fill
-
-- Inventory: parameter scale styles unified across resource and bar meters with rounded track corners, inherited fill radius and smooth transitions (TK-103).

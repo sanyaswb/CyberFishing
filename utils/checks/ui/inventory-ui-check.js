@@ -2058,6 +2058,16 @@ class InventoryUiBehaviorCheck {
       /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel\s*\{[^}]*--inventory-equipment-unit:\s*min\(calc\(100cqi\s*\/\s*3\.38\),\s*calc\(100cqb\s*\/\s*4\.60\)\);/,
       "inventory-loadout-panel sizes equipment unit with 3.38 divisor to match container width without padding",
     );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel__primary,\s*\n?\s*\.inventory-loadout-panel__auxiliary\s*\{[^}]*width:\s*100%;/,
+      "inventory-loadout-panel primary and auxiliary panels expand to 100% width in portrait mode",
+    );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel__primary\s*\{[^}]*justify-content:\s*center;[^}]*grid-template-columns:\s*calc\(var\(--inventory-equipment-unit\)\s*\*\s*1\.9\)\s+var\(--inventory-equipment-unit\);/,
+      "inventory-loadout-panel primary centers fixed proportional rod and cascade columns in portrait mode",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {

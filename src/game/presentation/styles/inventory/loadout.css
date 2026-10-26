@@ -389,6 +389,20 @@
       padding: 0;
     }
 
+    .inventory-loadout-panel__primary,
+    .inventory-loadout-panel__auxiliary {
+      width: 100%;
+    }
+
+    .inventory-loadout-panel__primary {
+      justify-content: center;
+      grid-template-columns: calc(var(--inventory-equipment-unit) * 1.9) var(--inventory-equipment-unit);
+    }
+
+    .inventory-loadout-panel__primary--single {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */
     .inventory-main__section--equipment:has(
       .inventory-loadout-panel__primary--single
