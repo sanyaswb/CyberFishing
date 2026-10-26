@@ -150,7 +150,7 @@ class ItemProgressionCheck {
         Assertion.that(Boolean(item.itemType), `${item.id} has an itemType`);
       }
     }
-    Assertion.equal(gameplay, 27, "all catalog items including live bait, backpack, battery and radio have explicit profiles");
+    Assertion.equal(gameplay, 31, "all catalog items including live bait, backpack, battery and radio have explicit profiles");
     Assertion.equal(technical, 1, "all technical records explicitly excluded");
     for (const [groupId, group] of Object.entries(
       this.#runtime.CONFIGURATION.groups,

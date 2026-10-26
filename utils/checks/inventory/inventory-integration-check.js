@@ -274,6 +274,42 @@ vm.runInContext(
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       gameplayStats: {},
     },
+    oil_worm_25: {
+      id: "oil_worm_25",
+      baitId: "oil_worm",
+      name: "Масляний черв'як (25 шт)",
+      itemType: "bait",
+      packSize: 25,
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
+    oil_worm_50: {
+      id: "oil_worm_50",
+      baitId: "oil_worm",
+      name: "Масляний черв'як (50 шт)",
+      itemType: "bait",
+      packSize: 50,
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
+    oil_worm_75: {
+      id: "oil_worm_75",
+      baitId: "oil_worm",
+      name: "Масляний черв'як (75 шт)",
+      itemType: "bait",
+      packSize: 75,
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
+    oil_worm_100: {
+      id: "oil_worm_100",
+      baitId: "oil_worm",
+      name: "Масляний черв'як (100 шт)",
+      itemType: "bait",
+      packSize: 100,
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
     bread: { id: "bread", name: "Bread", itemType: "bait", gameplayStats: {} },
     pellet: { id: "pellet", name: "Pellet", itemType: "bait", gameplayStats: {} },
     chum: {
@@ -3249,6 +3285,19 @@ vm.runInContext(
   const vm1 = jarFlow1.facade.getViewModel();
   assertIntegration(vm1.sections.backpackItemCount === 1,
     "1 worm (partially full jar) must count as 1 item in backpack");
+
+  // TK-108: separate jar items: 2 jars of 25 = 2 items; 1 jar of 50 = 1 item; 1 jar of 75 with 5 worms = 1 item.
+  const jarFlowMultiple = makeComposition({
+    items: [
+      raw("jar-25-a", "oil_worm_25", 25),
+      raw("jar-25-b", "oil_worm_25", 25),
+      raw("jar-50-a", "oil_worm_50", 50),
+      raw("jar-75-partial", "oil_worm_75", 5),
+    ],
+  });
+  const vmMultiple = jarFlowMultiple.facade.getViewModel();
+  assertIntegration(vmMultiple.sections.backpackItemCount === 4,
+    "2 jars of 25, 1 jar of 50 and 1 jar of 75 (with 5 worms) must count as 4 items in backpack");
 
   console.log("Inventory integration checks passed.");
   `,

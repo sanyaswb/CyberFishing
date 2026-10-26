@@ -558,12 +558,13 @@ export class DevTools {
       if (this.#excludeKeys.includes(category)) continue;
       const section = this.#createSectionWithCache(labels[category] || category, content);
       for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
-        if (!item?.itemType) continue;
+        if (!item?.itemType || item.devExclude) continue;
         const iconUrl = item.iconUrl || item.skin?.thumbnail?.src || "";
         const label = `${iconUrl ? "" : item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
         let granted = 0;
         this.#ui.createButtonRow(label, section, (event) => {
-          const result = this.#grantCatalogItem(itemId, 1);
+          const quantity = Math.max(1, Number(item.defaultQuantity || item.packSize) || 1);
+          const result = this.#grantCatalogItem(itemId, quantity);
           if (result?.success) granted += 1;
           const labelNode = iconUrl ? event.currentTarget.querySelector(".devtools__action-label") : event.currentTarget;
           labelNode.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;

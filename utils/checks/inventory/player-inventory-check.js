@@ -234,6 +234,26 @@ function checkCatalogItemGrant() {
   assert.equal(cache.values.get(key).items.find((item) => item.instanceId === stack.instanceId).quantity, 3,
     "a grant keeps the requested quantity");
 
+  const jar25a = inventory.grantCatalogItem("oil_worm_25", 25);
+  const jar25b = inventory.grantCatalogItem("oil_worm_25", 25);
+  assert.equal(jar25a.success, true, "jar 25 granted");
+  assert.equal(jar25b.success, true, "second jar 25 granted");
+  assert.notEqual(jar25a.instanceId, jar25b.instanceId, "two jars of 25 have separate instance IDs");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar25a.instanceId).quantity, 25);
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar25b.instanceId).quantity, 25);
+
+  const jar50 = inventory.grantCatalogItem("oil_worm_50", 50);
+  assert.equal(jar50.success, true, "jar 50 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar50.instanceId).quantity, 50);
+
+  const jar75 = inventory.grantCatalogItem("oil_worm_75", 75);
+  assert.equal(jar75.success, true, "jar 75 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar75.instanceId).quantity, 75);
+
+  const jar100 = inventory.grantCatalogItem("oil_worm_100", 100);
+  assert.equal(jar100.success, true, "jar 100 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar100.instanceId).quantity, 100);
+
   const backpack = inventory.grantCatalogItem("backpack_basic");
   assert.equal(backpack.success, true, "the backpack is available to the DEV catalog grant port");
   const backpackView = items(inventory).find((item) => item.instanceId === backpack.instanceId);

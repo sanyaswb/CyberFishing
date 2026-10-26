@@ -83,6 +83,18 @@ class BaitEffectivenessCheck {
       2,
       "oil worm uses perch affinity",
     );
+    for (const jarId of ["oil_worm_25", "oil_worm_50", "oil_worm_75", "oil_worm_100"]) {
+      Assertion.equal(
+        resolver.resolveMultiplier(perch, jarId),
+        2,
+        `${jarId} resolves perch affinity`,
+      );
+      Assertion.equal(
+        resolver.resolveMultiplier(perch, { itemId: jarId, baitId: "oil_worm" }),
+        2,
+        `${jarId} item object with baitId resolves perch affinity`,
+      );
+    }
     Assertion.equal(
       resolver.resolveMultiplier(perch, "bread"),
       0,

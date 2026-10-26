@@ -34,9 +34,12 @@ export class BaitEffectivenessResolver {
     this.#descriptorFactory = descriptorFactory;
   }
 
-  resolveMultiplier(fish, baitId) {
-    if (!fish || !baitId) return 0;
-    const multiplier = Number(fish.baitMultipliers?.[baitId]);
+  resolveMultiplier(fish, baitCandidate) {
+    if (!fish || !baitCandidate) return 0;
+    const candidateId = typeof baitCandidate === "object"
+      ? (baitCandidate.baitId || baitCandidate.itemId || baitCandidate.id)
+      : baitCandidate;
+    const multiplier = Number(fish.baitMultipliers?.[candidateId]);
     return Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 0;
   }
 
@@ -153,7 +156,7 @@ export class BaitEffectivenessResolver {
       return { baitId: String(value || ""), item: null };
     }
     return {
-      baitId: String(value.itemId || value.id || ""),
+      baitId: String(value.baitId || value.itemId || value.id || ""),
       item: value,
     };
   }

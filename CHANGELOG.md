@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.13 - Discrete worm jar sizes (25, 50, 75, 100) and DEV shop delivery
+
+- Inventory: added discrete worm jar catalog items (25, 50, 75, 100 pcs) with distinct jar art and pack capacities; DEV shop grants nominal jar quantities (TK-108).
+
 ## v0.48.12 - Bait and chum packs in backpack and switcher worm icon
 
 - Inventory: bait and chum stacks count by pack/jar size towards backpack capacity (50 worms in jars of 25 = 2 items); worm item displays jar artwork in backpack and worm icon in header switcher (TK-107).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.4 - Radio sound export and interference switch
 
 - Radio: «Перешкоди сигналу» switch (the hiss and crackle left with the effects off), DEV switches for vinyl, walkie-talkie and interference in the radio's window, export of the sound settings and `npm run apply:radio` to write them into the code (TK-099).
-
-## v0.48.3 - Effect sliders in the radio (DEV)
-
-- DEV: the main parameters of the enabled radio effects (vinyl, walkie-talkie) as sliders under the volume in the radio's editor; production shows none (TK-098).
