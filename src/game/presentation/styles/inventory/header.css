@@ -46,13 +46,13 @@
   .inventory-header {
     --inventory-header-radius: 8px;
     --inventory-header-bottom-gap: 8px;
-    --inventory-header-unit: clamp(1px, calc(100cqi / 320), calc(44px / 36));
-    --inventory-header-control-height: calc(var(--inventory-header-unit) * 36);
+    --inventory-header-unit: calc(44px / 36);
+    --inventory-header-control-height: 44px;
     --inventory-scale-unit: var(--inventory-header-unit);
     grid-template-columns: minmax(0, 1fr) auto var(--ui-close-size);
     gap: 6px;
     margin-bottom: var(--inventory-header-bottom-gap);
-    padding: var(--inventory-header-radius);
+    padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);
   }
   .inventory-header__controls {
     display: contents;
@@ -76,7 +76,7 @@
   /* Portrait (spec 069): the header is a rounded mini panel inside the full-screen container. */
   @container ui-surface (orientation: portrait) {
     .inventory-header {
-      --inventory-header-unit: clamp(1px, calc(100cqi / 320), 2px);
+      --inventory-header-unit: calc(44px / 36);
       margin: var(--inventory-mobile-inset);
       gap: calc(var(--inventory-header-unit) * 8);
       border-bottom: 0;

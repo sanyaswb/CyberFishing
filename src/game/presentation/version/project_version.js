@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.16";
+export const CURRENT_PROJECT_VERSION = "0.48.17";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-26",
   notes: Object.freeze([
+    "TK-112: fixed header height, loadout stretching and 100% width alignment in portrait.",
     "TK-111: loadout panel padding reset to 0 in portrait mode.",
     "TK-110: equipment panel overflow-x hidden and portrait alignment with header.",
     "TK-109: open backpack backdrop fills container with 10px padding.",

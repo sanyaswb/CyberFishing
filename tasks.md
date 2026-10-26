@@ -8,6 +8,33 @@
 
 ## Задачі в роботі
 
+### TK-112 — однакова висота inventory-header, розтягування inventory-loadout-panel та вирівнювання по ширині з header
+
+- Власник 2026-10-26:
+  1. Зроби висоту цього блоку inventory-loadout-panel inventory-panel з широких екранів однаково і для розмірів вужче.
+  2. Зроби висоту цього блоку inventory-header з широких екранів однаково і для розмірів вужче.
+  3. inventory-main__section inventory-main__section--equipment тут лишні відступи прибери вирівняй по ширині з header.
+- Уточнення власника:
+  1. Для `inventory-header`: зберігати фіксовану висоту контролів 44px та відступи з десктопу (загальна висота шапки ~59px без звуження і зменшення кнопок на вузьких екранах).
+  2. Для `inventory-loadout-panel`: зробити розтягування на всю висоту контейнера (`height: 100%` / `flex: 1`, як на широких екранах, замість `height: auto` / `flex: none`).
+  3. Для `inventory-main__section--equipment`: усунути зайві бічні порожнечі/відступи первинної панелі (`width: var(--inventory-equipment-width)` ~314px), встановивши для `.inventory-loadout-panel__primary` `width: 100%` та `.inventory-loadout-panel__auxiliary` `max-width: 100%`, щоб панель займала всю ширину між 10px відступами і збігалася з шириною `inventory-header`.
+- Причина:
+  1. У `header.css` у `@container ui-surface (max-width: 820px)` та в portrait-запиті висота контролів зменшувалася формулою `--inventory-header-control-height: calc(var(--inventory-header-unit) * 36)` та масштабованим `--inventory-header-unit: clamp(...)`, через що шапка ставала нижчою на вузьких екранах.
+  2. У `loadout.css` та `modal.css` для portrait-режиму стояло `.inventory-loadout-shell { height: auto; }` та `.inventory-loadout-panel { flex: none; }`, через що панель екіпірування схлопувалася до висоти свого вмісту (`max-content`) замість того, щоб займати 100% доступної висоти секції, як це відбувається на десктопі (`height: 100%` / `flex: 1`).
+  3. У `loadout.css` клас `.inventory-loadout-panel__primary` мав фіксовану ширину `width: var(--inventory-equipment-width);` (3.38 units), яка була меншою за ширину контейнера (3.66 units / 340px) і центрувалася з порожніми відступами по ~13px з кожного боку, через що блок екіпірування був візуально вужчим за `inventory-header`.
+- Зміна:
+  1. У `header.css` у `@container ui-surface (max-width: 820px)` зафіксувати `--inventory-header-control-height: 44px;`, `--inventory-header-unit: calc(44px / 36);` та `padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);`, зберігаючи ідентичну висоту шапки (~59px) на всіх ширинах.
+  2. У `modal.css` для `.inventory-modal--section-equipment .inventory-main__section--equipment` забезпечити `height: 100%;`.
+  3. У `loadout.css` у portrait-секції встановити `.inventory-loadout-shell { height: 100%; }`, для `.inventory-loadout-panel` встановити `flex: 1; min-height: 0;`, для `.inventory-loadout-panel__primary` встановити `width: 100%;`, а для `.inventory-loadout-panel__auxiliary` встановити `max-width: 100%;`.
+- Перевірка:
+  - Автоматичний тест у `inventory-ui-check.js`: перевірка `--inventory-header-control-height: 44px` у `@container ui-surface (max-width: 820px)`, `flex: 1` для `.inventory-loadout-panel` та `width: 100%` для `.inventory-loadout-panel__primary` у portrait; Full 72/72.
+- [x] Реалізовано v0.48.17; на старому коді перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` у портретній та мобільній орієнтації:
+  1. Шапка `.inventory-header` зберігає ту саму висоту контролів (44px) і загальну висоту (~59px), що й на широких екранах.
+  2. Панель `.inventory-loadout-panel` розтягується на всю доступну висоту контентної зони (`height: 100%` / `flex: 1`), як на десктопі.
+  3. Блок екіпірування `.inventory-loadout-panel__primary` не має зайвих бічних відступів і вирівняний по ширині точно з шапкою `.inventory-header`. Візуально агентом не перевіряється.
+
+
 ### TK-111 — обнулення padding для inventory-loadout-panel у portrait медіа-запиті
 
 - Власник 2026-10-26: тоді треба прибрати в цьому медіа запиті padding для inventory-loadout-panel inventory-panel і для верху і низу.
