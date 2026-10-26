@@ -137,7 +137,8 @@
 @media (prefers-reduced-motion: reduce) {
   .inventory-parameter__help,
   .inventory-parameter__bar-fill,
-  .inventory-parameter__segment {
+  .inventory-parameter__segment,
+  .inventory-parameter .inventory-resource-meter__fill {
     transition: none;
   }
 }
@@ -149,18 +150,22 @@
   text-align: right;
 }
 
-.inventory-parameter__bar {
+.inventory-parameter__bar,
+.inventory-parameter .inventory-resource-meter {
   display: flex;
+  align-items: center;
   width: 100%;
 }
 
-.inventory-parameter__bar-track {
+.inventory-parameter__bar-track,
+.inventory-parameter .inventory-resource-meter__track {
   width: 100%;
   height: var(--inventory-parameter-meter-height, 7px);
   border-radius: var(--ui-radius-control);
   background: var(--inventory-resource-track, var(--ui-border));
   overflow: hidden;
   border: 0;
+  position: relative;
 }
 
 .inventory-parameter__bar-fill {
@@ -168,6 +173,16 @@
   background-color: var(--inventory-parameter-color, var(--inventory-success, var(--ui-success)));
   border-radius: inherit;
   transition: width var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease);
+}
+
+.inventory-parameter .inventory-resource-meter__fill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background-color: var(--inventory-resource-color, var(--ui-border));
+  border-radius: inherit;
+  clip-path: inset(0 calc(100% - var(--inventory-resource-percent)) 0 0);
+  transition: clip-path var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease);
 }
 
 .inventory-parameter__segments {

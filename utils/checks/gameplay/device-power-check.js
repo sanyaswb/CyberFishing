@@ -248,13 +248,19 @@ const liveThumbBattery = thumbnails.create("thumb-battery");
 assert.equal(liveThumbBattery.charge.percent, 40, "battery gets live charge from provider");
 assert.equal(liveThumbBattery.displayStats["Ємність"], "1440", "live battery capacity reflects 40% of 3600 = 1440 units");
 
-// TK-102: item-parameters.css design rule compliance
+// TK-102 & TK-103: item-parameters.css and resource-meters.css unified meter design rules
 const paramsCss = runtime.read("src/game/presentation/styles/inventory/item-parameters.css");
 assert(!/#e8f7f8|#83a2aa|#0a1114/u.test(paramsCss), "item-parameters.css uses design tokens instead of legacy hardcoded colors");
 assert(paramsCss.includes("prefers-reduced-motion"), "item-parameters.css supports prefers-reduced-motion");
+assert(paramsCss.includes(".inventory-parameter .inventory-resource-meter__track"), "item-parameters.css unifies resource meter track styling with parameter bars");
+
+const resourceMetersCss = runtime.read("src/game/presentation/styles/inventory/resource-meters.css");
+assert(resourceMetersCss.includes(".inventory-resource-meter--parameter .inventory-resource-meter__track"), "resource-meters.css defines parameter meter track styling");
+assert(resourceMetersCss.includes("--ui-radius-control"), "resource-meters.css applies control border-radius token to parameter meter tracks");
+assert(resourceMetersCss.includes("prefers-reduced-motion"), "resource-meters.css supports prefers-reduced-motion");
 
 console.log("Device power passed: catalog boat rates (5/7.5/10 min moving, a third waiting, 0 idle/drifting), drain never "
   + "rises or goes below 0, 300 s per battery on 16 ms steps without the wall clock, writes every 5 s and at empty, "
   + "clamped steps, flush on hide, ledger, lower charge across tabs, one-time grants once, boat drifts on an empty "
   + "battery and idle boats consume nothing; the boat thumbnail shows the battery as its charge bar, not a cell; "
-  + "TK-102: battery parameters have one charge meter and dynamic remaining capacity.");
+  + "TK-102/TK-103: battery parameters have one charge meter, dynamic remaining capacity and unified parameter scale styles.");

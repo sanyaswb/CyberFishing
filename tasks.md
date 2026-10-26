@@ -8,6 +8,18 @@
 
 ## Задачі в роботі
 
+### TK-103 — уніфікація стилів шкал параметрів за зразком inventory-parameter__bar-fill
+
+- Власник 2026-10-26: стилі шкал параметрів всюди повинні бути однакові, зразок — стиль `inventory-parameter` `inventory-parameter__bar-fill`.
+- Причина: шкали типу `resource` (`InventoryResourceMeterRenderer`, `.inventory-resource-meter--parameter`), на відміну від шкал типу `bar` (`.inventory-parameter__bar-track` / `.inventory-parameter__bar-fill`), малювалися без заокруглення треку (`border-radius: var(--ui-radius-control)`), без наслідування радіусу заливкою, без плавного переходу `clip-path` / `transition` та без медіа-правила `prefers-reduced-motion`.
+- Зміна: уніфіковано стилі у `resource-meters.css` та `item-parameters.css`:
+  1. `.inventory-resource-meter--parameter` та `.inventory-parameter .inventory-resource-meter`: трек отримує `border-radius: var(--ui-radius-control)`, фоновий колір `var(--inventory-resource-track, var(--ui-border))` та `overflow: hidden`.
+  2. Заливка `.inventory-resource-meter__fill` отримує `border-radius: inherit`, плавний перехід `transition: clip-path var(--ui-duration-normal, 280ms) var(--ui-ease-standard, ease)` та підтримку `prefers-reduced-motion: reduce`.
+  3. Треки мініатюр (`.inventory-resource-meter--thumbnail .inventory-resource-meter__track`) зберігають прямі краї `border-radius: 0`.
+- Перевірка: `device-power` перевіряє наявність правил уніфікації треків і заливок та reduced-motion у `resource-meters.css` та `item-parameters.css`; `css-usage`; Full 72/72.
+- [x] Реалізовано v0.48.8; на старому CSS перевірка падає.
+- [ ] Власник: `dev.html` / `index.html` — відкрити інвентар, оглянути параметри батарейки («Заряд») та інших предметів зі шкалами («Міцність», «Свіжість» тощо): усі шкали параметрів виглядають однаково (однакова висота, заокруглені краї, плавний рух заливки). Візуально агентом не перевіряється.
+
 ### TK-102 — стилі параметрів за дизайн-правилами, єдина шкала заряду та динамічна ємність батарейки
 
 - Власник 2026-10-26: виправити неузгодженості блока стилів параметрів з правилами дизайну; прибрати дублювання шкали заряду в картці батарейки; зробити блок `text|Ємність||v|` залежним від реального розряду: число 3600 плавно зменшується відповідно до розряджання.
