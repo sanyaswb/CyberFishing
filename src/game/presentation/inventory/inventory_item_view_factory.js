@@ -101,6 +101,8 @@ export class InventoryItemViewFactory {
       ...(this.#runtimeContextProvider(hydrated) || {}),
       catalogItem: baseItem,
     };
+    const charge = this.#chargeResolver?.resolve(hydrated) || null;
+    if (charge) hydrated.charge = charge;
     this.#displayStatsResolver?.apply?.(hydrated, runtimeContext);
     hydrated.progression = this.#progressionResolver.resolve(
       hydrated,
@@ -114,8 +116,6 @@ export class InventoryItemViewFactory {
       { exposureMs: runtimeContext.freshnessExposureMs },
     ) || null;
     if (freshness) hydrated.freshness = freshness;
-    const charge = this.#chargeResolver?.resolve(hydrated) || null;
-    if (charge) hydrated.charge = charge;
     const baitEffectiveness =
       this.#baitEffectivenessCatalogResolver?.resolve(hydrated, runtimeContext) ||
       null;

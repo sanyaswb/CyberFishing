@@ -192,8 +192,9 @@ const thumbRepository = new FlatInventoryItemRepository({ items: [
 const thumbnails = new InventoryItemTreeViewFactory({ repository: thumbRepository, assemblyStates: { get: () => null },
   profileRegistry: new AssemblyProfileRegistry(ITEM_ASSEMBLY_PROFILE_CONFIG, { itemDefinitionResolver: (id) => definitions[id] }),
   hydrate: (raw) => ({ ...definitions[raw.itemId], ...raw, effectiveStats: { ...definitions[raw.itemId].gameplayStats } }),
-  deviceChargeProvider: (boatItem) => {
-    const child = thumbRepository.getChild(boatItem.instanceId, "battery", 0);
+  deviceChargeProvider: (item) => {
+    if (item?.itemType === "battery") return { current: item.chargeState?.percent ?? 100, maximum: 100 };
+    const child = thumbRepository.getChild(item.instanceId, "battery", 0);
     return child ? { current: child.chargeState?.percent ?? 100, maximum: 100 } : null;
   } });
 const boatThumb = thumbnails.create("thumb-boat");
@@ -203,7 +204,57 @@ assert.equal(boatThumb.charge.percent, 40, "the boat thumbnail shows its battery
 thumbRepository.setLocation("thumb-battery", InventoryItemLocation.inventory());
 assert.equal(thumbnails.create("thumb-boat").charge, undefined, "without a battery the boat has no charge bar");
 
+// TK-102: battery parameters have one charge meter (resource:energy, not a duplicated bar), and displayStats "Ємність" reflects live remaining capacity.
+const { InventoryItemParametersResolver } = runtime.importModule("src/game/presentation/inventory/inventory_item_parameters_resolver.js");
+const { InventoryResourceMeterResolver } = runtime.importModule("src/game/presentation/inventory/inventory_resource_meter_resolver.js");
+const { InventoryRuntimeDisplayStatsResolver } = runtime.importModule("src/game/application/inventory/inventory_runtime_display_stats_resolver.js");
+const { InventoryItemViewFactory } = runtime.importModule("src/game/presentation/inventory/inventory_item_view_factory.js");
+const { ItemDatabase } = runtime.importModule("src/game/application/inventory/item_database.js");
+
+const itemDbInstance = new ItemDatabase(ITEM_DB);
+const batteryChargeResolver = new ItemBoundedMetricResolver({
+  capabilityId: "charge",
+  profileProvider: (item) => ITEM_PROGRESSION_CONFIG.groups[item?.progressionProfile?.groupId]?.charge,
+  descriptorFactory: (values) => values,
+});
+const batteryViewFactory = new InventoryItemViewFactory({
+  itemDatabase: itemDbInstance,
+  progressionResolver: { resolve: () => ({}) },
+  conditionResolver: { resolve: () => null },
+  freshnessResolver: { resolve: () => null },
+  chargeResolver: batteryChargeResolver,
+  baitEffectivenessCatalogResolver: { resolve: () => null },
+  effectiveRarityResolver: { resolve: () => null },
+  displayStatsResolver: new InventoryRuntimeDisplayStatsResolver(),
+  effectiveStatsResolver: { resolve: ({ definition }) => ({ ...definition.gameplayStats }) },
+  runtimeContextProvider: () => ({}),
+});
+
+const batFull = batteryViewFactory.create({ instanceId: "bat-f", itemId: "battery_basic", chargeState: { percent: 100 } });
+assert.equal(batFull.displayStats["Ємність"], "3600", "full battery capacity is 3600");
+const batHalf = batteryViewFactory.create({ instanceId: "bat-h", itemId: "battery_basic", chargeState: { percent: 50 } });
+assert.equal(batHalf.displayStats["Ємність"], "1800", "50% battery capacity drops to 1800");
+const batZero = batteryViewFactory.create({ instanceId: "bat-z", itemId: "battery_basic", chargeState: { percent: 0 } });
+assert.equal(batZero.displayStats["Ємність"], "0", "empty battery capacity drops to 0");
+
+const paramResolver = new InventoryItemParametersResolver({ resourceMeterResolver: new InventoryResourceMeterResolver() });
+const batParams = paramResolver.resolve(batHalf);
+assert.equal(batParams.filter((p) => p.label === "Заряд").length, 1, "battery parameters have exactly one charge meter (no duplicate bar)");
+assert.equal(batParams.find((p) => p.label === "Заряд")?.id, "resource:energy", "the charge parameter is resource:energy");
+assert.equal(batParams.find((p) => p.label === "Ємність")?.value, "1800", "the capacity parameter reflects 1800 remaining units");
+
+// TK-102: live battery view with deviceChargeProvider (e.g. while draining in radio or boat)
+const liveThumbBattery = thumbnails.create("thumb-battery");
+assert.equal(liveThumbBattery.charge.percent, 40, "battery gets live charge from provider");
+assert.equal(liveThumbBattery.displayStats["Ємність"], "1440", "live battery capacity reflects 40% of 3600 = 1440 units");
+
+// TK-102: item-parameters.css design rule compliance
+const paramsCss = runtime.read("src/game/presentation/styles/inventory/item-parameters.css");
+assert(!/#e8f7f8|#83a2aa|#0a1114/u.test(paramsCss), "item-parameters.css uses design tokens instead of legacy hardcoded colors");
+assert(paramsCss.includes("prefers-reduced-motion"), "item-parameters.css supports prefers-reduced-motion");
+
 console.log("Device power passed: catalog boat rates (5/7.5/10 min moving, a third waiting, 0 idle/drifting), drain never "
   + "rises or goes below 0, 300 s per battery on 16 ms steps without the wall clock, writes every 5 s and at empty, "
   + "clamped steps, flush on hide, ledger, lower charge across tabs, one-time grants once, boat drifts on an empty "
-  + "battery and idle boats consume nothing; the boat thumbnail shows the battery as its charge bar, not a cell.");
+  + "battery and idle boats consume nothing; the boat thumbnail shows the battery as its charge bar, not a cell; "
+  + "TK-102: battery parameters have one charge meter and dynamic remaining capacity.");

@@ -134,18 +134,6 @@ export class InventoryItemParametersResolver {
       );
     }
 
-    const charge = item.charge;
-    if (charge?.available && Number.isFinite(Number(charge.percent))) {
-      this.#append(
-        parameters,
-        renderedIds,
-        "charge",
-        "bar",
-        `${Math.round(Number(charge.percent))}%`,
-        { percent: charge.percent },
-      );
-    }
-
     const baitEffectiveness = item.baitEffectiveness;
     if (
       baitEffectiveness?.available &&

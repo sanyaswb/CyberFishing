@@ -1021,9 +1021,11 @@ export class GameCompositionRoot {
       inventory,
     };
     systems.radio = this.#composeRadio({ own, inventory, devicePower, weather: systems.env });
-    // A device card's charge is its battery's (null without a battery: no bar).
+    // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {
-      const batteryId = devicePower.batteryOf(deviceItem?.instanceId);
+      const batteryId = deviceItem?.itemType === "battery"
+        ? deviceItem?.instanceId
+        : devicePower.batteryOf(deviceItem?.instanceId);
       if (!batteryId) return null;
       return { current: devicePower.read(batteryId).percent, maximum: 100 };
     });

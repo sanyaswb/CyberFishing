@@ -63,7 +63,20 @@ export class InventoryItemTreeViewFactory {
     const reelLineCapacity = this.#createReelLineCapacity(view);
     if (reelLineCapacity) view.reelLineCapacity = reelLineCapacity;
     const charge = this.#createDeviceCharge(view);
-    if (charge) view.charge = charge;
+    if (charge) {
+      view.charge = charge;
+      if (view.itemType === "battery" && view.displayStats) {
+        const capacityUnits = Number(view.effectiveStats?.capacityUnits);
+        if (capacityUnits > 0) {
+          const remaining = Math.round(capacityUnits * (charge.percent / 100));
+          const key = Object.keys(view.displayStatsSchema || {}).find((k) => k === "capacityUnits") || "capacityUnits";
+          const label = typeof view.displayStatsSchema?.[key] === "string"
+            ? view.displayStatsSchema[key].replace(/:.*/u, "").trim()
+            : view.displayStatsSchema?.[key]?.label || "Ємність";
+          view.displayStats[label] = String(remaining);
+        }
+      }
+    }
     return view;
   }
 
@@ -173,8 +186,8 @@ export class InventoryItemTreeViewFactory {
 
   #createDeviceCharge(item) {
     if (
-      // Devices with a battery slot (spec 143): the bait boat and the radio receiver (spec 142).
-      !["boat", "chum_delivery", "radio"].includes(item?.itemType) ||
+      // Devices with a battery slot (spec 143): the bait boat and the radio receiver (spec 142), and battery items.
+      !["boat", "chum_delivery", "radio", "battery"].includes(item?.itemType) ||
       !this.#deviceChargeProvider
     ) {
       return null;
