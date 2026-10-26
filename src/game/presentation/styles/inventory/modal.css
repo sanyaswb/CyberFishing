@@ -285,10 +285,6 @@
       padding: 0 var(--inventory-mobile-inset);
     }
 
-    .inventory-modal--section-equipment .inventory-main__section--equipment {
-      height: 100%;
-    }
-
     .inventory-modal--section-equipment .inventory-main__right {
       display: none;
     }

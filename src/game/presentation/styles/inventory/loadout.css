@@ -377,24 +377,15 @@
        the equipment host is a size container in portrait (modal.css), so the composition always fits the real row
        between the header and the tabs (spec 078; the former viewport estimate broke when the header grew). */
     .inventory-loadout-shell {
-      height: 100%;
+      height: auto;
     }
 
     .inventory-loadout-panel {
       display: grid;
-      flex: 1;
-      min-height: 0;
+      flex: none;
       grid-template-rows: max-content max-content;
       align-content: start;
       padding: 0;
-    }
-
-    .inventory-loadout-panel__primary {
-      width: 100%;
-    }
-
-    .inventory-loadout-panel__auxiliary {
-      max-width: 100%;
     }
 
     /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */
