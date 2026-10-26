@@ -2068,6 +2068,16 @@ class InventoryUiBehaviorCheck {
       /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel__primary\s*\{[^}]*justify-content:\s*center;[^}]*grid-template-columns:\s*calc\(var\(--inventory-equipment-unit\)\s*\*\s*1\.9\)\s+var\(--inventory-equipment-unit\);/,
       "inventory-loadout-panel primary centers fixed proportional rod and cascade columns in portrait mode",
     );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel__primary--single\s*\{[^}]*grid-template-columns:\s*calc\(var\(--inventory-equipment-unit\)\s*\*\s*1\.9\);/,
+      "inventory-loadout-panel single rod primary centers fixed proportional rod column in portrait mode",
+    );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-loadout-panel\s+\.inventory-loadout-panel__auxiliary\s*\{[^}]*width:\s*100%;[^}]*grid-auto-flow:\s*column;/,
+      "inventory-loadout-panel auxiliary overrides desktop column to full-width horizontal scroll in portrait mode",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {

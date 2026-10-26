@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.20 - Rodless loadout panel portrait alignment and layout fix
+
+- Inventory: fixed portrait loadout layout when no rod is equipped, preventing two-column split and full-height stretch, and keeping primary and auxiliary panels full-width with a centered proportional rod slot (TK-115).
+
 ## v0.48.19 - Added battery variants Volt-2, Volt-3 and Volt-4
 
 - Inventory: added three battery variants to the catalog: Volt-2 (7200 units, tier 2), Volt-3 (10800 units, tier 3), and Volt-4 (24000 units, tier 4) with dedicated assets, dynamic capacity readout, and DEV shop availability (TK-114).
@@ -38,8 +42,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Inventory: mobile layout (<=820px) adapts grid column counts to the selected display size: 1 -> 6 columns, 2 -> 4 columns (standard), 3 -> 3 columns (TK-106).
 
-## v0.48.10 - Unified card rounded corners and inventory grid scale settings
-
-- Inventory: item cards in backpack unified with rounded corners matching equipment wells, and added display settings toggle with 1 (0.5×), 2 (1×), 3 (1.5×) scale buttons (TK-105).
 
 

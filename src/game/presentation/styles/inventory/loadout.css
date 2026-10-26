@@ -382,9 +382,16 @@
 
     .inventory-loadout-panel {
       --inventory-equipment-unit: min(calc(100cqi / 3.38), calc(100cqb / 4.60));
+      --inventory-equipment-well-size: calc(
+        var(--inventory-equipment-unit) * 0.7
+      );
       display: grid;
       flex: none;
+      grid-template-areas: none;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: max-content max-content;
+      row-gap: var(--inventory-equipment-gap);
+      column-gap: 0;
       align-content: start;
       padding: 0;
     }
@@ -395,15 +402,41 @@
     }
 
     .inventory-loadout-panel__primary {
+      grid-area: auto;
       justify-content: center;
       grid-template-columns: calc(var(--inventory-equipment-unit) * 1.9) var(--inventory-equipment-unit);
+      height: calc(
+        var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 +
+          var(--inventory-equipment-inset) * 2
+      );
     }
 
     .inventory-loadout-panel__primary--single {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: calc(var(--inventory-equipment-unit) * 1.9);
     }
 
-    /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */
+    .inventory-loadout-panel .inventory-loadout-panel__auxiliary {
+      --inventory-scroll-axis: x;
+      grid-area: auto;
+      justify-self: stretch;
+      width: 100%;
+      max-height: none;
+      height: auto;
+      grid-auto-flow: column;
+      grid-template-columns: none;
+      grid-auto-columns: var(--inventory-equipment-well-size);
+      grid-auto-rows: var(--inventory-equipment-well-size);
+      justify-content: start;
+      align-content: center;
+      column-gap: var(--inventory-equipment-gap);
+      row-gap: 0;
+      padding: var(--inventory-equipment-inset);
+      overflow: auto hidden;
+      overscroll-behavior: contain;
+      touch-action: pan-x;
+    }
+
+    /* A rodless equipment section keeps the consistent panel height matching the header (TK-115). */
     .inventory-main__section--equipment:has(
       .inventory-loadout-panel__primary--single
     ),
@@ -411,15 +444,17 @@
         .inventory-loadout-panel__primary--single
       )
       .inventory-loadout-shell {
-      height: 100%;
+      height: auto;
     }
 
     .inventory-main__section--equipment
       .inventory-loadout-panel:has(
         > .inventory-loadout-panel__primary--single
       ) {
-      flex: 1;
-      min-height: 0;
+      flex: none;
+      min-height: auto;
+      grid-template-rows: max-content max-content;
+      align-content: start;
     }
   }
 

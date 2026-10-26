@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.19";
+export const CURRENT_PROJECT_VERSION = "0.48.20";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -14,8 +14,9 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
   codename: "Field Radio",
-  updatedAt: "2026-10-26",
+  updatedAt: "2026-10-27",
   notes: Object.freeze([
+    "TK-115: rodless loadout panel portrait alignment and layout fix.",
     "TK-114: added battery variants Volt-2 (7200), Volt-3 (10800), and Volt-4 (24000).",
     "TK-113: full-width portrait loadout panels with centered proportional rod and cascade.",
     "TK-112: fixed header height and proportional loadout width alignment in portrait.",
