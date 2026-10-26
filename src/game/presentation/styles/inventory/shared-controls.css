@@ -163,11 +163,11 @@
 
 .inventory-collection__backdrop {
   position: absolute;
-  top: 15%;
-  left: 15%;
+  inset: 0;
   display: none;
-  width: 70%;
-  height: 70%;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
   object-fit: contain;
   object-position: center;
   opacity: 0.12;

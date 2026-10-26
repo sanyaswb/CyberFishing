@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.14 - Open backpack backdrop sizing and padding
+
+- Inventory: open backpack background image fills collection container with 10px padding (TK-109).
+
 ## v0.48.13 - Discrete worm jar sizes (25, 50, 75, 100) and DEV shop delivery
 
 - Inventory: added discrete worm jar catalog items (25, 50, 75, 100 pcs) with distinct jar art and pack capacities; DEV shop grants nominal jar quantities (TK-108).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.5 - Radio prefers stations with the effect
 
 - Radio remembers which stations play with the effect (their servers allow it) and offers them first; DEV switch to skip stations without it (TK-100).
-
-## v0.48.4 - Radio sound export and interference switch
-
-- Radio: «Перешкоди сигналу» switch (the hiss and crackle left with the effects off), DEV switches for vinyl, walkie-talkie and interference in the radio's window, export of the sound settings and `npm run apply:radio` to write them into the code (TK-099).

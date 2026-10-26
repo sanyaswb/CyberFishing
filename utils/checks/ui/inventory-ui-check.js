@@ -2028,6 +2028,11 @@ class InventoryUiBehaviorCheck {
       /\.inventory-list-grid--size-3\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
       "inventory-list-grid--size-3 has 3 columns",
     );
+    assert.match(
+      itemCardsCss,
+      /\.inventory-collection__backdrop\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*padding:\s*10px;/,
+      "inventory-collection__backdrop fills container with 10px padding",
+    );
 
     this.#findByClass(ui.rootNode, "inventory-categories__button").click();
     this.#assertLast(dispatched, {
