@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.25";
+export const CURRENT_PROJECT_VERSION = "0.48.26";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-27",
   notes: Object.freeze([
+    "TK-121: expanded DEV radio sound tuning parameters and organized into collapsible accordion sections.",
     "TK-120: align item assembly editor width and margins with inventory header in portrait mode.",
     "TK-119: remove dead EmbeddedPageOverlay, dev-tools.css iframe styles, test suite, and style reader catalog remnants.",
     "TK-118: remove UI catalog code, components, examples, fixtures, styles and dev navigation; ui-catalog.html cleared.",

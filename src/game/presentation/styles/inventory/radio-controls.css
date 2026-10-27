@@ -123,8 +123,7 @@
   accent-color: var(--ui-success);
 }
 
-/* TK-098/099 (DEV only): a switch per sound part, then the main parameters of the parts that are on as sliders under
-   the volume; a slider's value at its end. */
+/* TK-098/099, TK-121 (DEV only): collapsible sound tuning block by analogy with DevTools. */
 .radio-controls__tuning {
   display: grid;
   gap: 6px;
@@ -132,18 +131,98 @@
   border-top: 1px dashed #43525b;
 }
 
-.radio-controls__tuning .radio-controls__field {
-  grid-template-columns: minmax(0, 9em) minmax(0, 1fr) 3.5em;
+.radio-controls__tuning-toggle,
+.radio-controls__group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.3);
+  border-radius: var(--ui-radius-control);
+  background: rgba(var(--ui-accent-rgb), 0.08);
+  color: var(--ui-accent);
+  font: 700 12px/1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.16s, color 0.16s;
+}
+
+.radio-controls__tuning-toggle {
+  width: 100%;
+}
+
+.radio-controls__group-toggle {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.ui-surface--desktop-hover .radio-controls__tuning-toggle:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .radio-controls__tuning-toggle:active {
+  background: rgba(var(--ui-accent-rgb), 0.18);
+  color: var(--ui-text);
+}
+
+.radio-controls__tuning-arrow {
+  font-size: 10px;
+  flex: none;
 }
 
 .radio-controls__tuning-title {
   margin: 0;
   color: var(--ui-accent);
   font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-controls__tuning-content {
+  display: grid;
+  gap: 8px;
+  padding-left: 6px;
+  border-left: 2px solid rgba(var(--ui-accent-rgb), 0.4);
+  margin-left: 4px;
+}
+
+.radio-controls__tuning-group {
+  display: grid;
+  gap: 4px;
+}
+
+.radio-controls__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.radio-controls__group-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-controls__group-content {
+  display: grid;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(var(--ui-accent-rgb), 0.25);
+  margin-left: 4px;
+}
+
+.radio-controls__tuning .radio-controls__field {
+  grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 3.5em;
 }
 
 .radio-controls__tuning-value {
   color: var(--ui-text);
   font-size: 11px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }

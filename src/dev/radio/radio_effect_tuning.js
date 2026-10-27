@@ -1,33 +1,74 @@
-// DEV (TK-098..TK-100): the radio's sound parts tuned in its editor next to the volume: a switch per part (vinyl,
-// walkie-talkie, the signal's interference, «only stations with the effect») and sliders for the main parameters of the parts that are on. Writes go to
-// the live configuration through the same config runtime as DevTools, so both show one value. Production composes no
-// tuning port: the player never controls the sound quality.
+// DEV (TK-098..TK-100, TK-121): all radio sound parameters tuned in its editor next to the volume: a switch per part
+// (vinyl, walkie-talkie, signal interference, «only stations with the effect») and sliders for all parameters of the
+// parts that are on. Writes go to the live configuration through the same config runtime as DevTools, so both show one
+// value. Production composes no tuning port: the player never controls the sound quality.
 const GROUPS = Object.freeze([
-  Object.freeze({ group: "vinyl", label: "Платівка", path: Object.freeze(["effects", "vinyl"]), parameters: Object.freeze([
-    Object.freeze({ key: "crackleLevel", label: "Платівка · тріск", min: 0, max: 0.5, step: 0.01 }),
-    Object.freeze({ key: "popLevel", label: "Платівка · клацання", min: 0, max: 1, step: 0.01 }),
-    Object.freeze({ key: "hissLevel", label: "Платівка · шипіння", min: 0, max: 0.05, step: 0.001 }),
-    Object.freeze({ key: "wowDepthMs", label: "Платівка · похитування, мс", min: 0, max: 4, step: 0.1 }),
-    Object.freeze({ key: "warmthGainDb", label: "Платівка · тепло, дБ", min: 0, max: 8, step: 0.5 }),
-    Object.freeze({ key: "mix", label: "Платівка · мікс", min: 0, max: 1, step: 0.05 }),
-  ]) }),
-  Object.freeze({ group: "walkieTalkie", label: "Рація", path: Object.freeze(["effects", "walkieTalkie"]),
+  Object.freeze({
+    group: "vinyl",
+    label: "Платівка",
+    path: Object.freeze(["effects", "vinyl"]),
+    parameters: Object.freeze([
+      Object.freeze({ key: "crackleLevel", label: "Платівка · тріск", min: 0, max: 0.5, step: 0.01 }),
+      Object.freeze({ key: "crackleRate", label: "Платівка · частота тріску, 1/с", min: 0, max: 20, step: 0.5 }),
+      Object.freeze({ key: "crackleToneHz", label: "Платівка · тембр тріску, Гц", min: 500, max: 8000, step: 100 }),
+      Object.freeze({ key: "popLevel", label: "Платівка · клацання", min: 0, max: 1, step: 0.01 }),
+      Object.freeze({ key: "popRate", label: "Платівка · частота клацань, 1/с", min: 0, max: 2, step: 0.05 }),
+      Object.freeze({ key: "hissLevel", label: "Платівка · шипіння", min: 0, max: 0.05, step: 0.001 }),
+      Object.freeze({ key: "warmthGainDb", label: "Платівка · тепло, дБ", min: 0, max: 12, step: 0.5 }),
+      Object.freeze({ key: "warmthHz", label: "Платівка · частота тепла, Гц", min: 50, max: 500, step: 10 }),
+      Object.freeze({ key: "wowDepthMs", label: "Платівка · похитування (wow), мс", min: 0, max: 4, step: 0.1 }),
+      Object.freeze({ key: "wowHz", label: "Платівка · частота wow, Гц", min: 0.1, max: 2, step: 0.05 }),
+      Object.freeze({ key: "flutterDepthMs", label: "Платівка · тріпотіння (flutter), мс", min: 0, max: 1, step: 0.05 }),
+      Object.freeze({ key: "flutterHz", label: "Платівка · частота flutter, Гц", min: 1, max: 15, step: 0.5 }),
+      Object.freeze({ key: "rumbleLevel", label: "Платівка · гул", min: 0, max: 0.2, step: 0.01 }),
+      Object.freeze({ key: "rumbleHz", label: "Платівка · частота гулу, Гц", min: 10, max: 100, step: 5 }),
+      Object.freeze({ key: "drive", label: "Платівка · перевантаження", min: 0, max: 10, step: 0.5 }),
+      Object.freeze({ key: "baseDelayMs", label: "Платівка · затримка, мс", min: 0, max: 30, step: 1 }),
+      Object.freeze({ key: "lowpassHz", label: "Платівка · зріз верхів, Гц", min: 2000, max: 16000, step: 500 }),
+      Object.freeze({ key: "highpassHz", label: "Платівка · зріз низів, Гц", min: 10, max: 200, step: 5 }),
+      Object.freeze({ key: "outputGain", label: "Платівка · вихідне підсилення", min: 0, max: 2, step: 0.05 }),
+      Object.freeze({ key: "mix", label: "Платівка · мікс", min: 0, max: 1, step: 0.05 }),
+    ]),
+  }),
+  Object.freeze({
+    group: "walkieTalkie",
+    label: "Рація",
+    path: Object.freeze(["effects", "walkieTalkie"]),
     parameters: Object.freeze([
       Object.freeze({ key: "drive", label: "Рація · хрип", min: 0, max: 40, step: 1 }),
       Object.freeze({ key: "lowpassHz", label: "Рація · верхи, Гц", min: 1500, max: 6000, step: 100 }),
       Object.freeze({ key: "highpassHz", label: "Рація · низи, Гц", min: 200, max: 1200, step: 50 }),
+      Object.freeze({ key: "peakHz", label: "Рація · пік частота, Гц", min: 500, max: 4000, step: 50 }),
+      Object.freeze({ key: "peakGainDb", label: "Рація · пік підсилення, дБ", min: 0, max: 18, step: 0.5 }),
+      Object.freeze({ key: "peakQ", label: "Рація · пік добротність (Q)", min: 0.5, max: 6, step: 0.1 }),
+      Object.freeze({ key: "outputGain", label: "Рація · вихідне підсилення", min: 0, max: 2, step: 0.05 }),
       Object.freeze({ key: "mix", label: "Рація · мікс", min: 0, max: 1, step: 0.05 }),
-    ]) }),
-  Object.freeze({ group: "signal", label: "Перешкоди сигналу", path: Object.freeze(["signal"]), parameters: Object.freeze([
-    Object.freeze({ key: "baseNoise", label: "Перешкоди · шипіння", min: 0, max: 0.05, step: 0.001 }),
-    Object.freeze({ key: "rainNoise", label: "Перешкоди · дощ", min: 0, max: 0.3, step: 0.01 }),
-    Object.freeze({ key: "maxNoise", label: "Перешкоди · слабка батарейка", min: 0, max: 0.6, step: 0.01 }),
-    Object.freeze({ key: "dropoutMax", label: "Перешкоди · розриви", min: 0, max: 1, step: 0.05 }),
-    Object.freeze({ key: "lowChargePercent", label: "Перешкоди · поріг заряду, %", min: 0, max: 60, step: 1 }),
-  ]) }),
+    ]),
+  }),
+  Object.freeze({
+    group: "signal",
+    label: "Перешкоди сигналу",
+    path: Object.freeze(["signal"]),
+    parameters: Object.freeze([
+      Object.freeze({ key: "baseNoise", label: "Перешкоди · шипіння", min: 0, max: 0.05, step: 0.001 }),
+      Object.freeze({ key: "maxNoise", label: "Перешкоди · шум при розряді", min: 0, max: 0.6, step: 0.01 }),
+      Object.freeze({ key: "maxCrackle", label: "Перешкоди · тріск при розряді", min: 0, max: 15, step: 0.5 }),
+      Object.freeze({ key: "maxVolumeSag", label: "Перешкоди · просідання гучності", min: 0, max: 1, step: 0.05 }),
+      Object.freeze({ key: "dropoutMax", label: "Перешкоди · розриви", min: 0, max: 1, step: 0.05 }),
+      Object.freeze({ key: "lowChargePercent", label: "Перешкоди · поріг заряду, %", min: 0, max: 60, step: 1 }),
+      Object.freeze({ key: "rainNoise", label: "Перешкоди · дощ шум", min: 0, max: 0.3, step: 0.01 }),
+      Object.freeze({ key: "rainCrackle", label: "Перешкоди · дощ тріск", min: 0, max: 10, step: 0.5 }),
+      Object.freeze({ key: "rainMultMax", label: "Перешкоди · множник дощу", min: 1, max: 5, step: 0.1 }),
+    ]),
+  }),
   // TK-100: a plain flag (CONFIG.radio.onlyEffectStations), no sliders.
-  Object.freeze({ group: "onlyEffectStations", label: "Лише станції з ефектом", flag: true,
-    path: Object.freeze(["onlyEffectStations"]), parameters: Object.freeze([]) }),
+  Object.freeze({
+    group: "onlyEffectStations",
+    label: "Лише станції з ефектом",
+    flag: true,
+    path: Object.freeze(["onlyEffectStations"]),
+    parameters: Object.freeze([]),
+  }),
 ]);
 
 export class RadioEffectTuning {
@@ -44,6 +85,10 @@ export class RadioEffectTuning {
   groups() {
     return GROUPS.map(({ group, label, flag }) => ({ group, label,
       enabled: flag ? this.#settings(group) === true : this.#settings(group)?.enabled === true }));
+  }
+
+  isFlag(group) {
+    return GROUPS.find((candidate) => candidate.group === group)?.flag === true;
   }
 
   setEnabled(group, enabled) {

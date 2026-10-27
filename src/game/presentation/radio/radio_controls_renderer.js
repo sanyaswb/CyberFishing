@@ -10,6 +10,7 @@ export class RadioControlsRenderer {
   #labels;
   #tuning;
   #unsubscribe = null;
+  #expandedSections = new Set();
 
   // radio: RadioReceiverService-like port; labels: RADIO_LABELS; tuning: DEV only, { list(), set(effect, key, value) }.
   constructor({ domFactory, radio, labels, tuning = null }) {
@@ -115,19 +116,78 @@ export class RadioControlsRenderer {
     nodes.country.value = current;
   }
 
-  // DEV: one slider per main parameter of every enabled effect; rebuilt only when that set changes.
-  // DEV: a switch per sound part (TK-099), then one slider per main parameter of the parts that are on; rebuilt only
-  // when that set changes.
+  #toggleSection(key, button, content, arrow) {
+    const isExpanded = this.#expandedSections.has(key);
+    if (isExpanded) {
+      this.#expandedSections.delete(key);
+      content.style.display = "none";
+      button.setAttribute("aria-expanded", "false");
+      if (arrow) this.#text(arrow, "▶");
+    } else {
+      this.#expandedSections.add(key);
+      content.style.display = "grid";
+      button.setAttribute("aria-expanded", "true");
+      if (arrow) this.#text(arrow, "▼");
+    }
+  }
+
+  // DEV: all radio sound parameters organized into a collapsed list by analogy with DevTools (TK-121).
   #fillTuning(nodes) {
     if (!nodes.tuning) return;
     const groups = this.#tuning.groups();
     const entries = this.#tuning.list();
-    const signature = [...groups.map((group) => `${group.group}:${group.enabled}`),
-      ...entries.map((entry) => `${entry.effect}.${entry.key}`)].join("|");
+    const signature = [
+      ...groups.map((group) => `${group.group}:${group.enabled}`),
+      ...entries.map((entry) => `${entry.effect}.${entry.key}`),
+    ].join("|");
     if (signature === nodes.tuningSignature) return;
     nodes.tuningSignature = signature;
-    const children = [this.#dom.element("p", "radio-controls__tuning-title", this.#labels.tuningTitle)];
+
+    const isMainExpanded = this.#expandedSections.has("main");
+    const mainToggle = this.#dom.button("radio-controls__tuning-toggle", "");
+    mainToggle.type = "button";
+    mainToggle.setAttribute("aria-expanded", String(isMainExpanded));
+    const mainArrow = this.#dom.element("span", "radio-controls__tuning-arrow", isMainExpanded ? "▼" : "▶");
+    const mainTitle = this.#dom.element("span", "radio-controls__tuning-title", this.#labels.tuningTitle);
+    mainToggle.append(mainArrow, mainTitle);
+
+    const mainContent = this.#dom.element("div", "radio-controls__tuning-content");
+    mainContent.style.display = isMainExpanded ? "grid" : "none";
+
+    mainToggle.addEventListener("click", () => {
+      this.#toggleSection("main", mainToggle, mainContent, mainArrow);
+    });
+
     for (const group of groups) {
+      if (group.flag || this.#tuning.isFlag?.(group.group)) {
+        const groupEl = this.#dom.element("div", "radio-controls__tuning-group");
+        const label = this.#dom.element("label", "radio-controls__switch");
+        const input = this.#dom.element("input", "radio-controls__tuning-switch");
+        input.type = "checkbox";
+        input.setAttribute("role", "switch");
+        input.checked = group.enabled;
+        input.addEventListener("change", () => {
+          this.#tuning.setEnabled(group.group, input.checked);
+          this.#fillTuning(nodes);
+        });
+        label.append(input, this.#dom.element("span", "radio-controls__switch-label", group.label));
+        groupEl.append(label);
+        mainContent.append(groupEl);
+        continue;
+      }
+
+      const groupKey = `group:${group.group}`;
+      const isGroupExpanded = this.#expandedSections.has(groupKey);
+      const groupEl = this.#dom.element("div", "radio-controls__tuning-group");
+      const groupHeader = this.#dom.element("div", "radio-controls__group-header");
+
+      const groupToggle = this.#dom.button("radio-controls__group-toggle", "");
+      groupToggle.type = "button";
+      groupToggle.setAttribute("aria-expanded", String(isGroupExpanded));
+      const groupArrow = this.#dom.element("span", "radio-controls__tuning-arrow", isGroupExpanded ? "▼" : "▶");
+      const groupTitle = this.#dom.element("span", "radio-controls__group-title", group.label);
+      groupToggle.append(groupArrow, groupTitle);
+
       const label = this.#dom.element("label", "radio-controls__switch");
       const input = this.#dom.element("input", "radio-controls__tuning-switch");
       input.type = "checkbox";
@@ -137,23 +197,40 @@ export class RadioControlsRenderer {
         this.#tuning.setEnabled(group.group, input.checked);
         this.#fillTuning(nodes);
       });
-      label.append(input, this.#dom.element("span", "radio-controls__switch-label", group.label));
-      children.push(label);
-    }
-    for (const entry of entries) {
-      const slider = this.#dom.element("input", "radio-controls__slider");
-      Object.assign(slider, { type: "range", min: String(entry.min), max: String(entry.max), step: String(entry.step) });
-      slider.value = String(entry.value);
-      const field = this.#field(entry.label, slider);
-      const value = this.#dom.element("span", "radio-controls__tuning-value", String(entry.value));
-      field.field.append(value);
-      slider.addEventListener("input", () => {
-        this.#tuning.set(entry.effect, entry.key, Number(slider.value));
-        this.#text(value, slider.value);
+      label.append(input, this.#dom.element("span", "radio-controls__switch-label", "увімкнено"));
+
+      groupHeader.append(groupToggle, label);
+      groupEl.append(groupHeader);
+
+      const groupContent = this.#dom.element("div", "radio-controls__group-content");
+      groupContent.style.display = isGroupExpanded ? "grid" : "none";
+
+      groupToggle.addEventListener("click", () => {
+        this.#toggleSection(groupKey, groupToggle, groupContent, groupArrow);
       });
-      children.push(field.field);
+
+      if (group.enabled) {
+        const groupEntries = entries.filter((entry) => entry.effect === group.group);
+        for (const entry of groupEntries) {
+          const slider = this.#dom.element("input", "radio-controls__slider");
+          Object.assign(slider, { type: "range", min: String(entry.min), max: String(entry.max), step: String(entry.step) });
+          slider.value = String(entry.value);
+          const field = this.#field(entry.label, slider);
+          const value = this.#dom.element("span", "radio-controls__tuning-value", String(entry.value));
+          field.field.append(value);
+          slider.addEventListener("input", () => {
+            this.#tuning.set(entry.effect, entry.key, Number(slider.value));
+            this.#text(value, slider.value);
+          });
+          groupContent.append(field.field);
+        }
+      }
+
+      groupEl.append(groupContent);
+      mainContent.append(groupEl);
     }
-    nodes.tuning.replaceChildren(...children);
+
+    nodes.tuning.replaceChildren(mainToggle, mainContent);
   }
 
   #update(nodes, reading) {

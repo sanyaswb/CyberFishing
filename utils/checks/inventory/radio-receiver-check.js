@@ -725,8 +725,10 @@ async function tuningSliders() {
     { group: "walkieTalkie", label: "Рація", enabled: false }, { group: "signal", label: "Перешкоди сигналу", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false }],
     "a switch per sound part: vinyl, walkie-talkie, the signal's interference");
-  assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
-    ["crackleLevel", "popLevel", "hissLevel", "wowDepthMs", "warmthGainDb", "mix"], "only the enabled part's main parameters");
+  assert.equal(plain(tuning.list()).length, 20, "all parameters of vinyl sound are available");
+  assert.ok(plain(tuning.list()).some((entry) => entry.key === "wowHz" && entry.min === 0.1), "detailed vinyl wowHz parameter is available");
+  assert.deepEqual(plain(tuning.list()).slice(0, 6).map((entry) => entry.key),
+    ["crackleLevel", "crackleRate", "crackleToneHz", "popLevel", "popRate", "hissLevel"], "all vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -746,11 +748,24 @@ async function tuningSliders() {
   const production = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS }).render();
   assert.equal(byClass(production, "radio-controls__tuning").length, 0, "production has no sound switches or sliders");
   const block = new RadioControlsRenderer({ domFactory: dom, radio: port, labels: RADIO_LABELS, tuning }).render();
+  const mainToggle = byClass(block, "radio-controls__tuning-toggle")[0];
+  assert.ok(mainToggle, "DEV tuning block has a main toggle button by analogy with DevTools");
+  assert.equal(mainToggle.getAttribute("aria-expanded"), "false", "tuning list starts collapsed");
+  mainToggle.click();
+  assert.equal(mainToggle.getAttribute("aria-expanded"), "true", "clicking expands the tuning list");
+  const groupToggles = byClass(block, "radio-controls__group-toggle");
+  assert.equal(groupToggles.length, 3, "group toggles for vinyl, walkie-talkie, and signal");
+  assert.equal(groupToggles[0].getAttribute("aria-expanded"), "false", "group starts collapsed");
+  groupToggles[0].click();
+  assert.equal(groupToggles[0].getAttribute("aria-expanded"), "true", "clicking group toggle expands it");
+  groupToggles[0].click();
+  assert.equal(groupToggles[0].getAttribute("aria-expanded"), "false", "clicking again collapses it");
+
   const switches = byClass(block, "radio-controls__tuning-switch");
   assert.deepEqual(switches.map((input) => input.checked), [true, false, false, false],
     "DEV shows the three part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 6, "one slider per main parameter of the enabled part");
+  assert.equal(sliders.length, 20, "all 20 sliders of the enabled part (vinyl)");
   assert.equal(sliders[0].value, "0.3");
   sliders[0].value = "0.2"; sliders[0].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
@@ -761,11 +776,12 @@ async function tuningSliders() {
   byClass(block, "radio-controls__tuning-switch")[2].checked = true;
   byClass(block, "radio-controls__tuning-switch")[2].fire("change");
   assert.equal(radio.signal.enabled, true, "the interference switch");
-  assert.equal(byClass(block, "radio-controls__slider").length, 5, "the interference's sliders");
+  assert.equal(byClass(block, "radio-controls__slider").length, 9, "all 9 interference sliders");
   radio.signal.enabled = false;
   radio.effects.walkieTalkie.enabled = true;
   listener(status);
-  assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max), ["40", "6000", "1200", "1"],
+  assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max),
+    ["40", "6000", "1200", "4000", "18", "6", "2", "1"],
     "switching the parts in DevTools changes the window on the next update");
 
   // TK-100: the DEV switch writes the plain flag.

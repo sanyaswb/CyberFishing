@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.26 - Radio DEV sound tuning full parameters and collapsed list
+
+- Radio: expanded DEV radio sound tuning to full parameter set across vinyl, walkie-talkie and battery/signal interference, organizing groups into collapsible accordion sections with range sliders (TK-121).
+
 ## v0.48.25 - Aligned item assembly editor width and margins in portrait mode
 
 - Inventory: removed redundant horizontal and top padding on assembly editor in portrait mode, aligning content panels with header margins and pinning sticky actions to top (TK-120).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.17 - Fixed header height and proportional loadout width alignment in portrait
 
 - Inventory: header height preserved on narrow screens with 44px control height, and portrait loadout unit scaled with 3.38 divisor to eliminate side indents while keeping exact card proportions (TK-112).
-
-## v0.48.16 - Zero padding for loadout panel in portrait
-
-- Inventory: removed top, bottom, and side padding on equipment panel in portrait mode to prevent redundant spacing inside padded container (TK-111).
 
 
 
