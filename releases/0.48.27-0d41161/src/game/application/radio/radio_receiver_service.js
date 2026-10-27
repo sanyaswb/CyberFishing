@@ -131,7 +131,7 @@ export class RadioReceiverService {
   }
 
   setChannel(mode) {
-    if (!["volia", "custom", "world"].includes(mode) || mode === this.#prefs.channelMode) return;
+    if (!["volia", "world"].includes(mode) || mode === this.#prefs.channelMode) return;
     this.#prefs.channelMode = mode;
     this.#save({ channelMode: mode });
     this.#clearIntermission();
@@ -246,6 +246,7 @@ export class RadioReceiverService {
       return;
     } else if (state === "ended") {
       if (mode !== "world") {
+        this.#failures = 0;
         this.#handleTrackEnded(mode);
         return;
       }
@@ -258,6 +259,12 @@ export class RadioReceiverService {
       this.#index = (this.#index + 1) % this.#list.length;
       this.#playCurrent();
     } else {
+      this.#failures += 1;
+      const tracks = this.#getChannelConfig(mode)?.tracks || [];
+      if (this.#failures >= tracks.length) {
+        this.#failures = 0;
+        return this.#set({ status: mode === "volia" ? "no-volia-tracks" : "no-tracks" });
+      }
       this.#handleTrackEnded(mode);
     }
   }
@@ -477,22 +484,30 @@ export class RadioReceiverService {
       const statusKey = mode === "volia" ? "no-volia-tracks" : "no-tracks";
       return this.#set({ status: statusKey });
     }
-    const intermissionCfg = channel?.intermission || { minSeconds: 15, maxSeconds: 45 };
-    const minSec = Number(intermissionCfg.minSeconds) || 15;
-    const maxSec = Number(intermissionCfg.maxSeconds) || 45;
-    const pauseSeconds = minSec + this.#rng.next() * Math.max(0, maxSec - minSec);
-    const pauseMs = pauseSeconds * 1000;
+    const intermissionCfg = channel?.intermission;
+    if (intermissionCfg && (Number(intermissionCfg.minSeconds) > 0 || Number(intermissionCfg.maxSeconds) > 0)) {
+      const minSec = Number(intermissionCfg.minSeconds) || 15;
+      const maxSec = Number(intermissionCfg.maxSeconds) || 45;
+      const pauseSeconds = minSec + this.#rng.next() * Math.max(0, maxSec - minSec);
+      const pauseMs = pauseSeconds * 1000;
 
-    this.#set({ status: "intermission" });
-    this.#intermissionTimer = this.#scheduler.setTimeout(() => {
-      this.#intermissionTimer = null;
-      if (!this.#status.powered || this.#prefs.channelMode !== mode) return;
+      this.#set({ status: "intermission" });
+      this.#intermissionTimer = this.#scheduler.setTimeout(() => {
+        this.#intermissionTimer = null;
+        if (!this.#status.powered || this.#prefs.channelMode !== mode) return;
+        const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
+        const nextIndex = ((this.#prefs[prefKey] ?? 0) + 1) % tracks.length;
+        this.#prefs[prefKey] = nextIndex;
+        this.#save({ [prefKey]: nextIndex });
+        this.#loadPlaylistChannel(mode);
+      }, pauseMs);
+    } else {
       const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
       const nextIndex = ((this.#prefs[prefKey] ?? 0) + 1) % tracks.length;
       this.#prefs[prefKey] = nextIndex;
       this.#save({ [prefKey]: nextIndex });
       this.#loadPlaylistChannel(mode);
-    }, pauseMs);
+    }
   }
 
   #clearIntermission() {
