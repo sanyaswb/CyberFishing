@@ -1,0 +1,149 @@
+/* Spec 142 D7: the radio receiver's controls under its preview in the item editor. The block is an inventory-panel;
+   buttons are the shared inventory-action; country, volume and the switches are native controls laid out here. */
+/* TK-096: a flex item of the fixed-height, scrolling editor. inventory-panel sets min-height 0, so without flex: none the
+   block shrank to almost nothing, its buttons overflowed under the editor tabs' panel and could not be pressed. */
+.radio-controls {
+  flex: none;
+  display: grid;
+  gap: var(--inventory-container-gap);
+  padding: var(--inventory-container-gap);
+  min-width: 0;
+}
+
+.radio-controls__display {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.radio-controls__station,
+.radio-controls__meta,
+.radio-controls__status {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-controls__station {
+  color: var(--ui-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.radio-controls__meta,
+.radio-controls__status {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.radio-controls--on .radio-controls__status {
+  color: var(--ui-success);
+}
+
+.radio-controls__channels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--inventory-container-gap);
+}
+
+.radio-controls__channel {
+  min-width: 0;
+  padding: 6px 4px;
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-controls__channel--active {
+  background: var(--ui-accent, #3ec5ff);
+  color: #050e14;
+  font-weight: 700;
+  border-color: transparent;
+}
+
+.radio-controls__buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--inventory-container-gap);
+}
+
+.radio-controls__button {
+  min-width: 0;
+}
+
+.radio-controls__field {
+  display: grid;
+  grid-template-columns: minmax(0, 7em) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--inventory-container-gap);
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.radio-controls__field[hidden] {
+  display: none;
+}
+
+.radio-controls__select {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #43525b;
+  border-radius: var(--ui-radius-control);
+  background: #09131b;
+  color: var(--ui-text);
+  font: inherit;
+}
+
+.radio-controls__volume,
+.radio-controls__slider {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--ui-accent);
+}
+
+.radio-controls__switches {
+  display: grid;
+  gap: 6px;
+}
+
+.radio-controls__switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.radio-controls__switch-input,
+.radio-controls__tuning-switch {
+  accent-color: var(--ui-success);
+}
+
+/* TK-098/099 (DEV only): a switch per sound part, then the main parameters of the parts that are on as sliders under
+   the volume; a slider's value at its end. */
+.radio-controls__tuning {
+  display: grid;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #43525b;
+}
+
+.radio-controls__tuning .radio-controls__field {
+  grid-template-columns: minmax(0, 9em) minmax(0, 1fr) 3.5em;
+}
+
+.radio-controls__tuning-title {
+  margin: 0;
+  color: var(--ui-accent);
+  font-size: 11px;
+}
+
+.radio-controls__tuning-value {
+  color: var(--ui-text);
+  font-size: 11px;
+  text-align: right;
+}

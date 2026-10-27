@@ -1,0 +1,85 @@
+/* Two consumable pills combine equipped artwork with an accessible automatic-refill switch.
+   Wide layouts (spec 074): two sections over the content columns in one centred row — the load meter over the left
+   panel, the switches (centred) and close (right) over the right panel. */
+.inventory-header {
+  --inventory-header-unit: calc(44px / 36);
+  --inventory-header-radius: 14px;
+  --inventory-header-control-height: 44px;
+  --ui-close-size: var(--inventory-header-control-height);
+  display: grid;
+  grid-template-columns: var(--inventory-content-columns);
+  gap: 8px var(--inventory-content-gap);
+  align-items: center;
+  margin-bottom: 12px;
+  padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);
+  border-radius: var(--inventory-header-radius);
+  background: var(--inventory-equipment-panel);
+}
+.inventory-header__controls {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+}
+.inventory-header__load {
+  grid-column: 1;
+  grid-row: 1;
+}
+.inventory-auto-settings {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 10px;
+  min-width: 0;
+  justify-self: center;
+}
+.inventory-header__close {
+  grid-column: 3;
+  justify-self: end;
+}
+/* Mobile: one row as in wide layouts, the load meter first taking the free width, then the switches and close. The
+   controls group lends its children to the header grid, so the load meter never drops to a lower row. */
+@container ui-surface (max-width: 820px) {
+  .inventory-header {
+    --inventory-header-radius: 8px;
+    --inventory-header-bottom-gap: 8px;
+    --inventory-header-unit: calc(44px / 36);
+    --inventory-header-control-height: 44px;
+    --inventory-scale-unit: var(--inventory-header-unit);
+    grid-template-columns: minmax(0, 1fr) auto var(--ui-close-size);
+    gap: 6px;
+    margin-bottom: var(--inventory-header-bottom-gap);
+    padding: calc(var(--inventory-header-unit) * 6) var(--inventory-header-radius);
+  }
+  .inventory-header__controls {
+    display: contents;
+  }
+  .inventory-header__load {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .inventory-auto-settings {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    gap: calc(var(--inventory-header-unit) * 4);
+  }
+  .inventory-header__close {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  /* Portrait (spec 069): the header is a rounded mini panel inside the full-screen container. */
+  @container ui-surface (orientation: portrait) {
+    .inventory-header {
+      --inventory-header-unit: calc(44px / 36);
+      margin: var(--inventory-mobile-inset);
+      gap: calc(var(--inventory-header-unit) * 8);
+      border-bottom: 0;
+    }
+  }
+}
