@@ -3,8 +3,7 @@
 Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
 
 Native HTML pages compose the stylesheet order. `index.html` loads 30 production assets;
-`dev.html` reuses that exact prefix, appends the House stylesheet for the House screen it opens (spec 084) and three DEV assets. `ui-catalog.html` reuses the
-same prefix, appends the House component styles, catalog stylesheet and shared DEV clock/navigation styles. Every link uses the package
+`dev.html` reuses that exact prefix, appends the House stylesheet for the House screen it opens (spec 084) and three DEV assets. `ui-catalog.html` is an empty page. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.
 
 ## Ownership
@@ -116,7 +115,6 @@ All rows reuse DevToolsUI and its collapsed descriptions. No per-frame DOM work 
 | `src/dev/styles/dev-tools.css` | DEV editor and toggle |
 | `src/dev/styles/overlay.css`, `overlay-content.css` | Diagnostic window/interaction and diagnostic content |
 | `styles/house.css`, `keepnet.css` | House composition; the inventory's keepnet section (`keepnet-section`, spec 067) and its cards; since [spec 088](../specs/088-keepnet-like-backpack/spec.md) its view (`keepnet-overview`) shares the backpack view's containers in `loadout.css` and its filters are the backpack's rows; shared actions/meters/close/switch are reused |
-| `src/dev/styles/ui-catalog.css` | Catalog page, fixture controls and external placement of examples |
 
 Layout belongs to the component containing an element. Appearance shared across components belongs
 to a reusable block. For example, an assembly action mixes `inventory-assembly-editor__button`

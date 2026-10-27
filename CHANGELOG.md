@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.24 - Removed obsolete embedded page overlay platform code and test suite
+
+- Tooling / Platform: deleted unused `EmbeddedPageOverlay`, its CSS rule in `dev-tools.css`, and its test suite `embedded-page-overlay-check.js`; pruned obsolete test fixtures and style readers (TK-119).
+
 ## v0.48.23 - Removed UI catalog code and cleared ui-catalog.html
 
 - Dev / Catalog: removed all UI catalog code, components, examples, fixtures, styles, test suite, and DevTools navigation; cleared ui-catalog.html to an empty page (TK-118).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.15 - Loadout panel overflow fix and mobile portrait width alignment
 
 - Inventory: eliminated horizontal scrollbar under equipment panel and aligned loadout container width with header in portrait mode (TK-110).
-
-## v0.48.14 - Open backpack backdrop sizing and padding
-
-- Inventory: open backpack background image fills collection container with 10px padding (TK-109).
 
 
 

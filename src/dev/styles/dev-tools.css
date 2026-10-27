@@ -310,16 +310,6 @@
   left: var(--ui-edge-left);
   z-index: var(--ui-layer-hud);
 }
-.embedded-page-overlay {
-  position: fixed;
-  z-index: 30000;
-  inset: 0;
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  border: 0;
-  background: #081110;
-}
 
 /* Spec 129 D6: the zone editor's drag layer over the game canvas, under the DevTools panel; it exists only while
    "drag editing" is on, so the game receives no pointer input meanwhile. */

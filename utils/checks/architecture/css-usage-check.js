@@ -139,7 +139,6 @@ const fixturePath = "src/game/presentation/styles/game-shell.css";
 assert.throws(() => readPageStylesheets({ html: link(fixturePath) + link(`${fixturePath}?different=1`) }), /Duplicate stylesheet/);
 assert.throws(() => readPageStylesheets({ html: link("src/game/presentation/styles/missing.css") }), /Missing stylesheet/);
 assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/dev-tools.css") }), /Production loads DEV CSS/);
-assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/ui-catalog.css") }), /Production loads DEV CSS/);
 assert.throws(() => readPageStylesheets({ html: link("../../outside.css") }), /escapes project/);
 assert.throws(() => readPageStylesheets({ html: link("https://external.example/styles.css") }), /relative project path/);
 assert.equal(stylePolicyViolations('.is-open {} .card__image--large {}').length, 1);
@@ -161,8 +160,7 @@ assert.deepEqual(staticStyleViolations('`<span style="--debug-overlay-color:${co
 
 const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
-const stylesheets = [...new Map([...composition.development, ...composition.catalog]
-  .map((entry) => [entry.file, entry])).values()];
+const stylesheets = composition.development;
 let total = 0;
 for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
   const dev = file.startsWith("src/dev/");

@@ -333,12 +333,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
-    id: "embedded-page-overlay",
-    title: "Embedded House/UI catalog navigation and return lifecycle",
-    file: "utils/checks/tooling/embedded-page-overlay-check.js",
-    suites: ["tools"],
-  },
-  {
     id: "service-artifacts",
     title: "Bounded service logs and safe artifact cleanup",
     file: "utils/checks/tooling/service-artifacts-check.js",

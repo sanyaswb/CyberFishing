@@ -20,6 +20,12 @@
 
 Архівування не означає візуального приймання. Усі наведені нижче перевірки залишаються невиконаними.
 
+### TK-119 — очищення залишків тестів та утиліт оверлею каталогу UI
+
+- [x] Реалізовано у v0.48.24: видалено неактивний `EmbeddedPageOverlay`, CSS `.embedded-page-overlay` та тест `embedded-page-overlay-check.js`; очищено застарілі фікстури в `css-usage-check.js`, `page_stylesheet_reader.js` та `docs/styles.md`.
+- [ ] Власник:
+  1. `dev.html` / `index.html`: відкрити екран Будинку рибалки та панель DevTools — навігація між екранами працює штатно, відсутні помилки в консолі. Візуально агентом не перевіряється.
+
 ### TK-118 — видалення коду Каталогу UI та очищення сторінки ui-catalog.html
 
 - [x] Реалізовано у v0.48.23: видалено всі файли `src/dev/ui_catalog/`, точку входу `src/entrypoints/dev/ui_catalog.entry.js`, бутстрап `src/bootstrap/development/ui_catalog_bootstrap.js`, стилі `src/dev/styles/ui-catalog.css`, виклик із DevTools/startup та сьют `ui-catalog-check.js`; сторінку `ui-catalog.html` очищено до порожньої розмітки.

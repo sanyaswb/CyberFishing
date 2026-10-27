@@ -28,7 +28,7 @@ function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", 
       throw new Error(`Stylesheet has no presentation/DEV owner: ${file}`);
     }
     if (!file.endsWith(".css")) throw new Error(`Stylesheet must be CSS: ${file}`);
-    if (!["dev.html", "ui-catalog.html"].includes(page) && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
+    if (page !== "dev.html" && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
     if (seen.has(file)) throw new Error(`Duplicate stylesheet: ${file}`);
     if (!fs.existsSync(absolute)) throw new Error(`Missing stylesheet: ${file}`);
     seen.add(file);
@@ -70,7 +70,7 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   };
   walk(PRODUCTION_STYLES);
   walk(DEV_STYLES);
-  return { production, development, catalog: [] };
+  return { production, development };
 }
 
 module.exports = { readPageStylesheets, readPageCss, validatePageStyleComposition };
