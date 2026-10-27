@@ -254,7 +254,17 @@
     gap: var(--inventory-mobile-gap);
   }
 
+  /* Portrait: .inventory-main__left already supplies the mobile side insets, and .inventory-header supplies
+     the bottom margin: the editor clears horizontal and top padding so its panels align with the header. */
   @container ui-surface (orientation: portrait) {
+    .inventory-assembly-editor {
+      padding: 0 0 var(--inventory-container-gap);
+    }
+
+    .inventory-assembly-editor__actions {
+      top: 0;
+    }
+
     .inventory-editor-tabs__candidates {
       display: block;
     }

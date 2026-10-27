@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.25 - Aligned item assembly editor width and margins in portrait mode
+
+- Inventory: removed redundant horizontal and top padding on assembly editor in portrait mode, aligning content panels with header margins and pinning sticky actions to top (TK-120).
+
 ## v0.48.24 - Removed obsolete embedded page overlay platform code and test suite
 
 - Tooling / Platform: deleted unused `EmbeddedPageOverlay`, its CSS rule in `dev-tools.css`, and its test suite `embedded-page-overlay-check.js`; pruned obsolete test fixtures and style readers (TK-119).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.16 - Zero padding for loadout panel in portrait
 
 - Inventory: removed top, bottom, and side padding on equipment panel in portrait mode to prevent redundant spacing inside padded container (TK-111).
-
-## v0.48.15 - Loadout panel overflow fix and mobile portrait width alignment
-
-- Inventory: eliminated horizontal scrollbar under equipment panel and aligned loadout container width with header in portrait mode (TK-110).
 
 
 

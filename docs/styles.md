@@ -133,6 +133,7 @@ navigation while the equipment editor is visible in either orientation. Re-rende
 scroll position; another editor starts at the top. `INVENTORY_EDITOR_CONFIG.scrollbar.enabled` defaults to `false`;
 bootstrap injects it into the renderer, whose modifier lets `shared-controls.css` hide the scrollbar without
 disabling scrolling. Enabling the setting restores the existing shared scrollbar appearance.
+In portrait mode (TK-120), `.inventory-main__left` provides the `--inventory-mobile-inset` side padding: `.inventory-assembly-editor` clears horizontal and top padding (`padding: 0 0 var(--inventory-container-gap)`) and pins its sticky actions bar to `top: 0` so its width and margins align with the inventory header.
 
 Since TK-009/v0.45.28 the inventory header itself owns the shared grey panel background, 14px radius and proportional inner padding in all orientations. Landscape and desktop keep their existing column layout; portrait retains its inset and gap. The header owns its spacing below the panel rather than painting that gap.
 

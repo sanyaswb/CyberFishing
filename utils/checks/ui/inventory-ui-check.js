@@ -2050,6 +2050,16 @@ class InventoryUiBehaviorCheck {
     );
     assert.match(
       itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-assembly-editor\s*\{[^}]*padding:\s*0\s+0\s+var\(--inventory-container-gap\);/,
+      "inventory-assembly-editor removes horizontal and top padding in portrait mode",
+    );
+    assert.match(
+      itemCardsCss,
+      /orientation:\s*portrait\)[\s\S]*\.inventory-assembly-editor__actions\s*\{[^}]*top:\s*0;/,
+      "inventory-assembly-editor__actions sticks to top in portrait mode",
+    );
+    assert.match(
+      itemCardsCss,
       /max-width:\s*820px\)[\s\S]*\.inventory-header\s*\{[^}]*--inventory-header-control-height:\s*44px;/,
       "inventory-header retains 44px control height on mobile screens",
     );
