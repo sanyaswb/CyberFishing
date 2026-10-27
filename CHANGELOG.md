@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.27 - Radio channel switcher cleanup and continuous VOLIA 77.2 playback
+
+- Radio: removed custom channel button and functionality from UI/preferences; tracks on VOLIA 77.2 now transition seamlessly to the next song upon completion without intermission pause (TK-122).
+
 ## v0.48.26 - Radio DEV sound tuning full parameters and collapsed list
 
 - Radio: expanded DEV radio sound tuning to full parameter set across vinyl, walkie-talkie and battery/signal interference, organizing groups into collapsible accordion sections with range sliders (TK-121).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.18 - Full-width portrait loadout panels with centered proportional rod and cascade
 
 - Inventory: primary and auxiliary loadout panels expand to 100% width matching header, with rod and cascade columns centered and strictly preserving proportional aspect ratio without distortion (TK-113).
-
-## v0.48.17 - Fixed header height and proportional loadout width alignment in portrait
-
-- Inventory: header height preserved on narrow screens with 44px control height, and portrait loadout unit scaled with 3.38 divisor to eliminate side indents while keeping exact card proportions (TK-112).
 
 
 

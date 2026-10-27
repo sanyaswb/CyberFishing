@@ -16,7 +16,7 @@ export class RadioPreferencesLocalStore {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
     const result = {};
     if (/^[A-Z]{2}$/u.test(raw.country || "")) result.country = raw.country;
-    if (typeof raw.channelMode === "string" && ["volia", "custom", "world"].includes(raw.channelMode)) {
+    if (typeof raw.channelMode === "string" && ["volia", "world"].includes(raw.channelMode)) {
       result.channelMode = raw.channelMode;
     }
     if (typeof raw.stationId === "string" && raw.stationId) result.stationId = raw.stationId;

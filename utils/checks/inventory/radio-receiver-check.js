@@ -339,10 +339,14 @@ async function stageTwo() {
   // shrank and the editor tabs' panel covered its buttons. The DOM double has no layout, so the CSS contract guards it.
   const controlsCss = runtime.read("src/game/presentation/styles/inventory/radio-controls.css").replace(/\s+/gu, " ");
   assert(/\.radio-controls \{[^}]*flex: none;/u.test(controlsCss), "the radio controls keep their height in the editor");
+  assert(/\.radio-controls__channels \{[^}]*grid-template-columns:\s*repeat\(2,/u.test(controlsCss), "channels grid has 2 columns");
   assert.equal(controls.supports({ itemType: "radio" }), true);
   assert.equal(controls.supports({ itemType: "boat" }), false);
   const block = controls.render();
   await settle();
+  const channelButtons = byClass(block, "radio-controls__channel");
+  assert.equal(channelButtons.length, 2, "radio controls list only 2 channel buttons: volia and world");
+  assert.deepEqual(channelButtons.map((b) => b.textContent), [RADIO_LABELS.channels.volia, RADIO_LABELS.channels.world]);
   const [powerButton] = byClass(block, "radio-controls__button--power");
   powerButton.click();
   byClass(block, "radio-controls__button")[2].click();
@@ -878,17 +882,10 @@ async function spec144CustomRadio() {
       id: "volia",
       name: "VOLIA 77.2",
       frequency: "77.2 FM",
-      tracks: [{ id: "v1", title: "Volia 1", url: "assets/audio/radio/volia/RADIO_VOLIA.mp3" }],
-    },
-    custom: {
-      id: "custom",
-      name: "Свій канал",
-      frequency: "MP3",
       tracks: [
-        { id: "c1", title: "Custom 1", url: "assets/audio/radio/custom/track1.mp3" },
-        { id: "c2", title: "Custom 2", url: "assets/audio/radio/custom/track2.mp3" },
+        { id: "v1", title: "Volia 1", url: "assets/audio/radio/volia/RADIO_VOLIA.mp3" },
+        { id: "v2", title: "Volia 2", url: "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3" },
       ],
-      intermission: { minSeconds: 10, maxSeconds: 10 },
     },
     world: { id: "world", name: "Світове радіо", frequency: "Online" },
   };
@@ -917,23 +914,25 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().station.name, "VOLIA 77.2");
   assert.equal(service.getStatus().station.frequency, "77.2 FM");
 
-  // Track finished: transitions to intermission pause
+  // Track finished: automatically advances to next track immediately without intermission pause
   service.handlePlayerState("ended");
-  assert.equal(service.getStatus().status, "intermission", "ended event transitions to intermission");
-  assert.equal(timers.length, 1, "schedules intermission timer");
+  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel automatically starts next track when current ends");
+  assert.notEqual(service.getStatus().status, "intermission", "volia channel does not stop in intermission");
+  assert.equal(timers.filter((t) => !t.cancelled).length, 0, "no intermission timer scheduled for volia");
 
-  // Timer fires: plays next (or loops single) track
-  const activeTimer = timers.find((t) => !t.cancelled);
-  assert(activeTimer, "has active intermission timer");
-  activeTimer.cb();
-  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "after intermission, track plays again");
+  // Next track finished: loops back to first track
+  service.handlePlayerState("ended");
+  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia loops back to first track");
 
-  // Switch to custom channel
+  // Custom channel cannot be set
   service.setChannel("custom");
-  assert.equal(service.getStatus().channelMode, "custom");
-  assert.equal(played.at(-1), "assets/audio/radio/custom/track1.mp3", "custom channel plays first track");
-  service.next();
-  assert.equal(played.at(-1), "assets/audio/radio/custom/track2.mp3", "next advances to second track");
+  assert.equal(service.getStatus().channelMode, "volia", "custom channel cannot be set and is ignored");
+
+  // Channel switching works between volia and world
+  service.setChannel("world");
+  assert.equal(service.getStatus().channelMode, "world", "world channel can be selected");
+  service.setChannel("volia");
+  assert.equal(service.getStatus().channelMode, "volia", "volia channel can be selected");
 
   // Effect toggling
   service.setEffectEnabled("walkieTalkie", false);
@@ -941,26 +940,13 @@ async function spec144CustomRadio() {
   service.setEffectEnabled("vinyl", true);
   assert.equal(liveEffects.vinyl.enabled, true, "vinyl toggle enables vinyl in live config");
 
-  // Custom channel with empty tracks
-  const emptyChannels = { ...testChannels, custom: { ...testChannels.custom, tracks: [] } };
-  const emptyCustomService = new RadioReceiverService({
-    equipment: { getEquipped: () => ({ radio: { instanceId: "r" }, radioBattery: { instanceId: "b" } }) },
-    power: { read: () => ({ empty: false }) },
-    stations: { listStations: async () => [], listCountries: async () => [] },
-    player: fakePlayer,
-    preferences: new RadioPreferencesLocalStore({ cache: { get: () => ({ channelMode: "custom" }), set() {} } }),
-    region: { resolve: () => "UA" },
-    config: () => ({ defaultChannel: "custom", channels: emptyChannels }),
-    scheduler: fakeScheduler,
-    noise: { update() {}, burst() {}, stop() {} },
-    rng: { next: () => 0.5 },
-  });
-  emptyCustomService.powerOn();
-  assert.equal(emptyCustomService.getStatus().status, "no-tracks", "empty custom playlist reports no-tracks");
+  // Preferences reject custom channel mode
+  const prefStore = new RadioPreferencesLocalStore({ cache: { get: () => ({ channelMode: "custom" }), set() {} } });
+  assert.equal(prefStore.load().channelMode, undefined, "custom channel mode in storage is rejected");
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(spec144CustomRadio).then(() => console.log("Radio receiver "
-  + "Spec 144 passed: channel selection (volia, custom, world), VOLIA 77.2 broadcast file, custom MP3 channel with intermission pause, and live effect switches."))
+  + "TK-122 and Spec 144 passed: channel selection (volia, world), automatic next track playback on volia, custom channel removed, and live effect switches."))
   .then(() => console.log("Radio receiver "
   + "TK-098 passed: DEV tuning lists only enabled effects, writes known keys to the live config, sliders in the editor, "
   + "rebuilt when the enabled set changes, none in production.")).then(() => console.log("Radio receiver stage 5 passed: ducking "

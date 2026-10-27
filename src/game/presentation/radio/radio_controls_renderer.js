@@ -38,7 +38,7 @@ export class RadioControlsRenderer {
 
     const channels = this.#dom.element("div", "radio-controls__channels");
     const channelButtons = {};
-    for (const key of ["volia", "custom", "world"]) {
+    for (const key of ["volia", "world"]) {
       const btn = this.#dom.button("radio-controls__channel inventory-action", labels.channels?.[key] || key);
       btn.addEventListener("click", () => this.#radio.setChannel?.(key));
       channels.append(btn);
@@ -252,12 +252,6 @@ export class RadioControlsRenderer {
       const meta = reading.trackCount > 1
         ? `77.2 FM · ${labels.trackIndex(reading.trackIndex + 1, reading.trackCount)}`
         : "77.2 FM · Воля";
-      this.#text(nodes.meta, meta);
-      if (nodes.countryField) nodes.countryField.hidden = true;
-    } else if (mode === "custom") {
-      const title = reading.station?.title ? `${reading.station.name} — ${reading.station.title}` : (reading.station?.name || "Свій канал");
-      this.#text(nodes.station, title);
-      const meta = reading.trackCount > 0 ? labels.trackIndex(reading.trackIndex + 1, reading.trackCount) : labels.noTracks;
       this.#text(nodes.meta, meta);
       if (nodes.countryField) nodes.countryField.hidden = true;
     } else {
