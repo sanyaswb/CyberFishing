@@ -43,7 +43,7 @@ export class InventoryEditorTabsRenderer {
   // swipeSurfaces: more elements whose horizontal swipe switches the page (the editor's preview).
   // inlineChoices(): true while the editor offers inline choices instead of the item list beside it.
   render(model, { onSocketActivate = null, onSocketLongPress = null, onSocketItemActivate = null, onWarning = null,
-    inlineChoices = () => true } = {}, { swipeSurfaces = [] } = {}) {
+    inlineChoices = () => true, onTabSelect = null } = {}, { swipeSurfaces = [] } = {}) {
     const tabs = this.#resolver.resolve(model);
     if (!tabs.length) return null;
     if (tabs[0].key !== this.#rootKey) {
@@ -75,7 +75,7 @@ export class InventoryEditorTabsRenderer {
         onSelect: (index) => this.#select(this.#current.tabs[index].key) });
     }
     this.#rowScroll.attach(row);
-    this.#current = { tabs, tabNodes, pages, row, panel, surfaces, onSocketItemActivate, onWarning,
+    this.#current = { tabs, tabNodes, pages, row, panel, surfaces, onSocketItemActivate, onWarning, onTabSelect,
       candidateKey: null, candidates: null };
     this.#apply();
     return block;
@@ -192,6 +192,7 @@ export class InventoryEditorTabsRenderer {
     this.#current.pages.forEach((page, position) => { page.hidden = position !== index; });
     // Only the visible empty cell needs a candidate grid; multiple hook slots must not multiply the inventory DOM.
     const tab = this.#current.tabs[index];
+    this.#current.onTabSelect?.(tab);
     const candidateKey = !tab.item && tab.socket?.canSelectCompatibleItem ? tab.key : null;
     if (candidateKey !== this.#current.candidateKey) {
       this.#current.candidates?.remove();

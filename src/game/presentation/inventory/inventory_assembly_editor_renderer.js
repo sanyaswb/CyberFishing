@@ -1,3 +1,5 @@
+import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+
 // Item editor in every layout (spec 091 on phones, spec 094 on wide screens): the actions panel, the root item's
 // preview and the tabs block (the item, its cells, nested items) joined to the active tab's parameters.
 export class InventoryAssemblyEditorRenderer {
@@ -71,7 +73,14 @@ export class InventoryAssemblyEditorRenderer {
     if (this.#deviceControlsRenderer?.supports(model.root)) editor.appendChild(this.#deviceControlsRenderer.render());
     // The preview swipes the tabs too (spec 092).
     const tabs = this.#tabsRenderer.render(model,
-      { onSocketActivate, onSocketLongPress, onSocketItemActivate, onWarning, inlineChoices },
+      {
+        onSocketActivate,
+        onSocketLongPress,
+        onSocketItemActivate,
+        onWarning,
+        inlineChoices,
+        onTabSelect: (tab) => this.#updateVisual(visual, tab, model.root),
+      },
       { swipeSurfaces: [visual] });
     if (tabs) editor.appendChild(tabs);
     return editor;
@@ -93,16 +102,47 @@ export class InventoryAssemblyEditorRenderer {
       "inventory-assembly-editor__visual",
     );
     if (!model.root) return visual;
-    visual.appendChild(this.#itemRenderer.renderItem(model.root, {
-      variant: "assembly-root",
-      frameless: true,
-      wholeArt: true,
-      showAttachments: false,
-      showMetadata: false,
-      showResourceMeter: false,
-      showTooltip: !this.#parametersRenderer.hasParameters(model.root),
-    }));
+    visual.appendChild(this.#renderVisualContent({ kind: "root", item: model.root }, model.root));
     return visual;
+  }
+
+  #updateVisual(visual, tab, rootItem) {
+    const content = this.#renderVisualContent(tab, rootItem);
+    if (this.#dom?.replaceChildren) {
+      this.#dom.replaceChildren(visual, content);
+    } else if (visual.replaceChildren) {
+      visual.replaceChildren(content);
+    } else {
+      while (visual.firstChild) visual.removeChild(visual.firstChild);
+      if (content) visual.appendChild(content);
+    }
+  }
+
+  #renderVisualContent(tab, rootItem) {
+    const item = tab?.item || (tab?.kind === "root" ? rootItem : null);
+    if (item) {
+      return this.#itemRenderer.renderItem(item, {
+        variant: "assembly-root",
+        frameless: true,
+        wholeArt: true,
+        showAttachments: false,
+        showMetadata: false,
+        showResourceMeter: false,
+        showTooltip: !this.#parametersRenderer?.hasParameters(item),
+      });
+    }
+    const empty = this.#dom.element("div", "inventory-assembly-editor__empty");
+    const slotId = tab?.socket?.slotId || "";
+    const iconPath = inventorySlotIconPath(slotId);
+    if (iconPath) {
+      const icon = this.#dom.image(iconPath, tab?.label || slotId);
+      if (icon) {
+        icon.className = "inventory-assembly-editor__empty-icon";
+        icon.setAttribute("aria-hidden", "true");
+        empty.appendChild(icon);
+      }
+    }
+    return empty;
   }
 
   #renderActions(

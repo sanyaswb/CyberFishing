@@ -943,6 +943,10 @@ async function spec144CustomRadio() {
   // Preferences reject custom channel mode
   const prefStore = new RadioPreferencesLocalStore({ cache: { get: () => ({ channelMode: "custom" }), set() {} } });
   assert.equal(prefStore.load().channelMode, undefined, "custom channel mode in storage is rejected");
+
+  const { RADIO_CHANNELS } = runtime.importModule("src/game/config/raw/radio/radio_channels.js");
+  assert.equal(RADIO_CHANNELS.volia.tracks[0].id, "volia-radio_volia", "first track must be 'Ефір ВОЛЯ 77.2'");
+  assert.equal(RADIO_CHANNELS.volia.tracks[1].id, "volia-chomu_z_kupola_tikayut_na_irzhavyi_shelf", "second track must be 'Чому з Купола тікають на Іржавий Шельф'");
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(spec144CustomRadio).then(() => console.log("Radio receiver "

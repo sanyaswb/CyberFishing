@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.28 - Visual preview synchronization on tab switch and default VOLIA 77.2 track order
+
+- Inventory / Assembly: visual preview card now synchronizes with the active slot tab on swipe or tap, showing the equipped item card or the compartment icon for empty slots (TK-123).
+- Radio: default VOLIA 77.2 playlist begins with "Ефір ВОЛЯ 77.2" followed by "Чому з Купола тікають на Іржавий Шельф" (TK-123).
+
 ## v0.48.27 - Radio channel switcher cleanup and continuous VOLIA 77.2 playback
 
 - Radio: removed custom channel button and functionality from UI/preferences; tracks on VOLIA 77.2 now transition seamlessly to the next song upon completion without intermission pause (TK-122).
@@ -37,10 +42,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.19 - Added battery variants Volt-2, Volt-3 and Volt-4
 
 - Inventory: added three battery variants to the catalog: Volt-2 (7200 units, tier 2), Volt-3 (10800 units, tier 3), and Volt-4 (24000 units, tier 4) with dedicated assets, dynamic capacity readout, and DEV shop availability (TK-114).
-
-## v0.48.18 - Full-width portrait loadout panels with centered proportional rod and cascade
-
-- Inventory: primary and auxiliary loadout panels expand to 100% width matching header, with rod and cascade columns centered and strictly preserving proportional aspect ratio without distortion (TK-113).
 
 
 

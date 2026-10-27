@@ -16,6 +16,12 @@ const KNOWN_TITLES = {
   "radio_volya_shelf": "Ефір ВОЛЯ (Іржавий Шельф)",
 };
 
+const VOLIA_TRACK_ORDER = [
+  "radio_volia",
+  "chomu_z_kupola_tikayut_na_irzhavyi_shelf",
+  "radio_volya_shelf",
+];
+
 function scanDir(dir, prefix) {
   if (!fs.existsSync(dir)) return [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -31,6 +37,16 @@ function scanDir(dir, prefix) {
       id: `${prefix}-${baseName.toLowerCase().replace(/[^a-z0-9_-]/gu, "-")}`,
       title,
       url: `assets/audio/radio/${prefix}/${entry.name}`,
+    });
+  }
+  if (prefix === "volia") {
+    tracks.sort((a, b) => {
+      const getRank = (track) => {
+        const id = track.id.replace(/^volia-/u, "");
+        const idx = VOLIA_TRACK_ORDER.indexOf(id);
+        return idx !== -1 ? idx : 999;
+      };
+      return getRank(a) - getRank(b);
     });
   }
   return tracks;

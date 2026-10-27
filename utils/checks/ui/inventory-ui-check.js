@@ -3397,6 +3397,22 @@ class InventoryUiBehaviorCheck {
       1,
       "a swipe on the preview switches the tab",
     );
+    assert.ok(
+      this.#findByClass(preview, "inventory-assembly-editor__empty"),
+      "swiping to an empty cell tab displays the slot placeholder icon in preview",
+    );
+    const emptyIcon = this.#findByClass(preview, "inventory-assembly-editor__empty-icon");
+    assert.ok(emptyIcon, "empty cell visual has empty icon");
+    assert.ok(
+      emptyIcon.src?.includes("tackle.svg"),
+      "empty hook cell displays tackle.svg icon",
+    );
+    tabRow.emit("keydown", { key: "Home" });
+    assert.strictEqual(activeTab(), 0);
+    assert.ok(
+      this.#findByClass(preview, "inventory-item-card"),
+      "switching back to root tab restores root item in preview",
+    );
     // Equal items in different cells keep separate tabs; nested parameter items already in a cell are not repeated.
     const tabResolver = new sandbox.InventoryEditorTabsResolver();
     const hookA = { instanceId: "hook-a", name: "Hook" };

@@ -8,14 +8,14 @@ export const RADIO_CHANNELS = {
     description: "Військово-польове радіо",
     tracks: [
       {
-            "id": "volia-chomu_z_kupola_tikayut_na_irzhavyi_shelf",
-            "title": "Чому з Купола тікають на Іржавий Шельф",
-            "url": "assets/audio/radio/volia/Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a"
-      },
-      {
             "id": "volia-radio_volia",
             "title": "Ефір ВОЛЯ 77.2",
             "url": "assets/audio/radio/volia/RADIO_VOLIA.mp3"
+      },
+      {
+            "id": "volia-chomu_z_kupola_tikayut_na_irzhavyi_shelf",
+            "title": "Чому з Купола тікають на Іржавий Шельф",
+            "url": "assets/audio/radio/volia/Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a"
       },
       {
             "id": "volia-radio_volya_shelf",
