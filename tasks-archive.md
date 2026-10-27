@@ -2,6 +2,54 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-120"></a>
+
+## TK-120 — вирівнювання ширини контенту редактора предметів у portrait режимі
+
+- Власник 2026-10-27: виправити UI в режимі редагування предметів; подивитися ширину контенту в мобільній portrait версії та ширину header, вирівняти відступи, щоб вони були однаковими згідно з правилами або краще.
+- Причина: у portrait-режимі (`@container ui-surface (max-width: 820px) and (orientation: portrait)`) `.inventory-header` має `margin: var(--inventory-mobile-inset)` (10px зліва та справа, ширина `calc(100% - 20px)`), а зовнішній контейнер секції обладнання `.inventory-modal--section-equipment .inventory-main__left` уже має `padding: 0 var(--inventory-mobile-inset)` (10px). Водночас `.inventory-assembly-editor` додавав власний `padding: var(--inventory-container-gap) var(--inventory-mobile-inset)`, що створювало подвійний бічний відступ 20px (ширина контенту `calc(100% - 40px)`, на 20px вужча за хедер), а зверху між хедером і редактором утворювався подвійний проміжок 20px (10px margin хедера + 10px padding редактора) замість стандартних 10px.
+- Зміна:
+  1. У `src/game/presentation/styles/inventory/assembly-editor.css` для `@container ui-surface (orientation: portrait)` скинути padding: `.inventory-assembly-editor { padding: 0 0 var(--inventory-container-gap); }` (бічні відступи 0, верхній 0, нижній 10px).
+  2. Для `.inventory-assembly-editor__actions` встановити `top: 0` для липкого прилипання у верхній точці скрол-контейнера без зміщення під обнулений padding.
+  3. Додати перевірки в `utils/checks/ui/inventory-ui-check.js` та оновити `docs/styles.md`.
+- Перевірка:
+  - Автоматичні тести: `inventory-ui` (перевірено відмову на старому коді) та повний прогін `npm run check` (70/70 passed).
+- [x] Реалізовано v0.48.25.
+
+<a id="tk-119"></a>
+
+## TK-119 — очищення залишків тестів та утиліт оверлею каталогу UI
+
+- Власник 2026-10-27: передивитися тести, які належали до видалення Каталогу UI, та правила utils; зібрати непотрібне та видалити без порушень основних правил.
+- Причина: після видалення функціональності Каталогу UI в коді залишився невикористовуваний допоміжний клас платформи `EmbeddedPageOverlay`, застарілий стиль `.embedded-page-overlay` у `dev-tools.css`, окремий тестовий сьют `embedded-page-overlay-check.js` та згадки/фікстури каталогу в `css-usage-check.js` та `page_stylesheet_reader.js`.
+- Зміна:
+  1. Видалити `src/platform/browser/ui/embedded_page_overlay.js`.
+  2. Видалити CSS-правило `.embedded-page-overlay` у `src/dev/styles/dev-tools.css`.
+  3. Видалити тест `utils/checks/platform/embedded-page-overlay-check.js` та його реєстрацію в `utils/run-checks.js`.
+  4. Очистити фікстури каталогу в `utils/checks/architecture/css-usage-check.js` та виключити `ui-catalog.html` з перевірки стилів у `utils/page_stylesheet_reader.js`.
+  5. Оновити документацію в `docs/styles.md`.
+- Перевірка:
+  - Автоматичні тести: `npm run check` (70/70 passed).
+- [x] Реалізовано v0.48.24.
+
+<a id="tk-118"></a>
+
+## TK-118 — видалення коду Каталогу UI та очищення сторінки ui-catalog.html
+
+- Власник 2026-10-27: прибрати весь код, що стосується Каталогу UI, залишити тільки сторінку `ui-catalog.html`, там повинно бути пусто.
+- Причина: Каталог UI виконав свою роль і більше не підтримується як окремий інструмент розробки.
+- Зміна:
+  1. Видалити всі компоненти каталогу: `src/dev/ui_catalog/` (каталог, картки, фільтри, прев'ю, рендерери).
+  2. Видалити точку входу `src/entrypoints/dev/ui_catalog.entry.js` та бутстрап `src/bootstrap/development/ui_catalog_bootstrap.js`.
+  3. Видалити стилі `src/dev/styles/ui-catalog.css`.
+  4. Прибрати кнопку «Каталог UI 🧩» та метод `openUiCatalog` з `DevTools` (`src/dev/tools/dev_tools.js`) та `dev_startup.js`.
+  5. Видалити тестовий сьют `utils/checks/ui/ui-catalog-check.js` та зняти його виклики з `utils/run-checks.js`.
+  6. Оновити сторінку `ui-catalog.html`, залишивши порожню мінімальну HTML-розмітку без завантаження скриптів і стилів.
+  7. Оновити перевірки `build-pages-release.js`, `config-runtime-check.js` та `page_stylesheet_reader.js`.
+- Перевірка:
+  - Автоматичні тести: `npm run check` (71/71 passed).
+- [x] Реалізовано v0.48.23.
+
 <a id="tk-117"></a>
 
 ## Spec 144 / TK-117 — власний радіоканал (MP3) та окремий канал VOLIA 77.2
