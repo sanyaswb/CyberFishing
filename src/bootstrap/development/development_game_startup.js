@@ -53,9 +53,7 @@ import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishB
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
-import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
-import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
 import { ScreenHost } from "../../engine/screens/screen_host.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
@@ -138,13 +136,7 @@ async function startGame() {
     writeConfig: (path, value) => devTools?.updateConfig(path, value) });
   let zoneEditorDrag = null;
   let compositionRoot = null;
-  let catalogTimeSnapshot = null;
   const resumeGame = () => { void game?.start().catch((error) => windowTarget.console.error(error)); };
-  // The UI catalog stays a separate DEV page in an overlay frame.
-  const pageOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
-    src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle,
-    onEnter: () => { game?.stop(); catalogTimeSnapshot = timeControl?.suspend(); },
-    onExit: () => { timeControl?.resume(catalogTimeSnapshot); catalogTimeSnapshot = null; resumeGame(); } });
   // The House is a screen of this page (spec 084), composed over the session's live bait and clock.
   const screens = new ScreenHost({ base: { suspend: () => game?.stop(), resume: resumeGame }, factories: {
     house: createDevHouseScreenFactory({ documentTarget, windowTarget, uiSurface, config: CONFIG,
@@ -160,7 +152,6 @@ async function startGame() {
     cheatInput.dispose();
     browserLifecycle.removePagehideListener(cleanup);
     screens.dispose();
-    pageOverlay.dispose();
     zoneEditorDrag?.dispose();
     watchdog?.dispose();
     overlayRuntime?.dispose();
@@ -218,7 +209,6 @@ async function startGame() {
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
         openHouse,
-        openUiCatalog: () => pageOverlay.open(),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();

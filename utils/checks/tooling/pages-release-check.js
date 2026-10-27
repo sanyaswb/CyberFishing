@@ -66,8 +66,6 @@ try {
   if (tree.has("ui-catalog.html")) {
     const catalogPage = tree.read("ui-catalog.html").toString("utf8");
     assert(files.has("ui-catalog.html"));
-    assert(files.has("src/entrypoints/dev/ui_catalog.entry.js"));
-    assert(files.has("src/dev/styles/ui-catalog.css"));
     for (const [, href] of catalogPage.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href));
     assert.equal(fs.readFileSync(path.join(site, "ui-catalog.html"), "utf8"),
       catalogPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`));
@@ -137,8 +135,7 @@ try {
   assert(production.every(file => authoredFiles.has(file)), "production structure uses the release file selection");
   assert(!production.some(file => /^(?:dev\.html$|ui-catalog\.html$|src\/(?:dev|bootstrap\/development|entrypoints\/dev)\/|utils\/|docs\/|specs\/|\.)/u.test(file)),
     "production structure excludes DEV, tools, tests, docs and repository metadata");
-  for (const file of ["ui-catalog.html", "src/game/presentation/house/house_screen_markup.js", "src/entrypoints/dev/ui_catalog.entry.js",
-    "src/bootstrap/development/ui_catalog_bootstrap.js", "src/dev/styles/ui-catalog.css",
+  for (const file of ["ui-catalog.html", "src/game/presentation/house/house_screen_markup.js",
     "src/game/presentation/styles/auto-switch.css", "src/game/presentation/styles/ui-surface.css",
     "src/game/presentation/ui/ui_close_button_renderer.js", "src/game/presentation/ui/ui_auto_switch_renderer.js"]) {
     assert(authoredFiles.has(file), `authored catalog release closure includes ${file}`);

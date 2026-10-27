@@ -93,12 +93,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
-    id: "ui-catalog",
-    title: "Isolated production UI catalog",
-    file: "utils/checks/ui/ui-catalog-check.js",
-    suites: ["architecture"],
-  },
-  {
     id: "line-allocation",
     title: "Line allocation domain",
     file: "utils/checks/gameplay/line-allocation-check.js",

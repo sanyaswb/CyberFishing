@@ -47,7 +47,6 @@ function readPageCss(options = {}) {
 function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   const production = readPageStylesheets({ projectRoot });
   const development = readPageStylesheets({ projectRoot, page: "dev.html" });
-  const catalog = readPageStylesheets({ projectRoot, page: "ui-catalog.html" });
   const productionPaths = production.map(({ file }) => file);
   const reused = development.filter(({ file }) => file.startsWith(PRODUCTION_STYLES)).map(({ file }) => file);
   if (JSON.stringify(reused) !== JSON.stringify([...productionPaths, `${PRODUCTION_STYLES}house.css`]) ||
@@ -55,18 +54,13 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
     throw new Error("DEV must reuse production CSS in the same order, followed by House and DEV styles");
   }
   if (!development.some(({ file }) => file.startsWith(DEV_STYLES))) throw new Error("DEV page has no DEV stylesheet");
-  const catalogPrefix = catalog.slice(0, production.length).map(({ file }) => file);
-  if (JSON.stringify(catalogPrefix) !== JSON.stringify(productionPaths)) {
-    throw new Error("Catalog must reuse the complete production CSS prefix in the same order");
-  }
-  if (!catalog.some(({ file }) => file === `${DEV_STYLES}ui-catalog.css`)) throw new Error("Catalog page has no catalog stylesheet");
   const version = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
-  for (const { file, href } of [...production, ...development, ...catalog]) {
+  for (const { file, href } of [...production, ...development]) {
     if (new URL(href, "http://project.local/").searchParams.get("v") !== version) {
       throw new Error(`Stylesheet cache version differs from project version: ${file}`);
     }
   }
-  const linked = new Set([...development, ...catalog].map(({ file }) => file));
+  const linked = new Set(development.map(({ file }) => file));
   const walk = (relative) => {
     for (const entry of fs.readdirSync(path.join(projectRoot, relative), { withFileTypes: true })) {
       const file = relative + entry.name;
@@ -76,7 +70,7 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   };
   walk(PRODUCTION_STYLES);
   walk(DEV_STYLES);
-  return { production, development, catalog };
+  return { production, development, catalog: [] };
 }
 
 module.exports = { readPageStylesheets, readPageCss, validatePageStyleComposition };

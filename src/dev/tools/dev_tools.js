@@ -40,7 +40,6 @@ export class DevTools {
   #createWaterMetric;
   #storageCache;
   #openHouse;
-  #openUiCatalog;
   #openGame;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
@@ -97,7 +96,6 @@ export class DevTools {
       createUI,
       storageCache,
       openHouse = null,
-      openUiCatalog = null,
       openGame = null,
     } = {},
   ) {
@@ -113,7 +111,6 @@ export class DevTools {
     this.#getWaterMetric = getWaterMetric;
     this.#createWaterMetric = createWaterMetric;
     this.#openHouse = openHouse;
-    this.#openUiCatalog = openUiCatalog;
     this.#openGame = openGame;
     if (
       !hookedFishProfileSynchronizer ||
@@ -193,7 +190,6 @@ export class DevTools {
     const pages = [];
     if (this.#openGame) pages.push(["До риболовлі ▶", () => this.#openGame()]);
     if (this.#openHouse) pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
-    if (this.#openUiCatalog) pages.push(["Каталог UI 🧩", () => this.#openUiCatalog()]);
     if (pages.length) this.#ui.createNavigation(pages, body);
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();

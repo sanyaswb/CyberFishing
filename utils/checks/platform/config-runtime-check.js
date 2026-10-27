@@ -171,11 +171,8 @@ function checkDevelopmentInputs() {
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
   const godModeInstance = { enabled: true }, gameLoopGuard = {}, listenerCounter = {};
   const uiSurface = { mountRoot: {} }, developmentMount = {}, toolbar = { element: {}, tackleMountNode: {}, depthMountNode: {}, selectorMountNode: {} };
-  const openedPages = [];
-  const pageOverlay = { open: options => openedPages.push(options) };
   const openedScreens = [];
   const openHouse = () => openedScreens.push("house");
-  const catalogLabels = { pageTitle: "Catalog fixture" };
   const debugModules = { catchResolution: true };
   const pageParams = { get: (name) => ({ scene: "webgl" })[name] ?? null };
   class Flags { constructor(options) { this.options = options; } }
@@ -196,7 +193,7 @@ function checkDevelopmentInputs() {
     zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null, maskEditor: {}, zoneDrawing: {},
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
-    pageOverlay, openHouse, UI_CATALOG_LABELS: catalogLabels, godMode: godModeInstance, pageParams } });
+    openHouse, godMode: godModeInstance, pageParams } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -273,9 +270,7 @@ function checkDevelopmentInputs() {
   assert.equal(tools.options.prepareZoneEdit(["CONFIG"], 42).value, 42, "zone commands use the composed edit projector");
   assert.equal(tools.options.itemProgressionResolver, progression);
   tools.options.openHouse();
-  tools.options.openUiCatalog();
   assert.deepEqual(openedScreens, ["house"], "the House opens as a screen of the page (spec 084)");
-  assert.deepEqual(openedPages, [undefined], "the UI catalog opens the overlay at its default destination");
   const toggle = () => {};
   const toolsUi = tools.options.createUI(toggle, config).ui;
   assert.equal(toolsUi.args[0], toggle);
@@ -575,7 +570,7 @@ function checkLocationMapConfigChanges() {
   const switches = new Map();
   const navigationButtons = new Map();
   const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {};
-  let houseOpens = 0, catalogOpens = 0, itemGrants = 0, overlayEdits = 0;
+  let houseOpens = 0, itemGrants = 0, overlayEdits = 0;
   const ui = new Proxy({body:panelBody,createSection(label,parent,expanded,onToggle,path,options){
       const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section); return section;
     },
@@ -602,7 +597,7 @@ function checkLocationMapConfigChanges() {
     createWaterMetric:options=>WaterMetric.illustrated(options),
     zoneEditorState:editorState, maskEditor, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),
-    openHouse:()=>houseOpens++,openUiCatalog:()=>catalogOpens++});
+    openHouse:()=>houseOpens++});
   tools.toggle();
   const overlaySection = sections.find(section => section.path?.join('.') === 'OVERLAY');
   assert.equal(overlaySection?.parent, panelBody, 'Overlay is a root section');
@@ -632,9 +627,7 @@ function checkLocationMapConfigChanges() {
   navigationButtons.get('Test rod · Безкоштовно')({currentTarget:grantTarget});
   assert.equal(itemGrants,1,'the top shop retains its real grant action');
   assert.match(grantTarget.innerText,/✓×1$/,'grant confirmation stays with the selected item');
-  assert.equal(typeof navigationButtons.get("Каталог UI 🧩"), "function", "DEV menu exposes the UI catalog");
-  navigationButtons.get("Каталог UI 🧩")();
-  assert.equal(catalogOpens, 1); assert.equal(houseOpens, 0, "Catalog navigation must not open the House");
+  assert.equal(navigationButtons.has("Каталог UI 🧩"), false, "DEV menu no longer exposes the removed UI catalog");
   navigationButtons.get("Будинок рибалки 🏠")();
   assert.equal(houseOpens, 1);
   // The map receives the same live view that actual checkbox callbacks write through the authoritative store.
@@ -750,8 +743,7 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(freshInventory.loadouts.length, 0, 'DEV starts without saved builds');
   assert.equal(rootPorts.itemDb, source.importModule('src/game/config/databases/item_catalog.js').ITEM_DB, 'DEV shares the production item catalog');
   assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
-  assert.deepEqual([...listeners.keys()].sort(),['blur','keydown','message','pagehide'],'DEV cheat, catalog return and page cleanup listeners are active');
-  assert.equal(registered.get("message").size,1,"only the UI catalog overlay listens for a trusted return");
+  assert.deepEqual([...listeners.keys()].sort(),['blur','keydown','pagehide'],'DEV cheat and page cleanup listeners are active');
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
   assert.equal(navigationTools.options.catalogs.items, rootPorts.itemDb, 'the free shop uses the same catalog without obsolete DEV builds');
@@ -764,16 +756,6 @@ async function checkNativeDevelopmentLifecycle() {
   await navigationTools.options.openHouse();assert.equal(houseScreens,1,"an open House is not created twice");
   closeHouse();await Promise.resolve();await Promise.resolve();
   assert.equal(houseDisposals,1);assert.equal(counts.start,2,"closing the House resumes the loop exactly once");
-  navigationTools.options.openUiCatalog();
-  assert.equal(frames[0].src,"ui-catalog.html?embedded=1");assert.equal(counts.stop,2);
-  frames[0].load();
-  const dispatch=event=>{for(const listener of [...registered.get("message")])listener(event);};
-  dispatch({source:{},origin:windowTarget.location.origin,data:{type:"cyber-fishing:close-embedded-page"}});
-  assert.equal(counts.start,2,"unrelated pages cannot close the catalog");
-  dispatch({source:frames[0].contentWindow,origin:windowTarget.location.origin,data:{type:"cyber-fishing:close-embedded-page"}});
-  await Promise.resolve();await Promise.resolve();
-  assert.equal(counts.start,3,"trusted catalog return resumes exactly once");
-  assert.equal(timeResumes.at(-1).multiplier,2,"the catalog returns the suspended clock rate");
   configRuntime.resetAll();
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
@@ -792,7 +774,7 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
   assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
   assert.equal(config.debug.fixedCatch.enabled,false);
-  assert.equal(counts.root,2);assert.equal(counts.start,4);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
+  assert.equal(counts.root,2);assert.equal(counts.start,3);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   assert.equal(startupErrors.length, 0, 'successful startup reports no errors');
   resetBuild();const failed=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(), failed);
   const startupFailure = new Error('fixture build failure');rejectBuild(startupFailure);await assert.rejects(failed,/fixture build failure/);
@@ -800,7 +782,7 @@ async function checkNativeDevelopmentLifecycle() {
   assert(startupErrors[0].includes(startupFailure), 'startup reports the original error with its stack');
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
-  assert.equal(counts.start,4,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
+  assert.equal(counts.start,3,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
   assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
   assert.equal(counts.surfaces,4);assert.equal(counts.surfaceDispose,4, "DEV restart, failed build and pagehide clean every surface exactly once");
 }

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.22";
+export const CURRENT_PROJECT_VERSION = "0.48.23";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-27",
   notes: Object.freeze([
+    "TK-118: remove UI catalog code, components, examples, fixtures, styles and dev navigation; ui-catalog.html cleared.",
     "Spec 144 / TK-117: custom radio channel (MP3) and dedicated station VOLIA 77.2 with atmospheric broadcast and effect controls.",
     "TK-116: auxiliary loadout bottom margin in portrait and tile grid in landscape.",
     "TK-115: rodless loadout panel portrait alignment and layout fix.",

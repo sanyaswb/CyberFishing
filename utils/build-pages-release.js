@@ -105,9 +105,13 @@ class ReleaseFileSet {
         files.add(ReleaseFileSet.#projectPath(tree, href));
       }
       const entries = ReleaseFileSet.#attributeValues(page, "script", "src", /\btype="module"/u);
-      if (entries.length !== 1) throw new Error(`${pageName} must load exactly one module entry`);
-      for (const file of ReleaseFileSet.#moduleGraph(tree, ReleaseFileSet.#projectPath(tree, entries[0]))) {
-        files.add(file);
+      if (entries.length > 1 || (entries.length === 0 && pageName !== CATALOG_PAGE)) {
+        throw new Error(`${pageName} must load exactly one module entry`);
+      }
+      if (entries.length === 1) {
+        for (const file of ReleaseFileSet.#moduleGraph(tree, ReleaseFileSet.#projectPath(tree, entries[0]))) {
+          files.add(file);
+        }
       }
     }
     for (const file of tree.paths()) {

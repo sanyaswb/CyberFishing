@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.23 - Removed UI catalog code and cleared ui-catalog.html
+
+- Dev / Catalog: removed all UI catalog code, components, examples, fixtures, styles, test suite, and DevTools navigation; cleared ui-catalog.html to an empty page (TK-118).
+
 ## v0.48.22 - Custom radio channel and dedicated station VOLIA 77.2
 
 - Radio: added dedicated station VOLIA 77.2 (77.2 FM) playing atmospheric local broadcasts, custom MP3 channel with intermission receiver noise between tracks, channel switcher, and live sound effect controls (Spec 144 / TK-117).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.14 - Open backpack backdrop sizing and padding
 
 - Inventory: open backpack background image fills collection container with 10px padding (TK-109).
-
-## v0.48.13 - Discrete worm jar sizes (25, 50, 75, 100) and DEV shop delivery
-
-- Inventory: added discrete worm jar catalog items (25, 50, 75, 100 pcs) with distinct jar art and pack capacities; DEV shop grants nominal jar quantities (TK-108).
 
 
 
