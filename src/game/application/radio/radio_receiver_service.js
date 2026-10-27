@@ -33,9 +33,11 @@ export class RadioReceiverService {
   #biting = false;
   #stationEffects;
   #dropoutTimer = null;
+  #intermissionTimer = null;
   #status = {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
-    volume: 0.6, ducking: true, playInBackground: false,
+    volume: 0.6, ducking: true, playInBackground: false, channelMode: "world", trackIndex: 0, trackCount: 0,
+    walkieTalkie: true, vinyl: false,
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
@@ -60,16 +62,27 @@ export class RadioReceiverService {
     this.#scheduler = scheduler;
     this.#signalModel = signalModel;
     const cfg = this.#config() || {};
+    const defaultChannel = cfg.defaultChannel || "world";
     this.#prefs = {
       volume: Number.isFinite(Number(cfg.defaultVolume)) ? Number(cfg.defaultVolume) : 0.6,
       ducking: cfg.ducking?.enabled !== false,
       playInBackground: cfg.playInBackground === true,
+      channelMode: defaultChannel,
+      voliaTrackIndex: 0,
+      customTrackIndex: 0,
       ...this.#preferences.load(),
     };
+    if (this.#prefs.walkieTalkie !== undefined && cfg.effects?.walkieTalkie) {
+      cfg.effects.walkieTalkie.enabled = this.#prefs.walkieTalkie;
+    }
+    if (this.#prefs.vinyl !== undefined && cfg.effects?.vinyl) {
+      cfg.effects.vinyl.enabled = this.#prefs.vinyl;
+    }
     this.#prefs.country = this.#prefs.country || this.#region.resolve();
     this.#stationEffects = this.#preferences.loadStationEffects();
     this.#player.setVolume(this.#prefs.volume);
     this.#syncPreferences();
+    this.#updateCurrentStationPreview();
   }
 
   // { status, powered, equipped, signal, station, country, stationCount, effects, volume, ducking, playInBackground }; one
@@ -94,11 +107,13 @@ export class RadioReceiverService {
     if (!this.#hasCharge()) return this.#set({ status: "no-battery", powered: false });
     this.#set({ powered: true, status: "loading" });
     this.#failures = 0;
-    this.#loadCountry(this.#prefs.country, this.#prefs.stationId);
+    this.#clearIntermission();
+    this.#startCurrentChannel();
   }
 
   powerOff(status = "off") {
     this.#requestSerial += 1;
+    this.#clearIntermission();
     this.#player.stop();
     this.#noise.stop();
     this.#endDropout();
@@ -115,12 +130,42 @@ export class RadioReceiverService {
     this.#step(-1);
   }
 
+  setChannel(mode) {
+    if (!["volia", "custom", "world"].includes(mode) || mode === this.#prefs.channelMode) return;
+    this.#prefs.channelMode = mode;
+    this.#save({ channelMode: mode });
+    this.#clearIntermission();
+    this.#syncPreferences();
+    if (this.#status.powered) {
+      this.#startCurrentChannel();
+    } else {
+      this.#updateCurrentStationPreview();
+      this.#notify();
+    }
+  }
+
+  setEffectEnabled(effect, enabled) {
+    if (!["walkieTalkie", "vinyl"].includes(effect)) return;
+    const value = enabled === true;
+    const cfg = this.#config() || {};
+    if (cfg.effects?.[effect]) {
+      cfg.effects[effect].enabled = value;
+      this.#prefs[effect] = value;
+      this.#save({ [effect]: value });
+      this.#player.refreshEffects();
+      this.#syncPreferences();
+      this.#notify();
+    }
+  }
+
   setCountry(code) {
     const country = String(code || "").toUpperCase();
-    if (!/^[A-Z]{2}$/u.test(country) || country === this.#prefs.country) return;
+    if (!/^[A-Z]{2}$/u.test(country) || (country === this.#prefs.country && this.#prefs.channelMode === "world")) return;
     this.#prefs.country = country;
+    this.#prefs.channelMode = "world";
     delete this.#prefs.stationId;
-    this.#save({ country, stationId: null });
+    this.#save({ country, channelMode: "world", stationId: null });
+    this.#clearIntermission();
     this.#syncPreferences();
     if (this.#status.powered) this.#loadCountry(country, null);
     else this.#notify();
@@ -170,30 +215,51 @@ export class RadioReceiverService {
   setPageHidden(hidden) {
     this.#hidden = hidden === true;
     if (!this.#status.powered || this.#prefs.playInBackground) return;
-    if (this.#hidden) this.#player.stop();
-    else this.#playCurrent();
+    if (this.#hidden) {
+      this.#player.stop();
+    } else if (this.#status.status === "intermission") {
+      // While in intermission, keep waiting for interval timer.
+    } else {
+      this.#resumeCurrentChannel();
+    }
   }
 
   // The player reported a state for the current station.
   handlePlayerState(state, { effects = true } = {}) {
     if (!this.#status.powered) return;
+    const mode = this.#prefs.channelMode || "world";
     if (state === "playing") {
-      this.#rememberStation(effects);
-      // TK-100: with onlyEffectStations a station without CORS is skipped like a silent one.
-      if (effects || this.#config()?.onlyEffectStations !== true) {
+      if (mode === "world") {
+        this.#rememberStation(effects);
+        // TK-100: with onlyEffectStations a station without CORS is skipped like a silent one.
+        if (effects || this.#config()?.onlyEffectStations !== true) {
+          this.#failures = 0;
+          this.#set({ status: effects ? "playing" : "no-effect", effects });
+          return;
+        }
+      } else {
         this.#failures = 0;
         this.#set({ status: effects ? "playing" : "no-effect", effects });
         return;
       }
     } else if (state === "loading") {
       return;
+    } else if (state === "ended") {
+      if (mode !== "world") {
+        this.#handleTrackEnded(mode);
+        return;
+      }
     }
     // "failed": the next station, until every station of the list failed once.
-    this.#failures += 1;
-    if (this.#failures >= this.#list.length) return this.#set({ status: "no-stations" });
-    this.#set({ status: "offline-retrying" });
-    this.#index = (this.#index + 1) % this.#list.length;
-    this.#playCurrent();
+    if (mode === "world") {
+      this.#failures += 1;
+      if (this.#failures >= this.#list.length) return this.#set({ status: "no-stations" });
+      this.#set({ status: "offline-retrying" });
+      this.#index = (this.#index + 1) % this.#list.length;
+      this.#playCurrent();
+    } else {
+      this.#handleTrackEnded(mode);
+    }
   }
 
   // Per frame: tracks whether a radio is worn, and an unequipped radio or an empty battery turns it off (stage 4 adds
@@ -241,6 +307,7 @@ export class RadioReceiverService {
 
   dispose() {
     this.#requestSerial += 1;
+    this.#clearIntermission();
     this.#player.stop();
     this.#noise.stop();
     this.#endDropout();
@@ -313,10 +380,150 @@ export class RadioReceiverService {
   }
 
   #step(direction) {
-    if (!this.#status.powered || this.#list.length === 0) return;
-    this.#failures = 0;
-    this.#index = (this.#index + direction + this.#list.length) % this.#list.length;
-    this.#playCurrent();
+    if (!this.#status.powered) return;
+    const mode = this.#prefs.channelMode || "world";
+    if (mode === "world") {
+      if (this.#list.length === 0) return;
+      this.#failures = 0;
+      this.#index = (this.#index + direction + this.#list.length) % this.#list.length;
+      this.#playCurrent();
+    } else {
+      this.#clearIntermission();
+      const channel = this.#getChannelConfig(mode);
+      const tracks = channel?.tracks || [];
+      if (tracks.length === 0) return;
+      const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
+      const nextIndex = ((this.#prefs[prefKey] ?? 0) + direction + tracks.length) % tracks.length;
+      this.#prefs[prefKey] = nextIndex;
+      this.#save({ [prefKey]: nextIndex });
+      this.#loadPlaylistChannel(mode);
+    }
+  }
+
+  #getChannelConfig(mode) {
+    const cfg = this.#config() || {};
+    return cfg.channels?.[mode] || null;
+  }
+
+  #startCurrentChannel() {
+    const mode = this.#prefs.channelMode || "world";
+    if (mode === "world") {
+      this.#loadCountry(this.#prefs.country, this.#prefs.stationId);
+    } else {
+      this.#loadPlaylistChannel(mode);
+    }
+  }
+
+  #resumeCurrentChannel() {
+    const mode = this.#prefs.channelMode || "world";
+    if (mode === "world") {
+      this.#playCurrent();
+    } else {
+      this.#loadPlaylistChannel(mode);
+    }
+  }
+
+  #loadPlaylistChannel(mode) {
+    const channel = this.#getChannelConfig(mode);
+    const tracks = channel?.tracks || [];
+    const count = tracks.length;
+    const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
+    let index = Number(this.#prefs[prefKey]) || 0;
+    if (index >= count) index = 0;
+    this.#prefs[prefKey] = index;
+
+    if (count === 0) {
+      this.#player.stop();
+      const statusKey = mode === "volia" ? "no-volia-tracks" : "no-tracks";
+      return this.#set({
+        status: statusKey,
+        station: {
+          id: channel?.id || mode,
+          name: channel?.name || mode,
+          frequency: channel?.frequency || "",
+          title: "",
+          url: "",
+        },
+        stationCount: 0,
+        trackIndex: 0,
+        trackCount: 0,
+      });
+    }
+
+    const track = tracks[index];
+    const station = {
+      id: track.id || `${mode}-${index}`,
+      name: channel.name,
+      frequency: channel.frequency || "",
+      title: track.title || "",
+      url: track.url || "",
+    };
+    this.#set({
+      status: "loading",
+      station,
+      stationCount: count,
+      trackIndex: index,
+      trackCount: count,
+    });
+    if (this.#hidden && !this.#prefs.playInBackground) return;
+    this.#player.play(track.url);
+  }
+
+  #handleTrackEnded(mode) {
+    this.#player.stop();
+    const channel = this.#getChannelConfig(mode);
+    const tracks = channel?.tracks || [];
+    if (tracks.length === 0) {
+      const statusKey = mode === "volia" ? "no-volia-tracks" : "no-tracks";
+      return this.#set({ status: statusKey });
+    }
+    const intermissionCfg = channel?.intermission || { minSeconds: 15, maxSeconds: 45 };
+    const minSec = Number(intermissionCfg.minSeconds) || 15;
+    const maxSec = Number(intermissionCfg.maxSeconds) || 45;
+    const pauseSeconds = minSec + this.#rng.next() * Math.max(0, maxSec - minSec);
+    const pauseMs = pauseSeconds * 1000;
+
+    this.#set({ status: "intermission" });
+    this.#intermissionTimer = this.#scheduler.setTimeout(() => {
+      this.#intermissionTimer = null;
+      if (!this.#status.powered || this.#prefs.channelMode !== mode) return;
+      const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
+      const nextIndex = ((this.#prefs[prefKey] ?? 0) + 1) % tracks.length;
+      this.#prefs[prefKey] = nextIndex;
+      this.#save({ [prefKey]: nextIndex });
+      this.#loadPlaylistChannel(mode);
+    }, pauseMs);
+  }
+
+  #clearIntermission() {
+    if (this.#intermissionTimer !== null) {
+      this.#scheduler.clearTimeout(this.#intermissionTimer);
+      this.#intermissionTimer = null;
+    }
+  }
+
+  #updateCurrentStationPreview() {
+    const mode = this.#prefs.channelMode || "world";
+    if (mode === "volia" || mode === "custom") {
+      const channel = this.#getChannelConfig(mode);
+      const tracks = channel?.tracks || [];
+      const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
+      const index = Math.min(Math.max(0, tracks.length - 1), Math.max(0, Number(this.#prefs[prefKey]) || 0));
+      const track = tracks[index];
+      this.#status.station = {
+        id: track?.id || `${mode}-${index}`,
+        name: channel?.name || mode,
+        frequency: channel?.frequency || "",
+        title: track?.title || "",
+        url: track?.url || "",
+      };
+      this.#status.stationCount = tracks.length;
+      this.#status.trackIndex = index;
+      this.#status.trackCount = tracks.length;
+    } else {
+      this.#status.station = this.#list[this.#index] || null;
+      this.#status.stationCount = this.#list.length;
+    }
   }
 
   #playCurrent() {
@@ -341,8 +548,15 @@ export class RadioReceiverService {
   }
 
   #syncPreferences() {
+    const cfg = this.#config() || {};
     Object.assign(this.#status, {
-      country: this.#prefs.country, volume: this.#prefs.volume, ducking: this.#prefs.ducking, playInBackground: this.#prefs.playInBackground,
+      country: this.#prefs.country,
+      volume: this.#prefs.volume,
+      ducking: this.#prefs.ducking,
+      playInBackground: this.#prefs.playInBackground,
+      channelMode: this.#prefs.channelMode || "world",
+      walkieTalkie: cfg.effects?.walkieTalkie?.enabled ?? true,
+      vinyl: cfg.effects?.vinyl?.enabled ?? false,
     });
   }
 

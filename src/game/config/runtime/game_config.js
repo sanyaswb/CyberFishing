@@ -1,4 +1,5 @@
 import { RADIO_SOUND_SETTINGS } from "../raw/radio/radio_sound_settings.js";
+import { RADIO_CHANNELS } from "../raw/radio/radio_channels.js";
 import { FISH_DB } from "../databases/fish_database.js";
 import { ITEM_PROGRESSION_CONFIG } from "../items/item_progression_config.js";
 import { ITEM_STAT_OVERRIDE_CONFIG } from "../raw/items/item_stat_overrides.js";
@@ -342,6 +343,8 @@ export const CONFIG = {
     stationLimit: 60,
     codecs: ["MP3", "AAC", "AAC+"],
     defaultCountry: "UA",
+    defaultChannel: "volia",
+    channels: RADIO_CHANNELS,
     requestTimeoutMs: 8000,
     startTimeoutMs: 5000,
     defaultVolume: 0.6,

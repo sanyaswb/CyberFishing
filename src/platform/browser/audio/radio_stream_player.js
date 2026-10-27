@@ -106,7 +106,12 @@ export class RadioStreamPlayer {
       this.#clearTimer();
       this.#onState("playing", { effects: mode === "effects" });
     });
-    for (const type of ["error", "ended"]) this.#listen(element, type, () => this.#fail(element));
+    this.#listen(element, "error", () => this.#fail(element));
+    this.#listen(element, "ended", () => {
+      if (this.#element !== element) return;
+      this.#clearTimer();
+      this.#onState("ended", { effects: mode === "effects" });
+    });
     if (mode === "effects") {
       this.#ensureGraph();
       this.#sourceNode = this.#audioContexts.get().createMediaElementSource(element);

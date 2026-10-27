@@ -6,7 +6,14 @@
 │  │        ├── rod.json
 │  │        └── rod.webp
 │  ├── audio
-│  │  └── bell_ring.mp3
+│  │  ├── bell_ring.mp3
+│  │  └── radio
+│  │     ├── custom
+│  │     │  └── .gitkeep
+│  │     └── volia
+│  │        ├── Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a
+│  │        ├── RADIO_VOLIA.mp3
+│  │        └── RADIO_VOLYA_SHELF.mp3
 │  ├── fish
 │  │  ├── crucian_stalker
 │  │  │  ├── standart
@@ -430,6 +437,7 @@
 │  │  │  │  │  ├── tackle_physics.js
 │  │  │  │  │  └── tension_physics.js
 │  │  │  │  ├── radio
+│  │  │  │  │  ├── radio_channels.js
 │  │  │  │  │  └── radio_sound_settings.js
 │  │  │  │  └── time
 │  │  │  │     └── game_time_config.js

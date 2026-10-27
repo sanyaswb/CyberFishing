@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.21";
+export const CURRENT_PROJECT_VERSION = "0.48.22";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-27",
   notes: Object.freeze([
+    "Spec 144 / TK-117: custom radio channel (MP3) and dedicated station VOLIA 77.2 with atmospheric broadcast and effect controls.",
     "TK-116: auxiliary loadout bottom margin in portrait and tile grid in landscape.",
     "TK-115: rodless loadout panel portrait alignment and layout fix.",
     "TK-114: added battery variants Volt-2 (7200), Volt-3 (10800), and Volt-4 (24000).",
@@ -27,7 +28,6 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
     "TK-108: discrete worm jar sizes (25, 50, 75, 100) and DEV shop nominal quantities.",
     "TK-107: bait/chum pack capacity in backpack, jar card art, worm icon in switcher.",
     "TK-106: mobile inventory card columns by display size (1 -> 6, 2 -> 4, 3 -> 3).",
-    "TK-105: unified card rounded corners and inventory grid scale settings (1, 2, 3).",
     "TK-104: backpack capacity scale color derives from remaining free capacity.",
     "TK-103: unified parameter scale styles matching inventory-parameter__bar-fill.",
     "TK-102: item parameter design tokens, single battery charge meter, dynamic capacity.",

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.22 - Custom radio channel and dedicated station VOLIA 77.2
+
+- Radio: added dedicated station VOLIA 77.2 (77.2 FM) playing atmospheric local broadcasts, custom MP3 channel with intermission receiver noise between tracks, channel switcher, and live sound effect controls (Spec 144 / TK-117).
+
 ## v0.48.21 - Auxiliary loadout bottom margin in portrait and tile grid in landscape
 
 - Inventory: added bottom margin to auxiliary loadout panel in portrait mode and enabled multi-column tile grid layout in wide/square landscape mode (TK-116).
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.13 - Discrete worm jar sizes (25, 50, 75, 100) and DEV shop delivery
 
 - Inventory: added discrete worm jar catalog items (25, 50, 75, 100 pcs) with distinct jar art and pack capacities; DEV shop grants nominal jar quantities (TK-108).
-
-## v0.48.12 - Bait and chum packs in backpack and switcher worm icon
-
-- Inventory: bait and chum stacks count by pack/jar size towards backpack capacity (50 worms in jars of 25 = 2 items); worm item displays jar artwork in backpack and worm icon in header switcher (TK-107).
 
 
 

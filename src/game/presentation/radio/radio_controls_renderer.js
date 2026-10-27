@@ -35,6 +35,15 @@ export class RadioControlsRenderer {
     status.setAttribute("role", "status");
     display.append(station, meta, status);
 
+    const channels = this.#dom.element("div", "radio-controls__channels");
+    const channelButtons = {};
+    for (const key of ["volia", "custom", "world"]) {
+      const btn = this.#dom.button("radio-controls__channel inventory-action", labels.channels?.[key] || key);
+      btn.addEventListener("click", () => this.#radio.setChannel?.(key));
+      channels.append(btn);
+      channelButtons[key] = btn;
+    }
+
     const buttons = this.#dom.element("div", "radio-controls__buttons");
     const previous = this.#dom.button("radio-controls__button inventory-action", labels.previous);
     const power = this.#dom.button("radio-controls__button radio-controls__button--power inventory-action", labels.powerOn);
@@ -64,9 +73,10 @@ export class RadioControlsRenderer {
       toggles[key] = input;
     }
     const tuning = this.#tuning ? this.#dom.element("div", "radio-controls__tuning") : null;
-    block.append(display, buttons, country.field, volume.field, ...(tuning ? [tuning] : []), switches);
+    block.append(display, channels, buttons, country.field, volume.field, ...(tuning ? [tuning] : []), switches);
 
-    const nodes = { block, station, meta, status, power, previous, next, country: country.control,
+    const nodes = { block, station, meta, status, power, previous, next, channels, channelButtons,
+      country: country.control, countryField: country.field,
       volume: volume.control, toggles, countryOptions: null, tuning, tuningSignature: null };
     this.#fillTuning(nodes);
     this.#fillCountries(nodes);
@@ -149,10 +159,38 @@ export class RadioControlsRenderer {
   #update(nodes, reading) {
     this.#fillTuning(nodes);
     const labels = this.#labels;
-    this.#text(nodes.station, reading.station?.name || labels.noStation);
-    const meta = [reading.country, reading.station?.bitrate ? labels.bitrate(reading.station.bitrate) : ""]
-      .filter(Boolean).join(" · ");
-    this.#text(nodes.meta, meta);
+    const mode = reading.channelMode || "world";
+
+    if (nodes.channelButtons) {
+      for (const [key, btn] of Object.entries(nodes.channelButtons)) {
+        const active = mode === key;
+        btn.classList.toggle("radio-controls__channel--active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      }
+    }
+
+    if (mode === "volia") {
+      const title = reading.station?.title ? `${reading.station.name} — ${reading.station.title}` : (reading.station?.name || "VOLIA 77.2");
+      this.#text(nodes.station, title);
+      const meta = reading.trackCount > 1
+        ? `77.2 FM · ${labels.trackIndex(reading.trackIndex + 1, reading.trackCount)}`
+        : "77.2 FM · Воля";
+      this.#text(nodes.meta, meta);
+      if (nodes.countryField) nodes.countryField.hidden = true;
+    } else if (mode === "custom") {
+      const title = reading.station?.title ? `${reading.station.name} — ${reading.station.title}` : (reading.station?.name || "Свій канал");
+      this.#text(nodes.station, title);
+      const meta = reading.trackCount > 0 ? labels.trackIndex(reading.trackIndex + 1, reading.trackCount) : labels.noTracks;
+      this.#text(nodes.meta, meta);
+      if (nodes.countryField) nodes.countryField.hidden = true;
+    } else {
+      this.#text(nodes.station, reading.station?.name || labels.noStation);
+      const meta = [reading.country, reading.station?.bitrate ? labels.bitrate(reading.station.bitrate) : ""]
+        .filter(Boolean).join(" · ");
+      this.#text(nodes.meta, meta);
+      if (nodes.countryField) nodes.countryField.hidden = false;
+    }
+
     const statusText = labels.status[reading.status] || reading.status;
     const weak = reading.powered && Number(reading.signal ?? 1) < 1;
     this.#text(nodes.status, weak ? `${statusText} · ${labels.weakSignal}` : statusText);

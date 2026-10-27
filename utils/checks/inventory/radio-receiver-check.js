@@ -836,7 +836,116 @@ async function tuningSliders() {
     [1, 0, 0, 0, 0], "signal.enabled false: no hiss, crackle, dropouts or sag, even with an empty battery in the rain");
 }
 
-stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(() => console.log("Radio receiver "
+async function spec144CustomRadio() {
+  const timers = [];
+  const fakeScheduler = {
+    setTimeout: (cb, ms) => {
+      const entry = { cb, ms, cancelled: false };
+      timers.push(entry);
+      return entry;
+    },
+    clearTimeout: (entry) => {
+      if (entry) entry.cancelled = true;
+    },
+  };
+  const played = [];
+  const fakePlayer = {
+    play: (url) => played.push(url),
+    stop: () => {},
+    setVolume() {},
+    setGainScale() {},
+    setStreamMuted() {},
+    refreshEffects() {},
+  };
+  const testChannels = {
+    volia: {
+      id: "volia",
+      name: "VOLIA 77.2",
+      frequency: "77.2 FM",
+      tracks: [{ id: "v1", title: "Volia 1", url: "assets/audio/radio/volia/RADIO_VOLIA.mp3" }],
+    },
+    custom: {
+      id: "custom",
+      name: "Свій канал",
+      frequency: "MP3",
+      tracks: [
+        { id: "c1", title: "Custom 1", url: "assets/audio/radio/custom/track1.mp3" },
+        { id: "c2", title: "Custom 2", url: "assets/audio/radio/custom/track2.mp3" },
+      ],
+      intermission: { minSeconds: 10, maxSeconds: 10 },
+    },
+    world: { id: "world", name: "Світове радіо", frequency: "Online" },
+  };
+  const liveEffects = { walkieTalkie: { enabled: true }, vinyl: { enabled: false } };
+  const service = new RadioReceiverService({
+    equipment: { getEquipped: () => ({ radio: { instanceId: "r" }, radioBattery: { instanceId: "b" } }) },
+    power: { read: () => ({ empty: false }), consume: () => ({ empty: false, percent: 100 }) },
+    stations: { listStations: async () => [], listCountries: async () => [] },
+    player: fakePlayer,
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }),
+    region: { resolve: () => "UA" },
+    config: () => ({
+      defaultChannel: "volia",
+      channels: testChannels,
+      effects: liveEffects,
+      ducking: { enabled: true, duckGain: 0.25 },
+    }),
+    scheduler: fakeScheduler,
+    noise: { update() {}, burst() {}, stop() {} },
+    rng: { next: () => 0.5 },
+  });
+
+  assert.equal(service.getStatus().channelMode, "volia", "default channel is volia");
+  service.powerOn();
+  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia channel plays its broadcast file");
+  assert.equal(service.getStatus().station.name, "VOLIA 77.2");
+  assert.equal(service.getStatus().station.frequency, "77.2 FM");
+
+  // Track finished: transitions to intermission pause
+  service.handlePlayerState("ended");
+  assert.equal(service.getStatus().status, "intermission", "ended event transitions to intermission");
+  assert.equal(timers.length, 1, "schedules intermission timer");
+
+  // Timer fires: plays next (or loops single) track
+  const activeTimer = timers.find((t) => !t.cancelled);
+  assert(activeTimer, "has active intermission timer");
+  activeTimer.cb();
+  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "after intermission, track plays again");
+
+  // Switch to custom channel
+  service.setChannel("custom");
+  assert.equal(service.getStatus().channelMode, "custom");
+  assert.equal(played.at(-1), "assets/audio/radio/custom/track1.mp3", "custom channel plays first track");
+  service.next();
+  assert.equal(played.at(-1), "assets/audio/radio/custom/track2.mp3", "next advances to second track");
+
+  // Effect toggling
+  service.setEffectEnabled("walkieTalkie", false);
+  assert.equal(liveEffects.walkieTalkie.enabled, false, "walkie talkie toggle disables effect in live config");
+  service.setEffectEnabled("vinyl", true);
+  assert.equal(liveEffects.vinyl.enabled, true, "vinyl toggle enables vinyl in live config");
+
+  // Custom channel with empty tracks
+  const emptyChannels = { ...testChannels, custom: { ...testChannels.custom, tracks: [] } };
+  const emptyCustomService = new RadioReceiverService({
+    equipment: { getEquipped: () => ({ radio: { instanceId: "r" }, radioBattery: { instanceId: "b" } }) },
+    power: { read: () => ({ empty: false }) },
+    stations: { listStations: async () => [], listCountries: async () => [] },
+    player: fakePlayer,
+    preferences: new RadioPreferencesLocalStore({ cache: { get: () => ({ channelMode: "custom" }), set() {} } }),
+    region: { resolve: () => "UA" },
+    config: () => ({ defaultChannel: "custom", channels: emptyChannels }),
+    scheduler: fakeScheduler,
+    noise: { update() {}, burst() {}, stop() {} },
+    rng: { next: () => 0.5 },
+  });
+  emptyCustomService.powerOn();
+  assert.equal(emptyCustomService.getStatus().status, "no-tracks", "empty custom playlist reports no-tracks");
+}
+
+stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(spec144CustomRadio).then(() => console.log("Radio receiver "
+  + "Spec 144 passed: channel selection (volia, custom, world), VOLIA 77.2 broadcast file, custom MP3 channel with intermission pause, and live effect switches."))
+  .then(() => console.log("Radio receiver "
   + "TK-098 passed: DEV tuning lists only enabled effects, writes known keys to the live config, sliders in the editor, "
   + "rebuilt when the enabled set changes, none in production.")).then(() => console.log("Radio receiver stage 5 passed: ducking "
   + "on a bite with its switch and recovery, eased gain, the DevTools section.")).then(() => console.log("Radio receiver stage 4 passed: reception model (charge "
