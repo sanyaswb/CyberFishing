@@ -2,6 +2,22 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-123"></a>
+
+## TK-123 — зміна великого зображення в редакторі предметів при свайпі комірок та порядок треків ВОЛЯ 77.2
+
+- Власник 2026-10-27: поправити логіку свайпу/скролу картки редагування: при свайпі вліво і вправо перемикається активна комірка, але повинна змінюватися і велика картинка на той предмет, на який було перемикання; якщо предмет пустий — показувати іконку комірки. За дефолтними налаштуваннями перший трек на радіо ВОЛЯ 77.2 повинен бути «Ефір ВОЛЯ 77.2», потім «Чому з Купола тікають на Іржавий Шельф».
+- Причина: у `InventoryAssemblyEditorRenderer` прев'ю `.inventory-assembly-editor__visual` рендерилося один раз і завжди містило картку кореневого предмета (`model.root`). При перемиканні вкладок комірок прев'ю не оновлювалося. Для порожніх комірок у прев'ю було відсутнє відображення іконки-плейсхолдера комірки. У `RADIO_CHANNELS.volia.tracks` першим треком був `volia-chomu_z_kupola_tikayut_na_irzhavyi_shelf` через алфавітне сортування файлів.
+- Зміна:
+  1. `src/game/presentation/inventory/inventory_editor_tabs_renderer.js`: додано виклик `onTabSelect(tab)` при оновленні активної вкладки в `#apply()`.
+  2. `src/game/presentation/inventory/inventory_assembly_editor_renderer.js`: підписано на `onTabSelect` у `tabsRenderer.render`. Реалізовано методи `#updateVisual` та `#renderVisualContent`: якщо у вибраній вкладці є предмет (`tab.item` або `tab.kind === "root"`), рендериться велика картка предмета; якщо комірка порожня — рендериться контейнер `.inventory-assembly-editor__empty` з іконкою слота (`inventorySlotIconPath(slotId)`).
+  3. `src/game/presentation/styles/inventory/assembly-editor.css`: додано стилі для `.inventory-assembly-editor__empty` та `.inventory-assembly-editor__empty-icon`.
+  4. `src/game/config/raw/radio/radio_channels.js` та `utils/scan-radio-tracks.js`: встановлено порядок треків ВОЛЯ 77.2: 1) «Ефір ВОЛЯ 77.2», 2) «Чому з Купола тікають на Іржавий Шельф», 3) «Ефір ВОЛЯ (Іржавий Шельф)».
+  5. Оновлено перевірки в `utils/checks/ui/inventory-ui-check.js` та `utils/checks/inventory/radio-receiver-check.js`.
+- Перевірка:
+  - Автоматичні тести: `inventory-ui` та `radio-receiver` (перевірено відмову на старому коді) та повний прогін `npm run check` (70/70 passed).
+- [x] Реалізовано v0.48.28.
+
 <a id="tk-122"></a>
 
 ## TK-122 — приховування каналу «Свій канал» та автоперемикання треків «VOLIA 77.2»
