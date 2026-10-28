@@ -4,6 +4,18 @@
 export const RADIO_SOUND_SETTINGS = {
   "effects": {
     "rampSeconds": 0.03,
+    "retro": {
+      "drive": 2,
+      "enabled": false,
+      "highpassHz": 80,
+      "lowpassHz": 6000,
+      "mix": 1,
+      "outputGain": 1,
+      "presenceGainDb": 2,
+      "presenceHz": 2000,
+      "warmthGainDb": 3.5,
+      "warmthHz": 220
+    },
     "vinyl": {
       "baseDelayMs": 6,
       "crackleLevel": 0.12,
@@ -44,16 +56,19 @@ export const RADIO_SOUND_SETTINGS = {
     "baseNoise": 0.01,
     "dropoutMax": 0.5,
     "dropoutMs": [
-      150,
-      900
+      500,
+      2500
     ],
     "enabled": true,
     "lowChargePercent": 25,
     "maxCrackle": 6,
     "maxNoise": 0.3,
     "maxVolumeSag": 0.35,
-    "rainCrackle": 2,
-    "rainMultMax": 2.5,
-    "rainNoise": 0.12
+    "weather": {
+      "enabled": true,
+      "rainCrackle": 2,
+      "rainMultMax": 2.5,
+      "rainNoise": 0.12
+    }
   }
 };

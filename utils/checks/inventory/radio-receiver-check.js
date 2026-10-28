@@ -260,17 +260,19 @@ async function stageTwo() {
     "https://dead.example": { dead: true } };
   const elements = [];
   class FakeAudio {
-    constructor() { this.listeners = {}; this.volume = 1; this.crossOrigin = null; this.connected = false; elements.push(this); }
+    constructor() { this.listeners = {}; this.volume = 1; this.crossOrigin = null; this.connected = false;
+      this.playbackRate = 1.0; this.paused = false; elements.push(this); }
     addEventListener(type, handler) { (this.listeners[type] ||= new Set()).add(handler); }
     removeEventListener(type, handler) { this.listeners[type]?.delete(handler); }
     emit(type) { for (const handler of [...(this.listeners[type] || [])]) handler({}); }
     play() {
+      this.paused = false;
       const entry = streams[this.src] || {};
       this.outcome = entry.dead ? "silent" : this.crossOrigin === "anonymous" && !entry.cors ? "error" : "playing";
       return Promise.resolve();
     }
     settle() { if (this.outcome === "error") this.emit("error"); else if (this.outcome === "playing") this.emit("playing"); }
-    pause() {}
+    pause() { this.paused = true; }
     load() {}
     removeAttribute(key) { if (key === "src") this.src = ""; }
   }
@@ -321,6 +323,20 @@ async function stageTwo() {
   assert.equal(playerTimers.pending, 0, "stop clears the timers");
   assert(elements.every((element) => Object.values(element.listeners).every((set) => set.size === 0)),
     "stop and every attempt remove their listeners");
+
+  // TK-124: stream interruption during dropouts and optional accelerated catch-up.
+  stream.play("https://cors.example");
+  elements.at(-1).settle();
+  const playingElem = elements.at(-1);
+  assert.equal(playingElem.paused, false);
+  stream.setStreamInterrupted(true);
+  assert.equal(playingElem.paused, true, "dropout interruption pauses the stream");
+  stream.setStreamInterrupted(false, { catchUp: true, catchUpRate: 1.45, catchUpSeconds: 2 });
+  assert.equal(playingElem.paused, false, "resuming resumes stream playback");
+  assert.equal(playingElem.playbackRate, 1.45, "catch-up speeds up stream playback");
+  playerTimers.advance(2000);
+  assert.equal(playingElem.playbackRate, 1.0, "playback rate returns to 1.0 after catch-up duration");
+  stream.stop();
 
   // The editor controls drive the service; status updates write in place, station names as text.
   const doc = new TestDocument();
@@ -396,9 +412,18 @@ async function stageTwo() {
   indicator.dispose();
 }
 
-// ---- Stage 3: the walkie-talkie rack ----
+// ---- Stage 3: retro rack, walkie-talkie rack and vinyl rack ----
+const { RetroRack } = runtime.importModule("src/platform/browser/audio/retro_rack.js");
 const { WalkieTalkieRack } = runtime.importModule("src/platform/browser/audio/walkie_talkie_rack.js");
 async function stageThree() {
+  const retroCurve = RetroRack.curve(2, 1001);
+  assert.equal(retroCurve.length, 1001);
+  assert(Math.abs(retroCurve[500]) < 1e-6, "the retro S-curve passes through zero");
+  assert(Math.abs(retroCurve[0] + retroCurve[1000]) < 1e-6, "it is odd-symmetric");
+  for (let index = 1; index < retroCurve.length; index += 1) assert(retroCurve[index] >= retroCurve[index - 1], "and monotonic");
+  assert(Math.abs(retroCurve[1000] - RetroRack.peak(2)) < 1e-6);
+  assert.equal(RetroRack.curve(2).length, 44100, "the retro curve has 44100 points");
+
   const curve = WalkieTalkieRack.curve(18, 1001);
   assert.equal(curve.length, 1001);
   assert(Math.abs(curve[500]) < 1e-6, "the S-curve passes through zero");
@@ -422,6 +447,33 @@ async function stageThree() {
     createWaveShaper: () => node("shaper"), createGain: () => node("gain"), createDelay: () => node("delay"),
     createOscillator: () => node("oscillator"), createBufferSource: () => node("source"),
     createBuffer: (channels, length) => { const data = new Float32Array(length); return { length, getChannelData: () => data }; } };
+
+  // The retro stage: filters, saturation, makeup gain, live edits, disabled = dry.
+  const retro = new RetroRack().build(context);
+  const retroSettings = { enabled: true, mix: 1, highpassHz: 80, warmthHz: 220, warmthGainDb: 3.5,
+    presenceHz: 2000, presenceGainDb: 2, lowpassHz: 6000, drive: 2, oversample: "2x", outputGain: 1.15 };
+  retro.update(retroSettings, 0.03);
+  const [rInput, rOutput, rDry, rWet, rHighpass, rWarmth, rPresence, rLowpass, rShaper, rMakeup] = made.slice(0, 10);
+  assert.deepEqual([rHighpass.type, rWarmth.type, rPresence.type, rLowpass.type],
+    ["highpass", "lowshelf", "peaking", "lowpass"], "retro filters");
+  assert.deepEqual([rHighpass.frequency.value, rWarmth.frequency.value, rWarmth.gain.value,
+    rPresence.frequency.value, rPresence.gain.value, rLowpass.frequency.value],
+    [80, 220, 3.5, 2000, 2, 6000], "the filters follow CONFIG.radio.effects.retro");
+  assert.equal(rShaper.oversample, "2x");
+  assert(Math.abs(rMakeup.gain.value - 1.15 / RetroRack.peak(2)) < 1e-9, "make-up gain applies drive compensation");
+  assert(rInput.to.includes(rDry) && rInput.to.includes(rHighpass) && rHighpass.to.includes(rWarmth) &&
+    rWarmth.to.includes(rPresence) && rPresence.to.includes(rLowpass) && rLowpass.to.includes(rShaper) &&
+    rShaper.to.includes(rMakeup) && rMakeup.to.includes(rWet), "the retro wet chain in order");
+  assert(rDry.to.includes(rOutput) && rWet.to.includes(rOutput));
+  assert.deepEqual([rWet.gain.value, rDry.gain.value], [1, 0], "an enabled stage starts wet");
+  retro.update({ ...retroSettings, lowpassHz: 5500, outputGain: 1.0 }, 0.03);
+  assert.equal(rLowpass.frequency.value, 5500, "live edit applies to retro filter");
+  retro.update({ ...retroSettings, enabled: false }, 0.03);
+  assert.deepEqual([...rWet.gain.targets.at(-1)], [0, 2, 0.03], "disabling ramps wet out");
+  assert.deepEqual([...rDry.gain.targets.at(-1)], [1, 2, 0.03], "and dry in");
+  retro.dispose();
+  assert(made.slice(0, 10).every((entry) => entry.to.length === 0), "dispose disconnects retro stage");
+  made.length = 0;
 
   // The walkie-talkie stage: order, settings, make-up gain, ramped mix, live edits, disabled = dry.
   const walkie = new WalkieTalkieRack().build(context);
@@ -492,18 +544,18 @@ async function stageThree() {
   vinyl.dispose();
   assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
 
-  // The chain: input -> vinyl -> walkie-talkie -> output, both read from CONFIG.radio.effects live.
+  // The chain: input -> retro -> vinyl -> walkie-talkie -> output, all read from CONFIG.radio.effects live.
   made.length = 0;
   const { RadioEffectsChain } = runtime.importModule("src/platform/browser/audio/radio_effects_chain.js");
-  const effectsConfig = { rampSeconds: 0.05, vinyl: { ...vinylSettings, enabled: false }, walkieTalkie: { ...walkieSettings } };
+  const effectsConfig = { rampSeconds: 0.05, retro: { ...retroSettings, enabled: false }, vinyl: { ...vinylSettings, enabled: false }, walkieTalkie: { ...walkieSettings } };
   const chain = new RadioEffectsChain({ config: () => effectsConfig, rng: { next: () => 0.5 } });
   const chainIn = node("in");
   const chainOut = node("out");
   chain.attach(context, chainIn, chainOut);
   const stageInputs = made.filter((entry) => entry.kind === "gain" && chainIn.to.includes(entry));
-  assert.equal(stageInputs.length, 1, "the chain input feeds the vinyl stage");
+  assert.equal(stageInputs.length, 1, "the chain input feeds the retro stage");
   assert(made.some((entry) => entry.to.includes(chainOut)), "the walkie-talkie stage feeds the output");
-  effectsConfig.vinyl.enabled = true;
+  effectsConfig.retro.enabled = true;
   chain.update();
   assert(made.some((entry) => entry.gain.targets.some(([value, , constant]) => value === 1 && constant === 0.05)),
     "enabling the record in the configuration ramps it in on the next update");
@@ -529,8 +581,8 @@ const { RadioSignalModel } = runtime.importModule("src/game/domain/radio/radio_s
 const { DevicePowerService } = runtime.importModule("src/game/application/power/device_power_service.js");
 const { MonotonicIntervalTicker } = runtime.importModule("src/platform/browser/time/monotonic_interval_ticker.js");
 async function stageFour() {
-  const signalSettings = { lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, rainNoise: 0.12, rainMultMax: 2.5,
-    maxCrackle: 6, rainCrackle: 2, dropoutMax: 0.5, maxVolumeSag: 0.35 };
+  const signalSettings = { lowChargePercent: 25, baseNoise: 0.01, maxNoise: 0.3, maxCrackle: 6, dropoutMax: 0.5, maxVolumeSag: 0.35,
+    weather: { enabled: true, rainNoise: 0.12, rainMultMax: 2.5, rainCrackle: 2 } };
   const model = new RadioSignalModel();
   const full = { ...model.read({ chargePercent: 80 }, signalSettings) };
   assert.deepEqual([full.quality, full.noiseGain, full.crackleRate, full.dropoutChancePerSecond, full.volumeSag],
@@ -543,6 +595,12 @@ async function stageFour() {
   assert(Math.abs(rain.noiseGain - 0.13) < 1e-9 && rain.crackleRate === 2, "full rain adds its noise and crackle");
   assert.equal(model.read({ chargePercent: 80, isRaining: false, rainMult: 2.5 }, signalSettings).rain, 0);
 
+  // Weather disabled: rain adds no extra noise or crackle even in storm.
+  const dryWeather = { ...model.read({ chargePercent: 80, isRaining: true, rainMult: 2.5 },
+    { ...signalSettings, weather: { enabled: false, rainNoise: 0.12, rainCrackle: 2 } }) };
+  assert.equal(dryWeather.crackleRate, 0, "weather disabled: no rain crackle");
+  assert.equal(dryWeather.noiseGain, 0.01, "weather disabled: no rain noise");
+
   // The real power service over a battery port; the radio consumes 1 unit/s: one ordinary battery = 1 hour.
   const stored = new Map([["bat", { percent: 100, capacityUnits: 3600 }]]);
   const powerService = new DevicePowerService({ config: () => ({ maxStepSeconds: 1, maxBackgroundStepSeconds: 65,
@@ -552,14 +610,15 @@ async function stageFour() {
       entry.percent = Math.max(0, entry.percent - units / entry.capacityUnits * 100); return { ...entry }; } } });
   const radioItem = { instanceId: "radio-1", effectiveStats: { batteryUse: { unitsPerSecond: 1 } } };
   const equipment = { radio: radioItem, radioBattery: { instanceId: "bat" } };
-  const gains = []; const mutes = []; const noiseCalls = []; const bursts = []; let noiseStops = 0;
+  const gains = []; const mutes = []; const interrupted = []; const noiseCalls = []; const bursts = []; let noiseStops = 0;
   let next = 0.99;
   const timers = scheduler();
   let weather = { isRaining: false, wind: { rainMult: 1 } };
   const service = new RadioReceiverService({ equipment: { getEquipped: () => equipment }, power: powerService,
     stations: { listStations: async () => [station("s", "https://s.example/live")], listCountries: async () => [] },
     player: { play() {}, stop() {}, setVolume() {}, refreshEffects() {}, setGainScale: (value) => gains.push(value),
-      setStreamMuted: (muted) => mutes.push(muted) },
+      setStreamMuted: (muted) => mutes.push(muted),
+      setStreamInterrupted: (val, opts) => interrupted.push([val, opts]) },
     preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
     config: () => ({ codecs: ["MP3"], signal: { ...signalSettings, dropoutMs: [200, 200] } }), secureOnly: true,
     weather: { getSnapshot: () => weather },
@@ -602,11 +661,11 @@ async function stageFour() {
   service.tick(1);
   assert(Math.abs(gains.at(-1) - (1 - 0.35 * (1 - (12.5 - 1 / 36) / 25))) < 1e-3, "the volume sags with the weak battery");
   assert(noiseCalls.at(-1)[0] > 0.13 && noiseCalls.at(-1)[1] > 2, "noise and crackle from the battery and the rain");
-  assert.equal(mutes.at(-1), true, "a dropout silences the station");
+  assert.equal(interrupted.at(-1)[0], true, "a dropout silences and interrupts the station");
   assert(Math.abs(bursts.at(-1) - 0.2) < 1e-9, "with a crackle burst for its length");
   assert(service.getStatus().signal < 1, "the status reports the weak signal");
   timers.advance(200);
-  assert.equal(mutes.at(-1), false, "the station returns after the dropout");
+  assert.equal(interrupted.at(-1)[0], false, "the station returns after the dropout");
   service.powerOff();
 
   // The ticker reports the monotonic gap.
@@ -667,8 +726,9 @@ async function stageFive() {
   const ui = { createInfoRow: (label, value) => rows.push([label, value]),
     createButtonRow: (label, parent, onClick) => buttons.set(label, onClick),
     createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }) };
-  const radioConfig = { tickMs: 1000, effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 } },
-    signal: { enabled: true, baseNoise: 0.01 } };
+  const radioConfig = { tickMs: 1000,
+    effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 }, retro: { enabled: false, drive: 2 } },
+    signal: { enabled: true, baseNoise: 0.01, weather: { enabled: false, rainNoise: 0.12 } } };
   const trees = [];
   const writes = [];
   const downloads = [];
@@ -691,9 +751,11 @@ async function stageFive() {
   await section.exportSettings();
   assert.equal(downloads[0][0], "radio-sound-v0.48.4-20261025-2105.json", "the export file is named by version and time");
   assert.equal(downloads[0][1].format, "cyber-fishing-radio-sound");
-  assert.deepEqual(downloads[0][1].settings.signal, { baseNoise: 0.01, enabled: true }, "it carries the live settings");
+  assert.deepEqual(downloads[0][1].settings.signal, { baseNoise: 0.01, enabled: true, weather: { enabled: false, rainNoise: 0.12 } }, "it carries the live settings");
   assert(String(downloads[0][1].baseHash).startsWith("hash:"), "with the code's hash for the conflict check");
   assert(buttons.has("⬇ Експорт налаштувань звуку (npm run apply:radio)"), "DevTools offers the export");
+  assert(switches.has("RADIO.effects.retro.enabled"), "retro switch is present in DevTools");
+  assert(switches.has("RADIO.effects.weather.enabled"), "weather switch is present in DevTools");
   assert(rows.some(([label, value]) => label === "заряд батарейки" && value === "42.0%"));
   buttons.get("Розрядити до 5%")();
   assert.deepEqual(discharged, [5], "the DEV buttons discharge through the port");
@@ -714,9 +776,17 @@ async function stageFive() {
 // ---- TK-098: DEV sliders for the enabled effects' main parameters ----
 const { RadioEffectTuning } = runtime.importModule("src/dev/radio/radio_effect_tuning.js");
 async function tuningSliders() {
-  const radio = { effects: { vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2,
-    warmthGainDb: 2.5, mix: 1 }, walkieTalkie: { enabled: false, drive: 18 } },
-  signal: { enabled: false, baseNoise: 0.01, rainNoise: 0.12, maxNoise: 0.3, dropoutMax: 0.5, lowChargePercent: 25 } };
+  const radio = {
+    effects: {
+      retro: { enabled: false, warmthGainDb: 3.5, warmthHz: 220, presenceGainDb: 2, presenceHz: 2000, lowpassHz: 6000, highpassHz: 80, drive: 2, outputGain: 1.15, mix: 1 },
+      vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2, warmthGainDb: 2.5, mix: 1 },
+      walkieTalkie: { enabled: false, drive: 18 },
+    },
+    signal: {
+      enabled: false, baseNoise: 0.01, maxNoise: 0.3, dropoutMax: 0.5, lowChargePercent: 25,
+      weather: { enabled: false, rainNoise: 0.12, rainCrackle: 2, rainMultMax: 3.5 },
+    },
+  };
   const sets = [];
   const writeConfig = (path, value) => {
     sets.push([path.join("."), value]);
@@ -725,10 +795,16 @@ async function tuningSliders() {
     target[path.at(-1)] = value;
   };
   const tuning = new RadioEffectTuning({ config: () => radio, configRuntime: { set: writeConfig } });
-  assert.deepEqual(plain(tuning.groups()), [{ group: "vinyl", label: "Платівка", enabled: true },
-    { group: "walkieTalkie", label: "Рація", enabled: false }, { group: "signal", label: "Перешкоди сигналу", enabled: false },
-    { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false }],
-    "a switch per sound part: vinyl, walkie-talkie, the signal's interference");
+  assert.ok(tuning.groups().some((g) => g.group === "retro"), "retro effect group is present");
+  assert.ok(tuning.groups().some((g) => g.group === "weather"), "separate weather interference group is present");
+  assert.deepEqual(plain(tuning.groups()), [
+    { group: "retro", label: "Ретро", enabled: false },
+    { group: "vinyl", label: "Платівка", enabled: true },
+    { group: "walkieTalkie", label: "Рація", enabled: false },
+    { group: "signal", label: "Перешкоди сигналу", enabled: false },
+    { group: "weather", label: "Погодні перешкоди", enabled: false },
+    { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
+  ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
   assert.equal(plain(tuning.list()).length, 20, "all parameters of vinyl sound are available");
   assert.ok(plain(tuning.list()).some((entry) => entry.key === "wowHz" && entry.min === 0.1), "detailed vinyl wowHz parameter is available");
   assert.deepEqual(plain(tuning.list()).slice(0, 6).map((entry) => entry.key),
@@ -758,7 +834,7 @@ async function tuningSliders() {
   mainToggle.click();
   assert.equal(mainToggle.getAttribute("aria-expanded"), "true", "clicking expands the tuning list");
   const groupToggles = byClass(block, "radio-controls__group-toggle");
-  assert.equal(groupToggles.length, 3, "group toggles for vinyl, walkie-talkie, and signal");
+  assert.equal(groupToggles.length, 5, "group toggles for retro, vinyl, walkie-talkie, signal, and weather");
   assert.equal(groupToggles[0].getAttribute("aria-expanded"), "false", "group starts collapsed");
   groupToggles[0].click();
   assert.equal(groupToggles[0].getAttribute("aria-expanded"), "true", "clicking group toggle expands it");
@@ -766,21 +842,30 @@ async function tuningSliders() {
   assert.equal(groupToggles[0].getAttribute("aria-expanded"), "false", "clicking again collapses it");
 
   const switches = byClass(block, "radio-controls__tuning-switch");
-  assert.deepEqual(switches.map((input) => input.checked), [true, false, false, false],
-    "DEV shows the three part switches and «only stations with the effect»");
+  assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
+    "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
   assert.equal(sliders.length, 20, "all 20 sliders of the enabled part (vinyl)");
   assert.equal(sliders[0].value, "0.3");
   sliders[0].value = "0.2"; sliders[0].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
   assert.equal(byClass(block, "radio-controls__tuning-value")[0].textContent, "0.2");
-  switches[0].checked = false; switches[0].fire("change");
+  switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");
-  byClass(block, "radio-controls__tuning-switch")[2].checked = true;
-  byClass(block, "radio-controls__tuning-switch")[2].fire("change");
+  switches[0].checked = true; switches[0].fire("change");
+  assert.equal(radio.effects.retro.enabled, true, "the retro switch");
+  assert.equal(byClass(block, "radio-controls__slider").length, 9, "all 9 retro sliders");
+  switches[0].checked = false; switches[0].fire("change");
+  byClass(block, "radio-controls__tuning-switch")[3].checked = true;
+  byClass(block, "radio-controls__tuning-switch")[3].fire("change");
   assert.equal(radio.signal.enabled, true, "the interference switch");
-  assert.equal(byClass(block, "radio-controls__slider").length, 9, "all 9 interference sliders");
+  assert.equal(byClass(block, "radio-controls__slider").length, 6, "all 6 signal interference sliders");
+  byClass(block, "radio-controls__tuning-switch")[4].checked = true;
+  byClass(block, "radio-controls__tuning-switch")[4].fire("change");
+  assert.equal(radio.signal.weather.enabled, true, "the weather interference switch");
+  assert.equal(byClass(block, "radio-controls__slider").length, 9, "6 signal + 3 weather sliders");
+  radio.signal.weather.enabled = false;
   radio.signal.enabled = false;
   radio.effects.walkieTalkie.enabled = true;
   listener(status);
@@ -950,6 +1035,8 @@ async function spec144CustomRadio() {
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(spec144CustomRadio).then(() => console.log("Radio receiver "
+  + "TK-124 passed: retro rack (lowshelf warmth, presence peak, soft tanh saturation, makeup gain), weather interference subsection, glitches, dropouts with catch-up playbackRate acceleration."))
+  .then(() => console.log("Radio receiver "
   + "TK-122 and Spec 144 passed: channel selection (volia, world), automatic next track playback on volia, custom channel removed, and live effect switches."))
   .then(() => console.log("Radio receiver "
   + "TK-098 passed: DEV tuning lists only enabled effects, writes known keys to the live config, sliders in the editor, "

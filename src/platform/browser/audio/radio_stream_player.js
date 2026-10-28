@@ -13,6 +13,7 @@ export class RadioStreamPlayer {
   #input = null;
   #stream = null;
   #streamMuted = false;
+  #catchUpTimer = null;
   #element = null;
   #sourceNode = null;
   #timer = null;
@@ -57,6 +58,40 @@ export class RadioStreamPlayer {
     if (this.#element && this.#attempt === "native") this.#element.muted = this.#streamMuted;
   }
 
+  #clearCatchUpTimer() {
+    if (this.#catchUpTimer) {
+      this.#scheduler.clearTimeout(this.#catchUpTimer);
+      this.#catchUpTimer = null;
+    }
+  }
+
+  // TK-124: complete interruption of the station during dropouts with optional catch-up playback
+  setStreamInterrupted(interrupted, { catchUp = false, catchUpRate = 1.4, catchUpSeconds = 3 } = {}) {
+    if (interrupted) {
+      this.setStreamMuted(true);
+      if (this.#element && !this.#element.paused) {
+        this.#element.pause?.();
+      }
+    } else {
+      this.setStreamMuted(false);
+      if (this.#element) {
+        this.#element.play?.().catch?.(() => {});
+        this.#clearCatchUpTimer();
+        if (catchUp) {
+          const rate = Math.max(1.1, Math.min(2.0, Number(catchUpRate) || 1.4));
+          this.#element.playbackRate = rate;
+          const durationMs = Math.max(500, Math.round((Number(catchUpSeconds) || 3) * 1000));
+          this.#catchUpTimer = this.#scheduler.setTimeout(() => {
+            if (this.#element) this.#element.playbackRate = 1.0;
+            this.#catchUpTimer = null;
+          }, durationMs);
+        } else {
+          this.#element.playbackRate = 1.0;
+        }
+      }
+    }
+  }
+
   play(url) {
     this.stop();
     this.#url = String(url || "");
@@ -66,6 +101,8 @@ export class RadioStreamPlayer {
 
   stop() {
     this.#clearTimer();
+    this.#clearCatchUpTimer();
+    if (this.#element) this.#element.playbackRate = 1.0;
     this.#releaseElement();
     this.#url = null;
     this.#attempt = null;

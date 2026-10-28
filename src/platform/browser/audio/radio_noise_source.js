@@ -31,12 +31,22 @@ export class RadioNoiseSource {
     }
   }
 
-  // A dropout: a burst of crackle for its length.
-  burst(seconds) {
+  // A dropout / glitch: a burst of prominent radio hiss and crackles for its length.
+  burst(seconds, hissLevel = 0.3) {
     if (!this.#ensure()) return;
     const now = Number(this.#audioContexts.peek().currentTime) || 0;
-    this.#crackle.gain.setValueAtTime(0.35, now);
-    this.#crackle.gain.setValueAtTime(0, now + Math.max(0.05, Number(seconds) || 0));
+    const duration = Math.max(0.05, Number(seconds) || 0);
+    const targetHiss = Math.max(0.1, Number(hissLevel) || 0.3);
+    this.#hiss.gain.setValueAtTime(targetHiss, now);
+    this.#hiss.gain.setValueAtTime(0, now + duration);
+    this.#crackle.gain.setValueAtTime(0.4, now);
+    const glitchCount = Math.floor(duration * 6) + 1;
+    for (let index = 0; index < glitchCount; index += 1) {
+      const at = now + (index / glitchCount) * duration;
+      this.#crackle.gain.setValueAtTime(0.3 + this.#rng.next() * 0.4, at);
+      this.#crackle.gain.setValueAtTime(0.05, at + 0.02 + this.#rng.next() * 0.03);
+    }
+    this.#crackle.gain.setValueAtTime(0, now + duration);
   }
 
   stop() {

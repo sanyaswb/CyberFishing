@@ -7,9 +7,11 @@ import { buildSettingsFile, pickSettings, settingsFileName, settingsHash } from 
 // interference: each with its «увімкнено» switch; a part that is off hides its parameters, edited live), the export of
 // the sound settings for `npm run apply:radio`, and the other CONFIG.radio values. The player has no sound controls.
 const PARTS = Object.freeze([
+  Object.freeze({ key: "retro", label: "Ретро", path: Object.freeze(["effects", "retro"]) }),
   Object.freeze({ key: "vinyl", label: "Платівка", path: Object.freeze(["effects", "vinyl"]) }),
   Object.freeze({ key: "walkieTalkie", label: "Рація", path: Object.freeze(["effects", "walkieTalkie"]) }),
   Object.freeze({ key: "signal", label: "Перешкоди сигналу", path: Object.freeze(["signal"]) }),
+  Object.freeze({ key: "weather", label: "Погодні перешкоди", path: Object.freeze(["signal", "weather"]) }),
 ]);
 
 export class RadioDevSection {

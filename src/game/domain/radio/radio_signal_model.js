@@ -16,14 +16,21 @@ export class RadioSignalModel {
     const charge = Math.max(0, Math.min(100, Number(chargePercent) || 0));
     const quality = charge >= low ? 1 : charge / low;
     const weak = 1 - quality;
-    const span = Math.max(1e-6, (Number(settings.rainMultMax) || 2.5) - 1);
-    const rain = isRaining ? Math.max(0, Math.min(1, ((Number(rainMult) || 1) - 1) / span)) : 0;
+
+    const weatherSettings = settings.weather || settings;
+    const weatherEnabled = settings.weather ? settings.weather.enabled !== false : true;
+    const rainMultMax = Number(weatherSettings.rainMultMax ?? settings.rainMultMax) || 2.5;
+    const span = Math.max(1e-6, rainMultMax - 1);
+    const rain = (isRaining && weatherEnabled) ? Math.max(0, Math.min(1, ((Number(rainMult) || 1) - 1) / span)) : 0;
+    const rainNoise = Number(weatherSettings.rainNoise ?? settings.rainNoise) || 0;
+    const rainCrackle = Number(weatherSettings.rainCrackle ?? settings.rainCrackle) || 0;
+
     const reading = this.#reading;
     reading.quality = quality;
     reading.rain = rain;
     reading.noiseGain = (Number(settings.baseNoise) || 0) + weak * (Number(settings.maxNoise) || 0)
-      + rain * (Number(settings.rainNoise) || 0);
-    reading.crackleRate = weak * (Number(settings.maxCrackle) || 0) + rain * (Number(settings.rainCrackle) || 0);
+      + rain * rainNoise;
+    reading.crackleRate = weak * (Number(settings.maxCrackle) || 0) + rain * rainCrackle;
     reading.dropoutChancePerSecond = weak * weak * (Number(settings.dropoutMax) || 0);
     reading.volumeSag = weak * (Number(settings.maxVolumeSag) || 0);
     return reading;

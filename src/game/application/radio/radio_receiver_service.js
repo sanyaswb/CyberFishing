@@ -322,17 +322,29 @@ export class RadioReceiverService {
   }
 
   #startDropout() {
-    const [minimum, maximum] = this.#config()?.signal?.dropoutMs || [150, 900];
+    const [minimum, maximum] = this.#config()?.signal?.dropoutMs || [500, 2500];
     const length = minimum + this.#rng.next() * Math.max(0, maximum - minimum);
-    this.#player.setStreamMuted(true);
+    if (typeof this.#player.setStreamInterrupted === "function") {
+      this.#player.setStreamInterrupted(true);
+    } else {
+      this.#player.setStreamMuted(true);
+    }
     this.#noise.burst(length / 1000);
-    this.#dropoutTimer = this.#scheduler.setTimeout(() => this.#endDropout(), length);
+    this.#dropoutTimer = this.#scheduler.setTimeout(() => this.#endDropout(length), length);
   }
 
-  #endDropout() {
+  #endDropout(interruptedDurationMs = 0) {
     if (this.#dropoutTimer !== null) this.#scheduler.clearTimeout(this.#dropoutTimer);
     this.#dropoutTimer = null;
-    this.#player.setStreamMuted(false);
+    const catchUp = this.#rng.next() < 0.55;
+    const catchUpRate = 1.35 + this.#rng.next() * 0.15;
+    const missedSeconds = Math.max(1, interruptedDurationMs / 1000);
+    const catchUpSeconds = Math.min(4, Math.max(1.5, missedSeconds / (catchUpRate - 1)));
+    if (typeof this.#player.setStreamInterrupted === "function") {
+      this.#player.setStreamInterrupted(false, { catchUp, catchUpRate, catchUpSeconds });
+    } else {
+      this.#player.setStreamMuted(false);
+    }
   }
 
   // Stage 5: a bite ducks the radio to CONFIG.radio.ducking.duckGain while «Тихіше при кльові» is on.

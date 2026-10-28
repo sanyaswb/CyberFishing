@@ -898,6 +898,7 @@
 │        │  ├── radio_effects_chain.js
 │        │  ├── radio_noise_source.js
 │        │  ├── radio_stream_player.js
+│        │  ├── retro_rack.js
 │        │  ├── shared_audio_context_provider.js
 │        │  ├── vinyl_rack.js
 │        │  └── walkie_talkie_rack.js

@@ -4,6 +4,22 @@
 // value. Production composes no tuning port: the player never controls the sound quality.
 const GROUPS = Object.freeze([
   Object.freeze({
+    group: "retro",
+    label: "Ретро",
+    path: Object.freeze(["effects", "retro"]),
+    parameters: Object.freeze([
+      Object.freeze({ key: "warmthGainDb", label: "Ретро · тепло, дБ", min: 0, max: 10, step: 0.5 }),
+      Object.freeze({ key: "warmthHz", label: "Ретро · частота тепла, Гц", min: 100, max: 500, step: 10 }),
+      Object.freeze({ key: "presenceGainDb", label: "Ретро · присутність, дБ", min: 0, max: 8, step: 0.5 }),
+      Object.freeze({ key: "presenceHz", label: "Ретро · частота присутності, Гц", min: 1000, max: 4000, step: 100 }),
+      Object.freeze({ key: "lowpassHz", label: "Ретро · зріз верхів, Гц", min: 3000, max: 12000, step: 500 }),
+      Object.freeze({ key: "highpassHz", label: "Ретро · зріз низів, Гц", min: 30, max: 200, step: 5 }),
+      Object.freeze({ key: "drive", label: "Ретро · сатурація", min: 1, max: 6, step: 0.2 }),
+      Object.freeze({ key: "outputGain", label: "Ретро · вихідне підсилення", min: 0, max: 2, step: 0.05 }),
+      Object.freeze({ key: "mix", label: "Ретро · мікс", min: 0, max: 1, step: 0.05 }),
+    ]),
+  }),
+  Object.freeze({
     group: "vinyl",
     label: "Платівка",
     path: Object.freeze(["effects", "vinyl"]),
@@ -56,9 +72,16 @@ const GROUPS = Object.freeze([
       Object.freeze({ key: "maxVolumeSag", label: "Перешкоди · просідання гучності", min: 0, max: 1, step: 0.05 }),
       Object.freeze({ key: "dropoutMax", label: "Перешкоди · розриви", min: 0, max: 1, step: 0.05 }),
       Object.freeze({ key: "lowChargePercent", label: "Перешкоди · поріг заряду, %", min: 0, max: 60, step: 1 }),
-      Object.freeze({ key: "rainNoise", label: "Перешкоди · дощ шум", min: 0, max: 0.3, step: 0.01 }),
-      Object.freeze({ key: "rainCrackle", label: "Перешкоди · дощ тріск", min: 0, max: 10, step: 0.5 }),
-      Object.freeze({ key: "rainMultMax", label: "Перешкоди · множник дощу", min: 1, max: 5, step: 0.1 }),
+    ]),
+  }),
+  Object.freeze({
+    group: "weather",
+    label: "Погодні перешкоди",
+    path: Object.freeze(["signal", "weather"]),
+    parameters: Object.freeze([
+      Object.freeze({ key: "rainNoise", label: "Дощ · шум", min: 0, max: 0.5, step: 0.01 }),
+      Object.freeze({ key: "rainCrackle", label: "Дощ · тріск", min: 0, max: 15, step: 0.5 }),
+      Object.freeze({ key: "rainMultMax", label: "Дощ · множник інтенсивності", min: 1, max: 5, step: 0.1 }),
     ]),
   }),
   // TK-100: a plain flag (CONFIG.radio.onlyEffectStations), no sliders.
@@ -122,6 +145,9 @@ export class RadioEffectTuning {
     const entry = GROUPS.find((candidate) => candidate.group === group);
     let value = this.#config() || {};
     for (const part of entry?.path || []) value = value?.[part];
+    if (group === "weather" && !value && this.#config()?.signal) {
+      return this.#config().signal;
+    }
     return value;
   }
 }

@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.29 - Retro sound filter, weather interference subsection, and audio dropouts with catch-up acceleration
+
+- Radio: added dedicated Retro audio effect rack with analog saturation, presence boost, and tube low-end warmth without walkie-talkie clipping or vinyl crackle (TK-124).
+- Radio: separated weather interference into its own settings subsection and DevTools/tuning group, isolating rain-induced hiss and crackle from battery discharge (TK-124).
+- Radio: implemented stream interruption on signal dropouts with hiss bursts and accelerated playback rate catch-up upon resumption (TK-124).
+
 ## v0.48.28 - Visual preview synchronization on tab switch and default VOLIA 77.2 track order
 
 - Inventory / Assembly: visual preview card now synchronizes with the active slot tab on swipe or tap, showing the equipped item card or the compartment icon for empty slots (TK-123).
@@ -38,10 +44,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.20 - Rodless loadout panel portrait alignment and layout fix
 
 - Inventory: fixed portrait loadout layout when no rod is equipped, preventing two-column split and full-height stretch, and keeping primary and auxiliary panels full-width with a centered proportional rod slot (TK-115).
-
-## v0.48.19 - Added battery variants Volt-2, Volt-3 and Volt-4
-
-- Inventory: added three battery variants to the catalog: Volt-2 (7200 units, tier 2), Volt-3 (10800 units, tier 3), and Volt-4 (24000 units, tier 4) with dedicated assets, dynamic capacity readout, and DEV shop availability (TK-114).
 
 
 
