@@ -9,22 +9,24 @@ export class RadioControlsRenderer {
   #radio;
   #labels;
   #tuning;
+  #onPowerBlocked = null;
   #unsubscribe = null;
   #expandedSections = new Set();
 
   // radio: RadioReceiverService-like port; labels: RADIO_LABELS; tuning: DEV only, { list(), set(effect, key, value) }.
-  constructor({ domFactory, radio, labels, tuning = null }) {
+  constructor({ domFactory, radio, labels, tuning = null, onPowerBlocked = null }) {
     this.#dom = domFactory;
     this.#radio = radio;
     this.#labels = labels;
     this.#tuning = tuning;
+    this.#onPowerBlocked = onPowerBlocked;
   }
 
   supports(item) {
     return item?.itemType === "radio";
   }
 
-  render() {
+  render({ onWarning = null, onPowerBlocked = null } = {}) {
     this.#unsubscribe?.();
     const labels = this.#labels;
     const block = this.#dom.element("section", "radio-controls inventory-panel");
@@ -50,7 +52,19 @@ export class RadioControlsRenderer {
     const power = this.#dom.button("radio-controls__button radio-controls__button--power inventory-action", labels.powerOn);
     const next = this.#dom.button("radio-controls__button inventory-action", labels.next);
     previous.addEventListener("click", () => this.#radio.previous());
-    power.addEventListener("click", () => this.#radio.togglePower());
+    power.addEventListener("click", () => {
+      if (!this.#radio.getStatus().powered && !this.#radio.hasPower?.()) {
+        const handler = onPowerBlocked || this.#onPowerBlocked;
+        if (handler) {
+          handler();
+          this.#radio.powerOn?.();
+        } else {
+          this.#radio.togglePower();
+        }
+      } else {
+        this.#radio.togglePower();
+      }
+    });
     next.addEventListener("click", () => this.#radio.next());
     buttons.append(previous, power, next);
 

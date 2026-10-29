@@ -189,6 +189,39 @@ export class RadioStreamPlayer {
     this.stop({ isPowerOff: true });
   }
 
+  // TK-152: pauses playback without destroying the audio element or losing currentTime (e.g. page hidden).
+  pause() {
+    this.#clearTimer();
+    this.#clearCatchUpTimer();
+    this.#clearCueStartTimer();
+    if (this.#element && !this.#element.paused) {
+      this.#element.pause?.();
+    }
+    if (this.#effectsGate) this.#effectsGate.gain.value = 0;
+    this.#effects?.setActive?.(false);
+  }
+
+  // TK-152: resumes playback from the paused position without cue or track restart.
+  resume() {
+    if (this.#element && this.#element.paused) {
+      this.#active = true;
+      if (this.#audioContexts.get()) {
+        this.#ensureGraph();
+        if (this.#effectsGate) this.#effectsGate.gain.value = 1;
+        this.#effects?.setActive?.(true);
+      }
+      const started = this.#element.play?.();
+      started?.catch?.(() => {});
+      return true;
+    }
+    return false;
+  }
+
+  // Current playback position in seconds.
+  get currentTime() {
+    return Number(this.#element?.currentTime) || 0;
+  }
+
   setVolume(volume) {
     this.#volume = Math.max(0, Math.min(1, Number(volume) || 0));
     this.#applyVolume();

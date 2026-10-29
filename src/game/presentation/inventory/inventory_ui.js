@@ -1,3 +1,5 @@
+import { RADIO_LABELS } from "../radio/radio_labels.js";
+
 export class InventoryUI {
   #facade;
   #actionContract;
@@ -215,17 +217,27 @@ export class InventoryUI {
   }
 
   // Opens the equipment section on an equipped item's editor (spec 142: the radio indicator).
-  openSlotEditor(slotId, { feedbackSlotId = null, tone = "error" } = {}) {
+  openSlotEditor(slotId, { feedbackSlotId = null, tone = "error", message = null } = {}) {
     this.openSection("equipment");
     this.#dispatch({ type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE, slotId });
     this.refresh();
     if (feedbackSlotId) {
-      this.showEquipmentFeedback({
-        revision: (this.#lastEquipmentFeedbackRevision || 0) + 1,
-        slotId: feedbackSlotId,
-        tone,
-      });
+      this.highlightSlot(feedbackSlotId, { tone, message });
+    } else if (message) {
+      this.showWarning(message);
     }
+  }
+
+  // TK-152: highlights a slot and optionally shows a warning hint.
+  highlightSlot(slotId, { tone = "error", message = null } = {}) {
+    if (message) {
+      this.showWarning(message);
+    }
+    this.showEquipmentFeedback({
+      revision: (this.#lastEquipmentFeedbackRevision || 0) + 1,
+      slotId,
+      tone,
+    });
   }
 
   showEquipmentFeedback(feedback) {
@@ -567,6 +579,26 @@ export class InventoryUI {
       overlay.setAttribute("aria-hidden", "true");
       if (overlay.parentNode !== container) container.appendChild(overlay);
     }
+    const scrollToTarget = () => {
+      const firstField = fields[0];
+      const parent = firstField?.parentNode;
+      const firstContainer = parent?.classList.contains("inventory-editor-tabs__tab") ? parent : firstField;
+      firstContainer?.scrollIntoView?.({ block: "end", inline: "nearest", behavior: "smooth" });
+      const scroller = firstContainer?.closest?.(".inventory-assembly-editor") ||
+        this.#equipmentHost?.querySelector?.(".inventory-assembly-editor");
+      if (scroller) {
+        if (scroller.scrollTo) {
+          scroller.scrollTo({ top: scroller.scrollHeight || 0, behavior: "smooth" });
+        } else if (typeof scroller.scrollHeight === "number") {
+          scroller.scrollTop = scroller.scrollHeight;
+        }
+      }
+    };
+    if (this.#dom?.view?.requestAnimationFrame) {
+      this.#dom.view.requestAnimationFrame(() => scrollToTarget());
+    } else {
+      scrollToTarget();
+    }
   }
 
   #renderLeftPanel(panel) {
@@ -625,6 +657,7 @@ export class InventoryUI {
             rootInstanceId,
           }),
         onWarning: (message) => this.showWarning(message),
+        onPowerBlocked: () => this.highlightSlot("battery", { tone: "error", message: RADIO_LABELS.noPowerWarning }),
       });
       this.#dom.replaceChildren(this.#equipmentHost, editor);
       editor.scrollTop = scrollTop;

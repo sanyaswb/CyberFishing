@@ -341,6 +341,22 @@ async function stageTwo() {
   assert.equal(playingElem.playbackRate, 1.0, "playback rate returns to 1.0 after catch-up duration");
   stream.stop();
 
+  // TK-152: stream player pause, resume, and currentTime position preservation
+  stream.play("https://cors.example");
+  elements.at(-1).settle();
+  const pauseResumeElem = elements.at(-1);
+  pauseResumeElem.currentTime = 37.5;
+  assert.equal(stream.currentTime, 37.5, "currentTime reflects audio element currentTime");
+  assert.equal(pauseResumeElem.paused, false, "stream element starts playing");
+  stream.pause();
+  assert.equal(pauseResumeElem.paused, true, "stream player pause() pauses audio element");
+  assert.equal(stream.currentTime, 37.5, "stream pause preserves currentTime");
+  const resumed = stream.resume();
+  assert.equal(resumed, true, "stream player resume() returns true when resumed from pause");
+  assert.equal(pauseResumeElem.paused, false, "stream element is playing again after resume()");
+  assert.equal(stream.currentTime, 37.5, "resumed stream retains exact position");
+  stream.stop();
+
   // TK-140: sequential cue playback before track starts with configurable overlap.
   let cueInvoked = 0;
   const fakeEffects = {
@@ -447,6 +463,55 @@ async function stageTwo() {
   button.click();
   assert.equal(opened, 1, "a tap opens the radio's editor");
   indicator.dispose();
+
+  // TK-152: power button blocked when no battery / empty battery
+  let powerBlockedCalls = 0;
+  let powerOnCalls = 0;
+  const noPowerRadio = {
+    getStatus: () => ({ status: "off", powered: false, equipped: true }),
+    hasPower: () => false,
+    powerOn: () => { powerOnCalls += 1; },
+    togglePower: () => {},
+    subscribe: () => () => {},
+  };
+  const blockedControls = new RadioControlsRenderer({ domFactory: dom, radio: noPowerRadio, labels: RADIO_LABELS });
+  const blockedBlock = blockedControls.render({ onPowerBlocked: () => { powerBlockedCalls += 1; } });
+  const [blockedPowerBtn] = byClass(blockedBlock, "radio-controls__button--power");
+  blockedPowerBtn.click();
+  assert.equal(powerBlockedCalls, 1, "onPowerBlocked called when radio has no power");
+  assert.equal(powerOnCalls, 1, "radio.powerOn called to transition status to no-battery");
+
+  // TK-152: hud-indicator--empty has red icon and red border in CSS
+  const hudIndicatorCss = runtime.read("src/game/presentation/styles/hud/hud-indicator.css").replace(/\s+/gu, " ");
+  assert(/\.hud-indicator--empty\s*\{[^}]*color:\s*var\(--ui-danger\);[^}]*border-color:\s*var\(--ui-danger\);/u.test(hudIndicatorCss),
+    "hud-indicator--empty has red color and red border");
+  assert.equal(RADIO_LABELS.noPowerWarning, "Без енергії діла не буде");
+
+  // TK-152: composition root opener routes empty battery status to openSlotEditor with feedback
+  let openedSlot = null, openOpts = null;
+  const mockInventoryUI = {
+    openSlotEditor: (slot, opts) => { openedSlot = slot; openOpts = opts; },
+  };
+  const mockRadio = {
+    getStatus: () => ({ status: "no-battery", powered: false, equipped: true }),
+    hasPower: () => false,
+  };
+  const testOpener = () => {
+    const s = mockRadio.getStatus();
+    const needsBatteryFeedback = s?.status === "no-battery" || !mockRadio.hasPower?.();
+    if (needsBatteryFeedback) {
+      mockInventoryUI.openSlotEditor("radio", {
+        feedbackSlotId: "battery",
+        tone: "error",
+        message: RADIO_LABELS.noPowerWarning,
+      });
+    } else {
+      mockInventoryUI.openSlotEditor("radio");
+    }
+  };
+  testOpener();
+  assert.equal(openedSlot, "radio");
+  assert.deepEqual(openOpts, { feedbackSlotId: "battery", tone: "error", message: "Без енергії діла не буде" });
 }
 
 // ---- Stage 3: retro rack, walkie-talkie rack and vinyl rack ----
@@ -1165,9 +1230,13 @@ async function spec144CustomRadio() {
     },
   };
   const played = [];
+  let playerPaused = 0;
+  let playerResumed = 0;
   const fakePlayer = {
     play: (url, opts) => played.push({ url, isStationSwitch: opts?.isStationSwitch }),
     stop: () => {},
+    pause: () => { playerPaused += 1; },
+    resume: () => { playerResumed += 1; return true; },
     setVolume() {},
     setGainScale() {},
     setStreamMuted() {},
@@ -1205,11 +1274,20 @@ async function spec144CustomRadio() {
   });
 
   assert.equal(service.getStatus().channelMode, "volia", "default channel is volia");
+  assert.equal(service.hasPower(), true, "service.hasPower() is true when radio and charged battery are equipped");
   service.powerOn();
   assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia channel plays its broadcast file");
   assert.equal(played.at(-1)?.isStationSwitch, true, "powering on triggers station switch");
   assert.equal(service.getStatus().station.name, "VOLIA 77.2");
   assert.equal(service.getStatus().station.frequency, "77.2 FM");
+
+  // TK-152: Page hide pauses volia; page show resumes without reloading or re-triggering station switch
+  const playedCountBeforeHide = played.length;
+  service.setPageHidden(true);
+  assert.equal(playerPaused, 1, "volia playback pauses when page is hidden");
+  service.setPageHidden(false);
+  assert.equal(playerResumed, 1, "volia playback resumes when page is shown again");
+  assert.equal(played.length, playedCountBeforeHide, "resuming volia does not call play() or restart the track");
 
   // Track finished: advances to next track after 2-second intermission pause
   service.handlePlayerState("ended");

@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.3 - Radio battery empty feedback, warning notice, red HUD indicator, and VOLIA playback resume
+
+- Radio / Inventory: clicking power without a charged battery scrolls to the battery socket, flashes it in red error feedback (`inventory-equipment-feedback--error`), and displays the warning notice «Без енергії діла не буде» (Spec 142 / TK-152).
+- Radio / HUD: styled depleted battery state (`hud-indicator--empty`) with red circle border alongside red icon; clicking the indicator opens the radio editor with battery feedback and warning (TK-152).
+- Radio / VOLIA 77.2: implemented non-destructive stream player pause and resume on page visibility changes, resuming VOLIA playback from the exact paused position without cue or restart (TK-152).
+
 ## v0.49.2 - Red border and dark-red background warning state for empty bait boat button
 
 - Fishing / HUD: styled empty bait boat toolbar button (`chum-control--boat-empty`) with high-visibility red border (`var(--ui-danger, #ff4444)`) and dark-red background (`rgb(117, 23, 6)`), ensuring unambiguous visual indication when chum runs out while keeping the button active and clickable (Spec 150 / TK-151).
@@ -50,9 +56,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery / Inventory: added dynamic artwork switching for bait boat lvl3 (`boat-lvl--3_bait.webp` when all 3 chum slots are equipped, `boat-lvl--3_no-bait.webp` otherwise) across inventory cards, thumbnails, and delivery slot (Spec 150 / TK-141).
 - Fishing / HUD: updated `ChumControls` and `ChumController` to show the corresponding boat image on the toolbar button for boat delivery mode (TK-141).
-
-## v0.48.47 - Sequential switch cue playback with configurable overlap, next_track-vinyl, and 2s track pause
-
-- Radio: converted track and station switch cueing into sequential playback (`next_track-vinyl` or `next_track-radio` plays first, followed by incoming track audio from 0:00:00 without beginning cutoff or ducking), governed by new configurable `cueOverlapSeconds` parameter (TK-140).
-- Radio / Vinyl: renamed `assets/audio/radio/vinyl/vinyl-6.mp3` to `assets/audio/radio/next_track-vinyl.mp3` alongside `next_track-radio.mp3` and exposed `cueOverlapSeconds` sliders for both vinyl and radio in DEV tuning (TK-140).
-- Radio / VOLIA 77.2: inserted an authentic 2-second broadcast pause (`2000 ms`) between playlist tracks during automatic track progression and manual stepping on the same frequency without triggering station switch sweep cues (TK-140).

@@ -18,6 +18,7 @@ export const RADIO_LABELS = Object.freeze({
   walkieTalkie: "Ефект рації",
   vinyl: "Ефект вінілу",
   radio: "Ефект радіо",
+  noPowerWarning: "Без енергії діла не буде",
   noStation: "Станцію не вибрано",
   noTracks: "Немає MP3 у папці custom",
   weakSignal: "слабкий сигнал",

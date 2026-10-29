@@ -36,7 +36,10 @@
 .hud-indicator--playing .hud-indicator__wave { animation: hud-indicator-wave 1.2s linear infinite; }
 .hud-indicator--weak { color: var(--ui-accent); }
 .hud-indicator--weak .hud-indicator__wave { stroke-dasharray: 4 5; }
-.hud-indicator--empty { color: var(--ui-danger); }
+.hud-indicator--empty {
+  color: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
 /* Off and empty: a flat line (the wave squashed onto its axis). */
 .hud-indicator--off .hud-indicator__wave,
 .hud-indicator--empty .hud-indicator__wave {

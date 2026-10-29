@@ -39,6 +39,7 @@ export class InventoryAssemblyEditorRenderer {
       onDisassemble = null,
       onBack = null,
       onWarning = null,
+      onPowerBlocked = null,
       onRodRemovalChoice = null,
       onRodRemovalSave = null,
       onSocketLongPress = null,
@@ -70,7 +71,12 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
     }), workspace);
-    if (this.#deviceControlsRenderer?.supports(model.root)) editor.appendChild(this.#deviceControlsRenderer.render());
+    if (this.#deviceControlsRenderer?.supports(model.root)) {
+      editor.appendChild(this.#deviceControlsRenderer.render({
+        onWarning,
+        onPowerBlocked,
+      }));
+    }
     // The preview swipes the tabs too (spec 092).
     const tabs = this.#tabsRenderer.render(model,
       {

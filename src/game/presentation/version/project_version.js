@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.2";
+export const CURRENT_PROJECT_VERSION = "0.49.3";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-152 (Spec 142): radio empty battery red feedback, scroll, «Без енергії діла не буде» warning, red HUD indicator, and VOLIA playback resume.",
     "TK-151 (Spec 150): red border and dark-red background (rgb(117, 23, 6)) warning state on empty bait boat launch button.",
     "TK-150 (Spec 150): active empty bait boat launch button with editor opening, red cargo compartment feedback, and load chum hint.",
     "v0.49.0 (Spec 150): bait boat lvl3 Spine animation, night lights, multi-track hopper doors, and dynamic visuals.",

@@ -1119,7 +1119,19 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
-    this.#radioEditorOpener = () => systems.inventoryUI?.openSlotEditor("radio");
+    this.#radioEditorOpener = () => {
+      const status = systems.radio?.getStatus?.();
+      const needsBatteryFeedback = status?.status === "no-battery" || !systems.radio?.hasPower?.();
+      if (needsBatteryFeedback) {
+        systems.inventoryUI?.openSlotEditor("radio", {
+          feedbackSlotId: "battery",
+          tone: "error",
+          message: RADIO_LABELS.noPowerWarning,
+        });
+      } else {
+        systems.inventoryUI?.openSlotEditor("radio");
+      }
+    };
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });

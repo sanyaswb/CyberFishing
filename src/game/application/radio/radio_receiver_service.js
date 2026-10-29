@@ -94,6 +94,11 @@ export class RadioReceiverService {
     return this.#status;
   }
 
+  // TK-152: returns true when a radio is worn and equipped with a charged battery.
+  hasPower() {
+    return Boolean(this.#equipment.getEquipped()?.radio && this.#hasCharge());
+  }
+
   subscribe(listener) {
     this.#listeners.add(listener);
     return () => this.#listeners.delete(listener);
@@ -223,12 +228,21 @@ export class RadioReceiverService {
   setPageHidden(hidden) {
     this.#hidden = hidden === true;
     if (!this.#status.powered || this.#prefs.playInBackground) return;
+    const mode = this.#prefs.channelMode || "world";
     if (this.#hidden) {
-      this.#player.stop();
+      if (mode !== "world") {
+        this.#player.pause?.();
+      } else {
+        this.#player.stop();
+      }
     } else if (this.#status.status === "intermission") {
       // While in intermission, keep waiting for interval timer.
     } else {
-      this.#resumeCurrentChannel();
+      if (mode !== "world" && this.#player.resume?.()) {
+        // TK-152: resumed local playlist playback from paused position without cue or restart.
+      } else {
+        this.#resumeCurrentChannel();
+      }
     }
   }
 
