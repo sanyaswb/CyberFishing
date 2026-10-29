@@ -254,6 +254,18 @@ function checkCatalogItemGrant() {
   assert.equal(jar100.success, true, "jar 100 granted");
   assert.equal(cache.values.get(key).items.find((item) => item.instanceId === jar100.instanceId).quantity, 100);
 
+  const bread10 = inventory.grantCatalogItem("bread_10", 10);
+  assert.equal(bread10.success, true, "bread 10 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === bread10.instanceId).quantity, 10);
+
+  const bread25 = inventory.grantCatalogItem("bread_25", 25);
+  assert.equal(bread25.success, true, "bread 25 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === bread25.instanceId).quantity, 25);
+
+  const bread50 = inventory.grantCatalogItem("bread_50", 50);
+  assert.equal(bread50.success, true, "bread 50 granted");
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === bread50.instanceId).quantity, 50);
+
   const backpack = inventory.grantCatalogItem("backpack_basic");
   assert.equal(backpack.success, true, "the backpack is available to the DEV catalog grant port");
   const backpackView = items(inventory).find((item) => item.instanceId === backpack.instanceId);

@@ -148,6 +148,9 @@
 │  │  ├── aquarium-feed-premium.svg
 │  │  ├── aquarium-feed-simple.svg
 │  │  ├── baits
+│  │  │  ├── bread--10.webp
+│  │  │  ├── bread--25.webp
+│  │  │  ├── bread--50.webp
 │  │  │  ├── oil-worm_icon.webp
 │  │  │  ├── oil-worms--100.webp
 │  │  │  ├── oil-worms--25.webp

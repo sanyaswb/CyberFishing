@@ -95,6 +95,23 @@ class BaitEffectivenessCheck {
         `${jarId} item object with baitId resolves perch affinity`,
       );
     }
+    for (const stackId of ["bread_10", "bread_25", "bread_50"]) {
+      Assertion.equal(
+        resolver.resolveMultiplier(perch, stackId),
+        0,
+        `${stackId} is incompatible with perch`,
+      );
+      Assertion.equal(
+        resolver.resolveMultiplier(crucian, stackId),
+        1,
+        `${stackId} resolves crucian affinity`,
+      );
+      Assertion.equal(
+        resolver.resolveMultiplier(crucian, { itemId: stackId, baitId: "bread" }),
+        1,
+        `${stackId} item object with baitId resolves crucian affinity`,
+      );
+    }
     Assertion.equal(
       resolver.resolveMultiplier(perch, "bread"),
       0,

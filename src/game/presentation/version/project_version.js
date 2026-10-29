@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.4";
+export const CURRENT_PROJECT_VERSION = "0.49.5";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-154: bamboo bread bait discrete stacks (10, 25, 50 pcs) with WebP artwork, default 25 pieces in starting inventory, and DEV free shop entries.",
     "TK-153 (Spec 150): bait boat immersion Spine animation replay on re-aiming, track 0 clearing on boat spawn, and completed one-shot clip restart.",
     "TK-152 (Spec 142): radio empty battery red feedback, scroll, «Без енергії діла не буде» warning, red HUD indicator, and VOLIA playback resume.",
     "TK-151 (Spec 150): red border and dark-red background (rgb(117, 23, 6)) warning state on empty bait boat launch button.",

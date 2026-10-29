@@ -54,6 +54,9 @@ export const PEACEFUL_FISH = [
       oil_worm_75: 1.0,
       oil_worm_100: 1.0,
       bread: 1.0,
+      bread_10: 1.0,
+      bread_25: 1.0,
+      bread_50: 1.0,
     },
 
     timeMultipliers: { morning: 1.0, day: 1.0, evening: 1.0, night: 1.0 },

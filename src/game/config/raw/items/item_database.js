@@ -612,10 +612,95 @@ export const ITEM_DB = {
 
     bread: {
       id: "bread",
-      name: "Хліб",
+      baitId: "bread",
+      name: "Бамбуковий хліб (25 шт)",
       itemType: "bait",
       icon: "🍞",
-      packSize: 20,
+      iconUrl: "assets/items/baits/bread--25.webp",
+      packSize: 25,
+      defaultQuantity: 25,
+      devExclude: true,
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
+      displayStats: {
+        itemType: {
+          key: "itemType",
+          label: "Тип",
+          map: { bait: "Наживка" },
+        },
+      },
+      gameplayStats: {},
+    },
+
+    bread_10: {
+      id: "bread_10",
+      baitId: "bread",
+      name: "Бамбуковий хліб (10 шт)",
+      itemType: "bait",
+      icon: "🍞",
+      iconUrl: "assets/items/baits/bread--10.webp",
+      packSize: 10,
+      defaultQuantity: 10,
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
+      displayStats: {
+        itemType: {
+          key: "itemType",
+          label: "Тип",
+          map: { bait: "Наживка" },
+        },
+      },
+      gameplayStats: {},
+    },
+
+    bread_25: {
+      id: "bread_25",
+      baitId: "bread",
+      name: "Бамбуковий хліб (25 шт)",
+      itemType: "bait",
+      icon: "🍞",
+      iconUrl: "assets/items/baits/bread--25.webp",
+      packSize: 25,
+      defaultQuantity: 25,
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
+      displayStats: {
+        itemType: {
+          key: "itemType",
+          label: "Тип",
+          map: { bait: "Наживка" },
+        },
+      },
+      gameplayStats: {},
+    },
+
+    bread_50: {
+      id: "bread_50",
+      baitId: "bread",
+      name: "Бамбуковий хліб (50 шт)",
+      itemType: "bait",
+      icon: "🍞",
+      iconUrl: "assets/items/baits/bread--50.webp",
+      packSize: 50,
+      defaultQuantity: 50,
       rarityProfile: {
         mode: "authored",
         tier: 1,

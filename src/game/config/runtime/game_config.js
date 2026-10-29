@@ -305,7 +305,7 @@ export const CONFIG = {
       { instanceId: "uuid-spring", itemId: "feeder_spring_basic" },
       { instanceId: "uuid-hook", itemId: "hook_basic", quantity: 2 },
       { instanceId: "uuid-worm", itemId: "oil_worm", quantity: 50 },
-      { instanceId: "uuid-bread", itemId: "bread", quantity: 20 },
+      { instanceId: "uuid-bread", itemId: "bread", quantity: 25 },
       { instanceId: "uuid-spinner", itemId: "test_spinner" },
       { instanceId: "uuid-wob-susp", itemId: "test_wobbler_suspend" },
       { instanceId: "uuid-wob-sink", itemId: "test_wobbler_sinking" },
@@ -361,9 +361,18 @@ export const CONFIG = {
     signal: RADIO_SOUND_SETTINGS.signal,
     tickMs: 1000,
     timeZoneCountries: {
-      "Europe/Kyiv": "UA", "Europe/Kiev": "UA", "Europe/Warsaw": "PL", "Europe/Berlin": "DE", "Europe/London": "GB",
-      "Europe/Paris": "FR", "Europe/Rome": "IT", "Europe/Madrid": "ES", "America/New_York": "US",
-      "America/Chicago": "US", "America/Los_Angeles": "US", "Asia/Tokyo": "JP",
+      "Europe/Kyiv": "UA",
+      "Europe/Kiev": "UA",
+      "Europe/Warsaw": "PL",
+      "Europe/Berlin": "DE",
+      "Europe/London": "GB",
+      "Europe/Paris": "FR",
+      "Europe/Rome": "IT",
+      "Europe/Madrid": "ES",
+      "America/New_York": "US",
+      "America/Chicago": "US",
+      "America/Los_Angeles": "US",
+      "Asia/Tokyo": "JP",
     },
   },
 
@@ -554,7 +563,14 @@ export const CONFIG = {
   },
 
   ui: {
-    inventorySelector: { radialEnabled: true, size: 1, openSize: 3, compactShape: "half", compactPlacement: "center", compactActionsSide: "right" },
+    inventorySelector: {
+      radialEnabled: true,
+      size: 1,
+      openSize: 3,
+      compactShape: "half",
+      compactPlacement: "center",
+      compactActionsSide: "right",
+    },
     draggableButtons: true,
     dragHoldTimeMs: 1000,
 
@@ -609,7 +625,7 @@ export const CONFIG = {
       displayScale: 0.2,
       x: "rod",
       xOffset: 0,
-      yOffset: -5,
+      yOffset: -70,
     },
 
     hudStyles: {

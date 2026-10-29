@@ -311,6 +311,33 @@ vm.runInContext(
       gameplayStats: {},
     },
     bread: { id: "bread", name: "Bread", itemType: "bait", gameplayStats: {} },
+    bread_10: {
+      id: "bread_10",
+      baitId: "bread",
+      name: "Бамбуковий хліб (10 шт)",
+      itemType: "bait",
+      packSize: 10,
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
+    bread_25: {
+      id: "bread_25",
+      baitId: "bread",
+      name: "Бамбуковий хліб (25 шт)",
+      itemType: "bait",
+      packSize: 25,
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
+    bread_50: {
+      id: "bread_50",
+      baitId: "bread",
+      name: "Бамбуковий хліб (50 шт)",
+      itemType: "bait",
+      packSize: 50,
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      gameplayStats: {},
+    },
     pellet: { id: "pellet", name: "Pellet", itemType: "bait", gameplayStats: {} },
     chum: {
       id: "chum",
@@ -3298,6 +3325,18 @@ vm.runInContext(
   const vmMultiple = jarFlowMultiple.facade.getViewModel();
   assertIntegration(vmMultiple.sections.backpackItemCount === 4,
     "2 jars of 25, 1 jar of 50 and 1 jar of 75 (with 5 worms) must count as 4 items in backpack");
+
+  // TK-154: separate bread stack items: 1 stack of 10 = 1 item; 1 stack of 25 = 1 item; 1 stack of 50 with 10 bread = 1 item.
+  const breadFlowMultiple = makeComposition({
+    items: [
+      raw("bread-10-a", "bread_10", 10),
+      raw("bread-25-a", "bread_25", 25),
+      raw("bread-50-partial", "bread_50", 10),
+    ],
+  });
+  const vmBreadMultiple = breadFlowMultiple.facade.getViewModel();
+  assertIntegration(vmBreadMultiple.sections.backpackItemCount === 3,
+    "1 stack of 10, 1 stack of 25 and 1 stack of 50 (with 10 bread) must count as 3 items in backpack");
 
   console.log("Inventory integration checks passed.");
   `,
