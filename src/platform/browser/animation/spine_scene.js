@@ -123,7 +123,7 @@ export class SpineScene {
       return false;
     }
     const current = this.#state.getTrack(track);
-    if (current && current.animation === animation && current.loop === loop) return true;
+    if (current && current.animation === animation && current.loop === loop && (!current.isComplete || !current.isComplete())) return true;
     let entry;
     if (!current && mixSec > 0) {
       this.#state.setEmptyAnimation(track, 0);
@@ -186,7 +186,11 @@ export class SpineScene {
   clearTrack(track, mixSec = 0) {
     const current = this.#state.getTrack(track);
     if (!current || current.animation.name === EMPTY_ANIMATION) return;
-    this.#state.setEmptyAnimation(track, Math.max(0, mixSec));
+    if (typeof this.#state.clearTrack === "function" && mixSec <= 0) {
+      this.#state.clearTrack(track);
+    } else {
+      this.#state.setEmptyAnimation(track, Math.max(0, mixSec));
+    }
   }
 
   setTrackTimeScale(track, timeScale) {

@@ -66,6 +66,7 @@ async function checkAnimationController() {
 
   const visibleSlots = new Map();
   const sampledTracks = new Map();
+  const clearedTracks = [];
   let currentTrackAnimation = null;
   let currentLoop = false;
   const fakeBone = { name: "root", x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
@@ -85,6 +86,7 @@ async function checkAnimationController() {
       return true;
     },
     clearTrack(track) {
+      clearedTracks.push(track);
       sampledTracks.delete(track);
     },
     setSlotVisible(slot, visible) {
@@ -165,7 +167,8 @@ async function checkAnimationController() {
     assert.equal(visibleSlots.get(slot), false, "night light off during day");
   }
 
-  // 4b. Re-spawning / new boat instance restarts immersion (TK-149)
+  // 4b. Re-spawning / new boat instance restarts immersion (TK-149, TK-153)
+  clearedTracks.length = 0;
   const boatA = { animationState: "immersion", openingSectionIndex: 1, droppedSections: [] };
   controller.advance(boatA, { dtSec: 0.5 });
   controller.advance(boatA, { dtSec: 1.0 }); // timer is now 1.5
@@ -173,6 +176,15 @@ async function checkAnimationController() {
   const replayRes = controller.advance(boatB, { dtSec: 0.1 });
   assert.equal(replayRes.clip, BOAT_ANIMATION_CLIPS.IMMERSION, "immersion replays for new boat");
   assert.equal(replayRes.clipTimer, 0.1, "clip timer resets for new boat instance");
+  assert.ok(clearedTracks.includes(0), "track 0 cleared on new boat instance");
+
+  // 4c. Same boat transitioning to idle and re-entering immersion resets clip timer (TK-153)
+  boatB.animationState = "idle";
+  controller.advance(boatB, { dtSec: 0.5 });
+  boatB.animationState = "immersion";
+  const sameBoatReplay = controller.advance(boatB, { dtSec: 0.1 });
+  assert.equal(sameBoatReplay.clip, BOAT_ANIMATION_CLIPS.IMMERSION, "immersion replays for same boat after idle");
+  assert.equal(sameBoatReplay.clipTimer, 0.1, "clip timer resets for same boat after idle");
 
   // 5. DEV methods
   assert.equal(controller.isSpineEnabled(), true);
@@ -472,6 +484,12 @@ async function checkRealSpineSceneSlotVisibility() {
   assert.equal(scene.setSlotVisible("section--1-bait2", true), true);
   assert.equal(scene.setSlotVisible("section--1-bait3", false), true);
   assert.equal(scene.setSlotVisible("section--1-bait3", true), true);
+
+  // Immersion animation replay (TK-153): calling setAnimation for completed clip must restart from 0
+  assert.equal(scene.setAnimation(0, "boat3--immersion", false, 0), true);
+  scene.update(1.25);
+  // Re-invoking setAnimation for the completed one-shot animation must restart it
+  assert.equal(scene.setAnimation(0, "boat3--immersion", false, 0), true);
 
   scene.dispose();
 }

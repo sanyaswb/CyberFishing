@@ -89,8 +89,8 @@ export class BoatAnimationController {
       this.#currentClip = "";
       this.#clipTimer = 0;
       this.#lightsActive = null;
-      for (let sec = 1; sec <= 3; sec++) {
-        scene.clearTrack?.(sec, 0);
+      for (let track = 0; track <= 3; track++) {
+        scene.clearTrack?.(track, 0);
       }
     }
 
@@ -132,6 +132,11 @@ export class BoatAnimationController {
         }
       }
       this.#clipTimer += dtSec;
+    } else {
+      if (this.#currentClip !== "") {
+        this.#currentClip = "";
+        this.#clipTimer = 0;
+      }
     }
 
     // Spec 150: night lights are enabled during the night in all states EXCEPT immersion.

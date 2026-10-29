@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.4 - Bait boat immersion Spine animation replay on re-aiming, track 0 clearing, and completed clip restart
+
+- Delivery / Spine: updated `SpineScene.prototype.setAnimation` to allow completed one-shot animations (`isComplete() === true`) to replay from 0 rather than being blocked by early equality return, and ensured `clearTrack` cleans entries immediately via `state.clearTrack` when `mixSec <= 0` (Spec 150 / TK-153).
+- Delivery / Animation: cleared track 0 alongside compartment tracks 1..3 (`for (let track = 0; track <= 3; track++) scene.clearTrack(track, 0)`) in `BoatAnimationController` on boat change, and reset `currentClip` to empty on idle, guaranteeing reliable `boat3--immersion` replay whenever aiming is cancelled and restarted (TK-153).
+
 ## v0.49.3 - Radio battery empty feedback, warning notice, red HUD indicator, and VOLIA playback resume
 
 - Radio / Inventory: clicking power without a charged battery scrolls to the battery socket, flashes it in red error feedback (`inventory-equipment-feedback--error`), and displays the warning notice «Без енергії діла не буде» (Spec 142 / TK-152).
@@ -51,8 +56,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Delivery / Animation: integrated Level 3 bait boat Spine skeletal animation (`boat-lvl--3.json`) across immersion, move start/loop, and sequential hopper bay door opening (`boat3--open-section-1..3`) (Spec 150 / TK-142, TK-143).
 - Delivery / Lighting: enabled night lights in slots `boat-light` and `boat3-night_light1..3` during nighttime in all animations except immersion (TK-142).
 - World / Rendering: wired `BoatAnimationController` into `BoatChumRenderFrameBuilder` and `PixiWorldEntitiesRenderer`, rendering the Spine display object with motion trajectory alignment and falling back to text emoji (TK-144).
-
-## v0.48.48 - Bait boat lvl3 inventory and chum controls dynamic artwork variants
-
-- Delivery / Inventory: added dynamic artwork switching for bait boat lvl3 (`boat-lvl--3_bait.webp` when all 3 chum slots are equipped, `boat-lvl--3_no-bait.webp` otherwise) across inventory cards, thumbnails, and delivery slot (Spec 150 / TK-141).
-- Fishing / HUD: updated `ChumControls` and `ChumController` to show the corresponding boat image on the toolbar button for boat delivery mode (TK-141).
