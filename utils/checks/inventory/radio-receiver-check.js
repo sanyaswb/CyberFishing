@@ -305,6 +305,8 @@ async function stageTwo() {
   assert.deepEqual(states.at(-1), ["playing", true], "a CORS stream plays through Web Audio");
   assert.equal(elements.at(-1).crossOrigin, "anonymous");
   assert.equal(stream.output.gain.value, 0.5, "volume is the output gain");
+  assert.ok(stream.streamGate, "player exposes streamGate node for sharp crackle ducking");
+  assert.equal(stream.streamGate.gain.value, 1, "streamGate starts open at gain 1");
   stream.play("https://nocors.example");
   const first = elements.at(-1);
   first.settle();
@@ -667,6 +669,65 @@ async function stageFour() {
   timers.advance(200);
   assert.equal(interrupted.at(-1)[0], false, "the station returns after the dropout");
   service.powerOff();
+
+  // TK-125: discharge crackles sharply duck the stream gate without smoothness
+  const { RadioNoiseSource } = runtime.importModule("src/platform/browser/audio/radio_noise_source.js");
+  const gateEvents = [];
+  const fakeGate = {
+    gain: {
+      setValueAtTime: (v, at) => gateEvents.push([v, at]),
+      setTargetAtTime() {},
+      cancelScheduledValues() {},
+    },
+  };
+  const testContext = {
+    currentTime: 10,
+    sampleRate: 44100,
+    createBufferSource: () => ({ buffer: null, loop: false, connect() {}, start() {}, stop() {}, disconnect() {} }),
+    createBuffer: () => ({ getChannelData: () => new Float32Array(100) }),
+    createGain: () => ({ gain: { value: 0, setTargetAtTime() {}, setValueAtTime() {} }, connect() {}, disconnect() {} }),
+  };
+  const noiseSource = new RadioNoiseSource({
+    audioContexts: { peek: () => testContext, get: () => testContext },
+    getOutput: () => ({ connect() {} }),
+    getGate: () => fakeGate,
+    rng: { next: () => 0.2 },
+  });
+  noiseSource.update(0.01, 5, 1);
+  assert(gateEvents.some(([val]) => val === 0), "discharge crackle sharply ducks the track to 0");
+  assert(gateEvents.some(([val]) => val === 1), "discharge crackle sharply restores the track to 1");
+
+  // TK-125: dropout burst loudness calibrated to track level (~0.08, not deafening 0.35)
+  const burstHissGains = [];
+  const burstCrackleGains = [];
+  let burstGainCount = 0;
+  const burstContext = {
+    currentTime: 12,
+    sampleRate: 44100,
+    createBufferSource: () => ({ buffer: null, loop: false, connect() {}, start() {}, stop() {}, disconnect() {} }),
+    createBuffer: () => ({ getChannelData: () => new Float32Array(100) }),
+    createGain: () => {
+      const idx = burstGainCount++;
+      return {
+        gain: {
+          value: 0,
+          setTargetAtTime() {},
+          setValueAtTime: (v) => { (idx === 0 ? burstHissGains : burstCrackleGains).push(v); },
+        },
+        connect() {},
+        disconnect() {},
+      };
+    },
+  };
+  const burstSource = new RadioNoiseSource({
+    audioContexts: { peek: () => burstContext, get: () => burstContext },
+    getOutput: () => ({ connect() {} }),
+    rng: { next: () => 0.5 },
+  });
+  burstSource.burst(0.5);
+  assert(burstHissGains.some((v) => v > 0 && v <= 0.1), "burst hiss gain is calibrated to track level (~0.08)");
+  assert(burstCrackleGains.every((v) => v <= 0.2), "burst crackles are bounded to comfortable levels");
+  noiseSource.stop();
 
   // The ticker reports the monotonic gap.
   let current = 1000;
@@ -1035,6 +1096,8 @@ async function spec144CustomRadio() {
 }
 
 stageTwo().then(stageThree).then(stageFour).then(stageFive).then(tuningSliders).then(spec144CustomRadio).then(() => console.log("Radio receiver "
+  + "TK-125 passed: calibrated dropout noise burst volume matching track loudness and sharp stream gate ducking on discharge crackles without smoothness."))
+  .then(() => console.log("Radio receiver "
   + "TK-124 passed: retro rack (lowshelf warmth, presence peak, soft tanh saturation, makeup gain), weather interference subsection, glitches, dropouts with catch-up playbackRate acceleration."))
   .then(() => console.log("Radio receiver "
   + "TK-122 and Spec 144 passed: channel selection (volia, world), automatic next track playback on volia, custom channel removed, and live effect switches."))

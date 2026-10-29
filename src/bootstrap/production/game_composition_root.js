@@ -1046,7 +1046,7 @@ export class GameCompositionRoot {
     const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
       config, onState: (state, info) => radio?.handlePlayerState(state, info),
       effects: new RadioEffectsChain({ config: () => config().effects || {}, rng: radioRng }) }));
-    const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, rng: radioRng }));
+    const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, getGate: () => player.streamGate, rng: radioRng }));
     radio = own(new RadioReceiverService({
       equipment: inventory,
       power: devicePower,

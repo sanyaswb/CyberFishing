@@ -329,7 +329,9 @@ export class RadioReceiverService {
     } else {
       this.#player.setStreamMuted(true);
     }
-    this.#noise.burst(length / 1000);
+    // TK-125: dropout noise level matched to track loudness
+    const hissLevel = Number(this.#config()?.signal?.dropoutNoise) || 0.08;
+    this.#noise.burst(length / 1000, hissLevel);
     this.#dropoutTimer = this.#scheduler.setTimeout(() => this.#endDropout(length), length);
   }
 

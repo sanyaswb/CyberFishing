@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.30 - Calibrated radio dropout noise level and sharp discharge crackle gating
+
+- Radio: calibrated dropout hiss burst and micro-glitch volume to match nominal track loudness, scaling proportionally with volume sag (TK-125).
+- Radio: added stream gate node to sharply duck the audio track to zero during discharge crackles without smoothness/easing (TK-125).
+
 ## v0.48.29 - Retro sound filter, weather interference subsection, and audio dropouts with catch-up acceleration
 
 - Radio: added dedicated Retro audio effect rack with analog saturation, presence boost, and tube low-end warmth without walkie-talkie clipping or vinyl crackle (TK-124).
@@ -40,10 +45,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.21 - Auxiliary loadout bottom margin in portrait and tile grid in landscape
 
 - Inventory: added bottom margin to auxiliary loadout panel in portrait mode and enabled multi-column tile grid layout in wide/square landscape mode (TK-116).
-
-## v0.48.20 - Rodless loadout panel portrait alignment and layout fix
-
-- Inventory: fixed portrait loadout layout when no rod is equipped, preventing two-column split and full-height stretch, and keeping primary and auxiliary panels full-width with a centered proportional rod slot (TK-115).
 
 
 

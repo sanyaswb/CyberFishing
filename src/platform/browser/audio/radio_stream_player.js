@@ -11,6 +11,7 @@ export class RadioStreamPlayer {
   #onState;
   #output = null;
   #input = null;
+  #gate = null;
   #stream = null;
   #streamMuted = false;
   #catchUpTimer = null;
@@ -49,6 +50,12 @@ export class RadioStreamPlayer {
   get output() {
     this.#ensureGraph();
     return this.#output;
+  }
+
+  // TK-125: the gate node between effects and stream; discharge crackles duck it to 0 sharply without smoothness.
+  get streamGate() {
+    this.#ensureGraph();
+    return this.#gate;
   }
 
   // A dropout (stage 4): silences the station alone; the noise on the output stays.
@@ -125,9 +132,12 @@ export class RadioStreamPlayer {
   dispose() {
     this.stop();
     this.#effects?.dispose();
+    this.#gate?.disconnect?.();
     this.#stream?.disconnect?.();
     this.#output?.disconnect?.();
     this.#input?.disconnect?.();
+    this.#gate = null;
+    this.#stream = null;
     this.#output = null;
     this.#input = null;
   }
@@ -179,11 +189,14 @@ export class RadioStreamPlayer {
     if (!context) return;
     this.#output = context.createGain();
     this.#input = context.createGain();
-    // input -> [rack] -> stream (dropouts) -> output (volume, ducking) -> destination
+    this.#gate = context.createGain();
+    this.#gate.gain.value = 1;
+    // input -> [rack] -> gate (sharp crackle ducking) -> stream (dropouts) -> output (volume, ducking) -> destination
     this.#stream = context.createGain();
     this.#stream.gain.value = this.#streamMuted ? 0 : 1;
-    if (this.#effects) this.#effects.attach(context, this.#input, this.#stream);
-    else this.#input.connect(this.#stream);
+    if (this.#effects) this.#effects.attach(context, this.#input, this.#gate);
+    else this.#input.connect(this.#gate);
+    this.#gate.connect(this.#stream);
     this.#stream.connect(this.#output);
     this.#output.connect(context.destination);
     this.#applyVolume();
