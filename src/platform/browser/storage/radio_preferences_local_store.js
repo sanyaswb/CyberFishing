@@ -23,7 +23,7 @@ export class RadioPreferencesLocalStore {
     if (Number.isInteger(raw.voliaTrackIndex) && raw.voliaTrackIndex >= 0) result.voliaTrackIndex = raw.voliaTrackIndex;
     if (Number.isInteger(raw.customTrackIndex) && raw.customTrackIndex >= 0) result.customTrackIndex = raw.customTrackIndex;
     if (Number.isFinite(Number(raw.volume))) result.volume = Math.max(0, Math.min(1, Number(raw.volume)));
-    for (const key of ["ducking", "playInBackground", "walkieTalkie", "vinyl"]) {
+    for (const key of ["ducking", "playInBackground", "walkieTalkie", "vinyl", "radio"]) {
       if (typeof raw[key] === "boolean") result[key] = raw[key];
     }
     return result;

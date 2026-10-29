@@ -1,6 +1,7 @@
 import { RetroRack } from "./retro_rack.js";
 import { VinylRack } from "./vinyl_rack.js";
 import { WalkieTalkieRack } from "./walkie_talkie_rack.js";
+import { RadioRack } from "./radio_rack.js";
 
 const RADIO_SWITCH_FILE = "assets/audio/radio/next_track-radio.mp3";
 
@@ -13,8 +14,8 @@ function resolveFetch(ref) {
   return null;
 }
 
-// TK-097, TK-124, TK-137: the radio's sound effects between the stream player's input and output:
-// input -> retro -> vinyl -> walkie-talkie -> streamCueGate -> output.
+// TK-097, TK-124, TK-137, TK-138: the radio's sound effects between the stream player's input and output:
+// input -> retro -> vinyl -> walkie-talkie -> radio -> streamCueGate -> output.
 // Each stage passes the sound dry while it is disabled, so any combination can be on.
 // update() applies CONFIG.radio.effects live (the player calls it about once a second);
 // the player never decides the sound, only the configuration does.
@@ -23,6 +24,7 @@ export class RadioEffectsChain {
   #retro;
   #vinyl;
   #walkieTalkie;
+  #radio;
   #attached = false;
   #context = null;
   #output = null;
@@ -37,7 +39,8 @@ export class RadioEffectsChain {
     this.#fetchRef = resolveFetch(fetchRef);
     this.#retro = new RetroRack();
     this.#vinyl = new VinylRack({ rng, fetchRef });
-    this.#walkieTalkie = new WalkieTalkieRack({ rng });
+    this.#walkieTalkie = new WalkieTalkieRack();
+    this.#radio = new RadioRack({ rng });
   }
 
   attach(context, input, output) {
@@ -49,10 +52,12 @@ export class RadioEffectsChain {
     this.#retro.build(context);
     this.#vinyl.build(context);
     this.#walkieTalkie.build(context);
+    this.#radio.build(context);
     input.connect(this.#retro.input);
     this.#retro.output.connect(this.#vinyl.input);
     this.#vinyl.output.connect(this.#walkieTalkie.input);
-    this.#walkieTalkie.output.connect(this.#streamCueGate);
+    this.#walkieTalkie.output.connect(this.#radio.input);
+    this.#radio.output.connect(this.#streamCueGate);
     this.#streamCueGate.connect(output);
     this.#attached = true;
     this.update();
@@ -65,11 +70,12 @@ export class RadioEffectsChain {
     this.#retro.update(cfg.retro || {}, cfg.rampSeconds);
     this.#vinyl.update(cfg.vinyl || {}, cfg.rampSeconds);
     this.#walkieTalkie.update(cfg.walkieTalkie || {}, cfg.rampSeconds);
+    this.#radio.update(cfg.radio || {}, cfg.rampSeconds);
   }
 
   setActive(active) {
     this.#vinyl?.setActive?.(active);
-    this.#walkieTalkie?.setActive?.(active);
+    this.#radio?.setActive?.(active);
   }
 
   // TK-137: Dispatches to vinyl-6 tonearm cue if vinyl is enabled, or next_track-radio if vinyl is disabled
@@ -209,6 +215,7 @@ export class RadioEffectsChain {
     this.#retro.dispose();
     this.#vinyl.dispose();
     this.#walkieTalkie.dispose();
+    this.#radio.dispose();
     this.#attached = false;
   }
 }

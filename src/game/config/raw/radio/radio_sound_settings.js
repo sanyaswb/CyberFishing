@@ -3,6 +3,21 @@
 // in this form. Hand edits are fine.
 export const RADIO_SOUND_SETTINGS = {
   "effects": {
+    "radio": {
+      "drive": 25,
+      "enabled": false,
+      "highpassHz": 450,
+      "lowpassHz": 3800,
+      "mix": 1,
+      "noiseLevel": 0.04,
+      "outputGain": 1,
+      "oversample": "2x",
+      "peakGainDb": 8,
+      "peakHz": 2100,
+      "peakQ": 2.5,
+      "tuning": 0,
+      "whistleLevel": 0.008
+    },
     "rampSeconds": 0.03,
     "retro": {
       "drive": 2,
@@ -54,19 +69,16 @@ export const RADIO_SOUND_SETTINGS = {
       "wowFlutter": 3
     },
     "walkieTalkie": {
-      "drive": 25,
+      "drive": 18,
       "enabled": true,
-      "highpassHz": 450,
-      "lowpassHz": 3800,
+      "highpassHz": 500,
+      "lowpassHz": 3000,
       "mix": 1,
-      "noiseLevel": 0.04,
       "outputGain": 1,
-      "oversample": "2x",
+      "oversample": "4x",
       "peakGainDb": 8,
-      "peakHz": 2100,
-      "peakQ": 2.5,
-      "tuning": 0,
-      "whistleLevel": 0.008
+      "peakHz": 1800,
+      "peakQ": 2.5
     }
   },
   "signal": {

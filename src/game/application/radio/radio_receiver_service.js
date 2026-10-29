@@ -37,7 +37,7 @@ export class RadioReceiverService {
   #status = {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
     volume: 0.6, ducking: true, playInBackground: false, channelMode: "world", trackIndex: 0, trackCount: 0,
-    walkieTalkie: true, vinyl: false,
+    walkieTalkie: true, vinyl: false, radio: false,
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
@@ -77,6 +77,9 @@ export class RadioReceiverService {
     }
     if (this.#prefs.vinyl !== undefined && cfg.effects?.vinyl) {
       cfg.effects.vinyl.enabled = this.#prefs.vinyl;
+    }
+    if (this.#prefs.radio !== undefined && cfg.effects?.radio) {
+      cfg.effects.radio.enabled = this.#prefs.radio;
     }
     this.#prefs.country = this.#prefs.country || this.#region.resolve();
     this.#stationEffects = this.#preferences.loadStationEffects();
@@ -146,7 +149,7 @@ export class RadioReceiverService {
   }
 
   setEffectEnabled(effect, enabled) {
-    if (!["walkieTalkie", "vinyl"].includes(effect)) return;
+    if (!["walkieTalkie", "vinyl", "radio"].includes(effect)) return;
     const value = enabled === true;
     const cfg = this.#config() || {};
     if (cfg.effects?.[effect]) {
@@ -591,6 +594,7 @@ export class RadioReceiverService {
       channelMode: this.#prefs.channelMode || "world",
       walkieTalkie: cfg.effects?.walkieTalkie?.enabled ?? true,
       vinyl: cfg.effects?.vinyl?.enabled ?? false,
+      radio: cfg.effects?.radio?.enabled ?? false,
     });
   }
 

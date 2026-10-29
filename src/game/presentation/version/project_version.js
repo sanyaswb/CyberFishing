@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.44";
+export const CURRENT_PROJECT_VERSION = "0.48.45";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,7 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
-    "TK-138 (Spec 149): 3-track physical transistor radio / walkie-talkie DSP synthesizer with 24dB filters, AGC compressor, carrier static bed, and heterodyne whistle tuning.",
+    "TK-138 (Spec 149): dedicated 'Радіо' (RadioRack) 3-track transistor radio synthesizer section; restored 'Рація' (WalkieTalkieRack) bit-for-bit.",
     "TK-137: next_track-radio.mp3 radio frequency tuning cue with stream ducking when vinyl effect is disabled.",
     "TK-136: restored vinyl-6.mp3 tonearm lead-in groove cueing with 3.0s ducking on track/wave switches, and added authentic needle cueing on radio power-on and power-off.",
     "TK-135: silenced effects when radio is powered off, increased wow pitch sway to 16ms (~90 cents), expanded warmth lowpass to 4.2kHz, and added saturation pre-drive.",

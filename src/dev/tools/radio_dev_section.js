@@ -9,6 +9,7 @@ import { buildSettingsFile, pickSettings, settingsFileName, settingsHash } from 
 const PARTS = Object.freeze([
   Object.freeze({ key: "retro", label: "Ретро", path: Object.freeze(["effects", "retro"]) }),
   Object.freeze({ key: "vinyl", label: "Платівка", path: Object.freeze(["effects", "vinyl"]) }),
+  Object.freeze({ key: "radio", label: "Радіо", path: Object.freeze(["effects", "radio"]) }),
   Object.freeze({ key: "walkieTalkie", label: "Рація", path: Object.freeze(["effects", "walkieTalkie"]) }),
   Object.freeze({ key: "signal", label: "Перешкоди сигналу", path: Object.freeze(["signal"]) }),
   Object.freeze({ key: "weather", label: "Погодні перешкоди", path: Object.freeze(["signal", "weather"]) }),
