@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.49 - Bait boat lvl3 Spine animation, night lights, and door opening logic
+
+- Delivery / Animation: integrated Level 3 bait boat Spine skeletal animation (`boat-lvl--3.json`) across immersion, move start/loop, and sequential hopper bay door opening (`boat3--open-section-1..3`) (Spec 150 / TK-142, TK-143).
+- Delivery / Lighting: enabled night lights in slots `boat-light` and `boat3-night_light1..3` during nighttime in all animations except immersion (TK-142).
+- World / Rendering: wired `BoatAnimationController` into `BoatChumRenderFrameBuilder` and `PixiWorldEntitiesRenderer`, rendering the Spine display object with motion trajectory alignment and falling back to text emoji (TK-144).
+
 ## v0.48.48 - Bait boat lvl3 inventory and chum controls dynamic artwork variants
 
 - Delivery / Inventory: added dynamic artwork switching for bait boat lvl3 (`boat-lvl--3_bait.webp` when all 3 chum slots are equipped, `boat-lvl--3_no-bait.webp` otherwise) across inventory cards, thumbnails, and delivery slot (Spec 150 / TK-141).
@@ -47,8 +53,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.40 - Physical acoustic vinyl synthesizer with 3-track DSP architecture
 
 - Radio / Vinyl: upgraded procedural vinyl synthesizer to a physical 3-track DSP architecture with independent controls for Track 1 (mechanical rumble 10-60 Hz and filtered surface noise 300-8k Hz), Track 2 (scratch pops with 16 kHz cantilever ringing and micro-crackle), and Track 3 (program material with sub-bass cut, MM cartridge peak, 2nd-harmonic asymmetric saturation, inner groove distortion, and 33⅓ rpm wow & flutter) (Spec 148 / TK-134).
-
-## v0.48.39 - Vinyl-6 needle cueing with 3s ducking on track switch and removed oldSpeaker slider
-
-- Radio / Vinyl: replaced synthetic chirp cue with single-shot `vinyl-6.mp3` tonearm drop & groove lead-in, ducking switched track audio for 3.0s with smooth fade-in (3.0s..3.4s) while `vinyl-6` sharply fades out (3.0s..3.25s) (TK-133).
-- Radio / Vinyl: removed obsolete `oldSpeaker` DSP processing, configuration, and DEV slider; decoupled from legacy sample files (`vinyl_needle_drop.mp3`, `vinyl_surface.mp3`) (TK-133).

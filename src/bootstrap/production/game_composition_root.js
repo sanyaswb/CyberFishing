@@ -124,6 +124,7 @@ import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_sty
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
+import { composeBoatAnimation } from "./boat_animation_composition.js";
 import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
 import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
 import { composeSceneLayer } from "./scene_layer_composition.js";
@@ -445,6 +446,10 @@ export class GameCompositionRoot {
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
       scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas },
     }));
+    const boatAnimation = own(composeBoatAnimation({
+      windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
+      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas },
+    }));
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
       ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
         "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
@@ -547,6 +552,7 @@ export class GameCompositionRoot {
         rarityVisualResolver,
         victoryLayoutResolver,
         rodAnimation,
+        boatAnimation,
         floatRocking,
       },
       interaction: {

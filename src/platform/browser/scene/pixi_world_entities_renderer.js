@@ -15,6 +15,7 @@ export class PixiWorldEntitiesRenderer {
   #zoneMask;
   #overlay;
   #boatLayer;
+  #boatView = null;
   #boatSprites = [];
   #labelSprites = [];
   #fingerprint = new SceneChangeFingerprint();
@@ -59,6 +60,7 @@ export class PixiWorldEntitiesRenderer {
     if (!this.#visible) return false;
     this.#visible = false;
     this.#container.visible = false;
+    if (this.#boatView) this.#boatView.visible = false;
     this.#fingerprint.invalidate();
     return true;
   }
@@ -86,6 +88,10 @@ export class PixiWorldEntitiesRenderer {
       print.length(boat.x); print.length(boat.y); print.length(boat.angle * 100); print.text(boat.emoji);
       print.length(boat.fontSize); print.alpha(boat.energyRatio); print.text(boat.energyColor);
       print.length(boat.barWidth); print.length(boat.barHeight); print.length(boat.barY);
+      if (boat.view) {
+        print.text(boat.animClip || "");
+        print.length(Math.floor((boat.animTimer || 0) * 1000));
+      }
     }
     for (let index = 0; index < world.sensorRays.count; index += 1) {
       const ray = world.sensorRays.getAt(index);
@@ -147,21 +153,42 @@ export class PixiWorldEntitiesRenderer {
 
   #drawBoats(world, pixelRatio) {
     const overlay = this.#overlay;
+    let activeView = null;
     for (let index = 0; index < world.boats.count; index += 1) {
       const boat = world.boats.getAt(index);
-      const text = this.#texts.get(boat.emoji, boat.fontSize, pixelRatio);
       const sprite = this.#sprite(this.#boatSprites, index);
-      sprite.texture = text.texture;
-      sprite.width = text.width;
-      sprite.height = text.height;
-      sprite.anchor.set(0.5, 0.5);
-      sprite.x = boat.x;
-      sprite.y = boat.y;
-      sprite.rotation = boat.angle + Math.PI;
+      const view = boat.view ?? null;
+      if (view) {
+        activeView = view;
+        sprite.visible = false;
+        if (view.parent !== this.#boatLayer) {
+          this.#boatLayer.addChild(view);
+        }
+        view.visible = true;
+        view.x = boat.x;
+        view.y = boat.y;
+        view.rotation = boat.angle - Math.PI / 2;
+        const scale = boat.viewScale ?? 1;
+        view.scale.set(scale, scale);
+      } else {
+        const text = this.#texts.get(boat.emoji, boat.fontSize, pixelRatio);
+        sprite.texture = text.texture;
+        sprite.width = text.width;
+        sprite.height = text.height;
+        sprite.anchor.set(0.5, 0.5);
+        sprite.x = boat.x;
+        sprite.y = boat.y;
+        sprite.rotation = boat.angle + Math.PI;
+        sprite.visible = true;
+      }
       const left = boat.x - boat.barWidth / 2;
       const top = boat.y + boat.barY;
       overlay.rect(left, top, boat.barWidth, boat.barHeight).fill({ color: 0x000000, alpha: 0.7 });
       overlay.rect(left, top, boat.barWidth * boat.energyRatio, boat.barHeight).fill(boat.energyColor);
+    }
+    if (this.#boatView !== activeView) {
+      if (this.#boatView) this.#boatView.visible = false;
+      this.#boatView = activeView;
     }
     this.#hideFrom(this.#boatSprites, world.boats.count);
   }

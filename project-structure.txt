@@ -216,6 +216,7 @@
 ├── src
 │  ├── bootstrap
 │  │  └── production
+│  │     ├── boat_animation_composition.js
 │  │     ├── config_context.js
 │  │     ├── depth_selector_composition.js
 │  │     ├── fishing_services_composition.js
@@ -483,6 +484,8 @@
 │  │  │  ├── casting
 │  │  │  │  ├── cast_distance_calculator.js
 │  │  │  │  └── distance_unit_converter.js
+│  │  │  ├── chum
+│  │  │  │  └── boat_animation_state.js
 │  │  │  ├── equipment
 │  │  │  │  ├── auto_refill_memory.js
 │  │  │  │  ├── auto_refill_policy.js
@@ -893,6 +896,7 @@
 │  │     │  ├── degradation_color_config.js
 │  │     │  └── degradation_color_config_validator.js
 │  │     └── world
+│  │        ├── boat_animation_controller.js
 │  │        ├── boat_chum_renderer.js
 │  │        └── world_scene_renderer.js
 │  └── platform

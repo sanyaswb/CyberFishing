@@ -1194,8 +1194,8 @@ function checkProductionGraph() {
   assert.deepEqual([...staticGraph].filter((file) => file.includes("/scene/pixi_") || file.startsWith("vendor/pixi/")), [],
     "index.html loads no Pixi module statically");
   assert.deepEqual(lazyImporters.filter(([, target]) => target.includes("/scene/pixi_")).sort(),
-    [["src/bootstrap/production/rod_animation_composition.js", RUNTIME_MODULE], [SCENE_COMPOSITION, RUNTIME_MODULE]],
-    "Pixi is reached only lazily: by the scene composition, and by the rod's Spine runtime once the scene is ready");
+    [["src/bootstrap/production/boat_animation_composition.js", RUNTIME_MODULE], ["src/bootstrap/production/rod_animation_composition.js", RUNTIME_MODULE], [SCENE_COMPOSITION, RUNTIME_MODULE]],
+    "Pixi is reached only lazily: by the scene composition, and by the rod and boat Spine runtimes once the scene is ready");
   return staticGraph.size;
 }
 

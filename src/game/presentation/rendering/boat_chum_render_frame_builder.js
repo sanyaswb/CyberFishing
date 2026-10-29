@@ -1,15 +1,28 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { backgroundTimeBlend } from "../../domain/time/background_time_blend.js";
 
 export class BoatChumRenderFrameBuilder {
   #chum;
   #projector;
   #config;
   #getWaterMetric;
+  #boatAnimation;
+  #getTimeOfDay;
+  #clock;
+  #timeBlend = { evening: 0, night: 0 };
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
 
-  constructor({ chum, projector, config, getWaterMetric }) {
+  constructor({
+    chum,
+    projector,
+    config,
+    getWaterMetric,
+    boatAnimation = null,
+    getTimeOfDay = null,
+    clock = null,
+  }) {
     if (!chum || typeof chum.getBoats !== "function") {
       throw new TypeError(
         "BoatChumRenderFrameBuilder requires chum",
@@ -25,6 +38,9 @@ export class BoatChumRenderFrameBuilder {
     this.#config = config;
     if (typeof getWaterMetric !== "function") throw new TypeError("BoatChumRenderFrameBuilder requires getWaterMetric");
     this.#getWaterMetric = getWaterMetric;
+    this.#boatAnimation = boatAnimation;
+    this.#getTimeOfDay = getTimeOfDay;
+    this.#clock = clock;
   }
 
   buildInto(target) {
@@ -71,6 +87,23 @@ export class BoatChumRenderFrameBuilder {
       const fontSize = 40 * this.#projector.getScale() * scale;
       // The battery's remaining share (spec 143), written on the boat by ChumService.
       const energyRatio = RenderMath.clamp(boat.powerRatio);
+
+      const animDescriptor = boat.config?.skin?.animation;
+      let anim = null;
+      if (animDescriptor && this.#boatAnimation) {
+        this.#boatAnimation.setDescriptor(animDescriptor);
+        const dtSec = this.#clock?.delta ? this.#clock.delta * 0.001 : 0.016;
+        const timeOfDay = typeof this.#getTimeOfDay === "function" ? this.#getTimeOfDay() : 12;
+        const isNight = backgroundTimeBlend(timeOfDay, this.#timeBlend).night > 0;
+        anim = this.#boatAnimation.advance(boat, {
+          dtSec,
+          isNight,
+          screenX: 0,
+          screenY: 0,
+          scale: 1,
+        });
+      }
+
       const record = target.boats.acquire();
       record.x = position.x;
       record.y = position.y;
@@ -87,6 +120,10 @@ export class BoatChumRenderFrameBuilder {
       record.barWidth = 40 * scale * this.#projector.getScale();
       record.barHeight = 4 * scale * this.#projector.getScale();
       record.barY = -fontSize / 1.5;
+      record.view = anim?.view ?? null;
+      record.viewScale = scale * this.#projector.getScale() * 0.20;
+      record.animClip = anim?.clip ?? "";
+      record.animTimer = anim?.clipTimer ?? 0;
       this.#buildSensors(target, boat);
     }
   }

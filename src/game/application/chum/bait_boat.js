@@ -42,6 +42,13 @@ export class BaitBoat {
     this.remainingSections = statsConfig.sections || 1;
     this.waypoints = [];
 
+    this.animationState = "immersion";
+    this.immersionTimer = 1.25;
+    this.moveStartTimer = 0;
+    this.openingTimer = 0;
+    this.openingSectionIndex = 1;
+    this.droppedSections = [];
+
     this.avoidanceState = "none";
     this.avoidanceTimer = 0;
     this.avoidanceTargetAngle = 0;
@@ -88,14 +95,28 @@ export class BaitBoat {
     this.target = new Vector2(targetX, targetY);
     if (zoneId !== null) this.zoneId = zoneId;
     this.state = isReturn ? "returning" : "deploying";
+    this.animationState = "moving_start";
+    this.moveStartTimer = 1.333;
   }
 
   update(dt, checkPhysics, checkSensor, cellSize, env) {
+    const dtSec = dt * 0.001;
+    if (this.immersionTimer > 0) {
+      this.immersionTimer = Math.max(0, this.immersionTimer - dtSec);
+      if (this.immersionTimer === 0 && this.state === "idle") {
+        this.animationState = "idle";
+      }
+    }
     if (this.state === "idle" || this.isFinished) return;
 
-    const dtSec = dt * 0.001;
     this.persistenceTimer = Math.max(0, this.persistenceTimer - dtSec);
     this.maneuverTimer = Math.max(0, this.maneuverTimer - dtSec);
+    if (this.moveStartTimer > 0) {
+      this.moveStartTimer = Math.max(0, this.moveStartTimer - dtSec);
+      if (this.moveStartTimer === 0 && (this.state === "deploying" || this.state === "returning")) {
+        this.animationState = "moving";
+      }
+    }
     const isManual = this.config.manualControl;
 
     this.#sensorTimer -= dtSec;
@@ -145,7 +166,7 @@ export class BaitBoat {
       this.engineThrottle = 1.0;
     }
 
-    if (this.#checkArrival(targetInfo, obstacles, isManual)) return;
+    if (this.#checkArrival(targetInfo, obstacles, isManual, dtSec)) return;
 
     const steering = this.#calculateSteering(
       targetInfo,
@@ -446,7 +467,7 @@ export class BaitBoat {
     }
   }
 
-  #checkArrival({ dist }, { isForwardBlocked }, isManual) {
+  #checkArrival({ dist }, { isForwardBlocked }, isManual, dtSec = 0) {
     const cfg = this.config;
     const targetRad = cfg.finishRadiusTarget || 10;
     const finishRad =
@@ -463,9 +484,31 @@ export class BaitBoat {
       if (this.state === "deploying") {
         if (!isManual) {
           if (this.zoneId && !this.isBaitDropped) {
-            this.isBaitDropped = true;
-            this.remainingSections--;
-            return true;
+            if (this.animationState !== "opening") {
+              this.animationState = "opening";
+              const totalSections = this.config.sections || 3;
+              const dropNum = Math.max(1, Math.min(3, totalSections - this.remainingSections + 1));
+              this.openingSectionIndex = dropNum;
+              const openDurations = { 1: 1.583, 2: 1.167, 3: 1.167 };
+              this.openingTimer = openDurations[dropNum] || 1.2;
+              this.velocity.x = 0;
+              this.velocity.y = 0;
+              return true;
+            }
+            if (this.openingTimer > 0) {
+              this.openingTimer -= dtSec;
+              this.velocity.x = 0;
+              this.velocity.y = 0;
+              if (this.openingTimer <= 0) {
+                this.isBaitDropped = true;
+                if (!this.droppedSections.includes(this.openingSectionIndex)) {
+                  this.droppedSections.push(this.openingSectionIndex);
+                }
+                this.remainingSections--;
+                this.animationState = "idle";
+              }
+              return true;
+            }
           }
 
           if (this.isBaitDropped) return true;
@@ -476,6 +519,8 @@ export class BaitBoat {
           } else {
             this.zoneId = null;
             this.state = "returning";
+            this.animationState = "moving_start";
+            this.moveStartTimer = 1.333;
           }
         } else {
           this.state = "waiting";
@@ -507,8 +552,12 @@ export class BaitBoat {
       this.target.x = wp.x;
       this.target.y = wp.y;
       this.zoneId = wp.zoneId;
+      this.animationState = "moving_start";
+      this.moveStartTimer = 1.333;
     } else {
       this.state = "returning";
+      this.animationState = "moving_start";
+      this.moveStartTimer = 1.333;
     }
   }
 

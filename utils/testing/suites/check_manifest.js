@@ -321,6 +321,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "bait-boat-spine-animation",
+    title: "Bait boat Spine animation states, clips, night lights and doors (spec 150)",
+    file: "utils/checks/gameplay/bait-boat-spine-animation-check.js",
+    suites: ["gameplay", "quick"],
+  },
+  {
     id: "live-bait",
     title: "Live bait, aquarium care and snapshot",
     file: "utils/checks/gameplay/live-bait-check.js",

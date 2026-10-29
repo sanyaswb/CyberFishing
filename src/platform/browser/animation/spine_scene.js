@@ -116,6 +116,40 @@ export class SpineScene {
     return true;
   }
 
+  setAnimation(track, clipName, loop = false, mixSec = 0) {
+    const animation = this.#animation(clipName);
+    if (!animation) {
+      this.clearTrack(track, mixSec);
+      return false;
+    }
+    const current = this.#state.getTrack(track);
+    if (current && current.animation === animation && current.loop === loop) return true;
+    let entry;
+    if (!current && mixSec > 0) {
+      this.#state.setEmptyAnimation(track, 0);
+      entry = this.#state.addAnimation(track, animation, loop, 0);
+    } else {
+      entry = this.#state.setAnimation(track, animation, loop);
+    }
+    entry.mixDuration = Math.max(0, mixSec);
+    return true;
+  }
+
+  setSlotVisible(slotName, visible) {
+    const slot = this.#skeleton.findSlot(slotName);
+    if (!slot) return false;
+    if (visible) {
+      const data = slot.data;
+      const attachment = data.attachmentName ? this.#skeleton.getAttachment(data.index, data.attachmentName) : null;
+      slot.setAttachment(attachment);
+      if (slot.color) slot.color.a = 1;
+    } else {
+      slot.setAttachment(null);
+      if (slot.color) slot.color.a = 0;
+    }
+    return true;
+  }
+
   // Clip held at ratio × duration (time scale 0) and blended with alpha: the fight bend sampled by load.
   setSampled(track, clipName, ratio, alpha) {
     const animation = this.#animation(clipName);
