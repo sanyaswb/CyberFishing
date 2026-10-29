@@ -413,9 +413,9 @@ export class VinylRack {
     }
   }
 
-  // TK-126/128/129/133/136: Tonearm needle drop cueing with vinyl-6.mp3:
-  // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once.
-  // Music track is muted for the first 3.0s, then smoothly overlays in (3.0s..3.4s) while vinyl-6 sharply fades out (3.0s..3.25s).
+  // TK-126/128/129/133/136/139: Tonearm needle drop cueing with vinyl-6.mp3:
+  // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once layered over the music.
+  // Music track starts normally without ducking/muting.
   cueTonearm() {
     if (!this.#context || !this.#nodes) return;
     if (this.#applied.enabled === false || this.#applied.mix === 0) return;
@@ -432,9 +432,7 @@ export class VinylRack {
     if (gate?.gain) {
       try {
         gate.gain.cancelScheduledValues?.(now);
-        gate.gain.setValueAtTime?.(0, now);
-        gate.gain.setValueAtTime?.(0, now + 3.0);
-        gate.gain.linearRampToValueAtTime?.(1, now + 3.4);
+        gate.gain.setValueAtTime?.(1, now);
       } catch {
         gate.gain.value = 1;
       }

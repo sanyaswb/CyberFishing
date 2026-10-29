@@ -107,7 +107,7 @@ export class RadioStreamPlayer {
     }
   }
 
-  play(url) {
+  play(url, { isStationSwitch = true } = {}) {
     this.stop();
     this.#url = String(url || "");
     if (!this.#url) return;
@@ -117,7 +117,9 @@ export class RadioStreamPlayer {
       if (this.#effectsGate) this.#effectsGate.gain.value = 1;
       this.#effects?.setActive?.(true);
     }
-    this.cueTrackSwitch();
+    if (isStationSwitch !== false) {
+      this.cueTrackSwitch();
+    }
     this.#start(this.#audioContexts.get() ? "effects" : "native");
   }
 

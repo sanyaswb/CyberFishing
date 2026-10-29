@@ -13,8 +13,14 @@ export class RetroRack {
 
   // Soft analog saturation curve (smooth sigmoid, gentle harmonic warmth).
   static curve(drive, length = RetroRack.CURVE_LENGTH) {
-    const k = Math.max(0.5, Number(drive) || 1.5);
+    const k = Number(drive) || 0;
     const curve = new Float32Array(length);
+    if (k <= 0) {
+      for (let index = 0; index < length; index += 1) {
+        curve[index] = (index * 2) / (length - 1) - 1;
+      }
+      return curve;
+    }
     const norm = Math.tanh(k);
     for (let index = 0; index < length; index += 1) {
       const x = (index * 2) / (length - 1) - 1;
@@ -77,7 +83,7 @@ export class RetroRack {
     const nodes = this.#nodes;
     if (!nodes) return;
 
-    const drive = finiteOr(settings.drive, 2);
+    const drive = Math.max(0, finiteOr(settings.drive, 2));
     this.#param("highpassHz", nodes.highpass.frequency, finiteOr(settings.highpassHz, 80));
     this.#param("warmthHz", nodes.warmth.frequency, finiteOr(settings.warmthHz, 220));
     this.#param("warmthGainDb", nodes.warmth.gain, finiteOr(settings.warmthGainDb, 3.5));

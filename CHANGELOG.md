@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.46 - Uncolored retro zero-state, station-only switch cues, and unmuted vinyl track start
+
+- Radio / Retro: removed hidden distortion in `RetroRack` by making `drive = 0` yield a strictly linear $f(x) = x$ curve, extending lowpass to 22 kHz and highpass down to 10 Hz, and exposing `presenceQ` slider in DEV tuning for full acoustic transparency when sliders are zeroed (TK-139).
+- Radio: separated station/frequency switching cues (`next_track-radio` / `vinyl-6`) from intra-station playlist track advances on the same frequency (VOLIA 77.2), playing switch sweep only when changing stations or waves (TK-139).
+- Radio / Vinyl: removed initial 3.0s ducking/silencing on `trackCueGate` during vinyl needle drop cueing, allowing the incoming track to play immediately at normal volume without muffling or fade-in delay (TK-139).
+
 ## v0.48.45 - Dedicated physical 3-track transistor radio synthesizer section ("Радіо")
 
 - Radio: created new independent "Радіо" (`RadioRack`) section implementing full 3-track physical transistor radio synthesizer with dual cascaded 24 dB/oct HPF/LPF, chassis resonance, asymmetric clipper, DynamicsCompressor AGC, carrier noise, and heterodyne whistle tuning (Spec 149 / TK-138).
@@ -43,7 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.37 - Dedicated vinyl SFX overlay section with ready audio recordings
 
 - Radio / Vinyl: added dedicated SFX overlay section in DEV tuning with individual switches and volume sliders for 6 authentic vinyl audio recordings (`vinyl-1.mp3` through `vinyl-6.mp3`) seamlessly looped in Web Audio (TK-132).
-
-## v0.48.36 - Independent blendable vintage character sliders and dynamic crackle density
-
-- Radio / Vinyl: made dry gramophone, worn speaker, and soft vinyl into independent blendable sliders with wider distortion/bandwidth ranges, and tied crackle and pop slider levels dynamically to both amplitude and click density (TK-131).

@@ -28,6 +28,7 @@ export const RADIO_SOUND_SETTINGS = {
       "outputGain": 1,
       "presenceGainDb": 2,
       "presenceHz": 2000,
+      "presenceQ": 1.2,
       "warmthGainDb": 3.5,
       "warmthHz": 220
     },

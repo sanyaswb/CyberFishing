@@ -141,7 +141,7 @@ export class RadioReceiverService {
     this.#clearIntermission();
     this.#syncPreferences();
     if (this.#status.powered) {
-      this.#startCurrentChannel();
+      this.#startCurrentChannel({ isStationSwitch: true });
     } else {
       this.#updateCurrentStationPreview();
       this.#notify();
@@ -425,7 +425,7 @@ export class RadioReceiverService {
       const nextIndex = ((this.#prefs[prefKey] ?? 0) + direction + tracks.length) % tracks.length;
       this.#prefs[prefKey] = nextIndex;
       this.#save({ [prefKey]: nextIndex });
-      this.#loadPlaylistChannel(mode);
+      this.#loadPlaylistChannel(mode, { isStationSwitch: false });
     }
   }
 
@@ -434,12 +434,12 @@ export class RadioReceiverService {
     return cfg.channels?.[mode] || null;
   }
 
-  #startCurrentChannel() {
+  #startCurrentChannel({ isStationSwitch = true } = {}) {
     const mode = this.#prefs.channelMode || "world";
     if (mode === "world") {
       this.#loadCountry(this.#prefs.country, this.#prefs.stationId);
     } else {
-      this.#loadPlaylistChannel(mode);
+      this.#loadPlaylistChannel(mode, { isStationSwitch });
     }
   }
 
@@ -448,11 +448,11 @@ export class RadioReceiverService {
     if (mode === "world") {
       this.#playCurrent();
     } else {
-      this.#loadPlaylistChannel(mode);
+      this.#loadPlaylistChannel(mode, { isStationSwitch: true });
     }
   }
 
-  #loadPlaylistChannel(mode) {
+  #loadPlaylistChannel(mode, { isStationSwitch = false } = {}) {
     const channel = this.#getChannelConfig(mode);
     const tracks = channel?.tracks || [];
     const count = tracks.length;
@@ -495,7 +495,7 @@ export class RadioReceiverService {
       trackCount: count,
     });
     if (this.#hidden && !this.#prefs.playInBackground) return;
-    this.#player.play(track.url);
+    this.#player.play(track.url, { isStationSwitch });
   }
 
   #handleTrackEnded(mode) {
@@ -521,14 +521,14 @@ export class RadioReceiverService {
         const nextIndex = ((this.#prefs[prefKey] ?? 0) + 1) % tracks.length;
         this.#prefs[prefKey] = nextIndex;
         this.#save({ [prefKey]: nextIndex });
-        this.#loadPlaylistChannel(mode);
+        this.#loadPlaylistChannel(mode, { isStationSwitch: false });
       }, pauseMs);
     } else {
       const prefKey = mode === "volia" ? "voliaTrackIndex" : "customTrackIndex";
       const nextIndex = ((this.#prefs[prefKey] ?? 0) + 1) % tracks.length;
       this.#prefs[prefKey] = nextIndex;
       this.#save({ [prefKey]: nextIndex });
-      this.#loadPlaylistChannel(mode);
+      this.#loadPlaylistChannel(mode, { isStationSwitch: false });
     }
   }
 
@@ -570,7 +570,7 @@ export class RadioReceiverService {
     this.#save({ stationId: station.id });
     this.#set({ station, status: "loading" });
     if (this.#hidden && !this.#prefs.playInBackground) return;
-    this.#player.play(station.url);
+    this.#player.play(station.url, { isStationSwitch: true });
   }
 
   #hasCharge() {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.45";
+export const CURRENT_PROJECT_VERSION = "0.48.46";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-139: removed hidden retro effect coloring (drive=0 linear curve, 22kHz lowpass, presenceQ slider), decoupled station switch cues from intra-station playlist track advances, and removed vinyl start ducking.",
     "TK-138 (Spec 149): dedicated 'Радіо' (RadioRack) 3-track transistor radio synthesizer section; restored 'Рація' (WalkieTalkieRack) bit-for-bit.",
     "TK-137: next_track-radio.mp3 radio frequency tuning cue with stream ducking when vinyl effect is disabled.",
     "TK-136: restored vinyl-6.mp3 tonearm lead-in groove cueing with 3.0s ducking on track/wave switches, and added authentic needle cueing on radio power-on and power-off.",

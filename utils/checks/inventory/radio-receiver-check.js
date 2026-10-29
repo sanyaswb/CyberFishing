@@ -1026,7 +1026,7 @@ async function tuningSliders() {
   assert.equal(byClass(block, "radio-controls__sfx-checkbox").length, 0, "and SFX checkboxes go when vinyl is off");
   switches[0].checked = true; switches[0].fire("change");
   assert.equal(radio.effects.retro.enabled, true, "the retro switch");
-  assert.equal(byClass(block, "radio-controls__slider").length, 9, "all 9 retro sliders");
+  assert.equal(byClass(block, "radio-controls__slider").length, 10, "all 10 retro sliders");
   switches[0].checked = false; switches[0].fire("change");
   byClass(block, "radio-controls__tuning-switch")[4].checked = true;
   byClass(block, "radio-controls__tuning-switch")[4].fire("change");
@@ -1132,7 +1132,7 @@ async function spec144CustomRadio() {
   };
   const played = [];
   const fakePlayer = {
-    play: (url) => played.push(url),
+    play: (url, opts) => played.push({ url, isStationSwitch: opts?.isStationSwitch }),
     stop: () => {},
     setVolume() {},
     setGainScale() {},
@@ -1172,19 +1172,26 @@ async function spec144CustomRadio() {
 
   assert.equal(service.getStatus().channelMode, "volia", "default channel is volia");
   service.powerOn();
-  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia channel plays its broadcast file");
+  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia channel plays its broadcast file");
+  assert.equal(played.at(-1)?.isStationSwitch, true, "powering on triggers station switch");
   assert.equal(service.getStatus().station.name, "VOLIA 77.2");
   assert.equal(service.getStatus().station.frequency, "77.2 FM");
 
   // Track finished: automatically advances to next track immediately without intermission pause
   service.handlePlayerState("ended");
-  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel automatically starts next track when current ends");
+  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel automatically starts next track when current ends");
+  assert.equal(played.at(-1)?.isStationSwitch, false, "advancing tracks on the same channel is not a station switch");
   assert.notEqual(service.getStatus().status, "intermission", "volia channel does not stop in intermission");
   assert.equal(timers.filter((t) => !t.cancelled).length, 0, "no intermission timer scheduled for volia");
 
   // Next track finished: loops back to first track
   service.handlePlayerState("ended");
-  assert.equal(played.at(-1), "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia loops back to first track");
+  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia loops back to first track");
+  assert.equal(played.at(-1)?.isStationSwitch, false, "looping track on same channel is not a station switch");
+
+  service.next();
+  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3");
+  assert.equal(played.at(-1)?.isStationSwitch, false, "manual next on same channel is not a station switch");
 
   // Custom channel cannot be set
   service.setChannel("custom");
@@ -1195,6 +1202,7 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().channelMode, "world", "world channel can be selected");
   service.setChannel("volia");
   assert.equal(service.getStatus().channelMode, "volia", "volia channel can be selected");
+  assert.equal(played.at(-1)?.isStationSwitch, true, "switching channel mode is a station switch");
 
   // Effect toggling
   service.setEffectEnabled("walkieTalkie", false);
