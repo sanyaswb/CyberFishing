@@ -57,10 +57,10 @@ async function checkChumControls() {
   controls.setState("moving", "boat", 3, false, true, "assets/items/boats/boat-lvl--3_bait.webp");
   assert.equal(controls.button.innerText, "⏩");
 
-  // Empty state for boat stays active with no-bait image and allows clicking
+  // Empty state for boat stays active with no-bait image, boat-empty class, and allows clicking
   controls.setState("empty", "boat", 3, false, true, "assets/items/boats/boat-lvl--3_no-bait.webp");
   assert.equal(controls.button.child.src, "assets/items/boats/boat-lvl--3_no-bait.webp");
-  assert.ok(controls.button.className.includes("chum-control--idle"), "empty boat button has active idle class");
+  assert.ok(controls.button.className.includes("chum-control--boat-empty"), "empty boat button has boat-empty class");
   controls.button.listeners.click({});
   assert.equal(clicked, true, "clicking empty boat button triggers callback");
 }

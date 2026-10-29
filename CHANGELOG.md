@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.2 - Red border and dark-red background warning state for empty bait boat button
+
+- Fishing / HUD: styled empty bait boat toolbar button (`chum-control--boat-empty`) with high-visibility red border (`var(--ui-danger, #ff4444)`) and dark-red background (`rgb(117, 23, 6)`), ensuring unambiguous visual indication when chum runs out while keeping the button active and clickable (Spec 150 / TK-151).
+
 ## v0.49.1 - Active empty bait boat launch button with editor opening and compartment feedback
 
 - Fishing / HUD: kept bait boat toolbar launch button active when compartments are empty with `boat-lvl--3_no-bait.webp` artwork, clickable cursor, and non-blocking interaction (Spec 150 / TK-150).
@@ -52,9 +56,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Radio: converted track and station switch cueing into sequential playback (`next_track-vinyl` or `next_track-radio` plays first, followed by incoming track audio from 0:00:00 without beginning cutoff or ducking), governed by new configurable `cueOverlapSeconds` parameter (TK-140).
 - Radio / Vinyl: renamed `assets/audio/radio/vinyl/vinyl-6.mp3` to `assets/audio/radio/next_track-vinyl.mp3` alongside `next_track-radio.mp3` and exposed `cueOverlapSeconds` sliders for both vinyl and radio in DEV tuning (TK-140).
 - Radio / VOLIA 77.2: inserted an authentic 2-second broadcast pause (`2000 ms`) between playlist tracks during automatic track progression and manual stepping on the same frequency without triggering station switch sweep cues (TK-140).
-
-## v0.48.46 - Uncolored retro zero-state, station-only switch cues, and unmuted vinyl track start
-
-- Radio / Retro: removed hidden distortion in `RetroRack` by making `drive = 0` yield a strictly linear $f(x) = x$ curve, extending lowpass to 22 kHz and highpass down to 10 Hz, and exposing `presenceQ` slider in DEV tuning for full acoustic transparency when sliders are zeroed (TK-139).
-- Radio: separated station/frequency switching cues (`next_track-radio` / `vinyl-6`) from intra-station playlist track advances on the same frequency (VOLIA 77.2), playing switch sweep only when changing stations or waves (TK-139).
-- Radio / Vinyl: removed initial 3.0s ducking/silencing on `trackCueGate` during vinyl needle drop cueing, allowing the incoming track to play immediately at normal volume without muffling or fade-in delay (TK-139).

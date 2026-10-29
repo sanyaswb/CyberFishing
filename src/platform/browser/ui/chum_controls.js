@@ -1,6 +1,6 @@
 import { UiEventShield } from "../dom/ui_event_shield.js";
 
-const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "ready"]);
+const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "ready", "boat-empty"]);
 
 export class ChumControls {
   #labels;
@@ -103,7 +103,7 @@ export class ChumControls {
     }
 
     const visualState = (method === "boat" && state === "empty")
-      ? "idle"
+      ? "boat-empty"
       : CHUM_VISUAL_STATES.has(state)
         ? state
         : "idle";
