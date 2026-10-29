@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.51 - Fixed Spine bait boat rendering over emoji fallback
+
+- Delivery / Animation: fixed runtime boat creation in `BaitBoat` to preserve top-level `skin` and `emoji` from equipped `delivery` item alongside `effectiveStats`, ensuring `BoatChumRenderFrameBuilder` acquires animation descriptors (Spec 150 / TK-146).
+- Animation / Spine: aligned `BoatAnimationController.#onBundle` with canonical `SpineRuntimeProvider` capability contract (`capability.available`, `createScene(bundle, surface)`), preventing premature fallback to "runtime-not-ready" (TK-146).
+- Presentation / Scene: safely unwrapped `boatAnimation` in `game_render_composition.js` for robust frame builder wiring (TK-146).
+
 ## v0.48.50 - Bait boat size and initial coordinates DevTools tuning and live water updates
 
 - DevTools / Spine: added `SpineBoatDevSection` in DevTools under the "SPINE" category with live config tuning for `CONFIG.ui.boat` (`displayScale`, `x`, `xOffset`, `yOffset`), Spine switcher, clip and bone editors, and skeleton JSON export (Spec 150 / TK-145).
@@ -50,8 +56,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio / Vinyl: restored `vinyl-6.mp3` tonearm drop & lead-in cueing with 3.0s ducking on track and station switches, ensuring active effects graph and open gate prior to cue trigger (TK-136).
 - Radio / Vinyl: added authentic vinyl tonearm sound on radio power-on (needle contact and groove spin before music fades in) and radio power-off (instant music and noise mute with ~1.8s tonearm lift fade-out into silence) (TK-136).
-
-## v0.48.41 - Silenced effects when radio is off and calibrated Track 3 parameter ranges
-
-- Radio / Vinyl: silenced all vinyl synthesizers, SFX loops, and needle cues when the radio is powered off or paused via dedicated effects gate and active state suppression (TK-135).
-- Radio / Vinyl: recalibrated Track 3 parameter ranges for unmistakable acoustic impact on mobile transducers: wow expanded to 16ms depth (~90 cents pitch sway), tonal warmth down to 4.2 kHz cutoff with +8 dB warmth, and asymmetric saturation boosted with pre-gain (TK-135).

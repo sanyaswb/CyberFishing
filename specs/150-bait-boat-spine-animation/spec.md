@@ -73,3 +73,7 @@
    - Реалізація DEV-портів у `BoatAnimationController` (`getStatus`, `isSpineEnabled`, `getClips`, `getBones`, `setBoneSetup`, `exportSkeleton`).
    - Створення `SpineBoatDevSection` у `src/dev/tools/spine_boat_dev_section.js` та монтування в розділі "SPINE" у DevTools.
    - Підтримка живого оновлення координат човна біля берега (`state === "idle"`) при редагуванні повзунків у DevTools.
+6. **Етап 6: Виправлення контракту завантаження та збереження skin у BaitBoat (TK-146).**
+   - Збереження `skin` та `emoji` в `BaitBoat.config` з екіпірованого `eq.delivery`.
+   - Приведення `BoatAnimationController.#onBundle` до канонічного контракту `SpineRuntimeProvider`: перевірка `capability.available` замість неіснуючого `status === "ready"`, виклик `capability.runtime.createScene(outcome.bundle, this.#glSurface)`.
+   - Безпечне розгортання `boatAnimation` у `game_render_composition.js`.

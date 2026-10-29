@@ -2,7 +2,14 @@ const assert = require("node:assert/strict");
 
 async function checkBoatStateFlow() {
   const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
-  const boat = new BaitBoat(100, 200, { sections: 3, statsByLevel: { 1: { speedPxPerSec: 100 } } });
+  const boat = new BaitBoat(100, 200, {
+    skin: { animation: { skeleton: "boat.json", atlas: "boat.atlas" } },
+    effectiveStats: { sections: 3, statsByLevel: { 1: { speedPxPerSec: 100 } } },
+  });
+
+  // Verify skin retention (TK-146)
+  assert.ok(boat.config.skin?.animation, "boat.config must retain skin from equipped item");
+  assert.ok(boat.skin?.animation, "boat.skin must retain skin from equipped item");
 
   // 1. Initial immersion state
   assert.equal(boat.animationState, "immersion");
@@ -87,7 +94,7 @@ async function checkAnimationController() {
 
   const controller = new BoatAnimationController({
     loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26", skeleton: { bones: [{ name: "root" }] } } }) }),
-    loadRuntime: () => Promise.resolve({ status: "ready", createScene: () => ({ scene: fakeScene }) }),
+    loadRuntime: () => Promise.resolve({ available: true, runtime: { createScene: () => ({ scene: fakeScene, reason: null }) } }),
     glSurface: fakeGlSurface,
   });
 

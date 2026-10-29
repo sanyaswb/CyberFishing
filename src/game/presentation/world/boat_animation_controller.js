@@ -246,19 +246,20 @@ export class BoatAnimationController {
       return;
     }
     this.#bundle = outcome.bundle;
-    const runtimeOutcome = await this.#loadRuntime(outcome.bundle.version);
+    const capability = await this.#loadRuntime(outcome.bundle.version);
     if (generation !== this.#generation) return;
-    if (runtimeOutcome.status !== "ready") {
-      this.#reason = runtimeOutcome.reason ?? "runtime-not-ready";
+    if (!capability.available) {
+      this.#reason = capability.reason ?? "runtime-not-available";
       this.#replaceScene(null);
       return;
     }
-    const { scene, reason } = runtimeOutcome.createScene({
-      bundle: outcome.bundle,
-      surface: this.#glSurface,
-    });
-    this.#reason = reason ?? null;
-    this.#replaceScene(scene);
+    const created = capability.runtime.createScene(outcome.bundle, this.#glSurface);
+    if (generation !== this.#generation) {
+      created.scene?.dispose();
+      return;
+    }
+    this.#reason = created.reason ?? null;
+    this.#replaceScene(created.scene);
   }
 
   #replaceScene(scene) {

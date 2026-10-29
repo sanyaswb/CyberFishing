@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.50";
+export const CURRENT_PROJECT_VERSION = "0.48.51";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-146 (Spec 150): fixed Spine bait boat rendering over emoji fallback (preserved skin on BaitBoat, aligned SpineRuntimeProvider load contract).",
     "TK-145 (Spec 150): bait boat displayScale & spawn coordinates in CONFIG.ui.boat and DevTools SpineBoatDevSection with live water updates.",
     "TK-142..144 (Spec 150): bait boat lvl3 Spine animation, night lights, hopper bay door opening logic, and WebGL scene entity rendering.",
     "TK-141: bait boat lvl3 inventory & chum controls artwork dynamic variants (boat-lvl--3_bait vs no-bait when 3 chums are equipped).",

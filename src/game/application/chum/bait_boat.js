@@ -21,14 +21,20 @@ export class BaitBoat {
     this.pos = new Vector2(startX, startY);
     this.target = null;
     const statsConfig = config.effectiveStats || config;
-    this.config = statsConfig;
+    this.config = Object.assign({}, statsConfig, {
+      skin: config.skin || statsConfig.skin || null,
+      emoji: statsConfig.emoji || config.icon || "🚤",
+    });
+    this.skin = this.config.skin;
     // The equipped delivery slot may change while this boat is away. Keep the
     // identity of the assembly that actually started the trip on the runtime
     // boat so the return event can refill that exact root.
     this.#rootInstanceId = config?.instanceId || null;
     this.stats =
-      statsConfig.statsByLevel[statsConfig.upgradeLevel] ||
-      statsConfig.statsByLevel[1];
+      statsConfig.statsByLevel?.[statsConfig.upgradeLevel] ||
+      statsConfig.statsByLevel?.[1] ||
+      statsConfig.statsByLevel ||
+      {};
     this.zoneId = zoneId;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;

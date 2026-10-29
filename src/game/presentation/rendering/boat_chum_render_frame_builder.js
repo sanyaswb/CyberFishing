@@ -88,7 +88,7 @@ export class BoatChumRenderFrameBuilder {
       // The battery's remaining share (spec 143), written on the boat by ChumService.
       const energyRatio = RenderMath.clamp(boat.powerRatio);
 
-      const animDescriptor = boat.config?.skin?.animation;
+      const animDescriptor = boat.config?.skin?.animation || boat.skin?.animation;
       let anim = null;
       if (animDescriptor && this.#boatAnimation) {
         this.#boatAnimation.setDescriptor(animDescriptor);

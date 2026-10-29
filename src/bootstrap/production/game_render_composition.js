@@ -265,7 +265,7 @@ export class GameRenderComposition {
         getWaterMetric: appPorts.getWaterMetric,
         projector: runtime.projector,
         config,
-        boatAnimation: runtime.rendering.boatAnimation?.controller,
+        boatAnimation: runtime.rendering.boatAnimation?.controller ?? runtime.rendering.boatAnimation,
         getTimeOfDay: () => runtime.env?.getSnapshot?.()?.time ?? (typeof clock?.getHours === "function" ? clock.getHours() : 12),
         clock,
       }),
