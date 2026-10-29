@@ -215,10 +215,21 @@ export class InventoryUI {
   }
 
   // Opens the equipment section on an equipped item's editor (spec 142: the radio indicator).
-  openSlotEditor(slotId) {
+  openSlotEditor(slotId, { feedbackSlotId = null, tone = "error" } = {}) {
     this.openSection("equipment");
     this.#dispatch({ type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE, slotId });
     this.refresh();
+    if (feedbackSlotId) {
+      this.showEquipmentFeedback({
+        revision: (this.#lastEquipmentFeedbackRevision || 0) + 1,
+        slotId: feedbackSlotId,
+        tone,
+      });
+    }
+  }
+
+  showEquipmentFeedback(feedback) {
+    this.#showEquipmentFeedback(feedback);
   }
 
   toggleSection(sectionId) {
@@ -542,18 +553,20 @@ export class InventoryUI {
     if (!feedback || feedback.revision === this.#lastEquipmentFeedbackRevision) return;
     this.#lastEquipmentFeedbackRevision = feedback.revision;
     if (!this.#isOpen || this.#activeSectionId !== "equipment") return;
-    const field = this.#nodesByClass(this.#equipmentHost, "inventory-field")
-      .find((node) => node.dataset.slotId === feedback.slotId);
-    const parent = field?.parentNode;
-    const container = parent?.classList.contains("inventory-editor-tabs__tab") ? parent : field;
-    if (!container) return;
-    container.classList.add("inventory-equipment-feedback");
-    container.classList.toggle("inventory-equipment-feedback--error", feedback.tone === "error");
-    const overlay = this.#firstNodeByClass(container, "inventory-editor-tabs__highlight") ||
-      this.#dom.element("span", "inventory-equipment-feedback__overlay");
-    overlay.classList.add("inventory-equipment-feedback__overlay");
-    overlay.setAttribute("aria-hidden", "true");
-    if (overlay.parentNode !== container) container.appendChild(overlay);
+    const fields = this.#nodesByClass(this.#equipmentHost, "inventory-field")
+      .filter((node) => node.dataset.slotId === feedback.slotId);
+    for (const field of fields) {
+      const parent = field?.parentNode;
+      const container = parent?.classList.contains("inventory-editor-tabs__tab") ? parent : field;
+      if (!container) continue;
+      container.classList.add("inventory-equipment-feedback");
+      container.classList.toggle("inventory-equipment-feedback--error", feedback.tone === "error");
+      const overlay = this.#firstNodeByClass(container, "inventory-editor-tabs__highlight") ||
+        this.#dom.element("span", "inventory-equipment-feedback__overlay");
+      overlay.classList.add("inventory-equipment-feedback__overlay");
+      overlay.setAttribute("aria-hidden", "true");
+      if (overlay.parentNode !== container) container.appendChild(overlay);
+    }
   }
 
   #renderLeftPanel(panel) {

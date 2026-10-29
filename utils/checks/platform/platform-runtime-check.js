@@ -1249,7 +1249,7 @@ function checkBrowserWidgets() {
   assert.equal(queries, initialQueries, "updates use cached DOM references");
   assert.equal(depth.lastChange, 2);
   assert.equal(time.emojiSpan.innerText, "🌇");
-  assert.equal(clicks, 61, "only enabled chum states dispatch clicks");
+  assert.equal(clicks, 81, "only enabled chum states and actionable empty boat dispatch clicks");
   assert.equal(hold.circles.length, 4);
   assert.equal(hold.textLabel.innerText, "УТРИМАННЯ");
   const depthRoot = document.body.children.find((node) =>

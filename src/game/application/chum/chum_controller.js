@@ -197,6 +197,7 @@ export class ChumController {
       if (this.#countLoadedChums(eq.deliveryChums) > 0) {
         this.toggleAim();
       } else {
+        this.#inventoryUI?.openSlotEditor?.("delivery", { feedbackSlotId: "cargo", tone: "error" });
         this.#warn(this.#messages.loadChumIntoBoat);
       }
       return;

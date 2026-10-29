@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.1 - Active empty bait boat launch button with editor opening and compartment feedback
+
+- Fishing / HUD: kept bait boat toolbar launch button active when compartments are empty with `boat-lvl--3_no-bait.webp` artwork, clickable cursor, and non-blocking interaction (Spec 150 / TK-150).
+- Delivery / Inventory: clicking empty boat launch button opens the bait boat assembly editor in inventory, flashes empty cargo compartments in red error feedback (`inventory-equipment-feedback--error`), and displays the load chum hint (TK-150).
+
 ## v0.49.0 - Bait boat lvl3 Spine animation, night lights, multi-track hopper doors, and dynamic visuals
 
 - Delivery / Spine: introduced full skeletal Spine animation for Level 3 bait boat (`boat-lvl--3.json`), featuring water immersion (`boat3--immersion`), forward propulsion (`boat3--move-forvard_start` -> `boat3--move-forvard1`) with bow forward orientation, and night lights (`boat-light`, `boat3-night_light*`) active in the dark (Spec 150 / TK-141..TK-149).
@@ -53,8 +58,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Radio / Retro: removed hidden distortion in `RetroRack` by making `drive = 0` yield a strictly linear $f(x) = x$ curve, extending lowpass to 22 kHz and highpass down to 10 Hz, and exposing `presenceQ` slider in DEV tuning for full acoustic transparency when sliders are zeroed (TK-139).
 - Radio: separated station/frequency switching cues (`next_track-radio` / `vinyl-6`) from intra-station playlist track advances on the same frequency (VOLIA 77.2), playing switch sweep only when changing stations or waves (TK-139).
 - Radio / Vinyl: removed initial 3.0s ducking/silencing on `trackCueGate` during vinyl needle drop cueing, allowing the incoming track to play immediately at normal volume without muffling or fade-in delay (TK-139).
-
-## v0.48.45 - Dedicated physical 3-track transistor radio synthesizer section ("Радіо")
-
-- Radio: created new independent "Радіо" (`RadioRack`) section implementing full 3-track physical transistor radio synthesizer with dual cascaded 24 dB/oct HPF/LPF, chassis resonance, asymmetric clipper, DynamicsCompressor AGC, carrier noise, and heterodyne whistle tuning (Spec 149 / TK-138).
-- Radio / Walkie-Talkie: restored "Рація" (`WalkieTalkieRack`) and its configuration bit-for-bit to its previous architecture, keeping both effects fully independent in the chain and DEV tuning (TK-138).

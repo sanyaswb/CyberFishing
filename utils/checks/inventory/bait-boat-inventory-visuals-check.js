@@ -26,8 +26,9 @@ async function checkChumControls() {
         innerText: "",
         hidden: false,
         attrs: {},
+        listeners: {},
         setAttribute(k, v) { this.attrs[k] = String(v); },
-        addEventListener() {},
+        addEventListener(event, fn) { this.listeners[event] = fn; },
         appendChild(child) { this.child = child; },
         replaceChildren(child) { this.child = child; },
         remove() {},
@@ -36,7 +37,8 @@ async function checkChumControls() {
     body: { appendChild() {} },
   };
 
-  const controls = new ChumControls(() => {}, { documentRef: fakeDoc });
+  let clicked = false;
+  const controls = new ChumControls(() => { clicked = true; }, { documentRef: fakeDoc });
   
   // Hand mode keeps text emoji
   controls.setState("idle", "hand", 1);
@@ -54,11 +56,58 @@ async function checkChumControls() {
   // Moving state shows moving icon
   controls.setState("moving", "boat", 3, false, true, "assets/items/boats/boat-lvl--3_bait.webp");
   assert.equal(controls.button.innerText, "⏩");
+
+  // Empty state for boat stays active with no-bait image and allows clicking
+  controls.setState("empty", "boat", 3, false, true, "assets/items/boats/boat-lvl--3_no-bait.webp");
+  assert.equal(controls.button.child.src, "assets/items/boats/boat-lvl--3_no-bait.webp");
+  assert.ok(controls.button.className.includes("chum-control--idle"), "empty boat button has active idle class");
+  controls.button.listeners.click({});
+  assert.equal(clicked, true, "clicking empty boat button triggers callback");
+}
+
+async function checkChumControllerEmptyBoat() {
+  const { ChumController } = await import("../../../src/game/application/chum/chum_controller.js");
+  const { FISHING_MESSAGES } = await import("../../../src/game/presentation/fishing/fishing_messages.js");
+  let editorSlot = null;
+  let feedbackOptions = null;
+  let warnedMessage = null;
+  const fakeInventoryUI = {
+    openSlotEditor(slot, opts) {
+      editorSlot = slot;
+      feedbackOptions = opts;
+    },
+    showWarning(msg) {
+      warnedMessage = msg;
+    },
+  };
+  const fakeInventory = {
+    getEquipped() {
+      return {
+        delivery: { instanceId: "boat-3", effectiveStats: { sections: 3 } },
+        deliveryChums: [],
+      };
+    },
+  };
+  const fakeChum = {
+    getBoats: () => [],
+  };
+  const controller = new ChumController({
+    messages: FISHING_MESSAGES,
+    inventory: fakeInventory,
+    chum: fakeChum,
+    inventoryUI: fakeInventoryUI,
+    createUi: () => ({ setState() {}, dispose() {} }),
+  });
+  controller.handleClick();
+  assert.equal(editorSlot, "delivery", "opens delivery slot editor");
+  assert.deepEqual(feedbackOptions, { feedbackSlotId: "cargo", tone: "error" }, "highlights cargo sockets in red");
+  assert.equal(warnedMessage, FISHING_MESSAGES.loadChumIntoBoat, "shows load chum into boat warning");
 }
 
 async function run() {
   await checkItemDatabase();
   await checkChumControls();
+  await checkChumControllerEmptyBoat();
 }
 
 run().then(() => {

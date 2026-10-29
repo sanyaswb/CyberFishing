@@ -27,7 +27,7 @@ export class ChumControls {
       if (
         this.button.hidden ||
         this.currentState === "disabled" ||
-        this.currentState === "empty" ||
+        (this.currentState === "empty" && this.currentMethod !== "boat") ||
         this.currentState === "moving"
       ) {
         return;
@@ -42,7 +42,7 @@ export class ChumControls {
 
     let text = "";
     if (state === "empty") {
-      text = "🔘";
+      text = method === "boat" ? "🚤" : "🔘";
     } else if (state === "moving") {
       text = "⏩";
     } else if (state === "aiming") {
@@ -59,13 +59,14 @@ export class ChumControls {
     const label = method === "boat"
       ? this.#labels?.chumBoatAction || ""
       : this.#labels?.chumActionCount(count) || "";
+    const isImageMode = method === "boat" && Boolean(boatIconUrl) && text === "🚤";
     // Skip DOM updates when the displayed state has not changed.
     if (
       this.currentState === state &&
       this.currentMethod === method &&
       this.#boatIconUrl === boatIconUrl &&
       this.button.hidden === !isVisible &&
-      this.button.innerText === text &&
+      (isImageMode ? this.#image?.src === boatIconUrl : this.button.innerText === text) &&
       this.button.title === label
     ) {
       return;
@@ -101,9 +102,11 @@ export class ChumControls {
       this.button.innerText = text;
     }
 
-    const visualState = CHUM_VISUAL_STATES.has(state)
-      ? state
-      : "idle";
+    const visualState = (method === "boat" && state === "empty")
+      ? "idle"
+      : CHUM_VISUAL_STATES.has(state)
+        ? state
+        : "idle";
     this.button.className = "game-control game-toolbar-button game-toolbar-button--chum chum-control chum-control--" + visualState;
   }
 

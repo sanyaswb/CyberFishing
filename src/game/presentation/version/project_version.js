@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.0";
+export const CURRENT_PROJECT_VERSION = "0.49.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-150 (Spec 150): active empty bait boat launch button with editor opening, red cargo compartment feedback, and load chum hint.",
     "v0.49.0 (Spec 150): bait boat lvl3 Spine animation, night lights, multi-track hopper doors, and dynamic visuals.",
     "TK-149 (Spec 150): bait boat immersion replay, wave-1 motion visibility with open bays, and initial empty bay states.",
     "TK-148 (Spec 150): forward boat start orientation (view.rotation = boat.angle + Math.PI / 2), persistent open compartments across moves, and disabled wave slots 2-3.",
