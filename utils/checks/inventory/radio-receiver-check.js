@@ -543,6 +543,24 @@ async function stageThree() {
   const vinylWet = made[3];
   vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12, enabled: false }, 0.03);
   assert.deepEqual([...vinylWet.gain.targets.at(-1)], [0, 2, 0.03], "a disabled record passes the sound dry (and silent surface)");
+
+  // TK-132: SFX overlay tracks looping & independent gain
+  const fakeSfxBuffer = context.createBuffer(1, 100);
+  vinyl.setSfxBuffer("vinyl-1", fakeSfxBuffer);
+  vinyl.update({
+    ...vinylSettings,
+    sfx: { "vinyl-1": { enabled: true, volume: 0.75 } },
+  }, 0.03);
+  const sfxSources = byKind("source").filter((s) => s.buffer === fakeSfxBuffer);
+  assert.equal(sfxSources.length, 1, "enabling vinyl-1 starts an overlay source");
+  assert.equal(sfxSources[0].loop, true, "SFX overlay loops continuously");
+  assert.equal(sfxSources[0].started, 1, "SFX source is started");
+  vinyl.update({
+    ...vinylSettings,
+    sfx: { "vinyl-1": { enabled: false, volume: 0.75 } },
+  }, 0.03);
+  assert.equal(sfxSources[0].stopped, 1, "disabling vinyl-1 stops the overlay source");
+
   assert.equal(typeof vinyl.cueTonearm, "function", "tonearm cue method exists");
   vinyl.cueTonearm();
   vinyl.dispose();
@@ -856,7 +874,10 @@ async function tuningSliders() {
   const writeConfig = (path, value) => {
     sets.push([path.join("."), value]);
     let target = radio;
-    for (const part of path.slice(2, -1)) target = target[part];
+    for (const part of path.slice(2, -1)) {
+      if (!target[part]) target[part] = {};
+      target = target[part];
+    }
     target[path.at(-1)] = value;
   };
   const tuning = new RadioEffectTuning({ config: () => radio, configRuntime: { set: writeConfig } });
@@ -910,6 +931,14 @@ async function tuningSliders() {
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
   assert.equal(sliders.length, 6, "all 6 sliders of the enabled part (vinyl)");
+  const sfxBoxes = byClass(block, "radio-controls__sfx-checkbox");
+  assert.equal(sfxBoxes.length, 6, "6 SFX checkboxes for ready vinyl recordings");
+  const sfxVolumes = byClass(block, "radio-controls__sfx-volume");
+  assert.equal(sfxVolumes.length, 6, "6 SFX volume sliders");
+  sfxBoxes[0].checked = true; sfxBoxes[0].fire("change");
+  assert.equal(radio.effects.vinyl.sfx?.["vinyl-1"]?.enabled, true, "toggling SFX checkbox updates live config");
+  sfxVolumes[0].value = "0.85"; sfxVolumes[0].fire("input");
+  assert.equal(radio.effects.vinyl.sfx?.["vinyl-1"]?.volume, 0.85, "sliding SFX volume updates live config");
   assert.equal(sliders[3].value, "0.3");
   sliders[3].value = "0.2"; sliders[3].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
@@ -919,6 +948,7 @@ async function tuningSliders() {
   switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");
+  assert.equal(byClass(block, "radio-controls__sfx-checkbox").length, 0, "and SFX checkboxes go when vinyl is off");
   switches[0].checked = true; switches[0].fire("change");
   assert.equal(radio.effects.retro.enabled, true, "the retro switch");
   assert.equal(byClass(block, "radio-controls__slider").length, 9, "all 9 retro sliders");

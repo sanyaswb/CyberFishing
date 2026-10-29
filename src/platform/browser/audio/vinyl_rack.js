@@ -1,6 +1,15 @@
 import { finiteOr } from "../../../engine/math/number_normalization.js";
 import { WalkieTalkieRack } from "./walkie_talkie_rack.js";
 
+export const VINYL_SFX_FILES = Object.freeze({
+  "vinyl-1": "assets/audio/radio/vinyl/vinyl-1.mp3",
+  "vinyl-2": "assets/audio/radio/vinyl/vinyl-2.mp3",
+  "vinyl-3": "assets/audio/radio/vinyl/vinyl-3.mp3",
+  "vinyl-4": "assets/audio/radio/vinyl/vinyl-4.mp3",
+  "vinyl-5": "assets/audio/radio/vinyl/vinyl-5.mp3",
+  "vinyl-6": "assets/audio/radio/vinyl/vinyl-6.mp3",
+});
+
 // TK-097, TK-128 (Spec 147): the "vinyl record" stage of the radio's effects chain.
 // Dual Engine Architecture:
 // - Mode 0 (Sampled / Автентичний): uses genuine sampled recordings of vinyl surface noise and tonearm needle drop;
@@ -20,6 +29,9 @@ export class VinylRack {
   #sampledSurfaceBuffer = null;
   #sampledNeedleDropBuffer = null;
   #sampledSurfaceSource = null;
+  #sfxGains = new Map();
+  #sfxSources = new Map();
+  #sfxBuffers = new Map();
 
   // rng: the radio's own { next() } (never the gameplay RNG).
   constructor({ rng, fetchRef = (typeof fetch !== "undefined" ? fetch : null) }) {
@@ -102,6 +114,8 @@ export class VinylRack {
     this.#nodes = node;
     this.#applied = {};
     this.#sources = {};
+    this.#sfxGains.clear();
+    this.#sfxSources.clear();
     this.#loop("hiss", this.#noiseBuffer(), node.hissTone);
     this.#loop("rumble", this.#noiseBuffer(), node.rumbleTone);
     this.#loadSamples();
@@ -237,6 +251,41 @@ export class VinylRack {
       }
       this.#applied.mix = mix;
     }
+
+    // TK-132: SFX overlay tracks (vinyl-1 .. vinyl-6)
+    const sfxSettings = settings.sfx || {};
+    if (!this.#applied.sfx) this.#applied.sfx = {};
+    for (const [id, filePath] of Object.entries(VINYL_SFX_FILES)) {
+      const trackCfg = sfxSettings[id] || {};
+      const isTrackEnabled = trackCfg.enabled === true;
+      const targetGain = isTrackEnabled ? Math.max(0, Math.min(1, finiteOr(trackCfg.volume, 0.5))) : 0;
+
+      let gainNode = this.#sfxGains.get(id);
+      if (!gainNode && this.#context && node) {
+        gainNode = this.#context.createGain();
+        gainNode.gain.value = 0;
+        gainNode.connect(node.wet);
+        this.#sfxGains.set(id, gainNode);
+      }
+      if (gainNode) {
+        gainNode.gain.value = targetGain;
+      }
+
+      if (isTrackEnabled && targetGain > 0) {
+        if (this.#sfxBuffers.has(id)) {
+          this.#startSfxSource(id, this.#sfxBuffers.get(id), gainNode);
+        } else {
+          this.#loadSfxBuffer(id, filePath).then((buf) => {
+            if (buf && this.#nodes && this.#applied.sfx?.[id]?.enabled === true) {
+              this.#startSfxSource(id, buf, this.#sfxGains.get(id));
+            }
+          });
+        }
+      } else {
+        this.#stopSfxSource(id);
+      }
+      this.#applied.sfx[id] = { enabled: isTrackEnabled, volume: targetGain };
+    }
   }
 
   // TK-126/128/129: Tonearm needle drop cueing
@@ -274,6 +323,17 @@ export class VinylRack {
     }
     this.#cueSources.clear();
 
+    for (const source of this.#sfxSources.values()) {
+      source.stop?.();
+      source.disconnect?.();
+    }
+    this.#sfxSources.clear();
+
+    for (const gain of this.#sfxGains.values()) {
+      gain.disconnect?.();
+    }
+    this.#sfxGains.clear();
+
     this.#nodes?.wowOsc.stop();
     this.#nodes?.flutterOsc.stop();
     for (const node of Object.values(this.#nodes || {})) node.disconnect?.();
@@ -281,6 +341,49 @@ export class VinylRack {
     this.#sources = {};
     this.#context = null;
     this.#applied = {};
+  }
+
+  setSfxBuffer(id, buffer) {
+    this.#sfxBuffers.set(id, buffer);
+    const gainNode = this.#sfxGains.get(id);
+    if (this.#applied.sfx?.[id]?.enabled && gainNode) {
+      this.#startSfxSource(id, buffer, gainNode);
+    }
+  }
+
+  #startSfxSource(id, buffer, destination) {
+    if (!this.#context || !destination || !buffer) return;
+    if (this.#sfxSources.has(id)) return;
+    try {
+      const source = this.#context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(destination);
+      source.start();
+      this.#sfxSources.set(id, source);
+    } catch {
+      // AudioContext state or disposed
+    }
+  }
+
+  #stopSfxSource(id) {
+    const source = this.#sfxSources.get(id);
+    if (!source) return;
+    try {
+      source.stop?.();
+      source.disconnect?.();
+    } catch {
+      // already stopped/disconnected
+    }
+    this.#sfxSources.delete(id);
+  }
+
+  async #loadSfxBuffer(id, filePath) {
+    if (this.#sfxBuffers.has(id)) return this.#sfxBuffers.get(id);
+    if (!this.#fetchRef || !this.#context?.decodeAudioData) return null;
+    const buf = await this.#fetchAudio([filePath, `/${filePath}`]);
+    if (buf) this.#sfxBuffers.set(id, buf);
+    return buf;
   }
 
   #param(key, param, value) {

@@ -2,6 +2,15 @@
 // (vinyl, walkie-talkie, signal interference, «only stations with the effect») and sliders for all parameters of the
 // parts that are on. Writes go to the live configuration through the same config runtime as DevTools, so both show one
 // value. Production composes no tuning port: the player never controls the sound quality.
+export const VINYL_SFX_TRACKS = Object.freeze([
+  Object.freeze({ id: "vinyl-1", file: "vinyl-1.mp3", label: "vinyl-1 · Оберти 33⅓ (кліки)" }),
+  Object.freeze({ id: "vinyl-2", file: "vinyl-2.mp3", label: "vinyl-2 · Текстура поверхні" }),
+  Object.freeze({ id: "vinyl-3", file: "vinyl-3.mp3", label: "vinyl-3 · Шум та тріск борозенок" }),
+  Object.freeze({ id: "vinyl-4", file: "vinyl-4.mp3", label: "vinyl-4 · Посадка голки (луп)" }),
+  Object.freeze({ id: "vinyl-5", file: "vinyl-5.mp3", label: "vinyl-5 · Фоновий вініл (довгий)" }),
+  Object.freeze({ id: "vinyl-6", file: "vinyl-6.mp3", label: "vinyl-6 · Скрип канавки та голка" }),
+]);
+
 const GROUPS = Object.freeze([
   Object.freeze({
     group: "retro",
@@ -125,6 +134,27 @@ export class RadioEffectTuning {
     const number = Number(value);
     if (!Number.isFinite(number)) return;
     this.#configRuntime.set(["CONFIG", "radio", ...entry.path, key], number);
+  }
+
+  getVinylSfxList() {
+    const sfx = this.#settings("vinyl")?.sfx || {};
+    return VINYL_SFX_TRACKS.map((track) => ({
+      id: track.id,
+      file: track.file,
+      label: track.label,
+      enabled: sfx[track.id]?.enabled === true,
+      volume: Number.isFinite(Number(sfx[track.id]?.volume)) ? Number(sfx[track.id].volume) : 0.5,
+    }));
+  }
+
+  setVinylSfxEnabled(id, enabled) {
+    this.#configRuntime.set(["CONFIG", "radio", "effects", "vinyl", "sfx", id, "enabled"], enabled === true);
+  }
+
+  setVinylSfxVolume(id, volume) {
+    const number = Number(volume);
+    if (!Number.isFinite(number)) return;
+    this.#configRuntime.set(["CONFIG", "radio", "effects", "vinyl", "sfx", id, "volume"], number);
   }
 
   #settings(group) {

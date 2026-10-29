@@ -224,6 +224,41 @@ export class RadioControlsRenderer {
           });
           groupContent.append(field.field);
         }
+
+        if (group.group === "vinyl" && typeof this.#tuning.getVinylSfxList === "function") {
+          const sfxSection = this.#dom.element("div", "radio-controls__sfx-section");
+          const sfxTitle = this.#dom.element("div", "radio-controls__sfx-title", "Семпли SFX (накладання аудіозаписів)");
+          sfxSection.append(sfxTitle);
+
+          const sfxList = this.#tuning.getVinylSfxList();
+          for (const track of sfxList) {
+            const row = this.#dom.element("div", "radio-controls__sfx-row");
+            const toggleLabel = this.#dom.element("label", "radio-controls__sfx-toggle");
+            const checkbox = this.#dom.element("input", "radio-controls__sfx-checkbox");
+            checkbox.type = "checkbox";
+            checkbox.checked = track.enabled;
+            checkbox.addEventListener("change", () => {
+              this.#tuning.setVinylSfxEnabled?.(track.id, checkbox.checked);
+            });
+            const name = this.#dom.element("span", "radio-controls__sfx-name", track.label);
+            toggleLabel.append(checkbox, name);
+
+            const volField = this.#dom.element("div", "radio-controls__sfx-volume-field");
+            const volSlider = this.#dom.element("input", "radio-controls__sfx-volume");
+            Object.assign(volSlider, { type: "range", min: "0", max: "1", step: "0.05" });
+            volSlider.value = String(track.volume);
+            const volVal = this.#dom.element("span", "radio-controls__tuning-value", String(track.volume));
+            volSlider.addEventListener("input", () => {
+              this.#tuning.setVinylSfxVolume?.(track.id, Number(volSlider.value));
+              this.#text(volVal, volSlider.value);
+            });
+            volField.append(volSlider, volVal);
+
+            row.append(toggleLabel, volField);
+            sfxSection.append(row);
+          }
+          groupContent.append(sfxSection);
+        }
       }
 
       groupEl.append(groupContent);

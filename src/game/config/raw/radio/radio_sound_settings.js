@@ -23,6 +23,32 @@ export const RADIO_SOUND_SETTINGS = {
       "noiseLevel": 0.15,
       "oldSpeaker": 0,
       "popLevel": 0.35,
+      "sfx": {
+        "vinyl-1": {
+          "enabled": false,
+          "volume": 0.5
+        },
+        "vinyl-2": {
+          "enabled": false,
+          "volume": 0.5
+        },
+        "vinyl-3": {
+          "enabled": false,
+          "volume": 0.5
+        },
+        "vinyl-4": {
+          "enabled": false,
+          "volume": 0.5
+        },
+        "vinyl-5": {
+          "enabled": false,
+          "volume": 0.5
+        },
+        "vinyl-6": {
+          "enabled": false,
+          "volume": 0.5
+        }
+      },
       "softVinyl": 0
     },
     "walkieTalkie": {

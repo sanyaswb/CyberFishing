@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.37 - Dedicated vinyl SFX overlay section with ready audio recordings
+
+- Radio / Vinyl: added dedicated SFX overlay section in DEV tuning with individual switches and volume sliders for 6 authentic vinyl audio recordings (`vinyl-1.mp3` through `vinyl-6.mp3`) seamlessly looped in Web Audio (TK-132).
+
 ## v0.48.36 - Independent blendable vintage character sliders and dynamic crackle density
 
 - Radio / Vinyl: made dry gramophone, worn speaker, and soft vinyl into independent blendable sliders with wider distortion/bandwidth ranges, and tied crackle and pop slider levels dynamically to both amplitude and click density (TK-131).
@@ -43,10 +47,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Inventory / Assembly: visual preview card now synchronizes with the active slot tab on swipe or tap, showing the equipped item card or the compartment icon for empty slots (TK-123).
 - Radio: default VOLIA 77.2 playlist begins with "Ефір ВОЛЯ 77.2" followed by "Чому з Купола тікають на Іржавий Шельф" (TK-123).
-
-## v0.48.27 - Radio channel switcher cleanup and continuous VOLIA 77.2 playback
-
-- Radio: removed custom channel button and functionality from UI/preferences; tracks on VOLIA 77.2 now transition seamlessly to the next song upon completion without intermission pause (TK-122).
 
 
 

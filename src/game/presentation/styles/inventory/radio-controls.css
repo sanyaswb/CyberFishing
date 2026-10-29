@@ -226,3 +226,63 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* TK-132: SFX overlay samples section inside vinyl tuning */
+.radio-controls__sfx-section {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(var(--ui-accent-rgb), 0.04);
+  border: 1px dashed rgba(var(--ui-accent-rgb), 0.25);
+  border-radius: var(--ui-radius-control);
+}
+
+.radio-controls__sfx-title {
+  color: var(--ui-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.radio-controls__sfx-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.radio-controls__sfx-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer;
+  color: var(--ui-text);
+  font-size: 11px;
+}
+
+.radio-controls__sfx-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-controls__sfx-checkbox {
+  accent-color: var(--ui-success);
+  flex: none;
+}
+
+.radio-controls__sfx-volume-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.5em;
+  align-items: center;
+  gap: 4px;
+}
+
+.radio-controls__sfx-volume {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--ui-accent);
+}
