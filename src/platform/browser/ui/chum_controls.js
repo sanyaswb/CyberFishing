@@ -4,9 +4,13 @@ const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "re
 
 export class ChumControls {
   #labels;
+  #documentRef;
+  #image = null;
+  #boatIconUrl = null;
 
   constructor(onClickCallback, { labels, documentRef = document, mountNode = documentRef.body } = {}) {
     this.#labels = labels;
+    this.#documentRef = documentRef;
     this.button = documentRef.createElement("button");
     this.button.className = "game-control chum-control game-toolbar-button game-toolbar-button--chum";
     this.button.type = "button";
@@ -34,7 +38,7 @@ export class ChumControls {
     mountNode.appendChild(this.button);
   }
 
-  setState(state, method = "hand", count = 0, isManual = false, isVisible = true) {
+  setState(state, method = "hand", count = 0, isManual = false, isVisible = true, boatIconUrl = null) {
 
     let text = "";
     if (state === "empty") {
@@ -59,6 +63,7 @@ export class ChumControls {
     if (
       this.currentState === state &&
       this.currentMethod === method &&
+      this.#boatIconUrl === boatIconUrl &&
       this.button.hidden === !isVisible &&
       this.button.innerText === text &&
       this.button.title === label
@@ -68,10 +73,33 @@ export class ChumControls {
 
     this.currentState = state;
     this.currentMethod = method;
+    this.#boatIconUrl = boatIconUrl;
     this.button.hidden = !isVisible;
-    this.button.innerText = text;
     this.button.title = label;
     this.button.setAttribute("aria-label", label);
+
+    if (method === "boat" && boatIconUrl && text === "🚤" && typeof this.#documentRef?.createElement === "function") {
+      if (!this.#image) {
+        this.#image = this.#documentRef.createElement("img");
+        this.#image.className = "chum-control__image";
+        this.#image.setAttribute("aria-hidden", "true");
+        this.#image.alt = "";
+      }
+      this.#image.src = boatIconUrl;
+      if (typeof this.button.replaceChildren === "function") {
+        this.button.replaceChildren(this.#image);
+      } else if (typeof this.button.appendChild === "function") {
+        if (typeof this.button.innerHTML === "string") this.button.innerHTML = "";
+        this.button.appendChild(this.#image);
+      } else {
+        this.button.innerText = text;
+      }
+    } else {
+      if (this.#image?.remove) {
+        this.#image.remove();
+      }
+      this.button.innerText = text;
+    }
 
     const visualState = CHUM_VISUAL_STATES.has(state)
       ? state

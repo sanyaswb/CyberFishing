@@ -62,6 +62,31 @@ export class InventoryItemTreeViewFactory {
     }
     const reelLineCapacity = this.#createReelLineCapacity(view);
     if (reelLineCapacity) view.reelLineCapacity = reelLineCapacity;
+    if (view.itemType === "boat" && view.skin?.equipment) {
+      const sections = Number(view.effectiveStats?.sections) || 3;
+      let loadedChums = 0;
+      for (let index = 0; index < sections; index += 1) {
+        if (this.#repository.getChild(raw.instanceId, "cargo", index)) {
+          loadedChums += 1;
+        }
+      }
+      const artwork = view.skin.equipment;
+      const fullyLoaded = loadedChums >= sections;
+      const targetUrl = fullyLoaded ? artwork.bait : artwork.noBait;
+      if (targetUrl) {
+        view.equipmentArtUrl = targetUrl;
+        view.iconUrl = targetUrl;
+        if (view.skin?.thumbnail) {
+          view.skin = {
+            ...view.skin,
+            thumbnail: {
+              ...view.skin.thumbnail,
+              src: targetUrl,
+            },
+          };
+        }
+      }
+    }
     const charge = this.#createDeviceCharge(view);
     if (charge) {
       view.charge = charge;

@@ -30,3 +30,11 @@
   opacity: 1;
   cursor: pointer;
 }
+
+.chum-control__image {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+

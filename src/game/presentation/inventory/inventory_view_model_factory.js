@@ -201,6 +201,7 @@ export class InventoryViewModelFactory {
           selectedRaw,
           uiState.highlightedEquipmentSlotId,
           Boolean(equipmentReadModel.line),
+          equipmentReadModel,
         ),
         assembly: this.#createAssemblyEditor(
           editingRootInstanceId,
@@ -244,6 +245,7 @@ export class InventoryViewModelFactory {
     selectedRaw,
     highlightedSlotId = null,
     hasLine = false,
+    equipmentReadModel = null,
   ) {
     const mainSlots = [];
     const auxiliarySlots = [];
@@ -261,6 +263,25 @@ export class InventoryViewModelFactory {
       // A skinned rod shows its whole artwork in its cell, with or without the equipped line (spec 071).
       const rodArtwork = slotId === "rod" ? equippedItem?.skin?.equipment : null;
       if (rodArtwork) equippedItem.equipmentArtUrl = hasLine ? rodArtwork.withLine : rodArtwork.withoutLine;
+      const boatArtwork = slotId === "delivery" ? equippedItem?.skin?.equipment : null;
+      if (boatArtwork) {
+        const loadedCount = (equipmentReadModel?.deliveryChums || []).filter(Boolean).length;
+        const fullyLoaded = loadedCount >= (Number(equippedItem.effectiveStats?.sections) || 3);
+        const targetUrl = fullyLoaded ? boatArtwork.bait : boatArtwork.noBait;
+        if (targetUrl) {
+          equippedItem.equipmentArtUrl = targetUrl;
+          equippedItem.iconUrl = targetUrl;
+          if (equippedItem.skin?.thumbnail) {
+            equippedItem.skin = {
+              ...equippedItem.skin,
+              thumbnail: {
+                ...equippedItem.skin.thumbnail,
+                src: targetUrl,
+              },
+            };
+          }
+        }
+      }
       const slot = {
         slotId,
         label: this.#equipmentLabel(slotId, rod, equippedItem),

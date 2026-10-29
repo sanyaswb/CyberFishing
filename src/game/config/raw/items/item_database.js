@@ -1070,6 +1070,25 @@ export const ITEM_DB = {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
       icon: "🚤",
+      iconUrl: "assets/items/boats/boat-lvl--3_no-bait.webp",
+      skin: {
+        id: "boat-lvl--3",
+        thumbnail: {
+          src: "assets/items/boats/boat-lvl--3_no-bait.webp",
+          visibleHeight: 1,
+          focusX: 0.5,
+          anchor: "center",
+        },
+        equipment: {
+          noBait: "assets/items/boats/boat-lvl--3_no-bait.webp",
+          bait: "assets/items/boats/boat-lvl--3_bait.webp",
+        },
+        animation: {
+          skeleton: "assets/animations/boats/boat-lvl--3.json",
+          atlas: "assets/animations/boats/boat-lvl--3.atlas",
+          skin: "skin_boat-lvl--3",
+        },
+      },
       itemType: "boat",
       rarityProfile: {
         mode: "authored",

@@ -1,5 +1,9 @@
 ├── assets
 │  ├── animations
+│  │  ├── boats
+│  │  │  ├── boat-lvl--3.atlas
+│  │  │  ├── boat-lvl--3.json
+│  │  │  └── boat-lvl--3.webp
 │  │  └── rods
 │  │     └── bamboo-rod-v1
 │  │        ├── rod.atlas
@@ -154,6 +158,9 @@
 │  │  │  ├── battery-volt--2.webp
 │  │  │  ├── battery-volt--3.webp
 │  │  │  └── battery-volt--4.webp
+│  │  ├── boats
+│  │  │  ├── boat-lvl--3_bait.webp
+│  │  │  └── boat-lvl--3_no-bait.webp
 │  │  ├── briefcases
 │  │  │  ├── briefcase--1--close.webp
 │  │  │  └── briefcase--1--open.webp

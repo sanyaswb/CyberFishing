@@ -141,6 +141,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "inventory", "gameplay"],
   },
   {
+    id: "bait-boat-inventory-visuals",
+    title: "Bait boat inventory visuals and chum controls icon (spec 150)",
+    file: "utils/checks/inventory/bait-boat-inventory-visuals-check.js",
+    suites: ["quick", "inventory"],
+  },
+  {
     id: "inventory-transaction",
     title: "Inventory transactions",
     file: "utils/checks/inventory/inventory-transaction-check.js",
