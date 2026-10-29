@@ -870,10 +870,9 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 21, "all parameters of vinyl sound are available");
-  assert.ok(plain(tuning.list()).some((entry) => entry.key === "wowHz" && entry.min === 0.1), "detailed vinyl wowHz parameter is available");
-  assert.deepEqual(plain(tuning.list()).slice(0, 7).map((entry) => entry.key),
-    ["mode", "crackleLevel", "crackleRate", "crackleToneHz", "popLevel", "popRate", "hissLevel"], "all vinyl parameters in tuning list");
+  assert.equal(plain(tuning.list()).length, 3, "3 core parameters of vinyl sound are available");
+  assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
+    ["warmth", "crackleLevel", "popLevel"], "3 vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -910,13 +909,13 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 21, "all 21 sliders of the enabled part (vinyl)");
+  assert.equal(sliders.length, 3, "all 3 sliders of the enabled part (vinyl)");
   assert.equal(sliders[1].value, "0.3");
   sliders[1].value = "0.2"; sliders[1].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
   assert.equal(byClass(block, "radio-controls__tuning-value")[1].textContent, "0.2");
-  sliders[0].value = "1"; sliders[0].fire("input");
-  assert.equal(radio.effects.vinyl.mode, 1, "the mode slider switches between sampled (0) and procedural (1)");
+  sliders[0].value = "7.5"; sliders[0].fire("input");
+  assert.equal(radio.effects.vinyl.warmth, 7.5, "warmth slider tunes the live parameter");
   switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");

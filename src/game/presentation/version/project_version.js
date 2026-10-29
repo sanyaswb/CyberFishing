@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.33";
+export const CURRENT_PROJECT_VERSION = "0.48.34";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-129: simplified vinyl effect to 3 core procedural parameters (warmth, crackle, pops) for focused testing.",
     "TK-128 (Spec 147): dual vinyl sound engine with sampled authentic recordings and dry procedural lo-fi vintage turntable mode.",
     "TK-127: restored previous vinyl record sound effect and configuration (reverted TK-126).",
     "TK-126: complete vinyl sound rework, expressive crackle and clicks, unified warmth control, and tonearm needle drop cueing (reverted).",

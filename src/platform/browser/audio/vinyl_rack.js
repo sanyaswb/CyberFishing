@@ -112,41 +112,44 @@ export class VinylRack {
     const node = this.#nodes;
     if (!node) return;
 
-    // TK-128: Mode 0 = Sampled authentic vinyl, Mode 1 = Procedural lo-fi vintage turntable
-    const mode = Number(settings.mode) === 1 ? 1 : 0;
-    const modeChanged = this.#applied.mode !== mode;
-    this.#applied.mode = mode;
+    // TK-129: simplified to 3 core procedural parameters: warmth (0..10), crackleLevel (0..1), popLevel (0..1).
+    // Backward-compatible with granular settings if explicitly provided.
+    const warmth = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0)));
+    const w = warmth / 10;
 
     const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
     const wowHz = Math.max(0, finiteOr(settings.wowHz, 0.55));
     const flutterHz = Math.max(0, finiteOr(settings.flutterHz, 6.5));
-    const flutterDepthMs = Math.max(0, finiteOr(settings.flutterDepthMs, 0.15));
+    const flutterDepthMs = settings.flutterDepthMs !== undefined
+      ? Math.max(0, finiteOr(settings.flutterDepthMs, 0.15))
+      : 0.05 + w * 0.25;
+    const wowDepthMs = settings.wowDepthMs !== undefined
+      ? Math.max(0, finiteOr(settings.wowDepthMs, 1.2))
+      : 0.4 + w * 1.8;
 
     this.#param("baseDelayMs", node.delay.delayTime, baseDelayMs / 1000);
     this.#param("wowHz", node.wowOsc.frequency, wowHz);
     this.#param("flutterHz", node.flutterOsc.frequency, flutterHz);
     this.#param("flutterDepthMs", node.flutterDepth.gain, flutterDepthMs / 1000);
-
-    let highpassHz = finiteOr(settings.highpassHz, 35);
-    let warmthHz = finiteOr(settings.warmthHz, 150);
-    let warmthGainDb = finiteOr(settings.warmthGainDb, 2.5);
-    let lowpassHz = finiteOr(settings.lowpassHz, 9000);
-    let drive = Math.max(0, finiteOr(settings.drive, 3));
-    let wowDepthMs = Math.max(0, finiteOr(settings.wowDepthMs, 1.2));
-    let lofiResonanceDb = 0;
-
-    if (mode === 1) {
-      // Procedural lo-fi vintage turntable: dry, band-limited without crisp details, warm boxy tone
-      highpassHz = Math.max(80, highpassHz);
-      warmthHz = 220;
-      warmthGainDb = Math.max(4.0, warmthGainDb + 2.0);
-      lofiResonanceDb = 3.5; // boxy/horn resonance
-      lowpassHz = Math.min(4200, lowpassHz); // steep roll-off above 4 kHz
-      drive = Math.max(4.0, drive + 1.5); // vintage lo-fi saturation
-      wowDepthMs = Math.max(1.8, wowDepthMs); // mechanical pitch flutter
-    }
-
     this.#param("wowDepthMs", node.wowDepth.gain, wowDepthMs / 1000);
+
+    const highpassHz = settings.highpassHz !== undefined
+      ? finiteOr(settings.highpassHz, 35)
+      : Math.round(25 + w * 65);
+    const warmthHz = settings.warmthHz !== undefined
+      ? finiteOr(settings.warmthHz, 150)
+      : 200;
+    const warmthGainDb = settings.warmthGainDb !== undefined
+      ? finiteOr(settings.warmthGainDb, 2.5)
+      : w * 6.0;
+    const lowpassHz = settings.lowpassHz !== undefined
+      ? finiteOr(settings.lowpassHz, 9000)
+      : Math.round(12000 - w * 8800);
+    const lofiResonanceDb = w * 4.5;
+    const drive = settings.drive !== undefined
+      ? Math.max(0, finiteOr(settings.drive, 3))
+      : 1.0 + w * 4.0;
+
     this.#param("highpassHz", node.highpass.frequency, highpassHz);
     this.#param("warmthHz", node.warmth.frequency, warmthHz);
     this.#param("warmthGainDb", node.warmth.gain, warmthGainDb);
@@ -161,41 +164,37 @@ export class VinylRack {
     this.#param("makeup", node.makeup.gain,
       (1 / Math.max(1e-6, WalkieTalkieRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
 
-    // Surface sound routing and levels
+    // Surface sound routing and levels: rich, distinct crackle, pops, and groove texture
     const crackleLevel = Math.max(0, finiteOr(settings.crackleLevel, 0.12));
     const popLevel = Math.max(0, finiteOr(settings.popLevel, 0.35));
-    const hissLevel = Math.max(0, finiteOr(settings.hissLevel, 0.006));
-    const rumbleLevel = Math.max(0, finiteOr(settings.rumbleLevel, 0.02));
+    const hissLevel = settings.hissLevel !== undefined
+      ? finiteOr(settings.hissLevel, 0.006)
+      : crackleLevel * 0.04;
+    const rumbleLevel = settings.rumbleLevel !== undefined
+      ? finiteOr(settings.rumbleLevel, 0.02)
+      : crackleLevel * 0.05;
 
-    this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 2500));
-    this.#param("crackleLevel", node.crackle.gain, crackleLevel);
-    this.#param("popLevel", node.pops.gain, popLevel);
+    this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 2800));
+    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 1.6);
+    this.#param("popLevel", node.pops.gain, popLevel * 1.5);
     this.#param("hissLevel", node.hiss.gain, hissLevel);
     this.#param("rumbleHz", node.rumbleTone.frequency, Math.max(1, finiteOr(settings.rumbleHz, 30)));
     this.#param("rumbleLevel", node.rumble.gain, rumbleLevel);
 
-    const crackleRate = Math.max(0, finiteOr(settings.crackleRate, 6));
+    const crackleRate = Math.max(0, finiteOr(settings.crackleRate, 4 + crackleLevel * 14));
     if (this.#applied.crackleRate !== crackleRate) {
       this.#loop("crackle", this.#clickBuffer(crackleRate, 0.002), node.crackleTone);
       this.#applied.crackleRate = crackleRate;
     }
-    const popRate = Math.max(0, finiteOr(settings.popRate, 0.25));
+    const popRate = Math.max(0, finiteOr(settings.popRate, 0.2 + popLevel * 1.2));
     if (this.#applied.popRate !== popRate) {
       this.#loop("pops", this.#clickBuffer(popRate, 0.006), node.pops);
       this.#applied.popRate = popRate;
     }
 
-    // Toggle surface routing between Sampled (mode 0) and Procedural (mode 1)
-    if (mode === 0) {
-      this.#param("sampledGain", node.sampledSurface.gain, crackleLevel * 2.2);
-      this.#param("proceduralGain", node.proceduralSurface.gain, 0);
-      if (this.#sampledSurfaceBuffer && !this.#sampledSurfaceSource) {
-        this.#startSampledSurface();
-      }
-    } else {
-      this.#param("sampledGain", node.sampledSurface.gain, 0);
-      this.#param("proceduralGain", node.proceduralSurface.gain, 1);
-    }
+    // TK-129: Procedural surface noise active
+    this.#param("sampledGain", node.sampledSurface.gain, 0);
+    this.#param("proceduralGain", node.proceduralSurface.gain, 1);
 
     const enabled = settings.enabled !== false;
     this.#applied.enabled = enabled;
@@ -214,32 +213,10 @@ export class VinylRack {
     }
   }
 
-  // TK-126/128: Tonearm needle drop cueing
+  // TK-126/128/129: Tonearm needle drop cueing
   cueTonearm() {
     if (!this.#context || !this.#nodes) return;
     if (this.#applied.enabled === false || this.#applied.mix === 0) return;
-    const now = Number(this.#context.currentTime) || 0;
-
-    // Mode 0: play genuine recorded tonearm touchdown & groove squeak if loaded
-    if (this.#applied.mode === 0 && this.#sampledNeedleDropBuffer) {
-      try {
-        const source = this.#context.createBufferSource();
-        this.#cueSources.add(source);
-        source.buffer = this.#sampledNeedleDropBuffer;
-        source.connect(this.#nodes.wet);
-        // Play touchdown segment from 0.8s
-        source.start(now, 0.8, 3.2);
-        source.onended = () => {
-          source.disconnect?.();
-          this.#cueSources.delete(source);
-        };
-        return;
-      } catch {
-        // Fall back to procedural cue if playback fails
-      }
-    }
-
-    // Mode 1 (or fallback): procedural landing thump, lead-in squeak and crackle flurry
     try {
       const buffer = this.#cueBuffer();
       const source = this.#context.createBufferSource();
@@ -393,7 +370,7 @@ export class VinylRack {
       const t = i / rate;
       const freq = 75 - t * 300;
       const env = Math.exp(-t / 0.022);
-      data[i] += Math.sin(2 * Math.PI * freq * t) * env * 0.5;
+      data[i] += Math.sin(2 * Math.PI * freq * t) * env * 0.7;
     }
 
     // 2. Stylus friction squeak / chirp into the groove (0.02..0.22s)
@@ -405,19 +382,19 @@ export class VinylRack {
       const norm = t / squeakDuration;
       const freq = 1350 - norm * 650;
       const env = Math.sin(Math.PI * norm) * Math.exp(-norm * 1.2);
-      const squeak = (Math.sin(2 * Math.PI * freq * t) + 0.35 * Math.sin(4 * Math.PI * freq * t)) * env * 0.35;
+      const squeak = (Math.sin(2 * Math.PI * freq * t) + 0.35 * Math.sin(4 * Math.PI * freq * t)) * env * 0.55;
       data[squeakStart + i] += squeak;
     }
 
     // 3. Dense flurry of crackles and pops on landing (0..0.45s)
-    const burstCount = 20;
+    const burstCount = 25;
     for (let b = 0; b < burstCount; b += 1) {
       const clickStart = Math.floor(this.#rng.next() * length * 0.95);
       const sign = this.#rng.next() < 0.5 ? -1 : 1;
       const amplitude = (0.5 + this.#rng.next() * 0.5) * sign;
       const decay = Math.max(1, Math.floor((0.001 + this.#rng.next() * 0.003) * rate));
       for (let offset = 0; offset < decay * 4 && clickStart + offset < length; offset += 1) {
-        data[clickStart + offset] += amplitude * Math.exp(-offset / decay) * (offset % 2 === 0 ? 1 : -0.7) * 0.4;
+        data[clickStart + offset] += amplitude * Math.exp(-offset / decay) * (offset % 2 === 0 ? 1 : -0.7) * 0.55;
       }
     }
 
