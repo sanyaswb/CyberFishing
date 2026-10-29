@@ -238,10 +238,14 @@ export class ChumController {
     if (this.#isAiming && method === "boat") {
       const bounds = this.#getDynamicBounds();
       const rodPos = this.#getRodVirtualPos(bounds);
+      const boatUi = this.#config.ui?.boat || {};
+      const baseX = boatUi.x === "center" ? (bounds.left + bounds.right) / 2 : typeof boatUi.x === "number" ? boatUi.x : rodPos.x;
+      const startX = baseX + (Number(boatUi.xOffset) || 0);
+      const startY = bounds.bottom + (boatUi.yOffset !== undefined ? Number(boatUi.yOffset) : -5);
 
       this.#activeBoat = this.#chum.spawnIdleBoat(
-        rodPos.x,
-        bounds.bottom - 5,
+        startX,
+        startY,
         eq.delivery,
         eq.deliveryBattery?.instanceId || null,
       );
@@ -276,6 +280,22 @@ export class ChumController {
 
     const eq = this.#inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
+
+    if (method === "boat" && this.#activeBoat && this.#activeBoat.state === "idle") {
+      const rodPos = this.#getRodVirtualPos(bounds);
+      const boatUi = this.#config.ui?.boat || {};
+      const baseX = boatUi.x === "center" ? (bounds.left + bounds.right) / 2 : typeof boatUi.x === "number" ? boatUi.x : rodPos.x;
+      const startX = baseX + (Number(boatUi.xOffset) || 0);
+      const startY = bounds.bottom + (boatUi.yOffset !== undefined ? Number(boatUi.yOffset) : -5);
+      if (this.#activeBoat.pos) {
+        this.#activeBoat.pos.x = startX;
+        this.#activeBoat.pos.y = startY;
+      }
+      if (this.#activeBoat.startPos) {
+        this.#activeBoat.startPos.x = startX;
+        this.#activeBoat.startPos.y = startY;
+      }
+    }
 
     if (method === "hand" && this.#config.casting?.enabled !== false) {
       this.#handleHandPowerAiming(input, bounds, dt);

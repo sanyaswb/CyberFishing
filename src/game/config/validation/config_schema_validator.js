@@ -61,6 +61,7 @@ export class ConfigSchemaValidator {
     this.#validateRarityConfig();
     this.#validateLiveBaitConfig();
     this.#validateRodSpineConfig();
+    this.#validateBoatUiConfig();
     for (const issue of InventorySelectorConfigValidator.issues(this.config.ui?.inventorySelector)) {
       this.#error("CONFIG.ui.inventorySelector", issue);
     }
@@ -518,6 +519,26 @@ export class ConfigSchemaValidator {
     if (typeof cfg.windRainTimeScale !== "boolean") this.#error(`${path}.windRainTimeScale`, "expected boolean");
     if (!["tension", "rodStress"].includes(cfg.bendSource)) {
       this.#error(`${path}.bendSource`, `expected "tension" or "rodStress", got ${cfg.bendSource}`);
+    }
+  }
+
+  // The bait boat presentation and spawn offsets (spec 150).
+  #validateBoatUiConfig() {
+    const cfg = this.config.ui?.boat;
+    if (cfg === undefined) return;
+    const path = "CONFIG.ui.boat";
+    if (!cfg || typeof cfg !== "object") { this.#error(path, "must be an object"); return; }
+    if (cfg.displayScale !== undefined) {
+      this.#requireFiniteNumber(`${path}.displayScale`, cfg.displayScale, { min: 0.01, max: 5 });
+    }
+    if (cfg.x !== undefined && typeof cfg.x !== "number" && !["rod", "center"].includes(cfg.x)) {
+      this.#error(`${path}.x`, 'must be "rod", "center" or a finite number');
+    }
+    if (cfg.xOffset !== undefined) {
+      this.#requireFiniteNumber(`${path}.xOffset`, cfg.xOffset, { min: -2000, max: 2000 });
+    }
+    if (cfg.yOffset !== undefined) {
+      this.#requireFiniteNumber(`${path}.yOffset`, cfg.yOffset, { min: -2000, max: 2000 });
     }
   }
 

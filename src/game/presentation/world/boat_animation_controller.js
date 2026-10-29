@@ -24,6 +24,10 @@ export class BoatAnimationController {
   #clipTimer = 0;
   #openedSections = new Set();
   #lightsActive = null;
+  #spineEnabled = true;
+  #disabledClips = new Set();
+  #boneEdits = new Map();
+  #reason = null;
 
   constructor({
     loadBundle,
@@ -55,6 +59,8 @@ export class BoatAnimationController {
     this.#load?.release();
     this.#load = null;
     this.#openedSections.clear();
+    this.#boneEdits.clear();
+    this.#reason = null;
     this.#currentClip = "";
     this.#clipTimer = 0;
 
@@ -71,7 +77,7 @@ export class BoatAnimationController {
 
   advance(boat, context = {}) {
     const scene = this.#scene;
-    if (!scene || this.#disposed || this.#glSurface.isContextLost()) {
+    if (!scene || this.#disposed || !this.#spineEnabled || this.#glSurface.isContextLost()) {
       return null;
     }
 
@@ -103,10 +109,12 @@ export class BoatAnimationController {
       if (this.#currentClip !== targetClip) {
         this.#currentClip = targetClip;
         this.#clipTimer = 0;
-        if (isLoop) {
-          scene.setLoop(0, targetClip, 0.1);
-        } else {
-          scene.setAnimation?.(0, targetClip, false, 0.1) || scene.setLoop(0, targetClip, 0.1);
+        if (!this.#disabledClips.has(targetClip)) {
+          if (isLoop) {
+            scene.setLoop(0, targetClip, 0.1);
+          } else {
+            scene.setAnimation?.(0, targetClip, false, 0.1) || scene.setLoop(0, targetClip, 0.1);
+          }
         }
       }
       this.#clipTimer += dtSec;
@@ -147,6 +155,79 @@ export class BoatAnimationController {
     return this.#scene;
   }
 
+  // DEV port (spec 150, DevTools "SPINE" -> "SPINE_BOAT")
+  setSpineEnabled(enabled) {
+    this.#spineEnabled = enabled !== false;
+  }
+
+  isSpineEnabled() {
+    return this.#spineEnabled;
+  }
+
+  getStatus() {
+    return {
+      mode: this.#scene && this.#spineEnabled && !this.#glSurface.isContextLost() ? "spine" : "fallback (emoji)",
+      reason: this.#reason,
+      missingClips: this.#scene?.getMissingClips?.() ?? [],
+      mipmapped: this.#scene?.isMipmapped?.() ?? false,
+      currentClip: this.#currentClip,
+      lightsActive: this.#lightsActive === true,
+    };
+  }
+
+  getClips() {
+    return (this.#scene?.getClips?.() ?? []).map((clip) => ({
+      ...clip,
+      enabled: !this.#disabledClips.has(clip.name),
+    }));
+  }
+
+  setClipEnabled(clipName, enabled) {
+    if (enabled === false) this.#disabledClips.add(String(clipName));
+    else this.#disabledClips.delete(String(clipName));
+  }
+
+  getBones() {
+    return this.#scene?.getBones?.() ?? [];
+  }
+
+  setBoneSetup(boneName, values) {
+    if (!this.#scene?.setBoneSetup?.(boneName, values)) return false;
+    const bone = this.#scene.getBones().find((entry) => entry.name === boneName);
+    if (bone) {
+      this.#boneEdits.set(boneName, { x: bone.x, y: bone.y, rotation: bone.rotation, scaleX: bone.scaleX, scaleY: bone.scaleY });
+    }
+    return true;
+  }
+
+  getBoneEdits() {
+    return Object.fromEntries(this.#boneEdits);
+  }
+
+  exportSkeleton() {
+    if (!this.#bundle?.skeleton) return null;
+    const path = this.#descriptor.skeleton;
+    return {
+      fileName: path ? path.slice(path.lastIndexOf("/") + 1) : "boat-lvl--3.json",
+      text: JSON.stringify(this.#editedSkeleton(), null, 2),
+    };
+  }
+
+  #editedSkeleton() {
+    if (!this.#bundle?.skeleton) return null;
+    const json = JSON.parse(JSON.stringify(this.#bundle.skeleton));
+    const defaults = { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
+    for (const [boneName, values] of this.#boneEdits) {
+      const bone = json.bones?.find((entry) => entry.name === boneName);
+      if (!bone) continue;
+      for (const [key, value] of Object.entries(values)) {
+        if (value === defaults[key]) delete bone[key];
+        else bone[key] = value;
+      }
+    }
+    return json;
+  }
+
   dispose() {
     if (this.#disposed) return;
     this.#disposed = true;
@@ -160,6 +241,7 @@ export class BoatAnimationController {
   async #onBundle(generation, outcome) {
     if (generation !== this.#generation) return;
     if (outcome.status !== "ready") {
+      this.#reason = outcome.reason ?? outcome.status;
       this.#replaceScene(null);
       return;
     }
@@ -167,13 +249,15 @@ export class BoatAnimationController {
     const runtimeOutcome = await this.#loadRuntime(outcome.bundle.version);
     if (generation !== this.#generation) return;
     if (runtimeOutcome.status !== "ready") {
+      this.#reason = runtimeOutcome.reason ?? "runtime-not-ready";
       this.#replaceScene(null);
       return;
     }
-    const { scene } = runtimeOutcome.createScene({
+    const { scene, reason } = runtimeOutcome.createScene({
       bundle: outcome.bundle,
       surface: this.#glSurface,
     });
+    this.#reason = reason ?? null;
     this.#replaceScene(scene);
   }
 

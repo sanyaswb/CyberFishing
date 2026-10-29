@@ -495,7 +495,8 @@ export class GameCompositionRoot {
       projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-      gameTimeClock, rodAnimation: rodAnimation.controller, scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
+      gameTimeClock, rodAnimation: rodAnimation.controller, boatAnimation: boatAnimation.controller,
+      scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
     await this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
@@ -937,7 +938,7 @@ export class GameCompositionRoot {
     projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-    gameTimeClock, rodAnimation, scene,
+    gameTimeClock, rodAnimation, boatAnimation, scene,
   }) {
     const uiLogger = new ConsoleLogger();
     // Spec 143: battery consumption; pending consumption is written when the page hides or closes.
@@ -970,8 +971,9 @@ export class GameCompositionRoot {
             itemProgressionResolver,
             // DEV item grant; DevTools exist only in Development, so production never calls it.
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
-            // DEV Spine section (spec 099 Phase 4): the rod controller's DEV port.
-            rodSpine: rodAnimation,
+            // DEV Spine section (spec 099 Phase 4, spec 150): rod and boat controllers' DEV ports.
+            rodSpine: rodAnimation.controller ?? rodAnimation,
+            boatSpine: boatAnimation.controller ?? boatAnimation,
             // DEV radio section (spec 142): status and discharging through the ordinary consumption path.
             radio: {
               getStatus: () => systems.radio.getStatus(),

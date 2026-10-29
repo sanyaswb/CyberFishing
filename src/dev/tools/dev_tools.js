@@ -3,6 +3,7 @@ import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_t
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
+import { SpineBoatDevSection } from "./spine_boat_dev_section.js";
 import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
 import { ZoneEditorSection } from "./zone_editor_section.js";
 
@@ -25,6 +26,7 @@ export class DevTools {
   #itemProgressionResolver;
   #grantCatalogItem;
   #rodSpine;
+  #boatSpine;
   #radio;
   #scene;
   #zoneEditorState;
@@ -76,6 +78,7 @@ export class DevTools {
       itemProgressionResolver = null,
       grantCatalogItem = null,
       rodSpine = null,
+      boatSpine = null,
       radio = null,
       scene = null,
       zoneEditorState = null,
@@ -133,6 +136,7 @@ export class DevTools {
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
     this.#rodSpine = rodSpine;
+    this.#boatSpine = boatSpine;
     this.#radio = radio;
     this.#scene = scene;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
@@ -220,7 +224,11 @@ export class DevTools {
     }
 
     this.#renderDatabaseSection(body);
-    if (this.#rodSpine) this.#renderSpineRodSection(this.#createSectionWithCache("SPINE", body, ["SPINE"]));
+    if (this.#rodSpine || this.#boatSpine) {
+      const spineSection = this.#createSectionWithCache("SPINE", body, ["SPINE"]);
+      if (this.#rodSpine) this.#renderSpineRodSection(spineSection);
+      if (this.#boatSpine) this.#renderSpineBoatSection(spineSection);
+    }
     if (this.#radio) {
       new RadioDevSection({ ui: this.#ui, radio: this.#radio,
         createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
@@ -577,6 +585,17 @@ export class DevTools {
       controller: this.#rodSpine,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
       renderConfigTree: (parent) => this.#buildTree(this.#config.ui.rod.spine, parent, ["CONFIG", "ui", "rod", "spine"]),
+    }).render(body);
+  }
+
+  // DEV Spine boat section (spec 150 TK-145) over the boat controller's DEV port.
+  #renderSpineBoatSection(body) {
+    if (!this.#boatSpine) return;
+    new SpineBoatDevSection({
+      ui: this.#ui,
+      controller: this.#boatSpine,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (parent) => this.#buildTree(this.#config.ui.boat, parent, ["CONFIG", "ui", "boat"]),
     }).render(body);
   }
 

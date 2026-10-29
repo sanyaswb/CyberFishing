@@ -18,7 +18,7 @@ export class SpineRodDevSection {
   // collapsible state and the live config editor.
   constructor({ ui, controller, createSection, renderConfigTree, documentRef = document, windowRef = window }) {
     this.#ui = ui;
-    this.#controller = controller;
+    this.#controller = controller?.controller ?? controller;
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
     this.#documentRef = documentRef;

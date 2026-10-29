@@ -120,8 +120,10 @@ export class BoatChumRenderFrameBuilder {
       record.barWidth = 40 * scale * this.#projector.getScale();
       record.barHeight = 4 * scale * this.#projector.getScale();
       record.barY = -fontSize / 1.5;
+      const boatUi = this.#config.ui?.boat || {};
+      const boatScale = Number(boatUi.displayScale) > 0 ? Number(boatUi.displayScale) : 0.20;
       record.view = anim?.view ?? null;
-      record.viewScale = scale * this.#projector.getScale() * 0.20;
+      record.viewScale = scale * this.#projector.getScale() * boatScale;
       record.animClip = anim?.clip ?? "";
       record.animTimer = anim?.clipTimer ?? 0;
       this.#buildSensors(target, boat);

@@ -46,6 +46,7 @@ async function checkAnimationController() {
   const visibleSlots = new Map();
   let currentTrackAnimation = null;
   let currentLoop = false;
+  const fakeBone = { name: "root", x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
 
   const fakeScene = {
     setLoop(track, clip) {
@@ -60,6 +61,19 @@ async function checkAnimationController() {
     setSlotVisible(slot, visible) {
       visibleSlots.set(slot, visible);
     },
+    getClips() {
+      return [{ name: "boat3--immersion", duration: 1.25 }];
+    },
+    getBones() {
+      return [fakeBone];
+    },
+    setBoneSetup(name, values) {
+      if (fakeBone.name === name) {
+        Object.assign(fakeBone, values);
+        return true;
+      }
+      return false;
+    },
     setPlacement() {},
     update() {},
     getView() { return {}; },
@@ -72,7 +86,7 @@ async function checkAnimationController() {
   };
 
   const controller = new BoatAnimationController({
-    loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26" } }) }),
+    loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26", skeleton: { bones: [{ name: "root" }] } } }) }),
     loadRuntime: () => Promise.resolve({ status: "ready", createScene: () => ({ scene: fakeScene }) }),
     glSurface: fakeGlSurface,
   });
@@ -111,6 +125,24 @@ async function checkAnimationController() {
   for (const slot of BOAT_LIGHT_SLOTS) {
     assert.equal(visibleSlots.get(slot), false, "night light off during day");
   }
+
+  // 5. DEV methods
+  assert.equal(controller.isSpineEnabled(), true);
+  const status = controller.getStatus();
+  assert.equal(status.mode, "spine");
+  assert.equal(controller.getClips().length, 1);
+  controller.setClipEnabled("boat3--immersion", false);
+  assert.equal(controller.getClips()[0].enabled, false);
+  assert.equal(controller.getBones().length, 1);
+  assert.equal(controller.setBoneSetup("root", { x: 5 }), true);
+  assert.equal(controller.getBoneEdits().root.x, 5);
+  assert.ok(controller.exportSkeleton()?.fileName?.includes("boat-lvl--3.json"));
+
+  controller.setSpineEnabled(false);
+  assert.equal(controller.isSpineEnabled(), false);
+  assert.equal(controller.getStatus().mode, "fallback (emoji)");
+  assert.equal(controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [] }, { dtSec: 0.1 }), null);
+  controller.setSpineEnabled(true);
 }
 
 async function checkBoatRenderPipeline() {
@@ -241,10 +273,68 @@ async function checkBoatRenderPipeline() {
   assert.equal(fakeBoatView.rotation, 0 - Math.PI / 2);
 }
 
+async function checkDevToolsAndBoatConfig() {
+  const { CONFIG } = await import("../../../src/game/config/runtime/game_config.js");
+  const { SpineBoatDevSection } = await import("../../../src/dev/tools/spine_boat_dev_section.js");
+
+  assert.ok(CONFIG.ui?.boat, "CONFIG.ui.boat must exist");
+  assert.equal(typeof CONFIG.ui.boat.displayScale, "number");
+  assert.equal(typeof CONFIG.ui.boat.x, "string");
+  assert.equal(typeof CONFIG.ui.boat.xOffset, "number");
+  assert.equal(typeof CONFIG.ui.boat.yOffset, "number");
+
+  const createdElements = [];
+  const fakeUi = {
+    createInfoRow(label, value, parent) {
+      createdElements.push({ type: "info", label, value });
+    },
+    createSwitcherRow(label, initialValue, parent, onChange) {
+      createdElements.push({ type: "switcher", label, initialValue, onChange });
+    },
+    createButtonRow(label, parent, onClick) {
+      createdElements.push({ type: "button", label, onClick });
+    },
+    createSelectRow(label, options, selected, parent, onChange) {
+      createdElements.push({ type: "select", label, options, selected, onChange });
+    },
+    createInputRow(label, value, parent, onChange) {
+      createdElements.push({ type: "input", label, value, onChange });
+    },
+    createRangeRow(label, options, parent, onChange) {
+      createdElements.push({ type: "range", label, onChange });
+    },
+  };
+
+  const fakeController = {
+    exportSkeleton: () => ({ fileName: "boat-lvl--3.json", skeleton: {} }),
+    getStatus: () => ({ mode: "spine", mipmapped: false, currentClip: "boat3--immersion", lightsActive: false }),
+    isSpineEnabled: () => true,
+    setSpineEnabled: () => {},
+    getClips: () => [{ name: "boat3--immersion", duration: 1.25, enabled: true }],
+    setClipEnabled: () => {},
+    getBones: () => [{ name: "root", parent: null, x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 }],
+    setBoneSetup: () => true,
+    getBoneEdits: () => ({}),
+  };
+
+  let renderedConfigTree = false;
+  const section = new SpineBoatDevSection({
+    ui: fakeUi,
+    controller: fakeController,
+    createSection: (label, parent, path) => ({ label, path, replaceChildren() {} }),
+    renderConfigTree: (parent) => { renderedConfigTree = true; },
+  });
+
+  section.render({});
+  assert.ok(createdElements.length > 0, "SpineBoatDevSection creates UI rows");
+  assert.equal(renderedConfigTree, true, "SpineBoatDevSection renders config tree for CONFIG.ui.boat");
+}
+
 async function run() {
   await checkBoatStateFlow();
   await checkAnimationController();
   await checkBoatRenderPipeline();
+  await checkDevToolsAndBoatConfig();
 }
 
 run().then(() => {

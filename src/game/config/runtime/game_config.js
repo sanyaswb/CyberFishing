@@ -604,6 +604,14 @@ export const CONFIG = {
       },
     },
 
+    // The bait boat on the water (spec 150): display scale and initial deployment coordinate offsets.
+    boat: {
+      displayScale: 0.2,
+      x: "rod",
+      xOffset: 0,
+      yOffset: -5,
+    },
+
     hudStyles: {
       bars: {
         layout: {

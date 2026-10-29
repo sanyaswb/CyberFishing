@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.50 - Bait boat size and initial coordinates DevTools tuning and live water updates
+
+- DevTools / Spine: added `SpineBoatDevSection` in DevTools under the "SPINE" category with live config tuning for `CONFIG.ui.boat` (`displayScale`, `x`, `xOffset`, `yOffset`), Spine switcher, clip and bone editors, and skeleton JSON export (Spec 150 / TK-145).
+- Delivery / Chum: wired `CONFIG.ui.boat` display scale into `BoatChumRenderFrameBuilder` and initial coordinates/offsets into `ChumController`, enabling real-time visual repositioning of parked idle boats at shore when sliders are adjusted (TK-145).
+- Config / Metadata: added `ui.boat` schema validation to `ConfigSchemaValidator` and localized labels for DevTools parameter inspection (TK-145).
+
 ## v0.48.49 - Bait boat lvl3 Spine animation, night lights, and door opening logic
 
 - Delivery / Animation: integrated Level 3 bait boat Spine skeletal animation (`boat-lvl--3.json`) across immersion, move start/loop, and sequential hopper bay door opening (`boat3--open-section-1..3`) (Spec 150 / TK-142, TK-143).
@@ -49,7 +55,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio / Vinyl: silenced all vinyl synthesizers, SFX loops, and needle cues when the radio is powered off or paused via dedicated effects gate and active state suppression (TK-135).
 - Radio / Vinyl: recalibrated Track 3 parameter ranges for unmistakable acoustic impact on mobile transducers: wow expanded to 16ms depth (~90 cents pitch sway), tonal warmth down to 4.2 kHz cutoff with +8 dB warmth, and asymmetric saturation boosted with pre-gain (TK-135).
-
-## v0.48.40 - Physical acoustic vinyl synthesizer with 3-track DSP architecture
-
-- Radio / Vinyl: upgraded procedural vinyl synthesizer to a physical 3-track DSP architecture with independent controls for Track 1 (mechanical rumble 10-60 Hz and filtered surface noise 300-8k Hz), Track 2 (scratch pops with 16 kHz cantilever ringing and micro-crackle), and Track 3 (program material with sub-bass cut, MM cartridge peak, 2nd-harmonic asymmetric saturation, inner groove distortion, and 33⅓ rpm wow & flutter) (Spec 148 / TK-134).
