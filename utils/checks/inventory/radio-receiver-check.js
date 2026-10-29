@@ -509,40 +509,41 @@ async function stageThree() {
   const { VinylRack } = runtime.importModule("src/platform/browser/audio/vinyl_rack.js");
   let draw = 0;
   const vinyl = new VinylRack({ rng: { next: () => { draw = (draw + 0.37) % 1; return draw; } } }).build(context);
-  const vinylSettings = { enabled: true, mix: 1, highpassHz: 35, warmthHz: 150, warmthGainDb: 2.5, lowpassHz: 9000,
-    drive: 3, outputGain: 1, baseDelayMs: 6, wowHz: 0.55, wowDepthMs: 1.2, flutterHz: 6.5, flutterDepthMs: 0.15,
-    crackleRate: 6, crackleLevel: 0.12, crackleToneHz: 2500, popRate: 0.25, popLevel: 0.35, hissLevel: 0.006,
-    rumbleHz: 30, rumbleLevel: 0.02 };
+  const vinylSettings = { enabled: true, mix: 1, warmth: 5, crackleLevel: 0.12, crackleRate: 18, popLevel: 0.4, popRate: 1.5, outputGain: 1 };
   vinyl.update(vinylSettings, 0.03);
   const byKind = (kind) => made.filter((entry) => entry.kind === kind);
   const [delay] = byKind("delay");
   const [wow, flutter] = byKind("oscillator");
   assert.equal(delay.delayTime.value, 0.006, "the record plays through a short delay");
-  assert.deepEqual([wow.frequency.value, flutter.frequency.value], [0.55, 6.5], "wow and flutter rates");
+  assert.deepEqual([wow.frequency.value, flutter.frequency.value], [0.55, 6.0], "wow and flutter rates");
   const wowDepth = made.find((entry) => wow.to.includes(entry));
   const flutterDepth = made.find((entry) => flutter.to.includes(entry));
   assert(wowDepth.to.includes(delay.delayTime) && flutterDepth.to.includes(delay.delayTime), "both sway the delay time");
-  assert(Math.abs(wowDepth.gain.value - 0.0012) < 1e-12 && Math.abs(flutterDepth.gain.value - 0.00015) < 1e-12,
+  assert(Math.abs(wowDepth.gain.value - 0.001) < 1e-12 && Math.abs(flutterDepth.gain.value - 0.0001) < 1e-12,
     "by their depths in seconds");
   assert(wow.started === 1 && flutter.started === 1, "the oscillators run");
   const filters = byKind("biquad");
   assert.deepEqual(filters.slice(0, 3).map((entry) => [entry.type, entry.frequency.value]),
-    [["highpass", 35], ["lowshelf", 150], ["lowpass", 9000]], "rumble filter, warmth, old top end");
-  assert.equal(filters[1].gain.value, 2.5, "the warm low shelf");
+    [["highpass", 30], ["lowshelf", 160], ["lowpass", 12750]], "rumble filter, warmth, old top end");
+  assert.equal(filters[1].gain.value, 3.75, "the warm low shelf");
   const sources = byKind("source");
   assert.equal(sources.length, 4, "hiss, rumble, crackle and pops loop");
   assert(sources.every((source) => source.loop === true && source.started === 1));
   const crackleBuffer = sources[2].buffer.getChannelData(0);
   assert(crackleBuffer.some((sample) => sample !== 0), "the crackle buffer holds clicks");
-  vinyl.update({ ...vinylSettings, crackleRate: 6, wowDepthMs: 2 }, 0.03);
+  vinyl.update({ ...vinylSettings, crackleRate: 18, warmth: 8 }, 0.03);
   assert.equal(byKind("source").length, 4, "an unchanged click density keeps its buffer");
-  assert(Math.abs(wowDepth.gain.value - 0.002) < 1e-12, "a live wow edit applies");
-  vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12 }, 0.03);
+  assert.equal(filters[1].gain.value, 6.0, "warmth 8 scales lowshelf gain to 6 dB");
+  vinyl.update({ ...vinylSettings, crackleRate: 30 }, 0.03);
   assert.equal(byKind("source").length, 5, "a new crackle density rebuilds only that buffer");
   assert.equal(sources[2].stopped, 1, "and stops the old one");
+  const initialSources = byKind("source").length;
+  vinyl.cueTonearm();
+  assert.equal(byKind("source").length, initialSources + 1, "cueTonearm plays one-shot landing sound");
   const vinylWet = made[3];
-  vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12, enabled: false }, 0.03);
+  vinyl.update({ ...vinylSettings, enabled: false }, 0.03);
   assert.deepEqual([...vinylWet.gain.targets.at(-1)], [0, 2, 0.03], "a disabled record passes the sound dry (and silent surface)");
+  assert.equal(typeof vinyl.cueTonearm, "function", "vinyl rack has cueTonearm method (TK-126)");
   vinyl.dispose();
   assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
 
@@ -551,6 +552,7 @@ async function stageThree() {
   const { RadioEffectsChain } = runtime.importModule("src/platform/browser/audio/radio_effects_chain.js");
   const effectsConfig = { rampSeconds: 0.05, retro: { ...retroSettings, enabled: false }, vinyl: { ...vinylSettings, enabled: false }, walkieTalkie: { ...walkieSettings } };
   const chain = new RadioEffectsChain({ config: () => effectsConfig, rng: { next: () => 0.5 } });
+  assert.equal(typeof chain.cueVinyl, "function", "effects chain has cueVinyl method (TK-126)");
   const chainIn = node("in");
   const chainOut = node("out");
   chain.attach(context, chainIn, chainOut);
@@ -840,7 +842,7 @@ async function tuningSliders() {
   const radio = {
     effects: {
       retro: { enabled: false, warmthGainDb: 3.5, warmthHz: 220, presenceGainDb: 2, presenceHz: 2000, lowpassHz: 6000, highpassHz: 80, drive: 2, outputGain: 1.15, mix: 1 },
-      vinyl: { enabled: true, crackleLevel: 0.12, popLevel: 0.35, hissLevel: 0.006, wowDepthMs: 1.2, warmthGainDb: 2.5, mix: 1 },
+      vinyl: { enabled: true, crackleLevel: 0.12, crackleRate: 18, popLevel: 0.4, popRate: 1.5, warmth: 5, outputGain: 1, mix: 1 },
       walkieTalkie: { enabled: false, drive: 18 },
     },
     signal: {
@@ -866,10 +868,10 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 20, "all parameters of vinyl sound are available");
-  assert.ok(plain(tuning.list()).some((entry) => entry.key === "wowHz" && entry.min === 0.1), "detailed vinyl wowHz parameter is available");
-  assert.deepEqual(plain(tuning.list()).slice(0, 6).map((entry) => entry.key),
-    ["crackleLevel", "crackleRate", "crackleToneHz", "popLevel", "popRate", "hissLevel"], "all vinyl parameters in tuning list");
+  assert.equal(plain(tuning.list()).length, 7, "all 7 parameters of vinyl sound are available (TK-126)");
+  assert.ok(plain(tuning.list()).some((entry) => entry.key === "warmth" && entry.min === 0), "single vinyl warmth parameter is available");
+  assert.deepEqual(plain(tuning.list()).slice(0, 5).map((entry) => entry.key),
+    ["warmth", "crackleLevel", "crackleRate", "popLevel", "popRate"], "essential vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -906,11 +908,11 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 20, "all 20 sliders of the enabled part (vinyl)");
-  assert.equal(sliders[0].value, "0.3");
-  sliders[0].value = "0.2"; sliders[0].fire("input");
+  assert.equal(sliders.length, 7, "all 7 sliders of the enabled part (vinyl)");
+  assert.equal(sliders[1].value, "0.3");
+  sliders[1].value = "0.2"; sliders[1].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
-  assert.equal(byClass(block, "radio-controls__tuning-value")[0].textContent, "0.2");
+  assert.equal(byClass(block, "radio-controls__tuning-value")[1].textContent, "0.2");
   switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");

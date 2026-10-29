@@ -17,27 +17,14 @@ export const RADIO_SOUND_SETTINGS = {
       "warmthHz": 220
     },
     "vinyl": {
-      "baseDelayMs": 6,
       "crackleLevel": 0.12,
-      "crackleRate": 6,
-      "crackleToneHz": 2500,
-      "drive": 3,
+      "crackleRate": 18,
       "enabled": false,
-      "flutterDepthMs": 0.15,
-      "flutterHz": 6.5,
-      "highpassHz": 35,
-      "hissLevel": 0.006,
-      "lowpassHz": 9000,
       "mix": 1,
       "outputGain": 1,
-      "popLevel": 0.35,
-      "popRate": 0.25,
-      "rumbleHz": 30,
-      "rumbleLevel": 0.02,
-      "warmthGainDb": 2.5,
-      "warmthHz": 150,
-      "wowDepthMs": 1.2,
-      "wowHz": 0.55
+      "popLevel": 0.4,
+      "popRate": 1.5,
+      "warmth": 5
     },
     "walkieTalkie": {
       "drive": 18,
