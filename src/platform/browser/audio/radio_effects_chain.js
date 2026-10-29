@@ -42,6 +42,10 @@ export class RadioEffectsChain {
     this.#walkieTalkie.update(cfg.walkieTalkie || {}, cfg.rampSeconds);
   }
 
+  setActive(active) {
+    this.#vinyl?.setActive?.(active);
+  }
+
   cueVinyl() {
     this.#vinyl.cueTonearm();
   }

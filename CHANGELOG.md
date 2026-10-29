@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.41 - Silenced effects when radio is off and calibrated Track 3 parameter ranges
+
+- Radio / Vinyl: silenced all vinyl synthesizers, SFX loops, and needle cues when the radio is powered off or paused via dedicated effects gate and active state suppression (TK-135).
+- Radio / Vinyl: recalibrated Track 3 parameter ranges for unmistakable acoustic impact on mobile transducers: wow expanded to 16ms depth (~90 cents pitch sway), tonal warmth down to 4.2 kHz cutoff with +8 dB warmth, and asymmetric saturation boosted with pre-gain (TK-135).
+
 ## v0.48.40 - Physical acoustic vinyl synthesizer with 3-track DSP architecture
 
 - Radio / Vinyl: upgraded procedural vinyl synthesizer to a physical 3-track DSP architecture with independent controls for Track 1 (mechanical rumble 10-60 Hz and filtered surface noise 300-8k Hz), Track 2 (scratch pops with 16 kHz cantilever ringing and micro-crackle), and Track 3 (program material with sub-bass cut, MM cartridge peak, 2nd-harmonic asymmetric saturation, inner groove distortion, and 33⅓ rpm wow & flutter) (Spec 148 / TK-134).
@@ -38,12 +43,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.32 - Restored previous vinyl record sound effect and configuration
 
 - Radio: restored previous vinyl record rack DSP, full parameter set, and sound characteristics (reverted TK-126 by owner request, TK-127).
-
-## v0.48.31 - Complete vinyl sound rework, expressive crackle/clicks, unified warmth and tonearm drop cueing
-
-- Radio: streamlined vinyl rack to essential expressive parameters (warmth, crackle level and rate, pop level and rate) with wide, tactile dynamic range from delicate surface noise to loud vinyl crunch (TK-126).
-- Radio: added unified warmth slider controlling lowshelf bass boost, analog high-cut, tube saturation and organic turntable pitch flutter in a single intuitive slider (TK-126).
-- Radio: implemented procedural tonearm drop cueing sound with landing contact thump, lead-in groove friction squeak, and crackle flurry on track changes and playback start (TK-126).
 
 
 

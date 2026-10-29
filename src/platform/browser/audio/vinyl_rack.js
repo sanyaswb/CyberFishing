@@ -50,6 +50,7 @@ export class VinylRack {
   #sfxGains = new Map();
   #sfxSources = new Map();
   #sfxBuffers = new Map();
+  #active = true;
 
   // rng: the radio's own { next() } (never the gameplay RNG).
   constructor({ rng, fetchRef = null }) {
@@ -57,23 +58,41 @@ export class VinylRack {
     this.#fetchRef = resolveFetch(fetchRef);
   }
 
+  setActive(active) {
+    this.#active = active === true;
+    const node = this.#nodes;
+    if (!node) return;
+    const now = Number(this.#context?.currentTime) || 0;
+    if (!this.#active) {
+      if (node.wet.gain.setTargetAtTime) node.wet.gain.setTargetAtTime(0, now, 0.02);
+      else node.wet.gain.value = 0;
+      if (node.dry.gain.setTargetAtTime) node.dry.gain.setTargetAtTime(0, now, 0.02);
+      else node.dry.gain.value = 0;
+    } else {
+      const enabled = this.#applied.enabled !== false;
+      const mix = !enabled ? 0 : Math.max(0, Math.min(1, finiteOr(this.#applied.mix, 1)));
+      if (node.wet.gain.setTargetAtTime) node.wet.gain.setTargetAtTime(mix, now, 0.02);
+      else node.wet.gain.value = mix;
+      if (node.dry.gain.setTargetAtTime) node.dry.gain.setTargetAtTime(1 - mix, now, 0.02);
+      else node.dry.gain.value = 1 - mix;
+    }
+  }
+
   static asymmetricCurve(drive, length = 44100) {
-    const k = Math.max(0.1, Number(drive) || 1);
-    const alpha = Math.min(0.22, (k - 1) * 0.035);
+    const k = Math.max(1, Number(drive) || 1);
+    const alpha = Math.min(0.45, (k - 1) * 0.06);
     const curve = new Float32Array(length);
     for (let index = 0; index < length; index += 1) {
       const x = (index * 2) / (length - 1) - 1;
-      const shaped = x + alpha * (x * x - 0.25);
-      curve[index] = Math.tanh(shaped * (0.8 + k * 0.25));
+      const shaped = x > 0 ? (x * (1 + alpha * 0.6)) : (x * (1 - alpha * 0.4) + alpha * x * x);
+      curve[index] = Math.tanh(shaped * (1.2 + (k - 1) * 0.85));
     }
     return curve;
   }
 
   static peak(drive) {
-    const k = Math.max(0.1, Number(drive) || 1);
-    const alpha = Math.min(0.22, (k - 1) * 0.035);
-    const shaped = 1 + alpha * 0.75;
-    return Math.max(0.1, Math.tanh(shaped * (0.8 + k * 0.25)));
+    const k = Math.max(1, Number(drive) || 1);
+    return Math.max(0.1, Math.tanh(1.2 + (k - 1) * 0.85));
   }
 
   static igdCurve(amount, length = 44100) {
@@ -98,7 +117,7 @@ export class VinylRack {
     this.#context = context;
     const node = {
       input: context.createGain(), output: context.createGain(), dry: context.createGain(), wet: context.createGain(),
-      delay: context.createDelay(0.05), wowOsc: context.createOscillator(), wowDepth: context.createGain(),
+      delay: context.createDelay(0.1), wowOsc: context.createOscillator(), wowDepth: context.createGain(),
       flutterOsc: context.createOscillator(), flutterDepth: context.createGain(),
       highpass: context.createBiquadFilter(), warmth: context.createBiquadFilter(), lowpass: context.createBiquadFilter(),
       cartridgePeak: context.createBiquadFilter(),
@@ -241,15 +260,17 @@ export class VinylRack {
     const wf = wowFlutter / 10;
 
     // Track 3: Wow & Flutter (0.55 Hz rotation 33⅓ + 6.5 Hz flutter)
-    const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
+    // Base delay 20 ms so delay time never clips to 0 when wow sways by up to 16 ms
+    const baseDelayMs = settings.baseDelayMs !== undefined ? Math.max(0, finiteOr(settings.baseDelayMs, 20)) : 20;
     const wowHz = Math.max(0, finiteOr(settings.wowHz, 0.55));
     const flutterHz = Math.max(0, finiteOr(settings.flutterHz, 6.5));
+    // At 10, wowDepthMs is 16 ms: produces ~90 cents (almost a full semitone) deep unmistakable vinyl warp sway!
     const wowDepthMs = settings.wowDepthMs !== undefined
       ? Math.max(0, finiteOr(settings.wowDepthMs, 1.2))
-      : (0.3 + wf * 2.2);
+      : (0.2 + wf * 15.8);
     const flutterDepthMs = settings.flutterDepthMs !== undefined
       ? Math.max(0, finiteOr(settings.flutterDepthMs, 0.15))
-      : (0.03 + wf * 0.22);
+      : (0.02 + wf * 0.6);
 
     this.#param("baseDelayMs", node.delay.delayTime, baseDelayMs / 1000);
     this.#param("wowHz", node.wowOsc.frequency, wowHz);
@@ -257,22 +278,27 @@ export class VinylRack {
     this.#param("flutterDepthMs", node.flutterDepth.gain, flutterDepthMs / 1000);
     this.#param("wowDepthMs", node.wowDepth.gain, wowDepthMs / 1000);
 
-    // Track 3: Frequency Profile (Sub-bass HPF 32 Hz, low-shelf warmth 200 Hz, cartridge MM peak 9.2 kHz, high-cut lowpass 13.5 kHz)
-    let highpassHz = settings.highpassHz !== undefined ? finiteOr(settings.highpassHz, 32) : 32;
-    let warmthHz = settings.warmthHz !== undefined ? finiteOr(settings.warmthHz, 200) : 200;
-    let warmthGainDb = settings.warmthGainDb !== undefined ? finiteOr(settings.warmthGainDb, tw * 5.0) : (tw * 5.0);
-    let lowpassHz = settings.lowpassHz !== undefined ? finiteOr(settings.lowpassHz, Math.round(14500 - tw * 3500)) : Math.round(14500 - tw * 3500);
+    // Track 3: Frequency Profile (Tonal Warmth EQ)
+    // - Lowpass: sweeps from 16,000 Hz down to 4,200 Hz (heavy warm vintage vinyl acoustic roll-off, instantly heard on phones!)
+    // - Highpass: sweeps from 25 Hz up to 220 Hz (removes modern sub-bass, creates dry vintage gramophone low end)
+    // - Warmth: lowshelf at 250 Hz boosts up to +8 dB for rich vocal body
+    // - Cartridge peak: at 8.5 kHz boosts presence
+    let highpassHz = settings.highpassHz !== undefined ? finiteOr(settings.highpassHz, 25) : Math.round(25 + tw * 195);
+    let warmthHz = settings.warmthHz !== undefined ? finiteOr(settings.warmthHz, 250) : 250;
+    let warmthGainDb = settings.warmthGainDb !== undefined ? finiteOr(settings.warmthGainDb, tw * 8.0) : (tw * 8.0);
+    let lowpassHz = settings.lowpassHz !== undefined ? finiteOr(settings.lowpassHz, Math.round(16000 - tw * 11800)) : Math.round(16000 - tw * 11800);
 
     this.#param("highpassHz", node.highpass.frequency, highpassHz);
     this.#param("warmthHz", node.warmth.frequency, warmthHz);
     this.#param("warmthGainDb", node.warmth.gain, warmthGainDb);
-    this.#param("cartridgePeakGain", node.cartridgePeak.gain, 1.5 + tw * 2.5);
+    this.#param("cartridgePeakGain", node.cartridgePeak.gain, 1.0 + tw * 3.5);
     this.#param("lowpassHz", node.lowpass.frequency, lowpassHz);
 
     // Track 3: Asymmetric Soft-clipper with dominant 2nd harmonic
+    // Multiplies drive into the waveshaper curve (up to 9.5x) so quiet broadcast streams actually enter saturation
     const drive = settings.drive !== undefined
       ? Math.max(0.1, finiteOr(settings.drive, 1.0))
-      : (1.0 + saturation * 0.45);
+      : (1.0 + saturation * 0.85);
 
     if (this.#applied.drive !== drive) {
       node.shaper.curve = VinylRack.asymmetricCurve(drive);
@@ -283,7 +309,7 @@ export class VinylRack {
       (1 / Math.max(1e-6, VinylRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
 
     // Track 3: Inner Groove Distortion (IGD / Sibilance rasp)
-    const igdGainValue = (igd / 10) * 0.35;
+    const igdGainValue = (igd / 10) * 0.65;
     this.#param("igdGain", node.igdGain.gain, igdGainValue);
     if (this.#applied.igd !== igd) {
       node.igdShaper.curve = VinylRack.igdCurve(igd / 10);
@@ -386,7 +412,7 @@ export class VinylRack {
   // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once.
   // Music track is muted for the first 3.0s, then smoothly overlays in (3.0s..3.4s) while vinyl-6 sharply fades out (3.0s..3.25s).
   cueTonearm() {
-    if (!this.#context || !this.#nodes) return;
+    if (!this.#active || !this.#context || !this.#nodes) return;
     if (this.#applied.enabled === false || this.#applied.mix === 0) return;
     const buf = this.#sfxBuffers.get("vinyl-6");
     if (!buf) {

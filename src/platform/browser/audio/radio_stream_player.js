@@ -24,6 +24,8 @@ export class RadioStreamPlayer {
   #gainScale = 1;
   #listeners = [];
   #effects;
+  #effectsGate = null;
+  #active = false;
 
   // effects: an optional chain { attach(context, input, output), update(), dispose() } between input and output.
   constructor({ documentRef, audioContexts, scheduler, config, onState, effects = null }) {
@@ -36,8 +38,13 @@ export class RadioStreamPlayer {
   }
 
   // Re-reads the effects' configuration (DevTools edits apply live; only streams played through Web Audio have them).
-  refreshEffects() {
+  refreshEffects(powered = null) {
     this.#ensureGraph();
+    if (powered !== null) {
+      this.#active = powered === true && (this.#attempt !== null || Boolean(this.#element));
+      this.#effects?.setActive?.(this.#active);
+      if (this.#effectsGate) this.#effectsGate.gain.value = this.#active ? 1 : 0;
+    }
     this.#effects?.update();
   }
 
@@ -104,6 +111,7 @@ export class RadioStreamPlayer {
     this.stop();
     this.#url = String(url || "");
     if (!this.#url) return;
+    this.#active = true;
     this.cueVinyl();
     this.#start(this.#audioContexts.get() ? "effects" : "native");
   }
@@ -120,6 +128,9 @@ export class RadioStreamPlayer {
     this.#releaseElement();
     this.#url = null;
     this.#attempt = null;
+    this.#active = false;
+    this.#effects?.setActive?.(false);
+    if (this.#effectsGate) this.#effectsGate.gain.value = 0;
   }
 
   setVolume(volume) {
@@ -139,10 +150,12 @@ export class RadioStreamPlayer {
   dispose() {
     this.stop();
     this.#effects?.dispose();
+    this.#effectsGate?.disconnect?.();
     this.#gate?.disconnect?.();
     this.#stream?.disconnect?.();
     this.#output?.disconnect?.();
     this.#input?.disconnect?.();
+    this.#effectsGate = null;
     this.#gate = null;
     this.#stream = null;
     this.#output = null;
@@ -168,6 +181,9 @@ export class RadioStreamPlayer {
     });
     if (mode === "effects") {
       this.#ensureGraph();
+      this.#active = true;
+      if (this.#effectsGate) this.#effectsGate.gain.value = 1;
+      this.#effects?.setActive?.(true);
       this.#sourceNode = this.#audioContexts.get().createMediaElementSource(element);
       this.#sourceNode.connect(this.#input);
     }
@@ -198,11 +214,18 @@ export class RadioStreamPlayer {
     this.#input = context.createGain();
     this.#gate = context.createGain();
     this.#gate.gain.value = 1;
-    // input -> [rack] -> gate (sharp crackle ducking) -> stream (dropouts) -> output (volume, ducking) -> destination
+    this.#effectsGate = context.createGain();
+    this.#effectsGate.gain.value = this.#active ? 1 : 0;
+    // input -> [rack] -> effectsGate (radio off mute) -> gate (sharp crackle ducking) -> stream (dropouts) -> output (volume, ducking) -> destination
     this.#stream = context.createGain();
     this.#stream.gain.value = this.#streamMuted ? 0 : 1;
-    if (this.#effects) this.#effects.attach(context, this.#input, this.#gate);
-    else this.#input.connect(this.#gate);
+    if (this.#effects) {
+      this.#effects.attach(context, this.#input, this.#effectsGate);
+      this.#effects.setActive?.(this.#active);
+    } else {
+      this.#input.connect(this.#effectsGate);
+    }
+    this.#effectsGate.connect(this.#gate);
     this.#gate.connect(this.#stream);
     this.#stream.connect(this.#output);
     this.#output.connect(context.destination);

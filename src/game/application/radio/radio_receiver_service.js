@@ -152,14 +152,14 @@ export class RadioReceiverService {
       cfg.effects[effect].enabled = value;
       this.#prefs[effect] = value;
       this.#save({ [effect]: value });
-      this.#player.refreshEffects();
+      this.#player.refreshEffects(this.#status.powered);
       this.#syncPreferences();
       this.#notify();
     }
   }
 
   refreshEffects() {
-    this.#player.refreshEffects();
+    this.#player.refreshEffects(this.#status.powered);
   }
 
   setCountry(code) {
@@ -302,7 +302,7 @@ export class RadioReceiverService {
     });
     if (reading.empty) return this.powerOff("no-battery");
     // The sound effects follow CONFIG.radio.effects (DevTools); the player does not choose them (TK-097).
-    this.#player.refreshEffects();
+    this.#player.refreshEffects(this.#status.powered);
     const weather = this.#weather.getSnapshot() || {};
     const signal = this.#signalModel.read({ chargePercent: reading.percent, isRaining: weather.isRaining === true,
       rainMult: weather.wind?.rainMult }, this.#config()?.signal || {});
