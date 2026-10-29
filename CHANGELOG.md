@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.32 - Restored previous vinyl record sound effect and configuration
+
+- Radio: restored previous vinyl record rack DSP, full parameter set, and sound characteristics (reverted TK-126 by owner request, TK-127).
+
 ## v0.48.31 - Complete vinyl sound rework, expressive crackle/clicks, unified warmth and tonearm drop cueing
 
 - Radio: streamlined vinyl rack to essential expressive parameters (warmth, crackle level and rate, pop level and rate) with wide, tactile dynamic range from delicate surface noise to loud vinyl crunch (TK-126).
@@ -43,10 +47,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.23 - Removed UI catalog code and cleared ui-catalog.html
 
 - Dev / Catalog: removed all UI catalog code, components, examples, fixtures, styles, test suite, and DevTools navigation; cleared ui-catalog.html to an empty page (TK-118).
-
-## v0.48.22 - Custom radio channel and dedicated station VOLIA 77.2
-
-- Radio: added dedicated station VOLIA 77.2 (77.2 FM) playing atmospheric local broadcasts, custom MP3 channel with intermission receiver noise between tracks, channel switcher, and live sound effect controls (Spec 144 / TK-117).
 
 
 

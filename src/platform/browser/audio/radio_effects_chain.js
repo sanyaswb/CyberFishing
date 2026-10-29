@@ -42,11 +42,6 @@ export class RadioEffectsChain {
     this.#walkieTalkie.update(cfg.walkieTalkie || {}, cfg.rampSeconds);
   }
 
-  // TK-126: cue tonearm drop on vinyl when switching tracks
-  cueVinyl() {
-    this.#vinyl.cueTonearm();
-  }
-
   dispose() {
     this.#retro.dispose();
     this.#vinyl.dispose();

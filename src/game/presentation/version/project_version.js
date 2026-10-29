@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.31";
+export const CURRENT_PROJECT_VERSION = "0.48.32";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,7 +16,8 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
-    "TK-126: complete vinyl sound rework, expressive crackle and clicks, unified warmth control, and tonearm needle drop cueing.",
+    "TK-127: restored previous vinyl record sound effect and configuration (reverted TK-126).",
+    "TK-126: complete vinyl sound rework, expressive crackle and clicks, unified warmth control, and tonearm needle drop cueing (reverted).",
     "TK-125: calibrated dropout noise burst volume to match track loudness and sharp stream gate ducking on discharge crackles.",
     "TK-124: retro sound filter rack, dedicated weather interference subsection, and audio glitch dropouts with catch-up playback acceleration.",
     "TK-123: sync item assembly editor visual preview on tab swipe/switch and set default VOLIA 77.2 track order.",

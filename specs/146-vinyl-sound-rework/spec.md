@@ -1,7 +1,7 @@
 # Feature Specification: Complete Vinyl Sound Rework, Expressive Crackle/Clicks, Unified Warmth and Tonearm Drop Cueing
 
 **Created**: 2026-10-29  
-**Status**: In Progress  
+**Status**: Reverted by owner (TK-127)  
 **Spec Number**: 146  
 **Tasks**: TK-126 in `tasks.md`  
 **Input**: Власник 2026-10-29:
