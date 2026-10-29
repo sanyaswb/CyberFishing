@@ -75,6 +75,11 @@ export class VinylRack {
       else node.wet.gain.value = mix;
       if (node.dry.gain.setTargetAtTime) node.dry.gain.setTargetAtTime(1 - mix, now, 0.02);
       else node.dry.gain.value = 1 - mix;
+      if (node.proceduralSurface?.gain) node.proceduralSurface.gain.value = 1;
+      for (const [id, gain] of this.#sfxGains.entries()) {
+        const targetGain = this.#applied.sfx?.[id]?.enabled ? (this.#applied.sfx[id].volume ?? 0.5) : 0;
+        if (gain?.gain) gain.gain.value = targetGain;
+      }
     }
   }
 
@@ -408,15 +413,18 @@ export class VinylRack {
     }
   }
 
-  // TK-126/128/129/133: Tonearm needle drop cueing with vinyl-6.mp3:
+  // TK-126/128/129/133/136: Tonearm needle drop cueing with vinyl-6.mp3:
   // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once.
   // Music track is muted for the first 3.0s, then smoothly overlays in (3.0s..3.4s) while vinyl-6 sharply fades out (3.0s..3.25s).
   cueTonearm() {
-    if (!this.#active || !this.#context || !this.#nodes) return;
+    if (!this.#context || !this.#nodes) return;
     if (this.#applied.enabled === false || this.#applied.mix === 0) return;
+    this.#active = true;
     const buf = this.#sfxBuffers.get("vinyl-6");
     if (!buf) {
-      this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]);
+      this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]).then((loaded) => {
+        if (loaded && this.#active) this.cueTonearm();
+      });
       return;
     }
     const now = Number(this.#context.currentTime) || 0;
@@ -452,6 +460,10 @@ export class VinylRack {
       source.loop = false;
       source.connect(cueGain);
       cueGain.connect(this.#nodes.wet);
+      if (this.#nodes.wet.gain) {
+        const mix = Math.max(0.1, finiteOr(this.#applied.mix, 1));
+        this.#nodes.wet.gain.value = mix;
+      }
       source.start(now);
       try {
         source.stop?.(now + 3.3);
@@ -467,6 +479,70 @@ export class VinylRack {
       };
     } catch {
       if (gate?.gain) gate.gain.value = 1;
+    }
+  }
+
+  // TK-136: Tonearm lift and needle stop cue on radio power off:
+  // Immediately silences background surface noise & SFX loops, plays authentic ~1.8s vinyl stop sound,
+  // then triggers onEnded callback to seal the output into complete silence.
+  cueTonearmOff(onEnded) {
+    if (!this.#context || !this.#nodes) return false;
+    if (this.#applied.enabled === false || this.#applied.mix === 0) return false;
+    const buf = this.#sfxBuffers.get("vinyl-6");
+    if (!buf) return false;
+
+    if (this.#nodes.proceduralSurface?.gain) {
+      this.#nodes.proceduralSurface.gain.value = 0;
+    }
+    for (const gain of this.#sfxGains.values()) {
+      if (gain?.gain) gain.gain.value = 0;
+    }
+
+    const now = Number(this.#context.currentTime) || 0;
+    const duration = 1.8;
+
+    for (const source of this.#cueSources) {
+      try {
+        source.stop?.();
+        source.disconnect?.();
+      } catch {}
+    }
+    this.#cueSources.clear();
+
+    try {
+      const source = this.#context.createBufferSource();
+      const cueGain = this.#context.createGain();
+      if (cueGain.gain?.setValueAtTime) {
+        cueGain.gain.setValueAtTime(1, now);
+        cueGain.gain.setValueAtTime(1, now + 1.0);
+        cueGain.gain.linearRampToValueAtTime?.(0, now + duration);
+      }
+      source.buffer = buf;
+      source.loop = false;
+      source.connect(cueGain);
+      cueGain.connect(this.#nodes.wet);
+      if (this.#nodes.wet.gain) this.#nodes.wet.gain.value = 1;
+      source.start(now);
+      try {
+        source.stop?.(now + duration + 0.1);
+      } catch {}
+
+      this.#cueSources.add(source);
+      source.onended = () => {
+        try {
+          source.disconnect?.();
+          cueGain.disconnect?.();
+        } catch {}
+        this.#cueSources.delete(source);
+        if (typeof onEnded === "function") {
+          try {
+            onEnded();
+          } catch {}
+        }
+      };
+      return true;
+    } catch {
+      return false;
     }
   }
 

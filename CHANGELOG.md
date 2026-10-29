@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.42 - Restored vinyl-6 cue on track switches and added power on/off tonearm needle effects
+
+- Radio / Vinyl: restored `vinyl-6.mp3` tonearm drop & lead-in cueing with 3.0s ducking on track and station switches, ensuring active effects graph and open gate prior to cue trigger (TK-136).
+- Radio / Vinyl: added authentic vinyl tonearm sound on radio power-on (needle contact and groove spin before music fades in) and radio power-off (instant music and noise mute with ~1.8s tonearm lift fade-out into silence) (TK-136).
+
 ## v0.48.41 - Silenced effects when radio is off and calibrated Track 3 parameter ranges
 
 - Radio / Vinyl: silenced all vinyl synthesizers, SFX loops, and needle cues when the radio is powered off or paused via dedicated effects gate and active state suppression (TK-135).
@@ -39,10 +44,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.33 - Dual vinyl sound engine (sampled authentic recordings vs procedural lo-fi vintage turntable)
 
 - Radio / Vinyl: added dual vinyl engine with live mode selector (0: sampled genuine vinyl crackle and needle drop, 1: dry procedural lo-fi vintage turntable with horn resonance and steep bandwidth cutoff), tonearm needle drop cueing on track switch, and updated DEV radio tuning parameters (Spec 147 / TK-128).
-
-## v0.48.32 - Restored previous vinyl record sound effect and configuration
-
-- Radio: restored previous vinyl record rack DSP, full parameter set, and sound characteristics (reverted TK-126 by owner request, TK-127).
 
 
 

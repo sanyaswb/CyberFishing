@@ -322,6 +322,7 @@ async function stageTwo() {
   playerTimers.advance(5000);
   assert.deepEqual(states.at(-1), ["failed", undefined], "a silent stream fails after both attempts time out");
   stream.stop();
+  assert.equal(typeof stream.powerOff, "function", "stream player exposes powerOff");
   assert.equal(playerTimers.pending, 0, "stop clears the timers");
   assert(elements.every((element) => Object.values(element.listeners).every((set) => set.size === 0)),
     "stop and every attempt remove their listeners");
@@ -575,6 +576,10 @@ async function stageThree() {
   assert.equal(cueSources.length, 1, "cueing tonearm plays vinyl-6 needle landing buffer");
   assert.equal(cueSources[0].loop, false, "cue source does not loop");
   assert.equal(cueSources[0].started, 1, "cue source starts immediately");
+  assert.equal(typeof vinyl.cueTonearmOff, "function", "tonearm power-off cue method exists");
+  let offEnded = false;
+  const offPlayed = vinyl.cueTonearmOff(() => { offEnded = true; });
+  assert.equal(offPlayed, true, "cueTonearmOff returns true when vinyl-6 is buffered and active");
   vinyl.dispose();
   assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
 
@@ -595,6 +600,7 @@ async function stageThree() {
     "enabling the record in the configuration ramps it in on the next update");
   assert.equal(typeof chain.cueVinyl, "function", "chain exposes cueVinyl hook");
   chain.cueVinyl();
+  assert.equal(typeof chain.cueVinylOff, "function", "chain exposes cueVinylOff hook");
   chain.dispose();
 
   // The player re-reads the effects; the service never lets the player choose them.

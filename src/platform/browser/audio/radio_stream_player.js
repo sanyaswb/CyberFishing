@@ -112,16 +112,21 @@ export class RadioStreamPlayer {
     this.#url = String(url || "");
     if (!this.#url) return;
     this.#active = true;
+    if (this.#audioContexts.get()) {
+      this.#ensureGraph();
+      if (this.#effectsGate) this.#effectsGate.gain.value = 1;
+      this.#effects?.setActive?.(true);
+    }
     this.cueVinyl();
     this.#start(this.#audioContexts.get() ? "effects" : "native");
   }
 
-  // TK-126/128: triggers tonearm needle drop sound effect if vinyl is active
+  // TK-126/128/133/136: triggers tonearm needle drop sound effect if vinyl is active
   cueVinyl() {
     this.#effects?.cueVinyl?.();
   }
 
-  stop() {
+  stop({ isPowerOff = false } = {}) {
     this.#clearTimer();
     this.#clearCatchUpTimer();
     if (this.#element) this.#element.playbackRate = 1.0;
@@ -129,8 +134,26 @@ export class RadioStreamPlayer {
     this.#url = null;
     this.#attempt = null;
     this.#active = false;
-    this.#effects?.setActive?.(false);
-    if (this.#effectsGate) this.#effectsGate.gain.value = 0;
+
+    let cuePlayed = false;
+    if (isPowerOff && this.#effects?.cueVinylOff) {
+      cuePlayed = this.#effects.cueVinylOff(() => {
+        if (!this.#active) {
+          if (this.#effectsGate) this.#effectsGate.gain.value = 0;
+          this.#effects?.setActive?.(false);
+        }
+      });
+    }
+
+    if (!cuePlayed) {
+      this.#effects?.setActive?.(false);
+      if (this.#effectsGate) this.#effectsGate.gain.value = 0;
+    }
+  }
+
+  // TK-136: explicit power-off entry point triggering the tonearm lift / stop cue
+  powerOff() {
+    this.stop({ isPowerOff: true });
   }
 
   setVolume(volume) {

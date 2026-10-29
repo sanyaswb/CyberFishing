@@ -114,7 +114,8 @@ export class RadioReceiverService {
   powerOff(status = "off") {
     this.#requestSerial += 1;
     this.#clearIntermission();
-    this.#player.stop();
+    if (this.#player.powerOff) this.#player.powerOff();
+    else this.#player.stop({ isPowerOff: true });
     this.#noise.stop();
     this.#endDropout();
     this.#signalScale = 1;

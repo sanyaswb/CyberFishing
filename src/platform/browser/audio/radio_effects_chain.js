@@ -50,6 +50,10 @@ export class RadioEffectsChain {
     this.#vinyl.cueTonearm();
   }
 
+  cueVinylOff(onEnded) {
+    return this.#vinyl?.cueTonearmOff?.(onEnded) || false;
+  }
+
   dispose() {
     this.#retro.dispose();
     this.#vinyl.dispose();
