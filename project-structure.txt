@@ -10,6 +10,14 @@
 │  │  └── radio
 │  │     ├── custom
 │  │     │  └── readme.txt
+│  │     ├── vinyl
+│  │     │  ├── vinyl-1.mp3
+│  │     │  ├── vinyl-2.mp3
+│  │     │  ├── vinyl-3.mp3
+│  │     │  ├── vinyl-4.mp3
+│  │     │  ├── vinyl-6.mp3
+│  │     │  ├── vinyl_needle_drop.mp3
+│  │     │  └── vinyl_surface.mp3
 │  │     └── volia
 │  │        ├── Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a
 │  │        ├── RADIO_VOLIA.mp3

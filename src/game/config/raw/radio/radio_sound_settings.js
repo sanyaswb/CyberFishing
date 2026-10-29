@@ -29,6 +29,7 @@ export const RADIO_SOUND_SETTINGS = {
       "hissLevel": 0.006,
       "lowpassHz": 9000,
       "mix": 1,
+      "mode": 0,
       "outputGain": 1,
       "popLevel": 0.35,
       "popRate": 0.25,

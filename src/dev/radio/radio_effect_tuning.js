@@ -24,6 +24,7 @@ const GROUPS = Object.freeze([
     label: "Платівка",
     path: Object.freeze(["effects", "vinyl"]),
     parameters: Object.freeze([
+      Object.freeze({ key: "mode", label: "Платівка · режим (0:семпли, 1:код)", min: 0, max: 1, step: 1 }),
       Object.freeze({ key: "crackleLevel", label: "Платівка · тріск", min: 0, max: 0.5, step: 0.01 }),
       Object.freeze({ key: "crackleRate", label: "Платівка · частота тріску, 1/с", min: 0, max: 20, step: 0.5 }),
       Object.freeze({ key: "crackleToneHz", label: "Платівка · тембр тріску, Гц", min: 500, max: 8000, step: 100 }),

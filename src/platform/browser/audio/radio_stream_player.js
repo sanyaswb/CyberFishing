@@ -103,7 +103,13 @@ export class RadioStreamPlayer {
     this.stop();
     this.#url = String(url || "");
     if (!this.#url) return;
+    this.cueVinyl();
     this.#start(this.#audioContexts.get() ? "effects" : "native");
+  }
+
+  // TK-126/128: triggers tonearm needle drop sound effect if vinyl is active
+  cueVinyl() {
+    this.#effects?.cueVinyl?.();
   }
 
   stop() {

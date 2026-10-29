@@ -543,6 +543,8 @@ async function stageThree() {
   const vinylWet = made[3];
   vinyl.update({ ...vinylSettings, wowDepthMs: 2, crackleRate: 12, enabled: false }, 0.03);
   assert.deepEqual([...vinylWet.gain.targets.at(-1)], [0, 2, 0.03], "a disabled record passes the sound dry (and silent surface)");
+  assert.equal(typeof vinyl.cueTonearm, "function", "tonearm cue method exists");
+  vinyl.cueTonearm();
   vinyl.dispose();
   assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
 
@@ -561,6 +563,8 @@ async function stageThree() {
   chain.update();
   assert(made.some((entry) => entry.gain.targets.some(([value, , constant]) => value === 1 && constant === 0.05)),
     "enabling the record in the configuration ramps it in on the next update");
+  assert.equal(typeof chain.cueVinyl, "function", "chain exposes cueVinyl hook");
+  chain.cueVinyl();
   chain.dispose();
 
   // The player re-reads the effects; the service never lets the player choose them.
@@ -866,10 +870,10 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 20, "all parameters of vinyl sound are available");
+  assert.equal(plain(tuning.list()).length, 21, "all parameters of vinyl sound are available");
   assert.ok(plain(tuning.list()).some((entry) => entry.key === "wowHz" && entry.min === 0.1), "detailed vinyl wowHz parameter is available");
-  assert.deepEqual(plain(tuning.list()).slice(0, 6).map((entry) => entry.key),
-    ["crackleLevel", "crackleRate", "crackleToneHz", "popLevel", "popRate", "hissLevel"], "all vinyl parameters in tuning list");
+  assert.deepEqual(plain(tuning.list()).slice(0, 7).map((entry) => entry.key),
+    ["mode", "crackleLevel", "crackleRate", "crackleToneHz", "popLevel", "popRate", "hissLevel"], "all vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -906,11 +910,13 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 20, "all 20 sliders of the enabled part (vinyl)");
-  assert.equal(sliders[0].value, "0.3");
-  sliders[0].value = "0.2"; sliders[0].fire("input");
+  assert.equal(sliders.length, 21, "all 21 sliders of the enabled part (vinyl)");
+  assert.equal(sliders[1].value, "0.3");
+  sliders[1].value = "0.2"; sliders[1].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
-  assert.equal(byClass(block, "radio-controls__tuning-value")[0].textContent, "0.2");
+  assert.equal(byClass(block, "radio-controls__tuning-value")[1].textContent, "0.2");
+  sliders[0].value = "1"; sliders[0].fire("input");
+  assert.equal(radio.effects.vinyl.mode, 1, "the mode slider switches between sampled (0) and procedural (1)");
   switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");

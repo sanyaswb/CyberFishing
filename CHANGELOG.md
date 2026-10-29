@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.33 - Dual vinyl sound engine (sampled authentic recordings vs procedural lo-fi vintage turntable)
+
+- Radio / Vinyl: added dual vinyl engine with live mode selector (0: sampled genuine vinyl crackle and needle drop, 1: dry procedural lo-fi vintage turntable with horn resonance and steep bandwidth cutoff), tonearm needle drop cueing on track switch, and updated DEV radio tuning parameters (Spec 147 / TK-128).
+
 ## v0.48.32 - Restored previous vinyl record sound effect and configuration
 
 - Radio: restored previous vinyl record rack DSP, full parameter set, and sound characteristics (reverted TK-126 by owner request, TK-127).
@@ -43,10 +47,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.24 - Removed obsolete embedded page overlay platform code and test suite
 
 - Tooling / Platform: deleted unused `EmbeddedPageOverlay`, its CSS rule in `dev-tools.css`, and its test suite `embedded-page-overlay-check.js`; pruned obsolete test fixtures and style readers (TK-119).
-
-## v0.48.23 - Removed UI catalog code and cleared ui-catalog.html
-
-- Dev / Catalog: removed all UI catalog code, components, examples, fixtures, styles, test suite, and DevTools navigation; cleared ui-catalog.html to an empty page (TK-118).
 
 
 
