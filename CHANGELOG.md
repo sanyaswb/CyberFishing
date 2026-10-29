@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.39 - Vinyl-6 needle cueing with 3s ducking on track switch and removed oldSpeaker slider
+
+- Radio / Vinyl: replaced synthetic chirp cue with single-shot `vinyl-6.mp3` tonearm drop & groove lead-in, ducking switched track audio for 3.0s with smooth fade-in (3.0s..3.4s) while `vinyl-6` sharply fades out (3.0s..3.25s) (TK-133).
+- Radio / Vinyl: removed obsolete `oldSpeaker` DSP processing, configuration, and DEV slider; decoupled from legacy sample files (`vinyl_needle_drop.mp3`, `vinyl_surface.mp3`) (TK-133).
+
 ## v0.48.38 - Browser fetch binding, AudioContext gesture resume, and live tuning refresh
 
 - Radio / Vinyl: resolved browser `fetch` binding (`Illegal invocation`), ensured `AudioContext` resumes on gesture and graph initializes on effect refresh, and wired immediate live effect updates from DEV radio tuning controls (TK-132).
@@ -40,12 +45,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio: calibrated dropout hiss burst and micro-glitch volume to match nominal track loudness, scaling proportionally with volume sag (TK-125).
 - Radio: added stream gate node to sharply duck the audio track to zero during discharge crackles without smoothness/easing (TK-125).
-
-## v0.48.29 - Retro sound filter, weather interference subsection, and audio dropouts with catch-up acceleration
-
-- Radio: added dedicated Retro audio effect rack with analog saturation, presence boost, and tube low-end warmth without walkie-talkie clipping or vinyl crackle (TK-124).
-- Radio: separated weather interference into its own settings subsection and DevTools/tuning group, isolating rain-induced hiss and crackle from battery discharge (TK-124).
-- Radio: implemented stream interruption on signal dropouts with hiss bursts and accelerated playback rate catch-up upon resumption (TK-124).
 
 
 

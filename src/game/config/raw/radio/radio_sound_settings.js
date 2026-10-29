@@ -21,7 +21,6 @@ export const RADIO_SOUND_SETTINGS = {
       "dryGramophone": 5,
       "enabled": false,
       "noiseLevel": 0.15,
-      "oldSpeaker": 0,
       "popLevel": 0.35,
       "sfx": {
         "vinyl-1": {

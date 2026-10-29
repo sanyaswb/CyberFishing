@@ -34,7 +34,6 @@ const GROUPS = Object.freeze([
     path: Object.freeze(["effects", "vinyl"]),
     parameters: Object.freeze([
       Object.freeze({ key: "dryGramophone", label: "Платівка · сухий патефон (зріз низу, рупор)", min: 0, max: 10, step: 0.5 }),
-      Object.freeze({ key: "oldSpeaker", label: "Платівка · старий динамік (глухий, хрип)", min: 0, max: 10, step: 0.5 }),
       Object.freeze({ key: "softVinyl", label: "Платівка · м'який вініл (теплий бас, wow)", min: 0, max: 10, step: 0.5 }),
       Object.freeze({ key: "crackleLevel", label: "Платівка · тріск (гучність + щільність)", min: 0, max: 1, step: 0.05 }),
       Object.freeze({ key: "noiseLevel", label: "Платівка · шум борозенки", min: 0, max: 1, step: 0.05 }),

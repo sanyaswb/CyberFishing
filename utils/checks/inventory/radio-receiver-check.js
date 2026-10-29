@@ -437,7 +437,13 @@ async function stageThree() {
 
   // A fake Web Audio that records the graph and AudioParam writes.
   const made = [];
-  const param = (value = 0) => ({ value, targets: [], setTargetAtTime(v, at, c) { this.targets.push([v, at, c]); } });
+  const param = (value = 0) => ({
+    value, targets: [],
+    setTargetAtTime(v, at, c) { this.targets.push([v, at, c]); },
+    setValueAtTime(v) { this.value = v; },
+    cancelScheduledValues() {},
+    linearRampToValueAtTime(v) { this.value = v; },
+  });
   const node = (kind) => {
     const entry = { kind, to: [], connect(target) { this.to.push(target); }, disconnect() { this.to = []; },
       gain: param(1), frequency: param(), Q: param(), delayTime: param(), started: 0, stopped: 0,
@@ -562,7 +568,13 @@ async function stageThree() {
   assert.equal(sfxSources[0].stopped, 1, "disabling vinyl-1 stops the overlay source");
 
   assert.equal(typeof vinyl.cueTonearm, "function", "tonearm cue method exists");
+  const fakeCueBuffer = context.createBuffer(1, 100);
+  vinyl.setSfxBuffer("vinyl-6", fakeCueBuffer);
   vinyl.cueTonearm();
+  const cueSources = byKind("source").filter((s) => s.buffer === fakeCueBuffer);
+  assert.equal(cueSources.length, 1, "cueing tonearm plays vinyl-6 needle landing buffer");
+  assert.equal(cueSources[0].loop, false, "cue source does not loop");
+  assert.equal(cueSources[0].started, 1, "cue source starts immediately");
   vinyl.dispose();
   assert(wow.stopped === 1 && byKind("source").every((source) => source.to.length === 0), "dispose stops and disconnects");
 
@@ -891,9 +903,9 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 6, "6 parameters of vinyl sound are available");
+  assert.equal(plain(tuning.list()).length, 5, "5 parameters of vinyl sound are available");
   assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
-    ["dryGramophone", "oldSpeaker", "softVinyl", "crackleLevel", "noiseLevel", "popLevel"], "6 vinyl parameters in tuning list");
+    ["dryGramophone", "softVinyl", "crackleLevel", "noiseLevel", "popLevel"], "5 vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -930,7 +942,7 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 6, "all 6 sliders of the enabled part (vinyl)");
+  assert.equal(sliders.length, 5, "all 5 sliders of the enabled part (vinyl)");
   const sfxBoxes = byClass(block, "radio-controls__sfx-checkbox");
   assert.equal(sfxBoxes.length, 6, "6 SFX checkboxes for ready vinyl recordings");
   const sfxVolumes = byClass(block, "radio-controls__sfx-volume");
@@ -939,10 +951,10 @@ async function tuningSliders() {
   assert.equal(radio.effects.vinyl.sfx?.["vinyl-1"]?.enabled, true, "toggling SFX checkbox updates live config");
   sfxVolumes[0].value = "0.85"; sfxVolumes[0].fire("input");
   assert.equal(radio.effects.vinyl.sfx?.["vinyl-1"]?.volume, 0.85, "sliding SFX volume updates live config");
-  assert.equal(sliders[3].value, "0.3");
-  sliders[3].value = "0.2"; sliders[3].fire("input");
+  assert.equal(sliders[2].value, "0.3");
+  sliders[2].value = "0.2"; sliders[2].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
-  assert.equal(byClass(block, "radio-controls__tuning-value")[3].textContent, "0.2");
+  assert.equal(byClass(block, "radio-controls__tuning-value")[2].textContent, "0.2");
   sliders[0].value = "8"; sliders[0].fire("input");
   assert.equal(radio.effects.vinyl.dryGramophone, 8, "dryGramophone slider tunes vintage dry sound");
   switches[1].checked = false; switches[1].fire("change");

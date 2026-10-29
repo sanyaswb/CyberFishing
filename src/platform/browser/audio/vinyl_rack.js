@@ -74,6 +74,7 @@ export class VinylRack {
       highpass: context.createBiquadFilter(), warmth: context.createBiquadFilter(), lowpass: context.createBiquadFilter(),
       lofiResonance: context.createBiquadFilter(),
       shaper: context.createWaveShaper(), makeup: context.createGain(),
+      trackCueGate: context.createGain(),
       proceduralSurface: context.createGain(),
       sampledSurface: context.createGain(),
       crackleTone: context.createBiquadFilter(), crackle: context.createGain(), pops: context.createGain(),
@@ -102,14 +103,16 @@ export class VinylRack {
     node.flutterOsc.connect(node.flutterDepth);
     node.flutterDepth.connect(node.delay.delayTime);
 
-    // Audio path: delay -> highpass -> warmth -> lofiResonance -> lowpass -> shaper -> makeup -> wet
+    // Audio path: delay -> highpass -> warmth -> lofiResonance -> lowpass -> shaper -> makeup -> trackCueGate -> wet
     node.delay.connect(node.highpass);
     node.highpass.connect(node.warmth);
     node.warmth.connect(node.lofiResonance);
     node.lofiResonance.connect(node.lowpass);
     node.lowpass.connect(node.shaper);
     node.shaper.connect(node.makeup);
-    node.makeup.connect(node.wet);
+    node.makeup.connect(node.trackCueGate);
+    node.trackCueGate.connect(node.wet);
+    node.trackCueGate.gain.value = 1;
 
     // Procedural surface noise path
     node.crackleTone.connect(node.crackle);
@@ -144,39 +147,35 @@ export class VinylRack {
     const node = this.#nodes;
     if (!node) return;
 
-    // TK-131: 3 independent vintage blendable tone shapers:
+    // TK-131, TK-133: 2 vintage blendable tone shapers:
     // - dryGramophone (0..10): steep low cut (up to 480 Hz), vocal horn peak (950..1200 Hz)
-    // - oldSpeaker (0..10): steep high roll-off (down to 2200 Hz), 1400 Hz cone peak, tube distortion/crunch
     // - softVinyl (0..10): analog 200 Hz lowshelf warmth (+7 dB), organic pitch wow
     let d = 0;
-    let s = 0;
     let m = 0;
-    if (settings.dryGramophone !== undefined || settings.oldSpeaker !== undefined || settings.softVinyl !== undefined) {
+    if (settings.dryGramophone !== undefined || settings.softVinyl !== undefined) {
       d = Math.max(0, Math.min(10, finiteOr(settings.dryGramophone, 0))) / 10;
-      s = Math.max(0, Math.min(10, finiteOr(settings.oldSpeaker, 0))) / 10;
       m = Math.max(0, Math.min(10, finiteOr(settings.softVinyl, 0))) / 10;
     } else {
-      const preset = Number(settings.preset) === 1 ? 1 : (Number(settings.preset) === 2 ? 2 : 0);
+      const preset = Number(settings.preset) === 1 ? 1 : 0;
       const w = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0))) / 10;
       if (preset === 1) d = w;
-      else if (preset === 2) s = w;
       else m = w;
     }
 
     const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
     const wowHz = Math.max(0, finiteOr(settings.wowHz, d > 0.3 ? 0.75 : 0.55));
-    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, s > 0.3 ? 8.0 : 6.5));
+    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, 6.5));
 
-    let flutterDepthMs = 0.05 + d * 0.35 + s * 0.4;
-    let wowDepthMs = 0.2 + m * 2.5 + d * 1.8 + s * 0.8;
-    let highpassHz = Math.max(20, Math.min(500, Math.round(25 + d * 450 + s * 180 - m * 15)));
+    let flutterDepthMs = 0.05 + d * 0.35;
+    let wowDepthMs = 0.2 + m * 2.5 + d * 1.8;
+    let highpassHz = Math.max(20, Math.min(500, Math.round(25 + d * 450 - m * 15)));
     let warmthHz = 200;
     let warmthGainDb = Math.max(-12, Math.min(12, m * 7.0 - d * 6.0));
-    let lowpassHz = Math.max(1800, Math.min(14000, Math.round(14000 - s * 10500 - d * 6500 - m * 3500)));
-    let resonanceHz = Math.round(950 + s * 350);
-    let resonanceQ = 1.5 + d * 1.5 + s * 0.8;
-    let lofiResonanceDb = d * 8.5 + s * 6.0;
-    let drive = 1.0 + s * 7.0 + d * 3.5 + m * 1.5;
+    let lowpassHz = Math.max(1800, Math.min(14000, Math.round(14000 - d * 6500 - m * 3500)));
+    let resonanceHz = 950;
+    let resonanceQ = 1.5 + d * 1.5;
+    let lofiResonanceDb = d * 8.5;
+    let drive = 1.0 + d * 3.5 + m * 1.5;
 
     // Allow explicit overrides if provided (backwards compatibility with tests)
     if (settings.highpassHz !== undefined) highpassHz = finiteOr(settings.highpassHz, highpassHz);
@@ -306,23 +305,65 @@ export class VinylRack {
     }
   }
 
-  // TK-126/128/129: Tonearm needle drop cueing
+  // TK-126/128/129/133: Tonearm needle drop cueing with vinyl-6.mp3:
+  // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once.
+  // Music track is muted for the first 3.0s, then smoothly overlays in (3.0s..3.4s) while vinyl-6 sharply fades out (3.0s..3.25s).
   cueTonearm() {
     if (!this.#context || !this.#nodes) return;
     if (this.#applied.enabled === false || this.#applied.mix === 0) return;
-    try {
-      const buffer = this.#cueBuffer();
-      const source = this.#context.createBufferSource();
-      this.#cueSources.add(source);
-      source.buffer = buffer;
-      source.connect(this.#nodes.wet);
-      source.start();
-      source.onended = () => {
+    const buf = this.#sfxBuffers.get("vinyl-6");
+    if (!buf) {
+      this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]);
+      return;
+    }
+    const now = Number(this.#context.currentTime) || 0;
+    const gate = this.#nodes.trackCueGate;
+    if (gate?.gain) {
+      try {
+        gate.gain.cancelScheduledValues?.(now);
+        gate.gain.setValueAtTime?.(0, now);
+        gate.gain.setValueAtTime?.(0, now + 3.0);
+        gate.gain.linearRampToValueAtTime?.(1, now + 3.4);
+      } catch {
+        gate.gain.value = 1;
+      }
+    }
+
+    for (const source of this.#cueSources) {
+      try {
+        source.stop?.();
         source.disconnect?.();
+      } catch {}
+    }
+    this.#cueSources.clear();
+
+    try {
+      const source = this.#context.createBufferSource();
+      const cueGain = this.#context.createGain();
+      if (cueGain.gain?.setValueAtTime) {
+        cueGain.gain.setValueAtTime(1, now);
+        cueGain.gain.setValueAtTime(1, now + 3.0);
+        cueGain.gain.linearRampToValueAtTime?.(0, now + 3.25);
+      }
+      source.buffer = buf;
+      source.loop = false;
+      source.connect(cueGain);
+      cueGain.connect(this.#nodes.wet);
+      source.start(now);
+      try {
+        source.stop?.(now + 3.3);
+      } catch {}
+
+      this.#cueSources.add(source);
+      source.onended = () => {
+        try {
+          source.disconnect?.();
+          cueGain.disconnect?.();
+        } catch {}
         this.#cueSources.delete(source);
       };
     } catch {
-      // AudioContext state or disposed
+      if (gate?.gain) gate.gain.value = 1;
     }
   }
 
@@ -478,19 +519,8 @@ export class VinylRack {
   async #loadSamples() {
     if (!this.#fetchRef || !this.#context?.decodeAudioData) return;
     try {
-      const [surfaceBuf, dropBuf] = await Promise.all([
-        this.#fetchAudio(["assets/audio/radio/vinyl/vinyl_surface.mp3", "SFX/vinyl-3.mp3", "SFX/vinyl-5.mp3"]),
-        this.#fetchAudio(["assets/audio/radio/vinyl/vinyl_needle_drop.mp3", "SFX/vinyl-6.mp3", "SFX/vinyl-4.mp3"]),
-      ]);
-      if (surfaceBuf && this.#context) {
-        this.#sampledSurfaceBuffer = surfaceBuf;
-        if (this.#applied.mode !== 1 && this.#nodes && !this.#sampledSurfaceSource) {
-          this.#startSampledSurface();
-        }
-      }
-      if (dropBuf && this.#context) {
-        this.#sampledNeedleDropBuffer = dropBuf;
-      }
+      // TK-133: Pre-load vinyl-6 for instantaneous authentic needle drop cueing on track switches
+      await this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]);
     } catch {
       // In tests or non-browser environments, safely ignore
     }
@@ -522,50 +552,6 @@ export class VinylRack {
         data[start + offset] += amplitude * Math.exp(-offset / decay) * (offset % 2 === 0 ? 1 : -0.6);
       }
     }
-    return buffer;
-  }
-
-  #cueBuffer() {
-    const rate = Number(this.#context?.sampleRate) || 44100;
-    const duration = 0.45;
-    const length = Math.max(1, Math.floor(rate * duration));
-    const buffer = this.#context.createBuffer(1, length, rate);
-    const data = buffer.getChannelData(0);
-
-    // 1. Mechanical needle drop thud (0..0.08s)
-    const thudSamples = Math.floor(0.08 * rate);
-    for (let i = 0; i < thudSamples && i < length; i += 1) {
-      const t = i / rate;
-      const freq = 75 - t * 300;
-      const env = Math.exp(-t / 0.022);
-      data[i] += Math.sin(2 * Math.PI * freq * t) * env * 0.7;
-    }
-
-    // 2. Stylus friction squeak / chirp into the groove (0.02..0.22s)
-    const squeakStart = Math.floor(0.02 * rate);
-    const squeakDuration = 0.20;
-    const squeakSamples = Math.floor(squeakDuration * rate);
-    for (let i = 0; i < squeakSamples && squeakStart + i < length; i += 1) {
-      const t = i / rate;
-      const norm = t / squeakDuration;
-      const freq = 1350 - norm * 650;
-      const env = Math.sin(Math.PI * norm) * Math.exp(-norm * 1.2);
-      const squeak = (Math.sin(2 * Math.PI * freq * t) + 0.35 * Math.sin(4 * Math.PI * freq * t)) * env * 0.55;
-      data[squeakStart + i] += squeak;
-    }
-
-    // 3. Dense flurry of crackles and pops on landing (0..0.45s)
-    const burstCount = 25;
-    for (let b = 0; b < burstCount; b += 1) {
-      const clickStart = Math.floor(this.#rng.next() * length * 0.95);
-      const sign = this.#rng.next() < 0.5 ? -1 : 1;
-      const amplitude = (0.5 + this.#rng.next() * 0.5) * sign;
-      const decay = Math.max(1, Math.floor((0.001 + this.#rng.next() * 0.003) * rate));
-      for (let offset = 0; offset < decay * 4 && clickStart + offset < length; offset += 1) {
-        data[clickStart + offset] += amplitude * Math.exp(-offset / decay) * (offset % 2 === 0 ? 1 : -0.7) * 0.55;
-      }
-    }
-
     return buffer;
   }
 }

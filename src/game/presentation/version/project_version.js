@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.38";
+export const CURRENT_PROJECT_VERSION = "0.48.39";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-133: vinyl-6.mp3 tonearm lead-in groove cueing with 3.0s ducking on track switch; removed oldSpeaker slider and legacy sample paths.",
     "TK-132: fixed browser fetch binding, AudioContext resume on gesture, and immediate live effects refresh for vinyl SFX.",
     "TK-132: dedicated vinyl SFX section with individual sample toggles, volume sliders, and continuous looping.",
     "TK-131: independent blendable vintage character sliders (dry gramophone, worn speaker, soft vinyl) and dynamic crackle/pop density.",
