@@ -15,10 +15,10 @@ export class RadioEffectsChain {
   #attached = false;
 
   // config: () => CONFIG.radio.effects; rng: the radio's own { next() }.
-  constructor({ config, rng }) {
+  constructor({ config, rng, fetchRef = null }) {
     this.#config = config;
     this.#retro = new RetroRack();
-    this.#vinyl = new VinylRack({ rng });
+    this.#vinyl = new VinylRack({ rng, fetchRef });
     this.#walkieTalkie = new WalkieTalkieRack();
   }
 

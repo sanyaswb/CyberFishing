@@ -37,6 +37,7 @@ export class RadioStreamPlayer {
 
   // Re-reads the effects' configuration (DevTools edits apply live; only streams played through Web Audio have them).
   refreshEffects() {
+    this.#ensureGraph();
     this.#effects?.update();
   }
 

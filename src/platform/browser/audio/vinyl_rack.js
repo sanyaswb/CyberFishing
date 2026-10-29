@@ -10,6 +10,24 @@ export const VINYL_SFX_FILES = Object.freeze({
   "vinyl-6": "assets/audio/radio/vinyl/vinyl-6.mp3",
 });
 
+function resolveFetch(ref) {
+  if (ref) {
+    if (typeof window !== "undefined" && ref === window.fetch) return window.fetch.bind(window);
+    return ref;
+  }
+  if (typeof window !== "undefined" && typeof window.fetch === "function") {
+    return window.fetch.bind(window);
+  }
+  if (typeof globalThis !== "undefined" && typeof globalThis.fetch === "function") {
+    try {
+      return globalThis.fetch.bind(globalThis);
+    } catch {
+      return globalThis.fetch;
+    }
+  }
+  return null;
+}
+
 // TK-097, TK-128 (Spec 147): the "vinyl record" stage of the radio's effects chain.
 // Dual Engine Architecture:
 // - Mode 0 (Sampled / Автентичний): uses genuine sampled recordings of vinyl surface noise and tonearm needle drop;
@@ -34,9 +52,9 @@ export class VinylRack {
   #sfxBuffers = new Map();
 
   // rng: the radio's own { next() } (never the gameplay RNG).
-  constructor({ rng, fetchRef = (typeof fetch !== "undefined" ? fetch : null) }) {
+  constructor({ rng, fetchRef = null }) {
     this.#rng = rng;
-    this.#fetchRef = fetchRef;
+    this.#fetchRef = resolveFetch(fetchRef);
   }
 
   get input() {
@@ -353,6 +371,9 @@ export class VinylRack {
 
   #startSfxSource(id, buffer, destination) {
     if (!this.#context || !destination || !buffer) return;
+    if (this.#context.state === "suspended") {
+      this.#context.resume?.().catch?.(() => {});
+    }
     if (this.#sfxSources.has(id)) return;
     try {
       const source = this.#context.createBufferSource();
@@ -378,10 +399,28 @@ export class VinylRack {
     this.#sfxSources.delete(id);
   }
 
+  async #decodeAudio(arr) {
+    if (!this.#context?.decodeAudioData) return null;
+    return new Promise((resolve) => {
+      try {
+        const res = this.#context.decodeAudioData(
+          arr,
+          (buf) => resolve(buf),
+          () => resolve(null)
+        );
+        if (res && typeof res.then === "function") {
+          res.then(resolve).catch(() => resolve(null));
+        }
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
   async #loadSfxBuffer(id, filePath) {
     if (this.#sfxBuffers.has(id)) return this.#sfxBuffers.get(id);
     if (!this.#fetchRef || !this.#context?.decodeAudioData) return null;
-    const buf = await this.#fetchAudio([filePath, `/${filePath}`]);
+    const buf = await this.#fetchAudio([filePath, `/${filePath}`, `./${filePath}`]);
     if (buf) this.#sfxBuffers.set(id, buf);
     return buf;
   }
@@ -426,7 +465,7 @@ export class VinylRack {
         const res = await this.#fetchRef(p);
         if (res?.ok && this.#context) {
           const arr = await res.arrayBuffer();
-          const buf = await this.#context.decodeAudioData(arr);
+          const buf = await this.#decodeAudio(arr);
           if (buf) return buf;
         }
       } catch {

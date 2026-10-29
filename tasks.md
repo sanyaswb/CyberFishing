@@ -10,25 +10,28 @@
 
 ### TK-132 — окрема секція SFX для платівки з накладанням готових аудіозаписів (галочки, гучність, луп)
 
-- [x] Реалізовано v0.48.37.
+- [x] Реалізовано v0.48.38.
 - Що просив власник:
   1. Додати до платівки окрему секцію SFX, де можна накласти вже готові звуки, які лежать у папці.
   2. Галочка біля ефекту вмикає його, повзунок гучності редагує гучність.
   3. Всі вони повинні повторюватися (програватися заново після закінчення).
+  4. Виправити увімкнення SFX у браузері на телефоні («не вмикається SFX ось як я ввімкнув»).
 - Що виявлено:
   1. У `assets/audio/radio/vinyl/` підготовлено 6 файлів аудіозаписів вінілу (`vinyl-1.mp3` .. `vinyl-6.mp3`): оберти 33⅓, текстура поверхні, шум борозенок, посадка голки, довгий фоновий вініл, скрип канавки.
-  2. Для комбінування та детального прослуховування автентичних звуків разом із процедурним звуком потрібна зручна підсекція у DEV-блоці налаштувань платівки з незалежним перемикачем (checkbox) та окремим повзунком гучності для кожного запису.
+  2. У браузерному середовищі виклик незв'язаного `fetch` викидав `TypeError: Failed to execute 'fetch' on 'Window': Illegal invocation`, через що завантаження MP3 безмовно блокувалося.
+  3. Якщо радіоприймач не відтворював станцію або знаходився між секундними тактами споживання батареї, Web Audio граф не ініціалізувався для DEV-перегляду, а зміна галочки в UI не викликала оновлення звуку наживо.
+  4. `AudioContext` у мобільних браузерах (WebKit / iOS Safari) потребував безпечного `decodeAudioData` (з підтримкою як Promise, так і callback) та `resume()` при жесті користувача.
 - Що змінилося:
-  1. У `src/game/config/raw/radio/radio_sound_settings.js` додано блок `sfx` для 6 записів (`vinyl-1` .. `vinyl-6`) із початковими значеннями `{ enabled: false, volume: 0.5 }`.
-  2. У `src/dev/radio/radio_effect_tuning.js` додано константу `VINYL_SFX_TRACKS` та методи `getVinylSfxList()`, `setVinylSfxEnabled(id, enabled)`, `setVinylSfxVolume(id, volume)`.
-  3. У `src/platform/browser/audio/vinyl_rack.js` реалізовано:
-     - Окремі Gain-вузли для кожного з 6 SFX-треків, підключені до wet-виходу платівки.
-     - Завантаження MP3 на вимогу (`#loadSfxBuffer`), безшовний цикл відтворення (`source.loop = true`) при увімкненій галочці та регулювання гучності.
-     - Зупинку та відключення аудіовузлів при вимкненні або утилізації (`dispose`).
-  4. У `src/game/presentation/radio/radio_controls_renderer.js` для платівки додано підсекцію «Семпли SFX (накладання аудіозаписів)» із чекбоксами та повзунками гучності (0..1, крок 0.05).
-  5. У `src/game/presentation/styles/inventory/radio-controls.css` додано стилі для нової підсекції та елементів керування SFX.
-  6. Оновлено перевірки в `radio-receiver-check.js` (перевірено наявність 6 чекбоксів, 6 повзунків гучності, зміну конфігурації наживо та зациклене відтворення).
-  7. Піднято версію до `0.48.37`, оновлено `CHANGELOG.md` та `CHANGELOG_ARCHIVE.md`.
+  1. У `VinylRack`:
+     - Додано `resolveFetch(ref)` із прив'язкою до `window` (`window.fetch.bind(window)`).
+     - Додано універсальний декодер `#decodeAudio(arr)` (Promise + Callback fallback).
+     - Розширено пошук файлів за шляхами (`filePath`, `/${filePath}`, `./${filePath}`).
+     - Додано відновлення `context.resume()` при старті джерела семплу.
+  2. У `RadioEffectsChain` прокинуто `fetchRef` у `VinylRack`, у `game_composition_root.js` зв'язано `windowRef.fetch.bind(windowRef)`.
+  3. У `RadioReceiverService` додано публічний метод `refreshEffects()`.
+  4. У `RadioControlsRenderer` на подію зміни будь-якого чекбокса чи повзунка додано негайний виклик `this.#radio.refreshEffects?.()`.
+  5. У `RadioStreamPlayer.refreshEffects()` додано `this.#ensureGraph()`, щоб граф ефектів формувався при DEV-тюнінгу навіть без запущеного стріму.
+  6. Оновлено тести, піднято версію до `0.48.38`, оновлено `CHANGELOG.md` та `CHANGELOG_ARCHIVE.md`.
 - Як перевіряється:
   1. `node utils/run-checks.js --check radio-receiver`
   2. `node utils/run-checks.js --check apply-radio-sound`

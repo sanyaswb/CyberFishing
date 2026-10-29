@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.38 - Browser fetch binding, AudioContext gesture resume, and live tuning refresh
+
+- Radio / Vinyl: resolved browser `fetch` binding (`Illegal invocation`), ensured `AudioContext` resumes on gesture and graph initializes on effect refresh, and wired immediate live effect updates from DEV radio tuning controls (TK-132).
+
 ## v0.48.37 - Dedicated vinyl SFX overlay section with ready audio recordings
 
 - Radio / Vinyl: added dedicated SFX overlay section in DEV tuning with individual switches and volume sliders for 6 authentic vinyl audio recordings (`vinyl-1.mp3` through `vinyl-6.mp3`) seamlessly looped in Web Audio (TK-132).
@@ -42,11 +46,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Radio: added dedicated Retro audio effect rack with analog saturation, presence boost, and tube low-end warmth without walkie-talkie clipping or vinyl crackle (TK-124).
 - Radio: separated weather interference into its own settings subsection and DevTools/tuning group, isolating rain-induced hiss and crackle from battery discharge (TK-124).
 - Radio: implemented stream interruption on signal dropouts with hiss bursts and accelerated playback rate catch-up upon resumption (TK-124).
-
-## v0.48.28 - Visual preview synchronization on tab switch and default VOLIA 77.2 track order
-
-- Inventory / Assembly: visual preview card now synchronizes with the active slot tab on swipe or tap, showing the equipped item card or the compartment icon for empty slots (TK-123).
-- Radio: default VOLIA 77.2 playlist begins with "Ефір ВОЛЯ 77.2" followed by "Чому з Купола тікають на Іржавий Шельф" (TK-123).
 
 
 

@@ -168,6 +168,7 @@ export class RadioControlsRenderer {
         input.checked = group.enabled;
         input.addEventListener("change", () => {
           this.#tuning.setEnabled(group.group, input.checked);
+          this.#radio.refreshEffects?.();
           this.#fillTuning(nodes);
         });
         label.append(input, this.#dom.element("span", "radio-controls__switch-label", group.label));
@@ -195,6 +196,7 @@ export class RadioControlsRenderer {
       input.checked = group.enabled;
       input.addEventListener("change", () => {
         this.#tuning.setEnabled(group.group, input.checked);
+        this.#radio.refreshEffects?.();
         this.#fillTuning(nodes);
       });
       label.append(input, this.#dom.element("span", "radio-controls__switch-label", "увімкнено"));
@@ -221,6 +223,7 @@ export class RadioControlsRenderer {
           slider.addEventListener("input", () => {
             this.#tuning.set(entry.effect, entry.key, Number(slider.value));
             this.#text(value, slider.value);
+            this.#radio.refreshEffects?.();
           });
           groupContent.append(field.field);
         }
@@ -239,6 +242,7 @@ export class RadioControlsRenderer {
             checkbox.checked = track.enabled;
             checkbox.addEventListener("change", () => {
               this.#tuning.setVinylSfxEnabled?.(track.id, checkbox.checked);
+              this.#radio.refreshEffects?.();
             });
             const name = this.#dom.element("span", "radio-controls__sfx-name", track.label);
             toggleLabel.append(checkbox, name);
@@ -251,6 +255,7 @@ export class RadioControlsRenderer {
             volSlider.addEventListener("input", () => {
               this.#tuning.setVinylSfxVolume?.(track.id, Number(volSlider.value));
               this.#text(volVal, volSlider.value);
+              this.#radio.refreshEffects?.();
             });
             volField.append(volSlider, volVal);
 

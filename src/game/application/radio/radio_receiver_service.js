@@ -158,6 +158,10 @@ export class RadioReceiverService {
     }
   }
 
+  refreshEffects() {
+    this.#player.refreshEffects();
+  }
+
   setCountry(code) {
     const country = String(code || "").toUpperCase();
     if (!/^[A-Z]{2}$/u.test(country) || (country === this.#prefs.country && this.#prefs.channelMode === "world")) return;
