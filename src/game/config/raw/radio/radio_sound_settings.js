@@ -18,11 +18,12 @@ export const RADIO_SOUND_SETTINGS = {
     },
     "vinyl": {
       "crackleLevel": 0.12,
+      "dryGramophone": 5,
       "enabled": false,
       "noiseLevel": 0.15,
+      "oldSpeaker": 0,
       "popLevel": 0.35,
-      "preset": 1,
-      "warmth": 5
+      "softVinyl": 0
     },
     "walkieTalkie": {
       "drive": 18,

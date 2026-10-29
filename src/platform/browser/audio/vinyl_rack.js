@@ -112,50 +112,39 @@ export class VinylRack {
     const node = this.#nodes;
     if (!node) return;
 
-    // TK-130: 3 vintage presets (0: soft vinyl, 1: dry gramophone, 2: old worn speaker)
-    // with independent crackle, groove noise, and dust pops.
-    const preset = Number(settings.preset) === 1 ? 1 : (Number(settings.preset) === 2 ? 2 : 0);
-    const warmth = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0)));
-    const w = warmth / 10;
+    // TK-131: 3 independent vintage blendable tone shapers:
+    // - dryGramophone (0..10): steep low cut (up to 480 Hz), vocal horn peak (950..1200 Hz)
+    // - oldSpeaker (0..10): steep high roll-off (down to 2200 Hz), 1400 Hz cone peak, tube distortion/crunch
+    // - softVinyl (0..10): analog 200 Hz lowshelf warmth (+7 dB), organic pitch wow
+    let d = 0;
+    let s = 0;
+    let m = 0;
+    if (settings.dryGramophone !== undefined || settings.oldSpeaker !== undefined || settings.softVinyl !== undefined) {
+      d = Math.max(0, Math.min(10, finiteOr(settings.dryGramophone, 0))) / 10;
+      s = Math.max(0, Math.min(10, finiteOr(settings.oldSpeaker, 0))) / 10;
+      m = Math.max(0, Math.min(10, finiteOr(settings.softVinyl, 0))) / 10;
+    } else {
+      const preset = Number(settings.preset) === 1 ? 1 : (Number(settings.preset) === 2 ? 2 : 0);
+      const w = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0))) / 10;
+      if (preset === 1) d = w;
+      else if (preset === 2) s = w;
+      else m = w;
+    }
 
     const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
-    const wowHz = Math.max(0, finiteOr(settings.wowHz, preset === 1 ? 0.7 : 0.55));
-    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, preset === 2 ? 8.0 : 6.5));
+    const wowHz = Math.max(0, finiteOr(settings.wowHz, d > 0.3 ? 0.75 : 0.55));
+    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, s > 0.3 ? 8.0 : 6.5));
 
-    let flutterDepthMs = 0.05 + w * 0.25;
-    let wowDepthMs = 0.4 + w * 1.8;
-    let highpassHz = Math.round(25 + w * 65);
+    let flutterDepthMs = 0.05 + d * 0.35 + s * 0.4;
+    let wowDepthMs = 0.2 + m * 2.5 + d * 1.8 + s * 0.8;
+    let highpassHz = Math.max(20, Math.min(500, Math.round(25 + d * 450 + s * 180 - m * 15)));
     let warmthHz = 200;
-    let warmthGainDb = w * 6.0;
-    let lowpassHz = Math.round(12000 - w * 8800);
-    let lofiResonanceDb = w * 4.5;
-    let resonanceHz = 850;
-    let resonanceQ = 1.5;
-    let drive = 1.0 + w * 4.0;
-
-    if (preset === 1) {
-      // Preset 1: «Сухий патефон» — явно обрізані низькі частоти, сухий, плоский тон з яскравим рупорним резонансом
-      highpassHz = Math.round(160 + w * 180); // 160..340 Hz (низи повністю відрізані!)
-      warmthHz = 260;
-      warmthGainDb = 0; // немає глибокого тепла
-      resonanceHz = 950;
-      resonanceQ = 2.2;
-      lofiResonanceDb = 2.0 + w * 5.0; // потужний рупорний відгук
-      lowpassHz = Math.round(6500 - w * 3200); // 6500..3300 Hz
-      drive = 1.5 + w * 3.5;
-      wowDepthMs = 0.6 + w * 1.6;
-    } else if (preset === 2) {
-      // Preset 2: «Старий динамік» — вузька смуга, зрізані низи й верхи, відчутна лоу-фай сатурація/хрип
-      highpassHz = Math.round(110 + w * 130); // 110..240 Hz
-      warmthHz = 320;
-      warmthGainDb = w * 2.0;
-      resonanceHz = 1400;
-      resonanceQ = 1.8;
-      lofiResonanceDb = 2.0 + w * 4.5;
-      lowpassHz = Math.round(5200 - w * 2800); // 5200..2400 Hz (дуже глухі верхи)
-      drive = 2.5 + w * 4.5; // сильне лампове перевантаження
-      wowDepthMs = 0.4 + w * 1.2;
-    }
+    let warmthGainDb = Math.max(-12, Math.min(12, m * 7.0 - d * 6.0));
+    let lowpassHz = Math.max(1800, Math.min(14000, Math.round(14000 - s * 10500 - d * 6500 - m * 3500)));
+    let resonanceHz = Math.round(950 + s * 350);
+    let resonanceQ = 1.5 + d * 1.5 + s * 0.8;
+    let lofiResonanceDb = d * 8.5 + s * 6.0;
+    let drive = 1.0 + s * 7.0 + d * 3.5 + m * 1.5;
 
     // Allow explicit overrides if provided (backwards compatibility with tests)
     if (settings.highpassHz !== undefined) highpassHz = finiteOr(settings.highpassHz, highpassHz);
@@ -190,7 +179,7 @@ export class VinylRack {
       (1 / Math.max(1e-6, WalkieTalkieRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
 
     // Surface sound routing and levels:
-    // TK-130: Independent controls for crackle (clicks) and noise (continuous groove friction)
+    // TK-131: Crackle & Pop intensity slider controls both amplitude AND density
     const crackleLevel = Math.max(0, finiteOr(settings.crackleLevel, 0.12));
     const noiseLevel = settings.noiseLevel !== undefined
       ? Math.max(0, finiteOr(settings.noiseLevel, 0.15))
@@ -198,24 +187,32 @@ export class VinylRack {
     const popLevel = Math.max(0, finiteOr(settings.popLevel, 0.35));
     const hissLevel = settings.hissLevel !== undefined
       ? finiteOr(settings.hissLevel, 0.006)
-      : noiseLevel * 0.12;
+      : noiseLevel * 0.14;
     const rumbleLevel = settings.rumbleLevel !== undefined
       ? finiteOr(settings.rumbleLevel, 0.02)
-      : noiseLevel * 0.15;
+      : noiseLevel * 0.18;
 
     this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 2800));
-    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 1.8);
-    this.#param("popLevel", node.pops.gain, popLevel * 1.5);
+    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 2.2);
+    this.#param("popLevel", node.pops.gain, popLevel * 1.8);
     this.#param("hissLevel", node.hiss.gain, hissLevel);
     this.#param("rumbleHz", node.rumbleTone.frequency, Math.max(1, finiteOr(settings.rumbleHz, 30)));
     this.#param("rumbleLevel", node.rumble.gain, rumbleLevel);
 
-    const crackleRate = Math.max(0, finiteOr(settings.crackleRate, 4 + crackleLevel * 14));
+    // Dynamic density scaling: higher slider = much denser flurry of crackles and pops
+    const dynamicCrackleRate = Math.max(2, Math.round(2 + crackleLevel * crackleLevel * 38));
+    const crackleRate = settings.crackleRate !== undefined
+      ? Math.max(0, finiteOr(settings.crackleRate, dynamicCrackleRate))
+      : dynamicCrackleRate;
     if (this.#applied.crackleRate !== crackleRate) {
       this.#loop("crackle", this.#clickBuffer(crackleRate, 0.002), node.crackleTone);
       this.#applied.crackleRate = crackleRate;
     }
-    const popRate = Math.max(0, finiteOr(settings.popRate, 0.2 + popLevel * 1.2));
+
+    const dynamicPopRate = Number((0.1 + popLevel * popLevel * 3.0).toFixed(2));
+    const popRate = settings.popRate !== undefined
+      ? Math.max(0, finiteOr(settings.popRate, dynamicPopRate))
+      : dynamicPopRate;
     if (this.#applied.popRate !== popRate) {
       this.#loop("pops", this.#clickBuffer(popRate, 0.006), node.pops);
       this.#applied.popRate = popRate;
