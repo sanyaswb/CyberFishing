@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.52 - Fixed SpineScene setSlotVisible Spine 4.3 SlotPose attachment contract
+
+- Animation / Spine: fixed `SpineScene.prototype.setSlotVisible` to use Spine 4.3 runtime attachment API (`Skeleton.prototype.setAttachment(slotName, placeholder)` and `slot.pose.setAttachment`), resolving `TypeError: slot.setAttachment is not a function` on bait boat launch (Spec 150 / TK-147).
+- Animation / Spine: preserved and restored authored slot alpha from `slot.data.setupPose.color.a` when making slots visible, retaining proper transparency for boat night lights and bait compartments (TK-147).
+
 ## v0.48.51 - Fixed Spine bait boat rendering over emoji fallback
 
 - Delivery / Animation: fixed runtime boat creation in `BaitBoat` to preserve top-level `skin` and `emoji` from equipped `delivery` item alongside `effectiveStats`, ensuring `BoatChumRenderFrameBuilder` acquires animation descriptors (Spec 150 / TK-146).
@@ -51,8 +56,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio: added authentic radio frequency search / tuning sweep audio cue (`next_track-radio.mp3`) with 2.8s stream ducking and smooth crossfade for station and track switches when vinyl effect is disabled (TK-137).
 - Radio: unified track switch dispatching in effects chain, seamlessly selecting vinyl tonearm landing (`vinyl-6.mp3`) when vinyl is active or electronic radio tuning when vinyl is disabled (TK-137).
-
-## v0.48.42 - Restored vinyl-6 cue on track switches and added power on/off tonearm needle effects
-
-- Radio / Vinyl: restored `vinyl-6.mp3` tonearm drop & lead-in cueing with 3.0s ducking on track and station switches, ensuring active effects graph and open gate prior to cue trigger (TK-136).
-- Radio / Vinyl: added authentic vinyl tonearm sound on radio power-on (needle contact and groove spin before music fades in) and radio power-off (instant music and noise mute with ~1.8s tonearm lift fade-out into silence) (TK-136).

@@ -18,6 +18,7 @@
 - [x] TK-144: Інтеграція Spine-рендерингу кораблика на WebGL сцені (PixiWorldEntitiesRenderer / BoatChumRenderer). Реалізовано v0.48.49.
 - [x] TK-145: Налаштування розміру (`displayScale`) та початкових координат (`x`, `xOffset`, `yOffset`) кораблика в `CONFIG.ui.boat` і DevTools (секція `SpineBoatDevSection` у розділі `SPINE`). Реалізовано v0.48.50.
 - [x] TK-146: Виправлення перемикання на emoji-фолбек замість Spine-кораблика: збереження `skin` та `emoji` в `BaitBoat` з екіпірованого `eq.delivery`, виправлення контракту `loadRuntime` (`capability.available`, `createScene(bundle, surface)`) у `BoatAnimationController` та безпечне розгортання контролера в `game_render_composition.js`. Реалізовано v0.48.51.
+- [x] TK-147: Виправлення помилки `slot.setAttachment is not a function` у `SpineScene.prototype.setSlotVisible`: перехід на Spine 4.3 SlotPose контракт (`Skeleton.prototype.setAttachment(slotName, attachmentName/null)` та `slot.pose.setAttachment()`), збереження та відновлення авторського кольору й альфи `slot.data.setupPose.color.a`. Реалізовано v0.48.52.
 
 ### Spec 142 — польовий радіоприймач
 
@@ -28,6 +29,17 @@
 ## Незавершені перевірки власника
 
 Архівування не означає візуального приймання. Усі наведені нижче перевірки залишаються невиконаними.
+
+### TK-147 — Запуск кораблика без помилки slot.setAttachment is not a function
+
+[Spec 150](specs/150-bait-boat-spine-animation/spec.md); реалізовано v0.48.52.
+
+- [ ] Власник:
+  1. Запустити `dev.html` або `index.html`.
+  2. Переконатися, що екіпіровано кораблик 3 рівня з прикормками.
+  3. Спустити кораблик на воду (натиснути кнопку запуску доставки).
+  4. Перевірити, що кораблик запускається плавно без винятку `slot.setAttachment is not a function` у консолі браузера.
+  5. Перевірити роботу слотів ліхтарів (удень вимкнені, вночі увімкнені крім занурення) та секцій скидання (відкриття стулок і приховування слота `section--1-bait`). Візуально агентом не перевірялося.
 
 ### TK-146 — Відображення Spine-кораблика boat-lvl--3 на воді замість emoji-фолбеку
 

@@ -337,11 +337,72 @@ async function checkDevToolsAndBoatConfig() {
   assert.equal(renderedConfigTree, true, "SpineBoatDevSection renders config tree for CONFIG.ui.boat");
 }
 
+async function checkRealSpineSceneSlotVisibility() {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const spine = require("@esotericsoftware/spine-webgl");
+  const { SpineScene } = await import("../../../src/platform/browser/animation/spine_scene.js");
+
+  const atlasPath = path.resolve(__dirname, "../../../assets/animations/boats/boat-lvl--3.atlas");
+  const jsonPath = path.resolve(__dirname, "../../../assets/animations/boats/boat-lvl--3.json");
+
+  const fakeSurface = {
+    width: 200,
+    height: 200,
+    maxTextureSize: 4096,
+    isContextLost: () => false,
+    onContextChange: () => () => {},
+  };
+  const fakeGraphics = {
+    createTexture: () => ({ setFilters: () => {}, setWraps: () => {}, dispose: () => {} }),
+    canMipmap: () => false,
+    dispose: () => {},
+  };
+  const bundle = {
+    version: "4.3.13",
+    atlasText: fs.readFileSync(atlasPath, "utf8"),
+    skeleton: JSON.parse(fs.readFileSync(jsonPath, "utf8")),
+    skin: "skin_boat-lvl--3",
+    pages: new Map([["boat-lvl--3.webp", {}]]),
+  };
+
+  const { scene, reason, error } = SpineScene.create({
+    spine,
+    bundle,
+    surface: fakeSurface,
+    graphics: fakeGraphics,
+    runtimeVersion: "4.3.13",
+  });
+
+  assert.equal(reason, null, `SpineScene must initialize without error, got: ${error}`);
+  assert.ok(scene, "SpineScene instance must be created");
+
+  // Non-existent slot returns false
+  assert.equal(scene.setSlotVisible("non-existent-slot", true), false);
+
+  // Night light slots: hide and show without throwing (TK-147)
+  assert.equal(scene.setSlotVisible("boat-light", false), true);
+  assert.equal(scene.setSlotVisible("boat-light", true), true);
+  assert.equal(scene.setSlotVisible("boat3-night_light", false), true);
+  assert.equal(scene.setSlotVisible("boat3-night_light", true), true);
+
+  // Bait slots: hide and show without throwing
+  assert.equal(scene.setSlotVisible("section--1-bait", false), true);
+  assert.equal(scene.setSlotVisible("section--1-bait", true), true);
+  assert.equal(scene.setSlotVisible("section--1-bait2", false), true);
+  assert.equal(scene.setSlotVisible("section--1-bait2", true), true);
+  assert.equal(scene.setSlotVisible("section--1-bait3", false), true);
+  assert.equal(scene.setSlotVisible("section--1-bait3", true), true);
+
+  scene.dispose();
+}
+
 async function run() {
   await checkBoatStateFlow();
   await checkAnimationController();
   await checkBoatRenderPipeline();
   await checkDevToolsAndBoatConfig();
+  await checkRealSpineSceneSlotVisibility();
 }
 
 run().then(() => {

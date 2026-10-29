@@ -77,3 +77,7 @@
    - Збереження `skin` та `emoji` в `BaitBoat.config` з екіпірованого `eq.delivery`.
    - Приведення `BoatAnimationController.#onBundle` до канонічного контракту `SpineRuntimeProvider`: перевірка `capability.available` замість неіснуючого `status === "ready"`, виклик `capability.runtime.createScene(outcome.bundle, this.#glSurface)`.
    - Безпечне розгортання `boatAnimation` у `game_render_composition.js`.
+7. **Етап 7: Виправлення `SpineScene.prototype.setSlotVisible` для Spine 4.3 SlotPose контракту (TK-147).**
+   - Усунення виклику застарілого методу `slot.setAttachment` (відсутнього у Spine 4.3 `Slot.prototype`).
+   - Використання канонічного методу `Skeleton.prototype.setAttachment(slotName, placeholder)` з безпечним фолбеком до `slot.pose.setAttachment()`.
+   - Збереження та коректне відновлення авторської альфи `slot.data.setupPose.color.a` для ліхтарів та слотів наживки.

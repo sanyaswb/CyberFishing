@@ -138,14 +138,29 @@ export class SpineScene {
   setSlotVisible(slotName, visible) {
     const slot = this.#skeleton.findSlot(slotName);
     if (!slot) return false;
+    const data = slot.data;
     if (visible) {
-      const data = slot.data;
-      const attachment = data.attachmentName ? this.#skeleton.getAttachment(data.index, data.attachmentName) : null;
-      slot.setAttachment(attachment);
-      if (slot.color) slot.color.a = 1;
+      if (data?.attachmentName) {
+        try {
+          this.#skeleton.setAttachment(slotName, data.attachmentName);
+        } catch {
+          const attachment = this.#skeleton.getAttachment?.(data.index, data.attachmentName);
+          if (slot.pose?.setAttachment) slot.pose.setAttachment(attachment);
+          else if (typeof slot.setAttachment === "function") slot.setAttachment(attachment);
+        }
+      }
+      const alpha = data?.setupPose?.color?.a ?? 1;
+      if (slot.pose?.color) slot.pose.color.a = alpha;
+      else if (slot.color) slot.color.a = alpha;
     } else {
-      slot.setAttachment(null);
-      if (slot.color) slot.color.a = 0;
+      try {
+        this.#skeleton.setAttachment(slotName, null);
+      } catch {
+        if (slot.pose?.setAttachment) slot.pose.setAttachment(null);
+        else if (typeof slot.setAttachment === "function") slot.setAttachment(null);
+      }
+      if (slot.pose?.color) slot.pose.color.a = 0;
+      else if (slot.color) slot.color.a = 0;
     }
     return true;
   }
