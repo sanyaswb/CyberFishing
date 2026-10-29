@@ -24,8 +24,10 @@ const GROUPS = Object.freeze([
     label: "Платівка",
     path: Object.freeze(["effects", "vinyl"]),
     parameters: Object.freeze([
-      Object.freeze({ key: "warmth", label: "Платівка · теплота", min: 0, max: 10, step: 0.5 }),
+      Object.freeze({ key: "preset", label: "Платівка · пресет (0:м'який, 1:сухий, 2:старий динамік)", min: 0, max: 2, step: 1 }),
+      Object.freeze({ key: "warmth", label: "Платівка · глибина старіння", min: 0, max: 10, step: 0.5 }),
       Object.freeze({ key: "crackleLevel", label: "Платівка · тріск", min: 0, max: 1, step: 0.05 }),
+      Object.freeze({ key: "noiseLevel", label: "Платівка · шум борозенки", min: 0, max: 1, step: 0.05 }),
       Object.freeze({ key: "popLevel", label: "Платівка · клацання", min: 0, max: 1, step: 0.05 }),
     ]),
   }),

@@ -19,7 +19,9 @@ export const RADIO_SOUND_SETTINGS = {
     "vinyl": {
       "crackleLevel": 0.12,
       "enabled": false,
+      "noiseLevel": 0.15,
       "popLevel": 0.35,
+      "preset": 1,
       "warmth": 5
     },
     "walkieTalkie": {

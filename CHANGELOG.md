@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.35 - Independent vinyl crackle / groove noise controls and 3 vintage presets
+
+- Radio / Vinyl: separated needle crackle and continuous groove surface noise into independent controls, and introduced 3 distinct vintage tone presets (0: soft vinyl, 1: dry gramophone with steep bass cut and horn resonance, 2: worn speaker with narrow bandwidth and tube saturation) with intensity/warmth scaling (TK-130).
+
 ## v0.48.34 - Simplified vinyl sound effect to 3 core procedural parameters
 
 - Radio / Vinyl: streamlined vinyl tuning down to 3 core intuitive parameters: warmth (vintage boxy filter & saturation), crackle (prominent needle-in-groove crackling and surface bed), and pops (distinct dust impulse clicks) for focused procedural sound testing (TK-129).
@@ -43,10 +47,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.26 - Radio DEV sound tuning full parameters and collapsed list
 
 - Radio: expanded DEV radio sound tuning to full parameter set across vinyl, walkie-talkie and battery/signal interference, organizing groups into collapsible accordion sections with range sliders (TK-121).
-
-## v0.48.25 - Aligned item assembly editor width and margins in portrait mode
-
-- Inventory: removed redundant horizontal and top padding on assembly editor in portrait mode, aligning content panels with header margins and pinning sticky actions to top (TK-120).
 
 
 

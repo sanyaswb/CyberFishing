@@ -112,43 +112,68 @@ export class VinylRack {
     const node = this.#nodes;
     if (!node) return;
 
-    // TK-129: simplified to 3 core procedural parameters: warmth (0..10), crackleLevel (0..1), popLevel (0..1).
-    // Backward-compatible with granular settings if explicitly provided.
+    // TK-130: 3 vintage presets (0: soft vinyl, 1: dry gramophone, 2: old worn speaker)
+    // with independent crackle, groove noise, and dust pops.
+    const preset = Number(settings.preset) === 1 ? 1 : (Number(settings.preset) === 2 ? 2 : 0);
     const warmth = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0)));
     const w = warmth / 10;
 
     const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
-    const wowHz = Math.max(0, finiteOr(settings.wowHz, 0.55));
-    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, 6.5));
-    const flutterDepthMs = settings.flutterDepthMs !== undefined
-      ? Math.max(0, finiteOr(settings.flutterDepthMs, 0.15))
-      : 0.05 + w * 0.25;
-    const wowDepthMs = settings.wowDepthMs !== undefined
-      ? Math.max(0, finiteOr(settings.wowDepthMs, 1.2))
-      : 0.4 + w * 1.8;
+    const wowHz = Math.max(0, finiteOr(settings.wowHz, preset === 1 ? 0.7 : 0.55));
+    const flutterHz = Math.max(0, finiteOr(settings.flutterHz, preset === 2 ? 8.0 : 6.5));
+
+    let flutterDepthMs = 0.05 + w * 0.25;
+    let wowDepthMs = 0.4 + w * 1.8;
+    let highpassHz = Math.round(25 + w * 65);
+    let warmthHz = 200;
+    let warmthGainDb = w * 6.0;
+    let lowpassHz = Math.round(12000 - w * 8800);
+    let lofiResonanceDb = w * 4.5;
+    let resonanceHz = 850;
+    let resonanceQ = 1.5;
+    let drive = 1.0 + w * 4.0;
+
+    if (preset === 1) {
+      // Preset 1: «Сухий патефон» — явно обрізані низькі частоти, сухий, плоский тон з яскравим рупорним резонансом
+      highpassHz = Math.round(160 + w * 180); // 160..340 Hz (низи повністю відрізані!)
+      warmthHz = 260;
+      warmthGainDb = 0; // немає глибокого тепла
+      resonanceHz = 950;
+      resonanceQ = 2.2;
+      lofiResonanceDb = 2.0 + w * 5.0; // потужний рупорний відгук
+      lowpassHz = Math.round(6500 - w * 3200); // 6500..3300 Hz
+      drive = 1.5 + w * 3.5;
+      wowDepthMs = 0.6 + w * 1.6;
+    } else if (preset === 2) {
+      // Preset 2: «Старий динамік» — вузька смуга, зрізані низи й верхи, відчутна лоу-фай сатурація/хрип
+      highpassHz = Math.round(110 + w * 130); // 110..240 Hz
+      warmthHz = 320;
+      warmthGainDb = w * 2.0;
+      resonanceHz = 1400;
+      resonanceQ = 1.8;
+      lofiResonanceDb = 2.0 + w * 4.5;
+      lowpassHz = Math.round(5200 - w * 2800); // 5200..2400 Hz (дуже глухі верхи)
+      drive = 2.5 + w * 4.5; // сильне лампове перевантаження
+      wowDepthMs = 0.4 + w * 1.2;
+    }
+
+    // Allow explicit overrides if provided (backwards compatibility with tests)
+    if (settings.highpassHz !== undefined) highpassHz = finiteOr(settings.highpassHz, highpassHz);
+    if (settings.warmthHz !== undefined) warmthHz = finiteOr(settings.warmthHz, warmthHz);
+    if (settings.warmthGainDb !== undefined) warmthGainDb = finiteOr(settings.warmthGainDb, warmthGainDb);
+    if (settings.lowpassHz !== undefined) lowpassHz = finiteOr(settings.lowpassHz, lowpassHz);
+    if (settings.drive !== undefined) drive = Math.max(0, finiteOr(settings.drive, drive));
+    if (settings.wowDepthMs !== undefined) wowDepthMs = Math.max(0, finiteOr(settings.wowDepthMs, wowDepthMs));
+    if (settings.flutterDepthMs !== undefined) flutterDepthMs = Math.max(0, finiteOr(settings.flutterDepthMs, flutterDepthMs));
+
+    node.lofiResonance.frequency.value = resonanceHz;
+    node.lofiResonance.Q.value = resonanceQ;
 
     this.#param("baseDelayMs", node.delay.delayTime, baseDelayMs / 1000);
     this.#param("wowHz", node.wowOsc.frequency, wowHz);
     this.#param("flutterHz", node.flutterOsc.frequency, flutterHz);
     this.#param("flutterDepthMs", node.flutterDepth.gain, flutterDepthMs / 1000);
     this.#param("wowDepthMs", node.wowDepth.gain, wowDepthMs / 1000);
-
-    const highpassHz = settings.highpassHz !== undefined
-      ? finiteOr(settings.highpassHz, 35)
-      : Math.round(25 + w * 65);
-    const warmthHz = settings.warmthHz !== undefined
-      ? finiteOr(settings.warmthHz, 150)
-      : 200;
-    const warmthGainDb = settings.warmthGainDb !== undefined
-      ? finiteOr(settings.warmthGainDb, 2.5)
-      : w * 6.0;
-    const lowpassHz = settings.lowpassHz !== undefined
-      ? finiteOr(settings.lowpassHz, 9000)
-      : Math.round(12000 - w * 8800);
-    const lofiResonanceDb = w * 4.5;
-    const drive = settings.drive !== undefined
-      ? Math.max(0, finiteOr(settings.drive, 3))
-      : 1.0 + w * 4.0;
 
     this.#param("highpassHz", node.highpass.frequency, highpassHz);
     this.#param("warmthHz", node.warmth.frequency, warmthHz);
@@ -164,18 +189,22 @@ export class VinylRack {
     this.#param("makeup", node.makeup.gain,
       (1 / Math.max(1e-6, WalkieTalkieRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
 
-    // Surface sound routing and levels: rich, distinct crackle, pops, and groove texture
+    // Surface sound routing and levels:
+    // TK-130: Independent controls for crackle (clicks) and noise (continuous groove friction)
     const crackleLevel = Math.max(0, finiteOr(settings.crackleLevel, 0.12));
+    const noiseLevel = settings.noiseLevel !== undefined
+      ? Math.max(0, finiteOr(settings.noiseLevel, 0.15))
+      : crackleLevel * 0.4;
     const popLevel = Math.max(0, finiteOr(settings.popLevel, 0.35));
     const hissLevel = settings.hissLevel !== undefined
       ? finiteOr(settings.hissLevel, 0.006)
-      : crackleLevel * 0.04;
+      : noiseLevel * 0.12;
     const rumbleLevel = settings.rumbleLevel !== undefined
       ? finiteOr(settings.rumbleLevel, 0.02)
-      : crackleLevel * 0.05;
+      : noiseLevel * 0.15;
 
     this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 2800));
-    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 1.6);
+    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 1.8);
     this.#param("popLevel", node.pops.gain, popLevel * 1.5);
     this.#param("hissLevel", node.hiss.gain, hissLevel);
     this.#param("rumbleHz", node.rumbleTone.frequency, Math.max(1, finiteOr(settings.rumbleHz, 30)));
@@ -192,7 +221,7 @@ export class VinylRack {
       this.#applied.popRate = popRate;
     }
 
-    // TK-129: Procedural surface noise active
+    // Procedural surface noise active
     this.#param("sampledGain", node.sampledSurface.gain, 0);
     this.#param("proceduralGain", node.proceduralSurface.gain, 1);
 
