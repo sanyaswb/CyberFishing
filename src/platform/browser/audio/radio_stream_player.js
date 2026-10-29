@@ -15,6 +15,7 @@ export class RadioStreamPlayer {
   #stream = null;
   #streamMuted = false;
   #catchUpTimer = null;
+  #cueStartTimer = null;
   #element = null;
   #sourceNode = null;
   #timer = null;
@@ -80,6 +81,13 @@ export class RadioStreamPlayer {
     }
   }
 
+  #clearCueStartTimer() {
+    if (this.#cueStartTimer) {
+      this.#scheduler.clearTimeout(this.#cueStartTimer);
+      this.#cueStartTimer = null;
+    }
+  }
+
   // TK-124: complete interruption of the station during dropouts with optional catch-up playback
   setStreamInterrupted(interrupted, { catchUp = false, catchUpRate = 1.4, catchUpSeconds = 3 } = {}) {
     if (interrupted) {
@@ -117,25 +125,43 @@ export class RadioStreamPlayer {
       if (this.#effectsGate) this.#effectsGate.gain.value = 1;
       this.#effects?.setActive?.(true);
     }
+    const attempt = this.#audioContexts.get() ? "effects" : "native";
     if (isStationSwitch !== false) {
-      this.cueTrackSwitch();
+      const cueInfo = this.cueTrackSwitch();
+      if (cueInfo && typeof cueInfo.duration === "number" && cueInfo.duration > 0) {
+        const rawCfg = typeof this.#config === "function" ? this.#config() : (this.#config || {});
+        const cfg = rawCfg.effects || rawCfg;
+        const vinylEnabled = cfg.vinyl?.enabled !== false && (cfg.vinyl?.mix === undefined || cfg.vinyl?.mix > 0);
+        const overlapSec = Number(vinylEnabled ? cfg.vinyl?.cueOverlapSeconds : cfg.radio?.cueOverlapSeconds);
+        const overlap = Number.isFinite(overlapSec) ? Math.max(0, overlapSec) : 1.0;
+        const delayMs = Math.max(0, Math.round((cueInfo.duration - overlap) * 1000));
+        if (delayMs > 0) {
+          this.#onState("loading");
+          this.#cueStartTimer = this.#scheduler.setTimeout(() => {
+            this.#cueStartTimer = null;
+            this.#start(attempt);
+          }, delayMs);
+          return;
+        }
+      }
     }
-    this.#start(this.#audioContexts.get() ? "effects" : "native");
+    this.#start(attempt);
   }
 
-  // TK-126/128/133/136/137: triggers authentic switch cue (vinyl-6 tonearm drop if vinyl active, next_track-radio if vinyl disabled)
+  // TK-126/128/133/136/137/140: triggers authentic switch cue (vinyl tonearm drop if vinyl active, next_track-radio if vinyl disabled)
   cueTrackSwitch() {
-    if (this.#effects?.cueTrackSwitch) this.#effects.cueTrackSwitch();
-    else this.#effects?.cueVinyl?.();
+    if (this.#effects?.cueTrackSwitch) return this.#effects.cueTrackSwitch();
+    return this.#effects?.cueVinyl?.();
   }
 
   cueVinyl() {
-    this.#effects?.cueVinyl?.();
+    return this.#effects?.cueVinyl?.();
   }
 
   stop({ isPowerOff = false } = {}) {
     this.#clearTimer();
     this.#clearCatchUpTimer();
+    this.#clearCueStartTimer();
     if (this.#element) this.#element.playbackRate = 1.0;
     this.#releaseElement();
     this.#url = null;

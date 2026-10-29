@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.48.46";
+export const CURRENT_PROJECT_VERSION = "0.48.47";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Field Radio",
   updatedAt: "2026-10-29",
   notes: Object.freeze([
+    "TK-140: sequential switch cue playback with configurable cueOverlapSeconds, next_track-vinyl.mp3 rename and move, and 2s pause between tracks on VOLIA 77.2.",
     "TK-139: removed hidden retro effect coloring (drive=0 linear curve, 22kHz lowpass, presenceQ slider), decoupled station switch cues from intra-station playlist track advances, and removed vinyl start ducking.",
     "TK-138 (Spec 149): dedicated 'Радіо' (RadioRack) 3-track transistor radio synthesizer section; restored 'Рація' (WalkieTalkieRack) bit-for-bit.",
     "TK-137: next_track-radio.mp3 radio frequency tuning cue with stream ducking when vinyl effect is disabled.",

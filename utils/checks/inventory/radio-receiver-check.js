@@ -341,6 +341,40 @@ async function stageTwo() {
   assert.equal(playingElem.playbackRate, 1.0, "playback rate returns to 1.0 after catch-up duration");
   stream.stop();
 
+  // TK-140: sequential cue playback before track starts with configurable overlap.
+  let cueInvoked = 0;
+  const fakeEffects = {
+    cueTrackSwitch: () => { cueInvoked += 1; return { duration: 3.3 }; },
+    attach() {},
+    setActive() {},
+    update() {},
+    dispose() {},
+  };
+  const cueTimers = scheduler();
+  const cueStates = [];
+  const cuePlayer = new RadioStreamPlayer({
+    documentRef: { createElement: () => new FakeAudio() },
+    audioContexts,
+    scheduler: cueTimers,
+    config: () => ({ effects: { vinyl: { enabled: true, cueOverlapSeconds: 1.0 } } }),
+    onState: (state) => cueStates.push(state),
+    effects: fakeEffects,
+  });
+  const elementsCountBefore = elements.length;
+  cuePlayer.play("https://cors.example", { isStationSwitch: true });
+  assert.equal(cueInvoked, 1, "station switch triggers cue sound first");
+  assert.equal(cueStates.at(-1), "loading", "player stays in loading while cue plays");
+  assert.equal(elements.length, elementsCountBefore, "audio element not created yet during cue delay");
+  // 3.3s duration - 1.0s overlap = 2.3s (2300ms) delay
+  cueTimers.advance(2290);
+  assert.equal(elements.length, elementsCountBefore, "track still waiting 10ms before overlap point");
+  cueTimers.advance(20);
+  assert.equal(elements.length, elementsCountBefore + 1, "track element created exactly at duration - overlap point");
+  assert.equal(elements.at(-1)?.connected, true, "track starts connected to effects");
+  elements.at(-1).settle();
+  assert.equal(cueStates.at(-1), "playing", "player enters playing state from the beginning of track");
+  cuePlayer.stop();
+
   // The editor controls drive the service; status updates write in place, station names as text.
   const doc = new TestDocument();
   const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
@@ -966,9 +1000,9 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, radio, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 8, "8 parameters of vinyl sound are available");
+  assert.equal(plain(tuning.list()).length, 9, "9 parameters of vinyl sound are available");
   assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
-    ["rumbleLevel", "surfaceLevel", "crackleLevel", "popLevel", "tonalWarmth", "saturation", "innerGrooveDistortion", "wowFlutter"], "8 vinyl parameters in tuning list");
+    ["rumbleLevel", "surfaceLevel", "crackleLevel", "popLevel", "tonalWarmth", "saturation", "innerGrooveDistortion", "wowFlutter", "cueOverlapSeconds"], "9 vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -1005,7 +1039,7 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false, false],
     "DEV shows the six part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 8, "all 8 sliders of the enabled part (vinyl)");
+  assert.equal(sliders.length, 9, "all 9 sliders of the enabled part (vinyl)");
   const sfxBoxes = byClass(block, "radio-controls__sfx-checkbox");
   assert.equal(sfxBoxes.length, 6, "6 SFX checkboxes for ready vinyl recordings");
   const sfxVolumes = byClass(block, "radio-controls__sfx-volume");
@@ -1041,7 +1075,7 @@ async function tuningSliders() {
   radio.effects.radio = { enabled: true };
   listener(status);
   assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max),
-    ["50", "1", "0.2", "0.05", "15", "3500", "5000", "1000", "2", "1"],
+    ["50", "1", "0.2", "0.05", "15", "3500", "5000", "1000", "3", "2", "1"],
     "radio group sliders in DEV");
   radio.effects.radio.enabled = false;
   radio.effects.walkieTalkie.enabled = true;
@@ -1177,19 +1211,26 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().station.name, "VOLIA 77.2");
   assert.equal(service.getStatus().station.frequency, "77.2 FM");
 
-  // Track finished: automatically advances to next track immediately without intermission pause
+  // Track finished: advances to next track after 2-second intermission pause
   service.handlePlayerState("ended");
-  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel automatically starts next track when current ends");
+  assert.equal(service.getStatus().status, "intermission", "volia pauses for 2s intermission");
+  assert.equal(timers.at(-1)?.ms, 2000, "2000ms intermission timer scheduled for volia");
+  timers.at(-1).cb();
+  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel starts next track when intermission ends");
   assert.equal(played.at(-1)?.isStationSwitch, false, "advancing tracks on the same channel is not a station switch");
-  assert.notEqual(service.getStatus().status, "intermission", "volia channel does not stop in intermission");
-  assert.equal(timers.filter((t) => !t.cancelled).length, 0, "no intermission timer scheduled for volia");
 
-  // Next track finished: loops back to first track
+  // Next track finished: loops back to first track after 2-second intermission pause
   service.handlePlayerState("ended");
+  assert.equal(service.getStatus().status, "intermission", "volia pauses for 2s intermission before looping");
+  assert.equal(timers.at(-1)?.ms, 2000);
+  timers.at(-1).cb();
   assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia loops back to first track");
   assert.equal(played.at(-1)?.isStationSwitch, false, "looping track on same channel is not a station switch");
 
   service.next();
+  assert.equal(service.getStatus().status, "intermission", "manual next on volia pauses for 2s intermission");
+  assert.equal(timers.at(-1)?.ms, 2000);
+  timers.at(-1).cb();
   assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3");
   assert.equal(played.at(-1)?.isStationSwitch, false, "manual next on same channel is not a station switch");
 

@@ -8,7 +8,7 @@ export const VINYL_SFX_TRACKS = Object.freeze([
   Object.freeze({ id: "vinyl-3", file: "vinyl-3.mp3", label: "vinyl-3 · Шум та тріск борозенок" }),
   Object.freeze({ id: "vinyl-4", file: "vinyl-4.mp3", label: "vinyl-4 · Посадка голки (луп)" }),
   Object.freeze({ id: "vinyl-5", file: "vinyl-5.mp3", label: "vinyl-5 · Фоновий вініл (довгий)" }),
-  Object.freeze({ id: "vinyl-6", file: "vinyl-6.mp3", label: "vinyl-6 · Скрип канавки та голка" }),
+  Object.freeze({ id: "vinyl-6", file: "next_track-vinyl.mp3", label: "next_track-vinyl · Скрип канавки та голка" }),
 ]);
 
 const GROUPS = Object.freeze([
@@ -42,6 +42,7 @@ const GROUPS = Object.freeze([
       Object.freeze({ key: "saturation", label: "Платівка · Д3 асиметрична сатурація (2-га гармоніка)", min: 0, max: 10, step: 0.5 }),
       Object.freeze({ key: "innerGrooveDistortion", label: "Платівка · Д3 спотворення канавки (IGD/яблуко)", min: 0, max: 10, step: 0.5 }),
       Object.freeze({ key: "wowFlutter", label: "Платівка · Д3 детонація (wow 0.55 Гц + flutter)", min: 0, max: 10, step: 0.5 }),
+      Object.freeze({ key: "cueOverlapSeconds", label: "Платівка · накладення голки, с", min: 0, max: 3, step: 0.1 }),
     ]),
   }),
   Object.freeze({
@@ -57,6 +58,7 @@ const GROUPS = Object.freeze([
       Object.freeze({ key: "peakHz", label: "Радіо · частота резонансу, Гц", min: 1000, max: 3500, step: 50 }),
       Object.freeze({ key: "lowpassHz", label: "Радіо · верхи (зріз 24дБ), Гц", min: 2000, max: 5000, step: 100 }),
       Object.freeze({ key: "highpassHz", label: "Радіо · низи (зріз 24дБ), Гц", min: 200, max: 1000, step: 25 }),
+      Object.freeze({ key: "cueOverlapSeconds", label: "Радіо · накладення хвилі, с", min: 0, max: 3, step: 0.1 }),
       Object.freeze({ key: "outputGain", label: "Радіо · вихідне підсилення", min: 0, max: 2, step: 0.05 }),
       Object.freeze({ key: "mix", label: "Радіо · мікс", min: 0, max: 1, step: 0.05 }),
     ]),

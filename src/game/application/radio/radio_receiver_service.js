@@ -425,7 +425,14 @@ export class RadioReceiverService {
       const nextIndex = ((this.#prefs[prefKey] ?? 0) + direction + tracks.length) % tracks.length;
       this.#prefs[prefKey] = nextIndex;
       this.#save({ [prefKey]: nextIndex });
-      this.#loadPlaylistChannel(mode, { isStationSwitch: false });
+      this.#player.stop();
+      this.#updateCurrentStationPreview();
+      this.#set({ status: "intermission" });
+      this.#intermissionTimer = this.#scheduler.setTimeout(() => {
+        this.#intermissionTimer = null;
+        if (!this.#status.powered || this.#prefs.channelMode !== mode) return;
+        this.#loadPlaylistChannel(mode, { isStationSwitch: false });
+      }, 2000);
     }
   }
 
@@ -507,12 +514,12 @@ export class RadioReceiverService {
       return this.#set({ status: statusKey });
     }
     const intermissionCfg = channel?.intermission;
-    if (intermissionCfg && (Number(intermissionCfg.minSeconds) > 0 || Number(intermissionCfg.maxSeconds) > 0)) {
-      const minSec = Number(intermissionCfg.minSeconds) || 15;
-      const maxSec = Number(intermissionCfg.maxSeconds) || 45;
-      const pauseSeconds = minSec + this.#rng.next() * Math.max(0, maxSec - minSec);
-      const pauseMs = pauseSeconds * 1000;
+    const hasIntermission = intermissionCfg && (Number(intermissionCfg.minSeconds) > 0 || Number(intermissionCfg.maxSeconds) > 0);
+    const pauseMs = hasIntermission
+      ? (Number(intermissionCfg.minSeconds) || 15) * 1000 + this.#rng.next() * Math.max(0, ((Number(intermissionCfg.maxSeconds) || 45) - (Number(intermissionCfg.minSeconds) || 15)) * 1000)
+      : (mode === "volia" ? 2000 : 0);
 
+    if (pauseMs > 0) {
       this.#set({ status: "intermission" });
       this.#intermissionTimer = this.#scheduler.setTimeout(() => {
         this.#intermissionTimer = null;

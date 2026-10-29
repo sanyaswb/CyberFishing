@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.47 - Sequential switch cue playback with configurable overlap, next_track-vinyl, and 2s track pause
+
+- Radio: converted track and station switch cueing into sequential playback (`next_track-vinyl` or `next_track-radio` plays first, followed by incoming track audio from 0:00:00 without beginning cutoff or ducking), governed by new configurable `cueOverlapSeconds` parameter (TK-140).
+- Radio / Vinyl: renamed `assets/audio/radio/vinyl/vinyl-6.mp3` to `assets/audio/radio/next_track-vinyl.mp3` alongside `next_track-radio.mp3` and exposed `cueOverlapSeconds` sliders for both vinyl and radio in DEV tuning (TK-140).
+- Radio / VOLIA 77.2: inserted an authentic 2-second broadcast pause (`2000 ms`) between playlist tracks during automatic track progression and manual stepping on the same frequency without triggering station switch sweep cues (TK-140).
+
 ## v0.48.46 - Uncolored retro zero-state, station-only switch cues, and unmuted vinyl track start
 
 - Radio / Retro: removed hidden distortion in `RetroRack` by making `drive = 0` yield a strictly linear $f(x) = x$ curve, extending lowpass to 22 kHz and highpass down to 10 Hz, and exposing `presenceQ` slider in DEV tuning for full acoustic transparency when sliders are zeroed (TK-139).
@@ -45,7 +51,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.38 - Browser fetch binding, AudioContext gesture resume, and live tuning refresh
 
 - Radio / Vinyl: resolved browser `fetch` binding (`Illegal invocation`), ensured `AudioContext` resumes on gesture and graph initializes on effect refresh, and wired immediate live effect updates from DEV radio tuning controls (TK-132).
-
-## v0.48.37 - Dedicated vinyl SFX overlay section with ready audio recordings
-
-- Radio / Vinyl: added dedicated SFX overlay section in DEV tuning with individual switches and volume sliders for 6 authentic vinyl audio recordings (`vinyl-1.mp3` through `vinyl-6.mp3`) seamlessly looped in Web Audio (TK-132).

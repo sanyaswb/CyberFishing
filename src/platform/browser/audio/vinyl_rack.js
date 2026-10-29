@@ -7,7 +7,7 @@ export const VINYL_SFX_FILES = Object.freeze({
   "vinyl-3": "assets/audio/radio/vinyl/vinyl-3.mp3",
   "vinyl-4": "assets/audio/radio/vinyl/vinyl-4.mp3",
   "vinyl-5": "assets/audio/radio/vinyl/vinyl-5.mp3",
-  "vinyl-6": "assets/audio/radio/vinyl/vinyl-6.mp3",
+  "vinyl-6": "assets/audio/radio/next_track-vinyl.mp3",
 });
 
 function resolveFetch(ref) {
@@ -413,20 +413,21 @@ export class VinylRack {
     }
   }
 
-  // TK-126/128/129/133/136/139: Tonearm needle drop cueing with vinyl-6.mp3:
-  // Plays authentic needle drop & lead-in groove (vinyl-6.mp3) once layered over the music.
-  // Music track starts normally without ducking/muting.
+  // TK-126/128/129/133/136/139/140: Tonearm needle drop cueing with next_track-vinyl.mp3:
+  // Plays authentic needle drop & lead-in groove once before or overlapping track start.
+  // Returns { duration } so the stream player can sequence the incoming track with configurable overlap.
   cueTonearm() {
-    if (!this.#context || !this.#nodes) return;
-    if (this.#applied.enabled === false || this.#applied.mix === 0) return;
+    if (!this.#context || !this.#nodes) return null;
+    if (this.#applied.enabled === false || this.#applied.mix === 0) return null;
     this.#active = true;
     const buf = this.#sfxBuffers.get("vinyl-6");
     if (!buf) {
       this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]).then((loaded) => {
         if (loaded && this.#active) this.cueTonearm();
       });
-      return;
+      return { duration: 3.3 };
     }
+    const duration = Math.max(1, Number(buf.duration) || 3.3);
     const now = Number(this.#context.currentTime) || 0;
     const gate = this.#nodes.trackCueGate;
     if (gate?.gain) {
@@ -451,8 +452,8 @@ export class VinylRack {
       const cueGain = this.#context.createGain();
       if (cueGain.gain?.setValueAtTime) {
         cueGain.gain.setValueAtTime(1, now);
-        cueGain.gain.setValueAtTime(1, now + 3.0);
-        cueGain.gain.linearRampToValueAtTime?.(0, now + 3.25);
+        cueGain.gain.setValueAtTime(1, now + Math.max(0, duration - 0.35));
+        cueGain.gain.linearRampToValueAtTime?.(0, now + duration);
       }
       source.buffer = buf;
       source.loop = false;
@@ -464,7 +465,7 @@ export class VinylRack {
       }
       source.start(now);
       try {
-        source.stop?.(now + 3.3);
+        source.stop?.(now + duration + 0.1);
       } catch {}
 
       this.#cueSources.add(source);
@@ -478,6 +479,7 @@ export class VinylRack {
     } catch {
       if (gate?.gain) gate.gain.value = 1;
     }
+    return { duration };
   }
 
   // TK-136: Tonearm lift and needle stop cue on radio power off:

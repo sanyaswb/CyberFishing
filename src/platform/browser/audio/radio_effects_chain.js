@@ -78,19 +78,19 @@ export class RadioEffectsChain {
     this.#radio?.setActive?.(active);
   }
 
-  // TK-137: Dispatches to vinyl-6 tonearm cue if vinyl is enabled, or next_track-radio if vinyl is disabled
+  // TK-137 / TK-140: Dispatches to next_track-vinyl tonearm cue if vinyl is enabled, or next_track-radio if vinyl is disabled
   cueTrackSwitch() {
     const cfg = this.#config() || {};
     const vinylEnabled = cfg.vinyl?.enabled !== false && (cfg.vinyl?.mix === undefined || cfg.vinyl?.mix > 0);
     if (vinylEnabled) {
-      this.cueVinyl();
+      return this.cueVinyl();
     } else {
-      this.cueRadioSwitch();
+      return this.cueRadioSwitch();
     }
   }
 
   cueVinyl() {
-    this.#vinyl.cueTonearm();
+    return this.#vinyl.cueTonearm();
   }
 
   cueVinylOff(onEnded) {
@@ -101,24 +101,23 @@ export class RadioEffectsChain {
     this.#radioSwitchBuffer = buf;
   }
 
-  // TK-137: Plays next_track-radio.mp3 on radio frequency switch with 2.8s stream ducking
+  // TK-137 / TK-140: Plays next_track-radio.mp3 on radio frequency switch, returns { duration }
   cueRadioSwitch() {
-    if (!this.#context || !this.#streamCueGate || !this.#output) return;
+    if (!this.#context || !this.#streamCueGate || !this.#output) return null;
     const buf = this.#radioSwitchBuffer;
     if (!buf) {
       this.#loadRadioSwitchBuffer().then((loaded) => {
         if (loaded && this.#attached) this.cueRadioSwitch();
       });
-      return;
+      return { duration: 3.3 };
     }
+    const duration = Math.max(0.5, Number(buf.duration) || 3.3);
     const now = Number(this.#context.currentTime) || 0;
     const gate = this.#streamCueGate;
     if (gate?.gain) {
       try {
         gate.gain.cancelScheduledValues?.(now);
-        gate.gain.setValueAtTime?.(0, now);
-        gate.gain.setValueAtTime?.(0, now + 2.8);
-        gate.gain.linearRampToValueAtTime?.(1, now + 3.2);
+        gate.gain.setValueAtTime?.(1, now);
       } catch {
         gate.gain.value = 1;
       }
@@ -137,8 +136,9 @@ export class RadioEffectsChain {
       const cueGain = this.#context.createGain();
       if (cueGain.gain?.setValueAtTime) {
         cueGain.gain.setValueAtTime(1, now);
-        cueGain.gain.setValueAtTime(1, now + 2.9);
-        cueGain.gain.linearRampToValueAtTime?.(0, now + 3.25);
+        const fadeStart = Math.max(now, now + duration - 0.4);
+        cueGain.gain.setValueAtTime(1, fadeStart);
+        cueGain.gain.linearRampToValueAtTime?.(0, now + duration);
       }
       source.buffer = buf;
       source.loop = false;
@@ -146,7 +146,7 @@ export class RadioEffectsChain {
       cueGain.connect(this.#output);
       source.start(now);
       try {
-        source.stop?.(now + 3.3);
+        source.stop?.(now + duration + 0.1);
       } catch {}
 
       this.#radioCueSources.add(source);
@@ -160,6 +160,7 @@ export class RadioEffectsChain {
     } catch {
       if (gate?.gain) gate.gain.value = 1;
     }
+    return { duration };
   }
 
   async #loadRadioSwitchBuffer() {

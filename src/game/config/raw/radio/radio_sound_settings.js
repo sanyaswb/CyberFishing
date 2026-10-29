@@ -4,6 +4,7 @@
 export const RADIO_SOUND_SETTINGS = {
   "effects": {
     "radio": {
+      "cueOverlapSeconds": 1,
       "drive": 25,
       "enabled": false,
       "highpassHz": 450,
@@ -34,6 +35,7 @@ export const RADIO_SOUND_SETTINGS = {
     },
     "vinyl": {
       "crackleLevel": 0.12,
+      "cueOverlapSeconds": 1,
       "enabled": false,
       "innerGrooveDistortion": 0,
       "popLevel": 0.35,
