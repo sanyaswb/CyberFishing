@@ -28,3 +28,9 @@ export const BOAT_BAIT_SLOTS = Object.freeze({
   2: "section--1-bait2",
   3: "section--1-bait3",
 });
+
+export const BOAT_SECTION_CLIPS = Object.freeze({
+  1: BOAT_ANIMATION_CLIPS.OPEN_SECTION_1,
+  2: BOAT_ANIMATION_CLIPS.OPEN_SECTION_2,
+  3: BOAT_ANIMATION_CLIPS.OPEN_SECTION_3,
+});

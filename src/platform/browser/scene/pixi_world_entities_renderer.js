@@ -167,7 +167,7 @@ export class PixiWorldEntitiesRenderer {
         view.visible = true;
         view.x = boat.x;
         view.y = boat.y;
-        view.rotation = boat.angle - Math.PI / 2;
+        view.rotation = boat.angle + Math.PI / 2;
         const scale = boat.viewScale ?? 1;
         view.scale.set(scale, scale);
       } else {

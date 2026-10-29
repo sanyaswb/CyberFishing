@@ -48,9 +48,10 @@ async function checkBoatStateFlow() {
 
 async function checkAnimationController() {
   const { BoatAnimationController } = await import("../../../src/game/presentation/world/boat_animation_controller.js");
-  const { BOAT_ANIMATION_CLIPS, BOAT_LIGHT_SLOTS, BOAT_BAIT_SLOTS } = await import("../../../src/game/domain/chum/boat_animation_state.js");
+  const { BOAT_ANIMATION_CLIPS, BOAT_LIGHT_SLOTS, BOAT_BAIT_SLOTS, BOAT_SECTION_CLIPS } = await import("../../../src/game/domain/chum/boat_animation_state.js");
 
   const visibleSlots = new Map();
+  const sampledTracks = new Map();
   let currentTrackAnimation = null;
   let currentLoop = false;
   const fakeBone = { name: "root", x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
@@ -64,6 +65,13 @@ async function checkAnimationController() {
       currentTrackAnimation = clip;
       currentLoop = loop;
       return true;
+    },
+    setSampled(track, clip, ratio, alpha) {
+      sampledTracks.set(track, { clip, ratio, alpha });
+      return true;
+    },
+    clearTrack(track) {
+      sampledTracks.delete(track);
     },
     setSlotVisible(slot, visible) {
       visibleSlots.set(slot, visible);
@@ -113,6 +121,9 @@ async function checkAnimationController() {
   for (const slot of BOAT_LIGHT_SLOTS) {
     assert.equal(visibleSlots.get(slot), false, "night light off during immersion");
   }
+  // Wave slots 2 and 3 disabled by default
+  assert.equal(visibleSlots.get("boats-wave--2"), false, "boats-wave--2 disabled by default");
+  assert.equal(visibleSlots.get("boats-wave--3"), false, "boats-wave--3 disabled by default");
 
   // 2. Moving start with night active: lights turn ON
   const startRes = controller.advance({ animationState: "moving_start", openingSectionIndex: 1, droppedSections: [] }, { dtSec: 0.1, isNight: true });
@@ -121,11 +132,14 @@ async function checkAnimationController() {
     assert.equal(visibleSlots.get(slot), true, "night light on during moving start at night");
   }
 
-  // 3. Dropping section 1 turns off bait slot 1
+  // 3. Dropping section 1 turns off bait slot 1 and holds compartment 1 open
   controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [1] }, { dtSec: 0.1, isNight: true });
   assert.equal(visibleSlots.get(BOAT_BAIT_SLOTS[1]), false, "bait slot 1 turned off after drop");
   assert.equal(visibleSlots.get(BOAT_BAIT_SLOTS[2]), true, "bait slot 2 still visible");
   assert.equal(visibleSlots.get(BOAT_BAIT_SLOTS[3]), true, "bait slot 3 still visible");
+  assert.equal(sampledTracks.get(1)?.ratio, 1.0, "section 1 held open after drop");
+  assert.equal(sampledTracks.get(1)?.clip, BOAT_SECTION_CLIPS[1]);
+  assert.equal(sampledTracks.has(2), false, "section 2 not held open yet");
 
   // 4. In daylight: lights turn OFF
   controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [1] }, { dtSec: 0.1, isNight: false });
@@ -277,7 +291,7 @@ async function checkBoatRenderPipeline() {
   assert.equal(fakeBoatView.visible, true);
   assert.equal(fakeBoatView.x, 100);
   assert.equal(fakeBoatView.y, 240);
-  assert.equal(fakeBoatView.rotation, 0 - Math.PI / 2);
+  assert.equal(fakeBoatView.rotation, 0 + Math.PI / 2);
 }
 
 async function checkDevToolsAndBoatConfig() {

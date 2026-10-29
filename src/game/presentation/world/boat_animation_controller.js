@@ -3,6 +3,7 @@ import {
   BOAT_ANIMATION_DURATIONS,
   BOAT_LIGHT_SLOTS,
   BOAT_BAIT_SLOTS,
+  BOAT_SECTION_CLIPS,
 } from "../../domain/chum/boat_animation_state.js";
 
 // Animation controller for the bait boat Spine skeleton (spec 150).
@@ -129,11 +130,28 @@ export class BoatAnimationController {
       }
     }
 
+    // Owner instruction (2026-10-29): boats-wave--2 and boats-wave--3 are disabled by default
+    // until animations are authored for them.
+    scene.setSlotVisible?.("boats-wave--2", false);
+    scene.setSlotVisible?.("boats-wave--3", false);
+
     // Spec 150: bait attachments turn off once their corresponding section opens/drops.
     const droppedSections = boat?.droppedSections || [];
     for (const [sectionNum, baitSlot] of Object.entries(BOAT_BAIT_SLOTS)) {
       const isDropped = droppedSections.includes(Number(sectionNum));
       scene.setSlotVisible?.(baitSlot, !isDropped);
+    }
+
+    // Spec 150 (owner instruction 2026-10-29): keep dropped compartments open across subsequent moves.
+    for (let sec = 1; sec <= 3; sec++) {
+      const clip = BOAT_SECTION_CLIPS[sec];
+      if (droppedSections.includes(sec)) {
+        if (!this.#disabledClips.has(clip)) {
+          scene.setSampled?.(sec, clip, 1.0, 1.0);
+        }
+      } else {
+        scene.clearTrack?.(sec, 0);
+      }
     }
 
     const scale = Number(context.scale) || 1;

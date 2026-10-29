@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.53 - Forward boat start orientation, persistent open compartments, and disabled extra waves
+
+- World / Rendering: corrected Spine boat view rotation in `PixiWorldEntitiesRenderer` (`view.rotation = boat.angle + Math.PI / 2`), ensuring the boat spawns and travels with its bow and headlight pointing forward toward the water instead of backwards facing shore (Spec 150 / TK-148).
+- Delivery / Animation: implemented multi-track compartment holding in `BoatAnimationController` (`scene.setSampled(sec, clip, 1.0, 1.0)` on tracks 1..3), keeping bay doors open after bait is dropped during subsequent moves and return trips (TK-148).
+- Animation / Spine: disabled unauthored wave slots `boats-wave--2` and `boats-wave--3` by default in `BoatAnimationController` (TK-148).
+
 ## v0.48.52 - Fixed SpineScene setSlotVisible Spine 4.3 SlotPose attachment contract
 
 - Animation / Spine: fixed `SpineScene.prototype.setSlotVisible` to use Spine 4.3 runtime attachment API (`Skeleton.prototype.setAttachment(slotName, placeholder)` and `slot.pose.setAttachment`), resolving `TypeError: slot.setAttachment is not a function` on bait boat launch (Spec 150 / TK-147).
@@ -51,8 +57,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio / Walkie-Talkie: upgraded walkie-talkie stage to a physical 3-track transistor radio synthesizer with dual cascaded 24 dB/oct HPF (450 Hz) and LPF (3800 Hz), chassis resonance peaking (+8 dB @ 2.1 kHz), asymmetric 3rd/5th harmonic hard clipper, and DynamicsCompressor AGC (Spec 149 / TK-138).
 - Radio / Walkie-Talkie: added background static noise bed (Track 1) and heterodyne whistle generator (Track 2) dynamically modulated by a new tuning/detune control, with full DEV slider coverage and powered-off state silencing (TK-138).
-
-## v0.48.43 - Radio frequency tuning cue (next_track-radio) on station switches when vinyl is disabled
-
-- Radio: added authentic radio frequency search / tuning sweep audio cue (`next_track-radio.mp3`) with 2.8s stream ducking and smooth crossfade for station and track switches when vinyl effect is disabled (TK-137).
-- Radio: unified track switch dispatching in effects chain, seamlessly selecting vinyl tonearm landing (`vinyl-6.mp3`) when vinyl is active or electronic radio tuning when vinyl is disabled (TK-137).
