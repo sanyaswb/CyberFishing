@@ -2,11 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
-## v0.48.54 - Bait boat immersion replay, wave-1 motion visibility with open bays, and initial empty bay states
+## v0.49.0 - Bait boat lvl3 Spine animation, night lights, multi-track hopper doors, and dynamic visuals
 
-- Delivery / Animation: fixed `BoatAnimationController` to track boat reference `#lastBoat`, resetting animation state and clearing secondary tracks on new boat spawn to reliably replay `boat3--immersion` when toggling the boat out of inventory (Spec 150 / TK-149).
-- Delivery / Animation: sanitized multi-track animations by removing `boats-wave--1` timelines from `boat3--open-section-1..3` and zeroing setup alpha, preventing open compartment door tracks from overriding and hiding hull movement waves on track 0 (`boat3--move-forvard1`) and eliminating initial spawn wave flashes (TK-149).
-- Delivery / Inventory: initialized `BaitBoat.droppedSections` with already-used or empty bays on spawn when fewer than 3 chums are equipped (`eq.deliveryChums`), keeping empty bays visually open and bait hidden so players clearly see remaining drops, and routing subsequent drops to the next available bay (TK-149).
+- Delivery / Spine: introduced full skeletal Spine animation for Level 3 bait boat (`boat-lvl--3.json`), featuring water immersion (`boat3--immersion`), forward propulsion (`boat3--move-forvard_start` -> `boat3--move-forvard1`) with bow forward orientation, and night lights (`boat-light`, `boat3-night_light*`) active in the dark (Spec 150 / TK-141..TK-149).
+- Delivery / Hopper: implemented multi-track sequential bay door opening (`boat3--open-section-1..3`), synchronized bait release and slot hiding (`section--1-bait*`), and persistent open bay doors across trips with pre-opened empty bay tracking (TK-143, TK-148, TK-149).
+- Delivery / UI & Tools: added dynamic inventory and chum button artwork switching (`boat-lvl--3_bait.webp` vs `boat-lvl--3_no-bait.webp`) and `CONFIG.ui.boat` live DevTools tuning under "SPINE" (TK-141, TK-145).
 
 ## v0.48.53 - Forward boat start orientation, persistent open compartments, and disabled extra waves
 

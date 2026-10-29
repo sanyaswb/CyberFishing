@@ -2,6 +2,23 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="spec-150-stages"></a>
+
+## Spec 150 — Spine-анімація та візуальні стани прикормочного кораблика (Рівень 3)
+
+[Специфікація](specs/150-bait-boat-spine-animation/spec.md); реалізовано v0.48.48–v0.49.0.
+
+- [x] TK-141: Конфігурація `boat_lvl3` та динамічне відображення кораблика в інвентарі, мініатюрах та кнопці риболовлі залежно від наявності 3 прикормок. Реалізовано v0.48.48.
+- [x] TK-142: Контролер Spine-анімації кораблика: завантаження бандла, анімації занурення (`immersion`), руху (`move-forvard_start` -> `move-forvard1`), нічне світло в слотах ліхтарів (`boat-light`, `boat3-night_light*`). Реалізовано v0.48.49.
+- [x] TK-143: Логіка відкриття секцій бункера (`open-section-1..3`), вимикання слотів наживки `section--1-bait*` та узгодження зі скидом прикормки у воду. Реалізовано v0.48.49.
+- [x] TK-144: Інтеграція Spine-рендерингу кораблика на WebGL сцені (PixiWorldEntitiesRenderer / BoatChumRenderer). Реалізовано v0.48.49.
+- [x] TK-145: Налаштування розміру (`displayScale`) та початкових координат (`x`, `xOffset`, `yOffset`) кораблика в `CONFIG.ui.boat` і DevTools (секція `SpineBoatDevSection` у розділі `SPINE`). Реалізовано v0.48.50.
+- [x] TK-146: Виправлення перемикання на emoji-фолбек замість Spine-кораблика: збереження `skin` та `emoji` в `BaitBoat` з екіпірованого `eq.delivery`, виправлення контракту `loadRuntime` (`capability.available`, `createScene(bundle, surface)`) у `BoatAnimationController` та безпечне розгортання контролера в `game_render_composition.js`. Реалізовано v0.48.51.
+- [x] TK-147: Виправлення помилки `slot.setAttachment is not a function` у `SpineScene.prototype.setSlotVisible`: перехід на Spine 4.3 SlotPose контракт (`Skeleton.prototype.setAttachment(slotName, attachmentName/null)` та `slot.pose.setAttachment()`), збереження та відновлення авторського кольору й альфи `slot.data.setupPose.color.a`. Реалізовано v0.48.52.
+- [x] TK-148: Орієнтація кораблика носом уперед до водойми (`view.rotation = boat.angle + Math.PI / 2`), утримання стулок відкритими після скидання (`setSampled(sec, clip, 1.0, 1.0)` на доріжках 1..3) та вимкнення незаанімованих слотів хвиль `boats-wave--2` і `boats-wave--3`. Реалізовано v0.48.53.
+- [x] TK-149: Усунення спалаху `boats-wave--1` при спавні (альфа 0 у setup pose, миттєвий мікс immersion, вимкнення хвилі при зануренні/idle), перезапуск `boat3--immersion` при повторному діставанні кораблика (скидання стану контролера при зміні екземпляра човна), відновлення анімації руху `boat3--move-forvard1` після скиду (ізоляція багатодоріжкових таймлайнів хвиль від відкритих стулок на доріжках 1..3) та початковий стан відкритих порожніх відсіків при неповному завантаженні прикормок. Реалізовано v0.48.54.
+- Як перевіряється: `node utils/checks/gameplay/bait-boat-spine-animation-check.js`, `node utils/checks/inventory/bait-boat-inventory-visuals-check.js`, `npm run check` (72/72).
+
 <a id="tk-140"></a>
 
 ## TK-140 — чергове відтворення перемикання станцій з параметром накладення (overlap), перейменування next_track-vinyl.mp3 та 2с пауза між треками
