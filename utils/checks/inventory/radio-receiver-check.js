@@ -601,6 +601,13 @@ async function stageThree() {
   assert.equal(typeof chain.cueVinyl, "function", "chain exposes cueVinyl hook");
   chain.cueVinyl();
   assert.equal(typeof chain.cueVinylOff, "function", "chain exposes cueVinylOff hook");
+  assert.equal(typeof chain.cueTrackSwitch, "function", "chain exposes cueTrackSwitch hook");
+  assert.equal(typeof chain.cueRadioSwitch, "function", "chain exposes cueRadioSwitch hook");
+  const fakeRadioCue = context.createBuffer(1, 100);
+  chain.setRadioSwitchBuffer(fakeRadioCue);
+  chain.cueTrackSwitch();
+  const radioCueSources = byKind("source").filter((s) => s.buffer === fakeRadioCue);
+  assert.equal(radioCueSources.length, 1, "cueTrackSwitch plays next_track-radio when vinyl is disabled");
   chain.dispose();
 
   // The player re-reads the effects; the service never lets the player choose them.

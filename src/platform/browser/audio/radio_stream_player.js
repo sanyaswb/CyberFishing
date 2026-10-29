@@ -117,11 +117,16 @@ export class RadioStreamPlayer {
       if (this.#effectsGate) this.#effectsGate.gain.value = 1;
       this.#effects?.setActive?.(true);
     }
-    this.cueVinyl();
+    this.cueTrackSwitch();
     this.#start(this.#audioContexts.get() ? "effects" : "native");
   }
 
-  // TK-126/128/133/136: triggers tonearm needle drop sound effect if vinyl is active
+  // TK-126/128/133/136/137: triggers authentic switch cue (vinyl-6 tonearm drop if vinyl active, next_track-radio if vinyl disabled)
+  cueTrackSwitch() {
+    if (this.#effects?.cueTrackSwitch) this.#effects.cueTrackSwitch();
+    else this.#effects?.cueVinyl?.();
+  }
+
   cueVinyl() {
     this.#effects?.cueVinyl?.();
   }

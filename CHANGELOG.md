@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.43 - Radio frequency tuning cue (next_track-radio) on station switches when vinyl is disabled
+
+- Radio: added authentic radio frequency search / tuning sweep audio cue (`next_track-radio.mp3`) with 2.8s stream ducking and smooth crossfade for station and track switches when vinyl effect is disabled (TK-137).
+- Radio: unified track switch dispatching in effects chain, seamlessly selecting vinyl tonearm landing (`vinyl-6.mp3`) when vinyl is active or electronic radio tuning when vinyl is disabled (TK-137).
+
 ## v0.48.42 - Restored vinyl-6 cue on track switches and added power on/off tonearm needle effects
 
 - Radio / Vinyl: restored `vinyl-6.mp3` tonearm drop & lead-in cueing with 3.0s ducking on track and station switches, ensuring active effects graph and open gate prior to cue trigger (TK-136).
@@ -40,10 +45,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.34 - Simplified vinyl sound effect to 3 core procedural parameters
 
 - Radio / Vinyl: streamlined vinyl tuning down to 3 core intuitive parameters: warmth (vintage boxy filter & saturation), crackle (prominent needle-in-groove crackling and surface bed), and pops (distinct dust impulse clicks) for focused procedural sound testing (TK-129).
-
-## v0.48.33 - Dual vinyl sound engine (sampled authentic recordings vs procedural lo-fi vintage turntable)
-
-- Radio / Vinyl: added dual vinyl engine with live mode selector (0: sampled genuine vinyl crackle and needle drop, 1: dry procedural lo-fi vintage turntable with horn resonance and steep bandwidth cutoff), tonearm needle drop cueing on track switch, and updated DEV radio tuning parameters (Spec 147 / TK-128).
 
 
 
