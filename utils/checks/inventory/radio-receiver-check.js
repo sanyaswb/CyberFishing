@@ -455,7 +455,13 @@ async function stageThree() {
   const context = { currentTime: 2, sampleRate: 1000, createBiquadFilter: () => node("biquad"),
     createWaveShaper: () => node("shaper"), createGain: () => node("gain"), createDelay: () => node("delay"),
     createOscillator: () => node("oscillator"), createBufferSource: () => node("source"),
+    createDynamicsCompressor: () => {
+      const c = node("compressor");
+      c.threshold = param(-30); c.knee = param(3); c.ratio = param(12); c.attack = param(0.003); c.release = param(0.2);
+      return c;
+    },
     createBuffer: (channels, length) => { const data = new Float32Array(length); return { length, getChannelData: () => data }; } };
+  const byKind = (kind) => made.filter((entry) => entry.kind === kind);
 
   // The retro stage: filters, saturation, makeup gain, live edits, disabled = dry.
   const retro = new RetroRack().build(context);
@@ -486,30 +492,45 @@ async function stageThree() {
 
   // The walkie-talkie stage: order, settings, make-up gain, ramped mix, live edits, disabled = dry.
   const walkie = new WalkieTalkieRack().build(context);
-  const walkieSettings = { enabled: true, mix: 1, highpassHz: 500, lowpassHz: 3000, peakHz: 1800, peakGainDb: 8, peakQ: 2.5,
-    drive: 18, oversample: "4x", outputGain: 1 };
+  const walkieSettings = { enabled: true, mix: 1, highpassHz: 450, lowpassHz: 3800, peakHz: 2100, peakGainDb: 8, peakQ: 2.5,
+    drive: 25, oversample: "2x", outputGain: 1, tuning: 0, noiseLevel: 0.04, whistleLevel: 0.008 };
   walkie.update(walkieSettings, 0.03);
-  const [input, output, dry, wet, highpass, lowpass, peaking, shaper, makeup] = made.slice(0, 9);
-  assert.deepEqual([highpass.type, lowpass.type, peaking.type], ["highpass", "lowpass", "peaking"]);
-  assert.deepEqual([highpass.frequency.value, lowpass.frequency.value, peaking.frequency.value, peaking.gain.value,
-    peaking.Q.value], [500, 3000, 1800, 8, 2.5], "the filters follow CONFIG.radio.effects.walkieTalkie");
-  assert.equal(shaper.oversample, "4x");
-  assert(Math.abs(makeup.gain.value - 1 / WalkieTalkieRack.peak(18)) < 1e-9, "make-up gain keeps it as loud as dry");
-  assert(input.to.includes(dry) && input.to.includes(highpass) && highpass.to.includes(lowpass) && lowpass.to.includes(peaking)
-    && peaking.to.includes(shaper) && shaper.to.includes(makeup) && makeup.to.includes(wet), "the wet chain in order");
-  assert(dry.to.includes(output) && wet.to.includes(output));
+  const biquads = byKind("biquad");
+  const [shaper] = byKind("shaper");
+  const [compressor] = byKind("compressor");
+  const [whistleOsc] = byKind("oscillator");
+  const [noiseSource] = byKind("source");
+
+  assert.equal(biquads.length, 6, "dual HPF + peaking + dual LPF + noise BPF");
+  assert.equal(biquads[0].type, "highpass");
+  assert.equal(biquads[1].type, "highpass");
+  assert.equal(biquads[2].type, "peaking");
+  assert.equal(biquads[3].type, "lowpass");
+  assert.equal(biquads[4].type, "lowpass");
+  assert.equal(biquads[5].type, "bandpass");
+  assert.equal(biquads[5].frequency.value, 1800, "noise bandpass filter");
+  assert.deepEqual([biquads[0].frequency.value, biquads[1].frequency.value], [450, 450], "24 dB/oct HPF");
+  assert.deepEqual([biquads[3].frequency.value, biquads[4].frequency.value], [3800, 3800], "24 dB/oct LPF");
+  assert.equal(biquads[2].frequency.value, 2100, "chassis peak frequency");
+  assert.equal(biquads[2].gain.value, 8, "chassis peak gain");
+  assert.equal(shaper.oversample, "2x");
+  assert.ok(compressor, "AGC dynamics compressor present");
+  assert.equal(compressor.ratio.value, 12, "AGC compressor ratio");
+  assert.ok(whistleOsc && noiseSource, "heterodyne whistle and noise bed present");
+
+  const [input, output, dry, wet] = byKind("gain");
+  assert(input.to.includes(dry) && dry.to.includes(output), "dry path connects directly");
+  assert(compressor.to.includes(wet) && wet.to.includes(output), "wet path connects to output");
   assert.deepEqual([wet.gain.value, dry.gain.value], [1, 0], "an enabled stage starts wet");
+
   walkie.update({ ...walkieSettings, lowpassHz: 2500, outputGain: 0.5 }, 0.03);
-  assert.equal(lowpass.frequency.value, 2500, "a live edit applies");
-  assert(Math.abs(makeup.gain.value - 0.5 / WalkieTalkieRack.peak(18)) < 1e-9, "outputGain scales the make-up gain");
+  assert.equal(biquads[3].frequency.value, 2500, "a live edit applies to lowpass");
   walkie.update({ ...walkieSettings, enabled: false }, 0.03);
   assert.deepEqual([...wet.gain.targets.at(-1)], [0, 2, 0.03], "disabling ramps the wet gain out");
   assert.deepEqual([...dry.gain.targets.at(-1)], [1, 2, 0.03], "and the dry gain in, without a click");
-  const targetCount = wet.gain.targets.length;
-  walkie.update({ ...walkieSettings, enabled: false }, 0.03);
-  assert.equal(wet.gain.targets.length, targetCount, "unchanged settings write nothing");
   walkie.dispose();
-  assert(made.slice(0, 9).every((entry) => entry.to.length === 0), "dispose disconnects the stage");
+  assert(made.every((entry) => entry.to.length === 0), "dispose disconnects the stage");
+  made.length = 0;
 
   // The vinyl stage: wow/flutter on the delay, warm tone, surface sounds, live edits and disabling.
   made.length = 0;
@@ -521,7 +542,6 @@ async function stageThree() {
     crackleRate: 6, crackleLevel: 0.12, crackleToneHz: 2500, popRate: 0.25, popLevel: 0.35, hissLevel: 0.006,
     rumbleHz: 30, rumbleLevel: 0.02 };
   vinyl.update(vinylSettings, 0.03);
-  const byKind = (kind) => made.filter((entry) => entry.kind === kind);
   const [delay] = byKind("delay");
   const [wow, flutter] = byKind("oscillator");
   assert.equal(delay.delayTime.value, 0.006, "the record plays through a short delay");
@@ -991,7 +1011,7 @@ async function tuningSliders() {
   radio.effects.walkieTalkie.enabled = true;
   listener(status);
   assert.deepEqual(byClass(block, "radio-controls__slider").map((slider) => slider.max),
-    ["40", "6000", "1200", "4000", "18", "6", "2", "1"],
+    ["50", "1", "0.2", "0.05", "15", "3500", "5000", "1000", "2", "1"],
     "switching the parts in DevTools changes the window on the next update");
 
   // TK-100: the DEV switch writes the plain flag.

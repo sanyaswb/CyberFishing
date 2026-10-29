@@ -54,16 +54,19 @@ export const RADIO_SOUND_SETTINGS = {
       "wowFlutter": 3
     },
     "walkieTalkie": {
-      "drive": 18,
+      "drive": 25,
       "enabled": true,
-      "highpassHz": 500,
-      "lowpassHz": 3000,
+      "highpassHz": 450,
+      "lowpassHz": 3800,
       "mix": 1,
+      "noiseLevel": 0.04,
       "outputGain": 1,
-      "oversample": "4x",
+      "oversample": "2x",
       "peakGainDb": 8,
-      "peakHz": 1800,
-      "peakQ": 2.5
+      "peakHz": 2100,
+      "peakQ": 2.5,
+      "tuning": 0,
+      "whistleLevel": 0.008
     }
   },
   "signal": {

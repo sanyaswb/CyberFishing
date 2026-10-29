@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.44 - Physical transistor radio DSP synthesizer with AGC compressor and heterodyne tuning
+
+- Radio / Walkie-Talkie: upgraded walkie-talkie stage to a physical 3-track transistor radio synthesizer with dual cascaded 24 dB/oct HPF (450 Hz) and LPF (3800 Hz), chassis resonance peaking (+8 dB @ 2.1 kHz), asymmetric 3rd/5th harmonic hard clipper, and DynamicsCompressor AGC (Spec 149 / TK-138).
+- Radio / Walkie-Talkie: added background static noise bed (Track 1) and heterodyne whistle generator (Track 2) dynamically modulated by a new tuning/detune control, with full DEV slider coverage and powered-off state silencing (TK-138).
+
 ## v0.48.43 - Radio frequency tuning cue (next_track-radio) on station switches when vinyl is disabled
 
 - Radio: added authentic radio frequency search / tuning sweep audio cue (`next_track-radio.mp3`) with 2.8s stream ducking and smooth crossfade for station and track switches when vinyl effect is disabled (TK-137).
@@ -41,10 +46,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.48.35 - Independent vinyl crackle / groove noise controls and 3 vintage presets
 
 - Radio / Vinyl: separated needle crackle and continuous groove surface noise into independent controls, and introduced 3 distinct vintage tone presets (0: soft vinyl, 1: dry gramophone with steep bass cut and horn resonance, 2: worn speaker with narrow bandwidth and tube saturation) with intensity/warmth scaling (TK-130).
-
-## v0.48.34 - Simplified vinyl sound effect to 3 core procedural parameters
-
-- Radio / Vinyl: streamlined vinyl tuning down to 3 core intuitive parameters: warmth (vintage boxy filter & saturation), crackle (prominent needle-in-groove crackling and surface bed), and pops (distinct dust impulse clicks) for focused procedural sound testing (TK-129).
 
 
 

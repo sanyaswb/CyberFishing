@@ -37,7 +37,7 @@ export class RadioEffectsChain {
     this.#fetchRef = resolveFetch(fetchRef);
     this.#retro = new RetroRack();
     this.#vinyl = new VinylRack({ rng, fetchRef });
-    this.#walkieTalkie = new WalkieTalkieRack();
+    this.#walkieTalkie = new WalkieTalkieRack({ rng });
   }
 
   attach(context, input, output) {
@@ -69,6 +69,7 @@ export class RadioEffectsChain {
 
   setActive(active) {
     this.#vinyl?.setActive?.(active);
+    this.#walkieTalkie?.setActive?.(active);
   }
 
   // TK-137: Dispatches to vinyl-6 tonearm cue if vinyl is enabled, or next_track-radio if vinyl is disabled
