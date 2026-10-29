@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.40 - Physical acoustic vinyl synthesizer with 3-track DSP architecture
+
+- Radio / Vinyl: upgraded procedural vinyl synthesizer to a physical 3-track DSP architecture with independent controls for Track 1 (mechanical rumble 10-60 Hz and filtered surface noise 300-8k Hz), Track 2 (scratch pops with 16 kHz cantilever ringing and micro-crackle), and Track 3 (program material with sub-bass cut, MM cartridge peak, 2nd-harmonic asymmetric saturation, inner groove distortion, and 33⅓ rpm wow & flutter) (Spec 148 / TK-134).
+
 ## v0.48.39 - Vinyl-6 needle cueing with 3s ducking on track switch and removed oldSpeaker slider
 
 - Radio / Vinyl: replaced synthetic chirp cue with single-shot `vinyl-6.mp3` tonearm drop & groove lead-in, ducking switched track audio for 3.0s with smooth fade-in (3.0s..3.4s) while `vinyl-6` sharply fades out (3.0s..3.25s) (TK-133).
@@ -40,11 +44,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Radio: streamlined vinyl rack to essential expressive parameters (warmth, crackle level and rate, pop level and rate) with wide, tactile dynamic range from delicate surface noise to loud vinyl crunch (TK-126).
 - Radio: added unified warmth slider controlling lowshelf bass boost, analog high-cut, tube saturation and organic turntable pitch flutter in a single intuitive slider (TK-126).
 - Radio: implemented procedural tonearm drop cueing sound with landing contact thump, lead-in groove friction squeak, and crackle flurry on track changes and playback start (TK-126).
-
-## v0.48.30 - Calibrated radio dropout noise level and sharp discharge crackle gating
-
-- Radio: calibrated dropout hiss burst and micro-glitch volume to match nominal track loudness, scaling proportionally with volume sag (TK-125).
-- Radio: added stream gate node to sharply duck the audio track to zero during discharge crackles without smoothness/easing (TK-125).
 
 
 

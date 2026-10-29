@@ -57,6 +57,35 @@ export class VinylRack {
     this.#fetchRef = resolveFetch(fetchRef);
   }
 
+  static asymmetricCurve(drive, length = 44100) {
+    const k = Math.max(0.1, Number(drive) || 1);
+    const alpha = Math.min(0.22, (k - 1) * 0.035);
+    const curve = new Float32Array(length);
+    for (let index = 0; index < length; index += 1) {
+      const x = (index * 2) / (length - 1) - 1;
+      const shaped = x + alpha * (x * x - 0.25);
+      curve[index] = Math.tanh(shaped * (0.8 + k * 0.25));
+    }
+    return curve;
+  }
+
+  static peak(drive) {
+    const k = Math.max(0.1, Number(drive) || 1);
+    const alpha = Math.min(0.22, (k - 1) * 0.035);
+    const shaped = 1 + alpha * 0.75;
+    return Math.max(0.1, Math.tanh(shaped * (0.8 + k * 0.25)));
+  }
+
+  static igdCurve(amount, length = 44100) {
+    const a = Math.max(0, Number(amount) || 0);
+    const curve = new Float32Array(length);
+    for (let index = 0; index < length; index += 1) {
+      const x = (index * 2) / (length - 1) - 1;
+      curve[index] = Math.tanh(x * (1 + a * 2.2)) * 0.85;
+    }
+    return curve;
+  }
+
   get input() {
     return this.#nodes?.input || null;
   }
@@ -72,8 +101,10 @@ export class VinylRack {
       delay: context.createDelay(0.05), wowOsc: context.createOscillator(), wowDepth: context.createGain(),
       flutterOsc: context.createOscillator(), flutterDepth: context.createGain(),
       highpass: context.createBiquadFilter(), warmth: context.createBiquadFilter(), lowpass: context.createBiquadFilter(),
+      cartridgePeak: context.createBiquadFilter(),
       lofiResonance: context.createBiquadFilter(),
       shaper: context.createWaveShaper(), makeup: context.createGain(),
+      igdFilter: context.createBiquadFilter(), igdShaper: context.createWaveShaper(), igdGain: context.createGain(),
       trackCueGate: context.createGain(),
       proceduralSurface: context.createGain(),
       sampledSurface: context.createGain(),
@@ -84,14 +115,30 @@ export class VinylRack {
     node.highpass.type = "highpass";
     node.warmth.type = "lowshelf";
     node.lowpass.type = "lowpass";
+    node.cartridgePeak.type = "peaking";
+    node.cartridgePeak.frequency.value = 9200;
+    node.cartridgePeak.Q.value = 2.0;
+    node.cartridgePeak.gain.value = 2.5;
+
     node.lofiResonance.type = "peaking";
     node.lofiResonance.frequency.value = 850;
     node.lofiResonance.Q.value = 1.5;
     node.lofiResonance.gain.value = 0;
+
+    node.igdFilter.type = "bandpass";
+    node.igdFilter.frequency.value = 5500;
+    node.igdFilter.Q.value = 1.2;
+    node.igdGain.gain.value = 0;
+
     node.crackleTone.type = "bandpass";
-    node.hissTone.type = "highpass";
-    node.hissTone.frequency.value = 3000;
-    node.rumbleTone.type = "lowpass";
+    node.crackleTone.frequency.value = 4500;
+    node.hissTone.type = "bandpass";
+    node.hissTone.frequency.value = 3500;
+    node.hissTone.Q.value = 0.7;
+    node.rumbleTone.type = "bandpass";
+    node.rumbleTone.frequency.value = 25;
+    node.rumbleTone.Q.value = 1.5;
+
     node.wowOsc.type = "sine";
     node.flutterOsc.type = "sine";
 
@@ -103,18 +150,27 @@ export class VinylRack {
     node.flutterOsc.connect(node.flutterDepth);
     node.flutterDepth.connect(node.delay.delayTime);
 
-    // Audio path: delay -> highpass -> warmth -> lofiResonance -> lowpass -> shaper -> makeup -> trackCueGate -> wet
+    // Audio path (Track 3: Program Material):
+    // delay -> highpass -> warmth -> cartridgePeak -> lofiResonance -> lowpass -> shaper -> makeup -> trackCueGate -> wet
     node.delay.connect(node.highpass);
     node.highpass.connect(node.warmth);
-    node.warmth.connect(node.lofiResonance);
+    node.warmth.connect(node.cartridgePeak);
+    node.cartridgePeak.connect(node.lofiResonance);
     node.lofiResonance.connect(node.lowpass);
     node.lowpass.connect(node.shaper);
     node.shaper.connect(node.makeup);
     node.makeup.connect(node.trackCueGate);
+
+    // Inner Groove Distortion (IGD / Sibilance rasp branch)
+    node.makeup.connect(node.igdFilter);
+    node.igdFilter.connect(node.igdShaper);
+    node.igdShaper.connect(node.igdGain);
+    node.igdGain.connect(node.trackCueGate);
+
     node.trackCueGate.connect(node.wet);
     node.trackCueGate.gain.value = 1;
 
-    // Procedural surface noise path
+    // Procedural surface noise path (Track 1 & Track 2):
     node.crackleTone.connect(node.crackle);
     node.crackle.connect(node.proceduralSurface);
     node.pops.connect(node.proceduralSurface);
@@ -137,8 +193,8 @@ export class VinylRack {
     this.#sources = {};
     this.#sfxGains.clear();
     this.#sfxSources.clear();
-    this.#loop("hiss", this.#noiseBuffer(), node.hissTone);
-    this.#loop("rumble", this.#noiseBuffer(), node.rumbleTone);
+    this.#loop("hiss", this.#pinkNoiseBuffer(), node.hissTone);
+    this.#loop("rumble", this.#rumbleBuffer(), node.rumbleTone);
     this.#loadSamples();
     return this;
   }
@@ -147,47 +203,53 @@ export class VinylRack {
     const node = this.#nodes;
     if (!node) return;
 
-    // TK-131, TK-133: 2 vintage blendable tone shapers:
-    // - dryGramophone (0..10): steep low cut (up to 480 Hz), vocal horn peak (950..1200 Hz)
-    // - softVinyl (0..10): analog 200 Hz lowshelf warmth (+7 dB), organic pitch wow
-    let d = 0;
-    let m = 0;
-    if (settings.dryGramophone !== undefined || settings.softVinyl !== undefined) {
-      d = Math.max(0, Math.min(10, finiteOr(settings.dryGramophone, 0))) / 10;
-      m = Math.max(0, Math.min(10, finiteOr(settings.softVinyl, 0))) / 10;
-    } else {
-      const preset = Number(settings.preset) === 1 ? 1 : 0;
-      const w = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0))) / 10;
-      if (preset === 1) d = w;
-      else m = w;
+    // TK-134 (Spec 148): 3-Track Physical Vinyl Synthesizer:
+    // Track 1 (Noise & Rumble): rumbleLevel (0..1), surfaceLevel (0..1)
+    // Track 2 (Clicks, Pops & Crackle): crackleLevel (0..1), popLevel (0..1)
+    // Track 3 (Program Material): tonalWarmth (0..10), saturation (0..10), innerGrooveDistortion (0..10), wowFlutter (0..10)
+    const rumbleLevel = Math.max(0, finiteOr(settings.rumbleLevel, 0.0));
+    const surfaceLevel = settings.surfaceLevel !== undefined
+      ? Math.max(0, finiteOr(settings.surfaceLevel, 0.15))
+      : (settings.noiseLevel !== undefined ? Math.max(0, finiteOr(settings.noiseLevel, 0.15)) : 0.15);
+
+    const crackleLevel = Math.max(0, finiteOr(settings.crackleLevel, 0.12));
+    const popLevel = Math.max(0, finiteOr(settings.popLevel, 0.35));
+
+    let tonalWarmth = 5.0;
+    if (settings.tonalWarmth !== undefined) {
+      tonalWarmth = Math.max(0, Math.min(10, finiteOr(settings.tonalWarmth, 5.0)));
+    } else if (settings.warmth !== undefined) {
+      tonalWarmth = Math.max(0, Math.min(10, finiteOr(settings.warmth, 5.0)));
+    } else if (settings.dryGramophone !== undefined) {
+      tonalWarmth = Math.max(0, Math.min(10, finiteOr(settings.dryGramophone, 5.0)));
     }
 
+    const saturation = settings.saturation !== undefined
+      ? Math.max(0, Math.min(10, finiteOr(settings.saturation, 2.0)))
+      : 2.0;
+
+    const igd = Math.max(0, Math.min(10, finiteOr(settings.innerGrooveDistortion, 0.0)));
+
+    let wowFlutter = 3.0;
+    if (settings.wowFlutter !== undefined) {
+      wowFlutter = Math.max(0, Math.min(10, finiteOr(settings.wowFlutter, 3.0)));
+    } else if (settings.softVinyl !== undefined) {
+      wowFlutter = Math.max(0, Math.min(10, finiteOr(settings.softVinyl, 3.0)));
+    }
+
+    const tw = tonalWarmth / 10;
+    const wf = wowFlutter / 10;
+
+    // Track 3: Wow & Flutter (0.55 Hz rotation 33⅓ + 6.5 Hz flutter)
     const baseDelayMs = Math.max(0, finiteOr(settings.baseDelayMs, 6));
-    const wowHz = Math.max(0, finiteOr(settings.wowHz, d > 0.3 ? 0.75 : 0.55));
+    const wowHz = Math.max(0, finiteOr(settings.wowHz, 0.55));
     const flutterHz = Math.max(0, finiteOr(settings.flutterHz, 6.5));
-
-    let flutterDepthMs = 0.05 + d * 0.35;
-    let wowDepthMs = 0.2 + m * 2.5 + d * 1.8;
-    let highpassHz = Math.max(20, Math.min(500, Math.round(25 + d * 450 - m * 15)));
-    let warmthHz = 200;
-    let warmthGainDb = Math.max(-12, Math.min(12, m * 7.0 - d * 6.0));
-    let lowpassHz = Math.max(1800, Math.min(14000, Math.round(14000 - d * 6500 - m * 3500)));
-    let resonanceHz = 950;
-    let resonanceQ = 1.5 + d * 1.5;
-    let lofiResonanceDb = d * 8.5;
-    let drive = 1.0 + d * 3.5 + m * 1.5;
-
-    // Allow explicit overrides if provided (backwards compatibility with tests)
-    if (settings.highpassHz !== undefined) highpassHz = finiteOr(settings.highpassHz, highpassHz);
-    if (settings.warmthHz !== undefined) warmthHz = finiteOr(settings.warmthHz, warmthHz);
-    if (settings.warmthGainDb !== undefined) warmthGainDb = finiteOr(settings.warmthGainDb, warmthGainDb);
-    if (settings.lowpassHz !== undefined) lowpassHz = finiteOr(settings.lowpassHz, lowpassHz);
-    if (settings.drive !== undefined) drive = Math.max(0, finiteOr(settings.drive, drive));
-    if (settings.wowDepthMs !== undefined) wowDepthMs = Math.max(0, finiteOr(settings.wowDepthMs, wowDepthMs));
-    if (settings.flutterDepthMs !== undefined) flutterDepthMs = Math.max(0, finiteOr(settings.flutterDepthMs, flutterDepthMs));
-
-    node.lofiResonance.frequency.value = resonanceHz;
-    node.lofiResonance.Q.value = resonanceQ;
+    const wowDepthMs = settings.wowDepthMs !== undefined
+      ? Math.max(0, finiteOr(settings.wowDepthMs, 1.2))
+      : (0.3 + wf * 2.2);
+    const flutterDepthMs = settings.flutterDepthMs !== undefined
+      ? Math.max(0, finiteOr(settings.flutterDepthMs, 0.15))
+      : (0.03 + wf * 0.22);
 
     this.#param("baseDelayMs", node.delay.delayTime, baseDelayMs / 1000);
     this.#param("wowHz", node.wowOsc.frequency, wowHz);
@@ -195,57 +257,72 @@ export class VinylRack {
     this.#param("flutterDepthMs", node.flutterDepth.gain, flutterDepthMs / 1000);
     this.#param("wowDepthMs", node.wowDepth.gain, wowDepthMs / 1000);
 
+    // Track 3: Frequency Profile (Sub-bass HPF 32 Hz, low-shelf warmth 200 Hz, cartridge MM peak 9.2 kHz, high-cut lowpass 13.5 kHz)
+    let highpassHz = settings.highpassHz !== undefined ? finiteOr(settings.highpassHz, 32) : 32;
+    let warmthHz = settings.warmthHz !== undefined ? finiteOr(settings.warmthHz, 200) : 200;
+    let warmthGainDb = settings.warmthGainDb !== undefined ? finiteOr(settings.warmthGainDb, tw * 5.0) : (tw * 5.0);
+    let lowpassHz = settings.lowpassHz !== undefined ? finiteOr(settings.lowpassHz, Math.round(14500 - tw * 3500)) : Math.round(14500 - tw * 3500);
+
     this.#param("highpassHz", node.highpass.frequency, highpassHz);
     this.#param("warmthHz", node.warmth.frequency, warmthHz);
     this.#param("warmthGainDb", node.warmth.gain, warmthGainDb);
-    this.#param("lofiResonanceGain", node.lofiResonance.gain, lofiResonanceDb);
+    this.#param("cartridgePeakGain", node.cartridgePeak.gain, 1.5 + tw * 2.5);
     this.#param("lowpassHz", node.lowpass.frequency, lowpassHz);
 
+    // Track 3: Asymmetric Soft-clipper with dominant 2nd harmonic
+    const drive = settings.drive !== undefined
+      ? Math.max(0.1, finiteOr(settings.drive, 1.0))
+      : (1.0 + saturation * 0.45);
+
     if (this.#applied.drive !== drive) {
-      node.shaper.curve = WalkieTalkieRack.curve(drive);
+      node.shaper.curve = VinylRack.asymmetricCurve(drive);
       node.shaper.oversample = "2x";
       this.#applied.drive = drive;
     }
     this.#param("makeup", node.makeup.gain,
-      (1 / Math.max(1e-6, WalkieTalkieRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
+      (1 / Math.max(1e-6, VinylRack.peak(drive))) * Math.max(0, finiteOr(settings.outputGain, 1)));
 
-    // Surface sound routing and levels:
-    // TK-131: Crackle & Pop intensity slider controls both amplitude AND density
-    const crackleLevel = Math.max(0, finiteOr(settings.crackleLevel, 0.12));
-    const noiseLevel = settings.noiseLevel !== undefined
-      ? Math.max(0, finiteOr(settings.noiseLevel, 0.15))
-      : crackleLevel * 0.4;
-    const popLevel = Math.max(0, finiteOr(settings.popLevel, 0.35));
-    const hissLevel = settings.hissLevel !== undefined
-      ? finiteOr(settings.hissLevel, 0.006)
-      : noiseLevel * 0.14;
-    const rumbleLevel = settings.rumbleLevel !== undefined
-      ? finiteOr(settings.rumbleLevel, 0.02)
-      : noiseLevel * 0.18;
+    // Track 3: Inner Groove Distortion (IGD / Sibilance rasp)
+    const igdGainValue = (igd / 10) * 0.35;
+    this.#param("igdGain", node.igdGain.gain, igdGainValue);
+    if (this.#applied.igd !== igd) {
+      node.igdShaper.curve = VinylRack.igdCurve(igd / 10);
+      node.igdShaper.oversample = "2x";
+      this.#applied.igd = igd;
+    }
 
-    this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 2800));
-    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 2.2);
-    this.#param("popLevel", node.pops.gain, popLevel * 1.8);
-    this.#param("hissLevel", node.hiss.gain, hissLevel);
-    this.#param("rumbleHz", node.rumbleTone.frequency, Math.max(1, finiteOr(settings.rumbleHz, 30)));
-    this.#param("rumbleLevel", node.rumble.gain, rumbleLevel);
+    // Track 1: Mechanical Noise & Rumble
+    const rumbleHz = Math.max(10, finiteOr(settings.rumbleHz, 25));
+    const rumbleGain = settings.rumbleLevel !== undefined
+      ? finiteOr(settings.rumbleLevel, rumbleLevel * 0.18)
+      : rumbleLevel * 0.18;
+    this.#param("rumbleHz", node.rumbleTone.frequency, rumbleHz);
+    this.#param("rumbleLevel", node.rumble.gain, rumbleGain);
 
-    // Dynamic density scaling: higher slider = much denser flurry of crackles and pops
+    const surfaceGain = settings.hissLevel !== undefined
+      ? finiteOr(settings.hissLevel, surfaceLevel * 0.14)
+      : surfaceLevel * 0.14;
+    this.#param("hissLevel", node.hiss.gain, surfaceGain);
+
+    // Track 2: Clicks, Pops & Crackle
     const dynamicCrackleRate = Math.max(2, Math.round(2 + crackleLevel * crackleLevel * 38));
     const crackleRate = settings.crackleRate !== undefined
       ? Math.max(0, finiteOr(settings.crackleRate, dynamicCrackleRate))
       : dynamicCrackleRate;
+    this.#param("crackleToneHz", node.crackleTone.frequency, finiteOr(settings.crackleToneHz, 4500));
+    this.#param("crackleLevel", node.crackle.gain, crackleLevel * 2.2);
     if (this.#applied.crackleRate !== crackleRate) {
-      this.#loop("crackle", this.#clickBuffer(crackleRate, 0.002), node.crackleTone);
+      this.#loop("crackle", this.#clickBuffer(crackleRate, 0.0012, false), node.crackleTone);
       this.#applied.crackleRate = crackleRate;
     }
 
-    const dynamicPopRate = Number((0.1 + popLevel * popLevel * 3.0).toFixed(2));
+    const dynamicPopRate = Number((0.08 + popLevel * popLevel * 2.8).toFixed(2));
     const popRate = settings.popRate !== undefined
       ? Math.max(0, finiteOr(settings.popRate, dynamicPopRate))
       : dynamicPopRate;
+    this.#param("popLevel", node.pops.gain, popLevel * 1.8);
     if (this.#applied.popRate !== popRate) {
-      this.#loop("pops", this.#clickBuffer(popRate, 0.006), node.pops);
+      this.#loop("pops", this.#clickBuffer(popRate, 0.005, true), node.pops);
       this.#applied.popRate = popRate;
     }
 
@@ -539,17 +616,59 @@ export class VinylRack {
     return buffer;
   }
 
-  // ratePerSecond clicks of random sign and size, each decaying over about decaySeconds.
-  #clickBuffer(ratePerSecond, decaySeconds) {
+  // Track 1: Paul Kellet's filtered pink/brown noise for surface friction (300 Hz - 8 kHz)
+  #pinkNoiseBuffer() {
+    const { buffer, length } = this.#buffer();
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < length; i += 1) {
+      const white = this.#rng.next() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+      b6 = white * 0.115926;
+    }
+    return buffer;
+  }
+
+  // Track 1: Low-frequency mechanical rumble (10-60 Hz with 11.2 Hz motor bearing resonance)
+  #rumbleBuffer() {
+    const { buffer, length, rate } = this.#buffer();
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < length; i += 1) {
+      const white = this.#rng.next() * 2 - 1;
+      last = (last + 0.025 * white) / 1.025;
+      const t = i / rate;
+      const motorResonance = Math.sin(2 * Math.PI * 11.2 * t) * 0.12 * (0.8 + 0.4 * this.#rng.next());
+      data[i] = last * 3.2 + motorResonance;
+    }
+    return buffer;
+  }
+
+  // Track 2: Clicks and Pops. For pops, adds ~16 kHz cantilever ringing.
+  #clickBuffer(ratePerSecond, decaySeconds, isPop = false) {
     const { buffer, length, rate } = this.#buffer();
     const data = buffer.getChannelData(0);
     const count = Math.round(ratePerSecond * VinylRack.BUFFER_SECONDS);
     const decay = Math.max(1, Math.floor(decaySeconds * rate));
+    const ringFreq = 16000;
     for (let click = 0; click < count; click += 1) {
       const start = Math.floor(this.#rng.next() * length);
-      const amplitude = (0.3 + this.#rng.next() * 0.7) * (this.#rng.next() < 0.5 ? -1 : 1);
+      const amplitude = (0.35 + this.#rng.next() * 0.65) * (this.#rng.next() < 0.5 ? -1 : 1);
       for (let offset = 0; offset < decay * 4 && start + offset < length; offset += 1) {
-        data[start + offset] += amplitude * Math.exp(-offset / decay) * (offset % 2 === 0 ? 1 : -0.6);
+        const env = Math.exp(-offset / decay);
+        if (isPop) {
+          const t = offset / rate;
+          const ringing = Math.sin(2 * Math.PI * ringFreq * t) * 0.35;
+          data[start + offset] += amplitude * env * (1 + ringing);
+        } else {
+          data[start + offset] += amplitude * env * (offset % 2 === 0 ? 1 : -0.6);
+        }
       }
     }
     return buffer;

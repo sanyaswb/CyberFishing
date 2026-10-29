@@ -18,10 +18,11 @@ export const RADIO_SOUND_SETTINGS = {
     },
     "vinyl": {
       "crackleLevel": 0.12,
-      "dryGramophone": 5,
       "enabled": false,
-      "noiseLevel": 0.15,
+      "innerGrooveDistortion": 0,
       "popLevel": 0.35,
+      "rumbleLevel": 0,
+      "saturation": 2,
       "sfx": {
         "vinyl-1": {
           "enabled": false,
@@ -48,7 +49,9 @@ export const RADIO_SOUND_SETTINGS = {
           "volume": 0.5
         }
       },
-      "softVinyl": 0
+      "surfaceLevel": 0.15,
+      "tonalWarmth": 5,
+      "wowFlutter": 3
     },
     "walkieTalkie": {
       "drive": 18,

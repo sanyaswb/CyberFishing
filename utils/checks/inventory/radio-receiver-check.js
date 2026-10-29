@@ -903,9 +903,9 @@ async function tuningSliders() {
     { group: "weather", label: "Погодні перешкоди", enabled: false },
     { group: "onlyEffectStations", label: "Лише станції з ефектом", enabled: false },
   ], "a switch per sound part: retro, vinyl, walkie-talkie, signal, weather, onlyEffectStations");
-  assert.equal(plain(tuning.list()).length, 5, "5 parameters of vinyl sound are available");
+  assert.equal(plain(tuning.list()).length, 8, "8 parameters of vinyl sound are available");
   assert.deepEqual(plain(tuning.list()).map((entry) => entry.key),
-    ["dryGramophone", "softVinyl", "crackleLevel", "noiseLevel", "popLevel"], "5 vinyl parameters in tuning list");
+    ["rumbleLevel", "surfaceLevel", "crackleLevel", "popLevel", "tonalWarmth", "saturation", "innerGrooveDistortion", "wowFlutter"], "8 vinyl parameters in tuning list");
   tuning.set("vinyl", "crackleLevel", 0.3);
   tuning.set("vinyl", "secretKey", 1);
   tuning.setEnabled("signal", true);
@@ -942,7 +942,7 @@ async function tuningSliders() {
   assert.deepEqual(switches.map((input) => input.checked), [false, true, false, false, false, false],
     "DEV shows the five part switches and «only stations with the effect»");
   const sliders = byClass(block, "radio-controls__slider");
-  assert.equal(sliders.length, 5, "all 5 sliders of the enabled part (vinyl)");
+  assert.equal(sliders.length, 8, "all 8 sliders of the enabled part (vinyl)");
   const sfxBoxes = byClass(block, "radio-controls__sfx-checkbox");
   assert.equal(sfxBoxes.length, 6, "6 SFX checkboxes for ready vinyl recordings");
   const sfxVolumes = byClass(block, "radio-controls__sfx-volume");
@@ -955,8 +955,8 @@ async function tuningSliders() {
   sliders[2].value = "0.2"; sliders[2].fire("input");
   assert.equal(radio.effects.vinyl.crackleLevel, 0.2, "a slider tunes the live parameter");
   assert.equal(byClass(block, "radio-controls__tuning-value")[2].textContent, "0.2");
-  sliders[0].value = "8"; sliders[0].fire("input");
-  assert.equal(radio.effects.vinyl.dryGramophone, 8, "dryGramophone slider tunes vintage dry sound");
+  sliders[4].value = "8"; sliders[4].fire("input");
+  assert.equal(radio.effects.vinyl.tonalWarmth, 8, "tonalWarmth slider tunes warm EQ");
   switches[1].checked = false; switches[1].fire("change");
   assert.equal(radio.effects.vinyl.enabled, false, "the window's switch turns the record off in the live config");
   assert.equal(byClass(block, "radio-controls__slider").length, 0, "and its sliders go at once");
