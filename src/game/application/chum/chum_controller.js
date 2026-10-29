@@ -254,6 +254,14 @@ export class ChumController {
         const loadedChums = this.#getLoadedChums(eq.deliveryChums);
         this.#boatLoadedChums.set(this.#activeBoat, loadedChums);
         this.#activeBoat.remainingSections = loadedChums.length;
+        const totalSections = this.#activeBoat.config?.sections || 3;
+        const initialDropped = [];
+        for (let s = 1; s <= totalSections; s++) {
+          if (!eq.deliveryChums || !eq.deliveryChums[s - 1]) {
+            initialDropped.push(s);
+          }
+        }
+        this.#activeBoat.droppedSections = initialDropped;
       }
     } else if (!this.#isAiming && this.#activeBoat) {
       if (this.#activeBoat.state === "idle") {

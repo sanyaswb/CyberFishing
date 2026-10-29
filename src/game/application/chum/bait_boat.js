@@ -45,7 +45,14 @@ export class BaitBoat {
     this.isBaitDropped = false;
     this.isFinished = false;
     this.hasLeftShore = false;
-    this.remainingSections = statsConfig.sections || 1;
+    const initialDropped = Array.isArray(statsConfig.initialDroppedSections)
+      ? [...statsConfig.initialDroppedSections]
+      : Array.isArray(config.initialDroppedSections)
+        ? [...config.initialDroppedSections]
+        : [];
+    this.droppedSections = initialDropped;
+    const totalSecs = statsConfig.sections || 1;
+    this.remainingSections = Math.max(0, totalSecs - initialDropped.length);
     this.waypoints = [];
 
     this.animationState = "immersion";
@@ -53,7 +60,6 @@ export class BaitBoat {
     this.moveStartTimer = 0;
     this.openingTimer = 0;
     this.openingSectionIndex = 1;
-    this.droppedSections = [];
 
     this.avoidanceState = "none";
     this.avoidanceTimer = 0;
@@ -493,7 +499,13 @@ export class BaitBoat {
             if (this.animationState !== "opening") {
               this.animationState = "opening";
               const totalSections = this.config.sections || 3;
-              const dropNum = Math.max(1, Math.min(3, totalSections - this.remainingSections + 1));
+              let dropNum = 1;
+              for (let s = 1; s <= totalSections; s++) {
+                if (!this.droppedSections.includes(s)) {
+                  dropNum = s;
+                  break;
+                }
+              }
               this.openingSectionIndex = dropNum;
               const openDurations = { 1: 1.583, 2: 1.167, 3: 1.167 };
               this.openingTimer = openDurations[dropNum] || 1.2;

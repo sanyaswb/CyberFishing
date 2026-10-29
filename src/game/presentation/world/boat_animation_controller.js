@@ -23,6 +23,7 @@ export class BoatAnimationController {
 
   #currentClip = "";
   #clipTimer = 0;
+  #lastBoat = null;
   #openedSections = new Set();
   #lightsActive = null;
   #spineEnabled = true;
@@ -64,6 +65,7 @@ export class BoatAnimationController {
     this.#reason = null;
     this.#currentClip = "";
     this.#clipTimer = 0;
+    this.#lastBoat = null;
 
     if (!skeleton || !atlas) {
       this.#replaceScene(null);
@@ -80,6 +82,16 @@ export class BoatAnimationController {
     const scene = this.#scene;
     if (!scene || this.#disposed || !this.#spineEnabled || this.#glSurface.isContextLost()) {
       return null;
+    }
+
+    if (this.#lastBoat !== boat) {
+      this.#lastBoat = boat;
+      this.#currentClip = "";
+      this.#clipTimer = 0;
+      this.#lightsActive = null;
+      for (let sec = 1; sec <= 3; sec++) {
+        scene.clearTrack?.(sec, 0);
+      }
     }
 
     const dtSec = Math.max(0, Number(context.dtSec) || 0);
@@ -111,10 +123,11 @@ export class BoatAnimationController {
         this.#currentClip = targetClip;
         this.#clipTimer = 0;
         if (!this.#disabledClips.has(targetClip)) {
+          const mixSec = targetClip === BOAT_ANIMATION_CLIPS.IMMERSION ? 0 : 0.1;
           if (isLoop) {
-            scene.setLoop(0, targetClip, 0.1);
+            scene.setLoop(0, targetClip, mixSec);
           } else {
-            scene.setAnimation?.(0, targetClip, false, 0.1) || scene.setLoop(0, targetClip, 0.1);
+            scene.setAnimation?.(0, targetClip, false, mixSec) || scene.setLoop(0, targetClip, mixSec);
           }
         }
       }
@@ -129,6 +142,10 @@ export class BoatAnimationController {
         scene.setSlotVisible?.(lightSlot, shouldLight);
       }
     }
+
+    // Spec 150 / TK-149: Wave slot 1 is visible during motion, hidden during immersion and idle.
+    const isMoving = animationState === "moving_start" || animationState === "moving" || animationState === "returning";
+    scene.setSlotVisible?.("boats-wave--1", isMoving);
 
     // Owner instruction (2026-10-29): boats-wave--2 and boats-wave--3 are disabled by default
     // until animations are authored for them.
@@ -254,6 +271,7 @@ export class BoatAnimationController {
     this.#load = null;
     this.#replaceScene(null);
     this.#bundle = null;
+    this.#lastBoat = null;
   }
 
   async #onBundle(generation, outcome) {
@@ -263,21 +281,44 @@ export class BoatAnimationController {
       this.#replaceScene(null);
       return;
     }
-    this.#bundle = outcome.bundle;
-    const capability = await this.#loadRuntime(outcome.bundle.version);
+    const skeleton = this.#sanitizeSkeleton(outcome.bundle.skeleton);
+    const bundle = { ...outcome.bundle, skeleton };
+    this.#bundle = bundle;
+    const capability = await this.#loadRuntime(bundle.version);
     if (generation !== this.#generation) return;
     if (!capability.available) {
       this.#reason = capability.reason ?? "runtime-not-available";
       this.#replaceScene(null);
       return;
     }
-    const created = capability.runtime.createScene(outcome.bundle, this.#glSurface);
+    const created = capability.runtime.createScene(bundle, this.#glSurface);
     if (generation !== this.#generation) {
       created.scene?.dispose();
       return;
     }
     this.#reason = created.reason ?? null;
     this.#replaceScene(created.scene);
+  }
+
+  #sanitizeSkeleton(raw) {
+    if (!raw?.animations) return raw;
+    const skeleton = JSON.parse(JSON.stringify(raw));
+    const sectionClips = [
+      BOAT_ANIMATION_CLIPS.OPEN_SECTION_1,
+      BOAT_ANIMATION_CLIPS.OPEN_SECTION_2,
+      BOAT_ANIMATION_CLIPS.OPEN_SECTION_3,
+    ];
+    for (const clipName of sectionClips) {
+      const anim = skeleton.animations[clipName];
+      if (anim?.slots?.["boats-wave--1"]) {
+        delete anim.slots["boats-wave--1"];
+      }
+    }
+    const waveSlot = skeleton.slots?.find((s) => s.name === "boats-wave--1");
+    if (waveSlot) {
+      waveSlot.color = "ffffff00";
+    }
+    return skeleton;
   }
 
   #replaceScene(scene) {

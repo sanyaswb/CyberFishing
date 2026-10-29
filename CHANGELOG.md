@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.48.54 - Bait boat immersion replay, wave-1 motion visibility with open bays, and initial empty bay states
+
+- Delivery / Animation: fixed `BoatAnimationController` to track boat reference `#lastBoat`, resetting animation state and clearing secondary tracks on new boat spawn to reliably replay `boat3--immersion` when toggling the boat out of inventory (Spec 150 / TK-149).
+- Delivery / Animation: sanitized multi-track animations by removing `boats-wave--1` timelines from `boat3--open-section-1..3` and zeroing setup alpha, preventing open compartment door tracks from overriding and hiding hull movement waves on track 0 (`boat3--move-forvard1`) and eliminating initial spawn wave flashes (TK-149).
+- Delivery / Inventory: initialized `BaitBoat.droppedSections` with already-used or empty bays on spawn when fewer than 3 chums are equipped (`eq.deliveryChums`), keeping empty bays visually open and bait hidden so players clearly see remaining drops, and routing subsequent drops to the next available bay (TK-149).
+
 ## v0.48.53 - Forward boat start orientation, persistent open compartments, and disabled extra waves
 
 - World / Rendering: corrected Spine boat view rotation in `PixiWorldEntitiesRenderer` (`view.rotation = boat.angle + Math.PI / 2`), ensuring the boat spawns and travels with its bow and headlight pointing forward toward the water instead of backwards facing shore (Spec 150 / TK-148).
@@ -52,8 +58,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Radio: created new independent "Радіо" (`RadioRack`) section implementing full 3-track physical transistor radio synthesizer with dual cascaded 24 dB/oct HPF/LPF, chassis resonance, asymmetric clipper, DynamicsCompressor AGC, carrier noise, and heterodyne whistle tuning (Spec 149 / TK-138).
 - Radio / Walkie-Talkie: restored "Рація" (`WalkieTalkieRack`) and its configuration bit-for-bit to its previous architecture, keeping both effects fully independent in the chain and DEV tuning (TK-138).
-
-## v0.48.44 - Physical transistor radio DSP synthesizer with AGC compressor and heterodyne tuning
-
-- Radio / Walkie-Talkie: upgraded walkie-talkie stage to a physical 3-track transistor radio synthesizer with dual cascaded 24 dB/oct HPF (450 Hz) and LPF (3800 Hz), chassis resonance peaking (+8 dB @ 2.1 kHz), asymmetric 3rd/5th harmonic hard clipper, and DynamicsCompressor AGC (Spec 149 / TK-138).
-- Radio / Walkie-Talkie: added background static noise bed (Track 1) and heterodyne whistle generator (Track 2) dynamically modulated by a new tuning/detune control, with full DEV slider coverage and powered-off state silencing (TK-138).

@@ -44,6 +44,20 @@ async function checkBoatStateFlow() {
   assert.equal(boat.isBaitDropped, true, "bait dropped after door opened");
   assert.deepEqual(boat.droppedSections, [1], "section 1 recorded as dropped");
   assert.equal(boat.remainingSections, 2);
+
+  // Partially loaded boat starting with section 1 pre-dropped (TK-149)
+  const partialBoat = new BaitBoat(100, 200, {
+    skin: { animation: { skeleton: "boat.json", atlas: "boat.atlas" } },
+    effectiveStats: { sections: 3, initialDroppedSections: [1], statsByLevel: { 1: { speedPxPerSec: 100 } } },
+  });
+  assert.deepEqual(partialBoat.droppedSections, [1], "partially loaded boat starts with pre-emptied sections");
+  assert.equal(partialBoat.remainingSections, 2);
+  partialBoat.setTarget(150, 200, "test-zone-2");
+  partialBoat.pos.x = 150;
+  partialBoat.pos.y = 200;
+  partialBoat.update(100, () => 1, null, 20, null);
+  assert.equal(partialBoat.animationState, "opening");
+  assert.equal(partialBoat.openingSectionIndex, 2, "next drop opens section 2 when section 1 already open");
 }
 
 async function checkAnimationController() {
@@ -121,6 +135,8 @@ async function checkAnimationController() {
   for (const slot of BOAT_LIGHT_SLOTS) {
     assert.equal(visibleSlots.get(slot), false, "night light off during immersion");
   }
+  // Wave slot 1 disabled during immersion (TK-149)
+  assert.equal(visibleSlots.get("boats-wave--1"), false, "boats-wave--1 disabled during immersion");
   // Wave slots 2 and 3 disabled by default
   assert.equal(visibleSlots.get("boats-wave--2"), false, "boats-wave--2 disabled by default");
   assert.equal(visibleSlots.get("boats-wave--3"), false, "boats-wave--3 disabled by default");
@@ -131,6 +147,8 @@ async function checkAnimationController() {
   for (const slot of BOAT_LIGHT_SLOTS) {
     assert.equal(visibleSlots.get(slot), true, "night light on during moving start at night");
   }
+  // Wave slot 1 enabled during movement (TK-149)
+  assert.equal(visibleSlots.get("boats-wave--1"), true, "boats-wave--1 enabled during motion");
 
   // 3. Dropping section 1 turns off bait slot 1 and holds compartment 1 open
   controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [1] }, { dtSec: 0.1, isNight: true });
@@ -146,6 +164,15 @@ async function checkAnimationController() {
   for (const slot of BOAT_LIGHT_SLOTS) {
     assert.equal(visibleSlots.get(slot), false, "night light off during day");
   }
+
+  // 4b. Re-spawning / new boat instance restarts immersion (TK-149)
+  const boatA = { animationState: "immersion", openingSectionIndex: 1, droppedSections: [] };
+  controller.advance(boatA, { dtSec: 0.5 });
+  controller.advance(boatA, { dtSec: 1.0 }); // timer is now 1.5
+  const boatB = { animationState: "immersion", openingSectionIndex: 1, droppedSections: [] };
+  const replayRes = controller.advance(boatB, { dtSec: 0.1 });
+  assert.equal(replayRes.clip, BOAT_ANIMATION_CLIPS.IMMERSION, "immersion replays for new boat");
+  assert.equal(replayRes.clipTimer, 0.1, "clip timer resets for new boat instance");
 
   // 5. DEV methods
   assert.equal(controller.isSpineEnabled(), true);
@@ -164,6 +191,44 @@ async function checkAnimationController() {
   assert.equal(controller.getStatus().mode, "fallback (emoji)");
   assert.equal(controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [] }, { dtSec: 0.1 }), null);
   controller.setSpineEnabled(true);
+
+  // 6. Sanitization of secondary clips and setup pose alpha (TK-149)
+  let passedSkeleton = null;
+  const sanitizingController = new BoatAnimationController({
+    loadBundle: () => ({
+      result: Promise.resolve({
+        status: "ready",
+        bundle: {
+          version: "4.3.26",
+          skeleton: {
+            bones: [{ name: "root" }],
+            slots: [{ name: "boats-wave--1", bone: "root", attachment: "boats-wave--1" }],
+            animations: {
+              "boat3--open-section-1": { slots: { "boats-wave--1": { rgba: [] } } },
+              "boat3--open-section-2": { slots: { "boats-wave--1": { rgba: [] } } },
+              "boat3--open-section-3": { slots: { "boats-wave--1": { rgba: [] } } },
+            },
+          },
+        },
+      }),
+    }),
+    loadRuntime: () => Promise.resolve({
+      available: true,
+      runtime: {
+        createScene: (bundle) => {
+          passedSkeleton = bundle.skeleton;
+          return { scene: fakeScene, reason: null };
+        },
+      },
+    }),
+    glSurface: fakeGlSurface,
+  });
+  sanitizingController.setDescriptor({ skeleton: "boat.json", atlas: "boat.atlas" });
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(passedSkeleton.animations["boat3--open-section-1"].slots["boats-wave--1"], undefined, "open-section-1 stripped of wave 1");
+  assert.equal(passedSkeleton.animations["boat3--open-section-2"].slots["boats-wave--1"], undefined, "open-section-2 stripped of wave 1");
+  assert.equal(passedSkeleton.animations["boat3--open-section-3"].slots["boats-wave--1"], undefined, "open-section-3 stripped of wave 1");
+  assert.equal(passedSkeleton.slots[0].color, "ffffff00", "wave 1 setup color alpha 0 to prevent spawn flash");
 }
 
 async function checkBoatRenderPipeline() {
