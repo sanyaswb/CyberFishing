@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.30 - Owner style edits
+
+- TK-169 (owner's edits): the inventory panel border is warm grey (rgba(218, 204, 201, 0.23) instead of the cool grey), the simple aquarium feed icon's box and circle outline are grey instead of brown; theme.css card/socket sizes reformatted, values unchanged. Game-cycle report unchanged.
+
 ## v0.49.29 - One bamboo rod art
 
 - Spec 157 stage C: the bamboo rod's with-line and no-line fields point at one file (bamboo-rod-ecip-v1.webp); the byte-identical bamboo-rod-unecip-v1.webp is removed (owner: one art until a separate no-line art). The Pages release check rejects two item art files with the same bytes. Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.21 - Foam-only boat wake
 
 - Spec 156: the wake's water ripples are off by default (CONFIG.ui.boat.wake.water.enabled = false, owner: only the foam wake of spec 155 for now); the code and checks stay, DevTools turns them on live. Spec 157 text corrected after review (compressed byte budget, single rod art, vinyl-5 load condition).
-
-## v0.49.20 - Visible boat wake ripples
-
-- Spec 156 fix (owner: no visible change in v0.49.19): the wake's ripples now bend the water as far as its own waves (strength 1 = full amplitude), fade over each puff's life instead of the foam's transparency, and always cover at least 2.5 texels of the water map; defaults strength 1, radiusScale 2.5 (CONFIG.ui.boat.wake.water, live in DevTools). Incident I-8, rule R8.

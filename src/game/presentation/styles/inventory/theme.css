@@ -35,8 +35,16 @@
   --inventory-assembly-card-width: min(100%, 292px);
   --inventory-assembly-content-width: min(100%, 720px);
   --inventory-parameter-tile-gap: 12px;
-  --inventory-card-size: clamp(78px, calc(var(--ui-logical-width, 100vw) * 0.062), 110px);
-  --inventory-socket-size: clamp(66px, calc(var(--ui-logical-width, 100vw) * 0.05), 88px);
+  --inventory-card-size: clamp(
+    78px,
+    calc(var(--ui-logical-width, 100vw) * 0.062),
+    110px
+  );
+  --inventory-socket-size: clamp(
+    66px,
+    calc(var(--ui-logical-width, 100vw) * 0.05),
+    88px
+  );
   --inventory-control-border: #627077;
   --inventory-control-background: #29343a;
   --inventory-control-text: #f1f5f6;
@@ -47,6 +55,6 @@
   --inventory-danger-background: rgba(var(--inventory-danger-rgb), 0.16);
   --inventory-danger-text: var(--ui-danger-text);
   --inventory-muted-text: #c2c9cc;
-  --inventory-panel-border: rgba(201, 216, 218, 0.23);
+  --inventory-panel-border: rgba(218, 204, 201, 0.23);
   --inventory-panel-radius: 10px;
 }
