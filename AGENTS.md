@@ -72,6 +72,11 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 
 ## Working rules learned in practice
 
+- **Record every significant defect in [docs/incidents.md](docs/incidents.md)** (owner instruction, 2026-10-30): a
+  defect that breaks the game, loses progress, wastes an owner test round or took more than one attempt to find gets an
+  entry in the same commit as its fix — what was seen, the cause as a mechanism with the place in the code, the fix, the
+  architectural rule that prevents it, and the check that catches it. Read the incidents (and their rules table) of an
+  area before changing it, so a solved problem is not investigated again.
 - **Explain from evidence.** When the owner asks why something happens, reproduce it first (Node on the real config,
   catalogs and maps, or a disposable copy of a check in `utils/tmp/<dir>/`, removed afterwards) and name the exact cause
   with file and line before proposing a fix.

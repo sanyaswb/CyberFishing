@@ -149,6 +149,11 @@ Keep active development documents concise and focused on current rules and work.
 - Sort both files by numeric version components, newest first; for example, 0.24.100 comes before 0.24.99. Preserve historical four-part version numbers. Merge identical entries by version without duplicates and preserve their complete text. Reconcile differing text for one version without losing information.
 - During ordinary work read the recent changelog; consult archived versions only when the task needs that history. The archive retains the full history and is not a disposable generated service artifact.
 
+**Incidents (owner, 2026-10-30).** Significant defects and the rules they taught are kept in
+[docs/incidents.md](docs/incidents.md) (rendering ones also in docs/rendering.md). Add the entry with the fix; follow
+its rules table (test doubles with the real contract, production-shaped test data, anisotropic ground plane, one source
+for asset values, per-time damping, plan-then-steer agents, safe old-code proofs).
+
 For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, performance and tests. Use P0/P1/P2/P3 only when useful.
 
 Priority:
