@@ -2,7 +2,9 @@
 
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
 //   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets, vendor licences
-//   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">
+//   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">, and (spec 157
+//     stage B) <link rel="preload" as="style"> for every stylesheet and <link rel="modulepreload"> for every module of
+//     the page's graph, so the browser requests them in parallel instead of one import level after another
 // Files are the committed bytes. A published release directory is never overwritten. Retention (owner decision
 // 2026-10-15, spec 085): the site keeps the new release and, with keep 2 (default), the release that was live before
 // it, so open tabs of the previous version and a rollback still work; older releases are removed. Other root files are
@@ -122,6 +124,19 @@ class ReleaseFileSet {
     return [...files].sort();
   }
 
+  // Spec 157 R1/R2: what a page's root copy announces up front: its stylesheets in page order, and every module of its
+  // graph (static and dynamic imports alike: every dynamic import but the DEV House screen is on the startup path),
+  // the entry as the page writes it, then breadth-first from it, nearest the entry first.
+  static pagePreloads(tree, pageName) {
+    const page = tree.read(pageName).toString("utf8");
+    const styles = ReleaseFileSet.#attributeValues(page, "link", "href", /\brel="stylesheet"/u);
+    const [entry] = ReleaseFileSet.#attributeValues(page, "script", "src", /\btype="module"/u);
+    if (!entry) return Object.freeze({ styles, modules: [] });
+    const entryFile = ReleaseFileSet.#projectPath(tree, entry);
+    const graph = [...ReleaseFileSet.#moduleGraph(tree, entryFile)].filter((file) => file !== entryFile);
+    return Object.freeze({ styles, modules: [entry, ...graph] });
+  }
+
   // A released vendor module ships with its licence from the manifest: the Spine Runtimes License and the MIT notices
   // require it with every copy (specs 099, 103).
   static #vendorLicenses(tree, files) {
@@ -235,14 +250,9 @@ class PagesReleaseBuilder {
       bytes += contents.get(file).length;
     }
     fs.renameSync(stagingDir, releaseDir);
-    fs.writeFileSync(path.join(siteDir, PAGE), PagesReleaseBuilder.rootPage(contents.get(PAGE).toString("utf8"), id));
-    if (files.includes(DEV_PAGE)) {
-      fs.writeFileSync(path.join(siteDir, DEV_PAGE),
-        PagesReleaseBuilder.rootPage(contents.get(DEV_PAGE).toString("utf8"), id));
-    }
-    if (files.includes(CATALOG_PAGE)) {
-      fs.writeFileSync(path.join(siteDir, CATALOG_PAGE),
-        PagesReleaseBuilder.rootPage(contents.get(CATALOG_PAGE).toString("utf8"), id));
+    for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => files.includes(name))) {
+      fs.writeFileSync(path.join(siteDir, page), PagesReleaseBuilder.rootPage(contents.get(page).toString("utf8"), id,
+        ReleaseFileSet.pagePreloads(this.#tree, page)));
     }
     const removed = PagesReleaseBuilder.#prune(siteDir, new Set(keep === 2 && previous ? [id, previous] : [id]));
     return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes, previous, removed: Object.freeze(removed) });
@@ -266,13 +276,20 @@ class PagesReleaseBuilder {
     return removed.sort();
   }
 
-  // The release page with every relative URL (stylesheets, entry, runtime assets) resolved inside the release.
-  static rootPage(html, id) {
+  // The release page with every relative URL (stylesheets, entry, runtime assets) resolved inside the release, then
+  // its preloads (pagePreloads): the stylesheets first (small, needed for the first styled frame), then the modules.
+  static rootPage(html, id, { styles = [], modules = [] } = {}) {
     if (/<base\b/iu.test(html)) throw new Error(`${PAGE} must not declare <base>`);
     const heads = [...html.matchAll(/<head>\n/gu)];
     if (heads.length !== 1) throw new Error(`${PAGE} must contain one <head> line`);
     const index = heads[0].index + heads[0][0].length;
-    return `${html.slice(0, index)}    <base href="releases/${id}/" />\n${html.slice(index)}`;
+    const href = (url) => {
+      if (!/^[\w./?=@-]+$/u.test(url)) throw new Error(`Preload URL needs escaping: ${url}`);
+      return url;
+    };
+    const preloads = [...styles.map((url) => `    <link rel="preload" as="style" href="${href(url)}" />\n`),
+      ...modules.map((url) => `    <link rel="modulepreload" href="${href(url)}" />\n`)].join("");
+    return `${html.slice(0, index)}    <base href="releases/${id}/" />\n${preloads}${html.slice(index)}`;
   }
 }
 

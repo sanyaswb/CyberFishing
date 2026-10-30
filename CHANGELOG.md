@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.27 - Module preload on Pages
+
+- Spec 157 stage B: the Pages release writes `<link rel="preload" as="style">` for every stylesheet and `<link rel="modulepreload">` for every module of the page's graph into the root pages, so the browser requests them in parallel (request waves 24 → 4; cold start on Fast 4G 3.6 → 2.7 s, 3G 14.2 → 13.0 s locally). Game code unchanged. Game-cycle report unchanged.
+
 ## v0.49.26 - Static startup screen
 
 - Spec 157 D0: a black startup screen with an inline SVG spinner paints straight from the HTML (game stylesheets now follow it in the body) and fades out at the first frame of play (data-game-ready); first paint on a cold Fast 4G start 2920 → 120 ms, 3G 12740 → 212 ms locally. Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.18 - Boat targets on a scrolled map
 
 - Delivery / Input: while bait boat targets are chosen, dragging pans the map (as bare scouting does) and a tap places a target, so targets can be set anywhere on the water regardless of where the boat is; hand chum aiming keeps its power drag (TK-166). Game-cycle report unchanged.
-
-## v0.49.17 - Bait boat wake crash fix
-
-- Delivery / Scene: launching the bait boat crashed the frame (`out.set is not a function` in BoatWakeEmitter.buildInto): ViewportProjector writes screen points with `out.set`, the wake passed a plain object; the wake check's projector now follows that contract (TK-163). Game-cycle report unchanged.

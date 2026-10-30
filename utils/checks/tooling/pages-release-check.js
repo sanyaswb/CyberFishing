@@ -8,6 +8,12 @@ const path = require("node:path");
 const { GitCommitTree, ReleaseFileSet, PagesReleaseBuilder } = require("../../build-pages-release.js");
 
 const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, "../../..") });
+// The root page's preloads (spec 157 stage B), as the release writes them after <base>.
+const preloadLines = (page) => {
+  const { styles, modules } = ReleaseFileSet.pagePreloads(tree, page);
+  return [...styles.map((url) => `    <link rel="preload" as="style" href="${url}" />\n`),
+    ...modules.map((url) => `    <link rel="modulepreload" href="${url}" />\n`)].join("");
+};
 const site = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-pages-"));
 try {
   // An earlier release and the old root files must survive.
@@ -43,8 +49,8 @@ try {
       assert(files.has(href), `DEV stylesheet ${href} is released`);
     }
     assert.equal(fs.readFileSync(path.join(site, "dev.html"), "utf8"),
-      devPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
-      "the root DEV page resolves its files inside the release");
+      devPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n${preloadLines("dev.html")}`),
+      "the root DEV page resolves its files inside the release and announces its stylesheets and modules");
   }
   // Spec 082: published raster art is WebP; masters stay in asset-sources/ and are never released.
   assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
@@ -97,8 +103,26 @@ try {
     assert(fs.readFileSync(path.join(release.releaseDir, ...file.split("/"))).equals(contents.get(file)), `${file} has the committed bytes`);
   }
   const root = fs.readFileSync(path.join(site, "index.html"), "utf8");
-  assert.equal(root, page.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
-    "the root page is the release page resolved inside the release");
+  assert.equal(root, page.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n${preloadLines("index.html")}`),
+    "the root page is the release page resolved inside the release, with its preloads");
+  // Spec 157 stage B: one modulepreload per module of the page's graph (the entry first, as the page writes it, then
+  // nothing missing and nothing extra) and one style preload per stylesheet in page order.
+  for (const name of ["index.html", "dev.html"].filter((file) => tree.has(file))) {
+    const published = fs.readFileSync(path.join(site, name), "utf8");
+    const source = tree.read(name).toString("utf8");
+    const preloaded = [...published.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
+    const entry = source.match(/<script type="module" src="([^"]+)"/u)[1];
+    assert.equal(preloaded[0], entry, `${name}: the entry is preloaded first, with its query`);
+    assert.equal(new Set(preloaded).size, preloaded.length, `${name}: no module is preloaded twice`);
+    const released = new Set(release.files);
+    for (const module of preloaded.slice(1)) assert(released.has(module), `${name}: preloaded ${module} is released`);
+    assert(preloaded.includes("src/bootstrap/production/game_composition_root.js"), `${name}: the composition is preloaded`);
+    assert(preloaded.includes("vendor/pixi/8.22.0/pixi-scene.js"), `${name}: the dynamically imported scene bundle is preloaded`);
+    const styles = [...source.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu)].map((match) => match[1]);
+    assert.deepEqual([...published.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]),
+      styles, `${name}: every stylesheet is preloaded in page order`);
+    assert(published.indexOf("<base ") < published.indexOf("<link rel="), `${name}: preloads resolve inside the release`);
+  }
   assert.equal(fs.readFileSync(olderRelease, "utf8"), "older release", "the previously live release is retained");
   assert(!fs.existsSync(path.dirname(staleRelease)), "older releases are removed");
   assert.equal(release.previous, "0.0.1-0000000"); assert.deepEqual([...release.removed], ["0.0.0-ffffff0"]);
