@@ -642,8 +642,9 @@ export const CONFIG = {
         capacity: 96,
         // Spec 156: each puff also bends the water around it (WebGL water only): crest height as a share of the water's
         // full amplitude (1 = as far as the waves shift the art), radius as a multiple of half the puff's size (at least
-        // 2.5 texels of the water map).
-        water: { enabled: true, strength: 1, radiusScale: 2.5 },
+        // 2.5 texels of the water map). Off by default (owner, 2026-10-30: the foam wake alone for now); DevTools turns
+        // it on live.
+        water: { enabled: false, strength: 1, radiusScale: 2.5 },
       },
       displayScale: 0.2,
       x: "rod",
