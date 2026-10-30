@@ -26,12 +26,10 @@ export function composeBoatAnimation({ windowTarget, documentTarget, scene }) {
     drawsRod: () => scene.router ? scene.router.drawsOnScene("world-entities") : true,
     getWebGLVersion: () => scene.layer.getStatus().webglVersion ?? null,
   }) : new SpineGlSurface({ createCanvas: () => documentTarget.createElement("canvas") });
-  const reducedMotion = windowTarget.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
   const controller = new BoatAnimationController({
     loadBundle: (descriptor) => loader.load(descriptor, { priority: "interactive" }),
     loadRuntime: (exportVersion) => runtimeProvider.load(exportVersion),
     glSurface,
-    isReducedMotion: () => reducedMotion?.matches === true,
   });
   return {
     controller,

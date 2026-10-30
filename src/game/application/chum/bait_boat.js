@@ -1,7 +1,15 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
 import { BoatRules } from "../../domain/rules/boat_rules.js";
+import {
+  BOAT_ANIMATION_CLIPS,
+  BOAT_ANIMATION_DURATIONS,
+  BOAT_SECTION_CLIPS,
+} from "../../domain/chum/boat_animation_state.js";
 
 const BOAT_RULES = new BoatRules();
+// The boat waits for its clips (TK-160: one source of their lengths).
+const IMMERSION_SEC = BOAT_ANIMATION_DURATIONS[BOAT_ANIMATION_CLIPS.IMMERSION];
+const MOVE_START_SEC = BOAT_ANIMATION_DURATIONS[BOAT_ANIMATION_CLIPS.MOVE_START];
 
 export class BaitBoat {
   #rootInstanceId;
@@ -61,7 +69,7 @@ export class BaitBoat {
     this.waypoints = [];
 
     this.animationState = "immersion";
-    this.immersionTimer = 1.25;
+    this.immersionTimer = IMMERSION_SEC;
     this.moveStartTimer = 0;
     this.openingTimer = 0;
     this.openingSectionIndex = 1;
@@ -99,7 +107,10 @@ export class BaitBoat {
     this.remainingSections = snapshot.remainingSections;
     this.hasLeftShore = snapshot.hasLeftShore;
     this.powerRatio = snapshot.powerRatio;
-    this.animationState = snapshot.animationState === "immersion" ? "idle" : snapshot.animationState;
+    // A reload resumes without the one-shot clips: immersion is over, a start continues as motion (TK-160).
+    const resumed = { immersion: "idle", moving_start: "moving" };
+    this.animationState = resumed[snapshot.animationState] ?? snapshot.animationState;
+    this.moveStartTimer = 0;
     this.immersionTimer = 0;
     this.openingTimer = snapshot.openingTimer;
     this.openingSectionIndex = snapshot.openingSectionIndex;
@@ -145,7 +156,7 @@ export class BaitBoat {
     if (drop !== null) this.drop = drop;
     this.state = isReturn ? "returning" : "deploying";
     this.animationState = "moving_start";
-    this.moveStartTimer = 1.333;
+    this.moveStartTimer = MOVE_START_SEC;
   }
 
   update(dt, checkPhysics, checkSensor, cellSize, env) {
@@ -162,7 +173,9 @@ export class BaitBoat {
     this.maneuverTimer = Math.max(0, this.maneuverTimer - dtSec);
     if (this.moveStartTimer > 0) {
       this.moveStartTimer = Math.max(0, this.moveStartTimer - dtSec);
-      if (this.moveStartTimer === 0 && (this.state === "deploying" || this.state === "returning")) {
+      // Only a start becomes motion: a bunker that began opening meanwhile keeps opening (TK-160).
+      if (this.moveStartTimer === 0 && this.animationState === "moving_start" &&
+        (this.state === "deploying" || this.state === "returning")) {
         this.animationState = "moving";
       }
     }
@@ -248,6 +261,9 @@ export class BaitBoat {
     if (this.state === "idle" || this.isFinished) return;
     this.powerRatio = 0;
     this.state = "drifting";
+    // The motor stops: no motion clip or wake while it drifts (TK-160).
+    this.animationState = "idle";
+    this.moveStartTimer = 0;
   }
 
   #applyDrift(dtSec, checkPhysics, env) {
@@ -543,13 +559,14 @@ export class BaitBoat {
                 }
               }
               this.openingSectionIndex = dropNum;
-              const openDurations = { 1: 1.583, 2: 1.167, 3: 1.167 };
-              this.openingTimer = openDurations[dropNum] || 1.2;
+              // A bunker without its own clip opens at once.
+              this.openingTimer = BOAT_ANIMATION_DURATIONS[BOAT_SECTION_CLIPS[dropNum]] ?? 0;
               this.velocity.x = 0;
               this.velocity.y = 0;
               return true;
             }
-            if (this.openingTimer > 0) {
+            // Opening: the bunker drops when its clip has played (a bunker without a clip on the next step).
+            {
               this.openingTimer -= dtSec;
               this.velocity.x = 0;
               this.velocity.y = 0;
@@ -574,7 +591,7 @@ export class BaitBoat {
             this.drop = null;
             this.state = "returning";
             this.animationState = "moving_start";
-            this.moveStartTimer = 1.333;
+            this.moveStartTimer = MOVE_START_SEC;
           }
         } else {
           this.state = "waiting";
@@ -607,11 +624,11 @@ export class BaitBoat {
       this.target.y = wp.y;
       this.drop = wp.drop;
       this.animationState = "moving_start";
-      this.moveStartTimer = 1.333;
+      this.moveStartTimer = MOVE_START_SEC;
     } else {
       this.state = "returning";
       this.animationState = "moving_start";
-      this.moveStartTimer = 1.333;
+      this.moveStartTimer = MOVE_START_SEC;
     }
   }
 

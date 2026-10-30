@@ -1,6 +1,5 @@
 import {
   BOAT_ANIMATION_CLIPS,
-  BOAT_ANIMATION_DURATIONS,
   BOAT_LIGHT_SLOTS,
   BOAT_BAIT_SLOTS,
   BOAT_SECTION_CLIPS,
@@ -8,12 +7,12 @@ import {
 
 // Animation controller for the bait boat Spine skeleton (spec 150).
 // Controls immersion, start and forward movement loops, compartment door opening,
-// night lights and bait attachment visibility.
+// night lights and bait attachment visibility. No clip keys the light, bait or extra wave slots, and the held doors
+// stay sampled, so those are written only when they change (docs/rendering.md rule 22, TK-160).
 export class BoatAnimationController {
   #loadBundle;
   #loadRuntime;
   #glSurface;
-  #isReducedMotion;
   #descriptor = { skeleton: "", atlas: "", skin: "" };
   #generation = 0;
   #load = null;
@@ -30,12 +29,13 @@ export class BoatAnimationController {
   #disabledClips = new Set();
   #boneEdits = new Map();
   #reason = null;
+  #slotVisible = new Map();
+  #heldSections = "";
 
   constructor({
     loadBundle,
     loadRuntime,
     glSurface,
-    isReducedMotion = () => false,
   }) {
     if (typeof loadBundle !== "function") throw new TypeError("BoatAnimationController requires loadBundle");
     if (typeof loadRuntime !== "function") throw new TypeError("BoatAnimationController requires loadRuntime");
@@ -43,7 +43,6 @@ export class BoatAnimationController {
     this.#loadBundle = loadBundle;
     this.#loadRuntime = loadRuntime;
     this.#glSurface = glSurface;
-    this.#isReducedMotion = isReducedMotion;
   }
 
   setDescriptor(animation) {
@@ -89,6 +88,8 @@ export class BoatAnimationController {
       this.#currentClip = "";
       this.#clipTimer = 0;
       this.#lightsActive = null;
+      this.#slotVisible.clear();
+      this.#heldSections = "";
       for (let track = 0; track <= 3; track++) {
         scene.clearTrack?.(track, 0);
       }
@@ -108,7 +109,7 @@ export class BoatAnimationController {
     } else if (animationState === "moving_start") {
       targetClip = BOAT_ANIMATION_CLIPS.MOVE_START;
       isLoop = false;
-    } else if (animationState === "moving" || animationState === "returning") {
+    } else if (animationState === "moving") {
       targetClip = BOAT_ANIMATION_CLIPS.MOVE_LOOP;
       isLoop = true;
     } else if (animationState === "opening") {
@@ -139,8 +140,8 @@ export class BoatAnimationController {
       }
     }
 
-    // Spec 150: night lights are enabled during the night in all states EXCEPT immersion.
-    const shouldLight = isNight && targetClip !== BOAT_ANIMATION_CLIPS.IMMERSION;
+    // Spec 150: night lights burn at night in every state except immersion; TK-160: only while the battery powers them.
+    const shouldLight = isNight && targetClip !== BOAT_ANIMATION_CLIPS.IMMERSION && Number(boat?.powerRatio) > 0;
     if (this.#lightsActive !== shouldLight) {
       this.#lightsActive = shouldLight;
       for (const lightSlot of BOAT_LIGHT_SLOTS) {
@@ -149,30 +150,33 @@ export class BoatAnimationController {
     }
 
     // Spec 150 / TK-149: Wave slot 1 is visible during motion, hidden during immersion and idle.
-    const isMoving = animationState === "moving_start" || animationState === "moving" || animationState === "returning";
-    scene.setSlotVisible?.("boats-wave--1", isMoving);
+    const isMoving = animationState === "moving_start" || animationState === "moving";
+    this.#setSlot(scene, "boats-wave--1", isMoving);
 
     // Owner instruction (2026-10-29): boats-wave--2 and boats-wave--3 are disabled by default
     // until animations are authored for them.
-    scene.setSlotVisible?.("boats-wave--2", false);
-    scene.setSlotVisible?.("boats-wave--3", false);
+    this.#setSlot(scene, "boats-wave--2", false);
+    this.#setSlot(scene, "boats-wave--3", false);
 
     // Spec 150: bait attachments turn off once their corresponding section opens/drops.
     const droppedSections = boat?.droppedSections || [];
     for (const [sectionNum, baitSlot] of Object.entries(BOAT_BAIT_SLOTS)) {
-      const isDropped = droppedSections.includes(Number(sectionNum));
-      scene.setSlotVisible?.(baitSlot, !isDropped);
+      this.#setSlot(scene, baitSlot, !droppedSections.includes(Number(sectionNum)));
     }
 
     // Spec 150 (owner instruction 2026-10-29): keep dropped compartments open across subsequent moves.
-    for (let sec = 1; sec <= 3; sec++) {
-      const clip = BOAT_SECTION_CLIPS[sec];
-      if (droppedSections.includes(sec)) {
-        if (!this.#disabledClips.has(clip)) {
-          scene.setSampled?.(sec, clip, 1.0, 1.0);
+    const heldSections = droppedSections.join(",");
+    if (heldSections !== this.#heldSections) {
+      this.#heldSections = heldSections;
+      for (let sec = 1; sec <= 3; sec++) {
+        const clip = BOAT_SECTION_CLIPS[sec];
+        if (droppedSections.includes(sec)) {
+          if (!this.#disabledClips.has(clip)) {
+            scene.setSampled?.(sec, clip, 1.0, 1.0);
+          }
+        } else {
+          scene.clearTrack?.(sec, 0);
         }
-      } else {
-        scene.clearTrack?.(sec, 0);
       }
     }
 
@@ -186,9 +190,13 @@ export class BoatAnimationController {
       view: scene.getView?.() || null,
       clip: this.#currentClip,
       clipTimer: this.#clipTimer,
-      duration: BOAT_ANIMATION_DURATIONS[this.#currentClip] || 0,
-      isFinished: !isLoop && this.#clipTimer >= (BOAT_ANIMATION_DURATIONS[this.#currentClip] || 0),
     };
+  }
+
+  #setSlot(scene, slotName, visible) {
+    if (this.#slotVisible.get(slotName) === visible) return;
+    this.#slotVisible.set(slotName, visible);
+    scene.setSlotVisible?.(slotName, visible);
   }
 
   get scene() {
@@ -225,6 +233,7 @@ export class BoatAnimationController {
   setClipEnabled(clipName, enabled) {
     if (enabled === false) this.#disabledClips.add(String(clipName));
     else this.#disabledClips.delete(String(clipName));
+    this.#heldSections = "";
   }
 
   getBones() {
@@ -286,8 +295,7 @@ export class BoatAnimationController {
       this.#replaceScene(null);
       return;
     }
-    const skeleton = this.#sanitizeSkeleton(outcome.bundle.skeleton);
-    const bundle = { ...outcome.bundle, skeleton };
+    const bundle = outcome.bundle;
     this.#bundle = bundle;
     const capability = await this.#loadRuntime(bundle.version);
     if (generation !== this.#generation) return;
@@ -305,30 +313,10 @@ export class BoatAnimationController {
     this.#replaceScene(created.scene);
   }
 
-  #sanitizeSkeleton(raw) {
-    if (!raw?.animations) return raw;
-    const skeleton = JSON.parse(JSON.stringify(raw));
-    const sectionClips = [
-      BOAT_ANIMATION_CLIPS.OPEN_SECTION_1,
-      BOAT_ANIMATION_CLIPS.OPEN_SECTION_2,
-      BOAT_ANIMATION_CLIPS.OPEN_SECTION_3,
-    ];
-    for (const clipName of sectionClips) {
-      const anim = skeleton.animations[clipName];
-      if (anim?.slots?.["boats-wave--1"]) {
-        delete anim.slots["boats-wave--1"];
-      }
-    }
-    const waveSlot = skeleton.slots?.find((s) => s.name === "boats-wave--1");
-    if (waveSlot) {
-      waveSlot.color = "ffffff00";
-    }
-    return skeleton;
-  }
-
   #replaceScene(scene) {
     if (this.#scene === scene) return;
     this.#scene?.dispose();
     this.#scene = scene;
+    this.#lastBoat = null;
   }
 }

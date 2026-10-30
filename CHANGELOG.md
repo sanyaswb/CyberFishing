@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.10 - Bait boat Spine review
+
+- Delivery / Spine: the boat waits for the export's clip lengths (`BOAT_ANIMATION_DURATIONS`, checked against `boat-lvl--3.json`; bunkers 2-3 open for 1.583 s, not 1.167 s); the end of the start clip no longer restarts an opening door; a reloaded start continues as motion; a drained boat drifts without the motor clip, wake or lights (TK-160).
+- Delivery / Spine: bait, light, wake slots and held doors are written into the skeleton only when they change; the obsolete skeleton rewrite, the `returning` branch and the unused reduced-motion port are removed. Game-cycle report unchanged.
+
 ## v0.49.9 - Drained bait boat recovery by net or mooring
 
 - Delivery: a drained boat drifts with the current; the landing net button takes it back inside the net's reach (outside the fight), and it is taken back automatically when it moors within `recovery.mooringMeters` (1 m) of the player's shore; the 40/200 px tap removal is gone (spec 151 / G-124).
@@ -46,9 +51,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Fishing / HUD: kept bait boat toolbar launch button active when compartments are empty with `boat-lvl--3_no-bait.webp` artwork, clickable cursor, and non-blocking interaction (Spec 150 / TK-150).
 - Delivery / Inventory: clicking empty boat launch button opens the bait boat assembly editor in inventory, flashes empty cargo compartments in red error feedback (`inventory-equipment-feedback--error`), and displays the load chum hint (TK-150).
-
-## v0.49.0 - Bait boat lvl3 Spine animation, night lights, multi-track hopper doors, and dynamic visuals
-
-- Delivery / Spine: introduced full skeletal Spine animation for Level 3 bait boat (`boat-lvl--3.json`), featuring water immersion (`boat3--immersion`), forward propulsion (`boat3--move-forvard_start` -> `boat3--move-forvard1`) with bow forward orientation, and night lights (`boat-light`, `boat3-night_light*`) active in the dark (Spec 150 / TK-141..TK-149).
-- Delivery / Hopper: implemented multi-track sequential bay door opening (`boat3--open-section-1..3`), synchronized bait release and slot hiding (`section--1-bait*`), and persistent open bay doors across trips with pre-opened empty bay tracking (TK-143, TK-148, TK-149).
-- Delivery / UI & Tools: added dynamic inventory and chum button artwork switching (`boat-lvl--3_bait.webp` vs `boat-lvl--3_no-bait.webp`) and `CONFIG.ui.boat` live DevTools tuning under "SPINE" (TK-141, TK-145).
