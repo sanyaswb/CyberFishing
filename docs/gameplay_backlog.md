@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-126 Window size moves the float, fish and boat (P1, open)
+Found: 2026-10-30, owner, v0.49.7.
+Reproduce: during a fight or a boat trip narrow the browser window or pan — objects near the screen edge are pushed toward the centre.
+Expected: the window is only the camera; world positions and physics do not depend on it.
+Actual: CONFIG.locations.lockZoneXToScreen takes the physics X bounds from the visible screen (GameWorld.getDynamicBounds), and WaterEntity clamps into them every frame; the fight's side share divides by half the canvas width.
+Notes: [spec 153](../specs/153-viewport-independent-world/spec.md).
+
 ### G-125 Chum zones do not follow game time and undelivered zones never expire (P2, open)
 Found: 2026-10-30, owner + code review of the bait boat, v0.49.7.
 Reproduce: launch the boat, let the battery run out before the drop (or reload) — the zone stays in chum_active_<location>
