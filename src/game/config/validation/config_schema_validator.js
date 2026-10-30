@@ -531,6 +531,9 @@ export class ConfigSchemaValidator {
     if (cfg.displayScale !== undefined) {
       this.#requireFiniteNumber(`${path}.displayScale`, cfg.displayScale, { min: 0.01, max: 5 });
     }
+    if (cfg.inertialMotion !== undefined && typeof cfg.inertialMotion !== "boolean") {
+      this.#error(`${path}.inertialMotion`, "must be a boolean");
+    }
     if (cfg.x !== undefined && typeof cfg.x !== "number" && !["rod", "center"].includes(cfg.x)) {
       this.#error(`${path}.x`, 'must be "rod", "center" or a finite number');
     }

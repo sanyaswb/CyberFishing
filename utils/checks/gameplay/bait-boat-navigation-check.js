@@ -28,14 +28,14 @@ function createMap(blocks = [], land = []) {
   return map;
 }
 
-function trip(m, map, target, { fps = 60, seconds = 60, planned = true } = {}) {
+function trip(m, map, target, { fps = 60, seconds = 60, planned = true, inertial = false } = {}) {
   const planner = new m.BoatRoutePlanner({ getRevision: () => map.revision, getCellSize: () => CELL,
     getBounds: () => ({ left: 0, top: 0, right: W, bottom: H }), isWater: (x, y) => !!map.water(x, y) });
   const service = new m.ChumService("nav", { baits: { mix: { id: "mix", effectiveStats: { radius: 100,
     targetFishes: [], rampUpTimeMs: 1, peakDurationMs: 1, totalBonusTimeMs: 2, minBonusDurationHours: 1, maxBonus: 2,
     minBonus: 1 } } } }, () => null, { cache: { get: (key, fallback) => fallback, set() {} }, now: () => 0, rng: { next: () => 0.5 }, gameTime: { getGameMs: () => 0 },
     devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) },
-    routePlanner: planned ? planner : null });
+    routePlanner: planned ? planner : null, isInertialMotion: () => inertial });
   const boat = service.spawnIdleBoat(SHORE.x, SHORE.y, m.boatItem, "battery");
   boat.immersionTimer = 0;
   const result = { reachable: service.isReachableByBoat(boat, target.x, target.y), dropAt: null, homeAt: null,
@@ -92,6 +92,19 @@ async function run() {
   changing.revision += 1;
   const after = trip(m, changing, far, { seconds: 0.02 });
   assert(after.boat.route.length > 1, "after a map edit the next leg goes around the new obstacle");
+
+  // Spec 154 C: the inertial test preset reaches the same targets without ramming, only later.
+  for (const [name, map] of Object.entries(traps)) {
+    const result = trip(m, map, far, { inertial: true });
+    assert(result.dropAt !== null && result.dropAt < 16, `inertial, ${name}: drops (${result.dropAt})`);
+    assert(result.homeAt !== null && result.homeAt < 32, `inertial, ${name}: comes home (${result.homeAt})`);
+    assert(result.reversals <= 1, `inertial, ${name}: no ramming`);
+  }
+  const agile = trip(m, createMap(), far);
+  const heavy = trip(m, createMap(), far, { inertial: true });
+  assert(heavy.dropAt > agile.dropAt + 1, "the inertial hull takes longer to get going");
+  const inertialTimes = [30, 144].map((fps) => trip(m, createMap(), far, { fps, inertial: true }).dropAt);
+  assert(Math.abs(inertialTimes[0] - inertialTimes[1]) < 0.4, `inertial motion is frame-rate independent (${inertialTimes})`);
 
   // The same trip at 30, 60 and 144 Hz.
   const open = createMap();

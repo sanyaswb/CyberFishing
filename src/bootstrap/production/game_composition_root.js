@@ -1021,6 +1021,7 @@ export class GameCompositionRoot {
         // and a saved boat is restored from the equipped boat item.
         consumeBoatChum: (slotIndex) => inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1),
         onBoatLost: ({ rootInstanceId }) => inventory.consumeItem(rootInstanceId, 1),
+        isInertialMotion: () => this.#config.ui?.boat?.inertialMotion === true,
         // Spec 154: boat routes on the current map, with the boat physics' water test (GameWorld.checkWater).
         routePlanner: new BoatRoutePlanner({
           getRevision: () => locationMap.getRevision(),

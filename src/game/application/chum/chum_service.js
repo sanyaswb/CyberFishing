@@ -26,6 +26,7 @@ export class ChumService {
   #onBoatLost;
   #findBoatItem;
   #routePlanner;
+  #isInertialMotion;
 
   constructor(locationId, chumConfig, getWaterMetric, services = {}) {
     this.#chumConfig = chumConfig;
@@ -56,6 +57,8 @@ export class ChumService {
     this.#findBoatItem = services.findBoatItem || null;
     // Spec 154: routes on the current map ({ plan, isReachable }); without it a boat steers straight with its rays.
     this.#routePlanner = services.routePlanner || null;
+    // Spec 154 C: DEV switch for the inertial motion preset, read every update so a live edit applies at once.
+    this.#isInertialMotion = services.isInertialMotion || (() => false);
     this.#boatsKey = `chum_boats_${locationId}`;
 
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
@@ -203,6 +206,7 @@ export class ChumService {
     for (let i = this.#boats.length - 1; i >= 0; i--) {
       const boat = this.#boats[i];
       const stateBefore = boat.state;
+      boat.setInertialMotion(this.#isInertialMotion());
       this.#planRoute(boat);
       const plane = this.#groundPlane.enter({ metric: waterMetric, boat, checkPhysics, checkSensor, cellSize });
       try {

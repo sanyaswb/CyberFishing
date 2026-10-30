@@ -622,6 +622,8 @@ export const CONFIG = {
 
     // The bait boat on the water (spec 150): display scale and initial deployment coordinate offsets.
     boat: {
+      // Spec 154 C: test switch for the boat's inertial motion preset (catalog motionPresets.inertial); off = agile.
+      inertialMotion: false,
       displayScale: 0.2,
       x: "rod",
       xOffset: 0,

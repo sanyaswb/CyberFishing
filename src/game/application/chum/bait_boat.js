@@ -34,6 +34,8 @@ export class BaitBoat {
   #bestGoalDist = Infinity;
   #noProgressSec = 0;
   #replans = 0;
+  #inertial = false;
+  #motionParams = { acceleration: 0, turnSpeedRad: 0, turnAtRestShare: 1, dragPerTick: 0, lateralPerTick: 0 };
 
   // drop: { baitId, slotIndex } the boat carries to its current target; the bunker opening spends that cargo slot and
   // starts the spot (specs 151 D5, 152 D2).
@@ -664,6 +666,23 @@ export class BaitBoat {
     }
   }
 
+  // Spec 154 C: the DEV switch between the tuned agile motion and the catalog's inertial preset (motionPresets.inertial).
+  setInertialMotion(enabled) {
+    this.#inertial = enabled === true && !!this.config.motionPresets?.inertial;
+  }
+
+  // Thrust, turn rate (its share at rest grows to full at top speed), drag and side-slip kept per 60 Hz tick.
+  #motion() {
+    const preset = this.#inertial ? this.config.motionPresets.inertial : null;
+    const motion = this.#motionParams;
+    motion.acceleration = preset?.acceleration ?? (this.config.acceleration || 400);
+    motion.turnSpeedRad = preset?.turnSpeedRad ?? (this.config.turnSpeedRad || 3.0);
+    motion.turnAtRestShare = preset?.turnAtRestShare ?? 1;
+    motion.dragPerTick = preset?.dragPerTick ?? 0.97;
+    motion.lateralPerTick = preset?.lateralPerTick ?? 0.05;
+    return motion;
+  }
+
   // The leg's goal: the target while deploying, the shore start on the way back.
   get legGoal() {
     return this.state === "deploying" ? this.target : this.startPos;
@@ -710,7 +729,8 @@ export class BaitBoat {
   }
 
   #applyPhysics(steering, dtSec) {
-    const accel = this.config.acceleration || 400;
+    const motion = this.#motion();
+    const accel = motion.acceleration;
     const isReversing = this.avoidanceState === "reversing";
     const steeringMag = Math.hypot(steering.x, steering.y);
     const noseX = Math.cos(this.angle);
@@ -725,7 +745,10 @@ export class BaitBoat {
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
 
-      const maxTurn = (this.config.turnSpeedRad || 3.0) * dtSec;
+      const speedShare = Math.min(1, Math.hypot(this.velocity.x, this.velocity.y) /
+        Math.max(1, this.stats.speedPxPerSec || 1));
+      const turnShare = motion.turnAtRestShare + (1 - motion.turnAtRestShare) * speedShare;
+      const maxTurn = motion.turnSpeedRad * turnShare * dtSec;
       this.angle +=
         Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
 
@@ -760,7 +783,7 @@ export class BaitBoat {
     const forwardSpeed = this.velocity.x * noseX + this.velocity.y * noseY;
     let lateralSpeed = this.velocity.x * rightX + this.velocity.y * rightY;
 
-    lateralSpeed *= Math.pow(0.05, dtSec * FRAME_RATE_OF_TUNING);
+    lateralSpeed *= Math.pow(motion.lateralPerTick, dtSec * FRAME_RATE_OF_TUNING);
 
     this.velocity.x = noseX * forwardSpeed + rightX * lateralSpeed;
     this.velocity.y = noseY * forwardSpeed + rightY * lateralSpeed;
@@ -771,7 +794,7 @@ export class BaitBoat {
       this.velocity.y *= brakeFriction;
     }
 
-    const drag = Math.pow(0.97, dtSec * FRAME_RATE_OF_TUNING);
+    const drag = Math.pow(motion.dragPerTick, dtSec * FRAME_RATE_OF_TUNING);
     this.velocity.x *= drag;
     this.velocity.y *= drag;
 

@@ -1232,6 +1232,11 @@ export const ITEM_DB = {
         avoidancePersistenceMs: 300,
         avoidanceThrustMultiplier: 0.5,
         acceleration: 800,
+        // Spec 154 C: a heavier hull for the DEV test switch (CONFIG.ui.boat.inertialMotion): 3 m/s² thrust, a quarter
+        // of the turn rate at rest, softer drag and more side-slip per 60 Hz tick.
+        motionPresets: {
+          inertial: { acceleration: 150, turnSpeedRad: 1.6, turnAtRestShare: 0.25, dragPerTick: 0.99, lateralPerTick: 0.2 },
+        },
         slowRadius: 150,
         brakeForce: 0.5,
         finishRadiusTarget: 5,

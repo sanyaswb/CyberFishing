@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.13 - Inertial bait boat motion test switch
+
+- DEV / Delivery: `CONFIG.ui.boat.inertialMotion` (DevTools → SPINE → «Кораблик») switches the boat to the catalog's inertial preset — 3 m/s² thrust, a quarter of the turn rate at rest, softer drag and more side-slip; off keeps the agile motion unchanged (spec 154 C). Game-cycle report unchanged.
+
 ## v0.49.12 - DEV bait boat route display
 
 - DEV: DevTools → «РЕДАКТОР» → «Маршрут кораблика» draws the boat's planned route as a dashed line on the WebGL scene and the 2D fallback; production never shows it (spec 154 Q3). Game-cycle report unchanged.
@@ -45,9 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery / Spine: updated `SpineScene.prototype.setAnimation` to allow completed one-shot animations (`isComplete() === true`) to replay from 0 rather than being blocked by early equality return, and ensured `clearTrack` cleans entries immediately via `state.clearTrack` when `mixSec <= 0` (Spec 150 / TK-153).
 - Delivery / Animation: cleared track 0 alongside compartment tracks 1..3 (`for (let track = 0; track <= 3; track++) scene.clearTrack(track, 0)`) in `BoatAnimationController` on boat change, and reset `currentClip` to empty on idle, guaranteeing reliable `boat3--immersion` replay whenever aiming is cancelled and restarted (TK-153).
-
-## v0.49.3 - Radio battery empty feedback, warning notice, red HUD indicator, and VOLIA playback resume
-
-- Radio / Inventory: clicking power without a charged battery scrolls to the battery socket, flashes it in red error feedback (`inventory-equipment-feedback--error`), and displays the warning notice «Без енергії діла не буде» (Spec 142 / TK-152).
-- Radio / HUD: styled depleted battery state (`hud-indicator--empty`) with red circle border alongside red icon; clicking the indicator opens the radio editor with battery feedback and warning (TK-152).
-- Radio / VOLIA 77.2: implemented non-destructive stream player pause and resume on page visibility changes, resuming VOLIA playback from the exact paused position without cue or restart (TK-152).
