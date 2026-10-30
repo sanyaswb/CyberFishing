@@ -20,6 +20,24 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-125 Chum zones do not follow game time and undelivered zones never expire (P2, open)
+Found: 2026-10-30, owner + code review of the bait boat, v0.49.7.
+Reproduce: launch the boat, let the battery run out before the drop (or reload) — the zone stays in chum_active_<location>
+forever; with DEV time acceleration the clock runs faster but zone bonuses do not.
+Expected: zones live and expire by game time; an active zone stays until a new one is actually dropped over it.
+Actual: zone age = real time x CONFIG.debug.timeScale; undelivered zones are saved forever; a boat's not yet delivered zone
+replaces an overlapping active zone at click time.
+Notes: [spec 152](../specs/152-chum-zone-lifecycle/spec.md); ChumZone, ChumService, GameTimeClock.
+
+### G-124 Drained bait boat cannot be recovered (P2, open)
+Found: 2026-10-30, owner, v0.49.7.
+Reproduce: launch the boat, let the battery run out far from the shore.
+Expected: it drifts with the current; the landing net picks it up inside the net's reach, or it is taken back when it moors
+at the shore; bunker chum returns; it is lost only when the player leaves the location.
+Actual: it drifts forever, only a tap within 40 px and 200 map px of the bottom removes it, no new boat can be launched
+until reload, and the reload loses it.
+Notes: [spec 151](../specs/151-bait-boat-drift-recovery/spec.md); ChumController, ChumService, BaitBoat, Net.
+
 ### G-123 Fine connected masks for ordinary coordinate zones (P2, done in v0.47.0; owner acceptance pending)
 Found: 2026-10-23, owner, spec 138.
 Reproduce: trace a stepped shore inside one coarse zone without refining the global grid.
