@@ -182,6 +182,7 @@ function checkDevelopmentInputs() {
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
   const renderedVersions = [];
+  const startupMarks = { mark() {}, markReady() {} };
   class VersionBadge { constructor({ element }) { this.element = element; } render() { renderedVersions.push(this.element); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
     LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
@@ -193,13 +194,14 @@ function checkDevelopmentInputs() {
     zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null, maskEditor: {}, zoneDrawing: {},
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
-    openHouse, godMode: godModeInstance, pageParams } });
+    openHouse, godMode: godModeInstance, pageParams, startupMarks } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
   assert.equal(ports.documentTarget, document);
   assert.equal(ports.windowTarget, window);
   assert.equal(ports.gameLoopGuard, gameLoopGuard, "the page loop guard reaches the composition root");
+  assert.equal(ports.startupMarks, startupMarks, "DEV passes its startup marks to the composition root (spec 157)");
   assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
   assert.equal(ports.uiSurface, uiSurface, "Production DOM UI receives the composed browser coordinate port");
   assert.equal(ports.toolbarMountNode, toolbar.element, "DEV reuses the composed production toolbar row");
@@ -331,6 +333,9 @@ async function checkNativeProductionStartup() {
   const { Game } = require("../../../src/bootstrap/production/game.js");
   const { BrowserGameLifecycle } = require("../../../src/platform/browser/runtime/browser_game_lifecycle.js");
   const { FightPhysicsConfigAdapter } = require("../../../src/game/config/physics/fight_physics_config_adapter.js");
+  const { PerformanceStartupMarks } = require("../../../src/platform/browser/diagnostics/performance_startup_marks.js");
+  const { STARTUP_STAGES } = require("../../../src/engine/diagnostics/startup_stages.js");
+  const { markStartupReady } = require("../../../src/bootstrap/production/startup_ready_signal.js");
   // Evaluate the actual module bodies with controlled imported collaborators and import callbacks.
   function evaluate(file, names, bindings) {
     const source = fs.readFileSync(path.join(__dirname, "../../..", file), "utf8");
@@ -376,10 +381,13 @@ async function checkNativeProductionStartup() {
     let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, surfaces = 0, surfaceDisposals = 0, toolbars = 0, toolbarDisposals = 0;
     const toolbarElement = {};
     const tackleMountNode = {}, depthMountNode = {}, selectorMountNode = {};
-    const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
+    const marks = [], frames = [], rootAttributes = {};
+    const windowTarget = { performance: { mark(name) { marks.push(name); } }, requestAnimationFrame(callback) { frames.push(callback); },
+      addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
       CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
     const documentTarget = { readyState, body: { appendChild() {} }, getElementById() { return null; },
+      documentElement: { setAttribute(name, value) { rootAttributes[name] = value; } },
       addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); },
       removeEventListener(type,fn){if(documentListeners.get(type)===fn)documentListeners.delete(type);} };
     class Surface {
@@ -418,13 +426,14 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "startupMarks", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
         assert.equal(ports.toolbarMountNode, toolbarElement, "startup injects the shared toolbar mount");
         assert.equal(ports.tackleMountNode, tackleMountNode, "startup injects the shared float/net group");
         assert.equal(ports.depthMountNode, depthMountNode, "startup injects the independent depth expansion slot");
         assert.equal(ports.selectorMountNode, selectorMountNode, "production injects its separate selector mount");
         assert(ports.uiSurface instanceof Surface, "startup injects one browser coordinate surface into production composition");
         assert(ports.gameLoopGuard instanceof ActiveGameLoopGuard, "startup composes the page loop guard");
+        assert(ports.startupMarks instanceof PerformanceStartupMarks, "startup composes the page's startup marks (spec 157)");
         this.ports = ports;
         const flags = ports.createDevFlags(owner);assert(flags instanceof InactiveDevFlags, "production composes the inactive DEV flags");
         assert.equal(owner.debug.godMode.enabled, true);assert.equal(flags.isEnabled("noEquipmentLoss"), false, "production ignores an enabled GodMode config");
@@ -440,6 +449,7 @@ async function checkNativeProductionStartup() {
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
       GameCompositionRoot: Root, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
+      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
     });
@@ -447,6 +457,12 @@ async function checkNativeProductionStartup() {
     assert.equal(first, second, "concurrent startup shares the original promise");resolveBuild(app);
     const game = await first, context = windowTarget.CYBER_FISHING_CONFIG_RUNTIME;
     assert(game instanceof Game);assert.equal(await game.ready, app);assert.equal(windowTarget.game, game);
+    const stageMarks = ["entry", "config", "composition", "loop"].map(stage => "startup:" + stage);
+    assert.deepEqual(marks, stageMarks, "spec 157: stage marks in order up to the started loop");
+    assert.equal(rootAttributes["data-game-ready"], undefined, "ready waits for the loop's first frame");
+    assert.equal(frames.length, 1);frames[0]();frames[0]();
+    assert.deepEqual(marks, [...stageMarks, "startup:ready"], "the frame after the loop's first frame marks ready once");
+    assert.equal(rootAttributes["data-game-ready"], "", "ready sets the measurer's signal");
     assert.equal(composition.createProductionConfigContext(), context);assert.equal(composition.createProductionConfigContext(), context);
     assert.equal(context.overrideStore, context.resolvedProvider.overrideStore);assert(Object.isFrozen(context.baseConfig));
     assert.equal(config.rarity.visual, visual);assert.equal(config.degradationColors, degradation);assert.equal(config.fightPhysicsConfig.config, config);
@@ -492,8 +508,12 @@ function checkNativeDevelopmentDisplays() {
   const factory = new SourceRuntime({globals:bindings}).run("(function(){"+body+";return createDebugOverlayRuntime;})()",file);
   // Spec 101: the performance module reads the injected DEV frame profiler; the overlay rebuild is measured through it.
   const frameProfiler={getSnapshot:()=>({frames:0}),measure:(id,callback)=>callback()};
-  const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:{},frameProfiler,readRenderInfo:()=>null});
-  assert.equal(captured.length,20,"all main overlays (19 + performance) are composed exactly once");
+  const timingWindow={performance:{getEntriesByType:()=>[]},navigator:{},location:{href:""}};
+  const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:timingWindow,frameProfiler,readRenderInfo:()=>null,gameVersion:"9.9.9"});
+  assert.equal(captured.length,21,"all main overlays (19 + performance + startup) are composed exactly once");
+  const startupRecord=captured.find(record=>record.name==="StartupLoadOverlayModule");
+  assert(startupRecord,"spec 157: the startup overlay is composed");
+  assert.equal(JSON.parse(startupRecord.instance.reportText()).version,"9.9.9","the report names the game version");
   assert(captured.some(record=>record.name==="PerformanceOverlayModule"&&record.options.profiler===frameProfiler),
     "the performance overlay gets the shared profiler");
   const data = {gameState:"playing",hookedFish:{id:"fish",name:"Fish",physics:{behaviors:{swim:{forceMultiplier:1,speedMultiplier:1,weight:1}}}},
@@ -678,7 +698,7 @@ async function checkNativeDevelopmentLifecycle() {
   const startupErrors = [];
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
   const listeners=new Map(), registered=new Map();
-  const windowTarget={console,URLSearchParams,setTimeout,clearTimeout,location:{origin:"https://game.example",search:""},
+  const windowTarget={console,URLSearchParams,performance:{mark(){}},requestAnimationFrame(){},setTimeout,clearTimeout,location:{origin:"https://game.example",search:""},
     addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
     removeEventListener(type,fn){registered.get(type)?.delete(fn);const remaining=[...(registered.get(type)||[])];if(remaining.length)listeners.set(type,remaining.at(-1));else listeners.delete(type);}};
   const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{timeScale:240,timeAccelerationEnabled:false,godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
@@ -694,7 +714,7 @@ async function checkNativeDevelopmentLifecycle() {
   const frames = [], timeResumes = [];
   const sessionServices = { liveBait: {}, gameTime: {} };
   let houseFactoryOptions = null, closeHouse = null, houseScreens = 0, houseDisposals = 0;
-  const documentTarget = { body: { appendChild() {} }, getElementById() { return null; },
+  const documentTarget = { documentElement: { setAttribute() {} }, body: { appendChild() {} }, getElementById() { return null; },
     createElement(tag) {
       if(tag!=="iframe")return{children:[],appendChild(node){this.children.push(node);},remove(){this.removed=true;}};
       const frame={contentWindow:{},addEventListener(type,callback){this[type]=callback;},remove(){this.removed=true;}};

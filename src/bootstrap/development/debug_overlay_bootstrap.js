@@ -44,15 +44,18 @@ import { OverlayValueFormatter } from "../../dev/overlay/services/overlay_value_
 import { OverlayViewStateStore } from "../../dev/overlay/services/overlay_view_state_store.js";
 import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_window_drag_controller.js";
 import { PerformanceOverlayModule } from "../../dev/overlay/modules/performance_overlay_module.js";
+import { StartupLoadOverlayModule, STARTUP_REPORT_COPY_CONTROL } from "../../dev/overlay/modules/startup_load_overlay_module.js";
+import { BrowserStartupTimingReader } from "../../dev/diagnostics/browser_startup_timing_reader.js";
 import { PlayerMaxOverlayModule } from "../../dev/overlay/modules/player_max_overlay_module.js";
 import { RodControlSummaryOverlayModule } from "../../dev/overlay/fight_summary/rod_control_summary_overlay_module.js";
 import { StaminaBalanceOverlayModule } from "../../dev/overlay/modules/stamina_balance_overlay_module.js";
 import { WorstCaseForceDebugSelector } from "../../dev/fishing/worst_case_force_debug_selector.js";
 import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_overlay_module.js";
 
-// frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap.
+// frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap;
+// gameVersion: written into the startup report (spec 157).
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
-  frameProfiler, readRenderInfo}) {
+  frameProfiler, readRenderInfo, gameVersion}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -109,9 +112,21 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
           sections: [new FightRodStrokeSection(sectionOptions)],
         },
       ];
+  // Spec 157 R9: the startup report goes to the clipboard, or to a prompt the owner copies from when it is unavailable.
+  const copyText = async (text, title) => {
+    try {
+      await windowTarget.navigator.clipboard.writeText(text);
+      return "copied";
+    } catch {
+      windowTarget.prompt?.(title, text);
+      return "prompted";
+    }
+  };
+  const startupModule = new StartupLoadOverlayModule({...moduleOptions,
+    reader: new BrowserStartupTimingReader({windowTarget}), copyText, gameVersion});
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
-    new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}),
+    new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}), startupModule,
     new EchoOverlayModule(moduleOptions), new ChancesDetailOverlayModule(moduleOptions), new BehaviorOverlayModule(moduleOptions),
     new FishBalanceOverlayModule({...moduleOptions, liveForceSection: new FishLiveForceSummarySection(moduleOptions),
       forcePreviewSection: new FishStateForcePreviewSection(moduleOptions)}),
@@ -124,7 +139,8 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   const domAdapter = new OverlayDomAdapter({documentTarget, mountNode,
     createScaleControls: options => new OverlayScaleControls(options),
     createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget, cache: storageCache, uiSurface})});
-  const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore});
+  const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore,
+    actions: {[STARTUP_REPORT_COPY_CONTROL]: () => { void startupModule.copyReport().then(() => controller.update()); }}});
   let controller;
   // The overlay's own HTML rebuild is measured as the DEV "overlay" section, so its cost is never mistaken for the game's.
   const updateLoop = new OverlayUpdateLoop({callback: () => frameProfiler.measure("overlay", () => controller.update()),

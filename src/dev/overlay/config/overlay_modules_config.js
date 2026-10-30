@@ -1,5 +1,6 @@
 export const OVERLAY_MODULES = {
   performance: true,
+  startup: false,
   echo: true,
   state: true,
   chancesDetail: false,
@@ -95,7 +96,7 @@ export const ADVANCED_OVERLAY_MODULE_KEYS = [
   "fightTension",
 ];
 
-export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance"];
+export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance", "startup"];
 
 export const OVERLAY_MODULE_GROUPS = Object.freeze([
   Object.freeze({
@@ -117,6 +118,10 @@ export const OVERLAY_MODULE_GROUPS = Object.freeze([
 ]);
 
 export const OVERLAY_MODULE_LABELS = Object.freeze({
+  startup: Object.freeze({
+    label: "Завантаження",
+    original: "startup",
+  }),
   fishBase: Object.freeze({
     label: "Базова сила риби",
     original: "fishBase",

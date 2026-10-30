@@ -411,6 +411,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "startup-load-report",
+    title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
+    file: "utils/checks/platform/startup-load-report-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "render-resolution",
     title: "Logical canvas pixels at the device pixel ratio, rod depth order and display-sized fish art",
     file: "utils/checks/platform/render-resolution-check.js",

@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.22 - Startup measurement
+
+- Spec 157 stage A: the game marks its startup stages (`startup:entry` … `startup:ready`, then `data-game-ready`); DEV overlay «ЗАВАНТАЖЕННЯ» (DevTools → OVERLAY MODULES → Performance → «Завантаження»): stages, T-paint/T-play, requests and bytes by kind, request waves, 10 largest/longest, «Копіювати звіт».
+- Tools: `npm run measure:startup` measures a local copy of the Pages release in headless Chrome (HTTP/2, 4G, cold and warm, 5 runs) against the spec 157 budget. Game-cycle report unchanged.
+
 ## v0.49.21 - Foam-only boat wake
 
 - Spec 156: the wake's water ripples are off by default (CONFIG.ui.boat.wake.water.enabled = false, owner: only the foam wake of spec 155 for now); the code and checks stay, DevTools turns them on live. Spec 157 text corrected after review (compressed byte budget, single rod art, vinyl-5 load condition).
@@ -39,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.13 - Inertial bait boat motion test switch
 
 - DEV / Delivery: `CONFIG.ui.boat.inertialMotion` (DevTools → SPINE → «Кораблик») switches the boat to the catalog's inertial preset — 3 m/s² thrust, a quarter of the turn rate at rest, softer drag and more side-slip; off keeps the agile motion unchanged (spec 154 C). Game-cycle report unchanged.
-
-## v0.49.12 - DEV bait boat route display
-
-- DEV: DevTools → «РЕДАКТОР» → «Маршрут кораблика» draws the boat's planned route as a dashed line on the WebGL scene and the 2D fallback; production never shows it (spec 154 Q3). Game-cycle report unchanged.

@@ -127,6 +127,7 @@ import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
 import { composeBoatAnimation } from "./boat_animation_composition.js";
 import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
+import { STARTUP_MARKS_METHODS, STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
 import { composeSceneLayer } from "./scene_layer_composition.js";
 import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
@@ -183,6 +184,7 @@ export class GameCompositionRoot {
   #isCatchResolutionLogEnabled;
   #createFightDiagnosticsBuilder;
   #frameProbe;
+  #startupMarks;
   #sceneMode;
   #storageCache;
   #rendering;
@@ -218,6 +220,7 @@ export class GameCompositionRoot {
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
+    startupMarks,
     // DEV (TK-098): ({ config }) -> the radio effects' tuning port shown in the radio's editor; absent in production.
     createRadioEffectTuning = null,
     sceneMode = null,
@@ -284,6 +287,8 @@ export class GameCompositionRoot {
     this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
     new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
       this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
+    // Startup stage marks (spec 157 R9): composed by both pages, read by the DEV startup overlay and the measurer.
+    this.#startupMarks = startupMarks;
     // WebGL scene mode for this page load (spec 104 D1): DEV's ?scene= value; production reads CONFIG.canvas.scene.
     this.#sceneMode = sceneMode;
     this.#rendering = new GameRenderComposition({
@@ -343,6 +348,7 @@ export class GameCompositionRoot {
     const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
     contracts.requireMethods(devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"]);
     contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", ["acquire", "release", "getDiagnostics"]);
+    contracts.requireMethods(this.#startupMarks, "startupMarks", STARTUP_MARKS_METHODS);
     if (this.#listenerCounter != null) {
       contracts.requireMethods(this.#listenerCounter, "listenerCounter", ["added", "removed"]);
     }
@@ -461,6 +467,7 @@ export class GameCompositionRoot {
     const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
     });
+    this.#startupMarks.mark(STARTUP_STAGES.location);
     const {
       inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
     } = await this.#composePlayerInventory({
@@ -504,6 +511,7 @@ export class GameCompositionRoot {
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
       physicsConfig, liveBait, imageAssets,
     });
+    this.#startupMarks.mark(STARTUP_STAGES.inventory);
     const {
       world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules,
       castRules, biteRules, chumRules, boatRules, playerCastRules,
@@ -520,6 +528,7 @@ export class GameCompositionRoot {
     await imageAssets.preload(floatArt.map((src) => ({ id: src, src }))).catch(() => null);
     await sceneLayer.whenReady();
     sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
+    this.#startupMarks.mark(STARTUP_STAGES.scene);
     return {
       liveBait,
       liveBaitCandidate,

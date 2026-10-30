@@ -11,6 +11,9 @@ import { GameCompositionRoot } from "./game_composition_root.js";
 import { Game } from "./game.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
+import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
+import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
+import { markStartupReady } from "./startup_ready_signal.js";
 
 let startup;
 // One loop guard per page, shared by every game this realm starts.
@@ -27,7 +30,12 @@ export function startProductionGame() {
 
 async function startGame() {
   const { windowTarget, documentTarget } = getBrowserStartupEnvironment();
+  // Spec 157 R9: stage marks from the first evaluated module to the first frame of play.
+  const startupMarks = new PerformanceStartupMarks({ performance: windowTarget.performance,
+    rootElement: documentTarget.documentElement });
+  startupMarks.mark(STARTUP_STAGES.entry);
   const configRuntime = createProductionConfigContext();
+  startupMarks.mark(STARTUP_STAGES.config);
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
@@ -51,6 +59,7 @@ async function startGame() {
     depthMountNode: toolbar.depthMountNode,
     selectorMountNode: toolbar.selectorMountNode,
     createDevFlags: () => new InactiveDevFlags(),
+    startupMarks,
   });
   const game = new Game("gameCanvas", compositionRoot);
   browserLifecycle.publishGame(game);
@@ -70,12 +79,15 @@ async function startGame() {
   browserLifecycle.installPagehideCleanup(cleanup);
   try {
   await game.ready;
+  startupMarks.mark(STARTUP_STAGES.composition);
   if (disposed) { game.dispose(); return game; }
   const started = await game.start();
   if (disposed) return game;
   if (!started) {
     new ConsoleLogger().error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+    return game;
   }
+  markStartupReady({ marks: startupMarks, windowTarget });
   return game;
   } catch (error) { cleanup(); throw error; }
 }

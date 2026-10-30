@@ -238,6 +238,7 @@
 │  │     ├── player_inventory_composition.js
 │  │     ├── rod_animation_composition.js
 │  │     ├── scene_layer_composition.js
+│  │     ├── startup_ready_signal.js
 │  │     └── time_display_composition.js
 │  ├── engine
 │  │  ├── animation
@@ -250,7 +251,8 @@
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── diagnostics
-│  │  │  └── inactive_frame_probe.js
+│  │  │  ├── inactive_frame_probe.js
+│  │  │  └── startup_stages.js
 │  │  ├── events
 │  │  │  └── event_lifecycle.js
 │  │  ├── geometry
@@ -938,7 +940,8 @@
 │        ├── config
 │        │  └── deep_clone_config.js
 │        ├── diagnostics
-│        │  └── console_logger.js
+│        │  ├── console_logger.js
+│        │  └── performance_startup_marks.js
 │        ├── dom
 │        │  ├── double_activation_controller.js
 │        │  ├── engine_interface.js

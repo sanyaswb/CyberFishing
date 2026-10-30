@@ -58,6 +58,9 @@ import { composeDevTimeDisplay } from "./dev_time_composition.js";
 import { ScreenHost } from "../../engine/screens/screen_host.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
 import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
+import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
+import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
+import { markStartupReady } from "../production/startup_ready_signal.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -77,6 +80,10 @@ export function startDevelopmentGame() {
 
 async function startGame() {
   const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
+  // Spec 157 R9: the same stage marks as production; the DEV startup overlay reads them.
+  const startupMarks = new PerformanceStartupMarks({ performance: windowTarget.performance,
+    rootElement: documentTarget.documentElement });
+  startupMarks.mark(STARTUP_STAGES.entry);
   // DEV page switches: ?screen=house opens the House after startup; ?scene=webgl|canvas picks the scene mode (spec 104);
   // ?location=<id> starts on that location (spec 130 D2: the location editor's "Відкрити локацію").
   const pageParams = new windowTarget.URLSearchParams(windowTarget.location.search);
@@ -87,6 +94,7 @@ async function startGame() {
     config.debug.fixedCatch.enabled = true;
     config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
   });
+  startupMarks.mark(STARTUP_STAGES.config);
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
@@ -168,7 +176,7 @@ async function startGame() {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget,
       logger: windowTarget.console, getWaterMetric: () => readLocationMetric?.() });
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
-      frameProfiler, readRenderInfo});
+      frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version});
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
@@ -183,6 +191,7 @@ async function startGame() {
       selectorMountNode: toolbar.selectorMountNode,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource, zoneEditorState}),
       createFrameProbe: () => frameProfiler,
+      startupMarks,
       // TK-098: the radio's enabled effects tuned with sliders in its editor (DEV only).
       createRadioEffectTuning: ({ config }) => new RadioEffectTuning({ config, configRuntime }),
       sceneMode: pageParams.get("scene"),
@@ -244,10 +253,12 @@ async function startGame() {
     browserLifecycle.publishGame(game);
     browserLifecycle.installPagehideCleanup(cleanup);
     await game.ready;
+    startupMarks.mark(STARTUP_STAGES.composition);
     gameReady = true;
     if (disposed) { game.dispose(); return game; }
     const started = await game.start();
     if (disposed) return game;
+    if (started) markStartupReady({ marks: startupMarks, windowTarget });
     const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
     watchdog = memoryConfig.enabled === true ? new MemoryLeakWatchdog({intervalMs: memoryConfig.intervalMs,
       maxSamples: memoryConfig.maxSamples, minTrendSamples: memoryConfig.minTrendSamples, thresholds: memoryConfig.thresholds,
