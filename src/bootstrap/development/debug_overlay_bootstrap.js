@@ -44,8 +44,9 @@ import { OverlayValueFormatter } from "../../dev/overlay/services/overlay_value_
 import { OverlayViewStateStore } from "../../dev/overlay/services/overlay_view_state_store.js";
 import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_window_drag_controller.js";
 import { PerformanceOverlayModule } from "../../dev/overlay/modules/performance_overlay_module.js";
-import { StartupLoadOverlayModule, STARTUP_REPORT_COPY_CONTROL } from "../../dev/overlay/modules/startup_load_overlay_module.js";
+import { StartupLoadOverlayModule, STARTUP_REPORT_COPY_CONTROL, STARTUP_REPORT_DOWNLOAD_CONTROL } from "../../dev/overlay/modules/startup_load_overlay_module.js";
 import { BrowserStartupTimingReader } from "../../dev/diagnostics/browser_startup_timing_reader.js";
+import { BrowserTextFileSaver } from "../../dev/services/browser_text_file_saver.js";
 import { PlayerMaxOverlayModule } from "../../dev/overlay/modules/player_max_overlay_module.js";
 import { RodControlSummaryOverlayModule } from "../../dev/overlay/fight_summary/rod_control_summary_overlay_module.js";
 import { StaminaBalanceOverlayModule } from "../../dev/overlay/modules/stamina_balance_overlay_module.js";
@@ -122,8 +123,10 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
       return "prompted";
     }
   };
+  // TK-168: the same report saved as a JSON file.
+  const saveFile = async (text, fileName) => new BrowserTextFileSaver({documentTarget, windowTarget}).save(text, fileName);
   const startupModule = new StartupLoadOverlayModule({...moduleOptions,
-    reader: new BrowserStartupTimingReader({windowTarget}), copyText, gameVersion});
+    reader: new BrowserStartupTimingReader({windowTarget}), copyText, saveFile, now: () => windowTarget.Date.now(), gameVersion});
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
     new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}), startupModule,
@@ -140,7 +143,8 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     createScaleControls: options => new OverlayScaleControls(options),
     createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget, cache: storageCache, uiSurface})});
   const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore,
-    actions: {[STARTUP_REPORT_COPY_CONTROL]: () => { void startupModule.copyReport().then(() => controller.update()); }}});
+    actions: {[STARTUP_REPORT_COPY_CONTROL]: () => { void startupModule.copyReport().then(() => controller.update()); },
+      [STARTUP_REPORT_DOWNLOAD_CONTROL]: () => { void startupModule.downloadReport().then(() => controller.update()); }}});
   let controller;
   // The overlay's own HTML rebuild is measured as the DEV "overlay" section, so its cost is never mistaken for the game's.
   const updateLoop = new OverlayUpdateLoop({callback: () => frameProfiler.measure("overlay", () => controller.update()),

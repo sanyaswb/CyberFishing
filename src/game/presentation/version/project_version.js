@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.22";
+export const CURRENT_PROJECT_VERSION = "0.49.23";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-168: DEV overlay «ЗАВАНТАЖЕННЯ» also saves the startup report as a JSON file («Завантажити JSON»).",
     "Spec 157 stage A: startup stage marks and data-game-ready; DEV overlay «ЗАВАНТАЖЕННЯ» with a copyable report; npm run measure:startup (Playwright, local Pages copy over HTTP/2, 4G).",
     "Spec 156: boat wake water ripples off by default (owner: foam wake only for now); DevTools turns them on live.",
     "Spec 156 fix: boat wake ripples visible — crest normalised to the water amplitude (strength 1, radiusScale 2.5), fade over the puff's life, radius at least 2.5 map texels.",

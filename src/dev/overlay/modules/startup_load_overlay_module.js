@@ -16,34 +16,44 @@ const KIND_LABELS = Object.freeze({
   document: "HTML", modules: "модулі", styles: "стилі", images: "картинки", audio: "аудіо", vendor: "вендор",
   data: "дані", other: "інше",
 });
-const COPY_STATUS_LABELS = Object.freeze({
-  copied: "Звіт скопійовано в буфер.",
-  prompted: "Буфер недоступний: звіт у вікні для копіювання.",
-  failed: "Не вдалося скопіювати звіт.",
+const STATUS_LABELS = Object.freeze({
+  copied: () => "Звіт скопійовано в буфер.",
+  prompted: () => "Буфер недоступний: звіт у вікні для копіювання.",
+  copyFailed: () => "Не вдалося скопіювати звіт.",
+  saved: (fileName) => `Звіт збережено у файл ${fileName}.`,
+  saveFailed: () => "Не вдалося зберегти файл звіту.",
 });
 const COPY_PROMPT_TITLE = "Звіт завантаження";
 export const STARTUP_REPORT_COPY_CONTROL = "startup-report-copy";
+export const STARTUP_REPORT_DOWNLOAD_CONTROL = "startup-report-download";
 
 // DEV overlay "⏱ ЗАВАНТАЖЕННЯ" (spec 157 R9): the startup stages and T-paint/T-play, requests and bytes by kind up to
 // T-play (transferred = compressed over the network, then uncompressed), the sequential network steps, the 10 largest
-// and 10 longest requests, and "Копіювати звіт" (the JSON report for the owner's phone). The report is rebuilt only when
-// a timing entry was added. The preloader queue joins it with the preloader facade (spec 157 stage D).
+// and 10 longest requests, "Копіювати звіт" and "Завантажити JSON" (the JSON report for the owner's phone, to the
+// clipboard or as a file, TK-168). The report is rebuilt only when a timing entry was added. The preloader queue joins it with the preloader facade (spec 157 stage D).
 export class StartupLoadOverlayModule extends OverlayModule {
   #reader;
   #copyText;
+  #saveFile;
+  #now;
   #gameVersion;
   #revision = null;
   #report = null;
-  #copyStatus = null;
+  #status = null;
+  #savedFileName = "";
 
   constructor(options = {}) {
     super("startup", options);
     if (!["read", "revision", "environment"].every((method) => typeof options.reader?.[method] === "function")) {
       throw new TypeError("StartupLoadOverlayModule requires reader");
     }
-    if (typeof options.copyText !== "function") throw new TypeError("StartupLoadOverlayModule requires copyText");
+    for (const port of ["copyText", "saveFile", "now"]) {
+      if (typeof options[port] !== "function") throw new TypeError(`StartupLoadOverlayModule requires ${port}`);
+    }
     this.#reader = options.reader;
     this.#copyText = options.copyText;
+    this.#saveFile = options.saveFile;
+    this.#now = options.now;
     this.#gameVersion = String(options.gameVersion ?? "");
   }
 
@@ -87,11 +97,13 @@ export class StartupLoadOverlayModule extends OverlayModule {
     for (const request of report.longest) {
       html += this.metricRow(this.#shortName(request.url), ms(request.durationMs), { metricKey: `startup.longest.${request.url}` });
     }
-    html += `<button type="button" class="debug-overlay__tab" data-overlay-control="${STARTUP_REPORT_COPY_CONTROL}"`
-      + ` data-overlay-activate="release">Копіювати звіт</button>`;
-    if (this.#copyStatus) {
+    const button = (control, label) => `<button type="button" class="debug-overlay__tab" data-overlay-control="${control}"`
+      + ` data-overlay-activate="release">${label}</button>`;
+    html += `<div class="debug-overlay__tabs" role="group" aria-label="Звіт завантаження">${
+      button(STARTUP_REPORT_COPY_CONTROL, "Копіювати звіт")}${button(STARTUP_REPORT_DOWNLOAD_CONTROL, "Завантажити JSON")}</div>`;
+    if (this.#status) {
       html += `<div class="debug-overlay__note debug-overlay__text debug-overlay__text--muted">${
-        this.escapeAttr(COPY_STATUS_LABELS[this.#copyStatus])}</div>`;
+        this.escapeAttr(STATUS_LABELS[this.#status](this.#savedFileName))}</div>`;
     }
     return `${html}<div class="debug-overlay__spacer"></div>`;
   }
@@ -104,11 +116,32 @@ export class StartupLoadOverlayModule extends OverlayModule {
 
   async copyReport() {
     try {
-      this.#copyStatus = await this.#copyText(this.reportText(), COPY_PROMPT_TITLE);
+      this.#status = await this.#copyText(this.reportText(), COPY_PROMPT_TITLE);
     } catch {
-      this.#copyStatus = "failed";
+      this.#status = "copyFailed";
     }
-    return this.#copyStatus;
+    return this.#status;
+  }
+
+  // Saves the same report as cyber-fishing-startup-<version>-<local date>_<time>.json (TK-168).
+  async downloadReport() {
+    const fileName = this.reportFileName();
+    try {
+      await this.#saveFile(this.reportText(), fileName);
+      this.#status = "saved";
+      this.#savedFileName = fileName;
+    } catch {
+      this.#status = "saveFailed";
+    }
+    return this.#status;
+  }
+
+  reportFileName() {
+    const date = new Date(this.#now());
+    const two = (value) => String(value).padStart(2, "0");
+    const stamp = `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}_${two(date.getHours())}-${
+      two(date.getMinutes())}-${two(date.getSeconds())}`;
+    return `cyber-fishing-startup-${this.#gameVersion || "dev"}-${stamp}.json`;
   }
 
   #currentReport() {

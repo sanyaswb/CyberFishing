@@ -84,15 +84,20 @@ async function checkOverlay() {
     environment: () => ({ viewport: "412x915" }),
   };
   const copies = [];
+  const saved = [];
   let copyResult = "copied";
-  const module = new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, gameVersion: "1.2.3",
-    copyText: async (text, title) => { copies.push([JSON.parse(text), title]); if (copyResult instanceof Error) throw copyResult; return copyResult; } });
+  let saveError = null;
+  const now = new Date(2026, 9, 30, 21, 5, 7).getTime();
+  const module = new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, gameVersion: "1.2.3", now: () => now,
+    copyText: async (text, title) => { copies.push([JSON.parse(text), title]); if (copyResult instanceof Error) throw copyResult; return copyResult; },
+    saveFile: async (text, fileName) => { if (saveError) throw saveError; saved.push([text, fileName]); } });
   let html = module.render();
   module.render();
   assert.equal(reads, 1, "an unchanged timing revision reuses the report");
   assert.match(html, /ЗАВАНТАЖЕННЯ/u);
   assert.match(html, /700 мс/u, "T-play is shown");
   assert.match(html, /data-overlay-control="startup-report-copy" data-overlay-activate="release"/u);
+  assert.match(html, /data-overlay-control="startup-report-download" data-overlay-activate="release"/u);
   revision = "2";
   module.render();
   assert.equal(reads, 2, "a new timing entry rebuilds the report");
@@ -103,9 +108,42 @@ async function checkOverlay() {
   assert.equal(typeof copies[0][1], "string", "the prompt fallback gets a title");
   assert.match(module.render(), /скопійовано/u);
   copyResult = new Error("denied");
-  assert.equal(await module.copyReport(), "failed", "a failing copy is reported, not thrown");
+  assert.equal(await module.copyReport(), "copyFailed", "a failing copy is reported, not thrown");
+  // TK-168: the same JSON saved as a file named by version and local time.
+  assert.equal(await module.downloadReport(), "saved");
+  assert.deepEqual(saved.map(([, fileName]) => fileName), ["cyber-fishing-startup-1.2.3-2026-10-30_21-05-07.json"]);
+  assert.equal(saved[0][0], module.reportText(), "the file holds the copied report");
+  assert.match(module.render(), /збережено у файл cyber-fishing-startup-1.2.3-2026-10-30_21-05-07.json/u);
+  saveError = new Error("blocked");
+  assert.equal(await module.downloadReport(), "saveFailed", "a failing save is reported, not thrown");
+  assert.match(module.render(), /Не вдалося зберегти/u);
   assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader: { read() {} },
-    copyText() {} }), /requires reader/u);
+    copyText() {}, saveFile() {}, now() {} }), /requires reader/u);
+  assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, copyText() {}, now() {} }),
+    /requires saveFile/u);
+}
+
+async function checkFileSaver() {
+  const { BrowserTextFileSaver } = await importSource("src/dev/services/browser_text_file_saver.js");
+  const events = [];
+  const timers = [];
+  const link = { click() { events.push(["click", this.href, this.download, this.hidden]); }, remove() { events.push(["remove"]); } };
+  class FakeBlob { constructor(parts, options) { this.parts = parts; this.type = options.type; } }
+  const windowTarget = { Blob: FakeBlob, setTimeout: (callback, ms) => timers.push([callback, ms]),
+    URL: { createObjectURL: (blob) => { events.push(["url", blob.parts.join(""), blob.type]); return "blob:1"; },
+      revokeObjectURL: (url) => events.push(["revoke", url]) } };
+  const documentTarget = { createElement: (tag) => { assert.equal(tag, "a"); return link; },
+    body: { appendChild: (node) => { assert.equal(node, link); events.push(["append"]); } } };
+  new BrowserTextFileSaver({ documentTarget, windowTarget }).save("{}", "report.json");
+  assert.deepEqual(events, [["url", "{}", "application/json"], ["append"], ["click", "blob:1", "report.json", true], ["remove"]],
+    "one hidden download link, clicked once and removed");
+  assert.equal(timers.length, 1);
+  assert.equal(timers[0][1], BrowserTextFileSaver.RELEASE_DELAY_MS, "the URL is released after the download started");
+  timers[0][0]();
+  assert.deepEqual(events.at(-1), ["revoke", "blob:1"]);
+  link.click = () => { throw new Error("blocked"); };
+  assert.throws(() => new BrowserTextFileSaver({ documentTarget, windowTarget }).save("{}", "x.json"), /blocked/u);
+  assert.deepEqual(events.at(-1), ["remove"], "a failed click still removes the link");
 }
 
 async function checkReleaseControl() {
@@ -156,9 +194,10 @@ function checkMeasurer() {
   await checkReport();
   await checkOverlay();
   await checkReleaseControl();
+  await checkFileSaver();
   checkMeasurer();
   console.log("Startup load report passed: stage marks once with the ready signal, report stages/paint/play, requests and "
-    + "cache hits before T-play, kinds, request waves and the deepest chain, overlay report cache and copy outcomes, "
+    + "cache hits before T-play, kinds, request waves and the deepest chain, overlay report cache, copy and file save outcomes, file saver, "
     + "release-activated overlay control, measurer medians and budget verdicts.");
 })().catch((error) => {
   console.error(error);
