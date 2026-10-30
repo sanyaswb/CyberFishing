@@ -1,4 +1,7 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { BoatRules } from "../../domain/rules/boat_rules.js";
+
+const BOAT_RULES = new BoatRules();
 
 export class BaitBoat {
   #rootInstanceId;
@@ -51,8 +54,8 @@ export class BaitBoat {
         ? [...config.initialDroppedSections]
         : [];
     this.droppedSections = initialDropped;
-    const totalSecs = statsConfig.sections || 1;
-    this.remainingSections = Math.max(0, totalSecs - initialDropped.length);
+    this.sectionCount = BOAT_RULES.sectionCount(statsConfig);
+    this.remainingSections = Math.max(0, this.sectionCount - initialDropped.length);
     this.waypoints = [];
 
     this.animationState = "immersion";
@@ -498,9 +501,8 @@ export class BaitBoat {
           if (this.zoneId && !this.isBaitDropped) {
             if (this.animationState !== "opening") {
               this.animationState = "opening";
-              const totalSections = this.config.sections || 3;
               let dropNum = 1;
-              for (let s = 1; s <= totalSections; s++) {
+              for (let s = 1; s <= this.sectionCount; s++) {
                 if (!this.droppedSections.includes(s)) {
                   dropNum = s;
                   break;

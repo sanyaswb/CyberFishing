@@ -1,4 +1,5 @@
 import { CastPowerAim } from "../casting/cast_power_aim.js";
+import { BoatRules } from "../../domain/rules/boat_rules.js";
 
 export class ChumController {
   #messages;
@@ -27,6 +28,7 @@ export class ChumController {
   #boatLoadedChums = new WeakMap();
   #handCastAim = null;
   #pendingHandDrop = null;
+  #boatRules = new BoatRules();
 
   constructor({
     messages,
@@ -115,7 +117,7 @@ export class ChumController {
     const method = eq.delivery ? "boat" : "hand";
     const boatItem = eq.delivery || {};
     const isManual = boatItem.effectiveStats?.manualControl ?? true;
-    const sections = boatItem.effectiveStats?.sections ?? 1;
+    const sections = this.#boatRules.sectionCount(boatItem.effectiveStats);
 
     let state = "idle";
     let count = 0;
@@ -165,8 +167,7 @@ export class ChumController {
     let boatIconUrl = null;
     if (method === "boat") {
       const loadedCount = this.#countLoadedChums(eq.deliveryChums);
-      const sections = Number(boatItem.effectiveStats?.sections) || 3;
-      const fullyLoaded = loadedCount >= sections;
+      const fullyLoaded = sections > 0 && loadedCount >= sections;
       const artwork = boatItem.skin?.equipment;
       boatIconUrl = fullyLoaded
         ? artwork?.bait || "assets/items/boats/boat-lvl--3_bait.webp"
@@ -255,9 +256,8 @@ export class ChumController {
         const loadedChums = this.#getLoadedChums(eq.deliveryChums);
         this.#boatLoadedChums.set(this.#activeBoat, loadedChums);
         this.#activeBoat.remainingSections = loadedChums.length;
-        const totalSections = this.#activeBoat.config?.sections || 3;
         const initialDropped = [];
-        for (let s = 1; s <= totalSections; s++) {
+        for (let s = 1; s <= this.#activeBoat.sectionCount; s++) {
           if (!eq.deliveryChums || !eq.deliveryChums[s - 1]) {
             initialDropped.push(s);
           }

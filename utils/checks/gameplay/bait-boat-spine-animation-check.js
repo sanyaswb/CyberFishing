@@ -494,7 +494,25 @@ async function checkRealSpineSceneSlotVisibility() {
   scene.dispose();
 }
 
+// TK-156: one reading of the bunker count; no invented default when an item has none.
+async function checkSectionCount() {
+  const { BoatRules } = await import("../../../src/game/domain/rules/boat_rules.js");
+  const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
+  const rules = new BoatRules();
+  assert.equal(rules.sectionCount({ sections: 3 }), 3);
+  for (const stats of [null, {}, { sections: 0 }, { sections: -2 }, { sections: 1.5 }, { sections: "x" }]) {
+    assert.equal(rules.sectionCount(stats), 0, "no positive integer means no bunkers: " + JSON.stringify(stats));
+  }
+  const stats = { statsByLevel: { 1: { speedPxPerSec: 100 } } };
+  assert.equal(new BaitBoat(0, 0, { effectiveStats: stats }).remainingSections, 0,
+    "a boat item without sections carries no bunkers");
+  const twoBunkers = new BaitBoat(0, 0, { effectiveStats: { ...stats, sections: 2, initialDroppedSections: [1] } });
+  assert.equal(twoBunkers.sectionCount, 2);
+  assert.equal(twoBunkers.remainingSections, 1);
+}
+
 async function run() {
+  await checkSectionCount();
   await checkBoatStateFlow();
   await checkAnimationController();
   await checkBoatRenderPipeline();

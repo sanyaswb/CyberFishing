@@ -5,6 +5,7 @@ import { InventoryItemLocation } from "../../domain/inventory/inventory_item_loc
 import { EquipmentState } from "../../domain/equipment/equipment_state.js";
 import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
 import { INVENTORY_SECTIONS } from "./inventory_sections.js";
+import { BoatRules } from "../../domain/rules/boat_rules.js";
 
 const BAIT_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_BAIT]);
 const CHUM_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_CHUM]);
@@ -25,6 +26,7 @@ export class InventoryViewModelFactory {
     { id: "tools", label: "Інше", icon: "☣️" },
   ]);
 
+  #boatRules = new BoatRules();
   #repository;
   #assemblyStates;
   #attachmentTargetResolver;
@@ -266,7 +268,8 @@ export class InventoryViewModelFactory {
       const boatArtwork = slotId === "delivery" ? equippedItem?.skin?.equipment : null;
       if (boatArtwork) {
         const loadedCount = (equipmentReadModel?.deliveryChums || []).filter(Boolean).length;
-        const fullyLoaded = loadedCount >= (Number(equippedItem.effectiveStats?.sections) || 3);
+        const sections = this.#boatRules.sectionCount(equippedItem.effectiveStats);
+        const fullyLoaded = sections > 0 && loadedCount >= sections;
         const targetUrl = fullyLoaded ? boatArtwork.bait : boatArtwork.noBait;
         if (targetUrl) {
           equippedItem.equipmentArtUrl = targetUrl;

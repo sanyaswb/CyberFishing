@@ -1,4 +1,7 @@
+import { BoatRules } from "../../domain/rules/boat_rules.js";
+
 export class InventoryItemTreeViewFactory {
+  #boatRules = new BoatRules();
   #repository;
   #assemblyStates;
   #profileRegistry;
@@ -63,7 +66,7 @@ export class InventoryItemTreeViewFactory {
     const reelLineCapacity = this.#createReelLineCapacity(view);
     if (reelLineCapacity) view.reelLineCapacity = reelLineCapacity;
     if (view.itemType === "boat" && view.skin?.equipment) {
-      const sections = Number(view.effectiveStats?.sections) || 3;
+      const sections = this.#boatRules.sectionCount(view.effectiveStats);
       let loadedChums = 0;
       for (let index = 0; index < sections; index += 1) {
         if (this.#repository.getChild(raw.instanceId, "cargo", index)) {
@@ -71,7 +74,7 @@ export class InventoryItemTreeViewFactory {
         }
       }
       const artwork = view.skin.equipment;
-      const fullyLoaded = loadedChums >= sections;
+      const fullyLoaded = sections > 0 && loadedChums >= sections;
       const targetUrl = fullyLoaded ? artwork.bait : artwork.noBait;
       if (targetUrl) {
         view.equipmentArtUrl = targetUrl;

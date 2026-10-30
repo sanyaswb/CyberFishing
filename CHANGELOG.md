@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.7 - Bait boat bunker count from one source
+
+- Delivery: `BoatRules.sectionCount` is the only reading of a boat's `sections` (the property its cargo slot capacity reads); `BaitBoat`, `ChumController` and the inventory boat artwork use it instead of `?? 1` / `|| 3` / `|| 1` defaults (TK-156).
+- An item without a positive integer `sections` carries no bunkers. Game-cycle report unchanged.
+
 ## v0.49.6 - Unused chum memory grid removed
 
 - Chum: `ChumService` no longer writes or saves the per-location chum memory grid (`chum_memory_<location>`); nothing read it (TK-155). Game-cycle report unchanged.
@@ -48,9 +53,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Animation / Spine: fixed `SpineScene.prototype.setSlotVisible` to use Spine 4.3 runtime attachment API (`Skeleton.prototype.setAttachment(slotName, placeholder)` and `slot.pose.setAttachment`), resolving `TypeError: slot.setAttachment is not a function` on bait boat launch (Spec 150 / TK-147).
 - Animation / Spine: preserved and restored authored slot alpha from `slot.data.setupPose.color.a` when making slots visible, retaining proper transparency for boat night lights and bait compartments (TK-147).
-
-## v0.48.51 - Fixed Spine bait boat rendering over emoji fallback
-
-- Delivery / Animation: fixed runtime boat creation in `BaitBoat` to preserve top-level `skin` and `emoji` from equipped `delivery` item alongside `effectiveStats`, ensuring `BoatChumRenderFrameBuilder` acquires animation descriptors (Spec 150 / TK-146).
-- Animation / Spine: aligned `BoatAnimationController.#onBundle` with canonical `SpineRuntimeProvider` capability contract (`capability.available`, `createScene(bundle, surface)`), preventing premature fallback to "runtime-not-ready" (TK-146).
-- Presentation / Scene: safely unwrapped `boatAnimation` in `game_render_composition.js` for robust frame builder wiring (TK-146).
