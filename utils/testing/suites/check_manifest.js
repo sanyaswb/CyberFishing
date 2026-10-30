@@ -333,6 +333,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "boat-wake",
+    title: "Procedural bait boat wake: Kelvin arms, frame rate, fading, pool, perspective (spec 155)",
+    file: "utils/checks/gameplay/boat-wake-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-recovery",
     title: "Drained bait boat: net pick-up, mooring, reload, loss; cargo spent at the drop (spec 151)",
     file: "utils/checks/gameplay/bait-boat-recovery-check.js",

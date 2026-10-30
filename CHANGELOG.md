@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.14 - Procedural bait boat wake
+
+- Delivery / Scene: a running boat leaves a procedural foam wake — puffs along both Kelvin arms (19.5°) that spread, grow and fade, smaller on far water — drawn as pooled sprites of one generated foam texture under the boat (2D fallback: translucent dots); the Spine `boats-wave--1` slot is off (spec 155).
+- Tuning lives in `CONFIG.ui.boat.wake` (DevTools → SPINE → «Кораблик»). Game-cycle report unchanged.
+
 ## v0.49.13 - Inertial bait boat motion test switch
 
 - DEV / Delivery: `CONFIG.ui.boat.inertialMotion` (DevTools → SPINE → «Кораблик») switches the boat to the catalog's inertial preset — 3 m/s² thrust, a quarter of the turn rate at rest, softer drag and more side-slip; off keeps the agile motion unchanged (spec 154 C). Game-cycle report unchanged.
@@ -44,8 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Bait / Items: added discrete bamboo bread stack catalog items (`bread_10`, `bread_25`, `bread_50`) with WebP artwork (`bread--10.webp`, `bread--25.webp`, `bread--50.webp`), pack sizes (10, 25, 50 pcs), nominal grant quantities, and natural bait progression profiles (TK-154).
 - Inventory / Config: updated default player inventory bread quantity to 25 pcs and replaced emoji glyph with WebP artwork for generic `bread` while excluding it from duplicate shop listings (`devExclude: true`) (TK-154).
 - Fish / DEV: enabled peaceful fish bite multipliers (1.0) for all bread stack sizes, and exposed 3 discrete free shop buttons granting their nominal stack amounts in DevTools (TK-154).
-
-## v0.49.4 - Bait boat immersion Spine animation replay on re-aiming, track 0 clearing, and completed clip restart
-
-- Delivery / Spine: updated `SpineScene.prototype.setAnimation` to allow completed one-shot animations (`isComplete() === true`) to replay from 0 rather than being blocked by early equality return, and ensured `clearTrack` cleans entries immediately via `state.clearTrack` when `mixSec <= 0` (Spec 150 / TK-153).
-- Delivery / Animation: cleared track 0 alongside compartment tracks 1..3 (`for (let track = 0; track <= 3; track++) scene.clearTrack(track, 0)`) in `BoatAnimationController` on boat change, and reset `currentClip` to empty on idle, guaranteeing reliable `boat3--immersion` replay whenever aiming is cancelled and restarted (TK-153).

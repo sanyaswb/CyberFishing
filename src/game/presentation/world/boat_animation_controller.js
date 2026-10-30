@@ -149,12 +149,9 @@ export class BoatAnimationController {
       }
     }
 
-    // Spec 150 / TK-149: Wave slot 1 is visible during motion, hidden during immersion and idle.
-    const isMoving = animationState === "moving_start" || animationState === "moving";
-    this.#setSlot(scene, "boats-wave--1", isMoving);
-
-    // Owner instruction (2026-10-29): boats-wave--2 and boats-wave--3 are disabled by default
-    // until animations are authored for them.
+    // Spec 155 (owner 2026-10-30): the procedural wake (BoatWakeEmitter) replaces the Spine wave; boats-wave--2 and
+    // --3 were never animated (owner 2026-10-29).
+    this.#setSlot(scene, "boats-wave--1", false);
     this.#setSlot(scene, "boats-wave--2", false);
     this.#setSlot(scene, "boats-wave--3", false);
 

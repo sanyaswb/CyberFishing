@@ -534,6 +534,7 @@ export class ConfigSchemaValidator {
     if (cfg.inertialMotion !== undefined && typeof cfg.inertialMotion !== "boolean") {
       this.#error(`${path}.inertialMotion`, "must be a boolean");
     }
+    this.#validateBoatWake(cfg.wake, `${path}.wake`);
     if (cfg.x !== undefined && typeof cfg.x !== "number" && !["rod", "center"].includes(cfg.x)) {
       this.#error(`${path}.x`, 'must be "rod", "center" or a finite number');
     }
@@ -542,6 +543,21 @@ export class ConfigSchemaValidator {
     }
     if (cfg.yOffset !== undefined) {
       this.#requireFiniteNumber(`${path}.yOffset`, cfg.yOffset, { min: -2000, max: 2000 });
+    }
+  }
+
+  // Spec 155: the procedural wake's switches and finite ranges.
+  #validateBoatWake(wake, path) {
+    if (wake === undefined) return;
+    if (!wake || typeof wake !== "object") { this.#error(path, "must be an object"); return; }
+    for (const key of ["enabled", "bowFoam"]) {
+      if (wake[key] !== undefined && typeof wake[key] !== "boolean") this.#error(`${path}.${key}`, "must be a boolean");
+    }
+    const ranges = { ratePerSecond: [0, 120], armAngleDeg: [0, 90], lifeSec: [0.05, 10], startSizePx: [0, 400],
+      endSizePx: [0, 800], spreadSpeedPx: [0, 1000], damping: [0, 20], alpha: [0, 1], sternOffsetPx: [-400, 400],
+      capacity: [0, 512] };
+    for (const [key, [min, max]] of Object.entries(ranges)) {
+      if (wake[key] !== undefined) this.#requireFiniteNumber(`${path}.${key}`, wake[key], { min, max });
     }
   }
 

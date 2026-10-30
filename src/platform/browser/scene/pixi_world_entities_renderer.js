@@ -3,6 +3,7 @@ import { SceneChangeFingerprint } from "./scene_change_fingerprint.js";
 const CHUM_COLOR = 0xc8ff64;
 const WAYPOINT_COLOR = 0xffaa00;
 const ROUTE_COLOR = 0x00dcff;
+const FOAM_TEXTURE_PX = 64;
 
 // The world-entities kind on the scene (spec 107): the bait boats' chum zones (clipped to the castable water), their
 // waypoints, the boats (emoji sprites with an energy bar) and their sensor rays, drawn exactly as BoatChumRenderer
@@ -16,16 +17,24 @@ export class PixiWorldEntitiesRenderer {
   #zoneMask;
   #overlay;
   #boatLayer;
+  #wakeLayer;
+  #wakeSprites = [];
+  #foamTexture = null;
+  #documentTarget;
   #boatView = null;
   #boatSprites = [];
   #labelSprites = [];
   #fingerprint = new SceneChangeFingerprint();
   #visible = false;
 
-  // stage: the scene's root container; texts: the scene's SceneTextTextures.
-  constructor({ pixi, stage, texts }) {
+  // stage: the scene's root container; texts: the scene's SceneTextTextures; documentTarget: makes the foam texture.
+  constructor({ pixi, stage, texts, documentTarget }) {
     if (typeof pixi?.Graphics !== "function") throw new TypeError("PixiWorldEntitiesRenderer requires the Pixi namespace");
     if (typeof texts?.get !== "function") throw new TypeError("PixiWorldEntitiesRenderer requires texts");
+    if (typeof documentTarget?.createElement !== "function") {
+      throw new TypeError("PixiWorldEntitiesRenderer requires documentTarget");
+    }
+    this.#documentTarget = documentTarget;
     this.#pixi = pixi;
     this.#texts = texts;
     this.#container = new pixi.Container();
@@ -33,7 +42,9 @@ export class PixiWorldEntitiesRenderer {
     this.#zoneMask = new pixi.Graphics();
     this.#overlay = new pixi.Graphics();
     this.#boatLayer = new pixi.Container();
-    this.#container.addChild(this.#zones, this.#zoneMask, this.#overlay, this.#boatLayer);
+    // Spec 155: the wake lies on the water, under the waypoints, bars and boats.
+    this.#wakeLayer = new pixi.Container();
+    this.#container.addChild(this.#zones, this.#zoneMask, this.#wakeLayer, this.#overlay, this.#boatLayer);
     this.#container.visible = false;
     stage.addChild(this.#container);
   }
@@ -51,12 +62,18 @@ export class PixiWorldEntitiesRenderer {
     this.#drawBoats(world, pixelRatio);
     this.#drawSensors(world);
     this.#drawRoute(world);
+    this.#drawWake(world);
     return true;
+  }
+
+  dispose() {
+    this.#foamTexture?.destroy(true);
+    this.#foamTexture = null;
   }
 
   #hasContent(world) {
     return world.chumZones.count + world.waypoints.count + world.boats.count + world.sensorRays.count +
-      world.boatRoute.count > 0;
+      world.boatRoute.count + world.boatWake.count > 0;
   }
 
   #hide() {
@@ -104,6 +121,10 @@ export class PixiWorldEntitiesRenderer {
     for (let index = 0; index < world.boatRoute.count; index += 1) {
       const dash = world.boatRoute.getAt(index);
       print.length(dash.startX); print.length(dash.startY); print.length(dash.endX); print.length(dash.endY);
+    }
+    for (let index = 0; index < world.boatWake.count; index += 1) {
+      const puff = world.boatWake.getAt(index);
+      print.length(puff.x); print.length(puff.y); print.length(puff.size); print.alpha(puff.alpha);
     }
     return print.finish();
   }
@@ -198,6 +219,46 @@ export class PixiWorldEntitiesRenderer {
       this.#boatView = activeView;
     }
     this.#hideFrom(this.#boatSprites, world.boats.count);
+  }
+
+  // Spec 155: pooled sprites of one soft foam texture (one batch); unused sprites are hidden, none created per frame
+  // once the pool has grown to the wake's capacity.
+  #drawWake(world) {
+    const count = world.boatWake.count;
+    if (count > 0 && !this.#foamTexture) this.#foamTexture = this.#createFoamTexture();
+    for (let index = 0; index < count; index += 1) {
+      const puff = world.boatWake.getAt(index);
+      let sprite = this.#wakeSprites[index];
+      if (!sprite) {
+        sprite = new this.#pixi.Sprite(this.#foamTexture);
+        sprite.anchor.set(0.5, 0.5);
+        this.#wakeSprites.push(sprite);
+        this.#wakeLayer.addChild(sprite);
+      }
+      sprite.visible = true;
+      sprite.x = puff.x;
+      sprite.y = puff.y;
+      sprite.width = puff.size;
+      sprite.height = puff.size;
+      sprite.alpha = puff.alpha;
+    }
+    for (let index = count; index < this.#wakeSprites.length; index += 1) this.#wakeSprites[index].visible = false;
+  }
+
+  // White foam: dense in the middle, fading to nothing at the edge.
+  #createFoamTexture() {
+    const canvas = this.#documentTarget.createElement("canvas");
+    canvas.width = FOAM_TEXTURE_PX;
+    canvas.height = FOAM_TEXTURE_PX;
+    const context = canvas.getContext("2d");
+    const half = FOAM_TEXTURE_PX / 2;
+    const gradient = context.createRadialGradient(half, half, 0, half, half, half);
+    gradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+    gradient.addColorStop(0.55, "rgba(240, 248, 255, 0.45)");
+    gradient.addColorStop(1, "rgba(240, 248, 255, 0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, FOAM_TEXTURE_PX, FOAM_TEXTURE_PX);
+    return this.#pixi.Texture.from(canvas, true);
   }
 
   // Spec 154 Q3: the DEV route as its dash segments (2D: BoatChumRenderer, same colour and width).

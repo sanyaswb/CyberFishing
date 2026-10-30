@@ -244,6 +244,7 @@ function checkCanvasScenes() {
       { startX: 250, startY: 250, endX: 300, endY: 300, blocked: false },
     ]),
     boatRoute: list([]),
+    boatWake: list([]),
     invalidCastMarker: { visible: true, x: 200, y: 200 },
   };
   const castModel = {
@@ -648,6 +649,7 @@ function checkRenderStorage() {
     "world.boats",
     "world.sensorRays",
     "world.boatRoute",
+    "world.boatWake",
     "fishing.fightAreas.clipRegions",
     "fishing.fightAreas.sectorPoints",
     "fishing.fightAreas.lineRadiusPoints",

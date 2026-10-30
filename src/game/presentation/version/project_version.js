@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.13";
+export const CURRENT_PROJECT_VERSION = "0.49.14";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 155: procedural PixiJS foam wake (Kelvin V of pooled sprites) replaces the Spine boat wave; tunable in CONFIG.ui.boat.wake.",
     "Spec 154 C: DEV switch CONFIG.ui.boat.inertialMotion for a heavier bait boat hull (catalog motionPresets.inertial); off keeps the agile motion.",
     "Spec 154 B: DEV dashed bait boat route with a zone editor switch (never in production).",
     "Spec 154 A (G-127): bait boat plans routes on the current map (A* + smoothing), follows them without ramming, refuses unreachable water, gives up safely without progress; frame-rate independent motion.",

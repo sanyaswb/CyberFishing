@@ -624,6 +624,23 @@ export const CONFIG = {
     boat: {
       // Spec 154 C: test switch for the boat's inertial motion preset (catalog motionPresets.inertial); off = agile.
       inertialMotion: false,
+      // Spec 155: the procedural foam wake (replaces the Spine wave). Pairs of puffs per second at full speed, the arms'
+      // Kelvin angle, life, sizes and spread speed in map pixels at the near water (scaled with the surface), puffs in
+      // the pool at most.
+      wake: {
+        enabled: true,
+        ratePerSecond: 16,
+        armAngleDeg: 19.5,
+        lifeSec: 1.4,
+        startSizePx: 12,
+        endSizePx: 40,
+        spreadSpeedPx: 55,
+        damping: 1.6,
+        alpha: 0.55,
+        sternOffsetPx: 18,
+        bowFoam: true,
+        capacity: 96,
+      },
       displayScale: 0.2,
       x: "rod",
       xOffset: 0,

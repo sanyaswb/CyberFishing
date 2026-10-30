@@ -33,6 +33,7 @@ export class GameRenderFrame {
       boats: new ReusableRenderList("world.boats", diagnostics),
       sensorRays: new ReusableRenderList("world.sensorRays", diagnostics),
       boatRoute: new ReusableRenderList("world.boatRoute", diagnostics),
+      boatWake: new ReusableRenderList("world.boatWake", diagnostics),
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -103,6 +104,7 @@ export class GameRenderFrame {
     this.world.boats.reset();
     this.world.sensorRays.reset();
     this.world.boatRoute.reset();
+    this.world.boatWake.reset();
     this.world.debugImage.visible = false;
     this.world.annotations = null;
     this.world.backgroundHidden = false;

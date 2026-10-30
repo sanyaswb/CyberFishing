@@ -1,5 +1,6 @@
 import { BoatChumRenderer } from "../../game/presentation/world/boat_chum_renderer.js";
 import { BoatChumRenderFrameBuilder } from "../../game/presentation/rendering/boat_chum_render_frame_builder.js";
+import { BoatWakeEmitter } from "../../game/presentation/world/boat_wake_emitter.js";
 import { CastingRenderFrameBuilder } from "../../game/presentation/rendering/casting_render_frame_builder.js";
 import { CastingRenderPass } from "../../game/presentation/rendering/casting_render_pass.js";
 import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
@@ -270,6 +271,8 @@ export class GameRenderComposition {
         clock,
         // Spec 154 Q3: production's inactive DEV flags never show the boat route.
         isRouteVisible: () => devFlags?.isEnabled("showBoatRoute") === true,
+        // Spec 155: the procedural wake, read live from CONFIG.ui.boat.wake.
+        wake: new BoatWakeEmitter({ getSettings: () => config.ui?.boat?.wake }),
       }),
       debugBuilder: this.#createOptionalDiagnostic(
         this.#createLocationDebugRenderFrameBuilder, "locationDebugRenderFrameBuilder", [{

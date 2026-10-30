@@ -152,7 +152,7 @@ async function checkAnimationController() {
     assert.equal(visibleSlots.get(slot), true, "night light on during moving start at night");
   }
   // Wave slot 1 enabled during movement (TK-149)
-  assert.equal(visibleSlots.get("boats-wave--1"), true, "boats-wave--1 enabled during motion");
+  assert.equal(visibleSlots.get("boats-wave--1"), false, "spec 155: the procedural wake replaces the Spine wave");
 
   // 3. Dropping section 1 turns off bait slot 1 and holds compartment 1 open
   controller.advance({ powerRatio: 1, animationState: "moving", openingSectionIndex: 2, droppedSections: [1] }, { dtSec: 0.1, isNight: true });
@@ -360,6 +360,7 @@ async function checkBoatRenderPipeline() {
     pixi: fakePixi,
     stage: fakeStage,
     texts: { get: () => ({ texture: {}, width: 10, height: 10 }) },
+    documentTarget: { createElement: () => ({}) },
   });
 
   const world = {
@@ -370,6 +371,7 @@ async function checkBoatRenderPipeline() {
     boats: frameTarget.boats,
     sensorRays: frameTarget.sensorRays,
     boatRoute: frameTarget.boatRoute,
+    boatWake: new ReusableRenderList("world.boatWake"),
   };
 
   const updated = renderer.update(world, 1);

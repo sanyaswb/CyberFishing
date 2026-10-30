@@ -188,6 +188,7 @@ export class PixiSceneLayer {
     this.#water?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
+    this.#worldEntities?.dispose();
     this.#texts?.dispose();
     this.#textures?.dispose();
     this.#canvas.remove();
@@ -212,7 +213,8 @@ export class PixiSceneLayer {
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings });
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
-      this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts });
+      this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
+        documentTarget: this.#documentTarget });
       this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
       this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });

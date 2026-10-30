@@ -21,6 +21,7 @@ export class BoatChumRenderer {
     if (!model.visible) return;
     this.#renderChumZones(model);
     this.#renderWaypoints(model);
+    this.#renderWake(model);
     this.#renderBoats(model);
     this.#renderSensors(model);
     this.#renderRoute(model);
@@ -97,6 +98,21 @@ export class BoatChumRenderer {
       }
       surface.restore();
     }
+  }
+
+  // Spec 155: the procedural wake under the boats (the scene draws soft foam sprites; here plain translucent dots).
+  #renderWake(model) {
+    if (model.boatWake.count === 0) return;
+    const surface = this.#surface;
+    surface.save();
+    for (let index = 0; index < model.boatWake.count; index += 1) {
+      const puff = model.boatWake.getAt(index);
+      surface.fillStyle = `rgba(255, 255, 255, ${puff.alpha * 0.6})`;
+      surface.beginPath();
+      surface.arc(puff.x, puff.y, puff.size / 2, 0, Math.PI * 2);
+      surface.fill();
+    }
+    surface.restore();
   }
 
   #renderBoats(model) {

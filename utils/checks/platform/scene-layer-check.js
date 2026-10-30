@@ -799,15 +799,17 @@ async function checkSceneWorldKinds() {
   const { PixiWorldEntitiesRenderer } = await importSource("src/platform/browser/scene/pixi_world_entities_renderer.js");
   const stage = new fake.pixi.Container();
   const entities = new PixiWorldEntitiesRenderer({ pixi: fake.pixi,
-    stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }) });
+    stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }),
+    documentTarget: dom.documentTarget });
   const [container] = stage.children;
-  const [zones, zoneMask, overlay, boatLayer] = container.children;
+  const [zones, zoneMask, wakeLayer, overlay, boatLayer] = container.children;
   const zone = { x: 200, y: 400, radiusX: 60, radiusY: 20, opacity: 0.5 };
   const boatModel = { x: 150, y: 380, angle: 0.3, emoji: "⛵", fontSize: 24, energyRatio: 0.5, energyColor: "#00ff00",
     barWidth: 40, barHeight: 4, barY: -16 };
   const world = { visible: true, clipRegions: list([{ x: 0, y: 300, width: 400, height: 300 }]), chumZones: list([zone]),
     waypoints: list([{ x: 100, y: 350, scale: 1, index: 2, showIndex: true }]), boats: list([boatModel]),
-    sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]), boatRoute: list([]) };
+    sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]), boatRoute: list([]),
+    boatWake: list([{ x: 120, y: 420, size: 30, alpha: 0.4 }, { x: 110, y: 430, size: 36, alpha: 0.2 }]) };
   assert.equal(entities.update(world, 2), true);
   assert.equal(container.visible, true);
   assert.deepEqual(zones.ops, [["ellipse", 200, 400, 60, 20], ["fill", { color: 0xc8ff64, alpha: 0.1 }],
@@ -820,6 +822,12 @@ async function checkSceneWorldKinds() {
   assert(overlay.ops.some((op) => op[0] === "rect" && op[1] === 130 && op[2] === 364 && op[3] === 20),
     "the energy bar fills its share");
   assert(overlay.ops.some((op) => op[0] === "stroke" && op[1].color === 0xff0000), "a blocked sensor ray is red");
+  // Spec 155: the wake is a layer of one foam texture's sprites under the overlay and the boats.
+  const puffs = wakeLayer.children.filter((sprite) => sprite.visible);
+  assert.deepEqual(puffs.map((sprite) => [sprite.x, sprite.y, sprite.width, sprite.height, sprite.alpha]),
+    [[120, 420, 30, 30, 0.4], [110, 430, 36, 36, 0.2]], "wake puffs drawn where the model puts them");
+  assert(puffs.every((sprite) => sprite.texture === puffs[0].texture), "one foam texture for every puff (one batch)");
+  assert(container.children.indexOf(wakeLayer) < container.children.indexOf(boatLayer), "the wake lies under the boats");
   assert.equal(entities.update(world, 2), false, "an unchanged world presents nothing");
   zone.radiusY += 1;
   assert.equal(entities.update(world, 2), true, "a changed surface ellipse invalidates the scene");
@@ -828,7 +836,7 @@ async function checkSceneWorldKinds() {
   assert.equal(entities.update(null, 2), true, "off the scene it hides once");
   assert.equal(container.visible, false);
   assert.equal(entities.update(null, 2), false);
-  assert.equal(entities.update({ ...world, chumZones: list([]), waypoints: list([]), boats: list([]), sensorRays: list([]), boatRoute: list([]) }, 2),
+  assert.equal(entities.update({ ...world, chumZones: list([]), waypoints: list([]), boats: list([]), sensorRays: list([]), boatRoute: list([]), boatWake: list([]) }, 2),
     false, "nothing to draw: hidden, no frame");
 
   const { PixiFightAreaRenderer } = await importSource("src/platform/browser/scene/pixi_fight_area_renderer.js");

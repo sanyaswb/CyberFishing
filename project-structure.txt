@@ -906,6 +906,7 @@
 │  │     └── world
 │  │        ├── boat_animation_controller.js
 │  │        ├── boat_chum_renderer.js
+│  │        ├── boat_wake_emitter.js
 │  │        └── world_scene_renderer.js
 │  └── platform
 │     └── browser

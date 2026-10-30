@@ -11,6 +11,8 @@ export class BoatChumRenderFrameBuilder {
   #getTimeOfDay;
   #clock;
   #isRouteVisible;
+  #wake;
+  #surfaceScaleAt = (y) => this.#getWaterMetric().surfaceScaleAt(y);
   #timeBlend = { evening: 0, night: 0 };
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
@@ -24,6 +26,7 @@ export class BoatChumRenderFrameBuilder {
     getTimeOfDay = null,
     clock = null,
     isRouteVisible = () => false,
+    wake = null,
   }) {
     if (!chum || typeof chum.getBoats !== "function") {
       throw new TypeError(
@@ -45,11 +48,21 @@ export class BoatChumRenderFrameBuilder {
     this.#clock = clock;
     // Spec 154 Q3: the planned route is a DEV diagnostic (zone editor switch); production never shows it.
     this.#isRouteVisible = isRouteVisible;
+    // Spec 155: the procedural wake (BoatWakeEmitter), composed in bootstrap.
+    this.#wake = wake;
   }
 
   buildInto(target) {
     this.#buildChumZones(target);
+    this.#buildWake(target);
     this.#buildBoats(target);
+  }
+
+  #buildWake(target) {
+    if (!this.#wake) return;
+    const dtSec = this.#clock?.delta ? this.#clock.delta * 0.001 : 0.016;
+    this.#wake.update(this.#chum.getBoats(), dtSec, this.#surfaceScaleAt);
+    this.#wake.buildInto(target.boatWake, this.#projector);
   }
 
   #buildChumZones(target) {
