@@ -42,6 +42,7 @@ import { FishingController } from "../../game/application/fishing/fishing_contro
 import { ChumController } from "../../game/application/chum/chum_controller.js";
 import { ChumControls } from "../../platform/browser/ui/chum_controls.js";
 import { ChumService } from "../../game/application/chum/chum_service.js";
+import { BoatRoutePlanner } from "../../game/application/chum/boat_route_planner.js";
 import { CompositeMetricStrategy } from "../../game/domain/items/progression/composite_metric_strategy.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { DegradationColorConfigValidator } from "../../game/presentation/visual/degradation_color_config_validator.js";
@@ -1020,6 +1021,14 @@ export class GameCompositionRoot {
         // and a saved boat is restored from the equipped boat item.
         consumeBoatChum: (slotIndex) => inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1),
         onBoatLost: ({ rootInstanceId }) => inventory.consumeItem(rootInstanceId, 1),
+        // Spec 154: boat routes on the current map, with the boat physics' water test (GameWorld.checkWater).
+        routePlanner: new BoatRoutePlanner({
+          getRevision: () => locationMap.getRevision(),
+          getCellSize: () => this.#config.locations.cellSize,
+          getBounds: () => locationMap.getCastableBoundsVirtual(this.#config.locations.cellSize),
+          isWater: (x, y) => !!locationMap.getCellAtVirtualPos(x, y, this.#config.locations.cellSize) &&
+            locationMap.isCastableAt(x, y),
+        }),
         findBoatItem: (rootInstanceId) => {
           const boatItem = inventory.getEquipped().delivery;
           return boatItem?.instanceId === rootInstanceId ? boatItem : null;

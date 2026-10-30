@@ -506,7 +506,7 @@ export class ChumController {
     const loadedChums = this.#getLoadedChums(this.#inventory.getEquipped().deliveryChums);
     const chumData = loadedChums[reservedTargets] || null;
 
-    if (!cell || !chumData) {
+    if (!cell || !chumData || !this.#chum.isReachableByBoat(activeBoat, vPos.x, vPos.y)) {
       this.#markInvalidCast(input.clickPos);
       input.clickPos = null;
       return;
@@ -547,6 +547,10 @@ export class ChumController {
     const loadedChums = this.#getLoadedChums(eq.deliveryChums);
     const chumData = loadedChums[reservedTargets] || null;
     if (!chumData) return false;
+    if (!this.#chum.isReachableByBoat(activeBoat, vPos.x, vPos.y)) {
+      this.#markInvalidCast(clickPos);
+      return true;
+    }
 
     this.#chum.deployBait(vPos.x, vPos.y, chumData.item.id, activeBoat, chumData.slotIndex);
     return true;

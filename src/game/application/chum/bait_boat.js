@@ -10,6 +10,11 @@ const BOAT_RULES = new BoatRules();
 // The boat waits for its clips (TK-160: one source of their lengths).
 const IMMERSION_SEC = BOAT_ANIMATION_DURATIONS[BOAT_ANIMATION_CLIPS.IMMERSION];
 const MOVE_START_SEC = BOAT_ANIMATION_DURATIONS[BOAT_ANIMATION_CLIPS.MOVE_START];
+// Spec 154: progress along a leg is checked over this many seconds; after this many replans a trip gives up.
+const NO_PROGRESS_SEC = 3;
+const MAX_REPLANS = 3;
+// The per-frame damping the boat was tuned with at 60 Hz, applied per second of time instead (spec 154).
+const FRAME_RATE_OF_TUNING = 60;
 
 export class BaitBoat {
   #rootInstanceId;
@@ -25,6 +30,10 @@ export class BaitBoat {
   #cachedSensors = null;
   #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
   #rayPoint = { x: 0, y: 0 };
+  #targetInfo = { dx: 0, dy: 0, dist: 1, goalDist: 0 };
+  #bestGoalDist = Infinity;
+  #noProgressSec = 0;
+  #replans = 0;
 
   // drop: { baitId, slotIndex } the boat carries to its current target; the bunker opening spends that cargo slot and
   // starts the spot (specs 151 D5, 152 D2).
@@ -67,6 +76,10 @@ export class BaitBoat {
     this.sectionCount = BOAT_RULES.sectionCount(statsConfig);
     this.remainingSections = Math.max(0, this.sectionCount - initialDropped.length);
     this.waypoints = [];
+    // Spec 154: the planned route of the current leg (map points after the boat, ending at the leg's goal). ChumService
+    // plans it on the current map whenever needsRoute is set; an empty route steers straight at the goal.
+    this.route = [];
+    this.needsRoute = false;
 
     this.animationState = "immersion";
     this.immersionTimer = IMMERSION_SEC;
@@ -115,6 +128,8 @@ export class BaitBoat {
     this.openingTimer = snapshot.openingTimer;
     this.openingSectionIndex = snapshot.openingSectionIndex;
     this.isBaitDropped = snapshot.isBaitDropped;
+    this.route = [];
+    this.needsRoute = this.state === "deploying" || this.state === "returning";
     return this;
   }
 
@@ -155,6 +170,7 @@ export class BaitBoat {
     this.target = new Vector2(targetX, targetY);
     if (drop !== null) this.drop = drop;
     this.state = isReturn ? "returning" : "deploying";
+    this.#beginLeg();
     this.animationState = "moving_start";
     this.moveStartTimer = MOVE_START_SEC;
   }
@@ -199,7 +215,7 @@ export class BaitBoat {
 
     this.#syncRayPositions();
 
-    const targetInfo = this.#calculateTargetInfo();
+    const targetInfo = this.#calculateTargetInfo(cellSize);
     const obstacles = this.#cachedSensors;
 
     if (isManual) {
@@ -239,6 +255,7 @@ export class BaitBoat {
     this.#applyPhysics(steering, dtSec);
     this.#moveAndCollide(dtSec, checkPhysics, isManual);
     this.#checkShoreParking(isManual);
+    this.#watchProgress(targetInfo.goalDist, dtSec, isManual);
   }
 
   #syncRayPositions() {
@@ -290,12 +307,23 @@ export class BaitBoat {
     }
   }
 
-  #calculateTargetInfo() {
-    const target = this.state === "deploying" ? this.target : this.startPos;
-    const dx = target.x - this.pos.x;
-    const dy = target.y - this.pos.y;
-    const distSq = dx * dx + dy * dy;
-    return { dx, dy, distSq, dist: Math.sqrt(distSq) || 1 };
+  // Direction to the next route point; goalDist is the remaining length along the route to the leg's goal (arrival,
+  // braking and progress use it). Route points closer than three quarters of a cell are passed.
+  #calculateTargetInfo(cellSize) {
+    const route = this.route;
+    const advance = cellSize * 0.75;
+    while (route.length > 1 && Math.hypot(route[0].x - this.pos.x, route[0].y - this.pos.y) < advance) route.shift();
+    const aim = route.length > 0 ? route[0] : this.legGoal;
+    const info = this.#targetInfo;
+    info.dx = aim.x - this.pos.x;
+    info.dy = aim.y - this.pos.y;
+    info.dist = Math.hypot(info.dx, info.dy) || 1;
+    let goalDist = info.dist;
+    for (let index = 1; index < route.length; index += 1) {
+      goalDist += Math.hypot(route[index].x - route[index - 1].x, route[index].y - route[index - 1].y);
+    }
+    info.goalDist = goalDist;
+    return info;
   }
 
   #scanEnvironment(checkPhysics, checkSensor, cellSize) {
@@ -355,12 +383,13 @@ export class BaitBoat {
     this.avoidanceTargetAngle = angle;
   }
 
-  #calculateSteering({ dx, dy, dist }, sensors, isManual, dtSec) {
+  #calculateSteering({ dx, dy, dist, goalDist }, sensors, isManual, dtSec) {
     const slowRadius = Math.max(1, this.config.slowRadius || 150);
-    const t = Math.min(dist / slowRadius, 1.0);
+    const t = Math.min(goalDist / slowRadius, 1.0);
     const arrivalRatio = t * t;
 
-    const isBlindZone = dist < sensors.lookDist * 1.5;
+    // Spec 154: a planned route already avoids land and obstacles; the rays are the fallback without one (D2).
+    const isBlindZone = goalDist < sensors.lookDist * 1.5 || this.route.length > 0;
 
     if (this.avoidanceTimer > 0) {
       this.avoidanceTimer -= dtSec;
@@ -475,7 +504,7 @@ export class BaitBoat {
 
     // Keep avoiding while the wall is visible or the persistence timer is active.
     const inAvoidanceMode =
-      (isForwardBlocked || this.persistenceTimer > 0) && !isParking;
+      (isForwardBlocked || this.persistenceTimer > 0) && !isParking && this.route.length === 0;
 
     if (!isManual && inAvoidanceMode && this.avoidanceState === "none") {
 
@@ -493,7 +522,7 @@ export class BaitBoat {
     }
 
     const targetBrake =
-      dist < slowRadius && this.avoidanceState === "none"
+      goalDist < slowRadius && this.avoidanceState === "none"
         ? (this.config.brakeForce || 0.5) * (1.0 - arrivalRatio)
         : 0;
     return { x: steerX, y: steerY, brake: Math.max(targetBrake, hazardBrake) };
@@ -532,7 +561,7 @@ export class BaitBoat {
     }
   }
 
-  #checkArrival({ dist }, { isForwardBlocked }, isManual, dtSec = 0) {
+  #checkArrival({ goalDist: dist }, { isForwardBlocked }, isManual, dtSec = 0) {
     const cfg = this.config;
     const targetRad = cfg.finishRadiusTarget || 10;
     const finishRad =
@@ -590,6 +619,7 @@ export class BaitBoat {
           } else {
             this.drop = null;
             this.state = "returning";
+            this.#beginLeg();
             this.animationState = "moving_start";
             this.moveStartTimer = MOVE_START_SEC;
           }
@@ -623,13 +653,60 @@ export class BaitBoat {
       this.target.x = wp.x;
       this.target.y = wp.y;
       this.drop = wp.drop;
+      this.#beginLeg();
       this.animationState = "moving_start";
       this.moveStartTimer = MOVE_START_SEC;
     } else {
       this.state = "returning";
+      this.#beginLeg();
       this.animationState = "moving_start";
       this.moveStartTimer = MOVE_START_SEC;
     }
+  }
+
+  // The leg's goal: the target while deploying, the shore start on the way back.
+  get legGoal() {
+    return this.state === "deploying" ? this.target : this.startPos;
+  }
+
+  setRoute(points) {
+    this.route = points ? points.map((point) => ({ x: point.x, y: point.y })) : [];
+    this.needsRoute = false;
+  }
+
+  #beginLeg() {
+    this.route = [];
+    this.needsRoute = true;
+    this.#bestGoalDist = Infinity;
+    this.#noProgressSec = 0;
+    this.#replans = 0;
+  }
+
+  // Spec 154: no progress toward the leg's goal for NO_PROGRESS_SEC replans the route; after MAX_REPLANS a deploying
+  // boat gives up its remaining targets (their cargo stays in the bunkers) and comes back.
+  #watchProgress(goalDist, dtSec, isManual) {
+    if (isManual || this.animationState === "opening" || (this.state !== "deploying" && this.state !== "returning")) {
+      return;
+    }
+    if (goalDist < this.#bestGoalDist - 5) {
+      this.#bestGoalDist = goalDist;
+      this.#noProgressSec = 0;
+      return;
+    }
+    this.#noProgressSec += dtSec;
+    if (this.#noProgressSec < NO_PROGRESS_SEC) return;
+    this.#noProgressSec = 0;
+    this.#bestGoalDist = goalDist;
+    this.#replans += 1;
+    if (this.#replans > MAX_REPLANS && this.state === "deploying") {
+      this.waypoints.length = 0;
+      this.drop = null;
+      this.state = "returning";
+      this.#beginLeg();
+      return;
+    }
+    this.route = [];
+    this.needsRoute = true;
   }
 
   #applyPhysics(steering, dtSec) {
@@ -683,7 +760,7 @@ export class BaitBoat {
     const forwardSpeed = this.velocity.x * noseX + this.velocity.y * noseY;
     let lateralSpeed = this.velocity.x * rightX + this.velocity.y * rightY;
 
-    lateralSpeed *= 0.05;
+    lateralSpeed *= Math.pow(0.05, dtSec * FRAME_RATE_OF_TUNING);
 
     this.velocity.x = noseX * forwardSpeed + rightX * lateralSpeed;
     this.velocity.y = noseY * forwardSpeed + rightY * lateralSpeed;
@@ -694,8 +771,9 @@ export class BaitBoat {
       this.velocity.y *= brakeFriction;
     }
 
-    this.velocity.x *= 0.97;
-    this.velocity.y *= 0.97;
+    const drag = Math.pow(0.97, dtSec * FRAME_RATE_OF_TUNING);
+    this.velocity.x *= drag;
+    this.velocity.y *= drag;
 
     const maneuverSpeed = this.config.maneuver?.maneuverSpeedMult || 0.4;
     const maxSpeed =

@@ -79,7 +79,7 @@ export class BaitBoatGroundPlaneScope {
     return this.#metric.velocityFromBasePlane(position.x, position.y, vx, vy, out);
   }
 
-  // The boat's other points: start (the shore it returns to), target, queued waypoints and its sensor rays. Rays are
+  // The boat's other points: start (the shore it returns to), target, queued waypoints, route and its sensor rays. Rays are
   // converted both ways too, so rays the update did not rewrite (an idle boat) come back unchanged.
   #convertPoints(boat, map) {
     const scratch = this.#scratch;
@@ -90,6 +90,13 @@ export class BaitBoatGroundPlaneScope {
       map(waypoint.x, waypoint.y, scratch);
       waypoint.x = scratch.x;
       waypoint.y = scratch.y;
+    }
+    // Spec 154: the planned route points too.
+    for (let index = 0; index < boat.route.length; index += 1) {
+      const point = boat.route[index];
+      map(point.x, point.y, scratch);
+      point.x = scratch.x;
+      point.y = scratch.y;
     }
     boat.mapSensorRays(map);
   }

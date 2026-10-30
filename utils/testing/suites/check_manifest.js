@@ -327,6 +327,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "bait-boat-navigation",
+    title: "Bait boat routes on the current map: traps, land, unreachable water, frame rate (spec 154)",
+    file: "utils/checks/gameplay/bait-boat-navigation-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-recovery",
     title: "Drained bait boat: net pick-up, mooring, reload, loss; cargo spent at the drop (spec 151)",
     file: "utils/checks/gameplay/bait-boat-recovery-check.js",

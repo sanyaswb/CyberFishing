@@ -20,7 +20,7 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
-### G-127 Bait boat AI gets stuck, circles at obstacles and depends on the frame rate (P2, open)
+### G-127 Bait boat AI gets stuck, circles at obstacles and depends on the frame rate (P2, done in v0.49.11; owner acceptance pending)
 Found: 2026-10-30, owner request + Node simulation of BaitBoat (catalog level 3).
 Reproduce: U-shaped obstacle cells or a land peninsula across the course; or 144 Hz vs 60 Hz in open water.
 Expected: the boat reaches reachable targets and returns; same speed at any frame rate.

@@ -260,6 +260,9 @@
 │  │  │  ├── number_normalization.js
 │  │  │  ├── rectangle_bounds.js
 │  │  │  └── vector2.js
+│  │  ├── navigation
+│  │  │  ├── grid_path_smoother.js
+│  │  │  └── grid_pathfinder.js
 │  │  ├── random
 │  │  │  └── seeded_rng.js
 │  │  ├── rendering
@@ -279,6 +282,7 @@
 │  │  │  ├── chum
 │  │  │  │  ├── bait_boat.js
 │  │  │  │  ├── bait_boat_ground_plane_scope.js
+│  │  │  │  ├── boat_route_planner.js
 │  │  │  │  ├── chum_controller.js
 │  │  │  │  ├── chum_service.js
 │  │  │  │  └── chum_zone.js

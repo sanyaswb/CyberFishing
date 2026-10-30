@@ -25,6 +25,7 @@ export class ChumService {
   #consumeBoatChum;
   #onBoatLost;
   #findBoatItem;
+  #routePlanner;
 
   constructor(locationId, chumConfig, getWaterMetric, services = {}) {
     this.#chumConfig = chumConfig;
@@ -53,6 +54,8 @@ export class ChumService {
     this.#consumeBoatChum = services.consumeBoatChum || null;
     this.#onBoatLost = services.onBoatLost || null;
     this.#findBoatItem = services.findBoatItem || null;
+    // Spec 154: routes on the current map ({ plan, isReachable }); without it a boat steers straight with its rays.
+    this.#routePlanner = services.routePlanner || null;
     this.#boatsKey = `chum_boats_${locationId}`;
 
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
@@ -200,6 +203,7 @@ export class ChumService {
     for (let i = this.#boats.length - 1; i >= 0; i--) {
       const boat = this.#boats[i];
       const stateBefore = boat.state;
+      this.#planRoute(boat);
       const plane = this.#groundPlane.enter({ metric: waterMetric, boat, checkPhysics, checkSensor, cellSize });
       try {
         boat.update(dt, plane.checkPhysics, plane.checkSensor, plane.cellSize, env);
@@ -207,6 +211,7 @@ export class ChumService {
         this.#groundPlane.exit();
       }
       this.#consumePower(boat, dt);
+      this.#planRoute(boat);
       if (boat.state !== stateBefore) boatsChanged = true;
 
       if (boat.isBaitDropped && boat.drop) {
@@ -225,6 +230,18 @@ export class ChumService {
     }
     this.#boatSaveMs += Math.max(0, Number(dt) || 0);
     if (boatsChanged || (this.#boatSaveMs >= 1000 && this.#boats.length > 0)) this.saveBoats();
+  }
+
+  // A leg plans its route on the map as it is now (spec 154 D1), in map coordinates (outside the ground plane).
+  #planRoute(boat) {
+    if (!boat.needsRoute) return;
+    const goal = boat.legGoal;
+    boat.setRoute(this.#routePlanner?.plan(boat.pos.x, boat.pos.y, goal.x, goal.y) ?? null);
+  }
+
+  // Spec 154 Q1: a target in water the boat cannot reach from its shore start is refused.
+  isReachableByBoat(boat, x, y) {
+    return this.#routePlanner ? this.#routePlanner.isReachable(boat.startPos.x, boat.startPos.y, x, y) : true;
   }
 
   // Spec 151 D8: a drifting boat that reaches the player's shore within its mooring distance is taken back.

@@ -22,7 +22,8 @@ function checkChumComposition() {
   let state='waiting',water=true,canCast=true,hidden=0;
   const config={casting:{enabled:false,handChumAccuracyPx:0,travelDelayMinMs:10,travelDelayMaxMs:10}};
   const projector={screenToVirtual(x,y,out={}){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out={}){out.x=x;out.y=y;return out;},getScale:()=>1,getPerspective:()=>({scale:1,squashY:1})};
-  const chum={getBoats:()=>boats,deployBait(x,y,id,boat,slotIndex=null){drops.push([x,y,id,boat,slotIndex]);if(boat){boat.state='deploying';boat.waypoints.push({x,y});}},
+  let reachable=true;
+  const chum={getBoats:()=>boats,isReachableByBoat:()=>reachable,deployBait(x,y,id,boat,slotIndex=null){drops.push([x,y,id,boat,slotIndex]);if(boat){boat.state='deploying';boat.waypoints.push({x,y});}},
     spawnIdleBoat(x,y){const boat={pos:{x,y},state:'idle',remainingSections:2,waypoints:[],setTarget(x,y){this.pos.x=x;this.pos.y=y;}};boats.push(boat);return boat;},
     removeBoat(boat){boats.splice(boats.indexOf(boat),1);}};
   const controller=new runtime.context.ChumController({inventory:{getEquipped:()=>equipped},chum,projector,inventoryUI:{showWarning(message){warnings.push(message);}},
@@ -67,6 +68,10 @@ function checkChumComposition() {
   controller.handleClick();const boat=controller.activeBoat;assert.equal(boat,boats[0]);assert.equal(boat.remainingSections,2);
   // Spec 151 D5: a boat target reserves the next loaded cargo slot; nothing is spent until the drop.
   const spentBeforeTarget=consumed.length;
+  // Spec 154 Q1: water the boat cannot reach is refused like an invalid cast.
+  const dropsBeforeRefusal=drops.length,invalidBeforeRefusal=invalid.length;reachable=false;
+  clock.now+=250;input.clickPos={x:300,y:400};controller.handleAiming(input,bounds,16);reachable=true;
+  assert.equal(drops.length,dropsBeforeRefusal,'an unreachable target sends nothing');assert.equal(invalid.length,invalidBeforeRefusal+1);
   clock.now+=250;input.clickPos={x:300,y:400};controller.handleAiming(input,bounds,16);
   assert.equal(drops.at(-1)[4],0,'the target carries cargo slot 0');assert.equal(consumed.length,spentBeforeTarget,'nothing spent at the click');
   controller.updateUI();assert.equal(controller.ui.currentState,'moving');assert.equal(controller.isAiming,false);
