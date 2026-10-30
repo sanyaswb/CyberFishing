@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.20 - Visible boat wake ripples
+
+- Spec 156 fix (owner: no visible change in v0.49.19): the wake's ripples now bend the water as far as its own waves (strength 1 = full amplitude), fade over each puff's life instead of the foam's transparency, and always cover at least 2.5 texels of the water map; defaults strength 1, radiusScale 2.5 (CONFIG.ui.boat.wake.water, live in DevTools). Incident I-8, rule R8.
+
 ## v0.49.19 - Boat wake ripples in the water
 
 - Delivery / Scene: each wake puff also bends the painted water around it (an outward ring in the water's displacement map, only on water), so the water behind the boat ripples along with the foam; tuning in `CONFIG.ui.boat.wake.water` (spec 156). Game-cycle report unchanged.
@@ -40,8 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery / AI: each boat leg is planned on the current map (passability at half a map cell, rebuilt on map edits; A* with string pulling, off the shore); the boat follows the route, rays stay only as a fallback, and a leg without progress replans and finally comes home with its cargo (spec 154 / G-127).
 - Delivery / AI: a target in water the boat cannot reach is refused like an invalid cast; drag and side-slip damping are per second, so 30/60/144 Hz move alike (144 Hz was 28% slower). Game-cycle report unchanged.
-
-## v0.49.10 - Bait boat Spine review
-
-- Delivery / Spine: the boat waits for the export's clip lengths (`BOAT_ANIMATION_DURATIONS`, checked against `boat-lvl--3.json`; bunkers 2-3 open for 1.583 s, not 1.167 s); the end of the start clip no longer restarts an opening door; a reloaded start continues as motion; a drained boat drifts without the motor clip, wake or lights (TK-160).
-- Delivery / Spine: bait, light, wake slots and held doors are written into the skeleton only when they change; the obsolete skeleton rewrite, the `returning` branch and the unused reduced-motion port are removed. Game-cycle report unchanged.

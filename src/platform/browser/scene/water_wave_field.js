@@ -9,6 +9,16 @@ const FADE_TOP = 0.18;
 const FADE_BOTTOM = 0.08;
 const FADE_SIDE = 0.03;
 const TWO_PI = Math.PI * 2;
+// Spec 156 (owner, 2026-10-30: the first ripples were invisible): a wake ripple covers at least this many map texels,
+// or a small far puff falls between texel centres and bends nothing; its crest height is normalised to 1, so
+// strength 1 shifts the art as far as the water's own full amplitude.
+const RIPPLE_MIN_TEXELS = 2.5;
+const rippleProfile = (share) => Math.sin(share * Math.PI) * (1 - share);
+const RIPPLE_PEAK = (() => {
+  let peak = 0;
+  for (let step = 1; step < 200; step += 1) peak = Math.max(peak, rippleProfile(step / 200));
+  return peak;
+})();
 
 const smoothstep = (value) => {
   const t = value <= 0 ? 0 : value >= 1 ? 1 : value;
@@ -117,10 +127,12 @@ export class WaterWaveField {
     return this.#height;
   }
 
-  // Spec 156: the boat's wake bends the water. puffs: the frame's world.boatWake (screen x, y, size, alpha); area: the
-  // screen rectangle this map covers ({ left, top, right, bottom }); settings: CONFIG.ui.boat.wake.water. Each puff adds
-  // a ring bump that pushes the art outward from its centre (strength x the puff's alpha, falling to nothing at
-  // radiusScale x half its size), only on water (the envelope). Call after write(); only texels near a puff change.
+  // Spec 156: the boat's wake bends the water. puffs: the frame's world.boatWake (screen x, y, size, alpha, life = the
+  // share of the puff's life gone); area: the screen rectangle this map covers ({ left, top, right, bottom }); settings:
+  // CONFIG.ui.boat.wake.water. Each puff adds a ring bump that pushes the art outward from its centre: crest height
+  // strength x the water's full amplitude, fading linearly over the puff's life (not with the foam's alpha, which is
+  // nearly transparent most of the time); radius radiusScale x half its size, at least RIPPLE_MIN_TEXELS texels; only on
+  // water (the envelope). Call after write(); only texels near a puff change.
   addRipples(puffs, area, settings) {
     if (!settings?.enabled || !puffs || puffs.count === 0) return this.#pixels;
     const strength = Math.max(0, Number(settings.strength) || 0);
@@ -128,11 +140,12 @@ export class WaterWaveField {
     const width = this.#width, height = this.#height, pixels = this.#pixels;
     const texelWidth = (area.right - area.left) / width, texelHeight = (area.bottom - area.top) / height;
     if (!(texelWidth > 0 && texelHeight > 0) || strength === 0 || radiusScale === 0) return pixels;
+    const minRadius = RIPPLE_MIN_TEXELS * Math.max(texelWidth, texelHeight);
     for (let index = 0; index < puffs.count; index += 1) {
       const puff = puffs.getAt(index);
-      const radius = puff.size * 0.5 * radiusScale;
-      if (!(radius > 0)) continue;
-      const amount = 127 * strength * Math.max(0, Math.min(1, puff.alpha));
+      if (!(puff.size > 0)) continue;
+      const radius = Math.max(puff.size * 0.5 * radiusScale, minRadius);
+      const amount = 127 * strength * Math.max(0, Math.min(1, 1 - (Number(puff.life) || 0))) / RIPPLE_PEAK;
       const column0 = Math.max(0, Math.floor((puff.x - radius - area.left) / texelWidth));
       const column1 = Math.min(width - 1, Math.floor((puff.x + radius - area.left) / texelWidth));
       const row0 = Math.max(0, Math.floor((puff.y - radius - area.top) / texelHeight));
@@ -145,7 +158,7 @@ export class WaterWaveField {
           if (distance >= radius || distance === 0) continue;
           const share = distance / radius;
           // One crest between the centre and the rim, fading toward the rim.
-          const push = amount * Math.sin(share * Math.PI) * (1 - share) * this.#envelope[row * width + column];
+          const push = amount * rippleProfile(share) * this.#envelope[row * width + column];
           const offset = (row * width + column) * 4;
           pixels[offset] = pixels[offset] + push * (dx / distance);
           pixels[offset + 1] = pixels[offset + 1] + push * (dy / distance);

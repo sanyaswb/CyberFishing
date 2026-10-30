@@ -21,6 +21,21 @@ rule as something the next change can follow.
 | R5 | Per-frame damping is per time: `Math.pow(k, dt * 60)` or `exp(-c * dt)`, never `v *= k` per update. Check 30/60/144 Hz alike. | I-2 |
 | R6 | A moving agent plans on the map as it is (passability from the same water test as its physics, rebuilt on map revision) and watches its progress; reactive sensors only as a fallback. | I-1 |
 | R7 | When proving a check against old code, keep the backup until `cmp` confirms the restore; never delete it in the same command. | I-7 |
+| R8 | An effect added to an existing signal (a displacement map, a sound, a light) is sized against that signal and its grid: the check asserts its magnitude as a share of the signal's full range and that the smallest real input still reaches a cell. A check that only asserts "changed" passes an invisible effect. | I-8 |
+
+## I-8 · 2026-10-30 · v0.49.19: the boat's water ripples were invisible (spec 156)
+
+- **Seen:** owner's phone, Pages 0.49.19: no change in the water behind the boat.
+- **Cause:** `WaterWaveField.addRipples` scaled each ripple by the foam puff's alpha (mostly 0.02–0.3) and its
+  profile peaks at 0.42, so at strength 0.6 the crest moved the art 1–2 art px while the water's own waves move it
+  20 px; the radius came from the puff's size (4–13 px on screen) while a map texel is ~7×8 px, so most puffs covered
+  0–1 texels. The check asserted only the direction of the push on a 60 px puff at alpha 1.
+- **Measured** (dev.html, a hook on the map): the ripple ran (~30 steps/s, up to 33 puffs) but changed the map by
+  ~13 of 127 at the default settings.
+- **Fix (v0.49.20):** crest normalised (strength 1 = the water's full amplitude), fade over the puff's life (`life` on the wake
+  record) instead of its foam alpha, radius at least 2.5 texels; defaults strength 1, radiusScale 2.5 (6–16 art px over 16–59 texels for the real puff sizes).
+- **Rule R8.** Check: `scene-layer` (crest ≥ 100/127 at strength 1, a 4 px puff at alpha 0.02 still bends the map,
+  nothing at the end of life), `boat-wake` (records carry `life`).
 
 ## I-7 · 2026-10-30 · A restore after the old-code proof failed and its backup was already deleted
 

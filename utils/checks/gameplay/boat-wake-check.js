@@ -33,6 +33,8 @@ async function run() {
   assert(xs.some((x) => x < 500) && xs.some((x) => x > 500), "puffs spread to both sides of the course");
   for (let index = 0; index < list.count; index += 1) {
     assert(list.getAt(index).y > 1500, "puffs lie behind a boat heading up the screen");
+    const life = list.getAt(index).life;
+    assert(life >= 0 && life < 1, "each puff carries the share of its life gone (spec 156 ripple fade)");
   }
   boat.state = "drifting";
   boat.animationState = "idle";

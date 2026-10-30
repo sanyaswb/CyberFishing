@@ -641,9 +641,9 @@ async function checkWaterWaveField() {
   assert.equal(field.setRegions([0, 0, 1, .25, 0, .25, .25, 1], 2, true), false, 'unchanged masks do not rebuild the envelope');
 
   // Spec 156: a wake puff pushes the water outward from its centre, only near it and only on water.
-  const puffs = { count: 1, getAt: () => ({ x: 960, y: 240, size: 60, alpha: 1 }) };
+  const puffs = { count: 1, getAt: () => ({ x: 960, y: 240, size: 60, alpha: 1, life: 0 }) };
   const area = { left: 0, top: 0, right: 1920, bottom: 480 }; // 10 px texels
-  const ripple = { enabled: true, strength: 0.6, radiusScale: 1.6 };
+  const ripple = { enabled: true, strength: 1, radiusScale: 1.6 };
   const texel = (pixels, column, row) => [pixels[(row * 192 + column) * 4], pixels[(row * 192 + column) * 4 + 1]];
   field.setRegions([0, 0, 1, 1], 1);
   const calm = Array.from(field.write(2, { ...settings, artWidth: 1920, artHeight: 480 }));
@@ -655,6 +655,21 @@ async function checkWaterWaveField() {
   assert(belowY > calm[(26 * 192 + 96) * 4 + 1], "below the puff it moves down");
   assert.deepEqual(texel(bent, 120, 24), [calm[(24 * 192 + 120) * 4], calm[(24 * 192 + 120) * 4 + 1]],
     "far from the puff the water is untouched");
+  // Owner 2026-10-30 (the first ripples were invisible): the crest reaches the water's full amplitude at strength 1,
+  // a puff smaller than a texel still bends the map, and the ripple fades with the puff's life, not its foam alpha.
+  const peakShift = (pixels, base) => {
+    let peak = 0;
+    for (let index = 0; index < pixels.length; index += 4) peak = Math.max(peak, Math.abs(pixels[index] - base[index]));
+    return peak;
+  };
+  assert(peakShift(bent, calm) >= 100, "strength 1 shifts the art about as far as the waves (crest near 127)");
+  field.write(2, { ...settings, artWidth: 1920, artHeight: 480 });
+  const tiny = { count: 1, getAt: () => ({ x: 965, y: 245, size: 4, alpha: 0.02, life: 0.5 }) };
+  const tinyShift = peakShift(field.addRipples(tiny, area, ripple), calm);
+  assert(tinyShift >= 40 && tinyShift <= 80, "a tiny, nearly transparent puff half way through its life still bends the water");
+  field.write(2, { ...settings, artWidth: 1920, artHeight: 480 });
+  const ended = { count: 1, getAt: () => ({ x: 965, y: 245, size: 60, alpha: 1, life: 1 }) };
+  assert.deepEqual(Array.from(field.addRipples(ended, area, ripple)), calm, "a puff at the end of its life no longer bends the water");
   field.write(2, { ...settings, artWidth: 1920, artHeight: 480 });
   assert.deepEqual(Array.from(field.addRipples(puffs, area, { ...ripple, enabled: false })), calm, "switched off: no ripples");
   field.setRegions([0, 0, .25, 1], 1);

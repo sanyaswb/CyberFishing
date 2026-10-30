@@ -51,7 +51,7 @@ export class BoatWakeEmitter {
     if (boat) this.#emit(boat, dtSec, settings, surfaceScaleAt);
   }
 
-  // Screen records into list (ReusableRenderList): x, y, size, alpha.
+  // Screen records into list (ReusableRenderList): x, y, size, alpha, life (share of the puff's life gone, 0..1).
   buildInto(list, projector) {
     const scale = projector.getScale();
     for (let index = 0; index < this.#count; index += 1) {
@@ -65,6 +65,7 @@ export class BoatWakeEmitter {
       record.y = screen.y;
       record.size = (this.#size0[index] + (this.#size1[index] - this.#size0[index]) * Math.sqrt(t)) * scale;
       record.alpha = alpha;
+      record.life = t;
     }
   }
 
