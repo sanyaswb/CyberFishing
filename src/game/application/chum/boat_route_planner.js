@@ -1,10 +1,18 @@
 import { GridPathfinder } from "../../../engine/navigation/grid_pathfinder.js";
 import { GridPathSmoother } from "../../../engine/navigation/grid_path_smoother.js";
 
+// TK-161: routes keep off land and obstacles. Distances are in planning steps (half a map cell, 20 px at 40 px cells).
+// A straight shortcut may only cross cells at least CLEAR_STEPS from land (a full cell: more than the boat's bumper
+// reach), and cells closer than COST_STEPS cost more the closer they are, so A* runs down the middle of the water.
+const CLEAR_STEPS = 2;
+const COST_STEPS = 4;
+const NEAR_LAND_COST = 6;
+
 // The bait boat's routes on the current map (spec 154). A passability grid at half a map cell is built from the same
 // water test the boat's physics uses, and rebuilt whenever the map's revision, cell size or water bounds change (DEV
-// zone/grid edits, future map changes), so every leg is planned on the map as it is when the boat sets off. Cells next
-// to land cost more and the shortened route only crosses cells with water all around, so routes keep off the shore.
+// zone/grid edits, future map changes), so every leg is planned on the map as it is when the boat sets off. A distance
+// field from land (shore, obstacles, the map edge) makes cells near land cost more and limits straight shortcuts to
+// cells a full cell from land, so routes keep off the shore and obstacles (TK-161).
 // Connected water bodies are labelled once per grid: a target in other water is unreachable (Q1).
 export class BoatRoutePlanner {
   #getRevision;
@@ -37,6 +45,8 @@ export class BoatRoutePlanner {
     if (!cells) return null;
     const kept = this.#smoother.smooth(grid, grid.clear, cells);
     const route = [];
+    // TK-161: a boat in a pocket finer than the grid (a notch of a fine mask) first moves to its snapped water cell.
+    if (!this.#isWater(fromX, fromY) || this.#cellOf(grid, fromX, fromY) !== start) route.push(this.#centre(grid, start));
     for (let index = 1; index < kept.length - 1; index += 1) route.push(this.#centre(grid, kept[index]));
     route.push(this.#isWater(toX, toY) ? { x: toX, y: toY } : this.#centre(grid, goal));
     return route;
@@ -70,26 +80,55 @@ export class BoatRoutePlanner {
         passable[y * cols + x] = this.#isWater(left + (x + 0.5) * step, top + (y + 0.5) * step) ? 1 : 0;
       }
     }
+    const distance = this.#landDistance(cols, rows, passable);
     const clear = new Uint8Array(size);
     const cost = new Float32Array(size);
-    for (let y = 0; y < rows; y += 1) {
-      for (let x = 0; x < cols; x += 1) {
-        const index = y * cols + x;
-        if (!passable[index]) continue;
-        let open = true;
-        for (let dy = -1; dy <= 1 && open; dy += 1) {
-          for (let dx = -1; dx <= 1; dx += 1) {
-            const nx = x + dx, ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= cols || ny >= rows || !passable[ny * cols + nx]) { open = false; break; }
-          }
-        }
-        clear[index] = open ? 1 : 0;
-        cost[index] = open ? 1 : 4;
-      }
+    for (let index = 0; index < size; index += 1) {
+      if (!passable[index]) continue;
+      const steps = distance[index];
+      clear[index] = steps >= CLEAR_STEPS ? 1 : 0;
+      cost[index] = steps >= COST_STEPS ? 1 : 1 + NEAR_LAND_COST * (COST_STEPS - steps) / COST_STEPS;
     }
     const grid = { cols, rows, left, top, step, passable, clear, cost, component: new Int32Array(size).fill(-1) };
     this.#label(grid);
     return grid;
+  }
+
+  // Steps from each water cell to the nearest land cell (8 neighbours; outside the grid counts as land): 1 next to
+  // land, 2 one cell further, ...
+  #landDistance(cols, rows, passable) {
+    const size = cols * rows;
+    const distance = new Int16Array(size).fill(-1);
+    const queue = new Int32Array(size);
+    let head = 0, tail = 0;
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < cols; x += 1) {
+        const index = y * cols + x;
+        if (!passable[index]) continue;
+        let nearLand = x === 0 || y === 0 || x === cols - 1 || y === rows - 1;
+        for (let dy = -1; dy <= 1 && !nearLand; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            if (!passable[(y + dy) * cols + (x + dx)]) { nearLand = true; break; }
+          }
+        }
+        if (nearLand) { distance[index] = 1; queue[tail++] = index; }
+      }
+    }
+    while (head < tail) {
+      const index = queue[head++];
+      const x = index % cols, y = (index - x) / cols;
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+          const next = ny * cols + nx;
+          if (!passable[next] || distance[next] >= 0) continue;
+          distance[next] = distance[index] + 1;
+          queue[tail++] = next;
+        }
+      }
+    }
+    return distance;
   }
 
   // Connected water: 8 neighbours with the same corner rule as the pathfinder.
@@ -139,6 +178,11 @@ export class BoatRoutePlanner {
       }
     }
     return best;
+  }
+
+  #cellOf(grid, x, y) {
+    const cx = Math.floor((x - grid.left) / grid.step), cy = Math.floor((y - grid.top) / grid.step);
+    return cx < 0 || cy < 0 || cx >= grid.cols || cy >= grid.rows ? -1 : cy * grid.cols + cx;
   }
 
   #centre(grid, index) {

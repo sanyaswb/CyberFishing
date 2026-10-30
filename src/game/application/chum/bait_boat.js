@@ -15,6 +15,9 @@ const NO_PROGRESS_SEC = 3;
 const MAX_REPLANS = 3;
 // The per-frame damping the boat was tuned with at 60 Hz, applied per second of time instead (spec 154).
 const FRAME_RATE_OF_TUNING = 60;
+// TK-161: a route point counts as reached within this many ground-plane pixels (0.5 m). Not a share of the cell size:
+// the ground plane stretches far cells vertically only, so a cell-based radius skipped points beside obstacles far away.
+const ROUTE_POINT_REACH = 25;
 
 export class BaitBoat {
   #rootInstanceId;
@@ -217,7 +220,7 @@ export class BaitBoat {
 
     this.#syncRayPositions();
 
-    const targetInfo = this.#calculateTargetInfo(cellSize);
+    const targetInfo = this.#calculateTargetInfo();
     const obstacles = this.#cachedSensors;
 
     if (isManual) {
@@ -310,11 +313,12 @@ export class BaitBoat {
   }
 
   // Direction to the next route point; goalDist is the remaining length along the route to the leg's goal (arrival,
-  // braking and progress use it). Route points closer than three quarters of a cell are passed.
-  #calculateTargetInfo(cellSize) {
+  // braking and progress use it). Route points within ROUTE_POINT_REACH are passed.
+  #calculateTargetInfo() {
     const route = this.route;
-    const advance = cellSize * 0.75;
-    while (route.length > 1 && Math.hypot(route[0].x - this.pos.x, route[0].y - this.pos.y) < advance) route.shift();
+    while (route.length > 1 && Math.hypot(route[0].x - this.pos.x, route[0].y - this.pos.y) < ROUTE_POINT_REACH) {
+      route.shift();
+    }
     const aim = route.length > 0 ? route[0] : this.legGoal;
     const info = this.#targetInfo;
     info.dx = aim.x - this.pos.x;
@@ -762,7 +766,9 @@ export class BaitBoat {
           (steering.x / steeringMag) * noseX +
           (steering.y / steeringMag) * noseY;
 
-        const alignFactor = Math.max(0.3, alignment);
+        // TK-161: a twin-motor bait boat turns on the spot; it pushes forward only toward an aim ahead of it, so a leg that
+        // starts behind it (the way home after a drop) does not swing into the shore or an obstacle.
+        const alignFactor = Math.max(0, alignment);
 
         const maneuverThrust = this.config.maneuver?.maneuverThrustMult || 0.3;
         const maneuverPenalty = this.maneuverTimer > 0 ? maneuverThrust : 1.0;

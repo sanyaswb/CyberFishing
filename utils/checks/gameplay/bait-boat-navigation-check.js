@@ -106,12 +106,73 @@ async function run() {
   const inertialTimes = [30, 144].map((fps) => trip(m, createMap(), far, { fps, inertial: true }).dropAt);
   assert(Math.abs(inertialTimes[0] - inertialTimes[1]) < 0.4, `inertial motion is frame-rate independent (${inertialTimes})`);
 
+  // TK-161: on the real test location (perspective water, a fine-masked obstacle) a drop 1-2 px above the obstacle
+  // goes home along its route at once: far route points are not skipped and the boat turns on the spot.
+  await checkReturnBesideObstacle(m);
+
   // The same trip at 30, 60 and 144 Hz.
   const open = createMap();
   const paths = [30, 60, 144].map((fps) => trip(m, open, far, { fps }));
   for (const result of paths) assert(result.homeAt !== null, "every frame rate completes the trip");
   const times = paths.map((result) => result.dropAt);
   assert(Math.max(...times) - Math.min(...times) < 0.3, `drop time does not depend on the frame rate (${times})`);
+}
+
+async function checkReturnBesideObstacle(m) {
+  const [{ LocationMap }, { LocationWaterMetricResolver }, { LocationWaterMetricSource }, { CONFIG }] = await Promise.all([
+    import("../../../src/game/domain/locations/location_map.js"),
+    import("../../../src/game/domain/locations/location_water_metric_resolver.js"),
+    import("../../../src/game/domain/locations/location_water_metric_source.js"),
+    import("../../../src/game/config/runtime/game_config.js"),
+  ]);
+  const locations = CONFIG.locations;
+  const map = new LocationMap("test", locations, { next: () => 0.5 }, {}, { next: () => 0.5 });
+  const metric = new LocationWaterMetricSource({ map, getLocations: () => locations,
+    resolver: new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { warn() {}, error() {}, info() {} } }) }).current();
+  assert.equal(metric.isUniform, false, "the test location has perspective water");
+  const cell = locations.cellSize;
+  const bounds = { ...map.getCastableBoundsVirtual(cell) };
+  const isWater = (x, y) => !!map.getCellAtVirtualPos(x, y, cell) && map.isCastableAt(x, y);
+  const water = (x, y) => (x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom || !isWater(x, y) ? null : {});
+  // The cause: a route point counted as reached within a share of the ground plane's cell, which far away is stretched
+  // vertically only, so a point 75 map px beside a far boat was skipped and the boat headed straight for home.
+  {
+    const { BaitBoatGroundPlaneScope } = await import("../../../src/game/application/chum/bait_boat_ground_plane_scope.js");
+    const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
+    const farBoat = new BaitBoat(2075, 600, m.boatItem);
+    farBoat.immersionTimer = 0;
+    farBoat.setTarget(2070, 1110, null, true);
+    farBoat.setRoute([{ x: 2150, y: 590 }, { x: 2070, y: 1110 }]);
+    const scope = new BaitBoatGroundPlaneScope();
+    const plane = scope.enter({ metric, boat: farBoat, checkPhysics: () => ({}), checkSensor: () => false, cellSize: cell });
+    try { farBoat.update(16, plane.checkPhysics, plane.checkSensor, plane.cellSize, null); } finally { scope.exit(); }
+    assert.equal(farBoat.route.length, 2, "a route point 75 px beside a boat on far water is not skipped");
+  }
+  const obstacle = locations.map.test.zones.collisions[0];
+  const top = obstacle.y * cell;
+  for (const [startX, targetX, targetY] of [[2060, 2060, top - 2], [2060, 2010, top - 1], [2300, 2060, top - 1]]) {
+    const planner = new m.BoatRoutePlanner({ getRevision: () => map.getRevision(), getCellSize: () => cell,
+      getBounds: () => map.getCastableBoundsVirtual(cell), isWater });
+    const service = new m.ChumService("tk161", { baits: { mix: { id: "mix", effectiveStats: { radius: 50, targetFishes: [],
+      rampUpTimeMs: 1, peakDurationMs: 1, totalBonusTimeMs: 2, minBonusDurationHours: 1, maxBonus: 2, minBonus: 1 } } } },
+      () => metric, { cache: { get: (key, fallback) => fallback, set() {} }, gameTime: { getGameMs: () => 0 },
+        devicePower: { consume: () => ({ percent: 100, empty: false }) }, routePlanner: planner });
+    const boat = service.spawnIdleBoat(startX, bounds.bottom - 70, m.boatItem, "battery");
+    boat.immersionTimer = 0;
+    service.deployBait(targetX, targetY, "mix", boat, 0);
+    let returnStart = null, reversals = 0, previous = boat.avoidanceState, home = null;
+    for (let t = 16; t <= 30000; t += 16) {
+      service.updateBoats(16, water, (x, y) => map.hasCollisionAt(x, y), cell, null, metric);
+      if (returnStart === null && boat.state === "returning") returnStart = t;
+      if (boat.avoidanceState !== previous && boat.avoidanceState === "reversing") reversals += 1;
+      previous = boat.avoidanceState;
+      if (service.getBoats().length === 0) { home = t; break; }
+    }
+    const label = `drop at (${targetX}, ${targetY}) beside the obstacle`;
+    assert(service.getZones().length === 1, `${label}: dropped`);
+    assert(home !== null && home - returnStart < 9000, `${label}: home along the route (${home && (home - returnStart)} ms)`);
+    assert.equal(reversals, 0, `${label}: no ramming`);
+  }
 }
 
 run().then(() => {
