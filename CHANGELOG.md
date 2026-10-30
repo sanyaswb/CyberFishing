@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.24 - Startup without selector artwork
+
+- Spec 157 R11: the game starts without waiting for the inventory selector's artwork (section sprite, backpack, first keepnet stage, rod thumbnail); the classic inventory and keepnet buttons stand in until it loads right after the first frame (cold start on Fast 4G 8.4 → 3.6 s, 3G 40.8 → 14.2 s locally). The startup measurer names the last stage and page errors when a start never becomes ready. Game-cycle report unchanged.
+
 ## v0.49.23 - Startup report as a file
 
 - TK-168: DEV overlay «ЗАВАНТАЖЕННЯ» has «Завантажити JSON» next to «Копіювати звіт»: the same report saved as `cyber-fishing-startup-<version>-<date>_<time>.json`, with a saved/failed status line. Game-cycle report unchanged.
@@ -39,8 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery / AI: route points counted as reached within a share of the ground-plane cell, stretched ~3x vertically on far water, so side points beside an obstacle were skipped and the boat headed straight home into it; the reach is now 0.5 m (TK-161).
 - Delivery / AI: the boat turns on the spot when its aim is behind it, routes keep at least a cell off land and obstacles where the water allows (distance field), and a boat in a fine-mask notch first returns to free water. Game-cycle report unchanged.
-
-## v0.49.14 - Procedural bait boat wake
-
-- Delivery / Scene: a running boat leaves a procedural foam wake — puffs along both Kelvin arms (19.5°) that spread, grow and fade, smaller on far water — drawn as pooled sprites of one generated foam texture under the boat (2D fallback: translucent dots); the Spine `boats-wave--1` slot is off (spec 155).
-- Tuning lives in `CONFIG.ui.boat.wake` (DevTools → SPINE → «Кораблик»). Game-cycle report unchanged.

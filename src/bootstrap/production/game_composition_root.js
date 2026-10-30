@@ -177,6 +177,9 @@ export class GameCompositionRoot {
   #createDevTools;
   #createTimeDisplay;
   #sessionServices = null;
+  // Spec 157 R11: loads that wait until the game is ready (startDeferredAssetLoads), registered during create().
+  #deferredAssetLoads = [];
+  #deferredAssetLoadsStarted = false;
   // Opens the radio's editor once the inventory UI exists (spec 142: the HUD indicator's tap).
   #radioEditorOpener = null;
   #createRadioEffectTuning = null;
@@ -317,6 +320,14 @@ export class GameCompositionRoot {
 
   printStorageUsage() {
     this.#storageCache.printStorageUsage();
+  }
+
+  // Spec 157 R11: called by the page startup once the first frame is drawn; starts each registered load once.
+  // A load's failure is its owner's to report; the startup never waits for these loads.
+  startDeferredAssetLoads() {
+    if (this.#deferredAssetLoadsStarted) return;
+    this.#deferredAssetLoadsStarted = true;
+    for (const load of this.#deferredAssetLoads) load();
   }
 
   // Services of the running session that other screens share instead of composing their own (spec 084).
@@ -506,7 +517,7 @@ export class GameCompositionRoot {
       gameTimeClock, rodAnimation: rodAnimation.controller, boatAnimation: boatAnimation.controller,
       scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
-    await this.#composeInventoryUi({
+    this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
       physicsConfig, liveBait, imageAssets,
@@ -1116,7 +1127,7 @@ export class GameCompositionRoot {
   }
 
   // Inventory UI over the composed facade and item read-model adapters.
-  async #composeInventoryUi({
+  #composeInventoryUi({
     inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
     itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
     physicsConfig, liveBait, imageAssets,
@@ -1171,7 +1182,8 @@ export class GameCompositionRoot {
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
       equipmentSource: inventory }));
-    await selector.ready;
+    // The selector's artwork waits for the started game (spec 157 R11); its classic buttons stand in until then.
+    this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
     return {  };
   }
 

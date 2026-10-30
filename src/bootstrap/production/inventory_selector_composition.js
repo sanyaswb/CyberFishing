@@ -7,6 +7,9 @@ import { INVENTORY_SELECTOR_LABELS } from "../../game/presentation/inventory/inv
 import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_config.js";
 
+// Spec 157 R11 (owner, 2026-10-30): the selector's artwork (section sprite, backpack, first keepnet stage, rod
+// thumbnail) is not part of startup. Until loadArtwork() is called (after the game is ready) and the artwork has
+// loaded, the classic inventory and keepnet buttons stand in for the radial selector; a failed load keeps them.
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
   id = "inventory-selector-sections", onSelect = null }) {
@@ -24,9 +27,9 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   mountNode.appendChild(view.element);
   let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null, compactKey = null;
   const pick = (list, value) => list.includes(value) ? value : list[0];
-  let artworkKey = "", artworkRevision = 0;
+  let artworkKey = "", artworkRevision = 0, artworkRequested = false, ready = null;
   const syncEquipment = () => {
-    if (disposed) return;
+    if (disposed || !artworkRequested) return;
     const rod = equipmentSource?.getEquipped()?.rod;
     const thumbnail = rod?.skin?.thumbnail ? { ...rod.skin.thumbnail }
       : { src: rod?.iconUrl || rod?.imageUrl || rod?.src };
@@ -47,8 +50,8 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     const settings = config.ui?.inventorySelector;
     const requestedRadial = settings?.radialEnabled === true;
     const nextRadial = loadState === "ready" && requestedRadial;
-    // Pending artwork is not a request for classic mode. Only a real failure needs that fallback.
-    const nextClassicVisible = !requestedRadial || loadState === "failed";
+    // Until the artwork is ready the classic buttons stand in (spec 157 R11), and they stay after a failure.
+    const nextClassicVisible = !requestedRadial || loadState !== "ready";
     const nextSize = settings?.size ?? 1;
     const nextOpenSize = settings?.openSize ?? 3;
     // Compact toolbars: a corner selector puts the action column on the other side; a centred one follows the setting.
@@ -77,14 +80,24 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   documentRef.addEventListener("config-updated", sync);
   sync();
   const sources = [INVENTORY_SECTIONS.iconSprite, INVENTORY_SECTIONS.backpackImage, KEEPNET_ART_STAGES[0].imagePath];
-  const ready = imageAssets.preload(sources.map(src => ({ id: src, src }))).then(() => {
-    loadState = "ready"; sync(); return true;
-  }).catch(error => {
-    loadState = "failed"; sync();
-    if (!disposed) logger.warn("[InventorySelector] Artwork preload failed; retaining classic controls", error);
-    return false;
-  });
-  return { view, controller, ready,
+  // Starts the artwork loads once; resolves true when the radial selector can show, false after a failure.
+  const loadArtwork = () => {
+    if (ready) return ready;
+    artworkRequested = true;
+    syncEquipment();
+    ready = imageAssets.preload(sources.map(src => ({ id: src, src }))).then(() => {
+      if (!disposed) { loadState = "ready"; sync(); }
+      return true;
+    }).catch(error => {
+      if (!disposed) {
+        loadState = "failed"; sync();
+        logger.warn("[InventorySelector] Artwork preload failed; retaining classic controls", error);
+      }
+      return false;
+    });
+    return ready;
+  };
+  return { view, controller, loadArtwork,
     dispose() {
       if (disposed) return;
       disposed = true;

@@ -132,6 +132,14 @@ function serveSite(siteDir, certificate) {
   return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server)));
 }
 
+// Collects the page's uncaught errors and console errors for a start that never becomes ready.
+function watchPageErrors(page) {
+  page.startupErrors = [];
+  page.on("pageerror", (error) => page.startupErrors.push(String(error?.message ?? error)));
+  page.on("console", (message) => { if (message.type() === "error") page.startupErrors.push(message.text()); });
+  return page;
+}
+
 function launchOptions(browser) {
   return ["chrome", "msedge"].includes(browser) ? { channel: browser, headless: true } : { executablePath: browser, headless: true };
 }
@@ -143,7 +151,15 @@ async function measureLoad(context, page, { network, cold, url, reload }) {
   if (network) await client.send("Network.emulateNetworkConditions", { offline: false, ...network });
   if (reload) await page.reload({ waitUntil: "commit" });
   else await page.goto(url, { waitUntil: "commit" });
-  await page.waitForSelector("html[data-game-ready]", { state: "attached", timeout: READY_TIMEOUT_MS });
+  try {
+    await page.waitForSelector("html[data-game-ready]", { state: "attached", timeout: READY_TIMEOUT_MS });
+  } catch (error) {
+    // A start that never becomes ready: name the last stage it reached and the page's own errors.
+    const reached = await page.evaluate(() => performance.getEntriesByType("mark").map((mark) => mark.name)).catch(() => []);
+    const errors = (page.startupErrors ?? []).slice(-5);
+    throw new Error(`The game did not become ready in ${READY_TIMEOUT_MS} ms; marks: ${reached.join(", ") || "none"}; `
+      + `page errors: ${errors.join(" | ") || "none"}`, { cause: error });
+  }
   const timings = await page.evaluate(() => {
     const copy = ({ name, initiatorType, startTime, responseEnd, transferSize, encodedBodySize, decodedBodySize }) =>
       ({ name, initiatorType, startTime, responseEnd, transferSize, encodedBodySize, decodedBodySize });
@@ -184,14 +200,14 @@ async function main() {
     for (let run = 0; run < options.runs; run += 1) {
       const context = await browser.newContext(PHONE);
       await context.addInitScript(enlargeBuffer);
-      const page = await context.newPage();
+      const page = watchPageErrors(await context.newPage());
       cold.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: true, url, reload: false })));
       await context.close();
     }
     const warm = [];
     const context = await browser.newContext(PHONE);
     await context.addInitScript(enlargeBuffer);
-    const page = await context.newPage();
+    const page = watchPageErrors(await context.newPage());
     await measureLoad(context, page, { network, cold: false, url, reload: false });
     for (let run = 0; run < options.runs; run += 1) {
       warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true })));

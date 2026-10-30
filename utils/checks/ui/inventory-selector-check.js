@@ -412,15 +412,24 @@ async function checkComposition() {
       artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; });
     } }, logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
-  assert.equal(classic, false, "radial startup must never expose the classic backpack while artwork is pending");
-  assert.equal(keepnet, false, "the classic keepnet must also stay hidden during radial preload");
+  // Spec 157 R11: startup does not load the selector's artwork; the classic buttons stand in until it is ready.
+  assert.equal(classic, true, "radial startup shows the classic backpack until the artwork is ready (spec 157 R11)");
+  assert.equal(keepnet, true, "the classic keepnet also stands in before the artwork");
   assert(!binding.view.enabled, "the radial control waits for its artwork");
+  assert.equal(finishSelector, undefined, "composition starts no artwork load");
+  equipped.rod = { skin: { thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp" } } };
+  equipmentListener();
+  assert.equal(artworkLoads, 0, "an equipment change before loadArtwork loads no rod art either");
+  equipped.rod = null;
+  const loading = binding.loadArtwork();
+  assert.equal(binding.loadArtwork(), loading, "the artwork loads once");
+  assert.equal(typeof finishSelector, "function", "loadArtwork starts the selector artwork");
   config.ui.inventorySelector.radialEnabled = false; s.doc.fire("config-updated");
   assert(classic && keepnet && !binding.view.enabled, "classic mode remains usable while preload is pending");
   config.ui.inventorySelector.radialEnabled = true; s.doc.fire("config-updated");
-  assert(!classic && !keepnet && !binding.view.enabled, "returning to radial hides classic controls before readiness");
+  assert(classic && keepnet && !binding.view.enabled, "returning to radial keeps the classic buttons until readiness");
   finishSelector();
-  await binding.ready;
+  assert.equal(await loading, true);
   assert(!classic && !keepnet && binding.view.enabled);
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
@@ -526,13 +535,14 @@ async function checkPreloadOutcomes() {
       imageAssets: { preload: () => new Promise((resolve, reject) => { finish = resolve; fail = reject; }) },
       logger: { warn: () => { warnings++; } },
     });
-    assert.equal(classic, !options.radial); assert.equal(keepnet, classic);
+    assert.equal(classic, true, "classic buttons stand in before the artwork (spec 157 R11)"); assert.equal(keepnet, classic);
     assert(!binding.view.enabled);
+    const loading = binding.loadArtwork();
     if (options.disposeEarly) binding.dispose();
     const beforeCompletion = visibilityWrites;
     if (options.fail) fail(new Error("deterministic preload failure"));
     else finish();
-    assert.equal(await binding.ready, !options.fail);
+    assert.equal(await loading, !options.fail);
     if (options.disposeEarly) {
       assert.equal(visibilityWrites, beforeCompletion, "late preload completion cannot alter disposed controls");
       assert.equal(warnings, 0);

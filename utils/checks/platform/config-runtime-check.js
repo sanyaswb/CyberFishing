@@ -381,7 +381,7 @@ async function checkNativeProductionStartup() {
     let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, surfaces = 0, surfaceDisposals = 0, toolbars = 0, toolbarDisposals = 0;
     const toolbarElement = {};
     const tackleMountNode = {}, depthMountNode = {}, selectorMountNode = {};
-    const marks = [], frames = [], rootAttributes = {};
+    const marks = [], frames = [], rootAttributes = {}, deferredStarts = [];
     const windowTarget = { performance: { mark(name) { marks.push(name); } }, requestAnimationFrame(callback) { frames.push(callback); },
       addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
@@ -445,6 +445,7 @@ async function checkNativeProductionStartup() {
         return buildReady;
       }
       printStorageUsage() { storage++; }
+      startDeferredAssetLoads() { deferredStarts.push(marks.length); }
     }
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
@@ -460,7 +461,10 @@ async function checkNativeProductionStartup() {
     const stageMarks = ["entry", "config", "composition", "loop"].map(stage => "startup:" + stage);
     assert.deepEqual(marks, stageMarks, "spec 157: stage marks in order up to the started loop");
     assert.equal(rootAttributes["data-game-ready"], undefined, "ready waits for the loop's first frame");
-    assert.equal(frames.length, 1);frames[0]();frames[0]();
+    assert.deepEqual(deferredStarts, [], "deferred loads wait for the ready frame (spec 157 R11)");
+    assert.equal(frames.length, 1);frames[0]();
+    assert.deepEqual(deferredStarts, [5], "deferred loads start right after the ready mark");
+    frames[0]();
     assert.deepEqual(marks, [...stageMarks, "startup:ready"], "the frame after the loop's first frame marks ready once");
     assert.equal(rootAttributes["data-game-ready"], "", "ready sets the measurer's signal");
     assert.equal(composition.createProductionConfigContext(), context);assert.equal(composition.createProductionConfigContext(), context);
@@ -709,7 +713,7 @@ async function checkNativeDevelopmentLifecycle() {
   const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
   const app={start(){counts.start++;return true;},stop(){counts.stop++;},dispose(){counts.gameDispose++;}};
   let rootPorts;
-  class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getSessionServices(){return sessionServices;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
+  class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getSessionServices(){return sessionServices;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){}startDeferredAssetLoads(){} }
   const resource=key=>({dispose(){counts[key]++;}});
   const frames = [], timeResumes = [];
   const sessionServices = { liveBait: {}, gameTime: {} };

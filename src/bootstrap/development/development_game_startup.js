@@ -258,7 +258,7 @@ async function startGame() {
     if (disposed) { game.dispose(); return game; }
     const started = await game.start();
     if (disposed) return game;
-    if (started) markStartupReady({ marks: startupMarks, windowTarget });
+    if (started) markStartupReady({ marks: startupMarks, windowTarget, onReady: () => compositionRoot.startDeferredAssetLoads() });
     const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
     watchdog = memoryConfig.enabled === true ? new MemoryLeakWatchdog({intervalMs: memoryConfig.intervalMs,
       maxSamples: memoryConfig.maxSamples, minTrendSamples: memoryConfig.minTrendSamples, thresholds: memoryConfig.thresholds,

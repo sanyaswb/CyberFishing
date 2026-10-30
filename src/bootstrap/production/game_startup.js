@@ -87,7 +87,7 @@ async function startGame() {
     new ConsoleLogger().error(new Error("[Bootstrap] CyberFishing game loop did not start."));
     return game;
   }
-  markStartupReady({ marks: startupMarks, windowTarget });
+  markStartupReady({ marks: startupMarks, windowTarget, onReady: () => compositionRoot.startDeferredAssetLoads() });
   return game;
   } catch (error) { cleanup(); throw error; }
 }
