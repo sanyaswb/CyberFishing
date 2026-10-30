@@ -9,8 +9,6 @@ export class ChumService {
   #boats = [];
   #groundPlane = new BaitBoatGroundPlaneScope();
   #storageKey;
-  #locationMemoryKey;
-  #memoryGrid = {};
   #power;
   #powerRate = new BoatPowerRatePolicy();
   #getWaterMetric;
@@ -37,7 +35,6 @@ export class ChumService {
         ? services.onBoatReturned
         : null;
     this.#storageKey = `chum_active_${locationId}`;
-    this.#locationMemoryKey = `chum_memory_${locationId}`;
 
 
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
@@ -91,8 +88,6 @@ export class ChumService {
         ),
       );
     }
-
-    this.#memoryGrid = this.#cache.get(this.#locationMemoryKey, {});
   }
 
   saveToStorage() {
@@ -113,7 +108,6 @@ export class ChumService {
     }
 
     this.#cache.set(this.#storageKey, zonesToSave);
-    this.#cache.set(this.#locationMemoryKey, this.#memoryGrid);
   }
 
   deployBait(targetX, targetY, baitId, activeBoat = null) {
@@ -152,16 +146,8 @@ export class ChumService {
       activeBoat.setTarget(targetX, targetY, zoneId);
     }
 
-    this.#addMemory(targetX, targetY);
     this.saveToStorage();
     return newZone;
-  }
-
-  #addMemory(x, y) {
-    const gridX = Math.floor(x / 100) * 100;
-    const gridY = Math.floor(y / 100) * 100;
-    const key = `${gridX}_${gridY}`;
-    this.#memoryGrid[key] = (this.#memoryGrid[key] || 0) + 0.05;
   }
 
   removeBoat(boat) {

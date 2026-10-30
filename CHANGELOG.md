@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.6 - Unused chum memory grid removed
+
+- Chum: `ChumService` no longer writes or saves the per-location chum memory grid (`chum_memory_<location>`); nothing read it (TK-155). Game-cycle report unchanged.
+
 ## v0.49.5 - Bamboo bread bait stacks (10, 25, 50 pcs), WebP artwork, and DEV free shop entries
 
 - Bait / Items: added discrete bamboo bread stack catalog items (`bread_10`, `bread_25`, `bread_50`) with WebP artwork (`bread--10.webp`, `bread--25.webp`, `bread--50.webp`), pack sizes (10, 25, 50 pcs), nominal grant quantities, and natural bait progression profiles (TK-154).
@@ -50,9 +54,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Delivery / Animation: fixed runtime boat creation in `BaitBoat` to preserve top-level `skin` and `emoji` from equipped `delivery` item alongside `effectiveStats`, ensuring `BoatChumRenderFrameBuilder` acquires animation descriptors (Spec 150 / TK-146).
 - Animation / Spine: aligned `BoatAnimationController.#onBundle` with canonical `SpineRuntimeProvider` capability contract (`capability.available`, `createScene(bundle, surface)`), preventing premature fallback to "runtime-not-ready" (TK-146).
 - Presentation / Scene: safely unwrapped `boatAnimation` in `game_render_composition.js` for robust frame builder wiring (TK-146).
-
-## v0.48.50 - Bait boat size and initial coordinates DevTools tuning and live water updates
-
-- DevTools / Spine: added `SpineBoatDevSection` in DevTools under the "SPINE" category with live config tuning for `CONFIG.ui.boat` (`displayScale`, `x`, `xOffset`, `yOffset`), Spine switcher, clip and bone editors, and skeleton JSON export (Spec 150 / TK-145).
-- Delivery / Chum: wired `CONFIG.ui.boat` display scale into `BoatChumRenderFrameBuilder` and initial coordinates/offsets into `ChumController`, enabling real-time visual repositioning of parked idle boats at shore when sliders are adjusted (TK-145).
-- Config / Metadata: added `ui.boat` schema validation to `ConfigSchemaValidator` and localized labels for DevTools parameter inspection (TK-145).
