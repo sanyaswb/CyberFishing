@@ -1,0 +1,58 @@
+/* Chum control state appearance. */
+
+.chum-control--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chum-control--empty {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chum-control--aiming {
+  border-color: #ff8888;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--moving {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.chum-control--ready {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--idle {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--boat-empty {
+  border-color: var(--ui-danger, #ff4444);
+  background: rgb(117, 23, 6);
+  opacity: 1;
+  cursor: pointer;
+}
+
+.ui-surface--desktop-hover .chum-control--boat-empty:hover:not(:disabled) {
+  border-color: #ff6666;
+  background: rgb(140, 28, 8);
+}
+
+.ui-surface:not(.ui-surface--desktop-hover) .chum-control--boat-empty:active:not(:disabled),
+.ui-surface--desktop-hover .chum-control--boat-empty:active:not(:disabled) {
+  border-color: #ff8888;
+  background: rgb(95, 18, 4);
+}
+
+.chum-control__image {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
