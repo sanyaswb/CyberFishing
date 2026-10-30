@@ -1011,6 +1011,8 @@ export class GameCompositionRoot {
         configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
+        gameTime: gameTimeClock,
+        legacyTimeScale: this.#config.debug?.timeScale,
         devicePower,
         onBoatReturned: (context) =>
           inventory.handleBoatReturned?.(context),

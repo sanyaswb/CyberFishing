@@ -16,6 +16,8 @@ export class ChumService {
   #onBoatReturned;
   #rng;
   #now;
+  #gameTime;
+  #legacyTimeScale;
   #cache;
   #configEvents;
 
@@ -30,6 +32,12 @@ export class ChumService {
       throw new TypeError("ChumService requires devicePower");
     }
     this.#power = services.devicePower;
+    // Spec 152: spots live by monotonic game time; legacyTimeScale converts saves from before it.
+    if (typeof services.gameTime?.getGameMs !== "function") {
+      throw new TypeError("ChumService requires gameTime");
+    }
+    this.#gameTime = services.gameTime;
+    this.#legacyTimeScale = Number(services.legacyTimeScale) || 1;
     this.#onBoatReturned =
       typeof services.onBoatReturned === "function"
         ? services.onBoatReturned
@@ -68,25 +76,25 @@ export class ChumService {
     return boat;
   }
 
+  // Saved spots (spec 152). Records from before spec 152 carry deployRealTimeMs: a delivered zone becomes a one-drop
+  // spot of the same age in game time (real age x the legacy timeScale), an undelivered one is dropped.
   loadFromStorage() {
     const savedZones = this.#cache.get(this.#storageKey, []);
+    const gameNow = this.#gameTime.getGameMs();
 
     this.#zones.length = 0;
     for (let i = 0; i < savedZones.length; i++) {
       const z = savedZones[i];
-      const baitConfig = this.#chumConfig.baits[z.baitId];
+      const baitConfig = this.#spotConfig(z.baitId);
       if (!baitConfig) continue;
-
-      this.#zones.push(
-        new ChumZone(
-          z.id,
-          z.x,
-          z.y,
-          baitConfig,
-          z.deployRealTimeMs,
-          z.isDelivered,
-        ),
-      );
+      if (z.deployRealTimeMs !== undefined) {
+        if (!z.isDelivered) continue;
+        const meanDropGameMs = gameNow - Math.max(0, this.#now() - z.deployRealTimeMs) * this.#legacyTimeScale;
+        this.#zones.push(new ChumZone({ id: z.id, x: z.x, y: z.y, baitConfig, meanDropGameMs }));
+        continue;
+      }
+      this.#zones.push(new ChumZone({ id: z.id, x: z.x, y: z.y, baitConfig, drops: z.drops,
+        meanDropGameMs: z.meanDropGameMs, feedLoad: z.feedLoad, feedGameMs: z.feedGameMs }));
     }
   }
 
@@ -102,52 +110,54 @@ export class ChumService {
         x: z.x,
         y: z.y,
         baitId: z.baitId,
-        deployRealTimeMs: z.deployRealTimeMs,
-        isDelivered: z.isDelivered,
+        drops: z.drops,
+        meanDropGameMs: z.meanDropGameMs,
+        feedLoad: z.feedLoad,
+        feedGameMs: z.feedGameMs,
       });
     }
 
     this.#cache.set(this.#storageKey, zonesToSave);
   }
 
+  // A hand cast drops at once; a boat carries the chum to the target and drops it when its bunker opens (spec 152 D2).
   deployBait(targetX, targetY, baitId, activeBoat = null) {
-    const baitConfig = this.#chumConfig.baits[baitId];
-    if (!baitConfig) return null;
-
-    const now = this.#now();
-    const randomIdPart =
-      typeof this.#rng.int === "function"
-        ? this.#rng.int(0, 999)
-        : Math.floor(this.#rng.next() * 1000);
-    const zoneId = `zone_${Math.floor(now)}_${randomIdPart}`;
-    const isDeliveredNow = activeBoat === null;
-
-    const newZone = new ChumZone(
-      zoneId,
-      targetX,
-      targetY,
-      baitConfig,
-      now,
-      isDeliveredNow,
-    );
-
-    const waterMetric = this.#getWaterMetric();
-    const overlappingIndex = this.#zones.findIndex(
-      (z) => z.isDelivered && z.checkOverlap(newZone, waterMetric),
-    );
-
-    if (overlappingIndex !== -1) {
-      this.#zones[overlappingIndex] = newZone;
-    } else {
-      this.#zones.push(newZone);
-    }
-
+    if (!this.#spotConfig(baitId)) return null;
     if (activeBoat) {
-      activeBoat.setTarget(targetX, targetY, zoneId);
+      activeBoat.setTarget(targetX, targetY, baitId);
+      return null;
     }
+    return this.dropChum(targetX, targetY, baitId);
+  }
 
+  // The chum reaches the water: it joins the same chum's spot here or starts a new one (spec 152 D3/D5).
+  dropChum(x, y, baitId) {
+    const baitConfig = this.#spotConfig(baitId);
+    if (!baitConfig) return null;
+    const gameMs = this.#gameTime.getGameMs();
+    const waterMetric = this.#getWaterMetric();
+    let spot = this.#zones.find((zone) => !zone.isExpired && zone.isSameSpot(baitId, x, y, waterMetric));
+    if (spot) {
+      spot.addDrop(x, y, gameMs);
+    } else {
+      const randomIdPart =
+        typeof this.#rng.int === "function"
+          ? this.#rng.int(0, 999)
+          : Math.floor(this.#rng.next() * 1000);
+      spot = new ChumZone({ id: `zone_${Math.floor(this.#now())}_${randomIdPart}`, x, y, baitConfig,
+        meanDropGameMs: gameMs });
+      this.#zones.push(spot);
+    }
+    spot.currentBonus = spot.updateState(gameMs);
     this.saveToStorage();
-    return newZone;
+    return spot;
+  }
+
+  // A chum's spot parameters are its effective stats (radius, bonus curve, targetFishes, feed), as the catalog projects
+  // them (spec 152 B4: reading them from the definition's top level gave no bonus and no expiry).
+  #spotConfig(baitId) {
+    const stats = this.#chumConfig.baits[baitId]?.effectiveStats;
+    return stats ? { ...stats, id: baitId } : null;
   }
 
   removeBoat(boat) {
@@ -157,11 +167,12 @@ export class ChumService {
     }
   }
 
-  update(realTimeNow, timeScale) {
+  update() {
+    const gameMs = this.#gameTime.getGameMs();
     let needsSave = false;
     for (let i = this.#zones.length - 1; i >= 0; i--) {
       const zone = this.#zones[i];
-      zone.currentBonus = zone.updateState(realTimeNow, timeScale);
+      zone.currentBonus = zone.updateState(gameMs);
       if (zone.isExpired) {
         this.#zones.splice(i, 1);
         needsSave = true;
@@ -184,18 +195,10 @@ export class ChumService {
       }
       this.#consumePower(boat, dt);
 
-      if (boat.isBaitDropped && boat.zoneId) {
-        const zone = this.#zones.find((z) => z.id === boat.zoneId);
-        if (zone) {
-          zone.x = boat.pos.x;
-          zone.y = boat.pos.y;
-          zone.isDelivered = true;
-          zone.deployRealTimeMs = this.#now();
-          needsSave = true;
-        }
-
+      if (boat.isBaitDropped && boat.dropBaitId) {
+        this.dropChum(boat.pos.x, boat.pos.y, boat.dropBaitId);
         boat.isBaitDropped = false;
-        boat.zoneId = null;
+        boat.dropBaitId = null;
       }
 
       if (boat.isFinished) {
@@ -231,30 +234,21 @@ export class ChumService {
     }
   }
 
+  // The best spot covering the point; an overfed spot gives a bonus below 1 (spec 152 D5).
   getChumDataAt(floatX, floatY) {
-    let bestBonus = 1.0;
+    let bestBonus = null;
     let bestTargets = [];
     const waterMetric = this.#getWaterMetric();
 
     for (const zone of this.#zones) {
-      if (!zone.isDelivered || zone.isExpired) continue;
-
-      const zoneMult = zone.getMultiplierAt(
-        floatX,
-        floatY,
-        null,
-        waterMetric,
-      );
-
-      if (zoneMult > bestBonus) {
-        bestBonus = zoneMult;
-        if (zone.baitConfig && Array.isArray(zone.baitConfig.targetFishes)) {
-          bestTargets = zone.baitConfig.targetFishes;
-        }
+      if (zone.isExpired || !zone.covers(floatX, floatY, waterMetric)) continue;
+      if (bestBonus === null || zone.currentBonus > bestBonus) {
+        bestBonus = zone.currentBonus;
+        bestTargets = Array.isArray(zone.baitConfig.targetFishes) ? zone.baitConfig.targetFishes : [];
       }
     }
 
-    return { bonus: bestBonus, targets: bestTargets };
+    return { bonus: bestBonus ?? 1.0, targets: bestTargets };
   }
 
   getZones() {

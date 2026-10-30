@@ -18,8 +18,9 @@ export class BaitBoat {
   #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
   #rayPoint = { x: 0, y: 0 };
 
+  // dropBaitId: the chum the boat carries to its current target (spec 152: the spot appears when the bunker opens).
   // batteryInstanceId: the battery in the boat's slot at launch (spec 143); ChumService consumes it.
-  constructor(startX, startY, config, zoneId = null, batteryInstanceId = null) {
+  constructor(startX, startY, config, dropBaitId = null, batteryInstanceId = null) {
     this.startPos = new Vector2(startX, startY);
     this.pos = new Vector2(startX, startY);
     this.target = null;
@@ -38,7 +39,7 @@ export class BaitBoat {
       statsConfig.statsByLevel?.[1] ||
       statsConfig.statsByLevel ||
       {};
-    this.zoneId = zoneId;
+    this.dropBaitId = dropBaitId;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;
     this.batteryInstanceId = batteryInstanceId;
@@ -97,18 +98,18 @@ export class BaitBoat {
     }
   }
 
-  setTarget(targetX, targetY, zoneId = null, isReturn = false) {
+  setTarget(targetX, targetY, dropBaitId = null, isReturn = false) {
     if (this.state === "drifting") return;
 
     const isManual = this.config.manualControl;
 
     if (!isManual && !isReturn && this.state === "deploying") {
-      this.waypoints.push({ x: targetX, y: targetY, zoneId: zoneId });
+      this.waypoints.push({ x: targetX, y: targetY, dropBaitId });
       return;
     }
 
     this.target = new Vector2(targetX, targetY);
-    if (zoneId !== null) this.zoneId = zoneId;
+    if (dropBaitId !== null) this.dropBaitId = dropBaitId;
     this.state = isReturn ? "returning" : "deploying";
     this.animationState = "moving_start";
     this.moveStartTimer = 1.333;
@@ -498,7 +499,7 @@ export class BaitBoat {
     if (isCloseEnough || isStalled || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          if (this.zoneId && !this.isBaitDropped) {
+          if (this.dropBaitId && !this.isBaitDropped) {
             if (this.animationState !== "opening") {
               this.animationState = "opening";
               let dropNum = 1;
@@ -537,7 +538,7 @@ export class BaitBoat {
             this.#processNextWaypoint();
             return true;
           } else {
-            this.zoneId = null;
+            this.dropBaitId = null;
             this.state = "returning";
             this.animationState = "moving_start";
             this.moveStartTimer = 1.333;
@@ -571,7 +572,7 @@ export class BaitBoat {
       const wp = this.waypoints.splice(closestIdx, 1)[0];
       this.target.x = wp.x;
       this.target.y = wp.y;
-      this.zoneId = wp.zoneId;
+      this.dropBaitId = wp.dropBaitId;
       this.animationState = "moving_start";
       this.moveStartTimer = 1.333;
     } else {

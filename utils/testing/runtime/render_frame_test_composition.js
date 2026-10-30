@@ -34,7 +34,7 @@ function checkRenderFrameComposition() {
   const poseSignals={castSerial:1,angleDeg:10,scaleY:1,isBiteTilt:false,load:1,lyingSide:1,restDraft:0,windDeg:0,lineX:0,lineY:0,waterX:0,waterY:0};
   const float={getPosition:()=>({x:250,y:300}),getVisualState:()=>({color:'#f00'}),getPoseSignals:()=>poseSignals,isHooked:()=>false};
   const holdState={hasHold:true,max:3,current:1,isActive:true,restoring:[500],restoreMaxTime:1000};
-  const chum={getZones:()=>[{isDelivered:true,isExpired:false,x:100,y:100,baseRadius:40,currentBonus:0.5,baitConfig:{minBonus:0,maxBonus:1}}],getBoats:()=>[{pos:{x:200,y:200},angle:0,powerRatio:0.5,stats:{},config:{emoji:'boat'},state:'deploying',target:{x:300,y:300},waypoints:[{x:350,y:350}],sensorRays:[{startX:200,startY:200,endX:300,endY:300,isBlocked:false}]}]};
+  const chum={getZones:()=>[{isExpired:false,x:100,y:100,baseRadius:40,currentBonus:0.5,baitConfig:{minBonus:0,maxBonus:1}}],getBoats:()=>[{pos:{x:200,y:200},angle:0,powerRatio:0.5,stats:{},config:{emoji:'boat'},state:'deploying',target:{x:300,y:300},waypoints:[{x:350,y:350}],sensorRays:[{startX:200,startY:200,endX:300,endY:300,isBlocked:false}]}]};
   const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:600,topY:0});
   const boatBuilder=new c.BoatChumRenderFrameBuilder({chum,projector,config,getWaterMetric:()=>waterMetric});
   const worldBuilder=new c.WorldRenderFrameBuilder({map:{getBackgroundRenderData:()=>background},projector,config,canvasMetrics:metrics,boatChumBuilder:boatBuilder,debugBuilder:{buildInto(){}},locationId:'test'});

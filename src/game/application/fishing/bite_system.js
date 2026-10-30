@@ -320,7 +320,8 @@ export class BiteSystem {
     chance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
     chance *= envData.zoneBonus || 1.0;
 
-    if (envData.chumBonus > 1.0 && envData.chumTargets?.includes(fish.id)) {
+    if (Number.isFinite(envData.chumBonus) && envData.chumBonus !== 1.0 &&
+      envData.chumTargets?.includes(fish.id)) {
       chance *= envData.chumBonus;
     }
 
@@ -588,7 +589,8 @@ export class BiteSystem {
         (envData.isRaining ? (fish.weatherMultipliers?.rain ?? 1.0) : 1.0) *
         (envData.isFoggy ? (fish.weatherMultipliers?.fog ?? 1.0) : 1.0)
       ).toFixed(2),
-      chum: (envData.chumBonus > 1.0 && envData.chumTargets?.includes(fish.id)
+      chum: (Number.isFinite(envData.chumBonus) && envData.chumBonus !== 1.0 &&
+      envData.chumTargets?.includes(fish.id)
         ? envData.chumBonus
         : 1.0
       ).toFixed(2),

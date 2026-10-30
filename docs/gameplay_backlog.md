@@ -27,14 +27,15 @@ Expected: the window is only the camera; world positions and physics do not depe
 Actual: CONFIG.locations.lockZoneXToScreen takes the physics X bounds from the visible screen (GameWorld.getDynamicBounds), and WaterEntity clamps into them every frame; the fight's side share divides by half the canvas width.
 Notes: [spec 153](../specs/153-viewport-independent-world/spec.md).
 
-### G-125 Chum zones do not follow game time and undelivered zones never expire (P2, open)
+### G-125 Chum zones do not follow game time and undelivered zones never expire (P2, done in v0.49.8; owner acceptance pending)
 Found: 2026-10-30, owner + code review of the bait boat, v0.49.7.
 Reproduce: launch the boat, let the battery run out before the drop (or reload) — the zone stays in chum_active_<location>
 forever; with DEV time acceleration the clock runs faster but zone bonuses do not.
 Expected: zones live and expire by game time; an active zone stays until a new one is actually dropped over it.
 Actual: zone age = real time x CONFIG.debug.timeScale; undelivered zones are saved forever; a boat's not yet delivered zone
 replaces an overlapping active zone at click time.
-Notes: [spec 152](../specs/152-chum-zone-lifecycle/spec.md); ChumZone, ChumService, GameTimeClock.
+Notes: [spec 152](../specs/152-chum-zone-lifecycle/spec.md); ChumZone, ChumService, GameTimeClock. Also found: production
+zones read their stats from the wrong level, so they gave no bonus and never expired (B4), fixed with it.
 
 ### G-124 Drained bait boat cannot be recovered (P2, open)
 Found: 2026-10-30, owner, v0.49.7.

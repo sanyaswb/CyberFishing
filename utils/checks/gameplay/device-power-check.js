@@ -163,7 +163,8 @@ const boatInventory = batteryInventory([
 ]);
 const boatPower = new DevicePowerService({ batteries: boatInventory.port, config: () => config });
 assert.throws(() => new ChumService("power-test", { baits: {} }, () => null, { cache }), /requires devicePower/u);
-const chum = new ChumService("power-test", { baits: {} }, () => null, { cache, devicePower: boatPower });
+const chum = new ChumService("power-test", { baits: {} }, () => null, { cache, devicePower: boatPower,
+  gameTime: { getGameMs: () => 0 } });
 const boat = chum.spawnIdleBoat(500, 500, { instanceId: "boat-root", effectiveStats: { ...boatStats, upgradeLevel: 1,
   manualControl: true, sections: 1 } }, "boat-battery");
 chum.updateBoats(1000, () => ({}), () => null, 10, null);

@@ -68,7 +68,7 @@ function checkFlatLakeEquivalence(perspective) {
     farthest = Math.max(farthest, perspective.metersFromShore(onPerspective.pos.y));
     if (onPerspective.state === "returning") sawReturn = true;
     for (const boat of [onPerspective, onFlat]) {
-      if (boat.isBaitDropped && boat.zoneId) Object.assign(boat, { isBaitDropped: false, zoneId: null }); // as ChumService
+      if (boat.isBaitDropped && boat.dropBaitId) Object.assign(boat, { isBaitDropped: false, dropBaitId: null }); // as ChumService
     }
     const metresPerSecond = Math.hypot(plane.x - before.x, plane.y - before.y) / 50 / 0.016;
     const metres = perspective.metersFromShore(onPerspective.pos.y);

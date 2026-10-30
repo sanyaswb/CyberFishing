@@ -80,7 +80,7 @@ vm.runInContext(
     },
     {},
     { cache: LocalStorageCache, configEvents: document, onBoatReturned: (event) => boatReturnEvents.push(event),
-      devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } },
+      gameTime: { getGameMs: () => 0 }, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } },
   );
   const tripBoat = chumManager.spawnIdleBoat(0, 0, {
     instanceId: "boat-trip-root",
@@ -277,16 +277,17 @@ vm.runInContext(
     totalBonusTimeMs: 4000, minBonusDurationHours: 0.001, maxBonus: 2, minBonus: 1.2 };
   // Zones are created by their owner (ChumZone has no global of its own once migrated).
   const flatProjector = new WaterMetric({ pixelsPerMeter: 50, shoreY: 600, topY: 0 });
-  const zoneManager = new ChumService("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
-    level: 1, statsByLevel: { 1: {} } } } }, () => flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
-    now: () => 0, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } });
+  // The catalog projection keeps a chum's stats in effectiveStats (spec 152).
+  const zoneManager = new ChumService("zone-probe", { baits: { probe_mix: { id: "probe_mix", effectiveStats: zoneConfig } },
+    deliveryMethods: { boat: { level: 1, statsByLevel: { 1: {} } } } }, () => flatProjector, { cache: LocalStorageCache,
+    rng: { next: () => 0.5 }, now: () => 0, gameTime: { getGameMs: () => 0 }, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } });
   zoneManager.deployBait(50, 50, "probe_mix");
   zoneManager.deployBait(400, 50, "probe_mix");
   const [zone, other] = zoneManager.getZones();
   const bonuses = [];
-  for (let step = 0; step <= 14; step++) bonuses.push(zone.updateState(step * 600, 1));
+  for (let step = 0; step <= 14; step++) bonuses.push(zone.updateState(step * 600));
   assertIdentity(bonuses[0] === 1 && bonuses[2] === 2 && bonuses[10] === 1.2 && bonuses[14] === 0 && zone.isExpired &&
-    other.getMultiplierAt(400, 50, "carp", flatProjector) >= 1 && zone.checkOverlap(other, flatProjector) === false,
+    other.getMultiplierAt(400, 50, "carp", flatProjector) >= 1 && zone.isSameSpot("probe_mix", other.x, other.y, flatProjector) === false,
     "chum zone bonus ramps, peaks, decays and expires");
   `,
   context,

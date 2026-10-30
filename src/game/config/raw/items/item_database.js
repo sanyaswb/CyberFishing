@@ -1146,6 +1146,9 @@ export const ITEM_DB = {
         totalBonusTimeMs: 14400000,
         safeRecastWindowMs: 300000,
         minBonusDurationHours: 24,
+        // Spec 152: each drop adds 1 unit of feed, eaten at eatenPerHour (game hours); above comfortLoad the bonus falls
+        // linearly to overfedMultiplier at maxLoad (overfed fish bite worse).
+        feed: { eatenPerHour: 0.25, comfortLoad: 1.5, maxLoad: 4, overfedMultiplier: 0.8 },
       },
     },
   },

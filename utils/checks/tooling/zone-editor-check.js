@@ -1781,15 +1781,15 @@ controlUI.dispose();
   assert(canvasOps.includes("closePath"), "the Canvas fallback draws the same polygon");
   // TK-088: the game's own chum zones on the location on screen are listed first and edited like test zones.
   {
-    const gameZone = { x: 300, y: 300, baseRadius: 100, isDelivered: true, isExpired: false };
-    const hidden = [{ x: 0, y: 0, baseRadius: 50, isDelivered: false, isExpired: false }, { x: 0, y: 0, baseRadius: 50, isDelivered: true, isExpired: true }];
+    const gameZone = { x: 300, y: 300, baseRadius: 100, isExpired: false };
+    const hidden = [{ x: 0, y: 0, baseRadius: 50, isExpired: true }];
     let saves = 0;
     const withGame = new CastableDependentZones({ state: st, config: cfg, readings, projector: identity, getWaterMetric: () => flat,
       map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 },
       writeConfig() {}, getChumZones: () => [gameZone, ...hidden], saveChumZones: () => { saves++; } });
     const spots = withGame.chumZones;
     withGame.addChumZone();
-    assert.equal(spots.list("lake").length, 2, "the delivered game zone and the test zone; undelivered and expired ones are not listed");
+    assert.equal(spots.list("lake").length, 2, "the game zone and the test zone; expired ones are not listed");
     assert(spots.isGameZone("lake", 0) && !spots.isGameZone("lake", 1), "the game's zone comes first");
     assert.equal(spots.selected, 1, "a new test zone is selected after the game's zones");
     assert.equal(spots.list("pond").length, 0, "another location has none of the game's zones on screen");

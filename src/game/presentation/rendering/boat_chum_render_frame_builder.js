@@ -54,13 +54,14 @@ export class BoatChumRenderFrameBuilder {
     const metric = this.#getWaterMetric();
     for (let index = 0; index < zones.length; index += 1) {
       const source = zones[index];
-      if (!source.isDelivered || source.isExpired) continue;
+      if (source.isExpired) continue;
       const bait = source.baitConfig;
       let opacity = 1;
       if (source.currentBonus < bait.maxBonus) {
+        // An overfed spot (bonus below minBonus, spec 152) stays at the faintest opacity.
         opacity =
           0.3 +
-          (0.7 * (source.currentBonus - bait.minBonus)) /
+          (0.7 * Math.max(0, source.currentBonus - bait.minBonus)) /
             Math.max(0.01, bait.maxBonus - bait.minBonus);
       }
       const record = target.chumZones.acquire();

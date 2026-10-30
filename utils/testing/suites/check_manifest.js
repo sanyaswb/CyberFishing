@@ -321,6 +321,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "chum-spot",
+    title: "Chum spots by game time: merge, overfeeding, boat drop, migration (spec 152)",
+    file: "utils/checks/gameplay/chum-spot-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-spine-animation",
     title: "Bait boat Spine animation states, clips, night lights and doors (spec 150)",
     file: "utils/checks/gameplay/bait-boat-spine-animation-check.js",

@@ -13,6 +13,10 @@ export class GameTimeLocalStore {
       if (value?.version !== 1 || !Number.isFinite(value.anchorMs) ||
         !Number.isFinite(value.anchorHours) || value.anchorHours < 0 || value.anchorHours >= 24 ||
         !Number.isFinite(value.timeScale) || value.timeScale <= 0) return null;
+      // Spec 152: monotonic game time; saves without it derive it from the hour (GameTimeClock).
+      if (value.anchorGameMs !== undefined && !(Number.isFinite(value.anchorGameMs) && value.anchorGameMs >= 0)) {
+        delete value.anchorGameMs;
+      }
       return value;
     } catch { return null; }
   }

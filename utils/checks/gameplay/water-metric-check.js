@@ -94,29 +94,33 @@ function checkGroundChumPersistence() {
   const cacheData = new Map();
   const cache = { get: (key, fallback) => cacheData.has(key) ? JSON.parse(cacheData.get(key)) : fallback,
     set: (key, value) => cacheData.set(key, JSON.stringify(value)) };
-  const config = { baits: { mix: { id: "mix", radius: 50, targetFishes: ["carp"], rampUpTimeMs: 1000,
-    peakDurationMs: 1000, totalBonusTimeMs: 4000, minBonusDurationHours: .001, maxBonus: 2, minBonus: 1.2 } } };
-  let now = 0;
-  const services = { cache, now: () => now, rng: { next: () => .5 }, devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } };
+  const stats = { radius: 50, targetFishes: ["carp"], rampUpTimeMs: 1000,
+    peakDurationMs: 1000, totalBonusTimeMs: 4000, minBonusDurationHours: .001, maxBonus: 2, minBonus: 1.2 };
+  // Production shape: the catalog projection keeps a chum's stats in effectiveStats (spec 152).
+  const config = { baits: { mix: { id: "mix", gameplayStats: stats, effectiveStats: stats } } };
+  let gameMs = 0;
+  const services = { cache, now: () => 0, rng: { next: () => .5 }, gameTime: { getGameMs: () => gameMs },
+    devicePower: { consume: () => ({ hasBattery: true, percent: 100, empty: false }) } };
   const point = {};
   let metricReads = 0;
   const service = new ChumService("projection-test", config, () => (metricReads++, metric), services);
   metric.toVirtual(2, 10, point); service.deployBait(point.x, point.y, "mix");
-  service.update(1000, 1);
+  gameMs = 1000; service.update();
   assert.equal(service.getChumDataAt(point.x, point.y).bonus, 2, "the delivered centre receives the peak bonus");
-  metric.toVirtual(2.1, 10, point); now = 1000; service.deployBait(point.x, point.y, "mix");
-  assert.equal(service.getZones().length, 1, "nearby ground zones retain replacement behavior");
+  metric.toVirtual(2.1, 10, point); service.deployBait(point.x, point.y, "mix");
+  assert.equal(service.getZones().length, 1, "nearby ground drops of one chum form one spot");
   const saved = cacheData.get("chum_active_projection-test");
-  assert.deepEqual(Object.keys(JSON.parse(saved)[0]).sort(), ["baitId", "deployRealTimeMs", "id", "isDelivered", "x", "y"],
-    "the existing save shape is unchanged");
+  assert.deepEqual(Object.keys(JSON.parse(saved)[0]).sort(),
+    ["baitId", "drops", "feedGameMs", "feedLoad", "id", "meanDropGameMs", "x", "y"], "the spot save shape");
   const reloaded = new ChumService("projection-test", config, () => (metricReads++, metric), services);
-  reloaded.update(2000, 1);
-  assert.equal(reloaded.getChumDataAt(point.x, point.y).bonus, 2, "reload restores the same ground influence and timing");
+  gameMs = 2000; reloaded.update();
+  const spot = reloaded.getZones()[0];
+  assert.equal(reloaded.getChumDataAt(spot.x, spot.y).bonus, 2, "reload restores the same ground influence and timing");
   reloaded.saveToStorage(); assert.equal(cacheData.get("chum_active_projection-test"), saved, "reload/save preserves bytes");
-  metric.toVirtual(-6, 20, point); reloaded.deployBait(point.x, point.y, "mix"); reloaded.update(3000, 1);
+  metric.toVirtual(-6, 20, point); reloaded.deployBait(point.x, point.y, "mix"); gameMs = 3000; reloaded.update();
   metricReads = 0; reloaded.getChumDataAt(point.x, point.y);
   assert.equal(metricReads, 1, "R5: one metric query per chum lookup, however many zones are delivered");
-  reloaded.update(9000, 1); assert.equal(reloaded.getZones().length, 0, "expiry still removes persisted zones");
+  gameMs = 20000; reloaded.update(); assert.equal(reloaded.getZones().length, 0, "expiry still removes persisted zones");
   service.dispose(); reloaded.dispose();
 }
 checkGroundChumPersistence();
@@ -383,8 +387,8 @@ function checkUnifiedWaterAreas() {
     for (const share of [.1, .5, .9]) {
       const depth = metric.topMeters * share;
       metric.toVirtual(3, depth, metricPoint);
-      const zone = new ChumZone(depth, metricPoint.x, metricPoint.y,
-        { id: "test", radius: 50, minBonus: 1, maxBonus: 2, targetFishes: ["carp"] }, 0, true);
+      const zone = new ChumZone({ id: depth, x: metricPoint.x, y: metricPoint.y,
+        baitConfig: { id: "test", radius: 50, minBonus: 1, maxBonus: 2, targetFishes: ["carp"] }, meanDropGameMs: 0 });
       zone.currentBonus = 2; zones.push(zone);
       assert.equal(zone.getMultiplierAt(zone.x, zone.y, "pike", metric), 1, "species filtering stays intact");
       assert.equal(zone.getMultiplierAt(zone.x, zone.y, null, metric), 2, "centre always receives the bonus");
@@ -436,11 +440,11 @@ function checkUnifiedWaterAreas() {
         "render/wave clipping and gameplay bounds agree on the visible far distance");
     }
     const original = zones[0];
-    const other=new ChumZone('other',original.x+metric.surfaceScaleAt(original.y)*20,original.y,{radius:50},0,true);
-    assert(original.checkOverlap(other,metric)&&other.checkOverlap(original,metric),'surface overlap is symmetric');
+    const other=new ChumZone({id:'other',x:original.x+metric.surfaceScaleAt(original.y)*20,y:original.y,
+      baitConfig:{id:'test',radius:50},meanDropGameMs:0});
+    assert(original.isSameSpot('test',other.x,other.y,metric)&&other.isSameSpot('test',original.x,original.y,metric),
+      'surface same-spot test is symmetric');
     original.isExpired = true;
-    assert.equal(original.getMultiplierAt(original.x, original.y, null, metric), 1);
-    original.isExpired = false; original.isDelivered = false;
     assert.equal(original.getMultiplierAt(original.x, original.y, null, metric), 1);
   }
   const before=getWaterMetric(); projection={...projection,farScale:.6};

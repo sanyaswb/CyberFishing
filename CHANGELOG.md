@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.8 - Chum spots by game time, merge and overfeeding
+
+- Chum: zones now read the chum's effective stats; before, production zones had no bite bonus and never expired (spec 152 B4). Spots live by the game clock's monotonic time (DEV acceleration and phase jumps count), appear only when the chum reaches the water (boat: when the bunker opens), and drops of one chum merge into one spot with averaged age and centre (G-125).
+- Chum: each drop adds feed eaten at `feed.eatenPerHour`; above `comfortLoad` the bonus falls to `overfedMultiplier` at `maxLoad` (carp mix: 0.25/h, 1.5, 4, 0.8). Old saves migrate (delivered zones keep their age, undelivered ones are dropped). Game-cycle report unchanged.
+
 ## v0.49.7 - Bait boat bunker count from one source
 
 - Delivery: `BoatRules.sectionCount` is the only reading of a boat's `sections` (the property its cargo slot capacity reads); `BaitBoat`, `ChumController` and the inventory boat artwork use it instead of `?? 1` / `|| 3` / `|| 1` defaults (TK-156).
@@ -48,8 +53,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - World / Rendering: corrected Spine boat view rotation in `PixiWorldEntitiesRenderer` (`view.rotation = boat.angle + Math.PI / 2`), ensuring the boat spawns and travels with its bow and headlight pointing forward toward the water instead of backwards facing shore (Spec 150 / TK-148).
 - Delivery / Animation: implemented multi-track compartment holding in `BoatAnimationController` (`scene.setSampled(sec, clip, 1.0, 1.0)` on tracks 1..3), keeping bay doors open after bait is dropped during subsequent moves and return trips (TK-148).
 - Animation / Spine: disabled unauthored wave slots `boats-wave--2` and `boats-wave--3` by default in `BoatAnimationController` (TK-148).
-
-## v0.48.52 - Fixed SpineScene setSlotVisible Spine 4.3 SlotPose attachment contract
-
-- Animation / Spine: fixed `SpineScene.prototype.setSlotVisible` to use Spine 4.3 runtime attachment API (`Skeleton.prototype.setAttachment(slotName, placeholder)` and `slot.pose.setAttachment`), resolving `TypeError: slot.setAttachment is not a function` on bait boat launch (Spec 150 / TK-147).
-- Animation / Spine: preserved and restored authored slot alpha from `slot.data.setupPose.color.a` when making slots visible, retaining proper transparency for boat night lights and bait compartments (TK-147).

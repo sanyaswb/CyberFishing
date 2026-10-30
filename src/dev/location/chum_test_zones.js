@@ -40,7 +40,7 @@ export class ChumTestZones {
   }
 
   #game(locationId) {
-    return (this.#getGameZones(locationId) || []).filter(zone => zone.isDelivered && !zone.isExpired);
+    return (this.#getGameZones(locationId) || []).filter(zone => !zone.isExpired);
   }
 
   #test(locationId) {

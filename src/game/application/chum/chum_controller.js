@@ -630,7 +630,7 @@ export class ChumController {
   }
 
   #getReservedTargets(boat) {
-    return (boat.zoneId ? 1 : 0) + (boat.waypoints ? boat.waypoints.length : 0);
+    return (boat.dropBaitId ? 1 : 0) + (boat.waypoints ? boat.waypoints.length : 0);
   }
 
   #warn(message) {

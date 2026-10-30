@@ -291,7 +291,7 @@ for (const interval of [299, 300, 301]) {
       timers.advance(1000);
     }
     assert.equal(saved.timeScale, 1);
-    assert.deepEqual(Object.keys(saved).sort(), ["anchorHours", "anchorMs", "timeScale"]);
+    assert.deepEqual(Object.keys(saved).sort(), ["anchorGameMs", "anchorHours", "anchorMs", "timeScale"]);
     calendarNow += 3600000; assert.equal(clock.getHours(), 13);
     assert.equal(clock.setHours(NaN), false); assert.equal(clock.setHours(24), false);
     button.click(); control.suspend(); timers.advance(1000); assert.equal(clock.getRateMultiplier(), 1);

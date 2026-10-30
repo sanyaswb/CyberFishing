@@ -106,7 +106,7 @@ export class GameWorld {
     this.#env.update(dt, timeScale);
     const envSnapshot = this.#env.getSnapshot();
     this.#map.update(dt, envSnapshot.time, this.#isZoneMotionPaused?.() === true);
-    this.#chum.update(this.#clock.realNow, timeScale);
+    this.#chum.update();
 
     this.#chum.updateBoats(
       dt,
