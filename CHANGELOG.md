@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.19 - Boat wake ripples in the water
+
+- Delivery / Scene: each wake puff also bends the painted water around it (an outward ring in the water's displacement map, only on water), so the water behind the boat ripples along with the foam; tuning in `CONFIG.ui.boat.wake.water` (spec 156). Game-cycle report unchanged.
+
 ## v0.49.18 - Boat targets on a scrolled map
 
 - Delivery / Input: while bait boat targets are chosen, dragging pans the map (as bare scouting does) and a tap places a target, so targets can be set anywhere on the water regardless of where the boat is; hand chum aiming keeps its power drag (TK-166). Game-cycle report unchanged.
@@ -41,8 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery / Spine: the boat waits for the export's clip lengths (`BOAT_ANIMATION_DURATIONS`, checked against `boat-lvl--3.json`; bunkers 2-3 open for 1.583 s, not 1.167 s); the end of the start clip no longer restarts an opening door; a reloaded start continues as motion; a drained boat drifts without the motor clip, wake or lights (TK-160).
 - Delivery / Spine: bait, light, wake slots and held doors are written into the skeleton only when they change; the obsolete skeleton rewrite, the `returning` branch and the unused reduced-motion port are removed. Game-cycle report unchanged.
-
-## v0.49.9 - Drained bait boat recovery by net or mooring
-
-- Delivery: a drained boat drifts with the current; the landing net button takes it back inside the net's reach (outside the fight), and it is taken back automatically when it moors within `recovery.mooringMeters` (1 m) of the player's shore; the 40/200 px tap removal is gone (spec 151 / G-124).
-- Delivery: bunker chum is spent when its bunker opens, so a recovered boat keeps its undropped cargo; while a boat is on the water the inventory rolls back any change to it, its battery or cargo; a launched boat is saved and restored after a reload; boats move on the map's water, not the visible screen. Game-cycle report unchanged.

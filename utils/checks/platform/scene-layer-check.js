@@ -639,6 +639,27 @@ async function checkWaterWaveField() {
   assert.equal(shoreline[(35 * 192 + 150) * 4], 128, 'no displacement in the excluded shore');
   assert.equal(shoreline[(35 * 192 + 150) * 4 + 1], 128);
   assert.equal(field.setRegions([0, 0, 1, .25, 0, .25, .25, 1], 2, true), false, 'unchanged masks do not rebuild the envelope');
+
+  // Spec 156: a wake puff pushes the water outward from its centre, only near it and only on water.
+  const puffs = { count: 1, getAt: () => ({ x: 960, y: 240, size: 60, alpha: 1 }) };
+  const area = { left: 0, top: 0, right: 1920, bottom: 480 }; // 10 px texels
+  const ripple = { enabled: true, strength: 0.6, radiusScale: 1.6 };
+  const texel = (pixels, column, row) => [pixels[(row * 192 + column) * 4], pixels[(row * 192 + column) * 4 + 1]];
+  field.setRegions([0, 0, 1, 1], 1);
+  const calm = Array.from(field.write(2, { ...settings, artWidth: 1920, artHeight: 480 }));
+  const bent = field.addRipples(puffs, area, ripple);
+  const [rightX] = texel(bent, 98, 24), [leftX] = texel(bent, 93, 24);
+  const [, belowY] = texel(bent, 96, 26);
+  assert(rightX > calm[(24 * 192 + 98) * 4] && leftX < calm[(24 * 192 + 93) * 4],
+    "the water right of the puff moves right, left of it moves left");
+  assert(belowY > calm[(26 * 192 + 96) * 4 + 1], "below the puff it moves down");
+  assert.deepEqual(texel(bent, 120, 24), [calm[(24 * 192 + 120) * 4], calm[(24 * 192 + 120) * 4 + 1]],
+    "far from the puff the water is untouched");
+  field.write(2, { ...settings, artWidth: 1920, artHeight: 480 });
+  assert.deepEqual(Array.from(field.addRipples(puffs, area, { ...ripple, enabled: false })), calm, "switched off: no ripples");
+  field.setRegions([0, 0, .25, 1], 1);
+  const dry = Array.from(field.write(2, { ...settings, artWidth: 1920, artHeight: 480 }));
+  assert.deepEqual(Array.from(field.addRipples(puffs, area, ripple)), dry, "no ripples where there is no water");
 }
 
 // Spec 106: the water over the background, stepping at its own frame rate.

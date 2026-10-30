@@ -640,6 +640,9 @@ export const CONFIG = {
         sternOffsetPx: 18,
         bowFoam: true,
         capacity: 96,
+        // Spec 156: each puff also bends the water around it (WebGL water only): strength as a share of the water's full
+        // amplitude, radius as a multiple of half the puff's size.
+        water: { enabled: true, strength: 0.6, radiusScale: 1.6 },
       },
       displayScale: 0.2,
       x: "rod",

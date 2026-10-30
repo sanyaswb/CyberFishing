@@ -28,7 +28,8 @@ export function composeSceneLayer({ config, modeOverride = null, documentTarget,
   sceneLayer = mode === "webgl" ? new DeferredSceneLayer({
     load: () => import("../../platform/browser/scene/pixi_runtime_module.js").then((module) =>
       module.createPixiRuntime().createSceneLayer({ documentTarget, gameCanvas, canvasMetrics, images, router: sceneRouter,
-        clock, getWaterSettings: () => config.canvas?.water, fightAreaStyles, probe, logger,
+        clock, getWaterSettings: () => config.canvas?.water,
+        getWakeSettings: () => config.ui?.boat?.wake?.water, fightAreaStyles, probe, logger,
         background: config.canvas?.backgroundColor })),
     onUnavailable: (error) => logger.warn("[Scene] The WebGL scene runtime did not load; the 2D canvas stays alone.", error),
   }) : new InactiveSceneLayer();
