@@ -83,6 +83,11 @@ async function checkGameApplicationComposition(diagnostics = true) {
   assert.equal(runtime.input.pointerPanEnabled,true,'bare scouting enables map navigation before reading input');
   app.isAimingChum=true;app.update(16);
   assert.equal(runtime.input.pointerPanEnabled,false,'chum aiming keeps its casting gesture without a rod');
+  equipment={...readyEquipment,rod:null,delivery:{instanceId:'boat'}};app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,true,'TK-166: choosing boat targets pans the map (drag pans, a tap places a point)');
+  equipment={...readyEquipment,delivery:{instanceId:'boat'}};app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,true,'with a cast-ready rod too, while boat targets are chosen');
+  equipment={...readyEquipment,rod:null};
   app.isAimingChum=false;stateMachine.currentName='playing';app.update(16);
   assert.equal(runtime.input.pointerPanEnabled,false,'fight input never becomes map navigation');
   equipment=readyEquipment;stateMachine.currentName='scouting';

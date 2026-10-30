@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.18 - Boat targets on a scrolled map
+
+- Delivery / Input: while bait boat targets are chosen, dragging pans the map (as bare scouting does) and a tap places a target, so targets can be set anywhere on the water regardless of where the boat is; hand chum aiming keeps its power drag (TK-166). Game-cycle report unchanged.
+
 ## v0.49.17 - Bait boat wake crash fix
 
 - Delivery / Scene: launching the bait boat crashed the frame (`out.set is not a function` in BoatWakeEmitter.buildInto): ViewportProjector writes screen points with `out.set`, the wake passed a plain object; the wake check's projector now follows that contract (TK-163). Game-cycle report unchanged.
@@ -42,8 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Delivery: a drained boat drifts with the current; the landing net button takes it back inside the net's reach (outside the fight), and it is taken back automatically when it moors within `recovery.mooringMeters` (1 m) of the player's shore; the 40/200 px tap removal is gone (spec 151 / G-124).
 - Delivery: bunker chum is spent when its bunker opens, so a recovered boat keeps its undropped cargo; while a boat is on the water the inventory rolls back any change to it, its battery or cargo; a launched boat is saved and restored after a reload; boats move on the map's water, not the visible screen. Game-cycle report unchanged.
-
-## v0.49.8 - Chum spots by game time, merge and overfeeding
-
-- Chum: zones now read the chum's effective stats; before, production zones had no bite bonus and never expired (spec 152 B4). Spots live by the game clock's monotonic time (DEV acceleration and phase jumps count), appear only when the chum reaches the water (boat: when the bunker opens), and drops of one chum merge into one spot with averaged age and centre (G-125).
-- Chum: each drop adds feed eaten at `feed.eatenPerHour`; above `comfortLoad` the bonus falls to `overfedMultiplier` at `maxLoad` (carp mix: 0.25/h, 1.5, 4, 0.8). Old saves migrate (delivered zones keep their age, undelivered ones are dropped). Game-cycle report unchanged.
