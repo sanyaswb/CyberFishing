@@ -8,7 +8,8 @@ async function run() {
   const { ReusableRenderList } = await import("../../../src/game/presentation/rendering/reusable_render_list.js");
   const { CONFIG } = await import("../../../src/game/config/runtime/game_config.js");
   const base = CONFIG.ui.boat.wake;
-  const projector = { getScale: () => 1, virtualToScreen: (x, y, out) => Object.assign(out, { x, y }) };
+  // Like ViewportProjector: the result is written with out.set(x, y), so the caller must pass a Vector2.
+  const projector = { getScale: () => 1, virtualToScreen: (x, y, out) => out.set(x, y) };
   const near = () => 1;
   const boatAt = (y, overrides = {}) => ({ pos: { x: 500, y }, angle: -Math.PI / 2, velocity: { x: 0, y: -250 },
     stats: { speedPxPerSec: 250 }, state: "deploying", animationState: "moving", powerRatio: 1, ...overrides });

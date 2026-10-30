@@ -1,3 +1,5 @@
+import { Vector2 } from "../../../engine/math/vector2.js";
+
 const DEG = Math.PI / 180;
 
 // The bait boat's procedural wake (spec 155): foam puffs in map coordinates, so the wake stays on the water while the
@@ -19,7 +21,8 @@ export class BoatWakeEmitter {
   #alpha = null;
   #lastBoat = null;
   #pending = 0;
-  #screen = { x: 0, y: 0 };
+  // The projector writes screen points into a Vector2 (ViewportProjector.virtualToScreen calls out.set).
+  #screen = new Vector2(0, 0);
 
   // getSettings(): CONFIG.ui.boat.wake, read every frame (live DevTools edits).
   constructor({ getSettings }) {

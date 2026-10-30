@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.16";
+export const CURRENT_PROJECT_VERSION = "0.49.17";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-163: the game no longer crashes when the bait boat starts: the wake writes screen points into a Vector2 as the viewport projector requires.",
     "TK-162: without a charged battery the bait boat button is inactive like without chum; a click opens the battery socket with a warning.",
     "TK-161: the bait boat follows its planned route home after a drop: route points on far water are no longer skipped, it turns on the spot, and routes keep off land and obstacles.",
     "Spec 155: procedural PixiJS foam wake (Kelvin V of pooled sprites) replaces the Spine boat wave; tunable in CONFIG.ui.boat.wake.",
