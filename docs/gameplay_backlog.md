@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-127 Bait boat AI gets stuck, circles at obstacles and depends on the frame rate (P2, open)
+Found: 2026-10-30, owner request + Node simulation of BaitBoat (catalog level 3).
+Reproduce: U-shaped obstacle cells or a land peninsula across the course; or 144 Hz vs 60 Hz in open water.
+Expected: the boat reaches reachable targets and returns; same speed at any frame rate.
+Actual: U trap never reached in 60 s (46 evades), land peninsula blocks the return until the battery dies (sensors see only collision cells), 30-125 rad of turning at walls, top speed 180 instead of 250 px/s at 144 Hz (per-frame damping).
+Notes: [spec 154](../specs/154-bait-boat-navigation/spec.md).
+
 ### G-126 Window size moves the float, fish and boat (P1, open)
 Found: 2026-10-30, owner, v0.49.7.
 Reproduce: during a fight or a boat trip narrow the browser window or pan — objects near the screen edge are pushed toward the centre.
