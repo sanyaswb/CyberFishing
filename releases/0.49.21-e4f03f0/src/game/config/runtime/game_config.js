@@ -640,9 +640,11 @@ export const CONFIG = {
         sternOffsetPx: 18,
         bowFoam: true,
         capacity: 96,
-        // Spec 156: each puff also bends the water around it (WebGL water only): strength as a share of the water's full
-        // amplitude, radius as a multiple of half the puff's size.
-        water: { enabled: true, strength: 0.6, radiusScale: 1.6 },
+        // Spec 156: each puff also bends the water around it (WebGL water only): crest height as a share of the water's
+        // full amplitude (1 = as far as the waves shift the art), radius as a multiple of half the puff's size (at least
+        // 2.5 texels of the water map). Off by default (owner, 2026-10-30: the foam wake alone for now); DevTools turns
+        // it on live.
+        water: { enabled: false, strength: 1, radiusScale: 2.5 },
       },
       displayScale: 0.2,
       x: "rod",
