@@ -49,6 +49,7 @@ export class PixiSceneLayer {
   #router;
   #clock;
   #getWaterSettings;
+  #getWakeSettings;
   #fightAreaStyles;
   #documentTarget;
   #textures = null;
@@ -85,7 +86,7 @@ export class PixiSceneLayer {
   // the game clock ({ now }, the frame's time in ms); getWaterSettings: () => CONFIG.canvas.water (spec 106);
   // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
-    fightAreaStyles, probe, logger }) {
+    fightAreaStyles, probe, logger, getWakeSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -101,6 +102,8 @@ export class PixiSceneLayer {
     this.#router = router;
     this.#clock = clock;
     this.#getWaterSettings = getWaterSettings;
+    // Spec 156: CONFIG.ui.boat.wake.water, the boat wake's ripples in the water.
+    this.#getWakeSettings = getWakeSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -211,7 +214,8 @@ export class PixiSceneLayer {
       this.#background = new PixiBackgroundRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         renderer: app.renderer });
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
-        documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings });
+        documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings,
+        getWakeSettings: this.#getWakeSettings });
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
         documentTarget: this.#documentTarget });

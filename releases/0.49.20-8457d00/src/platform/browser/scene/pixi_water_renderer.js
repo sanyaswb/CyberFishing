@@ -16,6 +16,8 @@ const LAYER_SPRITES = 2;
 export class PixiWaterRenderer {
   #textures;
   #getSettings;
+  #getWakeSettings;
+  #wakeArea = { left: 0, top: 0, right: 0, bottom: 0 };
   #container;
   #sprites = [];
   #field;
@@ -39,13 +41,15 @@ export class PixiWaterRenderer {
   #metric = null;
 
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
-  // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water.
-  constructor({ pixi, stage, textures, documentTarget, getSettings }) {
+  // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water; getWakeSettings: () =>
+  // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water).
+  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null }) {
     if (typeof pixi?.DisplacementFilter !== "function") throw new TypeError("PixiWaterRenderer requires the Pixi namespace");
     if (typeof textures?.get !== "function") throw new TypeError("PixiWaterRenderer requires textures");
     if (typeof getSettings !== "function") throw new TypeError("PixiWaterRenderer requires getSettings");
     this.#textures = textures;
     this.#getSettings = getSettings;
+    this.#getWakeSettings = getWakeSettings;
     this.#field = new WaterWaveField({ width: MAP_WIDTH, height: MAP_HEIGHT });
     this.#mapCanvas = documentTarget.createElement("canvas");
     this.#mapCanvas.width = MAP_WIDTH;
@@ -121,7 +125,8 @@ export class PixiWaterRenderer {
     if (stepDue) {
       this.#metric = metric;
       this.#drift(world.current, settings, nowMs);
-      this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale, world.waterPlane);
+      this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale, world.waterPlane,
+        world.boatWake, area);
     }
     return stepDue || !wasVisible;
   }
@@ -142,11 +147,14 @@ export class PixiWaterRenderer {
     this.#driftSpeed = Math.hypot(velocityX, velocityY);
   }
 
-  #step(nowMs, settings, artWidth, artHeight, plane) {
+  #step(nowMs, settings, artWidth, artHeight, plane, wake, area) {
     const started = performance.now();
     this.#lastStepAt = nowMs;
-    const pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight, wavelength: Number(settings.wavelength) || 1,
+    let pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight, wavelength: Number(settings.wavelength) || 1,
       speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane });
+    const wakeArea = this.#wakeArea;
+    wakeArea.left = area.left; wakeArea.top = area.top; wakeArea.right = area.right; wakeArea.bottom = area.bottom;
+    pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings());
     this.#mapImage.data.set(pixels);
     this.#mapContext.putImageData(this.#mapImage, 0, 0);
     this.#mapTexture.source.update();
