@@ -48,6 +48,7 @@ export const INVENTORY_MESSAGES = Object.freeze({
   equipmentChangeFailed: "Не вдалося змінити спорядження.",
   autoRefillMissing: (count) => `Не вистачило точних предметів для ${count} комірок автопоповнення.`,
   equipmentLockedWhileFishing: "Витягніть снасть з води, щоб змінити спорядження.",
+  deviceAwayOnWater: "Кораблик на воді: його, бункери й батарейку не можна змінювати, доки він не повернеться.",
   corruptedStackSkipped: (instanceId) => `Пропущено пошкоджений стек ${instanceId}.`,
   emptyLoadoutSkipped: (name) => `Порожній комплект ${name} було пропущено.`,
   componentAlreadyAttached: (instanceId) => `Компонент ${instanceId} уже належить іншій оснастці; дублювання пропущено.`,

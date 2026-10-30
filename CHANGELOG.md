@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.9 - Drained bait boat recovery by net or mooring
+
+- Delivery: a drained boat drifts with the current; the landing net button takes it back inside the net's reach (outside the fight), and it is taken back automatically when it moors within `recovery.mooringMeters` (1 m) of the player's shore; the 40/200 px tap removal is gone (spec 151 / G-124).
+- Delivery: bunker chum is spent when its bunker opens, so a recovered boat keeps its undropped cargo; while a boat is on the water the inventory rolls back any change to it, its battery or cargo; a launched boat is saved and restored after a reload; boats move on the map's water, not the visible screen. Game-cycle report unchanged.
+
 ## v0.49.8 - Chum spots by game time, merge and overfeeding
 
 - Chum: zones now read the chum's effective stats; before, production zones had no bite bonus and never expired (spec 152 B4). Spots live by the game clock's monotonic time (DEV acceleration and phase jumps count), appear only when the chum reaches the water (boat: when the bunker opens), and drops of one chum merge into one spot with averaged age and centre (G-125).
@@ -47,9 +52,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Delivery / Spine: introduced full skeletal Spine animation for Level 3 bait boat (`boat-lvl--3.json`), featuring water immersion (`boat3--immersion`), forward propulsion (`boat3--move-forvard_start` -> `boat3--move-forvard1`) with bow forward orientation, and night lights (`boat-light`, `boat3-night_light*`) active in the dark (Spec 150 / TK-141..TK-149).
 - Delivery / Hopper: implemented multi-track sequential bay door opening (`boat3--open-section-1..3`), synchronized bait release and slot hiding (`section--1-bait*`), and persistent open bay doors across trips with pre-opened empty bay tracking (TK-143, TK-148, TK-149).
 - Delivery / UI & Tools: added dynamic inventory and chum button artwork switching (`boat-lvl--3_bait.webp` vs `boat-lvl--3_no-bait.webp`) and `CONFIG.ui.boat` live DevTools tuning under "SPINE" (TK-141, TK-145).
-
-## v0.48.53 - Forward boat start orientation, persistent open compartments, and disabled extra waves
-
-- World / Rendering: corrected Spine boat view rotation in `PixiWorldEntitiesRenderer` (`view.rotation = boat.angle + Math.PI / 2`), ensuring the boat spawns and travels with its bow and headlight pointing forward toward the water instead of backwards facing shore (Spec 150 / TK-148).
-- Delivery / Animation: implemented multi-track compartment holding in `BoatAnimationController` (`scene.setSampled(sec, clip, 1.0, 1.0)` on tracks 1..3), keeping bay doors open after bait is dropped during subsequent moves and return trips (TK-148).
-- Animation / Spine: disabled unauthored wave slots `boats-wave--2` and `boats-wave--3` by default in `BoatAnimationController` (TK-148).

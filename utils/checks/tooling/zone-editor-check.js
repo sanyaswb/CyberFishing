@@ -1183,7 +1183,7 @@ controlUI.dispose();
   const world = new GameWorld({ map: liveMap, projector: proj, env: { update() {}, getSnapshot: () => ({ time: 12 }) },
     chum: { update() {}, updateBoats() {} }, location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
     locationConfig: cfg.locations, waterMetricSource: { current: () => null }, isZoneMotionPaused: () => flags.isEnabled('pauseDynamicZones') });
-  const step = dt => world.update(dt, 1, { left: 0, top: 0, right: 400, bottom: 400 });
+  const step = dt => world.update(dt, 1);
   step(1000); assert.equal(liveMap.getDynamicZones()[0].x, 2, 'zone moves away from its authored start');
   st.setFlag('enabled', true); st.setEditing('dynamic', true); st.setCategory('dynamic', true);
   step(1000); assert.equal(liveMap.getDynamicZones()[0].x, 2, 'enabling category editing pauses actual game motion');

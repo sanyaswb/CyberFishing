@@ -29,6 +29,11 @@ export class InventoryFacade {
     );
   }
 
+  // Spec 151: devices away from the player; actions that would change them are rolled back.
+  setBusyDevices(source) {
+    this.#commands.setBusyDevices(source);
+  }
+
   getViewModel() {
     return this.#viewModels.create(this.#commands.getUiState());
   }

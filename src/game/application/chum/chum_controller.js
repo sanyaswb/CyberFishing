@@ -25,7 +25,6 @@ export class ChumController {
   #isAiming = false;
   #activeBoat = null;
   #uiClickLockTime = 0;
-  #boatLoadedChums = new WeakMap();
   #handCastAim = null;
   #pendingHandDrop = null;
   #boatRules = new BoatRules();
@@ -208,6 +207,11 @@ export class ChumController {
     const boatItem = eq.delivery || {};
     const isManual = boatItem.effectiveStats?.manualControl ?? true;
 
+    if (activeBoat.state === "drifting") {
+      this.#warn(this.#messages.boatDrifting);
+      return;
+    }
+
     if (this.#isAiming) {
       this.toggleAim();
       return;
@@ -254,7 +258,6 @@ export class ChumController {
 
       if (this.#activeBoat) {
         const loadedChums = this.#getLoadedChums(eq.deliveryChums);
-        this.#boatLoadedChums.set(this.#activeBoat, loadedChums);
         this.#activeBoat.remainingSections = loadedChums.length;
         const initialDropped = [];
         for (let s = 1; s <= this.#activeBoat.sectionCount; s++) {
@@ -348,24 +351,26 @@ export class ChumController {
     );
     let clickHandled = false;
 
-    const distToBoat = Math.hypot(
-      activeBoat.pos.x - vPos.x,
-      activeBoat.pos.y - vPos.y,
-    );
-    const mapBounds = this.#getDynamicBounds();
-
-    if (distToBoat < 40) {
-      if (activeBoat.pos.y > mapBounds.bottom - 200) {
-        this.#chum.removeBoat(activeBoat);
-      }
-      clickHandled = true;
-    } else if (activeBoat.state !== "drifting") {
+    if (activeBoat.state !== "drifting") {
       clickHandled = this.#handleBoatMapClick(activeBoat, vPos, input.clickPos);
     }
 
     if (clickHandled || !this.#canPlayerCast()) {
       input.clickPos = null;
     }
+  }
+
+  // Spec 151: a drifting boat inside the equipped landing net's reach (Net's zone, up to the shore) can be taken back
+  // with the net button. Without a net it only comes back by mooring (D4).
+  getBoatInNetReach(net, waterMetric) {
+    if (!net?.isActive) return null;
+    const boat = this.#chum.getBoats()[0] || null;
+    return boat?.state === "drifting" && net.isFloatInZone(boat.pos.y, waterMetric) ? boat : null;
+  }
+
+  recoverBoatWithNet(net, waterMetric) {
+    const boat = this.getBoatInNetReach(net, waterMetric);
+    return boat ? this.#chum.recoverBoat(boat) : false;
   }
 
   getPowerAimVisualState() {
@@ -498,18 +503,16 @@ export class ChumController {
     }
 
     const reservedTargets = this.#getReservedTargets(activeBoat);
-    const loadedChums = this.#boatLoadedChums.get(activeBoat) || [];
+    const loadedChums = this.#getLoadedChums(this.#inventory.getEquipped().deliveryChums);
     const chumData = loadedChums[reservedTargets] || null;
-    const chumToDrop = chumData ? chumData.item : null;
 
-    if (!cell || !chumToDrop) {
+    if (!cell || !chumData) {
       this.#markInvalidCast(input.clickPos);
       input.clickPos = null;
       return;
     }
 
-    this.#chum.deployBait(vPos.x, vPos.y, chumToDrop.id, activeBoat);
-    this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+    this.#chum.deployBait(vPos.x, vPos.y, chumData.item.id, activeBoat, chumData.slotIndex);
     input.clickPos = null;
 
     const loadedCount = loadedChums.length;
@@ -541,21 +544,16 @@ export class ChumController {
     const freeSlots = activeBoat.remainingSections - reservedTargets;
     if (freeSlots <= 0 || activeBoat.state === "returning") return false;
 
-    const loadedChums = this.#boatLoadedChums.get(activeBoat) || [];
+    const loadedChums = this.#getLoadedChums(eq.deliveryChums);
     const chumData = loadedChums[reservedTargets] || null;
-    const chumToDrop = chumData ? chumData.item : null;
-    if (!chumToDrop) return false;
+    if (!chumData) return false;
 
-    this.#chum.deployBait(vPos.x, vPos.y, chumToDrop.id, activeBoat);
-    this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+    this.#chum.deployBait(vPos.x, vPos.y, chumData.item.id, activeBoat, chumData.slotIndex);
     return true;
   }
 
   #dropManualBoatChum(activeBoat, boatItem) {
-    const loadedChums = this.#boatLoadedChums.get(activeBoat) || [];
-    const loadedCount = loadedChums.length;
-    const dropIndex = loadedCount - activeBoat.remainingSections;
-    const chumData = loadedChums[dropIndex];
+    const chumData = this.#getLoadedChums(this.#inventory.getEquipped().deliveryChums)[0];
 
     if (chumData) {
       this.#chum.deployBait(
@@ -630,7 +628,7 @@ export class ChumController {
   }
 
   #getReservedTargets(boat) {
-    return (boat.dropBaitId ? 1 : 0) + (boat.waypoints ? boat.waypoints.length : 0);
+    return (boat.drop ? 1 : 0) + (boat.waypoints ? boat.waypoints.length : 0);
   }
 
   #warn(message) {

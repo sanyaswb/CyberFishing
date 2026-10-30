@@ -20,6 +20,11 @@ export class ChumService {
   #legacyTimeScale;
   #cache;
   #configEvents;
+  #boatsKey;
+  #boatSaveMs = 0;
+  #consumeBoatChum;
+  #onBoatLost;
+  #findBoatItem;
 
   constructor(locationId, chumConfig, getWaterMetric, services = {}) {
     this.#chumConfig = chumConfig;
@@ -43,11 +48,17 @@ export class ChumService {
         ? services.onBoatReturned
         : null;
     this.#storageKey = `chum_active_${locationId}`;
-
+    // Spec 151: a boat spends a cargo slot when its bunker opens, is lost with its items when the player leaves the
+    // location, and a launched boat is saved across reloads (restored from the owned boat item).
+    this.#consumeBoatChum = services.consumeBoatChum || null;
+    this.#onBoatLost = services.onBoatLost || null;
+    this.#findBoatItem = services.findBoatItem || null;
+    this.#boatsKey = `chum_boats_${locationId}`;
 
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
 
     this.loadFromStorage();
+    this.#restoreBoats();
 
     this.#onConfigUpdateBind = (e) => this.#onConfigUpdate(e.detail);
     // DEV config edits arrive as "config-updated" events on the injected event target (the document in production).
@@ -121,10 +132,11 @@ export class ChumService {
   }
 
   // A hand cast drops at once; a boat carries the chum to the target and drops it when its bunker opens (spec 152 D2).
-  deployBait(targetX, targetY, baitId, activeBoat = null) {
+  // slotIndex: the boat's cargo slot whose chum this target spends at the drop (spec 151 D5).
+  deployBait(targetX, targetY, baitId, activeBoat = null, slotIndex = null) {
     if (!this.#spotConfig(baitId)) return null;
     if (activeBoat) {
-      activeBoat.setTarget(targetX, targetY, baitId);
+      activeBoat.setTarget(targetX, targetY, { baitId, slotIndex });
       return null;
     }
     return this.dropChum(targetX, targetY, baitId);
@@ -184,9 +196,10 @@ export class ChumService {
   // waterMetric: the location's metric; every boat update runs on its ground plane (spec 054), and drops and rays are
   // back on the map before anything else reads them.
   updateBoats(dt, checkPhysics, checkSensor, cellSize, env, waterMetric = null) {
-    let needsSave = false;
+    let boatsChanged = false;
     for (let i = this.#boats.length - 1; i >= 0; i--) {
       const boat = this.#boats[i];
+      const stateBefore = boat.state;
       const plane = this.#groundPlane.enter({ metric: waterMetric, boat, checkPhysics, checkSensor, cellSize });
       try {
         boat.update(dt, plane.checkPhysics, plane.checkSensor, plane.cellSize, env);
@@ -194,25 +207,91 @@ export class ChumService {
         this.#groundPlane.exit();
       }
       this.#consumePower(boat, dt);
+      if (boat.state !== stateBefore) boatsChanged = true;
 
-      if (boat.isBaitDropped && boat.dropBaitId) {
-        this.dropChum(boat.pos.x, boat.pos.y, boat.dropBaitId);
+      if (boat.isBaitDropped && boat.drop) {
+        // Spec 151 D5: the cargo is spent only now; a slot emptied meanwhile drops nothing.
+        const { baitId, slotIndex } = boat.drop;
+        if (!this.#consumeBoatChum || this.#consumeBoatChum(slotIndex)) this.dropChum(boat.pos.x, boat.pos.y, baitId);
         boat.isBaitDropped = false;
-        boat.dropBaitId = null;
+        boat.drop = null;
+        boatsChanged = true;
       }
 
-      if (boat.isFinished) {
-        if (boat.remainingSections <= 0) {
-          this.#onBoatReturned?.({
-            allBaysEmptied: true,
-            hasReturnedToPlayer: true,
-            rootInstanceId: boat.rootInstanceId,
-          });
-        }
-        this.#boats.splice(i, 1);
+      if (boat.isFinished || this.#isMoored(boat, waterMetric)) {
+        this.#finishBoat(i);
+        boatsChanged = true;
       }
     }
-    if (needsSave) this.saveToStorage();
+    this.#boatSaveMs += Math.max(0, Number(dt) || 0);
+    if (boatsChanged || (this.#boatSaveMs >= 1000 && this.#boats.length > 0)) this.saveBoats();
+  }
+
+  // Spec 151 D8: a drifting boat that reaches the player's shore within its mooring distance is taken back.
+  #isMoored(boat, waterMetric) {
+    if (boat.state !== "drifting" || !waterMetric) return false;
+    const mooringMeters = Number(boat.config.recovery?.mooringMeters);
+    return Number.isFinite(mooringMeters) && waterMetric.metersFromShore(boat.pos.y) <= mooringMeters;
+  }
+
+  // Spec 151: the player takes a drifting boat back with the landing net; its cargo stays in the bunkers.
+  recoverBoat(boat) {
+    const index = this.#boats.indexOf(boat);
+    if (index === -1 || boat.state !== "drifting") return false;
+    this.#finishBoat(index);
+    this.saveBoats();
+    return true;
+  }
+
+  // Spec 151 D1: leaving the location loses every launched boat with its battery and cargo.
+  loseBoats() {
+    const lost = this.rootInstanceIdsAway();
+    this.#boats.length = 0;
+    this.saveBoats();
+    for (const rootInstanceId of lost) this.#onBoatLost?.({ rootInstanceId });
+  }
+
+  // Roots of the boats on the water (not one only being aimed); the inventory keeps them unchanged (spec 151 D5).
+  rootInstanceIdsAway() {
+    const roots = [];
+    for (const boat of this.#boats) {
+      if (boat.state !== "idle" && boat.rootInstanceId) roots.push(boat.rootInstanceId);
+    }
+    return roots;
+  }
+
+  saveBoats() {
+    this.#boatSaveMs = 0;
+    if (!this.#cache) return;
+    const snapshots = [];
+    for (const boat of this.#boats) {
+      if (boat.state === "idle" || !boat.rootInstanceId) continue;
+      snapshots.push({ rootInstanceId: boat.rootInstanceId, batteryInstanceId: boat.batteryInstanceId,
+        ...boat.toSnapshot() });
+    }
+    this.#cache.set(this.#boatsKey, snapshots);
+  }
+
+  #restoreBoats() {
+    const snapshots = this.#cache?.get(this.#boatsKey, []) || [];
+    for (const snapshot of snapshots) {
+      const boatItem = this.#findBoatItem?.(snapshot.rootInstanceId);
+      if (!boatItem) continue;
+      const boat = new BaitBoat(snapshot.startX, snapshot.startY, boatItem, null, snapshot.batteryInstanceId);
+      this.#boats.push(boat.restore(snapshot));
+    }
+  }
+
+  // The boat is off the water first, so the return's auto refill may fill its bunkers again.
+  #finishBoat(index) {
+    const [boat] = this.#boats.splice(index, 1);
+    if (boat.remainingSections <= 0) {
+      this.#onBoatReturned?.({
+        allBaysEmptied: true,
+        hasReturnedToPlayer: true,
+        rootInstanceId: boat.rootInstanceId,
+      });
+    }
   }
 
   // Spec 143 D-P1: a boat in the water consumes its battery by state; an empty or missing battery stops it.

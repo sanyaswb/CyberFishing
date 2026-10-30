@@ -327,6 +327,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "bait-boat-recovery",
+    title: "Drained bait boat: net pick-up, mooring, reload, loss; cargo spent at the drop (spec 151)",
+    file: "utils/checks/gameplay/bait-boat-recovery-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "bait-boat-spine-animation",
     title: "Bait boat Spine animation states, clips, night lights and doors (spec 150)",
     file: "utils/checks/gameplay/bait-boat-spine-animation-check.js",

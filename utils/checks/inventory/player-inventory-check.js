@@ -288,8 +288,32 @@ function checkCatalogItemGrant() {
     backpackView.iconUrl, "the backpack retains its full-resolution art after rehydration");
 }
 
+// Spec 151 D5: while a boat is on the water the inventory rolls back any action that would change it.
+function checkBoatOnWaterGuard() {
+  const { inventory, actions } = compose();
+  const boat = items(inventory).find((item) => item.itemId === "boat_lvl3");
+  assert(boat, "the starting inventory has the bait boat");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_EQUIP, rootInstanceId: boat.instanceId }).success,
+    true);
+  assert.equal(inventory.getEquipped().delivery?.instanceId, boat.instanceId);
+  let away = [boat.instanceId];
+  inventory.setBusyDevices({ rootInstanceIds: () => away });
+  const blocked = inventory.dispatchInventoryAction({ type: actions.EQUIPMENT_SLOT_LONG_PRESS, slotId: "delivery" });
+  assert.equal(blocked.success, false, "a boat on the water cannot be unequipped");
+  assert.match(blocked.warning, /Кораблик на воді/u);
+  assert.equal(inventory.getEquipped().delivery?.instanceId, boat.instanceId, "the action is rolled back as a whole");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_DISASSEMBLE, rootInstanceId: boat.instanceId })
+    .success, false, "nor taken apart");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.SECTION_SELECT, sectionId: "items" }).success, true,
+    "actions that leave the boat unchanged still work");
+  away = [];
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.EQUIPMENT_SLOT_LONG_PRESS, slotId: "delivery" }).success,
+    true, "back on shore the boat can be unequipped");
+}
+
 checkFreshStart();
 checkStartingInventory();
+checkBoatOnWaterGuard();
 checkCatalogItemGrant();
 checkLegacySaveMigration();
 checkPlayerInventoryPort();
@@ -298,4 +322,4 @@ checkInstanceIds();
 console.log("Player inventory passed: fresh start creates the current-format inventory directly (same bytes as the former " +
   "legacy conversion, starting equipment rejected) without writing legacy keys; a legacy save migrates " +
   "(sinker -> feeder rig); lock policy, change events, cached equipment with rod display stats, tackle load " +
-  "limit, readiness, provider validation, refresh, dispose, the id fallback, the live line-capacity context and the catalog item grant behave as composed in production.");
+  "limit, readiness, provider validation, refresh, dispose, the id fallback, the live line-capacity context, the catalog item grant and the boat-on-water guard behave as composed in production.");

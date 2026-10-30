@@ -37,7 +37,7 @@ replaces an overlapping active zone at click time.
 Notes: [spec 152](../specs/152-chum-zone-lifecycle/spec.md); ChumZone, ChumService, GameTimeClock. Also found: production
 zones read their stats from the wrong level, so they gave no bonus and never expired (B4), fixed with it.
 
-### G-124 Drained bait boat cannot be recovered (P2, open)
+### G-124 Drained bait boat cannot be recovered (P2, done in v0.49.9; owner acceptance pending)
 Found: 2026-10-30, owner, v0.49.7.
 Reproduce: launch the boat, let the battery run out far from the shore.
 Expected: it drifts with the current; the landing net picks it up inside the net's reach, or it is taken back when it moors

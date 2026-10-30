@@ -100,7 +100,7 @@ export class GameWorld {
     return cell && accepted ? cell : null;
   }
 
-  update(dt, timeScale, bounds) {
+  update(dt, timeScale) {
     const locations = this.#locationConfig;
 
     this.#env.update(dt, timeScale);
@@ -108,14 +108,16 @@ export class GameWorld {
     this.#map.update(dt, envSnapshot.time, this.#isZoneMotionPaused?.() === true);
     this.#chum.update();
 
+    // Spec 151: a boat moves on the whole map's water, not inside the visible screen (lockZoneXToScreen).
+    const boatBounds = this.#map.getCastableBoundsVirtual(locations.cellSize);
     this.#chum.updateBoats(
       dt,
       (vx, vy) => {
         if (
-          vx < bounds.left ||
-          vx > bounds.right ||
-          vy < bounds.top ||
-          vy > bounds.bottom
+          vx < boatBounds.left ||
+          vx > boatBounds.right ||
+          vy < boatBounds.top ||
+          vy > boatBounds.bottom
         ) {
           return null;
         }

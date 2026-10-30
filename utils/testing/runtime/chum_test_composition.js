@@ -22,11 +22,11 @@ function checkChumComposition() {
   let state='waiting',water=true,canCast=true,hidden=0;
   const config={casting:{enabled:false,handChumAccuracyPx:0,travelDelayMinMs:10,travelDelayMaxMs:10}};
   const projector={screenToVirtual(x,y,out={}){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out={}){out.x=x;out.y=y;return out;},getScale:()=>1,getPerspective:()=>({scale:1,squashY:1})};
-  const chum={getBoats:()=>boats,deployBait(x,y,id,boat){drops.push([x,y,id,boat]);if(boat){boat.state='deploying';boat.waypoints.push({x,y});}},
+  const chum={getBoats:()=>boats,deployBait(x,y,id,boat,slotIndex=null){drops.push([x,y,id,boat,slotIndex]);if(boat){boat.state='deploying';boat.waypoints.push({x,y});}},
     spawnIdleBoat(x,y){const boat={pos:{x,y},state:'idle',remainingSections:2,waypoints:[],setTarget(x,y){this.pos.x=x;this.pos.y=y;}};boats.push(boat);return boat;},
     removeBoat(boat){boats.splice(boats.indexOf(boat),1);}};
   const controller=new runtime.context.ChumController({inventory:{getEquipped:()=>equipped},chum,projector,inventoryUI:{showWarning(message){warnings.push(message);}},
-    fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);}},location:{chumCastDistance:300},clock,config,
+    fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);equipped.deliveryChums[index]=null;}},location:{chumCastDistance:300},clock,config,
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
     getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,devicePower,
     createUi:(onClick)=>new runtime.context.ChumControls(onClick,{labels:runtime.context.HUD_LABELS})});
@@ -65,7 +65,10 @@ function checkChumComposition() {
   controller.setAiming(true);assert.equal(controller.isAiming,false,'setAiming cannot bypass the battery');
   charge.percent=40;
   controller.handleClick();const boat=controller.activeBoat;assert.equal(boat,boats[0]);assert.equal(boat.remainingSections,2);
-  clock.now+=250;input.clickPos={x:300,y:400};controller.handleAiming(input,bounds,16);assert.equal(consumed.at(-1),0);
+  // Spec 151 D5: a boat target reserves the next loaded cargo slot; nothing is spent until the drop.
+  const spentBeforeTarget=consumed.length;
+  clock.now+=250;input.clickPos={x:300,y:400};controller.handleAiming(input,bounds,16);
+  assert.equal(drops.at(-1)[4],0,'the target carries cargo slot 0');assert.equal(consumed.length,spentBeforeTarget,'nothing spent at the click');
   controller.updateUI();assert.equal(controller.ui.currentState,'moving');assert.equal(controller.isAiming,false);
   boat.state='waiting';boat.waypoints=[];controller.updateUI();assert.equal(controller.ui.currentState,'ready');
   controller.handleClick();assert.equal(boat.remainingSections,1);assert.equal(consumed.at(-1),0);boat.state='waiting';
@@ -73,10 +76,15 @@ function checkChumComposition() {
   boat.state='waiting';input.clickPos={x:600,y:200};controller.handleGlobalBoatControl(input);assert.equal(input.clickPos,null);assert.equal(boat.pos.x,600);
   state='playing';input.clickPos={x:500,y:300};controller.handleGlobalBoatControl(input);assert.notEqual(input.clickPos,null);state='waiting';
   boat.state='drifting';canCast=false;controller.handleGlobalBoatControl(input);assert.equal(input.clickPos,null);canCast=true;
-  boat.pos={x:400,y:590};input.clickPos={x:400,y:590};controller.handleGlobalBoatControl(input);assert.equal(boats.length,0);
+  // Spec 151 D7: no tap removal; a drifting boat explains how to get it back.
+  boat.pos={x:400,y:590};input.clickPos={x:400,y:590};controller.handleGlobalBoatControl(input);assert.equal(boats.length,1,'a tap never removes a boat');
+  controller.handleClick();assert.equal(warnings.at(-1),runtime.context.FISHING_MESSAGES.boatDrifting);
+  chum.removeBoat(boat);equipped.deliveryChums=[{id:'first'},null,{id:'second'}];
   equipped.delivery.effectiveStats.manualControl=false;controller.setAiming(true);const auto=controller.activeBoat;clock.now+=250;
   input.clickPos={x:200,y:300};controller.handleAiming(input,bounds,16);controller.setAiming(false);auto.waypoints=[];auto.remainingSections=2;
-  input.clickPos={x:600,y:100};controller.handleGlobalBoatControl(input);assert.equal(input.clickPos,null);assert.equal(consumed.at(-1),0);
+  const spentBeforeMapClick=consumed.length;
+  input.clickPos={x:600,y:100};controller.handleGlobalBoatControl(input);assert.equal(input.clickPos,null);
+  assert.equal(drops.at(-1)[4],0,'a map click reserves the first unreserved loaded slot');assert.equal(consumed.length,spentBeforeMapClick);
   controller.setAiming(true);boats[0].state='returning';controller.updateUI();assert.equal(controller.isAiming,false);
   controller.activeBoat=auto;assert.equal(controller.activeBoat,auto);
   const ui=controller.ui;controller.dispose();assert.equal(controller.ui,null);assert.equal(controller.activeBoat,null);assert.equal(ui.button,null);assert.equal(nodes[0].removed,true);

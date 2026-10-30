@@ -81,6 +81,11 @@ export class PlayerInventory {
     return this.#facade.dispatch(action);
   }
 
+  // Spec 151: e.g. a bait boat on the water (ChumService.rootInstanceIdsAway).
+  setBusyDevices(source) {
+    this.#facade.setBusyDevices(source);
+  }
+
   setDeviceChargeProvider(provider) {
     this.#facade.setDeviceChargeProvider(provider);
   }

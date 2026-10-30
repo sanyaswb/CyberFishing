@@ -1016,6 +1016,14 @@ export class GameCompositionRoot {
         devicePower,
         onBoatReturned: (context) =>
           inventory.handleBoatReturned?.(context),
+        // Spec 151: the cargo slot is spent at the drop, a lost boat leaves the inventory with its battery and cargo,
+        // and a saved boat is restored from the equipped boat item.
+        consumeBoatChum: (slotIndex) => inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1),
+        onBoatLost: ({ rootInstanceId }) => inventory.consumeItem(rootInstanceId, 1),
+        findBoatItem: (rootInstanceId) => {
+          const boatItem = inventory.getEquipped().delivery;
+          return boatItem?.instanceId === rootInstanceId ? boatItem : null;
+        },
       })),
       bite: new BiteSystem(
         this.#config.spawns,
@@ -1030,6 +1038,8 @@ export class GameCompositionRoot {
       ),
       inventory,
     };
+    // Spec 151 D5: the inventory leaves a boat on the water unchanged (its slot, battery and cargo).
+    inventory.setBusyDevices({ rootInstanceIds: () => systems.chum.rootInstanceIdsAway() });
     systems.radio = this.#composeRadio({ own, inventory, devicePower, weather: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {

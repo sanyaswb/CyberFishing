@@ -18,9 +18,10 @@ export class BaitBoat {
   #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
   #rayPoint = { x: 0, y: 0 };
 
-  // dropBaitId: the chum the boat carries to its current target (spec 152: the spot appears when the bunker opens).
+  // drop: { baitId, slotIndex } the boat carries to its current target; the bunker opening spends that cargo slot and
+  // starts the spot (specs 151 D5, 152 D2).
   // batteryInstanceId: the battery in the boat's slot at launch (spec 143); ChumService consumes it.
-  constructor(startX, startY, config, dropBaitId = null, batteryInstanceId = null) {
+  constructor(startX, startY, config, drop = null, batteryInstanceId = null) {
     this.startPos = new Vector2(startX, startY);
     this.pos = new Vector2(startX, startY);
     this.target = null;
@@ -39,7 +40,7 @@ export class BaitBoat {
       statsConfig.statsByLevel?.[1] ||
       statsConfig.statsByLevel ||
       {};
-    this.dropBaitId = dropBaitId;
+    this.drop = drop;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;
     this.batteryInstanceId = batteryInstanceId;
@@ -74,6 +75,38 @@ export class BaitBoat {
   }
 
 
+  // Spec 151 D6: a launched boat survives a page reload. Everything its trip needs, in map coordinates.
+  toSnapshot() {
+    return {
+      x: this.pos.x, y: this.pos.y, startX: this.startPos.x, startY: this.startPos.y, angle: this.angle,
+      state: this.state, target: this.target ? { x: this.target.x, y: this.target.y } : null, drop: this.drop,
+      waypoints: this.waypoints.map((waypoint) => ({ ...waypoint })), droppedSections: [...this.droppedSections],
+      remainingSections: this.remainingSections, hasLeftShore: this.hasLeftShore, powerRatio: this.powerRatio,
+      animationState: this.animationState, openingTimer: this.openingTimer,
+      openingSectionIndex: this.openingSectionIndex, isBaitDropped: this.isBaitDropped,
+    };
+  }
+
+  restore(snapshot) {
+    this.pos.set(snapshot.x, snapshot.y);
+    this.startPos.set(snapshot.startX, snapshot.startY);
+    this.angle = snapshot.angle;
+    this.state = snapshot.state;
+    this.target = snapshot.target ? new Vector2(snapshot.target.x, snapshot.target.y) : null;
+    this.drop = snapshot.drop ?? null;
+    this.waypoints = snapshot.waypoints.map((waypoint) => ({ ...waypoint }));
+    this.droppedSections = [...snapshot.droppedSections];
+    this.remainingSections = snapshot.remainingSections;
+    this.hasLeftShore = snapshot.hasLeftShore;
+    this.powerRatio = snapshot.powerRatio;
+    this.animationState = snapshot.animationState === "immersion" ? "idle" : snapshot.animationState;
+    this.immersionTimer = 0;
+    this.openingTimer = snapshot.openingTimer;
+    this.openingSectionIndex = snapshot.openingSectionIndex;
+    this.isBaitDropped = snapshot.isBaitDropped;
+    return this;
+  }
+
   get sensorRays() {
     if (this.config.showSensors === false) return [];
     return this.#sensorRays;
@@ -98,18 +131,18 @@ export class BaitBoat {
     }
   }
 
-  setTarget(targetX, targetY, dropBaitId = null, isReturn = false) {
+  setTarget(targetX, targetY, drop = null, isReturn = false) {
     if (this.state === "drifting") return;
 
     const isManual = this.config.manualControl;
 
     if (!isManual && !isReturn && this.state === "deploying") {
-      this.waypoints.push({ x: targetX, y: targetY, dropBaitId });
+      this.waypoints.push({ x: targetX, y: targetY, drop });
       return;
     }
 
     this.target = new Vector2(targetX, targetY);
-    if (dropBaitId !== null) this.dropBaitId = dropBaitId;
+    if (drop !== null) this.drop = drop;
     this.state = isReturn ? "returning" : "deploying";
     this.animationState = "moving_start";
     this.moveStartTimer = 1.333;
@@ -499,7 +532,7 @@ export class BaitBoat {
     if (isCloseEnough || isStalled || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          if (this.dropBaitId && !this.isBaitDropped) {
+          if (this.drop && !this.isBaitDropped) {
             if (this.animationState !== "opening") {
               this.animationState = "opening";
               let dropNum = 1;
@@ -538,7 +571,7 @@ export class BaitBoat {
             this.#processNextWaypoint();
             return true;
           } else {
-            this.dropBaitId = null;
+            this.drop = null;
             this.state = "returning";
             this.animationState = "moving_start";
             this.moveStartTimer = 1.333;
@@ -572,7 +605,7 @@ export class BaitBoat {
       const wp = this.waypoints.splice(closestIdx, 1)[0];
       this.target.x = wp.x;
       this.target.y = wp.y;
-      this.dropBaitId = wp.dropBaitId;
+      this.drop = wp.drop;
       this.animationState = "moving_start";
       this.moveStartTimer = 1.333;
     } else {

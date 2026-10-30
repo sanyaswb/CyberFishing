@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.8";
+export const CURRENT_PROJECT_VERSION = "0.49.9";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 151 (G-124): drained bait boat drifts and comes back by the landing net or by mooring (metres); cargo spent at the drop; a boat on the water cannot be changed; launched boats survive a reload; no tap removal.",
     "Spec 152 (G-125): chum spots by monotonic game time, created at the drop, same-chum drops merge with averaged age, overfeeding; production chum zones now give their bonus and expire.",
     "TK-156: one source for the bait boat bunker count (BoatRules.sectionCount); no invented 1/3 defaults.",
     "TK-155: removed the unused chum memory grid (chum_memory_<location> was written and saved but never read).",

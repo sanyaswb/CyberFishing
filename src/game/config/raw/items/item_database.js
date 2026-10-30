@@ -1236,6 +1236,8 @@ export const ITEM_DB = {
         brakeForce: 0.5,
         finishRadiusTarget: 5,
         finishRadiusReturning: 30,
+        // Spec 151 D8: a drained, drifting boat this close to the player's shore (ground metres) is taken back.
+        recovery: { mooringMeters: 1 },
         emoji: "🚤",
       },
     },

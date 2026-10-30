@@ -33,6 +33,7 @@ export class GameApplication {
   #timeUI;
   #holdUI;
   #hasEquippedNet = false;
+  #boatInNetReach = false;
   #location;
   #rng;
   #devFlags;
@@ -293,6 +294,8 @@ export class GameApplication {
         this.#stateMachine?.currentName || this.#gameStateName,
       onStateChanged: (name) => {
         this.#gameStateName = name;
+        // A state's enter() sets the net button itself; the boat reach is written again on the next update.
+        this.#boatInNetReach = false;
         if (this.#inventory) this.#inventory.setLock(name !== "scouting");
       },
     };
@@ -415,6 +418,7 @@ export class GameApplication {
     this.#hasEquippedNet = !!newEq.net;
     this.#chumController.refreshActiveHandChum();
 
+    this.#boatInNetReach = false;
     this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
     this.#depthUI.updateMax(this.getMaxHookDepth());
   }
@@ -468,6 +472,8 @@ export class GameApplication {
     });
 
     this.#ui.onNetClick = () => {
+      if (this.#stateMachine?.currentName !== "playing" &&
+        this.#chumController.recoverBoatWithNet(this.#net, this.#world.getWaterMetric())) return;
       const state = this.#stateMachine?.currentState;
       if (state && typeof state.handleNetClick === "function")
         state.handleNetClick();
@@ -679,7 +685,7 @@ export class GameApplication {
     this.#applyViewportPan(input);
     const bounds = this.getDynamicBounds();
 
-    const envSnapshot = this.#world.update(dt, timeScale, bounds);
+    const envSnapshot = this.#world.update(dt, timeScale);
     this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
     this.updateChumUI();
@@ -718,6 +724,7 @@ export class GameApplication {
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
+    this.#updateBoatNetReach();
     this.#inventoryUI.updateDynamicProgression(dt);
     if (!updateAimBeforeFight) this.#updateRodVisualOffset(dt, input, bounds);
 
@@ -728,6 +735,20 @@ export class GameApplication {
 
     // Reuse the pre-built debug context object — no per-frame allocation.
     this.#debugService?.update(this.#debugContext);
+  }
+
+  // Spec 151: outside the fight the net button takes back a drifting boat inside the net's reach. Written only on
+  // change; in the fight the button belongs to the fish (PlayingState).
+  #updateBoatNetReach() {
+    if (this.#stateMachine.currentName === "playing") {
+      this.#boatInNetReach = false;
+      return;
+    }
+    const inReach = this.#net?.isActive === true &&
+      this.#chumController.getBoatInNetReach(this.#net, this.#world.getWaterMetric()) !== null;
+    if (inReach === this.#boatInNetReach) return;
+    this.#boatInNetReach = inReach;
+    this.#ui.updateNetButtonState(this.#hasEquippedNet, inReach);
   }
 
   #syncInputAvailability() {

@@ -1,3 +1,4 @@
+import { BusyDeviceSignature } from "./busy_device_signature.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_catalog.js";
 import { InventoryApplicationError } from "./inventory_application_error.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
@@ -34,6 +35,8 @@ export class InventoryCommandService {
   #consumableTargets;
   #slotVisibility;
   #pickSubfilterIds;
+  #busyDevices = null;
+  #busySignature = new BusyDeviceSignature();
 
   constructor({
     messages,
@@ -103,9 +106,24 @@ export class InventoryCommandService {
     return this.#uiState.snapshot();
   }
 
+  // Spec 151: devices away from the player (a bait boat on the water) report their roots here.
+  setBusyDevices(source) {
+    this.#busyDevices = source || null;
+  }
+
   dispatch(action = {}) {
     try {
-      return this.#dispatch(action);
+      const busyRoots = this.#busyDevices?.rootInstanceIds() || [];
+      if (busyRoots.length === 0) return this.#dispatch(action);
+      // Any action that would change a busy device (its slot, its items) is rolled back as a whole.
+      return this.#transaction.runAtomic(() => {
+        const before = this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState);
+        const result = this.#dispatch(action);
+        if (this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState) !== before) {
+          throw new Error(this.#messages.deviceAwayOnWater);
+        }
+        return result;
+      });
     } catch (error) {
       return this.#failure(error?.message, error);
     }
