@@ -1184,6 +1184,8 @@ export class GameCompositionRoot {
       equipmentSource: inventory }));
     // The selector's artwork waits for the started game (spec 157 R11); its classic buttons stand in until then.
     this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
+    // Spec 157 R5: the other keepnet fill stages warm up after the selector artwork the toolbar shows.
+    if (keepnetUI) this.#deferredAssetLoads.push(() => { void InventoryUiBootstrap.preloadKeepnetStages(this.#documentTarget); });
     return {  };
   }
 

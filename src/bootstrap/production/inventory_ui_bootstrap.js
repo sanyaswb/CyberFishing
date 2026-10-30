@@ -76,10 +76,9 @@ export class InventoryUiBootstrap {
     const dom = new InventoryDomFactory(documentRef);
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
+    // Only the current fill stage loads with the view (its images); the other stages wait for preloadKeepnetStages
+    // after the game is ready (spec 157 R5).
     const imageResolver = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
-    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
-    imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imagePath, src: stage.imagePath })))
-      .catch((error) => new ConsoleLogger().warn("[Keepnet] Artwork preload failed", error));
     return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
       imageResolver,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
@@ -107,6 +106,14 @@ export class InventoryUiBootstrap {
   static createListScrollController(uiSurface) {
     return new HorizontalScrollController({ uiSurface, axis: "y", className: "inventory-vertical-scroll",
       dragClassName: "inventory-vertical-scroll--dragging" });
+  }
+
+  // Spec 157 R5: every keepnet fill stage, warmed after the game is ready so a filling keepnet swaps its art without
+  // a network wait; startup loads only the current stage (createKeepnetView).
+  static preloadKeepnetStages(documentRef) {
+    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
+    return imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imagePath, src: stage.imagePath })))
+      .catch((error) => new ConsoleLogger().warn("[Keepnet] Artwork preload failed", error));
   }
 
   // The empty-slot placeholders appear only once the inventory opens; warming them here instead of <link preload>

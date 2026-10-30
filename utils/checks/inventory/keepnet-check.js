@@ -45,9 +45,28 @@ async function main() {
   // Production composition: both overview images, the backdrop and toolbar share the unfiltered occupancy.
   const artworkDocument = new TestDocument();
   const artworkState = { ...empty };
+  const createdImages = [];
+  const createElement = artworkDocument.createElement.bind(artworkDocument);
+  artworkDocument.createElement = (tag) => {
+    const element = createElement(tag);
+    if (tag === "img") createdImages.push(element);
+    return element;
+  };
   const artworkView = InventoryUiBootstrap.createKeepnetView({ documentRef: artworkDocument,
     liveBait: { getView: () => artworkState, advance() {} }, buttonMountNode: artworkDocument.body,
     degradationColorResolver: colors, openSection() {}, toggleSection() {} });
+  // Spec 157 R5: the view loads only the current fill stage; the other stages wait for preloadKeepnetStages.
+  assert.deepEqual([...new Set(createdImages.map((image) => image.src).filter((src) => /keepnet--/u.test(src)))],
+    [artwork.resolve(0)], "startup requests only the current keepnet stage");
+  const stageImages = createdImages.length;
+  await InventoryUiBootstrap.preloadKeepnetStages({ createElement: (tag) => {
+    const image = createElement(tag);
+    queueMicrotask(() => image.onload?.());
+    createdImages.push(image);
+    return image;
+  } });
+  assert.deepEqual(createdImages.slice(stageImages).map((image) => image.src).filter((src) => /keepnet--/u.test(src)),
+    KEEPNET_ART_STAGES.map((stage) => stage.imagePath), "the deferred warm-up loads every stage");
   artworkDocument.body.append(artworkView.summaryNode, artworkView.contentNode);
   artworkView.setVisible(true);
   const artworkImages = [...artworkDocument.byClass("keepnet-section__icon"),
