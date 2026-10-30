@@ -170,6 +170,31 @@ async function checkReleaseControl() {
   assert.equal(listeners.size, 0, "detach removes every listener, pointerup included");
 }
 
+// Spec 157 D0: both game pages paint the startup screen from their HTML alone. Its markup and inline style come
+// before every game stylesheet (a stylesheet before it would hold back the first paint), and the rule that hides it
+// keys on the very attribute PerformanceStartupMarks sets at ready (another name would leave a black screen).
+async function checkStartupScreen() {
+  const fs = require("node:fs");
+  const { PerformanceStartupMarks } = await importSource("src/platform/browser/diagnostics/performance_startup_marks.js");
+  const attributes = [];
+  new PerformanceStartupMarks({ performance: { mark() {} }, rootElement: { setAttribute: (name) => attributes.push(name) } })
+    .markReady();
+  const [readyAttribute] = attributes;
+  for (const page of ["index.html", "dev.html"]) {
+    const html = fs.readFileSync(path.join(ROOT_DIR, page), "utf8").replace(/<!--[^]*?-->/gu, "");
+    const screen = html.indexOf('<div class="startup-loader"');
+    const firstStylesheet = html.search(/<link\b[^>]*rel="stylesheet"/u);
+    const inlineStyle = html.match(/<style>([^]*?)<\/style>/u);
+    assert(screen > 0 && firstStylesheet > screen, `${page}: the startup screen precedes every game stylesheet`);
+    assert(inlineStyle && inlineStyle.index < screen, `${page}: the screen's inline style comes first`);
+    assert(html.indexOf("<svg", screen) > screen && html.indexOf("<svg", screen) < firstStylesheet,
+      `${page}: the screen's icon is inline SVG`);
+    assert(inlineStyle[1].includes(`html[${readyAttribute}] .startup-loader`),
+      `${page}: the screen hides on ${readyAttribute}, the attribute set at ready`);
+    assert(!/<img\b|url\(/u.test(html.slice(0, firstStylesheet)), `${page}: the startup screen loads no file`);
+  }
+}
+
 function checkMeasurer() {
   const { median, summarize, readOptions, BUDGET } = require(path.join(ROOT_DIR, "utils/measure-startup.js"));
   assert.equal(median([3, 1, 2]), 2);
@@ -195,10 +220,11 @@ function checkMeasurer() {
   await checkOverlay();
   await checkReleaseControl();
   await checkFileSaver();
+  await checkStartupScreen();
   checkMeasurer();
   console.log("Startup load report passed: stage marks once with the ready signal, report stages/paint/play, requests and "
     + "cache hits before T-play, kinds, request waves and the deepest chain, overlay report cache, copy and file save outcomes, file saver, "
-    + "release-activated overlay control, measurer medians and budget verdicts.");
+    + "release-activated overlay control, startup screen before the stylesheets and hidden at ready, measurer medians and budget verdicts.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

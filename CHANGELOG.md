@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.26 - Static startup screen
+
+- Spec 157 D0: a black startup screen with an inline SVG spinner paints straight from the HTML (game stylesheets now follow it in the body) and fades out at the first frame of play (data-game-ready); first paint on a cold Fast 4G start 2920 → 120 ms, 3G 12740 → 212 ms locally. Game-cycle report unchanged.
+
 ## v0.49.25 - Current keepnet stage only
 
 - Spec 157 R5: the keepnet view loads only its current fill stage; all six stages warm up after the first frame, after the selector artwork (warm start on Fast 4G 828 → 537 ms locally; cold unchanged after R11). Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.17 - Bait boat wake crash fix
 
 - Delivery / Scene: launching the bait boat crashed the frame (`out.set is not a function` in BoatWakeEmitter.buildInto): ViewportProjector writes screen points with `out.set`, the wake passed a plain object; the wake check's projector now follows that contract (TK-163). Game-cycle report unchanged.
-
-## v0.49.16 - Bait boat button without battery charge
-
-- Delivery / HUD: a boat without a charged battery shows the inactive (red, empty) launch button like empty bunkers; with chum loaded a click opens the boat editor at its battery socket in red with the battery warning (TK-162). Game-cycle report unchanged.
