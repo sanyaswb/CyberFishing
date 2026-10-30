@@ -56,6 +56,18 @@ try {
   assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
     "released raster assets are WebP");
   assert(![...files].some((file) => file.startsWith("asset-sources/")), "image masters are not released");
+  // Spec 157 R6: one file per item art; two files with the same bytes are two downloads of one picture (the bamboo
+  // rod's with-line and no-line arts were one picture in two files until v0.49.28).
+  // The tracked item art as it is now (the index and the working files), so a duplicate fails before its commit.
+  const rootDir = path.resolve(__dirname, "../../..");
+  const itemArt = require("node:child_process").spawnSync("git", ["ls-files", "-z", "assets/items"], { cwd: rootDir })
+    .stdout.toString("utf8").split("\0").filter((file) => file && fs.existsSync(path.join(rootDir, file)));
+  const byDigest = new Map();
+  for (const file of itemArt) {
+    const digest = require("node:crypto").createHash("sha256").update(fs.readFileSync(path.join(rootDir, file))).digest("hex");
+    assert(!byDigest.has(digest), `${file} repeats the bytes of ${byDigest.get(digest)}; point both fields at one file`);
+    byDigest.set(digest, file);
+  }
   // Spec 084: the House is a screen of the DEV page (the lobby will compose it in production), not a page.
   assert(!tree.has("fisherman-house.html") && !files.has("fisherman-house.html"), "no separate House page");
   if (tree.has("dev.html") && tree.has("src/bootstrap/production/house_screen_composition.js")) {

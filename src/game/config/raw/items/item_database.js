@@ -135,7 +135,8 @@ export const ITEM_DB = {
         },
         equipment: {
           withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
-          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.webp",
+          // Spec 157 R6 (owner, 2026-10-30): one art for now; a separate no-line art comes later.
+          withoutLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
         },
         // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
         // hangs from the line-tip bone.

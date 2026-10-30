@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.29 - One bamboo rod art
+
+- Spec 157 stage C: the bamboo rod's with-line and no-line fields point at one file (bamboo-rod-ecip-v1.webp); the byte-identical bamboo-rod-unecip-v1.webp is removed (owner: one art until a separate no-line art). The Pages release check rejects two item art files with the same bytes. Game-cycle report unchanged.
+
 ## v0.49.28 - Display-sized keepnet art
 
 - Spec 157 stage C: the six keepnet fill stages are 768 px WebP middle (0.80 MB instead of 3.89 MB; largest phone view ~374 CSS px), masters in asset-sources/items/keepnet; convert-images --thumbnails takes --quality low|middle|high and sizes up to 2048 px. Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.20 - Visible boat wake ripples
 
 - Spec 156 fix (owner: no visible change in v0.49.19): the wake's ripples now bend the water as far as its own waves (strength 1 = full amplitude), fade over each puff's life instead of the foam's transparency, and always cover at least 2.5 texels of the water map; defaults strength 1, radiusScale 2.5 (CONFIG.ui.boat.wake.water, live in DevTools). Incident I-8, rule R8.
-
-## v0.49.19 - Boat wake ripples in the water
-
-- Delivery / Scene: each wake puff also bends the painted water around it (an outward ring in the water's displacement map, only on water), so the water behind the boat ripples along with the foam; tuning in `CONFIG.ui.boat.wake.water` (spec 156). Game-cycle report unchanged.

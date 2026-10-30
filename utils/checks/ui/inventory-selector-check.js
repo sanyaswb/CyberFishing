@@ -441,7 +441,7 @@ async function checkComposition() {
   equipmentListener(); assert.equal(artworkLoads, 1, "unchanged inventory never reloads rod art");
   assert.equal(art.children[0], rodImage, "rod updates retain the image node");
   equipped.rod = null; equipmentListener(); assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
-  equipped.rod = { imageUrl: "assets/items/rods/bamboo-rod-unecip-v1.webp" }; equipmentListener();
+  equipped.rod = { imageUrl: "assets/items/rods/bamboo-rod-ecip-v1.webp" }; equipmentListener();
   equipped.rod = null; equipmentListener(); finishArtwork(); await Promise.resolve();
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden, "a late preload cannot restore a removed rod");
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-closed-scale"), String(1 / 1.7));
