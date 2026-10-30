@@ -192,6 +192,10 @@ async function checkStartupScreen() {
     assert(inlineStyle[1].includes(`html[${readyAttribute}] .startup-loader`),
       `${page}: the screen hides on ${readyAttribute}, the attribute set at ready`);
     assert(!/<img\b|url\(/u.test(html.slice(0, firstStylesheet)), `${page}: the startup screen loads no file`);
+    // TK-171 / incident I-9: a background on the root stops the body's background from moving to the canvas; the body
+    // then paints it on its own box, above the WebGL scene at z-index -1, and the water disappears.
+    assert(!/(?:^|[\s,}])(?:html|body|:root)\b[^{]*\{[^}]*background/u.test(inlineStyle[1]),
+      `${page}: the startup screen's style sets no html/body background (it would cover the WebGL scene)`);
   }
 }
 

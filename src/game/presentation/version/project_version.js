@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.30";
+export const CURRENT_PROJECT_VERSION = "0.49.31";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-171: the water shows again after the startup screen (the screen's style no longer sets a page background that covered the WebGL scene).",
     "TK-169: the owner's inventory panel border tone and grey aquarium feed box icon.",
     "Spec 157 stage C: the bamboo rod's no-line field uses the one rod art; the byte-identical duplicate file is removed.",
     "Spec 157 stage C: keepnet stages display-sized (768 px WebP middle, 0.80 MB instead of 3.89 MB); masters in asset-sources.",

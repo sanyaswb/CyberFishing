@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.31 - Water visible again
+
+- TK-171 fix: since v0.49.26 the startup screen's inline style set a background on `html`, so the page's grey body background was painted above the WebGL scene (z-index -1) and the water was a grey screen; the root background is removed (incident I-9). Game-cycle report unchanged.
+
 ## v0.49.30 - Owner style edits
 
 - TK-169 (owner's edits): the inventory panel border is warm grey (rgba(218, 204, 201, 0.23) instead of the cool grey), the simple aquarium feed icon's box and circle outline are grey instead of brown; theme.css card/socket sizes reformatted, values unchanged. Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Spec 157 stage A: the game marks its startup stages (`startup:entry` … `startup:ready`, then `data-game-ready`); DEV overlay «ЗАВАНТАЖЕННЯ» (DevTools → OVERLAY MODULES → Performance → «Завантаження»): stages, T-paint/T-play, requests and bytes by kind, request waves, 10 largest/longest, «Копіювати звіт».
 - Tools: `npm run measure:startup` measures a local copy of the Pages release in headless Chrome (HTTP/2, 4G, cold and warm, 5 runs) against the spec 157 budget. Game-cycle report unchanged.
-
-## v0.49.21 - Foam-only boat wake
-
-- Spec 156: the wake's water ripples are off by default (CONFIG.ui.boat.wake.water.enabled = false, owner: only the foam wake of spec 155 for now); the code and checks stay, DevTools turns them on live. Spec 157 text corrected after review (compressed byte budget, single rod art, vinyl-5 load condition).

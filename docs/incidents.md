@@ -22,6 +22,24 @@ rule as something the next change can follow.
 | R6 | A moving agent plans on the map as it is (passability from the same water test as its physics, rebuilt on map revision) and watches its progress; reactive sensors only as a fallback. | I-1 |
 | R7 | When proving a check against old code, keep the backup until `cmp` confirms the restore; never delete it in the same command. | I-7 |
 | R8 | An effect added to an existing signal (a displacement map, a sound, a light) is sized against that signal and its grid: the check asserts its magnitude as a share of the signal's full range and that the smallest real input still reaches a cell. A check that only asserts "changed" passes an invisible effect. | I-8 |
+| R9 | Page-level styles never set a background on `html`/`:root`: the body's background must keep moving to the canvas, below the WebGL scene at `z-index: -1`. A browser check of a page change looks at the pixels of the scene, not only at what an element hit test returns. | I-9 |
+
+## I-9 · 2026-10-31 · v0.49.26–29: grey screen instead of the water after the startup screen (TK-171)
+
+- **Seen:** owner's phone, Pages 0.49.29 (`dev.html?scene=webgl`): the game started (toolbar, clock), but where the
+  water should be the page stayed plain grey.
+- **Cause:** the inline style of the static startup screen (spec 157 D0, `index.html`/`dev.html`) set
+  `html { background: #000; }`. CSS moves the body's background to the canvas (the whole viewport, under every layer)
+  only while the root element has none; with a root background the body paints its `#1a1a1a` (`.game-shell`) on its
+  own box, and that box is painted above negative z-index layers. The WebGL scene (`.game-shell__scene`, `position:
+  fixed; z-index: -1`, `game-shell.css`) is exactly such a layer, so the body's grey covered it on every page.
+- **Why it slipped through:** the D0 browser check (Playwright) asserted the screen's visibility before and after ready
+  and that the centre of the screen hits the 2D game canvas — a hit test, which ignores painting order.
+- **Fix:** v0.49.31 removes the root background (the startup screen is a full-viewport black layer of its own until ready).
+- **Rule:** R9.
+- **Check:** `startup-load-report` (the startup screen's inline style sets no `html`/`body`/`:root` background; fails on
+  the 0.49.26–30 pages); a Playwright pixel check of the scene after ready on both pages and orientations: 0.49.30 —
+  every water sample `26,26,26` (page grey), the fix — the same water colours as before D0 (c17bfe59).
 
 ## I-8 · 2026-10-30 · v0.49.19: the boat's water ripples were invisible (spec 156)
 
