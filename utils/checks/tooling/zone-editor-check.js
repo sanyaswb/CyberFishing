@@ -1180,6 +1180,10 @@ controlUI.dispose();
     virtualToScreen: (x, y, out) => out ? out.set(x, y) : { x, y }, screenToVirtual: (x, y, out) => out ? out.set(x, y) : { x, y } };
   const geo = new ZoneEditorGeometryBuilder({ state: st, map: liveMap, projector: proj, config: cfg, getWaterMetric: () => null });
   const flags = new DevFlagsProvider({ config: cfg, zoneEditorState: st });
+  // Spec 154 Q3: the editor's route switch is the only source of the DEV boat route flag.
+  assert.equal(flags.isEnabled("showBoatRoute"), false);
+  st.setFlag("boatRoute", true); assert.equal(flags.isEnabled("showBoatRoute"), true, "the route switch shows the boat route");
+  st.setFlag("boatRoute", false); assert.equal(flags.isEnabled("showBoatRoute"), false);
   const world = new GameWorld({ map: liveMap, projector: proj, env: { update() {}, getSnapshot: () => ({ time: 12 }) },
     chum: { update() {}, updateBoats() {} }, location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
     locationConfig: cfg.locations, waterMetricSource: { current: () => null }, isZoneMotionPaused: () => flags.isEnabled('pauseDynamicZones') });

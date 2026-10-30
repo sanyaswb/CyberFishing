@@ -20,6 +20,7 @@ export class DevFlagsProvider {
   }
 
   isEnabled(flag) {
+    if (flag === "showBoatRoute") return this.#zoneEditorState?.boatRoute === true;
     if (flag === "pauseDynamicZones") return this.#zoneEditorState?.enabled === true &&
       this.#zoneEditorState.editsLoadedLocation && this.#zoneEditorState.isEditable("dynamic") &&
       this.#config.locations?.enableDynamicZones !== false;

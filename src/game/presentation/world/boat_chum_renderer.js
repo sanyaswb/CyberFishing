@@ -23,6 +23,23 @@ export class BoatChumRenderer {
     this.#renderWaypoints(model);
     this.#renderBoats(model);
     this.#renderSensors(model);
+    this.#renderRoute(model);
+  }
+
+  #renderRoute(model) {
+    if (model.boatRoute.count === 0) return;
+    const surface = this.#surface;
+    surface.save();
+    surface.lineWidth = 2;
+    surface.strokeStyle = "rgba(0, 220, 255, 0.85)";
+    surface.beginPath();
+    for (let index = 0; index < model.boatRoute.count; index += 1) {
+      const dash = model.boatRoute.getAt(index);
+      surface.moveTo(dash.startX, dash.startY);
+      surface.lineTo(dash.endX, dash.endY);
+    }
+    surface.stroke();
+    surface.restore();
   }
 
   #renderChumZones(model) {

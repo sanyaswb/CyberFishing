@@ -533,6 +533,9 @@ export class ZoneEditorSection {
       ["ZONE_EDITOR", "depth"]);
     ui.createRangeRow("Непрозорість глибини", state.depthOpacity * 100, section,
       value => state.setNumber("depthOpacity", value / 100), ["ZONE_EDITOR", "depthOpacity"]);
+    ui.createSwitcherRow("Маршрут кораблика", state.boatRoute, section, value => state.setFlag("boatRoute", value),
+      ["ZONE_EDITOR", "boatRoute"]);
+    ui.createInfoRow("Маршрут кораблика", "Пунктир запланованого маршруту кораблика на воді (лише DEV): шлях по поточній карті навколо суші й перешкод. Перевіряє планування після змін сітки й зон.", section);
   }
 
   #fillPerspective() {

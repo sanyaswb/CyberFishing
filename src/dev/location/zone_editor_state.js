@@ -18,6 +18,8 @@ export class ZoneEditorState {
   grid = false;
   cellGrid = false;
   depth = false;
+  // Spec 154 Q3: show the bait boat's planned route (DEV diagnostic, independent of editing).
+  boatRoute = false;
   spacingMeters = 1;
   cellGridOpacity = 0.25;
   depthOpacity = 0.7;
@@ -62,7 +64,9 @@ export class ZoneEditorState {
   }
 
   setFlag(key, value) {
-    if (!["enabled", "background", "grid", "cellGrid", "depth"].includes(key)) throw new TypeError("Unknown editor flag");
+    if (!["enabled", "background", "grid", "cellGrid", "depth", "boatRoute"].includes(key)) {
+      throw new TypeError("Unknown editor flag");
+    }
     const next = value === true;
     if (this[key] === next) return;
     this[key] = next;

@@ -2,6 +2,7 @@ import { SceneChangeFingerprint } from "./scene_change_fingerprint.js";
 
 const CHUM_COLOR = 0xc8ff64;
 const WAYPOINT_COLOR = 0xffaa00;
+const ROUTE_COLOR = 0x00dcff;
 
 // The world-entities kind on the scene (spec 107): the bait boats' chum zones (clipped to the castable water), their
 // waypoints, the boats (emoji sprites with an energy bar) and their sensor rays, drawn exactly as BoatChumRenderer
@@ -49,11 +50,13 @@ export class PixiWorldEntitiesRenderer {
     this.#drawWaypoints(world, pixelRatio);
     this.#drawBoats(world, pixelRatio);
     this.#drawSensors(world);
+    this.#drawRoute(world);
     return true;
   }
 
   #hasContent(world) {
-    return world.chumZones.count + world.waypoints.count + world.boats.count + world.sensorRays.count > 0;
+    return world.chumZones.count + world.waypoints.count + world.boats.count + world.sensorRays.count +
+      world.boatRoute.count > 0;
   }
 
   #hide() {
@@ -97,6 +100,10 @@ export class PixiWorldEntitiesRenderer {
       const ray = world.sensorRays.getAt(index);
       print.length(ray.startX); print.length(ray.startY); print.length(ray.endX); print.length(ray.endY);
       print.flag(ray.blocked);
+    }
+    for (let index = 0; index < world.boatRoute.count; index += 1) {
+      const dash = world.boatRoute.getAt(index);
+      print.length(dash.startX); print.length(dash.startY); print.length(dash.endX); print.length(dash.endY);
     }
     return print.finish();
   }
@@ -191,6 +198,18 @@ export class PixiWorldEntitiesRenderer {
       this.#boatView = activeView;
     }
     this.#hideFrom(this.#boatSprites, world.boats.count);
+  }
+
+  // Spec 154 Q3: the DEV route as its dash segments (2D: BoatChumRenderer, same colour and width).
+  #drawRoute(world) {
+    if (world.boatRoute.count === 0) return;
+    const overlay = this.#overlay;
+    for (let index = 0; index < world.boatRoute.count; index += 1) {
+      const dash = world.boatRoute.getAt(index);
+      overlay.moveTo(dash.startX, dash.startY);
+      overlay.lineTo(dash.endX, dash.endY);
+    }
+    overlay.stroke({ width: 2, color: ROUTE_COLOR, alpha: 0.85 });
   }
 
   #drawSensors(world) {

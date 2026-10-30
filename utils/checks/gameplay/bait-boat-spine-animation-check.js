@@ -261,6 +261,7 @@ async function checkBoatRenderPipeline() {
     powerRatio: 0.9,
     waypoints: [],
     sensorRays: [],
+    route: [{ x: 50, y: 20 }],
   };
 
   const projector = {
@@ -287,9 +288,27 @@ async function checkBoatRenderPipeline() {
     waypoints: new ReusableRenderList("world.waypoints"),
     boats: new ReusableRenderList("world.boats"),
     sensorRays: new ReusableRenderList("world.sensorRays"),
+    boatRoute: new ReusableRenderList("world.boatRoute"),
   };
 
   builder.buildInto(frameTarget);
+  assert.equal(frameTarget.boatRoute.count, 0, "spec 154 Q3: without the DEV switch the route is not drawn");
+  let routeShown = true;
+  const routeBuilder = new BoatChumRenderFrameBuilder({
+    chum: { getBoats: () => [fakeBoat], getZones: () => [] }, projector, config: { locations: { showChumZones: false } },
+    getWaterMetric: () => ({ surfaceScaleAt: () => 1, surfaceSquashY: 1 }), isRouteVisible: () => routeShown,
+  });
+  const routeFrame = { chumZones: new ReusableRenderList("a"), waypoints: new ReusableRenderList("b"),
+    boats: new ReusableRenderList("c"), sensorRays: new ReusableRenderList("d"), boatRoute: new ReusableRenderList("e") };
+  routeBuilder.buildInto(routeFrame);
+  // Boat (100, 240) to route point (100, 40) on screen: 200 px = 10 periods of 12 px dash + 8 px gap.
+  assert.equal(routeFrame.boatRoute.count, 10, "the DEV route is drawn as 12/8 px dashes");
+  const firstDash = routeFrame.boatRoute.getAt(0);
+  assert.deepEqual([firstDash.startX, firstDash.startY, firstDash.endX, firstDash.endY], [100, 240, 100, 228]);
+  routeShown = false;
+  for (const list of Object.values(routeFrame)) list.reset();
+  routeBuilder.buildInto(routeFrame);
+  assert.equal(routeFrame.boatRoute.count, 0, "switching it off removes it");
   assert.equal(frameTarget.boats.count, 1);
   const boatRecord = frameTarget.boats.getAt(0);
   assert.equal(boatRecord.x, 100);
@@ -350,6 +369,7 @@ async function checkBoatRenderPipeline() {
     waypoints: frameTarget.waypoints,
     boats: frameTarget.boats,
     sensorRays: frameTarget.sensorRays,
+    boatRoute: frameTarget.boatRoute,
   };
 
   const updated = renderer.update(world, 1);

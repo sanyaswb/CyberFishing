@@ -807,7 +807,7 @@ async function checkSceneWorldKinds() {
     barWidth: 40, barHeight: 4, barY: -16 };
   const world = { visible: true, clipRegions: list([{ x: 0, y: 300, width: 400, height: 300 }]), chumZones: list([zone]),
     waypoints: list([{ x: 100, y: 350, scale: 1, index: 2, showIndex: true }]), boats: list([boatModel]),
-    sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]) };
+    sensorRays: list([{ startX: 150, startY: 380, endX: 180, endY: 360, blocked: true }]), boatRoute: list([]) };
   assert.equal(entities.update(world, 2), true);
   assert.equal(container.visible, true);
   assert.deepEqual(zones.ops, [["ellipse", 200, 400, 60, 20], ["fill", { color: 0xc8ff64, alpha: 0.1 }],
@@ -828,7 +828,7 @@ async function checkSceneWorldKinds() {
   assert.equal(entities.update(null, 2), true, "off the scene it hides once");
   assert.equal(container.visible, false);
   assert.equal(entities.update(null, 2), false);
-  assert.equal(entities.update({ ...world, chumZones: list([]), waypoints: list([]), boats: list([]), sensorRays: list([]) }, 2),
+  assert.equal(entities.update({ ...world, chumZones: list([]), waypoints: list([]), boats: list([]), sensorRays: list([]), boatRoute: list([]) }, 2),
     false, "nothing to draw: hidden, no frame");
 
   const { PixiFightAreaRenderer } = await importSource("src/platform/browser/scene/pixi_fight_area_renderer.js");

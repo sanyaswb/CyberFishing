@@ -1253,7 +1253,7 @@ export class GameCompositionRoot {
     const { chumController } = this.#composeChumController({ own, runtime, clock, config, rng, appPorts });
 
     const { frameBuilder } = this.#rendering.composeFrameBuilders({
-      runtime, config, canvasMetrics, appPorts, clock, contracts, fightService,
+      runtime, config, canvasMetrics, appPorts, clock, contracts, fightService, devFlags,
     });
     const { renderCoordinator } = this.#rendering.composeCoordinator({
       stateMachine, frameBuilder, runtime, appPorts, contracts,

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.12 - DEV bait boat route display
+
+- DEV: DevTools → «РЕДАКТОР» → «Маршрут кораблика» draws the boat's planned route as a dashed line on the WebGL scene and the 2D fallback; production never shows it (spec 154 Q3). Game-cycle report unchanged.
+
 ## v0.49.11 - Bait boat route planning
 
 - Delivery / AI: each boat leg is planned on the current map (passability at half a map cell, rebuilt on map edits; A* with string pulling, off the shore); the boat follows the route, rays stay only as a fallback, and a leg without progress replans and finally comes home with its cargo (spec 154 / G-127).
@@ -47,7 +51,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Radio / Inventory: clicking power without a charged battery scrolls to the battery socket, flashes it in red error feedback (`inventory-equipment-feedback--error`), and displays the warning notice «Без енергії діла не буде» (Spec 142 / TK-152).
 - Radio / HUD: styled depleted battery state (`hud-indicator--empty`) with red circle border alongside red icon; clicking the indicator opens the radio editor with battery feedback and warning (TK-152).
 - Radio / VOLIA 77.2: implemented non-destructive stream player pause and resume on page visibility changes, resuming VOLIA playback from the exact paused position without cue or restart (TK-152).
-
-## v0.49.2 - Red border and dark-red background warning state for empty bait boat button
-
-- Fishing / HUD: styled empty bait boat toolbar button (`chum-control--boat-empty`) with high-visibility red border (`var(--ui-danger, #ff4444)`) and dark-red background (`rgb(117, 23, 6)`), ensuring unambiguous visual indication when chum runs out while keeping the button active and clickable (Spec 150 / TK-151).

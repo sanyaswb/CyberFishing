@@ -10,6 +10,7 @@ export class BoatChumRenderFrameBuilder {
   #boatAnimation;
   #getTimeOfDay;
   #clock;
+  #isRouteVisible;
   #timeBlend = { evening: 0, night: 0 };
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
@@ -22,6 +23,7 @@ export class BoatChumRenderFrameBuilder {
     boatAnimation = null,
     getTimeOfDay = null,
     clock = null,
+    isRouteVisible = () => false,
   }) {
     if (!chum || typeof chum.getBoats !== "function") {
       throw new TypeError(
@@ -41,6 +43,8 @@ export class BoatChumRenderFrameBuilder {
     this.#boatAnimation = boatAnimation;
     this.#getTimeOfDay = getTimeOfDay;
     this.#clock = clock;
+    // Spec 154 Q3: the planned route is a DEV diagnostic (zone editor switch); production never shows it.
+    this.#isRouteVisible = isRouteVisible;
   }
 
   buildInto(target) {
@@ -128,6 +132,34 @@ export class BoatChumRenderFrameBuilder {
       record.animClip = anim?.clip ?? "";
       record.animTimer = anim?.clipTimer ?? 0;
       this.#buildSensors(target, boat);
+      if (this.#isRouteVisible()) this.#buildRoute(target, boat);
+    }
+  }
+
+  // The route from the boat through its remaining points as screen-space dashes (12 px on, 8 px off).
+  #buildRoute(target, boat) {
+    const route = boat.route;
+    if (!route || route.length === 0) return;
+    let from = this.#projector.virtualToScreen(boat.pos.x, boat.pos.y, this.#screenA);
+    let fromX = from.x, fromY = from.y, phase = 0;
+    for (let index = 0; index < route.length; index += 1) {
+      const to = this.#projector.virtualToScreen(route[index].x, route[index].y, this.#screenB);
+      const length = Math.hypot(to.x - fromX, to.y - fromY);
+      for (let at = 0; at < length;) {
+        const dash = phase < 12;
+        const step = Math.min(dash ? 12 - phase : 20 - phase, length - at);
+        if (dash) {
+          const record = target.boatRoute.acquire();
+          record.startX = fromX + (to.x - fromX) * (at / length);
+          record.startY = fromY + (to.y - fromY) * (at / length);
+          record.endX = fromX + (to.x - fromX) * ((at + step) / length);
+          record.endY = fromY + (to.y - fromY) * ((at + step) / length);
+        }
+        at += step;
+        phase = (phase + step) % 20;
+      }
+      fromX = to.x;
+      fromY = to.y;
     }
   }
 

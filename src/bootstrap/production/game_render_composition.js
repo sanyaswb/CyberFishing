@@ -252,7 +252,7 @@ export class GameRenderComposition {
   }
 
   // Render frame builders for world, casting, fight areas, HUD, fishing and outcome.
-  composeFrameBuilders({ runtime, config, canvasMetrics, appPorts, clock, contracts, fightService }) {
+  composeFrameBuilders({ runtime, config, canvasMetrics, appPorts, clock, contracts, fightService, devFlags = null }) {
     const worldBuilder = new WorldRenderFrameBuilder({
       map: runtime.map,
       getWaterMetric: appPorts.getWaterMetric,
@@ -268,6 +268,8 @@ export class GameRenderComposition {
         boatAnimation: runtime.rendering.boatAnimation?.controller ?? runtime.rendering.boatAnimation,
         getTimeOfDay: () => runtime.env?.getSnapshot?.()?.time ?? (typeof clock?.getHours === "function" ? clock.getHours() : 12),
         clock,
+        // Spec 154 Q3: production's inactive DEV flags never show the boat route.
+        isRouteVisible: () => devFlags?.isEnabled("showBoatRoute") === true,
       }),
       debugBuilder: this.#createOptionalDiagnostic(
         this.#createLocationDebugRenderFrameBuilder, "locationDebugRenderFrameBuilder", [{
