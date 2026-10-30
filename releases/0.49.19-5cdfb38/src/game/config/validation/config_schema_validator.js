@@ -559,6 +559,17 @@ export class ConfigSchemaValidator {
     for (const [key, [min, max]] of Object.entries(ranges)) {
       if (wake[key] !== undefined) this.#requireFiniteNumber(`${path}.${key}`, wake[key], { min, max });
     }
+    // Spec 156: the wake's ripples in the water.
+    const water = wake.water;
+    if (water === undefined) return;
+    if (!water || typeof water !== "object") { this.#error(`${path}.water`, "must be an object"); return; }
+    if (water.enabled !== undefined && typeof water.enabled !== "boolean") {
+      this.#error(`${path}.water.enabled`, "must be a boolean");
+    }
+    if (water.strength !== undefined) this.#requireFiniteNumber(`${path}.water.strength`, water.strength, { min: 0, max: 2 });
+    if (water.radiusScale !== undefined) {
+      this.#requireFiniteNumber(`${path}.water.radiusScale`, water.radiusScale, { min: 0, max: 10 });
+    }
   }
 
   // A skin's Spine bundle: project-relative skeleton JSON and atlas paths, optional skin and line point names.

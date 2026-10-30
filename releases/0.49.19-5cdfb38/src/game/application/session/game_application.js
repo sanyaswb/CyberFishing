@@ -757,7 +757,11 @@ export class GameApplication {
     const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
     this.#input.setDragControlEnabled(rodAllowsReel && reelHasDrag);
     const stateName = this.#stateMachine?.currentName || this.#gameStateName;
-    this.#input.setPointerPanEnabled(stateName === "scouting" && !this.isAimingChum && !this.#canCast(eq));
+    // TK-166: choosing boat targets pans the map like bare scouting (drag pans, a tap places a point), so targets can be
+    // set anywhere on the water; hand chum aiming keeps its power-drag gesture.
+    const boatAiming = this.isAimingChum && !!eq.delivery;
+    this.#input.setPointerPanEnabled(stateName === "scouting" &&
+      (boatAiming || (!this.isAimingChum && !this.#canCast(eq))));
   }
 
   // A drag pans the map whenever it cannot cast (spec 076): no rod, or a rod without its reel or line. getEquipped()
