@@ -1,4 +1,4 @@
-// convert-images.js v1.4.0
+// convert-images.js v1.5.0
 
 const fs = require('fs');
 const path = require('path');
@@ -440,6 +440,8 @@ async function main() {
 }
 
 // --top-fraction 0.3 keeps the upper 30% before the ordinary contain resize (full image by default).
+// node utils/convert-images.js --thumbnails --input <masters> --output <assets> [--size 128..2048]
+//   [--quality low|middle|high]  (spec 157 R5/R6: display-sized art with the --batch presets; middle = WebP 80)
 async function createThumbnails(args) {
   const option = (name, fallback) => {
     const index = args.indexOf(name);
@@ -449,7 +451,9 @@ async function createThumbnails(args) {
   const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-thumbnails'));
   const size = Number(option('--size', '128'));
   const topFraction = Number(option('--top-fraction', '1'));
-  if (!Number.isSafeInteger(size) || size < 1 || size > 1024 || input === output ||
+  const qualityKeys = { low: '1', middle: '2', medium: '2', high: '3' };
+  const quality = QUALITY_PRESETS[qualityKeys[option('--quality', 'middle')]];
+  if (!quality || !Number.isSafeInteger(size) || size < 1 || size > 2048 || input === output ||
     !Number.isFinite(topFraction) || topFraction <= 0 || topFraction > 1 ||
     path.relative(BASE_DIR, output).startsWith('..')) throw new Error('Invalid thumbnail options');
   const files = glob.sync('**/*.{png,jpg,jpeg,webp,avif}', { cwd: input, nodir: true });
@@ -465,9 +469,10 @@ async function createThumbnails(args) {
         height: Math.max(1, Math.floor(metadata.height * topFraction)) });
     }
     await pipeline.resize(size, size, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 80 }).toFile(target);
+      .webp({ quality: quality.webp }).toFile(target);
   }
-  console.log(`Created ${files.length} thumbnails at max ${size}px in ${path.relative(BASE_DIR, output)}`);
+  console.log(`Created ${files.length} thumbnails at max ${size}px, ${quality.name} (WebP ${quality.webp}) in ${
+    path.relative(BASE_DIR, output)}`);
 }
 
 // Non-interactive conversion (spec 082): the same presets and naming as the dialogue, limited to one folder.

@@ -184,8 +184,7 @@
 │  │  ├── radio
 │  │  │  └── radio-receiver.webp
 │  │  └── rods
-│  │     ├── bamboo-rod-ecip-v1.webp
-│  │     └── bamboo-rod-unecip-v1.webp
+│  │     └── bamboo-rod-ecip-v1.webp
 │  ├── lobby
 │  │  └── lobby-background.webp
 │  ├── locations

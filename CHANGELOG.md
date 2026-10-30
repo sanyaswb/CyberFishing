@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.28 - Display-sized keepnet art
+
+- Spec 157 stage C: the six keepnet fill stages are 768 px WebP middle (0.80 MB instead of 3.89 MB; largest phone view ~374 CSS px), masters in asset-sources/items/keepnet; convert-images --thumbnails takes --quality low|middle|high and sizes up to 2048 px. Game-cycle report unchanged.
+
 ## v0.49.27 - Module preload on Pages
 
 - Spec 157 stage B: the Pages release writes `<link rel="preload" as="style">` for every stylesheet and `<link rel="modulepreload">` for every module of the page's graph into the root pages, so the browser requests them in parallel (request waves 24 → 4; cold start on Fast 4G 3.6 → 2.7 s, 3G 14.2 → 13.0 s locally). Game code unchanged. Game-cycle report unchanged.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.19 - Boat wake ripples in the water
 
 - Delivery / Scene: each wake puff also bends the painted water around it (an outward ring in the water's displacement map, only on water), so the water behind the boat ripples along with the foam; tuning in `CONFIG.ui.boat.wake.water` (spec 156). Game-cycle report unchanged.
-
-## v0.49.18 - Boat targets on a scrolled map
-
-- Delivery / Input: while bait boat targets are chosen, dragging pans the map (as bare scouting does) and a tap places a target, so targets can be set anywhere on the water regardless of where the boat is; hand chum aiming keeps its power drag (TK-166). Game-cycle report unchanged.

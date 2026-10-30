@@ -350,6 +350,7 @@ async function main() {
   assert.equal(outcomes, 2, "retry succeeds once after capacity is freed");
   assert.equal(notifications[1].notice, "aquarium_full");
   await checkSlotIconWarmUp(InventoryUiBootstrap);
+  await checkKeepnetArtBudget();
   console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation; inventory slot icons warmed without link preload.");
 }
 
@@ -373,5 +374,26 @@ async function checkSlotIconWarmUp(InventoryUiBootstrap) {
   assert(images.every((image) => image.tag === "img"));
   images.forEach((image) => image.onload());
   await warmed;
+}
+// Spec 157 R5: the keepnet stages are display-sized (the largest phone view is ~374 CSS px, x2), committed and light;
+// their 2048 px masters stay in asset-sources/ and are never released.
+async function checkKeepnetArtBudget() {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const { spawnSync } = require("node:child_process");
+  const sharp = require("sharp");
+  const root = path.resolve(__dirname, "../../..");
+  const { KEEPNET_ART_STAGES } = await import("../../../src/game/presentation/keepnet/keepnet_art_config.js");
+  const tracked = new Set(spawnSync("git", ["ls-files", "assets/items/keepnet", "asset-sources/items/keepnet"], { cwd: root })
+    .stdout.toString("utf8").split("\n").filter(Boolean));
+  for (const { imagePath } of KEEPNET_ART_STAGES) {
+    const file = path.join(root, imagePath);
+    assert(tracked.has(imagePath), `${imagePath} is committed (Pages ships tracked files only)`);
+    const { width, height } = await sharp(file).metadata();
+    assert(Math.max(width, height) <= 768, `${imagePath} is display-sized: ${width}x${height}`);
+    assert(fs.statSync(file).size <= 200 * 1024, `${imagePath} stays within 200 KB: ${fs.statSync(file).size} bytes`);
+    const master = imagePath.replace(/^assets\//u, "asset-sources/");
+    assert(tracked.has(master), `${imagePath} keeps its master at ${master}`);
+  }
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

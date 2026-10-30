@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.27";
+export const CURRENT_PROJECT_VERSION = "0.49.28";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 157 stage C: keepnet stages display-sized (768 px WebP middle, 0.80 MB instead of 3.89 MB); masters in asset-sources.",
     "Spec 157 stage B: Pages root pages preload every stylesheet and every module of their graph (modulepreload), so modules load in parallel.",
     "Spec 157 D0: a static black startup screen with an inline SVG spinner paints from the HTML before the game's stylesheets; it fades out at the first frame.",
     "Spec 157 R5: the keepnet loads only its current fill stage at startup; the other stages warm up after the first frame.",
