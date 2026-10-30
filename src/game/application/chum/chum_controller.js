@@ -134,8 +134,8 @@ export class ChumController {
       if (!activeBoat) {
         const loadedCount = this.#countLoadedChums(eq.deliveryChums);
         count = sections;
-        state =
-          loadedCount === 0 ? "empty" : this.#isAiming ? "aiming" : "idle";
+        // TK-162: without a charged battery the boat cannot go, like without chum: the button shows it.
+        state = loadedCount === 0 || this.#batteryProblem(eq) ? "empty" : this.#isAiming ? "aiming" : "idle";
       } else {
         count = activeBoat.remainingSections;
 
@@ -194,7 +194,13 @@ export class ChumController {
 
     const boats = this.#chum.getBoats();
     if (boats.length === 0) {
-      if (this.#countLoadedChums(eq.deliveryChums) > 0) {
+      const batteryProblem = this.#batteryProblem(eq);
+      const loaded = this.#countLoadedChums(eq.deliveryChums) > 0;
+      if (loaded && batteryProblem && !this.#isAiming) {
+        // TK-162: like empty bunkers (TK-150), a missing or empty battery opens the boat editor at its battery socket.
+        this.#inventoryUI?.openSlotEditor?.("delivery", { feedbackSlotId: "battery", tone: "error" });
+        this.#warn(batteryProblem);
+      } else if (loaded) {
         this.toggleAim();
       } else {
         this.#inventoryUI?.openSlotEditor?.("delivery", { feedbackSlotId: "cargo", tone: "error" });
@@ -599,16 +605,16 @@ export class ChumController {
 
   // Spec 143: a boat starts only with a charged battery in its slot; otherwise the player is told why.
   #isBoatPowered(eq) {
+    const problem = this.#batteryProblem(eq);
+    if (problem) this.#warn(problem);
+    return !problem;
+  }
+
+  // The warning for a boat that cannot start for want of power, or null when its battery is charged.
+  #batteryProblem(eq) {
     const batteryId = eq.deliveryBattery?.instanceId || null;
-    if (!batteryId) {
-      this.#warn(this.#messages.boatNeedsBattery);
-      return false;
-    }
-    if (this.#devicePower.read(batteryId).empty) {
-      this.#warn(this.#messages.boatBatteryEmpty);
-      return false;
-    }
-    return true;
+    if (!batteryId) return this.#messages.boatNeedsBattery;
+    return this.#devicePower.read(batteryId).empty ? this.#messages.boatBatteryEmpty : null;
   }
 
   #getLoadedChums(deliveryChums) {

@@ -102,6 +102,28 @@ async function checkChumControllerEmptyBoat() {
   assert.equal(editorSlot, "delivery", "opens delivery slot editor");
   assert.deepEqual(feedbackOptions, { feedbackSlotId: "cargo", tone: "error" }, "highlights cargo sockets in red");
   assert.equal(warnedMessage, FISHING_MESSAGES.loadChumIntoBoat, "shows load chum into boat warning");
+
+  // TK-162: loaded bunkers but no charge: the button is inactive and a click opens the battery socket with a warning.
+  const states = [];
+  let percent = 0;
+  const loaded = new ChumController({
+    messages: FISHING_MESSAGES,
+    inventory: { getEquipped: () => ({ delivery: { instanceId: "boat-3", effectiveStats: { sections: 3 } },
+      deliveryChums: [{ id: "mix" }], deliveryBattery: { instanceId: "battery-1" } }) },
+    chum: fakeChum,
+    inventoryUI: fakeInventoryUI,
+    devicePower: { read: () => ({ hasBattery: true, percent, empty: percent <= 0 }) },
+    createUi: () => ({ setState(state) { states.push(state); }, dispose() {} }),
+  });
+  loaded.updateUI();
+  assert.equal(states.at(-1), "empty", "a drained battery shows the inactive (empty) boat button");
+  loaded.handleClick();
+  assert.deepEqual(feedbackOptions, { feedbackSlotId: "battery", tone: "error" }, "highlights the battery socket in red");
+  assert.equal(warnedMessage, FISHING_MESSAGES.boatBatteryEmpty, "says the battery is empty");
+  assert.equal(loaded.isAiming, false, "and does not start aiming");
+  percent = 50;
+  loaded.updateUI();
+  assert.equal(states.at(-1), "idle", "a charged battery makes the button active again");
 }
 
 async function run() {
