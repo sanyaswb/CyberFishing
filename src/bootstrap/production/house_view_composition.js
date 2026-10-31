@@ -8,11 +8,12 @@ import { composeHintRenderer } from "./hint_renderer_composition.js";
 // One House view composition for the House screen and the DEV UI catalog (which passes a preview-scoped document).
 // rootNode is the screen root that receives the view's delegated events (spec 084).
 export function composeHouseView({ documentRef, rootNode, windowTarget, domFactory, perform, roomConfig, uiConfig, labels,
-  onReturn, fishView, feedPicker, resourceMeters, sheetHeights, sheetHandleRenderer, autoSwitchRenderer, timeBlendMs, uiSurface = null }) {
+  onReturn, fishView, feedPicker, resourceMeters, sheetHeights, sheetHandleRenderer, autoSwitchRenderer, timeBlendMs, assets,
+  uiSurface = null }) {
   const node = (name) => documentRef.querySelector(`[data-house-${name}]`);
   const navigation = new HouseNavigationController({ documentRef, rootNode, windowTarget, sheetHeights, sheetHandleRenderer,
     sheetDismissLabel: labels.sheetDismiss, menuHandleLabel: labels.menuHandle, feedPicker });
-  const roomView = new HouseRoomView({ documentRef, roomConfig, labels, timeBlendMs,
+  const roomView = new HouseRoomView({ documentRef, roomConfig, labels, timeBlendMs, assets,
     levelCard: new HouseLevelCard({ domFactory, segments: node("room-segments"), list: node("room-level-list"), labels }) });
   return new HouseView({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
     resourceMeters, autoSwitchRenderer, hintRenderer: composeHintRenderer({ domFactory, uiSurface, timers: windowTarget,

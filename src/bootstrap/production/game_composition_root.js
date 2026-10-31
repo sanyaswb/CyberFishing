@@ -516,7 +516,7 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({

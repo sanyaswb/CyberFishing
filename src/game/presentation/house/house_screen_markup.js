@@ -70,16 +70,16 @@ export const HOUSE_SCREEN_MARKUP = `
     <div class="house__hints house__hints--sheet" data-house-sheet-hints></div>
     <div class="house__sheet-heading"><h2 class="house__sheet-title">Акваріум</h2></div>
     <div class="inventory-parameter house__upgrade-card">
-      <div class="inventory-parameter__header house__stat-header" data-house-level role="group" aria-label="Рівень акваріума" title="Рівень акваріума"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/ui/status-icons.svg#level"></use></svg><span data-house-aquarium-level-count>0 / 10</span></div>
+      <div class="inventory-parameter__header house__stat-header" data-house-level role="group" aria-label="Рівень акваріума" title="Рівень акваріума"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use data-asset-href="ui.status-icons#level"></use></svg><span data-house-aquarium-level-count>0 / 10</span></div>
       <div class="inventory-parameter__segments house__level-segments" data-house-aquarium-segments aria-label="Прогрес рівнів акваріума"></div>
-      <div class="house__capacity"><div class="inventory-parameter__header house__stat-header" role="group" aria-label="Місткість акваріума" title="Місткість акваріума"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/ui/status-icons.svg#fish"></use></svg><span data-house-capacity>0 / 0</span></div><div class="house__capacity-meter" data-house-capacity-meter></div></div>
+      <div class="house__capacity"><div class="inventory-parameter__header house__stat-header" role="group" aria-label="Місткість акваріума" title="Місткість акваріума"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use data-asset-href="ui.status-icons#fish"></use></svg><span data-house-capacity>0 / 0</span></div><div class="house__capacity-meter" data-house-capacity-meter></div></div>
       <div class="house__feeding-row"><button class="inventory-action inventory-action--primary house__button" data-house-feed-toggle aria-controls="house-feed-list" type="button">Прикормити</button><div class="house__feed-preview" data-house-next-feed role="group" aria-label="Обрана прикормка" tabindex="-1"></div></div>
       <p class="house__muted" data-house-feed-hint tabindex="-1" hidden></p>
       <div class="house__feed-list" id="house-feed-list" data-house-feed-list aria-label="Доступна прикормка з інвентарю" hidden></div>
     </div>
     <div data-house-unowned><button class="inventory-action inventory-action--primary house__button house__button--wide" data-house-action="buyAquarium" type="button">Встановити · Безкоштовно</button></div>
     <div data-house-owned hidden>
-      <button class="inventory-action inventory-action--primary house__button house__button--wide house__upgrade-action" data-house-action="upgrade" aria-label="Рівень 2 · Місткість 6" type="button"><span class="house__stat-header"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/ui/status-icons.svg#level"></use></svg><span data-house-upgrade-level>2</span></span><span class="house__stat-header"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/ui/status-icons.svg#fish"></use></svg><span data-house-upgrade-capacity>6</span></span></button>
+      <button class="inventory-action inventory-action--primary house__button house__button--wide house__upgrade-action" data-house-action="upgrade" aria-label="Рівень 2 · Місткість 6" type="button"><span class="house__stat-header"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use data-asset-href="ui.status-icons#level"></use></svg><span data-house-upgrade-level>2</span></span><span class="house__stat-header"><svg class="house__stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use data-asset-href="ui.status-icons#fish"></use></svg><span data-house-upgrade-capacity>6</span></span></button>
     </div>
     <div class="house__stat-row"><strong>Автогодівниця</strong><span data-house-auto-status>Вручну</span></div>
     <button class="inventory-action inventory-action--primary house__button house__button--wide" data-house-action="buyAutoFeeder" type="button">Встановити · Безкоштовно</button>
@@ -100,7 +100,7 @@ export const HOUSE_SCREEN_MARKUP = `
   </section>
   <div class="house__renovation" data-house-renovation hidden role="status" aria-live="polite">
     <div class="house__renovation-shade"></div>
-    <img class="house__renovation-image" src="assets/house/room-1/under-renovation.webp" alt="Кімната на ремонті" />
+    <img class="house__renovation-image" data-house-renovation-image alt="Кімната на ремонті" />
     <div class="house__renovation-controls"><span data-house-renovation-level>Ремонт до рівня 2</span><strong class="house__renovation-time" data-house-renovation-time>02:00:00</strong><button class="inventory-action inventory-action--primary house__button" type="button" data-house-action="finishRoom">Завершити · Безкоштовно</button></div>
   </div>
 </main>

@@ -3,6 +3,7 @@ import { HousePresenter } from "../../game/presentation/house/house_presenter.js
 import { composeHouseView } from "./house_view_composition.js";
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
 import { HOUSE_SCREEN_MARKUP } from "../../game/presentation/house/house_screen_markup.js";
+import { bindAssetHrefs } from "../../game/presentation/ui/asset_href_binder.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
 import { RoomUpgradeService } from "../../game/application/house/room_upgrade_service.js";
@@ -29,13 +30,14 @@ import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 const AQUARIUM_VISUAL_PATH = Object.freeze(["liveBait", "visual"]);
 
 // The House screen (spec 084) inside the game page: a `.house` root in the page's UI surface, composed over the
-// session's live bait service and game clock (GameCompositionRoot.getSessionServices). It owns its timers, listeners
+// session's live bait service, game clock and asset registry (GameCompositionRoot.getSessionServices). It owns its timers, listeners
 // and DOM until dispose. `onExit` is the return control; `createTimeDisplay` and `mountHeaderControl` are DEV ports.
-export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, onExit,
+export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, onExit,
   createTimeDisplay = null, mountHeaderControl = null }) {
   const root = documentTarget.createElement("div");
   root.className = "house";
   root.innerHTML = HOUSE_SCREEN_MARKUP;
+  bindAssetHrefs(root, assets);
   uiSurface.mountRoot.appendChild(root);
   const node = (selector) => root.querySelector(selector);
   const domFactory = new InventoryDomFactory(documentTarget);
@@ -82,7 +84,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
     preview: node("[data-house-next-feed]"), hint: node("[data-house-feed-hint]"),
     labels: HOUSE_LABELS.feedPicker, onFeed: (id, quantity) => presenter.perform("feed", id, quantity) });
   const sheetHeights = new SheetHeightController({ windowTarget, uiSurface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs });
-  view = composeHouseView({ documentRef: documentTarget, rootNode: root, windowTarget, domFactory, sheetHeights, uiSurface,
+  view = composeHouseView({ documentRef: documentTarget, rootNode: root, windowTarget, domFactory, sheetHeights, uiSurface, assets,
     resourceMeters, sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory,
       dismissController: new SheetDismissController({ uiSurface, dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }),
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }),

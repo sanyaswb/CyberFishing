@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.39";
+export const CURRENT_PROJECT_VERSION = "0.49.40";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-178 (c): House room art and sprite icons by asset id.",
     "TK-178 (c): sounds and radio playlist tracks by asset id; the audio loaders resolve the files.",
     "TK-178 (b): AssetRegistry resolves asset ids where files load; locations name backgrounds and depth map by id.",
     "TK-178 (a): asset registry with stable ids (npm run assets:sync, --check in Full); code and configuration move to ids next.",

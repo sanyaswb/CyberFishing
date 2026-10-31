@@ -24,20 +24,26 @@ const MIGRATED_MODULES = Object.freeze([
   "src/platform/browser/audio/vinyl_rack.js",
   "src/platform/browser/audio/radio_effects_chain.js",
   "src/platform/browser/audio/radio_stream_player.js",
+  "src/game/config/raw/house/house_config.js",
+  "src/game/presentation/house/house_room_view.js",
+  "src/game/presentation/house/house_screen_markup.js",
 ]);
 const PATH_LITERAL = /["'`]assets\/[^"'`]*/gu;
 // A string literal shaped like a registry id (its first part is a top folder of assets/).
 const ID_LITERAL = /["'`]((?:animations|audio|fish|fish-display|fish-thumbnails|house|items|lobby|locations|ui)\.[A-Za-z0-9_.-]+)["'`]/gu;
 
-// Every `asset` / `*Asset` / `*Assets` field under value, with the path to it.
+// Every `asset` / `*Asset` field and every id inside a `*Assets` object (nested by level, phase...) under value.
 function collectAssetReferences(value, where, found = []) {
   if (!value || typeof value !== "object") return found;
+  const ids = (child, at) => {
+    if (child && typeof child === "object") for (const [name, id] of Object.entries(child)) ids(id, `${at}.${name}`);
+    else found.push([at, child]);
+  };
   for (const [key, child] of Object.entries(value)) {
     const at = `${where}.${key}`;
     if (key === "asset" || /[a-z]Asset$/u.test(key)) found.push([at, child]);
-    else if (/[a-z]Assets$/u.test(key) && child && typeof child === "object") {
-      for (const [name, id] of Object.entries(child)) found.push([`${at}.${name}`, id]);
-    } else collectAssetReferences(child, at, found);
+    else if (/[a-z]Assets$/u.test(key) && child && typeof child === "object") ids(child, at);
+    else collectAssetReferences(child, at, found);
   }
   return found;
 }
@@ -67,8 +73,14 @@ function collectAssetReferences(value, where, found = []) {
   const { MAP_DB } = await importSource("src/game/config/raw/locations/location_database.js");
   const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
   const { RADIO_CHANNELS } = await importSource("src/game/config/raw/radio/radio_channels.js");
+  const { HOUSE_CONFIG } = await importSource("src/game/config/raw/house/house_config.js");
   const references = [...collectAssetReferences(MAP_DB, "MAP_DB"), ...collectAssetReferences(CONFIG.ui, "CONFIG.ui"),
-    ...collectAssetReferences(RADIO_CHANNELS, "RADIO_CHANNELS")];
+    ...collectAssetReferences(RADIO_CHANNELS, "RADIO_CHANNELS"), ...collectAssetReferences(HOUSE_CONFIG, "HOUSE_CONFIG")];
+  const room = HOUSE_CONFIG.room;
+  assert(room.aquariumAsset && room.renovationAsset, "the House names its aquarium and renovation art by asset id");
+  for (let level = 1; level <= room.maxLevel; level++) {
+    for (const phase of ["day", "evening", "night"]) assert(room.backgroundAssets?.[level]?.[phase], `room level ${level} ${phase} by id`);
+  }
   assert(CONFIG.ui.audio.feederBiteAsset, "the feeder bell is named by asset id");
   for (const channel of Object.values(RADIO_CHANNELS)) {
     for (const track of channel.tracks ?? []) assert(track.asset && !("url" in track), `${channel.id} track ${track.id} by asset id`);

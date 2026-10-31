@@ -5,6 +5,7 @@ const TIME_PHASES = Object.freeze(["day", "evening", "night"]);
 // Room art (level backgrounds and time of day), the room level card and renovation status.
 export class HouseRoomView {
   #roomConfig;
+  #assets;
   #labels;
   #levelCard;
   #nodes = new Map();
@@ -16,8 +17,11 @@ export class HouseRoomView {
   #phaseOpacities = new Map();
   #timeBlendEnabled = false;
 
-  constructor({ documentRef, roomConfig, labels, levelCard, timeBlendMs }) {
+  // assets: the AssetRegistry; the room's art is named by asset id (spec 157 R16).
+  constructor({ documentRef, roomConfig, labels, levelCard, timeBlendMs, assets }) {
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("HouseRoomView requires assets");
     this.#roomConfig = roomConfig;
+    this.#assets = assets;
     this.#labels = labels;
     this.#levelCard = levelCard;
     for (const name of ["room-level-panel", "room-max-level", "room-level-count", "room-next-level", "room-duration",
@@ -29,16 +33,17 @@ export class HouseRoomView {
     this.#scene = documentRef.querySelector(".house__scene");
     // Opacity eases linearly across one refresh interval, so the stepped clock reads as a continuous blend.
     this.#scene.style.setProperty("--house-time-blend-duration", `${timeBlendMs}ms`);
-    documentRef.querySelector("[data-house-aquarium-image]").src = roomConfig.aquariumImage;
+    documentRef.querySelector("[data-house-aquarium-image]").src = assets.pathOf(roomConfig.aquariumAsset);
+    documentRef.querySelector("[data-house-renovation-image]").src = assets.pathOf(roomConfig.renovationAsset);
   }
 
   // Returns whether the room is under renovation.
   render(room) {
     const get = (key) => this.#nodes.get(key);
     if (room.level !== this.#lastLevel) {
-      const art = this.#roomConfig.backgrounds[room.level];
+      const art = this.#roomConfig.backgroundAssets[room.level];
       for (const phase of TIME_PHASES)
-        this.#backgrounds.get(phase).src = art[phase];
+        this.#backgrounds.get(phase).src = this.#assets.pathOf(art[phase]);
       this.#lastLevel = room.level;
     }
     this.#renderTimeOfDay(room.eveningOpacity, room.nightOpacity);

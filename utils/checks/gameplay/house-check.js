@@ -74,6 +74,9 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   const { SheetDismissController } = await import("../../../src/platform/browser/dom/sheet_dismiss_controller.js");
   const { SheetHeightController } = await import("../../../src/platform/browser/dom/sheet_height_controller.js");
   const { UiAutoSwitchRenderer } = await import("../../../src/game/presentation/ui/ui_auto_switch_renderer.js");
+  const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
+  const assets = new AssetRegistry(ASSET_REGISTRY);
   const documentRef = houseDocument(), domFactory = new InventoryDomFactory(documentRef);
   let degradationColors = { range: { minimum: 0, maximum: 100 }, colorStops: [
     { position: 0, color: [255, 0, 0] }, { position: 100, color: [0, 255, 0] }] };
@@ -105,8 +108,16 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
-    autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000, labels: HOUSE_LABELS });
+    autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000, labels: HOUSE_LABELS, assets });
   const view = createView();
+  // Spec 157 R16: the room's art is named by asset id and the view sets the registry's files.
+  assert.equal(documentRef.querySelector("[data-house-aquarium-image]").src, "assets/house/room-1/room--1_aqua.webp");
+  assert.equal(documentRef.querySelector("[data-house-renovation-image]").src, "assets/house/room-1/under-renovation.webp");
+  const { bindAssetHrefs } = await import("../../../src/game/presentation/ui/asset_href_binder.js");
+  bindAssetHrefs(documentRef, assets);
+  const spriteHrefs = [...documentRef.querySelectorAll("[data-asset-href]")].map((use) => use.getAttribute("href"));
+  assert.deepEqual(spriteHrefs, ["assets/ui/status-icons.svg#level", "assets/ui/status-icons.svg#fish",
+    "assets/ui/status-icons.svg#level", "assets/ui/status-icons.svg#fish"], "sprite symbols resolve through the registry");
   const header = documentRef.querySelector("[data-house-header]"), dock = documentRef.querySelector("[data-house-dock]");
   assert.equal(header.inert, true, "House starts with both gesture zones closed");
   assert.equal(dock.inert, false, "the default compact menu keeps its three icon buttons accessible");
@@ -439,12 +450,15 @@ function checkHouseScreenComposition() {
   const liveBait = { advance() {} };
   const gameTime = { getHours: () => 12, msUntilNextMinute: () => 250 };
   const exits = [];
-  const house = composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, onExit: () => exits.push("exit") });
+  const { AssetRegistry } = runtime.importModule("src/engine/assets/asset_registry.js");
+  const assets = new AssetRegistry({});
+  const house = composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, onExit: () => exits.push("exit") });
   assert.deepEqual(mounted, [root], "the screen root is mounted into the page's UI surface");
   assert(root.className === "house" && root.innerHTML === readHouseMarkup(), "the root holds the House screen markup");
   const presenter = created.find((entry) => entry.options?.liveBait);
   assert.equal(presenter.options.liveBait, liveBait, "the House uses the session's live bait service");
   assert.equal(presenter.options.gameTime, gameTime, "the House uses the session's game clock");
+  assert.equal(created.find((entry) => entry.options?.rootNode).options.assets, assets, "the House views resolve art through the session's asset registry");
   const view = created.find((entry) => entry.options?.rootNode);
   assert.equal(view.options.rootNode, root, "views listen on the screen root, not on the document body");
   view.options.onReturn();
@@ -597,12 +611,15 @@ async function main() {
   houseClock.sync();
   assert.equal(houseClock.getHours(), 23, "a live time-scale edit propagates to the house clock");
 
+  const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
+  const assets = new AssetRegistry(ASSET_REGISTRY);
   for (let level = 1; level <= HOUSE_CONFIG.room.maxLevel; level++) {
-    const art = HOUSE_CONFIG.room.backgrounds[level];
-    for (const phase of ["day", "evening", "night"]) assert(fs.existsSync(art[phase]), art[phase]);
+    const art = HOUSE_CONFIG.room.backgroundAssets[level];
+    for (const phase of ["day", "evening", "night"]) assert(fs.existsSync(assets.pathOf(art[phase])), art[phase]);
   }
-  assert(fs.existsSync(HOUSE_CONFIG.room.aquariumImage));
-  assert(fs.existsSync(HOUSE_CONFIG.room.renovationImage));
+  assert(fs.existsSync(assets.pathOf(HOUSE_CONFIG.room.aquariumAsset)));
+  assert(fs.existsSync(assets.pathOf(HOUSE_CONFIG.room.renovationAsset)));
   const store = new RoomProgressLocalStore(storage);
   let room = new RoomUpgradeService({ config: HOUSE_CONFIG.room, store, now: nowFn });
   assert.equal(room.getView().level, 1);
