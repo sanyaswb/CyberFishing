@@ -80,7 +80,7 @@ export class InventoryUiBootstrap {
     // after the game is ready (spec 157 R5).
     const imageResolver = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
     return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
-      imageResolver,
+      imageResolver, shortcutIcon: `${INVENTORY_SECTIONS.iconSprite}#keepnet`,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
       overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),

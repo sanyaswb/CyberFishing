@@ -34,6 +34,13 @@ class TestElement {
     return child;
   }
   replaceChildren(...children) { for (const child of [...this.children]) child.remove(); this.text = ""; this.append(...children); }
+  // DOM contract: the node's place goes to the given nodes; a node without a parent does nothing.
+  replaceWith(...nodes) {
+    const parent = this.parentNode;
+    if (!parent) return;
+    for (const node of nodes) parent.insertBefore(node, this);
+    this.remove();
+  }
   remove() {
     if (this.contains(this.document.activeElement)) this.document.activeElement = this.document.body;
     if (this.parentNode) this.parentNode.children = this.parentNode.children.filter((child) => child !== this);
@@ -43,15 +50,21 @@ class TestElement {
   setAttribute(key, value) { this.attributes[key] = String(value); }
   removeAttribute(key) { delete this.attributes[key]; }
   getAttribute(key) { return this.attributes[key] ?? null; }
-  addEventListener(type, listener) {
+  // DOM contract: { once: true } removes the listener after its first call.
+  addEventListener(type, listener, options = {}) {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());
-    this.listeners.get(type).add(listener);
+    const wrapped = options?.once === true ? Object.assign((event) => { this.listeners.get(type)?.delete(wrapped); listener(event); },
+      { original: listener }) : listener;
+    this.listeners.get(type).add(wrapped);
   }
-  removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
+  removeEventListener(type, listener) {
+    const listeners = this.listeners.get(type);
+    for (const entry of [...(listeners || [])]) if (entry === listener || entry.original === listener) listeners.delete(entry);
+  }
   fire(type, fields = {}) {
     const event = { target: this, key: "", shiftKey: false, prevented: false, stopped: false,
       preventDefault() { this.prevented = true; }, stopPropagation() { this.stopped = true; }, ...fields };
-    for (const listener of this.listeners.get(type) || []) listener(event);
+    for (const listener of [...(this.listeners.get(type) || [])]) listener(event);
     return event;
   }
   focus() { this.document.activeElement = this; }

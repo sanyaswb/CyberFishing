@@ -2,7 +2,8 @@
    (image with help, capacity scale, status) on the left, the shared collection (filters panel, fish-list pager) on
    the right. The view's containers share the backpack view's rules (loadout.css); the filters reuse the backpack's
    category and subfilter rows (list-and-filters.css). Toolbar appearance and the shared scale are reused. */
-.keepnet-button__icon { width: 66%; height: 66%; object-fit: contain; pointer-events: none; }
+.keepnet-button__icon,
+.keepnet-button__placeholder { width: 66%; height: 66%; object-fit: contain; pointer-events: none; }
 
 .keepnet-section__content {
   --keepnet-list-gap: 10px;

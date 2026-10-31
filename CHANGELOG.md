@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.34 - Sprite icons before start
+
+- TK-174 / spec 157: until the game is ready the classic backpack and keepnet buttons (R11 stand-ins, and classic mode) show the sections sprite's icons instead of the 2048 px briefcase and the keepnet art (0.44 MB no longer requested before the start); the art replaces each icon once it has loaded after the first frame. Game-cycle report unchanged.
+
 ## v0.49.33 - Current background phase only
 
 - Spec 157 R4: the game starts with only the background phase of the current game time (and its overlay at dusk or dawn); the other phases load right after the first frame, and until one arrives the nearest loaded phase is drawn (cold start on Fast 4G 2.7 → 2.3 s, 3G 12.8 → 11.0 s locally). Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.25 - Current keepnet stage only
 
 - Spec 157 R5: the keepnet view loads only its current fill stage; all six stages warm up after the first frame, after the selector artwork (warm start on Fast 4G 828 → 537 ms locally; cold unchanged after R11). Game-cycle report unchanged.
-
-## v0.49.24 - Startup without selector artwork
-
-- Spec 157 R11: the game starts without waiting for the inventory selector's artwork (section sprite, backpack, first keepnet stage, rod thumbnail); the classic inventory and keepnet buttons stand in until it loads right after the first frame (cold start on Fast 4G 8.4 → 3.6 s, 3G 40.8 → 14.2 s locally). The startup measurer names the last stage and page errors when a start never becomes ready. Game-cycle report unchanged.

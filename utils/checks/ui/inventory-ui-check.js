@@ -268,9 +268,25 @@ class FakeElement {
     this.append(...children);
   }
 
-  addEventListener(type, listener) {
+  // DOM contract: { once: true } removes the listener after its first call.
+  addEventListener(type, listener, options = {}) {
     if (!this.#listeners.has(type)) this.#listeners.set(type, []);
+    if (options?.once === true) {
+      const once = (event) => { this.removeEventListener(type, once); listener(event); };
+      this.#listeners.get(type).push(once);
+      return;
+    }
     this.#listeners.get(type).push(listener);
+  }
+
+  // DOM contract: the node's place among its parent's children goes to the given nodes.
+  replaceWith(...nodes) {
+    const parent = this.parentNode;
+    if (!parent) return;
+    const index = parent.children.indexOf(this);
+    for (const node of nodes) node.parentNode = parent;
+    parent.children.splice(index, 1, ...nodes);
+    this.parentNode = null;
   }
 
   removeEventListener(type, listener) {
@@ -712,6 +728,9 @@ class InventoryUiBehaviorCheck {
         return { refresh: false };
       },
     };
+    const createElement = document.createElement.bind(document);
+    const createdElements = [];
+    document.createElement = (tagName) => { const element = createElement(tagName); createdElements.push(element); return element; };
     const ui = sandbox.InventoryUiBootstrap.create({
       facade,
       uiSurface: {
@@ -734,6 +753,22 @@ class InventoryUiBehaviorCheck {
       },
       warningTimers: new BrowserTimeoutScheduler(sandbox),
     });
+    document.createElement = createElement;
+    // Spec 157 TK-174: until the game is ready the backpack shortcut shows the sections sprite's backpack symbol; its art
+    // is lazy and not in the page (not requested); showShortcutArtwork() requests it and swaps it in once it has loaded.
+    const backpackButton = this.#findByClass(document.body, "inventory-backpack-button");
+    const backpackPlaceholder = backpackButton.children[0];
+    assert.strictEqual(backpackPlaceholder.tagName, "SVG", "the backpack shortcut starts with a sprite icon");
+    assert.strictEqual(backpackPlaceholder.children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#backpack");
+    const backpackArt = createdElements.find((element) => element.tagName === "IMG"
+      && String(element.src).includes("briefcase--1--close"));
+    assert(backpackArt && backpackArt.loading === "lazy" && !backpackArt.parentNode, "the backpack art waits outside the page");
+    ui.showShortcutArtwork();
+    assert.strictEqual(backpackArt.loading, "eager", "after ready the backpack art is requested");
+    assert.strictEqual(backpackButton.children[0], backpackPlaceholder, "the icon stays until the art has loaded");
+    backpackArt.emit("load");
+    assert.strictEqual(backpackButton.children[0], backpackArt, "the loaded art replaces the icon");
+    assert.strictEqual(backpackButton.children.length, 1);
     ui.open();
     const headerPills = this.#findAllByClass(ui.rootNode, "inventory-toggle");
     assert.strictEqual(

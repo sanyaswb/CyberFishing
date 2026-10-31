@@ -21,6 +21,8 @@ export class InventoryUI {
   #mountNode;
   #buttonMountNode;
   #backpackButtonNode;
+  #backpackShortcutPlaceholder = null;
+  #backpackShortcutImage = null;
   #rootNode;
   // The inventory's own UI surface container (spec 098): the modal's breakpoints follow this box.
   #surfaceNode;
@@ -158,6 +160,16 @@ export class InventoryUI {
 
   // The composed activation mode owns visibility; the inventory tree stays mounted.
   setShortcutVisible(visible) { this.#backpackButtonNode.hidden = !visible; }
+
+  // Spec 157 TK-174: requests the shortcut's backpack art and shows it in place of the sprite icon once it has loaded.
+  showShortcutArtwork() {
+    const placeholder = this.#backpackShortcutPlaceholder;
+    if (!placeholder) return;
+    this.#backpackShortcutPlaceholder = null;
+    const image = this.#backpackShortcutImage;
+    image.addEventListener("load", () => placeholder.replaceWith(image), { once: true });
+    image.loading = "eager";
+  }
 
   // Open/close notifications for the page layout (the landscape split, spec 098); returns the unsubscribe.
   onVisibilityChange(listener) {
@@ -425,10 +437,15 @@ export class InventoryUI {
       "",
       { title: "Відкрити інвентар" },
     );
+    // Spec 157 TK-174: until the game is ready the shortcut shows the sections sprite's backpack symbol; the backpack
+    // art (lazy and not yet in the page, so not requested) replaces it after showShortcutArtwork().
     const backpackIcon = this.#dom.image(this.#sections.backpackImage, "");
     backpackIcon.className = "game-toolbar-button__image";
     backpackIcon.setAttribute("aria-hidden", "true");
-    this.#backpackButtonNode.appendChild(backpackIcon);
+    this.#backpackShortcutImage = backpackIcon;
+    this.#backpackShortcutPlaceholder = this.#dom.svgIcon(`${this.#sections.iconSprite}#backpack`,
+      "game-toolbar-button__image game-toolbar-button__placeholder");
+    this.#backpackButtonNode.appendChild(this.#backpackShortcutPlaceholder);
     this.#backpackButtonNode.setAttribute("aria-label", "Відкрити інвентар");
     this.#backpackButtonNode.addEventListener("click", () => this.toggleSection("backpack"));
 

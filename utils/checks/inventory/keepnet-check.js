@@ -68,6 +68,22 @@ async function main() {
   assert.deepEqual(createdImages.slice(stageImages).map((image) => image.src).filter((src) => /keepnet--/u.test(src)),
     KEEPNET_ART_STAGES.map((stage) => stage.imagePath), "the deferred warm-up loads every stage");
   artworkDocument.body.append(artworkView.summaryNode, artworkView.contentNode);
+  // Spec 157 TK-174: until the game is ready the toolbar button shows the sections sprite's keepnet symbol, and its art
+  // is lazy and not in the page (not requested); showShortcutArtwork() requests it and swaps it in once it has loaded.
+  const keepnetButton = artworkDocument.byClass("keepnet-button")[0];
+  const placeholder = keepnetButton.children[0];
+  assert.equal(placeholder.tagName, "svg", "the button starts with a sprite icon");
+  assert.equal(placeholder.children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#keepnet");
+  const buttonArt = createdImages.find((image) => image.className === "keepnet-button__icon");
+  assert(buttonArt && buttonArt.loading === "lazy" && !buttonArt.parentNode, "the button art waits outside the page");
+  artworkView.showShortcutArtwork();
+  assert.equal(buttonArt.loading, "eager", "after ready the art is requested");
+  assert.equal(keepnetButton.children[0], placeholder, "the icon stays until the art has loaded");
+  buttonArt.fire("load");
+  assert.equal(keepnetButton.children[0], buttonArt, "the loaded art replaces the icon");
+  buttonArt.fire("load");
+  artworkView.showShortcutArtwork();
+  assert.deepEqual(keepnetButton.children, [buttonArt], "a later load or call swaps nothing twice");
   artworkView.setVisible(true);
   const artworkImages = [...artworkDocument.byClass("keepnet-section__icon"),
     ...artworkDocument.byClass("keepnet-section__backdrop"), ...artworkDocument.byClass("keepnet-button__icon")];

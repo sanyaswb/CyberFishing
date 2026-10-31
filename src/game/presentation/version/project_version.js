@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.33";
+export const CURRENT_PROJECT_VERSION = "0.49.34";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-174: until the game is ready the classic backpack and keepnet buttons show sprite icons; their art loads after the first frame.",
     "Spec 157 R4: startup loads only the background phase of the current game time; the others load after the first frame, the nearest loaded phase stands in.",
     "Spec 157 R6: images of hidden UI (closed inventory, hidden toolbar buttons) are lazy and warm up one at a time after the first frame.",
     "TK-171: the water shows again after the startup screen (the screen's style no longer sets a page background that covered the WebGL scene).",

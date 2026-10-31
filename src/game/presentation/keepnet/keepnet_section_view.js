@@ -19,6 +19,7 @@ export class KeepnetSectionView {
   #notice = "";
   #button;
   #buttonImage;
+  #buttonPlaceholder;
   #backdrop;
   #imageResolver;
   #imagePath;
@@ -40,7 +41,8 @@ export class KeepnetSectionView {
   #cardFocusables = [];
 
   constructor({ documentRef, liveBait, model, cards, labels, overviewRenderer, filtersRenderer, pagerRenderer,
-    hintRenderer, imageResolver, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null }) {
+    hintRenderer, imageResolver, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null,
+    shortcutIcon }) {
     this.#document = documentRef;
     this.#hints = hintRenderer;
     this.#liveBait = liveBait;
@@ -55,8 +57,11 @@ export class KeepnetSectionView {
     this.#openSection = openSection;
     this.#toggleSection = toggleSection;
     this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
+    // Spec 157 TK-174: until the game is ready the toolbar button shows the sections sprite's keepnet symbol; its
+    // stage art (lazy and not yet in the page, so not requested) replaces it after showShortcutArtwork().
     this.#buttonImage = this.#icon("keepnet-button__icon");
-    this.#button.append(this.#buttonImage);
+    this.#buttonPlaceholder = this.#spriteIcon(shortcutIcon, "keepnet-button__placeholder");
+    this.#button.append(this.#buttonPlaceholder);
     this.#button.type = "button";
     this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
@@ -112,6 +117,14 @@ export class KeepnetSectionView {
   }
   get summaryNode() { return this.#summary; }
   setShortcutVisible(visible) { this.#button.hidden = !visible; }
+  // Spec 157 TK-174: requests the button's stage art and shows it in place of the sprite icon once it has loaded.
+  showShortcutArtwork() {
+    if (!this.#buttonPlaceholder) return;
+    const placeholder = this.#buttonPlaceholder;
+    this.#buttonPlaceholder = null;
+    this.#buttonImage.addEventListener("load", () => placeholder.replaceWith(this.#buttonImage), { once: true });
+    this.#buttonImage.loading = "eager";
+  }
   // The help hint; its host places it in its hint region (the inventory's, spec 086).
   get helpNode() { return this.#helpText; }
   get contentNode() { return this.#content; }
@@ -247,6 +260,18 @@ export class KeepnetSectionView {
     if (className) el.className = className;
     if (text !== null) el.textContent = text;
     return el;
+  }
+  #spriteIcon(href, className) {
+    const namespace = "http://www.w3.org/2000/svg";
+    const icon = this.#document.createElementNS(namespace, "svg");
+    icon.setAttribute("class", className);
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.setAttribute("focusable", "false");
+    const use = this.#document.createElementNS(namespace, "use");
+    use.setAttribute("href", href);
+    icon.appendChild(use);
+    return icon;
   }
   #icon(className, alt = "") {
     const image = this.#el("img", className);
