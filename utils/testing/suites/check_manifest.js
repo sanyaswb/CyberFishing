@@ -75,6 +75,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "text-encoding",
+    title: "Shipped text files are single-encoded UTF-8",
+    file: "utils/checks/architecture/text-encoding-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "architecture",
     title: "Layer boundaries, import graph and host globals",
     file: "utils/checks/architecture/architecture-check.js",

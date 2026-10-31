@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.35";
+export const CURRENT_PROJECT_VERSION = "0.49.36";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-167: the version badge's aria-label reads «Поточна версія гри» again; a check keeps shipped text single-encoded UTF-8.",
     "Spec 157 R13 (trial): releases are bundled with esbuild (npm run build:release); ?esm=1 runs the source modules; docs/deployment.md lists the server requirements.",
     "TK-174: until the game is ready the classic backpack and keepnet buttons show sprite icons; their art loads after the first frame.",
     "Spec 157 R4: startup loads only the background phase of the current game time; the others load after the first frame, the nearest loaded phase stands in.",

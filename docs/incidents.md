@@ -23,6 +23,21 @@ rule as something the next change can follow.
 | R7 | When proving a check against old code, keep the backup until `cmp` confirms the restore; never delete it in the same command. | I-7 |
 | R8 | An effect added to an existing signal (a displacement map, a sound, a light) is sized against that signal and its grid: the check asserts its magnitude as a share of the signal's full range and that the smallest real input still reaches a cell. A check that only asserts "changed" passes an invisible effect. | I-8 |
 | R9 | Page-level styles never set a background on `html`/`:root`: the body's background must keep moving to the canvas, below the WebGL scene at `z-index: -1`. A browser check of a page change looks at the pixels of the scene, not only at what an element hit test returns. | I-9 |
+| R10 | Project text files are read and written as UTF-8 explicitly: Node (`fs` with `"utf8"`) or the editor tools, never Windows PowerShell 5.1 `Get-Content` / `Set-Content` without `-Encoding UTF8` (they read UTF-8 without a BOM as the ANSI code page). A bulk rewrite of a page or module is followed by the `text-encoding` check. | I-10 |
+
+## I-10 · 2026-10-31 · v0.48.45–0.49.35: the version badge's label was unreadable (TK-167)
+
+- **Seen:** the `aria-label` of `#gameVersionBadge` in `index.html` and `dev.html` read «ÐŸÐ¾Ñ‚Ð¾Ñ‡Ð½Ð°…» instead of
+  «Поточна версія гри» — what a screen reader announced for the badge; found while reading the pages for spec 157.
+- **Cause:** commit 6363e51c (v0.48.45) rewrote both pages whole (every line changed, CRLF) while bumping the `?v=`
+  links. The text went through a read that took the UTF-8 bytes as Windows-1252 characters (Windows PowerShell 5.1
+  `Get-Content` without `-Encoding` reads a BOM-less UTF-8 file in the ANSI code page) and a write that encoded those
+  characters as UTF-8 again, so every Cyrillic letter became two Latin-1 characters (Ð/Ñ plus a continuation). The pages'
+  other text was ASCII, so nothing else showed it, and no check read the pages' text.
+- **Fix:** v0.49.36 restores «Поточна версія гри» in both pages (Node, explicit UTF-8).
+- **Rule:** R10.
+- **Check:** `text-encoding` (Quick, Architecture): every shipped text file (pages, `src/**/*.{js,css,json}`,
+  `assets/**/*.{svg,json,atlas}`) is valid UTF-8 without double-encoded Cyrillic; fails on the 6363e51c..v0.49.35 pages.
 
 ## I-9 · 2026-10-31 · v0.49.26–29: grey screen instead of the water after the startup screen (TK-171)
 
