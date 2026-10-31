@@ -55,9 +55,10 @@ export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
   // assets: the AssetRegistry (art and sprite icons by asset id, spec 157 R16).
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
-    buttonMountNode = documentRef?.body, showHelp = false, assets, fishArt }) {
+    buttonMountNode = documentRef?.body, showHelp = false, assets, fishArt, progressive = null }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
     const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, assets, fishArt,
+      progressive,
       degradationColorResolver, showHelp,
       openSection: () => inventoryUI.openSection("keepnet"),
       toggleSection: () => inventoryUI.toggleSection("keepnet"),
@@ -70,8 +71,8 @@ export class InventoryUiBootstrap {
   // The UI catalog builds the same view without an inventory. The help button stays a component but the game hides
   // it for now (spec 089).
   static createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, degradationColorResolver,
-    openSection, toggleSection, onPagerEdge = null, showHelp = false, assets, fishArt }) {
-    const dom = new InventoryDomFactory(documentRef, { assets });
+    openSection, toggleSection, onPagerEdge = null, showHelp = false, assets, fishArt, progressive = null }) {
+    const dom = new InventoryDomFactory(documentRef, { assets, progressive });
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
     // Only the current fill stage loads with the view (its images); the other stages are the asset load plan's
@@ -109,14 +110,16 @@ export class InventoryUiBootstrap {
   // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
   // radioTuning: DEV only, the enabled sound effects' main parameters as sliders (TK-098); null in production.
   // assets: the AssetRegistry; every image and sprite icon of the inventory is named by asset id (spec 157 R16).
-  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, assets, ...options } = {}) {
+  // progressive: the asset load plan's facade (an image not yet loaded shows its low copy first, spec 157 R17) or null.
+  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, assets, progressive = null,
+    ...options } = {}) {
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
       createPresentation: (presentationOptions) =>
-        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning, assets }),
+        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning, assets, progressive }),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -130,6 +133,7 @@ export class InventoryUiBootstrap {
     radio = null,
     radioTuning = null,
     assets,
+    progressive,
     rarityDomAdapter,
     rarityVisualResolver,
     progressionDomAdapter,
@@ -149,7 +153,7 @@ export class InventoryUiBootstrap {
     warningTimers,
   }) {
     const LongPressController = InventoryLongPressController;
-    const dom = new InventoryDomFactory(documentRef, { assets });
+    const dom = new InventoryDomFactory(documentRef, { assets, progressive });
     const resolvedNormalizer =
       normalizer || new InventoryViewModelNormalizer();
     const resolvedLongPressController =

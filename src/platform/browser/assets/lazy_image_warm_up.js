@@ -1,7 +1,8 @@
 // Spec 157 R6 (prefetch after the barrier): UI images are lazy, so the closed inventory and hidden toolbar buttons
 // request nothing before the game is ready. Once it is, warm() loads every lazy image of the page that has not loaded
 // yet, one at a time, into the browser cache; opening the inventory then shows them without a network wait. A failed
-// image is skipped (its view keeps its own fallback); dispose() stops the queue.
+// image is skipped (its view keeps its own fallback); dispose() stops the queue. Since spec 157 D4a an image that has
+// not loaded holds its low-quality copy, so this warms the small copies; the full file follows when the image is shown.
 export class LazyImageWarmUp {
   #documentRef;
   #disposed = false;

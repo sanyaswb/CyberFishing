@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.47 - Low copy first in the UI
+
+- Spec 157 stage D4a (TK-179): inventory, keepnet and selector images whose file has not loaded show their low-quality copy first; once shown, the full file is requested ahead of the background and replaces the copy in the same element after decoding (a failed copy falls back to the full file, a failed full file keeps the copy). The background warm-up after the first frame now loads the small copies. Game-cycle report unchanged.
+
 ## v0.49.46 - Low-quality copies
 
 - Spec 157 stage D3 (TK-179): `npm run assets:sync` makes a low-quality copy of every raster image except depth maps under `assets/low-copies/` with `utils/convert-images.js --low-copies` (a quarter of the longest side, at most 256 px, WebP Low; 122 copies, 0.52 MB) and records each image's width, height, copy and source hash in the registry; `--check` fails on a missing, untracked or stale copy. Nothing loads them yet (stage D4). Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.38 - Location assets by id
 
 - TK-178 / spec 157 R16 (b): `AssetRegistry` (engine, pure: `pathOf`, `spineOf`, `has`, `idsByTag`) composed once in the composition root; locations name their background phases and depth map by asset id (`backgroundAssets`, `depthAsset`), and the location loaders resolve the files where they load them; new check `asset-references`. Same requests before the start. Game-cycle report unchanged.
-
-## v0.49.37 - Asset registry
-
-- TK-178 / spec 157 R16 (a): `npm run assets:sync` keeps a generated registry of every tracked asset under a stable id (`src/game/config/generated/asset_registry.js`, 156 assets; a Spine export is one asset); moved files keep their id (same content, git rename or `--moved`), ambiguous or vanished referenced files stop the sync; `--check` runs in Full. Code and configuration move from paths to ids in the next steps. Game-cycle report unchanged.

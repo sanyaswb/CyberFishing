@@ -4,16 +4,21 @@ export class InventoryDomFactory {
   #document;
   #glyphMetrics;
   #assets;
+  #progressive;
 
   // assets: the AssetRegistry; images and sprite icons are named by asset id (spec 157 R16). A factory without it
   // still builds elements, but asking it for an asset's file is an error.
-  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }), assets = null } = {}) {
+  // progressive: { isReady(id), request(ids) -> Promise<{ status }> } (the asset load plan's facade, spec 157 R17) or
+  // null: an image whose file has not loaded shows its low-quality copy first, then the full file in the same element.
+  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }), assets = null,
+    progressive = null } = {}) {
     if (!documentRef?.createElement) {
       throw new TypeError("InventoryDomFactory requires a document");
     }
     this.#document = documentRef;
     this.#glyphMetrics = glyphMetrics;
     this.#assets = assets;
+    this.#progressive = progressive;
   }
 
   // Browser lookup for cold Bootstrap mounting; preserve live document, receiver and missing-global errors.
@@ -56,10 +61,28 @@ export class InventoryDomFactory {
     const image = this.element("img");
     image.loading = "lazy";
     image.decoding = "async";
-    image.src = source;
+    const low = this.#progressive && !this.#progressive.isReady(assetId) ? this.#assets.lowPathOf(assetId) : null;
+    if (low) this.#showLowFirst(image, assetId, low, source);
+    else image.src = source;
     image.alt = alternativeText;
     image.draggable = false;
     return image;
+  }
+
+  // Spec 157 R17: the copy shows first (the same proportion, so the box does not move); once it is shown the full file
+  // is requested ahead of the background and replaces it after decoding. A failed copy falls back to the full file at
+  // once; a failed full file keeps the copy.
+  #showLowFirst(image, assetId, low, full) {
+    image.addEventListener("load", () => {
+      if (image.getAttribute("src") !== low) return;
+      Promise.resolve(this.#progressive.request([assetId])).then((outcome) => {
+        if (outcome?.status === "ready" && image.getAttribute("src") === low) image.src = full;
+      });
+    }, { once: true });
+    image.addEventListener("error", () => {
+      if (image.getAttribute("src") === low) image.src = full;
+    }, { once: true });
+    image.src = low;
   }
 
   // The file of an asset ("" without an id), for views that set the source of an element they keep.

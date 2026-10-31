@@ -13,10 +13,10 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 // preloadArtwork(): settles when the asset load plan's "selector" group has loaded (rejects when it failed).
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, requestArtwork, logger, equipmentSource = null,
-  id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork }) {
+  id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork, progressive = null }) {
   const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
     .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
-  const domFactory = new InventoryDomFactory(documentRef, { assets });
+  const domFactory = new InventoryDomFactory(documentRef, { assets, progressive });
   const view = new InventorySelectorRenderer({ domFactory, geometries, sections: INVENTORY_SECTIONS,
     labels: INVENTORY_SELECTOR_LABELS, keepnetAsset: KEEPNET_ART_STAGES[0].imageAsset, id });
   const controller = new InventorySelectorController({ view, uiSurface, documentRef, windowRef,

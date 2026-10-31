@@ -211,6 +211,43 @@ async function checkDeferredUiImages() {
   const element = () => new Proxy({}, { set(target, key, value) { writes.push(String(key)); target[key] = value; return true; } });
   const image = new InventoryDomFactory({ createElement: element }, { assets }).image("items.nets.net--1", "net");
   assert.equal(image.src, "assets/items/nets/net--1.webp", "an image by asset id gets the registry's file");
+
+  // Spec 157 R17 (D4a): an image whose file has not loaded shows its low copy first and the full file once it is ready.
+  const listeners = [];
+  const progressiveElement = () => {
+    const attributes = new Map();
+    return { listeners: new Map(), addEventListener(type, fn) { this.listeners.set(type, fn); listeners.push(type); },
+      fire(type) { const fn = this.listeners.get(type); this.listeners.delete(type); fn?.(); },
+      set src(value) { attributes.set("src", value); }, get src() { return attributes.get("src"); },
+      getAttribute: (name) => attributes.get(name) ?? null };
+  };
+  const requested = [];
+  let finish;
+  let ready = false;
+  const progressive = { isReady: () => ready, request: (ids) => { requested.push(...ids); return new Promise((done) => { finish = done; }); } };
+  const progressiveDom = new InventoryDomFactory({ createElement: progressiveElement }, { assets, progressive });
+  const netLow = assets.lowPathOf("items.nets.net--1");
+  const card = progressiveDom.image("items.nets.net--1", "net");
+  assert.equal(card.src, netLow, "the low copy shows first");
+  assert.deepEqual(requested, [], "nothing more until the copy is shown");
+  card.fire("load");
+  assert.deepEqual(requested, ["items.nets.net--1"], "a shown copy asks for the full file");
+  finish({ status: "ready" });
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(card.src, "assets/items/nets/net--1.webp", "the full file replaces the copy in the same element");
+  const broken = progressiveDom.image("items.nets.net--1", "net");
+  broken.fire("error");
+  assert.equal(broken.src, "assets/items/nets/net--1.webp", "a failed copy falls back to the full file");
+  const kept = progressiveDom.image("items.nets.net--1", "net");
+  kept.fire("load");
+  finish({ status: "failed" });
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(kept.src, netLow, "a failed full file keeps the copy");
+  ready = true;
+  assert.equal(progressiveDom.image("items.nets.net--1", "net").src, "assets/items/nets/net--1.webp",
+    "a file already loaded shows at once, without its copy");
+  ready = false;
+  assert.equal(progressiveDom.image("ui.inventory.rod", "").src, "assets/ui/inventory/rod.svg", "vectors have no copy");
   assert.equal(image.loading, "lazy");
   assert(writes.indexOf("loading") >= 0 && writes.indexOf("loading") < writes.indexOf("src"),
     "lazy is set before the source, or the browser has already requested it");

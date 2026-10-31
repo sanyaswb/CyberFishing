@@ -1186,6 +1186,7 @@ export class GameCompositionRoot {
     systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
       assets: this.#assets,
+      progressive: this.#preload,
       radio: systems.radio,
       // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
       radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio || {} }) || null,
@@ -1223,7 +1224,7 @@ export class GameCompositionRoot {
       }
     };
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget, assets: this.#assets,
-      fishArt: this.#fishArt,
+      fishArt: this.#fishArt, progressive: this.#preload,
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
@@ -1232,7 +1233,7 @@ export class GameCompositionRoot {
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, logger: new ConsoleLogger(),
       // The equipped rod's art in the selector, when the player changes the rod: ahead of the background (spec 157 D2).
       requestArtwork: (ids) => this.#preload.request(ids),
-      equipmentSource: inventory, assets: this.#assets,
+      equipmentSource: inventory, assets: this.#assets, progressive: this.#preload,
       // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
       preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {
         if (group.status === "failed") throw group.error;

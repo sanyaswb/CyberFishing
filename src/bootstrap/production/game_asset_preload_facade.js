@@ -74,6 +74,11 @@ export class GameAssetPreloadFacade {
     return this.#loadIds(ids, "interactive");
   }
 
+  // Whether an image has loaded into the game's image store (a view can show it at once, without its low copy).
+  isReady(id) {
+    return this.#images.isReady?.(id) === true;
+  }
+
   getQueueSnapshot() {
     return this.#queue.getSnapshot();
   }
