@@ -13,14 +13,14 @@ import { SceneSkeletalSurface } from "../../platform/browser/scene/scene_skeleta
 // the scene composition. With the WebGL scene (spec 107), the rod's skeleton is drawn inside it by spine-pixi-v8 (the
 // scene's own bundle, imported once the scene is ready) over a surface that is only a coordinate space; without it,
 // spine-webgl draws into an offscreen GL surface that the 2D canvas copies (spec 099).
-export function composeRodAnimation({ windowTarget, documentTarget, config, scene }) {
+export function composeRodAnimation({ windowTarget, documentTarget, config, scene, assets }) {
   const queue = new AssetLoadQueue({
     scheduler: {
       setTimeout: (callback, delayMs) => windowTarget.setTimeout(callback, delayMs),
       clearTimeout: (id) => windowTarget.clearTimeout(id),
     },
   });
-  const loader = new SpineBundleLoader({ queue, transport: new BrowserAssetTransport() });
+  const loader = new SpineBundleLoader({ queue, transport: new BrowserAssetTransport(), assets });
   const onScene = scene?.webgl === true;
   const runtimeProvider = onScene ? new SpineRuntimeProvider({
     importModule: () => scene.layer.whenReady().then((ready) => {

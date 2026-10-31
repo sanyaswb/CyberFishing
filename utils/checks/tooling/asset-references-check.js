@@ -27,6 +27,13 @@ const MIGRATED_MODULES = Object.freeze([
   "src/game/config/raw/house/house_config.js",
   "src/game/presentation/house/house_room_view.js",
   "src/game/presentation/house/house_screen_markup.js",
+  "src/platform/browser/animation/spine_bundle_loader.js",
+  "src/game/presentation/fishing/rod_animation_controller.js",
+  "src/game/presentation/world/boat_animation_controller.js",
+  "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+  "src/bootstrap/production/rod_animation_composition.js",
+  "src/bootstrap/production/boat_animation_composition.js",
+  "src/game/config/validation/config_schema_validator.js",
 ]);
 const PATH_LITERAL = /["'`]assets\/[^"'`]*/gu;
 // A string literal shaped like a registry id (its first part is a top folder of assets/).
@@ -74,8 +81,26 @@ function collectAssetReferences(value, where, found = []) {
   const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
   const { RADIO_CHANNELS } = await importSource("src/game/config/raw/radio/radio_channels.js");
   const { HOUSE_CONFIG } = await importSource("src/game/config/raw/house/house_config.js");
+  const { ITEM_DB } = await importSource("src/game/config/raw/items/item_database.js");
   const references = [...collectAssetReferences(MAP_DB, "MAP_DB"), ...collectAssetReferences(CONFIG.ui, "CONFIG.ui"),
-    ...collectAssetReferences(RADIO_CHANNELS, "RADIO_CHANNELS"), ...collectAssetReferences(HOUSE_CONFIG, "HOUSE_CONFIG")];
+    ...collectAssetReferences(RADIO_CHANNELS, "RADIO_CHANNELS"), ...collectAssetReferences(HOUSE_CONFIG, "HOUSE_CONFIG"),
+    ...collectAssetReferences(ITEM_DB, "ITEM_DB")];
+  // Skins: a Spine export is one registered package; the float's scene art and tip glow are files.
+  let spineSkins = 0;
+  for (const group of Object.values(ITEM_DB)) {
+    for (const item of Object.values(group ?? {})) {
+      const animation = item?.skin?.animation;
+      if (animation) {
+        assert(typeof animation.asset === "string" && !("skeleton" in animation) && !("atlas" in animation),
+          `${item.id} names its Spine export by asset id`);
+        spineSkins += 1;
+      }
+      const scene = item?.skin?.scene;
+      if (scene) assert(scene.asset && !("src" in scene) && (!scene.glow || (scene.glow.asset && !("src" in scene.glow))),
+        `${item.id} names its scene art by asset id`);
+    }
+  }
+  assert(spineSkins >= 2, "the rod and the boat have Spine skins");
   const room = HOUSE_CONFIG.room;
   assert(room.aquariumAsset && room.renovationAsset, "the House names its aquarium and renovation art by asset id");
   for (let level = 1; level <= room.maxLevel; level++) {
@@ -92,7 +117,8 @@ function collectAssetReferences(value, where, found = []) {
   assert(references.length > 0, "the configuration has asset references");
   for (const [where, id] of references) {
     assert(typeof id === "string" && assets.has(id), `${where}: "${id}" is not an asset id of the registry`);
-    assert.notEqual(assets.entryOf(id).kind, "spine", `${where}: ${id} is a Spine package, not a file`);
+    const spine = where.endsWith(".animation.asset");
+    assert.equal(assets.entryOf(id).kind === "spine", spine, `${where}: ${id} must be ${spine ? "a Spine package" : "a file"}`);
   }
 
   // Moved modules hold no path literals, and every id they name in code is registered.

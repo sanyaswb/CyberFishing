@@ -8,9 +8,13 @@ import { SpineSetupPoseReader } from "./spine_setup_pose_reader.js";
 export class SpineBundleLoader {
   #queue;
   #transport;
+  #assets;
 
-  constructor({ queue, transport }) {
+  // assets: the AssetRegistry; a bundle is requested by the export's asset id (spec 157 R16).
+  constructor({ queue, transport, assets }) {
     if (typeof queue?.request !== "function") throw new TypeError("SpineBundleLoader requires an AssetLoadQueue");
+    if (typeof assets?.spineOf !== "function") throw new TypeError("SpineBundleLoader requires assets");
+    this.#assets = assets;
     if (typeof transport?.loadText !== "function" || typeof transport.loadJson !== "function" ||
       typeof transport.loadImage !== "function") {
       throw new TypeError("SpineBundleLoader requires a transport with loadText, loadJson and loadImage");
@@ -19,8 +23,9 @@ export class SpineBundleLoader {
     this.#transport = transport;
   }
 
-  // descriptor: { skeleton, atlas, skin, linePoint } with project-relative URLs.
+  // descriptor: { asset, skin, linePoint }; the registry gives the skeleton JSON and the atlas.
   load(descriptor, { priority = "interactive" } = {}) {
+    const files = this.#assets.spineOf(descriptor.asset);
     const interests = [];
     let released = false;
     const request = (key, load) => {
@@ -29,9 +34,9 @@ export class SpineBundleLoader {
       if (released) interest.release();
       return interest.result;
     };
-    const pages = request(`text:${descriptor.atlas}`, (token) => this.#transport.loadText(descriptor.atlas, token))
-      .then((outcome) => this.#loadPages(descriptor, outcome, request));
-    const skeleton = request(`json:${descriptor.skeleton}`, (token) => this.#transport.loadJson(descriptor.skeleton, token));
+    const pages = request(`text:${files.atlas}`, (token) => this.#transport.loadText(files.atlas, token))
+      .then((outcome) => this.#loadPages(files.atlas, outcome, request));
+    const skeleton = request(`json:${files.skeleton}`, (token) => this.#transport.loadJson(files.skeleton, token));
     const result = Promise.all([pages, skeleton]).then(([pagesOutcome, skeletonOutcome]) => {
       if (pagesOutcome.status !== "ready") return pagesOutcome;
       if (skeletonOutcome.status !== "ready") {
@@ -49,6 +54,8 @@ export class SpineBundleLoader {
         status: "ready",
         bundle: Object.freeze({
           skeleton: json,
+          // The skeleton file's name, for the DEV export of an edited skeleton.
+          skeletonFile: files.skeleton.slice(files.skeleton.lastIndexOf("/") + 1),
           version: String(json?.skeleton?.spine ?? ""),
           atlasText: pagesOutcome.atlasText,
           atlas: pagesOutcome.atlas,
@@ -70,7 +77,7 @@ export class SpineBundleLoader {
     };
   }
 
-  async #loadPages(descriptor, outcome, request) {
+  async #loadPages(atlasFile, outcome, request) {
     if (outcome.status !== "ready") {
       return SpineBundleLoader.#failure(outcome.status === "cancelled" ? "cancelled" : "atlas-failed", outcome.error);
     }
@@ -80,7 +87,7 @@ export class SpineBundleLoader {
     } catch (error) {
       return SpineBundleLoader.#failure("atlas-invalid", error);
     }
-    const directory = descriptor.atlas.slice(0, descriptor.atlas.lastIndexOf("/") + 1);
+    const directory = atlasFile.slice(0, atlasFile.lastIndexOf("/") + 1);
     const loads = atlas.pages.map((page) => {
       const url = `${directory}${page.name}`;
       return request(`image:${url}`, (token) => this.#transport.loadImage(url, token));

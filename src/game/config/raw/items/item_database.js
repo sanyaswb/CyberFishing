@@ -141,8 +141,7 @@ export const ITEM_DB = {
         // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
         // hangs from the line-tip bone.
         animation: {
-          skeleton: "assets/animations/rods/bamboo-rod-v1/rod.json",
-          atlas: "assets/animations/rods/bamboo-rod-v1/rod.atlas",
+          asset: "animations.rods.bamboo-rod-v1.rod",
           skin: "default",
           linePoint: "line-tip",
         },
@@ -890,7 +889,7 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          src: "assets/items/floats-scene/float-day.webp",
+          asset: "items.floats-scene.float-day",
           waterline: 0.3,
         },
       },
@@ -954,9 +953,9 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          src: "assets/items/floats-scene/float-day.webp",
+          asset: "items.floats-scene.float-day",
           waterline: 0.3,
-          glow: { src: "assets/items/floats-scene/float-day-glow.webp", pad: 8 },
+          glow: { asset: "items.floats-scene.float-day-glow", pad: 8 },
         },
       },
       rarityProfile: {
@@ -1018,7 +1017,7 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          src: "assets/items/floats-scene/float-day.webp",
+          asset: "items.floats-scene.float-day",
           waterline: 0.3,
         },
       },
@@ -1173,8 +1172,7 @@ export const ITEM_DB = {
           bait: "assets/items/boats/boat-lvl--3_bait.webp",
         },
         animation: {
-          skeleton: "assets/animations/boats/boat-lvl--3.json",
-          atlas: "assets/animations/boats/boat-lvl--3.atlas",
+          asset: "animations.boats.boat-lvl--3",
           skin: "skin_boat-lvl--3",
         },
       },

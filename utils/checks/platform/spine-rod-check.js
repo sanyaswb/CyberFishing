@@ -10,9 +10,10 @@ const { pathToFileURL } = require("node:url");
 
 const ROOT_DIR = path.resolve(__dirname, "../../..");
 const EXPORT_DIR = "assets/animations/rods/bamboo-rod-v1";
-const DESCRIPTOR = Object.freeze({
-  skeleton: `${EXPORT_DIR}/rod.json`, atlas: `${EXPORT_DIR}/rod.atlas`, skin: "default", linePoint: "line-tip",
-});
+// The rod skin names its export by asset id (spec 157 R16); the registry gives the files.
+const DESCRIPTOR = Object.freeze({ asset: "animations.rods.bamboo-rod-v1.rod", skin: "default", linePoint: "line-tip" });
+const FILES = Object.freeze({ skeleton: `${EXPORT_DIR}/rod.json`, atlas: `${EXPORT_DIR}/rod.atlas` });
+let assets = null;
 const near = (actual, expected, tolerance, label) =>
   assert(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} is not within ${tolerance} of ${expected}`);
 const importSource = (file) => import(pathToFileURL(path.join(ROOT_DIR, file)).href);
@@ -26,14 +27,14 @@ function checkVendorManifest() {
   assert.equal(entry.importer, "src/platform/browser/animation/spine_runtime_module.js");
   const tracked = require("node:child_process").spawnSync("git", ["ls-files", "--", EXPORT_DIR, entry.file, entry.license],
     { cwd: ROOT_DIR, encoding: "utf8" }).stdout.split(/\r?\n/u).filter(Boolean);
-  for (const file of [DESCRIPTOR.skeleton, DESCRIPTOR.atlas, `${EXPORT_DIR}/rod.webp`, entry.file, entry.license]) {
+  for (const file of [FILES.skeleton, FILES.atlas, `${EXPORT_DIR}/rod.webp`, entry.file, entry.license]) {
     assert(tracked.includes(file), `${file} is tracked in git (Pages serves tracked files only)`);
   }
   return entry.version;
 }
 
 function checkAtlasReader(SpineAtlasTextReader) {
-  const { pages } = SpineAtlasTextReader.read(read(DESCRIPTOR.atlas));
+  const { pages } = SpineAtlasTextReader.read(read(FILES.atlas));
   assert.equal(pages.length, 1);
   assert.deepEqual({ ...pages[0], regions: undefined },
     { name: "rod.webp", width: 2739, height: 89, pma: false, minFilter: "Linear", magFilter: "Linear", regions: undefined });
@@ -72,7 +73,7 @@ function fakeTransport({ failText = null, failJson = null, failImage = null } = 
 async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   const queue = () => new AssetLoadQueue({ scheduler: timers, maxAttempts: 1 });
   const transport = fakeTransport();
-  const loader = new SpineBundleLoader({ queue: queue(), transport });
+  const loader = new SpineBundleLoader({ queue: queue(), transport, assets });
   const load = loader.load(DESCRIPTOR);
   const pages = await load.pages;
   assert.equal(pages.status, "ready", "atlas and pages are ready on their own (static picture)");
@@ -83,25 +84,27 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   assert.equal(result.bundle.version, "4.3.26");
   assert.equal(result.bundle.skin, "default", "the skin named by the rod's config");
   assert.equal(result.bundle.linePoint, "line-tip");
-  assert.deepEqual([...transport.calls].sort(), [DESCRIPTOR.atlas, `${EXPORT_DIR}/rod.webp`, DESCRIPTOR.skeleton].sort(),
+  assert.deepEqual([...transport.calls].sort(), [FILES.atlas, `${EXPORT_DIR}/rod.webp`, FILES.skeleton].sort(),
     "one request per resource");
 
   const shared = fakeTransport();
-  const sharedLoader = new SpineBundleLoader({ queue: queue(), transport: shared });
+  const sharedLoader = new SpineBundleLoader({ queue: queue(), transport: shared, assets });
   const [one, two] = [sharedLoader.load(DESCRIPTOR), sharedLoader.load(DESCRIPTOR)];
   await Promise.all([one.result, two.result]);
   assert.equal(shared.calls.length, 3, "concurrent loads of one bundle share the queue jobs");
 
   const outcome = async (options, descriptor = DESCRIPTOR) =>
-    (await new SpineBundleLoader({ queue: queue(), transport: fakeTransport(options) }).load(descriptor).result).reason;
-  assert.equal(await outcome({ failText: DESCRIPTOR.atlas }), "atlas-failed");
+    (await new SpineBundleLoader({ queue: queue(), transport: fakeTransport(options), assets }).load(descriptor).result).reason;
+  assert.equal(await outcome({ failText: FILES.atlas }), "atlas-failed");
   assert.equal(await outcome({ failImage: `${EXPORT_DIR}/rod.webp` }), "page-failed");
-  assert.equal(await outcome({ failJson: DESCRIPTOR.skeleton }), "skeleton-failed");
-  assert.equal(await outcome({}, { ...DESCRIPTOR, atlas: `${EXPORT_DIR}/broken.atlas` }), "atlas-invalid");
-  const released = new SpineBundleLoader({ queue: queue(), transport: fakeTransport() }).load(DESCRIPTOR);
+  assert.equal(await outcome({ failJson: FILES.skeleton }), "skeleton-failed");
+  assert.equal(await outcome({}, { ...DESCRIPTOR, asset: "test.broken-atlas" }), "atlas-invalid");
+  const released = new SpineBundleLoader({ queue: queue(), transport: fakeTransport(), assets }).load(DESCRIPTOR);
   released.release();
   assert.equal((await released.result).reason, "cancelled", "a released load settles as cancelled");
   assert.throws(() => new SpineBundleLoader({ queue: {}, transport }), /requires an AssetLoadQueue/u);
+  assert.throws(() => new SpineBundleLoader({ queue: queue(), transport }), /requires assets/u);
+  assert.equal(result.bundle.skeletonFile, "rod.json", "the bundle keeps the skeleton file's name for the DEV export");
 }
 
 function fakeSurface({ height = 600, maxTextureSize = 4096 } = {}) {
@@ -132,7 +135,7 @@ function fakeGraphics() {
 }
 
 async function realBundle(SpineBundleLoader, AssetLoadQueue, overrides = {}) {
-  const loader = new SpineBundleLoader({ queue: new AssetLoadQueue({ scheduler: timers }), transport: fakeTransport() });
+  const loader = new SpineBundleLoader({ queue: new AssetLoadQueue({ scheduler: timers }), transport: fakeTransport(), assets });
   const { bundle } = await loader.load(DESCRIPTOR).result;
   return { ...bundle, ...overrides };
 }
@@ -454,7 +457,7 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   let anchor = controller.advance(context());
   assert.deepEqual([anchor.mode, anchor.tipX, anchor.tipY], ["rectangle", 640, 600], "no animated skin: today's rectangle top");
 
-  const animation = { skeleton: DESCRIPTOR.skeleton, atlas: DESCRIPTOR.atlas, skin: "default", linePoint: "line-tip" };
+  const animation = { asset: DESCRIPTOR.asset, skin: "default", linePoint: "line-tip" };
   runtime = { available: false, runtime: null, reason: "import-failed" };
   controller.setSkin(animation);
   controller.setSkin({ ...animation });
@@ -575,7 +578,7 @@ function checkDevPort(controller, context, staticTip, scale) {
   controller.setSpineEnabled(true);
   assert.deepEqual(Object.keys(controller.getBoneEdits()), ["rod"]);
 
-  const original = JSON.parse(read(DESCRIPTOR.skeleton));
+  const original = JSON.parse(read(FILES.skeleton));
   let exported = controller.exportSkeleton();
   assert.equal(exported.fileName, "rod.json", "the export keeps the file's own name");
   const edited = JSON.parse(exported.text);
@@ -733,6 +736,12 @@ async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
 
 async function main() {
   const version = checkVendorManifest();
+  const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
+  assets = new AssetRegistry({ ...ASSET_REGISTRY, "test.broken-atlas": { kind: "spine", json: FILES.skeleton,
+    atlas: `${EXPORT_DIR}/broken.atlas`, textures: [], bytes: 0, sha256: "0", tags: [], label: "" } });
+  assert.deepEqual({ ...assets.spineOf(DESCRIPTOR.asset), textures: undefined }, { ...FILES, textures: undefined },
+    "the registry names the tracked rod export");
   const spine = await importSource("vendor/spine-webgl/4.3.13/spine-webgl.js");
   const { SpineAtlasTextReader } = await importSource("src/platform/browser/animation/spine_atlas_text_reader.js");
   const { SpineBundleLoader } = await importSource("src/platform/browser/animation/spine_bundle_loader.js");

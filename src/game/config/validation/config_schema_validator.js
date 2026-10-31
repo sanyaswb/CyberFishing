@@ -572,15 +572,12 @@ export class ConfigSchemaValidator {
     }
   }
 
-  // A skin's Spine bundle: project-relative skeleton JSON and atlas paths, optional skin and line point names.
+  // A skin's Spine bundle: the export's asset id (spec 157 R16; the asset-references check proves it is a registered
+  // Spine package), optional skin and line point names.
   #validateSkinAnimation(animation, path) {
     if (animation === undefined) return;
     if (!animation || typeof animation !== "object") { this.#error(path, "must be an object"); return; }
-    const relative = /^(?![a-z]+:|\/)(?!.*(?:^|\/)\.\.(?:\/|$)).+/iu;
-    this.#requirePattern(`${path}.skeleton`, animation.skeleton, new RegExp(`${relative.source}\\.json$`, "iu"),
-      "expected a project-relative .json path");
-    this.#requirePattern(`${path}.atlas`, animation.atlas, new RegExp(`${relative.source}\\.atlas$`, "iu"),
-      "expected a project-relative .atlas path");
+    this.#requireNonEmptyString(`${path}.asset`, animation.asset);
     for (const key of ["skin", "linePoint"]) {
       if (animation[key] !== undefined) this.#requireNonEmptyString(`${path}.${key}`, animation[key]);
     }

@@ -214,8 +214,9 @@ export class FishingEquipmentRenderModelBuilder {
     target.glow = biteHalo || nightHalo;
     target.glowColor = biteHalo ? visual.color : NIGHT_HALO_COLOR;
     target.glowBlur = 8 * scale;
-    target.imageId = art?.src || "";
-    target.tipGlowId = isNight && floatUi.nightTipGlow !== false && art?.glow?.src ? art.glow.src : "";
+    // Image keys are the art's asset ids, as the composition preloads them (spec 157 R16).
+    target.imageId = art?.asset || "";
+    target.tipGlowId = isNight && floatUi.nightTipGlow !== false && art?.glow?.asset ? art.glow.asset : "";
     target.tipGlowPad = Math.max(0, Number(art?.glow?.pad) || 0);
     let rotationDeg = 0;
     let foreshortening = 1;

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.41 - Spine and scene art by id
+
+- TK-178 / spec 157 R16 (c, scene): the rod and boat skins name their Spine export by asset id (`skin.animation.asset`) and `SpineBundleLoader` takes the files from the registry; the float's scene art and tip glow are `skin.scene.asset` / `glow.asset`, preloaded and drawn under their asset ids. Same requests before the start. Game-cycle report unchanged.
+
 ## v0.49.40 - House art by id
 
 - TK-178 / spec 157 R16 (c, house): the House names its room backgrounds, aquarium and renovation art by asset id (`HOUSE_CONFIG.room.backgroundAssets`, `aquariumAsset`, `renovationAsset`); `HouseRoomView` resolves them through the registry, which the session services hand to the House screen, and the screen's sprite icons are `data-asset-href` ids bound after the markup is inserted. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.32 - Hidden UI images after start
 
 - Spec 157 R6 (TK-172): images of the closed inventory and hidden toolbar buttons are lazy (loading before src) and no longer load before the game starts; after the first frame they warm up one at a time, so the inventory opens without a network wait; depth selector icons load after start too. The startup measurer takes --cpu N. Game-cycle report unchanged.
-
-## v0.49.31 - Water visible again
-
-- TK-171 fix: since v0.49.26 the startup screen's inline style set a background on `html`, so the page's grey body background was painted above the WebGL scene (z-index -1) and the water was a grey screen; the root background is removed (incident I-9). Game-cycle report unchanged.

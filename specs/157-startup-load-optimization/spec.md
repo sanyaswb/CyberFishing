@@ -941,6 +941,25 @@ Spine-скелетом (spec 099), але статичний режим вудк
   корінь сервера (3) 1562 → 1557 мс; 0.99 МБ, 68 запитів, той самий список асетів (будинок — лише DEV, лінивий). Full 80/80,
   game-cycle без змін.
 
+### R16, крок (в) — група «Spine і арт сцени» (v0.49.41, 2026-10-31; TK-178)
+
+- **Предмети:** `skin.animation.asset` вудки (`animations.rods.bamboo-rod-v1.rod`) і кораблика
+  (`animations.boats.boat-lvl--3`) замість пар `skeleton`/`atlas`; поплавки — `skin.scene.asset`
+  (`items.floats-scene.float-day`) і `glow.asset` (`…float-day-glow`).
+- **Місця завантаження:** `SpineBundleLoader({ assets })` бере JSON скелета й атлас з `assets.spineOf(id)` (сторінки атласу —
+  поруч з атласом, як і раніше); бандл несе `skeletonFile` — ім'я файла для DEV-експорту відредагованого скелета
+  (раніше бралося зі шляху в дескрипторі). `RodAnimationController` / `BoatAnimationController` порівнюють і передають id.
+  Арт поплавка завантажується в композиції під ключем id (`imageAssets.preload({ id, src: pathOf(id) })`), і той самий id
+  пише модель рендера (`imageId`, `tipGlowId`) — і 2D, і Pixi беруть картинку за цим ключем.
+- **Схема:** `config_schema_validator` вимагає непорожній `animation.asset`; що це саме Spine-пакет реєстру, доводить
+  `asset-references` (поле `*.animation.asset` — пакет, інші — файли).
+- **Перевірки:** `spine-rod` (реєстр називає tracked-експорт вудки; завантажувач вимагає реєстр; `skeletonFile`),
+  `bait-boat-spine-animation`, `bait-boat-inventory-visuals`, `float-pose`, `asset-references` (скіни без шляхів; падає на
+  старому `item_database.js` — «rod_test_float names its Spine export by asset id»).
+- **Заміри** (холодний, медіана; до = 0.49.40): Fast 4G (5) 1563 → 1552 мс, 3G (3) 6351 → 6377 мс, `--cpu 4` (3) 2316 → 2274 мс,
+  корінь сервера (3) 1557 → 1575 мс; 0.99 МБ, 68 запитів; ті самі 20 асетів до `ready` (поплавок і світіння — за тими самими
+  URL, тепер через реєстр). Full 80/80, game-cycle без змін.
+
 ## Перевірки
 
 `asset-preloader` (розширення: facade поверх черги, мінімальний набір, фази доби, prefetch після барʼєра, пауза);

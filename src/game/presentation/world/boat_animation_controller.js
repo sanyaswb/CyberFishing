@@ -13,7 +13,7 @@ export class BoatAnimationController {
   #loadBundle;
   #loadRuntime;
   #glSurface;
-  #descriptor = { skeleton: "", atlas: "", skin: "" };
+  #descriptor = { asset: "", skin: "" };
   #generation = 0;
   #load = null;
   #bundle = null;
@@ -47,13 +47,11 @@ export class BoatAnimationController {
 
   setDescriptor(animation) {
     if (this.#disposed) return;
-    const skeleton = animation?.skeleton ?? "";
-    const atlas = animation?.atlas ?? "";
+    const asset = animation?.asset ?? "";
     const skin = animation?.skin ?? "";
     const current = this.#descriptor;
-    if (current.skeleton === skeleton && current.atlas === atlas && current.skin === skin) return;
-    current.skeleton = skeleton;
-    current.atlas = atlas;
+    if (current.asset === asset && current.skin === skin) return;
+    current.asset = asset;
     current.skin = skin;
 
     const generation = ++this.#generation;
@@ -66,13 +64,13 @@ export class BoatAnimationController {
     this.#clipTimer = 0;
     this.#lastBoat = null;
 
-    if (!skeleton || !atlas) {
+    if (!asset) {
       this.#replaceScene(null);
       this.#bundle = null;
       return;
     }
 
-    const load = this.#loadBundle({ skeleton, atlas, skin: skin || null });
+    const load = this.#loadBundle({ asset, skin: skin || null });
     this.#load = load;
     load.result.then((outcome) => this.#onBundle(generation, outcome));
   }
@@ -252,9 +250,8 @@ export class BoatAnimationController {
 
   exportSkeleton() {
     if (!this.#bundle?.skeleton) return null;
-    const path = this.#descriptor.skeleton;
     return {
-      fileName: path ? path.slice(path.lastIndexOf("/") + 1) : "boat-lvl--3.json",
+      fileName: this.#bundle.skeletonFile,
       text: JSON.stringify(this.#editedSkeleton(), null, 2),
     };
   }

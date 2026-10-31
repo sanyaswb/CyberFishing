@@ -7,14 +7,14 @@ import { SpineRuntimeProvider } from "../../platform/browser/animation/spine_run
 import { SceneSkeletalSurface } from "../../platform/browser/scene/scene_skeletal_surface.js";
 
 // Composition of the Spine bait boat animation (spec 150).
-export function composeBoatAnimation({ windowTarget, documentTarget, scene }) {
+export function composeBoatAnimation({ windowTarget, documentTarget, scene, assets }) {
   const queue = new AssetLoadQueue({
     scheduler: {
       setTimeout: (callback, delayMs) => windowTarget.setTimeout(callback, delayMs),
       clearTimeout: (id) => windowTarget.clearTimeout(id),
     },
   });
-  const loader = new SpineBundleLoader({ queue, transport: new BrowserAssetTransport() });
+  const loader = new SpineBundleLoader({ queue, transport: new BrowserAssetTransport(), assets });
   const onScene = scene?.webgl === true;
   const runtimeProvider = onScene ? new SpineRuntimeProvider({
     importModule: () => scene.layer.whenReady().then((ready) => {

@@ -469,11 +469,11 @@ export class GameCompositionRoot {
     } = this.#composeFishModels({ contracts, itemFreshnessResolver });
     const rodAnimation = own(composeRodAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
-      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas },
+      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
     }));
     const boatAnimation = own(composeBoatAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
-      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas },
+      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
     }));
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
       ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
@@ -542,10 +542,10 @@ export class GameCompositionRoot {
     // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
     // happen during loading, not in the first frames of play.
     // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too; an image that fails
-    // to load leaves that float a bar.
+    // to load leaves that float a bar. The art is keyed by its asset id; the registry gives the file (spec 157 R16).
     const floatArt = [...new Set(Object.values(this.#itemDb?.floats || {}).flatMap((float) =>
-      [float.skin?.scene?.src, float.skin?.scene?.glow?.src]).filter(Boolean))];
-    await imageAssets.preload(floatArt.map((src) => ({ id: src, src }))).catch(() => null);
+      [float.skin?.scene?.asset, float.skin?.scene?.glow?.asset]).filter(Boolean))];
+    await imageAssets.preload(floatArt.map((id) => ({ id, src: this.#assets.pathOf(id) }))).catch(() => null);
     // Spec 157 R6: last of the deferred loads, the page's lazy UI images (closed inventory, hidden toolbar buttons),
     // one at a time, so opening the inventory finds them in the cache.
     const lazyImages = own(new LazyImageWarmUp({ documentRef: this.#documentTarget }));

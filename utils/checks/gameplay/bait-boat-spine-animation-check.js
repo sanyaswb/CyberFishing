@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 async function checkBoatStateFlow() {
   const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
   const boat = new BaitBoat(100, 200, {
-    skin: { animation: { skeleton: "boat.json", atlas: "boat.atlas" } },
+    skin: { animation: { asset: "animations.boats.boat-lvl--3" } },
     effectiveStats: { sections: 3, statsByLevel: { 1: { speedPxPerSec: 100 } } },
   });
 
@@ -47,7 +47,7 @@ async function checkBoatStateFlow() {
 
   // Partially loaded boat starting with section 1 pre-dropped (TK-149)
   const partialBoat = new BaitBoat(100, 200, {
-    skin: { animation: { skeleton: "boat.json", atlas: "boat.atlas" } },
+    skin: { animation: { asset: "animations.boats.boat-lvl--3" } },
     effectiveStats: { sections: 3, initialDroppedSections: [1], statsByLevel: { 1: { speedPxPerSec: 100 } } },
   });
   assert.deepEqual(partialBoat.droppedSections, [1], "partially loaded boat starts with pre-emptied sections");
@@ -119,14 +119,13 @@ async function checkAnimationController() {
   };
 
   const controller = new BoatAnimationController({
-    loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26", skeleton: { bones: [{ name: "root" }] } } }) }),
+    loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26", skeletonFile: "boat-lvl--3.json", skeleton: { bones: [{ name: "root" }] } } }) }),
     loadRuntime: () => Promise.resolve({ available: true, runtime: { createScene: () => ({ scene: fakeScene, reason: null }) } }),
     glSurface: fakeGlSurface,
   });
 
   controller.setDescriptor({
-    skeleton: "assets/animations/boats/boat-lvl--3.json",
-    atlas: "assets/animations/boats/boat-lvl--3.atlas",
+    asset: "animations.boats.boat-lvl--3",
     skin: "skin_boat-lvl--3",
   });
 
@@ -255,7 +254,7 @@ async function checkBoatRenderPipeline() {
     config: {
       emoji: "🚤",
       skin: {
-        animation: { skeleton: "boat.json", atlas: "boat.atlas" },
+        animation: { asset: "animations.boats.boat-lvl--3" },
       },
     },
     powerRatio: 0.9,

@@ -22,7 +22,7 @@ export class RodAnimationController {
   #boneEdits = new Map();
   #snapshot;
   #bend = new ScalarSmoother({ timeConstantSec: 0.12 });
-  #descriptor = { skeleton: "", atlas: "", skin: "", linePoint: "" };
+  #descriptor = { asset: "", skin: "", linePoint: "" };
   #generation = 0;
   #load = null;
   #bundle = null;
@@ -69,19 +69,16 @@ export class RodAnimationController {
     this.#snapshot = resolver.createSnapshot();
   }
 
-  // animation: the equipped rod skin's { skeleton, atlas, skin, linePoint } or null. Called every frame; a change
-  // starts a new load and keeps the current picture until the new one is ready.
+  // animation: the equipped rod skin's { asset, skin, linePoint } (asset: the Spine export's id) or null. Called every
+  // frame; a change starts a new load and keeps the current picture until the new one is ready.
   setSkin(animation) {
     if (this.#disposed) return;
-    const skeleton = animation?.skeleton ?? "";
-    const atlas = animation?.atlas ?? "";
+    const asset = animation?.asset ?? "";
     const skin = animation?.skin ?? "";
     const linePoint = animation?.linePoint ?? "";
     const current = this.#descriptor;
-    if (current.skeleton === skeleton && current.atlas === atlas && current.skin === skin &&
-      current.linePoint === linePoint) return;
-    current.skeleton = skeleton;
-    current.atlas = atlas;
+    if (current.asset === asset && current.skin === skin && current.linePoint === linePoint) return;
+    current.asset = asset;
     current.skin = skin;
     current.linePoint = linePoint;
     const generation = ++this.#generation;
@@ -89,12 +86,12 @@ export class RodAnimationController {
     this.#load = null;
     this.#reason = null;
     this.#boneEdits.clear();
-    if (!skeleton || !atlas) {
+    if (!asset) {
       this.#replaceScene(null);
       this.#bundle = null;
       return;
     }
-    const load = this.#loadBundle({ skeleton, atlas, skin: skin || null, linePoint: linePoint || null });
+    const load = this.#loadBundle({ asset, skin: skin || null, linePoint: linePoint || null });
     this.#load = load;
     load.result.then((outcome) => this.#onBundle(generation, outcome));
   }
@@ -207,8 +204,7 @@ export class RodAnimationController {
   // { fileName, text } or null without a bundle. Default values are omitted, as Spine writes them.
   exportSkeleton() {
     if (!this.#bundle) return null;
-    const path = this.#descriptor.skeleton;
-    return { fileName: path.slice(path.lastIndexOf("/") + 1), text: JSON.stringify(this.#editedSkeleton()) };
+    return { fileName: this.#bundle.skeletonFile, text: JSON.stringify(this.#editedSkeleton()) };
   }
 
   dispose() {

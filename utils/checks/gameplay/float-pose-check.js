@@ -189,7 +189,7 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     floatPose: new FloatPoseAnimator({ getConfig: () => CONFIG }), getWaterMetric: () => flat,
     floatRocking: new FloatWaveRocking({ getSettings: () => null }),
   });
-  const skin = { scene: { src: "float.webp", waterline: 0.3, glow: { src: "glow.webp", pad: 8 } } };
+  const skin = { scene: { asset: "float.webp", waterline: 0.3, glow: { asset: "glow.webp", pad: 8 } } };
   let colour = "#00ff80";
   const entity = { getVisualState: () => ({ color: colour }), getPosition: () => ({ x: 500, y: 500 }),
     isHooked: () => false, getPoseSignals: () => signals({ castSerial: 7 }) };
