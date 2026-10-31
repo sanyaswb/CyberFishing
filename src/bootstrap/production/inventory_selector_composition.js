@@ -12,12 +12,12 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 // loaded, the classic inventory and keepnet buttons stand in for the radial selector; a failed load keeps them.
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
-  id = "inventory-selector-sections", onSelect = null }) {
+  id = "inventory-selector-sections", onSelect = null, assets }) {
   const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
     .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
-  const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(documentRef),
-    geometries, sections: INVENTORY_SECTIONS,
-    labels: INVENTORY_SELECTOR_LABELS, keepnetImage: KEEPNET_ART_STAGES[0].imagePath, id });
+  const domFactory = new InventoryDomFactory(documentRef, { assets });
+  const view = new InventorySelectorRenderer({ domFactory, geometries, sections: INVENTORY_SECTIONS,
+    labels: INVENTORY_SELECTOR_LABELS, keepnetAsset: KEEPNET_ART_STAGES[0].imageAsset, id });
   const controller = new InventorySelectorController({ view, uiSurface, documentRef, windowRef,
     onSelect: onSelect || (sectionId => {
       inventoryUI.openSection(sectionId);
@@ -31,15 +31,14 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   const syncEquipment = () => {
     if (disposed || !artworkRequested) return;
     const rod = equipmentSource?.getEquipped()?.rod;
-    const thumbnail = rod?.skin?.thumbnail ? { ...rod.skin.thumbnail }
-      : { src: rod?.iconUrl || rod?.imageUrl || rod?.src };
-    const key = JSON.stringify([thumbnail.src || "", thumbnail.visibleHeight, thumbnail.focusX, thumbnail.anchor]);
+    const thumbnail = rod?.skin?.thumbnail ? { ...rod.skin.thumbnail } : { asset: rod?.iconAsset };
+    const key = JSON.stringify([thumbnail.asset || "", thumbnail.visibleHeight, thumbnail.focusX, thumbnail.anchor]);
     if (key === artworkKey) return;
     artworkKey = key;
     const revision = ++artworkRevision;
     view.setEquipmentArtwork(null);
-    if (!thumbnail.src) return;
-    imageAssets.preload([{ id: thumbnail.src, src: thumbnail.src }]).then(() => {
+    if (!thumbnail.asset) return;
+    imageAssets.preload([{ id: thumbnail.asset, src: domFactory.assetUrl(thumbnail.asset) }]).then(() => {
       if (!disposed && revision === artworkRevision) view.setEquipmentArtwork(thumbnail);
     }).catch(error => {
       if (!disposed && revision === artworkRevision) logger.warn("[InventorySelector] Rod artwork preload failed; retaining SVG", error);
@@ -79,13 +78,13 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   syncEquipment();
   documentRef.addEventListener("config-updated", sync);
   sync();
-  const sources = [INVENTORY_SECTIONS.iconSprite, INVENTORY_SECTIONS.backpackImage, KEEPNET_ART_STAGES[0].imagePath];
+  const sources = [INVENTORY_SECTIONS.iconSpriteAsset, INVENTORY_SECTIONS.backpackAsset, KEEPNET_ART_STAGES[0].imageAsset];
   // Starts the artwork loads once; resolves true when the radial selector can show, false after a failure.
   const loadArtwork = () => {
     if (ready) return ready;
     artworkRequested = true;
     syncEquipment();
-    ready = imageAssets.preload(sources.map(src => ({ id: src, src }))).then(() => {
+    ready = imageAssets.preload(sources.map(id => ({ id, src: domFactory.assetUrl(id) }))).then(() => {
       if (!disposed) { loadState = "ready"; sync(); }
       return true;
     }).catch(error => {

@@ -22,7 +22,7 @@ export class InventorySectionTabsRenderer {
       tab.setAttribute("role", "tab");
       tab.setAttribute("aria-label", section.label);
       tab.title = section.label;
-      tab.appendChild(this.#dom.svgIcon(`${this.#sections.iconSprite}#${section.icon}`, "inventory-section-tabs__icon"));
+      tab.appendChild(this.#dom.svgIcon(this.#sections.iconSpriteAsset, section.icon, "inventory-section-tabs__icon"));
       tab.addEventListener("click", () => onSelect(section.id));
       return tab;
     });

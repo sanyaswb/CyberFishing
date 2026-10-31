@@ -204,9 +204,13 @@ async function checkStartupScreen() {
 // wait for the deferred loads.
 async function checkDeferredUiImages() {
   const { InventoryDomFactory } = await importSource("src/platform/browser/dom/inventory_dom_factory.js");
+  const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
+  const assets = new AssetRegistry(ASSET_REGISTRY);
   const writes = [];
   const element = () => new Proxy({}, { set(target, key, value) { writes.push(String(key)); target[key] = value; return true; } });
-  const image = new InventoryDomFactory({ createElement: element }).image("assets/items/nets/net--1.webp", "net");
+  const image = new InventoryDomFactory({ createElement: element }, { assets }).image("items.nets.net--1", "net");
+  assert.equal(image.src, "assets/items/nets/net--1.webp", "an image by asset id gets the registry's file");
   assert.equal(image.loading, "lazy");
   assert(writes.indexOf("loading") >= 0 && writes.indexOf("loading") < writes.indexOf("src"),
     "lazy is set before the source, or the browser has already requested it");
@@ -248,7 +252,7 @@ async function checkDeferredUiImages() {
     setAttribute() {}, addEventListener() {}, removeEventListener() {}, appendChild() {}, append() {}, replaceChildren() {} });
   composeDepthSelector({ documentRef: { createElement: fakeElement, createElementNS: fakeElement, addEventListener() {},
     removeEventListener() {} }, mountNode: host, uiSurface: null,
-  itemDb: { floats: { float_day: { icon: "F", iconUrl: "assets/items/floats/float-day.webp" } }, baits: {} },
+  itemDb: { floats: { float_day: { icon: "F", iconAsset: "items.floats.float-day" } }, baits: {} }, assets,
   imageAssets: { preload: () => { preloads += 1; return Promise.resolve(); } }, deferLoad: (load) => deferred.push(load) });
   assert.equal(preloads, 0, "the depth selector requests no icon at composition");
   assert.equal(deferred.length, 1);

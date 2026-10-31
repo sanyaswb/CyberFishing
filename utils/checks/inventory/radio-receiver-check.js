@@ -24,7 +24,7 @@ const assets = new AssetRegistry(ASSET_REGISTRY);
 
 const radio = ITEM_DB.devices.radio_receiver_basic;
 assert.equal(radio.itemType, "radio");
-assert.equal(radio.iconUrl, "assets/items/radio/radio-receiver.webp", "the radio shows the owner's art");
+assert.equal(radio.iconAsset, "items.radio.radio-receiver", "the radio shows the owner's art");
 assert.equal(radio.gameplayStats.batteryUse.unitsPerSecond, 1, "1 unit/s: an ordinary battery plays 1 hour (D-P5)");
 assert.equal(EQUIPMENT_SLOT_CONFIG.radio.group, "auxiliary");
 assert.deepEqual([...EQUIPMENT_SLOT_CONFIG.radio.acceptTypes], ["radio"]);
@@ -77,7 +77,7 @@ dispatch({ type: InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, slotId: "radio" })
 const editor = inventory.facade.getViewModel();
 assert.equal(editor.panel.mode, "assembly", "a tap on the radio opens its editor");
 assert.equal(editor.panel.assembly.root?.itemId, "radio_receiver_basic");
-assert.equal(editor.panel.assembly.root?.iconUrl, "assets/items/radio/radio-receiver.webp", "the editor shows the radio's art");
+assert.equal(editor.panel.assembly.root?.iconAsset, "items.radio.radio-receiver", "the editor shows the radio's art");
 const sockets = JSON.stringify(editor.panel.assembly);
 assert(sockets.includes("\"battery\""), "the editor offers the battery socket");
 

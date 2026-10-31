@@ -34,6 +34,29 @@ const MIGRATED_MODULES = Object.freeze([
   "src/bootstrap/production/rod_animation_composition.js",
   "src/bootstrap/production/boat_animation_composition.js",
   "src/game/config/validation/config_schema_validator.js",
+  "src/game/config/raw/items/item_database.js",
+  "src/game/config/raw/live_bait/live_bait_config.js",
+  "src/game/config/databases/item_catalog.js",
+  "src/game/application/chum/chum_controller.js",
+  "src/game/presentation/inventory/inventory_slot_icons.js",
+  "src/game/presentation/inventory/inventory_sections.js",
+  "src/game/presentation/inventory/inventory_selector_renderer.js",
+  "src/game/presentation/inventory/inventory_item_card_renderer.js",
+  "src/game/presentation/inventory/inventory_view_model_factory.js",
+  "src/game/presentation/inventory/inventory_item_tree_view_factory.js",
+  "src/game/presentation/keepnet/keepnet_art_config.js",
+  "src/game/presentation/keepnet/keepnet_section_view.js",
+  "src/game/presentation/keepnet/keepnet_overview_renderer.js",
+  "src/game/presentation/house/aquarium_feed_picker.js",
+  "src/game/presentation/house/house_view.js",
+  "src/platform/browser/dom/inventory_dom_factory.js",
+  "src/platform/browser/ui/chum_controls.js",
+  "src/platform/browser/ui/game_controls.js",
+  "src/platform/browser/ui/depth_selector.js",
+  "src/bootstrap/production/inventory_ui_bootstrap.js",
+  "src/bootstrap/production/inventory_selector_composition.js",
+  "src/bootstrap/production/depth_selector_composition.js",
+  "src/dev/tools/dev_tools.js",
 ]);
 const PATH_LITERAL = /["'`]assets\/[^"'`]*/gu;
 // A string literal shaped like a registry id (its first part is a top folder of assets/).
@@ -101,6 +124,28 @@ function collectAssetReferences(value, where, found = []) {
     }
   }
   assert(spineSkins >= 2, "the rod and the boat have Spine skins");
+  // Item art (inventory, switchers, toolbar) by asset id: no path field is left on any catalog item.
+  const pathFields = /^(?:iconUrl|switcherIconUrl|imageUrl|imagePath|src|withLine|withoutLine|noBait|bait)$/u;
+  const findPathFields = (value, where) => {
+    if (!value || typeof value !== "object") return [];
+    return Object.entries(value).flatMap(([key, child]) => (typeof child === "string" && pathFields.test(key) && /\.[a-z0-9]{2,5}$/iu.test(child) ? [`${where}.${key}`]
+      : findPathFields(child, `${where}.${key}`)));
+  };
+  assert.deepEqual(findPathFields(ITEM_DB, "ITEM_DB"), [], "catalog items name their art by asset id");
+  const iconItems = Object.values(ITEM_DB).flatMap((group) => Object.values(group ?? {})).filter((item) => item?.iconAsset);
+  assert(iconItems.length >= 15,`catalog items carry iconAsset (${iconItems.length})`);
+  // Inventory interface art, keepnet stages and aquarium feed boxes.
+  const { INVENTORY_SECTIONS } = await importSource("src/game/presentation/inventory/inventory_sections.js");
+  const { inventorySlotIconAssets } = await importSource("src/game/presentation/inventory/inventory_slot_icons.js");
+  const { KEEPNET_ART_STAGES } = await importSource("src/game/presentation/keepnet/keepnet_art_config.js");
+  const { LIVE_BAIT_CONFIG } = await importSource("src/game/config/raw/live_bait/live_bait_config.js");
+  references.push(...collectAssetReferences(INVENTORY_SECTIONS, "INVENTORY_SECTIONS"),
+    ...KEEPNET_ART_STAGES.map((stage) => [`KEEPNET_ART_STAGES.${stage.maxPercent}`, stage.imageAsset]),
+    ...inventorySlotIconAssets().map((id) => ["inventory slot icon", id]),
+    ...collectAssetReferences(LIVE_BAIT_CONFIG.aquariumFeeds, "LIVE_BAIT_CONFIG.aquariumFeeds"));
+  assert.equal(KEEPNET_ART_STAGES.length, 6, "six keepnet stages");
+  assert(Object.values(LIVE_BAIT_CONFIG.aquariumFeeds).every((feed) => feed.imageAsset && !("imagePath" in feed)),
+    "aquarium feeds name their box art by asset id");
   const room = HOUSE_CONFIG.room;
   assert(room.aquariumAsset && room.renovationAsset, "the House names its aquarium and renovation art by asset id");
   for (let level = 1; level <= room.maxLevel; level++) {

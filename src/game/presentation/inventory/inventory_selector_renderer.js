@@ -17,7 +17,7 @@ export class InventorySelectorRenderer {
 
   // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars; toolbars up to 820
   // logical px use the configured compact one (`half`/`arc` centred, `corner`/`corner-left` in a bottom corner).
-  constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetImage, id }) {
+  constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetAsset, id }) {
     this.#dom = domFactory;
     this.#geometries = geometries;
     this.element = this.#dom.element("div", "inventory-selector");
@@ -39,8 +39,8 @@ export class InventorySelectorRenderer {
       svg.setAttribute("aria-hidden", "true");
       const path = this.#svg("path"); svg.appendChild(path);
       this.#paths.push({ svg, path });
-      const image = section.id === "equipment" ? this.#dom.svgIcon(`${sections.iconSprite}#${section.icon}`, "inventory-selector__art")
-        : this.#dom.image(section.id === "backpack" ? sections.backpackImage : keepnetImage, "");
+      const image = section.id === "equipment" ? this.#dom.svgIcon(sections.iconSpriteAsset, section.icon, "inventory-selector__art")
+        : this.#dom.image(section.id === "backpack" ? sections.backpackAsset : keepnetAsset, "");
       image.classList.add("inventory-selector__art");
       image.setAttribute("aria-hidden", "true");
       button.append(svg, image);
@@ -63,7 +63,7 @@ export class InventorySelectorRenderer {
     this.central.setAttribute("aria-label", labels.inventory);
     this.central.setAttribute("aria-controls", id);
     this.central.setAttribute("aria-expanded", "false");
-    this.central.appendChild(this.#dom.svgIcon(`${sections.iconSprite}#inventory`, "inventory-selector__icon"));
+    this.central.appendChild(this.#dom.svgIcon(sections.iconSpriteAsset, "inventory", "inventory-selector__icon"));
     this.group.setAttribute("aria-hidden", "true");
     this.group.inert = true;
     const stage = this.#dom.element("div", "inventory-selector__stage");
@@ -111,8 +111,9 @@ export class InventorySelectorRenderer {
     return this.#apply(compact ? this.#compact : this.#geometries.corner);
   }
 
+  // thumbnail: the rod skin's { asset, visibleHeight, focusX, anchor } or null.
   setEquipmentArtwork(thumbnail) {
-    const src = this.#dom.safeImageSource(thumbnail?.src);
+    const src = this.#dom.assetUrl(thumbnail?.asset);
     if (src) this.#equipmentFallback.setAttribute("hidden", "");
     else this.#equipmentFallback.removeAttribute("hidden");
     this.#equipmentArt.hidden = !src;

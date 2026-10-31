@@ -7,6 +7,8 @@ function checkChumComposition() {
   const document={createElement(){const node={style:{},attributes:{},setAttribute(key,value){this.attributes[key]=String(value);},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
   const runtime=new SourceRuntime({globals:{document,console:{log(){}}}});
   runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumControls']});
+  runtime.load('src/engine/assets/asset_registry.js',{expose:['AssetRegistry']});
+  runtime.load('src/game/config/generated/asset_registry.js',{expose:['ASSET_REGISTRY']});
   runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
   runtime.load('src/game/application/casting/cast_power_aim.js');
   runtime.load('src/game/application/chum/chum_controller.js',{expose:['ChumController']});
@@ -30,7 +32,8 @@ function checkChumComposition() {
     fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);equipped.deliveryChums[index]=null;}},location:{chumCastDistance:300},clock,config,
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
     getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,devicePower,
-    createUi:(onClick)=>new runtime.context.ChumControls(onClick,{labels:runtime.context.HUD_LABELS})});
+    createUi:(onClick)=>new runtime.context.ChumControls(onClick,{labels:runtime.context.HUD_LABELS,
+      assets:new runtime.context.AssetRegistry(runtime.context.ASSET_REGISTRY)})});
   assert.equal(controller.ui.button.hidden,true);
   const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞');assert.match(controller.ui.button.attributes['aria-label'],/3/);assert.equal(controller.ui.button.hidden,false);
   // Visibility follows equipped items, including changes with the same empty UI state.

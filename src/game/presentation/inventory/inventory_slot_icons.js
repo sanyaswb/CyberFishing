@@ -1,30 +1,30 @@
-// Shared empty-compartment artwork. Filled compartments keep their actual item images.
+// Shared empty-compartment artwork by asset id (spec 157 R16). Filled compartments keep their actual item images.
 const ICONS = Object.freeze({
-  rod: "assets/ui/inventory/rod.svg",
-  reel: "assets/ui/inventory/reel.svg",
-  terminalLine: "assets/ui/inventory/line.svg",
-  line: "assets/ui/inventory/line.svg",
-  float: "assets/ui/inventory/float.svg",
-  tackle: "assets/ui/inventory/tackle.svg",
-  hook: "assets/ui/inventory/tackle.svg",
-  net: "assets/ui/inventory/net.svg",
-  keepnet: "assets/ui/inventory/keepnet.svg",
-  handChum: "assets/ui/inventory/chum.svg",
-  chum: "assets/ui/inventory/chum.svg",
-  cargo: "assets/ui/inventory/chum.svg",
-  battery: "assets/ui/inventory/battery.svg",
-  delivery: "assets/ui/inventory/boat.svg",
-  gasMask: "assets/ui/inventory/gas-mask.svg",
-  radio: "assets/ui/inventory/radio.svg",
-  bait: "assets/ui/inventory/bait.svg",
-  weight: "assets/ui/inventory/weight.svg",
+  rod: "ui.inventory.rod",
+  reel: "ui.inventory.reel",
+  terminalLine: "ui.inventory.line",
+  line: "ui.inventory.line",
+  float: "ui.inventory.float",
+  tackle: "ui.inventory.tackle",
+  hook: "ui.inventory.tackle",
+  net: "ui.inventory.net",
+  keepnet: "ui.inventory.keepnet",
+  handChum: "ui.inventory.chum",
+  chum: "ui.inventory.chum",
+  cargo: "ui.inventory.chum",
+  battery: "ui.inventory.battery",
+  delivery: "ui.inventory.boat",
+  gasMask: "ui.inventory.gas-mask",
+  radio: "ui.inventory.radio",
+  bait: "ui.inventory.bait",
+  weight: "ui.inventory.weight",
 });
 
-export function inventorySlotIconPath(slotId) {
+export function inventorySlotIconAsset(slotId) {
   return ICONS[slotId] || "";
 }
 
-// Every distinct placeholder file, warmed when the inventory is composed (TK-081).
-export function inventorySlotIconPaths() {
+// Every distinct placeholder, warmed when the inventory is composed (TK-081).
+export function inventorySlotIconAssets() {
   return [...new Set(Object.values(ICONS))];
 }

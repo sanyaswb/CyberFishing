@@ -4,11 +4,15 @@ const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "re
 
 export class ChumControls {
   #labels;
+  #assets;
   #documentRef;
   #image = null;
   #boatIconUrl = null;
 
-  constructor(onClickCallback, { labels, documentRef = document, mountNode = documentRef.body } = {}) {
+  // assets: the AssetRegistry; setState names the boat's art by asset id (spec 157 R16).
+  constructor(onClickCallback, { labels, documentRef = document, mountNode = documentRef.body, assets } = {}) {
+    if (typeof assets?.pathOf !== "function") throw new TypeError("ChumControls requires assets");
+    this.#assets = assets;
     this.#labels = labels;
     this.#documentRef = documentRef;
     this.button = documentRef.createElement("button");
@@ -38,7 +42,8 @@ export class ChumControls {
     mountNode.appendChild(this.button);
   }
 
-  setState(state, method = "hand", count = 0, isManual = false, isVisible = true, boatIconUrl = null) {
+  setState(state, method = "hand", count = 0, isManual = false, isVisible = true, boatIconAsset = null) {
+    const boatIconUrl = boatIconAsset ? this.#assets.pathOf(boatIconAsset) : null;
 
     let text = "";
     if (state === "empty") {

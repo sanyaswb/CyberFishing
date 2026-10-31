@@ -1,13 +1,14 @@
-// Inventory sections in tab order; icons are symbols of assets/ui/inventory-sections.svg. The root modifier and host
-// class names are literal so the style guard can reach them (spec 068).
+// Inventory sections in tab order; icons are symbols of the sections sprite (asset ui.inventory-sections). Art is named
+// by asset id (spec 157 R16). The root modifier and host class names are literal so the style guard can reach them
+// (spec 068).
 export const INVENTORY_SECTIONS = Object.freeze({
   label: "Розділи інвентарю",
-  iconSprite: "assets/ui/inventory-sections.svg",
+  iconSpriteAsset: "ui.inventory-sections",
   defaultSectionId: "equipment",
-  backpackImage: "assets/items/briefcases/briefcase--1--close.webp",
-  backpackBackdropImage: "assets/items/briefcases/briefcase--1--open.webp",
+  backpackAsset: "items.briefcases.briefcase--1--close",
+  backpackBackdropAsset: "items.briefcases.briefcase--1--open",
   // A scale icon is interface: the vector backpack icon, never item artwork (DESIGN_RULES.md).
-  backpackCapacityIcon: "assets/ui/inventory/backpack.svg",
+  backpackCapacityIconAsset: "ui.inventory.backpack",
   // Presentation scale only (spec 075): gameplay inventory capacity stays unlimited.
   backpackCapacity: Object.freeze({ maxItems: 100 }),
   labels: Object.freeze({
@@ -24,7 +25,7 @@ export const INVENTORY_SECTIONS = Object.freeze({
   // The portrait backpack pager (spec 075): the item list on the left page, the backpack view on the right.
   backpackPager: Object.freeze({
     label: "Вміст рюкзака",
-    iconSprite: "assets/ui/inventory-sections.svg",
+    iconSpriteAsset: "ui.inventory-sections",
     items: Object.freeze([
       Object.freeze({ id: "items", icon: "items", label: "Предмети" }),
       Object.freeze({ id: "backpack", icon: "backpack", label: "Рюкзак" }),
@@ -34,8 +35,9 @@ export const INVENTORY_SECTIONS = Object.freeze({
   // scale uses the status sprite's fish icon (the House capacity icon).
   keepnetPager: Object.freeze({
     label: "Вміст садка",
-    iconSprite: "assets/ui/inventory-sections.svg",
-    capacityIcon: "assets/ui/status-icons.svg#fish",
+    iconSpriteAsset: "ui.inventory-sections",
+    capacityIconAsset: "ui.status-icons",
+    capacityIconSymbol: "fish",
     items: Object.freeze([
       Object.freeze({ id: "fish", icon: "fish", label: "Риба" }),
       Object.freeze({ id: "keepnet", icon: "keepnet", label: "Садок" }),

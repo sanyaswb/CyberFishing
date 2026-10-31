@@ -10,8 +10,11 @@ module.exports = async function checkFeedPicker() {
   documentRef.body.append(button, preview, hint, list);
   const original = create("p"); original.textContent = "Original fixture content"; list.append(original);
   const applied = []; let accepted = true, picker;
-  const items = [{ id: "one", name: "One", count: 1, imagePath: "one.svg" },
-    { id: "many", name: "Many", count: 5, imagePath: "many.svg" }, { id: "empty", name: "Empty", count: 0 }];
+  const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
+  const assets = new AssetRegistry(ASSET_REGISTRY);
+  const items = [{ id: "one", name: "One", count: 1, imageAsset: "items.aquarium-feed-simple" },
+    { id: "many", name: "Many", count: 5, imageAsset: "items.aquarium-feed-good" }, { id: "empty", name: "Empty", count: 0 }];
   let model = { feedItems: items, selectedFeedId: "unavailable", aquarium: { owned: true, count: 1, canLoadFeed: true, feed: null } };
   const onFeed = (id, quantity) => {
     applied.push([id, quantity]);
@@ -22,7 +25,7 @@ module.exports = async function checkFeedPicker() {
     }
     return { ok: accepted };
   };
-  const mount = () => new AquariumFeedPicker({ documentRef, button, list, preview, hint, labels: HOUSE_LABELS.feedPicker, onFeed });
+  const mount = () => new AquariumFeedPicker({ documentRef, button, list, preview, hint, labels: HOUSE_LABELS.feedPicker, onFeed, assets });
   picker = mount(); picker.update(model);
   assert(preview.textContent.includes("One"), "the first available row previews before any choice");
   button.click(); assert.equal(list.hidden, false);

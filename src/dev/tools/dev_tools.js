@@ -41,6 +41,7 @@ export class DevTools {
   #getWaterMetric;
   #createWaterMetric;
   #storageCache;
+  #assets;
   #openHouse;
   #openGame;
   #isDisposed = false;
@@ -100,8 +101,11 @@ export class DevTools {
       storageCache,
       openHouse = null,
       openGame = null,
+      // The AssetRegistry: the shop shows each item's art by asset id (spec 157 R16).
+      assets = null,
     } = {},
   ) {
+    this.#assets = assets;
     this.#storageCache = storageCache;
     this.#zoneEditorState = zoneEditorState;
     this.#zoneEditorFiles = zoneEditorFiles;
@@ -563,7 +567,8 @@ export class DevTools {
       const section = this.#createSectionWithCache(labels[category] || category, content);
       for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
         if (!item?.itemType || item.devExclude) continue;
-        const iconUrl = item.iconUrl || item.skin?.thumbnail?.src || "";
+        const iconAsset = item.iconAsset || item.skin?.thumbnail?.asset || "";
+        const iconUrl = iconAsset && this.#assets ? this.#assets.pathOf(iconAsset) : "";
         const label = `${iconUrl ? "" : item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
         let granted = 0;
         this.#ui.createButtonRow(label, section, (event) => {

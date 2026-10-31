@@ -129,14 +129,14 @@ export const ITEM_DB = {
       skin: {
         id: "bamboo-rod-v1",
         thumbnail: {
-          src: "assets/items/rods/bamboo-rod-ecip-v1.webp",
+          asset: "items.rods.bamboo-rod-ecip-v1",
           visibleHeight: 0.5,
           focusX: 0.31,
         },
         equipment: {
-          withLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
+          withLineAsset: "items.rods.bamboo-rod-ecip-v1",
           // Spec 157 R6 (owner, 2026-10-30): one art for now; a separate no-line art comes later.
-          withoutLine: "assets/items/rods/bamboo-rod-ecip-v1.webp",
+          withoutLineAsset: "items.rods.bamboo-rod-ecip-v1",
         },
         // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
         // hangs from the line-tip bone.
@@ -475,8 +475,8 @@ export const ITEM_DB = {
       name: "Масляний черв'як (50 шт)",
       itemType: "bait",
       icon: "🪱",
-      iconUrl: "assets/items/baits/oil-worms--50.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--50",
+      switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 50,
       defaultQuantity: 50,
       devExclude: true,
@@ -504,8 +504,8 @@ export const ITEM_DB = {
       name: "Масляний черв'як (25 шт)",
       itemType: "bait",
       icon: "🪱",
-      iconUrl: "assets/items/baits/oil-worms--25.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--25",
+      switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 25,
       defaultQuantity: 25,
       rarityProfile: {
@@ -532,8 +532,8 @@ export const ITEM_DB = {
       name: "Масляний черв'як (50 шт)",
       itemType: "bait",
       icon: "🪱",
-      iconUrl: "assets/items/baits/oil-worms--50.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--50",
+      switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 50,
       defaultQuantity: 50,
       rarityProfile: {
@@ -560,8 +560,8 @@ export const ITEM_DB = {
       name: "Масляний черв'як (75 шт)",
       itemType: "bait",
       icon: "🪱",
-      iconUrl: "assets/items/baits/oil-worms--75.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--75",
+      switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 75,
       defaultQuantity: 75,
       rarityProfile: {
@@ -588,8 +588,8 @@ export const ITEM_DB = {
       name: "Масляний черв'як (100 шт)",
       itemType: "bait",
       icon: "🪱",
-      iconUrl: "assets/items/baits/oil-worms--100.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--100",
+      switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 100,
       defaultQuantity: 100,
       rarityProfile: {
@@ -616,7 +616,7 @@ export const ITEM_DB = {
       name: "Бамбуковий хліб (25 шт)",
       itemType: "bait",
       icon: "🍞",
-      iconUrl: "assets/items/baits/bread--25.webp",
+      iconAsset: "items.baits.bread--25",
       packSize: 25,
       defaultQuantity: 25,
       devExclude: true,
@@ -644,7 +644,7 @@ export const ITEM_DB = {
       name: "Бамбуковий хліб (10 шт)",
       itemType: "bait",
       icon: "🍞",
-      iconUrl: "assets/items/baits/bread--10.webp",
+      iconAsset: "items.baits.bread--10",
       packSize: 10,
       defaultQuantity: 10,
       rarityProfile: {
@@ -671,7 +671,7 @@ export const ITEM_DB = {
       name: "Бамбуковий хліб (25 шт)",
       itemType: "bait",
       icon: "🍞",
-      iconUrl: "assets/items/baits/bread--25.webp",
+      iconAsset: "items.baits.bread--25",
       packSize: 25,
       defaultQuantity: 25,
       rarityProfile: {
@@ -698,7 +698,7 @@ export const ITEM_DB = {
       name: "Бамбуковий хліб (50 шт)",
       itemType: "bait",
       icon: "🍞",
-      iconUrl: "assets/items/baits/bread--50.webp",
+      iconAsset: "items.baits.bread--50",
       packSize: 50,
       defaultQuantity: 50,
       rarityProfile: {
@@ -883,7 +883,7 @@ export const ITEM_DB = {
       itemType: "float",
       variant: "day",
       icon: "🥢",
-      iconUrl: "assets/items/floats/float-day.webp",
+      iconAsset: "items.floats.float-day",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
       skin: {
@@ -947,7 +947,7 @@ export const ITEM_DB = {
       itemType: "float",
       variant: "night",
       icon: "🥢",
-      iconUrl: "assets/items/floats/float-day.webp",
+      iconAsset: "items.floats.float-day",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
       skin: {
@@ -1077,12 +1077,12 @@ export const ITEM_DB = {
       name: "Базова підсака",
       itemType: "net",
       icon: "🕸️",
-      iconUrl: "assets/items/nets/net--1.webp",
+      iconAsset: "items.nets.net--1",
       // Мініатюри показують верхні 40% малюнка по центру; прев'ю редактора — весь малюнок.
       skin: {
         id: "net-v1",
         thumbnail: {
-          src: "assets/items/nets/net--1.webp",
+          asset: "items.nets.net--1",
           visibleHeight: 0.4,
           focusX: 0.5,
           anchor: "top",
@@ -1158,18 +1158,18 @@ export const ITEM_DB = {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
       icon: "🚤",
-      iconUrl: "assets/items/boats/boat-lvl--3_no-bait.webp",
+      iconAsset: "items.boats.boat-lvl--3_no-bait",
       skin: {
         id: "boat-lvl--3",
         thumbnail: {
-          src: "assets/items/boats/boat-lvl--3_no-bait.webp",
+          asset: "items.boats.boat-lvl--3_no-bait",
           visibleHeight: 1,
           focusX: 0.5,
           anchor: "center",
         },
         equipment: {
-          noBait: "assets/items/boats/boat-lvl--3_no-bait.webp",
-          bait: "assets/items/boats/boat-lvl--3_bait.webp",
+          noBaitAsset: "items.boats.boat-lvl--3_no-bait",
+          baitAsset: "items.boats.boat-lvl--3_bait",
         },
         animation: {
           asset: "animations.boats.boat-lvl--3",
@@ -1253,7 +1253,7 @@ export const ITEM_DB = {
       id: "battery_basic",
       name: "Батарейка Volt-1",
       itemType: "battery",
-      iconUrl: "assets/items/batteries/battery-volt--1.webp",
+      iconAsset: "items.batteries.battery-volt--1",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1268,7 +1268,7 @@ export const ITEM_DB = {
       id: "battery_volt_2",
       name: "Батарейка Volt-2",
       itemType: "battery",
-      iconUrl: "assets/items/batteries/battery-volt--2.webp",
+      iconAsset: "items.batteries.battery-volt--2",
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1283,7 +1283,7 @@ export const ITEM_DB = {
       id: "battery_volt_3",
       name: "Батарейка Volt-3",
       itemType: "battery",
-      iconUrl: "assets/items/batteries/battery-volt--3.webp",
+      iconAsset: "items.batteries.battery-volt--3",
       rarityProfile: { mode: "authored", tier: 3, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1298,7 +1298,7 @@ export const ITEM_DB = {
       id: "battery_volt_4",
       name: "Батарейка Volt-4",
       itemType: "battery",
-      iconUrl: "assets/items/batteries/battery-volt--4.webp",
+      iconAsset: "items.batteries.battery-volt--4",
       rarityProfile: { mode: "authored", tier: 4, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1316,7 +1316,7 @@ export const ITEM_DB = {
       id: "radio_receiver_basic",
       name: "Польовий радіоприймач",
       itemType: "radio",
-      iconUrl: "assets/items/radio/radio-receiver.webp",
+      iconAsset: "items.radio.radio-receiver",
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "device.radio" },
       assemblyProfileId: "radio_receiver",
@@ -1333,7 +1333,7 @@ export const ITEM_DB = {
       id: "backpack_basic",
       name: "Похідний рюкзак",
       itemType: "backpack",
-      iconUrl: "assets/items/briefcases/briefcase--1--close.webp",
+      iconAsset: "items.briefcases.briefcase--1--close",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "storage.backpack" },
       displayStats: {},

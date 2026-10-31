@@ -69,10 +69,7 @@ export class InventoryAttachmentBadgeRenderer {
     }
     if (attachment.rarity) this.#rarityDomAdapter?.apply?.(badge, attachment.rarity);
 
-    const image = this.#dom.image(
-      attachment.iconUrl || attachment.imageUrl,
-      "",
-    );
+    const image = this.#dom.image(attachment.iconAsset, "");
     if (image) {
       image.className = "inventory-attachment-badge__image";
       badge.appendChild(image);

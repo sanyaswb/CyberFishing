@@ -270,7 +270,7 @@ function checkCatalogItemGrant() {
   assert.equal(backpack.success, true, "the backpack is available to the DEV catalog grant port");
   const backpackView = items(inventory).find((item) => item.instanceId === backpack.instanceId);
   assert.equal(backpackView.itemType, "backpack");
-  assert.equal(backpackView.iconUrl, "assets/items/briefcases/briefcase--1--close.webp");
+  assert.equal(backpackView.iconAsset, "items.briefcases.briefcase--1--close");
   inventory.inventoryFacade.dispatch({ type: actions.CATEGORY_SELECT, categoryId: "tools" });
   assert(items(inventory).some((item) => item.instanceId === backpack.instanceId), "the backpack appears in Other");
   inventory.inventoryFacade.dispatch({ type: actions.CATEGORY_SELECT, categoryId: "all" });

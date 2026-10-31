@@ -156,7 +156,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert(header.classList.contains("house__header--visible") && !dock.classList.contains("house__dock--expanded"), "the next downward gesture opens the header");
   view.handleSceneGesture(-30); view.handleSceneGesture(-30);
   const model = { aquarium: { count: 1, capacity: 5, owned: true, level: 1, maxLevel: 2,
-      feed: { name: "Feed", quantity: 1, imagePath: "feed.svg", percentage: 50 }, autoFeeder: { owned: true, enabled: false } },
+      feed: { name: "Feed", quantity: 1, imageAsset: "items.aquarium-feed-simple", percentage: 50 }, autoFeeder: { owned: true, enabled: false } },
     liveBaits: [{ id: "fish-1", name: "Fish", weightLabel: "1 г", location: "aquarium", locationLabel: "Акваріум",
       selected: false, actionLabel: "Обрати", timerLabel: "00:00:05", canTransfer: false }], keepnet: [], deadCount: 0,
     levelLabel: "1", upgradeLevel: 2, upgradeCapacity: 6, upgradeLabel: "Покращити", feedStock: 5, nextFeedLabel: "Feed", autoStatus: "Вручну",
@@ -344,7 +344,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert.equal(documentRef.byClass("inventory-toggle").length, 0);
   assert.equal(documentRef.byClass("inventory-resource-meter").length, 0);
   assert.equal(documentRef.byClass("house__fish").length, 0);
-  model.aquarium.feed = { name: "Feed", quantity: 1, imagePath: "feed.svg", percentage: 50 };
+  model.aquarium.feed = { name: "Feed", quantity: 1, imageAsset: "items.aquarium-feed-simple", percentage: 50 };
   const remounted = createView(); remounted.render(model);
   assert.equal(dock.listeners.get("pointerover").size, 1); assert.equal(dock.listeners.get("pointerleave").size, 1);
   assert.equal(documentRef.byClass("ui-sheet-handle").length, 5, "remount creates one handle for menu, each sheet and notice");

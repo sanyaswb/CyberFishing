@@ -12,7 +12,7 @@ const CHUM_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_CHUM]);
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
-    { id: "all", label: "Усі", iconUrl: INVENTORY_SECTIONS.backpackImage },
+    { id: "all", label: "Усі", iconAsset: INVENTORY_SECTIONS.backpackAsset },
     { id: "compatible", label: "Сумісне", icon: "✓" },
     { id: "loadouts", label: "Збірки", icon: "🎣" },
     { id: "rods", label: "Вудилища", icon: "🎣" },
@@ -264,22 +264,22 @@ export class InventoryViewModelFactory {
         : null;
       // A skinned rod shows its whole artwork in its cell, with or without the equipped line (spec 071).
       const rodArtwork = slotId === "rod" ? equippedItem?.skin?.equipment : null;
-      if (rodArtwork) equippedItem.equipmentArtUrl = hasLine ? rodArtwork.withLine : rodArtwork.withoutLine;
+      if (rodArtwork) equippedItem.equipmentArtAsset = hasLine ? rodArtwork.withLineAsset : rodArtwork.withoutLineAsset;
       const boatArtwork = slotId === "delivery" ? equippedItem?.skin?.equipment : null;
       if (boatArtwork) {
         const loadedCount = (equipmentReadModel?.deliveryChums || []).filter(Boolean).length;
         const sections = this.#boatRules.sectionCount(equippedItem.effectiveStats);
         const fullyLoaded = sections > 0 && loadedCount >= sections;
-        const targetUrl = fullyLoaded ? boatArtwork.bait : boatArtwork.noBait;
-        if (targetUrl) {
-          equippedItem.equipmentArtUrl = targetUrl;
-          equippedItem.iconUrl = targetUrl;
+        const targetAsset = fullyLoaded ? boatArtwork.baitAsset : boatArtwork.noBaitAsset;
+        if (targetAsset) {
+          equippedItem.equipmentArtAsset = targetAsset;
+          equippedItem.iconAsset = targetAsset;
           if (equippedItem.skin?.thumbnail) {
             equippedItem.skin = {
               ...equippedItem.skin,
               thumbnail: {
                 ...equippedItem.skin.thumbnail,
-                src: targetUrl,
+                asset: targetAsset,
               },
             };
           }

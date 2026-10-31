@@ -1060,6 +1060,8 @@ function checkBrowserWidgets() {
     ["src/platform/browser/ui/depth_selector.js", "DepthSelector"],
     ["src/platform/browser/ui/time_display.js", "TimeDisplay"],
     ["src/platform/browser/ui/hold_charges.js", "HoldCharges"],
+    ["src/engine/assets/asset_registry.js", "AssetRegistry"],
+    ["src/game/config/generated/asset_registry.js", "ASSET_REGISTRY"],
   ];
   for (const [file, ...expose] of definitions) runtime.load(file, { expose });
   runtime.load("src/game/presentation/hud/hud_labels.js", {
@@ -1154,8 +1156,9 @@ function checkBrowserWidgets() {
       cache,
       labels: c.HUD_LABELS,
       logger: { warn() {} },
+      assets: new c.AssetRegistry(c.ASSET_REGISTRY),
       landingNetArt: {
-        src: "assets/items/nets/net--1.webp",
+        asset: "items.nets.net--1",
         visibleHeight: 0.4,
         focusX: 0.5,
         anchor: "top",
@@ -1205,7 +1208,7 @@ function checkBrowserWidgets() {
   const depth = new c.DepthSelector(),
     time = new c.TimeDisplay(),
     hold = new c.HoldCharges(),
-    chum = new c.ChumControls(() => clicks++, { labels: c.HUD_LABELS });
+    chum = new c.ChumControls(() => clicks++, { labels: c.HUD_LABELS, assets: new c.AssetRegistry(c.ASSET_REGISTRY) });
   chum.setState("idle", "hand", 4);
   assert.equal(
     chum.button.innerText,

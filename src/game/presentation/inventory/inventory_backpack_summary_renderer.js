@@ -16,12 +16,12 @@ export class InventoryBackpackSummaryRenderer {
   create() {
     const view = this.#dom.element("section", "inventory-backpack");
     const visual = this.#dom.element("div", "inventory-backpack__visual inventory-panel");
-    const image = this.#dom.image(this.#sections.backpackImage, "");
+    const image = this.#dom.image(this.#sections.backpackAsset, "");
     image.className = "inventory-backpack__image";
     image.setAttribute("aria-hidden", "true");
     visual.appendChild(image);
     const stats = this.#dom.element("div", "inventory-backpack__stats inventory-panel");
-    const capacity = this.#scales.create({ iconPath: this.#sections.backpackCapacityIcon, meterId: "backpack-capacity",
+    const capacity = this.#scales.create({ iconAsset: this.#sections.backpackCapacityIconAsset, meterId: "backpack-capacity",
       className: "inventory-backpack__capacity" });
     stats.appendChild(capacity);
     view.append(visual, stats);

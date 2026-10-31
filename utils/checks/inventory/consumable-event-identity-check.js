@@ -41,6 +41,8 @@ const files = [
   "src/game/application/fishing/catch_resolution_service.js",
   "src/game/application/fishing/fight_service.js",
   "src/platform/browser/ui/chum_controls.js",
+  "src/engine/assets/asset_registry.js",
+  "src/game/config/generated/asset_registry.js",
   "src/game/domain/locations/water_metric.js",
   "src/game/application/chum/chum_controller.js",
   "src/game/application/chum/chum_zone.js",
@@ -198,7 +200,7 @@ vm.runInContext(
       markInvalidCast() {},
       canPlayerCast: () => true,
       getGameStateName: () => "scouting",
-      createUi: (onClick) => new ChumControls(onClick),
+      createUi: (onClick) => new ChumControls(onClick, { assets: new AssetRegistry(ASSET_REGISTRY) }),
     });
 
     controller.toggleAim();

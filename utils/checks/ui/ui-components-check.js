@@ -10,8 +10,11 @@ const { InventoryResourceMeterRenderer } = require("../../../src/game/presentati
 const { HoldCharges } = require("../../../src/platform/browser/ui/hold_charges.js");
 const { InventoryItemParametersRenderer } = require("../../../src/game/presentation/inventory/inventory_item_parameters_renderer.js");
 
+const { AssetRegistry } = require("../../../src/engine/assets/asset_registry.js");
+const { ASSET_REGISTRY } = require("../../../src/game/config/generated/asset_registry.js");
+const assets = new AssetRegistry(ASSET_REGISTRY);
 const documentRef = new TestDocument();
-const domFactory = new InventoryDomFactory(documentRef);
+const domFactory = new InventoryDomFactory(documentRef, { assets });
 // The float and landing net share one transparent toolbar group. Closed depth
 // content is removed from interaction, rather than masking a tall game region.
 {
@@ -21,7 +24,7 @@ const domFactory = new InventoryDomFactory(documentRef);
   const { HUD_LABELS } = require("../../../src/game/presentation/hud/hud_labels.js");
   const toolbar = new GameToolbar({ documentRef, mountNode: documentRef.body });
   const depth = new DepthSelector({ documentRef, mountNode: toolbar.depthMountNode, domFactory,
-    labels: HUD_LABELS, iconImages: { F: "assets/items/floats/float-day.webp" } });
+    labels: HUD_LABELS, iconImages: { F: "items.floats.float-day" } });
   const controls = new GameControls({}, null, { documentRef, labels: HUD_LABELS,
     toolbarMountNode: toolbar.element, netMountNode: toolbar.tackleMountNode });
   depth.show(10, 2, () => {}); depth.setIcon("F");
@@ -70,7 +73,7 @@ assert.equal(close.listeners.get("click").size, 0);
 const switches = new UiAutoSwitchRenderer({ domFactory });
 let selected = null;
 const toggle = switches.create({ id: "automatic", name: "Bait", modeLabel: "Automatic bait",
-  placeholderUrl: "assets/ui/inventory/bait.svg", stock: 17, onChange: value => { selected = value; } });
+  placeholderAsset: "ui.inventory.bait", stock: 17, onChange: value => { selected = value; } });
 documentRef.body.append(toggle);
 const input = documentRef.byClass("inventory-toggle__input")[0];
 const image = documentRef.byClass("inventory-toggle__placeholder")[0];
@@ -89,7 +92,7 @@ assert.equal(input.listeners.get("change").size, 0);
 let baitSlot = null;
 const picker = switches.create({ name: "Bait", modeLabel: "Automatic bait",
   checked: true, stock: 102,
-  placeholderUrl: "assets/ui/inventory/bait.svg", onSlotActivate: index => { baitSlot = index; },
+  placeholderAsset: "ui.inventory.bait", onSlotActivate: index => { baitSlot = index; },
   slots: [12, 80, 10].map((stock, index) => ({ available: true, highlighted: index === 0,
     stock, item: { name: "Bait " + index, icon: "B" } })) });
 documentRef.body.append(picker);
@@ -132,22 +135,22 @@ switches.dispose(picker);
 pickerButtons[0].click(); assert.equal(baitSlot, 2, "disposed bait buttons cannot call their previous host");
 assert.equal(pickerButtons[0].listeners.get("click").size, 0);
 
-// TK-107: switcher prefers switcherIconUrl over iconUrl when equipped.
+// TK-107: switcher prefers switcherIconAsset over iconAsset when equipped (asset ids, spec 157 R16).
 const wormToggle = switches.create({
   name: "Bait",
-  placeholderUrl: "assets/ui/inventory/bait.svg",
+  placeholderAsset: "ui.inventory.bait",
   slots: [{
     available: true,
     item: {
       name: "Масляний черв'як",
-      iconUrl: "assets/items/baits/oil-worms--100.webp",
-      switcherIconUrl: "assets/items/baits/oil-worm_icon.webp",
+      iconAsset: "items.baits.oil-worms--100",
+      switcherIconAsset: "items.baits.oil-worm_icon",
     },
   }],
 });
 documentRef.body.append(wormToggle);
 const wormImage = documentRef.byClass("inventory-toggle__image").pop();
-assert.equal(wormImage?.src, "assets/items/baits/oil-worm_icon.webp", "the switcher displays switcherIconUrl when available");
+assert.equal(wormImage?.src, "assets/items/baits/oil-worm_icon.webp", "the switcher displays switcherIconAsset when available");
 switches.dispose(wormToggle);
 
 const compact = switches.create({ variant: "control", name: "Feeder", modeLabel: "Automatic feeder", checked: true });

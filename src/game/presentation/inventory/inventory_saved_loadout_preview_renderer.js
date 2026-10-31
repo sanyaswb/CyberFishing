@@ -1,4 +1,4 @@
-import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
 
 export class InventorySavedLoadoutPreviewRenderer {
   #dom;
@@ -103,7 +103,7 @@ export class InventorySavedLoadoutPreviewRenderer {
     } else {
       well.classList.add("inventory-saved-loadout-preview__well--empty");
       well.setAttribute("aria-label", `${slot.label}: порожньо`);
-      const placeholder = this.#dom.image(inventorySlotIconPath(slot.slotId), "");
+      const placeholder = this.#dom.image(inventorySlotIconAsset(slot.slotId), "");
       if (placeholder) {
         placeholder.className = "inventory-slot-icon";
         placeholder.setAttribute("aria-hidden", "true");

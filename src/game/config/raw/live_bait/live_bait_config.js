@@ -1,15 +1,15 @@
 const minute = 60000;
 const qualities = {
-  simple: { name: "Проста", penalty: 5, window: 60, packs: [[500, 30], [1000, 60], [1500, 90]] },
-  good: { name: "Хороша", penalty: 4, window: 180, packs: [[500, 40], [1000, 80], [1500, 120], [3000, 240]] },
-  premium: { name: "Преміум", penalty: 3, window: 360, packs: [[500, 60], [1000, 120], [1500, 180], [5000, 600]] },
+  simple: { name: "Проста", imageAsset: "items.aquarium-feed-simple", penalty: 5, window: 60, packs: [[500, 30], [1000, 60], [1500, 90]] },
+  good: { name: "Хороша", imageAsset: "items.aquarium-feed-good", penalty: 4, window: 180, packs: [[500, 40], [1000, 80], [1500, 120], [3000, 240]] },
+  premium: { name: "Преміум", imageAsset: "items.aquarium-feed-premium", penalty: 3, window: 360, packs: [[500, 60], [1000, 120], [1500, 180], [5000, 600]] },
 };
 
 const AQUARIUM_FEED_CATALOG = Object.freeze(Object.fromEntries(
   Object.entries(qualities).flatMap(([quality, data]) => data.packs.map(([grams, minutes]) => {
     const id = `aquarium_feed_${quality}_${grams}`;
     return [id, Object.freeze({ id, itemType: "aquarium_feed", quality, grams,
-      name: `${data.name} · ${grams} г`, imagePath: `assets/items/aquarium-feed-${quality}.svg`,
+      name: `${data.name} · ${grams} г`, imageAsset: data.imageAsset,
       durationMs: minutes * minute, extraFishPenaltyMs: data.penalty * minute,
       starvationWindowMs: data.window * minute })];
   })),

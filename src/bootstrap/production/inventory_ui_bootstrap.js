@@ -17,7 +17,7 @@ import { InventoryBalanceParameterResolver } from "../../game/presentation/inven
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
-import { inventorySlotIconPaths } from "../../game/presentation/inventory/inventory_slot_icons.js";
+import { inventorySlotIconAssets } from "../../game/presentation/inventory/inventory_slot_icons.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
@@ -56,10 +56,11 @@ import { composeHintRenderer } from "./hint_renderer_composition.js";
 
 export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
+  // assets: the AssetRegistry (art and sprite icons by asset id, spec 157 R16).
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
-    buttonMountNode = documentRef?.body, showHelp = false }) {
+    buttonMountNode = documentRef?.body, showHelp = false, assets }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface,
+    const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, assets,
       degradationColorResolver, showHelp,
       openSection: () => inventoryUI.openSection("keepnet"),
       toggleSection: () => inventoryUI.toggleSection("keepnet"),
@@ -72,19 +73,19 @@ export class InventoryUiBootstrap {
   // The UI catalog builds the same view without an inventory. The help button stays a component but the game hides
   // it for now (spec 089).
   static createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, degradationColorResolver,
-    openSection, toggleSection, onPagerEdge = null, showHelp = false }) {
-    const dom = new InventoryDomFactory(documentRef);
+    openSection, toggleSection, onPagerEdge = null, showHelp = false, assets }) {
+    const dom = new InventoryDomFactory(documentRef, { assets });
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
     // Only the current fill stage loads with the view (its images); the other stages wait for preloadKeepnetStages
     // after the game is ready (spec 157 R5).
     const imageResolver = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
     return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
-      imageResolver, shortcutIcon: `${INVENTORY_SECTIONS.iconSprite}#keepnet`,
+      imageResolver, shortcutIcon: { asset: INVENTORY_SECTIONS.iconSpriteAsset, symbol: "keepnet" }, assets,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
       overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),
-        imageResolver, capacityIcon: pagerConfig.capacityIcon, showHelp }),
+        imageResolver, capacityIcon: { asset: pagerConfig.capacityIconAsset, symbol: pagerConfig.capacityIconSymbol }, showHelp }),
       filtersRenderer: new KeepnetFiltersRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
       pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
@@ -110,31 +111,32 @@ export class InventoryUiBootstrap {
 
   // Spec 157 R5: every keepnet fill stage, warmed after the game is ready so a filling keepnet swaps its art without
   // a network wait; startup loads only the current stage (createKeepnetView).
-  static preloadKeepnetStages(documentRef) {
+  static preloadKeepnetStages(documentRef, assets) {
     const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
-    return imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imagePath, src: stage.imagePath })))
+    return imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imageAsset, src: assets.pathOf(stage.imageAsset) })))
       .catch((error) => new ConsoleLogger().warn("[Keepnet] Artwork preload failed", error));
   }
 
   // The empty-slot placeholders appear only once the inventory opens; warming them here instead of <link preload>
   // keeps them cached without the browser's "preloaded but not used" warning (TK-081).
-  static preloadSlotIcons(documentRef) {
+  static preloadSlotIcons(documentRef, assets) {
     const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
-    return imagePreloader.preload(inventorySlotIconPaths().map((src) => ({ id: src, src })))
+    return imagePreloader.preload(inventorySlotIconAssets().map((id) => ({ id, src: assets.pathOf(id) })))
       .catch((error) => new ConsoleLogger().warn("[Inventory] Slot icon preload failed", error));
   }
 
   // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
   // radioTuning: DEV only, the enabled sound effects' main parameters as sliders (TK-098); null in production.
-  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, ...options } = {}) {
-    InventoryUiBootstrap.preloadSlotIcons(options.documentRef);
+  // assets: the AssetRegistry; every image and sprite icon of the inventory is named by asset id (spec 157 R16).
+  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, assets, ...options } = {}) {
+    InventoryUiBootstrap.preloadSlotIcons(options.documentRef, assets);
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
       createPresentation: (presentationOptions) =>
-        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning }),
+        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning, assets }),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -147,6 +149,7 @@ export class InventoryUiBootstrap {
     uiSurface,
     radio = null,
     radioTuning = null,
+    assets,
     rarityDomAdapter,
     rarityVisualResolver,
     progressionDomAdapter,
@@ -166,7 +169,7 @@ export class InventoryUiBootstrap {
     warningTimers,
   }) {
     const LongPressController = InventoryLongPressController;
-    const dom = new InventoryDomFactory(documentRef);
+    const dom = new InventoryDomFactory(documentRef, { assets });
     const resolvedNormalizer =
       normalizer || new InventoryViewModelNormalizer();
     const resolvedLongPressController =
@@ -278,7 +281,7 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
         listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface),
-        backdropImage: INVENTORY_SECTIONS.backpackBackdropImage,
+        backdropAsset: INVENTORY_SECTIONS.backpackBackdropAsset,
         pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
           tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),
           isPagingEnabled: swipeEnabled,

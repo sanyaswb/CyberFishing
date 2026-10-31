@@ -15,10 +15,14 @@ export class GameControls {
   #frameScheduler;
   #pendingFrames = new Set();
   #landingNetArt;
+  #assets;
 
+  // landingNetArt: the net skin's thumbnail { asset, visibleHeight, focusX, anchor }; assets: the AssetRegistry.
   constructor(config, lifecycle, { labels, documentRef = document,
     mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null,
-    landingNetArt = null, netMountNode = toolbarMountNode } = {}) {
+    landingNetArt = null, netMountNode = toolbarMountNode, assets = null } = {}) {
+    if (landingNetArt?.asset && typeof assets?.pathOf !== "function") throw new TypeError("GameControls requires assets for the net art");
+    this.#assets = assets;
     this.#labels = labels;
     this.#mount = mountNode;
     this.#netMount = netMountNode;
@@ -44,7 +48,7 @@ export class GameControls {
   }
 
   // The item's thumbnail crop (skin.thumbnail: visibleHeight, focusX, anchor "top"), as in its inventory card.
-  #createCroppedArt({ src, visibleHeight = 1, focusX = 0.5, anchor = "bottom" }) {
+  #createCroppedArt({ asset, visibleHeight = 1, focusX = 0.5, anchor = "bottom" }) {
     const frame = this.#document.createElement("span");
     frame.className = anchor === "top" ? "game-toolbar-button__art game-toolbar-button__art--cropped-top"
       : "game-toolbar-button__art";
@@ -55,7 +59,7 @@ export class GameControls {
     // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
     image.loading = "lazy";
     image.decoding = "async";
-    image.src = src;
+    image.src = this.#assets.pathOf(asset);
     image.alt = "";
     image.draggable = false;
     frame.appendChild(image);
@@ -66,7 +70,7 @@ export class GameControls {
     this.#netBtn = this.#document.createElement("button");
     this.#netBtn.className = "game-control game-control--net game-toolbar-button game-toolbar-button--net";
     this.#netBtn.type = "button";
-    if (this.#landingNetArt?.src) this.#netBtn.appendChild(this.#createCroppedArt(this.#landingNetArt));
+    if (this.#landingNetArt?.asset) this.#netBtn.appendChild(this.#createCroppedArt(this.#landingNetArt));
     else this.#netBtn.textContent = "🕸️";
     this.#netBtn.setAttribute("aria-label", this.#labels.landingNet);
     this.#netBtn.title = this.#labels.landingNet;

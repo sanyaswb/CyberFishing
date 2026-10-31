@@ -89,6 +89,9 @@ assert(geometries.arc.extent.width < geometries.half.extent.width, "the arc is n
 const { InventorySelectorRenderer } = require("../../../src/game/presentation/inventory/inventory_selector_renderer.js");
 const { InventorySelectorController } = require("../../../src/platform/browser/dom/inventory_selector_controller.js");
 const { InventoryDomFactory } = require("../../../src/platform/browser/dom/inventory_dom_factory.js");
+const { AssetRegistry } = require("../../../src/engine/assets/asset_registry.js");
+const { ASSET_REGISTRY } = require("../../../src/game/config/generated/asset_registry.js");
+const assets = new AssetRegistry(ASSET_REGISTRY);
 const { INVENTORY_SECTIONS } = require("../../../src/game/presentation/inventory/inventory_sections.js");
 const { INVENTORY_SELECTOR_LABELS } = require("../../../src/game/presentation/inventory/inventory_selector_labels.js");
 const { composeInventorySelector } = require("../../../src/bootstrap/production/inventory_selector_composition.js");
@@ -121,9 +124,9 @@ function scenario({ width = 320, size = 1, openSize = size, hover = false, reduc
   const surface = { getMetrics: () => metrics,
     physicalToLogicalPoint: ({ x, y }) => ({ x: (x - 17) / scale, y: (y - 29) / scale }),
     subscribe: listener => { subscriptions.add(listener); return () => subscriptions.delete(listener); } };
-  const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(doc), geometries,
+  const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(doc, { assets }), geometries,
     compactLayout: compact ? layout : "half",
-    sections: INVENTORY_SECTIONS, labels: INVENTORY_SELECTOR_LABELS, keepnetImage: "assets/items/keepnet/keepnet--0.webp", id: "test-sections" });
+    sections: INVENTORY_SECTIONS, labels: INVENTORY_SELECTOR_LABELS, keepnetAsset: "items.keepnet.keepnet--0", id: "test-sections" });
   view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[size], INVENTORY_SELECTOR_CONFIG.sizeScales[openSize]);
   doc.body.appendChild(view.element);
   // The fan centre stays at logical (300, 500); the root box lies around it by the layout's origin share.
@@ -402,7 +405,7 @@ async function checkComposition() {
   const inventory = { editor, rootNode: s.doc.createElement("div"),
     setShortcutVisible: value => { classic = value; }, onVisibilityChange: fn => { listener = fn; return () => { listener = null; }; },
     openSection: id => { s.selected.push(id); listener(true); } };
-  const binding = composeInventorySelector({ documentRef: s.doc, windowRef: s.doc.defaultView,
+  const binding = composeInventorySelector({ documentRef: s.doc, windowRef: s.doc.defaultView, assets,
     uiSurface: s.surface, mountNode: s.doc.body, inventoryUI: inventory,
     keepnetUI: { setShortcutVisible: value => { keepnet = value; } }, config,
     equipmentSource: { getEquipped: () => equipped,
@@ -417,7 +420,7 @@ async function checkComposition() {
   assert.equal(keepnet, true, "the classic keepnet also stands in before the artwork");
   assert(!binding.view.enabled, "the radial control waits for its artwork");
   assert.equal(finishSelector, undefined, "composition starts no artwork load");
-  equipped.rod = { skin: { thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp" } } };
+  equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1" } } };
   equipmentListener();
   assert.equal(artworkLoads, 0, "an equipment change before loadArtwork loads no rod art either");
   equipped.rod = null;
@@ -433,15 +436,15 @@ async function checkComposition() {
   assert(!classic && !keepnet && binding.view.enabled);
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
-  equipped.rod = { skin: { thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.webp", visibleHeight: 0.5, focusX: 0.31 } } };
+  equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1", visibleHeight: 0.5, focusX: 0.31 } } };
   equipmentListener(); finishArtwork(); await Promise.resolve();
   const rodImage = art.children[0];
-  assert.equal(rodImage.getAttribute("src"), equipped.rod.skin.thumbnail.src);
+  assert.equal(rodImage.getAttribute("src"), "assets/items/rods/bamboo-rod-ecip-v1.webp", "the rod art resolves through the registry");
   assert.equal(fallback.getAttribute("hidden"), ""); assert(!art.hidden && rodImage.draggable === false);
   equipmentListener(); assert.equal(artworkLoads, 1, "unchanged inventory never reloads rod art");
   assert.equal(art.children[0], rodImage, "rod updates retain the image node");
   equipped.rod = null; equipmentListener(); assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
-  equipped.rod = { imageUrl: "assets/items/rods/bamboo-rod-ecip-v1.webp" }; equipmentListener();
+  equipped.rod = { iconAsset: "items.rods.bamboo-rod-ecip-v1" }; equipmentListener();
   equipped.rod = null; equipmentListener(); finishArtwork(); await Promise.resolve();
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden, "a late preload cannot restore a removed rod");
   assert.equal(binding.view.element.style.getPropertyValue("--inventory-selector-closed-scale"), String(1 / 1.7));
@@ -527,7 +530,7 @@ async function checkPreloadOutcomes() {
     const s = scenario(); s.controller.dispose(); s.view.dispose();
     const config = { ui: { inventorySelector: { radialEnabled: options.radial } } };
     let finish, fail, classic, keepnet, visibilityWrites = 0, warnings = 0;
-    const binding = composeInventorySelector({
+    const binding = composeInventorySelector({ assets,
       documentRef: s.doc, windowRef: s.doc.defaultView, uiSurface: s.surface, mountNode: s.doc.body, config,
       inventoryUI: { setShortcutVisible: value => { classic = value; visibilityWrites++; },
         onVisibilityChange: () => () => {} },

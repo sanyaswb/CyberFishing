@@ -161,7 +161,7 @@ export class InventoryViewModelNormalizer {
         id: this.#text(category?.id, "all"),
         label: this.#text(category?.label, "Усі"),
         icon: this.#text(category?.icon, ""),
-        iconUrl: this.#text(category?.iconUrl, ""),
+        iconAsset: this.#text(category?.iconAsset, ""),
         selected:
           category?.selected === true ||
           category?.id === source.activeCategoryId,

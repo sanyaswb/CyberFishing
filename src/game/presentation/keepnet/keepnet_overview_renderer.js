@@ -25,21 +25,22 @@ export class KeepnetOverviewRenderer {
     const view = this.#dom.element("section", `keepnet-overview ${className}`.trim());
     view.setAttribute("aria-label", this.#labels.title);
     const visual = this.#dom.element("div", "keepnet-overview__visual inventory-panel");
-    const imagePath = this.#imageResolver.resolve(0);
-    const image = this.#dom.image(imagePath, this.#labels.title);
+    const imageAsset = this.#imageResolver.resolve(0);
+    const image = this.#dom.image(imageAsset, this.#labels.title);
     image.className = "keepnet-section__icon";
     visual.appendChild(image);
     const help = this.#showHelp ? this.#helpButton(onHelp) : null;
     if (help) visual.appendChild(help);
     const stats = this.#dom.element("div", "keepnet-overview__stats inventory-panel");
-    const capacity = this.#scales.create({ iconHref: this.#capacityIcon, meterId: "keepnet-capacity",
+    const capacity = this.#scales.create({ iconAsset: this.#capacityIcon.asset, iconSymbol: this.#capacityIcon.symbol,
+      meterId: "keepnet-capacity",
       className: "keepnet-section__capacity" });
     const status = this.#dom.element("p", "keepnet-section__status");
     status.setAttribute("role", "status");
     status.hidden = true;
     stats.append(capacity, status);
     view.append(visual, stats);
-    this.#bindings.set(view, { image, imagePath, help, capacity, status });
+    this.#bindings.set(view, { image, imageAsset, help, capacity, status });
     return view;
   }
 
@@ -60,10 +61,10 @@ export class KeepnetOverviewRenderer {
   // Occupied space fills the meter; its colour follows the free space like every remaining resource.
   update(view, { percent, value, label, status }) {
     const binding = this.#bindings.get(view);
-    const imagePath = this.#imageResolver.resolve(percent);
-    if (binding.imagePath !== imagePath) {
-      binding.image.src = imagePath;
-      binding.imagePath = imagePath;
+    const imageAsset = this.#imageResolver.resolve(percent);
+    if (binding.imageAsset !== imageAsset) {
+      binding.image.src = this.#dom.assetUrl(imageAsset);
+      binding.imageAsset = imageAsset;
     }
     this.#scales.update(binding.capacity, { percent, remainingPercent: 100 - percent, value, label });
     if (binding.status.textContent !== status) binding.status.textContent = status;

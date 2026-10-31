@@ -960,6 +960,31 @@ Spine-скелетом (spec 099), але статичний режим вудк
   корінь сервера (3) 1557 → 1575 мс; 0.99 МБ, 68 запитів; ті самі 20 асетів до `ready` (поплавок і світіння — за тими самими
   URL, тепер через реєстр). Full 80/80, game-cycle без змін.
 
+### R16, крок (в) — група «інвентар» (v0.49.42, 2026-10-31; TK-178)
+
+UI й арт предметів — один патч, бо вони йдуть в одні й ті самі DOM-методи (`InventoryDomFactory.image`), а стадії садка й
+корм акваріума — туди ж (садок у селекторі й секції інвентаря, корм — предмет каталогу).
+- **Дані:** предмети — `iconAsset`, `switcherIconAsset`, `skin.thumbnail.asset`, вудка `skin.equipment.withLineAsset` /
+  `withoutLineAsset`, кораблик `baitAsset` / `noBaitAsset` (31 поле); заглушки клітинок (`inventorySlotIconAsset`);
+  `INVENTORY_SECTIONS` (`iconSpriteAsset`, `backpackAsset`, `backpackBackdropAsset`, `backpackCapacityIconAsset`,
+  `capacityIconAsset` + `capacityIconSymbol`); `KEEPNET_ART_STAGES[].imageAsset`; корм акваріума `imageAsset` (каталог дає
+  `iconAsset`); запасні шляхи кораблика в `ChumController` — id. Id корму й стадій — літерали: шар `game/config/raw` нічого
+  не імпортує, а `presentation` не імпортує `game/config`, тож спільний побудовник id тут недоречний (знадобиться для риб).
+- **Місця завантаження:** `InventoryDomFactory({ assets })` — `image(assetId)`, `svgIcon(spriteAsset, symbol)`,
+  `assetUrl(assetId)` (для елементів, яким вигляд сам міняє `src`); `safeImageSource` прибрано — джерела тепер лише з
+  реєстру. Реєстр отримують `KeepnetSectionView`, `DepthSelector` (через фабрику), `GameControls` (арт підсаки), `ChumControls`
+  (кораблик), `AquariumFeedPicker` і `HouseView` (корм), DEV-магазин; передзавантаження селектора, стадій садка, заглушок і
+  іконок глибини ставлять у `ImageAssetProvider` записи `{ id, src: pathOf(id) }`.
+- **Поля моделей вигляду:** `iconAsset`, `equipmentArtAsset`, `placeholderAsset`; застарілі запасні `imageUrl`/`src`
+  прибрано (жоден предмет їх не мав).
+- **Перевірки:** `asset-references` — жоден предмет каталогу не має полів-шляхів, ≥ 15 предметів з `iconAsset`, секції,
+  стадії, заглушки й корм зареєстровані, 43 модулі без літералів (падає на старих `item_database.js`/секціях/стадіях);
+  `inventory-ui`, `keepnet`, `inventory-selector`, `ui-components`, `startup-load-report` (картинка за id отримує файл
+  реєстру), `house`, `radio-receiver`, `bait-boat-inventory-visuals` — на справжньому реєстрі; дублери інших перевірок (`ChumControls`, `GameControls`, пікер корму) отримали реєстр.
+- **Заміри** (холодний, медіана; до = 0.49.41): Fast 4G (5) 1552 → 1595 мс, 3G (3) 6377 → 6419 мс, корінь сервера (3) 1575 → 1614 мс;
+  `--cpu 4` (5, підряд) HEAD 2600 → 2411 мс — машина цього разу повільніша (HEAD сам 2270 → 2600), різниці в межах шуму;
+  0.99 МБ, 68 запитів, ті самі 20 асетів до `ready` у кожному запуску. Full 80/80, game-cycle без змін.
+
 ## Перевірки
 
 `asset-preloader` (розширення: facade поверх черги, мінімальний набір, фази доби, prefetch після барʼєра, пауза);

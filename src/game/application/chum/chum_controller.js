@@ -163,17 +163,17 @@ export class ChumController {
       }
     }
 
-    let boatIconUrl = null;
+    let boatIconAsset = null;
     if (method === "boat") {
       const loadedCount = this.#countLoadedChums(eq.deliveryChums);
       const fullyLoaded = sections > 0 && loadedCount >= sections;
       const artwork = boatItem.skin?.equipment;
-      boatIconUrl = fullyLoaded
-        ? artwork?.bait || "assets/items/boats/boat-lvl--3_bait.webp"
-        : artwork?.noBait || "assets/items/boats/boat-lvl--3_no-bait.webp";
+      boatIconAsset = fullyLoaded
+        ? artwork?.baitAsset || "items.boats.boat-lvl--3_bait"
+        : artwork?.noBaitAsset || "items.boats.boat-lvl--3_no-bait";
     }
 
-    this.#ui.setState(state, method, count, isManual, !!(eq.delivery || eq.handChum), boatIconUrl);
+    this.#ui.setState(state, method, count, isManual, !!(eq.delivery || eq.handChum), boatIconAsset);
     this.#syncAimingWithBoatState(method, isManual);
   }
 

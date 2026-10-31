@@ -147,8 +147,8 @@ vm.runInContext(
       variant: "pole",
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       skin: {
-        thumbnail: { src: "skin-thumb.png", visibleHeight: 0.5, focusX: 0.31 },
-        equipment: { withLine: "skin-line.png", withoutLine: "skin-bare.png" },
+        thumbnail: { asset: "skin-thumb", visibleHeight: 0.5, focusX: 0.31 },
+        equipment: { withLineAsset: "skin-line", withoutLineAsset: "skin-bare" },
       },
       equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false },
       gameplayStats: { lengthMeters: 4 },
@@ -765,12 +765,12 @@ vm.runInContext(
     equipment: { ...emptyEquipment(), rod: "skin-rod" },
   });
   const skinnedRodArt = () => skinned.facade.getViewModel().panel.loadout.mainSlots
-    .find((slot) => slot.slotId === "rod").item.equipmentArtUrl;
-  assertIntegration(skinnedRodArt() === "skin-bare.png", "a skinned rod without a line shows its lineless artwork");
+    .find((slot) => slot.slotId === "rod").item.equipmentArtAsset;
+  assertIntegration(skinnedRodArt() === "skin-bare", "a skinned rod without a line shows its lineless artwork");
   dispatch(skinned, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "terminalLine" });
   dispatch(skinned, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "skin-line" });
   assertIntegration(skinned.equipmentState.getRootInstanceId("terminalLine") !== null &&
-    skinnedRodArt() === "skin-line.png", "an equipped fishing line switches the rod cell to the artwork with line");
+    skinnedRodArt() === "skin-line", "an equipped fishing line switches the rod cell to the artwork with line");
 
   // Spec 070: one pick flow. An empty cell or craft socket opens the backpack at the compatible items and the activated
   // card returns to the equipment section, equipped or with its craft panel open.

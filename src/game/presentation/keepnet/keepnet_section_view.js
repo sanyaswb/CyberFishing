@@ -22,7 +22,8 @@ export class KeepnetSectionView {
   #buttonPlaceholder;
   #backdrop;
   #imageResolver;
-  #imagePath;
+  #imageAsset;
+  #assets;
   #summary;
   #pagerOverview;
   #content;
@@ -42,7 +43,10 @@ export class KeepnetSectionView {
 
   constructor({ documentRef, liveBait, model, cards, labels, overviewRenderer, filtersRenderer, pagerRenderer,
     hintRenderer, imageResolver, openSection, toggleSection, buttonMountNode, listScrollController, onPagerEdge = null,
-    shortcutIcon }) {
+    shortcutIcon, assets }) {
+    // assets: the AssetRegistry; the stage art and the shortcut's sprite symbol ({ asset, symbol }) are asset ids.
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("KeepnetSectionView requires assets");
+    this.#assets = assets;
     this.#document = documentRef;
     this.#hints = hintRenderer;
     this.#liveBait = liveBait;
@@ -53,7 +57,7 @@ export class KeepnetSectionView {
     this.#pager = pagerRenderer;
     this.#labels = labels;
     this.#imageResolver = imageResolver;
-    this.#imagePath = imageResolver.resolve(0);
+    this.#imageAsset = imageResolver.resolve(0);
     this.#openSection = openSection;
     this.#toggleSection = toggleSection;
     this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
@@ -169,11 +173,12 @@ export class KeepnetSectionView {
       status: model.error ? this.#labels.error(model.error) : this.#notice };
     this.#overviews.update(this.#summary, reading);
     this.#overviews.update(this.#pagerOverview, reading);
-    const imagePath = this.#imageResolver.resolve(model.capacityPercent);
-    if (this.#imagePath !== imagePath) {
-      this.#buttonImage.src = imagePath;
-      this.#backdrop.src = imagePath;
-      this.#imagePath = imagePath;
+    const imageAsset = this.#imageResolver.resolve(model.capacityPercent);
+    if (this.#imageAsset !== imageAsset) {
+      const source = this.#assets.pathOf(imageAsset);
+      this.#buttonImage.src = source;
+      this.#backdrop.src = source;
+      this.#imageAsset = imageAsset;
     }
     this.#detail.hidden = !group;
     this.#back.hidden = !group;
@@ -261,7 +266,8 @@ export class KeepnetSectionView {
     if (text !== null) el.textContent = text;
     return el;
   }
-  #spriteIcon(href, className) {
+  #spriteIcon({ asset, symbol }, className) {
+    const href = `${this.#assets.pathOf(asset)}#${symbol}`;
     const namespace = "http://www.w3.org/2000/svg";
     const icon = this.#document.createElementNS(namespace, "svg");
     icon.setAttribute("class", className);
@@ -278,7 +284,7 @@ export class KeepnetSectionView {
     // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
     image.loading = "lazy";
     image.decoding = "async";
-    image.src = this.#imagePath;
+    image.src = this.#assets.pathOf(this.#imageAsset);
     image.alt = alt;
     image.draggable = false;
     return image;

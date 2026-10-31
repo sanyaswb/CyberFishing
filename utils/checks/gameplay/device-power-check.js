@@ -252,17 +252,17 @@ assert.equal(liveThumbBattery.displayStats["Ємність"], "1440", "live batt
 // TK-114: battery variants Volt-2 (7200), Volt-3 (10800), Volt-4 (24000)
 assert(ITEM_DB.batteries.battery_volt_2, "battery_volt_2 exists in catalog");
 assert.equal(ITEM_DB.batteries.battery_volt_2.gameplayStats.capacityUnits, 7200, "battery_volt_2 capacity is 7200");
-assert.equal(ITEM_DB.batteries.battery_volt_2.iconUrl, "assets/items/batteries/battery-volt--2.webp", "battery_volt_2 icon is battery-volt--2.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_2.iconAsset, "items.batteries.battery-volt--2", "battery_volt_2 icon is battery-volt--2.webp");
 assert.equal(ITEM_DB.batteries.battery_volt_2.rarityProfile.tier, 2, "battery_volt_2 is tier 2");
 
 assert(ITEM_DB.batteries.battery_volt_3, "battery_volt_3 exists in catalog");
 assert.equal(ITEM_DB.batteries.battery_volt_3.gameplayStats.capacityUnits, 10800, "battery_volt_3 capacity is 10800");
-assert.equal(ITEM_DB.batteries.battery_volt_3.iconUrl, "assets/items/batteries/battery-volt--3.webp", "battery_volt_3 icon is battery-volt--3.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_3.iconAsset, "items.batteries.battery-volt--3", "battery_volt_3 icon is battery-volt--3.webp");
 assert.equal(ITEM_DB.batteries.battery_volt_3.rarityProfile.tier, 3, "battery_volt_3 is tier 3");
 
 assert(ITEM_DB.batteries.battery_volt_4, "battery_volt_4 exists in catalog");
 assert.equal(ITEM_DB.batteries.battery_volt_4.gameplayStats.capacityUnits, 24000, "battery_volt_4 capacity is 24000");
-assert.equal(ITEM_DB.batteries.battery_volt_4.iconUrl, "assets/items/batteries/battery-volt--4.webp", "battery_volt_4 icon is battery-volt--4.webp");
+assert.equal(ITEM_DB.batteries.battery_volt_4.iconAsset, "items.batteries.battery-volt--4", "battery_volt_4 icon is battery-volt--4.webp");
 assert.equal(ITEM_DB.batteries.battery_volt_4.rarityProfile.tier, 4, "battery_volt_4 is tier 4");
 
 const bat2Half = batteryViewFactory.create({ instanceId: "bat-2h", itemId: "battery_volt_2", chargeState: { percent: 50 } });

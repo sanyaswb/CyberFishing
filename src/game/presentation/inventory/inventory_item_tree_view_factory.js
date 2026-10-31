@@ -75,16 +75,16 @@ export class InventoryItemTreeViewFactory {
       }
       const artwork = view.skin.equipment;
       const fullyLoaded = sections > 0 && loadedChums >= sections;
-      const targetUrl = fullyLoaded ? artwork.bait : artwork.noBait;
-      if (targetUrl) {
-        view.equipmentArtUrl = targetUrl;
-        view.iconUrl = targetUrl;
+      const targetAsset = fullyLoaded ? artwork.baitAsset : artwork.noBaitAsset;
+      if (targetAsset) {
+        view.equipmentArtAsset = targetAsset;
+        view.iconAsset = targetAsset;
         if (view.skin?.thumbnail) {
           view.skin = {
             ...view.skin,
             thumbnail: {
               ...view.skin.thumbnail,
-              src: targetUrl,
+              asset: targetAsset,
             },
           };
         }
@@ -125,7 +125,7 @@ export class InventoryItemTreeViewFactory {
       prepared: true,
       attachments: roots.filter((entry) => entry !== main).map(({ slotId, item }) => ({
         instanceId: item.instanceId, name: item.name, icon: item.icon,
-        iconUrl: item.iconUrl || item.imageUrl, rarity: item.rarity,
+        iconAsset: item.iconAsset, rarity: item.rarity,
         kind: slotId, placement: "bottom", empty: false,
       })),
     };
@@ -175,7 +175,7 @@ export class InventoryItemTreeViewFactory {
           empty: !raw,
           name: hydrated?.name,
           icon: hydrated?.icon,
-          iconUrl: hydrated?.iconUrl || hydrated?.imageUrl,
+          iconAsset: hydrated?.iconAsset,
           rarity: hydrated?.rarity,
           kind: slot.id,
           placement: this.#placement(slot.id),

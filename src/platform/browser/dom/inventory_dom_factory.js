@@ -3,13 +3,17 @@ import { GlyphInkMetrics } from "./glyph_ink_metrics.js";
 export class InventoryDomFactory {
   #document;
   #glyphMetrics;
+  #assets;
 
-  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }) } = {}) {
+  // assets: the AssetRegistry; images and sprite icons are named by asset id (spec 157 R16). A factory without it
+  // still builds elements, but asking it for an asset's file is an error.
+  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }), assets = null } = {}) {
     if (!documentRef?.createElement) {
       throw new TypeError("InventoryDomFactory requires a document");
     }
     this.#document = documentRef;
     this.#glyphMetrics = glyphMetrics;
+    this.#assets = assets;
   }
 
   // Browser lookup for cold Bootstrap mounting; preserve live document, receiver and missing-global errors.
@@ -43,29 +47,26 @@ export class InventoryDomFactory {
     return button;
   }
 
-  // Spec 157 R6: lazy (set before src) so an image of a hidden view, such as the closed inventory, is not requested
-  // until it is shown; after the game is ready LazyImageWarmUp loads them in the background.
-  image(source, alternativeText = "") {
+  // An image by asset id, or null without one. Spec 157 R6: lazy (set before src) so an image of a hidden view, such
+  // as the closed inventory, is not requested until it is shown; after the game is ready LazyImageWarmUp loads them in
+  // the background.
+  image(assetId, alternativeText = "") {
+    const source = this.assetUrl(assetId);
+    if (!source) return null;
     const image = this.element("img");
-    const safeSource = this.safeImageSource(source);
-    if (!safeSource) return null;
     image.loading = "lazy";
     image.decoding = "async";
-    image.src = safeSource;
+    image.src = source;
     image.alt = alternativeText;
     image.draggable = false;
     return image;
   }
 
-  safeImageSource(source) {
-    if (typeof source !== "string") return "";
-    const value = source.trim();
-    if (!value || /[\u0000-\u001f]/.test(value)) return "";
-    if (/^(?:javascript|vbscript):/i.test(value)) return "";
-    if (/^data:/i.test(value) && !/^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(value)) {
-      return "";
-    }
-    return value;
+  // The file of an asset ("" without an id), for views that set the source of an element they keep.
+  assetUrl(assetId) {
+    if (!assetId) return "";
+    if (!this.#assets) throw new TypeError("InventoryDomFactory requires assets for asset images");
+    return this.#assets.pathOf(assetId);
   }
 
   // A text glyph (emoji) centred by its measured ink inside the consumer's box (DESIGN_RULES §8, ui-glyph.css).
@@ -80,8 +81,10 @@ export class InventoryDomFactory {
     return glyph;
   }
 
-  // A decorative sprite icon: <svg><use href="sprite.svg#id"/></svg> inherits currentColor from its parent.
-  svgIcon(href, className = "") {
+  // A decorative sprite icon: <svg><use href="sprite.svg#symbol"/></svg> inherits currentColor from its parent;
+  // spriteAsset is the sprite's asset id.
+  svgIcon(spriteAsset, symbol, className = "") {
+    const href = `${this.assetUrl(spriteAsset)}#${symbol}`;
     const namespace = "http://www.w3.org/2000/svg";
     const icon = this.#document.createElementNS(namespace, "svg");
     if (className) icon.setAttribute("class", className);

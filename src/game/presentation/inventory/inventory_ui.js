@@ -320,7 +320,7 @@ export class InventoryUI {
       ...viewModel.inventory, savedLoadout: undefined, mode: undefined,
       items: viewModel.inventory.items.map((item) => ({
         instanceId: item.instanceId, itemId: item.itemId, itemType: item.itemType,
-        name: item.name, icon: item.icon, iconUrl: item.iconUrl || item.imageUrl,
+        name: item.name, icon: item.icon, iconAsset: item.iconAsset,
         quantity: item.quantity, rarity: item.rarity, attachments: item.attachments,
         ratingTier: item.progression?.ratingTier, rarityVisual: item.rarityVisual,
         assemblyCompletion: item.assemblyCompletion, equipmentCompletion: item.equipmentCompletion,
@@ -439,11 +439,11 @@ export class InventoryUI {
     );
     // Spec 157 TK-174: until the game is ready the shortcut shows the sections sprite's backpack symbol; the backpack
     // art (lazy and not yet in the page, so not requested) replaces it after showShortcutArtwork().
-    const backpackIcon = this.#dom.image(this.#sections.backpackImage, "");
+    const backpackIcon = this.#dom.image(this.#sections.backpackAsset, "");
     backpackIcon.className = "game-toolbar-button__image";
     backpackIcon.setAttribute("aria-hidden", "true");
     this.#backpackShortcutImage = backpackIcon;
-    this.#backpackShortcutPlaceholder = this.#dom.svgIcon(`${this.#sections.iconSprite}#backpack`,
+    this.#backpackShortcutPlaceholder = this.#dom.svgIcon(this.#sections.iconSpriteAsset, "backpack",
       "game-toolbar-button__image game-toolbar-button__placeholder");
     this.#backpackButtonNode.appendChild(this.#backpackShortcutPlaceholder);
     this.#backpackButtonNode.setAttribute("aria-label", "Відкрити інвентар");

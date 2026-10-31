@@ -1,4 +1,4 @@
-import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
 
 // Projects the tackle's existing load limit onto the owner's fixed kilogram scale.
 export class InventoryLoadRenderer {
@@ -11,7 +11,7 @@ export class InventoryLoadRenderer {
   }
 
   create() {
-    return this.#scales.create({ iconPath: inventorySlotIconPath("weight"), meterId: "load", className: "inventory-load" });
+    return this.#scales.create({ iconAsset: inventorySlotIconAsset("weight"), meterId: "load", className: "inventory-load" });
   }
 
   update(root, header) {

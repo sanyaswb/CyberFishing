@@ -40,7 +40,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   bindAssetHrefs(root, assets);
   uiSurface.mountRoot.appendChild(root);
   const node = (selector) => root.querySelector(selector);
-  const domFactory = new InventoryDomFactory(documentTarget);
+  const domFactory = new InventoryDomFactory(documentTarget, { assets });
   const resourceMeters = new InventoryResourceMeterRenderer({ domFactory,
     degradationColorResolver: new DegradationColorResolver({ configProvider: () => CONFIG.degradationColors }) });
   const clock = new BrowserWallClock();
@@ -79,7 +79,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   };
   documentTarget.addEventListener("config-updated", onConfigUpdated);
   let presenter;
-  const feedPicker = new AquariumFeedPicker({ documentRef: documentTarget,
+  const feedPicker = new AquariumFeedPicker({ documentRef: documentTarget, assets,
     button: node("[data-house-feed-toggle]"), list: node("[data-house-feed-list]"),
     preview: node("[data-house-next-feed]"), hint: node("[data-house-feed-hint]"),
     labels: HOUSE_LABELS.feedPicker, onFeed: (id, quantity) => presenter.perform("feed", id, quantity) });

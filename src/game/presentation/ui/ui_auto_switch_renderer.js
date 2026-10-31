@@ -12,7 +12,7 @@ export class UiAutoSwitchRenderer {
     this.#longPressActivationDelayMs = longPressActivationDelayMs;
   }
 
-  create({ id, name, modeLabel, items = [], placeholderUrl, checked = false,
+  create({ id, name, modeLabel, items = [], placeholderAsset, checked = false,
     slots = null, onSlotActivate = null, onSlotLongPress = null,
     disabled = false, stock = 0, onChange = null, className = "", variant = "equipment", activateUnavailable = false }) {
     const compact = variant === "control";
@@ -39,7 +39,7 @@ export class UiAutoSwitchRenderer {
     switchHost.append(input, control);
     if (!compact) label.append(switchHost);
     this.#bindings.set(label, { input, count, change, modeLabel, compact, content,
-      name, placeholderUrl, onSlotActivate, onSlotLongPress, activateUnavailable, stock: 0, slots: [], slotBindings: [] });
+      name, placeholderAsset, onSlotActivate, onSlotLongPress, activateUnavailable, stock: 0, slots: [], slotBindings: [] });
     this.update(label, { checked, disabled, stock, slots: slots || items.map((item) => ({ item, available: true })) });
     return label;
   }
@@ -118,7 +118,7 @@ export class UiAutoSwitchRenderer {
       nodes.media.classList.toggle("inventory-toggle__item--available", slot.available === true);
       nodes.media.classList.toggle("inventory-toggle__item--highlighted", slot.highlighted === true);
       nodes.media.setAttribute("aria-pressed", String(slot.highlighted === true));
-      const imageSource = item ? item.switcherIconUrl || item.iconUrl || item.imageUrl || "" : binding.placeholderUrl;
+      const imageSource = item ? item.switcherIconAsset || item.iconAsset || "" : binding.placeholderAsset;
       const icon = String(item?.icon || item?.emoji || "");
       if (nodes.source !== imageSource || nodes.icon !== icon) {
         nodes.image = this.#dom.image(imageSource, "");

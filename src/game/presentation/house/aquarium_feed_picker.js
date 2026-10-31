@@ -1,8 +1,11 @@
 export class AquariumFeedPicker {
-  #document; #button; #list; #preview; #hint; #labels; #onFeed; #original;
+  #document; #button; #list; #preview; #hint; #labels; #onFeed; #original; #assets;
   #previewRecord;
   #items = []; #rows = new Map(); #empty; #selectionId = null; #model; #disposed = false;
-  constructor({ documentRef, button, list, preview, hint, onFeed, labels }) {
+  // assets: the AssetRegistry; a feed's box art is its imageAsset (spec 157 R16).
+  constructor({ documentRef, button, list, preview, hint, onFeed, labels, assets }) {
+    if (typeof assets?.pathOf !== "function") throw new TypeError("AquariumFeedPicker requires assets");
+    this.#assets = assets;
     this.#document = documentRef; this.#button = button; this.#list = list; this.#preview = preview; this.#hint = hint;
     this.#onFeed = onFeed; this.#labels = labels;
     this.#original = { children: [...list.childNodes], hidden: list.hidden, expanded: button.getAttribute("aria-expanded"),
@@ -119,12 +122,14 @@ export class AquariumFeedPicker {
     const name = this.#el("span", "house__feed-item-name");
     const meta = this.#el("span", "house__feed-item-meta"); details.append(name, meta);
     row.append(thumbnail, details);
-    return { row, image, quantity, details, name, meta, imagePath: null };
+    return { row, image, quantity, details, name, meta, imageAsset: null };
   }
   #updateRow(record, item, description = "", quantity = item?.count, accessibleDescription = description) {
     record.image.hidden = !item;
     record.quantity.hidden = !Number.isFinite(quantity);
-    if (item && record.imagePath !== item.imagePath) { record.image.src = item.imagePath; record.imagePath = item.imagePath; }
+    if (item && record.imageAsset !== item.imageAsset) {
+      record.image.src = this.#assets.pathOf(item.imageAsset); record.imageAsset = item.imageAsset;
+    }
     this.#text(record.name, item?.name || this.#labels.noSelection);
     this.#text(record.quantity, Number.isFinite(quantity) ? quantity : "");
     this.#text(record.meta, description); record.meta.hidden = !description;

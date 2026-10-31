@@ -621,6 +621,8 @@ class InventoryUiBehaviorCheck {
     });
     runtime.load("src/platform/browser/dom/horizontal_scroll_controller.js");
     runtime.load("src/platform/browser/dom/scroll_container_aligner.js");
+    runtime.load("src/engine/assets/asset_registry.js", { expose: ["AssetRegistry"] });
+    runtime.load("src/game/config/generated/asset_registry.js", { expose: ["ASSET_REGISTRY"] });
     // Spec 093: a tab tap brings the tab row to the top of the nearest vertical scroller (smooth unless reduced motion);
     // the browser clamps the target at the end of the content.
     for (const reduced of [false, true]) {
@@ -733,6 +735,7 @@ class InventoryUiBehaviorCheck {
     document.createElement = (tagName) => { const element = createElement(tagName); createdElements.push(element); return element; };
     const ui = sandbox.InventoryUiBootstrap.create({
       facade,
+      assets: new sandbox.AssetRegistry(sandbox.ASSET_REGISTRY),
       uiSurface: {
         getMetrics: () => ({
           valid: true,
@@ -792,7 +795,7 @@ class InventoryUiBehaviorCheck {
       2,
       "unset consumables use vector placeholders",
     );
-    const headerDom = new sandbox.InventoryDomFactory(document);
+    const headerDom = new sandbox.InventoryDomFactory(document, { assets: new sandbox.AssetRegistry(sandbox.ASSET_REGISTRY) });
     const loadRenderer = new sandbox.InventoryLoadRenderer({
       config: sandbox.INVENTORY_LOAD_METER_CONFIG,
       scaleRenderer: new sandbox.InventoryScaleRenderer({
@@ -2384,7 +2387,7 @@ class InventoryUiBehaviorCheck {
         ratingTierOf: (current, maximum) => `Tier ${current} of ${maximum}`,
       },
     });
-    const isolatedDom = new sandbox.InventoryDomFactory(document);
+    const isolatedDom = new sandbox.InventoryDomFactory(document, { assets: new sandbox.AssetRegistry(sandbox.ASSET_REGISTRY) });
     const isolatedItemRenderer = new sandbox.InventoryItemCardRenderer({
       domFactory: isolatedDom,
       attachmentRenderer: new sandbox.InventoryAttachmentBadgeRenderer({
@@ -2518,7 +2521,7 @@ class InventoryUiBehaviorCheck {
       "effectiveness",
       "Contextual bait effectiveness must be an opt-in UI descriptor",
     );
-    const contextualDom = new sandbox.InventoryDomFactory(document);
+    const contextualDom = new sandbox.InventoryDomFactory(document, { assets: new sandbox.AssetRegistry(sandbox.ASSET_REGISTRY) });
     const contextualRenderer = new sandbox.InventoryItemParametersRenderer({
       domFactory: contextualDom,
       resolver: new sandbox.InventoryItemParametersResolver(),
@@ -3205,7 +3208,7 @@ class InventoryUiBehaviorCheck {
       "hook-0",
       "Three statistically identical hooks must share one component section",
     );
-    const groupedDom = new sandbox.InventoryDomFactory(document);
+    const groupedDom = new sandbox.InventoryDomFactory(document, { assets: new sandbox.AssetRegistry(sandbox.ASSET_REGISTRY) });
     const groupedHookPanel = new sandbox.InventoryItemParametersRenderer({
       domFactory: groupedDom,
       resolver: new sandbox.InventoryItemParametersResolver(),
@@ -3904,7 +3907,7 @@ class InventoryUiBehaviorCheck {
     heldHeaderButton.emit("pointerdown", { pointerId: 72, button: 0 });
     const heldProgress = this.#findByClass(heldHeaderButton, "inventory-press__progress");
     assert(heldProgress, "header removal has circular hold feedback");
-    heldHeaderView.header.baitSlots[0].item.iconUrl = "/changed-header-bait.webp";
+    heldHeaderView.header.baitSlots[0].item.iconAsset = "items.baits.bread--10";
     ui.render(heldHeaderView);
     assert.strictEqual(this.#findByClass(heldHeaderButton, "inventory-press__progress"), heldProgress,
       "an artwork refresh must retain the active feedback and its deadline");

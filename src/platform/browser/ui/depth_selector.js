@@ -98,7 +98,7 @@ export class DepthSelector {
       image.className = "game-toolbar-button__image";
       // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
       image.loading = "lazy"; image.decoding = "async";
-      image.src = source; image.alt = ""; image.draggable = false;
+      image.src = this.#dom.assetUrl(source); image.alt = ""; image.draggable = false;
       this.#icon.appendChild(image);
     } else if (this.#dom) this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
     else this.#icon.textContent = text;

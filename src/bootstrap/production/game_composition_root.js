@@ -1011,6 +1011,7 @@ export class GameCompositionRoot {
             itemProgressionResolver,
             // DEV item grant; DevTools exist only in Development, so production never calls it.
             grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
+            assets: this.#assets,
             // DEV Spine section (spec 099 Phase 4, spec 150): rod and boat controllers' DEV ports.
             rodSpine: rodAnimation.controller ?? rodAnimation,
             boatSpine: boatAnimation.controller ?? boatAnimation,
@@ -1037,7 +1038,7 @@ export class GameCompositionRoot {
           }], ["dispose"],
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS,
-          landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail,
+          landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail, assets: this.#assets,
           fullscreenControl: own(new FullscreenControl({ documentRef: this.#documentTarget,
             mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body, label: HUD_LABELS.fullscreen,
             onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),
@@ -1157,6 +1158,7 @@ export class GameCompositionRoot {
     }
     systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
+      assets: this.#assets,
       radio: systems.radio,
       // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
       radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio || {} }) || null,
@@ -1193,20 +1195,20 @@ export class GameCompositionRoot {
         systems.inventoryUI?.openSlotEditor("radio");
       }
     };
-    const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
+    const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget, assets: this.#assets,
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
-      equipmentSource: inventory }));
+      equipmentSource: inventory, assets: this.#assets }));
     // The selector's artwork waits for the started game (spec 157 R11); its classic buttons stand in until then.
     this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
     // Spec 157 TK-174: the classic shortcuts swap their sprite icons for the backpack and keepnet art.
     this.#deferredAssetLoads.push(() => { systems.inventoryUI.showShortcutArtwork(); keepnetUI?.showShortcutArtwork(); });
     // Spec 157 R5: the other keepnet fill stages warm up after the selector artwork the toolbar shows.
-    if (keepnetUI) this.#deferredAssetLoads.push(() => { void InventoryUiBootstrap.preloadKeepnetStages(this.#documentTarget); });
+    if (keepnetUI) this.#deferredAssetLoads.push(() => { void InventoryUiBootstrap.preloadKeepnetStages(this.#documentTarget, this.#assets); });
     return {  };
   }
 
@@ -1252,7 +1254,7 @@ export class GameCompositionRoot {
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
     const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
       mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets,
-      deferLoad: (load) => this.#deferredAssetLoads.push(load) }));
+      deferLoad: (load) => this.#deferredAssetLoads.push(load), assets: this.#assets }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
       : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));
@@ -1521,7 +1523,7 @@ export class GameCompositionRoot {
       canPlayerCast: appPorts.canPlayerCast,
       getGameStateName: appPorts.getGameStateName,
       devicePower: runtime.devicePower,
-      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS,
+      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS, assets: this.#assets,
         documentRef: this.#documentTarget, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body }),
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,

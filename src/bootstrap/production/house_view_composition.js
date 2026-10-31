@@ -15,7 +15,7 @@ export function composeHouseView({ documentRef, rootNode, windowTarget, domFacto
     sheetDismissLabel: labels.sheetDismiss, menuHandleLabel: labels.menuHandle, feedPicker });
   const roomView = new HouseRoomView({ documentRef, roomConfig, labels, timeBlendMs, assets,
     levelCard: new HouseLevelCard({ domFactory, segments: node("room-segments"), list: node("room-level-list"), labels }) });
-  return new HouseView({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
+  return new HouseView({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker, assets,
     resourceMeters, autoSwitchRenderer, hintRenderer: composeHintRenderer({ domFactory, uiSurface, timers: windowTarget,
       inlineDurationMs: uiConfig.noticeDurationMs }), labels, navigation, roomView,
     aquariumLevelCard: new HouseLevelCard({ domFactory, segments: node("aquarium-segments"), labels }),

@@ -1,4 +1,4 @@
-import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
 
 export class InventoryHeaderRenderer {
   #dom;
@@ -79,7 +79,7 @@ export class InventoryHeaderRenderer {
       onSlotActivate: (slotIndex) => onActivate?.(slotId, slotIndex),
       onSlotLongPress: slotId === "bait" && onLongPress
         ? (slotIndex, instanceId) => onLongPress(slotId, slotIndex, instanceId) : null,
-      placeholderUrl: inventorySlotIconPath(slotId) });
+      placeholderAsset: inventorySlotIconAsset(slotId) });
   }
 
 }

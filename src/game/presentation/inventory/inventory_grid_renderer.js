@@ -9,7 +9,7 @@ export class InventoryGridRenderer {
   #itemRenderer;
   #horizontalScrollController;
   #listScrollController;
-  #backdropImage;
+  #backdropAsset;
   #pager;
   #subfiltersExpanded = false;
   #sortExpanded = false;
@@ -24,11 +24,11 @@ export class InventoryGridRenderer {
     horizontalScrollController = null,
     createHorizontalScrollController,
     listScrollController,
-    backdropImage = "",
+    backdropAsset = "",
     pagerRenderer,
   } = {}) {
     this.#dom = domFactory;
-    this.#backdropImage = backdropImage;
+    this.#backdropAsset = backdropAsset;
     this.#listScrollController = listScrollController;
     this.#pager = pagerRenderer;
     this.#itemRenderer = itemRenderer;
@@ -88,7 +88,7 @@ export class InventoryGridRenderer {
     // The item page holds the faded backpack and the grid directly: the pager page is the flex parent that bounds the
     // grid's height, so no wrapper may sit between them (spec 076 follow-up).
     const items = [];
-    const backdrop = this.#dom.image(this.#backdropImage, "");
+    const backdrop = this.#dom.image(this.#backdropAsset, "");
     if (backdrop) {
       backdrop.className = "inventory-collection__backdrop";
       backdrop.setAttribute("aria-hidden", "true");
@@ -162,12 +162,12 @@ export class InventoryGridRenderer {
     settingsToggle.addEventListener("click", () => onSettingsToggle?.(settingsToggle));
     navigation.appendChild(settingsToggle);
     model.categories.forEach((category) => {
-      const label = [category.iconUrl ? "" : category.icon, category.label].filter(Boolean).join(" ");
+      const label = [category.iconAsset ? "" : category.icon, category.label].filter(Boolean).join(" ");
       const button = this.#dom.button(
         "inventory-categories__button",
-        category.iconUrl ? "" : label,
+        category.iconAsset ? "" : label,
       );
-      const image = this.#dom.image(category.iconUrl, "");
+      const image = this.#dom.image(category.iconAsset, "");
       if (image) {
         image.className = "inventory-categories__image";
         image.setAttribute("aria-hidden", "true");

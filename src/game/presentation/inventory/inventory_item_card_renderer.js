@@ -1,4 +1,4 @@
-import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
 
 export class InventoryItemCardRenderer {
   #dom;
@@ -99,7 +99,7 @@ export class InventoryItemCardRenderer {
         "aria-label",
         isBlocked ? slot.warning || slot.label : slot.label,
       );
-      const placeholder = this.#dom.image(inventorySlotIconPath(slot.slotId), "");
+      const placeholder = this.#dom.image(inventorySlotIconAsset(slot.slotId), "");
       if (placeholder) {
         placeholder.className = "inventory-slot-icon";
         placeholder.setAttribute("aria-hidden", "true");
@@ -197,11 +197,8 @@ export class InventoryItemCardRenderer {
   #renderMainVisual(card, item, { wholeArt = false } = {}) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
     const art = item.skin?.thumbnail;
-    const thumbnail = item.equipmentArtUrl || wholeArt ? null : art;
-    const image = this.#dom.image(
-      item.equipmentArtUrl || art?.src || item.iconUrl || item.imageUrl || item.src,
-      "",
-    );
+    const thumbnail = item.equipmentArtAsset || wholeArt ? null : art;
+    const image = this.#dom.image(item.equipmentArtAsset || art?.asset || item.iconAsset, "");
     if (thumbnail && image) {
       visual.classList.add("inventory-item-card__visual--cropped");
       visual.classList.toggle("inventory-item-card__visual--cropped-top", thumbnail.anchor === "top");

@@ -1,5 +1,6 @@
 // House screen: aquarium status and actions; composes navigation, room art and fish lists injected by bootstrap.
 export class HouseView {
+  #assets;
   #root;
   #nodes = new Map();
   #perform;
@@ -23,7 +24,10 @@ export class HouseView {
   #noticeRoom;
 
   constructor({ documentRef, rootNode, windowTarget, perform, uiConfig, onReturn, fishView, feedPicker,
-    resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList }) {
+    resourceMeters, autoSwitchRenderer, hintRenderer, labels, navigation, roomView, aquariumLevelCard, liveBaitList, keepnetList,
+    assets }) {
+    if (typeof assets?.pathOf !== "function") throw new TypeError("HouseView requires assets");
+    this.#assets = assets;
     this.#root = rootNode;
     this.#perform = perform;
     this.#onReturn = onReturn;
@@ -148,7 +152,8 @@ export class HouseView {
     this.#nodes.get("feed-bar").hidden = !feed;
     if (feed) {
       const image = this.#nodes.get("feed-image");
-      if (image.getAttribute("src") !== feed.imagePath) image.src = feed.imagePath;
+      const source = this.#assets.pathOf(feed.imageAsset);
+      if (image.getAttribute("src") !== source) image.src = source;
       image.alt = feed.name;
       const percentage = Number(feed.percentage);
       const percent = Number.isFinite(percentage) ? Math.max(0, Math.min(100, percentage)) : 0;
