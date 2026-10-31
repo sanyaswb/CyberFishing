@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/platform/browser/time/browser_timeout_scheduler.js"],
+  "sourcesContent": ["export class BrowserTimeoutScheduler {\n  #host;\n\n  constructor(timerHost = globalThis) {\n    this.#host = timerHost;\n  }\n\n  setTimeout(callback, delayMs) {\n    return this.#host.setTimeout(callback, delayMs);\n  }\n\n  clearTimeout(handle) {\n    return this.#host.clearTimeout(handle);\n  }\n}\n"],
+  "mappings": "AAAO,IAAMA,EAAN,KAA8B,CACnCC,GAEA,YAAYC,EAAY,WAAY,CAClC,KAAKD,GAAQC,CACf,CAEA,WAAWC,EAAUC,EAAS,CAC5B,OAAO,KAAKH,GAAM,WAAWE,EAAUC,CAAO,CAChD,CAEA,aAAaC,EAAQ,CACnB,OAAO,KAAKJ,GAAM,aAAaI,CAAM,CACvC,CACF",
+  "names": ["BrowserTimeoutScheduler", "#host", "timerHost", "callback", "delayMs", "handle"]
+}
