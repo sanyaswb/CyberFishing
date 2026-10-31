@@ -60,7 +60,7 @@ Performance:
 - dispose scheduled frames, observers, media-query listeners and UI subscriptions with their owner; repeated panel openings must not multiply work;
 - no unnecessary allocations in hot loops;
 - no repeated DOM queries per frame;
-- preload assets;
+- load assets through the asset load plan (see "Loading and startup optimization" below), not through ad hoc preloads;
 - optimize every new or replaced raster illustration before integration: always use `utils/convert-images.js` to generate WebP (Middle / quality 80 by default), and reference the optimized file in runtime/catalog data; keep alpha, size runtime art for its use (see "Rendering resolution and image quality"), and retain source masters outside runtime references. Keep SVG artwork as vectors and preserve pixel-exact data maps when selecting compression;
 - use deltaTime;
 - keep update separate from render;
@@ -85,6 +85,34 @@ frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; 
 - every rendering change is measured on a phone in both orientations with the DevTools overlay "⚡ ПРОДУКТИВНІСТЬ"
   before the commit;
 - draw order follows depth.
+
+**Loading and startup optimization — mandatory (owner, 2026-10-31; spec 157).** The game will keep growing, so
+optimization is part of every change, never an afterthought:
+- **Budgets are a starting point, not a finish line.** The current targets (cold start on 4G: first paint ≤ 1 s, ready
+  to play ≤ 3–4 s, ≤ 3 MB compressed before the start) are the floor. "Already within budget" is never a reason to skip
+  an optimization or to accept a regression; every change keeps the numbers or improves them, and a budget miss found by
+  the measurer is a defect (record it in docs/incidents.md).
+- **The main metric is the cold start of a new player** (no cache, phone, mobile network). Caching is a bonus, never the
+  fix.
+- **Measure before and after.** Every change that can affect loading is measured with `npm run measure:startup`
+  (Fast 4G, `--network 3g`, `--cpu 4`) on the built release, and the numbers go into the spec or the commit message;
+  phone reports come from the DEV overlay "⏱ ЗАВАНТАЖЕННЯ" («Завантажити JSON»). Bytes are counted compressed.
+- **The start loads only what the first frame needs.** Everything else goes to a later layer of the asset load plan
+  (layer two: the full game cycle; layer three: content opened later, in the background) or loads on first use. A new
+  asset, module or feature never joins the start silently: it needs an explicit place in the plan.
+- **Nothing on the start waits for what it does not need.** No `await` on decorative artwork, selectors, previews or
+  warm-ups before `ready`; show a stand-in (sprite symbol, classic control, static pose) and replace it later (R11).
+- **Assets by stable id, never by path.** Code and configuration reference assets through the asset registry ids;
+  `npm run assets:sync` registers new and moved files and its `--check` runs in Full. Raster art is display-sized and
+  converted with `utils/convert-images.js`.
+- **Progressive images.** Every raster image has a generated low-quality copy: when the player opens content that has
+  not loaded, it gets priority 1, the low copy shows first (a loader only if it is late), and the full image replaces it
+  instantly once decoded, in the same box (no layout jump).
+- **Code:** the repository stays zero-build; a release is bundled (`npm run build:release`) and must run the same on
+  GitHub Pages and on the game server. Features not needed for the first frame load with dynamic `import()` through the
+  composition, and their chunks are not preloaded by the page.
+- **After the network, the CPU.** When transfer is no longer the bottleneck, measure the main-thread work of the start
+  (decode, composition, uploads) and move it off the critical path (deferred work, later Web Workers).
 
 Before creating or changing any design/UI element, read and follow [DESIGN_RULES.md](DESIGN_RULES.md) and [docs/styles.md](docs/styles.md). DESIGN_RULES is the current source for component/style reuse, BEM, tokens, Grid/Flex responsibilities, the 320px logical layout with proportional scaling below it, inventory's four mobile columns, keepnet's two mobile columns and shared parameter-meter semantics. Completed design specs remain historical records.
 
