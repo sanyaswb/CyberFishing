@@ -40,8 +40,8 @@ export const ACTIVE_FISH_DEV_TOOLS_SCHEMA = Object.freeze({
     leafKeys: Object.freeze({
       icon: Object.freeze({ enabled: false }),
       imagePath: Object.freeze({ enabled: false }),
-      bgUrls: Object.freeze({ enabled: false }),
-      depthUrl: Object.freeze({ enabled: false }),
+      backgroundAssets: Object.freeze({ enabled: false }),
+      depthAsset: Object.freeze({ enabled: false }),
       endpoint: Object.freeze({ enabled: false }),
       backgroundColor: Object.freeze({ enabled: false }),
       colorGradient: Object.freeze({ enabled: false }),

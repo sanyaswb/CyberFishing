@@ -2603,6 +2603,7 @@ async function main() {
       "src/platform/browser/storage/local_storage_cache.js",
       "LocalStorageCache",
     ],
+    ["src/engine/assets/asset_registry.js", "AssetRegistry"],
   ])
     runtime.load(file, { expose: [name] });
   for (const module of [
@@ -2615,7 +2616,10 @@ async function main() {
     ImageAssetProvider,
     OffscreenCanvasFactory,
     LocationAssetLoader,
+    AssetRegistry,
   } = runtime.context;
+  const image = (path) => ({ kind: "image", path, bytes: 1, sha256: "0", tags: [], label: "" });
+  const assetRegistry = new AssetRegistry({ "pond.background": image("pond.png"), "pond.depth": image("depth.png") });
   const clock = new GameClock(100);
   const deltas = [
     clock.tick(100),
@@ -2714,6 +2718,7 @@ async function main() {
     ready = new Set();
   const coordinator = new runtime.context.AssetPreloadCoordinator({
     locationsConfig: {},
+    assets: assetRegistry,
     resolveFishImage: (fish) => fish?.imagePath || "",
     imageAssets: {
       isReady: (id) => ready.has(id),
@@ -2834,10 +2839,11 @@ async function main() {
       tryGet: () => images[1],
     },
     canvasFactory: factory,
+    assets: assetRegistry,
   });
   const result = await loader.load(
     "pond",
-    { bgUrl: "pond.png", depthUrl: "depth.png" },
+    { backgroundAsset: "pond.background", depthAsset: "pond.depth" },
     { baseResolution: { width: 1, height: 1 } },
   );
   assert.equal(

@@ -4,11 +4,15 @@ import { ImageAssetProvider } from "../assets/image_asset_provider.js";
 export class LocationAssetLoader {
   #imageAssets;
   #canvasFactory;
+  #assets;
 
-  constructor({ imageAssets, canvasFactory }) {
+  // assets: the AssetRegistry; a location names its backgrounds and depth map by asset id (spec 157 R16).
+  constructor({ imageAssets, canvasFactory, assets }) {
     if (!imageAssets || typeof imageAssets.preload !== "function") {
       throw new TypeError("LocationAssetLoader requires imageAssets");
     }
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("LocationAssetLoader requires assets");
+    this.#assets = assets;
     if (!canvasFactory || typeof canvasFactory.createSurface !== "function") {
       throw new TypeError("LocationAssetLoader requires canvasFactory");
     }
@@ -46,10 +50,10 @@ export class LocationAssetLoader {
     const manifest = {};
     const assetIds = {};
     let dynamic = false;
-    if (locationConfig.bgUrls) {
+    if (locationConfig.backgroundAssets) {
       dynamic = true;
       for (const key of ["day", "evening", "night"]) {
-        const src = locationConfig.bgUrls[key];
+        const src = this.#assets.pathOf(locationConfig.backgroundAssets[key]);
         const assetId = ImageAssetProvider.assetIdForSource(
           src,
           `location:${locationId}:${key}`,
@@ -57,26 +61,19 @@ export class LocationAssetLoader {
         assetIds[key] = assetId;
         manifest[assetId] = src;
       }
-    } else if (locationConfig.bgUrl) {
-      const assetId = ImageAssetProvider.assetIdForSource(
-        locationConfig.bgUrl,
-        `location:${locationId}:default`,
-      );
+    } else if (locationConfig.backgroundAsset) {
+      const src = this.#assets.pathOf(locationConfig.backgroundAsset);
+      const assetId = ImageAssetProvider.assetIdForSource(src, `location:${locationId}:default`);
       assetIds.default = assetId;
-      manifest[assetId] = locationConfig.bgUrl;
+      manifest[assetId] = src;
     }
     return { dynamic, assetIds, manifest };
   }
 
   #buildDepthRecord(locationId, locationConfig) {
-    if (!locationConfig.depthUrl) return { assetId: "", src: "" };
-    return {
-      assetId: ImageAssetProvider.assetIdForSource(
-        locationConfig.depthUrl,
-        `location:${locationId}:depth`,
-      ),
-      src: locationConfig.depthUrl,
-    };
+    if (!locationConfig.depthAsset) return { assetId: "", src: "" };
+    const src = this.#assets.pathOf(locationConfig.depthAsset);
+    return { assetId: ImageAssetProvider.assetIdForSource(src, `location:${locationId}:depth`), src };
   }
 
   #createDepthReader(assetId, locationsConfig) {

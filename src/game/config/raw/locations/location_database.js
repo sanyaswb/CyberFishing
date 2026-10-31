@@ -9,12 +9,13 @@ export const MAP_DB = {
   test: {
     id: "test",
     name: "Test Waters",
-    bgUrls: {
-      day: "assets/locations/test/bg_test--day.webp",
-      evening: "assets/locations/test/bg_test--evening.webp",
-      night: "assets/locations/test/bg_test--night.webp",
+    // Фони фаз доби й карта глибин — id реєстру асетів (spec 157 R16), не шляхи.
+    backgroundAssets: {
+      day: "locations.test.bg_test--day",
+      evening: "locations.test.bg_test--evening",
+      night: "locations.test.bg_test--night",
     },
-    depthUrl: "assets/locations/test/test-depth.webp",
+    depthAsset: "locations.test.test-depth",
     // x: 'left', 'center', 'right'
     // y: 'top', 'center', 'bottom', 'safeZone'
     initialAlignment: { x: "center", y: "center" },

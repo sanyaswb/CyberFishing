@@ -62,8 +62,8 @@ export class DevTools {
     "id",
     "name",
     "icon", // ігноруємо емодзі, щоб не створювати для них зайвих полів
-    "bgUrls",
-    "depthUrl",
+    "backgroundAssets",
+    "depthAsset",
     "endpoint",
     "backgroundColor",
     "colorGradient",

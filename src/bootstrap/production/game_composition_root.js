@@ -86,6 +86,8 @@ import { InventoryBalanceParameterResolver } from "../../game/presentation/inven
 import { InventoryUiBootstrap } from "./inventory_ui_bootstrap.js";
 import { composeInventorySelector } from "./inventory_selector_composition.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
+import { ASSET_REGISTRY } from "../../game/config/generated/asset_registry.js";
+import { AssetRegistry } from "../../engine/assets/asset_registry.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
 import { ItemConditionDescriptor } from "../../game/presentation/inventory/item_condition_descriptor.js";
@@ -158,6 +160,8 @@ import { WorldPerspective } from "../../game/domain/locations/world_perspective.
 export class GameCompositionRoot {
   #config;
   #itemDb;
+  // Spec 157 R16: every asset by stable id; the places that load files resolve ids through it.
+  #assets = new AssetRegistry(ASSET_REGISTRY);
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
@@ -634,6 +638,7 @@ export class GameCompositionRoot {
       imageAssets,
       resolveFishImage: fishDisplayImagePath,
       locationsConfig: this.#config.locations,
+      assets: this.#assets,
       diagnostics: this.#readRenderDiagnostics(),
     });
     contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
@@ -642,10 +647,7 @@ export class GameCompositionRoot {
       "preloadFishingAssets",
       "preloadVictoryAssets",
     ]);
-    const locationAssetLoader = new LocationAssetLoader({
-      imageAssets,
-      canvasFactory,
-    });
+    const locationAssetLoader = new LocationAssetLoader({ imageAssets, canvasFactory, assets: this.#assets });
     contracts.requireMethods(locationAssetLoader, "locationAssetLoader", [
       "load",
     ]);

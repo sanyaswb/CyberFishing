@@ -246,7 +246,8 @@
 │  │  ├── assets
 │  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
-│  │  │  └── asset_manifest.js
+│  │  │  ├── asset_manifest.js
+│  │  │  └── asset_registry.js
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── diagnostics
@@ -430,6 +431,8 @@
 │  │  │  │  ├── fish_database.js
 │  │  │  │  ├── item_catalog.js
 │  │  │  │  └── location_catalog.js
+│  │  │  ├── generated
+│  │  │  │  └── asset_registry.js
 │  │  │  ├── inventory
 │  │  │  │  └── inventory_composition_config.js
 │  │  │  ├── items

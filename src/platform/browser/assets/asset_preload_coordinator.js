@@ -7,16 +7,20 @@ export class AssetPreloadCoordinator {
   #locationsConfig;
   #diagnostics;
   #resolveFishImage;
+  #assets;
   #requests = new Map();
 
   // resolveFishImage(fish): the one victory image source (spec 100 D4), shared with the outcome frame builder.
-  constructor({ imageAssets, locationsConfig, resolveFishImage, diagnostics = null }) {
+  // assets: the AssetRegistry (a location names its backgrounds and depth map by asset id, spec 157 R16).
+  constructor({ imageAssets, locationsConfig, resolveFishImage, assets, diagnostics = null }) {
     if (!imageAssets || typeof imageAssets.preload !== "function") {
       throw new TypeError("AssetPreloadCoordinator requires imageAssets");
     }
     if (typeof resolveFishImage !== "function") {
       throw new TypeError("AssetPreloadCoordinator requires resolveFishImage");
     }
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("AssetPreloadCoordinator requires assets");
+    this.#assets = assets;
     this.#resolveFishImage = resolveFishImage;
     this.#imageAssets = imageAssets;
     this.#locationsConfig = locationsConfig || {};
@@ -31,29 +35,23 @@ export class AssetPreloadCoordinator {
   preloadLocation(locationId, { phases = null } = {}) {
     const locationConfig = this.#locationsConfig.map?.[locationId] || {};
     const manifest = new AssetManifest();
-    if (locationConfig.bgUrls) {
+    if (locationConfig.backgroundAssets) {
       for (const key of ["day", "evening", "night"]) {
         if (phases !== null && !phases.includes(key)) continue;
-        const src = locationConfig.bgUrls[key];
+        const src = this.#assets.pathOf(locationConfig.backgroundAssets[key]);
         manifest.add(
           ImageAssetProvider.assetIdForSource(src, `location:${locationId}:${key}`),
           src,
           { critical: true },
         );
       }
-    } else if (locationConfig.bgUrl) {
-      manifest.add(
-        ImageAssetProvider.assetIdForSource(locationConfig.bgUrl, `location:${locationId}:default`),
-        locationConfig.bgUrl,
-        { critical: true },
-      );
+    } else if (locationConfig.backgroundAsset) {
+      const src = this.#assets.pathOf(locationConfig.backgroundAsset);
+      manifest.add(ImageAssetProvider.assetIdForSource(src, `location:${locationId}:default`), src, { critical: true });
     }
-    if (locationConfig.depthUrl) {
-      manifest.add(
-        ImageAssetProvider.assetIdForSource(locationConfig.depthUrl, `location:${locationId}:depth`),
-        locationConfig.depthUrl,
-        { critical: true },
-      );
+    if (locationConfig.depthAsset) {
+      const src = this.#assets.pathOf(locationConfig.depthAsset);
+      manifest.add(ImageAssetProvider.assetIdForSource(src, `location:${locationId}:depth`), src, { critical: true });
     }
     return this.preloadManifest(manifest, `location:${locationId}`);
   }

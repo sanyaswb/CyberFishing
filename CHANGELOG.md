@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.38 - Location assets by id
+
+- TK-178 / spec 157 R16 (b): `AssetRegistry` (engine, pure: `pathOf`, `spineOf`, `has`, `idsByTag`) composed once in the composition root; locations name their background phases and depth map by asset id (`backgroundAssets`, `depthAsset`), and the location loaders resolve the files where they load them; new check `asset-references`. Same requests before the start. Game-cycle report unchanged.
+
 ## v0.49.37 - Asset registry
 
 - TK-178 / spec 157 R16 (a): `npm run assets:sync` keeps a generated registry of every tracked asset under a stable id (`src/game/config/generated/asset_registry.js`, 156 assets; a Spine export is one asset); moved files keep their id (same content, git rename or `--moved`), ambiguous or vanished referenced files stop the sync; `--check` runs in Full. Code and configuration move from paths to ids in the next steps. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.29 - One bamboo rod art
 
 - Spec 157 stage C: the bamboo rod's with-line and no-line fields point at one file (bamboo-rod-ecip-v1.webp); the byte-identical bamboo-rod-unecip-v1.webp is removed (owner: one art until a separate no-line art). The Pages release check rejects two item art files with the same bytes. Game-cycle report unchanged.
-
-## v0.49.28 - Display-sized keepnet art
-
-- Spec 157 stage C: the six keepnet fill stages are 768 px WebP middle (0.80 MB instead of 3.89 MB; largest phone view ~374 CSS px), masters in asset-sources/items/keepnet; convert-images --thumbnails takes --quality low|middle|high and sizes up to 2048 px. Game-cycle report unchanged.

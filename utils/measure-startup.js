@@ -192,6 +192,16 @@ async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 
   return timings;
 }
 
+// The asset files (images, audio, Spine data, location data) a cold start finished before ready, as release paths,
+// sorted: two builds that request the same files before the start give the same list (spec 157 TK-178).
+function withAssetsBeforePlay(build, timings) {
+  const report = build(timings);
+  const assets = timings.resources.filter((entry) => report.playMs !== null && entry.responseEnd <= report.playMs)
+    .map((entry) => new URL(entry.name).pathname.replace(/^.*?\/(?=assets\/)/u, ""))
+    .filter((pathname) => pathname.startsWith("assets/"));
+  return Object.freeze({ ...report, assetsBeforePlay: Object.freeze([...new Set(assets)].sort()) });
+}
+
 async function main() {
   const options = readOptions(process.argv.slice(2));
   const { chromium } = require("playwright-core");
@@ -226,7 +236,7 @@ async function main() {
       const context = await browser.newContext(PHONE);
       await context.addInitScript(enlargeBuffer);
       const page = watchPageErrors(await context.newPage());
-      cold.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: true, url, reload: false, cpu: options.cpu })));
+      cold.push(withAssetsBeforePlay(StartupLoadReport.build, await measureLoad(context, page, { network, cold: true, url, reload: false, cpu: options.cpu })));
       await context.close();
     }
     const warm = [];

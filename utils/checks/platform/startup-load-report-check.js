@@ -260,12 +260,16 @@ async function checkDeferredUiImages() {
 // after ready; until a phase arrives the world frame draws the nearest loaded one instead of nothing.
 async function checkCurrentPhaseBackground() {
   const { LocationAssetLoader } = await importSource("src/platform/browser/location/location_asset_loader.js");
+  const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
+  const image = (path) => ({ kind: "image", path, bytes: 1, sha256: "0", tags: [], label: "" });
+  const assets = new AssetRegistry({ "lake.day": image("bg--day.webp"), "lake.evening": image("bg--evening.webp"),
+    "lake.night": image("bg--night.webp"), "lake.depth": image("depth.webp") });
   const requests = [];
   const ready = new Set();
   const imageAssets = { preload: (manifest) => { requests.push(Object.values(manifest)); return Promise.resolve(); },
     tryGet: () => null, isReady: (id) => ready.has(id) };
-  const loader = new LocationAssetLoader({ imageAssets, canvasFactory: { createSurface() {} } });
-  const config = { bgUrls: { day: "bg--day.webp", evening: "bg--evening.webp", night: "bg--night.webp" }, depthUrl: "depth.webp" };
+  const loader = new LocationAssetLoader({ imageAssets, canvasFactory: { createSurface() {} }, assets });
+  const config = { backgroundAssets: { day: "lake.day", evening: "lake.evening", night: "lake.night" }, depthAsset: "lake.depth" };
   const resources = await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } }, { phases: ["day"] });
   assert.deepEqual(requests, [["bg--day.webp", "depth.webp"]], "startup waits for the current phase and the depth map only");
   assert.deepEqual(Object.keys(resources.background.assetIds), ["day", "evening", "night"], "every phase keeps its id");
@@ -280,7 +284,7 @@ async function checkCurrentPhaseBackground() {
   const coordinated = [];
   const coordinator = new AssetPreloadCoordinator({ imageAssets: { preload: (record) => {
     coordinated.push(...Object.values(record)); return Promise.resolve(); }, isReady: () => false },
-  locationsConfig: { map: { lake: config } }, resolveFishImage: () => "" });
+  locationsConfig: { map: { lake: config } }, resolveFishImage: () => "", assets });
   await coordinator.preloadLocation("lake", { phases: ["evening", "night"] });
   assert.deepEqual(coordinated, ["bg--evening.webp", "bg--night.webp", "depth.webp"], "the coordinator takes the same phases");
 

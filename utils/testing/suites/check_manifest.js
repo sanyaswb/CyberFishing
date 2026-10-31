@@ -423,6 +423,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "asset-references",
+    title: "Asset registry lookups, configuration asset ids and modules without asset path literals",
+    file: "utils/checks/tooling/asset-references-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "startup-load-report",
     title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
     file: "utils/checks/platform/startup-load-report-check.js",
