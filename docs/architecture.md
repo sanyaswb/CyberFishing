@@ -254,7 +254,7 @@ CLIENT (Browser Vanilla JS / 60 FPS) ↔ [WebSocket / REST Fastify] ↔ BACKEND 
 
 ### 3. Language and TypeScript Roadmap
 - **Backend**: 100% written in TypeScript from inception.
-- **Client prior to version 1.0.0**: The browser client codebase remains on zero-build native ESM in Vanilla JavaScript for maximum iteration speed, instant browser refresh, and transparent debugging.
+- **Client prior to version 1.0.0**: The browser client codebase remains on zero-build native ESM in Vanilla JavaScript for maximum iteration speed, instant browser refresh, and transparent debugging. The repository and local development run without a build; only a release is bundled (`utils/build-release.js`, spec 157 R13, [deployment.md](deployment.md)).
 - **Client after version 1.0.0**: A planned migration of the entire client codebase to TypeScript will take place, establishing an end-to-end type-safe TypeScript codebase with shared type contracts across client and backend.
 
 ## Migration history

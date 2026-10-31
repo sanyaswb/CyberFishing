@@ -13,7 +13,9 @@
 //   StartupLoadReport. Medians are compared with the spec 157 Q4 budget; --strict exits 1 when one is exceeded.
 // Options: --ref <commit> --page index.html|dev.html --network 4g|3g|none --runs N --browser chrome|msedge|<path>
 //   --cpu N (CPU slowdown through the DevTools protocol: 4 is close to a mid-range phone, where the scene's setup takes
-//   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --strict. The summary is written to utils/generated/startup-measure.json.
+//   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --prefix pages|root (pages: the
+//   Pages site with root copies and releases/<id>/; root: the release folder at the server root, spec 157 R13) --strict.
+//   The summary is written to utils/generated/startup-measure.json.
 
 const fs = require("node:fs");
 const http = require("node:http");
@@ -50,11 +52,13 @@ function readOptions(argv) {
   };
   const options = { ref: value("--ref", "HEAD"), page: value("--page", "index.html"), network: value("--network", "4g"),
     runs: Number(value("--runs", "5")), browser: value("--browser", "chrome"), cpu: Number(value("--cpu", "1")),
+    prefix: value("--prefix", "pages"),
     strict: argv.includes("--strict") };
   if (!["index.html", "dev.html"].includes(options.page)) throw new Error("--page must be index.html or dev.html");
   if (!Object.hasOwn(NETWORKS, options.network)) throw new Error("--network must be 4g, 3g or none");
   if (!Number.isInteger(options.runs) || options.runs < 1) throw new Error("--runs must be a positive integer");
   if (!Number.isFinite(options.cpu) || options.cpu < 1 || options.cpu > 20) throw new Error("--cpu must be 1..20");
+  if (!["pages", "root"].includes(options.prefix)) throw new Error("--prefix must be pages or root");
   return options;
 }
 
@@ -150,6 +154,13 @@ function launchOptions(browser) {
 async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 }) {
   const client = await context.newCDPSession(page);
   if (cpu > 1) await client.send("Emulation.setCPUThrottlingRate", { rate: cpu });
+  // Requests that started and have not finished, for the diagnosis of a start that never becomes ready.
+  const pending = new Map();
+  client.on("Network.requestWillBeSent", ({ requestId, request }) => pending.set(requestId, request.url));
+  client.on("Network.loadingFinished", ({ requestId }) => pending.delete(requestId));
+  client.on("Network.loadingFailed", ({ requestId, errorText }) => {
+    pending.set(requestId, `${pending.get(requestId) ?? requestId} (failed: ${errorText})`);
+  });
   await client.send("Network.enable");
   await client.send("Network.setCacheDisabled", { cacheDisabled: cold });
   if (network) await client.send("Network.emulateNetworkConditions", { offline: false, ...network });
@@ -161,8 +172,10 @@ async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 
     // A start that never becomes ready: name the last stage it reached and the page's own errors.
     const reached = await page.evaluate(() => performance.getEntriesByType("mark").map((mark) => mark.name)).catch(() => []);
     const errors = (page.startupErrors ?? []).slice(-5);
+    const stuck = [...pending.values()].slice(0, 8).map((value) => value.replace(/^https?:\/\/[^/]+/u, ""));
     throw new Error(`The game did not become ready in ${READY_TIMEOUT_MS} ms; marks: ${reached.join(", ") || "none"}; `
-      + `page errors: ${errors.join(" | ") || "none"}`, { cause: error });
+      + `page errors: ${errors.join(" | ") || "none"}; unfinished requests (${pending.size}): ${stuck.join(", ") || "none"}`,
+    { cause: error });
   }
   const timings = await page.evaluate(() => {
     const copy = ({ name, initiatorType, startTime, responseEnd, transferSize, encodedBodySize, decodedBodySize }) =>
@@ -189,7 +202,14 @@ async function main() {
   let server = null;
   let browser = null;
   try {
-    const release = new PagesReleaseBuilder({ tree: new GitCommitTree({ rootDir: ROOT_DIR, ref: options.ref }) }).build(siteDir);
+    // --prefix pages: the Pages site (root copies with <base> and preloads, the release under releases/<id>/);
+    // --prefix root: the release folder itself at the server root, as a game server would serve it (spec 157 R13).
+    const builder = new PagesReleaseBuilder({ tree: new GitCommitTree({ rootDir: ROOT_DIR, ref: options.ref }) });
+    let release;
+    if (options.prefix === "root") {
+      fs.rmSync(siteDir, { recursive: true, force: true });
+      release = builder.buildRelease(siteDir);
+    } else release = builder.build(siteDir);
     const certificate = createCertificate(workDir);
     const protocol = certificate ? "h2" : "http/1.1";
     server = await serveSite(siteDir, certificate);
@@ -198,7 +218,7 @@ async function main() {
     const network = NETWORKS[options.network];
     // Every entry is kept: the page loads several hundred files and browsers keep 250 by default.
     const enlargeBuffer = () => performance.setResourceTimingBufferSize(5000);
-    console.log(`Measuring ${release.id} ${options.page} over ${protocol}, network ${options.network}, CPU x${options.cpu}, `
+    console.log(`Measuring ${release.id} ${options.page} (${options.prefix}) over ${protocol}, network ${options.network}, CPU x${options.cpu}, `
       + `${options.runs} runs each.`);
     if (!certificate) console.log("No openssl: HTTP/1.1 limits the browser to 6 connections, so cold starts read slower than on Pages.");
     const cold = [];
@@ -221,7 +241,7 @@ async function main() {
     const summaries = [summarize("cold", cold), summarize("warm", warm)];
     for (const summary of summaries) console.log(formatSummary(summary));
     fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
-    fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify({ release: release.id, page: options.page, protocol, network: options.network, cpu: options.cpu,
+    fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify({ release: release.id, page: options.page, prefix: options.prefix, protocol, network: options.network, cpu: options.cpu,
       budget: BUDGET, summaries, coldRuns: cold, warmRuns: warm }, null, 2)}\n`);
     console.log(`Report: ${path.relative(ROOT_DIR, OUTPUT_FILE)}`);
     if (options.strict && summaries.some((summary) => summary.verdicts.some((verdict) => !verdict.pass))) process.exitCode = 1;

@@ -323,7 +323,9 @@ function checkMeasurer() {
     [["T-paint", BUDGET.paintMs, true], ["T-play", BUDGET.warmPlayMs, false]], "warm start: its own T-play budget, no byte budget");
   assert.equal(summarize("cold", [{ paintMs: null, playMs: null, beforePlay: { transferred: 0, count: 0 }, networkSteps: 0 }])
     .verdicts[1].pass, false, "a start that never became ready fails");
-  assert.deepEqual(readOptions([]), { ref: "HEAD", page: "index.html", network: "4g", runs: 5, browser: "chrome", cpu: 1, strict: false });
+  assert.deepEqual(readOptions([]), { ref: "HEAD", page: "index.html", network: "4g", runs: 5, browser: "chrome", cpu: 1,
+    prefix: "pages", strict: false });
+  assert.throws(() => readOptions(["--prefix", "cdn"]), /--prefix/u);
   assert.throws(() => readOptions(["--cpu", "0"]), /--cpu/u);
   assert.throws(() => readOptions(["--network", "5g"]), /--network/u);
 }

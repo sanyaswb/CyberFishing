@@ -1,6 +1,7 @@
 "use strict";
 
-// Immutable Pages release (spec 038): builds the committed HEAD into a temporary site and checks the release.
+// Immutable Pages release (spec 038) of the bundled release folder (spec 157 R13): builds the committed HEAD into a
+// temporary site and checks the release, its boot modules, bundles and root pages.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -8,12 +9,8 @@ const path = require("node:path");
 const { GitCommitTree, ReleaseFileSet, PagesReleaseBuilder } = require("../../build-pages-release.js");
 
 const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, "../../..") });
-// The root page's preloads (spec 157 stage B), as the release writes them after <base>.
-const preloadLines = (page) => {
-  const { styles, modules } = ReleaseFileSet.pagePreloads(tree, page);
-  return [...styles.map((url) => `    <link rel="preload" as="style" href="${url}" />\n`),
-    ...modules.map((url) => `    <link rel="modulepreload" href="${url}" />\n`)].join("");
-};
+// The committed page's module entry (spec 157 R13: the release points it at the boot module).
+const entryOf = (html) => html.match(/<script type="module" src="([^"]+)"/u)[1];
 const site = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-pages-"));
 try {
   // An earlier release and the old root files must survive.
@@ -48,9 +45,6 @@ try {
     for (const [, href] of devPage.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) {
       assert(files.has(href), `DEV stylesheet ${href} is released`);
     }
-    assert.equal(fs.readFileSync(path.join(site, "dev.html"), "utf8"),
-      devPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n${preloadLines("dev.html")}`),
-      "the root DEV page resolves its files inside the release and announces its stylesheets and modules");
   }
   // Spec 082: published raster art is WebP; masters stay in asset-sources/ and are never released.
   assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
@@ -110,30 +104,56 @@ try {
   }
   assert(resolvedTargets.size > 400, "the production graph was followed");
 
-  const contents = tree.readAll(release.files);
-  for (const file of release.files) {
+  // Spec 157 R13: every release file but build/ and the two game pages is the committed bytes; each game page differs
+  // only in its module script, which loads the page's boot module.
+  const builtPages = ["index.html", "dev.html"].filter((file) => tree.has(file));
+  const committed = release.files.filter((file) => !file.startsWith("build/") && !builtPages.includes(file));
+  const contents = tree.readAll(committed);
+  for (const file of committed) {
     assert(fs.readFileSync(path.join(release.releaseDir, ...file.split("/"))).equals(contents.get(file)), `${file} has the committed bytes`);
   }
-  const root = fs.readFileSync(path.join(site, "index.html"), "utf8");
-  assert.equal(root, page.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n${preloadLines("index.html")}`),
-    "the root page is the release page resolved inside the release, with its preloads");
-  // Spec 157 stage B: one modulepreload per module of the page's graph (the entry first, as the page writes it, then
-  // nothing missing and nothing extra) and one style preload per stylesheet in page order.
-  for (const name of ["index.html", "dev.html"].filter((file) => tree.has(file))) {
-    const published = fs.readFileSync(path.join(site, name), "utf8");
+  for (const name of builtPages) {
     const source = tree.read(name).toString("utf8");
-    const preloaded = [...published.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
-    const entry = source.match(/<script type="module" src="([^"]+)"/u)[1];
-    assert.equal(preloaded[0], entry, `${name}: the entry is preloaded first, with its query`);
-    assert.equal(new Set(preloaded).size, preloaded.length, `${name}: no module is preloaded twice`);
-    const released = new Set(release.files);
-    for (const module of preloaded.slice(1)) assert(released.has(module), `${name}: preloaded ${module} is released`);
-    assert(preloaded.includes("src/bootstrap/production/game_composition_root.js"), `${name}: the composition is preloaded`);
-    assert(preloaded.includes("vendor/pixi/8.22.0/pixi-scene.js"), `${name}: the dynamically imported scene bundle is preloaded`);
+    const built = release.bundle.pages[name];
+    const releasePage = fs.readFileSync(path.join(release.releaseDir, name), "utf8");
+    assert.match(built.boot, /^build\/(index|dev)\.boot-[0-9A-F]{8}\.js$/u, `${name}: a content-hashed boot module`);
+    // The release page (a game server serves it as it is): right after <head> a style preload per stylesheet in page
+    // order, then modulepreloads for the boot module, the bundle and every chunk it reaches (static, then dynamic),
+    // each released once; its module script loads the boot module. The root copy on Pages adds only <base>, first.
     const styles = [...source.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu)].map((match) => match[1]);
-    assert.deepEqual([...published.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]),
-      styles, `${name}: every stylesheet is preloaded in page order`);
-    assert(published.indexOf("<base ") < published.indexOf("<link rel="), `${name}: preloads resolve inside the release`);
+    const stylePreloads = [...releasePage.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]);
+    assert.deepEqual(stylePreloads, styles, `${name}: every stylesheet is preloaded in page order`);
+    const preloaded = [...releasePage.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
+    assert.deepEqual(preloaded, [built.boot, built.bundle, ...built.chunks], `${name}: boot, bundle and every chunk it reaches`);
+    assert.equal(new Set(preloaded).size, preloaded.length, `${name}: no module is preloaded twice`);
+    for (const module of preloaded) assert(files.has(module), `${name}: preloaded ${module} is released`);
+    const preloadLines = [...stylePreloads.map((url) => `    <link rel="preload" as="style" href="${url}" />\n`),
+      ...preloaded.map((url) => `    <link rel="modulepreload" href="${url}" />\n`)].join("");
+    assert.equal(releasePage, source.replace(`src="${entryOf(source)}"`, `src="${built.boot}"`)
+      .replace("<head>\n", `<head>\n${preloadLines}`), `${name}: the release page is the committed page with its preloads and boot module`);
+    const root = fs.readFileSync(path.join(site, name), "utf8");
+    assert.equal(root, releasePage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
+      `${name}: the root page is the release page with <base> first`);
+    // The boot module: the bundle by default; ?esm=1 preloads the page's whole source graph (stage B: the entry as the
+    // page writes it, the composition, the dynamically imported Pixi bundle) and imports the source entry.
+    const boot = fs.readFileSync(path.join(release.releaseDir, built.boot), "utf8");
+    const graph = JSON.parse(boot.match(/for \(const href of (\[[^\]]*\])\)/u)[1]);
+    assert.equal(graph[0], entryOf(source), `${name}: ?esm=1 preloads the source entry first, with its query`);
+    assert.equal(new Set(graph).size, graph.length, `${name}: no source module is preloaded twice`);
+    for (const module of graph.slice(1)) assert(files.has(module), `${name}: source module ${module} is released`);
+    assert(graph.includes("src/bootstrap/production/game_composition_root.js"), `${name}: the composition is in the graph`);
+    assert(graph.includes("vendor/pixi/8.22.0/pixi-scene.js"), `${name}: the dynamically imported Pixi bundle is in the graph`);
+    assert(boot.includes(`"../${entryOf(source)}"`) && boot.includes(`"./${built.bundle.slice("build/".length)}"`),
+      `${name}: the boot module imports the source entry under ?esm=1 and the bundle otherwise`);
+  }
+  // Bundles: hashed names, a source map each, and no absolute URL, so the folder works under any path prefix.
+  const bundleFiles = release.files.filter((file) => file.startsWith("build/") && file.endsWith(".js") && !/\.boot-/u.test(file));
+  assert(bundleFiles.length >= 3, "the bundles and their chunks are released");
+  for (const file of bundleFiles) {
+    assert.match(file, /-[0-9A-Z]{8}\.js$/u, `${file} has a content hash`);
+    assert(files.has(`${file}.map`), `${file} has its source map`);
+    const code = fs.readFileSync(path.join(release.releaseDir, file), "utf8");
+    assert(!/["'`]\/(?:src|assets|vendor|build)\//u.test(code), `${file} uses relative URLs only`);
   }
   assert.equal(fs.readFileSync(olderRelease, "utf8"), "older release", "the previously live release is retained");
   assert(!fs.existsSync(path.dirname(staleRelease)), "older releases are removed");
@@ -177,7 +197,7 @@ try {
     assert(authoredFiles.has(file), `authored catalog release closure includes ${file}`);
   }
 
-  console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, ` +
+  console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, bundles with boot modules and ?esm=1 source graph, ` +
     `${modules.length} modules, assets), closed module graph, base-resolved root page, previous live release kept, older ones removed, root files ` +
     "retained, overwrite refused.");
 } finally {

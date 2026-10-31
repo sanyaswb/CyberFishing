@@ -1,19 +1,22 @@
 "use strict";
 
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
-//   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets, vendor licences
-//   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">, and (spec 157
-//     stage B) <link rel="preload" as="style"> for every stylesheet and <link rel="modulepreload"> for every module of
-//     the page's graph, so the browser requests them in parallel instead of one import level after another
-// Files are the committed bytes. A published release directory is never overwritten. Retention (owner decision
-// 2026-10-15, spec 085): the site keeps the new release and, with keep 2 (default), the release that was live before
-// it, so open tabs of the previous version and a rollback still work; older releases are removed. Other root files are
-// left alone. Publishing (commit and push of the site checkout) is a separate, manual step.
+//   <site>/releases/<version>-<commit>/  the release folder of utils/build-release.js (spec 157 R13): the committed game
+//     and DEV pages, stylesheets, source modules, tracked assets and vendor licences, plus build/ (bundles, boot modules)
+//   <site>/index.html, dev.html, ui-catalog.html  the release pages with <base href="releases/<version>-<commit>/">, a
+//     <link rel="preload" as="style"> per stylesheet and a <link rel="modulepreload"> for the boot module, the bundle and
+//     every chunk it reaches (spec 157 B, R13)
+// Files are the committed bytes, except build/ and the pages' module script, which points at the boot module. A
+// published release directory is never overwritten. Retention (owner decision 2026-10-15, spec 085): the site keeps the
+// new release and, with keep 2 (default), the release that was live before it, so open tabs of the previous version and
+// a rollback still work; older releases are removed. Other root files are left alone. Publishing (commit and push of
+// the site checkout) is a separate, manual step.
 
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const acorn = require("acorn");
+const { ReleaseBundleBuilder } = require("./build-release.js");
 
 const PAGE = "index.html";
 const DEV_PAGE = "dev.html";
@@ -235,27 +238,56 @@ class PagesReleaseBuilder {
     if (fs.existsSync(releaseDir)) {
       throw new Error(`Release ${id} is already published in ${siteDir}; published releases are never overwritten`);
     }
+    // Write into a temporary sibling first so an interrupted build never leaves a partial release under its id.
+    const stagingDir = `${releaseDir}.partial-${process.pid}`;
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+    let release;
+    try {
+      release = this.buildRelease(stagingDir);
+    } catch (error) {
+      fs.rmSync(stagingDir, { recursive: true, force: true });
+      throw error;
+    }
+    fs.renameSync(stagingDir, releaseDir);
+    for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => release.files.includes(name))) {
+      fs.writeFileSync(path.join(siteDir, page), PagesReleaseBuilder.rootPage(
+        fs.readFileSync(path.join(releaseDir, page), "utf8"), id));
+    }
+    const removed = PagesReleaseBuilder.#prune(siteDir, new Set(keep === 2 && previous ? [id, previous] : [id]));
+    return Object.freeze({ id, releaseDir, files: release.files, bytes: release.bytes, bundle: release.bundle, previous,
+      removed: Object.freeze(removed) });
+  }
+
+  // Spec 157 R13: the self-contained release folder (any static host or the game server serves it as it is): the
+  // committed release files, then build/ with the bundles and the boot modules, each game page pointing at its boot
+  // module and announcing, right after <head>, a style preload per stylesheet and a modulepreload for the boot module,
+  // the bundle and every chunk it reaches (preloads[page]), so a server gets the same parallel start as Pages.
+  buildRelease(releaseDir) {
     const files = ReleaseFileSet.collect(this.#tree);
     const hidden = files.find((file) => file.split("/").some((segment) => /^[_.]/u.test(segment)));
     if (hidden) throw new Error(`GitHub Pages would hide ${hidden}`);
     const contents = this.#tree.readAll(files);
-    // Write into a temporary sibling first so an interrupted build never leaves a partial release under its id.
-    const stagingDir = `${releaseDir}.partial-${process.pid}`;
-    fs.rmSync(stagingDir, { recursive: true, force: true });
     let bytes = 0;
     for (const file of files) {
-      const target = path.join(stagingDir, ...file.split("/"));
+      const target = path.join(releaseDir, ...file.split("/"));
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, contents.get(file));
       bytes += contents.get(file).length;
     }
-    fs.renameSync(stagingDir, releaseDir);
+    const bundle = ReleaseBundleBuilder.build({ releaseDir,
+      pagePreloads: (page) => ReleaseFileSet.pagePreloads(this.#tree, page) });
+    const preloads = {};
     for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => files.includes(name))) {
-      fs.writeFileSync(path.join(siteDir, page), PagesReleaseBuilder.rootPage(contents.get(page).toString("utf8"), id,
-        ReleaseFileSet.pagePreloads(this.#tree, page)));
+      const built = bundle.pages[page];
+      const { styles } = ReleaseFileSet.pagePreloads(this.#tree, page);
+      preloads[page] = Object.freeze({ styles, modules: built ? [built.boot, built.bundle, ...built.chunks] : [] });
+      if (!built) continue;
+      const target = path.join(releaseDir, page);
+      fs.writeFileSync(target, PagesReleaseBuilder.withPreloads(fs.readFileSync(target, "utf8"), preloads[page]));
     }
-    const removed = PagesReleaseBuilder.#prune(siteDir, new Set(keep === 2 && previous ? [id, previous] : [id]));
-    return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes, previous, removed: Object.freeze(removed) });
+    for (const file of bundle.files) bytes += fs.statSync(path.join(releaseDir, ...file.split("/"))).size;
+    return Object.freeze({ id: this.releaseId(), files: Object.freeze([...files, ...bundle.files].sort()), bytes, bundle,
+      preloads: Object.freeze(preloads) });
   }
 
   // The release the root page loads now (its <base href="releases/<id>/">), or null.
@@ -276,20 +308,31 @@ class PagesReleaseBuilder {
     return removed.sort();
   }
 
-  // The release page with every relative URL (stylesheets, entry, runtime assets) resolved inside the release, then
-  // its preloads (pagePreloads): the stylesheets first (small, needed for the first styled frame), then the modules.
-  static rootPage(html, id, { styles = [], modules = [] } = {}) {
+  // The release page with every relative URL (stylesheets, entry, runtime assets) resolved inside the release: <base>
+  // as the first line of <head>, before the page's preloads, so they too resolve inside the release.
+  static rootPage(html, id) {
     if (/<base\b/iu.test(html)) throw new Error(`${PAGE} must not declare <base>`);
-    const heads = [...html.matchAll(/<head>\n/gu)];
-    if (heads.length !== 1) throw new Error(`${PAGE} must contain one <head> line`);
-    const index = heads[0].index + heads[0][0].length;
+    const index = PagesReleaseBuilder.#headEnd(html);
+    return `${html.slice(0, index)}    <base href="releases/${id}/" />\n${html.slice(index)}`;
+  }
+
+  // The page with its preloads right after <head>: the stylesheets first (small, needed for the first styled frame),
+  // then the modules.
+  static withPreloads(html, { styles = [], modules = [] }) {
+    const index = PagesReleaseBuilder.#headEnd(html);
     const href = (url) => {
       if (!/^[\w./?=@-]+$/u.test(url)) throw new Error(`Preload URL needs escaping: ${url}`);
       return url;
     };
     const preloads = [...styles.map((url) => `    <link rel="preload" as="style" href="${href(url)}" />\n`),
       ...modules.map((url) => `    <link rel="modulepreload" href="${href(url)}" />\n`)].join("");
-    return `${html.slice(0, index)}    <base href="releases/${id}/" />\n${preloads}${html.slice(index)}`;
+    return `${html.slice(0, index)}${preloads}${html.slice(index)}`;
+  }
+
+  static #headEnd(html) {
+    const heads = [...html.matchAll(/<head>\n/gu)];
+    if (heads.length !== 1) throw new Error(`${PAGE} must contain one <head> line`);
+    return heads[0].index + heads[0][0].length;
   }
 }
 

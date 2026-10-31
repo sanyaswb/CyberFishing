@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.35 - Trial release bundle
+
+- Spec 157 R13 (trial, owner decides after Pages): the release is one self-contained folder built from a commit (`npm run build:release`): esbuild bundles with hashed chunks, minified, with source maps, a boot module per page (`?esm=1` runs the source modules), preloads in the pages; Pages and a game server serve the same folder (cold start on Fast 4G 2.3 → 1.55 s, 3G 10.9 → 6.3 s locally; 68 instead of 709 requests). Server requirements: docs/deployment.md. The repository and local work stay without a build. Game-cycle report unchanged.
+
 ## v0.49.34 - Sprite icons before start
 
 - TK-174 / spec 157: until the game is ready the classic backpack and keepnet buttons (R11 stand-ins, and classic mode) show the sections sprite's icons instead of the 2048 px briefcase and the keepnet art (0.44 MB no longer requested before the start); the art replaces each icon once it has loaded after the first frame. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.26 - Static startup screen
 
 - Spec 157 D0: a black startup screen with an inline SVG spinner paints straight from the HTML (game stylesheets now follow it in the body) and fades out at the first frame of play (data-game-ready); first paint on a cold Fast 4G start 2920 → 120 ms, 3G 12740 → 212 ms locally. Game-cycle report unchanged.
-
-## v0.49.25 - Current keepnet stage only
-
-- Spec 157 R5: the keepnet view loads only its current fill stage; all six stages warm up after the first frame, after the selector artwork (warm start on Fast 4G 828 → 537 ms locally; cold unchanged after R11). Game-cycle report unchanged.
