@@ -49,6 +49,7 @@ import { DegradationColorConfigValidator } from "../../game/presentation/visual/
 import { DegradationColorResolver } from "../../game/presentation/styles/degradation_color_resolver.js";
 import { DependencyContractValidator } from "../../engine/di/dependency_contract_validator.js";
 import { composeDepthSelector } from "./depth_selector_composition.js";
+import { LazyImageWarmUp } from "../../platform/browser/assets/lazy_image_warm_up.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
@@ -537,6 +538,10 @@ export class GameCompositionRoot {
     const floatArt = [...new Set(Object.values(this.#itemDb?.floats || {}).flatMap((float) =>
       [float.skin?.scene?.src, float.skin?.scene?.glow?.src]).filter(Boolean))];
     await imageAssets.preload(floatArt.map((src) => ({ id: src, src }))).catch(() => null);
+    // Spec 157 R6: last of the deferred loads, the page's lazy UI images (closed inventory, hidden toolbar buttons),
+    // one at a time, so opening the inventory finds them in the cache.
+    const lazyImages = own(new LazyImageWarmUp({ documentRef: this.#documentTarget }));
+    this.#deferredAssetLoads.push(() => { void lazyImages.warm(); });
     await sceneLayer.whenReady();
     sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
     this.#startupMarks.mark(STARTUP_STAGES.scene);
@@ -1230,7 +1235,8 @@ export class GameCompositionRoot {
     const castPenalty = new CastPenalty();
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
     const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
-      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets }));
+      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets,
+      deferLoad: (load) => this.#deferredAssetLoads.push(load) }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
       : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));

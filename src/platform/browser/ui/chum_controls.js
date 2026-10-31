@@ -83,6 +83,9 @@ export class ChumControls {
       if (!this.#image) {
         this.#image = this.#documentRef.createElement("img");
         this.#image.className = "chum-control__image";
+        // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
+        this.#image.loading = "lazy";
+        this.#image.decoding = "async";
         this.#image.setAttribute("aria-hidden", "true");
         this.#image.alt = "";
       }

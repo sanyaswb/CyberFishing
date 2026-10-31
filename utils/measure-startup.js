@@ -12,7 +12,8 @@
 // - Every run waits for data-game-ready and reads the page's timing entries; the report is the DEV overlay's
 //   StartupLoadReport. Medians are compared with the spec 157 Q4 budget; --strict exits 1 when one is exceeded.
 // Options: --ref <commit> --page index.html|dev.html --network 4g|3g|none --runs N --browser chrome|msedge|<path>
-//   --strict. The summary is written to utils/generated/startup-measure.json.
+//   --cpu N (CPU slowdown through the DevTools protocol: 4 is close to a mid-range phone, where the scene's setup takes
+//   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --strict. The summary is written to utils/generated/startup-measure.json.
 
 const fs = require("node:fs");
 const http = require("node:http");
@@ -48,10 +49,12 @@ function readOptions(argv) {
     return index === -1 ? fallback : argv[index + 1];
   };
   const options = { ref: value("--ref", "HEAD"), page: value("--page", "index.html"), network: value("--network", "4g"),
-    runs: Number(value("--runs", "5")), browser: value("--browser", "chrome"), strict: argv.includes("--strict") };
+    runs: Number(value("--runs", "5")), browser: value("--browser", "chrome"), cpu: Number(value("--cpu", "1")),
+    strict: argv.includes("--strict") };
   if (!["index.html", "dev.html"].includes(options.page)) throw new Error("--page must be index.html or dev.html");
   if (!Object.hasOwn(NETWORKS, options.network)) throw new Error("--network must be 4g, 3g or none");
   if (!Number.isInteger(options.runs) || options.runs < 1) throw new Error("--runs must be a positive integer");
+  if (!Number.isFinite(options.cpu) || options.cpu < 1 || options.cpu > 20) throw new Error("--cpu must be 1..20");
   return options;
 }
 
@@ -144,8 +147,9 @@ function launchOptions(browser) {
   return ["chrome", "msedge"].includes(browser) ? { channel: browser, headless: true } : { executablePath: browser, headless: true };
 }
 
-async function measureLoad(context, page, { network, cold, url, reload }) {
+async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 }) {
   const client = await context.newCDPSession(page);
+  if (cpu > 1) await client.send("Emulation.setCPUThrottlingRate", { rate: cpu });
   await client.send("Network.enable");
   await client.send("Network.setCacheDisabled", { cacheDisabled: cold });
   if (network) await client.send("Network.emulateNetworkConditions", { offline: false, ...network });
@@ -194,29 +198,30 @@ async function main() {
     const network = NETWORKS[options.network];
     // Every entry is kept: the page loads several hundred files and browsers keep 250 by default.
     const enlargeBuffer = () => performance.setResourceTimingBufferSize(5000);
-    console.log(`Measuring ${release.id} ${options.page} over ${protocol}, network ${options.network}, ${options.runs} runs each.`);
+    console.log(`Measuring ${release.id} ${options.page} over ${protocol}, network ${options.network}, CPU x${options.cpu}, `
+      + `${options.runs} runs each.`);
     if (!certificate) console.log("No openssl: HTTP/1.1 limits the browser to 6 connections, so cold starts read slower than on Pages.");
     const cold = [];
     for (let run = 0; run < options.runs; run += 1) {
       const context = await browser.newContext(PHONE);
       await context.addInitScript(enlargeBuffer);
       const page = watchPageErrors(await context.newPage());
-      cold.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: true, url, reload: false })));
+      cold.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: true, url, reload: false, cpu: options.cpu })));
       await context.close();
     }
     const warm = [];
     const context = await browser.newContext(PHONE);
     await context.addInitScript(enlargeBuffer);
     const page = watchPageErrors(await context.newPage());
-    await measureLoad(context, page, { network, cold: false, url, reload: false });
+    await measureLoad(context, page, { network, cold: false, url, reload: false, cpu: options.cpu });
     for (let run = 0; run < options.runs; run += 1) {
-      warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true })));
+      warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true, cpu: options.cpu })));
     }
     await context.close();
     const summaries = [summarize("cold", cold), summarize("warm", warm)];
     for (const summary of summaries) console.log(formatSummary(summary));
     fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
-    fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify({ release: release.id, page: options.page, protocol, network: options.network,
+    fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify({ release: release.id, page: options.page, protocol, network: options.network, cpu: options.cpu,
       budget: BUDGET, summaries, coldRuns: cold, warmRuns: warm }, null, 2)}\n`);
     console.log(`Report: ${path.relative(ROOT_DIR, OUTPUT_FILE)}`);
     if (options.strict && summaries.some((summary) => summary.verdicts.some((verdict) => !verdict.pass))) process.exitCode = 1;

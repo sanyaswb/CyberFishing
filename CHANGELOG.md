@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.32 - Hidden UI images after start
+
+- Spec 157 R6 (TK-172): images of the closed inventory and hidden toolbar buttons are lazy (loading before src) and no longer load before the game starts; after the first frame they warm up one at a time, so the inventory opens without a network wait; depth selector icons load after start too. The startup measurer takes --cpu N. Game-cycle report unchanged.
+
 ## v0.49.31 - Water visible again
 
 - TK-171 fix: since v0.49.26 the startup screen's inline style set a background on `html`, so the page's grey body background was painted above the WebGL scene (z-index -1) and the water was a grey screen; the root background is removed (incident I-9). Game-cycle report unchanged.
@@ -37,8 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.23 - Startup report as a file
 
 - TK-168: DEV overlay «ЗАВАНТАЖЕННЯ» has «Завантажити JSON» next to «Копіювати звіт»: the same report saved as `cyber-fishing-startup-<version>-<date>_<time>.json`, with a saved/failed status line. Game-cycle report unchanged.
-
-## v0.49.22 - Startup measurement
-
-- Spec 157 stage A: the game marks its startup stages (`startup:entry` … `startup:ready`, then `data-game-ready`); DEV overlay «ЗАВАНТАЖЕННЯ» (DevTools → OVERLAY MODULES → Performance → «Завантаження»): stages, T-paint/T-play, requests and bytes by kind, request waves, 10 largest/longest, «Копіювати звіт».
-- Tools: `npm run measure:startup` measures a local copy of the Pages release in headless Chrome (HTTP/2, 4G, cold and warm, 5 runs) against the spec 157 budget. Game-cycle report unchanged.

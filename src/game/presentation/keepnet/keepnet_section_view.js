@@ -250,6 +250,9 @@ export class KeepnetSectionView {
   }
   #icon(className, alt = "") {
     const image = this.#el("img", className);
+    // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
+    image.loading = "lazy";
+    image.decoding = "async";
     image.src = this.#imagePath;
     image.alt = alt;
     image.draggable = false;

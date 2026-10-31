@@ -43,10 +43,14 @@ export class InventoryDomFactory {
     return button;
   }
 
+  // Spec 157 R6: lazy (set before src) so an image of a hidden view, such as the closed inventory, is not requested
+  // until it is shown; after the game is ready LazyImageWarmUp loads them in the background.
   image(source, alternativeText = "") {
     const image = this.element("img");
     const safeSource = this.safeImageSource(source);
     if (!safeSource) return null;
+    image.loading = "lazy";
+    image.decoding = "async";
     image.src = safeSource;
     image.alt = alternativeText;
     image.draggable = false;

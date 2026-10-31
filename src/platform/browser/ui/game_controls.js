@@ -52,6 +52,9 @@ export class GameControls {
     frame.style.setProperty("--game-toolbar-art-focus-x", String(focusX));
     const image = this.#document.createElement("img");
     image.className = "game-toolbar-button__image";
+    // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
+    image.loading = "lazy";
+    image.decoding = "async";
     image.src = src;
     image.alt = "";
     image.draggable = false;

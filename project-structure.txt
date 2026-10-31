@@ -922,7 +922,8 @@
 │        ├── assets
 │        │  ├── asset_preload_coordinator.js
 │        │  ├── browser_asset_transport.js
-│        │  └── image_asset_provider.js
+│        │  ├── image_asset_provider.js
+│        │  └── lazy_image_warm_up.js
 │        ├── audio
 │        │  ├── radio_effects_chain.js
 │        │  ├── radio_noise_source.js
