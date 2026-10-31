@@ -5,13 +5,15 @@
 // - layer-one: the first frame; the game is ready only when it has loaded (start "composition").
 // - layer-two: the full game cycle, right after the first frame (start "ready").
 // - layer-three: content opened later. load: false groups load only when the game asks for them (on demand).
+// - readyOn: "low": the group counts as loaded with the low-quality copies of its images; the full files replace them
+//   right after the first frame (spec 157 R17, owner: on for the current background phase).
 // Today's plan repeats the loads before stage D (spec 157 R4, R5, R6, R11): nothing is added to the start.
 export const ASSET_LOAD_PLAN = {
   layers: [
     {
       id: "layer-one", label: "Перший кадр", start: "composition",
       groups: [
-        { id: "location", label: "Фон поточної фази й карта глибин", priority: 1,
+        { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low",
           assets: [{ source: "location.background.current" }, { source: "location.depthMap" }] },
         { id: "scene", label: "Поплавок у сцені", priority: 2, assets: [{ tag: "floats-scene" }] },
         { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 2, assets: [{ source: "inventory.slotIcons" }] },

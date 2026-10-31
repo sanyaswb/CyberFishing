@@ -37,6 +37,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.match(errors([layer("one", "composition", [{ id: "g", priority: 1, assets: [] }]),
     layer("two", "after:three", [{ id: "h", priority: 1, assets: [] }])]), /unknown or later layer three/u);
   assert.match(errors([layer("one", "soon", [])]), /start must be/u);
+  assert.match(errors([layer("one", "composition", [{ id: "g", priority: 1, readyOn: "half", assets: [] }])]), /readyOn must be/u);
   assert.throws(() => new AssetLoadPlan({ plan: plan([layer("one", "soon", [])]), registry, sources }), /Invalid asset load plan/u);
 
   // Sources and tags resolve; whatever no group names (and no source can give) is the implicit last group.
@@ -127,6 +128,39 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   bgFacade.dispose();
   assert.equal(listeners.size, 0, "dispose unsubscribes from the conditions");
 
+  // Stage D4b: readyOn "low" — the copy under the image's own id first, the full file only when the next layer starts.
+  const lowRegistry = new AssetRegistry({ "bg.day": { ...image("assets/bg/day.webp", ["bg"]), low: "assets/low-copies/bg/day.webp" },
+    "bg.depth": image("assets/bg/depth.webp", ["bg"]) });
+  const lowPlan = new AssetLoadPlan({ registry: lowRegistry, plan: plan([
+    layer("first", "composition", [{ id: "map", priority: 1, readyOn: "low", assets: [{ id: "bg.day" }, { id: "bg.depth" }] }]),
+    layer("second", "ready", [{ id: "rest", priority: 1, assets: [] }]),
+  ]) });
+  const lowLoads = [];
+  const lowFacade = new GameAssetPreloadFacade({ plan: lowPlan, assets: lowRegistry, scheduler,
+    imageAssets: { preload: ([record]) => { lowLoads.push([record.id, record.src]); return Promise.resolve(); } } });
+  await lowFacade.start("first");
+  assert.deepEqual(lowLoads, [["bg.day", "assets/low-copies/bg/day.webp"], ["bg.depth", "assets/bg/depth.webp"]],
+    "the start loads the copy under the image's id; an image without a copy loads whole");
+  await lowFacade.start("second");
+  await flush();
+  assert.deepEqual(lowLoads.slice(2), [["bg.day", "assets/bg/day.webp"]], "the full file follows when the next layer starts");
+
+  // The image store keeps serving the copy until the full file is decoded, then swaps; a failed upgrade keeps the copy.
+  const { ImageAssetProvider } = await importSource("src/platform/browser/assets/image_asset_provider.js");
+  const made = [];
+  const provider = new ImageAssetProvider({ imageFactory: () => { const img = { decode: () => Promise.resolve() }; made.push(img); return img; } });
+  const lowReady = provider.preload([{ id: "bg.day", src: "low.webp" }]);
+  made[0].onload(); await lowReady;
+  const copy = provider.tryGet("bg.day");
+  const upgrade = provider.preload([{ id: "bg.day", src: "full.webp" }]);
+  assert.equal(provider.tryGet("bg.day"), copy, "the copy stays while the full file loads");
+  made[1].onload(); await upgrade;
+  assert.equal(provider.tryGet("bg.day"), made[1], "the decoded full file replaces the copy (the scene re-uploads it)");
+  const failing = provider.preload([{ id: "bg.day", src: "broken.webp" }]);
+  made[2].onerror(new Error("404"));
+  await failing.catch(() => null);
+  assert.equal(provider.tryGet("bg.day"), made[1], "a failed upgrade keeps the shown image");
+
   const { BrowserLoadConditions } = await importSource("src/platform/browser/assets/browser_load_conditions.js");
   const events = new Map();
   const target = () => ({ addEventListener: (type, fn) => events.set(type, fn), removeEventListener: (type) => events.delete(type) });
@@ -163,10 +197,14 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.deepEqual(first.scene, ["items.floats-scene.float-day", "items.floats-scene.float-day-glow"]);
   assert.equal(first["slot-icons"].length, 14, "the fourteen slot placeholders");
   // Before stage D the start finished 20 assets: these 18 preloads, plus the sections sprite and the status icons that
-  // the page's markup requests (measure:startup assetsBeforePlay).
-  const startFiles = Object.values(first).flat().map((id) => assets.pathOf(id)).sort();
+  // the page's markup requests (measure:startup assetsBeforePlay). Since D4b the current phase starts from its low copy
+  // (readyOn "low"); the depth map has none and loads whole.
+  const lowGroups = new Set(production.layer("layer-one").groups.filter((group) => group.readyOn === "low").map((group) => group.id));
+  assert.deepEqual([...lowGroups], ["location"], "the current background phase is ready on its low copy (owner, R17)");
+  const startFiles = Object.entries(first).flatMap(([groupId, ids]) => ids.map((id) =>
+    (lowGroups.has(groupId) && assets.lowPathOf(id)) || assets.pathOf(id))).sort();
   assert.deepEqual(startFiles, ["assets/items/floats-scene/float-day-glow.webp", "assets/items/floats-scene/float-day.webp",
-    "assets/locations/test/bg_test--day.webp", "assets/locations/test/test-depth.webp",
+    "assets/low-copies/locations/test/bg_test--day.webp", "assets/locations/test/test-depth.webp",
     ...["bait", "battery", "boat", "chum", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod", "tackle",
       "weight"].map((name) => `assets/ui/inventory/${name}.svg`)].sort(), "layer-one is today's start, nothing added");
   const second = groupIds("layer-two");

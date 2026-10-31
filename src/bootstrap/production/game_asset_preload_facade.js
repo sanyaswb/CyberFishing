@@ -20,6 +20,8 @@ export class GameAssetPreloadFacade {
   #layerRuns = new Map();
   #groupOutcomes = new Map();
   #groupWaiters = new Map();
+  // Images shown from their low copy (readyOn "low"), upgraded to the full file when the next layer starts.
+  #upgrades = [];
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
@@ -45,6 +47,10 @@ export class GameAssetPreloadFacade {
     if (this.#layerRuns.has(layerId)) return this.#layerRuns.get(layerId);
     Object.assign(this.#state, state);
     const index = this.#plan.layers.findIndex((layer) => layer.id === layerId);
+    if (index > 0 && this.#upgrades.length > 0) {
+      const upgrades = this.#upgrades.splice(0);
+      void this.#loadIds(upgrades, "upgrade");
+    }
     const run = this.#runLayer(this.#plan.layer(layerId), LAYER_PRIORITIES[index] ?? "prefetch");
     this.#layerRuns.set(layerId, run);
     run.then(() => {
@@ -106,16 +112,24 @@ export class GameAssetPreloadFacade {
     }
   }
 
-  async #loadIds(ids, priority) {
-    const results = await Promise.all(this.#imageIds(ids).map((id) => this.#queue.request({ key: id, priority,
-      load: () => this.#images.preload([{ id, src: this.#assets.pathOf(id) }]) }).result));
+  // low: load the low-quality copy (where an image has one) under the image's own id; the full file replaces it later.
+  async #loadIds(ids, priority, { low = false } = {}) {
+    const results = await Promise.all(this.#imageIds(ids).map((id) => {
+      const lowPath = low ? this.#assets.lowPathOf(id) : null;
+      return this.#queue.request({ key: lowPath ? `${id}#low` : id, priority,
+        load: () => this.#images.preload([{ id, src: lowPath ?? this.#assets.pathOf(id) }]) }).result;
+    }));
     const failed = results.find((result) => result.status !== "ready");
     return { status: failed ? "failed" : "ready", ids, error: failed ? failed.error ?? new Error(failed.status) : null };
   }
 
   async #loadGroup(group, priority) {
     const ids = this.#plan.resolveGroup(group, this.#state);
-    const outcome = group.load ? await this.#loadIds(ids, priority) : { status: "on-demand", ids, error: null };
+    const low = group.readyOn === "low";
+    const outcome = group.load ? await this.#loadIds(ids, priority, { low }) : { status: "on-demand", ids, error: null };
+    if (low && outcome.status === "ready") {
+      this.#upgrades.push(...this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id)));
+    }
     this.#groupOutcomes.set(group.id, outcome);
     this.#groupWaiters.get(group.id)?.resolve(outcome);
     return outcome;

@@ -3,6 +3,8 @@
 // ({ source }: a function of the startup state that returns ids). Pure: no browser, no game.
 // - A layer starts on "composition" (with the game's composition), "ready" (the first frame) or "after:<layer>".
 // - A group with load: false is placed but loads only on demand (large content opened later: audio, the House, fish).
+// - A group with readyOn: "low" counts as loaded once the low-quality copies of its images have (spec 157 R17); the
+//   full files follow after the first frame.
 // - An asset belongs to the first group (layer, then priority) that names it; an explicit { id } in two groups is an
 //   error. Registry assets no group names are the implicit last group "unassigned" of the last layer.
 const ENTRY_KEYS = Object.freeze(["id", "tag", "source"]);
@@ -26,6 +28,7 @@ export class AssetLoadPlan {
       id: layer.id, label: layer.label ?? layer.id, start: layer.start,
       groups: Object.freeze([...layer.groups].sort((a, b) => a.priority - b.priority).map((group) => Object.freeze({
         id: group.id, label: group.label ?? group.id, priority: group.priority, load: group.load !== false,
+        readyOn: group.readyOn ?? "full",
         assets: Object.freeze([...group.assets]),
       }))),
     }));
@@ -59,6 +62,7 @@ export class AssetLoadPlan {
         if (!group?.id || groupIds.has(group.id) || group.id === UNASSIGNED_GROUP_ID) errors.push(`group "${where}" needs a unique id`);
         groupIds.add(group?.id);
         if (!Number.isInteger(group?.priority) || group.priority < 1) errors.push(`${where}: priority must be an integer >= 1`);
+        if (group?.readyOn !== undefined && !["full", "low"].includes(group.readyOn)) errors.push(`${where}: readyOn must be full or low`);
         if (!Array.isArray(group?.assets)) { errors.push(`${where}: assets must be a list`); continue; }
         for (const entry of group.assets) {
           const keys = Object.keys(entry ?? {}).filter((key) => ENTRY_KEYS.includes(key));

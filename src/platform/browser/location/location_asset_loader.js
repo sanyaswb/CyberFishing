@@ -31,6 +31,9 @@ export class LocationAssetLoader {
       if (!background.dynamic || phases === null || phases.includes(phase)) manifest[assetId] = background.manifest[assetId];
     }
     if (depth.assetId) manifest[depth.assetId] = depth.src;
+    // Images the asset load plan already put into the store stay as they are: the current phase may be its low copy
+    // until the plan upgrades it after the first frame (spec 157 D4b).
+    for (const assetId of Object.keys(manifest)) if (this.#imageAssets.isReady?.(assetId)) delete manifest[assetId];
 
     if (Object.keys(manifest).length > 0) {
       await this.#imageAssets.preload(manifest);

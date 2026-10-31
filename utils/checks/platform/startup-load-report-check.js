@@ -315,6 +315,12 @@ async function checkCurrentPhaseBackground() {
   await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } });
   assert.deepEqual(requests, [["bg--day.webp", "bg--evening.webp", "bg--night.webp", "depth.webp"]],
     "without phases everything loads at once");
+  requests.length = 0;
+  ready.add("lake.day");
+  await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } }, { phases: ["day"] });
+  assert.deepEqual(requests, [["depth.webp"]],
+    "an image the plan already loaded (the phase's low copy) is not loaded again, so its upgrade waits for the first frame");
+  ready.delete("lake.day");
   // The other phases after the first frame: the plan's source location.background.others (layer-two).
   const { createAssetLoadSources } = await importSource("src/bootstrap/production/asset_load_sources.js");
   const sources = createAssetLoadSources({ locations: { map: { lake: config } }, itemDb: {} });

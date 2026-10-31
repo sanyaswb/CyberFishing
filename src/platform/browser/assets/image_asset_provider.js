@@ -47,6 +47,7 @@ export class ImageAssetProvider {
     ) {
       return existing.promise;
     }
+    if (existing?.upgrade && existing.upgrade.src === src && existing.upgrade.status !== "failed") return existing.upgrade.promise;
 
     const image = this.#imageFactory();
     if (!image) {
@@ -102,6 +103,13 @@ export class ImageAssetProvider {
         markLoaded();
       }
     });
+    // Spec 157 D4b: a new source for an image that is already shown (its low copy -> the full file) is an upgrade: the
+    // ready image keeps being served until the new one is decoded, then replaces it; a failed upgrade keeps the old.
+    if (existing?.status === "ready") {
+      existing.upgrade = entry;
+      entry.promise.then(() => { if (this.#entries.get(id) === existing) this.#entries.set(id, entry); }, () => {});
+      return entry.promise;
+    }
     this.#entries.set(id, entry);
     return entry.promise;
   }
