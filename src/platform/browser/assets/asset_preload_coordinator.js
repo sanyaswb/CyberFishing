@@ -27,11 +27,13 @@ export class AssetPreloadCoordinator {
     return this.preloadManifest(new AssetManifest(), "application");
   }
 
-  preloadLocation(locationId) {
+  // phases (spec 157 R4): the time-of-day phases startup needs; null takes all three.
+  preloadLocation(locationId, { phases = null } = {}) {
     const locationConfig = this.#locationsConfig.map?.[locationId] || {};
     const manifest = new AssetManifest();
     if (locationConfig.bgUrls) {
       for (const key of ["day", "evening", "night"]) {
+        if (phases !== null && !phases.includes(key)) continue;
         const src = locationConfig.bgUrls[key];
         manifest.add(
           ImageAssetProvider.assetIdForSource(src, `location:${locationId}:${key}`),

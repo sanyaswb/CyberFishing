@@ -16,12 +16,17 @@ export class LocationAssetLoader {
     this.#canvasFactory = canvasFactory;
   }
 
-  async load(locationId, locationConfig, locationsConfig) {
+  // phases (spec 157 R4, spec 083 decision 3): the time-of-day phases startup waits for, the current one first
+  // (base, and its overlay at dusk or dawn); null loads all. The other phases come back as loadDeferredBackground(),
+  // which the composition starts after the game is ready; background.assetIds always names every phase.
+  async load(locationId, locationConfig, locationsConfig, { phases = null } = {}) {
     const background = this.#buildBackgroundManifest(locationId, locationConfig);
     const depth = this.#buildDepthRecord(locationId, locationConfig);
     const manifest = {};
-    for (const key of Object.keys(background.manifest)) {
-      manifest[key] = background.manifest[key];
+    const deferred = {};
+    for (const [phase, assetId] of Object.entries(background.assetIds)) {
+      const target = !background.dynamic || phases === null || phases.includes(phase) ? manifest : deferred;
+      target[assetId] = background.manifest[assetId];
     }
     if (depth.assetId) manifest[depth.assetId] = depth.src;
 
@@ -32,6 +37,8 @@ export class LocationAssetLoader {
     return {
       background,
       depthReader: this.#createDepthReader(depth.assetId, locationsConfig),
+      loadDeferredBackground: () => (Object.keys(deferred).length > 0
+        ? this.#imageAssets.preload(deferred) : Promise.resolve()),
     };
   }
 

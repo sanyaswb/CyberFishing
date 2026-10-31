@@ -256,6 +256,58 @@ async function checkDeferredUiImages() {
   assert.equal(preloads, 1, "its icons load with the deferred loads");
 }
 
+// Spec 157 R4 (spec 083 decision 3): startup loads the background phases of the current game time; the others load
+// after ready; until a phase arrives the world frame draws the nearest loaded one instead of nothing.
+async function checkCurrentPhaseBackground() {
+  const { LocationAssetLoader } = await importSource("src/platform/browser/location/location_asset_loader.js");
+  const requests = [];
+  const ready = new Set();
+  const imageAssets = { preload: (manifest) => { requests.push(Object.values(manifest)); return Promise.resolve(); },
+    tryGet: () => null, isReady: (id) => ready.has(id) };
+  const loader = new LocationAssetLoader({ imageAssets, canvasFactory: { createSurface() {} } });
+  const config = { bgUrls: { day: "bg--day.webp", evening: "bg--evening.webp", night: "bg--night.webp" }, depthUrl: "depth.webp" };
+  const resources = await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } }, { phases: ["day"] });
+  assert.deepEqual(requests, [["bg--day.webp", "depth.webp"]], "startup waits for the current phase and the depth map only");
+  assert.deepEqual(Object.keys(resources.background.assetIds), ["day", "evening", "night"], "every phase keeps its id");
+  await resources.loadDeferredBackground();
+  assert.deepEqual(requests[1], ["bg--evening.webp", "bg--night.webp"], "the other phases load when deferred");
+  requests.length = 0;
+  await (await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } })).loadDeferredBackground();
+  assert.deepEqual(requests, [["bg--day.webp", "bg--evening.webp", "bg--night.webp", "depth.webp"]],
+    "without phases everything loads at once and nothing is deferred");
+
+  const { AssetPreloadCoordinator } = await importSource("src/platform/browser/assets/asset_preload_coordinator.js");
+  const coordinated = [];
+  const coordinator = new AssetPreloadCoordinator({ imageAssets: { preload: (record) => {
+    coordinated.push(...Object.values(record)); return Promise.resolve(); }, isReady: () => false },
+  locationsConfig: { map: { lake: config } }, resolveFishImage: () => "" });
+  await coordinator.preloadLocation("lake", { phases: ["evening", "night"] });
+  assert.deepEqual(coordinated, ["bg--evening.webp", "bg--night.webp", "depth.webp"], "the coordinator takes the same phases");
+
+  const { WorldRenderFrameBuilder } = await importSource("src/game/presentation/rendering/world_render_frame_builder.js");
+  const { GameRenderFrame } = await importSource("src/game/presentation/rendering/game_render_frame.js");
+  const data = { loaded: true, dynamic: true, assetIds: { day: "D", evening: "E", night: "N" }, eveningOpacity: 1,
+    nightOpacity: 0.5, width: 100, height: 50 };
+  const builderFor = (isAssetReady) => new WorldRenderFrameBuilder({ map: { getBackgroundRenderData: () => data },
+    projector: { virtualToScreen: (x, y, out) => { out.x = x; out.y = y; return out; }, getScale: () => 1 },
+    config: { canvas: {} }, canvasMetrics: { width: 100 }, locationId: "lake", isAssetReady,
+    boatChumBuilder: { buildInto() {} } });
+  const layers = (isAssetReady) => {
+    const frame = new GameRenderFrame();
+    builderFor(isAssetReady).buildInto({ target: frame.world, invalidCastMarker: null, debugEnabled: false });
+    const out = [];
+    for (let index = 0; index < frame.world.backgroundLayers.count; index += 1) {
+      const layer = frame.world.backgroundLayers.getAt(index);
+      out.push(`${layer.assetId}@${layer.alpha}`);
+    }
+    return out;
+  };
+  assert.deepEqual(layers(null), ["E@1", "N@0.5"], "dusk: evening base and the night overlay (no port: all loaded)");
+  assert.deepEqual(layers((id) => id !== "N"), ["E@1"], "an overlay that has not loaded is left out");
+  assert.deepEqual(layers((id) => id === "D"), ["D@1"], "a missing base is drawn with the nearest loaded phase");
+  assert.deepEqual(layers(() => false), [], "nothing loaded: nothing drawn (the clear colour)");
+}
+
 function checkMeasurer() {
   const { median, summarize, readOptions, BUDGET } = require(path.join(ROOT_DIR, "utils/measure-startup.js"));
   assert.equal(median([3, 1, 2]), 2);
@@ -284,10 +336,11 @@ function checkMeasurer() {
   await checkFileSaver();
   await checkStartupScreen();
   await checkDeferredUiImages();
+  await checkCurrentPhaseBackground();
   checkMeasurer();
   console.log("Startup load report passed: stage marks once with the ready signal, report stages/paint/play, requests and "
     + "cache hits before T-play, kinds, request waves and the deepest chain, overlay report cache, copy and file save outcomes, file saver, "
-    + "release-activated overlay control, startup screen before the stylesheets and hidden at ready, lazy UI images and their warm-up, measurer medians and budget verdicts.");
+    + "release-activated overlay control, startup screen before the stylesheets and hidden at ready, lazy UI images and their warm-up, current-phase background with the nearest loaded phase, measurer medians and budget verdicts.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

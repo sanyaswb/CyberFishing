@@ -256,6 +256,7 @@ export class GameRenderComposition {
   composeFrameBuilders({ runtime, config, canvasMetrics, appPorts, clock, contracts, fightService, devFlags = null }) {
     const worldBuilder = new WorldRenderFrameBuilder({
       map: runtime.map,
+      isAssetReady: (assetId) => runtime.rendering.imageAssets.isReady(assetId),
       getWaterMetric: appPorts.getWaterMetric,
       projector: runtime.projector,
       config,

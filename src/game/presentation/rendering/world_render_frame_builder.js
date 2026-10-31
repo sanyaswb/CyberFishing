@@ -14,6 +14,7 @@ export class WorldRenderFrameBuilder {
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
+  #isAssetReady;
 
   constructor({
     map,
@@ -24,6 +25,10 @@ export class WorldRenderFrameBuilder {
     debugBuilder,
     locationId,
     getWaterMetric,
+    // Spec 157 R4: (assetId) => boolean, whether a background image has loaded; startup loads only the current
+    // time-of-day phase, so until the others arrive a missing base is drawn with the nearest loaded phase. Without it
+    // every phase counts as loaded.
+    isAssetReady = null,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -49,6 +54,7 @@ export class WorldRenderFrameBuilder {
     this.#debugBuilder = debugBuilder;
     this.#locationId = locationId;
     this.#getWaterMetric = getWaterMetric;
+    this.#isAssetReady = isAssetReady;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -91,11 +97,31 @@ export class WorldRenderFrameBuilder {
     }
 
     const layers = timeOfDayLayers(data.eveningOpacity, data.nightOpacity, this.#timeLayers);
-    this.#addBackgroundLayer(target, data.assetIds[layers.base], 1, position, width, height);
-    if (layers.overlay) {
+    const base = this.#loadedPhase(data.assetIds, layers.base);
+    this.#addBackgroundLayer(target, base === null ? "" : data.assetIds[base], 1, position, width, height);
+    if (layers.overlay && base === layers.base && this.#isLoaded(data.assetIds[layers.overlay])) {
       this.#addBackgroundLayer(target, data.assetIds[layers.overlay], layers.overlayOpacity, position, width, height);
     }
   }
+
+  // The phase itself when its image has loaded, else the nearest loaded phase (day and night meet through evening).
+  #loadedPhase(assetIds, phase) {
+    if (this.#isLoaded(assetIds[phase])) return phase;
+    for (const other of WorldRenderFrameBuilder.#NEAREST_PHASES[phase] ?? []) {
+      if (this.#isLoaded(assetIds[other])) return other;
+    }
+    return null;
+  }
+
+  #isLoaded(assetId) {
+    return Boolean(assetId) && (this.#isAssetReady === null || this.#isAssetReady(assetId));
+  }
+
+  static #NEAREST_PHASES = Object.freeze({
+    day: Object.freeze(["evening", "night"]),
+    evening: Object.freeze(["night", "day"]),
+    night: Object.freeze(["evening", "day"]),
+  });
 
   #addBackgroundLayer(target, assetId, alpha, position, width, height) {
     if (!assetId) return;

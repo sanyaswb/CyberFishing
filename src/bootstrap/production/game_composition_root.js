@@ -54,6 +54,8 @@ import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/d
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { composeGameTime } from "./game_time_composition.js";
+import { backgroundTimeBlend } from "../../game/domain/time/background_time_blend.js";
+import { timeOfDayLayers } from "../../game/presentation/time/time_of_day_layers.js";
 import { GameWorld } from "../../game/application/world/game_world.js";
 import { LocationWaterMetricResolver } from "../../game/domain/locations/location_water_metric_resolver.js";
 import { LocationWaterMetricSource } from "../../game/domain/locations/location_water_metric_source.js";
@@ -476,8 +478,16 @@ export class GameCompositionRoot {
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
       rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
     });
+    // The game clock comes before the location: startup loads only the background phase of the current game time
+    // (spec 157 R4).
+    const gameTimeClock = composeGameTime({
+      storage: this.#windowTarget.localStorage,
+      now: () => Date.now(),
+      initialHours: this.#config.debug?.initialTime,
+      timeScale: this.#config.debug?.timeScale || 1,
+    });
     const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric } = await this.#composeLocation({
-      assetPreloadCoordinator, locationAssetLoader,
+      assetPreloadCoordinator, locationAssetLoader, startupHours: gameTimeClock.getHours(),
     });
     this.#startupMarks.mark(STARTUP_STAGES.location);
     const {
@@ -502,12 +512,6 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    const gameTimeClock = composeGameTime({
-      storage: this.#windowTarget.localStorage,
-      now: () => Date.now(),
-      initialHours: this.#config.debug?.initialTime,
-      timeScale: this.#config.debug?.timeScale || 1,
-    });
     this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
@@ -850,7 +854,9 @@ export class GameCompositionRoot {
 
 
   // Current location, RNG, preloaded location resources and the viewport projector.
-  async #composeLocation({ assetPreloadCoordinator, locationAssetLoader }) {
+  // startupHours: the game time at startup; its background phases (base, and the overlay at dusk or dawn) load before
+  // the game starts, the others right after it (spec 157 R4, spec 083 decision 3).
+  async #composeLocation({ assetPreloadCoordinator, locationAssetLoader, startupHours }) {
     const location = new CurrentLocation(
       this.#config.locations,
       this.#config.player?.locationId,
@@ -860,12 +866,18 @@ export class GameCompositionRoot {
     );
     const locId = location.id;
     const locCfg = location.config;
-    await assetPreloadCoordinator.preloadLocation(locId);
+    const blend = backgroundTimeBlend(startupHours, { evening: 0, night: 0 });
+    const layers = timeOfDayLayers(blend.evening, blend.night, {});
+    const phases = [layers.base, layers.overlay].filter(Boolean);
+    await assetPreloadCoordinator.preloadLocation(locId, { phases });
     const locationResources = await locationAssetLoader.load(
       locId,
       locCfg,
       this.#config.locations,
+      { phases },
     );
+    // First of the deferred loads: the other phases; the scene uploads each one in the frame after it arrives.
+    this.#deferredAssetLoads.push(() => { void locationResources.loadDeferredBackground(); });
     // Session starts vary even when gameplay uses a fixed seed; sampling never advances gameplay RNG.
     const locationMap = new LocationMap(locId, this.#config.locations, rng, locationResources, { next: () => Math.random() });
     const waterMetricResolver = new LocationWaterMetricResolver({
