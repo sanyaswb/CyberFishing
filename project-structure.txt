@@ -736,8 +736,6 @@
 │  │     │  ├── rod_line_renderer.js
 │  │     │  ├── rod_spine_renderer.js
 │  │     │  └── rod_static_renderer.js
-│  │     ├── house
-│  │     │  └── fish_thumbnail_path.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
 │  │     │  ├── fight_hud_renderer.js

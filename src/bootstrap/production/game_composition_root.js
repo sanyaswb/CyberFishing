@@ -135,7 +135,7 @@ import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostic
 import { STARTUP_MARKS_METHODS, STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
 import { composeSceneLayer } from "./scene_layer_composition.js";
-import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
+import { FishArtVariants } from "../../game/presentation/fish/fish_art_variants.js";
 import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
 import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
 import { LiveBaitMotionProfileResolver } from "../../game/domain/live_bait/live_bait_motion_profile_resolver.js";
@@ -162,6 +162,8 @@ export class GameCompositionRoot {
   #itemDb;
   // Spec 157 R16: every asset by stable id; the places that load files resolve ids through it.
   #assets = new AssetRegistry(ASSET_REGISTRY);
+  // Fish art variants over the registry (spec 100 D4): one victory display source for the outcome frame and preloader.
+  #fishArt = new FishArtVariants({ assets: this.#assets });
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
@@ -516,7 +518,7 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({
@@ -589,6 +591,7 @@ export class GameCompositionRoot {
         rodAnimation,
         boatAnimation,
         floatRocking,
+        fishArt: this.#fishArt,
       },
       interaction: {
         victoryActionGestureResolver,
@@ -636,7 +639,7 @@ export class GameCompositionRoot {
     const canvasFactory = new OffscreenCanvasFactory();
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
-      resolveFishImage: fishDisplayImagePath,
+      resolveFishImage: (fish) => this.#fishArt.displayImagePath(fish),
       locationsConfig: this.#config.locations,
       assets: this.#assets,
       diagnostics: this.#readRenderDiagnostics(),
@@ -818,6 +821,7 @@ export class GameCompositionRoot {
       "resolveRarity",
     ]);
     const fishVisualVariantResolver = new FishVisualVariantResolver({
+      assets: this.#assets,
       noneAnomalyIds: this.#config.rarity?.fish?.noneAnomalyIds,
     });
     const fishAnomalyVariantResolver = new FishAnomalyVariantResolver({
@@ -1196,6 +1200,7 @@ export class GameCompositionRoot {
       }
     };
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget, assets: this.#assets,
+      fishArt: this.#fishArt,
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);

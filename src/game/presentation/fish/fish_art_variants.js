@@ -1,30 +1,53 @@
-// Fish art sized for its use (spec 100 D4): the masters in assets/fish/ (2752 px) are never drawn into small boxes.
-// thumbnail: keepnet cards, aquarium; display: the victory panel (its 260 px box x the canvas pixel-ratio cap 2,
-// with room for larger layouts). Variants are generated from the tracked masters with
+// Fish art sized for its use (spec 100 D4): the masters (2752 px) are never drawn into small boxes. thumbnail: keepnet
+// cards, aquarium; display: the victory panel (its 260 px box x the canvas pixel-ratio cap 2, with room for larger
+// layouts). Variants are generated from the tracked masters with
 // `node utils/convert-images.js --thumbnails --input <masters> --output <directory> --size <maxSize>`.
+// By asset id (spec 157 R16): a master `fish.<species>.<…>` has its variants at the same rest of the id under the
+// variant's prefix.
 export const FISH_ART_VARIANTS = Object.freeze({
-  thumbnail: Object.freeze({ directory: "assets/fish-thumbnails/", maxSize: 128 }),
-  display: Object.freeze({ directory: "assets/fish-display/", maxSize: 768 }),
+  thumbnail: Object.freeze({ assetPrefix: "fish-thumbnails.", maxSize: 128 }),
+  display: Object.freeze({ assetPrefix: "fish-display.", maxSize: 768 }),
 });
 
-const MASTER_DIRECTORY = "assets/fish/";
+const MASTER_PREFIX = "fish.";
 
-// A master path's variant (WebP, same relative path); any other path (no fish master) is returned unchanged.
-export function fishArtVariantPath(imagePath, variant) {
-  const entry = FISH_ART_VARIANTS[variant];
-  if (!entry) throw new Error(`Unknown fish art variant ${variant}`);
-  return typeof imagePath === "string" && imagePath.startsWith(MASTER_DIRECTORY)
-    ? imagePath.replace(MASTER_DIRECTORY, entry.directory).replace(/\.[^.]+$/, ".webp") : imagePath || "";
+// The one place that composes a fish master's asset id: the species' standard art for a level.
+export function fishMasterAssetId(fishId, level) {
+  return `${MASTER_PREFIX}${fishId}.standart.${fishId}--${level}`;
 }
 
-// The fish's master image: its own imagePath, or the species' default master for its level.
-export function fishMasterImagePath(fish) {
-  const id = String(fish?.id || "unknown");
-  const level = Number(fish?.level) || 1;
-  return fish?.imagePath || `${MASTER_DIRECTORY}${id}/${id}--${level}.webp`;
-}
+// A caught fish keeps its master's file in game state (`imagePath`, saved); these map it to the variant files.
+export class FishArtVariants {
+  #assets;
 
-// The one victory image source (spec 100 D4): drawn by the outcome frame and preloaded by the asset coordinator.
-export function fishDisplayImagePath(fish) {
-  return fishArtVariantPath(fishMasterImagePath(fish), "display");
+  constructor({ assets }) {
+    if (typeof assets?.idOfPath !== "function") throw new TypeError("FishArtVariants requires assets");
+    this.#assets = assets;
+  }
+
+  // A master's variant file; any other path (no registered fish master) is returned unchanged.
+  variantPath(imagePath, variant) {
+    const entry = FISH_ART_VARIANTS[variant];
+    if (!entry) throw new Error(`Unknown fish art variant ${variant}`);
+    if (typeof imagePath !== "string" || !imagePath) return "";
+    const masterId = this.#assets.idOfPath(imagePath);
+    const variantId = masterId?.startsWith(MASTER_PREFIX) ? `${entry.assetPrefix}${masterId.slice(MASTER_PREFIX.length)}` : null;
+    return variantId && this.#assets.has(variantId) ? this.#assets.pathOf(variantId) : imagePath;
+  }
+
+  // The fish's master image: its own imagePath, or the species' standard master for its level ("" without one).
+  masterImagePath(fish) {
+    if (fish?.imagePath) return fish.imagePath;
+    const masterId = fishMasterAssetId(String(fish?.id || "unknown"), Number(fish?.level) || 1);
+    return this.#assets.has(masterId) ? this.#assets.pathOf(masterId) : "";
+  }
+
+  // The one victory image source (spec 100 D4): drawn by the outcome frame and preloaded by the asset coordinator.
+  displayImagePath(fish) {
+    return this.variantPath(this.masterImagePath(fish), "display");
+  }
+
+  thumbnailPath(imagePath) {
+    return this.variantPath(imagePath, "thumbnail");
+  }
 }

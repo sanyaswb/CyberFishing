@@ -1,6 +1,8 @@
 const { CheckAssertion } = require("../../testing/core/check_assertion");
 const { bindConstructorDefaults } = require("../../testing/runtime/constructor_defaults");
 const { SourceRuntime } = require("../../testing/core/source_runtime");
+const { AssetRegistry } = require("../../../src/engine/assets/asset_registry.js");
+const { ASSET_REGISTRY } = require("../../../src/game/config/generated/asset_registry.js");
 
 const Assertion = CheckAssertion.create("Fish rarity check");
 
@@ -69,7 +71,13 @@ class FishRarityCheck {
       scale: rarityScale,
       fish: { noneAnomalyIds: ["", "none"] },
     });
+    // The real registry plus the fixture species' art (same files as the old path patterns named).
+    const fixtureArt = Object.fromEntries([1, 2, 3, 4, 5, 6].flatMap((level) => [
+      [`fish.fixture.fixture--${level}`, `assets/fish/fixture/fixture--${level}.webp`],
+      [`fish.fixture.fixture--${level}-uniq`, `assets/fish/fixture/fixture--${level}-uniq.webp`],
+    ]).map(([id, path]) => [id, { kind: "image", path, bytes: 1, sha256: "0", tags: [], label: "" }]));
     this.visualVariantResolver = new FishVisualVariantResolver({
+      assets: new AssetRegistry({ ...ASSET_REGISTRY, ...fixtureArt }),
       noneAnomalyIds: ["", "none"],
     });
     this.anomalyVariantResolver = new FishAnomalyVariantResolver();
@@ -242,8 +250,8 @@ class FishRarityCheck {
     );
 
     const visual = {
-      imagePattern: "assets/fish/fixture/fixture--{level}.webp",
-      uniqueImagePattern: "assets/fish/fixture/fixture--{level}-uniq.webp",
+      imageAssetPattern: "fish.fixture.fixture--{level}",
+      uniqueImageAssetPattern: "fish.fixture.fixture--{level}-uniq",
     };
     Assertion.equal(
       this.visualVariantResolver.resolveImagePath({
@@ -379,10 +387,10 @@ class FishRarityCheck {
       },
       weightConfig: this.fixture.weightConfig,
       visual: {
-        imagePattern:
-          "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp",
-        uniqueImagePattern:
-          "assets/fish/crucian_stalker/unique/crucian_stalker--{level}-uniq.webp",
+        imageAssetPattern:
+          "fish.crucian_stalker.standart.crucian_stalker--{level}",
+        uniqueImageAssetPattern:
+          "fish.crucian_stalker.unique.crucian_stalker--{level}-uniq",
       },
       physics: {},
     };
@@ -733,8 +741,8 @@ class FishRarityCheck {
       },
       weightConfig: this.fixture.weightConfig,
       visual: {
-        imagePattern: "assets/fish/fixture/fixture--{level}.webp",
-        uniqueImagePattern: "assets/fish/fixture/fixture--{level}-uniq.webp",
+        imageAssetPattern: "fish.fixture.fixture--{level}",
+        uniqueImageAssetPattern: "fish.fixture.fixture--{level}-uniq",
       },
     };
     const validator = new this.RarityConfigValidator();
@@ -1000,10 +1008,10 @@ class FishRarityCheck {
         locationIds: ["test"],
       },
       visual: {
-        imagePattern:
-          "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp",
-        uniqueImagePattern:
-          "assets/fish/crucian_stalker/unique/crucian_stalker--{level}-uniq.webp",
+        imageAssetPattern:
+          "fish.crucian_stalker.standart.crucian_stalker--{level}",
+        uniqueImageAssetPattern:
+          "fish.crucian_stalker.unique.crucian_stalker--{level}-uniq",
       },
       physics: {},
     };

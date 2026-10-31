@@ -58,9 +58,9 @@ export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
   // assets: the AssetRegistry (art and sprite icons by asset id, spec 157 R16).
   static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
-    buttonMountNode = documentRef?.body, showHelp = false, assets }) {
+    buttonMountNode = documentRef?.body, showHelp = false, assets, fishArt }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, assets,
+    const keepnet = InventoryUiBootstrap.createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, assets, fishArt,
       degradationColorResolver, showHelp,
       openSection: () => inventoryUI.openSection("keepnet"),
       toggleSection: () => inventoryUI.toggleSection("keepnet"),
@@ -73,7 +73,7 @@ export class InventoryUiBootstrap {
   // The UI catalog builds the same view without an inventory. The help button stays a component but the game hides
   // it for now (spec 089).
   static createKeepnetView({ documentRef, liveBait, buttonMountNode, uiSurface, degradationColorResolver,
-    openSection, toggleSection, onPagerEdge = null, showHelp = false, assets }) {
+    openSection, toggleSection, onPagerEdge = null, showHelp = false, assets, fishArt }) {
     const dom = new InventoryDomFactory(documentRef, { assets });
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
@@ -93,7 +93,7 @@ export class InventoryUiBootstrap {
         isPagingEnabled: InventoryUiBootstrap.#swipeEnabled(dom),
         swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-section-swipe") }),
         config: pagerConfig }),
-      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
+      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS, fishArt }),
       hintRenderer: new UiHintRenderer({ domFactory: dom }),
       listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
   }

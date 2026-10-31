@@ -172,6 +172,13 @@ Spine capability stay in platform. Until the facade step these engine modules ar
 art is WebP under `assets/`; image masters live in `asset-sources/` and are never published
 ([spec 082](../specs/082-webp-art/spec.md)).
 
+Assets by stable id ([spec 157](../specs/157-startup-load-optimization/spec.md) R16): `npm run assets:sync` keeps the
+generated registry `src/game/config/generated/asset_registry.js`; `engine/assets/asset_registry.js` (`AssetRegistry`,
+pure) is composed once in `GameCompositionRoot` and passed through constructors. Configuration and code name assets by
+id; the place that loads a file (the DOM factory, image/audio loaders, the Spine loader, the scene's float art)
+resolves it. No source holds an `"assets/…"` literal (`asset-references` check); paths already stored in game state (a
+caught fish's `imagePath`) are mapped back with `idOfPath`.
+
 Render resolution ([spec 100](../specs/100-render-resolution-and-image-quality/spec.md)): the game works in logical
 (CSS) pixels. `CanvasMetricsProvider` (platform) is the only owner of the game canvas element's size: its backing store
 is logical × `min(devicePixelRatio, CONFIG.canvas.maxPixelRatio)` and its CSS size the logical size. `Canvas2DSurface`

@@ -2,8 +2,9 @@
 
 // Spec 157 R16 / TK-178 (b-d): the AssetRegistry (a pure id -> file lookup) and the references to it. Configuration
 // names an asset by id in a field called `asset`, `<name>Asset` or `<name>Assets` (an object of ids); every such id is
-// in the registry with a kind its field can load. Modules already moved to ids hold no "assets/..." path literal: the
-// list grows with every group and ends as all of src/ (TK-178 step d).
+// in the registry with a kind its field can load. No source file, stylesheet or page holds an "assets/..." path literal
+// (TK-178 step d) except the generated registry and the sync's folder constant; the asset modules' id literals are
+// registered ids.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -12,7 +13,8 @@ const { pathToFileURL } = require("node:url");
 const ROOT = path.resolve(__dirname, "../../..");
 const importSource = (file) => import(pathToFileURL(path.join(ROOT, file)).href);
 
-// Modules whose assets are named by id (TK-178 groups). A path literal in them is a regression.
+// Modules that name assets in code (TK-178 groups): every id-shaped literal in them must be a registered id. (Elsewhere
+// such strings are configuration paths like "ui.inventorySelector.size".)
 const MIGRATED_MODULES = Object.freeze([
   "src/game/config/raw/locations/location_database.js",
   "src/platform/browser/location/location_asset_loader.js",
@@ -57,7 +59,32 @@ const MIGRATED_MODULES = Object.freeze([
   "src/bootstrap/production/inventory_selector_composition.js",
   "src/bootstrap/production/depth_selector_composition.js",
   "src/dev/tools/dev_tools.js",
+  "src/game/config/raw/fish/peaceful_fish.js",
+  "src/game/config/raw/fish/predator_fish.js",
+  "src/game/presentation/fish/fish_art_variants.js",
+  "src/game/presentation/fish/fish_visual_variant_resolver.js",
+  "src/game/presentation/keepnet/keepnet_card_renderer.js",
+  "src/game/presentation/house/aquarium_fish_view.js",
 ]);
+// The only files allowed to hold an "assets/..." literal.
+const PATH_LITERAL_EXCEPTIONS = Object.freeze([
+  "src/game/config/generated/asset_registry.js",
+  "src/engine/assets/asset_registry_sync.js",
+]);
+
+// Every shipped text source: src/**/*.{js,css,html} and the pages (not only tracked files, so a new file counts too).
+function shippedSources() {
+  const files = ["index.html", "dev.html", "ui-catalog.html"];
+  const walk = (directory) => {
+    for (const entry of fs.readdirSync(path.join(ROOT, directory), { withFileTypes: true })) {
+      const relative = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) walk(relative);
+      else if (/\.(?:js|css|html)$/u.test(entry.name)) files.push(relative);
+    }
+  };
+  walk("src");
+  return files;
+}
 const PATH_LITERAL = /["'`]assets\/[^"'`]*/gu;
 // A string literal shaped like a registry id (its first part is a top folder of assets/).
 const ID_LITERAL = /["'`]((?:animations|audio|fish|fish-display|fish-thumbnails|house|items|lobby|locations|ui)\.[A-Za-z0-9_.-]+)["'`]/gu;
@@ -166,19 +193,41 @@ function collectAssetReferences(value, where, found = []) {
     assert.equal(assets.entryOf(id).kind === "spine", spine, `${where}: ${id} must be ${spine ? "a Spine package" : "a file"}`);
   }
 
-  // Moved modules hold no path literals, and every id they name in code is registered.
+  // Fish: every level's art of every species is registered (standard, and unique where an anomaly variant exists).
+  const { FISH_DB } = await importSource("src/game/config/databases/fish_database.js");
+  let fishArt = 0;
+  for (const fish of FISH_DB) {
+    const maxLevel = Math.max(1, Math.round(Number(fish.weightConfig?.maxLevel) || 1));
+    assert(fish.visual?.imageAssetPattern && !("imagePattern" in fish.visual), `${fish.id} names its art by asset-id pattern`);
+    for (let level = 1; level <= maxLevel; level += 1) {
+      const patterns = [fish.visual.imageAssetPattern, ...(fish.anomalyVariant ? [fish.visual.uniqueImageAssetPattern] : [])];
+      for (const pattern of patterns) {
+        const id = pattern.replace("{level}", level);
+        assert(assets.has(id), `${fish.id} level ${level}: "${id}" is not an asset id of the registry`);
+        fishArt += 1;
+      }
+    }
+  }
+
+  // No path literal anywhere in the shipped sources (TK-178 step d).
+  const sources = shippedSources();
+  for (const file of sources) {
+    if (PATH_LITERAL_EXCEPTIONS.includes(file)) continue;
+    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
+    assert.deepEqual(text.match(PATH_LITERAL) ?? [], [], `${file} names assets by id, not by path`);
+  }
+  // The asset modules' id literals are registered.
   let codeIds = 0;
   for (const file of MIGRATED_MODULES) {
     const text = fs.readFileSync(path.join(ROOT, file), "utf8");
-    assert.deepEqual(text.match(PATH_LITERAL) ?? [], [], `${file} names assets by id, not by path`);
     for (const [, id] of text.matchAll(ID_LITERAL)) {
       assert(assets.has(id), `${file}: "${id}" is not an asset id of the registry`);
       codeIds += 1;
     }
   }
   console.log(`Asset references passed: registry lookups (path, Spine package, tags, unknown id), ${references.length} `
-    + `configuration references and ${codeIds} ids in code registered, ${MIGRATED_MODULES.length} modules without path `
-    + "literals.");
+    + `configuration references, ${fishArt} fish art ids and ${codeIds} ids in code registered; ${sources.length} sources `
+    + "without asset path literals.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

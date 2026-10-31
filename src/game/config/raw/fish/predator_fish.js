@@ -6,10 +6,9 @@ export const PREDATOR_FISH = [
     baseChance: 0.02,
     maxHookSize: 4,
     visual: {
-      imagePattern:
-        "assets/fish/perch_radioactive/standart/perch_radioactive--{level}.webp",
-      uniqueImagePattern:
-        "assets/fish/perch_radioactive/unique/perch_radioactive--{level}-uniq.webp",
+      // Asset-id patterns of the fish's art (spec 157 R16).
+      imageAssetPattern: "fish.perch_radioactive.standart.perch_radioactive--{level}",
+      uniqueImageAssetPattern: "fish.perch_radioactive.unique.perch_radioactive--{level}-uniq",
     },
 
     weatherMultipliers: {

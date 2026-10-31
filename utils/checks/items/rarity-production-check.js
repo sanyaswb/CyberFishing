@@ -5,6 +5,9 @@ const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 
 const ROOT = path.resolve(__dirname, "../../..");
+const { AssetRegistry } = require("../../../src/engine/assets/asset_registry.js");
+const { ASSET_REGISTRY } = require("../../../src/game/config/generated/asset_registry.js");
+const ASSETS = new AssetRegistry(ASSET_REGISTRY);
 
 class ProductionRarityConfigLoader {
   load() {
@@ -70,17 +73,19 @@ class ProductionRarityCheck {
   #assertUniqueAssets(fishDb) {
     for (const fish of fishDb) {
       if (!fish?.anomalyVariant) continue;
-      const pattern = String(fish.visual?.uniqueImagePattern || "").trim();
+      const pattern = String(fish.visual?.uniqueImageAssetPattern || "").trim();
       const maxLevel = Math.max(
         1,
         Math.round(Number(fish.weightConfig?.maxLevel) || 1),
       );
       for (let level = 1; level <= maxLevel; level += 1) {
-        const relativePath = pattern.replace("{level}", level);
+        const assetId = pattern.replace("{level}", level);
+        if (!ASSETS.has(assetId)) throw new Error(`FISH_DB.${fish.id} unique level-${level} asset id is not registered: ${assetId}`);
+        const relativePath = ASSETS.pathOf(assetId);
         const absolutePath = path.resolve(ROOT, relativePath);
         if (!absolutePath.startsWith(`${ROOT}${path.sep}`)) {
           throw new Error(
-            `FISH_DB.${fish.id}.visual.uniqueImagePattern escapes project root`,
+            `FISH_DB.${fish.id}.visual.uniqueImageAssetPattern escapes project root`,
           );
         }
         if (!fs.existsSync(absolutePath) || fs.statSync(absolutePath).size === 0) {

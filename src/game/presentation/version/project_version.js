@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.42";
+export const CURRENT_PROJECT_VERSION = "0.49.43";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "TK-178 (c–d): fish art by asset id; no asset path literals left in src/.",
     "TK-178 (c): inventory, item, keepnet and feed art by asset id; the DOM factory resolves the files.",
     "TK-178 (c): Spine exports (rod, boat) and the float's scene art by asset id.",
     "TK-178 (c): House room art and sprite icons by asset id.",

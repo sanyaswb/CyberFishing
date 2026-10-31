@@ -6,7 +6,6 @@ import { CastingRenderPass } from "../../game/presentation/rendering/casting_ren
 import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { FightAreaRenderer } from "../../game/presentation/fishing/fight_area_renderer.js";
-import { fishDisplayImagePath } from "../../game/presentation/fish/fish_art_variants.js";
 import { FightAreaRenderFrameBuilder } from "../../game/presentation/rendering/fight_area_render_frame_builder.js";
 import { FightHudFrameBuilder } from "../../game/presentation/hud/fight_hud_frame_builder.js";
 import { FightHudRenderer } from "../../game/presentation/hud/fight_hud_renderer.js";
@@ -370,7 +369,7 @@ export class GameRenderComposition {
     });
     const outcomeBuilder = new OutcomeRenderFrameBuilder({
       // The victory image: the fish's 768 px display variant, the same source the preloader loads (spec 100 D4).
-      resolveFishImage: fishDisplayImagePath,
+      resolveFishImage: (fish) => runtime.rendering.fishArt.displayImagePath(fish),
       canvasMetrics,
       clock,
       styleResolver: runtime.rendering.outcomeStyleResolver,

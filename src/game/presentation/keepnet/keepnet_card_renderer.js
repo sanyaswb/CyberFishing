@@ -1,9 +1,12 @@
-import { fishThumbnailPath } from "../house/fish_thumbnail_path.js";
-
 export class KeepnetCardRenderer {
   #document;
   #labels;
-  constructor({ documentRef, labels }) { this.#document = documentRef; this.#labels = labels; }
+  #fishArt;
+  // fishArt: FishArtVariants (a caught fish's 128 px thumbnail through the asset registry).
+  constructor({ documentRef, labels, fishArt }) {
+    if (typeof fishArt?.thumbnailPath !== "function") throw new TypeError("KeepnetCardRenderer requires fishArt");
+    this.#document = documentRef; this.#labels = labels; this.#fishArt = fishArt;
+  }
 
   group(group, onOpen) {
     const card = this.#button("keepnet-section__group", "", `species:${group.id}`, () => onOpen(group.id));
@@ -60,7 +63,7 @@ export class KeepnetCardRenderer {
       image.alt = fish.name; image.loading = "lazy"; image.decoding = "async";
       fallback.hidden = true;
       image.addEventListener("error", () => { image.hidden = true; fallback.hidden = false; }, { once: true });
-      image.src = fishThumbnailPath(fish.imagePath);
+      image.src = this.#fishArt.thumbnailPath(fish.imagePath);
       media.append(image);
     }
     return media;

@@ -1,6 +1,5 @@
-import { fishThumbnailPath } from "./fish_thumbnail_path.js";
-
 export class AquariumFishView {
+  #fishArt;
   #canvas;
   #context;
   #window;
@@ -13,7 +12,10 @@ export class AquariumFishView {
   #createImage;
   #style;
   #ratio = 0;
-  constructor({ canvas, windowTarget, motion, createImage, observeResize, style }) {
+  // fishArt: FishArtVariants (each live bait's thumbnail through the asset registry).
+  constructor({ canvas, windowTarget, motion, createImage, observeResize, style, fishArt }) {
+    if (typeof fishArt?.thumbnailPath !== "function") throw new TypeError("AquariumFishView requires fishArt");
+    this.#fishArt = fishArt;
     this.#canvas = canvas; this.#window = windowTarget; this.#motion = motion; this.#style = style;
     this.#context = canvas.getContext("2d");
     this.#createImage = createImage;
@@ -26,7 +28,7 @@ export class AquariumFishView {
     this.#canvas.hidden = !owned;
     this.#motion.setFish(fish);
     for (const entry of fish) {
-      const path = fishThumbnailPath(entry.imagePath);
+      const path = this.#fishArt.thumbnailPath(entry.imagePath);
       if (path && !this.#images.has(entry.imagePath)) {
         const image = this.#createImage(); image.src = path; this.#images.set(entry.imagePath, image);
       }

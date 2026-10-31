@@ -8,6 +8,8 @@ async function main() {
   const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
   const assets = new AssetRegistry(ASSET_REGISTRY);
+  const { FishArtVariants } = await import("../../../src/game/presentation/fish/fish_art_variants.js");
+  const fishArt = new FishArtVariants({ assets });
   const artwork = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
   for (const [percent, stage] of [[-1, 0], [0, 0], [.01, 20], [20, 20], [20.01, 40], [40, 40],
     [40.01, 60], [60, 60], [60.01, 80], [80, 80], [80.01, 100], [100, 100], [150, 100], [NaN, 0]]) {
@@ -29,10 +31,10 @@ async function main() {
   const service = composeLiveBait({ storage, clock: { nowMs: () => now }, rng: { next: () => 0 },
     config: { ...LIVE_BAIT_CONFIG, lifetimeMinMs: 10000, lifetimeMaxMs: 10000 },
     fishDb: [{ id: "crucian_stalker", name: "Карась" }, { id: "pike", name: "Щука" }] });
-  const fish = { id: "crucian_stalker", name: "Карась", weight: .1, level: 1, imagePath: "assets/fish/a.webp",
+  const fish = { id: "crucian_stalker", name: "Карась", weight: .1, level: 1, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--1.webp",
     rarity: { halfSteps: 3, maxHalfSteps: 12, unitsPerStar: 2 } };
   service.keepCatch(fish, "one");
-  service.keepCatch({ ...fish, weight: .08, imagePath: "assets/fish/b.webp", rarity: { ...fish.rarity, halfSteps: 2 } }, "two");
+  service.keepCatch({ ...fish, weight: .08, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp", rarity: { ...fish.rarity, halfSteps: 2 } }, "two");
   service.convertCatch({ ...fish, weight: .06 }, "bait");
   service.keepCatch({ ...fish, id: "pike", name: "Щука", weight: 1.2, imagePath: "" }, "pike");
   const source = service.getView();
@@ -57,7 +59,7 @@ async function main() {
   };
   const artworkView = InventoryUiBootstrap.createKeepnetView({ documentRef: artworkDocument,
     liveBait: { getView: () => artworkState, advance() {} }, buttonMountNode: artworkDocument.body,
-    degradationColorResolver: colors, openSection() {}, toggleSection() {}, assets });
+    degradationColorResolver: colors, openSection() {}, toggleSection() {}, assets, fishArt });
   // Spec 157 R5: the view loads only the current fill stage; the other stages wait for preloadKeepnetStages.
   assert.deepEqual([...new Set(createdImages.map((image) => image.src).filter((src) => /keepnet--/u.test(src)))],
     [assets.pathOf(artwork.resolve(0))], "startup requests only the current keepnet stage");
@@ -136,11 +138,11 @@ async function main() {
     toggleSection(id) { this.toggled++; assert.equal(id, "keepnet"); this.view.setVisible(!this.view.isOpen); } };
   // Spec 089: the game hides the help button for now; the component stays and is checked here with showHelp.
   const hiddenHelpDocument = new TestDocument();
-  InventoryUiBootstrap.createKeepnet({ documentRef: hiddenHelpDocument, liveBait: service, degradationColorResolver: colors, assets,
+  InventoryUiBootstrap.createKeepnet({ documentRef: hiddenHelpDocument, liveBait: service, degradationColorResolver: colors, assets, fishArt,
     inventoryUI: { attachKeepnetSection(view) { hiddenHelpDocument.body.append(view.summaryNode, view.contentNode); } } });
   assert.equal(hiddenHelpDocument.byClass("keepnet-section__help").length, 0, "the game shows no keepnet help button");
   assert.equal(hiddenHelpDocument.byClass("keepnet-overview").length, 2);
-  const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service, degradationColorResolver: colors, assets,
+  const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service, degradationColorResolver: colors, assets, fishArt,
     inventoryUI: inventory, showHelp: true });
   assert.equal(inventory.view, ui, "the keepnet attaches itself as the inventory section");
   assert.equal(ui.isOpen, false);
@@ -288,7 +290,9 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__fish").length, 3);
   assert.equal(documentRef.activeElement, back);
   const images = documentRef.byClass("keepnet-section__image");
-  assert.deepEqual(images.map((image) => image.src), ["assets/fish-thumbnails/a.webp", "assets/fish-thumbnails/b.webp", "assets/fish-thumbnails/a.webp"]);
+  const [A_THUMB, B_THUMB] = ["assets/fish/crucian_stalker/standart/crucian_stalker--1.webp", "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp"].map((master) => fishArt.thumbnailPath(master));
+  assert.equal(A_THUMB, "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--1.webp");
+  assert.deepEqual(images.map((image) => image.src), [A_THUMB, B_THUMB, A_THUMB], "a caught fish shows its master's registered thumbnail");
   assert(documentRef.byClass("keepnet-section__fish-rarity")[0].textContent.includes("1,5 / 6"));
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
   images[0].fire("error");

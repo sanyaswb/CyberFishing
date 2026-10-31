@@ -32,7 +32,7 @@ const AQUARIUM_VISUAL_PATH = Object.freeze(["liveBait", "visual"]);
 // The House screen (spec 084) inside the game page: a `.house` root in the page's UI surface, composed over the
 // session's live bait service, game clock and asset registry (GameCompositionRoot.getSessionServices). It owns its timers, listeners
 // and DOM until dispose. `onExit` is the return control; `createTimeDisplay` and `mountHeaderControl` are DEV ports.
-export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, onExit,
+export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, fishArt, onExit,
   createTimeDisplay = null, mountHeaderControl = null }) {
   const root = documentTarget.createElement("div");
   root.className = "house";
@@ -63,7 +63,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   });
   sceneDetachers.push(sceneScroll.attach(node("[data-house-scrim]")));
   for (const button of root.querySelectorAll("[data-house-panel-button]")) sceneDetachers.push(sceneScroll.attach(button));
-  const fishView = new AquariumFishView({ canvas: node("[data-house-aquarium-fish]"),
+  const fishView = new AquariumFishView({ canvas: node("[data-house-aquarium-fish]"), fishArt,
     windowTarget, motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => Math.random() }, isValidConfig: isUsableAquariumVisual }),
     style: AQUARIUM_FISH_VIEW_STYLE,
     createImage: () => new windowTarget.Image(),

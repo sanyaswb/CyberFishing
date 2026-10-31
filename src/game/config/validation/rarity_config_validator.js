@@ -254,23 +254,23 @@ export class RarityConfigValidator {
     );
     for (const fish of Array.isArray(fishDb) ? fishDb : []) {
       const fishPath = `FISH_DB.${fish?.id || "<missing-id>"}`;
-      const uniqueImagePattern = fish?.visual?.uniqueImagePattern;
-      if (fish?.anomalyVariant && uniqueImagePattern === undefined) {
+      const uniqueImageAssetPattern = fish?.visual?.uniqueImageAssetPattern;
+      if (fish?.anomalyVariant && uniqueImageAssetPattern === undefined) {
         this.#error(
-          `${fishPath}.visual.uniqueImagePattern`,
+          `${fishPath}.visual.uniqueImageAssetPattern`,
           "anomaly variant requires a level-specific unique image pattern",
         );
       }
-      if (uniqueImagePattern !== undefined) {
-        const pattern = String(uniqueImagePattern || "").trim();
+      if (uniqueImageAssetPattern !== undefined) {
+        const pattern = String(uniqueImageAssetPattern || "").trim();
         if (!pattern) {
           this.#error(
-            `${fishPath}.visual.uniqueImagePattern`,
-            "expected non-empty asset pattern when configured",
+            `${fishPath}.visual.uniqueImageAssetPattern`,
+            "expected a non-empty asset id pattern when configured",
           );
         } else if (!pattern.includes("{level}")) {
           this.#error(
-            `${fishPath}.visual.uniqueImagePattern`,
+            `${fishPath}.visual.uniqueImageAssetPattern`,
             'expected a "{level}" placeholder',
           );
         }

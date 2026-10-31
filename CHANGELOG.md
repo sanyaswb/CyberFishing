@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.43 - Fish art by id, no asset paths in code
+
+- TK-178 / spec 157 R16 (c–d): fish name their art by asset-id patterns (`visual.imageAssetPattern`, `uniqueImageAssetPattern`); `FishVisualVariantResolver` hands out the registry's file (a caught fish keeps the same `imagePath` in saves) and `FishArtVariants` maps it to the thumbnail and display variants through the registry (`AssetRegistry.idOfPath`). The `asset-references` check now forbids `"assets/…"` literals in every source, stylesheet and page except the generated registry. Game-cycle report unchanged.
+
 ## v0.49.42 - Inventory art by id
 
 - TK-178 / spec 157 R16 (c, inventory): item art (`iconAsset`, `switcherIconAsset`, `skin.thumbnail.asset`, rod `withLineAsset`/`withoutLineAsset`, boat `baitAsset`/`noBaitAsset`), slot placeholders, inventory sections and their sprite, keepnet fill stages and aquarium feed boxes are named by asset id; `InventoryDomFactory` (`image`, `svgIcon`, `assetUrl`), the keepnet views, selector, depth selector, landing net and chum buttons, House feed images and the DEV shop resolve the files through the registry. Same requests before the start. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.34 - Sprite icons before start
 
 - TK-174 / spec 157: until the game is ready the classic backpack and keepnet buttons (R11 stand-ins, and classic mode) show the sections sprite's icons instead of the 2048 px briefcase and the keepnet art (0.44 MB no longer requested before the start); the art replaces each icon once it has loaded after the first frame. Game-cycle report unchanged.
-
-## v0.49.33 - Current background phase only
-
-- Spec 157 R4: the game starts with only the background phase of the current game time (and its overlay at dusk or dawn); the other phases load right after the first frame, and until one arrives the nearest loaded phase is drawn (cold start on Fast 4G 2.7 → 2.3 s, 3G 12.8 → 11.0 s locally). Game-cycle report unchanged.

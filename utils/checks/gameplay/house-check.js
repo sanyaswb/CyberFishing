@@ -452,7 +452,8 @@ function checkHouseScreenComposition() {
   const exits = [];
   const { AssetRegistry } = runtime.importModule("src/engine/assets/asset_registry.js");
   const assets = new AssetRegistry({});
-  const house = composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, onExit: () => exits.push("exit") });
+  const fishArt = { thumbnailPath: () => "" };
+  const house = composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, fishArt, onExit: () => exits.push("exit") });
   assert.deepEqual(mounted, [root], "the screen root is mounted into the page's UI surface");
   assert(root.className === "house" && root.innerHTML === readHouseMarkup(), "the root holds the House screen markup");
   const presenter = created.find((entry) => entry.options?.liveBait);
@@ -485,7 +486,10 @@ async function checkAquariumCanvasResize() {
   const size = { width: 300, height: 150 };
   const canvas = { getBoundingClientRect: () => rect, getContext: () => ({ setTransform() { transforms++; } }) };
   for (const key of ["width", "height"]) Object.defineProperty(canvas, key, { get: () => size[key], set: value => { writes++; size[key] = value; } });
-  const view = new AquariumFishView({ canvas, windowTarget: { devicePixelRatio: 2 }, motion: { setBounds() { bounds++; } },
+  const { FishArtVariants } = await import("../../../src/game/presentation/fish/fish_art_variants.js");
+  const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
+  const fishArt = new FishArtVariants({ assets: new AssetRegistry({}) });
+  const view = new AquariumFishView({ canvas, windowTarget: { devicePixelRatio: 2 }, motion: { setBounds() { bounds++; } }, fishArt,
     createImage: () => ({}), observeResize: (target, callback) => { resize = callback; return { disconnect() {} }; }, style: {} });
   assert.deepEqual([size.width, size.height, writes, transforms, bounds], [400, 200, 2, 1, 1]);
   for (let index = 0; index < 100; index++) resize();

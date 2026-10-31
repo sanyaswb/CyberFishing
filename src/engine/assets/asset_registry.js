@@ -4,6 +4,7 @@
 export class AssetRegistry {
   #entries;
   #idsByTag = null;
+  #idsByPath = null;
 
   // entries: { id: { kind, path | json + atlas + textures, bytes, sha256, tags, label } } (ASSET_REGISTRY).
   constructor(entries) {
@@ -33,6 +34,16 @@ export class AssetRegistry {
     const entry = this.entryOf(id);
     if (entry.kind !== "spine") throw new TypeError(`Asset "${id}" is not a Spine package`);
     return { skeleton: entry.json, atlas: entry.atlas, textures: entry.textures };
+  }
+
+  // The id of the asset whose file is path, or null. Only for paths that game state already holds (a caught fish's
+  // image in a save); code and configuration name assets by id.
+  idOfPath(path) {
+    if (!this.#idsByPath) {
+      this.#idsByPath = new Map();
+      for (const [id, entry] of this.#entries) if (entry.path) this.#idsByPath.set(entry.path, id);
+    }
+    return this.#idsByPath.get(path) ?? null;
   }
 
   idsByTag(tag) {

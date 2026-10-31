@@ -110,19 +110,21 @@ function checkDrawOrder() {
 }
 
 async function checkFishArt() {
-  const { FISH_ART_VARIANTS, fishArtVariantPath, fishMasterImagePath, fishDisplayImagePath } =
-    await importSource("src/game/presentation/fish/fish_art_variants.js");
-  const { fishThumbnailPath } = await importSource("src/game/presentation/house/fish_thumbnail_path.js");
+  const { FISH_ART_VARIANTS, FishArtVariants } = await importSource("src/game/presentation/fish/fish_art_variants.js");
+  const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
+  const fishArt = new FishArtVariants({ assets: new AssetRegistry(ASSET_REGISTRY) });
   const master = "assets/fish/crucian_stalker/standart/crucian_stalker--3.webp";
-  assert.equal(fishThumbnailPath(master), "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--3.webp",
+  assert.equal(fishArt.thumbnailPath(master), "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--3.webp",
     "thumbnails keep their paths");
-  assert.equal(fishArtVariantPath(master, "display"), "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp");
-  assert.equal(fishArtVariantPath("assets/items/x.svg", "display"), "assets/items/x.svg", "non-master art is untouched");
-  assert.equal(fishArtVariantPath(null, "thumbnail"), "");
-  assert.throws(() => fishArtVariantPath(master, "poster"), /Unknown fish art variant/u);
-  assert.equal(fishMasterImagePath({ id: "perch_radioactive", level: 4 }),
-    "assets/fish/perch_radioactive/perch_radioactive--4.webp", "the species default master for a level");
-  assert.equal(fishDisplayImagePath({ imagePath: master }), fishArtVariantPath(master, "display"));
+  assert.equal(fishArt.variantPath(master, "display"), "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp");
+  assert.equal(fishArt.variantPath("assets/items/x.svg", "display"), "assets/items/x.svg", "non-master art is untouched");
+  assert.equal(fishArt.variantPath(null, "thumbnail"), "");
+  assert.throws(() => fishArt.variantPath(master, "poster"), /Unknown fish art variant/u);
+  assert.equal(fishArt.masterImagePath({ id: "perch_radioactive", level: 4 }),
+    "assets/fish/perch_radioactive/standart/perch_radioactive--4.webp", "the species' standard master for a level");
+  assert.equal(fishArt.masterImagePath({ id: "unknown_fish", level: 1 }), "", "no registered master, no guessed path");
+  assert.equal(fishArt.displayImagePath({ imagePath: master }), fishArt.variantPath(master, "display"));
 
   const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
   const tracked = new Set(spawnSync("git", ["ls-files", "assets/fish", "assets/fish-thumbnails", "assets/fish-display"],
@@ -131,7 +133,8 @@ async function checkFishArt() {
   assert(masters.length > 0, "fish masters are tracked");
   for (const file of masters) {
     for (const [variant, { maxSize }] of Object.entries(FISH_ART_VARIANTS)) {
-      const target = fishArtVariantPath(file, variant);
+      const target = fishArt.variantPath(file, variant);
+      assert.notEqual(target, file, `${file} has a registered ${variant} variant`);
       assert(tracked.has(target), `${target} is tracked (Pages serves tracked files only)`);
       const meta = await sharp(path.join(ROOT_DIR, target)).metadata();
       assert(Math.max(meta.width, meta.height) <= maxSize, `${target} is at most ${maxSize} px`);
@@ -151,8 +154,9 @@ async function checkOneSource() {
     /requires resolveFishImage/u, "the preloader has no default image path of its own");
   const composition = fs.readFileSync(path.join(ROOT_DIR, "src/bootstrap/production/game_render_composition.js"), "utf8")
     + fs.readFileSync(path.join(ROOT_DIR, "src/bootstrap/production/game_composition_root.js"), "utf8");
-  assert.equal((composition.match(/resolveFishImage: fishDisplayImagePath/gu) || []).length, 2,
+  assert.equal((composition.match(/resolveFishImage: \(fish\) => [\w.#]*fishArt\.displayImagePath\(fish\)/gu) || []).length, 2,
     "bootstrap gives both consumers the same display source");
+  assert.equal((composition.match(/new FishArtVariants\(/gu) || []).length, 1, "one fish art instance serves both");
 }
 
 async function main() {
