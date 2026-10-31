@@ -41,7 +41,8 @@ export class RadioReceiverService {
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
-  // listCountries() }; player: RadioStreamPlayer-like { play(url), stop(), setVolume(v) }; preferences: { load(),
+  // listCountries() }; player: RadioStreamPlayer-like { play(url), playAsset(assetId) (a playlist track by asset id,
+  // spec 157 R16), stop(), setVolume(v) }; preferences: { load(),
   // save(p) }; region: { resolve() }; config: () => CONFIG.radio; secureOnly: the page is https (mixed content);
   // weather: { getSnapshot() } (isRaining, wind.rainMult); noise: RadioNoiseSource-like { update(level, rate, s),
   // burst(s), stop() }; rng: the radio's own { next() }; scheduler: { setTimeout, clearTimeout } (dropouts).
@@ -492,7 +493,7 @@ export class RadioReceiverService {
           name: channel?.name || mode,
           frequency: channel?.frequency || "",
           title: "",
-          url: "",
+          asset: "",
         },
         stationCount: 0,
         trackIndex: 0,
@@ -506,7 +507,7 @@ export class RadioReceiverService {
       name: channel.name,
       frequency: channel.frequency || "",
       title: track.title || "",
-      url: track.url || "",
+      asset: track.asset || "",
     };
     this.#set({
       status: "loading",
@@ -516,7 +517,7 @@ export class RadioReceiverService {
       trackCount: count,
     });
     if (this.#hidden && !this.#prefs.playInBackground) return;
-    this.#player.play(track.url, { isStationSwitch });
+    this.#player.playAsset(track.asset, { isStationSwitch });
   }
 
   #handleTrackEnded(mode) {
@@ -573,7 +574,7 @@ export class RadioReceiverService {
         name: channel?.name || mode,
         frequency: channel?.frequency || "",
         title: track?.title || "",
-        url: track?.url || "",
+        asset: track?.asset || "",
       };
       this.#status.stationCount = tracks.length;
       this.#status.trackIndex = index;

@@ -3,7 +3,7 @@ import { VinylRack } from "./vinyl_rack.js";
 import { WalkieTalkieRack } from "./walkie_talkie_rack.js";
 import { RadioRack } from "./radio_rack.js";
 
-const RADIO_SWITCH_FILE = "assets/audio/radio/next_track-radio.mp3";
+const RADIO_SWITCH_ASSET = "audio.radio.next_track-radio";
 
 function resolveFetch(ref) {
   if (typeof ref === "function") return ref;
@@ -30,15 +30,18 @@ export class RadioEffectsChain {
   #output = null;
   #streamCueGate = null;
   #fetchRef;
+  #assets;
   #radioSwitchBuffer = null;
   #radioCueSources = new Set();
 
-  // config: () => CONFIG.radio.effects; rng: the radio's own { next() }.
-  constructor({ config, rng, fetchRef = null }) {
+  // config: () => CONFIG.radio.effects; rng: the radio's own { next() }; assets: the AssetRegistry (spec 157 R16).
+  constructor({ config, rng, fetchRef = null, assets }) {
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("RadioEffectsChain requires assets");
     this.#config = config;
     this.#fetchRef = resolveFetch(fetchRef);
+    this.#assets = assets;
     this.#retro = new RetroRack();
-    this.#vinyl = new VinylRack({ rng, fetchRef });
+    this.#vinyl = new VinylRack({ rng, fetchRef, assets });
     this.#walkieTalkie = new WalkieTalkieRack();
     this.#radio = new RadioRack({ rng });
   }
@@ -166,7 +169,8 @@ export class RadioEffectsChain {
   async #loadRadioSwitchBuffer() {
     if (this.#radioSwitchBuffer) return this.#radioSwitchBuffer;
     if (!this.#fetchRef || !this.#context?.decodeAudioData) return null;
-    const paths = [RADIO_SWITCH_FILE, `/${RADIO_SWITCH_FILE}`, `./${RADIO_SWITCH_FILE}`];
+    const file = this.#assets.pathOf(RADIO_SWITCH_ASSET);
+    const paths = [file, `/${file}`, `./${file}`];
     for (const p of paths) {
       try {
         const res = await this.#fetchRef(p);

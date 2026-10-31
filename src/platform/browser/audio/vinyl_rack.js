@@ -1,13 +1,14 @@
 import { finiteOr } from "../../../engine/math/number_normalization.js";
 import { WalkieTalkieRack } from "./walkie_talkie_rack.js";
 
-export const VINYL_SFX_FILES = Object.freeze({
-  "vinyl-1": "assets/audio/radio/vinyl/vinyl-1.mp3",
-  "vinyl-2": "assets/audio/radio/vinyl/vinyl-2.mp3",
-  "vinyl-3": "assets/audio/radio/vinyl/vinyl-3.mp3",
-  "vinyl-4": "assets/audio/radio/vinyl/vinyl-4.mp3",
-  "vinyl-5": "assets/audio/radio/vinyl/vinyl-5.mp3",
-  "vinyl-6": "assets/audio/radio/next_track-vinyl.mp3",
+// The record's overlay sounds by asset id (spec 157 R16); the registry gives each file when it is fetched.
+export const VINYL_SFX_ASSETS = Object.freeze({
+  "vinyl-1": "audio.radio.vinyl.vinyl-1",
+  "vinyl-2": "audio.radio.vinyl.vinyl-2",
+  "vinyl-3": "audio.radio.vinyl.vinyl-3",
+  "vinyl-4": "audio.radio.vinyl.vinyl-4",
+  "vinyl-5": "audio.radio.vinyl.vinyl-5",
+  "vinyl-6": "audio.radio.next_track-vinyl",
 });
 
 function resolveFetch(ref) {
@@ -50,12 +51,15 @@ export class VinylRack {
   #sfxGains = new Map();
   #sfxSources = new Map();
   #sfxBuffers = new Map();
+  #assets;
   #active = true;
 
-  // rng: the radio's own { next() } (never the gameplay RNG).
-  constructor({ rng, fetchRef = null }) {
+  // rng: the radio's own { next() } (never the gameplay RNG); assets: the AssetRegistry.
+  constructor({ rng, fetchRef = null, assets }) {
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("VinylRack requires assets");
     this.#rng = rng;
     this.#fetchRef = resolveFetch(fetchRef);
+    this.#assets = assets;
   }
 
   setActive(active) {
@@ -380,7 +384,7 @@ export class VinylRack {
     // TK-132: SFX overlay tracks (vinyl-1 .. vinyl-6)
     const sfxSettings = settings.sfx || {};
     if (!this.#applied.sfx) this.#applied.sfx = {};
-    for (const [id, filePath] of Object.entries(VINYL_SFX_FILES)) {
+    for (const id of Object.keys(VINYL_SFX_ASSETS)) {
       const trackCfg = sfxSettings[id] || {};
       const isTrackEnabled = trackCfg.enabled === true;
       const targetGain = isTrackEnabled ? Math.max(0, Math.min(1, finiteOr(trackCfg.volume, 0.5))) : 0;
@@ -400,7 +404,7 @@ export class VinylRack {
         if (this.#sfxBuffers.has(id)) {
           this.#startSfxSource(id, this.#sfxBuffers.get(id), gainNode);
         } else {
-          this.#loadSfxBuffer(id, filePath).then((buf) => {
+          this.#loadSfxBuffer(id).then((buf) => {
             if (buf && this.#nodes && this.#applied.sfx?.[id]?.enabled === true) {
               this.#startSfxSource(id, buf, this.#sfxGains.get(id));
             }
@@ -422,7 +426,7 @@ export class VinylRack {
     this.#active = true;
     const buf = this.#sfxBuffers.get("vinyl-6");
     if (!buf) {
-      this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]).then((loaded) => {
+      this.#loadSfxBuffer("vinyl-6").then((loaded) => {
         if (loaded && this.#active) this.cueTonearm();
       });
       return { duration: 3.3 };
@@ -637,9 +641,10 @@ export class VinylRack {
     });
   }
 
-  async #loadSfxBuffer(id, filePath) {
+  async #loadSfxBuffer(id) {
     if (this.#sfxBuffers.has(id)) return this.#sfxBuffers.get(id);
     if (!this.#fetchRef || !this.#context?.decodeAudioData) return null;
+    const filePath = this.#assets.pathOf(VINYL_SFX_ASSETS[id]);
     const buf = await this.#fetchAudio([filePath, `/${filePath}`, `./${filePath}`]);
     if (buf) this.#sfxBuffers.set(id, buf);
     return buf;
@@ -699,7 +704,7 @@ export class VinylRack {
     if (!this.#fetchRef || !this.#context?.decodeAudioData) return;
     try {
       // TK-133: Pre-load vinyl-6 for instantaneous authentic needle drop cueing on track switches
-      await this.#loadSfxBuffer("vinyl-6", VINYL_SFX_FILES["vinyl-6"]);
+      await this.#loadSfxBuffer("vinyl-6");
     } catch {
       // In tests or non-browser environments, safely ignore
     }

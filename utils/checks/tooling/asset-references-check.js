@@ -17,8 +17,17 @@ const MIGRATED_MODULES = Object.freeze([
   "src/game/config/raw/locations/location_database.js",
   "src/platform/browser/location/location_asset_loader.js",
   "src/platform/browser/assets/asset_preload_coordinator.js",
+  "src/game/config/runtime/game_config.js",
+  "src/game/config/raw/radio/radio_channels.js",
+  "src/game/application/state/biting_state.js",
+  "src/platform/browser/runtime/browser_audio_adapter.js",
+  "src/platform/browser/audio/vinyl_rack.js",
+  "src/platform/browser/audio/radio_effects_chain.js",
+  "src/platform/browser/audio/radio_stream_player.js",
 ]);
 const PATH_LITERAL = /["'`]assets\/[^"'`]*/gu;
+// A string literal shaped like a registry id (its first part is a top folder of assets/).
+const ID_LITERAL = /["'`]((?:animations|audio|fish|fish-display|fish-thumbnails|house|items|lobby|locations|ui)\.[A-Za-z0-9_.-]+)["'`]/gu;
 
 // Every `asset` / `*Asset` / `*Assets` field under value, with the path to it.
 function collectAssetReferences(value, where, found = []) {
@@ -56,7 +65,14 @@ function collectAssetReferences(value, where, found = []) {
   // Configuration names its assets by registered ids.
   const assets = new AssetRegistry(ASSET_REGISTRY);
   const { MAP_DB } = await importSource("src/game/config/raw/locations/location_database.js");
-  const references = collectAssetReferences(MAP_DB, "MAP_DB");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const { RADIO_CHANNELS } = await importSource("src/game/config/raw/radio/radio_channels.js");
+  const references = [...collectAssetReferences(MAP_DB, "MAP_DB"), ...collectAssetReferences(CONFIG.ui, "CONFIG.ui"),
+    ...collectAssetReferences(RADIO_CHANNELS, "RADIO_CHANNELS")];
+  assert(CONFIG.ui.audio.feederBiteAsset, "the feeder bell is named by asset id");
+  for (const channel of Object.values(RADIO_CHANNELS)) {
+    for (const track of channel.tracks ?? []) assert(track.asset && !("url" in track), `${channel.id} track ${track.id} by asset id`);
+  }
   for (const location of Object.values(MAP_DB)) {
     assert(location.backgroundAssets || location.backgroundAsset, `${location.id} names its background by asset id`);
     assert(location.depthAsset, `${location.id} names its depth map by asset id`);
@@ -67,13 +83,19 @@ function collectAssetReferences(value, where, found = []) {
     assert.notEqual(assets.entryOf(id).kind, "spine", `${where}: ${id} is a Spine package, not a file`);
   }
 
-  // Moved modules hold no path literals.
+  // Moved modules hold no path literals, and every id they name in code is registered.
+  let codeIds = 0;
   for (const file of MIGRATED_MODULES) {
-    const literals = fs.readFileSync(path.join(ROOT, file), "utf8").match(PATH_LITERAL) ?? [];
-    assert.deepEqual(literals, [], `${file} names assets by id, not by path`);
+    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
+    assert.deepEqual(text.match(PATH_LITERAL) ?? [], [], `${file} names assets by id, not by path`);
+    for (const [, id] of text.matchAll(ID_LITERAL)) {
+      assert(assets.has(id), `${file}: "${id}" is not an asset id of the registry`);
+      codeIds += 1;
+    }
   }
   console.log(`Asset references passed: registry lookups (path, Spine package, tags, unknown id), ${references.length} `
-    + `configuration references to registered ids, ${MIGRATED_MODULES.length} modules without path literals.`);
+    + `configuration references and ${codeIds} ids in code registered, ${MIGRATED_MODULES.length} modules without path `
+    + "literals.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -1999,6 +1999,7 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/browser_audio_adapter.js", {
     expose: ["BrowserAudioAdapter"],
   });
+  runtime.load("src/engine/assets/asset_registry.js", { expose: ["AssetRegistry"] });
   runtime.load("src/dev/runtime/browser_debug_adapter.js", {
     expose: ["BrowserDebugAdapter"],
   });
@@ -2454,7 +2455,11 @@ async function checkGameLoopAndAdapters() {
   );
   assert.equal(new ConfigProvider({}).fightPhysicsConfig, null);
 
-  const pooled = new BrowserAudioAdapter().createPlayer("splash.mp3");
+  const { AssetRegistry: AudioAssetRegistry } = runtime.context;
+  const sound = (file) => ({ kind: "audio", path: file, bytes: 1, sha256: "0", tags: [], label: "" });
+  const audioAssets = new AudioAssetRegistry({ "sfx.splash": sound("splash.mp3"), "sfx.reel": sound("reel.mp3") });
+  assert.throws(() => new BrowserAudioAdapter({}), /requires assets/u);
+  const pooled = new BrowserAudioAdapter({ assets: audioAssets }).createPlayer("sfx.splash");
   assert.equal(pooled.src, "splash.mp3");
   assert.equal(audios.length, 4, "no AudioContext: a pool of four elements");
   await pooled.warm();
@@ -2520,7 +2525,7 @@ async function checkGameLoopAndAdapters() {
     }
   }
   window.AudioContext = AudioContextProbe;
-  const buffered = new BrowserAudioAdapter().createPlayer("reel.mp3");
+  const buffered = new BrowserAudioAdapter({ assets: audioAssets }).createPlayer("sfx.reel");
   buffered.play(0.5);
   await buffered.warm();
   await Promise.resolve();

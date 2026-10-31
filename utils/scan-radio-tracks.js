@@ -1,11 +1,13 @@
 "use strict";
 
+// The radio's playlists from the asset registry (spec 157 R16, TK-178): every registered audio file under
+// assets/audio/radio/<channel>/ becomes a track named by its asset id (run npm run assets:sync first for new files).
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 
 const ROOT = path.resolve(__dirname, "..");
-const VOLIA_DIR = path.join(ROOT, "assets", "audio", "radio", "volia");
-const CUSTOM_DIR = path.join(ROOT, "assets", "audio", "radio", "custom");
+const REGISTRY_FILE = path.join(ROOT, "src", "game", "config", "generated", "asset_registry.js");
 const TARGET_FILE = path.join(ROOT, "src", "game", "config", "raw", "radio", "radio_channels.js");
 
 const AUDIO_EXTS = new Set([".mp3", ".ogg", ".wav", ".aac", ".m4a"]);
@@ -22,21 +24,22 @@ const VOLIA_TRACK_ORDER = [
   "radio_volya_shelf",
 ];
 
-function scanDir(dir, prefix) {
-  if (!fs.existsSync(dir)) return [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+// registry: ASSET_REGISTRY; prefix: the channel folder under assets/audio/radio/.
+function scanChannel(registry, prefix) {
+  const folder = `assets/audio/radio/${prefix}/`;
   const tracks = [];
-  for (const entry of entries) {
-    if (!entry.isFile()) continue;
-    const ext = path.extname(entry.name).toLowerCase();
+  for (const [assetId, entry] of Object.entries(registry)) {
+    if (entry.kind !== "audio" || !entry.path.startsWith(folder) || entry.path.slice(folder.length).includes("/")) continue;
+    const fileName = entry.path.slice(folder.length);
+    const ext = path.extname(fileName).toLowerCase();
     if (!AUDIO_EXTS.has(ext)) continue;
-    const baseName = path.basename(entry.name, ext);
+    const baseName = path.basename(fileName, ext);
     const lookupKey = baseName.toLowerCase();
     const title = KNOWN_TITLES[lookupKey] || baseName.replace(/[_-]+/gu, " ").trim();
     tracks.push({
       id: `${prefix}-${baseName.toLowerCase().replace(/[^a-z0-9_-]/gu, "-")}`,
       title,
-      url: `assets/audio/radio/${prefix}/${entry.name}`,
+      asset: assetId,
     });
   }
   if (prefix === "volia") {
@@ -52,9 +55,10 @@ function scanDir(dir, prefix) {
   return tracks;
 }
 
-function generate() {
-  const voliaTracks = scanDir(VOLIA_DIR, "volia");
-  const customTracks = scanDir(CUSTOM_DIR, "custom");
+async function generate() {
+  const { ASSET_REGISTRY } = await import(pathToFileURL(REGISTRY_FILE).href);
+  const voliaTracks = scanChannel(ASSET_REGISTRY, "volia");
+  const customTracks = scanChannel(ASSET_REGISTRY, "custom");
 
   const content = `// Spec 144: Channel and playlist configuration for dedicated station VOLIA 77.2, custom player MP3 playlist,
 // and world radio (Radio Browser). Auto-scanned via utils/scan-radio-tracks.js.
@@ -91,7 +95,10 @@ export const RADIO_CHANNELS = {
 }
 
 if (require.main === module) {
-  generate();
+  generate().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
 }
 
-module.exports = { scanDir, generate };
+module.exports = { scanChannel, generate };

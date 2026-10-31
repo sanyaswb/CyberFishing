@@ -25,11 +25,15 @@ export class RadioStreamPlayer {
   #gainScale = 1;
   #listeners = [];
   #effects;
+  #assets;
   #effectsGate = null;
   #active = false;
 
   // effects: an optional chain { attach(context, input, output), update(), dispose() } between input and output.
-  constructor({ documentRef, audioContexts, scheduler, config, onState, effects = null }) {
+  // assets: the AssetRegistry; a playlist track is played by its asset id (spec 157 R16).
+  constructor({ documentRef, audioContexts, scheduler, config, onState, effects = null, assets }) {
+    if (!assets || typeof assets.pathOf !== "function") throw new TypeError("RadioStreamPlayer requires assets");
+    this.#assets = assets;
     this.#documentRef = documentRef;
     this.#audioContexts = audioContexts;
     this.#scheduler = scheduler;
@@ -113,6 +117,11 @@ export class RadioStreamPlayer {
         }
       }
     }
+  }
+
+  // A track of the game's own playlist (VOLIA 77.2, custom) by asset id.
+  playAsset(assetId, options) {
+    this.play(assetId ? this.#assets.pathOf(assetId) : "", options);
   }
 
   play(url, { isStationSwitch = true } = {}) {

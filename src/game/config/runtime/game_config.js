@@ -575,7 +575,7 @@ export const CONFIG = {
     dragHoldTimeMs: 1000,
 
     audio: {
-      feederBite: "assets/audio/bell_ring.mp3",
+      feederBiteAsset: "audio.bell_ring", // id реєстру асетів (spec 157 R16)
     },
 
     // The float on the water (spec 127), presentation only: displayScale multiplies its drawn size (2 = twice the

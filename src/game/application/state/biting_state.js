@@ -9,6 +9,7 @@ export class BitingState extends GameState {
   }
 
   #feederAudioPlayer;
+  #feederAssetId = "";
   #lastStepId = -1;
   #ringQueue = [];
   #ringHead = 0;
@@ -34,17 +35,19 @@ export class BitingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     if (
       this.deps.rules.equipment.isFeeder(eq) &&
-      this.deps.config.ui?.audio?.feederBite
+      this.deps.config.ui?.audio?.feederBiteAsset
     ) {
-      const src = this.deps.config.ui.audio.feederBite;
-      if (!this.#feederAudioPlayer || this.#feederAudioPlayer.src !== src) {
+      const assetId = this.deps.config.ui.audio.feederBiteAsset;
+      if (!this.#feederAudioPlayer || this.#feederAssetId !== assetId) {
         this.#feederAudioPlayer?.dispose();
-        this.#feederAudioPlayer = this.deps.services.audio.createPlayer(src);
+        this.#feederAudioPlayer = this.deps.services.audio.createPlayer(assetId);
+        this.#feederAssetId = assetId;
       }
       this.#feederAudioPlayer.warm().catch(() => {});
     } else {
       this.#feederAudioPlayer?.dispose();
       this.#feederAudioPlayer = null;
+      this.#feederAssetId = "";
     }
   }
 

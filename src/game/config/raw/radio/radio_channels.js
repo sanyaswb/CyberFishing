@@ -10,17 +10,17 @@ export const RADIO_CHANNELS = {
       {
             "id": "volia-radio_volia",
             "title": "Ефір ВОЛЯ 77.2",
-            "url": "assets/audio/radio/volia/RADIO_VOLIA.mp3"
+            "asset": "audio.radio.volia.RADIO_VOLIA"
       },
       {
             "id": "volia-chomu_z_kupola_tikayut_na_irzhavyi_shelf",
             "title": "Чому з Купола тікають на Іржавий Шельф",
-            "url": "assets/audio/radio/volia/Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a"
+            "asset": "audio.radio.volia.Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf"
       },
       {
             "id": "volia-radio_volya_shelf",
             "title": "Ефір ВОЛЯ (Іржавий Шельф)",
-            "url": "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3"
+            "asset": "audio.radio.volia.RADIO_VOLYA_SHELF"
       }
 ],
   },

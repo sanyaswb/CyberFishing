@@ -18,6 +18,9 @@ const { InventoryCompositionRoot } = runtime.importModule("src/bootstrap/product
 const { InventoryActionType } = runtime.importModule("src/game/presentation/inventory/inventory_action_type.js");
 const { EQUIPMENT_SLOT_CONFIG } = runtime.importModule("src/game/domain/equipment/equipment_slot_catalog.js");
 const { HorizontalScrollController } = runtime.importModule("src/platform/browser/dom/horizontal_scroll_controller.js");
+const { AssetRegistry } = runtime.importModule("src/engine/assets/asset_registry.js");
+const { ASSET_REGISTRY } = runtime.importModule("src/game/config/generated/asset_registry.js");
+const assets = new AssetRegistry(ASSET_REGISTRY);
 
 const radio = ITEM_DB.devices.radio_receiver_basic;
 assert.equal(radio.itemType, "radio");
@@ -296,8 +299,16 @@ async function stageTwo() {
   assert.equal(audioContexts.peek(), null, "no audio context before the power gesture");
   const states = [];
   const playerTimers = scheduler();
-  const stream = new RadioStreamPlayer({ documentRef: { createElement: () => new FakeAudio() }, audioContexts,
+  const stream = new RadioStreamPlayer({ documentRef: { createElement: () => new FakeAudio() }, audioContexts, assets,
     scheduler: playerTimers, config: () => ({ startTimeoutMs: 5000 }), onState: (state, info) => states.push([state, info.effects]) });
+  // A playlist track plays by asset id: the player resolves its file through the registry (spec 157 R16).
+  const resolved = [];
+  const resolving = new RadioStreamPlayer({ documentRef: { createElement: () => new FakeAudio() }, audioContexts, assets,
+    scheduler: scheduler(), config: () => ({}), onState() {} });
+  resolving.play = (url, options) => resolved.push([url, options]);
+  resolving.playAsset("audio.radio.volia.RADIO_VOLIA", { isStationSwitch: false });
+  assert.deepEqual(resolved, [["assets/audio/radio/volia/RADIO_VOLIA.mp3", { isStationSwitch: false }]]);
+  assert.throws(() => resolving.playAsset("audio.radio.volia.missing"), /Unknown asset id/u);
   stream.setVolume(0.5);
   stream.play("https://cors.example");
   assert.equal(contextsMade, 1, "the first play (in the gesture) makes the context");
@@ -369,6 +380,7 @@ async function stageTwo() {
   const cueTimers = scheduler();
   const cueStates = [];
   const cuePlayer = new RadioStreamPlayer({
+    assets,
     documentRef: { createElement: () => new FakeAudio() },
     audioContexts,
     scheduler: cueTimers,
@@ -664,7 +676,7 @@ async function stageThree() {
   made.length = 0;
   const { VinylRack } = runtime.importModule("src/platform/browser/audio/vinyl_rack.js");
   let draw = 0;
-  const vinyl = new VinylRack({ rng: { next: () => { draw = (draw + 0.37) % 1; return draw; } } }).build(context);
+  const vinyl = new VinylRack({ rng: { next: () => { draw = (draw + 0.37) % 1; return draw; } }, assets }).build(context);
   const vinylSettings = { enabled: true, mix: 1, highpassHz: 35, warmthHz: 150, warmthGainDb: 2.5, lowpassHz: 9000,
     drive: 3, outputGain: 1, baseDelayMs: 6, wowHz: 0.55, wowDepthMs: 1.2, flutterHz: 6.5, flutterDepthMs: 0.15,
     crackleRate: 6, crackleLevel: 0.12, crackleToneHz: 2500, popRate: 0.25, popLevel: 0.35, hissLevel: 0.006,
@@ -735,7 +747,7 @@ async function stageThree() {
   made.length = 0;
   const { RadioEffectsChain } = runtime.importModule("src/platform/browser/audio/radio_effects_chain.js");
   const effectsConfig = { rampSeconds: 0.05, retro: { ...retroSettings, enabled: false }, vinyl: { ...vinylSettings, enabled: false }, walkieTalkie: { ...walkieSettings }, radio: { ...radioSettings, enabled: false } };
-  const chain = new RadioEffectsChain({ config: () => effectsConfig, rng: { next: () => 0.5 } });
+  const chain = new RadioEffectsChain({ config: () => effectsConfig, rng: { next: () => 0.5 }, assets });
   const chainIn = node("in");
   const chainOut = node("out");
   chain.attach(context, chainIn, chainOut);
@@ -966,7 +978,7 @@ async function stageFive() {
   const targets = [];
   const context = { state: "running", currentTime: 4, destination: { connect() {} },
     createGain: () => ({ connect() {}, disconnect() {}, gain: { value: 1, setTargetAtTime: (v, at, c) => targets.push([v, at, c]) } }) };
-  const player = new RadioStreamPlayer({ documentRef: { createElement: () => ({}) },
+  const player = new RadioStreamPlayer({ documentRef: { createElement: () => ({}) }, assets,
     audioContexts: new SharedAudioContextProvider({ windowRef: { AudioContext: function AudioContext() { return context; } } }),
     scheduler: scheduler(), config: () => ({ ducking: { rampSeconds: 0.15 } }), onState() {} });
   player.input;
@@ -1234,6 +1246,7 @@ async function spec144CustomRadio() {
   let playerResumed = 0;
   const fakePlayer = {
     play: (url, opts) => played.push({ url, isStationSwitch: opts?.isStationSwitch }),
+    playAsset: (asset, opts) => played.push({ asset, isStationSwitch: opts?.isStationSwitch }),
     stop: () => {},
     pause: () => { playerPaused += 1; },
     resume: () => { playerResumed += 1; return true; },
@@ -1248,8 +1261,8 @@ async function spec144CustomRadio() {
       name: "VOLIA 77.2",
       frequency: "77.2 FM",
       tracks: [
-        { id: "v1", title: "Volia 1", url: "assets/audio/radio/volia/RADIO_VOLIA.mp3" },
-        { id: "v2", title: "Volia 2", url: "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3" },
+        { id: "v1", title: "Volia 1", asset: "audio.radio.volia.RADIO_VOLIA" },
+        { id: "v2", title: "Volia 2", asset: "audio.radio.volia.RADIO_VOLYA_SHELF" },
       ],
     },
     world: { id: "world", name: "Світове радіо", frequency: "Online" },
@@ -1276,7 +1289,7 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().channelMode, "volia", "default channel is volia");
   assert.equal(service.hasPower(), true, "service.hasPower() is true when radio and charged battery are equipped");
   service.powerOn();
-  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia channel plays its broadcast file");
+  assert.equal(played.at(-1)?.asset, "audio.radio.volia.RADIO_VOLIA", "volia channel plays its broadcast file");
   assert.equal(played.at(-1)?.isStationSwitch, true, "powering on triggers station switch");
   assert.equal(service.getStatus().station.name, "VOLIA 77.2");
   assert.equal(service.getStatus().station.frequency, "77.2 FM");
@@ -1294,7 +1307,7 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().status, "intermission", "volia pauses for 2s intermission");
   assert.equal(timers.at(-1)?.ms, 2000, "2000ms intermission timer scheduled for volia");
   timers.at(-1).cb();
-  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3", "volia channel starts next track when intermission ends");
+  assert.equal(played.at(-1)?.asset, "audio.radio.volia.RADIO_VOLYA_SHELF", "volia channel starts next track when intermission ends");
   assert.equal(played.at(-1)?.isStationSwitch, false, "advancing tracks on the same channel is not a station switch");
 
   // Next track finished: loops back to first track after 2-second intermission pause
@@ -1302,14 +1315,14 @@ async function spec144CustomRadio() {
   assert.equal(service.getStatus().status, "intermission", "volia pauses for 2s intermission before looping");
   assert.equal(timers.at(-1)?.ms, 2000);
   timers.at(-1).cb();
-  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLIA.mp3", "volia loops back to first track");
+  assert.equal(played.at(-1)?.asset, "audio.radio.volia.RADIO_VOLIA", "volia loops back to first track");
   assert.equal(played.at(-1)?.isStationSwitch, false, "looping track on same channel is not a station switch");
 
   service.next();
   assert.equal(service.getStatus().status, "intermission", "manual next on volia pauses for 2s intermission");
   assert.equal(timers.at(-1)?.ms, 2000);
   timers.at(-1).cb();
-  assert.equal(played.at(-1)?.url, "assets/audio/radio/volia/RADIO_VOLYA_SHELF.mp3");
+  assert.equal(played.at(-1)?.asset, "audio.radio.volia.RADIO_VOLYA_SHELF");
   assert.equal(played.at(-1)?.isStationSwitch, false, "manual next on same channel is not a station switch");
 
   // Custom channel cannot be set

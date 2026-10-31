@@ -370,7 +370,7 @@ export class GameCompositionRoot {
     if (this.#listenerCounter != null) {
       contracts.requireMethods(this.#listenerCounter, "listenerCounter", ["added", "removed"]);
     }
-    const audio = new BrowserAudioAdapter();
+    const audio = new BrowserAudioAdapter({ assets: this.#assets });
     const clock = new GameClock();
     // Debug events and session diagnostics exist only when DEV composes them; production gets inactive ports.
     const debugEvents = this.#createDebugEvents == null
@@ -1113,8 +1113,8 @@ export class GameCompositionRoot {
     const radioRng = new SeededRng(seed[0] || 0x5eed);
     const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
     const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
-      config, onState: (state, info) => radio?.handlePlayerState(state, info),
-      effects: new RadioEffectsChain({ config: () => config().effects || {}, rng: radioRng,
+      config, onState: (state, info) => radio?.handlePlayerState(state, info), assets: this.#assets,
+      effects: new RadioEffectsChain({ config: () => config().effects || {}, rng: radioRng, assets: this.#assets,
         fetchRef: windowRef.fetch ? windowRef.fetch.bind(windowRef) : null }) }));
     const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, getGate: () => player.streamGate, rng: radioRng }));
     radio = own(new RadioReceiverService({
