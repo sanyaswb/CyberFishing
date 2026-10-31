@@ -417,6 +417,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "asset-registry",
+    title: "Asset registry with stable ids: sync matching and an up-to-date registry",
+    file: "utils/checks/tooling/asset-registry-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "startup-load-report",
     title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
     file: "utils/checks/platform/startup-load-report-check.js",
