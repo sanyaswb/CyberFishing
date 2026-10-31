@@ -245,7 +245,6 @@ async function checkDeferredUiImages() {
   assert.deepEqual(created, ["a.webp"], "dispose stops the queue after the image in flight");
 
   const { composeDepthSelector } = await importSource("src/bootstrap/production/depth_selector_composition.js");
-  const deferred = [];
   let preloads = 0;
   const host = { appendChild() {}, append() {} };
   const fakeElement = () => ({ className: "", style: { setProperty() {} }, classList: { add() {}, remove() {}, toggle() {} },
@@ -253,11 +252,8 @@ async function checkDeferredUiImages() {
   composeDepthSelector({ documentRef: { createElement: fakeElement, createElementNS: fakeElement, addEventListener() {},
     removeEventListener() {} }, mountNode: host, uiSurface: null,
   itemDb: { floats: { float_day: { icon: "F", iconAsset: "items.floats.float-day" } }, baits: {} }, assets,
-  imageAssets: { preload: () => { preloads += 1; return Promise.resolve(); } }, deferLoad: (load) => deferred.push(load) });
-  assert.equal(preloads, 0, "the depth selector requests no icon at composition");
-  assert.equal(deferred.length, 1);
-  await deferred[0]();
-  assert.equal(preloads, 1, "its icons load with the deferred loads");
+  imageAssets: { preload: () => { preloads += 1; return Promise.resolve(); } } });
+  assert.equal(preloads, 0, "the depth selector requests no icon at composition (its icons are the plan's layer-two)");
 }
 
 // Spec 157 R4 (spec 083 decision 3): startup loads the background phases of the current game time; the others load
@@ -276,13 +272,20 @@ async function checkCurrentPhaseBackground() {
   const config = { backgroundAssets: { day: "lake.day", evening: "lake.evening", night: "lake.night" }, depthAsset: "lake.depth" };
   const resources = await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } }, { phases: ["day"] });
   assert.deepEqual(requests, [["bg--day.webp", "depth.webp"]], "startup waits for the current phase and the depth map only");
-  assert.deepEqual(Object.keys(resources.background.assetIds), ["day", "evening", "night"], "every phase keeps its id");
-  await resources.loadDeferredBackground();
-  assert.deepEqual(requests[1], ["bg--evening.webp", "bg--night.webp"], "the other phases load when deferred");
+  assert.deepEqual(resources.background.assetIds, { day: "lake.day", evening: "lake.evening", night: "lake.night" },
+    "every phase keeps its asset id, the image key the asset load plan uses too (spec 157 D1)");
   requests.length = 0;
-  await (await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } })).loadDeferredBackground();
+  await loader.load("lake", config, { baseResolution: { width: 10, height: 10 } });
   assert.deepEqual(requests, [["bg--day.webp", "bg--evening.webp", "bg--night.webp", "depth.webp"]],
-    "without phases everything loads at once and nothing is deferred");
+    "without phases everything loads at once");
+  // The other phases after the first frame: the plan's source location.background.others (layer-two).
+  const { createAssetLoadSources } = await importSource("src/bootstrap/production/asset_load_sources.js");
+  const sources = createAssetLoadSources({ locations: { map: { lake: config } }, itemDb: {} });
+  assert.deepEqual(sources["location.background.current"].resolve({ locationId: "lake", phases: ["day"] }), ["lake.day"]);
+  assert.deepEqual(sources["location.background.others"].resolve({ locationId: "lake", phases: ["day"] }),
+    ["lake.evening", "lake.night"], "the other phases load after the first frame");
+  assert.deepEqual(sources["location.background.others"].resolve({ locationId: "lake", phases: null }), [],
+    "without startup phases nothing is left for later");
 
   const { AssetPreloadCoordinator } = await importSource("src/platform/browser/assets/asset_preload_coordinator.js");
   const coordinated = [];

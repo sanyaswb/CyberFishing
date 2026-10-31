@@ -429,6 +429,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "asset-load-plan",
+    title: "Asset load plan: validation, sources and tags, the facade's layers and priorities, the production plan",
+    file: "utils/checks/tooling/asset-load-plan-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "startup-load-report",
     title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
     file: "utils/checks/platform/startup-load-report-check.js",

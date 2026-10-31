@@ -15,9 +15,6 @@ import { INVENTORY_EDITOR_CONFIG } from "../../game/presentation/inventory/inven
 import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
-import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
-import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
-import { inventorySlotIconAssets } from "../../game/presentation/inventory/inventory_slot_icons.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
@@ -77,8 +74,8 @@ export class InventoryUiBootstrap {
     const dom = new InventoryDomFactory(documentRef, { assets });
     const resourceMeterRenderer = new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const pagerConfig = INVENTORY_SECTIONS.keepnetPager;
-    // Only the current fill stage loads with the view (its images); the other stages wait for preloadKeepnetStages
-    // after the game is ready (spec 157 R5).
+    // Only the current fill stage loads with the view (its images); the other stages are the asset load plan's
+    // layer-two group "keepnet-stages", after the first frame (spec 157 R5, R15).
     const imageResolver = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
     return new KeepnetSectionView({ documentRef, liveBait, buttonMountNode, openSection, toggleSection, onPagerEdge,
       imageResolver, shortcutIcon: { asset: INVENTORY_SECTIONS.iconSpriteAsset, symbol: "keepnet" }, assets,
@@ -109,27 +106,10 @@ export class InventoryUiBootstrap {
       dragClassName: "inventory-vertical-scroll--dragging" });
   }
 
-  // Spec 157 R5: every keepnet fill stage, warmed after the game is ready so a filling keepnet swaps its art without
-  // a network wait; startup loads only the current stage (createKeepnetView).
-  static preloadKeepnetStages(documentRef, assets) {
-    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
-    return imagePreloader.preload(KEEPNET_ART_STAGES.map((stage) => ({ id: stage.imageAsset, src: assets.pathOf(stage.imageAsset) })))
-      .catch((error) => new ConsoleLogger().warn("[Keepnet] Artwork preload failed", error));
-  }
-
-  // The empty-slot placeholders appear only once the inventory opens; warming them here instead of <link preload>
-  // keeps them cached without the browser's "preloaded but not used" warning (TK-081).
-  static preloadSlotIcons(documentRef, assets) {
-    const imagePreloader = new ImageAssetProvider({ imageFactory: () => documentRef.createElement("img") });
-    return imagePreloader.preload(inventorySlotIconAssets().map((id) => ({ id, src: assets.pathOf(id) })))
-      .catch((error) => new ConsoleLogger().warn("[Inventory] Slot icon preload failed", error));
-  }
-
   // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
   // radioTuning: DEV only, the enabled sound effects' main parameters as sliders (TK-098); null in production.
   // assets: the AssetRegistry; every image and sprite icon of the inventory is named by asset id (spec 157 R16).
   static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, assets, ...options } = {}) {
-    InventoryUiBootstrap.preloadSlotIcons(options.documentRef, assets);
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,

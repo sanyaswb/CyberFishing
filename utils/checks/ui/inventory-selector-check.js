@@ -410,10 +410,9 @@ async function checkComposition() {
     keepnetUI: { setShortcutVisible: value => { keepnet = value; } }, config,
     equipmentSource: { getEquipped: () => equipped,
       onInventoryChanged: fn => { equipmentListener = fn; return () => { equipmentListener = null; }; } },
-    imageAssets: { preload: records => {
-      if (records.length === 3) return new Promise(resolve => { finishSelector = resolve; });
-      artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; });
-    } }, logger: { warn: assert.fail } });
+    preloadArtwork: () => new Promise(resolve => { finishSelector = resolve; }),
+    imageAssets: { preload: () => { artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; }); } },
+    logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
   // Spec 157 R11: startup does not load the selector's artwork; the classic buttons stand in until it is ready.
   assert.equal(classic, true, "radial startup shows the classic backpack until the artwork is ready (spec 157 R11)");
@@ -535,7 +534,8 @@ async function checkPreloadOutcomes() {
       inventoryUI: { setShortcutVisible: value => { classic = value; visibilityWrites++; },
         onVisibilityChange: () => () => {} },
       keepnetUI: { setShortcutVisible: value => { keepnet = value; visibilityWrites++; } },
-      imageAssets: { preload: () => new Promise((resolve, reject) => { finish = resolve; fail = reject; }) },
+      preloadArtwork: () => new Promise((resolve, reject) => { finish = resolve; fail = reject; }),
+      imageAssets: { preload: () => Promise.resolve() },
       logger: { warn: () => { warnings++; } },
     });
     assert.equal(classic, true, "classic buttons stand in before the artwork (spec 157 R11)"); assert.equal(keepnet, classic);

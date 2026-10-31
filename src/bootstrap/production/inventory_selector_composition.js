@@ -10,9 +10,10 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 // Spec 157 R11 (owner, 2026-10-30): the selector's artwork (section sprite, backpack, first keepnet stage, rod
 // thumbnail) is not part of startup. Until loadArtwork() is called (after the game is ready) and the artwork has
 // loaded, the classic inventory and keepnet buttons stand in for the radial selector; a failed load keeps them.
+// preloadArtwork(): settles when the asset load plan's "selector" group has loaded (rejects when it failed).
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
-  id = "inventory-selector-sections", onSelect = null, assets }) {
+  id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork }) {
   const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
     .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
   const domFactory = new InventoryDomFactory(documentRef, { assets });
@@ -78,13 +79,12 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   syncEquipment();
   documentRef.addEventListener("config-updated", sync);
   sync();
-  const sources = [INVENTORY_SECTIONS.iconSpriteAsset, INVENTORY_SECTIONS.backpackAsset, KEEPNET_ART_STAGES[0].imageAsset];
   // Starts the artwork loads once; resolves true when the radial selector can show, false after a failure.
   const loadArtwork = () => {
     if (ready) return ready;
     artworkRequested = true;
     syncEquipment();
-    ready = imageAssets.preload(sources.map(id => ({ id, src: domFactory.assetUrl(id) }))).then(() => {
+    ready = new Promise((resolve) => resolve(preloadArtwork())).then(() => {
       if (!disposed) { loadState = "ready"; sync(); }
       return true;
     }).catch(error => {

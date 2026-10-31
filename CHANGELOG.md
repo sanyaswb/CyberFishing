@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.44 - Asset load plan
+
+- Spec 157 stage D1 (TK-177): the asset load plan in configuration (`src/game/config/raw/assets/asset_load_plan.js`: three layers, groups by priority, entries by asset id, tag or game-state source; registry assets without a place form an `unassigned` group) runs through `GameAssetPreloadFacade` over the game's one image store, keyed by asset id; it replaces the scattered preloads (current background phase and depth map, float art, slot placeholders, later phases, depth icons, selector art, keepnet stages). Today's plan repeats the loads before stage D: the same files before the start. Game-cycle report unchanged.
+
 ## v0.49.43 - Fish art by id, no asset paths in code
 
 - TK-178 / spec 157 R16 (c–d): fish name their art by asset-id patterns (`visual.imageAssetPattern`, `uniqueImageAssetPattern`); `FishVisualVariantResolver` hands out the registry's file (a caught fish keeps the same `imagePath` in saves) and `FishArtVariants` maps it to the thumbnail and display variants through the registry (`AssetRegistry.idOfPath`). The `asset-references` check now forbids `"assets/…"` literals in every source, stylesheet and page except the generated registry. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.35 - Trial release bundle
 
 - Spec 157 R13 (trial, owner decides after Pages): the release is one self-contained folder built from a commit (`npm run build:release`): esbuild bundles with hashed chunks, minified, with source maps, a boot module per page (`?esm=1` runs the source modules), preloads in the pages; Pages and a game server serve the same folder (cold start on Fast 4G 2.3 → 1.55 s, 3G 10.9 → 6.3 s locally; 68 instead of 709 requests). Server requirements: docs/deployment.md. The repository and local work stay without a build. Game-cycle report unchanged.
-
-## v0.49.34 - Sprite icons before start
-
-- TK-174 / spec 157: until the game is ready the classic backpack and keepnet buttons (R11 stand-ins, and classic mode) show the sections sprite's icons instead of the 2048 px briefcase and the keepnet art (0.44 MB no longer requested before the start); the art replaces each icon once it has loaded after the first frame. Game-cycle report unchanged.

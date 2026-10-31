@@ -88,6 +88,10 @@ import { composeInventorySelector } from "./inventory_selector_composition.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ASSET_REGISTRY } from "../../game/config/generated/asset_registry.js";
 import { AssetRegistry } from "../../engine/assets/asset_registry.js";
+import { AssetLoadPlan } from "../../engine/assets/asset_load_plan.js";
+import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
+import { createAssetLoadSources } from "./asset_load_sources.js";
+import { GameAssetPreloadFacade } from "./game_asset_preload_facade.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
 import { ItemConditionDescriptor } from "../../game/presentation/inventory/item_condition_descriptor.js";
@@ -164,6 +168,8 @@ export class GameCompositionRoot {
   #assets = new AssetRegistry(ASSET_REGISTRY);
   // Fish art variants over the registry (spec 100 D4): one victory display source for the outcome frame and preloader.
   #fishArt = new FishArtVariants({ assets: this.#assets });
+  // Spec 157 R15 (stage D1): the asset load plan's runner over the game's image store, composed in create().
+  #preload = null;
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
@@ -336,6 +342,8 @@ export class GameCompositionRoot {
   startDeferredAssetLoads() {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
+    // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
+    void this.#preload?.start("layer-two");
     for (const load of this.#deferredAssetLoads) load();
   }
 
@@ -441,6 +449,9 @@ export class GameCompositionRoot {
     // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
     const imageAssets = new ImageAssetProvider();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
+    this.#preload = new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
+      plan: ASSET_LOAD_PLAN, registry: this.#assets,
+      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }) }) });
     // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
@@ -493,7 +504,7 @@ export class GameCompositionRoot {
       timeScale: this.#config.debug?.timeScale || 1,
     });
     const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric } = await this.#composeLocation({
-      assetPreloadCoordinator, locationAssetLoader, startupHours: gameTimeClock.getHours(),
+      locationAssetLoader, startupHours: gameTimeClock.getHours(),
     });
     this.#startupMarks.mark(STARTUP_STAGES.location);
     const {
@@ -543,17 +554,17 @@ export class GameCompositionRoot {
     });
     // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
     // happen during loading, not in the first frames of play.
-    // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too; an image that fails
-    // to load leaves that float a bar. The art is keyed by its asset id; the registry gives the file (spec 157 R16).
-    const floatArt = [...new Set(Object.values(this.#itemDb?.floats || {}).flatMap((float) =>
-      [float.skin?.scene?.asset, float.skin?.scene?.glow?.asset]).filter(Boolean))];
-    await imageAssets.preload(floatArt.map((id) => ({ id, src: this.#assets.pathOf(id) }))).catch(() => null);
+    // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too, as the plan's
+    // layer-one group "scene"; an image that fails to load leaves that float a bar.
+    const floatArt = (await this.#preload.whenGroup("scene")).ids;
     // Spec 157 R6: last of the deferred loads, the page's lazy UI images (closed inventory, hidden toolbar buttons),
     // one at a time, so opening the inventory finds them in the cache.
     const lazyImages = own(new LazyImageWarmUp({ documentRef: this.#documentTarget }));
     this.#deferredAssetLoads.push(() => { void lazyImages.warm(); });
     await sceneLayer.whenReady();
     sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
+    // The game is ready only once the plan's first layer has loaded (spec 157 R15).
+    await this.#preload.whenLayer("layer-one");
     this.#startupMarks.mark(STARTUP_STAGES.scene);
     return {
       liveBait,
@@ -862,7 +873,7 @@ export class GameCompositionRoot {
   // Current location, RNG, preloaded location resources and the viewport projector.
   // startupHours: the game time at startup; its background phases (base, and the overlay at dusk or dawn) load before
   // the game starts, the others right after it (spec 157 R4, spec 083 decision 3).
-  async #composeLocation({ assetPreloadCoordinator, locationAssetLoader, startupHours }) {
+  async #composeLocation({ locationAssetLoader, startupHours }) {
     const location = new CurrentLocation(
       this.#config.locations,
       this.#config.player?.locationId,
@@ -875,15 +886,23 @@ export class GameCompositionRoot {
     const blend = backgroundTimeBlend(startupHours, { evening: 0, night: 0 });
     const layers = timeOfDayLayers(blend.evening, blend.night, {});
     const phases = [layers.base, layers.overlay].filter(Boolean);
-    await assetPreloadCoordinator.preloadLocation(locId, { phases });
+    // The plan's layer-one starts here (its sources need the location and the startup phases); its "location" group is
+    // the current phase and the depth map. The other phases are layer-two, after the first frame; the scene uploads each
+    // one in the frame after it arrives.
+    void this.#preload.start("layer-one", { locationId: locId, phases });
+    const locationGroup = await this.#preload.whenGroup("location");
+    if (locationGroup.status === "failed") {
+      const error = new Error(`location:${locId} critical assets failed: ${locationGroup.error?.message || "load error"}`);
+      error.scope = `location:${locId}`;
+      error.critical = true;
+      throw error;
+    }
     const locationResources = await locationAssetLoader.load(
       locId,
       locCfg,
       this.#config.locations,
       { phases },
     );
-    // First of the deferred loads: the other phases; the scene uploads each one in the frame after it arrives.
-    this.#deferredAssetLoads.push(() => { void locationResources.loadDeferredBackground(); });
     // Session starts vary even when gameplay uses a fixed seed; sampling never advances gameplay RNG.
     const locationMap = new LocationMap(locId, this.#config.locations, rng, locationResources, { next: () => Math.random() });
     const waterMetricResolver = new LocationWaterMetricResolver({
@@ -1207,13 +1226,16 @@ export class GameCompositionRoot {
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
-      equipmentSource: inventory, assets: this.#assets }));
+      equipmentSource: inventory, assets: this.#assets,
+      // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
+      preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {
+        if (group.status === "failed") throw group.error;
+      }) }));
     // The selector's artwork waits for the started game (spec 157 R11); its classic buttons stand in until then.
     this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
     // Spec 157 TK-174: the classic shortcuts swap their sprite icons for the backpack and keepnet art.
     this.#deferredAssetLoads.push(() => { systems.inventoryUI.showShortcutArtwork(); keepnetUI?.showShortcutArtwork(); });
-    // Spec 157 R5: the other keepnet fill stages warm up after the selector artwork the toolbar shows.
-    if (keepnetUI) this.#deferredAssetLoads.push(() => { void InventoryUiBootstrap.preloadKeepnetStages(this.#documentTarget, this.#assets); });
+    // Spec 157 R5: every keepnet fill stage warms up as the plan's layer-two group "keepnet-stages".
     return {  };
   }
 
@@ -1258,8 +1280,8 @@ export class GameCompositionRoot {
     const castPenalty = new CastPenalty();
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
     const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
-      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb, imageAssets,
-      deferLoad: (load) => this.#deferredAssetLoads.push(load), assets: this.#assets }));
+      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb,
+      assets: this.#assets }));
     const timeUI = own(this.#createTimeDisplay
       ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
       : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));

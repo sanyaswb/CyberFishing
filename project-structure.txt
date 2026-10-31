@@ -218,11 +218,13 @@
 ├── src
 │  ├── bootstrap
 │  │  └── production
+│  │     ├── asset_load_sources.js
 │  │     ├── boat_animation_composition.js
 │  │     ├── config_context.js
 │  │     ├── depth_selector_composition.js
 │  │     ├── fishing_services_composition.js
 │  │     ├── game.js
+│  │     ├── game_asset_preload_facade.js
 │  │     ├── game_composition_root.js
 │  │     ├── game_config_composition.js
 │  │     ├── game_render_composition.js
@@ -244,6 +246,7 @@
 │  │  │  ├── damped_spring.js
 │  │  │  └── scalar_smoother.js
 │  │  ├── assets
+│  │  │  ├── asset_load_plan.js
 │  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
 │  │  │  ├── asset_manifest.js
@@ -441,6 +444,8 @@
 │  │  │  │  ├── fight_physics_config_adapter.js
 │  │  │  │  └── physics_config.js
 │  │  │  ├── raw
+│  │  │  │  ├── assets
+│  │  │  │  │  └── asset_load_plan.js
 │  │  │  │  ├── fish
 │  │  │  │  │  ├── event_fish.js
 │  │  │  │  │  ├── peaceful_fish.js

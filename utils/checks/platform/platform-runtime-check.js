@@ -2856,7 +2856,8 @@ async function main() {
   );
   assert.equal(
     result.background.assetIds.default,
-    "location:pond:default:pond.png",
+    "pond.background",
+    "location images are keyed by their asset id (spec 157 D1)",
   );
   assert.equal(Object.keys(preloads[0]).length, 2);
   assert(

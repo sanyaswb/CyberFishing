@@ -60,18 +60,17 @@ async function main() {
   const artworkView = InventoryUiBootstrap.createKeepnetView({ documentRef: artworkDocument,
     liveBait: { getView: () => artworkState, advance() {} }, buttonMountNode: artworkDocument.body,
     degradationColorResolver: colors, openSection() {}, toggleSection() {}, assets, fishArt });
-  // Spec 157 R5: the view loads only the current fill stage; the other stages wait for preloadKeepnetStages.
+  // Spec 157 R5: the view loads only the current fill stage; the other stages are the plan's layer-two.
   assert.deepEqual([...new Set(createdImages.map((image) => image.src).filter((src) => /keepnet--/u.test(src)))],
     [assets.pathOf(artwork.resolve(0))], "startup requests only the current keepnet stage");
-  const stageImages = createdImages.length;
-  await InventoryUiBootstrap.preloadKeepnetStages({ createElement: (tag) => {
-    const image = createElement(tag);
-    queueMicrotask(() => image.onload?.());
-    createdImages.push(image);
-    return image;
-  } }, assets);
-  assert.deepEqual(createdImages.slice(stageImages).map((image) => image.src).filter((src) => /keepnet--/u.test(src)),
-    KEEPNET_ART_STAGES.map((stage) => assets.pathOf(stage.imageAsset)), "the deferred warm-up loads every stage");
+  const { AssetLoadPlan } = await import("../../../src/engine/assets/asset_load_plan.js");
+  const { ASSET_LOAD_PLAN } = await import("../../../src/game/config/raw/assets/asset_load_plan.js");
+  const { createAssetLoadSources } = await import("../../../src/bootstrap/production/asset_load_sources.js");
+  const loadPlan = new AssetLoadPlan({ plan: ASSET_LOAD_PLAN, registry: assets,
+    sources: createAssetLoadSources({ locations: { map: {} }, itemDb: {} }) });
+  const stagesGroup = loadPlan.layer("layer-two").groups.find((group) => group.id === "keepnet-stages");
+  assert.deepEqual(loadPlan.resolveGroup(stagesGroup).sort(), KEEPNET_ART_STAGES.map((stage) => stage.imageAsset).sort(),
+    "every keepnet stage warms up after the first frame (the plan's layer-two)");
   artworkDocument.body.append(artworkView.summaryNode, artworkView.contentNode);
   // Spec 157 TK-174: until the game is ready the toolbar button shows the sections sprite's keepnet symbol, and its art
   // is lazy and not in the page (not requested); showShortcutArtwork() requests it and swaps it in once it has loaded.
@@ -391,15 +390,15 @@ async function checkSlotIconWarmUp(InventoryUiBootstrap) {
   const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
   const assets = new AssetRegistry(ASSET_REGISTRY);
-  const images = [];
-  const documentRef = { createElement: (tag) => { const image = { tag, decode: () => Promise.resolve() }; images.push(image); return image; } };
-  const warmed = InventoryUiBootstrap.preloadSlotIcons(documentRef, assets);
-  const expected = inventorySlotIconAssets().map((id) => assets.pathOf(id));
+  const { AssetLoadPlan } = await import("../../../src/engine/assets/asset_load_plan.js");
+  const { ASSET_LOAD_PLAN } = await import("../../../src/game/config/raw/assets/asset_load_plan.js");
+  const { createAssetLoadSources } = await import("../../../src/bootstrap/production/asset_load_sources.js");
+  const loadPlan = new AssetLoadPlan({ plan: ASSET_LOAD_PLAN, registry: assets,
+    sources: createAssetLoadSources({ locations: { map: {} }, itemDb: {} }) });
+  const slotGroup = loadPlan.layer("layer-one").groups.find((group) => group.id === "slot-icons");
+  const expected = inventorySlotIconAssets();
   assert.equal(expected.length, 14, "fourteen distinct placeholder files (battery, spec 143; radio, spec 142)");
-  assert.deepEqual(images.map((image) => image.src).sort(), [...expected].sort(), "each icon file is requested once");
-  assert(images.every((image) => image.tag === "img"));
-  images.forEach((image) => image.onload());
-  await warmed;
+  assert.deepEqual(loadPlan.resolveGroup(slotGroup), expected, "the plan's layer-one warms each placeholder once");
 }
 // Spec 157 R5: the keepnet stages are display-sized (the largest phone view is ~374 CSS px, x2), committed and light;
 // their 2048 px masters stay in asset-sources/ and are never released.

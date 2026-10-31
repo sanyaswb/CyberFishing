@@ -12,6 +12,10 @@ export class AssetRegistry {
     this.#entries = new Map(Object.entries(entries));
   }
 
+  ids() {
+    return [...this.#entries.keys()];
+  }
+
   has(id) {
     return this.#entries.has(id);
   }

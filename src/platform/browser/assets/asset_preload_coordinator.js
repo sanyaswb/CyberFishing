@@ -38,20 +38,14 @@ export class AssetPreloadCoordinator {
     if (locationConfig.backgroundAssets) {
       for (const key of ["day", "evening", "night"]) {
         if (phases !== null && !phases.includes(key)) continue;
-        const src = this.#assets.pathOf(locationConfig.backgroundAssets[key]);
-        manifest.add(
-          ImageAssetProvider.assetIdForSource(src, `location:${locationId}:${key}`),
-          src,
-          { critical: true },
-        );
+        const assetId = locationConfig.backgroundAssets[key];
+        manifest.add(assetId, this.#assets.pathOf(assetId), { critical: true });
       }
     } else if (locationConfig.backgroundAsset) {
-      const src = this.#assets.pathOf(locationConfig.backgroundAsset);
-      manifest.add(ImageAssetProvider.assetIdForSource(src, `location:${locationId}:default`), src, { critical: true });
+      manifest.add(locationConfig.backgroundAsset, this.#assets.pathOf(locationConfig.backgroundAsset), { critical: true });
     }
     if (locationConfig.depthAsset) {
-      const src = this.#assets.pathOf(locationConfig.depthAsset);
-      manifest.add(ImageAssetProvider.assetIdForSource(src, `location:${locationId}:depth`), src, { critical: true });
+      manifest.add(locationConfig.depthAsset, this.#assets.pathOf(locationConfig.depthAsset), { critical: true });
     }
     return this.preloadManifest(manifest, `location:${locationId}`);
   }

@@ -1022,6 +1022,42 @@ UI й арт предметів — один патч, бо вони йдуть 
 
 Після D — TK-180 (риба: одна картинка 768 px + низька копія з D3, оригінали в `asset-sources/`).
 
+### D1 — план завантаження і фасад (v0.49.44, 2026-10-31)
+
+- **`src/engine/assets/asset_load_plan.js`** (`AssetLoadPlan`, чистий): валідація (унікальні id шарів і груп, пріоритет —
+  ціле ≥ 1, у записі рівно один ключ `id`/`tag`/`source`, невідомий id, порожній тег, невідоме джерело, явний id у двох
+  групах, `start` = `composition` | `ready` | `after:<попередній шар>`); `resolveGroup(group, state)`; асет належить
+  першій групі, що його називає; асети реєстру без місця — неявна остання група `unassigned` останнього шару
+  (вантажиться). Для `AssetRegistry` додано `ids()`.
+- **Конфіг** `src/game/config/raw/assets/asset_load_plan.js` (власник редагує): layer-one (`composition`, `ready` чекає
+  на нього) — `location` (джерела `location.background.current` + `location.depthMap`, пріоритет 1) → `scene` (тег `floats-scene`) і
+  `slot-icons` (`inventory.slotIcons`), обидві пріоритет 2; layer-two (`ready`) — `location-phases`, `depth-icons`, `selector`,
+  `keepnet-stages`, усі пріоритет 1, як і раніше паралельно; layer-three (`after:layer-two`) — одна група `load: false`
+  «на вимогу» (аудіо, Spine, риби, будинок, лобі, арт предметів і UI): у фоні не вантажиться, як і раніше; `unassigned`
+  зараз порожній. Нова тека з асетами без місця в плані потрапить в `unassigned` і завантажиться у фоні останньою.
+- **Джерела стану** `src/bootstrap/production/asset_load_sources.js`: фаза фону старту / інші фази / карта глибин
+  (з `locations`), іконки глибини (поплавки й наживки), заглушки клітинок; `candidates()` кожного — для `unassigned`.
+- **`GameAssetPreloadFacade`** (bootstrap): `start(layer, state)` (раз; `after:<шар>` стартує сам), `whenGroup(id)` →
+  `{ status: ready|failed|on-demand, ids, error }` (ніколи не rejects), `whenLayer(id)`, `request(ids)`, `getStatus()`
+  (для оверлею D6). Вантажить лише картинки, у **один** `ImageAssetProvider` під **id асета**. Черга з пріоритетами
+  `AssetLoadQueue` і `interactive` — D2.
+- **Ключі кешу:** фон і карта глибин тепер за id асета (`LocationAssetLoader`, `AssetPreloadCoordinator`), як і арт
+  поплавка; рендер бере ключі з `background.assetIds`, тож не змінився. `loadDeferredBackground` прибрано.
+- **Прибрані розрізнені передзавантаження:** `assetPreloadCoordinator.preloadLocation` на старті (лишився для зміни
+  локації), передзавантаження арту поплавків, `InventoryUiBootstrap.preloadSlotIcons` / `preloadKeepnetStages`,
+  `deferLoad` іконок глибини, власне передзавантаження арту селектора (`preloadArtwork` → група `selector`). Відкладено
+  в D2: арт вудки в секторі селектора (залежить від спорядження → `facade.request`).
+- **Перевірка `asset-load-plan`** (Full): правила валідації, джерела/теги/`unassigned`, порядок фасаду (пріоритети,
+  старт шарів, `after:`, на вимогу, помилка без rejection), production-план без `unassigned`, **layer-one = старт до D**
+  (18 файлів: фаза, глибини, поплавок і світіння, 14 заглушок; ще 2 з 20 — спрайт секцій і `status-icons` — запитує
+  розмітка), і жодного `.preload(` у `src/bootstrap/**` поза фасадом (падає на старій композиції).
+- **Заміри** (холодний, медіана; до = 0.49.43): Fast 4G (5) 1592 → 1520 мс, 3G (3) 6410 → 6327 мс, `--cpu 4` (3) 2352 → 2475 мс,
+  корінь сервера (3) 1600 → 1521 мс; 1.00 МБ, 68 запитів, той самий список 20 асетів до `ready`. Хвиль на Fast 4G 4 → 5 (3G — 4):
+  поплавок тепер вантажиться одразу після фону (раніше — після композиції інвентаря) і закінчується до того, як розмітка
+  садка запитує `status-icons.svg`; метрика рахує «почався після кінця попереднього», тож ланка додалась без нової
+  залежності. Перша версія плану (заглушки на пріоритеті 3, після поплавка) давала 5 хвиль і T-play 1597 мс — заглушки
+  перенесено на пріоритет 2. Full 81/81, game-cycle без змін.
+
 ## Перевірки
 
 `asset-preloader` (розширення: facade поверх черги, мінімальний набір, фази доби, prefetch після барʼєра, пауза);

@@ -1,5 +1,4 @@
 import { DepthMapReader } from "./depth_map_reader.js";
-import { ImageAssetProvider } from "../assets/image_asset_provider.js";
 
 export class LocationAssetLoader {
   #imageAssets;
@@ -21,16 +20,15 @@ export class LocationAssetLoader {
   }
 
   // phases (spec 157 R4, spec 083 decision 3): the time-of-day phases startup waits for, the current one first
-  // (base, and its overlay at dusk or dawn); null loads all. The other phases come back as loadDeferredBackground(),
-  // which the composition starts after the game is ready; background.assetIds always names every phase.
+  // (base, and its overlay at dusk or dawn); null loads all. The other phases load through the asset load plan after the
+  // game is ready (layer-two). Images are keyed by their asset id (spec 157 D1), the key the plan's loads use too;
+  // background.assetIds always names every phase.
   async load(locationId, locationConfig, locationsConfig, { phases = null } = {}) {
-    const background = this.#buildBackgroundManifest(locationId, locationConfig);
-    const depth = this.#buildDepthRecord(locationId, locationConfig);
+    const background = this.#buildBackgroundManifest(locationConfig);
+    const depth = this.#buildDepthRecord(locationConfig);
     const manifest = {};
-    const deferred = {};
     for (const [phase, assetId] of Object.entries(background.assetIds)) {
-      const target = !background.dynamic || phases === null || phases.includes(phase) ? manifest : deferred;
-      target[assetId] = background.manifest[assetId];
+      if (!background.dynamic || phases === null || phases.includes(phase)) manifest[assetId] = background.manifest[assetId];
     }
     if (depth.assetId) manifest[depth.assetId] = depth.src;
 
@@ -38,42 +36,30 @@ export class LocationAssetLoader {
       await this.#imageAssets.preload(manifest);
     }
 
-    return {
-      background,
-      depthReader: this.#createDepthReader(depth.assetId, locationsConfig),
-      loadDeferredBackground: () => (Object.keys(deferred).length > 0
-        ? this.#imageAssets.preload(deferred) : Promise.resolve()),
-    };
+    return { background, depthReader: this.#createDepthReader(depth.assetId, locationsConfig) };
   }
 
-  #buildBackgroundManifest(locationId, locationConfig) {
+  #buildBackgroundManifest(locationConfig) {
     const manifest = {};
     const assetIds = {};
     let dynamic = false;
     if (locationConfig.backgroundAssets) {
       dynamic = true;
       for (const key of ["day", "evening", "night"]) {
-        const src = this.#assets.pathOf(locationConfig.backgroundAssets[key]);
-        const assetId = ImageAssetProvider.assetIdForSource(
-          src,
-          `location:${locationId}:${key}`,
-        );
+        const assetId = locationConfig.backgroundAssets[key];
         assetIds[key] = assetId;
-        manifest[assetId] = src;
+        manifest[assetId] = this.#assets.pathOf(assetId);
       }
     } else if (locationConfig.backgroundAsset) {
-      const src = this.#assets.pathOf(locationConfig.backgroundAsset);
-      const assetId = ImageAssetProvider.assetIdForSource(src, `location:${locationId}:default`);
-      assetIds.default = assetId;
-      manifest[assetId] = src;
+      assetIds.default = locationConfig.backgroundAsset;
+      manifest[locationConfig.backgroundAsset] = this.#assets.pathOf(locationConfig.backgroundAsset);
     }
     return { dynamic, assetIds, manifest };
   }
 
-  #buildDepthRecord(locationId, locationConfig) {
+  #buildDepthRecord(locationConfig) {
     if (!locationConfig.depthAsset) return { assetId: "", src: "" };
-    const src = this.#assets.pathOf(locationConfig.depthAsset);
-    return { assetId: ImageAssetProvider.assetIdForSource(src, `location:${locationId}:depth`), src };
+    return { assetId: locationConfig.depthAsset, src: this.#assets.pathOf(locationConfig.depthAsset) };
   }
 
   #createDepthReader(assetId, locationsConfig) {
