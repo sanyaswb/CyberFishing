@@ -33,6 +33,17 @@ export class AssetRegistry {
     return entry.path;
   }
 
+  // The low-quality copy of an image (spec 157 R17), or null (vectors, data maps, audio, Spine).
+  lowPathOf(id) {
+    return this.entryOf(id).low ?? null;
+  }
+
+  // An image's size in pixels { width, height }, or null when the registry does not know it (vectors).
+  sizeOf(id) {
+    const entry = this.entryOf(id);
+    return entry.width && entry.height ? { width: entry.width, height: entry.height } : null;
+  }
+
   // The files of a Spine export: { skeleton, atlas, textures }.
   spineOf(id) {
     const entry = this.entryOf(id);

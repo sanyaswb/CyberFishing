@@ -72,12 +72,29 @@ const ROOT = path.resolve(__dirname, "../../..");
   result = sync([file("assets/items/rod.webp", "r9", 12), file("assets/ui/a.svg", "s1")]);
   assert.deepEqual([result.report.updated, result.registry["items.rod"].label], [["items.rod"], "Вудка"]);
 
+  // Low-quality copies (spec 157 R17): derived files under assets/low-copies/ are never assets; raster images except depth
+  // maps get one; the collected entry keeps the image size.
+  const { lowCopyPath, needsLowCopy } = await import(pathToFileURL(path.join(ROOT, "src/engine/assets/asset_registry_sync.js")).href);
+  assert.equal(lowCopyPath("assets/items/rods/rod.png"), "assets/low-copies/items/rods/rod.webp");
+  assert.deepEqual(["assets/a/x.webp", "assets/a/x.png", "assets/a/x.svg", "assets/loc/test-depth.webp", "assets/low-copies/a/x.webp",
+    "assets/audio/x.mp3"].map(needsLowCopy), [true, true, false, false, false, false]);
+  const withLow = collectAssets([{ path: "assets/a/x.webp", sha256: "s", bytes: 5, width: 800, height: 400 },
+    { path: "assets/low-copies/a/x.webp", sha256: "l", bytes: 1 }]);
+  assert.deepEqual([...withLow.keys()], ["assets/a/x.webp"], "a low copy is not an asset");
+  assert.deepEqual([withLow.get("assets/a/x.webp").width, withLow.get("assets/a/x.webp").height], [800, 400]);
+
   // The repository's registry matches its tracked assets.
   const check = spawnSync(process.execPath, [path.join(ROOT, "utils/assets-sync.js"), "--check"], { cwd: ROOT });
   assert.equal(check.status, 0, `npm run assets:sync -- --check: ${check.stderr.toString("utf8").trim()}`);
   const { ASSET_REGISTRY } = await import(pathToFileURL(path.join(ROOT, "src/game/config/generated/asset_registry.js")).href);
   assert(Object.keys(ASSET_REGISTRY).length >= 150 && Object.isFrozen(ASSET_REGISTRY));
   assert.equal(ASSET_REGISTRY["animations.rods.bamboo-rod-v1.rod"].kind, "spine", "the rod's Spine export is one asset");
+  const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.low);
+  assert(lows.length >= 100 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
+    "every raster image has a current low copy and its size");
+  assert.equal(ASSET_REGISTRY["locations.test.test-depth"].low, undefined, "the depth map has no low copy");
+  assert(lows.every((entry) => !entry.low.split("/").some((segment) => /^[_.]/u.test(segment))),
+    "no low copy sits in a folder GitHub Pages hides (a name starting with _ or .)");
   console.log(`Asset registry passed: ids from paths, Spine packages, moves by content, git rename and hint, ambiguity and `
     + `vanished assets stop the sync, prune, new ids with folder tags, duplicates; repository registry up to date `
     + `(${Object.keys(ASSET_REGISTRY).length} assets).`);

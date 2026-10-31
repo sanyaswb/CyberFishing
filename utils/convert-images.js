@@ -1,4 +1,4 @@
-// convert-images.js v1.5.0
+// convert-images.js v1.6.0
 
 const fs = require('fs');
 const path = require('path');
@@ -496,7 +496,31 @@ async function convertBatch(args) {
   if (successfullyConvertedFiles.length === 0) process.exitCode = 1;
 }
 
-if (process.argv.includes('--batch')) {
+// Low-quality copies for progressive loading (spec 157 R17, TK-179), called by npm run assets:sync:
+// node utils/convert-images.js --low-copies --manifest <json: [{ input, output }]>
+// The longest side becomes a quarter of the original's, at most 256 px (never enlarged), the same proportion, WebP Low.
+const LOW_COPY_MAX_SIDE = 256;
+async function createLowCopies(args) {
+  const index = args.indexOf('--manifest');
+  const manifest = JSON.parse(fs.readFileSync(path.resolve(BASE_DIR, args[index + 1]), 'utf8'));
+  for (const { input, output } of manifest) {
+    const source = path.resolve(BASE_DIR, input);
+    const target = path.resolve(BASE_DIR, output);
+    if (source === target || path.relative(BASE_DIR, target).startsWith('..')) throw new Error(`Invalid low copy ${output}`);
+    const { width, height } = await sharp(source).metadata();
+    const side = Math.max(1, Math.min(LOW_COPY_MAX_SIDE, Math.round(Math.max(width, height) / 4)));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    await sharp(source).resize(side, side, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: QUALITY_PRESETS[1].webp }).toFile(target);
+  }
+  console.log(`Created ${manifest.length} low copies (max ${LOW_COPY_MAX_SIDE} px, WebP ${QUALITY_PRESETS[1].webp}).`);
+}
+
+if (process.argv.includes('--low-copies')) {
+  createLowCopies(process.argv.slice(2)).catch((error) => {
+    console.error(error.message); process.exitCode = 1;
+  }).finally(() => rl.close());
+} else if (process.argv.includes('--batch')) {
   convertBatch(process.argv.slice(2)).catch((error) => {
     console.error(error.message); process.exitCode = 1;
   }).finally(() => rl.close());

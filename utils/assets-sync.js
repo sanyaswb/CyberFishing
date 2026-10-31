@@ -9,8 +9,13 @@
 //   npm run assets:sync -- --prune            drop assets whose files are gone and nothing references
 //   npm run assets:sync -- --rename-id <old> <new>   rename an id in the registry and in every src/ reference
 // Content hashes are the first 16 hex digits of SHA-256 (enough to tell files apart, small in the registry).
+// Low-quality copies (spec 157 R17, TK-179): every raster image except depth maps has one under assets/low-copies/, made by
+// utils/convert-images.js --low-copies (a quarter of the longest side, at most 256 px, WebP Low); the registry keeps the
+// image's width/height, its copy (low) and the source hash it was made from (lowSource). The sync makes missing or stale
+// copies (stage the new files); --check fails on a missing, untracked or stale one.
 
 const crypto = require("node:crypto");
+const os = require("node:os");
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
@@ -36,13 +41,47 @@ function readOptions(argv) {
   return options;
 }
 
-function trackedAssetFiles() {
-  return git(["ls-files", "-z", "assets"]).split("\0").filter(Boolean)
-    .filter((file) => fs.existsSync(path.join(ROOT, file)))
-    .map((file) => {
-      const bytes = fs.readFileSync(path.join(ROOT, file));
-      return { path: file, bytes: bytes.length, sha256: crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 16) };
-    });
+function trackedFileList() {
+  return git(["ls-files", "-z", "assets"]).split("\0").filter(Boolean).filter((file) => fs.existsSync(path.join(ROOT, file)));
+}
+
+async function trackedAssetFiles(needsLowCopy) {
+  const sharp = require("sharp");
+  const files = [];
+  for (const file of trackedFileList()) {
+    const bytes = fs.readFileSync(path.join(ROOT, file));
+    const entry = { path: file, bytes: bytes.length, sha256: crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 16) };
+    if (needsLowCopy(file)) Object.assign(entry, await sharp(bytes).metadata().then(({ width, height }) => ({ width, height })));
+    files.push(entry);
+  }
+  return files;
+}
+
+// Missing or stale low copies are made (or, with --check, reported); the entries get low and lowSource.
+function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy }) {
+  const tracked = new Set(trackedFileList());
+  const make = [];
+  const problems = [];
+  for (const [id, entry] of Object.entries(registry)) {
+    if (entry.kind !== "image" || !needsLowCopy(entry.path)) continue;
+    const low = lowCopyPath(entry.path);
+    const stale = previous[id]?.lowSource !== entry.sha256 || !fs.existsSync(path.join(ROOT, low));
+    if (stale) {
+      if (check) problems.push(`${low} is missing or older than ${entry.path}`);
+      else make.push({ input: entry.path, output: low });
+    } else if (check && !tracked.has(low)) problems.push(`${low} is not tracked (Pages ships tracked files only)`);
+    entry.low = low;
+    entry.lowSource = entry.sha256;
+  }
+  if (problems.length > 0) throw new Error(`${problems.join("\n")}\nrun npm run assets:sync and stage assets/low-copies`);
+  if (make.length === 0) return 0;
+  const manifest = path.join(os.tmpdir(), `cyber-fishing-low-copies-${process.pid}.json`);
+  fs.writeFileSync(manifest, JSON.stringify(make), "utf8");
+  const result = spawnSync(process.execPath, [path.join(ROOT, "utils/convert-images.js"), "--low-copies", "--manifest", manifest],
+    { cwd: ROOT, stdio: "inherit" });
+  fs.rmSync(manifest, { force: true });
+  if (result.status !== 0) throw new Error("utils/convert-images.js --low-copies failed");
+  return make.length;
 }
 
 // Renames git sees between the commit that last wrote the registry and the working tree.
@@ -86,7 +125,9 @@ function render(registry) {
     const fields = entry.kind === "spine"
       ? [`kind: "spine"`, `json: ${JSON.stringify(entry.json)}`, `atlas: ${JSON.stringify(entry.atlas)}`,
         `textures: Object.freeze(${JSON.stringify(entry.textures)})`]
-      : [`kind: ${JSON.stringify(entry.kind)}`, `path: ${JSON.stringify(entry.path)}`];
+      : [`kind: ${JSON.stringify(entry.kind)}`, `path: ${JSON.stringify(entry.path)}`,
+        ...(entry.width ? [`width: ${entry.width}`, `height: ${entry.height}`] : []),
+        ...(entry.low ? [`low: ${JSON.stringify(entry.low)}`, `lowSource: ${JSON.stringify(entry.lowSource)}`] : [])];
     fields.push(`bytes: ${entry.bytes}`, `sha256: ${JSON.stringify(entry.sha256)}`,
       `tags: Object.freeze(${JSON.stringify(entry.tags)})`, `label: ${JSON.stringify(entry.label)}`);
     return `Object.freeze({ ${fields.join(", ")} })`;
@@ -103,10 +144,11 @@ ${lines.join("\n")}
 
 async function main() {
   const options = readOptions(process.argv.slice(2));
-  const { collectAssets, syncAssetRegistry, atlasTextureNames } = await import(pathToFileURL(path.join(ROOT, ENGINE_MODULE)).href);
+  const { collectAssets, syncAssetRegistry, atlasTextureNames, lowCopyPath, needsLowCopy } =
+    await import(pathToFileURL(path.join(ROOT, ENGINE_MODULE)).href);
   let previous = await loadPrevious();
   if (options.renameId) previous = renameId(previous, ...options.renameId, options.check);
-  const files = trackedAssetFiles();
+  const files = await trackedAssetFiles(needsLowCopy);
   const atlasTextures = Object.fromEntries(files.filter((file) => file.path.endsWith(".atlas"))
     .map((file) => [file.path, atlasTextureNames(fs.readFileSync(path.join(ROOT, file.path), "utf8"))]));
   const result = syncAssetRegistry({ previous, assets: collectAssets(files, atlasTextures), moved: options.moved,
@@ -114,6 +156,7 @@ async function main() {
   const { report, errors } = result;
   for (const [first, second] of report.duplicates) console.log(`warning: ${first} and ${second} have the same content`);
   if (errors.length > 0) throw new Error(errors.join("\n"));
+  const madeLowCopies = syncLowCopies(result.registry, previous, { check: options.check, lowCopyPath, needsLowCopy });
   const text = render(result.registry);
   const file = path.join(ROOT, REGISTRY_FILE);
   const current = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
@@ -129,6 +172,7 @@ async function main() {
   for (const { id, from, to } of report.moved) console.log(`moved ${id}: ${from} -> ${to}`);
   for (const id of report.added) console.log(`added ${id}`);
   for (const id of report.removed) console.log(`removed ${id}`);
+  if (madeLowCopies > 0) console.log(`made ${madeLowCopies} low copies under assets/low-copies (stage them)`);
   console.log(`${current === text ? "Unchanged" : "Wrote"} ${REGISTRY_FILE}: ${summary}.`);
 }
 

@@ -13,6 +13,20 @@ const MEDIA_KINDS = Object.freeze({
   json: "data", atlas: "data",
 });
 const ASSETS_PREFIX = "assets/";
+// Generated low-quality copies (spec 157 R17): derived files, never assets of their own.
+const LOW_PREFIX = "assets/low-copies/";
+const RASTER = new Set(["webp", "png", "jpg", "jpeg", "avif", "gif"]);
+
+// The low-quality copy of an image: the same path under assets/low-copies/, as WebP.
+export function lowCopyPath(path) {
+  return `${LOW_PREFIX}${path.slice(ASSETS_PREFIX.length).replace(/\.[^./]+$/u, "")}.webp`;
+}
+
+// Raster images get a low copy; vectors, audio, Spine data and exact data maps (a location's depth map) do not.
+export function needsLowCopy(path) {
+  return path.startsWith(ASSETS_PREFIX) && !path.startsWith(LOW_PREFIX) && RASTER.has(extensionOf(path))
+    && !/-depth\.[^./]+$/u.test(path);
+}
 
 function extensionOf(path) {
   return path.match(/\.([^./]+)$/u)?.[1]?.toLowerCase() ?? "";
@@ -32,8 +46,8 @@ export function assetIdForPath(path, taken = new Set()) {
 // Files of the working tree (tracked, under assets/) -> assets keyed by their path (a Spine package by its .json).
 // files: [{ path, bytes, sha256 }]; atlasTextures: { atlasPath: ["texture.webp", ...] } (names relative to the atlas).
 export function collectAssets(files, atlasTextures = {}) {
-  const byPath = new Map(files.filter((file) => file.path.startsWith(ASSETS_PREFIX) && MEDIA_KINDS[extensionOf(file.path)])
-    .map((file) => [file.path, file]));
+  const byPath = new Map(files.filter((file) => file.path.startsWith(ASSETS_PREFIX) && !file.path.startsWith(LOW_PREFIX)
+    && MEDIA_KINDS[extensionOf(file.path)]).map((file) => [file.path, file]));
   const assets = new Map();
   const packaged = new Set();
   for (const file of byPath.values()) {
@@ -51,7 +65,9 @@ export function collectAssets(files, atlasTextures = {}) {
   }
   for (const file of byPath.values()) {
     if (packaged.has(file.path)) continue;
-    assets.set(file.path, { kind: MEDIA_KINDS[extensionOf(file.path)], path: file.path, bytes: file.bytes, sha256: file.sha256 });
+    const entry = { kind: MEDIA_KINDS[extensionOf(file.path)], path: file.path, bytes: file.bytes, sha256: file.sha256 };
+    if (file.width && file.height) Object.assign(entry, { width: file.width, height: file.height });
+    assets.set(file.path, entry);
   }
   return assets;
 }

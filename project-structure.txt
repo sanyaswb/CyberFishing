@@ -193,6 +193,173 @@
 │  │     ├── bg_test--evening.webp
 │  │     ├── bg_test--night.webp
 │  │     └── test-depth.webp
+│  ├── low-copies
+│  │  ├── fish
+│  │  │  ├── crucian_stalker
+│  │  │  │  ├── standart
+│  │  │  │  │  ├── crucian_stalker--1.webp
+│  │  │  │  │  ├── crucian_stalker--2.webp
+│  │  │  │  │  ├── crucian_stalker--3.webp
+│  │  │  │  │  ├── crucian_stalker--4.webp
+│  │  │  │  │  ├── crucian_stalker--5.webp
+│  │  │  │  │  └── crucian_stalker--6.webp
+│  │  │  │  └── unique
+│  │  │  │     ├── crucian_stalker--1-uniq.webp
+│  │  │  │     ├── crucian_stalker--2-uniq.webp
+│  │  │  │     ├── crucian_stalker--3-uniq.webp
+│  │  │  │     ├── crucian_stalker--4-uniq.webp
+│  │  │  │     ├── crucian_stalker--5-uniq.webp
+│  │  │  │     └── crucian_stalker--6-uniq.webp
+│  │  │  └── perch_radioactive
+│  │  │     ├── standart
+│  │  │     │  ├── perch_radioactive--1.webp
+│  │  │     │  ├── perch_radioactive--2.webp
+│  │  │     │  ├── perch_radioactive--3.webp
+│  │  │     │  ├── perch_radioactive--4.webp
+│  │  │     │  ├── perch_radioactive--5.webp
+│  │  │     │  └── perch_radioactive--6.webp
+│  │  │     └── unique
+│  │  │        ├── perch_radioactive--1-uniq.webp
+│  │  │        ├── perch_radioactive--2-uniq.webp
+│  │  │        ├── perch_radioactive--3-uniq.webp
+│  │  │        ├── perch_radioactive--4-uniq.webp
+│  │  │        ├── perch_radioactive--5-uniq.webp
+│  │  │        └── perch_radioactive--6-uniq.webp
+│  │  ├── fish-display
+│  │  │  ├── crucian_stalker
+│  │  │  │  ├── standart
+│  │  │  │  │  ├── crucian_stalker--1.webp
+│  │  │  │  │  ├── crucian_stalker--2.webp
+│  │  │  │  │  ├── crucian_stalker--3.webp
+│  │  │  │  │  ├── crucian_stalker--4.webp
+│  │  │  │  │  ├── crucian_stalker--5.webp
+│  │  │  │  │  └── crucian_stalker--6.webp
+│  │  │  │  └── unique
+│  │  │  │     ├── crucian_stalker--1-uniq.webp
+│  │  │  │     ├── crucian_stalker--2-uniq.webp
+│  │  │  │     ├── crucian_stalker--3-uniq.webp
+│  │  │  │     ├── crucian_stalker--4-uniq.webp
+│  │  │  │     ├── crucian_stalker--5-uniq.webp
+│  │  │  │     └── crucian_stalker--6-uniq.webp
+│  │  │  └── perch_radioactive
+│  │  │     ├── standart
+│  │  │     │  ├── perch_radioactive--1.webp
+│  │  │     │  ├── perch_radioactive--2.webp
+│  │  │     │  ├── perch_radioactive--3.webp
+│  │  │     │  ├── perch_radioactive--4.webp
+│  │  │     │  ├── perch_radioactive--5.webp
+│  │  │     │  └── perch_radioactive--6.webp
+│  │  │     └── unique
+│  │  │        ├── perch_radioactive--1-uniq.webp
+│  │  │        ├── perch_radioactive--2-uniq.webp
+│  │  │        ├── perch_radioactive--3-uniq.webp
+│  │  │        ├── perch_radioactive--4-uniq.webp
+│  │  │        ├── perch_radioactive--5-uniq.webp
+│  │  │        └── perch_radioactive--6-uniq.webp
+│  │  ├── fish-thumbnails
+│  │  │  ├── crucian_stalker
+│  │  │  │  ├── standart
+│  │  │  │  │  ├── crucian_stalker--1.webp
+│  │  │  │  │  ├── crucian_stalker--2.webp
+│  │  │  │  │  ├── crucian_stalker--3.webp
+│  │  │  │  │  ├── crucian_stalker--4.webp
+│  │  │  │  │  ├── crucian_stalker--5.webp
+│  │  │  │  │  └── crucian_stalker--6.webp
+│  │  │  │  └── unique
+│  │  │  │     ├── crucian_stalker--1-uniq.webp
+│  │  │  │     ├── crucian_stalker--2-uniq.webp
+│  │  │  │     ├── crucian_stalker--3-uniq.webp
+│  │  │  │     ├── crucian_stalker--4-uniq.webp
+│  │  │  │     ├── crucian_stalker--5-uniq.webp
+│  │  │  │     └── crucian_stalker--6-uniq.webp
+│  │  │  └── perch_radioactive
+│  │  │     ├── standart
+│  │  │     │  ├── perch_radioactive--1.webp
+│  │  │     │  ├── perch_radioactive--2.webp
+│  │  │     │  ├── perch_radioactive--3.webp
+│  │  │     │  ├── perch_radioactive--4.webp
+│  │  │     │  ├── perch_radioactive--5.webp
+│  │  │     │  └── perch_radioactive--6.webp
+│  │  │     └── unique
+│  │  │        ├── perch_radioactive--1-uniq.webp
+│  │  │        ├── perch_radioactive--2-uniq.webp
+│  │  │        ├── perch_radioactive--3-uniq.webp
+│  │  │        ├── perch_radioactive--4-uniq.webp
+│  │  │        ├── perch_radioactive--5-uniq.webp
+│  │  │        └── perch_radioactive--6-uniq.webp
+│  │  ├── house
+│  │  │  └── room-1
+│  │  │     ├── lvl-1
+│  │  │     │  ├── room--1-day-lvl--1.webp
+│  │  │     │  ├── room--1-eveningLight--on-lvl--1.webp
+│  │  │     │  └── room--1-nightLight--on-lvl--1.webp
+│  │  │     ├── lvl-2
+│  │  │     │  ├── room--1-day-lvl--2.webp
+│  │  │     │  ├── room--1-eveningLight--off-lvl--2.webp
+│  │  │     │  └── room--1-nightLight--on-lvl--2.webp
+│  │  │     ├── lvl-3
+│  │  │     │  ├── room--1-day-lvl--3.webp
+│  │  │     │  ├── room--1-eveningLight--on-lvl--3.webp
+│  │  │     │  └── room--1-nightLight--on-lvl--3.webp
+│  │  │     ├── lvl-4
+│  │  │     │  ├── room--1-day-lvl--4.webp
+│  │  │     │  ├── room--1-eveningLight--off-lvl--4.webp
+│  │  │     │  └── room--1-nightLight--off-lvl--4.webp
+│  │  │     ├── lvl-5
+│  │  │     │  ├── room--1-day-lvl--5.webp
+│  │  │     │  ├── room--1-eveningLight--on-lvl--5.webp
+│  │  │     │  └── room--1-nightLight--on-lvl--5.webp
+│  │  │     ├── room--1_aqua.webp
+│  │  │     └── under-renovation.webp
+│  │  ├── items
+│  │  │  ├── baits
+│  │  │  │  ├── bread--10.webp
+│  │  │  │  ├── bread--25.webp
+│  │  │  │  ├── bread--50.webp
+│  │  │  │  ├── oil-worm_icon.webp
+│  │  │  │  ├── oil-worms--100.webp
+│  │  │  │  ├── oil-worms--25.webp
+│  │  │  │  ├── oil-worms--50.webp
+│  │  │  │  └── oil-worms--75.webp
+│  │  │  ├── batteries
+│  │  │  │  ├── battery-volt--1.webp
+│  │  │  │  ├── battery-volt--2.webp
+│  │  │  │  ├── battery-volt--3.webp
+│  │  │  │  └── battery-volt--4.webp
+│  │  │  ├── boats
+│  │  │  │  ├── boat-lvl--3_bait.webp
+│  │  │  │  └── boat-lvl--3_no-bait.webp
+│  │  │  ├── briefcases
+│  │  │  │  ├── briefcase--1--close.webp
+│  │  │  │  └── briefcase--1--open.webp
+│  │  │  ├── floats
+│  │  │  │  └── float-day.webp
+│  │  │  ├── floats-scene
+│  │  │  │  ├── float-day-glow.webp
+│  │  │  │  └── float-day.webp
+│  │  │  ├── keepnet
+│  │  │  │  ├── keepnet--0.webp
+│  │  │  │  ├── keepnet--100.webp
+│  │  │  │  ├── keepnet--20.webp
+│  │  │  │  ├── keepnet--40.webp
+│  │  │  │  ├── keepnet--60.webp
+│  │  │  │  └── keepnet--80.webp
+│  │  │  ├── nets
+│  │  │  │  └── net--1.webp
+│  │  │  ├── radio
+│  │  │  │  └── radio-receiver.webp
+│  │  │  └── rods
+│  │  │     └── bamboo-rod-ecip-v1.webp
+│  │  ├── lobby
+│  │  │  └── lobby-background.webp
+│  │  ├── locations
+│  │  │  └── test
+│  │  │     ├── bg_test--day.webp
+│  │  │     ├── bg_test--evening.webp
+│  │  │     └── bg_test--night.webp
+│  │  └── ui
+│  │     └── loader
+│  │        └── loader-poster.webp
 │  └── ui
 │     ├── inventory
 │     │  ├── backpack.svg

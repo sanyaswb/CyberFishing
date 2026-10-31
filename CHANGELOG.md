@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.46 - Low-quality copies
+
+- Spec 157 stage D3 (TK-179): `npm run assets:sync` makes a low-quality copy of every raster image except depth maps under `assets/low-copies/` with `utils/convert-images.js --low-copies` (a quarter of the longest side, at most 256 px, WebP Low; 122 copies, 0.52 MB) and records each image's width, height, copy and source hash in the registry; `--check` fails on a missing, untracked or stale copy. Nothing loads them yet (stage D4). Game-cycle report unchanged.
+
 ## v0.49.45 - Load priorities and pause
 
 - Spec 157 stage D2: the asset load plan runs through one priority queue (`AssetLoadQueue`): the first layer blocks, the second and third are capped background work that waits in a hidden tab, offline or with save-data (`BrowserLoadConditions`), and what the player opens (`request`, today the equipped rod's art in the selector) loads ahead of them, promoting a queued job; loads retry once. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.37 - Asset registry
 
 - TK-178 / spec 157 R16 (a): `npm run assets:sync` keeps a generated registry of every tracked asset under a stable id (`src/game/config/generated/asset_registry.js`, 156 assets; a Spine export is one asset); moved files keep their id (same content, git rename or `--moved`), ambiguous or vanished referenced files stop the sync; `--check` runs in Full. Code and configuration move from paths to ids in the next steps. Game-cycle report unchanged.
-
-## v0.49.36 - Version badge label
-
-- TK-167: the version badge's `aria-label` in `index.html` / `dev.html` was double-encoded UTF-8 since v0.48.45 (a rewrite in the ANSI code page); it reads «Поточна версія гри» again, and the new `text-encoding` check rejects double-encoded or invalid UTF-8 in shipped text (incident I-10). Game-cycle report unchanged.

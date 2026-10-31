@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.45";
+export const CURRENT_PROJECT_VERSION = "0.49.46";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 157 D3: generated low-quality copies of every raster image (assets/low-copies), checked in Full.",
     "Spec 157 D2: one priority queue; background layers pause in a hidden tab, offline or with save-data; opened content goes first.",
     "Spec 157 D1: the asset load plan (three layers, priorities) drives every image preload; the start loads the same files.",
     "TK-178 (c–d): fish art by asset id; no asset path literals left in src/.",
