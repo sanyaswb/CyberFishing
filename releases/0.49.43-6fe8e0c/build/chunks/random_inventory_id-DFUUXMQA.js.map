@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/platform/browser/inventory/random_inventory_id.js"],
+  "sourcesContent": ["// Browser UUID capability; InventoryInstanceIdFactory falls back to a timestamp/counter id without it.\nexport function createRandomInventoryId(prefix) {\n  const cryptoObj = globalThis.crypto;\n  return cryptoObj?.randomUUID ? `${prefix}_${cryptoObj.randomUUID()}` : null;\n}\n"],
+  "mappings": "4BACO,SAASA,EAAwBC,EAAQ,CAC9C,IAAMC,EAAY,WAAW,OAC7B,OAAOA,GAAW,WAAa,GAAGD,CAAM,IAAIC,EAAU,WAAW,CAAC,GAAK,IACzE",
+  "names": ["createRandomInventoryId", "prefix", "cryptoObj"]
+}

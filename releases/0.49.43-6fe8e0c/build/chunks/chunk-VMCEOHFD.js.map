@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/engine/diagnostics/inactive_frame_probe.js"],
+  "sourcesContent": ["// Frame timing port (spec 101). The game loop, the render pipeline, the scene layer (spec 103) and the Spine rod\n// renderer report into it; production composes this inactive probe (no clock reads, no work), DEV composes the\n// FrameProfiler behind the overlay's performance module. Calls: beginFrame(timestampMs) once per animation frame,\n// begin(id) / end(id) around a section, gauge(id, value) for a size worth seeing (pixels), endFrame().\nexport const FRAME_SECTIONS = Object.freeze({\n  update: \"update\",\n  draw: \"draw\",\n  scene: \"scene\",\n  rodSpine: \"rod-spine\",\n});\n\nexport const FRAME_GAUGES = Object.freeze({\n  glPixels: \"gl-pixels\",\n  scenePixels: \"scene-pixels\",\n});\n\nexport const FRAME_PROBE_METHODS = Object.freeze([\"beginFrame\", \"begin\", \"end\", \"gauge\", \"endFrame\"]);\n\nexport class InactiveFrameProbe {\n  beginFrame() {}\n\n  begin() {}\n\n  end() {}\n\n  gauge() {}\n\n  endFrame() {}\n}\n"],
+  "mappings": "AAIO,IAAMA,EAAiB,OAAO,OAAO,CAC1C,OAAQ,SACR,KAAM,OACN,MAAO,QACP,SAAU,WACZ,CAAC,EAEYC,EAAe,OAAO,OAAO,CACxC,SAAU,YACV,YAAa,cACf,CAAC,EAEYC,EAAsB,OAAO,OAAO,CAAC,aAAc,QAAS,MAAO,QAAS,UAAU,CAAC,EAEvFC,EAAN,KAAyB,CAC9B,YAAa,CAAC,CAEd,OAAQ,CAAC,CAET,KAAM,CAAC,CAEP,OAAQ,CAAC,CAET,UAAW,CAAC,CACd",
+  "names": ["FRAME_SECTIONS", "FRAME_GAUGES", "FRAME_PROBE_METHODS", "InactiveFrameProbe"]
+}

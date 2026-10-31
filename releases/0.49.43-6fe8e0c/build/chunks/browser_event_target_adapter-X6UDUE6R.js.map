@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/platform/browser/runtime/browser_event_target_adapter.js"],
+  "sourcesContent": ["export class BrowserEventTargetAdapter {\n  constructor(target) {\n    this.target = target;\n  }\n\n  add(type, handler, options) {\n    this.target.addEventListener(type, handler, options);\n    return () => this.target.removeEventListener(type, handler, options);\n  }\n\n  emit(type, detail) {\n    this.target.dispatchEvent(new CustomEvent(type, { detail }));\n  }\n}\n"],
+  "mappings": "4BAAO,IAAMA,EAAN,KAAgC,CACrC,YAAYC,EAAQ,CAClB,KAAK,OAASA,CAChB,CAEA,IAAIC,EAAMC,EAASC,EAAS,CAC1B,YAAK,OAAO,iBAAiBF,EAAMC,EAASC,CAAO,EAC5C,IAAM,KAAK,OAAO,oBAAoBF,EAAMC,EAASC,CAAO,CACrE,CAEA,KAAKF,EAAMG,EAAQ,CACjB,KAAK,OAAO,cAAc,IAAI,YAAYH,EAAM,CAAE,OAAAG,CAAO,CAAC,CAAC,CAC7D,CACF",
+  "names": ["BrowserEventTargetAdapter", "target", "type", "handler", "options", "detail"]
+}

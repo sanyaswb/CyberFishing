@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="uk">
+
+<head>
+    <link rel="preload" as="style" href="src/game/presentation/styles/tokens.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/ui-glyph.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/ui-surface.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/game-shell.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/modal-controls.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/auto-switch.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/toolbar.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/inventory-selector.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/version-badge.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/theme.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/modal.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/header.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/shared-controls.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/loadout.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/section-tabs.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/slots.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/item-cards.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/resource-meters.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/attachments.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/assembly-editor.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/item-parameters.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/list-and-filters.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/tooltips.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/keepnet.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/game-controls.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/time-display.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/hud-indicator.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/inventory/radio-controls.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/hold-charges.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/depth-selector.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/chum-control.css?v=0.49.43" />
+    <link rel="preload" as="style" href="src/game/presentation/styles/hud/draggable-control.css?v=0.49.43" />
+    <link rel="modulepreload" href="build/index.boot-2DA42568.js" />
+    <link rel="modulepreload" href="build/game.entry-KDTSALQS.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-PWIWUXGI.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-2JIJGK4K.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-IJQKA6DF.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-7W6YD7QL.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-VMCEOHFD.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-XAWE4EAK.js" />
+    <link rel="modulepreload" href="build/chunks/random_inventory_id-DFUUXMQA.js" />
+    <link rel="modulepreload" href="build/chunks/browser_event_target_adapter-X6UDUE6R.js" />
+    <link rel="modulepreload" href="build/chunks/browser_timeout_scheduler-EW5TRX2W.js" />
+    <link rel="modulepreload" href="build/chunks/inventory_composition_config-U74YV2Q7.js" />
+    <link rel="modulepreload" href="build/chunks/spine_runtime_module-AITWB7GX.js" />
+    <link rel="modulepreload" href="build/chunks/pixi_runtime_module-IC5AZDQY.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-GTIBHHEY.js" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fishing Mechanic Prototype</title>
+  <style>
+    /* Spec 157 D0: the startup screen paints from this HTML alone, before the game's stylesheets and modules load;
+       data-game-ready (set with the first frame of play) fades it out. Stage D adds progress and removes it. */
+    .startup-loader { position: fixed; inset: 0; z-index: 2147483647; display: grid; place-items: center;
+      background: #000; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+    .startup-loader__icon { width: 56px; height: 56px; animation: startup-loader-spin 1s linear infinite; }
+    html[data-game-ready] .startup-loader { opacity: 0; visibility: hidden; pointer-events: none; }
+    html[data-game-ready] .startup-loader__icon { animation-play-state: paused; }
+    @keyframes startup-loader-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .startup-loader__icon { animation: none; } }
+  </style>
+</head>
+
+<body class="game-shell">
+  <div class="startup-loader" role="status" aria-label="Завантаження гри">
+    <svg class="startup-loader__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255, 255, 255, 0.16)" stroke-width="4" />
+      <circle cx="24" cy="24" r="20" fill="none" stroke="#7fd1ff" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="36 90" />
+    </svg>
+  </div>
+  <!-- Spec 157 D0: the game's stylesheets follow the startup screen so they do not hold back its first paint. -->
+  <link rel="stylesheet" href="src/game/presentation/styles/tokens.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/ui-glyph.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/ui-surface.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/game-shell.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/modal-controls.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/auto-switch.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/toolbar.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/inventory-selector.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/version-badge.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/theme.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/modal.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/header.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/shared-controls.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/loadout.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/section-tabs.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/slots.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-cards.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/resource-meters.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/attachments.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/assembly-editor.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-parameters.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/list-and-filters.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/tooltips.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/keepnet.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/game-controls.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/time-display.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/hud-indicator.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/inventory/radio-controls.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/hold-charges.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/depth-selector.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/chum-control.css?v=0.49.43" />
+  <link rel="stylesheet" href="src/game/presentation/styles/hud/draggable-control.css?v=0.49.43" />
+  <canvas id="gameCanvas" class="game-shell__canvas"></canvas>
+  <div id="gameVersionBadge" class="game-version-badge" aria-label="Поточна версія гри"></div>
+  <script type="module" src="build/index.boot-2DA42568.js"></script>
+</body>
+
+</html>
