@@ -58,7 +58,8 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const imageAssets = { preload: (records) => new Promise((resolve, reject) => {
     for (const record of records) { requests.push(record.id); pending.set(record.id, { resolve, reject }); }
   }) };
-  const facade = new GameAssetPreloadFacade({ plan: testPlan, assets: registry, imageAssets });
+  const scheduler = { setTimeout, clearTimeout };
+  const facade = new GameAssetPreloadFacade({ plan: testPlan, assets: registry, imageAssets, scheduler, maxAttempts: 1 });
   const one = facade.start("one", { phase: "day" });
   assert.equal(facade.start("one"), one, "a layer starts once");
   await flush();
@@ -83,6 +84,66 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   pending.get("extra.new").resolve();
   await facade.whenLayer("three");
   assert.deepEqual(facade.getStatus().map((entry) => entry.started), [true, true, true]);
+
+  // Stage D2: background layers share capped slots and wait while paused; what the player opened goes first.
+  const bgRegistry = new AssetRegistry(Object.fromEntries(["a", "b", "c", "d"].map((name) =>
+    [`bg.${name}`, image(`assets/bg/${name}.webp`, ["bg"])]).concat([["open.x", image("assets/open/x.webp", ["open"])]])));
+  const bgPlan = new AssetLoadPlan({ registry: bgRegistry, plan: plan([
+    layer("first", "composition", [{ id: "none", priority: 1, assets: [] }]),
+    layer("second", "ready", [{ id: "bg", priority: 1, assets: [{ tag: "bg" }] }]),
+    layer("third", "after:second", [{ id: "open", priority: 1, load: false, assets: [{ id: "open.x" }] }]),
+  ]) });
+  const started = [];
+  const finishers = new Map();
+  const bgImages = { preload: ([record]) => new Promise((resolve) => { started.push(record.id); finishers.set(record.id, resolve); }) };
+  let paused = true;
+  const listeners = new Set();
+  const conditions = { isPaused: () => paused, subscribe: (listener) => { listeners.add(listener); return () => listeners.delete(listener); } };
+  const bgFacade = new GameAssetPreloadFacade({ plan: bgPlan, assets: bgRegistry, imageAssets: bgImages, scheduler, conditions,
+    networkSlots: 3, backgroundSlots: 2 });
+  await bgFacade.start("first");
+  bgFacade.start("second");
+  await flush();
+  assert.deepEqual(started, [], "a hidden tab, offline or save-data pauses the background layers");
+  const opened = bgFacade.request(["open.x"]);
+  await flush();
+  assert.deepEqual(started, ["open.x"], "what the player opened loads even while the background waits");
+  paused = false;
+  for (const listener of listeners) listener(false);
+  await flush();
+  assert.deepEqual(started, ["open.x", "bg.a", "bg.b"], "the background resumes within its own cap");
+  finishers.get("open.x")();
+  assert.deepEqual(await opened, { status: "ready", ids: ["open.x"], error: null });
+  const promoted = bgFacade.request(["bg.d"]);
+  finishers.get("bg.a")();
+  await flush();
+  assert.deepEqual(started.slice(3), ["bg.d", "bg.c"], "a queued background job the player needs is promoted ahead of the rest");
+  for (const id of ["bg.b", "bg.d"]) finishers.get(id)();
+  await flush();
+  finishers.get("bg.c")?.();
+  assert.equal((await promoted).status, "ready");
+  await bgFacade.whenLayer("second");
+  assert.equal(bgFacade.getQueueSnapshot().queued, 0);
+  bgFacade.dispose();
+  assert.equal(listeners.size, 0, "dispose unsubscribes from the conditions");
+
+  const { BrowserLoadConditions } = await importSource("src/platform/browser/assets/browser_load_conditions.js");
+  const events = new Map();
+  const target = () => ({ addEventListener: (type, fn) => events.set(type, fn), removeEventListener: (type) => events.delete(type) });
+  const documentRef = { ...target(), visibilityState: "visible" };
+  const windowRef = { ...target(), navigator: { onLine: true, connection: { saveData: false, ...target() } } };
+  const browserConditions = new BrowserLoadConditions({ documentRef, windowRef });
+  const changes = [];
+  browserConditions.subscribe((value) => changes.push(value));
+  assert.equal(browserConditions.isPaused(), false);
+  documentRef.visibilityState = "hidden"; events.get("visibilitychange")();
+  documentRef.visibilityState = "visible"; events.get("visibilitychange")();
+  windowRef.navigator.onLine = false; events.get("offline")();
+  windowRef.navigator.onLine = true; events.get("online")();
+  windowRef.navigator.connection.saveData = true; events.get("change")();
+  assert.deepEqual(changes, [true, false, true, false, true], "hidden tab, offline and save-data pause; each change once");
+  browserConditions.dispose();
+  assert.equal(events.size, 0, "dispose removes every listener");
 
   // The production plan: valid on the real registry, nothing unassigned, and its first layer is the pre-D start.
   const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
@@ -114,10 +175,9 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert(production.layer("layer-three").groups.every((group) => group.load === false), "layer three loads on demand only");
 
   // Loads go through the plan (DEVELOPMENT_RULES "Loading and startup optimization"): in the composition only the
-  // facade preloads images; the selector's rod art follows the equipped rod (moves to facade.request with stage D2).
+  // facade preloads images (the selector's rod art goes through facade.request, stage D2).
   const fs = require("node:fs");
-  const allowed = new Set(["src/bootstrap/production/game_asset_preload_facade.js",
-    "src/bootstrap/production/inventory_selector_composition.js"]);
+  const allowed = new Set(["src/bootstrap/production/game_asset_preload_facade.js"]);
   const adHoc = [];
   for (const directory of ["src/bootstrap/production", "src/bootstrap/development"]) {
     for (const name of fs.readdirSync(path.join(ROOT, directory))) {

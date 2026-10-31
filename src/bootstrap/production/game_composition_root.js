@@ -92,6 +92,7 @@ import { AssetLoadPlan } from "../../engine/assets/asset_load_plan.js";
 import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
 import { createAssetLoadSources } from "./asset_load_sources.js";
 import { GameAssetPreloadFacade } from "./game_asset_preload_facade.js";
+import { BrowserLoadConditions } from "../../platform/browser/assets/browser_load_conditions.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
 import { ItemConditionDescriptor } from "../../game/presentation/inventory/item_condition_descriptor.js";
@@ -449,9 +450,12 @@ export class GameCompositionRoot {
     // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
     const imageAssets = new ImageAssetProvider();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
-    this.#preload = new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
+    this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
       plan: ASSET_LOAD_PLAN, registry: this.#assets,
-      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }) }) });
+      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }) }),
+      scheduler: this.#windowTarget,
+      // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
+      conditions: own(new BrowserLoadConditions({ documentRef: this.#documentTarget, windowRef: this.#windowTarget })) }));
     // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
@@ -1225,7 +1229,9 @@ export class GameCompositionRoot {
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, imageAssets, logger: new ConsoleLogger(),
+      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, logger: new ConsoleLogger(),
+      // The equipped rod's art in the selector, when the player changes the rod: ahead of the background (spec 157 D2).
+      requestArtwork: (ids) => this.#preload.request(ids),
       equipmentSource: inventory, assets: this.#assets,
       // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
       preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {

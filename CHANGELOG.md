@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.45 - Load priorities and pause
+
+- Spec 157 stage D2: the asset load plan runs through one priority queue (`AssetLoadQueue`): the first layer blocks, the second and third are capped background work that waits in a hidden tab, offline or with save-data (`BrowserLoadConditions`), and what the player opens (`request`, today the equipped rod's art in the selector) loads ahead of them, promoting a queued job; loads retry once. Game-cycle report unchanged.
+
 ## v0.49.44 - Asset load plan
 
 - Spec 157 stage D1 (TK-177): the asset load plan in configuration (`src/game/config/raw/assets/asset_load_plan.js`: three layers, groups by priority, entries by asset id, tag or game-state source; registry assets without a place form an `unassigned` group) runs through `GameAssetPreloadFacade` over the game's one image store, keyed by asset id; it replaces the scattered preloads (current background phase and depth map, float art, slot placeholders, later phases, depth icons, selector art, keepnet stages). Today's plan repeats the loads before stage D: the same files before the start. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.36 - Version badge label
 
 - TK-167: the version badge's `aria-label` in `index.html` / `dev.html` was double-encoded UTF-8 since v0.48.45 (a rewrite in the ANSI code page); it reads «Поточна версія гри» again, and the new `text-encoding` check rejects double-encoded or invalid UTF-8 in shipped text (incident I-10). Game-cycle report unchanged.
-
-## v0.49.35 - Trial release bundle
-
-- Spec 157 R13 (trial, owner decides after Pages): the release is one self-contained folder built from a commit (`npm run build:release`): esbuild bundles with hashed chunks, minified, with source maps, a boot module per page (`?esm=1` runs the source modules), preloads in the pages; Pages and a game server serve the same folder (cold start on Fast 4G 2.3 → 1.55 s, 3G 10.9 → 6.3 s locally; 68 instead of 709 requests). Server requirements: docs/deployment.md. The repository and local work stay without a build. Game-cycle report unchanged.

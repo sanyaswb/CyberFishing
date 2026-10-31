@@ -411,7 +411,7 @@ async function checkComposition() {
     equipmentSource: { getEquipped: () => equipped,
       onInventoryChanged: fn => { equipmentListener = fn; return () => { equipmentListener = null; }; } },
     preloadArtwork: () => new Promise(resolve => { finishSelector = resolve; }),
-    imageAssets: { preload: () => { artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; }); } },
+    requestArtwork: () => { artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; }); },
     logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
   // Spec 157 R11: startup does not load the selector's artwork; the classic buttons stand in until it is ready.
@@ -535,7 +535,7 @@ async function checkPreloadOutcomes() {
         onVisibilityChange: () => () => {} },
       keepnetUI: { setShortcutVisible: value => { keepnet = value; visibilityWrites++; } },
       preloadArtwork: () => new Promise((resolve, reject) => { finish = resolve; fail = reject; }),
-      imageAssets: { preload: () => Promise.resolve() },
+      requestArtwork: () => Promise.resolve({ status: "ready" }),
       logger: { warn: () => { warnings++; } },
     });
     assert.equal(classic, true, "classic buttons stand in before the artwork (spec 157 R11)"); assert.equal(keepnet, classic);

@@ -12,7 +12,7 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 // loaded, the classic inventory and keepnet buttons stand in for the radial selector; a failed load keeps them.
 // preloadArtwork(): settles when the asset load plan's "selector" group has loaded (rejects when it failed).
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
-  inventoryUI, keepnetUI, config, imageAssets, logger, equipmentSource = null,
+  inventoryUI, keepnetUI, config, requestArtwork, logger, equipmentSource = null,
   id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork }) {
   const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
     .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
@@ -39,7 +39,8 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     const revision = ++artworkRevision;
     view.setEquipmentArtwork(null);
     if (!thumbnail.asset) return;
-    imageAssets.preload([{ id: thumbnail.asset, src: domFactory.assetUrl(thumbnail.asset) }]).then(() => {
+    Promise.resolve(requestArtwork([thumbnail.asset])).then((outcome) => {
+      if (outcome?.status === "failed") throw outcome.error;
       if (!disposed && revision === artworkRevision) view.setEquipmentArtwork(thumbnail);
     }).catch(error => {
       if (!disposed && revision === artworkRevision) logger.warn("[InventorySelector] Rod artwork preload failed; retaining SVG", error);
