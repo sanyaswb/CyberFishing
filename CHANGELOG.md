@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.52 - Item art 1024 px
+
+- Spec 157 R6 step 2: one image per item at most 1024 px (WebP middle) for every place; measured, the editor preview draws an item at most 375 CSS px tall on phones in both orientations (748 device px at ratio 2), the toolbar net/boat buttons under 190 px and the scene boat is Spine. Briefcases, bait boats, net, float, rod, oil worms 100, batteries 3-4 re-encoded from masters now kept in `asset-sources/items/` (never released), bread 50 from its PNG master: item art 3.26 -> 2.24 MB per release. `convert-images.js --thumbnails` refuses two masters writing one file. Game-cycle report unchanged.
+
 ## v0.49.51 - One fish image
 
 - TK-180: each fish has one runtime image (the 768 px display art); keepnet cards and the aquarium show its generated low copy (~192 px), the hand-made `assets/fish-thumbnails/` are gone and the 2752 px masters moved to `asset-sources/fish/` (never released: -4.8 MB per release). Saves written earlier keep their master path and still find the same fish's image (recognised through the asset id scheme); new catches store the display image's path. `assets:sync` removes low copies whose image is gone. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.43 - Fish art by id, no asset paths in code
 
 - TK-178 / spec 157 R16 (c–d): fish name their art by asset-id patterns (`visual.imageAssetPattern`, `uniqueImageAssetPattern`); `FishVisualVariantResolver` hands out the registry's file (a caught fish keeps the same `imagePath` in saves) and `FishArtVariants` maps it to the thumbnail and display variants through the registry (`AssetRegistry.idOfPath`). The `asset-references` check now forbids `"assets/…"` literals in every source, stylesheet and page except the generated registry. Game-cycle report unchanged.
-
-## v0.49.42 - Inventory art by id
-
-- TK-178 / spec 157 R16 (c, inventory): item art (`iconAsset`, `switcherIconAsset`, `skin.thumbnail.asset`, rod `withLineAsset`/`withoutLineAsset`, boat `baitAsset`/`noBaitAsset`), slot placeholders, inventory sections and their sprite, keepnet fill stages and aquarium feed boxes are named by asset id; `InventoryDomFactory` (`image`, `svgIcon`, `assetUrl`), the keepnet views, selector, depth selector, landing net and chum buttons, House feed images and the DEV shop resolve the files through the registry. Same requests before the start. Game-cycle report unchanged.

@@ -1,4 +1,4 @@
-// convert-images.js v1.6.0
+// convert-images.js v1.7.0
 
 const fs = require('fs');
 const path = require('path');
@@ -458,6 +458,13 @@ async function createThumbnails(args) {
     !Number.isFinite(topFraction) || topFraction <= 0 || topFraction > 1 ||
     path.relative(BASE_DIR, output).startsWith('..')) throw new Error('Invalid thumbnail options');
   const files = glob.sync('**/*.{png,jpg,jpeg,webp,avif}', { cwd: input, nodir: true });
+  // Two masters with one name and different extensions would write the same file (spec 157 R6: rods keep an older PNG).
+  const targets = new Map();
+  for (const relative of files) {
+    const target = relative.replace(/\.[^.]+$/, '.webp');
+    if (targets.has(target)) throw new Error(`${targets.get(target)} and ${relative} would both write ${target}`);
+    targets.set(target, relative);
+  }
   for (const relative of files) {
     const source = path.join(input, relative);
     const target = path.join(output, relative.replace(/\.[^.]+$/, '.webp'));

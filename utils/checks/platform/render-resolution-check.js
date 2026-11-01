@@ -148,6 +148,31 @@ async function checkFishArt() {
   return masters.length;
 }
 
+// Spec 157 R6: one image per item for every place (card, cell, toolbar, editor preview). The largest place is the editor
+// preview, measured at most 375 CSS px tall on phones in both orientations (748 device px at ratio 2), so the longest
+// side is 1024 px (WebP middle); masters stay in asset-sources/. Keepnet stages are 768 px (R5).
+const ITEM_ART_MAX_SIDE = 1024;
+const KEEPNET_ART_MAX_SIDE = 768;
+const ITEM_ART_MAX_BYTES = 180 * 1024;
+
+async function checkItemArt() {
+  const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
+  const files = spawnSync("git", ["ls-files", "assets/items"], { cwd: ROOT_DIR, encoding: "utf8" }).stdout
+    .split(/\r?\n/u).filter((file) => /\.(?:webp|png|jpe?g|avif)$/u.test(file));
+  assert(files.length > 20, "item art is tracked");
+  const offenders = [];
+  for (const file of files) {
+    const absolute = path.join(ROOT_DIR, file);
+    const { width, height } = await sharp(absolute).metadata();
+    const limit = file.startsWith("assets/items/keepnet/") ? KEEPNET_ART_MAX_SIDE : ITEM_ART_MAX_SIDE;
+    if (Math.max(width, height) > limit) offenders.push(`${file} is ${width}x${height} (at most ${limit} px)`);
+    const bytes = fs.statSync(absolute).size;
+    if (bytes > ITEM_ART_MAX_BYTES) offenders.push(`${file} is ${Math.round(bytes / 1024)} KB (at most 180 KB)`);
+  }
+  assert.deepEqual(offenders, [], "item art fits the editor preview (spec 157 R6)");
+  return files.length;
+}
+
 async function checkOneSource() {
   const { OutcomeRenderFrameBuilder } = await importSource("src/game/presentation/screens/outcome_render_frame_builder.js");
   const { AssetPreloadCoordinator } = await importSource("src/platform/browser/assets/asset_preload_coordinator.js");
@@ -169,9 +194,11 @@ async function main() {
   await checkFilterPolicy();
   checkDrawOrder();
   const masters = await checkFishArt();
+  const itemArt = await checkItemArt();
   await checkOneSource();
   console.log(`Render resolution passed: logical surface with the base transform at frame start, offscreen `
     + `data at ratio 1, rod depth order, ${masters} fish masters with tracked thumbnail/display variants within size, `
+    + `${itemArt} item images at most 1024 px (keepnet 768) and 180 KB, `
     + "one victory image source for the frame and the preloader, per-draw image filter (medium for downscales, low "
     + "otherwise, never high, set only by the surface).");
 }
