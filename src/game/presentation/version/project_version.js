@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.49";
+export const CURRENT_PROJECT_VERSION = "0.49.50";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 157 D6: the loading overlay shows plan layers, groups, files and duplicates; DevTools edits and exports the plan.",
     "Spec 157 D5: the startup screen shows a bar and loaded / total MB (compressed) from the release's startup manifest.",
     "Spec 157 D4b: the game starts with the background's low copy; the full image replaces it after the first frame.",
     "Spec 157 D4a: UI images show their low copy first; the full file replaces it once shown and loaded.",

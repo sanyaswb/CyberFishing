@@ -42,6 +42,7 @@ export class DevTools {
   #createWaterMetric;
   #storageCache;
   #assets;
+  #assetLoadPlanStore;
   #openHouse;
   #openGame;
   #isDisposed = false;
@@ -103,6 +104,8 @@ export class DevTools {
       openGame = null,
       // The AssetRegistry: the shop shows each item's art by asset id (spec 157 R16).
       assets = null,
+      // Spec 157 D6: the asset load plan's DEV edits (DevAssetLoadPlanStore) or null.
+      assetLoadPlanStore = null,
     } = {},
   ) {
     this.#assets = assets;
@@ -119,6 +122,7 @@ export class DevTools {
     this.#createWaterMetric = createWaterMetric;
     this.#openHouse = openHouse;
     this.#openGame = openGame;
+    this.#assetLoadPlanStore = assetLoadPlanStore;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -244,7 +248,34 @@ export class DevTools {
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
     this.#renderRuntimeOverrideControls(service);
+    this.#renderAssetLoadPlanControls(service);
     this.#renderItemProgressionSection(service);
+  }
+
+  // Spec 157 D6 (TK-177 item 8): the asset load plan exported as its module text, an edited plan (JSON) validated and
+  // kept for the next start, and a reset to the configured plan.
+  #renderAssetLoadPlanControls(service) {
+    const store = this.#assetLoadPlanStore;
+    if (!store) return;
+    const content = this.#createSectionWithCache(store.isEdited() ? "ПЛАН ЗАВАНТАЖЕННЯ (змінено)" : "ПЛАН ЗАВАНТАЖЕННЯ",
+      service, ["DEV_SERVICE", "ASSET_LOAD_PLAN"]);
+    this.#ui.createButtonRow("Експорт плану", content, () => {
+      const text = store.exportText();
+      if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(text).catch(() => {});
+      window.prompt?.("Текст для src/game/config/raw/assets/asset_load_plan.js", text);
+    });
+    this.#ui.createButtonRow("Змінити план (з наступного старту)", content, () => {
+      const json = window.prompt?.("JSON плану завантаження", JSON.stringify(store.plan()));
+      if (!json) return;
+      let errors;
+      try { errors = store.save(JSON.parse(json)); } catch (error) { errors = [error.message]; }
+      if (errors.length > 0) window.alert?.(`План не збережено:\n${errors.join("\n")}`);
+      else window.alert?.("План збережено: діє з наступного старту.");
+    });
+    this.#ui.createButtonRow("Скинути план до конфігу", content, () => {
+      store.reset();
+      window.alert?.("Скинуто: з наступного старту діє план із конфігу.");
+    });
   }
 
   #renderOverlaySection(body) {

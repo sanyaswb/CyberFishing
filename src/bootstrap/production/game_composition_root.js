@@ -171,6 +171,7 @@ export class GameCompositionRoot {
   #fishArt = new FishArtVariants({ assets: this.#assets });
   // Spec 157 R15 (stage D1): the asset load plan's runner over the game's image store, composed in create().
   #preload = null;
+  #assetLoadPlan;
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
@@ -219,6 +220,8 @@ export class GameCompositionRoot {
     createHookedFishProfileSynchronizer,
     createDebugService,
     itemDb = ITEM_DB,
+    // Spec 157 R15: the asset load plan (DEV passes the owner's edited plan; production the configured one).
+    assetLoadPlan = ASSET_LOAD_PLAN,
     loadRandomInventoryId,
     loadBrowserEventTargetAdapter,
     loadBrowserTimeoutScheduler,
@@ -321,6 +324,7 @@ export class GameCompositionRoot {
     this.#storageCache = new LocalStorageCache({ storage: windowTarget?.localStorage, logger: new ConsoleLogger() });
     this.#config = config || {};
     this.#itemDb = itemDb;
+    this.#assetLoadPlan = assetLoadPlan;
     this.#runtimeConfig = {};
     for (const key of Object.getOwnPropertyNames(this.#config)) {
       Object.defineProperty(this.#runtimeConfig, key, {
@@ -346,6 +350,22 @@ export class GameCompositionRoot {
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
     void this.#preload?.start("layer-two");
     for (const load of this.#deferredAssetLoads) load();
+  }
+
+  // The asset load plan's state for the DEV overlay "ЗАВАНТАЖЕННЯ" (spec 157 D6): layers -> groups -> asset ids with
+  // their files and sizes, the registry's duplicate contents; null before create().
+  getAssetLoadStatus() {
+    if (!this.#preload) return null;
+    const file = (id) => {
+      const entry = this.#assets.entryOf(id);
+      return { id, path: entry.path ?? entry.json, bytes: entry.bytes, low: entry.low ?? null };
+    };
+    return {
+      layers: this.#preload.getStatus().map((layer) => ({ ...layer,
+        groups: layer.groups.map((group) => ({ ...group, files: group.ids.map(file) })) })),
+      duplicates: this.#assets.duplicates(),
+      queue: this.#preload.getQueueSnapshot(),
+    };
   }
 
   // Services of the running session that other screens share instead of composing their own (spec 084).
@@ -451,9 +471,10 @@ export class GameCompositionRoot {
     const imageAssets = new ImageAssetProvider();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
-      plan: ASSET_LOAD_PLAN, registry: this.#assets,
+      plan: this.#assetLoadPlan, registry: this.#assets,
       sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }) }),
       scheduler: this.#windowTarget,
+      now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
       // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
       conditions: own(new BrowserLoadConditions({ documentRef: this.#documentTarget, windowRef: this.#windowTarget })) }));
     // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).

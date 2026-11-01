@@ -24,13 +24,20 @@ const STATUS_LABELS = Object.freeze({
   saveFailed: () => "Не вдалося зберегти файл звіту.",
 });
 const COPY_PROMPT_TITLE = "Звіт завантаження";
+const GROUP_STATUS_LABELS = Object.freeze({
+  waiting: "чекає", loading: "іде", ready: "готово", failed: "помилка", "on-demand": "на вимогу",
+});
+// A group's files are listed one per row up to this many; larger groups show their count only.
+const LISTED_FILES = 16;
 export const STARTUP_REPORT_COPY_CONTROL = "startup-report-copy";
 export const STARTUP_REPORT_DOWNLOAD_CONTROL = "startup-report-download";
 
 // DEV overlay "⏱ ЗАВАНТАЖЕННЯ" (spec 157 R9): the startup stages and T-paint/T-play, requests and bytes by kind up to
 // T-play (transferred = compressed over the network, then uncompressed), the sequential network steps, the 10 largest
 // and 10 longest requests, "Копіювати звіт" and "Завантажити JSON" (the JSON report for the owner's phone, to the
-// clipboard or as a file, TK-168). The report is rebuilt only when a timing entry was added. The preloader queue joins it with the preloader facade (spec 157 stage D).
+// clipboard or as a file, TK-168). The report is rebuilt only when a timing entry was added. Spec 157 D6: the asset
+// load plan's layers -> groups -> files (state, time, compressed size) and the registry's duplicate contents, read
+// through readAssetLoadStatus() (the composition's getAssetLoadStatus; null before the game is composed).
 export class StartupLoadOverlayModule extends OverlayModule {
   #reader;
   #copyText;
@@ -41,6 +48,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
   #report = null;
   #status = null;
   #savedFileName = "";
+  #readAssetLoadStatus;
 
   constructor(options = {}) {
     super("startup", options);
@@ -55,6 +63,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
     this.#saveFile = options.saveFile;
     this.#now = options.now;
     this.#gameVersion = String(options.gameVersion ?? "");
+    this.#readAssetLoadStatus = typeof options.readAssetLoadStatus === "function" ? options.readAssetLoadStatus : () => null;
   }
 
   render() {
@@ -88,6 +97,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
       html += this.metricRow("після T-play", `${report.all.count - totals.count} запитів · ${
         this.#mb(report.all.transferred - totals.transferred)}`, { metricKey: "startup.after" });
     }
+    html += this.#planRows();
     html += this.#caption("10 найбільших (стиснуто / без стиснення):");
     for (const request of report.largest) {
       html += this.metricRow(this.#shortName(request.url), `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}`,
@@ -111,7 +121,8 @@ export class StartupLoadOverlayModule extends OverlayModule {
   // The full report as JSON, with the device facts, for the owner to send from a phone.
   reportText() {
     const report = this.#currentReport();
-    return JSON.stringify({ version: this.#gameVersion, environment: this.#reader.environment(), ...report }, null, 2);
+    return JSON.stringify({ version: this.#gameVersion, environment: this.#reader.environment(), ...report,
+      assetLoadPlan: this.#readAssetLoadStatus() }, null, 2);
   }
 
   async copyReport() {
@@ -151,6 +162,36 @@ export class StartupLoadOverlayModule extends OverlayModule {
       this.#revision = revision;
     }
     return this.#report;
+  }
+
+  // The asset load plan, layer by layer: each group's state, priority, time and size, its files (small groups), then
+  // the registry's duplicates (one file's content under two ids).
+  #planRows() {
+    const status = this.#readAssetLoadStatus();
+    if (!status) return "";
+    let html = this.#caption("План завантаження (шари → групи → файли):");
+    for (const layer of status.layers) {
+      html += this.metricRow(layer.label, layer.started ? "стартував" : "чекає", { metricKey: `startup.plan.${layer.id}`,
+        color: layer.started ? "#00ff80" : "#ffaa00" });
+      for (const group of layer.groups) {
+        const bytes = group.files.reduce((sum, file) => sum + (file.bytes || 0), 0);
+        const time = group.settledMs !== null && group.settledMs !== undefined && group.startedMs !== null
+          ? ` · ${Math.round(group.settledMs - group.startedMs)} мс` : "";
+        const low = group.readyOn === "low" ? ", спершу копії" : "";
+        html += this.metricRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
+          `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${group.files.length} файлів · ${this.#kb(bytes)}${time}`,
+          { metricKey: `startup.plan.${layer.id}.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
+        if (group.files.length > LISTED_FILES) continue;
+        for (const file of group.files) {
+          html += this.metricRow(`    ${this.#shortName(file.path)}`, this.#kb(file.bytes || 0),
+            { metricKey: `startup.plan.file.${group.id}.${file.id}` });
+        }
+      }
+    }
+    html += this.metricRow("дублікати (однаковий вміст)", status.duplicates.length === 0 ? "немає"
+      : status.duplicates.map((ids) => ids.join(" = ")).join("; "), { metricKey: "startup.plan.duplicates",
+      color: status.duplicates.length === 0 ? "#00ff80" : "#ffaa00" });
+    return html;
   }
 
   #caption(text) {

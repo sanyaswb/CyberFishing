@@ -22,13 +22,17 @@ export class GameAssetPreloadFacade {
   #groupWaiters = new Map();
   // Images shown from their low copy (readyOn "low"), upgraded to the full file when the next layer starts.
   #upgrades = [];
+  #now;
+  #groupTimes = new Map();
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
   // networkSlots: the start's first layer (16 images today) must not queue behind a small cap over HTTP/2 (measured:
   // 6 slots cost 0.1 s and a request wave on Fast 4G); backgroundSlots caps the later layers.
+  // now(): milliseconds for the DEV overlay's group times (performance.now), or null.
   constructor({ plan, assets, imageAssets, scheduler, conditions = null, networkSlots = 24, backgroundSlots = 4,
-    maxAttempts = 2 }) {
+    maxAttempts = 2, now = null }) {
+    this.#now = typeof now === "function" ? now : null;
     if (typeof plan?.resolveGroup !== "function") throw new TypeError("GameAssetPreloadFacade requires a plan");
     if (typeof assets?.pathOf !== "function") throw new TypeError("GameAssetPreloadFacade requires assets");
     if (typeof imageAssets?.preload !== "function") throw new TypeError("GameAssetPreloadFacade requires imageAssets");
@@ -100,7 +104,9 @@ export class GameAssetPreloadFacade {
     return this.#plan.layers.map((layer) => ({
       id: layer.id, label: layer.label, started: this.#layerRuns.has(layer.id),
       groups: layer.groups.map((group) => ({ id: group.id, label: group.label, priority: group.priority, load: group.load,
-        status: this.#groupOutcomes.get(group.id)?.status ?? "waiting", ids: this.#groupOutcomes.get(group.id)?.ids ?? [] })),
+        readyOn: group.readyOn, status: this.#groupOutcomes.get(group.id)?.status
+          ?? (this.#groupTimes.has(group.id) ? "loading" : "waiting"),
+        ids: this.#groupOutcomes.get(group.id)?.ids ?? [], ...(this.#groupTimes.get(group.id) ?? {}) })),
     }));
   }
 
@@ -125,11 +131,14 @@ export class GameAssetPreloadFacade {
 
   async #loadGroup(group, priority) {
     const ids = this.#plan.resolveGroup(group, this.#state);
+    const times = { startedMs: this.#now?.() ?? null, settledMs: null };
+    this.#groupTimes.set(group.id, times);
     const low = group.readyOn === "low";
     const outcome = group.load ? await this.#loadIds(ids, priority, { low }) : { status: "on-demand", ids, error: null };
     if (low && outcome.status === "ready") {
       this.#upgrades.push(...this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id)));
     }
+    times.settledMs = this.#now?.() ?? null;
     this.#groupOutcomes.set(group.id, outcome);
     this.#groupWaiters.get(group.id)?.resolve(outcome);
     return outcome;

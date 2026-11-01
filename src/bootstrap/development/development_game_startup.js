@@ -52,6 +52,11 @@ import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js"
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
+import { DevAssetLoadPlanStore } from "../../dev/assets/dev_asset_load_plan_store.js";
+import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
+import { ASSET_REGISTRY } from "../../game/config/generated/asset_registry.js";
+import { AssetRegistry } from "../../engine/assets/asset_registry.js";
+import { createAssetLoadSources } from "../production/asset_load_sources.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
@@ -123,6 +128,10 @@ async function startGame() {
   };
   // DEV window positions and section states share the game's storage prefix.
   const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
+  // Spec 157 D6: the owner's edited asset load plan (DevTools), used from the next start.
+  const assetLoadPlanStore = new DevAssetLoadPlanStore({ cache: storageCache, basePlan: ASSET_LOAD_PLAN,
+    registry: new AssetRegistry(ASSET_REGISTRY), logger: new ConsoleLogger(),
+    sources: createAssetLoadSources({ locations: CONFIG.locations, itemDb: ITEM_DB }) });
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
@@ -176,9 +185,12 @@ async function startGame() {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget,
       logger: windowTarget.console, getWaterMetric: () => readLocationMetric?.() });
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
-      frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version});
+      frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version,
+      // Spec 157 D6: the asset load plan's state, from the composition once it exists.
+      readAssetLoadStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null});
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
+      assetLoadPlan: assetLoadPlanStore.plan(),
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
       loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
@@ -214,6 +226,7 @@ async function startGame() {
         getDependentZones: () => dependentZones,
         maskEditor,
         zoneDrawing,
+        assetLoadPlanStore,
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,

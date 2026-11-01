@@ -56,7 +56,7 @@ import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_ove
 // frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap;
 // gameVersion: written into the startup report (spec 157).
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
-  frameProfiler, readRenderInfo, gameVersion}) {
+  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -126,7 +126,8 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   // TK-168: the same report saved as a JSON file.
   const saveFile = async (text, fileName) => new BrowserTextFileSaver({documentTarget, windowTarget}).save(text, fileName);
   const startupModule = new StartupLoadOverlayModule({...moduleOptions,
-    reader: new BrowserStartupTimingReader({windowTarget}), copyText, saveFile, now: () => windowTarget.Date.now(), gameVersion});
+    reader: new BrowserStartupTimingReader({windowTarget}), copyText, saveFile, now: () => windowTarget.Date.now(), gameVersion,
+    readAssetLoadStatus});
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
     new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}), startupModule,

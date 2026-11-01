@@ -212,6 +212,36 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.equal(second["keepnet-stages"].length, 6);
   assert(production.layer("layer-three").groups.every((group) => group.load === false), "layer three loads on demand only");
 
+  // Stage D6: group times for the overlay, the registry's duplicates, and the DEV plan edits used from the next start.
+  let clock = 0;
+  const timedFacade = new GameAssetPreloadFacade({ plan: lowPlan, assets: lowRegistry, scheduler, now: () => (clock += 10),
+    imageAssets: { preload: () => Promise.resolve() } });
+  await timedFacade.start("first");
+  const timed = timedFacade.getStatus()[0].groups[0];
+  assert.deepEqual([timed.status, timed.readyOn, timed.settledMs - timed.startedMs], ["ready", "low", 10], "a group's state and time");
+  assert.deepEqual(new AssetRegistry({ a: image("assets/a.webp", []), b: { ...image("assets/b.webp", []), sha256: "0" },
+    c: { ...image("assets/c.webp", []), sha256: "1" } }).duplicates(), [["a", "b"]], "same content under two ids");
+  const { DevAssetLoadPlanStore } = await importSource("src/dev/assets/dev_asset_load_plan_store.js");
+  const stored = new Map();
+  const warnings = [];
+  const cache = { get: (key) => stored.get(key) ?? null, set: (key, value) => stored.set(key, value), remove: (key) => stored.delete(key) };
+  const store = new DevAssetLoadPlanStore({ cache, basePlan: ASSET_LOAD_PLAN, registry: assets, logger: { warn: (text) => warnings.push(text) },
+    sources: createAssetLoadSources({ locations: CONFIG.locations, itemDb: ITEM_DB }) });
+  assert.equal(store.plan(), ASSET_LOAD_PLAN, "without an edit the configured plan runs");
+  const edited = JSON.parse(JSON.stringify(ASSET_LOAD_PLAN));
+  edited.layers[1].groups[0].priority = 2;
+  assert.match(store.save({ layers: [] }).join("\n"), /needs layers/u, "an invalid plan is not saved");
+  assert.equal(store.isEdited(), false);
+  assert.deepEqual(store.save(edited), []);
+  assert.deepEqual([store.isEdited(), store.plan().layers[1].groups[0].priority], [true, 2], "the edit runs from the next start");
+  assert.match(store.exportText(), /^export const ASSET_LOAD_PLAN = \{/u, "export gives the configuration module's text");
+  assert.deepEqual(JSON.parse(store.exportText().replace(/^export const ASSET_LOAD_PLAN = /u, "").replace(/;\n$/u, "")), edited);
+  stored.set("cyber-fishing:dev-asset-load-plan", { layers: [{ id: "x", start: "soon", groups: [] }] });
+  assert.equal(store.plan(), ASSET_LOAD_PLAN, "a broken stored plan is ignored");
+  assert.equal(warnings.length, 1, "and reported");
+  store.reset();
+  assert.equal(store.isEdited(), false);
+
   // Loads go through the plan (DEVELOPMENT_RULES "Loading and startup optimization"): in the composition only the
   // facade preloads images (the selector's rod art goes through facade.request, stage D2).
   const fs = require("node:fs");

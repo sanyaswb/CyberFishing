@@ -117,6 +117,31 @@ async function checkOverlay() {
   saveError = new Error("blocked");
   assert.equal(await module.downloadReport(), "saveFailed", "a failing save is reported, not thrown");
   assert.match(module.render(), /Не вдалося зберегти/u);
+  // Spec 157 D6: the asset load plan, layers -> groups -> files, and the duplicate contents, also in the JSON report.
+  const planStatus = { duplicates: [], queue: {}, layers: [
+    { id: "layer-one", label: "Перший кадр", started: true, groups: [
+      { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low", status: "ready",
+        startedMs: 100, settledMs: 160, files: [{ id: "locations.test.bg_test--day", path: "assets/locations/test/bg_test--day.webp", bytes: 222664 }] }] },
+    { id: "layer-three", label: "Вміст, який відкривають пізніше", started: false, groups: [
+      { id: "on-demand", label: "На вимогу", priority: 1, readyOn: "full", status: "waiting",
+        files: Array.from({ length: 20 }, (_, index) => ({ id: `a.${index}`, path: `assets/a/${index}.webp`, bytes: 1024 })) }] }] };
+  let currentPlan = null;
+  const planModule = new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, now: () => now,
+    copyText: async () => "copied", saveFile: async () => {}, readAssetLoadStatus: () => currentPlan });
+  assert.doesNotMatch(planModule.render(), /План завантаження/u, "no plan section before the game is composed");
+  currentPlan = planStatus;
+  html = planModule.render();
+  assert.match(html, /План завантаження/u);
+  assert.match(html, /Фон поточної фази й карта глибин \(пріоритет 1, спершу копії\)/u, "a group with its priority and readyOn");
+  assert.match(html, /готово · 1 файлів · 217 КБ · 60 мс/u, "the group's state, size and time");
+  assert.match(html, /locations\/test\/bg_test--day\.webp/u, "a small group lists its files");
+  assert.match(html, /чекає · 20 файлів · 20 КБ/u, "a large group shows its count only");
+  assert.doesNotMatch(html, /assets\/a\/3\.webp/u);
+  assert.match(html, /дублікати \(однаковий вміст\)[^]*немає/u, "the duplicates row");
+  currentPlan = { ...planStatus, duplicates: [["items.rods.a", "items.rods.b"]] };
+  assert.match(planModule.render(), /items\.rods\.a = items\.rods\.b/u, "duplicate ids are named");
+  assert.deepEqual(JSON.parse(planModule.reportText()).assetLoadPlan.duplicates, [["items.rods.a", "items.rods.b"]],
+    "the JSON report carries the plan");
   assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader: { read() {} },
     copyText() {}, saveFile() {}, now() {} }), /requires reader/u);
   assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, copyText() {}, now() {} }),

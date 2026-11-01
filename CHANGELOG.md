@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.50 - Loading overlay with the plan
+
+- Spec 157 stage D6 (TK-177 item 8, TK-178 item 8): the DEV overlay «ЗАВАНТАЖЕННЯ» shows the asset load plan layer by layer (each group's state, priority, readyOn, time, compressed size and, for small groups, its files) and a duplicates row (one content under two ids), and the JSON report carries the plan; DevTools «Сервіс → ПЛАН ЗАВАНТАЖЕННЯ» exports the plan as the configuration module's text, takes an edited plan (validated) for the next start and resets it. Production unchanged. Game-cycle report unchanged.
+
 ## v0.49.49 - Loading bar with megabytes
 
 - Spec 157 stage D5 (owner Q7): the release startup screen shows a bar and the loaded / total megabytes in compressed bytes; the release writes a startup manifest per page (the page, stylesheets, preloaded modules and the asset load plan's first layer with their gzip sizes) and its total into the screen; a tiny meter bundle the boot module imports first counts the transferred bytes until ready. The ?esm=1 module list moved out of the boot module into a JSON fetched only with ?esm=1. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.41 - Spine and scene art by id
 
 - TK-178 / spec 157 R16 (c, scene): the rod and boat skins name their Spine export by asset id (`skin.animation.asset`) and `SpineBundleLoader` takes the files from the registry; the float's scene art and tip glow are `skin.scene.asset` / `glow.asset`, preloaded and drawn under their asset ids. Same requests before the start. Game-cycle report unchanged.
-
-## v0.49.40 - House art by id
-
-- TK-178 / spec 157 R16 (c, house): the House names its room backgrounds, aquarium and renovation art by asset id (`HOUSE_CONFIG.room.backgroundAssets`, `aquariumAsset`, `renovationAsset`); `HouseRoomView` resolves them through the registry, which the session services hand to the House screen, and the screen's sprite icons are `data-asset-href` ids bound after the markup is inserted. Game-cycle report unchanged.

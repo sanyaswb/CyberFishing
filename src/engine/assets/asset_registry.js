@@ -61,6 +61,16 @@ export class AssetRegistry {
     return this.#idsByPath.get(path) ?? null;
   }
 
+  // Assets with the same content under different ids (TK-178 item 3): [[id, id, ...], ...].
+  duplicates() {
+    const byContent = new Map();
+    for (const [id, entry] of this.#entries) {
+      if (!byContent.has(entry.sha256)) byContent.set(entry.sha256, []);
+      byContent.get(entry.sha256).push(id);
+    }
+    return [...byContent.values()].filter((ids) => ids.length > 1);
+  }
+
   idsByTag(tag) {
     if (!this.#idsByTag) {
       this.#idsByTag = new Map();
