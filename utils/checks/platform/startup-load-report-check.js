@@ -196,7 +196,46 @@ async function checkStartupScreen() {
     // then paints it on its own box, above the WebGL scene at z-index -1, and the water disappears.
     assert(!/(?:^|[\s,}])(?:html|body|:root)\b[^{]*\{[^}]*background/u.test(inlineStyle[1]),
       `${page}: the startup screen's style sets no html/body background (it would cover the WebGL scene)`);
+    // Spec 157 D5: the bar and the megabytes sit in the screen and show only with the release's start size.
+    assert(html.indexOf("startup-loader__bar", screen) > screen && html.indexOf("startup-loader__bytes", screen) > screen,
+      `${page}: the screen has its progress bar and megabytes`);
+    assert(inlineStyle[1].includes(".startup-loader:not([data-startup-bytes]) .startup-loader__progress"),
+      `${page}: without the release's size the screen keeps its spinner only`);
   }
+
+  // The meter: the document and every resource (a cache hit by its body), the bar and "loaded / total МБ", stops at ready.
+  const { StartupLoadMeter, formatMegabytes } = await importSource("src/platform/browser/ui/startup_load_meter.js");
+  const { STARTUP_LABELS } = await importSource("src/game/presentation/hud/startup_labels.js");
+  assert.equal(formatMegabytes(825000), "0,79");
+  const properties = new Map();
+  const bytesNode = { textContent: "" };
+  const attributesOf = new Map([["data-startup-bytes", String(1048576)]]);
+  const loader = { getAttribute: (name) => attributesOf.get(name) ?? null, querySelector: () => bytesNode,
+    style: { setProperty: (name, value) => properties.set(name, value) } };
+  let readyFlag = false;
+  const documentRef = { querySelector: (selector) => (selector.includes("[data-startup-bytes]") ? loader : null),
+    documentElement: { hasAttribute: () => readyFlag } };
+  let pushResources = null;
+  let onMutation = null;
+  const disconnected = [];
+  const meter = new StartupLoadMeter({ documentRef, labels: STARTUP_LABELS,
+    performanceRef: { getEntriesByType: () => [{ transferSize: 52428 }] },
+    createPerformanceObserver: (callback) => { pushResources = callback; return { observe() {}, disconnect: () => disconnected.push("resources") }; },
+    createMutationObserver: (callback) => { onMutation = callback; return { observe() {}, disconnect: () => disconnected.push("ready") }; } });
+  assert.equal(meter.start(), true);
+  assert.deepEqual([bytesNode.textContent, properties.get("--startup-progress")], ["0,05 / 1,00 МБ", "0.0500"],
+    "the document counts at once");
+  pushResources({ getEntries: () => [{ transferSize: 471859 }, { transferSize: 0, encodedBodySize: 104858 }] });
+  assert.equal(bytesNode.textContent, "0,60 / 1,00 МБ", "resources add up; a cache hit counts by its body");
+  pushResources({ getEntries: () => [{ transferSize: 900000 }] });
+  assert.deepEqual([bytesNode.textContent, properties.get("--startup-progress")], ["1,00 / 1,00 МБ", "1.0000"],
+    "the bar never runs past the end");
+  readyFlag = true;
+  onMutation();
+  assert.deepEqual(disconnected, ["resources", "ready"], "the meter stops when the game is ready");
+  const plain = new StartupLoadMeter({ documentRef: { querySelector: () => null, documentElement: { hasAttribute: () => false } },
+    labels: STARTUP_LABELS, performanceRef: {}, createPerformanceObserver: assert.fail, createMutationObserver: assert.fail });
+  assert.equal(plain.start(), false, "a page without the release's size shows the spinner only");
 }
 
 // Spec 157 R6 (TK-172): UI images are lazy before their source is set, so a hidden view requests nothing before the

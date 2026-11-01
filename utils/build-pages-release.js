@@ -101,6 +101,8 @@ class GitCommitTree {
 }
 
 // What the published pages need: their stylesheets, module graphs and the assets that gameplay addresses by path.
+const STARTUP_METER_ENTRY = "src/entrypoints/game_startup_meter.entry.js";
+
 class ReleaseFileSet {
   static collect(tree, { pages = [PAGE, ...[DEV_PAGE, CATALOG_PAGE].filter(page => tree.has(page))] } = {}) {
     const files = new Set(pages);
@@ -119,6 +121,8 @@ class ReleaseFileSet {
         }
       }
     }
+    // Spec 157 D5: the startup screen's meter, which every game page's release boot imports first.
+    if (tree.has(STARTUP_METER_ENTRY)) for (const file of ReleaseFileSet.#moduleGraph(tree, STARTUP_METER_ENTRY)) files.add(file);
     for (const file of tree.paths()) {
       if (file.startsWith(ASSETS_PREFIX) || (pages.includes(DEV_PAGE) &&
         file.startsWith(DEV_METADATA_PREFIX) && file.endsWith(".json"))) files.add(file);
@@ -280,7 +284,8 @@ class PagesReleaseBuilder {
     for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => files.includes(name))) {
       const built = bundle.pages[page];
       const { styles } = ReleaseFileSet.pagePreloads(this.#tree, page);
-      preloads[page] = Object.freeze({ styles, modules: built ? [built.boot, built.bundle, ...built.chunks] : [] });
+      preloads[page] = Object.freeze({ styles, modules: built
+        ? [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] : [] });
       if (!built) continue;
       const target = path.join(releaseDir, page);
       fs.writeFileSync(target, PagesReleaseBuilder.withPreloads(fs.readFileSync(target, "utf8"), preloads[page]));

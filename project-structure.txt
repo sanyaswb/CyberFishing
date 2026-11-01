@@ -406,6 +406,7 @@
 │  │     ├── player_inventory_composition.js
 │  │     ├── rod_animation_composition.js
 │  │     ├── scene_layer_composition.js
+│  │     ├── startup_load_meter_composition.js
 │  │     ├── startup_ready_signal.js
 │  │     └── time_display_composition.js
 │  ├── engine
@@ -446,7 +447,8 @@
 │  │     ├── deferred_scene_layer.js
 │  │     └── inactive_scene_layer.js
 │  ├── entrypoints
-│  │  └── game.entry.js
+│  │  ├── game.entry.js
+│  │  └── game_startup_meter.entry.js
 │  ├── game
 │  │  ├── application
 │  │  │  ├── casting
@@ -916,6 +918,7 @@
 │  │     │  ├── hud_bar_renderer.js
 │  │     │  ├── hud_labels.js
 │  │     │  ├── player_pressure_fatigue_indicator_renderer.js
+│  │     │  ├── startup_labels.js
 │  │     │  └── tackle_stress_bar_visibility.js
 │  │     ├── input
 │  │     │  └── victory_action_gesture_resolver.js
@@ -1192,6 +1195,7 @@
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
 │           ├── radio_hud_indicator.js
+│           ├── startup_load_meter.js
 │           └── time_display.js
 └── vendor
    ├── pixi

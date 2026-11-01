@@ -124,20 +124,39 @@ try {
     const stylePreloads = [...releasePage.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]);
     assert.deepEqual(stylePreloads, styles, `${name}: every stylesheet is preloaded in page order`);
     const preloaded = [...releasePage.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
-    assert.deepEqual(preloaded, [built.boot, built.bundle, ...built.chunks], `${name}: boot, bundle and every chunk it reaches`);
+    assert.deepEqual(preloaded, [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks],
+      `${name}: boot, the startup meter, bundle and every chunk it reaches`);
     assert.equal(new Set(preloaded).size, preloaded.length, `${name}: no module is preloaded twice`);
     for (const module of preloaded) assert(files.has(module), `${name}: preloaded ${module} is released`);
     const preloadLines = [...stylePreloads.map((url) => `    <link rel="preload" as="style" href="${url}" />\n`),
       ...preloaded.map((url) => `    <link rel="modulepreload" href="${url}" />\n`)].join("");
+    // Spec 157 D5: the startup screen carries the start's compressed size from the page's startup manifest.
+    const manifest = JSON.parse(fs.readFileSync(path.join(release.releaseDir, built.startup), "utf8"));
+    assert.match(built.startup, /^build\/(index|dev)\.startup-[0-9A-F]{8}\.json$/u, `${name}: a content-hashed startup manifest`);
+    assert.equal(manifest.totalBytes, manifest.files.reduce((sum, entry) => sum + entry.bytes, 0), `${name}: the total adds up`);
+    assert(manifest.totalBytes === built.startupBytes && manifest.totalBytes > 100000, `${name}: the start's size is recorded`);
+    for (const entry of manifest.files.slice(1)) assert(files.has(entry.path.split("?")[0]), `${name}: ${entry.path} is released`);
+    for (const module of preloaded) assert(manifest.files.some((entry) => entry.path === module), `${name}: the manifest counts ${module}`);
+    assert(manifest.files.some((entry) => entry.path.startsWith("assets/low-copies/locations/")),
+      `${name}: the manifest counts the background's low copy (readyOn low)`);
     assert.equal(releasePage, source.replace(`src="${entryOf(source)}"`, `src="${built.boot}"`)
-      .replace("<head>\n", `<head>\n${preloadLines}`), `${name}: the release page is the committed page with its preloads and boot module`);
+      .replace('<div class="startup-loader"', `<div class="startup-loader" data-startup-bytes="${built.startupBytes}"`)
+      .replace("<head>\n", `<head>\n${preloadLines}`),
+      `${name}: the release page is the committed page with its preloads, boot module and startup size`);
     const root = fs.readFileSync(path.join(site, name), "utf8");
     assert.equal(root, releasePage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
       `${name}: the root page is the release page with <base> first`);
     // The boot module: the bundle by default; ?esm=1 preloads the page's whole source graph (stage B: the entry as the
     // page writes it, the composition, the dynamically imported Pixi bundle) and imports the source entry.
     const boot = fs.readFileSync(path.join(release.releaseDir, built.boot), "utf8");
-    const graph = JSON.parse(boot.match(/for \(const href of (\[[^\]]*\])\)/u)[1]);
+    // The source graph is fetched only under ?esm=1 (a normal start does not carry it).
+    if (tree.has("src/entrypoints/game_startup_meter.entry.js")) {
+      assert(built.meter && boot.includes(`import "./${built.meter.slice("build/".length)}";`),
+        `${name}: the boot module imports the startup meter first`);
+    }
+    assert(boot.includes(`"./${built.esmGraph.slice("build/".length)}"`) && !boot.includes("src/bootstrap/"),
+      `${name}: the boot fetches the ?esm=1 graph instead of carrying it`);
+    const graph = JSON.parse(fs.readFileSync(path.join(release.releaseDir, built.esmGraph), "utf8"));
     assert.equal(graph[0], entryOf(source), `${name}: ?esm=1 preloads the source entry first, with its query`);
     assert.equal(new Set(graph).size, graph.length, `${name}: no source module is preloaded twice`);
     for (const module of graph.slice(1)) assert(files.has(module), `${name}: source module ${module} is released`);
