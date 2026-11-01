@@ -73,15 +73,28 @@ export class OverlayWindowDragController {
     if (this.#isDragging) return;
     if (!this.#element || this.#element.style.display === "none") return;
     if (!this.#windowTarget) return;
+
+    const origin = this.#uiSurface?.getMetrics();
+    const viewportWidth = origin?.physicalWidth ?? this.#windowTarget.innerWidth;
+    const viewportHeight = origin?.physicalHeight ?? this.#windowTarget.innerHeight;
+    const originX = origin?.originX || 0;
+    const originY = origin?.originY || 0;
+    const surfaceScale = origin?.scale || 1;
+
+    // TK-185: Constrain overlay maxHeight to available screen height so it never cuts off behind the taskbar
+    const margin = 10;
+    const maxPhysicalHeight = Math.max(120, viewportHeight - margin * 2);
+    const maxLogicalHeight = maxPhysicalHeight / surfaceScale;
+    this.#element.style.maxHeight = `${maxLogicalHeight}px`;
+
     const rect = this.#element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const origin = this.#uiSurface?.getMetrics();
-    const maxLeft = Math.max(origin?.originX || 0, (origin?.originX || 0) + (origin?.physicalWidth ?? this.#windowTarget.innerWidth) - rect.width);
-    const maxTop = Math.max(origin?.originY || 0, (origin?.originY || 0) + (origin?.physicalHeight ?? this.#windowTarget.innerHeight) - rect.height);
+    const maxLeft = Math.max(originX + margin, originX + viewportWidth - rect.width - margin);
+    const maxTop = Math.max(originY + margin, originY + viewportHeight - rect.height - margin);
     this.#placeVisualAt(
-      clampNumber(rect.left, origin?.originX || 0, maxLeft),
-      clampNumber(rect.top, origin?.originY || 0, maxTop),
+      clampNumber(rect.left, originX + margin, maxLeft),
+      clampNumber(rect.top, originY + margin, maxTop),
     );
   }
 
@@ -166,12 +179,15 @@ export class OverlayWindowDragController {
 
   #placeVisualAt(left, top) {
     const rect = this.#element.getBoundingClientRect();
+    const diffX = left - rect.left;
+    const diffY = top - rect.top;
+    if (Math.abs(diffX) < 0.5 && Math.abs(diffY) < 0.5) return;
     const logicalPoint = this.#uiSurface?.physicalToLogicalPoint({ x: rect.left, y: rect.top });
     const currentLeft = this.#readStylePx("left", logicalPoint?.x ?? rect.left);
     const currentTop = this.#readStylePx("top", logicalPoint?.y ?? rect.top);
-    const delta = this.#uiSurface?.physicalToLogicalDelta({ x: left - rect.left, y: top - rect.top });
-    this.#element.style.left = `${currentLeft + (delta?.x ?? left - rect.left)}px`;
-    this.#element.style.top = `${currentTop + (delta?.y ?? top - rect.top)}px`;
+    const delta = this.#uiSurface?.physicalToLogicalDelta({ x: diffX, y: diffY });
+    this.#element.style.left = `${currentLeft + (delta?.x ?? diffX)}px`;
+    this.#element.style.top = `${currentTop + (delta?.y ?? diffY)}px`;
     this.#element.style.right = "auto";
     this.#element.style.bottom = "auto";
   }

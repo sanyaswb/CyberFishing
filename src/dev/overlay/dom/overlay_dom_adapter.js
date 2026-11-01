@@ -3,6 +3,18 @@ import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js"
 // The window's size factor at start (owner, 2026-10-18: 1.5 times smaller than full size); − / + change it.
 const DEFAULT_SCALE = 2 / 3;
 
+function nodeKey(node) {
+  if (!node || node.nodeType !== 1 /* ELEMENT_NODE */) return null;
+  if (node.id) return `#${node.id}`;
+  if (typeof node.getAttribute === "function") {
+    const metric = node.getAttribute("data-overlay-metric");
+    if (metric) return `m:${metric}`;
+    const control = node.getAttribute("data-overlay-control");
+    if (control) return `c:${control}`;
+  }
+  return null;
+}
+
 // The DEV overlay window. Its scale is the --debug-overlay-scale property: CSS zooms the content and the − / + buttons
 // with it and scales the window's padding, so the window's box is what is seen (dragging and clamping need no
 // transform correction) and its width follows the content.
@@ -91,7 +103,6 @@ export class OverlayDomAdapter {
     const temp = this.#documentTarget.createElement("div");
     temp.innerHTML = html;
     this.#patchNode(this.#content, temp);
-    this.#applyOpenDetails();
     this.#clampWhenStable();
   }
 
@@ -146,18 +157,65 @@ export class OverlayDomAdapter {
   #patchChildren(parent, nextParent) {
     const curChildren = Array.from(parent.childNodes || []);
     const nextChildren = Array.from(nextParent.childNodes || []);
-    const max = Math.max(curChildren.length, nextChildren.length);
-    for (let i = 0; i < max; i++) {
-      const cur = curChildren[i];
-      const next = nextChildren[i];
-      if (!cur && next) {
-        parent.appendChild(typeof next.cloneNode === "function" ? next.cloneNode(true) : next);
-      } else if (cur && !next) {
-        if (typeof cur.remove === "function") cur.remove();
-        else parent.removeChild?.(cur);
-      } else if (cur && next) {
-        this.#patchNode(cur, next);
+
+    const curKeyMap = new Map();
+    for (let i = 0; i < curChildren.length; i++) {
+      const child = curChildren[i];
+      const key = nodeKey(child);
+      if (key && !curKeyMap.has(key)) {
+        curKeyMap.set(key, child);
       }
+    }
+
+    let curIdx = 0;
+    for (let nextIdx = 0; nextIdx < nextChildren.length; nextIdx++) {
+      const nextChild = nextChildren[nextIdx];
+      const nextKey = nodeKey(nextChild);
+      let matchingNode = null;
+
+      if (nextKey && curKeyMap.has(nextKey)) {
+        matchingNode = curKeyMap.get(nextKey);
+        curKeyMap.delete(nextKey);
+      } else {
+        const candidate = parent.childNodes ? parent.childNodes[curIdx] : null;
+        if (candidate && !nodeKey(candidate) && candidate.nodeType === nextChild.nodeType && candidate.nodeName === nextChild.nodeName) {
+          matchingNode = candidate;
+        }
+      }
+
+      if (matchingNode) {
+        const refNode = parent.childNodes ? parent.childNodes[curIdx] : null;
+        if (matchingNode !== refNode && typeof parent.insertBefore === "function") {
+          parent.insertBefore(matchingNode, refNode || null);
+        }
+        this.#patchNode(matchingNode, nextChild);
+        curIdx++;
+      } else {
+        const newNode = typeof nextChild.cloneNode === "function" ? nextChild.cloneNode(true) : nextChild;
+        if (newNode.nodeName === "DETAILS" && newNode.id && this.#openDetailsIds.has(newNode.id)) {
+          newNode.open = true;
+        }
+        const refNode = parent.childNodes ? parent.childNodes[curIdx] : null;
+        if (typeof parent.insertBefore === "function") {
+          parent.insertBefore(newNode, refNode || null);
+        } else {
+          parent.appendChild?.(newNode);
+        }
+        curIdx++;
+      }
+    }
+
+    for (const [, orphan] of curKeyMap) {
+      if (orphan.parentNode === parent) {
+        if (typeof orphan.remove === "function") orphan.remove();
+        else parent.removeChild?.(orphan);
+      }
+    }
+
+    while (parent.childNodes && parent.childNodes.length > curIdx) {
+      const child = parent.childNodes[curIdx];
+      if (typeof child.remove === "function") child.remove();
+      else parent.removeChild?.(child);
     }
   }
 
