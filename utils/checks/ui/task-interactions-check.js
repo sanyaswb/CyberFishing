@@ -117,7 +117,24 @@ const preview = aim.getAccuracyPreview(aimBounds, 600, 0, 0);
 assert.equal(preview.x, release.screenX, "accuracy preview shares the release coordinate");
 assert.equal(target.success, true);
 assert.equal(target.x, preview.x);
-assert.equal(target.rodScreenX, preview.x, "resolved cast target and rod origin agree with preview");
+// TK-157: the target is chosen from the release point as before, but the rod moves towards the screen centre as far as
+// the longest cast (maxDistance 600) still reaches the target: here all the way (hypot(90, 300) = 313 <= 600).
+assert.equal(target.rodScreenX, 200, "a cast aimed right of centre puts the rod at the centre when the line allows");
+assert.equal(target.originVirtualX, 200, "the line's origin is the moved rod");
+const rodFor = (releaseX, maxDistance, power = 1) => aim.resolveTarget({ active: true, screenX: releaseX, power },
+  { bounds: aimBounds, maxDistance, accuracyPx: 0, accuracyPercent: 0, checkWater: () => ({ depth: 2 }) });
+const leftCast = rodFor(20, 600, 0.5);
+assert.equal(leftCast.x, 20, "the target stays where the cast was aimed");
+assert.equal(leftCast.rodScreenX, 200, "a cast aimed left of centre puts the rod right of it, at most at the centre");
+const longCast = rodFor(20, 350);
+assert(longCast.rodScreenX > 20 && longCast.rodScreenX < 200, "a long cast moves the rod only as far as the line reaches");
+assert(Math.hypot(longCast.x - longCast.rodScreenX, longCast.y - 1000) <= 350.001, "the line still reaches the target");
+assert(Math.hypot(longCast.x - (longCast.rodScreenX + 1), longCast.y - 1000) > 350, "a pixel further would not");
+const fullCast = rodFor(20, 600);
+assert(Math.abs(fullCast.rodScreenX - 20) < 1.5, "a cast at the full line length leaves the rod under the target (within the reach tolerance)");
+assert.equal(rodFor(200, 600, 0.5).rodScreenX, 200, "a cast straight up from the centre keeps the rod under it");
+const rightCast = rodFor(380, 600, 0.5);
+assert.equal(rightCast.rodScreenX, 200, "a cast aimed right puts the rod left of it, at most at the centre");
 aim.reset();
 aimConfig.casting.edgeScrollCenterRatio = 0.3;
 assert.equal(aimAt(250), 290);

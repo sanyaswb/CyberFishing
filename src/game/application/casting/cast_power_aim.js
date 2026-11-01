@@ -249,6 +249,7 @@ export class CastPowerAim {
           cell,
           bounds,
           originX,
+          metric,
           screenX: release.screenX,
           power: release.power,
           distance,
@@ -278,6 +279,7 @@ export class CastPowerAim {
         cell: centerCell,
         bounds,
         originX,
+        metric,
         screenX: release.screenX,
         power: release.power,
         distance,
@@ -305,6 +307,7 @@ export class CastPowerAim {
     cell,
     bounds,
     originX,
+    metric,
     screenX,
     power,
     distance,
@@ -313,18 +316,43 @@ export class CastPowerAim {
   }) {
     const ratio =
       maxDistance > 0 ? Math.max(0, Math.min(1, distance / maxDistance)) : 0;
+    const rodScreenX = this.#rodTowardCentre(metric, virtualPos, bounds.bottom, screenX, maxDistance);
     return {
       success: true,
       x: virtualPos.x,
       y: virtualPos.y,
       depth: cell?.depth ?? (canCastAnywhere ? 2.0 : 0),
-      originVirtualX: originX,
+      originVirtualX: rodScreenX === screenX ? originX : this.#projector.screenToVirtual(rodScreenX, 0, this.#scratchA).x,
       originVirtualY: bounds.bottom,
-      rodScreenX: screenX,
+      rodScreenX,
       power,
       castDistanceRatio: ratio,
       travelDelayMs: this.#travelDelayMs(ratio),
     };
+  }
+
+  // TK-157: the rod does not stand straight under a cast aimed to one side: it moves from the release point towards the
+  // screen centre as far as the line's longest cast (maxDistance) still reaches the target, never past the centre.
+  // The target itself is chosen exactly as before (accuracy and distance from the release point).
+  #rodTowardCentre(metric, target, bottom, releaseX, maxDistance) {
+    const centreX = (Number(this.#getViewportSize?.()?.width) || 0) / 2;
+    if (!(centreX > 0) || !(maxDistance > 0) || releaseX === centreX) return releaseX;
+    const targetX = target.x;
+    const targetY = target.y;
+    const reaches = (screenX) => {
+      const origin = this.#projector.screenToVirtual(screenX, 0, this.#scratchA);
+      return metric.distanceBasePixels(targetX, targetY, origin.x, bottom) <= maxDistance + 0.001;
+    };
+    if (reaches(centreX)) return centreX;
+    if (!reaches(releaseX)) return releaseX;
+    let near = releaseX;
+    let far = centreX;
+    for (let step = 0; step < 24; step += 1) {
+      const middle = (near + far) / 2;
+      if (reaches(middle)) near = middle;
+      else far = middle;
+    }
+    return near;
   }
 
   #updateVisual(mode) {
