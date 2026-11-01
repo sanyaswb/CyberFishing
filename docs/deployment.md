@@ -22,8 +22,9 @@ npm run build:release -- --out <empty dir> [--ref <commit>]
 | `assets/` | images, Spine exports, audio | short (e.g. 10 min) or revalidate |
 
 Each game page of the folder announces, right after `<head>`, a `<link rel="preload" as="style">` per stylesheet and a
-`<link rel="modulepreload">` for its boot module, the bundle and every chunk the bundle reaches (static and dynamic: the
-game requests them all during startup), so the browser fetches them in parallel. `npm run release:pages -- --site
+`<link rel="modulepreload">` for its boot module, the bundle and the chunks the start loads (the static ones and those of
+the start's own `import()` calls, `START_IMPORTS` in `utils/build-release.js`), so the browser fetches them in parallel;
+a feature loaded after `ready` or on first use stays out of the preloads (spec 157 R12). `npm run release:pages -- --site
 <gh-pages checkout>` builds the same folder into `releases/<version>-<commit>/` and writes root copies of the pages that
 only add `<base href="releases/<version>-<commit>/">` as the first line of `<head>`. A server serves the folder as it is.
 

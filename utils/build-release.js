@@ -25,6 +25,17 @@ const { pathToFileURL } = require("node:url");
 const BUILD_DIR = "build";
 const PAGES = Object.freeze(["index.html", "dev.html"]);
 const METER_ENTRY = "src/entrypoints/game_startup_meter.entry.js";
+// The dynamic imports the start itself makes (spec 157 R12, TK-176 item 2): their chunks are preloaded with the bundle.
+// Every other import() — a feature loaded after ready or on first use, spine-webgl of the 2D "canvas" scene mode — stays out
+// of the page's preloads.
+const START_IMPORTS = Object.freeze([
+  "src/bootstrap/development/development_game_startup.js", // dev.html's entry imports the DEV composition
+  "src/platform/browser/inventory/random_inventory_id.js", // the startup loaders (game_startup.js)
+  "src/platform/browser/runtime/browser_event_target_adapter.js",
+  "src/platform/browser/time/browser_timeout_scheduler.js",
+  "src/game/config/inventory/inventory_composition_config.js",
+  "src/platform/browser/scene/pixi_runtime_module.js", // the WebGL scene draws the first frame (and its Spine rod)
+]);
 // Text files the server compresses (docs/deployment.md); media go as they are.
 const COMPRESSED = /\.(?:js|mjs|css|json|svg|atlas|html|map)$/iu;
 
@@ -61,7 +72,7 @@ class ReleaseBundleBuilder {
       const output = Object.keys(outputs).find((file) => outputs[file].entryPoint === entry.file);
       if (!output) throw new Error(`esbuild wrote no bundle for ${entry.file}`);
       const bundle = ReleaseBundleBuilder.#relative(releaseDir, output);
-      const chunks = ReleaseBundleBuilder.#closure(outputs, output).map((file) => ReleaseBundleBuilder.#relative(releaseDir, file));
+      const chunks = ReleaseBundleBuilder.#startChunks(outputs, output).map((file) => ReleaseBundleBuilder.#relative(releaseDir, file));
       const { styles, modules } = pagePreloads(page);
       const esmGraph = ReleaseBundleBuilder.#writeHashed(releaseDir, `${page.replace(/\.html$/u, "")}.esm`, "json",
         JSON.stringify(modules));
@@ -89,25 +100,27 @@ class ReleaseBundleBuilder {
     return { tag: tags[0], src, file: src.split(/[?#]/u)[0] };
   }
 
-  // Every chunk the bundle reaches: the static imports first (they load with it), then the dynamic ones, nearest first.
-  // The game requests the dynamic ones during startup too (the scene's Pixi chunk, the composition's loaders), so a
-  // root page preloads them all instead of waiting for each import() in turn.
-  static #closure(outputs, start) {
-    const reach = (kinds) => {
-      const seen = new Set([start]);
-      const queue = [start];
-      while (queue.length > 0) {
-        for (const record of outputs[queue.shift()].imports ?? []) {
-          if (!kinds.includes(record.kind) || record.external || seen.has(record.path)) continue;
-          seen.add(record.path);
-          queue.push(record.path);
-        }
+  // The chunks the start loads: the bundle's static imports first (they load with it), then each start import()
+  // (START_IMPORTS) with its own static imports, nearest first, so a root page preloads them instead of waiting for each
+  // import() in turn. A chunk reached only through another import() is loaded when the game asks for it.
+  static #startChunks(outputs, start) {
+    const seen = new Set([start]);
+    const order = [];
+    const visit = (from, kind) => {
+      for (const record of outputs[from].imports ?? []) {
+        if (record.kind !== kind || record.external || seen.has(record.path)) continue;
+        if (kind === "dynamic-import" && !START_IMPORTS.includes(outputs[record.path]?.entryPoint)) continue;
+        seen.add(record.path);
+        order.push(record.path);
       }
-      seen.delete(start);
-      return [...seen];
     };
-    const statics = reach(["import-statement"]);
-    return [...statics, ...reach(["import-statement", "dynamic-import"]).filter((file) => !statics.includes(file))];
+    for (let index = -1; index < order.length; index += 1) visit(index < 0 ? start : order[index], "import-statement");
+    for (let index = -1; index < order.length; index += 1) {
+      const before = order.length;
+      visit(index < 0 ? start : order[index], "dynamic-import");
+      for (let next = before; next < order.length; next += 1) visit(order[next], "import-statement");
+    }
+    return order;
   }
 
   // build/<page>.boot-<hash>.js: the startup meter, then the page's bundle, or with ?esm=1 its source modules after a
@@ -223,7 +236,7 @@ function readOptions(argv) {
 }
 
 // Exported before the command runs: build-pages-release.js requires this module back (a cycle).
-module.exports = { ReleaseBundleBuilder, BUILD_DIR };
+module.exports = { ReleaseBundleBuilder, BUILD_DIR, START_IMPORTS };
 
 if (require.main === module) {
   try {

@@ -7,6 +7,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { GitCommitTree, ReleaseFileSet, PagesReleaseBuilder } = require("../../build-pages-release.js");
+const { START_IMPORTS } = require("../../build-release.js");
 
 const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, "../../..") });
 // The committed page's module entry (spec 157 R13: the release points it at the boot module).
@@ -112,21 +113,35 @@ try {
   for (const file of committed) {
     assert(fs.readFileSync(path.join(release.releaseDir, ...file.split("/"))).equals(contents.get(file)), `${file} has the committed bytes`);
   }
+  for (const file of START_IMPORTS) assert(tree.has(file), `start import ${file} is a committed module (spec 157 R12)`);
   for (const name of builtPages) {
     const source = tree.read(name).toString("utf8");
     const built = release.bundle.pages[name];
     const releasePage = fs.readFileSync(path.join(release.releaseDir, name), "utf8");
     assert.match(built.boot, /^build\/(index|dev)\.boot-[0-9A-F]{8}\.js$/u, `${name}: a content-hashed boot module`);
     // The release page (a game server serves it as it is): right after <head> a style preload per stylesheet in page
-    // order, then modulepreloads for the boot module, the bundle and every chunk it reaches (static, then dynamic),
-    // each released once; its module script loads the boot module. The root copy on Pages adds only <base>, first.
+    // order, then modulepreloads for the boot module, the bundle and the chunks the start loads (static, then the start's
+    // own import() calls), each released once; its module script loads the boot module. The root copy on Pages adds only <base>, first.
     const styles = [...source.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu)].map((match) => match[1]);
     const stylePreloads = [...releasePage.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]);
     assert.deepEqual(stylePreloads, styles, `${name}: every stylesheet is preloaded in page order`);
     const preloaded = [...releasePage.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
     assert.deepEqual(preloaded, [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks],
-      `${name}: boot, the startup meter, bundle and every chunk it reaches`);
+      `${name}: boot, the startup meter, bundle and the chunks the start loads`);
     assert.equal(new Set(preloaded).size, preloaded.length, `${name}: no module is preloaded twice`);
+    // Spec 157 R12 (TK-176 item 2): a chunk named after its module is an import() target; only the start's own
+    // (START_IMPORTS) are preloaded. A feature loaded after ready or on first use is not — dev.html's House screen.
+    const startNames = START_IMPORTS.map((file) => path.posix.basename(file, ".js"));
+    for (const module of preloaded.filter((file) => file.startsWith("build/chunks/"))) {
+      const chunkName = path.posix.basename(module).replace(/-[0-9A-Z]{8}\.js$/u, "");
+      assert(chunkName === "chunk" || startNames.includes(chunkName),
+        `${name}: ${module} is loaded by a later import(), not preloaded`);
+    }
+    if (name === "dev.html" && tree.has("src/bootstrap/production/house_screen_composition.js")) {
+      assert(!preloaded.some((module) => /\/house_screen_composition-/u.test(module)), "dev.html: the lazy House screen is not preloaded");
+      assert(release.files.some((file) => /^build\/chunks\/house_screen_composition-[0-9A-Z]{8}\.js$/u.test(file)),
+        "dev.html: the House screen is released as its own chunk");
+    }
     for (const module of preloaded) assert(files.has(module), `${name}: preloaded ${module} is released`);
     const preloadLines = [...stylePreloads.map((url) => `    <link rel="preload" as="style" href="${url}" />\n`),
       ...preloaded.map((url) => `    <link rel="modulepreload" href="${url}" />\n`)].join("");
