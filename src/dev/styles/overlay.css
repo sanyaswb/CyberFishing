@@ -80,7 +80,7 @@
   background: rgba(var(--ui-surface-rgb), 0.95);
   color: var(--ui-text);
   padding: calc(15px * var(--debug-overlay-scale, 1)) calc(15px * var(--debug-overlay-scale, 1))
-    calc(50px * var(--debug-overlay-scale, 1));
+    calc(10px * var(--debug-overlay-scale, 1));
   font-family: var(--ui-font-mono);
   font-size: 14px;
   border: 1px solid var(--ui-border);
@@ -89,15 +89,20 @@
   display: none;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6);
   min-width: calc(280px * var(--debug-overlay-scale, 1));
-  touch-action: none;
+  /* TK-182: a long report scrolls inside the panel, which never leaves the screen. */
+  box-sizing: border-box;
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   pointer-events: all;
 }
 
 .debug-overlay__scale-controls {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: sticky;
+  bottom: 0;
+  width: fit-content;
+  margin: 8px auto 0;
   display: flex;
   gap: 15px;
   z-index: var(--ui-layer-tooltip);

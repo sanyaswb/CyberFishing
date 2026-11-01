@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.61 - Overlay scroll and viewport bounds
+
+- TK-182: the DEV overlay is bounded by the screen height (`max-height: calc(100% - 20px)`, `overflow-y: auto`, `touch-action: pan-y`) and its scale buttons stick to the bottom, so long reports scroll and remain accessible on phones. Startup-load-report check asserts the contract. Game-cycle report unchanged.
+
 ## v0.49.60 - Rod picture from the start
 
 - TK-181: the rod is no longer a rectangle until its Spine export arrives: a small upright picture of the atlas region (9.9 KB, first layer of the load plan) stands in the export's setup pose at the same scale and line tip. Start 0.70 -> 0.71 MB. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.52 - Item art 1024 px
 
 - Spec 157 R6 step 2: one image per item at most 1024 px (WebP middle) for every place; measured, the editor preview draws an item at most 375 CSS px tall on phones in both orientations (748 device px at ratio 2), the toolbar net/boat buttons under 190 px and the scene boat is Spine. Briefcases, bait boats, net, float, rod, oil worms 100, batteries 3-4 re-encoded from masters now kept in `asset-sources/items/` (never released), bread 50 from its PNG master: item art 3.26 -> 2.24 MB per release. `convert-images.js --thumbnails` refuses two masters writing one file. Game-cycle report unchanged.
-
-## v0.49.51 - One fish image
-
-- TK-180: each fish has one runtime image (the 768 px display art); keepnet cards and the aquarium show its generated low copy (~192 px), the hand-made `assets/fish-thumbnails/` are gone and the 2752 px masters moved to `asset-sources/fish/` (never released: -4.8 MB per release). Saves written earlier keep their master path and still find the same fish's image (recognised through the asset id scheme); new catches store the display image's path. `assets:sync` removes low copies whose image is gone. Game-cycle report unchanged.

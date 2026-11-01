@@ -448,10 +448,24 @@ function checkMeasurer() {
   assert.throws(() => readOptions(["--network", "5g"]), /--network/u);
 }
 
+function checkOverlayScrolling() {
+  const fs = require("node:fs");
+  const css = fs.readFileSync(path.join(ROOT_DIR, "src/dev/styles/overlay.css"), "utf8");
+  assert.match(css, /\.debug-overlay\s*\{[^}]*max-height:\s*calc\(100%\s*-\s*20px\)/u,
+    "TK-182: debug-overlay is constrained to the screen height");
+  assert.match(css, /\.debug-overlay\s*\{[^}]*overflow-y:\s*auto/u,
+    "TK-182: debug-overlay scrolls vertically when content overflows");
+  assert.match(css, /\.debug-overlay\s*\{[^}]*touch-action:\s*pan-y/u,
+    "TK-182: debug-overlay allows touch scrolling");
+  assert.match(css, /\.debug-overlay__scale-controls\s*\{[^}]*position:\s*sticky/u,
+    "TK-182: scale controls stick to the bottom of the scroll container");
+}
+
 (async () => {
   await checkMarks();
   await checkReport();
   await checkOverlay();
+  checkOverlayScrolling();
   await checkReleaseControl();
   await checkFileSaver();
   await checkStartupScreen();
