@@ -1,10 +1,13 @@
 // The asset load plan (spec 157 R15, TK-177; owner edits it): three layers, each with groups by priority (1 first).
 // Entries: { id } one registry asset, { tag } every asset with that folder tag, { source } a named source of the game's
-// state (see bootstrap/production/asset_load_sources.js). An asset belongs to the first group that names it; registry
+// state (see bootstrap/production/asset_load_sources.js), { module } a feature's code (bootstrap/production/
+// game_feature_modules.js, spec 157 R12). An asset belongs to the first group that names it; registry
 // assets that no group names land in the implicit last group "unassigned" of layer-three and load there.
 // - layer-one: the first frame; the game is ready only when it has loaded (start "composition").
 // - layer-two: the full game cycle, right after the first frame (start "ready").
 // - layer-three: content opened later. load: false groups load only when the game asks for them (on demand).
+// - features: the code of features not needed for the first frame, warmed up after it one group at a time (start
+//   "ready"); the player's first use asks for a feature at once.
 // - readyOn: "low": the group counts as loaded with the low-quality copies of its images; the full files replace them
 //   right after the first frame (spec 157 R17, owner: on for the current background phase).
 // Today's plan repeats the loads before stage D (spec 157 R4, R5, R6, R11): nothing is added to the start.
@@ -27,6 +30,12 @@ export const ASSET_LOAD_PLAN = {
         { id: "selector", label: "Арт селектора інвентаря", priority: 1,
           assets: [{ id: "ui.inventory-sections" }, { id: "items.briefcases.briefcase--1--close" }, { id: "items.keepnet.keepnet--0" }] },
         { id: "keepnet-stages", label: "Стадії садка", priority: 1, assets: [{ tag: "keepnet" }] },
+      ],
+    },
+    {
+      id: "features", label: "Функції поза стартом (код)", start: "ready",
+      groups: [
+        { id: "feature-radio", label: "Радіо", priority: 1, assets: [{ module: "radio" }] },
       ],
     },
     {

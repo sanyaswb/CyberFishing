@@ -103,17 +103,9 @@ import { ItemFreshnessResolver } from "../../game/domain/items/freshness/item_fr
 import { ItemBoundedMetricResolver } from "../../game/domain/items/metrics/item_bounded_metric_resolver.js";
 import { DevicePowerService } from "../../game/application/power/device_power_service.js";
 import { BrowserPageHideListener } from "../../platform/browser/runtime/browser_page_hide_listener.js";
-import { RadioReceiverService } from "../../game/application/radio/radio_receiver_service.js";
-import { RadioBrowserStationSource } from "../../platform/browser/radio/radio_browser_station_source.js";
-import { BrowserRegionResolver } from "../../platform/browser/radio/browser_region_resolver.js";
-import { RadioPreferencesLocalStore } from "../../platform/browser/storage/radio_preferences_local_store.js";
-import { SharedAudioContextProvider } from "../../platform/browser/audio/shared_audio_context_provider.js";
-import { RadioStreamPlayer } from "../../platform/browser/audio/radio_stream_player.js";
-import { RadioEffectsChain } from "../../platform/browser/audio/radio_effects_chain.js";
-import { RadioNoiseSource } from "../../platform/browser/audio/radio_noise_source.js";
-import { MonotonicIntervalTicker } from "../../platform/browser/time/monotonic_interval_ticker.js";
-import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator.js";
 import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
+import { GAME_FEATURE_MODULES } from "./game_feature_modules.js";
+import { LazyFeature } from "./lazy_feature.js";
 import { ItemMetricStrategyRegistry } from "../../game/domain/items/progression/item_metric_strategy_registry.js";
 import { ItemProgressionConfigValidator } from "../../game/config/validation/item_progression_config_validator.js";
 import { ItemProgressionDomAdapter } from "../../platform/browser/dom/item_progression_dom_adapter.js";
@@ -199,6 +191,8 @@ export class GameCompositionRoot {
   #deferredAssetLoadsStarted = false;
   // Opens the radio's editor once the inventory UI exists (spec 142: the HUD indicator's tap).
   #radioEditorOpener = null;
+  // The game state the radio quiets down for during a bite, kept for a radio that arrives later (spec 157 R12).
+  #stateName = null;
   #createRadioEffectTuning = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
@@ -348,7 +342,7 @@ export class GameCompositionRoot {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
-    void this.#preload?.start("layer-two");
+    void this.#preload?.startOn("ready");
     for (const load of this.#deferredAssetLoads) load();
   }
 
@@ -472,7 +466,9 @@ export class GameCompositionRoot {
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
       plan: this.#assetLoadPlan, registry: this.#assets,
-      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }) }),
+      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }),
+      modules: Object.keys(GAME_FEATURE_MODULES) }),
+      modules: GAME_FEATURE_MODULES,
       scheduler: this.#windowTarget,
       now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
       // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
@@ -1065,7 +1061,8 @@ export class GameCompositionRoot {
             boatSpine: boatAnimation.controller ?? boatAnimation,
             // DEV radio section (spec 142): status and discharging through the ordinary consumption path.
             radio: {
-              getStatus: () => systems.radio.getStatus(),
+              getStatus: () => systems.radio.get()?.radio.getStatus()
+                ?? { status: "loading", powered: false, station: null, country: "—", stationCount: 0, signal: null },
               batteryPercent: () => {
                 const batteryId = inventory.getEquipped()?.radioBattery?.instanceId;
                 return batteryId ? systems.devicePower.read(batteryId).percent : null;
@@ -1078,7 +1075,7 @@ export class GameCompositionRoot {
                 const units = Math.max(0, (systems.devicePower.read(batteryId).percent - target) / 100 * stored.capacityUnits);
                 systems.devicePower.consume({ deviceId: "dev", batteryInstanceId: batteryId, unitsPerSecond: units, seconds: 1 });
                 systems.devicePower.flush();
-                systems.radio.update();
+                systems.radio.get()?.radio.update();
               },
             },
             // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
@@ -1150,48 +1147,31 @@ export class GameCompositionRoot {
     return { systems };
   }
 
-  // Spec 142: the field radio receiver (stations, stream player, preferences, region), its HUD indicator under the
-  // clock (a tap opens the radio's editor) and the page visibility policy.
+  // Spec 142: the field radio receiver, a feature loaded after the first frame (spec 157 R12): the asset load plan
+  // warms it up after ready, the radio's editor asks for it on first use. Until it arrives there is no HUD indicator and
+  // no radio controls; a radio left on in the preferences starts once it has.
   #composeRadio({ own, inventory, devicePower, weather }) {
-    const windowRef = this.#windowTarget;
     const config = () => this.#config.radio || {};
-    let radio = null;
-    // The radio's own random numbers (noise, crackle, dropouts, the record's surface); never the gameplay RNG.
-    const seed = new Uint32Array(1);
-    windowRef.crypto?.getRandomValues?.(seed);
-    const radioRng = new SeededRng(seed[0] || 0x5eed);
-    const audioContexts = own(new SharedAudioContextProvider({ windowRef }));
-    const player = own(new RadioStreamPlayer({ documentRef: this.#documentTarget, audioContexts, scheduler: windowRef,
-      config, onState: (state, info) => radio?.handlePlayerState(state, info), assets: this.#assets,
-      effects: new RadioEffectsChain({ config: () => config().effects || {}, rng: radioRng, assets: this.#assets,
-        fetchRef: windowRef.fetch ? windowRef.fetch.bind(windowRef) : null }) }));
-    const noise = own(new RadioNoiseSource({ audioContexts, getOutput: () => player.output, getGate: () => player.streamGate, rng: radioRng }));
-    radio = own(new RadioReceiverService({
-      equipment: inventory,
-      power: devicePower,
-      stations: new RadioBrowserStationSource({ fetchRef: windowRef.fetch.bind(windowRef), config, scheduler: windowRef }),
-      player,
-      preferences: new RadioPreferencesLocalStore({ cache: this.#storageCache }),
-      region: new BrowserRegionResolver({ navigatorRef: windowRef.navigator, config,
-        timeZone: () => windowRef.Intl?.DateTimeFormat?.().resolvedOptions?.().timeZone || "" }),
-      config,
-      secureOnly: windowRef.location?.protocol === "https:",
-      weather,
-      noise,
-      rng: radioRng,
-      scheduler: windowRef,
-    }));
-    own(new MonotonicIntervalTicker({ windowRef, intervalMs: config().tickMs, now: () => windowRef.performance.now(),
-      onTick: (seconds) => radio.tick(seconds) }));
-    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef,
-      onHide: () => radio.setPageHidden(true), onShow: () => radio.setPageHidden(false) }));
-    const removeInventoryListener = inventory.onInventoryChanged(() => radio.update());
-    own({ dispose: () => removeInventoryListener?.() });
-    radio.update();
-    own(new RadioHudIndicator({ documentRef: this.#documentTarget, radio, labels: RADIO_LABELS,
-      mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      onActivate: () => this.#radioEditorOpener?.() }));
+    // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
+    const tuning = this.#createRadioEffectTuning?.({ config }) || null;
+    const radio = own(new LazyFeature({ name: "radio", preload: this.#preload,
+      compose: ({ composeRadioFeature }) => composeRadioFeature({ windowTarget: this.#windowTarget,
+        documentTarget: this.#documentTarget, config, assets: this.#assets, storageCache: this.#storageCache, inventory,
+        devicePower, weather, mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+        onActivate: () => this.#radioEditorOpener?.(), tuning }) }));
+    radio.onReady((feature) => feature.radio.setBiting(this.#stateName === "biting"));
     return radio;
+  }
+
+  // The radio editor's controls over the lazily loaded radio: none until it arrives (the open editor refreshes then).
+  #radioControlsRenderer(radio, domFactory) {
+    let renderer = null;
+    const current = () => (renderer ??= radio.get()?.createControlsRenderer(domFactory) ?? null);
+    return {
+      supports: (item) => current()?.supports(item) === true,
+      render: (options) => current().render(options),
+      dispose: () => renderer?.dispose(),
+    };
   }
 
   // Inventory UI over the composed facade and item read-model adapters.
@@ -1208,9 +1188,7 @@ export class GameCompositionRoot {
       facade: inventoryFacade,
       assets: this.#assets,
       progressive: this.#preload,
-      radio: systems.radio,
-      // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
-      radioTuning: this.#createRadioEffectTuning?.({ config: () => this.#config.radio || {} }) || null,
+      createDeviceControlsRenderer: (domFactory) => this.#radioControlsRenderer(systems.radio, domFactory),
       documentRef: this.#documentTarget,
       mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
@@ -1231,9 +1209,16 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
+    systems.radio.onReady(() => systems.inventoryUI?.refresh());
     this.#radioEditorOpener = () => {
-      const status = systems.radio?.getStatus?.();
-      const needsBatteryFeedback = status?.status === "no-battery" || !systems.radio?.hasPower?.();
+      const radio = systems.radio.get()?.radio;
+      // The first use before the radio has arrived waits for it (spec 157 R12).
+      if (!radio) {
+        void systems.radio.request().then((feature) => { if (feature) this.#radioEditorOpener?.(); });
+        return;
+      }
+      const status = radio.getStatus();
+      const needsBatteryFeedback = status?.status === "no-battery" || !radio.hasPower();
       if (needsBatteryFeedback) {
         systems.inventoryUI?.openSlotEditor("radio", {
           feedbackSlotId: "battery",
@@ -1548,7 +1533,8 @@ export class GameCompositionRoot {
       // Spec 142 stage 5: the radio gets quieter during a bite (its «Тихіше при кльові» switch).
       onStateChanged: (name) => {
         appPorts.onStateChanged(name);
-        runtime.radio.setBiting(name === "biting");
+        this.#stateName = name;
+        runtime.radio.get()?.radio.setBiting(name === "biting");
       },
     }));
     return { stateMachine, stateDepsFactory };

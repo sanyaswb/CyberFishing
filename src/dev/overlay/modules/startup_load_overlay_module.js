@@ -178,8 +178,11 @@ export class StartupLoadOverlayModule extends OverlayModule {
         const time = group.settledMs !== null && group.settledMs !== undefined && group.startedMs !== null
           ? ` · ${Math.round(group.settledMs - group.startedMs)} мс` : "";
         const low = group.readyOn === "low" ? ", спершу копії" : "";
+        // A feature group (spec 157 R12) loads code modules, named instead of files.
+        const content = group.modules?.length > 0 ? `код: ${group.modules.join(", ")}`
+          : `${group.files.length} файлів · ${this.#kb(bytes)}`;
         html += this.metricRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
-          `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${group.files.length} файлів · ${this.#kb(bytes)}${time}`,
+          `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${content}${time}`,
           { metricKey: `startup.plan.${layer.id}.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
         if (group.files.length > LISTED_FILES) continue;
         for (const file of group.files) {

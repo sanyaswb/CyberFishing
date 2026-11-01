@@ -7,7 +7,9 @@ import { AssetLoadQueue } from "../../engine/assets/asset_load_queue.js";
 // Every load goes through one AssetLoadQueue: the first layer is "blocking", the second "upgrade", later layers
 // "prefetch" (background work, capped and paused while the conditions say so: hidden tab, offline, save-data), and
 // request() — what the player opened — is "interactive": it overtakes the background and promotes a queued job.
-// Only images load here; audio, Spine exports and other kinds stay with their own loaders on use.
+// Only images load here; audio, Spine exports and other kinds stay with their own loaders on use. Code modules (spec 157
+// R12: features loaded with import() after the first frame) go through the same queue: a plan group's { module } entries
+// load at the layer's priority, loadModule() — the player's first use — as "interactive", one job per module.
 const LAYER_PRIORITIES = Object.freeze(["blocking", "upgrade"]);
 
 export class GameAssetPreloadFacade {
@@ -24,14 +26,19 @@ export class GameAssetPreloadFacade {
   #upgrades = [];
   #now;
   #groupTimes = new Map();
+  #moduleLoaders;
+  #modules = new Map();
+  #moduleWaiters = new Map();
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
   // networkSlots: the start's first layer (16 images today) must not queue behind a small cap over HTTP/2 (measured:
   // 6 slots cost 0.1 s and a request wave on Fast 4G); backgroundSlots caps the later layers.
   // now(): milliseconds for the DEV overlay's group times (performance.now), or null.
+  // modules: { name: () => Promise<module> } — the composition's import() of each feature the plan names.
   constructor({ plan, assets, imageAssets, scheduler, conditions = null, networkSlots = 24, backgroundSlots = 4,
-    maxAttempts = 2, now = null }) {
+    maxAttempts = 2, now = null, modules = {} }) {
+    this.#moduleLoaders = modules;
     this.#now = typeof now === "function" ? now : null;
     if (typeof plan?.resolveGroup !== "function") throw new TypeError("GameAssetPreloadFacade requires a plan");
     if (typeof assets?.pathOf !== "function") throw new TypeError("GameAssetPreloadFacade requires assets");
@@ -63,6 +70,11 @@ export class GameAssetPreloadFacade {
     return run;
   }
 
+  // Starts every layer whose start is the trigger ("composition", "ready").
+  startOn(trigger, state = {}) {
+    return Promise.all(this.#plan.layers.filter((layer) => layer.start === trigger).map((layer) => this.start(layer.id, state)));
+  }
+
   whenLayer(layerId) {
     return this.#layerRuns.get(layerId) ?? Promise.reject(new Error(`Asset load plan layer ${layerId} has not started`));
   }
@@ -82,6 +94,23 @@ export class GameAssetPreloadFacade {
   // Settles { status: ready|failed, ids, error }.
   async request(ids) {
     return this.#loadIds(ids, "interactive");
+  }
+
+  // A feature module the player needs now: "interactive", ahead of the background (a queued prefetch of the same module
+  // is promoted, not repeated). Settles { status: ready|failed, module, error }.
+  loadModule(name) {
+    return this.#loadModule(name, "interactive");
+  }
+
+  // Settles with the module once it has loaded, by the plan or by loadModule().
+  whenModule(name) {
+    if (this.#modules.has(name)) return Promise.resolve(this.#modules.get(name));
+    if (!this.#moduleWaiters.has(name)) {
+      let resolve;
+      const promise = new Promise((done) => { resolve = done; });
+      this.#moduleWaiters.set(name, { promise, resolve });
+    }
+    return this.#moduleWaiters.get(name).promise;
   }
 
   // Whether an image has loaded into the game's image store (a view can show it at once, without its low copy).
@@ -104,7 +133,7 @@ export class GameAssetPreloadFacade {
     return this.#plan.layers.map((layer) => ({
       id: layer.id, label: layer.label, started: this.#layerRuns.has(layer.id),
       groups: layer.groups.map((group) => ({ id: group.id, label: group.label, priority: group.priority, load: group.load,
-        readyOn: group.readyOn, status: this.#groupOutcomes.get(group.id)?.status
+        readyOn: group.readyOn, modules: this.#plan.modulesOf(group), status: this.#groupOutcomes.get(group.id)?.status
           ?? (this.#groupTimes.has(group.id) ? "loading" : "waiting"),
         ids: this.#groupOutcomes.get(group.id)?.ids ?? [], ...(this.#groupTimes.get(group.id) ?? {}) })),
     }));
@@ -129,12 +158,31 @@ export class GameAssetPreloadFacade {
     return { status: failed ? "failed" : "ready", ids, error: failed ? failed.error ?? new Error(failed.status) : null };
   }
 
+  async #loadModule(name, priority) {
+    const load = this.#moduleLoaders[name];
+    if (typeof load !== "function") return { status: "failed", module: null, error: new Error(`Unknown module ${name}`) };
+    if (this.#modules.has(name)) return { status: "ready", module: this.#modules.get(name), error: null };
+    const result = await this.#queue.request({ key: `module:${name}`, priority, load: () => load() }).result;
+    if (result.status !== "ready") return { status: "failed", module: null, error: result.error ?? new Error(result.status) };
+    if (!this.#modules.has(name)) {
+      this.#modules.set(name, result.payload);
+      this.#moduleWaiters.get(name)?.resolve(result.payload);
+    }
+    return { status: "ready", module: this.#modules.get(name), error: null };
+  }
+
   async #loadGroup(group, priority) {
     const ids = this.#plan.resolveGroup(group, this.#state);
     const times = { startedMs: this.#now?.() ?? null, settledMs: null };
     this.#groupTimes.set(group.id, times);
     const low = group.readyOn === "low";
     const outcome = group.load ? await this.#loadIds(ids, priority, { low }) : { status: "on-demand", ids, error: null };
+    if (group.load) {
+      for (const name of this.#plan.modulesOf(group)) {
+        const loaded = await this.#loadModule(name, priority);
+        if (loaded.status !== "ready" && outcome.status === "ready") Object.assign(outcome, { status: "failed", error: loaded.error });
+      }
+    }
     if (low && outcome.status === "ready") {
       this.#upgrades.push(...this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id)));
     }

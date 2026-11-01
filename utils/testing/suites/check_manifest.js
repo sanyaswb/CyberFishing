@@ -435,6 +435,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "lazy-features",
+    title: "Lazy features: plan module entries, one queued load per module, LazyFeature, absent from the start graph",
+    file: "utils/checks/tooling/lazy-features-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "startup-load-report",
     title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
     file: "utils/checks/platform/startup-load-report-check.js",

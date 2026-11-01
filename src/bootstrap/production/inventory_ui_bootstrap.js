@@ -1,6 +1,4 @@
 import { HorizontalScrollController } from "../../platform/browser/dom/horizontal_scroll_controller.js";
-import { RadioControlsRenderer } from "../../game/presentation/radio/radio_controls_renderer.js";
-import { RADIO_LABELS } from "../../game/presentation/radio/radio_labels.js";
 import { InventoryActionContract } from "../../game/presentation/inventory/inventory_action_contract.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryFacadeContract } from "../../game/presentation/inventory/inventory_facade_contract.js";
@@ -107,11 +105,11 @@ export class InventoryUiBootstrap {
       dragClassName: "inventory-vertical-scroll--dragging" });
   }
 
-  // radio: the radio receiver's port (spec 142), whose controls the radio's editor shows; null without one.
-  // radioTuning: DEV only, the enabled sound effects' main parameters as sliders (TK-098); null in production.
+  // createDeviceControlsRenderer(domFactory): the controls a device's editor shows (the radio, spec 142; loaded after
+  // the first frame, spec 157 R12) — { supports(item), render(options), dispose() } — or null without any.
   // assets: the AssetRegistry; every image and sprite icon of the inventory is named by asset id (spec 157 R16).
   // progressive: the asset load plan's facade (an image not yet loaded shows its low copy first, spec 157 R17) or null.
-  static create({ autoMount = true, autoOpen = false, radio = null, radioTuning = null, assets, progressive = null,
+  static create({ autoMount = true, autoOpen = false, createDeviceControlsRenderer = null, assets, progressive = null,
     ...options } = {}) {
     const ui = new InventoryUI({
       ...options,
@@ -119,7 +117,8 @@ export class InventoryUiBootstrap {
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
       createPresentation: (presentationOptions) =>
-        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, radio, radioTuning, assets, progressive }),
+        InventoryUiBootstrap.#createPresentation({ ...presentationOptions, createDeviceControlsRenderer, assets,
+          progressive }),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -130,8 +129,7 @@ export class InventoryUiBootstrap {
   static #createPresentation({
     documentRef,
     uiSurface,
-    radio = null,
-    radioTuning = null,
+    createDeviceControlsRenderer = null,
     assets,
     progressive,
     rarityDomAdapter,
@@ -235,8 +233,7 @@ export class InventoryUiBootstrap {
         scrollbarEnabled: INVENTORY_EDITOR_CONFIG.scrollbar.enabled,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
-        deviceControlsRenderer: radio ? new RadioControlsRenderer({ domFactory: dom, radio, labels: RADIO_LABELS,
-          tuning: radioTuning }) : null,
+        deviceControlsRenderer: createDeviceControlsRenderer?.(dom) ?? null,
         rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
         // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
         // off in the editor.

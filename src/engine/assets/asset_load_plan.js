@@ -1,13 +1,14 @@
 // The asset load plan (spec 157 R15, TK-177): layers in order, each with groups by priority (1 first); a group names its
 // assets by registry id ({ id }), by tag ({ tag }: every asset carrying it) or by a named source of game state
-// ({ source }: a function of the startup state that returns ids). Pure: no browser, no game.
+// ({ source }: a function of the startup state that returns ids), or names a code module ({ module }: a feature the
+// composition loads with import() after the first frame or on first use, spec 157 R12). Pure: no browser, no game.
 // - A layer starts on "composition" (with the game's composition), "ready" (the first frame) or "after:<layer>".
 // - A group with load: false is placed but loads only on demand (large content opened later: audio, the House, fish).
 // - A group with readyOn: "low" counts as loaded once the low-quality copies of its images have (spec 157 R17); the
 //   full files follow after the first frame.
 // - An asset belongs to the first group (layer, then priority) that names it; an explicit { id } in two groups is an
 //   error. Registry assets no group names are the implicit last group "unassigned" of the last layer.
-const ENTRY_KEYS = Object.freeze(["id", "tag", "source"]);
+const ENTRY_KEYS = Object.freeze(["id", "tag", "source", "module"]);
 const STARTS = /^(?:composition|ready|after:[a-z0-9-]+)$/u;
 export const UNASSIGNED_GROUP_ID = "unassigned";
 
@@ -18,9 +19,10 @@ export class AssetLoadPlan {
   #unassigned;
 
   // plan: { layers: [{ id, label, start, groups: [{ id, label, priority, load, assets: [entry] }] }] };
-  // registry: AssetRegistry; sources: { name: { resolve(state) -> ids, candidates() -> every id it may return } }.
-  constructor({ plan, registry, sources = {} }) {
-    const errors = AssetLoadPlan.validate({ plan, registry, sources });
+  // registry: AssetRegistry; sources: { name: { resolve(state) -> ids, candidates() -> every id it may return } };
+  // modules: the module names the composition can load, or null (a tool that only reads the plan's assets).
+  constructor({ plan, registry, sources = {}, modules = null }) {
+    const errors = AssetLoadPlan.validate({ plan, registry, sources, modules });
     if (errors.length > 0) throw new Error(`Invalid asset load plan:\n${errors.join("\n")}`);
     this.#registry = registry;
     this.#sources = sources;
@@ -44,12 +46,13 @@ export class AssetLoadPlan {
   }
 
   // Every problem of a plan, as readable lines (empty when valid).
-  static validate({ plan, registry, sources = {} }) {
+  static validate({ plan, registry, sources = {}, modules = null }) {
     const errors = [];
     if (!plan || !Array.isArray(plan.layers) || plan.layers.length === 0) return ["the plan needs layers"];
     const layerIds = new Set();
     const groupIds = new Set();
     const explicit = new Map();
+    const moduleGroups = new Map();
     for (const layer of plan.layers) {
       if (!layer?.id || layerIds.has(layer.id)) errors.push(`layer "${layer?.id}" needs a unique id`);
       if (!STARTS.test(String(layer?.start))) errors.push(`layer ${layer?.id}: start must be composition, ready or after:<layer>`);
@@ -72,6 +75,11 @@ export class AssetLoadPlan {
             if (!registry.has(entry.id)) errors.push(`${where}: unknown asset id ${entry.id}`);
             if (explicit.has(entry.id)) errors.push(`${where}: ${entry.id} is also in ${explicit.get(entry.id)}`);
             explicit.set(entry.id, where);
+          } else if (keys[0] === "module") {
+            if (typeof entry.module !== "string" || !entry.module) errors.push(`${where}: a module entry needs a name`);
+            else if (modules && !modules.includes(entry.module)) errors.push(`${where}: unknown module ${entry.module}`);
+            if (moduleGroups.has(entry.module)) errors.push(`${where}: module ${entry.module} is also in ${moduleGroups.get(entry.module)}`);
+            moduleGroups.set(entry.module, where);
           } else if (keys[0] === "tag") {
             if (registry.idsByTag(entry.tag).length === 0) errors.push(`${where}: tag ${entry.tag} matches no asset`);
           } else if (typeof sources[entry.source]?.resolve !== "function") {
@@ -99,9 +107,14 @@ export class AssetLoadPlan {
     for (const entry of group.assets) {
       if (entry.id) ids.push(entry.id);
       else if (entry.tag) ids.push(...this.#registry.idsByTag(entry.tag));
-      else ids.push(...this.#sources[entry.source].resolve(state));
+      else if (entry.source) ids.push(...this.#sources[entry.source].resolve(state));
     }
     return [...new Set(ids)];
+  }
+
+  // The code modules a group names, in entry order.
+  modulesOf(group) {
+    return group.assets.filter((entry) => entry.module).map((entry) => entry.module);
   }
 
   // Registry assets that no group of the configured plan names (and no source can return).
@@ -116,7 +129,7 @@ export class AssetLoadPlan {
         for (const entry of group.assets) {
           if (entry.id) covered.add(entry.id);
           else if (entry.tag) for (const id of this.#registry.idsByTag(entry.tag)) covered.add(id);
-          else for (const id of this.#sources[entry.source].candidates()) covered.add(id);
+          else if (entry.source) for (const id of this.#sources[entry.source].candidates()) covered.add(id);
         }
       }
     }

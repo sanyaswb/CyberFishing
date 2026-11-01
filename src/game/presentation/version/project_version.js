@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.53";
+export const CURRENT_PROJECT_VERSION = "0.49.54";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 157 R12 step (b): the radio loads after the start through the asset load plan.",
     "Spec 157 R12 step (a): release pages preload only the chunks the start loads.",
     "Spec 157 R6 step 2: item art at most 1024 px (WebP middle), masters in asset-sources/items.",
     "TK-180: one 768 px image per fish, its low copy in cards and the aquarium; masters out of the release.",

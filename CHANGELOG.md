@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.54 - Radio after the start
+
+- Spec 157 R12 step (b): the asset load plan names code modules ({ module }) and a new layer of features warmed up after the first frame through the same load queue (the player's first use asks for a module at once, without a second load); LazyFeature composes a feature when its module arrives. The radio is the first such feature: receiver, player, effects, stations, HUD indicator and editor controls load after ready (16 modules off the start; index.html 0.71 -> 0.70 MB); a radio left on starts once it arrives. New check lazy-features. Game-cycle report unchanged.
+
 ## v0.49.53 - Start-only preloads
 
 - Spec 157 R12 step (a), TK-176 item 2: a release page preloads only the chunks its start loads (the bundle's static chunks and the start's own import() calls, START_IMPORTS in utils/build-release.js); spine-webgl (the rod engine of the 2D canvas scene mode) and dev.html's House screen load on demand. index.html start 0.78 -> 0.71 MB (Fast 4G 1235 -> 1160 ms, 3G 5131 -> 4726 ms). Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.45 - Load priorities and pause
 
 - Spec 157 stage D2: the asset load plan runs through one priority queue (`AssetLoadQueue`): the first layer blocks, the second and third are capped background work that waits in a hidden tab, offline or with save-data (`BrowserLoadConditions`), and what the player opens (`request`, today the equipped rod's art in the selector) loads ahead of them, promoting a queued job; loads retry once. Game-cycle report unchanged.
-
-## v0.49.44 - Asset load plan
-
-- Spec 157 stage D1 (TK-177): the asset load plan in configuration (`src/game/config/raw/assets/asset_load_plan.js`: three layers, groups by priority, entries by asset id, tag or game-state source; registry assets without a place form an `unassigned` group) runs through `GameAssetPreloadFacade` over the game's one image store, keyed by asset id; it replaces the scattered preloads (current background phase and depth map, float art, slot placeholders, later phases, depth icons, selector art, keepnet stages). Today's plan repeats the loads before stage D: the same files before the start. Game-cycle report unchanged.
