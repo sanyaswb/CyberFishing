@@ -79,7 +79,7 @@ export class OverlayMetricInfoBridge {
 
   #handleClick(event) {
     const label = this.#findMetricLabel(event.target);
-    if (!label) return;
+    if (!label || label.closest("summary")) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
@@ -89,7 +89,7 @@ export class OverlayMetricInfoBridge {
   #handleKeyDown(event) {
     if (event.key !== "Enter" && event.key !== " ") return;
     const label = this.#findMetricLabel(event.target);
-    if (!label) return;
+    if (!label || label.closest("summary")) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();

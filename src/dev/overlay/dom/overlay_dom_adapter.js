@@ -15,6 +15,7 @@ export class OverlayDomAdapter {
   #content = null;
   #dragController = null;
   #scale;
+  #openDetailsIds = new Set();
 
   constructor({
     documentTarget = document,
@@ -43,6 +44,15 @@ export class OverlayDomAdapter {
 
     this.#content = this.#documentTarget.createElement("div");
     this.#content.className = "debug-overlay__content";
+    if (typeof this.#content.addEventListener === "function") {
+      this.#content.addEventListener("toggle", (event) => {
+        const details = event.target;
+        if (details?.id) {
+          if (details.open) this.#openDetailsIds.add(details.id);
+          else this.#openDetailsIds.delete(details.id);
+        }
+      }, true);
+    }
     this.#container.appendChild(this.#content);
 
     const controls = this.#createScaleControls({
@@ -71,19 +81,84 @@ export class OverlayDomAdapter {
 
   updateHtml(html) {
     if (!this.#content) return;
-    const openIds = new Set();
-    if (typeof this.#content.querySelectorAll === "function") {
-      for (const el of this.#content.querySelectorAll("details[open][id]")) {
-        if (el.id) openIds.add(el.id);
-      }
+    const hasExistingChildren = this.#content.childNodes && this.#content.childNodes.length > 0;
+    if (!hasExistingChildren || typeof this.#documentTarget.createElement !== "function") {
+      this.#content.innerHTML = html;
+      this.#applyOpenDetails();
+      this.#clampWhenStable();
+      return;
     }
-    this.#content.innerHTML = html;
-    if (openIds.size > 0 && typeof this.#content.querySelectorAll === "function") {
-      for (const el of this.#content.querySelectorAll("details[id]")) {
-        if (openIds.has(el.id)) el.open = true;
-      }
-    }
+    const temp = this.#documentTarget.createElement("div");
+    temp.innerHTML = html;
+    this.#patchNode(this.#content, temp);
+    this.#applyOpenDetails();
     this.#clampWhenStable();
+  }
+
+  #applyOpenDetails() {
+    if (this.#openDetailsIds.size === 0 || typeof this.#content.querySelectorAll !== "function") return;
+    for (const el of this.#content.querySelectorAll("details[id]")) {
+      if (this.#openDetailsIds.has(el.id) && !el.open) el.open = true;
+    }
+  }
+
+  #patchNode(current, next) {
+    if (current.nodeType !== next.nodeType || current.nodeName !== next.nodeName) {
+      if (typeof current.replaceWith === "function" && typeof next.cloneNode === "function") {
+        current.replaceWith(next.cloneNode(true));
+      } else if (current.parentNode && typeof current.parentNode.replaceChild === "function") {
+        current.parentNode.replaceChild(typeof next.cloneNode === "function" ? next.cloneNode(true) : next, current);
+      }
+      return;
+    }
+    if (current.nodeType === 3 /* TEXT_NODE */) {
+      if (current.nodeValue !== next.nodeValue) {
+        current.nodeValue = next.nodeValue;
+      }
+      return;
+    }
+    if (current.nodeType !== 1 /* ELEMENT_NODE */) return;
+
+    const curAttrs = current.attributes;
+    const nextAttrs = next.attributes;
+    if (curAttrs) {
+      for (let i = curAttrs.length - 1; i >= 0; i--) {
+        const name = curAttrs[i].name;
+        if (current.nodeName === "DETAILS" && name === "open") continue;
+        if (!next.hasAttribute(name)) {
+          current.removeAttribute(name);
+        }
+      }
+    }
+    if (nextAttrs) {
+      for (let i = 0; i < nextAttrs.length; i++) {
+        const { name, value } = nextAttrs[i];
+        if (current.nodeName === "DETAILS" && name === "open") continue;
+        if (current.getAttribute(name) !== value) {
+          current.setAttribute(name, value);
+        }
+      }
+    }
+
+    this.#patchChildren(current, next);
+  }
+
+  #patchChildren(parent, nextParent) {
+    const curChildren = Array.from(parent.childNodes || []);
+    const nextChildren = Array.from(nextParent.childNodes || []);
+    const max = Math.max(curChildren.length, nextChildren.length);
+    for (let i = 0; i < max; i++) {
+      const cur = curChildren[i];
+      const next = nextChildren[i];
+      if (!cur && next) {
+        parent.appendChild(typeof next.cloneNode === "function" ? next.cloneNode(true) : next);
+      } else if (cur && !next) {
+        if (typeof cur.remove === "function") cur.remove();
+        else parent.removeChild?.(cur);
+      } else if (cur && next) {
+        this.#patchNode(cur, next);
+      }
+    }
   }
 
   getRootElement() {

@@ -190,7 +190,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
         // A feature group (spec 157 R12) loads code modules, named instead of files.
         const content = group.modules?.length > 0 ? `код: ${group.modules.join(", ")}`
           : `${group.files.length} файлів · ${this.#kb(bytes)}`;
-        const groupRow = this.metricRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
+        const groupRow = this.#summaryRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
           `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${content}${time}`,
           { metricKey: `startup.plan.${layer.id}.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
         if (group.files.length > 0 && group.files.length <= LISTED_FILES) {
@@ -206,7 +206,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
           layerBody += groupRow;
         }
       }
-      const layerRow = this.metricRow(layer.label, layer.started ? "стартував" : "чекає", {
+      const layerRow = this.#summaryRow(layer.label, layer.started ? "стартував" : "чекає", {
         metricKey: `startup.plan.${layer.id}`,
         color: layer.started ? "#00ff80" : "#ffaa00",
       });
@@ -218,6 +218,17 @@ export class StartupLoadOverlayModule extends OverlayModule {
       : status.duplicates.map((ids) => ids.join(" = ")).join("; "), { metricKey: "startup.plan.duplicates",
       color: status.duplicates.length === 0 ? "#00ff80" : "#ffaa00" });
     return html;
+  }
+
+  #summaryRow(label, value, options = {}) {
+    const metricKey = options.metricKey || label;
+    const color = options.color || "#8a9bac";
+    const safeMetricKey = this.escapeAttr(metricKey);
+    const safeLabel = this.escapeAttr(label);
+    return `<div class="debug-overlay__row" data-overlay-metric="${safeMetricKey}">`
+      + `<span class="debug-overlay__label" data-metric="${safeMetricKey}" title="${this.escapeAttr(label)}">${safeLabel}:</span>`
+      + `<span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>`
+      + `</div>`;
   }
 
   #caption(text) {
