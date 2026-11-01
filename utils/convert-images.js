@@ -1,4 +1,4 @@
-// convert-images.js v1.7.0
+// convert-images.js v1.8.0
 
 const fs = require('fs');
 const path = require('path');
@@ -504,6 +504,33 @@ async function convertBatch(args) {
   if (successfullyConvertedFiles.length === 0) process.exitCode = 1;
 }
 
+// A Spine atlas's one region as an upright picture (TK-181: the rod's picture before its export arrives):
+// node utils/convert-images.js --spine-region --atlas <rod.atlas> --output <picture.webp> [--size 1024] [--quality middle]
+async function createSpineRegionPicture(args) {
+  const option = (name, fallback) => {
+    const index = args.indexOf(name);
+    return index < 0 ? fallback : args[index + 1];
+  };
+  const atlasFile = path.resolve(BASE_DIR, option('--atlas', ''));
+  const output = path.resolve(BASE_DIR, option('--output', ''));
+  const size = Number(option('--size', '1024'));
+  const quality = QUALITY_PRESETS[{ low: '1', middle: '2', medium: '2', high: '3' }[option('--quality', 'middle')]];
+  const lines = fs.readFileSync(atlasFile, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const bounds = lines.filter((line) => line.startsWith('bounds:'));
+  if (!quality || !Number.isSafeInteger(size) || size < 1 || bounds.length !== 1 || path.relative(BASE_DIR, output).startsWith('..')) {
+    throw new Error('Invalid --spine-region options (the atlas must hold one region)');
+  }
+  const [x, y, width, height] = bounds[0].slice('bounds:'.length).split(',').map(Number);
+  const rotated = lines.includes('rotate:90');
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  // A region stored rotated has its width and height swapped in the page; turning it clockwise makes it upright.
+  const region = await sharp(path.join(path.dirname(atlasFile), lines[0]))
+    .extract({ left: x, top: y, width: rotated ? height : width, height: rotated ? width : height })
+    .rotate(rotated ? 90 : 0).toBuffer();
+  await sharp(region).resize(size, size, { fit: 'inside', withoutEnlargement: true }).webp({ quality: quality.webp }).toFile(output);
+  console.log(`Created ${path.relative(BASE_DIR, output)} from ${path.relative(BASE_DIR, atlasFile)}`);
+}
+
 // Low-quality copies for progressive loading (spec 157 R17, TK-179), called by npm run assets:sync:
 // node utils/convert-images.js --low-copies --manifest <json: [{ input, output }]>
 // The longest side becomes a quarter of the original's, at most 256 px (never enlarged), the same proportion, WebP Low.
@@ -524,7 +551,11 @@ async function createLowCopies(args) {
   console.log(`Created ${manifest.length} low copies (max ${LOW_COPY_MAX_SIDE} px, WebP ${QUALITY_PRESETS[1].webp}).`);
 }
 
-if (process.argv.includes('--low-copies')) {
+if (process.argv.includes('--spine-region')) {
+  createSpineRegionPicture(process.argv.slice(2)).catch((error) => {
+    console.error(error.message); process.exitCode = 1;
+  }).finally(() => rl.close());
+} else if (process.argv.includes('--low-copies')) {
   createLowCopies(process.argv.slice(2)).catch((error) => {
     console.error(error.message); process.exitCode = 1;
   }).finally(() => rl.close());

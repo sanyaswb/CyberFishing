@@ -121,8 +121,10 @@
 │  │  │  └── net--1.webp
 │  │  ├── radio
 │  │  │  └── radio-receiver.webp
-│  │  └── rods
-│  │     └── bamboo-rod-ecip-v1.webp
+│  │  ├── rods
+│  │  │  └── bamboo-rod-ecip-v1.webp
+│  │  └── rods-scene
+│  │     └── bamboo-rod-v1.webp
 │  ├── lobby
 │  │  └── lobby-background.webp
 │  ├── locations
@@ -224,8 +226,10 @@
 │  │  │  │  └── net--1.webp
 │  │  │  ├── radio
 │  │  │  │  └── radio-receiver.webp
-│  │  │  └── rods
-│  │  │     └── bamboo-rod-ecip-v1.webp
+│  │  │  ├── rods
+│  │  │  │  └── bamboo-rod-ecip-v1.webp
+│  │  │  └── rods-scene
+│  │  │     └── bamboo-rod-v1.webp
 │  │  ├── lobby
 │  │  │  └── lobby-background.webp
 │  │  ├── locations

@@ -503,7 +503,7 @@ export class GameCompositionRoot {
     } = this.#composeFishModels({ contracts, itemFreshnessResolver });
     const rodAnimation = own(composeRodAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
-      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
+      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets, images: imageAssets,
     }));
     const boatAnimation = own(composeBoatAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,

@@ -44,11 +44,17 @@ export class RodAnimationController {
     image: null, region: null, bounds: null, view: null, viewScale: 1,
   };
   #pixelRatio = 1;
+  #getStartImage;
+  #startPicture = null;
+  #startRegion = null;
+  #startRegionImage = null;
   #disposed = false;
 
   // readSetupPose(skeletonJson, atlas, descriptor) recomputes the static picture after a DEV bone edit.
+  // getStartImage(assetId): the loaded image of the skin's startPicture (TK-181), or null.
   constructor({
     loadBundle, loadRuntime, glSurface, resolver, getConfig, isReducedMotion = () => false, readSetupPose = null,
+    getStartImage = () => null,
   }) {
     const functions = { loadBundle, loadRuntime, getConfig, isReducedMotion };
     for (const [name, value] of Object.entries(functions)) {
@@ -66,13 +72,16 @@ export class RodAnimationController {
     this.#getConfig = getConfig;
     this.#isReducedMotion = isReducedMotion;
     this.#readSetupPose = readSetupPose;
+    this.#getStartImage = getStartImage;
     this.#snapshot = resolver.createSnapshot();
   }
 
-  // animation: the equipped rod skin's { asset, skin, linePoint } (asset: the Spine export's id) or null. Called every
-  // frame; a change starts a new load and keeps the current picture until the new one is ready.
+  // animation: the equipped rod skin's { asset, skin, linePoint, startPicture } (asset: the Spine export's id) or null.
+  // Called every frame; a change starts a new load and keeps the current picture until the new one is ready.
+  // startPicture { asset, bounds, linePoint }: an upright image of the export's setup pose, drawn until the export arrives.
   setSkin(animation) {
     if (this.#disposed) return;
+    this.#startPicture = animation?.startPicture ?? null;
     const asset = animation?.asset ?? "";
     const skin = animation?.skin ?? "";
     const linePoint = animation?.linePoint ?? "";
@@ -107,7 +116,10 @@ export class RodAnimationController {
     const pose = this.#bundle?.staticPose ?? null;
     const image = pose?.region ? this.#bundle.pages.get(pose.region.pageName) ?? null : null;
     if (!pose || !image || !(pose.bounds.height > 0)) {
-      this.#rectangle(anchor);
+      const start = this.#startPicture;
+      const startImage = start ? this.#getStartImage(start.asset) : null;
+      if (startImage) this.#placeStatic(anchor, context, config, start, startImage, this.#startRegionOf(startImage));
+      else this.#rectangle(anchor);
       return anchor;
     }
     anchor.scale = (context.canvasHeight * config.heightRatio) / pose.bounds.height;
@@ -119,13 +131,32 @@ export class RodAnimationController {
       this.#advanceScene(scene, context, config, anchor);
       return anchor;
     }
+    this.#placeStatic(anchor, context, config, pose, image, pose.region);
+    return anchor;
+  }
+
+  // The static picture over the pose's setup bounds: the export's atlas region, or the start picture before it.
+  #placeStatic(anchor, context, config, pose, image, region) {
+    anchor.scale = (context.canvasHeight * config.heightRatio) / pose.bounds.height;
+    anchor.image = image;
+    anchor.region = region;
+    anchor.bounds = pose.bounds;
     anchor.mode = "static";
     anchor.view = null;
     const tipX = pose.linePoint ? pose.linePoint.x : pose.bounds.x + pose.bounds.width / 2;
     const tipY = pose.linePoint ? pose.linePoint.y : pose.bounds.y + pose.bounds.height;
     anchor.tipX = context.baseX + tipX * anchor.scale;
     anchor.tipY = context.baseY - tipY * anchor.scale;
-    return anchor;
+  }
+
+  // The whole start image as an unrotated region, one object per image (advance runs every frame).
+  #startRegionOf(image) {
+    if (this.#startRegionImage !== image) {
+      this.#startRegionImage = image;
+      this.#startRegion = Object.freeze({ x: 0, y: 0, width: image.naturalWidth || image.width,
+        height: image.naturalHeight || image.height, rotate: 0 });
+    }
+    return this.#startRegion;
   }
 
   getAnchor() {

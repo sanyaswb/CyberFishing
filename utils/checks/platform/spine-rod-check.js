@@ -428,6 +428,63 @@ function recordingSurface() {
   };
 }
 
+// TK-181: the rod is never a rectangle on a normal start: its start picture (first layer of the load plan) stands in the
+// export's setup pose until the export arrives, at the same scale and line tip, so nothing jumps when it does.
+async function checkStartPicture({ RodAnimationController, RodAnimationStateResolver, SpineSetupPoseReader, bundle, config,
+  startPicture, surface }) {
+  const pose = bundle.staticPose;
+  assert.deepEqual({ ...startPicture.bounds }, { ...pose.bounds }, "the start picture's bounds are the export's (re-copy after a new export)");
+  assert.deepEqual({ ...startPicture.linePoint }, { ...pose.linePoint }, "the start picture's line point is the export's");
+  assert.equal(assets.entryOf(startPicture.asset).kind, "image");
+
+  // The file is the export's atlas region turned upright, small enough for the first layer.
+  const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
+  const file = path.join(ROOT_DIR, assets.pathOf(startPicture.asset));
+  const { width, height } = await sharp(file).metadata();
+  assert(Math.abs(width / height - pose.region.width / pose.region.height) < 0.002, "the picture has the region's proportion");
+  assert(fs.statSync(file).size <= 16 * 1024, "the start picture is at most 16 KB");
+  const alphaBars = async (input) => (await sharp(input).ensureAlpha().extractChannel(3).resize(1, 32, { fit: "fill" }).raw().toBuffer());
+  const pagePath = path.join(ROOT_DIR, EXPORT_DIR, "rod.webp");
+  const upright = await sharp(pagePath).extract({ left: pose.region.x, top: pose.region.y, width: pose.region.height,
+    height: pose.region.width }).rotate(90).toBuffer();
+  const [picture, region] = [await alphaBars(file), await alphaBars(upright)];
+  const difference = picture.reduce((sum, value, index) => sum + Math.abs(value - region[index]), 0) / picture.length;
+  assert(difference < 6, `the picture matches the upright region along its length (mean difference ${difference})`);
+
+  let image = null;
+  const asked = [];
+  let finish;
+  const controller = new RodAnimationController({
+    loadBundle: () => ({ release() {}, result: new Promise((resolve) => { finish = resolve; }) }),
+    loadRuntime: async () => ({ available: false, runtime: null, reason: "not-needed" }),
+    glSurface: surface, resolver: new RodAnimationStateResolver(), getConfig: () => config,
+    readSetupPose: (json, atlas, descriptor) => SpineSetupPoseReader.read(json, atlas, descriptor),
+    getStartImage: (id) => { asked.push(id); return image; },
+  });
+  const context = { dtSec: 1 / 60, state: "waiting", stressRatio: 0, fishScreenX: 640, baseX: 640, baseY: 800, canvasWidth: 1280,
+    canvasHeight: 800, windDirection: 0, rainMultiplier: 1 };
+  controller.setSkin({ ...DESCRIPTOR, startPicture });
+  assert.equal(controller.advance(context).mode, "rectangle", "without the image (a failed load) the rectangle stays");
+  assert.equal(asked.at(-1), startPicture.asset);
+  image = { naturalWidth: width, naturalHeight: height };
+  const before = { ...controller.advance(context) };
+  assert.equal(before.mode, "static", "the start picture replaces the rectangle");
+  assert.equal(before.image, image);
+  assert.deepEqual({ ...before.region }, { x: 0, y: 0, width, height, rotate: 0 }, "the whole upright image is the region");
+  const region1 = before.region;
+  assert.equal(controller.advance(context).region, region1, "no new region object per frame");
+  finish({ status: "ready", bundle });
+  for (let index = 0; index < 8; index += 1) await Promise.resolve();
+  const after = { ...controller.advance(context) };
+  assert.equal(after.mode, "static");
+  assert.notEqual(after.image, image, "the export's page replaces the start picture");
+  for (const key of ["scale", "tipX", "tipY"]) near(after[key], before[key], 1e-9, `no jump in ${key} when the export arrives`);
+  assert.deepEqual({ ...after.bounds }, { ...before.bounds }, "no jump in the bounds");
+  controller.setSkin(null);
+  assert.equal(controller.advance(context).mode, "rectangle", "no rod skin, no start picture");
+  controller.dispose();
+}
+
 async function checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, SpineSetupPoseReader,
   spine, bundle, config }) {
   const surface = fakeSurface();
@@ -776,8 +833,8 @@ async function main() {
   const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
   const { ITEM_DB } = await importSource("src/game/config/raw/items/item_database.js");
   const config = CONFIG.ui.rod.spine;
-  assert.deepEqual({ ...ITEM_DB.rods.rod_test_float.skin.animation }, { ...DESCRIPTOR },
-    "the bamboo rod skin names the tracked export");
+  const { startPicture, ...skinExport } = ITEM_DB.rods.rod_test_float.skin.animation;
+  assert.deepEqual(skinExport, { ...DESCRIPTOR }, "the bamboo rod skin names the tracked export");
   const { TackleStressBarVisibility } = await importSource("src/game/presentation/hud/tackle_stress_bar_visibility.js");
   // The HUD rule before it was shared: stressRatio > 0 || tension >= (breakThreshold || 100) - 0.1.
   for (const [stressRatio, tension, breakThreshold, visible] of [[0, 50, 100, false], [0.01, 0, 100, true],
@@ -790,6 +847,8 @@ async function main() {
   checkResolver(RodAnimationStateResolver, config);
   await checkController({ RodAnimationController, RodAnimationStateResolver, SpineScene, SpineSetupPoseReader, spine,
     bundle, config });
+  await checkStartPicture({ RodAnimationController, RodAnimationStateResolver, SpineSetupPoseReader, bundle, config,
+    startPicture, surface: fakeSurface() });
   checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
     RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `
@@ -797,7 +856,7 @@ async function main() {
     + "bends, side blend, idle loop and time scale, missing clips, bounds, context restore, dispose), the same scene on "
     + "spine-pixi-v8 (y down, Spine view, line tip, bounds and bones equal to spine-webgl), GL and scene surfaces, "
     + "transport and frame-rate independent smoothing; setup pose without the runtime, pose resolver (wind, reduced "
-    + "motion, rain, side weights), controller modes rectangle -> static -> spine (unavailable runtime, context loss, "
+    + "motion, rain, side weights), controller modes rectangle -> start picture -> static -> spine (unavailable runtime, context loss, "
     + "DEV static, stale loads, spring-back), static/Spine/line renderers and the bit-for-bit rod line model without a "
     + "skin; DEV port (clip list and switches, bone setup edits in the scene and the static picture, skeleton JSON "
     + "export with edits only); critical tremble while the tackle STRESS bar shows (shared HUD rule, side clip, mix out, "

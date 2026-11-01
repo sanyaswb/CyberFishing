@@ -19,6 +19,7 @@ export const ASSET_LOAD_PLAN = {
         { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low",
           assets: [{ source: "location.background.current" }, { source: "location.depthMap" }] },
         { id: "scene", label: "Поплавок у сцені", priority: 2, assets: [{ tag: "floats-scene" }] },
+        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 2, assets: [{ tag: "rods-scene" }] },
         { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 2, assets: [{ source: "inventory.slotIcons" }] },
       ],
     },

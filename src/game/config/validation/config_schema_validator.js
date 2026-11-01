@@ -581,6 +581,12 @@ export class ConfigSchemaValidator {
     for (const key of ["skin", "linePoint"]) {
       if (animation[key] !== undefined) this.#requireNonEmptyString(`${path}.${key}`, animation[key]);
     }
+    const picture = animation.startPicture;
+    if (picture === undefined) return;
+    this.#requireNonEmptyString(`${path}.startPicture.asset`, picture?.asset);
+    if (!(picture?.bounds?.height > 0) || !(picture.bounds.width > 0)) {
+      this.#error(`${path}.startPicture.bounds`, "needs a positive width and height");
+    }
   }
 
   #validateFishDb() {

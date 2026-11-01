@@ -144,6 +144,12 @@ export const ITEM_DB = {
           asset: "animations.rods.bamboo-rod-v1.rod",
           skin: "default",
           linePoint: "line-tip",
+          // TK-181: drawn until the export arrives, in the export's setup pose (the spine-rod check compares them).
+          startPicture: {
+            asset: "items.rods-scene.bamboo-rod-v1",
+            bounds: { x: -6.404347, y: -2.046038, width: 16.769104, height: 468.8618 },
+            linePoint: { x: 1.1598823877317312, y: 466.09938640304864 },
+          },
         },
       },
       rarityProfile: {
