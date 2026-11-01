@@ -1354,6 +1354,16 @@ UI й арт предметів — один патч, бо вони йдуть 
   esbuild (`pages-release`; на старому `fish_force_system.js` / DEV-будівнику — «esbuild warnings: … Duplicate key»).
   Full, game-cycle без змін.
 
+### F — VOLIA 77.2 перекодовано, 32 кбіт/с (v0.49.57, 2026-11-01; вибір власника)
+
+- Три записи → AAC (`.m4a`), моно, 32 кГц, **32 кбіт/с** (`utils/convert-audio.js --bitrate 32`): «Чому з Купола…» 39.45 →
+  5.23 МБ, «Ефір ВОЛЯ 77.2» 19.40 → 2.08 МБ, «Ефір ВОЛЯ (Іржавий Шельф)» 9.95 → 1.04 МБ; **разом 68.80 → 8.34 МБ** на
+  кожен реліз. Оригінали — `asset-sources/audio/radio/volia/` (`git mv`), у реліз не йдуть.
+- Id асетів ті самі (`audio.radio.volia.*`; `assets:sync --moved` для двох `.mp3` → `.m4a`), `radio_channels.js` без змін
+  (`utils/scan-radio-tracks.js` — 3 доріжки). Програвання потокове, як було.
+- Перевірка `radio-receiver`: три записи VOLIA — `.m4a` у `assets/audio/radio/volia/`, кожен ≤ 12 МБ; програвач бере
+  `.m4a` за id. На старому реєстрі падає.
+
 ## Перевірки
 
 `asset-preloader` (розширення: facade поверх черги, мінімальний набір, фази доби, prefetch після барʼєра, пауза);

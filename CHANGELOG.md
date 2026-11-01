@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.57 - VOLIA at 32 kbit/s
+
+- Spec 157 F (owner: 32 kbit/s): the three VOLIA 77.2 recordings are AAC (.m4a), mono, 32 kHz, 32 kbit/s, re-encoded with utils/convert-audio.js: 68.80 -> 8.34 MB per release; the originals moved to asset-sources/audio/radio/volia/. Asset ids and the playlist are unchanged. Game-cycle report unchanged.
+
 ## v0.49.56 - No duplicate keys
 
 - Spec 157: the 11 duplicate object keys esbuild warned about (fight diagnostics, game config, fish force, pressure fatigue) are removed; each pair held the same expression, so values and key order are unchanged. The release build now fails on any esbuild warning. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.48 - Background ready on its low copy
 
 - Spec 157 stage D4b (TK-179, owner: readyOn "low" on): the game starts with the low-quality copy of the current background phase (13 KB instead of 223 KB); the full file loads right after the first frame and replaces it in the scene once decoded (the image store keeps the copy until then; the scene re-uploads the texture). Game-cycle report unchanged.
-
-## v0.49.47 - Low copy first in the UI
-
-- Spec 157 stage D4a (TK-179): inventory, keepnet and selector images whose file has not loaded show their low-quality copy first; once shown, the full file is requested ahead of the background and replaces the copy in the same element after decoding (a failed copy falls back to the full file, a failed full file keeps the copy). The background warm-up after the first frame now loads the small copies. Game-cycle report unchanged.

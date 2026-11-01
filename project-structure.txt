@@ -24,8 +24,8 @@
 │  │     │  └── vinyl-5.mp3
 │  │     └── volia
 │  │        ├── Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a
-│  │        ├── RADIO_VOLIA.mp3
-│  │        └── RADIO_VOLYA_SHELF.mp3
+│  │        ├── RADIO_VOLIA.m4a
+│  │        └── RADIO_VOLYA_SHELF.m4a
 │  ├── fish-display
 │  │  ├── crucian_stalker
 │  │  │  ├── standart
