@@ -127,7 +127,6 @@ import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_sty
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
-import { composeBoatAnimation } from "./boat_animation_composition.js";
 import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
 import { STARTUP_MARKS_METHODS, STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
@@ -149,8 +148,6 @@ import { GameStageLayout } from "../../platform/browser/ui/game_stage_layout.js"
 import { InventorySplitLayoutPolicy } from "../../game/presentation/viewport/inventory_split_layout_policy.js";
 import { InactiveDebugEvents } from "../../game/application/session/inactive_debug_events.js";
 import { InactiveGameDiagnostics } from "../../game/application/session/inactive_game_diagnostics.js";
-import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
-import { VictoryLayoutResolver } from "../../game/presentation/screens/victory_layout_resolver.js";
 import { ViewportProjector } from "../../game/application/viewport/viewport_projector.js";
 import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
 
@@ -193,6 +190,7 @@ export class GameCompositionRoot {
   #radioEditorOpener = null;
   // The game state the radio quiets down for during a bite, kept for a radio that arrives later (spec 157 R12).
   #stateName = null;
+  #victoryFeature = null;
   #createRadioEffectTuning = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
@@ -494,9 +492,10 @@ export class GameCompositionRoot {
     } = this.#composeItemModels({
       rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
     });
-    const { victoryLayoutResolver, victoryActionGestureResolver } = this.#composeOutcomeInteraction({
-      contracts,
+    const { victoryFeature, victoryLayoutResolver, victoryActionGestureResolver, victoryRenderer } = this.#composeOutcomeInteraction({
+      contracts, surface, primitives, imageAssets, rarityVisualResolver, own,
     });
+    this.#victoryFeature = victoryFeature;
     const {
       baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver,
@@ -505,16 +504,24 @@ export class GameCompositionRoot {
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
       scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets, images: imageAssets,
     }));
-    const boatAnimation = own(composeBoatAnimation({
-      windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
-      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
+    const boatFeature = own(new LazyFeature({
+      name: "boat",
+      preload: this.#preload,
+      compose: ({ composeBoatAnimation }) => composeBoatAnimation({
+        windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
+        scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
+      }),
     }));
+    const boatAnimation = {
+      controller: new LazyBoatAnimationController(boatFeature),
+      dispose: () => boatFeature.get()?.dispose?.(),
+    };
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
       ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
         "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
+      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter, victoryRenderer,
     });
     // The game clock comes before the location: startup loads only the background phase of the current game time
     // (spec 157 R4).
@@ -621,6 +628,7 @@ export class GameCompositionRoot {
         fightAreaStyleResolver,
         outcomeStyleResolver,
         rarityVisualResolver,
+        victoryRenderer,
         victoryLayoutResolver,
         rodAnimation,
         boatAnimation,
@@ -826,21 +834,51 @@ export class GameCompositionRoot {
     return { itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
   }
 
-  // Victory layout and the victory action gesture.
-  #composeOutcomeInteraction({ contracts }) {
-    const victoryLayoutResolver = new VictoryLayoutResolver({
-      diagnostics: this.#readRenderDiagnostics(),
-    });
+  // Victory layout, the victory action gesture and victory renderer as a feature loaded after ready (spec 157 R12, TK-184).
+  #composeOutcomeInteraction({ contracts, surface, primitives, imageAssets, rarityVisualResolver, own }) {
+    const victoryFeature = own(new LazyFeature({
+      name: "victory",
+      preload: this.#preload,
+      compose: ({ composeVictoryFeature }) => composeVictoryFeature({
+        diagnostics: this.#readRenderDiagnostics(),
+        surface,
+        primitives,
+        assets: imageAssets,
+        rarityVisualResolver,
+      }),
+    }));
+    const victoryLayoutResolver = {
+      resolve: (context) => {
+        const real = victoryFeature.get()?.victoryLayoutResolver;
+        if (real) return real.resolve(context);
+        void victoryFeature.request();
+        return null;
+      },
+    };
+    const victoryActionGestureResolver = {
+      resolve: (context) => {
+        const real = victoryFeature.get()?.victoryActionGestureResolver;
+        if (real) return real.resolve(context);
+        void victoryFeature.request();
+        return null;
+      },
+    };
+    const victoryRenderer = {
+      render: (target) => {
+        const real = victoryFeature.get()?.victoryRenderer;
+        if (real) real.render(target);
+        else void victoryFeature.request();
+      },
+    };
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
     ]);
-    const victoryActionGestureResolver = new VictoryActionGestureResolver();
     contracts.requireMethods(
       victoryActionGestureResolver,
       "victoryActionGestureResolver",
       ["resolve"],
     );
-    return { victoryLayoutResolver, victoryActionGestureResolver };
+    return { victoryFeature, victoryLayoutResolver, victoryActionGestureResolver, victoryRenderer };
   }
 
   // Fish rarity, visual and anomaly variants, bait effectiveness and the DEV hooked fish synchronizer.
@@ -1212,7 +1250,14 @@ export class GameCompositionRoot {
       }),
     }));
     systems.radio.onReady(() => systems.inventoryUI?.refresh());
+    const itemEditor = own(new LazyFeature({
+      name: "item-editor",
+      preload: this.#preload,
+      compose: (module) => module,
+    }));
+    itemEditor.onReady(() => systems.inventoryUI?.refresh());
     this.#radioEditorOpener = () => {
+      void itemEditor.request();
       const radio = systems.radio.get()?.radio;
       // The first use before the radio has arrived waits for it (spec 157 R12).
       if (!radio) {
@@ -1536,6 +1581,9 @@ export class GameCompositionRoot {
       onStateChanged: (name) => {
         appPorts.onStateChanged(name);
         this.#stateName = name;
+        if (name === "biting" || name === "victory") {
+          void this.#victoryFeature?.request();
+        }
         runtime.radio.get()?.radio.setBiting(name === "biting");
       },
     }));
@@ -1621,4 +1669,76 @@ export class GameCompositionRoot {
     return devTools == null ? null : { dispose: () => devTools?.dispose?.() };
   }
 
+}
+
+class LazyBoatAnimationController {
+  #feature;
+  #lastDescriptor = null;
+  #spineEnabled = true;
+
+  constructor(feature) {
+    this.#feature = feature;
+    feature.onReady((instance) => {
+      if (this.#lastDescriptor && instance?.controller) {
+        instance.controller.setDescriptor(this.#lastDescriptor);
+      }
+    });
+  }
+
+  setDescriptor(descriptor) {
+    this.#lastDescriptor = descriptor;
+    const real = this.#feature.get()?.controller;
+    if (real) real.setDescriptor(descriptor);
+    else void this.#feature.request();
+  }
+
+  advance(boat, context) {
+    const real = this.#feature.get()?.controller;
+    return real ? real.advance(boat, context) : null;
+  }
+
+  get scene() {
+    return this.#feature.get()?.controller?.scene ?? null;
+  }
+
+  setSpineEnabled(enabled) {
+    this.#spineEnabled = enabled;
+    this.#feature.get()?.controller?.setSpineEnabled(enabled);
+  }
+
+  isSpineEnabled() {
+    return this.#feature.get()?.controller?.isSpineEnabled() ?? this.#spineEnabled;
+  }
+
+  getStatus() {
+    return this.#feature.get()?.controller?.getStatus() ?? { status: "loading", reason: "module loading" };
+  }
+
+  getClips() {
+    return this.#feature.get()?.controller?.getClips() ?? [];
+  }
+
+  setClipEnabled(clipName, enabled) {
+    this.#feature.get()?.controller?.setClipEnabled(clipName, enabled);
+  }
+
+  getBones() {
+    return this.#feature.get()?.controller?.getBones() ?? [];
+  }
+
+  setBoneSetup(boneName, values) {
+    this.#feature.get()?.controller?.setBoneSetup(boneName, values);
+  }
+
+  getBoneEdits() {
+    return this.#feature.get()?.controller?.getBoneEdits() ?? new Map();
+  }
+
+  exportSkeleton() {
+    return this.#feature.get()?.controller?.exportSkeleton() ?? null;
+  }
+
+  dispose() {
+    this.#feature.get()?.dispose?.();
+  }
 }

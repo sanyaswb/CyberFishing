@@ -230,6 +230,7 @@ export class InventoryUI {
 
   // Opens the equipment section on an equipped item's editor (spec 142: the radio indicator).
   openSlotEditor(slotId, { feedbackSlotId = null, tone = "error", message = null } = {}) {
+    void this.#assemblyRenderer?.request?.()?.then?.(() => this.refresh());
     this.openSection("equipment");
     this.#dispatch({ type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE, slotId });
     this.refresh();
@@ -631,6 +632,7 @@ export class InventoryUI {
     }
     if (panel.mode === "assembly") {
       const editor = this.#assemblyRenderer.render(panel.assembly, {
+        onLoaded: () => this.refresh(),
         onRodRemovalChoice: (choice) => this.#dispatch({ type: this.#actionTypes.ROD_REMOVAL_CHOICE, choice }),
         onRodRemovalSave: (name) => this.#dispatch({ type: this.#actionTypes.LOADOUT_SAVE, name }),
         // Portrait keeps its inline choices in the editor while starting the same cancellable pick as wide layouts.

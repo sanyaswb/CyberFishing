@@ -21,6 +21,14 @@ const LAZY_FEATURE_MODULES = Object.freeze({
     "src/platform/browser/audio/radio_stream_player.js", "src/platform/browser/audio/radio_effects_chain.js",
     "src/platform/browser/audio/radio_noise_source.js", "src/platform/browser/ui/radio_hud_indicator.js",
     "src/game/presentation/radio/radio_controls_renderer.js", "src/platform/browser/radio/radio_browser_station_source.js"],
+  boat: ["src/bootstrap/production/boat_animation_composition.js", "src/game/presentation/world/boat_animation_controller.js"],
+  "item-editor": ["src/bootstrap/production/item_editor_feature_composition.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
+    "src/game/presentation/inventory/inventory_editor_tabs_renderer.js", "src/game/presentation/inventory/inventory_editor_tabs_resolver.js",
+    "src/game/presentation/inventory/inventory_editor_tabs_labels.js", "src/game/presentation/inventory/inventory_editor_config.js",
+    "src/game/presentation/inventory/inventory_rod_removal_renderer.js"],
+  victory: ["src/bootstrap/production/victory_feature_composition.js", "src/game/presentation/input/victory_action_gesture_resolver.js",
+    "src/game/presentation/screens/victory_layout_resolver.js", "src/game/presentation/screens/victory_renderer.js",
+    "src/game/presentation/screens/victory_theme_resolver.js", "src/game/presentation/screens/star_rating_renderer.js"],
 });
 // The production entry, and the DEV composition that dev.entry.js imports first thing (a start import).
 const ENTRIES = Object.freeze(["src/entrypoints/game.entry.js", "src/bootstrap/development/development_game_startup.js"]);
@@ -140,6 +148,9 @@ function staticGraph(entry) {
   const featureLayer = productionPlan.layers.find((layer) => productionPlan.layer(layer.id).groups
     .some((group) => productionPlan.modulesOf(group).length > 0));
   assert.equal(featureLayer.start, "ready", "lazy features warm up after the first frame");
+  const layerThree = productionPlan.layer("layer-three");
+  assert.deepEqual(layerThree.groups.slice(0, 3).map((group) => productionPlan.modulesOf(group)),
+    [["boat"], ["item-editor"], ["victory"]], "boat, item-editor, victory are entries of the third layer (TK-184)");
   for (const entry of ENTRIES) {
     const graph = staticGraph(entry);
     assert(graph.size > 300, `${entry}: the static graph was followed`);

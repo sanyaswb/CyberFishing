@@ -3,14 +3,8 @@ import { InventoryActionContract } from "../../game/presentation/inventory/inven
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryFacadeContract } from "../../game/presentation/inventory/inventory_facade_contract.js";
 import { InventoryViewModelNormalizer } from "../../game/presentation/inventory/inventory_view_model_normalizer.js";
-import { InventoryAssemblyEditorRenderer } from "../../game/presentation/inventory/inventory_assembly_editor_renderer.js";
 import { InventoryAssemblyParameterSectionResolver } from "../../game/presentation/inventory/inventory_assembly_parameter_section_resolver.js";
 import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/inventory/inventory_attachment_badge_renderer.js";
-import { InventoryEditorTabsRenderer } from "../../game/presentation/inventory/inventory_editor_tabs_renderer.js";
-import { InventoryEditorTabsResolver } from "../../game/presentation/inventory/inventory_editor_tabs_resolver.js";
-import { INVENTORY_EDITOR_TABS_LABELS } from "../../game/presentation/inventory/inventory_editor_tabs_labels.js";
-import { INVENTORY_EDITOR_CONFIG } from "../../game/presentation/inventory/inventory_editor_config.js";
-import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
@@ -18,7 +12,6 @@ import { InventoryLoadRenderer } from "../../game/presentation/inventory/invento
 import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
 import { InventoryCollectionPagerRenderer } from "../../game/presentation/inventory/inventory_collection_pager_renderer.js";
 import { SwipePagerController } from "../../platform/browser/dom/swipe_pager_controller.js";
-import { ScrollContainerAligner } from "../../platform/browser/dom/scroll_container_aligner.js";
 import { INVENTORY_LOAD_METER_CONFIG } from "../../game/presentation/inventory/inventory_load_meter_config.js";
 import { InventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
 import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inventory_item_card_renderer.js";
@@ -228,22 +221,13 @@ export class InventoryUiBootstrap {
       });
     const resolvedAssemblyRenderer =
       assemblyRenderer ||
-      new InventoryAssemblyEditorRenderer({
+      new LazyAssemblyEditorRenderer({
         domFactory: dom,
-        scrollbarEnabled: INVENTORY_EDITOR_CONFIG.scrollbar.enabled,
+        createDeviceControlsRenderer,
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
-        deviceControlsRenderer: createDeviceControlsRenderer?.(dom) ?? null,
-        rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
-        // Item editor tabs (spec 091, every layout since spec 094): their own swipe flag, so the section swipe can be
-        // off in the editor.
-        tabsRenderer: new InventoryEditorTabsRenderer({ domFactory: dom, resolver: new InventoryEditorTabsResolver(),
-          itemRenderer: resolvedItemRenderer, parametersRenderer: itemParametersRenderer,
-          swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
-            positionProperty: null, draggingClassName: "inventory-editor-tabs__panel--dragging" }),
-          rowScrollController: new HorizontalScrollController({ uiSurface }), labels: INVENTORY_EDITOR_TABS_LABELS,
-          longPressDurationMs: LongPressController.EQUIPPED_DURATION_MS,
-          scrollAligner: new ScrollContainerAligner({ windowRef: dom.view }) }),
+        uiSurface,
+        swipeEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
       });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||
@@ -290,5 +274,79 @@ export class InventoryUiBootstrap {
       backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS, scaleRenderer }),
       hintRenderer: composeHintRenderer({ domFactory: dom, uiSurface, timers: warningTimers }),
     };
+  }
+}
+
+class LazyAssemblyEditorRenderer {
+  #domFactory;
+  #createDeviceControlsRenderer;
+  #itemRenderer;
+  #parametersRenderer;
+  #uiSurface;
+  #swipeEnabled;
+  #renderer = null;
+  #loading = null;
+
+  constructor({ domFactory, createDeviceControlsRenderer, itemRenderer, parametersRenderer, uiSurface, swipeEnabled }) {
+    this.#domFactory = domFactory;
+    this.#createDeviceControlsRenderer = createDeviceControlsRenderer;
+    this.#itemRenderer = itemRenderer;
+    this.#parametersRenderer = parametersRenderer;
+    this.#uiSurface = uiSurface;
+    this.#swipeEnabled = swipeEnabled;
+  }
+
+  #getRenderer() {
+    if (this.#renderer) return this.#renderer;
+    const view = this.#domFactory.view;
+    const compose = typeof view?.composeItemEditorRenderer === "function"
+      ? view.composeItemEditorRenderer
+      : null;
+    if (compose) {
+      this.#renderer = compose({
+        domFactory: this.#domFactory,
+        itemRenderer: this.#itemRenderer,
+        parametersRenderer: this.#parametersRenderer,
+        deviceControlsRenderer: this.#createDeviceControlsRenderer?.(this.#domFactory) ?? null,
+        uiSurface: this.#uiSurface,
+        swipeEnabled: this.#swipeEnabled,
+      });
+      return this.#renderer;
+    }
+    return null;
+  }
+
+  request() {
+    const real = this.#getRenderer();
+    if (real) return Promise.resolve(real);
+    if (!this.#loading) {
+      this.#loading = import("./item_editor_feature_composition.js").then(({ composeItemEditorRenderer }) => {
+        this.#renderer = composeItemEditorRenderer({
+          domFactory: this.#domFactory,
+          itemRenderer: this.#itemRenderer,
+          parametersRenderer: this.#parametersRenderer,
+          deviceControlsRenderer: this.#createDeviceControlsRenderer?.(this.#domFactory) ?? null,
+          uiSurface: this.#uiSurface,
+          swipeEnabled: this.#swipeEnabled,
+        });
+        return this.#renderer;
+      });
+    }
+    return this.#loading;
+  }
+
+  render(assembly, options) {
+    const real = this.#getRenderer();
+    if (real) return real.render(assembly, options);
+    void this.request().then(() => options?.onLoaded?.());
+    return this.#domFactory.element("div", "inventory-assembly-editor inventory-assembly-editor--loading");
+  }
+
+  resetView() {
+    this.#renderer?.resetView();
+  }
+
+  updateDynamicVisuals(host, model) {
+    this.#renderer?.updateDynamicVisuals(host, model);
   }
 }

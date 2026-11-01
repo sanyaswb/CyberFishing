@@ -212,7 +212,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const second = groupIds("layer-two");
   assert.deepEqual(second["location-phases"], ["locations.test.bg_test--evening", "locations.test.bg_test--night"]);
   assert.equal(second["keepnet-stages"].length, 6);
-  assert(production.layer("layer-three").groups.every((group) => group.load === false), "layer three loads on demand only");
+  assert.equal(production.layer("layer-three").groups.find((group) => group.id === "on-demand").load, false, "on-demand loads on demand only");
 
   // Stage D6: group times for the overlay, the registry's duplicates, and the DEV plan edits used from the next start.
   let clock = 0;

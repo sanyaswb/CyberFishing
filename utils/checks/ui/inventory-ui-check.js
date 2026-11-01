@@ -121,6 +121,10 @@ const UI_SCRIPT_ORDER = Object.freeze([
     "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
   ],
   [
+    "item_editor_feature_composition.js",
+    "src/bootstrap/production/item_editor_feature_composition.js",
+  ],
+  [
     "inventory_saved_loadout_preview_renderer.js",
     "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js",
   ],
@@ -619,6 +623,7 @@ class InventoryUiBehaviorCheck {
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
+    Object.assign(document.defaultView, context);
     runtime.load("src/platform/browser/dom/horizontal_scroll_controller.js");
     runtime.load("src/platform/browser/dom/scroll_container_aligner.js");
     runtime.load("src/engine/assets/asset_registry.js", { expose: ["AssetRegistry"] });

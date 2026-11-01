@@ -36,9 +36,6 @@ import { GameRenderOrder } from "../../game/presentation/rendering/game_render_o
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { RodSpineRenderer } from "../../game/presentation/fishing/rod_spine_renderer.js";
 import { RodStaticRenderer } from "../../game/presentation/fishing/rod_static_renderer.js";
-import { StarRatingRenderer } from "../../game/presentation/screens/star_rating_renderer.js";
-import { VictoryRenderer } from "../../game/presentation/screens/victory_renderer.js";
-import { VictoryThemeResolver } from "../../game/presentation/screens/victory_theme_resolver.js";
 import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
 import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
 import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_renderer.js";
@@ -70,7 +67,7 @@ export class GameRenderComposition {
   // sceneRouter (spec 104): a world kind's 2D component draws only while the kind is on the 2D canvas.
   composePipeline({
     surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-    rarityVisualResolver, rodAnimation, sceneRouter,
+    rarityVisualResolver, rodAnimation, sceneRouter, victoryRenderer,
   }) {
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -229,18 +226,7 @@ export class GameRenderComposition {
         hud: new HudRenderPass({ renderer: fightHudRenderer }),
         outcome: new OutcomeRenderPass({
           gameOverRenderer: new GameOverRenderer({ surface }),
-          victoryRenderer: new VictoryRenderer({
-            surface,
-            primitives,
-            assets: imageAssets,
-            themeResolver: new VictoryThemeResolver({
-              rarityVisualResolver,
-            }),
-            starRatingRenderer: new StarRatingRenderer({
-              surface,
-              primitives,
-            }),
-          }),
+          victoryRenderer,
         }),
       }),
     });

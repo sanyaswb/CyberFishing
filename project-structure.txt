@@ -283,6 +283,7 @@
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_selector_composition.js
 │  │     ├── inventory_ui_bootstrap.js
+│  │     ├── item_editor_feature_composition.js
 │  │     ├── lazy_feature.js
 │  │     ├── live_bait_composition.js
 │  │     ├── player_inventory_composition.js
@@ -291,7 +292,8 @@
 │  │     ├── scene_layer_composition.js
 │  │     ├── startup_load_meter_composition.js
 │  │     ├── startup_ready_signal.js
-│  │     └── time_display_composition.js
+│  │     ├── time_display_composition.js
+│  │     └── victory_feature_composition.js
 │  ├── engine
 │  │  ├── animation
 │  │  │  ├── damped_spring.js

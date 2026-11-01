@@ -4,4 +4,7 @@
 export const GAME_FEATURE_MODULES = Object.freeze({
   pixi: () => import("../../platform/browser/scene/pixi_runtime_module.js"),
   radio: () => import("./radio_feature_composition.js"),
+  boat: () => import("./boat_animation_composition.js"),
+  "item-editor": () => import("./item_editor_feature_composition.js"),
+  victory: () => import("./victory_feature_composition.js"),
 });
