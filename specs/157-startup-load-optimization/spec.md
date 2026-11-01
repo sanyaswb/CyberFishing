@@ -1341,6 +1341,16 @@ UI й арт предметів — один патч, бо вони йдуть 
   інструментом, `npm run assets:sync` (нові id через `--moved`/перейменування), `utils/scan-radio-tracks.js`, перевірка
   бюджету розміру (12 МБ на файл), шляхи tracked.
 
+### Дрібниця — приховані імена й у build/ (v0.49.55, 2026-11-01)
+
+- `PagesReleaseBuilder.hiddenFile(files)`: перший шлях із сегментом на `_` або `.` (Jekyll на Pages без `.nojekyll` його
+  не віддає). Перевіряються і закомічені файли релізу, і `build/` (esbuild називає шматки за модулями: модуль `_x.js` дав
+  би прихований шматок). `pages-release`: реліз без прихованих імен; синтетичні `build/chunks/_private-…` і `build/.cache/…`
+  знаходяться. На старому `build-pages-release.js` падає (методу немає). Full 82/82.
+- **Ще відкрито:** 11 попереджень esbuild «Duplicate key» (`fight_diagnostics_snapshot_builder.js` ×5 — DEV,
+  `game_config.js` ×2, `fish_force_system.js` ×2, `player_pressure_fatigue_calculator.js` ×2). Діє останній ключ;
+  прибрати попередні копії треба з перевіркою, що значення збігаються (ігрові файли, game-cycle) — окремим кроком.
+
 ## Перевірки
 
 `asset-preloader` (розширення: facade поверх черги, мінімальний набір, фази доби, prefetch після барʼєра, пауза);

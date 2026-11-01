@@ -32,6 +32,11 @@ try {
   assert.match(release.id, /^\d+\.\d+\.\d+-[0-9a-f]{7}$/u);
 
   const files = new Set(release.files);
+  // Jekyll hides _ and . names on Pages: no released file, built ones included (esbuild names chunks after modules).
+  assert.equal(PagesReleaseBuilder.hiddenFile(release.files), null, "no released file has a hidden name");
+  assert.equal(PagesReleaseBuilder.hiddenFile(["index.html", "build/chunks/_private-ABCDEFGH.js"]), "build/chunks/_private-ABCDEFGH.js",
+    "a chunk named after a _module would be hidden");
+  assert.equal(PagesReleaseBuilder.hiddenFile(["assets/low-copies/a.webp", "build/.cache/x.js"]), "build/.cache/x.js");
   const page = tree.read("index.html").toString("utf8");
   for (const [, href] of page.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href), `stylesheet ${href} is released`);
   assert(files.has("src/entrypoints/game.entry.js"));

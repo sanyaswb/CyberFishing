@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.55 - Hidden names in build
+
+- Spec 157: the release refuses a file GitHub Pages would hide (a name segment starting with _ or .) in build/ too, where esbuild names chunks after their modules; PagesReleaseBuilder.hiddenFile is checked by pages-release. Game-cycle report unchanged.
+
 ## v0.49.54 - Radio after the start
 
 - Spec 157 R12 step (b): the asset load plan names code modules ({ module }) and a new layer of features warmed up after the first frame through the same load queue (the player's first use asks for a module at once, without a second load); LazyFeature composes a feature when its module arrives. The radio is the first such feature: receiver, player, effects, stations, HUD indicator and editor controls load after ready (16 modules off the start; index.html 0.71 -> 0.70 MB); a radio left on starts once it arrives. New check lazy-features. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.46 - Low-quality copies
 
 - Spec 157 stage D3 (TK-179): `npm run assets:sync` makes a low-quality copy of every raster image except depth maps under `assets/low-copies/` with `utils/convert-images.js --low-copies` (a quarter of the longest side, at most 256 px, WebP Low; 122 copies, 0.52 MB) and records each image's width, height, copy and source hash in the registry; `--check` fails on a missing, untracked or stale copy. Nothing loads them yet (stage D4). Game-cycle report unchanged.
-
-## v0.49.45 - Load priorities and pause
-
-- Spec 157 stage D2: the asset load plan runs through one priority queue (`AssetLoadQueue`): the first layer blocks, the second and third are capped background work that waits in a hidden tab, offline or with save-data (`BrowserLoadConditions`), and what the player opens (`request`, today the equipped rod's art in the selector) loads ahead of them, promoting a queued job; loads retry once. Game-cycle report unchanged.

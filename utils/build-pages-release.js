@@ -265,11 +265,10 @@ class PagesReleaseBuilder {
   // Spec 157 R13: the self-contained release folder (any static host or the game server serves it as it is): the
   // committed release files, then build/ with the bundles and the boot modules, each game page pointing at its boot
   // module and announcing, right after <head>, a style preload per stylesheet and a modulepreload for the boot module,
-  // the bundle and every chunk it reaches (preloads[page]), so a server gets the same parallel start as Pages.
+  // the bundle and the chunks the start loads (preloads[page]), so a server gets the same parallel start as Pages.
   buildRelease(releaseDir) {
     const files = ReleaseFileSet.collect(this.#tree);
-    const hidden = files.find((file) => file.split("/").some((segment) => /^[_.]/u.test(segment)));
-    if (hidden) throw new Error(`GitHub Pages would hide ${hidden}`);
+    PagesReleaseBuilder.#assertVisible(files);
     const contents = this.#tree.readAll(files);
     let bytes = 0;
     for (const file of files) {
@@ -290,9 +289,22 @@ class PagesReleaseBuilder {
       const target = path.join(releaseDir, page);
       fs.writeFileSync(target, PagesReleaseBuilder.withPreloads(fs.readFileSync(target, "utf8"), preloads[page]));
     }
+    // esbuild names chunks after their modules: build/ is held to the same rule as the committed files.
+    PagesReleaseBuilder.#assertVisible(bundle.files);
     for (const file of bundle.files) bytes += fs.statSync(path.join(releaseDir, ...file.split("/"))).size;
     return Object.freeze({ id: this.releaseId(), files: Object.freeze([...files, ...bundle.files].sort()), bytes, bundle,
       preloads: Object.freeze(preloads) });
+  }
+
+  // The first path GitHub Pages would not serve (a segment starting with _ or ., hidden by Jekyll without .nojekyll),
+  // or null.
+  static hiddenFile(files) {
+    return files.find((file) => file.split("/").some((segment) => /^[_.]/u.test(segment))) ?? null;
+  }
+
+  static #assertVisible(files) {
+    const hidden = PagesReleaseBuilder.hiddenFile(files);
+    if (hidden) throw new Error(`GitHub Pages would hide ${hidden}`);
   }
 
   // The release the root page loads now (its <base href="releases/<id>/">), or null.
