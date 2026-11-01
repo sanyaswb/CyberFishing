@@ -8,8 +8,8 @@ export const PEACEFUL_FISH = [
     trophyWeightKg: 1.0,
     visual: {
       // Asset-id patterns of the fish's art (spec 157 R16).
-      imageAssetPattern: "fish.crucian_stalker.standart.crucian_stalker--{level}",
-      uniqueImageAssetPattern: "fish.crucian_stalker.unique.crucian_stalker--{level}-uniq",
+      imageAssetPattern: "fish-display.crucian_stalker.standart.crucian_stalker--{level}",
+      uniqueImageAssetPattern: "fish-display.crucian_stalker.unique.crucian_stalker--{level}-uniq",
     },
     anomalyVariant: {
       enabled: true,

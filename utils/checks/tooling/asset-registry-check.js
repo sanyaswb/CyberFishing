@@ -87,10 +87,10 @@ const ROOT = path.resolve(__dirname, "../../..");
   const check = spawnSync(process.execPath, [path.join(ROOT, "utils/assets-sync.js"), "--check"], { cwd: ROOT });
   assert.equal(check.status, 0, `npm run assets:sync -- --check: ${check.stderr.toString("utf8").trim()}`);
   const { ASSET_REGISTRY } = await import(pathToFileURL(path.join(ROOT, "src/game/config/generated/asset_registry.js")).href);
-  assert(Object.keys(ASSET_REGISTRY).length >= 150 && Object.isFrozen(ASSET_REGISTRY));
+  assert(Object.keys(ASSET_REGISTRY).length >= 100 && Object.isFrozen(ASSET_REGISTRY));
   assert.equal(ASSET_REGISTRY["animations.rods.bamboo-rod-v1.rod"].kind, "spine", "the rod's Spine export is one asset");
   const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.low);
-  assert(lows.length >= 100 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
+  assert(lows.length >= 70 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
     "every raster image has a current low copy and its size");
   assert.equal(ASSET_REGISTRY["locations.test.test-depth"].low, undefined, "the depth map has no low copy");
   assert(lows.every((entry) => !entry.low.split("/").some((segment) => /^[_.]/u.test(segment))),

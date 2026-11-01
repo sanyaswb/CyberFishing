@@ -1,4 +1,4 @@
-import { fishMasterAssetId } from "./fish_art_variants.js";
+import { fishDisplayAssetId } from "./fish_art_variants.js";
 
 // The image of a caught fish (spec 157 R16): the species' visual names its art by asset-id patterns with "{level}"
 // (imageAssetPattern, uniqueImageAssetPattern for a unique anomaly fish). The fish keeps the file in game state
@@ -31,7 +31,7 @@ export class FishVisualVariantResolver {
     const uniquePattern = String(config.uniqueImageAssetPattern || "").trim();
     const pattern = isUnique === true && !this.#noneAnomalyIds.has(anomalyId) && uniquePattern
       ? uniquePattern
-      : String(config.imageAssetPattern || "").trim() || fishMasterAssetId(fishId, "{level}");
+      : String(config.imageAssetPattern || "").trim() || fishDisplayAssetId(fishId, "{level}");
     const assetId = pattern.replace("{level}", normalizedLevel);
     return this.#assets.has(assetId) ? this.#assets.pathOf(assetId) : "";
   }

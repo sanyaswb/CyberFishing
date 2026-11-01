@@ -110,35 +110,40 @@ function checkDrawOrder() {
 }
 
 async function checkFishArt() {
-  const { FISH_ART_VARIANTS, FishArtVariants } = await importSource("src/game/presentation/fish/fish_art_variants.js");
+  const { FishArtVariants } = await importSource("src/game/presentation/fish/fish_art_variants.js");
   const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
   const fishArt = new FishArtVariants({ assets: new AssetRegistry(ASSET_REGISTRY) });
-  const master = "assets/fish/crucian_stalker/standart/crucian_stalker--3.webp";
-  assert.equal(fishArt.thumbnailPath(master), "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--3.webp",
-    "thumbnails keep their paths");
-  assert.equal(fishArt.variantPath(master, "display"), "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp");
-  assert.equal(fishArt.variantPath("assets/items/x.svg", "display"), "assets/items/x.svg", "non-master art is untouched");
-  assert.equal(fishArt.variantPath(null, "thumbnail"), "");
-  assert.throws(() => fishArt.variantPath(master, "poster"), /Unknown fish art variant/u);
-  assert.equal(fishArt.masterImagePath({ id: "perch_radioactive", level: 4 }),
-    "assets/fish/perch_radioactive/standart/perch_radioactive--4.webp", "the species' standard master for a level");
-  assert.equal(fishArt.masterImagePath({ id: "unknown_fish", level: 1 }), "", "no registered master, no guessed path");
-  assert.equal(fishArt.displayImagePath({ imagePath: master }), fishArt.variantPath(master, "display"));
+  // TK-180: one runtime image per fish (768 px); cards and the aquarium take its low copy. A save written before TK-180
+  // holds the master's (or a thumbnail's) path: it still finds the same fish's image.
+  const display = "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp";
+  const low = "assets/low-copies/fish-display/crucian_stalker/standart/crucian_stalker--3.webp";
+  for (const saved of [display, "assets/fish/crucian_stalker/standart/crucian_stalker--3.webp",
+    "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--3.webp"]) {
+    assert.equal(fishArt.displayPath(saved), display, `${saved}: the victory image`);
+    assert.equal(fishArt.thumbnailPath(saved), low, `${saved}: the card image is the low copy`);
+  }
+  assert.equal(fishArt.displayPath("assets/items/x.svg"), "assets/items/x.svg", "other art is untouched");
+  assert.equal(fishArt.thumbnailPath(null), "");
+  assert.equal(fishArt.imagePathOf({ id: "perch_radioactive", level: 4 }),
+    "assets/fish-display/perch_radioactive/standart/perch_radioactive--4.webp", "the species' standard image for a level");
+  assert.equal(fishArt.imagePathOf({ id: "unknown_fish", level: 1 }), "", "no registered image, no guessed path");
+  assert.equal(fishArt.displayImagePath({ imagePath: display }), display);
 
   const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
-  const tracked = new Set(spawnSync("git", ["ls-files", "assets/fish", "assets/fish-thumbnails", "assets/fish-display"],
+  const tracked = new Set(spawnSync("git", ["ls-files", "assets", "asset-sources/fish"],
     { cwd: ROOT_DIR, encoding: "utf8" }).stdout.split(/\r?\n/u).filter(Boolean));
-  const masters = [...tracked].filter((file) => file.startsWith("assets/fish/"));
-  assert(masters.length > 0, "fish masters are tracked");
-  for (const file of masters) {
-    for (const [variant, { maxSize }] of Object.entries(FISH_ART_VARIANTS)) {
-      const target = fishArt.variantPath(file, variant);
-      assert.notEqual(target, file, `${file} has a registered ${variant} variant`);
-      assert(tracked.has(target), `${target} is tracked (Pages serves tracked files only)`);
-      const meta = await sharp(path.join(ROOT_DIR, target)).metadata();
-      assert(Math.max(meta.width, meta.height) <= maxSize, `${target} is at most ${maxSize} px`);
-    }
+  assert(![...tracked].some((file) => /^assets\/fish(?:-thumbnails)?\//u.test(file)),
+    "no fish master or hand-made thumbnail is released (TK-180)");
+  const masters = [...tracked].filter((file) => file.startsWith("asset-sources/fish/"));
+  assert(masters.length > 0, "fish masters are kept in asset-sources");
+  for (const master of masters) {
+    const target = master.replace(/^asset-sources\/fish\//u, "assets/fish-display/").replace(/\.[^.]+$/u, ".webp");
+    assert(tracked.has(target), `${target} is tracked (Pages serves tracked files only)`);
+    const meta = await sharp(path.join(ROOT_DIR, target)).metadata();
+    assert(Math.max(meta.width, meta.height) <= 768, `${target} is at most 768 px`);
+    const card = fishArt.thumbnailPath(target);
+    assert(card !== target && tracked.has(card), `${target} has its low copy`);
   }
   return masters.length;
 }

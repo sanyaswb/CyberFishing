@@ -356,13 +356,13 @@ class FishRarityCheck {
     );
 
     const imagePath =
-      "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp".replace(
+      "assets/fish-display/crucian_stalker/standart/crucian_stalker--{level}.webp".replace(
         "{level}",
         profile.level,
       );
     Assertion.equal(
       imagePath,
-      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
+      "assets/fish-display/crucian_stalker/standart/crucian_stalker--2.webp",
       "gap weight image level",
     );
   }
@@ -388,9 +388,9 @@ class FishRarityCheck {
       weightConfig: this.fixture.weightConfig,
       visual: {
         imageAssetPattern:
-          "fish.crucian_stalker.standart.crucian_stalker--{level}",
+          "fish-display.crucian_stalker.standart.crucian_stalker--{level}",
         uniqueImageAssetPattern:
-          "fish.crucian_stalker.unique.crucian_stalker--{level}-uniq",
+          "fish-display.crucian_stalker.unique.crucian_stalker--{level}-uniq",
       },
       physics: {},
     };
@@ -432,7 +432,7 @@ class FishRarityCheck {
     Assertion.that(!caught.isUnique, "generated gap-weight fish uniqueness");
     Assertion.equal(
       caught.imagePath,
-      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
+      "assets/fish-display/crucian_stalker/standart/crucian_stalker--2.webp",
       "generated gap-weight fish image",
     );
     Assertion.equal(
@@ -472,7 +472,7 @@ class FishRarityCheck {
     Assertion.equal(uniqueCatch.anomaly, "inside", "unique anomaly policy");
     Assertion.equal(
       uniqueCatch.imagePath,
-      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
+      "assets/fish-display/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "unique image contract",
     );
 
@@ -547,7 +547,7 @@ class FishRarityCheck {
     );
     Assertion.equal(
       forcedAnomalyCatch.imagePath,
-      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
+      "assets/fish-display/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "God Mode forced anomaly uses the unique level skin",
     );
   }
@@ -884,7 +884,7 @@ class FishRarityCheck {
     Assertion.that(!ordinary.isUnique, "fixed catch 4.2kg is ordinary");
     Assertion.equal(
       ordinary.imagePath,
-      "assets/fish/crucian_stalker/standart/crucian_stalker--6.webp",
+      "assets/fish-display/crucian_stalker/standart/crucian_stalker--6.webp",
       "fixed catch ordinary image",
     );
 
@@ -901,7 +901,7 @@ class FishRarityCheck {
     );
     Assertion.equal(
       godForced.imagePath,
-      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
+      "assets/fish-display/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "God Mode fixed catch uses the unique level skin",
     );
 
@@ -935,7 +935,7 @@ class FishRarityCheck {
       );
       Assertion.equal(
         unique.imagePath,
-        `assets/fish/crucian_stalker/unique/crucian_stalker--${range.level}-uniq.webp`,
+        `assets/fish-display/crucian_stalker/unique/crucian_stalker--${range.level}-uniq.webp`,
         `fixed catch level ${range.level} unique image routing`,
       );
     }
@@ -957,7 +957,7 @@ class FishRarityCheck {
     Assertion.that(!fish.isUnique, "DevTools gap weight is not unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
+      "assets/fish-display/crucian_stalker/standart/crucian_stalker--2.webp",
       "DevTools gap weight image",
     );
 
@@ -971,7 +971,7 @@ class FishRarityCheck {
     Assertion.that(fish.isUnique, "DevTools anomaly toggle makes fish unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/unique/crucian_stalker--2-uniq.webp",
+      "assets/fish-display/crucian_stalker/unique/crucian_stalker--2-uniq.webp",
       "DevTools anomaly toggle applies level skin",
     );
 
@@ -986,7 +986,7 @@ class FishRarityCheck {
     Assertion.that(fish.isUnique, "DevTools anomalous fish is unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
+      "assets/fish-display/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "DevTools unique image routing",
     );
   }
@@ -1009,9 +1009,9 @@ class FishRarityCheck {
       },
       visual: {
         imageAssetPattern:
-          "fish.crucian_stalker.standart.crucian_stalker--{level}",
+          "fish-display.crucian_stalker.standart.crucian_stalker--{level}",
         uniqueImageAssetPattern:
-          "fish.crucian_stalker.unique.crucian_stalker--{level}-uniq",
+          "fish-display.crucian_stalker.unique.crucian_stalker--{level}-uniq",
       },
       physics: {},
     };

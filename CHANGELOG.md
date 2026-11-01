@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.51 - One fish image
+
+- TK-180: each fish has one runtime image (the 768 px display art); keepnet cards and the aquarium show its generated low copy (~192 px), the hand-made `assets/fish-thumbnails/` are gone and the 2752 px masters moved to `asset-sources/fish/` (never released: -4.8 MB per release). Saves written earlier keep their master path and still find the same fish's image (recognised through the asset id scheme); new catches store the display image's path. `assets:sync` removes low copies whose image is gone. Game-cycle report unchanged.
+
 ## v0.49.50 - Loading overlay with the plan
 
 - Spec 157 stage D6 (TK-177 item 8, TK-178 item 8): the DEV overlay «ЗАВАНТАЖЕННЯ» shows the asset load plan layer by layer (each group's state, priority, readyOn, time, compressed size and, for small groups, its files) and a duplicates row (one content under two ids), and the JSON report carries the plan; DevTools «Сервіс → ПЛАН ЗАВАНТАЖЕННЯ» exports the plan as the configuration module's text, takes an edited plan (validated) for the next start and resets it. Production unchanged. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.42 - Inventory art by id
 
 - TK-178 / spec 157 R16 (c, inventory): item art (`iconAsset`, `switcherIconAsset`, `skin.thumbnail.asset`, rod `withLineAsset`/`withoutLineAsset`, boat `baitAsset`/`noBaitAsset`), slot placeholders, inventory sections and their sprite, keepnet fill stages and aquarium feed boxes are named by asset id; `InventoryDomFactory` (`image`, `svgIcon`, `assetUrl`), the keepnet views, selector, depth selector, landing net and chum buttons, House feed images and the DEV shop resolve the files through the registry. Same requests before the start. Game-cycle report unchanged.
-
-## v0.49.41 - Spine and scene art by id
-
-- TK-178 / spec 157 R16 (c, scene): the rod and boat skins name their Spine export by asset id (`skin.animation.asset`) and `SpineBundleLoader` takes the files from the registry; the float's scene art and tip glow are `skin.scene.asset` / `glow.asset`, preloaded and drawn under their asset ids. Same requests before the start. Game-cycle report unchanged.

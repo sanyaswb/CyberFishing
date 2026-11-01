@@ -1,22 +1,19 @@
-// Fish art sized for its use (spec 100 D4): the masters (2752 px) are never drawn into small boxes. thumbnail: keepnet
-// cards, aquarium; display: the victory panel (its 260 px box x the canvas pixel-ratio cap 2, with room for larger
-// layouts). Variants are generated from the tracked masters with
-// `node utils/convert-images.js --thumbnails --input <masters> --output <directory> --size <maxSize>`.
-// By asset id (spec 157 R16): a master `fish.<species>.<…>` has its variants at the same rest of the id under the
-// variant's prefix.
-export const FISH_ART_VARIANTS = Object.freeze({
-  thumbnail: Object.freeze({ assetPrefix: "fish-thumbnails.", maxSize: 128 }),
-  display: Object.freeze({ assetPrefix: "fish-display.", maxSize: 768 }),
-});
+import { assetIdForPath } from "../../../engine/assets/asset_registry_sync.js";
 
-const MASTER_PREFIX = "fish.";
+// Fish art (spec 100 D4, TK-180): one runtime image per fish, sized for the victory panel (768 px: its 260 px box x the
+// canvas pixel-ratio cap 2, with room for larger layouts), named fish-display.<species>.<variant>.<file>; keepnet cards
+// and the aquarium show its generated low-quality copy (spec 157 R17, about 192 px). The 2752 px masters live in
+// asset-sources/ and are never released.
+const DISPLAY_PREFIX = "fish-display.";
+// Saves written before TK-180 hold the master's (or a thumbnail's) path: the same file under another top folder.
+const FORMER_PREFIXES = Object.freeze(["fish.", "fish-thumbnails."]);
 
-// The one place that composes a fish master's asset id: the species' standard art for a level.
-export function fishMasterAssetId(fishId, level) {
-  return `${MASTER_PREFIX}${fishId}.standart.${fishId}--${level}`;
+// The one place that composes a fish image's asset id: the species' standard art for a level.
+export function fishDisplayAssetId(fishId, level) {
+  return `${DISPLAY_PREFIX}${fishId}.standart.${fishId}--${level}`;
 }
 
-// A caught fish keeps its master's file in game state (`imagePath`, saved); these map it to the variant files.
+// A caught fish keeps its image's file in game state (`imagePath`, saved); these map it to the files to show.
 export class FishArtVariants {
   #assets;
 
@@ -25,29 +22,37 @@ export class FishArtVariants {
     this.#assets = assets;
   }
 
-  // A master's variant file; any other path (no registered fish master) is returned unchanged.
-  variantPath(imagePath, variant) {
-    const entry = FISH_ART_VARIANTS[variant];
-    if (!entry) throw new Error(`Unknown fish art variant ${variant}`);
-    if (typeof imagePath !== "string" || !imagePath) return "";
-    const masterId = this.#assets.idOfPath(imagePath);
-    const variantId = masterId?.startsWith(MASTER_PREFIX) ? `${entry.assetPrefix}${masterId.slice(MASTER_PREFIX.length)}` : null;
-    return variantId && this.#assets.has(variantId) ? this.#assets.pathOf(variantId) : imagePath;
+  // The fish image's asset id for a saved path (today's display file, or a former master or thumbnail), or null.
+  displayIdOf(imagePath) {
+    if (typeof imagePath !== "string" || !imagePath) return null;
+    const id = this.#assets.idOfPath(imagePath) ?? assetIdForPath(imagePath);
+    if (id.startsWith(DISPLAY_PREFIX)) return this.#assets.has(id) ? id : null;
+    const former = FORMER_PREFIXES.find((prefix) => id.startsWith(prefix));
+    const candidate = former ? `${DISPLAY_PREFIX}${id.slice(former.length)}` : null;
+    return candidate && this.#assets.has(candidate) ? candidate : null;
   }
 
-  // The fish's master image: its own imagePath, or the species' standard master for its level ("" without one).
-  masterImagePath(fish) {
+  // The image for the victory panel; any other path (no registered fish image) is returned unchanged.
+  displayPath(imagePath) {
+    const id = this.displayIdOf(imagePath);
+    return id ? this.#assets.pathOf(id) : imagePath || "";
+  }
+
+  // The small image for keepnet cards and the aquarium: the display image's low copy.
+  thumbnailPath(imagePath) {
+    const id = this.displayIdOf(imagePath);
+    return id ? this.#assets.lowPathOf(id) ?? this.#assets.pathOf(id) : imagePath || "";
+  }
+
+  // The fish's image: its own imagePath, or the species' standard image for its level ("" without one).
+  imagePathOf(fish) {
     if (fish?.imagePath) return fish.imagePath;
-    const masterId = fishMasterAssetId(String(fish?.id || "unknown"), Number(fish?.level) || 1);
-    return this.#assets.has(masterId) ? this.#assets.pathOf(masterId) : "";
+    const id = fishDisplayAssetId(String(fish?.id || "unknown"), Number(fish?.level) || 1);
+    return this.#assets.has(id) ? this.#assets.pathOf(id) : "";
   }
 
   // The one victory image source (spec 100 D4): drawn by the outcome frame and preloaded by the asset coordinator.
   displayImagePath(fish) {
-    return this.variantPath(this.masterImagePath(fish), "display");
-  }
-
-  thumbnailPath(imagePath) {
-    return this.variantPath(imagePath, "thumbnail");
+    return this.displayPath(this.imagePathOf(fish));
   }
 }

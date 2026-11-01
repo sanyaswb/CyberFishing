@@ -73,6 +73,16 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy })
     entry.low = low;
     entry.lowSource = entry.sha256;
   }
+  // A copy whose image is gone (moved out of assets/ or removed) goes with it.
+  const kept = new Set(Object.values(registry).map((entry) => entry.low).filter(Boolean));
+  const orphans = [...tracked].filter((file) => file.startsWith("assets/low-copies/") && !kept.has(file));
+  if (check) for (const orphan of orphans) problems.push(`${orphan} has no image any more`);
+  else {
+    for (const orphan of orphans) {
+      fs.rmSync(path.join(ROOT, orphan), { force: true });
+      console.log(`removed ${orphan} (stage the deletion)`);
+    }
+  }
   if (problems.length > 0) throw new Error(`${problems.join("\n")}\nrun npm run assets:sync and stage assets/low-copies`);
   if (make.length === 0) return 0;
   const manifest = path.join(os.tmpdir(), `cyber-fishing-low-copies-${process.pid}.json`);

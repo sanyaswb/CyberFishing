@@ -26,69 +26,7 @@
 │  │        ├── Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a
 │  │        ├── RADIO_VOLIA.mp3
 │  │        └── RADIO_VOLYA_SHELF.mp3
-│  ├── fish
-│  │  ├── crucian_stalker
-│  │  │  ├── standart
-│  │  │  │  ├── crucian_stalker--1.webp
-│  │  │  │  ├── crucian_stalker--2.webp
-│  │  │  │  ├── crucian_stalker--3.webp
-│  │  │  │  ├── crucian_stalker--4.webp
-│  │  │  │  ├── crucian_stalker--5.webp
-│  │  │  │  └── crucian_stalker--6.webp
-│  │  │  └── unique
-│  │  │     ├── crucian_stalker--1-uniq.webp
-│  │  │     ├── crucian_stalker--2-uniq.webp
-│  │  │     ├── crucian_stalker--3-uniq.webp
-│  │  │     ├── crucian_stalker--4-uniq.webp
-│  │  │     ├── crucian_stalker--5-uniq.webp
-│  │  │     └── crucian_stalker--6-uniq.webp
-│  │  └── perch_radioactive
-│  │     ├── standart
-│  │     │  ├── perch_radioactive--1.webp
-│  │     │  ├── perch_radioactive--2.webp
-│  │     │  ├── perch_radioactive--3.webp
-│  │     │  ├── perch_radioactive--4.webp
-│  │     │  ├── perch_radioactive--5.webp
-│  │     │  └── perch_radioactive--6.webp
-│  │     └── unique
-│  │        ├── perch_radioactive--1-uniq.webp
-│  │        ├── perch_radioactive--2-uniq.webp
-│  │        ├── perch_radioactive--3-uniq.webp
-│  │        ├── perch_radioactive--4-uniq.webp
-│  │        ├── perch_radioactive--5-uniq.webp
-│  │        └── perch_radioactive--6-uniq.webp
 │  ├── fish-display
-│  │  ├── crucian_stalker
-│  │  │  ├── standart
-│  │  │  │  ├── crucian_stalker--1.webp
-│  │  │  │  ├── crucian_stalker--2.webp
-│  │  │  │  ├── crucian_stalker--3.webp
-│  │  │  │  ├── crucian_stalker--4.webp
-│  │  │  │  ├── crucian_stalker--5.webp
-│  │  │  │  └── crucian_stalker--6.webp
-│  │  │  └── unique
-│  │  │     ├── crucian_stalker--1-uniq.webp
-│  │  │     ├── crucian_stalker--2-uniq.webp
-│  │  │     ├── crucian_stalker--3-uniq.webp
-│  │  │     ├── crucian_stalker--4-uniq.webp
-│  │  │     ├── crucian_stalker--5-uniq.webp
-│  │  │     └── crucian_stalker--6-uniq.webp
-│  │  └── perch_radioactive
-│  │     ├── standart
-│  │     │  ├── perch_radioactive--1.webp
-│  │     │  ├── perch_radioactive--2.webp
-│  │     │  ├── perch_radioactive--3.webp
-│  │     │  ├── perch_radioactive--4.webp
-│  │     │  ├── perch_radioactive--5.webp
-│  │     │  └── perch_radioactive--6.webp
-│  │     └── unique
-│  │        ├── perch_radioactive--1-uniq.webp
-│  │        ├── perch_radioactive--2-uniq.webp
-│  │        ├── perch_radioactive--3-uniq.webp
-│  │        ├── perch_radioactive--4-uniq.webp
-│  │        ├── perch_radioactive--5-uniq.webp
-│  │        └── perch_radioactive--6-uniq.webp
-│  ├── fish-thumbnails
 │  │  ├── crucian_stalker
 │  │  │  ├── standart
 │  │  │  │  ├── crucian_stalker--1.webp
@@ -194,69 +132,7 @@
 │  │     ├── bg_test--night.webp
 │  │     └── test-depth.webp
 │  ├── low-copies
-│  │  ├── fish
-│  │  │  ├── crucian_stalker
-│  │  │  │  ├── standart
-│  │  │  │  │  ├── crucian_stalker--1.webp
-│  │  │  │  │  ├── crucian_stalker--2.webp
-│  │  │  │  │  ├── crucian_stalker--3.webp
-│  │  │  │  │  ├── crucian_stalker--4.webp
-│  │  │  │  │  ├── crucian_stalker--5.webp
-│  │  │  │  │  └── crucian_stalker--6.webp
-│  │  │  │  └── unique
-│  │  │  │     ├── crucian_stalker--1-uniq.webp
-│  │  │  │     ├── crucian_stalker--2-uniq.webp
-│  │  │  │     ├── crucian_stalker--3-uniq.webp
-│  │  │  │     ├── crucian_stalker--4-uniq.webp
-│  │  │  │     ├── crucian_stalker--5-uniq.webp
-│  │  │  │     └── crucian_stalker--6-uniq.webp
-│  │  │  └── perch_radioactive
-│  │  │     ├── standart
-│  │  │     │  ├── perch_radioactive--1.webp
-│  │  │     │  ├── perch_radioactive--2.webp
-│  │  │     │  ├── perch_radioactive--3.webp
-│  │  │     │  ├── perch_radioactive--4.webp
-│  │  │     │  ├── perch_radioactive--5.webp
-│  │  │     │  └── perch_radioactive--6.webp
-│  │  │     └── unique
-│  │  │        ├── perch_radioactive--1-uniq.webp
-│  │  │        ├── perch_radioactive--2-uniq.webp
-│  │  │        ├── perch_radioactive--3-uniq.webp
-│  │  │        ├── perch_radioactive--4-uniq.webp
-│  │  │        ├── perch_radioactive--5-uniq.webp
-│  │  │        └── perch_radioactive--6-uniq.webp
 │  │  ├── fish-display
-│  │  │  ├── crucian_stalker
-│  │  │  │  ├── standart
-│  │  │  │  │  ├── crucian_stalker--1.webp
-│  │  │  │  │  ├── crucian_stalker--2.webp
-│  │  │  │  │  ├── crucian_stalker--3.webp
-│  │  │  │  │  ├── crucian_stalker--4.webp
-│  │  │  │  │  ├── crucian_stalker--5.webp
-│  │  │  │  │  └── crucian_stalker--6.webp
-│  │  │  │  └── unique
-│  │  │  │     ├── crucian_stalker--1-uniq.webp
-│  │  │  │     ├── crucian_stalker--2-uniq.webp
-│  │  │  │     ├── crucian_stalker--3-uniq.webp
-│  │  │  │     ├── crucian_stalker--4-uniq.webp
-│  │  │  │     ├── crucian_stalker--5-uniq.webp
-│  │  │  │     └── crucian_stalker--6-uniq.webp
-│  │  │  └── perch_radioactive
-│  │  │     ├── standart
-│  │  │     │  ├── perch_radioactive--1.webp
-│  │  │     │  ├── perch_radioactive--2.webp
-│  │  │     │  ├── perch_radioactive--3.webp
-│  │  │     │  ├── perch_radioactive--4.webp
-│  │  │     │  ├── perch_radioactive--5.webp
-│  │  │     │  └── perch_radioactive--6.webp
-│  │  │     └── unique
-│  │  │        ├── perch_radioactive--1-uniq.webp
-│  │  │        ├── perch_radioactive--2-uniq.webp
-│  │  │        ├── perch_radioactive--3-uniq.webp
-│  │  │        ├── perch_radioactive--4-uniq.webp
-│  │  │        ├── perch_radioactive--5-uniq.webp
-│  │  │        └── perch_radioactive--6-uniq.webp
-│  │  ├── fish-thumbnails
 │  │  │  ├── crucian_stalker
 │  │  │  │  ├── standart
 │  │  │  │  │  ├── crucian_stalker--1.webp
@@ -418,7 +294,8 @@
 │  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
 │  │  │  ├── asset_manifest.js
-│  │  │  └── asset_registry.js
+│  │  │  ├── asset_registry.js
+│  │  │  └── asset_registry_sync.js
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── diagnostics

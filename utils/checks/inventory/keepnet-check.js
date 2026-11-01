@@ -290,8 +290,9 @@ async function main() {
   assert.equal(documentRef.activeElement, back);
   const images = documentRef.byClass("keepnet-section__image");
   const [A_THUMB, B_THUMB] = ["assets/fish/crucian_stalker/standart/crucian_stalker--1.webp", "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp"].map((master) => fishArt.thumbnailPath(master));
-  assert.equal(A_THUMB, "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--1.webp");
-  assert.deepEqual(images.map((image) => image.src), [A_THUMB, B_THUMB, A_THUMB], "a caught fish shows its master's registered thumbnail");
+  assert.equal(A_THUMB, "assets/low-copies/fish-display/crucian_stalker/standart/crucian_stalker--1.webp",
+    "a fish saved before TK-180 (its master's path) shows the display image's low copy");
+  assert.deepEqual(images.map((image) => image.src), [A_THUMB, B_THUMB, A_THUMB], "a caught fish shows its image's low copy");
   assert(documentRef.byClass("keepnet-section__fish-rarity")[0].textContent.includes("1,5 / 6"));
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
   images[0].fire("error");

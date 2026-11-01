@@ -33,7 +33,7 @@ export const ASSET_LOAD_PLAN = {
       id: "layer-three", label: "Вміст, який відкривають пізніше", start: "after:layer-two",
       groups: [
         { id: "on-demand", label: "На вимогу (не вантажиться у фоні)", priority: 1, load: false,
-          assets: [{ tag: "audio" }, { tag: "animations" }, { tag: "fish" }, { tag: "fish-display" }, { tag: "fish-thumbnails" },
+          assets: [{ tag: "audio" }, { tag: "animations" }, { tag: "fish-display" },
             { tag: "house" }, { tag: "lobby" }, { tag: "inventory" }, { tag: "loader" }, { id: "ui.status-icons" },
             { tag: "baits" }, { tag: "batteries" }, { tag: "boats" }, { tag: "briefcases" }, { tag: "floats" }, { tag: "nets" },
             { tag: "radio" }, { tag: "rods" }, { id: "items.aquarium-feed-simple" }, { id: "items.aquarium-feed-good" },

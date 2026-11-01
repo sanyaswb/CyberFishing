@@ -440,16 +440,17 @@ async function main() {
 }
 
 // --top-fraction 0.3 keeps the upper 30% before the ordinary contain resize (full image by default).
-// node utils/convert-images.js --thumbnails --input <masters> --output <assets> [--size 128..2048]
+// node utils/convert-images.js --thumbnails --input <masters> --output <assets> [--size 128..2048] (defaults: the fish
+//   masters in asset-sources/fish -> assets/fish-display at 768 px, TK-180)
 //   [--quality low|middle|high]  (spec 157 R5/R6: display-sized art with the --batch presets; middle = WebP 80)
 async function createThumbnails(args) {
   const option = (name, fallback) => {
     const index = args.indexOf(name);
     return index < 0 ? fallback : args[index + 1];
   };
-  const input = path.resolve(BASE_DIR, option('--input', 'assets/fish'));
-  const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-thumbnails'));
-  const size = Number(option('--size', '128'));
+  const input = path.resolve(BASE_DIR, option('--input', 'asset-sources/fish'));
+  const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-display'));
+  const size = Number(option('--size', '768'));
   const topFraction = Number(option('--top-fraction', '1'));
   const qualityKeys = { low: '1', middle: '2', medium: '2', high: '3' };
   const quality = QUALITY_PRESETS[qualityKeys[option('--quality', 'middle')]];
