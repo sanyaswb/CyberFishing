@@ -522,8 +522,8 @@ export const CONFIG = {
         minBasePowerRatio: 0.2,
         curvePower: 1.0,
       },
-      masteryTimeRatio: 0.5,
-      masteryPowerMultiplier: 0.2,
+      masteryTimeRatio: 0.5, // Час утримання: 50% (0.5) від часу, який був потрібен на повне виснаження
+      masteryPowerMultiplier: 0.2, // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 80%)
 
       debuffs: {
         swimPullMult: 0.75, // Зменшує тягу на 25%
@@ -533,9 +533,6 @@ export const CONFIG = {
         restWeightAdd: 25, // Збільшує шанс стану rest
         restMaxTimeMult: 1.5, // Збільшує час відпочинку на 50%
       },
-
-      masteryTimeRatio: 0.5, // Час утримання: 50% (0.5) від часу, який був потрібен на повне виснаження
-      masteryPowerMultiplier: 0.2, // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 80%)
     },
   },
 

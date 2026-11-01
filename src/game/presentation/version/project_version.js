@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.55";
+export const CURRENT_PROJECT_VERSION = "0.49.56";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-10-30",
   notes: Object.freeze([
+    "Spec 157: duplicate object keys removed; release fails on esbuild warnings.",
     "Spec 157: hidden-name guard covers build/.",
     "Spec 157 R12 step (b): the radio loads after the start through the asset load plan.",
     "Spec 157 R12 step (a): release pages preload only the chunks the start loads.",

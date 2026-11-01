@@ -864,12 +864,6 @@ export class FightDiagnosticsSnapshotBuilder {
       reelHoldHasReel: holdReelRecover?.hasReel === true,
       reelHoldPlayerHoldActive:
         holdReelRecover?.playerHoldActive === true,
-      playerReelFatigueSessionActive:
-        playerReelFatigueSession?.active === true,
-      playerReelFatigueSessionStarted:
-        playerReelFatigueSession?.startedThisFrame === true,
-      playerReelFatigueSessionEnded:
-        playerReelFatigueSession?.endedThisFrame === true,
       reelHoldRequiredStrokeRatio:
         holdReelRecover?.requiredStrokeRatio ?? 1,
       holdReelRecoverInputStrokeRatio:
@@ -935,8 +929,6 @@ export class FightDiagnosticsSnapshotBuilder {
       rodSideReliefKg: frame.rodSideReliefKg,
       rodSideReliefActive: frame.rodSideReliefActive,
       uncompensatedTensionKg: frame.uncompensatedTensionKg,
-      fishTensionKg: frame.fishTensionKg,
-      playerHoldTensionKg: frame.playerHoldTensionKg,
       totalTensionKg: frame.totalTensionKg,
       rodStressRatio: tensionResult.rodStressRatio,
       lineStressRatio: tensionResult.lineStressRatio,

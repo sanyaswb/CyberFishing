@@ -1347,9 +1347,12 @@ UI й арт предметів — один патч, бо вони йдуть 
   не віддає). Перевіряються і закомічені файли релізу, і `build/` (esbuild називає шматки за модулями: модуль `_x.js` дав
   би прихований шматок). `pages-release`: реліз без прихованих імен; синтетичні `build/chunks/_private-…` і `build/.cache/…`
   знаходяться. На старому `build-pages-release.js` падає (методу немає). Full 82/82.
-- **Ще відкрито:** 11 попереджень esbuild «Duplicate key» (`fight_diagnostics_snapshot_builder.js` ×5 — DEV,
-  `game_config.js` ×2, `fish_force_system.js` ×2, `player_pressure_fatigue_calculator.js` ×2). Діє останній ключ;
-  прибрати попередні копії треба з перевіркою, що значення збігаються (ігрові файли, game-cycle) — окремим кроком.
+- **11 попереджень esbuild «Duplicate key» виправлено (v0.49.56):** у кожній парі обидва ключі мали той самий чистий
+  вираз в одному літералі (`fight_diagnostics_snapshot_builder.js` ×5 — DEV, `game_config.js` ×2,
+  `fish_force_system.js` ×2, `player_pressure_fatigue_calculator.js` ×2); прибрано другі копії — значення й порядок
+  ключів ті самі (коментарі конфігу перенесено до першої копії). Збірка релізу тепер падає на будь-якому попередженні
+  esbuild (`pages-release`; на старому `fish_force_system.js` / DEV-будівнику — «esbuild warnings: … Duplicate key»).
+  Full, game-cycle без змін.
 
 ## Перевірки
 

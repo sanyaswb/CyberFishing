@@ -164,8 +164,6 @@ export class PlayerPressureFatigueCalculator {
         controlBreak.minContinuousPressureMs,
       pressureThresholdKg,
       minEfficiency,
-      graceDurationMs,
-      fatigueDurationMs,
       curvePower,
       delayAfterPressureMs,
       recoveryPerSecond,

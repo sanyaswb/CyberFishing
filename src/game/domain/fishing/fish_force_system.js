@@ -439,8 +439,6 @@ export class FishForceSystem {
       directionResistanceMultiplier: directionMultiplier,
       fishDirectionState: directionInfo.name,
       fishOwnTowardSpeedMps,
-      escapeOpposingHoldKg: holdOpposition.forceKg,
-      holdOppositionRatio: holdOpposition.ratio,
       awayFromPlayerRatio: outwardRatio,
       dragRatio: clampUnit(dragRatio),
       dragLimitKg: playerData.dragLimitKg,

@@ -63,6 +63,12 @@ class ReleaseBundleBuilder {
       logLevel: "error",
       write: true,
     });
+    // A warning is a defect in the source (a duplicate object key keeps only its last value): the release refuses it.
+    if (result.warnings.length > 0) {
+      const lines = result.warnings.map((warning) =>
+        `${warning.location?.file ?? "?"}:${warning.location?.line ?? "?"} ${warning.text}`);
+      throw new Error(["esbuild warnings:", ...lines].join("\n"));
+    }
     const outputs = result.metafile.outputs;
     const meterOutput = meter ? Object.keys(outputs).find((file) => outputs[file].entryPoint === meter) : null;
     const meterFile = meterOutput ? ReleaseBundleBuilder.#relative(releaseDir, meterOutput) : null;

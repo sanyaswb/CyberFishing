@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.56 - No duplicate keys
+
+- Spec 157: the 11 duplicate object keys esbuild warned about (fight diagnostics, game config, fish force, pressure fatigue) are removed; each pair held the same expression, so values and key order are unchanged. The release build now fails on any esbuild warning. Game-cycle report unchanged.
+
 ## v0.49.55 - Hidden names in build
 
 - Spec 157: the release refuses a file GitHub Pages would hide (a name segment starting with _ or .) in build/ too, where esbuild names chunks after their modules; PagesReleaseBuilder.hiddenFile is checked by pages-release. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.47 - Low copy first in the UI
 
 - Spec 157 stage D4a (TK-179): inventory, keepnet and selector images whose file has not loaded show their low-quality copy first; once shown, the full file is requested ahead of the background and replaces the copy in the same element after decoding (a failed copy falls back to the full file, a failed full file keeps the copy). The background warm-up after the first frame now loads the small copies. Game-cycle report unchanged.
-
-## v0.49.46 - Low-quality copies
-
-- Spec 157 stage D3 (TK-179): `npm run assets:sync` makes a low-quality copy of every raster image except depth maps under `assets/low-copies/` with `utils/convert-images.js --low-copies` (a quarter of the longest side, at most 256 px, WebP Low; 122 copies, 0.52 MB) and records each image's width, height, copy and source hash in the registry; `--check` fails on a missing, untracked or stale copy. Nothing loads them yet (stage D4). Game-cycle report unchanged.
