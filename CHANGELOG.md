@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.58 - Float under the rod
+
+- TK-158: depth order is float, line, rod (the rod is nearest the camera and covers the float where they meet), on the 2D canvas and in the WebGL scene; render-resolution checks both. Game-cycle report unchanged.
+
 ## v0.49.57 - VOLIA at 32 kbit/s
 
 - Spec 157 F (owner: 32 kbit/s): the three VOLIA 77.2 recordings are AAC (.m4a), mono, 32 kHz, 32 kbit/s, re-encoded with utils/convert-audio.js: 68.80 -> 8.34 MB per release; the originals moved to asset-sources/audio/radio/volia/. Asset ids and the playlist are unchanged. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.49 - Loading bar with megabytes
 
 - Spec 157 stage D5 (owner Q7): the release startup screen shows a bar and the loaded / total megabytes in compressed bytes; the release writes a startup manifest per page (the page, stylesheets, preloaded modules and the asset load plan's first layer with their gzip sizes) and its total into the screen; a tiny meter bundle the boot module imports first counts the transferred bytes until ready. The ?esm=1 module list moved out of the boot module into a JSON fetched only with ?esm=1. Game-cycle report unchanged.
-
-## v0.49.48 - Background ready on its low copy
-
-- Spec 157 stage D4b (TK-179, owner: readyOn "low" on): the game starts with the low-quality copy of the current background phase (13 KB instead of 223 KB); the full file loads right after the first frame and replaces it in the scene once decoded (the image store keeps the copy until then; the scene re-uploads the texture). Game-cycle report unchanged.

@@ -131,9 +131,10 @@ export class GameRenderComposition {
           selectModel: (model) => model.rodLine,
           isVisible: sceneRouter.canvasVisibility("rod"),
         }),
+        // TK-158: the float lies out on the water, under the line and the rod (nearer the camera).
         new RenderComponent({
           id: "float",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT + 1,
+          order: GameRenderOrder.values.FISHING_EQUIPMENT - 3,
           renderer: floatRenderer,
           selectModel: (model) => model.float,
           isVisible: sceneRouter.canvasVisibility("float"),

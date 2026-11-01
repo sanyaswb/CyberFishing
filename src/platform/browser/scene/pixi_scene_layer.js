@@ -220,10 +220,12 @@ export class PixiSceneLayer {
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
         documentTarget: this.#documentTarget });
       this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
-      this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
-      this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
+      // Depth (docs/rendering.md rule 14, TK-158): the float out on the water first, then the line, then the rod nearest
+      // the camera, which covers the float where they meet.
       this.#float = new PixiFloatRenderer({ pixi: this.#pixi, stage: app.stage, documentTarget: this.#documentTarget,
         textures: this.#textures });
+      this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
+      this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);

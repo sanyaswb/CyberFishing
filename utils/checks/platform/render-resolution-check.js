@@ -105,8 +105,13 @@ function checkDrawOrder() {
     return Number((match[1] || "0").replace(/\s+/gu, ""));
   };
   const [line, staticRod, spineRod, float] = ["rod-line", "rod-static", "rod-spine", "float"].map(orderOf);
-  assert(line < staticRod && staticRod < spineRod && spineRod < float,
-    `depth order: line ${line} < static rod ${staticRod} < Spine rod ${spineRod} < float ${float}`);
+  assert(float < line && line < staticRod && staticRod < spineRod,
+    `depth order (TK-158): float ${float} < line ${line} < static rod ${staticRod} < Spine rod ${spineRod}`);
+  // The WebGL scene adds its pictures to the stage in the same depth order.
+  const scene = fs.readFileSync(path.join(ROOT_DIR, "src/platform/browser/scene/pixi_scene_layer.js"), "utf8");
+  const created = ["PixiFloatRenderer", "PixiLineRenderer", "PixiRodRenderer"].map((name) => scene.indexOf(`new ${name}(`));
+  assert(created.every((index, i) => index > 0 && (i === 0 || created[i - 1] < index)),
+    "the scene stage gets the float, then the line, then the rod (TK-158)");
 }
 
 async function checkFishArt() {
