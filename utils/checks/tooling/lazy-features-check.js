@@ -16,6 +16,7 @@ const flush = async () => { for (let index = 0; index < 20; index += 1) await Pr
 
 // Modules each lazy feature owns: none of them may load with the start (static imports from a page entry).
 const LAZY_FEATURE_MODULES = Object.freeze({
+  pixi: ["src/platform/browser/scene/pixi_runtime_module.js"],
   radio: ["src/bootstrap/production/radio_feature_composition.js", "src/game/application/radio/radio_receiver_service.js",
     "src/platform/browser/audio/radio_stream_player.js", "src/platform/browser/audio/radio_effects_chain.js",
     "src/platform/browser/audio/radio_noise_source.js", "src/platform/browser/ui/radio_hud_indicator.js",

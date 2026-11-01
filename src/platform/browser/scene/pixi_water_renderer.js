@@ -29,6 +29,7 @@ export class PixiWaterRenderer {
   #filter;
   #filterArea = { x: 0, y: 0, width: 0, height: 0 };
   #area = { left: 0, top: 0, right: 0, bottom: 0 };
+  #getImageSize;
   #mask;
   #maskRects = [];
   #shares = [];
@@ -43,13 +44,14 @@ export class PixiWaterRenderer {
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
   // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water; getWakeSettings: () =>
   // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water).
-  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null }) {
+  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null, getImageSize = null }) {
     if (typeof pixi?.DisplacementFilter !== "function") throw new TypeError("PixiWaterRenderer requires the Pixi namespace");
     if (typeof textures?.get !== "function") throw new TypeError("PixiWaterRenderer requires textures");
     if (typeof getSettings !== "function") throw new TypeError("PixiWaterRenderer requires getSettings");
     this.#textures = textures;
     this.#getSettings = getSettings;
     this.#getWakeSettings = getWakeSettings;
+    this.#getImageSize = typeof getImageSize === "function" ? getImageSize : null;
     this.#field = new WaterWaveField({ width: MAP_WIDTH, height: MAP_HEIGHT });
     this.#mapCanvas = documentTarget.createElement("canvas");
     this.#mapCanvas.width = MAP_WIDTH;
@@ -116,7 +118,10 @@ export class PixiWaterRenderer {
     this.#mapSprite.height = area.bottom - area.top;
     // Settings are in art pixels; the art is drawn at base.width / its own width logical pixels per art pixel. The
     // filter shifts by half its scale at full map values.
-    const artScale = base.width / baseTexture.width;
+    // TK-183: when the background starts from a low-quality copy, the scale uses the registry's full image width so
+    // the waves are never stretched.
+    const fullWidth = this.#getImageSize?.(base.assetId)?.width || baseTexture.width;
+    const artScale = base.width / fullWidth;
     this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * artScale;
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
     const metric = world.waterPlane?.metric ?? null;

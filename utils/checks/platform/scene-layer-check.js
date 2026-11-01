@@ -711,6 +711,16 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const artScale = 1451 / 2560;
   assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "amplitude in art pixels, the filter shifts by half its scale");
   assert(Math.abs(filter.scale.y - filter.scale.x * 0.5) < 1e-9, "vertical share of the shift");
+  // TK-183: when the background is a low copy, the wave scale uses the registry's full width, never stretching the waves.
+  const lowWet = compose({ getImageSize: (assetId) => assetId === "day" ? { width: 2560, height: 1440 } : null });
+  lowWet.apps[0].initCall.resolve();
+  await lowWet.layer.whenReady();
+  const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
+  if (lowTexture) lowTexture.width = 640;
+  lowWet.layer.render(frame);
+  const lowFilter = lowWet.apps[0].stage.children[1].filters[0];
+  assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
+
   assert.equal(map.updates, 1, "each step uploads the map once");
   wet.layer.render(frame);
   clock.now += 20;
@@ -1146,8 +1156,8 @@ async function checkComposition() {
   assert.match(renderComposition, /surface\.beginFrame\(runtime\.rendering\.sceneRouter\.clearsCanvas\(\)\)/u);
   const root = read("src/bootstrap/production/game_composition_root.js");
   assert.match(root, /contextAttributes: \{ alpha: transparentCanvas \}/u, "the scene mode decides the 2D canvas alpha");
-  assert.match(root, /await sceneLayer\.whenReady\(\);\n\s*sceneLayer\.prepare\(\[\.\.\.Object\.values\(systems\.map\.getBackgroundRenderData\(\)\.assetIds\)\.filter\(Boolean\), \.\.\.floatArt\]\)/u,
-    "startup waits for the scene's warm-up frame, then uploads every background phase and the float art during loading");
+  assert.match(root, /void sceneLayer\.whenReady\(\)\.then\(\(ready\) => \{[^}]*sceneLayer\.prepare/u,
+    "the scene warms up and uploads textures once ready, without blocking the start (TK-183)");
   assert.match(root, /shell: this\.#documentTarget\.body/u, "the split stage places both canvases through the shell");
 }
 
@@ -1238,8 +1248,8 @@ function checkProductionGraph() {
   assert.deepEqual([...staticGraph].filter((file) => file.includes("/scene/pixi_") || file.startsWith("vendor/pixi/")), [],
     "index.html loads no Pixi module statically");
   assert.deepEqual(lazyImporters.filter(([, target]) => target.includes("/scene/pixi_")).sort(),
-    [["src/bootstrap/production/boat_animation_composition.js", RUNTIME_MODULE], ["src/bootstrap/production/rod_animation_composition.js", RUNTIME_MODULE], [SCENE_COMPOSITION, RUNTIME_MODULE]],
-    "Pixi is reached only lazily: by the scene composition, and by the rod and boat Spine runtimes once the scene is ready");
+    [["src/bootstrap/production/boat_animation_composition.js", RUNTIME_MODULE], ["src/bootstrap/production/game_feature_modules.js", RUNTIME_MODULE], ["src/bootstrap/production/rod_animation_composition.js", RUNTIME_MODULE], [SCENE_COMPOSITION, RUNTIME_MODULE]],
+    "Pixi is reached only lazily: by the plan feature, scene composition, and by the rod and boat Spine runtimes once the scene is ready");
   return staticGraph.size;
 }
 

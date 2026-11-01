@@ -482,7 +482,7 @@ export class GameCompositionRoot {
     const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
       modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
       images: imageAssets, clock, fightAreaStyles: fightAreaStyleResolver, probe: this.#frameProbe,
-      logger: new ConsoleLogger() });
+      logger: new ConsoleLogger(), getImageSize: (assetId) => this.#assets.sizeOf(assetId), preload: this.#preload });
     own(sceneLayer);
     contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
     const {
@@ -582,8 +582,10 @@ export class GameCompositionRoot {
     // one at a time, so opening the inventory finds them in the cache.
     const lazyImages = own(new LazyImageWarmUp({ documentRef: this.#documentTarget }));
     this.#deferredAssetLoads.push(() => { void lazyImages.warm(); });
-    await sceneLayer.whenReady();
-    sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
+    // TK-183: the first frame renders on the 2D canvas; the Pixi scene warms up after ready.
+    void sceneLayer.whenReady().then((ready) => {
+      if (ready) sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
+    });
     // The game is ready only once the plan's first layer has loaded (spec 157 R15).
     await this.#preload.whenLayer("layer-one");
     this.#startupMarks.mark(STARTUP_STAGES.scene);

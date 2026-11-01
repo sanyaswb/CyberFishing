@@ -36,7 +36,8 @@ export const ASSET_LOAD_PLAN = {
     {
       id: "features", label: "Функції поза стартом (код)", start: "ready",
       groups: [
-        { id: "feature-radio", label: "Радіо", priority: 1, assets: [{ module: "radio" }] },
+        { id: "feature-pixi", label: "Pixi (сцена WebGL)", priority: 1, assets: [{ module: "pixi" }] },
+        { id: "feature-radio", label: "Радіо", priority: 2, assets: [{ module: "radio" }] },
       ],
     },
     {

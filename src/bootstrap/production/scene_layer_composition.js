@@ -15,7 +15,7 @@ const SCENE_RENDERED_KINDS = Object.freeze(["background", "world-entities", "fig
 // times the water's animation (spec 106); fightAreaStyles: the fight area style resolver the 2D renderer uses too.
 // Returns { sceneLayer, sceneRouter, transparentCanvas }.
 export function composeSceneLayer({ config, modeOverride = null, documentTarget, gameCanvas, canvasMetrics, images, clock,
-  fightAreaStyles, probe, logger }) {
+  fightAreaStyles, probe, logger, getImageSize = null, preload = null }) {
   let mode = config.canvas?.scene ?? "canvas";
   if (modeOverride != null) {
     if (SCENE_MODES.includes(modeOverride)) mode = modeOverride;
@@ -26,11 +26,12 @@ export function composeSceneLayer({ config, modeOverride = null, documentTarget,
   const sceneRouter = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: SCENE_RENDERED_KINDS,
     isSceneActive: () => sceneLayer.isActive(), mode });
   sceneLayer = mode === "webgl" ? new DeferredSceneLayer({
-    load: () => import("../../platform/browser/scene/pixi_runtime_module.js").then((module) =>
+    load: () => (preload ? preload.whenModule("pixi") : Promise.resolve()).then(() =>
+      import("../../platform/browser/scene/pixi_runtime_module.js")).then((module) =>
       module.createPixiRuntime().createSceneLayer({ documentTarget, gameCanvas, canvasMetrics, images, router: sceneRouter,
         clock, getWaterSettings: () => config.canvas?.water,
         getWakeSettings: () => config.ui?.boat?.wake?.water, fightAreaStyles, probe, logger,
-        background: config.canvas?.backgroundColor })),
+        background: config.canvas?.backgroundColor, getImageSize })),
     onUnavailable: (error) => logger.warn("[Scene] The WebGL scene runtime did not load; the 2D canvas stays alone.", error),
   }) : new InactiveSceneLayer();
   return { sceneLayer, sceneRouter, transparentCanvas: mode === "webgl" };

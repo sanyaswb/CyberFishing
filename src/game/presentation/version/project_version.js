@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.61";
+export const CURRENT_PROJECT_VERSION = "0.49.62";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-01",
   notes: Object.freeze([
+    "TK-183: the 2D canvas draws the first frame, Pixi warms up after ready, wave scale uses the registry width.",
     "TK-182: the DEV overlay scrolls inside the viewport on small mobile screens.",
     "TK-181: a static rod picture replaces the rectangle until the Spine export arrives.",
     "TK-157: the rod moves towards the screen centre within the line's reach.",

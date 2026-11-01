@@ -52,6 +52,7 @@ export class PixiSceneLayer {
   #getWakeSettings;
   #fightAreaStyles;
   #documentTarget;
+  #getImageSize;
   #textures = null;
   #texts = null;
   #background = null;
@@ -86,7 +87,7 @@ export class PixiSceneLayer {
   // the game clock ({ now }, the frame's time in ms); getWaterSettings: () => CONFIG.canvas.water (spec 106);
   // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
-    fightAreaStyles, probe, logger, getWakeSettings = () => null }) {
+    fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -109,6 +110,7 @@ export class PixiSceneLayer {
     this.#metrics = canvasMetrics;
     this.#probe = probe;
     this.#logger = logger;
+    this.#getImageSize = typeof getImageSize === "function" ? getImageSize : null;
     this.#canvas = documentTarget.createElement("canvas");
     this.#canvas.className = "game-shell__scene";
     this.#canvas.setAttribute("aria-hidden", "true");
@@ -215,7 +217,7 @@ export class PixiSceneLayer {
         renderer: app.renderer });
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings,
-        getWakeSettings: this.#getWakeSettings });
+        getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize });
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
         documentTarget: this.#documentTarget });

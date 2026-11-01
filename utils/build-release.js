@@ -34,7 +34,6 @@ const START_IMPORTS = Object.freeze([
   "src/platform/browser/runtime/browser_event_target_adapter.js",
   "src/platform/browser/time/browser_timeout_scheduler.js",
   "src/game/config/inventory/inventory_composition_config.js",
-  "src/platform/browser/scene/pixi_runtime_module.js", // the WebGL scene draws the first frame (and its Spine rod)
 ]);
 // Text files the server compresses (docs/deployment.md); media go as they are.
 const COMPRESSED = /\.(?:js|mjs|css|json|svg|atlas|html|map)$/iu;
