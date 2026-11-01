@@ -77,34 +77,34 @@
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background: rgba(var(--ui-surface-rgb), 0.95);
-  color: var(--ui-text);
-  padding: calc(15px * var(--debug-overlay-scale, 1)) calc(15px * var(--debug-overlay-scale, 1))
-    calc(10px * var(--debug-overlay-scale, 1));
-  font-family: var(--ui-font-mono);
-  font-size: 14px;
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-panel);
   z-index: var(--ui-layer-panel);
   display: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-  min-width: calc(280px * var(--debug-overlay-scale, 1));
-  /* TK-182: a long report scrolls inside the panel, which never leaves the screen. */
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
   box-sizing: border-box;
   max-height: calc(100% - 20px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-  pointer-events: all;
+  pointer-events: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.debug-overlay::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .debug-overlay__scale-controls {
-  position: sticky;
-  bottom: 0;
+  flex: 0 0 auto;
   width: fit-content;
-  margin: 8px auto 0;
+  margin: 0 auto;
   display: flex;
   gap: 15px;
+  padding: calc(4px * var(--debug-overlay-scale, 1)) calc(8px * var(--debug-overlay-scale, 1));
+  background: rgba(var(--ui-surface-rgb), 0.95);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   z-index: var(--ui-layer-tooltip);
   pointer-events: all;
   zoom: var(--debug-overlay-scale, 1);
@@ -135,6 +135,72 @@
 }
 
 .debug-overlay__content {
-  pointer-events: none;
+  background: rgba(var(--ui-surface-rgb), 0.95);
+  color: var(--ui-text);
+  padding: calc(15px * var(--debug-overlay-scale, 1)) calc(15px * var(--debug-overlay-scale, 1))
+    calc(10px * var(--debug-overlay-scale, 1));
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  min-width: calc(280px * var(--debug-overlay-scale, 1));
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  pointer-events: all;
   zoom: var(--debug-overlay-scale, 1);
+  /* TK-185: hide scrollbar completely while maintaining scroll functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.debug-overlay__content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.debug-overlay__details {
+  margin: 1px 0;
+}
+.debug-overlay__details--sub {
+  margin-left: 8px;
+}
+.debug-overlay__summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  outline: none;
+}
+.debug-overlay__summary::-webkit-details-marker {
+  display: none;
+}
+.debug-overlay__details > .debug-overlay__summary .debug-overlay__label::before,
+.debug-overlay__details > .debug-overlay__summary .debug-overlay__caption::before {
+  content: "▶ ";
+  display: inline-block;
+  color: var(--ui-accent);
+  transition: transform 0.15s ease;
+  font-size: 11px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.debug-overlay__details[open] > .debug-overlay__summary .debug-overlay__label::before,
+.debug-overlay__details[open] > .debug-overlay__summary .debug-overlay__caption::before {
+  transform: rotate(90deg);
+}
+.debug-overlay__summary:focus-visible {
+  outline: 2px solid var(--ui-info);
+  outline-offset: 2px;
+}
+.debug-overlay__details-body {
+  padding-left: 6px;
+  border-left: 1px solid rgba(var(--ui-accent-rgb), 0.2);
+  margin-left: 4px;
+  margin-top: 2px;
+  margin-bottom: 4px;
 }

@@ -134,6 +134,10 @@ async function checkOverlay() {
   assert.match(html, /План завантаження/u);
   assert.match(html, /Фон поточної фази й карта глибин \(пріоритет 1, спершу копії\)/u, "a group with its priority and readyOn");
   assert.match(html, /готово · 1 файлів · 217 КБ · 60 мс/u, "the group's state, size and time");
+  assert.match(html, /<details class="debug-overlay__details" id="dev-load-layer-layer-one">/u, "layers are expandable details");
+  assert.match(html, /<details class="debug-overlay__details debug-overlay__details--sub" id="dev-load-group-layer-one-location">/u,
+    "groups with files are expandable details");
+  assert.match(html, /<summary class="debug-overlay__summary">/u, "expandable sections have a summary header");
   assert.match(html, /locations\/test\/bg_test--day\.webp/u, "a small group lists its files");
   assert.match(html, /чекає · 20 файлів · 20 КБ/u, "a large group shows its count only");
   assert.doesNotMatch(html, /assets\/a\/3\.webp/u);
@@ -452,13 +456,23 @@ function checkOverlayScrolling() {
   const fs = require("node:fs");
   const css = fs.readFileSync(path.join(ROOT_DIR, "src/dev/styles/overlay.css"), "utf8");
   assert.match(css, /\.debug-overlay\s*\{[^}]*max-height:\s*calc\(100%\s*-\s*20px\)/u,
-    "TK-182: debug-overlay is constrained to the screen height");
-  assert.match(css, /\.debug-overlay\s*\{[^}]*overflow-y:\s*auto/u,
-    "TK-182: debug-overlay scrolls vertically when content overflows");
-  assert.match(css, /\.debug-overlay\s*\{[^}]*touch-action:\s*pan-y/u,
-    "TK-182: debug-overlay allows touch scrolling");
-  assert.match(css, /\.debug-overlay__scale-controls\s*\{[^}]*position:\s*sticky/u,
-    "TK-182: scale controls stick to the bottom of the scroll container");
+    "TK-182/TK-185: debug-overlay is constrained to the screen height");
+  assert.match(css, /\.debug-overlay__content\s*\{[^}]*overflow-y:\s*auto/u,
+    "TK-185: debug-overlay__content scrolls vertically when content overflows");
+  assert.match(css, /\.debug-overlay__content\s*\{[^}]*touch-action:\s*pan-y/u,
+    "TK-185: debug-overlay__content allows touch scrolling");
+  assert.match(css, /scrollbar-width:\s*none/u,
+    "TK-185: scrollbar is hidden in CSS (Firefox)");
+  assert.match(css, /-ms-overflow-style:\s*none/u,
+    "TK-185: scrollbar is hidden in CSS (IE/Edge)");
+  assert.match(css, /::-webkit-scrollbar\s*\{[^}]*display:\s*none/u,
+    "TK-185: scrollbar is hidden in CSS (WebKit/Blink)");
+  assert.match(css, /\.debug-overlay__scale-controls\s*\{/u,
+    "TK-185: scale controls sit in their own container");
+  assert.match(css, /\.debug-overlay__details/u,
+    "TK-185: expandable details sections are styled");
+  assert.match(css, /\.debug-overlay__summary/u,
+    "TK-185: summary headers are styled");
 }
 
 (async () => {

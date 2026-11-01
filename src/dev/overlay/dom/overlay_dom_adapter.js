@@ -60,8 +60,8 @@ export class OverlayDomAdapter {
 
   show() {
     if (!this.#container) return;
-    if (this.#container.style.display === "block") return;
-    this.#container.style.display = "block";
+    if (this.#container.style.display === "flex") return;
+    this.#container.style.display = "flex";
     this.#clampWhenStable();
   }
 
@@ -71,7 +71,18 @@ export class OverlayDomAdapter {
 
   updateHtml(html) {
     if (!this.#content) return;
+    const openIds = new Set();
+    if (typeof this.#content.querySelectorAll === "function") {
+      for (const el of this.#content.querySelectorAll("details[open][id]")) {
+        if (el.id) openIds.add(el.id);
+      }
+    }
     this.#content.innerHTML = html;
+    if (openIds.size > 0 && typeof this.#content.querySelectorAll === "function") {
+      for (const el of this.#content.querySelectorAll("details[id]")) {
+        if (openIds.has(el.id)) el.open = true;
+      }
+    }
     this.#clampWhenStable();
   }
 

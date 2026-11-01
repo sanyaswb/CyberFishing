@@ -98,14 +98,24 @@ export class StartupLoadOverlayModule extends OverlayModule {
         this.#mb(report.all.transferred - totals.transferred)}`, { metricKey: "startup.after" });
     }
     html += this.#planRows();
-    html += this.#caption("10 найбільших (стиснуто / без стиснення):");
+    let largestRows = "";
     for (const request of report.largest) {
-      html += this.metricRow(this.#shortName(request.url), `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}`,
+      largestRows += this.metricRow(this.#shortName(request.url), `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}`,
         { metricKey: `startup.largest.${request.url}` });
     }
-    html += this.#caption("10 найдовших:");
+    if (report.largest.length > 0) {
+      html += `<details class="debug-overlay__details" id="dev-load-largest"><summary class="debug-overlay__summary">${
+        this.#caption("10 найбільших (стиснуто / без стиснення):")}</summary><div class="debug-overlay__details-body">${
+        largestRows}</div></details>`;
+    }
+    let longestRows = "";
     for (const request of report.longest) {
-      html += this.metricRow(this.#shortName(request.url), ms(request.durationMs), { metricKey: `startup.longest.${request.url}` });
+      longestRows += this.metricRow(this.#shortName(request.url), ms(request.durationMs), { metricKey: `startup.longest.${request.url}` });
+    }
+    if (report.longest.length > 0) {
+      html += `<details class="debug-overlay__details" id="dev-load-longest"><summary class="debug-overlay__summary">${
+        this.#caption("10 найдовших:")}</summary><div class="debug-overlay__details-body">${
+        longestRows}</div></details>`;
     }
     const button = (control, label) => `<button type="button" class="debug-overlay__tab" data-overlay-control="${control}"`
       + ` data-overlay-activate="release">${label}</button>`;
@@ -171,8 +181,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
     if (!status) return "";
     let html = this.#caption("План завантаження (шари → групи → файли):");
     for (const layer of status.layers) {
-      html += this.metricRow(layer.label, layer.started ? "стартував" : "чекає", { metricKey: `startup.plan.${layer.id}`,
-        color: layer.started ? "#00ff80" : "#ffaa00" });
+      let layerBody = "";
       for (const group of layer.groups) {
         const bytes = group.files.reduce((sum, file) => sum + (file.bytes || 0), 0);
         const time = group.settledMs !== null && group.settledMs !== undefined && group.startedMs !== null
@@ -181,15 +190,29 @@ export class StartupLoadOverlayModule extends OverlayModule {
         // A feature group (spec 157 R12) loads code modules, named instead of files.
         const content = group.modules?.length > 0 ? `код: ${group.modules.join(", ")}`
           : `${group.files.length} файлів · ${this.#kb(bytes)}`;
-        html += this.metricRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
+        const groupRow = this.metricRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
           `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${content}${time}`,
           { metricKey: `startup.plan.${layer.id}.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
-        if (group.files.length > LISTED_FILES) continue;
-        for (const file of group.files) {
-          html += this.metricRow(`    ${this.#shortName(file.path)}`, this.#kb(file.bytes || 0),
-            { metricKey: `startup.plan.file.${group.id}.${file.id}` });
+        if (group.files.length > 0 && group.files.length <= LISTED_FILES) {
+          let fileRows = "";
+          for (const file of group.files) {
+            fileRows += this.metricRow(`    ${this.#shortName(file.path)}`, this.#kb(file.bytes || 0),
+              { metricKey: `startup.plan.file.${group.id}.${file.id}` });
+          }
+          layerBody += `<details class="debug-overlay__details debug-overlay__details--sub" id="dev-load-group-${layer.id}-${group.id}">`
+            + `<summary class="debug-overlay__summary">${groupRow}</summary>`
+            + `<div class="debug-overlay__details-body">${fileRows}</div></details>`;
+        } else {
+          layerBody += groupRow;
         }
       }
+      const layerRow = this.metricRow(layer.label, layer.started ? "стартував" : "чекає", {
+        metricKey: `startup.plan.${layer.id}`,
+        color: layer.started ? "#00ff80" : "#ffaa00",
+      });
+      html += `<details class="debug-overlay__details" id="dev-load-layer-${layer.id}">`
+        + `<summary class="debug-overlay__summary">${layerRow}</summary>`
+        + `<div class="debug-overlay__details-body">${layerBody}</div></details>`;
     }
     html += this.metricRow("дублікати (однаковий вміст)", status.duplicates.length === 0 ? "немає"
       : status.duplicates.map((ids) => ids.join(" = ")).join("; "), { metricKey: "startup.plan.duplicates",
