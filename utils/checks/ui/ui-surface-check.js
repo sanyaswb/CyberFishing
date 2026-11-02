@@ -351,13 +351,16 @@ const overlayDrag = new OverlayWindowDragController({ element: overlay, uiSurfac
   windowTarget: dragEnv.window, config: { ui: { draggableButtons: true } },
   cache: { get: key => overlayPositions.get(key), set: (key, value) => overlayPositions.set(key, value) } });
 overlayDrag.attach();
+assert.equal(overlay.classList.contains("draggable-window"), true);
 const shieldListeners = [...overlay.listeners.values()].reduce((sum, entries) => sum + entries.size, 0) - 1;
 overlay.fire("pointerdown", { clientX: 15, clientY: 75, pointerId: 4, pointerType: "mouse", button: 0 });
 overlayHold();
+assert.equal(overlay.classList.contains("draggable-window--dragging"), true);
 overlay.fire("pointermove", { clientX: 45, clientY: 105, pointerId: 4 });
 assert.equal(overlay.style.left, "50px", "Overlay drag converts physical deltas once while preserving its independent visual zoom");
 assert.equal(overlay.style.top, "120px");
 overlay.fire("pointerup", { pointerId: 4 });
+assert.equal(overlay.classList.contains("draggable-window--dragging"), false);
 assert.deepEqual(overlayPositions.get("drag_pos_debug_overlay"), { left: "50px", top: "120px", right: "auto", bottom: "auto" });
 overlayDrag.detach();
 assert.equal([...overlay.listeners.values()].reduce((sum, entries) => sum + entries.size, 0), shieldListeners);

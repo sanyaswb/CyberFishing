@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.68 - Visual feedback and blue outline for draggable windows
+
+- TK-187: movable windows (`OverlayWindowDragController`, `.draggable-window`) provide tactile visual feedback when long-click drag activates (`.draggable-window--dragging`); plays a brief scale contraction and recovery animation (`draggable-window-pop`, scale 1 -> 0.96 -> 1), applies a 2px blue outline (`#2196f3`), and lightens the background (`rgba(30, 48, 68, 0.96)`) while dragging. Game-cycle report unchanged.
+
 ## v0.49.67 - Persistent scroll container in DOM patching
 
 - TK-186: `OverlayDomAdapter.updateHtml` uses `#patchChildren` on the temporary wrapper instead of `#patchNode` on the container so `.debug-overlay__content` retains its CSS class, `overflow-y: auto`, and flex properties across updates; prevents the content container from expanding unconstrained and pushing the footer scale buttons (+ / -) out of view; verified visually in Chrome at 400px viewport. Game-cycle report unchanged.
@@ -38,9 +42,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - TK-157: a cast aimed to one side no longer puts the rod straight under it: the target is chosen as before, then the rod (and the line's origin) moves towards the screen centre as far as the longest cast still reaches the target, never past the centre; a cast at the full line length keeps the rod under the target. Game-cycle report unchanged.
 
-## v0.49.58 - Float under the rod
-
-- TK-158: depth order is float, line, rod (the rod is nearest the camera and covers the float where they meet), on the 2D canvas and in the WebGL scene; render-resolution checks both. Game-cycle report unchanged.
 
 
 

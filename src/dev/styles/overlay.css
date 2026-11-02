@@ -101,6 +101,38 @@
   max-height: calc(100% - 20px);
   scrollbar-width: none;
   -ms-overflow-style: none;
+  transition: background 160ms ease, outline 160ms ease, box-shadow 160ms ease;
+}
+
+/* TK-187: Visual tactile feedback for windows movable via long click */
+@keyframes draggable-window-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.draggable-window {
+  transition: background 160ms ease, outline 160ms ease, box-shadow 160ms ease;
+}
+
+.draggable-window.draggable-window--dragging {
+  animation: draggable-window-pop 220ms ease-out;
+  outline: 2px solid #2196f3;
+  outline-offset: -2px;
+  background: rgba(30, 48, 68, 0.96);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draggable-window.draggable-window--dragging {
+    animation: none;
+  }
 }
 .debug-overlay::-webkit-scrollbar {
   display: none;
