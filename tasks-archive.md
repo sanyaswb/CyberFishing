@@ -2,6 +2,19 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-159"></a>
+
+## TK-159 — нічне світіння поплавка лише на зеленій частинці (v0.49.73)
+
+- [x] **TK-159 — нічне світіння поплавка лише на зеленій частинці (власник, 2026-10-30; v0.49.73).**
+  Власник: «Вночі світиться весь поплавок; має світитися тільки зелена частинка, адитивним зеленим (spec 127: tip-only additive glow).»
+  Знайдено: у `game_config.js` прапорець `CONFIG.ui.float.nightHalo` за замовчуванням був `true` (`fishing_equipment_render_model_builder.js` встановлював `target.glow = biteHalo || nightHalo`), що вмикало розмите кругове світіння (`#glow` у Pixi або `surface.shadowBlur` у Canvas) навколо всього тіла поплавка; при цьому адитивне світіння кінчика антени (`nightTipGlow` з асетом `float-day-glow.webp`) вже працювало, але перекривалося ореолом усього тіла.
+  Зміни:
+  1. `src/game/config/runtime/game_config.js`: `CONFIG.ui.float.nightHalo` змінено на `false` за замовчуванням.
+  2. `src/game/presentation/fishing/fishing_equipment_render_model_builder.js`: `nightHalo` активується лише при явному `floatUi.nightHalo === true` (у DEV-налаштуваннях).
+  3. Вночі світиться виключно кінчик антени адитивним зеленим спрайтом (`float-day-glow.webp`).
+  Перевірено: `node utils/checks/gameplay/float-pose-check.js` (перевірка впала на старій конфігурації з `AssertionError: TK-159: the night float has no outside halo by default, only tip glow`, пройшла на новій), `npm run check:quick`, `npm run check:gameplay`, Full `npm run check` (82/82 passing); game-cycle без змін.
+
 <a id="tk-191"></a>
 
 ## TK-191 — надійне перетягування оверлея без спрацьовування нативного скролу на телефоні (v0.49.72)
