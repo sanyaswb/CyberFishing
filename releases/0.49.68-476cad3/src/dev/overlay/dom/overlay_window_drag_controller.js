@@ -35,6 +35,7 @@ export class OverlayWindowDragController {
     this.#id = id;
     this.#cache = cache;
     this.#uiSurface = uiSurface;
+    this.#element?.classList?.add?.("draggable-window");
   }
 
   attach() {
@@ -63,6 +64,7 @@ export class OverlayWindowDragController {
     }
     this.#pointerId = null;
     this.#isDragging = false;
+    this.#element?.classList?.remove?.("draggable-window--dragging");
   }
 
   isDragging() {
@@ -154,12 +156,14 @@ export class OverlayWindowDragController {
 
     if (!this.#isDragging) return;
     this.#isDragging = false;
+    this.#element?.classList?.remove?.("draggable-window--dragging");
     this.clampToViewport();
     this.#savePosition();
   }
 
   #startDrag(startRect) {
     this.#isDragging = true;
+    this.#element?.classList?.add?.("draggable-window--dragging");
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
     this.#element.style.right = "auto";

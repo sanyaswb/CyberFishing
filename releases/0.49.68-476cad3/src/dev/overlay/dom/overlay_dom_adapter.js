@@ -102,7 +102,7 @@ export class OverlayDomAdapter {
     }
     const temp = this.#documentTarget.createElement("div");
     temp.innerHTML = html;
-    this.#patchNode(this.#content, temp);
+    this.#patchChildren(this.#content, temp);
     this.#clampWhenStable();
   }
 
