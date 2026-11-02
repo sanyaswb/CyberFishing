@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.66 - Clean overlay zoom and uncrushed mobile layout
+
+- TK-186: DEV overlay scaling moves to container-level `zoom: var(--debug-overlay-scale, 1)` on `.debug-overlay` (`width: 320px`, `max-width: calc(100% - 20px)`, `max-height: calc(100% - 20px)`) so child metrics and scale buttons scale together cleanly; `.debug-overlay__label` uses `white-space: nowrap; flex-shrink: 0` to prevent metric labels from breaking into single vertical characters on narrow screens; verified visually in Chrome across multiple mobile viewport sizes. Game-cycle report unchanged.
+
 ## v0.49.65 - Scaled overlay width and mobile viewport constraints
 
 - TK-186: the DEV overlay width scales responsively with `--debug-overlay-scale` (`width: calc(340px * var(--debug-overlay-scale, 1))`, `min-width: calc(180px * var(--debug-overlay-scale, 1))`, `max-width: calc(100% - 20px)`); row labels and values wrap breaking long text anywhere so the unzoomed intrinsic content no longer stretches the window to full viewport width on mobile phones; drag clamping enforces dynamic maxWidth within the UI surface so scaling down contracts the window bounds smoothly instead of keeping it pinned against the right screen edge. Game-cycle report unchanged.
@@ -38,8 +42,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Spec 157 F (owner: 32 kbit/s): the three VOLIA 77.2 recordings are AAC (.m4a), mono, 32 kHz, 32 kbit/s, re-encoded with utils/convert-audio.js: 68.80 -> 8.34 MB per release; the originals moved to asset-sources/audio/radio/volia/. Asset ids and the playlist are unchanged. Game-cycle report unchanged.
 
-## v0.49.56 - No duplicate keys
-
-- Spec 157: the 11 duplicate object keys esbuild warned about (fight diagnostics, game config, fish force, pressure fatigue) are removed; each pair held the same expression, so values and key order are unchanged. The release build now fails on any esbuild warning. Game-cycle report unchanged.
 
 
