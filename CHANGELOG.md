@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.71 - Scope overlay metric underline to desktop hover
+
+- TK-190: DEV overlay metric labels (`.debug-overlay__metric-label`) display as clean unstyled text on touch devices without pseudo-link dotted underline or press highlighting; dotted underline decoration and help cursor are scoped exclusively to desktop pointer hover (`.ui-surface--desktop-hover`). Game-cycle report unchanged.
+
 ## v0.49.70 - Suppress long-touch vibration and configure 800ms hold
 
 - TK-189: draggable overlay and child elements prevent native browser touch selection and context menu triggers (`.debug-overlay, .debug-overlay * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }`), eliminating native vibration from Chrome text selection handles or context menu; drag hold duration is unified to 800ms (`dragHoldTimeMs: 800`) across game config and drag controllers. Game-cycle report unchanged.
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.62 - Pixi and waves after start
 
 - TK-183: the 2D canvas draws the first frame, the Pixi bundle is excluded from release preloads and loads via the asset load plan's features layer after ready, and PixiWaterRenderer scales waves against the registry's full image width so waves are never stretched when the background starts from a low-quality copy. Scene-layer and lazy-features checks assert the behavior. Game-cycle report unchanged.
-
-## v0.49.61 - Overlay scroll and viewport bounds
-
-- TK-182: the DEV overlay is bounded by the screen height (`max-height: calc(100% - 20px)`, `overflow-y: auto`, `touch-action: pan-y`) and its scale buttons stick to the bottom, so long reports scroll and remain accessible on phones. Startup-load-report check asserts the contract. Game-cycle report unchanged.
 
 
 

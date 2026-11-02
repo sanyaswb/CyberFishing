@@ -57,17 +57,20 @@
 .debug-overlay__metric-label:focus-visible,
 .debug-overlay__scale-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .debug-overlay__metric-label {
-  cursor: help;
+  cursor: default;
   pointer-events: auto;
   touch-action: manipulation;
-  text-decoration: underline dotted rgba(115, 194, 251, 0.55);
-  text-underline-offset: 2px;
+  text-decoration: none;
   border-radius: 3px;
   outline: none;
   transition: background 80ms ease, color 80ms ease;
 }
+.ui-surface--desktop-hover .debug-overlay__metric-label {
+  cursor: help;
+  text-decoration: underline dotted rgba(115, 194, 251, 0.55);
+  text-underline-offset: 2px;
+}
 .ui-surface--desktop-hover .debug-overlay__metric-label:hover,
-.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__metric-label:active,
 .debug-overlay__metric-label:focus-visible {
   color: var(--ui-text);
   background: rgba(115, 194, 251, 0.16);
