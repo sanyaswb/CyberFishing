@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.70 - Suppress long-touch vibration and configure 800ms hold
+
+- TK-189: draggable overlay and child elements prevent native browser touch selection and context menu triggers (`.debug-overlay, .debug-overlay * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }`), eliminating native vibration from Chrome text selection handles or context menu; drag hold duration is unified to 800ms (`dragHoldTimeMs: 800`) across game config and drag controllers. Game-cycle report unchanged.
+
 ## v0.49.69 - Scroll lock during active window drag
 
 - TK-188: when long-click window drag activates (`.draggable-window--dragging`), content scrolling is completely locked (`overflow-y: hidden !important`, `touch-action: none !important`, `pointer-events: none !important`, and element `touchAction = "none"`) so pointer motion drags the window without scrolling the content; text selection and iOS/Android touch callouts are disabled on the overlay window. Game-cycle report unchanged.
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.61 - Overlay scroll and viewport bounds
 
 - TK-182: the DEV overlay is bounded by the screen height (`max-height: calc(100% - 20px)`, `overflow-y: auto`, `touch-action: pan-y`) and its scale buttons stick to the bottom, so long reports scroll and remain accessible on phones. Startup-load-report check asserts the contract. Game-cycle report unchanged.
-
-## v0.49.60 - Rod picture from the start
-
-- TK-181: the rod is no longer a rectangle until its Spine export arrives: a small upright picture of the atlas region (9.9 KB, first layer of the load plan) stands in the export's setup pose at the same scale and line tip. Start 0.70 -> 0.71 MB. Game-cycle report unchanged.
 
 
 

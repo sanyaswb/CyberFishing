@@ -152,7 +152,7 @@ export class DraggableButton {
     if (this.#config.ui?.draggableButtons) {
       this.#holdTimer = setTimeout(() => {
         this.#startDrag();
-      }, this.#config.ui?.dragHoldTimeMs || 1500);
+      }, this.#config.ui?.dragHoldTimeMs ?? 800);
     }
 
     this.#element.addEventListener("pointermove", this.onPointerMove);

@@ -78,6 +78,13 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.debug-overlay,
+.debug-overlay * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .debug-overlay {
   position: absolute;
   bottom: 10px;
@@ -102,9 +109,6 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   transition: background 160ms ease, outline 160ms ease, box-shadow 160ms ease;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
 
 /* TK-187: Visual tactile feedback for windows movable via long click */

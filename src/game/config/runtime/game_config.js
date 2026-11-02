@@ -569,7 +569,7 @@ export const CONFIG = {
       compactActionsSide: "right",
     },
     draggableButtons: true,
-    dragHoldTimeMs: 1000,
+    dragHoldTimeMs: 800,
 
     audio: {
       feederBiteAsset: "audio.bell_ring", // id реєстру асетів (spec 157 R16)
