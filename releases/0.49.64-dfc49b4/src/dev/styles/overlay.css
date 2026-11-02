@@ -1,0 +1,201 @@
+/* DEV overlay window, metric rows and interaction controls. */
+
+.debug-overlay__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+.debug-overlay__label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 16px;
+  line-height: 1.2;
+}
+.debug-overlay__value {
+  font-weight: bold;
+  text-align: right;
+}
+
+.debug-overlay__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 6px;
+  pointer-events: auto;
+}
+.debug-overlay__tab {
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--ui-radius-control);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.ui-surface--desktop-hover .debug-overlay__tab:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__tab:active,
+.debug-overlay__tab:focus-visible {
+  background: rgba(120, 190, 255, 0.16);
+  border-color: rgba(120, 190, 255, 0.45);
+  outline: none;
+}
+.debug-overlay__tab--active {
+  background: rgba(120, 190, 255, 0.22);
+  border-color: rgba(120, 190, 255, 0.65);
+}
+.debug-overlay__tab:focus-visible,
+.debug-overlay__metric-label:focus-visible,
+.debug-overlay__scale-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.debug-overlay__metric-label {
+  cursor: help;
+  pointer-events: auto;
+  touch-action: manipulation;
+  text-decoration: underline dotted rgba(115, 194, 251, 0.55);
+  text-underline-offset: 2px;
+  border-radius: 3px;
+  outline: none;
+  transition: background 80ms ease, color 80ms ease;
+}
+.ui-surface--desktop-hover .debug-overlay__metric-label:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__metric-label:active,
+.debug-overlay__metric-label:focus-visible {
+  color: var(--ui-text);
+  background: rgba(115, 194, 251, 0.16);
+}
+.ui-surface--desktop-hover .debug-overlay__metric-label--active,
+.ui-surface--desktop-hover .debug-overlay__metric-label:active {
+  color: var(--ui-text);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.debug-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(var(--ui-surface-rgb), 0.95);
+  color: var(--ui-text);
+  padding: calc(12px * var(--debug-overlay-scale, 1)) calc(15px * var(--debug-overlay-scale, 1));
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  z-index: var(--ui-layer-panel);
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  min-width: calc(280px * var(--debug-overlay-scale, 1));
+  box-sizing: border-box;
+  max-height: calc(100% - 20px);
+  pointer-events: all;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.debug-overlay::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.debug-overlay__scale-controls {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: calc(8px * var(--debug-overlay-scale, 1)) auto 0;
+  padding-top: calc(8px * var(--debug-overlay-scale, 1));
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  justify-content: center;
+  gap: calc(12px * var(--debug-overlay-scale, 1));
+  z-index: var(--ui-layer-tooltip);
+  pointer-events: all;
+  box-sizing: border-box;
+}
+
+.debug-overlay__scale-button {
+  width: calc(32px * var(--debug-overlay-scale, 1));
+  height: calc(32px * var(--debug-overlay-scale, 1));
+  background-color: rgba(var(--ui-accent-rgb), 0.1);
+  color: var(--ui-accent);
+  border: 1px solid var(--ui-accent);
+  border-radius: calc(6px * var(--debug-overlay-scale, 1));
+  font-family: var(--ui-font-mono);
+  font-weight: bold;
+  font-size: calc(20px * var(--debug-overlay-scale, 1));
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__scale-button:active:not(:disabled) {
+  background-color: rgba(var(--ui-accent-rgb), 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debug-overlay__metric-label { transition: none; }
+}
+
+.debug-overlay__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  pointer-events: all;
+  zoom: var(--debug-overlay-scale, 1);
+  /* TK-185: hide scrollbar completely while maintaining scroll functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.debug-overlay__content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.debug-overlay__details {
+  margin: 1px 0;
+}
+.debug-overlay__details--sub {
+  margin-left: 8px;
+}
+.debug-overlay__summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  outline: none;
+}
+.debug-overlay__summary::-webkit-details-marker {
+  display: none;
+}
+.debug-overlay__details > .debug-overlay__summary .debug-overlay__label::before,
+.debug-overlay__details > .debug-overlay__summary .debug-overlay__caption::before {
+  content: "▶ ";
+  display: inline-block;
+  color: var(--ui-accent);
+  transition: transform 0.15s ease;
+  font-size: 11px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.debug-overlay__details[open] > .debug-overlay__summary .debug-overlay__label::before,
+.debug-overlay__details[open] > .debug-overlay__summary .debug-overlay__caption::before {
+  transform: rotate(90deg);
+}
+.debug-overlay__summary:focus-visible {
+  outline: 2px solid var(--ui-info);
+  outline-offset: 2px;
+}
+.debug-overlay__details-body {
+  padding-left: 6px;
+  border-left: 1px solid rgba(var(--ui-accent-rgb), 0.2);
+  margin-left: 4px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
