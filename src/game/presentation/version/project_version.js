@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.66";
+export const CURRENT_PROJECT_VERSION = "0.49.67";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-02",
   notes: Object.freeze([
+    "TK-186: patchChildren in OverlayDomAdapter keeps content class and scroll container intact without pushing scale buttons out of view.",
     "TK-186: container-level zoom scaling, uncrushed metric labels and smooth responsive DEV overlay on mobile.",
     "TK-185: overlay scrollbar hidden, content and scale buttons in separate containers, load plan sections collapsible.",
     "TK-184: the bait boat, item editor and victory screen load in layer-three, first use waits for module without start delay.",

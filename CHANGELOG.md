@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.67 - Persistent scroll container in DOM patching
+
+- TK-186: `OverlayDomAdapter.updateHtml` uses `#patchChildren` on the temporary wrapper instead of `#patchNode` on the container so `.debug-overlay__content` retains its CSS class, `overflow-y: auto`, and flex properties across updates; prevents the content container from expanding unconstrained and pushing the footer scale buttons (+ / -) out of view; verified visually in Chrome at 400px viewport. Game-cycle report unchanged.
+
 ## v0.49.66 - Clean overlay zoom and uncrushed mobile layout
 
 - TK-186: DEV overlay scaling moves to container-level `zoom: var(--debug-overlay-scale, 1)` on `.debug-overlay` (`width: 320px`, `max-width: calc(100% - 20px)`, `max-height: calc(100% - 20px)`) so child metrics and scale buttons scale together cleanly; `.debug-overlay__label` uses `white-space: nowrap; flex-shrink: 0` to prevent metric labels from breaking into single vertical characters on narrow screens; verified visually in Chrome across multiple mobile viewport sizes. Game-cycle report unchanged.
@@ -38,9 +42,7 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - TK-158: depth order is float, line, rod (the rod is nearest the camera and covers the float where they meet), on the 2D canvas and in the WebGL scene; render-resolution checks both. Game-cycle report unchanged.
 
-## v0.49.57 - VOLIA at 32 kbit/s
 
-- Spec 157 F (owner: 32 kbit/s): the three VOLIA 77.2 recordings are AAC (.m4a), mono, 32 kHz, 32 kbit/s, re-encoded with utils/convert-audio.js: 68.80 -> 8.34 MB per release; the originals moved to asset-sources/audio/radio/volia/. Asset ids and the playlist are unchanged. Game-cycle report unchanged.
 
 
 
