@@ -3,7 +3,7 @@
 import "./game_startup_meter.entry-A2ZHJ3CD.js";
 const esm = new URLSearchParams(location.search).has("esm");
 if (esm) {
-  const graph = await fetch(new URL("./index.esm-F156504B.json", import.meta.url)).then((response) => response.json());
+  const graph = await fetch(new URL("./index.esm-8CC577F3.json", import.meta.url)).then((response) => response.json());
   for (const href of graph) {
     const link = document.createElement("link");
     link.rel = "modulepreload";
@@ -11,4 +11,4 @@ if (esm) {
     document.head.append(link);
   }
 }
-await import(esm ? "../src/entrypoints/game.entry.js?v=0.49.70" : "./game.entry-GMCZOJYZ.js");
+await import(esm ? "../src/entrypoints/game.entry.js?v=0.49.72" : "./game.entry-DCZ36NA4.js");

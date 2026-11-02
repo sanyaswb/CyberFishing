@@ -19,6 +19,7 @@ export class OverlayWindowDragController {
   #onPointerDown = (event) => this.#handlePointerDown(event);
   #onPointerMove = (event) => this.#handlePointerMove(event);
   #onPointerUp = (event) => this.#handlePointerUp(event);
+  #onTouchMove = (event) => this.#handleTouchMove(event);
   #onResize = () => this.clampToViewport();
 
   constructor({
@@ -56,6 +57,8 @@ export class OverlayWindowDragController {
     this.#element.removeEventListener("pointermove", this.#onPointerMove);
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
+    this.#element.removeEventListener("touchmove", this.#onTouchMove, { capture: true });
+    this.#windowTarget?.removeEventListener?.("touchmove", this.#onTouchMove, { capture: true });
     this.#windowTarget?.removeEventListener?.("resize", this.#onResize);
     this.#unsubscribeSurface?.();
     this.#unsubscribeSurface = null;
@@ -66,6 +69,12 @@ export class OverlayWindowDragController {
     this.#isDragging = false;
     this.#element?.classList?.remove?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "";
+    const content = this.#element?.querySelector?.(".debug-overlay__content");
+    if (content?.style) {
+      content.style.overflowY = "";
+      content.style.touchAction = "";
+      content.style.pointerEvents = "";
+    }
   }
 
   isDragging() {
@@ -130,6 +139,15 @@ export class OverlayWindowDragController {
     this.#element.addEventListener("pointermove", this.#onPointerMove);
     this.#element.addEventListener("pointerup", this.#onPointerUp);
     this.#element.addEventListener("pointercancel", this.#onPointerUp);
+    this.#element.addEventListener("touchmove", this.#onTouchMove, { passive: false, capture: true });
+    this.#windowTarget?.addEventListener?.("touchmove", this.#onTouchMove, { passive: false, capture: true });
+  }
+
+  #handleTouchMove(event) {
+    if (this.#isDragging) {
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   #handlePointerMove(event) {
@@ -138,7 +156,7 @@ export class OverlayWindowDragController {
         event.clientX - this.#startX,
         event.clientY - this.#startY,
       );
-      if (distance > 10) this.#clearHoldTimer();
+      if (distance > 18) this.#clearHoldTimer();
       return;
     }
 
@@ -153,12 +171,20 @@ export class OverlayWindowDragController {
     this.#element.removeEventListener("pointermove", this.#onPointerMove);
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
+    this.#element.removeEventListener("touchmove", this.#onTouchMove, { capture: true });
+    this.#windowTarget?.removeEventListener?.("touchmove", this.#onTouchMove, { capture: true });
     this.#clearHoldTimer();
 
     if (!this.#isDragging) return;
     this.#isDragging = false;
     this.#element?.classList?.remove?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "";
+    const content = this.#element?.querySelector?.(".debug-overlay__content");
+    if (content?.style) {
+      content.style.overflowY = "";
+      content.style.touchAction = "";
+      content.style.pointerEvents = "";
+    }
     this.clampToViewport();
     this.#savePosition();
   }
@@ -167,6 +193,12 @@ export class OverlayWindowDragController {
     this.#isDragging = true;
     this.#element?.classList?.add?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "none";
+    const content = this.#element?.querySelector?.(".debug-overlay__content");
+    if (content?.style) {
+      content.style.overflowY = "hidden";
+      content.style.touchAction = "none";
+      content.style.pointerEvents = "none";
+    }
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
     this.#element.style.right = "auto";
@@ -231,7 +263,7 @@ export class OverlayWindowDragController {
 
   #isInteractiveTarget(target) {
     return !!target?.closest?.(
-      "button,input,select,textarea,summary,[data-overlay-control],.debug-overlay__metric-label",
+      "button,input,select,textarea,summary,[data-overlay-control]",
     );
   }
 
