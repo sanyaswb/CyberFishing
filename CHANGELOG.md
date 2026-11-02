@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.69 - Scroll lock during active window drag
+
+- TK-188: when long-click window drag activates (`.draggable-window--dragging`), content scrolling is completely locked (`overflow-y: hidden !important`, `touch-action: none !important`, `pointer-events: none !important`, and element `touchAction = "none"`) so pointer motion drags the window without scrolling the content; text selection and iOS/Android touch callouts are disabled on the overlay window. Game-cycle report unchanged.
+
 ## v0.49.68 - Visual feedback and blue outline for draggable windows
 
 - TK-187: movable windows (`OverlayWindowDragController`, `.draggable-window`) provide tactile visual feedback when long-click drag activates (`.draggable-window--dragging`); plays a brief scale contraction and recovery animation (`draggable-window-pop`, scale 1 -> 0.96 -> 1), applies a 2px blue outline (`#2196f3`), and lightens the background (`rgba(30, 48, 68, 0.96)`) while dragging. Game-cycle report unchanged.
@@ -38,9 +42,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - TK-181: the rod is no longer a rectangle until its Spine export arrives: a small upright picture of the atlas region (9.9 KB, first layer of the load plan) stands in the export's setup pose at the same scale and line tip. Start 0.70 -> 0.71 MB. Game-cycle report unchanged.
 
-## v0.49.59 - Rod towards the centre
-
-- TK-157: a cast aimed to one side no longer puts the rod straight under it: the target is chosen as before, then the rod (and the line's origin) moves towards the screen centre as far as the longest cast still reaches the target, never past the centre; a cast at the full line length keeps the rod under the target. Game-cycle report unchanged.
 
 
 

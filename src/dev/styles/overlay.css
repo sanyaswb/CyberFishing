@@ -102,6 +102,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   transition: background 160ms ease, outline 160ms ease, box-shadow 160ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* TK-187: Visual tactile feedback for windows movable via long click */
@@ -127,6 +130,14 @@
   outline-offset: -2px;
   background: rgba(30, 48, 68, 0.96);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
+  touch-action: none;
+}
+
+/* TK-188: Prevent any scrolling while dragging is active */
+.draggable-window.draggable-window--dragging .debug-overlay__content {
+  overflow-y: hidden;
+  pointer-events: none;
+  touch-action: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
