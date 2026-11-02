@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.72 - Isolate touch gestures and allow metric label drag hold
+
+- TK-191: DEV overlay window dragging (`OverlayWindowDragController`) no longer aborts pointerdown on `.debug-overlay__metric-label`, allowing hold-to-drag initiation anywhere on the report; active dragging captures and prevents default on touchmove (`{ passive: false, capture: true }`) to block mobile browser vertical scroll takeover, raises movement slop threshold to 18px to prevent micro-wobble cancellations, and freezes content overflow/pointer-events during movement. Game-cycle report unchanged.
+
 ## v0.49.71 - Scope overlay metric underline to desktop hover
 
 - TK-190: DEV overlay metric labels (`.debug-overlay__metric-label`) display as clean unstyled text on touch devices without pseudo-link dotted underline or press highlighting; dotted underline decoration and help cursor are scoped exclusively to desktop pointer hover (`.ui-surface--desktop-hover`). Game-cycle report unchanged.
@@ -38,9 +42,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - TK-184: the bait boat, item assembly editor, and victory screen presentation modules are deferred to the asset load plan's third layer (start "after:layer-two"); a first action requesting any of them loads the module interactively without startup delay, while the game core remains at the start. Lazy features check asserts the behavior. Game-cycle report unchanged.
 
-## v0.49.62 - Pixi and waves after start
-
-- TK-183: the 2D canvas draws the first frame, the Pixi bundle is excluded from release preloads and loads via the asset load plan's features layer after ready, and PixiWaterRenderer scales waves against the registry's full image width so waves are never stretched when the background starts from a low-quality copy. Scene-layer and lazy-features checks assert the behavior. Game-cycle report unchanged.
 
 
 
