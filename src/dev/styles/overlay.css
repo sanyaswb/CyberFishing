@@ -3,19 +3,27 @@
 .debug-overlay__row {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  align-items: baseline;
+  gap: 8px;
   margin-bottom: 2px;
   font-size: 12px;
+  min-width: 0;
 }
 .debug-overlay__label {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   min-height: 16px;
   line-height: 1.2;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .debug-overlay__value {
   font-weight: bold;
   text-align: right;
+  flex-shrink: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .debug-overlay__tabs {
@@ -88,7 +96,9 @@
   display: none;
   flex-direction: column;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-  min-width: calc(280px * var(--debug-overlay-scale, 1));
+  width: calc(340px * var(--debug-overlay-scale, 1));
+  max-width: calc(100% - 20px);
+  min-width: calc(180px * var(--debug-overlay-scale, 1));
   box-sizing: border-box;
   max-height: calc(100% - 20px);
   pointer-events: all;
@@ -99,6 +109,11 @@
   display: none;
   width: 0;
   height: 0;
+}
+
+.debug-overlay__caption {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .debug-overlay__scale-controls {
@@ -145,6 +160,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   touch-action: pan-y;
   pointer-events: all;

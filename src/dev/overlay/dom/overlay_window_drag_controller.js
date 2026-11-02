@@ -81,11 +81,15 @@ export class OverlayWindowDragController {
     const originY = origin?.originY || 0;
     const surfaceScale = origin?.scale || 1;
 
-    // TK-185: Constrain overlay maxHeight to available screen height so it never cuts off behind the taskbar
+    // TK-185: Constrain overlay maxHeight and maxWidth to available screen dimensions
     const margin = 10;
     const maxPhysicalHeight = Math.max(120, viewportHeight - margin * 2);
     const maxLogicalHeight = maxPhysicalHeight / surfaceScale;
     this.#element.style.maxHeight = `${maxLogicalHeight}px`;
+
+    const maxPhysicalWidth = Math.max(180, viewportWidth - margin * 2);
+    const maxLogicalWidth = maxPhysicalWidth / surfaceScale;
+    this.#element.style.maxWidth = `${maxLogicalWidth}px`;
 
     const rect = this.#element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
