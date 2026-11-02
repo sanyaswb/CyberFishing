@@ -3036,6 +3036,34 @@ class InventoryUiBehaviorCheck {
       "Progression adapter and item renderer must not duplicate the rating-tier badge",
     );
 
+    const { ITEM_DB } = new SourceRuntime().importModule(
+      "src/game/config/raw/items/item_database.js",
+    );
+    const dayFloatCard = isolatedItemRenderer.renderItem(ITEM_DB.floats.float_day, { wholeArt: true });
+    assert.strictEqual(
+      this.#findAllByClass(dayFloatCard, "inventory-item-card__glow-image").length,
+      0,
+      "Day float must not render a glow overlay",
+    );
+
+    const nightFloatCard = isolatedItemRenderer.renderItem(ITEM_DB.floats.float_night, { wholeArt: true });
+    const nightGlowImages = this.#findAllByClass(nightFloatCard, "inventory-item-card__glow-image");
+    assert.strictEqual(
+      nightGlowImages.length,
+      1,
+      "Night float card must render a glow overlay",
+    );
+    assert.strictEqual(
+      nightGlowImages[0].src,
+      "assets/items/floats-scene/float-day-glow.webp",
+      "Night float glow overlay must point to the float glow asset",
+    );
+    assert.strictEqual(
+      nightGlowImages[0].getAttribute("aria-hidden"),
+      "true",
+      "Glow overlay image must be aria-hidden",
+    );
+
     currentView = this.#loadoutViewModel();
     ui.render(currentView);
     const inventoryBeforePreview = this.#findByClass(

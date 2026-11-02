@@ -2,6 +2,19 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-192"></a>
+
+## TK-192 — відображення світлового кінчика нічного поплавка в картках та редакторі спорядження (v0.49.74)
+
+- [x] **TK-192 — відображення світлового кінчика нічного поплавка в картках та редакторі спорядження (власник, 2026-11-03; v0.49.74).**
+  Власник: «Чому коли я купую нічний поплавок в редакторі я бачу скін денного?» -> «Давай варіант Б, він фактично змінюється вночі і ефект працює тож ми цей самий ефект накладемі не буде дубліката роби і пуш в gh pages».
+  Знайдено: у базі предметів (`item_database.js`) `float_night` має спільний `iconAsset: "items.floats.float-day"`, але має `skin.scene.glow: { asset: "items.floats-scene.float-day-glow", pad: 8 }`. В `InventoryItemCardRenderer.#renderMainVisual` відмальовувався лише базовий асет без накладання шару світіння.
+  Зміни:
+  1. `src/game/presentation/inventory/inventory_item_card_renderer.js`: у `#renderMainVisual` додано перевірку асету світіння (`item.glowAsset || item.skin?.glowAsset || item.skin?.scene?.glow?.asset`). Якщо задано, створюється елемент `glowImage` з класом `.inventory-item-card__glow-image`, `aria-hidden="true"` та додається до `.inventory-item-card__visual`.
+  2. `src/game/presentation/styles/inventory/item-cards.css`: додано стилі для `.inventory-item-card__glow-image` (абсолютне позиціонування поверх візуалу, `inset: var(--inventory-image-inset, 0px)`, `width: calc(100% - 2 * var(--inventory-image-inset, 0px))`, `height: calc(100% - 2 * var(--inventory-image-inset, 0px))`, `object-fit: contain`, `pointer-events: none`, `user-select: none`).
+  3. `utils/checks/ui/inventory-ui-check.js`: додано перевірку наявності світлового шару для `float_night` (елемент `.inventory-item-card__glow-image` із `src="assets/items/floats-scene/float-day-glow.webp"`) та його відсутності для `float_day`.
+  Перевірено: `node utils/checks/ui/inventory-ui-check.js`, `npm run check:quick`, `npm run check` (82/82 успішно). Game-cycle без змін.
+
 <a id="tk-159"></a>
 
 ## TK-159 — нічне світіння поплавка лише на зеленій частинці (v0.49.73)

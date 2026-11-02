@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.74 - Night float glowing tip in cards and assembly editor
+
+- TK-192: night float (`float_night`) renders an additive green glowing tip overlay (`items.floats-scene.float-day-glow`, `.inventory-item-card__glow-image`) over the float antenna in inventory item cards, equipment slots and assembly editor preview, distinguishing it from the day float without duplicate raster assets. Inventory-ui check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.73 - Float night glow only on tip
 
 - TK-159: night float halo is disabled by default (`nightHalo: false` in `CONFIG.ui.float` and builder) so only the antenna tip glows green additively (`nightTipGlow`, `float-day-glow.webp`) at night as specified in spec 127; the full-body green radial halo / canvas shadow is no longer drawn over the float body. Float-pose check asserts the behavior. Game-cycle report unchanged.
@@ -37,10 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.65 - Scaled overlay width and mobile viewport constraints
 
 - TK-186: the DEV overlay width scales responsively with `--debug-overlay-scale` (`width: calc(340px * var(--debug-overlay-scale, 1))`, `min-width: calc(180px * var(--debug-overlay-scale, 1))`, `max-width: calc(100% - 20px)`); row labels and values wrap breaking long text anywhere so the unzoomed intrinsic content no longer stretches the window to full viewport width on mobile phones; drag clamping enforces dynamic maxWidth within the UI surface so scaling down contracts the window bounds smoothly instead of keeping it pinned against the right screen edge. Game-cycle report unchanged.
-
-## v0.49.64 - Overlay hidden scrollbar and separate containers
-
-- TK-185: the DEV overlay scrollbar is hidden (`scrollbar-width: none`, `-ms-overflow-style: none`, `::-webkit-scrollbar: none`); the overlay forms a unified window with a scrollable content area containing the report and action buttons, logically separated by a divider from the bottom scale buttons (+ / -) so buttons never overlap text and remain always accessible; scale buttons layout within window padding without straddling borders, viewport drag/clamp prevents taskbar overlap; keyed DOM diffing preserves collapsible load plan sections without flicker or toggle race conditions. Startup-load-report check asserts the behavior. Game-cycle report unchanged.
 
 
 
