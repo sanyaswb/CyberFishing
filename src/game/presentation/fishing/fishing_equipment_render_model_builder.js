@@ -204,13 +204,13 @@ export class FishingEquipmentRenderModelBuilder {
     target.x = screenPosition.x;
     target.y = screenPosition.y;
     target.color = visual.color;
-    // Halo around the tackle (ui.float, DEV switches): the bite colours' halo is off by default (owner, v0.46.2); a
-    // night float has a green halo and tip glow only while the location's night lighting is present.
+    // Halo around the tackle (ui.float, DEV switches): both bite halo and night halo are off by default (owner, v0.46.2, TK-159);
+    // a night float has tip glow only while the location's night lighting is present.
     const floatUi = this.#config.ui?.float || {};
     const nightFloat = kind === "float" && floatConfig.variant === "night";
     const isNight = nightFloat && backgroundTimeBlend(this.#getTimeOfDay(), this.#timeBlend).night > 0;
     const biteHalo = (!nightFloat || isNight) && floatUi.biteHalo === true && visual.color !== "#ffffff" && visual.color !== "#00ff80";
-    const nightHalo = isNight && floatUi.nightHalo !== false;
+    const nightHalo = isNight && floatUi.nightHalo === true;
     target.glow = biteHalo || nightHalo;
     target.glowColor = biteHalo ? visual.color : NIGHT_HALO_COLOR;
     target.glowBlur = 8 * scale;

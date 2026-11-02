@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.73 - Float night glow only on tip
+
+- TK-159: night float halo is disabled by default (`nightHalo: false` in `CONFIG.ui.float` and builder) so only the antenna tip glows green additively (`nightTipGlow`, `float-day-glow.webp`) at night as specified in spec 127; the full-body green radial halo / canvas shadow is no longer drawn over the float body. Float-pose check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.72 - Isolate touch gestures and allow metric label drag hold
 
 - TK-191: DEV overlay window dragging (`OverlayWindowDragController`) no longer aborts pointerdown on `.debug-overlay__metric-label`, allowing hold-to-drag initiation anywhere on the report; active dragging captures and prevents default on touchmove (`{ passive: false, capture: true }`) to block mobile browser vertical scroll takeover, raises movement slop threshold to 18px to prevent micro-wobble cancellations, and freezes content overflow/pointer-events during movement. Game-cycle report unchanged.
@@ -38,9 +42,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - TK-185: the DEV overlay scrollbar is hidden (`scrollbar-width: none`, `-ms-overflow-style: none`, `::-webkit-scrollbar: none`); the overlay forms a unified window with a scrollable content area containing the report and action buttons, logically separated by a divider from the bottom scale buttons (+ / -) so buttons never overlap text and remain always accessible; scale buttons layout within window padding without straddling borders, viewport drag/clamp prevents taskbar overlap; keyed DOM diffing preserves collapsible load plan sections without flicker or toggle race conditions. Startup-load-report check asserts the behavior. Game-cycle report unchanged.
 
-## v0.49.63 - Boat, editor and victory in layer-three
-
-- TK-184: the bait boat, item assembly editor, and victory screen presentation modules are deferred to the asset load plan's third layer (start "after:layer-two"); a first action requesting any of them loads the module interactively without startup delay, while the game core remains at the start. Lazy features check asserts the behavior. Game-cycle report unchanged.
 
 
 

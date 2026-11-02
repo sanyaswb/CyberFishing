@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.72";
+export const CURRENT_PROJECT_VERSION = "0.49.73";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-02",
   notes: Object.freeze([
+    "TK-159: disable night halo by default so only the float tip glows green additively at night.",
     "TK-191: isolate touch gestures and allow metric label drag hold without scroll interference.",
     "TK-190: scope overlay metric underline to desktop hover only.",
     "TK-189: suppress long-touch vibration and configure 800ms hold.",

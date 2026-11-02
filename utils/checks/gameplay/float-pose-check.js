@@ -205,14 +205,18 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
   timeOfDay = 0;
   build("night");
   assert.equal(model.tipGlowId, "glow.webp", "the night float gets its tip glow");
-  assert(model.glow === true && model.glowColor === "#46ff8c", "the night float has a green halo by default");
+  assert.equal(model.glow, false, "TK-159: the night float has no outside halo by default, only tip glow");
+  floatUi.nightHalo = true;
+  build("night");
+  assert(model.glow === true && model.glowColor === "#46ff8c", "the DEV switch brings the night halo back");
+  delete floatUi.nightHalo;
   const nightGeometry = [model.bodyHeight, model.visibleShare, model.width, model.height, model.rotationRad];
   // Reuse the same cast/read model through sunset, night and dawn, following the background's exact boundaries.
   for (const [hour, shouldGlow] of [[12, false], [18, false], [19, false], [19.01, true],
     [21, true], [23.99, true], [0, true], [5, true], [6.99, true], [7, false], [9, false]]) {
     timeOfDay = hour;
     build("night");
-    assert.equal(model.glow, shouldGlow, `outside halo follows location light at ${hour}`);
+    assert.equal(model.glow, false, `TK-159: default night float has no outside halo at ${hour}`);
     assert.equal(model.tipGlowId, shouldGlow ? "glow.webp" : "", `tip overlay follows location light at ${hour}`);
     assert.equal(model.imageId, "float.webp", "daylight retains the original red-tipped artwork");
     assert.deepEqual([model.bodyHeight, model.visibleShare, model.width, model.height, model.rotationRad], nightGeometry,
