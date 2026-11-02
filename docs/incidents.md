@@ -24,6 +24,35 @@ rule as something the next change can follow.
 | R8 | An effect added to an existing signal (a displacement map, a sound, a light) is sized against that signal and its grid: the check asserts its magnitude as a share of the signal's full range and that the smallest real input still reaches a cell. A check that only asserts "changed" passes an invisible effect. | I-8 |
 | R9 | Page-level styles never set a background on `html`/`:root`: the body's background must keep moving to the canvas, below the WebGL scene at `z-index: -1`. A browser check of a page change looks at the pixels of the scene, not only at what an element hit test returns. | I-9 |
 | R10 | Project text files are read and written as UTF-8 explicitly: Node (`fs` with `"utf8"`) or the editor tools, never Windows PowerShell 5.1 `Get-Content` / `Set-Content` without `-Encoding UTF8` (they read UTF-8 without a BOM as the ANSI code page). A bulk rewrite of a page or module is followed by the `text-encoding` check. | I-10 |
+| R11 | Dynamic DOM reconciliation (`#patchChildren`) must never patch the outer container element with attributes of an ephemeral wrapper. Containers preserve their CSS classes, flex constraints and scroll contexts across update ticks. | I-11 |
+| R12 | UI responsive and bounds checks must test layout geometry (`getBoundingClientRect()`, viewport boundaries, scroll overflow) after real update intervals, not just DOM node presence (`querySelector`) at mount time (T=0). | I-11 |
+| R13 | Responsive layout testing must assert the worst-case payload (all sections active/expanded, maximum metrics) at minimum screen width (320px–400px). | I-11 |
+
+## I-11 · 2026-11-02 · v0.49.63–66: Dev overlay pushed scale buttons off-screen and broke scrolling (TK-186)
+
+- **Seen:** on mobile screen (400px portrait) and desktop when both «Завантаження» and «Продуктивність» were active:
+  scale buttons `[ - ]` and `[ + ]` disappeared completely from the overlay, content grew beyond the screen height
+  instead of scrolling inside the window, and scaling only shrunk the buttons' font without reducing the window width.
+- **Cause:** in `src/dev/overlay/dom/overlay_dom_adapter.js`, `updateHtml()` called `this.#patchNode(this.#content, temp)`.
+  The ephemeral `temp` wrapper was an unstyled `<div>`. On mount, `this.#content` had `class="debug-overlay__content"`.
+  On the very first periodic update tick (150 ms later), `#patchNode` compared `this.#content` against the unstyled
+  `temp` and stripped the `debug-overlay__content` class (`current.removeAttribute("class")`). Without this class, CSS
+  rules `overflow-y: auto`, `min-height: 0` and flex shrinkage were lost; the element expanded to 1182 px, pushing the
+  footer buttons down to y=1202 px (off-screen).
+- **Why it slipped through:**
+  1. Synthetic DOM checks checked at T=0 (mount time), before the 150 ms timer fired the first update tick.
+  2. Test assertions checked `querySelector('.debug-overlay__scale-btn') !== null` (DOM element existence), which
+     succeeds even when the element is rendered hundreds of pixels outside the visible viewport.
+  3. Tests only checked single-module configurations rather than the worst-case payload (both heavy modules active).
+  4. On Android phones, Chrome in Incognito mode / secure tabs enables `FLAG_SECURE`, causing hardware screenshot
+     blanking (solid black images of 3542 bytes), which prevented visual feedback during mobile checks.
+- **Fix (v0.49.67):** `OverlayDomAdapter.updateHtml` calls `this.#patchChildren(this.#content, temp)` instead of
+  `#patchNode`, ensuring `this.#content` retains its classes, styles, and scrollable container invariants indefinitely.
+- **Rules:** R11, R12, R13.
+- **Check:** `npm run check` and Playwright headless check asserting footer scale button visibility (`rect.bottom <= viewportHeight`),
+  content scroll height constraints (`scrollHeight > clientHeight` when content overflows), and retention of
+  `debug-overlay__content` after multiple update ticks (> 300 ms).
+
 
 ## I-10 · 2026-10-31 · v0.48.45–0.49.35: the version badge's label was unreadable (TK-167)
 
