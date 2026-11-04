@@ -307,7 +307,7 @@ async function stageTwo() {
     scheduler: scheduler(), config: () => ({}), onState() {} });
   resolving.play = (url, options) => resolved.push([url, options]);
   resolving.playAsset("audio.radio.volia.RADIO_VOLIA", { isStationSwitch: false });
-  assert.deepEqual(resolved, [["assets/audio/radio/volia/RADIO_VOLIA.m4a", { isStationSwitch: false }]]);
+  assert.deepEqual(resolved, [["assets/audio/radio/volia/RADIO_VOLYA.m4a", { isStationSwitch: false }]]);
   // Spec 157 F (owner: 32 kbit/s): VOLIA plays re-encoded AAC files within the size budget; the masters stay in
   // asset-sources/ and are never released.
   const voliaTracks = Object.entries(ASSET_REGISTRY).filter(([id]) => id.startsWith("audio.radio.volia."));

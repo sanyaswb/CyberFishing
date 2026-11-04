@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.81 - New VOLIA 77.2 recording
+
+- TK-198: the first VOLIA 77.2 track plays the owner's new recording (8:34) under the same asset id, as 32 kbit/s mono AAC like the other tracks; the master is in `asset-sources/`, the old `RADIO_VOLIA.m4a` is removed. Radio-receiver check asserts the file. Game-cycle report unchanged.
+
 ## v0.49.80 - Vector icons outside the inventory
 
 - TK-197: the chum and boat button, the net fallback, the clock and its speed use symbols of the shared sprite; the world boat without Spine is a vector shape from above; the `emoji` stat is gone.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.72 - Isolate touch gestures and allow metric label drag hold
 
 - TK-191: DEV overlay window dragging (`OverlayWindowDragController`) no longer aborts pointerdown on `.debug-overlay__metric-label`, allowing hold-to-drag initiation anywhere on the report; active dragging captures and prevents default on touchmove (`{ passive: false, capture: true }`) to block mobile browser vertical scroll takeover, raises movement slop threshold to 18px to prevent micro-wobble cancellations, and freezes content overflow/pointer-events during movement. Game-cycle report unchanged.
-
-## v0.49.71 - Scope overlay metric underline to desktop hover
-
-- TK-190: DEV overlay metric labels (`.debug-overlay__metric-label`) display as clean unstyled text on touch devices without pseudo-link dotted underline or press highlighting; dotted underline decoration and help cursor are scoped exclusively to desktop pointer hover (`.ui-surface--desktop-hover`). Game-cycle report unchanged.

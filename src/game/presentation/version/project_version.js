@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.80";
+export const CURRENT_PROJECT_VERSION = "0.49.81";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-04",
   notes: Object.freeze([
+    "TK-198: VOLIA 77.2 plays the owner's new recording.",
     "TK-197: chum and boat button, net fallback, clock and world boat fallback draw vector icons instead of emoji.",
     "TK-196: on mobile the load scale moves from the header to the bottom of the rod panel.",
     "TK-195: inventory placeholders and filters use vector icons instead of emoji; rod and hook slot icons redrawn.",
