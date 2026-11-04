@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.84";
+export const CURRENT_PROJECT_VERSION = "0.49.85";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-04",
   notes: Object.freeze([
+    "TK-203: the Fisherman's House is open: art of every room level loads lazily in the third layer.",
     "TK-202: DEV overlay grows to its text on wide layouts and scrolls on phones; loading rows have no hints; zoom and metric clicks fixed.",
     "TK-201: audio loads only when the radio starts or a sound plays, never in the background.",
     "TK-200: after the start every open resource loads in the owner's lazy order; progress-closed art waits in a locked queue.",

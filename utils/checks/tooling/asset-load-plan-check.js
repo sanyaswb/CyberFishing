@@ -224,11 +224,11 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.deepEqual(lazyKinds("lazy-items"), ["image"], "the items group holds images only");
   assert.deepEqual(lazyKinds("lazy-spine"), ["spine"]);
   assert.deepEqual(lazyKinds("audio"), ["audio"]);
-  const levelTwo = "house.room-1.lvl-2.room--1-day-lvl--2";
-  assert(production.lockedIds({ roomLevel: 1 }).includes(levelTwo), "a level above the room's is closed");
-  assert(!production.lockedIds({ roomLevel: 1, roomTargetLevel: 2 }).includes(levelTwo), "the level under renovation is open");
-  assert(!production.lockedIds({ roomLevel: 1 }).some((id) => id.includes(".lvl-1.")), "the current level is open");
-  assert.equal(production.lockedIds({ roomLevel: 5 }).length, 0, "the last level opens everything");
+  // TK-203: the Fisherman's House is open: every level's art loads lazily and nothing is closed today.
+  assert.deepEqual(production.lockedIds({}), [], "nothing is closed by progress today");
+  const roomIds = production.resolveGroup(lazyGroup("lazy-room"), {});
+  assert.equal(roomIds.length, assets.idsByTag("house").length, "the room group holds all the House art");
+  assert(roomIds.includes("house.room-1.lvl-5.room--1-day-lvl--5"), "the highest level loads too");
 
   // Spec 159: the lazy layer runs the low pass, then the full pass in the same order; closed assets stay out until they
   // open; Spine and audio reach the cache; a later layer's full file follows its copy; a copy is not "ready" for a view.

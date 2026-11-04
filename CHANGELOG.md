@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.85 - Fisherman's House loads lazily
+
+- TK-203 (spec 159): the Fisherman's House is open, so the art of every room level loads in the third layer; the `locked` queue stays for future content and is empty today. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.84 - DEV overlay width, loading rows and zoom
 
 - TK-202: the DEV overlay grows to its unwrapped text above 820 logical px and scrolls sideways up to 820; loading rows have no hints, hover or click. Dragging, limits and the saved position now account for the window's zoom, a click on a metric reaches it again (capture starts with the drag), and the window is clamped when its size changes instead of on every update. Ui-surface and startup-load-report checks assert the behavior. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.76 - Overlay drag hold threshold unified to 500ms
 
 - TK-191: unified overlay and draggable button hold threshold to 500ms (`dragHoldTimeMs: 500` in `CONFIG.ui` and drag controllers) so visual drag mode activates in direct synchronization with standard mobile phone haptic long-press vibration. UI surface check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.75 - Depth selector equipped float with night glow, 50% default depth, full rod thumbnail and 45deg float rotation
-
-- TK-192 / TK-193: depth selector button dynamically displays the equipped float (with additive green glow tip for `float_night`) instead of hardcoded day float; default float depth set to 50% of available max depth instead of 0.1m. Rod inventory thumbnail displays full rod (`visibleHeight: 1, focusX: 0.5`) and floats are rotated by 45 degrees in cards and depth selector button. Inventory-ui, inventory-selector and ui-components checks assert the behavior. Game-cycle report unchanged.

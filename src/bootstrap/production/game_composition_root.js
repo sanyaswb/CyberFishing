@@ -50,7 +50,6 @@ import { DegradationColorResolver } from "../../game/presentation/styles/degrada
 import { DependencyContractValidator } from "../../engine/di/dependency_contract_validator.js";
 import { composeDepthSelector } from "./depth_selector_composition.js";
 import { BrowserAssetTransport } from "../../platform/browser/assets/browser_asset_transport.js";
-import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
@@ -343,7 +342,7 @@ export class GameCompositionRoot {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
-    void this.#preload?.startOn("ready", this.#roomProgressState());
+    void this.#preload?.startOn("ready");
     for (const load of this.#deferredAssetLoads) load();
   }
 
@@ -361,12 +360,6 @@ export class GameCompositionRoot {
       duplicates: this.#assetDuplicates ??= this.#assets.duplicates(),
       queue: this.#preload.getQueueSnapshot(),
     };
-  }
-
-  // The room's levels as the load plan's state: what game progress has opened (spec 159).
-  #roomProgressState() {
-    const room = new RoomProgressLocalStore(this.#windowTarget.localStorage).load();
-    return { roomLevel: room?.level, roomTargetLevel: room?.targetLevel };
   }
 
   // Services of the running session that other screens share instead of composing their own (spec 084).
@@ -568,8 +561,7 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt,
-      onRoomProgress: ({ level, targetLevel }) => { void this.#preload.setProgress({ roomLevel: level, roomTargetLevel: targetLevel }); } });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({
