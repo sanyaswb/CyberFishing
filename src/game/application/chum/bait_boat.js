@@ -50,7 +50,7 @@ export class BaitBoat {
     const statsConfig = config.effectiveStats || config;
     this.config = Object.assign({}, statsConfig, {
       skin: config.skin || statsConfig.skin || null,
-      emoji: statsConfig.emoji || config.icon || "🚤",
+      emoji: statsConfig.emoji || "🚤",
     });
     this.skin = this.config.skin;
     // The equipped delivery slot may change while this boat is away. Keep the

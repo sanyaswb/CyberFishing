@@ -119,9 +119,7 @@ export class InventoryTooltipPresenter {
 
     const title = this.#document.createElement("div");
     title.className = "inventory-tooltip__title";
-    title.textContent = [item.icon || item.emoji, item.name]
-      .filter(Boolean)
-      .join(" ");
+    title.textContent = item.name || "";
     this.#tooltipNode.appendChild(title);
 
     const sections = this.#balanceParameterResolver.resolve(

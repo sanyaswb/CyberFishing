@@ -1,4 +1,5 @@
 import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
+import { createItemPlaceholderIcon } from "./inventory_icons.js";
 
 export class InventoryItemCardRenderer {
   #dom;
@@ -214,7 +215,7 @@ export class InventoryItemCardRenderer {
       image.setAttribute("aria-hidden", "true");
       visual.appendChild(image);
     } else {
-      visual.appendChild(this.#dom.glyph(item.icon || item.emoji || "?", "inventory-item-card__icon"));
+      visual.appendChild(createItemPlaceholderIcon(this.#dom, item.icon, "inventory-item-card__icon"));
     }
     const glowAsset = item.glowAsset || item.skin?.glowAsset || item.skin?.scene?.glow?.asset;
     if (glowAsset) {

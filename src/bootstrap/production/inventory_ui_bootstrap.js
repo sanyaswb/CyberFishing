@@ -82,7 +82,7 @@ export class InventoryUiBootstrap {
         isPagingEnabled: InventoryUiBootstrap.#swipeEnabled(dom),
         swipeController: new SwipePagerController({ isEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-section-swipe") }),
         config: pagerConfig }),
-      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS, fishArt }),
+      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS, fishArt, domFactory: dom }),
       hintRenderer: new UiHintRenderer({ domFactory: dom }),
       listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
   }

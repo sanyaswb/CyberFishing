@@ -1,3 +1,5 @@
+import { createInventoryIcon } from "./inventory_icons.js";
+
 const MOBILE_COLUMNS_BY_SCALE_ID = Object.freeze({
   1: 6,
   2: 4,
@@ -162,17 +164,9 @@ export class InventoryGridRenderer {
     settingsToggle.addEventListener("click", () => onSettingsToggle?.(settingsToggle));
     navigation.appendChild(settingsToggle);
     model.categories.forEach((category) => {
-      const label = [category.iconAsset ? "" : category.icon, category.label].filter(Boolean).join(" ");
-      const button = this.#dom.button(
-        "inventory-categories__button",
-        category.iconAsset ? "" : label,
-      );
-      const image = this.#dom.image(category.iconAsset, "");
-      if (image) {
-        image.className = "inventory-categories__image";
-        image.setAttribute("aria-hidden", "true");
-        button.append(image, this.#dom.element("span", "", label));
-      }
+      const button = this.#dom.button("inventory-categories__button", "");
+      button.append(createInventoryIcon(this.#dom, category.icon, "inventory-categories__icon"),
+        this.#dom.element("span", "", category.label));
       button.classList.toggle("inventory-categories__button--active", category.selected);
       button.setAttribute("aria-pressed", String(category.selected));
       button.addEventListener("click", () => onCategorySelect?.(category.id));
@@ -223,7 +217,7 @@ export class InventoryGridRenderer {
   }
 
   #syncSubfilterToggle(toggle) {
-    toggle.textContent = this.#subfiltersExpanded ? "▴" : "▾";
+    toggle.replaceChildren(createInventoryIcon(this.#dom, this.#subfiltersExpanded ? "chevron-up" : "chevron-down", "inventory-categories__toggle-icon"));
     toggle.setAttribute("aria-expanded", String(this.#subfiltersExpanded));
     toggle.classList.toggle("inventory-categories__toggle--active", this.#subfiltersExpanded);
   }
@@ -247,9 +241,10 @@ export class InventoryGridRenderer {
     model.sort.directions.forEach((direction) => {
       const button = this.#dom.button(
         "inventory-sort-options__button inventory-sort-options__direction",
-        direction.icon,
+        "",
         { title: direction.label },
       );
+      button.appendChild(createInventoryIcon(this.#dom, direction.icon, "inventory-sort-options__direction-icon"));
       button.classList.toggle("inventory-sort-options__button--active", direction.selected);
       button.setAttribute("aria-label", direction.label);
       button.setAttribute("aria-pressed", String(direction.selected));

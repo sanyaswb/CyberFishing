@@ -1,8 +1,5 @@
-import { GlyphInkMetrics } from "./glyph_ink_metrics.js";
-
 export class InventoryDomFactory {
   #document;
-  #glyphMetrics;
   #assets;
   #progressive;
 
@@ -10,13 +7,11 @@ export class InventoryDomFactory {
   // still builds elements, but asking it for an asset's file is an error.
   // progressive: { isReady(id), request(ids) -> Promise<{ status }> } (the asset load plan's facade, spec 157 R17) or
   // null: an image whose file has not loaded shows its low-quality copy first, then the full file in the same element.
-  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }), assets = null,
-    progressive = null } = {}) {
+  constructor(documentRef = globalThis.document, { assets = null, progressive = null } = {}) {
     if (!documentRef?.createElement) {
       throw new TypeError("InventoryDomFactory requires a document");
     }
     this.#document = documentRef;
-    this.#glyphMetrics = glyphMetrics;
     this.#assets = assets;
     this.#progressive = progressive;
   }
@@ -90,18 +85,6 @@ export class InventoryDomFactory {
     if (!assetId) return "";
     if (!this.#assets) throw new TypeError("InventoryDomFactory requires assets for asset images");
     return this.#assets.pathOf(assetId);
-  }
-
-  // A text glyph (emoji) centred by its measured ink inside the consumer's box (DESIGN_RULES §8, ui-glyph.css).
-  glyph(text, className = "") {
-    const glyph = this.element("span", `ui-glyph ${className}`.trim());
-    const ink = this.element("span", "ui-glyph__ink", text);
-    const offset = this.#glyphMetrics.offset(ink.textContent);
-    if (offset.x) ink.style.setProperty("--ui-glyph-shift-x", `${offset.x}em`);
-    if (offset.y) ink.style.setProperty("--ui-glyph-shift-y", `${offset.y}em`);
-    glyph.setAttribute("aria-hidden", "true");
-    glyph.appendChild(ink);
-    return glyph;
   }
 
   // A decorative sprite icon: <svg><use href="sprite.svg#symbol"/></svg> inherits currentColor from its parent;

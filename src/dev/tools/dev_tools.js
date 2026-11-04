@@ -600,7 +600,7 @@ export class DevTools {
         if (!item?.itemType || item.devExclude) continue;
         const iconAsset = item.iconAsset || item.skin?.thumbnail?.asset || "";
         const iconUrl = iconAsset && this.#assets ? this.#assets.pathOf(iconAsset) : "";
-        const label = `${iconUrl ? "" : item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
+        const label = `${item.name || itemId} · Безкоштовно`;
         let granted = 0;
         this.#ui.createButtonRow(label, section, (event) => {
           const quantity = Math.max(1, Number(item.defaultQuantity || item.packSize) || 1);

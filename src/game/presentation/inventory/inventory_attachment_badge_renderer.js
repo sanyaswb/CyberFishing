@@ -1,3 +1,5 @@
+import { createItemPlaceholderIcon } from "./inventory_icons.js";
+
 export class InventoryAttachmentBadgeRenderer {
   #dom;
   #rarityDomAdapter;
@@ -74,7 +76,7 @@ export class InventoryAttachmentBadgeRenderer {
       image.className = "inventory-attachment-badge__image";
       badge.appendChild(image);
     } else {
-      badge.appendChild(this.#dom.glyph(attachment.icon || attachment.emoji || "•", "inventory-attachment-badge__icon"));
+      badge.appendChild(createItemPlaceholderIcon(this.#dom, attachment.icon, "inventory-attachment-badge__icon"));
     }
     return badge;
   }

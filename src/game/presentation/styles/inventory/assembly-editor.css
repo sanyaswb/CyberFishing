@@ -75,7 +75,8 @@
 }
 
 .inventory-assembly-editor__visual .inventory-item-card__icon {
-  --ui-glyph-max-size: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
+  max-width: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
+  max-height: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
 }
 
 .inventory-assembly-editor__empty {

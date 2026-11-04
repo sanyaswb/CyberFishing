@@ -161,7 +161,6 @@ export class InventoryViewModelNormalizer {
         id: this.#text(category?.id, "all"),
         label: this.#text(category?.label, "Усі"),
         icon: this.#text(category?.icon, ""),
-        iconAsset: this.#text(category?.iconAsset, ""),
         selected:
           category?.selected === true ||
           category?.id === source.activeCategoryId,
@@ -235,7 +234,7 @@ export class InventoryViewModelNormalizer {
         this.#array(source.directions).map((direction) =>
           Object.freeze({
             id: this.#text(direction?.id, "ascending"),
-            icon: this.#text(direction?.icon, "↕"),
+            icon: this.#text(direction?.icon, "arrow-down"),
             label: this.#text(direction?.label, "Напрямок"),
             selected:
               direction?.selected === true || direction?.id === directionId,

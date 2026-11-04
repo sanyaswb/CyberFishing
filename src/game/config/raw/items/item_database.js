@@ -17,7 +17,7 @@ export const ITEM_DB = {
       name: "Тестовий Спінінг",
       itemType: "rod",
       variant: "spinning",
-      icon: "🎣",
+      icon: "rod",
       rarityProfile: {
         mode: "authored",
         tier: 3,
@@ -70,7 +70,7 @@ export const ITEM_DB = {
       name: "Тестовий Фідер",
       itemType: "rod",
       variant: "feeder",
-      icon: "🎣",
+      icon: "rod",
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -123,7 +123,7 @@ export const ITEM_DB = {
       name: "Бамбукова Вудка",
       itemType: "rod",
       variant: "float",
-      icon: "🎣",
+      icon: "rod",
       // Перший скін: мініатюра показує весь малюнок (visibleHeight: 1); клітинка вудки — весь малюнок з ліскою чи без,
       // прев'ю редактора — весь малюнок.
       skin: {
@@ -206,7 +206,7 @@ export const ITEM_DB = {
       name: "Тестова Котушка",
       itemType: "reel",
       variant: "spinning_reel",
-      icon: "⚙️",
+      icon: "reel",
       rarityProfile: {
         mode: "authored",
         tier: 3,
@@ -248,7 +248,7 @@ export const ITEM_DB = {
       name: "Інерційна котушка без фрикціону",
       itemType: "reel",
       variant: "spinning_reel",
-      icon: "⚙️",
+      icon: "reel",
       rarityProfile: {
         mode: "authored",
         tier: 1,
@@ -292,7 +292,7 @@ export const ITEM_DB = {
       id: "line_test_1",
       name: "Test line I",
       itemType: "fishing_line",
-      icon: "🧵",
+      icon: "line",
       rarityProfile: {
         mode: "authored",
         tier: 1,
@@ -320,7 +320,7 @@ export const ITEM_DB = {
       id: "line_test_2",
       name: "Test line II",
       itemType: "fishing_line",
-      icon: "🧵",
+      icon: "line",
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -348,7 +348,7 @@ export const ITEM_DB = {
       id: "line_test_3",
       name: "Test line III",
       itemType: "fishing_line",
-      icon: "🧵",
+      icon: "line",
       rarityProfile: {
         mode: "authored",
         tier: 3,
@@ -378,7 +378,7 @@ export const ITEM_DB = {
       id: "leader_test_025",
       name: "Тестовий поводок 0.25мм",
       itemType: "leader_line",
-      icon: "🪢",
+      icon: "leader",
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -407,7 +407,7 @@ export const ITEM_DB = {
       id: "hook_basic",
       name: "Базовий гачок",
       itemType: "hook",
-      icon: "🪝",
+      icon: "hook",
       rarityProfile: {
         mode: "authored",
         tier: 1,
@@ -438,7 +438,7 @@ export const ITEM_DB = {
       id: "live_crucian",
       name: "Живець",
       itemType: "bait",
-      icon: "🐟",
+      icon: "fish",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "bait.natural" },
       requiresTag: "bait",
@@ -448,7 +448,7 @@ export const ITEM_DB = {
       id: "feeder_spring_basic",
       name: "Базова пружина",
       itemType: "feeder_rig",
-      icon: "🪤",
+      icon: "feeder",
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -480,7 +480,7 @@ export const ITEM_DB = {
       baitId: "oil_worm",
       name: "Масляний черв'як (50 шт)",
       itemType: "bait",
-      icon: "🪱",
+      icon: "worm",
       iconAsset: "items.baits.oil-worms--50",
       switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 50,
@@ -509,7 +509,7 @@ export const ITEM_DB = {
       baitId: "oil_worm",
       name: "Масляний черв'як (25 шт)",
       itemType: "bait",
-      icon: "🪱",
+      icon: "worm",
       iconAsset: "items.baits.oil-worms--25",
       switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 25,
@@ -537,7 +537,7 @@ export const ITEM_DB = {
       baitId: "oil_worm",
       name: "Масляний черв'як (50 шт)",
       itemType: "bait",
-      icon: "🪱",
+      icon: "worm",
       iconAsset: "items.baits.oil-worms--50",
       switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 50,
@@ -565,7 +565,7 @@ export const ITEM_DB = {
       baitId: "oil_worm",
       name: "Масляний черв'як (75 шт)",
       itemType: "bait",
-      icon: "🪱",
+      icon: "worm",
       iconAsset: "items.baits.oil-worms--75",
       switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 75,
@@ -593,7 +593,7 @@ export const ITEM_DB = {
       baitId: "oil_worm",
       name: "Масляний черв'як (100 шт)",
       itemType: "bait",
-      icon: "🪱",
+      icon: "worm",
       iconAsset: "items.baits.oil-worms--100",
       switcherIconAsset: "items.baits.oil-worm_icon",
       packSize: 100,
@@ -621,7 +621,7 @@ export const ITEM_DB = {
       baitId: "bread",
       name: "Бамбуковий хліб (25 шт)",
       itemType: "bait",
-      icon: "🍞",
+      icon: "bread",
       iconAsset: "items.baits.bread--25",
       packSize: 25,
       defaultQuantity: 25,
@@ -649,7 +649,7 @@ export const ITEM_DB = {
       baitId: "bread",
       name: "Бамбуковий хліб (10 шт)",
       itemType: "bait",
-      icon: "🍞",
+      icon: "bread",
       iconAsset: "items.baits.bread--10",
       packSize: 10,
       defaultQuantity: 10,
@@ -676,7 +676,7 @@ export const ITEM_DB = {
       baitId: "bread",
       name: "Бамбуковий хліб (25 шт)",
       itemType: "bait",
-      icon: "🍞",
+      icon: "bread",
       iconAsset: "items.baits.bread--25",
       packSize: 25,
       defaultQuantity: 25,
@@ -703,7 +703,7 @@ export const ITEM_DB = {
       baitId: "bread",
       name: "Бамбуковий хліб (50 шт)",
       itemType: "bait",
-      icon: "🍞",
+      icon: "bread",
       iconAsset: "items.baits.bread--50",
       packSize: 50,
       defaultQuantity: 50,
@@ -730,7 +730,7 @@ export const ITEM_DB = {
       name: "Блешня (Тест)",
       itemType: "lure",
       variant: "spinner",
-      icon: "🥄",
+      icon: "spinner",
       rarityProfile: {
         mode: "authored",
         tier: 3,
@@ -764,7 +764,7 @@ export const ITEM_DB = {
       name: "Воблер Suspend",
       itemType: "lure",
       variant: "wobbler",
-      icon: "🐟",
+      icon: "wobbler",
       rarityProfile: {
         mode: "authored",
         tier: 4,
@@ -808,7 +808,7 @@ export const ITEM_DB = {
       name: "Воблер Sinking",
       itemType: "lure",
       variant: "wobbler",
-      icon: "🐟",
+      icon: "wobbler",
       rarityProfile: {
         mode: "authored",
         tier: 3,
@@ -852,7 +852,7 @@ export const ITEM_DB = {
       name: "Джиг",
       itemType: "lure",
       variant: "jig",
-      icon: "🪨",
+      icon: "jig",
       rarityProfile: {
         mode: "authored",
         tier: 2,
@@ -888,7 +888,7 @@ export const ITEM_DB = {
       name: "Денний поплавок",
       itemType: "float",
       variant: "day",
-      icon: "🥢",
+      icon: "float",
       iconAsset: "items.floats.float-day",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
@@ -952,7 +952,7 @@ export const ITEM_DB = {
       name: "Нічний поплавок",
       itemType: "float",
       variant: "night",
-      icon: "🥢",
+      icon: "float",
       iconAsset: "items.floats.float-day",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
@@ -1017,7 +1017,7 @@ export const ITEM_DB = {
       name: "Ковзний поплавок",
       itemType: "float",
       variant: "day",
-      icon: "🪶",
+      icon: "float-sliding",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
       skin: {
@@ -1082,7 +1082,7 @@ export const ITEM_DB = {
       id: "net_basic",
       name: "Базова підсака",
       itemType: "net",
-      icon: "🕸️",
+      icon: "net",
       iconAsset: "items.nets.net--1",
       // Мініатюри показують верхні 40% малюнка по центру; прев'ю редактора — весь малюнок.
       skin: {
@@ -1126,7 +1126,7 @@ export const ITEM_DB = {
       id: "carp_mix_basic",
       name: "Базова коропова суміш",
       itemType: "chum_mix",
-      icon: "🍞",
+      icon: "chum",
       packSize: 15,
       rarityProfile: {
         mode: "authored",
@@ -1163,7 +1163,7 @@ export const ITEM_DB = {
     boat_lvl3: {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
-      icon: "🚤",
+      icon: "boat",
       iconAsset: "items.boats.boat-lvl--3_no-bait",
       skin: {
         id: "boat-lvl--3",
@@ -1349,7 +1349,7 @@ export const ITEM_DB = {
       id: "sys_build_box",
       name: "Ящик збірки",
       itemType: "build_box",
-      icon: "🧰",
+      icon: "box",
       rarityProfile: null,
       progressionProfile: null,
       displayStats: {},

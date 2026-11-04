@@ -1,3 +1,5 @@
+import { createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
+
 export class UiAutoSwitchRenderer {
   #dom;
   #bindings = new WeakMap();
@@ -119,10 +121,10 @@ export class UiAutoSwitchRenderer {
       nodes.media.classList.toggle("inventory-toggle__item--highlighted", slot.highlighted === true);
       nodes.media.setAttribute("aria-pressed", String(slot.highlighted === true));
       const imageSource = item ? item.switcherIconAsset || item.iconAsset || "" : binding.placeholderAsset;
-      const icon = String(item?.icon || item?.emoji || "");
+      const icon = String(item?.icon || "");
       if (nodes.source !== imageSource || nodes.icon !== icon) {
         nodes.image = this.#dom.image(imageSource, "");
-        const visual = nodes.image || this.#dom.glyph(icon, "inventory-toggle__glyph");
+        const visual = nodes.image || createItemPlaceholderIcon(this.#dom, icon, "inventory-toggle__icon");
         visual.setAttribute("aria-hidden", "true");
         nodes.visual?.remove();
         nodes.artwork.appendChild(visual);

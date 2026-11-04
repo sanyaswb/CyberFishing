@@ -4,7 +4,6 @@ import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_po
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { EquipmentState } from "../../domain/equipment/equipment_state.js";
 import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
-import { INVENTORY_SECTIONS } from "./inventory_sections.js";
 import { BoatRules } from "../../domain/rules/boat_rules.js";
 
 const BAIT_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_BAIT]);
@@ -12,18 +11,18 @@ const CHUM_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_CHUM]);
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
-    { id: "all", label: "Усі", iconAsset: INVENTORY_SECTIONS.backpackAsset },
-    { id: "compatible", label: "Сумісне", icon: "✓" },
-    { id: "loadouts", label: "Збірки", icon: "🎣" },
-    { id: "rods", label: "Вудилища", icon: "🎣" },
-    { id: "reels", label: "Котушки", icon: "⚙️" },
-    { id: "lines", label: "Ліски", icon: "🧵" },
-    { id: "tackle", label: "Оснастка", icon: "🪝" },
-    { id: "baits", label: "Наживки", icon: "🪱" },
-    { id: "chums", label: "Прикормки", icon: "🍞" },
-    { id: "boats", label: "Кораблики", icon: "🚤" },
-    { id: "nets", label: "Підсаки", icon: "🕸️" },
-    { id: "tools", label: "Інше", icon: "☣️" },
+    { id: "all", label: "Усі", icon: "items" },
+    { id: "compatible", label: "Сумісне", icon: "check" },
+    { id: "loadouts", label: "Збірки", icon: "loadout" },
+    { id: "rods", label: "Вудилища", icon: "rod" },
+    { id: "reels", label: "Котушки", icon: "reel" },
+    { id: "lines", label: "Ліски", icon: "line" },
+    { id: "tackle", label: "Оснастка", icon: "hook" },
+    { id: "baits", label: "Наживки", icon: "worm" },
+    { id: "chums", label: "Прикормки", icon: "chum" },
+    { id: "boats", label: "Кораблики", icon: "boat" },
+    { id: "nets", label: "Підсаки", icon: "net" },
+    { id: "tools", label: "Інше", icon: "tools" },
   ]);
 
   #boatRules = new BoatRules();

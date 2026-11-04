@@ -60,9 +60,10 @@
   object-fit: contain;
 }
 
-/* A ui-glyph filling the badge's content box (DESIGN_RULES §8). */
+/* A ui-icon filling the badge's content box (DESIGN_RULES §8). */
 .inventory-attachment-badge__icon {
-  --ui-glyph-max-size: 30px;
   width: 100%;
+  max-width: 30px;
   height: 100%;
+  max-height: 30px;
 }

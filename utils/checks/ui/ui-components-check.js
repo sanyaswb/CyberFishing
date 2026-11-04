@@ -1,7 +1,6 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const { GlyphInkMetrics } = require("../../../src/platform/browser/dom/glyph_ink_metrics.js");
 const { TestDocument } = require("../../testing/keepnet/test_document.js");
 const { InventoryDomFactory } = require("../../../src/platform/browser/dom/inventory_dom_factory.js");
 const { UiCloseButtonRenderer } = require("../../../src/game/presentation/ui/ui_close_button_renderer.js");
@@ -100,19 +99,20 @@ const picker = switches.create({ name: "Bait", modeLabel: "Automatic bait",
   checked: true, stock: 102,
   placeholderAsset: "ui.inventory.bait", onSlotActivate: index => { baitSlot = index; },
   slots: [12, 80, 10].map((stock, index) => ({ available: true, highlighted: index === 0,
-    stock, item: { name: "Bait " + index, icon: "B" } })) });
+    stock, item: { name: "Bait " + index, icon: "worm" } })) });
 documentRef.body.append(picker);
 const pickerButtons = picker.children[0].children;
 assert.equal(pickerButtons.length, 3, "the owner's v2 sketch exposes each of the three bait slots");
 assert.deepEqual([...pickerButtons].map(button => button.children[1].textContent), ["12", "80", "10"],
   "every equipped bait shows its exact matching reserve below its artwork");
-assert.equal(pickerButtons[0].children[0].children[0].textContent, "B", "an equipped item's artwork replaces its category placeholder");
-assert(pickerButtons[0].children[0].children[0].classList.contains("inventory-toggle__glyph"),
-  "emoji artwork has an explicit visual box inside the circular frame");
+assert(pickerButtons[0].children[0].children[0].children[0].getAttribute("href").endsWith("#worm"),
+  "an equipped item without artwork shows its own sprite symbol instead of the category placeholder");
+assert(pickerButtons[0].children[0].children[0].getAttribute("class").includes("inventory-toggle__icon"),
+  "a placeholder icon has an explicit visual box inside the circular frame");
 const firstArtwork = pickerButtons[0].children[0];
 const firstVisual = firstArtwork.children[0];
 switches.update(picker, { checked: true, stock: 102, slots: [12, 80, 10].map((stock, index) =>
-  ({ available: true, highlighted: index === 0, stock, item: { name: "Bait " + index, icon: "B" } })) });
+  ({ available: true, highlighted: index === 0, stock, item: { name: "Bait " + index, icon: "worm" } })) });
 assert.equal(picker.children[0].children[0], pickerButtons[0], "switch updates retain the consumable buttons");
 assert.equal(pickerButtons[0].children[0], firstArtwork, "unchanged consumable artwork retains its DOM identity");
 assert.equal(firstArtwork.children[0], firstVisual, "unchanged emoji updates retain the bounded visual node");
@@ -195,12 +195,23 @@ parameters.update(tiles.children[2], { instanceId: "3", empty: true });
 assert.equal(tiles.children.length, 2);
 parameters.update(tiles.children[1], { instanceId: "2", empty: true });
 assert.equal(tiles.children.length, 1);
-// Glyph measurement is cached; its visual offsets belong to owner acceptance.
-let measurements = 0;
-const metrics = new GlyphInkMetrics({ documentRef: { documentElement: {},
-  defaultView: { getComputedStyle: () => ({ getPropertyValue: () => "system-ui" }) },
-  createElement: () => ({ getContext: () => ({ measureText() { measurements++; return { width: 100 }; } }) }) } });
-metrics.offset("x"); metrics.offset("x");
-assert.equal(measurements, 1, "repeated glyphs reuse the measurement");
+// TK-195: every item and filter icon of the inventory is a symbol the sprite draws, never an emoji.
+{
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const sprite = fs.readFileSync(path.join(__dirname, "../../../assets/ui/inventory-sections.svg"), "utf8");
+  const symbols = new Set([...sprite.matchAll(/<symbol id="([^"]+)"/g)].map(match => match[1]));
+  const { ITEM_DB } = require("../../../src/game/config/databases/item_catalog.js");
+  const { INVENTORY_SORT_CONFIG } = require("../../../src/game/presentation/inventory/inventory_sort_config.js");
+  const named = [...Object.values(ITEM_DB).flatMap(category => Object.values(category || {}))
+    .filter(item => item?.icon).map(item => [item.id || item.name, item.icon]),
+  ...INVENTORY_SORT_CONFIG.directions.map(direction => [direction.id, direction.icon])];
+  assert(named.length > 30, "the catalog's icons are read");
+  for (const [id, icon] of named) assert(symbols.has(icon), `${id}: icon "${icon}" is a symbol of the inventory sprite`);
+  const factory = fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/inventory/inventory_view_model_factory.js"), "utf8");
+  const filters = [...factory.matchAll(/\{ id: "([a-z]+)", label: "[^"]+", icon: "([^"]+)" \}/g)];
+  assert.equal(filters.length, 12, "every filter names an icon");
+  for (const [, id, icon] of filters) assert(symbols.has(icon), `filter ${id}: icon "${icon}" is a symbol of the inventory sprite`);
+}
 
 console.log("UI components passed: shared close/switch callbacks, semantic controls, host mixes, disabled/compact states, stable artwork, cached measurement and disposal.");

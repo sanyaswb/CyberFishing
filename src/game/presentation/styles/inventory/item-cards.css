@@ -205,11 +205,13 @@
   bottom: auto;
 }
 
-/* A ui-glyph filling the visual (DESIGN_RULES §8). */
+/* A ui-icon filling the visual up to its largest size (DESIGN_RULES §8). */
 .inventory-item-card__icon {
-  --ui-glyph-max-size: 63px;
   width: 100%;
+  max-width: 63px;
   height: 100%;
+  max-height: 63px;
+  margin: auto;
 }
 
 .inventory-item-card__quantity {

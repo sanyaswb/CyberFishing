@@ -103,7 +103,7 @@
 }
 .inventory-toggle__image,
 .inventory-toggle__placeholder,
-.inventory-toggle__glyph {
+.inventory-toggle__icon {
   width: var(--inventory-toggle-artwork-size);
   height: var(--inventory-toggle-artwork-size);
   object-fit: contain;

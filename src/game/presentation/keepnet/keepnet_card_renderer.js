@@ -1,11 +1,15 @@
+import { createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
+
 export class KeepnetCardRenderer {
   #document;
   #labels;
   #fishArt;
-  // fishArt: FishArtVariants (a caught fish's 128 px thumbnail through the asset registry).
-  constructor({ documentRef, labels, fishArt }) {
+  #dom;
+  // fishArt: FishArtVariants (a caught fish's 128 px thumbnail through the asset registry). domFactory draws the
+  // placeholder of a fish without an image.
+  constructor({ documentRef, labels, fishArt, domFactory }) {
     if (typeof fishArt?.thumbnailPath !== "function") throw new TypeError("KeepnetCardRenderer requires fishArt");
-    this.#document = documentRef; this.#labels = labels; this.#fishArt = fishArt;
+    this.#document = documentRef; this.#labels = labels; this.#fishArt = fishArt; this.#dom = domFactory;
   }
 
   group(group, onOpen) {
@@ -55,8 +59,7 @@ export class KeepnetCardRenderer {
 
   #image(fish) {
     const media = this.#el("div", "keepnet-section__thumbnail");
-    const fallback = this.#el("span", "keepnet-section__image-fallback", "🐟");
-    fallback.setAttribute("aria-hidden", "true");
+    const fallback = createItemPlaceholderIcon(this.#dom, "fish", "keepnet-section__image-fallback");
     media.append(fallback);
     if (fish.imagePath) {
       const image = this.#el("img", "keepnet-section__image");

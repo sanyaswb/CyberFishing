@@ -119,7 +119,7 @@ export class InventoryItemTreeViewFactory {
       itemId: "equipment_loadout",
       itemType: "equipment_loadout",
       name: loadout.name,
-      icon: main?.item.icon || "🎣",
+      icon: main?.item.icon || "rod",
       quantity: 1,
       loadoutId: loadout.loadoutId,
       prepared: true,

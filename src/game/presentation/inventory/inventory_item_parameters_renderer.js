@@ -1,3 +1,5 @@
+import { createItemPlaceholderIcon } from "./inventory_icons.js";
+
 export class InventoryItemParametersRenderer {
   #dom;
   #resolver;
@@ -169,9 +171,9 @@ export class InventoryItemParametersRenderer {
       "span",
       "inventory-item-parameter-section__identity",
     );
-    const icon = section?.item?.icon || section?.item?.emoji;
+    const icon = section?.item?.icon;
     if (icon) {
-      identity.appendChild(this.#dom.glyph(icon, "inventory-item-parameter-section__icon"));
+      identity.appendChild(createItemPlaceholderIcon(this.#dom, icon, "inventory-item-parameter-section__icon"));
     }
     const count = Math.max(1, Math.floor(Number(section?.count) || 1));
     const title = [

@@ -83,12 +83,18 @@
   white-space: nowrap;
 }
 
-.inventory-categories__image {
+.inventory-categories__icon {
   width: 1.5em;
   height: 1.5em;
-  object-fit: contain;
+  margin-right: 5px;
   vertical-align: middle;
-  pointer-events: none;
+}
+
+.inventory-categories__toggle-icon {
+  display: block;
+  width: 1.3em;
+  height: 1.3em;
+  margin: auto;
 }
 
 .inventory-categories__button.inventory-categories__button--active {
@@ -236,6 +242,13 @@
   width: 30px;
   padding: 3px;
   font-size: 17px;
+}
+
+.inventory-sort-options__direction-icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  margin: auto;
 }
 
 .inventory-sort-options__criterion {

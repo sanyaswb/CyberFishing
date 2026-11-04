@@ -828,6 +828,7 @@
 │  │     │  ├── inventory_facade_contract.js
 │  │     │  ├── inventory_grid_renderer.js
 │  │     │  ├── inventory_header_renderer.js
+│  │     │  ├── inventory_icons.js
 │  │     │  ├── inventory_item_card_renderer.js
 │  │     │  ├── inventory_item_order_resolver.js
 │  │     │  ├── inventory_item_parameter_config.js
@@ -948,7 +949,7 @@
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
 │  │     │  ├── tokens.css
-│  │     │  ├── ui-glyph.css
+│  │     │  ├── ui-icon.css
 │  │     │  ├── ui-surface.css
 │  │     │  └── version-badge.css
 │  │     ├── time
@@ -1008,7 +1009,6 @@
 │        ├── dom
 │        │  ├── double_activation_controller.js
 │        │  ├── engine_interface.js
-│        │  ├── glyph_ink_metrics.js
 │        │  ├── hint_sheet_controller.js
 │        │  ├── horizontal_scroll_controller.js
 │        │  ├── inventory_dom_factory.js

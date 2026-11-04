@@ -413,7 +413,7 @@ async function stageTwo() {
 
   // The editor controls drive the service; status updates write in place, station names as text.
   const doc = new TestDocument();
-  const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
+  const dom = new InventoryDomFactory(doc);
   const calls = [];
   let listener = null;
   const status = { status: "off", powered: false, equipped: true, station: null, country: "UA", stationCount: 2,
@@ -1098,7 +1098,7 @@ async function tuningSliders() {
   tuning.setEnabled("signal", false);
 
   const doc = new TestDocument();
-  const dom = new InventoryDomFactory(doc, { glyphMetrics: {} });
+  const dom = new InventoryDomFactory(doc);
   let listener = null;
   const status = { status: "off", powered: false, equipped: true, station: null, country: "UA", stationCount: 0, volume: 0.5,
     ducking: true, playInBackground: false };
@@ -1219,7 +1219,7 @@ async function tuningSliders() {
   // TK-101: filled auxiliary wells first, so a worn radio is never behind empty ones in the scrolling block.
   const { InventoryLoadoutPanelRenderer } = runtime.importModule("src/game/presentation/inventory/inventory_loadout_panel_renderer.js");
   const panelDoc = new TestDocument();
-  const panelDom = new InventoryDomFactory(panelDoc, { glyphMetrics: {} });
+  const panelDom = new InventoryDomFactory(panelDoc);
   const panel = new InventoryLoadoutPanelRenderer({ domFactory: panelDom, resourceMeterRenderer: { create: () => panelDom.element("div") },
     getEquippedLongPressDurationMs: () => 500, itemRenderer: { renderSlot: (slot) => {
       const well = panelDom.element("div", "well"); well.dataset.slotId = slot.slotId; return well; } } });

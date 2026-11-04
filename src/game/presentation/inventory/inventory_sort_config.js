@@ -6,12 +6,12 @@ export const INVENTORY_SORT_CONFIG = Object.freeze({
   directions: Object.freeze([
     Object.freeze({
       id: "ascending",
-      icon: "↑",
+      icon: "arrow-up",
       label: "Від меншого до більшого",
     }),
     Object.freeze({
       id: "descending",
-      icon: "↓",
+      icon: "arrow-down",
       label: "Від більшого до меншого",
     }),
   ]),

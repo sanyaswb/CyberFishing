@@ -78,7 +78,7 @@
 .keepnet-section__group .keepnet-section__image { position: absolute; inset: 0; height: 100%; max-height: none; }
 .keepnet-section__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: var(--inventory-equipment-cell); border-radius: 5px; overflow: hidden; }
 .keepnet-section__image { display: block; width: 100%; height: 112px; object-fit: cover; object-position: center; padding: var(--keepnet-image-inset); }
-.keepnet-section__image-fallback { font-size: 3rem; }
+.keepnet-section__image-fallback { width: 3rem; height: 3rem; }
 .keepnet-section__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #d4d4d4; color: #1c1c1c; font-weight: 800; text-align: center; }
 .keepnet-section__back, .keepnet-section__action {
   min-height: 44px;
@@ -116,7 +116,7 @@
   .keepnet-section__fish .keepnet-section__thumbnail { aspect-ratio: 1; height: auto; }
   .keepnet-section__fish .keepnet-section__image { height: 100%; }
   .keepnet-section__fish-name, .keepnet-section__fish-level { font-size: 11px; }
-  .keepnet-section__image-fallback { font-size: 24px; }
+  .keepnet-section__image-fallback { width: 24px; height: 24px; }
   .keepnet-section__actions { flex-direction: column; gap: 4px; }
   .keepnet-section__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
 }

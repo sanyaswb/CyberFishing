@@ -50,7 +50,7 @@
   gap: 7px;
 }
 
-/* A square ui-glyph box (DESIGN_RULES §8). */
+/* A square ui-icon box (DESIGN_RULES §8). */
 .inventory-item-parameter-section__icon {
   flex: 0 0 auto;
   width: 18px;

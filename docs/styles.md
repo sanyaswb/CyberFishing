@@ -100,7 +100,7 @@ All rows reuse DevToolsUI and its collapsed descriptions. No per-frame DOM work 
 | Owner | Responsibility |
 | --- | --- |
 | `src/game/presentation/styles/tokens.css` | Shared DOM palette, font, radii and stacking roles |
-| `styles/ui-glyph.css` | Shared text glyph (emoji) box: flex centring, size share and the measured ink shift written by `InventoryDomFactory.glyph()` ([spec 073](../specs/073-glyph-ink-centring/spec.md)) |
+| `styles/ui-icon.css` | Shared outline sprite icon: stroke from `currentColor`, the light-grey `--placeholder` tone of an item without artwork ([spec 158](../specs/158-inventory-vector-icons/spec.md)) |
 | `styles/ui-surface.css` | One logical DOM coordinate surface and physical flow footprint; Canvas stays outside |
 | `styles/modal-controls.css`, `auto-switch.css` | Shared close/switch appearance, the transient `ui-hint` (spec 080), documented custom properties and native interactive states |
 | `styles/game-shell.css`, `version-badge.css`, `styles/hud/toolbar.css` | Page interaction policy, canvas stacking, badge and common bottom action row |

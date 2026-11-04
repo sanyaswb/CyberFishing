@@ -30,6 +30,7 @@ export class DepthSelector {
   #disposed = false;
   #dom;
   #iconImages;
+  #iconSprite;
   #dragRect = null;
   #unsubscribe;
   #removeShield;
@@ -40,12 +41,13 @@ export class DepthSelector {
   };
 
   constructor({ labels, documentRef = document, mountNode = documentRef.body, uiSurface = null,
-    domFactory = null, iconImages = null } = {}) {
+    domFactory = null, iconImages = null, iconSprite = "" } = {}) {
     this.#labels = labels;
     this.#document = documentRef;
     this.#mount = mountNode;
     this.#dom = domFactory;
     this.#iconImages = iconImages;
+    this.#iconSprite = iconSprite;
     this.onChange = null;
     this.isActive = false;
     this.#build();
@@ -107,8 +109,7 @@ export class DepthSelector {
       image.loading = "lazy"; image.decoding = "async";
       image.src = this.#dom.assetUrl(source); image.alt = ""; image.draggable = false;
       this.#icon.appendChild(image);
-    } else if (this.#dom) this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
-    else this.#icon.textContent = text;
+    } else this.#showSymbol(text);
   }
 
   setItem(item) {
@@ -146,11 +147,14 @@ export class DepthSelector {
           this.#icon.appendChild(glowImage);
         }
       }
-    } else if (this.#dom && text) {
-      this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
-    } else {
-      this.#icon.textContent = text;
-    }
+    } else this.#showSymbol(text);
+  }
+
+  // An item without artwork: its symbol from the sprite composition supplies; legacy callers retain the text.
+  #showSymbol(symbol) {
+    if (symbol && this.#dom && this.#iconSprite) {
+      this.#icon.appendChild(this.#dom.svgIcon(this.#iconSprite, symbol, "ui-icon ui-icon--placeholder depth-selector__glyph"));
+    } else this.#icon.textContent = symbol;
   }
 
   open() {
