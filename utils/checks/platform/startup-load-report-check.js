@@ -268,8 +268,7 @@ async function checkStartupScreen() {
 }
 
 // Spec 157 R6 (TK-172): UI images are lazy before their source is set, so a hidden view requests nothing before the
-// game is ready; LazyImageWarmUp then loads the not yet loaded lazy images one at a time; the depth selector's icons
-// wait for the deferred loads.
+// game is ready; the depth selector's icons wait for the deferred loads.
 async function checkDeferredUiImages() {
   const { InventoryDomFactory } = await importSource("src/platform/browser/dom/inventory_dom_factory.js");
   const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
@@ -319,35 +318,6 @@ async function checkDeferredUiImages() {
   assert.equal(image.loading, "lazy");
   assert(writes.indexOf("loading") >= 0 && writes.indexOf("loading") < writes.indexOf("src"),
     "lazy is set before the source, or the browser has already requested it");
-
-  const { LazyImageWarmUp } = await importSource("src/platform/browser/assets/lazy_image_warm_up.js");
-  const created = [];
-  let pending = 0;
-  let peak = 0;
-  const page = [{ src: "a.webp", complete: false }, { src: "b.webp", complete: true }, { src: "a.webp", complete: false },
-    { src: "bad.webp", complete: false }, { src: "c.webp", complete: false }];
-  const documentRef = {
-    querySelectorAll: (selector) => { assert.equal(selector, 'img[loading="lazy"]'); return page; },
-    createElement: (tag) => {
-      assert.equal(tag, "img");
-      const loader = {};
-      Object.defineProperty(loader, "src", { set(value) {
-        created.push(value); pending += 1; peak = Math.max(peak, pending);
-        setTimeout(() => { pending -= 1; (value === "bad.webp" ? loader.onerror : loader.onload)(); }, 0);
-      } });
-      return loader;
-    },
-  };
-  const warmUp = new LazyImageWarmUp({ documentRef });
-  assert.deepEqual(await warmUp.warm(), ["a.webp", "c.webp"], "loaded sources, failures skipped");
-  assert.deepEqual(created, ["a.webp", "bad.webp", "c.webp"], "each not yet loaded lazy source once, in page order");
-  assert.equal(peak, 1, "one image at a time, so the warm-up never floods the network");
-  const stopped = new LazyImageWarmUp({ documentRef });
-  created.length = 0;
-  const run = stopped.warm();
-  stopped.dispose();
-  await run;
-  assert.deepEqual(created, ["a.webp"], "dispose stops the queue after the image in flight");
 
   const { composeDepthSelector } = await importSource("src/bootstrap/production/depth_selector_composition.js");
   let preloads = 0;

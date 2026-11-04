@@ -25,7 +25,7 @@ const STATUS_LABELS = Object.freeze({
 });
 const COPY_PROMPT_TITLE = "Звіт завантаження";
 const GROUP_STATUS_LABELS = Object.freeze({
-  waiting: "чекає", loading: "іде", ready: "готово", failed: "помилка", "on-demand": "на вимогу",
+  waiting: "чекає", loading: "іде", ready: "готово", failed: "помилка", locked: "закрите", "on-demand": "на вимогу",
 });
 // A group's files are listed one per row up to this many; larger groups show their count only.
 const LISTED_FILES = 16;

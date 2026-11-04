@@ -6,6 +6,10 @@
 // - A group with load: false is placed but loads only on demand (large content opened later: audio, the House, fish).
 // - A group with readyOn: "low" counts as loaded once the low-quality copies of its images have (spec 157 R17); the
 //   full files follow after the first frame.
+// - A layer with lazy: true runs twice over its groups in order: the low-quality copies (with the files that have no
+//   copy, except audio), then the full files and audio (spec 159).
+// - A group with locked: true names what game progress has not opened yet (by a source): it loads nothing, and the lazy
+//   layer leaves those assets out until they open.
 // - An asset belongs to the first group (layer, then priority) that names it; an explicit { id } in two groups is an
 //   error. Registry assets no group names are the implicit last group "unassigned" of the last layer.
 const ENTRY_KEYS = Object.freeze(["id", "tag", "source", "module"]);
@@ -27,10 +31,10 @@ export class AssetLoadPlan {
     this.#registry = registry;
     this.#sources = sources;
     this.#layers = plan.layers.map((layer) => Object.freeze({
-      id: layer.id, label: layer.label ?? layer.id, start: layer.start,
+      id: layer.id, label: layer.label ?? layer.id, start: layer.start, lazy: layer.lazy === true,
       groups: Object.freeze([...layer.groups].sort((a, b) => a.priority - b.priority).map((group) => Object.freeze({
-        id: group.id, label: group.label ?? group.id, priority: group.priority, load: group.load !== false,
-        readyOn: group.readyOn ?? "full",
+        id: group.id, label: group.label ?? group.id, priority: group.priority, load: group.load !== false && group.locked !== true,
+        locked: group.locked === true, readyOn: group.readyOn ?? "full",
         assets: Object.freeze([...group.assets]),
       }))),
     }));
@@ -40,7 +44,7 @@ export class AssetLoadPlan {
       const last = this.#layers[this.#layers.length - 1];
       const priority = Math.max(0, ...last.groups.map((group) => group.priority)) + 1;
       this.#layers[this.#layers.length - 1] = Object.freeze({ ...last, groups: Object.freeze([...last.groups,
-        Object.freeze({ id: UNASSIGNED_GROUP_ID, label: UNASSIGNED_GROUP_ID, priority, load: true,
+        Object.freeze({ id: UNASSIGNED_GROUP_ID, label: UNASSIGNED_GROUP_ID, priority, load: true, locked: false,
           assets: Object.freeze(unassigned.map((id) => Object.freeze({ id }))) })]) });
     }
   }
@@ -65,6 +69,7 @@ export class AssetLoadPlan {
         if (!group?.id || groupIds.has(group.id) || group.id === UNASSIGNED_GROUP_ID) errors.push(`group "${where}" needs a unique id`);
         groupIds.add(group?.id);
         if (!Number.isInteger(group?.priority) || group.priority < 1) errors.push(`${where}: priority must be an integer >= 1`);
+        if (group?.locked === true && !group.assets?.every((entry) => entry.source)) errors.push(`${where}: a locked group names sources only`);
         if (group?.readyOn !== undefined && !["full", "low"].includes(group.readyOn)) errors.push(`${where}: readyOn must be full or low`);
         if (!Array.isArray(group?.assets)) { errors.push(`${where}: assets must be a list`); continue; }
         for (const entry of group.assets) {
@@ -110,6 +115,12 @@ export class AssetLoadPlan {
       else if (entry.source) ids.push(...this.#sources[entry.source].resolve(state));
     }
     return [...new Set(ids)];
+  }
+
+  // Every asset that game progress keeps closed for the given state.
+  lockedIds(state = {}) {
+    return this.#layers.flatMap((layer) => layer.groups).filter((group) => group.locked)
+      .flatMap((group) => this.resolveGroup(group, state));
   }
 
   // The code modules a group names, in entry order.

@@ -1,10 +1,12 @@
 import { inventorySlotIconAssets } from "../../game/presentation/inventory/inventory_slot_icons.js";
+import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
 
 const PHASES = Object.freeze(["day", "evening", "night"]);
 
 // The named sources of the asset load plan (spec 157 R15): asset ids that depend on the game's state at startup.
 // resolve(state) gives the ids for this start; candidates() every id the source can give (the plan counts them as
-// placed). state: { locationId, phases } (phases: the time-of-day phases the start needs, spec 157 R4).
+// placed). state: { locationId, phases, roomLevel, roomTargetLevel } (phases: the time-of-day phases the start needs,
+// spec 157 R4; the room's levels: what progress has opened, spec 159).
 export function createAssetLoadSources({ locations, itemDb }) {
   const locationOf = (id) => locations?.map?.[id] || {};
   const backgrounds = (location) => (location.backgroundAssets
@@ -13,7 +15,23 @@ export function createAssetLoadSources({ locations, itemDb }) {
   const everyLocation = () => Object.values(locations?.map || {});
   const depthIcons = () => [...new Set([...Object.values(itemDb.floats || {}), ...Object.values(itemDb.baits || {})]
     .filter((item) => item.icon && item.iconAsset).map((item) => item.iconAsset))];
+  const locationFiles = (location) => [...backgrounds(location).map(([, id]) => id), location.depthAsset].filter(Boolean);
+  const { room } = HOUSE_CONFIG;
+  const roomArt = (level) => Object.values(room.backgroundAssets[level] || {});
   return Object.freeze({
+    "location.elsewhere": {
+      resolve: ({ locationId }) => Object.entries(locations?.map || {}).filter(([id]) => id !== locationId)
+        .flatMap(([, location]) => locationFiles(location)),
+      candidates: () => [],
+    },
+    // Room art above the opened level (the level under renovation counts as opened: it shows when the work ends).
+    "progress.locked": {
+      resolve: ({ roomLevel, roomTargetLevel }) => {
+        const opened = Math.max(roomLevel ?? room.initialLevel, roomTargetLevel ?? 0);
+        return Object.keys(room.backgroundAssets).map(Number).filter((level) => level > opened).flatMap(roomArt);
+      },
+      candidates: () => Object.keys(room.backgroundAssets).flatMap(roomArt),
+    },
     "location.background.current": {
       resolve: ({ locationId, phases = null }) => backgrounds(locationOf(locationId))
         .filter(([phase]) => phases === null || phase === "default" || phases.includes(phase)).map(([, id]) => id),

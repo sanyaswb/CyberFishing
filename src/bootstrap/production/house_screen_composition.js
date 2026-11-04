@@ -32,7 +32,7 @@ const AQUARIUM_VISUAL_PATH = Object.freeze(["liveBait", "visual"]);
 // The House screen (spec 084) inside the game page: a `.house` root in the page's UI surface, composed over the
 // session's live bait service, game clock and asset registry (GameCompositionRoot.getSessionServices). It owns its timers, listeners
 // and DOM until dispose. `onExit` is the return control; `createTimeDisplay` and `mountHeaderControl` are DEV ports.
-export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, fishArt, onExit,
+export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, liveBait, gameTime, assets, fishArt, onExit, onRoomProgress = null,
   createTimeDisplay = null, mountHeaderControl = null }) {
   const root = documentTarget.createElement("div");
   root.className = "house";
@@ -45,7 +45,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
     degradationColorResolver: new DegradationColorResolver({ configProvider: () => CONFIG.degradationColors }) });
   const clock = new BrowserWallClock();
   const room = new RoomUpgradeService({ config: HOUSE_CONFIG.room,
-    store: new RoomProgressLocalStore(windowTarget.localStorage), now: () => clock.nowMs() });
+    store: new RoomProgressLocalStore(windowTarget.localStorage), now: () => clock.nowMs(), onProgress: onRoomProgress });
   const timeOptions = { documentRef: documentTarget, mount: node("[data-house-time-mount]"), clock: gameTime, assets, uiSurface };
   const timeDisplay = createTimeDisplay ? createTimeDisplay(timeOptions) : composeTimeDisplay(timeOptions);
   const headerRow = node("[data-house-header-row]");

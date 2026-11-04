@@ -7,7 +7,9 @@ import { AssetLoadQueue } from "../../engine/assets/asset_load_queue.js";
 // Every load goes through one AssetLoadQueue: the first layer is "blocking", the second "upgrade", later layers
 // "prefetch" (background work, capped and paused while the conditions say so: hidden tab, offline, save-data), and
 // request() — what the player opened — is "interactive": it overtakes the background and promotes a queued job.
-// Only images load here; audio, Spine exports and other kinds stay with their own loaders on use. Code modules (spec 157
+// A lazy layer (spec 159) runs its groups twice: the low copies, then the full files; closed assets stay out until
+// setProgress() opens them. Spine exports and audio reach the browser's cache there through warmFile; on use they stay
+// with their own loaders. Code modules (spec 157
 // R12: features loaded with import() after the first frame) go through the same queue: a plan group's { module } entries
 // load at the layer's priority, loadModule() — the player's first use — as "interactive", one job per module.
 const LAYER_PRIORITIES = Object.freeze(["blocking", "upgrade"]);
@@ -29,6 +31,11 @@ export class GameAssetPreloadFacade {
   #moduleLoaders;
   #modules = new Map();
   #moduleWaiters = new Map();
+  #warmFile;
+  #lockedIds = new Set();
+  // Images loaded in full, and images whose store entry is still only the low copy.
+  #fullIds = new Set();
+  #lowOnlyIds = new Set();
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
@@ -36,8 +43,10 @@ export class GameAssetPreloadFacade {
   // 6 slots cost 0.1 s and a request wave on Fast 4G); backgroundSlots caps the later layers.
   // now(): milliseconds for the DEV overlay's group times (performance.now), or null.
   // modules: { name: () => Promise<module> } — the composition's import() of each feature the plan names.
+  // warmFile: (path) => Promise — puts a file in the browser's cache, or null (the lazy layer then skips those kinds).
   constructor({ plan, assets, imageAssets, scheduler, conditions = null, networkSlots = 24, backgroundSlots = 4,
-    maxAttempts = 2, now = null, modules = {} }) {
+    maxAttempts = 2, now = null, modules = {}, warmFile = null }) {
+    this.#warmFile = warmFile;
     this.#moduleLoaders = modules;
     this.#now = typeof now === "function" ? now : null;
     if (typeof plan?.resolveGroup !== "function") throw new TypeError("GameAssetPreloadFacade requires a plan");
@@ -57,17 +66,31 @@ export class GameAssetPreloadFacade {
   start(layerId, state = {}) {
     if (this.#layerRuns.has(layerId)) return this.#layerRuns.get(layerId);
     Object.assign(this.#state, state);
+    this.#lockedIds = new Set(this.#plan.lockedIds(this.#state));
     const index = this.#plan.layers.findIndex((layer) => layer.id === layerId);
     if (index > 0 && this.#upgrades.length > 0) {
       const upgrades = this.#upgrades.splice(0);
       void this.#loadIds(upgrades, "upgrade");
     }
-    const run = this.#runLayer(this.#plan.layer(layerId), LAYER_PRIORITIES[index] ?? "prefetch");
+    const layer = this.#plan.layer(layerId);
+    const priority = LAYER_PRIORITIES[index] ?? "prefetch";
+    const run = layer.lazy ? this.#runLazyLayer(layer, priority) : this.#runLayer(layer, priority);
     this.#layerRuns.set(layerId, run);
     run.then(() => {
       for (const layer of this.#plan.layers) if (layer.start === `after:${layerId}`) this.start(layer.id);
     });
     return run;
+  }
+
+  // Game progress changed: what it opened joins the background at once (low copy, then the full file).
+  async setProgress(state) {
+    Object.assign(this.#state, state);
+    const next = new Set(this.#plan.lockedIds(this.#state));
+    const opened = [...this.#lockedIds].filter((id) => !next.has(id));
+    this.#lockedIds = next;
+    if (opened.length === 0 || !this.#plan.layers.some((layer) => layer.lazy && this.#layerRuns.has(layer.id))) return;
+    await this.#loadIds(opened, "prefetch", { low: true });
+    await this.#loadIds(opened, "prefetch");
   }
 
   // Starts every layer whose start is the trigger ("composition", "ready").
@@ -115,7 +138,7 @@ export class GameAssetPreloadFacade {
 
   // Whether an image has loaded into the game's image store (a view can show it at once, without its low copy).
   isReady(id) {
-    return this.#images.isReady?.(id) === true;
+    return this.#images.isReady?.(id) === true && !this.#lowOnlyIds.has(id);
   }
 
   getQueueSnapshot() {
@@ -132,7 +155,7 @@ export class GameAssetPreloadFacade {
   getStatus() {
     return this.#plan.layers.map((layer) => ({
       id: layer.id, label: layer.label, started: this.#layerRuns.has(layer.id),
-      groups: layer.groups.map((group) => ({ id: group.id, label: group.label, priority: group.priority, load: group.load,
+      groups: layer.groups.map((group) => ({ id: group.id, label: group.label, priority: group.priority, load: group.load, locked: group.locked,
         readyOn: group.readyOn, modules: this.#plan.modulesOf(group), status: this.#groupOutcomes.get(group.id)?.status
           ?? (this.#groupTimes.has(group.id) ? "loading" : "waiting"),
         ids: this.#groupOutcomes.get(group.id)?.ids ?? [], ...(this.#groupTimes.get(group.id) ?? {}) })),
@@ -147,12 +170,80 @@ export class GameAssetPreloadFacade {
     }
   }
 
+  // A lazy layer: the low pass over its groups in order, then the full pass in the same order (spec 159).
+  async #runLazyLayer(layer, priority) {
+    const groups = layer.groups.filter((group) => {
+      if (group.load) return true;
+      this.#settleGroup(group, { status: group.locked ? "locked" : "on-demand", ids: this.#plan.resolveGroup(group, this.#state), error: null });
+      return false;
+    });
+    const priorities = [...new Set(groups.map((group) => group.priority))];
+    const pass = async (step) => {
+      for (const groupPriority of priorities) {
+        await Promise.all(groups.filter((group) => group.priority === groupPriority).map((group) => step(group)));
+      }
+    };
+    const outcomes = new Map();
+    await pass(async (group) => {
+      this.#groupTimes.set(group.id, { startedMs: this.#now?.() ?? null, settledMs: null });
+      const ids = this.#openIds(group);
+      const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(this.#kindIds(ids, "spine"), priority)];
+      for (const name of this.#plan.modulesOf(group)) results.push(await this.#loadModule(name, priority));
+      outcomes.set(group.id, results);
+    });
+    await pass(async (group) => {
+      const ids = this.#openIds(group);
+      const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority),
+        await this.#warm(this.#kindIds(ids, "audio"), priority)];
+      const failed = results.find((result) => result.status === "failed");
+      this.#groupTimes.get(group.id).settledMs = this.#now?.() ?? null;
+      this.#settleGroup(group, { status: failed ? "failed" : "ready", ids, error: failed?.error ?? null });
+    });
+  }
+
+  #openIds(group) {
+    return this.#plan.resolveGroup(group, this.#state).filter((id) => !this.#lockedIds.has(id));
+  }
+
+  #hasLow(id) {
+    return this.#assets.entryOf(id).kind === "image" && Boolean(this.#assets.lowPathOf(id));
+  }
+
+  #kindIds(ids, kind) {
+    return ids.filter((id) => this.#assets.entryOf(id).kind === kind);
+  }
+
+  // Spine exports and audio: into the browser's cache through the queue, so the background still yields to the player.
+  async #warm(ids, priority) {
+    if (!this.#warmFile) return { status: "ready", ids, error: null };
+    const paths = ids.flatMap((id) => {
+      const entry = this.#assets.entryOf(id);
+      return entry.kind === "spine" ? [entry.json, entry.atlas, ...(entry.textures ?? [])] : [entry.path];
+    });
+    const results = await Promise.all(paths.map((path) => this.#queue.request({ key: `file:${path}`, priority,
+      load: () => this.#warmFile(path) }).result));
+    const failed = results.find((result) => result.status !== "ready");
+    return { status: failed ? "failed" : "ready", ids, error: failed ? failed.error ?? new Error(failed.status) : null };
+  }
+
+  #settleGroup(group, outcome) {
+    this.#groupOutcomes.set(group.id, outcome);
+    this.#groupWaiters.get(group.id)?.resolve(outcome);
+  }
+
   // low: load the low-quality copy (where an image has one) under the image's own id; the full file replaces it later.
   async #loadIds(ids, priority, { low = false } = {}) {
-    const results = await Promise.all(this.#imageIds(ids).map((id) => {
+    const targets = this.#imageIds(ids).filter((id) => !(low && this.#fullIds.has(id)));
+    const results = await Promise.all(targets.map((id) => {
       const lowPath = low ? this.#assets.lowPathOf(id) : null;
       return this.#queue.request({ key: lowPath ? `${id}#low` : id, priority,
-        load: () => this.#images.preload([{ id, src: lowPath ?? this.#assets.pathOf(id) }]) }).result;
+        load: () => this.#images.preload([{ id, src: lowPath ?? this.#assets.pathOf(id) }]) }).result.then((result) => {
+        if (result.status === "ready") {
+          if (lowPath) { if (!this.#fullIds.has(id)) this.#lowOnlyIds.add(id); }
+          else { this.#fullIds.add(id); this.#lowOnlyIds.delete(id); }
+        }
+        return result;
+      });
     }));
     const failed = results.find((result) => result.status !== "ready");
     return { status: failed ? "failed" : "ready", ids, error: failed ? failed.error ?? new Error(failed.status) : null };
@@ -184,11 +275,13 @@ export class GameAssetPreloadFacade {
       }
     }
     if (low && outcome.status === "ready") {
-      this.#upgrades.push(...this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id)));
+      const upgrades = this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id));
+      // The first layer's full files wait for the first frame; a later layer's follow their copies at once (spec 159).
+      if (priority === "blocking") this.#upgrades.push(...upgrades);
+      else await this.#loadIds(upgrades, priority);
     }
     times.settledMs = this.#now?.() ?? null;
-    this.#groupOutcomes.set(group.id, outcome);
-    this.#groupWaiters.get(group.id)?.resolve(outcome);
+    this.#settleGroup(group, outcome);
     return outcome;
   }
 

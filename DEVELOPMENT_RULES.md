@@ -102,6 +102,9 @@ optimization is part of every change, never an afterthought:
   asset, module or feature never joins the start silently: it needs an explicit place in the plan.
 - **Nothing on the start waits for what it does not need.** No `await` on decorative artwork, selectors, previews or
   warm-ups before `ready`; show a stand-in (sprite symbol, classic control, static pose) and replace it later (R11).
+- **After the start everything loads, except what progress has closed** (spec 159). The third layer of the plan runs
+  twice in the owner's order (low copies of backgrounds, items, then Spine, the Fisherman's Room, the rest; then the full
+  files, audio last). Content gated by progress goes into the source `progress.locked`, never into the lazy order.
 - **Assets by stable id, never by path.** Code and configuration reference assets through the asset registry ids;
   `npm run assets:sync` registers new and moved files and its `--check` runs in Full. Raster art is display-sized and
   converted with `utils/convert-images.js`.

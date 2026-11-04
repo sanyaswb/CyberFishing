@@ -49,7 +49,8 @@ import { DegradationColorConfigValidator } from "../../game/presentation/visual/
 import { DegradationColorResolver } from "../../game/presentation/styles/degradation_color_resolver.js";
 import { DependencyContractValidator } from "../../engine/di/dependency_contract_validator.js";
 import { composeDepthSelector } from "./depth_selector_composition.js";
-import { LazyImageWarmUp } from "../../platform/browser/assets/lazy_image_warm_up.js";
+import { BrowserAssetTransport } from "../../platform/browser/assets/browser_asset_transport.js";
+import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
@@ -341,7 +342,7 @@ export class GameCompositionRoot {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
-    void this.#preload?.startOn("ready");
+    void this.#preload?.startOn("ready", this.#roomProgressState());
     for (const load of this.#deferredAssetLoads) load();
   }
 
@@ -359,6 +360,12 @@ export class GameCompositionRoot {
       duplicates: this.#assets.duplicates(),
       queue: this.#preload.getQueueSnapshot(),
     };
+  }
+
+  // The room's levels as the load plan's state: what game progress has opened (spec 159).
+  #roomProgressState() {
+    const room = new RoomProgressLocalStore(this.#windowTarget.localStorage).load();
+    return { roomLevel: room?.level, roomTargetLevel: room?.targetLevel };
   }
 
   // Services of the running session that other screens share instead of composing their own (spec 084).
@@ -462,12 +469,14 @@ export class GameCompositionRoot {
     });
     // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
     const imageAssets = new ImageAssetProvider();
+    const assetTransport = new BrowserAssetTransport();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
       plan: this.#assetLoadPlan, registry: this.#assets,
       sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }),
       modules: Object.keys(GAME_FEATURE_MODULES) }),
       modules: GAME_FEATURE_MODULES,
+      warmFile: (path) => assetTransport.warm(path),
       scheduler: this.#windowTarget,
       now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
       // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
@@ -558,7 +567,8 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt,
+      onRoomProgress: ({ level, targetLevel }) => { void this.#preload.setProgress({ roomLevel: level, roomTargetLevel: targetLevel }); } });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({
@@ -588,8 +598,6 @@ export class GameCompositionRoot {
     const floatArt = (await this.#preload.whenGroup("scene")).ids;
     // Spec 157 R6: last of the deferred loads, the page's lazy UI images (closed inventory, hidden toolbar buttons),
     // one at a time, so opening the inventory finds them in the cache.
-    const lazyImages = own(new LazyImageWarmUp({ documentRef: this.#documentTarget }));
-    this.#deferredAssetLoads.push(() => { void lazyImages.warm(); });
     // TK-183: the first frame renders on the 2D canvas; the Pixi scene warms up after ready.
     void sceneLayer.whenReady().then((ready) => {
       if (ready) sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);

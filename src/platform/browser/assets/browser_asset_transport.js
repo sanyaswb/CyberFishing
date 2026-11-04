@@ -16,6 +16,13 @@ export class BrowserAssetTransport {
     this.#createImage = createImage;
   }
 
+  // Puts a file in the browser's cache and discards it; the consumer's own request finds it there (spec 159).
+  async warm(url) {
+    const response = await this.#fetch(url);
+    if (!response?.ok) throw new Error(`BrowserAssetTransport: HTTP ${response?.status ?? "error"} for ${url}`);
+    await response.blob();
+  }
+
   async loadText(url, token = null) {
     const response = await this.#fetch(url);
     if (!response?.ok) throw new Error(`BrowserAssetTransport: HTTP ${response?.status ?? "error"} for ${url}`);

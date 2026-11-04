@@ -212,7 +212,77 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const second = groupIds("layer-two");
   assert.deepEqual(second["location-phases"], ["locations.test.bg_test--evening", "locations.test.bg_test--night"]);
   assert.equal(second["keepnet-stages"].length, 6);
-  assert.equal(production.layer("layer-three").groups.find((group) => group.id === "on-demand").load, false, "on-demand loads on demand only");
+  // Spec 159: the owner's lazy order; every asset has a place that loads it, or the locked queue.
+  const lazyLayer = production.layer("layer-three");
+  assert.equal(lazyLayer.lazy, true, "the third layer is the lazy one");
+  assert.deepEqual(lazyLayer.groups.slice(3).map((group) => group.id),
+    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "lazy-audio", "locked"], "the owner's order");
+  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["locked"], "nothing stays unloaded except the locked queue");
+  const lazyGroup = (id) => lazyLayer.groups.find((group) => group.id === id);
+  const lazyKinds = (id) => [...new Set(production.resolveGroup(lazyGroup(id), {}).map((asset) => assets.entryOf(asset).kind))];
+  assert.deepEqual(lazyKinds("lazy-items"), ["image"], "the items group holds images only");
+  assert.deepEqual(lazyKinds("lazy-spine"), ["spine"]);
+  assert.deepEqual(lazyKinds("lazy-audio"), ["audio"]);
+  const levelTwo = "house.room-1.lvl-2.room--1-day-lvl--2";
+  assert(production.lockedIds({ roomLevel: 1 }).includes(levelTwo), "a level above the room's is closed");
+  assert(!production.lockedIds({ roomLevel: 1, roomTargetLevel: 2 }).includes(levelTwo), "the level under renovation is open");
+  assert(!production.lockedIds({ roomLevel: 1 }).some((id) => id.includes(".lvl-1.")), "the current level is open");
+  assert.equal(production.lockedIds({ roomLevel: 5 }).length, 0, "the last level opens everything");
+
+  // Spec 159: the lazy layer runs the low pass, then the full pass in the same order; closed assets stay out until they
+  // open; Spine and audio reach the cache; a later layer's full file follows its copy; a copy is not "ready" for a view.
+  {
+    const entry = (file, tags) => ({ kind: "image", path: file, low: `low/${file}`, bytes: 1, sha256: "0", tags, label: "" });
+    const lazyRegistry = new AssetRegistry({ "bg.a": entry("bg/a.webp", ["bg"]), "item.a": entry("item/a.webp", ["item"]),
+      "room.open": entry("room/open.webp", ["room"]), "room.closed": entry("room/closed.webp", ["room"]),
+      "ui.vector": image("ui/v.svg", ["rest"]),
+      "anim.a": { kind: "spine", json: "anim/a.json", atlas: "anim/a.atlas", textures: ["anim/a.webp"], bytes: 1, sha256: "0", tags: ["anim"], label: "" },
+      "song.a": { kind: "audio", path: "song/a.m4a", bytes: 1, sha256: "0", tags: ["song"], label: "" },
+      "two.a": entry("two/a.webp", ["two"]) });
+    const lazySources = { closed: { resolve: ({ level = 1 }) => (level < 2 ? ["room.closed"] : []), candidates: () => ["room.closed"] } };
+    const lazyPlan = new AssetLoadPlan({ registry: lazyRegistry, sources: lazySources, plan: plan([
+      layer("one", "composition", [{ id: "none", priority: 1, assets: [] }]),
+      layer("two", "ready", [{ id: "two", priority: 1, readyOn: "low", assets: [{ tag: "two" }] }]),
+      { id: "three", start: "after:two", lazy: true, groups: [
+        { id: "bg", priority: 1, assets: [{ tag: "bg" }] }, { id: "items", priority: 2, assets: [{ tag: "item" }] },
+        { id: "anim", priority: 3, assets: [{ tag: "anim" }] }, { id: "room", priority: 4, assets: [{ tag: "room" }] },
+        { id: "rest", priority: 5, assets: [{ tag: "rest" }] }, { id: "song", priority: 6, assets: [{ tag: "song" }] },
+        { id: "closed", priority: 7, locked: true, assets: [{ source: "closed" }] }] },
+    ]) });
+    const order = [];
+    const ready = new Set();
+    const lazyFacade = new GameAssetPreloadFacade({ plan: lazyPlan, assets: lazyRegistry, scheduler,
+      imageAssets: { preload: async ([record]) => { order.push(record.src); ready.add(record.id); }, isReady: (id) => ready.has(id) },
+      warmFile: async (file) => { order.push(`warm ${file}`); } });
+    await lazyFacade.start("one", { level: 1 });
+    assert.equal(lazyFacade.isReady("two.a"), false);
+    await lazyFacade.startOn("ready");
+    assert.deepEqual(order.splice(0, 2), ["low/two/a.webp", "two/a.webp"], "layer two: the full file follows its copy at once");
+    assert.equal(lazyFacade.isReady("two.a"), true);
+    await lazyFacade.whenLayer("three");
+    assert.deepEqual(order, ["low/bg/a.webp", "low/item/a.webp", "warm anim/a.json", "warm anim/a.atlas", "warm anim/a.webp",
+      "low/room/open.webp", "ui/v.svg", "bg/a.webp", "item/a.webp", "room/open.webp", "warm song/a.m4a"],
+    "low copies in the owner's order, then the full files in the same order, audio last, nothing closed");
+    assert.equal((await lazyFacade.whenGroup("closed")).status, "locked");
+    assert.deepEqual((await lazyFacade.whenGroup("room")).ids, ["room.open"], "a closed asset stays out of its group");
+    order.length = 0;
+    await lazyFacade.setProgress({ level: 2 });
+    assert.deepEqual(order, ["low/room/closed.webp", "room/closed.webp"], "progress opens the art: low copy, then the full file");
+    order.length = 0;
+    await lazyFacade.setProgress({ level: 2 });
+    assert.deepEqual(order, [], "unchanged progress loads nothing");
+    ready.clear();
+    let finishLow;
+    const lowOnly = new GameAssetPreloadFacade({ plan: lazyPlan, assets: lazyRegistry, scheduler,
+      imageAssets: { preload: ([record]) => { ready.add(record.id); return record.src.startsWith("low/") ? Promise.resolve() : new Promise((done) => { finishLow = done; }); },
+        isReady: (id) => ready.has(id) } });
+    await lowOnly.start("one", { level: 1 });
+    void lowOnly.startOn("ready");
+    await flush();
+    assert.equal(lowOnly.isReady("two.a"), false, "a store entry that is only the copy does not count as ready for a view");
+    finishLow();
+    lowOnly.dispose(); lazyFacade.dispose();
+  }
 
   // Stage D6: group times for the overlay, the registry's duplicates, and the DEV plan edits used from the next start.
   let clock = 0;

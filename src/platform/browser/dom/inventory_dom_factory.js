@@ -48,8 +48,7 @@ export class InventoryDomFactory {
   }
 
   // An image by asset id, or null without one. Spec 157 R6: lazy (set before src) so an image of a hidden view, such
-  // as the closed inventory, is not requested until it is shown; after the game is ready LazyImageWarmUp loads them in
-  // the background.
+  // as the closed inventory, is not requested until it is shown; the asset load plan's third layer warms them.
   image(assetId, alternativeText = "") {
     const source = this.assetUrl(assetId);
     if (!source) return null;
