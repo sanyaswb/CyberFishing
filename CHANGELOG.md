@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.83 - Audio on demand
+
+- TK-201 (spec 159): audio stays in the third layer as an on-demand group and loads only when the radio starts or a sound plays; the background no longer downloads it. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.82 - Lazy load order and locked queue
 
 - TK-200 (spec 159): the third layer of the asset load plan runs low copies of backgrounds, items, then Spine, the Fisherman's Room and the rest, then the full files in the same order, audio last; art above the opened room level waits in a `locked` queue until progress opens it. Layer two loads each full file right after its copy. `LazyImageWarmUp` is removed. Asset-load-plan check asserts the order. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.74 - Night float glowing tip in cards and assembly editor
 
 - TK-192: night float (`float_night`) renders an additive green glowing tip overlay (`items.floats-scene.float-day-glow`, `.inventory-item-card__glow-image`) over the float antenna in inventory item cards, equipment slots and assembly editor preview, distinguishing it from the day float without duplicate raster assets. Inventory-ui check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.73 - Float night glow only on tip
-
-- TK-159: night float halo is disabled by default (`nightHalo: false` in `CONFIG.ui.float` and builder) so only the antenna tip glows green additively (`nightTipGlow`, `float-day-glow.webp`) at night as specified in spec 127; the full-body green radial halo / canvas shadow is no longer drawn over the float body. Float-pose check asserts the behavior. Game-cycle report unchanged.

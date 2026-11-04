@@ -6,7 +6,8 @@
 // - layer-one: the first frame; the game is ready only when it has loaded (start "composition").
 // - layer-two: the full game cycle, right after the first frame (start "ready").
 // - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine, the Fisherman's
-//   Room and the rest; then the full files in the same order, and audio last. A group with locked: true holds what game
+//   Room and the rest; then the full files in the same order. Audio is on demand (load: false): its players load it when the radio starts or a
+//   sound plays. A group with locked: true holds what game
 //   progress has not opened: it stays out until it opens, or until the player asks for it.
 // - features: the code of features not needed for the first frame, warmed up after it one group at a time (start
 //   "ready"); the player's first use asks for a feature at once.
@@ -58,7 +59,7 @@ export const ASSET_LOAD_PLAN = {
         { id: "lazy-room", label: "Кімната рибалки", priority: 7, assets: [{ tag: "house" }] },
         { id: "lazy-rest", label: "Решта зображень", priority: 8,
           assets: [{ tag: "fish-display" }, { tag: "lobby" }, { tag: "inventory" }, { tag: "loader" }, { id: "ui.status-icons" }] },
-        { id: "lazy-audio", label: "Аудіо", priority: 9, assets: [{ tag: "audio" }] },
+        { id: "audio", label: "Аудіо (під час запуску радіо)", priority: 9, load: false, assets: [{ tag: "audio" }] },
         { id: "locked", label: "Закрите прогресом (на вимогу)", priority: 10, locked: true, assets: [{ source: "progress.locked" }] },
       ],
     },

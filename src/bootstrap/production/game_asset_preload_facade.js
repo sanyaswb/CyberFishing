@@ -8,7 +8,7 @@ import { AssetLoadQueue } from "../../engine/assets/asset_load_queue.js";
 // "prefetch" (background work, capped and paused while the conditions say so: hidden tab, offline, save-data), and
 // request() — what the player opened — is "interactive": it overtakes the background and promotes a queued job.
 // A lazy layer (spec 159) runs its groups twice: the low copies, then the full files; closed assets stay out until
-// setProgress() opens them. Spine exports and audio reach the browser's cache there through warmFile; on use they stay
+// setProgress() opens them. Spine exports reach the browser's cache there through warmFile; on use they, like audio, stay
 // with their own loaders. Code modules (spec 157
 // R12: features loaded with import() after the first frame) go through the same queue: a plan group's { module } entries
 // load at the layer's priority, loadModule() — the player's first use — as "interactive", one job per module.
@@ -187,14 +187,13 @@ export class GameAssetPreloadFacade {
     await pass(async (group) => {
       this.#groupTimes.set(group.id, { startedMs: this.#now?.() ?? null, settledMs: null });
       const ids = this.#openIds(group);
-      const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(this.#kindIds(ids, "spine"), priority)];
+      const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(ids.filter((id) => this.#assets.entryOf(id).kind === "spine"), priority)];
       for (const name of this.#plan.modulesOf(group)) results.push(await this.#loadModule(name, priority));
       outcomes.set(group.id, results);
     });
     await pass(async (group) => {
       const ids = this.#openIds(group);
-      const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority),
-        await this.#warm(this.#kindIds(ids, "audio"), priority)];
+      const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority)];
       const failed = results.find((result) => result.status === "failed");
       this.#groupTimes.get(group.id).settledMs = this.#now?.() ?? null;
       this.#settleGroup(group, { status: failed ? "failed" : "ready", ids, error: failed?.error ?? null });
@@ -209,16 +208,12 @@ export class GameAssetPreloadFacade {
     return this.#assets.entryOf(id).kind === "image" && Boolean(this.#assets.lowPathOf(id));
   }
 
-  #kindIds(ids, kind) {
-    return ids.filter((id) => this.#assets.entryOf(id).kind === kind);
-  }
-
-  // Spine exports and audio: into the browser's cache through the queue, so the background still yields to the player.
+  // Spine exports: into the browser's cache through the queue, so the background still yields to the player.
   async #warm(ids, priority) {
     if (!this.#warmFile) return { status: "ready", ids, error: null };
     const paths = ids.flatMap((id) => {
       const entry = this.#assets.entryOf(id);
-      return entry.kind === "spine" ? [entry.json, entry.atlas, ...(entry.textures ?? [])] : [entry.path];
+      return [entry.json, entry.atlas, ...(entry.textures ?? [])];
     });
     const results = await Promise.all(paths.map((path) => this.#queue.request({ key: `file:${path}`, priority,
       load: () => this.#warmFile(path) }).result));

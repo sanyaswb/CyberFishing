@@ -216,13 +216,14 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const lazyLayer = production.layer("layer-three");
   assert.equal(lazyLayer.lazy, true, "the third layer is the lazy one");
   assert.deepEqual(lazyLayer.groups.slice(3).map((group) => group.id),
-    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "lazy-audio", "locked"], "the owner's order");
-  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["locked"], "nothing stays unloaded except the locked queue");
+    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "audio", "locked"], "the owner's order");
+  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["audio", "locked"],
+    "only audio (TK-201: when the radio starts) and the locked queue stay out of the background");
   const lazyGroup = (id) => lazyLayer.groups.find((group) => group.id === id);
   const lazyKinds = (id) => [...new Set(production.resolveGroup(lazyGroup(id), {}).map((asset) => assets.entryOf(asset).kind))];
   assert.deepEqual(lazyKinds("lazy-items"), ["image"], "the items group holds images only");
   assert.deepEqual(lazyKinds("lazy-spine"), ["spine"]);
-  assert.deepEqual(lazyKinds("lazy-audio"), ["audio"]);
+  assert.deepEqual(lazyKinds("audio"), ["audio"]);
   const levelTwo = "house.room-1.lvl-2.room--1-day-lvl--2";
   assert(production.lockedIds({ roomLevel: 1 }).includes(levelTwo), "a level above the room's is closed");
   assert(!production.lockedIds({ roomLevel: 1, roomTargetLevel: 2 }).includes(levelTwo), "the level under renovation is open");
@@ -246,7 +247,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
       { id: "three", start: "after:two", lazy: true, groups: [
         { id: "bg", priority: 1, assets: [{ tag: "bg" }] }, { id: "items", priority: 2, assets: [{ tag: "item" }] },
         { id: "anim", priority: 3, assets: [{ tag: "anim" }] }, { id: "room", priority: 4, assets: [{ tag: "room" }] },
-        { id: "rest", priority: 5, assets: [{ tag: "rest" }] }, { id: "song", priority: 6, assets: [{ tag: "song" }] },
+        { id: "rest", priority: 5, assets: [{ tag: "rest" }] }, { id: "song", priority: 6, load: false, assets: [{ tag: "song" }] },
         { id: "closed", priority: 7, locked: true, assets: [{ source: "closed" }] }] },
     ]) });
     const order = [];
@@ -261,8 +262,9 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     assert.equal(lazyFacade.isReady("two.a"), true);
     await lazyFacade.whenLayer("three");
     assert.deepEqual(order, ["low/bg/a.webp", "low/item/a.webp", "warm anim/a.json", "warm anim/a.atlas", "warm anim/a.webp",
-      "low/room/open.webp", "ui/v.svg", "bg/a.webp", "item/a.webp", "room/open.webp", "warm song/a.m4a"],
-    "low copies in the owner's order, then the full files in the same order, audio last, nothing closed");
+      "low/room/open.webp", "ui/v.svg", "bg/a.webp", "item/a.webp", "room/open.webp"],
+    "low copies in the owner's order, then the full files in the same order, no audio, nothing closed");
+    assert.equal((await lazyFacade.whenGroup("song")).status, "on-demand", "audio waits for its use");
     assert.equal((await lazyFacade.whenGroup("closed")).status, "locked");
     assert.deepEqual((await lazyFacade.whenGroup("room")).ids, ["room.open"], "a closed asset stays out of its group");
     order.length = 0;

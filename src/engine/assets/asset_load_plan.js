@@ -7,7 +7,7 @@
 // - A group with readyOn: "low" counts as loaded once the low-quality copies of its images have (spec 157 R17); the
 //   full files follow after the first frame.
 // - A layer with lazy: true runs twice over its groups in order: the low-quality copies (with the files that have no
-//   copy, except audio), then the full files and audio (spec 159).
+//   copy), then the full files (spec 159).
 // - A group with locked: true names what game progress has not opened yet (by a source): it loads nothing, and the lazy
 //   layer leaves those assets out until they open.
 // - An asset belongs to the first group (layer, then priority) that names it; an explicit { id } in two groups is an
