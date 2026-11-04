@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.76";
+export const CURRENT_PROJECT_VERSION = "0.49.77";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-04",
   notes: Object.freeze([
+    "TK-194: the configured inventory control shows from the first frame, without the classic buttons flashing.",
     "TK-191: sync drag hold threshold to 500ms with phone haptic vibration.",
     "TK-192 / TK-193: dynamic float in depth selector button with night glow, 50% default depth, full rod thumbnail, and 45deg float rotation.",
     "TK-192: display night float tip glow in cards and assembly editor.",

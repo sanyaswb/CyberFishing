@@ -14,6 +14,7 @@ export class InventorySelectorRenderer {
   #equipmentArt;
   #equipmentImage;
   #paths = [];
+  #pendingArt = [];
 
   // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars; toolbars up to 820
   // logical px use the configured compact one (`half`/`arc` centred, `corner`/`corner-left` in a bottom corner).
@@ -39,13 +40,13 @@ export class InventorySelectorRenderer {
       svg.setAttribute("aria-hidden", "true");
       const path = this.#svg("path"); svg.appendChild(path);
       this.#paths.push({ svg, path });
-      const image = section.id === "equipment" ? this.#dom.svgIcon(sections.iconSpriteAsset, section.icon, "inventory-selector__art")
-        : this.#dom.image(section.id === "backpack" ? sections.backpackAsset : keepnetAsset, "");
-      image.classList.add("inventory-selector__art");
-      image.setAttribute("aria-hidden", "true");
-      button.append(svg, image);
-      if (section.id === "equipment") {
-        this.#equipmentFallback = image;
+      // TK-194: every sector starts on its sprite symbol, so the selector can show before any artwork has loaded.
+      const symbol = this.#dom.svgIcon(sections.iconSpriteAsset, section.icon, "inventory-selector__art");
+      button.append(svg, symbol);
+      if (section.id !== "equipment") {
+        this.#pendingArt.push({ symbol, asset: section.id === "backpack" ? sections.backpackAsset : keepnetAsset });
+      } else {
+        this.#equipmentFallback = symbol;
         this.#equipmentArt = this.#dom.element("span", "game-toolbar-button__art inventory-selector__art");
         this.#equipmentArt.hidden = true;
         this.#equipmentArt.setAttribute("aria-hidden", "true");
@@ -109,6 +110,17 @@ export class InventorySelectorRenderer {
   setCompact(compact) {
     this.#isCompact = compact;
     return this.#apply(compact ? this.#compact : this.#geometries.corner);
+  }
+
+  // TK-194: the backpack and keepnet sectors swap their sprite symbols for the artwork, each once its image has loaded.
+  showSectionArtwork() {
+    for (const { symbol, asset } of this.#pendingArt.splice(0)) {
+      const image = this.#dom.image(asset, "");
+      image.classList.add("inventory-selector__art");
+      image.setAttribute("aria-hidden", "true");
+      image.addEventListener("load", () => symbol.replaceWith(image), { once: true });
+      image.loading = "eager";
+    }
   }
 
   // thumbnail: the rod skin's { asset, visibleHeight, focusX, anchor } or null.

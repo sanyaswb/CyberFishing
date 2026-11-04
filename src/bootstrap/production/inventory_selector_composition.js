@@ -7,9 +7,9 @@ import { INVENTORY_SELECTOR_LABELS } from "../../game/presentation/inventory/inv
 import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_config.js";
 
-// Spec 157 R11 (owner, 2026-10-30): the selector's artwork (section sprite, backpack, first keepnet stage, rod
-// thumbnail) is not part of startup. Until loadArtwork() is called (after the game is ready) and the artwork has
-// loaded, the classic inventory and keepnet buttons stand in for the radial selector; a failed load keeps them.
+// The control shown is what the configuration names, from the first frame (TK-194). The selector's artwork (backpack,
+// first keepnet stage, rod thumbnail) is not part of startup (spec 157 R11): its sectors show the section sprite's
+// symbols until loadArtwork() (after the game is ready) has loaded it, and keep them when the load fails.
 // preloadArtwork(): settles when the asset load plan's "selector" group has loaded (rejects when it failed).
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, requestArtwork, logger, equipmentSource = null,
@@ -26,7 +26,7 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
       inventoryUI.rootNode.focus();
     }) });
   mountNode.appendChild(view.element);
-  let disposed = false, loadState = "pending", radial = null, classicVisible = null, size = null, openSize = null, compactKey = null;
+  let disposed = false, radial = null, size = null, openSize = null, compactKey = null;
   const pick = (list, value) => list.includes(value) ? value : list[0];
   let artworkKey = "", artworkRevision = 0, artworkRequested = false, ready = null;
   const syncEquipment = () => {
@@ -49,10 +49,7 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   const sync = () => {
     if (disposed) return;
     const settings = config.ui?.inventorySelector;
-    const requestedRadial = settings?.radialEnabled === true;
-    const nextRadial = loadState === "ready" && requestedRadial;
-    // Until the artwork is ready the classic buttons stand in (spec 157 R11), and they stay after a failure.
-    const nextClassicVisible = !requestedRadial || loadState !== "ready";
+    const nextRadial = settings?.radialEnabled === true;
     const nextSize = settings?.size ?? 1;
     const nextOpenSize = settings?.openSize ?? 3;
     // Compact toolbars: a corner selector puts the action column on the other side; a centred one follows the setting.
@@ -62,17 +59,16 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
     const compactLayout = placement === "center" ? pick(INVENTORY_SELECTOR_CONFIG.compactLayouts, settings?.compactShape)
       : placement === "left" ? "corner-left" : "corner";
     const nextCompactKey = `${compactLayout} ${placement} ${actionsSide}`;
-    if (radial === nextRadial && classicVisible === nextClassicVisible && size === nextSize && openSize === nextOpenSize
-      && compactKey === nextCompactKey) return;
+    if (radial === nextRadial && size === nextSize && openSize === nextOpenSize && compactKey === nextCompactKey) return;
     controller.cancel();
     view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[nextSize] || 1,
       INVENTORY_SELECTOR_CONFIG.sizeScales[nextOpenSize] || INVENTORY_SELECTOR_CONFIG.sizeScales[3]);
     view.setCompactLayout(compactLayout);
     view.setCompactPlacement(placement, actionsSide);
     controller.setEnabled(nextRadial);
-    inventoryUI.setShortcutVisible(nextClassicVisible);
-    keepnetUI?.setShortcutVisible(nextClassicVisible);
-    radial = nextRadial; classicVisible = nextClassicVisible; size = nextSize; openSize = nextOpenSize;
+    inventoryUI.setShortcutVisible(!nextRadial);
+    keepnetUI?.setShortcutVisible(!nextRadial);
+    radial = nextRadial; size = nextSize; openSize = nextOpenSize;
     compactKey = nextCompactKey;
   };
   const unsubscribe = inventoryUI.onVisibilityChange(open => { if (open) controller.cancel(); });
@@ -80,19 +76,16 @@ export function composeInventorySelector({ documentRef, windowRef, uiSurface, mo
   syncEquipment();
   documentRef.addEventListener("config-updated", sync);
   sync();
-  // Starts the artwork loads once; resolves true when the radial selector can show, false after a failure.
+  // Starts the artwork loads once; resolves true when the sectors can show their artwork, false after a failure.
   const loadArtwork = () => {
     if (ready) return ready;
     artworkRequested = true;
     syncEquipment();
     ready = new Promise((resolve) => resolve(preloadArtwork())).then(() => {
-      if (!disposed) { loadState = "ready"; sync(); }
+      if (!disposed) view.showSectionArtwork();
       return true;
     }).catch(error => {
-      if (!disposed) {
-        loadState = "failed"; sync();
-        logger.warn("[InventorySelector] Artwork preload failed; retaining classic controls", error);
-      }
+      if (!disposed) logger.warn("[InventorySelector] Artwork preload failed; retaining sprite symbols", error);
       return false;
     });
     return ready;

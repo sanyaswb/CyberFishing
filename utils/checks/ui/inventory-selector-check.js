@@ -400,8 +400,11 @@ async function checkComposition() {
   const ctx = createRuntimeConfigContext(config, { validateOverrides: InventorySelectorConfigValidator.validateOverrides,
     resetOnImport: ["ui.inventorySelector.radialEnabled", "ui.inventorySelector.size", "ui.inventorySelector.openSize",
       "ui.inventorySelector.compactShape", "ui.inventorySelector.compactPlacement", "ui.inventorySelector.compactActionsSide"] });
-  let classic, keepnet, listener, equipmentListener, finishArtwork, finishSelector, artworkLoads = 0;
+  let classic, keepnet, listener, equipmentListener, finishArtwork, finishSelector, artworkLoads = 0, artworkPhase = false;
   const equipped = { rod: null };
+  // Only the images a sector creates: the rod's image is built with the selector, before this list is read.
+  const createdImages = [], createElement = s.doc.createElement.bind(s.doc);
+  s.doc.createElement = tag => { const node = createElement(tag); if (tag === "img" && artworkPhase) createdImages.push(node); return node; };
   const inventory = { editor, rootNode: s.doc.createElement("div"),
     setShortcutVisible: value => { classic = value; }, onVisibilityChange: fn => { listener = fn; return () => { listener = null; }; },
     openSection: id => { s.selected.push(id); listener(true); } };
@@ -414,11 +417,13 @@ async function checkComposition() {
     requestArtwork: () => { artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; }); },
     logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
-  // Spec 157 R11: startup does not load the selector's artwork; the classic buttons stand in until it is ready.
-  assert.equal(classic, true, "radial startup shows the classic backpack until the artwork is ready (spec 157 R11)");
-  assert.equal(keepnet, true, "the classic keepnet also stands in before the artwork");
-  assert(!binding.view.enabled, "the radial control waits for its artwork");
+  // TK-194: the configured control shows from the first frame; startup still loads none of its artwork (spec 157 R11).
+  assert.equal(classic, false, "radial startup never shows the classic backpack (TK-194)");
+  assert.equal(keepnet, false, "radial startup never shows the classic keepnet (TK-194)");
+  assert(binding.view.enabled, "the radial control does not wait for its artwork");
   assert.equal(finishSelector, undefined, "composition starts no artwork load");
+  assert.deepEqual(binding.view.buttons.map(button => button.children[1].tagName), ["svg", "svg", "svg"],
+    "every sector starts on its sprite symbol, with no image to request");
   equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1" } } };
   equipmentListener();
   assert.equal(artworkLoads, 0, "an equipment change before loadArtwork loads no rod art either");
@@ -426,13 +431,22 @@ async function checkComposition() {
   const loading = binding.loadArtwork();
   assert.equal(binding.loadArtwork(), loading, "the artwork loads once");
   assert.equal(typeof finishSelector, "function", "loadArtwork starts the selector artwork");
+  artworkPhase = true;
   config.ui.inventorySelector.radialEnabled = false; s.doc.fire("config-updated");
   assert(classic && keepnet && !binding.view.enabled, "classic mode remains usable while preload is pending");
   config.ui.inventorySelector.radialEnabled = true; s.doc.fire("config-updated");
-  assert(classic && keepnet && !binding.view.enabled, "returning to radial keeps the classic buttons until readiness");
+  assert(!classic && !keepnet && binding.view.enabled, "returning to radial does not wait for the artwork");
   finishSelector();
   assert.equal(await loading, true);
   assert(!classic && !keepnet && binding.view.enabled);
+  // The art replaces each symbol in the same place once its image has loaded; the equipment sector follows the rod.
+  const sectionNodes = binding.view.buttons.slice(1).map(button => button.children[1]);
+  assert.deepEqual(sectionNodes.map(node => node.tagName), ["svg", "svg"], "a symbol stays until its image has loaded");
+  assert.equal(createdImages.length, 2, "loadArtwork creates the backpack and keepnet images only now");
+  for (const image of createdImages) image.fire("load");
+  assert.deepEqual(binding.view.buttons.slice(1).map(button => button.children[1]), createdImages, "each image takes its symbol's place");
+  assert.deepEqual(createdImages.map(image => image.getAttribute("src") ?? image.src), [
+    assets.pathOf(INVENTORY_SECTIONS.backpackAsset), assets.pathOf("items.keepnet.keepnet--0")], "the art resolves through the registry");
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
   equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1", visibleHeight: 1, focusX: 0.5 } } };
@@ -538,8 +552,8 @@ async function checkPreloadOutcomes() {
       requestArtwork: () => Promise.resolve({ status: "ready" }),
       logger: { warn: () => { warnings++; } },
     });
-    assert.equal(classic, true, "classic buttons stand in before the artwork (spec 157 R11)"); assert.equal(keepnet, classic);
-    assert(!binding.view.enabled);
+    assert.equal(classic, !options.radial, "the configured control shows before any artwork (TK-194)"); assert.equal(keepnet, classic);
+    assert.equal(binding.view.enabled, options.radial);
     const loading = binding.loadArtwork();
     if (options.disposeEarly) binding.dispose();
     const beforeCompletion = visibilityWrites;
@@ -550,10 +564,14 @@ async function checkPreloadOutcomes() {
       assert.equal(visibilityWrites, beforeCompletion, "late preload completion cannot alter disposed controls");
       assert.equal(warnings, 0);
     } else {
-      assert(classic && keepnet && !binding.view.enabled, "explicit classic or failed artwork leaves usable classic shortcuts");
+      assert.equal(classic, !options.radial, "failed artwork never changes the configured control");
+      assert.equal(keepnet, classic); assert.equal(binding.view.enabled, options.radial);
       assert.equal(warnings, Number(options.fail));
       s.doc.fire("config-updated");
-      assert(classic && keepnet && !binding.view.enabled, "config refresh preserves the failed-artwork fallback");
+      assert.equal(classic, !options.radial, "config refresh keeps the configured control");
+      assert.equal(binding.view.enabled, options.radial);
+      if (options.fail) assert.deepEqual(binding.view.buttons.map(button => button.children[1].tagName), ["svg", "svg", "svg"],
+        "failed artwork keeps the sprite symbols");
     }
     binding.dispose();
     for (const listeners of s.doc.listeners.values()) assert.equal(listeners.size, 0);

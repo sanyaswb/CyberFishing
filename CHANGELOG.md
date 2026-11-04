@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.77 - Inventory control follows the configuration from the first frame
+
+- TK-194: the radial selector or the classic buttons show from the first frame as `ui.inventorySelector.radialEnabled` says; the classic buttons no longer stand in for the selector while its artwork loads. Sectors show sprite symbols until the artwork arrives and keep them if it fails. Inventory-selector check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.76 - Overlay drag hold threshold unified to 500ms
 
 - TK-191: unified overlay and draggable button hold threshold to 500ms (`dragHoldTimeMs: 500` in `CONFIG.ui` and drag controllers) so visual drag mode activates in direct synchronization with standard mobile phone haptic long-press vibration. UI surface check asserts the behavior. Game-cycle report unchanged.
@@ -37,10 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.68 - Visual feedback and blue outline for draggable windows
 
 - TK-187: movable windows (`OverlayWindowDragController`, `.draggable-window`) provide tactile visual feedback when long-click drag activates (`.draggable-window--dragging`); plays a brief scale contraction and recovery animation (`draggable-window-pop`, scale 1 -> 0.96 -> 1), applies a 2px blue outline (`#2196f3`), and lightens the background (`rgba(30, 48, 68, 0.96)`) while dragging. Game-cycle report unchanged.
-
-## v0.49.67 - Persistent scroll container in DOM patching
-
-- TK-186: `OverlayDomAdapter.updateHtml` uses `#patchChildren` on the temporary wrapper instead of `#patchNode` on the container so `.debug-overlay__content` retains its CSS class, `overflow-y: auto`, and flex properties across updates; prevents the content container from expanding unconstrained and pushing the footer scale buttons (+ / -) out of view; verified visually in Chrome at 400px viewport. Game-cycle report unchanged.
-
-
-

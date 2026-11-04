@@ -1291,7 +1291,7 @@ export class GameCompositionRoot {
       preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {
         if (group.status === "failed") throw group.error;
       }) }));
-    // The selector's artwork waits for the started game (spec 157 R11); its classic buttons stand in until then.
+    // The selector's artwork waits for the started game (spec 157 R11); its sectors show sprite symbols until then.
     this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
     // Spec 157 TK-174: the classic shortcuts swap their sprite icons for the backpack and keepnet art.
     this.#deferredAssetLoads.push(() => { systems.inventoryUI.showShortcutArtwork(); keepnetUI?.showShortcutArtwork(); });
