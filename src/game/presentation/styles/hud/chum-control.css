@@ -12,6 +12,7 @@
 
 .chum-control--aiming {
   border-color: #ff8888;
+  color: #ff8888;
   opacity: 1;
   cursor: pointer;
 }

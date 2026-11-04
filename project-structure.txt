@@ -280,6 +280,7 @@
 │  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
 │  │     ├── hint_renderer_composition.js
+│  │     ├── hud_icons_composition.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_selector_composition.js
 │  │     ├── inventory_ui_bootstrap.js
@@ -970,6 +971,7 @@
 │  │     └── world
 │  │        ├── boat_animation_controller.js
 │  │        ├── boat_chum_renderer.js
+│  │        ├── boat_fallback_shape.js
 │  │        ├── boat_wake_emitter.js
 │  │        └── world_scene_renderer.js
 │  └── platform

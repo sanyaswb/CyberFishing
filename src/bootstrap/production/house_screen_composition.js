@@ -46,7 +46,7 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   const clock = new BrowserWallClock();
   const room = new RoomUpgradeService({ config: HOUSE_CONFIG.room,
     store: new RoomProgressLocalStore(windowTarget.localStorage), now: () => clock.nowMs() });
-  const timeOptions = { documentRef: documentTarget, mount: node("[data-house-time-mount]"), clock: gameTime, uiSurface };
+  const timeOptions = { documentRef: documentTarget, mount: node("[data-house-time-mount]"), clock: gameTime, assets, uiSurface };
   const timeDisplay = createTimeDisplay ? createTimeDisplay(timeOptions) : composeTimeDisplay(timeOptions);
   const headerRow = node("[data-house-header-row]");
   const removeHeaderControl = mountHeaderControl?.(node("[data-house-dev-mount]")) ?? null;

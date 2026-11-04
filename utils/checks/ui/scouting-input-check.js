@@ -150,7 +150,8 @@ input.dispose();
 
 const { TimeDisplay } = runtime.importModule("src/platform/browser/ui/time_display.js");
 for (const onActivate of [null, () => {}]) {
-  const clock = new TimeDisplay({ documentRef: new TestDocument(), onActivate });
+  const clockDocument = new TestDocument();
+  const clock = new TimeDisplay({ documentRef: clockDocument, onActivate, icons: { create: () => clockDocument.createElement("span") } });
   assert.equal(clock.container.fire("pointerdown").stopped, true, "passive and disabled clocks shield gameplay input");
   const css = runtime.read("src/game/presentation/styles/hud/time-display.css");
   assert.match(css, /\.time-display\s*\{[^}]*pointer-events:\s*auto/s, "the clock must intercept hit testing in every state");

@@ -216,7 +216,7 @@ async function checkAnimationController() {
 
   controller.setSpineEnabled(false);
   assert.equal(controller.isSpineEnabled(), false);
-  assert.equal(controller.getStatus().mode, "fallback (emoji)");
+  assert.equal(controller.getStatus().mode, "fallback (vector)");
   assert.equal(controller.advance({ animationState: "moving", openingSectionIndex: 2, droppedSections: [] }, { dtSec: 0.1 }), null);
   controller.setSpineEnabled(true);
 
@@ -252,7 +252,6 @@ async function checkBoatRenderPipeline() {
     pos: { x: 50, y: 120 },
     angle: 0,
     config: {
-      emoji: "🚤",
       skin: {
         animation: { asset: "animations.boats.boat-lvl--3" },
       },

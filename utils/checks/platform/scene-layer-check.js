@@ -812,12 +812,12 @@ async function checkSceneWorldKinds() {
   const { SceneChangeFingerprint } = await importSource("src/platform/browser/scene/scene_change_fingerprint.js");
   const print = new SceneChangeFingerprint();
   const feed = (x, alpha, text) => { print.begin(); print.length(x); print.alpha(alpha); print.text(text); return print.finish(); };
-  assert.equal(feed(10, 0.5, "⛵"), true, "the first picture is a change");
-  assert.equal(feed(10.02, 0.5005, "⛵"), false, "steps under 0.05 px and half an 8-bit opacity step are not a change");
-  assert.equal(feed(10.2, 0.5, "⛵"), true);
-  assert.equal(feed(10.2, 0.5, "🚤"), true, "a different emoji is a change");
+  assert.equal(feed(10, 0.5, "a"), true, "the first picture is a change");
+  assert.equal(feed(10.02, 0.5005, "a"), false, "steps under 0.05 px and half an 8-bit opacity step are not a change");
+  assert.equal(feed(10.2, 0.5, "a"), true);
+  assert.equal(feed(10.2, 0.5, "b"), true, "a different text is a change");
   print.invalidate();
-  assert.equal(feed(10.2, 0.5, "🚤"), true, "after invalidate the same picture is drawn again");
+  assert.equal(feed(10.2, 0.5, "b"), true, "after invalidate the same picture is drawn again");
 
   const { appendDashedLine } = await importSource("src/platform/browser/scene/pixi_dashed_line.js");
   const { pixi } = fakePixi();
@@ -833,12 +833,12 @@ async function checkSceneWorldKinds() {
   const dom = fakeDom();
   const fake = fakePixi();
   const texts = new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget });
-  const boat = texts.get("⛵", 20, 2);
-  assert.equal(texts.get("⛵", 20.2, 2), boat, "sizes that round to the same backing pixels share one texture");
-  assert.notEqual(texts.get("⛵", 24, 2), boat);
+  const boat = texts.get("7", 20, 2);
+  assert.equal(texts.get("7", 20.2, 2), boat, "sizes that round to the same backing pixels share one texture");
+  assert.notEqual(texts.get("7", 24, 2), boat);
   assert.equal(boat.height, boat.pixelHeight / 2, "drawn at logical size: backing pixels over the ratio");
   const drawn = boat.texture.canvas.getContext("2d").texts[0];
-  assert.deepEqual([drawn.text, drawn.font], ["⛵", "40px sans-serif"], "drawn once at the scene's pixel ratio");
+  assert.deepEqual([drawn.text, drawn.font], ["7", "40px sans-serif"], "drawn once at the scene's pixel ratio");
   texts.dispose();
   assert.equal(fake.canvasTextures.every((texture) => texture.destroyed === true), true, "released with the scene");
 
@@ -850,7 +850,7 @@ async function checkSceneWorldKinds() {
   const [container] = stage.children;
   const [zones, zoneMask, wakeLayer, overlay, boatLayer] = container.children;
   const zone = { x: 200, y: 400, radiusX: 60, radiusY: 20, opacity: 0.5 };
-  const boatModel = { x: 150, y: 380, angle: 0.3, emoji: "⛵", fontSize: 24, energyRatio: 0.5, energyColor: "#00ff00",
+  const boatModel = { x: 150, y: 380, angle: 0, shape: { parts: [{ color: "#e8edf0", points: [0.5, 0, -0.5, 0.25, -0.5, -0.25] }] }, size: 24, energyRatio: 0.5, energyColor: "#00ff00",
     barWidth: 40, barHeight: 4, barY: -16 };
   const world = { visible: true, clipRegions: list([{ x: 0, y: 300, width: 400, height: 300 }]), chumZones: list([zone]),
     waypoints: list([{ x: 100, y: 350, scale: 1, index: 2, showIndex: true }]), boats: list([boatModel]),
@@ -862,9 +862,9 @@ async function checkSceneWorldKinds() {
     ["stroke", { width: 2, color: 0xc8ff64, alpha: 0.25 }]], "chum zones: BoatChumRenderer's colours and opacities");
   assert.equal(zones.mask, zoneMask, "chum zones are clipped to the castable water");
   assert.deepEqual(zoneMask.ops, [["rect", 0, 300, 400, 300], ["fill", 0xffffff]]);
-  const boatSprite = boatLayer.children.find((sprite) => sprite.texture?.canvas?.getContext("2d").texts[0]?.text === "⛵");
-  assert.deepEqual([boatSprite.x, boatSprite.y, boatSprite.rotation, boatSprite.anchor.x, boatSprite.anchor.y],
-    [150, 380, 0.3 + Math.PI, 0.5, 0.5], "the boat emoji turns with the boat around its centre");
+  assert.deepEqual(overlay.ops.filter((op) => op[1] === 162 || op[1] === 138 || op[1] === "#e8edf0"),
+    [["moveTo", 162, 380], ["lineTo", 138, 386], ["lineTo", 138, 374], ["fill", "#e8edf0"]],
+    "a boat without a Spine view is its vector shape around the centre, the bow along its heading");
   assert(overlay.ops.some((op) => op[0] === "rect" && op[1] === 130 && op[2] === 364 && op[3] === 20),
     "the energy bar fills its share");
   assert(overlay.ops.some((op) => op[0] === "stroke" && op[1].color === 0xff0000), "a blocked sensor ray is red");

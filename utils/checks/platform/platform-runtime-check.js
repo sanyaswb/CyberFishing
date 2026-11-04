@@ -231,8 +231,8 @@ function checkCanvasScenes() {
         x: 250,
         y: 250,
         angle: 0,
-        fontSize: 20,
-        emoji: "boat",
+        size: 20,
+        shape: { parts: [{ color: "#ffffff", points: [0.5, 0, -0.5, 0.25, -0.5, -0.25] }] },
         barWidth: 40,
         barY: 12,
         barHeight: 4,
@@ -982,6 +982,9 @@ function checkBrowserWidgets() {
       this.children.push(node);
       return node;
     },
+    replaceChildren(...nodes) {
+      this.children = nodes;
+    },
     remove() {
       this.removed = true;
     },
@@ -1205,16 +1208,13 @@ function checkBrowserWidgets() {
       !fullscreen.disabled,
     "exiting fullscreen restores the button",
   );
+  const hudIcons = { create: (symbol, className) => { const icon = document.createElement("span"); icon.className = className; icon.symbol = symbol; return icon; } };
   const depth = new c.DepthSelector(),
-    time = new c.TimeDisplay(),
+    time = new c.TimeDisplay({ icons: hudIcons }),
     hold = new c.HoldCharges(),
-    chum = new c.ChumControls(() => clicks++, { labels: c.HUD_LABELS, assets: new c.AssetRegistry(c.ASSET_REGISTRY) });
+    chum = new c.ChumControls(() => clicks++, { labels: c.HUD_LABELS, assets: new c.AssetRegistry(c.ASSET_REGISTRY), icons: hudIcons });
   chum.setState("idle", "hand", 4);
-  assert.equal(
-    chum.button.innerText,
-    "🍞",
-    "chum is an icon-only toolbar action",
-  );
+  assert.equal(chum.currentSymbol, "chum", "chum is an icon-only toolbar action");
   assert(
     chum.button.attrs["aria-label"].includes("4"),
     "the accessible label retains the quantity",
@@ -1255,7 +1255,7 @@ function checkBrowserWidgets() {
   }
   assert.equal(queries, initialQueries, "updates use cached DOM references");
   assert.equal(depth.lastChange, 2);
-  assert.equal(time.emojiSpan.innerText, "🌇");
+  assert.equal(time.phaseSymbol, "sunset");
   assert.equal(clicks, 81, "only enabled chum states and actionable empty boat dispatch clicks");
   assert.equal(hold.circles.length, 4);
   assert.equal(hold.textLabel.innerText, "УТРИМАННЯ");

@@ -24,7 +24,7 @@ const domFactory = new InventoryDomFactory(documentRef, { assets });
   const toolbar = new GameToolbar({ documentRef, mountNode: documentRef.body });
   const depth = new DepthSelector({ documentRef, mountNode: toolbar.depthMountNode, domFactory,
     labels: HUD_LABELS, iconImages: { F: "items.floats.float-day" } });
-  const controls = new GameControls({}, null, { documentRef, labels: HUD_LABELS,
+  const controls = new GameControls({}, null, { documentRef, labels: HUD_LABELS, icons: { create: (symbol, className) => { const node = documentRef.createElement("span"); node.className = className; node.symbol = symbol; return node; } },
     toolbarMountNode: toolbar.element, netMountNode: toolbar.tackleMountNode });
   depth.show(10, 2, () => {}); depth.setIcon("F");
   const root = documentRef.byClass("depth-selector")[0];
@@ -212,6 +212,55 @@ assert.equal(tiles.children.length, 1);
   const filters = [...factory.matchAll(/\{ id: "([a-z]+)", label: "[^"]+", icon: "([^"]+)" \}/g)];
   assert.equal(filters.length, 12, "every filter names an icon");
   for (const [, id, icon] of filters) assert(symbols.has(icon), `filter ${id}: icon "${icon}" is a symbol of the inventory sprite`);
+}
+// TK-197: the toolbar, the clock and the world boat draw no emoji; every symbol they ask for is in the sprite.
+{
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = path.join(__dirname, "../../..");
+  const sprite = fs.readFileSync(path.join(root, "assets/ui/inventory-sections.svg"), "utf8");
+  const symbols = new Set([...sprite.matchAll(/<symbol id="([^"]+)"/g)].map(match => match[1]));
+  for (const file of ["src/platform/browser/ui/chum_controls.js", "src/platform/browser/ui/game_controls.js",
+    "src/platform/browser/ui/time_display.js", "src/game/application/chum/bait_boat.js",
+    "src/game/presentation/world/boat_chum_renderer.js", "src/platform/browser/scene/scene_text_textures.js",
+    "src/platform/browser/scene/pixi_world_entities_renderer.js"]) {
+    assert(!/\p{Extended_Pictographic}/u.test(fs.readFileSync(path.join(root, file), "utf8")), `${file} holds no emoji`);
+  }
+  const { ITEM_DB } = require("../../../src/game/config/databases/item_catalog.js");
+  assert.equal(ITEM_DB.deliveryMethods.boat_lvl3.effectiveStats?.emoji ?? ITEM_DB.deliveryMethods.boat_lvl3.emoji, undefined, "the boat's stats name no emoji");
+  const { TestDocument } = require("../../testing/keepnet/test_document.js");
+  const { ChumControls } = require("../../../src/platform/browser/ui/chum_controls.js");
+  const { TimeDisplay } = require("../../../src/platform/browser/ui/time_display.js");
+  const { GameControls } = require("../../../src/platform/browser/ui/game_controls.js");
+  const iconDocument = new TestDocument();
+  const asked = [];
+  const icons = { create: (symbol, className) => { asked.push(symbol); const node = iconDocument.createElement("span"); node.className = className; return node; } };
+  const chum = new ChumControls(() => {}, { documentRef: iconDocument, assets: { pathOf: (id) => id }, icons, labels: { chumActionCount: String } });
+  const shown = [];
+  for (const [state, method] of [["idle", "hand"], ["empty", "hand"], ["moving", "hand"], ["aiming", "hand"], ["idle", "boat"], ["empty", "boat"], ["moving", "boat"], ["aiming", "boat"]]) {
+    chum.setState(state, method, 1);
+    shown.push(chum.currentSymbol);
+  }
+  assert.deepEqual(shown, ["chum", "chum-empty", "fast-forward", "cancel", "boat", "boat", "fast-forward", "cancel"], "each chum state has its symbol");
+  const created = asked.length;
+  chum.setState("aiming", "boat", 2);
+  assert.equal(asked.length, created, "an unchanged picture keeps its icon node");
+  chum.setState("idle", "boat", 2, false, true, "items.boats.boat-lvl--3_bait");
+  assert.equal(iconDocument.byClass("chum-control__image").length, 1, "a boat with art shows the art");
+  const clock = new TimeDisplay({ documentRef: iconDocument, icons, onActivate: () => {} });
+  const phases = [[3, "moon"], [6, "sunrise"], [12, "sun"], [19, "sunset"], [22, "moon"]].map(([hours, symbol]) => {
+    clock.update(hours);
+    assert.equal(iconDocument.byClass("time-display__icon").length, 1, "one phase icon at a time");
+    return [clock.phaseSymbol, symbol];
+  });
+  for (const [actual, expected] of phases) assert.equal(actual, expected);
+  const beforeMinute = asked.length;
+  clock.update(22.5);
+  assert.equal(asked.length, beforeMinute, "a new minute in the same phase keeps the icon node");
+  const net = new GameControls({}, null, { documentRef: iconDocument, labels: { landingNet: "Net", continueAfterOutcome: "Go" }, icons });
+  assert(asked.includes("net"), "a net without art shows the sprite's net");
+  for (const symbol of new Set(asked)) assert(symbols.has(symbol), `"${symbol}" is a symbol of the inventory sprite`);
+  net.dispose(); clock.dispose(); chum.dispose();
 }
 
 console.log("UI components passed: shared close/switch callbacks, semantic controls, host mixes, disabled/compact states, stable artwork, cached measurement and disposal.");

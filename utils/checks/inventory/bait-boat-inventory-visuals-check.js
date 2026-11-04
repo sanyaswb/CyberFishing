@@ -39,11 +39,12 @@ async function checkChumControls() {
   let clicked = false;
   const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
-  const controls = new ChumControls(() => { clicked = true; }, { documentRef: fakeDoc, assets: new AssetRegistry(ASSET_REGISTRY) });
-  
-  // Hand mode keeps text emoji
+  const icons = { create: (symbol) => ({ symbol }) };
+  const controls = new ChumControls(() => { clicked = true; }, { documentRef: fakeDoc, assets: new AssetRegistry(ASSET_REGISTRY), icons });
+
+  // Hand mode shows the sprite's chum symbol
   controls.setState("idle", "hand", 1);
-  assert.equal(controls.button.innerText, "🍞");
+  assert.equal(controls.button.child.symbol, "chum");
 
   // Boat mode without 3 baits gets no-bait image
   controls.setState("idle", "boat", 3, false, true, "items.boats.boat-lvl--3_no-bait");
@@ -56,7 +57,7 @@ async function checkChumControls() {
 
   // Moving state shows moving icon
   controls.setState("moving", "boat", 3, false, true, "items.boats.boat-lvl--3_bait");
-  assert.equal(controls.button.innerText, "⏩");
+  assert.equal(controls.button.child.symbol, "fast-forward");
 
   // Empty state for boat stays active with no-bait image, boat-empty class, and allows clicking
   controls.setState("empty", "boat", 3, false, true, "items.boats.boat-lvl--3_no-bait");

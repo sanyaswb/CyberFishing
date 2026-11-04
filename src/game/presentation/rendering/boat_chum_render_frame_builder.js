@@ -1,6 +1,7 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 import { backgroundTimeBlend } from "../../domain/time/background_time_blend.js";
+import { BOAT_FALLBACK_SHAPE } from "../world/boat_fallback_shape.js";
 
 export class BoatChumRenderFrameBuilder {
   #chum;
@@ -102,7 +103,7 @@ export class BoatChumRenderFrameBuilder {
         this.#screenA,
       );
       const scale = this.#projector.getPerspective(boat.pos.y).scale;
-      const fontSize = 40 * this.#projector.getScale() * scale;
+      const size = 40 * this.#projector.getScale() * scale;
       // The battery's remaining share (spec 143), written on the boat by ChumService.
       const energyRatio = RenderMath.clamp(boat.powerRatio);
 
@@ -126,8 +127,8 @@ export class BoatChumRenderFrameBuilder {
       record.x = position.x;
       record.y = position.y;
       record.angle = boat.angle;
-      record.emoji = boat.config.emoji;
-      record.fontSize = fontSize;
+      record.shape = BOAT_FALLBACK_SHAPE;
+      record.size = size;
       record.energyRatio = energyRatio;
       record.energyColor =
         energyRatio > 0.5
@@ -137,7 +138,7 @@ export class BoatChumRenderFrameBuilder {
             : "#ff4444";
       record.barWidth = 40 * scale * this.#projector.getScale();
       record.barHeight = 4 * scale * this.#projector.getScale();
-      record.barY = -fontSize / 1.5;
+      record.barY = -size / 1.5;
       const boatUi = this.#config.ui?.boat || {};
       const boatScale = Number(boatUi.displayScale) > 0 ? Number(boatUi.displayScale) : 0.20;
       record.view = anim?.view ?? null;

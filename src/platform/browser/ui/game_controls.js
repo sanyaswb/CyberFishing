@@ -16,13 +16,17 @@ export class GameControls {
   #pendingFrames = new Set();
   #landingNetArt;
   #assets;
+  #icons;
 
   // landingNetArt: the net skin's thumbnail { asset, visibleHeight, focusX, anchor }; assets: the AssetRegistry.
+  // icons: create(symbol, className) of the shared sprite, for a net without art.
   constructor(config, lifecycle, { labels, documentRef = document,
     mountNode = documentRef.body, toolbarMountNode = mountNode, frameScheduler = null, fullscreenControl = null,
-    landingNetArt = null, netMountNode = toolbarMountNode, assets = null } = {}) {
+    landingNetArt = null, netMountNode = toolbarMountNode, assets = null, icons = null } = {}) {
     if (landingNetArt?.asset && typeof assets?.pathOf !== "function") throw new TypeError("GameControls requires assets for the net art");
+    if (!landingNetArt?.asset && typeof icons?.create !== "function") throw new TypeError("GameControls requires icons for a net without art");
     this.#assets = assets;
+    this.#icons = icons;
     this.#labels = labels;
     this.#mount = mountNode;
     this.#netMount = netMountNode;
@@ -71,7 +75,7 @@ export class GameControls {
     this.#netBtn.className = "game-control game-control--net game-toolbar-button game-toolbar-button--net";
     this.#netBtn.type = "button";
     if (this.#landingNetArt?.asset) this.#netBtn.appendChild(this.#createCroppedArt(this.#landingNetArt));
-    else this.#netBtn.textContent = "🕸️";
+    else this.#netBtn.appendChild(this.#icons.create("net", "game-toolbar-button__icon"));
     this.#netBtn.setAttribute("aria-label", this.#labels.landingNet);
     this.#netBtn.title = this.#labels.landingNet;
     UiEventShield.makeSolid(this.#netBtn);

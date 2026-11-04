@@ -1,5 +1,12 @@
 import { UiEventShield } from "../dom/ui_event_shield.js";
 
+function phaseSymbol(hours) {
+  if (hours >= 21 || hours < 5) return "moon";
+  if (hours < 8) return "sunrise";
+  if (hours >= 18) return "sunset";
+  return "sun";
+}
+
 export class TimeDisplay {
   #onActivate;
   #onDoubleActivate;
@@ -8,8 +15,14 @@ export class TimeDisplay {
   #enabled = null;
   #multiplier = null;
   #speedSpan;
+  #speedValue;
+  #phaseSpan;
+  #icons;
+  // icons: create(symbol, className) of the shared sprite (TK-197).
   constructor({ documentRef = document, mount = documentRef.body, onActivate = null, onDoubleActivate = null,
-    activationController = null, labels = {} } = {}) {
+    activationController = null, labels = {}, icons } = {}) {
+    if (typeof icons?.create !== "function") throw new TypeError("TimeDisplay requires icons");
+    this.#icons = icons;
     this.#onActivate = onActivate;
     this.#onDoubleActivate = onDoubleActivate;
     this.#activation = activationController;
@@ -32,14 +45,18 @@ export class TimeDisplay {
       this.#speedSpan.className = "time-display__speed";
       this.#speedSpan.setAttribute("aria-hidden", "true");
       this.#speedSpan.hidden = true;
+      this.#speedValue = documentRef.createElement("span");
+      this.#speedSpan.append(icons.create("fast-forward", "time-display__speed-icon"), this.#speedValue);
       this.container.appendChild(this.#speedSpan);
     }
 
-    this.emojiSpan = documentRef.createElement("span");
+    this.phaseSymbol = null;
+    this.#phaseSpan = documentRef.createElement("span");
+    this.#phaseSpan.className = "time-display__phase";
     this.timeSpan = documentRef.createElement("span");
     this.timeSpan.className = "time-display__time";
 
-    this.container.appendChild(this.emojiSpan);
+    this.container.appendChild(this.#phaseSpan);
     this.container.appendChild(this.timeSpan);
     mount.appendChild(this.container);
   }
@@ -56,7 +73,7 @@ export class TimeDisplay {
     if (multiplier !== this.#multiplier) {
       if (this.#speedSpan) {
         this.#speedSpan.hidden = multiplier === 1;
-        this.#speedSpan.textContent = multiplier === 1 ? "" : `⏩ ×${multiplier}`;
+        this.#speedValue.textContent = multiplier === 1 ? "" : `×${multiplier}`;
       }
       this.container.classList.toggle("time-display--accelerated", multiplier > 1);
       this.#multiplier = multiplier;
@@ -76,18 +93,13 @@ export class TimeDisplay {
     const m = Math.floor((gameTimeHours % 1) * 60);
     const timeStr = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 
-    let emoji = "☀️";
-    if (gameTimeHours >= 21 || gameTimeHours < 5) {
-      emoji = "🌙";
-    } else if (gameTimeHours >= 5 && gameTimeHours < 8) {
-      emoji = "🌅";
-    } else if (gameTimeHours >= 18 && gameTimeHours < 21) {
-      emoji = "🌇";
-    }
-
     if (this.timeSpan.innerText !== timeStr) {
       this.timeSpan.innerText = timeStr;
-      this.emojiSpan.innerText = emoji;
+      const symbol = phaseSymbol(gameTimeHours);
+      if (symbol !== this.phaseSymbol) {
+        this.phaseSymbol = symbol;
+        this.#phaseSpan.replaceChildren(this.#icons.create(symbol, "time-display__icon"));
+      }
       if (this.#onActivate || this.#onDoubleActivate) this.#updateLabel();
     }
   }
@@ -100,9 +112,10 @@ export class TimeDisplay {
     this.#onActivate = null;
     this.#onDoubleActivate = null;
     this.#speedSpan = null;
+    this.#speedValue = null;
+    this.#phaseSpan = null;
     this.container?.remove();
     this.container = null;
-    this.emojiSpan = null;
     this.timeSpan = null;
   }
 }

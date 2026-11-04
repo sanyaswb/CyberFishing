@@ -134,6 +134,7 @@
   top: 0;
   bottom: auto;
 }
+.game-toolbar-button__icon { width: 60%; height: 60%; }
 .game-toolbar-button__image {
   display: block;
   min-width: 0;

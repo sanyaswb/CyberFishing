@@ -6,7 +6,7 @@ const ROUTE_COLOR = 0x00dcff;
 const FOAM_TEXTURE_PX = 64;
 
 // The world-entities kind on the scene (spec 107): the bait boats' chum zones (clipped to the castable water), their
-// waypoints, the boats (emoji sprites with an energy bar) and their sensor rays, drawn exactly as BoatChumRenderer
+// waypoints, the boats (a Spine view or the model's vector shape, with an energy bar) and their sensor rays, drawn exactly as BoatChumRenderer
 // draws them on the 2D canvas. The world model is rebuilt every frame, so a fingerprint of what is drawn decides
 // whether the picture changed (update() returns it) and the Graphics are rebuilt only then.
 export class PixiWorldEntitiesRenderer {
@@ -22,7 +22,6 @@ export class PixiWorldEntitiesRenderer {
   #foamTexture = null;
   #documentTarget;
   #boatView = null;
-  #boatSprites = [];
   #labelSprites = [];
   #fingerprint = new SceneChangeFingerprint();
   #visible = false;
@@ -59,7 +58,7 @@ export class PixiWorldEntitiesRenderer {
     this.#drawZones(world);
     this.#overlay.clear();
     this.#drawWaypoints(world, pixelRatio);
-    this.#drawBoats(world, pixelRatio);
+    this.#drawBoats(world);
     this.#drawSensors(world);
     this.#drawRoute(world);
     this.#drawWake(world);
@@ -105,8 +104,8 @@ export class PixiWorldEntitiesRenderer {
     }
     for (let index = 0; index < world.boats.count; index += 1) {
       const boat = world.boats.getAt(index);
-      print.length(boat.x); print.length(boat.y); print.length(boat.angle * 100); print.text(boat.emoji);
-      print.length(boat.fontSize); print.alpha(boat.energyRatio); print.text(boat.energyColor);
+      print.length(boat.x); print.length(boat.y); print.length(boat.angle * 100);
+      print.length(boat.size); print.alpha(boat.energyRatio); print.text(boat.energyColor);
       print.length(boat.barWidth); print.length(boat.barHeight); print.length(boat.barY);
       if (boat.view) {
         print.text(boat.animClip || "");
@@ -179,16 +178,14 @@ export class PixiWorldEntitiesRenderer {
     this.#hideFrom(this.#labelSprites, labels);
   }
 
-  #drawBoats(world, pixelRatio) {
+  #drawBoats(world) {
     const overlay = this.#overlay;
     let activeView = null;
     for (let index = 0; index < world.boats.count; index += 1) {
       const boat = world.boats.getAt(index);
-      const sprite = this.#sprite(this.#boatSprites, index);
       const view = boat.view ?? null;
       if (view) {
         activeView = view;
-        sprite.visible = false;
         if (view.parent !== this.#boatLayer) {
           this.#boatLayer.addChild(view);
         }
@@ -199,15 +196,7 @@ export class PixiWorldEntitiesRenderer {
         const scale = boat.viewScale ?? 1;
         view.scale.set(scale, scale);
       } else {
-        const text = this.#texts.get(boat.emoji, boat.fontSize, pixelRatio);
-        sprite.texture = text.texture;
-        sprite.width = text.width;
-        sprite.height = text.height;
-        sprite.anchor.set(0.5, 0.5);
-        sprite.x = boat.x;
-        sprite.y = boat.y;
-        sprite.rotation = boat.angle + Math.PI;
-        sprite.visible = true;
+        this.#drawBoatShape(boat);
       }
       const left = boat.x - boat.barWidth / 2;
       const top = boat.y + boat.barY;
@@ -218,7 +207,23 @@ export class PixiWorldEntitiesRenderer {
       if (this.#boatView) this.#boatView.visible = false;
       this.#boatView = activeView;
     }
-    this.#hideFrom(this.#boatSprites, world.boats.count);
+  }
+
+  // The boat without a Spine view: the same polygons BoatChumRenderer fills, turned with the boat around its centre.
+  #drawBoatShape(boat) {
+    const overlay = this.#overlay;
+    const cos = Math.cos(boat.angle) * boat.size;
+    const sin = Math.sin(boat.angle) * boat.size;
+    for (const part of boat.shape.parts) {
+      const { points } = part;
+      overlay.moveTo(boat.x + points[0] * cos - points[1] * sin, boat.y + points[0] * sin + points[1] * cos);
+      for (let index = 2; index < points.length; index += 2) {
+        overlay.lineTo(boat.x + points[index] * cos - points[index + 1] * sin,
+          boat.y + points[index] * sin + points[index + 1] * cos);
+      }
+      overlay.closePath();
+      overlay.fill(part.color);
+    }
   }
 
   // Spec 155: pooled sprites of one soft foam texture (one batch); unused sprites are hidden, none created per frame

@@ -12,7 +12,7 @@ const context = vm.createContext({
     set() {},
   },
   document: {
-    createElement() { return { style: {}, attributes: {}, setAttribute(key, value) { this.attributes[key] = String(value); }, addEventListener() {}, remove() {} }; },
+    createElement() { return { replaceChildren() {}, style: {}, attributes: {}, setAttribute(key, value) { this.attributes[key] = String(value); }, addEventListener() {}, remove() {} }; },
     body: { appendChild() {} },
     addEventListener() {},
     removeEventListener() {},
@@ -200,7 +200,7 @@ vm.runInContext(
       markInvalidCast() {},
       canPlayerCast: () => true,
       getGameStateName: () => "scouting",
-      createUi: (onClick) => new ChumControls(onClick, { assets: new AssetRegistry(ASSET_REGISTRY) }),
+      createUi: (onClick) => new ChumControls(onClick, { assets: new AssetRegistry(ASSET_REGISTRY), icons: { create: (symbol) => ({ symbol }) } }),
     });
 
     controller.toggleAim();

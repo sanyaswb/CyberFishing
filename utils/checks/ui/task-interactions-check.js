@@ -286,7 +286,7 @@ for (const interval of [299, 300, 301]) {
     now: () => calendarNow, save: value => { saved = value; } });
   const doc = new TestDocument();
   const config = { debug: { timeAccelerationEnabled: true, timeScale: 1 } };
-  const control = composeDevTimeDisplay({ documentRef: doc, mount: doc.body, clock, config, timers, nowMs: () => timers.now });
+  const control = composeDevTimeDisplay({ documentRef: doc, mount: doc.body, clock, config, timers, nowMs: () => timers.now, assets: new (require("../../../src/engine/assets/asset_registry.js").AssetRegistry)(require("../../../src/game/config/generated/asset_registry.js").ASSET_REGISTRY) });
   const environment = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 }, environment: {} },
     12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
   const button = control.container;
@@ -354,14 +354,14 @@ let phaseSave = { anchorHours: 12, anchorMs: 0, timeScale: 1 };
 const phaseClock = new GameTimeClock({ ...phaseSave, now: () => 0, save: value => { phaseSave = value; } });
 const peerClock = new GameTimeClock({ ...phaseSave, now: () => 0, load: () => phaseSave });
 const phaseDoc = new TestDocument();
-const passiveView = composeTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock,
+const passiveView = composeTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock, assets: new (require("../../../src/engine/assets/asset_registry.js").AssetRegistry)(require("../../../src/game/config/generated/asset_registry.js").ASSET_REGISTRY),
   timers: phaseTimers, nowMs: () => phaseTimers.now });
 passiveView.container.fire("click", { detail: 1 }); passiveView.container.fire("click", { detail: 1 });
 assert.equal(phaseClock.getHours(), 12, "production composition has no phase-changing capability");
 assert.equal(phaseTimers.jobs.size, 0);
 passiveView.dispose();
 const phaseConfig = { debug: { timeAccelerationEnabled: false, timeScale: 1 } };
-const phaseControl = composeDevTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock,
+const phaseControl = composeDevTimeDisplay({ documentRef: phaseDoc, mount: phaseDoc.body, clock: phaseClock, assets: new (require("../../../src/engine/assets/asset_registry.js").AssetRegistry)(require("../../../src/game/config/generated/asset_registry.js").ASSET_REGISTRY),
   config: phaseConfig, timers: phaseTimers, nowMs: () => phaseTimers.now });
 const phaseView = phaseControl;
 phaseControl.advancePhase();

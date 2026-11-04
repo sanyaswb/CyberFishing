@@ -209,7 +209,7 @@ export class BoatAnimationController {
 
   getStatus() {
     return {
-      mode: this.#scene && this.#spineEnabled && !this.#glSurface.isContextLost() ? "spine" : "fallback (emoji)",
+      mode: this.#scene && this.#spineEnabled && !this.#glSurface.isContextLost() ? "spine" : "fallback (vector)",
       reason: this.#reason,
       missingClips: this.#scene?.getMissingClips?.() ?? [],
       mipmapped: this.#scene?.isMipmapped?.() ?? false,

@@ -1,4 +1,4 @@
-// Short texts the scene draws as sprites (spec 107 D2): the bait boats' emoji and their waypoint numbers. Pixi's text
+// Short texts the scene draws as sprites (spec 107 D2): the bait boats' waypoint numbers. Pixi's text
 // classes are not in the bundle, so each distinct (text, font, colour) is drawn once into a small canvas and becomes a
 // texture, shared by every sprite that shows it and released with the scene. Fonts are rounded to whole pixels at the
 // scene's pixel ratio, so a boat's perspective scale reuses a few sizes instead of making one texture per frame.

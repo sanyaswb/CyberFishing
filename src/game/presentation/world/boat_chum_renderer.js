@@ -118,15 +118,21 @@ export class BoatChumRenderer {
   #renderBoats(model) {
     const surface = this.#surface;
     surface.save();
-    surface.textAlign = "center";
-    surface.textBaseline = "middle";
     for (let index = 0; index < model.boats.count; index += 1) {
       const boat = model.boats.getAt(index);
       surface.save();
       surface.translate(boat.x, boat.y);
-      surface.rotate(boat.angle + Math.PI);
-      surface.font = `${boat.fontSize}px sans-serif`;
-      surface.fillText(boat.emoji, 0, 0);
+      surface.rotate(boat.angle);
+      for (const part of boat.shape.parts) {
+        surface.fillStyle = part.color;
+        surface.beginPath();
+        surface.moveTo(part.points[0] * boat.size, part.points[1] * boat.size);
+        for (let point = 2; point < part.points.length; point += 2) {
+          surface.lineTo(part.points[point] * boat.size, part.points[point + 1] * boat.size);
+        }
+        surface.closePath();
+        surface.fill();
+      }
       surface.restore();
       surface.fillStyle = "rgba(0, 0, 0, 0.7)";
       surface.fillRect(

@@ -375,6 +375,7 @@ dragEnv.document.body.classList.toggle = (name, enabled) => enabled ? dragEnv.do
 try {
   const controls = new GameControls({}, null, { mountNode: dragEnv.surface.mountRoot,
     documentRef: dragEnv.document, frameScheduler: dragEnv.window,
+    icons: { create: () => dragEnv.document.createElement("span") },
     labels: { fullscreen: "Fullscreen", landingNet: "Net", continueAfterOutcome: "Continue" } });
   controls.setOutcomeOverlayActive(true);
   assert.equal(dragEnv.surface.mountRoot.inert, true);

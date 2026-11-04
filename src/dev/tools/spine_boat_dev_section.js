@@ -1,4 +1,4 @@
-// DevTools "SPINE КОРАБЛИК" (spec 150 TK-145): Spine on/off (to see emoji fallback), clips list,
+// DevTools "SPINE КОРАБЛИК" (spec 150 TK-145): Spine on/off (to see the vector fallback), clips list,
 // live CONFIG.ui.boat values (displayScale and initial coordinates: x, xOffset, yOffset), bone editor and skeleton export.
 const BONE_KEYS = Object.freeze(["x", "y", "rotation", "scaleX", "scaleY"]);
 const DEFAULT_BONE = "root";

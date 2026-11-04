@@ -93,7 +93,6 @@ export const INVENTORY_BALANCE_TOOLTIP_CONFIG = Object.freeze({
   ignoredEffectiveStatsPaths: Object.freeze([
     "assemblyProfileId",
     "capabilities",
-    "emoji",
     "equipmentCapabilities",
     "requiresTag",
   ]),

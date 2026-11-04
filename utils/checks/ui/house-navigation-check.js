@@ -210,6 +210,7 @@ const badge = documentRef.createElement("div"); badge.className = "game-version-
 badge.textContent = "v0.34.4 prototype"; documentRef.body.appendChild(badge);
 const toolbar = new GameToolbar({ documentRef, mountNode: mount, versionBadge: badge });
 const gameControls = new GameControls({}, null, { documentRef, mountNode: mount, toolbarMountNode: toolbar.element,
+  icons: { create: () => documentRef.createElement("span") },
   labels: { landingNet: "Net", continueAfterOutcome: "Continue" } });
 assert.equal(badge.parentNode, toolbar.depthMountNode, "badge shares the free left slot without moving actions on float expansion");
 assert.equal(documentRef.byClass("game-control--net")[0].parentNode, toolbar.element, "toolbar actions use the shared row");

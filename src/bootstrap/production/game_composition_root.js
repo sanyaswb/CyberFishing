@@ -142,6 +142,7 @@ import { ReelRetrieveSpeedCalculator } from "../../game/domain/fishing/reel_retr
 import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { composeTimeDisplay } from "./time_display_composition.js";
+import { composeHudIcons } from "./hud_icons_composition.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
 import { GameStageLayout } from "../../platform/browser/ui/game_stage_layout.js";
@@ -1124,6 +1125,7 @@ export class GameCompositionRoot {
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS,
           landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail, assets: this.#assets,
+          icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }),
           fullscreenControl: own(new FullscreenControl({ documentRef: this.#documentTarget,
             mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body, label: HUD_LABELS.fullscreen,
             onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),
@@ -1343,8 +1345,8 @@ export class GameCompositionRoot {
       mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb,
       assets: this.#assets }));
     const timeUI = own(this.#createTimeDisplay
-      ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock })
-      : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock }));
+      ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock, assets: this.#assets })
+      : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock, assets: this.#assets }));
     const holdUI = own(new HoldCharges({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
     return { world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules, castRules, biteRules, chumRules, boatRules, playerCastRules };
   }
@@ -1615,6 +1617,7 @@ export class GameCompositionRoot {
       getGameStateName: appPorts.getGameStateName,
       devicePower: runtime.devicePower,
       createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS, assets: this.#assets,
+        icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }),
         documentRef: this.#documentTarget, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body }),
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
