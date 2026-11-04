@@ -355,7 +355,7 @@ overlayDrag.attach();
 assert.equal(overlay.classList.contains("draggable-window"), true);
 const shieldListeners = [...overlay.listeners.values()].reduce((sum, entries) => sum + entries.size, 0) - 1;
 overlay.fire("pointerdown", { clientX: 15, clientY: 75, pointerId: 4, pointerType: "mouse", button: 0 });
-assert.equal(overlayDelay, 800, "Default drag hold duration is 800ms");
+assert.equal(overlayDelay, 500, "Default drag hold duration is 500ms");
 overlayHold();
 assert.equal(overlay.classList.contains("draggable-window--dragging"), true);
 assert.equal(overlay.style.touchAction, "none", "Dragging sets touch-action: none to prevent touch scrolling");

@@ -133,7 +133,7 @@ export class OverlayWindowDragController {
 
     this.#holdTimer = this.#windowTarget.setTimeout(
       () => this.#startDrag(rect),
-      this.#config.ui?.dragHoldTimeMs ?? 800,
+      this.#config.ui?.dragHoldTimeMs ?? 500,
     );
 
     this.#element.addEventListener("pointermove", this.#onPointerMove);
