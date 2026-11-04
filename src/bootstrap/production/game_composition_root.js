@@ -187,6 +187,7 @@ export class GameCompositionRoot {
   #sessionServices = null;
   // Spec 157 R11: loads that wait until the game is ready (startDeferredAssetLoads), registered during create().
   #deferredAssetLoads = [];
+  #assetDuplicates = null;
   #deferredAssetLoadsStarted = false;
   // Opens the radio's editor once the inventory UI exists (spec 142: the HUD indicator's tap).
   #radioEditorOpener = null;
@@ -357,7 +358,7 @@ export class GameCompositionRoot {
     return {
       layers: this.#preload.getStatus().map((layer) => ({ ...layer,
         groups: layer.groups.map((group) => ({ ...group, files: group.ids.map(file) })) })),
-      duplicates: this.#assets.duplicates(),
+      duplicates: this.#assetDuplicates ??= this.#assets.duplicates(),
       queue: this.#preload.getQueueSnapshot(),
     };
   }

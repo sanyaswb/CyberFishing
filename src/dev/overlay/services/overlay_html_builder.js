@@ -22,6 +22,15 @@ export class OverlayHtmlBuilder {
     </div>`;
   }
 
+  // A row that only reads: no explanation on hover, focus or click.
+  plainRow(label, value, options = {}) {
+    const color = options.color || "#8a9bac";
+    return `<div class="debug-overlay__row" data-overlay-metric="${this.escapeAttr(options.metricKey || label)}">`
+      + `<span class="debug-overlay__label">${this.escapeHtml(label)}:</span>`
+      + `<span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>`
+      + "</div>";
+  }
+
   escapeHtml(value) {
     return this.escapeAttr(value);
   }

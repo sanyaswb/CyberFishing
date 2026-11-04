@@ -132,6 +132,8 @@ async function checkOverlay() {
   currentPlan = planStatus;
   html = planModule.render();
   assert.match(html, /План завантаження/u);
+  // TK-202: the loading section only reads: nothing on hover, focus or click.
+  assert.doesNotMatch(html, /debug-overlay__metric-label|\btitle=|role="button"|tabindex|data-metric=/u, "loading rows have no hints");
   assert.match(html, /Фон поточної фази й карта глибин \(пріоритет 1, спершу копії\)/u, "a group with its priority and readyOn");
   assert.match(html, /готово · 1 файлів · 217 КБ · 60 мс/u, "the group's state, size and time");
   assert.match(html, /<details class="debug-overlay__details" id="dev-load-layer-layer-one">/u, "layers are expandable details");
@@ -427,10 +429,12 @@ function checkOverlayScrolling() {
   const css = fs.readFileSync(path.join(ROOT_DIR, "src/dev/styles/overlay.css"), "utf8");
   assert.match(css, /\.debug-overlay\s*\{[^}]*max-height:\s*calc\(100%\s*-\s*20px\)/u,
     "TK-182/TK-185: debug-overlay is constrained to the screen height");
-  assert.match(css, /\.debug-overlay__content\s*\{[^}]*overflow-y:\s*auto/u,
-    "TK-185: debug-overlay__content scrolls vertically when content overflows");
-  assert.match(css, /\.debug-overlay__content\s*\{[^}]*touch-action:\s*pan-y/u,
-    "TK-185: debug-overlay__content allows touch scrolling");
+  assert.match(css, /\.debug-overlay__content\s*\{[^}]*overflow:\s*auto/u,
+    "TK-185, TK-202: debug-overlay__content scrolls in both directions when content overflows");
+  assert.match(css, /\.debug-overlay__content\s*\{[^}]*touch-action:\s*pan-x pan-y/u,
+    "TK-202: a phone scrolls the unwrapped text sideways as well");
+  assert.match(css, /@container ui-surface \(min-width:\s*821px\)\s*\{\s*\.debug-overlay\s*\{[^}]*width:\s*max-content/u,
+    "TK-202: only wide layouts grow the window to its text");
   assert.match(css, /scrollbar-width:\s*none/u,
     "TK-185: scrollbar is hidden in CSS (Firefox)");
   assert.match(css, /-ms-overflow-style:\s*none/u,

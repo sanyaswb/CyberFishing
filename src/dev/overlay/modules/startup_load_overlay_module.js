@@ -70,37 +70,37 @@ export class StartupLoadOverlayModule extends OverlayModule {
     const report = this.#currentReport();
     const ms = (value) => value === null ? "—" : `${Math.round(value)} мс`;
     let html = this.formatHeader("⏱ ЗАВАНТАЖЕННЯ", "#7fd1ff");
-    html += this.metricRow("T-paint (перша відмальовка)", ms(report.paintMs), { metricKey: "startup.paint",
+    html += this.plainRow("T-paint (перша відмальовка)", ms(report.paintMs), { metricKey: "startup.paint",
       color: report.paintMs !== null && report.paintMs <= 1000 ? "#00ff80" : "#ffaa00" });
-    html += this.metricRow("T-play (гра готова)", report.playMs === null ? "гра ще не готова" : ms(report.playMs),
+    html += this.plainRow("T-play (гра готова)", report.playMs === null ? "гра ще не готова" : ms(report.playMs),
       { metricKey: "startup.play", color: report.playMs !== null && report.playMs <= 4000 ? "#00ff80" : "#ff4444" });
     html += this.#caption("Етапи, від початку / крок:");
     for (const stage of report.stages) {
-      html += this.metricRow(STAGE_LABELS[stage.stage] ?? stage.stage, `${ms(stage.atMs)} / +${ms(stage.sinceMs)}`,
+      html += this.plainRow(STAGE_LABELS[stage.stage] ?? stage.stage, `${ms(stage.atMs)} / +${ms(stage.sinceMs)}`,
         { metricKey: `startup.stage.${stage.stage}` });
     }
     const totals = report.beforePlay;
     html += this.#caption(report.playMs === null ? "Запити досі:" : "Запити до T-play:");
-    html += this.metricRow("усього", `${totals.count} (з кешу ${totals.cached}) · передано ${this.#mb(totals.transferred)}`
+    html += this.plainRow("усього", `${totals.count} (з кешу ${totals.cached}) · передано ${this.#mb(totals.transferred)}`
       + ` · без стиснення ${this.#mb(totals.decoded)}`, { metricKey: "startup.requests" });
     for (const kind of ["document", ...STARTUP_RESOURCE_KINDS]) {
       const bucket = totals.byKind[kind];
       if (!bucket || bucket.count === 0) continue;
-      html += this.metricRow(`  ${KIND_LABELS[kind]}`, `${bucket.count} · ${this.#mb(bucket.transferred)} / ${
+      html += this.plainRow(`  ${KIND_LABELS[kind]}`, `${bucket.count} · ${this.#mb(bucket.transferred)} / ${
         this.#mb(bucket.decoded)}${bucket.cached ? ` · кеш ${bucket.cached}` : ""}`, { metricKey: `startup.kind.${kind}` });
     }
     // Waves: a request that started only after another one had finished is one step later (time order; browsers do
     // not tell the page which request initiated another, so this is an upper bound of the import depth).
-    html += this.metricRow("хвиль запитів (послідовно)", `${report.networkSteps} (з них модулів ${report.moduleSteps})`,
+    html += this.plainRow("хвиль запитів (послідовно)", `${report.networkSteps} (з них модулів ${report.moduleSteps})`,
       { metricKey: "startup.steps", color: report.networkSteps <= 3 ? "#00ff80" : "#ffaa00" });
     if (report.all.count > totals.count) {
-      html += this.metricRow("після T-play", `${report.all.count - totals.count} запитів · ${
+      html += this.plainRow("після T-play", `${report.all.count - totals.count} запитів · ${
         this.#mb(report.all.transferred - totals.transferred)}`, { metricKey: "startup.after" });
     }
     html += this.#planRows();
     let largestRows = "";
     for (const request of report.largest) {
-      largestRows += this.metricRow(this.#shortName(request.url), `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}`,
+      largestRows += this.plainRow(this.#shortName(request.url), `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}`,
         { metricKey: `startup.largest.${request.url}` });
     }
     if (report.largest.length > 0) {
@@ -110,7 +110,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
     }
     let longestRows = "";
     for (const request of report.longest) {
-      longestRows += this.metricRow(this.#shortName(request.url), ms(request.durationMs), { metricKey: `startup.longest.${request.url}` });
+      longestRows += this.plainRow(this.#shortName(request.url), ms(request.durationMs), { metricKey: `startup.longest.${request.url}` });
     }
     if (report.longest.length > 0) {
       html += `<details class="debug-overlay__details" id="dev-load-longest"><summary class="debug-overlay__summary">${
@@ -190,13 +190,13 @@ export class StartupLoadOverlayModule extends OverlayModule {
         // A feature group (spec 157 R12) loads code modules, named instead of files.
         const content = group.modules?.length > 0 ? `код: ${group.modules.join(", ")}`
           : `${group.files.length} файлів · ${this.#kb(bytes)}`;
-        const groupRow = this.#summaryRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
+        const groupRow = this.plainRow(`  ${group.label} (пріоритет ${group.priority}${low})`,
           `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${content}${time}`,
           { metricKey: `startup.plan.${layer.id}.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
         if (group.files.length > 0 && group.files.length <= LISTED_FILES) {
           let fileRows = "";
           for (const file of group.files) {
-            fileRows += this.metricRow(`    ${this.#shortName(file.path)}`, this.#kb(file.bytes || 0),
+            fileRows += this.plainRow(`    ${this.#shortName(file.path)}`, this.#kb(file.bytes || 0),
               { metricKey: `startup.plan.file.${group.id}.${file.id}` });
           }
           layerBody += `<details class="debug-overlay__details debug-overlay__details--sub" id="dev-load-group-${layer.id}-${group.id}">`
@@ -206,7 +206,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
           layerBody += groupRow;
         }
       }
-      const layerRow = this.#summaryRow(layer.label, layer.started ? "стартував" : "чекає", {
+      const layerRow = this.plainRow(layer.label, layer.started ? "стартував" : "чекає", {
         metricKey: `startup.plan.${layer.id}`,
         color: layer.started ? "#00ff80" : "#ffaa00",
       });
@@ -214,21 +214,10 @@ export class StartupLoadOverlayModule extends OverlayModule {
         + `<summary class="debug-overlay__summary">${layerRow}</summary>`
         + `<div class="debug-overlay__details-body">${layerBody}</div></details>`;
     }
-    html += this.metricRow("дублікати (однаковий вміст)", status.duplicates.length === 0 ? "немає"
+    html += this.plainRow("дублікати (однаковий вміст)", status.duplicates.length === 0 ? "немає"
       : status.duplicates.map((ids) => ids.join(" = ")).join("; "), { metricKey: "startup.plan.duplicates",
       color: status.duplicates.length === 0 ? "#00ff80" : "#ffaa00" });
     return html;
-  }
-
-  #summaryRow(label, value, options = {}) {
-    const metricKey = options.metricKey || label;
-    const color = options.color || "#8a9bac";
-    const safeMetricKey = this.escapeAttr(metricKey);
-    const safeLabel = this.escapeAttr(label);
-    return `<div class="debug-overlay__row" data-overlay-metric="${safeMetricKey}">`
-      + `<span class="debug-overlay__label" data-metric="${safeMetricKey}" title="${this.escapeAttr(label)}">${safeLabel}:</span>`
-      + `<span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>`
-      + `</div>`;
   }
 
   #caption(text) {

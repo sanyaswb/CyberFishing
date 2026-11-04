@@ -28,6 +28,7 @@ export class OverlayDomAdapter {
   #dragController = null;
   #scale;
   #openDetailsIds = new Set();
+  #sizeObserver = null;
 
   constructor({
     documentTarget = document,
@@ -78,6 +79,12 @@ export class OverlayDomAdapter {
 
     this.#dragController = this.#createDragController(this.#container);
     this.#dragController.attach();
+    // The window is clamped when its size changes, not on every content update: reading it forces a layout (TK-202).
+    const ResizeObserverClass = this.#documentTarget.defaultView?.ResizeObserver;
+    if (typeof ResizeObserverClass === "function") {
+      this.#sizeObserver = new ResizeObserverClass(() => this.#clampWhenStable());
+      this.#sizeObserver.observe(this.#container);
+    }
   }
 
   show() {
@@ -97,13 +104,13 @@ export class OverlayDomAdapter {
     if (!hasExistingChildren || typeof this.#documentTarget.createElement !== "function") {
       this.#content.innerHTML = html;
       this.#applyOpenDetails();
-      this.#clampWhenStable();
+      if (!this.#sizeObserver) this.#clampWhenStable();
       return;
     }
     const temp = this.#documentTarget.createElement("div");
     temp.innerHTML = html;
     this.#patchChildren(this.#content, temp);
-    this.#clampWhenStable();
+    if (!this.#sizeObserver) this.#clampWhenStable();
   }
 
   #applyOpenDetails() {
@@ -230,7 +237,9 @@ export class OverlayDomAdapter {
 
   applyScale() {
     if (this.#container) {
-      this.#container.style.setProperty("--debug-overlay-scale", String(this.#scale));
+      const zoom = () => this.#container.style.setProperty("--debug-overlay-scale", String(this.#scale));
+      if (this.#dragController?.keepPosition) this.#dragController.keepPosition(zoom);
+      else zoom();
       this.#clampWhenStable();
     }
   }
@@ -241,6 +250,8 @@ export class OverlayDomAdapter {
   }
 
   dispose() {
+    this.#sizeObserver?.disconnect();
+    this.#sizeObserver = null;
     this.#dragController?.detach?.();
     this.#container?.remove();
     this.#container = null;

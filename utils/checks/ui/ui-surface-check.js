@@ -367,6 +367,34 @@ assert.equal(overlay.classList.contains("draggable-window--dragging"), false);
 assert.equal(overlay.style.touchAction, "", "Releasing drag clears touch-action override");
 assert.deepEqual(overlayPositions.get("drag_pos_debug_overlay"), { left: "50px", top: "120px", right: "auto", bottom: "auto" });
 overlayDrag.detach();
+// TK-202: a press keeps the row's click (no capture before the drag); the window's zoom is part of every position.
+{
+  const zoomed = dragEnv.document.createElement("div");
+  zoomed.style.setProperty("--debug-overlay-scale", "0.5");
+  let capturedPointer = null;
+  zoomed.setPointerCapture = (id) => { capturedPointer = id; };
+  const saved = new Map([["drag_pos_debug_overlay", { left: "40px", top: "60px" }]]);
+  let hold;
+  const zoomedWindow = { innerWidth: 320, innerHeight: 600, addEventListener: dragEnv.window.addEventListener, removeEventListener: dragEnv.window.removeEventListener,
+    setTimeout: (callback) => { hold = callback; return 1; }, clearTimeout() {} };
+  const zoomedDrag = new OverlayWindowDragController({ element: zoomed, windowTarget: zoomedWindow, config: { ui: { draggableButtons: true } },
+    cache: { get: (key) => saved.get(key), set: (key, value) => saved.set(key, value) } });
+  zoomedDrag.attach();
+  assert.equal(zoomed.style.left, "80px", "a saved surface position is written through the window's zoom");
+  assert.equal(zoomed.style.transition, undefined, "restoring a position keeps the drag's transitions");
+  zoomed.getBoundingClientRect = () => ({ left: 40, top: 60, width: 100, height: 100 });
+  zoomed.fire("pointerdown", { clientX: 50, clientY: 70, pointerId: 7, pointerType: "mouse", button: 0 });
+  assert.equal(capturedPointer, null, "a press does not capture: the click stays on the row under the pointer");
+  hold();
+  assert.equal(capturedPointer, 7, "the drag captures when it starts");
+  zoomed.fire("pointermove", { clientX: 60, clientY: 70, pointerId: 7 });
+  assert.equal(zoomed.style.left, "100px", "10 px on screen are 20 px of left at zoom 0.5");
+  zoomed.fire("pointerup", { pointerId: 7 });
+  zoomed.style.setProperty("--debug-overlay-scale", "1.5");
+  zoomedDrag.clampToViewport();
+  assert.equal(zoomed.style.maxWidth, `${300 / 1.5}px`, "the width limit is divided by the zoom");
+  zoomedDrag.detach();
+}
 assert.equal([...overlay.listeners.values()].reduce((sum, entries) => sum + entries.size, 0), shieldListeners);
 const originalDocument = global.document;
 global.document = dragEnv.document;

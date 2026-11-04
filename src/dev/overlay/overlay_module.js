@@ -33,6 +33,10 @@ export class OverlayModule {
     return this.htmlBuilder.metricRow(label, value, options);
   }
 
+  plainRow(label, value, options = {}) {
+    return this.htmlBuilder.plainRow(label, value, options);
+  }
+
   escapeAttr(value) {
     return this.htmlBuilder.escapeAttr(value);
   }

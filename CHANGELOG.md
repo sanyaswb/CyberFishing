@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.84 - DEV overlay width, loading rows and zoom
+
+- TK-202: the DEV overlay grows to its unwrapped text above 820 logical px and scrolls sideways up to 820; loading rows have no hints, hover or click. Dragging, limits and the saved position now account for the window's zoom, a click on a metric reaches it again (capture starts with the drag), and the window is clamped when its size changes instead of on every update. Ui-surface and startup-load-report checks assert the behavior. Game-cycle report unchanged.
+
 ## v0.49.83 - Audio on demand
 
 - TK-201 (spec 159): audio stays in the third layer as an on-demand group and loads only when the radio starts or a sound plays; the background no longer downloads it. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.75 - Depth selector equipped float with night glow, 50% default depth, full rod thumbnail and 45deg float rotation
 
 - TK-192 / TK-193: depth selector button dynamically displays the equipped float (with additive green glow tip for `float_night`) instead of hardcoded day float; default float depth set to 50% of available max depth instead of 0.1m. Rod inventory thumbnail displays full rod (`visibleHeight: 1, focusX: 0.5`) and floats are rotated by 45 degrees in cards and depth selector button. Inventory-ui, inventory-selector and ui-components checks assert the behavior. Game-cycle report unchanged.
-
-## v0.49.74 - Night float glowing tip in cards and assembly editor
-
-- TK-192: night float (`float_night`) renders an additive green glowing tip overlay (`items.floats-scene.float-day-glow`, `.inventory-item-card__glow-image`) over the float antenna in inventory item cards, equipment slots and assembly editor preview, distinguishing it from the day float without duplicate raster assets. Inventory-ui check asserts the behavior. Game-cycle report unchanged.

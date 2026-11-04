@@ -28,6 +28,20 @@ rule as something the next change can follow.
 | R12 | UI responsive and bounds checks must test layout geometry (`getBoundingClientRect()`, viewport boundaries, scroll overflow) after real update intervals, not just DOM node presence (`querySelector`) at mount time (T=0). | I-11 |
 | R13 | Responsive layout testing must assert the worst-case payload (all sections active/expanded, maximum metrics) at minimum screen width (320px–400px). | I-11 |
 
+## I-12 · 2026-11-04 · The DEV overlay ignored its own zoom and swallowed metric clicks (TK-202)
+
+- **Seen:** found while reviewing the overlay: a click on a metric never explained it, and dragging, screen limits and the
+  saved position were off at any scale except 1. The owner had not reported it.
+- **Cause:** `OverlayWindowDragController` assumed its CSS lengths equal what is seen, but CSS `zoom` on `.debug-overlay`
+  multiplies the element's own `left`, `top` and `max-*` (at zoom 0.5 `left: 100px` lands at 50 px). And
+  `setPointerCapture` in `#handlePointerDown` makes the browser send the release's `click` to the capturing window, so
+  `OverlayMetricInfoBridge` never saw a click on a label once TK-191 allowed presses on labels.
+- **Fix:** every length the controller writes is divided by the zoom; the saved position stays the position on the surface;
+  capture starts with the drag, and the window object hears a release outside it before that.
+- **Rule:** an element with `zoom` works in its own units, so convert what is measured before writing it back. Capture a
+  pointer only once the gesture is yours: capture also moves `click`. Probe such browser facts on a plain page.
+- **Check:** `ui-surface` (zoom in saved position, drag and limits; no capture before the drag).
+
 ## I-11 · 2026-11-02 · v0.49.63–66: Dev overlay pushed scale buttons off-screen and broke scrolling (TK-186)
 
 - **Seen:** on mobile screen (400px portrait) and desktop when both «Завантаження» and «Продуктивність» were active:

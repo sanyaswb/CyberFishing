@@ -57,6 +57,8 @@ export class OverlayWindowDragController {
     this.#element.removeEventListener("pointermove", this.#onPointerMove);
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
+    this.#windowTarget?.removeEventListener?.("pointerup", this.#onPointerUp);
+    this.#windowTarget?.removeEventListener?.("pointercancel", this.#onPointerUp);
     this.#element.removeEventListener("touchmove", this.#onTouchMove, { capture: true });
     this.#windowTarget?.removeEventListener?.("touchmove", this.#onTouchMove, { capture: true });
     this.#windowTarget?.removeEventListener?.("resize", this.#onResize);
@@ -69,12 +71,6 @@ export class OverlayWindowDragController {
     this.#isDragging = false;
     this.#element?.classList?.remove?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "";
-    const content = this.#element?.querySelector?.(".debug-overlay__content");
-    if (content?.style) {
-      content.style.overflowY = "";
-      content.style.touchAction = "";
-      content.style.pointerEvents = "";
-    }
   }
 
   isDragging() {
@@ -96,12 +92,14 @@ export class OverlayWindowDragController {
     // TK-185: Constrain overlay maxHeight and maxWidth to available screen dimensions
     const margin = 10;
     const maxPhysicalHeight = Math.max(120, viewportHeight - margin * 2);
-    const maxLogicalHeight = maxPhysicalHeight / surfaceScale;
-    this.#element.style.maxHeight = `${maxLogicalHeight}px`;
+    // The window's own zoom multiplies its limits and offsets too (TK-202).
+    const zoom = this.#zoom();
+    const maxHeight = `${maxPhysicalHeight / surfaceScale / zoom}px`;
+    if (this.#element.style.maxHeight !== maxHeight) this.#element.style.maxHeight = maxHeight;
 
     const maxPhysicalWidth = Math.max(180, viewportWidth - margin * 2);
-    const maxLogicalWidth = maxPhysicalWidth / surfaceScale;
-    this.#element.style.maxWidth = `${maxLogicalWidth}px`;
+    const maxWidth = `${maxPhysicalWidth / surfaceScale / zoom}px`;
+    if (this.#element.style.maxWidth !== maxWidth) this.#element.style.maxWidth = maxWidth;
 
     const rect = this.#element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
@@ -122,7 +120,7 @@ export class OverlayWindowDragController {
     if (this.#isInteractiveTarget(event.target)) return;
 
     event.stopPropagation();
-    this.#element.setPointerCapture?.(event.pointerId);
+    // No capture yet: it would send the release's click to the window, away from the row under the pointer (TK-202).
     this.#pointerId = event.pointerId;
     const rect = this.#element.getBoundingClientRect();
     this.#startX = event.clientX;
@@ -139,6 +137,9 @@ export class OverlayWindowDragController {
     this.#element.addEventListener("pointermove", this.#onPointerMove);
     this.#element.addEventListener("pointerup", this.#onPointerUp);
     this.#element.addEventListener("pointercancel", this.#onPointerUp);
+    // Before the capture a release outside the window reaches only the window object.
+    this.#windowTarget?.addEventListener?.("pointerup", this.#onPointerUp);
+    this.#windowTarget?.addEventListener?.("pointercancel", this.#onPointerUp);
     this.#element.addEventListener("touchmove", this.#onTouchMove, { passive: false, capture: true });
     this.#windowTarget?.addEventListener?.("touchmove", this.#onTouchMove, { passive: false, capture: true });
   }
@@ -166,11 +167,14 @@ export class OverlayWindowDragController {
   }
 
   #handlePointerUp(event) {
-    this.#element.releasePointerCapture?.(event.pointerId);
+    if (this.#pointerId === null) return;
+    if (this.#element.hasPointerCapture?.(event.pointerId)) this.#element.releasePointerCapture(event.pointerId);
     this.#pointerId = null;
     this.#element.removeEventListener("pointermove", this.#onPointerMove);
     this.#element.removeEventListener("pointerup", this.#onPointerUp);
     this.#element.removeEventListener("pointercancel", this.#onPointerUp);
+    this.#windowTarget?.removeEventListener?.("pointerup", this.#onPointerUp);
+    this.#windowTarget?.removeEventListener?.("pointercancel", this.#onPointerUp);
     this.#element.removeEventListener("touchmove", this.#onTouchMove, { capture: true });
     this.#windowTarget?.removeEventListener?.("touchmove", this.#onTouchMove, { capture: true });
     this.#clearHoldTimer();
@@ -179,12 +183,6 @@ export class OverlayWindowDragController {
     this.#isDragging = false;
     this.#element?.classList?.remove?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "";
-    const content = this.#element?.querySelector?.(".debug-overlay__content");
-    if (content?.style) {
-      content.style.overflowY = "";
-      content.style.touchAction = "";
-      content.style.pointerEvents = "";
-    }
     this.clampToViewport();
     this.#savePosition();
   }
@@ -193,12 +191,7 @@ export class OverlayWindowDragController {
     this.#isDragging = true;
     this.#element?.classList?.add?.("draggable-window--dragging");
     if (this.#element?.style) this.#element.style.touchAction = "none";
-    const content = this.#element?.querySelector?.(".debug-overlay__content");
-    if (content?.style) {
-      content.style.overflowY = "hidden";
-      content.style.touchAction = "none";
-      content.style.pointerEvents = "none";
-    }
+    this.#element.setPointerCapture?.(this.#pointerId);
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
     this.#element.style.right = "auto";
@@ -225,12 +218,13 @@ export class OverlayWindowDragController {
     const diffX = left - rect.left;
     const diffY = top - rect.top;
     if (Math.abs(diffX) < 0.5 && Math.abs(diffY) < 0.5) return;
+    const zoom = this.#zoom();
     const logicalPoint = this.#uiSurface?.physicalToLogicalPoint({ x: rect.left, y: rect.top });
-    const currentLeft = this.#readStylePx("left", logicalPoint?.x ?? rect.left);
-    const currentTop = this.#readStylePx("top", logicalPoint?.y ?? rect.top);
+    const currentLeft = this.#readStylePx("left", (logicalPoint?.x ?? rect.left) / zoom);
+    const currentTop = this.#readStylePx("top", (logicalPoint?.y ?? rect.top) / zoom);
     const delta = this.#uiSurface?.physicalToLogicalDelta({ x: diffX, y: diffY });
-    this.#element.style.left = `${currentLeft + (delta?.x ?? diffX)}px`;
-    this.#element.style.top = `${currentTop + (delta?.y ?? diffY)}px`;
+    this.#element.style.left = `${currentLeft + (delta?.x ?? diffX) / zoom}px`;
+    this.#element.style.top = `${currentTop + (delta?.y ?? diffY) / zoom}px`;
     this.#element.style.right = "auto";
     this.#element.style.bottom = "auto";
   }
@@ -242,9 +236,9 @@ export class OverlayWindowDragController {
 
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
-    this.#element.style.transition = "none";
-    this.#element.style.left = savedPosition.x ?? savedPosition.left ?? "auto";
-    this.#element.style.top = savedPosition.y ?? savedPosition.top ?? "auto";
+    // Saved as the position on the surface; the window's zoom multiplies what is written here.
+    this.#element.style.left = this.#unzoomed(savedPosition.x ?? savedPosition.left);
+    this.#element.style.top = this.#unzoomed(savedPosition.y ?? savedPosition.top);
     this.#element.style.right = savedPosition.right ?? "auto";
     this.#element.style.bottom = savedPosition.bottom ?? "auto";
   }
@@ -271,6 +265,23 @@ export class OverlayWindowDragController {
     if (!this.#holdTimer) return;
     this.#windowTarget?.clearTimeout?.(this.#holdTimer);
     this.#holdTimer = null;
+  }
+
+  // Keeps the window's corner where it is while its zoom changes.
+  keepPosition(changeZoom) {
+    const rect = this.#element?.getBoundingClientRect?.();
+    changeZoom();
+    if (rect && !this.#isDragging && rect.width > 0) this.#placeVisualAt(rect.left, rect.top);
+  }
+
+  #zoom() {
+    const zoom = Number.parseFloat(this.#element?.style?.getPropertyValue?.("--debug-overlay-scale"));
+    return zoom > 0 ? zoom : 1;
+  }
+
+  #unzoomed(value) {
+    const position = Number.parseFloat(value);
+    return Number.isFinite(position) ? `${position / this.#zoom()}px` : "auto";
   }
 
   #readStylePx(property, fallback) {

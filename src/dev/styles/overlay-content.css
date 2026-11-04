@@ -141,6 +141,7 @@
 .debug-overlay__note,
 .debug-overlay__notice {
   contain: inline-size;
+  white-space: normal;
 }
 
 .debug-overlay__chance-card {
@@ -193,11 +194,6 @@
 
 .debug-overlay__line--spaced {
   margin-bottom: 8px;
-}
-
-.debug-overlay__caption {
-  font-size: 12px;
-  margin-bottom: 4px;
 }
 
 .debug-overlay__pair--tight {

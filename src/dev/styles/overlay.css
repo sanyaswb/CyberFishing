@@ -7,6 +7,10 @@
   gap: 8px;
   margin-bottom: 2px;
   font-size: 12px;
+  /* A row is as wide as its text: it widens the window on wide layouts and scrolls on phones (TK-202). */
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 .debug-overlay__label {
   display: inline-flex;
@@ -19,8 +23,6 @@
 .debug-overlay__value {
   font-weight: bold;
   text-align: right;
-  word-break: break-word;
-  overflow-wrap: break-word;
 }
 
 .debug-overlay__tabs {
@@ -109,9 +111,15 @@
   width: 320px;
   max-width: calc(100% - 20px);
   max-height: calc(100% - 20px);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   transition: background 160ms ease, outline 160ms ease, box-shadow 160ms ease;
+}
+
+/* Wide layouts: the window grows to its text. Up to 820 logical px it keeps its width and the content scrolls (TK-202). */
+@container ui-surface (min-width: 821px) {
+  .debug-overlay {
+    width: max-content;
+    min-width: 320px;
+  }
 }
 
 /* TK-187: Visual tactile feedback for windows movable via long click */
@@ -152,18 +160,10 @@
     animation: none;
   }
 }
-.debug-overlay::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
 .debug-overlay__caption {
-  font-size: 11px;
   color: #8a9bac;
-  margin: 4px 0 2px;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  margin: 4px 0;
+  font-size: 12px;
 }
 
 .debug-overlay__scale-controls {
@@ -209,10 +209,10 @@
 .debug-overlay__content {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
+  white-space: nowrap;
   overscroll-behavior: contain;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   pointer-events: all;
   /* TK-185: hide scrollbar completely while maintaining scroll functionality */
   scrollbar-width: none;
