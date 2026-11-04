@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.78";
+export const CURRENT_PROJECT_VERSION = "0.49.79";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -16,6 +16,7 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   codename: "Bait Boat Spine",
   updatedAt: "2026-11-04",
   notes: Object.freeze([
+    "TK-196: on mobile the load scale moves from the header to the bottom of the rod panel.",
     "TK-195: inventory placeholders and filters use vector icons instead of emoji; rod and hook slot icons redrawn.",
     "TK-194: the configured inventory control shows from the first frame, without the classic buttons flashing.",
     "TK-191: sync drag hold threshold to 500ms with phone haptic vibration.",

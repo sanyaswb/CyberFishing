@@ -101,6 +101,33 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* The load scale belongs to the header on wide layouts. */
+.inventory-loadout-panel__primary .inventory-loadout-panel__load {
+  display: none;
+}
+
+/* TK-196: up to 820 logical px it spans the bottom of the primary panel, which keeps its height: the rod and the
+   dependent cells give up the scale's row. */
+@container ui-surface (max-width: 820px) {
+  .inventory-loadout-panel__primary {
+    grid-template-rows: minmax(0, 1fr) auto;
+    row-gap: var(--inventory-equipment-gap);
+  }
+
+  .inventory-loadout-panel__primary .inventory-loadout-panel__load {
+    --inventory-scale-unit: calc(44px / 36);
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  .inventory-loadout-panel__rod,
+  .inventory-loadout-panel__cascade {
+    min-height: 0;
+  }
+}
+
 /* Without a rod the single rod cell grows into the free height above the auxiliary row: a rod is taller than wide.
    The reference height stays its minimum, so the gaps between the panels are kept (spec 070 follow-up). */
 .inventory-main__section--equipment

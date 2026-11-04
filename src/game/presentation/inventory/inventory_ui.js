@@ -314,7 +314,7 @@ export class InventoryUI {
     this.#tooltipPresenter.hide();
     this.#tooltipPresenter.setContext(viewModel.tooltipContext);
     this.#renderHeader(viewModel);
-    this.#renderLeftPanel(viewModel.panel);
+    this.#renderLeftPanel(viewModel.panel, viewModel.header);
     this.#applySection(viewModel.sections);
     this.#showEquipmentFeedback(viewModel.equipmentFeedback);
     const signature = JSON.stringify({
@@ -361,6 +361,7 @@ export class InventoryUI {
     }
 
     this.#headerRenderer.updateLoad(this.#headerNode, viewModel.header);
+    this.#loadoutRenderer.updateLoad?.(viewModel.header);
   }
 
   #createDynamicItemIndex(viewModel) {
@@ -619,7 +620,7 @@ export class InventoryUI {
     }
   }
 
-  #renderLeftPanel(panel) {
+  #renderLeftPanel(panel, header) {
     // A socket pick refreshes the same editor. Keep its scroll position while replacing the view's DOM.
     const rootInstanceId = panel.mode === "assembly" ? panel.assembly.rootInstanceId : null;
     const sameEditor = rootInstanceId !== null && rootInstanceId === this.#editorRootInstanceId;
@@ -698,7 +699,7 @@ export class InventoryUI {
           instanceId: slot.item?.instanceId || null,
         }),
       onWarning: (message) => this.showWarning(message),
-    });
+    }, header);
     this.#dom.replaceChildren(this.#equipmentHost, loadout);
   }
 

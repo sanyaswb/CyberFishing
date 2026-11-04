@@ -199,6 +199,7 @@ export class InventoryUiBootstrap {
       resourceMeterResolver: resolvedResourceMeterResolver,
       resourceMeterRenderer: resolvedResourceMeterRenderer,
     });
+    const loadRenderer = new InventoryLoadRenderer({ scaleRenderer, config: INVENTORY_LOAD_METER_CONFIG });
     const resolvedHeaderRenderer =
       headerRenderer ||
       new InventoryHeaderRenderer({ domFactory: dom,
@@ -206,7 +207,7 @@ export class InventoryUiBootstrap {
         autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom,
           longPressController: resolvedLongPressController, longPressDurationMs: LongPressController.DURATION_MS,
           longPressActivationDelayMs: LongPressController.ACTIVATION_DELAY_MS }),
-        loadRenderer: new InventoryLoadRenderer({ scaleRenderer, config: INVENTORY_LOAD_METER_CONFIG }),
+        loadRenderer,
       });
     const resolvedLoadoutRenderer =
       loadoutRenderer ||
@@ -215,6 +216,7 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         resourceMeterRenderer: resolvedResourceMeterRenderer,
         getEquippedLongPressDurationMs: () => LongPressController.EQUIPPED_DURATION_MS,
+        loadRenderer,
         // Spec 142: the auxiliary wells scroll along the axis their layout declares (row: x, column: y).
         auxiliaryScrollController: new HorizontalScrollController({ uiSurface,
           resolveAxis: (node) => dom.view.getComputedStyle(node).getPropertyValue("--inventory-scroll-axis").trim() }),

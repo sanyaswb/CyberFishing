@@ -4,14 +4,17 @@ export class InventoryLoadoutPanelRenderer {
   #resourceMeterRenderer;
   #getEquippedLongPressDurationMs;
   #auxiliaryScrollController;
+  #loadRenderer;
+  #loadNode = null;
 
   constructor({ domFactory, itemRenderer, resourceMeterRenderer, getEquippedLongPressDurationMs,
-    auxiliaryScrollController = null } = {}) {
+    auxiliaryScrollController = null, loadRenderer = null } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#resourceMeterRenderer = resourceMeterRenderer;
     this.#getEquippedLongPressDurationMs = getEquippedLongPressDurationMs;
     this.#auxiliaryScrollController = auxiliaryScrollController;
+    this.#loadRenderer = loadRenderer;
   }
 
   render(
@@ -21,6 +24,7 @@ export class InventoryLoadoutPanelRenderer {
       onSlotLongPress = null,
       onWarning = null,
     } = {},
+    header = null,
   ) {
     const handlers = { onSlotActivate, onSlotLongPress, onWarning };
     const shell = this.#dom.element(
@@ -53,6 +57,13 @@ export class InventoryLoadoutPanelRenderer {
       });
       primary.appendChild(cascade);
     }
+    // TK-196: up to 820 logical px the load scale stands here, under the rod, instead of in the header (CSS picks one).
+    this.#loadNode = this.#loadRenderer && header ? this.#loadRenderer.create() : null;
+    if (this.#loadNode) {
+      this.#loadNode.classList.add("inventory-loadout-panel__load");
+      this.#loadRenderer.update(this.#loadNode, header);
+      primary.appendChild(this.#loadNode);
+    }
     panel.appendChild(primary);
 
     if (model.auxiliarySlots.length) {
@@ -74,6 +85,10 @@ export class InventoryLoadoutPanelRenderer {
     }
     shell.appendChild(panel);
     return shell;
+  }
+
+  updateLoad(header) {
+    if (this.#loadNode) this.#loadRenderer.update(this.#loadNode, header);
   }
 
   // The rod column: its cell, then the equipped rod's condition meter in a stats container under it (like the

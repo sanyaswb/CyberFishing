@@ -1648,6 +1648,13 @@ class InventoryUiBehaviorCheck {
     ui.render(currentView);
     const primaryOf = () =>
       this.#findByClass(ui.rootNode, "inventory-loadout-panel__primary");
+    // TK-196: the primary panel ends with the load scale, which mobile layouts show instead of the header's.
+    const panelLoad = this.#findByClass(primaryOf(), "inventory-loadout-panel__load");
+    assert.strictEqual(primaryOf().children[primaryOf().children.length - 1], panelLoad, "the load scale is the panel's last row");
+    assert.ok(this.#findByClass(panelLoad, "inventory-scale__icon"), "the load scale keeps its icon in the panel");
+    assert.strictEqual(this.#findByClass(panelLoad, "inventory-scale__value").textContent,
+      this.#findByClass(this.#findByClass(ui.rootNode, "inventory-header__load"), "inventory-scale__value").textContent,
+      "the panel's scale reads the same load as the header's");
     assert.strictEqual(
       this.#findAllByClass(
         ui.rootNode,
