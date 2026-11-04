@@ -3045,6 +3045,11 @@ class InventoryUiBehaviorCheck {
       0,
       "Day float must not render a glow overlay",
     );
+    const dayVisual = this.#findByClass(dayFloatCard, "inventory-item-card__visual");
+    assert.ok(
+      dayVisual.classList.contains("inventory-item-card__visual--float"),
+      "Float card visual must have the float class for 45deg rotation",
+    );
 
     const nightFloatCard = isolatedItemRenderer.renderItem(ITEM_DB.floats.float_night, { wholeArt: true });
     const nightGlowImages = this.#findAllByClass(nightFloatCard, "inventory-item-card__glow-image");

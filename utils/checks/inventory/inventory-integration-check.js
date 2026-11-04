@@ -147,7 +147,7 @@ vm.runInContext(
       variant: "pole",
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       skin: {
-        thumbnail: { asset: "skin-thumb", visibleHeight: 0.5, focusX: 0.31 },
+        thumbnail: { asset: "skin-thumb", visibleHeight: 1, focusX: 0.5 },
         equipment: { withLineAsset: "skin-line", withoutLineAsset: "skin-bare" },
       },
       equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false },

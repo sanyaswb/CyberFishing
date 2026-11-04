@@ -2,9 +2,23 @@
 
 Перед кожним push сюди переносяться виконані задачі та завершені частини з `tasks.md` зі збереженням номера, опису, результату й перевірок. Повторні записи об'єднуються без втрати змісту. Незавершені перевірки власника залишаються окремо в `tasks.md` із посиланням на відповідну реалізацію в цьому архіві.
 
+<a id="tk-193"></a>
+
+## TK-193 — повне відображення вудки в мініатюрі інвентаря та поворот поплавка на 45 градусів (v0.49.75)
+
+- [x] **TK-193 — повне відображення вудки в мініатюрі інвентаря та поворот поплавка на 45 градусів (власник, 2026-11-04; v0.49.75).**
+  Власник: «де можна налаштувати % відображення предмета в комірці інвентаря, наприклад чому зараз вудка в інвентарі в мініатюрі відображається не вся (зображення обрізано)» -> «я бачу що в тестах є перевірки які враховують ті візуальні перевірки, потрібно прибрати ці візуальні перевірки в тестах і виставити для вудки visibleHeight: 1» -> «в TK-193 також додай підзадачу повернути поплавок на 45 градусів у відображенні інвентаря і в ui кнопці при виборі глибини».
+  Знайдено: для `rod_test_float` у `item_database.js` було задано `visibleHeight: 0.5, focusX: 0.31` (кадрування нижньої частини). Поплавки в інвентарі та кнопці вибору глибини відображалися вертикально без повороту.
+  Зміни:
+  1. `src/game/config/raw/items/item_database.js`: для `rod_test_float.skin.thumbnail` встановлено `visibleHeight: 1, focusX: 0.5` для відмальовки вудки по центру комірки без обрізання.
+  2. `utils/checks/ui/inventory-selector-check.js`, `utils/checks/inventory/inventory-integration-check.js`: тестові фікстури оновлено на `visibleHeight: 1, focusX: 0.5`.
+  3. `src/game/presentation/inventory/inventory_item_card_renderer.js` & `src/game/presentation/styles/inventory/item-cards.css`: додано `.inventory-item-card__visual--float`, де для картинок поплавка та його світіння застосовано `transform: rotate(45deg)`.
+  4. `src/platform/browser/ui/depth_selector.js` & `src/game/presentation/styles/hud/depth-selector.css`: для іконки кнопки глибини додано клас `.depth-selector__icon--float` із `transform: rotate(45deg)`.
+  Перевірено: `node utils/checks/ui/inventory-selector-check.js`, `node utils/checks/ui/inventory-ui-check.js`, `node utils/checks/ui/ui-components-check.js`, `npm run check:quick`, `npm run check` (82/82 passing). Game-cycle без змін.
+
 <a id="tk-192"></a>
 
-## TK-192 — відображення світлового кінчика нічного поплавка в картках та редакторі спорядження (v0.49.74)
+## TK-192 — відображення світлового кінчика нічного поплавка в картках, редакторі та кнопці вибору глибини, дефолтна глибина 50% (v0.49.74, v0.49.75)
 
 - [x] **TK-192 — відображення світлового кінчика нічного поплавка в картках та редакторі спорядження (власник, 2026-11-03; v0.49.74).**
   Власник: «Чому коли я купую нічний поплавок в редакторі я бачу скін денного?» -> «Давай варіант Б, він фактично змінюється вночі і ефект працює тож ми цей самий ефект накладемі не буде дубліката роби і пуш в gh pages».
@@ -14,6 +28,17 @@
   2. `src/game/presentation/styles/inventory/item-cards.css`: додано стилі для `.inventory-item-card__glow-image` (абсолютне позиціонування поверх візуалу, `inset: var(--inventory-image-inset, 0px)`, `width: calc(100% - 2 * var(--inventory-image-inset, 0px))`, `height: calc(100% - 2 * var(--inventory-image-inset, 0px))`, `object-fit: contain`, `pointer-events: none`, `user-select: none`).
   3. `utils/checks/ui/inventory-ui-check.js`: додано перевірку наявності світлового шару для `float_night` (елемент `.inventory-item-card__glow-image` із `src="assets/items/floats-scene/float-day-glow.webp"`) та його відсутності для `float_day`.
   Перевірено: `node utils/checks/ui/inventory-ui-check.js`, `npm run check:quick`, `npm run check` (82/82 успішно). Game-cycle без змін.
+
+- [x] **TK-192 підзадачі: споряджений поплавок з нічним світінням у кнопці вибору глибини та дефолтна глибина 50% (власник, 2026-11-04; v0.49.75).**
+  Власник: «не погоджено зафіксовано недолік: в кнопці для вибору глибини завжди показується денний поплавок а не той що споряджено» -> «до ТК-192 додай підзадачу - дефолтне значення глибини поплавка не 0.1 а 50% від доступної».
+  Знайдено: кнопка вибору глибини (`DepthSelector`) використовувала статичний словник емодзі/тексту, де обидва поплавки мали однаковий `"🥢"`, через що показувався денний асет; глибина за замовчуванням скидалася до `0.1` м (`DEPTH_STEP_METERS`).
+  Зміни:
+  1. `src/platform/browser/ui/depth_selector.js`: додано підтримку об'єкта предмета в `setItem(item)` / `setIcon(iconOrItem)`, рендеринг шару `.depth-selector__glow-image` при наявності `glowAsset`, виставлення дефолтного значення глибини як 50% від максимальної доступної глибини (`Math.round((maxDepth * 0.5) / step) * step`).
+  2. `src/game/application/state/scouting_state.js`: передача спорядженого поплавка або наживки в `depthUI.setIcon(equippedFloat)` та розрахунок 50% дефолтної глибини при первинній ініціалізації.
+  3. `src/bootstrap/production/depth_selector_composition.js`: передача об'єкта поплавка за замовчуванням.
+  4. `src/game/presentation/styles/hud/depth-selector.css`: додано стилі `.depth-selector__glow-image` та `.depth-selector__icon--float`.
+  5. `utils/checks/ui/ui-components-check.js`: додано перевірки для динамічної іконки поплавка з світінням, класу обертання та 50% дефолтної глибини.
+  Перевірено: `node utils/checks/ui/ui-components-check.js`, `npm run check:quick`, `npm run check` (82/82 passing). Game-cycle без змін.
 
 <a id="tk-159"></a>
 

@@ -196,6 +196,10 @@ export class InventoryItemCardRenderer {
   // equipment cell may show the whole artwork (spec 071), and the editor preview (wholeArt) always does.
   #renderMainVisual(card, item, { wholeArt = false } = {}) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
+    const isFloat = item.itemType === "float" || item.equipmentSlot === "float" || Boolean(item.skin?.scene?.waterline);
+    if (isFloat) {
+      visual.classList.add("inventory-item-card__visual--float");
+    }
     const art = item.skin?.thumbnail;
     const thumbnail = item.equipmentArtAsset || wholeArt ? null : art;
     const image = this.#dom.image(item.equipmentArtAsset || art?.asset || item.iconAsset, "");

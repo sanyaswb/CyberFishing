@@ -67,7 +67,9 @@ export class DepthSelector {
     this.isActive = true;
     this.onChange = changeCallback;
     this.#setRange(maxDepth);
-    this.#value = this.#clamp(currentDepth);
+    const halfDepth = Math.round((this.#maxDepth * 0.5) / DEPTH_STEP_METERS) * DEPTH_STEP_METERS;
+    const initial = Number.isFinite(Number(currentDepth)) && Number(currentDepth) > 0 ? Number(currentDepth) : halfDepth;
+    this.#value = this.#clamp(initial);
     this.#root.hidden = false;
     this.#render();
   }
@@ -88,20 +90,67 @@ export class DepthSelector {
   // Artwork is supplied by composition; legacy callers retain the text fallback.
   setIcon(icon) {
     if (this.#disposed) return;
+    if (typeof icon === "object" && icon !== null) {
+      this.setItem(icon);
+      return;
+    }
     const text = icon || "";
     if (text === this.#iconText) return;
     this.#iconText = text;
     this.#icon.textContent = "";
+    this.#icon.classList.remove("depth-selector__icon--float");
     const source = this.#iconImages?.[text];
     if (source) {
       const image = this.#document.createElement("img");
-      image.className = "game-toolbar-button__image";
+      image.className = "game-toolbar-button__image depth-selector__image";
       // Spec 157 R6: lazy before src, so a hidden image (closed inventory, hidden toolbar button) waits until it is shown.
       image.loading = "lazy"; image.decoding = "async";
       image.src = this.#dom.assetUrl(source); image.alt = ""; image.draggable = false;
       this.#icon.appendChild(image);
     } else if (this.#dom) this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
     else this.#icon.textContent = text;
+  }
+
+  setItem(item) {
+    if (this.#disposed) return;
+    if (!item) {
+      this.setIcon("");
+      return;
+    }
+    if (typeof item !== "object") {
+      this.setIcon(item);
+      return;
+    }
+    const text = item.icon || "";
+    const assetId = item.iconAsset || item.skin?.scene?.asset || item.skin?.thumbnail?.asset || this.#iconImages?.[text];
+    const glowAsset = item.glowAsset || item.skin?.glowAsset || item.skin?.scene?.glow?.asset;
+    const isFloat = item.itemType === "float" || item.equipmentSlot === "float" || Boolean(item.skin?.scene?.waterline);
+
+    const key = JSON.stringify([text, assetId, glowAsset, isFloat]);
+    if (key === this.#iconText) return;
+    this.#iconText = key;
+    this.#icon.textContent = "";
+    this.#icon.classList.toggle("depth-selector__icon--float", isFloat);
+
+    if (assetId && this.#dom) {
+      const image = this.#dom.image(assetId, "");
+      if (image) {
+        image.className = "game-toolbar-button__image depth-selector__image";
+        this.#icon.appendChild(image);
+      }
+      if (glowAsset) {
+        const glowImage = this.#dom.image(glowAsset, "");
+        if (glowImage) {
+          glowImage.className = "depth-selector__glow-image";
+          glowImage.setAttribute("aria-hidden", "true");
+          this.#icon.appendChild(glowImage);
+        }
+      }
+    } else if (this.#dom && text) {
+      this.#icon.appendChild(this.#dom.glyph(text, "depth-selector__glyph"));
+    } else {
+      this.#icon.textContent = text;
+    }
   }
 
   open() {

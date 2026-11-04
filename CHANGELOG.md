@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.75 - Depth selector equipped float with night glow, 50% default depth, full rod thumbnail and 45deg float rotation
+
+- TK-192 / TK-193: depth selector button dynamically displays the equipped float (with additive green glow tip for `float_night`) instead of hardcoded day float; default float depth set to 50% of available max depth instead of 0.1m. Rod inventory thumbnail displays full rod (`visibleHeight: 1, focusX: 0.5`) and floats are rotated by 45 degrees in cards and depth selector button. Inventory-ui, inventory-selector and ui-components checks assert the behavior. Game-cycle report unchanged.
+
 ## v0.49.74 - Night float glowing tip in cards and assembly editor
 
 - TK-192: night float (`float_night`) renders an additive green glowing tip overlay (`items.floats-scene.float-day-glow`, `.inventory-item-card__glow-image`) over the float antenna in inventory item cards, equipment slots and assembly editor preview, distinguishing it from the day float without duplicate raster assets. Inventory-ui check asserts the behavior. Game-cycle report unchanged.
@@ -37,16 +41,6 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.66 - Clean overlay zoom and uncrushed mobile layout
 
 - TK-186: DEV overlay scaling moves to container-level `zoom: var(--debug-overlay-scale, 1)` on `.debug-overlay` (`width: 320px`, `max-width: calc(100% - 20px)`, `max-height: calc(100% - 20px)`) so child metrics and scale buttons scale together cleanly; `.debug-overlay__label` uses `white-space: nowrap; flex-shrink: 0` to prevent metric labels from breaking into single vertical characters on narrow screens; verified visually in Chrome across multiple mobile viewport sizes. Game-cycle report unchanged.
-
-## v0.49.65 - Scaled overlay width and mobile viewport constraints
-
-- TK-186: the DEV overlay width scales responsively with `--debug-overlay-scale` (`width: calc(340px * var(--debug-overlay-scale, 1))`, `min-width: calc(180px * var(--debug-overlay-scale, 1))`, `max-width: calc(100% - 20px)`); row labels and values wrap breaking long text anywhere so the unzoomed intrinsic content no longer stretches the window to full viewport width on mobile phones; drag clamping enforces dynamic maxWidth within the UI surface so scaling down contracts the window bounds smoothly instead of keeping it pinned against the right screen edge. Game-cycle report unchanged.
-
-
-
-
-
-
 
 
 

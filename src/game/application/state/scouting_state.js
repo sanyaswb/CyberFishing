@@ -121,18 +121,27 @@ export class ScoutingState extends GameState {
     }
 
     const maxDepth = this.deps.getMaxHookDepth();
+    const halfDepth = Math.round((maxDepth * 0.5) / 0.1) * 0.1;
+    let currentDepth = this.deps.currentHookDepthRef.get();
+    if (!Number.isFinite(currentDepth) || currentDepth <= 0 || currentDepth === 0.1) {
+      currentDepth = halfDepth;
+      this.deps.currentHookDepthRef.set(currentDepth);
+    } else if (currentDepth > maxDepth) {
+      currentDepth = maxDepth;
+      this.deps.currentHookDepthRef.set(currentDepth);
+    }
 
     if (!this.deps.depthUI.isActive) {
       this.deps.depthUI.show(
         maxDepth,
-        Math.min(this.deps.currentHookDepthRef.get(), maxDepth),
+        currentDepth,
         (d) => this.deps.currentHookDepthRef.set(d),
       );
     } else {
       this.deps.depthUI.updateMax(maxDepth);
     }
     // The button shows the equipped float (or the jig on a spinning rod).
-    this.deps.depthUI.setIcon(eq?.float?.icon || eq?.baits?.[0]?.icon || "");
+    this.deps.depthUI.setIcon(eq?.float || eq?.baits?.[0] || "");
   }
 
   getRenderState(target, bounds) {

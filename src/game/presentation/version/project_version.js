@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.49.74";
+export const CURRENT_PROJECT_VERSION = "0.49.75";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -14,8 +14,9 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
   codename: "Bait Boat Spine",
-  updatedAt: "2026-11-03",
+  updatedAt: "2026-11-04",
   notes: Object.freeze([
+    "TK-192 / TK-193: dynamic float in depth selector button with night glow, 50% default depth, full rod thumbnail, and 45deg float rotation.",
     "TK-192: display night float tip glow in cards and assembly editor.",
     "TK-159: disable night halo by default so only the float tip glows green additively at night.",
     "TK-191: isolate touch gestures and allow metric label drag hold without scroll interference.",

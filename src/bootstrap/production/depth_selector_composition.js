@@ -9,6 +9,6 @@ export function composeDepthSelector({ documentRef, mountNode, uiSurface, itemDb
     .filter(item => item.icon && item.iconAsset).map(item => [item.icon, item.iconAsset]));
   const domFactory = new InventoryDomFactory(documentRef, { assets });
   const selector = new DepthSelector({ documentRef, mountNode, uiSurface, labels: HUD_LABELS, domFactory, iconImages });
-  selector.setIcon(itemDb.floats?.float_day?.icon || "");
+  selector.setIcon(itemDb.floats?.float_day || "");
   return selector;
 }

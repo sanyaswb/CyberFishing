@@ -39,6 +39,18 @@
 }
 .depth-selector__float:focus-visible { outline: 2px solid var(--ui-info); outline-offset: -3px; }
 .depth-selector__icon { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.depth-selector__icon--float { transform: rotate(45deg); }
+.depth-selector__glow-image {
+  position: absolute;
+  inset: 0;
+  width: 85%;
+  height: 85%;
+  margin: auto;
+  object-fit: contain;
+  object-position: center center;
+  pointer-events: none;
+  user-select: none;
+}
 .depth-selector__glyph { width: 85%; height: 85%; }
 .depth-selector__value {
   position: absolute;

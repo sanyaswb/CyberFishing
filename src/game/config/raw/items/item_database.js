@@ -124,14 +124,14 @@ export const ITEM_DB = {
       itemType: "rod",
       variant: "float",
       icon: "🎣",
-      // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без,
+      // Перший скін: мініатюра показує весь малюнок (visibleHeight: 1); клітинка вудки — весь малюнок з ліскою чи без,
       // прев'ю редактора — весь малюнок.
       skin: {
         id: "bamboo-rod-v1",
         thumbnail: {
           asset: "items.rods.bamboo-rod-ecip-v1",
-          visibleHeight: 0.5,
-          focusX: 0.31,
+          visibleHeight: 1,
+          focusX: 0.5,
         },
         equipment: {
           withLineAsset: "items.rods.bamboo-rod-ecip-v1",

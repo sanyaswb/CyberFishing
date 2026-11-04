@@ -167,6 +167,11 @@
   user-select: none;
 }
 
+.inventory-item-card__visual--float .inventory-item-card__image,
+.inventory-item-card__visual--float .inventory-item-card__glow-image {
+  transform: rotate(45deg);
+}
+
 /* Skin thumbnail (spec 071): the artwork is scaled so only its lower visible-height share fits the card, aligned to the
    bottom; the focus share of its width sits at the card centre. */
 .inventory-item-card__visual--cropped .inventory-item-card__image {

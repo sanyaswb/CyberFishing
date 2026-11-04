@@ -435,7 +435,7 @@ async function checkComposition() {
   assert(!classic && !keepnet && binding.view.enabled);
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
-  equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1", visibleHeight: 0.5, focusX: 0.31 } } };
+  equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1", visibleHeight: 1, focusX: 0.5 } } };
   equipmentListener(); finishArtwork(); await Promise.resolve();
   const rodImage = art.children[0];
   assert.equal(rodImage.getAttribute("src"), "assets/items/rods/bamboo-rod-ecip-v1.webp", "the rod art resolves through the registry");
