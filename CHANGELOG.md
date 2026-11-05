@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.90 - Utils cleanup after spec 157
+
+- TK-211: every tool and dependency of the start's work still has a consumer, so nothing tracked is removed; stale release descriptions and measurements corrected. No game change.
+
 ## v0.49.89 - One pass of the spec 157 owner checks
 
 - TK-210: the spec 157 owner checks in tasks.md are one pass (a cold phone report and a short list of visible things); the finished parts of TK-165, TK-173-179 and the closed R12 question are in the archive. No game change.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.81 - New VOLIA 77.2 recording
 
 - TK-198: the first VOLIA 77.2 track plays the owner's new recording (8:34) under the same asset id, as 32 kbit/s mono AAC like the other tracks; the master is in `asset-sources/`, the old `RADIO_VOLIA.m4a` is removed. Radio-receiver check asserts the file. Game-cycle report unchanged.
-
-## v0.49.80 - Vector icons outside the inventory
-
-- TK-197: the chum and boat button, the net fallback, the clock and its speed use symbols of the shared sprite; the world boat without Spine is a vector shape from above; the `emoji` stat is gone.

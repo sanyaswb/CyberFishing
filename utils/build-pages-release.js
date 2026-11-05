@@ -4,9 +4,9 @@
 //   <site>/releases/<version>-<commit>/  the release folder of utils/build-release.js (spec 157 R13): the committed game
 //     and DEV pages, stylesheets, source modules, tracked assets and vendor licences, plus build/ (bundles, boot modules)
 //   <site>/index.html, dev.html, ui-catalog.html  the release pages with <base href="releases/<version>-<commit>/">, a
-//     <link rel="preload" as="style"> per stylesheet and a <link rel="modulepreload"> for the boot module, the bundle and
-//     every chunk it reaches (spec 157 B, R13)
-// Files are the committed bytes, except build/ and the pages' module script, which points at the boot module. A
+//     <link rel="preload" as="style"> for the stylesheet and a <link rel="modulepreload"> for the boot module, the bundle
+//     and the chunks the start loads (spec 157 B, R13, spec 160)
+// Files are the committed bytes, except build/ and the game pages, which link the built stylesheet and boot module. A
 // published release directory is never overwritten. Retention (owner decision 2026-10-15, spec 085): the site keeps the
 // new release and, with keep 2 (default), the release that was live before it, so open tabs of the previous version and
 // a rollback still work; older releases are removed. Other root files are left alone. Publishing (commit and push of
@@ -131,9 +131,9 @@ class ReleaseFileSet {
     return [...files].sort();
   }
 
-  // Spec 157 R1/R2: what a page's root copy announces up front: its stylesheets in page order, and every module of its
-  // graph (static and dynamic imports alike: every dynamic import but the DEV House screen is on the startup path),
-  // the entry as the page writes it, then breadth-first from it, nearest the entry first.
+  // A page's committed inputs: its stylesheets in page order (bundled into one file) and every module of its graph
+  // (static and dynamic imports alike, the ?esm=1 graph), the entry as the page writes it, then breadth-first from it,
+  // nearest the entry first.
   static pagePreloads(tree, pageName) {
     const page = tree.read(pageName).toString("utf8");
     const styles = ReleaseFileSet.#attributeValues(page, "link", "href", /\brel="stylesheet"/u);
@@ -264,7 +264,7 @@ class PagesReleaseBuilder {
 
   // Spec 157 R13: the self-contained release folder (any static host or the game server serves it as it is): the
   // committed release files, then build/ with the bundles and the boot modules, each game page pointing at its boot
-  // module and announcing, right after <head>, a style preload per stylesheet and a modulepreload for the boot module,
+  // module and announcing, right after <head>, a style preload for its stylesheet and a modulepreload for the boot module,
   // the bundle and the chunks the start loads (preloads[page]), so a server gets the same parallel start as Pages.
   buildRelease(releaseDir) {
     const files = ReleaseFileSet.collect(this.#tree);

@@ -33,7 +33,7 @@ Every URL in the folder is relative, so it works under any path prefix: Pages se
 `/CyberFishing/releases/<version>-<commit>/` (through the root copies), a server from `/` or another prefix. The
 `pages-release` check rejects absolute `/src/`, `/assets/`, `/vendor/` or `/build/` strings in the bundles; the browser
 check of spec 157 R13 ran the game on both prefixes, and `npm run measure:startup -- --prefix root` measures the folder at a
-server root (same start as Pages: 1.56 s cold on Fast 4G, 4 request waves).
+server root (same start as Pages: 0.8 s cold on Fast 4G on a PC, 3 request waves, v0.49.89).
 
 ## Server requirements
 
