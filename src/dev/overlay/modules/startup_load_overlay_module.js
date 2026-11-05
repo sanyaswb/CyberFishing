@@ -11,6 +11,7 @@ const STAGE_LABELS = Object.freeze({
   composition: "композиція",
   loop: "цикл гри",
   ready: "перший кадр (T-play)",
+  "full-load": "повне завантаження (T-full)",
 });
 const KIND_LABELS = Object.freeze({
   document: "HTML", modules: "модулі", styles: "стилі", images: "картинки", audio: "аудіо", vendor: "вендор",
@@ -74,6 +75,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
       color: report.paintMs !== null && report.paintMs <= 1000 ? "#00ff80" : "#ffaa00" });
     html += this.plainRow("T-play (гра готова)", report.playMs === null ? "гра ще не готова" : ms(report.playMs),
       { metricKey: "startup.play", color: report.playMs !== null && report.playMs <= 4000 ? "#00ff80" : "#ff4444" });
+    html += this.#fullLoadRow(report.fullMs, ms);
     html += this.#caption("Етапи, від початку / крок:");
     for (const stage of report.stages) {
       html += this.plainRow(STAGE_LABELS[stage.stage] ?? stage.stage, `${ms(stage.atMs)} / +${ms(stage.sinceMs)}`,
@@ -172,6 +174,18 @@ export class StartupLoadOverlayModule extends OverlayModule {
       this.#revision = revision;
     }
     return this.#report;
+  }
+
+  // T-full (TK-214): the time once reached, until then how many of the plan's loading groups have settled. Closed and
+  // on-demand groups do not count; a failed group settles, so the row names it.
+  #fullLoadRow(fullMs, ms) {
+    const groups = (this.#readAssetLoadStatus()?.layers ?? []).flatMap((layer) => layer.groups)
+      .filter((group) => group.load !== false && !group.locked);
+    const failed = groups.filter((group) => group.status === "failed").length;
+    const settled = groups.filter((group) => group.status === "ready").length + failed;
+    const value = fullMs !== null ? ms(fullMs) : groups.length > 0 ? `вантажиться: ${settled} / ${groups.length} груп` : "—";
+    return this.plainRow("T-full (усе, крім закритого й на вимогу)", failed > 0 ? `${value} · з помилкою: ${failed}` : value,
+      { metricKey: "startup.full", color: failed > 0 ? "#ff4444" : undefined });
   }
 
   // The asset load plan, layer by layer: each group's state, priority, time and size, its files (small groups), then

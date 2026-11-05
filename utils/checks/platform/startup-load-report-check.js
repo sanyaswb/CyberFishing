@@ -70,6 +70,10 @@ async function checkReport() {
   assert.equal(report.largest[0].url.endsWith("keepnet--0.webp"), true, "largest by compressed size");
   assert.equal(report.longest[0].url.endsWith("pixi-scene.js"), true);
   assert.equal(StartupLoadReport.build({}).playMs, null, "no ready mark: the game is not ready yet");
+  assert.equal(report.fullMs, null, "no full-load mark: the lazy layers are still loading");
+  const full = StartupLoadReport.build({ marks: [{ name: "startup:ready", startTime: 900 }, { name: "startup:full-load", startTime: 18900 }] });
+  assert.equal(full.fullMs, 18900, "T-full is the full-load mark");
+  assert.deepEqual(full.stages.at(-1), { stage: "full-load", atMs: 18900, sinceMs: 18000 }, "it follows ready in the stages");
   assert.equal(StartupLoadReport.kindOf("https://x/assets/a.atlas"), "data");
 }
 
@@ -132,6 +136,14 @@ async function checkOverlay() {
   currentPlan = planStatus;
   html = planModule.render();
   assert.match(html, /План завантаження/u);
+  // TK-214: until T-full the row counts the settled groups; closed and on-demand groups do not count.
+  const fullRowGroups = (groups) => ({ ...planStatus, layers: [{ id: "x", label: "x", started: true, groups: groups.map((group, index) =>
+    ({ id: `g${index}`, label: "g", priority: 1, readyOn: "full", files: [], ...group })) }] });
+  currentPlan = fullRowGroups([{ load: true, status: "ready" }, { load: true, status: "loading" }, { load: false, status: "on-demand" }, { load: false, locked: true, status: "locked" }]);
+  assert.match(planModule.render(), /вантажиться: 1 \/ 2 груп/u);
+  currentPlan = fullRowGroups([{ load: true, status: "failed" }, { load: true, status: "ready" }]);
+  assert.match(planModule.render(), /вантажиться: 2 \/ 2 груп · з помилкою: 1/u);
+  currentPlan = planStatus;
   // TK-202: the loading section only reads: nothing on hover, focus or click.
   assert.doesNotMatch(html, /debug-overlay__metric-label|\btitle=|role="button"|tabindex|data-metric=/u, "loading rows have no hints");
   assert.match(html, /Фон поточної фази й карта глибин \(пріоритет 1, спершу копії\)/u, "a group with its priority and readyOn");
@@ -436,7 +448,7 @@ async function checkCurrentPhaseBackground() {
 }
 
 function checkMeasurer() {
-  const { median, summarize, readOptions, BUDGET } = require(path.join(ROOT_DIR, "utils/measure-startup.js"));
+  const { median, summarize, formatSummary, readOptions, BUDGET } = require(path.join(ROOT_DIR, "utils/measure-startup.js"));
   assert.equal(median([3, 1, 2]), 2);
   assert.equal(median([4, 1, 3, 2]), 2.5);
   assert.equal(median([null, Number.NaN]), null);
@@ -451,7 +463,11 @@ function checkMeasurer() {
   assert.equal(summarize("cold", [{ paintMs: null, playMs: null, beforePlay: { transferred: 0, count: 0 }, networkSteps: 0 }])
     .verdicts[1].pass, false, "a start that never became ready fails");
   assert.deepEqual(readOptions([]), { ref: "HEAD", page: "index.html", network: "4g", runs: 5, browser: "chrome", cpu: 1,
-    prefix: "pages", strict: false });
+    prefix: "pages", strict: false, full: false });
+  assert.equal(readOptions(["--full"]).full, true);
+  const fullRun = { ...run(3000, 1000, 2), fullMs: 18900, all: { transferred: 2 * 1048576 } };
+  assert.match(formatSummary(summarize("cold", [fullRun])), /T-full 18900 ms, 2\.00 MB in all/u, "--full reports T-full");
+  assert.doesNotMatch(formatSummary(cold), /T-full/u, "without --full there is no T-full line");
   assert.throws(() => readOptions(["--prefix", "cdn"]), /--prefix/u);
   assert.throws(() => readOptions(["--cpu", "0"]), /--cpu/u);
   assert.throws(() => readOptions(["--network", "5g"]), /--network/u);

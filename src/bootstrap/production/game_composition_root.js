@@ -335,6 +335,7 @@ export class GameCompositionRoot {
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
     void this.#preload?.startOn("ready");
+    void this.#preload?.whenFullyLoaded().then(() => this.#startupMarks.mark(STARTUP_STAGES.fullLoad));
     for (const load of this.#deferredAssetLoads) load();
   }
 

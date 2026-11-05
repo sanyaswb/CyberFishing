@@ -3,7 +3,8 @@ import { STARTUP_MARK_PREFIX, STARTUP_STAGE_ORDER, STARTUP_STAGES } from "../../
 // Startup report (spec 157 R9) from the browser's timing entries, shared by the DEV overlay "ЗАВАНТАЖЕННЯ" and
 // `npm run measure:startup` so both count the same way. Input is plain data (marks, paints, the navigation entry and
 // resource entries); nothing here reads the browser.
-// - T-paint: first contentful paint (first paint when the browser reports no contentful one); T-play: the "ready" mark.
+// - T-paint: first contentful paint (first paint when the browser reports no contentful one); T-play: the "ready" mark;
+//   T-full: the "full-load" mark (TK-214), null until then.
 // - Bytes are transferred (compressed, with headers) as the browser reports transferSize; a resource with transferSize
 //   0 and a body is a cache hit; encoded/decoded sizes are the compressed and uncompressed bodies.
 // - Network steps: the longest chain of requests where each one started only after the previous one had finished
@@ -34,6 +35,7 @@ export class StartupLoadReport {
     return Object.freeze({
       paintMs: paint ? paint.startTime : null,
       playMs,
+      fullMs: stages.find((stage) => stage.stage === STARTUP_STAGES.fullLoad)?.atMs ?? null,
       stages,
       beforePlay: StartupLoadReport.#totals(beforePlay),
       all: StartupLoadReport.#totals(requests),

@@ -14,7 +14,8 @@
 // Options: --ref <commit> --page index.html|dev.html --network 4g|3g|none --runs N --browser chrome|msedge|<path>
 //   --cpu N (CPU slowdown through the DevTools protocol: 4 is close to a mid-range phone, where the scene's setup takes
 //   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --prefix pages|root (pages: the
-//   Pages site with root copies and releases/<id>/; root: the release folder at the server root, spec 157 R13) --strict.
+//   Pages site with root copies and releases/<id>/; root: the release folder at the server root, spec 157 R13) --strict
+//   --full (every run also waits for T-full, the "full-load" mark, TK-214; no budget, and slow on a slow network).
 //   The summary is written to utils/generated/startup-measure.json.
 
 const fs = require("node:fs");
@@ -32,6 +33,7 @@ const ROOT_DIR = path.resolve(__dirname, "..");
 const OUTPUT_FILE = path.join(ROOT_DIR, "utils", "generated", "startup-measure.json");
 const MEBIBYTE = 1048576;
 const READY_TIMEOUT_MS = 180000;
+const FULL_LOAD_TIMEOUT_MS = 600000;
 const COMPRESSED_TYPES = /^(?:text\/|application\/(?:json|javascript))|image\/svg\+xml/u;
 // Chrome DevTools throttling presets: "Fast 4G" and "Slow 4G" (the former "Fast 3G"); bytes per second.
 const NETWORKS = Object.freeze({
@@ -53,7 +55,7 @@ function readOptions(argv) {
   const options = { ref: value("--ref", "HEAD"), page: value("--page", "index.html"), network: value("--network", "4g"),
     runs: Number(value("--runs", "5")), browser: value("--browser", "chrome"), cpu: Number(value("--cpu", "1")),
     prefix: value("--prefix", "pages"),
-    strict: argv.includes("--strict") };
+    strict: argv.includes("--strict"), full: argv.includes("--full") };
   if (!["index.html", "dev.html"].includes(options.page)) throw new Error("--page must be index.html or dev.html");
   if (!Object.hasOwn(NETWORKS, options.network)) throw new Error("--network must be 4g, 3g or none");
   if (!Number.isInteger(options.runs) || options.runs < 1) throw new Error("--runs must be a positive integer");
@@ -74,6 +76,8 @@ function summarize(kind, reports) {
   const medians = {
     paintMs: median(reports.map((report) => report.paintMs)),
     playMs: median(reports.map((report) => report.playMs)),
+    fullMs: median(reports.map((report) => report.fullMs)),
+    allBytes: median(reports.map((report) => report.all?.transferred)),
     bytes: median(reports.map((report) => report.beforePlay.transferred)),
     requests: median(reports.map((report) => report.beforePlay.count)),
     networkSteps: median(reports.map((report) => report.networkSteps)),
@@ -92,7 +96,8 @@ function formatSummary(summary) {
   const ms = (value) => value === null ? "-" : `${Math.round(value)} ms`;
   const lines = [`${summary.kind} (${summary.runs} runs): T-paint ${ms(medians.paintMs)}, T-play ${ms(medians.playMs)}, `
     + `${(medians.bytes / MEBIBYTE).toFixed(2)} MB transferred, ${medians.requests} requests, `
-    + `${medians.networkSteps} network steps`];
+    + `${medians.networkSteps} network steps`
+    + (medians.fullMs === null ? "" : `; T-full ${ms(medians.fullMs)}, ${(medians.allBytes / MEBIBYTE).toFixed(2)} MB in all`)];
   for (const verdict of summary.verdicts) {
     const shown = verdict.metric === "Bytes-play" ? `${(verdict.actual / MEBIBYTE).toFixed(2)} MB <= ${verdict.limit / MEBIBYTE} MB`
       : verdict.metric === "Waterfall" ? `${verdict.actual} <= ${verdict.limit}` : `${ms(verdict.actual)} <= ${verdict.limit} ms`;
@@ -151,7 +156,7 @@ function launchOptions(browser) {
   return ["chrome", "msedge"].includes(browser) ? { channel: browser, headless: true } : { executablePath: browser, headless: true };
 }
 
-async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 }) {
+async function measureLoad(context, page, { network, cold, url, reload, cpu = 1, fullLoadMark = null }) {
   const client = await context.newCDPSession(page);
   if (cpu > 1) await client.send("Emulation.setCPUThrottlingRate", { rate: cpu });
   // Requests that started and have not finished, for the diagnosis of a start that never becomes ready.
@@ -176,6 +181,10 @@ async function measureLoad(context, page, { network, cold, url, reload, cpu = 1 
     throw new Error(`The game did not become ready in ${READY_TIMEOUT_MS} ms; marks: ${reached.join(", ") || "none"}; `
       + `page errors: ${errors.join(" | ") || "none"}; unfinished requests (${pending.size}): ${stuck.join(", ") || "none"}`,
     { cause: error });
+  }
+  if (fullLoadMark) {
+    await page.waitForFunction((mark) => performance.getEntriesByName(mark, "mark").length > 0, fullLoadMark,
+      { polling: 250, timeout: FULL_LOAD_TIMEOUT_MS });
   }
   const timings = await page.evaluate(() => {
     const copy = ({ name, initiatorType, startTime, responseEnd, transferSize, encodedBodySize, decodedBodySize }) =>
@@ -206,6 +215,8 @@ async function main() {
   const options = readOptions(process.argv.slice(2));
   const { chromium } = require("playwright-core");
   const { StartupLoadReport } = await import(pathToFileURL(path.join(ROOT_DIR, "src/dev/diagnostics/startup_load_report.js")).href);
+  const { STARTUP_MARK_PREFIX, STARTUP_STAGES } = await import(pathToFileURL(path.join(ROOT_DIR, "src/engine/diagnostics/startup_stages.js")).href);
+  const fullLoadMark = options.full ? `${STARTUP_MARK_PREFIX}${STARTUP_STAGES.fullLoad}` : null;
   const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-startup-"));
   const siteDir = path.join(workDir, "site");
   fs.mkdirSync(siteDir);
@@ -236,16 +247,16 @@ async function main() {
       const context = await browser.newContext(PHONE);
       await context.addInitScript(enlargeBuffer);
       const page = watchPageErrors(await context.newPage());
-      cold.push(withAssetsBeforePlay(StartupLoadReport.build, await measureLoad(context, page, { network, cold: true, url, reload: false, cpu: options.cpu })));
+      cold.push(withAssetsBeforePlay(StartupLoadReport.build, await measureLoad(context, page, { network, cold: true, url, reload: false, cpu: options.cpu, fullLoadMark })));
       await context.close();
     }
     const warm = [];
     const context = await browser.newContext(PHONE);
     await context.addInitScript(enlargeBuffer);
     const page = watchPageErrors(await context.newPage());
-    await measureLoad(context, page, { network, cold: false, url, reload: false, cpu: options.cpu });
+    await measureLoad(context, page, { network, cold: false, url, reload: false, cpu: options.cpu, fullLoadMark });
     for (let run = 0; run < options.runs; run += 1) {
-      warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true, cpu: options.cpu })));
+      warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true, cpu: options.cpu, fullLoadMark })));
     }
     await context.close();
     const summaries = [summarize("cold", cold), summarize("warm", warm)];

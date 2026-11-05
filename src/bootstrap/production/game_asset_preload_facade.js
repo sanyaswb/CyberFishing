@@ -36,6 +36,10 @@ export class GameAssetPreloadFacade {
   // Images loaded in full, and images whose store entry is still only the low copy.
   #fullIds = new Set();
   #lowOnlyIds = new Set();
+  #settledLayers = new Set();
+  // The first layer's full files replacing its copies: no layer run waits for them.
+  #upgradeRuns = [];
+  #fullLoad;
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
@@ -55,6 +59,8 @@ export class GameAssetPreloadFacade {
     this.#plan = plan;
     this.#assets = assets;
     this.#images = imageAssets;
+    this.#fullLoad = {};
+    this.#fullLoad.promise = new Promise((resolve) => { this.#fullLoad.resolve = resolve; });
     this.#queue = new AssetLoadQueue({ scheduler, networkSlots, speculativeSlots: backgroundSlots, maxAttempts });
     if (conditions) {
       this.#queue.setSpeculativeAllowed(!conditions.isPaused());
@@ -70,7 +76,7 @@ export class GameAssetPreloadFacade {
     const index = this.#plan.layers.findIndex((layer) => layer.id === layerId);
     if (index > 0 && this.#upgrades.length > 0) {
       const upgrades = this.#upgrades.splice(0);
-      void this.#loadIds(upgrades, "upgrade");
+      this.#upgradeRuns.push(this.#loadIds(upgrades, "upgrade"));
     }
     const layer = this.#plan.layer(layerId);
     const priority = LAYER_PRIORITIES[index] ?? "prefetch";
@@ -78,8 +84,18 @@ export class GameAssetPreloadFacade {
     this.#layerRuns.set(layerId, run);
     run.then(() => {
       for (const layer of this.#plan.layers) if (layer.start === `after:${layerId}`) this.start(layer.id);
+      this.#settledLayers.add(layerId);
+      if (this.#settledLayers.size === this.#plan.layers.length) {
+        void Promise.all(this.#upgradeRuns).then(() => this.#fullLoad.resolve());
+      }
     });
     return run;
+  }
+
+  // Settles when every layer has settled and the first layer's copies have been replaced (T-full, TK-214). Failed loads
+  // settle too; what progress keeps closed, on-demand groups and what the player opens later are not waited for.
+  whenFullyLoaded() {
+    return this.#fullLoad.promise;
   }
 
   // Game progress changed: what it opened joins the background at once (low copy, then the full file).

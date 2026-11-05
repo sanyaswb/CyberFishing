@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.93 - T-full: the time of the full load
+
+- TK-214: a `startup:full-load` mark when every asset load plan layer has settled, without closed and on-demand content; shown as T-full in the DEV overlay «ЗАВАНТАЖЕННЯ» and its JSON, and by `npm run measure:startup -- --full`. Game-cycle report unchanged.
+
 ## v0.49.92 - A closed inventory is not rendered at the start
 
 - TK-213 (spec 160, the owner's cheaper option instead of stage 2): the closed inventory is no longer rendered during the start, and a lazy feature that becomes ready refreshes it only when open; the first opening renders the list itself. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.84 - DEV overlay width, loading rows and zoom
 
 - TK-202: the DEV overlay grows to its unwrapped text above 820 logical px and scrolls sideways up to 820; loading rows have no hints, hover or click. Dragging, limits and the saved position now account for the window's zoom, a click on a metric reaches it again (capture starts with the drag), and the window is clamped when its size changes instead of on every update. Ui-surface and startup-load-report checks assert the behavior. Game-cycle report unchanged.
-
-## v0.49.83 - Audio on demand
-
-- TK-201 (spec 159): audio stays in the third layer as an on-demand group and loads only when the radio starts or a sound plays; the background no longer downloads it. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.

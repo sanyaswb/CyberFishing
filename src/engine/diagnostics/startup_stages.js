@@ -1,7 +1,8 @@
 // Startup stages (spec 157 R9): the page records one performance mark per stage, named STARTUP_MARK_PREFIX + stage,
 // in this order. The DEV startup overlay and `npm run measure:startup` read the same names; "ready" is the
 // moment the game can be played (stage A: the first frame after the loop started; later the minimal barrier of
-// spec 083) and also sets the page's data-game-ready attribute.
+// spec 083) and also sets the page's data-game-ready attribute. "full-load" (T-full, TK-214) follows it: every layer of
+// the asset load plan has settled, without the assets progress keeps closed and the on-demand ones.
 export const STARTUP_MARK_PREFIX = "startup:";
 
 export const STARTUP_STAGES = Object.freeze({
@@ -13,6 +14,7 @@ export const STARTUP_STAGES = Object.freeze({
   composition: "composition",
   loop: "loop",
   ready: "ready",
+  fullLoad: "full-load",
 });
 
 export const STARTUP_STAGE_ORDER = Object.freeze(Object.values(STARTUP_STAGES));

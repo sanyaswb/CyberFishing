@@ -82,8 +82,15 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.equal((await facade.whenGroup("demand")).status, "on-demand", "after:two starts by itself");
   assert.deepEqual(requests.slice(3), ["extra.new"],
     "audio is not an image the facade loads, an on-demand group loads nothing, unassigned loads last");
+  // TK-214: T-full waits for every layer; a failed load (loc.day above) and an on-demand group do not hold it back.
+  let fullyLoaded = false;
+  void facade.whenFullyLoaded().then(() => { fullyLoaded = true; });
+  await flush();
+  assert.equal(fullyLoaded, false, "T-full waits for the last load of the last layer");
   pending.get("extra.new").resolve();
   await facade.whenLayer("three");
+  await flush();
+  assert.equal(fullyLoaded, true, "T-full follows the last layer");
   assert.deepEqual(facade.getStatus().map((entry) => entry.started), [true, true, true]);
 
   // Stage D2: background layers share capped slots and wait while paused; what the player opened goes first.
@@ -295,6 +302,22 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     imageAssets: { preload: () => Promise.resolve() } });
   await timedFacade.start("first");
   const timed = timedFacade.getStatus()[0].groups[0];
+  {
+    // TK-214: the first layer's full files count toward T-full, although no layer run waits for them.
+    const finishers = [];
+    const upgrading = new GameAssetPreloadFacade({ plan: lowPlan, assets: lowRegistry, scheduler,
+      imageAssets: { preload: ([record]) => (record.src === "assets/bg/day.webp" ? new Promise((done) => { finishers.push(done); }) : Promise.resolve()) } });
+    let upgraded = false;
+    void upgrading.whenFullyLoaded().then(() => { upgraded = true; });
+    await upgrading.start("first");
+    await upgrading.startOn("ready");
+    await flush();
+    assert.ok(finishers.length > 0, "the next layer starts the first layer's full files");
+    assert.equal(upgraded, false, "T-full waits for the full files that replace the first layer's copies");
+    for (const finish of finishers) finish();
+    await upgrading.whenFullyLoaded();
+    upgrading.dispose();
+  }
   assert.deepEqual([timed.status, timed.readyOn, timed.settledMs - timed.startedMs], ["ready", "low", 10], "a group's state and time");
   assert.deepEqual(new AssetRegistry({ a: image("assets/a.webp", []), b: { ...image("assets/b.webp", []), sha256: "0" },
     c: { ...image("assets/c.webp", []), sha256: "1" } }).duplicates(), [["a", "b"]], "same content under two ids");
