@@ -584,8 +584,6 @@ export class GameCompositionRoot {
     // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too, as the plan's
     // layer-one group "scene"; an image that fails to load leaves that float a bar.
     const floatArt = (await this.#preload.whenGroup("scene")).ids;
-    // Spec 157 R6: last of the deferred loads, the page's lazy UI images (closed inventory, hidden toolbar buttons),
-    // one at a time, so opening the inventory finds them in the cache.
     // TK-183: the first frame renders on the 2D canvas; the Pixi scene warms up after ready.
     void sceneLayer.whenReady().then((ready) => {
       if (ready) sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);

@@ -18,6 +18,9 @@ const EXTENSION_KINDS = Object.freeze({
   json: "data", atlas: "data", skel: "data",
 });
 const TOP_COUNT = 10;
+// Spec 157 Q4 (owner, 2026-10-30): T-paint <= 1 s, cold T-play <= 4 s, warm T-play <= 2 s, <= 3 MB transferred before
+// T-play, <= 3 sequential network steps. The overlay's colours and the measurer's verdicts read these.
+export const STARTUP_BUDGET = Object.freeze({ paintMs: 1000, coldPlayMs: 4000, warmPlayMs: 2000, bytes: 3 * 1048576, networkSteps: 3 });
 
 export class StartupLoadReport {
   // timings: { marks: [{ name, startTime }], paints: [{ name, startTime }], navigation: entry | null,

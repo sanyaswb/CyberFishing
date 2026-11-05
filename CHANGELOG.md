@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.97 - One startup budget
+
+- TK-218: the startup budget has one source for the DEV overlay and the measurer; stale comments removed. Finished tasks archived. Game-cycle report unchanged.
+
 ## v0.49.96 - No underline or hover on overlay metrics
 
 - TK-217: DEV overlay metric rows have no underline, help cursor, hover highlight or tooltip on any device; a click on a metric's name still writes its formula to the console. Ui-surface check asserts the behavior. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.88 - Start manifest budget in the release check
 
 - TK-209 (spec 157 R9): the pages-release check fails when a page's start manifest exceeds the 2.5 MB budget and names its largest files. Game-cycle report unchanged.
-
-## v0.49.87 - A failed start says so
-
-- TK-208 (spec 157 R3): a failed start shows an error text and a retry button on the startup screen instead of an endless ring, also when the game's bundle cannot load; the cause goes to the console. Game-cycle report unchanged.

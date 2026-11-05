@@ -1,5 +1,5 @@
 import { OverlayModule } from "../overlay_module.js";
-import { STARTUP_RESOURCE_KINDS, StartupLoadReport } from "../../diagnostics/startup_load_report.js";
+import { STARTUP_BUDGET, STARTUP_RESOURCE_KINDS, StartupLoadReport } from "../../diagnostics/startup_load_report.js";
 
 const MEBIBYTE = 1048576;
 const STAGE_LABELS = Object.freeze({
@@ -72,9 +72,9 @@ export class StartupLoadOverlayModule extends OverlayModule {
     const ms = (value) => value === null ? "—" : `${Math.round(value)} мс`;
     let html = this.formatHeader("⏱ ЗАВАНТАЖЕННЯ", "#7fd1ff");
     html += this.plainRow("T-paint (перша відмальовка)", ms(report.paintMs), { metricKey: "startup.paint",
-      color: report.paintMs !== null && report.paintMs <= 1000 ? "#00ff80" : "#ffaa00" });
+      color: report.paintMs !== null && report.paintMs <= STARTUP_BUDGET.paintMs ? "#00ff80" : "#ffaa00" });
     html += this.plainRow("T-play (гра готова)", report.playMs === null ? "гра ще не готова" : ms(report.playMs),
-      { metricKey: "startup.play", color: report.playMs !== null && report.playMs <= 4000 ? "#00ff80" : "#ff4444" });
+      { metricKey: "startup.play", color: report.playMs !== null && report.playMs <= STARTUP_BUDGET.coldPlayMs ? "#00ff80" : "#ff4444" });
     html += this.#fullLoadRow(report.fullMs, ms);
     html += this.#caption("Етапи, від початку / крок:");
     for (const stage of report.stages) {
@@ -94,7 +94,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
     // Waves: a request that started only after another one had finished is one step later (time order; browsers do
     // not tell the page which request initiated another, so this is an upper bound of the import depth).
     html += this.plainRow("хвиль запитів (послідовно)", `${report.networkSteps} (з них модулів ${report.moduleSteps})`,
-      { metricKey: "startup.steps", color: report.networkSteps <= 3 ? "#00ff80" : "#ffaa00" });
+      { metricKey: "startup.steps", color: report.networkSteps <= STARTUP_BUDGET.networkSteps ? "#00ff80" : "#ffaa00" });
     if (report.all.count > totals.count) {
       html += this.plainRow("після T-play", `${report.all.count - totals.count} запитів · ${
         this.#mb(report.all.transferred - totals.transferred)}`, { metricKey: "startup.after" });

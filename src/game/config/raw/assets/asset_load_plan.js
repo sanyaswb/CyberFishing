@@ -15,7 +15,6 @@
 //   "ready"); the player's first use asks for a feature at once.
 // - readyOn: "low": the low-quality copies load first. In layer-one the group counts as loaded with them and the full
 //   files follow right after the first frame; in later layers the full files follow at once (spec 157 R17, spec 159).
-// Today's plan repeats the loads before stage D (spec 157 R4, R5, R6, R11): nothing is added to the start.
 export const ASSET_LOAD_PLAN = {
   layers: [
     {

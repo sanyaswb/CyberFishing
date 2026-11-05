@@ -41,9 +41,7 @@ const NETWORKS = Object.freeze({
   "3g": Object.freeze({ latency: 150, downloadThroughput: 1600 * 1000 / 8, uploadThroughput: 750 * 1000 / 8 }),
   none: null,
 });
-// Spec 157 Q4 (owner, 2026-10-30): T-paint <= 1 s, cold T-play <= 4 s, warm T-play <= 2 s, <= 3 MB transferred
-// before T-play, <= 3 sequential network steps.
-const BUDGET = Object.freeze({ paintMs: 1000, coldPlayMs: 4000, warmPlayMs: 2000, bytes: 3 * MEBIBYTE, networkSteps: 3 });
+const { STARTUP_BUDGET: BUDGET } = require("../src/dev/diagnostics/startup_load_report.js");
 const PHONE = Object.freeze({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
   ignoreHTTPSErrors: true });
 
