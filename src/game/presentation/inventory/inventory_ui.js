@@ -188,7 +188,6 @@ export class InventoryUI {
       );
       if (typeof unsubscribe === "function") this.#unsubscribe = unsubscribe;
     }
-    this.refresh();
     return this;
   }
 
@@ -288,6 +287,11 @@ export class InventoryUI {
   refresh() {
     const source = this.#facade.getViewModel();
     this.render(source);
+  }
+
+  // For a lazy feature that became ready: a closed inventory has nothing to show, open() renders it anyway.
+  refreshWhenOpen() {
+    if (this.#isOpen) this.refresh();
   }
 
   updateDynamicProgression(dt = 0) {

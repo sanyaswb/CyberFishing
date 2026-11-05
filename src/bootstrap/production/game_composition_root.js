@@ -1238,13 +1238,13 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
-    systems.radio.onReady(() => systems.inventoryUI?.refresh());
+    systems.radio.onReady(() => systems.inventoryUI?.refreshWhenOpen());
     const itemEditor = own(new LazyFeature({
       name: "item-editor",
       preload: this.#preload,
       compose: (module) => module,
     }));
-    itemEditor.onReady(() => systems.inventoryUI?.refresh());
+    itemEditor.onReady(() => systems.inventoryUI?.refreshWhenOpen());
     this.#radioEditorOpener = () => {
       void itemEditor.request();
       const radio = systems.radio.get()?.radio;

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.92 - A closed inventory is not rendered at the start
+
+- TK-213 (spec 160, the owner's cheaper option instead of stage 2): the closed inventory is no longer rendered during the start, and a lazy feature that becomes ready refreshes it only when open; the first opening renders the list itself. Game-cycle report unchanged.
+
 ## v0.49.91 - One result in spec 157
 
 - TK-212: spec 157 has one new result (v0.49.90: 0.41 MB, 31 requests, 3 network steps on Fast 4G); closing TK-165 waits for the owner's phone report. No game change.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.83 - Audio on demand
 
 - TK-201 (spec 159): audio stays in the third layer as an on-demand group and loads only when the radio starts or a sound plays; the background no longer downloads it. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.82 - Lazy load order and locked queue
-
-- TK-200 (spec 159): the third layer of the asset load plan runs low copies of backgrounds, items, then Spine, the Fisherman's Room and the rest, then the full files in the same order, audio last; art above the opened room level waits in a `locked` queue until progress opens it. Layer two loads each full file right after its copy. `LazyImageWarmUp` is removed. Asset-load-plan check asserts the order. Game-cycle report unchanged.

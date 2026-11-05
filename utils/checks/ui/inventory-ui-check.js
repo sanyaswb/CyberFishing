@@ -721,8 +721,12 @@ class InventoryUiBehaviorCheck {
     const observed = [];
     let subscriber = null;
     let currentView = this.#loadoutViewModel();
+    let viewModelReads = 0;
     const facade = {
-      getViewModel: () => currentView,
+      getViewModel: () => {
+        viewModelReads += 1;
+        return currentView;
+      },
       subscribe: (listener) => {
         subscriber = listener;
         return () => {
@@ -777,7 +781,15 @@ class InventoryUiBehaviorCheck {
     backpackArt.emit("load");
     assert.strictEqual(backpackButton.children[0], backpackArt, "the loaded art replaces the icon");
     assert.strictEqual(backpackButton.children.length, 1);
+    // TK-213: a closed inventory is not rendered at the start, and a lazy feature that becomes ready does not render it.
+    ui.refreshWhenOpen();
+    assert.strictEqual(viewModelReads, 0, "the closed inventory reads no view model");
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle").length, 0, "the closed inventory has no content");
     ui.open();
+    assert(viewModelReads > 0, "open() renders the inventory");
+    const readsAfterOpen = viewModelReads;
+    ui.refreshWhenOpen();
+    assert(viewModelReads > readsAfterOpen, "an open inventory shows a feature that became ready");
     const headerPills = this.#findAllByClass(ui.rootNode, "inventory-toggle");
     assert.strictEqual(
       headerPills.length,
