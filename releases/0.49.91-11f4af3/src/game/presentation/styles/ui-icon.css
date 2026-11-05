@@ -1,0 +1,13 @@
+/* Shared sprite icon (DESIGN_RULES §8): an outline symbol that takes its colour from the text. The consumer class sizes
+   the square box; --placeholder gives an item without artwork the light-grey tone of the empty compartments. */
+.ui-icon {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.ui-icon--placeholder { color: #c2c9cf; }
