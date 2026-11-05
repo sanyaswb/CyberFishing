@@ -417,6 +417,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "check-runner",
+    title: "Check runner: a check that hung or ended without a pass line fails",
+    file: "utils/checks/tooling/check-runner-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "asset-registry",
     title: "Asset registry with stable ids: sync matching and an up-to-date registry",
     file: "utils/checks/tooling/asset-registry-check.js",

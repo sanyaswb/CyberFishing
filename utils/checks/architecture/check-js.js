@@ -85,7 +85,7 @@ class CheckJsCommand {
       return;
     }
 
-    console.log(`Checked ${files.length} JavaScript files. No syntax errors.`);
+    console.log(`Checked ${files.length} JavaScript files: passed, no syntax errors.`);
   }
 }
 

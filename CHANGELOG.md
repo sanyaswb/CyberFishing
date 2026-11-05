@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.94 - A hung check no longer counts as passed
+
+- TK-215: the check runner requires exit code 0 and a pass line at the end of stdout, because Node exits with 0 when an awaited promise never settles (incident I-13, check `check-runner`). Game-cycle report unchanged.
+
 ## v0.49.93 - T-full: the time of the full load
 
 - TK-214: a `startup:full-load` mark when every asset load plan layer has settled, without closed and on-demand content; shown as T-full in the DEV overlay «ЗАВАНТАЖЕННЯ» and its JSON, and by `npm run measure:startup -- --full`. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.85 - Fisherman's House loads lazily
 
 - TK-203 (spec 159): the Fisherman's House is open, so the art of every room level loads in the third layer; the `locked` queue stays for future content and is empty today. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.84 - DEV overlay width, loading rows and zoom
-
-- TK-202: the DEV overlay grows to its unwrapped text above 820 logical px and scrolls sideways up to 820; loading rows have no hints, hover or click. Dragging, limits and the saved position now account for the window's zoom, a click on a metric reaches it again (capture starts with the drag), and the window is clamped when its size changes instead of on every update. Ui-surface and startup-load-report checks assert the behavior. Game-cycle report unchanged.

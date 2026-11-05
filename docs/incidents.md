@@ -27,6 +27,24 @@ rule as something the next change can follow.
 | R11 | Dynamic DOM reconciliation (`#patchChildren`) must never patch the outer container element with attributes of an ephemeral wrapper. Containers preserve their CSS classes, flex constraints and scroll contexts across update ticks. | I-11 |
 | R12 | UI responsive and bounds checks must test layout geometry (`getBoundingClientRect()`, viewport boundaries, scroll overflow) after real update intervals, not just DOM node presence (`querySelector`) at mount time (T=0). | I-11 |
 | R13 | Responsive layout testing must assert the worst-case payload (all sections active/expanded, maximum metrics) at minimum screen width (320px–400px). | I-11 |
+| R14 | A check passes only by exit code 0 and a last stdout line that says it passed: Node exits with 0 when an awaited promise never settles, so the exit code alone cannot tell a finished check from a hung one. | I-13 |
+
+## I-13 · 2026-11-05 · A hung check exited with code 0 and counted as passed (TK-215)
+
+- **Seen:** while writing TK-214, `node utils/checks/tooling/asset-load-plan-check.js` printed nothing and exited with 0: its
+  pass line was missing, and every assertion after the hang had not run.
+- **Cause:** the runner (`CheckRunner` in `utils/run-checks.js`) assumed exit code 0 means the check finished, but a check's
+  `(async () => { ... })()` is not awaited by anything: when its `await` waits on a promise nobody can settle, the event
+  loop empties and Node exits with 0. The trigger was a new fixture of that check: its fake `preload` returned a pending
+  promise for every path not starting with `low/`, while the plan's copies live under `assets/low-copies/`, so
+  `await upgrading.start("first")` never returned. Full would have reported it as passed, with the rest of the check
+  silently skipped. The same could happen to any async check, and a real regression (a load that stops settling) would
+  look like a pass in exactly this way.
+- **Fix:** v0.49.94: a check with exit code 0 fails unless the last line of its stdout says it passed (`reportsCompletion`);
+  the two checks that ended differently now print a pass line; the fixture holds back only the one full file. All 83
+  checks end with a pass line; no earlier hidden hang was found.
+- **Rule:** R14.
+- **Check:** `check-runner` (a never-settling fixture fails, exit codes are kept, stderr after the pass line does not hide it).
 
 ## I-12 · 2026-11-04 · The DEV overlay ignored its own zoom and swallowed metric clicks (TK-202)
 

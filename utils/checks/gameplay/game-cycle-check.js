@@ -2327,3 +2327,4 @@ const report = context.gameCycleReport.map(line => line + "\n").join("");
 process.stdout.write(report);
 new OutputBaseline({ file: path.join(ROOT, "utils/testing/baselines/game-cycle.txt") })
   .verify(report, { update: process.argv.includes("--update-baseline") });
+console.log("Game cycle passed: the report matches the baseline.");

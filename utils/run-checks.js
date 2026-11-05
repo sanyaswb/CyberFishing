@@ -6,6 +6,14 @@ const { spawn, spawnSync } = require("node:child_process");
 const { CHECK_DEFINITIONS } = require("./testing/suites/check_manifest");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
+const PASS_LINE = /\b(?:passed?|ok)\b/iu;
+
+// An async check that never settles empties the event loop and Node exits with 0 without running the rest of its body
+// (incident I-9), so a pass needs both exit code 0 and a last stdout line that says so.
+function reportsCompletion(stdout) {
+  const lines = stdout.split(/\r?\n/u).filter((line) => line.trim());
+  return lines.length > 0 && PASS_LINE.test(lines.at(-1));
+}
 
 // Registry of stable scenario IDs; discover checks recursively to reject orphaned tests.
 class CheckCatalog {
@@ -84,7 +92,7 @@ class CheckRunner {
     const worker = async () => {
       while (next < checks.length) {
         const index = next++;
-        results[index] = await this.#execute(checks[index]);
+        results[index] = await this.execute(checks[index]);
         flush();
       }
     };
@@ -100,17 +108,22 @@ class CheckRunner {
     }
   }
 
-  #execute(check) {
+  execute(check) {
     const startedAt = Date.now();
     return new Promise((resolve) => {
       const child = spawn(process.execPath, [path.join(this.projectRoot, check.file)], { cwd: this.projectRoot });
       const chunks = [];
-      child.stdout.on("data", (chunk) => chunks.push(chunk));
+      const stdoutChunks = [];
+      child.stdout.on("data", (chunk) => { chunks.push(chunk); stdoutChunks.push(chunk); });
       child.stderr.on("data", (chunk) => chunks.push(chunk));
-      const finish = (status, error = null) => resolve({ check, status, durationMs: Date.now() - startedAt,
-        output: Buffer.concat(chunks).toString() + (error ? `${error.stack}\n` : "") });
-      child.on("error", (error) => finish(1, error));
-      child.on("close", (status) => finish(status ?? 1));
+      const finish = (status, note = "") => resolve({ check, status, durationMs: Date.now() - startedAt,
+        output: Buffer.concat(chunks).toString() + note });
+      child.on("error", (error) => finish(1, `${error.stack}\n`));
+      child.on("close", (status) => {
+        if (status === 0 && !reportsCompletion(Buffer.concat(stdoutChunks).toString())) {
+          finish(1, "Exit code 0, but the check did not report a pass on its last line: it hung or ended early (incident I-9).\n");
+        } else finish(status ?? 1);
+      });
     });
   }
 }
@@ -137,7 +150,11 @@ async function main(argv) {
   await new CheckRunner({ projectRoot: PROJECT_ROOT, jobs }).run(checks);
 }
 
-main(process.argv.slice(2)).catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main(process.argv.slice(2)).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { CheckRunner, reportsCompletion };
