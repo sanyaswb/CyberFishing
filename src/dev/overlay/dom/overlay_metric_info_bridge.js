@@ -1,3 +1,5 @@
+// A metric's name in a DEV overlay writes its formula to the console when clicked or activated from the keyboard. Metric
+// rows have no underline, hover or tooltip on any device (owner, TK-217).
 export class OverlayMetricInfoBridge {
   #catalog;
   #inspector;
@@ -7,11 +9,6 @@ export class OverlayMetricInfoBridge {
   #onDebugLiveUpdate = (event) => {
     this.#inspector.updateLiveData(event.detail || {});
   };
-  #onPointerOver = (event) => {
-    if (event.pointerType === "touch" || !event.target?.closest?.(".ui-surface--desktop-hover")) return;
-    this.#handleHover(event);
-  };
-  #onFocusIn = (event) => this.#handleHover(event);
   #onClick = (event) => this.#handleClick(event);
   #onKeyDown = (event) => this.#handleKeyDown(event);
 
@@ -31,8 +28,6 @@ export class OverlayMetricInfoBridge {
     this.#listenForDebugData();
     const content = this.#documentTarget.querySelector(".debug-overlay__content");
     this.#eventTarget = content || this.#documentTarget;
-    this.#eventTarget.addEventListener("pointerover", this.#onPointerOver, true);
-    this.#eventTarget.addEventListener("focusin", this.#onFocusIn, true);
     this.#eventTarget.addEventListener("click", this.#onClick, true);
     this.#eventTarget.addEventListener("keydown", this.#onKeyDown, true);
   }
@@ -43,16 +38,6 @@ export class OverlayMetricInfoBridge {
     this.#documentTarget.removeEventListener(
       "debug-live-update",
       this.#onDebugLiveUpdate,
-    );
-    this.#eventTarget?.removeEventListener(
-      "pointerover",
-      this.#onPointerOver,
-      true,
-    );
-    this.#eventTarget?.removeEventListener(
-      "focusin",
-      this.#onFocusIn,
-      true,
     );
     this.#eventTarget?.removeEventListener("click", this.#onClick, true);
     this.#eventTarget?.removeEventListener("keydown", this.#onKeyDown, true);
@@ -69,12 +54,6 @@ export class OverlayMetricInfoBridge {
       "debug-live-update",
       this.#onDebugLiveUpdate,
     );
-  }
-
-  #handleHover(event) {
-    const label = this.#findMetricLabel(event.target);
-    if (!label) return;
-    this.#applyTooltip(label);
   }
 
   #handleClick(event) {
@@ -100,37 +79,12 @@ export class OverlayMetricInfoBridge {
     return target?.closest?.(".debug-overlay__metric-label") || null;
   }
 
-  #applyTooltip(labelElement) {
-    const metricLabel = labelElement.dataset.metric || "metric";
-    const entry = this.#catalog.getEntry(metricLabel);
-    labelElement.title = this.#buildTooltip(metricLabel, entry);
-  }
-
   #inspectLabel(labelElement) {
     const row = labelElement.closest(".debug-overlay__row");
     const label = labelElement.dataset.metric || "metric";
     const value =
       row?.querySelector(".debug-overlay__value")?.textContent?.trim() || "";
     const entry = this.#catalog.getEntry(label);
-
-    labelElement.classList.add("debug-overlay__metric-label--active");
-    window.setTimeout(() => {
-      if (labelElement.isConnected) {
-        labelElement.classList.remove("debug-overlay__metric-label--active");
-      }
-    }, 180);
-
     this.#inspector.inspect({ label, displayedValue: value, entry });
-  }
-
-  #buildTooltip(label, entry) {
-    if (!entry) {
-      return `${label}\nОпис для цієї overlay-метрики ще не додано.`;
-    }
-
-    const lines = [String(label)];
-    if (entry.description) lines.push(entry.description);
-    if (entry.formula) lines.push(`Formula: ${entry.formula}`);
-    return lines.join("\n");
   }
 }

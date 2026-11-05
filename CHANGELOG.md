@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.96 - No underline or hover on overlay metrics
+
+- TK-217: DEV overlay metric rows have no underline, help cursor, hover highlight or tooltip on any device; a click on a metric's name still writes its formula to the console. Ui-surface check asserts the behavior. Game-cycle report unchanged.
+
 ## v0.49.95 - Only the opened room level loads
 
 - TK-216 (replaces part of TK-203): the Fisherman's Room loads its opened level, the aquarium and the renovation picture; a higher level's art waits in the locked queue until the player presses upgrade, and T-full does not count it. Asset-load-plan and house checks assert the behavior. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.87 - A failed start says so
 
 - TK-208 (spec 157 R3): a failed start shows an error text and a retry button on the startup screen instead of an endless ring, also when the game's bundle cannot load; the cause goes to the console. Game-cycle report unchanged.
-
-## v0.49.86 - One stylesheet and one start bundle
-
-- TK-206 (spec 160 stage 1): the release links one minified stylesheet instead of 32; the start's small modules are static imports and each page is built on its own (JS files 20 -> 10); the first layer's image groups load together (network steps 4 -> 3); release notes moved to DEV. Fast 4G: 74 -> 31 requests, 0.47 -> 0.41 MB. Game-cycle report unchanged.

@@ -9,6 +9,7 @@ const { OverlayWindowDragController } = require("../../../src/dev/overlay/dom/ov
 const { GameControls } = require("../../../src/platform/browser/ui/game_controls.js");
 const { InventoryTooltipPresenter } = require("../../../src/game/presentation/inventory/inventory_tooltip_presenter.js");
 const { OverlayMetricInfoBridge } = require("../../../src/dev/overlay/dom/overlay_metric_info_bridge.js");
+const { OverlayHtmlBuilder } = require("../../../src/dev/overlay/services/overlay_html_builder.js");
 const { TestDocument } = require("../../testing/keepnet/test_document.js");
 
 function environment(width, height = 600, viewport = false, capabilities = null) {
@@ -141,23 +142,22 @@ assert.equal(hoverTooltip.style.display, "block", "Returning to desktop landscap
 const metricContent = hoverEnv.document.createElement("div");
 const metricLabel = hoverEnv.document.createElement("span");
 metricLabel.dataset.metric = "Fixture";
-metricLabel.closest = selector => selector === ".debug-overlay__metric-label" ? metricLabel :
-  selector === ".ui-surface--desktop-hover" && hoverEnv.surface.getMetrics().hoverEnabled ? hoverEnv.surface.mountRoot.parentNode : null;
+metricLabel.closest = selector => selector === ".debug-overlay__metric-label" ? metricLabel : null;
 hoverEnv.document.querySelector = () => metricContent;
-let metricReads = 0;
+const inspected = [];
 const bridge = new OverlayMetricInfoBridge({ documentTarget: hoverEnv.document,
-  catalog: { getEntry: () => { metricReads++; return { description: "Accessible help" }; } }, inspector: {} });
+  catalog: { getEntry: () => ({ description: "Fixture help" }) }, inspector: { inspect: (entry) => inspected.push(entry.label) } });
 bridge.start();
-metricContent.fire("pointerover", { target: metricLabel, pointerType: "touch" });
-assert.equal(metricReads, 0, "Touch pointer events must not build DEV hover help");
-metricContent.fire("pointerover", { target: metricLabel, pointerType: "mouse" });
-assert.equal(metricReads, 1, "Desktop mouse retains DEV hover help");
-hoverEnv.resize(320);
-metricContent.fire("pointerover", { target: metricLabel, pointerType: "mouse" });
-assert.equal(metricReads, 1, "Mobile layout suppresses DEV hover help even with a mouse");
-metricContent.fire("focusin", { target: metricLabel });
-assert.equal(metricReads, 2, "Keyboard focus retains accessible help");
-assert.match(metricLabel.title, /Accessible help/);
+// TK-217: metric rows have no hover, tooltip or underline on any device; a click still writes the formula to the console.
+assert.deepEqual([...metricContent.listeners.keys()].filter((type) => metricContent.listeners.get(type).size > 0).sort(),
+  ["click", "keydown"], "DEV metric rows listen to no hover or focus event");
+metricContent.fire("click", { target: metricLabel, preventDefault() {}, stopPropagation() {} });
+assert.deepEqual(inspected, ["Fixture"], "A click on a metric's name explains it");
+assert.equal(metricLabel.title, undefined, "The metric name gets no tooltip");
+const overlayCss = fs.readFileSync(path.join(__dirname, "../../../src/dev/styles/overlay.css"), "utf8");
+assert.doesNotMatch(overlayCss, /metric-label[^{]*:hover|cursor:\s*help|underline/u, "Metric rows have no hover style, help cursor or underline");
+const metricHtml = new OverlayHtmlBuilder().metricRow("Fixture", "1");
+assert.doesNotMatch(metricHtml, /\btitle=/u, "A metric row has no browser tooltip");
 bridge.dispose();
 assert.equal([...metricContent.listeners.values()].reduce((count, listeners) => count + listeners.size, 0), 0);
 hoverPresenter.dispose();

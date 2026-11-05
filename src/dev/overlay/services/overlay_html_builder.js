@@ -15,7 +15,6 @@ export class OverlayHtmlBuilder {
         data-metric="${safeMetricKey}"
         role="button"
         tabindex="0"
-        title="${this.escapeAttr(label)}"
         aria-label="Пояснити формулу для ${this.escapeAttr(label)}"
       >${safeLabel}:</span>
       <span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>
