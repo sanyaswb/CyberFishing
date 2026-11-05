@@ -3,7 +3,8 @@
 // state (see bootstrap/production/asset_load_sources.js), { module } a feature's code (bootstrap/production/
 // game_feature_modules.js, spec 157 R12). An asset belongs to the first group that names it; registry
 // assets that no group names land in the implicit last group "unassigned" of layer-three and load there.
-// - layer-one: the first frame; the game is ready only when it has loaded (start "composition").
+// - layer-one: the first frame; the game is ready only when it has loaded (start "composition"). Its groups share one
+//   priority: a later priority waits for the earlier one and is one more request wave of the start (spec 160).
 // - layer-two: the full game cycle, right after the first frame (start "ready").
 // - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine, the Fisherman's
 //   Room and the rest; then the full files in the same order. Audio is on demand (load: false): its players load it when the radio starts or a
@@ -21,9 +22,9 @@ export const ASSET_LOAD_PLAN = {
       groups: [
         { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low",
           assets: [{ source: "location.background.current" }, { source: "location.depthMap" }] },
-        { id: "scene", label: "Поплавок у сцені", priority: 2, assets: [{ tag: "floats-scene" }] },
-        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 2, assets: [{ tag: "rods-scene" }] },
-        { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 2, assets: [{ source: "inventory.slotIcons" }] },
+        { id: "scene", label: "Поплавок у сцені", priority: 1, assets: [{ tag: "floats-scene" }] },
+        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 1, assets: [{ tag: "rods-scene" }] },
+        { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 1, assets: [{ source: "inventory.slotIcons" }] },
       ],
     },
     {

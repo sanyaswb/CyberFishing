@@ -129,7 +129,28 @@ try {
     // own import() calls), each released once; its module script loads the boot module. The root copy on Pages adds only <base>, first.
     const styles = [...source.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu)].map((match) => match[1]);
     const stylePreloads = [...releasePage.matchAll(/<link rel="preload" as="style" href="([^"]+)" \/>/gu)].map((match) => match[1]);
-    assert.deepEqual(stylePreloads, styles, `${name}: every stylesheet is preloaded in page order`);
+    // Spec 160: the release page links one minified stylesheet, the committed ones in page order.
+    assert.match(built.stylesheet, /^build\/(index|dev)\.styles-[0-9A-Z]{8}\.css$/u, `${name}: one content-hashed stylesheet`);
+    assert.deepEqual([...releasePage.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu)].map((match) => match[1]), [built.stylesheet],
+      `${name}: the release page links only the one stylesheet`);
+    assert.deepEqual(stylePreloads, [built.stylesheet], `${name}: the one stylesheet is preloaded`);
+    const bundledStyles = fs.readFileSync(path.join(release.releaseDir, built.stylesheet), "utf8");
+    assert(files.has(`${built.stylesheet}.map`), `${name}: the stylesheet has its source map`);
+    // The cascade: a later page stylesheet stays after an earlier one. Marked by the first class unique to each file.
+    let lastAt = -1;
+    for (const href of styles) {
+      const own = tree.read(href.split("?")[0]).toString("utf8").replace(/\/\*[^]*?\*\//gu, "").match(/\.[a-z][\w-]*/gu) ?? [];
+      const others = styles.filter((other) => other !== href).map((other) => tree.read(other.split("?")[0]).toString("utf8")).join("\n");
+      const unique = own.find((selector) => !others.includes(selector) && bundledStyles.includes(selector));
+      if (!unique) continue;
+      const at = bundledStyles.indexOf(unique);
+      assert(at > lastAt, `${name}: ${href} keeps its place in the cascade`);
+      lastAt = at;
+    }
+    if (name === "index.html") {
+      // Boot, meter, bundle and the fragments esbuild shares with the lazy features (20 files before spec 160).
+      assert(built.chunks.length + 3 <= 10, `index.html: the start loads ${built.chunks.length + 3} JS files, at most 10 (spec 160)`);
+    }
     const preloaded = [...releasePage.matchAll(/<link rel="modulepreload" href="([^"]+)" \/>/gu)].map((match) => match[1]);
     assert.deepEqual(preloaded, [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks],
       `${name}: boot, the startup meter, bundle and the chunks the start loads`);
@@ -159,7 +180,15 @@ try {
     for (const module of preloaded) assert(manifest.files.some((entry) => entry.path === module), `${name}: the manifest counts ${module}`);
     assert(manifest.files.some((entry) => entry.path.startsWith("assets/low-copies/locations/")),
       `${name}: the manifest counts the background's low copy (readyOn low)`);
-    assert.equal(releasePage, source.replace(`src="${entryOf(source)}"`, `src="${built.boot}"`)
+    const oneStylesheet = (html) => {
+      let first = true;
+      return html.replace(/^[ \t]*<link rel="stylesheet" href="[^"]+" \/>\r?\n/gmu, () => {
+        if (!first) return "";
+        first = false;
+        return `  <link rel="stylesheet" href="${built.stylesheet}" />\n`;
+      });
+    };
+    assert.equal(releasePage, oneStylesheet(source).replace(`src="${entryOf(source)}"`, `src="${built.boot}"`)
       .replace('<div class="startup-loader"', `<div class="startup-loader" data-startup-bytes="${built.startupBytes}"`)
       .replace("<head>\n", `<head>\n${preloadLines}`),
       `${name}: the release page is the committed page with its preloads, boot module and startup size`);

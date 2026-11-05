@@ -283,7 +283,7 @@ class PagesReleaseBuilder {
     for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => files.includes(name))) {
       const built = bundle.pages[page];
       const { styles } = ReleaseFileSet.pagePreloads(this.#tree, page);
-      preloads[page] = Object.freeze({ styles, modules: built
+      preloads[page] = Object.freeze({ styles: built ? [built.stylesheet] : styles, modules: built
         ? [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] : [] });
       if (!built) continue;
       const target = path.join(releaseDir, page);

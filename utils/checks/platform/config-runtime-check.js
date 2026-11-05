@@ -135,14 +135,11 @@ function checkDevelopmentInputs() {
   }
   visit(tree);
   assert.equal(options?.type, "ObjectExpression");
-  // Preserve each original serial await; only its importer moves to Development Bootstrap.
+  // Spec 160 stage 1: the start's small platform modules are static imports of the composition, no ports of the page.
   const rootSource = fs.readFileSync(require("node:path").join(__dirname, "../../../src/bootstrap/production/game_composition_root.js"), "utf8");
   for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/browser_event_target_adapter.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
-    const property = options.properties.find(item => item.key.name === name);
-    assert.equal(property.value.type, "ArrowFunctionExpression");
-    assert.equal(property.value.body.type, "ImportExpression");
-    assert.equal(property.value.body.source.value, specifier);
-    assert.equal(rootSource.split("const { " + symbol + " } = await this.#" + name + "();").length, 2);
+    assert.equal(options.properties.some(item => item.key.name === name), false, name + " is no port any more");
+    assert(rootSource.includes(`import { ${symbol} } from "${specifier}";`), symbol + " is a static import of the composition");
   }
   assert.equal(rootSource.includes("await import("), false);
   const lifecycleSource = fs.readFileSync(require("node:path").join(__dirname, "../../../src/platform/browser/runtime/browser_game_lifecycle.js"), "utf8");
@@ -370,12 +367,6 @@ async function checkNativeProductionStartup() {
     ...require("../../../src/game/config/runtime/config_override_store.js"), ...require("../../../src/game/config/runtime/resolved_config_provider.js"),
     ...require("../../../src/platform/browser/config/deep_clone_config.js"), ...require("../../../src/game/config/runtime/immutable_config.js"),
   });
-  const loaders = {
-    loadRandomInventoryId: "../../platform/browser/inventory/random_inventory_id.js",
-    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/browser_event_target_adapter.js",
-    loadBrowserTimeoutScheduler: "../../platform/browser/time/browser_timeout_scheduler.js",
-    loadInventoryAssemblyProfileConfig: "../../game/config/inventory/inventory_composition_config.js",
-  };
   for (const readyState of ["loading", "interactive", "complete"]) {
     const fishCatalog = [], mapCatalog = {}, physicsCatalog = {};
     const config = { physics: physicsCatalog, spawns: { fishes: fishCatalog }, locations: { map: mapCatalog }, rarity: { visual: null }, degradationColors: null,
@@ -422,14 +413,14 @@ async function checkNativeProductionStartup() {
     const platform = evaluate("src/platform/browser/runtime/browser_startup_environment.js",
       ["getBrowserStartupEnvironment", "publishBrowserStartupConfig", "activateBrowserStartupInterface"],
       { window: windowTarget, document: documentTarget, initEngineInterface() { activations++; } });
-    const imports = [], modules = Object.fromEntries(Object.values(loaders).map(specifier => [specifier, {}]));
+    const imports = [];
     let resolveBuild;
     const buildReady = new Promise(resolve => { resolveBuild = resolve; });
     const app = { start() { starts++;return true; }, dispose() { disposals++; } };
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "startupMarks", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), ["windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "startupMarks", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
         assert.equal(ports.toolbarMountNode, toolbarElement, "startup injects the shared toolbar mount");
         assert.equal(ports.tackleMountNode, tackleMountNode, "startup injects the shared float/net group");
         assert.equal(ports.depthMountNode, depthMountNode, "startup injects the independent depth expansion slot");
@@ -444,7 +435,6 @@ async function checkNativeProductionStartup() {
       }
       async build(canvasId) {
         builds++;assert.equal(canvasId, "gameCanvas");
-        for (const [name, specifier] of Object.entries(loaders)) assert.equal(await this.ports[name](), modules[specifier]);
         return buildReady;
       }
       printStorageUsage() { storage++; }
@@ -455,7 +445,7 @@ async function checkNativeProductionStartup() {
       GameCompositionRoot: Root, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
       PerformanceStartupMarks, STARTUP_STAGES, markStartupReady,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
-      importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
+      importModule(specifier) { imports.push(specifier);return Promise.resolve({}); },
     });
     const first = startup.startProductionGame(), second = startup.startProductionGame();
     assert.equal(first, second, "concurrent startup shares the original promise");resolveBuild(app);
@@ -476,7 +466,7 @@ async function checkNativeProductionStartup() {
     assert.equal(config.spawns.fishes, fishCatalog);assert.equal(config.locations.map, mapCatalog);assert.equal(config.physics, physicsCatalog);
     const descriptor = Object.getOwnPropertyDescriptor(config, "fightPhysicsConfig");
     assert.equal(descriptor.enumerable, false);assert.equal(descriptor.configurable, true);assert.equal(descriptor.writable, false);
-    assert.deepEqual(imports, Object.values(loaders));assert.deepEqual([roots, builds, starts, contexts, adapters, activations, storage, previous], [1,1,1,1,1,1,0,1], "production startup prints no storage report");
+    assert.deepEqual(imports, [], "the production start makes no import() of its own (spec 160)");assert.deepEqual([roots, builds, starts, contexts, adapters, activations, storage, previous], [1,1,1,1,1,1,0,1], "production startup prints no storage report");
     assert.equal(windowTarget.CYBER_FISHING_PROJECT_VERSION, version);assert.equal(windowTarget.CYBER_FISHING_MEMORY_WATCHDOG, null);assert.equal(windowTarget.getCyberFishingMemoryReport(), null);
     if (readyState === "loading") { assert.equal(mounts, 0);assert.equal(documentListeners.size, 1);documentListeners.get("DOMContentLoaded")(); }
     else assert.equal(documentListeners.size, 0);

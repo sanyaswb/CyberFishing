@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.86 - One stylesheet and one start bundle
+
+- TK-206 (spec 160 stage 1): the release links one minified stylesheet instead of 32; the start's small modules are static imports and each page is built on its own (JS files 20 -> 10); the first layer's image groups load together (network steps 4 -> 3); release notes moved to DEV. Fast 4G: 74 -> 31 requests, 0.47 -> 0.41 MB. Game-cycle report unchanged.
+
 ## v0.49.85 - Fisherman's House loads lazily
 
 - TK-203 (spec 159): the Fisherman's House is open, so the art of every room level loads in the third layer; the `locked` queue stays for future content and is empty today. Asset-load-plan check asserts the behavior. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.77 - Inventory control follows the configuration from the first frame
 
 - TK-194: the radial selector or the classic buttons show from the first frame as `ui.inventorySelector.radialEnabled` says; the classic buttons no longer stand in for the selector while its artwork loads. Sectors show sprite symbols until the artwork arrives and keep them if it fails. Inventory-selector check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.76 - Overlay drag hold threshold unified to 500ms
-
-- TK-191: unified overlay and draggable button hold threshold to 500ms (`dragHoldTimeMs: 500` in `CONFIG.ui` and drag controllers) so visual drag mode activates in direct synchronization with standard mobile phone haptic long-press vibration. UI surface check asserts the behavior. Game-cycle report unchanged.

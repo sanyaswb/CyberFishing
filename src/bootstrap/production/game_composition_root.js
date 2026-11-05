@@ -151,6 +151,10 @@ import { InactiveDebugEvents } from "../../game/application/session/inactive_deb
 import { InactiveGameDiagnostics } from "../../game/application/session/inactive_game_diagnostics.js";
 import { ViewportProjector } from "../../game/application/viewport/viewport_projector.js";
 import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
+import { createRandomInventoryId } from "../../platform/browser/inventory/random_inventory_id.js";
+import { BrowserEventTargetAdapter } from "../../platform/browser/runtime/browser_event_target_adapter.js";
+import { BrowserTimeoutScheduler } from "../../platform/browser/time/browser_timeout_scheduler.js";
+import { getInventoryAssemblyProfileConfig } from "../../game/config/inventory/inventory_composition_config.js";
 
 export class GameCompositionRoot {
   #config;
@@ -170,10 +174,6 @@ export class GameCompositionRoot {
   #stageLayout = null;
   #createHookedFishProfileSynchronizer;
   #createDebugService;
-  #loadRandomInventoryId;
-  #loadBrowserEventTargetAdapter;
-  #loadBrowserTimeoutScheduler;
-  #loadInventoryAssemblyProfileConfig;
   #documentTarget;
   #windowTarget;
   #gameLoopGuard;
@@ -216,10 +216,6 @@ export class GameCompositionRoot {
     itemDb = ITEM_DB,
     // Spec 157 R15: the asset load plan (DEV passes the owner's edited plan; production the configured one).
     assetLoadPlan = ASSET_LOAD_PLAN,
-    loadRandomInventoryId,
-    loadBrowserEventTargetAdapter,
-    loadBrowserTimeoutScheduler,
-    loadInventoryAssemblyProfileConfig,
     documentTarget,
     windowTarget,
     gameLoopGuard,
@@ -276,10 +272,6 @@ export class GameCompositionRoot {
     this.#createInventorySplitSource = createInventorySplitSource;
     this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
     this.#createDebugService = createDebugService;
-    this.#loadRandomInventoryId = loadRandomInventoryId;
-    this.#loadBrowserEventTargetAdapter = loadBrowserEventTargetAdapter;
-    this.#loadBrowserTimeoutScheduler = loadBrowserTimeoutScheduler;
-    this.#loadInventoryAssemblyProfileConfig = loadInventoryAssemblyProfileConfig;
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
     this.#gameLoopGuard = gameLoopGuard;
@@ -539,9 +531,7 @@ export class GameCompositionRoot {
       locationAssetLoader, startupHours: gameTimeClock.getHours(),
     });
     this.#startupMarks.mark(STARTUP_STAGES.location);
-    const {
-      inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
-    } = await this.#composePlayerInventory({
+    const { inventory, castDistanceCalculator, physicsConfig } = this.#composePlayerInventory({
       own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
       itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
     });
@@ -572,7 +562,7 @@ export class GameCompositionRoot {
       scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
     this.#composeInventoryUi({
-      inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
+      inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
       physicsConfig, liveBait, imageAssets,
     });
@@ -984,7 +974,7 @@ export class GameCompositionRoot {
   }
 
   // Physics-backed line and cast rules and the player's inventory.
-  async #composePlayerInventory({
+  #composePlayerInventory({
     own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
     itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
   }) {
@@ -1000,10 +990,6 @@ export class GameCompositionRoot {
       this.#runtimeConfig,
       physicsConfig,
     );
-    const { createRandomInventoryId } = await this.#loadRandomInventoryId();
-    const { BrowserEventTargetAdapter } = await this.#loadBrowserEventTargetAdapter();
-    const { BrowserTimeoutScheduler } = await this.#loadBrowserTimeoutScheduler();
-    const { getInventoryAssemblyProfileConfig } = await this.#loadInventoryAssemblyProfileConfig();
     const inventory = own(createPlayerInventory({
       itemDB: this.#itemDb,
       playerConfig: this.#config.player,
@@ -1024,7 +1010,7 @@ export class GameCompositionRoot {
       makeRandomId: createRandomInventoryId,
       now: () => Date.now(),
     }));
-    return { inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig };
+    return { inventory, castDistanceCalculator, physicsConfig };
   }
 
   // Equipped items at startup and the chum service catalog projected through effective stats.
@@ -1219,7 +1205,7 @@ export class GameCompositionRoot {
 
   // Inventory UI over the composed facade and item read-model adapters.
   #composeInventoryUi({
-    inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
+    inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
     itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
     physicsConfig, liveBait, imageAssets,
   }) {

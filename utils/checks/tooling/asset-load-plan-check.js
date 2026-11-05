@@ -209,6 +209,9 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     "assets/low-copies/locations/test/bg_test--day.webp", "assets/locations/test/test-depth.webp",
     ...["bait", "battery", "boat", "chum", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod", "tackle",
       "weight"].map((name) => `assets/ui/inventory/${name}.svg`)].sort(), "layer-one is the pre-D start plus the rod's start picture (TK-181)");
+  // Spec 160: a later priority of the first layer waits for the earlier one and is one more request wave of the start.
+  assert.deepEqual([...new Set(production.layer("layer-one").groups.map((group) => group.priority))], [1],
+    "the first layer's groups load together: no extra request wave");
   const second = groupIds("layer-two");
   assert.deepEqual(second["location-phases"], ["locations.test.bg_test--evening", "locations.test.bg_test--night"]);
   assert.equal(second["keepnet-stages"].length, 6);

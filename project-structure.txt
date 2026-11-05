@@ -507,8 +507,6 @@
 │  │  │  │  │  ├── peaceful_fish.js
 │  │  │  │  │  ├── predator_fish.js
 │  │  │  │  │  └── rare_fish.js
-│  │  │  │  ├── house
-│  │  │  │  │  └── house_config.js
 │  │  │  │  ├── inventory
 │  │  │  │  │  └── item_assembly_profiles.js
 │  │  │  │  ├── items
@@ -1069,8 +1067,7 @@
 │        │  ├── inventory_snapshot_local_store.js
 │        │  ├── live_bait_local_store.js
 │        │  ├── local_storage_cache.js
-│        │  ├── radio_preferences_local_store.js
-│        │  └── room_progress_local_store.js
+│        │  └── radio_preferences_local_store.js
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js

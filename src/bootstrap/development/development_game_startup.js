@@ -47,6 +47,7 @@ import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
 import { OVERLAY_MODULES } from "../../dev/overlay/config/overlay_modules_config.js";
 import { OverlaySettingsStore } from "../../dev/overlay/overlay_settings_store.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
+import { PROJECT_RELEASE_NOTES } from "../../dev/version/project_release_notes.js";
 import { RenderAllocationDiagnostics } from "../../dev/diagnostics/render_allocation_diagnostics.js";
 import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
@@ -100,7 +101,7 @@ async function startGame() {
     config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
   });
   startupMarks.mark(STARTUP_STAGES.config);
-  publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
+  publishBrowserStartupConfig(windowTarget, configRuntime, Object.freeze({ ...PROJECT_VERSION_CONFIG, notes: PROJECT_RELEASE_NOTES }));
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
@@ -191,10 +192,6 @@ async function startGame() {
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       assetLoadPlan: assetLoadPlanStore.plan(),
-      loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
-      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
-      loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
-      loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
       documentTarget, windowTarget, gameLoopGuard, listenerCounter,
       uiSurface,
       toolbarMountNode: toolbar.element,

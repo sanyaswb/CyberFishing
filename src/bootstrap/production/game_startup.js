@@ -46,10 +46,6 @@ async function startGame() {
   const toolbar = new GameToolbar({ documentRef: documentTarget, mountNode: uiSurface.mountRoot, versionBadge: badge });
   gameLoopGuard ??= new ActiveGameLoopGuard({ logger: new ConsoleLogger(), warningTarget: windowTarget });
   const compositionRoot = new GameCompositionRoot(CONFIG, {
-    loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
-    loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
-    loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
-    loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
     documentTarget,
     windowTarget,
     gameLoopGuard,

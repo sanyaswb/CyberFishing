@@ -4,7 +4,10 @@
 //   npm run build:release -- --out <dir> [--ref <commit>]
 // writes a self-contained release folder from a commit: the committed release files (pages, stylesheets, source modules,
 // assets, vendor files and licences: the ?esm=1 fallback still runs from them) and build/ with
-//   - one esbuild bundle per page entry, split into shared and lazy chunks (minified, with source maps), names hashed;
+//   - one esbuild bundle per page entry, split into its own shared and lazy chunks (minified, with source maps), names
+//     hashed; each page is built on its own, so dev.html's graph does not cut index.html's start into more chunks;
+//   - one minified stylesheet per page (build/<page>.styles-<hash>.css, spec 160) in place of the page's stylesheet links,
+//     in their order; ?esm=1 uses it too (the same rules, with a source map);
 //   - a small boot module per page (build/<page>.boot-<hash>.js): the startup screen's meter first (spec 157 D5, its own
 //     tiny bundle), then the bundle by default, or the source modules when the page address has ?esm=1 (it then fetches
 //     build/<page>.esm-<hash>.json, the page's source graph, and adds a modulepreload for each module first);
@@ -27,13 +30,9 @@ const PAGES = Object.freeze(["index.html", "dev.html"]);
 const METER_ENTRY = "src/entrypoints/game_startup_meter.entry.js";
 // The dynamic imports the start itself makes (spec 157 R12, TK-176 item 2): their chunks are preloaded with the bundle.
 // Every other import() — a feature loaded after ready or on first use, spine-webgl of the 2D "canvas" scene mode — stays out
-// of the page's preloads.
+// of the page's preloads. The production start makes none (spec 160).
 const START_IMPORTS = Object.freeze([
-  "src/bootstrap/development/development_game_startup.js", // dev.html's entry imports the DEV composition
-  "src/platform/browser/inventory/random_inventory_id.js", // the startup loaders (game_startup.js)
-  "src/platform/browser/runtime/browser_event_target_adapter.js",
-  "src/platform/browser/time/browser_timeout_scheduler.js",
-  "src/game/config/inventory/inventory_composition_config.js",
+  "src/bootstrap/development/development_game_startup.js", // dev.html's entry: the timing buffer grows before this graph
 ]);
 // Text files the server compresses (docs/deployment.md); media go as they are.
 const COMPRESSED = /\.(?:js|mjs|css|json|svg|atlas|html|map)$/iu;
@@ -41,26 +40,80 @@ const COMPRESSED = /\.(?:js|mjs|css|json|svg|atlas|html|map)$/iu;
 class ReleaseBundleBuilder {
   // releaseDir holds the committed release files already; pagePreloads(page) -> { styles, modules } (ReleaseFileSet).
   static build({ releaseDir, pages = PAGES, pagePreloads }) {
-    const esbuild = require("esbuild");
     const present = pages.filter((page) => fs.existsSync(path.join(releaseDir, page)));
     const entries = new Map(present.map((page) => [page, ReleaseBundleBuilder.#entryOf(fs.readFileSync(
       path.join(releaseDir, page), "utf8"), page)]));
     const meter = fs.existsSync(path.join(releaseDir, METER_ENTRY)) ? METER_ENTRY : null;
-    const result = esbuild.buildSync({
+    // The meter is its own bundle: shared modules with a page's bundle would be one more chunk of that page's start.
+    const meterFile = meter ? ReleaseBundleBuilder.#relative(releaseDir,
+      ReleaseBundleBuilder.#outputOf(ReleaseBundleBuilder.#bundle(releaseDir, meter), meter)) : null;
+    const layerOne = ReleaseBundleBuilder.#layerOneAssets(releaseDir);
+    const pagesBuilt = {};
+    for (const [page, entry] of entries) {
+      const name = page.replace(/\.html$/u, "");
+      const outputs = ReleaseBundleBuilder.#bundle(releaseDir, entry.file);
+      const output = ReleaseBundleBuilder.#outputOf(outputs, entry.file);
+      const bundle = ReleaseBundleBuilder.#relative(releaseDir, output);
+      const chunks = ReleaseBundleBuilder.#startChunks(outputs, output).map((file) => ReleaseBundleBuilder.#relative(releaseDir, file));
+      const { styles, modules } = pagePreloads(page);
+      const stylesheet = ReleaseBundleBuilder.#bundleStyles(releaseDir, name, styles);
+      const esmGraph = ReleaseBundleBuilder.#writeHashed(releaseDir, `${name}.esm`, "json", JSON.stringify(modules));
+      const boot = ReleaseBundleBuilder.#writeBoot(releaseDir, page, bundle, entry, esmGraph, meterFile);
+      const startModules = [boot, ...(meterFile ? [meterFile] : []), bundle, ...chunks];
+      const html = ReleaseBundleBuilder.#withStylesheet(fs.readFileSync(path.join(releaseDir, page), "utf8"), stylesheet, page)
+        .replace(entry.tag, entry.tag.replace(entry.src, boot));
+      const manifest = ReleaseBundleBuilder.#startupManifest(releaseDir, page, html, [stylesheet, ...startModules, ...layerOne]);
+      const startup = ReleaseBundleBuilder.#writeHashed(releaseDir, `${name}.startup`, "json",
+        `${JSON.stringify(manifest, null, 2)}\n`);
+      fs.writeFileSync(path.join(releaseDir, page), ReleaseBundleBuilder.#withStartupBytes(html, manifest.totalBytes, page));
+      pagesBuilt[page] = Object.freeze({ boot, meter: meterFile, bundle, chunks: Object.freeze(chunks), stylesheet, esmGraph,
+        startup, startupBytes: manifest.totalBytes });
+    }
+    const files = ReleaseBundleBuilder.#listFiles(path.join(releaseDir, BUILD_DIR)).map((file) =>
+      `${BUILD_DIR}/${file}`);
+    return Object.freeze({ pages: Object.freeze(pagesBuilt), files: Object.freeze(files.sort()) });
+  }
+
+  // One entry's bundle with its own chunks; returns esbuild's outputs.
+  static #bundle(releaseDir, entryFile) {
+    return ReleaseBundleBuilder.#runEsbuild(releaseDir, { entryPoints: [entryFile], bundle: true, splitting: true, format: "esm",
+      chunkNames: "chunks/[name]-[hash]" }).metafile.outputs;
+  }
+
+  static #outputOf(outputs, entryFile) {
+    const output = Object.keys(outputs).find((file) => outputs[file].entryPoint === entryFile);
+    if (!output) throw new Error(`esbuild wrote no bundle for ${entryFile}`);
+    return output;
+  }
+
+  // The page's stylesheets, in page order, as one minified file. Returns its release path.
+  static #bundleStyles(releaseDir, name, styles) {
+    const entry = path.join(releaseDir, BUILD_DIR, `${name}.styles.css`);
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, styles.map((href) => `@import ${JSON.stringify(`../${href.split(/[?#]/u)[0]}`)};\n`).join(""));
+    try {
+      const { outputs } = ReleaseBundleBuilder.#runEsbuild(releaseDir, { entryPoints: [`${BUILD_DIR}/${name}.styles.css`],
+        bundle: true }).metafile;
+      const output = Object.keys(outputs).find((file) => file.endsWith(".css"));
+      if (!output) throw new Error(`esbuild wrote no stylesheet for ${name}`);
+      return ReleaseBundleBuilder.#relative(releaseDir, output);
+    } finally {
+      fs.rmSync(entry);
+    }
+  }
+
+  static #runEsbuild(releaseDir, options) {
+    const result = require("esbuild").buildSync({
       absWorkingDir: releaseDir,
-      entryPoints: [...new Set([...entries.values()].map((entry) => entry.file)), ...(meter ? [meter] : [])],
       outdir: BUILD_DIR,
-      bundle: true,
-      splitting: true,
-      format: "esm",
       target: "es2022",
       minify: true,
       sourcemap: "linked",
       entryNames: "[name]-[hash]",
-      chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       logLevel: "error",
       write: true,
+      ...options,
     });
     // A warning is a defect in the source (a duplicate object key keeps only its last value): the release refuses it.
     if (result.warnings.length > 0) {
@@ -68,32 +121,20 @@ class ReleaseBundleBuilder {
         `${warning.location?.file ?? "?"}:${warning.location?.line ?? "?"} ${warning.text}`);
       throw new Error(["esbuild warnings:", ...lines].join("\n"));
     }
-    const outputs = result.metafile.outputs;
-    const meterOutput = meter ? Object.keys(outputs).find((file) => outputs[file].entryPoint === meter) : null;
-    const meterFile = meterOutput ? ReleaseBundleBuilder.#relative(releaseDir, meterOutput) : null;
-    const layerOne = ReleaseBundleBuilder.#layerOneAssets(releaseDir);
-    const pagesBuilt = {};
-    for (const [page, entry] of entries) {
-      const output = Object.keys(outputs).find((file) => outputs[file].entryPoint === entry.file);
-      if (!output) throw new Error(`esbuild wrote no bundle for ${entry.file}`);
-      const bundle = ReleaseBundleBuilder.#relative(releaseDir, output);
-      const chunks = ReleaseBundleBuilder.#startChunks(outputs, output).map((file) => ReleaseBundleBuilder.#relative(releaseDir, file));
-      const { styles, modules } = pagePreloads(page);
-      const esmGraph = ReleaseBundleBuilder.#writeHashed(releaseDir, `${page.replace(/\.html$/u, "")}.esm`, "json",
-        JSON.stringify(modules));
-      const boot = ReleaseBundleBuilder.#writeBoot(releaseDir, page, bundle, entry, esmGraph, meterFile);
-      const startModules = [boot, ...(meterFile ? [meterFile] : []), bundle, ...chunks];
-      const html = fs.readFileSync(path.join(releaseDir, page), "utf8").replace(entry.tag, entry.tag.replace(entry.src, boot));
-      const manifest = ReleaseBundleBuilder.#startupManifest(releaseDir, page, html, [...styles, ...startModules, ...layerOne]);
-      const startup = ReleaseBundleBuilder.#writeHashed(releaseDir, `${page.replace(/\.html$/u, "")}.startup`, "json",
-        `${JSON.stringify(manifest, null, 2)}\n`);
-      fs.writeFileSync(path.join(releaseDir, page), ReleaseBundleBuilder.#withStartupBytes(html, manifest.totalBytes, page));
-      pagesBuilt[page] = Object.freeze({ boot, meter: meterFile, bundle, chunks: Object.freeze(chunks), esmGraph, startup,
-        startupBytes: manifest.totalBytes });
-    }
-    const files = ReleaseBundleBuilder.#listFiles(path.join(releaseDir, BUILD_DIR)).map((file) =>
-      `${BUILD_DIR}/${file}`);
-    return Object.freeze({ pages: Object.freeze(pagesBuilt), files: Object.freeze(files.sort()) });
+    return result;
+  }
+
+  // The page with the one stylesheet where its first stylesheet link stood; the other links are gone.
+  static #withStylesheet(html, stylesheet, page) {
+    const links = /^[ \t]*<link\b[^>]*\brel="stylesheet"[^>]*>\r?\n/gmu;
+    let first = true;
+    const result = html.replace(links, (line) => {
+      if (!first) return "";
+      first = false;
+      return line.replace(/\bhref="[^"]*"/u, `href="${stylesheet}"`);
+    });
+    if (first) throw new Error(`${page} has no stylesheet`);
+    return result;
   }
 
   // The page's one module script: its tag, its src as written (with any query) and the file it names.

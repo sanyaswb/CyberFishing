@@ -34,9 +34,9 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 
 - **Patch: one per completed task.** Every completed task (a whole `TK-NNN` or spec step, not each intermediate edit)
   bumps the patch version (`0.47.N` → `0.47.N+1`) with a short `CHANGELOG.md` entry (1–3 lines), so the owner can tell
-  which build has which change. The version lives in `src/game/presentation/version/project_version.js` (version and
-  release note), `package.json`/`package-lock.json` and the `?v=` links of `index.html`, `dev.html` and
-  `ui-catalog.html`; change all of them together.
+  which build has which change. The version lives in `src/game/presentation/version/project_version.js`, its release
+  note in `src/dev/version/project_release_notes.js` (DEV only, spec 160), then `package.json`/`package-lock.json` and
+  the `?v=` links of `index.html`, `dev.html` and `ui-catalog.html`; change all of them together.
 - **Minor: only after the owner's explicit approval**, also for a new or changed mechanic. Until then increment only
   the patch. Never bump the major.
 - Keep the version, `CHANGELOG.md` and its archive consistent: the latest 10 entries in `CHANGELOG.md`, the oldest
