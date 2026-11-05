@@ -19,6 +19,8 @@ export class RoomProgress {
   get level() { return this.#level; }
   get targetLevel() { return this.#targetLevel; }
   get endsAt() { return this.#endsAt; }
+  // The highest level the player has opened: pressing upgrade opens the target level, its art is needed from then on.
+  get openedLevel() { return this.#targetLevel ?? this.#level; }
 
   start(now) {
     if (this.#targetLevel !== null) return { ok: false, reason: "already_upgrading" };

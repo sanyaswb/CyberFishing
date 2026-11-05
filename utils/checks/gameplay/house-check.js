@@ -582,6 +582,7 @@ async function main() {
   await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../../../src/game/config/raw/house/house_config.js");
   const { RoomUpgradeService } = await import("../../../src/game/application/house/room_upgrade_service.js");
+  const { RoomProgress } = await import("../../../src/game/domain/house/room_progress.js");
   const { RoomProgressLocalStore } = await import("../../../src/platform/browser/storage/room_progress_local_store.js");
   const { composeGameTime } = await import("../../../src/bootstrap/production/game_time_composition.js");
   const { backgroundTimeBlend } = await import("../../../src/game/domain/time/background_time_blend.js");
@@ -647,6 +648,16 @@ async function main() {
   assert.equal(room.start().reason, "max_level");
   values.set("cyber_fishing_room_1_v1", "{bad");
   assert.equal(new RoomUpgradeService({ config: HOUSE_CONFIG.room, store, now: nowFn }).getView().level, 1);
+  // TK-216: pressing upgrade opens the next level's art, once; a refused start opens nothing.
+  const openedLevels = [];
+  const opening = new RoomUpgradeService({ config: HOUSE_CONFIG.room, store, now: nowFn, onLevelOpened: (level) => openedLevels.push(level) });
+  assert.equal(opening.start().ok, true);
+  assert.deepEqual(openedLevels, [2], "the upgrade opens the target level");
+  assert.equal(opening.start().reason, "already_upgrading");
+  assert.deepEqual(openedLevels, [2], "a refused start opens nothing");
+  assert.equal(new RoomProgress(HOUSE_CONFIG.room, store.load()).openedLevel, 2, "a reload during the renovation keeps the level open");
+  assert.equal(opening.finish().ok, true);
+  assert.equal(new RoomProgress(HOUSE_CONFIG.room, store.load()).openedLevel, 2, "the finished level stays open");
   await checkHousePresentation(HOUSE_CONFIG);
   console.log("House passed: shared time/art/upgrades, shared feed colors and clamping, stable rows/focus, shared close/switch and sheet keyboard lifecycle.");
 }

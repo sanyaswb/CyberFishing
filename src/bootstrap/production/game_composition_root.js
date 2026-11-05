@@ -91,6 +91,9 @@ import { AssetRegistry } from "../../engine/assets/asset_registry.js";
 import { AssetLoadPlan } from "../../engine/assets/asset_load_plan.js";
 import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
 import { createAssetLoadSources } from "./asset_load_sources.js";
+import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
+import { RoomProgress } from "../../game/domain/house/room_progress.js";
+import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
 import { GameAssetPreloadFacade } from "./game_asset_preload_facade.js";
 import { BrowserLoadConditions } from "../../platform/browser/assets/browser_load_conditions.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
@@ -552,7 +555,8 @@ export class GameCompositionRoot {
         rng }) : null;
     };
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt });
+    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt,
+      openRoomLevel: (level) => { void this.#preload.setProgress({ openedRoomLevel: level }); } });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
     const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
     const { systems } = this.#composeWorldSystems({
@@ -943,7 +947,8 @@ export class GameCompositionRoot {
     // The plan's layer-one starts here (its sources need the location and the startup phases); its "location" group is
     // the current phase and the depth map. The other phases are layer-two, after the first frame; the scene uploads each
     // one in the frame after it arrives.
-    void this.#preload.start("layer-one", { locationId: locId, phases });
+    const roomProgress = new RoomProgress(HOUSE_CONFIG.room, new RoomProgressLocalStore(this.#windowTarget.localStorage).load());
+    void this.#preload.start("layer-one", { locationId: locId, phases, openedRoomLevel: roomProgress.openedLevel });
     const locationGroup = await this.#preload.whenGroup("location");
     if (locationGroup.status === "failed") {
       const error = new Error(`location:${locId} critical assets failed: ${locationGroup.error?.message || "load error"}`);

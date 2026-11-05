@@ -235,10 +235,18 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.deepEqual(lazyKinds("lazy-spine"), ["spine"]);
   assert.deepEqual(lazyKinds("audio"), ["audio"]);
   // TK-203: the Fisherman's House is open: every level's art loads lazily and nothing is closed today.
-  assert.deepEqual(production.lockedIds({}), [], "nothing is closed by progress today");
+  // TK-216: only the opened room level loads; the art of the others waits for the player's upgrade.
+  const closedRoomArt = production.lockedIds({});
+  assert.equal(closedRoomArt.length, 12, "levels 2-5 are closed at the first level (3 phases each)");
+  assert(closedRoomArt.includes("house.room-1.lvl-5.room--1-day-lvl--5"), "the highest level is closed");
+  assert(closedRoomArt.includes("house.room-1.lvl-2.room--1-day-lvl--2"), "the next level waits for the upgrade too");
+  assert(!closedRoomArt.some((id) => id.includes(".lvl-1.")), "the first level is open");
+  assert(!closedRoomArt.some((id) => /_aqua|under-renovation/u.test(id)), "the aquarium and the renovation pictures are open");
+  assert.equal(production.lockedIds({ openedRoomLevel: 2 }).length, 9, "pressing upgrade opens one level");
+  assert(!production.lockedIds({ openedRoomLevel: 2 }).some((id) => id.includes(".lvl-2.")), "the opened level leaves the closed list");
+  assert.deepEqual(production.lockedIds({ openedRoomLevel: 5 }), [], "nothing is closed at the last level");
   const roomIds = production.resolveGroup(lazyGroup("lazy-room"), {});
-  assert.equal(roomIds.length, assets.idsByTag("house").length, "the room group holds all the House art");
-  assert(roomIds.includes("house.room-1.lvl-5.room--1-day-lvl--5"), "the highest level loads too");
+  assert.equal(roomIds.length, assets.idsByTag("house").length, "the room group names all the House art; the facade leaves the closed ones out");
 
   // Spec 159: the lazy layer runs the low pass, then the full pass in the same order; closed assets stay out until they
   // open; Spine and audio reach the cache; a later layer's full file follows its copy; a copy is not "ready" for a view.
@@ -280,6 +288,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     order.length = 0;
     await lazyFacade.setProgress({ level: 2 });
     assert.deepEqual(order, ["low/room/closed.webp", "room/closed.webp"], "progress opens the art: low copy, then the full file");
+    assert.deepEqual((await lazyFacade.whenGroup("closed")).ids, [], "the closed group no longer lists what opened");
     order.length = 0;
     await lazyFacade.setProgress({ level: 2 });
     assert.deepEqual(order, [], "unchanged progress loads nothing");

@@ -105,6 +105,11 @@ export class GameAssetPreloadFacade {
     const opened = [...this.#lockedIds].filter((id) => !next.has(id));
     this.#lockedIds = next;
     if (opened.length === 0 || !this.#plan.layers.some((layer) => layer.lazy && this.#layerRuns.has(layer.id))) return;
+    for (const group of this.#plan.layers.flatMap((layer) => layer.groups)) {
+      if (group.locked && this.#groupOutcomes.has(group.id)) {
+        this.#settleGroup(group, { status: "locked", ids: this.#plan.resolveGroup(group, this.#state), error: null });
+      }
+    }
     await this.#loadIds(opened, "prefetch", { low: true });
     await this.#loadIds(opened, "prefetch");
   }

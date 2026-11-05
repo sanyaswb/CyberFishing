@@ -5,11 +5,14 @@ export class RoomUpgradeService {
   #store;
   #now;
   #progress;
+  #onLevelOpened;
 
-  constructor({ config, store, now }) {
+  // onLevelOpened(level): the player started an upgrade, the art of that level is needed now (TK-216).
+  constructor({ config, store, now, onLevelOpened = null }) {
     this.#config = config;
     this.#store = store;
     this.#now = now;
+    this.#onLevelOpened = onLevelOpened;
     this.#progress = new RoomProgress(config, store.load());
   }
 
@@ -27,6 +30,7 @@ export class RoomUpgradeService {
     this.getView();
     const result = this.#progress.start(this.#now());
     if (result.ok && !this.#store.save(this.#progress.snapshot())) return { ok: false, reason: "save_failed" };
+    if (result.ok) this.#onLevelOpened?.(this.#progress.openedLevel);
     return result;
   }
 

@@ -9,7 +9,8 @@
 // - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine, the Fisherman's
 //   Room and the rest; then the full files in the same order. Audio is on demand (load: false): its players load it when the radio starts or a
 //   sound plays. A group with locked: true holds what game
-//   progress has not opened: it stays out until it opens, or until the player asks for it.
+//   progress has not opened (room levels above the opened one, TK-216): it stays out until it opens, or until the player
+//   asks for it. An asset named by another group too (the House tag) still waits for that.
 // - features: the code of features not needed for the first frame, warmed up after it one group at a time (start
 //   "ready"); the player's first use asks for a feature at once.
 // - readyOn: "low": the low-quality copies load first. In layer-one the group counts as loaded with them and the full
