@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.91 - One result in spec 157
+
+- TK-212: spec 157 has one new result (v0.49.90: 0.41 MB, 31 requests, 3 network steps on Fast 4G); closing TK-165 waits for the owner's phone report. No game change.
+
 ## v0.49.90 - Utils cleanup after spec 157
 
 - TK-211: every tool and dependency of the start's work still has a consumer, so nothing tracked is removed; stale release descriptions and measurements corrected. No game change.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.82 - Lazy load order and locked queue
 
 - TK-200 (spec 159): the third layer of the asset load plan runs low copies of backgrounds, items, then Spine, the Fisherman's Room and the rest, then the full files in the same order, audio last; art above the opened room level waits in a `locked` queue until progress opens it. Layer two loads each full file right after its copy. `LazyImageWarmUp` is removed. Asset-load-plan check asserts the order. Game-cycle report unchanged.
-
-## v0.49.81 - New VOLIA 77.2 recording
-
-- TK-198: the first VOLIA 77.2 track plays the owner's new recording (8:34) under the same asset id, as 32 kbit/s mono AAC like the other tracks; the master is in `asset-sources/`, the old `RADIO_VOLIA.m4a` is removed. Radio-receiver check asserts the file. Game-cycle report unchanged.

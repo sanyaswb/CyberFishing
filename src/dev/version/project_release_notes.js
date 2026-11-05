@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-212: spec 157 has one new result.",
   "TK-211: utils cleanup after spec 157: stale release descriptions corrected.",
   "TK-210: the spec 157 owner checks are one pass; finished parts archived.",
   "TK-209: the release check holds the start manifest to its 2.5 MB budget.",
