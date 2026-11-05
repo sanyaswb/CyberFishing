@@ -34,10 +34,20 @@ const METER_ENTRY = "src/entrypoints/game_startup_meter.entry.js";
 const START_IMPORTS = Object.freeze([
   "src/bootstrap/development/development_game_startup.js", // dev.html's entry: the timing buffer grows before this graph
 ]);
+// Spec 157 Q4: what a page's start may transfer by its manifest, in compressed bytes (the pages-release check holds it).
+const STARTUP_MANIFEST_BUDGET_BYTES = 2.5 * 1048576;
 // Text files the server compresses (docs/deployment.md); media go as they are.
 const COMPRESSED = /\.(?:js|mjs|css|json|svg|atlas|html|map)$/iu;
 
 class ReleaseBundleBuilder {
+  // Spec 157 R9: the manifest's overrun as text with its largest files, or null within the budget.
+  static startupBudgetOverrun(manifest, budget = STARTUP_MANIFEST_BUDGET_BYTES) {
+    if (manifest.totalBytes <= budget) return null;
+    const largest = [...manifest.files].sort((a, b) => b.bytes - a.bytes).slice(0, 5)
+      .map((entry) => `${entry.path} ${Math.round(entry.bytes / 1024)} KB`).join(", ");
+    return `${manifest.page}: the start transfers ${manifest.totalBytes} bytes, the budget is ${budget}; largest: ${largest}`;
+  }
+
   // releaseDir holds the committed release files already; pagePreloads(page) -> { styles, modules } (ReleaseFileSet).
   static build({ releaseDir, pages = PAGES, pagePreloads }) {
     const present = pages.filter((page) => fs.existsSync(path.join(releaseDir, page)));
@@ -288,7 +298,7 @@ function readOptions(argv) {
 }
 
 // Exported before the command runs: build-pages-release.js requires this module back (a cycle).
-module.exports = { ReleaseBundleBuilder, BUILD_DIR, START_IMPORTS };
+module.exports = { ReleaseBundleBuilder, BUILD_DIR, START_IMPORTS, STARTUP_MANIFEST_BUDGET_BYTES };
 
 if (require.main === module) {
   try {

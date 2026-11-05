@@ -7,7 +7,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { GitCommitTree, ReleaseFileSet, PagesReleaseBuilder } = require("../../build-pages-release.js");
-const { START_IMPORTS } = require("../../build-release.js");
+const { ReleaseBundleBuilder, START_IMPORTS, STARTUP_MANIFEST_BUDGET_BYTES } = require("../../build-release.js");
 
 const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, "../../..") });
 // The committed page's module entry (spec 157 R13: the release points it at the boot module).
@@ -176,6 +176,14 @@ try {
     assert.match(built.startup, /^build\/(index|dev)\.startup-[0-9A-F]{8}\.json$/u, `${name}: a content-hashed startup manifest`);
     assert.equal(manifest.totalBytes, manifest.files.reduce((sum, entry) => sum + entry.bytes, 0), `${name}: the total adds up`);
     assert(manifest.totalBytes === built.startupBytes && manifest.totalBytes > 100000, `${name}: the start's size is recorded`);
+    // Spec 157 R9: the start stays within its budget, and an oversized manifest is caught and names its largest files.
+    assert.equal(ReleaseBundleBuilder.startupBudgetOverrun(manifest), null, `${name}: the start manifest is within the budget`);
+    const oversized = { page: name, totalBytes: STARTUP_MANIFEST_BUDGET_BYTES + 1,
+      files: [{ path: "small.js", bytes: 1 }, { path: "huge.webp", bytes: STARTUP_MANIFEST_BUDGET_BYTES }] };
+    assert.match(ReleaseBundleBuilder.startupBudgetOverrun(oversized) ?? "", /budget is 2621440; largest: huge\.webp 2560 KB, small\.js/u,
+      `${name}: an oversized manifest is reported with its largest files`);
+    assert.equal(ReleaseBundleBuilder.startupBudgetOverrun({ ...oversized, totalBytes: STARTUP_MANIFEST_BUDGET_BYTES }), null,
+      "exactly the budget passes");
     for (const entry of manifest.files.slice(1)) assert(files.has(entry.path.split("?")[0]), `${name}: ${entry.path} is released`);
     for (const module of preloaded) assert(manifest.files.some((entry) => entry.path === module), `${name}: the manifest counts ${module}`);
     assert(manifest.files.some((entry) => entry.path.startsWith("assets/low-copies/locations/")),
