@@ -67,6 +67,7 @@ import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
 import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
 import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { markStartupReady } from "../production/startup_ready_signal.js";
+import { showStartupFailure } from "../production/startup_failure_composition.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -80,6 +81,7 @@ export function startDevelopmentGame() {
   requested.catch((error) => {
     if (startup === requested) startup = null;
     new ConsoleLogger().error("[Bootstrap] CyberFishing DEV startup failed.", error);
+    showStartupFailure();
   });
   return requested;
 }
@@ -279,7 +281,10 @@ async function startGame() {
       }}) : null;
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);
-    if (!started) windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+    if (!started) {
+      windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+      showStartupFailure();
+    }
     if (pageParams.get("screen") === "house") openHouse();
     compositionRoot.printStorageUsage();
     return game;

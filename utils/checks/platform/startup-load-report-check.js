@@ -267,6 +267,39 @@ async function checkStartupScreen() {
   const plain = new StartupLoadMeter({ documentRef: { querySelector: () => null, documentElement: { hasAttribute: () => false } },
     labels: STARTUP_LABELS, performanceRef: {}, createPerformanceObserver: assert.fail, createMutationObserver: assert.fail });
   assert.equal(plain.start(), false, "a page without the release's size shows the spinner only");
+
+  // Spec 157 R3: a failed start shows the error text and a retry button on the startup screen, once; retry reloads.
+  const { StartupFailureScreen } = await importSource("src/platform/browser/ui/startup_failure_screen.js");
+  const failurePage = (ready) => {
+    const appended = [];
+    const attributes = new Map();
+    const screen = { setAttribute: (name, value) => attributes.set(name, value), append: (...nodes) => appended.push(...nodes) };
+    const documentRef = { querySelector: (selector) => (selector === ".startup-loader" ? screen : null),
+      documentElement: { hasAttribute: (name) => name === readyAttribute && ready },
+      createElement: (tag) => ({ tag, listeners: new Map(), addEventListener(type, fn) { this.listeners.set(type, fn); } }) };
+    return { appended, attributes, documentRef };
+  };
+  const failed = failurePage(false);
+  let reloads = 0;
+  const failureScreen = new StartupFailureScreen({ documentRef: failed.documentRef, labels: STARTUP_LABELS, reload: () => { reloads += 1; } });
+  assert.equal(failureScreen.show(), true);
+  assert.equal(failed.attributes.has("data-startup-failed"), true, "the screen leaves its loading state");
+  assert.equal(failed.attributes.get("role"), "alert", "assistive technology hears the failure");
+  const [failureText, retryButton] = failed.appended;
+  assert.equal(failureText.textContent, STARTUP_LABELS.failed);
+  assert.deepEqual([retryButton.tag, retryButton.type, retryButton.textContent], ["button", "button", STARTUP_LABELS.retry]);
+  retryButton.listeners.get("click")();
+  assert.equal(reloads, 1, "retry reloads the page: a failed module fetch stays failed for the page's lifetime");
+  assert.equal(failureScreen.show(), true);
+  assert.equal(failed.appended.length, 2, "a second failure adds no second message");
+  const lateFailure = failurePage(true);
+  assert.equal(new StartupFailureScreen({ documentRef: lateFailure.documentRef, labels: STARTUP_LABELS, reload: assert.fail }).show(), false,
+    "a game that became ready keeps playing: nothing is shown");
+  assert.equal(lateFailure.appended.length, 0);
+  for (const page of ["index.html", "dev.html"]) {
+    const html = fs.readFileSync(path.join(ROOT_DIR, page), "utf8");
+    assert(html.includes(".startup-loader[data-startup-failed] .startup-loader__icon"), `${page}: the failure stops the ring`);
+  }
 }
 
 // Spec 157 R6 (TK-172): UI images are lazy before their source is set, so a hidden view requests nothing before the

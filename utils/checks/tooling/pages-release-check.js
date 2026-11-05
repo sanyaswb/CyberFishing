@@ -200,8 +200,14 @@ try {
     const boot = fs.readFileSync(path.join(release.releaseDir, built.boot), "utf8");
     // The source graph is fetched only under ?esm=1 (a normal start does not carry it).
     if (tree.has("src/entrypoints/game_startup_meter.entry.js")) {
-      assert(built.meter && boot.includes(`import "./${built.meter.slice("build/".length)}";`),
+      assert(built.meter && boot.includes(`import { showStartupFailure } from "./${built.meter.slice("build/".length)}";`),
         `${name}: the boot module imports the startup meter first`);
+      // Spec 157 R3: a bundle that cannot load reaches the startup screen's failure; the meter's bundle exports it.
+      assert(/\btry \{[^]*await import\([^]*\} catch \(error\) \{[^]*showStartupFailure\(\);/u.test(boot),
+        `${name}: the boot module answers a failed import with the startup failure`);
+      const meterCode = fs.readFileSync(path.join(release.releaseDir, built.meter), "utf8");
+      assert(/export\s*\{[^}]*\bas showStartupFailure\b|export\s*\{[^}]*\bshowStartupFailure\b/u.test(meterCode),
+        `${name}: the meter's bundle exports showStartupFailure`);
     }
     assert(boot.includes(`"./${built.esmGraph.slice("build/".length)}"`) && !boot.includes("src/bootstrap/"),
       `${name}: the boot fetches the ?esm=1 graph instead of carrying it`);

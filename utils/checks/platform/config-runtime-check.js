@@ -476,6 +476,23 @@ async function checkNativeProductionStartup() {
     assert.equal(surfaces, 1);assert.equal(surfaceDisposals, 1, "page cleanup disposes the coordinate surface exactly once");
     assert.equal(toolbars, 1);assert.equal(toolbarDisposals, 1, "page cleanup disposes the shared toolbar exactly once");
     assert.equal(startup.startProductionGame(), first, "completed single-shot startup retains its original promise");assert.equal(roots, 1);
+    // Spec 157 R3: a failed composition and a loop that does not start both reach the startup screen's failure.
+    let failures = 0;
+    const logged = [];
+    const startWith = (RootClass) => evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
+      CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
+      GameCompositionRoot: RootClass, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
+      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, showStartupFailure() { failures++; },
+      GameVersionBadge: { mountById() {} }, ConsoleLogger: class { error(...args) { logged.push(args); } },
+    }).startProductionGame();
+    const rootThat = (build) => class { build = build; getRuntimeConfig() { return config; } startDeferredAssetLoads() { assert.fail("no ready after a failure"); } };
+    const criticalAsset = new Error("location:lake critical assets failed");
+    await assert.rejects(startWith(rootThat(async () => { throw criticalAsset; })), criticalAsset, "the failure still rejects the startup");
+    await Promise.resolve();
+    assert.equal(failures, 1, "a failed composition shows the failure on the startup screen");
+    assert(logged.some((args) => args.includes(criticalAsset)), "the cause stays in the console");
+    await startWith(rootThat(async () => ({ start: () => false, dispose() {} })));
+    assert.equal(failures, 2, "a loop that does not start shows it too");
   }
 }
 function checkNativeDevelopmentDisplays() {
@@ -736,6 +753,7 @@ async function checkNativeDevelopmentLifecycle() {
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
+    'src/bootstrap/production/startup_failure_composition.js':{showStartupFailure(){counts.startupFailure=(counts.startupFailure||0)+1;}},
     'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
     'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
     'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
@@ -796,6 +814,7 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const failed=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(), failed);
   const startupFailure = new Error('fixture build failure');rejectBuild(startupFailure);await assert.rejects(failed,/fixture build failure/);
   assert.equal(startupErrors.length, 1, 'a failed shared startup reports once');
+  assert.equal(counts.startupFailure, 1, 'a failed DEV startup shows the failure on the startup screen (spec 157 R3)');
   assert(startupErrors[0].includes(startupFailure), 'startup reports the original error with its stack');
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;

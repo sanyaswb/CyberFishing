@@ -14,6 +14,7 @@ import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
 import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
 import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { markStartupReady } from "./startup_ready_signal.js";
+import { showStartupFailure } from "./startup_failure_composition.js";
 
 let startup;
 // One loop guard per page, shared by every game this realm starts.
@@ -24,7 +25,11 @@ export function startProductionGame() {
   if (startup) return startup;
   const requested = startGame();
   startup = requested;
-  requested.catch(() => { if (startup === requested) startup = null; });
+  requested.catch((error) => {
+    if (startup === requested) startup = null;
+    new ConsoleLogger().error("[Bootstrap] CyberFishing startup failed.", error);
+    showStartupFailure();
+  });
   return requested;
 }
 
@@ -81,6 +86,7 @@ async function startGame() {
   if (disposed) return game;
   if (!started) {
     new ConsoleLogger().error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+    showStartupFailure();
     return game;
   }
   markStartupReady({ marks: startupMarks, windowTarget, onReady: () => compositionRoot.startDeferredAssetLoads() });

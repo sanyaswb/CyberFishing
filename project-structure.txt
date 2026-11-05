@@ -291,6 +291,7 @@
 │  │     ├── radio_feature_composition.js
 │  │     ├── rod_animation_composition.js
 │  │     ├── scene_layer_composition.js
+│  │     ├── startup_failure_composition.js
 │  │     ├── startup_load_meter_composition.js
 │  │     ├── startup_ready_signal.js
 │  │     ├── time_display_composition.js
@@ -1082,6 +1083,7 @@
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
 │           ├── radio_hud_indicator.js
+│           ├── startup_failure_screen.js
 │           ├── startup_load_meter.js
 │           └── time_display.js
 └── vendor

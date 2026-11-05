@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.87 - A failed start says so
+
+- TK-208 (spec 157 R3): a failed start shows an error text and a retry button on the startup screen instead of an endless ring, also when the game's bundle cannot load; the cause goes to the console. Game-cycle report unchanged.
+
 ## v0.49.86 - One stylesheet and one start bundle
 
 - TK-206 (spec 160 stage 1): the release links one minified stylesheet instead of 32; the start's small modules are static imports and each page is built on its own (JS files 20 -> 10); the first layer's image groups load together (network steps 4 -> 3); release notes moved to DEV. Fast 4G: 74 -> 31 requests, 0.47 -> 0.41 MB. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.78 - Inventory vector icons instead of emoji
 
 - TK-195 (spec 158): items without art, filters, sort directions and the subfilter arrow use outline symbols of the sections sprite (`ui-icon` block); an item's `icon` now names a symbol. The rod and hook slot icons are redrawn. `InventoryDomFactory.glyph()`, `GlyphInkMetrics` and `ui-glyph.css` are removed. Ui-components check rejects an icon the sprite does not draw. Game-cycle report unchanged.
-
-## v0.49.77 - Inventory control follows the configuration from the first frame
-
-- TK-194: the radial selector or the classic buttons show from the first frame as `ui.inventorySelector.radialEnabled` says; the classic buttons no longer stand in for the selector while its artwork loads. Sectors show sprite symbols until the artwork arrives and keep them if it fails. Inventory-selector check asserts the behavior. Game-cycle report unchanged.

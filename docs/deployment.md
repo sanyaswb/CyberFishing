@@ -15,13 +15,14 @@ npm run build:release -- --out <empty dir> [--ref <commit>]
 | Path | What it is | Cache |
 | --- | --- | --- |
 | `index.html`, `dev.html`, `ui-catalog.html` | the pages; each game page's one module script loads its boot module | no cache |
-| `build/<page>.boot-<hash>.js` | boot module: imports the bundle; with `?esm=1` in the address it adds a `modulepreload` for every source module of the page and imports the source entry instead (debugging on a phone) | immutable |
-| `build/<entry>-<hash>.js`, `build/chunks/<name>-<hash>.js` | esbuild bundles (`--bundle --format=esm --splitting --minify`), split into shared and lazy chunks | immutable |
-| `build/**/*.js.map` | source maps | immutable (publication: see below) |
+| `build/<page>.boot-<hash>.js` | boot module: imports the bundle; with `?esm=1` in the address it adds a `modulepreload` for every source module of the page and imports the source entry instead (debugging on a phone); a bundle that cannot load shows the failure and a retry button on the startup screen | immutable |
+| `build/<entry>-<hash>.js`, `build/chunks/<name>-<hash>.js` | esbuild bundles (`--bundle --format=esm --splitting --minify`), one build per page, split into shared and lazy chunks | immutable |
+| `build/<page>.styles-<hash>.css` | the page's stylesheets in page order as one minified file; the release page links only this one, also under `?esm=1` | immutable |
+| `build/**/*.map` | source maps | immutable (publication: see below) |
 | `src/`, `vendor/` | source modules and vendor modules for the `?esm=1` fallback, vendor licences | short (e.g. 10 min) or revalidate |
 | `assets/` | images, Spine exports, audio | short (e.g. 10 min) or revalidate |
 
-Each game page of the folder announces, right after `<head>`, a `<link rel="preload" as="style">` per stylesheet and a
+Each game page of the folder announces, right after `<head>`, a `<link rel="preload" as="style">` for its stylesheet and a
 `<link rel="modulepreload">` for its boot module, the bundle and the chunks the start loads (the static ones and those of
 the start's own `import()` calls, `START_IMPORTS` in `utils/build-release.js`), so the browser fetches them in parallel;
 a feature loaded after `ready` or on first use stays out of the preloads (spec 157 R12). `npm run release:pages -- --site
@@ -40,8 +41,9 @@ server root (same start as Pages: 1.56 s cold on Fast 4G, 4 request waves).
   `text/html`, `.svg` `image/svg+xml`, `.webp` `image/webp`, `.atlas` `text/plain`, `.mp3` `audio/mpeg`, `.m4a`
   `audio/mp4`. Module scripts fail with any other type for `.js`.
 - **Compression:** gzip or brotli for `.js`, `.css`, `.json`, `.map`, `.svg`, `.atlas`, `.html` (images and audio are
-  compressed already). Startup budgets of spec 157 count compressed bytes.
-- **HTTP/2** (or HTTP/3): the release still requests ~70 files before the first frame; HTTP/1.1 with 6 connections
+  compressed already). Startup budgets of spec 157 count compressed bytes. Prefer brotli on the game server: the main
+  start bundle is about 20 % smaller than with gzip, with no code change (Pages offers gzip only).
+- **HTTP/2** (or HTTP/3): the release still requests ~30 files before the first frame; HTTP/1.1 with 6 connections
   per host is slower.
 - **Caching:** the hashed files under `build/` never change for a name: `Cache-Control: public, max-age=31536000,
   immutable`. The pages: `no-cache` (revalidate every time), so a new release is seen at once. `src/`, `vendor/`,
@@ -51,7 +53,8 @@ server root (same start as Pages: 1.56 s cold on Fast 4G, 4 request waves).
   - `script-src 'self'` — the pages load module scripts of the same origin only; there are no inline scripts;
   - `worker-src 'self' blob:` — PixiJS starts workers from `blob:` URLs (`vendor/pixi/8.22.0/pixi-scene.js`);
   - `style-src 'self' 'unsafe-inline'` — the static startup screen is an inline `<style>` in each page (spec 157 D0;
-    a hash of that block instead of `'unsafe-inline'` also works, it changes only with the page);
+    a hash of that block instead of `'unsafe-inline'` also works, it changes only with the page). A boot module that
+    cannot load at all leaves the screen's ring running: with no inline scripts nothing on the page can report it;
   - `img-src 'self' blob: data:`, `media-src 'self'` (radio streams), `connect-src 'self'` plus the API origin once
     there is a backend.
 - **Source maps:** published on GitHub Pages; on the production server publishing them is the owner's decision (for

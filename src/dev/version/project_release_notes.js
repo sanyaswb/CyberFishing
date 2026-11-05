@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-208: a failed start shows its error and a retry button on the startup screen.",
   "TK-206: one stylesheet and one start bundle in the release; the first layer's images load together.",
   "TK-203: the Fisherman's House is open: art of every room level loads lazily in the third layer.",
   "TK-202: DEV overlay grows to its text on wide layouts and scrolls on phones; loading rows have no hints; zoom and metric clicks fixed.",
