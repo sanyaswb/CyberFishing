@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.0 - Keepnet and asset folder fixes
+
+- Minor release of v0.49.98-0.49.100: only the current keepnet stage loads after the first frame, the keepnet fish card shows its whole picture, and every item's files lie in one folder per type with --low/--scene/--spine name suffixes. Game-cycle report unchanged.
+
 ## v0.49.100 - One folder per item type
 
 - TK-221: every file of an item lies in its type folder with a suffix name: low copies beside their image (name--low.webp), scene art name--scene.webp, Spine exports name--spine.*; the clone folders low-copies, floats-scene, rods-scene and animations are gone, and the unused lobby and loader art left the registry. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.92 - A closed inventory is not rendered at the start
 
 - TK-213 (spec 160, the owner's cheaper option instead of stage 2): the closed inventory is no longer rendered during the start, and a lazy feature that becomes ready refreshes it only when open; the first opening renders the list itself. Game-cycle report unchanged.
-
-## v0.49.91 - One result in spec 157
-
-- TK-212: spec 157 has one new result (v0.49.90: 0.41 MB, 31 requests, 3 network steps on Fast 4G); closing TK-165 waits for the owner's phone report. No game change.
