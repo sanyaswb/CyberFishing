@@ -25,6 +25,7 @@ export class VictoryViewModelBuilder {
     const rarity = fish.rarity && Number.isFinite(Number(fish.rarity.halfSteps)) ? fish.rarity : UNKNOWN_RARITY;
     const theme = this.#themeResolver.resolve({ level, maxLevel: fish.maxLevel, isUnique: fish.isUnique === true }, 0);
     const extraStats = Array.isArray(fish.victoryStats) ? fish.victoryStats : [];
+    const species = this.#species.get(fish.id);
     return {
       name: String(fish.name || "Unknown fish"),
       level,
@@ -36,8 +37,13 @@ export class VictoryViewModelBuilder {
       rarity,
       imagePath: this.#resolveFishImage(fish),
       color: Array.isArray(theme?.color) ? theme.color : [255, 255, 255],
+      // TK-231: the panel is tinted like an inventory card of that quality (semi-transparent), the glow only animates
+      // for a unique (legendary) fish.
+      backgroundAlpha: Number.isFinite(theme?.background?.alpha) ? theme.background.alpha : 0.35,
       animated: theme?.isAnimated === true,
-      scale: this.#scale(this.#species.get(fish.id), weightKg),
+      // TK-224/231: the size system of the keepnet card (level of maxLevel) also sizes the fish here.
+      artSize: species?.visual?.artSizeByLevel === true ? { step: level, of: Number(species.weightConfig?.maxLevel) } : null,
+      scale: this.#scale(species, weightKg),
       extraStats: extraStats.map((stat) => String(stat?.label || stat?.value || "")).filter(Boolean),
     };
   }

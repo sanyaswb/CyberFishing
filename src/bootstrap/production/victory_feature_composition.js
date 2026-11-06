@@ -14,7 +14,7 @@ export function composeVictoryFeature({ documentRef, assets, mountNode, rarityVi
     resolveFishImage, species });
   const window = new VictoryWindow({ domFactory, mountNode, labels: VICTORY_LABELS,
     stars: new RarityStarsRenderer({ documentRef }),
-    scale: new VictoryWeightScaleRenderer({ documentRef, format: VICTORY_LABELS.scaleValue }),
+    scale: new VictoryWeightScaleRenderer({ documentRef, format: VICTORY_LABELS.scaleValue, formatCurrent: VICTORY_LABELS.scaleCurrent }),
     icons: { sprite: "ui.status-icons", weight: "ui.inventory.weight" } });
   return Object.freeze({
     show: (fish, handlers) => window.show(viewModels.build(fish), handlers),

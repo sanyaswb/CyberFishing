@@ -7,12 +7,14 @@ const WIDTH = 320, LEFT = 18, RIGHT = 302, TRACK_Y = 26, TICKS = 10;
 export class VictoryWeightScaleRenderer {
   #document;
   #format;
+  #formatCurrent;
 
-  // format(kg): the weight text of the labels.
-  constructor({ documentRef, format }) {
+  // format(kg): the ends' and the trophy's weight text; formatCurrent(kg): the caught weight, unrounded (TK-231).
+  constructor({ documentRef, format, formatCurrent = format }) {
     if (typeof documentRef?.createElementNS !== "function") throw new TypeError("VictoryWeightScaleRenderer requires documentRef");
     this.#document = documentRef;
     this.#format = format;
+    this.#formatCurrent = formatCurrent;
   }
 
   // The ruler for { minKg, maxKg, weightKg, trophyKg }, or null without a scale.
@@ -23,7 +25,8 @@ export class VictoryWeightScaleRenderer {
     svg.append(this.#node("rect", { class: "victory-scale__track", x: LEFT, y: TRACK_Y, width: RIGHT - LEFT, height: 6, rx: 3 }));
     if (scale.trophyKg !== null) {
       const start = x(scale.trophyKg);
-      svg.append(this.#node("rect", { class: "victory-scale__trophy", x: start, y: TRACK_Y, width: RIGHT - start, height: 6, rx: 3 }));
+      svg.append(this.#node("rect", { class: "victory-scale__trophy", x: start, y: TRACK_Y - 2, width: RIGHT - start, height: 10, rx: 4 }));
+      svg.append(this.#node("line", { class: "victory-scale__trophy-start", x1: start, x2: start, y1: TRACK_Y - 6, y2: TRACK_Y + 14 }));
       svg.append(this.#text(`≥ ${this.#format(scale.trophyKg)}`, Math.min(RIGHT - 40, Math.max(LEFT + 60, start)), 54,
         "middle", "victory-scale__label victory-scale__label--trophy"));
     }
@@ -36,7 +39,7 @@ export class VictoryWeightScaleRenderer {
     svg.append(this.#text(this.#format(scale.maxKg), RIGHT, 54, "end", "victory-scale__label"));
     const markerX = x(scale.weightKg);
     svg.append(this.#node("path", { class: "victory-scale__marker", d: `M${markerX - 6} 13h12l-6 9z` }));
-    svg.append(this.#text(this.#format(scale.weightKg), Math.min(RIGHT - 24, Math.max(LEFT + 24, markerX)), 10, "middle",
+    svg.append(this.#text(this.#formatCurrent(scale.weightKg), Math.min(RIGHT - 24, Math.max(LEFT + 24, markerX)), 10, "middle",
       "victory-scale__label victory-scale__label--current"));
     return svg;
   }

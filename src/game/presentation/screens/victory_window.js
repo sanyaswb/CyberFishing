@@ -1,3 +1,5 @@
+import { applyArtSize } from "../ui/art_size.js";
+
 // The victory window (spec 161): a DOM dialog over the game, built once and filled when a fish is caught. The blur
 // behind it is the compositor's backdrop filter (no per-frame canvas work). The picture opens the fish on the whole
 // screen; a click there (or Escape) brings the panel back. Claim and Release report their action to the victory state.
@@ -42,14 +44,14 @@ export class VictoryWindow {
     this.#picture.setAttribute("aria-label", labels.showFish);
     this.#image = this.#fishImage("victory-window__image");
     this.#level = dom.element("span", "victory-window__level");
-    this.#picture.append(this.#image, this.#level);
+    this.#picture.append(this.#image);
     this.#details = dom.element("div", "victory-window__details");
     this.#stats = dom.element("ul", "victory-window__stats");
     const actions = dom.element("div", "victory-window__actions");
     this.#claim = dom.button("victory-window__action victory-window__action--primary", labels.claim);
     this.#release = dom.button("victory-window__action", labels.release);
     actions.append(this.#claim, this.#release);
-    this.#panel.append(dom.element("p", "victory-window__eyebrow", labels.title), this.#title, this.#picture,
+    this.#panel.append(this.#level, dom.element("p", "victory-window__eyebrow", labels.title), this.#title, this.#picture,
       this.#details, this.#stats, actions);
     this.#zoom = dom.button("victory-window__zoom", "", { title: labels.closeFish });
     this.#zoom.setAttribute("aria-label", labels.closeFish);
@@ -73,6 +75,8 @@ export class VictoryWindow {
     const labels = this.#labels;
     this.#onAction = onAction;
     this.#root.style.setProperty("--victory-color", view.color.join(", "));
+    this.#root.style.setProperty("--victory-background-alpha", String(view.backgroundAlpha));
+    applyArtSize(this.#picture, view.artSize);
     this.#root.classList.toggle("victory-window--animated", view.animated);
     this.#title.textContent = view.name;
     for (const image of [this.#image, this.#zoomImage]) {

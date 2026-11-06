@@ -19,7 +19,7 @@ async function main() {
   // View model (D4): crucian has level ranges and a trophy weight; perch has neither (its depth range is used).
   const themes = [];
   const builder = new VictoryViewModelBuilder({ species: FISH_DB, resolveFishImage: (fish) => `img/${fish.id}--${fish.level}.webp`,
-    themeResolver: { resolve: (fish) => { themes.push(fish); return { color: [10, 20, 30], isAnimated: fish.isUnique }; } } });
+    themeResolver: { resolve: (fish) => { themes.push(fish); return { color: [10, 20, 30], isAnimated: fish.isUnique, background: { alpha: 0.2 } }; } } });
   const crucian = builder.build({ id: "crucian_stalker", name: "Карась", level: 3, maxLevel: 6, weight: 1.2, isTrophy: true,
     anomaly: "inside", isUnique: true, rarity: { halfSteps: 7, maxHalfSteps: 10, unitsPerStar: 2 } });
   assert.deepEqual(crucian.scale, { minKg: 0.05, maxKg: 5, weightKg: 1.2, trophyKg: 1 }, "the level ranges and the trophy weight");
@@ -30,6 +30,8 @@ async function main() {
     "without level ranges the depth range; the marker stays on the ruler; no trophy segment");
   assert.deepEqual([perch.hasAnomaly, perch.isTrophy, perch.rarity.isResolved], [false, false, false]);
   assert.equal(builder.build({ id: "unknown", weight: 1 }).scale, null, "an unknown species has no ruler");
+  // TK-231: the size system of the keepnet card, the quality tint's alpha.
+  assert.deepEqual([crucian.artSize, perch.artSize, crucian.backgroundAlpha], [{ step: 3, of: 6 }, { step: 1, of: 5 }, 0.2]);
 
   // Window.
   const documentRef = new TestDocument();
@@ -38,7 +40,7 @@ async function main() {
   documentRef.body.append(mountNode);
   const view = new VictoryWindow({ domFactory: new InventoryDomFactory(documentRef, { assets }), mountNode, labels: VICTORY_LABELS,
     stars: new RarityStarsRenderer({ documentRef }),
-    scale: new VictoryWeightScaleRenderer({ documentRef, format: VICTORY_LABELS.scaleValue }),
+    scale: new VictoryWeightScaleRenderer({ documentRef, format: VICTORY_LABELS.scaleValue, formatCurrent: VICTORY_LABELS.scaleCurrent }),
     icons: { sprite: "ui.status-icons", weight: "ui.inventory.weight" } });
   const root = view.element;
   assert(root.hidden && mountNode.children[0] === root, "built once, hidden until a catch");
@@ -48,6 +50,14 @@ async function main() {
   assert(!root.hidden && one("victory-window__title").textContent === "Карась" && one("victory-window__image").src ===
     "img/crucian_stalker--3.webp" && one("victory-window__level").textContent === "3");
   assert.equal(root.style.getPropertyValue("--victory-color"), "10, 20, 30");
+  assert.equal(root.style.getPropertyValue("--victory-background-alpha"), "0.2", "the panel takes the quality tint's alpha");
+  const picture = one("victory-window__picture");
+  assert(picture.classList.contains("art-size") && picture.style.getPropertyValue("--art-size-rank") === "0.6",
+    "a level-3 fish of six is drawn smaller in the invisible picture box (TK-231)");
+  assert(one("victory-window__panel").children[0] === one("victory-window__level") && !picture.contains(one("victory-window__level")),
+    "the level sits in the panel's corner, not on the picture");
+  assert.equal(documentRef.byClass("victory-scale__label--current")[0].textContent, "1.200", "the caught weight is not rounded");
+  assert.deepEqual(documentRef.byClass("victory-window__action").map((button) => button.textContent), ["Забрати", "Відпустити"]);
   assert(root.classList.contains("victory-window--animated"), "a unique fish's glow animates in CSS");
   const stats = one("victory-window__stats").children;
   const hrefs = (stat) => stat.children.filter((child) => child.tagName === "svg").map((icon) => icon.children[0].getAttribute("href"));
