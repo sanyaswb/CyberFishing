@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.2 - convert-images v2
+
+- TK-223: convert-images is rewritten: batch/thumbnails/low-copies/spine-region commands, a guided menu and help, files in parallel, failures fail the run, --masters moves masters to asset-sources, --max-size and --dry-run; output bytes unchanged.
+
 ## v0.50.1 - Fish art without empty edges
 
 - TK-222: convert-images --trim cuts empty edges; the fish art is re-encoded without them, so the fish is larger in keepnet cards; the catch panel and the aquarium draw it whole with its proportions. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.94 - A hung check no longer counts as passed
 
 - TK-215: the check runner requires exit code 0 and a pass line at the end of stdout, because Node exits with 0 when an awaited promise never settles (incident I-13, check `check-runner`). Game-cycle report unchanged.
-
-## v0.49.93 - T-full: the time of the full load
-
-- TK-214: a `startup:full-load` mark when every asset load plan layer has settled, without closed and on-demand content; shown as T-full in the DEV overlay «ЗАВАНТАЖЕННЯ» and its JSON, and by `npm run measure:startup -- --full`. Game-cycle report unchanged.

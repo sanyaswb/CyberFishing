@@ -89,7 +89,9 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   parent is off is blocked and highlights the parent; showing never depends on editing switches.
 - **Read real data, do not change it for display.** DEV previews read game values through the game's own classes; they
   never edit item, fish or physics values unless the owner asks for that exact value.
-- **Image conversions** only through `utils/convert-images.js` (`--batch`); the master moves to `asset-sources/`.
+- **Image conversions** only through `utils/convert-images.js` (no arguments = menu, `help` = all options):
+  `batch --masters` converts and moves each master to `asset-sources/`; `--trim` cuts empty edges (the card's padding sets the
+  margin, TK-222).
 - **Gameplay changes** need a `docs/gameplay_backlog.md` entry and an unchanged game-cycle report or an owner-approved
   re-baseline with its reason (DEVELOPMENT_RULES "Gameplay changes").
 - **Shell edits:** prefer the file tools; large heredocs with quotes or backticks break in this shell, so write a small
