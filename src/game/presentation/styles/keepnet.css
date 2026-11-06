@@ -74,10 +74,12 @@
 }
 .ui-surface--desktop-hover .keepnet-section__group:hover,
 .ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__group:active { background: var(--inventory-equipment-tab-active); border-color: var(--inventory-equipment-tab-border); }
-.keepnet-section__group .keepnet-section__thumbnail { position: relative; flex: 1; min-height: 0; }
+.keepnet-section__group .keepnet-section__thumbnail { position: relative; }
 .keepnet-section__group .keepnet-section__image { position: absolute; inset: 0; height: 100%; max-height: none; }
-.keepnet-section__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: var(--inventory-equipment-cell); border-radius: 5px; overflow: hidden; }
-.keepnet-section__image { display: block; width: 100%; height: 112px; object-fit: cover; object-position: center; padding: var(--keepnet-image-inset); }
+/* TK-220: the picture box has a fixed size (flex: none: long text grows the card, never shrinks or moves the box) and the
+   whole fish fits in it (contain). */
+.keepnet-section__thumbnail { display: grid; place-items: center; flex: none; width: 100%; height: 112px; background: var(--inventory-equipment-cell); border-radius: 5px; overflow: hidden; }
+.keepnet-section__image { display: block; width: 100%; height: 112px; object-fit: contain; object-position: center; padding: var(--keepnet-image-inset); }
 .keepnet-section__image-fallback { width: 3rem; height: 3rem; }
 .keepnet-section__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #d4d4d4; color: #1c1c1c; font-weight: 800; text-align: center; }
 .keepnet-section__back, .keepnet-section__action {
@@ -110,7 +112,7 @@
   .keepnet-section__group { padding: 4px; }
   .keepnet-section__group .keepnet-section__fish-name,
   .keepnet-section__group .keepnet-section__fish-weight { display: none; }
-  .keepnet-section__group .keepnet-section__thumbnail { height: auto; }
+  .keepnet-section__group .keepnet-section__thumbnail { flex: 1; min-height: 0; height: auto; }
   .keepnet-section__badge { right: 4px; bottom: 4px; min-width: 20px; padding: 1px 4px; font-size: 11px; }
   .keepnet-section__fish { padding: 4px; gap: 4px; font-size: 11px; }
   .keepnet-section__fish .keepnet-section__thumbnail { aspect-ratio: 1; height: auto; }

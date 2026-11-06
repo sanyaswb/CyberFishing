@@ -57,18 +57,20 @@ export class KeepnetCardRenderer {
     return { element: card, focusables, update };
   }
 
+  // The fish's image, or the placeholder icon when it has none or its file fails. Only one of them is in the box: an
+  // SVG element has no hidden property, so a hidden placeholder stayed visible over the fish (TK-220).
   #image(fish) {
     const media = this.#el("div", "keepnet-section__thumbnail");
-    const fallback = createItemPlaceholderIcon(this.#dom, "fish", "keepnet-section__image-fallback");
-    media.append(fallback);
-    if (fish.imagePath) {
-      const image = this.#el("img", "keepnet-section__image");
-      image.alt = fish.name; image.loading = "lazy"; image.decoding = "async";
-      fallback.hidden = true;
-      image.addEventListener("error", () => { image.hidden = true; fallback.hidden = false; }, { once: true });
-      image.src = this.#fishArt.thumbnailPath(fish.imagePath);
-      media.append(image);
+    const fallback = () => createItemPlaceholderIcon(this.#dom, "fish", "keepnet-section__image-fallback");
+    if (!fish.imagePath) {
+      media.append(fallback());
+      return media;
     }
+    const image = this.#el("img", "keepnet-section__image");
+    image.alt = fish.name; image.loading = "lazy"; image.decoding = "async";
+    image.addEventListener("error", () => image.replaceWith(fallback()), { once: true });
+    image.src = this.#fishArt.thumbnailPath(fish.imagePath);
+    media.append(image);
     return media;
   }
   #button(className, text, key, handler) {

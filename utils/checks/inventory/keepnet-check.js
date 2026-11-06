@@ -303,15 +303,18 @@ async function main() {
   assert.deepEqual(images.map((image) => image.src), [A_THUMB, B_THUMB, A_THUMB], "a caught fish shows its image's low copy");
   assert(documentRef.byClass("keepnet-section__fish-rarity")[0].textContent.includes("1,5 / 6"));
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
+  // TK-220: a fish with an image has only the image in its box (the placeholder SVG cannot be hidden by a property).
+  assert(images.every((image) => image.parentNode.children.length === 1), "no placeholder icon next to a fish's image");
+  const box = images[0].parentNode;
   images[0].fire("error");
-  assert.equal(images[0].hidden, true);
-  assert.equal(images[0].parentNode.children[0].hidden, false, "missing image gets a stable fallback");
+  assert.equal(box.children.length, 1, "a missing image is replaced, not hidden");
+  assert(box.children[0].className.includes("keepnet-section__image-fallback"), "missing image gets a stable fallback");
   const select = documentRef.byKey("bait:select");
   select.focus();
   content.scrollTop = 137;
   now += 1000; ui.refresh();
   assert.equal(documentRef.activeElement, select, "countdown refresh retains focus");
-  assert.equal(documentRef.byClass("keepnet-section__image")[0], images[0], "timer refresh does not reload images");
+  assert.equal(documentRef.byClass("keepnet-section__image")[0], images[1], "timer refresh does not reload images");
   assert.equal(documentRef.byClass("keepnet-section__capacity")[0], scale, "timer refresh retains the shared scale node");
   assert.equal(content.scrollTop, 137);
   assert(documentRef.byClass("keepnet-section__fish-timer")[2].textContent.includes("0:09"));

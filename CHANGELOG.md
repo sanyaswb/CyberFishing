@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.49.99 - Keepnet fish card picture
+
+- TK-220: a fish card in the keepnet shows only the fish's picture (the placeholder icon stayed visible over it and pushed it down, where it was cropped); the picture box has a fixed size, the whole fish fits, long text no longer moves it. Game-cycle report unchanged.
+
 ## v0.49.98 - Only the current keepnet stage after the first frame
 
 - TK-219: right after the first frame only the keepnet stage the player sees now loads (an 80 % keepnet after a cleared cache shows its own art first); the other stages load with the items of the lazy third layer. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.90 - Utils cleanup after spec 157
 
 - TK-211: every tool and dependency of the start's work still has a consumer, so nothing tracked is removed; stale release descriptions and measurements corrected. No game change.
-
-## v0.49.89 - One pass of the spec 157 owner checks
-
-- TK-210: the spec 157 owner checks in tasks.md are one pass (a cold phone report and a short list of visible things); the finished parts of TK-165, TK-173-179 and the closed R12 question are in the archive. No game change.
