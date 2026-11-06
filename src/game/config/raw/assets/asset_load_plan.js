@@ -5,7 +5,8 @@
 // assets that no group names land in the implicit last group "unassigned" of layer-three and load there.
 // - layer-one: the first frame; the game is ready only when it has loaded (start "composition"). Its groups share one
 //   priority: a later priority waits for the earlier one and is one more request wave of the start (spec 160).
-// - layer-two: the full game cycle, right after the first frame (start "ready").
+// - layer-two: the full game cycle, right after the first frame (start "ready"); of the keepnet only the stage the
+//   player sees now, the other stages are items of layer-three (fishing takes long enough, TK-219).
 // - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine, the Fisherman's
 //   Room and the rest; then the full files in the same order. Audio is on demand (load: false): its players load it when the radio starts or a
 //   sound plays. A group with locked: true holds what game
@@ -34,7 +35,7 @@ export const ASSET_LOAD_PLAN = {
         { id: "depth-icons", label: "Іконки вибору глибини", priority: 1, readyOn: "low", assets: [{ source: "hud.depthIcons" }] },
         { id: "selector", label: "Арт селектора інвентаря", priority: 1, readyOn: "low",
           assets: [{ id: "ui.inventory-sections" }, { id: "items.briefcases.briefcase--1--close" }, { id: "items.keepnet.keepnet--0" }] },
-        { id: "keepnet-stages", label: "Стадії садка", priority: 1, readyOn: "low", assets: [{ tag: "keepnet" }] },
+        { id: "keepnet-stage", label: "Поточна стадія садка", priority: 1, readyOn: "low", assets: [{ source: "keepnet.currentStage" }] },
       ],
     },
     {
@@ -52,7 +53,7 @@ export const ASSET_LOAD_PLAN = {
         { id: "feature-victory", label: "Екран перемоги", priority: 3, assets: [{ module: "victory" }] },
         { id: "lazy-backgrounds", label: "Фони інших локацій", priority: 4, assets: [{ source: "location.elsewhere" }] },
         { id: "lazy-items", label: "Предмети інвентаря", priority: 5,
-          assets: [{ tag: "baits" }, { tag: "batteries" }, { tag: "briefcases" }, { tag: "floats" }, { tag: "nets" },
+          assets: [{ tag: "baits" }, { tag: "batteries" }, { tag: "briefcases" }, { tag: "floats" }, { tag: "keepnet" }, { tag: "nets" },
             { id: "items.boats.boat-lvl--3_bait" }, { id: "items.boats.boat-lvl--3_no-bait" }, { id: "items.radio.radio-receiver" },
             { id: "items.rods.bamboo-rod-ecip-v1" }, { id: "items.aquarium-feed-simple" }, { id: "items.aquarium-feed-good" },
             { id: "items.aquarium-feed-premium" }] },

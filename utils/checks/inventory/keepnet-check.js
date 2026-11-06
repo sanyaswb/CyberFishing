@@ -68,9 +68,17 @@ async function main() {
   const { createAssetLoadSources } = await import("../../../src/bootstrap/production/asset_load_sources.js");
   const loadPlan = new AssetLoadPlan({ plan: ASSET_LOAD_PLAN, registry: assets,
     sources: createAssetLoadSources({ locations: { map: {} }, itemDb: {} }) });
-  const stagesGroup = loadPlan.layer("layer-two").groups.find((group) => group.id === "keepnet-stages");
-  assert.deepEqual(loadPlan.resolveGroup(stagesGroup).sort(), KEEPNET_ART_STAGES.map((stage) => stage.imageAsset).sort(),
-    "every keepnet stage warms up after the first frame (the plan's layer-two)");
+  // TK-219: right after the first frame only the stage the player sees now; the other stages are items of layer-three.
+  const stageGroup = loadPlan.layer("layer-two").groups.find((group) => group.id === "keepnet-stage");
+  assert.deepEqual(loadPlan.resolveGroup(stageGroup, {}), [artwork.resolve(0)], "an empty keepnet: its first stage");
+  assert.deepEqual(loadPlan.resolveGroup(stageGroup, { keepnetPercent: 80 }), ["items.keepnet.keepnet--80"],
+    "a keepnet at 80 % after a cleared cache: its own stage first");
+  assert.equal(loadPlan.layer("layer-two").groups.flatMap((group) => loadPlan.resolveGroup(group, { keepnetPercent: 80 }))
+    .filter((id) => id.startsWith("items.keepnet.") && id !== "items.keepnet.keepnet--0").length, 1,
+    "layer-two loads no other stage (stage 0 is the selector's art)");
+  const itemsGroup = loadPlan.layer("layer-three").groups.find((group) => group.id === "lazy-items");
+  assert(KEEPNET_ART_STAGES.every((stage) => loadPlan.resolveGroup(itemsGroup, {}).includes(stage.imageAsset)),
+    "every keepnet stage loads with the items of layer-three");
   artworkDocument.body.append(artworkView.summaryNode, artworkView.contentNode);
   // Spec 157 TK-174: until the game is ready the toolbar button shows the sections sprite's keepnet symbol, and its art
   // is lazy and not in the page (not requested); showShortcutArtwork() requests it and swaps it in once it has loaded.

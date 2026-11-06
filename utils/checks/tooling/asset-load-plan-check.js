@@ -221,7 +221,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     "the first layer's groups load together: no extra request wave");
   const second = groupIds("layer-two");
   assert.deepEqual(second["location-phases"], ["locations.test.bg_test--evening", "locations.test.bg_test--night"]);
-  assert.equal(second["keepnet-stages"].length, 6);
+  assert.deepEqual(second["keepnet-stage"], ["items.keepnet.keepnet--0"], "only the keepnet stage the player sees (TK-219)");
   // Spec 159: the owner's lazy order; every asset has a place that loads it, or the locked queue.
   const lazyLayer = production.layer("layer-three");
   assert.equal(lazyLayer.lazy, true, "the third layer is the lazy one");

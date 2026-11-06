@@ -91,6 +91,7 @@ import { AssetRegistry } from "../../engine/assets/asset_registry.js";
 import { AssetLoadPlan } from "../../engine/assets/asset_load_plan.js";
 import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
 import { createAssetLoadSources } from "./asset_load_sources.js";
+import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
 import { RoomProgress } from "../../game/domain/house/room_progress.js";
 import { RoomProgressLocalStore } from "../../platform/browser/storage/room_progress_local_store.js";
@@ -337,9 +338,15 @@ export class GameCompositionRoot {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
-    void this.#preload?.startOn("ready");
+    void this.#preload?.startOn("ready", { keepnetPercent: this.#keepnetPercent() });
     void this.#preload?.whenFullyLoaded().then(() => this.#startupMarks.mark(STARTUP_STAGES.fullLoad));
     for (const load of this.#deferredAssetLoads) load();
+  }
+
+  // The keepnet's fill when the first frame is drawn: the plan loads that stage's art first (TK-219).
+  #keepnetPercent() {
+    const liveBait = this.#sessionServices?.liveBait;
+    return liveBait ? new KeepnetViewModel().build(liveBait.getView()).capacityPercent : 0;
   }
 
   // The asset load plan's state for the DEV overlay "ЗАВАНТАЖЕННЯ" (spec 157 D6): layers -> groups -> asset ids with
