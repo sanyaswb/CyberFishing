@@ -20,7 +20,8 @@ export const KEEPNET_LABELS = Object.freeze({
   groupCount: (count) => `Кількість: ${count}`,
   details: (name, count) => `${name} · ${count} шт.`,
   weight: (kg) => `${formatNumber(kg * 1000)} г`,
-  totalWeight: (kg) => `Разом: ${formatNumber(kg * 1000)} г`,
+  // TK-228: a group's total in kilograms with two decimals.
+  totalWeight: (kg) => `Разом: ${kg.toFixed(2).replace(".", ",")} кг`,
   level: (level) => `Рівень: ${level}`,
   rarity: (value) => typeof value === "string" ? `Рідкість: ${value}` :
     `Рідкість: ${formatNumber(value.halfSteps / value.unitsPerStar)} / ${formatNumber(value.maxHalfSteps / value.unitsPerStar)} ★ (${value.halfSteps}/${value.maxHalfSteps})`,

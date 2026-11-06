@@ -249,10 +249,6 @@ export class DevTools {
         setConfig: (path, value) => this.#updateConfigValue(path, value),
         files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
     }
-    if (this.#keepnet) {
-      new KeepnetDevSection({ ui: this.#ui, keepnet: this.#keepnet,
-        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }).render(body);
-    }
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
     this.#renderRuntimeOverrideControls(service);
@@ -434,6 +430,11 @@ export class DevTools {
     if (this.#config.debug.inventorySplit) {
       const splitPath = ["CONFIG", "debug", "inventorySplit"];
       this.#buildTree(this.#config.debug.inventorySplit, this.#createSectionWithCache("Split", inventory, splitPath), splitPath);
+    }
+    // TK-227/228: the keepnet fill lives under DEBUG, not among the main sections.
+    if (this.#keepnet) {
+      new KeepnetDevSection({ ui: this.#ui, keepnet: this.#keepnet,
+        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }).render(debugContent);
     }
     return debugContent;
   }

@@ -303,6 +303,8 @@ async function main() {
   }
   documentRef.defaultView.getComputedStyle = portraitStyle;
   assert.equal(documentRef.byClass("keepnet-section__badge")[0].textContent, "3");
+  assert.equal(documentRef.byClass("keepnet-section__group")[0].children.find((child) =>
+    child.className === "keepnet-section__fish-weight").textContent, "Разом: 0,24 кг", "a group's total is in kg with two decimals (TK-228)");
   const group = documentRef.byKey("species:crucian_stalker");
   content.scrollTop = 200;
   group.click();
@@ -516,6 +518,10 @@ async function checkKeepnetDevFill() {
     entry.level >= 1 && entry.imagePath.endsWith(`--${entry.level}.webp`) && entry.rarity?.halfSteps >= 1),
   "each random fish is a valid catch of a real species with its level's art");
   assert(new Set(fish.map((entry) => entry.level)).size > 1, "levels vary");
+  assert.deepEqual([...new Set(fish.map((entry) => entry.sourceSpeciesId))].sort(), FISH_DB.map((species) => species.id).sort(),
+    "every species of the game appears, also one without levelWeightRanges (TK-228)");
+  const perchMax = FISH_DB.find((species) => species.id === "perch_radioactive").weightConfig.maxLevel;
+  assert(fish.filter((entry) => entry.sourceSpeciesId === "perch_radioactive").every((entry) => entry.level <= perchMax));
   assert.deepEqual(section.fill(100), { added: capacity - fish.length, released: 0, occupied: capacity, capacity });
   assert.equal(section.fill(100).added, 0, "a full keepnet takes no more");
   assert.deepEqual(section.fill(20), { added: 0, released: capacity - Math.round(capacity * 0.2), occupied: Math.round(capacity * 0.2), capacity });

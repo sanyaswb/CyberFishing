@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.7 - Keepnet group weight in kg
+
+- TK-228: a keepnet group shows its total weight in kilograms with two decimals; the DevTools keepnet fill moved under DEBUG and now adds every species of the game (a species without per-level weight ranges splits its depth weight range by level).
+
 ## v0.50.6 - DevTools keepnet fill
 
 - TK-227: DevTools section «САДОК» shows the keepnet's fill and fills it to 0, 20, 40, 60, 80 or 100 % with random fish (species, level, weight, art, rarity) through the ordinary keep and release commands.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.99 - Keepnet fish card picture
 
 - TK-220: a fish card in the keepnet shows only the fish's picture (the placeholder icon stayed visible over it and pushed it down, where it was cropped); the picture box has a fixed size, the whole fish fits, long text no longer moves it. Game-cycle report unchanged.
-
-## v0.49.98 - Only the current keepnet stage after the first frame
-
-- TK-219: right after the first frame only the keepnet stage the player sees now loads (an 80 % keepnet after a cleared cache shows its own art first); the other stages load with the items of the lazy third layer. Game-cycle report unchanged.
