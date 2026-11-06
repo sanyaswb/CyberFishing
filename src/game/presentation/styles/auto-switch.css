@@ -193,7 +193,8 @@
 .inventory-toggle__input:checked + .inventory-toggle__control .inventory-toggle__count {
   transform: translateX(0);
 }
-.inventory-toggle--equipped.inventory-toggle--automatic:not(.inventory-toggle--control) { --inventory-toggle-background: #2b4035; border-color: rgba(var(--inventory-success-rgb, var(--ui-success-rgb)), 0.7); }
+/* TK-236: the pill is green while a bait or chum is in its slots; automatic mode colours only its own track. */
+.inventory-toggle--equipped:not(.inventory-toggle--control) { --inventory-toggle-background: #2b4035; border-color: rgba(var(--inventory-success-rgb, var(--ui-success-rgb)), 0.7); }
 .inventory-toggle__input:focus-visible + .inventory-toggle__control {
   outline: 2px solid var(--inventory-accent, var(--ui-accent));
   outline-offset: 3px;

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.18 - Green switcher when a bait is chosen
+
+- TK-236: the bait and chum switcher turns green while a bait, live bait or chum is in its slots, not only in automatic mode; automatic mode colours only its own track.
+
 ## v0.50.17 - Switcher cells at full height
 
 - TK-235: the bait and chum switcher's item circle takes the pill's whole height and the art inside is the largest box of its own proportion that fits the circle (a long worm icon or live bait is no longer a third of the circle); a slot's count is a badge on the circle's edge.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.9 - Keepnet fish card text box and stars
 
 - TK-229.1-2: a keepnet fish card shows its text in a grey rounded box (name, level, weight, rarity as a row of SVG stars, timer); its buttons fill the row, two that fit take half each.
-
-## v0.50.8 - Filter plates without scrollbars
-
-- TK-229: the backpack's and keepnet's filter plates (species, sort, settings) have the filters panel's 14 px inset on every side, and the plates and category rows scroll without a scrollbar.

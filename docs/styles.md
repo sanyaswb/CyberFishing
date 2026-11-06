@@ -151,7 +151,8 @@ also the pill's left padding, so it is concentric with the pill's rounded end; T
 its own proportion inside the circle: `UiAutoSwitchRenderer.circleFit` turns the asset's registry size into
 `--inventory-toggle-art-width/-height` shares of the inner diameter (no DOM measurement); placeholders and unsized art
 keep the inscribed square. Transparent borders become visible only for the selected item or keyboard focus. A slot's own
-count is a badge on the circle's lower right edge.
+count is a badge on the circle's lower right edge. The pill is green while a bait or chum fills its slots
+(`inventory-toggle--equipped`); automatic mode colours only its track (TK-236).
 The pill, track and thumb keep opaque background colors in both modes. Their geometry/state rules have one
 shared owner in `auto-switch.css`, including the House's compact variant.
 The header bait hold (v0.45.35) reuses the `inventory-press` block from `inventory/shared-controls.css`.
