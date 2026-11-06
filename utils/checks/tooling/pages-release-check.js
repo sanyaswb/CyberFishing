@@ -77,7 +77,8 @@ try {
     assert(files.has("assets/house/room-1/under-renovation.webp"));
     for (let level = 1; level <= 5; level++) {
       const prefix = `assets/house/room-1/lvl-${level}/room--1-`;
-      assert([...files].filter((file) => file.startsWith(prefix)).length === 3,
+      // Their low copies lie beside them (name--low.webp, TK-221).
+      assert([...files].filter((file) => file.startsWith(prefix) && !file.endsWith("--low.webp")).length === 3,
         `room level ${level} has day, evening and night backgrounds`);
     }
   }
