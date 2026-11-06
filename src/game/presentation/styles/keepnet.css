@@ -62,17 +62,8 @@
 .keepnet-section__group:focus-visible,
 .keepnet-section__action:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 2px; }
 .keepnet-section__status { margin: 0; color: #c9c9c9; font: 13px/1.4 system-ui, sans-serif; }
-/* The filter rows are the controls panel's own rows, like the backpack's. TK-225: the category row (back, species toggle,
-   kinds) drag-scrolls without a scrollbar, so its spacing above and below is equal. */
+/* The filter rows are the controls panel's own rows, like the backpack's (spacing and no scrollbar: TK-225, TK-229). */
 .keepnet-section__filters { display: contents; }
-.inventory-categories.keepnet-section__kinds {
-  min-height: 0;
-  align-items: center;
-  padding: 1px;
-  scrollbar-gutter: auto;
-  scrollbar-width: none;
-}
-.inventory-categories.keepnet-section__kinds::-webkit-scrollbar { display: none; }
 .keepnet-section__back { display: inline-flex; align-items: center; }
 .keepnet-section__back .inventory-categories__icon { margin-right: 4px; }
 .keepnet-section__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: var(--keepnet-list-gap); }

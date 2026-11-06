@@ -39,15 +39,14 @@
   min-height: 0;
 }
 
+/* TK-229: no scrollbar (shared-controls.css), so the row keeps 1 px for button outlines on every side. */
 .inventory-categories {
   grid-row: 1;
   display: flex;
-  min-height: calc(44px + var(--inventory-scrollbar-size) + 8px);
   gap: 10px;
   flex: none;
-  align-items: flex-start;
-  padding: 1px 1px 8px;
-  scrollbar-gutter: stable;
+  align-items: center;
+  padding: 1px;
   overflow-x: auto;
 }
 
@@ -142,11 +141,11 @@
 .inventory-sort-options,
 .inventory-settings-options {
   display: none;
-  min-height: calc(var(--inventory-filter-height) + var(--inventory-scrollbar-size));
+  /* TK-229: the controls panel's inset on every side (border-box: the height adds both insets and the border). */
+  min-height: calc(var(--inventory-filter-height) + var(--inventory-collection-inset, 14px) * 2 + 2px);
   gap: var(--inventory-filter-gap);
   align-items: center;
-  padding: 8px 12px 14px;
-  scrollbar-gutter: stable;
+  padding: var(--inventory-collection-inset, 14px);
   overflow-x: auto;
   border: 1px solid #3f565f;
   border-radius: 7px;

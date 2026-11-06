@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.8 - Filter plates without scrollbars
+
+- TK-229: the backpack's and keepnet's filter plates (species, sort, settings) have the filters panel's 14 px inset on every side, and the plates and category rows scroll without a scrollbar.
+
 ## v0.50.7 - Keepnet group weight in kg
 
 - TK-228: a keepnet group shows its total weight in kilograms with two decimals; the DevTools keepnet fill moved under DEBUG and now adds every species of the game (a species without per-level weight ranges splits its depth weight range by level).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.100 - One folder per item type
 
 - TK-221: every file of an item lies in its type folder with a suffix name: low copies beside their image (name--low.webp), scene art name--scene.webp, Spine exports name--spine.*; the clone folders low-copies, floats-scene, rods-scene and animations are gone, and the unused lobby and loader art left the registry. Game-cycle report unchanged.
-
-## v0.49.99 - Keepnet fish card picture
-
-- TK-220: a fish card in the keepnet shows only the fish's picture (the placeholder icon stayed visible over it and pushed it down, where it was cropped); the picture box has a fixed size, the whole fish fits, long text no longer moves it. Game-cycle report unchanged.

@@ -36,9 +36,6 @@
 
 .inventory-modal,
 .inventory-list-grid,
-.inventory-categories,
-.inventory-subfilters,
-.inventory-sort-options,
 .inventory-loadout-panel,
 .inventory-assembly-editor,
 .inventory-saved-loadout-preview,
@@ -50,15 +47,28 @@
 
 .inventory-modal::-webkit-scrollbar,
 .inventory-list-grid::-webkit-scrollbar,
-.inventory-categories::-webkit-scrollbar,
-.inventory-subfilters::-webkit-scrollbar,
-.inventory-sort-options::-webkit-scrollbar,
 .inventory-loadout-panel::-webkit-scrollbar,
 .inventory-assembly-editor::-webkit-scrollbar,
 .inventory-saved-loadout-preview::-webkit-scrollbar,
 .inventory-tooltip::-webkit-scrollbar {
   width: var(--inventory-scrollbar-size);
   height: var(--inventory-scrollbar-size);
+}
+
+/* TK-229: filter rows and plates (categories, species, sort, settings) scroll by drag or gesture without a scrollbar,
+   so their insets stay equal on every side. */
+.inventory-categories,
+.inventory-subfilters,
+.inventory-sort-options,
+.inventory-settings-options {
+  scrollbar-width: none;
+}
+
+.inventory-categories::-webkit-scrollbar,
+.inventory-subfilters::-webkit-scrollbar,
+.inventory-sort-options::-webkit-scrollbar,
+.inventory-settings-options::-webkit-scrollbar {
+  display: none;
 }
 
 /* Presentation config can restore the existing scrollbar; scrolling itself always remains available. */
@@ -72,9 +82,6 @@
 
 .inventory-modal::-webkit-scrollbar-track,
 .inventory-list-grid::-webkit-scrollbar-track,
-.inventory-categories::-webkit-scrollbar-track,
-.inventory-subfilters::-webkit-scrollbar-track,
-.inventory-sort-options::-webkit-scrollbar-track,
 .inventory-loadout-panel::-webkit-scrollbar-track,
 .inventory-assembly-editor::-webkit-scrollbar-track,
 .inventory-saved-loadout-preview::-webkit-scrollbar-track,
@@ -84,9 +91,6 @@
 
 .inventory-modal::-webkit-scrollbar-thumb,
 .inventory-list-grid::-webkit-scrollbar-thumb,
-.inventory-categories::-webkit-scrollbar-thumb,
-.inventory-subfilters::-webkit-scrollbar-thumb,
-.inventory-sort-options::-webkit-scrollbar-thumb,
 .inventory-loadout-panel::-webkit-scrollbar-thumb,
 .inventory-assembly-editor::-webkit-scrollbar-thumb,
 .inventory-saved-loadout-preview::-webkit-scrollbar-thumb,
@@ -96,9 +100,6 @@
 }
 .ui-surface--desktop-hover .inventory-modal::-webkit-scrollbar-thumb:hover,
 .ui-surface--desktop-hover .inventory-list-grid::-webkit-scrollbar-thumb:hover,
-.ui-surface--desktop-hover .inventory-categories::-webkit-scrollbar-thumb:hover,
-.ui-surface--desktop-hover .inventory-subfilters::-webkit-scrollbar-thumb:hover,
-.ui-surface--desktop-hover .inventory-sort-options::-webkit-scrollbar-thumb:hover,
 .ui-surface--desktop-hover .inventory-loadout-panel::-webkit-scrollbar-thumb:hover,
 .ui-surface--desktop-hover .inventory-assembly-editor::-webkit-scrollbar-thumb:hover,
 .ui-surface--desktop-hover .inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,

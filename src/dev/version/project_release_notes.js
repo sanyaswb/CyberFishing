@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-229: filter plates use the controls panel's inset on every side; filter rows and plates have no scrollbar.",
   "TK-228: DEV keepnet fill moved under DEBUG; group totals in kg; every species in random fills.",
   "TK-227: DevTools «САДОК»: fill the keepnet to 0-100 % with random fish.",
   "TK-226: wide layouts: a click on a fish card shows that fish in full on the left in place of the keepnet.",
