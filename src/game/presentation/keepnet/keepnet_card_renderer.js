@@ -26,8 +26,10 @@ export class KeepnetCardRenderer {
     return { element: card, focusables: [card] };
   }
 
-  fish(fish, { aquarium, pendingRelease, onAction }) {
+  // onPreview (TK-226): a click on the card outside its buttons; setPreviewed marks the fish shown in the overview.
+  fish(fish, { aquarium, pendingRelease, onAction, onPreview }) {
     const card = this.#el("article", "keepnet-section__fish");
+    card.addEventListener("click", (event) => { if (!event.target?.closest?.("button")) onPreview(fish); });
     const labels = this.#labels;
     card.append(this.#image(fish), this.#el("strong", "keepnet-section__fish-name", fish.name),
       this.#el("span", "keepnet-section__fish-weight", labels.weight(fish.weightKg)),
@@ -57,7 +59,8 @@ export class KeepnetCardRenderer {
         `${current.remainingMs === null ? labels.protected : labels.lifetime(current.remainingMs)}${current.selected ? " · ✓" : ""}`;
     };
     update(fish);
-    return { element: card, focusables, update };
+    const setPreviewed = (previewed) => card.classList.toggle("keepnet-section__fish--previewed", previewed);
+    return { element: card, focusables, update, setPreviewed };
   }
 
   // The fish's image, or the placeholder icon when it has none or its file fails. Only one of them is in the box: an

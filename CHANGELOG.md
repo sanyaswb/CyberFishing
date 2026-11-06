@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.5 - Fish preview beside the keepnet
+
+- TK-226: in wide layouts a click on a fish card inside a group shows that fish's full art on the left in place of the keepnet; a second click, leaving the group or closing the section brings the keepnet back.
+
 ## v0.50.4 - Keepnet filters in one row
 
 - TK-225: the keepnet's back button is the first category button of the filter row (chevron, group name and count); the separate heading row is gone, the species toggle uses the backpack's chevrons, and the row has no scrollbar with equal spacing above and below.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.97 - One startup budget
 
 - TK-218: the startup budget has one source for the DEV overlay and the measurer; stale comments removed. Finished tasks archived. Game-cycle report unchanged.
-
-## v0.49.96 - No underline or hover on overlay metrics
-
-- TK-217: DEV overlay metric rows have no underline, help cursor, hover highlight or tooltip on any device; a click on a metric's name still writes its formula to the console. Ui-surface check asserts the behavior. Game-cycle report unchanged.

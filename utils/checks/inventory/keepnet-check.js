@@ -331,6 +331,29 @@ async function main() {
   images[0].fire("error");
   assert.equal(box.children.length, 1, "a missing image is replaced, not hidden");
   assert(box.children[0].className.includes("keepnet-section__image-fallback"), "missing image gets a stable fallback");
+  // TK-226: in wide layouts a click on a fish card (not on its buttons) shows that fish's full art in the summary's image
+  // container in place of the keepnet; a second click, leaving the group or a portrait layout (no summary) keep the keepnet.
+  const summaryVisual = summary.children[0];
+  const keepnetIcon = summaryVisual.children.find((child) => child.className === "keepnet-section__icon");
+  const fishCards = documentRef.byClass("keepnet-section__fish");
+  const previewOf = () => summaryVisual.children.find((child) => child.className === "keepnet-overview__fish") ?? null;
+  summary.offsetParent = null;
+  fishCards[1].fire("click");
+  assert(previewOf() === null, "no preview while the summary column is not shown (portrait)");
+  delete summary.offsetParent;
+  fishCards[1].fire("click", { target: { closest: (selector) => selector === "button" } });
+  assert(previewOf() === null, "a click on a card's button does not preview the fish");
+  fishCards[1].fire("click");
+  assert.equal(previewOf()?.src, "assets/fish-display/crucian_stalker/standart/crucian_stalker--2.webp",
+    "the previewed fish shows its full display art");
+  assert(keepnetIcon.hidden && fishCards[1].classList.contains("keepnet-section__fish--previewed") &&
+    !fishCards[0].classList.contains("keepnet-section__fish--previewed"), "the keepnet hides and the card is marked");
+  assert.equal(documentRef.byClass("keepnet-overview")[1].children[0].children.some((child) =>
+    child.className === "keepnet-overview__fish"), false, "the portrait pager's keepnet view never previews");
+  fishCards[0].fire("click");
+  assert(previewOf()?.src.endsWith("crucian_stalker--1.webp") && !fishCards[1].classList.contains("keepnet-section__fish--previewed"));
+  fishCards[0].fire("click");
+  assert(previewOf() === null && !keepnetIcon.hidden, "a second click brings the keepnet back");
   const select = documentRef.byKey("bait:select");
   select.focus();
   content.scrollTop = 137;
@@ -358,7 +381,10 @@ async function main() {
   documentRef.byKey("two:release").click();
   documentRef.byKey("two:confirm-release").click();
   assert.equal(service.getView().keepnet.some((entry) => entry.id === "two"), false);
+  documentRef.byClass("keepnet-section__fish")[0].fire("click");
+  assert(previewOf() !== null, "a fish of the open group is previewed");
   content.fire("keydown", { key: "Escape" });
+  assert(previewOf() === null && !keepnetIcon.hidden, "leaving the group brings the keepnet back");
   assert.equal(ui.isOpen, true);
   assert.equal(documentRef.activeElement, documentRef.byKey("species:crucian_stalker"));
   documentRef.byKey("species:crucian_stalker").click();

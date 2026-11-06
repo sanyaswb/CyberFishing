@@ -2,7 +2,8 @@
 // then a separate stats container with the capacity scale (fish icon, meter, occupancy centred on it) and the status
 // line. Wide layouts show it in the keepnet section's left column; portrait shows a second instance as the keepnet
 // pager's right page. showHelp places the help button on the image; the game hides it for now (spec 089) and keeps
-// the button and its hint as a component.
+// the button and its hint as a component. TK-226: showFish() puts one fish's full art in the image container in place of
+// the keepnet (the wide layout's summary), and showFish(view, null) brings the keepnet back.
 export class KeepnetOverviewRenderer {
   #dom;
   #labels;
@@ -10,9 +11,13 @@ export class KeepnetOverviewRenderer {
   #imageResolver;
   #capacityIcon;
   #showHelp;
+  #fishArt;
   #bindings = new WeakMap();
 
-  constructor({ domFactory, labels, scaleRenderer, imageResolver, capacityIcon, showHelp = true }) {
+  // fishArt: FishArtVariants (the fish's 768 px display image for the preview).
+  constructor({ domFactory, labels, scaleRenderer, imageResolver, capacityIcon, fishArt, showHelp = true }) {
+    if (typeof fishArt?.displayPath !== "function") throw new TypeError("KeepnetOverviewRenderer requires fishArt");
+    this.#fishArt = fishArt;
     this.#dom = domFactory;
     this.#labels = labels;
     this.#scales = scaleRenderer;
@@ -40,7 +45,7 @@ export class KeepnetOverviewRenderer {
     status.hidden = true;
     stats.append(capacity, status);
     view.append(visual, stats);
-    this.#bindings.set(view, { image, imageAsset, help, capacity, status });
+    this.#bindings.set(view, { visual, image, imageAsset, help, capacity, status, fish: null, fishId: null });
     return view;
   }
 
@@ -56,6 +61,22 @@ export class KeepnetOverviewRenderer {
     help.setAttribute("aria-controls", "keepnet-help");
     help.addEventListener("click", onHelp);
     return help;
+  }
+
+  // The fish's full art in place of the keepnet ({ id, name, imagePath }), or the keepnet again with null.
+  showFish(view, fish) {
+    const binding = this.#bindings.get(view);
+    const id = fish?.id ?? null;
+    if (binding.fishId === id) return;
+    binding.fishId = id;
+    binding.image.hidden = id !== null;
+    if (id === null) { binding.fish?.remove(); binding.fish = null; return; }
+    const image = this.#dom.element("img", "keepnet-overview__fish");
+    image.alt = fish.name; image.decoding = "async"; image.draggable = false;
+    image.src = this.#fishArt.displayPath(fish.imagePath);
+    if (binding.fish) binding.fish.replaceWith(image);
+    else binding.visual.insertBefore(image, binding.image);
+    binding.fish = image;
   }
 
   // Occupied space fills the meter; its colour follows the free space like every remaining resource.

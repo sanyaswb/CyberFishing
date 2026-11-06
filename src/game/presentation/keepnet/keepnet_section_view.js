@@ -15,6 +15,7 @@ export class KeepnetSectionView {
   #toggleSection;
   #filter = { kind: "all", speciesId: "all" };
   #detailSpecies = null;
+  #previewFishId = null;
   #pendingRelease = null;
   #notice = "";
   #button;
@@ -139,6 +140,8 @@ export class KeepnetSectionView {
     } else {
       this.#setHelpVisible(false);
       this.#pendingRelease = null;
+      this.#previewFishId = null;
+      this.#overviews.showFish(this.#summary, null);
     }
   }
   showCatchResult(result) {
@@ -160,6 +163,10 @@ export class KeepnetSectionView {
     const group = model.groups.find((entry) => entry.id === this.#detailSpecies);
     if (!group) this.#detailSpecies = null;
     if (!model.filtered.some((fish) => fish.id === this.#pendingRelease)) this.#pendingRelease = null;
+    // TK-226: the previewed fish belongs to the open group; leaving it or losing the fish brings the keepnet back.
+    const preview = group?.fish.find((fish) => fish.id === this.#previewFishId) ?? null;
+    this.#previewFishId = preview?.id ?? null;
+    this.#overviews.showFish(this.#summary, preview);
     const reading = { percent: model.capacityPercent,
       value: this.#labels.occupancy(model.count + model.reservedCount, model.capacity),
       label: `${this.#labels.capacity}: ${this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount)}`,
@@ -187,7 +194,7 @@ export class KeepnetSectionView {
       this.#rendered.clear();
       const rendered = group ? group.fish.map((fish) => {
         const card = this.#cards.fish(fish, { aquarium: model.aquarium,
-          pendingRelease: this.#pendingRelease, onAction: this.#act });
+          pendingRelease: this.#pendingRelease, onAction: this.#act, onPreview: this.#preview });
         this.#rendered.set(fish.id, card);
         return card;
       }) : model.groups.map((item) => this.#cards.group(item, this.#openSpecies));
@@ -200,7 +207,11 @@ export class KeepnetSectionView {
         (group ? this.#back : this.#activeKind())).focus();
       else if (active === this.#back && !group) this.#activeKind().focus();
     }
-    if (group) for (const fish of group.fish) this.#rendered.get(fish.id)?.update(fish);
+    if (group) for (const fish of group.fish) {
+      const card = this.#rendered.get(fish.id);
+      card?.update(fish);
+      card?.setPreviewed(fish.id === this.#previewFishId);
+    }
   }
   dispose() {
     this.setVisible(false);
@@ -216,6 +227,12 @@ export class KeepnetSectionView {
   #openSpecies = (id) => {
     this.#detailSpecies = id; this.#pendingRelease = null;
     this.refresh(); this.#content.scrollTop = 0; this.#back.focus();
+  };
+  // TK-226: only where the summary (left column) is shown, i.e. wide layouts; a second click brings the keepnet back.
+  #preview = (fish) => {
+    if (this.#summary.offsetParent === null) return;
+    this.#previewFishId = this.#previewFishId === fish.id ? null : fish.id;
+    this.refresh();
   };
   #goBack = () => {
     const id = this.#detailSpecies;

@@ -74,7 +74,7 @@ export class InventoryUiBootstrap {
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
       overviewRenderer: new KeepnetOverviewRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         scaleRenderer: new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer }),
-        imageResolver, capacityIcon: { asset: pagerConfig.capacityIconAsset, symbol: pagerConfig.capacityIconSymbol }, showHelp }),
+        imageResolver, capacityIcon: { asset: pagerConfig.capacityIconAsset, symbol: pagerConfig.capacityIconSymbol }, fishArt, showHelp }),
       filtersRenderer: new KeepnetFiltersRenderer({ domFactory: dom, labels: KEEPNET_LABELS,
         horizontalScrollController: new HorizontalScrollController({ uiSurface }) }),
       pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
