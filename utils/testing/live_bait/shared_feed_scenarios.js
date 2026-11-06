@@ -87,7 +87,7 @@ module.exports = async function checkSharedFeed() {
   assert.equal(migrated.error, null); assert.equal(migrated.getView().feedStock, 2);
   assert.equal(migrated.getView().liveBaits[0].remainingMs, 5000);
   assert.equal(migrated.getView().liveBaits[0].isUnique, null);
-  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 5);
+  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 6);
   legacy.tick(5000); migrated.advance(); assert.equal(migrated.getView().liveBaits.length, 0);
 
   const { aquariumVisualIssues, isUsableAquariumVisual } = await import("../../../src/game/config/validation/aquarium_visual_issues.js");

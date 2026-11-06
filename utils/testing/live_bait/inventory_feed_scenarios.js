@@ -61,7 +61,7 @@ module.exports = async function checkInventoryFeed() {
   values.set(featureKey, JSON.stringify(legacy));
   assert.equal(create().getView().feedStock, 4);
   assert.equal(create().getView().feedStock, 4, "legacy migration is exactly once");
-  assert.equal(JSON.parse(values.get(featureKey)).schemaVersion, 5);
+  assert.equal(JSON.parse(values.get(featureKey)).schemaVersion, 6);
   assert.equal(Object.hasOwn(JSON.parse(values.get(featureKey)).feedSupply, "stock"), false);
   for (const item of Object.values(ITEM_DB.aquariumFeeds)) {
     assert.equal(item.itemType, "aquarium_feed");

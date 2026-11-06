@@ -36,7 +36,7 @@ module.exports = async function checkKeepnetLifecycle() {
   assert.equal(migrated.error, null, "schema 1 saves still load");
   assert.equal(migrated.getView().liveBaits[0].rarity, null, "lost historical rarity is explicitly unknown");
   migrated.buyFeed();
-  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 5);
+  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 6);
   const corrupt = JSON.parse(metadata.values.get(key));
   corrupt.fish[0].rarity = { halfSteps: 50, maxHalfSteps: 12, unitsPerStar: 2 };
   const corruptBytes = JSON.stringify(corrupt);

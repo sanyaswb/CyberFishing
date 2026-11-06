@@ -59,7 +59,7 @@ module.exports = async function checkFeedLoading() {
   assert.equal(service.getView().aquarium.canLoadFeed, true);
   service.buyFeed(simple);
   const migrated = JSON.parse(values.get(featureKey));
-  assert.equal(migrated.schemaVersion, 5);
+  assert.equal(migrated.schemaVersion, 6);
   assert.equal(migrated.aquarium.feed.carriedMs, 0);
   const invalid = { ...migrated, aquarium: { ...migrated.aquarium, feed: { ...migrated.aquarium.feed, carriedMs: -1 } } };
   const invalidBytes = JSON.stringify(invalid); values.set(featureKey, invalidBytes);

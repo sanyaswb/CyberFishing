@@ -269,6 +269,7 @@ export class KeepnetSectionView {
       replace: () => hook?.confirm(),
       deselect: () => hook ? hook.clear() : this.#liveBait.selectBait(null),
       transfer: () => this.#liveBait.transferToAquarium(fish.id),
+      "to-inventory": () => this.#liveBait.showSpeciesInInventory(fish.sourceSpeciesId),
       "confirm-release": () => fish.kind === "catch" ? this.#liveBait.releaseCatch(fish.id) : this.#liveBait.releaseBait(fish.id),
     };
     const result = commands[action]?.();

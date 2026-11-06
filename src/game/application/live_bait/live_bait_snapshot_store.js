@@ -15,7 +15,8 @@ export class LiveBaitSnapshotStore {
     const known = new Set(fishDb.map((fish) => fish.id));
     const locations = new Set(["keepnet", "aquarium", "hook", "dead", "consumed", "released"]);
     const fish = state?.fish;
-    if (![1, 2, 3, 4, 5].includes(state?.schemaVersion) ||
+    if (![1, 2, 3, 4, 5, 6].includes(state?.schemaVersion) ||
+      (state.schemaVersion >= 6 && !this.#validInventorySpecies(state.inventorySpeciesIds, known)) ||
       (state.schemaVersion >= 4 && Object.hasOwn(state, "pendingLegacyStock")) ||
       !Number.isSafeInteger(state.revision) || state.revision < 0 ||
       !Number.isFinite(state.lastAppliedAtMs) || state.lastAppliedAtMs < 0 ||
@@ -83,6 +84,11 @@ export class LiveBaitSnapshotStore {
       if (state.aquarium.feed) state.aquarium.feed.carriedMs = 0;
       state.schemaVersion = 5;
     }
+    // Spec 163: the species whose live baits the backpack shows as a stack.
+    if (state.schemaVersion === 5) {
+      state.inventorySpeciesIds = [];
+      state.schemaVersion = 6;
+    }
     return { ok: true, state };
   }
   save(state, changes = []) {
@@ -97,9 +103,13 @@ export class LiveBaitSnapshotStore {
     return { ok: true, revision: next.revision };
   }
   #empty(nowMs, config) {
-    return { schemaVersion: 5, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
+    return { schemaVersion: 6, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
       aquarium: { owned: false, level: 0, feed: null, starvation: null },
-      feedSupply: { selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null };
+      feedSupply: { selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null,
+      inventorySpeciesIds: [] };
+  }
+  #validInventorySpecies(ids, known) {
+    return Array.isArray(ids) && ids.every((id) => typeof id === "string" && known.has(id)) && new Set(ids).size === ids.length;
   }
   #validCare(state, known, config) {
     const supply = state.feedSupply, aquarium = state.aquarium;

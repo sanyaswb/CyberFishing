@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 163 stage 1: chosen live bait cannot be released; «В інвентар» marks its species for the backpack stack.",
   "TK-238: live bait card icons (hook, aquarium, red cross); one hook drawing for empty compartments.",
   "TK-237: «A» is off and inactive while no bait/chum is chosen.",
   "TK-236: the switcher is green while a bait or chum is chosen; «A» colours only its track.",

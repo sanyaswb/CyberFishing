@@ -875,6 +875,17 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-129 Live bait species stack in the backpack; the chosen live bait cannot be released (P2, stage 1 done in v0.50.21)
+Found: 2026-11-06, owner ([spec 163](../specs/163-live-bait-in-inventory/spec.md)): the chosen live bait could be released, and the
+backpack's bait section could not show the live baits.
+Change (stage 1): the chosen live bait's «Відпустити» is replaced by «В інвентар» (refused in the service: `bait_selected`);
+«В інвентар» marks its species for a backpack stack (live bait save schema 6, `inventorySpeciesIds`, migrated from 5 as
+empty); the stack is a view of that species' keepnet + aquarium live baits (they stay in the keepnet), least life first with
+a life share; a released, dead or used-up live bait leaves it and the species' last one removes it. Stages 2-3: the backpack
+card and editor, choosing the stack for the hook.
+Evidence: `live-bait` (stacks, release refusal, death/use/release, reload, schema 6), `keepnet` (card buttons and the
+section's «В інвентар»); game-cycle report unchanged (it does not use live bait).
+
 ### G-128 Live bait by species, automatic live bait (P2, done in v0.50.11 and v0.50.14; owner acceptance pending)
 Found: 2026-11-06, owner (TK-229.3, [spec 162](../specs/162-live-bait-by-species/spec.md)): a fish that suits live bait had to be converted by hand; the chosen live bait was one fish, and when it was used up the choice was gone.
 Change (stage 1): a kept fish up to `liveBait.maxWeightKg` (100 g) becomes a live bait in the keepnet at once, with its own lifetime; saved catches that suit become live baits once on load. The separate convert action is gone (keepnet and victory). A live bait card has «На живця» (hook) and «В акваріум» (disabled without an aquarium). The chosen live bait is followed by the same species' live bait with the least life left when it is used up, dies or is released (aquarium fish last); none left clears the choice (`LiveBaitSuccession`).

@@ -56,6 +56,8 @@ export class LiveBaitCommandService {
   releaseBait(id) { return this.#commit((state) => {
     const fish = state.fish.find((item) => item.id === id);
     if (!fish || fish.purpose !== "live_bait" || !["aquarium", "keepnet"].includes(fish.disposition)) return "bait_unavailable";
+    // Spec 163 D1: the chosen live bait cannot be released.
+    if (state.selectedFishId === id) return "bait_selected";
     fish.disposition = "released";
     LiveBaitSuccession.replace(state, fish);
     return null;
@@ -83,6 +85,42 @@ export class LiveBaitCommandService {
   countSelectedReserve() {
     const selected = this.getSelectedBait();
     return selected ? LiveBaitSuccession.count(this.#state, selected.sourceSpeciesId, selected.fishId) : 0;
+  }
+  // Spec 163 D2/D6: the backpack shows (or stops showing) a stack of a species' live baits; the fish stay where they are.
+  showSpeciesInInventory(speciesId) { return this.#commit((state) => {
+    if (!LiveBaitSuccession.members(state, speciesId).length) return "bait_unavailable";
+    if (state.inventorySpeciesIds.includes(speciesId)) return "already_shown";
+    state.inventorySpeciesIds.push(speciesId); return null;
+  }); }
+  hideSpeciesFromInventory(speciesId) { return this.#commit((state) => {
+    const index = state.inventorySpeciesIds.indexOf(speciesId);
+    if (index < 0) return "not_shown";
+    state.inventorySpeciesIds.splice(index, 1); return null;
+  }); }
+  // Spec 163 D2/D4: the backpack's stacks, one per shown species with live baits left: its fish (least life first, as
+  // the successor is picked) with their life share (remaining / sampled lifetime; an aquarium fish without a starvation
+  // deadline is full). Reads the current state without a care settlement, like getSelectedBait().
+  getInventoryStacks() {
+    if (this.#error || !this.#state) return [];
+    const now = this.#clock.nowMs();
+    const elapsed = Math.max(0, now - this.#state.lastAppliedAtMs);
+    const stacks = [];
+    for (const speciesId of this.#state.inventorySpeciesIds) {
+      const fish = [];
+      for (const entry of LiveBaitSuccession.members(this.#state, speciesId)) {
+        const remainingMs = entry.disposition === "aquarium"
+          ? entry.starvationDeadlineMs === null ? entry.sampledLifetimeMs : entry.starvationDeadlineMs - now
+          : entry.remainingLifetimeMs - elapsed;
+        if (remainingMs <= 0) continue;
+        fish.push({ id: entry.id, name: entry.name, imagePath: entry.imagePath, weightKg: entry.weightKg, level: entry.level,
+          location: entry.disposition, lifeShare: Math.min(1, remainingMs / entry.sampledLifetimeMs), remainingMs });
+      }
+      if (!fish.length) continue;
+      fish.sort((left, right) => (left.location === "aquarium") - (right.location === "aquarium") ||
+        left.remainingMs - right.remainingMs || left.weightKg - right.weightKg || (left.id < right.id ? -1 : 1));
+      stacks.push({ speciesId, name: fish[0].name, imagePath: fish[0].imagePath, count: fish.length, fish });
+    }
+    return stacks;
   }
   beginLiveBaitCast(id, hookContext = {}) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);
@@ -155,7 +193,8 @@ export class LiveBaitCommandService {
     const stock = this.#loadStock(next);
     if (!stock.ok) return stock;
     const changed = this.#care.settle(next);
-    if (!changed && !next.pendingLegacyStock) return { ok: true, revision: this.#state.revision };
+    const pruned = this.#pruneInventorySpecies(next);
+    if (!changed && !pruned && !next.pendingLegacyStock) return { ok: true, revision: this.#state.revision };
     const saved = this.#save(next, stock);
     if (saved.ok) this.#state = next;
     else this.#handleSaveFailure(saved);
@@ -177,6 +216,7 @@ export class LiveBaitCommandService {
     const now = state.lastAppliedAtMs;
     const liveBaits = state.fish.filter((fish) => fish.purpose === "live_bait" && ["keepnet", "aquarium", "hook"].includes(fish.disposition))
       .map((fish) => ({ ...this.#fishView(fish), location: fish.disposition,
+        inInventory: state.inventorySpeciesIds.includes(fish.speciesId),
         remainingMs: fish.disposition === "aquarium" ? fish.starvationDeadlineMs === null ? null : Math.max(0, fish.starvationDeadlineMs - now)
           : fish.remainingLifetimeMs, selected: fish.id === state.selectedFishId }));
     const inhabitants = liveBaits.filter((fish) => fish.location === "aquarium");
@@ -212,7 +252,8 @@ export class LiveBaitCommandService {
     const settled = this.#care.settle(next);
     const reason = mutate(next);
     if (!reason) this.#care.synchronize(next);
-    if (reason && !settled) return { ok: false, reason };
+    const pruned = this.#pruneInventorySpecies(next);
+    if (reason && !settled && !pruned) return { ok: false, reason };
     const saved = this.#save(next, stock);
     if (saved.ok) this.#state = next;
     else this.#handleSaveFailure(saved);
@@ -251,6 +292,13 @@ export class LiveBaitCommandService {
       delete state.feedSupply.stock;
     }
     return saved;
+  }
+  // Spec 163 D5: a species whose last live bait is used up, dead or released leaves the backpack.
+  #pruneInventorySpecies(state) {
+    const kept = state.inventorySpeciesIds.filter((id) => LiveBaitSuccession.members(state, id).length > 0);
+    if (kept.length === state.inventorySpeciesIds.length) return false;
+    state.inventorySpeciesIds = kept;
+    return true;
   }
   #leaveAquarium(state, fish) {
     if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null)

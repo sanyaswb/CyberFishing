@@ -70,6 +70,7 @@ async function main() {
   assert.equal(service.selectBait("claim").ok, false);
 
   checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
+  checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
   await checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
 
   const aquarium = create();
@@ -206,6 +207,54 @@ async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }
   assert(changes >= 4, "views are told about every change");
 }
 
+// Spec 163 stage 1: the backpack shows a stack per species (keepnet + aquarium live baits, least life first, life share
+// without numbers); the fish stay in the keepnet; the chosen one cannot be released; a used-up, dead or released bait
+// shrinks the stack and its last one removes the species; the choice survives a reload (schema 6).
+function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
+  let now = 9000;
+  const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
+  const rolls = [];
+  const create = () => composeLiveBait({ storage, clock: { nowMs: () => now }, rng: { next: () => rolls.shift() ?? 0 }, fishDb, config: LIVE_BAIT_CONFIG });
+  const service = create();
+  const crucian = { id: "crucian_stalker", weight: .05, level: 1, name: "Crucian", imagePath: "img/crucian.webp" };
+  const minnow = { id: "minnow", weight: .04, level: 1, name: "Minnow" };
+  const keep = (id, fish, roll) => { rolls.length = 0; rolls.push(roll); assert.equal(service.resolveCatch(id, fish, "claim").ok, true); };
+  keep("c-long", crucian, 0.9); keep("c-mid", crucian, 0.5); keep("c-short", crucian, 0.1); keep("m", minnow, 0.5);
+  assert.deepEqual(service.getInventoryStacks(), [], "nothing is shown before «В інвентар»");
+  assert.equal(service.showSpeciesInInventory("crucian_stalker").ok, true);
+  assert.equal(service.showSpeciesInInventory("crucian_stalker").reason, "already_shown");
+  assert.equal(service.showSpeciesInInventory("perch_radioactive").reason, "bait_unavailable", "a species without live baits has no stack");
+  let [stack] = service.getInventoryStacks();
+  assert.equal(service.getInventoryStacks().length, 1, "one stack per shown species");
+  assert(stack.speciesId === "crucian_stalker" && stack.count === 3 && stack.name === "Crucian" && stack.imagePath === "img/crucian.webp");
+  assert.deepEqual(stack.fish.map((fish) => fish.id), ["c-short", "c-mid", "c-long"], "least life first, as the successor is picked");
+  assert(stack.fish.every((fish) => fish.lifeShare > 0 && fish.lifeShare <= 1), "a life share for the scale without numbers");
+  const view = service.getView();
+  assert(view.liveBaits.filter((fish) => fish.inInventory).length === 3 && !view.liveBaits.find((fish) => fish.id === "m").inInventory);
+  assert.equal(view.liveBaits.filter((fish) => fish.location === "keepnet").length, 4, "D3: the stack is a view, the fish stay in the keepnet");
+  const saved = JSON.parse(values.get("fishing_game_player_live_bait_v1"));
+  assert(saved.schemaVersion === 6 && saved.inventorySpeciesIds.join() === "crucian_stalker", "saved as schema 6");
+  assert.equal(create().getInventoryStacks()[0].count, 3, "the stack survives a reload");
+  assert.equal(service.selectBait("c-mid").ok, true);
+  assert.equal(service.releaseBait("c-mid").reason, "bait_selected", "D1: the chosen live bait cannot be released");
+  assert.equal(service.releaseBait("c-long").ok, true, "another live bait can be released");
+  assert.equal(service.getInventoryStacks()[0].count, 2, "a released live bait leaves the stack");
+  now += service.getView().liveBaits.find((fish) => fish.id === "c-short").remainingMs;
+  assert.equal(service.advance().ok, true);
+  [stack] = service.getInventoryStacks();
+  assert.deepEqual(stack.fish.map((fish) => fish.id), ["c-mid"], "D5: a dead live bait leaves the stack (10 -> 9)");
+  assert.equal(service.beginLiveBaitCast("c-mid", { compatible: true, free: true, hookCount: 1 }).ok, true);
+  assert.deepEqual(service.getInventoryStacks(), [], "the bait on the hook is in use, not in the stack");
+  assert.equal(service.settleBaitLoss("c-mid").ok, true);
+  assert.equal(JSON.parse(values.get("fishing_game_player_live_bait_v1")).inventorySpeciesIds.length, 0,
+    "D5: the species' last live bait used up removes its stack");
+  assert.equal(service.showSpeciesInInventory("minnow").ok, true);
+  assert.equal(service.hideSpeciesFromInventory("minnow").ok, true, "D6: «В садок» removes the stack");
+  assert.equal(service.hideSpeciesFromInventory("minnow").reason, "not_shown");
+  assert.equal(service.getView().liveBaits.find((fish) => fish.id === "m").location, "keepnet", "the fish stays in the keepnet");
+}
+
 // Spec 162: the chosen live bait is followed by the same species' live bait with the least life left (used up, dead or
 // released); saved catches that suit live bait become live baits on load.
 function checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
@@ -233,7 +282,9 @@ function checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb
   assert.equal(service.settleBaitLoss("long").ok, true);
   assert.equal(service.getSelectedBait().fishId, "short", "a used-up bait is followed by its species' bait with the least life");
   assert.equal(service.countSelectedReserve(), 0, "TK-234: a used-up live bait leaves the reserve");
-  assert.equal(service.releaseBait("short").ok, true);
+  assert.equal(service.releaseBait("short").reason, "bait_selected", "spec 163 D1: the chosen live bait cannot be released");
+  assert.equal(service.beginLiveBaitCast("short", { compatible: true, free: true, hookCount: 1 }).ok, true);
+  assert.equal(service.settleBaitLoss("short").ok, true);
   assert.equal(service.getSelectedBait(), null, "no live bait of the species is left: the choice clears");
   assert.equal(service.selectBait("other").ok, true);
   assert.equal(service.countSelectedReserve(), 1);

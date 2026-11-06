@@ -22,6 +22,11 @@ export class LiveBaitSuccession {
     return count;
   }
 
+  // Spec 163: the live baits of speciesId that can go on the hook (the backpack's stack of that species).
+  static members(state, speciesId) {
+    return state.fish.filter((fish) => LiveBaitSuccession.#canFollow(fish, speciesId, null));
+  }
+
   // Moves the choice from the fish that left (used up, dead, released) to the next of its species.
   static replace(state, leaving) {
     if (state.selectedFishId !== leaving.id) return;

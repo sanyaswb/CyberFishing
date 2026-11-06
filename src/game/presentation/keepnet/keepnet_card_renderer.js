@@ -2,7 +2,7 @@ import { createInventoryIcon, createItemPlaceholderIcon } from "../inventory/inv
 
 // TK-238: card actions drawn as a sprite icon (the text stays the accessible name and the tooltip); cancel actions are
 // a red cross.
-const ACTION_ICONS = Object.freeze({ select: "hook", transfer: "aquarium",
+const ACTION_ICONS = Object.freeze({ select: "hook", transfer: "aquarium", "to-inventory": "backpack",
   deselect: "close", "cancel-replace": "close", "cancel-release": "close" });
 const CANCEL_ACTIONS = Object.freeze(new Set(["deselect", "cancel-replace", "cancel-release"]));
 import { applyArtSize } from "../ui/art_size.js";
@@ -79,7 +79,10 @@ export class KeepnetCardRenderer {
         action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select, blocked);
         if (fish.location !== "aquarium") action("transfer", labels.transfer, aquarium?.owned ? null : labels.aquariumRequired);
       }
-      action("release", labels.release);
+      // Spec 163 D1: the chosen live bait cannot be released; «В інвентар» shows its species in the backpack instead.
+      if (fish.kind === "live_bait" && fish.selected) {
+        action("to-inventory", labels.toInventory, fish.inInventory ? labels.inInventory : null);
+      } else action("release", labels.release);
     }
     card.append(actions);
     const update = (current) => {

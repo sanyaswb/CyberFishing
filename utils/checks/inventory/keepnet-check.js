@@ -379,6 +379,11 @@ async function main() {
   assert(transfer?.disabled && transfer.title.includes("акваріум"), "«В акваріум» is shown and disabled without an aquarium");
   assert.equal(documentRef.byKey("one:convert"), undefined, "a catch has no separate convert action");
   select.click(); assert.equal(service.getSelectedBait().fishId, "bait");
+  // Spec 163 D1/D2: the chosen live bait's «В інвентар» shows its species in the backpack; it has no «Відпустити».
+  ui.refresh();
+  assert.equal(documentRef.byKey("bait:release"), undefined, "the chosen live bait cannot be released");
+  documentRef.byKey("bait:to-inventory").click();
+  assert.equal(service.getInventoryStacks()[0]?.speciesId, service.getSelectedBait().sourceSpeciesId, "«В інвентар» shows the species");
   assert.equal(service.beginLiveBaitCast("bait", { compatible: true, free: true, hookCount: 1 }).ok, true);
   ui.refresh();
   assert.equal(capacity.getAttribute("aria-valuenow"), "4", "a hooked bait still reserves its return slot");
@@ -527,6 +532,17 @@ async function checkLiveBaitCardStates() {
   assert.deepEqual(plain.elements.map(symbolOf), ["hook", "aquarium", null],
     "TK-238: «На живця» is the inventory's hook, «В акваріум» the aquarium icon; «Відпустити» stays text");
   assert.equal(plain.elements[0].title, "На живця", "an icon action keeps its label as the tooltip");
+  // Spec 163 D1: the chosen live bait has no «Відпустити»; «В інвентар» (backpack icon) shows its species in the backpack,
+  // disabled once that species is shown.
+  const chosenButtons = (inInventory) => cards.fish({ ...fish, selected: true, inInventory }, { aquarium: { owned: true },
+    pendingRelease: null, onAction() {}, onPreview() {}, hook: { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false } })
+    .element.children.find((child) => child.className === "keepnet-section__actions").children;
+  let chosen = chosenButtons(false);
+  assert.deepEqual(chosen.map((button) => button.getAttribute("aria-label")), ["Скасувати вибір", "В акваріум", "В інвентар"]);
+  assert.deepEqual(chosen.map(symbolOf), ["close", "aquarium", "backpack"]);
+  assert(!chosen[2].disabled, "«В інвентар» is available while the species is not shown");
+  chosen = chosenButtons(true);
+  assert(chosen[2].disabled && chosen[2].title === KEEPNET_LABELS.inInventory, "a shown species explains the disabled «В інвентар»");
   const base = { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false };
   assert.deepEqual(render(base).buttons[0], ["На живця", false, ""]);
   assert.deepEqual(render({ ...base, hookCount: 2 }).buttons[0], ["На живця", true, KEEPNET_LABELS.singleHookRequired]);
