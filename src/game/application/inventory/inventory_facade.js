@@ -39,6 +39,11 @@ export class InventoryFacade {
     this.#viewModels.setLiveBaitHook(hook);
   }
 
+  // Spec 163 stage 2: the backpack's live bait stacks.
+  setLiveBaitStacks(stacks) {
+    this.#viewModels.setLiveBaitStacks(stacks);
+  }
+
   getViewModel() {
     return this.#viewModels.create(this.#commands.getUiState());
   }

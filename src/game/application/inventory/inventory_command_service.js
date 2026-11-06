@@ -1,3 +1,4 @@
+import { LiveBaitStackId } from "../../domain/live_bait/live_bait_stack_id.js";
 import { BusyDeviceSignature } from "./busy_device_signature.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_catalog.js";
 import { InventoryApplicationError } from "./inventory_application_error.js";
@@ -191,6 +192,9 @@ export class InventoryCommandService {
         return this.#equipLoadoutSlot(action.loadoutId, action.slotId);
       case InventoryActionType.LOADOUT_EQUIP_ALL:
         return this.#equipLoadout(action.loadoutId);
+      case InventoryActionType.LIVE_BAIT_STACK_BACK:
+        this.#uiState.backFromLiveBaitStack();
+        return this.#success();
       case InventoryActionType.LOADOUT_PREVIEW_BACK:
         this.#uiState.showLoadoutPanel();
         return this.#success({ loadoutId: action.loadoutId });
@@ -232,6 +236,11 @@ export class InventoryCommandService {
   }
 
   #activateInventoryItemInPanel(instanceId) {
+    const liveBaitSpeciesId = LiveBaitStackId.speciesOf(instanceId);
+    if (liveBaitSpeciesId) {
+      this.#uiState.showLiveBaitStack(liveBaitSpeciesId);
+      return this.#success({ speciesId: liveBaitSpeciesId });
+    }
     if (this.#loadouts.has(instanceId)) {
       this.#uiState.showSavedLoadoutPreview(instanceId);
       return this.#success({ loadoutId: instanceId });
@@ -358,6 +367,8 @@ export class InventoryCommandService {
   }
 
   #longPressInventoryItem(instanceId) {
+    // A live bait stack is not an assembly: a hold does nothing (spec 163).
+    if (LiveBaitStackId.speciesOf(instanceId)) return this.#success();
     if (this.#loadouts.has(instanceId)) {
       return this.#disassembleLoadout(instanceId);
     }

@@ -869,6 +869,40 @@ vm.runInContext(
   // TK-234: with auto refill the switch counts the live baits of the chosen one's species, not backpack baits (was 0).
   assertIntegration(liveSlot.stock === 3 && reloadedQuickHook.facade.getViewModel().header.refillStock.bait === 3,
     "the bait switcher's count is the live bait's species reserve");
+  // Spec 163 stage 2: a backpack stack per species: a bait-like card (count in the corner) under «Усі» and «Наживки», one
+  // backpack slot; activating it opens its panel, «Назад» returns to the backpack; a hold does nothing.
+  const liveStacks = [{ id: "live-stack:crucian", speciesId: "crucian", name: "Карась", iconAsset: "fish-display.live", count: 3,
+    fish: [{ id: "f1", name: "Карась", iconAsset: "", lifeShare: 0.4, location: "keepnet" }] }];
+  const slotsBefore = reloadedQuickHook.facade.getViewModel().sections.backpackItemCount;
+  reloadedQuickHook.facade.setLiveBaitStacks({ stacks: () => liveStacks });
+  let stackModel = reloadedQuickHook.facade.getViewModel();
+  const stackCard = stackModel.inventory.items.find((item) => item.instanceId === "live-stack:crucian");
+  assertIntegration(stackCard?.isLiveBaitStack && stackCard.quantity === 3 && stackCard.iconAsset === "fish-display.live" &&
+    stackModel.sections.backpackItemCount === slotsBefore + 1 && stackModel.liveBaitStackSignature === "crucian:3",
+    "a live bait stack is a backpack card with its count and takes one backpack slot");
+  dispatch(reloadedQuickHook, InventoryActionType.CATEGORY_SELECT, { categoryId: "baits" });
+  assertIntegration(reloadedQuickHook.facade.getViewModel().inventory.items.some((item) => item.isLiveBaitStack),
+    "the stack is listed under «Наживки»");
+  dispatch(reloadedQuickHook, InventoryActionType.CATEGORY_SELECT, { categoryId: "rods" });
+  assertIntegration(!reloadedQuickHook.facade.getViewModel().inventory.items.some((item) => item.isLiveBaitStack),
+    "the stack is not a rod");
+  dispatch(reloadedQuickHook, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+  dispatch(reloadedQuickHook, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+  dispatch(reloadedQuickHook, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, { instanceId: "live-stack:crucian" });
+  dispatch(reloadedQuickHook, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "live-stack:crucian" });
+  stackModel = reloadedQuickHook.facade.getViewModel();
+  assertIntegration(stackModel.panel.mode === "live-bait-stack" && stackModel.panel.liveBaitStack.fish[0].lifeShare === 0.4 &&
+    stackModel.sections.activeId === "equipment", "activating the stack opens its panel in the editor's place");
+  dispatch(reloadedQuickHook, InventoryActionType.LIVE_BAIT_STACK_BACK);
+  stackModel = reloadedQuickHook.facade.getViewModel();
+  assertIntegration(stackModel.panel.mode === "loadout" && stackModel.sections.activeId === "backpack",
+    "«Назад» returns to the backpack section");
+  dispatch(reloadedQuickHook, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "live-stack:crucian" });
+  liveStacks.length = 0;
+  assertIntegration(reloadedQuickHook.facade.getViewModel().panel.mode === "loadout",
+    "a stack whose last live bait is gone closes its panel");
+  dispatch(reloadedQuickHook, InventoryActionType.LIVE_BAIT_STACK_BACK);
+  reloadedQuickHook.facade.setLiveBaitStacks({ stacks: () => [] });
   reloadedQuickHook.facade.setLiveBaitHook({ pendingFishId: null, preview: () => null });
   assertIntegration(!reloadedQuickHook.facade.getViewModel().header.baitSlots[0].item,
     "no chosen live bait: the empty hook's cell stays empty");

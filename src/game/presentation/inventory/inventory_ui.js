@@ -15,6 +15,9 @@ export class InventoryUI {
   #loadoutRenderer;
   #assemblyRenderer;
   #savedLoadoutRenderer;
+  #liveBaitStackRenderer;
+  #liveBaitStacks = null;
+  #liveBaitStackSignature = "";
   #inventoryRenderSignature = null;
   #inventoryRenderer;
   #tooltipPresenter;
@@ -137,6 +140,7 @@ export class InventoryUI {
     this.#loadoutRenderer = presentation.resolvedLoadoutRenderer;
     this.#assemblyRenderer = presentation.resolvedAssemblyRenderer;
     this.#savedLoadoutRenderer = presentation.resolvedSavedLoadoutRenderer;
+    this.#liveBaitStackRenderer = presentation.resolvedLiveBaitStackRenderer;
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
     this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
@@ -213,6 +217,9 @@ export class InventoryUI {
     this.#liveBaitHook = hook;
     this.#unsubscribeLiveBaitHook = hook.onChange(() => this.refreshWhenOpen());
   }
+
+  // Spec 163 stage 2: the backpack's live bait stacks (LiveBaitStackView) for «В садок».
+  setLiveBaitStacks(stacks) { this.#liveBaitStacks = stacks; }
 
   // The keepnet section view is composed after the inventory (it opens the inventory at its own section).
   attachKeepnetSection(view) {
@@ -318,11 +325,17 @@ export class InventoryUI {
     const viewModel = this.#normalizer.normalize(
       this.#facade.getViewModel(),
     );
+    // Spec 163: a stack gained or lost a live bait (keepnet «В інвентар», use, death): redraw once.
+    if (viewModel.liveBaitStackSignature !== this.#liveBaitStackSignature) {
+      this.render(this.#facade.getViewModel());
+      return;
+    }
     this.#updateDynamicVisuals(viewModel);
   }
 
   render(source) {
     const viewModel = this.#normalizer.normalize(source);
+    this.#liveBaitStackSignature = viewModel.liveBaitStackSignature;
     this.#longPressController.clear(this.#leftHost);
     this.#tooltipPresenter.hide();
     this.#tooltipPresenter.setContext(viewModel.tooltipContext);
@@ -371,6 +384,8 @@ export class InventoryUI {
       );
     } else if (viewModel.panel.mode === "saved-loadout") {
       this.#savedLoadoutRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.savedLoadout);
+    } else if (viewModel.panel.mode === "live-bait-stack") {
+      this.#liveBaitStackRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.liveBaitStack);
     }
 
     this.#headerRenderer.updateLoad(this.#headerNode, viewModel.header);
@@ -648,6 +663,15 @@ export class InventoryUI {
     this.#editorRootInstanceId = rootInstanceId;
     if (panel.mode === "saved-loadout") {
       this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
+      return;
+    }
+    if (panel.mode === "live-bait-stack") {
+      const back = () => this.#dispatch({ type: this.#actionTypes.LIVE_BAIT_STACK_BACK });
+      this.#dom.replaceChildren(this.#equipmentHost, this.#liveBaitStackRenderer.render(panel.liveBaitStack, {
+        onBack: back,
+        // D6: «В садок» stops showing the species in the backpack; the fish stay in the keepnet.
+        onReturnToKeepnet: (speciesId) => { this.#liveBaitStacks?.hide(speciesId); back(); },
+      }));
       return;
     }
     if (panel.mode === "assembly") {

@@ -3180,6 +3180,41 @@ class InventoryUiBehaviorCheck {
       });
     });
 
+    // Spec 163 stage 2: a live bait stack opens its panel on the left: every fish as a thumbnail with a life scale
+    // without numbers; «В садок» hides the species and goes back, «Назад» goes back; the tick patches the scales in place.
+    const hidden = [];
+    ui.setLiveBaitStacks({ hide: (speciesId) => hidden.push(speciesId) });
+    const stackFish = (id, lifeShare) => ({ id, name: "Карась", iconAsset: "", location: "keepnet", lifeShare });
+    const stackView = (shares) => ({ ...this.#loadoutViewModel(), liveBaitStackSignature: `crucian:${shares.length}`,
+      panel: { ...this.#loadoutViewModel().panel, mode: "live-bait-stack",
+        liveBaitStack: { speciesId: "crucian", name: "Карась", iconAsset: "", count: shares.length,
+          fish: shares.map((share, index) => stackFish(`c${index}`, share)) } } });
+    currentView = stackView([0.25, 0.8]);
+    ui.render(currentView);
+    const stackPanel = this.#findByClass(ui.rootNode, "inventory-live-bait-stack");
+    assert.ok(stackPanel && this.#findByClass(ui.rootNode, "inventory-main__left").contains(stackPanel),
+      "the stack panel takes the left panel");
+    const stackMeters = this.#findAllByClass(stackPanel, "inventory-live-bait-stack__meter");
+    assert.deepStrictEqual(stackMeters.map((meter) => meter.getAttribute("aria-valuenow")), ["25", "80"],
+      "one life scale per fish");
+    assert.strictEqual(this.#findAllByClass(stackPanel, "inventory-resource-meter__icon").length, 0, "the scale has no icon");
+    assert.ok(stackMeters.every((meter) => !meter.textContent), "the scale shows no number");
+    currentView = stackView([0.2, 0.75]);
+    ui.updateDynamicProgression(250);
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-live-bait-stack"), stackPanel, "the tick keeps the panel");
+    assert.strictEqual(stackMeters[0].getAttribute("aria-valuenow"), "20", "the tick patches the scale in place");
+    currentView = stackView([0.75]);
+    ui.updateDynamicProgression(250);
+    assert.notStrictEqual(this.#findByClass(ui.rootNode, "inventory-live-bait-stack"), stackPanel,
+      "a fish leaving the stack redraws it (10 -> 9)");
+    const [returnButton, backButton] = this.#findAllByClass(ui.rootNode, "inventory-live-bait-stack__button");
+    assert.deepStrictEqual([returnButton.textContent, backButton.textContent], ["В садок", "Назад"]);
+    returnButton.click();
+    assert.deepStrictEqual(hidden, ["crucian"], "«В садок» hides the species");
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_BACK });
+    backButton.click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_BACK });
+
     currentView = this.#editorViewModel();
     ui.render(currentView);
     this.#inventoryCard(ui.rootNode, "assembly-bag").click();
@@ -4115,6 +4150,7 @@ class InventoryUiBehaviorCheck {
       },
       { type: actions.LOADOUT_EQUIP_ALL, loadoutId: "saved-kit" },
       { type: actions.LOADOUT_PREVIEW_BACK, loadoutId: "saved-kit" },
+      { type: actions.LIVE_BAIT_STACK_BACK },
       { type: actions.AUTO_BAIT_CHANGE, enabled: true },
       { type: actions.AUTO_CHUM_CHANGE, enabled: false },
     ];

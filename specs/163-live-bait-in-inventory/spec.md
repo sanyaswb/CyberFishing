@@ -1,6 +1,6 @@
 # Spec 163 — Живець в інвентарі (стек виду)
 
-Статус: етап 1 виконано (v0.50.21), етапи 2–3 відкриті. Задача — `tasks.md`, «Spec 163».
+Статус: етапи 1 (v0.50.21, прийнято власником 2026-11-07) і 2 (v0.50.22) виконано, етап 3 відкритий. Задача — `tasks.md`, «Spec 163».
 
 ## Запит власника (2026-11-06)
 
@@ -64,6 +64,14 @@
   залишок / `sampledLifetimeMs`, акваріумна без дедлайну голоду — повна); `releaseBait` обраного → `bait_selected`; вид без
   живих живців прибирається при наступному записі чи догляді (D5). Картка садка: в обраного «В інвентар» (символ
   `backpack`) замість «Відпустити», вже показаний вид — неактивна з поясненням. `getView().liveBaits[].inInventory`.
+
+- **Етап 2 (v0.50.22):** `LiveBaitStackView` (застосунок: стеки з id картки `LiveBaitStackId` і id арту риби, «В садок»)
+  складено в `GameCompositionRoot` → `InventoryFacade.setLiveBaitStacks` / `InventoryUI.setLiveBaitStacks`. Модель
+  інвентаря: картка стеку (`itemType: "live_bait_stack"`, кількість — `quantity`) в «Усі»/«Наживки», +1 до
+  `backpackItemCount`, `liveBaitStackSignature`; режим лівої панелі `live-bait-stack` (`InventoryUiState.showLiveBaitStack` —
+  розділ «Екіпіровка», `LIVE_BAIT_STACK_BACK` — назад до розділу); `InventoryLiveBaitStackRenderer` (мініатюри + спільна
+  шкала `parameter` без іконки й числа, «В садок», «Назад»); тік 250 мс патчить шкали, зміна підпису — одна повна
+  перемальовка. Утримання стеку нічого не робить. Стили — `loadout.css` поряд із переглядом збірки.
 
 ## Перевірки
 

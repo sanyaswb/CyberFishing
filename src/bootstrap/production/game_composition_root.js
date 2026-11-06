@@ -70,6 +70,7 @@ import { FishVisualVariantResolver } from "../../game/presentation/fish/fish_vis
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { LiveBaitHookController } from "../../game/application/live_bait/live_bait_hook_controller.js";
+import { LiveBaitStackView } from "../../game/application/live_bait/live_bait_stack_view.js";
 import { GameApplication } from "../../game/application/session/game_application.js";
 import { GameViewportFacade } from "../../game/presentation/viewport/game_viewport_facade.js";
 import { RodVisualOffsetSystem } from "../../game/application/fishing/rod_visual_offset_system.js";
@@ -1279,6 +1280,10 @@ export class GameCompositionRoot {
     inventoryFacade.setLiveBaitHook(liveBaitHook);
     systems.inventoryUI.setLiveBaitHook(liveBaitHook);
     keepnetUI?.setLiveBaitHook(liveBaitHook);
+    // Spec 163 stage 2: the backpack shows a stack per species chosen with «В інвентар».
+    const liveBaitStacks = new LiveBaitStackView({ liveBait, iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath) });
+    inventoryFacade.setLiveBaitStacks(liveBaitStacks);
+    systems.inventoryUI.setLiveBaitStacks(liveBaitStacks);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, logger: new ConsoleLogger(),

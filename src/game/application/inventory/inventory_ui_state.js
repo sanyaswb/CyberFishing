@@ -18,6 +18,9 @@ export class InventoryUiState {
   #panelMode = "loadout";
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
+  // Spec 163: the species whose live bait stack the left panel shows, and the section to return to.
+  #viewingLiveBaitSpeciesId = null;
+  #liveBaitStackReturnSectionId = null;
   #rodRemovalStep = null;
   #editorReturnContext = null;
   // Equipment, backpack or keepnet (spec 067). It survives closing for the rest of the session.
@@ -45,6 +48,7 @@ export class InventoryUiState {
       panelMode: this.#panelMode,
       editingRootInstanceId: this.#editingRootInstanceId,
       viewingLoadoutId: this.#viewingLoadoutId,
+      viewingLiveBaitSpeciesId: this.#viewingLiveBaitSpeciesId,
       rodRemovalStep: this.#rodRemovalStep,
       activeSectionId: this.#activeSectionId,
     });
@@ -231,6 +235,21 @@ export class InventoryUiState {
     this.#showPanel("saved-loadout", null, loadoutId);
   }
 
+  // Spec 163 D4: the stack panel takes the editor's place (the equipment section on phones); back returns to the section.
+  showLiveBaitStack(speciesId) {
+    const returnSectionId = this.#activeSectionId;
+    this.#showPanel("live-bait-stack", null, null);
+    this.#viewingLiveBaitSpeciesId = speciesId;
+    this.#liveBaitStackReturnSectionId = returnSectionId;
+    this.#activeSectionId = "equipment";
+  }
+
+  backFromLiveBaitStack() {
+    const sectionId = this.#liveBaitStackReturnSectionId || "equipment";
+    this.showLoadoutPanel();
+    this.#activeSectionId = sectionId;
+  }
+
   showRodRemoval(rootInstanceId, step = "choice") {
     this.showAssemblyEditor(rootInstanceId);
     this.#rodRemovalStep = step;
@@ -242,6 +261,8 @@ export class InventoryUiState {
     this.#rodRemovalStep = null;
     this.#editingRootInstanceId = editingRootInstanceId;
     this.#viewingLoadoutId = viewingLoadoutId;
+    this.#viewingLiveBaitSpeciesId = null;
+    this.#liveBaitStackReturnSectionId = null;
     this.#selectedInstanceId = null;
     this.#clearPick();
     this.clearPlacementOrder();

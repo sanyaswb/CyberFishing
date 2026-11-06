@@ -875,14 +875,15 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
-### G-129 Live bait species stack in the backpack; the chosen live bait cannot be released (P2, stage 1 done in v0.50.21)
+### G-129 Live bait species stack in the backpack; the chosen live bait cannot be released (P2, stages 1-2 done in v0.50.21-22)
 Found: 2026-11-06, owner ([spec 163](../specs/163-live-bait-in-inventory/spec.md)): the chosen live bait could be released, and the
 backpack's bait section could not show the live baits.
 Change (stage 1): the chosen live bait's «Відпустити» is replaced by «В інвентар» (refused in the service: `bait_selected`);
 «В інвентар» marks its species for a backpack stack (live bait save schema 6, `inventorySpeciesIds`, migrated from 5 as
 empty); the stack is a view of that species' keepnet + aquarium live baits (they stay in the keepnet), least life first with
-a life share; a released, dead or used-up live bait leaves it and the species' last one removes it. Stages 2-3: the backpack
-card and editor, choosing the stack for the hook.
+a life share; a released, dead or used-up live bait leaves it and the species' last one removes it. Stage 2: the backpack
+card (count in the corner, one slot, no weight) and its panel (thumbnails with life scales, «В садок»). Stage 3: choosing
+the stack for the hook.
 Evidence: `live-bait` (stacks, release refusal, death/use/release, reload, schema 6), `keepnet` (card buttons and the
 section's «В інвентар»); game-cycle report unchanged (it does not use live bait).
 

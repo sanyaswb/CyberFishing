@@ -413,7 +413,8 @@
 │  │  │  │  ├── live_bait_command_service.js
 │  │  │  │  ├── live_bait_hook_controller.js
 │  │  │  │  ├── live_bait_motion_adapter.js
-│  │  │  │  └── live_bait_snapshot_store.js
+│  │  │  │  ├── live_bait_snapshot_store.js
+│  │  │  │  └── live_bait_stack_view.js
 │  │  │  ├── power
 │  │  │  │  └── device_power_service.js
 │  │  │  ├── radio
@@ -696,6 +697,7 @@
 │  │  │  │  ├── feed_supply_state.js
 │  │  │  │  ├── live_bait_eligibility_policy.js
 │  │  │  │  ├── live_bait_motion_profile_resolver.js
+│  │  │  │  ├── live_bait_stack_id.js
 │  │  │  │  └── live_bait_succession.js
 │  │  │  ├── loadouts
 │  │  │  │  ├── equipment_loadout.js
@@ -797,6 +799,7 @@
 │  │     │  ├── inventory_item_parameters_resolver.js
 │  │     │  ├── inventory_item_tree_view_factory.js
 │  │     │  ├── inventory_item_view_factory.js
+│  │     │  ├── inventory_live_bait_stack_renderer.js
 │  │     │  ├── inventory_load_meter_config.js
 │  │     │  ├── inventory_load_renderer.js
 │  │     │  ├── inventory_loadout_panel_renderer.js

@@ -70,7 +70,7 @@ async function main() {
   assert.equal(service.selectBait("claim").ok, false);
 
   checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
-  checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
+  await checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
   await checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
 
   const aquarium = create();
@@ -210,7 +210,8 @@ async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }
 // Spec 163 stage 1: the backpack shows a stack per species (keepnet + aquarium live baits, least life first, life share
 // without numbers); the fish stay in the keepnet; the chosen one cannot be released; a used-up, dead or released bait
 // shrinks the stack and its last one removes the species; the choice survives a reload (schema 6).
-function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
+async function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
+  const { LiveBaitStackView } = await import("../../../src/game/application/live_bait/live_bait_stack_view.js");
   let now = 9000;
   const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
@@ -250,7 +251,14 @@ function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
   assert.equal(JSON.parse(values.get("fishing_game_player_live_bait_v1")).inventorySpeciesIds.length, 0,
     "D5: the species' last live bait used up removes its stack");
   assert.equal(service.showSpeciesInInventory("minnow").ok, true);
-  assert.equal(service.hideSpeciesFromInventory("minnow").ok, true, "D6: «В садок» removes the stack");
+  // Stage 2: the inventory's view of the stacks: card ids, the fish art's asset ids, «В садок».
+  const stackView = new LiveBaitStackView({ liveBait: service, iconAssetOf: (path) => path ? `id:${path}` : null });
+  const [minnowStack] = stackView.stacks();
+  assert(minnowStack.id === "live-stack:minnow" && minnowStack.count === 1 && minnowStack.iconAsset === null &&
+    minnowStack.fish[0].id === "m" && minnowStack.fish[0].lifeShare > 0);
+  assert.equal(stackView.hide("minnow").ok, true, "D6: «В садок» removes the stack");
+  assert.equal(service.showSpeciesInInventory("minnow").ok, true);
+  assert.equal(service.hideSpeciesFromInventory("minnow").ok, true);
   assert.equal(service.hideSpeciesFromInventory("minnow").reason, "not_shown");
   assert.equal(service.getView().liveBaits.find((fish) => fish.id === "m").location, "keepnet", "the fish stays in the keepnet");
 }

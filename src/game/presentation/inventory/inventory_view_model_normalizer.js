@@ -34,10 +34,13 @@ export class InventoryViewModelNormalizer {
   normalize(source = {}) {
     const panel = source.panel || {};
     const requestedMode = panel.mode || source.mode;
-    const mode = ["assembly", "saved-loadout"].includes(requestedMode) ? requestedMode : "loadout";
+    const liveBaitStack = this.#normalizeLiveBaitStack(panel.liveBaitStack);
+    const mode = ["assembly", "saved-loadout"].includes(requestedMode) ? requestedMode
+      : requestedMode === "live-bait-stack" && liveBaitStack ? requestedMode : "loadout";
 
     return Object.freeze({
       isOpen: source.isOpen !== false,
+      liveBaitStackSignature: this.#text(source.liveBaitStackSignature, ""),
       equipmentFeedback: source.equipmentFeedback || null,
       sections: Object.freeze({ activeId: INVENTORY_SECTIONS.items.some((section) => section.id === source.sections?.activeId)
         ? source.sections.activeId : INVENTORY_SECTIONS.defaultSectionId,
@@ -47,6 +50,7 @@ export class InventoryViewModelNormalizer {
       tooltipContext: this.#normalizeTooltipContext(source.tooltipContext),
       panel: Object.freeze({
         mode,
+        liveBaitStack,
         savedLoadout: this.#normalizeSavedLoadout(panel.savedLoadout || source.inventory?.savedLoadout),
         loadout: this.#normalizeLoadout(panel.loadout || source.loadout),
         assembly: this.#normalizeAssembly(
@@ -152,6 +156,20 @@ export class InventoryViewModelNormalizer {
       slots: Object.freeze(this.#normalizeSlots(source.slots, "saved-loadout")),
       canEquipAll: source.canEquipAll !== false,
       equipWarning: this.#text(source.equipWarning, ""),
+    });
+  }
+
+  // Spec 163 D4: the stack panel: the species and each fish with its life share (0..1) for the scale without numbers.
+  #normalizeLiveBaitStack(source) {
+    if (!source || typeof source.speciesId !== "string" || !source.speciesId) return null;
+    return Object.freeze({
+      speciesId: source.speciesId, name: this.#text(source.name, ""), iconAsset: this.#text(source.iconAsset, ""),
+      count: Math.max(0, Math.floor(this.#finite(source.count, 0))),
+      fish: Object.freeze(this.#array(source.fish).map((fish) => Object.freeze({
+        id: this.#text(fish?.id, ""), name: this.#text(fish?.name, ""), iconAsset: this.#text(fish?.iconAsset, ""),
+        location: fish?.location === "aquarium" ? "aquarium" : "keepnet",
+        lifeShare: Math.min(1, Math.max(0, this.#finite(fish?.lifeShare, 0))),
+      }))),
     });
   }
 

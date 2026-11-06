@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.22 - Live bait stack in the backpack
+
+- Spec 163 stage 2: a species shown with «В інвентар» is a bait-like stack card in the backpack (fish picture, count in the corner, one slot, no weight); opening it lists every fish with a life scale without numbers, «В садок» removes the stack. The fish stay in the keepnet.
+
 ## v0.50.21 - Chosen live bait goes to the inventory
 
 - Spec 163 stage 1: the chosen live bait can no longer be released; its card has «В інвентар» (backpack icon), which marks its species for a backpack stack of its keepnet and aquarium live baits (they stay in the keepnet); a used-up, dead or released live bait leaves the stack. The backpack card follows in stage 2.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.13 - Perch trophy weight
 
 - TK-232: a radioactive perch from 0.833 kg is a trophy (owner's value); the victory ruler shows its trophy zone.
-
-## v0.50.12 - Victory window corrections
-
-- TK-231: the victory window sizes the fish by level like the keepnet (no frame, nothing cropped), tints its semi-transparent panel by the fish's quality like an inventory card (glow animates only for a unique fish), shows the caught weight unrounded, the level in the panel's corner and the buttons «Забрати» / «Відпустити».

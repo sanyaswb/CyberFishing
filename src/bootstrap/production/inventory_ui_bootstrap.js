@@ -26,6 +26,7 @@ import { InventoryPickCancelController } from "../../platform/browser/dom/invent
 import { BrowserTimeoutScheduler } from "../../platform/browser/time/browser_timeout_scheduler.js";
 import { InventoryResourceMeterRenderer } from "../../game/presentation/inventory/inventory_resource_meter_renderer.js";
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
+import { InventoryLiveBaitStackRenderer, INVENTORY_LIVE_BAIT_STACK_LABELS } from "../../game/presentation/inventory/inventory_live_bait_stack_renderer.js";
 import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/inventory/inventory_saved_loadout_preview_renderer.js";
 import { InventoryTooltipPresenter } from "../../game/presentation/inventory/inventory_tooltip_presenter.js";
 import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
@@ -231,6 +232,8 @@ export class InventoryUiBootstrap {
         uiSurface,
         swipeEnabled: InventoryUiBootstrap.#swipeEnabled(dom, "--inventory-editor-swipe"),
       });
+    const resolvedLiveBaitStackRenderer = new InventoryLiveBaitStackRenderer({ domFactory: dom,
+      resourceMeterRenderer: resolvedResourceMeterRenderer, labels: INVENTORY_LIVE_BAIT_STACK_LABELS });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||
       new InventorySavedLoadoutPreviewRenderer({
@@ -268,6 +271,7 @@ export class InventoryUiBootstrap {
       resolvedLoadoutRenderer,
       resolvedAssemblyRenderer,
       resolvedSavedLoadoutRenderer,
+      resolvedLiveBaitStackRenderer,
       resolvedInventoryRenderer,
       sections: INVENTORY_SECTIONS,
       sectionSwipeController: new SwipePagerController({ isEnabled: sectionSwipeEnabled, positionProperty: null,

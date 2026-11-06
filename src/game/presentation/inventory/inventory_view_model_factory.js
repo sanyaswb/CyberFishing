@@ -47,6 +47,7 @@ export class InventoryViewModelFactory {
   #loadValueProvider;
   #consumableTargets;
   #liveBaitHook = null;
+  #liveBaitStacks = null;
 
   constructor({
     repository,
@@ -134,9 +135,12 @@ export class InventoryViewModelFactory {
       uiState.panelMode === "assembly" &&
       Boolean(editingRootInstanceId) &&
       this.#assemblyStates.has(editingRootInstanceId);
+    // Spec 163: the backpack's live bait stacks (a view of the keepnet's live baits, one backpack slot each, no weight).
+    const liveBaitStacks = this.#liveBaitStacks?.stacks() || [];
     const inventoryContext = {
       mode: uiState.consumableKind ? "consumable" : isAttachmentEditor ? "assembly" : "loadout",
       rootInstanceId: uiState.consumableKind ? this.#equipmentState.getRootInstanceId("tackle") : editingRootInstanceId,
+      liveBaitStacks,
     };
     let visibleInventoryItems = this.#contextItemFilter.filter(
       accessibleRawItems,
@@ -170,8 +174,12 @@ export class InventoryViewModelFactory {
     const baitSlots = this.#createConsumableSlots("bait", uiState);
     // TK-234: a live bait on the hook counts the live baits of its species that can follow it, not backpack baits.
     const liveBaitReserve = baitSlots.length === 1 && baitSlots[0].liveBait ? baitSlots[0].stock : null;
+    const liveBaitStack = uiState.viewingLiveBaitSpeciesId
+      ? liveBaitStacks.find((stack) => stack.speciesId === uiState.viewingLiveBaitSpeciesId) || null : null;
     return {
       isOpen: uiState.isOpen === true,
+      // Spec 163: which stacks the view shows; a change (a new, used-up or dead live bait) needs a full redraw.
+      liveBaitStackSignature: liveBaitStacks.map((stack) => `${stack.speciesId}:${stack.count}`).join("|"),
       equipmentFeedback: uiState.equipmentFeedback || null,
       sections: {
         activeId: uiState.activeSectionId,
@@ -179,7 +187,7 @@ export class InventoryViewModelFactory {
           const packSize = Math.max(1, Number(this.#itemViews.create(item.instanceId)?.packSize) || 1);
           const quantity = Math.max(1, Number(item.quantity) || 1);
           return total + Math.ceil(quantity / packSize);
-        }, 0),
+        }, 0) + liveBaitStacks.length,
       },
       header: {
         baitSlots,
@@ -198,7 +206,9 @@ export class InventoryViewModelFactory {
       settings: this.#settings.snapshot(),
       tooltipContext: this.#createTooltipContext(equipmentReadModel),
       panel: {
-        mode: ["assembly", "saved-loadout"].includes(uiState.panelMode) ? uiState.panelMode : "loadout",
+        mode: ["assembly", "saved-loadout"].includes(uiState.panelMode) ? uiState.panelMode
+          : uiState.panelMode === "live-bait-stack" && liveBaitStack ? "live-bait-stack" : "loadout",
+        liveBaitStack,
         savedLoadout,
         loadout: this.#createEquipmentPanel(
           accessibleRawItems,
@@ -233,6 +243,9 @@ export class InventoryViewModelFactory {
 
   // Spec 162 stage 2: the chosen live bait's port (LiveBaitHookController), set once the live bait service exists.
   setLiveBaitHook(hook) { this.#liveBaitHook = hook; }
+
+  // Spec 163 stage 2: the backpack's live bait stacks (LiveBaitStackView).
+  setLiveBaitStacks(stacks) { this.#liveBaitStacks = stacks; }
 
   #createConsumableSlots(kind, uiState) {
     const targets = this.#consumableTargets.list(kind);
@@ -658,6 +671,10 @@ export class InventoryViewModelFactory {
         const card = this.#itemViews.createLoadout(loadout);
         if (this.#matchesCategory(card, categoryId)) categoryItems.push(card);
       }
+      for (const stack of context.liveBaitStacks || []) {
+        const card = InventoryViewModelFactory.#liveBaitStackCard(stack);
+        if (this.#matchesCategory(card, categoryId)) categoryItems.push(card);
+      }
     }
     const requestedSubfilterIds = new Set(
       Array.isArray(uiState.activeSubfilterIds)
@@ -733,6 +750,12 @@ export class InventoryViewModelFactory {
     );
   }
 
+  // Spec 163 D2: a stack's card looks like a bait card: the fish's picture and the count in the corner.
+  static #liveBaitStackCard(stack) {
+    return { instanceId: stack.id, itemId: "live_bait_stack", itemType: "live_bait_stack", name: stack.name,
+      iconAsset: stack.iconAsset, icon: "fish", quantity: stack.count, isLiveBaitStack: true, speciesId: stack.speciesId };
+  }
+
   #matchesCategory(item, categoryId) {
     if (categoryId === "all") return true;
     if (categoryId === "compatible") return false;
@@ -747,7 +770,7 @@ export class InventoryViewModelFactory {
       return ["hook", "feeder_rig", "lure", "float"].includes(itemType);
     }
     if (categoryId === "baits") {
-      return ["bait", "fishing_bait"].includes(itemType);
+      return ["bait", "fishing_bait", "live_bait_stack"].includes(itemType);
     }
     if (categoryId === "chums") {
       return ["chum_mix", "groundbait", "aquarium_feed"].includes(itemType);
