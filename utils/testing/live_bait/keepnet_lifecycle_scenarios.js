@@ -19,10 +19,10 @@ module.exports = async function checkKeepnetLifecycle() {
   const metadata = fixture();
   const service = metadata.create();
   service.keepCatch(fish, "catch");
-  assert.equal(service.getView().keepnet[0].rarity.halfSteps, 3, "caught rarity must survive retention");
-  service.convertStoredCatch("catch");
+  // Spec 162: a kept fish that suits live bait is a live bait at once, with its artwork and rarity.
+  assert.equal(service.getView().liveBaits[0].rarity.halfSteps, 3, "caught rarity must survive retention");
   let bait = metadata.create().getView().liveBaits[0];
-  assert.equal(bait.imagePath, fish.imagePath, "converted live bait keeps its exact artwork");
+  assert.equal(bait.imagePath, fish.imagePath, "an auto live bait keeps its exact artwork");
   assert.equal(bait.rarity.halfSteps, 3, "live bait retains rarity after reload");
   bait.rarity.halfSteps = 12;
   assert.equal(service.getView().liveBaits[0].rarity.halfSteps, 3, "read models cannot mutate stored rarity");

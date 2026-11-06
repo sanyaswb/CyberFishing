@@ -44,17 +44,18 @@ export class KeepnetCardRenderer {
     card.append(this.#image(fish), info);
     const actions = this.#el("div", "keepnet-section__actions");
     const focusables = [];
-    const action = (id, text) => {
+    const action = (id, text, disabledReason = null) => {
       const button = this.#button("keepnet-section__action", text, `${fish.id}:${id}`, () => onAction(fish, id));
+      if (disabledReason) { button.disabled = true; button.title = disabledReason; }
       actions.append(button); focusables.push(button);
     };
     if (pendingRelease === fish.id) {
       action("confirm-release", labels.confirmRelease); action("cancel-release", labels.cancel);
     } else {
-      if (fish.kind === "catch" && fish.canConvert) action("convert", labels.convert);
+      // Spec 162: a live bait goes on the hook («На живця») or to the aquarium, which needs one bought.
       if (fish.kind === "live_bait") {
         action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select);
-        if (aquarium?.owned) action("transfer", labels.transfer);
+        if (fish.location !== "aquarium") action("transfer", labels.transfer, aquarium?.owned ? null : labels.aquariumRequired);
       }
       action("release", labels.release);
     }

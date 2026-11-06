@@ -11,7 +11,7 @@ export const KEEPNET_LABELS = Object.freeze({
   kinds: [["all", "Уся риба"], ["catch", "Забраний улов"], ["live_bait", "Живці"]],
   empty: "За цими фільтрами риби немає.", unknownRarity: "Рідкість: не збережена",
   catch: "Забраний улов", protected: "Живець · під захистом",
-  convert: "На живця", select: "Вибрати живця", deselect: "Скасувати вибір",
+  select: "На живця", deselect: "Скасувати вибір", aquariumRequired: "Спочатку встановіть акваріум у будинку",
   transfer: "В акваріум", release: "Відпустити", confirmRelease: "Так, відпустити", cancel: "Залишити",
   done: "Зміни збережено.", moved: "Рибу перенесено в акваріум.",
   fallback: "Акваріум заповнений. Живця залишено в садку з власним таймером.",

@@ -695,7 +695,8 @@
 │  │  │  │  ├── caught_fish_rarity.js
 │  │  │  │  ├── feed_supply_state.js
 │  │  │  │  ├── live_bait_eligibility_policy.js
-│  │  │  │  └── live_bait_motion_profile_resolver.js
+│  │  │  │  ├── live_bait_motion_profile_resolver.js
+│  │  │  │  └── live_bait_succession.js
 │  │  │  ├── loadouts
 │  │  │  │  ├── equipment_loadout.js
 │  │  │  │  ├── equipment_loadout_repository.js

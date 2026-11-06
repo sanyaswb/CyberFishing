@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.11 - Automatic live bait by species
+
+- TK-229.3 stage 1 (spec 162): a kept fish up to 100 g becomes a live bait at once (saved catches convert on load); a live bait card has «На живця» and «В акваріум» (disabled without an aquarium); when the chosen live bait is used up, dies or is released, the same species' bait with the least life left follows.
+
 ## v0.50.10 - Victory window
 
 - TK-230: the victory panel is a DOM window (spec 161): a rounded rectangular picture that opens the fish on the whole screen over a blur, plates with icons (weight, trophy cup, radiation sign with check or cross), rarity stars and a weight ruler with the green trophy segment. No per-frame canvas blur any more.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.2 - convert-images v2
 
 - TK-223: convert-images is rewritten: batch/thumbnails/low-copies/spine-region commands, a guided menu and help, files in parallel, failures fail the run, --masters moves masters to asset-sources, --max-size and --dry-run; output bytes unchanged.
-
-## v0.50.1 - Fish art without empty edges
-
-- TK-222: convert-images --trim cuts empty edges; the fish art is re-encoded without them, so the fish is larger in keepnet cards; the catch panel and the aquarium draw it whole with its proportions. Game-cycle report unchanged.

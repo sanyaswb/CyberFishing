@@ -2,6 +2,7 @@ import { AquariumState } from "../../domain/live_bait/aquarium_state.js";
 import { FeedSupplyState } from "../../domain/live_bait/feed_supply_state.js";
 import { CatchDispositionService } from "./catch_disposition_service.js";
 import { CaughtFishRarity } from "../../domain/live_bait/caught_fish_rarity.js";
+import { LiveBaitSuccession } from "../../domain/live_bait/live_bait_succession.js";
 
 export class LiveBaitCommandService {
   #config;
@@ -28,6 +29,10 @@ export class LiveBaitCommandService {
     else {
       this.#state = loaded.state;
       this.advance();
+      // Spec 162: catches kept before auto live bait that suit live bait become live baits once.
+      if (this.#state.fish.some((fish) => fish.purpose === "catch" && fish.disposition === "keepnet" && this.canConvert(fish))) {
+        this.#commit((state) => (this.#catchDisposition.convertEligibleStored(state) ? null : "nothing_to_convert"));
+      }
     }
   }
   get error() { return this.#error; }
@@ -52,10 +57,9 @@ export class LiveBaitCommandService {
     const fish = state.fish.find((item) => item.id === id);
     if (!fish || fish.purpose !== "live_bait" || !["aquarium", "keepnet"].includes(fish.disposition)) return "bait_unavailable";
     fish.disposition = "released";
-    if (state.selectedFishId === id) state.selectedFishId = null;
+    LiveBaitSuccession.replace(state, fish);
     return null;
   }); }
-  convertStoredCatch(id) { return this.#commit((state) => this.#catchDisposition.convertStored(state, id)); }
   selectBait(id) { return this.#commit((state) => {
     if (state.fish.some((fish) => fish.disposition === "hook")) return "hook_busy";
     if (id === null) { state.selectedFishId = null; return null; }
@@ -86,7 +90,7 @@ export class LiveBaitCommandService {
     const fish = state.fish.find((entry) => entry.id === id);
     if (!fish || fish.disposition === "consumed") return "already_consumed";
     if (fish.disposition !== "hook") return "bait_unavailable";
-    fish.disposition = "consumed"; if (state.selectedFishId === id) state.selectedFishId = null; return null;
+    fish.disposition = "consumed"; LiveBaitSuccession.replace(state, fish); return null;
   }); }
   endLiveBaitCast(id) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);

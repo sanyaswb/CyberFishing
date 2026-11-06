@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-229.3 stage 1: fish up to 100 g become live baits when kept; next live bait of the same species follows automatically.",
   "TK-230: victory window in the DOM: rounded picture, full-screen fish, icon plates, weight ruler with the trophy segment.",
   "TK-229.1-2: keepnet fish card text in a grey box (name, level, weight, SVG stars); buttons full width or half by half.",
   "TK-229: filter plates use the controls panel's inset on every side; filter rows and plates have no scrollbar.",

@@ -51,20 +51,25 @@ async function main() {
   assert.equal(service.resolveCatch("too-heavy", { ...fish, weight: .101 }, "live_bait").ok, false);
   assert.equal(service.resolveCatch("released", fish, "release").ok, true);
   assert.equal(service.getView().keepnet.length, 0);
+  // Spec 162: a kept fish that suits live bait becomes one at once; a heavier one stays a catch.
   assert.equal(service.resolveCatch("claim", fish, "claim").ok, true);
-  assert.equal(service.getView().keepnet.length, 1);
-  assert.equal(service.convertStoredCatch("claim").ok, true);
+  assert.equal(service.getView().keepnet.length, 0, "a kept fish that suits live bait is not a catch");
   assert.equal(service.getView().liveBaits[0].id, "claim");
+  assert.equal(service.getView().liveBaits[0].location, "keepnet", "auto live bait stays in the keepnet");
+  assert.equal(service.resolveCatch("heavy", { ...fish, weight: .5 }, "claim").ok, true);
+  assert.equal(service.getView().keepnet.length, 1, "a heavier fish stays a catch");
   const keepnetModel = new KeepnetViewModel().build(service.getView(), { kind: "live_bait",
     speciesId: "crucian_stalker" });
   assert.equal(keepnetModel.filtered.length, 1);
   assert.equal(keepnetModel.filtered[0].id, "claim");
-  assert.equal(new KeepnetViewModel().build(service.getView(), { kind: "catch" }).filtered.length, 0);
+  assert.equal(new KeepnetViewModel().build(service.getView(), { kind: "catch" }).filtered.length, 1);
   now += LIVE_BAIT_CONFIG.lifetimeMinMs;
   assert.equal(service.advance().ok, true);
   assert.equal(service.getView().deadCount, 1);
   assert.equal(create().getView().deadCount, 1, "reload does not revive or reroll");
   assert.equal(service.selectBait("claim").ok, false);
+
+  checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
 
   const aquarium = create();
   assert.equal(aquarium.buyAquarium().ok, true);
@@ -155,6 +160,48 @@ async function main() {
   assert.equal(values.get("fishing_game_player_live_bait_v1"), invalidBytes, "invalid bytes remain recoverable");
   values.set("fishing_game_player_live_bait_v1", original);
   console.log("Live bait passed: eligibility, exactly-once disposition, one-hook lifecycle, save conflicts, time/death, aquarium levels/feed/auto care, input and swim-only half-speed motion.");
+}
+
+// Spec 162: the chosen live bait is followed by the same species' live bait with the least life left (used up, dead or
+// released); saved catches that suit live bait become live baits on load.
+function checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
+  let now = 5000;
+  const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
+  const rolls = [];
+  const rng = { next: () => rolls.shift() ?? 0 };
+  const create = (config = LIVE_BAIT_CONFIG) => composeLiveBait({ storage, clock: { nowMs: () => now }, rng, fishDb, config });
+  const service = create();
+  const crucian = { id: "crucian_stalker", weight: .05, level: 1, name: "Crucian" };
+  const minnow = { id: "minnow", weight: .04, level: 1, name: "Minnow" };
+  const keep = (id, fish, roll) => { rolls.length = 0; rolls.push(roll); assert.equal(service.resolveCatch(id, fish, "claim").ok, true); };
+  keep("long", crucian, 0.9);
+  keep("short", crucian, 0.1);
+  keep("other", minnow, 0);
+  keep("minnow-2", minnow, 0.5);
+  const life = (id) => service.getView().liveBaits.find((entry) => entry.id === id).remainingMs;
+  assert(life("other") < life("short") && life("short") < life("long"));
+  assert.equal(service.selectBait("long").ok, true);
+  assert.equal(service.beginLiveBaitCast("long", { compatible: true, free: true, hookCount: 1 }).ok, true);
+  assert.equal(service.settleBaitLoss("long").ok, true);
+  assert.equal(service.getSelectedBait().fishId, "short", "a used-up bait is followed by its species' bait with the least life");
+  assert.equal(service.releaseBait("short").ok, true);
+  assert.equal(service.getSelectedBait(), null, "no live bait of the species is left: the choice clears");
+  assert.equal(service.selectBait("other").ok, true);
+  now += life("other");
+  assert.equal(service.advance().ok, true);
+  assert.equal(service.getSelectedBait().fishId, "minnow-2", "a dead bait is followed by its species' next bait");
+
+  // Migration: a catch kept under an older rule (here a lighter limit) becomes a live bait when loaded.
+  values.delete("fishing_game_live_bait_v1");
+  for (const key of [...values.keys()]) if (key !== "fishing_game_player_inventory_v2") values.delete(key);
+  const old = create({ ...LIVE_BAIT_CONFIG, maxWeightKg: 0.01 });
+  assert.equal(old.resolveCatch("stored", crucian, "claim").ok, true);
+  assert.equal(old.getView().keepnet.length, 1);
+  const reloaded = create();
+  assert.equal(reloaded.getView().keepnet.length, 0, "a stored catch that suits live bait is converted on load");
+  assert.equal(reloaded.getView().liveBaits.find((entry) => entry.id === "stored").location, "keepnet");
+  assert.equal(create().getView().liveBaits.length, 1, "the conversion is saved once");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

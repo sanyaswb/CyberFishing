@@ -27,11 +27,13 @@ export class CatchDispositionService {
     const collection = new CaughtFishCollection(state.fish, state.resolvedCatchIds);
     if (action === "release") { collection.resolve(catchId, action); return null; }
     if (action === "live_bait" && !this.#eligibility.resolve(fish)) return "bait_ineligible";
+    // Spec 162: a kept fish that suits live bait becomes one at once (in the keepnet, with its own lifetime).
+    const autoLiveBait = action === "claim" && !!this.#eligibility.resolve(fish);
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
     const toAquarium = action === "live_bait" && aquarium.owned && collection.countAt("aquarium") < aquarium.capacity;
     const location = toAquarium ? "aquarium" : "keepnet";
     if (location === "keepnet" && collection.countAt("keepnet") + collection.countAt("hook") >= this.#config.keepnetCapacity) return "keepnet_full";
-    const lifetime = action === "live_bait" ? this.#sampleLifetime() : null;
+    const lifetime = action === "live_bait" || autoLiveBait ? this.#sampleLifetime() : null;
     collection.resolve(catchId, action, {
       id: catchId, speciesId, name: String(fish.name || this.#fishDb.get(speciesId).name), weightKg,
       level: Number.isFinite(fish.level) ? fish.level : 1,
@@ -40,25 +42,26 @@ export class CatchDispositionService {
       anomaly: typeof fish.anomaly === "string" ? fish.anomaly : null,
       hasAnomaly: fish.hasAnomaly === true || (!!fish.anomaly && fish.anomaly !== "none"),
       isUnique: fish.isUnique === true || fish.hasAnomaly === true || (!!fish.anomaly && fish.anomaly !== "none"),
-      purpose: action === "live_bait" ? "live_bait" : "catch", disposition: location,
+      purpose: action === "live_bait" || autoLiveBait ? "live_bait" : "catch", disposition: location,
       caughtAtMs: state.lastAppliedAtMs, sampledLifetimeMs: lifetime, remainingLifetimeMs: lifetime,
       starvationDeadlineMs: null,
     });
     return null;
   }
 
-  convertStored(state, id) {
-    const fish = state.fish.find((item) => item.id === id);
-    if (!fish || fish.disposition !== "keepnet" || fish.purpose !== "catch") return "not_found";
-    if (!this.#eligibility.resolve({ speciesId: fish.speciesId, weightKg: fish.weightKg })) return "bait_ineligible";
-    fish.purpose = "live_bait";
-    fish.sampledLifetimeMs = this.#sampleLifetime();
-    fish.remainingLifetimeMs = fish.sampledLifetimeMs;
-    const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
-    if (aquarium.owned && state.fish.filter((item) => item.disposition === "aquarium").length < aquarium.capacity) {
-      fish.disposition = "aquarium";
+  // Spec 162: stored catches that suit live bait (saves from before the rule) become live baits in the keepnet; the
+  // count of converted fish.
+  convertEligibleStored(state) {
+    let converted = 0;
+    for (const fish of state.fish) {
+      if (fish.purpose !== "catch" || fish.disposition !== "keepnet") continue;
+      if (!this.#eligibility.resolve({ speciesId: fish.speciesId, weightKg: fish.weightKg })) continue;
+      fish.purpose = "live_bait";
+      fish.sampledLifetimeMs = this.#sampleLifetime();
+      fish.remainingLifetimeMs = fish.sampledLifetimeMs;
+      converted++;
     }
-    return null;
+    return converted;
   }
 
   #sampleLifetime() {

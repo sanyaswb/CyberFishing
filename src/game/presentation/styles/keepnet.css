@@ -116,6 +116,7 @@
   padding-top: 8px;
 }
 .keepnet-section__action { width: 100%; }
+.keepnet-section__action:disabled { opacity: 0.45; cursor: not-allowed; }
 .keepnet-section__action:last-child:nth-child(odd) { grid-column: 1 / -1; }
 /* TK-229.2: the card's text in its own grey, rounded box; rarity as stars (victory panel's colours). */
 .keepnet-section__info {

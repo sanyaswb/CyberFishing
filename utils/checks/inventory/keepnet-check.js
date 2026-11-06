@@ -37,7 +37,8 @@ async function main() {
   const values = new Map();
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
   const service = composeLiveBait({ storage, clock: { nowMs: () => now }, rng: { next: () => 0 },
-    config: { ...LIVE_BAIT_CONFIG, lifetimeMinMs: 10000, lifetimeMaxMs: 10000 },
+    // Spec 162: kept fish up to maxWeightKg become live baits at once; 70 g keeps the 100 g and 80 g fish catches here.
+    config: { ...LIVE_BAIT_CONFIG, lifetimeMinMs: 10000, lifetimeMaxMs: 10000, maxWeightKg: 0.07 },
     fishDb: [{ id: "crucian_stalker", name: "Карась" }, { id: "pike", name: "Щука" }] });
   const fish = { id: "crucian_stalker", name: "Карась", weight: .1, level: 1, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--1.webp",
     rarity: { halfSteps: 3, maxHalfSteps: 12, unitsPerStar: 2 } };
@@ -373,6 +374,10 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__capacity")[0], scale, "timer refresh retains the shared scale node");
   assert.equal(content.scrollTop, 137);
   assert(documentRef.byClass("keepnet-section__fish-timer")[2].textContent.includes("0:09"));
+  assert.equal(select.textContent, "На живця", "a live bait goes on the hook with «На живця» (spec 162)");
+  const transfer = documentRef.byKey("bait:transfer");
+  assert(transfer?.disabled && transfer.title.includes("акваріум"), "«В акваріум» is shown and disabled without an aquarium");
+  assert.equal(documentRef.byKey("one:convert"), undefined, "a catch has no separate convert action");
   select.click(); assert.equal(service.getSelectedBait().fishId, "bait");
   assert.equal(service.beginLiveBaitCast("bait", { compatible: true, free: true, hookCount: 1 }).ok, true);
   ui.refresh();
@@ -381,8 +386,9 @@ async function main() {
   assert(capacity.title.includes("1 місце на гачку"));
   assert.equal(service.endLiveBaitCast("bait").ok, true);
   ui.refresh();
-  documentRef.byKey("one:convert").click();
-  assert.equal(service.getView().liveBaits.length, 2);
+  documentRef.byKey("one:release").click();
+  documentRef.byKey("one:confirm-release").click();
+  assert.equal(service.getView().keepnet.length, 2);
   documentRef.byKey("two:release").click();
   assert.equal(service.getView().keepnet.length, 2, "release requires confirmation");
   assert.equal(documentRef.activeElement, documentRef.byKey("two:cancel-release"));
@@ -515,10 +521,12 @@ async function checkKeepnetDevFill() {
   section.render({});
   assert.deepEqual([...buttons.keys()].slice(1), KEEPNET_FILL_TARGETS.map((target) => `Заповнити на ${target}%`));
   const capacity = service.getView().keepnetCapacity;
+  // Spec 162: light random fish are live baits in the keepnet; both count as occupied places.
+  const inKeepnet = () => { const view = service.getView(); return [...view.keepnet, ...view.liveBaits.filter((entry) => entry.location === "keepnet")]; };
   buttons.get("Заповнити на 40%")();
-  assert.equal(service.getView().keepnet.length, Math.round(capacity * 0.4), "40 % of the capacity is filled");
+  assert.equal(inKeepnet().length, Math.round(capacity * 0.4), "40 % of the capacity is filled");
   assert.equal(rows[0][1], `${Math.round(capacity * 0.4)} / ${capacity} (40%)`, "the section shows the new fill");
-  const fish = service.getView().keepnet;
+  const fish = inKeepnet();
   assert(fish.every((entry) => FISH_DB.some((species) => species.id === entry.sourceSpeciesId) && entry.weightKg > 0 &&
     entry.level >= 1 && entry.imagePath.endsWith(`--${entry.level}.webp`) && entry.rarity?.halfSteps >= 1),
   "each random fish is a valid catch of a real species with its level's art");
@@ -528,10 +536,11 @@ async function checkKeepnetDevFill() {
   const perchMax = FISH_DB.find((species) => species.id === "perch_radioactive").weightConfig.maxLevel;
   assert(fish.filter((entry) => entry.sourceSpeciesId === "perch_radioactive").every((entry) => entry.level <= perchMax));
   assert.deepEqual(section.fill(100), { added: capacity - fish.length, released: 0, occupied: capacity, capacity });
+  assert(inKeepnet().some((entry) => entry.kind !== "catch" && entry.remainingMs !== undefined), "some random fish are live baits");
   assert.equal(section.fill(100).added, 0, "a full keepnet takes no more");
   assert.deepEqual(section.fill(20), { added: 0, released: capacity - Math.round(capacity * 0.2), occupied: Math.round(capacity * 0.2), capacity });
   buttons.get("Заповнити на 0%")();
-  assert.equal(service.getView().keepnet.length, 0, "0 % empties the keepnet");
+  assert.equal(inKeepnet().length, 0, "0 % empties the keepnet");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -249,7 +249,6 @@ export class KeepnetSectionView {
       return;
     }
     const commands = {
-      convert: () => this.#liveBait.convertStoredCatch(fish.id),
       select: () => this.#liveBait.selectBait(fish.id),
       deselect: () => this.#liveBait.selectBait(null),
       transfer: () => this.#liveBait.transferToAquarium(fish.id),
@@ -259,7 +258,7 @@ export class KeepnetSectionView {
     if (!result) return;
     this.#pendingRelease = null;
     this.#notice = result.ok ? this.#labels.done : this.#labels.error(result.reason);
-    if (result.ok && ["convert", "transfer"].includes(action)) {
+    if (result.ok && action === "transfer") {
       const view = this.#liveBait.getView();
       const converted = view.liveBaits.find((entry) => entry.id === fish.id);
       if (converted?.location === "aquarium") this.#notice = this.#labels.moved;

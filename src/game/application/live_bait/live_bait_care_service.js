@@ -1,3 +1,4 @@
+import { LiveBaitSuccession } from "../../domain/live_bait/live_bait_succession.js";
 export class LiveBaitCareService {
   #clock;
   #config;
@@ -79,7 +80,7 @@ export class LiveBaitCareService {
     fish.disposition = "dead";
     fish.remainingLifetimeMs = 0;
     fish.starvationDeadlineMs = null;
-    if (state.selectedFishId === fish.id) state.selectedFishId = null;
+    LiveBaitSuccession.replace(state, fish);
   }
   #autoFill(state, count) {
     const supply = state.feedSupply;
