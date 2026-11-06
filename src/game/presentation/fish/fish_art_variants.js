@@ -3,7 +3,8 @@ import { assetIdForPath } from "../../../engine/assets/asset_registry_sync.js";
 // Fish art (spec 100 D4, TK-180): one runtime image per fish, sized for the victory panel (768 px: its 260 px box x the
 // canvas pixel-ratio cap 2, with room for larger layouts), named fish-display.<species>.<variant>.<file>; keepnet cards
 // and the aquarium show its generated low-quality copy (spec 157 R17, about 192 px). The 2752 px masters live in
-// asset-sources/ and are never released.
+// asset-sources/ and are never released. The art has no empty edges (convert-images --thumbnails --trim, TK-222): each place
+// draws it whole (contain) and sets its own margin.
 const DISPLAY_PREFIX = "fish-display.";
 // Saves written before TK-180 hold the master's (or a thumbnail's) path: the same file under another top folder.
 const FORMER_PREFIXES = Object.freeze(["fish.", "fish-thumbnails."]);

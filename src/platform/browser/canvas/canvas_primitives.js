@@ -74,30 +74,18 @@ export class CanvasPrimitives {
     this.#surface.rect(rect.x, rect.y, rect.width, rect.height);
   }
 
-  drawImageCover(image, x, y, width, height) {
+  // The whole image, centred in the box with its proportions (TK-222: the catch panel's trimmed fish art).
+  drawImageContain(image, x, y, width, height) {
     const naturalWidth = Math.max(0, Number(image?.naturalWidth) || 0);
     const naturalHeight = Math.max(0, Number(image?.naturalHeight) || 0);
     if (naturalWidth <= 0 || naturalHeight <= 0 || width <= 0 || height <= 0) {
       return false;
     }
 
-    const scale = Math.max(width / naturalWidth, height / naturalHeight);
-    const sourceWidth = width / scale;
-    const sourceHeight = height / scale;
-    const sourceX = (naturalWidth - sourceWidth) / 2;
-    const sourceY = (naturalHeight - sourceHeight) / 2;
-
-    this.#surface.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      x,
-      y,
-      width,
-      height,
-    );
+    const scale = Math.min(width / naturalWidth, height / naturalHeight);
+    const drawWidth = naturalWidth * scale;
+    const drawHeight = naturalHeight * scale;
+    this.#surface.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
     return true;
   }
 

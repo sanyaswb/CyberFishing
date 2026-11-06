@@ -159,7 +159,7 @@ export class VictoryRenderer {
         imageRect.height,
       );
       surface.clip();
-      this.#primitives.drawImageCover(
+      this.#primitives.drawImageContain(
         image,
         imageRect.x,
         imageRect.y,

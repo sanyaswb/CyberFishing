@@ -147,6 +147,10 @@ async function checkFishArt() {
     assert(tracked.has(target), `${target} is tracked (Pages serves tracked files only)`);
     const meta = await sharp(path.join(ROOT_DIR, target)).metadata();
     assert(Math.max(meta.width, meta.height) <= 768, `${target} is at most 768 px`);
+    // TK-222: the art has no empty edges (convert-images --thumbnails --trim); the card's padding sets the margin.
+    const trimmed = (await sharp(path.join(ROOT_DIR, target)).trim().toBuffer({ resolveWithObject: true })).info;
+    assert(meta.width - trimmed.width <= 2 && meta.height - trimmed.height <= 2,
+      `${target} has empty edges (${meta.width}x${meta.height}, art ${trimmed.width}x${trimmed.height}): convert with --trim`);
     const card = fishArt.thumbnailPath(target);
     assert(card !== target && tracked.has(card), `${target} has its low copy`);
   }

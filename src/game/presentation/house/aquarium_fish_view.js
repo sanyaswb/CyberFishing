@@ -75,7 +75,12 @@ export class AquariumFishView {
     for (const fish of this.#motion.fish) {
       const image = this.#images.get(fish.imagePath);
       context.save(); context.translate(fish.x, fish.y); context.scale(fish.vx < 0 ? -1 : 1, 1);
-      if (image?.complete && image.naturalWidth > 0) context.drawImage(image, -fish.drawSize / 2, -fish.drawSize / 2, fish.drawSize, fish.drawSize);
+      // Fish art has no empty edges (TK-222): it keeps its proportions inside the drawSize square.
+      if (image?.complete && image.naturalWidth > 0) {
+        const scale = fish.drawSize / Math.max(image.naturalWidth, image.naturalHeight);
+        const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
+        context.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+      }
       else { context.fillStyle = this.#style.placeholderFish; context.beginPath(); context.ellipse(0, 0, fish.drawSize / 2, fish.drawSize / 4, 0, 0, Math.PI * 2); context.fill(); }
       context.restore();
     }

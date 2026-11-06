@@ -125,8 +125,8 @@ function checkCanvasScenes() {
       roundedRect(...args) {
         commands.push(["roundedRect", ...args]);
       },
-      drawImageCover(...args) {
-        commands.push(["imageCover", ...args]);
+      drawImageContain(...args) {
+        commands.push(["imageContain", ...args]);
       },
       drawFittedText(options) {
         textOptions.push(options);
@@ -2874,6 +2874,7 @@ async function main() {
   checkLongPressFrames(true);
   checkLongPressFrames(false);
   await checkGameLoopAndAdapters();
+  await checkImageContain();
   console.log(
     "Platform runtime passed: frame delta clamp/reset and clock read counts; pending/ready/failed asset cache identity; injected canvas and location depth loading.",
   );
@@ -2884,6 +2885,18 @@ async function main() {
     "Game loop and adapters passed: 120 frames with one reused callback and pass-through deltaTime, duplicate start refused and reported, stop cancels; DEV flag sources, debug events, event target, canvas metrics, config provider, pooled and buffered audio.",
   );
 }
+// TK-222: trimmed fish art (no empty edges) is drawn whole in the catch panel's square box, centred, never cropped.
+async function checkImageContain() {
+  const { CanvasPrimitives } = await import("../../../src/platform/browser/canvas/canvas_primitives.js");
+  const draws = [];
+  const primitives = new CanvasPrimitives({ beginPath() {}, drawImage: (...args) => draws.push(args) });
+  const fish = { naturalWidth: 768, naturalHeight: 384 };
+  assert.equal(primitives.drawImageContain(fish, 10, 20, 260, 260), true);
+  assert.deepEqual(draws[0], [fish, 10, 85, 260, 130], "a wide fish fills the box's width, centred vertically");
+  assert.equal(primitives.drawImageContain({ naturalWidth: 0, naturalHeight: 0 }, 0, 0, 260, 260), false);
+  assert.equal(draws.length, 1, "an unloaded image draws nothing");
+}
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

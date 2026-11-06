@@ -130,7 +130,8 @@ function askForFormat() {
 
 // --- Основна логіка ---
 
-async function convertImages(quality, formatChoice, addSuffix, rootDir = BASE_DIR) {
+// trim: null, or { threshold } to cut the empty (transparent or uniform) edges before encoding (TK-222).
+async function convertImages(quality, formatChoice, addSuffix, rootDir = BASE_DIR, trim = null) {
   const { webp: webpQuality, avif: avifQuality } = quality;
   const qualitySuffix = addSuffix ? `--${quality.name.toLowerCase()}` : '';
 
@@ -175,7 +176,7 @@ async function convertImages(quality, formatChoice, addSuffix, rootDir = BASE_DI
         outputName = `${originalName}${qualitySuffix}`;
       }
 
-      const image = sharp(imgPath);
+      const image = trim ? sharp(imgPath).trim(trim) : sharp(imgPath);
       let convertedFormats = [];
 
       if (formatChoice === '1' || formatChoice === '3') {
@@ -443,6 +444,7 @@ async function main() {
 // node utils/convert-images.js --thumbnails --input <masters> --output <assets> [--size 128..2048] (defaults: the fish
 //   masters in asset-sources/fish -> assets/fish-display at 768 px, TK-180)
 //   [--quality low|middle|high]  (spec 157 R5/R6: display-sized art with the --batch presets; middle = WebP 80)
+//   [--trim [--trim-threshold 10]]  (TK-222: cut the empty edges first; the card's padding sets the margin, not the art)
 async function createThumbnails(args) {
   const option = (name, fallback) => {
     const index = args.indexOf(name);
@@ -452,6 +454,7 @@ async function createThumbnails(args) {
   const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-display'));
   const size = Number(option('--size', '768'));
   const topFraction = Number(option('--top-fraction', '1'));
+  const trim = trimOption(args, option);
   const qualityKeys = { low: '1', middle: '2', medium: '2', high: '3' };
   const quality = QUALITY_PRESETS[qualityKeys[option('--quality', 'middle')]];
   if (!quality || !Number.isSafeInteger(size) || size < 1 || size > 2048 || input === output ||
@@ -470,21 +473,32 @@ async function createThumbnails(args) {
     const target = path.join(output, relative.replace(/\.[^.]+$/, '.webp'));
     if (source === target) throw new Error('Thumbnail must not overwrite source');
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    const pipeline = sharp(source);
+    let pipeline = sharp(source);
     if (topFraction < 1) {
       const metadata = await pipeline.metadata();
       pipeline.extract({ left: 0, top: 0, width: metadata.width,
         height: Math.max(1, Math.floor(metadata.height * topFraction)) });
     }
+    // sharp trims before it extracts: the kept part goes through a lossless buffer first.
+    if (trim) pipeline = sharp(topFraction < 1 ? await pipeline.png().toBuffer() : source).trim(trim);
     await pipeline.resize(size, size, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality: quality.webp }).toFile(target);
   }
-  console.log(`Created ${files.length} thumbnails at max ${size}px, ${quality.name} (WebP ${quality.webp}) in ${
+  console.log(`Created ${files.length} thumbnails at max ${size}px${trim ? ', trimmed' : ''}, ${quality.name} (WebP ${quality.webp}) in ${
     path.relative(BASE_DIR, output)}`);
+}
+
+// --trim: sharp's trim of edges like the top-left pixel (transparent edges in a PNG/WebP with alpha); null without it.
+function trimOption(args, option) {
+  if (!args.includes('--trim')) return null;
+  const threshold = Number(option('--trim-threshold', '10'));
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 255) throw new Error('Invalid --trim-threshold');
+  return { threshold };
 }
 
 // Non-interactive conversion (spec 082): the same presets and naming as the dialogue, limited to one folder.
 // node utils/convert-images.js --batch [--quality low|middle|high] [--format webp|avif|both] [--input assets]
+//   [--trim [--trim-threshold 10]]  (TK-222: cut the empty edges of every converted image)
 // Originals stay in place; the caller updates references and removes them (Git keeps their history).
 async function convertBatch(args) {
   const option = (name, fallback) => {
@@ -500,7 +514,7 @@ async function convertBatch(args) {
     throw new Error('Invalid batch options');
   }
   console.log(`Batch: ${quality.name} (WebP ${quality.webp}, AVIF ${quality.avif}) in ${path.relative(BASE_DIR, input)}`);
-  await convertImages(quality, formatChoice, false, input);
+  await convertImages(quality, formatChoice, false, input, trimOption(args, option));
   if (successfullyConvertedFiles.length === 0) process.exitCode = 1;
 }
 

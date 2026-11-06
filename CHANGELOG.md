@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.1 - Fish art without empty edges
+
+- TK-222: convert-images --trim cuts empty edges; the fish art is re-encoded without them, so the fish is larger in keepnet cards; the catch panel and the aquarium draw it whole with its proportions. Game-cycle report unchanged.
+
 ## v0.50.0 - Keepnet and asset folder fixes
 
 - Minor release of v0.49.98-0.49.100: only the current keepnet stage loads after the first frame, the keepnet fish card shows its whole picture, and every item's files lie in one folder per type with --low/--scene/--spine name suffixes. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.93 - T-full: the time of the full load
 
 - TK-214: a `startup:full-load` mark when every asset load plan layer has settled, without closed and on-demand content; shown as T-full in the DEV overlay «ЗАВАНТАЖЕННЯ» and its JSON, and by `npm run measure:startup -- --full`. Game-cycle report unchanged.
-
-## v0.49.92 - A closed inventory is not rendered at the start
-
-- TK-213 (spec 160, the owner's cheaper option instead of stage 2): the closed inventory is no longer rendered during the start, and a lazy feature that becomes ready refreshes it only when open; the first opening renders the list itself. Game-cycle report unchanged.
