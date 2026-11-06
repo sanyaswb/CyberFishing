@@ -45,13 +45,21 @@
 .ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__help:active { background: var(--inventory-equipment-tab-active); }
 .keepnet-section__help:focus-visible,
 .keepnet-section__group:focus-visible,
-.keepnet-section__back:focus-visible,
 .keepnet-section__action:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 2px; }
 .keepnet-section__status { margin: 0; color: #c9c9c9; font: 13px/1.4 system-ui, sans-serif; }
-/* The filter rows are the controls panel's own rows, like the backpack's; species details follow them. */
+/* The filter rows are the controls panel's own rows, like the backpack's. TK-225: the category row (back, species toggle,
+   kinds) drag-scrolls without a scrollbar, so its spacing above and below is equal. */
 .keepnet-section__filters { display: contents; }
-.keepnet-section__detail { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.keepnet-section__section-title { margin: 0; font-size: 15px; }
+.inventory-categories.keepnet-section__kinds {
+  min-height: 0;
+  align-items: center;
+  padding: 1px;
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+.inventory-categories.keepnet-section__kinds::-webkit-scrollbar { display: none; }
+.keepnet-section__back { display: inline-flex; align-items: center; }
+.keepnet-section__back .inventory-categories__icon { margin-right: 4px; }
 .keepnet-section__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: var(--keepnet-list-gap); }
 .keepnet-section__fish, .keepnet-section__group {
   display: flex;
@@ -68,7 +76,6 @@
   overflow-wrap: anywhere;
 }
 .keepnet-section__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
-.ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__back:active:not(:disabled),
 .ui-surface:not(.ui-surface--desktop-hover) .keepnet-section__action:active:not(:disabled) {
   background: var(--inventory-equipment-tab-active);
 }
@@ -82,7 +89,7 @@
 .keepnet-section__image { display: block; width: 100%; height: 112px; object-fit: contain; object-position: center; padding: var(--keepnet-image-inset); }
 .keepnet-section__image-fallback { width: 3rem; height: 3rem; }
 .keepnet-section__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #d4d4d4; color: #1c1c1c; font-weight: 800; text-align: center; }
-.keepnet-section__back, .keepnet-section__action {
+.keepnet-section__action {
   min-height: 44px;
   max-width: 100%;
   padding: 7px 10px;

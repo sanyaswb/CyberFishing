@@ -3,7 +3,7 @@ const formatNumber = (value) => String(Math.round(value * 1000) / 1000).replace(
 export const KEEPNET_LABELS = Object.freeze({
   open: "Відкрити садок", title: "Садок",
   help: "Як користуватися садком", closeHelp: "Закрити підказку",
-  capacity: "Місткість садка", back: "← Усі види",
+  capacity: "Місткість садка", back: "Назад до всіх видів",
   note: "У садку немає прикормки. Живці мають власний відлік життя. Натисніть на вид, щоб оглянути кожну рибу.",
   status: "Прикормка доступна лише в акваріумі",
   kindLabel: "Тип риби", speciesLabel: "Вид риби", allSpecies: "Усі види",

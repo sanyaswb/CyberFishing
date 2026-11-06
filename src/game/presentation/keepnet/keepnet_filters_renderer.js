@@ -1,6 +1,9 @@
+import { createInventoryIcon } from "../inventory/inventory_icons.js";
+
 // Keepnet filters in the backpack's filter style (spec 088): a category row with the species toggle and one button per
 // fish kind, then the species row (one choice) that the toggle opens. Both rows drag-scroll horizontally like the
-// backpack's. The keepnet section owns the filter values; update() writes only changed states.
+// backpack's. In a species group the row starts with the back button (TK-225: a category button with the group's name,
+// no separate heading row). The keepnet section owns the filter values; update() writes only changed states.
 export class KeepnetFiltersRenderer {
   #dom;
   #labels;
@@ -13,7 +16,7 @@ export class KeepnetFiltersRenderer {
     this.#scroll = horizontalScrollController;
   }
 
-  create({ onKind, onSpecies }) {
+  create({ onKind, onSpecies, onBack }) {
     const root = this.#dom.element("div", "keepnet-section__filters");
     const kinds = this.#dom.element("nav", "inventory-categories keepnet-section__kinds");
     kinds.setAttribute("aria-label", this.#labels.kindLabel);
@@ -25,11 +28,17 @@ export class KeepnetFiltersRenderer {
       button.addEventListener("click", () => onKind(value));
       return button;
     });
-    kinds.append(toggle, ...kindButtons);
+    const back = this.#dom.button("inventory-categories__button keepnet-section__back", "", { title: this.#labels.back });
+    back.dataset.keepnetFocus = "back";
+    back.hidden = true;
+    const backLabel = this.#dom.element("span", "keepnet-section__back-label");
+    back.append(createInventoryIcon(this.#dom, "chevron-left", "inventory-categories__icon"), backLabel);
+    back.addEventListener("click", () => onBack());
+    kinds.append(back, toggle, ...kindButtons);
     const species = this.#dom.element("div", "inventory-subfilters keepnet-section__species");
     species.setAttribute("role", "radiogroup");
     species.setAttribute("aria-label", this.#labels.speciesLabel);
-    const binding = { toggle, kindButtons, species, open: false, signature: "", radios: [], onSpecies };
+    const binding = { back, backLabel, toggle, kindButtons, species, open: false, signature: "", radios: [], onSpecies };
     toggle.addEventListener("click", () => {
       binding.open = !binding.open;
       this.#syncToggle(binding);
@@ -42,8 +51,11 @@ export class KeepnetFiltersRenderer {
     return root;
   }
 
-  update(root, { kind, species, speciesId }) {
+  // back: the open group's label (name and count), or null at the species list.
+  update(root, { kind, species, speciesId, back = null }) {
     const binding = this.#bindings.get(root);
+    binding.back.hidden = back === null;
+    if (binding.backLabel.textContent !== (back ?? "")) binding.backLabel.textContent = back ?? "";
     binding.kindButtons.forEach((button, index) => {
       const active = this.#labels.kinds[index][0] === kind;
       if (button.getAttribute("aria-pressed") === String(active)) return;
@@ -58,6 +70,11 @@ export class KeepnetFiltersRenderer {
       binding.signature = signature;
     }
     for (const radio of binding.radios) radio.checked = radio.value === speciesId;
+  }
+
+  // The back button (TK-225): the focus target inside a group.
+  backButton(root) {
+    return this.#bindings.get(root).back;
   }
 
   // The active kind button: the focus target when the focused card disappears.
@@ -77,7 +94,8 @@ export class KeepnetFiltersRenderer {
   }
 
   #syncToggle(binding) {
-    binding.toggle.textContent = binding.open ? "▴" : "▾";
+    binding.toggle.replaceChildren(createInventoryIcon(this.#dom, binding.open ? "chevron-up" : "chevron-down",
+      "inventory-categories__toggle-icon"));
     binding.toggle.setAttribute("aria-expanded", String(binding.open));
     binding.toggle.classList.toggle("inventory-categories__toggle--active", binding.open);
     binding.species.classList.toggle("inventory-subfilters--open", binding.open);

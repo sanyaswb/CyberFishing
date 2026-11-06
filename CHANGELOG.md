@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.4 - Keepnet filters in one row
+
+- TK-225: the keepnet's back button is the first category button of the filter row (chevron, group name and count); the separate heading row is gone, the species toggle uses the backpack's chevrons, and the row has no scrollbar with equal spacing above and below.
+
 ## v0.50.3 - Sized item art
 
 - TK-224: items marked with a size (batteries Volt-1..4, fish by level 1..6) show their art smaller in cards and cells the smaller they are; the largest fills the box. One CSS value (--art-size-min-scale) sets the smallest. Game-cycle report unchanged.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.96 - No underline or hover on overlay metrics
 
 - TK-217: DEV overlay metric rows have no underline, help cursor, hover highlight or tooltip on any device; a click on a metric's name still writes its formula to the console. Ui-surface check asserts the behavior. Game-cycle report unchanged.
-
-## v0.49.95 - Only the opened room level loads
-
-- TK-216 (replaces part of TK-203): the Fisherman's Room loads its opened level, the aquarium and the renovation picture; a higher level's art waits in the locked queue until the player presses upgrade, and T-full does not count it. Asset-load-plan and house checks assert the behavior. Game-cycle report unchanged.

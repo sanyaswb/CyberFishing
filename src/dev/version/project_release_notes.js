@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-225: keepnet filters in one row: back is a category button with the group's name; no scrollbar, equal spacing.",
   "TK-224: sized art: batteries 1-4 and fish levels 1-6 show smaller in their boxes the smaller they are.",
   "TK-223: convert-images v2: commands with a menu and help, parallel files, --masters, --max-size, --dry-run; same output bytes.",
   "TK-222: convert-images --trim; fish art has no empty edges, the catch panel and aquarium draw it whole.",

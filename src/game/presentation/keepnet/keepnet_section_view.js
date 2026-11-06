@@ -32,8 +32,6 @@ export class KeepnetSectionView {
   #hints;
   #helpOpen = false;
   #back;
-  #heading;
-  #detail;
   #filters;
   #list;
   #visible = false;
@@ -80,14 +78,8 @@ export class KeepnetSectionView {
     this.#helpText.id = "keepnet-help";
     this.#content = this.#el("section", "keepnet-section__content");
     this.#content.setAttribute("aria-label", labels.title);
-    this.#back = this.#el("button", "keepnet-section__back", labels.back);
-    this.#back.type = "button";
-    this.#back.addEventListener("click", this.#goBack);
-    this.#heading = this.#el("h3", "keepnet-section__section-title");
-    // The species details row takes no space (and no column gap) while the list shows all species.
-    this.#detail = this.#el("div", "keepnet-section__detail");
-    this.#detail.append(this.#back, this.#heading);
     this.#filters = this.#filtersRenderer.create({
+      onBack: () => this.#goBack(),
       onKind: (kind) => {
         this.#filter.kind = kind;
         this.#pendingRelease = null;
@@ -100,6 +92,7 @@ export class KeepnetSectionView {
         this.refresh();
       },
     });
+    this.#back = this.#filtersRenderer.backButton(this.#filters);
     this.#list = this.#el("div", "keepnet-section__list inventory-collection__list");
     // Dragging over a fish card scrolls the list instead of opening the card (spec 076).
     listScrollController.attach(this.#list);
@@ -109,7 +102,7 @@ export class KeepnetSectionView {
     const backdrop = this.#icon("keepnet-section__backdrop");
     this.#backdrop = backdrop;
     backdrop.classList.add("inventory-collection__backdrop");
-    controls.append(this.#filters, this.#detail);
+    controls.append(this.#filters);
     const pager = this.#pager.create([[backdrop, this.#list], [this.#pagerOverview]], {
       viewportClassName: "keepnet-section__items inventory-collection__items inventory-panel", onEdge: onPagerEdge });
     this.#content.classList.add("inventory-collection");
@@ -180,11 +173,8 @@ export class KeepnetSectionView {
       this.#backdrop.src = source;
       this.#imageAsset = imageAsset;
     }
-    this.#detail.hidden = !group;
-    this.#back.hidden = !group;
-    this.#heading.hidden = !group;
-    this.#heading.textContent = group ? this.#labels.details(group.name, group.count) : "";
-    this.#filtersRenderer.update(this.#filters, { kind: model.kind, species: model.species, speciesId: model.speciesId });
+    this.#filtersRenderer.update(this.#filters, { kind: model.kind, species: model.species, speciesId: model.speciesId,
+      back: group ? this.#labels.details(group.name, group.count) : null });
     // Timer-only updates retain images, focused controls and scroll position.
     const signature = JSON.stringify([this.#detailSpecies, this.#pendingRelease, model.kind,
       model.speciesId, model.aquarium?.owned,

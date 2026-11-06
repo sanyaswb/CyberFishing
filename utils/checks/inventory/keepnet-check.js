@@ -192,9 +192,15 @@ async function main() {
   assert.equal(pagerTabButtons[0].children[0].children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#fish");
   const pagerIndex = () => keepnetItems.style.getPropertyValue("--inventory-pager-index");
   assert.equal(pagerIndex(), "0", "the section opens on the fish list");
-  // The filters are the backpack's rows: a category row (species toggle, kind buttons), then the species row.
+  // The filters are the backpack's rows: a category row (back, species toggle, kind buttons), then the species row.
   const [kinds, speciesRow] = documentRef.byClass("keepnet-section__filters")[0].children;
-  const [speciesToggle, ...kindButtons] = kinds.children;
+  const [backButton, speciesToggle, ...kindButtons] = kinds.children;
+  // TK-225: every filter is in the category row; back is its first button, styled like a category, hidden at the list.
+  assert(backButton.classList.contains("keepnet-section__back") && backButton.classList.contains("inventory-categories__button") &&
+    backButton.hidden, "the back button belongs to the category row and hides at the species list");
+  assert.equal(keepnetControls.children.length, 1, "no separate details row under the filters");
+  assert.equal(speciesToggle.children[0].children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#chevron-down",
+    "the species toggle shows the backpack's chevron");
   assert(keepnetControls.children[0].contains(kinds) && kinds.classList.contains("inventory-categories") &&
     speciesRow.classList.contains("inventory-subfilters") && speciesToggle.classList.contains("inventory-categories__toggle") &&
     kindButtons.every((button) => button.classList.contains("inventory-categories__button")),
@@ -205,6 +211,7 @@ async function main() {
   speciesToggle.click();
   assert(speciesRow.classList.contains("inventory-subfilters--open") && speciesToggle.getAttribute("aria-expanded") === "true",
     "the toggle opens the species row");
+  assert.equal(speciesToggle.children[0].children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#chevron-up");
   const speciesRadios = () => documentRef.byClass("inventory-subfilters__checkbox");
   assert.deepEqual(speciesRadios().map((radio) => [radio.type, radio.value, radio.checked]),
     [["radio", "all", true], ["radio", "crucian_stalker", false], ["radio", "pike", false]]);
@@ -224,8 +231,7 @@ async function main() {
   assert.equal(capacity.getAttribute("role"), "meter");
   assert.equal(capacity.getAttribute("aria-valuenow"), "4");
   assert(capacity.title.includes("4 / 100"), "exact capacity stays available as a contextual hint");
-  assert.equal(documentRef.byClass("keepnet-section__section-title")[0].hidden, true);
-  assert.equal(documentRef.byClass("keepnet-section__detail")[0].hidden, true, "the details row takes no space");
+  assert.equal(back, backButton);
   assert.equal(documentRef.byClass("keepnet-section__icon")[0].src, "assets/items/keepnet/keepnet--20.webp");
   assert.equal(capacity.textContent, "", "the capacity meter has no permanent numeric label");
   assert.equal(capacityCount.textContent, "4 / 100", "the occupancy reading is centred on the meter");
@@ -304,6 +310,8 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__content").length, 1, "details reuse the same content host");
   assert.equal(documentRef.byClass("keepnet-section__fish").length, 3);
   assert.equal(documentRef.activeElement, back);
+  assert(!back.hidden && back.textContent === "Карась · 3 шт.", "inside a group the back button names it");
+  assert.equal(back.children[0].children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#chevron-left");
   const images = documentRef.byClass("keepnet-section__image");
   const [A_THUMB, B_THUMB] = ["assets/fish/crucian_stalker/standart/crucian_stalker--1.webp", "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp"].map((master) => fishArt.thumbnailPath(master));
   assert.equal(A_THUMB, "assets/fish-display/crucian_stalker/standart/crucian_stalker--1--low.webp",
