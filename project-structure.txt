@@ -213,7 +213,6 @@
 │     │  ├── radio.svg
 │     │  ├── reel.svg
 │     │  ├── rod.svg
-│     │  ├── tackle.svg
 │     │  └── weight.svg
 │     ├── inventory-sections.svg
 │     └── status-icons.svg

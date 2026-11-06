@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.20 - Live bait card icons, one hook drawing
+
+- TK-238: on the live bait card «На живця» is the inventory's hook icon, «В акваріум» a new aquarium icon and every cancel a red cross (the text stays the button's name and tooltip); empty hook compartments draw the same hook, the old tackle.svg moved to asset-sources.
+
 ## v0.50.19 - Automatic switch needs a chosen bait
 
 - TK-237: without a bait (or chum) in any slot the automatic switch is off and inactive (dimmed track), so a used-up bait no longer lets «A» turn on with the old bait's reserve; the saved setting returns with a chosen bait.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.11 - Automatic live bait by species
 
 - TK-229.3 stage 1 (spec 162): a kept fish up to 100 g becomes a live bait at once (saved catches convert on load); a live bait card has «На живця» and «В акваріум» (disabled without an aquarium); when the chosen live bait is used up, dies or is released, the same species' bait with the least life left follows.
-
-## v0.50.10 - Victory window
-
-- TK-230: the victory panel is a DOM window (spec 161): a rounded rectangular picture that opens the fish on the whole screen over a blur, plates with icons (weight, trophy cup, radiation sign with check or cross), rarity stars and a weight ruler with the green trophy segment. No per-frame canvas blur any more.

@@ -211,6 +211,18 @@
 .keepnet-section__action {
   width: 100%;
 }
+/* TK-238: an icon action keeps the button's size; the icon takes its colour, a cancel action is red. */
+.keepnet-section__action--icon {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+}
+.keepnet-section__action-icon {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2;
+}
+.keepnet-section__action--cancel { color: var(--ui-danger); }
 .keepnet-section__action:disabled {
   opacity: 0.45;
   cursor: not-allowed;

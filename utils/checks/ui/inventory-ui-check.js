@@ -3522,11 +3522,12 @@ class InventoryUiBehaviorCheck {
       this.#findByClass(preview, "inventory-assembly-editor__empty"),
       "swiping to an empty cell tab displays the slot placeholder icon in preview",
     );
-    const emptyIcon = this.#findByClass(preview, "inventory-assembly-editor__empty-icon");
-    assert.ok(emptyIcon, "empty cell visual has empty icon");
+    // TK-238: an empty hook cell shows the same sprite hook as a hook item without artwork (tackle.svg retired).
+    const emptyIcon = this.#findByClass(preview, "inventory-assembly-editor__empty").children[0];
     assert.ok(
-      emptyIcon.src?.includes("tackle.svg"),
-      "empty hook cell displays tackle.svg icon",
+      String(emptyIcon?.getAttribute("class")).includes("inventory-assembly-editor__empty-icon") &&
+        emptyIcon.children[0]?.getAttribute("href")?.endsWith("#hook"),
+      "empty hook cell displays the sprite hook",
     );
     tabRow.emit("keydown", { key: "Home" });
     assert.strictEqual(activeTab(), 0);

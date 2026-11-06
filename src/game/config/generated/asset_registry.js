@@ -92,7 +92,7 @@ export const ASSET_REGISTRY = Object.freeze({
   "locations.test.bg_test--evening": Object.freeze({ kind: "image", path: "assets/locations/test/bg_test--evening.webp", width: 2560, height: 1440, low: "assets/locations/test/bg_test--evening--low.webp", lowSource: "29d842bd7ad1ec32", bytes: 185072, sha256: "29d842bd7ad1ec32", tags: Object.freeze(["locations","test"]), label: "" }),
   "locations.test.bg_test--night": Object.freeze({ kind: "image", path: "assets/locations/test/bg_test--night.webp", width: 2560, height: 1440, low: "assets/locations/test/bg_test--night--low.webp", lowSource: "58b2e7fb75edd79b", bytes: 170592, sha256: "58b2e7fb75edd79b", tags: Object.freeze(["locations","test"]), label: "" }),
   "locations.test.test-depth": Object.freeze({ kind: "image", path: "assets/locations/test/test-depth.webp", bytes: 18652, sha256: "01d5364c2eeda969", tags: Object.freeze(["locations","test"]), label: "" }),
-  "ui.inventory-sections": Object.freeze({ kind: "image", path: "assets/ui/inventory-sections.svg", bytes: 7630, sha256: "5b93f4e56489f561", tags: Object.freeze(["ui"]), label: "" }),
+  "ui.inventory-sections": Object.freeze({ kind: "image", path: "assets/ui/inventory-sections.svg", bytes: 7964, sha256: "9ee2e8d76244ddb5", tags: Object.freeze(["ui"]), label: "" }),
   "ui.inventory.backpack": Object.freeze({ kind: "image", path: "assets/ui/inventory/backpack.svg", bytes: 760, sha256: "5560b914337988cd", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.bait": Object.freeze({ kind: "image", path: "assets/ui/inventory/bait.svg", bytes: 390, sha256: "553bd35b8c04f2d1", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.battery": Object.freeze({ kind: "image", path: "assets/ui/inventory/battery.svg", bytes: 256, sha256: "728c965775c4db7a", tags: Object.freeze(["ui","inventory"]), label: "" }),
@@ -106,7 +106,6 @@ export const ASSET_REGISTRY = Object.freeze({
   "ui.inventory.radio": Object.freeze({ kind: "image", path: "assets/ui/inventory/radio.svg", bytes: 437, sha256: "4f2c0f2fc021389d", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.reel": Object.freeze({ kind: "image", path: "assets/ui/inventory/reel.svg", bytes: 419, sha256: "7744784009bbddb1", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.rod": Object.freeze({ kind: "image", path: "assets/ui/inventory/rod.svg", bytes: 988, sha256: "4391e978e20fc1a4", tags: Object.freeze(["ui","inventory"]), label: "" }),
-  "ui.inventory.tackle": Object.freeze({ kind: "image", path: "assets/ui/inventory/tackle.svg", bytes: 334, sha256: "c9f7e856613ce3ee", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.weight": Object.freeze({ kind: "image", path: "assets/ui/inventory/weight.svg", bytes: 287, sha256: "2107bae3e5b95560", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.status-icons": Object.freeze({ kind: "image", path: "assets/ui/status-icons.svg", bytes: 1027, sha256: "b5b6fa03dc04a9e6", tags: Object.freeze(["ui"]), label: "" }),
 });

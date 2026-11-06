@@ -1,4 +1,10 @@
-import { createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
+import { createInventoryIcon, createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
+
+// TK-238: card actions drawn as a sprite icon (the text stays the accessible name and the tooltip); cancel actions are
+// a red cross.
+const ACTION_ICONS = Object.freeze({ select: "hook", transfer: "aquarium",
+  deselect: "close", "cancel-replace": "close", "cancel-release": "close" });
+const CANCEL_ACTIONS = Object.freeze(new Set(["deselect", "cancel-replace", "cancel-release"]));
 import { applyArtSize } from "../ui/art_size.js";
 import { RarityStarsRenderer } from "../ui/rarity_stars_renderer.js";
 
@@ -46,7 +52,15 @@ export class KeepnetCardRenderer {
     const actions = this.#el("div", "keepnet-section__actions");
     const focusables = [];
     const action = (id, text, disabledReason = null) => {
-      const button = this.#button("keepnet-section__action", text, `${fish.id}:${id}`, () => onAction(fish, id));
+      const icon = ACTION_ICONS[id];
+      const button = this.#button(icon ? `keepnet-section__action keepnet-section__action--icon${CANCEL_ACTIONS.has(id)
+        ? " keepnet-section__action--cancel" : ""}` : "keepnet-section__action", icon ? "" : text,
+      `${fish.id}:${id}`, () => onAction(fish, id));
+      if (icon) {
+        button.setAttribute("aria-label", text);
+        button.title = text;
+        button.appendChild(createInventoryIcon(this.#dom, icon, "keepnet-section__action-icon"));
+      }
       if (disabledReason) { button.disabled = true; button.title = disabledReason; }
       actions.append(button); focusables.push(button);
     };

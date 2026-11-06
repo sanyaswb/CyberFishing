@@ -218,6 +218,8 @@ assert.equal(tiles.children.length, 1);
   const filters = [...factory.matchAll(/\{ id: "([a-z]+)", label: "[^"]+", icon: "([^"]+)" \}/g)];
   assert.equal(filters.length, 12, "every filter names an icon");
   for (const [, id, icon] of filters) assert(symbols.has(icon), `filter ${id}: icon "${icon}" is a symbol of the inventory sprite`);
+  // TK-238: the keepnet card actions, the empty hook compartment and «В інвентар» (spec 163) draw sprite symbols.
+  for (const icon of ["hook", "aquarium", "close", "backpack"]) assert(symbols.has(icon), `icon "${icon}" is a symbol of the inventory sprite`);
 }
 // TK-197: the toolbar, the clock and the world boat draw no emoji; every symbol they ask for is in the sprite.
 {

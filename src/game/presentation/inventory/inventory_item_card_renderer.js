@@ -1,4 +1,4 @@
-import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
+import { createInventorySlotIcon } from "./inventory_slot_icons.js";
 import { createItemPlaceholderIcon } from "./inventory_icons.js";
 import { applyArtSize } from "../ui/art_size.js";
 
@@ -101,9 +101,8 @@ export class InventoryItemCardRenderer {
         "aria-label",
         isBlocked ? slot.warning || slot.label : slot.label,
       );
-      const placeholder = this.#dom.image(inventorySlotIconAsset(slot.slotId), "");
+      const placeholder = createInventorySlotIcon(this.#dom, slot.slotId, "inventory-slot-icon");
       if (placeholder) {
-        placeholder.className = "inventory-slot-icon";
         placeholder.setAttribute("aria-hidden", "true");
         emptyButton.appendChild(placeholder);
       }

@@ -1,4 +1,4 @@
-import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
+import { createInventorySlotIcon } from "./inventory_slot_icons.js";
 
 // Item editor in every layout (spec 091 on phones, spec 094 on wide screens): the actions panel, the root item's
 // preview and the tabs block (the item, its cells, nested items) joined to the active tab's parameters.
@@ -139,14 +139,10 @@ export class InventoryAssemblyEditorRenderer {
     }
     const empty = this.#dom.element("div", "inventory-assembly-editor__empty");
     const slotId = tab?.socket?.slotId || "";
-    const iconAsset = inventorySlotIconAsset(slotId);
-    if (iconAsset) {
-      const icon = this.#dom.image(iconAsset, tab?.label || slotId);
-      if (icon) {
-        icon.className = "inventory-assembly-editor__empty-icon";
-        icon.setAttribute("aria-hidden", "true");
-        empty.appendChild(icon);
-      }
+    const icon = createInventorySlotIcon(this.#dom, slotId, "inventory-assembly-editor__empty-icon");
+    if (icon) {
+      icon.setAttribute("aria-hidden", "true");
+      empty.appendChild(icon);
     }
     return empty;
   }

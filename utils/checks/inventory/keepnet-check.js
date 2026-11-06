@@ -374,7 +374,7 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__capacity")[0], scale, "timer refresh retains the shared scale node");
   assert.equal(content.scrollTop, 137);
   assert(documentRef.byClass("keepnet-section__fish-timer")[2].textContent.includes("0:09"));
-  assert.equal(select.textContent, "На живця", "a live bait goes on the hook with «На живця» (spec 162)");
+  assert.equal(select.getAttribute("aria-label"), "На живця", "a live bait goes on the hook with «На живця» (spec 162)");
   const transfer = documentRef.byKey("bait:transfer");
   assert(transfer?.disabled && transfer.title.includes("акваріум"), "«В акваріум» is shown and disabled without an aquarium");
   assert.equal(documentRef.byKey("one:convert"), undefined, "a catch has no separate convert action");
@@ -472,7 +472,7 @@ async function checkSlotIconWarmUp(InventoryUiBootstrap) {
     sources: createAssetLoadSources({ locations: { map: {} }, itemDb: {} }) });
   const slotGroup = loadPlan.layer("layer-one").groups.find((group) => group.id === "slot-icons");
   const expected = inventorySlotIconAssets();
-  assert.equal(expected.length, 14, "fourteen distinct placeholder files (battery, spec 143; radio, spec 142)");
+  assert.equal(expected.length, 13, "thirteen distinct placeholder files (battery, spec 143; radio, spec 142; the hook is the sprite symbol, TK-238)");
   assert.deepEqual(loadPlan.resolveGroup(slotGroup), expected, "the plan's layer-one warms each placeholder once");
 }
 // Spec 157 R5: the keepnet stages are display-sized (the largest phone view is ~374 CSS px, x2), committed and light;
@@ -518,8 +518,15 @@ async function checkLiveBaitCardStates() {
   const render = (hook) => {
     const card = cards.fish(fish, { aquarium: { owned: false }, pendingRelease: null, onAction() {}, onPreview() {}, hook });
     const buttons = card.element.children.find((child) => child.className === "keepnet-section__actions").children;
-    return { card: card.element, buttons: buttons.map((button) => [button.textContent, button.disabled === true, button.title || ""]) };
+    // TK-238: an icon action is named by its label (aria-label and tooltip); a disabled one explains why.
+    return { card: card.element, elements: buttons, buttons: buttons.map((button) => [button.getAttribute("aria-label") || button.textContent,
+      button.disabled === true, button.disabled === true ? button.title || "" : ""]) };
   };
+  const symbolOf = (button) => button.children[0]?.children?.[0]?.getAttribute("href")?.split("#")[1] ?? null;
+  const plain = render({ pendingFishId: null, hookCount: 1, hasBait: false, inWater: false });
+  assert.deepEqual(plain.elements.map(symbolOf), ["hook", "aquarium", null],
+    "TK-238: «На живця» is the inventory's hook, «В акваріум» the aquarium icon; «Відпустити» stays text");
+  assert.equal(plain.elements[0].title, "На живця", "an icon action keeps its label as the tooltip");
   const base = { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false };
   assert.deepEqual(render(base).buttons[0], ["На живця", false, ""]);
   assert.deepEqual(render({ ...base, hookCount: 2 }).buttons[0], ["На живця", true, KEEPNET_LABELS.singleHookRequired]);
@@ -527,6 +534,8 @@ async function checkLiveBaitCardStates() {
   const pending = render({ ...base, hasBait: true, pendingFishId: "fry" });
   assert(pending.card.classList.contains("keepnet-section__fish--replace"), "the waiting live bait's card is green");
   assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Скасувати", "Відпустити"]);
+  assert(symbolOf(pending.elements[1]) === "close" && pending.elements[1].classList.contains("keepnet-section__action--cancel"),
+    "TK-238: «Скасувати» is a red cross");
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "fry", inWater: true }).buttons[0], ["Замінити", true, KEEPNET_LABELS.tackleInWater]);
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "other" }).buttons[0], ["На живця", false, ""],
     "only the waiting fish's card changes");
