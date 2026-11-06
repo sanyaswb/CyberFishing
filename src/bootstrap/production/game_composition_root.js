@@ -127,7 +127,6 @@ import { LocationMap } from "../../game/domain/locations/location_map.js";
 import { Net } from "../../game/domain/tackle/net.js";
 import { NumericStatMetricStrategy } from "../../game/domain/items/progression/numeric_stat_metric_strategy.js";
 import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_canvas_factory.js";
-import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_style_resolver.js";
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
@@ -481,7 +480,6 @@ export class GameCompositionRoot {
     // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
     const {
       rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
-      outcomeStyleResolver,
     } = this.#composeStyleResolvers();
     // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
     const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
@@ -499,9 +497,7 @@ export class GameCompositionRoot {
     } = this.#composeItemModels({
       rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
     });
-    const { victoryFeature, victoryLayoutResolver, victoryActionGestureResolver, victoryRenderer } = this.#composeOutcomeInteraction({
-      contracts, surface, primitives, imageAssets, rarityVisualResolver, own,
-    });
+    const { victoryFeature, victoryWindow } = this.#composeOutcomeInteraction({ rarityVisualResolver, own });
     this.#victoryFeature = victoryFeature;
     const {
       baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver,
@@ -528,7 +524,7 @@ export class GameCompositionRoot {
         "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter, victoryRenderer,
+      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
     });
     // The game clock comes before the location: startup loads only the background phase of the current game time
     // (spec 157 R4).
@@ -628,17 +624,14 @@ export class GameCompositionRoot {
         locationDebugMapBuilder,
         hudStyleResolver,
         fightAreaStyleResolver,
-        outcomeStyleResolver,
         rarityVisualResolver,
-        victoryRenderer,
-        victoryLayoutResolver,
         rodAnimation,
         boatAnimation,
         floatRocking,
         fishArt: this.#fishArt,
       },
       interaction: {
-        victoryActionGestureResolver,
+        victoryWindow,
       },
       fishRarityResolver,
       itemRarityResolver,
@@ -712,9 +705,6 @@ export class GameCompositionRoot {
     const fightAreaStyleResolver = new FightAreaStyleResolver({
       configProvider: () => this.#config.ui?.catchZone || {},
     });
-    const outcomeStyleResolver = new OutcomeStyleResolver({
-      configProvider: () => this.#config.ui?.victory || {},
-    });
     const rarityAnimationResolver = new RarityAnimationResolver();
     const rarityVisualResolver = new RarityVisualResolver({
       configProvider: () => this.#config.rarity?.visual || {},
@@ -723,7 +713,7 @@ export class GameCompositionRoot {
     const degradationColorResolver = new DegradationColorResolver({
       configProvider: () => this.#config.degradationColors || {},
     });
-    return { rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver, outcomeStyleResolver };
+    return { rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver };
   }
 
   // Item rarity, condition, freshness and progression read models with their DOM adapters.
@@ -836,51 +826,37 @@ export class GameCompositionRoot {
     return { itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
   }
 
-  // Victory layout, the victory action gesture and victory renderer as a feature loaded after ready (spec 157 R12, TK-184).
-  #composeOutcomeInteraction({ contracts, surface, primitives, imageAssets, rarityVisualResolver, own }) {
+  // The victory window (spec 161) as a feature loaded after ready (spec 157 R12, TK-184). Until its module arrives a
+  // show() waits for it, so a catch right after the start still opens the window.
+  #composeOutcomeInteraction({ rarityVisualResolver, own }) {
     const victoryFeature = own(new LazyFeature({
       name: "victory",
       preload: this.#preload,
       compose: ({ composeVictoryFeature }) => composeVictoryFeature({
-        diagnostics: this.#readRenderDiagnostics(),
-        surface,
-        primitives,
-        assets: imageAssets,
+        documentRef: this.#documentTarget,
+        assets: this.#assets,
+        mountNode: this.#uiSurface.portalRoot,
         rarityVisualResolver,
+        resolveFishImage: (fish) => this.#fishArt.displayImagePath(fish),
+        species: FISH_DB,
       }),
     }));
-    const victoryLayoutResolver = {
-      resolve: (context) => {
-        const real = victoryFeature.get()?.victoryLayoutResolver;
-        if (real) return real.resolve(context);
-        void victoryFeature.request();
-        return null;
+    let pending = null;
+    const victoryWindow = Object.freeze({
+      show: (fish, handlers) => {
+        const real = victoryFeature.get();
+        if (real) { pending = null; real.show(fish, handlers); return; }
+        pending = { fish, handlers };
+        void victoryFeature.request().then((feature) => {
+          if (!feature || !pending) return;
+          const { fish: waiting, handlers: waitingHandlers } = pending;
+          pending = null;
+          feature.show(waiting, waitingHandlers);
+        });
       },
-    };
-    const victoryActionGestureResolver = {
-      resolve: (context) => {
-        const real = victoryFeature.get()?.victoryActionGestureResolver;
-        if (real) return real.resolve(context);
-        void victoryFeature.request();
-        return null;
-      },
-    };
-    const victoryRenderer = {
-      render: (target) => {
-        const real = victoryFeature.get()?.victoryRenderer;
-        if (real) real.render(target);
-        else void victoryFeature.request();
-      },
-    };
-    contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
-      "resolve",
-    ]);
-    contracts.requireMethods(
-      victoryActionGestureResolver,
-      "victoryActionGestureResolver",
-      ["resolve"],
-    );
-    return { victoryFeature, victoryLayoutResolver, victoryActionGestureResolver, victoryRenderer };
+      hide: () => { pending = null; victoryFeature.get()?.hide(); },
+    });
+    return { victoryFeature, victoryWindow };
   }
 
   // Fish rarity, visual and anomaly variants, bait effectiveness and the DEV hooked fish synchronizer.
@@ -1540,9 +1516,7 @@ export class GameCompositionRoot {
       getWaterMetric: appPorts.getWaterMetric,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
-      victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
-      victoryActionGestureResolver:
-        runtime.interaction.victoryActionGestureResolver,
+      victoryWindow: runtime.interaction.victoryWindow,
       liveBait: runtime.liveBait,
       onCatchResult: (result) => runtime.keepnetUI?.showCatchResult(result),
       liveBaitCandidate: runtime.liveBaitCandidate,
@@ -1668,7 +1642,7 @@ export class GameCompositionRoot {
     const diagnostics = this.#getRenderDiagnostics?.();
     if (diagnostics != null) {
       new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
-        diagnostics, "renderDiagnostics", ["recordAssetRequestCreated", "recordVictoryLayoutCreated",
+        diagnostics, "renderDiagnostics", ["recordAssetRequestCreated",
           "recordRenderPassCreated", "recordFrameCreated", "recordBufferGrowth"],
       );
     }

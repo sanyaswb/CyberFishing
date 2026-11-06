@@ -280,7 +280,7 @@ const CHECK_DEFINITIONS = Object.freeze([
   },
   {
     id: "victory-input",
-    title: "Victory input",
+    title: "Victory window",
     file: "utils/checks/ui/victory-input-check.js",
     suites: ["gameplay"],
   },

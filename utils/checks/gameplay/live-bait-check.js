@@ -18,8 +18,6 @@ async function main() {
   const { FISH_DB } = await import("../../../src/game/config/databases/fish_database.js");
   const { ITEM_DB } = await import("../../../src/game/config/databases/item_catalog.js");
   const { KeepnetViewModel } = await import("../../../src/game/presentation/keepnet/keepnet_view_model.js");
-  const { VictoryLayoutResolver } = await import("../../../src/game/presentation/screens/victory_layout_resolver.js");
-  const { VictoryActionGestureResolver } = await import("../../../src/game/presentation/input/victory_action_gesture_resolver.js");
   let now = 1000;
   const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
@@ -98,17 +96,6 @@ async function main() {
   now += LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].durationMs + LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].starvationWindowMs;
   aquarium.advance();
   assert.equal(aquarium.getView().liveBaits.some((item) => item.id === "a"), false, "starvation eventually kills");
-
-  const layout = new VictoryLayoutResolver();
-  const actions = layout.resolve({ width: 800, height: 900, config: {}, canLiveBait: true });
-  assert(actions.liveBait.width > 0);
-  const center = { x: actions.liveBait.x + actions.liveBait.width / 2,
-    y: actions.liveBait.y + actions.liveBait.height / 2 };
-  assert.equal(new VictoryActionGestureResolver().resolve({ input: { pointerReleased: true,
-    pointerGestureId: 2, pointerStart: center, pointerRelease: center }, entryGestureId: 1, actions }), "live_bait");
-  assert.equal(new VictoryActionGestureResolver().resolve({ input: { pointerReleased: true,
-    pointerGestureId: 1, pointerStart: center, pointerRelease: center }, entryGestureId: 1, actions }), null);
-  assert.equal(layout.resolve({ width: 800, height: 900, config: {}, canLiveBait: false }).liveBait.width, 0);
 
   const motionState = { weight: 1, speedMultiplier: 1, forceMultiplier: 1,
     minTime: 10000, maxTime: 10000 };

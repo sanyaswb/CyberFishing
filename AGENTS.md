@@ -13,6 +13,10 @@ Small tasks and large changes (owner instruction, 2026-10-22):
   owner's acceptance. `tasks.md` then lists its tasks, each referring to the spec, and the spec records what was
   implemented. When unsure, treat the change as large.
 
+The owner describes the result (what the player sees and does); the technical solution is the agent's (owner,
+2026-11-06). Do not take the owner's technical wording literally: choose the technically correct, most efficient way
+(least CPU/GPU load, the rendering roles of docs/rendering.md, existing components) and say briefly why.
+
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
 Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional

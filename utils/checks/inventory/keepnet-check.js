@@ -322,10 +322,11 @@ async function main() {
   // TK-229.2: the text box holds name, level, weight, stars, timer in that order; stars fill by half steps.
   const info = documentRef.byClass("keepnet-section__info")[0];
   assert.deepEqual(info.children.map((child) => child.className.split(" ")[0]), ["keepnet-section__fish-name",
-    "keepnet-section__fish-level", "keepnet-section__fish-weight", "keepnet-section__fish-rarity", "keepnet-section__fish-timer"]);
-  const stars = documentRef.byClass("keepnet-section__stars")[0];
+    "keepnet-section__fish-level", "keepnet-section__fish-weight", "rarity-stars", "keepnet-section__fish-timer"]);
+  assert(info.children[3].classList.contains("keepnet-section__fish-rarity"), "the shared star row is the card's rarity element");
+  const stars = documentRef.byClass("rarity-stars")[0];
   assert(stars.getAttribute("aria-label").includes("1,5 / 6"), "the exact rarity is the stars' accessible name");
-  assert.deepEqual(stars.children.map((star) => star.children[1].style.getPropertyValue("--keepnet-star-fill")),
+  assert.deepEqual(stars.children.map((star) => star.children[1].style.getPropertyValue("--rarity-star-fill")),
     ["1", "0.5", "0", "0", "0", "0"], "3 of 12 half steps: one full star, one half, four empty");
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
   // TK-220: a fish with an image has only the image in its box (the placeholder SVG cannot be hidden by a property).
@@ -420,23 +421,20 @@ async function main() {
   const transitions = [];
   let catchResult = { ok: false, reason: "keepnet_full" };
   let outcomes = 0;
+  let windowAction = null;
   const victory = new VictoryState({
     ui: { updateContinueButtonState() {}, setOutcomeOverlayActive() {} },
-    input: { getPointerGestureId: () => 1 }, config: {}, getViewportSize: () => ({ width: 400, height: 800 }),
-    victoryLayoutResolver: { resolve: () => ({}) }, victoryActionGestureResolver: { resolve: () => "live_bait" },
-    liveBait: { createCatchId: () => "caught", canConvert: () => true,
-      resolveCatch: () => { outcomes++; return catchResult; } },
+    victoryWindow: { show: (shownFish, { onAction }) => { windowAction = onAction; }, hide() {} },
+    liveBait: { createCatchId: () => "caught", resolveCatch: () => { outcomes++; return catchResult; } },
     onCatchResult: (result) => notifications.push(result), commands: { setState: (state) => transitions.push(state) },
   });
   victory.enter({ fish });
-  const gesture = { pointerReleased: true };
-  victory.handleInput(gesture);
-  assert.equal(gesture.pointerReleased, false);
+  windowAction("claim");
   assert.equal(transitions.length, 0, "full keepnet does not silently resolve the catch");
   assert.equal(notifications[0].reason, "keepnet_full");
   catchResult = { ok: true, notice: "aquarium_full", fishId: "caught" };
-  victory.handleInput({ pointerReleased: true });
-  victory.handleInput({ pointerReleased: true });
+  windowAction("claim");
+  windowAction("claim");
   assert.deepEqual(transitions, ["scouting"]);
   assert.equal(outcomes, 2, "retry succeeds once after capacity is freed");
   assert.equal(notifications[1].notice, "aquarium_full");

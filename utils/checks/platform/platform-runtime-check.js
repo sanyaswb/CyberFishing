@@ -36,11 +36,6 @@ function checkCanvasScenes() {
       "PlayerPressureFatigueIndicatorRenderer",
     ],
     ["src/game/presentation/screens/game_over_renderer.js", "GameOverRenderer"],
-    [
-      "src/game/presentation/screens/star_rating_renderer.js",
-      "StarRatingRenderer",
-    ],
-    ["src/game/presentation/screens/victory_renderer.js", "VictoryRenderer"],
     ["src/game/presentation/world/boat_chum_renderer.js", "BoatChumRenderer"],
     [
       "src/game/presentation/world/world_scene_renderer.js",
@@ -193,14 +188,6 @@ function checkCanvasScenes() {
     hold = new c.HoldChargesRenderer({ surface }),
     fatigue = new c.PlayerPressureFatigueIndicatorRenderer({ surface }),
     gameOver = new c.GameOverRenderer({ surface }),
-    stars = new c.StarRatingRenderer({ surface, primitives }),
-    victory = new c.VictoryRenderer({
-      surface,
-      primitives,
-      assets,
-      themeResolver: { resolve: () => theme },
-      starRatingRenderer: stars,
-    }),
     boat = new c.BoatChumRenderer({ surface, primitives }),
     world = new c.WorldSceneRenderer({ surface, assets });
   const list = (items) => ({
@@ -398,53 +385,6 @@ function checkCanvasScenes() {
       },
     },
   };
-  const victoryModel = {
-    visible: true,
-    width: 800,
-    height: 600,
-    nowMs: 1000,
-    config: {
-      blurPx: 2,
-      panelRadius: 10,
-      imageBorderWidth: 2,
-      rarityStarGap: 7,
-      rarityStarRadius: 12,
-    },
-    spriteId: "fish",
-    fish: {
-      name: "Test Fish",
-      level: 3,
-      rarity: {
-        isResolved: true,
-        halfSteps: 3,
-        maxHalfSteps: 6,
-        maxStars: 3,
-        unitsPerStar: 2,
-        isMaximum: false,
-      },
-    },
-    layout: {
-      panel: { x: 20, y: 20, width: 500, height: 500 },
-      padding: 20,
-      image: rect,
-      badge: rect,
-      rarity: rect,
-      stats: {
-        x: 20,
-        y: 200,
-        columns: 2,
-        pillWidth: 100,
-        pillHeight: 20,
-        pillGap: 5,
-      },
-      claim: rect,
-      release: rect,
-    },
-    stats: list([
-      { label: "Weight 1kg", tone: "neutral" },
-      { label: "Level 3" },
-    ]),
-  };
   const frame = {
     world: worldModel,
     casting: castModel,
@@ -453,7 +393,6 @@ function checkCanvasScenes() {
     outcome: {
       visible: true,
       mode: "victory",
-      victory: victoryModel,
       gameOver: {
         visible: true,
         width: 800,
@@ -497,7 +436,6 @@ function checkCanvasScenes() {
     new c.HudRenderPass({ renderer: hud }),
     new c.OutcomeRenderPass({
       gameOverRenderer: gameOver,
-      victoryRenderer: victory,
     }),
   ];
   const sequence = [];
@@ -539,15 +477,8 @@ function checkCanvasScenes() {
       commands.some((entry) => entry[0] === "fillText" && entry[1] === "HOLD"),
     );
     assert(
-      commands.some(
-        (entry) => entry[0] === "fittedText" && entry[1] === "Test Fish",
-      ),
-    );
-    const unique = new Set(textOptions);
-    assert.equal(
-      unique.size,
-      2,
-      "victory and star renderer each reuse one fitted-text options object",
+      !commands.some((entry) => entry[0] === "fittedText"),
+      "the victory window is DOM: the outcome pass draws nothing for a victory (spec 161)",
     );
   }
   for (const kind of ["hooked", "lure", "feeder", "float"]) {
@@ -557,14 +488,6 @@ function checkCanvasScenes() {
   fightModel.catchZone.kind = "line";
   fightModel.sectorClamped = true;
   fight.render(fightModel);
-  theme.isAnimated = true;
-  victoryModel.spriteId = "missing";
-  victory.render(victoryModel);
-  victoryModel.fish.rarity.isMaximum = true;
-  victoryModel.fish.rarity.halfSteps = 6;
-  victory.render(victoryModel);
-  victoryModel.fish.rarity.isResolved = false;
-  victory.render(victoryModel);
   for (const stateName of ["idle", "grace", "fatigue", "recovered"]) {
     hudModel.playerPressureFatigue.state.stateName = stateName;
     fatigue.render(hudModel.playerPressureFatigue);
@@ -592,10 +515,6 @@ function checkCanvasScenes() {
   for (const pass of passes) pass.render(frame);
   assert.equal(commands.length, 0, "hidden passes do not draw");
   assert.throws(() => new c.FloatRenderer({}), /requires surface/);
-  assert.throws(
-    () => new c.VictoryRenderer({ surface, primitives, assets }),
-    /requires themeResolver/,
-  );
   assert.equal(stack.length, 0);
 }
 
@@ -653,7 +572,6 @@ function checkRenderStorage() {
     "fishing.fightAreas.clipRegions",
     "fishing.fightAreas.sectorPoints",
     "fishing.fightAreas.lineRadiusPoints",
-    "outcome.victory.stats",
   ];
   const lists = names.map((path) =>
       path.split(".").reduce((value, key) => value[key], frame),
@@ -718,7 +636,7 @@ function checkRenderStorage() {
     frame.casting.aimingZone.visible = true;
     frame.fishing.float.visible = true;
     frame.hud.tension.visible = true;
-    frame.outcome.victory.visible = true;
+    frame.outcome.gameOver.visible = true;
     intent.casting.visible = true;
     intent.casting.accuracyPreview = {};
     intent.fishing.tensionMeter = {};
@@ -746,7 +664,7 @@ function checkRenderStorage() {
   assert.equal(frame.casting.aimingZone.visible, false);
   assert.equal(frame.fishing.float.visible, false);
   assert.equal(frame.hud.tension.visible, false);
-  assert.equal(frame.outcome.victory.visible, false);
+  assert.equal(frame.outcome.gameOver.visible, false);
   const list = new c.ReusableRenderList();
   assert.equal(list.reset(), list);
   assert.throws(() => list.forEachActive(null), /requires callback/);
@@ -1490,10 +1408,6 @@ function checkVisualFrames() {
     ],
     ["src/game/presentation/styles/hud_style_resolver.js", "HudStyleResolver"],
     [
-      "src/game/presentation/styles/outcome_style_resolver.js",
-      "OutcomeStyleResolver",
-    ],
-    [
       "src/game/presentation/screens/rarity_animation_resolver.js",
       "RarityAnimationResolver",
     ],
@@ -1504,10 +1418,6 @@ function checkVisualFrames() {
     [
       "src/game/presentation/screens/victory_theme_resolver.js",
       "VictoryThemeResolver",
-    ],
-    [
-      "src/game/presentation/screens/victory_layout_resolver.js",
-      "VictoryLayoutResolver",
     ],
     [
       "src/game/presentation/fishing/line_visual_state_controller.js",
@@ -1524,18 +1434,13 @@ function checkVisualFrames() {
   let fightConfig = { color: "red" },
     hudConfig = {
       bars: { shared: { width: 12, dash: [1, 2] }, tension: { width: 20 } },
-    },
-    outcomeConfig = { panelWidth: 450 };
+    };
   const fight = new c.FightAreaStyleResolver({
     configProvider: () => fightConfig,
   });
   const hud = new c.HudStyleResolver({ hudStylesProvider: () => hudConfig });
-  const outcome = new c.OutcomeStyleResolver({
-    configProvider: () => outcomeConfig,
-  });
   const fightStyle = fight.resolve(),
-    hudStyle = hud.resolveBarStyle("tension"),
-    outcomeStyle = outcome.resolveVictory();
+    hudStyle = hud.resolveBarStyle("tension");
   assert(Object.isFrozen(fightStyle));
   assert(Object.isFrozen(fightStyle.lastDashDash));
   assert.equal(hudStyle.width, 20);
@@ -1558,28 +1463,12 @@ function checkVisualFrames() {
   const theme = new c.VictoryThemeResolver({ rarityVisualResolver: rarity });
   const ordinary = theme.resolve({ level: 2, maxLevel: 4 }, 0);
   const animated = theme.resolve({ level: 4, maxLevel: 4, isUnique: true }, 0);
-  let layoutCreations = 0;
-  const layout = new c.VictoryLayoutResolver({
-    diagnostics: {
-      recordVictoryLayoutCreated() {
-        layoutCreations++;
-      },
-    },
-  });
-  const firstLayout = layout.resolve({
-      width: 1280,
-      height: 720,
-      config: outcomeStyle,
-      statCount: 3,
-    }),
-    panel = firstLayout.panel;
   const line = new c.LineVisualStateController(),
     rod = new c.RodVisualOffsetSystem();
   let lineFrame = null;
   for (let frame = 0; frame < 120; frame++) {
     assert.equal(fight.resolve(), fightStyle);
     assert.equal(hud.resolveBarStyle("tension"), hudStyle);
-    assert.equal(outcome.resolveVictory(), outcomeStyle);
     assert.equal(
       theme.resolve({ level: 2, maxLevel: 4 }, frame * 16),
       ordinary,
@@ -1588,14 +1477,6 @@ function checkVisualFrames() {
       theme.resolve({ level: 4, maxLevel: 4, isUnique: true }, frame * 16),
       animated,
     );
-    const currentLayout = layout.resolve({
-      width: frame < 60 ? 1280 : 360,
-      height: 720,
-      config: outcomeStyle,
-      statCount: frame < 60 ? 3 : 7,
-    });
-    assert.equal(currentLayout, firstLayout);
-    assert.equal(currentLayout.panel, panel);
     const currentLine = line.update({
       state: frame < 40 ? "waiting" : frame < 80 ? "biting" : "playing",
       nowMs: 1000 + frame * 16,
@@ -1638,25 +1519,20 @@ function checkVisualFrames() {
       frame < 40 ? "free_line" : frame < 80 ? "drag_slip" : "tight_line",
     );
   }
-  assert.equal(layoutCreations, 1);
   assert(lineFrame.straightFactor > 0);
   rod.reset();
   assert.equal(rod.getOffsetPx(), 0);
   assert.equal(rod.isClamped(), false);
   fightConfig = { color: "blue" };
   hudConfig = { bars: { shared: { width: 40 } } };
-  outcomeConfig = { panelWidth: 600 };
   fight.invalidate();
   hud.invalidate();
-  outcome.invalidate();
   assert.equal(fight.resolve().catchFill, "blue");
   assert.equal(hud.resolveBarStyle("tension").width, 40);
-  assert.equal(outcome.resolveVictory().panelWidth, 600);
   assert.notEqual(fight.resolve(), fightStyle);
   assert.notEqual(hud.resolveBarStyle("tension"), hudStyle);
-  assert.notEqual(outcome.resolveVictory(), outcomeStyle);
   console.log(
-    "Visual frames passed: 120 cached styles and ordinary/animated themes; reused layout/line identities, viewport changes, line waiting/biting/playing and rod free/slip/tight/reset states; live config invalidation.",
+    "Visual frames passed: 120 cached styles and ordinary/animated themes; reused line identities, line waiting/biting/playing and rod free/slip/tight/reset states; live config invalidation.",
   );
 }
 

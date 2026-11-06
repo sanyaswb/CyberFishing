@@ -185,12 +185,10 @@ async function checkItemArt() {
 }
 
 async function checkOneSource() {
-  const { OutcomeRenderFrameBuilder } = await importSource("src/game/presentation/screens/outcome_render_frame_builder.js");
+  const { VictoryViewModelBuilder } = await importSource("src/game/presentation/screens/victory_view_model_builder.js");
   const { AssetPreloadCoordinator } = await importSource("src/platform/browser/assets/asset_preload_coordinator.js");
-  const base = { canvasMetrics: { width: 1, height: 1 }, clock: {}, styleResolver: { resolveVictory: () => ({}) },
-    layoutResolver: { resolve: () => ({}) } };
-  assert.throws(() => new OutcomeRenderFrameBuilder(base), /requires resolveFishImage/u,
-    "the outcome frame has no default image path of its own");
+  assert.throws(() => new VictoryViewModelBuilder({ themeResolver: { resolve() {} }, species: [] }), /requires resolveFishImage/u,
+    "the victory window has no default image path of its own (spec 161)");
   assert.throws(() => new AssetPreloadCoordinator({ imageAssets: { preload() {} }, locationsConfig: {} }),
     /requires resolveFishImage/u, "the preloader has no default image path of its own");
   const composition = fs.readFileSync(path.join(ROOT_DIR, "src/bootstrap/production/game_render_composition.js"), "utf8")
@@ -210,7 +208,7 @@ async function main() {
   console.log(`Render resolution passed: logical surface with the base transform at frame start, offscreen `
     + `data at ratio 1, rod depth order, ${masters} fish masters with tracked thumbnail/display variants within size, `
     + `${itemArt} item images at most 1024 px (keepnet 768) and 180 KB, `
-    + "one victory image source for the frame and the preloader, per-draw image filter (medium for downscales, low "
+    + "one victory image source for the window and the preloader, per-draw image filter (medium for downscales, low "
     + "otherwise, never high, set only by the surface).");
 }
 

@@ -49,8 +49,7 @@ class FishRarityCheck {
     RarityVisualResolver,
     VictoryThemeResolver,
     RarityConfigValidator,
-    OutcomeRenderFrameBuilder,
-    GameRenderFrame,
+    VictoryViewModelBuilder,
     FishAnomalyVariantResolver,
     FishVisualVariantResolver,
     FixedCatchFishFactory,
@@ -100,8 +99,7 @@ class FishRarityCheck {
     this.RarityVisualResolver = RarityVisualResolver;
     this.VictoryThemeResolver = VictoryThemeResolver;
     this.RarityConfigValidator = RarityConfigValidator;
-    this.OutcomeRenderFrameBuilder = OutcomeRenderFrameBuilder;
-    this.GameRenderFrame = GameRenderFrame;
+    this.VictoryViewModelBuilder = VictoryViewModelBuilder;
     this.RarityAnimationResolver = RarityAnimationResolver;
     this.baitEffectivenessResolver = new BaitEffectivenessResolver();
     this.fixture = new FishRarityFixture();
@@ -1017,93 +1015,35 @@ class FishRarityCheck {
     };
   }
 
+  // Spec 161: the victory window's reading keeps the domain rarity and the unique identity apart.
   #checkVictoryRarityTransfer() {
-    const builder = new this.OutcomeRenderFrameBuilder({
-      canvasMetrics: { width: 800, height: 600 },
-      clock: { realNow: 100 },
-      styleResolver: { resolveVictory: () => ({}) },
-      layoutResolver: { resolve: () => ({}) },
-      assetIdForSource: (source, namespace) => runtime.ImageAssetProvider.assetIdForSource(source, namespace),
+    const builder = new this.VictoryViewModelBuilder({
+      species: [],
       resolveFishImage: (fish) => fish.imagePath || "",
+      themeResolver: { resolve: () => ({ color: [1, 2, 3], isAnimated: false }) },
     });
-    const frame = new this.GameRenderFrame();
     const resolved = this.resolver.resolve({
       weightKg: 4.2,
       weightConfig: this.fixture.weightConfig,
     });
-    builder.buildInto({
-      target: frame.outcome,
-      intent: {
-        visible: true,
-        mode: "victory",
-        fish: {
-          id: "fixture",
-          level: 6,
-          maxLevel: 6,
-          weight: 4.2,
-          isUnique: resolved.isUnique,
-          rarity: resolved.rarity,
-        },
-      },
-    });
-    Assertion.equal(
-      frame.outcome.victory.fish.rarity.halfSteps,
-      9,
-      "Victory preserves resolved rarity",
-    );
-    Assertion.that(
-      !frame.outcome.victory.fish.isUnique,
-      "Victory preserves ordinary fish identity separately from rarity",
-    );
+    const ordinary = builder.build({ id: "fixture", level: 6, maxLevel: 6, weight: 4.2,
+      isUnique: resolved.isUnique, rarity: resolved.rarity });
+    Assertion.equal(ordinary.rarity.halfSteps, 9, "Victory preserves resolved rarity");
+    Assertion.that(!ordinary.isUnique, "Victory preserves ordinary fish identity separately from rarity");
 
     const uniqueHalfStar = this.resolver.resolve({
       weightKg: 0.05,
       weightConfig: this.fixture.weightConfig,
       baseAnomaly: "inside",
     });
-    frame.reset();
-    builder.buildInto({
-      target: frame.outcome,
-      intent: {
-        visible: true,
-        mode: "victory",
-        fish: {
-          id: "fixture",
-          level: 1,
-          maxLevel: 6,
-          weight: 0.05,
-          isUnique: uniqueHalfStar.isUnique,
-          rarity: uniqueHalfStar.rarity,
-        },
-      },
-    });
-    Assertion.that(
-      frame.outcome.victory.fish.isUnique,
-      "Victory preserves unique fish identity",
-    );
-    Assertion.equal(
-      frame.outcome.victory.fish.rarity.stars,
-      0.5,
-      "Victory preserves independent half-star rarity for a unique fish",
-    );
-    Assertion.that(
-      !frame.outcome.victory.fish.rarity.isMaximum,
-      "Victory unique identity does not alter maximum rarity",
-    );
+    const unique = builder.build({ id: "fixture", level: 1, maxLevel: 6, weight: 0.05,
+      isUnique: uniqueHalfStar.isUnique, rarity: uniqueHalfStar.rarity });
+    Assertion.that(unique.isUnique, "Victory preserves unique fish identity");
+    Assertion.equal(unique.rarity.stars, 0.5, "Victory preserves independent half-star rarity for a unique fish");
+    Assertion.that(!unique.rarity.isMaximum, "Victory unique identity does not alter maximum rarity");
 
-    frame.reset();
-    builder.buildInto({
-      target: frame.outcome,
-      intent: {
-        visible: true,
-        mode: "victory",
-        fish: { id: "fixture", level: 6, maxLevel: 6, weight: 4.2 },
-      },
-    });
-    Assertion.that(
-      frame.outcome.victory.fish.rarity.isResolved === false,
-      "Victory uses an unknown descriptor when domain rarity is missing",
-    );
+    const missing = builder.build({ id: "fixture", level: 6, maxLevel: 6, weight: 4.2 });
+    Assertion.that(missing.rarity.isResolved === false, "Victory uses an unknown descriptor when domain rarity is missing");
   }
 }
 
@@ -1194,12 +1134,8 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["ImageAssetProvider"],
   },
   {
-    relativePath: "src/game/presentation/rendering/game_render_frame.js",
-    classNames: ["GameRenderFrame"],
-  },
-  {
-    relativePath: "src/game/presentation/screens/outcome_render_frame_builder.js",
-    classNames: ["OutcomeRenderFrameBuilder"],
+    relativePath: "src/game/presentation/screens/victory_view_model_builder.js",
+    classNames: ["VictoryViewModelBuilder"],
   },
   {
     relativePath: "src/dev/fishing/fixed_catch_fish_factory.js",
@@ -1216,8 +1152,7 @@ new FishRarityCheck(
   runtime.RarityVisualResolver,
   runtime.VictoryThemeResolver,
   runtime.RarityConfigValidator,
-  runtime.OutcomeRenderFrameBuilder,
-  runtime.GameRenderFrame,
+  runtime.VictoryViewModelBuilder,
   runtime.FishAnomalyVariantResolver,
   runtime.FishVisualVariantResolver,
   runtime.FixedCatchFishFactory,

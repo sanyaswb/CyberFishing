@@ -69,8 +69,7 @@ function checkRenderFrameComposition() {
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;
   let castRodMovement=null;
   const fishingBuilder=new c.FishingRenderFrameBuilder({inventory:{getEquipped:()=>equipment},projector,canvasMetrics:metrics,clock,config,equipmentRules:{isSpinning:eq=>eq.rod.variant==='spinning',isFeeder:eq=>eq.rod.variant==='feeder'},baitRules:{getSinkRate:()=>1},getFloat:()=>float,getInputState:()=>({isPulling:true}),getCastRodMovement:()=>castRodMovement,getCastDistanceRatio:()=>0.5,getCurrentHookDepth:()=>2,getHoldState:()=>holdState,lineVisualState:{update(context){if(lineContext)assert.equal(context,lineContext);lineContext=context;return lineFrame;}},fightAreaBuilder:areaBuilder,hudBuilder,equipmentModelBuilder:equipmentBuilder});
-  const victoryConfig={},layout={id:'layout'};
-  const outcomeBuilder=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics,clock,resolveFishImage:fish=>fish.imagePath,styleResolver:{resolveVictory:()=>victoryConfig},layoutResolver:{resolve:()=>layout},assetIdForSource:(source,namespace)=>c.ImageAssetProvider.assetIdForSource(source,namespace)});
+  const outcomeBuilder=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics});
   const builder=new c.GameRenderFrameBuilder({canvasMetrics:metrics,projector,worldBuilder,castingBuilder,fishingBuilder,outcomeBuilder});
   const order=[],passes=['world','casting','fishing','hud','outcome'].map(id=>({id,render(frame){assert.equal(frame.frameNumber,Math.floor(clock.now/16));order.push(id);}})),passSections=[],probe={begin:id=>passSections.push('+'+id),end:id=>passSections.push('-'+id)},pipeline=new c.GameRenderPipeline({passes,probe});
   assert.throws(()=>new c.GameRenderPipeline({passes}),/requires a frame probe/,'the frame probe is composed (spec 101)');
@@ -86,12 +85,12 @@ function checkRenderFrameComposition() {
   assert.throws(()=>new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:new c.RenderFrameBuffer(),frameBuilder:builder,pipeline,sceneLayer,probe}),/requires sceneRouter/);
   assert.throws(()=>new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:new c.RenderFrameBuffer(),frameBuilder:builder,pipeline,sceneLayer,sceneRouter}),/requires a frame probe/);
   const buffer=new c.RenderFrameBuffer(),coordinator=new c.GameRenderCoordinator({stateMachine:machine,frameBuffer:buffer,frameBuilder:builder,pipeline,sceneLayer,sceneRouter,probe,getBounds:()=>bounds,getInvalidCastMarker:()=>({x:250,y:300,timeLeft:1}),isDebugEnabled:()=>true,invalidateStyles:()=>invalidations++,beginFrame:()=>{frameStarts++;}});
-  let record=null,fishRecord=null,restoreProgress=null,contextFrame=null;
+  let record=null,restoreProgress=null,contextFrame=null;
   for(let index=1;index<=120;index++) {
     clock.now=clock.realNow=index*16;order.length=0;const frame=coordinator.render(0.016);assert.equal(frame,buffer.current);assert.equal(frame.dt,0.016);assert.equal(frame.viewport.width,800);assert.equal(frame.world.chumZones.count,1);assert.equal(frame.world.boats.count,1);assert.equal(frame.world.waypoints.count,2);assert.equal(frame.world.sensorRays.count,1);
     assert.equal(frame.fishing.float.kind,'float');assert(lineEnd.x===frame.fishing.float.x&&lineEnd.y===frame.fishing.float.y,'the line ends at the rocked float point');assert.equal(frame.fishing.fightAreas.netZone.visible,true);assert.equal(frame.fishing.fightAreas.sectorPoints.count,66);assert.equal(frame.fishing.fightAreas.lineRadiusPoints.count,65);assert.equal(frame.hud.fishCondition.staminaRatio,0.7);assert.equal(frame.hud.holdCharges.restoreProgress[0],0.5);
-    assert.equal(frame.outcome.victory.spriteId,'fish:fish.png');assert.equal(frame.outcome.victory.stats.count,4);assert.equal(frame.outcome.victory.layout,layout);assert.deepEqual(order,['world','casting','fishing','hud','outcome']);
-    if(record){assert.equal(frame.world.boats.getAt(0),record);assert.equal(frame.outcome.victory.fish,fishRecord);assert.equal(frame.hud.holdCharges.restoreProgress,restoreProgress);assert.equal(frame,contextFrame);}else{record=frame.world.boats.getAt(0);fishRecord=frame.outcome.victory.fish;restoreProgress=frame.hud.holdCharges.restoreProgress;contextFrame=frame;}
+    assert(frame.outcome.visible&&frame.outcome.mode==='victory'&&!('victory' in frame.outcome),'a victory is the DOM window: the frame holds only its mode (spec 161)');assert.deepEqual(order,['world','casting','fishing','hud','outcome']);
+    if(record){assert.equal(frame.world.boats.getAt(0),record);assert.equal(frame.hud.holdCharges.restoreProgress,restoreProgress);assert.equal(frame,contextFrame);}else{record=frame.world.boats.getAt(0);restoreProgress=frame.hud.holdCharges.restoreProgress;contextFrame=frame;}
   }
   for(const next of ['waiting','biting']){state=next;clock.now+=16;clock.realNow=clock.now;const frame=coordinator.render(0.016);assert.equal(frame.hud.visible,false);assert.equal(frame.fishing.visible,true);}
   config.physics.castRodControl={enabled:true,lineTension:{enabled:true}};
@@ -110,9 +109,6 @@ function checkRenderFrameComposition() {
   assert.deepEqual(passSections.slice(0,12),['+scene','-scene','+world','-world','+casting','-casting','+fishing','-fishing','+hud','-hud','+outcome','-outcome'],'the scene layer and each pass are probe sections (specs 101, 103)');
   assert.equal(passSections.length,frame.frameNumber*12);assert.equal(sceneFrames.length,frame.frameNumber);assert.equal(sceneFrames.at(-1),frame,'the scene gets the built frame');assert.equal(routerUpdates,frame.frameNumber,'one routing decision per frame (spec 104)');
   for(const reason of ['line','rod','reel','leader','hook','net_escape']){frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'failed',reason}});assert(frame.outcome.gameOver.title);}
-  const defaultOutcome=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics,clock,resolveFishImage:fish=>fish.imagePath,styleResolver:{resolveVictory:()=>victoryConfig},layoutResolver:{resolve:()=>layout}});
-  for(const imagePath of [' spaced.png ','   ',42]){frame.reset();defaultOutcome.buildInto({target:frame.outcome,intent:{visible:true,mode:'victory',fish:{imagePath}}});assert.equal(frame.outcome.victory.spriteId,c.ImageAssetProvider.assetIdForSource(imagePath,'fish'),'old constructor default preserves source ID values');}
-  const originalId=c.ImageAssetProvider.assetIdForSource;c.ImageAssetProvider.assetIdForSource=(source,namespace)=>originalId(source,namespace)+':live';frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'victory',fish:{imagePath:'fish.png'}}});assert.equal(frame.outcome.victory.spriteId,'fish:fish.png:live','injected production callback preserves live Platform method lookup');c.ImageAssetProvider.assetIdForSource=originalId;
   assert.throws(()=>new c.GameRenderCoordinator({}),/requires stateMachine/);
 }
 

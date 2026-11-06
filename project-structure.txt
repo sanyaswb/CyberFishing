@@ -768,8 +768,6 @@
 │  │     │  ├── player_pressure_fatigue_indicator_renderer.js
 │  │     │  ├── startup_labels.js
 │  │     │  └── tackle_stress_bar_visibility.js
-│  │     ├── input
-│  │     │  └── victory_action_gesture_resolver.js
 │  │     ├── inventory
 │  │     │  ├── bait_effectiveness_catalog_resolver.js
 │  │     │  ├── bait_effectiveness_descriptor.js
@@ -868,10 +866,11 @@
 │  │     │  ├── game_over_renderer.js
 │  │     │  ├── outcome_render_frame_builder.js
 │  │     │  ├── rarity_animation_resolver.js
-│  │     │  ├── star_rating_renderer.js
-│  │     │  ├── victory_layout_resolver.js
-│  │     │  ├── victory_renderer.js
-│  │     │  └── victory_theme_resolver.js
+│  │     │  ├── victory_labels.js
+│  │     │  ├── victory_theme_resolver.js
+│  │     │  ├── victory_view_model_builder.js
+│  │     │  ├── victory_weight_scale_renderer.js
+│  │     │  └── victory_window.js
 │  │     ├── styles
 │  │     │  ├── auto-switch.css
 │  │     │  ├── degradation_color_resolver.js
@@ -907,17 +906,19 @@
 │  │     │  │  └── tooltips.css
 │  │     │  ├── keepnet.css
 │  │     │  ├── modal-controls.css
-│  │     │  ├── outcome_style_resolver.js
+│  │     │  ├── rarity-stars.css
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
 │  │     │  ├── tokens.css
 │  │     │  ├── ui-icon.css
 │  │     │  ├── ui-surface.css
-│  │     │  └── version-badge.css
+│  │     │  ├── version-badge.css
+│  │     │  └── victory-window.css
 │  │     ├── time
 │  │     │  └── time_of_day_layers.js
 │  │     ├── ui
 │  │     │  ├── art_size.js
+│  │     │  ├── rarity_stars_renderer.js
 │  │     │  ├── ui_auto_switch_renderer.js
 │  │     │  ├── ui_close_button_renderer.js
 │  │     │  ├── ui_hint_config.js

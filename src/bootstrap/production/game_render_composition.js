@@ -22,7 +22,6 @@ import { GameRenderPipeline } from "../../game/presentation/rendering/game_rende
 import { HoldChargesRenderer } from "../../game/presentation/hud/hold_charges_renderer.js";
 import { HudBarRenderer } from "../../game/presentation/hud/hud_bar_renderer.js";
 import { HudRenderPass } from "../../game/presentation/rendering/hud_render_pass.js";
-import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { LandingAreaRenderFrameBuilder } from "../../game/presentation/rendering/landing_area_render_frame_builder.js";
 import { LandingPolicyResolver } from "../../game/domain/fishing/landing_policy_resolver.js";
 import { LineVisualStateController } from "../../game/presentation/fishing/line_visual_state_controller.js";
@@ -67,7 +66,7 @@ export class GameRenderComposition {
   // sceneRouter (spec 104): a world kind's 2D component draws only while the kind is on the 2D canvas.
   composePipeline({
     surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-    rarityVisualResolver, rodAnimation, sceneRouter, victoryRenderer,
+    rarityVisualResolver, rodAnimation, sceneRouter,
   }) {
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -226,7 +225,6 @@ export class GameRenderComposition {
         hud: new HudRenderPass({ renderer: fightHudRenderer }),
         outcome: new OutcomeRenderPass({
           gameOverRenderer: new GameOverRenderer({ surface }),
-          victoryRenderer,
         }),
       }),
     });
@@ -354,15 +352,8 @@ export class GameRenderComposition {
         getWaterMetric: appPorts.getWaterMetric,
       }),
     });
-    const outcomeBuilder = new OutcomeRenderFrameBuilder({
-      // The victory image: the fish's 768 px display variant, the same source the preloader loads (spec 100 D4).
-      resolveFishImage: (fish) => runtime.rendering.fishArt.displayImagePath(fish),
-      canvasMetrics,
-      clock,
-      styleResolver: runtime.rendering.outcomeStyleResolver,
-      layoutResolver: runtime.rendering.victoryLayoutResolver,
-      assetIdForSource: (source, namespace) => ImageAssetProvider.assetIdForSource(source, namespace),
-    });
+    // The game-over panel; the victory window is DOM (spec 161).
+    const outcomeBuilder = new OutcomeRenderFrameBuilder({ canvasMetrics });
     runtime.inventory.setLineCapacityStateProvider?.(
       () => fightService.getLineCapacityState(),
     );
@@ -405,7 +396,6 @@ export class GameRenderComposition {
       invalidateStyles: () => {
         runtime.rendering.hudStyleResolver.invalidate();
         runtime.rendering.fightAreaStyleResolver.invalidate();
-        runtime.rendering.outcomeStyleResolver.invalidate();
         runtime.rendering.rarityVisualResolver.invalidate();
       },
     });

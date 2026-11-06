@@ -72,10 +72,6 @@ export class GameRenderFrame {
       visible: false,
       mode: "",
       gameOver: { visible: false },
-      victory: {
-        visible: false,
-        stats: new ReusableRenderList("victory.stats", diagnostics),
-      },
     };
     this.debug = { visible: false };
   }
@@ -136,8 +132,6 @@ export class GameRenderFrame {
     this.outcome.visible = false;
     this.outcome.mode = "";
     this.outcome.gameOver.visible = false;
-    this.outcome.victory.visible = false;
-    this.outcome.victory.stats.reset();
     this.debug.visible = false;
     return this;
   }

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.10 - Victory window
+
+- TK-230: the victory panel is a DOM window (spec 161): a rounded rectangular picture that opens the fish on the whole screen over a blur, plates with icons (weight, trophy cup, radiation sign with check or cross), rarity stars and a weight ruler with the green trophy segment. No per-frame canvas blur any more.
+
 ## v0.50.9 - Keepnet fish card text box and stars
 
 - TK-229.1-2: a keepnet fish card shows its text in a grey rounded box (name, level, weight, rarity as a row of SVG stars, timer); its buttons fill the row, two that fit take half each.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.1 - Fish art without empty edges
 
 - TK-222: convert-images --trim cuts empty edges; the fish art is re-encoded without them, so the fish is larger in keepnet cards; the catch panel and the aquarium draw it whole with its proportions. Game-cycle report unchanged.
-
-## v0.50.0 - Keepnet and asset folder fixes
-
-- Minor release of v0.49.98-0.49.100: only the current keepnet stage loads after the first frame, the keepnet fish card shows its whole picture, and every item's files lie in one folder per type with --low/--scene/--spine name suffixes. Game-cycle report unchanged.

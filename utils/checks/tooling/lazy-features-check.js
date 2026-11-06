@@ -26,9 +26,9 @@ const LAZY_FEATURE_MODULES = Object.freeze({
     "src/game/presentation/inventory/inventory_editor_tabs_renderer.js", "src/game/presentation/inventory/inventory_editor_tabs_resolver.js",
     "src/game/presentation/inventory/inventory_editor_tabs_labels.js", "src/game/presentation/inventory/inventory_editor_config.js",
     "src/game/presentation/inventory/inventory_rod_removal_renderer.js"],
-  victory: ["src/bootstrap/production/victory_feature_composition.js", "src/game/presentation/input/victory_action_gesture_resolver.js",
-    "src/game/presentation/screens/victory_layout_resolver.js", "src/game/presentation/screens/victory_renderer.js",
-    "src/game/presentation/screens/victory_theme_resolver.js", "src/game/presentation/screens/star_rating_renderer.js"],
+  victory: ["src/bootstrap/production/victory_feature_composition.js", "src/game/presentation/screens/victory_window.js",
+    "src/game/presentation/screens/victory_view_model_builder.js", "src/game/presentation/screens/victory_weight_scale_renderer.js",
+    "src/game/presentation/screens/victory_labels.js", "src/game/presentation/screens/victory_theme_resolver.js"],
 });
 // The production entry, and the DEV composition that dev.entry.js imports first thing (a start import).
 const ENTRIES = Object.freeze(["src/entrypoints/game.entry.js", "src/bootstrap/development/development_game_startup.js"]);

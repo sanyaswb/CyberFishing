@@ -108,5 +108,5 @@ export const ASSET_REGISTRY = Object.freeze({
   "ui.inventory.rod": Object.freeze({ kind: "image", path: "assets/ui/inventory/rod.svg", bytes: 988, sha256: "4391e978e20fc1a4", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.tackle": Object.freeze({ kind: "image", path: "assets/ui/inventory/tackle.svg", bytes: 334, sha256: "c9f7e856613ce3ee", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.weight": Object.freeze({ kind: "image", path: "assets/ui/inventory/weight.svg", bytes: 287, sha256: "2107bae3e5b95560", tags: Object.freeze(["ui","inventory"]), label: "" }),
-  "ui.status-icons": Object.freeze({ kind: "image", path: "assets/ui/status-icons.svg", bytes: 339, sha256: "15061ce8506b0065", tags: Object.freeze(["ui"]), label: "" }),
+  "ui.status-icons": Object.freeze({ kind: "image", path: "assets/ui/status-icons.svg", bytes: 1027, sha256: "b5b6fa03dc04a9e6", tags: Object.freeze(["ui"]), label: "" }),
 });

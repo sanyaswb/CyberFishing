@@ -769,24 +769,6 @@ export const CONFIG = {
       },
     },
 
-    victory: {
-      panelWidth: 540,
-      panelMinHeight: 560,
-      viewportMargin: 24,
-      panelPadding: 24,
-      panelRadius: 8,
-      imageBoxSize: 260,
-      imageBorderWidth: 3,
-      statPillHeight: 42,
-      rarityRowHeight: 50,
-      rarityStarGap: 7,
-      rarityStarRadius: 12,
-      buttonWidth: 150,
-      buttonHeight: 42,
-      buttonGap: 14,
-      blurPx: 3,
-    },
-
     line: {
       visible: true,
       color: "rgba(255, 255, 255, 0.3)",

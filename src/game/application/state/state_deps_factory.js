@@ -205,11 +205,7 @@ export class StateDepsFactory {
     const root = this.#root;
     return Object.freeze({
       ui: root.ui,
-      input: root.input,
-      config: root.config,
-      getViewportSize: root.getViewportSize,
-      victoryLayoutResolver: root.victoryLayoutResolver,
-      victoryActionGestureResolver: root.victoryActionGestureResolver,
+      victoryWindow: root.victoryWindow,
       liveBait: root.liveBait,
       onCatchResult: root.onCatchResult,
       commands: Object.freeze({
