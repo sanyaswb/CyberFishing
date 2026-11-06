@@ -141,12 +141,12 @@ export const ITEM_DB = {
         // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
         // hangs from the line-tip bone.
         animation: {
-          asset: "animations.rods.bamboo-rod-v1.rod",
+          asset: "items.rods.bamboo-rod-v1--spine",
           skin: "default",
           linePoint: "line-tip",
           // TK-181: drawn until the export arrives, in the export's setup pose (the spine-rod check compares them).
           startPicture: {
-            asset: "items.rods-scene.bamboo-rod-v1",
+            asset: "items.rods.bamboo-rod-v1--scene",
             bounds: { x: -6.404347, y: -2.046038, width: 16.769104, height: 468.8618 },
             linePoint: { x: 1.1598823877317312, y: 466.09938640304864 },
           },
@@ -895,7 +895,7 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          asset: "items.floats-scene.float-day",
+          asset: "items.floats.float-day--scene",
           waterline: 0.3,
         },
       },
@@ -959,9 +959,9 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          asset: "items.floats-scene.float-day",
+          asset: "items.floats.float-day--scene",
           waterline: 0.3,
-          glow: { asset: "items.floats-scene.float-day-glow", pad: 8 },
+          glow: { asset: "items.floats.float-day-glow--scene", pad: 8 },
         },
       },
       rarityProfile: {
@@ -1023,7 +1023,7 @@ export const ITEM_DB = {
       skin: {
         id: "float-v1",
         scene: {
-          asset: "items.floats-scene.float-day",
+          asset: "items.floats.float-day--scene",
           waterline: 0.3,
         },
       },
@@ -1178,7 +1178,7 @@ export const ITEM_DB = {
           baitAsset: "items.boats.boat-lvl--3_bait",
         },
         animation: {
-          asset: "animations.boats.boat-lvl--3",
+          asset: "items.boats.boat-lvl--3--spine",
           skin: "skin_boat-lvl--3",
         },
       },

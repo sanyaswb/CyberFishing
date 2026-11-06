@@ -3079,7 +3079,7 @@ class InventoryUiBehaviorCheck {
     );
     assert.strictEqual(
       nightGlowImages[0].src,
-      "assets/items/floats-scene/float-day-glow.webp",
+      "assets/items/floats/float-day-glow--scene.webp",
       "Night float glow overlay must point to the float glow asset",
     );
     assert.strictEqual(

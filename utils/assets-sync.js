@@ -9,7 +9,7 @@
 //   npm run assets:sync -- --prune            drop assets whose files are gone and nothing references
 //   npm run assets:sync -- --rename-id <old> <new>   rename an id in the registry and in every src/ reference
 // Content hashes are the first 16 hex digits of SHA-256 (enough to tell files apart, small in the registry).
-// Low-quality copies (spec 157 R17, TK-179): every raster image except depth maps has one under assets/low-copies/, made by
+// Low-quality copies (spec 157 R17, TK-179): every raster image except depth maps has one beside it (name--low.webp, TK-221), made by
 // utils/convert-images.js --low-copies (a quarter of the longest side, at most 256 px, WebP Low); the registry keeps the
 // image's width/height, its copy (low) and the source hash it was made from (lowSource). The sync makes missing or stale
 // copies (stage the new files); --check fails on a missing, untracked or stale one.
@@ -58,7 +58,7 @@ async function trackedAssetFiles(needsLowCopy) {
 }
 
 // Missing or stale low copies are made (or, with --check, reported); the entries get low and lowSource.
-function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy }) {
+function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy, isLowCopy }) {
   const tracked = new Set(trackedFileList());
   const make = [];
   const problems = [];
@@ -75,7 +75,7 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy })
   }
   // A copy whose image is gone (moved out of assets/ or removed) goes with it.
   const kept = new Set(Object.values(registry).map((entry) => entry.low).filter(Boolean));
-  const orphans = [...tracked].filter((file) => file.startsWith("assets/low-copies/") && !kept.has(file));
+  const orphans = [...tracked].filter((file) => isLowCopy(file) && !kept.has(file));
   if (check) for (const orphan of orphans) problems.push(`${orphan} has no image any more`);
   else {
     for (const orphan of orphans) {
@@ -83,7 +83,7 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy })
       console.log(`removed ${orphan} (stage the deletion)`);
     }
   }
-  if (problems.length > 0) throw new Error(`${problems.join("\n")}\nrun npm run assets:sync and stage assets/low-copies`);
+  if (problems.length > 0) throw new Error(`${problems.join("\n")}\nrun npm run assets:sync and stage the --low copies`);
   if (make.length === 0) return 0;
   const manifest = path.join(os.tmpdir(), `cyber-fishing-low-copies-${process.pid}.json`);
   fs.writeFileSync(manifest, JSON.stringify(make), "utf8");
@@ -154,7 +154,7 @@ ${lines.join("\n")}
 
 async function main() {
   const options = readOptions(process.argv.slice(2));
-  const { collectAssets, syncAssetRegistry, atlasTextureNames, lowCopyPath, needsLowCopy } =
+  const { collectAssets, syncAssetRegistry, atlasTextureNames, lowCopyPath, needsLowCopy, isLowCopy } =
     await import(pathToFileURL(path.join(ROOT, ENGINE_MODULE)).href);
   let previous = await loadPrevious();
   if (options.renameId) previous = renameId(previous, ...options.renameId, options.check);
@@ -166,7 +166,7 @@ async function main() {
   const { report, errors } = result;
   for (const [first, second] of report.duplicates) console.log(`warning: ${first} and ${second} have the same content`);
   if (errors.length > 0) throw new Error(errors.join("\n"));
-  const madeLowCopies = syncLowCopies(result.registry, previous, { check: options.check, lowCopyPath, needsLowCopy });
+  const madeLowCopies = syncLowCopies(result.registry, previous, { check: options.check, lowCopyPath, needsLowCopy, isLowCopy });
   const text = render(result.registry);
   const file = path.join(ROOT, REGISTRY_FILE);
   const current = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
@@ -182,7 +182,7 @@ async function main() {
   for (const { id, from, to } of report.moved) console.log(`moved ${id}: ${from} -> ${to}`);
   for (const id of report.added) console.log(`added ${id}`);
   for (const id of report.removed) console.log(`removed ${id}`);
-  if (madeLowCopies > 0) console.log(`made ${madeLowCopies} low copies under assets/low-copies (stage them)`);
+  if (madeLowCopies > 0) console.log(`made ${madeLowCopies} low copies beside their images (stage them)`);
   console.log(`${current === text ? "Unchanged" : "Wrote"} ${REGISTRY_FILE}: ${summary}.`);
 }
 

@@ -6,6 +6,9 @@
 //   3. a rename that git reports (renames: [[oldPath, newPath]]);
 //   otherwise it is a new asset with a new id, and the vanished one is an error (referenced) or needs prune.
 // A Spine export (name.json + name.atlas, its textures named in the atlas) is one asset of kind "spine".
+// Folders (owner, TK-221): every file of one item lives in its type's folder; a variant is a suffix of the name, never a
+// folder of its own: float-day.webp, float-day--low.webp (its low copy), float-day--scene.webp (drawn in the scene),
+// bamboo-rod-v1--spine.json/.atlas/.webp (its Spine export).
 
 const MEDIA_KINDS = Object.freeze({
   webp: "image", png: "image", jpg: "image", jpeg: "image", svg: "image", avif: "image", gif: "image",
@@ -13,18 +16,25 @@ const MEDIA_KINDS = Object.freeze({
   json: "data", atlas: "data",
 });
 const ASSETS_PREFIX = "assets/";
-// Generated low-quality copies (spec 157 R17): derived files, never assets of their own.
-const LOW_PREFIX = "assets/low-copies/";
+// Generated low-quality copies (spec 157 R17): derived files beside their image, never assets of their own.
+const LOW_COPY = /--low\.[^./]+$/u;
 const RASTER = new Set(["webp", "png", "jpg", "jpeg", "avif", "gif"]);
+// Name suffixes of a separately rendered variant; each adds the tags "<variant>" and "<folder>-<variant>".
+const VARIANT = /--(scene|spine)$/u;
 
-// The low-quality copy of an image: the same path under assets/low-copies/, as WebP.
+// A generated low copy (name--low.webp).
+export function isLowCopy(path) {
+  return LOW_COPY.test(path);
+}
+
+// The low-quality copy of an image: beside it, name--low.webp.
 export function lowCopyPath(path) {
-  return `${LOW_PREFIX}${path.slice(ASSETS_PREFIX.length).replace(/\.[^./]+$/u, "")}.webp`;
+  return `${path.replace(/\.[^./]+$/u, "")}--low.webp`;
 }
 
 // Raster images get a low copy; vectors, audio, Spine data and exact data maps (a location's depth map) do not.
 export function needsLowCopy(path) {
-  return path.startsWith(ASSETS_PREFIX) && !path.startsWith(LOW_PREFIX) && RASTER.has(extensionOf(path))
+  return path.startsWith(ASSETS_PREFIX) && !isLowCopy(path) && RASTER.has(extensionOf(path))
     && !/-depth\.[^./]+$/u.test(path);
 }
 
@@ -46,7 +56,7 @@ export function assetIdForPath(path, taken = new Set()) {
 // Files of the working tree (tracked, under assets/) -> assets keyed by their path (a Spine package by its .json).
 // files: [{ path, bytes, sha256 }]; atlasTextures: { atlasPath: ["texture.webp", ...] } (names relative to the atlas).
 export function collectAssets(files, atlasTextures = {}) {
-  const byPath = new Map(files.filter((file) => file.path.startsWith(ASSETS_PREFIX) && !file.path.startsWith(LOW_PREFIX)
+  const byPath = new Map(files.filter((file) => file.path.startsWith(ASSETS_PREFIX) && !isLowCopy(file.path)
     && MEDIA_KINDS[extensionOf(file.path)]).map((file) => [file.path, file]));
   const assets = new Map();
   const packaged = new Set();
@@ -76,8 +86,16 @@ function keyOf(entry) {
   return entry.kind === "spine" ? entry.json : entry.path;
 }
 
-function tagsOf(key) {
-  return stem(key).split("/").slice(0, -1);
+// The folders of a path, then its variant: items/floats/float-day--scene.webp -> items, floats, scene, floats-scene.
+export function tagsOf(key) {
+  const parts = stem(key).split("/");
+  const folders = parts.slice(0, -1);
+  const variant = parts[parts.length - 1].match(VARIANT)?.[1];
+  return variant ? [...folders, variant, `${folders[folders.length - 1]}-${variant}`] : folders;
+}
+
+function sameTags(first, second) {
+  return first.length === second.length && first.every((tag, index) => tag === second[index]);
 }
 
 // previous: { id: entry } (the registry as committed); referencedIds: ids used by code, configuration or the load plan.
@@ -89,7 +107,9 @@ export function syncAssetRegistry({ previous = {}, assets, moved = [], renames =
   const previousByKey = new Map(Object.entries(previous).map(([id, entry]) => [keyOf(entry), id]));
   const keep = (id, key, entry, from) => {
     const old = previous[id];
-    registry[id] = { ...entry, tags: old?.tags ?? tagsOf(key), label: old?.label ?? "" };
+    // Tags the owner edited stay; tags that only named the folders follow the file (TK-221).
+    const tags = old && !sameTags(old.tags, tagsOf(keyOf(old))) ? old.tags : tagsOf(key);
+    registry[id] = { ...entry, tags, label: old?.label ?? "" };
     if (from) report.moved.push({ id, from, to: key });
     else if (old && (old.sha256 !== entry.sha256 || old.bytes !== entry.bytes)) report.updated.push(id);
   };

@@ -9,10 +9,10 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
 const ROOT_DIR = path.resolve(__dirname, "../../..");
-const EXPORT_DIR = "assets/animations/rods/bamboo-rod-v1";
+const EXPORT_DIR = "assets/items/rods";
 // The rod skin names its export by asset id (spec 157 R16); the registry gives the files.
-const DESCRIPTOR = Object.freeze({ asset: "animations.rods.bamboo-rod-v1.rod", skin: "default", linePoint: "line-tip" });
-const FILES = Object.freeze({ skeleton: `${EXPORT_DIR}/rod.json`, atlas: `${EXPORT_DIR}/rod.atlas` });
+const DESCRIPTOR = Object.freeze({ asset: "items.rods.bamboo-rod-v1--spine", skin: "default", linePoint: "line-tip" });
+const FILES = Object.freeze({ skeleton: `${EXPORT_DIR}/bamboo-rod-v1--spine.json`, atlas: `${EXPORT_DIR}/bamboo-rod-v1--spine.atlas` });
 let assets = null;
 const near = (actual, expected, tolerance, label) =>
   assert(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} is not within ${tolerance} of ${expected}`);
@@ -27,7 +27,7 @@ function checkVendorManifest() {
   assert.equal(entry.importer, "src/platform/browser/animation/spine_runtime_module.js");
   const tracked = require("node:child_process").spawnSync("git", ["ls-files", "--", EXPORT_DIR, entry.file, entry.license],
     { cwd: ROOT_DIR, encoding: "utf8" }).stdout.split(/\r?\n/u).filter(Boolean);
-  for (const file of [FILES.skeleton, FILES.atlas, `${EXPORT_DIR}/rod.webp`, entry.file, entry.license]) {
+  for (const file of [FILES.skeleton, FILES.atlas, `${EXPORT_DIR}/bamboo-rod-v1--spine.webp`, entry.file, entry.license]) {
     assert(tracked.includes(file), `${file} is tracked in git (Pages serves tracked files only)`);
   }
   return entry.version;
@@ -37,7 +37,7 @@ function checkAtlasReader(SpineAtlasTextReader) {
   const { pages } = SpineAtlasTextReader.read(read(FILES.atlas));
   assert.equal(pages.length, 1);
   assert.deepEqual({ ...pages[0], regions: undefined },
-    { name: "rod.webp", width: 2739, height: 89, pma: false, minFilter: "Linear", magFilter: "Linear", regions: undefined });
+    { name: "bamboo-rod-v1--spine.webp", width: 2739, height: 89, pma: false, minFilter: "Linear", magFilter: "Linear", regions: undefined });
   assert.deepEqual({ ...pages[0].regions[0] },
     { name: "bamboo_rod--1", x: 2, y: 2, width: 85, height: 2735, rotate: 90, index: -1 });
   const twoPages = SpineAtlasTextReader.read("a.webp\nsize:4,4\npma:true\nr1\nbounds:0,0,2,2\n\nb.webp\nsize:8,8\nr2\nrotate:true\n");
@@ -77,14 +77,14 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   const load = loader.load(DESCRIPTOR);
   const pages = await load.pages;
   assert.equal(pages.status, "ready", "atlas and pages are ready on their own (static picture)");
-  assert.deepEqual([...pages.pages.keys()], ["rod.webp"]);
-  assert.equal(pages.pages.get("rod.webp").url, `${EXPORT_DIR}/rod.webp`, "pages resolve next to the atlas");
+  assert.deepEqual([...pages.pages.keys()], ["bamboo-rod-v1--spine.webp"]);
+  assert.equal(pages.pages.get("bamboo-rod-v1--spine.webp").url, `${EXPORT_DIR}/bamboo-rod-v1--spine.webp`, "pages resolve next to the atlas");
   const result = await load.result;
   assert.equal(result.status, "ready");
   assert.equal(result.bundle.version, "4.3.26");
   assert.equal(result.bundle.skin, "default", "the skin named by the rod's config");
   assert.equal(result.bundle.linePoint, "line-tip");
-  assert.deepEqual([...transport.calls].sort(), [FILES.atlas, `${EXPORT_DIR}/rod.webp`, FILES.skeleton].sort(),
+  assert.deepEqual([...transport.calls].sort(), [FILES.atlas, `${EXPORT_DIR}/bamboo-rod-v1--spine.webp`, FILES.skeleton].sort(),
     "one request per resource");
 
   const shared = fakeTransport();
@@ -96,7 +96,7 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   const outcome = async (options, descriptor = DESCRIPTOR) =>
     (await new SpineBundleLoader({ queue: queue(), transport: fakeTransport(options), assets }).load(descriptor).result).reason;
   assert.equal(await outcome({ failText: FILES.atlas }), "atlas-failed");
-  assert.equal(await outcome({ failImage: `${EXPORT_DIR}/rod.webp` }), "page-failed");
+  assert.equal(await outcome({ failImage: `${EXPORT_DIR}/bamboo-rod-v1--spine.webp` }), "page-failed");
   assert.equal(await outcome({ failJson: FILES.skeleton }), "skeleton-failed");
   assert.equal(await outcome({}, { ...DESCRIPTOR, asset: "test.broken-atlas" }), "atlas-invalid");
   const released = new SpineBundleLoader({ queue: queue(), transport: fakeTransport(), assets }).load(DESCRIPTOR);
@@ -104,7 +104,7 @@ async function checkBundleLoader(SpineBundleLoader, AssetLoadQueue) {
   assert.equal((await released.result).reason, "cancelled", "a released load settles as cancelled");
   assert.throws(() => new SpineBundleLoader({ queue: {}, transport }), /requires an AssetLoadQueue/u);
   assert.throws(() => new SpineBundleLoader({ queue: queue(), transport }), /requires assets/u);
-  assert.equal(result.bundle.skeletonFile, "rod.json", "the bundle keeps the skeleton file's name for the DEV export");
+  assert.equal(result.bundle.skeletonFile, "bamboo-rod-v1--spine.json", "the bundle keeps the skeleton file's name for the DEV export");
 }
 
 function fakeSurface({ height = 600, maxTextureSize = 4096 } = {}) {
@@ -362,7 +362,7 @@ function checkSetupPose(SpineSetupPoseReader, bundle) {
   near(pose.linePoint.x, 1.16, 0.01, "setup line-tip x without the runtime");
   near(pose.linePoint.y, 466.10, 0.01, "setup line-tip y without the runtime");
   assert.deepEqual([pose.region.pageName, pose.region.name, pose.region.rotate, pose.region.width, pose.region.height],
-    ["rod.webp", "bamboo_rod--1", 90, 85, 2735], "the one drawn region");
+    ["bamboo-rod-v1--spine.webp", "bamboo_rod--1", 90, 85, 2735], "the one drawn region");
   const atlas = { pages: [{ name: "p.webp", regions: [{ name: "a", x: 0, y: 0, width: 4, height: 8, rotate: 0 }] }] };
   const json = (overrides = {}) => ({
     skeleton: { x: 0, y: 0, width: 4, height: 8 },
@@ -444,7 +444,7 @@ async function checkStartPicture({ RodAnimationController, RodAnimationStateReso
   assert(Math.abs(width / height - pose.region.width / pose.region.height) < 0.002, "the picture has the region's proportion");
   assert(fs.statSync(file).size <= 16 * 1024, "the start picture is at most 16 KB");
   const alphaBars = async (input) => (await sharp(input).ensureAlpha().extractChannel(3).resize(1, 32, { fit: "fill" }).raw().toBuffer());
-  const pagePath = path.join(ROOT_DIR, EXPORT_DIR, "rod.webp");
+  const pagePath = path.join(ROOT_DIR, EXPORT_DIR, "bamboo-rod-v1--spine.webp");
   const upright = await sharp(pagePath).extract({ left: pose.region.x, top: pose.region.y, width: pose.region.height,
     height: pose.region.width }).rotate(90).toBuffer();
   const [picture, region] = [await alphaBars(file), await alphaBars(upright)];
@@ -637,7 +637,7 @@ function checkDevPort(controller, context, staticTip, scale) {
 
   const original = JSON.parse(read(FILES.skeleton));
   let exported = controller.exportSkeleton();
-  assert.equal(exported.fileName, "rod.json", "the export keeps the file's own name");
+  assert.equal(exported.fileName, "bamboo-rod-v1--spine.json", "the export keeps the file's own name");
   const edited = JSON.parse(exported.text);
   assert.equal(edited.bones.find((bone) => bone.name === "rod").x, 50, "the edit is written into the bones entry");
   delete edited.bones.find((bone) => bone.name === "rod").x;

@@ -143,8 +143,8 @@ The rod is prepared/drawn only when the fishing render frame has a float. Before
 The equipped skin supplies the skeleton, atlas, skin name and line point. The current bamboo rod uses:
 
 ```text
-assets/animations/rods/bamboo-rod-v1/rod.json
-assets/animations/rods/bamboo-rod-v1/rod.atlas
+assets/items/rods/bamboo-rod-v1--spine.json
+assets/items/rods/bamboo-rod-v1--spine.atlas
 skin: rod-1
 linePoint: line-tip
 ```

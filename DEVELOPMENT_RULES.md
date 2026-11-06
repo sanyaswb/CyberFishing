@@ -108,6 +108,11 @@ optimization is part of every change, never an afterthought:
 - **Assets by stable id, never by path.** Code and configuration reference assets through the asset registry ids;
   `npm run assets:sync` registers new and moved files and its `--check` runs in Full. Raster art is display-sized and
   converted with `utils/convert-images.js`.
+- **One folder per item type, variants by name suffix** (owner, TK-221). Every file of one item lies in its type's folder
+  (`assets/items/floats/`), never in a clone folder per use or quality: `float-day.webp` normal, `float-day--low.webp` its
+  generated low copy, `float-day--scene.webp` drawn separately in the scene, `bamboo-rod-v1--spine.json/.atlas/.webp` its
+  Spine export (the atlas names its texture). The suffixes `--scene` and `--spine` add the registry tags `scene`/`spine`
+  and `<folder>-scene`/`<folder>-spine`, which the load plan uses.
 - **Progressive images.** Every raster image has a generated low-quality copy: when the player opens content that has
   not loaded, it gets priority 1, the low copy shows first (a loader only if it is late), and the full image replaces it
   instantly once decoded, in the same box (no layout jump).

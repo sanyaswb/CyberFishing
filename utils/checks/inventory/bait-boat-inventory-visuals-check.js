@@ -9,7 +9,7 @@ async function checkItemDatabase() {
   assert.equal(boat.skin.equipment?.noBaitAsset, "items.boats.boat-lvl--3_no-bait");
   assert.equal(boat.skin.equipment?.baitAsset, "items.boats.boat-lvl--3_bait");
   assert(boat.skin.animation, "boat must have skin animation definition");
-  assert.equal(boat.skin.animation.asset, "animations.boats.boat-lvl--3", "the boat names its Spine export by asset id");
+  assert.equal(boat.skin.animation.asset, "items.boats.boat-lvl--3--spine", "the boat names its Spine export by asset id");
   assert.equal(boat.skin.animation.skin, "skin_boat-lvl--3");
 }
 

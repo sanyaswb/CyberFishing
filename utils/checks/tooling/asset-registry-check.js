@@ -72,23 +72,40 @@ const ROOT = path.resolve(__dirname, "../../..");
   result = sync([file("assets/items/rod.webp", "r9", 12), file("assets/ui/a.svg", "s1")]);
   assert.deepEqual([result.report.updated, result.registry["items.rod"].label], [["items.rod"], "Вудка"]);
 
-  // Low-quality copies (spec 157 R17): derived files under assets/low-copies/ are never assets; raster images except depth
-  // maps get one; the collected entry keeps the image size.
-  const { lowCopyPath, needsLowCopy } = await import(pathToFileURL(path.join(ROOT, "src/engine/assets/asset_registry_sync.js")).href);
-  assert.equal(lowCopyPath("assets/items/rods/rod.png"), "assets/low-copies/items/rods/rod.webp");
-  assert.deepEqual(["assets/a/x.webp", "assets/a/x.png", "assets/a/x.svg", "assets/loc/test-depth.webp", "assets/low-copies/a/x.webp",
+  // Low-quality copies (spec 157 R17): derived files beside their image (name--low.webp, TK-221) are never assets; raster
+  // images except depth maps get one; the collected entry keeps the image size.
+  const { lowCopyPath, needsLowCopy, tagsOf } = await import(pathToFileURL(path.join(ROOT, "src/engine/assets/asset_registry_sync.js")).href);
+  assert.equal(lowCopyPath("assets/items/rods/rod.png"), "assets/items/rods/rod--low.webp", "the low copy lies beside its image");
+  assert.equal(lowCopyPath("assets/items/floats/float-day--scene.webp"), "assets/items/floats/float-day--scene--low.webp");
+  assert.deepEqual(["assets/a/x.webp", "assets/a/x.png", "assets/a/x.svg", "assets/loc/test-depth.webp", "assets/a/x--low.webp",
     "assets/audio/x.mp3"].map(needsLowCopy), [true, true, false, false, false, false]);
   const withLow = collectAssets([{ path: "assets/a/x.webp", sha256: "s", bytes: 5, width: 800, height: 400 },
-    { path: "assets/low-copies/a/x.webp", sha256: "l", bytes: 1 }]);
+    { path: "assets/a/x--low.webp", sha256: "l", bytes: 1 }]);
   assert.deepEqual([...withLow.keys()], ["assets/a/x.webp"], "a low copy is not an asset");
   assert.deepEqual([withLow.get("assets/a/x.webp").width, withLow.get("assets/a/x.webp").height], [800, 400]);
+
+  // TK-221: one folder per item type; a variant is a name suffix that adds its own tags. A moved file's tags follow its
+  // folder unless the owner edited them.
+  assert.deepEqual(tagsOf("assets/items/floats/float-day--scene.webp"), ["items", "floats", "scene", "floats-scene"]);
+  assert.deepEqual(tagsOf("assets/items/rods/bamboo-rod-v1--spine.json"), ["items", "rods", "spine", "rods-spine"]);
+  assert.deepEqual(tagsOf("assets/items/keepnet/keepnet--20.webp"), ["items", "keepnet"], "a stage number is no variant");
+  const placed = syncAssetRegistry({ assets: collectAssets([file("assets/items/floats-scene/float.webp", "f1"),
+    file("assets/items/rods-scene/rod.webp", "r1")]) }).registry;
+  placed["items.rods-scene.rod"] = { ...placed["items.rods-scene.rod"], tags: ["owner-tag"] };
+  const regrouped = syncAssetRegistry({ previous: placed, assets: collectAssets([file("assets/items/floats/float--scene.webp", "f1"),
+    file("assets/items/rods/rod--scene.webp", "r1")]) }).registry;
+  assert.deepEqual(regrouped["items.floats-scene.float"].tags, ["items", "floats", "scene", "floats-scene"], "folder tags follow the move");
+  assert.deepEqual(regrouped["items.rods-scene.rod"].tags, ["owner-tag"], "the owner's tags stay");
+  const folders = spawnSync("git", ["ls-files", "assets"], { cwd: ROOT }).stdout.toString("utf8").split("\n");
+  assert.deepEqual(folders.filter((tracked) => /^assets\/(?:low-copies|animations)\/|-scene\//u.test(tracked)), [],
+    "no clone folders: low copies, scene art and Spine exports lie beside the item (TK-221)");
 
   // The repository's registry matches its tracked assets.
   const check = spawnSync(process.execPath, [path.join(ROOT, "utils/assets-sync.js"), "--check"], { cwd: ROOT });
   assert.equal(check.status, 0, `npm run assets:sync -- --check: ${check.stderr.toString("utf8").trim()}`);
   const { ASSET_REGISTRY } = await import(pathToFileURL(path.join(ROOT, "src/game/config/generated/asset_registry.js")).href);
   assert(Object.keys(ASSET_REGISTRY).length >= 100 && Object.isFrozen(ASSET_REGISTRY));
-  assert.equal(ASSET_REGISTRY["animations.rods.bamboo-rod-v1.rod"].kind, "spine", "the rod's Spine export is one asset");
+  assert.equal(ASSET_REGISTRY["items.rods.bamboo-rod-v1--spine"].kind, "spine", "the rod's Spine export is one asset");
   const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.low);
   assert(lows.length >= 70 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
     "every raster image has a current low copy and its size");

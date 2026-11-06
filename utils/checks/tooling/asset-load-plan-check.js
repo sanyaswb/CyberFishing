@@ -136,7 +136,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.equal(listeners.size, 0, "dispose unsubscribes from the conditions");
 
   // Stage D4b: readyOn "low" — the copy under the image's own id first, the full file only when the next layer starts.
-  const lowRegistry = new AssetRegistry({ "bg.day": { ...image("assets/bg/day.webp", ["bg"]), low: "assets/low-copies/bg/day.webp" },
+  const lowRegistry = new AssetRegistry({ "bg.day": { ...image("assets/bg/day.webp", ["bg"]), low: "assets/bg/day--low.webp" },
     "bg.depth": image("assets/bg/depth.webp", ["bg"]) });
   const lowPlan = new AssetLoadPlan({ registry: lowRegistry, plan: plan([
     layer("first", "composition", [{ id: "map", priority: 1, readyOn: "low", assets: [{ id: "bg.day" }, { id: "bg.depth" }] }]),
@@ -146,7 +146,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const lowFacade = new GameAssetPreloadFacade({ plan: lowPlan, assets: lowRegistry, scheduler,
     imageAssets: { preload: ([record]) => { lowLoads.push([record.id, record.src]); return Promise.resolve(); } } });
   await lowFacade.start("first");
-  assert.deepEqual(lowLoads, [["bg.day", "assets/low-copies/bg/day.webp"], ["bg.depth", "assets/bg/depth.webp"]],
+  assert.deepEqual(lowLoads, [["bg.day", "assets/bg/day--low.webp"], ["bg.depth", "assets/bg/depth.webp"]],
     "the start loads the copy under the image's id; an image without a copy loads whole");
   await lowFacade.start("second");
   await flush();
@@ -201,19 +201,19 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     .map((group) => [group.id, production.resolveGroup(group, state)]));
   const first = groupIds("layer-one");
   assert.deepEqual(first.location, ["locations.test.bg_test--day", "locations.test.test-depth"]);
-  assert.deepEqual(first.scene, ["items.floats-scene.float-day", "items.floats-scene.float-day-glow"]);
+  assert.deepEqual(first.scene, ["items.floats.float-day--scene", "items.floats.float-day-glow--scene"]);
   assert.equal(first["slot-icons"].length, 14, "the fourteen slot placeholders");
   // Before stage D the start finished 20 assets: these 18 preloads, plus the sections sprite and the status icons that
   // the page's markup requests (measure:startup assetsBeforePlay). Since D4b the current phase starts from its low copy
   // (readyOn "low"); the depth map has none and loads whole.
   const lowGroups = new Set(production.layer("layer-one").groups.filter((group) => group.readyOn === "low").map((group) => group.id));
   assert.deepEqual([...lowGroups], ["location"], "the current background phase is ready on its low copy (owner, R17)");
-  assert.deepEqual(first["rod-start"], ["items.rods-scene.bamboo-rod-v1"], "the rod's picture before its export (TK-181)");
+  assert.deepEqual(first["rod-start"], ["items.rods.bamboo-rod-v1--scene"], "the rod's picture before its export (TK-181)");
   const startFiles = Object.entries(first).flatMap(([groupId, ids]) => ids.map((id) =>
     (lowGroups.has(groupId) && assets.lowPathOf(id)) || assets.pathOf(id))).sort();
-  assert.deepEqual(startFiles, ["assets/items/floats-scene/float-day-glow.webp", "assets/items/floats-scene/float-day.webp",
-    "assets/items/rods-scene/bamboo-rod-v1.webp",
-    "assets/low-copies/locations/test/bg_test--day.webp", "assets/locations/test/test-depth.webp",
+  assert.deepEqual(startFiles, ["assets/items/floats/float-day-glow--scene.webp", "assets/items/floats/float-day--scene.webp",
+    "assets/items/rods/bamboo-rod-v1--scene.webp",
+    "assets/locations/test/bg_test--day--low.webp", "assets/locations/test/test-depth.webp",
     ...["bait", "battery", "boat", "chum", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod", "tackle",
       "weight"].map((name) => `assets/ui/inventory/${name}.svg`)].sort(), "layer-one is the pre-D start plus the rod's start picture (TK-181)");
   // Spec 160: a later priority of the first layer waits for the earlier one and is one more request wave of the start.

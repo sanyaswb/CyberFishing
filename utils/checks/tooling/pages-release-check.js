@@ -36,7 +36,7 @@ try {
   assert.equal(PagesReleaseBuilder.hiddenFile(release.files), null, "no released file has a hidden name");
   assert.equal(PagesReleaseBuilder.hiddenFile(["index.html", "build/chunks/_private-ABCDEFGH.js"]), "build/chunks/_private-ABCDEFGH.js",
     "a chunk named after a _module would be hidden");
-  assert.equal(PagesReleaseBuilder.hiddenFile(["assets/low-copies/a.webp", "build/.cache/x.js"]), "build/.cache/x.js");
+  assert.equal(PagesReleaseBuilder.hiddenFile(["assets/a--low.webp", "build/.cache/x.js"]), "build/.cache/x.js");
   const page = tree.read("index.html").toString("utf8");
   for (const [, href] of page.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href), `stylesheet ${href} is released`);
   assert(files.has("src/entrypoints/game.entry.js"));
@@ -186,7 +186,7 @@ try {
       "exactly the budget passes");
     for (const entry of manifest.files.slice(1)) assert(files.has(entry.path.split("?")[0]), `${name}: ${entry.path} is released`);
     for (const module of preloaded) assert(manifest.files.some((entry) => entry.path === module), `${name}: the manifest counts ${module}`);
-    assert(manifest.files.some((entry) => entry.path.startsWith("assets/low-copies/locations/")),
+    assert(manifest.files.some((entry) => entry.path.startsWith("assets/locations/") && entry.path.endsWith("--low.webp")),
       `${name}: the manifest counts the background's low copy (readyOn low)`);
     const oneStylesheet = (html) => {
       let first = true;

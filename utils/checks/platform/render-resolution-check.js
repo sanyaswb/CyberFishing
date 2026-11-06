@@ -122,7 +122,7 @@ async function checkFishArt() {
   // TK-180: one runtime image per fish (768 px); cards and the aquarium take its low copy. A save written before TK-180
   // holds the master's (or a thumbnail's) path: it still finds the same fish's image.
   const display = "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp";
-  const low = "assets/low-copies/fish-display/crucian_stalker/standart/crucian_stalker--3.webp";
+  const low = "assets/fish-display/crucian_stalker/standart/crucian_stalker--3--low.webp";
   for (const saved of [display, "assets/fish/crucian_stalker/standart/crucian_stalker--3.webp",
     "assets/fish-thumbnails/crucian_stalker/standart/crucian_stalker--3.webp"]) {
     assert.equal(fishArt.displayPath(saved), display, `${saved}: the victory image`);
@@ -163,7 +163,9 @@ const ITEM_ART_MAX_BYTES = 180 * 1024;
 async function checkItemArt() {
   const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
   const files = spawnSync("git", ["ls-files", "assets/items"], { cwd: ROOT_DIR, encoding: "utf8" }).stdout
-    .split(/\r?\n/u).filter((file) => /\.(?:webp|png|jpe?g|avif)$/u.test(file));
+    .split(/\r?\n/u).filter((file) => /\.(?:webp|png|jpe?g|avif)$/u.test(file))
+    // A Spine export's texture page beside its item (TK-221) follows the Spine texture rules, not the preview limit.
+    .filter((file) => !/--spine\.[^./]+$/u.test(file));
   assert(files.length > 20, "item art is tracked");
   const offenders = [];
   for (const file of files) {
