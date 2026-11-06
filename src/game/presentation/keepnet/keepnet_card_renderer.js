@@ -1,6 +1,10 @@
 import { createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
 import { applyArtSize } from "../ui/art_size.js";
 
+const SVG = "http://www.w3.org/2000/svg";
+// A five-point star in a 24-unit box (the victory panel's star shape).
+const STAR_PATH = "M12 1.8l2.95 6.6 7.2.66-5.45 4.78 1.62 7.06L12 17.2l-6.32 3.7 1.62-7.06L1.85 9.06l7.2-.66z";
+
 export class KeepnetCardRenderer {
   #document;
   #labels;
@@ -31,12 +35,14 @@ export class KeepnetCardRenderer {
     const card = this.#el("article", "keepnet-section__fish");
     card.addEventListener("click", (event) => { if (!event.target?.closest?.("button")) onPreview(fish); });
     const labels = this.#labels;
-    card.append(this.#image(fish), this.#el("strong", "keepnet-section__fish-name", fish.name),
-      this.#el("span", "keepnet-section__fish-weight", labels.weight(fish.weightKg)),
-      this.#el("span", "keepnet-section__fish-rarity", fish.rarity ? labels.rarity(fish.rarity) : labels.unknownRarity),
-      this.#el("span", "keepnet-section__fish-level", labels.level(fish.level)));
+    // TK-229.2: the text sits in its own grey box: name, level, weight, rarity stars, then the timer.
+    const info = this.#el("div", "keepnet-section__info");
     const timer = this.#el("span", "keepnet-section__fish-timer");
-    card.append(timer);
+    info.append(this.#el("strong", "keepnet-section__fish-name", fish.name),
+      this.#el("span", "keepnet-section__fish-level", labels.level(fish.level)),
+      this.#el("span", "keepnet-section__fish-weight", labels.weight(fish.weightKg)),
+      this.#rarity(fish.rarity), timer);
+    card.append(this.#image(fish), info);
     const actions = this.#el("div", "keepnet-section__actions");
     const focusables = [];
     const action = (id, text) => {
@@ -61,6 +67,42 @@ export class KeepnetCardRenderer {
     update(fish);
     const setPreviewed = (previewed) => card.classList.toggle("keepnet-section__fish--previewed", previewed);
     return { element: card, focusables, update, setPreviewed };
+  }
+
+  // Rarity as a row of stars filled by half steps like the victory panel's; the exact reading is the accessible name. A
+  // legacy text rarity (or none) stays text.
+  #rarity(rarity) {
+    const text = rarity ? this.#labels.rarity(rarity) : this.#labels.unknownRarity;
+    if (typeof rarity !== "object" || rarity === null || !(rarity.maxHalfSteps > 0)) {
+      return this.#el("span", "keepnet-section__fish-rarity", text);
+    }
+    const row = this.#el("span", "keepnet-section__fish-rarity keepnet-section__stars");
+    row.setAttribute("role", "img");
+    row.setAttribute("aria-label", text);
+    row.title = text;
+    const perStar = rarity.unitsPerStar > 0 ? rarity.unitsPerStar : 2;
+    const count = Math.round(rarity.maxHalfSteps / perStar);
+    for (let index = 0; index < count; index++) {
+      const fill = Math.max(0, Math.min(1, (rarity.halfSteps - index * perStar) / perStar));
+      const star = this.#el("span", "keepnet-section__star");
+      const filled = this.#el("span", "keepnet-section__star-fill");
+      filled.style.setProperty("--keepnet-star-fill", String(fill));
+      star.append(this.#starShape("keepnet-section__star-shape"), filled);
+      filled.append(this.#starShape("keepnet-section__star-shape"));
+      row.append(star);
+    }
+    return row;
+  }
+  #starShape(className) {
+    const svg = this.#document.createElementNS(SVG, "svg");
+    svg.setAttribute("class", className);
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    const path = this.#document.createElementNS(SVG, "path");
+    path.setAttribute("d", STAR_PATH);
+    svg.appendChild(path);
+    return svg;
   }
 
   // The fish's image, or the placeholder icon when it has none or its file fails. Only one of them is in the box: an

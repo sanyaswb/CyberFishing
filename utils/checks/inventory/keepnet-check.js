@@ -319,7 +319,14 @@ async function main() {
   assert.equal(A_THUMB, "assets/fish-display/crucian_stalker/standart/crucian_stalker--1--low.webp",
     "a fish saved before TK-180 (its master's path) shows the display image's low copy");
   assert.deepEqual(images.map((image) => image.src), [A_THUMB, B_THUMB, A_THUMB], "a caught fish shows its image's low copy");
-  assert(documentRef.byClass("keepnet-section__fish-rarity")[0].textContent.includes("1,5 / 6"));
+  // TK-229.2: the text box holds name, level, weight, stars, timer in that order; stars fill by half steps.
+  const info = documentRef.byClass("keepnet-section__info")[0];
+  assert.deepEqual(info.children.map((child) => child.className.split(" ")[0]), ["keepnet-section__fish-name",
+    "keepnet-section__fish-level", "keepnet-section__fish-weight", "keepnet-section__fish-rarity", "keepnet-section__fish-timer"]);
+  const stars = documentRef.byClass("keepnet-section__stars")[0];
+  assert(stars.getAttribute("aria-label").includes("1,5 / 6"), "the exact rarity is the stars' accessible name");
+  assert.deepEqual(stars.children.map((star) => star.children[1].style.getPropertyValue("--keepnet-star-fill")),
+    ["1", "0.5", "0", "0", "0", "0"], "3 of 12 half steps: one full star, one half, four empty");
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
   // TK-220: a fish with an image has only the image in its box (the placeholder SVG cannot be hidden by a property).
   assert(images.every((image) => image.parentNode.children.length === 1), "no placeholder icon next to a fish's image");

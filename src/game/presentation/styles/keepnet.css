@@ -107,8 +107,37 @@
   cursor: pointer;
   overflow-wrap: anywhere;
 }
-.keepnet-section__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+/* TK-229.1: every button fills the row; two that fit side by side take half each, an odd last one the whole row. */
+.keepnet-section__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(72px, calc(50% - 3px)), 1fr));
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.keepnet-section__action { width: 100%; }
+.keepnet-section__action:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* TK-229.2: the card's text in its own grey, rounded box; rarity as stars (victory panel's colours). */
+.keepnet-section__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--inventory-equipment-cell);
+}
 .keepnet-section__fish-rarity { color: #f0dba7; }
+.keepnet-section__stars { display: flex; gap: 3px; align-items: center; }
+.keepnet-section__star { position: relative; display: block; width: 16px; height: 16px; flex: none; }
+.keepnet-section__star-shape { position: absolute; top: 0; left: 0; display: block; width: 16px; height: 16px; }
+.keepnet-section__star > .keepnet-section__star-shape { fill: rgba(255, 255, 255, 0.08); stroke: rgba(242, 201, 76, 0.8); stroke-width: 1.4; }
+.keepnet-section__star-fill {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  width: calc(var(--keepnet-star-fill, 0) * 100%);
+}
+.keepnet-section__star-fill > .keepnet-section__star-shape { fill: #f2c94c; stroke: none; }
 .keepnet-section__fish-level { color: #bdbdbd; font-size: .85rem; }
 .keepnet-section__fish-name { font-size: .92rem; }
 .keepnet-section__fish-weight { color: #bdbdbd; }
@@ -132,6 +161,8 @@
   .keepnet-section__fish .keepnet-section__image { height: 100%; }
   .keepnet-section__fish-name, .keepnet-section__fish-level { font-size: 11px; }
   .keepnet-section__image-fallback { width: 24px; height: 24px; }
-  .keepnet-section__actions { flex-direction: column; gap: 4px; }
-  .keepnet-section__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
+  .keepnet-section__actions { gap: 4px; }
+  .keepnet-section__action { padding: 4px 2px; font-size: 11px; line-height: 1.25; }
+  .keepnet-section__info { padding: 5px; }
+  .keepnet-section__star, .keepnet-section__star-shape { width: 13px; height: 13px; }
 }
