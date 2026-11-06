@@ -249,13 +249,17 @@ export class InventoryViewModelFactory {
   }
 
   // The single hook's cell: green while a live bait waits to replace its bait; the live bait's picture on an empty hook.
+  // Every combination of (waiting, hook bait, chosen live bait) is drawn, also the moment inside «Замінити» when the bait
+  // is already off and the live bait not yet chosen: an empty green cell (TK-233, incidents I-14).
   #liveBaitSlot(target) {
     const pending = this.#liveBaitHook.pendingFishId !== null;
     const preview = target.occupied ? null : this.#liveBaitHook.preview();
     if (!pending && !preview) return null;
-    const item = target.occupied ? this.#itemViews.create(target.occupied.instanceId) : { instanceId: `live:${preview.fishId}`,
-      name: preview.name, iconAsset: preview.iconAsset, itemType: "bait", quantity: 1, isLiveBait: true };
-    return { slotIndex: 0, available: true, highlighted: pending, showCount: false, stock: 0, item, liveBait: !target.occupied };
+    let item = null;
+    if (target.occupied) item = this.#itemViews.create(target.occupied.instanceId);
+    else if (preview) item = { instanceId: `live:${preview.fishId}`, name: preview.name, iconAsset: preview.iconAsset,
+      itemType: "bait", quantity: 1, isLiveBait: true };
+    return { slotIndex: 0, available: true, highlighted: pending, showCount: false, stock: 0, item, liveBait: Boolean(preview) };
   }
 
   #createEquipmentPanel(

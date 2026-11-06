@@ -869,6 +869,12 @@ vm.runInContext(
   reloadedQuickHook.facade.setLiveBaitHook({ pendingFishId: null, preview: () => null });
   assertIntegration(!reloadedQuickHook.facade.getViewModel().header.baitSlots[0].item,
     "no chosen live bait: the empty hook's cell stays empty");
+  // TK-233 (incidents I-14): inside «Замінити» the bait is already off and the live bait not yet chosen while the
+  // inventory redraws synchronously: the cell is green and empty, never a crash.
+  reloadedQuickHook.facade.setLiveBaitHook({ pendingFishId: "live-1", preview: () => null });
+  liveSlot = reloadedQuickHook.facade.getViewModel().header.baitSlots[0];
+  assertIntegration(liveSlot.highlighted && liveSlot.item === null && liveSlot.liveBait === false,
+    "a waiting live bait over an empty hook draws an empty green cell");
   for (const repairing of [false, true]) {
     let rejectPersist = false;
     const rollbackQuickHook = makeComposition({ items: [raw("rollback-quick-rod", "rodPole"), raw("rollback-quick-hook", "hook", repairing ? 1 : 3)],

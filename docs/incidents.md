@@ -28,6 +28,33 @@ rule as something the next change can follow.
 | R12 | UI responsive and bounds checks must test layout geometry (`getBoundingClientRect()`, viewport boundaries, scroll overflow) after real update intervals, not just DOM node presence (`querySelector`) at mount time (T=0). | I-11 |
 | R13 | Responsive layout testing must assert the worst-case payload (all sections active/expanded, maximum metrics) at minimum screen width (320px–400px). | I-11 |
 | R14 | A check passes only by exit code 0 and a last stdout line that says it passed: Node exits with 0 when an awaited promise never settles, so the exit code alone cannot tell a finished check from a hung one. | I-13 |
+| R15 | A view model that reads a port's state draws every combination of that state, not only the steady ones: listeners redraw synchronously from inside a command, between its steps. The check lists the combinations, and a double of a call that redraws in production redraws too. | I-14 |
+
+<a id="i-14"></a>
+
+## I-14 · 2026-11-06 · v0.50.14: «Замінити» crashed the inventory, then every frame (TK-233)
+
+- **Seen:** the owner chose a live bait over a hook with a regular bait (green card) and pressed «Замінити»: the console
+  showed `TypeError: Cannot read properties of null (reading 'fishId')` in `InventoryViewModelFactory.#liveBaitSlot`,
+  then the same error from the game loop (`InventoryUI.updateDynamicProgression`) every frame and from the next «На
+  живця». The bait was off the hook, the live bait not chosen, the card still green.
+- **Cause:** `#liveBaitSlot` (spec 162 stage 2) assumed that a waiting live bait (`pendingFishId`) on an empty hook
+  always has a chosen live bait (`preview()`), and built the cell's item from `preview.fishId`. But
+  `LiveBaitHookController.confirm()` works in two steps: it removes the bait (`removeHookBait` →
+  `PlayerInventory.dispatchInventoryAction` → `InventoryFacade.notify`, which rebuilds the view model at once), then
+  chooses the live bait. Between the steps the state is "waiting, hook empty, nothing chosen", and the synchronous
+  redraw read `null.fishId`. The exception left `confirm()` before it cleared `pendingFishId`, so the broken state
+  stayed and every later view model (each frame, each click) threw again.
+- **Why the checks passed:** `inventory-integration` set the hook port's fields to the steady states only (waiting over a
+  bait; chosen on an empty hook; neither), not the transient one. The controller check's double of `removeHookBait`
+  changed the equipment but did not redraw, so nothing read the state from inside `confirm()`: the double did not
+  keep the real contract (R1).
+- **Fix:** v0.50.15: every combination is drawn; waiting over an empty hook with nothing chosen is an empty green cell. The
+  double of `removeHookBait` records what a redraw sees from inside `confirm()` (waiting, nothing chosen). «Залишити» on
+  the waiting card is «Скасувати».
+- **Rule:** R15 (and R1 for the double).
+- **Check:** `inventory-integration` (waiting over an empty hook: green, empty, no throw; it fails on v0.50.14 with the
+  owner's error), `live-bait` (the redraw inside `confirm()`).
 
 ## I-13 · 2026-11-05 · A hung check exited with code 0 and counted as passed (TK-215)
 

@@ -58,7 +58,7 @@ export class KeepnetCardRenderer {
         // Over a regular bait the card turns green and waits for «Замінити» (spec 162 stage 2).
         card.classList.add("keepnet-section__fish--replace");
         action("replace", labels.replace, hook.inWater ? labels.tackleInWater : null);
-        action("cancel-replace", labels.cancel);
+        action("cancel-replace", labels.cancelReplace);
       } else if (fish.kind === "live_bait") {
         const blocked = fish.selected || !hook ? null : hook.hookCount !== 1 ? labels.singleHookRequired
           : hook.hasBait && hook.inWater ? labels.tackleInWater : null;

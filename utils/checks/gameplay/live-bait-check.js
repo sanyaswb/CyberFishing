@@ -173,9 +173,13 @@ async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }
   assert.equal(liveBait.resolveCatch("fry", { id: "crucian_stalker", weight: .05, level: 1, name: "Fry", imagePath: "img/fry.webp" }, "claim").ok, true);
   const equipped = { hooks: [{ instanceId: "hook" }], baits: [{ instanceId: "worm" }] };
   const removed = [];
+  const redraws = [];
+  // Like the real inventory, removing the bait redraws at once, in the middle of confirm() (TK-233, incidents I-14).
+  let hook = null;
   const inventory = { isLocked: false, getEquipped: () => equipped,
-    removeHookBait: (id) => { removed.push(id); equipped.baits = [null]; return { success: true }; } };
-  const hook = new LiveBaitHookController({ inventory, liveBait, iconAssetOf: (path) => `id:${path}` });
+    removeHookBait: (id) => { removed.push(id); equipped.baits = [null];
+      redraws.push([hook.pendingFishId, hook.preview()]); return { success: true }; } };
+  hook = new LiveBaitHookController({ inventory, liveBait, iconAssetOf: (path) => `id:${path}` });
   let changes = 0;
   hook.onChange(() => changes++);
   equipped.hooks = [{ instanceId: "a" }, { instanceId: "b" }];
@@ -191,6 +195,7 @@ async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }
   inventory.isLocked = false;
   assert.equal(hook.confirm().ok, true);
   assert.deepEqual(removed, ["worm"], "«Замінити» returns the bait to the backpack");
+  assert.deepEqual(redraws, [["fry", null]], "the redraw inside confirm() sees a waiting live bait and no chosen one yet");
   assert.equal(liveBait.getSelectedBait().fishId, "fry");
   assert.deepEqual(hook.preview(), { fishId: "fry", name: "Fry", iconAsset: "id:img/fry.webp" }, "the live bait's picture for the cell");
   assert.equal(hook.clear().ok, true);

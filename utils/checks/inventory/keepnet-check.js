@@ -526,7 +526,7 @@ async function checkLiveBaitCardStates() {
   assert.deepEqual(render({ ...base, hasBait: true, inWater: true }).buttons[0], ["На живця", true, KEEPNET_LABELS.tackleInWater]);
   const pending = render({ ...base, hasBait: true, pendingFishId: "fry" });
   assert(pending.card.classList.contains("keepnet-section__fish--replace"), "the waiting live bait's card is green");
-  assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Залишити", "Відпустити"]);
+  assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Скасувати", "Відпустити"]);
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "fry", inWater: true }).buttons[0], ["Замінити", true, KEEPNET_LABELS.tackleInWater]);
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "other" }).buttons[0], ["На живця", false, ""],
     "only the waiting fish's card changes");
