@@ -10,6 +10,8 @@ export const PEACEFUL_FISH = [
       // Asset-id patterns of the fish's art (spec 157 R16).
       imageAssetPattern: "fish-display.crucian_stalker.standart.crucian_stalker--{level}",
       uniqueImageAssetPattern: "fish-display.crucian_stalker.unique.crucian_stalker--{level}-uniq",
+      // TK-224: the art in keepnet cards is smaller the lower the level (weightConfig.maxLevel sizes).
+      artSizeByLevel: true,
     },
     anomalyVariant: {
       enabled: true,

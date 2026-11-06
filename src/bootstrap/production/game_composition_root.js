@@ -166,7 +166,7 @@ export class GameCompositionRoot {
   // Spec 157 R16: every asset by stable id; the places that load files resolve ids through it.
   #assets = new AssetRegistry(ASSET_REGISTRY);
   // Fish art variants over the registry (spec 100 D4): one victory display source for the outcome frame and preloader.
-  #fishArt = new FishArtVariants({ assets: this.#assets });
+  #fishArt = new FishArtVariants({ assets: this.#assets, species: FISH_DB });
   // Spec 157 R15 (stage D1): the asset load plan's runner over the game's image store, composed in create().
   #preload = null;
   #assetLoadPlan;

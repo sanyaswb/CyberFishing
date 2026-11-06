@@ -1,4 +1,5 @@
 import { createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
+import { applyArtSize } from "../ui/art_size.js";
 
 export class KeepnetCardRenderer {
   #document;
@@ -8,7 +9,9 @@ export class KeepnetCardRenderer {
   // fishArt: FishArtVariants (a caught fish's 128 px thumbnail through the asset registry). domFactory draws the
   // placeholder of a fish without an image.
   constructor({ documentRef, labels, fishArt, domFactory }) {
-    if (typeof fishArt?.thumbnailPath !== "function") throw new TypeError("KeepnetCardRenderer requires fishArt");
+    if (typeof fishArt?.thumbnailPath !== "function" || typeof fishArt.artSizeOf !== "function") {
+      throw new TypeError("KeepnetCardRenderer requires fishArt");
+    }
     this.#document = documentRef; this.#labels = labels; this.#fishArt = fishArt; this.#dom = domFactory;
   }
 
@@ -61,6 +64,8 @@ export class KeepnetCardRenderer {
   // SVG element has no hidden property, so a hidden placeholder stayed visible over the fish (TK-220).
   #image(fish) {
     const media = this.#el("div", "keepnet-section__thumbnail");
+    // TK-224: a smaller fish (lower level) shows smaller in the same box.
+    applyArtSize(media, this.#fishArt.artSizeOf(fish));
     const fallback = () => createItemPlaceholderIcon(this.#dom, "fish", "keepnet-section__image-fallback");
     if (!fish.imagePath) {
       media.append(fallback());

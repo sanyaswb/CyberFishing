@@ -17,10 +17,21 @@ export function fishDisplayAssetId(fishId, level) {
 // A caught fish keeps its image's file in game state (`imagePath`, saved); these map it to the files to show.
 export class FishArtVariants {
   #assets;
+  #sizeSteps;
 
-  constructor({ assets }) {
+  // species: the fish database (FISH_DB); a species with visual.artSizeByLevel sizes its art by level (TK-224).
+  constructor({ assets, species }) {
     if (typeof assets?.idOfPath !== "function") throw new TypeError("FishArtVariants requires assets");
+    if (!Array.isArray(species)) throw new TypeError("FishArtVariants requires species");
     this.#assets = assets;
+    this.#sizeSteps = new Map(species.filter((entry) => entry.visual?.artSizeByLevel === true)
+      .map((entry) => [entry.id, Number(entry.weightConfig?.maxLevel)]));
+  }
+
+  // The art size of a caught fish (keepnet entry or group: sourceSpeciesId and level), or null for an unsized species.
+  artSizeOf(fish) {
+    const of = this.#sizeSteps.get(fish?.sourceSpeciesId);
+    return of ? { step: Number(fish.level), of } : null;
   }
 
   // The fish image's asset id for a saved path (today's display file, or a former master or thumbnail), or null.

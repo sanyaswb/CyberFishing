@@ -19,7 +19,7 @@ export class KeepnetViewModel {
       const key = separate ? `fish:${fish.id}` : fish.sourceSpeciesId;
       let group = bySpecies.get(key);
       if (!group) {
-        group = { id: key, name: fish.name, imagePath: fish.imagePath,
+        group = { id: key, name: fish.name, imagePath: fish.imagePath, sourceSpeciesId: fish.sourceSpeciesId, level: fish.level,
           count: 0, totalWeightKg: 0, fish: [] };
         bySpecies.set(group.id, group);
       }
@@ -27,6 +27,7 @@ export class KeepnetViewModel {
       if (!current || rarityScore(fish) > rarityScore(current) ||
         (rarityScore(fish) === rarityScore(current) && fish.weightKg > current.weightKg)) {
         group.imagePath = fish.imagePath;
+        group.level = fish.level;
         group.representativeId = fish.id;
       }
       group.fish.push(fish);

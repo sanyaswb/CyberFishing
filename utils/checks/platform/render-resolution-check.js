@@ -118,7 +118,7 @@ async function checkFishArt() {
   const { FishArtVariants } = await importSource("src/game/presentation/fish/fish_art_variants.js");
   const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
-  const fishArt = new FishArtVariants({ assets: new AssetRegistry(ASSET_REGISTRY) });
+  const fishArt = new FishArtVariants({ assets: new AssetRegistry(ASSET_REGISTRY), species: [] });
   // TK-180: one runtime image per fish (768 px); cards and the aquarium take its low copy. A save written before TK-180
   // holds the master's (or a thumbnail's) path: it still finds the same fish's image.
   const display = "assets/fish-display/crucian_stalker/standart/crucian_stalker--3.webp";

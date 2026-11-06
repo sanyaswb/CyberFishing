@@ -9,7 +9,15 @@ async function main() {
   const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
   const assets = new AssetRegistry(ASSET_REGISTRY);
   const { FishArtVariants } = await import("../../../src/game/presentation/fish/fish_art_variants.js");
-  const fishArt = new FishArtVariants({ assets });
+  const fishArt = new FishArtVariants({ assets, species: [
+    { id: "crucian_stalker", visual: { artSizeByLevel: true }, weightConfig: { maxLevel: 6 } }, { id: "pike", weightConfig: { maxLevel: 6 } }] });
+  // TK-224: sized art. Rank 0 = the largest size (no margin) ... 1 = the smallest; only marked items are sized.
+  const { artSizeRank, applyArtSize } = await import("../../../src/game/presentation/ui/art_size.js");
+  assert.deepEqual([[1, 6], [6, 6], [2, 4], [4, 4]].map(([step, of]) => artSizeRank({ step, of })), [1, 0, 2 / 3, 0]);
+  assert.deepEqual([null, {}, { step: 0, of: 4 }, { step: 5, of: 4 }, { step: 1, of: 1 }, { step: 1.5, of: 4 }].map(artSizeRank),
+    [null, null, null, null, null, null], "an unmarked or invalid size leaves the art at full size");
+  assert.deepEqual(fishArt.artSizeOf({ sourceSpeciesId: "crucian_stalker", level: 2 }), { step: 2, of: 6 });
+  assert.equal(fishArt.artSizeOf({ sourceSpeciesId: "pike", level: 2 }), null, "a species without artSizeByLevel is not sized");
   const artwork = new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES });
   for (const [percent, stage] of [[-1, 0], [0, 0], [.01, 20], [20, 20], [20.01, 40], [40, 40],
     [40.01, 60], [60, 60], [60.01, 80], [80, 80], [80.01, 100], [100, 100], [150, 100], [NaN, 0]]) {
@@ -34,7 +42,7 @@ async function main() {
   const fish = { id: "crucian_stalker", name: "Карась", weight: .1, level: 1, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--1.webp",
     rarity: { halfSteps: 3, maxHalfSteps: 12, unitsPerStar: 2 } };
   service.keepCatch(fish, "one");
-  service.keepCatch({ ...fish, weight: .08, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp", rarity: { ...fish.rarity, halfSteps: 2 } }, "two");
+  service.keepCatch({ ...fish, weight: .08, level: 6, imagePath: "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp", rarity: { ...fish.rarity, halfSteps: 2 } }, "two");
   service.convertCatch({ ...fish, weight: .06 }, "bait");
   service.keepCatch({ ...fish, id: "pike", name: "Щука", weight: 1.2, imagePath: "" }, "pike");
   const source = service.getView();
@@ -305,6 +313,12 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-section__fish-weight")[0].textContent, "100 г");
   // TK-220: a fish with an image has only the image in its box (the placeholder SVG cannot be hidden by a property).
   assert(images.every((image) => image.parentNode.children.length === 1), "no placeholder icon next to a fish's image");
+  assert.deepEqual(images.map((image) => image.parentNode.style.getPropertyValue("--art-size-rank")), ["1", "0", "1"],
+    "a level-1 fish is the smallest of six, a level-6 fish fills its box (TK-224)");
+  assert(images.every((image) => image.parentNode.classList.contains("art-size")));
+  const pikeFree = documentRef.createElement("div");
+  applyArtSize(pikeFree, { step: 2, of: 4 }); applyArtSize(pikeFree, null);
+  assert(!pikeFree.classList.contains("art-size") && !pikeFree.style.getPropertyValue("--art-size-rank"), "unmarking clears the size");
   const box = images[0].parentNode;
   images[0].fire("error");
   assert.equal(box.children.length, 1, "a missing image is replaced, not hidden");

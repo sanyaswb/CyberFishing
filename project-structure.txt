@@ -917,6 +917,7 @@
 │  │     ├── time
 │  │     │  └── time_of_day_layers.js
 │  │     ├── ui
+│  │     │  ├── art_size.js
 │  │     │  ├── ui_auto_switch_renderer.js
 │  │     │  ├── ui_close_button_renderer.js
 │  │     │  ├── ui_hint_config.js

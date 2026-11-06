@@ -1259,6 +1259,7 @@ export const ITEM_DB = {
       name: "Батарейка Volt-1",
       itemType: "battery",
       iconAsset: "items.batteries.battery-volt--1",
+      artSize: { step: 1, of: 4 }, // TK-224: size 1 of 4 in cards and cells
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1274,6 +1275,7 @@ export const ITEM_DB = {
       name: "Батарейка Volt-2",
       itemType: "battery",
       iconAsset: "items.batteries.battery-volt--2",
+      artSize: { step: 2, of: 4 }, // TK-224: size 2 of 4 in cards and cells
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1289,6 +1291,7 @@ export const ITEM_DB = {
       name: "Батарейка Volt-3",
       itemType: "battery",
       iconAsset: "items.batteries.battery-volt--3",
+      artSize: { step: 3, of: 4 }, // TK-224: size 3 of 4 in cards and cells
       rarityProfile: { mode: "authored", tier: 3, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {
@@ -1304,6 +1307,7 @@ export const ITEM_DB = {
       name: "Батарейка Volt-4",
       itemType: "battery",
       iconAsset: "items.batteries.battery-volt--4",
+      artSize: { step: 4, of: 4 }, // TK-224: size 4 of 4 in cards and cells
       rarityProfile: { mode: "authored", tier: 4, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "power.battery" },
       displayStats: {

@@ -3070,6 +3070,13 @@ class InventoryUiBehaviorCheck {
       "Float card visual must have the float class for 45deg rotation",
     );
 
+    // TK-224: batteries are marked with their size (1..4); the card's visual box carries the rank, unmarked items none.
+    const batteryRanks = Object.values(ITEM_DB.batteries).map((battery) =>
+      this.#findByClass(isolatedItemRenderer.renderItem(battery), "inventory-item-card__visual")
+        .style.getPropertyValue("--art-size-rank"));
+    assert.deepStrictEqual(batteryRanks, ["1", String(2 / 3), String(1 / 3), "0"], "battery art shrinks with its size");
+    assert.ok(!dayVisual.classList.contains("art-size"), "an item without artSize keeps its art at full size");
+
     const nightFloatCard = isolatedItemRenderer.renderItem(ITEM_DB.floats.float_night, { wholeArt: true });
     const nightGlowImages = this.#findAllByClass(nightFloatCard, "inventory-item-card__glow-image");
     assert.strictEqual(

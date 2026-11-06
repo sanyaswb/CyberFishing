@@ -266,3 +266,12 @@
   color: var(--inventory-muted-text);
 }
 
+
+/* TK-224: art of an item that comes in sizes (applyArtSize: class art-size, --art-size-rank 0 largest ... 1 smallest).
+   The largest fills its box; the smallest is scaled to --art-size-min-scale, the one value to tune (per box if needed). */
+.art-size {
+  --art-size-min-scale: 0.6;
+}
+.art-size > img {
+  scale: calc(1 - (1 - var(--art-size-min-scale)) * var(--art-size-rank, 0));
+}

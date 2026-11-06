@@ -9,6 +9,8 @@ export const PREDATOR_FISH = [
       // Asset-id patterns of the fish's art (spec 157 R16).
       imageAssetPattern: "fish-display.perch_radioactive.standart.perch_radioactive--{level}",
       uniqueImageAssetPattern: "fish-display.perch_radioactive.unique.perch_radioactive--{level}-uniq",
+      // TK-224: the art in keepnet cards is smaller the lower the level (weightConfig.maxLevel sizes).
+      artSizeByLevel: true,
     },
 
     weatherMultipliers: {

@@ -488,7 +488,7 @@ async function checkAquariumCanvasResize() {
   for (const key of ["width", "height"]) Object.defineProperty(canvas, key, { get: () => size[key], set: value => { writes++; size[key] = value; } });
   const { FishArtVariants } = await import("../../../src/game/presentation/fish/fish_art_variants.js");
   const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
-  const fishArt = new FishArtVariants({ assets: new AssetRegistry({}) });
+  const fishArt = new FishArtVariants({ assets: new AssetRegistry({}), species: [] });
   const view = new AquariumFishView({ canvas, windowTarget: { devicePixelRatio: 2 }, motion: { setBounds() { bounds++; } }, fishArt,
     createImage: () => ({}), observeResize: (target, callback) => { resize = callback; return { disconnect() {} }; }, style: {} });
   assert.deepEqual([size.width, size.height, writes, transforms, bounds], [400, 200, 2, 1, 1]);

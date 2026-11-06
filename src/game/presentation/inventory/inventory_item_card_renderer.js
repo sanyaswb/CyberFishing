@@ -1,5 +1,6 @@
 import { inventorySlotIconAsset } from "./inventory_slot_icons.js";
 import { createItemPlaceholderIcon } from "./inventory_icons.js";
+import { applyArtSize } from "../ui/art_size.js";
 
 export class InventoryItemCardRenderer {
   #dom;
@@ -210,6 +211,8 @@ export class InventoryItemCardRenderer {
       visual.style.setProperty("--inventory-item-art-visible-height", String(thumbnail.visibleHeight));
       visual.style.setProperty("--inventory-item-art-focus-x", String(thumbnail.focusX));
     }
+    // TK-224: an item marked with artSize shows its art smaller the smaller its size.
+    applyArtSize(visual, item.artSize);
     if (image) {
       image.className = "inventory-item-card__image";
       image.setAttribute("aria-hidden", "true");
