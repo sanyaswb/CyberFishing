@@ -1,0 +1,41 @@
+/* Rarity stars (TK-229.2, spec 161): one row of vector stars filled by half steps, shared by the keepnet fish card and
+   the victory window. A consumer sets --rarity-star-size (and may set the colours). */
+.rarity-stars {
+  --rarity-star-size: 16px;
+  --rarity-star-color: #f2c94c;
+  --rarity-star-empty: rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: calc(var(--rarity-star-size) * 0.2);
+  align-items: center;
+}
+.rarity-stars__star {
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--rarity-star-size);
+  height: var(--rarity-star-size);
+}
+.rarity-stars__shape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: var(--rarity-star-size);
+  height: var(--rarity-star-size);
+}
+.rarity-stars__star > .rarity-stars__shape {
+  fill: var(--rarity-star-empty);
+  stroke: var(--rarity-star-color);
+  stroke-opacity: 0.8;
+  stroke-width: 1.4;
+}
+.rarity-stars__fill {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  width: calc(var(--rarity-star-fill, 0) * 100%);
+}
+.rarity-stars__fill > .rarity-stars__shape {
+  fill: var(--rarity-star-color);
+  stroke: none;
+}
