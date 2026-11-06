@@ -5,6 +5,7 @@ export const PREDATOR_FISH = [
     name: "Окунь-радіоактивний",
     baseChance: 0.02,
     maxHookSize: 4,
+    trophyWeightKg: 0.833, // TK-232 (owner): a perch from 0.833 kg is a trophy
     visual: {
       // Asset-id patterns of the fish's art (spec 157 R16).
       imageAssetPattern: "fish-display.perch_radioactive.standart.perch_radioactive--{level}",

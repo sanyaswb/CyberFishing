@@ -16,7 +16,8 @@ async function main() {
   const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
   const { FISH_DB } = await import("../../../src/game/config/databases/fish_database.js");
 
-  // View model (D4): crucian has level ranges and a trophy weight; perch has neither (its depth range is used).
+  // View model (D4): crucian has level ranges and a trophy weight; perch has no level ranges (its depth range is used)
+  // and its trophy weight is 0.833 kg (TK-232).
   const themes = [];
   const builder = new VictoryViewModelBuilder({ species: FISH_DB, resolveFishImage: (fish) => `img/${fish.id}--${fish.level}.webp`,
     themeResolver: { resolve: (fish) => { themes.push(fish); return { color: [10, 20, 30], isAnimated: fish.isUnique, background: { alpha: 0.2 } }; } } });
@@ -26,8 +27,12 @@ async function main() {
   assert.deepEqual([crucian.isTrophy, crucian.hasAnomaly, crucian.animated, crucian.imagePath, crucian.color],
     [true, true, true, "img/crucian_stalker--3.webp", [10, 20, 30]]);
   const perch = builder.build({ id: "perch_radioactive", name: "Окунь", level: 1, weight: 9, anomaly: "none" });
-  assert.deepEqual(perch.scale, { minKg: 0.125, maxKg: 2.678, weightKg: 2.678, trophyKg: null },
-    "without level ranges the depth range; the marker stays on the ruler; no trophy segment");
+  assert.deepEqual(perch.scale, { minKg: 0.125, maxKg: 2.678, weightKg: 2.678, trophyKg: 0.833 },
+    "without level ranges the depth range; the marker stays on the ruler; the perch's trophy weight");
+  assert.equal(builder.build({ id: "crucian_stalker", weight: 1, level: 1 }).scale.trophyKg, 1);
+  const noTrophy = new VictoryViewModelBuilder({ resolveFishImage: () => "", themeResolver: { resolve: () => ({}) },
+    species: [{ id: "plain", depthConfig: { minWeightAtMinDepth: 0.1, maxWeightAtMaxDepth: 1 } }] });
+  assert.equal(noTrophy.build({ id: "plain", weight: 0.5 }).scale.trophyKg, null, "a species without a trophy weight has no zone");
   assert.deepEqual([perch.hasAnomaly, perch.isTrophy, perch.rarity.isResolved], [false, false, false]);
   assert.equal(builder.build({ id: "unknown", weight: 1 }).scale, null, "an unknown species has no ruler");
   // TK-231: the size system of the keepnet card, the quality tint's alpha.
@@ -85,7 +90,7 @@ async function main() {
   assert.deepEqual(actions, ["claim", "release"]);
   view.show(perch, { onAction: (action) => actions.push(`perch:${action}`) });
   assert.deepEqual(hrefs(documentRef.byClass("victory-window__stat")[1]), ["assets/ui/status-icons.svg#trophy", "assets/ui/status-icons.svg#cross"]);
-  assert.equal(documentRef.byClass("victory-scale__trophy").length, 0, "no trophy weight, no green segment");
+  assert.equal(documentRef.byClass("victory-scale__trophy").length, 1, "the perch's trophy zone (TK-232)");
   assert.equal(documentRef.byClass("rarity-stars").length, 0, "an unknown rarity draws no stars");
   assert(!root.classList.contains("victory-window--animated"));
   view.hide();

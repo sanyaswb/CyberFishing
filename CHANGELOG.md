@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.13 - Perch trophy weight
+
+- TK-232: a radioactive perch from 0.833 kg is a trophy (owner's value); the victory ruler shows its trophy zone.
+
 ## v0.50.12 - Victory window corrections
 
 - TK-231: the victory window sizes the fish by level like the keepnet (no frame, nothing cropped), tints its semi-transparent panel by the fish's quality like an inventory card (glow animates only for a unique fish), shows the caught weight unrounded, the level in the panel's corner and the buttons «Забрати» / «Відпустити».
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.4 - Keepnet filters in one row
 
 - TK-225: the keepnet's back button is the first category button of the filter row (chevron, group name and count); the separate heading row is gone, the species toggle uses the backpack's chevrons, and the row has no scrollbar with equal spacing above and below.
-
-## v0.50.3 - Sized item art
-
-- TK-224: items marked with a size (batteries Volt-1..4, fish by level 1..6) show their art smaller in cards and cells the smaller they are; the largest fills the box. One CSS value (--art-size-min-scale) sets the smallest. Game-cycle report unchanged.
