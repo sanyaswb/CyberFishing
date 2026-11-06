@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.6 - DevTools keepnet fill
+
+- TK-227: DevTools section «САДОК» shows the keepnet's fill and fills it to 0, 20, 40, 60, 80 or 100 % with random fish (species, level, weight, art, rarity) through the ordinary keep and release commands.
+
 ## v0.50.5 - Fish preview beside the keepnet
 
 - TK-226: in wide layouts a click on a fish card inside a group shows that fish's full art on the left in place of the keepnet; a second click, leaving the group or closing the section brings the keepnet back.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.49.98 - Only the current keepnet stage after the first frame
 
 - TK-219: right after the first frame only the keepnet stage the player sees now loads (an 80 % keepnet after a cleared cache shows its own art first); the other stages load with the items of the lazy third layer. Game-cycle report unchanged.
-
-## v0.49.97 - One startup budget
-
-- TK-218: the startup budget has one source for the DEV overlay and the measurer; stale comments removed. Finished tasks archived. Game-cycle report unchanged.

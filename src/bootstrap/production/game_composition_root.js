@@ -1117,6 +1117,15 @@ export class GameCompositionRoot {
                 systems.radio.get()?.radio.update();
               },
             },
+            // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
+            keepnet: {
+              getView: () => this.#sessionServices.liveBait.getView(),
+              keepCatch: (fish) => this.#sessionServices.liveBait.keepCatch(fish),
+              releaseCatch: (id) => this.#sessionServices.liveBait.releaseCatch(id),
+              releaseBait: (id) => this.#sessionServices.liveBait.releaseBait(id),
+              species: FISH_DB,
+              imagePathOf: (fish) => this.#fishArt.imagePathOf(fish),
+            },
             // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
             scene,
           }], ["dispose"],

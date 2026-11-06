@@ -1,4 +1,5 @@
 import { RadioDevSection } from "./radio_dev_section.js";
+import { KeepnetDevSection } from "./keepnet_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
@@ -28,6 +29,7 @@ export class DevTools {
   #rodSpine;
   #boatSpine;
   #radio;
+  #keepnet;
   #scene;
   #zoneEditorState;
   #zoneEditorFiles;
@@ -82,6 +84,7 @@ export class DevTools {
       rodSpine = null,
       boatSpine = null,
       radio = null,
+      keepnet = null,
       scene = null,
       zoneEditorState = null,
       zoneEditorFiles = null,
@@ -146,6 +149,7 @@ export class DevTools {
     this.#rodSpine = rodSpine;
     this.#boatSpine = boatSpine;
     this.#radio = radio;
+    this.#keepnet = keepnet;
     this.#scene = scene;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
@@ -244,6 +248,10 @@ export class DevTools {
         renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
         setConfig: (path, value) => this.#updateConfigValue(path, value),
         files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
+    }
+    if (this.#keepnet) {
+      new KeepnetDevSection({ ui: this.#ui, keepnet: this.#keepnet,
+        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }).render(body);
     }
     this.#renderActiveFishSection(body);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);

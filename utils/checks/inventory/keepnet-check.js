@@ -433,6 +433,7 @@ async function main() {
   assert.equal(notifications[1].notice, "aquarium_full");
   await checkSlotIconWarmUp(InventoryUiBootstrap);
   await checkKeepnetArtBudget();
+  await checkKeepnetDevFill();
   console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation; inventory slot icons warmed without link preload.");
 }
 
@@ -485,4 +486,41 @@ async function checkKeepnetArtBudget() {
     assert(tracked.has(master), `${imagePath} keeps its master at ${master}`);
   }
 }
+// TK-227: the DevTools keepnet section fills the keepnet to 0..100 % of its capacity with random valid fish through the
+// ordinary keep/release commands, leaves a fish on the hook alone and renders one button per target.
+async function checkKeepnetDevFill() {
+  const { composeLiveBait } = await import("../../../src/bootstrap/production/live_bait_composition.js");
+  const { LIVE_BAIT_CONFIG } = await import("../../../src/game/config/raw/live_bait/live_bait_config.js");
+  const { FISH_DB } = await import("../../../src/game/config/databases/fish_database.js");
+  const { KeepnetDevSection, KEEPNET_FILL_TARGETS } = await import("../../../src/dev/tools/keepnet_dev_section.js");
+  const values = new Map();
+  const service = composeLiveBait({ storage: { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) },
+    clock: { nowMs: () => 1000 }, rng: { next: () => 0.5 }, config: LIVE_BAIT_CONFIG, fishDb: FISH_DB });
+  let seed = 7;
+  const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const rows = [], buttons = new Map();
+  const ui = { createInfoRow: (label, value) => rows.push([label, value]),
+    createButtonRow: (label, parent, onClick) => buttons.set(label, onClick) };
+  const section = new KeepnetDevSection({ ui, random, createSection: () => ({ replaceChildren() { rows.length = 0; buttons.clear(); } }),
+    keepnet: { getView: () => service.getView(), keepCatch: (fish) => service.keepCatch(fish), species: FISH_DB,
+      releaseCatch: (id) => service.releaseCatch(id), releaseBait: (id) => service.releaseBait(id),
+      imagePathOf: (fish) => `assets/fish-display/${fish.id}/standart/${fish.id}--${fish.level}.webp` } });
+  section.render({});
+  assert.deepEqual([...buttons.keys()].slice(1), KEEPNET_FILL_TARGETS.map((target) => `Заповнити на ${target}%`));
+  const capacity = service.getView().keepnetCapacity;
+  buttons.get("Заповнити на 40%")();
+  assert.equal(service.getView().keepnet.length, Math.round(capacity * 0.4), "40 % of the capacity is filled");
+  assert.equal(rows[0][1], `${Math.round(capacity * 0.4)} / ${capacity} (40%)`, "the section shows the new fill");
+  const fish = service.getView().keepnet;
+  assert(fish.every((entry) => FISH_DB.some((species) => species.id === entry.sourceSpeciesId) && entry.weightKg > 0 &&
+    entry.level >= 1 && entry.imagePath.endsWith(`--${entry.level}.webp`) && entry.rarity?.halfSteps >= 1),
+  "each random fish is a valid catch of a real species with its level's art");
+  assert(new Set(fish.map((entry) => entry.level)).size > 1, "levels vary");
+  assert.deepEqual(section.fill(100), { added: capacity - fish.length, released: 0, occupied: capacity, capacity });
+  assert.equal(section.fill(100).added, 0, "a full keepnet takes no more");
+  assert.deepEqual(section.fill(20), { added: 0, released: capacity - Math.round(capacity * 0.2), occupied: Math.round(capacity * 0.2), capacity });
+  buttons.get("Заповнити на 0%")();
+  assert.equal(service.getView().keepnet.length, 0, "0 % empties the keepnet");
+}
+
 main().catch((error) => { console.error(error); process.exitCode = 1; });
