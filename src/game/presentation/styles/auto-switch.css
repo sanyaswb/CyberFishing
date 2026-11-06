@@ -1,15 +1,20 @@
 .inventory-toggle {
   --inventory-toggle-height: var(--inventory-header-control-height, 44px);
   --inventory-toggle-thumb: 36px;
-  --inventory-toggle-item-size: 28px;
-  /* Keep the visual's square corners inside the circular border (below 1 / sqrt(2)). */
-  --inventory-toggle-artwork-size: calc((var(--inventory-toggle-item-size) - 2px) * 0.68);
+  /* TK-235: the item circle takes the pill's whole inner height with one inset on every side (the pill's left padding is
+     the same inset, so the circle is concentric with the pill's rounded end). */
+  --inventory-toggle-item-inset: 3px;
+  --inventory-toggle-item-size: calc(var(--inventory-toggle-height) - 2px - var(--inventory-toggle-item-inset) * 2);
+  /* The circle's inner diameter; the image is the largest box of its own proportion inside it (the switch renderer
+     sets --inventory-toggle-art-width/-height from the asset's size; without one, the inscribed square). */
+  --inventory-toggle-artwork-diameter: calc(var(--inventory-toggle-item-size) - 2px);
+  --inventory-toggle-artwork-size: calc(var(--inventory-toggle-artwork-diameter) * 0.7071);
   --inventory-toggle-item-gap: 2px;
   --inventory-toggle-item-count-size: 10px;
   --inventory-toggle-control-width: 88px;
   --inventory-toggle-inset: calc((var(--inventory-toggle-height) - var(--inventory-toggle-thumb) - 2px) / 2);
   --inventory-toggle-gap: 4px;
-  --inventory-toggle-padding: 0 0 0 6px;
+  --inventory-toggle-padding: 0 0 0 var(--inventory-toggle-item-inset);
   --inventory-toggle-count-size: 12px;
   --inventory-toggle-letter-size: 19px;
   --inventory-toggle-radius: 999px;
@@ -40,11 +45,10 @@
   min-width: 0;
 }
 .inventory-toggle__item {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--inventory-toggle-item-gap);
   min-width: 0;
   flex: 0 0 var(--inventory-toggle-item-size);
   width: var(--inventory-toggle-item-size);
@@ -70,7 +74,22 @@
   border: 1px solid transparent;
   border-radius: 50%;
 }
-.inventory-toggle__item-count { color: var(--inventory-muted-text, var(--ui-muted)); font-size: var(--inventory-toggle-item-count-size); line-height: 1; font-variant-numeric: tabular-nums; }
+/* TK-235: the circle fills the height, so a slot's own count is a badge on the circle's lower right edge. */
+.inventory-toggle__item-count {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  min-width: calc(var(--inventory-toggle-item-count-size) + 4px);
+  padding: 1px 2px;
+  border-radius: var(--inventory-toggle-radius);
+  background: var(--inventory-toggle-track-background);
+  color: var(--inventory-muted-text, var(--ui-muted));
+  font-size: var(--inventory-toggle-item-count-size);
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 .inventory-toggle__item:disabled { cursor: default; }
 .inventory-toggle__placeholder { opacity: var(--inventory-consumable-placeholder-muted, 0.32); }
 .inventory-toggle__item--available .inventory-toggle__placeholder { opacity: var(--inventory-consumable-placeholder-ready, 0.86); }
@@ -101,11 +120,15 @@
   cursor: pointer;
   margin: -1px -1px -1px 0;
 }
-.inventory-toggle__image,
 .inventory-toggle__placeholder,
 .inventory-toggle__icon {
   width: var(--inventory-toggle-artwork-size);
   height: var(--inventory-toggle-artwork-size);
+  object-fit: contain;
+}
+.inventory-toggle__image {
+  width: calc(var(--inventory-toggle-artwork-diameter) * var(--inventory-toggle-art-width, 0.7071));
+  height: calc(var(--inventory-toggle-artwork-diameter) * var(--inventory-toggle-art-height, 0.7071));
   object-fit: contain;
 }
 .inventory-toggle__input {
@@ -188,11 +211,10 @@
   .inventory-toggle:not(.inventory-toggle--control) {
     --inventory-toggle-thumb: calc(var(--inventory-header-unit, 1px) * 26);
     --inventory-toggle-control-width: calc(var(--inventory-header-unit, 1px) * 54);
-    --inventory-toggle-item-size: calc(var(--inventory-header-unit, 1px) * 22);
+    --inventory-toggle-item-inset: calc(var(--inventory-header-unit, 1px) * 2);
     --inventory-toggle-item-gap: calc(var(--inventory-header-unit, 1px) * 2);
     --inventory-toggle-item-count-size: calc(var(--inventory-header-unit, 1px) * 8);
     --inventory-toggle-gap: calc(var(--inventory-header-unit, 1px) * 2);
-    --inventory-toggle-padding: 0 0 0 calc(var(--inventory-header-unit, 1px) * 4);
     --inventory-toggle-count-size: calc(var(--inventory-header-unit, 1px) * 9);
     --inventory-toggle-letter-size: calc(var(--inventory-header-unit, 1px) * 16);
   }

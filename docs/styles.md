@@ -146,8 +146,12 @@ item side for every equipped slot, retaining the track on the right. Actual item
 Automatic mode shows matching reserves; manual mode shows equipped portions (one per filled icon).
 Uniform filled slots hide their individual counts and retain only the deduplicated reserve/equipped total beside `A`.
 The thumb slides through `transform`; numeric refresh retains its DOM node and keyboard focus.
-The item artwork has a square 22px circle at the 320px baseline; transparent borders become visible only for
-the selected item or keyboard focus. Counts sit outside/below this circle, and images use `contain` without clipping.
+The item circle takes the pill's whole inner height with one inset on every side (`--inventory-toggle-item-inset`,
+also the pill's left padding, so it is concentric with the pill's rounded end; TK-235). The image is the largest box of
+its own proportion inside the circle: `UiAutoSwitchRenderer.circleFit` turns the asset's registry size into
+`--inventory-toggle-art-width/-height` shares of the inner diameter (no DOM measurement); placeholders and unsized art
+keep the inscribed square. Transparent borders become visible only for the selected item or keyboard focus. A slot's own
+count is a badge on the circle's lower right edge.
 The pill, track and thumb keep opaque background colors in both modes. Their geometry/state rules have one
 shared owner in `auto-switch.css`, including the House's compact variant.
 The header bait hold (v0.45.35) reuses the `inventory-press` block from `inventory/shared-controls.css`.
@@ -158,7 +162,7 @@ for 200ms and fires at 500ms, including backpack cards, saved kits, equipment an
 The delay schedules no progress frames and keeps the indicator hidden. Artwork-only updates preserve the
 mounted progress node and deadline. Card appearance retains its existing owner.
 The pill, its track and close button share `--inventory-header-control-height`: all are 36px at 320px, with
-a 26px thumb and 22px artwork circle. There is no separate outer height or vertical pill padding; the track's
+a 26px thumb; the artwork circle follows the pill height. There is no separate outer height or vertical pill padding; the track's
 border aligns with the pill border. The same compact geometry applies in both phone orientations.
 The shared header unit grows with `cqi` up to 2px in portrait; landscape caps the common row height at 44px.
 Desktop controls are 44px high. Above 820px the header has two sections in one row over the content columns:

@@ -157,6 +157,12 @@ const wormToggle = switches.create({
 documentRef.body.append(wormToggle);
 const wormImage = documentRef.byClass("inventory-toggle__image").pop();
 assert.equal(wormImage?.src, "assets/items/baits/oil-worm_icon.webp", "the switcher displays switcherIconAsset when available");
+// TK-235: the 500x236 worm icon is the largest box of its proportion inside the circle (its diagonal = the diameter).
+assert.equal(wormImage.style.getPropertyValue("--inventory-toggle-art-width"), "0.9043");
+assert.equal(wormImage.style.getPropertyValue("--inventory-toggle-art-height"), "0.4268");
+assert.deepEqual(UiAutoSwitchRenderer.circleFit({ width: 1, height: 2 }), { width: 0.4472, height: 0.8944 }, "a tall image fits by its height");
+assert.deepEqual(UiAutoSwitchRenderer.circleFit({ width: 5, height: 5 }), { width: 0.7071, height: 0.7071 }, "a square image is the inscribed square");
+assert.equal(UiAutoSwitchRenderer.circleFit(null), null, "an unsized image keeps the CSS inscribed square");
 switches.dispose(wormToggle);
 
 const compact = switches.create({ variant: "control", name: "Feeder", modeLabel: "Automatic feeder", checked: true });

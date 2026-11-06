@@ -124,6 +124,12 @@ export class UiAutoSwitchRenderer {
       const icon = String(item?.icon || "");
       if (nodes.source !== imageSource || nodes.icon !== icon) {
         nodes.image = this.#dom.image(imageSource, "");
+        // TK-235: the image's box from its registry size, set once per image node.
+        const fit = nodes.image ? UiAutoSwitchRenderer.circleFit(this.#dom.sizeOf(imageSource)) : null;
+        if (fit) {
+          nodes.image.style.setProperty("--inventory-toggle-art-width", String(fit.width));
+          nodes.image.style.setProperty("--inventory-toggle-art-height", String(fit.height));
+        }
         const visual = nodes.image || createItemPlaceholderIcon(this.#dom, icon, "inventory-toggle__icon");
         visual.setAttribute("aria-hidden", "true");
         nodes.visual?.remove();
@@ -142,6 +148,16 @@ export class UiAutoSwitchRenderer {
     });
     label.classList.toggle("inventory-toggle--multiple", source.length > 1);
     label.classList.toggle("inventory-toggle--equipped", source.some((slot) => slot.item));
+  }
+
+  // TK-235: the largest box of the image's own proportion inside the circle, as shares of the circle's inner diameter:
+  // a = width / height, width = a / sqrt(1 + a²), height = 1 / sqrt(1 + a²) (its diagonal is the diameter). null
+  // without a known size: CSS keeps the inscribed square (1 / sqrt(2)).
+  static circleFit(size) {
+    const aspect = size && size.width > 0 && size.height > 0 ? size.width / size.height : null;
+    if (aspect === null) return null;
+    const diagonal = Math.sqrt(1 + aspect * aspect);
+    return { width: Number((aspect / diagonal).toFixed(4)), height: Number((1 / diagonal).toFixed(4)) };
   }
 
   dispose(label) {

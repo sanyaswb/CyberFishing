@@ -86,6 +86,14 @@ export class InventoryDomFactory {
     return this.#assets.pathOf(assetId);
   }
 
+  // An image asset's size in pixels { width, height } from the registry, or null (no id, a vector): lets a view fit an
+  // image by its proportion before it loads, without measuring the DOM (TK-235).
+  sizeOf(assetId) {
+    if (!assetId) return null;
+    if (!this.#assets) throw new TypeError("InventoryDomFactory requires assets for asset sizes");
+    return this.#assets.sizeOf(assetId);
+  }
+
   // A decorative sprite icon: <svg><use href="sprite.svg#symbol"/></svg> inherits currentColor from its parent;
   // spriteAsset is the sprite's asset id.
   svgIcon(spriteAsset, symbol, className = "") {
