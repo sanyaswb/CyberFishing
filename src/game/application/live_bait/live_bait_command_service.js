@@ -76,7 +76,8 @@ export class LiveBaitCommandService {
     if (fish.disposition !== "aquarium" && fish.remainingLifetimeMs <= elapsed) return null;
     if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null &&
       fish.starvationDeadlineMs <= this.#state.lastAppliedAtMs + elapsed) return null;
-    return { fishId: fish.id, baitId: this.#config.baitId, sourceSpeciesId: fish.speciesId, weightKg: fish.weightKg, disposition: fish.disposition };
+    return { fishId: fish.id, baitId: this.#config.baitId, sourceSpeciesId: fish.speciesId, weightKg: fish.weightKg, disposition: fish.disposition,
+      name: fish.name, imagePath: fish.imagePath };
   }
   beginLiveBaitCast(id, hookContext = {}) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);

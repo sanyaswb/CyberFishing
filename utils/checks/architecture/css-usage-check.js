@@ -82,7 +82,8 @@ function stylePolicyViolations(css) {
     violations.push("Whitespace splits a pseudo-class");
   }
   for (const rule of source.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
-    for (const selector of rule[1].split(",").map((value) => value.trim())) {
+    // The owner's formatter may wrap a long selector: whitespace runs count as one space.
+    for (const selector of rule[1].split(",").map((value) => value.replace(/\s+/g, " ").trim())) {
       const desktopPointer = selector.startsWith(".ui-surface--desktop-hover ");
       const pressOnly = selector.startsWith(".ui-surface:not(.ui-surface--desktop-hover) ") &&
         /:active\b/.test(selector) && !/:hover\b/.test(selector);
@@ -151,6 +152,8 @@ assert.equal(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .
 assert.equal(stylePolicyViolations('.control:not(:hover) {}').length, 1);
 assert.deepEqual(stylePolicyViolations('.ui-surface--desktop-hover .control:hover, .control:focus-visible, .control--selected {}'), []);
 assert.deepEqual(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:active:not(:disabled) {}'), []);
+assert.deepEqual(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover)\n  .control:active:not(:disabled) {}'), [],
+  "a selector the formatter wrapped keeps its gate");
 assert.equal(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:hover {}').length, 1);
 assert.equal(stylePolicyViolations('.ui-surface:not(.ui-surface--desktop-hover) .control:active:hover {}').length, 1);
 assert.equal(staticStyleViolations('document.createElement("style");').length, 1);

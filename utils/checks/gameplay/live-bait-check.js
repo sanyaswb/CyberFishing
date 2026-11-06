@@ -70,6 +70,7 @@ async function main() {
   assert.equal(service.selectBait("claim").ok, false);
 
   checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
+  await checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb });
 
   const aquarium = create();
   assert.equal(aquarium.buyAquarium().ok, true);
@@ -160,6 +161,43 @@ async function main() {
   assert.equal(values.get("fishing_game_player_live_bait_v1"), invalidBytes, "invalid bytes remain recoverable");
   values.set("fishing_game_player_live_bait_v1", original);
   console.log("Live bait passed: eligibility, exactly-once disposition, one-hook lifecycle, save conflicts, time/death, aquarium levels/feed/auto care, input and swim-only half-speed motion.");
+}
+
+// Spec 162 stage 2: «На живця» on an empty single hook chooses at once; over a bait it waits (green) for «Замінити»,
+// which takes the bait off and chooses the live bait; nothing while the tackle is in the water; one hook only.
+async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }) {
+  const { LiveBaitHookController } = await import("../../../src/game/application/live_bait/live_bait_hook_controller.js");
+  const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
+  const liveBait = composeLiveBait({ storage, clock: { nowMs: () => 1000 }, rng: { next: () => 0.5 }, fishDb, config: LIVE_BAIT_CONFIG });
+  assert.equal(liveBait.resolveCatch("fry", { id: "crucian_stalker", weight: .05, level: 1, name: "Fry", imagePath: "img/fry.webp" }, "claim").ok, true);
+  const equipped = { hooks: [{ instanceId: "hook" }], baits: [{ instanceId: "worm" }] };
+  const removed = [];
+  const inventory = { isLocked: false, getEquipped: () => equipped,
+    removeHookBait: (id) => { removed.push(id); equipped.baits = [null]; return { success: true }; } };
+  const hook = new LiveBaitHookController({ inventory, liveBait, iconAssetOf: (path) => `id:${path}` });
+  let changes = 0;
+  hook.onChange(() => changes++);
+  equipped.hooks = [{ instanceId: "a" }, { instanceId: "b" }];
+  assert.equal(hook.choose("fry").reason, "single_hook_required", "a live bait goes only on one hook");
+  equipped.hooks = [{ instanceId: "hook" }];
+  inventory.isLocked = true;
+  assert.equal(hook.choose("fry").reason, "tackle_in_water", "no replacement while the tackle is in the water");
+  inventory.isLocked = false;
+  assert.deepEqual(hook.choose("fry"), { ok: true, pending: true }, "over a bait the live bait waits for «Замінити»");
+  assert(hook.pendingFishId === "fry" && hook.preview() === null && liveBait.getSelectedBait() === null);
+  inventory.isLocked = true;
+  assert.equal(hook.confirm().reason, "tackle_in_water");
+  inventory.isLocked = false;
+  assert.equal(hook.confirm().ok, true);
+  assert.deepEqual(removed, ["worm"], "«Замінити» returns the bait to the backpack");
+  assert.equal(liveBait.getSelectedBait().fishId, "fry");
+  assert.deepEqual(hook.preview(), { fishId: "fry", name: "Fry", iconAsset: "id:img/fry.webp" }, "the live bait's picture for the cell");
+  assert.equal(hook.clear().ok, true);
+  assert.equal(hook.preview(), null);
+  assert.equal(hook.choose("fry").ok, true, "an empty single hook takes the live bait at once");
+  assert(hook.pendingFishId === null && liveBait.getSelectedBait().fishId === "fry" && removed.length === 1);
+  assert(changes >= 4, "views are told about every change");
 }
 
 // Spec 162: the chosen live bait is followed by the same species' live bait with the least life left (used up, dead or

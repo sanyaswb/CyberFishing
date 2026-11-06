@@ -46,6 +46,7 @@ export class InventoryViewModelFactory {
   #autoRefillStock;
   #loadValueProvider;
   #consumableTargets;
+  #liveBaitHook = null;
 
   constructor({
     repository,
@@ -227,8 +228,15 @@ export class InventoryViewModelFactory {
     };
   }
 
+  // Spec 162 stage 2: the chosen live bait's port (LiveBaitHookController), set once the live bait service exists.
+  setLiveBaitHook(hook) { this.#liveBaitHook = hook; }
+
   #createConsumableSlots(kind, uiState) {
     const targets = this.#consumableTargets.list(kind);
+    if (kind === "bait" && targets.length === 1 && this.#liveBaitHook) {
+      const live = this.#liveBaitSlot(targets[0]);
+      if (live) return [live];
+    }
     const sharedReserve = targets.length > 0 && targets.every((target) => target.occupied) &&
       this.#autoRefillStock?.shareReserve(targets.map((target) => target.occupied));
     return targets.map((target, slotIndex) => {
@@ -238,6 +246,16 @@ export class InventoryViewModelFactory {
         stock: item ? this.#autoRefillStock?.count({ items: [item] }) || 0 : 0,
         item };
     });
+  }
+
+  // The single hook's cell: green while a live bait waits to replace its bait; the live bait's picture on an empty hook.
+  #liveBaitSlot(target) {
+    const pending = this.#liveBaitHook.pendingFishId !== null;
+    const preview = target.occupied ? null : this.#liveBaitHook.preview();
+    if (!pending && !preview) return null;
+    const item = target.occupied ? this.#itemViews.create(target.occupied.instanceId) : { instanceId: `live:${preview.fishId}`,
+      name: preview.name, iconAsset: preview.iconAsset, itemType: "bait", quantity: 1, isLiveBait: true };
+    return { slotIndex: 0, available: true, highlighted: pending, showCount: false, stock: 0, item, liveBait: !target.occupied };
   }
 
   #createEquipmentPanel(

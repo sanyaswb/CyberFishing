@@ -12,6 +12,8 @@ export const KEEPNET_LABELS = Object.freeze({
   empty: "За цими фільтрами риби немає.", unknownRarity: "Рідкість: не збережена",
   catch: "Забраний улов", protected: "Живець · під захистом",
   select: "На живця", deselect: "Скасувати вибір", aquariumRequired: "Спочатку встановіть акваріум у будинку",
+  replace: "Замінити", singleHookRequired: "Живець — лише на снасті з одним гачком",
+  tackleInWater: "Снасть у воді: заміна наживки — коли її витягнуто",
   transfer: "В акваріум", release: "Відпустити", confirmRelease: "Так, відпустити", cancel: "Залишити",
   done: "Зміни збережено.", moved: "Рибу перенесено в акваріум.",
   fallback: "Акваріум заповнений. Живця залишено в садку з власним таймером.",
@@ -35,5 +37,7 @@ export const KEEPNET_LABELS = Object.freeze({
     bait_unavailable: "Цей живець уже недоступний.", not_found: "Цієї риби вже немає в садку.",
     bait_ineligible: "Ця риба не підходить для живця.", hook_busy: "Спочатку поверніть живця з гачка.",
     stale_revision: "Дані змінилися на іншій сторінці. Повторіть дію.",
+    single_hook_required: "Живець — лише на снасті з одним гачком.", tackle_in_water: "Снасть у воді: заміна наживки — коли її витягнуто.",
+    bait_not_removed: "Не вдалося зняти наживку з гачка.",
   })[reason] || `Не вдалося зберегти зміни: ${reason}`,
 });

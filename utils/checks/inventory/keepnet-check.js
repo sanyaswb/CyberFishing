@@ -447,6 +447,7 @@ async function main() {
   await checkSlotIconWarmUp(InventoryUiBootstrap);
   await checkKeepnetArtBudget();
   await checkKeepnetDevFill();
+  await checkLiveBaitCardStates();
   console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation; inventory slot icons warmed without link preload.");
 }
 
@@ -499,6 +500,38 @@ async function checkKeepnetArtBudget() {
     assert(tracked.has(master), `${imagePath} keeps its master at ${master}`);
   }
 }
+// Spec 162 stage 2: a live bait card's states against the hook: one hook only, the bait in the water, the green card
+// with «Замінити» while it waits to replace the bait.
+async function checkLiveBaitCardStates() {
+  const { KeepnetCardRenderer } = await import("../../../src/game/presentation/keepnet/keepnet_card_renderer.js");
+  const { KEEPNET_LABELS } = await import("../../../src/game/presentation/keepnet/keepnet_labels.js");
+  const { InventoryDomFactory } = await import("../../../src/platform/browser/dom/inventory_dom_factory.js");
+  const { FishArtVariants } = await import("../../../src/game/presentation/fish/fish_art_variants.js");
+  const { AssetRegistry } = await import("../../../src/engine/assets/asset_registry.js");
+  const { ASSET_REGISTRY } = await import("../../../src/game/config/generated/asset_registry.js");
+  const documentRef = new TestDocument();
+  const assets = new AssetRegistry(ASSET_REGISTRY);
+  const cards = new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS, fishArt: new FishArtVariants({ assets, species: [] }),
+    domFactory: new InventoryDomFactory(documentRef, { assets }) });
+  const fish = { id: "fry", kind: "live_bait", location: "keepnet", name: "Fry", weightKg: .05, level: 1, imagePath: "",
+    rarity: null, remainingMs: 1000, selected: false };
+  const render = (hook) => {
+    const card = cards.fish(fish, { aquarium: { owned: false }, pendingRelease: null, onAction() {}, onPreview() {}, hook });
+    const buttons = card.element.children.find((child) => child.className === "keepnet-section__actions").children;
+    return { card: card.element, buttons: buttons.map((button) => [button.textContent, button.disabled === true, button.title || ""]) };
+  };
+  const base = { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false };
+  assert.deepEqual(render(base).buttons[0], ["На живця", false, ""]);
+  assert.deepEqual(render({ ...base, hookCount: 2 }).buttons[0], ["На живця", true, KEEPNET_LABELS.singleHookRequired]);
+  assert.deepEqual(render({ ...base, hasBait: true, inWater: true }).buttons[0], ["На живця", true, KEEPNET_LABELS.tackleInWater]);
+  const pending = render({ ...base, hasBait: true, pendingFishId: "fry" });
+  assert(pending.card.classList.contains("keepnet-section__fish--replace"), "the waiting live bait's card is green");
+  assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Залишити", "Відпустити"]);
+  assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "fry", inWater: true }).buttons[0], ["Замінити", true, KEEPNET_LABELS.tackleInWater]);
+  assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "other" }).buttons[0], ["На живця", false, ""],
+    "only the waiting fish's card changes");
+}
+
 // TK-227: the DevTools keepnet section fills the keepnet to 0..100 % of its capacity with random valid fish through the
 // ordinary keep/release commands, leaves a fish on the hook alone and renders one button per target.
 async function checkKeepnetDevFill() {

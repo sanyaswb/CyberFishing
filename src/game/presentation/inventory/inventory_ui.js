@@ -45,6 +45,8 @@ export class InventoryUI {
   #equipmentHost;
   #itemsHost;
   #keepnetSection = null;
+  #liveBaitHook = null;
+  #unsubscribeLiveBaitHook = null;
   #sections;
   #activeSectionId = null;
   // Portrait swipes walk the sections in tab order (spec 087); -1 enters the backpack on its last page.
@@ -203,6 +205,13 @@ export class InventoryUI {
 
   #notifyVisibility() {
     for (const listener of [...this.#visibilityListeners]) listener(this.#isOpen);
+  }
+
+  // Spec 162 stage 2: the chosen live bait's controller; its changes redraw the open inventory.
+  setLiveBaitHook(hook) {
+    this.#unsubscribeLiveBaitHook?.();
+    this.#liveBaitHook = hook;
+    this.#unsubscribeLiveBaitHook = hook.onChange(() => this.refreshWhenOpen());
   }
 
   // The keepnet section view is composed after the inventory (it opens the inventory at its own section).
@@ -423,6 +432,8 @@ export class InventoryUI {
   dispose() {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
+    this.#unsubscribeLiveBaitHook?.();
+    this.#unsubscribeLiveBaitHook = null;
     this.#visibilityListeners.clear();
     this.#hintRenderer.dispose(this.#warningNode);
     this.#longPressController.dispose();
@@ -555,10 +566,14 @@ export class InventoryUI {
       viewModel.settings,
       {
         onClose: () => this.close(),
-        onConsumableLongPress: (kind, slotIndex, instanceId) => this.#dispatch({
-          type: this.#actionTypes.CONSUMABLE_SLOT_LONG_PRESS, kind, slotIndex, instanceId,
-        }),
+        onConsumableLongPress: (kind, slotIndex, instanceId) => {
+          // Spec 162 stage 2: a long press on the live bait's cell takes it off the hook.
+          if (kind === "bait" && String(instanceId).startsWith("live:")) { this.#liveBaitHook?.clear(); return; }
+          this.#dispatch({ type: this.#actionTypes.CONSUMABLE_SLOT_LONG_PRESS, kind, slotIndex, instanceId });
+        },
         onConsumableActivate: (kind, slotIndex) => {
+          // A green cell waits for a live bait: a tap there replaces its bait (spec 162 stage 2).
+          if (kind === "bait" && this.#liveBaitHook?.pendingFishId != null) { this.#liveBaitHook.confirm(); return; }
           const current = this.#facade.getViewModel();
           const slot = current.header[kind === "bait" ? "baitSlots" : "chumSlots"]?.[slotIndex];
           const candidate = slot?.highlighted

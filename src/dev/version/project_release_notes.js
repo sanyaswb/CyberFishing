@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-229.3 stage 2: the chosen live bait shows in the bait switcher; «Замінити» swaps it for the hook's bait.",
   "TK-232: a radioactive perch from 0.833 kg is a trophy.",
   "TK-231: victory window: sized fish without a frame, quality tint, level in the corner, unrounded weight, Ukrainian buttons.",
   "TK-229.3 stage 1: fish up to 100 g become live baits when kept; next live bait of the same species follows automatically.",

@@ -15,6 +15,8 @@ export class KeepnetSectionView {
   #toggleSection;
   #filter = { kind: "all", speciesId: "all" };
   #detailSpecies = null;
+  #liveBaitHook = null;
+  #unsubscribeHook = null;
   #previewFishId = null;
   #pendingRelease = null;
   #notice = "";
@@ -114,6 +116,13 @@ export class KeepnetSectionView {
     this.refresh();
   }
   get summaryNode() { return this.#summary; }
+  // Spec 162 stage 2: the chosen live bait's controller (hook state, pending replacement); its changes redraw.
+  setLiveBaitHook(hook) {
+    this.#unsubscribeHook?.();
+    this.#liveBaitHook = hook;
+    this.#unsubscribeHook = hook.onChange(() => this.refresh());
+    this.refresh();
+  }
   setShortcutVisible(visible) { this.#button.hidden = !visible; }
   // Spec 157 TK-174: requests the button's stage art and shows it in place of the sprite icon once it has loaded.
   showShortcutArtwork() {
@@ -183,8 +192,11 @@ export class KeepnetSectionView {
     this.#filtersRenderer.update(this.#filters, { kind: model.kind, species: model.species, speciesId: model.speciesId,
       back: group ? this.#labels.details(group.name, group.count) : null });
     // Timer-only updates retain images, focused controls and scroll position.
+    const hookState = this.#liveBaitHook?.hookState();
+    const hook = this.#liveBaitHook ? { pendingFishId: this.#liveBaitHook.pendingFishId, hookCount: hookState.hookCount,
+      hasBait: hookState.bait !== null, inWater: hookState.inWater } : null;
     const signature = JSON.stringify([this.#detailSpecies, this.#pendingRelease, model.kind,
-      model.speciesId, model.aquarium?.owned,
+      model.speciesId, model.aquarium?.owned, hook,
       model.filtered.map(({ remainingMs, ...fish }) => fish)]);
     if (signature !== this.#signature) {
       const active = this.#document.activeElement;
@@ -194,7 +206,7 @@ export class KeepnetSectionView {
       this.#rendered.clear();
       const rendered = group ? group.fish.map((fish) => {
         const card = this.#cards.fish(fish, { aquarium: model.aquarium,
-          pendingRelease: this.#pendingRelease, onAction: this.#act, onPreview: this.#preview });
+          pendingRelease: this.#pendingRelease, onAction: this.#act, onPreview: this.#preview, hook });
         this.#rendered.set(fish.id, card);
         return card;
       }) : model.groups.map((item) => this.#cards.group(item, this.#openSpecies));
@@ -214,6 +226,8 @@ export class KeepnetSectionView {
     }
   }
   dispose() {
+    this.#unsubscribeHook?.();
+    this.#unsubscribeHook = null;
     this.setVisible(false);
     this.#setHelpVisible(false);
     this.#hints.dispose(this.#helpText);
@@ -248,16 +262,19 @@ export class KeepnetSectionView {
       this.#cardFocusables.find((el) => el.dataset.keepnetFocus === key)?.focus();
       return;
     }
+    if (action === "cancel-replace") { this.#liveBaitHook?.cancel(); return; }
+    const hook = this.#liveBaitHook;
     const commands = {
-      select: () => this.#liveBait.selectBait(fish.id),
-      deselect: () => this.#liveBait.selectBait(null),
+      select: () => hook ? hook.choose(fish.id) : this.#liveBait.selectBait(fish.id),
+      replace: () => hook?.confirm(),
+      deselect: () => hook ? hook.clear() : this.#liveBait.selectBait(null),
       transfer: () => this.#liveBait.transferToAquarium(fish.id),
       "confirm-release": () => fish.kind === "catch" ? this.#liveBait.releaseCatch(fish.id) : this.#liveBait.releaseBait(fish.id),
     };
     const result = commands[action]?.();
     if (!result) return;
     this.#pendingRelease = null;
-    this.#notice = result.ok ? this.#labels.done : this.#labels.error(result.reason);
+    this.#notice = result.pending ? "" : result.ok ? this.#labels.done : this.#labels.error(result.reason);
     if (result.ok && action === "transfer") {
       const view = this.#liveBait.getView();
       const converted = view.liveBaits.find((entry) => entry.id === fish.id);

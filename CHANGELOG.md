@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.14 - Live bait in the bait switcher
+
+- TK-229.3 stage 2 (spec 162): the chosen live bait shows in the bait switcher's empty hook cell; over a regular bait «На живця» turns the card green with «Замінити» and the hook's cell blinks, and replacing returns the bait to the backpack. Not while the tackle is in the water; one hook only.
+
 ## v0.50.13 - Perch trophy weight
 
 - TK-232: a radioactive perch from 0.833 kg is a trophy (owner's value); the victory ruler shows its trophy zone.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.5 - Fish preview beside the keepnet
 
 - TK-226: in wide layouts a click on a fish card inside a group shows that fish's full art on the left in place of the keepnet; a second click, leaving the group or closing the section brings the keepnet back.
-
-## v0.50.4 - Keepnet filters in one row
-
-- TK-225: the keepnet's back button is the first category button of the filter row (chevron, group name and count); the separate heading row is gone, the species toggle uses the backpack's chevrons, and the row has no scrollbar with equal spacing above and below.

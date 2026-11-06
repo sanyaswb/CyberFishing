@@ -30,7 +30,8 @@ export class KeepnetCardRenderer {
   }
 
   // onPreview (TK-226): a click on the card outside its buttons; setPreviewed marks the fish shown in the overview.
-  fish(fish, { aquarium, pendingRelease, onAction, onPreview }) {
+  // hook (spec 162 stage 2): { pendingFishId, hookCount, hasBait, inWater } of LiveBaitHookController, or null.
+  fish(fish, { aquarium, pendingRelease, onAction, onPreview, hook = null }) {
     const card = this.#el("article", "keepnet-section__fish");
     card.addEventListener("click", (event) => { if (!event.target?.closest?.("button")) onPreview(fish); });
     const labels = this.#labels;
@@ -53,8 +54,15 @@ export class KeepnetCardRenderer {
       action("confirm-release", labels.confirmRelease); action("cancel-release", labels.cancel);
     } else {
       // Spec 162: a live bait goes on the hook («На живця») or to the aquarium, which needs one bought.
-      if (fish.kind === "live_bait") {
-        action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select);
+      if (fish.kind === "live_bait" && hook?.pendingFishId === fish.id) {
+        // Over a regular bait the card turns green and waits for «Замінити» (spec 162 stage 2).
+        card.classList.add("keepnet-section__fish--replace");
+        action("replace", labels.replace, hook.inWater ? labels.tackleInWater : null);
+        action("cancel-replace", labels.cancel);
+      } else if (fish.kind === "live_bait") {
+        const blocked = fish.selected || !hook ? null : hook.hookCount !== 1 ? labels.singleHookRequired
+          : hook.hasBait && hook.inWater ? labels.tackleInWater : null;
+        action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select, blocked);
         if (fish.location !== "aquarium") action("transfer", labels.transfer, aquarium?.owned ? null : labels.aquariumRequired);
       }
       action("release", labels.release);

@@ -68,6 +68,8 @@ import { FishAnomalyVariantResolver } from "../../game/domain/fish/fish_anomaly_
 import { FishRarityResolver } from "../../game/domain/fish/fish_rarity_resolver.js";
 import { FishVisualVariantResolver } from "../../game/presentation/fish/fish_visual_variant_resolver.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
+import { LiveBaitHookController } from "../../game/application/live_bait/live_bait_hook_controller.js";
 import { GameApplication } from "../../game/application/session/game_application.js";
 import { GameViewportFacade } from "../../game/presentation/viewport/game_viewport_facade.js";
 import { RodVisualOffsetSystem } from "../../game/application/fishing/rod_visual_offset_system.js";
@@ -1266,6 +1268,17 @@ export class GameCompositionRoot {
       liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
+    // Spec 162 stage 2: the chosen live bait on the hook, shared by the bait switcher and the keepnet cards.
+    const liveBaitHook = new LiveBaitHookController({ liveBait, iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath),
+      inventory: {
+        getEquipped: () => inventory.getEquipped(),
+        get isLocked() { return inventory.isLocked; },
+        removeHookBait: (instanceId) => inventory.dispatchInventoryAction({
+          type: InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS, kind: "bait", slotIndex: 0, instanceId }),
+      } });
+    inventoryFacade.setLiveBaitHook(liveBaitHook);
+    systems.inventoryUI.setLiveBaitHook(liveBaitHook);
+    keepnetUI?.setLiveBaitHook(liveBaitHook);
     const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
       uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
       inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, logger: new ConsoleLogger(),

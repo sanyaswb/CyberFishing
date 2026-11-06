@@ -875,10 +875,10 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
-### G-128 Live bait by species, automatic live bait (P2, stage 1 done in v0.50.11; owner acceptance pending)
+### G-128 Live bait by species, automatic live bait (P2, done in v0.50.11 and v0.50.14; owner acceptance pending)
 Found: 2026-11-06, owner (TK-229.3, [spec 162](../specs/162-live-bait-by-species/spec.md)): a fish that suits live bait had to be converted by hand; the chosen live bait was one fish, and when it was used up the choice was gone.
 Change (stage 1): a kept fish up to `liveBait.maxWeightKg` (100 g) becomes a live bait in the keepnet at once, with its own lifetime; saved catches that suit become live baits once on load. The separate convert action is gone (keepnet and victory). A live bait card has «На живця» (hook) and «В акваріум» (disabled without an aquarium). The chosen live bait is followed by the same species' live bait with the least life left when it is used up, dies or is released (aquarium fish last); none left clears the choice (`LiveBaitSuccession`).
-Evidence: `live-bait` (auto live bait, heavier catch stays, succession after use/release/death, migration once), `keepnet` (card buttons, DEV fill counts live baits); game-cycle report unchanged (it does not use live bait). Stage 2 (switcher picture, replace flow) open.
+Evidence: `live-bait` (auto live bait, heavier catch stays, succession after use/release/death, migration once), `keepnet` (card buttons, DEV fill counts live baits); game-cycle report unchanged (it does not use live bait). Stage 2 (v0.50.14): the chosen live bait shows in the bait switcher's single empty hook cell; over a regular bait «На живця» turns the card green with «Замінити» and the hook's cell blinks, and «Замінити» (or that cell) returns the bait to the backpack and puts the live bait on; not while the tackle is in the water; one hook only (the game's existing rule). Checks: `live-bait` (controller), `inventory-integration` (switcher cell), `keepnet` (card states).
 
 ### G-119 The bait boat runs on a battery (P2, done)
 Found: 2026-10-25, owner (spec 143): the boat's energy lived only in the session (`BaitBoat.energy`, `ChumService.#boatEnergy`), a reload restored a full boat, and an idle boat started at `boatItem.maxEnergy || 100` whatever its level (the catalog authors 60/90/120 per level).

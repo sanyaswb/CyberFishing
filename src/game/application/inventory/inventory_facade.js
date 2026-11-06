@@ -34,6 +34,11 @@ export class InventoryFacade {
     this.#commands.setBusyDevices(source);
   }
 
+  // Spec 162 stage 2: the chosen live bait in the bait switcher.
+  setLiveBaitHook(hook) {
+    this.#viewModels.setLiveBaitHook(hook);
+  }
+
   getViewModel() {
     return this.#viewModels.create(this.#commands.getUiState());
   }

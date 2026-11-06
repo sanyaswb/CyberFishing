@@ -849,6 +849,26 @@ vm.runInContext(
   assertIntegration(reloadedQuickHook.facade.getViewModel().header.baitSlots[0]?.item?.itemId === "bait" &&
     reloadedQuickHook.equipmentState.getRootInstanceId("tackle") === "old-quick-hook",
     "repaired hook state and its bait survive a save/reload");
+  // Spec 162 stage 2: the bait switcher's single hook cell with a live bait: green while it waits to replace the bait,
+  // the live bait's picture once the hook is empty, the ordinary cell without one.
+  let liveHook = { pendingFishId: "live-1", preview: () => ({ fishId: "live-1", name: "Live", iconAsset: "fish-display.live" }) };
+  reloadedQuickHook.facade.setLiveBaitHook(liveHook);
+  let liveSlot = reloadedQuickHook.facade.getViewModel().header.baitSlots[0];
+  assertIntegration(liveSlot.highlighted && liveSlot.item?.itemId === "bait",
+    "a live bait waiting to replace the bait turns the hook's cell green over its bait");
+  liveHook = { ...liveHook, pendingFishId: null };
+  reloadedQuickHook.facade.setLiveBaitHook(liveHook);
+  assertIntegration(!reloadedQuickHook.facade.getViewModel().header.baitSlots[0].highlighted,
+    "without a waiting live bait the bait cell is ordinary");
+  dispatch(reloadedQuickHook, InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
+    { kind: "bait", slotIndex: 0, instanceId: reloadedQuickHook.assemblyReader.getChild("old-quick-hook", "bait", 0).instanceId });
+  liveSlot = reloadedQuickHook.facade.getViewModel().header.baitSlots[0];
+  assertIntegration(liveSlot.item?.isLiveBait && liveSlot.item.instanceId === "live:live-1" &&
+    liveSlot.item.iconAsset === "fish-display.live" && liveSlot.showCount === false,
+    "the chosen live bait shows on the empty hook's cell with its picture");
+  reloadedQuickHook.facade.setLiveBaitHook({ pendingFishId: null, preview: () => null });
+  assertIntegration(!reloadedQuickHook.facade.getViewModel().header.baitSlots[0].item,
+    "no chosen live bait: the empty hook's cell stays empty");
   for (const repairing of [false, true]) {
     let rejectPersist = false;
     const rollbackQuickHook = makeComposition({ items: [raw("rollback-quick-rod", "rodPole"), raw("rollback-quick-hook", "hook", repairing ? 1 : 3)],

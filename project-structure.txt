@@ -412,6 +412,7 @@
 │  │  │  │  ├── live_bait_bait_candidate_port.js
 │  │  │  │  ├── live_bait_care_service.js
 │  │  │  │  ├── live_bait_command_service.js
+│  │  │  │  ├── live_bait_hook_controller.js
 │  │  │  │  ├── live_bait_motion_adapter.js
 │  │  │  │  └── live_bait_snapshot_store.js
 │  │  │  ├── power
