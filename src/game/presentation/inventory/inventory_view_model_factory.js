@@ -167,6 +167,9 @@ export class InventoryViewModelFactory {
     const savedLoadout = this.#createSavedLoadoutPreview(
       uiState.viewingLoadoutId,
     );
+    const baitSlots = this.#createConsumableSlots("bait", uiState);
+    // TK-234: a live bait on the hook counts the live baits of its species that can follow it, not backpack baits.
+    const liveBaitReserve = baitSlots.length === 1 && baitSlots[0].liveBait ? baitSlots[0].stock : null;
     return {
       isOpen: uiState.isOpen === true,
       equipmentFeedback: uiState.equipmentFeedback || null,
@@ -179,7 +182,7 @@ export class InventoryViewModelFactory {
         }, 0),
       },
       header: {
-        baitSlots: this.#createConsumableSlots("bait", uiState),
+        baitSlots,
         chumSlots: this.#createConsumableSlots("chum", uiState),
         loadValue: Number(this.#loadValueProvider?.() || 0),
         loadUnit: "кг",
@@ -188,7 +191,7 @@ export class InventoryViewModelFactory {
           chums: activeChums,
         },
         refillStock: {
-          bait: this.#autoRefillStock?.count({ items: activeBaits, scopes: BAIT_REFILL_SCOPES }) || 0,
+          bait: liveBaitReserve ?? (this.#autoRefillStock?.count({ items: activeBaits, scopes: BAIT_REFILL_SCOPES }) || 0),
           chum: this.#autoRefillStock?.count({ items: activeChums, scopes: CHUM_REFILL_SCOPES }) || 0,
         },
       },
@@ -259,7 +262,8 @@ export class InventoryViewModelFactory {
     if (target.occupied) item = this.#itemViews.create(target.occupied.instanceId);
     else if (preview) item = { instanceId: `live:${preview.fishId}`, name: preview.name, iconAsset: preview.iconAsset,
       itemType: "bait", quantity: 1, isLiveBait: true };
-    return { slotIndex: 0, available: true, highlighted: pending, showCount: false, stock: 0, item, liveBait: Boolean(preview) };
+    return { slotIndex: 0, available: true, highlighted: pending, showCount: false, stock: preview?.reserve ?? 0, item,
+      liveBait: Boolean(preview) };
   }
 
   #createEquipmentPanel(

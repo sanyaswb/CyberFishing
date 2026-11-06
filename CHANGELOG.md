@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.16 - Live bait reserve in the switcher
+
+- TK-234: with auto refill on, the bait switcher's count shows how many live baits of the chosen one's species can still follow it onto the hook (keepnet and aquarium, not the chosen one, not dead ones), like the backpack reserve of a regular bait; it showed 0.
+
 ## v0.50.15 - «Замінити» fixed
 
 - TK-233: pressing «Замінити» no longer crashes the inventory (incident I-14): the moment the bait is off and the live bait not yet chosen draws an empty green cell; the waiting card's second button is «Скасувати».
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.7 - Keepnet group weight in kg
 
 - TK-228: a keepnet group shows its total weight in kilograms with two decimals; the DevTools keepnet fill moved under DEBUG and now adds every species of the game (a species without per-level weight ranges splits its depth weight range by level).
-
-## v0.50.6 - DevTools keepnet fill
-
-- TK-227: DevTools section «САДОК» shows the keepnet's fill and fills it to 0, 20, 40, 60, 80 or 100 % with random fish (species, level, weight, art, rarity) through the ordinary keep and release commands.

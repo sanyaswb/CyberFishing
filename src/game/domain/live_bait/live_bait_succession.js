@@ -7,19 +7,31 @@ export class LiveBaitSuccession {
     let best = null;
     let bestKey = null;
     for (const fish of state.fish) {
-      if (fish.id === excludedId || fish.speciesId !== speciesId || fish.purpose !== "live_bait") continue;
-      if (fish.disposition !== "keepnet" && fish.disposition !== "aquarium") continue;
-      if (fish.disposition === "keepnet" && !(fish.remainingLifetimeMs > 0)) continue;
+      if (!LiveBaitSuccession.#canFollow(fish, speciesId, excludedId)) continue;
       const key = [fish.disposition === "aquarium" ? Infinity : fish.remainingLifetimeMs, fish.weightKg, fish.id];
       if (!bestKey || LiveBaitSuccession.#before(key, bestKey)) { best = fish; bestKey = key; }
     }
     return best ? best.id : null;
   }
 
+  // How many live baits of speciesId, other than excludedId, can still follow it onto the hook (TK-234): the reserve
+  // the bait switcher shows, like the backpack reserve of a regular bait.
+  static count(state, speciesId, excludedId = null) {
+    let count = 0;
+    for (const fish of state.fish) if (LiveBaitSuccession.#canFollow(fish, speciesId, excludedId)) count++;
+    return count;
+  }
+
   // Moves the choice from the fish that left (used up, dead, released) to the next of its species.
   static replace(state, leaving) {
     if (state.selectedFishId !== leaving.id) return;
     state.selectedFishId = LiveBaitSuccession.next(state, leaving.speciesId, leaving.id);
+  }
+
+  static #canFollow(fish, speciesId, excludedId) {
+    if (fish.id === excludedId || fish.speciesId !== speciesId || fish.purpose !== "live_bait") return false;
+    if (fish.disposition === "aquarium") return true;
+    return fish.disposition === "keepnet" && fish.remainingLifetimeMs > 0;
   }
 
   static #before(left, right) {

@@ -197,7 +197,8 @@ async function checkHookController({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb }
   assert.deepEqual(removed, ["worm"], "«Замінити» returns the bait to the backpack");
   assert.deepEqual(redraws, [["fry", null]], "the redraw inside confirm() sees a waiting live bait and no chosen one yet");
   assert.equal(liveBait.getSelectedBait().fishId, "fry");
-  assert.deepEqual(hook.preview(), { fishId: "fry", name: "Fry", iconAsset: "id:img/fry.webp" }, "the live bait's picture for the cell");
+  assert.deepEqual(hook.preview(), { fishId: "fry", name: "Fry", iconAsset: "id:img/fry.webp", reserve: 0 },
+    "the live bait's picture for the cell; no other live bait of its species in reserve");
   assert.equal(hook.clear().ok, true);
   assert.equal(hook.preview(), null);
   assert.equal(hook.choose("fry").ok, true, "an empty single hook takes the live bait at once");
@@ -224,16 +225,22 @@ function checkSuccessionAndMigration({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb
   keep("minnow-2", minnow, 0.5);
   const life = (id) => service.getView().liveBaits.find((entry) => entry.id === id).remainingMs;
   assert(life("other") < life("short") && life("short") < life("long"));
+  assert.equal(service.countSelectedReserve(), 0, "TK-234: no chosen live bait, no reserve");
   assert.equal(service.selectBait("long").ok, true);
+  assert.equal(service.countSelectedReserve(), 1, "TK-234: the reserve counts its species only, not the chosen one");
   assert.equal(service.beginLiveBaitCast("long", { compatible: true, free: true, hookCount: 1 }).ok, true);
+  assert.equal(service.countSelectedReserve(), 1, "TK-234: the live bait on the hook keeps its reserve");
   assert.equal(service.settleBaitLoss("long").ok, true);
   assert.equal(service.getSelectedBait().fishId, "short", "a used-up bait is followed by its species' bait with the least life");
+  assert.equal(service.countSelectedReserve(), 0, "TK-234: a used-up live bait leaves the reserve");
   assert.equal(service.releaseBait("short").ok, true);
   assert.equal(service.getSelectedBait(), null, "no live bait of the species is left: the choice clears");
   assert.equal(service.selectBait("other").ok, true);
+  assert.equal(service.countSelectedReserve(), 1);
   now += life("other");
   assert.equal(service.advance().ok, true);
   assert.equal(service.getSelectedBait().fishId, "minnow-2", "a dead bait is followed by its species' next bait");
+  assert.equal(service.countSelectedReserve(), 0, "TK-234: a dead live bait is not in the reserve");
 
   // Migration: a catch kept under an older rule (here a lighter limit) becomes a live bait when loaded.
   values.delete("fishing_game_live_bait_v1");

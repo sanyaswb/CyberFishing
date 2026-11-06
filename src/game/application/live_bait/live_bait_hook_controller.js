@@ -16,7 +16,9 @@ export class LiveBaitHookController {
     for (const method of ["getEquipped", "removeHookBait"]) {
       if (typeof inventory?.[method] !== "function") throw new TypeError(`LiveBaitHookController requires inventory.${method}`);
     }
-    if (typeof liveBait?.selectBait !== "function") throw new TypeError("LiveBaitHookController requires liveBait");
+    for (const method of ["selectBait", "getSelectedBait", "countSelectedReserve"]) {
+      if (typeof liveBait?.[method] !== "function") throw new TypeError(`LiveBaitHookController requires liveBait.${method}`);
+    }
     if (typeof iconAssetOf !== "function") throw new TypeError("LiveBaitHookController requires iconAssetOf");
     this.#inventory = inventory;
     this.#liveBait = liveBait;
@@ -33,13 +35,15 @@ export class LiveBaitHookController {
     };
   }
 
-  // The bait slot's picture: the chosen live bait while the single hook carries no regular bait, or null.
+  // The bait slot's picture: the chosen live bait while the single hook carries no regular bait, or null. reserve: live
+  // baits of its species that can follow it onto the hook (TK-234), the switcher's count.
   preview() {
     const hook = this.hookState();
     if (hook.hookCount !== 1 || hook.bait) return null;
     const selected = this.#liveBait.getSelectedBait();
     if (!selected) return null;
-    return { fishId: selected.fishId, name: selected.name, iconAsset: this.#iconAssetOf(selected.imagePath) };
+    return { fishId: selected.fishId, name: selected.name, iconAsset: this.#iconAssetOf(selected.imagePath),
+      reserve: this.#liveBait.countSelectedReserve() };
   }
 
   get pendingFishId() { return this.#pendingFishId; }

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-234: with auto refill the bait switcher counts the live baits of the chosen one's species (was 0).",
   "TK-233: «Замінити» no longer crashes the inventory; the waiting card's second button is «Скасувати».",
   "TK-229.3 stage 2: the chosen live bait shows in the bait switcher; «Замінити» swaps it for the hook's bait.",
   "TK-232: a radioactive perch from 0.833 kg is a trophy.",

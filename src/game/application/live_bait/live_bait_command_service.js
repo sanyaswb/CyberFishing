@@ -79,6 +79,11 @@ export class LiveBaitCommandService {
     return { fishId: fish.id, baitId: this.#config.baitId, sourceSpeciesId: fish.speciesId, weightKg: fish.weightKg, disposition: fish.disposition,
       name: fish.name, imagePath: fish.imagePath };
   }
+  // TK-234: live baits of the chosen one's species that can still follow it onto the hook (not counting the chosen one).
+  countSelectedReserve() {
+    const selected = this.getSelectedBait();
+    return selected ? LiveBaitSuccession.count(this.#state, selected.sourceSpeciesId, selected.fishId) : 0;
+  }
   beginLiveBaitCast(id, hookContext = {}) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);
     if (!fish || state.selectedFishId !== id || fish.purpose !== "live_bait" || !["keepnet", "aquarium"].includes(fish.disposition)) return "bait_unavailable";

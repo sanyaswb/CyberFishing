@@ -851,7 +851,7 @@ vm.runInContext(
     "repaired hook state and its bait survive a save/reload");
   // Spec 162 stage 2: the bait switcher's single hook cell with a live bait: green while it waits to replace the bait,
   // the live bait's picture once the hook is empty, the ordinary cell without one.
-  let liveHook = { pendingFishId: "live-1", preview: () => ({ fishId: "live-1", name: "Live", iconAsset: "fish-display.live" }) };
+  let liveHook = { pendingFishId: "live-1", preview: () => ({ fishId: "live-1", name: "Live", iconAsset: "fish-display.live", reserve: 3 }) };
   reloadedQuickHook.facade.setLiveBaitHook(liveHook);
   let liveSlot = reloadedQuickHook.facade.getViewModel().header.baitSlots[0];
   assertIntegration(liveSlot.highlighted && liveSlot.item?.itemId === "bait",
@@ -866,6 +866,9 @@ vm.runInContext(
   assertIntegration(liveSlot.item?.isLiveBait && liveSlot.item.instanceId === "live:live-1" &&
     liveSlot.item.iconAsset === "fish-display.live" && liveSlot.showCount === false,
     "the chosen live bait shows on the empty hook's cell with its picture");
+  // TK-234: with auto refill the switch counts the live baits of the chosen one's species, not backpack baits (was 0).
+  assertIntegration(liveSlot.stock === 3 && reloadedQuickHook.facade.getViewModel().header.refillStock.bait === 3,
+    "the bait switcher's count is the live bait's species reserve");
   reloadedQuickHook.facade.setLiveBaitHook({ pendingFishId: null, preview: () => null });
   assertIntegration(!reloadedQuickHook.facade.getViewModel().header.baitSlots[0].item,
     "no chosen live bait: the empty hook's cell stays empty");
