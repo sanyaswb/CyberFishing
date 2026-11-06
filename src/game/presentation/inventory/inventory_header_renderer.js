@@ -52,10 +52,10 @@ export class InventoryHeaderRenderer {
     const binding = this.#bindings.get(node);
     if (!binding) return;
     this.updateLoad(node, header);
-    this.#autoSwitches.update(binding.switches[0], { slots: header.baitSlots,
-      checked: settings.autoBait, stock: header.baitStock });
-    this.#autoSwitches.update(binding.switches[1], { slots: header.chumSlots,
-      checked: settings.autoChum, stock: header.chumStock });
+    this.#autoSwitches.update(binding.switches[0], { slots: header.baitSlots, stock: header.baitStock,
+      ...InventoryHeaderRenderer.#automaticState(header.baitSlots, settings.autoBait) });
+    this.#autoSwitches.update(binding.switches[1], { slots: header.chumSlots, stock: header.chumStock,
+      ...InventoryHeaderRenderer.#automaticState(header.chumSlots, settings.autoChum) });
   }
 
   updateLoad(node, header) {
@@ -74,8 +74,16 @@ export class InventoryHeaderRenderer {
     return container;
   }
 
+  // TK-237: automatic mode needs a chosen bait/chum: without one in any slot the switch is off and inactive (the
+  // remembered refill choice must not turn it on with an old reserve); the saved setting itself is kept.
+  static #automaticState(slots, enabled) {
+    const chosen = (slots || []).some((slot) => slot.item);
+    return { checked: chosen && enabled === true, disabled: !chosen };
+  }
+
   #createToggle(id, slotId, name, modeLabel, slots, checked, stock = 0, onChange, onActivate, onLongPress = null) {
-    return this.#autoSwitches.create({ id, name, modeLabel, slots, checked, stock, onChange, activateUnavailable: true,
+    return this.#autoSwitches.create({ id, name, modeLabel, slots, stock, onChange, activateUnavailable: true,
+      ...InventoryHeaderRenderer.#automaticState(slots, checked),
       onSlotActivate: (slotIndex) => onActivate?.(slotId, slotIndex),
       onSlotLongPress: slotId === "bait" && onLongPress
         ? (slotIndex, instanceId) => onLongPress(slotId, slotIndex, instanceId) : null,

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-237: «A» is off and inactive while no bait/chum is chosen.",
   "TK-236: the switcher is green while a bait or chum is chosen; «A» colours only its track.",
   "TK-235: switcher cells at full height, art as large as the circle allows by its proportion.",
   "TK-234: with auto refill the bait switcher counts the live baits of the chosen one's species (was 0).",

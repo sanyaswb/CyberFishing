@@ -202,8 +202,11 @@
 .ui-surface--desktop-hover .inventory-toggle:hover:not(.inventory-toggle--disabled):not(.inventory-toggle--control),
 .ui-surface:not(.ui-surface--desktop-hover) .inventory-toggle:active:not(.inventory-toggle--disabled):not(.inventory-toggle--control) { border-color: var(--inventory-accent, var(--ui-accent)); }
 .ui-surface--desktop-hover .inventory-toggle:active:not(.inventory-toggle--disabled):not(.inventory-toggle--control) { background: #29343a; }
-.inventory-toggle--disabled { opacity: 0.46; cursor: not-allowed; }
-.inventory-toggle--disabled .inventory-toggle__input { cursor: not-allowed; }
+/* An inactive switch dims only its track: the pill's cells stay usable for choosing a bait/chum (TK-237). */
+.inventory-toggle--disabled .inventory-toggle__control { opacity: 0.46; }
+.inventory-toggle--disabled .inventory-toggle__switch,
+.inventory-toggle--disabled .inventory-toggle__input,
+.inventory-toggle--disabled.inventory-toggle--control { cursor: not-allowed; }
 .inventory-toggle--control { --inventory-toggle-control-width: 104px; width: var(--inventory-toggle-control-width); height: var(--inventory-toggle-height); padding: 0; border: 0; background: transparent; }
 .ui-surface--desktop-hover .inventory-toggle--control:hover:not(.inventory-toggle--disabled) .inventory-toggle__control,
 .ui-surface:not(.ui-surface--desktop-hover) .inventory-toggle--control:active:not(.inventory-toggle--disabled) .inventory-toggle__control { border-color: var(--inventory-accent, var(--ui-accent)); }

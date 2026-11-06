@@ -856,6 +856,21 @@ class InventoryUiBehaviorCheck {
       0,
       "selected item artwork replaces both category illustrations",
     );
+    // TK-237: automatic mode needs a chosen bait. Once the bait is used up (empty hook slot) the switch is off and
+    // inactive even with the saved setting on and a remembered reserve; it comes back with a chosen bait.
+    const [baitPill] = this.#findAllByClass(selectedHeader, "inventory-toggle");
+    const baitInput = this.#findByClass(baitPill, "inventory-toggle__input");
+    assert(baitInput.checked && !baitInput.disabled, "a chosen bait allows automatic mode");
+    const emptyHookHeader = { loadLabel: "Load", loadValue: 1, loadUnit: "kg", baitStock: 17, chumStock: 8,
+      baitSlots: [{ slotIndex: 0, available: true, item: null, stock: 0 }], chumSlots: [] };
+    headerRenderer.update(selectedHeader, emptyHookHeader, { autoBait: true, autoChum: true });
+    assert(!baitInput.checked && baitInput.disabled && baitPill.classList.contains("inventory-toggle--disabled"),
+      "no chosen bait: the automatic switch is off and inactive");
+    headerRenderer.update(selectedHeader, { ...emptyHookHeader,
+      baitSlots: [{ slotIndex: 0, available: true, item: { name: "Worm" }, stock: 17 }],
+      chumSlots: [{ slotIndex: 0, available: true, item: { name: "Mix" }, stock: 8 }] }, { autoBait: true, autoChum: false });
+    assert(baitInput.checked && !baitInput.disabled && !baitPill.classList.contains("inventory-toggle--disabled"),
+      "choosing a bait again restores the saved automatic mode");
     assert.strictEqual(
       this.#findByClass(selectedHeader, "inventory-header__load"),
       selectedHeader.children[1],
@@ -1025,6 +1040,10 @@ class InventoryUiBehaviorCheck {
     assert.ok(warningHint.hidden, "The close button dismisses the warning");
     subscriber({ viewModel: currentView, warning: "Partial refill" });
     assert.ok(!warningHint.hidden, "A new warning reopens the closed hint");
+    // TK-237: automatic mode is available only with a chosen bait/chum.
+    currentView = { ...currentView, header: { ...currentView.header,
+      baitSlots: [{ slotIndex: 0, available: true, item: { instanceId: "auto-bait", name: "Worm" } }],
+      chumSlots: [{ slotIndex: 0, available: true, item: { instanceId: "auto-chum", name: "Mix" } }] } };
     subscriber(currentView);
 
     const bottomAuxiliary = this.#findByClass(
