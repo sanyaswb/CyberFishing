@@ -3432,6 +3432,33 @@ vm.runInContext(
     slots.count([raw("p-segment-alone", "line", 1, { detachedLineSegment: true, sourceLineInstanceId: "gone" })]) === 1,
     "a hook portion stays in its pack's slot and a cut line segment in its spool's");
 
+  // TK-241: a repeated click on a bait already on the only hook has nothing to replace: it opens the bait's editor for
+  // every kind of bait (a jar of the same bait included); a different bait still proposes the replacement.
+  const repeatedBait = (items) => makeComposition({ items: [raw("rb-rod", "rodPole"), raw("rb-hook", "hook"), ...items],
+    equipment: { ...emptyEquipment(), rod: "rb-rod", tackle: "rb-hook" },
+    assemblies: [{ rootInstanceId: "rb-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }] });
+  for (const [jarId, itemId, quantity] of [["rb-worm", "oil_worm_25", 25], ["rb-bread", "bread_10", 10], ["rb-plain", "bait", 3]]) {
+    const flow = repeatedBait([raw(jarId, itemId, quantity)]);
+    dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: jarId });
+    const onHook = flow.assemblyReader.getChild("rb-hook", "bait", 0);
+    const again = dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: jarId });
+    const ui = flow.commands.getUiState();
+    assertIntegration(onHook?.itemId === itemId && !again.requiresSocketChoice && ui.panelMode === "assembly" &&
+      ui.editingRootInstanceId === jarId && ui.pickedSocketId === null && ui.consumableKind === null &&
+      flow.assemblyReader.getChild("rb-hook", "bait", 0)?.instanceId === onHook.instanceId,
+      itemId + ": the repeated click opens the editor and leaves the bait on the hook");
+  }
+  const sameBait = repeatedBait([raw("rb-jar-25", "oil_worm_25", 25), raw("rb-jar-50", "oil_worm_50", 50)]);
+  dispatch(sameBait, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "rb-jar-25" });
+  dispatch(sameBait, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "rb-jar-50" });
+  assertIntegration(sameBait.commands.getUiState().editingRootInstanceId === "rb-jar-50" &&
+    sameBait.commands.getUiState().pickedSocketId === null, "another jar of the same bait has nothing to replace either");
+  const otherBait = repeatedBait([raw("rb-worms", "oil_worm_25", 25), raw("rb-loaf", "bread_10", 10)]);
+  dispatch(otherBait, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "rb-worms" });
+  const replacement = dispatch(otherBait, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "rb-loaf" });
+  assertIntegration(replacement.requiresSocketChoice && otherBait.commands.getUiState().pickedSocketId !== null,
+    "a different bait still proposes replacing the hook's bait");
+
   console.log("Inventory integration checks passed.");
   `,
   context,

@@ -489,6 +489,14 @@ export class InventoryCommandService {
       ? targets.find((target) => target.socketId === this.#uiState.pickedSocketId) : null;
     const selectedId = this.#uiState.selectedInstanceId;
     const empty = targets.find((target) => !target.occupied);
+    // TK-241: nothing to replace when the chosen cell (or, without one, every cell) already holds this kind of bait or
+    // chum (the same baitId: a jar of 25 or 50 oil worms is the same bait): the click opens the item's editor instead
+    // of proposing the same replacement again.
+    const sameKind = (target) => target.occupied && this.#consumableKind(target.occupied) === this.#consumableKind(source);
+    if (explicit ? sameKind(explicit) : !empty && targets.every(sameKind)) {
+      this.#uiState.showAssemblyEditor(source.instanceId);
+      return this.#success({ rootInstanceId: source.instanceId });
+    }
     if ((explicit && (!selectedId || selectedId === source.instanceId)) || empty) {
       const target = explicit && (!selectedId || selectedId === source.instanceId) ? explicit : empty;
       const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
@@ -500,6 +508,11 @@ export class InventoryCommandService {
     this.#uiState.pickForConsumable(kind, target.socketId);
     this.#uiState.select(source.instanceId);
     return this.#success({ requiresSocketChoice: true });
+  }
+
+  // A consumable's kind for replacement: its catalog bait id, or its item id.
+  #consumableKind(rawItem) {
+    return this.#hydrate(rawItem)?.baitId || rawItem.itemId;
   }
 
   #unequipSlot(slotId) {

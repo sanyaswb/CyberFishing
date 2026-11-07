@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.25 - Repeated click on an equipped bait
+
+- TK-241: clicking a bait that is already on the hook (or another jar of the same bait) opens its editor instead of highlighting the hook's cell again for the same replacement; every bait type alike, a different bait still proposes the replacement.
+
 ## v0.50.24 - Live bait stack in the item editor
 
 - TK-240: a live bait stack opens in the ordinary item editor like any bait: the fish's picture in the editor's card, each fish as a parameter row (thumbnail and life scale without a number), «В садок» and «Назад»; the separate stack panel is gone.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.16 - Live bait reserve in the switcher
 
 - TK-234: with auto refill on, the bait switcher's count shows how many live baits of the chosen one's species can still follow it onto the hook (keepnet and aquarium, not the chosen one, not dead ones), like the backpack reserve of a regular bait; it showed 0.
-
-## v0.50.15 - «Замінити» fixed
-
-- TK-233: pressing «Замінити» no longer crashes the inventory (incident I-14): the moment the bait is off and the live bait not yet chosen draws an empty green cell; the waiting card's second button is «Скасувати».
