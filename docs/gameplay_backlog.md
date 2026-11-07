@@ -875,6 +875,17 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-130 The backpack holds more than its limit (P2, done in v0.50.23)
+Found: 2026-11-07, owner (TK-239, [spec 164](../specs/164-backpack-capacity/spec.md)): the backpack scale showed a 100-slot
+limit but nothing enforced it (`UnlimitedInventoryCapacityPolicy`, spec 075 presentation-only scale).
+Change: `BackpackSlotCount` counts every owned item (equipped and attached included, packs like their cards, hook portions
+with their pack, line segments with their spool, live baits never), so moving items keeps the count; new items (DEV grant,
+aquarium feed, one-time grants) that do not fit are refused (one-time grants wait); an old save over the limit keeps its
+items; a full backpack's skin gets a red layer.
+Evidence: `inventory-integration` (count incl. equipment, loadout move, 100 full, over-limit save, portions, segments),
+`live-bait` (grant and House feed refused, service keeps working), `device-power` (one-time grant deferred, applied with
+room), `inventory-ui` (red layer); game-cycle report unchanged.
+
 ### G-129 Live bait species stack in the backpack; the chosen live bait cannot be released (P2, stages 1-2 done in v0.50.21-22)
 Found: 2026-11-06, owner ([spec 163](../specs/163-live-bait-in-inventory/spec.md)): the chosen live bait could be released, and the
 backpack's bait section could not show the live baits.

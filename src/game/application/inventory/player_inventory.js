@@ -13,6 +13,7 @@ export class PlayerInventory {
   #itemViewContext;
   #itemGrant;
   #catalogItemSync;
+  #backpackSlots;
   #removeInventoryListener = null;
   #isLocked = false;
   #equippedCache = null;
@@ -28,7 +29,9 @@ export class PlayerInventory {
     itemViewContext,
     itemGrant,
     catalogItemSync = null,
+    backpackSlots,
   }) {
+    this.#backpackSlots = backpackSlots;
     this.#messages = messages;
     this.#facade = inventory.facade;
     this.#gameplayBridge = inventory.gameplayBridge;
@@ -51,6 +54,11 @@ export class PlayerInventory {
 
   setLock(locked) {
     this.#isLocked = locked;
+  }
+
+  // Spec 164: the backpack's slot counter (the aquarium feed port checks feed against it).
+  get backpackSlots() {
+    return this.#backpackSlots;
   }
 
   get isLocked() {

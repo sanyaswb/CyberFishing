@@ -1582,6 +1582,16 @@ class InventoryUiBehaviorCheck {
         "a scale icon is the SVG interface icon, not item artwork",
       );
     }
+    // Spec 164: a full backpack (100 / 100) lays a translucent red over its skin, masked by the skin's own picture.
+    const backpackTint = this.#findByClass(backpackVisual, "inventory-backpack__tint");
+    assert.ok(!backpackView.classList.contains("inventory-backpack--full") &&
+      backpackTint.style.getPropertyValue("--inventory-backpack-mask") === 'url("assets/items/briefcases/briefcase--1--close.webp")',
+      "7 / 100 is not full; the red layer is masked by the backpack skin");
+    ui.render({ ...currentView, sections: { activeId: "backpack", backpackItemCount: 100 } });
+    assert.ok(backpackView.classList.contains("inventory-backpack--full"), "100 / 100 is full: the skin turns red");
+    ui.render({ ...currentView, sections: { activeId: "backpack", backpackItemCount: 99 } });
+    assert.ok(!backpackView.classList.contains("inventory-backpack--full"), "a freed slot removes the red");
+    ui.render(sectionView("backpack"));
     ui.render(sectionView("keepnet"));
     assert.deepStrictEqual(
       visibleSections(),

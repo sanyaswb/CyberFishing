@@ -469,6 +469,9 @@ vm.runInContext(
     assemblies: [{ rootInstanceId: "ux-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }],
   });
   const beforeRodInspect = JSON.stringify(rodUx.snapshotFactory.create());
+  // Spec 164 Q2: equipped items take their backpack slots (rod, next rod, line, hook, its bait, float = 6).
+  const rodUxSlots = rodUx.facade.getViewModel().sections.backpackItemCount;
+  assertIntegration(rodUxSlots === 6, "every owned item counts, equipped ones included: " + rodUxSlots);
   dispatch(rodUx, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "ux-next-rod" });
   const inspectedRod = rodUx.facade.getViewModel();
   assertIntegration(JSON.stringify(rodUx.snapshotFactory.create()) === beforeRodInspect &&
@@ -495,6 +498,8 @@ vm.runInContext(
     rodUx.equipmentState.getRootInstanceId("rod") === null && lineMeters(rodUx, "ux-line") === 8 &&
     rodUx.repository.require("ux-bait").location.kind === "ATTACHED",
     "saving without a name assigns one automatically and preserves exact roots, nested bait and line length");
+  assertIntegration(rodUx.facade.getViewModel().sections.backpackItemCount === rodUxSlots,
+    "taking the rod off into a saved loadout keeps the backpack count (spec 164 Q2)");
   // Spec 067: the inventory section is navigation state; it survives closing and clears a highlighted slot.
   assertIntegration(rodUx.facade.getViewModel().sections.activeId === "equipment" &&
     rodUx.facade.getViewModel().sections.backpackItemCount > 0, "the inventory opens at equipment with a backpack count");
@@ -878,8 +883,8 @@ vm.runInContext(
   let stackModel = reloadedQuickHook.facade.getViewModel();
   const stackCard = stackModel.inventory.items.find((item) => item.instanceId === "live-stack:crucian");
   assertIntegration(stackCard?.isLiveBaitStack && stackCard.quantity === 3 && stackCard.iconAsset === "fish-display.live" &&
-    stackModel.sections.backpackItemCount === slotsBefore + 1 && stackModel.liveBaitStackSignature === "crucian:3",
-    "a live bait stack is a backpack card with its count and takes one backpack slot");
+    stackModel.sections.backpackItemCount === slotsBefore && stackModel.liveBaitStackSignature === "crucian:3",
+    "a live bait stack is a backpack card with its count; live baits are the keepnet's, not a backpack slot (spec 164 Q3)");
   dispatch(reloadedQuickHook, InventoryActionType.CATEGORY_SELECT, { categoryId: "baits" });
   assertIntegration(reloadedQuickHook.facade.getViewModel().inventory.items.some((item) => item.isLiveBaitStack),
     "the stack is listed under «Наживки»");
@@ -3400,6 +3405,28 @@ vm.runInContext(
   const vmBreadMultiple = breadFlowMultiple.facade.getViewModel();
   assertIntegration(vmBreadMultiple.sections.backpackItemCount === 3,
     "1 stack of 10, 1 stack of 25 and 1 stack of 50 (with 10 bread) must count as 3 items in backpack");
+
+  // Spec 164: the backpack's limit. Full at 100 slots: nothing new fits; an old save over the limit keeps its items and
+  // takes nothing new, but a change that does not grow it is accepted.
+  const fullBackpack = makeComposition({ items: Array.from({ length: 100 }, (_, index) => raw("full-" + index, "hook")) });
+  const slots = fullBackpack.backpackSlots;
+  const fullItems = fullBackpack.repository.list();
+  assertIntegration(slots.maxSlots === 100 && fullBackpack.facade.getViewModel().sections.backpackItemCount === 100 &&
+    slots.isFull(fullItems) && !slots.fitsAdding(fullItems, "hook", 1) && slots.fitsAdding(fullItems.slice(1), "hook", 1),
+    "100 slots are full: a new item does not fit, 99 take one more");
+  const overItems = [...fullItems, raw("over", "hook")];
+  assertIntegration(slots.count(overItems) === 101 && !slots.fitsAdding(overItems, "hook", 1) &&
+    slots.fits(overItems, overItems) && slots.fits(overItems, overItems.slice(1)),
+    "an old save over the limit keeps its items and accepts a change that does not grow it");
+  // A portion of a pack on the hook belongs to its pack; the last portions with no pack take their own slot; a line
+  // segment counts with its spool; a system box takes none.
+  const hookPortion = { location: InventoryItemLocation.attached("p-hook", "bait") };
+  assertIntegration(slots.count([raw("p-jar", "oil_worm_25", 24), raw("p-on-hook", "oil_worm_25", 1, hookPortion)]) === 1 &&
+    slots.count([raw("p-last", "oil_worm_25", 1, hookPortion)]) === 1 &&
+    slots.count([raw("p-spool", "line", 1), raw("p-segment", "line", 1,
+      { detachedLineSegment: true, sourceLineInstanceId: "p-spool" })]) === 1 &&
+    slots.count([raw("p-segment-alone", "line", 1, { detachedLineSegment: true, sourceLineInstanceId: "gone" })]) === 1,
+    "a hook portion stays in its pack's slot and a cut line segment in its spool's");
 
   console.log("Inventory integration checks passed.");
   `,

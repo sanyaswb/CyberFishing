@@ -547,7 +547,7 @@ export class GameCompositionRoot {
     });
     const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
       config: this.#config.liveBait, fishDb: FISH_DB, rng,
-      synchronizeInventory: (items) => inventory.synchronizeAquariumFeed(items) });
+      synchronizeInventory: (items) => inventory.synchronizeAquariumFeed(items), backpackSlots: inventory.backpackSlots });
     const onFeedStorage = (event) => { if (event.key === "fishing_game_player_inventory_v2") liveBait.synchronizeInventory(); };
     this.#windowTarget.addEventListener("storage", onFeedStorage);
     own({ dispose: () => this.#windowTarget.removeEventListener("storage", onFeedStorage) });

@@ -9,6 +9,7 @@ module.exports = async function checkInventoryFeed() {
   const { FlatInventoryItemRepository } = await import("../../../src/game/domain/inventory/flat_inventory_item_repository.js");
   const { BrowserSnapshotTransaction } = await import("../../../src/platform/browser/storage/browser_snapshot_transaction.js");
   const { InventoryItemGrantService } = await import("../../../src/game/application/inventory/inventory_item_grant_service.js");
+  const { BackpackSlotCount } = await import("../../../src/game/domain/inventory/backpack_slot_count.js");
   const featureKey = "fishing_game_player_live_bait_v1", inventoryKey = "fishing_game_player_inventory_v2";
   const journalKey = "fishing_game_aquarium_feed_transaction_v1";
   const simple = LIVE_BAIT_CONFIG.defaultFeedId, premium = "aquarium_feed_premium_500";
@@ -78,10 +79,29 @@ module.exports = async function checkInventoryFeed() {
   const granted = new FlatInventoryItemRepository();
   let id = 0;
   const grant = new InventoryItemGrantService({ repository: granted, transaction: { runAtomic: (operation) => operation() },
-    definitionLookup: (itemId) => ITEM_DB.aquariumFeeds[itemId], instanceIdFactory: () => `grant-${++id}`, notify() {} });
+    definitionLookup: (itemId) => ITEM_DB.aquariumFeeds[itemId], instanceIdFactory: () => `grant-${++id}`, notify() {},
+    capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.aquariumFeeds[itemId] || null }) });
   grant.grant(simple); grant.grant(simple); grant.grant(simple);
   assert.equal(granted.size, 1, "identical packs form one inventory quantity stack");
   assert.equal(granted.list()[0].quantity, 3);
+  // Spec 164: feed portions take backpack slots; at 100 the next grant is refused and nothing is added.
+  for (let portion = 3; portion < 100; portion++) assert.equal(grant.grant(simple).success, true);
+  assert.deepEqual({ ...grant.grant(simple) }, { success: false, instanceId: null, reason: "backpack_full" });
+  assert.equal(granted.list()[0].quantity, 100, "a refused grant adds nothing");
+  // The House's feed goes through the same limit: a full backpack refuses it like any command, the service keeps working.
+  const fullInventory = { ...initial, items: Array.from({ length: 100 }, (_, index) =>
+    ({ instanceId: `full-${index}`, itemId: "hook_basic", quantity: 1, location: { kind: "INVENTORY" } })) };
+  const fullValues = new Map([[inventoryKey, JSON.stringify(fullInventory)]]);
+  const fullStorage = { getItem: (key) => fullValues.get(key) ?? null, removeItem: (key) => fullValues.delete(key),
+    setItem: (key, raw) => fullValues.set(key, raw) };
+  const fullService = composeLiveBait({ storage: fullStorage, clock: { nowMs: () => now }, rng: { next: () => .5 },
+    config: LIVE_BAIT_CONFIG, fishDb: [{ id: fish.id, name: fish.name }],
+    backpackSlots: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.aquariumFeeds[itemId] || null }) });
+  const fullBefore = fullValues.get(inventoryKey);
+  assert.equal(fullService.buyFeed(simple).reason, "backpack_full", "spec 164: the House's feed does not fit a full backpack");
+  assert.equal(fullService.error, null, "a full backpack does not break the live bait service");
+  assert.equal(fullValues.get(inventoryKey), fullBefore, "the refused feed changes nothing");
+  assert.equal(fullService.buyAquarium().ok, true, "other commands keep working");
   const transaction = new BrowserSnapshotTransaction({ storage, journalKey, keys: [featureKey, inventoryKey] });
   assert.equal(transaction.commit([{ key: inventoryKey, before: "stale", after: "{}" }]).reason, "stale_revision");
   values.set(journalKey, JSON.stringify([{ key: "unrelated-save", before: null, after: "overwrite" }]));

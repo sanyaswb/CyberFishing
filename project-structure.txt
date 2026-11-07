@@ -629,6 +629,7 @@
 │  │  │  ├── house
 │  │  │  │  └── room_progress.js
 │  │  │  ├── inventory
+│  │  │  │  ├── backpack_slot_count.js
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
 │  │  │  │  ├── inventory_grant_ledger.js

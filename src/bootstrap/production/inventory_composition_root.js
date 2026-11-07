@@ -1,3 +1,4 @@
+import { BackpackSlotCount } from "../../game/domain/inventory/backpack_slot_count.js";
 import { ITEM_PROGRESSION_CONFIG } from "../../game/config/items/item_progression_config.js";
 import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_messages.js";
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
@@ -120,6 +121,8 @@ export class InventoryCompositionRoot {
       effectiveStatsResolver,
     });
     const definitionLookup = (itemId) => hydrator.getDefinition(itemId);
+    // Spec 164: the backpack's slots, one counter for the scale and every way in.
+    const backpackSlots = new BackpackSlotCount({ definitionOf: definitionLookup });
     const itemSnapshotMapper = new InventoryItemSnapshotMapper({
       itemDefinitionResolver: definitionLookup,
       overridePolicy,
@@ -226,7 +229,7 @@ export class InventoryCompositionRoot {
     });
     // Spec 143 D-P7: a save made before an item existed receives it once.
     new InventoryOneTimeGrantService({
-      ledger: grantLedger, repository, transaction, definitionLookup, instanceIdFactory,
+      ledger: grantLedger, repository, transaction, definitionLookup, instanceIdFactory, capacity: backpackSlots,
     }).apply(oneTimeGrants);
 
     const capabilityResolver = new RodCapabilityResolver();
@@ -390,6 +393,7 @@ export class InventoryCompositionRoot {
     });
     const consumableTargets = new EquipmentConsumableTargetResolver({ equipmentState, attachmentTargetResolver });
     const viewModels = new InventoryViewModelFactory({
+      backpackSlots,
       consumableTargets,
       repository,
       assemblyStates,
@@ -493,6 +497,7 @@ export class InventoryCompositionRoot {
 
     return Object.freeze({
       facade,
+      backpackSlots,
       gameplayBridge,
       commands,
       gameplayCommands,

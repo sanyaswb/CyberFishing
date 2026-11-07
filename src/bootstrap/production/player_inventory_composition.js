@@ -119,7 +119,9 @@ export function createPlayerInventory({
       definitionLookup: (itemId) => inventory.hydrator.getDefinition(itemId),
       instanceIdFactory: (prefix) => instanceIds.create(prefix),
       notify: () => inventory.facade.notify(),
+      capacity: inventory.backpackSlots,
     }),
+    backpackSlots: inventory.backpackSlots,
     catalogItemSync: new InventoryCatalogItemSync({ repository: inventory.repository,
       itemIds: Object.keys(itemDB.aquariumFeeds || {}), notify: () => inventory.facade.notify() }),
   });

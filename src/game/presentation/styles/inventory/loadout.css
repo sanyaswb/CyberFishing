@@ -184,6 +184,28 @@
   padding: var(--inventory-container-gap);
 }
 
+/* The skin and its red layer share one cell (spec 164). */
+.inventory-backpack__image,
+.inventory-backpack__tint {
+  grid-area: 1 / 1;
+}
+
+/* Spec 164: a full backpack (slots >= its limit) lays a translucent red over the skin's own shape. */
+.inventory-backpack__tint {
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: var(--ui-danger);
+  opacity: 0.45;
+  pointer-events: none;
+  -webkit-mask: var(--inventory-backpack-mask) center / contain no-repeat;
+  mask: var(--inventory-backpack-mask) center / contain no-repeat;
+}
+
+.inventory-backpack--full .inventory-backpack__tint {
+  display: block;
+}
+
 .inventory-backpack__image {
   display: block;
   width: 100%;

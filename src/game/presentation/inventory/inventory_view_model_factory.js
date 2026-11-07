@@ -44,6 +44,7 @@ export class InventoryViewModelFactory {
   #equipmentReadModelFactory;
   #settings;
   #autoRefillStock;
+  #backpackSlots;
   #loadValueProvider;
   #consumableTargets;
   #liveBaitHook = null;
@@ -68,6 +69,7 @@ export class InventoryViewModelFactory {
     equipmentReadModelFactory,
     settings,
     autoRefillStock = null,
+    backpackSlots,
     loadValueProvider = null,
     consumableTargets,
   } = {}) {
@@ -90,6 +92,8 @@ export class InventoryViewModelFactory {
     this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#settings = settings;
     this.#autoRefillStock = autoRefillStock;
+    if (typeof backpackSlots?.count !== "function") throw new TypeError("InventoryViewModelFactory requires backpackSlots");
+    this.#backpackSlots = backpackSlots;
     this.#loadValueProvider = loadValueProvider;
     this.#consumableTargets = consumableTargets;
     if (!consumableTargets?.list || !consumableTargets?.resolve) {
@@ -135,7 +139,7 @@ export class InventoryViewModelFactory {
       uiState.panelMode === "assembly" &&
       Boolean(editingRootInstanceId) &&
       this.#assemblyStates.has(editingRootInstanceId);
-    // Spec 163: the backpack's live bait stacks (a view of the keepnet's live baits, one backpack slot each, no weight).
+    // Spec 163: the backpack's live bait stacks (a view of the keepnet's live baits; no backpack slot, spec 164 Q3).
     const liveBaitStacks = this.#liveBaitStacks?.stacks() || [];
     const inventoryContext = {
       mode: uiState.consumableKind ? "consumable" : isAttachmentEditor ? "assembly" : "loadout",
@@ -183,11 +187,8 @@ export class InventoryViewModelFactory {
       equipmentFeedback: uiState.equipmentFeedback || null,
       sections: {
         activeId: uiState.activeSectionId,
-        backpackItemCount: accessibleRawItems.reduce((total, item) => {
-          const packSize = Math.max(1, Number(this.#itemViews.create(item.instanceId)?.packSize) || 1);
-          const quantity = Math.max(1, Number(item.quantity) || 1);
-          return total + Math.ceil(quantity / packSize);
-        }, 0) + liveBaitStacks.length,
+        // Spec 164: every owned item takes its slot wherever it is; live baits are the keepnet's (owner, Q2/Q3).
+        backpackItemCount: this.#backpackSlots.count(this.#repository.list()),
       },
       header: {
         baitSlots,

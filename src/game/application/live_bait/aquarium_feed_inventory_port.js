@@ -6,8 +6,10 @@ export class AquariumFeedInventoryPort {
   #store;
   #catalog;
   #synchronize;
-  constructor({ store, catalog, synchronize = null }) {
-    this.#store = store; this.#catalog = catalog; this.#synchronize = synchronize;
+  #capacity;
+  // capacity: BackpackSlotCount (spec 164), or null without a backpack limit (the feed scenarios alone).
+  constructor({ store, catalog, synchronize = null, capacity = null }) {
+    this.#store = store; this.#catalog = catalog; this.#synchronize = synchronize; this.#capacity = capacity;
   }
   read() {
     const loaded = this.#store.read();
@@ -39,6 +41,7 @@ export class AquariumFeedInventoryPort {
           location: InventoryItemLocation.inventory() }), quantity });
       }
       const snapshot = { ...plan.snapshot, items: repository.toSnapshot() };
+      if (this.#capacity && !this.#capacity.fits(plan.snapshot.items, snapshot.items)) return { ok: false, reason: "backpack_full" };
       return { ok: true, changes: [{ key: plan.key, before: plan.raw, after: JSON.stringify(snapshot) }], snapshot };
     } catch (error) { return { ok: false, reason: "invalid_inventory", error }; }
   }

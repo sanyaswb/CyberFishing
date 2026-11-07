@@ -8,8 +8,12 @@ export class InventoryItemGrantService {
   #definitionLookup;
   #instanceIdFactory;
   #notify;
+  #capacity;
 
-  constructor({ repository, transaction, definitionLookup, instanceIdFactory, notify }) {
+  // capacity: BackpackSlotCount (spec 164): a grant that does not fit the backpack is refused (reason backpack_full).
+  constructor({ repository, transaction, definitionLookup, instanceIdFactory, notify, capacity }) {
+    if (typeof capacity?.fitsAdding !== "function") throw new TypeError("InventoryItemGrantService requires capacity");
+    this.#capacity = capacity;
     this.#repository = repository;
     this.#transaction = transaction;
     this.#definitionLookup = definitionLookup;
@@ -22,6 +26,9 @@ export class InventoryItemGrantService {
     const definition = this.#definitionLookup(itemId);
     if (!Number.isInteger(count) || count < 1 || !definition) {
       return Object.freeze({ success: false, instanceId: null });
+    }
+    if (!this.#capacity.fitsAdding(this.#repository.list(), itemId, count)) {
+      return Object.freeze({ success: false, instanceId: null, reason: "backpack_full" });
     }
     const item = this.#transaction.runAtomic(() => {
       const stack = definition.itemType === "aquarium_feed" ? this.#repository.list().find((entry) =>

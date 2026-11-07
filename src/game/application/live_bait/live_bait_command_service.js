@@ -267,7 +267,8 @@ export class LiveBaitCommandService {
   }
   #handleSaveFailure(result) {
     if (result.reason === "stale_revision") this.#syncLatest();
-    else this.#error = result.reason;
+    // Spec 164: a full backpack refuses the feed like any command; the service keeps working.
+    else if (result.reason !== "backpack_full") this.#error = result.reason;
   }
   #fishView(fish) {
     return { id: fish.id, sourceSpeciesId: fish.speciesId, name: fish.name, weightKg: fish.weightKg,

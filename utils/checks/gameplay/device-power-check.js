@@ -20,6 +20,7 @@ const { FlatInventoryItemRepository } = runtime.importModule("src/game/domain/in
 const { InventoryItemLocation } = runtime.importModule("src/game/domain/inventory/inventory_item_location.js");
 const { InventoryGrantLedger } = runtime.importModule("src/game/domain/inventory/inventory_grant_ledger.js");
 const { InventoryOneTimeGrantService } = runtime.importModule("src/game/application/inventory/inventory_one_time_grant_service.js");
+const { BackpackSlotCount } = runtime.importModule("src/game/domain/inventory/backpack_slot_count.js");
 const { InventoryStateStore } = runtime.importModule("src/game/application/inventory/persistence/inventory_state_store.js");
 const { ChumService } = runtime.importModule("src/game/application/chum/chum_service.js");
 
@@ -141,7 +142,8 @@ const grantRepository = new FlatInventoryItemRepository({ items: [] });
 const ledgerOfGrants = new InventoryGrantLedger([]);
 let ids = 0;
 const grants = new InventoryOneTimeGrantService({ ledger: ledgerOfGrants, repository: grantRepository, transaction,
-  definitionLookup: (itemId) => ITEM_DB.batteries[itemId] || null, instanceIdFactory: () => `granted-${++ids}` });
+  definitionLookup: (itemId) => ITEM_DB.batteries[itemId] || null, instanceIdFactory: () => `granted-${++ids}`,
+  capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.batteries[itemId] || null }) });
 const firstBattery = [{ id: "spec143-first-battery", itemId: "battery_basic", quantity: 1 }];
 assert.equal(grants.apply(firstBattery).length, 1);
 assert.equal(grants.apply(firstBattery).length, 0, "a marked grant is not applied again");
@@ -151,8 +153,22 @@ assert.deepEqual([...ledgerOfGrants.snapshot()], ["spec143-first-battery"]);
 const heldRepository = new FlatInventoryItemRepository({ items: [item("held", null)] });
 const heldLedger = new InventoryGrantLedger([]);
 const heldResult = new InventoryOneTimeGrantService({ ledger: heldLedger, repository: heldRepository, transaction,
-  definitionLookup: (itemId) => ITEM_DB.batteries[itemId] || null, instanceIdFactory: () => "unused" }).apply(firstBattery);
+  definitionLookup: (itemId) => ITEM_DB.batteries[itemId] || null, instanceIdFactory: () => "unused",
+  capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.batteries[itemId] || null }) }).apply(firstBattery);
 assert.equal(heldResult[0].instanceId, null, "an inventory that already holds a battery is only marked");
+// Spec 164: a one-time grant that does not fit a full backpack waits, unmarked, and applies once there is room.
+const fullLedger = new Set();
+const fullLedgerPort = { has: (id) => fullLedger.has(id), mark: (id) => fullLedger.add(id) };
+const fullRepository = new FlatInventoryItemRepository({ items: Array.from({ length: 100 }, (_, index) =>
+  ({ instanceId: `full-${index}`, itemId: "hook_full", quantity: 1, location: { kind: "INVENTORY" } })) });
+const fullGrants = new InventoryOneTimeGrantService({ ledger: fullLedgerPort, repository: fullRepository, transaction,
+  definitionLookup: (itemId) => ITEM_DB.batteries[itemId] || null, instanceIdFactory: () => "late-battery",
+  capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.batteries[itemId] || null }) });
+assert.equal(fullGrants.apply(firstBattery)[0].deferred, true, "a full backpack defers the grant");
+assert.equal(fullLedger.size, 0, "a deferred grant stays unmarked");
+fullRepository.remove("full-0");
+assert.equal(fullGrants.apply(firstBattery)[0].instanceId, "late-battery", "with room the grant applies");
+assert(fullLedger.has("spec143-first-battery"));
 assert.equal(heldRepository.size, 1);
 
 // The boat runs on its battery: it drifts when the battery is empty and its bar follows the battery.

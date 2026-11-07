@@ -1,6 +1,8 @@
 // Inventory sections in tab order; icons are symbols of the sections sprite (asset ui.inventory-sections). Art is named
 // by asset id (spec 157 R16). The root modifier and host class names are literal so the style guard can reach them
 // (spec 068).
+import { BackpackSlotCount } from "../../domain/inventory/backpack_slot_count.js";
+
 export const INVENTORY_SECTIONS = Object.freeze({
   label: "Розділи інвентарю",
   iconSpriteAsset: "ui.inventory-sections",
@@ -9,8 +11,8 @@ export const INVENTORY_SECTIONS = Object.freeze({
   backpackBackdropAsset: "items.briefcases.briefcase--1--open",
   // A scale icon is interface: the vector backpack icon, never item artwork (DESIGN_RULES.md).
   backpackCapacityIconAsset: "ui.inventory.backpack",
-  // Presentation scale only (spec 075): gameplay inventory capacity stays unlimited.
-  backpackCapacity: Object.freeze({ maxItems: 100 }),
+  // The backpack's limit (spec 164, TK-239): the domain rule the inventory enforces; the scale shows it.
+  backpackCapacity: Object.freeze({ maxItems: BackpackSlotCount.MAX_SLOTS }),
   labels: Object.freeze({
     backpackItems: (count, maxItems) => `Предметів у рюкзаку: ${count} з ${maxItems}`,
   }),

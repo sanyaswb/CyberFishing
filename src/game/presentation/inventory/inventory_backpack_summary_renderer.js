@@ -6,6 +6,7 @@ export class InventoryBackpackSummaryRenderer {
   #sections;
   #scales;
   #capacities = new WeakMap();
+  #full = new WeakMap();
 
   constructor({ domFactory, sections, scaleRenderer }) {
     this.#dom = domFactory;
@@ -19,7 +20,11 @@ export class InventoryBackpackSummaryRenderer {
     const image = this.#dom.image(this.#sections.backpackAsset, "");
     image.className = "inventory-backpack__image";
     image.setAttribute("aria-hidden", "true");
-    visual.appendChild(image);
+    // Spec 164: a full backpack lays a translucent red over its skin: a layer masked by the same picture.
+    const tint = this.#dom.element("span", "inventory-backpack__tint");
+    tint.setAttribute("aria-hidden", "true");
+    tint.style.setProperty("--inventory-backpack-mask", `url("${this.#dom.assetUrl(this.#sections.backpackAsset)}")`);
+    visual.append(image, tint);
     const stats = this.#dom.element("div", "inventory-backpack__stats inventory-panel");
     const capacity = this.#scales.create({ iconAsset: this.#sections.backpackCapacityIconAsset, meterId: "backpack-capacity",
       className: "inventory-backpack__capacity" });
@@ -31,6 +36,11 @@ export class InventoryBackpackSummaryRenderer {
 
   update(view, itemCount) {
     const { maxItems } = this.#sections.backpackCapacity;
+    const full = itemCount >= maxItems;
+    if (this.#full.get(view) !== full) {
+      this.#full.set(view, full);
+      view.classList.toggle("inventory-backpack--full", full);
+    }
     const percent = (itemCount * 100) / maxItems;
     this.#scales.update(this.#capacities.get(view), {
       percent,

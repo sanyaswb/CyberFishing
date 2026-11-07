@@ -9,8 +9,12 @@ export class InventoryOneTimeGrantService {
   #transaction;
   #definitionLookup;
   #instanceIdFactory;
+  #capacity;
 
-  constructor({ ledger, repository, transaction, definitionLookup, instanceIdFactory }) {
+  // capacity: BackpackSlotCount (spec 164): a grant that does not fit stays unmarked and applies on a later start.
+  constructor({ ledger, repository, transaction, definitionLookup, instanceIdFactory, capacity }) {
+    if (typeof capacity?.fitsAdding !== "function") throw new TypeError("InventoryOneTimeGrantService requires capacity");
+    this.#capacity = capacity;
     this.#ledger = ledger;
     this.#repository = repository;
     this.#transaction = transaction;
@@ -29,6 +33,9 @@ export class InventoryOneTimeGrantService {
         return Object.freeze({ grantId: grant.id, instanceId: null });
       }
       const quantity = Number.isInteger(grant.quantity) && grant.quantity > 0 ? grant.quantity : 1;
+      if (!this.#capacity.fitsAdding(this.#repository.list(), grant.itemId, quantity)) {
+        return Object.freeze({ grantId: grant.id, instanceId: null, deferred: true });
+      }
       const item = this.#repository.add({
         instanceId: this.#instanceIdFactory("item"),
         itemId: grant.itemId,
