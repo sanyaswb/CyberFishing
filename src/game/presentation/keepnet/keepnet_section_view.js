@@ -132,6 +132,15 @@ export class KeepnetSectionView {
     this.#buttonImage.addEventListener("load", () => placeholder.replaceWith(this.#buttonImage), { once: true });
     this.#buttonImage.loading = "eager";
   }
+  #showFillStage(percent) {
+    const imageAsset = this.#imageResolver.resolve(percent);
+    if (this.#imageAsset === imageAsset) return;
+    const source = this.#assets.pathOf(imageAsset);
+    this.#buttonImage.src = source;
+    this.#backdrop.src = source;
+    this.#imageAsset = imageAsset;
+  }
+
   // The help hint; its host places it in its hint region (the inventory's, spec 086).
   get helpNode() { return this.#helpText; }
   get contentNode() { return this.#content; }
@@ -166,7 +175,11 @@ export class KeepnetSectionView {
     this.refresh();
   }
   refresh() {
-    if (!this.#visible && this.#signature) return;
+    // TK-247: a closed keepnet still shows its fill stage on the shortcut button.
+    if (!this.#visible && this.#signature) {
+      this.#showFillStage(this.#model.build(this.#liveBait.getView(), this.#filter).capacityPercent);
+      return;
+    }
     const model = this.#model.build(this.#liveBait.getView(), this.#filter);
     this.#filter.speciesId = model.speciesId;
     const group = model.groups.find((entry) => entry.id === this.#detailSpecies);
@@ -182,13 +195,7 @@ export class KeepnetSectionView {
       status: model.error ? this.#labels.error(model.error) : this.#notice };
     this.#overviews.update(this.#summary, reading);
     this.#overviews.update(this.#pagerOverview, reading);
-    const imageAsset = this.#imageResolver.resolve(model.capacityPercent);
-    if (this.#imageAsset !== imageAsset) {
-      const source = this.#assets.pathOf(imageAsset);
-      this.#buttonImage.src = source;
-      this.#backdrop.src = source;
-      this.#imageAsset = imageAsset;
-    }
+    this.#showFillStage(model.capacityPercent);
     this.#filtersRenderer.update(this.#filters, { kind: model.kind, species: model.species, speciesId: model.speciesId,
       back: group ? this.#labels.details(group.name, group.count) : null });
     // Timer-only updates retain images, focused controls and scroll position.

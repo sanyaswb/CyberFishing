@@ -6,6 +6,7 @@ import { INVENTORY_SELECTOR_CONFIG } from "../../game/presentation/inventory/inv
 import { INVENTORY_SELECTOR_LABELS } from "../../game/presentation/inventory/inventory_selector_labels.js";
 import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_config.js";
+import { KeepnetFillImageResolver } from "../../game/presentation/keepnet/keepnet_fill_image_resolver.js";
 
 // The control shown is what the configuration names, from the first frame (TK-194). The selector's artwork (backpack,
 // first keepnet stage, rod thumbnail) is not part of startup (spec 157 R11): its sectors show the section sprite's
@@ -13,12 +14,14 @@ import { KEEPNET_ART_STAGES } from "../../game/presentation/keepnet/keepnet_art_
 // preloadArtwork(): settles when the asset load plan's "selector" group has loaded (rejects when it failed).
 export function composeInventorySelector({ documentRef, windowRef, uiSurface, mountNode,
   inventoryUI, keepnetUI, config, requestArtwork, logger, equipmentSource = null,
-  id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork, progressive = null }) {
+  id = "inventory-selector-sections", onSelect = null, assets, preloadArtwork, progressive = null, keepnetPercent = () => 0 }) {
   const geometries = Object.fromEntries(Object.keys(INVENTORY_SELECTOR_CONFIG.layouts)
     .map(layout => [layout, new InventorySelectorGeometry(INVENTORY_SELECTOR_CONFIG, layout)]));
   const domFactory = new InventoryDomFactory(documentRef, { assets, progressive });
   const view = new InventorySelectorRenderer({ domFactory, geometries, sections: INVENTORY_SECTIONS,
-    labels: INVENTORY_SELECTOR_LABELS, keepnetAsset: KEEPNET_ART_STAGES[0].imageAsset, id });
+    labels: INVENTORY_SELECTOR_LABELS, id,
+    // TK-247: the keepnet sector shows the current fill stage, like the keepnet section (same resolver and stages).
+    keepnetArtwork: ((resolver) => () => resolver.resolve(keepnetPercent()))(new KeepnetFillImageResolver({ stages: KEEPNET_ART_STAGES })) });
   const controller = new InventorySelectorController({ view, uiSurface, documentRef, windowRef,
     onSelect: onSelect || (sectionId => {
       inventoryUI.openSection(sectionId);

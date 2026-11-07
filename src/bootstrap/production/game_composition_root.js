@@ -1290,6 +1290,7 @@ export class GameCompositionRoot {
       // The equipped rod's art in the selector, when the player changes the rod: ahead of the background (spec 157 D2).
       requestArtwork: (ids) => this.#preload.request(ids),
       equipmentSource: inventory, assets: this.#assets, progressive: this.#preload,
+      keepnetPercent: () => this.#keepnetPercent(),
       // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
       preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {
         if (group.status === "failed") throw group.error;

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.32 - Keepnet thumbnail follows the fill
+
+- TK-247: the keepnet sector of the inventory fan shows the keepnet's current fill stage (it was always the empty one), updated each time the fan opens; the classic keepnet button follows the fill while the keepnet is closed too.
+
 ## v0.50.31 - A bait over a live bait asks first
 
 - TK-246: with a live bait on the hook, choosing a regular bait lights the switcher cell and offers «Замінити» in its editor, like over any other bait; a second choice (the card, «Замінити» or the cell) puts it on and clears the live bait's choice (the fish stays in the keepnet), «Назад» keeps the live bait.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.23 - Backpack limit
 
 - TK-239 (spec 164): the backpack holds at most 100 slots: every owned item counts wherever it is (equipped ones too, so taking things off always works), live baits never; new items that do not fit are refused (DEV shop, House feed; one-time grants wait for room); a full backpack's skin turns translucent red.
-
-## v0.50.22 - Live bait stack in the backpack
-
-- Spec 163 stage 2: a species shown with «В інвентар» is a bait-like stack card in the backpack (fish picture, count in the corner, one slot, no weight); opening it lists every fish with a life scale without numbers, «В садок» removes the stack. The fish stay in the keepnet.

@@ -665,7 +665,8 @@ export class GameApplication {
     this.#keepnetRefreshElapsedMs += Math.max(0, dt);
     if (this.#keepnetRefreshElapsedMs >= this.#config.liveBait?.displayTickMs) {
       this.#keepnetRefreshElapsedMs = 0;
-      if (this.#keepnetUI?.isOpen) this.#keepnetUI.refresh();
+      // A closed keepnet refreshes only its shortcut's fill stage (TK-247).
+      this.#keepnetUI?.refresh();
     }
     if (this.#liveBait) {
       this.#liveBaitCareElapsedMs += Math.max(0, dt);

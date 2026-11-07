@@ -15,10 +15,17 @@ export class InventorySelectorRenderer {
   #equipmentImage;
   #paths = [];
   #pendingArt = [];
+  // TK-247: the keepnet sector shows the keepnet's current fill stage (KeepnetFillImageResolver), not the empty one.
+  #keepnetArtwork;
+  #keepnetArt = null;
+  #artworkShown = false;
 
   // `geometries` holds one InventorySelectorGeometry per layout: `corner` for wide toolbars; toolbars up to 820
   // logical px use the configured compact one (`half`/`arc` centred, `corner`/`corner-left` in a bottom corner).
-  constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetAsset, id }) {
+  // keepnetArtwork(): the asset id of the keepnet's current fill stage.
+  constructor({ domFactory, geometries, compactLayout = "half", sections, labels, keepnetArtwork, id }) {
+    if (typeof keepnetArtwork !== "function") throw new TypeError("InventorySelectorRenderer requires keepnetArtwork");
+    this.#keepnetArtwork = keepnetArtwork;
     this.#dom = domFactory;
     this.#geometries = geometries;
     this.element = this.#dom.element("div", "inventory-selector");
@@ -44,7 +51,10 @@ export class InventorySelectorRenderer {
       const symbol = this.#dom.svgIcon(sections.iconSpriteAsset, section.icon, "inventory-selector__art");
       button.append(svg, symbol);
       if (section.id !== "equipment") {
-        this.#pendingArt.push({ symbol, asset: section.id === "backpack" ? sections.backpackAsset : keepnetAsset });
+        const keepnet = section.id === "keepnet";
+        const entry = { symbol, asset: keepnet ? null : sections.backpackAsset, keepnet };
+        if (keepnet) this.#keepnetArt = { node: symbol, asset: null };
+        this.#pendingArt.push(entry);
       } else {
         this.#equipmentFallback = symbol;
         this.#equipmentArt = this.#dom.element("span", "game-toolbar-button__art inventory-selector__art");
@@ -114,13 +124,34 @@ export class InventorySelectorRenderer {
 
   // TK-194: the backpack and keepnet sectors swap their sprite symbols for the artwork, each once its image has loaded.
   showSectionArtwork() {
-    for (const { symbol, asset } of this.#pendingArt.splice(0)) {
-      const image = this.#dom.image(asset, "");
-      image.classList.add("inventory-selector__art");
-      image.setAttribute("aria-hidden", "true");
-      image.addEventListener("load", () => symbol.replaceWith(image), { once: true });
-      image.loading = "eager";
+    this.#artworkShown = true;
+    for (const { symbol, asset, keepnet } of this.#pendingArt.splice(0)) {
+      if (keepnet) this.refreshKeepnetArtwork();
+      else this.#swapOnLoad(symbol, asset);
     }
+  }
+
+  // The keepnet sector follows the fill (on opening the fan and once the artwork shows); the shown image is replaced only
+  // when the new stage has loaded, so the sector never goes blank.
+  refreshKeepnetArtwork() {
+    const target = this.#keepnetArt;
+    if (!this.#artworkShown || !target) return;
+    const asset = this.#keepnetArtwork();
+    if (!asset || asset === target.asset) return;
+    target.asset = asset;
+    this.#swapOnLoad(null, asset, (image) => {
+      if (target.asset !== asset) return;
+      target.node.replaceWith(image);
+      target.node = image;
+    });
+  }
+
+  #swapOnLoad(symbol, asset, place = (image) => symbol.replaceWith(image)) {
+    const image = this.#dom.image(asset, "");
+    image.classList.add("inventory-selector__art");
+    image.setAttribute("aria-hidden", "true");
+    image.addEventListener("load", () => place(image), { once: true });
+    image.loading = "eager";
   }
 
   // thumbnail: the rod skin's { asset, visibleHeight, focusX, anchor } or null.
@@ -153,6 +184,7 @@ export class InventorySelectorRenderer {
     open = Boolean(open && this.#enabled);
     if (this.#open === open) return;
     this.#open = open;
+    if (open) this.refreshKeepnetArtwork();
     this.element.classList.toggle("inventory-selector--open", open);
     this.central.setAttribute("aria-expanded", String(open));
     this.group.setAttribute("aria-hidden", String(!open));

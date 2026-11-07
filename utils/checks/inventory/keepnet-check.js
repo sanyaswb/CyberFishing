@@ -127,6 +127,15 @@ async function main() {
   artworkState.keepnetCapacity = 0;
   artworkView.refresh();
   assert(artworkImages.every((image) => image.src === assets.pathOf(artwork.resolve(100))), "zero capacity follows the full meter");
+  // TK-247: a closed keepnet's shortcut button follows the fill on the display tick's refresh.
+  artworkState.keepnetCapacity = source.keepnetCapacity; artworkState.keepnetReservedCount = 0;
+  artworkState.keepnet = [];
+  artworkView.setVisible(false);
+  artworkView.refresh();
+  assert.equal(buttonArt.src, assets.pathOf(artwork.resolve(0)), "a closed, emptied keepnet shows its first stage");
+  artworkState.keepnet = Array.from({ length: 70 }, (_, index) => ({ ...source.keepnet[0], id: `closed-${index}` }));
+  artworkView.refresh();
+  assert.equal(buttonArt.src, assets.pathOf(artwork.resolve(70)), "a closed keepnet's button shows its fill stage");
   artworkView.dispose();
   assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 4 }).capacityPercent, 100);
   assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 3 }).capacityPercent, 100,

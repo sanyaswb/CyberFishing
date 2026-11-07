@@ -126,7 +126,7 @@ function scenario({ width = 320, size = 1, openSize = size, hover = false, reduc
     subscribe: listener => { subscriptions.add(listener); return () => subscriptions.delete(listener); } };
   const view = new InventorySelectorRenderer({ domFactory: new InventoryDomFactory(doc, { assets }), geometries,
     compactLayout: compact ? layout : "half",
-    sections: INVENTORY_SECTIONS, labels: INVENTORY_SELECTOR_LABELS, keepnetAsset: "items.keepnet.keepnet--0", id: "test-sections" });
+    sections: INVENTORY_SECTIONS, labels: INVENTORY_SELECTOR_LABELS, keepnetArtwork: () => "items.keepnet.keepnet--0", id: "test-sections" });
   view.setSizeScales(INVENTORY_SELECTOR_CONFIG.sizeScales[size], INVENTORY_SELECTOR_CONFIG.sizeScales[openSize]);
   doc.body.appendChild(view.element);
   // The fan centre stays at logical (300, 500); the root box lies around it by the layout's origin share.
@@ -408,12 +408,14 @@ async function checkComposition() {
   const inventory = { editor, rootNode: s.doc.createElement("div"),
     setShortcutVisible: value => { classic = value; }, onVisibilityChange: fn => { listener = fn; return () => { listener = null; }; },
     openSection: id => { s.selected.push(id); listener(true); } };
+  let keepnetFill = 50;
   const binding = composeInventorySelector({ documentRef: s.doc, windowRef: s.doc.defaultView, assets,
     uiSurface: s.surface, mountNode: s.doc.body, inventoryUI: inventory,
     keepnetUI: { setShortcutVisible: value => { keepnet = value; } }, config,
     equipmentSource: { getEquipped: () => equipped,
       onInventoryChanged: fn => { equipmentListener = fn; return () => { equipmentListener = null; }; } },
     preloadArtwork: () => new Promise(resolve => { finishSelector = resolve; }),
+    keepnetPercent: () => keepnetFill,
     requestArtwork: () => { artworkLoads++; return new Promise(resolve => { finishArtwork = resolve; }); },
     logger: { warn: assert.fail } });
   binding.view.element.getBoundingClientRect = () => ({ left: 218.4, top: 418.4, width: 81.6, height: 81.6 });
@@ -446,7 +448,21 @@ async function checkComposition() {
   for (const image of createdImages) image.fire("load");
   assert.deepEqual(binding.view.buttons.slice(1).map(button => button.children[1]), createdImages, "each image takes its symbol's place");
   assert.deepEqual(createdImages.map(image => image.getAttribute("src") ?? image.src), [
-    assets.pathOf(INVENTORY_SECTIONS.backpackAsset), assets.pathOf("items.keepnet.keepnet--0")], "the art resolves through the registry");
+    assets.pathOf(INVENTORY_SECTIONS.backpackAsset), assets.pathOf("items.keepnet.keepnet--60")],
+    "the art resolves through the registry; the keepnet sector shows its fill stage (TK-247: 50 % -> stage 60)");
+  // TK-247: opening the fan follows the fill; the shown stage stays until the next one has loaded.
+  const shownKeepnet = binding.view.buttons[2].children[1];
+  keepnetFill = 95;
+  binding.view.setExpanded(true);
+  const nextKeepnet = createdImages.at(-1);
+  assert.equal(createdImages.length, 3, "a fuller keepnet loads its stage when the fan opens");
+  assert.equal(binding.view.buttons[2].children[1], shownKeepnet, "the shown stage stays until the next has loaded");
+  nextKeepnet.fire("load");
+  assert.equal(binding.view.buttons[2].children[1], nextKeepnet);
+  assert.equal(nextKeepnet.getAttribute("src") ?? nextKeepnet.src, assets.pathOf("items.keepnet.keepnet--100"));
+  binding.view.setExpanded(false); binding.view.setExpanded(true);
+  assert.equal(createdImages.length, 3, "an unchanged fill creates no image");
+  binding.view.setExpanded(false);
   const fallback = binding.view.buttons[0].children[1], art = binding.view.buttons[0].children[2];
   assert.equal(fallback.getAttribute("hidden"), null); assert(art.hidden);
   equipped.rod = { skin: { thumbnail: { asset: "items.rods.bamboo-rod-ecip-v1", visibleHeight: 1, focusX: 0.5 } } };
