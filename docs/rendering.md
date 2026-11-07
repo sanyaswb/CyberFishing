@@ -86,7 +86,8 @@ overdraw and texture memory, not from game code.
 19. **Texture memory:** an RGBA texture costs width × height × 4 bytes, plus a third more with mipmaps. A 2048² page
     is 16 MB with mipmaps. Keep the scene's live textures within about 150 MB on phones, load per location or screen,
     and release when it closes. Record the total of a new location or skeleton in its spec.
-20. **Atlas pages:** at most 2048 px per side (4096 only with a measured reason). Size the art for its largest
+20. **Atlas pages:** at most 2048 px per side (4096 only with a measured reason; owner's exception, TK-250: the rod's
+    scene picture and Spine page are 3840 ± 10 px long, 147×3844 = 3.0 MB with mipmaps). Size the art for its largest
     on-screen use × the pixel-ratio cap (rule 6). Mipmaps on for anything drawn smaller than its texture.
     Premultiplied alpha exported (`pma: true`) and used as exported.
 21. **Spine performance:** prefer region attachments to meshes, and weighted meshes only where deformation is

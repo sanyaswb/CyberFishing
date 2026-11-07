@@ -7,8 +7,8 @@
 //   otherwise it is a new asset with a new id, and the vanished one is an error (referenced) or needs prune.
 // A Spine export (name.json + name.atlas, its textures named in the atlas) is one asset of kind "spine".
 // Folders (owner, TK-221): every file of one item lives in its type's folder; a variant is a suffix of the name, never a
-// folder of its own: float-day.webp, float-day--low.webp (its low copy), float-day--scene.webp (drawn in the scene),
-// bamboo-rod-v1--spine.json/.atlas/.webp (its Spine export).
+// folder of its own: float-day.webp, float-day--low.webp (its low copy), float-day--scene.webp (drawn in the scene).
+// Spine exports (owner, TK-250) lie together in assets/animations/<type>/: animations/rods/bamboo-rod-v1.json/.atlas/.webp.
 
 const MEDIA_KINDS = Object.freeze({
   webp: "image", png: "image", jpg: "image", jpeg: "image", svg: "image", avif: "image", gif: "image",
@@ -19,8 +19,10 @@ const ASSETS_PREFIX = "assets/";
 // Generated low-quality copies (spec 157 R17): derived files beside their image, never assets of their own.
 const LOW_COPY = /--low\.[^./]+$/u;
 const RASTER = new Set(["webp", "png", "jpg", "jpeg", "avif", "gif"]);
-// Name suffixes of a separately rendered variant; each adds the tags "<variant>" and "<folder>-<variant>".
-const VARIANT = /--(scene|spine)$/u;
+// Name suffix of a separately rendered variant; it adds the tags "<variant>" and "<folder>-<variant>".
+const VARIANT = /--(scene)$/u;
+// The one folder of Spine exports (owner, TK-250).
+export const ANIMATIONS_PREFIX = "assets/animations/";
 
 // A generated low copy (name--low.webp).
 export function isLowCopy(path) {

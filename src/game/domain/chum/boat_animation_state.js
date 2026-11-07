@@ -7,7 +7,7 @@ export const BOAT_ANIMATION_CLIPS = Object.freeze({
   OPEN_SECTION_3: "boat3--open-section-3",
 });
 
-// The clips' lengths in the export (assets/items/boats/boat-lvl--3--spine.json); the boat's timers use them, and the
+// The clips' lengths in the export (assets/animations/boats/boat-lvl--3.json); the boat's timers use them, and the
 // bait-boat-spine-animation check compares them with the export (TK-160).
 export const BOAT_ANIMATION_DURATIONS = Object.freeze({
   [BOAT_ANIMATION_CLIPS.IMMERSION]: 1.25,

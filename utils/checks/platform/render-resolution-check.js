@@ -163,19 +163,23 @@ async function checkFishArt() {
 const ITEM_ART_MAX_SIDE = 1024;
 const KEEPNET_ART_MAX_SIDE = 768;
 const ITEM_ART_MAX_BYTES = 180 * 1024;
+// Owner, TK-250: the rod's scene picture (and its low copy) and its Spine texture page are drawn along the whole rod,
+// 3840 ± 10 px on the long side.
+const ROD_ART_MAX_SIDE = 3840 + 10;
+const ROD_ART = /^assets\/(?:items\/rods\/[^/]+--scene(?:--low)?|animations\/rods\/[^/]+)\.webp$/u;
 
 async function checkItemArt() {
   const sharp = require(require.resolve("sharp", { paths: [ROOT_DIR] }));
-  const files = spawnSync("git", ["ls-files", "assets/items"], { cwd: ROOT_DIR, encoding: "utf8" }).stdout
-    .split(/\r?\n/u).filter((file) => /\.(?:webp|png|jpe?g|avif)$/u.test(file))
-    // A Spine export's texture page beside its item (TK-221) follows the Spine texture rules, not the preview limit.
-    .filter((file) => !/--spine\.[^./]+$/u.test(file));
+  const files = spawnSync("git", ["ls-files", "assets/items", "assets/animations/rods"], { cwd: ROOT_DIR, encoding: "utf8" }).stdout
+    .split(/\r?\n/u).filter((file) => /\.(?:webp|png|jpe?g|avif)$/u.test(file));
   assert(files.length > 20, "item art is tracked");
+  assert(files.some((file) => file.startsWith("assets/animations/rods/")), "the rod's Spine page is measured");
   const offenders = [];
   for (const file of files) {
     const absolute = path.join(ROOT_DIR, file);
     const { width, height } = await sharp(absolute).metadata();
-    const limit = file.startsWith("assets/items/keepnet/") ? KEEPNET_ART_MAX_SIDE : ITEM_ART_MAX_SIDE;
+    const limit = ROD_ART.test(file) ? ROD_ART_MAX_SIDE
+      : file.startsWith("assets/items/keepnet/") ? KEEPNET_ART_MAX_SIDE : ITEM_ART_MAX_SIDE;
     if (Math.max(width, height) > limit) offenders.push(`${file} is ${width}x${height} (at most ${limit} px)`);
     const bytes = fs.statSync(absolute).size;
     if (bytes > ITEM_ART_MAX_BYTES) offenders.push(`${file} is ${Math.round(bytes / 1024)} KB (at most 180 KB)`);

@@ -24,7 +24,8 @@ export const ASSET_LOAD_PLAN = {
         { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low",
           assets: [{ source: "location.background.current" }, { source: "location.depthMap" }] },
         { id: "scene", label: "Поплавок у сцені", priority: 1, assets: [{ tag: "floats-scene" }] },
-        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 1, assets: [{ tag: "rods-scene" }] },
+        // TK-250: the owner's rod picture is 3840 px (149 KB); the first frame waits only for its low copy.
+        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 1, readyOn: "low", assets: [{ tag: "rods-scene" }] },
         { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 1, assets: [{ source: "inventory.slotIcons" }] },
       ],
     },
@@ -57,7 +58,7 @@ export const ASSET_LOAD_PLAN = {
             { id: "items.boats.boat-lvl--3_bait" }, { id: "items.boats.boat-lvl--3_no-bait" }, { id: "items.radio.radio-receiver" },
             { id: "items.rods.bamboo-rod-ecip-v1" }, { id: "items.aquarium-feed-simple" }, { id: "items.aquarium-feed-good" },
             { id: "items.aquarium-feed-premium" }] },
-        { id: "lazy-spine", label: "Анімації Spine", priority: 6, assets: [{ tag: "spine" }] },
+        { id: "lazy-spine", label: "Анімації Spine", priority: 6, assets: [{ tag: "animations" }] },
         { id: "lazy-room", label: "Кімната рибалки", priority: 7, assets: [{ tag: "house" }] },
         { id: "lazy-rest", label: "Решта зображень", priority: 8,
           assets: [{ tag: "fish-display" }, { tag: "inventory" }, { id: "ui.status-icons" }] },

@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 async function checkBoatStateFlow() {
   const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
   const boat = new BaitBoat(100, 200, {
-    skin: { animation: { asset: "items.boats.boat-lvl--3--spine" } },
+    skin: { animation: { asset: "animations.boats.boat-lvl--3" } },
     effectiveStats: { sections: 3, statsByLevel: { 1: { speedPxPerSec: 100 } } },
   });
 
@@ -47,7 +47,7 @@ async function checkBoatStateFlow() {
 
   // Partially loaded boat starting with section 1 pre-dropped (TK-149)
   const partialBoat = new BaitBoat(100, 200, {
-    skin: { animation: { asset: "items.boats.boat-lvl--3--spine" } },
+    skin: { animation: { asset: "animations.boats.boat-lvl--3" } },
     effectiveStats: { sections: 3, initialDroppedSections: [1], statsByLevel: { 1: { speedPxPerSec: 100 } } },
   });
   assert.deepEqual(partialBoat.droppedSections, [1], "partially loaded boat starts with pre-emptied sections");
@@ -125,7 +125,7 @@ async function checkAnimationController() {
   });
 
   controller.setDescriptor({
-    asset: "items.boats.boat-lvl--3--spine",
+    asset: "animations.boats.boat-lvl--3",
     skin: "skin_boat-lvl--3",
   });
 
@@ -223,7 +223,7 @@ async function checkAnimationController() {
   // 6. TK-149 needs a transparent wake in the setup pose and door clips that leave the wake alone; the export has both,
   // so the controller no longer rewrites the skeleton (TK-160).
   const exported = JSON.parse(require("node:fs").readFileSync(
-    require("node:path").join(__dirname, "../../../assets/items/boats/boat-lvl--3--spine.json"), "utf8"));
+    require("node:path").join(__dirname, "../../../assets/animations/boats/boat-lvl--3.json"), "utf8"));
   for (const clip of ["boat3--open-section-1", "boat3--open-section-2", "boat3--open-section-3"]) {
     assert.equal(exported.animations[clip].slots?.["boats-wave--1"], undefined, clip + " leaves the wake alone");
   }
@@ -253,7 +253,7 @@ async function checkBoatRenderPipeline() {
     angle: 0,
     config: {
       skin: {
-        animation: { asset: "items.boats.boat-lvl--3--spine" },
+        animation: { asset: "animations.boats.boat-lvl--3" },
       },
     },
     powerRatio: 0.9,
@@ -443,8 +443,8 @@ async function checkRealSpineSceneSlotVisibility() {
   const spine = require("@esotericsoftware/spine-webgl");
   const { SpineScene } = await import("../../../src/platform/browser/animation/spine_scene.js");
 
-  const atlasPath = path.resolve(__dirname, "../../../assets/items/boats/boat-lvl--3--spine.atlas");
-  const jsonPath = path.resolve(__dirname, "../../../assets/items/boats/boat-lvl--3--spine.json");
+  const atlasPath = path.resolve(__dirname, "../../../assets/animations/boats/boat-lvl--3.atlas");
+  const jsonPath = path.resolve(__dirname, "../../../assets/animations/boats/boat-lvl--3.json");
 
   const fakeSurface = {
     width: 200,
@@ -463,7 +463,7 @@ async function checkRealSpineSceneSlotVisibility() {
     atlasText: fs.readFileSync(atlasPath, "utf8"),
     skeleton: JSON.parse(fs.readFileSync(jsonPath, "utf8")),
     skin: "skin_boat-lvl--3",
-    pages: new Map([["boat-lvl--3--spine.webp", {}]]),
+    pages: new Map([["boat-lvl--3.webp", {}]]),
   };
 
   const { scene, reason, error } = SpineScene.create({
@@ -526,7 +526,7 @@ async function checkClipLengthsAndStates() {
   const path = require("node:path");
   const { BOAT_ANIMATION_DURATIONS } = await import("../../../src/game/domain/chum/boat_animation_state.js");
   const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
-  const skeleton = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../assets/items/boats/boat-lvl--3--spine.json"),
+  const skeleton = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../assets/animations/boats/boat-lvl--3.json"),
     "utf8"));
   const lastKey = (node) => Array.isArray(node)
     ? Math.max(0, ...node.map((key) => (typeof key?.time === "number" ? key.time : lastKey(key))))

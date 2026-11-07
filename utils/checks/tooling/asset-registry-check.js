@@ -85,9 +85,10 @@ const ROOT = path.resolve(__dirname, "../../..");
   assert.deepEqual([withLow.get("assets/a/x.webp").width, withLow.get("assets/a/x.webp").height], [800, 400]);
 
   // TK-221: one folder per item type; a variant is a name suffix that adds its own tags. A moved file's tags follow its
-  // folder unless the owner edited them.
+  // folder unless the owner edited them. TK-250: Spine exports lie in assets/animations/<type>/, tagged by those folders.
   assert.deepEqual(tagsOf("assets/items/floats/float-day--scene.webp"), ["items", "floats", "scene", "floats-scene"]);
-  assert.deepEqual(tagsOf("assets/items/rods/bamboo-rod-v1--spine.json"), ["items", "rods", "spine", "rods-spine"]);
+  assert.deepEqual(tagsOf("assets/animations/rods/bamboo-rod-v1.json"), ["animations", "rods"]);
+  assert.deepEqual(tagsOf("assets/items/rods/bamboo-rod-v1--spine.json"), ["items", "rods"], "--spine is no variant (TK-250)");
   assert.deepEqual(tagsOf("assets/items/keepnet/keepnet--20.webp"), ["items", "keepnet"], "a stage number is no variant");
   const placed = syncAssetRegistry({ assets: collectAssets([file("assets/items/floats-scene/float.webp", "f1"),
     file("assets/items/rods-scene/rod.webp", "r1")]) }).registry;
@@ -97,15 +98,23 @@ const ROOT = path.resolve(__dirname, "../../..");
   assert.deepEqual(regrouped["items.floats-scene.float"].tags, ["items", "floats", "scene", "floats-scene"], "folder tags follow the move");
   assert.deepEqual(regrouped["items.rods-scene.rod"].tags, ["owner-tag"], "the owner's tags stay");
   const folders = spawnSync("git", ["ls-files", "assets"], { cwd: ROOT }).stdout.toString("utf8").split("\n");
-  assert.deepEqual(folders.filter((tracked) => /^assets\/(?:low-copies|animations)\/|-scene\//u.test(tracked)), [],
-    "no clone folders: low copies, scene art and Spine exports lie beside the item (TK-221)");
+  assert.deepEqual(folders.filter((tracked) => /^assets\/low-copies\/|-scene\//u.test(tracked)), [],
+    "no clone folders: low copies and scene art lie beside the item (TK-221)");
 
   // The repository's registry matches its tracked assets.
   const check = spawnSync(process.execPath, [path.join(ROOT, "utils/assets-sync.js"), "--check"], { cwd: ROOT });
   assert.equal(check.status, 0, `npm run assets:sync -- --check: ${check.stderr.toString("utf8").trim()}`);
   const { ASSET_REGISTRY } = await import(pathToFileURL(path.join(ROOT, "src/game/config/generated/asset_registry.js")).href);
   assert(Object.keys(ASSET_REGISTRY).length >= 100 && Object.isFrozen(ASSET_REGISTRY));
-  assert.equal(ASSET_REGISTRY["items.rods.bamboo-rod-v1--spine"].kind, "spine", "the rod's Spine export is one asset");
+  assert.equal(ASSET_REGISTRY["animations.rods.bamboo-rod-v1"].kind, "spine", "the rod's Spine export is one asset");
+  assert.equal(ASSET_REGISTRY["animations.boats.boat-lvl--3"].kind, "spine", "the boat's Spine export is one asset");
+  // TK-250: every Spine export lies in assets/animations/<type>/, and that folder holds Spine exports only.
+  const spineFiles = new Set(Object.values(ASSET_REGISTRY).filter((entry) => entry.kind === "spine")
+    .flatMap((entry) => [entry.json, entry.atlas, ...entry.textures]));
+  assert.deepEqual([...spineFiles].filter((tracked) => !/^assets\/animations\/[^/]+\/[^/]+$/u.test(tracked)), [],
+    "Spine exports lie in assets/animations/<type>/ (TK-250)");
+  assert.deepEqual(folders.filter((tracked) => tracked.startsWith("assets/animations/") && !spineFiles.has(tracked)), [],
+    "assets/animations/ holds Spine exports only (TK-250)");
   const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.low);
   assert(lows.length >= 70 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
     "every raster image has a current low copy and its size");

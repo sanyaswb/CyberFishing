@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.36 - Spine animations in one folder
+
+- TK-250: the rod and bait boat Spine exports live in assets/animations/<type>/; the bamboo rod has the owner's new 3840 px art, and the first frame shows its low copy until the full picture arrives.
+
 ## v0.50.35 - Equipped chum shows the mix icon
 
 - TK-249.1: an equipped item's cell (the tackle's chum cell, boat bunkers, editor tabs, attachment badges) shows its equipped icon, as the switcher does; the backpack card and the editor preview keep the whole pack picture.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.27 - Live baits in the backpack keep their place
 
 - TK-244: once a species is sent to the backpack, every keepnet card of it loses both the backpack button and «Відпустити» (its live baits are all in the backpack, and the service refuses releasing them); «В садок» in the inventory brings both back.
-
-## v0.50.26 - Live bait card: release and backpack
-
-- TK-243: every live bait card ends with «Відпустити» across the row and a square backpack button, which is available before the live bait is chosen (a species already in the backpack only says so); the chosen live bait still cannot be released.

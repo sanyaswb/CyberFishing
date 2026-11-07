@@ -1,4 +1,13 @@
 ├── assets
+│  ├── animations
+│  │  ├── boats
+│  │  │  ├── boat-lvl--3.atlas
+│  │  │  ├── boat-lvl--3.json
+│  │  │  └── boat-lvl--3.webp
+│  │  └── rods
+│  │     ├── bamboo-rod-v1.atlas
+│  │     ├── bamboo-rod-v1.json
+│  │     └── bamboo-rod-v1.webp
 │  ├── audio
 │  │  ├── bell_ring.mp3
 │  │  └── radio
@@ -143,9 +152,6 @@
 │  │  │  ├── battery-volt--4--low.webp
 │  │  │  └── battery-volt--4.webp
 │  │  ├── boats
-│  │  │  ├── boat-lvl--3--spine.atlas
-│  │  │  ├── boat-lvl--3--spine.json
-│  │  │  ├── boat-lvl--3--spine.webp
 │  │  │  ├── boat-lvl--3_bait--low.webp
 │  │  │  ├── boat-lvl--3_bait.webp
 │  │  │  ├── boat-lvl--3_no-bait--low.webp
@@ -197,10 +203,7 @@
 │  │     ├── bamboo-rod-ecip-v1--low.webp
 │  │     ├── bamboo-rod-ecip-v1.webp
 │  │     ├── bamboo-rod-v1--scene--low.webp
-│  │     ├── bamboo-rod-v1--scene.webp
-│  │     ├── bamboo-rod-v1--spine.atlas
-│  │     ├── bamboo-rod-v1--spine.json
-│  │     └── bamboo-rod-v1--spine.webp
+│  │     └── bamboo-rod-v1--scene.webp
 │  ├── locations
 │  │  └── test
 │  │     ├── bg_test--day--low.webp

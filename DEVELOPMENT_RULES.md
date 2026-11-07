@@ -110,9 +110,13 @@ optimization is part of every change, never an afterthought:
   converted with `utils/convert-images.js`.
 - **One folder per item type, variants by name suffix** (owner, TK-221). Every file of one item lies in its type's folder
   (`assets/items/floats/`), never in a clone folder per use or quality: `float-day.webp` normal, `float-day--low.webp` its
-  generated low copy, `float-day--scene.webp` drawn separately in the scene, `bamboo-rod-v1--spine.json/.atlas/.webp` its
-  Spine export (the atlas names its texture). The suffixes `--scene` and `--spine` add the registry tags `scene`/`spine`
-  and `<folder>-scene`/`<folder>-spine`, which the load plan uses.
+  generated low copy, `float-day--scene.webp` drawn separately in the scene. The suffix `--scene` adds the registry tags
+  `scene` and `<folder>-scene`, which the load plan uses.
+- **Spine exports in `assets/animations/<type>/`** (owner, TK-250). Every Spine export lies there, named after the
+  animation: `assets/animations/rods/bamboo-rod-v1.json/.atlas/.webp`, `assets/animations/boats/boat-lvl--3.*` (the atlas
+  names its texture); the folder holds Spine exports only, its id is `animations.<type>.<name>` and its folder tag
+  `animations` puts it in the load plan's Spine group. An item's static pictures (`--scene`, inventory art) stay in its
+  `assets/items/<type>/` folder. Check `asset-registry`.
 - **Progressive images.** Every raster image has a generated low-quality copy: when the player opens content that has
   not loaded, it gets priority 1, the low copy shows first (a loader only if it is late), and the full image replaces it
   instantly once decoded, in the same box (no layout jump).

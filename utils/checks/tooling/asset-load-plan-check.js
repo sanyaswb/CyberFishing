@@ -207,12 +207,13 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   // the page's markup requests (measure:startup assetsBeforePlay). Since D4b the current phase starts from its low copy
   // (readyOn "low"); the depth map has none and loads whole.
   const lowGroups = new Set(production.layer("layer-one").groups.filter((group) => group.readyOn === "low").map((group) => group.id));
-  assert.deepEqual([...lowGroups], ["location"], "the current background phase is ready on its low copy (owner, R17)");
+  assert.deepEqual([...lowGroups], ["location", "rod-start"],
+    "the current background phase (owner, R17) and the 3840 px rod picture (TK-250) are ready on their low copies");
   assert.deepEqual(first["rod-start"], ["items.rods.bamboo-rod-v1--scene"], "the rod's picture before its export (TK-181)");
   const startFiles = Object.entries(first).flatMap(([groupId, ids]) => ids.map((id) =>
     (lowGroups.has(groupId) && assets.lowPathOf(id)) || assets.pathOf(id))).sort();
   assert.deepEqual(startFiles, ["assets/items/floats/float-day-glow--scene.webp", "assets/items/floats/float-day--scene.webp",
-    "assets/items/rods/bamboo-rod-v1--scene.webp",
+    "assets/items/rods/bamboo-rod-v1--scene--low.webp",
     "assets/locations/test/bg_test--day--low.webp", "assets/locations/test/test-depth.webp",
     ...["bait", "battery", "boat", "chum", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod",
       "weight"].map((name) => `assets/ui/inventory/${name}.svg`)].sort(), "layer-one is the pre-D start plus the rod's start picture (TK-181), without tackle.svg (TK-238)");

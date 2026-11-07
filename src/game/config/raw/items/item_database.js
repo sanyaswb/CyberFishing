@@ -185,13 +185,13 @@ export const ITEM_DB = {
         // Spine rod in the scene (spec 099): skin of the export (the 2026-10-17 re-export has "default"); the line
         // hangs from the line-tip bone.
         animation: {
-          asset: "items.rods.bamboo-rod-v1--spine",
+          asset: "animations.rods.bamboo-rod-v1",
           skin: "default",
           linePoint: "line-tip",
           // TK-181: drawn until the export arrives, in the export's setup pose (the spine-rod check compares them).
           startPicture: {
             asset: "items.rods.bamboo-rod-v1--scene",
-            bounds: { x: -6.404347, y: -2.046038, width: 16.769104, height: 468.8618 },
+            bounds: { x: -6.404347, y: -2.046427, width: 16.768637, height: 468.8626 },
             linePoint: { x: 1.1598823877317312, y: 466.09938640304864 },
           },
         },
@@ -1194,7 +1194,7 @@ export const ITEM_DB = {
           baitAsset: "items.boats.boat-lvl--3_bait",
         },
         animation: {
-          asset: "items.boats.boat-lvl--3--spine",
+          asset: "animations.boats.boat-lvl--3",
           skin: "skin_boat-lvl--3",
         },
       },
