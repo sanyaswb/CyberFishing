@@ -35,9 +35,11 @@ async function checkFishContent(schema) {
   const { FishPhysicsProfile } = await importSource("src/game/domain/fish/fish_physics_profile.js");
   const fishes = structuredClone(FISH_DB);
   const index = fishes.findIndex((fish) => fish.id === "crucian_stalker");
-  const config = { debug: { fixedCatch: { enabled: false, fishId: "crucian_stalker" } } };
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const config = { debug: { fixedCatch: { enabled: false, fishId: "crucian_stalker" } }, stamina: structuredClone(CONFIG.stamina) };
   const edits = [];
-  const content = new ActiveFishWindowContent({ config, fishes, schema, updateConfig: (editPath, value) => edits.push([editPath, value]) });
+  const content = new ActiveFishWindowContent({ config, baseConfig: structuredClone(config), fishes, schema,
+    updateConfig: (editPath, value) => edits.push([editPath, value]) });
 
   assert.equal(content.build(null).key, "none", "without a fish and Fixed Catch the window says so");
   assert.match(content.build(null).note, /Fixed Catch/u);
@@ -46,8 +48,19 @@ async function checkFishContent(schema) {
     physics: FishPhysicsProfile.toRuntimeConfig({ ...fishes[index].physics, levelBasePower: 1.4 }) };
   const form = content.build({ hookedFish: hooked, fishState: "dash", fishActiveKg: 1.234, fishOppositionKg: 0.5 });
   const titles = form.sections.map((section) => section.title);
-  assert.deepEqual(titles, ["Рівень і вага", "Сила", "Витривалість", "Рух", "Поведінка"], "the fish's sections");
-  assert.deepEqual(form.sections.at(-1).sections.map((section) => section.title), ["idle", "rest", "swim", "dash", "lastDash"],
+  assert.deepEqual(titles, ["Рівень і вага", "Сила", "Витривалість", "Рух", "Поведінка",
+    "Правила витривалості (усі риби, CONFIG.stamina)"], "the fish's sections");
+  // TK-254.1: every stamina value the fight reads, with its effective default when the species has none.
+  const staminaRows = form.sections[2].rows.map((row) => `${row.label}=${row.value}`);
+  assert.deepEqual(staminaRows, ["baseStamina=1000", "staminaRatioFromEndurance=0.1", "staminaBossMultiplier=1.5",
+    "minStaminaActivityMultiplier=0.75", "exhaustedSpeedRatio=0.25"], "the stamina section has every stamina value");
+  const drain = rowAt(form, "CONFIG.stamina.mechanics.drain.baseDrainPerSecond");
+  assert.deepEqual([drain.value, drain.base], [100, 100], "the stamina rules of every fight are editable");
+  assert.equal(rowAt(form, "CONFIG.stamina.mechanics.drain.enabled").kind, "boolean");
+  const live = content.build({ hookedFish: hooked, fishConditionPhase: "stamina", currentStamina: 75, fishConditionMaxStamina: 150,
+    currentExhaustion: 1500, fishConditionMaxEndurance: 1500 }).readouts.map((readout) => `${readout.label}=${readout.value}`);
+  assert.ok(live.includes("стаміна=75 / 150 (50%)") && live.includes("фаза=stamina"), "stamina is read live");
+  assert.deepEqual(form.sections[4].sections.map((section) => section.title), ["idle", "rest", "swim", "dash", "lastDash"],
     "one sub-section per behaviour state");
   const dash = rowAt(form, "HOOKED_FISH.physics.behaviorProfile.behaviors.dash.forceMultiplier");
   assert.deepEqual([dash.kind, dash.value, dash.base], ["number", 1.2, 1.2], "a behaviour number with its species base");
@@ -76,6 +89,37 @@ async function checkFishContent(schema) {
   const speciesRow = rowAt(species, `FISH_DB.${index}.physics.staminaProfile.baseStamina`);
   assert.deepEqual([speciesRow.value, speciesRow.base], [1000, 1000], "species rows edit FISH_DB and remember the start value");
   assert.deepEqual(species.actions, []);
+}
+
+// TK-254.1: a balance edit of the hooked fish reaches its stamina and endurance limits in the fight; the current values
+// keep their share, the phase stays.
+async function checkStaminaLimits() {
+  const { FishCondition } = await importSource("src/game/domain/fish/fish_condition.js");
+  const { FightService } = await importSource("src/game/application/fishing/fight_service.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const physics = (baseStamina) => ({ staminaProfile: { baseStamina } });
+  const condition = new FishCondition(3, 0.8, CONFIG.stamina.fish, physics(1000), {});
+  assert.equal(condition.maxEndurance, 1000 + 800 * 3);
+  assert.equal(condition.maxStamina, 340);
+  condition.applyStaminaDamage(170);
+  condition.updateLimits(3, 0.8, CONFIG.stamina.fish, { staminaProfile: { baseStamina: 2000, staminaRatioFromEndurance: 0.5 } }, {});
+  assert.deepEqual([condition.maxStamina, condition.currentStamina, condition.phase], [2200, 1100, "stamina"],
+    "new limits, the same share of stamina");
+
+  const stamina = structuredClone(CONFIG.stamina);
+  const fishCondition = new FishCondition(1, 1, stamina.fish, physics(500), {});
+  const session = { fishCondition, fish: { updateRuntimeStats() {} }, tensionMeter: {}, fightPhysicsSystem: {} };
+  const service = new FightService({ config: { stamina, fightPhysicsConfig: null }, rng: {}, devFlags: { isEnabled: () => false },
+    fightSessionFactory: { create: () => session }, forceService: {}, catchResolver: {} });
+  const fishData = { level: 1, weight: 1, physics: physics(500) };
+  service.startFight(fishData, {});
+  assert.equal(fishCondition.maxEndurance, 1500);
+  fishData.physics = physics(2500);
+  service.syncFishRuntime(fishData);
+  assert.equal(fishCondition.maxEndurance, 3500, "a stamina edit of the hooked fish changes its endurance in the fight");
+  stamina.fish.staminaRatioFromEndurance = 0.2;
+  service.refreshStaminaLimits();
+  assert.equal(fishCondition.maxStamina, 700, "an edit of CONFIG.stamina.fish reaches the fish being fought");
 }
 
 async function checkRodContent(schema) {
@@ -216,6 +260,7 @@ async function checkWindows() {
   const schema = new FightBalanceParameterSchema();
   await checkSchema(schema);
   await checkFishContent(schema);
+  await checkStaminaLimits();
   await checkRodContent(schema);
   await checkPanel();
   await checkWindows();

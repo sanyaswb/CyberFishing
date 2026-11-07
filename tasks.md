@@ -88,6 +88,16 @@
       нові вікна) → [spec 168](specs/168-overlay-fight-balance-windows/spec.md). Власник: «Yes, as recommended» (Q1–Q5).
       Виконано: два окремі вікна з повзунками, правка через DevTools.updateConfig, «Записати у вид», вид Fixed Catch поза
       боєм, вудилище (предмет + rodHold/rodStroke/rodControl); перевірка `overlay-balance-windows`.
+  - [x] **TK-254.1 — стаміна не змінювалась; більше параметрів стаміни (власник, 2026-11-08), v0.50.44.** «стаміна не працює
+        не змінюється і додай більше параметрів для стаміни це важливо». Знайдено: межі стаміни й витривалості риби
+        (`FishCondition`) рахуються один раз при підсіканні, а правка риби (`FightService.syncFishRuntime`) оновлювала лише
+        `Fish` (силу, поведінку) — baseStamina, staminaRatioFromEndurance, staminaBossMultiplier, вага й рівень на смугу
+        стаміни в бою не діяли; у вікні були лише ключі, що є в конфігу виду (у карася — тільки baseStamina). Зміна:
+        `FishCondition.updateLimits` (нові межі, поточні стаміна й витривалість зберігають частку, фаза та сама),
+        `FightService.refreshStaminaLimits` після правки риби й правки `CONFIG.stamina.fish`; у вікні ACTIVE FISH —
+        усі значення staminaProfile, які читає бій (з ефективним значенням за замовчуванням), наживо фаза / стаміна /
+        витривалість, розділ «Правила витривалості» (`CONFIG.stamina`: fish, drain, regen, enduranceDrain,
+        enduranceRecovery, powerDebuff, mastery, debuffs, pressure…). Перевірка `overlay-balance-windows` падає на старому коді.
 - [ ] **Перевірка власника TK-254 (v0.50.43):** `dev.html` → DevTools → OVERLAY → OVERLAY MODULES → «Вікна балансу»: увімкнути
       «🐟 ACTIVE FISH» і «🎣 ACTIVE ROD» — два окремі вікна (перетягування довгим натиском, − / +, позиція зберігається). До
       клювання ACTIVE FISH показує вид Fixed Catch; у бою — спійману рибу: повзунки (сила, витривалість, рух, стани поведінки)

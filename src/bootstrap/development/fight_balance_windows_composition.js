@@ -21,7 +21,7 @@ export function composeFightBalanceWindows({ documentTarget, windowTarget, mount
     createUpdateLoop: (callback) => new OverlayUpdateLoop({ callback, intervalMs: Number(config.debug?.overlayUpdateMs) || 150 }),
     windows: [
       { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "🐟 ACTIVE FISH"),
-        content: new ActiveFishWindowContent({ config, fishes, schema, updateConfig }) },
+        content: new ActiveFishWindowContent({ config, baseConfig, fishes, schema, updateConfig }) },
       { key: "activeRod", window: toolWindow("overlay_active_rod", "debug-overlay--active-rod", "🎣 ACTIVE ROD"),
         content: new ActiveRodWindowContent({ config, baseConfig, items, schema, updateConfig }) },
     ] });

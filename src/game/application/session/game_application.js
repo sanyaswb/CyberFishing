@@ -489,6 +489,8 @@ export class GameApplication {
       if (this.#isFishDatabaseUpdate(e)) {
         this.#handleFishDatabaseUpdate();
       }
+      // TK-254.1: a DEV edit of the fish stamina defaults reaches the fish being fought.
+      if (this.#isStaminaFishConfigUpdate(e)) this.#fightService.refreshStaminaLimits();
       if (this.#isMapDatabaseUpdate(e)) {
         this.#handleMapDatabaseUpdate();
       }
@@ -518,6 +520,11 @@ export class GameApplication {
   #isFishDatabaseUpdate(event) {
     const path = event?.detail?.path;
     return Array.isArray(path) && path[0] === "FISH_DB";
+  }
+
+  #isStaminaFishConfigUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "CONFIG" && path[1] === "stamina" && (path.length === 2 || path[2] === "fish");
   }
 
   #handleFishDatabaseUpdate() {

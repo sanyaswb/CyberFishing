@@ -26,6 +26,7 @@ export class FightService {
   #fightPhysicsSystem = null;
   #tensionMeter = null;
   #fishCondition = null;
+  #fishData = null;
   #staminaController = null;
   #rod = null;
   #reel = null;
@@ -84,6 +85,7 @@ export class FightService {
     this.#tensionMeter = session.tensionMeter;
     this.#fishingSystem = this.#createDebugFishingAdapter();
     this.#fishCondition = session.fishCondition;
+    this.#fishData = fishData;
     this.#staminaController = session.staminaController;
     this.#catchResolver.reset?.();
   }
@@ -115,6 +117,8 @@ export class FightService {
     this.#fishingSystem = this.#createDebugFishingAdapter();
   }
 
+  // DEV balance edits of the hooked fish (DevTools, overlay window ACTIVE FISH): force, behaviour and, since TK-254.1,
+  // the stamina and endurance limits (they were fixed at the hook, so stamina edits did nothing in the fight).
   syncFishRuntime(fishData) {
     if (!this.#fish || !fishData) return;
     this.#fish.updateRuntimeStats?.({
@@ -122,7 +126,18 @@ export class FightService {
       weight: fishData.weight,
       physics: fishData.physics,
     });
+    this.#fishData = fishData;
+    this.refreshStaminaLimits();
     this.#fishingSystem = this.#createDebugFishingAdapter();
+  }
+
+  // TK-254.1: the stamina and endurance limits from the hooked fish and the live CONFIG.stamina.fish (a DEV edit of
+  // either); the current values keep their share.
+  refreshStaminaLimits() {
+    const fishData = this.#fishData;
+    if (!this.#fishCondition || !fishData) return;
+    this.#fishCondition.updateLimits(fishData.level, fishData.weight, this.#config?.stamina?.fish, fishData.physics,
+      { maxLevel: fishData.maxLevel, levelAverageWeightKg: fishData.levelAverageWeightKg });
   }
 
   /** @returns {FightUpdateResult} */

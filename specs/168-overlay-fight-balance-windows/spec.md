@@ -101,6 +101,15 @@
   відкриті DevTools або увімкнене вікно. Перевірка `overlay-balance-windows` (набір tools), `config-runtime` (композиція,
   правка через DevTools, dispose).
 
+## TK-254.1 — стаміна в бою й більше параметрів стаміни (v0.50.44)
+
+Власник: «стаміна не працює не змінюється і додай більше параметрів для стаміни це важливо». Причина: межі стаміни й
+витривалості (`FishCondition`) рахувались лише при підсіканні, правка риби їх не оновлювала (incidents I-17). Зроблено:
+`FishCondition.updateLimits` + `FightService.refreshStaminaLimits` (після правки риби й `CONFIG.stamina.fish`); у вікні —
+усі значення staminaProfile, які читає бій (baseStamina, staminaRatioFromEndurance, staminaBossMultiplier,
+minStaminaActivityMultiplier, exhaustedSpeedRatio; відсутнє — з ефективним значенням), наживо фаза / стаміна /
+витривалість, розділ «Правила витривалості» (`CONFIG.stamina`, ↺ — базовий конфіг).
+
 ## Приймання власником
 
 `dev.html`: оверлей → увімкнути «ACTIVE FISH» і «ACTIVE ROD» — два окремі вікна, перетягуються, масштабуються; у бою

@@ -31,6 +31,23 @@ rule as something the next change can follow.
 | R15 | A view model that reads a port's state draws every combination of that state, not only the steady ones: listeners redraw synchronously from inside a command, between its steps. The check lists the combinations, and a double of a call that redraws in production redraws too. | I-14 |
 | R16 | A pick mode (a consumable or slot pick that narrows the list) ends with the choice it was opened for. A command that fills the picked target leaves the pick explicitly; a check selects «Усе» after the choice and expects items outside the picked kind. | I-15 |
 | R17 | A DEV tool that reads live game data asks for it itself (a port such as `isLiveDataRequested`); it never depends on another tool's switch (Overlay, console modules) being on. Changing a debug default is checked against every reader of the events that switch gates. | I-16 |
+| R18 | A DEV edit of a value reaches every result derived from it at the start (limits, pools, caches), not only the object that holds it. The check edits through the same path and asserts the effect on the running system (the fight's limit), not the stored value. | I-17 |
+
+<a id="i-17"></a>
+
+## I-17 · 2026-11-08 · v0.50.43: stamina sliders of ACTIVE FISH did nothing in the fight (TK-254.1)
+
+- **Seen:** the owner moved the stamina sliders of the hooked fish: the fish's stamina bar and its tiring did not change.
+- **Cause:** `FishCondition` computes the fish's stamina and endurance limits once, when the fish is hooked
+  (`fight_session_factory.js`); `FightService.syncFishRuntime` (the path of every DevTools / window edit) refreshed only
+  `Fish` (force, behaviour), so baseStamina, staminaRatioFromEndurance, staminaBossMultiplier, weight and level never
+  reached the limits. The window also showed only the stamina keys the species config happens to have (the crucian: one).
+- **Fix:** v0.50.44: `FishCondition.updateLimits` (the current values keep their share), `FightService.refreshStaminaLimits`
+  after a fish edit and an edit of `CONFIG.stamina.fish`; the window lists every stamina value the fight reads with its
+  effective default, the live stamina / endurance / phase, and the stamina rules `CONFIG.stamina`.
+- **Rule:** R18.
+- **Check:** overlay-balance-windows (real `FishCondition` and `FightService`: an edit changes the fight's limits; every
+  stamina row); fails on 0.50.43.
 
 <a id="i-16"></a>
 

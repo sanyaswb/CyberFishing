@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.44 - Stamina sliders act in the fight
+
+- TK-254.1 (spec 168): ACTIVE FISH stamina edits now change the fish's stamina and endurance in the fight (the limits were fixed at the hook); the window shows every stamina value the fight reads, live stamina / endurance / phase and the stamina rules of every fight (CONFIG.stamina).
+
 ## v0.50.43 - Balance windows ACTIVE FISH and ACTIVE ROD
 
 - TK-254 (spec 168): DEV overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (switches in DevTools → OVERLAY MODULES → «Вікна балансу»): every fight parameter of the hooked fish (or the Fixed Catch species) and of the equipped rod with the fight's rod rules on sliders, live; «💾 Записати у вид» saves the fish's changes to its species.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.35 - Equipped chum shows the mix icon
 
 - TK-249.1: an equipped item's cell (the tackle's chum cell, boat bunkers, editor tabs, attachment badges) shows its equipped icon, as the switcher does; the backpack card and the editor preview keep the whole pack picture.
-
-## v0.50.34 - Carp mix packs
-
-- TK-249: the basic carp mix comes in packs of 15, 25, 50 and 100 with their own pictures (DEV free shop too); the chum switcher shows the mix's icon, and every pack of the mix joins one spot in the water.

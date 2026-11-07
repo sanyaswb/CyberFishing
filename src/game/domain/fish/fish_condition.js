@@ -9,6 +9,24 @@ export class FishCondition {
   #phase;
 
   constructor(level, weight, staminaFishConfig, fishPhysics = null, options = {}) {
+    this.#setLimits(level, weight, staminaFishConfig, fishPhysics, options);
+    this.#currentStamina = this.#maxStamina;
+    this.#currentExhaustion = this.#maxEndurance;
+    this.#phase = "stamina";
+  }
+
+  // TK-254.1: a DEV balance edit of the hooked fish (level, weight, staminaProfile, CONFIG.stamina.fish) recomputes the
+  // limits; the current stamina and endurance keep their share of the new limits and the phase stays. Gameplay never
+  // calls it (the limits are fixed for a fight).
+  updateLimits(level, weight, staminaFishConfig, fishPhysics = null, options = {}) {
+    const staminaShare = this.#maxStamina > 0 ? this.#currentStamina / this.#maxStamina : 1;
+    const enduranceShare = this.#maxEndurance > 0 ? this.#currentExhaustion / this.#maxEndurance : 1;
+    this.#setLimits(level, weight, staminaFishConfig, fishPhysics, options);
+    this.#currentStamina = this.#maxStamina * staminaShare;
+    this.#currentExhaustion = this.#maxEndurance * enduranceShare;
+  }
+
+  #setLimits(level, weight, staminaFishConfig, fishPhysics, options) {
     this.#maxEndurance = new FishEndurancePointsCalculator().calculate({
       level,
       weightKg: weight,
@@ -22,9 +40,6 @@ export class FishCondition {
       staminaFishConfig,
       fishPhysics,
     });
-    this.#currentStamina = this.#maxStamina;
-    this.#currentExhaustion = this.#maxEndurance;
-    this.#phase = "stamina";
   }
 
   get phase() {

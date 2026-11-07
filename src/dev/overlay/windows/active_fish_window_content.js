@@ -12,9 +12,20 @@ const PHYSICS_SECTIONS = Object.freeze([
   ["movementProfile", "Рух"],
 ]);
 const NOT_SAVED_TO_SPECIES = new Set(["forceProfile.levelBasePower"]);
+// TK-254.1: every staminaProfile value the fight reads, shown with its effective value when the fish has none: the
+// limits (FishEndurancePointsCalculator, FishStaminaPointsCalculator fall back to CONFIG.stamina.fish) and the activity
+// and speed while tired (FishForceSystem, defaults 0.75 / 0.25).
+const STAMINA_DEFAULTS = Object.freeze([
+  ["baseStamina", (fish) => fish?.baseStamina ?? 500],
+  ["staminaRatioFromEndurance", (fish) => fish?.staminaRatioFromEndurance ?? 0.1],
+  ["staminaBossMultiplier", (fish) => fish?.staminaBossMultiplier ?? 1],
+  ["minStaminaActivityMultiplier", () => 0.75],
+  ["exhaustedSpeedRatio", () => 0.25],
+]);
 
 export class ActiveFishWindowContent {
   #config;
+  #baseConfig;
   #fishes;
   #schema;
   #rows;
@@ -27,10 +38,11 @@ export class ActiveFishWindowContent {
   #lastSaved = 0;
   #current = null;
 
-  // config: the live CONFIG (Fixed Catch); fishes: FISH_DB; schema: FightBalanceParameterSchema;
-  // updateConfig(path, value): DevTools.updateConfig.
-  constructor({ config, fishes, schema, updateConfig }) {
+  // config: the live CONFIG (Fixed Catch, stamina rules); baseConfig: the config without overrides (↺ of the rules);
+  // fishes: FISH_DB; schema: FightBalanceParameterSchema; updateConfig(path, value): DevTools.updateConfig.
+  constructor({ config, baseConfig, fishes, schema, updateConfig }) {
     this.#config = config;
+    this.#baseConfig = baseConfig;
     this.#fishes = fishes;
     this.#schema = schema;
     this.#rows = new BalanceFormRows({ schema });
@@ -94,6 +106,9 @@ export class ActiveFishWindowContent {
         { label: "стан", value: liveData.fishState ?? "—" },
         { label: "сила зараз", value: this.#kg(liveData.fishActiveKg) },
         { label: "протидія", value: this.#kg(liveData.fishOppositionKg) },
+        { label: "фаза", value: liveData.fishConditionPhase ?? "—" },
+        { label: "стаміна", value: this.#points(liveData.currentStamina, liveData.fishConditionMaxStamina) },
+        { label: "витривалість", value: this.#points(liveData.currentExhaustion, liveData.fishConditionMaxEndurance) },
       ],
       note: pending > 0 ? `Змінено в цій рибі: ${pending}, ще не записано у вид.`
         : this.#lastSaved > 0 ? `Записано у вид: ${this.#lastSaved}.` : "Зміни діють на цю рибу одразу.",
@@ -119,13 +134,31 @@ export class ActiveFishWindowContent {
 
   #physicsSections(prefix, physics, path, base) {
     const sections = PHYSICS_SECTIONS.map(([key, title]) => this.#rows.section({ id: `${prefix}.${key}`, title,
-      value: physics?.[key], path: [...path, key], base: base?.[key] }));
+      value: key === "staminaProfile" ? this.#withStaminaDefaults(physics?.[key]) : physics?.[key], path: [...path, key],
+      base: key === "staminaProfile" ? this.#withStaminaDefaults(base?.[key]) : base?.[key] }));
     const behaviors = physics?.behaviorProfile?.behaviors ?? {};
     const behaviorSections = Object.entries(behaviors).map(([state, behavior]) => this.#rows.section({
       id: `${prefix}.behavior.${state}`, title: state, value: behavior, path: [...path, "behaviorProfile", "behaviors", state],
       base: base?.behaviorProfile?.behaviors?.[state] }));
     sections.push({ id: `${prefix}.behavior`, title: "Поведінка", rows: [], sections: behaviorSections });
+    // TK-254.1: the stamina rules of every fight (drain, regen, endurance, power loss, mastery, debuffs), read live.
+    sections.push(this.#rows.section({ id: "stamina.rules", title: "Правила витривалості (усі риби, CONFIG.stamina)",
+      value: this.#config.stamina, path: ["CONFIG", "stamina"], base: this.#baseConfig?.stamina }));
     return sections.filter((section) => section.rows.length > 0 || section.sections.length > 0);
+  }
+
+  // The fish's staminaProfile with every value the fight reads; a missing one shows its effective default.
+  #withStaminaDefaults(profile) {
+    const stamina = this.#config.stamina?.fish;
+    const values = Object.fromEntries(STAMINA_DEFAULTS.map(([key, resolve]) => [key, resolve(stamina)]));
+    return { ...values, ...(profile ?? {}) };
+  }
+
+  #points(current, max) {
+    const now = Number(current);
+    const limit = Number(max);
+    if (!Number.isFinite(now) || !Number.isFinite(limit)) return "—";
+    return `${Math.round(now)} / ${Math.round(limit)}${limit > 0 ? ` (${Math.round((now / limit) * 100)}%)` : ""}`;
   }
 
   #serialOf(fish) {
