@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.35 - Equipped chum shows the mix icon
+
+- TK-249.1: an equipped item's cell (the tackle's chum cell, boat bunkers, editor tabs, attachment badges) shows its equipped icon, as the switcher does; the backpack card and the editor preview keep the whole pack picture.
+
 ## v0.50.34 - Carp mix packs
 
 - TK-249: the basic carp mix comes in packs of 15, 25, 50 and 100 with their own pictures (DEV free shop too); the chum switcher shows the mix's icon, and every pack of the mix joins one spot in the water.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.26 - Live bait card: release and backpack
 
 - TK-243: every live bait card ends with «Відпустити» across the row and a square backpack button, which is available before the live bait is chosen (a species already in the backpack only says so); the chosen live bait still cannot be released.
-
-## v0.50.25 - Repeated click on an equipped bait
-
-- TK-241: clicking a bait that is already on the hook (or another jar of the same bait) opens its editor instead of highlighting the hook's cell again for the same replacement; every bait type alike, a different bait still proposes the replacement.

@@ -175,7 +175,8 @@ export class InventoryItemTreeViewFactory {
           empty: !raw,
           name: hydrated?.name,
           icon: hydrated?.icon,
-          iconAsset: hydrated?.iconAsset,
+          // TK-249.1: an attached item is equipped: its badge shows the equipped picture (a chum pack: the mix's icon).
+          iconAsset: hydrated?.switcherIconAsset || hydrated?.iconAsset,
           rarity: hydrated?.rarity,
           kind: slot.id,
           placement: this.#placement(slot.id),

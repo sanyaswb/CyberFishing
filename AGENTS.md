@@ -12,6 +12,9 @@ Small tasks and large changes (owner instruction, 2026-10-22):
   `specs/NNN-name/spec.md` with the problem, the decisions (owner questions marked), the model, the checks and the
   owner's acceptance. `tasks.md` then lists its tasks, each referring to the spec, and the spec records what was
   implemented. When unsure, treat the change as large.
+- **A fix of a task is not a new task** (owner instruction, 2026-11-07): when the owner reports a defect or asks for a
+  correction of an existing `TK-NNN` (or spec step), add a sub-item under that entry (`TK-NNN.1`, `.2`, … — what the owner
+  said, what was found, what changed, the check, the owner's check) instead of a new `TK` number. It still bumps the patch.
 
 The owner describes the result (what the player sees and does); the technical solution is the agent's (owner,
 2026-11-06). Do not take the owner's technical wording literally: choose the technically correct, most efficient way

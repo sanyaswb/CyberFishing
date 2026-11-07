@@ -181,6 +181,24 @@ switches.dispose(wormToggle);
       "assets/items/chums/carp-mix-basic/carp-mix-basic_icon.webp", `${pack.id} is the mix's icon in the switcher`);
     switches.dispose(chumToggle);
   }
+  // TK-249.1: an equipped pack's cell (the tackle's chum cell, a boat bunker, an editor tab) is the mix's icon; the
+  // backpack card and the editor's whole-art preview keep the pack's own picture.
+  const { InventoryItemCardRenderer } = require("../../../src/game/presentation/inventory/inventory_item_card_renderer.js");
+  const cards = new InventoryItemCardRenderer({ domFactory, attachmentRenderer: { render() {} } });
+  const pack = packs[2];
+  const srcOf = (node) => {
+    const stack = [node];
+    while (stack.length) { const next = stack.pop(); if (next.className === "inventory-item-card__image") return next.src; stack.push(...(next.children || [])); }
+    return null;
+  };
+  const quiet = { showMetadata: false, showResourceMeter: false, showTooltip: false, showAttachments: false };
+  const packArt = "assets/items/chums/carp-mix-basic/carp-mix-basic--50.webp";
+  const mixIcon = "assets/items/chums/carp-mix-basic/carp-mix-basic_icon.webp";
+  assert.equal(srcOf(cards.renderSlot({ slotId: "chum", label: "Прикормка", state: "filled", item: pack }, { variant: "socket", ...quiet })),
+    mixIcon, "an equipped chum cell shows the mix's icon");
+  assert.equal(srcOf(cards.renderItem(pack, { variant: "inventory", ...quiet })), packArt, "the backpack card keeps the pack");
+  assert.equal(srcOf(cards.renderItem(pack, { variant: "assembly-root", wholeArt: true, ...quiet })), packArt,
+    "the editor preview keeps the whole pack");
 }
 
 // TK-240: a live bait stack's parameters are its fish: a thumbnail and a life scale without a number per fish; the

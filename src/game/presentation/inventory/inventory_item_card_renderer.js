@@ -88,6 +88,7 @@ export class InventoryItemCardRenderer {
           showAttachments,
           showResourceMeter,
           showTooltip,
+          equippedArt: true,
         }),
       );
     } else {
@@ -161,6 +162,7 @@ export class InventoryItemCardRenderer {
       showResourceMeter = true,
       showTooltip = true,
       wholeArt = false,
+      equippedArt = false,
     } = {},
   ) {
     const card = this.#dom.button(
@@ -171,7 +173,7 @@ export class InventoryItemCardRenderer {
     card.dataset.instanceId = String(item.instanceId || "");
     card.setAttribute("aria-label", String(item.name || "Предмет"));
     const content = this.#dom.element("span", "inventory-item-card__content");
-    this.#renderMainVisual(content, item, { wholeArt });
+    this.#renderMainVisual(content, item, { wholeArt, equippedArt });
     if (showAttachments) this.#attachmentRenderer.render(content, item.attachments);
     card.appendChild(content);
     if (showMetadata) this.#renderMetadata(card, item);
@@ -194,16 +196,19 @@ export class InventoryItemCardRenderer {
   }
 
   // A skin's thumbnail shows only its lower part, bottom-aligned (anchor "top": its upper part, top-aligned); an
-  // equipment cell may show the whole artwork (spec 071), and the editor preview (wholeArt) always does.
-  #renderMainVisual(card, item, { wholeArt = false } = {}) {
+  // equipment cell may show the whole artwork (spec 071), and the editor preview (wholeArt) always does. A cell of an
+  // equipped item (equippedArt) shows its equipped picture, the switcher's icon (TK-249.1: a chum pack in the tackle is
+  // the mix's icon; the editor preview keeps the whole pack).
+  #renderMainVisual(card, item, { wholeArt = false, equippedArt = false } = {}) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
     const isFloat = item.itemType === "float" || item.equipmentSlot === "float" || Boolean(item.skin?.scene?.waterline);
     if (isFloat) {
       visual.classList.add("inventory-item-card__visual--float");
     }
     const art = item.skin?.thumbnail;
-    const thumbnail = item.equipmentArtAsset || wholeArt ? null : art;
-    const image = this.#dom.image(item.equipmentArtAsset || art?.asset || item.iconAsset, "");
+    const equippedIcon = equippedArt && !item.equipmentArtAsset ? item.switcherIconAsset || "" : "";
+    const thumbnail = item.equipmentArtAsset || equippedIcon || wholeArt ? null : art;
+    const image = this.#dom.image(item.equipmentArtAsset || equippedIcon || art?.asset || item.iconAsset, "");
     if (thumbnail && image) {
       visual.classList.add("inventory-item-card__visual--cropped");
       visual.classList.toggle("inventory-item-card__visual--cropped-top", thumbnail.anchor === "top");

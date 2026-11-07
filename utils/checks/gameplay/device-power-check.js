@@ -218,6 +218,19 @@ const boatThumb = thumbnails.create("thumb-boat");
 assert(boatThumb.attachments.every((attachment) => attachment.kind !== "battery"), "no battery cell in the boat thumbnail");
 assert(boatThumb.attachments.some((attachment) => attachment.kind === "cargo"), "other sockets keep their cells");
 assert.equal(boatThumb.charge.percent, 40, "the boat thumbnail shows its battery's charge");
+// TK-249.1: a chum pack in a bunker is equipped: its cell is the mix's icon, not the pack.
+{
+  const chumDefinitions = { ...definitions, carp_mix_basic_50: ITEM_DB.chums.carp_mix_basic_50 };
+  const cargoRepository = new FlatInventoryItemRepository({ items: [
+    { instanceId: "cargo-boat", itemId: "boat_lvl3", quantity: 1, location: InventoryItemLocation.inventory() },
+    { instanceId: "cargo-chum", itemId: "carp_mix_basic_50", quantity: 1, location: InventoryItemLocation.attached("cargo-boat", "cargo", 0) },
+  ] });
+  const cargoViews = new InventoryItemTreeViewFactory({ repository: cargoRepository, assemblyStates: { get: () => null },
+    profileRegistry: new AssemblyProfileRegistry(ITEM_ASSEMBLY_PROFILE_CONFIG, { itemDefinitionResolver: (id) => chumDefinitions[id] }),
+    hydrate: (raw) => ({ ...chumDefinitions[raw.itemId], ...raw, effectiveStats: { ...chumDefinitions[raw.itemId].gameplayStats } }) });
+  const bunker = cargoViews.create("cargo-boat").attachments.find((attachment) => attachment.instanceId === "cargo-chum");
+  assert.equal(bunker?.iconAsset, "items.chums.carp-mix-basic.carp-mix-basic_icon", "a bunker's chum is the mix's icon");
+}
 thumbRepository.setLocation("thumb-battery", InventoryItemLocation.inventory());
 assert.equal(thumbnails.create("thumb-boat").charge, undefined, "without a battery the boat has no charge bar");
 
