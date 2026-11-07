@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-246: a bait over the chosen live bait first offers «Замінити», the second choice replaces it.",
   "TK-245: a live bait stack tap equips like a bait: empty hook at once, green cell + «Замінити» over another bait.",
   "Spec 165 stage 2: live bait stacks in the bait cell pick; repeated tap equips the first; «Усе» lists everything after a choice.",
   "Spec 165 stage 1: choosing a bait always opens its editor; empty cell equips, taken cell offers «Замінити».",

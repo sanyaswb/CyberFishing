@@ -276,7 +276,7 @@ export class InventoryViewModelFactory {
   #createConsumableSlots(kind, uiState) {
     const targets = this.#consumableTargets.list(kind);
     if (kind === "bait" && targets.length === 1 && this.#liveBaitHook) {
-      const live = this.#liveBaitSlot(targets[0]);
+      const live = this.#liveBaitSlot(targets[0], uiState);
       if (live) return [live];
     }
     const sharedReserve = targets.length > 0 && targets.every((target) => target.occupied) &&
@@ -293,8 +293,10 @@ export class InventoryViewModelFactory {
   // The single hook's cell: green while a live bait waits to replace its bait; the live bait's picture on an empty hook.
   // Every combination of (waiting, hook bait, chosen live bait) is drawn, also the moment inside «Замінити» when the bait
   // is already off and the live bait not yet chosen: an empty green cell (TK-233, incidents I-14).
-  #liveBaitSlot(target) {
-    const pending = this.#liveBaitHook.pendingFishId !== null;
+  #liveBaitSlot(target, uiState) {
+    // TK-246: a bait offered over the chosen live bait lights the cell like any offered replacement.
+    const pending = this.#liveBaitHook.pendingFishId !== null ||
+      (uiState.consumableKind === "bait" && uiState.pickedSocketId === target.socketId);
     const preview = target.occupied ? null : this.#liveBaitHook.preview();
     if (!pending && !preview) return null;
     let item = null;
@@ -522,13 +524,15 @@ export class InventoryViewModelFactory {
   // Spec 165 A2: a bait's editor button follows the same plan as its card: «Замінити» while every cell holds another bait
   // (or one is offered), none while it is already on the hook, otherwise «Спорядити» (the command marks a missing cell).
   #baitEditorAction(rootInstanceId, uiState) {
+    const liveBaitOnHook = Boolean(this.#liveBaitHook?.preview?.());
     const plan = this.#consumablePlacement.plan(this.#repository.get(rootInstanceId), "bait", {
       consumableKind: uiState.consumableKind || null,
       pickedSocketId: uiState.pickedSocketId || null,
       selectedInstanceId: uiState.selectedInstanceId || null,
-    });
+    }, { liveBaitOnHook });
     if (plan.action === "on-hook") return "none";
-    return plan.action === "offer" || plan.target?.occupied ? "replace" : "equip";
+    // TK-246: the single hook's chosen live bait is replaced too.
+    return plan.action === "offer" || plan.target?.occupied || (plan.action === "fill" && liveBaitOnHook) ? "replace" : "equip";
   }
 
   #resolveAssemblyEquipAvailability(rootView) {

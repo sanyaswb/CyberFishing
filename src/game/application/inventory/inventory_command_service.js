@@ -495,7 +495,7 @@ export class InventoryCommandService {
   // or offers the cell to replace (B3) beside it. fromEditor: the editor's «Спорядити»/«Замінити»; with nowhere to put
   // the bait it opens the equipment section and marks the missing rod or tackle in the error tone (B1).
   #activateConsumable(source, kind, { fromEditor = false } = {}) {
-    const plan = this.#consumablePlacement.plan(source, kind, this.#uiState);
+    const plan = this.#consumablePlacement.plan(source, kind, this.#uiState, { liveBaitOnHook: this.#liveBaitOnHook() });
     if (plan.action === "unavailable") {
       if (kind !== "bait") return this.#failure(this.#messages.consumableSlotUnavailable);
       if (!fromEditor) {
@@ -549,6 +549,11 @@ export class InventoryCommandService {
     return this.#success({ speciesId, liveBaitFishId: result.pending ? null : fish[0].id, pending: result.pending === true });
   }
 
+  // A chosen live bait on the single hook (the hook controller's picture of the bait cell).
+  #liveBaitOnHook() {
+    return Boolean(this.#liveBaitHook?.preview?.());
+  }
+
   // «Назад» from a stack's panel withdraws its offer (spec 165 B3); an offer of another species stays.
   #cancelLiveBaitOffer() {
     const speciesId = this.#uiState.snapshot().viewingLiveBaitSpeciesId;
@@ -558,8 +563,11 @@ export class InventoryCommandService {
 
   // The filled cell's bait stays in its editor (B2/B3): the jar when part of it went on the hook, else the hook's bait.
   #fillConsumableTarget(source, kind, target) {
+    const replacesLiveBait = kind === "bait" && this.#liveBaitOnHook();
     const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
     if (!result.success) return result;
+    // TK-246: the bait replaces the chosen live bait: the choice is cleared, the fish stays in the keepnet.
+    if (replacesLiveBait) this.#liveBaitHook.clear();
     if (kind !== "bait") {
       this.#uiState.pickForConsumable(kind);
       return result;

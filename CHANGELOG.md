@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.31 - A bait over a live bait asks first
+
+- TK-246: with a live bait on the hook, choosing a regular bait lights the switcher cell and offers «Замінити» in its editor, like over any other bait; a second choice (the card, «Замінити» or the cell) puts it on and clears the live bait's choice (the fish stays in the keepnet), «Назад» keeps the live bait.
+
 ## v0.50.30 - Live bait stacks equip like baits
 
 - TK-245: tapping a live bait stack in the backpack follows the bait rules: an empty single hook takes the species' next live bait at once; over a regular bait or another live bait the switcher cell turns green and the stack panel offers «Замінити» (a repeated tap or the cell confirms, «Назад» cancels); the chosen species only opens its panel; with no single hook «Спорядити» marks the tackle.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.22 - Live bait stack in the backpack
 
 - Spec 163 stage 2: a species shown with «В інвентар» is a bait-like stack card in the backpack (fish picture, count in the corner, one slot, no weight); opening it lists every fish with a life scale without numbers, «В садок» removes the stack. The fish stay in the keepnet.
-
-## v0.50.21 - Chosen live bait goes to the inventory
-
-- Spec 163 stage 1: the chosen live bait can no longer be released; its card has «В інвентар» (backpack icon), which marks its species for a backpack stack of its keepnet and aquarium live baits (they stay in the keepnet); a used-up, dead or released live bait leaves the stack. The backpack card follows in stage 2.

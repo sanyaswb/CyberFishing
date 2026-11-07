@@ -3670,6 +3670,32 @@ vm.runInContext(
     noSingleHook.flow.facade.getViewModel().equipmentFeedback?.slotId === "tackle" &&
     noSingleHook.flow.facade.getViewModel().equipmentFeedback?.tone === "error",
     "two hooks: the stack only opens its panel; «Спорядити» marks the tackle with the single-hook reason (TK-245 B1)");
+  // TK-246: a regular bait over the chosen live bait is a replacement like any other: the first choice lights the cell
+  // and offers «Замінити»; the second (card, «Замінити», the cell) puts the bait on and clears the live bait's choice.
+  for (const confirm of ["card", "editor", "cell", "back"]) {
+    const overLive = stackRules([raw("tk246-worm", "oil_worm_25", 25)]);
+    overLive.tap("crucian");
+    const offeredOverLive = dispatch(overLive.flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "tk246-worm" });
+    assertIntegration(offeredOverLive.requiresSocketChoice && !overLive.flow.assemblyReader.getChild("rb-hook", "bait", 0) &&
+      overLive.live.selected === "f-c1" && overLive.cell().highlighted && overLive.cell().item?.isLiveBait &&
+      overLive.flow.commands.getUiState().editingRootInstanceId === "tk246-worm" &&
+      overLive.panel().assembly.equipAction === "replace",
+      confirm + ": a bait over the chosen live bait first lights the cell and offers «Замінити» (TK-246)");
+    if (confirm === "card") dispatch(overLive.flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "tk246-worm" });
+    if (confirm === "editor") dispatch(overLive.flow, InventoryActionType.ASSEMBLY_EQUIP, { rootInstanceId: "tk246-worm" });
+    if (confirm === "cell") dispatch(overLive.flow, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 0 });
+    if (confirm === "back") {
+      dispatch(overLive.flow, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: "tk246-worm" });
+      assertIntegration(!overLive.flow.assemblyReader.getChild("rb-hook", "bait", 0) && overLive.live.selected === "f-c1" &&
+        !overLive.cell().highlighted && overLive.cell().item?.isLiveBait,
+        "«Назад» keeps the live bait on the hook (TK-246)");
+      continue;
+    }
+    assertIntegration(overLive.flow.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === "oil_worm_25" &&
+      overLive.live.selected === null && !overLive.cell().highlighted && !overLive.cell().item?.isLiveBait &&
+      overLive.panel().assembly.showEquip === false,
+      confirm + ": the second choice puts the worm on and clears the live bait's choice (TK-246)");
+  }
 
   console.log("Inventory integration checks passed.");
   `,

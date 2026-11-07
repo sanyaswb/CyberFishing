@@ -20,15 +20,17 @@ export class ConsumablePlacementPlanner {
     this.#hydrator = hydrator;
   }
 
-  // pick: the inventory UI state's consumable pick ({ consumableKind, pickedSocketId, selectedInstanceId }).
-  plan(source, kind, { consumableKind = null, pickedSocketId = null, selectedInstanceId = null } = {}) {
+  // pick: the inventory UI state's consumable pick ({ consumableKind, pickedSocketId, selectedInstanceId });
+  // liveBaitOnHook: a chosen live bait holds the single hook (TK-246): its cell counts as taken by another bait.
+  plan(source, kind, { consumableKind = null, pickedSocketId = null, selectedInstanceId = null } = {}, { liveBaitOnHook = false } = {}) {
     const all = this.#consumableTargets.list(kind);
     const own = all.find((target) => target.occupied?.instanceId === source.instanceId);
     if (own) return { action: "on-hook", target: own };
     const targets = all.filter((target) => this.#attachmentTargetResolver.accepts(target, source));
     if (!targets.length) return { action: "unavailable", target: null };
     const explicit = consumableKind === kind ? targets.find((target) => target.socketId === pickedSocketId) : null;
-    const empty = targets.find((target) => !target.occupied);
+    const liveTaken = kind === "bait" && liveBaitOnHook && all.length === 1;
+    const empty = liveTaken ? null : targets.find((target) => !target.occupied);
     // TK-241: the same baitId is the same bait (a jar of 25 or 50 oil worms), so there is nothing to replace.
     const sourceKind = this.#kindOf(source);
     const same = (target) => Boolean(target.occupied) && this.#kindOf(target.occupied) === sourceKind;
@@ -38,7 +40,8 @@ export class ConsumablePlacementPlanner {
     if (explicit && (!selectedInstanceId || selectedInstanceId === source.instanceId)) return { action: "fill", target: explicit };
     if (empty) return { action: "fill", target: empty };
     // Prefer a different bait: selecting a worm beside worm + bread proposes replacing only the bread.
-    return { action: "offer", target: targets.find((target) => target.occupied.itemId !== source.itemId) || targets[0] };
+    return { action: "offer", target: targets.find((target) => target.occupied && target.occupied.itemId !== source.itemId) ||
+      targets[0] };
   }
 
   // A consumable's kind for replacement: its catalog bait id, or its item id.
