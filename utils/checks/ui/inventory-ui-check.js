@@ -3237,6 +3237,16 @@ class InventoryUiBehaviorCheck {
     this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_BACK });
     backButton.click();
     this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_BACK });
+    // TK-245: over another bait the stack panel offers «Замінити», which dispatches the stack's equip action.
+    currentView = stackView([0.75]);
+    currentView.panel.liveBaitStack.editor = { ...currentView.panel.liveBaitStack.editor, showEquip: true, canEquip: true,
+      equipAction: "replace" };
+    ui.render(currentView);
+    const replaceButtons = this.#findAllByClass(ui.rootNode, "inventory-assembly-editor__button");
+    assert.deepStrictEqual(replaceButtons.map((button) => button.textContent), ["Замінити", "В садок", "Назад"],
+      "a stack over another bait offers «Замінити»");
+    replaceButtons[0].click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_EQUIP, speciesId: "crucian" });
 
     currentView = this.#editorViewModel();
     ui.render(currentView);
@@ -4174,6 +4184,7 @@ class InventoryUiBehaviorCheck {
       { type: actions.LOADOUT_EQUIP_ALL, loadoutId: "saved-kit" },
       { type: actions.LOADOUT_PREVIEW_BACK, loadoutId: "saved-kit" },
       { type: actions.LIVE_BAIT_STACK_BACK },
+      { type: actions.LIVE_BAIT_STACK_EQUIP, speciesId: "crucian" },
       { type: actions.AUTO_BAIT_CHANGE, enabled: true },
       { type: actions.AUTO_CHUM_CHANGE, enabled: false },
     ];

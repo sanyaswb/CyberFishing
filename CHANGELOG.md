@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.30 - Live bait stacks equip like baits
+
+- TK-245: tapping a live bait stack in the backpack follows the bait rules: an empty single hook takes the species' next live bait at once; over a regular bait or another live bait the switcher cell turns green and the stack panel offers «Замінити» (a repeated tap or the cell confirms, «Назад» cancels); the chosen species only opens its panel; with no single hook «Спорядити» marks the tackle.
+
 ## v0.50.29 - Live bait in the bait pick, full list after a choice
 
 - Spec 165 stage 2 (TK-242): an empty bait cell lists the live bait stacks among the compatible baits when the tackle has one hook; choosing a stack (or the repeated tap on the cell when it is first) puts the species' next live bait on and opens its panel. After any bait choice the search ends: «Усе» lists the whole backpack (it showed only baits).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.21 - Chosen live bait goes to the inventory
 
 - Spec 163 stage 1: the chosen live bait can no longer be released; its card has «В інвентар» (backpack icon), which marks its species for a backpack stack of its keepnet and aquarium live baits (they stay in the keepnet); a used-up, dead or released live bait leaves the stack. The backpack card follows in stage 2.
-
-## v0.50.20 - Live bait card icons, one hook drawing
-
-- TK-238: on the live bait card «На живця» is the inventory's hook icon, «В акваріум» a new aquarium icon and every cancel a red cross (the text stays the button's name and tooltip); empty hook compartments draw the same hook, the old tackle.svg moved to asset-sources.

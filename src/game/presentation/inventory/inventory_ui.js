@@ -671,6 +671,8 @@ export class InventoryUI {
       this.#dom.replaceChildren(this.#equipmentHost, this.#assemblyRenderer.render(editor, {
         onLoaded: () => this.refresh(),
         onBack: back,
+        // Spec 165 TK-245: «Спорядити» / «Замінити» under a bait's rules.
+        onEquip: () => this.#dispatch({ type: this.#actionTypes.LIVE_BAIT_STACK_EQUIP, speciesId }),
         // D6: «В садок» stops showing the species in the backpack; the fish stay in the keepnet.
         onReturnToKeepnet: () => { this.#liveBaitStacks?.hide(speciesId); back(); },
         onWarning: (message) => this.showWarning(message),

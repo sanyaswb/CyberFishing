@@ -101,6 +101,7 @@ const files = [
   "src/game/application/inventory/inventory_facade.js",
   "src/bootstrap/production/inventory_composition_root.js",
   "src/game/presentation/inventory/inventory_messages.js",
+  "src/game/application/live_bait/live_bait_hook_controller.js",
 ];
 
 new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
@@ -900,7 +901,9 @@ vm.runInContext(
   const stackEditor = stackModel.panel.liveBaitStack?.editor;
   assertIntegration(stackModel.panel.mode === "live-bait-stack" && stackEditor.root.isLiveBaitStack &&
     stackEditor.root.iconAsset === "fish-display.live" && stackEditor.root.liveBaitFish[0].lifeShare === 0.4 &&
-    stackEditor.showReturnToKeepnet && !stackEditor.showEquip && !stackEditor.showUnequip && !stackEditor.showDisassemble &&
+    // TK-245: another species' live bait (live-1) is chosen on the hook, so the panel offers «Замінити».
+    stackEditor.showReturnToKeepnet && stackEditor.showEquip && stackEditor.equipAction === "replace" &&
+    !stackEditor.showUnequip && !stackEditor.showDisassemble &&
     stackEditor.sockets.length === 0 && stackModel.sections.activeId === "equipment",
     "activating the stack opens the item editor with the fish as its root (TK-240)");
   dispatch(reloadedQuickHook, InventoryActionType.LIVE_BAIT_STACK_BACK);
@@ -3585,6 +3588,88 @@ vm.runInContext(
   tapCell(twoHooks);
   assertIntegration(!listed(twoHooks).includes("live-stack:crucian") && listed(twoHooks).includes("sb5-worms"),
     "two hooks: the pick lists baits but no live bait stack (a live bait needs a single hook)");
+
+  // TK-245: a backpack tap on a live bait stack follows a bait's equip rules through the real LiveBaitHookController,
+  // whose «Замінити» takes the regular bait off through the inventory (a nested dispatch, as in production).
+  const stackRules = (items, hookIds = ["rb-hook"], flowOf = repeatedBait) => {
+    const flow = flowOf(items);
+    const live = { selected: null };
+    const liveBait = {
+      selectBait: (id) => { live.selected = id; return { ok: true }; },
+      getSelectedBait: () => live.selected ? { fishId: live.selected, name: "Live", imagePath: "live.webp" } : null,
+      countSelectedReserve: () => 0,
+    };
+    const hook = new LiveBaitHookController({ liveBait, iconAssetOf: (path) => "id:" + path, inventory: {
+      getEquipped: () => ({ hooks: hookIds, baits: hookIds.map((id) => flow.assemblyReader.getChild(id, "bait", 0)) }),
+      isLocked: false,
+      removeHookBait: (instanceId) => flow.facade.dispatch({ type: InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
+        kind: "bait", slotIndex: 0, instanceId }),
+    } });
+    flow.facade.setLiveBaitStacks({ stacks: () => [
+      { id: "live-stack:crucian", speciesId: "crucian", name: "Crucian", iconAsset: "a", count: 2, fish: [
+        { id: "f-c1", name: "Crucian", iconAsset: "", lifeShare: 0.2, location: "keepnet" },
+        { id: "f-c2", name: "Crucian", iconAsset: "", lifeShare: 0.8, location: "keepnet" }] },
+      { id: "live-stack:perch", speciesId: "perch", name: "Perch", iconAsset: "b", count: 1, fish: [
+        { id: "f-p1", name: "Perch", iconAsset: "", lifeShare: 0.5, location: "keepnet" }] }] });
+    flow.facade.setLiveBaitHook(hook);
+    dispatch(flow, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+    return { flow, live, hook, cell: () => flow.facade.getViewModel().header.baitSlots[0],
+      panel: () => flow.facade.getViewModel().panel, tap: (speciesId) => dispatch(flow,
+        InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "live-stack:" + speciesId }) };
+  };
+  const onEmpty = stackRules([raw("tk245-spare", "hook")]);
+  onEmpty.tap("crucian");
+  assertIntegration(onEmpty.live.selected === "f-c1" && onEmpty.hook.pendingFishId === null &&
+    onEmpty.cell().item?.isLiveBait && onEmpty.panel().mode === "live-bait-stack" &&
+    onEmpty.panel().liveBaitStack.speciesId === "crucian" && onEmpty.panel().liveBaitStack.editor.showEquip === false &&
+    onEmpty.flow.facade.getViewModel().inventory.activeCategoryId === "all",
+    "an empty single hook takes the stack's first live bait at once and its panel opens (TK-245 B2)");
+  onEmpty.tap("crucian");
+  assertIntegration(onEmpty.live.selected === "f-c1" && onEmpty.hook.pendingFishId === null && !onEmpty.cell().highlighted,
+    "the chosen species' stack has nothing to replace: only its panel opens (TK-245 B6)");
+  onEmpty.tap("perch");
+  assertIntegration(onEmpty.live.selected === "f-c1" && onEmpty.hook.pendingFishId === "f-p1" && onEmpty.cell().highlighted &&
+    onEmpty.panel().liveBaitStack.speciesId === "perch" && onEmpty.panel().liveBaitStack.editor.equipAction === "replace",
+    "another species' live bait on the hook: the cell turns green and the panel offers «Замінити» (TK-245 B3)");
+  onEmpty.tap("perch");
+  assertIntegration(onEmpty.live.selected === "f-p1" && onEmpty.hook.pendingFishId === null && !onEmpty.cell().highlighted,
+    "a repeated tap on the offered stack replaces the live bait (TK-245 B3)");
+  for (const confirm of ["equip", "back"]) {
+    const overBait = stackRules([raw("tk245-worm", "oil_worm_25", 25)]);
+    dispatch(overBait.flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "tk245-worm" });
+    dispatch(overBait.flow, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+    overBait.tap("crucian");
+    assertIntegration(overBait.hook.pendingFishId === "f-c1" && overBait.live.selected === null && overBait.cell().highlighted &&
+      overBait.flow.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === "oil_worm_25" &&
+      overBait.panel().liveBaitStack.editor.equipAction === "replace",
+      "a regular bait on the hook: the stack waits for «Замінити» with the green cell, the bait stays on (TK-245 B3)");
+    if (confirm === "equip") {
+      dispatch(overBait.flow, InventoryActionType.LIVE_BAIT_STACK_EQUIP, { speciesId: "crucian" });
+      assertIntegration(overBait.live.selected === "f-c1" && overBait.hook.pendingFishId === null &&
+        !overBait.flow.assemblyReader.getChild("rb-hook", "bait", 0) && overBait.cell().item?.isLiveBait &&
+        overBait.panel().liveBaitStack?.editor.showEquip === false,
+        "«Замінити» in the panel takes the bait off and puts the live bait on (TK-245 B3)");
+    } else {
+      dispatch(overBait.flow, InventoryActionType.LIVE_BAIT_STACK_BACK);
+      assertIntegration(overBait.hook.pendingFishId === null && overBait.live.selected === null && !overBait.cell().highlighted &&
+        overBait.flow.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === "oil_worm_25" &&
+        overBait.flow.commands.getUiState().activeSectionId === "backpack",
+        "«Назад» withdraws the offer, the bait stays and the backpack returns (TK-245 B3)");
+    }
+  }
+  const noSingleHook = stackRules([], ["sb5-hook-0", "sb5-hook-1"], () => makeComposition({
+    items: [raw("sb5-rod", "rodFeeder"), raw("sb5-spring", "spring", 1, { statOverrides: { hooksCount: 2 } }),
+      ...[0, 1].map((index) => raw("sb5-hook-" + index, "hook", 1, { location: InventoryItemLocation.attached("sb5-spring", "hook", index) }))],
+    equipment: { ...emptyEquipment(), rod: "sb5-rod", tackle: "sb5-spring" },
+    assemblies: [{ rootInstanceId: "sb5-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+  }));
+  noSingleHook.tap("crucian");
+  const refused = noSingleHook.flow.facade.dispatch({ type: InventoryActionType.LIVE_BAIT_STACK_EQUIP, speciesId: "crucian" });
+  assertIntegration(noSingleHook.live.selected === null && noSingleHook.hook.pendingFishId === null && !refused.success &&
+    refused.warning === INVENTORY_MESSAGES.liveBaitSingleHookRequired &&
+    noSingleHook.flow.facade.getViewModel().equipmentFeedback?.slotId === "tackle" &&
+    noSingleHook.flow.facade.getViewModel().equipmentFeedback?.tone === "error",
+    "two hooks: the stack only opens its panel; «Спорядити» marks the tackle with the single-hook reason (TK-245 B1)");
 
   console.log("Inventory integration checks passed.");
   `,

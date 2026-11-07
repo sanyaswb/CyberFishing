@@ -100,6 +100,9 @@ export class InventoryActionContract {
       case types.LOADOUT_PREVIEW_BACK:
         this.#requireId(action.loadoutId, "loadoutId");
         break;
+      case types.LIVE_BAIT_STACK_EQUIP:
+        this.#requireId(action.speciesId, "speciesId");
+        break;
       case types.AUTO_BAIT_CHANGE:
       case types.AUTO_CHUM_CHANGE:
         if (typeof action.enabled !== "boolean") {

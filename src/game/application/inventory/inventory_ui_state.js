@@ -256,7 +256,9 @@ export class InventoryUiState {
 
   // Spec 163 D4: the stack panel takes the editor's place (the equipment section on phones); back returns to the section.
   showLiveBaitStack(speciesId) {
-    const returnSectionId = this.#activeSectionId;
+    // Reopening the stack already shown (spec 165: «Замінити» from its panel) keeps the section «Назад» returns to.
+    const returnSectionId = this.#panelMode === "live-bait-stack" && this.#viewingLiveBaitSpeciesId === speciesId
+      ? this.#liveBaitStackReturnSectionId : this.#activeSectionId;
     this.#showPanel("live-bait-stack", null, null);
     this.#viewingLiveBaitSpeciesId = speciesId;
     this.#liveBaitStackReturnSectionId = returnSectionId;

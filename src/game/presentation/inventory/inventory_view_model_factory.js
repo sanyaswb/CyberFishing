@@ -186,9 +186,11 @@ export class InventoryViewModelFactory {
     const viewedStack = uiState.viewingLiveBaitSpeciesId
       ? liveBaitStacks.find((stack) => stack.speciesId === uiState.viewingLiveBaitSpeciesId) || null : null;
     // TK-240: the stack opens in the item editor like any item: its card is the root, its fish the root's parameters.
+    const stackAction = viewedStack ? this.#liveBaitStackAction(viewedStack) : "none";
     const liveBaitStack = viewedStack ? { speciesId: viewedStack.speciesId,
       editor: { root: { ...InventoryViewModelFactory.#liveBaitStackCard(viewedStack), liveBaitFish: viewedStack.fish },
-        rootInstanceId: viewedStack.id, sockets: [], parameterItems: [], showEquip: false, showUnequip: false,
+        rootInstanceId: viewedStack.id, sockets: [], parameterItems: [], showEquip: stackAction !== "none", canEquip: true,
+        equipAction: stackAction === "replace" ? "replace" : "equip", showUnequip: false,
         showDisassemble: false, showReturnToKeepnet: true } } : null;
     return {
       isOpen: uiState.isOpen === true,
@@ -251,6 +253,18 @@ export class InventoryViewModelFactory {
         savedLoadout,
       },
     };
+  }
+
+  // Spec 165 TK-245: the stack panel's button, as a bait's editor: none while this species is the chosen live bait,
+  // «Замінити» while the single hook holds a regular bait or another live bait (or this stack's offer waits), otherwise
+  // «Спорядити» (with no single hook the command marks the tackle).
+  #liveBaitStackAction(stack) {
+    const ids = new Set(stack.fish.map((fish) => fish.id));
+    const chosen = this.#liveBaitHook?.preview?.() || null;
+    if (chosen && ids.has(chosen.fishId)) return "none";
+    const targets = this.#consumableTargets.list("bait");
+    if (targets.length !== 1) return "equip";
+    return targets[0].occupied || chosen || ids.has(this.#liveBaitHook?.pendingFishId) ? "replace" : "equip";
   }
 
   // Spec 162 stage 2: the chosen live bait's port (LiveBaitHookController), set once the live bait service exists.

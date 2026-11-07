@@ -26,6 +26,7 @@ export const InventoryActionType = Object.freeze({
   LOADOUT_EQUIP_ALL: "inventory/loadout-equip-all",
   LOADOUT_PREVIEW_BACK: "inventory/loadout-preview-back",
   LIVE_BAIT_STACK_BACK: "inventory/live-bait-stack-back",
+  LIVE_BAIT_STACK_EQUIP: "inventory/live-bait-stack-equip",
   AUTO_BAIT_CHANGE: "inventory/auto-bait-change",
   AUTO_CHUM_CHANGE: "inventory/auto-chum-change",
 });

@@ -203,8 +203,11 @@ export class InventoryCommandService {
       case InventoryActionType.LOADOUT_EQUIP_ALL:
         return this.#equipLoadout(action.loadoutId);
       case InventoryActionType.LIVE_BAIT_STACK_BACK:
+        this.#cancelLiveBaitOffer();
         this.#uiState.backFromLiveBaitStack();
         return this.#success();
+      case InventoryActionType.LIVE_BAIT_STACK_EQUIP:
+        return this.#activateLiveBaitStack(action.speciesId, { fromEditor: true });
       case InventoryActionType.LOADOUT_PREVIEW_BACK:
         this.#uiState.showLoadoutPanel();
         return this.#success({ loadoutId: action.loadoutId });
@@ -219,9 +222,9 @@ export class InventoryCommandService {
 
   // A card activated during a pick (spec 070) returns to the equipment section once it is equipped or opened.
   #activateInventoryItem(instanceId) {
-    // Spec 165 A3: during a bait pick a live bait stack is a candidate: choosing it puts the species' next live bait on.
+    // Spec 165 A3/TK-245: a live bait stack follows a bait's equip rules, in a bait pick and from the backpack alike.
     const liveBaitSpeciesId = LiveBaitStackId.speciesOf(instanceId);
-    if (liveBaitSpeciesId && this.#uiState.consumableKind === "bait") return this.#chooseLiveBaitStack(liveBaitSpeciesId);
+    if (liveBaitSpeciesId) return this.#activateLiveBaitStack(liveBaitSpeciesId);
     const source = this.#repository.get(instanceId);
     const kind = source ? this.#type(source) : null;
     // An editor without an assembly (a bait's own editor, spec 165) does not hold the bait back: it re-plans the choice.
@@ -248,11 +251,6 @@ export class InventoryCommandService {
   }
 
   #activateInventoryItemInPanel(instanceId) {
-    const liveBaitSpeciesId = LiveBaitStackId.speciesOf(instanceId);
-    if (liveBaitSpeciesId) {
-      this.#uiState.showLiveBaitStack(liveBaitSpeciesId);
-      return this.#success({ speciesId: liveBaitSpeciesId });
-    }
     if (this.#loadouts.has(instanceId)) {
       this.#uiState.showSavedLoadoutPreview(instanceId);
       return this.#success({ loadoutId: instanceId });
@@ -430,7 +428,7 @@ export class InventoryCommandService {
       if (!candidateInstanceId) return this.#success({ pickedSocketId: target.socketId });
       // Spec 165 B4: the repeated tap equips the list's first candidate, a live bait stack included.
       const candidateSpeciesId = kind === "bait" ? LiveBaitStackId.speciesOf(candidateInstanceId) : null;
-      if (candidateSpeciesId) return this.#chooseLiveBaitStack(candidateSpeciesId);
+      if (candidateSpeciesId) return this.#activateLiveBaitStack(candidateSpeciesId);
       const candidate = this.#pickCandidate(candidateInstanceId);
       if (!this.#attachmentTargetResolver.accepts(target, candidate)) return this.#failure(this.#messages.itemIncompatible);
       return this.#fillConsumableTarget(candidate, kind, target);
@@ -522,18 +520,40 @@ export class InventoryCommandService {
     return this.#success({ requiresSocketChoice: true });
   }
 
-  // «На живця» of the stack's first live bait (least life left, the one the succession takes next) through the hook
-  // controller: an empty single hook takes it at once, over a regular bait its cell turns green for «Замінити» (spec 162).
-  #chooseLiveBaitStack(speciesId) {
-    const fishId = this.#liveBaitStacks?.stacks().find((stack) => stack.speciesId === speciesId)?.fish?.[0]?.id;
-    if (!fishId || typeof this.#liveBaitHook?.choose !== "function") return this.#failure(this.#messages.itemNotFound);
-    const result = this.#liveBaitHook.choose(fishId);
+  // Spec 165 TK-245: a live bait stack under a bait's rules, through the hook controller (spec 162). The hook's single
+  // cell: empty — the stack's first live bait (least life left, the one the succession takes next) goes on at once (B2);
+  // a regular bait or another species' live bait there — the cell turns green and the panel offers «Замінити», a repeated
+  // tap or «Замінити» confirms (B3); this species already chosen — only the panel (B6); no hook or several hooks — the
+  // panel, its «Спорядити» marks the tackle (B1). The stack's panel always opens.
+  #activateLiveBaitStack(speciesId, { fromEditor = false } = {}) {
+    const fish = this.#liveBaitStacks?.stacks().find((stack) => stack.speciesId === speciesId)?.fish || [];
+    if (!fish.length) return this.#failure(this.#messages.itemNotFound);
+    const hook = this.#liveBaitHook;
+    const ids = new Set(fish.map((entry) => entry.id));
+    const hookCount = this.#consumableTargets.list("bait").length;
+    if (typeof hook?.choose !== "function" || hookCount !== 1 || ids.has(hook.preview?.()?.fishId)) {
+      if (fromEditor && hookCount !== 1) {
+        this.#uiState.equipmentRejected(this.#equipmentState.getRootInstanceId("rod") ? "tackle" : "rod");
+        return this.#failure(hookCount ? this.#messages.liveBaitSingleHookRequired : this.#messages.consumableSlotUnavailable);
+      }
+      this.#uiState.showLiveBaitStack(speciesId);
+      return this.#success({ speciesId });
+    }
+    const result = ids.has(hook.pendingFishId) ? hook.confirm() : hook.choose(fish[0].id, { replaceLiveBait: true });
     if (result?.ok !== true) {
       return this.#failure(result?.reason === "single_hook_required"
         ? this.#messages.liveBaitSingleHookRequired : this.#messages.liveBaitUnavailable);
     }
-    this.#uiState.showChosenLiveBaitStack(speciesId);
-    return this.#success({ speciesId, liveBaitFishId: fishId, pending: result.pending === true });
+    if (result.pending) this.#uiState.showLiveBaitStack(speciesId);
+    else this.#uiState.showChosenLiveBaitStack(speciesId);
+    return this.#success({ speciesId, liveBaitFishId: result.pending ? null : fish[0].id, pending: result.pending === true });
+  }
+
+  // «Назад» from a stack's panel withdraws its offer (spec 165 B3); an offer of another species stays.
+  #cancelLiveBaitOffer() {
+    const speciesId = this.#uiState.snapshot().viewingLiveBaitSpeciesId;
+    const fish = speciesId ? this.#liveBaitStacks?.stacks().find((stack) => stack.speciesId === speciesId)?.fish || [] : [];
+    if (fish.some((entry) => entry.id === this.#liveBaitHook?.pendingFishId)) this.#liveBaitHook.cancel();
   }
 
   // The filled cell's bait stays in its editor (B2/B3): the jar when part of it went on the hook, else the hook's bait.

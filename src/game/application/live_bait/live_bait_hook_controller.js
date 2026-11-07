@@ -49,10 +49,14 @@ export class LiveBaitHookController {
   get pendingFishId() { return this.#pendingFishId; }
 
   // «На живця»: chooses the live bait on an empty single hook; over a regular bait it waits for «Замінити».
-  choose(fishId) {
+  // replaceLiveBait: the inventory's bait rules (spec 165 TK-245): another chosen live bait is a taken cell too, so the
+  // new one waits for «Замінити» as well (the keepnet's «На живця» switches at once).
+  choose(fishId, { replaceLiveBait = false } = {}) {
     const hook = this.hookState();
     if (hook.hookCount !== 1) return { ok: false, reason: "single_hook_required" };
-    if (hook.bait) {
+    const chosen = replaceLiveBait && !hook.bait ? this.preview() : null;
+    const otherLiveBait = chosen !== null && chosen.fishId !== fishId;
+    if (hook.bait || otherLiveBait) {
       if (hook.inWater) return { ok: false, reason: "tackle_in_water" };
       this.#pendingFishId = fishId;
       this.#notify();
