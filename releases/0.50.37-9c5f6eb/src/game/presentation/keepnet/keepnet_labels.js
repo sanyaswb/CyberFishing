@@ -1,0 +1,45 @@
+const formatNumber = (value) => String(Math.round(value * 1000) / 1000).replace(".", ",");
+
+export const KEEPNET_LABELS = Object.freeze({
+  open: "Відкрити садок", title: "Садок",
+  help: "Як користуватися садком", closeHelp: "Закрити підказку",
+  capacity: "Місткість садка", back: "Назад до всіх видів",
+  note: "У садку немає прикормки. Живці мають власний відлік життя. Натисніть на вид, щоб оглянути кожну рибу.",
+  status: "Прикормка доступна лише в акваріумі",
+  kindLabel: "Тип риби", speciesLabel: "Вид риби", allSpecies: "Усі види",
+  speciesToggle: "Показати або приховати фільтр за видами",
+  kinds: [["all", "Уся риба"], ["catch", "Забраний улов"], ["live_bait", "Живці"]],
+  empty: "За цими фільтрами риби немає.", unknownRarity: "Рідкість: не збережена",
+  catch: "Забраний улов", protected: "Живець · під захистом",
+  select: "На живця", deselect: "Скасувати вибір", aquariumRequired: "Спочатку встановіть акваріум у будинку",
+  replace: "Замінити", cancelReplace: "Скасувати", singleHookRequired: "Живець — лише на снасті з одним гачком",
+  tackleInWater: "Снасть у воді: заміна наживки — коли її витягнуто",
+  transfer: "В акваріум", toInventory: "В інвентар", release: "Відпустити", confirmRelease: "Так, відпустити", cancel: "Залишити",
+  done: "Зміни збережено.", moved: "Рибу перенесено в акваріум.",
+  fallback: "Акваріум заповнений. Живця залишено в садку з власним таймером.",
+  count: (count, capacity, live, reserved) => `${count} / ${capacity} риб · ${live} живців${reserved ? ` · ${reserved} місце на гачку` : ""}`,
+  occupancy: (count, capacity) => `${count} / ${capacity}`,
+  groupCount: (count) => `Кількість: ${count}`,
+  details: (name, count) => `${name} · ${count} шт.`,
+  weight: (kg) => `${formatNumber(kg * 1000)} г`,
+  // TK-228: a group's total in kilograms with two decimals.
+  totalWeight: (kg) => `Разом: ${kg.toFixed(2).replace(".", ",")} кг`,
+  level: (level) => `Рівень: ${level}`,
+  rarity: (value) => typeof value === "string" ? `Рідкість: ${value}` :
+    `Рідкість: ${formatNumber(value.halfSteps / value.unitsPerStar)} / ${formatNumber(value.maxHalfSteps / value.unitsPerStar)} ★ (${value.halfSteps}/${value.maxHalfSteps})`,
+  lifetime: (ms) => {
+    const seconds = Math.max(0, Math.ceil(ms / 1000));
+    return `Живець · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  },
+  error: (reason) => ({
+    keepnet_full: "Садок заповнений: звільніть місце для повернення живця.",
+    aquarium_full: "Акваріум заповнений.", aquarium_required: "Спочатку встановіть акваріум у будинку.",
+    bait_unavailable: "Цей живець уже недоступний.", not_found: "Цієї риби вже немає в садку.",
+    bait_ineligible: "Ця риба не підходить для живця.", hook_busy: "Спочатку поверніть живця з гачка.",
+    stale_revision: "Дані змінилися на іншій сторінці. Повторіть дію.",
+    single_hook_required: "Живець — лише на снасті з одним гачком.", tackle_in_water: "Снасть у воді: заміна наживки — коли її витягнуто.",
+    bait_not_removed: "Не вдалося зняти наживку з гачка.",
+    bait_selected: "Обраного живця не можна відпустити.",
+    bait_in_inventory: "Живці цього виду в рюкзаку: поверніть їх у садок, щоб відпустити.", already_shown: "Живці цього виду вже в рюкзаку.",
+  })[reason] || `Не вдалося зберегти зміни: ${reason}`,
+});
