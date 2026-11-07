@@ -384,6 +384,7 @@ async function main() {
   assert.equal(documentRef.byKey("bait:release"), undefined, "the chosen live bait cannot be released");
   documentRef.byKey("bait:to-inventory").click();
   assert.equal(service.getInventoryStacks()[0]?.speciesId, service.getSelectedBait().sourceSpeciesId, "«В інвентар» shows the species");
+  assert.equal(documentRef.byKey("bait:to-inventory"), undefined, "TK-244: the card loses «В інвентар» once its species is in the backpack");
   assert.equal(service.beginLiveBaitCast("bait", { compatible: true, free: true, hookCount: 1 }).ok, true);
   ui.refresh();
   assert.equal(capacity.getAttribute("aria-valuenow"), "4", "a hooked bait still reserves its return slot");
@@ -548,7 +549,13 @@ async function checkLiveBaitCardStates() {
   assert.deepEqual(chosen.map(symbolOf), ["close", "aquarium", "backpack"]);
   assert(!chosen[2].disabled, "«В інвентар» is available while the species is not shown");
   chosen = chosenButtons(true);
-  assert(!chosen[2].disabled, "TK-243: «В інвентар» stays available when the species is already in the backpack");
+  assert.deepEqual(chosen.map((button) => button.getAttribute("aria-label")), ["Скасувати вибір", "В акваріум"],
+    "TK-244: a species in the backpack has no «В інвентар» and no «Відпустити»");
+  const shownButtons = cards.fish({ ...fish, inInventory: true }, { aquarium: { owned: true }, pendingRelease: null,
+    onAction() {}, onPreview() {}, hook: { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false } })
+    .element.children.find((child) => child.className === "keepnet-section__actions").children;
+  assert.deepEqual(shownButtons.map((button) => button.getAttribute("aria-label") || button.textContent), ["На живця", "В акваріум"],
+    "TK-244: every card of a species in the backpack loses both buttons");
   const base = { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false };
   assert.deepEqual(render(base).buttons[0], ["На живця", false, ""]);
   assert.deepEqual(render({ ...base, hookCount: 2 }).buttons[0], ["На живця", true, KEEPNET_LABELS.singleHookRequired]);

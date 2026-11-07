@@ -80,13 +80,16 @@ export class KeepnetCardRenderer {
         action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select, blocked);
         if (fish.location !== "aquarium") action("transfer", labels.transfer, aquarium?.owned ? null : labels.aquariumRequired);
       }
-      // TK-243: a live bait's last row is «Відпустити» across the width and a square «В інвентар» (backpack), always
-      // available (a species already in the backpack only says so). The chosen live bait cannot be released (spec 163 D1).
+      // TK-243: a live bait's last row is «Відпустити» across the width and a square «В інвентар» (backpack). TK-244:
+      // once its species is in the backpack every card of it has neither (they are all there); «В садок» brings them
+      // back. The chosen live bait cannot be released (spec 163 D1).
       if (fish.kind === "live_bait") {
-        const row = this.#el("div", "keepnet-section__action-row");
-        actions.append(row);
-        if (!fish.selected) action("release", labels.release, null, row).classList.add("keepnet-section__action--wide");
-        action("to-inventory", labels.toInventory, null, row).classList.add("keepnet-section__action--square");
+        if (!fish.inInventory) {
+          const row = this.#el("div", "keepnet-section__action-row");
+          actions.append(row);
+          if (!fish.selected) action("release", labels.release, null, row).classList.add("keepnet-section__action--wide");
+          action("to-inventory", labels.toInventory, null, row).classList.add("keepnet-section__action--square");
+        }
       } else action("release", labels.release);
     }
     card.append(actions);

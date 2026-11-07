@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-244: a species in the backpack has no backpack or release buttons in the keepnet; «В садок» restores them.",
   "TK-243: live bait card: wide «Відпустити» + square backpack, always available.",
   "TK-241: a repeated click on an equipped bait opens its editor.",
   "TK-240: live bait stack opens in the item editor (fish rows with life scales).",

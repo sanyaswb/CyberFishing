@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.27 - Live baits in the backpack keep their place
+
+- TK-244: once a species is sent to the backpack, every keepnet card of it loses both the backpack button and «Відпустити» (its live baits are all in the backpack, and the service refuses releasing them); «В садок» in the inventory brings both back.
+
 ## v0.50.26 - Live bait card: release and backpack
 
 - TK-243: every live bait card ends with «Відпустити» across the row and a square backpack button, which is available before the live bait is chosen (a species already in the backpack only says so); the chosen live bait still cannot be released.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.18 - Green switcher when a bait is chosen
 
 - TK-236: the bait and chum switcher turns green while a bait, live bait or chum is in its slots, not only in automatic mode; automatic mode colours only its own track.
-
-## v0.50.17 - Switcher cells at full height
-
-- TK-235: the bait and chum switcher's item circle takes the pill's whole height and the art inside is the largest box of its own proportion that fits the circle (a long worm icon or live bait is no longer a third of the circle); a slot's count is a badge on the circle's edge.

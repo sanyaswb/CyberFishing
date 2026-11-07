@@ -239,7 +239,10 @@ async function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb 
   assert.equal(create().getInventoryStacks()[0].count, 3, "the stack survives a reload");
   assert.equal(service.selectBait("c-mid").ok, true);
   assert.equal(service.releaseBait("c-mid").reason, "bait_selected", "D1: the chosen live bait cannot be released");
-  assert.equal(service.releaseBait("c-long").ok, true, "another live bait can be released");
+  assert.equal(service.releaseBait("c-long").reason, "bait_in_inventory", "TK-244: a species in the backpack cannot be released");
+  assert.equal(service.hideSpeciesFromInventory("crucian_stalker").ok, true);
+  assert.equal(service.releaseBait("c-long").ok, true, "back in the keepnet, another live bait can be released again");
+  assert.equal(service.showSpeciesInInventory("crucian_stalker").ok, true);
   assert.equal(service.getInventoryStacks()[0].count, 2, "a released live bait leaves the stack");
   now += service.getView().liveBaits.find((fish) => fish.id === "c-short").remainingMs;
   assert.equal(service.advance().ok, true);

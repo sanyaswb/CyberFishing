@@ -56,8 +56,9 @@ export class LiveBaitCommandService {
   releaseBait(id) { return this.#commit((state) => {
     const fish = state.fish.find((item) => item.id === id);
     if (!fish || fish.purpose !== "live_bait" || !["aquarium", "keepnet"].includes(fish.disposition)) return "bait_unavailable";
-    // Spec 163 D1: the chosen live bait cannot be released.
+    // Spec 163 D1: the chosen live bait cannot be released; TK-244: nor one whose species is in the backpack.
     if (state.selectedFishId === id) return "bait_selected";
+    if (state.inventorySpeciesIds.includes(fish.speciesId)) return "bait_in_inventory";
     fish.disposition = "released";
     LiveBaitSuccession.replace(state, fish);
     return null;
