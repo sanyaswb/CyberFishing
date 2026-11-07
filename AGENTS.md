@@ -71,8 +71,10 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   release go together: `git push origin develop`, then `npm run release:pages -- --site ../cyber-fishing-pages`, commit
   the site checkout (releases, root `index.html`, `dev.html`, `ui-catalog.html`) and push `gh-pages`. Report both
   commits and the kept previous release.
-- **Before every push** move finished tasks from `tasks.md` to `tasks-archive.md` (rule at the top of `tasks.md`); the
-  owner's open checks stay in `tasks.md` with a link to the archived implementation.
+- **Before every push** move finished tasks from `tasks.md` to [tasks-archive.md](<D:/dev/cyber fishing/tasks-archive.md>)
+  (rule at the top of `tasks.md`); the owner's open checks stay in `tasks.md` with a link to the archived implementation.
+  The archive lives outside the repository, beside `CHANGELOG_ARCHIVE.md` (owner, 2026-11-07: history files do not
+  weigh down the project); it is never committed.
 - Before a release check that every runtime asset path is tracked (`git ls-files`); Pages ships tracked files only, and
   released raster art is WebP (`pages-release` check).
 - Never publish or proxy the owner's code through third-party hosting or CDN mirrors; test builds go to `gh-pages` only.
