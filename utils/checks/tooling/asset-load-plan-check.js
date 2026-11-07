@@ -447,6 +447,31 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     assert.deepEqual([snapshot.nextIndex, snapshot.total, snapshot.steps.every((step) => step.state === "done")], [6, 6, true]);
     gated.dispose();
 
+    // TK-251.1: a full file a view asks for (request(), the DOM pictures after their low copy) waits for the first step
+    // that loads it in full: a first-layer copy for the upgrade, a lazy layer's file for its full pass.
+    const viewGate = new AssetLoadGate({ steps, now: () => 0 });
+    const viewLoads = [];
+    const viewFacade = new GameAssetPreloadFacade({ plan: stepPlan, assets: stepRegistry, scheduler, gate: viewGate,
+      imageAssets: { preload: ([record]) => { viewLoads.push(record.src); return Promise.resolve(); } } });
+    await viewFacade.start("first");
+    const asked = { bg: false, item: false };
+    void viewFacade.request(["bg.day"]).then(() => { asked.bg = true; });
+    void viewFacade.request(["it.a"]).then(() => { asked.item = true; });
+    await flush();
+    assert.deepEqual([asked, viewLoads.length], [{ bg: false, item: false }, 1], "a view's full files wait for their steps");
+    viewGate.next();
+    await flush();
+    assert.deepEqual([asked.bg, asked.item], [true, false], "the upgrade step releases the first layer's full file");
+    viewGate.jumpToLayer("third");
+    viewGate.next();
+    await flush();
+    assert.equal(asked.item, false, "the lazy layer's low pass does not release its full file");
+    viewGate.next();
+    await flush();
+    assert.equal(asked.item, true, "the full pass releases it");
+    assert.ok(viewLoads.includes("assets/it/a.webp"));
+    viewFacade.dispose();
+
     // The DevTools section: the mode switch for the next start, the restart, and the step buttons over the gate.
     const { LoadStepperDevSection } = await importSource("src/dev/tools/load_stepper_dev_section.js");
     const { DevLoadStepperSettings } = await importSource("src/dev/assets/dev_load_stepper_settings.js");

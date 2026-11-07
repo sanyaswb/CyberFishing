@@ -1,8 +1,9 @@
 // DEV step-by-step loading (spec 167, TK-251): holds GameAssetPreloadFacade before each step of the plan until the owner
 // releases it in DevTools. The first frame's steps (auto) are released at once, so the game starts and draws its first
 // frame; then every step waits for "Далі", a jump to a layer, "the whole layer" or "everything". Steps are only ever
-// released forward: a restart (reloading the page) begins again. What the player opens (request()) and the loads outside
-// the plan are not held. Production composes no gate.
+// released forward: a restart (reloading the page) begins again. A full file that a view asks for (request(): the DOM
+// pictures show their low copy, then ask for the full file) waits until the first step that loads it in full is released
+// (TK-251.1, whenReleased); files no step loads and the loads outside the plan are not held. Production composes no gate.
 const PASS_LABELS = Object.freeze({ load: "", low: "low-копії · ", full: "повні файли · " });
 
 // A step's name for DevTools and the overlay: layer, pass, priority and groups.
@@ -14,6 +15,7 @@ export class AssetLoadGate {
   #indexById;
   #released = 0;
   #waiters = new Map();
+  #releaseWaiters = [];
   #times = new Map();
   #listeners = new Set();
   #now;
@@ -38,6 +40,16 @@ export class AssetLoadGate {
     this.#notify();
     if (index < this.#released) return Promise.resolve();
     return new Promise((resolve) => { this.#waiters.set(stepId, resolve); });
+  }
+
+  // Settles once the earliest of these steps is released (a full file a view asked for, TK-251.1); steps the plan does not
+  // know do not hold, and with none known nothing waits. Unlike allow() it marks no step as asked for.
+  whenReleased(stepIds) {
+    const indexes = stepIds.map((stepId) => this.#indexById.get(stepId)).filter((index) => index !== undefined);
+    if (indexes.length === 0) return Promise.resolve();
+    const index = Math.min(...indexes);
+    if (index < this.#released) return Promise.resolve();
+    return new Promise((resolve) => { this.#releaseWaiters.push({ index, resolve }); });
   }
 
   // The facade reports that a step's loads have settled.
@@ -100,6 +112,9 @@ export class AssetLoadGate {
       this.#waiters.delete(id);
     }
     this.#released = end;
+    const ready = this.#releaseWaiters.filter((waiter) => waiter.index < end);
+    this.#releaseWaiters = this.#releaseWaiters.filter((waiter) => waiter.index >= end);
+    for (const waiter of ready) waiter.resolve();
     this.#notify();
   }
 

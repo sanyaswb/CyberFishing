@@ -145,8 +145,10 @@ export class GameAssetPreloadFacade {
   }
 
   // Images by asset id that an open view needs now: "interactive", ahead of the background, never paused.
-  // Settles { status: ready|failed, ids, error }.
+  // Settles { status: ready|failed, ids, error }. With the DEV gate (TK-251.1) they wait until the first step that loads
+  // them in full is released, so the views keep their low copies until that step.
   async request(ids) {
+    if (this.#gate) await this.#gate.whenReleased(ids.flatMap((id) => this.#fullStepIdsOf(id)));
     return this.#loadIds(ids, "interactive");
   }
 
@@ -258,6 +260,21 @@ export class GameAssetPreloadFacade {
     } catch {
       return [];
     }
+  }
+
+  // The steps whose loads bring this image in full (the gate picks the earliest): a first-layer group of low copies by
+  // its upgrade, a lazy layer by its full pass, any other layer by its load step.
+  #fullStepIdsOf(id) {
+    const first = this.#plan.layers[0];
+    return this.#plan.layers.flatMap((layer) => layer.groups
+      .filter((group) => group.load && this.#expectedIds(group).includes(id))
+      .map((group) => {
+        if (layer === first && layer.start === "composition" && group.readyOn === "low") {
+          return group.upgrade === "on-demand" ? null : AssetLoadStepPlan.stepId(null, "upgrade");
+        }
+        return AssetLoadStepPlan.stepId(layer.id, layer.lazy ? "full" : "load", group.priority);
+      })
+      .filter(Boolean));
   }
 
   #openIds(group) {
