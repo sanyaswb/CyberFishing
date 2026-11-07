@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-254 (spec 168): overlay windows ACTIVE FISH and ACTIVE ROD with sliders for every fight parameter.",
   "TK-251.2: in step mode the overlay ЗАВАНТАЖЕННЯ shows only the current step: its steps, requests and plan groups.",
   "TK-253: wide toolbar: actions right beside the selector (float leftmost), no fan reserve; they hide while the fan is open.",
   "TK-252: DevTools show ACTIVE FISH in the fight with Overlay off; Fixed Catch hasAnomaly always gives an anomalous fish; perch anomaly.",

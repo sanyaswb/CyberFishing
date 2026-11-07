@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.43 - Balance windows ACTIVE FISH and ACTIVE ROD
+
+- TK-254 (spec 168): DEV overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (switches in DevTools → OVERLAY MODULES → «Вікна балансу»): every fight parameter of the hooked fish (or the Fixed Catch species) and of the equipped rod with the fight's rod rules on sliders, live; «💾 Записати у вид» saves the fish's changes to its species.
+
 ## v0.50.42 - Loading overlay shows the current step
 
 - TK-251.2 (spec 167): with step-by-step loading on, the DEV overlay «⏱ ЗАВАНТАЖЕННЯ» shows only the current step: the steps of the last release, the requests started since then (each file with its size) and its plan groups with their files' state.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.34 - Carp mix packs
 
 - TK-249: the basic carp mix comes in packs of 15, 25, 50 and 100 with their own pictures (DEV free shop too); the chum switcher shows the mix's icon, and every pack of the mix joins one spot in the water.
-
-## v0.50.33 - Release confirmation is a green check
-
-- TK-248: a keepnet fish card waiting for release confirmation shows a green check instead of «Так, відпустити» (the text stays its name and tooltip), beside the red cross «Залишити».

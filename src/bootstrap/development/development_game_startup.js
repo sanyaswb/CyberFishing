@@ -53,6 +53,7 @@ import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js"
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
+import { composeFightBalanceWindows } from "./fight_balance_windows_composition.js";
 import { DevAssetLoadPlanStore } from "../../dev/assets/dev_asset_load_plan_store.js";
 import { AssetLoadGate } from "../../dev/assets/asset_load_gate.js";
 import { DevLoadStepperSettings } from "../../dev/assets/dev_load_stepper_settings.js";
@@ -155,8 +156,10 @@ async function startGame() {
   let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
-  // TK-252: the open DevTools panel reads the live data (ACTIVE FISH in the fight) with Overlay off.
-  const isLiveDataRequested = () => devTools?.isOpen === true;
+  // TK-252: the open DevTools panel reads the live data (ACTIVE FISH in the fight) with Overlay off; spec 168: so do the
+  // balance windows ACTIVE FISH / ACTIVE ROD while they are on.
+  let balanceWindows = null;
+  const isLiveDataRequested = () => devTools?.isOpen === true || balanceWindows?.isLiveDataRequested() === true;
   const cheatInput = new DevCheatInput({ target: windowTarget, scheduler: windowTarget,
     fetchCommand: (...args) => windowTarget.fetch(...args), createAbortController: () => new windowTarget.AbortController(),
     open: () => devTools?.open() });
@@ -184,6 +187,7 @@ async function startGame() {
     screens.dispose();
     zoneEditorDrag?.dispose();
     watchdog?.dispose();
+    balanceWindows?.dispose();
     overlayRuntime?.dispose();
     frameProfiler.dispose();
     consoleRuntime?.dispose();
@@ -201,6 +205,9 @@ async function startGame() {
       frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version,
       // Spec 157 D6: the asset load plan's state, from the composition once it exists.
       readAssetLoadStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null});
+    balanceWindows = composeFightBalanceWindows({ documentTarget, windowTarget, mountNode: developmentMount, uiSurface,
+      settingsStore, storageCache, config: CONFIG, baseConfig: configRuntime.baseConfig, fishes: FISH_DB, items: itemCatalog,
+      updateConfig: (path, value) => devTools?.updateConfig(path, value) });
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       assetLoadPlan: assetLoadPlanStore.plan(),

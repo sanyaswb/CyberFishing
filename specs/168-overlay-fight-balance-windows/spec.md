@@ -1,6 +1,7 @@
 # Spec 168 — Вікна оверлея «ACTIVE FISH» і «ACTIVE ROD» для балансу бою (TK-254)
 
-Статус: чернетка 2026-11-08; питання власнику Q1–Q5 відкриті; реалізації ще немає. Правила: DEVELOPMENT_RULES
+Статус: власник 2026-11-08 «Yes, as recommended» — Q1 (в), Q2 (а), Q3 (б), Q4 (б), Q5 лишити; реалізовано v0.50.43;
+перевірка власника відкрита. Правила: DEVELOPMENT_RULES
 (production не залежить від DEV), DESIGN_RULES.md і docs/styles.md (DEV-інтерфейс), incidents R17 (DEV-інструмент сам
 просить живі дані).
 
@@ -78,6 +79,27 @@
 
 Нова перевірка `overlay-balance-windows` (Quick): D2, D3, D4, D6, розділи D5 на реальних каталогах; падає без
 реалізації. Full; game-cycle без змін (лише DEV).
+
+## Реалізовано (v0.50.43)
+
+- `src/dev/overlay/windows/`: `OverlayToolWindow` (окреме вікно: заголовок, вміст, − / +, перетягування з власним id
+  позиції `overlay_active_fish` / `overlay_active_rod`; класи `debug-overlay--tool`, `--active-fish` (праворуч зверху),
+  `--active-rod` (праворуч посередині)), `BalanceControlPanel` (DOM один раз на ключ форми, далі лише значення; повзунок під
+  пальцем і поле у фокусі не перезаписуються; стан розділів — `overlay_balance_sections`), `BalanceFormRows` (числа →
+  повзунки, логічні → перемикачі, пари чисел → два повзунки, об'єкти → підрозділи), `FightBalanceParameterSchema` (D6),
+  `ActiveFishWindowContent`, `ActiveRodWindowContent`, `FightBalanceWindows` (показ за перемикачем, оновлення на
+  `OverlayUpdateLoop` з `overlayUpdateMs`, `isLiveDataRequested`).
+- Перемикачі `activeFish` / `activeRod` — у DevTools → OVERLAY → OVERLAY MODULES → група «Вікна балансу»; вікна не
+  залежать від головного перемикача Overlay.
+- Риба в бою: рядки `HOOKED_FISH.*` (вага, рівень, hasAnomaly, forceProfile, staminaProfile, movementProfile, кожен стан
+  поведінки); ↺ — значення виду; «💾 Записати у вид» пише змінені `physics.*` у `FISH_DB.<i>.physics.*` (крім
+  `forceProfile.levelBasePower`, що залежить від рівня). Поза боєм — вид Fixed Catch (`FISH_DB`), ↺ — значення на старті.
+- Вудилище: `ITEM_DB.rods.<id>.gameplayStats.*` (крім `durability` — стан, не баланс), ↺ — значення предмета при першому
+  показі; `CONFIG.physics.fight.rodHold / rodStroke / rodControl`, ↺ — базовий конфіг. Наживо: ефективні
+  `maxLoadKg`, `holdTensionRatio`.
+- Композиція: `src/bootstrap/development/fight_balance_windows_composition.js`; `isLiveDataRequested` у DEV-старті —
+  відкриті DevTools або увімкнене вікно. Перевірка `overlay-balance-windows` (набір tools), `config-runtime` (композиція,
+  правка через DevTools, dispose).
 
 ## Приймання власником
 

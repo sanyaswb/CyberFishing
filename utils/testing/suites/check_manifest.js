@@ -453,6 +453,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "overlay-balance-windows",
+    title: "Overlay windows ACTIVE FISH / ACTIVE ROD: slider limits, fish and rod forms, in-place panel, live data request",
+    file: "utils/checks/platform/overlay-balance-windows-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "render-resolution",
     title: "Logical canvas pixels at the device pixel ratio, rod depth order and display-sized fish art",
     file: "utils/checks/platform/render-resolution-check.js",

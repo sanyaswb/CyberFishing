@@ -245,3 +245,81 @@
   margin-top: 2px;
   margin-bottom: 4px;
 }
+
+/* Spec 168: the balance windows ACTIVE FISH / ACTIVE ROD — separate overlay windows with slider rows. The main window
+   sits bottom-left; these start top-right and below it, then keep the place the owner drags them to. */
+.debug-overlay--tool {
+  bottom: auto;
+  left: auto;
+  right: 10px;
+}
+.debug-overlay--active-fish { top: 10px; }
+.debug-overlay--active-rod { top: 50%; }
+.debug-overlay__title {
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+  color: var(--ui-accent);
+  font-weight: bold;
+}
+.debug-overlay__panel {
+  width: max-content;
+  min-width: 100%;
+}
+.debug-overlay__control-row {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 120px 64px 24px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+.debug-overlay__control-label {
+  min-width: 0;
+  white-space: nowrap;
+}
+.debug-overlay__slider {
+  width: 120px;
+  margin: 0;
+  accent-color: var(--ui-accent);
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+.debug-overlay__number {
+  width: 64px;
+  box-sizing: border-box;
+  padding: 1px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--ui-radius-control);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.debug-overlay__switch {
+  margin: 0;
+  accent-color: var(--ui-accent);
+  pointer-events: auto;
+}
+.debug-overlay__reset {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.45);
+  border-radius: var(--ui-radius-control);
+  background: rgba(var(--ui-accent-rgb), 0.1);
+  color: var(--ui-accent);
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.ui-surface--desktop-hover .debug-overlay__reset:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__reset:active {
+  background: rgba(var(--ui-accent-rgb), 0.24);
+}
+.debug-overlay__slider:focus-visible,
+.debug-overlay__number:focus-visible,
+.debug-overlay__switch:focus-visible,
+.debug-overlay__reset:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }

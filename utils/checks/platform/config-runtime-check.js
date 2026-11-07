@@ -718,7 +718,8 @@ function checkLocationMapConfigChanges() {
 
 async function checkNativeDevelopmentLifecycle() {
   const startupErrors = [];
-  const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
+  const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,balanceDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
+  let balanceOptions=null;
   const listeners=new Map(), registered=new Map();
   const windowTarget={console,URLSearchParams,performance:{mark(){}},requestAnimationFrame(){},setTimeout,clearTimeout,location:{origin:"https://game.example",search:""},
     addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
@@ -764,6 +765,8 @@ async function checkNativeDevelopmentLifecycle() {
     'src/bootstrap/production/startup_failure_composition.js':{showStartupFailure(){counts.startupFailure=(counts.startupFailure||0)+1;}},
     'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
     'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
+    'src/bootstrap/development/fight_balance_windows_composition.js':{composeFightBalanceWindows:options=>{balanceOptions=options;
+      return{...resource('balanceDispose'),isLiveDataRequested:()=>false};}},
     'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
   }});
   const startup=source.importModule('src/bootstrap/development/development_game_startup.js');
@@ -790,6 +793,12 @@ async function checkNativeDevelopmentLifecycle() {
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
   assert.equal(navigationTools.options.catalogs.items, rootPorts.itemDb, 'the free shop uses the same catalog without obsolete DEV builds');
+  // Spec 168: the balance windows edit through DevTools and share the overlay's switches and catalogs.
+  assert.equal(balanceOptions.items,rootPorts.itemDb,'the balance windows edit the game item catalog');
+  assert.equal(balanceOptions.baseConfig,configRuntime.baseConfig,'↺ of the fight rules reads the base config');
+  const balanceEdits=[];navigationTools.updateConfig=(editPath,value)=>balanceEdits.push([editPath,value]);
+  balanceOptions.updateConfig(['CONFIG','physics'],1);
+  assert.deepEqual(balanceEdits,[[['CONFIG','physics'],1]],'the balance windows edit through DevTools.updateConfig');
   assert.equal(houseFactoryOptions.getSessionServices(),sessionServices,"the House screen reuses the session services");
   assert.equal(houseFactoryOptions.getGameTimeControl(),timeControl,"the game's DEV time control hands its rate to the House");
   assert.equal(houseFactoryOptions.getDevTools(),navigationTools,"the House header toggles the page DevTools");
@@ -828,6 +837,7 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
   assert.equal(counts.start,3,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
   assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
+  assert.equal(counts.balanceDispose,4,'every DEV cleanup disposes the balance windows');
   assert.equal(counts.surfaces,4);assert.equal(counts.surfaceDispose,4, "DEV restart, failed build and pagehide clean every surface exactly once");
 }
 

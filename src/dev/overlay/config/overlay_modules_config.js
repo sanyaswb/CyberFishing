@@ -1,4 +1,8 @@
 export const OVERLAY_MODULES = {
+  // Spec 168: separate windows with sliders for fight balance.
+  activeFish: false,
+  activeRod: false,
+
   performance: true,
   startup: false,
   echo: true,
@@ -98,7 +102,13 @@ export const ADVANCED_OVERLAY_MODULE_KEYS = [
 
 export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance", "startup"];
 
+export const BALANCE_WINDOW_KEYS = ["activeFish", "activeRod"];
+
 export const OVERLAY_MODULE_GROUPS = Object.freeze([
+  Object.freeze({
+    label: "Вікна балансу",
+    keys: Object.freeze(BALANCE_WINDOW_KEYS),
+  }),
   Object.freeze({
     label: "Performance",
     keys: Object.freeze(PERFORMANCE_OVERLAY_MODULE_KEYS),
@@ -118,6 +128,14 @@ export const OVERLAY_MODULE_GROUPS = Object.freeze([
 ]);
 
 export const OVERLAY_MODULE_LABELS = Object.freeze({
+  activeFish: Object.freeze({
+    label: "🐟 ACTIVE FISH (вікно)",
+    original: "activeFish",
+  }),
+  activeRod: Object.freeze({
+    label: "🎣 ACTIVE ROD (вікно)",
+    original: "activeRod",
+  }),
   startup: Object.freeze({
     label: "Завантаження",
     original: "startup",
