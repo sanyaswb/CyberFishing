@@ -193,7 +193,14 @@ export class StartupLoadOverlayModule extends OverlayModule {
   #planRows() {
     const status = this.#readAssetLoadStatus();
     if (!status) return "";
-    let html = this.#caption("План завантаження (шари → групи → файли):");
+    let html = "";
+    // Spec 167: the step-by-step loading (DevTools) — how far it has gone and what comes next.
+    if (status.stepper) {
+      const { steps, nextIndex, total } = status.stepper;
+      html += this.plainRow("покрокове завантаження", `${nextIndex} / ${total} · далі: ${steps[nextIndex]?.label ?? "усе"}`,
+        { metricKey: "startup.plan.stepper", color: nextIndex < total ? "#ffaa00" : "#00ff80" });
+    }
+    html += this.#caption("План завантаження (шари → групи → файли):");
     for (const layer of status.layers) {
       let layerBody = "";
       for (const group of layer.groups) {

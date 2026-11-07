@@ -193,7 +193,7 @@ function checkDevelopmentInputs() {
     zoneEdits: { prepare: (path, value) => ({ path, value }), readDynamicZones: id => [{ id }] }, editorMap: null, maskEditor: {}, zoneDrawing: {},
     BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, uiSurface, developmentMount, toolbar,
-    openHouse, godMode: godModeInstance, pageParams, startupMarks, assetLoadPlanStore } });
+    openHouse, godMode: godModeInstance, pageParams, startupMarks, assetLoadPlanStore, createAssetLoadGate: null, loadStepperSettings: {}, assetLoadGate: null } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -202,6 +202,7 @@ function checkDevelopmentInputs() {
   assert.equal(ports.gameLoopGuard, gameLoopGuard, "the page loop guard reaches the composition root");
   assert.equal(ports.startupMarks, startupMarks, "DEV passes its startup marks to the composition root (spec 157)");
   assert.equal(ports.assetLoadPlan, editedPlan, "DEV passes the owner's edited asset load plan (spec 157 D6)");
+  assert.ok("createAssetLoadGate" in ports, "DEV passes the step-by-step loading gate factory (spec 167)");
   assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
   assert.equal(ports.uiSurface, uiSurface, "Production DOM UI receives the composed browser coordinate port");
   assert.equal(ports.toolbarMountNode, toolbar.element, "DEV reuses the composed production toolbar row");

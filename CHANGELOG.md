@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.38 - Step-by-step loading in DevTools
+
+- TK-251 (spec 167): DevTools «⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ» stops dev.html after the first frame; «Далі ▶», a layer jump, the whole layer or everything load the plan's next steps, with each step's files and their quality listed.
+
 ## v0.50.37 - Spine load order
 
 - TK-250.1 (spec 166): with Spine the rod and the bait boat start on a half-size atlas page and the full page replaces it in place; the full static pictures load only without Spine, and the boat then shows the owner's picture instead of the vector shape.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.29 - Live bait in the bait pick, full list after a choice
 
 - Spec 165 stage 2 (TK-242): an empty bait cell lists the live bait stacks among the compatible baits when the tackle has one hook; choosing a stack (or the repeated tap on the cell when it is first) puts the species' next live bait on and opens its panel. After any bait choice the search ends: «Усе» lists the whole backpack (it showed only baits).
-
-## v0.50.28 - Bait choice always opens its editor
-
-- Spec 165 stage 1 (TK-242): choosing a bait opens its editor every time; an empty hook takes it at once, a hook with another bait highlights its switcher cell and the editor offers «Замінити» (a repeated click or a tap on the cell replaces too, «Назад» cancels); «Спорядити» with nowhere to put the bait opens the equipment and marks the missing rod or tackle.

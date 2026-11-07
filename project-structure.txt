@@ -278,6 +278,7 @@
 │  │  │  ├── asset_load_plan.js
 │  │  │  ├── asset_load_queue.js
 │  │  │  ├── asset_load_result.js
+│  │  │  ├── asset_load_step_plan.js
 │  │  │  ├── asset_manifest.js
 │  │  │  ├── asset_registry.js
 │  │  │  └── asset_registry_sync.js

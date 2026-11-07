@@ -1,4 +1,5 @@
 import { AssetLoadQueue } from "../../engine/assets/asset_load_queue.js";
+import { AssetLoadStepPlan } from "../../engine/assets/asset_load_step_plan.js";
 
 // Runs the asset load plan (spec 157 R15, stages D1-D2): every image the plan loads goes into the game's one
 // ImageAssetProvider under its asset id, so the renderers, the scene and the views find it by that id. A layer runs its
@@ -41,6 +42,7 @@ export class GameAssetPreloadFacade {
   #upgradeRuns = [];
   #spineAvailable;
   #fullLoad;
+  #gate;
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
   // clearTimeout } (retries); conditions: { isPaused(), subscribe(listener) } or null (never paused).
@@ -51,8 +53,11 @@ export class GameAssetPreloadFacade {
   // warmFile: (path) => Promise — puts a file in the browser's cache, or null (the lazy layer then skips those kinds).
   // spineAvailable: () => Promise<boolean> — whether this page can play Spine (spec 166); without Spine the lazy layer
   // warms no Spine export. null: always warm.
+  // gate: DEV step-by-step loading (spec 167): { allow(stepId) -> Promise, done(stepId) }, asked before each step of
+  // AssetLoadStepPlan; null in production (nothing waits).
   constructor({ plan, assets, imageAssets, scheduler, conditions = null, networkSlots = 24, backgroundSlots = 4,
-    maxAttempts = 2, now = null, modules = {}, warmFile = null, spineAvailable = null }) {
+    maxAttempts = 2, now = null, modules = {}, warmFile = null, spineAvailable = null, gate = null }) {
+    this.#gate = gate;
     this.#warmFile = warmFile;
     this.#spineAvailable = spineAvailable;
     this.#moduleLoaders = modules;
@@ -80,7 +85,8 @@ export class GameAssetPreloadFacade {
     const index = this.#plan.layers.findIndex((layer) => layer.id === layerId);
     if (index > 0 && this.#upgrades.length > 0) {
       const upgrades = this.#upgrades.splice(0);
-      this.#upgradeRuns.push(this.#loadIds(upgrades, "upgrade"));
+      this.#upgradeRuns.push(this.#gate ? this.#gated(AssetLoadStepPlan.stepId(null, "upgrade"), () => this.#loadIds(upgrades, "upgrade"))
+        : this.#loadIds(upgrades, "upgrade"));
     }
     const layer = this.#plan.layer(layerId);
     const priority = LAYER_PRIORITIES[index] ?? "prefetch";
@@ -176,6 +182,11 @@ export class GameAssetPreloadFacade {
     this.#queue.dispose();
   }
 
+  // For the DEV step viewer: whether an image is in the store in full, only as its low copy, or not yet.
+  getImageState(id) {
+    return this.#fullIds.has(id) ? "full" : this.#lowOnlyIds.has(id) ? "low" : "none";
+  }
+
   // For the DEV overlay: every layer and group with its state and ids.
   getStatus() {
     return this.#plan.layers.map((layer) => ({
@@ -183,16 +194,26 @@ export class GameAssetPreloadFacade {
       groups: layer.groups.map((group) => ({ id: group.id, label: group.label, priority: group.priority, load: group.load, locked: group.locked,
         readyOn: group.readyOn, modules: this.#plan.modulesOf(group), status: this.#groupOutcomes.get(group.id)?.status
           ?? (this.#groupTimes.has(group.id) ? "loading" : "waiting"),
-        ids: this.#groupOutcomes.get(group.id)?.ids ?? [], ...(this.#groupTimes.get(group.id) ?? {}) })),
+        ids: this.#groupOutcomes.get(group.id)?.ids ?? this.#expectedIds(group), ...(this.#groupTimes.get(group.id) ?? {}) })),
     }));
   }
 
   async #runLayer(layer, priority) {
     const priorities = [...new Set(layer.groups.map((group) => group.priority))];
     for (const groupPriority of priorities) {
+      const stepId = AssetLoadStepPlan.stepId(layer.id, "load", groupPriority);
+      if (this.#gate) await this.#gate.allow(stepId);
       await Promise.all(layer.groups.filter((group) => group.priority === groupPriority)
         .map((group) => this.#loadGroup(group, priority)));
+      this.#gate?.done(stepId);
     }
+  }
+
+  async #gated(stepId, run) {
+    await this.#gate.allow(stepId);
+    const result = await run();
+    this.#gate.done(stepId);
+    return result;
   }
 
   // A lazy layer: the low pass over its groups in order, then the full pass in the same order (spec 159).
@@ -203,20 +224,23 @@ export class GameAssetPreloadFacade {
       return false;
     });
     const priorities = [...new Set(groups.map((group) => group.priority))];
-    const pass = async (step) => {
+    const pass = async (name, step) => {
       for (const groupPriority of priorities) {
+        const stepId = AssetLoadStepPlan.stepId(layer.id, name, groupPriority);
+        if (this.#gate) await this.#gate.allow(stepId);
         await Promise.all(groups.filter((group) => group.priority === groupPriority).map((group) => step(group)));
+        this.#gate?.done(stepId);
       }
     };
     const outcomes = new Map();
-    await pass(async (group) => {
+    await pass("low", async (group) => {
       this.#groupTimes.set(group.id, { startedMs: this.#now?.() ?? null, settledMs: null });
       const ids = this.#openIds(group);
       const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(this.#spineIds(ids), priority, "low")];
       for (const name of this.#plan.modulesOf(group)) results.push(await this.#loadModule(name, priority));
       outcomes.set(group.id, results);
     });
-    await pass(async (group) => {
+    await pass("full", async (group) => {
       const ids = this.#openIds(group);
       const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority),
         await this.#warm(this.#spineIds(ids), priority, "full")];
@@ -224,6 +248,16 @@ export class GameAssetPreloadFacade {
       this.#groupTimes.get(group.id).settledMs = this.#now?.() ?? null;
       this.#settleGroup(group, { status: failed ? "failed" : "ready", ids, error: failed?.error ?? null });
     });
+  }
+
+  // A group that has not settled: the ids it will load for the state known so far (the DEV overlay and step viewer list
+  // them before the load); a source that needs state not given yet lists nothing.
+  #expectedIds(group) {
+    try {
+      return this.#openIds(group);
+    } catch {
+      return [];
+    }
   }
 
   #openIds(group) {

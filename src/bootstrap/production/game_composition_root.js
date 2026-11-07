@@ -185,6 +185,8 @@ export class GameCompositionRoot {
   #gameLoopGuard;
   #listenerCounter;
   #createDevFlags;
+  #createAssetLoadGate;
+  #assetLoadGate = null;
   #createDebugEvents;
   #createGameDiagnostics;
   #createDevTools;
@@ -227,6 +229,8 @@ export class GameCompositionRoot {
     gameLoopGuard,
     listenerCounter = null,
     createDevFlags,
+    // DEV (spec 167): (plan: AssetLoadPlan) -> the step-by-step loading gate, or null; production passes none.
+    createAssetLoadGate = null,
     createDebugEvents,
     createGameDiagnostics,
     createWorldDebugRenderer,
@@ -253,7 +257,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe, createRadioEffectTuning,
+      createInventorySplitSource, createFrameProbe, createRadioEffectTuning, createAssetLoadGate,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -284,6 +288,7 @@ export class GameCompositionRoot {
     // DEV memory diagnostics only; production composes no counter.
     this.#listenerCounter = listenerCounter;
     this.#createDevFlags = createDevFlags;
+    this.#createAssetLoadGate = createAssetLoadGate;
     this.#createDebugEvents = createDebugEvents;
     this.#createGameDiagnostics = createGameDiagnostics;
     this.#createDevTools = createDevTools;
@@ -357,13 +362,16 @@ export class GameCompositionRoot {
     if (!this.#preload) return null;
     const file = (id) => {
       const entry = this.#assets.entryOf(id);
-      return { id, path: entry.path ?? entry.json, bytes: entry.bytes, low: entry.low ?? null };
+      return { id, kind: entry.kind, path: entry.path ?? entry.json, bytes: entry.bytes, low: entry.low ?? null,
+        state: this.#preload.getImageState(id) };
     };
     return {
       layers: this.#preload.getStatus().map((layer) => ({ ...layer,
         groups: layer.groups.map((group) => ({ ...group, files: group.ids.map(file) })) })),
       duplicates: this.#assetDuplicates ??= this.#assets.duplicates(),
       queue: this.#preload.getQueueSnapshot(),
+      // Spec 167: the DEV step-by-step loading, or null.
+      stepper: this.#assetLoadGate?.getSnapshot() ?? null,
     };
   }
 
@@ -472,10 +480,12 @@ export class GameCompositionRoot {
     let spineAvailable = () => Promise.resolve(false);
     const assetTransport = new BrowserAssetTransport();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
-    this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
-      plan: this.#assetLoadPlan, registry: this.#assets,
+    const assetLoadPlan = new AssetLoadPlan({ plan: this.#assetLoadPlan, registry: this.#assets,
       sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }),
-      modules: Object.keys(GAME_FEATURE_MODULES) }),
+      modules: Object.keys(GAME_FEATURE_MODULES) });
+    this.#assetLoadGate = this.#createAssetLoadGate?.(assetLoadPlan) ?? null;
+    this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: assetLoadPlan,
+      gate: this.#assetLoadGate,
       modules: GAME_FEATURE_MODULES,
       warmFile: (path) => assetTransport.warm(path),
       spineAvailable: () => spineAvailable(),

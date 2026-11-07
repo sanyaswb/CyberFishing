@@ -1,5 +1,6 @@
 import { RadioDevSection } from "./radio_dev_section.js";
 import { KeepnetDevSection } from "./keepnet_dev_section.js";
+import { LoadStepperDevSection } from "./load_stepper_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
@@ -45,6 +46,7 @@ export class DevTools {
   #storageCache;
   #assets;
   #assetLoadPlanStore;
+  #loadStepperSection = null;
   #openHouse;
   #openGame;
   #isDisposed = false;
@@ -109,6 +111,8 @@ export class DevTools {
       assets = null,
       // Spec 157 D6: the asset load plan's DEV edits (DevAssetLoadPlanStore) or null.
       assetLoadPlanStore = null,
+      // Spec 167: { settings, getGate, readStatus, restart } of the step-by-step loading, or null.
+      loadStepper = null,
     } = {},
   ) {
     this.#assets = assets;
@@ -126,6 +130,8 @@ export class DevTools {
     this.#openHouse = openHouse;
     this.#openGame = openGame;
     this.#assetLoadPlanStore = assetLoadPlanStore;
+    this.#loadStepperSection = loadStepper ? new LoadStepperDevSection({ ...loadStepper,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }) : null;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -250,6 +256,7 @@ export class DevTools {
         files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
     }
     this.#renderActiveFishSection(body);
+    this.#loadStepperSection?.render(body, this.#ui);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
     this.#renderRuntimeOverrideControls(service);
     this.#renderAssetLoadPlanControls(service);

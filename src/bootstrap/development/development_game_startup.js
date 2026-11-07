@@ -54,6 +54,9 @@ import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishB
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { DevAssetLoadPlanStore } from "../../dev/assets/dev_asset_load_plan_store.js";
+import { AssetLoadGate } from "../../dev/assets/asset_load_gate.js";
+import { DevLoadStepperSettings } from "../../dev/assets/dev_load_stepper_settings.js";
+import { AssetLoadStepPlan } from "../../engine/assets/asset_load_step_plan.js";
 import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
 import { ASSET_REGISTRY } from "../../game/config/generated/asset_registry.js";
 import { AssetRegistry } from "../../engine/assets/asset_registry.js";
@@ -135,6 +138,11 @@ async function startGame() {
   const assetLoadPlanStore = new DevAssetLoadPlanStore({ cache: storageCache, basePlan: ASSET_LOAD_PLAN,
     registry: new AssetRegistry(ASSET_REGISTRY), logger: new ConsoleLogger(),
     sources: createAssetLoadSources({ locations: CONFIG.locations, itemDb: ITEM_DB }) });
+  // Spec 167: step-by-step loading (DevTools), chosen for the next start; the gate exists only while the mode is on.
+  const loadStepperSettings = new DevLoadStepperSettings({ cache: storageCache });
+  let assetLoadGate = null;
+  const createAssetLoadGate = loadStepperSettings.isEnabled() ? (plan) => assetLoadGate = new AssetLoadGate({
+    steps: new AssetLoadStepPlan(plan).steps, now: () => windowTarget.performance.now() }) : null;
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
@@ -200,6 +208,7 @@ async function startGame() {
       tackleMountNode: toolbar.tackleMountNode,
       depthMountNode: toolbar.depthMountNode,
       selectorMountNode: toolbar.selectorMountNode,
+      createAssetLoadGate,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource, zoneEditorState}),
       createFrameProbe: () => frameProfiler,
       startupMarks,
@@ -226,6 +235,8 @@ async function startGame() {
         maskEditor,
         zoneDrawing,
         assetLoadPlanStore,
+        loadStepper: { settings: loadStepperSettings, getGate: () => assetLoadGate,
+          readStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null, restart: () => windowTarget.location.reload() },
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,

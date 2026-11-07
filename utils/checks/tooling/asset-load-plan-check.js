@@ -387,6 +387,109 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   store.reset();
   assert.equal(store.isEdited(), false);
 
+  // Spec 167 (TK-251): the DEV step-by-step loading. Steps follow the facade's order; with a gate no file of a step is
+  // asked for before the step is released; without a gate nothing waits.
+  {
+    const { AssetLoadStepPlan } = await importSource("src/engine/assets/asset_load_step_plan.js");
+    const { AssetLoadGate } = await importSource("src/dev/assets/asset_load_gate.js");
+    const productionSteps = new AssetLoadStepPlan(new AssetLoadPlan({ plan: ASSET_LOAD_PLAN, registry: assets,
+      sources: createAssetLoadSources({ locations: CONFIG.locations, itemDb: ITEM_DB }) })).steps;
+    const lazyPriorities = [...new Set(ASSET_LOAD_PLAN.layers[3].groups.filter((group) => group.load !== false && !group.locked)
+      .map((group) => group.priority))];
+    assert.deepEqual(productionSteps.map((step) => step.id), ["layer-one:load:1", "upgrade", "layer-two:load:1",
+      "features:load:1", "features:load:2", ...lazyPriorities.map((priority) => `layer-three:low:${priority}`),
+      ...lazyPriorities.map((priority) => `layer-three:full:${priority}`)], "production steps in the facade's order");
+    assert.deepEqual(productionSteps.filter((step) => step.auto).map((step) => step.id), ["layer-one:load:1"],
+      "only the first frame starts on its own");
+    assert.deepEqual(productionSteps[1].groupIds, ["location"], "the upgrade step names the first layer's groups with copies");
+
+    const stepRegistry = new AssetRegistry({ "bg.day": { ...image("assets/bg/day.webp", ["bg"]), low: "assets/bg/day--low.webp" },
+      "ui.a": image("assets/ui/a.svg", ["ui"]), "ui.b": image("assets/ui/b.svg", ["ui"]),
+      "it.a": { ...image("assets/it/a.webp", ["it"]), low: "assets/it/a--low.webp" } });
+    const stepPlan = new AssetLoadPlan({ registry: stepRegistry, plan: plan([
+      layer("first", "composition", [{ id: "map", priority: 1, readyOn: "low", assets: [{ id: "bg.day" }] }]),
+      layer("second", "ready", [{ id: "ui-a", priority: 1, assets: [{ id: "ui.a" }] }, { id: "ui-b", priority: 2, assets: [{ id: "ui.b" }] }]),
+      { ...layer("third", "after:second", [{ id: "items", priority: 1, assets: [{ id: "it.a" }] }]), lazy: true },
+    ]) });
+    const steps = new AssetLoadStepPlan(stepPlan).steps;
+    assert.deepEqual(steps.map((step) => step.id), ["first:load:1", "upgrade", "second:load:1", "second:load:2",
+      "third:low:1", "third:full:1"]);
+    let stepClock = 0;
+    const gate = new AssetLoadGate({ steps, now: () => (stepClock += 1) });
+    let changes = 0;
+    gate.subscribe(() => { changes += 1; });
+    const loads = [];
+    const gated = new GameAssetPreloadFacade({ plan: stepPlan, assets: stepRegistry, scheduler, gate,
+      imageAssets: { preload: ([record]) => { loads.push(record.src); return Promise.resolve(); } } });
+    await gated.start("first");
+    assert.deepEqual(loads, ["assets/bg/day--low.webp"], "the first frame loads on its own");
+    void gated.startOn("ready");
+    await flush();
+    assert.deepEqual(loads.length, 1, "after the first frame nothing loads until a step is released");
+    assert.equal(gated.getImageState("bg.day"), "low");
+    gate.next();
+    await flush();
+    assert.deepEqual(loads.slice(1), ["assets/bg/day.webp"], "Далі: the first layer's full files");
+    assert.equal(gated.getImageState("bg.day"), "full");
+    gate.jumpToLayer("third");
+    await flush();
+    assert.deepEqual(loads.slice(2), ["assets/ui/a.svg", "assets/ui/b.svg"], "a jump to a layer loads everything before it");
+    assert.ok(changes > 0, "the gate tells the DEV section about changes");
+    const listed = gated.getStatus()[2].groups[0];
+    assert.deepEqual([listed.status, listed.ids], ["waiting", ["it.a"]], "a step's files are listed before it loads");
+    await flush();
+    assert.equal(loads.length, 4, "the next layer waits at its first step");
+    gate.releaseLayer();
+    await flush();
+    assert.deepEqual(loads.slice(4), ["assets/it/a--low.webp", "assets/it/a.webp"], "the whole layer: low pass, then full");
+    await gated.whenFullyLoaded();
+    const snapshot = gate.getSnapshot();
+    assert.deepEqual([snapshot.nextIndex, snapshot.total, snapshot.steps.every((step) => step.state === "done")], [6, 6, true]);
+    gated.dispose();
+
+    // The DevTools section: the mode switch for the next start, the restart, and the step buttons over the gate.
+    const { LoadStepperDevSection } = await importSource("src/dev/tools/load_stepper_dev_section.js");
+    const { DevLoadStepperSettings } = await importSource("src/dev/assets/dev_load_stepper_settings.js");
+    const kept = new Map();
+    const settings = new DevLoadStepperSettings({ cache: { get: (key, fallback) => kept.get(key) ?? fallback,
+      set: (key, value) => kept.set(key, value), remove: (key) => kept.delete(key) } });
+    const node = () => ({ isConnected: true, rows: [], replaceChildren() { this.rows = []; } });
+    const ui = { createSwitcherRow: (label, value, parent, change) => parent.rows.push({ label, value, change }),
+      createButtonRow: (label, parent, click) => parent.rows.push({ label, click }),
+      createTextRow: (label, value, parent) => parent.rows.push({ label, value }) };
+    const sections = new Map();
+    const createSection = (label, parent) => { const content = sections.get(label) ?? node(); sections.set(label, content);
+      content.replaceChildren(); parent.rows.push({ label, content }); return content; };
+    let restarts = 0;
+    let sectionGate = null;
+    const section = new LoadStepperDevSection({ settings, getGate: () => sectionGate, restart: () => { restarts += 1; },
+      readStatus: () => ({ layers: stepPlan.layers.map((entry) => ({ groups: entry.groups.map((group) => ({ id: group.id,
+        label: group.label, files: stepPlan.resolveGroup(group).map((id) => ({ id, kind: "image", path: stepRegistry.pathOf(id),
+          bytes: 2048, state: "none" })) })) })) }), createSection });
+    const body = node();
+    section.render(body, ui);
+    const root = sections.get("⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ");
+    const row = (label) => root.rows.find((entry) => entry.label.startsWith(label));
+    assert.equal(row("стан").value, "вимкнено", "mode off: no steps");
+    row("Покроковий режим").change(true);
+    assert.equal(settings.isEnabled(), true, "the switch keeps the mode for the next start");
+    row("↻ Почати спочатку").click();
+    assert.equal(restarts, 1, "the restart reloads the page");
+    sectionGate = new AssetLoadGate({ steps, now: () => 0 });
+    section.render(body, ui);
+    assert.equal(row("кроків завантажено").value, "1 / 6");
+    row("Далі ▶").click();
+    assert.equal(row("кроків завантажено").value, "2 / 6", "Далі releases one step and the section re-renders");
+    sections.get("Шари (перейти до початку)").rows.find((entry) => entry.label.includes("third")).click();
+    assert.equal(row("кроків завантажено").value, "4 / 6", "a layer button jumps to the layer's start");
+    const nextFiles = sections.get("Наступний крок (ще не вантажиться)").rows.map((entry) => `${entry.label}=${entry.value}`);
+    assert.ok(nextFiles.includes("  a.webp=не завантажено · 2 КБ"), "the next step lists its files with their state");
+    row("Завантажити все").click();
+    assert.equal(row("наступний").value, "усе завантажено");
+    settings.setEnabled(false);
+    assert.equal(settings.isEnabled(), false);
+  }
+
   // Loads go through the plan (DEVELOPMENT_RULES "Loading and startup optimization"): in the composition only the
   // facade preloads images (the selector's rod art goes through facade.request, stage D2).
   const fs = require("node:fs");

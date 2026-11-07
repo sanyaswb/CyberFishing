@@ -193,6 +193,19 @@ export class DevToolsUI {
     return valueEl;
   }
 
+  // A visible label/value row (createInfoRow puts its rows into the collapsed "Опис"); returns the value element.
+  createTextRow(labelStr, value, parentElement) {
+    const row = document.createElement("div");
+    row.className = "devtools__row";
+    row.appendChild(this.#createLabelElement(labelStr));
+    const valueEl = document.createElement("div");
+    valueEl.className = "devtools__value";
+    valueEl.innerText = value;
+    row.appendChild(valueEl);
+    this.#insertTreeNode(parentElement, row, 0);
+    return valueEl;
+  }
+
   createNavigation(pages, parentElement) {
     const navigation = document.createElement("nav");
     navigation.className = "devtools__pages";
