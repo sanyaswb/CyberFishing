@@ -43,7 +43,7 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   bumps the patch version (`0.47.N` → `0.47.N+1`) with a short `CHANGELOG.md` entry (1–3 lines), so the owner can tell
   which build has which change. The version lives in `src/game/presentation/version/project_version.js`, its release
   note in `src/dev/version/project_release_notes.js` (DEV only, spec 160), then `package.json`/`package-lock.json` and
-  the `?v=` links of `index.html`, `dev.html` and `ui-catalog.html`; change all of them together.
+  the `?v=` links of `index.html` and `dev.html`; change all of them together.
 - **Minor: only after the owner's explicit approval**, also for a new or changed mechanic. Until then increment only
   the patch. Never bump the major.
 - Keep the version, `CHANGELOG.md` and its archive consistent: the latest 10 entries in `CHANGELOG.md`, the oldest
@@ -69,7 +69,7 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 
 - **Push only on the owner's command** ("Коміт пуш" or an explicit "push"). Then `develop` and the GitHub Pages
   release go together: `git push origin develop`, then `npm run release:pages -- --site ../cyber-fishing-pages`, commit
-  the site checkout (releases, root `index.html`, `dev.html`, `ui-catalog.html`) and push `gh-pages`. Report both
+  the site checkout (releases, root `index.html`, `dev.html`) and push `gh-pages`. Report both
   commits and the kept previous release.
 - **Before every push** move finished tasks from `tasks.md` to [tasks-archive.md](<D:/dev/cyber fishing/tasks-archive.md>)
   (rule at the top of `tasks.md`); the owner's open checks stay in `tasks.md` with a link to the archived implementation.

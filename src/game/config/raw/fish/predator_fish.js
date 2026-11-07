@@ -13,6 +13,13 @@ export const PREDATOR_FISH = [
       // TK-224: the art in keepnet cards is smaller the lower the level (weightConfig.maxLevel sizes).
       artSizeByLevel: true,
     },
+    // TK-252 (owner): the same anomaly as crucian_stalker, so the unique art can appear.
+    anomalyVariant: {
+      enabled: true,
+      anomalyId: "inside",
+      chance: 0.01,
+      locationIds: ["test"],
+    },
 
     weatherMultipliers: {
       rain: 2.0,

@@ -952,3 +952,10 @@ Reproduction: retain several species, add feed and let it expire; current care a
 ### Inventory aquarium feed and phone filters (v0.34.1, P2)
 
 Reproduction: DEV shop cannot grant aquarium packs; feed is held outside inventory, house acquisition lists every pack even without stock, and the touch shield/pan-y rule prevents horizontal phone scrolling. Expected: inventory-owned packs, grouped free DEV shop, available-only feed rows with exact quantity dialog, and native kinetic scrolling without toggling a checkbox during a swipe. Specs/055 FR-030–FR-035 and T066–T071.
+
+### TK-252 Perch anomaly and guaranteed Fixed Catch anomaly (v0.50.40, P3)
+
+Reproduction: Fixed Catch perch_radioactive with hasAnomaly on gives an ordinary fish (no `anomalyVariant`); the crucian
+only on its listed locations. Expected (owner): hasAnomaly on = the Fixed Catch fish is always anomalous; the perch gets
+the crucian's variant (inside, 1%, test), so natural perch catches on test can be anomalous too. Game-cycle report: see
+the TK-252 commit.

@@ -3,7 +3,7 @@
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
 //   <site>/releases/<version>-<commit>/  the release folder of utils/build-release.js (spec 157 R13): the committed game
 //     and DEV pages, stylesheets, source modules, tracked assets and vendor licences, plus build/ (bundles, boot modules)
-//   <site>/index.html, dev.html, ui-catalog.html  the release pages with <base href="releases/<version>-<commit>/">, a
+//   <site>/index.html, dev.html  the release pages with <base href="releases/<version>-<commit>/">, a
 //     <link rel="preload" as="style"> for the stylesheet and a <link rel="modulepreload"> for the boot module, the bundle
 //     and the chunks the start loads (spec 157 B, R13, spec 160)
 // Files are the committed bytes, except build/ and the game pages, which link the built stylesheet and boot module. A
@@ -20,7 +20,6 @@ const { ReleaseBundleBuilder } = require("./build-release.js");
 
 const PAGE = "index.html";
 const DEV_PAGE = "dev.html";
-const CATALOG_PAGE = "ui-catalog.html";
 const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
 const DEV_METADATA_PREFIX = "src/dev/metadata/";
@@ -104,7 +103,7 @@ class GitCommitTree {
 const STARTUP_METER_ENTRY = "src/entrypoints/game_startup_meter.entry.js";
 
 class ReleaseFileSet {
-  static collect(tree, { pages = [PAGE, ...[DEV_PAGE, CATALOG_PAGE].filter(page => tree.has(page))] } = {}) {
+  static collect(tree, { pages = [PAGE, ...[DEV_PAGE].filter(page => tree.has(page))] } = {}) {
     const files = new Set(pages);
     for (const pageName of pages) {
       const page = tree.read(pageName).toString("utf8");
@@ -112,7 +111,7 @@ class ReleaseFileSet {
         files.add(ReleaseFileSet.#projectPath(tree, href));
       }
       const entries = ReleaseFileSet.#attributeValues(page, "script", "src", /\btype="module"/u);
-      if (entries.length > 1 || (entries.length === 0 && pageName !== CATALOG_PAGE)) {
+      if (entries.length !== 1) {
         throw new Error(`${pageName} must load exactly one module entry`);
       }
       if (entries.length === 1) {
@@ -253,7 +252,7 @@ class PagesReleaseBuilder {
       throw error;
     }
     fs.renameSync(stagingDir, releaseDir);
-    for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => release.files.includes(name))) {
+    for (const page of [PAGE, DEV_PAGE].filter((name) => release.files.includes(name))) {
       fs.writeFileSync(path.join(siteDir, page), PagesReleaseBuilder.rootPage(
         fs.readFileSync(path.join(releaseDir, page), "utf8"), id));
     }
@@ -280,7 +279,7 @@ class PagesReleaseBuilder {
     const bundle = ReleaseBundleBuilder.build({ releaseDir,
       pagePreloads: (page) => ReleaseFileSet.pagePreloads(this.#tree, page) });
     const preloads = {};
-    for (const page of [PAGE, DEV_PAGE, CATALOG_PAGE].filter((name) => files.includes(name))) {
+    for (const page of [PAGE, DEV_PAGE].filter((name) => files.includes(name))) {
       const built = bundle.pages[page];
       const { styles } = ReleaseFileSet.pagePreloads(this.#tree, page);
       preloads[page] = Object.freeze({ styles: built ? [built.stylesheet] : styles, modules: built

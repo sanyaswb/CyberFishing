@@ -177,6 +177,11 @@ export class DevTools {
     this.#updateConfigValue(path, value);
   }
 
+  // TK-252: while the panel is open the game sends its live data (the hooked fish), Overlay on or off.
+  get isOpen() {
+    return this.#isOpen && !this.#isDisposed;
+  }
+
   toggle() {
     if (this.#isDisposed) return;
     this.#isOpen = !this.#isOpen;

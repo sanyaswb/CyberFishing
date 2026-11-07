@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.40 - ACTIVE FISH without Overlay, guaranteed Fixed Catch anomaly
+
+- TK-252: DevTools show the hooked fish's parameters (ACTIVE FISH) in the fight while the panel is open, Overlay off.
+- Fixed Catch hasAnomaly always makes the test fish anomalous; perch_radioactive gets the crucian's anomaly (inside, 1%, test).
+- ui-catalog.html removed (owner): no longer released, served or checked.
+
 ## v0.50.39 - Step mode holds HUD full files
 
 - TK-251.1 (spec 167): in step-by-step loading a full file asked for by a view (toolbar, HUD, inventory pictures after their low copy) waits for the first step that loads it in full.
@@ -37,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.31 - A bait over a live bait asks first
 
 - TK-246: with a live bait on the hook, choosing a regular bait lights the switcher cell and offers «Замінити» in its editor, like over any other bait; a second choice (the card, «Замінити» or the cell) puts it on and clears the live bait's choice (the fish stays in the keepnet), «Назад» keeps the live bait.
-
-## v0.50.30 - Live bait stacks equip like baits
-
-- TK-245: tapping a live bait stack in the backpack follows the bait rules: an empty single hook takes the species' next live bait at once; over a regular bait or another live bait the switcher cell turns green and the stack panel offers «Замінити» (a repeated tap or the cell confirms, «Назад» cancels); the chosen species only opens its panel; with no single hook «Спорядити» marks the tackle.

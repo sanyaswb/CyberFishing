@@ -14,7 +14,7 @@ npm run build:release -- --out <empty dir> [--ref <commit>]
 
 | Path | What it is | Cache |
 | --- | --- | --- |
-| `index.html`, `dev.html`, `ui-catalog.html` | the pages; each game page's one module script loads its boot module | no cache |
+| `index.html`, `dev.html` | the pages; each game page's one module script loads its boot module | no cache |
 | `build/<page>.boot-<hash>.js` | boot module: imports the bundle; with `?esm=1` in the address it adds a `modulepreload` for every source module of the page and imports the source entry instead (debugging on a phone); a bundle that cannot load shows the failure and a retry button on the startup screen | immutable |
 | `build/<entry>-<hash>.js`, `build/chunks/<name>-<hash>.js` | esbuild bundles (`--bundle --format=esm --splitting --minify`), one build per page, split into shared and lazy chunks | immutable |
 | `build/<page>.styles-<hash>.css` | the page's stylesheets in page order as one minified file; the release page links only this one, also under `?esm=1` | immutable |

@@ -1,23 +1,13 @@
 export class FixedCatchFishFactory {
   #fishRarityResolver;
-  #fishAnomalyVariantResolver;
   #fishVisualVariantResolver;
 
   constructor({
     fishRarityResolver,
-    fishAnomalyVariantResolver,
     fishVisualVariantResolver,
   }) {
     if (!fishRarityResolver || typeof fishRarityResolver.resolve !== "function") {
       throw new TypeError("FixedCatchFishFactory requires fishRarityResolver");
-    }
-    if (
-      !fishAnomalyVariantResolver ||
-      typeof fishAnomalyVariantResolver.resolve !== "function"
-    ) {
-      throw new TypeError(
-        "FixedCatchFishFactory requires fishAnomalyVariantResolver",
-      );
     }
     if (
       !fishVisualVariantResolver ||
@@ -28,7 +18,6 @@ export class FixedCatchFishFactory {
       );
     }
     this.#fishRarityResolver = fishRarityResolver;
-    this.#fishAnomalyVariantResolver = fishAnomalyVariantResolver;
     this.#fishVisualVariantResolver = fishVisualVariantResolver;
   }
 
@@ -37,18 +26,13 @@ export class FixedCatchFishFactory {
     weightKg,
     biteSequence,
     nameSuffix = " (TEST)",
-    anomalyChanceOverride = null,
-    locationId = "",
+    forceAnomaly = false,
   }) {
     if (!template || typeof template !== "object") {
       throw new TypeError("FixedCatchFishFactory requires fish template");
     }
     const weightConfig = template.weightConfig || {};
-    const anomalyId = this.#resolveAnomalyId({
-      template,
-      anomalyChanceOverride,
-      locationId,
-    });
+    const anomalyId = this.#resolveAnomalyId(template, forceAnomaly);
     const profile = this.#fishRarityResolver.resolve({
       weightKg,
       weightConfig,
@@ -91,23 +75,11 @@ export class FixedCatchFishFactory {
     };
   }
 
-  #resolveAnomalyId({
-    template,
-    anomalyChanceOverride,
-    locationId,
-  }) {
-    if (
-      anomalyChanceOverride === null ||
-      anomalyChanceOverride === undefined
-    ) {
-      return template.anomaly;
-    }
-    return this.#fishAnomalyVariantResolver.resolve({
-      config: template.anomalyVariant,
-      locationId,
-      roll: 0,
-      chanceOverride: anomalyChanceOverride,
-    }).anomalyId;
+  // TK-252 (owner): Fixed Catch hasAnomaly guarantees the species' anomaly, whatever the location, the variant's
+  // chance or its enabled switch. Natural bites keep those rules (BiteSystem).
+  #resolveAnomalyId(template, forceAnomaly) {
+    if (!forceAnomaly) return template.anomaly;
+    return template.anomalyVariant?.anomalyId || template.anomaly;
   }
 
   #findLevelRange(weightConfig, level) {

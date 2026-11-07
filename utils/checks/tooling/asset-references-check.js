@@ -74,7 +74,7 @@ const PATH_LITERAL_EXCEPTIONS = Object.freeze([
 
 // Every shipped text source: src/**/*.{js,css,html} and the pages (not only tracked files, so a new file counts too).
 function shippedSources() {
-  const files = ["index.html", "dev.html", "ui-catalog.html"];
+  const files = ["index.html", "dev.html"];
   const walk = (directory) => {
     for (const entry of fs.readdirSync(path.join(ROOT, directory), { withFileTypes: true })) {
       const relative = `${directory}/${entry.name}`;

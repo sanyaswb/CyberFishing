@@ -30,6 +30,25 @@ rule as something the next change can follow.
 | R14 | A check passes only by exit code 0 and a last stdout line that says it passed: Node exits with 0 when an awaited promise never settles, so the exit code alone cannot tell a finished check from a hung one. | I-13 |
 | R15 | A view model that reads a port's state draws every combination of that state, not only the steady ones: listeners redraw synchronously from inside a command, between its steps. The check lists the combinations, and a double of a call that redraws in production redraws too. | I-14 |
 | R16 | A pick mode (a consumable or slot pick that narrows the list) ends with the choice it was opened for. A command that fills the picked target leaves the pick explicitly; a check selects «Усе» after the choice and expects items outside the picked kind. | I-15 |
+| R17 | A DEV tool that reads live game data asks for it itself (a port such as `isLiveDataRequested`); it never depends on another tool's switch (Overlay, console modules) being on. Changing a debug default is checked against every reader of the events that switch gates. | I-16 |
+
+<a id="i-16"></a>
+
+## I-16 · 2026-11-07 · DevTools lost ACTIVE FISH in the fight; Fixed Catch hasAnomaly did nothing (TK-252)
+
+- **Seen:** the hooked fish's sections no longer appeared at the end of DevTools during a fight; Fixed Catch with
+  hasAnomaly on gave an ordinary perch_radioactive (and a crucian only on its listed locations).
+- **Cause:** DevTools build «ACTIVE FISH» from `debug-live-update`, but `DebugService.update` and `BrowserDebugAdapter.emit`
+  sent it only while `CONFIG.debug.overlay` or a console module was on; v0.42.1 (G-075) turned the Overlay off by default,
+  so DevTools never got the hooked fish. `FixedCatchFishFactory` took the anomaly from `FishAnomalyVariantResolver` (location
+  list, enabled switch), and perch_radioactive had no `anomalyVariant` at all.
+- **Fix:** v0.50.40: the open DevTools panel asks for the live update (`DevTools.isOpen` -> `isLiveDataRequested` in
+  `BrowserDebugAdapter` and `DebugService`, only that event); Fixed Catch `forceAnomaly` uses the species' anomaly id on any
+  location, a species without one warns once; the perch got the crucian's variant (owner).
+- **Rule:** R17.
+- **Check:** platform-runtime (live update with debug off), config-runtime (composition passes the port and the logger),
+  fish-rarity (every species with unique art becomes anomalous under Fixed Catch; one warning for a species without an
+  anomaly id); each fails on the old code.
 
 <a id="i-15"></a>
 

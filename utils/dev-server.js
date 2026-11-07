@@ -59,7 +59,7 @@ class StaticFileResolver {
 
     if (!this.#isInsideRoot(filePath)) return null;
     const relative = path.relative(this.#rootDir, filePath).split(path.sep);
-    if (!(relative.length === 1 && ['index.html', 'dev.html', 'ui-catalog.html'].includes(relative[0])) &&
+    if (!(relative.length === 1 && ['index.html', 'dev.html'].includes(relative[0])) &&
       !['src', 'styles', 'assets', 'vendor'].includes(relative[0])) return null;
     return filePath;
   }

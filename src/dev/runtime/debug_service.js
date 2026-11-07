@@ -1,14 +1,18 @@
 export class DebugService {
   #config;
   #debugModulesSource;
+  #isLiveDataRequested;
   #currentBaits = [];
-  constructor(config, debugModulesSource) {
+  // TK-252: isLiveDataRequested (the open DevTools panel) needs the live data with Overlay and console modules off.
+  constructor(config, debugModulesSource, isLiveDataRequested = null) {
     this.#config = config;
     this.#debugModulesSource = debugModulesSource;
+    this.#isLiveDataRequested = isLiveDataRequested;
   }
 
   update(context) {
-    if (!this.#config.debug?.overlay && !this.#hasEnabledConsoleModules())
+    if (!this.#config.debug?.overlay && !this.#hasEnabledConsoleModules() &&
+      this.#isLiveDataRequested?.() !== true)
       return;
     if (!context || typeof context.emitDebugEvent !== "function") return;
     context.emitDebugEvent("debug-live-update", this.#buildPayload(context));

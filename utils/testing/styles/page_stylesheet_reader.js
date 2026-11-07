@@ -9,7 +9,7 @@ const DEV_STYLES = "src/dev/styles/";
 
 // HTML is the CSS composition root. Tests read the same ordered assets as the browser.
 function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", html = null } = {}) {
-  if (!["index.html", "dev.html", "ui-catalog.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
+  if (!["index.html", "dev.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
   const source = html ?? fs.readFileSync(path.join(projectRoot, page), "utf8");
   const stylesheets = [];
   const seen = new Set();

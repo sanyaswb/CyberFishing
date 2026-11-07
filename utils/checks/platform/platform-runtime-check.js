@@ -2137,6 +2137,26 @@ async function checkGameLoopAndAdapters() {
   debug.on("bite", (detail) => received.push(detail));
   debug.on("tick", () => {});
   assert.equal(counter.getActiveCount(), 2);
+  // TK-252: with debug off, the open DevTools panel still receives the live update (ACTIVE FISH), nothing else.
+  let liveRequested = true;
+  const liveEvents = [];
+  const liveDebug = new BrowserDebugAdapter({ dispatchEvent: (event) => liveEvents.push(event.type) },
+    () => false, new EventBus(new ManagedListenerCounter()), () => liveRequested);
+  liveDebug.emit("debug-bite-tick", {});
+  liveDebug.emit("debug-live-update", { hookedFish: { id: "fish" } });
+  liveRequested = false;
+  liveDebug.emit("debug-live-update", {});
+  assert.equal(json(liveEvents), json(["debug-live-update"]), "the live update goes out only while DevTools asks for it");
+  runtime.load("src/dev/runtime/debug_service.js", { expose: ["DebugService"] });
+  const liveContextEvents = [];
+  const liveContext = { emitDebugEvent: (type) => liveContextEvents.push(type), getEnvSnapshot: () => ({}),
+    getFloatPosition: () => ({ x: 0, y: 0 }), getBiteEnv: () => ({}), getEquipment: () => ({}), getGameStateName: () => "playing",
+    getLiveChances: () => null, getChumZones: () => [], getActiveBoat: () => null, getStateDebugData: () => null };
+  const debugService = new runtime.context.DebugService({ debug: { overlay: false } }, () => ({}), () => liveRequested);
+  debugService.update(liveContext);
+  liveRequested = true;
+  debugService.update(liveContext);
+  assert.equal(json(liveContextEvents), json(["debug-live-update"]), "DebugService builds the live update for open DevTools");
   debug.clear();
   debug.emit("bite", { n: 4 });
   assert.equal(received.length, 1);

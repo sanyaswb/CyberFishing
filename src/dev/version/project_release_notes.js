@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-252: DevTools show ACTIVE FISH in the fight with Overlay off; Fixed Catch hasAnomaly always gives an anomalous fish; perch anomaly.",
   "TK-251.1: in step mode a picture's full file waits for its step; HUD pictures keep their low copy until then.",
   "TK-251 (spec 167): DevTools step-by-step loading: the first frame, then each layer and priority on «Далі ▶».",
   "TK-250.1 (spec 166): Spine loads its half-size atlas page, then the full one; static pictures only without Spine (rod, boat).",

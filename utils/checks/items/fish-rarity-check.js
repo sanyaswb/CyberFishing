@@ -59,7 +59,11 @@ class FishRarityCheck {
     InactiveDevFlags,
     DevFlagsProvider,
     GameplayOverrideReader,
+    FixedCatchHook,
   ) {
+    this.FixedCatchHook = FixedCatchHook;
+    this.FixedCatchFishFactory = FixedCatchFishFactory;
+    this.FishVisualVariantResolver = FishVisualVariantResolver;
     const rarityScale = Object.freeze({
       fishWeightBands: 7,
       weightUnitsPerKg: 1000,
@@ -82,7 +86,6 @@ class FishRarityCheck {
     this.anomalyVariantResolver = new FishAnomalyVariantResolver();
     this.fixedCatchFishFactory = new FixedCatchFishFactory({
       fishRarityResolver: this.resolver,
-      fishAnomalyVariantResolver: this.anomalyVariantResolver,
       fishVisualVariantResolver: this.visualVariantResolver,
     });
     this.hookedFishProfileSynchronizer = new HookedFishProfileSynchronizer({
@@ -117,6 +120,8 @@ class FishRarityCheck {
     this.#checkVisualScaleDistribution();
     this.#checkRarityConfigValidation();
     this.#checkFixedCatchRarity();
+    this.#checkUniqueArtFishTakeFixedCatchAnomaly();
+    this.#checkFixedCatchWarnsWithoutAnomaly();
     this.#checkDevToolsWeightSynchronization();
     this.#checkVictoryRarityTransfer();
   }
@@ -871,6 +876,44 @@ class FishRarityCheck {
     );
   }
 
+  // TK-252 (owner): Fixed Catch hasAnomaly guarantees the anomaly. Every real species with unique art becomes
+  // anomalous with its unique art on any location; perch_radioactive had no anomalyVariant, so the switch did nothing.
+  #checkUniqueArtFishTakeFixedCatchAnomaly() {
+    const { FISH_DB } = require("../../../src/game/config/databases/fish_database.js");
+    const realFactory = new this.FixedCatchFishFactory({
+      fishRarityResolver: this.resolver,
+      fishVisualVariantResolver: new this.FishVisualVariantResolver({
+        assets: new AssetRegistry(ASSET_REGISTRY), noneAnomalyIds: ["", "none"] }),
+    });
+    const uniqueArtFish = FISH_DB.filter((fish) => fish.visual?.uniqueImageAssetPattern);
+    Assertion.that(uniqueArtFish.some((fish) => fish.id === "perch_radioactive"), "perch_radioactive has unique art");
+    for (const fish of uniqueArtFish) {
+      const caught = realFactory.create({ template: fish, weightKg: 0.8, biteSequence: ["test"], forceAnomaly: true });
+      Assertion.that(caught.hasAnomaly && caught.isUnique, `Fixed Catch hasAnomaly makes ${fish.id} anomalous`);
+      Assertion.that(/-uniq\.webp$/.test(caught.imagePath), `${fish.id} anomaly uses its unique art`);
+    }
+  }
+
+  // TK-252: the hook makes the Fixed Catch fish anomalous on any location; a species with no anomaly id is reported once.
+  #checkFixedCatchWarnsWithoutAnomaly() {
+    const warnings = [];
+    const variantFish = { ...this.#createCatchTemplate(), id: "fixture_fish" };
+    const plainFish = { ...this.#createCatchTemplate(), id: "plain_fish", anomalyVariant: undefined };
+    const config = { debug: { fixedCatch: { enabled: true, fishId: "fixture_fish", weight: 1 } },
+      spawns: { fishes: [variantFish, plainFish] } };
+    const hook = new this.FixedCatchHook({ config, biteRules: { selectBiteSequence: () => ["test"] },
+      devFlags: { isEnabled: (flag) => flag === "forceAnomalyChance" }, fishFactory: this.fixedCatchFishFactory,
+      logger: { warn: (message) => warnings.push(message) } });
+    const bite = (locationId) => hook.apply({ hooked: { id: "natural" }, baitCandidates: [], biteEnv: { locationId } });
+    Assertion.that(bite("test").hasAnomaly, "Fixed Catch anomaly on a listed location");
+    Assertion.that(bite("missing").hasAnomaly, "Fixed Catch anomaly is guaranteed on an unlisted location too");
+    Assertion.equal(warnings.length, 0, "no warning when the anomaly applies");
+    config.debug.fixedCatch.fishId = "plain_fish";
+    Assertion.that(!bite("test").hasAnomaly && !bite("test").hasAnomaly, "a species with no anomaly id stays ordinary");
+    Assertion.equal(warnings.length, 1, "one warning per species");
+    Assertion.that(warnings[0].includes("plain_fish"), "warning names the fish");
+  }
+
   #checkFixedCatchRarity() {
     const template = this.#createCatchTemplate();
     const ordinary = this.fixedCatchFishFactory.create({
@@ -890,8 +933,7 @@ class FishRarityCheck {
       template,
       weightKg: 4.2,
       biteSequence: ["test"],
-      anomalyChanceOverride: 1,
-      locationId: "test",
+      forceAnomaly: true,
     });
     Assertion.that(
       godForced.hasAnomaly && godForced.isUnique,
@@ -903,16 +945,15 @@ class FishRarityCheck {
       "God Mode fixed catch uses the unique level skin",
     );
 
-    const wrongLocation = this.fixedCatchFishFactory.create({
-      template,
+    const disabledVariant = this.fixedCatchFishFactory.create({
+      template: { ...template, anomalyVariant: { ...template.anomalyVariant, enabled: false, chance: 0.0001 } },
       weightKg: 4.2,
       biteSequence: ["test"],
-      anomalyChanceOverride: 1,
-      locationId: "missing",
+      forceAnomaly: true,
     });
     Assertion.that(
-      !wrongLocation.hasAnomaly && !wrongLocation.isUnique,
-      "God Mode fixed catch preserves anomaly location restrictions",
+      disabledVariant.hasAnomaly && disabledVariant.isUnique,
+      "Fixed Catch hasAnomaly ignores the variant's chance and switch (TK-252)",
     );
 
     for (const range of this.fixture.weightConfig.levelWeightRanges) {
@@ -920,8 +961,7 @@ class FishRarityCheck {
         template,
         weightKg: range.min,
         biteSequence: ["test"],
-        anomalyChanceOverride: 1,
-        locationId: "test",
+        forceAnomaly: true,
       });
       Assertion.that(
         unique.hasAnomaly,
@@ -1145,6 +1185,10 @@ const runtime = new RuntimeLoader().loadClasses([
     relativePath: "src/dev/fishing/hooked_fish_profile_synchronizer.js",
     classNames: ["HookedFishProfileSynchronizer"],
   },
+  {
+    relativePath: "src/dev/fishing/fixed_catch_hook.js",
+    classNames: ["FixedCatchHook"],
+  },
 ]);
 new FishRarityCheck(
   runtime.FishRarityResolver,
@@ -1165,6 +1209,7 @@ new FishRarityCheck(
   runtime.InactiveDevFlags,
   runtime.DevFlagsProvider,
   runtime.GameplayOverrideReader,
+  runtime.FixedCatchHook,
 ).run();
 require("../../testing/runtime/render_frame_test_composition").checkRenderFrameComposition();
 require("../../testing/runtime/chum_test_composition").checkChumComposition();

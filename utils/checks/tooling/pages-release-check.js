@@ -82,13 +82,6 @@ try {
         `room level ${level} has day, evening and night backgrounds`);
     }
   }
-  if (tree.has("ui-catalog.html")) {
-    const catalogPage = tree.read("ui-catalog.html").toString("utf8");
-    assert(files.has("ui-catalog.html"));
-    for (const [, href] of catalogPage.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href));
-    assert.equal(fs.readFileSync(path.join(site, "ui-catalog.html"), "utf8"),
-      catalogPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`));
-  }
   for (const file of tree.paths().filter((file) => file.startsWith("assets/"))) assert(files.has(file), `asset ${file} is released`);
   // Specs 099, 103: every released vendor module ships with its manifest licence.
   if (tree.has("vendor/manifest.json")) {
@@ -253,7 +246,7 @@ try {
   assert.throws(() => PagesReleaseBuilder.rootPage("<head>\n<base href=\"x/\">", "1.0.0-abcdef0"), /must not declare <base>/u);
   const fakeTree = { read: (file) => Buffer.from(file === "index.html"
     ? '<link rel="stylesheet" href="https://cdn.example/x.css"><script type="module" src="src/e.js"></script>' : ""),
-  has: (file) => !["dev.html", "ui-catalog.html"].includes(file), paths: () => [] };
+  has: (file) => file !== "dev.html", paths: () => [] };
   assert.throws(() => ReleaseFileSet.collect(fakeTree), /project-relative paths/u, "external stylesheets are rejected");
 
   // New uncommitted catalog code is checked too; the immutable release above still uses HEAD bytes.
@@ -272,9 +265,9 @@ try {
   assert(production.includes("index.html") && production.some(file => file.startsWith("assets/")),
     "production structure includes the game page and shipped assets");
   assert(production.every(file => authoredFiles.has(file)), "production structure uses the release file selection");
-  assert(!production.some(file => /^(?:dev\.html$|ui-catalog\.html$|src\/(?:dev|bootstrap\/development|entrypoints\/dev)\/|utils\/|docs\/|specs\/|\.)/u.test(file)),
+  assert(!production.some(file => /^(?:dev\.html$|src\/(?:dev|bootstrap\/development|entrypoints\/dev)\/|utils\/|docs\/|specs\/|\.)/u.test(file)),
     "production structure excludes DEV, tools, tests, docs and repository metadata");
-  for (const file of ["ui-catalog.html", "src/game/presentation/house/house_screen_markup.js",
+  for (const file of ["src/game/presentation/house/house_screen_markup.js",
     "src/game/presentation/styles/auto-switch.css", "src/game/presentation/styles/ui-surface.css",
     "src/game/presentation/ui/ui_close_button_renderer.js", "src/game/presentation/ui/ui_auto_switch_renderer.js"]) {
     assert(authoredFiles.has(file), `authored catalog release closure includes ${file}`);

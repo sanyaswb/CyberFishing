@@ -155,6 +155,8 @@ async function startGame() {
   let readLocationMetric = null;
   let timeControl = null;
   let devTools = null;
+  // TK-252: the open DevTools panel reads the live data (ACTIVE FISH in the fight) with Overlay off.
+  const isLiveDataRequested = () => devTools?.isOpen === true;
   const cheatInput = new DevCheatInput({ target: windowTarget, scheduler: windowTarget,
     fetchCommand: (...args) => windowTarget.fetch(...args), createAbortController: () => new windowTarget.AbortController(),
     open: () => devTools?.open() });
@@ -217,15 +219,16 @@ async function startGame() {
       sceneMode: pageParams.get("scene"),
       createInventorySplitSource: ({documentTarget: target, listeners}) =>
         new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
-      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
+      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter),
+        isLiveDataRequested),
       createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
       createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
       createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({
-        config, biteRules, devFlags, fishFactory: new FixedCatchFishFactory(resolvers),
+        config, biteRules, devFlags, fishFactory: new FixedCatchFishFactory(resolvers), logger: new ConsoleLogger(),
       }),
       createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
-      createDebugService: config => new DebugService(config, debugModulesSource),
+      createDebugService: config => new DebugService(config, debugModulesSource, isLiveDataRequested),
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,

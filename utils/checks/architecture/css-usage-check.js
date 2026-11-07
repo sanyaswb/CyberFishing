@@ -125,7 +125,7 @@ function projectVocabulary() {
   };
   walk("src");
   production.addHtml(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"));
-  for (const page of ["index.html", "dev.html", "ui-catalog.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
+  for (const page of ["index.html", "dev.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
   return { production, development, injected };
 }
 

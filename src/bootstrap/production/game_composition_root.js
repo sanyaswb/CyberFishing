@@ -1563,7 +1563,6 @@ export class GameCompositionRoot {
           biteRules: runtime.biteRules,
           devFlags,
           fishRarityResolver: runtime.fishRarityResolver,
-          fishAnomalyVariantResolver: runtime.fishAnomalyVariantResolver,
           fishVisualVariantResolver: runtime.fishVisualVariantResolver,
         }], ["apply"],
       ),

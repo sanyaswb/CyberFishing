@@ -175,7 +175,9 @@ function checkDevelopmentInputs() {
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
-  class DebugAdapter { constructor(target, isEnabled, bus) { Object.assign(this, { target, isEnabled, bus }); } }
+  class DebugAdapter { constructor(target, isEnabled, bus, isLiveDataRequested) { Object.assign(this, { target, isEnabled, bus, isLiveDataRequested }); } }
+  class DebugServiceSpy { constructor(options, modulesSource, isLiveDataRequested) { Object.assign(this, { options, modulesSource, isLiveDataRequested }); } }
+  const isLiveDataRequested = () => false;
   class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
   class Bus { constructor(counter) { this.counter = counter; } }
   const renderedVersions = [];
@@ -186,7 +188,8 @@ function checkDevelopmentInputs() {
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
     LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
-    FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
+    FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: DebugServiceSpy,
+    ConsoleLogger: class { warn() {} }, isLiveDataRequested,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class { constructor(...args) { this.args = args; this.footer = {}; } },
     DevToolsDependencyFeedback: Renderer, BrowserTimeoutScheduler: class { constructor(host) { this.host = host; } },
@@ -246,15 +249,19 @@ function checkDevelopmentInputs() {
   assert.equal(dragTool.disposed, true, "a rebuilt location debug builder disposes the previous drag layer");
   assert.equal(ports.createLocationDebugMapBuilder(rendererOptions).options, rendererOptions);
   assert.equal(ports.createItemProgressionDebugSnapshotProvider(rendererOptions).options, rendererOptions);
-  const hookDeps = { config, biteRules: {}, devFlags: {}, fishRarityResolver: {}, fishAnomalyVariantResolver: {}, fishVisualVariantResolver: {} };
+  const hookDeps = { config, biteRules: {}, devFlags: {}, fishRarityResolver: {}, fishVisualVariantResolver: {} };
   const hook = ports.createHookedFishOverride(hookDeps);
   assert.equal(hook.options.config, config);assert.equal(hook.options.biteRules, hookDeps.biteRules);assert.equal(hook.options.devFlags, hookDeps.devFlags);
-  assert.deepEqual(Object.keys(hook.options.fishFactory.options).sort(), ["fishAnomalyVariantResolver", "fishRarityResolver", "fishVisualVariantResolver"], "DEV Fixed Catch hook composes its fish factory");
+  assert.deepEqual(Object.keys(hook.options.fishFactory.options).sort(), ["fishRarityResolver", "fishVisualVariantResolver"], "DEV Fixed Catch hook composes its fish factory");
   assert.equal(ports.createHookedFishProfileSynchronizer(rendererOptions).options, rendererOptions);
-  assert.equal(ports.createDebugService(config).options, config);
+  assert.equal(typeof hook.options.logger?.warn, "function", "DEV Fixed Catch hook reports a species without an anomaly id (TK-252)");
+  const debugService = ports.createDebugService(config);
+  assert.equal(debugService.options, config);
+  assert.equal(debugService.isLiveDataRequested, isLiveDataRequested, "open DevTools ask DebugService for the live data (TK-252)");
   assert(ports.createFightDiagnosticsBuilder() instanceof Renderer, "DEV composes the fight diagnostics snapshot builder");
   const isEnabled = () => true, debugEvents = ports.createDebugEvents({ documentTarget: document, isEnabled });
   assert(debugEvents instanceof DebugAdapter);assert.equal(debugEvents.target, document);assert.equal(debugEvents.isEnabled, isEnabled);
+  assert.equal(debugEvents.isLiveDataRequested, isLiveDataRequested, "open DevTools receive the live update with debug off (TK-252)");
   assert(debugEvents.bus instanceof Bus);assert.equal(debugEvents.bus.counter, listenerCounter, "the DEV debug bus is counted");
   const diagnosticsOptions = { devFlags: flags, debugEvents, documentTarget: document };
   const sessionDiagnostics = ports.createGameDiagnostics(diagnosticsOptions);

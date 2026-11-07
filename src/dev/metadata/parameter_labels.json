@@ -1341,7 +1341,7 @@
   },
   "debug.fixedCatch.hasAnomaly": {
     "label": "Fixed Catch anomaly",
-    "description": "Linked view of debug.godMode.forceAnomalyChance. Changing either switch immediately changes the other; no second anomaly value is stored."
+    "description": "Linked view of debug.godMode.forceAnomalyChance. Changing either switch immediately changes the other; no second anomaly value is stored. While on, the Fixed Catch fish is always anomalous (any location); natural bites keep the species' anomaly locations."
   },
   "debug.memoryWatchdog.enabled": {
     "label": "Memory watchdog enabled",
