@@ -577,6 +577,14 @@ async function checkLiveBaitCardStates() {
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "fry", inWater: true }).buttons[0], ["Замінити", true, KEEPNET_LABELS.tackleInWater]);
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "other" }).buttons[0], ["На живця", false, ""],
     "only the waiting fish's card changes");
+  // TK-248: a pending release is a green check («Так, відпустити» stays its name and tooltip) beside the red cross.
+  const releasing = cards.fish(fish, { aquarium: { owned: false }, pendingRelease: "fry", onAction() {}, onPreview() {}, hook: base })
+    .element.children.find((child) => child.className === "keepnet-section__actions").children;
+  assert.deepEqual(releasing.map(symbolOf), ["check", "close"]);
+  assert(releasing[0].classList.contains("keepnet-section__action--confirm") && releasing[0].textContent === "" &&
+    releasing[0].getAttribute("aria-label") === KEEPNET_LABELS.confirmRelease && releasing[0].title === KEEPNET_LABELS.confirmRelease,
+    "TK-248: «Так, відпустити» is a green check named by its label");
+  assert(releasing[1].classList.contains("keepnet-section__action--cancel"), "«Залишити» stays the red cross");
 }
 
 // TK-227: the DevTools keepnet section fills the keepnet to 0..100 % of its capacity with random valid fish through the

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.33 - Release confirmation is a green check
+
+- TK-248: a keepnet fish card waiting for release confirmation shows a green check instead of «Так, відпустити» (the text stays its name and tooltip), beside the red cross «Залишити».
+
 ## v0.50.32 - Keepnet thumbnail follows the fill
 
 - TK-247: the keepnet sector of the inventory fan shows the keepnet's current fill stage (it was always the empty one), updated each time the fan opens; the classic keepnet button follows the fill while the keepnet is closed too.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.24 - Live bait stack in the item editor
 
 - TK-240: a live bait stack opens in the ordinary item editor like any bait: the fish's picture in the editor's card, each fish as a parameter row (thumbnail and life scale without a number), «В садок» and «Назад»; the separate stack panel is gone.
-
-## v0.50.23 - Backpack limit
-
-- TK-239 (spec 164): the backpack holds at most 100 slots: every owned item counts wherever it is (equipped ones too, so taking things off always works), live baits never; new items that do not fit are refused (DEV shop, House feed; one-time grants wait for room); a full backpack's skin turns translucent red.

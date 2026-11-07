@@ -1,10 +1,11 @@
 import { createInventoryIcon, createItemPlaceholderIcon } from "../inventory/inventory_icons.js";
 
 // TK-238: card actions drawn as a sprite icon (the text stays the accessible name and the tooltip); cancel actions are
-// a red cross.
+// a red cross, the release confirmation a green check (TK-248).
 const ACTION_ICONS = Object.freeze({ select: "hook", transfer: "aquarium", "to-inventory": "backpack",
-  deselect: "close", "cancel-replace": "close", "cancel-release": "close" });
+  deselect: "close", "cancel-replace": "close", "cancel-release": "close", "confirm-release": "check" });
 const CANCEL_ACTIONS = Object.freeze(new Set(["deselect", "cancel-replace", "cancel-release"]));
+const CONFIRM_ACTIONS = Object.freeze(new Set(["confirm-release"]));
 import { applyArtSize } from "../ui/art_size.js";
 import { RarityStarsRenderer } from "../ui/rarity_stars_renderer.js";
 
@@ -53,8 +54,10 @@ export class KeepnetCardRenderer {
     const focusables = [];
     const action = (id, text, disabledReason = null, host = actions) => {
       const icon = ACTION_ICONS[id];
-      const button = this.#button(icon ? `keepnet-section__action keepnet-section__action--icon${CANCEL_ACTIONS.has(id)
-        ? " keepnet-section__action--cancel" : ""}` : "keepnet-section__action", icon ? "" : text,
+      const tone = CANCEL_ACTIONS.has(id) ? " keepnet-section__action--cancel"
+        : CONFIRM_ACTIONS.has(id) ? " keepnet-section__action--confirm" : "";
+      const button = this.#button(icon ? `keepnet-section__action keepnet-section__action--icon${tone}`
+        : "keepnet-section__action", icon ? "" : text,
       `${fish.id}:${id}`, () => onAction(fish, id));
       if (icon) {
         button.setAttribute("aria-label", text);

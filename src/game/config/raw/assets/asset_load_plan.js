@@ -53,7 +53,7 @@ export const ASSET_LOAD_PLAN = {
         { id: "feature-victory", label: "Екран перемоги", priority: 3, assets: [{ module: "victory" }] },
         { id: "lazy-backgrounds", label: "Фони інших локацій", priority: 4, assets: [{ source: "location.elsewhere" }] },
         { id: "lazy-items", label: "Предмети інвентаря", priority: 5,
-          assets: [{ tag: "baits" }, { tag: "batteries" }, { tag: "briefcases" }, { tag: "floats" }, { tag: "keepnet" }, { tag: "nets" },
+          assets: [{ tag: "baits" }, { tag: "chums" }, { tag: "batteries" }, { tag: "briefcases" }, { tag: "floats" }, { tag: "keepnet" }, { tag: "nets" },
             { id: "items.boats.boat-lvl--3_bait" }, { id: "items.boats.boat-lvl--3_no-bait" }, { id: "items.radio.radio-receiver" },
             { id: "items.rods.bamboo-rod-ecip-v1" }, { id: "items.aquarium-feed-simple" }, { id: "items.aquarium-feed-good" },
             { id: "items.aquarium-feed-premium" }] },

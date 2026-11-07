@@ -155,6 +155,18 @@
 │  │  │  ├── briefcase--1--close.webp
 │  │  │  ├── briefcase--1--open--low.webp
 │  │  │  └── briefcase--1--open.webp
+│  │  ├── chums
+│  │  │  └── carp-mix-basic
+│  │  │     ├── carp-mix-basic--100--low.webp
+│  │  │     ├── carp-mix-basic--100.webp
+│  │  │     ├── carp-mix-basic--15--low.webp
+│  │  │     ├── carp-mix-basic--15.webp
+│  │  │     ├── carp-mix-basic--25--low.webp
+│  │  │     ├── carp-mix-basic--25.webp
+│  │  │     ├── carp-mix-basic--50--low.webp
+│  │  │     ├── carp-mix-basic--50.webp
+│  │  │     ├── carp-mix-basic_icon--low.webp
+│  │  │     └── carp-mix-basic_icon.webp
 │  │  ├── floats
 │  │  │  ├── float-day--low.webp
 │  │  │  ├── float-day--scene--low.webp

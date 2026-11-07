@@ -223,6 +223,7 @@
   stroke-width: 2;
 }
 .keepnet-section__action--cancel { color: var(--ui-danger); }
+.keepnet-section__action--confirm { color: var(--ui-success); }
 .keepnet-section__action:disabled {
   opacity: 0.45;
   cursor: not-allowed;
