@@ -86,6 +86,18 @@ async function run() {
   assert.equal(first.drops, 2);
   assert.equal(first.x, 1010, "the spot's centre is the drops' average");
   assert.equal(first.meanDropGameMs, firstDrop + 2 * HOUR, "the spot's age is the average of its drops");
+  // TK-249: a pack of the same mix is the same chum: it joins the spot, which keeps (and saves) the mix's id.
+  {
+    const packs = new ChumService("pack-test", { baits: { ...chumConfig.baits, carp_mix_basic_50: project("carp_mix_basic_50") } },
+      () => metric, { cache: createCache(), now: () => realNow, rng: { next: () => 0.5 }, gameTime: clock, devicePower: POWER });
+    packs.deployBait(1000, 1000, "carp_mix_basic");
+    packs.deployBait(1010, 1000, "carp_mix_basic_50");
+    assert.equal(packs.getZones().length, 1, "packs of one mix share one spot");
+    assert.equal(packs.getZones()[0].drops, 2);
+    assert.equal(packs.getZones()[0].baitId, "carp_mix_basic", "the spot is the mix (old saves resolve the same id)");
+    packs.deployBait(1000, 1600, "carp_mix_basic_50");
+    assert.equal(packs.getZones()[1].baitId, "carp_mix_basic", "a pack's own spot is the mix too");
+  }
 
   // Overfeeding: frequent drops push the feed above comfort and the bonus falls toward overfedMultiplier.
   const feed = stats.feed;

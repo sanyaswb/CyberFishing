@@ -165,6 +165,24 @@ assert.deepEqual(UiAutoSwitchRenderer.circleFit({ width: 5, height: 5 }), { widt
 assert.equal(UiAutoSwitchRenderer.circleFit(null), null, "an unsized image keeps the CSS inscribed square");
 switches.dispose(wormToggle);
 
+// TK-249: every pack of the basic carp mix has its own art and shows the mix's icon in the chum switcher.
+{
+  const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
+  const packs = Object.values(ITEM_DB.chums).filter((item) => item.chumId === "carp_mix_basic");
+  assert.deepEqual(packs.map((item) => [item.id, item.packSize, item.defaultQuantity]), [["carp_mix_basic", 15, 15],
+    ["carp_mix_basic_25", 25, 25], ["carp_mix_basic_50", 50, 50], ["carp_mix_basic_100", 100, 100]]);
+  for (const pack of packs) {
+    assert.equal(assets.pathOf(pack.iconAsset), `assets/items/chums/carp-mix-basic/carp-mix-basic--${pack.packSize}.webp`,
+      `${pack.id} shows its own pack`);
+    const chumToggle = switches.create({ name: "Chum", placeholderAsset: "ui.inventory.chum",
+      slots: [{ available: true, item: pack }] });
+    documentRef.body.append(chumToggle);
+    assert.equal(documentRef.byClass("inventory-toggle__image").pop()?.src,
+      "assets/items/chums/carp-mix-basic/carp-mix-basic_icon.webp", `${pack.id} is the mix's icon in the switcher`);
+    switches.dispose(chumToggle);
+  }
+}
+
 // TK-240: a live bait stack's parameters are its fish: a thumbnail and a life scale without a number per fish; the
 // 250 ms refresh patches the scales in place and a different set of fish rebuilds the rows.
 {

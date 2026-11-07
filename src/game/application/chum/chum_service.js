@@ -77,9 +77,10 @@ export class ChumService {
 
     if (path.includes("chums") && path.includes("radius")) {
       // The next path segment identifies the chum catalog item.
-      const baitId = path[path.indexOf("chums") + 1];
+      const itemId = path[path.indexOf("chums") + 1];
+      const spotId = this.#chumConfig.baits[itemId]?.chumId || itemId;
       for (const zone of this.#zones) {
-        if (zone.baitId === baitId) {
+        if (zone.baitId === spotId) {
           zone.baseRadius = value;
         }
       }
@@ -154,7 +155,7 @@ export class ChumService {
     if (!baitConfig) return null;
     const gameMs = this.#gameTime.getGameMs();
     const waterMetric = this.#getWaterMetric();
-    let spot = this.#zones.find((zone) => !zone.isExpired && zone.isSameSpot(baitId, x, y, waterMetric));
+    let spot = this.#zones.find((zone) => !zone.isExpired && zone.isSameSpot(baitConfig.id, x, y, waterMetric));
     if (spot) {
       spot.addDrop(x, y, gameMs);
     } else {
@@ -173,9 +174,11 @@ export class ChumService {
 
   // A chum's spot parameters are its effective stats (radius, bonus curve, targetFishes, feed), as the catalog projects
   // them (spec 152 B4: reading them from the definition's top level gave no bonus and no expiry).
+  // TK-249: the spot's id is the chum the item is (chumId; packs of one mix share it), so every pack joins one spot.
   #spotConfig(baitId) {
-    const stats = this.#chumConfig.baits[baitId]?.effectiveStats;
-    return stats ? { ...stats, id: baitId } : null;
+    const item = this.#chumConfig.baits[baitId];
+    const stats = item?.effectiveStats;
+    return stats ? { ...stats, id: item.chumId || baitId } : null;
   }
 
   removeBoat(boat) {

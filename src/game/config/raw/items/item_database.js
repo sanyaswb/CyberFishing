@@ -9,6 +9,50 @@
  * та CONFIG.physics.simulation.pixelsPerMeter.
  * rarityProfile призначається дизайнером і не виводиться з gameplayStats.
  */
+
+// TK-249: one pack of the basic carp mix; every pack is a separate copy of the same data (DEV edits stay per item).
+function carpMixBasicPack(id, packSize) {
+  return {
+    id,
+    chumId: "carp_mix_basic",
+    name: `Базова коропова суміш (${packSize} шт)`,
+    itemType: "chum_mix",
+    icon: "chum",
+    iconAsset: `items.chums.carp-mix-basic.carp-mix-basic--${packSize}`,
+    switcherIconAsset: "items.chums.carp-mix-basic.carp-mix-basic_icon",
+    packSize,
+    defaultQuantity: packSize,
+    rarityProfile: {
+      mode: "authored",
+      tier: 2,
+      maxTier: 5,
+      isUnique: false,
+    },
+    progressionProfile: { groupId: "chum.carp" },
+    requiresTag: "chum_mix",
+    displayStats: {
+      minBonusDurationHours: "Мін. тривалість: год",
+      radius: "Радіус: px",
+      maxBonus: "Макс. бонус:",
+    },
+    gameplayStats: {
+      targetFishes: ["crucian_stalker"],
+      radius: 150,
+      maxBonus: 2.0,
+      quality: 6,
+      minBonus: 1.2,
+      rampUpTimeMs: 3600000,
+      peakDurationMs: 7200000,
+      totalBonusTimeMs: 14400000,
+      safeRecastWindowMs: 300000,
+      minBonusDurationHours: 24,
+      // Spec 152: each drop adds 1 unit of feed, eaten at eatenPerHour (game hours); above comfortLoad the bonus falls
+      // linearly to overfedMultiplier at maxLoad (overfed fish bite worse).
+      feed: { eatenPerHour: 0.25, comfortLoad: 1.5, maxLoad: 4, overfedMultiplier: 0.8 },
+    },
+  };
+}
+
 export const ITEM_DB = {
   rods: {
     // 1. СПІНІНГ (для блишень, воблерів, джигу)
@@ -1121,42 +1165,14 @@ export const ITEM_DB = {
     },
   },
 
+  // TK-249: packs of one chum like the bait jars: each pack has its own art, the switcher shows the mix's icon, and
+  // chumId names the chum they all are (one spot in the water, spec 152 D3). carp_mix_basic keeps its id (saves, the
+  // starting inventory).
   chums: {
-    carp_mix_basic: {
-      id: "carp_mix_basic",
-      name: "Базова коропова суміш",
-      itemType: "chum_mix",
-      icon: "chum",
-      packSize: 15,
-      rarityProfile: {
-        mode: "authored",
-        tier: 2,
-        maxTier: 5,
-        isUnique: false,
-      },
-      progressionProfile: { groupId: "chum.carp" },
-      requiresTag: "chum_mix",
-      displayStats: {
-        minBonusDurationHours: "Мін. тривалість: год",
-        radius: "Радіус: px",
-        maxBonus: "Макс. бонус:",
-      },
-      gameplayStats: {
-        targetFishes: ["crucian_stalker"],
-        radius: 150,
-        maxBonus: 2.0,
-        quality: 6,
-        minBonus: 1.2,
-        rampUpTimeMs: 3600000,
-        peakDurationMs: 7200000,
-        totalBonusTimeMs: 14400000,
-        safeRecastWindowMs: 300000,
-        minBonusDurationHours: 24,
-        // Spec 152: each drop adds 1 unit of feed, eaten at eatenPerHour (game hours); above comfortLoad the bonus falls
-        // linearly to overfedMultiplier at maxLoad (overfed fish bite worse).
-        feed: { eatenPerHour: 0.25, comfortLoad: 1.5, maxLoad: 4, overfedMultiplier: 0.8 },
-      },
-    },
+    carp_mix_basic: carpMixBasicPack("carp_mix_basic", 15),
+    carp_mix_basic_25: carpMixBasicPack("carp_mix_basic_25", 25),
+    carp_mix_basic_50: carpMixBasicPack("carp_mix_basic_50", 50),
+    carp_mix_basic_100: carpMixBasicPack("carp_mix_basic_100", 100),
   },
 
   deliveryMethods: {
