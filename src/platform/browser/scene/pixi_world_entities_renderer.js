@@ -22,14 +22,19 @@ export class PixiWorldEntitiesRenderer {
   #foamTexture = null;
   #documentTarget;
   #boatView = null;
+  #textures;
+  #boatSprites = [];
   #labelSprites = [];
   #fingerprint = new SceneChangeFingerprint();
   #visible = false;
 
-  // stage: the scene's root container; texts: the scene's SceneTextTextures; documentTarget: makes the foam texture.
-  constructor({ pixi, stage, texts, documentTarget }) {
+  // stage: the scene's root container; texts: the scene's SceneTextTextures; textures: its SceneTextureCache (a boat's
+  // static picture, spec 166); documentTarget: makes the foam texture.
+  constructor({ pixi, stage, texts, textures, documentTarget }) {
     if (typeof pixi?.Graphics !== "function") throw new TypeError("PixiWorldEntitiesRenderer requires the Pixi namespace");
     if (typeof texts?.get !== "function") throw new TypeError("PixiWorldEntitiesRenderer requires texts");
+    if (typeof textures?.get !== "function") throw new TypeError("PixiWorldEntitiesRenderer requires textures");
+    this.#textures = textures;
     if (typeof documentTarget?.createElement !== "function") {
       throw new TypeError("PixiWorldEntitiesRenderer requires documentTarget");
     }
@@ -111,6 +116,8 @@ export class PixiWorldEntitiesRenderer {
         print.text(boat.animClip || "");
         print.length(Math.floor((boat.animTimer || 0) * 1000));
       }
+      print.text(boat.imageAsset || "");
+      if (boat.image) { print.length(boat.imageScale * 1000); print.alpha(boat.imageAnchorY); }
     }
     for (let index = 0; index < world.sensorRays.count; index += 1) {
       const ray = world.sensorRays.getAt(index);
@@ -181,10 +188,15 @@ export class PixiWorldEntitiesRenderer {
   #drawBoats(world) {
     const overlay = this.#overlay;
     let activeView = null;
+    let pictures = 0;
     for (let index = 0; index < world.boats.count; index += 1) {
       const boat = world.boats.getAt(index);
       const view = boat.view ?? null;
-      if (view) {
+      const texture = !view && boat.image ? this.#textures.get(boat.imageAsset) : null;
+      if (texture) {
+        this.#drawBoatPicture(boat, texture, pictures);
+        pictures += 1;
+      } else if (view) {
         activeView = view;
         if (view.parent !== this.#boatLayer) {
           this.#boatLayer.addChild(view);
@@ -207,6 +219,24 @@ export class PixiWorldEntitiesRenderer {
       if (this.#boatView) this.#boatView.visible = false;
       this.#boatView = activeView;
     }
+    for (let index = pictures; index < this.#boatSprites.length; index += 1) this.#boatSprites[index].visible = false;
+  }
+
+  // Spec 166: the boat's static picture where Spine does not play, turned and sized like the Spine boat (pooled sprites).
+  #drawBoatPicture(boat, texture, index) {
+    let sprite = this.#boatSprites[index];
+    if (!sprite) {
+      sprite = new this.#pixi.Sprite(texture);
+      this.#boatSprites.push(sprite);
+      this.#boatLayer.addChild(sprite);
+    }
+    sprite.texture = texture;
+    sprite.anchor.set(0.5, boat.imageAnchorY);
+    sprite.visible = true;
+    sprite.x = boat.x;
+    sprite.y = boat.y;
+    sprite.rotation = boat.angle + Math.PI / 2;
+    sprite.scale.set(boat.imageScale, boat.imageScale);
   }
 
   // The boat without a Spine view: the same polygons BoatChumRenderer fills, turned with the boat around its centre.

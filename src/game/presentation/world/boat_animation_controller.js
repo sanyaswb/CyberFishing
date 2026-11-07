@@ -5,7 +5,10 @@ import {
   BOAT_SECTION_CLIPS,
 } from "../../domain/chum/boat_animation_state.js";
 
-// Animation controller for the bait boat Spine skeleton (spec 150).
+// Animation controller for the bait boat Spine skeleton (spec 150). Spec 166: Spine first decides what loads; with Spine
+// the export on its half-size atlas pages, then the full pages in the same textures; without Spine (or when its export,
+// runtime or context fails, or DEV turns it off) the owner's static picture, asked for once and drawn by the renderers
+// (getStaticPicture); the vector shape only while neither is there.
 // Controls immersion, start and forward movement loops, compartment door opening,
 // night lights and bait attachment visibility. No clip keys the light, bait or extra wave slots, and the held doors
 // stay sampled, so those are written only when they change (docs/rendering.md rule 22, TK-160).
@@ -31,22 +34,43 @@ export class BoatAnimationController {
   #reason = null;
   #slotVisible = new Map();
   #heldSections = "";
+  #probeSpine;
+  #requestStatic;
+  #getStaticImage;
+  #staticPicture = null;
+  #staticNeeded = false;
+  #staticRequested = false;
+  // One reused result of getStaticPicture (it runs every frame).
+  #staticResult = { image: null, asset: "", width: 0, anchorY: 0.5 };
 
+  // probeSpine() -> Promise<boolean>; requestStatic(assetId) loads the static picture; getStaticImage(assetId) -> the
+  // loaded image or null (spec 166).
   constructor({
     loadBundle,
     loadRuntime,
     glSurface,
+    probeSpine,
+    requestStatic,
+    getStaticImage,
   }) {
     if (typeof loadBundle !== "function") throw new TypeError("BoatAnimationController requires loadBundle");
     if (typeof loadRuntime !== "function") throw new TypeError("BoatAnimationController requires loadRuntime");
     if (typeof glSurface?.ensureContext !== "function") throw new TypeError("BoatAnimationController requires glSurface");
+    for (const [name, value] of Object.entries({ probeSpine, requestStatic, getStaticImage })) {
+      if (typeof value !== "function") throw new TypeError(`BoatAnimationController requires ${name}`);
+    }
     this.#loadBundle = loadBundle;
     this.#loadRuntime = loadRuntime;
     this.#glSurface = glSurface;
+    this.#probeSpine = probeSpine;
+    this.#requestStatic = requestStatic;
+    this.#getStaticImage = getStaticImage;
   }
 
+  // animation: the boat skin's { asset, skin, staticPicture: { asset, width, anchorY } } or null.
   setDescriptor(animation) {
     if (this.#disposed) return;
+    this.#staticPicture = animation?.staticPicture ?? null;
     const asset = animation?.asset ?? "";
     const skin = animation?.skin ?? "";
     const current = this.#descriptor;
@@ -63,6 +87,8 @@ export class BoatAnimationController {
     this.#currentClip = "";
     this.#clipTimer = 0;
     this.#lastBoat = null;
+    this.#staticNeeded = false;
+    this.#staticRequested = false;
 
     if (!asset) {
       this.#replaceScene(null);
@@ -70,9 +96,39 @@ export class BoatAnimationController {
       return;
     }
 
-    const load = this.#loadBundle({ asset, skin: skin || null });
-    this.#load = load;
-    load.result.then((outcome) => this.#onBundle(generation, outcome));
+    this.#probeSpine().then((available) => {
+      if (generation !== this.#generation || this.#disposed) return;
+      if (available !== true) {
+        this.#reason = "spine-unavailable";
+        this.#staticNeeded = true;
+        return;
+      }
+      const load = this.#loadBundle({ asset, skin: skin || null });
+      this.#load = load;
+      load.result.then((outcome) => this.#onBundle(generation, outcome, load));
+    });
+  }
+
+  // Spec 166: the static picture to draw this frame, or null (Spine draws the boat, or the picture is not loaded yet,
+  // or the boat has none: the vector shape then). Asks for the picture once, when it is first needed.
+  getStaticPicture() {
+    const picture = this.#staticPicture;
+    if (!picture?.asset || this.#disposed) return null;
+    const scene = this.#scene;
+    if (scene && this.#spineEnabled && !this.#glSurface.isContextLost()) return null;
+    if (!scene && !this.#staticNeeded) return null;
+    if (!this.#staticRequested) {
+      this.#staticRequested = true;
+      this.#requestStatic(picture.asset);
+    }
+    const image = this.#getStaticImage(picture.asset);
+    if (!image) return null;
+    const result = this.#staticResult;
+    result.image = image;
+    result.asset = picture.asset;
+    result.width = picture.width;
+    result.anchorY = picture.anchorY;
+    return result;
   }
 
   advance(boat, context = {}) {
@@ -209,7 +265,8 @@ export class BoatAnimationController {
 
   getStatus() {
     return {
-      mode: this.#scene && this.#spineEnabled && !this.#glSurface.isContextLost() ? "spine" : "fallback (vector)",
+      mode: this.#scene && this.#spineEnabled && !this.#glSurface.isContextLost() ? "spine"
+        : this.#getStaticImage(this.#staticPicture?.asset ?? "") && this.#staticRequested ? "static picture" : "fallback (vector)",
       reason: this.#reason,
       missingClips: this.#scene?.getMissingClips?.() ?? [],
       mipmapped: this.#scene?.isMipmapped?.() ?? false,
@@ -282,28 +339,37 @@ export class BoatAnimationController {
     this.#lastBoat = null;
   }
 
-  async #onBundle(generation, outcome) {
+  async #onBundle(generation, outcome, load) {
     if (generation !== this.#generation) return;
     if (outcome.status !== "ready") {
       this.#reason = outcome.reason ?? outcome.status;
+      this.#staticNeeded = outcome.reason !== "cancelled";
       this.#replaceScene(null);
       return;
     }
-    const bundle = outcome.bundle;
-    this.#bundle = bundle;
-    const capability = await this.#loadRuntime(bundle.version);
+    this.#bundle = outcome.bundle;
+    if (outcome.bundle.lowPages === true) {
+      load.upgrade().then((upgraded) => {
+        if (generation !== this.#generation || upgraded.status !== "ready") return;
+        this.#bundle = { ...this.#bundle, pages: upgraded.pages, lowPages: false };
+        this.#scene?.upgradePages(upgraded.pages);
+      });
+    }
+    const capability = await this.#loadRuntime(outcome.bundle.version);
     if (generation !== this.#generation) return;
     if (!capability.available) {
       this.#reason = capability.reason ?? "runtime-not-available";
+      this.#staticNeeded = true;
       this.#replaceScene(null);
       return;
     }
-    const created = capability.runtime.createScene(bundle, this.#glSurface);
+    const created = capability.runtime.createScene(this.#bundle, this.#glSurface);
     if (generation !== this.#generation) {
       created.scene?.dispose();
       return;
     }
     this.#reason = created.reason ?? null;
+    if (!created.scene) this.#staticNeeded = true;
     this.#replaceScene(created.scene);
   }
 

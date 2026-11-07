@@ -5,7 +5,8 @@
 // - A layer starts on "composition" (with the game's composition), "ready" (the first frame) or "after:<layer>".
 // - A group with load: false is placed but loads only on demand (large content opened later: audio, the House, fish).
 // - A group with readyOn: "low" counts as loaded once the low-quality copies of its images have (spec 157 R17); the
-//   full files follow after the first frame.
+//   full files follow after the first frame, unless the group says upgrade: "on-demand" (spec 166: the rod's start
+//   picture, whose full file only a rod without Spine asks for).
 // - A layer with lazy: true runs twice over its groups in order: the low-quality copies (with the files that have no
 //   copy), then the full files (spec 159).
 // - A group with locked: true names what game progress has not opened yet (by a source): it loads nothing, and the lazy
@@ -34,7 +35,7 @@ export class AssetLoadPlan {
       id: layer.id, label: layer.label ?? layer.id, start: layer.start, lazy: layer.lazy === true,
       groups: Object.freeze([...layer.groups].sort((a, b) => a.priority - b.priority).map((group) => Object.freeze({
         id: group.id, label: group.label ?? group.id, priority: group.priority, load: group.load !== false && group.locked !== true,
-        locked: group.locked === true, readyOn: group.readyOn ?? "full",
+        locked: group.locked === true, readyOn: group.readyOn ?? "full", upgrade: group.upgrade ?? "auto",
         assets: Object.freeze([...group.assets]),
       }))),
     }));
@@ -71,6 +72,9 @@ export class AssetLoadPlan {
         if (!Number.isInteger(group?.priority) || group.priority < 1) errors.push(`${where}: priority must be an integer >= 1`);
         if (group?.locked === true && !group.assets?.every((entry) => entry.source)) errors.push(`${where}: a locked group names sources only`);
         if (group?.readyOn !== undefined && !["full", "low"].includes(group.readyOn)) errors.push(`${where}: readyOn must be full or low`);
+        if (group?.upgrade !== undefined && (!["auto", "on-demand"].includes(group.upgrade) || group.readyOn !== "low")) {
+          errors.push(`${where}: upgrade must be auto or on-demand, with readyOn low`);
+        }
         if (!Array.isArray(group?.assets)) { errors.push(`${where}: assets must be a list`); continue; }
         for (const entry of group.assets) {
           const keys = Object.keys(entry ?? {}).filter((key) => ENTRY_KEYS.includes(key));

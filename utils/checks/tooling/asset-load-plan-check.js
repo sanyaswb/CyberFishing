@@ -227,9 +227,14 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const lazyLayer = production.layer("layer-three");
   assert.equal(lazyLayer.lazy, true, "the third layer is the lazy one");
   assert.deepEqual(lazyLayer.groups.slice(3).map((group) => group.id),
-    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "audio", "locked"], "the owner's order");
-  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["audio", "locked"],
-    "only audio (TK-201: when the radio starts) and the locked queue stay out of the background");
+    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "audio", "spine-fallback", "locked"], "the owner's order");
+  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["audio", "spine-fallback", "locked"],
+    "only audio (TK-201: when the radio starts), the pictures for a page without Spine (spec 166) and the locked queue stay out of the background");
+  // Spec 166: the rod's full start picture and the boat's picture load only for a page without Spine (on request).
+  assert.equal(production.layer("layer-one").groups.find((group) => group.id === "rod-start").upgrade, "on-demand",
+    "the rod's full start picture is not loaded after the first frame");
+  assert.deepEqual(production.resolveGroup(lazyLayer.groups.find((group) => group.id === "spine-fallback"), {}),
+    ["items.boats.boat-lvl--3"], "the boat's picture waits for a boat without Spine");
   const lazyGroup = (id) => lazyLayer.groups.find((group) => group.id === id);
   const lazyKinds = (id) => [...new Set(production.resolveGroup(lazyGroup(id), {}).map((asset) => assets.entryOf(asset).kind))];
   assert.deepEqual(lazyKinds("lazy-items"), ["image"], "the items group holds images only");
@@ -256,7 +261,8 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     const lazyRegistry = new AssetRegistry({ "bg.a": entry("bg/a.webp", ["bg"]), "item.a": entry("item/a.webp", ["item"]),
       "room.open": entry("room/open.webp", ["room"]), "room.closed": entry("room/closed.webp", ["room"]),
       "ui.vector": image("ui/v.svg", ["rest"]),
-      "anim.a": { kind: "spine", json: "anim/a.json", atlas: "anim/a.atlas", textures: ["anim/a.webp"], bytes: 1, sha256: "0", tags: ["anim"], label: "" },
+      "anim.a": { kind: "spine", json: "anim/a.json", atlas: "anim/a.atlas", textures: ["anim/a.webp"], low: ["anim/a--low.webp"],
+        bytes: 1, sha256: "0", tags: ["anim"], label: "" },
       "song.a": { kind: "audio", path: "song/a.m4a", bytes: 1, sha256: "0", tags: ["song"], label: "" },
       "two.a": entry("two/a.webp", ["two"]) });
     const lazySources = { closed: { resolve: ({ level = 1 }) => (level < 2 ? ["room.closed"] : []), candidates: () => ["room.closed"] } };
@@ -280,9 +286,9 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     assert.deepEqual(order.splice(0, 2), ["low/two/a.webp", "two/a.webp"], "layer two: the full file follows its copy at once");
     assert.equal(lazyFacade.isReady("two.a"), true);
     await lazyFacade.whenLayer("three");
-    assert.deepEqual(order, ["low/bg/a.webp", "low/item/a.webp", "warm anim/a.json", "warm anim/a.atlas", "warm anim/a.webp",
-      "low/room/open.webp", "ui/v.svg", "bg/a.webp", "item/a.webp", "room/open.webp"],
-    "low copies in the owner's order, then the full files in the same order, no audio, nothing closed");
+    assert.deepEqual(order, ["low/bg/a.webp", "low/item/a.webp", "warm anim/a.json", "warm anim/a.atlas", "warm anim/a--low.webp",
+      "low/room/open.webp", "ui/v.svg", "bg/a.webp", "item/a.webp", "warm anim/a.webp", "room/open.webp"],
+    "low copies in the owner's order (a Spine export with its half-size page, spec 166), then the full files in the same order, no audio, nothing closed");
     assert.equal((await lazyFacade.whenGroup("song")).status, "on-demand", "audio waits for its use");
     assert.equal((await lazyFacade.whenGroup("closed")).status, "locked");
     assert.deepEqual((await lazyFacade.whenGroup("room")).ids, ["room.open"], "a closed asset stays out of its group");
@@ -293,6 +299,35 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     order.length = 0;
     await lazyFacade.setProgress({ level: 2 });
     assert.deepEqual(order, [], "unchanged progress loads nothing");
+    // Spec 166: a page without Spine warms no Spine export.
+    const noSpineOrder = [];
+    const noSpine = new GameAssetPreloadFacade({ plan: lazyPlan, assets: lazyRegistry, scheduler, spineAvailable: async () => false,
+      imageAssets: { preload: async ([record]) => { noSpineOrder.push(record.src); }, isReady: () => true },
+      warmFile: async (file) => { noSpineOrder.push(`warm ${file}`); } });
+    await noSpine.start("one", { level: 1 });
+    await noSpine.startOn("ready");
+    await noSpine.whenLayer("three");
+    assert.deepEqual(noSpineOrder.filter((file) => file.startsWith("warm")), [], "without Spine nothing of the export is warmed");
+    noSpine.dispose();
+    // Spec 166: a first-layer group with upgrade "on-demand" keeps its copy after the first frame; request() brings the full file.
+    const onDemandPlan = new AssetLoadPlan({ registry: lazyRegistry, plan: plan([
+      layer("one", "composition", [{ id: "start", priority: 1, readyOn: "low", upgrade: "on-demand", assets: [{ id: "item.a" }] }]),
+      layer("two", "ready", [{ id: "none", priority: 1, assets: [] }]),
+    ]) });
+    const onDemandOrder = [];
+    const onDemand = new GameAssetPreloadFacade({ plan: onDemandPlan, assets: lazyRegistry, scheduler,
+      imageAssets: { preload: async ([record]) => { onDemandOrder.push(record.src); } } });
+    await onDemand.start("one");
+    await onDemand.startOn("ready");
+    await onDemand.whenFullyLoaded();
+    const itemFiles = () => onDemandOrder.filter((file) => file.includes("item/a"));
+    assert.deepEqual(itemFiles(), ["low/item/a.webp"], "the full file is not loaded after the first frame");
+    await onDemand.request(["item.a"]);
+    assert.deepEqual(itemFiles(), ["low/item/a.webp", "item/a.webp"], "whoever needs it asks for the full file");
+    onDemand.dispose();
+    assert.throws(() => new AssetLoadPlan({ registry: lazyRegistry, plan: plan([
+      layer("one", "composition", [{ id: "bad", priority: 1, upgrade: "on-demand", assets: [] }])]) }), /upgrade must be/u,
+    "upgrade needs readyOn low");
     ready.clear();
     let finishLow;
     const lowOnly = new GameAssetPreloadFacade({ plan: lazyPlan, assets: lazyRegistry, scheduler,

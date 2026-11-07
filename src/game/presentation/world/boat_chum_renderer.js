@@ -122,6 +122,16 @@ export class BoatChumRenderer {
       const boat = model.boats.getAt(index);
       surface.save();
       surface.translate(boat.x, boat.y);
+      if (boat.image) {
+        // Spec 166: the boat's static picture without Spine, turned and sized like the Spine boat.
+        surface.rotate(boat.angle + Math.PI / 2);
+        const width = (boat.image.naturalWidth || boat.image.width) * boat.imageScale;
+        const height = (boat.image.naturalHeight || boat.image.height) * boat.imageScale;
+        surface.drawImage(boat.image, -width / 2, -height * boat.imageAnchorY, width, height);
+        surface.restore();
+        this.#renderEnergyBar(boat);
+        continue;
+      }
       surface.rotate(boat.angle);
       for (const part of boat.shape.parts) {
         surface.fillStyle = part.color;
@@ -134,22 +144,27 @@ export class BoatChumRenderer {
         surface.fill();
       }
       surface.restore();
-      surface.fillStyle = "rgba(0, 0, 0, 0.7)";
-      surface.fillRect(
-        boat.x - boat.barWidth / 2,
-        boat.y + boat.barY,
-        boat.barWidth,
-        boat.barHeight,
-      );
-      surface.fillStyle = boat.energyColor;
-      surface.fillRect(
-        boat.x - boat.barWidth / 2,
-        boat.y + boat.barY,
-        boat.barWidth * boat.energyRatio,
-        boat.barHeight,
-      );
+      this.#renderEnergyBar(boat);
     }
     surface.restore();
+  }
+
+  #renderEnergyBar(boat) {
+    const surface = this.#surface;
+    surface.fillStyle = "rgba(0, 0, 0, 0.7)";
+    surface.fillRect(
+      boat.x - boat.barWidth / 2,
+      boat.y + boat.barY,
+      boat.barWidth,
+      boat.barHeight,
+    );
+    surface.fillStyle = boat.energyColor;
+    surface.fillRect(
+      boat.x - boat.barWidth / 2,
+      boat.y + boat.barY,
+      boat.barWidth * boat.energyRatio,
+      boat.barHeight,
+    );
   }
 
   #renderSensors(model) {

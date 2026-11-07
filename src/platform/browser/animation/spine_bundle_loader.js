@@ -5,6 +5,9 @@ import { SpineSetupPoseReader } from "./spine_setup_pose_reader.js";
 // skeleton JSON as their own jobs. Spine's AssetManager is never used, so every request obeys the queue caps.
 // `pages` settles as soon as the atlas and its pages are decoded (enough for the static picture); `result` settles
 // with the whole bundle. Both resolve, never reject: { status: "ready", ... } or { status: "failed", reason, error }.
+// Spec 166: with pages "low" the half-size page copies load instead of the pages (where the export has them), and
+// upgrade() then loads the full pages through the same queue: { status: "ready", pages } | { status: "none" } (nothing to
+// upgrade) | { status: "failed", reason, error }.
 export class SpineBundleLoader {
   #queue;
   #transport;
@@ -24,8 +27,9 @@ export class SpineBundleLoader {
   }
 
   // descriptor: { asset, skin, linePoint }; the registry gives the skeleton JSON and the atlas.
-  load(descriptor, { priority = "interactive" } = {}) {
+  load(descriptor, { priority = "interactive", pages: quality = "full" } = {}) {
     const files = this.#assets.spineOf(descriptor.asset);
+    const useLow = quality === "low" && Array.isArray(files.lowTextures);
     const interests = [];
     let released = false;
     const request = (key, load) => {
@@ -35,7 +39,7 @@ export class SpineBundleLoader {
       return interest.result;
     };
     const pages = request(`text:${files.atlas}`, (token) => this.#transport.loadText(files.atlas, token))
-      .then((outcome) => this.#loadPages(files.atlas, outcome, request));
+      .then((outcome) => this.#loadPages(files, outcome, request, useLow));
     const skeleton = request(`json:${files.skeleton}`, (token) => this.#transport.loadJson(files.skeleton, token));
     const result = Promise.all([pages, skeleton]).then(([pagesOutcome, skeletonOutcome]) => {
       if (pagesOutcome.status !== "ready") return pagesOutcome;
@@ -60,6 +64,8 @@ export class SpineBundleLoader {
           atlasText: pagesOutcome.atlasText,
           atlas: pagesOutcome.atlas,
           pages: pagesOutcome.pages,
+          // True while pages holds the half-size copies (spec 166); upgrade() brings the full pages.
+          lowPages: pagesOutcome.low,
           skin: descriptor.skin ?? null,
           linePoint: descriptor.linePoint ?? null,
           // The setup-pose picture for the static fallback: { bounds, linePoint, region } (skeleton units, y up).
@@ -67,9 +73,14 @@ export class SpineBundleLoader {
         }),
       };
     });
+    const upgrade = () => pages.then((outcome) => (outcome.status === "ready" && outcome.low
+      ? this.#loadPages(files, { status: "ready", payload: outcome.atlasText }, request, false)
+        .then((full) => (full.status === "ready" ? { status: "ready", pages: full.pages } : full))
+      : { status: "none" }));
     return {
       pages,
       result,
+      upgrade,
       release: () => {
         released = true;
         for (const interest of interests) interest.release();
@@ -77,7 +88,8 @@ export class SpineBundleLoader {
     };
   }
 
-  async #loadPages(atlasFile, outcome, request) {
+  async #loadPages(files, outcome, request, useLow) {
+    const atlasFile = files.atlas;
     if (outcome.status !== "ready") {
       return SpineBundleLoader.#failure(outcome.status === "cancelled" ? "cancelled" : "atlas-failed", outcome.error);
     }
@@ -89,7 +101,9 @@ export class SpineBundleLoader {
     }
     const directory = atlasFile.slice(0, atlasFile.lastIndexOf("/") + 1);
     const loads = atlas.pages.map((page) => {
-      const url = `${directory}${page.name}`;
+      const full = `${directory}${page.name}`;
+      const index = files.textures.indexOf(full);
+      const url = useLow && index >= 0 && files.lowTextures[index] ? files.lowTextures[index] : full;
       return request(`image:${url}`, (token) => this.#transport.loadImage(url, token));
     });
     const settled = await Promise.all(loads);
@@ -101,7 +115,7 @@ export class SpineBundleLoader {
       }
       pages.set(atlas.pages[index].name, page.payload);
     }
-    return { status: "ready", atlasText: outcome.payload, atlas, pages };
+    return { status: "ready", atlasText: outcome.payload, atlas, pages, low: useLow };
   }
 
   static #failure(reason, error = null) {

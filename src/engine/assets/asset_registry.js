@@ -33,9 +33,10 @@ export class AssetRegistry {
     return entry.path;
   }
 
-  // The low-quality copy of an image (spec 157 R17), or null (vectors, data maps, audio, Spine).
+  // The low-quality copy of an image (spec 157 R17), or null (vectors, data maps, audio, Spine: spineOf().lowTextures).
   lowPathOf(id) {
-    return this.entryOf(id).low ?? null;
+    const entry = this.entryOf(id);
+    return entry.kind === "image" ? entry.low ?? null : null;
   }
 
   // An image's size in pixels { width, height }, or null when the registry does not know it (vectors).
@@ -44,11 +45,12 @@ export class AssetRegistry {
     return entry.width && entry.height ? { width: entry.width, height: entry.height } : null;
   }
 
-  // The files of a Spine export: { skeleton, atlas, textures }.
+  // The files of a Spine export: { skeleton, atlas, textures, lowTextures } (lowTextures: the half-size page copies in
+  // the textures' order, spec 166, or null).
   spineOf(id) {
     const entry = this.entryOf(id);
     if (entry.kind !== "spine") throw new TypeError(`Asset "${id}" is not a Spine package`);
-    return { skeleton: entry.json, atlas: entry.atlas, textures: entry.textures };
+    return { skeleton: entry.json, atlas: entry.atlas, textures: entry.textures, lowTextures: entry.low ?? null };
   }
 
   // The id of the asset whose file is path, or null. Only for paths that game state already holds (a caught fish's

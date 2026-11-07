@@ -9,7 +9,8 @@
 //   thumbnails    Masters -> display art in another folder (TK-180: fish).
 //                 [--input asset-sources/fish] [--output assets/fish-display] [--size 768] [--quality middle]
 //                 [--top-fraction 1] [--trim [--trim-threshold 10]] [--dry-run]
-//   low-copies    --manifest <json: [{ input, output }]>  (npm run assets:sync makes the name--low.webp copies with it)
+//   low-copies    --manifest <json: [{ input, output, scale?, quality? }]>  (npm run assets:sync makes the name--low.webp
+//                 copies with it; a Spine atlas page gets scale 0.5, quality low and alphaQuality 50, spec 166)
 //   spine-region  --atlas <file.atlas> --output <picture.webp> [--size 1024] [--quality middle]
 //
 // --trim cuts empty (transparent or uniform) edges before resizing: art carries no margins, the place that shows it sets
@@ -100,10 +101,10 @@ async function pipelineOf(source, { topFraction = 1, trim = null, maxSize = null
   return image;
 }
 
-async function encode(image, format, quality, target) {
+async function encode(image, format, quality, target, { alphaQuality = 100 } = {}) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const encoder = format === "avif" ? image.clone().avif({ quality: quality.avif, effort: 5 })
-    : image.clone().webp({ quality: quality.webp });
+    : image.clone().webp({ quality: quality.webp, alphaQuality });
   return encoder.toFile(target);
 }
 
@@ -208,15 +209,29 @@ async function thumbnails(args) {
 // The longest side becomes a quarter of the original's, at most 256 px (never enlarged), the same proportion, WebP Low.
 async function lowCopies(args) {
   const manifest = JSON.parse(fs.readFileSync(projectPath(args.get("--manifest"), "--manifest"), "utf8"));
-  const jobs = manifest.map(({ input, output }) => ({ source: projectPath(input, "input"), label: input,
-    targets: [projectPath(output, "output")] }));
-  for (const job of jobs) if (job.source === job.targets[0]) throw new Error(`Invalid low copy ${job.label}`);
+  // A job may carry scale (a Spine atlas page, spec 166: each side x scale, rounded up, so the page keeps its proportions
+  // and its regions' UVs), quality (low | middle | high) and alphaQuality (0..100, lossless 100); without them, the image
+  // rule above.
+  const jobs = manifest.map(({ input, output, scale = null, quality = "low", alphaQuality = 100 }) => ({
+    source: projectPath(input, "input"), label: input, targets: [projectPath(output, "output")], scale,
+    quality: QUALITY[quality], alphaQuality }));
+  for (const job of jobs) {
+    if (job.source === job.targets[0] || !job.quality || (job.scale !== null && !(job.scale > 0 && job.scale < 1))) {
+      throw new Error(`Invalid low copy ${job.label}`);
+    }
+  }
   const failed = await runJobs(jobs, async (job) => {
     const { width, height } = await sharp(job.source).metadata();
+    if (job.scale !== null) {
+      await encode(sharp(job.source).resize(Math.ceil(width * job.scale), Math.ceil(height * job.scale), { fit: "fill" }),
+        "webp", job.quality, job.targets[0], { alphaQuality: job.alphaQuality });
+      return;
+    }
     const side = Math.max(1, Math.min(LOW_COPY_MAX_SIDE, Math.round(Math.max(width, height) / 4)));
-    await encode(sharp(job.source).resize(side, side, { fit: "inside", withoutEnlargement: true }), "webp", QUALITY.low, job.targets[0]);
+    await encode(sharp(job.source).resize(side, side, { fit: "inside", withoutEnlargement: true }), "webp", job.quality, job.targets[0]);
   });
-  console.log(`Created ${jobs.length - failed} low copies (max ${LOW_COPY_MAX_SIDE} px, WebP ${QUALITY.low.webp}).`);
+  console.log(`Created ${jobs.length - failed} low copies (images: max ${LOW_COPY_MAX_SIDE} px, WebP ${QUALITY.low.webp}; `
+    + `Spine pages: half size, WebP ${QUALITY.low.webp}, alpha 50).`);
 }
 
 // A Spine atlas's one region as an upright picture (TK-181: the rod's picture before its export arrives).

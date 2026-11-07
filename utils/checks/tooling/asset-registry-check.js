@@ -110,12 +110,24 @@ const ROOT = path.resolve(__dirname, "../../..");
   assert.equal(ASSET_REGISTRY["animations.boats.boat-lvl--3"].kind, "spine", "the boat's Spine export is one asset");
   // TK-250: every Spine export lies in assets/animations/<type>/, and that folder holds Spine exports only.
   const spineFiles = new Set(Object.values(ASSET_REGISTRY).filter((entry) => entry.kind === "spine")
-    .flatMap((entry) => [entry.json, entry.atlas, ...entry.textures]));
+    .flatMap((entry) => [entry.json, entry.atlas, ...entry.textures, ...(entry.low ?? [])]));
+  // Spec 166: every Spine atlas page has a tracked half-size copy (each side rounded up), made from the pages' content.
+  const sharp = require(require.resolve("sharp", { paths: [ROOT] }));
+  for (const entry of Object.values(ASSET_REGISTRY).filter((spine) => spine.kind === "spine")) {
+    assert.equal(entry.low?.length, entry.textures.length, `${entry.json} has a copy of every page`);
+    assert.equal(entry.lowSource, entry.sha256.split("+").slice(2).join("+"), `${entry.json}: copies made from its current pages`);
+    for (let index = 0; index < entry.textures.length; index += 1) {
+      const page = await sharp(path.join(ROOT, entry.textures[index])).metadata();
+      const copy = await sharp(path.join(ROOT, entry.low[index])).metadata();
+      assert.deepEqual([copy.width, copy.height], [Math.ceil(page.width / 2), Math.ceil(page.height / 2)], `${entry.low[index]} is half size`);
+      assert(folders.includes(entry.low[index]), `${entry.low[index]} is tracked`);
+    }
+  }
   assert.deepEqual([...spineFiles].filter((tracked) => !/^assets\/animations\/[^/]+\/[^/]+$/u.test(tracked)), [],
     "Spine exports lie in assets/animations/<type>/ (TK-250)");
   assert.deepEqual(folders.filter((tracked) => tracked.startsWith("assets/animations/") && !spineFiles.has(tracked)), [],
     "assets/animations/ holds Spine exports only (TK-250)");
-  const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.low);
+  const lows = Object.values(ASSET_REGISTRY).filter((entry) => entry.kind === "image" && entry.low);
   assert(lows.length >= 70 && lows.every((entry) => entry.lowSource === entry.sha256 && entry.width > 0 && entry.height > 0),
     "every raster image has a current low copy and its size");
   assert.equal(ASSET_REGISTRY["locations.test.test-depth"].low, undefined, "the depth map has no low copy");

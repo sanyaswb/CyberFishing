@@ -1196,6 +1196,10 @@ export const ITEM_DB = {
         animation: {
           asset: "animations.boats.boat-lvl--3",
           skin: "skin_boat-lvl--3",
+          // Spec 166: the owner's picture (241 x 595, bow up) where Spine does not play. width: skeleton units across
+          // (the hull mesh boat--3, 968 x 0.25 = 242); anchorY: the hull's centre (the skeleton root) as a share of the
+          // picture's height: the lower 574.75 of its 597.47 units are the hull, the antenna rises above it.
+          staticPicture: { asset: "items.boats.boat-lvl--3", width: 242, anchorY: 0.519 },
         },
       },
       itemType: "boat",

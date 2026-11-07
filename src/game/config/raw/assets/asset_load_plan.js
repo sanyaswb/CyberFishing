@@ -7,7 +7,8 @@
 //   priority: a later priority waits for the earlier one and is one more request wave of the start (spec 160).
 // - layer-two: the full game cycle, right after the first frame (start "ready"); of the keepnet only the stage the
 //   player sees now, the other stages are items of layer-three (fishing takes long enough, TK-219).
-// - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine, the Fisherman's
+// - layer-three: lazy: true, the owner's order (spec 159): low copies of backgrounds, items, then Spine (spec 166: only
+//   where Spine plays; its half-size atlas pages in the low pass, the full pages in the full pass), the Fisherman's
 //   Room and the rest; then the full files in the same order. Audio is on demand (load: false): its players load it when the radio starts or a
 //   sound plays. A group with locked: true holds what game
 //   progress has not opened (room levels above the opened one, TK-216): it stays out until it opens, or until the player
@@ -24,8 +25,10 @@ export const ASSET_LOAD_PLAN = {
         { id: "location", label: "Фон поточної фази й карта глибин", priority: 1, readyOn: "low",
           assets: [{ source: "location.background.current" }, { source: "location.depthMap" }] },
         { id: "scene", label: "Поплавок у сцені", priority: 1, assets: [{ tag: "floats-scene" }] },
-        // TK-250: the owner's rod picture is 3840 px (149 KB); the first frame waits only for its low copy.
-        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 1, readyOn: "low", assets: [{ tag: "rods-scene" }] },
+        // TK-250: the owner's rod picture is 3840 px (149 KB); the first frame waits only for its low copy. Spec 166: its
+        // full file loads only for a rod without Spine (the rod controller asks for it); with Spine the export follows.
+        { id: "rod-start", label: "Статична вудка (до приходу Spine)", priority: 1, readyOn: "low", upgrade: "on-demand",
+          assets: [{ tag: "rods-scene" }] },
         { id: "slot-icons", label: "Заглушки клітинок інвентаря", priority: 1, assets: [{ source: "inventory.slotIcons" }] },
       ],
     },
@@ -63,6 +66,9 @@ export const ASSET_LOAD_PLAN = {
         { id: "lazy-rest", label: "Решта зображень", priority: 8,
           assets: [{ tag: "fish-display" }, { tag: "inventory" }, { id: "ui.status-icons" }] },
         { id: "audio", label: "Аудіо (під час запуску радіо)", priority: 9, load: false, assets: [{ tag: "audio" }] },
+        // Spec 166: the boat's picture for a page without Spine; the boat asks for it when it is on the water.
+        { id: "spine-fallback", label: "Статика без Spine (на вимогу)", priority: 9, load: false,
+          assets: [{ id: "items.boats.boat-lvl--3" }] },
         { id: "locked", label: "Закрите прогресом (на вимогу)", priority: 10, locked: true, assets: [{ source: "progress.locked" }] },
       ],
     },

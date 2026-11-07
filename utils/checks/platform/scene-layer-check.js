@@ -99,6 +99,8 @@ function fakePixi() {
       Object.assign(this, { x: 0, y: 0, width: 0, alpha: 1, rotation: 0, visible: true, scaleY: 1 });
       this.texture = texture;
       this.anchor = { x: 0, y: 0, set: (x, y) => { this.anchor.x = x; this.anchor.y = y; } };
+      // Pixi's ObservablePoint: set(x, y = x).
+      this.scale = { x: 1, y: 1, set: (x, y = x) => { this.scale.x = x; this.scale.y = y; this.scaleY = y; } };
     }
 
     get texture() { return this.#texture; }
@@ -844,8 +846,10 @@ async function checkSceneWorldKinds() {
 
   const { PixiWorldEntitiesRenderer } = await importSource("src/platform/browser/scene/pixi_world_entities_renderer.js");
   const stage = new fake.pixi.Container();
+  const boatPictureTexture = new fake.pixi.Texture({ source: {}, frame: { width: 241, height: 595 } });
+  const sceneTextures = { get: (assetId) => (assetId === "items.boats.boat-lvl--3" ? boatPictureTexture : null) };
   const entities = new PixiWorldEntitiesRenderer({ pixi: fake.pixi,
-    stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }),
+    stage, texts: new SceneTextTextures({ pixi: fake.pixi, documentTarget: dom.documentTarget }), textures: sceneTextures,
     documentTarget: dom.documentTarget });
   const [container] = stage.children;
   const [zones, zoneMask, wakeLayer, overlay, boatLayer] = container.children;
@@ -879,6 +883,18 @@ async function checkSceneWorldKinds() {
   assert.equal(entities.update(world, 2), true, "a changed surface ellipse invalidates the scene");
   boatModel.x += 1;
   assert.equal(entities.update(world, 2), true, "a moving boat is a change");
+  // Spec 166: a boat without Spine shows its static picture (one sprite from the scene's texture cache), not the shape.
+  Object.assign(boatModel, { image: { naturalWidth: 241, naturalHeight: 595 }, imageAsset: "items.boats.boat-lvl--3",
+    imageScale: 0.25, imageAnchorY: 0.519 });
+  assert.equal(entities.update(world, 2), true, "the picture arriving is a change");
+  const pictures = boatLayer.children.filter((child) => child.visible && child.texture === boatPictureTexture);
+  assert.equal(pictures.length, 1, "one sprite of the boat's picture");
+  assert.deepEqual([pictures[0].x, pictures[0].y, pictures[0].rotation, pictures[0].scale.x, pictures[0].anchor.x, pictures[0].anchor.y],
+    [boatModel.x, 380, Math.PI / 2, 0.25, 0.5, 0.519], "placed, turned and sized like the Spine boat");
+  assert(!overlay.ops.some((op) => op[1] === "#e8edf0"), "no vector shape under the picture");
+  Object.assign(boatModel, { image: null, imageAsset: "" });
+  assert.equal(entities.update(world, 2), true);
+  assert.equal(pictures[0].visible, false, "the picture hides when Spine or the shape takes over");
   assert.equal(entities.update(null, 2), true, "off the scene it hides once");
   assert.equal(container.visible, false);
   assert.equal(entities.update(null, 2), false);

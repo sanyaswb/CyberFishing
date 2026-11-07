@@ -468,6 +468,8 @@ export class GameCompositionRoot {
     });
     // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
     const imageAssets = new ImageAssetProvider();
+    // Spec 166: set once the rod's Spine is composed; the lazy layer asks it long after composition.
+    let spineAvailable = () => Promise.resolve(false);
     const assetTransport = new BrowserAssetTransport();
     contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
     this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: new AssetLoadPlan({
@@ -476,6 +478,7 @@ export class GameCompositionRoot {
       modules: Object.keys(GAME_FEATURE_MODULES) }),
       modules: GAME_FEATURE_MODULES,
       warmFile: (path) => assetTransport.warm(path),
+      spineAvailable: () => spineAvailable(),
       scheduler: this.#windowTarget,
       now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
       // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
@@ -509,13 +512,17 @@ export class GameCompositionRoot {
     const rodAnimation = own(composeRodAnimation({
       windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
       scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets, images: imageAssets,
+      preload: this.#preload,
     }));
+    // Spec 166: the lazy layer warms Spine exports only where Spine plays.
+    spineAvailable = rodAnimation.probeSpine;
     const boatFeature = own(new LazyFeature({
       name: "boat",
       preload: this.#preload,
       compose: ({ composeBoatAnimation }) => composeBoatAnimation({
         windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
         scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
+        preload: this.#preload, images: imageAssets,
       }),
     }));
     const boatAnimation = {
@@ -1698,6 +1705,11 @@ class LazyBoatAnimationController {
   advance(boat, context) {
     const real = this.#feature.get()?.controller;
     return real ? real.advance(boat, context) : null;
+  }
+
+  // Spec 166: the boat's static picture without Spine, or null (also while the boat module loads).
+  getStaticPicture() {
+    return this.#feature.get()?.controller?.getStaticPicture() ?? null;
   }
 
   get scene() {

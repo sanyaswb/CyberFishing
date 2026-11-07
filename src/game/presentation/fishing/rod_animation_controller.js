@@ -48,15 +48,22 @@ export class RodAnimationController {
   #startPicture = null;
   #startRegion = null;
   #startRegionImage = null;
+  #probeSpine;
+  #requestStatic;
+  #pageRegion = null;
+  #pageRegionImage = null;
   #disposed = false;
 
   // readSetupPose(skeletonJson, atlas, descriptor) recomputes the static picture after a DEV bone edit.
   // getStartImage(assetId): the loaded image of the skin's startPicture (TK-181), or null.
+  // Spec 166: probeSpine() -> Promise<boolean>, whether Spine plays on this page (asked before any export file loads);
+  // requestStatic(assetId) asks for the full start picture, which only a rod without Spine needs. loadBundle(descriptor)
+  // returns { result, upgrade(), release() }: the export on its half-size pages where it has them, upgrade() the full pages.
   constructor({
     loadBundle, loadRuntime, glSurface, resolver, getConfig, isReducedMotion = () => false, readSetupPose = null,
-    getStartImage = () => null,
+    getStartImage = () => null, probeSpine = () => Promise.resolve(true), requestStatic = () => {},
   }) {
-    const functions = { loadBundle, loadRuntime, getConfig, isReducedMotion };
+    const functions = { loadBundle, loadRuntime, getConfig, isReducedMotion, probeSpine, requestStatic };
     for (const [name, value] of Object.entries(functions)) {
       if (typeof value !== "function") throw new TypeError(`RodAnimationController requires ${name}`);
     }
@@ -73,6 +80,8 @@ export class RodAnimationController {
     this.#isReducedMotion = isReducedMotion;
     this.#readSetupPose = readSetupPose;
     this.#getStartImage = getStartImage;
+    this.#probeSpine = probeSpine;
+    this.#requestStatic = requestStatic;
     this.#snapshot = resolver.createSnapshot();
   }
 
@@ -100,9 +109,20 @@ export class RodAnimationController {
       this.#bundle = null;
       return;
     }
-    const load = this.#loadBundle({ asset, skin: skin || null, linePoint: linePoint || null });
-    this.#load = load;
-    load.result.then((outcome) => this.#onBundle(generation, outcome));
+    // Spec 166: Spine first decides what loads. With Spine: the export (its half-size pages, then the full ones);
+    // without it: only the full start picture.
+    const startAsset = this.#startPicture?.asset ?? "";
+    this.#probeSpine().then((available) => {
+      if (generation !== this.#generation || this.#disposed) return;
+      if (available !== true) {
+        this.#reason = "spine-unavailable";
+        if (startAsset) this.#requestStatic(startAsset);
+        return;
+      }
+      const load = this.#loadBundle({ asset, skin: skin || null, linePoint: linePoint || null });
+      this.#load = load;
+      load.result.then((outcome) => this.#onBundle(generation, outcome, load, startAsset));
+    });
   }
 
   // context: { dtSec, state, stressRatio, tensionRatio, fishScreenX, baseX, baseY, canvasWidth, canvasHeight,
@@ -131,7 +151,7 @@ export class RodAnimationController {
       this.#advanceScene(scene, context, config, anchor);
       return anchor;
     }
-    this.#placeStatic(anchor, context, config, pose, image, pose.region);
+    this.#placeStatic(anchor, context, config, pose, image, this.#regionOnPage(pose.region, image));
     return anchor;
   }
 
@@ -157,6 +177,23 @@ export class RodAnimationController {
         height: image.naturalHeight || image.height, rotate: 0 });
     }
     return this.#startRegion;
+  }
+
+  // The pose's region on the page image it is drawn from: the atlas's own numbers on the full page, the same region
+  // scaled to a half-size copy (spec 166), one object per image (advance runs every frame).
+  #regionOnPage(region, image) {
+    const page = this.#bundle?.atlas?.pages?.find((entry) => entry.name === region.pageName);
+    const width = image.naturalWidth || image.width;
+    if (!page || !(page.width > 0) || width === page.width) return region;
+    if (this.#pageRegionImage !== image) {
+      this.#pageRegionImage = image;
+      const sx = width / page.width;
+      const sy = (image.naturalHeight || image.height) / page.height;
+      const rotated = region.rotate === 90;
+      this.#pageRegion = Object.freeze({ ...region, x: region.x * sx, y: region.y * sy,
+        width: region.width * (rotated ? sy : sx), height: region.height * (rotated ? sx : sy) });
+    }
+    return this.#pageRegion;
   }
 
   getAnchor() {
@@ -350,15 +387,26 @@ export class RodAnimationController {
     anchor.tipY = anchor.baseY - RECTANGLE_HEIGHT_PX;
   }
 
-  async #onBundle(generation, outcome) {
+  async #onBundle(generation, outcome, load, startAsset) {
     if (generation !== this.#generation) return;
     if (outcome.status !== "ready") {
       this.#reason = outcome.reason ?? outcome.status;
+      // Spec 166: an export that did not load leaves the start picture, now in full.
+      if (outcome.reason !== "cancelled" && startAsset) this.#requestStatic(startAsset);
       return;
     }
     // The new skin's static picture replaces the previous skin's scene until its own scene is ready.
     this.#replaceScene(null);
     this.#bundle = outcome.bundle;
+    // Spec 166: the full pages follow the half-size ones; the scene takes them into its textures, the static picture
+    // reads them from the bundle.
+    if (outcome.bundle.lowPages === true) {
+      load.upgrade().then((upgraded) => {
+        if (generation !== this.#generation || upgraded.status !== "ready") return;
+        this.#bundle = { ...this.#bundle, pages: upgraded.pages, lowPages: false };
+        this.#scene?.upgradePages(upgraded.pages);
+      });
+    }
     const capability = await this.#loadRuntime(outcome.bundle.version);
     if (generation !== this.#generation) return;
     if (!capability.available) {
@@ -366,7 +414,7 @@ export class RodAnimationController {
       this.#replaceScene(null);
       return;
     }
-    const created = capability.runtime.createScene(outcome.bundle, this.#glSurface);
+    const created = capability.runtime.createScene(this.#bundle, this.#glSurface);
     if (generation !== this.#generation) {
       created.scene?.dispose();
       return;

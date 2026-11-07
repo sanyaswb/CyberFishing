@@ -18,6 +18,12 @@ export class SpineRuntimeProvider {
       ? this.#unavailable("version-mismatch") : result);
   }
 
+  // Spec 166: whether the runtime imports and builds here at all, before any export file is loaded (the export's
+  // version, known from its JSON, is checked later by load()). The same single import as load().
+  probe() {
+    return this.load(null).then((result) => result.available || result.reason === "version-mismatch");
+  }
+
   #create(module) {
     let runtime;
     try { runtime = typeof module?.createSpineRuntime === "function" ? module.createSpineRuntime() : null; }

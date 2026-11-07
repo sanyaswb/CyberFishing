@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-250.1 (spec 166): Spine loads its half-size atlas page, then the full one; static pictures only without Spine (rod, boat).",
   "TK-250: Spine exports live in assets/animations (rod, boat); the owner's new 3840 px rod art; rod start on its low copy.",
   "TK-249.1: equipped cells and badges show the equipped icon; backpack and editor preview keep the pack.",
   "TK-249: carp mix packs 15/25/50/100 with art; the chum switcher shows the mix icon; packs share one spot.",

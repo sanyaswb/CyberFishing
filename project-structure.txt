@@ -1,10 +1,12 @@
 ├── assets
 │  ├── animations
 │  │  ├── boats
+│  │  │  ├── boat-lvl--3--low.webp
 │  │  │  ├── boat-lvl--3.atlas
 │  │  │  ├── boat-lvl--3.json
 │  │  │  └── boat-lvl--3.webp
 │  │  └── rods
+│  │     ├── bamboo-rod-v1--low.webp
 │  │     ├── bamboo-rod-v1.atlas
 │  │     ├── bamboo-rod-v1.json
 │  │     └── bamboo-rod-v1.webp
@@ -152,6 +154,8 @@
 │  │  │  ├── battery-volt--4--low.webp
 │  │  │  └── battery-volt--4.webp
 │  │  ├── boats
+│  │  │  ├── boat-lvl--3--low.webp
+│  │  │  ├── boat-lvl--3.webp
 │  │  │  ├── boat-lvl--3_bait--low.webp
 │  │  │  ├── boat-lvl--3_bait.webp
 │  │  │  ├── boat-lvl--3_no-bait--low.webp

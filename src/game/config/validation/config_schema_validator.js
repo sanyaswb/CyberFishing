@@ -581,6 +581,12 @@ export class ConfigSchemaValidator {
     for (const key of ["skin", "linePoint"]) {
       if (animation[key] !== undefined) this.#requireNonEmptyString(`${path}.${key}`, animation[key]);
     }
+    const staticPicture = animation.staticPicture;
+    if (staticPicture !== undefined) {
+      this.#requireNonEmptyString(`${path}.staticPicture.asset`, staticPicture?.asset);
+      if (!(staticPicture?.width > 0)) this.#error(`${path}.staticPicture.width`, "must be positive");
+      if (!(staticPicture?.anchorY >= 0 && staticPicture.anchorY <= 1)) this.#error(`${path}.staticPicture.anchorY`, "must be within 0..1");
+    }
     const picture = animation.startPicture;
     if (picture === undefined) return;
     this.#requireNonEmptyString(`${path}.startPicture.asset`, picture?.asset);

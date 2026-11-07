@@ -39,6 +39,7 @@ export class GameAssetPreloadFacade {
   #settledLayers = new Set();
   // The first layer's full files replacing its copies: no layer run waits for them.
   #upgradeRuns = [];
+  #spineAvailable;
   #fullLoad;
 
   // plan: AssetLoadPlan; assets: AssetRegistry; imageAssets: the game's ImageAssetProvider; scheduler: { setTimeout,
@@ -48,9 +49,12 @@ export class GameAssetPreloadFacade {
   // now(): milliseconds for the DEV overlay's group times (performance.now), or null.
   // modules: { name: () => Promise<module> } — the composition's import() of each feature the plan names.
   // warmFile: (path) => Promise — puts a file in the browser's cache, or null (the lazy layer then skips those kinds).
+  // spineAvailable: () => Promise<boolean> — whether this page can play Spine (spec 166); without Spine the lazy layer
+  // warms no Spine export. null: always warm.
   constructor({ plan, assets, imageAssets, scheduler, conditions = null, networkSlots = 24, backgroundSlots = 4,
-    maxAttempts = 2, now = null, modules = {}, warmFile = null }) {
+    maxAttempts = 2, now = null, modules = {}, warmFile = null, spineAvailable = null }) {
     this.#warmFile = warmFile;
+    this.#spineAvailable = spineAvailable;
     this.#moduleLoaders = modules;
     this.#now = typeof now === "function" ? now : null;
     if (typeof plan?.resolveGroup !== "function") throw new TypeError("GameAssetPreloadFacade requires a plan");
@@ -208,13 +212,14 @@ export class GameAssetPreloadFacade {
     await pass(async (group) => {
       this.#groupTimes.set(group.id, { startedMs: this.#now?.() ?? null, settledMs: null });
       const ids = this.#openIds(group);
-      const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(ids.filter((id) => this.#assets.entryOf(id).kind === "spine"), priority)];
+      const results = [await this.#loadIds(ids, priority, { low: true }), await this.#warm(this.#spineIds(ids), priority, "low")];
       for (const name of this.#plan.modulesOf(group)) results.push(await this.#loadModule(name, priority));
       outcomes.set(group.id, results);
     });
     await pass(async (group) => {
       const ids = this.#openIds(group);
-      const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority)];
+      const results = [...outcomes.get(group.id), await this.#loadIds(ids.filter((id) => this.#hasLow(id)), priority),
+        await this.#warm(this.#spineIds(ids), priority, "full")];
       const failed = results.find((result) => result.status === "failed");
       this.#groupTimes.get(group.id).settledMs = this.#now?.() ?? null;
       this.#settleGroup(group, { status: failed ? "failed" : "ready", ids, error: failed?.error ?? null });
@@ -229,12 +234,20 @@ export class GameAssetPreloadFacade {
     return this.#assets.entryOf(id).kind === "image" && Boolean(this.#assets.lowPathOf(id));
   }
 
-  // Spine exports: into the browser's cache through the queue, so the background still yields to the player.
-  async #warm(ids, priority) {
-    if (!this.#warmFile) return { status: "ready", ids, error: null };
+  #spineIds(ids) {
+    return ids.filter((id) => this.#assets.entryOf(id).kind === "spine");
+  }
+
+  // Spine exports: into the browser's cache through the queue, so the background still yields to the player. Spec 166:
+  // only where Spine plays; the low pass takes the skeleton, the atlas and the half-size pages (the full pages where an
+  // export has no copies), the full pass the full pages.
+  async #warm(ids, priority, pass) {
+    if (!this.#warmFile || ids.length === 0) return { status: "ready", ids, error: null };
+    if (this.#spineAvailable && await this.#spineAvailable() !== true) return { status: "ready", ids, error: null };
     const paths = ids.flatMap((id) => {
-      const entry = this.#assets.entryOf(id);
-      return [entry.json, entry.atlas, ...(entry.textures ?? [])];
+      const { skeleton, atlas, textures, lowTextures } = this.#assets.spineOf(id);
+      if (pass === "full") return lowTextures ? textures : [];
+      return [skeleton, atlas, ...(lowTextures ?? textures)];
     });
     const results = await Promise.all(paths.map((path) => this.#queue.request({ key: `file:${path}`, priority,
       load: () => this.#warmFile(path) }).result));
@@ -290,7 +303,8 @@ export class GameAssetPreloadFacade {
         if (loaded.status !== "ready" && outcome.status === "ready") Object.assign(outcome, { status: "failed", error: loaded.error });
       }
     }
-    if (low && outcome.status === "ready") {
+    // Spec 166: a group with upgrade "on-demand" keeps its copies; whoever needs a full file asks for it with request().
+    if (low && outcome.status === "ready" && group.upgrade !== "on-demand") {
       const upgrades = this.#imageIds(ids).filter((id) => this.#assets.lowPathOf(id));
       // The first layer's full files wait for the first frame; a later layer's follow their copies at once (spec 159).
       if (priority === "blocking") this.#upgrades.push(...upgrades);

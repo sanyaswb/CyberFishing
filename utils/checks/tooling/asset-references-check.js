@@ -116,7 +116,7 @@ function collectAssetReferences(value, where, found = []) {
       bytes: 3, sha256: "0", tags: ["anim"], label: "" } });
   assert.equal(registry.pathOf("ui.a"), "assets/ui/a.svg");
   assert.deepEqual(registry.spineOf("anim.rod"), { skeleton: "assets/anim/rod.json", atlas: "assets/anim/rod.atlas",
-    textures: ["assets/anim/rod.webp"] });
+    textures: ["assets/anim/rod.webp"], lowTextures: null }, "an export without page copies (spec 166: lowTextures null)");
   assert.deepEqual([registry.has("ui.a"), registry.has("ui.c")], [true, false]);
   assert.deepEqual([...registry.idsByTag("ui")], ["ui.a", "ui.b"]);
   assert.deepEqual([...registry.idsByTag("none")], []);

@@ -480,6 +480,7 @@ async function checkStartPicture({ RodAnimationController, RodAnimationStateReso
   assert.deepEqual({ ...before.region }, { x: 0, y: 0, width, height, rotate: 0 }, "the whole upright image is the region");
   const region1 = before.region;
   assert.equal(controller.advance(context).region, region1, "no new region object per frame");
+  await Promise.resolve(); // Spec 166: the export loads once the Spine probe has answered.
   finish({ status: "ready", bundle });
   for (let index = 0; index < 8; index += 1) await Promise.resolve();
   const after = { ...controller.advance(context) };
@@ -525,6 +526,7 @@ async function checkController({ RodAnimationController, RodAnimationStateResolv
   runtime = { available: false, runtime: null, reason: "import-failed" };
   controller.setSkin(animation);
   controller.setSkin({ ...animation });
+  await Promise.resolve(); // Spec 166: the export loads once the Spine probe has answered.
   assert.equal(loads.length, 1, "the same descriptor does not reload");
   assert.equal(controller.advance(context()).mode, "rectangle", "the rectangle stays until the bundle is ready");
   await flush();
@@ -798,14 +800,132 @@ async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
   assert.equal(views.disposed, 1, "the view is destroyed with its scene");
 }
 
+// Spec 166: Spine decides what the rod loads. The export starts on its half-size page and the full page replaces it in
+// the same texture; without Spine only the full start picture loads; a failed export asks for it too.
+async function checkSpineLoadOrder({ SpineBundleLoader, AssetLoadQueue, SpineScene, spine, bundle, RodAnimationController,
+  RodAnimationStateResolver, config, startPicture }) {
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const pageName = "bamboo-rod-v1.webp";
+  const lowUrl = `${EXPORT_DIR}/bamboo-rod-v1--low.webp`;
+  const fullUrl = `${EXPORT_DIR}/${pageName}`;
+  const lowImage = (url) => ({ url, naturalWidth: 74, naturalHeight: 1922, width: 74, height: 1922 });
+  const fullImage = (url) => ({ url, naturalWidth: 147, naturalHeight: 3844, width: 147, height: 3844 });
+  const transport = () => {
+    const fake = fakeTransport();
+    fake.loadImage = async (url) => { fake.calls.push(url); return url === lowUrl ? lowImage(url) : fullImage(url); };
+    return fake;
+  };
+  const queue = () => new AssetLoadQueue({ scheduler: timers, maxAttempts: 1 });
+
+  // The loader: the half-size page first, upgrade() the full page through the same queue.
+  const lowTransport = transport();
+  const lowLoad = new SpineBundleLoader({ queue: queue(), transport: lowTransport, assets }).load(DESCRIPTOR, { pages: "low" });
+  const lowResult = await lowLoad.result;
+  assert.equal(lowResult.bundle.lowPages, true);
+  assert.equal(lowResult.bundle.pages.get(pageName).url, lowUrl, "the bundle starts on the half-size page");
+  assert(!lowTransport.calls.includes(fullUrl), "the full page is not loaded with the export");
+  const upgraded = await lowLoad.upgrade();
+  assert.equal(upgraded.status, "ready");
+  assert.equal(upgraded.pages.get(pageName).url, fullUrl, "upgrade() brings the full page");
+  const fullLoad = new SpineBundleLoader({ queue: queue(), transport: transport(), assets }).load(DESCRIPTOR);
+  assert.equal((await fullLoad.result).bundle.lowPages, false, "pages full (spine-webgl): the full page at once");
+  assert.deepEqual(await fullLoad.upgrade(), { status: "none" }, "nothing to upgrade");
+
+  // The scene: the full page into the same texture; a wrong size or a runtime without replaceTexture keeps the copy.
+  const replaced = [];
+  const graphics = { ...fakeGraphics(), replaceTexture: (texture, image) => replaced.push([texture, image]) };
+  const lowBundle = { ...bundle, pages: new Map([[pageName, lowImage(lowUrl)]]), lowPages: true };
+  const scene = SpineScene.create({ spine, bundle: lowBundle, surface: fakeSurface(), graphics, runtimeVersion: "4.3.13" }).scene;
+  assert.equal(scene.upgradePages(new Map([[pageName, lowImage(lowUrl)]])), false, "an image of another size is refused");
+  assert.equal(scene.upgradePages(new Map([[pageName, fullImage(fullUrl)]])), true);
+  assert.deepEqual(replaced.map(([texture, image]) => [texture === graphics.textures[0], image.url]), [[true, fullUrl]],
+    "the page's own texture takes the full image");
+  scene.dispose();
+  const plain = SpineScene.create({ spine, bundle: lowBundle, surface: fakeSurface(), graphics: fakeGraphics(), runtimeVersion: "4.3.13" }).scene;
+  assert.equal(plain.upgradePages(new Map([[pageName, fullImage(fullUrl)]])), false, "spine-webgl keeps its pages");
+  plain.dispose();
+
+  // The Pixi swap on Pixi's own classes: the same source takes the image, its size and every texture over it follow.
+  const pixi = await importSource("vendor/pixi/8.22.0/pixi-scene.js");
+  const { replacePixiPageTexture } = await importSource("src/platform/browser/scene/pixi_spine_runtime.js");
+  const TextureSource = new pixi.Texture().source.constructor;
+  const source = new TextureSource({ resource: lowImage(lowUrl), width: 74, height: 1922 });
+  const spineTexture = pixi.SpineTexture.from(source);
+  const pixiTexture = spineTexture.texture;
+  const resized = [];
+  source.on("resize", () => resized.push(source.pixelHeight));
+  replacePixiPageTexture(spineTexture, fullImage(fullUrl));
+  assert.deepEqual([source.resource.url, source.pixelWidth, source.pixelHeight, pixiTexture.frame.width, pixiTexture.frame.height],
+    [fullUrl, 147, 3844, 147, 3844], "the source holds the full page and its texture's frame follows");
+  assert.deepEqual(resized, [3844], "a resize, which Pixi's texture system answers with an upload at the new size");
+  assert.equal(spineTexture.texture, pixiTexture, "the same texture objects: spine-pixi-v8's references stay valid");
+
+  // The runtime probe: the one import, without the export's version.
+  const { SpineRuntimeProvider } = await importSource("src/platform/browser/animation/spine_runtime_provider.js");
+  const fakeModule = { createSpineRuntime: () => ({ version: "4.3.13", createScene() {} }) };
+  assert.equal(await new SpineRuntimeProvider({ importModule: async () => fakeModule }).probe(), true);
+  assert.equal(await new SpineRuntimeProvider({ importModule: async () => { throw new Error("no scene"); } }).probe(), false);
+
+  // The controller's order.
+  const context = { dtSec: 1 / 60, state: "waiting", stressRatio: 0, fishScreenX: 640, baseX: 640, baseY: 800, canvasWidth: 1280,
+    canvasHeight: 800, windDirection: 0, rainMultiplier: 1 };
+  const make = ({ available, outcome = null, runtime = { available: false, runtime: null, reason: "version-mismatch" } }) => {
+    const calls = { bundles: 0, statics: [], finishUpgrade: null };
+    const controller = new RodAnimationController({
+      loadBundle: () => {
+        calls.bundles += 1;
+        return {
+          result: Promise.resolve(outcome ?? { status: "ready", bundle: lowBundle }),
+          upgrade: () => new Promise((resolve) => {
+            calls.finishUpgrade = () => resolve({ status: "ready", pages: new Map([[pageName, fullImage(fullUrl)]]) });
+          }),
+          release() {},
+        };
+      },
+      loadRuntime: async () => runtime,
+      glSurface: fakeSurface(), resolver: new RodAnimationStateResolver(), getConfig: () => config,
+      probeSpine: async () => available,
+      requestStatic: (assetId) => calls.statics.push(assetId),
+    });
+    controller.setSkin({ ...DESCRIPTOR, startPicture });
+    return { controller, calls };
+  };
+  const noSpine = make({ available: false });
+  await flush();
+  assert.equal(noSpine.calls.bundles, 0, "without Spine nothing of the export loads");
+  assert.deepEqual(noSpine.calls.statics, [startPicture.asset], "only the full start picture is asked for");
+  assert.equal(noSpine.controller.getStatus().reason, "spine-unavailable");
+  const failed = make({ available: true, outcome: { status: "failed", reason: "page-failed" } });
+  await flush(); await flush();
+  assert.deepEqual(failed.calls.statics, [startPicture.asset], "an export that did not load asks for the full start picture");
+  const withSpine = make({ available: true });
+  await flush(); await flush(); await flush();
+  assert.equal(withSpine.calls.bundles, 1, "with Spine the export loads");
+  assert.deepEqual(withSpine.calls.statics, [], "the full start picture is never loaded with Spine");
+  // Without the runtime (here an export of another line) the static picture comes from the page, scaled to the copy.
+  const onCopy = withSpine.controller.advance(context);
+  const region = bundle.staticPose.region;
+  assert.equal(onCopy.mode, "static");
+  assert.equal(onCopy.image.url, lowUrl);
+  near(onCopy.region.width, region.width * 74 / 147, 1e-9, "the region scaled to the half-size page");
+  near(onCopy.region.height, region.height * 1922 / 3844, 1e-9);
+  withSpine.calls.finishUpgrade();
+  await flush();
+  const onFull = withSpine.controller.advance(context);
+  assert.equal(onFull.image.url, fullUrl, "the full page replaces the copy");
+  assert.equal(onFull.region, region, "the atlas's own region on the full page");
+}
+
 async function main() {
   const version = checkVendorManifest();
   const { AssetRegistry } = await importSource("src/engine/assets/asset_registry.js");
   const { ASSET_REGISTRY } = await importSource("src/game/config/generated/asset_registry.js");
   assets = new AssetRegistry({ ...ASSET_REGISTRY, "test.broken-atlas": { kind: "spine", json: FILES.skeleton,
     atlas: `${EXPORT_DIR}/broken.atlas`, textures: [], bytes: 0, sha256: "0", tags: [], label: "" } });
-  assert.deepEqual({ ...assets.spineOf(DESCRIPTOR.asset), textures: undefined }, { ...FILES, textures: undefined },
-    "the registry names the tracked rod export");
+  assert.deepEqual({ ...assets.spineOf(DESCRIPTOR.asset), textures: undefined, lowTextures: undefined },
+    { ...FILES, textures: undefined, lowTextures: undefined }, "the registry names the tracked rod export");
+  assert.deepEqual(assets.spineOf(DESCRIPTOR.asset).lowTextures, [`${EXPORT_DIR}/bamboo-rod-v1--low.webp`],
+    "the export's half-size page (spec 166)");
   const spine = await importSource("vendor/spine-webgl/4.3.13/spine-webgl.js");
   const { SpineAtlasTextReader } = await importSource("src/platform/browser/animation/spine_atlas_text_reader.js");
   const { SpineBundleLoader } = await importSource("src/platform/browser/animation/spine_bundle_loader.js");
@@ -856,6 +976,8 @@ async function main() {
     bundle, config });
   await checkStartPicture({ RodAnimationController, RodAnimationStateResolver, SpineSetupPoseReader, bundle, config,
     startPicture, surface: fakeSurface() });
+  await checkSpineLoadOrder({ SpineBundleLoader, AssetLoadQueue, SpineScene, spine, bundle, RodAnimationController,
+    RodAnimationStateResolver, config, startPicture });
   checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
     RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `

@@ -143,6 +143,13 @@ export class BoatChumRenderFrameBuilder {
       const boatScale = Number(boatUi.displayScale) > 0 ? Number(boatUi.displayScale) : 0.20;
       record.view = anim?.view ?? null;
       record.viewScale = scale * this.#projector.getScale() * boatScale;
+      // Spec 166: without Spine the owner's picture, at the Spine boat's size and turn; the shape only without either.
+      const picture = record.view || !this.#boatAnimation ? null : this.#boatAnimation.getStaticPicture();
+      const pictureWidth = picture ? picture.image.naturalWidth || picture.image.width : 0;
+      record.image = picture && pictureWidth > 0 ? picture.image : null;
+      record.imageAsset = record.image ? picture.asset : "";
+      record.imageScale = record.image ? (record.viewScale * picture.width) / pictureWidth : 1;
+      record.imageAnchorY = record.image ? picture.anchorY : 0.5;
       record.animClip = anim?.clip ?? "";
       record.animTimer = anim?.clipTimer ?? 0;
       this.#buildSensors(target, boat);

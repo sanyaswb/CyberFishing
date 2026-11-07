@@ -63,6 +63,19 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy, i
   const make = [];
   const problems = [];
   for (const [id, entry] of Object.entries(registry)) {
+    // Spec 166: each Spine atlas page has a half-size copy (name--low.webp beside it), made from the pages' content.
+    if (entry.kind === "spine") {
+      const lows = entry.textures.map((texture) => lowCopyPath(texture));
+      const source = spinePagesSource(entry);
+      const stale = previous[id]?.lowSource !== source || lows.some((low) => !fs.existsSync(path.join(ROOT, low)));
+      if (stale) {
+        if (check) problems.push(`${lows.join(", ")} missing or older than ${entry.textures.join(", ")}`);
+        else entry.textures.forEach((texture, index) => make.push({ input: texture, output: lows[index], scale: 0.5, quality: "low", alphaQuality: 50 }));
+      } else if (check) for (const low of lows) if (!tracked.has(low)) problems.push(`${low} is not tracked (Pages ships tracked files only)`);
+      entry.low = lows;
+      entry.lowSource = source;
+      continue;
+    }
     if (entry.kind !== "image" || !needsLowCopy(entry.path)) continue;
     const low = lowCopyPath(entry.path);
     const stale = previous[id]?.lowSource !== entry.sha256 || !fs.existsSync(path.join(ROOT, low));
@@ -74,7 +87,7 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy, i
     entry.lowSource = entry.sha256;
   }
   // A copy whose image is gone (moved out of assets/ or removed) goes with it.
-  const kept = new Set(Object.values(registry).map((entry) => entry.low).filter(Boolean));
+  const kept = new Set(Object.values(registry).flatMap((entry) => [].concat(entry.low ?? [])));
   const orphans = [...tracked].filter((file) => isLowCopy(file) && !kept.has(file));
   if (check) for (const orphan of orphans) problems.push(`${orphan} has no image any more`);
   else {
@@ -92,6 +105,12 @@ function syncLowCopies(registry, previous, { check, lowCopyPath, needsLowCopy, i
   fs.rmSync(manifest, { force: true });
   if (result.status !== 0) throw new Error("utils/convert-images.js --low-copies failed");
   return make.length;
+}
+
+// The content a Spine package's page copies are made from: its pages' hashes (the sha256 parts after json and atlas), so a
+// new skeleton JSON alone does not remake them.
+function spinePagesSource(entry) {
+  return entry.sha256.split("+").slice(2).join("+");
 }
 
 // Renames git sees between the commit that last wrote the registry and the working tree.
@@ -134,7 +153,8 @@ function render(registry) {
   const value = (entry) => {
     const fields = entry.kind === "spine"
       ? [`kind: "spine"`, `json: ${JSON.stringify(entry.json)}`, `atlas: ${JSON.stringify(entry.atlas)}`,
-        `textures: Object.freeze(${JSON.stringify(entry.textures)})`]
+        `textures: Object.freeze(${JSON.stringify(entry.textures)})`,
+        ...(entry.low ? [`low: Object.freeze(${JSON.stringify(entry.low)})`, `lowSource: ${JSON.stringify(entry.lowSource)}`] : [])]
       : [`kind: ${JSON.stringify(entry.kind)}`, `path: ${JSON.stringify(entry.path)}`,
         ...(entry.width ? [`width: ${entry.width}`, `height: ${entry.height}`] : []),
         ...(entry.low ? [`low: ${JSON.stringify(entry.low)}`, `lowSource: ${JSON.stringify(entry.lowSource)}`] : [])];

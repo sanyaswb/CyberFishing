@@ -3,6 +3,16 @@ import { SpineScene } from "../animation/spine_scene.js";
 // spine-pixi-v8's version in the vendored scene bundle (vendor/manifest.json): exports of the 4.3 editor line.
 const RUNTIME_VERSION = "4.3.13";
 
+// Spec 166: the full page into the texture of its half-size copy (a SpineTexture). The same TextureSource takes the
+// image; update() resizes it to the image, which re-uploads it at the new size (Pixi's texture system listens to
+// "resize"), every Texture over the source follows the resize, and the mipmaps are rebuilt from the full image.
+export function replacePixiPageTexture(texture, image) {
+  const source = texture.texture.source;
+  source.resource = image;
+  source.update();
+  source.updateMipmaps();
+}
+
 // The Spine runtime of the WebGL scene (spec 107 D6), the same capability shape as spine_runtime_module.js:
 // { version, createScene(bundle, surface) } → { scene, reason, error }. SpineScene drives the skeleton with
 // spine-pixi-v8's copy of spine-core (y down); a Pixi Spine display object draws it inside the scene, with atlas pages
@@ -29,6 +39,7 @@ export function createPixiSpineRuntime(pixi) {
           createTexture: (image, pma) => pixi.SpineTexture.from(pixi.Texture.from({ resource: image,
             alphaMode: pma ? "premultiplied-alpha" : "premultiply-alpha-on-upload" }, true).source),
           canMipmap: (width, height) => surface.canMipmap(width, height),
+          replaceTexture: replacePixiPageTexture,
           createView: (data) => {
             const view = new pixi.Spine({ skeletonData: data, autoUpdate: false });
             return { view, skeleton: view.skeleton, state: view.state };

@@ -278,6 +278,24 @@ export class SpineScene {
     return [...this.#missingClips];
   }
 
+  // Spec 166: the full atlas pages replace the half-size copies the scene started on, inside the same textures, so the
+  // skeleton, its tracks and the display object stay as they are. pages: Map(page name -> image of the page's own size).
+  // True when every page was replaced; false (the copies stay) when the runtime cannot replace textures, the scene is
+  // gone, or an image is missing or not the size the atlas declares.
+  upgradePages(pages) {
+    if (this.#disposed || typeof this.#graphics.replaceTexture !== "function") return false;
+    const replaced = [];
+    for (const page of this.#atlas.pages) {
+      const image = pages?.get(page.name);
+      const width = image?.naturalWidth || image?.width;
+      const height = image?.naturalHeight || image?.height;
+      if (!image || width !== page.width || height !== page.height) return false;
+      replaced.push([page, image]);
+    }
+    for (const [page, image] of replaced) this.#graphics.replaceTexture(page.texture, image);
+    return true;
+  }
+
   // True when the atlas pages were mipmapped (spec 100 D3); false keeps the atlas filter (WebGL 1, non-power-of-two).
   isMipmapped() {
     return this.#mipmapped;

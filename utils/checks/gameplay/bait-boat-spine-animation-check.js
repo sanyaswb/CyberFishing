@@ -122,6 +122,9 @@ async function checkAnimationController() {
     loadBundle: () => ({ result: Promise.resolve({ status: "ready", bundle: { version: "4.3.26", skeletonFile: "boat-lvl--3.json", skeleton: { bones: [{ name: "root" }] } } }) }),
     loadRuntime: () => Promise.resolve({ available: true, runtime: { createScene: () => ({ scene: fakeScene, reason: null }) } }),
     glSurface: fakeGlSurface,
+    probeSpine: () => Promise.resolve(true),
+    requestStatic: () => {},
+    getStaticImage: () => null,
   });
 
   controller.setDescriptor({
@@ -239,6 +242,7 @@ async function checkBoatRenderPipeline() {
   const fakeBoatView = { visible: false, x: 0, y: 0, rotation: 0, scale: { set(x, y) { this.x = x; this.y = y; } } };
   const fakeAnimController = {
     setDescriptor() {},
+    getStaticPicture() { return null; },
     advance(boat, ctx) {
       return {
         view: fakeBoatView,
@@ -358,6 +362,7 @@ async function checkBoatRenderPipeline() {
     pixi: fakePixi,
     stage: fakeStage,
     texts: { get: () => ({ texture: {}, width: 10, height: 10 }) },
+    textures: { get: () => null },
     documentTarget: { createElement: () => ({}) },
   });
 
@@ -556,7 +561,92 @@ async function checkClipLengthsAndStates() {
   assert.equal(opening.isBaitDropped, true, "and drops when the clip has played");
 }
 
+// Spec 166: Spine decides what the boat loads. With Spine: the export on its half-size pages, then the full pages into
+// the same scene; without Spine, a failed export or a lost context: the static picture, asked for once.
+async function checkSpineLoadOrder() {
+  const { BoatAnimationController } = await import("../../../src/game/presentation/world/boat_animation_controller.js");
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const descriptor = { asset: "animations.boats.boat-lvl--3", skin: "skin_boat-lvl--3",
+    staticPicture: { asset: "items.boats.boat-lvl--3", width: 242, anchorY: 0.519 } };
+  const picture = { naturalWidth: 241, naturalHeight: 595 };
+  const make = ({ available, outcome = null, contextLost = false }) => {
+    const calls = { bundles: [], statics: [], upgrades: 0, upgraded: [], scenePages: [], finishUpgrade: null };
+    const fullPages = new Map([["boat-lvl--3.webp", { naturalWidth: 395, naturalHeight: 1027 }]]);
+    const scene = {
+      clearTrack() {}, setLoop() {}, setAnimation() {}, setSlotVisible() {}, setSampled() {}, setPlacement() {}, update() {},
+      getView: () => ({}), dispose() {}, upgradePages: (pages) => { calls.upgraded.push(pages); return true; },
+    };
+    let loaded = false;
+    const controller = new BoatAnimationController({
+      loadBundle: (requested) => {
+        calls.bundles.push(requested);
+        return {
+          result: Promise.resolve(outcome ?? { status: "ready", bundle: { version: "4.3.26", skeleton: {}, lowPages: true, pages: "low" } }),
+          upgrade: () => {
+            calls.upgrades += 1;
+            return new Promise((resolve) => { calls.finishUpgrade = () => resolve({ status: "ready", pages: fullPages }); });
+          },
+          release() {},
+        };
+      },
+      loadRuntime: () => Promise.resolve({ available: true, runtime: { createScene: (bundle) => {
+        calls.scenePages.push(bundle.pages ?? null);
+        return { scene, reason: null };
+      } } }),
+      glSurface: { ensureContext: () => true, isContextLost: () => contextLost },
+      probeSpine: () => Promise.resolve(available),
+      requestStatic: (assetId) => { calls.statics.push(assetId); loaded = true; },
+      getStaticImage: (assetId) => (loaded && assetId === descriptor.staticPicture.asset ? picture : null),
+    });
+    return { controller, calls, fullPages };
+  };
+
+  const withSpine = make({ available: true });
+  withSpine.controller.setDescriptor(descriptor);
+  assert.equal(withSpine.controller.getStaticPicture(), null, "while Spine loads the shape stays (no picture asked)");
+  await flush(); await flush(); await flush();
+  assert.equal(withSpine.calls.bundles.length, 1, "with Spine the export loads");
+  assert.equal(withSpine.calls.upgrades, 1, "its full pages follow the half-size ones");
+  assert.deepEqual(withSpine.calls.scenePages, ["low"], "the scene starts on the half-size pages");
+  withSpine.calls.finishUpgrade();
+  await flush();
+  assert.deepEqual(withSpine.calls.upgraded, [withSpine.fullPages], "the scene takes the full pages into its textures");
+  // Full pages that arrive before the runtime: the scene is built on them at once.
+  const early = make({ available: true });
+  early.controller.setDescriptor(descriptor);
+  await flush(); await flush();
+  early.calls.finishUpgrade?.();
+  await flush(); await flush(); await flush();
+  assert.equal(early.calls.scenePages.length, 1);
+  assert(early.calls.scenePages[0] === early.fullPages || early.calls.upgraded[0] === early.fullPages,
+    "full pages reach the scene whichever comes first");
+  assert(withSpine.controller.advance({ animationState: "idle" }, { dtSec: 0.1 }), "Spine draws the boat");
+  assert.equal(withSpine.controller.getStaticPicture(), null, "no static picture while Spine plays");
+  assert.deepEqual(withSpine.calls.statics, [], "the picture is never loaded with Spine");
+
+  const noSpine = make({ available: false });
+  noSpine.controller.setDescriptor(descriptor);
+  await flush();
+  assert.deepEqual(noSpine.calls.bundles, [], "without Spine nothing of the export loads");
+  const shown = noSpine.controller.getStaticPicture();
+  assert.deepEqual([shown.image, shown.asset, shown.width, shown.anchorY], [picture, "items.boats.boat-lvl--3", 242, 0.519],
+    "the owner's picture instead of the vector shape");
+  noSpine.controller.getStaticPicture();
+  assert.deepEqual(noSpine.calls.statics, ["items.boats.boat-lvl--3"], "asked for once");
+
+  const failed = make({ available: true, outcome: { status: "failed", reason: "page-failed" } });
+  failed.controller.setDescriptor(descriptor);
+  await flush(); await flush();
+  assert(failed.controller.getStaticPicture(), "an export that did not load leaves the picture");
+
+  const lost = make({ available: true, contextLost: true });
+  lost.controller.setDescriptor(descriptor);
+  await flush(); await flush(); await flush();
+  assert(lost.controller.getStaticPicture(), "a lost context shows the picture until Spine returns");
+}
+
 async function run() {
+  await checkSpineLoadOrder();
   await checkClipLengthsAndStates();
   await checkSectionCount();
   await checkBoatStateFlow();

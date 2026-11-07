@@ -220,7 +220,7 @@ export class PixiSceneLayer {
         getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize });
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
-        documentTarget: this.#documentTarget });
+        textures: this.#textures, documentTarget: this.#documentTarget });
       this.#fightAreas = new PixiFightAreaRenderer({ pixi: this.#pixi, stage: app.stage, styles: this.#fightAreaStyles });
       // Depth (docs/rendering.md rule 14, TK-158): the float out on the water first, then the line, then the rod nearest
       // the camera, which covers the float where they meet.
