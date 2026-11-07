@@ -1,2 +1,0 @@
-import{d as i}from"./chunk-AEMBJDYY.js";var n=class e{static clamp(r,t=0,c=1){return i(r,t,c)}static rgba(r,t=1){let c=Array.isArray(r)?r:[255,255,255];return`rgba(${c[0]||0}, ${c[1]||0}, ${c[2]||0}, ${t})`}static mixRgb(r,t,c){let o=e.clamp(c);return[Math.round(r[0]+(t[0]-r[0])*o),Math.round(r[1]+(t[1]-r[1])*o),Math.round(r[2]+(t[2]-r[2])*o)]}static interpolateRgb(r,t,c){let o=e.mixRgb(r,t,c);return`rgb(${o[0]}, ${o[1]}, ${o[2]})`}static resolveX(r,t,c){return r==="center"?(c-t)/2:Number(r)||0}};export{n as a};
-//# sourceMappingURL=chunk-KFLF5HKE.js.map
