@@ -38,6 +38,8 @@ export class InventoryCommandService {
   #slotVisibility;
   #pickSubfilterIds;
   #busyDevices = null;
+  #liveBaitHook = null;
+  #liveBaitStacks = null;
   #busySignature = new BusyDeviceSignature();
 
   constructor({
@@ -109,6 +111,11 @@ export class InventoryCommandService {
   getUiState() {
     return this.#uiState.snapshot();
   }
+
+  // Spec 165 A3: the live bait hook (LiveBaitHookController) and the backpack's stacks (LiveBaitStackView), composed
+  // after the inventory; without them a stack is never a bait candidate.
+  setLiveBaitHook(hook) { this.#liveBaitHook = hook || null; }
+  setLiveBaitStacks(stacks) { this.#liveBaitStacks = stacks || null; }
 
   // Spec 151: devices away from the player (a bait boat on the water) report their roots here.
   setBusyDevices(source) {
@@ -212,6 +219,9 @@ export class InventoryCommandService {
 
   // A card activated during a pick (spec 070) returns to the equipment section once it is equipped or opened.
   #activateInventoryItem(instanceId) {
+    // Spec 165 A3: during a bait pick a live bait stack is a candidate: choosing it puts the species' next live bait on.
+    const liveBaitSpeciesId = LiveBaitStackId.speciesOf(instanceId);
+    if (liveBaitSpeciesId && this.#uiState.consumableKind === "bait") return this.#chooseLiveBaitStack(liveBaitSpeciesId);
     const source = this.#repository.get(instanceId);
     const kind = source ? this.#type(source) : null;
     // An editor without an assembly (a bait's own editor, spec 165) does not hold the bait back: it re-plans the choice.
@@ -418,11 +428,12 @@ export class InventoryCommandService {
     }
     if (this.#uiState.consumableKind === kind && this.#uiState.pickedSocketId === target.socketId) {
       if (!candidateInstanceId) return this.#success({ pickedSocketId: target.socketId });
+      // Spec 165 B4: the repeated tap equips the list's first candidate, a live bait stack included.
+      const candidateSpeciesId = kind === "bait" ? LiveBaitStackId.speciesOf(candidateInstanceId) : null;
+      if (candidateSpeciesId) return this.#chooseLiveBaitStack(candidateSpeciesId);
       const candidate = this.#pickCandidate(candidateInstanceId);
       if (!this.#attachmentTargetResolver.accepts(target, candidate)) return this.#failure(this.#messages.itemIncompatible);
-      const result = this.#fillAssemblyTarget(target.rootInstanceId, candidate, target);
-      if (result.success) this.#uiState.pickForConsumable(kind);
-      return result;
+      return this.#fillConsumableTarget(candidate, kind, target);
     }
     this.#uiState.pickForConsumable(kind, target.socketId, { showBackpack: !listVisible });
     this.#selectPickSubfilters();
@@ -511,6 +522,20 @@ export class InventoryCommandService {
     return this.#success({ requiresSocketChoice: true });
   }
 
+  // «На живця» of the stack's first live bait (least life left, the one the succession takes next) through the hook
+  // controller: an empty single hook takes it at once, over a regular bait its cell turns green for «Замінити» (spec 162).
+  #chooseLiveBaitStack(speciesId) {
+    const fishId = this.#liveBaitStacks?.stacks().find((stack) => stack.speciesId === speciesId)?.fish?.[0]?.id;
+    if (!fishId || typeof this.#liveBaitHook?.choose !== "function") return this.#failure(this.#messages.itemNotFound);
+    const result = this.#liveBaitHook.choose(fishId);
+    if (result?.ok !== true) {
+      return this.#failure(result?.reason === "single_hook_required"
+        ? this.#messages.liveBaitSingleHookRequired : this.#messages.liveBaitUnavailable);
+    }
+    this.#uiState.showChosenLiveBaitStack(speciesId);
+    return this.#success({ speciesId, liveBaitFishId: fishId, pending: result.pending === true });
+  }
+
   // The filled cell's bait stays in its editor (B2/B3): the jar when part of it went on the hook, else the hook's bait.
   #fillConsumableTarget(source, kind, target) {
     const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
@@ -521,7 +546,7 @@ export class InventoryCommandService {
     }
     const placed = this.#consumableTargets.list(kind).find((entry) => entry.socketId === target.socketId)?.occupied;
     const editorId = this.#repository.has(source.instanceId) ? source.instanceId : placed?.instanceId || null;
-    if (editorId) this.#uiState.showConsumableEditor(editorId);
+    if (editorId) this.#uiState.showChosenConsumableEditor(editorId);
     else this.#uiState.pickForConsumable(kind);
     return { ...result, rootInstanceId: editorId };
   }

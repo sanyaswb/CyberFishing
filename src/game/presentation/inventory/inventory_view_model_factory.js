@@ -148,6 +148,7 @@ export class InventoryViewModelFactory {
     const inventoryContext = {
       mode: uiState.consumableKind ? "consumable" : isAttachmentEditor ? "assembly" : "loadout",
       rootInstanceId: uiState.consumableKind ? this.#equipmentState.getRootInstanceId("tackle") : editingRootInstanceId,
+      consumableKind: uiState.consumableKind || null,
       liveBaitStacks,
     };
     let visibleInventoryItems = this.#contextItemFilter.filter(
@@ -701,6 +702,13 @@ export class InventoryViewModelFactory {
       for (const stack of context.liveBaitStacks || []) {
         const card = InventoryViewModelFactory.#liveBaitStackCard(stack);
         if (this.#matchesCategory(card, categoryId)) categoryItems.push(card);
+      }
+    } else if (context.mode === "consumable" && context.consumableKind === "bait" &&
+        this.#consumableTargets.list("bait").length === 1) {
+      // Spec 165 B4/A3: a live bait goes only on a single hook (spec 162): there its stacks are bait candidates too.
+      for (const stack of context.liveBaitStacks || []) {
+        const card = { ...InventoryViewModelFactory.#liveBaitStackCard(stack), compatibleWithHighlightedSlot: Boolean(pickedTarget) };
+        if (categoryId === "compatible" || this.#matchesCategory(card, categoryId)) categoryItems.push(card);
       }
     }
     const requestedSubfilterIds = new Set(

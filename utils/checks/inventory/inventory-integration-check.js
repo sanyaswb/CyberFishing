@@ -3522,6 +3522,70 @@ vm.runInContext(
       confirm + ": the confirmed replacement puts the worm on the hook and keeps its editor open (B3)");
   }
 
+  // Spec 165 stage 2 (B4, B5, A3): an empty switcher cell lists the compatible baits, live bait stacks too on a single
+  // hook; the repeated tap equips the list's first candidate; a chosen bait ends the search with the whole backpack listed.
+  const tapCell = (flow) => {
+    const candidate = flow.facade.getViewModel().inventory.items.find((item) => item.compatibleWithHighlightedSlot);
+    return dispatch(flow, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE,
+      { kind: "bait", slotIndex: 0, ...(candidate ? { candidateInstanceId: candidate.instanceId } : {}) });
+  };
+  const listed = (flow) => flow.facade.getViewModel().inventory.items.map((item) => item.instanceId);
+  for (const itemId of ["oil_worm_25", "bread_10"]) {
+    const full = repeatedBait([raw("sb5-jar", itemId, 10), raw("sb5-spare", "hook")]);
+    dispatch(full, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+    tapCell(full);
+    assertIntegration(flowUi(full).consumableKind === "bait" && full.facade.getViewModel().inventory.activeCategoryId === "compatible" &&
+      !listed(full).includes("sb5-spare") && full.facade.getViewModel().header.baitSlots[0].highlighted,
+      itemId + ": an empty cell opens «Сумісне» with the baits that fit (B4)");
+    tapCell(full);
+    const chosen = full.facade.getViewModel().inventory;
+    assertIntegration(full.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === itemId && flowUi(full).consumableKind === null &&
+      flowUi(full).panelMode === "assembly" && flowUi(full).editingRootInstanceId === "sb5-jar" &&
+      chosen.activeCategoryId === "all" && chosen.activeSubfilterIds.length === 0 && listed(full).includes("sb5-spare"),
+      itemId + ": the repeated tap equips the first bait, opens its editor and lists the whole backpack under «Усе» (B4, B5)");
+    dispatch(full, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+    assertIntegration(listed(full).includes("sb5-spare"), itemId + ": «Усе» after the choice lists every item, not only baits (B5)");
+    dispatch(full, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: "sb5-jar" });
+    assertIntegration(flowUi(full).activeSectionId === "backpack" && full.facade.getViewModel().inventory.activeCategoryId === "all" &&
+      listed(full).includes("sb5-spare"), itemId + ": «Назад» returns to the whole backpack (B5)");
+  }
+  const crucianStack = () => [{ id: "live-stack:crucian", speciesId: "crucian", name: "Crucian", iconAsset: "fish-display.live",
+    count: 2, fish: [{ id: "f-next", name: "Crucian", iconAsset: "", lifeShare: 0.3, location: "keepnet" },
+      { id: "f-later", name: "Crucian", iconAsset: "", lifeShare: 0.9, location: "keepnet" }] }];
+  const withLiveBait = (flow) => {
+    const chosen = [];
+    flow.facade.setLiveBaitStacks({ stacks: crucianStack });
+    flow.facade.setLiveBaitHook({ pendingFishId: null, preview: () => null,
+      choose: (fishId) => { chosen.push(fishId); return { ok: true }; } });
+    return chosen;
+  };
+  for (const route of ["card", "repeat"]) {
+    const live = repeatedBait(route === "card" ? [raw("sb5-worm", "oil_worm_25", 25), raw("sb5-spare", "hook")] : [raw("sb5-spare", "hook")]);
+    const chosen = withLiveBait(live);
+    dispatch(live, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+    tapCell(live);
+    const card = live.facade.getViewModel().inventory.items.find((item) => item.instanceId === "live-stack:crucian");
+    assertIntegration(card?.isLiveBaitStack && card.compatibleWithHighlightedSlot && chosen.length === 0,
+      route + ": a single hook's empty cell lists the live bait stack among the compatible baits (B4, A3)");
+    if (route === "card") dispatch(live, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "live-stack:crucian" });
+    else tapCell(live);
+    assertIntegration(chosen.join(",") === "f-next" && !live.assemblyReader.getChild("rb-hook", "bait", 0) &&
+      flowUi(live).consumableKind === null && live.facade.getViewModel().panel.mode === "live-bait-stack" &&
+      live.facade.getViewModel().inventory.activeCategoryId === "all" && listed(live).includes("sb5-spare"),
+      route + ": choosing the stack puts the species' next live bait on the hook and opens its panel with «Усе» (A3, B5)");
+  }
+  const twoHooks = makeComposition({
+    items: [raw("sb5-rod", "rodFeeder"), raw("sb5-spring", "spring", 1, { statOverrides: { hooksCount: 2 } }),
+      ...[0, 1].map((index) => raw("sb5-hook-" + index, "hook", 1, { location: InventoryItemLocation.attached("sb5-spring", "hook", index) })),
+      raw("sb5-worms", "bait", 5)],
+    equipment: { ...emptyEquipment(), rod: "sb5-rod", tackle: "sb5-spring" },
+    assemblies: [{ rootInstanceId: "sb5-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+  });
+  withLiveBait(twoHooks);
+  tapCell(twoHooks);
+  assertIntegration(!listed(twoHooks).includes("live-stack:crucian") && listed(twoHooks).includes("sb5-worms"),
+    "two hooks: the pick lists baits but no live bait stack (a live bait needs a single hook)");
+
   console.log("Inventory integration checks passed.");
   `,
   context,

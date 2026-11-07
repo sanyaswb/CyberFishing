@@ -27,6 +27,8 @@ export const INVENTORY_MESSAGES = Object.freeze({
   socketNotFound: "Комірку не знайдено.",
   socketAlreadyFilled: "Комірка вже зайнята. Оберіть порожню комірку знову.",
   consumableSlotUnavailable: "Спочатку спорядіть гачок або снасть із коміркою прикормки.",
+  liveBaitSingleHookRequired: "Живець — лише на снасті з одним гачком.",
+  liveBaitUnavailable: "Цього живця зараз не можна обрати.",
   linePreparationFailed: "Не вдалося підготувати ліску.",
   reelLineIncompatibleWithRod: "Ліска в котушці несумісна з вудилищем.",
   lineInstallOnReelFailed: "Не вдалося встановити ліску на котушку.",

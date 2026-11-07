@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.29 - Live bait in the bait pick, full list after a choice
+
+- Spec 165 stage 2 (TK-242): an empty bait cell lists the live bait stacks among the compatible baits when the tackle has one hook; choosing a stack (or the repeated tap on the cell when it is first) puts the species' next live bait on and opens its panel. After any bait choice the search ends: «Усе» lists the whole backpack (it showed only baits).
+
 ## v0.50.28 - Bait choice always opens its editor
 
 - Spec 165 stage 1 (TK-242): choosing a bait opens its editor every time; an empty hook takes it at once, a hook with another bait highlights its switcher cell and the editor offers «Замінити» (a repeated click or a tap on the cell replaces too, «Назад» cancels); «Спорядити» with nowhere to put the bait opens the equipment and marks the missing rod or tackle.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.20 - Live bait card icons, one hook drawing
 
 - TK-238: on the live bait card «На живця» is the inventory's hook icon, «В акваріум» a new aquarium icon and every cancel a red cross (the text stays the button's name and tooltip); empty hook compartments draw the same hook, the old tackle.svg moved to asset-sources.
-
-## v0.50.19 - Automatic switch needs a chosen bait
-
-- TK-237: without a bait (or chum) in any slot the automatic switch is off and inactive (dimmed track), so a used-up bait no longer lets «A» turn on with the old bait's reserve; the saved setting returns with a chosen bait.

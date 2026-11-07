@@ -200,17 +200,26 @@ export class InventoryUiState {
   }
 
   showAssemblyEditor(rootInstanceId, { returnContext = null } = {}) {
-    this.#editorReturnContext = returnContext || this.#editorReturnContext || Object.freeze({
-      sectionId: this.#activeSectionId,
-      categoryId: this.#activeCategoryId,
-      subfilterIds: Object.freeze([...this.#activeSubfilterIds]),
-      rarityFilterIds: Object.freeze([...this.#activeRarityFilterIds]),
-      sortCriterionIds: Object.freeze([...this.#sortCriterionIds]),
-      sortDirectionId: this.#sortDirectionId,
-    });
+    this.#editorReturnContext = returnContext || this.#editorReturnContext || this.#captureReturnContext();
     this.#showPanel("assembly", rootInstanceId, null);
     this.#activeSectionId = "equipment";
     this.focusCompatibleCategory();
+  }
+
+  // Spec 165 B5: a chosen bait ends the search: its editor opens and the list, now and on «Назад», is the whole backpack
+  // («Усе» without subfilters), not the bait pick's compatible list.
+  showChosenConsumableEditor(instanceId) {
+    const context = this.#editorReturnContext || this.#captureReturnContext();
+    this.showAssemblyEditor(instanceId, {
+      returnContext: Object.freeze({ ...context, categoryId: "all", subfilterIds: Object.freeze([]) }),
+    });
+    this.selectCategory("all");
+  }
+
+  // Spec 165 A3: a chosen live bait opens its stack panel with the whole backpack listed.
+  showChosenLiveBaitStack(speciesId) {
+    this.showLiveBaitStack(speciesId);
+    this.selectCategory("all");
   }
 
   // Spec 165: a bait's editor; with kind and socketId the header cell offered for replacement stays highlighted and the
@@ -276,6 +285,17 @@ export class InventoryUiState {
     this.#selectedInstanceId = null;
     this.#clearPick();
     this.clearPlacementOrder();
+  }
+
+  #captureReturnContext() {
+    return Object.freeze({
+      sectionId: this.#activeSectionId,
+      categoryId: this.#activeCategoryId,
+      subfilterIds: Object.freeze([...this.#activeSubfilterIds]),
+      rarityFilterIds: Object.freeze([...this.#activeRarityFilterIds]),
+      sortCriterionIds: Object.freeze([...this.#sortCriterionIds]),
+      sortDirectionId: this.#sortDirectionId,
+    });
   }
 
   #startPick(showBackpack) {

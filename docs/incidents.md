@@ -29,6 +29,23 @@ rule as something the next change can follow.
 | R13 | Responsive layout testing must assert the worst-case payload (all sections active/expanded, maximum metrics) at minimum screen width (320px–400px). | I-11 |
 | R14 | A check passes only by exit code 0 and a last stdout line that says it passed: Node exits with 0 when an awaited promise never settles, so the exit code alone cannot tell a finished check from a hung one. | I-13 |
 | R15 | A view model that reads a port's state draws every combination of that state, not only the steady ones: listeners redraw synchronously from inside a command, between its steps. The check lists the combinations, and a double of a call that redraws in production redraws too. | I-14 |
+| R16 | A pick mode (a consumable or slot pick that narrows the list) ends with the choice it was opened for. A command that fills the picked target leaves the pick explicitly; a check selects «Усе» after the choice and expects items outside the picked kind. | I-15 |
+
+<a id="i-15"></a>
+
+## I-15 · 2026-11-07 · «Усе» listed only baits after a bait was chosen (spec 165 B5)
+
+- **Seen:** the owner tapped an empty bait cell, chose a bait and then pressed «Усе»: the backpack still showed baits
+  only.
+- **Cause:** `InventoryCommandService.#pickConsumable` (the repeated tap with a candidate) and `#activateConsumable`
+  called `InventoryUiState.pickForConsumable(kind)` after filling the cell, so `consumableKind` stayed set; with it
+  `InventoryViewModelFactory.create` filters the list to the items that fit the tackle's bait cells in every category,
+  «Усе» included.
+- **Fix:** a filled bait cell ends the pick: `showChosenConsumableEditor` opens the bait's editor and selects «Усе»
+  without subfilters (also as the editor's return context); a chosen live bait stack the same through
+  `showChosenLiveBaitStack`.
+- **Rule R16.** Check: `inventory-integration` (spec 165 stage 2: «Усе» after the choice lists a spare hook; «Назад»
+  returns to the whole backpack).
 
 <a id="i-14"></a>
 
