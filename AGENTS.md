@@ -79,6 +79,13 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 
 ## Working rules learned in practice
 
+- **The owner's new files are the current state** (owner instruction, 2026-11-07, TK-250). "Return", "move back" or
+  "put where it was" means moving the files as they are now, the owner's uncommitted and untracked ones included: never a
+  rollback to an earlier commit. Never replace, overwrite, regenerate (`assets:sync` low copies included) or drop a file the
+  owner added or changed, not even temporarily, without asking first; when a rule or check conflicts with the owner's new
+  file, stop and ask. Incident: TK-250 put the committed rod art over the owner's new uncommitted art to commit the move
+  separately, and the owner saw all their images disappear.
+
 - **Record every significant defect in [docs/incidents.md](docs/incidents.md)** (owner instruction, 2026-10-30): a
   defect that breaks the game, loses progress, wastes an owner test round or took more than one attempt to find gets an
   entry in the same commit as its fix — what was seen, the cause as a mechanism with the place in the code, the fix, the
