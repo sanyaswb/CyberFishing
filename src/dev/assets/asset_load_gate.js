@@ -19,6 +19,9 @@ export class AssetLoadGate {
   #times = new Map();
   #listeners = new Set();
   #now;
+  // TK-251.2: the steps of the last release ("Далі", a layer, everything) and when it happened; the first frame's steps
+  // count from the page start (0), so the overlay shows everything up to the first frame as that step.
+  #current = { fromIndex: 0, toIndex: 0, sinceMs: 0 };
 
   // steps: AssetLoadStepPlan.steps; now(): milliseconds (performance.now).
   constructor({ steps, now }) {
@@ -30,6 +33,7 @@ export class AssetLoadGate {
     for (const step of steps) this.#times.set(step.id, { releasedMs: null, requestedMs: null, doneMs: null });
     const auto = steps.findIndex((step) => !step.auto);
     this.#releaseTo(auto < 0 ? steps.length : auto);
+    this.#current = { ...this.#current, sinceMs: 0 };
   }
 
   // The facade asks before a step; settles once the step is released. A step the plan does not know is never held.
@@ -98,13 +102,15 @@ export class AssetLoadGate {
       const startMs = Math.max(releasedMs ?? 0, requestedMs ?? 0);
       return { ...step, label: stepLabel(step), state, ms: doneMs !== null ? Math.max(0, doneMs - startMs) : null };
     });
-    return { steps, nextIndex: this.#released, total: this.#steps.length };
+    // current: the last release's steps [fromIndex, toIndex) and its time (performance.now(), the resource timing clock).
+    return { steps, nextIndex: this.#released, total: this.#steps.length, current: { ...this.#current } };
   }
 
   #releaseTo(count) {
     const end = Math.min(count, this.#steps.length);
     if (end <= this.#released) return;
     const nowMs = this.#now();
+    this.#current = { fromIndex: this.#released, toIndex: end, sinceMs: nowMs };
     for (let index = this.#released; index < end; index += 1) {
       const id = this.#steps[index].id;
       this.#times.get(id).releasedMs = nowMs;

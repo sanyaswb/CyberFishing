@@ -160,6 +160,31 @@ async function checkOverlay() {
   assert.match(planModule.render(), /items\.rods\.a = items\.rods\.b/u, "duplicate ids are named");
   assert.deepEqual(JSON.parse(planModule.reportText()).assetLoadPlan.duplicates, [["items.rods.a", "items.rods.b"]],
     "the JSON report carries the plan");
+  // TK-251.2: with step-by-step loading on, the section shows only the current step: its steps, the requests that started
+  // since its release and its plan groups; nothing cumulative (requests to T-play, largest, longest, the whole plan).
+  const stepReader = { revision: () => "s", environment: () => ({}), read: () => ({ marks: [{ name: "startup:ready", startTime: 700 }],
+    paints: [], navigation: null, resources: [
+      { name: "https://x/assets/locations/test/bg_test--day--low.webp", startTime: 100, responseEnd: 150, transferSize: 900, encodedBodySize: 800, decodedBodySize: 800 },
+      { name: "https://x/assets/items/rods/rod.webp", startTime: 2000, responseEnd: 2100, transferSize: 5000, encodedBodySize: 4096, decodedBodySize: 4096 }] }) };
+  const stepStatus = { ...planStatus, stepper: { nextIndex: 2, total: 3, current: { fromIndex: 1, toIndex: 2, sinceMs: 1500 }, steps: [
+    { id: "layer-one:load:1", index: 0, label: "Перший кадр · пріоритет 1: Фон", state: "done", ms: 50, groupIds: ["location"] },
+    { id: "layer-three:low:1", index: 1, label: "Вміст · low-копії · пріоритет 1: На вимогу", state: "done", ms: 100, groupIds: ["on-demand"] },
+    { id: "layer-three:full:1", index: 2, label: "Вміст · повні файли · пріоритет 1: На вимогу", state: "waiting", ms: null, groupIds: ["on-demand"] }] } };
+  const stepModule = new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader: stepReader, now: () => now,
+    copyText: async () => "copied", saveFile: async () => {}, readAssetLoadStatus: () => stepStatus });
+  const stepHtml = stepModule.render();
+  assert.match(stepHtml, /2\. Вміст · low-копії · пріоритет 1: На вимогу/u, "the current step is named");
+  assert.doesNotMatch(stepHtml, /1\. Перший кадр/u, "an earlier step is not listed");
+  assert.match(stepHtml, /Запити цього кроку:[^]*усього[^]*1 \(з кешу 0\)/u, "only the requests since the step's release count");
+  assert.match(stepHtml, /assets\/items\/rods\/rod\.webp/u, "the step's request is listed");
+  assert.doesNotMatch(stepHtml, /bg_test--day--low\.webp|bg_test--day\.webp/u, "an earlier step's files are not listed");
+  assert.match(stepHtml, /assets\/a\/3\.webp/u, "the step's plan group lists every file");
+  assert.doesNotMatch(stepHtml, /План завантаження|Запити до T-play|10 найбільших|10 найдовших|Етапи/u, "nothing cumulative");
+  assert.match(stepHtml, /data-overlay-control="startup-report-copy"/u, "the report stays available");
+  const firstFrame = { ...stepStatus, stepper: { ...stepStatus.stepper, nextIndex: 1, current: { fromIndex: 0, toIndex: 1, sinceMs: 0 } } };
+  const firstModule = new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader: stepReader, now: () => now,
+    copyText: async () => "copied", saveFile: async () => {}, readAssetLoadStatus: () => firstFrame });
+  assert.match(firstModule.render(), /усього[^]*2 \(з кешу 0\)/u, "the first frame's step counts from the page start");
   assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader: { read() {} },
     copyText() {}, saveFile() {}, now() {} }), /requires reader/u);
   assert.throws(() => new StartupLoadOverlayModule({ htmlBuilder: new OverlayHtmlBuilder(), reader, copyText() {}, now() {} }),

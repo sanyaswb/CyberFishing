@@ -416,6 +416,8 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
       "third:low:1", "third:full:1"]);
     let stepClock = 0;
     const gate = new AssetLoadGate({ steps, now: () => (stepClock += 1) });
+    // TK-251.2: the current step is the last release; the first frame's step counts from the page start.
+    assert.deepEqual(gate.getSnapshot().current, { fromIndex: 0, toIndex: 1, sinceMs: 0 }, "the first frame is the current step");
     let changes = 0;
     gate.subscribe(() => { changes += 1; });
     const loads = [];
@@ -431,7 +433,11 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     await flush();
     assert.deepEqual(loads.slice(1), ["assets/bg/day.webp"], "Далі: the first layer's full files");
     assert.equal(gated.getImageState("bg.day"), "full");
+    const afterNext = gate.getSnapshot().current;
+    assert.deepEqual([afterNext.fromIndex, afterNext.toIndex, afterNext.sinceMs > 0], [1, 2, true], "Далі makes one step current");
     gate.jumpToLayer("third");
+    assert.deepEqual([gate.getSnapshot().current.fromIndex, gate.getSnapshot().current.toIndex], [2, 4],
+      "a jump makes every step it released current");
     await flush();
     assert.deepEqual(loads.slice(2), ["assets/ui/a.svg", "assets/ui/b.svg"], "a jump to a layer loads everything before it");
     assert.ok(changes > 0, "the gate tells the DEV section about changes");

@@ -30,6 +30,10 @@ const GROUP_STATUS_LABELS = Object.freeze({
 });
 // A group's files are listed one per row up to this many; larger groups show their count only.
 const LISTED_FILES = 16;
+// TK-251.2: a step's requests listed one per row up to this many, then their count.
+const LISTED_STEP_REQUESTS = 40;
+const STEP_STATE_LABELS = Object.freeze({ waiting: "чекає", released: "дозволено", loading: "іде", done: "готово" });
+const FILE_STATE_LABELS = Object.freeze({ full: "повний", low: "low-копія", none: "не завантажено" });
 export const STARTUP_REPORT_COPY_CONTROL = "startup-report-copy";
 export const STARTUP_REPORT_DOWNLOAD_CONTROL = "startup-report-download";
 
@@ -50,6 +54,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
   #status = null;
   #savedFileName = "";
   #readAssetLoadStatus;
+  #stepWindow = null;
 
   constructor(options = {}) {
     super("startup", options);
@@ -71,6 +76,10 @@ export class StartupLoadOverlayModule extends OverlayModule {
     const report = this.#currentReport();
     const ms = (value) => value === null ? "—" : `${Math.round(value)} мс`;
     let html = this.formatHeader("⏱ ЗАВАНТАЖЕННЯ", "#7fd1ff");
+    // TK-251.2: with step-by-step loading on, only what the current step loaded.
+    const stepStatus = this.#readAssetLoadStatus();
+    if (stepStatus?.stepper) return `${html}${this.#currentStepRows(stepStatus)}${this.#reportControls()}`
+      + "<div class=\"debug-overlay__spacer\"></div>";
     html += this.plainRow("T-paint (перша відмальовка)", ms(report.paintMs), { metricKey: "startup.paint",
       color: report.paintMs !== null && report.paintMs <= STARTUP_BUDGET.paintMs ? "#00ff80" : "#ffaa00" });
     html += this.plainRow("T-play (гра готова)", report.playMs === null ? "гра ще не готова" : ms(report.playMs),
@@ -119,15 +128,75 @@ export class StartupLoadOverlayModule extends OverlayModule {
         this.#caption("10 найдовших:")}</summary><div class="debug-overlay__details-body">${
         longestRows}</div></details>`;
     }
+    return `${html}${this.#reportControls()}<div class="debug-overlay__spacer"></div>`;
+  }
+
+  #reportControls() {
     const button = (control, label) => `<button type="button" class="debug-overlay__tab" data-overlay-control="${control}"`
       + ` data-overlay-activate="release">${label}</button>`;
-    html += `<div class="debug-overlay__tabs" role="group" aria-label="Звіт завантаження">${
+    let html = `<div class="debug-overlay__tabs" role="group" aria-label="Звіт завантаження">${
       button(STARTUP_REPORT_COPY_CONTROL, "Копіювати звіт")}${button(STARTUP_REPORT_DOWNLOAD_CONTROL, "Завантажити JSON")}</div>`;
     if (this.#status) {
       html += `<div class="debug-overlay__note debug-overlay__text debug-overlay__text--muted">${
         this.escapeAttr(STATUS_LABELS[this.#status](this.#savedFileName))}</div>`;
     }
-    return `${html}<div class="debug-overlay__spacer"></div>`;
+    return html;
+  }
+
+  // TK-251.2: the current step of the step-by-step loading — the steps of the last release, the requests that started
+  // since then (each file with its size) and the plan groups of those steps with their files' state.
+  #currentStepRows(status) {
+    const { steps, nextIndex, total, current } = status.stepper;
+    const stepsNow = steps.slice(current.fromIndex, current.toIndex);
+    let html = this.plainRow("покрокове завантаження", `${nextIndex} / ${total} · далі: ${steps[nextIndex]?.label ?? "усе"}`,
+      { metricKey: "startup.plan.stepper", color: nextIndex < total ? "#ffaa00" : "#00ff80" });
+    html += this.#caption(stepsNow.length === 0 ? "Поточний крок: ще нічого не дозволено." : "Поточний крок:");
+    for (const step of stepsNow) {
+      const time = step.ms !== null ? ` · ${Math.round(step.ms)} мс` : "";
+      html += this.plainRow(`  ${step.index + 1}. ${step.label}`, `${STEP_STATE_LABELS[step.state] ?? step.state}${time}`,
+        { metricKey: `startup.step.${step.id}` });
+    }
+    const { requests, totals } = this.#stepRequests(current.sinceMs);
+    html += this.#caption("Запити цього кроку:");
+    html += this.plainRow("усього", `${totals.count} (з кешу ${totals.cached}) · передано ${this.#mb(totals.transferred)}`
+      + ` · без стиснення ${this.#mb(totals.decoded)}`, { metricKey: "startup.step.requests" });
+    for (const kind of ["document", ...STARTUP_RESOURCE_KINDS]) {
+      const bucket = totals.byKind[kind];
+      if (!bucket || bucket.count === 0) continue;
+      html += this.plainRow(`  ${KIND_LABELS[kind]}`, `${bucket.count} · ${this.#mb(bucket.transferred)} / ${
+        this.#mb(bucket.decoded)}${bucket.cached ? ` · кеш ${bucket.cached}` : ""}`, { metricKey: `startup.step.kind.${kind}` });
+    }
+    for (const request of requests.slice(0, LISTED_STEP_REQUESTS)) {
+      html += this.plainRow(`    ${this.#shortName(request.url)}`, `${this.#kb(request.encoded)} / ${this.#kb(request.decoded)}${
+        request.cached ? " · кеш" : ""}`, { metricKey: `startup.step.request.${request.url}` });
+    }
+    if (requests.length > LISTED_STEP_REQUESTS) {
+      html += this.plainRow("    …", `ще ${requests.length - LISTED_STEP_REQUESTS}`, { metricKey: "startup.step.more" });
+    }
+    const groupIds = new Set(stepsNow.flatMap((step) => step.groupIds));
+    const groups = status.layers.flatMap((layer) => layer.groups).filter((group) => groupIds.has(group.id));
+    if (groups.length > 0) html += this.#caption("Групи плану цього кроку:");
+    for (const group of groups) {
+      const content = group.modules?.length > 0 ? `код: ${group.modules.join(", ")}` : `${group.files.length} файлів`;
+      html += this.plainRow(`  ${group.label} (пріоритет ${group.priority})`,
+        `${GROUP_STATUS_LABELS[group.status] ?? group.status} · ${content}`,
+        { metricKey: `startup.step.group.${group.id}`, color: group.status === "failed" ? "#ff4444" : undefined });
+      for (const file of group.files) {
+        const state = file.kind === "image" ? FILE_STATE_LABELS[file.state] ?? file.state : file.kind;
+        html += this.plainRow(`    ${this.#shortName(file.path)}`, `${state} · ${this.#kb(file.bytes || 0)}`,
+          { metricKey: `startup.step.file.${group.id}.${file.id}` });
+      }
+    }
+    return html;
+  }
+
+  // Rebuilt only when a timing entry was added or the step changed.
+  #stepRequests(sinceMs) {
+    const revision = this.#reader.revision();
+    if (this.#stepWindow === null || this.#stepWindow.revision !== revision || this.#stepWindow.sinceMs !== sinceMs) {
+      this.#stepWindow = { revision, sinceMs, ...StartupLoadReport.requestsSince(this.#reader.read(), sinceMs) };
+    }
+    return this.#stepWindow;
   }
 
   // The full report as JSON, with the device facts, for the owner to send from a phone.
@@ -193,14 +262,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
   #planRows() {
     const status = this.#readAssetLoadStatus();
     if (!status) return "";
-    let html = "";
-    // Spec 167: the step-by-step loading (DevTools) — how far it has gone and what comes next.
-    if (status.stepper) {
-      const { steps, nextIndex, total } = status.stepper;
-      html += this.plainRow("покрокове завантаження", `${nextIndex} / ${total} · далі: ${steps[nextIndex]?.label ?? "усе"}`,
-        { metricKey: "startup.plan.stepper", color: nextIndex < total ? "#ffaa00" : "#00ff80" });
-    }
-    html += this.#caption("План завантаження (шари → групи → файли):");
+    let html = this.#caption("План завантаження (шари → групи → файли):");
     for (const layer of status.layers) {
       let layerBody = "";
       for (const group of layer.groups) {

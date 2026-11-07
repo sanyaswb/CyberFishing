@@ -52,6 +52,14 @@ export class StartupLoadReport {
     });
   }
 
+  // TK-251.2: the requests that started at or after sinceMs (the current step of the DEV step-by-step loading), in start
+  // order, with their totals by kind.
+  static requestsSince({ resources = [] } = {}, sinceMs = 0) {
+    const requests = resources.map((entry) => StartupLoadReport.#request(entry))
+      .filter((request) => request.startMs >= sinceMs).sort((a, b) => a.startMs - b.startMs);
+    return Object.freeze({ requests: Object.freeze(requests), totals: StartupLoadReport.#totals(requests) });
+  }
+
   static kindOf(url) {
     const path = String(url).split(/[?#]/u)[0];
     if (/\/vendor\//u.test(path)) return "vendor";

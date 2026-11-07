@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.42 - Loading overlay shows the current step
+
+- TK-251.2 (spec 167): with step-by-step loading on, the DEV overlay «⏱ ЗАВАНТАЖЕННЯ» shows only the current step: the steps of the last release, the requests started since then (each file with its size) and its plan groups with their files' state.
+
 ## v0.50.41 - Wide toolbar beside the selector
 
 - TK-253: on wide (landscape) toolbars the float, chum and net stand right beside the radial selector with no reserve for its fan; while the fan is open they fade out, as on compact toolbars.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.33 - Release confirmation is a green check
 
 - TK-248: a keepnet fish card waiting for release confirmation shows a green check instead of «Так, відпустити» (the text stays its name and tooltip), beside the red cross «Залишити».
-
-## v0.50.32 - Keepnet thumbnail follows the fill
-
-- TK-247: the keepnet sector of the inventory fan shows the keepnet's current fill stage (it was always the empty one), updated each time the fan opens; the classic keepnet button follows the fill while the keepnet is closed too.
