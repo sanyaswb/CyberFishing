@@ -548,6 +548,33 @@ async function checkComposition() {
   const css = fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/styles/inventory/inventory-selector.css"), "utf8");
   assert.ok(css.includes("border-width: calc(0.025 * var(--inventory-selector-drawing-unit))"),
     "open central button matches the visible border width of the expanded sectors");
+  checkWideToolbarCss(fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/styles/hud/toolbar.css"), "utf8"));
+}
+// TK-253: wide toolbars (> 820 px) put the actions right beside the closed selector (no reserve for the open fan) and,
+// as on compact toolbars, hide every other action while the fan is open.
+function checkWideToolbarCss(source) {
+  const flat = source.replace(/\/\*[\s\S]*?\*\//gu, "").replace(/\s+/gu, " ");
+  const containerAt = flat.indexOf("@container game-toolbar");
+  assert.ok(containerAt > 0, "toolbar.css has the compact container block");
+  const wide = flat.slice(0, containerAt);
+  const rule = (selector) => {
+    const at = wide.indexOf(selector + " {");
+    assert.ok(at >= 0, `wide toolbar rule ${selector}`);
+    return wide.slice(at, wide.indexOf("}", at));
+  };
+  const selectorSlot = rule(".game-toolbar__selector > .inventory-selector");
+  assert.ok(!/margin-left:[^;]*retention-radius/u.test(selectorSlot), "the wide selector keeps no reserve for its open fan");
+  assert.ok(selectorSlot.includes("margin-left: calc((var(--inventory-selector-closed-scale, 1) - var(--inventory-selector-current-scale)) * var(--inventory-selector-unit))"),
+    "the open wide fan keeps the closed footprint and grows over its neighbours");
+  const open = ".game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open)";
+  for (const target of ["> .game-toolbar-button", "> .game-toolbar__tackle > .game-toolbar-button",
+    "> .game-toolbar__tackle > .game-toolbar__depth > .depth-selector"]) {
+    assert.ok(wide.includes(`${open} ${target}`), `the open fan hides ${target} on every toolbar width`);
+  }
+  const hide = wide.slice(wide.indexOf(`${open} > .game-toolbar-button`));
+  assert.ok(/^[^}]*opacity: 0; pointer-events: none;/u.test(hide), "hidden actions are transparent and take no input");
+  assert.ok(!flat.slice(containerAt).includes(".inventory-selector--open) > .game-toolbar-button"),
+    "the compact block does not repeat the open-fan rule");
 }
 async function checkPreloadOutcomes() {
   for (const options of [

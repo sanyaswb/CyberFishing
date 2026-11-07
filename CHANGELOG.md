@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.41 - Wide toolbar beside the selector
+
+- TK-253: on wide (landscape) toolbars the float, chum and net stand right beside the radial selector with no reserve for its fan; while the fan is open they fade out, as on compact toolbars.
+
 ## v0.50.40 - ACTIVE FISH without Overlay, guaranteed Fixed Catch anomaly
 
 - TK-252: DevTools show the hooked fish's parameters (ACTIVE FISH) in the fight while the panel is open, Overlay off.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.32 - Keepnet thumbnail follows the fill
 
 - TK-247: the keepnet sector of the inventory fan shows the keepnet's current fill stage (it was always the empty one), updated each time the fan opens; the classic keepnet button follows the fill while the keepnet is closed too.
-
-## v0.50.31 - A bait over a live bait asks first
-
-- TK-246: with a live bait on the hook, choosing a regular bait lights the switcher cell and offers «Замінити» in its editor, like over any other bait; a second choice (the card, «Замінити» or the cell) puts it on and clears the live bait's choice (the fish stays in the keepnet), «Назад» keeps the live bait.
