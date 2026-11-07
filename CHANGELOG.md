@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.26 - Live bait card: release and backpack
+
+- TK-243: every live bait card ends with «Відпустити» across the row and a square backpack button, which is available before the live bait is chosen (a species already in the backpack only says so); the chosen live bait still cannot be released.
+
 ## v0.50.25 - Repeated click on an equipped bait
 
 - TK-241: clicking a bait that is already on the hook (or another jar of the same bait) opens its editor instead of highlighting the hook's cell again for the same replacement; every bait type alike, a different bait still proposes the replacement.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.17 - Switcher cells at full height
 
 - TK-235: the bait and chum switcher's item circle takes the pill's whole height and the art inside is the largest box of its own proportion that fits the circle (a long worm icon or live bait is no longer a third of the circle); a slot's count is a badge on the circle's edge.
-
-## v0.50.16 - Live bait reserve in the switcher
-
-- TK-234: with auto refill on, the bait switcher's count shows how many live baits of the chosen one's species can still follow it onto the hook (keepnet and aquarium, not the chosen one, not dead ones), like the backpack reserve of a regular bait; it showed 0.

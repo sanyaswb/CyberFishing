@@ -230,6 +230,27 @@
 .keepnet-section__action:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
+/* TK-243: a live bait's last row: «Відпустити» takes the free width, the backpack button is square to the row height. */
+.keepnet-section__action-row {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 6px;
+  min-width: 0;
+}
+.keepnet-section__action--wide {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.keepnet-section__action--square {
+  flex: none;
+  width: auto;
+  height: 44px;
+  aspect-ratio: 1;
+}
+.keepnet-section__action-row .keepnet-section__action--square:only-child {
+  margin-left: auto;
+}
 /* TK-229.2: the card's text in its own grey, rounded box; rarity as stars (victory panel's colours). */
 .keepnet-section__info {
   display: flex;

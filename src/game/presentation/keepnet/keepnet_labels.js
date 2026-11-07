@@ -14,7 +14,7 @@ export const KEEPNET_LABELS = Object.freeze({
   select: "На живця", deselect: "Скасувати вибір", aquariumRequired: "Спочатку встановіть акваріум у будинку",
   replace: "Замінити", cancelReplace: "Скасувати", singleHookRequired: "Живець — лише на снасті з одним гачком",
   tackleInWater: "Снасть у воді: заміна наживки — коли її витягнуто",
-  transfer: "В акваріум", toInventory: "В інвентар", inInventory: "Живці цього виду вже в рюкзаку", release: "Відпустити", confirmRelease: "Так, відпустити", cancel: "Залишити",
+  transfer: "В акваріум", toInventory: "В інвентар", release: "Відпустити", confirmRelease: "Так, відпустити", cancel: "Залишити",
   done: "Зміни збережено.", moved: "Рибу перенесено в акваріум.",
   fallback: "Акваріум заповнений. Живця залишено в садку з власним таймером.",
   count: (count, capacity, live, reserved) => `${count} / ${capacity} риб · ${live} живців${reserved ? ` · ${reserved} місце на гачку` : ""}`,

@@ -51,7 +51,7 @@ export class KeepnetCardRenderer {
     card.append(this.#image(fish), info);
     const actions = this.#el("div", "keepnet-section__actions");
     const focusables = [];
-    const action = (id, text, disabledReason = null) => {
+    const action = (id, text, disabledReason = null, host = actions) => {
       const icon = ACTION_ICONS[id];
       const button = this.#button(icon ? `keepnet-section__action keepnet-section__action--icon${CANCEL_ACTIONS.has(id)
         ? " keepnet-section__action--cancel" : ""}` : "keepnet-section__action", icon ? "" : text,
@@ -62,7 +62,8 @@ export class KeepnetCardRenderer {
         button.appendChild(createInventoryIcon(this.#dom, icon, "keepnet-section__action-icon"));
       }
       if (disabledReason) { button.disabled = true; button.title = disabledReason; }
-      actions.append(button); focusables.push(button);
+      host.append(button); focusables.push(button);
+      return button;
     };
     if (pendingRelease === fish.id) {
       action("confirm-release", labels.confirmRelease); action("cancel-release", labels.cancel);
@@ -79,9 +80,13 @@ export class KeepnetCardRenderer {
         action(fish.selected ? "deselect" : "select", fish.selected ? labels.deselect : labels.select, blocked);
         if (fish.location !== "aquarium") action("transfer", labels.transfer, aquarium?.owned ? null : labels.aquariumRequired);
       }
-      // Spec 163 D1: the chosen live bait cannot be released; «В інвентар» shows its species in the backpack instead.
-      if (fish.kind === "live_bait" && fish.selected) {
-        action("to-inventory", labels.toInventory, fish.inInventory ? labels.inInventory : null);
+      // TK-243: a live bait's last row is «Відпустити» across the width and a square «В інвентар» (backpack), always
+      // available (a species already in the backpack only says so). The chosen live bait cannot be released (spec 163 D1).
+      if (fish.kind === "live_bait") {
+        const row = this.#el("div", "keepnet-section__action-row");
+        actions.append(row);
+        if (!fish.selected) action("release", labels.release, null, row).classList.add("keepnet-section__action--wide");
+        action("to-inventory", labels.toInventory, null, row).classList.add("keepnet-section__action--square");
       } else action("release", labels.release);
     }
     card.append(actions);

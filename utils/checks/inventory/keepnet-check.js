@@ -522,34 +522,40 @@ async function checkLiveBaitCardStates() {
     rarity: null, remainingMs: 1000, selected: false };
   const render = (hook) => {
     const card = cards.fish(fish, { aquarium: { owned: false }, pendingRelease: null, onAction() {}, onPreview() {}, hook });
-    const buttons = card.element.children.find((child) => child.className === "keepnet-section__actions").children;
+    const actionsNode = card.element.children.find((child) => child.className === "keepnet-section__actions");
+    const buttons = actionsNode.children.flatMap((child) => child.className === "keepnet-section__action-row" ? child.children : [child]);
     // TK-238: an icon action is named by its label (aria-label and tooltip); a disabled one explains why.
     return { card: card.element, elements: buttons, buttons: buttons.map((button) => [button.getAttribute("aria-label") || button.textContent,
       button.disabled === true, button.disabled === true ? button.title || "" : ""]) };
   };
   const symbolOf = (button) => button.children[0]?.children?.[0]?.getAttribute("href")?.split("#")[1] ?? null;
   const plain = render({ pendingFishId: null, hookCount: 1, hasBait: false, inWater: false });
-  assert.deepEqual(plain.elements.map(symbolOf), ["hook", "aquarium", null],
+  assert.deepEqual(plain.elements.map(symbolOf), ["hook", "aquarium", null, "backpack"],
     "TK-238: «На живця» is the inventory's hook, «В акваріум» the aquarium icon; «Відпустити» stays text");
+  // TK-243: «Відпустити» across the row and a square backpack, available before the live bait is chosen.
+  assert(plain.elements[2].classList.contains("keepnet-section__action--wide") &&
+    plain.elements[3].classList.contains("keepnet-section__action--square") && !plain.elements[3].disabled,
+    "a live bait's last row: wide «Відпустити», square «В інвентар», always available");
   assert.equal(plain.elements[0].title, "На живця", "an icon action keeps its label as the tooltip");
   // Spec 163 D1: the chosen live bait has no «Відпустити»; «В інвентар» (backpack icon) shows its species in the backpack,
   // disabled once that species is shown.
   const chosenButtons = (inInventory) => cards.fish({ ...fish, selected: true, inInventory }, { aquarium: { owned: true },
     pendingRelease: null, onAction() {}, onPreview() {}, hook: { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false } })
-    .element.children.find((child) => child.className === "keepnet-section__actions").children;
+    .element.children.find((child) => child.className === "keepnet-section__actions").children
+    .flatMap((child) => child.className === "keepnet-section__action-row" ? child.children : [child]);
   let chosen = chosenButtons(false);
   assert.deepEqual(chosen.map((button) => button.getAttribute("aria-label")), ["Скасувати вибір", "В акваріум", "В інвентар"]);
   assert.deepEqual(chosen.map(symbolOf), ["close", "aquarium", "backpack"]);
   assert(!chosen[2].disabled, "«В інвентар» is available while the species is not shown");
   chosen = chosenButtons(true);
-  assert(chosen[2].disabled && chosen[2].title === KEEPNET_LABELS.inInventory, "a shown species explains the disabled «В інвентар»");
+  assert(!chosen[2].disabled, "TK-243: «В інвентар» stays available when the species is already in the backpack");
   const base = { pendingFishId: null, hookCount: 1, hasBait: false, inWater: false };
   assert.deepEqual(render(base).buttons[0], ["На живця", false, ""]);
   assert.deepEqual(render({ ...base, hookCount: 2 }).buttons[0], ["На живця", true, KEEPNET_LABELS.singleHookRequired]);
   assert.deepEqual(render({ ...base, hasBait: true, inWater: true }).buttons[0], ["На живця", true, KEEPNET_LABELS.tackleInWater]);
   const pending = render({ ...base, hasBait: true, pendingFishId: "fry" });
   assert(pending.card.classList.contains("keepnet-section__fish--replace"), "the waiting live bait's card is green");
-  assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Скасувати", "Відпустити"]);
+  assert.deepEqual(pending.buttons.map(([text]) => text), ["Замінити", "Скасувати", "Відпустити", "В інвентар"]);
   assert(symbolOf(pending.elements[1]) === "close" && pending.elements[1].classList.contains("keepnet-section__action--cancel"),
     "TK-238: «Скасувати» is a red cross");
   assert.deepEqual(render({ ...base, hasBait: true, pendingFishId: "fry", inWater: true }).buttons[0], ["Замінити", true, KEEPNET_LABELS.tackleInWater]);
