@@ -178,8 +178,13 @@ export class InventoryViewModelFactory {
     const baitSlots = this.#createConsumableSlots("bait", uiState);
     // TK-234: a live bait on the hook counts the live baits of its species that can follow it, not backpack baits.
     const liveBaitReserve = baitSlots.length === 1 && baitSlots[0].liveBait ? baitSlots[0].stock : null;
-    const liveBaitStack = uiState.viewingLiveBaitSpeciesId
+    const viewedStack = uiState.viewingLiveBaitSpeciesId
       ? liveBaitStacks.find((stack) => stack.speciesId === uiState.viewingLiveBaitSpeciesId) || null : null;
+    // TK-240: the stack opens in the item editor like any item: its card is the root, its fish the root's parameters.
+    const liveBaitStack = viewedStack ? { speciesId: viewedStack.speciesId,
+      editor: { root: { ...InventoryViewModelFactory.#liveBaitStackCard(viewedStack), liveBaitFish: viewedStack.fish },
+        rootInstanceId: viewedStack.id, sockets: [], parameterItems: [], showEquip: false, showUnequip: false,
+        showDisassemble: false, showReturnToKeepnet: true } } : null;
     return {
       isOpen: uiState.isOpen === true,
       // Spec 163: which stacks the view shows; a change (a new, used-up or dead live bait) needs a full redraw.

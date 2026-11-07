@@ -145,6 +145,7 @@ export class InventoryViewModelNormalizer {
       equipWarning: this.#text(source.equipWarning, ""),
       unequipWarning: this.#text(source.unequipWarning, ""),
       disassembleWarning: this.#text(source.disassembleWarning, ""),
+      showReturnToKeepnet: source.showReturnToKeepnet === true,
     });
   }
 
@@ -159,18 +160,10 @@ export class InventoryViewModelNormalizer {
     });
   }
 
-  // Spec 163 D4: the stack panel: the species and each fish with its life share (0..1) for the scale without numbers.
+  // Spec 163 D4 / TK-240: a live bait stack opens in the item editor: its card is the root, its fish the parameters.
   #normalizeLiveBaitStack(source) {
-    if (!source || typeof source.speciesId !== "string" || !source.speciesId) return null;
-    return Object.freeze({
-      speciesId: source.speciesId, name: this.#text(source.name, ""), iconAsset: this.#text(source.iconAsset, ""),
-      count: Math.max(0, Math.floor(this.#finite(source.count, 0))),
-      fish: Object.freeze(this.#array(source.fish).map((fish) => Object.freeze({
-        id: this.#text(fish?.id, ""), name: this.#text(fish?.name, ""), iconAsset: this.#text(fish?.iconAsset, ""),
-        location: fish?.location === "aquarium" ? "aquarium" : "keepnet",
-        lifeShare: Math.min(1, Math.max(0, this.#finite(fish?.lifeShare, 0))),
-      }))),
-    });
+    if (!source || typeof source.speciesId !== "string" || !source.speciesId || !source.editor?.root) return null;
+    return Object.freeze({ speciesId: source.speciesId, editor: this.#normalizeAssembly(source.editor) });
   }
 
   #normalizeInventory(source = {}) {

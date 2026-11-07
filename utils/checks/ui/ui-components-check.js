@@ -165,6 +165,42 @@ assert.deepEqual(UiAutoSwitchRenderer.circleFit({ width: 5, height: 5 }), { widt
 assert.equal(UiAutoSwitchRenderer.circleFit(null), null, "an unsized image keeps the CSS inscribed square");
 switches.dispose(wormToggle);
 
+// TK-240: a live bait stack's parameters are its fish: a thumbnail and a life scale without a number per fish; the
+// 250 ms refresh patches the scales in place and a different set of fish rebuilds the rows.
+{
+  const { InventoryItemParametersRenderer } = require("../../../src/game/presentation/inventory/inventory_item_parameters_renderer.js");
+  const { InventoryItemParametersResolver } = require("../../../src/game/presentation/inventory/inventory_item_parameters_resolver.js");
+  const { InventoryResourceMeterRenderer } = require("../../../src/game/presentation/inventory/inventory_resource_meter_renderer.js");
+  const selectorDocument = new TestDocument();
+  const createPlain = selectorDocument.createElement.bind(selectorDocument);
+  selectorDocument.createElement = (tag) => {
+    const node = createPlain(tag);
+    node.querySelectorAll = (selector) => selectorDocument.all((entry) => entry !== node &&
+      String(entry.className).split(" ").includes(selector.slice(1)), node);
+    node.querySelector = (selector) => node.querySelectorAll(selector)[0] || null;
+    return node;
+  };
+  const stackDom = new InventoryDomFactory(selectorDocument, { assets });
+  const fishRows = new InventoryItemParametersRenderer({ domFactory: stackDom, resolver: new InventoryItemParametersResolver(),
+    resourceMeterRenderer: new InventoryResourceMeterRenderer({ domFactory: stackDom }) });
+  const stack = (fish) => ({ instanceId: "live-stack:crucian", name: "Карась", isLiveBaitStack: true,
+    liveBaitFish: fish.map(([id, lifeShare]) => ({ id, name: "Карась", iconAsset: "", lifeShare })) });
+  const stackPanel = fishRows.render(stack([["a", 0.25], ["b", 0.8]]));
+  selectorDocument.body.append(stackPanel);
+  const rowsOf = () => selectorDocument.byClass("inventory-parameter--thumbnail");
+  const meterOf = (row) => row.querySelector(".inventory-resource-meter");
+  const firstRows = rowsOf();
+  assert.deepEqual(firstRows.map((row) => meterOf(row).getAttribute("aria-valuenow")), ["25", "80"], "one life scale per fish");
+  assert(firstRows.every((row) => row.querySelector(".inventory-parameter__thumbnail") &&
+    !row.querySelector(".inventory-parameter__value") && !row.querySelector(".inventory-parameter__header")),
+    "a fish row is its thumbnail and a scale, no number and no label line");
+  fishRows.update(stackPanel, stack([["a", 0.2], ["b", 0.75]]));
+  assert(rowsOf().every((row, index) => row === firstRows[index]) && meterOf(firstRows[0]).getAttribute("aria-valuenow") === "20",
+    "the refresh patches the scales in place");
+  fishRows.update(stackPanel, stack([["b", 0.75], ["a", 0.2]]));
+  assert(rowsOf()[0] !== firstRows[0], "another order of fish rebuilds the rows (each row keeps its own picture)");
+}
+
 const compact = switches.create({ variant: "control", name: "Feeder", modeLabel: "Automatic feeder", checked: true });
 documentRef.body.append(compact);
 assert.equal(compact.children.length, 2, "control variant contains the input and control without equipment or stock");

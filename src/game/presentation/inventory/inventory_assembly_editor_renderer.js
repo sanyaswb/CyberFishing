@@ -44,6 +44,7 @@ export class InventoryAssemblyEditorRenderer {
       onRodRemovalSave = null,
       onSocketLongPress = null,
       onSocketItemActivate = null,
+      onReturnToKeepnet = null,
       inlineChoices = () => true,
     } = {},
   ) {
@@ -70,6 +71,7 @@ export class InventoryAssemblyEditorRenderer {
       onDisassemble,
       onBack,
       onWarning,
+      onReturnToKeepnet,
     }), workspace);
     if (this.#deviceControlsRenderer?.supports(model.root)) {
       editor.appendChild(this.#deviceControlsRenderer.render({
@@ -149,7 +151,7 @@ export class InventoryAssemblyEditorRenderer {
 
   #renderActions(
     model,
-    { onEquip, onUnequip, onDisassemble, onBack, onWarning },
+    { onEquip, onUnequip, onDisassemble, onBack, onWarning, onReturnToKeepnet },
   ) {
     const actions = this.#dom.element(
       "div",
@@ -184,6 +186,9 @@ export class InventoryAssemblyEditorRenderer {
           onDisassemble?.();
         },
       )] : []),
+      // Spec 163 D6: a live bait stack goes back to the keepnet view.
+      ...(model.showReturnToKeepnet ? [this.#actionButton("В садок", "inventory-action--primary", true,
+        () => onReturnToKeepnet?.())] : []),
       this.#actionButton("Назад", "inventory-action--muted", true, () => onBack?.()),
     );
     return actions;

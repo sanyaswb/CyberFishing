@@ -3190,35 +3190,48 @@ class InventoryUiBehaviorCheck {
       });
     });
 
-    // Spec 163 stage 2: a live bait stack opens its panel on the left: every fish as a thumbnail with a life scale
-    // without numbers; «В садок» hides the species and goes back, «Назад» goes back; the tick patches the scales in place.
+    // Spec 163 / TK-240: a live bait stack opens in the ordinary item editor: the fish's picture in the root card, each
+    // fish as a parameter row (thumbnail + life scale without a number); «В садок» hides the species and goes back,
+    // «Назад» goes back; the tick patches the scales in place and a different set of fish rebuilds the rows.
     const hidden = [];
     ui.setLiveBaitStacks({ hide: (speciesId) => hidden.push(speciesId) });
     const stackFish = (id, lifeShare) => ({ id, name: "Карась", iconAsset: "", location: "keepnet", lifeShare });
     const stackView = (shares) => ({ ...this.#loadoutViewModel(), liveBaitStackSignature: `crucian:${shares.length}`,
       panel: { ...this.#loadoutViewModel().panel, mode: "live-bait-stack",
-        liveBaitStack: { speciesId: "crucian", name: "Карась", iconAsset: "", count: shares.length,
-          fish: shares.map((share, index) => stackFish(`c${index}`, share)) } } });
+        liveBaitStack: { speciesId: "crucian", editor: {
+          root: { instanceId: "live-stack:crucian", itemId: "live_bait_stack", itemType: "live_bait_stack", name: "Карась",
+            iconAsset: "items.baits.oil-worm_icon", icon: "fish", quantity: shares.length, isLiveBaitStack: true,
+            speciesId: "crucian", liveBaitFish: shares.map((share, index) => stackFish(`c${index}`, share)) },
+          rootInstanceId: "live-stack:crucian", sockets: [], parameterItems: [], showEquip: false, showUnequip: false,
+          showDisassemble: false, showReturnToKeepnet: true } } } });
     currentView = stackView([0.25, 0.8]);
     ui.render(currentView);
-    const stackPanel = this.#findByClass(ui.rootNode, "inventory-live-bait-stack");
-    assert.ok(stackPanel && this.#findByClass(ui.rootNode, "inventory-main__left").contains(stackPanel),
-      "the stack panel takes the left panel");
-    const stackMeters = this.#findAllByClass(stackPanel, "inventory-live-bait-stack__meter");
+    const stackEditor = this.#findByClass(ui.rootNode, "inventory-assembly-editor");
+    assert.ok(stackEditor && this.#findByClass(ui.rootNode, "inventory-main__left").contains(stackEditor) &&
+      stackEditor.classList.contains("inventory-panel") && stackEditor.classList.contains("inventory-panel--full-height"),
+      "the stack opens in the item editor like any item");
+    const stackPreview = this.#findByClass(stackEditor, "inventory-item-card--assembly-root");
+    assert.ok(stackPreview?.classList.contains("inventory-item-card--frameless"), "the root card is the editor's preview");
+    const stackRows = this.#findAllByClass(stackEditor, "inventory-parameter--thumbnail");
+    const stackMeters = stackRows.map((row) => this.#findByClass(row, "inventory-resource-meter"));
     assert.deepStrictEqual(stackMeters.map((meter) => meter.getAttribute("aria-valuenow")), ["25", "80"],
-      "one life scale per fish");
-    assert.strictEqual(this.#findAllByClass(stackPanel, "inventory-resource-meter__icon").length, 0, "the scale has no icon");
-    assert.ok(stackMeters.every((meter) => !meter.textContent), "the scale shows no number");
+      "one parameter row with a life scale per fish");
+    assert.ok(stackRows.every((row) => this.#findByClass(row, "inventory-parameter__thumbnail") &&
+      this.#findAllByClass(row, "inventory-parameter__value").length === 0 &&
+      this.#findAllByClass(row, "inventory-resource-meter__icon").length === 0),
+      "each row is a thumbnail and a scale without a number");
     currentView = stackView([0.2, 0.75]);
     ui.updateDynamicProgression(250);
-    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-live-bait-stack"), stackPanel, "the tick keeps the panel");
-    assert.strictEqual(stackMeters[0].getAttribute("aria-valuenow"), "20", "the tick patches the scale in place");
+    // This fake DOM has no selectors: the rows' in-place patch is checked in ui-components-check.
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-assembly-editor"), stackEditor, "the tick keeps the editor");
     currentView = stackView([0.75]);
     ui.updateDynamicProgression(250);
-    assert.notStrictEqual(this.#findByClass(ui.rootNode, "inventory-live-bait-stack"), stackPanel,
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-parameter--thumbnail").length, 1,
       "a fish leaving the stack redraws it (10 -> 9)");
-    const [returnButton, backButton] = this.#findAllByClass(ui.rootNode, "inventory-live-bait-stack__button");
-    assert.deepStrictEqual([returnButton.textContent, backButton.textContent], ["В садок", "Назад"]);
+    const stackButtons = this.#findAllByClass(ui.rootNode, "inventory-assembly-editor__button");
+    assert.deepStrictEqual(stackButtons.map((button) => button.textContent), ["В садок", "Назад"],
+      "a stack has «В садок» and «Назад», no equip actions");
+    const [returnButton, backButton] = stackButtons;
     returnButton.click();
     assert.deepStrictEqual(hidden, ["crucian"], "«В садок» hides the species");
     this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LIVE_BAIT_STACK_BACK });

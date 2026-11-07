@@ -896,8 +896,12 @@ vm.runInContext(
   dispatch(reloadedQuickHook, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, { instanceId: "live-stack:crucian" });
   dispatch(reloadedQuickHook, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "live-stack:crucian" });
   stackModel = reloadedQuickHook.facade.getViewModel();
-  assertIntegration(stackModel.panel.mode === "live-bait-stack" && stackModel.panel.liveBaitStack.fish[0].lifeShare === 0.4 &&
-    stackModel.sections.activeId === "equipment", "activating the stack opens its panel in the editor's place");
+  const stackEditor = stackModel.panel.liveBaitStack?.editor;
+  assertIntegration(stackModel.panel.mode === "live-bait-stack" && stackEditor.root.isLiveBaitStack &&
+    stackEditor.root.iconAsset === "fish-display.live" && stackEditor.root.liveBaitFish[0].lifeShare === 0.4 &&
+    stackEditor.showReturnToKeepnet && !stackEditor.showEquip && !stackEditor.showUnequip && !stackEditor.showDisassemble &&
+    stackEditor.sockets.length === 0 && stackModel.sections.activeId === "equipment",
+    "activating the stack opens the item editor with the fish as its root (TK-240)");
   dispatch(reloadedQuickHook, InventoryActionType.LIVE_BAIT_STACK_BACK);
   stackModel = reloadedQuickHook.facade.getViewModel();
   assertIntegration(stackModel.panel.mode === "loadout" && stackModel.sections.activeId === "backpack",

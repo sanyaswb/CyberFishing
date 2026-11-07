@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.24 - Live bait stack in the item editor
+
+- TK-240: a live bait stack opens in the ordinary item editor like any bait: the fish's picture in the editor's card, each fish as a parameter row (thumbnail and life scale without a number), «В садок» and «Назад»; the separate stack panel is gone.
+
 ## v0.50.23 - Backpack limit
 
 - TK-239 (spec 164): the backpack holds at most 100 slots: every owned item counts wherever it is (equipped ones too, so taking things off always works), live baits never; new items that do not fit are refused (DEV shop, House feed; one-time grants wait for room); a full backpack's skin turns translucent red.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.15 - «Замінити» fixed
 
 - TK-233: pressing «Замінити» no longer crashes the inventory (incident I-14): the moment the bait is off and the live bait not yet chosen draws an empty green cell; the waiting card's second button is «Скасувати».
-
-## v0.50.14 - Live bait in the bait switcher
-
-- TK-229.3 stage 2 (spec 162): the chosen live bait shows in the bait switcher's empty hook cell; over a regular bait «На живця» turns the card green with «Замінити» and the hook's cell blinks, and replacing returns the bait to the backpack. Not while the tackle is in the water; one hook only.

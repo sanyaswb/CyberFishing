@@ -73,6 +73,12 @@
   розділ «Екіпіровка», `LIVE_BAIT_STACK_BACK` — назад до розділу); `InventoryLiveBaitStackRenderer` (мініатюри + спільна
   шкала `parameter` без іконки й числа, «В садок», «Назад»); тік 250 мс патчить шкали, зміна підпису — одна повна
   перемальовка. Утримання стеку нічого не робить. Стили — `loadout.css` поряд із переглядом збірки.
+- **TK-240 (v0.50.24), виправлення етапу 2 за правилами дизайну:** окрема панель `InventoryLiveBaitStackRenderer` прибрана;
+  стек відкривається в наявному редакторі предмета, як будь-яка наживка: картка стеку — корінь (`inventory-item-card
+  --assembly-root --frameless` з зображенням риби), її параметри (`inventory-editor-tabs__panel`) — рядки
+  `InventoryItemParametersResolver` по рибі (`resource` з `rowId`, мініатюра `inventory-parameter--thumbnail`, шкала без
+  числа й без рядка заголовка), дії редактора — «В садок» (`showReturnToKeepnet`) і «Назад», без «Спорядити»/«Зняти»/
+  «Розібрати». Тік оновлює рядки через `InventoryItemParametersRenderer.update`.
 
 ## Перевірки
 

@@ -81,7 +81,8 @@ export class InventoryItemParametersRenderer {
     const shape = parameter.kind === "effectiveness" ? (parameter.entries || []).length
       : parameter.kind === "segments" ? parameter.totalSections || 10
         : parameter.kind === "resource" ? parameter.resource?.id || "" : "";
-    return [parameter.kind || "", parameter.label || "", parameter.description || "", hasValue ? "v" : "", shape].join("|");
+    return [parameter.kind || "", parameter.label || "", parameter.description || "", hasValue ? "v" : "", shape,
+      parameter.rowId || ""].join("|");
   }
 
   // Writes only what changed, so an unchanged reading causes no DOM mutation.
@@ -212,6 +213,17 @@ export class InventoryItemParametersRenderer {
   #renderRow(parameter) {
     const li = this.#dom.element("li", "inventory-parameter");
     li.dataset.parameterKey = this.#rowKey(parameter);
+    // A row with its own picture (a live bait stack's fish, spec 163): the thumbnail left of the reading.
+    if (parameter.iconAsset !== undefined) {
+      li.classList.add("inventory-parameter--thumbnail");
+      const thumbnail = this.#dom.element("span", "inventory-parameter__thumbnail");
+      const image = parameter.iconAsset ? this.#dom.image(parameter.iconAsset, "") : null;
+      const visual = image || createItemPlaceholderIcon(this.#dom, "fish", "inventory-parameter__thumbnail-icon");
+      if (image) image.className = "inventory-parameter__thumbnail-image";
+      visual.setAttribute("aria-hidden", "true");
+      thumbnail.appendChild(visual);
+      li.appendChild(thumbnail);
+    }
     if (parameter.color) {
       li.style.setProperty("--inventory-parameter-color", parameter.color);
     }
@@ -236,7 +248,8 @@ export class InventoryItemParametersRenderer {
       header.appendChild(valueSpan);
     }
 
-    li.appendChild(header);
+    // A row without a label or a value (a fish's life scale) has no header line.
+    if (parameter.label || header.children.length > 1) li.appendChild(header);
 
     if (parameter.kind === "resource" && parameter.resource) {
       li.appendChild(

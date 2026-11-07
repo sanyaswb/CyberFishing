@@ -43,6 +43,8 @@ export class InventoryItemParametersResolver {
 
   resolve(item) {
     if (!item || typeof item !== "object") return Object.freeze([]);
+    // Spec 163 (TK-240): a live bait stack's parameters are its fish: a thumbnail and a life scale without a number.
+    if (item.isLiveBaitStack) return InventoryItemParametersResolver.#liveBaitFish(item);
     const parameters = [];
     const renderedIds = new Set();
     const visual = this.#progressionDomAdapter?.resolveVisual?.(item.progression);
@@ -233,6 +235,14 @@ export class InventoryItemParametersResolver {
       .replace(/[^a-zа-яіїєґ0-9]+/giu, "-")
       .replace(/^-+|-+$/g, "");
     return `stat:${slug || "parameter"}`;
+  }
+
+  static #liveBaitFish(item) {
+    return Object.freeze((item.liveBaitFish || []).map((fish) => {
+      const percent = Math.round(Math.min(1, Math.max(0, Number(fish.lifeShare) || 0)) * 100);
+      return Object.freeze({ kind: "resource", rowId: fish.id, label: "", iconAsset: fish.iconAsset || "",
+        resource: Object.freeze({ id: "life", percent, remainingPercent: percent, label: `${fish.name}: залишок життя` }) });
+    }));
   }
 
   #resolveRatingTier(item) {

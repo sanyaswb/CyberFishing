@@ -800,7 +800,6 @@
 │  │     │  ├── inventory_item_parameters_resolver.js
 │  │     │  ├── inventory_item_tree_view_factory.js
 │  │     │  ├── inventory_item_view_factory.js
-│  │     │  ├── inventory_live_bait_stack_renderer.js
 │  │     │  ├── inventory_load_meter_config.js
 │  │     │  ├── inventory_load_renderer.js
 │  │     │  ├── inventory_loadout_panel_renderer.js

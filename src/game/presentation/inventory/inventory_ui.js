@@ -15,7 +15,6 @@ export class InventoryUI {
   #loadoutRenderer;
   #assemblyRenderer;
   #savedLoadoutRenderer;
-  #liveBaitStackRenderer;
   #liveBaitStacks = null;
   #liveBaitStackSignature = "";
   #inventoryRenderSignature = null;
@@ -140,7 +139,6 @@ export class InventoryUI {
     this.#loadoutRenderer = presentation.resolvedLoadoutRenderer;
     this.#assemblyRenderer = presentation.resolvedAssemblyRenderer;
     this.#savedLoadoutRenderer = presentation.resolvedSavedLoadoutRenderer;
-    this.#liveBaitStackRenderer = presentation.resolvedLiveBaitStackRenderer;
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
     this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
@@ -385,7 +383,7 @@ export class InventoryUI {
     } else if (viewModel.panel.mode === "saved-loadout") {
       this.#savedLoadoutRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.savedLoadout);
     } else if (viewModel.panel.mode === "live-bait-stack") {
-      this.#liveBaitStackRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.liveBaitStack);
+      this.#assemblyRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.liveBaitStack.editor);
     }
 
     this.#headerRenderer.updateLoad(this.#headerNode, viewModel.header);
@@ -656,7 +654,8 @@ export class InventoryUI {
 
   #renderLeftPanel(panel, header) {
     // A socket pick refreshes the same editor. Keep its scroll position while replacing the view's DOM.
-    const rootInstanceId = panel.mode === "assembly" ? panel.assembly.rootInstanceId : null;
+    const rootInstanceId = panel.mode === "assembly" ? panel.assembly.rootInstanceId
+      : panel.mode === "live-bait-stack" ? panel.liveBaitStack.editor.rootInstanceId : null;
     const sameEditor = rootInstanceId !== null && rootInstanceId === this.#editorRootInstanceId;
     const scrollTop = sameEditor ? this.#equipmentHost.children[0]?.scrollTop || 0 : 0;
     if (rootInstanceId !== null && !sameEditor) this.#assemblyRenderer.resetView();
@@ -665,12 +664,16 @@ export class InventoryUI {
       this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
       return;
     }
+    // Spec 163 / TK-240: a live bait stack in the item editor: the fish's picture and each fish's life scale.
     if (panel.mode === "live-bait-stack") {
+      const { speciesId, editor } = panel.liveBaitStack;
       const back = () => this.#dispatch({ type: this.#actionTypes.LIVE_BAIT_STACK_BACK });
-      this.#dom.replaceChildren(this.#equipmentHost, this.#liveBaitStackRenderer.render(panel.liveBaitStack, {
+      this.#dom.replaceChildren(this.#equipmentHost, this.#assemblyRenderer.render(editor, {
+        onLoaded: () => this.refresh(),
         onBack: back,
         // D6: «В садок» stops showing the species in the backpack; the fish stay in the keepnet.
-        onReturnToKeepnet: (speciesId) => { this.#liveBaitStacks?.hide(speciesId); back(); },
+        onReturnToKeepnet: () => { this.#liveBaitStacks?.hide(speciesId); back(); },
+        onWarning: (message) => this.showWarning(message),
       }));
       return;
     }
