@@ -665,9 +665,10 @@ vm.runInContext(
   assertIntegration(
     slotlessItemCard.panel.assembly.rootInstanceId === "inspect-bait" &&
       slotlessItemCard.panel.assembly.sockets.length === 0 &&
-      slotlessItemCard.panel.assembly.canEquip === false &&
-      Boolean(slotlessItemCard.panel.assembly.equipWarning),
-    "a slotless inventory item opens as a read-only card and keeps normal inventory browsing",
+      // Spec 165 B1: a bait with nowhere to go still offers «Спорядити»; the command marks the missing cell.
+      slotlessItemCard.panel.assembly.canEquip === true &&
+      slotlessItemCard.panel.assembly.equipAction === "equip",
+    "a bait without a cell opens its editor with an enabled Equip that points at the missing cell",
   );
 
   dispatch(compatibleFiltering, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
@@ -1075,8 +1076,10 @@ vm.runInContext(
     "two equipped hooks keep two available empty bait icons");
   dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
   dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
-  assertIntegration(baitAt(0)?.itemId === "bait" && !baitAt(1) && consumableUi().activeSectionId === "backpack",
-    "the first bait click equips the first empty slot and keeps the list open");
+  // Spec 165 B2: the first empty cell takes the bait and its editor opens beside it.
+  assertIntegration(baitAt(0)?.itemId === "bait" && !baitAt(1) && consumableUi().panelMode === "assembly" &&
+    consumableUi().editingRootInstanceId === "worms" && consumableUi().consumableKind === null,
+    "the first bait click equips the first empty slot and opens the bait's editor");
   assertIntegration(consumableHeader().baitSlots.every((slot) => slot.showCount),
     "a partly filled tackle retains the count for its filled slot");
   dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "bread" });
@@ -1108,8 +1111,9 @@ vm.runInContext(
   const breadBeforeHeaderApply = consumablePick.repository.require("bread").quantity;
   dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 1 });
   assertIntegration(baitAt(1)?.itemId === "bread" && consumablePick.repository.require("bread").quantity === breadBeforeHeaderApply - 1 &&
-    consumableUi().selectedInstanceId === null && consumableUi().activeSectionId === "backpack",
-    "pressing the proposed header circle applies the waiting item at once");
+    consumableUi().selectedInstanceId === null && consumableUi().panelMode === "assembly" &&
+    consumableUi().editingRootInstanceId === "bread",
+    "pressing the proposed header circle applies the waiting item at once and keeps its editor");
   dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
   assertIntegration(consumableHeader().baitSlots.map((slot) => Boolean(slot.highlighted)).join(",") === "true,false",
     "worm beside two breads proposes the first slot");
@@ -3458,6 +3462,65 @@ vm.runInContext(
   const replacement = dispatch(otherBait, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "rb-loaf" });
   assertIntegration(replacement.requiresSocketChoice && otherBait.commands.getUiState().pickedSocketId !== null,
     "a different bait still proposes replacing the hook's bait");
+
+  // Spec 165 stage 1 (B1, B2, B3, B6): choosing a bait always opens its editor; equipping and highlighting run beside it.
+  const editorOf = (flow) => flow.facade.getViewModel().panel.assembly;
+  const flowUi = (flow) => flow.commands.getUiState();
+  for (const [jarId, itemId, quantity] of [["sb-worm", "oil_worm_25", 25], ["sb-bread", "bread_10", 10]]) {
+    // B1: no tackle (or no rod) to put the bait on: the editor opens; «Спорядити» marks the missing cell in error tone.
+    for (const [equipment, missingSlotId] of [[{ rod: "sb-rod" }, "tackle"], [{}, "rod"]]) {
+      const nowhere = makeComposition({ items: [raw("sb-rod", "rodPole"), raw(jarId, itemId, quantity)],
+        equipment: { ...emptyEquipment(), ...equipment } });
+      const before = JSON.stringify(nowhere.snapshotFactory.create());
+      dispatch(nowhere, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: jarId });
+      assertIntegration(flowUi(nowhere).panelMode === "assembly" && flowUi(nowhere).editingRootInstanceId === jarId &&
+        editorOf(nowhere).showEquip && editorOf(nowhere).canEquip && editorOf(nowhere).equipAction === "equip",
+        itemId + ": a bait with nowhere to go opens its editor with «Спорядити» (B1)");
+      const rejected = nowhere.facade.dispatch({ type: InventoryActionType.ASSEMBLY_EQUIP, rootInstanceId: jarId });
+      const feedback = nowhere.facade.getViewModel().equipmentFeedback;
+      assertIntegration(!rejected.success && Boolean(rejected.warning || rejected.reason) &&
+        feedback?.slotId === missingSlotId && feedback?.tone === "error" &&
+        flowUi(nowhere).activeSectionId === "equipment" && flowUi(nowhere).panelMode === "loadout" &&
+        JSON.stringify(nowhere.snapshotFactory.create()) === before,
+        itemId + ": «Спорядити» without a cell shows the equipment and marks the missing " + missingSlotId + " (B1)");
+    }
+    // B2: an empty hook takes the bait and the editor opens beside it; the bait on the hook has nothing to equip.
+    const empty = repeatedBait([raw(jarId, itemId, quantity)]);
+    dispatch(empty, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+    dispatch(empty, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: jarId });
+    assertIntegration(empty.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === itemId &&
+      flowUi(empty).panelMode === "assembly" && flowUi(empty).editingRootInstanceId === jarId &&
+      flowUi(empty).activeSectionId === "equipment" && flowUi(empty).consumableKind === null &&
+      editorOf(empty).showEquip === false && empty.facade.getViewModel().header.baitSlots.every((slot) => !slot.highlighted),
+      itemId + ": an empty hook takes the bait and its editor opens at once (B2)");
+  }
+  // B3: the hook holds another bait: the editor offers «Замінити» with the hook's cell highlighted; nothing changes until
+  // the choice is confirmed by «Замінити», a repeated card click or a tap on the cell; «Назад» cancels the offer.
+  for (const confirm of ["editor", "card", "cell", "back"]) {
+    const taken = repeatedBait([raw("sb-loaf", "bread_10", 10), raw("sb-worms", "oil_worm_25", 25)]);
+    dispatch(taken, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "sb-loaf" });
+    const before = JSON.stringify(taken.snapshotFactory.create());
+    const offered = dispatch(taken, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "sb-worms" });
+    assertIntegration(offered.requiresSocketChoice && JSON.stringify(taken.snapshotFactory.create()) === before &&
+      flowUi(taken).panelMode === "assembly" && flowUi(taken).editingRootInstanceId === "sb-worms" &&
+      editorOf(taken).showEquip && editorOf(taken).equipAction === "replace" &&
+      taken.facade.getViewModel().header.baitSlots[0]?.highlighted === true,
+      "another bait on the hook: editor with «Замінити» and the hook's cell highlighted, nothing replaced yet (B3)");
+    if (confirm === "editor") dispatch(taken, InventoryActionType.ASSEMBLY_EQUIP, { rootInstanceId: "sb-worms" });
+    if (confirm === "card") dispatch(taken, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "sb-worms" });
+    if (confirm === "cell") dispatch(taken, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 0 });
+    if (confirm === "back") {
+      dispatch(taken, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: "sb-worms" });
+      assertIntegration(JSON.stringify(taken.snapshotFactory.create()) === before && flowUi(taken).panelMode === "loadout" &&
+        taken.facade.getViewModel().header.baitSlots.every((slot) => !slot.highlighted),
+        "«Назад» closes the offer without replacing the bait (B3)");
+      continue;
+    }
+    assertIntegration(taken.assemblyReader.getChild("rb-hook", "bait", 0)?.itemId === "oil_worm_25" &&
+      flowUi(taken).panelMode === "assembly" && flowUi(taken).editingRootInstanceId === "sb-worms" &&
+      editorOf(taken).showEquip === false && taken.facade.getViewModel().header.baitSlots.every((slot) => !slot.highlighted),
+      confirm + ": the confirmed replacement puts the worm on the hook and keeps its editor open (B3)");
+  }
 
   console.log("Inventory integration checks passed.");
   `,

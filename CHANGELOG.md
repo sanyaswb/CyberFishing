@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.28 - Bait choice always opens its editor
+
+- Spec 165 stage 1 (TK-242): choosing a bait opens its editor every time; an empty hook takes it at once, a hook with another bait highlights its switcher cell and the editor offers «Замінити» (a repeated click or a tap on the cell replaces too, «Назад» cancels); «Спорядити» with nowhere to put the bait opens the equipment and marks the missing rod or tackle.
+
 ## v0.50.27 - Live baits in the backpack keep their place
 
 - TK-244: once a species is sent to the backpack, every keepnet card of it loses both the backpack button and «Відпустити» (its live baits are all in the backpack, and the service refuses releasing them); «В садок» in the inventory brings both back.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.19 - Automatic switch needs a chosen bait
 
 - TK-237: without a bait (or chum) in any slot the automatic switch is off and inactive (dimmed track), so a used-up bait no longer lets «A» turn on with the old bait's reserve; the saved setting returns with a chosen bait.
-
-## v0.50.18 - Green switcher when a bait is chosen
-
-- TK-236: the bait and chum switcher turns green while a bait, live bait or chum is in its slots, not only in automatic mode; automatic mode colours only its own track.

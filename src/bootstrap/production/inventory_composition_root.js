@@ -45,6 +45,7 @@ import { InventoryFacade } from "../../game/application/inventory/inventory_faca
 import { InventoryAutoRefillStockReadModel } from "../../game/application/inventory/inventory_auto_refill_stock_read_model.js";
 import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_bridge.js";
 import { InventoryItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
+import { ConsumablePlacementPlanner } from "../../game/application/inventory/consumable_placement_planner.js";
 import { InventoryItemOrderResolver } from "../../game/presentation/inventory/inventory_item_order_resolver.js";
 import { InventoryItemTreeViewFactory } from "../../game/presentation/inventory/inventory_item_tree_view_factory.js";
 import { InventoryLegacyMigration } from "../../game/application/inventory/persistence/inventory_legacy_migration.js";
@@ -392,9 +393,14 @@ export class InventoryCompositionRoot {
       config: INVENTORY_SORT_CONFIG,
     });
     const consumableTargets = new EquipmentConsumableTargetResolver({ equipmentState, attachmentTargetResolver });
+    // Spec 165: one bait choice plan for the card command and the editor's button.
+    const consumablePlacement = new ConsumablePlacementPlanner({
+      consumableTargets, attachmentTargetResolver, repository, hydrator,
+    });
     const viewModels = new InventoryViewModelFactory({
       backpackSlots,
       consumableTargets,
+      consumablePlacement,
       repository,
       assemblyStates,
       attachmentTargetResolver,
@@ -429,6 +435,7 @@ export class InventoryCompositionRoot {
     });
     const commands = new InventoryCommandService({
       consumableTargets,
+      consumablePlacement,
       messages: INVENTORY_MESSAGES,
       repository,
       assemblyStates,

@@ -158,8 +158,9 @@ export class InventoryAssemblyEditorRenderer {
       "inventory-assembly-editor__actions",
     );
     actions.append(
+      // Spec 165 A2: a bait offered for a taken cell replaces it; the command decides the same way as a card tap.
       ...(model.showEquip ? [this.#actionButton(
-        "Спорядити",
+        model.equipAction === "replace" ? "Замінити" : "Спорядити",
         "inventory-action--primary",
         model.canEquip,
         () => {

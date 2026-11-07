@@ -47,6 +47,7 @@ export class InventoryViewModelFactory {
   #backpackSlots;
   #loadValueProvider;
   #consumableTargets;
+  #consumablePlacement;
   #liveBaitHook = null;
   #liveBaitStacks = null;
 
@@ -72,6 +73,7 @@ export class InventoryViewModelFactory {
     backpackSlots,
     loadValueProvider = null,
     consumableTargets,
+    consumablePlacement,
   } = {}) {
     Object.assign(this, {});
     this.#repository = repository;
@@ -99,6 +101,8 @@ export class InventoryViewModelFactory {
     if (!consumableTargets?.list || !consumableTargets?.resolve) {
       throw new TypeError("InventoryViewModelFactory requires consumableTargets");
     }
+    if (!consumablePlacement?.plan) throw new TypeError("InventoryViewModelFactory requires consumablePlacement");
+    this.#consumablePlacement = consumablePlacement;
     if (
       !this.#attachmentTargetResolver?.listTargets ||
       !this.#attachmentTargetResolver?.findPlacementTargets
@@ -232,6 +236,7 @@ export class InventoryViewModelFactory {
           uiState.rodRemovalStep,
           uiState.highlightedEquipmentSlotId,
           uiState.pickedSocketId,
+          uiState,
         ),
       },
       inventory: {
@@ -384,6 +389,7 @@ export class InventoryViewModelFactory {
     rodRemovalStep = null,
     highlightedSlotId = null,
     pickedSocketId = null,
+    uiState = {},
   ) {
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
@@ -471,9 +477,11 @@ export class InventoryViewModelFactory {
     }
     const hasAttachedComponents =
       rootView?.assemblyCompletion?.hasAnyComponent === true;
+    const baitAction = !equipped && this.#itemType(rootView) === "bait"
+      ? this.#baitEditorAction(rootInstanceId, uiState) : null;
     const equipAvailability = equipped
       ? { canEquip: false, warning: "Цей предмет уже споряджений." }
-      : this.#resolveAssemblyEquipAvailability(rootView);
+      : baitAction ? { canEquip: true, warning: "" } : this.#resolveAssemblyEquipAvailability(rootView);
     return {
       root: rootView ? { ...rootView, equipped } : null,
       rootLabel: this.#itemViews.create(rootInstanceId)?.name || "Предмет",
@@ -486,13 +494,26 @@ export class InventoryViewModelFactory {
       ),
       equipped,
       canEquip: equipAvailability.canEquip,
-      showEquip: !equipped,
+      showEquip: !equipped && baitAction !== "none",
+      equipAction: baitAction === "replace" ? "replace" : "equip",
       equipWarning: equipAvailability.warning,
       canUnequip: equipped,
       showUnequip: equipped,
       canDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
       showDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
     };
+  }
+
+  // Spec 165 A2: a bait's editor button follows the same plan as its card: «Замінити» while every cell holds another bait
+  // (or one is offered), none while it is already on the hook, otherwise «Спорядити» (the command marks a missing cell).
+  #baitEditorAction(rootInstanceId, uiState) {
+    const plan = this.#consumablePlacement.plan(this.#repository.get(rootInstanceId), "bait", {
+      consumableKind: uiState.consumableKind || null,
+      pickedSocketId: uiState.pickedSocketId || null,
+      selectedInstanceId: uiState.selectedInstanceId || null,
+    });
+    if (plan.action === "on-hook") return "none";
+    return plan.action === "offer" || plan.target?.occupied ? "replace" : "equip";
   }
 
   #resolveAssemblyEquipAvailability(rootView) {

@@ -138,6 +138,7 @@ export class InventoryViewModelNormalizer {
       rodRemovalStep: source.rodRemovalStep || null,
       canEquip: source.canEquip !== false,
       showEquip: source.showEquip !== false && source.equipped !== true,
+      equipAction: source.equipAction === "replace" ? "replace" : "equip",
       canUnequip: source.canUnequip !== false,
       showUnequip: source.showUnequip !== false,
       canDisassemble: source.canDisassemble !== false,

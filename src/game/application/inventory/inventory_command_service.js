@@ -34,6 +34,7 @@ export class InventoryCommandService {
   #uiState;
   #itemRemoval;
   #consumableTargets;
+  #consumablePlacement;
   #slotVisibility;
   #pickSubfilterIds;
   #busyDevices = null;
@@ -68,6 +69,7 @@ export class InventoryCommandService {
     uiState,
     itemRemoval,
     consumableTargets,
+    consumablePlacement,
     slotVisibilityPolicy,
     pickSubfilterIds,
   } = {}) {
@@ -98,6 +100,7 @@ export class InventoryCommandService {
     this.#uiState = uiState;
     this.#itemRemoval = itemRemoval;
     this.#consumableTargets = consumableTargets;
+    this.#consumablePlacement = consumablePlacement;
     this.#slotVisibility = slotVisibilityPolicy;
     this.#pickSubfilterIds = pickSubfilterIds;
     this.#assertDependencies();
@@ -211,13 +214,12 @@ export class InventoryCommandService {
   #activateInventoryItem(instanceId) {
     const source = this.#repository.get(instanceId);
     const kind = source ? this.#type(source) : null;
-    if (!this.#uiState.highlightedEquipmentSlotId &&
-        (this.#uiState.panelMode !== "assembly" || this.#uiState.isConsumablePick) &&
-        (kind === "bait" || (kind === "chum_mix" && this.#uiState.isConsumablePick))) {
-      const consumableKind = kind === "bait" ? "bait" : "chum";
-      if (this.#uiState.isConsumablePick || this.#consumableTargets.list(consumableKind).length) {
-        return this.#activateConsumable(source, consumableKind);
-      }
+    // An editor without an assembly (a bait's own editor, spec 165) does not hold the bait back: it re-plans the choice.
+    const attachmentEditor = this.#uiState.panelMode === "assembly" &&
+      this.#assemblyStates.has(this.#uiState.editingRootInstanceId);
+    if (!this.#uiState.highlightedEquipmentSlotId && (!attachmentEditor || this.#uiState.isConsumablePick)) {
+      if (kind === "bait") return this.#activateConsumable(source, "bait");
+      if (kind === "chum_mix" && this.#uiState.isConsumablePick) return this.#activateConsumable(source, "chum");
     }
     const picking = this.#uiState.isPicking;
     const editorRootInstanceId = this.#uiState.panelMode === "assembly" ? this.#uiState.editingRootInstanceId : null;
@@ -409,11 +411,10 @@ export class InventoryCommandService {
       this.#uiState.equipmentRejected(this.#equipmentState.getRootInstanceId("rod") ? "tackle" : "rod");
       return this.#failure(this.#messages.consumableSlotUnavailable);
     }
+    // A bait offered for replacement (spec 165 B3) goes into the tapped cell and its editor stays open.
     const pending = this.#uiState.consumableKind === kind && this.#repository.get(this.#uiState.selectedInstanceId);
     if (pending && this.#attachmentTargetResolver.accepts(target, pending)) {
-      const result = this.#fillAssemblyTarget(target.rootInstanceId, pending, target);
-      if (result.success) this.#uiState.pickForConsumable(kind);
-      return result;
+      return this.#fillConsumableTarget(pending, kind, target);
     }
     if (this.#uiState.consumableKind === kind && this.#uiState.pickedSocketId === target.socketId) {
       if (!candidateInstanceId) return this.#success({ pickedSocketId: target.socketId });
@@ -481,38 +482,48 @@ export class InventoryCommandService {
     return this.#equipmentSuccess({ rootInstanceId, equippedInstanceId: rootInstanceId, slotId });
   }
 
-  #activateConsumable(source, kind) {
-    const targets = this.#consumableTargets.list(kind)
-      .filter((target) => this.#attachmentTargetResolver.accepts(target, source));
-    if (!targets.length) return this.#failure(this.#messages.consumableSlotUnavailable);
-    const explicit = this.#uiState.consumableKind === kind
-      ? targets.find((target) => target.socketId === this.#uiState.pickedSocketId) : null;
-    const selectedId = this.#uiState.selectedInstanceId;
-    const empty = targets.find((target) => !target.occupied);
-    // TK-241: nothing to replace when the chosen cell (or, without one, every cell) already holds this kind of bait or
-    // chum (the same baitId: a jar of 25 or 50 oil worms is the same bait): the click opens the item's editor instead
-    // of proposing the same replacement again.
-    const sameKind = (target) => target.occupied && this.#consumableKind(target.occupied) === this.#consumableKind(source);
-    if (explicit ? sameKind(explicit) : !empty && targets.every(sameKind)) {
+  // Spec 165 B6: choosing a bait always opens its editor; the plan (ConsumablePlacementPlanner) fills an empty cell (B2)
+  // or offers the cell to replace (B3) beside it. fromEditor: the editor's «Спорядити»/«Замінити»; with nowhere to put
+  // the bait it opens the equipment section and marks the missing rod or tackle in the error tone (B1).
+  #activateConsumable(source, kind, { fromEditor = false } = {}) {
+    const plan = this.#consumablePlacement.plan(source, kind, this.#uiState);
+    if (plan.action === "unavailable") {
+      if (kind !== "bait") return this.#failure(this.#messages.consumableSlotUnavailable);
+      if (!fromEditor) {
+        this.#uiState.showAssemblyEditor(source.instanceId);
+        return this.#success({ rootInstanceId: source.instanceId });
+      }
+      const hasTargets = this.#consumableTargets.list(kind).length > 0;
+      this.#uiState.equipmentRejected(this.#equipmentState.getRootInstanceId("rod") ? "tackle" : "rod");
+      return this.#failure(hasTargets ? this.#messages.itemIncompatible : this.#messages.consumableSlotUnavailable);
+    }
+    if (plan.action === "on-hook") {
       this.#uiState.showAssemblyEditor(source.instanceId);
       return this.#success({ rootInstanceId: source.instanceId });
     }
-    if ((explicit && (!selectedId || selectedId === source.instanceId)) || empty) {
-      const target = explicit && (!selectedId || selectedId === source.instanceId) ? explicit : empty;
-      const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
-      if (result.success) this.#uiState.pickForConsumable(kind);
-      return result;
+    if (plan.action === "fill") return this.#fillConsumableTarget(source, kind, plan.target);
+    // Chum keeps the header pick without an editor (spec 165 covers baits).
+    if (kind === "bait") this.#uiState.showConsumableEditor(source.instanceId, { kind, socketId: plan.target.socketId });
+    else {
+      this.#uiState.pickForConsumable(kind, plan.target.socketId);
+      this.#uiState.select(source.instanceId);
     }
-    // Prefer a different bait: selecting a worm beside worm + bread proposes replacing only the bread.
-    const target = targets.find((candidate) => candidate.occupied.itemId !== source.itemId) || targets[0];
-    this.#uiState.pickForConsumable(kind, target.socketId);
-    this.#uiState.select(source.instanceId);
     return this.#success({ requiresSocketChoice: true });
   }
 
-  // A consumable's kind for replacement: its catalog bait id, or its item id.
-  #consumableKind(rawItem) {
-    return this.#hydrate(rawItem)?.baitId || rawItem.itemId;
+  // The filled cell's bait stays in its editor (B2/B3): the jar when part of it went on the hook, else the hook's bait.
+  #fillConsumableTarget(source, kind, target) {
+    const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
+    if (!result.success) return result;
+    if (kind !== "bait") {
+      this.#uiState.pickForConsumable(kind);
+      return result;
+    }
+    const placed = this.#consumableTargets.list(kind).find((entry) => entry.socketId === target.socketId)?.occupied;
+    const editorId = this.#repository.has(source.instanceId) ? source.instanceId : placed?.instanceId || null;
+    if (editorId) this.#uiState.showConsumableEditor(editorId);
+    else this.#uiState.pickForConsumable(kind);
+    return { ...result, rootInstanceId: editorId };
   }
 
   #unequipSlot(slotId) {
@@ -649,6 +660,8 @@ export class InventoryCommandService {
 
   #equipAssembly(rootInstanceId) {
     const root = this.#repository.require(rootInstanceId);
+    // A bait's editor equips through the same plan as its card (spec 165 A2: «Спорядити» or «Замінити»).
+    if (this.#type(root) === "bait") return this.#activateConsumable(root, "bait", { fromEditor: true });
     const slotId = this.#findEquipmentSlot(root);
     if (!slotId) {
       return this.#failure(this.#messages.itemIncompatibleOrNoSlot);
@@ -1276,6 +1289,7 @@ export class InventoryCommandService {
       [this.#uiState, "uiState"],
       [this.#itemRemoval, "itemRemoval"],
       [this.#consumableTargets, "consumableTargets"],
+      [this.#consumablePlacement, "consumablePlacement"],
       [this.#slotVisibility, "slotVisibilityPolicy"],
     ];
     for (const [dependency, name] of dependencies) {

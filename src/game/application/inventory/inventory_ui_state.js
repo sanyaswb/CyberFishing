@@ -213,6 +213,16 @@ export class InventoryUiState {
     this.focusCompatibleCategory();
   }
 
+  // Spec 165: a bait's editor; with kind and socketId the header cell offered for replacement stays highlighted and the
+  // bait selected beside the open editor (B3), so a repeated choice or a tap on that cell replaces it.
+  showConsumableEditor(instanceId, { kind = null, socketId = null } = {}) {
+    this.showAssemblyEditor(instanceId);
+    if (!kind) return;
+    this.#consumableKind = kind;
+    this.#pickedSocketId = socketId;
+    this.#selectedInstanceId = instanceId;
+  }
+
   backFromAssemblyEditor(loadoutId = null) {
     const context = this.#editorReturnContext;
     if (loadoutId) this.showSavedLoadoutPreview(loadoutId);
