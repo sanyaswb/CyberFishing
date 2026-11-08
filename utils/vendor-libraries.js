@@ -42,10 +42,17 @@ const SCENE_EXPORTS = Object.freeze({
 // The layer passes skipExtensionImports, so Pixi's browser extensions (events, accessibility, DOM) never register;
 // the filter system is the one of them the scene needs, so the entry registers it.
 const SCENE_SIDE_EFFECTS = Object.freeze(["pixi.js/filters"]);
+// Installers the bundle carries but runs only on request (TK-255 P1-1, TK-256). Pixi 8 compiles its uniform and buffer
+// sync code with `new Function` and refuses to start where the page's CSP forbids eval (docs/deployment.md); its
+// eval-free systems (pixi.js/unsafe-eval, installed on import) are slower, so the runtime module installs them only on
+// such a page. Without code splitting esbuild keeps the imported module lazy, so the bundle still imports nothing.
+const SCENE_LAZY_INSTALLERS = Object.freeze({ installEvalFreeSystems: "pixi.js/unsafe-eval" });
 const SCENE_ENTRY = [
   ...SCENE_SIDE_EFFECTS.map((specifier) => `import ${JSON.stringify(specifier)};`),
   ...Object.entries(SCENE_EXPORTS).map(([specifier, names]) =>
     `export { ${names.join(", ")} } from ${JSON.stringify(specifier)};`),
+  ...Object.entries(SCENE_LAZY_INSTALLERS).map(([name, specifier]) =>
+    `export const ${name} = () => import(${JSON.stringify(specifier)}).then(() => undefined);`),
   "",
 ].join("\n");
 const PIXI_SCENE = Object.freeze({
@@ -179,7 +186,7 @@ class PixiSceneVendorEntry {
       integrity: pixi.integrity,
       bundles: bundled.filter((item) => item.name !== pixi.name).map((item) => `${item.name}@${item.version}`),
       source: `${PIXI_SCENE.bundler}@${esbuild.version} bundle of the scene entry in utils/vendor-libraries.js`,
-      exports: Object.values(SCENE_EXPORTS).flat().sort(),
+      exports: [...Object.values(SCENE_EXPORTS).flat(), ...Object.keys(SCENE_LAZY_INSTALLERS)].sort(),
       file,
       sha256: sha256(bundle),
       license: `${directory}/LICENSE`,
@@ -207,7 +214,7 @@ class PixiSceneVendorEntry {
       }
     };
     visit(ast);
-    const expected = Object.values(SCENE_EXPORTS).flat().sort();
+    const expected = [...Object.values(SCENE_EXPORTS).flat(), ...Object.keys(SCENE_LAZY_INSTALLERS)].sort();
     if (JSON.stringify(exported.sort()) !== JSON.stringify(expected)) {
       throw new Error(`the scene bundle exports ${exported.join(", ")}, expected ${expected.join(", ")}`);
     }

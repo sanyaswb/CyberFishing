@@ -461,6 +461,25 @@ async function checkPixiSceneLayer() {
     ["probe", { probe: undefined }, /requires probe/u],
   ]) assert.throws(() => compose(overrides), pattern, `PixiSceneLayer validates ${name}`);
 
+  // TK-256: the renderer starts only after prepareRenderer (Pixi's eval-free systems under a strict CSP); a failed
+  // preparation leaves the 2D canvas alone, like any other init failure.
+  const gate = deferred();
+  const gated = compose({ prepareRenderer: () => gate.promise });
+  await settle();
+  assert.equal(gated.apps[0].options, undefined, "the renderer does not start before prepareRenderer resolves");
+  gate.resolve();
+  await settle();
+  assert.equal(gated.apps[0].options?.canvas, gated.dom.inserted[0], "then it starts on the scene canvas");
+  gated.apps[0].initCall.resolve();
+  assert.equal(await gated.layer.whenReady(), true);
+  gated.layer.dispose();
+  const warningsBefore = warnings.length;
+  const failedPrep = compose({ prepareRenderer: () => Promise.reject(new Error("no eval-free systems")) });
+  assert.equal(await failedPrep.layer.whenReady(), false, "a failed preparation makes the layer unavailable");
+  assert.deepEqual([failedPrep.apps[0].options, failedPrep.layer.getStatus().state, warnings.length - warningsBefore],
+    [undefined, "unavailable", 1], "without starting the renderer, and it says so once");
+  warnings.splice(warningsBefore);
+
   const { layer, dom, apps, textures, probe } = compose();
   const canvas = dom.inserted[0];
   assert.equal(dom.inserted.length, 1, "one scene canvas, inserted right before the game canvas");
@@ -1187,6 +1206,34 @@ async function checkRuntimeModule(manifestEntry) {
     assert.equal(pixi.Ticker[name].started, false);
   }
   assert.deepEqual(Object.keys(pixi).sort(), manifestEntry.exports, "the bundle exports exactly the manifest's list");
+  // TK-256: Pixi's eval-free systems only where the page forbids eval, installed once.
+  assert.equal(createPixiRuntime({ allowsEval: () => true }).prepareRenderer(), null,
+    "a page that allows eval keeps Pixi's generated code");
+  const strict = createPixiRuntime({ allowsEval: () => false });
+  const install = strict.prepareRenderer();
+  assert(install instanceof Object && typeof install.then === "function", "a strict page installs the eval-free systems");
+  assert.equal(strict.prepareRenderer(), install, "once");
+  assert.equal(await install, undefined);
+  checkEvalFreeBundle(manifestEntry);
+}
+
+// TK-256: a page whose CSP forbids eval. Node's --disallow-code-generation-from-strings makes the Function constructor
+// throw like such a page: the bundle must load without compiling anything, the runtime must detect it and the
+// eval-free systems must install. The old bundle had no installer and Pixi refused to start there.
+function checkEvalFreeBundle(manifestEntry) {
+  const probe = [
+    `const pixi = await import(${JSON.stringify(pathToFileURL(path.join(ROOT_DIR, manifestEntry.file)).href)});`,
+    `const { createPixiRuntime } = await import(${JSON.stringify(pathToFileURL(path.join(ROOT_DIR, RUNTIME_MODULE)).href)});`,
+    "let blocked = false; try { new Function('return 1'); } catch { blocked = true; }",
+    "const install = createPixiRuntime().prepareRenderer();",
+    "await install;",
+    "console.log(JSON.stringify({ blocked, installs: install !== null, installer: typeof pixi.installEvalFreeSystems }));",
+  ].join("\n");
+  const result = spawnSync(process.execPath, ["--disallow-code-generation-from-strings", "--input-type=module", "-e", probe],
+    { cwd: ROOT_DIR, encoding: "utf8" });
+  assert.equal(result.status, 0, `the bundle loads and installs its eval-free systems without eval: ${result.stderr}`);
+  assert.deepEqual(JSON.parse(result.stdout.trim().split(/\r?\n/u).pop()), { blocked: true, installs: true,
+    installer: "function" }, "the runtime detects the forbidden eval and installs Pixi's eval-free systems");
 }
 
 async function checkDevWiring() {
@@ -1332,7 +1379,7 @@ async function main() {
     + `PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
     + `steps at its frame rate over the visible zone, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `
-    + `section, runtime ${entry.version} with stopped tickers, CSS, bundle (${size} bytes), ${productionModules} `
+    + `section, runtime ${entry.version} with stopped tickers and eval-free systems only under a strict CSP, CSS, bundle (${size} bytes), ${productionModules} `
     + `production modules loading Pixi only lazily.`);
 }
 

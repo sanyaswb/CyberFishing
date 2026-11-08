@@ -50,7 +50,9 @@ server root (same start as Pages: 0.8 s cold on Fast 4G on a PC, 3 request waves
   `assets/` have no hash in their names: a short `max-age` or revalidation (on Pages every release is its own folder,
   so their URLs change with the release anyway).
 - **Content Security Policy** (if the server sets one):
-  - `script-src 'self'` — the pages load module scripts of the same origin only; there are no inline scripts;
+  - `script-src 'self'` — the pages load module scripts of the same origin only; there are no inline scripts; no
+    `'unsafe-eval'` either: where the page forbids eval, the scene installs PixiJS's eval-free systems before its renderer
+    starts (TK-256, `pixi_runtime_module.js`), and pages that allow eval keep Pixi's faster generated code;
   - `worker-src 'self' blob:` — PixiJS starts workers from `blob:` URLs (`vendor/pixi/8.22.0/pixi-scene.js`);
   - `style-src 'self' 'unsafe-inline'` — the static startup screen is an inline `<style>` in each page (spec 157 D0;
     a hash of that block instead of `'unsafe-inline'` also works, it changes only with the page). A boot module that

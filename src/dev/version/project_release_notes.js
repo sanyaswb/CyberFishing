@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-256: the WebGL scene starts under a CSP without unsafe-eval (Pixi's eval-free systems only there).",
   "TK-254.1: ACTIVE FISH stamina sliders act in the fight; every stamina value and the stamina rules on sliders.",
   "TK-254 (spec 168): overlay windows ACTIVE FISH and ACTIVE ROD with sliders for every fight parameter.",
   "TK-251.2: in step mode the overlay ЗАВАНТАЖЕННЯ shows only the current step: its steps, requests and plan groups.",

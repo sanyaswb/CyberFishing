@@ -53,6 +53,7 @@ export class PixiSceneLayer {
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
+  #prepareRenderer;
   #textures = null;
   #texts = null;
   #background = null;
@@ -85,9 +86,10 @@ export class PixiSceneLayer {
   // canvasMetrics: the logical size and pixel ratio owner; background: the clear colour (any Pixi colour input);
   // images: the loaded images ({ tryGet }); router: which kinds the scene draws this frame ({ drawsOnScene }); clock:
   // the game clock ({ now }, the frame's time in ms); getWaterSettings: () => CONFIG.canvas.water (spec 106);
-  // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107).
+  // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107); prepareRenderer: an
+  // optional async step awaited before the renderer starts (pixi_runtime_module.js: eval-free systems under CSP).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
-    fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null }) {
+    fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -111,6 +113,7 @@ export class PixiSceneLayer {
     this.#probe = probe;
     this.#logger = logger;
     this.#getImageSize = typeof getImageSize === "function" ? getImageSize : null;
+    this.#prepareRenderer = typeof prepareRenderer === "function" ? prepareRenderer : null;
     this.#canvas = documentTarget.createElement("canvas");
     this.#canvas.className = "game-shell__scene";
     this.#canvas.setAttribute("aria-hidden", "true");
@@ -206,6 +209,10 @@ export class PixiSceneLayer {
     const height = this.#metrics.height;
     const resolution = this.#metrics.pixelRatio;
     try {
+      // Before the renderer creates its systems: a page that forbids eval gets Pixi's eval-free ones (TK-256). Nothing
+      // to prepare (null) starts the renderer in the same turn, as before.
+      const preparing = this.#prepareRenderer?.() ?? null;
+      if (preparing !== null) await preparing;
       await app.init({ ...APPLICATION_OPTIONS, canvas: this.#canvas, width, height, resolution, background });
       if (this.#released) {
         app.destroy({ removeView: false }, { children: true });

@@ -53,10 +53,11 @@
         "Texture",
         "TextureAtlas",
         "TextureFilter",
-        "Ticker"
+        "Ticker",
+        "installEvalFreeSystems"
       ],
       "file": "vendor/pixi/8.22.0/pixi-scene.js",
-      "sha256": "4054ad73f606d7951547875afb02fe931365462a8f4d81dd1ad2b2e4ff80e071",
+      "sha256": "a5edbcef5705895b357787f6340c9067d77cfc73fd6664ed317246fbf981657a",
       "license": "vendor/pixi/8.22.0/LICENSE",
       "licenseSha256": "bf10ca389d05447b3554dc6d1ae202f42339bfaa8c9c5e0cde1f9e4abfc5d25f",
       "importer": "src/platform/browser/scene/pixi_runtime_module.js"

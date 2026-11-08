@@ -9,17 +9,37 @@ import { PixiSceneLayer } from "./pixi_scene_layer.js";
 
 const RUNTIME_VERSION = "8.22.0";
 
-export function createPixiRuntime() {
+// allowsEval: () => boolean, whether the page may compile code from strings (the scene-layer check passes its own).
+export function createPixiRuntime({ allowsEval = allowsEvalInPage } = {}) {
   // Ticker.system drives Pixi's renderer scheduler and Ticker.shared library animation; both would request their own
   // animation frames as soon as anything subscribes.
   for (const ticker of [pixi.Ticker.system, pixi.Ticker.shared]) {
     ticker.autoStart = false;
     ticker.stop();
   }
+  // Pixi 8 compiles its uniform and buffer sync code with `new Function` and refuses to start where the page's CSP
+  // forbids eval (docs/deployment.md, TK-256). Only there does it get its eval-free systems, installed once before the
+  // renderer starts; every other page keeps the faster generated code.
+  let evalFreeSystems = null;
+  const prepareRenderer = () => {
+    if (allowsEval()) return null;
+    evalFreeSystems ??= pixi.installEvalFreeSystems();
+    return evalFreeSystems;
+  };
   return Object.freeze({
     version: RUNTIME_VERSION,
-    createSceneLayer: (options) => new PixiSceneLayer({ ...options, pixi }),
+    prepareRenderer,
+    createSceneLayer: (options) => new PixiSceneLayer({ ...options, pixi, prepareRenderer }),
   });
+}
+
+// The same probe Pixi runs before it compiles anything: a CSP without 'unsafe-eval' makes the Function constructor throw.
+function allowsEvalInPage() {
+  try {
+    return new Function("return true")() === true;
+  } catch {
+    return false;
+  }
 }
 
 export function createSpineRuntime() {
