@@ -277,9 +277,43 @@ try {
     assert(authoredFiles.has(file), `authored catalog release closure includes ${file}`);
   }
 
+  // Spec 169 (owner D1): the game server's release is the game only; DEV stays on Pages.
+  const productionDir = path.join(site, "production");
+  const mapsDir = path.join(site, "production-maps");
+  const prod = builder.buildProductionRelease(productionDir, { mapsDir });
+  const prodFiles = new Set(prod.files);
+  assert(prodFiles.has("index.html") && prod.files.some((file) => file.startsWith("assets/")), "the game page and its assets ship");
+  const notShipped = prod.files.filter((file) => file === "dev.html" || file.startsWith("src/") || file.endsWith(".map")
+    || /\.esm-[^/]+\.json$/u.test(file) || (file.startsWith("vendor/") && !file.endsWith("/LICENSE")) || /^build\/dev\./u.test(file));
+  assert.deepEqual(notShipped, [], "no DEV page, source modules, vendor modules, source graph or source maps");
+  assert.deepEqual(fs.readdirSync(productionDir).sort(), [...new Set(prod.files.map((file) => file.split("/")[0]))].sort(),
+    "the folder holds exactly the listed files' roots");
+  const prodText = (file) => fs.readFileSync(path.join(productionDir, ...file.split("/")), "utf8");
+  const prodBoot = prod.preloads["index.html"].boot;
+  assert(!/esm|URLSearchParams|modulepreload/u.test(prodText(prodBoot)), "the boot has no ?esm=1 branch");
+  // Closed graph: every relative URL of the page, the boot module, the bundles and the stylesheet is in the release.
+  const missing = [];
+  const pageHtml = prodText("index.html");
+  for (const [, url] of pageHtml.matchAll(/(?:src|href)="([^"#?:]+)(?:[?#][^"]*)?"/gu)) {
+    if (!prodFiles.has(url)) missing.push(`index.html -> ${url}`);
+  }
+  for (const file of prod.files.filter((name) => /\.(?:js|css)$/u.test(name))) {
+    const text = prodText(file);
+    assert(!text.includes("sourceMappingURL"), `${file} names no public source map`);
+    assert(!text.includes("src/dev/"), `${file} carries no DEV module path`);
+    for (const [, specifier] of text.matchAll(/(?:\bfrom|\bimport|url)\s*\(?\s*["']?(\.{1,2}\/[^"')\s]+)/gu)) {
+      const target = path.posix.normalize(path.posix.join(path.posix.dirname(file), specifier.split(/[?#]/u)[0]));
+      if (!prodFiles.has(target)) missing.push(`${file} -> ${target}`);
+    }
+  }
+  assert.deepEqual(missing, [], "every URL the production release loads is inside it");
+  assert(prod.maps.length > 0 && prod.maps.every((file) => fs.existsSync(path.join(mapsDir, ...file.split("/")))),
+    "source maps go only to the maps folder");
+  assert(prod.files.length < release.files.length / 2, "the production release is the game's subset of the Pages release");
+
   console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, bundles with boot modules and ?esm=1 source graph, ` +
     `${modules.length} modules, assets), closed module graph, base-resolved root page, previous live release kept, older ones removed, root files ` +
-    "retained, overwrite refused.");
+    `retained, overwrite refused; production release (spec 169): ${prod.files.length} files, game only, closed graph, no source maps or ?esm=1.`);
 } finally {
   fs.rmSync(site, { recursive: true, force: true });
 }

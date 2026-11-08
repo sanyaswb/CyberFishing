@@ -13,6 +13,7 @@
 // the site checkout) is a separate, manual step.
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const acorn = require("acorn");
@@ -293,6 +294,48 @@ class PagesReleaseBuilder {
     for (const file of bundle.files) bytes += fs.statSync(path.join(releaseDir, ...file.split("/"))).size;
     return Object.freeze({ id: this.releaseId(), files: Object.freeze([...files, ...bundle.files].sort()), bytes, bundle,
       preloads: Object.freeze(preloads) });
+  }
+
+  // Spec 169 (owner D1): the release for the game server, the game only. The full index.html inputs are staged in a
+  // temporary folder (esbuild reads the sources there); outDir receives only what the game loads: index.html, its
+  // build/ files (boot without ?esm=1, bundle, chunks, stylesheet, startup meter and manifest), assets/ and the vendor
+  // licences. No dev.html, no src/ or vendor modules, no source graph; source maps go to mapsDir only (never public).
+  buildProductionRelease(outDir, { mapsDir = null } = {}) {
+    const stage = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-production-"));
+    try {
+      const files = ReleaseFileSet.collect(this.#tree, { pages: [PAGE] });
+      const contents = this.#tree.readAll(files);
+      for (const file of files) {
+        const target = path.join(stage, ...file.split("/"));
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, contents.get(file));
+      }
+      const bundle = ReleaseBundleBuilder.build({ releaseDir: stage, pages: [PAGE], sourceFallback: false,
+        pagePreloads: (page) => ReleaseFileSet.pagePreloads(this.#tree, page) });
+      const built = bundle.pages[PAGE];
+      if (!built) throw new Error(`${PAGE} was not built`);
+      const pagePath = path.join(stage, PAGE);
+      fs.writeFileSync(pagePath, PagesReleaseBuilder.withPreloads(fs.readFileSync(pagePath, "utf8"), {
+        styles: [built.stylesheet], modules: [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] }));
+      const shipped = [PAGE, ...bundle.files.filter((file) => !file.endsWith(".map")),
+        ...files.filter((file) => file.startsWith(ASSETS_PREFIX) || /^vendor\/.+\/LICENSE$/u.test(file))].sort();
+      PagesReleaseBuilder.#assertVisible(shipped);
+      let bytes = 0;
+      for (const file of shipped) bytes += PagesReleaseBuilder.#copy(stage, outDir, file);
+      const maps = bundle.files.filter((file) => file.endsWith(".map"));
+      if (mapsDir) for (const file of maps) PagesReleaseBuilder.#copy(stage, mapsDir, file);
+      return Object.freeze({ id: this.releaseId(), files: Object.freeze(shipped), bytes, maps: Object.freeze(maps),
+        bundle, preloads: Object.freeze({ [PAGE]: built }) });
+    } finally {
+      fs.rmSync(stage, { recursive: true, force: true });
+    }
+  }
+
+  static #copy(fromDir, toDir, file) {
+    const target = path.join(toDir, ...file.split("/"));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(fromDir, ...file.split("/")), target);
+    return fs.statSync(target).size;
   }
 
   // The first path GitHub Pages would not serve (a segment starting with _ or ., hidden by Jekyll without .nojekyll),

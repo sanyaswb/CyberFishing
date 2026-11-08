@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.48 - Production release without DEV
+
+- Spec 169 (audit TK-255, owner): npm run build:release builds the game server's release with the game only (no dev.html, DEV code, source modules or public source maps; 220 files instead of 1,187); GitHub Pages keeps the full test release with DEV.
+
 ## v0.50.47 - All sounds in minimum size
 
 - TK-258 (audit TK-255): every sound is AAC .m4a, mono, 32 kbit/s: 10.95 -> 1.54 MB (vinyl-5 9.2 -> 1.2 MB); MP3 masters in asset-sources/, the release rejects MP3.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.39 - Step mode holds HUD full files
 
 - TK-251.1 (spec 167): in step-by-step loading a full file asked for by a view (toolbar, HUD, inventory pictures after their low copy) waits for the first step that loads it in full.
-
-## v0.50.38 - Step-by-step loading in DevTools
-
-- TK-251 (spec 167): DevTools «⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ» stops dev.html after the first frame; «Далі ▶», a layer jump, the whole layer or everything load the plan's next steps, with each step's files and their quality listed.

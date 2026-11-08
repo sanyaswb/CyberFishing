@@ -14,7 +14,7 @@
 // Options: --ref <commit> --page index.html|dev.html --network 4g|3g|none --runs N --browser chrome|msedge|<path>
 //   --cpu N (CPU slowdown through the DevTools protocol: 4 is close to a mid-range phone, where the scene's setup takes
 //   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --prefix pages|root (pages: the
-//   Pages site with root copies and releases/<id>/; root: the release folder at the server root, spec 157 R13) --strict
+//   Pages site with root copies and releases/<id>/; root: the production release at the server root, spec 157 R13 and spec 169) --strict
 //   --full (every run also waits for T-full, the "full-load" mark, TK-214; no budget, and slow on a slow network).
 //   The summary is written to utils/generated/startup-measure.json.
 
@@ -222,12 +222,14 @@ async function main() {
   let browser = null;
   try {
     // --prefix pages: the Pages site (root copies with <base> and preloads, the release under releases/<id>/);
-    // --prefix root: the release folder itself at the server root, as a game server would serve it (spec 157 R13).
+    // --prefix root: the game server's production release (spec 169: index.html only, no DEV) at the server root, as a
+    // game server would serve it (spec 157 R13).
     const builder = new PagesReleaseBuilder({ tree: new GitCommitTree({ rootDir: ROOT_DIR, ref: options.ref }) });
     let release;
     if (options.prefix === "root") {
       fs.rmSync(siteDir, { recursive: true, force: true });
-      release = builder.buildRelease(siteDir);
+      if (options.page !== "index.html") throw new Error("--prefix root serves the production release: index.html only");
+      release = builder.buildProductionRelease(siteDir);
     } else release = builder.build(siteDir);
     const certificate = createCertificate(workDir);
     const protocol = certificate ? "h2" : "http/1.1";

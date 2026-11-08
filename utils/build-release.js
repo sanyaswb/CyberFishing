@@ -1,8 +1,11 @@
 "use strict";
 
-// Release bundle (spec 157 R13, owner 2026-10-31): the one release form for GitHub Pages and the game server.
-//   npm run build:release -- --out <dir> [--ref <commit>]
-// writes a self-contained release folder from a commit: the committed release files (pages, stylesheets, source modules,
+// Release bundle (spec 157 R13, owner 2026-10-31; spec 169): the release folder of GitHub Pages and of the game server.
+//   npm run build:release -- --out <dir> [--ref <commit>] [--maps <dir>]
+// writes the production release for the game server (spec 169, owner: no DEV outside Pages): index.html, its build/
+// files without the ?esm=1 source graph, assets/ and vendor licences; source maps only into --maps, outside the folder
+// (PagesReleaseBuilder.buildProductionRelease). npm run release:pages builds the full Pages form described below.
+// The Pages form is a self-contained release folder from a commit: the committed release files (pages, stylesheets, source modules,
 // assets, vendor files and licences: the ?esm=1 fallback still runs from them) and build/ with
 //   - one esbuild bundle per page entry, split into its own shared and lazy chunks (minified, with source maps), names
 //     hashed; each page is built on its own, so dev.html's graph does not cut index.html's start into more chunks;
@@ -49,25 +52,29 @@ class ReleaseBundleBuilder {
   }
 
   // releaseDir holds the committed release files already; pagePreloads(page) -> { styles, modules } (ReleaseFileSet).
-  static build({ releaseDir, pages = PAGES, pagePreloads }) {
+  // sourceFallback (spec 169): true for Pages (the ?esm=1 source graph, linked source maps); false for the production
+  // release (no source graph, external maps the caller keeps out of the public folder).
+  static build({ releaseDir, pages = PAGES, pagePreloads, sourceFallback = true }) {
+    const sourcemap = sourceFallback ? "linked" : "external";
     const present = pages.filter((page) => fs.existsSync(path.join(releaseDir, page)));
     const entries = new Map(present.map((page) => [page, ReleaseBundleBuilder.#entryOf(fs.readFileSync(
       path.join(releaseDir, page), "utf8"), page)]));
     const meter = fs.existsSync(path.join(releaseDir, METER_ENTRY)) ? METER_ENTRY : null;
     // The meter is its own bundle: shared modules with a page's bundle would be one more chunk of that page's start.
     const meterFile = meter ? ReleaseBundleBuilder.#relative(releaseDir,
-      ReleaseBundleBuilder.#outputOf(ReleaseBundleBuilder.#bundle(releaseDir, meter), meter)) : null;
+      ReleaseBundleBuilder.#outputOf(ReleaseBundleBuilder.#bundle(releaseDir, meter, sourcemap), meter)) : null;
     const layerOne = ReleaseBundleBuilder.#layerOneAssets(releaseDir);
     const pagesBuilt = {};
     for (const [page, entry] of entries) {
       const name = page.replace(/\.html$/u, "");
-      const outputs = ReleaseBundleBuilder.#bundle(releaseDir, entry.file);
+      const outputs = ReleaseBundleBuilder.#bundle(releaseDir, entry.file, sourcemap);
       const output = ReleaseBundleBuilder.#outputOf(outputs, entry.file);
       const bundle = ReleaseBundleBuilder.#relative(releaseDir, output);
       const chunks = ReleaseBundleBuilder.#startChunks(outputs, output).map((file) => ReleaseBundleBuilder.#relative(releaseDir, file));
       const { styles, modules } = pagePreloads(page);
-      const stylesheet = ReleaseBundleBuilder.#bundleStyles(releaseDir, name, styles);
-      const esmGraph = ReleaseBundleBuilder.#writeHashed(releaseDir, `${name}.esm`, "json", JSON.stringify(modules));
+      const stylesheet = ReleaseBundleBuilder.#bundleStyles(releaseDir, name, styles, sourcemap);
+      const esmGraph = sourceFallback
+        ? ReleaseBundleBuilder.#writeHashed(releaseDir, `${name}.esm`, "json", JSON.stringify(modules)) : null;
       const boot = ReleaseBundleBuilder.#writeBoot(releaseDir, page, bundle, entry, esmGraph, meterFile);
       const startModules = [boot, ...(meterFile ? [meterFile] : []), bundle, ...chunks];
       const html = ReleaseBundleBuilder.#withStylesheet(fs.readFileSync(path.join(releaseDir, page), "utf8"), stylesheet, page)
@@ -85,8 +92,8 @@ class ReleaseBundleBuilder {
   }
 
   // One entry's bundle with its own chunks; returns esbuild's outputs.
-  static #bundle(releaseDir, entryFile) {
-    return ReleaseBundleBuilder.#runEsbuild(releaseDir, { entryPoints: [entryFile], bundle: true, splitting: true, format: "esm",
+  static #bundle(releaseDir, entryFile, sourcemap) {
+    return ReleaseBundleBuilder.#runEsbuild(releaseDir, { entryPoints: [entryFile], bundle: true, splitting: true, format: "esm", sourcemap,
       chunkNames: "chunks/[name]-[hash]" }).metafile.outputs;
   }
 
@@ -97,13 +104,13 @@ class ReleaseBundleBuilder {
   }
 
   // The page's stylesheets, in page order, as one minified file. Returns its release path.
-  static #bundleStyles(releaseDir, name, styles) {
+  static #bundleStyles(releaseDir, name, styles, sourcemap) {
     const entry = path.join(releaseDir, BUILD_DIR, `${name}.styles.css`);
     fs.mkdirSync(path.dirname(entry), { recursive: true });
     fs.writeFileSync(entry, styles.map((href) => `@import ${JSON.stringify(`../${href.split(/[?#]/u)[0]}`)};\n`).join(""));
     try {
       const { outputs } = ReleaseBundleBuilder.#runEsbuild(releaseDir, { entryPoints: [`${BUILD_DIR}/${name}.styles.css`],
-        bundle: true }).metafile;
+        bundle: true, sourcemap }).metafile;
       const output = Object.keys(outputs).find((file) => file.endsWith(".css"));
       if (!output) throw new Error(`esbuild wrote no stylesheet for ${name}`);
       return ReleaseBundleBuilder.#relative(releaseDir, output);
@@ -180,10 +187,25 @@ class ReleaseBundleBuilder {
   }
 
   // build/<page>.boot-<hash>.js: the startup meter, then the page's bundle, or with ?esm=1 its source modules after a
-  // modulepreload for each (their list is fetched only then, so a normal start does not carry it).
+  // modulepreload for each (their list is fetched only then, so a normal start does not carry it). Without a source
+  // graph (the production release, spec 169) the boot only imports the bundle.
   static #writeBoot(releaseDir, page, bundle, entry, esmGraph, meterFile) {
     const name = page.replace(/\.html$/u, "");
     const local = (file) => `./${path.posix.relative(BUILD_DIR, file)}`;
+    const failure = meterFile ? `import { showStartupFailure } from ${JSON.stringify(local(meterFile))};\n`
+      : "const showStartupFailure = () => {};\n";
+    if (esmGraph === null) {
+      return ReleaseBundleBuilder.#writeHashed(releaseDir, `${name}.boot`, "js", `// Release boot (spec 157 R13, D5, R3; \
+spec 169), generated by utils/build-release.js: the startup meter, then the bundle.
+// A bundle that cannot load shows the failure on the startup screen.
+${failure}try {
+  await import(${JSON.stringify(local(bundle))});
+} catch (error) {
+  console.error("[Bootstrap] The game's code could not load.", error);
+  showStartupFailure();
+}
+`);
+    }
     const source = `// Release boot (spec 157 R13, D5, R3), generated by utils/build-release.js: the startup meter, then the bundle;
 // ?esm=1 runs the source modules. A bundle that cannot load shows the failure on the startup screen.
 ${meterFile ? `import { showStartupFailure } from ${JSON.stringify(local(meterFile))};\n` : "const showStartupFailure = () => {};\n"}const esm = new URLSearchParams(location.search).has("esm");
@@ -293,8 +315,9 @@ function readOptions(argv) {
     return index === -1 ? fallback : argv[index + 1];
   };
   const out = value("--out", "");
-  if (!out) throw new Error("Usage: npm run build:release -- --out <dir> [--ref <commit>]");
-  return { out: path.resolve(out), ref: value("--ref", "HEAD") };
+  if (!out) throw new Error("Usage: npm run build:release -- --out <dir> [--ref <commit>] [--maps <dir>]");
+  const maps = value("--maps", "");
+  return { out: path.resolve(out), ref: value("--ref", "HEAD"), maps: maps ? path.resolve(maps) : null };
 }
 
 // Exported before the command runs: build-pages-release.js requires this module back (a cycle).
@@ -302,12 +325,16 @@ module.exports = { ReleaseBundleBuilder, BUILD_DIR, START_IMPORTS, STARTUP_MANIF
 
 if (require.main === module) {
   try {
-    const { out, ref } = readOptions(process.argv.slice(2));
+    const { out, ref, maps } = readOptions(process.argv.slice(2));
     const { GitCommitTree, PagesReleaseBuilder } = require("./build-pages-release.js");
     if (fs.existsSync(out) && fs.readdirSync(out).length > 0) throw new Error(`${out} is not empty`);
+    if (maps && path.relative(out, maps) && !path.relative(out, maps).startsWith("..")) {
+      throw new Error("--maps must be outside the public release folder");
+    }
     const release = new PagesReleaseBuilder({ tree: new GitCommitTree({ rootDir: path.resolve(__dirname, ".."), ref }) })
-      .buildRelease(out);
-    console.log(`Release ${release.id}: ${release.files.length} files in ${out} (bundles: ${release.bundle.files.length}).`);
+      .buildProductionRelease(out, { mapsDir: maps });
+    console.log(`Production release ${release.id}: ${release.files.length} files, ${(release.bytes / 1048576).toFixed(1)} MB in `
+      + `${out}${maps ? `; ${release.maps.length} source maps in ${maps}` : "; source maps not kept (--maps <dir>)"}.`);
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
