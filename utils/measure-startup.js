@@ -10,7 +10,7 @@
 // - Cold start (the spec's main metric): a new browser context with the cache disabled per run. Warm start: one
 //   context, one unmeasured load, then reloads.
 // - Every run waits for data-game-ready and reads the page's timing entries; the report is the DEV overlay's
-//   StartupLoadReport. Medians are compared with the spec 157 Q4 budget; --strict exits 1 when one is exceeded.
+//   StartupLoadReport. Medians are compared with the spec 171 Q4 budget (STARTUP_BUDGET); --strict exits 1 when one is exceeded.
 // Options: --ref <commit> --page index.html|dev.html --network 4g|3g|none --runs N --browser chrome|msedge|<path>
 //   --cpu N (CPU slowdown through the DevTools protocol: 4 is close to a mid-range phone, where the scene's setup takes
 //   long enough for images of hidden views to arrive before ready; 1 = the PC as it is) --prefix pages|root (pages: the
@@ -70,7 +70,7 @@ function median(values) {
 }
 
 // One series of runs (cold or warm) -> medians and the verdict against the budget.
-function summarize(kind, reports) {
+function summarize(kind, reports, network) {
   const medians = {
     paintMs: median(reports.map((report) => report.paintMs)),
     playMs: median(reports.map((report) => report.playMs)),
@@ -80,7 +80,8 @@ function summarize(kind, reports) {
     requests: median(reports.map((report) => report.beforePlay.count)),
     networkSteps: median(reports.map((report) => report.networkSteps)),
   };
-  const playBudget = kind === "cold" ? BUDGET.coldPlayMs : BUDGET.warmPlayMs;
+  // Spec 171 Q4: the cold budget follows the emulated network (3G 2.5 s, otherwise 1 s).
+  const playBudget = kind === "cold" ? (network === "3g" ? BUDGET.coldPlay3gMs : BUDGET.coldPlayMs) : BUDGET.warmPlayMs;
   const verdicts = [
     ["T-paint", medians.paintMs, BUDGET.paintMs],
     ["T-play", medians.playMs, playBudget],
@@ -259,7 +260,7 @@ async function main() {
       warm.push(StartupLoadReport.build(await measureLoad(context, page, { network, cold: false, url, reload: true, cpu: options.cpu, fullLoadMark })));
     }
     await context.close();
-    const summaries = [summarize("cold", cold), summarize("warm", warm)];
+    const summaries = [summarize("cold", cold, options.network), summarize("warm", warm, options.network)];
     for (const summary of summaries) console.log(formatSummary(summary));
     fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
     fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify({ release: release.id, page: options.page, prefix: options.prefix, protocol, network: options.network, cpu: options.cpu,

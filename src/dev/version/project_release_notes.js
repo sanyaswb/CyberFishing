@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 171 Q4: startup budgets cold 1 s (4G CPU x4) / 2.5 s (3G), warm 0.3 s, 3 network steps.",
   "Spec 169: build:release is the production release (game only, no DEV, maps only via --maps); Pages unchanged.",
   "TK-258: all sounds AAC m4a mono 32 kbit/s (10.95 -> 1.54 MB); release rejects MP3.",
   "TK-257: production console stays empty in a fight; fight diagnostics only in dev.html.",

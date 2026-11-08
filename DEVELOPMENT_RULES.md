@@ -91,8 +91,9 @@ frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; 
 
 **Loading and startup optimization — mandatory (owner, 2026-10-31; spec 157).** The game will keep growing, so
 optimization is part of every change, never an afterthought:
-- **Budgets are a starting point, not a finish line.** The current targets (cold start on 4G: first paint ≤ 1 s, ready
-  to play ≤ 3–4 s, ≤ 3 MB compressed before the start) are the floor. "Already within budget" is never a reason to skip
+- **Budgets are a starting point, not a finish line.** The current targets (owner, spec 171 Q4, 2026-11-09: first paint
+  ≤ 1 s; cold ready to play ≤ 1 s on Fast 4G with CPU ×4 and ≤ 2.5 s on 3G; warm ≤ 0.3 s; ≤ 3 network steps; ≤ 3 MB
+  compressed before the start; `STARTUP_BUDGET` in `src/dev/diagnostics/startup_load_report.js`) are the floor. "Already within budget" is never a reason to skip
   an optimization or to accept a regression; every change keeps the numbers or improves them, and a budget miss found by
   the measurer is a defect (record it in docs/incidents.md).
 - **The main metric is the cold start of a new player** (no cache, phone, mobile network). Caching is a bonus, never the

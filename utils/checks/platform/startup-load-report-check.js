@@ -478,10 +478,15 @@ function checkMeasurer() {
   assert.equal(median([4, 1, 3, 2]), 2.5);
   assert.equal(median([null, Number.NaN]), null);
   const run = (playMs, transferred, networkSteps) => ({ paintMs: 500, playMs, beforePlay: { transferred, count: 10 }, networkSteps });
-  const cold = summarize("cold", [run(3000, 1000, 2), run(5000, 2000, 3), run(3500, 9e9, 3)]);
-  assert.equal(cold.medians.playMs, 3500);
+  const cold = summarize("cold", [run(900, 1000, 2), run(5000, 2000, 3), run(950, 9e9, 3)], "4g");
+  assert.equal(cold.medians.playMs, 950);
   assert.deepEqual(cold.verdicts.map((verdict) => [verdict.metric, verdict.pass]),
     [["T-paint", true], ["T-play", true], ["Bytes-play", true], ["Waterfall", true]]);
+  // Spec 171 Q4 (owner 2026-11-09): cold 1 s on Fast 4G with CPU x4, 2.5 s on 3G, warm 0.3 s.
+  assert.deepEqual([BUDGET.coldPlayMs, BUDGET.coldPlay3gMs, BUDGET.warmPlayMs, BUDGET.networkSteps], [1000, 2500, 300, 3]);
+  const playVerdict = (playMs, network) => summarize("cold", [run(playMs, 1000, 2)], network).verdicts[1];
+  assert.deepEqual([playVerdict(1240, "4g").pass, playVerdict(1240, "3g").pass, playVerdict(2600, "3g").pass,
+    playVerdict(1240, "3g").limit], [false, true, false, 2500], "the cold T-play budget follows the network");
   const warm = summarize("warm", [run(2500, 0, 9)]);
   assert.deepEqual(warm.verdicts.map((verdict) => [verdict.metric, verdict.limit, verdict.pass]),
     [["T-paint", BUDGET.paintMs, true], ["T-play", BUDGET.warmPlayMs, false]], "warm start: its own T-play budget, no byte budget");
