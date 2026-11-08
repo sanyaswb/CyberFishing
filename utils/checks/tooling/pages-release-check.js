@@ -111,7 +111,8 @@ try {
   // Spec 157 R13: every release file but build/ and the two game pages is the committed bytes; each game page differs
   // only in its module script, which loads the page's boot module.
   const builtPages = ["index.html", "dev.html"].filter((file) => tree.has(file));
-  const committed = release.files.filter((file) => !file.startsWith("build/") && !builtPages.includes(file));
+  // sw.js is built like build/ (spec 171 stage 4).
+  const committed = release.files.filter((file) => !file.startsWith("build/") && !builtPages.includes(file) && file !== "sw.js");
   const contents = tree.readAll(committed);
   for (const file of committed) {
     assert(fs.readFileSync(path.join(release.releaseDir, ...file.split("/"))).equals(contents.get(file)), `${file} has the committed bytes`);
@@ -196,8 +197,10 @@ try {
     };
     assert.equal(releasePage, oneStylesheet(source).replace(`src="${entryOf(source)}"`, `src="${built.boot}"`)
       .replace('<div class="startup-loader"', `<div class="startup-loader" data-startup-bytes="${built.startupBytes}"`)
-      .replace("<head>\n", `<head>\n${preloadLines}`),
-      `${name}: the release page is the committed page with its preloads, boot module and startup size`);
+      .replace("<head>\n", `<head>\n${preloadLines}`)
+      // Spec 171 stage 4: the game page declares its offline worker; dev.html does not.
+      .replace(/<html\b/u, name === "index.html" ? '<html data-offline-worker="sw.js"' : "<html"),
+      `${name}: the release page is the committed page with its preloads, boot module, startup size and offline worker`);
     const root = fs.readFileSync(path.join(site, name), "utf8");
     assert.equal(root, releasePage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
       `${name}: the root page is the release page with <base> first`);
