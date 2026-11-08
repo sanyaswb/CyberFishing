@@ -91,6 +91,9 @@ frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; 
 
 **Loading and startup optimization — mandatory (owner, 2026-10-31; spec 157).** The game will keep growing, so
 optimization is part of every change, never an afterthought:
+- **Quality starts at the minimum (owner, 2026-11-09).** Art, audio (the radio included) and effects ship at the lowest
+  acceptable quality, with no player choice; the game picks the quality automatically by device (spec 171). Quality rises
+  only when the finished game (all animations and assets) still has measured performance headroom.
 - **Budgets are a starting point, not a finish line.** The current targets (owner, spec 171 Q4, 2026-11-09: first paint
   ≤ 1 s; cold ready to play ≤ 1 s on Fast 4G with CPU ×4 and ≤ 2.5 s on 3G; warm ≤ 0.3 s; ≤ 3 network steps; ≤ 3 MB
   compressed before the start; `STARTUP_BUDGET` in `src/dev/diagnostics/startup_load_report.js`) are the floor. "Already within budget" is never a reason to skip
