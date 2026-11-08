@@ -1,5 +1,6 @@
 // When background loads should wait (spec 047 FR-017, spec 157 D2): a hidden tab, no network, or the browser's
-// save-data preference. Loads the player is waiting for are never paused by this. onChange(paused) runs on every change.
+// save-data preference. No network pauses only while no service worker controls the page: the release's offline cache
+// (spec 171 stage 4) answers the plan's files without one, so an offline launch still loads the whole game. Loads the player is waiting for are never paused by this. onChange(paused) runs on every change.
 export class BrowserLoadConditions {
   #documentRef;
   #windowRef;
@@ -26,6 +27,7 @@ export class BrowserLoadConditions {
     listen(windowRef, "online");
     listen(windowRef, "offline");
     listen(windowRef?.navigator?.connection, "change");
+    listen(windowRef?.navigator?.serviceWorker, "controllerchange");
   }
 
   isPaused() {
@@ -45,7 +47,7 @@ export class BrowserLoadConditions {
 
   #read() {
     const navigatorRef = this.#windowRef?.navigator;
-    return this.#documentRef?.visibilityState === "hidden" || navigatorRef?.onLine === false
-      || navigatorRef?.connection?.saveData === true;
+    const offline = navigatorRef?.onLine === false && !navigatorRef?.serviceWorker?.controller;
+    return this.#documentRef?.visibilityState === "hidden" || offline || navigatorRef?.connection?.saveData === true;
   }
 }

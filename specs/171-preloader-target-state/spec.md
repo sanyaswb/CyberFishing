@@ -84,4 +84,25 @@
 
 ## Реалізація
 
-_(по етапах)_
+### Етап 4 — offline-кеш (v0.50.50, 2026-11-09)
+
+- `OfflineCacheWorker` (`src/platform/browser/offline/offline_cache_worker.js`): кеш на реліз
+  (`cyber-fishing-offline-<id>`), install — сторінка й файли старту (маніфест старту) з HTTP-кешу, activate — видаляє кеші
+  інших релізів і бере сторінки під контроль; сторінка гри — одразу з кешу з фоновим оновленням; файли релізу — cache first;
+  POST, Range (медіа), інші origin, `src/` (`?esm=1`), `.map`, інші сторінки (`dev.html`) — мережею без змін; повідомлення
+  `cache-urls` — файли першого візиту з HTTP-кешу (лише абсолютні URL свого origin і теки).
+- `BrowserOfflineCache` (`src/platform/browser/offline/browser_offline_cache.js`): лише коли зібрана сторінка оголошує
+  worker (`<html data-offline-worker="sw.js">`); реєстрація після «full-load» (`GameCompositionRoot`), один раз, URL від
+  адреси сторінки (не `<base>`), `updateViaCache: "none"`; буфер resource timing 2000.
+- Збірка (`utils/build-pages-release.js`): `sw.js` = клас + реліз (id, файли старту з маніфесту, сторінка) через esbuild
+  (iife, minify); у теці релізу, у корені Pages (префікс `releases/<id>/`) і в prod-формі. `dev.html`, `npm run dev` —
+  без worker.
+- `BrowserLoadConditions`: офлайн призупиняє фонове завантаження лише без контролюючого worker (`controllerchange`), бо
+  кеш відповідає без мережі — інакше офлайн-запуск зупинявся на шарі 1 (знайдено живим прогоном нижче).
+- Живий прогін (headless Chrome, prod-форма з робочого дерева, http://127.0.0.1, без тротлінгу): перший візит — ready
+  216–264 мс, worker не контролює сторінку до «full-load»; після нього кеш — 175 з 177 файлів, що вантажила сторінка;
+  повторний онлайн — ready 157–174 мс, повне завантаження, 0 помилок; **офлайн — ready 105–111 мс, повне завантаження,
+  176 файлів, 0 помилок**.
+- Перевірки: `offline-cache` (нова: worker і сторінка на фейках із контрактом Cache API), `asset-load-plan` (офлайн під
+  worker не призупиняє; падає на 0.50.49), `pages-release` (sw.js у обох формах і корені Pages, атрибут лише на зібраній
+  сторінці гри).

@@ -21,6 +21,7 @@ holds this form (game only, closed URL graph). The Pages release has every row o
 | Path | What it is | Cache |
 | --- | --- | --- |
 | `index.html`, `dev.html` | the pages; each game page's one module script loads its boot module | no cache |
+| `sw.js` | the release's offline cache worker (see below) | no cache |
 | `build/<page>.boot-<hash>.js` | boot module: imports the bundle; with `?esm=1` in the address it adds a `modulepreload` for every source module of the page and imports the source entry instead (debugging on a phone); a bundle that cannot load shows the failure and a retry button on the startup screen | immutable |
 | `build/<entry>-<hash>.js`, `build/chunks/<name>-<hash>.js` | esbuild bundles (`--bundle --format=esm --splitting --minify`), one build per page, split into shared and lazy chunks | immutable |
 | `build/<page>.styles-<hash>.css` | the page's stylesheets in page order as one minified file; the release page links only this one, also under `?esm=1` | immutable |
@@ -40,6 +41,17 @@ Every URL in the folder is relative, so it works under any path prefix: Pages se
 `pages-release` check rejects absolute `/src/`, `/assets/`, `/vendor/` or `/build/` strings in the bundles; the browser
 check of spec 157 R13 ran the game on both prefixes, and `npm run measure:startup -- --prefix root` measures the
 production release at a server root (v0.50.47: T-play 1.24 s cold on Fast 4G with CPU x4, 0.44 MB).
+
+## Offline cache (spec 171 stage 4)
+
+Both forms carry `sw.js` beside the game page (Pages: also at the site root, beside the root `index.html`, its files
+under `releases/<id>/`), and the built game page declares it (`<html data-offline-worker="sw.js">`); `npm run dev` and
+`dev.html` never register a worker. The page registers it only after the full load, so it never competes with the
+start, and hands it the files it loaded (taken from the HTTP cache, nothing downloads twice). The worker keeps one cache
+per release: the game page answers from the cache at once (instant repeat start, offline), the release's files are cache
+first, and only what the game actually loaded is kept (audio when it played, progress-locked content when opened). A
+new release's worker installs in the background and takes over on the next launch. Serve `sw.js` with `no-cache` (the
+browser also checks it on every navigation: `updateViaCache: "none"`).
 
 ## Server requirements
 

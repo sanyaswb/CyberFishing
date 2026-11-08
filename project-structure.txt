@@ -1018,6 +1018,8 @@
 │        ├── location
 │        │  ├── depth_map_reader.js
 │        │  └── location_asset_loader.js
+│        ├── offline
+│        │  └── browser_offline_cache.js
 │        ├── radio
 │        │  ├── browser_region_resolver.js
 │        │  └── radio_browser_station_source.js

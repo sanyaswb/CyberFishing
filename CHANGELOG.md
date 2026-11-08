@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.50 - Offline cache
+
+- Spec 171 stage 4 (owner): after the first full load the game starts instantly from its offline cache and plays without the network; a new release takes over on the next launch. Only built releases (Pages, server) register it; dev.html and npm run dev never do.
+
 ## v0.50.49 - New startup limits
 
 - Spec 171 Q4 (owner): startup budgets are now cold 1 s on Fast 4G with CPU x4, 2.5 s on 3G, warm 0.3 s, at most 3 network steps; the measurer and the DEV overlay «⏱ ЗАВАНТАЖЕННЯ» judge by them.
@@ -37,9 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.41 - Wide toolbar beside the selector
 
 - TK-253: on wide (landscape) toolbars the float, chum and net stand right beside the radial selector with no reserve for its fan; while the fan is open they fade out, as on compact toolbars.
-
-## v0.50.40 - ACTIVE FISH without Overlay, guaranteed Fixed Catch anomaly
-
-- TK-252: DevTools show the hooked fish's parameters (ACTIVE FISH) in the fight while the panel is open, Overlay off.
-- Fixed Catch hasAnomaly always makes the test fish anomalous; perch_radioactive gets the crucian's anomaly (inside, 1%, test).
-- ui-catalog.html removed (owner): no longer released, served or checked.

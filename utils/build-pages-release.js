@@ -25,6 +25,9 @@ const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
 const DEV_METADATA_PREFIX = "src/dev/metadata/";
 const VENDOR_MANIFEST = "vendor/manifest.json";
+// Spec 171 stage 4: the release's service worker, built from this committed class beside the game page.
+const OFFLINE_WORKER_SOURCE = "src/platform/browser/offline/offline_cache_worker.js";
+const OFFLINE_WORKER = "sw.js";
 
 class GitCommitTree {
   #rootDir;
@@ -257,6 +260,8 @@ class PagesReleaseBuilder {
       fs.writeFileSync(path.join(siteDir, page), PagesReleaseBuilder.rootPage(
         fs.readFileSync(path.join(releaseDir, page), "utf8"), id));
     }
+    // The root page's worker: beside the root page, its files under releases/<id>/ (spec 171 stage 4).
+    this.#writeOfflineWorker(releaseDir, siteDir, release.bundle, `releases/${id}/`);
     const removed = PagesReleaseBuilder.#prune(siteDir, new Set(keep === 2 && previous ? [id, previous] : [id]));
     return Object.freeze({ id, releaseDir, files: release.files, bytes: release.bytes, bundle: release.bundle, previous,
       removed: Object.freeze(removed) });
@@ -287,13 +292,16 @@ class PagesReleaseBuilder {
         ? [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] : [] });
       if (!built) continue;
       const target = path.join(releaseDir, page);
-      fs.writeFileSync(target, PagesReleaseBuilder.withPreloads(fs.readFileSync(target, "utf8"), preloads[page]));
+      const html = PagesReleaseBuilder.withPreloads(fs.readFileSync(target, "utf8"), preloads[page]);
+      fs.writeFileSync(target, page === PAGE ? PagesReleaseBuilder.withOfflineWorker(html) : html);
     }
     // esbuild names chunks after their modules: build/ is held to the same rule as the committed files.
     PagesReleaseBuilder.#assertVisible(bundle.files);
     for (const file of bundle.files) bytes += fs.statSync(path.join(releaseDir, ...file.split("/"))).size;
-    return Object.freeze({ id: this.releaseId(), files: Object.freeze([...files, ...bundle.files].sort()), bytes, bundle,
-      preloads: Object.freeze(preloads) });
+    const worker = this.#writeOfflineWorker(releaseDir, releaseDir, bundle, "");
+    bytes += worker.bytes;
+    return Object.freeze({ id: this.releaseId(), files: Object.freeze([...files, ...bundle.files, OFFLINE_WORKER].sort()), bytes,
+      bundle, preloads: Object.freeze(preloads) });
   }
 
   // Spec 169 (owner D1): the release for the game server, the game only. The full index.html inputs are staged in a
@@ -315,9 +323,11 @@ class PagesReleaseBuilder {
       const built = bundle.pages[PAGE];
       if (!built) throw new Error(`${PAGE} was not built`);
       const pagePath = path.join(stage, PAGE);
-      fs.writeFileSync(pagePath, PagesReleaseBuilder.withPreloads(fs.readFileSync(pagePath, "utf8"), {
-        styles: [built.stylesheet], modules: [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] }));
-      const shipped = [PAGE, ...bundle.files.filter((file) => !file.endsWith(".map")),
+      fs.writeFileSync(pagePath, PagesReleaseBuilder.withOfflineWorker(PagesReleaseBuilder.withPreloads(
+        fs.readFileSync(pagePath, "utf8"), { styles: [built.stylesheet],
+          modules: [built.boot, ...(built.meter ? [built.meter] : []), built.bundle, ...built.chunks] })));
+      this.#writeOfflineWorker(stage, stage, bundle, "");
+      const shipped = [PAGE, OFFLINE_WORKER, ...bundle.files.filter((file) => !file.endsWith(".map")),
         ...files.filter((file) => file.startsWith(ASSETS_PREFIX) || /^vendor\/.+\/LICENSE$/u.test(file))].sort();
       PagesReleaseBuilder.#assertVisible(shipped);
       let bytes = 0;
@@ -329,6 +339,35 @@ class PagesReleaseBuilder {
     } finally {
       fs.rmSync(stage, { recursive: true, force: true });
     }
+  }
+
+  // The game page declares its worker; only a built page does, so npm run dev never registers one (spec 171 stage 4).
+  static withOfflineWorker(html) {
+    const tags = html.match(/<html\b/gu) ?? [];
+    if (tags.length !== 1) throw new Error(`${PAGE} must have one <html> element`);
+    return html.replace(/<html\b/u, `<html data-offline-worker="${OFFLINE_WORKER}"`);
+  }
+
+  // <toDir>/sw.js: OfflineCacheWorker bundled with the release id, the game page and the start's files (its startup
+  // manifest), all relative to the worker; prefix: where the release lies from the worker ("" beside it, Pages'
+  // "releases/<id>/" from the site root, whose game page is the root copy).
+  #writeOfflineWorker(releaseDir, toDir, bundle, prefix) {
+    const built = bundle.pages[PAGE];
+    if (!built?.startup) throw new Error(`${PAGE} has no startup manifest for its offline worker`);
+    const manifest = JSON.parse(fs.readFileSync(path.join(releaseDir, ...built.startup.split("/")), "utf8"));
+    const shell = [...new Set(manifest.files.map((entry) => `${prefix}${entry.path.split(/[?#]/u)[0]}`))].sort();
+    const release = { id: this.releaseId(), shell, pages: [PAGE] };
+    const entry = `${this.#tree.read(OFFLINE_WORKER_SOURCE).toString("utf8")}
+new OfflineCacheWorker({ scope: self, caches: self.caches, fetch: (request) => self.fetch(request),
+  release: ${JSON.stringify(release)} }).listen();
+`;
+    const result = require("esbuild").buildSync({ stdin: { contents: entry, loader: "js", sourcefile: OFFLINE_WORKER_SOURCE },
+      bundle: false, format: "iife", minify: true, target: "es2022", write: false, logLevel: "error" });
+    if (result.warnings.length > 0) throw new Error(`esbuild warnings in ${OFFLINE_WORKER}: ${result.warnings.map((w) => w.text).join("; ")}`);
+    const source = Buffer.from(result.outputFiles[0].contents);
+    fs.mkdirSync(toDir, { recursive: true });
+    fs.writeFileSync(path.join(toDir, OFFLINE_WORKER), source);
+    return { bytes: source.length, release };
   }
 
   static #copy(fromDir, toDir, file) {
@@ -414,7 +453,8 @@ if (require.main === module) {
     console.log(`Release ${release.id}: ${release.files.length} files, ${release.bytes} bytes in ${release.releaseDir}.`);
     console.log(`Kept ${release.previous && keep === 2 ? `the previous live release ${release.previous}` : "no older release"}; ` +
       `removed ${release.removed.length ? release.removed.join(", ") : "nothing"}.`);
-    console.log("Root index.html and dev.html now load it. Review, then commit and push the site checkout to publish.");
+    console.log("Root index.html and dev.html now load it, root sw.js is its offline cache (spec 171). Review, then commit and push "
+      + "the site checkout (releases/, index.html, dev.html, sw.js) to publish.");
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;

@@ -205,6 +205,7 @@ export class GameCompositionRoot {
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #createDiagnosticsLogger;
+  #offlineCache;
   #createFightDiagnosticsBuilder;
   #frameProbe;
   #startupMarks;
@@ -243,6 +244,8 @@ export class GameCompositionRoot {
     // DEV (TK-257, G-001): () -> the console logger of the fight's and the catch's developer diagnostics. Production
     // passes none: the fight has no diagnostics logger and the production console stays empty in a fight (spec 020).
     createDiagnosticsLogger = null,
+    // Spec 171 stage 4: the release's offline cache ({ enable() }), enabled after the full load; null without a worker.
+    offlineCache = null,
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
@@ -301,6 +304,10 @@ export class GameCompositionRoot {
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#createDiagnosticsLogger = createDiagnosticsLogger;
+    if (offlineCache !== null && typeof offlineCache?.enable !== "function") {
+      throw new TypeError("GameCompositionRoot requires an offline cache with enable()");
+    }
+    this.#offlineCache = offlineCache;
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
@@ -351,7 +358,11 @@ export class GameCompositionRoot {
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
     void this.#preload?.startOn("ready", { keepnetPercent: this.#keepnetPercent() });
-    void this.#preload?.whenFullyLoaded().then(() => this.#startupMarks.mark(STARTUP_STAGES.fullLoad));
+    void this.#preload?.whenFullyLoaded().then(() => {
+      this.#startupMarks.mark(STARTUP_STAGES.fullLoad);
+      // Spec 171 stage 4: the offline cache starts only now, so it never competes with the start.
+      void this.#offlineCache?.enable();
+    });
     for (const load of this.#deferredAssetLoads) load();
   }
 

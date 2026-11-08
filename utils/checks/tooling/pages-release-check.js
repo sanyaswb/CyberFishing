@@ -310,6 +310,17 @@ try {
   assert(prod.maps.length > 0 && prod.maps.every((file) => fs.existsSync(path.join(mapsDir, ...file.split("/")))),
     "source maps go only to the maps folder");
   assert(prod.files.length < release.files.length / 2, "the production release is the game's subset of the Pages release");
+  // Spec 171 stage 4: the offline cache worker beside the game page, declared by the built page only.
+  assert(prodFiles.has("sw.js") && prodText("sw.js").includes(`cyber-fishing-offline-`) && prodText("sw.js").includes(release.id),
+    "the production release carries its offline worker with its release id");
+  assert.match(pageHtml, /<html data-offline-worker="sw\.js"/u, "the production game page declares its worker");
+  const rootWorker = fs.readFileSync(path.join(site, "sw.js"), "utf8");
+  assert(rootWorker.includes(`releases/${release.id}/build/`), "Pages: the root worker caches the release under releases/<id>/");
+  assert.match(fs.readFileSync(path.join(site, "index.html"), "utf8"), /<html data-offline-worker="sw\.js"/u,
+    "Pages: the root game page declares the root worker");
+  assert.doesNotMatch(fs.readFileSync(path.join(site, "dev.html"), "utf8"), /data-offline-worker/u, "dev.html never registers one");
+  assert.doesNotMatch(tree.read("index.html").toString("utf8"), /data-offline-worker/u,
+    "the committed page (npm run dev) declares no worker");
 
   console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, bundles with boot modules and ?esm=1 source graph, ` +
     `${modules.length} modules, assets), closed module graph, base-resolved root page, previous live release kept, older ones removed, root files ` +

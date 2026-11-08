@@ -183,6 +183,19 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   windowRef.navigator.onLine = true; events.get("online")();
   windowRef.navigator.connection.saveData = true; events.get("change")();
   assert.deepEqual(changes, [true, false, true, false, true], "hidden tab, offline and save-data pause; each change once");
+  // Spec 171 stage 4: under the release's service worker the offline cache answers, so offline loads go on.
+  windowRef.navigator.connection.saveData = false; events.get("change")();
+  windowRef.navigator.serviceWorker = { ...target(), controller: null };
+  const workerConditions = new BrowserLoadConditions({ documentRef, windowRef });
+  const workerChanges = [];
+  workerConditions.subscribe((value) => workerChanges.push(value));
+  windowRef.navigator.onLine = false; events.get("offline")();
+  windowRef.navigator.serviceWorker.controller = {}; events.get("controllerchange")();
+  assert.deepEqual([workerChanges, workerConditions.isPaused()], [[true, false], false],
+    "offline pauses only until a service worker controls the page");
+  workerConditions.dispose();
+  windowRef.navigator.onLine = true;
+  delete windowRef.navigator.serviceWorker;
   browserConditions.dispose();
   assert.equal(events.size, 0, "dispose removes every listener");
 

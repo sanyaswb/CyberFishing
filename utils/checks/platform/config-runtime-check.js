@@ -449,7 +449,8 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), ["windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "startupMarks", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), ["windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags", "startupMarks", "uiSurface", "toolbarMountNode", "tackleMountNode", "depthMountNode", "selectorMountNode", "offlineCache"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.equal(ports.offlineCache, null, "a page without a declared worker gets no offline cache (spec 171 stage 4)");
         assert.equal(ports.toolbarMountNode, toolbarElement, "startup injects the shared toolbar mount");
         assert.equal(ports.tackleMountNode, tackleMountNode, "startup injects the shared float/net group");
         assert.equal(ports.depthMountNode, depthMountNode, "startup injects the independent depth expansion slot");
@@ -472,7 +473,7 @@ async function checkNativeProductionStartup() {
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
       GameCompositionRoot: Root, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
-      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady,
+      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, BrowserOfflineCache: { fromPage: () => null },
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);return Promise.resolve({}); },
     });
@@ -511,7 +512,7 @@ async function checkNativeProductionStartup() {
     const startWith = (RootClass) => evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
       GameCompositionRoot: RootClass, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
-      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, showStartupFailure() { failures++; },
+      PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, BrowserOfflineCache: { fromPage: () => null }, showStartupFailure() { failures++; },
       GameVersionBadge: { mountById() {} }, ConsoleLogger: class { error(...args) { logged.push(args); } },
     }).startProductionGame();
     const rootThat = (build) => class { build = build; getRuntimeConfig() { return config; } startDeferredAssetLoads() { assert.fail("no ready after a failure"); } };

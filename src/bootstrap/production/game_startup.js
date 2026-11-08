@@ -12,6 +12,7 @@ import { Game } from "./game.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { GameToolbar } from "../../platform/browser/ui/game_toolbar.js";
 import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
+import { BrowserOfflineCache } from "../../platform/browser/offline/browser_offline_cache.js";
 import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { markStartupReady } from "./startup_ready_signal.js";
 import { showStartupFailure } from "./startup_failure_composition.js";
@@ -61,6 +62,8 @@ async function startGame() {
     selectorMountNode: toolbar.selectorMountNode,
     createDevFlags: () => new InactiveDevFlags(),
     startupMarks,
+    // Spec 171 stage 4: only a built release declares its service worker (data-offline-worker).
+    offlineCache: BrowserOfflineCache.fromPage({ windowTarget, documentTarget, logger: new ConsoleLogger() }),
   });
   const game = new Game("gameCanvas", compositionRoot);
   browserLifecycle.publishGame(game);

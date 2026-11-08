@@ -447,6 +447,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "offline-cache",
+    title: "Offline cache: the release's service worker and the page that registers it (spec 171 stage 4)",
+    file: "utils/checks/platform/offline-cache-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "startup-load-report",
     title: "Startup marks, the startup report of the DEV overlay and the measurer, copy control and budget verdicts",
     file: "utils/checks/platform/startup-load-report-check.js",
