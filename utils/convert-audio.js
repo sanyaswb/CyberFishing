@@ -1,8 +1,8 @@
 "use strict";
 
-// Radio audio conversion (spec 157 R8, owner Q6/Q6-b): re-encodes the VOLIA 77.2 recordings with the ffmpeg binary of
+// Audio conversion (spec 157 R8, owner Q6/Q6-b; every released sound since TK-258): re-encodes audio with the ffmpeg binary of
 // the ffmpeg-static devDependency (the tool's only; nothing of it is released). Masters live in asset-sources/.
-//   node utils/convert-audio.js --input <dir|file> --output <dir> [--bitrate 48] [--sample-rate 32000] [--stereo]
+//   node utils/convert-audio.js --input <dir|file> --output <dir> [--bitrate 32] [--sample-rate 32000] [--stereo]
 //     [--format m4a|mp3]
 //       every audio file of --input (one level) becomes <output>/<name>.<format>: mono unless --stereo, AAC (m4a) or
 //       MP3 at the bitrate in kbit/s; prints each file's size before and after.
@@ -26,7 +26,7 @@ function readOptions(argv) {
     samples: argv.includes("--samples"),
     input: value("--input", ""),
     output: value("--output", ""),
-    bitrate: Number(value("--bitrate", "48")),
+    bitrate: Number(value("--bitrate", "32")),
     bitrates: String(value("--bitrates", "32,48,64")).split(",").map(Number),
     sampleRate: Number(value("--sample-rate", "32000")),
     mono: !argv.includes("--stereo"),
@@ -39,7 +39,7 @@ function readOptions(argv) {
     || !kbits.every((rate) => Number.isInteger(rate) && rate >= 16 && rate <= 320)
     || ![16000, 22050, 24000, 32000, 44100, 48000].includes(options.sampleRate)
     || !(options.start >= 0) || !(options.seconds > 0)) {
-    throw new Error("Usage: node utils/convert-audio.js [--samples] --input <dir|file> --output <dir> [--bitrate 48 | "
+    throw new Error("Usage: node utils/convert-audio.js [--samples] --input <dir|file> --output <dir> [--bitrate 32 | "
       + "--bitrates 32,48,64] [--sample-rate 32000] [--stereo] [--format m4a|mp3] [--start 60 --seconds 60]");
   }
   return options;

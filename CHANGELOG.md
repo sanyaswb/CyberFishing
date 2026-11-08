@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.47 - All sounds in minimum size
+
+- TK-258 (audit TK-255): every sound is AAC .m4a, mono, 32 kbit/s: 10.95 -> 1.54 MB (vinyl-5 9.2 -> 1.2 MB); MP3 masters in asset-sources/, the release rejects MP3.
+
 ## v0.50.46 - Quiet production console in a fight
 
 - TK-257 (G-001, audit TK-255): the production game no longer prints the fish's [DEBUFF] / [MASTERY] diagnostics in a fight; dev.html keeps them in its console.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.38 - Step-by-step loading in DevTools
 
 - TK-251 (spec 167): DevTools «⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ» stops dev.html after the first frame; «Далі ▶», a layer jump, the whole layer or everything load the plan's next steps, with each step's files and their quality listed.
-
-## v0.50.37 - Spine load order
-
-- TK-250.1 (spec 166): with Spine the rod and the bait boat start on a half-size atlas page and the full page replaces it in place; the full static pictures load only without Spine, and the boat then shows the owner's picture instead of the vector shape.

@@ -3,12 +3,12 @@
 // parts that are on. Writes go to the live configuration through the same config runtime as DevTools, so both show one
 // value. Production composes no tuning port: the player never controls the sound quality.
 export const VINYL_SFX_TRACKS = Object.freeze([
-  Object.freeze({ id: "vinyl-1", file: "vinyl-1.mp3", label: "vinyl-1 · Оберти 33⅓ (кліки)" }),
-  Object.freeze({ id: "vinyl-2", file: "vinyl-2.mp3", label: "vinyl-2 · Текстура поверхні" }),
-  Object.freeze({ id: "vinyl-3", file: "vinyl-3.mp3", label: "vinyl-3 · Шум та тріск борозенок" }),
-  Object.freeze({ id: "vinyl-4", file: "vinyl-4.mp3", label: "vinyl-4 · Посадка голки (луп)" }),
-  Object.freeze({ id: "vinyl-5", file: "vinyl-5.mp3", label: "vinyl-5 · Фоновий вініл (довгий)" }),
-  Object.freeze({ id: "vinyl-6", file: "next_track-vinyl.mp3", label: "next_track-vinyl · Скрип канавки та голка" }),
+  Object.freeze({ id: "vinyl-1", file: "vinyl-1.m4a", label: "vinyl-1 · Оберти 33⅓ (кліки)" }),
+  Object.freeze({ id: "vinyl-2", file: "vinyl-2.m4a", label: "vinyl-2 · Текстура поверхні" }),
+  Object.freeze({ id: "vinyl-3", file: "vinyl-3.m4a", label: "vinyl-3 · Шум та тріск борозенок" }),
+  Object.freeze({ id: "vinyl-4", file: "vinyl-4.m4a", label: "vinyl-4 · Посадка голки (луп)" }),
+  Object.freeze({ id: "vinyl-5", file: "vinyl-5.m4a", label: "vinyl-5 · Фоновий вініл (довгий)" }),
+  Object.freeze({ id: "vinyl-6", file: "next_track-vinyl.m4a", label: "next_track-vinyl · Скрип канавки та голка" }),
 ]);
 
 const GROUPS = Object.freeze([

@@ -55,7 +55,11 @@ try {
   // Spec 082: published raster art is WebP; masters stay in asset-sources/ and are never released.
   assert(![...files].some((file) => file.startsWith("assets/") && /\.(png|jpe?g)$/iu.test(file)),
     "released raster assets are WebP");
-  assert(![...files].some((file) => file.startsWith("asset-sources/")), "image masters are not released");
+  // TK-258: published audio is AAC (.m4a) from utils/convert-audio.js, the smallest form every browser decodes; MP3,
+  // WAV or OGG masters stay in asset-sources/.
+  const unconverted = [...files].filter((file) => file.startsWith("assets/") && /\.(mp3|wav|ogg|flac|aiff?)$/iu.test(file));
+  assert.deepEqual(unconverted, [], "released audio is AAC (.m4a) converted by utils/convert-audio.js");
+  assert(![...files].some((file) => file.startsWith("asset-sources/")), "image and audio masters are not released");
   // Spec 157 R6: one file per item art; two files with the same bytes are two downloads of one picture (the bamboo
   // rod's with-line and no-line arts were one picture in two files until v0.49.28).
   // The tracked item art as it is now (the index and the working files), so a duplicate fails before its commit.

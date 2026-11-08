@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-258: all sounds AAC m4a mono 32 kbit/s (10.95 -> 1.54 MB); release rejects MP3.",
   "TK-257: production console stays empty in a fight; fight diagnostics only in dev.html.",
   "TK-256: the WebGL scene starts under a CSP without unsafe-eval (Pixi's eval-free systems only there).",
   "TK-254.1: ACTIVE FISH stamina sliders act in the fight; every stamina value and the stamina rules on sliders.",

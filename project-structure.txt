@@ -11,18 +11,18 @@
 │  │     ├── bamboo-rod-v1.json
 │  │     └── bamboo-rod-v1.webp
 │  ├── audio
-│  │  ├── bell_ring.mp3
+│  │  ├── bell_ring.m4a
 │  │  └── radio
 │  │     ├── custom
 │  │     │  └── readme.txt
-│  │     ├── next_track-radio.mp3
-│  │     ├── next_track-vinyl.mp3
+│  │     ├── next_track-radio.m4a
+│  │     ├── next_track-vinyl.m4a
 │  │     ├── vinyl
-│  │     │  ├── vinyl-1.mp3
-│  │     │  ├── vinyl-2.mp3
-│  │     │  ├── vinyl-3.mp3
-│  │     │  ├── vinyl-4.mp3
-│  │     │  └── vinyl-5.mp3
+│  │     │  ├── vinyl-1.m4a
+│  │     │  ├── vinyl-2.m4a
+│  │     │  ├── vinyl-3.m4a
+│  │     │  ├── vinyl-4.m4a
+│  │     │  └── vinyl-5.m4a
 │  │     └── volia
 │  │        ├── Chomu_z_Kupola_tikayut_na_Irzhavyi_Shelf.m4a
 │  │        ├── RADIO_VOLYA.m4a

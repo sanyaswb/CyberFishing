@@ -61,6 +61,9 @@ Performance:
 - no unnecessary allocations in hot loops;
 - no repeated DOM queries per frame;
 - load assets through the asset load plan (see "Loading and startup optimization" below), not through ad hoc preloads;
+- encode every new or replaced sound with `utils/convert-audio.js` before integration: AAC `.m4a`, mono, 32 kbit/s,
+  32 kHz by default (owner, TK-258: minimum size); the master goes to `asset-sources/audio/`, and the `pages-release` check
+  rejects MP3/WAV/OGG under `assets/`. A higher bitrate or stereo needs the owner's listening decision;
 - optimize every new or replaced raster illustration before integration: always use `utils/convert-images.js` to generate WebP (Middle / quality 80 by default), and reference the optimized file in runtime/catalog data; keep alpha, size runtime art for its use (see "Rendering resolution and image quality"), and retain source masters outside runtime references. Keep SVG artwork as vectors and preserve pixel-exact data maps when selecting compression;
 - use deltaTime;
 - keep update separate from render;
