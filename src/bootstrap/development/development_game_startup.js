@@ -281,6 +281,7 @@ async function startGame() {
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,
+      createDiagnosticsLogger: () => new ConsoleLogger(),
     });
     game = new Game("gameCanvas", compositionRoot);
     browserLifecycle.publishGame(game);

@@ -204,6 +204,7 @@ export class GameCompositionRoot {
   #createRadioEffectTuning = null;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
+  #createDiagnosticsLogger;
   #createFightDiagnosticsBuilder;
   #frameProbe;
   #startupMarks;
@@ -239,6 +240,9 @@ export class GameCompositionRoot {
     createLocationDebugRenderFrameBuilder,
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
+    // DEV (TK-257, G-001): () -> the console logger of the fight's and the catch's developer diagnostics. Production
+    // passes none: the fight has no diagnostics logger and the production console stays empty in a fight (spec 020).
+    createDiagnosticsLogger = null,
     createFightDiagnosticsBuilder,
     createInventorySplitSource,
     createFrameProbe,
@@ -257,7 +261,7 @@ export class GameCompositionRoot {
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe, createRadioEffectTuning, createAssetLoadGate,
+      createInventorySplitSource, createFrameProbe, createRadioEffectTuning, createAssetLoadGate, createDiagnosticsLogger,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -296,6 +300,7 @@ export class GameCompositionRoot {
     this.#createTimeDisplay = createTimeDisplay;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
+    this.#createDiagnosticsLogger = createDiagnosticsLogger;
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
@@ -1474,8 +1479,9 @@ export class GameCompositionRoot {
       castReadinessEvaluator: (equipment) =>
         runtime.inventory.evaluateCastReadiness?.(equipment),
       debugEvents,
-      catchResolutionLogger: new ConsoleLogger(),
-      fightLogger: new ConsoleLogger(),
+      // Developer diagnostics of the fight and the catch only where DEV composes a logger (TK-257).
+      catchResolutionLogger: this.#createDiagnosticsLogger?.() ?? null,
+      fightLogger: this.#createDiagnosticsLogger?.() ?? null,
       isCatchResolutionLogEnabled: this.#isCatchResolutionLogEnabled,
       // The DEV fight snapshot exists only when Development startup composes its builder.
       fightDiagnosticsBuilder: this.#createFightDiagnosticsBuilder == null ? null : this.#createFightDiagnosticsBuilder(),

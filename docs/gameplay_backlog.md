@@ -786,7 +786,7 @@ Expected: a third action converts the exact catch into live bait; the keepnet or
 Actual: Claim/Release only return to scouting; no caught-fish storage, survival, house runtime, or live-bait cast path exists.
 Notes: use a fake clock and seeded RNG to check eligibility, single disposition, death/feeding, reload, and one-hook consumption.
 
-### G-001 Fish developer diagnostics in the production console (P3, open)
+### G-001 Fish developer diagnostics in the production console (P3, fixed v0.50.46)
 Found: 2026-10-10, Claude, reading the fight composition (v0.32.0).
 Reproduce: `index.html`, fight a fish until it is exhausted in phase 2, or until it breaks out of the centre while
 mastery is applied.
@@ -796,6 +796,8 @@ Actual: production composition injects `ConsoleLogger` as the fight logger
 lines through it.
 Notes: confirmed by reading the code; not yet reproduced in the browser. Likely fix: production composes no fight
 logger (or an inactive one) and DEV composes the console logger.
+Fixed: TK-257 (v0.50.46, audit TK-255): `GameCompositionRoot` gives the fight and the catch a logger only from DEV's
+`createDiagnosticsLogger`; production passes none. Check `config-runtime` (fails on 0.50.45); game-cycle unchanged.
 
 ### G-003 Item cards show raw values instead of the display map (P3, open)
 Found: 2026-10-11, Claude, browser check of spec 050 (dev.html).

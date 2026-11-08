@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.46 - Quiet production console in a fight
+
+- TK-257 (G-001, audit TK-255): the production game no longer prints the fish's [DEBUFF] / [MASTERY] diagnostics in a fight; dev.html keeps them in its console.
+
 ## v0.50.45 - Scene starts under a strict CSP
 
 - TK-256 (audit TK-255): the WebGL scene starts on a server whose CSP forbids eval: PixiJS's eval-free systems are installed there before the renderer starts; other pages keep Pixi's faster generated code. Server CSP needs no 'unsafe-eval'.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.37 - Spine load order
 
 - TK-250.1 (spec 166): with Spine the rod and the bait boat start on a half-size atlas page and the full page replaces it in place; the full static pictures load only without Spine, and the boat then shows the owner's picture instead of the vector shape.
-
-## v0.50.36 - Spine animations in one folder
-
-- TK-250: the rod and bait boat Spine exports live in assets/animations/<type>/; the bamboo rod has the owner's new 3840 px art, and the first frame shows its low copy until the full picture arrives.

@@ -45,6 +45,12 @@
       = `ConsoleLogger` у production (`game_composition_root.js`), таблиця перемоги й `[DEBUFF]`/`[MASTERY]`. Зміна:
       production компонує неактивний діагностичний логер, DEV — консоль. Перевірка: бій production-композиції не пише в
       консоль; game-cycle без змін.
+  - [x] v0.50.46: уточнено — таблиця перемоги в production не друкувалась (її відкриває лише DEV
+        `isCatchResolutionLogEnabled`), протікали лише `[DEBUFF]`/`[MASTERY]` риби. `GameCompositionRoot` отримує DEV-опцію
+        `createDiagnosticsLogger` (DEV: `ConsoleLogger`), production її не передає → логерів бою й улову немає; у DEV усе як
+        було. Перевірка `config-runtime` (AST композиції: production не створює логер для бою; DEV передає консоль),
+        падає на 0.50.45. G-001 закрито. Перевірка власника: `index.html`, бій до виснаження риби — консоль без
+        `[DEBUFF]`/`[MASTERY]`; `dev.html` — як раніше.
 - [ ] **TK-258 — усі MP3 → мінімальний розмір (аудит P3-11, власник Q4).** 9 файлів `assets/audio/**/*.mp3`
       (11,3 MB, з них vinyl-5 9,2 MB, 256 кбіт/с стерео). Зміна: `utils/convert-audio.js` → AAC m4a, моно, 32 кбіт/с,
       32 кГц (налаштування VOLIA, обрані власником); майстри → `asset-sources/audio/`; id реєстру ті самі (`assets:sync`).

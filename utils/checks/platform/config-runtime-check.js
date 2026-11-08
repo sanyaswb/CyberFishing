@@ -142,6 +142,27 @@ function checkDevelopmentInputs() {
     assert(rootSource.includes(`import { ${symbol} } from "${specifier}";`), symbol + " is a static import of the composition");
   }
   assert.equal(rootSource.includes("await import("), false);
+  // TK-257 (G-001): the production console stays empty in a fight. The fish's and the catch's developer diagnostics get
+  // a logger only from DEV's createDiagnosticsLogger; the production composition never creates one for them.
+  let fishingCall = null;
+  const visitRoot = (node) => {
+    if (!node || typeof node !== "object") return;
+    if (node.type === "CallExpression" && node.callee.name === "composeFishingServices") fishingCall = node;
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(visitRoot);
+      else if (value && typeof value === "object") visitRoot(value);
+    }
+  };
+  visitRoot(acorn.parse(rootSource, { ecmaVersion: "latest", sourceType: "module" }));
+  const createsLogger = (node) => !!node && typeof node === "object" && (node.type === "NewExpression"
+    || Object.values(node).some((value) => Array.isArray(value) ? value.some(createsLogger) : createsLogger(value)));
+  for (const name of ["fightLogger", "catchResolutionLogger"]) {
+    const property = fishingCall?.arguments[0]?.properties.find((item) => item.key?.name === name);
+    assert(property, `the fishing composition receives ${name}`);
+    assert.equal(createsLogger(property.value), false, `production creates no ${name}: only DEV's createDiagnosticsLogger supplies it`);
+  }
+  const devLogger = options.properties.find((item) => item.key.name === "createDiagnosticsLogger");
+  assert.equal(devLogger?.value.body?.callee?.name, "ConsoleLogger", "DEV keeps the fight diagnostics in its console");
   const lifecycleSource = fs.readFileSync(require("node:path").join(__dirname, "../../../src/platform/browser/runtime/browser_game_lifecycle.js"), "utf8");
   const Lifecycle = new SourceRuntime().run(lifecycleSource.replace("export class", "class") + ";BrowserGameLifecycle");
   const calls = [], target = { addEventListener(...args) { calls.push(["add", ...args]); }, removeEventListener(...args) { calls.push(["remove", ...args]); } };
@@ -326,7 +347,7 @@ function checkDevOverrideReader() {
   assert.equal(flags.isEnabled("noEquipmentLoss"), false, "master setting is read live");
   const Root = source.context.GameCompositionRoot;
   assert.doesNotThrow(() => new Root(config));
-  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled","createDebugEvents","createGameDiagnostics","createFightDiagnosticsBuilder"])
+  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled","createDebugEvents","createGameDiagnostics","createFightDiagnosticsBuilder","createDiagnosticsLogger"])
     assert.throws(() => new Root(config, { [option]:false }), /optional callback/);
   for (const option of ["createDebugEvents","createGameDiagnostics"])
     assert.throws(() => new Root(config, { [option]:() => ({}) }), /coherent diagnostics/);

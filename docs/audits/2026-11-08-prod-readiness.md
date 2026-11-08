@@ -41,10 +41,10 @@
    (`lockZoneXToScreen`), бокова частка бою — з ширини canvas. Звуження вікна — чит. Для публічного prod це
    виправлення гри, а не оптимізація; окремий ігровий коміт із перебазуванням game-cycle за правилами «Gameplay changes».
 3. **Діагностика бою в production-консолі (G-001, відкритий з 2026-10-10).** Production-композиція
-   (`game_composition_root.js:1477–1478`) дає `catchResolutionLogger` і `fightLogger` = `ConsoleLogger`. Тому кожна
-   перемога автопідсікання друкує `groupCollapsed` + `table` ~40 полів (`catch_resolution_service.js:233–235`; поля з
-   DEV-знімка бою в production — нулі), а `Fish` — `[DEBUFF]`/`[MASTERY]` (`fish.js:103, 188, 234`). Правило spec 020:
-   production-консоль під час бою порожня.
+   (`game_composition_root.js:1477–1478`) дає `catchResolutionLogger` і `fightLogger` = `ConsoleLogger`. `Fish` друкує
+   `[DEBUFF]`/`[MASTERY]` (`fish.js:103, 188, 234`). Таблиця перемоги (`catch_resolution_service.js:233–235`) у
+   production не друкується: її відкриває лише DEV `isCatchResolutionLogEnabled` (виправлено при TK-257; перша редакція
+   звіту помилково рахувала її). Правило spec 020: production-консоль під час бою порожня.
    Рішення: діагностичний логер бою — порт; production компонує неактивну реалізацію (як 034–036),
    DEV — `ConsoleLogger`. Перевірка: production-композиція бою в game-cycle не викликає `log/table/groupCollapsed`.
    Game-cycle не змінюється.
