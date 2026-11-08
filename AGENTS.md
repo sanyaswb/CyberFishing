@@ -69,7 +69,7 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
 
 - **Push only on the owner's command** ("Коміт пуш" or an explicit "push"). Then `develop` and the GitHub Pages
   release go together: `git push origin develop`, then `npm run release:pages -- --site ../cyber-fishing-pages`, commit
-  the site checkout (releases, root `index.html`, `dev.html`) and push `gh-pages`. Report both
+  the site checkout (releases, root `index.html`, `dev.html`, `sw.js`) and push `gh-pages`. Report both
   commits and the kept previous release.
 - **Before every push** move finished tasks from `tasks.md` to [tasks-archive.md](<D:/dev/cyber fishing/tasks-archive.md>)
   (rule at the top of `tasks.md`); the owner's open checks stay in `tasks.md` with a link to the archived implementation.
