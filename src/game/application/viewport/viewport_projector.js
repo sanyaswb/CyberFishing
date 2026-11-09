@@ -159,9 +159,10 @@ export class ViewportProjector {
   }
 
   // Spec 153 (D1): along X the camera follows the tackle (targetX: the float, the fish in a fight) only when it enters
-  // the edge band (marginShare of the canvas width on each side), and never so far that keepX (the rod) leaves the
-  // band: the rod stays in view first, the tackle may then go past the edge. Eases like focusOnVirtualPos.
-  followVirtualX(targetX, keepX, dt, marginShare = 0.15, lerpSpeed = 0.08) {
+  // the edge band (marginShare of the canvas width on each side). priority (CONFIG.locations.cameraFollowPriority,
+  // TK-260): "rod" never moves so far that keepX (the rod) leaves the band, so the tackle may go past the edge;
+  // "tackle" keeps the tackle in view and lets the rod leave the screen. Eases like focusOnVirtualPos.
+  followVirtualX(targetX, keepX, dt, marginShare = 0.15, priority = "rod", lerpSpeed = 0.08) {
     if (this.#maxScrollX <= 0 || !Number.isFinite(targetX)) return;
     const width = this.#canvasWidth;
     const margin = width * Math.min(0.45, Math.max(0, Number(marginShare) || 0));
@@ -169,7 +170,7 @@ export class ViewportProjector {
     let desired = this.#cameraX;
     if (targetPx - desired < margin) desired = targetPx - margin;
     else if (targetPx - desired > width - margin) desired = targetPx - (width - margin);
-    if (Number.isFinite(keepX)) {
+    if (priority !== "tackle" && Number.isFinite(keepX)) {
       const keepPx = keepX * this.#scale;
       desired = Math.min(Math.max(desired, keepPx - (width - margin)), keepPx - margin);
     }

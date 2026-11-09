@@ -267,7 +267,23 @@ const farAway = anchoredRodX + 5000;
 for (let frame = 0; frame < 240; frame++) worldProjector.followVirtualX(farAway, anchoredRodX, 16.66, 0.15);
 const rodOnScreen = worldFacade.getRodScreenX();
 assert(rodOnScreen >= 640 * 0.15 - 1 && rodOnScreen <= 640 * 0.85 + 1, `the rod stays in view first: ${rodOnScreen}`);
-// The player's pan in scouting carries the rod with the camera, as before (the spot is chosen by panning).
+// TK-260: priority "tackle" (DevTools DEBUG) keeps the far fish in view and lets the rod leave the screen; "rod" brings
+// the rod back. A narrow canvas (300 px at scale 0.9 shows 333 map px) so both fit inside the map.
+const narrow = new ViewportProjector(worldConfig, "lake", () => ({ scale: 1 }));
+narrow.update(300, 360);
+const rodAt = 500;
+narrow.pan(narrow.virtualToScreen(rodAt, 0).x - 150, 0);
+const fishAt = 850;
+const band = [300 * 0.15 - 1, 300 * 0.85 + 1];
+for (let frame = 0; frame < 300; frame++) narrow.followVirtualX(fishAt, rodAt, 16.66, 0.15, "tackle");
+const fishX = narrow.virtualToScreen(fishAt, 0).x;
+const rodLeft = narrow.virtualToScreen(rodAt, 0).x;
+assert(fishX >= band[0] && fishX <= band[1], `"tackle" keeps the fish in view: ${fishX}`);
+assert(rodLeft < band[0], `"tackle" lets the rod leave the screen: ${rodLeft}`);
+for (let frame = 0; frame < 300; frame++) narrow.followVirtualX(fishAt, rodAt, 16.66, 0.15, "rod");
+const rodBack = narrow.virtualToScreen(rodAt, 0).x;
+assert(rodBack >= band[0] && rodBack <= band[1], `"rod" brings the rod back into view: ${rodBack}`);
+assert(narrow.virtualToScreen(fishAt, 0).x > band[1], "and the far fish may leave the screen then");// The player's pan in scouting carries the rod with the camera, as before (the spot is chosen by panning).
 const beforePan = worldFacade.getRodScreenX();
 worldFacade.panByPlayer(-40);
 assert(Math.abs(worldFacade.getRodScreenX() - beforePan) < 1e-9, "a player's pan keeps the rod at its screen place");

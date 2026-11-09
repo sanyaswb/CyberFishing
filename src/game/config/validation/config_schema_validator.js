@@ -503,6 +503,8 @@ export class ConfigSchemaValidator {
   #validateRodSpineConfig() {
     this.#requireFiniteNumber("CONFIG.canvas.maxPixelRatio", this.config.canvas?.maxPixelRatio, { min: 1, max: 4 });
     this.#requirePattern("CONFIG.canvas.scene", this.config.canvas?.scene, /^(?:canvas|webgl)$/u, 'must be "canvas" or "webgl"');
+    this.#requirePattern("CONFIG.locations.cameraFollowPriority", this.config.locations?.cameraFollowPriority, /^(?:rod|tackle)$/u,
+      'must be "rod" or "tackle"');
     this.#validateSceneWaterConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";

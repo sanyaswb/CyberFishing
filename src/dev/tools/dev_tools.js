@@ -437,6 +437,18 @@ export class DevTools {
       ["CONFIG", "debug"],
     );
     this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"], { groupedDebug: true });
+    // TK-260: which stays in view when the fish runs far: the rod (off) or the fish / float (on). It edits the game's
+    // own setting CONFIG.locations.cameraFollowPriority live (spec 153 D1).
+    if (this.#config.locations) {
+      // The switch binds its own path: config syncs carry "rod" / "tackle", a switch shows only true.
+      const priorityPath = ["CONFIG", "locations", "cameraFollowPriority"];
+      const switchPath = ["DEBUG_CAMERA", "followsTackle"];
+      this.#ui.createSwitcherRow("🎥 Камера тримає рибу (інакше — вудку в кадрі)",
+        this.#config.locations.cameraFollowPriority === "tackle", debugContent, (enabled) => {
+          this.#updateConfigValue(priorityPath, enabled ? "tackle" : "rod");
+          this.#ui.syncValue(switchPath, enabled);
+        }, switchPath);
+    }
     const inventory = this.#createSectionWithCache("Inventory", debugContent, ["DEBUG_INVENTORY"]);
     if (this.#config.debug.inventory) this.#buildTree(this.#config.debug.inventory, inventory, ["CONFIG", "debug", "inventory"]);
     if (this.#config.debug.inventorySplit) {

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-260: DevTools DEBUG switch: the camera keeps the rod or the far fish in view.",
   "Spec 153: the window is only the camera; map bounds, rod world anchor, camera follows the tackle along X.",
   "TK-259: git:version-copy and git:add (git add .) removed.",
   "Spec 170: 2D reserve without spine-webgl; Spine only on the WebGL scene; spec 103 closed.",

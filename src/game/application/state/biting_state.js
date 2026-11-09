@@ -124,7 +124,7 @@ export class BitingState extends GameState {
     this.deps.projector.focusOnVirtualPos(pos.y, dt, 0.05);
     // Spec 153 (D1): along X the camera follows the tackle near the screen edge, keeping the rod in view.
     this.deps.projector.followVirtualX(pos.x, this.deps.world.getRodVirtualPos(bounds).x, dt,
-      this.deps.config.locations?.cameraFollowMarginX);
+      this.deps.config.locations?.cameraFollowMarginX, this.deps.config.locations?.cameraFollowPriority);
 
     const eq = this.deps.inventory.getEquipped();
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
