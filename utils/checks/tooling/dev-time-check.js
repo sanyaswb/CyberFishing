@@ -41,7 +41,7 @@ for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 1]) {
   assert.equal(JSON.parse(values.get("cyber_fishing_game_time_v1")).timeScale, 240, "DEV factors never become the persisted base rate");
 }
 
-const env = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 }, environment: {} },
+const env = new EnvironmentSystem({ environment: {} },
   12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
 control.advance(); control.advance(); // ×2; click recognition has separate deterministic coverage.
 now += 15000;

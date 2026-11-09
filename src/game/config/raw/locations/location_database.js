@@ -33,12 +33,31 @@ export const MAP_DB = {
       lateralContraction: false, // додаткове звуження координат X; розміри поверхневих маркерів зменшуються завжди
     },
 
+    // Погода (spec 172): опади ясно → дощ → гроза (гроза лише після дощу), туман окремо. Усі часи — реальні секунди.
+    // weight — вага вибору наступного стану; intensity — діапазон сили 0…1; fadeInSec/fadeOutSec — повне наростання 0 → 1
+    // і згасання 1 → 0. Стартові значення (власник 2026-11-09: дощ 1–10 хв реального часу), баланс — у DevTools «ПОГОДА».
     weather: {
-      updateIntervalMs: 10000,
-      chances: {
-        rain: 0.1,
-        fog: 0.0,
+      precipitation: {
+        clear: { weight: 0.7, durationSec: [180, 900] },
+        rain: { weight: 0.25, durationSec: [60, 600], intensity: [0.3, 0.8] },
+        storm: { weight: 0.3, durationSec: [60, 240], intensity: [0.6, 1.0] }, // ~1 з 4 дощів переходить у грозу
+        fadeInSec: 20,
+        fadeOutSec: 30,
       },
+      fog: {
+        chance: 0.15, // шанс туману при кожній перевірці у дозволених фазах
+        phases: ["morning", "night"],
+        idleSec: [120, 600], // скільки чекати до наступної перевірки без туману
+        durationSec: [120, 600],
+        intensity: [0.4, 1.0],
+        fadeInSec: 30,
+        fadeOutSec: 45,
+      },
+      lightning: {
+        intervalSec: [25, 6], // інтервал між ударами при силі грози 0 → 1 (±50%)
+        distance: [0.2, 1.0], // 0 — поруч, 1 — далеко (затримка грому, сила спалаху)
+      },
+      thresholds: { rain: 0.15, fog: 0.3 }, // з якої сили діють множники кльову rain/fog
     },
 
     environment: {
@@ -54,7 +73,7 @@ export const MAP_DB = {
         gustFluctuationMs: [200, 500],
         gustChancePerSec: 0.4,
         gustDurationMs: [1000, 2500],
-        rainMultiplier: [1.5, 2.5],
+        rainMultiplier: 2.5, // множник вітру й шуму радіо при повній силі дощу (spec 172: 1 + дощ × (2,5 − 1))
       },
     },
 

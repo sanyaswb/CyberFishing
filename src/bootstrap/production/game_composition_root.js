@@ -53,6 +53,7 @@ import { BrowserAssetTransport } from "../../platform/browser/assets/browser_ass
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
+import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { backgroundTimeBlend } from "../../game/domain/time/background_time_blend.js";
 import { timeOfDayLayers } from "../../game/presentation/time/time_of_day_layers.js";
@@ -1069,6 +1070,17 @@ export class GameCompositionRoot {
 
   // Map, environment, input, game controls, device power, chum service and bite system; the inventory reads the boat's
   // charge from the battery in its slot (spec 143).
+  // Spec 172 stage A (owner Q1): the weather and the wind draw from their own seeded stream, derived from the session's
+  // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
+  #composeEnvironment({ locId, locCfg, gameTimeClock }) {
+    const seed = this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
+    const weatherRng = new SeededRng(`${seed}:weather`);
+    const weather = new WeatherModel({ rng: weatherRng,
+      getSettings: () => this.#config.locations?.map?.[locId]?.weather ?? locCfg?.weather ?? null });
+    return new EnvironmentSystem(locCfg, this.#config.debug?.initialTime ?? 12, weatherRng, this.#config.spawns,
+      gameTimeClock, weather);
+  }
+
   #composeWorldSystems({
     projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
@@ -1085,13 +1097,7 @@ export class GameCompositionRoot {
       devicePower,
       map: locationMap,
       waterMetricSource,
-      env: new EnvironmentSystem(
-        locCfg,
-        this.#config.debug?.initialTime ?? 12,
-        rng,
-        this.#config.spawns,
-        gameTimeClock,
-      ),
+      env: this.#composeEnvironment({ locId, locCfg, gameTimeClock }),
       input: own(new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
         listeners: new EventLifecycle(this.#listenerCounter),
@@ -1129,6 +1135,8 @@ export class GameCompositionRoot {
                 systems.radio.get()?.radio.update();
               },
             },
+            // DEV weather section (spec 172 stage A): the environment's weather model, read when the section is drawn.
+            weather: { getModel: () => systems.env?.weather ?? null, locationId: locId },
             // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
             keepnet: {
               getView: () => this.#sessionServices.liveBait.getView(),

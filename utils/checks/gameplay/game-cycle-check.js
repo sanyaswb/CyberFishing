@@ -169,6 +169,7 @@ const GAMEPLAY_FILES = [
   "src/game/application/viewport/viewport_projector.js",
   "src/game/domain/locations/world_perspective.js",
   "src/game/application/world/current_location.js",
+  "src/game/domain/weather/weather_model.js",
   "src/game/application/world/environment_system.js",
   "src/game/domain/locations/illustrated_depth_profile.js",
   "src/game/domain/locations/water_metric.js",
@@ -2243,8 +2244,11 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const projector = new ViewportProjector(viewConfig, location.id,
     worldPerspective.getPerspective.bind(worldPerspective));
   const gameConfig = createConfig();
-  const environment = new EnvironmentSystem(new CurrentLocation(gameConfig.locations).config, 6, new SeededRng(7),
-    gameConfig.spawns);
+  // Spec 172: the weather draws from its own stream, shared with the wind, as in production.
+  const environmentLocation = new CurrentLocation(gameConfig.locations).config;
+  const weatherRng = new SeededRng(7);
+  const environment = new EnvironmentSystem(environmentLocation, 6, weatherRng, gameConfig.spawns, null,
+    new WeatherModel({ rng: weatherRng, getSettings: () => environmentLocation.weather }));
   const chum = { update() {}, updateBoats() {}, getChumDataAt() { return null; } };
   const canvasMetrics = { width: 100, height: 60 };
   const clock = { now: 0, realNow: 0 };

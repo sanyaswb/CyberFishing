@@ -57,6 +57,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "weather",
+    title: "Weather model: states, fades, storm, lightning, fog and derived bite/radio fields (spec 172)",
+    file: "utils/checks/gameplay/weather-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "float-pose",
     title: "Float pose: lean from forces, springs, foreshortening and submersion (spec 127)",
     file: "utils/checks/gameplay/float-pose-check.js",

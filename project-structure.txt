@@ -760,9 +760,11 @@
 │  │  │  │  ├── spinner_entity.js
 │  │  │  │  ├── water_entity.js
 │  │  │  │  └── wobbler_entity.js
-│  │  │  └── time
-│  │  │     ├── background_time_blend.js
-│  │  │     └── game_time_clock.js
+│  │  │  ├── time
+│  │  │  │  ├── background_time_blend.js
+│  │  │  │  └── game_time_clock.js
+│  │  │  └── weather
+│  │  │     └── weather_model.js
 │  │  └── presentation
 │  │     ├── casting
 │  │     │  └── cast_scene_renderer.js

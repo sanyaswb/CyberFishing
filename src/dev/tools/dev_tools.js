@@ -1,4 +1,5 @@
 import { RadioDevSection } from "./radio_dev_section.js";
+import { WeatherDevSection } from "./weather_dev_section.js";
 import { KeepnetDevSection } from "./keepnet_dev_section.js";
 import { LoadStepperDevSection } from "./load_stepper_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
@@ -30,6 +31,7 @@ export class DevTools {
   #rodSpine;
   #boatSpine;
   #radio;
+  #weather;
   #keepnet;
   #scene;
   #zoneEditorState;
@@ -86,6 +88,7 @@ export class DevTools {
       rodSpine = null,
       boatSpine = null,
       radio = null,
+      weather = null,
       keepnet = null,
       scene = null,
       zoneEditorState = null,
@@ -155,6 +158,7 @@ export class DevTools {
     this.#rodSpine = rodSpine;
     this.#boatSpine = boatSpine;
     this.#radio = radio;
+    this.#weather = weather;
     this.#keepnet = keepnet;
     this.#scene = scene;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
@@ -259,6 +263,13 @@ export class DevTools {
         renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
         setConfig: (path, value) => this.#updateConfigValue(path, value),
         files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
+    }
+    if (this.#weather) {
+      const locationId = this.#weather.locationId;
+      new WeatherDevSection({ ui: this.#ui, weather: this.#weather,
+        config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
+        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options) }).render(body);
     }
     this.#renderActiveFishSection(body);
     this.#loadStepperSection?.render(body, this.#ui);

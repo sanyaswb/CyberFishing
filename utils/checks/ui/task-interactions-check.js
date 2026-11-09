@@ -287,7 +287,7 @@ for (const interval of [299, 300, 301]) {
   const doc = new TestDocument();
   const config = { debug: { timeAccelerationEnabled: true, timeScale: 1 } };
   const control = composeDevTimeDisplay({ documentRef: doc, mount: doc.body, clock, config, timers, nowMs: () => timers.now, assets: new (require("../../../src/engine/assets/asset_registry.js").AssetRegistry)(require("../../../src/game/config/generated/asset_registry.js").ASSET_REGISTRY) });
-  const environment = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 }, environment: {} },
+  const environment = new EnvironmentSystem({ environment: {} },
     12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
   const button = control.container;
   button.click(); timers.advance(interval); button.click();

@@ -607,7 +607,7 @@ async function main() {
   assert.deepEqual(backgroundTimeBlend(6, blend), { evening: 1, night: .5 });
   assert.deepEqual(backgroundTimeBlend(8, blend), { evening: .5, night: 0 });
   const houseClock = composeGameTime({ storage, now: nowFn, initialHours: 12, timeScale: 240 });
-  const env = new EnvironmentSystem({ weather: { chances: { rain: 0, fog: 0 }, updateIntervalMs: 1000 },
+  const env = new EnvironmentSystem({
     environment: {} }, 12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 },
       night: { startHour: 21, endHour: 9 } } }, clock);
   env.update(16, 1);
