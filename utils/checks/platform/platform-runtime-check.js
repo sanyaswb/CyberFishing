@@ -1504,12 +1504,14 @@ function checkVisualFrames() {
         reelSlip: frame >= 40 && frame < 80,
       },
       config: {},
-      canvasWidth: 800,
+      referenceWidth: 800,
     });
+    // Spec 153 (TK-262): the playable water (here its right edge at screen 800) limits the rod, not the canvas.
     const screenX = rod.resolveScreenX({
       baseX: 790,
-      canvasWidth: 800,
+      playableRight: 800,
       config: {},
+      scale: 1,
     });
     assert(screenX <= 784);
     assert.equal(rod.isClamped(), true);

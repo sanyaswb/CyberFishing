@@ -32,7 +32,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   let equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
   let lineEquipped=true;
   const net={updateConfig(value){this.config=value;}},rng={next:()=>0.5};
-  const projector={screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){assert.equal(typeof out.set,'function','production projector requires a Vector2 output');return out.set(x,y);}};
+  const projector={getScale(){return 1;},screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){assert.equal(typeof out.set,'function','production projector requires a Vector2 output');return out.set(x,y);}};
   let resizeCalls=0;
   const canvasMetrics={width:800,height:600,resizeToViewport(){resizeCalls++;this.width=900;}};
   let appPorts,freshness,onInventory,stateContext,debugContext,locationFails=false,victoryFails=false,castResult={success:false,reason:'missing_rod'};
@@ -125,7 +125,8 @@ async function checkGameApplicationComposition(diagnostics = true) {
   assert(stateContext.rodMotion.deltaPx>0);assert.equal(stateContext.rodMotion.deltaPx,app.getRodScreenX(bounds)-beforeAim);
   assert.equal(stateContext.rodMotion.fishOffsetX,500-beforeAim);assert.equal(stateContext.rodMotion.drivenByInput,true);
   const motionIdentity=stateContext.rodMotion;
-  for(let frame=0;frame<120;frame++)app.update(16);
+  // Spec 153 (TK-262): the travel limit is map units of the reference screen (128 for 2560), so the hold takes longer.
+  for(let frame=0;frame<600;frame++)app.update(16);
   assert.equal(stateContext.rodMotion,motionIdentity);assert.equal(stateContext.rodMotion.deltaPx,0,'held edge is not actual motion');
   input.rodControlActive=false;app.update(16);assert.equal(stateContext.rodMotion.drivenByInput,false,'automatic return cannot compensate');
   config.physics.fight.rodControl.rodAim={fallbackMaxOffsetPx:1000,baseAimSpeedPxPerSecond:10000,

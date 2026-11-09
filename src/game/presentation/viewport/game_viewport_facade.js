@@ -127,7 +127,7 @@ export class GameViewportFacade {
   getScreenOffsetRatio(floatPos, screenXOverride = null) {
     const rodScreenX = this.getRodScreenX(screenXOverride, this.getDynamicBounds());
     const rodX = this.#projector.screenToVirtual(rodScreenX, 0, this.#screenScratch).x;
-    const halfWidth = Math.max(1, (Number(this.#config.locations?.baseResolution?.width) || 2560) / 2);
+    const halfWidth = Math.max(1, this.#referenceWidth() / 2);
     return Math.min(1, Math.abs(floatPos.x - rodX) / halfWidth);
   }
 
@@ -149,7 +149,7 @@ export class GameViewportFacade {
       inputState: activeInput,
       fightDebug,
       config: rodControlConfig,
-      canvasWidth: this.#canvasMetrics.width,
+      referenceWidth: this.#referenceWidth(),
     });
     if (fightDebug) {
       const visualFrame = this.#rodVisualOffsetSystem.getFrame();
@@ -193,16 +193,27 @@ export class GameViewportFacade {
       {};
     return this.#rodVisualOffsetSystem.resolveScreenX({
       baseX,
-      canvasWidth: this.#canvasMetrics.width,
       playableLeft: playable.left,
       playableRight: playable.right,
       config: rodControlConfig,
+      scale: this.#projector.getScale(),
     });
   }
 
   #resolveBaseRodScreenX(screenXOverride = null) {
     if (Number.isFinite(screenXOverride)) return screenXOverride;
     return this.#projector.virtualToScreen(this.#rodAnchor(), 0, this.#anchorScratch).x;
+  }
+
+  // The reference screen width in map units (CONFIG.locations.baseResolution): fight shares and the rod's travel are
+  // measured against it, never against the canvas (spec 153).
+  #referenceWidth() {
+    return Number(this.#config.locations?.baseResolution?.width) || 2560;
+  }
+
+  // Screen pixels per map unit right now (the camera's scale).
+  get pixelsPerUnit() {
+    return this.#projector.getScale();
   }
 
   #rodAnchor() {

@@ -10,7 +10,7 @@ export class RodVisualOffsetSystem {
     inputState,
     fightDebug,
     config,
-    canvasWidth,
+    referenceWidth,
   } = {}) {
     const cfg = config || {};
     const visualCfg = cfg.rodVisual || {};
@@ -28,7 +28,9 @@ export class RodVisualOffsetSystem {
       inputDirection,
       fightDebug,
     });
-    const width = Math.max(0, Number(canvasWidth) || 0);
+    // Spec 153 (TK-262): the reference screen width (CONFIG.locations.baseResolution), never the canvas: the limit is in
+    // map units like the offset itself.
+    const width = Math.max(0, Number(referenceWidth) || 0);
     const maxOffsetPx = Math.max(
       Number(aimCfg.fallbackMaxOffsetPx) ||
         Number(visualCfg.fallbackMaxOffsetPx) ||
@@ -129,22 +131,26 @@ export class RodVisualOffsetSystem {
     return this.#offsetPx;
   }
 
+  // The rod's screen X: its base (the world anchor's projection) plus the offset. Spec 153 (TK-262): the offset, its
+  // limit, speeds and the edge padding are map units (reference screen pixels at scale 1); scale (the camera's screen
+  // pixels per map unit) turns them into screen pixels. The only limit is the playable water (its screen projection);
+  // the canvas edges are not: the camera keeps the rod in view, so the window size never narrows the rod's travel.
   resolveScreenX({
     baseX,
-    canvasWidth,
     playableLeft,
     playableRight,
     config,
+    scale = 1,
   } = {}) {
     const visualCfg = config?.rodVisual || {};
     const aimCfg = config?.rodAim || {};
-    const padding = Math.max(
+    const pixelsPerUnit = Number(scale) > 0 ? Number(scale) : 1;
+    const padding = pixelsPerUnit * Math.max(
       0,
       Number(aimCfg.edgePaddingPx) || Number(visualCfg.edgePaddingPx) || 16,
     );
-    const width = Math.max(1, Number(canvasWidth) || 1);
-    let minX = padding;
-    let maxX = Math.max(minX, width - padding);
+    let minX = -Infinity;
+    let maxX = Infinity;
 
     const clampToPlayable = aimCfg.clampToPlayableZone !== undefined
       ? aimCfg.clampToPlayableZone !== false
@@ -153,22 +159,19 @@ export class RodVisualOffsetSystem {
     // padding (spec 153: the DEV side share read the rod there).
     if (clampToPlayable) {
       if (playableLeft != null && Number.isFinite(Number(playableLeft))) {
-        minX = Math.max(minX, Number(playableLeft) + padding);
+        minX = Number(playableLeft) + padding;
       }
       if (playableRight != null && Number.isFinite(Number(playableRight))) {
-        maxX = Math.min(maxX, Number(playableRight) - padding);
+        maxX = Math.max(minX, Number(playableRight) - padding);
       }
     }
 
-    const resolvedBase = Number.isFinite(Number(baseX))
-      ? Number(baseX)
-      : width / 2;
-    const rawX = resolvedBase + this.#offsetPx;
+    const resolvedBase = Number.isFinite(Number(baseX)) ? Number(baseX) : 0;
+    const rawX = resolvedBase + this.#offsetPx * pixelsPerUnit;
     const clampedX = Math.max(minX, Math.min(maxX, rawX));
     this.#clamped = Math.abs(clampedX - rawX) > 0.001;
     return clampedX;
   }
-
   getOffsetPx() {
     return this.#offsetPx;
   }

@@ -718,8 +718,10 @@ export class GameApplication {
       this.#updateRodVisualOffset(aimDt, input, bounds);
       const aim = this.#viewportFacade.getRodAimFrame();
       const motion = this.#rodAimMotion;
-      motion.deltaPx = this.getRodScreenX(bounds) - previousX;
-      motion.fishOffsetX = fishX - previousX;
+      // Spec 153 (TK-262): map units, like the aim speed and the tuned thresholds, so the window size changes nothing.
+      const unitsPerPixel = 1 / (this.#viewportFacade.pixelsPerUnit || 1);
+      motion.deltaPx = (this.getRodScreenX(bounds) - previousX) * unitsPerPixel;
+      motion.fishOffsetX = (fishX - previousX) * unitsPerPixel;
       motion.drivenByInput = aim.drivenByInput;
       const availableStep = aim.aimSpeedPxPerSecond * aimDt / 1000;
       motion.movementRatio = availableStep > 0 ? Math.min(1, Math.abs(motion.deltaPx) / availableStep) : 0;

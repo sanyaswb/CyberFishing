@@ -267,6 +267,32 @@ const farAway = anchoredRodX + 5000;
 for (let frame = 0; frame < 240; frame++) worldProjector.followVirtualX(farAway, anchoredRodX, 16.66, 0.15);
 const rodOnScreen = worldFacade.getRodScreenX();
 assert(rodOnScreen >= 640 * 0.15 - 1 && rodOnScreen <= 640 * 0.85 + 1, `the rod stays in view first: ${rodOnScreen}`);
+// TK-262 (spec 153): the rod's side travel is map units: the same held input moves the rod the same world distance at
+// every window size, and the canvas edges do not stop it (only the map's water).
+const { RodVisualOffsetSystem } = runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js");
+const travel = sizes.map(([width, height]) => {
+  const projector = new ViewportProjector(worldConfig, "lake", () => ({ scale: 1 }));
+  const metrics = { width, height };
+  const world = new GameWorld({ map: { getCastableBoundsVirtual: () => mapBounds, recalculateZones() {} }, env: {}, chum: {},
+    projector, location: {}, canvasMetrics: metrics, clock: {}, locationConfig: worldConfig, waterMetricSource: {} });
+  world.refreshViewport(false);
+  const facade = new GameViewportFacade({ rodVisualOffsetSystem: new RodVisualOffsetSystem(),
+    world: { pan: (dx, dy) => projector.pan(dx, dy) }, projector, canvasMetrics: metrics, config: fullConfig,
+    biteEnvironmentService: { getDynamicBounds: () => world.getDynamicBounds() } });
+  facade.keepRodAnchored();
+  const bounds = world.getDynamicBounds();
+  const startX = projector.screenToVirtual(facade.getRodScreenX(null, bounds), 0).x;
+  const input = { rodControlActive: true, rodControlDirectionX: 1, rodControlInputRatio: 1 };
+  for (let frame = 0; frame < 30; frame++) {
+    facade.updateRodVisualOffset({ dtMs: 16, input, fightDebug: { rodControlDirectionFactor: 1, rodControlDirectionX: 1 },
+      bounds, stateName: "playing" });
+  }
+  return projector.screenToVirtual(facade.getRodScreenX(null, bounds), 0).x - startX;
+});
+assert(travel[0] > 0, `the held input moves the rod: ${travel[0]}`);
+for (const moved of travel) {
+  assert(Math.abs(moved - travel[0]) < 1e-6, `the rod travels the same world distance at every window size: ${travel.join(", ")}`);
+}
 // TK-260: priority "tackle" (DevTools DEBUG) keeps the far fish in view and lets the rod leave the screen; "rod" brings
 // the rod back. A narrow canvas (300 px at scale 0.9 shows 333 map px) so both fit inside the map.
 const narrow = new ViewportProjector(worldConfig, "lake", () => ({ scale: 1 }));

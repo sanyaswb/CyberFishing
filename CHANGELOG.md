@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.56 - Rod side travel independent of the window
+
+- TK-262 (spec 153): the rod's side movement in a fight is the same at every window size and on every screen: measured in map units, limited only by the water, the camera keeps the rod in view.
+
 ## v0.50.55 - Weather with intensity, fades and storms
 
 - Spec 172 stage A (TK-261): weather changes smoothly: clear, rain and storm (only after rain) with an intensity that rises and fades in real seconds (rain 1-10 min), fog in the morning and at night, lightning strikes in a storm; weather has its own random numbers and never changes the fish's. DevTools «🌦 ПОГОДА» forces states and edits the settings. No weather visuals yet.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.47 - All sounds in minimum size
 
 - TK-258 (audit TK-255): every sound is AAC .m4a, mono, 32 kbit/s: 10.95 -> 1.54 MB (vinyl-5 9.2 -> 1.2 MB); MP3 masters in asset-sources/, the release rejects MP3.
-
-## v0.50.46 - Quiet production console in a fight
-
-- TK-257 (G-001, audit TK-255): the production game no longer prints the fish's [DEBUFF] / [MASTERY] diagnostics in a fight; dev.html keeps them in its console.
