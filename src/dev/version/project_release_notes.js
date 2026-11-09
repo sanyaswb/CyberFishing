@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-263: empty tackle stays in the landing zone; only a double click takes it out.",
   "TK-262: rod side travel in map units, the same at every window size.",
   "TK-261 (spec 172 A): weather model: clear/rain/storm + fog, intensity with fades, lightning, own RNG; DevTools ПОГОДА.",
   "TK-260: DevTools DEBUG switch: the camera keeps the rod or the far fish in view.",

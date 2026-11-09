@@ -3,7 +3,6 @@ import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_e
 import { GameState } from "./game_state.js";
 import { GroundPlaneScope } from "../world/ground_plane_scope.js";
 import { IdleRetrievePolicyResolver } from "../../domain/fishing/idle_retrieve_policy_resolver.js";
-import { LandingPolicyResolver } from "../../domain/fishing/landing_policy_resolver.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class WaitingState extends GameState {
@@ -18,7 +17,6 @@ export class WaitingState extends GameState {
       panViewport: deps.commands.panViewport,
       rng: deps.rng,
     });
-    this.#landingPolicyResolver = new LandingPolicyResolver();
     this.#idleRetrievePolicyResolver = new IdleRetrievePolicyResolver();
     this.#castExposureResolver = new FishingCastExposureResolver();
   }
@@ -32,7 +30,6 @@ export class WaitingState extends GameState {
   #groundPlane = new GroundPlaneScope();
   #baitCandidates = [];
   #recastAim;
-  #landingPolicyResolver;
   #idleRetrievePolicyResolver;
   #castExposureResolver;
   #isRecastAiming = false;
@@ -131,12 +128,8 @@ export class WaitingState extends GameState {
       groundPlane.exit();
     }
 
-    const updatedPos = this.deps.float.getPosition();
-
-    if (this.#isEmptyTackleLandingComplete(updatedPos, bounds, eq, isSpinning)) {
-      this.deps.commands.setState("scouting");
-      return;
-    }
+    // TK-263 (G-131): tackle without a fish stays in the water even in the landing zone; only the player's double click
+    // (handleInput) takes it out.
 
     const baitCandidates = this.#baitCandidates;
     baitCandidates.length = 0;
@@ -287,36 +280,7 @@ export class WaitingState extends GameState {
     return release.power <= threshold;
   }
 
-  #isEmptyTackleLandingComplete(position, bounds, eq, isSpinning) {
-    const landingDistanceMeters = this.#getLandingDistanceMeters(eq);
-    if (landingDistanceMeters <= 0) return false;
 
-    const rodPos = this.deps.world.getRodVirtualPos(bounds);
-    const distanceMeters = this.deps.world.getWaterMetric().distanceMeters(
-      position.x,
-      position.y,
-      rodPos.x,
-      rodPos.y,
-    );
-
-    if (distanceMeters <= landingDistanceMeters + 0.001) return true;
-
-    if (!isSpinning) return false;
-
-    return position.y >= bounds.bottom;
-  }
-
-  #getLandingDistanceMeters(eq) {
-    const policy = this.#landingPolicyResolver.resolve({
-      rod: eq?.rod,
-      reel: eq?.reel,
-    });
-    return policy.getLandingDistanceMeters({
-      rod: eq?.rod,
-      reel: eq?.reel,
-      config: this.deps.config,
-    });
-  }
 
   #getIdleRetrieveParams(eq) {
     const policy = this.#idleRetrievePolicyResolver.resolve({

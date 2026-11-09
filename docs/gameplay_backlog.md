@@ -879,6 +879,14 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-131 Empty tackle is taken out automatically at the landing zone (P2, done v0.50.57)
+Found: 2026-11-09, owner, v0.50.56.
+Reproduce: cast, reel the float (or a spinning lure) in without a fish until it reaches the landing distance of the rod (or a
+spinning lure the shore, also while a fish only bites): the game goes back to scouting by itself.
+Expected: the tackle stays in the water until the player double-clicks (TK-263).
+Actual: `WaitingState.#isEmptyTackleLandingComplete` and the spinning shore branch of `BitingState.update` set the scouting state.
+Notes: TK-263. Done v0.50.57: both automatic transitions removed; check `tackle-line-limit` (fails on 0.50.56); game-cycle unchanged.
+
 ### G-130 The backpack holds more than its limit (P2, done in v0.50.23)
 Found: 2026-11-07, owner (TK-239, [spec 164](../specs/164-backpack-capacity/spec.md)): the backpack scale showed a 100-slot
 limit but nothing enforced it (`UnlimitedInventoryCapacityPolicy`, spec 075 presentation-only scale).

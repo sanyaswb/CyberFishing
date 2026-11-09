@@ -175,13 +175,8 @@ export class BitingState extends GameState {
       return;
     }
 
-    const updatedPos = this.deps.float.getPosition();
-    const shoreY = bounds.bottom;
-    if (isSpinning && updatedPos.y >= shoreY) {
-      this.deps.float.stopBite();
-      this.deps.commands.setState("scouting");
-      return;
-    }
+    // TK-263 (G-131): a spinning lure reeled to the shore while a fish only bites stays in the water; only the player's
+    // double click (handleInput) takes the tackle out.
 
     if (stepInfo) {
       if (stepInfo.id !== this.#lastStepId) {

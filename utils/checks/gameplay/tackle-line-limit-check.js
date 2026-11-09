@@ -62,4 +62,38 @@ for (const State of [WaitingState, BitingState]) {
     }
   }
 }
-console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval.");
+// TK-263 (G-131): tackle without a fish reeled into the landing zone (a spinning lure also to the shore) stays in the
+// water, in waiting and while a fish only bites; only the player's double click takes it out.
+for (const State of [WaitingState, BitingState]) {
+  for (const variant of ["fixed", "spinning"]) {
+    const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
+    const rules = new EquipmentRules(new CastDistanceCalculator(CONFIG), CONFIG, {});
+    const eq = { rod: { variant: variant === "spinning" ? "spinning" : "float", effectiveStats: { lengthMeters: 3 } },
+      reel: { effectiveStats: { basePower: 1 } }, line: { effectiveStats: { lengthMeters: 9 } },
+      float: { effectiveStats: { mount: "fixed" } } };
+    const rod = { x: 500, y: 1000 };
+    // At the rod's foot: inside any landing distance, and on the shore line for the spinning lure.
+    const entity = new FloatEntity(rod.x, variant === "spinning" ? 1000 : 990, CONFIG.float || {}, 10, { next: () => .5 },
+      null, null, null, CONFIG);
+    entity.isBiting = () => true; entity.isGuaranteedBite = () => false; entity.updateBite = () => {}; entity.stopBite = () => {};
+    entity.update = () => {};
+    const projector = { focusOnVirtualPos() {}, followVirtualX() {}, virtualToScreen: (x, y, out) => out.set(x, y),
+      screenToVirtual: (x, y, out) => out.set(x, y) };
+    const control = new CastRodControl({ config: CONFIG, projector, canvasMetrics: { width: 1000, height: 1000 },
+      getBaseRodVirtualPos: () => rod });
+    const transitions = [];
+    const deps = { float: entity, config: CONFIG, projector, getViewportSize: () => ({ width: 1000, height: 1000 }),
+      inventory: { getEquipped: () => eq }, currentHookDepthRef: { get: () => 1 }, canPlayerCast: () => false,
+      world: { getWaterMetric: () => metric, getRodVirtualPos: () => rod, checkWater: () => ({ depth: 5 }), getBiteEnv: () => ({}) },
+      rules: { equipment: rules }, castRodControl: control,
+      commands: { setState: (name) => transitions.push(name) }, input: { getState: () => ({}) }, clock: { now: 1000 },
+      getCastStartTime: () => 0, biteSystem: { reset() {}, evaluateBite: () => null }, fishing: { collectAvailableBaits() {} } };
+    const state = new State(deps);
+    const bounds = { left: 0, right: 1000, top: 0, bottom: 1000 };
+    for (let frame = 0; frame < 30; frame++) state.update(16, bounds, { input: { isPulling: true }, env: {} });
+    assert.deepEqual(transitions, [], `${State.name} ${variant}: tackle in the landing zone stays until the player takes it out`);
+    state.handleInput({ isDoubleClick: true });
+    assert.deepEqual(transitions, ["scouting"], `${State.name} ${variant}: a double click takes the tackle out`);
+  }
+}
+console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval; empty tackle in the landing zone stays until a double click (TK-263).");
