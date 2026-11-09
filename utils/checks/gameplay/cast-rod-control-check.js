@@ -157,6 +157,19 @@ function checkLine() {
   const blocked = fixture();
   assert.equal(blocked.step(left, { checkWater: x => x >= 400 }).floatMoved, false);
   assert.equal(blocked.position.x, 400);
+
+  // TK-264.1: float on the shoreline slides along the water boundary when the rod moves sideways
+  const sliding = fixture();
+  sliding.position.set(400, 200);
+  const shoreWater = (x, y) => y <= 200.0001;
+  let slidingMoved = false;
+  for (let i = 0; i < 20; i++) {
+    const frame = sliding.step(right, { checkWater: shoreWater });
+    if (frame.floatMoved) slidingMoved = true;
+  }
+  assert.equal(slidingMoved, true, "float on the shoreline slides along the water boundary");
+  assert.ok(sliding.position.x > 400, "float moves sideways along the shoreline");
+  assert.ok(sliding.position.y <= 200.0001, "float does not enter land beyond the shoreline");
   blocked.config.physics.castRodControl.floatDrag.enabled = false; assert.equal(blocked.step(right).floatMoved, false);
   for (const perspective of [false, true]) {
     const f = fixture({ perspective });

@@ -172,15 +172,71 @@ export class CastRodControl {
   #limitToWater(from, to, checkWater) {
     if (!checkWater || checkWater(to.x, to.y)) return;
     if (!checkWater(from.x, from.y)) { to.set(from.x, from.y); return; }
+
     const dx = to.x - from.x;
     const dy = to.y - from.y;
+
+    const directLow = this.#rayLow(from.x, from.y, dx, dy, checkWater);
+    let bestX = from.x + dx * directLow;
+    let bestY = from.y + dy * directLow;
+    let bestDistSq = (bestX - to.x) ** 2 + (bestY - to.y) ** 2;
+
+    const xALow = this.#axisLow(from.x, dx, (x) => checkWater(x, from.y));
+    if (xALow > 0) {
+      const xA = from.x + dx * xALow;
+      const yALow = this.#axisLow(from.y, dy, (y) => checkWater(xA, y));
+      const yA = from.y + dy * yALow;
+      const distASq = (xA - to.x) ** 2 + (yA - to.y) ** 2;
+      if (distASq < bestDistSq) {
+        bestX = xA;
+        bestY = yA;
+        bestDistSq = distASq;
+      }
+    }
+
+    const yBLow = this.#axisLow(from.y, dy, (y) => checkWater(from.x, y));
+    if (yBLow > 0) {
+      const yB = from.y + dy * yBLow;
+      const xBLow = this.#axisLow(from.x, dx, (x) => checkWater(x, yB));
+      const xB = from.x + dx * xBLow;
+      const distBSq = (xB - to.x) ** 2 + (yB - to.y) ** 2;
+      if (distBSq < bestDistSq) {
+        bestX = xB;
+        bestY = yB;
+        bestDistSq = distBSq;
+      }
+    }
+
+    if (dx !== 0 && Math.abs(bestX - from.x) < 1e-6) {
+      bestX = from.x;
+      bestY = from.y;
+    }
+
+    to.set(bestX, bestY);
+  }
+
+  #rayLow(fromX, fromY, dx, dy, checkWater) {
+    if (dx === 0 && dy === 0) return 0;
     let low = 0;
     let high = 1;
     for (let index = 0; index < 12; index++) {
       const mid = (low + high) / 2;
-      if (checkWater(from.x + dx * mid, from.y + dy * mid)) low = mid;
+      if (checkWater(fromX + dx * mid, fromY + dy * mid)) low = mid;
       else high = mid;
     }
-    to.set(from.x + dx * low, from.y + dy * low);
+    return low;
+  }
+
+  #axisLow(fromCoord, delta, check) {
+    if (delta === 0) return 0;
+    if (check(fromCoord + delta)) return 1;
+    let low = 0;
+    let high = 1;
+    for (let index = 0; index < 12; index++) {
+      const mid = (low + high) / 2;
+      if (check(fromCoord + delta * mid)) low = mid;
+      else high = mid;
+    }
+    return low;
   }
 }
