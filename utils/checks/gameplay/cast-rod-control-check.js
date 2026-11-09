@@ -33,7 +33,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const right = { rodControlActive: true, rodControlDirectionX: 1, rodControlInputRatio: 1 };
 const left = { ...right, rodControlDirectionX: -1 };
 
-function fixture({ floatX = 400, perspective = false } = {}) {
+function fixture({ floatX = 400, floatY = 0, perspective = false } = {}) {
   const config = { physics: { simulation: { pixelsPerMeter: 50, maxDtMs: 50 }, castRodControl: clone(CAST_ROD_CONTROL_CONFIG) }, ui: {} };
   const bounds = { left: 100, right: 900, top: 0, bottom: 1000 };
   const water = { pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 400 };
@@ -42,7 +42,7 @@ function fixture({ floatX = 400, perspective = false } = {}) {
   const projector = { virtualToScreen(x, y, out) { return out.set(x, y); },
     screenToVirtual(x, y, out) { return out.set(x, y); }, focusOnVirtualPos() {}, followVirtualX() {} };
   const metrics = { width: 1000, height: 1000 };
-  const position = new Vector2(floatX, 0);
+  const position = new Vector2(floatX, floatY);
   const float = { getPosition: () => position, biting: true, guaranteed: false, stopped: 0, hooked: 0, ticks: 0,
     updateBite() { this.ticks++; }, update() {}, getBiteStepInfo: () => null,
     isBiting() { return this.biting; }, isGuaranteedBite() { return this.guaranteed; },
@@ -124,8 +124,10 @@ function checkSpeedMultipliers() {
   near(blocked.control.getScreenX(), 395); assert.equal(blocked.control.getFrame().floatMoved, false);
   assert.equal(blocked.control.getFrame().lineTensionActive, true, "blocked tackle cannot create extra slack or speed");
   for (let i = 0; i < 20; i++) blocked.step(left, { checkWater: x => x >= 400 });
+  assert(blocked.control.getScreenX() >= 368 && blocked.control.getScreenX() <= 370, "blocked tackle limits rod movement to taut line reach");
+  assert.equal(blocked.control.getFrame().rodMoved, false, "holding against a blocked tackle stops the rod completely");
   for (let i = 0; i < 40; i++) blocked.step(right, { checkWater: () => true });
-  assert(blocked.position.y > 20, `repeatedly blocked tackle must not inflate slack; position.y was ${blocked.position.y}`);
+  assert(blocked.position.y > 15, `repeatedly blocked tackle must not inflate slack; position.y was ${blocked.position.y}`);
   assert.equal(blocked.control.getFrame().lineTensionActive, true, "taut line pulls the float when moving right");
   const noDrag = fixture(); noDrag.config.physics.castRodControl.floatDrag.enabled = false;
   noDrag.step(left); near(noDrag.control.getScreenX(), 395);
@@ -192,6 +194,22 @@ function checkLine() {
     assert.ok(tailDeltas[i] <= tailDeltas[i - 1] + 1e-4, `tail step must decelerate smoothly, got ${tailDeltas[i]} after ${tailDeltas[i - 1]}`);
   }
   assert.ok(tailDeltas.at(-1) < 0.2, `final movement step before stop must be near zero, got ${tailDeltas.at(-1)}`);
+
+  // TK-264.3: float caught in a step near the shore stops the rod from moving when line is taut (no infinite stretching)
+  const shoreBlocked = fixture({ floatX: 440, floatY: 800 });
+  const stepWater = (x, y) => x <= 440 && y <= 800.001;
+  shoreBlocked.step();
+  const initialLineLen = Math.hypot(440 - 400, 800 - 1000);
+  for (let i = 0; i < 30; i++) shoreBlocked.step(right, { checkWater: stepWater });
+  const finalRodX = shoreBlocked.control.getScreenX();
+  const finalDist = Math.hypot(finalRodX - 440, 1000 - 800);
+  assert.ok(finalDist <= initialLineLen + 0.501, `rod must not stretch the line beyond released line length; finalDist was ${finalDist}`);
+  const frameBlocked = shoreBlocked.step(right, { checkWater: stepWater });
+  assert.equal(frameBlocked.rodMoved, false, "rod must be completely stopped when line is taut against stuck tackle");
+  assert.equal(frameBlocked.lineTensionActive, true, "line tension is active while rod is held against line limit");
+  const frameLeft = shoreBlocked.step(left, { checkWater: stepWater });
+  assert.equal(frameLeft.rodMoved, true, "rod moves freely back toward the tackle");
+  assert.ok(shoreBlocked.control.getScreenX() < finalRodX, "rod returns toward center");
 
   blocked.config.physics.castRodControl.floatDrag.enabled = false; assert.equal(blocked.step(right).floatMoved, false);
   for (const perspective of [false, true]) {

@@ -116,6 +116,25 @@ export class CastRodControl {
       this.#frame.floatMoved = true;
       this.#frame.floatMoveMeters = meters;
     }
+    waterMetric.toBasePlane(position.x, position.y, this.#position);
+    const maxAllowedDistance = this.#lineLengthPx + 0.5;
+    const currentDistance = Math.hypot(this.#position.x - this.#nextRod.x, this.#position.y - this.#nextRod.y);
+    if (currentDistance > maxAllowedDistance) {
+      let low = previousX;
+      let high = this.#screenX;
+      for (let i = 0; i < 14; i++) {
+        const mid = (low + high) / 2;
+        this.#rodPlane(mid, bounds, waterMetric, this.#nextRod);
+        const d = Math.hypot(this.#position.x - this.#nextRod.x, this.#position.y - this.#nextRod.y);
+        if (d <= maxAllowedDistance) low = mid;
+        else high = mid;
+      }
+      this.#screenX = low;
+      this.#rodPlane(this.#screenX, bounds, waterMetric, this.#nextRod);
+      this.#frame.deltaPx = this.#screenX - previousX;
+      this.#frame.rodMoved = Math.abs(this.#frame.deltaPx) > nonNegativeOr(cfg.movementEpsilonPx);
+      this.#frame.lineTensionActive = true;
+    }
     return this.#frame;
   }
 
