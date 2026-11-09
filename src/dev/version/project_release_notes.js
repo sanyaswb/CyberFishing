@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-259: git:version-copy and git:add (git add .) removed.",
   "Spec 170: 2D reserve without spine-webgl; Spine only on the WebGL scene; spec 103 closed.",
   "Spec 171 stage 4: offline cache (service worker): instant repeat start, play without the network.",
   "Spec 171 Q4: startup budgets cold 1 s (4G CPU x4) / 2.5 s (3G), warm 0.3 s, 3 network steps.",

@@ -34,6 +34,9 @@
       `npm run git:add` / `git:version-copy` роблять `git add .` (може закомітити невідстежувані файли власника). Зміна: видалити
       `utils/git-version-copy.js`, `utils/create-version-copy.js` (якщо без інших споживачів), скрипти `git:add`, `git:version-copy`,
       `copy:version` і документи, що їх називають (DEVELOPMENT_RULES «Utils cleanup step»). Перевірка: grep споживачів, Full.
+  - [x] v0.50.52: видалено `utils/git-version-copy.js` і скрипти `git:add`, `git:version-copy` (споживачів у коді, перевірках і
+        документах, крім історії, немає). `copy:version` (`utils/create-version-copy.js`) лишився: окремий інструмент без git,
+        описаний у README. Full.
 
 - [ ] **TK-256 — PixiJS під CSP без `unsafe-eval` (аудит TK-255 P1-1).** Знайдено: vendored `pixi-scene.js` кидає
       «does not allow unsafe-eval» у `_systemCheck`, `pixi.js/unsafe-eval` не імпортується (`utils/vendor-libraries.js`).

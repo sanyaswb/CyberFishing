@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.52 - No git add . tools
+
+- TK-259 (owner, audit TK-255): the git:version-copy tool and the git:add script, which staged everything with git add ., are removed; commits stage explicit paths only.
+
 ## v0.50.51 - 2D reserve without spine-webgl
 
 - Spec 170 (owner): the 2D canvas stays the scene's reserve with nothing extra: the separate spine-webgl path (only reachable in dev.html?scene=canvas) is removed; Spine plays only on the WebGL scene, the reserve shows the rod's and boat's static pictures. Spec 103 closed.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.43 - Balance windows ACTIVE FISH and ACTIVE ROD
 
 - TK-254 (spec 168): DEV overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (switches in DevTools → OVERLAY MODULES → «Вікна балансу»): every fight parameter of the hooked fish (or the Fixed Catch species) and of the equipped rod with the fight's rod rules on sliders, live; «💾 Записати у вид» saves the fish's changes to its species.
-
-## v0.50.42 - Loading overlay shows the current step
-
-- TK-251.2 (spec 167): with step-by-step loading on, the DEV overlay «⏱ ЗАВАНТАЖЕННЯ» shows only the current step: the steps of the last release, the requests started since then (each file with its size) and its plan groups with their files' state.
