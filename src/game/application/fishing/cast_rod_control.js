@@ -21,7 +21,7 @@ export class CastRodControl {
   #position = new Vector2();
   #candidate = new Vector2();
   #mapCandidate = new Vector2();
-  #frame = { rodMoved: false, deltaPx: 0, floatMoved: false, floatMoveMeters: 0, retrieving: false, lineTensionActive: false };
+  #frame = { rodMoved: false, deltaPx: 0, floatMoved: false, floatMoveMeters: 0, retrieving: false, lineTensionActive: false, lineLengthPx: 0 };
 
   constructor({ config, projector, canvasMetrics, getBaseRodVirtualPos }) {
     this.#config = config;
@@ -32,6 +32,7 @@ export class CastRodControl {
 
   getScreenX() { return this.#screenX; }
   getFrame() { return this.#frame; }
+  getLineLengthPx() { return this.#lineLengthPx; }
 
   // A stage/camera resize changes screen coordinates without becoming a player's rod-motion action.
   setViewportScreenX(screenX) {
@@ -67,7 +68,7 @@ export class CastRodControl {
     });
   }
 
-  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, aiming = false, hasTerminalLoad = true }) {
+  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, aiming = false, hasTerminalLoad = true, hasReel = true, maxLineLengthPx = null }) {
     this.#clearFrame();
     const cfg = this.#settings();
     if (cfg?.enabled !== true || !floatEntity || !bounds) { this.reset(); return this.#frame; }
@@ -83,20 +84,32 @@ export class CastRodControl {
     const baseX = clampFinite(this.#base.x, greenLeft, greenRight);
     const left = baseX - (baseX - greenLeft) * clampUnitFinite(cfg.range.leftRatio);
     const right = baseX + (greenRight - baseX) * clampUnitFinite(cfg.range.rightRatio);
+    const resolvedHasReel = hasReel !== false;
+    const validMaxLine = Number.isFinite(Number(maxLineLengthPx)) && Number(maxLineLengthPx) > 0 ? Number(maxLineLengthPx) : null;
     if (this.#entity !== floatEntity) {
       this.#entity = floatEntity;
       this.#screenX = baseX;
       this.#rodPlane(this.#screenX, bounds, waterMetric, this.#previousRod);
       waterMetric.toBasePlane(floatEntity.getPosition().x, floatEntity.getPosition().y, this.#position);
-      this.#lineLengthPx = Math.hypot(this.#position.x - this.#previousRod.x, this.#position.y - this.#previousRod.y);
+      const castDistance = Math.hypot(this.#position.x - this.#previousRod.x, this.#position.y - this.#previousRod.y);
+      if (!resolvedHasReel && validMaxLine !== null) {
+        this.#lineLengthPx = validMaxLine;
+      } else {
+        this.#lineLengthPx = validMaxLine !== null ? Math.min(castDistance, validMaxLine) : castDistance;
+      }
     }
     const previousX = clampFinite(this.#screenX, left, right);
     this.#screenX = previousX;
     this.#rodPlane(previousX, bounds, waterMetric, this.#previousRod);
     const position = floatEntity.getPosition();
     waterMetric.toBasePlane(position.x, position.y, this.#position);
-    if (retrieving) this.#lineLengthPx = Math.min(this.#lineLengthPx,
-      Math.hypot(this.#position.x - this.#previousRod.x, this.#position.y - this.#previousRod.y));
+    if (!resolvedHasReel && validMaxLine !== null) {
+      this.#lineLengthPx = validMaxLine;
+    } else if (resolvedHasReel && retrieving) {
+      this.#lineLengthPx = Math.min(this.#lineLengthPx,
+        Math.hypot(this.#position.x - this.#previousRod.x, this.#position.y - this.#previousRod.y));
+    }
+    this.#frame.lineLengthPx = this.#lineLengthPx;
     if (aiming || !this.isLateralInput(input)) return this.#frame;
     const action = input.fightActions?.lateralControl;
     const direction = Math.sign(action?.directionX ?? input.rodControlDirectionX);
@@ -191,6 +204,7 @@ export class CastRodControl {
     this.#frame.floatMoveMeters = 0;
     this.#frame.retrieving = false;
     this.#frame.lineTensionActive = false;
+    this.#frame.lineLengthPx = this.#lineLengthPx;
   }
 
   #rodPlane(screenX, bounds, metric, out) {

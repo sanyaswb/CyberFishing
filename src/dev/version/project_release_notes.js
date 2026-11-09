@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-264.4: fixed line length radius for pole rods without reels and line radius overlay based on unspooled line.",
   "TK-264.3: cast rod movement stops when tackle is blocked and line is fully taut, preventing infinite line stretching.",
   "TK-264.2: continuous collision check and obstacle proximity deceleration prevent tackle teleportation and provide smooth stopping.",
   "TK-264.1: float slides along the water shoreline and mask boundaries when the rod moves sideways.",

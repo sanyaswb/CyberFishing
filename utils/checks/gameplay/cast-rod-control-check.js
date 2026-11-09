@@ -211,6 +211,27 @@ function checkLine() {
   assert.equal(frameLeft.rodMoved, true, "rod moves freely back toward the tackle");
   assert.ok(shoreBlocked.control.getScreenX() < finalRodX, "rod returns toward center");
 
+  // TK-264.4: pole rod without reel preserves fixed line length even after retrieval, allowing float to move inside slack
+  const pole = fixture({ floatX: 400, floatY: 900 });
+  const poleFrame = pole.step({}, { hasReel: false, maxLineLengthPx: 300 });
+  assert.equal(poleFrame.lineLengthPx, 300, "pole rod has fixed line length 300 px");
+  assert.equal(pole.control.getLineLengthPx(), 300);
+  pole.position.set(400, 950);
+  const retrieveFrame = pole.step({}, { hasReel: false, maxLineLengthPx: 300, retrieving: true });
+  assert.equal(retrieveFrame.lineLengthPx, 300, "retrieval on pole rod without reel does not reduce fixed line reach");
+  assert.equal(pole.control.getLineLengthPx(), 300);
+  const moveSlack = pole.step(right, { hasReel: false, maxLineLengthPx: 300 });
+  assert.equal(moveSlack.floatMoved, false, "float remains stationary inside slack radius");
+  assert.equal(moveSlack.lineTensionActive, false, "line tension inactive inside slack radius");
+
+  // Rod with reel reduces unspooled line length on retrieval
+  const reelRod = fixture({ floatX: 400, floatY: 800 });
+  const reelInitial = reelRod.step({}, { hasReel: true, maxLineLengthPx: 500 });
+  assert.equal(reelInitial.lineLengthPx, 200, "reel rod initializes unspooled line length to cast distance");
+  reelRod.position.set(400, 850);
+  const reelAfter = reelRod.step({}, { hasReel: true, maxLineLengthPx: 500, retrieving: true });
+  assert.equal(reelAfter.lineLengthPx, 150, "reel rod retrieval shortens unspooled line length to new distance");
+
   blocked.config.physics.castRodControl.floatDrag.enabled = false; assert.equal(blocked.step(right).floatMoved, false);
   for (const perspective of [false, true]) {
     const f = fixture({ perspective });

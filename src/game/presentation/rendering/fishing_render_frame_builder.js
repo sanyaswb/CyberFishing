@@ -29,6 +29,7 @@ export class FishingRenderFrameBuilder {
     fightDebug: null,
     equipment: null,
     floatVirtualPosition: null,
+    releasedLineLengthPx: null,
   };
   #rodLineContext = {
     target: null,
@@ -184,6 +185,18 @@ export class FishingRenderFrameBuilder {
     );
 
     fishingTarget.visible = true;
+    const castMovement = this.#getCastRodMovement?.();
+    let releasedLineLengthPx = castMovement?.lineLengthPx ?? null;
+    if ((!Number.isFinite(releasedLineLengthPx) || releasedLineLengthPx <= 0) && equipment) {
+      const hasReel = typeof this.#equipmentRules?.requiresReel === "function"
+        ? this.#equipmentRules.requiresReel(equipment)
+        : (equipment?.rod?.variant !== "pole" && equipment?.reel != null);
+      if (!hasReel && typeof this.#equipmentRules?.getMaxCastDistance === "function") {
+        releasedLineLengthPx = this.#equipmentRules.getMaxCastDistance(
+          equipment, Infinity, this.#getCurrentHookDepth?.() ?? null,
+        );
+      }
+    }
     const fightAreaContext = this.#fightAreaContext;
     fightAreaContext.target = fishingTarget.fightAreas;
     fightAreaContext.clipRegions = clipRegions;
@@ -192,6 +205,7 @@ export class FishingRenderFrameBuilder {
     fightAreaContext.fightDebug = fightDebug;
     fightAreaContext.equipment = equipment;
     fightAreaContext.floatVirtualPosition = floatPosition;
+    fightAreaContext.releasedLineLengthPx = releasedLineLengthPx;
     this.#fightAreaBuilder.buildInto(fightAreaContext);
 
     // The float first: rocking on the waves (spec 128) moves its waterline point, and the line ends there.

@@ -86,11 +86,16 @@ export class WaitingState extends GameState {
       ? this.#getIdleRetrieveParams(eq)
       : null;
 
+    const hasReel = this.deps.rules.equipment?.requiresReel?.(eq) ?? true;
+    const maxLineLengthPx = this.deps.rules.equipment?.getMaxCastDistance?.(
+      eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
+    ) ?? null;
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
       hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
       checkWater: this.deps.world.checkWater, retrieving: effectiveInput.isPulling,
       aiming: this.#isRecastAiming || this.#pendingRecast !== null,
+      hasReel, maxLineLengthPx,
     });
     effectiveInput.castRodDeltaX = this.deps.config.physics?.castRodControl?.floatTilt?.enabled === true &&
       castRodMovement.rodMoved ? castRodMovement.deltaPx : 0;

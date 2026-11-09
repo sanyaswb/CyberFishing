@@ -95,10 +95,16 @@ export class BitingState extends GameState {
 
   update(dt, bounds, envData) {
     const input = envData.input || this.deps.input.getState();
+    const eq = this.deps.inventory.getEquipped();
+    const hasReel = this.deps.rules.equipment?.requiresReel?.(eq) ?? true;
+    const maxLineLengthPx = this.deps.rules.equipment?.getMaxCastDistance?.(
+      eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
+    ) ?? null;
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
-      hasTerminalLoad: this.deps.inventory.getEquipped()?.hasTerminalLoad !== false,
+      hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
       checkWater: this.deps.world.checkWater, retrieving: this.deps.castRodControl.isPulling(input),
+      hasReel, maxLineLengthPx,
     });
     const response = this.deps.castRodControl.resolveBiteResponse(this.deps.float.isGuaranteedBite());
     if (castRodMovement.rodMoved && this.deps.float.isBiting() && response !== "none") {
@@ -126,7 +132,6 @@ export class BitingState extends GameState {
     this.deps.projector.followVirtualX(pos.x, this.deps.world.getRodVirtualPos(bounds).x, dt,
       this.deps.config.locations?.cameraFollowMarginX, this.deps.config.locations?.cameraFollowPriority);
 
-    const eq = this.deps.inventory.getEquipped();
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const reelPower = eq?.reel?.effectiveStats?.basePower || 0;

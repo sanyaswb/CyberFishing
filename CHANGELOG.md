@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.62 - Fixed line reach for pole rods and unspooled line overlay
+
+- TK-264.4: pole rods without a reel maintain a fixed authoritative line reach that never shrinks on retrieval, allowing the float to move freely within slack; the line radius overlay reflects the actual unspooled/fixed line boundary.
+
 ## v0.50.61 - Rod movement restricted by taut line
 
 - TK-264.3: when tackle is blocked by shore obstacles and the line is fully played out, sideways rod movement stops at maximum line reach, preventing infinite line stretching while keeping reverse movement free.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.53 - The window is only the camera
 
 - Spec 153 (G-126): narrowing or turning the window no longer moves the float, fish or rod in the world (the bounds are the map's water); the camera follows the float and the fish along the screen edge and keeps the rod in view.
-
-## v0.50.52 - No git add . tools
-
-- TK-259 (owner, audit TK-255): the git:version-copy tool and the git:add script, which staged everything with git add ., are removed; commits stage explicit paths only.
 
 

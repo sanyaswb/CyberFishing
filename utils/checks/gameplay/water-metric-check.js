@@ -522,7 +522,27 @@ function checkFightSectorDuringFight() {
     "their radius is the fight frame's released line (300 px), round the rod on the shore");
 }
 
+function checkLineRadiusOverlayOutsideFight() {
+  const { FightAreaRenderFrameBuilder } = runtime.importModule("src/game/presentation/rendering/fight_area_render_frame_builder.js");
+  const { PoleFightSectorGeometry } = runtime.importModule("src/game/domain/fishing/pole_fight_sector_geometry.js");
+  const { ReusableRenderList } = runtime.importModule("src/game/presentation/rendering/reusable_render_list.js");
+  const metric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 1000, topY: 0, centerX: 500 });
+  const projector = { virtualToScreen: (x, y, out) => out.set(x, y), screenToVirtual: (x, y, out) => out.set(x, y), getScale: () => 1 };
+  const config = { locations: { debugVisuals: true, showPoleFightSector: false, showFightLineRadius: true },
+    physics: { fight: { poleFightSector: { enabled: true, maxAngleFromCenterDeg: 50, shoreOpeningWidthMeters: 3 } } } };
+  const builder = new FightAreaRenderFrameBuilder({ projector, getWaterMetric: () => metric, config, canvasMetrics: { width: 1000, height: 1000 },
+    getRodScreenX: () => 500, landingAreaBuilder: { buildInto() {} }, sectorGeometry: new PoleFightSectorGeometry() });
+  const target = { visible: false, sectorPoints: new ReusableRenderList("sector"), lineRadiusPoints: new ReusableRenderList("line") };
+  builder.buildInto({ target, clipRegions: null, state: "waiting", bottom: 1000, fightDebug: null, equipment: {},
+    floatVirtualPosition: { x: 500, y: 990 }, releasedLineLengthPx: 350 });
+  const points = Array.from({ length: target.lineRadiusPoints.count }, (_, index) => target.lineRadiusPoints.getAt(index));
+  assert(points.length > 3, "line radius points are built outside fight");
+  assert(points.every(p => Math.abs(Math.hypot(p.x - 500, p.y - 1000) - 350) < 1e-4),
+    "line radius overlay uses the released/fixed line length (350 px), not the float's position (10 px)");
+}
+
 checkFightSectorDuringFight();
+checkLineRadiusOverlayOutsideFight();
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
 checkBasePixels();

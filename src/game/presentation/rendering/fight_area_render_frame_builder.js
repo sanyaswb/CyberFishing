@@ -72,6 +72,7 @@ export class FightAreaRenderFrameBuilder {
     fightDebug,
     equipment,
     floatVirtualPosition,
+    releasedLineLengthPx = null,
   }) {
     const locations = this.#config.locations || {};
     if (!locations.debugVisuals) return;
@@ -90,12 +91,13 @@ export class FightAreaRenderFrameBuilder {
       bottom,
       fightDebug,
       floatVirtualPosition,
+      releasedLineLengthPx,
     );
   }
 
   // The sector geometry lies on the water metric's ground plane (the fight frame is computed there); its points are
   // mapped to the map before projection, so a far line radius is no longer a circle on screen.
-  #buildSector(target, state, bottom, debug, floatPosition) {
+  #buildSector(target, state, bottom, debug, floatPosition, releasedLineLengthPx = null) {
     const locations = this.#config.locations || {};
     target.showSector = locations.showPoleFightSector === true;
     target.showLineRadius = locations.showFightLineRadius === true;
@@ -105,6 +107,7 @@ export class FightAreaRenderFrameBuilder {
       bottom,
       debug,
       floatPosition,
+      releasedLineLengthPx,
     );
     if (!geometry) return;
 
@@ -152,11 +155,18 @@ export class FightAreaRenderFrameBuilder {
     target.axisEndX = axisEnd.x;
     target.axisEndY = axisEnd.y;
 
+    const fightRadius = debug?.poleFightSectorActive === true ? Number(debug.poleFightSectorLimitRadiusPx) : 0;
+    const lineRadius = fightRadius > 0
+      ? radius
+      : (Number.isFinite(Number(releasedLineLengthPx)) && Number(releasedLineLengthPx) > 0
+          ? Number(releasedLineLengthPx)
+          : radius);
+
     for (let index = 0; index <= 64; index += 1) {
       const angle = (-90 + 180 * (index / 64)) * Math.PI / 180;
       const point = this.#planeToScreen(
-        originX + Math.sin(angle) * radius,
-        originY - Math.cos(angle) * radius,
+        originX + Math.sin(angle) * lineRadius,
+        originY - Math.cos(angle) * lineRadius,
       );
       record = target.lineRadiusPoints.acquire();
       record.x = point.x;
@@ -167,7 +177,7 @@ export class FightAreaRenderFrameBuilder {
   // The sector's geometry from the rod on the shore line: before a fight its radius is the rod-to-float distance; in a
   // fight (TK-071) the fight frame gives only whether the sector is active and its radius (the released line), so the
   // same geometry is built here with that radius. The fight frame carries no geometry points.
-  #resolveGeometry(state, bottom, debug, floatPosition) {
+  #resolveGeometry(state, bottom, debug, floatPosition, releasedLineLengthPx = null) {
     const fightRadius = debug?.poleFightSectorActive === true ? Number(debug.poleFightSectorLimitRadiusPx) : 0;
     const fighting = fightRadius > 0;
     if (!fighting && (!floatPosition || state === "playing")) return null;
@@ -185,6 +195,9 @@ export class FightAreaRenderFrameBuilder {
       const floatPlane = this.#metric.toBasePlane(floatPosition.x, floatPosition.y, this.#plane);
       limitRadius = Math.hypot(floatPlane.x - this.#origin.x, floatPlane.y - this.#origin.y);
     }
+    const effectiveLimitRadius = !fighting && Number.isFinite(Number(releasedLineLengthPx)) && Number(releasedLineLengthPx) > 0
+      ? Math.max(limitRadius, Number(releasedLineLengthPx))
+      : limitRadius;
     const config =
       this.#config.fightPhysicsConfig?.getPoleFightSectorConfig?.() ||
       this.#config.physics?.fight?.poleFightSector ||
@@ -192,7 +205,7 @@ export class FightAreaRenderFrameBuilder {
     const geometry = this.#sectorGeometry.resolve({
       origin: this.#origin,
       config,
-      limitRadiusPx: limitRadius,
+      limitRadiusPx: effectiveLimitRadius > 0.0001 ? effectiveLimitRadius : Math.max(0.001, limitRadius),
       pixelsPerMeter:
         this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() || 50,
     });
