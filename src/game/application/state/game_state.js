@@ -19,13 +19,13 @@ export class GameState {
 
   // Called after every source of idle tackle motion and before leaving GroundPlaneScope. Casting, the depth HUD,
   // idle drift and FightSessionFactory all take their depth cost from EquipmentRules/CastDistanceCalculator.
-  constrainTackleToLine(groundPlane, bounds, equipment) {
+  constrainTackleToLine(groundPlane, bounds, equipment, checkWater = null) {
     if (!equipment?.line) return;
     const maxDistance = this.deps.rules.equipment.getMaxCastDistance(
       equipment, Infinity, this.getSelectedHookDepthMeters(),
     );
     const rod = groundPlane.point(1, this.deps.world.getRodVirtualPos(bounds));
-    this.#tackleLineReach.apply(this.deps.float.getPosition(), this.deps.float.getVelocity(), rod, maxDistance);
+    this.#tackleLineReach.apply(this.deps.float.getPosition(), this.deps.float.getVelocity(), rod, maxDistance, checkWater);
   }
 
   getEffectiveCastDistance(

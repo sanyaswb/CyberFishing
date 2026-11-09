@@ -123,6 +123,10 @@ function checkSpeedMultipliers() {
   const blocked = fixture(); blocked.step(left, { checkWater: x => x >= 400 });
   near(blocked.control.getScreenX(), 395); assert.equal(blocked.control.getFrame().floatMoved, false);
   assert.equal(blocked.control.getFrame().lineTensionActive, true, "blocked tackle cannot create extra slack or speed");
+  for (let i = 0; i < 20; i++) blocked.step(left, { checkWater: x => x >= 400 });
+  for (let i = 0; i < 40; i++) blocked.step(right, { checkWater: () => true });
+  assert(blocked.position.y > 20, `repeatedly blocked tackle must not inflate slack; position.y was ${blocked.position.y}`);
+  assert.equal(blocked.control.getFrame().lineTensionActive, true, "taut line pulls the float when moving right");
   const noDrag = fixture(); noDrag.config.physics.castRodControl.floatDrag.enabled = false;
   noDrag.step(left); near(noDrag.control.getScreenX(), 395);
   assert.equal(noDrag.control.getFrame().lineTensionActive, true, "line reach determines the mode even when tackle dragging is disabled");

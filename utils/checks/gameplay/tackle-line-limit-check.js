@@ -20,6 +20,13 @@ for (const [velocity, expected] of [[{ x: 3, y: 4 }, { x: 0, y: 4 }], [{ x: -3, 
   constraint.apply(p, velocity, { x: 0, y: 0 }, 10);
   assert.deepEqual(p, { x: 10, y: 0 }); assert.deepEqual(velocity, expected, "remove only outward velocity");
 }
+{
+  const p = { x: 12, y: 0 };
+  const v = { x: 5, y: 0 };
+  // Target arc would be x = 10, but water ends at x = 9:
+  constraint.apply(p, v, { x: 0, y: 0 }, 10, (x, y) => x <= 9);
+  assert(p.x <= 9.001 && p.x >= 8.99, `reach constraint must clamp to water boundary, got ${p.x}`);
+}
 
 for (const State of [WaitingState, BitingState]) {
   for (const profiled of [false, true]) {

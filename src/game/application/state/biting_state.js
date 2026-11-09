@@ -158,7 +158,7 @@ export class BitingState extends GameState {
         reelPower,
         pullDirection,
       );
-      this.constrainTackleToLine(groundPlane, bounds, eq);
+      this.constrainTackleToLine(groundPlane, bounds, eq, plane.checkWater);
     } finally {
       groundPlane.exit();
     }

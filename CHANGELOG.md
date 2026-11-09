@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.58 - Cast rod movement preserves line reach and water bounds
+
+- TK-264: moving the cast rod against shore/obstacle no longer inflates line reach or creates phantom slack; the line stays authoritative and tackle reach clamps to valid water.
+
 ## v0.50.57 - Empty tackle leaves only on a double click
 
 - TK-263 (G-131): tackle without a fish reeled into the landing zone (or a spinning lure to the shore, also during a bite) stays in the water; only a double click takes it out.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.49 - New startup limits
 
 - Spec 171 Q4 (owner): startup budgets are now cold 1 s on Fast 4G with CPU x4, 2.5 s on 3G, warm 0.3 s, at most 3 network steps; the measurer and the DEV overlay «⏱ ЗАВАНТАЖЕННЯ» judge by them.
-
-## v0.50.48 - Production release without DEV
-
-- Spec 169 (audit TK-255, owner): npm run build:release builds the game server's release with the game only (no dev.html, DEV code, source modules or public source maps; 220 files instead of 1,187); GitHub Pages keeps the full test release with DEV.
