@@ -149,6 +149,16 @@ export class CastRodControl {
     waterMetric.fromBasePlane(this.#candidate.x, this.#candidate.y, this.#mapCandidate);
     this.#mapCandidate.x = clampFinite(this.#mapCandidate.x, bounds.left, bounds.right);
     this.#mapCandidate.y = clampFinite(this.#mapCandidate.y, bounds.top, bounds.bottom);
+
+    const maxCatchUpPx = (nonNegativeOr(this.#settings()?.speedPxPerSecond, 100) * 3 * 0.05) + 5;
+    const dx = this.#mapCandidate.x - position.x;
+    const dy = this.#mapCandidate.y - position.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > maxCatchUpPx && dist > 0) {
+      this.#mapCandidate.x = position.x + (dx / dist) * maxCatchUpPx;
+      this.#mapCandidate.y = position.y + (dy / dist) * maxCatchUpPx;
+    }
+
     this.#limitToWater(position, this.#mapCandidate, checkWater);
     return waterMetric.distanceMeters(position.x, position.y, this.#mapCandidate.x, this.#mapCandidate.y);
   }
@@ -170,22 +180,36 @@ export class CastRodControl {
   }
 
   #limitToWater(from, to, checkWater) {
-    if (!checkWater || checkWater(to.x, to.y)) return;
+    if (!checkWater) return;
     if (!checkWater(from.x, from.y)) { to.set(from.x, from.y); return; }
 
     const dx = to.x - from.x;
     const dy = to.y - from.y;
+    if (dx === 0 && dy === 0) return;
 
-    const directLow = this.#rayLow(from.x, from.y, dx, dy, checkWater);
-    let bestX = from.x + dx * directLow;
-    let bestY = from.y + dy * directLow;
+    const directT = this.#firstObstacleT(from.x, from.y, dx, dy, checkWater);
+    if (directT >= 1 && checkWater(to.x, to.y)) {
+      const obstacleDist = this.#freeDistToObstacle(from.x, from.y, dx, dy, checkWater, 12);
+      if (obstacleDist < 12) {
+        const factor = Math.min(1, Math.max(0, (obstacleDist / 12) ** 0.75));
+        const moveDist = Math.hypot(dx, dy);
+        const allowedDist = Math.min(moveDist, obstacleDist * factor);
+        if (moveDist > 0 && allowedDist < moveDist) {
+          to.set(from.x + (dx / moveDist) * allowedDist, from.y + (dy / moveDist) * allowedDist);
+        }
+      }
+      return;
+    }
+
+    let bestX = from.x + dx * directT;
+    let bestY = from.y + dy * directT;
     let bestDistSq = (bestX - to.x) ** 2 + (bestY - to.y) ** 2;
 
-    const xALow = this.#axisLow(from.x, dx, (x) => checkWater(x, from.y));
-    if (xALow > 0) {
-      const xA = from.x + dx * xALow;
-      const yALow = this.#axisLow(from.y, dy, (y) => checkWater(xA, y));
-      const yA = from.y + dy * yALow;
+    const tXA = this.#firstObstacleT(from.x, from.y, dx, 0, checkWater);
+    if (tXA > 0) {
+      const xA = from.x + dx * tXA;
+      const tYA = this.#firstObstacleT(xA, from.y, 0, dy, checkWater);
+      const yA = from.y + dy * tYA;
       const distASq = (xA - to.x) ** 2 + (yA - to.y) ** 2;
       if (distASq < bestDistSq) {
         bestX = xA;
@@ -194,16 +218,29 @@ export class CastRodControl {
       }
     }
 
-    const yBLow = this.#axisLow(from.y, dy, (y) => checkWater(from.x, y));
-    if (yBLow > 0) {
-      const yB = from.y + dy * yBLow;
-      const xBLow = this.#axisLow(from.x, dx, (x) => checkWater(x, yB));
-      const xB = from.x + dx * xBLow;
+    const tYB = this.#firstObstacleT(from.x, from.y, 0, dy, checkWater);
+    if (tYB > 0) {
+      const yB = from.y + dy * tYB;
+      const tXB = this.#firstObstacleT(from.x, yB, dx, 0, checkWater);
+      const xB = from.x + dx * tXB;
       const distBSq = (xB - to.x) ** 2 + (yB - to.y) ** 2;
       if (distBSq < bestDistSq) {
         bestX = xB;
         bestY = yB;
         bestDistSq = distBSq;
+      }
+    }
+
+    const chosenDx = bestX - from.x;
+    const chosenDy = bestY - from.y;
+    const chosenDist = Math.hypot(chosenDx, chosenDy);
+    if (chosenDist > 0) {
+      const obstacleDist = this.#freeDistToObstacle(from.x, from.y, chosenDx, chosenDy, checkWater, 12);
+      if (obstacleDist < 12) {
+        const factor = Math.min(1, Math.max(0, (obstacleDist / 12) ** 0.75));
+        const allowedDist = Math.min(chosenDist, obstacleDist * factor);
+        bestX = from.x + (chosenDx / chosenDist) * allowedDist;
+        bestY = from.y + (chosenDy / chosenDist) * allowedDist;
       }
     }
 
@@ -215,28 +252,38 @@ export class CastRodControl {
     to.set(bestX, bestY);
   }
 
-  #rayLow(fromX, fromY, dx, dy, checkWater) {
-    if (dx === 0 && dy === 0) return 0;
-    let low = 0;
-    let high = 1;
-    for (let index = 0; index < 12; index++) {
-      const mid = (low + high) / 2;
-      if (checkWater(fromX + dx * mid, fromY + dy * mid)) low = mid;
-      else high = mid;
+  #firstObstacleT(fromX, fromY, dx, dy, checkWater, stepPx = 1.5) {
+    const dist = Math.hypot(dx, dy);
+    if (dist === 0) return 1;
+    const numSteps = Math.max(1, Math.ceil(dist / stepPx));
+    let prevT = 0;
+    for (let i = 1; i <= numSteps; i++) {
+      const t = Math.min(1, i / numSteps);
+      if (!checkWater(fromX + dx * t, fromY + dy * t)) {
+        let low = prevT;
+        let high = t;
+        for (let j = 0; j < 6; j++) {
+          const mid = (low + high) / 2;
+          if (checkWater(fromX + dx * mid, fromY + dy * mid)) low = mid;
+          else high = mid;
+        }
+        return low;
+      }
+      prevT = t;
     }
-    return low;
+    return 1;
   }
 
-  #axisLow(fromCoord, delta, check) {
-    if (delta === 0) return 0;
-    if (check(fromCoord + delta)) return 1;
-    let low = 0;
-    let high = 1;
-    for (let index = 0; index < 12; index++) {
-      const mid = (low + high) / 2;
-      if (check(fromCoord + delta * mid)) low = mid;
-      else high = mid;
+  #freeDistToObstacle(fromX, fromY, dx, dy, checkWater, maxDist = 12) {
+    const len = Math.hypot(dx, dy);
+    if (len === 0) return 0;
+    const nx = dx / len;
+    const ny = dy / len;
+    let d = 0;
+    for (let s = 0.5; s <= maxDist; s += 0.5) {
+      if (!checkWater(fromX + nx * s, fromY + ny * s)) return d;
+      d = s;
     }
-    return low;
+    return maxDist;
   }
 }

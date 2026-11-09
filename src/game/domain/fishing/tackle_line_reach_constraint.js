@@ -10,22 +10,25 @@ export class TackleLineReachConstraint {
     const nx = dx / distance, ny = dy / distance;
     const targetX = rod.x + nx * radius;
     const targetY = rod.y + ny * radius;
-    if (checkWater && !checkWater(targetX, targetY)) {
-      const fromX = checkWater(position.x, position.y) ? position.x : rod.x;
-      const fromY = checkWater(position.x, position.y) ? position.y : rod.y;
-      const dxTarget = targetX - fromX;
-      const dyTarget = targetY - fromY;
 
-      const directLow = this.#rayLow(fromX, fromY, dxTarget, dyTarget, checkWater);
-      let bestX = fromX + dxTarget * directLow;
-      let bestY = fromY + dyTarget * directLow;
+    const fromX = checkWater && checkWater(position.x, position.y) ? position.x : rod.x;
+    const fromY = checkWater && checkWater(position.x, position.y) ? position.y : rod.y;
+    const dxTarget = targetX - fromX;
+    const dyTarget = targetY - fromY;
+
+    const directT = checkWater ? this.#firstObstacleT(fromX, fromY, dxTarget, dyTarget, checkWater) : 1;
+    const isDirectWater = checkWater ? (directT >= 1 && checkWater(targetX, targetY)) : true;
+
+    if (checkWater && !isDirectWater) {
+      let bestX = fromX + dxTarget * directT;
+      let bestY = fromY + dyTarget * directT;
       let bestDistSq = (bestX - targetX) ** 2 + (bestY - targetY) ** 2;
 
-      const xALow = this.#axisLow(fromX, dxTarget, (x) => checkWater(x, fromY));
-      if (xALow > 0) {
-        const xA = fromX + dxTarget * xALow;
-        const yALow = this.#axisLow(fromY, dyTarget, (y) => checkWater(xA, y));
-        const yA = fromY + dyTarget * yALow;
+      const tXA = this.#firstObstacleT(fromX, fromY, dxTarget, 0, checkWater);
+      if (tXA > 0) {
+        const xA = fromX + dxTarget * tXA;
+        const tYA = this.#firstObstacleT(xA, fromY, 0, dyTarget, checkWater);
+        const yA = fromY + dyTarget * tYA;
         const distASq = (xA - targetX) ** 2 + (yA - targetY) ** 2;
         if (distASq < bestDistSq) {
           bestX = xA;
@@ -34,11 +37,11 @@ export class TackleLineReachConstraint {
         }
       }
 
-      const yBLow = this.#axisLow(fromY, dyTarget, (y) => checkWater(fromX, y));
-      if (yBLow > 0) {
-        const yB = fromY + dyTarget * yBLow;
-        const xBLow = this.#axisLow(fromX, dxTarget, (x) => checkWater(x, yB));
-        const xB = fromX + dxTarget * xBLow;
+      const tYB = this.#firstObstacleT(fromX, fromY, 0, dyTarget, checkWater);
+      if (tYB > 0) {
+        const yB = fromY + dyTarget * tYB;
+        const tXB = this.#firstObstacleT(fromX, yB, dxTarget, 0, checkWater);
+        const xB = fromX + dxTarget * tXB;
         const distBSq = (xB - targetX) ** 2 + (yB - targetY) ** 2;
         if (distBSq < bestDistSq) {
           bestX = xB;
@@ -65,28 +68,25 @@ export class TackleLineReachConstraint {
     }
   }
 
-  #rayLow(fromX, fromY, dx, dy, checkWater) {
-    if (dx === 0 && dy === 0) return 0;
-    let low = 0;
-    let high = 1;
-    for (let index = 0; index < 12; index++) {
-      const mid = (low + high) / 2;
-      if (checkWater(fromX + dx * mid, fromY + dy * mid)) low = mid;
-      else high = mid;
+  #firstObstacleT(fromX, fromY, dx, dy, checkWater, stepPx = 1.5) {
+    const dist = Math.hypot(dx, dy);
+    if (dist === 0) return 1;
+    const numSteps = Math.max(1, Math.ceil(dist / stepPx));
+    let prevT = 0;
+    for (let i = 1; i <= numSteps; i++) {
+      const t = Math.min(1, i / numSteps);
+      if (!checkWater(fromX + dx * t, fromY + dy * t)) {
+        let low = prevT;
+        let high = t;
+        for (let j = 0; j < 6; j++) {
+          const mid = (low + high) / 2;
+          if (checkWater(fromX + dx * mid, fromY + dy * mid)) low = mid;
+          else high = mid;
+        }
+        return low;
+      }
+      prevT = t;
     }
-    return low;
-  }
-
-  #axisLow(fromCoord, delta, check) {
-    if (delta === 0) return 0;
-    if (check(fromCoord + delta)) return 1;
-    let low = 0;
-    let high = 1;
-    for (let index = 0; index < 12; index++) {
-      const mid = (low + high) / 2;
-      if (check(fromCoord + delta * mid)) low = mid;
-      else high = mid;
-    }
-    return low;
+    return 1;
   }
 }

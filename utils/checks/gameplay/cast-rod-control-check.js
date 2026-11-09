@@ -170,6 +170,29 @@ function checkLine() {
   assert.equal(slidingMoved, true, "float on the shoreline slides along the water boundary");
   assert.ok(sliding.position.x > 400, "float moves sideways along the shoreline");
   assert.ok(sliding.position.y <= 200.0001, "float does not enter land beyond the shoreline");
+
+  // TK-264.2: continuous collision check prevents teleportation across land ledges, and float smoothly decelerates to 0 at obstacles
+  const ledgeFixture = fixture();
+  ledgeFixture.position.set(420, 280);
+  const ledgeWater = (x, y) => (x >= 450 && x <= 500) ? y <= 250 : y <= 300;
+  const deltas = [];
+  for (let i = 0; i < 120; i++) {
+    const prevX = ledgeFixture.position.x;
+    const prevY = ledgeFixture.position.y;
+    ledgeFixture.step(right, { checkWater: ledgeWater });
+    const delta = Math.hypot(ledgeFixture.position.x - prevX, ledgeFixture.position.y - prevY);
+    deltas.push(delta);
+    assert.ok(ledgeFixture.position.x < 450.001, `float must never jump across land ledge, got x=${ledgeFixture.position.x}`);
+    assert.ok(ledgeFixture.position.y <= 300.001, `float must stay in valid water, got y=${ledgeFixture.position.y}`);
+  }
+  const movingDeltas = deltas.filter(d => d > 0.0001);
+  assert.ok(movingDeltas.length >= 5, "float moved across multiple frames");
+  const tailDeltas = movingDeltas.slice(-5);
+  for (let i = 1; i < tailDeltas.length; i++) {
+    assert.ok(tailDeltas[i] <= tailDeltas[i - 1] + 1e-4, `tail step must decelerate smoothly, got ${tailDeltas[i]} after ${tailDeltas[i - 1]}`);
+  }
+  assert.ok(tailDeltas.at(-1) < 0.2, `final movement step before stop must be near zero, got ${tailDeltas.at(-1)}`);
+
   blocked.config.physics.castRodControl.floatDrag.enabled = false; assert.equal(blocked.step(right).floatMoved, false);
   for (const perspective of [false, true]) {
     const f = fixture({ perspective });

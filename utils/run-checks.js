@@ -5,6 +5,13 @@ const path = require("node:path");
 const { spawn, spawnSync } = require("node:child_process");
 const { CHECK_DEFINITIONS } = require("./testing/suites/check_manifest");
 
+if (process.platform === "win32") {
+  const gitCmd = "C:\\Program Files\\Git\\cmd";
+  if (!process.env.PATH?.includes(gitCmd) && fs.existsSync(gitCmd)) {
+    process.env.PATH = `${gitCmd};${process.env.PATH || ""}`;
+  }
+}
+
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const PASS_LINE = /\b(?:passed?|ok)\b/iu;
 

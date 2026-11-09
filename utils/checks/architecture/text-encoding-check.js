@@ -10,6 +10,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
+if (process.platform === "win32") {
+  const gitCmd = "C:\\Program Files\\Git\\cmd";
+  if (!process.env.PATH?.includes(gitCmd) && fs.existsSync(gitCmd)) {
+    process.env.PATH = `${gitCmd};${process.env.PATH || ""}`;
+  }
+}
+
 const ROOT = path.resolve(__dirname, "../../..");
 const SHIPPED = /^(?:[^/]+\.html|src\/.+\.(?:js|css|json)|assets\/.+\.(?:svg|json|atlas)|vendor\/manifest\.json)$/u;
 const CP1252_CONTINUATION = " -¿€‚ƒ„…†‡ˆ‰Š‹ŒŽ"

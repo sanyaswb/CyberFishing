@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.60 - Anti-teleportation and smooth deceleration at obstacles
+
+- TK-264.2: continuous collision check prevents tackle from jumping across land ledges when moving the rod; tackle movement smoothly decelerates to zero upon encountering obstacles instead of abruptly freezing.
+
 ## v0.50.59 - Water boundary sliding for rod movement
 
 - TK-264.1: float now slides along the water shoreline and mask boundaries when the rod moves sideways, preventing deadlocks when leading the tackle.
@@ -38,7 +42,4 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Spec 170 (owner): the 2D canvas stays the scene's reserve with nothing extra: the separate spine-webgl path (only reachable in dev.html?scene=canvas) is removed; Spine plays only on the WebGL scene, the reserve shows the rod's and boat's static pictures. Spec 103 closed.
 
-## v0.50.50 - Offline cache
-
-- Spec 171 stage 4 (owner): after the first full load the game starts instantly from its offline cache and plays without the network; a new release takes over on the next launch. Only built releases (Pages, server) register it; dev.html and npm run dev never do.
 
