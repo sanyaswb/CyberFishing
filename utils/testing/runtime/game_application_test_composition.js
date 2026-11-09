@@ -49,7 +49,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
     env:{getPhysicsEnv:()=>physics,getSnapshot:()=>({time:5})},input:{getState:()=>input,setDragControlEnabled(value){assert.equal(value,true);},setPointerPanEnabled(value){this.pointerPanEnabled=value;},dispose(){disposed.push('input');}},
     ui:{updateNetButtonState(){},dispose(){disposed.push('ui');}},inventoryUI:{updateDynamicProgression(dt){assert.equal(dt,16);events.push('inventory-ui');},open(){events.push('open');},showWarning(message){warnings.push(message);},dispose(){disposed.push('inventory-ui');}},
     chum:{getBoats:()=>[],getChumDataAt:()=>({bonus:1,targets:[]}),dispose(){disposed.push('chum');}},bite:{setFishDatabase(value){assert.equal(value,source.context.FISH_DB);events.push('fish-db');}},
-    world:{refreshViewport(){events.push('viewport');},refreshLocationConfig(value,resources){assert.equal(value,config.locations);assert.equal(resources,locationResources);events.push('location');},pan(x,y){assert.equal(x,3);assert.equal(y,0);events.push('pan');},getWaterMetric:()=>null,update(dt,scale){assert.equal(dt,16);assert.equal(scale,config.debug.timeScale);events.push('world');return{time:5};}},
+    world:{refreshViewport(){events.push('viewport');},refreshLocationConfig(value,resources){assert.equal(value,config.locations);assert.equal(resources,locationResources);events.push('location');},pan(x,y){assert.equal(y,0);if(x!==3){assert.equal(x,-50,'spec 153: the resize keeps the rod at its world point (400) while the centre moves 400 -> 450');events.push('recentre');return;}events.push('pan');},getWaterMetric:()=>null,update(dt,scale){assert.equal(dt,16);assert.equal(scale,config.debug.timeScale);events.push('world');return{time:5};}},
     rendering:{assetPreloadCoordinator,locationAssetLoader:{load:()=>Promise.resolve(locationResources)}},
     fishing:{consumeWetFeederChum(eq,exposure){assert.equal(eq,equipment);events.push(['wet',exposure]);}},castPenalty:{update(dt){assert.equal(dt,16);events.push('cast');}},
     equipmentRules:{getMaxHookDepth:()=>8,getRodDisplayName:()=> 'Test rod'},baitRules:{isActiveLure:()=>false},playerCastRules:{canPlayerCast:(eq,boat)=>eq===equipment&&boat===null},
@@ -95,7 +95,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   assert.equal(listenerCounter.getActiveCount(),dev?3:2,'production subscribes no DEV hook');
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);
   for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','cast','time','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
-  assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),1); // Preserve the existing null playable-bound clamp.
+  assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),200/1280); // Spec 153 D2: 200 map px from the rod at 400 over half the reference 2560 px (the old null playable bound pinned the rod at the left padding).
   events.length=0;
   for(let event=0;event<100;event++)windowTarget.emit('resize');
   assert.equal(resizeCalls,0,'resize events must not reset the Canvas between game frames');
@@ -104,6 +104,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   assert.equal(resizeCalls,1,'the next game frame consumes one pending viewport resize');
   assert.equal(events.filter(value=>value==='viewport').length,1);
   assert.equal(events.indexOf('viewport')<events.indexOf('world'),true,'new viewport is applied before world/input update');
+  assert.equal(events.filter(value=>value==='recentre').length,1,'spec 153 D3: one camera recentring per consumed resize keeps the rod at its world place');
   assert.equal(app.getViewportSize().width,900);assert.equal(app.getViewportSize(),viewport);
   appPorts.update(16);assert.equal(resizeCalls,1,'stable game frames perform no viewport resize');
   input.pointerDown=true;events.length=0;app.update(16);assert.equal(events.includes('pan'),false);input.pointerDown=false;

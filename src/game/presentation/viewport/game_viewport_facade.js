@@ -13,6 +13,10 @@ export class GameViewportFacade {
   #playableScratch = new Vector2(0, 0);
   #viewportSize = { width: 0, height: 0 };
   #rodVisualOffsetSystem;
+  // Spec 153 (D3): the rod's world X. Its screen X is the camera's projection of it, so the window size and the camera
+  // following the tackle never move the rod in the world; null until the camera is placed (then the configured screen X).
+  #rodAnchorX = null;
+  #anchorScratch = new Vector2(0, 0);
 
   constructor({
     world,
@@ -45,6 +49,23 @@ export class GameViewportFacade {
 
   refreshLocationConfig(locationsConfig, locationResources) {
     this.#world.refreshLocationConfig(locationsConfig, locationResources);
+    // A new location places its camera anew; the rod takes the configured screen place in it.
+    this.#rodAnchorX = null;
+  }
+
+  // Spec 153: after the canvas changed size the camera brings the rod's world place to the new canvas centre (as far as
+  // the map allows); the rod itself stays where it is in the world.
+  keepRodAnchored() {
+    this.recenterRod(this.#rodAnchor());
+  }
+
+  // The player's pan (scouting, chum aim): the rod goes with the camera and keeps its screen place, as the fishing spot
+  // is chosen by panning.
+  panByPlayer(deltaX) {
+    const before = this.#projector.screenToVirtual(0, 0, this.#anchorScratch).x;
+    this.#world.pan(deltaX, 0);
+    const moved = this.#projector.screenToVirtual(0, 0, this.#anchorScratch).x - before;
+    if (this.#rodAnchorX !== null) this.#rodAnchorX += moved;
   }
 
   applyPan(input, stateName, isAimingChum) {
@@ -58,7 +79,7 @@ export class GameViewportFacade {
     ) {
       return;
     }
-    this.#world.pan(input.panDeltaX, 0);
+    this.panByPlayer(input.panDeltaX);
   }
 
   getDynamicBounds() {
@@ -83,9 +104,12 @@ export class GameViewportFacade {
     return this.#projector.screenToVirtual(this.#resolveBaseRodScreenX(screenXOverride), 0, this.#screenScratch).x;
   }
 
+  // The camera puts the rod's world point at the rod's configured screen place (the centre for "center"); no pan when
+  // it is there already.
   recenterRod(virtualX) {
     const currentX = this.#projector.virtualToScreen(virtualX, 0, this.#screenScratch).x;
-    this.#world.pan(currentX - this.#canvasMetrics.width / 2, 0);
+    const delta = currentX - this.#configuredRodScreenX();
+    if (Math.abs(delta) > 1e-9) this.#world.pan(delta, 0);
     return this.#projector.virtualToScreen(virtualX, 0, this.#screenScratch).x;
   }
 
@@ -97,15 +121,14 @@ export class GameViewportFacade {
     return this.#baseRodVirtualPos;
   }
 
+  // Spec 153 (D2): the fish's side share = its distance from the rod along X in map units over half the reference
+  // screen width (CONFIG.locations.baseResolution): on the reference 2560 px screen at scale 1 this is the screen share
+  // the fight was tuned with, and no window size or camera changes it.
   getScreenOffsetRatio(floatPos, screenXOverride = null) {
-    const sPos = this.#projector.virtualToScreen(
-      floatPos.x,
-      floatPos.y,
-      this.#screenScratch,
-    );
-    const screenX = this.getRodScreenX(screenXOverride, null);
-    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
-    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+    const rodScreenX = this.getRodScreenX(screenXOverride, this.getDynamicBounds());
+    const rodX = this.#projector.screenToVirtual(rodScreenX, 0, this.#screenScratch).x;
+    const halfWidth = Math.max(1, (Number(this.#config.locations?.baseResolution?.width) || 2560) / 2);
+    return Math.min(1, Math.abs(floatPos.x - rodX) / halfWidth);
   }
 
   updateRodVisualOffset({ dtMs, input, fightDebug, bounds, stateName } = {}) {
@@ -178,13 +201,19 @@ export class GameViewportFacade {
   }
 
   #resolveBaseRodScreenX(screenXOverride = null) {
+    if (Number.isFinite(screenXOverride)) return screenXOverride;
+    return this.#projector.virtualToScreen(this.#rodAnchor(), 0, this.#anchorScratch).x;
+  }
+
+  #rodAnchor() {
+    this.#rodAnchorX ??= this.#projector.screenToVirtual(this.#configuredRodScreenX(), 0, this.#anchorScratch).x;
+    return this.#rodAnchorX;
+  }
+
+  // The rod's screen place from CONFIG.ui.rod.x ("center" or pixels), where a new camera puts it.
+  #configuredRodScreenX() {
     const rodConfig = this.#config.ui?.rod || {};
-    const rodX =
-      Number.isFinite(screenXOverride)
-        ? screenXOverride
-        : rodConfig.x === "center"
-          ? this.#canvasMetrics.width / 2
-          : Number(rodConfig.x);
+    const rodX = rodConfig.x === "center" ? this.#canvasMetrics.width / 2 : Number(rodConfig.x);
     return Number.isFinite(rodX)
       ? rodX
       : this.#canvasMetrics.width / 2;

@@ -27,12 +27,14 @@ Expected: the boat reaches reachable targets and returns; same speed at any fram
 Actual: U trap never reached in 60 s (46 evades), land peninsula blocks the return until the battery dies (sensors see only collision cells), 30-125 rad of turning at walls, top speed 180 instead of 250 px/s at 144 Hz (per-frame damping).
 Notes: [spec 154](../specs/154-bait-boat-navigation/spec.md).
 
-### G-126 Window size moves the float, fish and boat (P1, open)
+### G-126 Window size moves the float, fish and boat (P1, fixed v0.50.53)
 Found: 2026-10-30, owner, v0.49.7.
 Reproduce: during a fight or a boat trip narrow the browser window or pan — objects near the screen edge are pushed toward the centre.
 Expected: the window is only the camera; world positions and physics do not depend on it.
 Actual: CONFIG.locations.lockZoneXToScreen takes the physics X bounds from the visible screen (GameWorld.getDynamicBounds), and WaterEntity clamps into them every frame; the fight's side share divides by half the canvas width.
 Notes: [spec 153](../specs/153-viewport-independent-world/spec.md).
+Fixed: spec 153 (v0.50.53): map bounds, a world anchor for the rod, the camera follows the tackle along X; the side share
+(DEV diagnostics only) in map units. Incident I-18, rule R19. Check `viewport` (fails on 0.50.52); game-cycle unchanged.
 
 ### G-125 Chum zones do not follow game time and undelivered zones never expire (P2, done in v0.49.8; owner acceptance pending)
 Found: 2026-10-30, owner + code review of the bait boat, v0.49.7.

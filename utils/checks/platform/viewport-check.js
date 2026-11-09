@@ -223,5 +223,54 @@ const edgeRodX = facade.recenterRod(edgeWorldX);
 assert(edgeRodX < 96 && Math.abs(stripProjector.screenToVirtual(edgeRodX, 0).x - edgeWorldX) < 1e-9,
   "at the map edge the camera stops and the rod keeps its world position off centre");
 
-console.log("Viewport passed: perspective boundaries/live config, 120 camera frames, one query per frame and reused function/vector identities; split inventory policy, stage, DEV source and rod recentring.");
+// Spec 153 (G-126): the window size is only the camera, never the world.
+const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
+// lockZoneXToScreen: the retired production setting (true until spec 153), kept here so the old screen-locked bounds fail.
+const worldConfig = { baseResolution: { width: 1000, height: 800 }, cameraFocusY: 0.7, cellSize: 40, lockZoneXToScreen: true,
+  map: { lake: { safeZone: { top: 100, bottom: 500 } } } };
+const mapBounds = { left: 0, right: 1000, top: 100, bottom: 500 };
+const worldProjector = new ViewportProjector(worldConfig, "lake", () => ({ scale: 1 }));
+const worldMetrics = { width: 640, height: 360 };
+const gameWorld = new GameWorld({ map: { getCastableBoundsVirtual: () => mapBounds, recalculateZones() {} }, env: {},
+  chum: {}, projector: worldProjector, location: {}, canvasMetrics: worldMetrics, clock: {}, locationConfig: worldConfig,
+  waterMetricSource: {} });
+const fullConfig = { ui: { rod: { x: "center" } }, locations: worldConfig };
+const worldFacade = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(),
+  world: { pan: (dx, dy) => worldProjector.pan(dx, dy) }, projector: worldProjector, canvasMetrics: worldMetrics,
+  config: fullConfig, biteEnvironmentService: { getDynamicBounds: () => gameWorld.getDynamicBounds() } });
+const sizes = [[640, 360], [192, 360], [1400, 360]];
+const readings = sizes.map(([width, height]) => {
+  worldMetrics.width = width; worldMetrics.height = height;
+  gameWorld.refreshViewport(false);
+  worldFacade.keepRodAnchored();
+  const bounds = { ...gameWorld.getDynamicBounds() };
+  const rodX = worldProjector.screenToVirtual(worldFacade.getRodScreenX(), 0).x;
+  return { bounds, rodX, ratio: worldFacade.getScreenOffsetRatio({ x: rodX + 200, y: 300 }) };
+});
+for (const reading of readings) {
+  assert.deepEqual(reading.bounds, mapBounds, "physics bounds are the map's water at every window size (D1)");
+  assert(Math.abs(reading.rodX - readings[0].rodX) < 1e-9, `the rod keeps its world X at every window size (D3): ${reading.rodX}`);
+  assert(Math.abs(reading.ratio - 0.4) < 1e-9, `the fish's side share is 200 map px / half the reference width (D2): ${reading.ratio}`);
+}
+// D1: the camera follows the tackle near the screen edge; the rod stays in its world place and in view.
+worldMetrics.width = 640; worldMetrics.height = 360;
+gameWorld.refreshViewport(false);
+worldFacade.keepRodAnchored();
+const anchoredRodX = worldProjector.screenToVirtual(worldFacade.getRodScreenX(), 0).x;
+const nearEdge = worldProjector.screenToVirtual(630, 0).x;
+for (let frame = 0; frame < 120; frame++) worldProjector.followVirtualX(nearEdge, anchoredRodX, 16.66, 0.15);
+const tackleScreenX = worldProjector.virtualToScreen(nearEdge, 0).x;
+assert(tackleScreenX <= 640 * 0.85 + 1, `the camera brings the tackle out of the edge band: ${tackleScreenX}`);
+assert(Math.abs(worldProjector.screenToVirtual(worldFacade.getRodScreenX(), 0).x - anchoredRodX) < 1e-9,
+  "following the tackle never moves the rod in the world");
+const farAway = anchoredRodX + 5000;
+for (let frame = 0; frame < 240; frame++) worldProjector.followVirtualX(farAway, anchoredRodX, 16.66, 0.15);
+const rodOnScreen = worldFacade.getRodScreenX();
+assert(rodOnScreen >= 640 * 0.15 - 1 && rodOnScreen <= 640 * 0.85 + 1, `the rod stays in view first: ${rodOnScreen}`);
+// The player's pan in scouting carries the rod with the camera, as before (the spot is chosen by panning).
+const beforePan = worldFacade.getRodScreenX();
+worldFacade.panByPlayer(-40);
+assert(Math.abs(worldFacade.getRodScreenX() - beforePan) < 1e-9, "a player's pan keeps the rod at its screen place");
+
+console.log("Viewport passed: perspective boundaries/live config, 120 camera frames, one query per frame and reused function/vector identities; split inventory policy, stage, DEV source and rod recentring; spec 153 (map bounds, rod world anchor, side share and tackle follow at every window size).");
 

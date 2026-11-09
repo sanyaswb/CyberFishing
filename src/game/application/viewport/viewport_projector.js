@@ -158,6 +158,29 @@ export class ViewportProjector {
     this.#offsetY = -this.#cameraY;
   }
 
+  // Spec 153 (D1): along X the camera follows the tackle (targetX: the float, the fish in a fight) only when it enters
+  // the edge band (marginShare of the canvas width on each side), and never so far that keepX (the rod) leaves the
+  // band: the rod stays in view first, the tackle may then go past the edge. Eases like focusOnVirtualPos.
+  followVirtualX(targetX, keepX, dt, marginShare = 0.15, lerpSpeed = 0.08) {
+    if (this.#maxScrollX <= 0 || !Number.isFinite(targetX)) return;
+    const width = this.#canvasWidth;
+    const margin = width * Math.min(0.45, Math.max(0, Number(marginShare) || 0));
+    const targetPx = targetX * this.#scale;
+    let desired = this.#cameraX;
+    if (targetPx - desired < margin) desired = targetPx - margin;
+    else if (targetPx - desired > width - margin) desired = targetPx - (width - margin);
+    if (Number.isFinite(keepX)) {
+      const keepPx = keepX * this.#scale;
+      desired = Math.min(Math.max(desired, keepPx - (width - margin)), keepPx - margin);
+    }
+    desired = Math.max(0, Math.min(desired, this.#maxScrollX));
+    if (desired === this.#cameraX) return;
+    const timeScale = dt / 16.66;
+    const lerp = 1 - Math.pow(1 - lerpSpeed, timeScale);
+    this.#cameraX += (desired - this.#cameraX) * lerp;
+    this.#offsetX = -this.#cameraX;
+  }
+
   screenToVirtual(screenX, screenY, out = null) {
     const x = (screenX - this.#offsetX) / this.#scale;
     const y = (screenY - this.#offsetY) / this.#scale;

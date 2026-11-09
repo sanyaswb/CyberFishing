@@ -32,7 +32,25 @@ rule as something the next change can follow.
 | R16 | A pick mode (a consumable or slot pick that narrows the list) ends with the choice it was opened for. A command that fills the picked target leaves the pick explicitly; a check selects «Усе» after the choice and expects items outside the picked kind. | I-15 |
 | R17 | A DEV tool that reads live game data asks for it itself (a port such as `isLiveDataRequested`); it never depends on another tool's switch (Overlay, console modules) being on. Changing a debug default is checked against every reader of the events that switch gates. | I-16 |
 | R18 | A DEV edit of a value reaches every result derived from it at the start (limits, pools, caches), not only the object that holds it. The check edits through the same path and asserts the effect on the running system (the fight's limit), not the stored value. | I-17 |
+| R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. | I-18 |
 
+<a id="i-18"></a>
+
+## I-18 · 2026-11-09 · v0.50.53: narrowing the window pulled the fish, float and boat (G-126, spec 153)
+
+- **Seen:** the owner noticed (2026-10-30) that narrowing the browser window during a fight or a boat trip pushed objects
+  near the screen edge towards the centre: a player could pull the fish in by resizing the window.
+- **Cause:** `GameWorld.getDynamicBounds()` took the physics X bounds from the visible screen while
+  `CONFIG.locations.lockZoneXToScreen` was true, and `WaterEntity` clamps the float and the fish into them every frame;
+  the rod stood at the screen centre, so its world X followed the canvas and the camera; the DEV side share divided by half
+  the canvas width and, with no bounds passed, `RodVisualOffsetSystem.resolveScreenX` read `Number(null) = 0` as the
+  playable edge and pinned the rod at the left padding.
+- **Fix:** the bounds are the map's water; the rod has a world anchor (`GameViewportFacade`) that moves only with the
+  player's pan, and every resize puts it back at its screen place; the camera follows the tackle along X near the edge
+  with the rod kept in view (`ViewportProjector.followVirtualX`); the side share is map units over half the reference
+  width; a missing playable edge is no limit.
+- **Rule R19.** Check: `viewport` (three window sizes: map bounds, rod world X, side share; the camera follows the tackle
+  and keeps the rod in view; fails with the old `GameWorld`).
 <a id="i-17"></a>
 
 ## I-17 · 2026-11-08 · v0.50.43: stamina sliders of ACTIVE FISH did nothing in the fight (TK-254.1)

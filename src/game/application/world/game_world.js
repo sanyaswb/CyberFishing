@@ -1,5 +1,3 @@
-import { Vector2 } from "../../../engine/math/vector2.js";
-
 export class GameWorld {
   #map;
   #env;
@@ -12,8 +10,6 @@ export class GameWorld {
   #waterMetricSource;
   #isZoneMotionPaused;
   #bounds = { left: 0, right: 0, top: 0, bottom: 0 };
-  #virtualTopLeft = new Vector2(0, 0);
-  #virtualBottomRight = new Vector2(0, 0);
 
   constructor({
     map,
@@ -58,22 +54,12 @@ export class GameWorld {
     }
   }
 
+  // Spec 153 (G-126): the physics bounds are the map's castable water, whatever the window shows; the window is only
+  // the camera (a narrower window shows less, it moves nothing).
   getDynamicBounds() {
-    const locations = this.#locationConfig;
-    const mapBounds = this.#map.getCastableBoundsVirtual(locations.cellSize);
-    const vTL = this.#projector.screenToVirtual(0, 0, this.#virtualTopLeft);
-    const vBR = this.#projector.screenToVirtual(
-      this.#canvasMetrics.width,
-      this.#canvasMetrics.height,
-      this.#virtualBottomRight,
-    );
-
-    this.#bounds.left = locations.lockZoneXToScreen
-      ? Math.max(vTL.x, mapBounds.left)
-      : mapBounds.left;
-    this.#bounds.right = locations.lockZoneXToScreen
-      ? Math.min(vBR.x, mapBounds.right)
-      : mapBounds.right;
+    const mapBounds = this.#map.getCastableBoundsVirtual(this.#locationConfig.cellSize);
+    this.#bounds.left = mapBounds.left;
+    this.#bounds.right = mapBounds.right;
     this.#bounds.top = mapBounds.top;
     this.#bounds.bottom = mapBounds.bottom;
 
@@ -108,7 +94,7 @@ export class GameWorld {
     this.#map.update(dt, envSnapshot.time, this.#isZoneMotionPaused?.() === true);
     this.#chum.update();
 
-    // Spec 151: a boat moves on the whole map's water, not inside the visible screen (lockZoneXToScreen).
+    // Spec 151: a boat moves on the whole map's water.
     const boatBounds = this.#map.getCastableBoundsVirtual(locations.cellSize);
     this.#chum.updateBoats(
       dt,

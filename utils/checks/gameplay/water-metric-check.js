@@ -370,7 +370,7 @@ function checkUnifiedWaterAreas() {
     const waterCell = { isCastable: true, hasCollision: false };
     const map = { currentLocationId: "test", getCastableBoundsVirtual: () => bounds,
       getCellAtVirtualPos: (_x, y) => y >= bounds.top && y <= bounds.bottom ? waterCell : null, getBackgroundRenderData: () => ({ loaded: false }) };
-    const config = { ...CONFIG, locations: { ...CONFIG.locations, lockZoneXToScreen: false,
+    const config = { ...CONFIG, locations: { ...CONFIG.locations,
       map: { test: { ...CONFIG.locations.map.test, waterProjection: projection } } } };
     const waterMetricSource = new LocationWaterMetricSource({ map, getLocations: () => config.locations, resolver });
     const world = new GameWorld({ map, projector, locationConfig: config.locations, waterMetricSource,

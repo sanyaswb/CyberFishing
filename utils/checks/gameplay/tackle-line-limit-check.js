@@ -34,7 +34,7 @@ for (const State of [WaitingState, BitingState]) {
       const rod = { x: 420, y: 1000 };
       const localConfig = { ...CONFIG, physics: { ...CONFIG.physics,
         castRodControl: { ...CONFIG.physics.castRodControl, enabled: controlEnabled } } };
-      const projector = { focusOnVirtualPos() {}, virtualToScreen: (x, y, out) => out.set(x, y),
+      const projector = { focusOnVirtualPos() {}, followVirtualX() {}, virtualToScreen: (x, y, out) => out.set(x, y),
         screenToVirtual: (x, y, out) => out.set(x, y) };
       const control = new CastRodControl({ config: localConfig, projector, canvasMetrics: { width: 1000, height: 1000 },
         getBaseRodVirtualPos: () => rod });

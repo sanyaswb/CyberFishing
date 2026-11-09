@@ -40,7 +40,7 @@ const config = { casting: { enabled: true }, input: { pointerThreshold: 10,
 } };
 let equipment = {}, warnings = 0, casts = 0;
 const deps = {
-  config, projector: { focusOnVirtualPos() {} }, rng: {},
+  config, projector: { focusOnVirtualPos() {}, followVirtualX() {} }, rng: {},
   inventory: { getEquipped: () => equipment, evaluateCastReadiness: () => ({ canCast: !!equipment.rod }) },
   world: { getWaterMetric: () => ({}) }, getViewportSize: () => ({ width: 800, height: 600 }),
   isAimingChum: () => false, canPlayerCast: () => false,
@@ -58,7 +58,8 @@ const canvas = eventTarget();
 const input = new InputController(canvas, null, { runtimeConfig: config, listeners: new EventLifecycle() });
 input.setPointerPanEnabled(true);
 const pans = [];
-const viewport = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(), config, world: { pan: (x, y) => pans.push([x, y]) } });
+const viewport = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule("src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(), config, world: { pan: (x, y) => pans.push([x, y]) },
+  projector: { screenToVirtual: (x, y, out) => out.set(x, y) } });
 function frame() {
   const state = input.getState();
   viewport.applyPan(state, "scouting", false);

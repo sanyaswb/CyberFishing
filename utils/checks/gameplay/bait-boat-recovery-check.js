@@ -150,7 +150,7 @@ async function run() {
     assert.deepEqual(compose(unknown).service.getBoats(), [], "a saved boat the player no longer has is not restored");
   }
 
-  // GameWorld gives the boat the map's water, not the visible screen (lockZoneXToScreen narrows only the camera).
+  // GameWorld gives the boat the map's water, not the visible screen (spec 153: the window is only the camera).
   {
     const { GameWorld } = await import("../../../src/game/application/world/game_world.js");
     let boatWater = null;
@@ -162,11 +162,11 @@ async function run() {
       env: { update() {}, getSnapshot: () => ({ time: 12 }) },
       chum: { update() {}, updateBoats(dt, checkPhysics) { boatWater = checkPhysics; } },
       location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
-      locationConfig: { ...m.CONFIG.locations, lockZoneXToScreen: true, cellSize: 40 },
+      locationConfig: { ...m.CONFIG.locations, cellSize: 40 },
       waterMetricSource: { current: () => metric },
     });
     world.update(16, 1);
-    assert.equal(world.getDynamicBounds().right, 400, "the screen-locked gameplay bounds end at the screen");
+    assert.equal(world.getDynamicBounds().right, 4000, "the gameplay bounds are the map's water, not the screen (spec 153)");
     assert.equal(boatWater(1500, 1000), cell, "the boat still has water beyond the visible screen");
     assert.equal(boatWater(4100, 1000), null, "but not beyond the map's water");
   }

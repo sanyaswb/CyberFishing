@@ -71,6 +71,9 @@ export class PlayingState extends GameState {
   update(dt, bounds, envData) {
     const floatPos = this.deps.float.getPosition();
     this.deps.projector.focusOnVirtualPos(floatPos.y, dt, 0.05);
+    // Spec 153 (D1): along X the camera follows the tackle near the screen edge, keeping the rod in view.
+    this.deps.projector.followVirtualX(floatPos.x, this.deps.world.getRodVirtualPos(bounds).x, dt,
+      this.deps.config.locations?.cameraFollowMarginX);
     const input = envData.input || this.deps.input.getState();
     const fightContext = this.#fightFrameContext;
     fightContext.floatEntity = this.deps.float;

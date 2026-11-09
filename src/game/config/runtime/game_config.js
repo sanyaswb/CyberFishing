@@ -228,7 +228,9 @@ export const CONFIG = {
     baseResolution: { width: 2560, height: 1440 },
     designCellSize: 40,
     cellSize: 40,
-    lockZoneXToScreen: true,
+    // Spec 153 (D1): the camera follows the float or the fish along X once it enters this share of the screen at either
+    // edge, keeping the rod in view; the window size never changes the world (the physics bounds are the map's water).
+    cameraFollowMarginX: 0.15,
     cameraFocusY: 0.7, // Позиція камери для поплавка на екрані (0.5 = центр, 0.7 = нижня третина)
 
     map: MAP_DB,

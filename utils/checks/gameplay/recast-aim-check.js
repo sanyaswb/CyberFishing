@@ -18,7 +18,7 @@ const deps = {
   config: { casting: { enabled: true, powerSwipePx: 90 }, debug: {}, physics: {}, ui: {} },
   rng: { next: () => 0.5, chance: () => false },
   getViewportSize: () => ({ width: 320, height: 600 }),
-  projector: { focusOnVirtualPos() {}, screenToVirtual: (x, y) => ({ x, y }), virtualToScreen: (x, y) => ({ x, y }) },
+  projector: { focusOnVirtualPos() {}, followVirtualX() {}, screenToVirtual: (x, y) => ({ x, y }), virtualToScreen: (x, y) => ({ x, y }) },
   commands: { panViewport() {}, setState() {}, castLine: (...args) => casts.push(args) },
   world: {
     getWaterMetric: () => ({ isUniform: true, distanceMeters: () => 99, topBasePixels: 1000, yAtBasePixels: (d) => 1000 - d }),

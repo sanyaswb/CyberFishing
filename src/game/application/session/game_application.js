@@ -23,7 +23,6 @@ export class GameApplication {
   #gameStateName = "scouting";
   #canvasMetrics;
   #viewportResizePending = false;
-  #stageSplitPending = false;
   #stageLayout = null;
   #rodResizePoint = new Vector2();
   #float;
@@ -190,7 +189,6 @@ export class GameApplication {
       getRodScreenX: () => this.#castRodScreenX === null ? null : this.getRodScreenX(),
       onSplitChange: () => {
         this.#viewportResizePending = true;
-        this.#stageSplitPending = true;
       },
     });
     this.#keepnetUI = runtime.keepnetUI || null;
@@ -652,13 +650,12 @@ export class GameApplication {
     // Consume the latest size once before input/world update; resize events never draw independently.
     if (this.#viewportResizePending) {
       this.#viewportResizePending = false;
-      // A split change keeps the rod's world position: the camera follows it into the new canvas (spec 098).
+      // Every size change keeps the rod's world position: the camera follows it into the new canvas (spec 098 for the
+      // split inventory, spec 153 D3 for any window size).
       const castX = this.#castRodControl.getScreenX();
-      const movingCast = this.#stageSplitPending && Number.isFinite(castX);
+      const movingCast = Number.isFinite(castX);
       const castBaseAnchorX = movingCast ? this.#viewportFacade.rodAnchorVirtualX(this.#castRodScreenX) : null;
-      const rodAnchorX = this.#stageSplitPending
-        ? this.#viewportFacade.rodAnchorVirtualX(movingCast ? castX : this.#castRodScreenX) : null;
-      this.#stageSplitPending = false;
+      const rodAnchorX = this.#viewportFacade.rodAnchorVirtualX(movingCast ? castX : this.#castRodScreenX);
       this.#canvasMetrics.resizeToViewport();
       this.#refreshViewport();
       if (rodAnchorX !== null) {

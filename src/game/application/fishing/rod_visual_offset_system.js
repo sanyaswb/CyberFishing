@@ -149,11 +149,13 @@ export class RodVisualOffsetSystem {
     const clampToPlayable = aimCfg.clampToPlayableZone !== undefined
       ? aimCfg.clampToPlayableZone !== false
       : visualCfg.clampToPlayableZone !== false;
+    // A missing playable edge (null: no bounds given) is no limit; Number(null) would be 0 and pin the rod at the left
+    // padding (spec 153: the DEV side share read the rod there).
     if (clampToPlayable) {
-      if (Number.isFinite(Number(playableLeft))) {
+      if (playableLeft != null && Number.isFinite(Number(playableLeft))) {
         minX = Math.max(minX, Number(playableLeft) + padding);
       }
-      if (Number.isFinite(Number(playableRight))) {
+      if (playableRight != null && Number.isFinite(Number(playableRight))) {
         maxX = Math.min(maxX, Number(playableRight) - padding);
       }
     }

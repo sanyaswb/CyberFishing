@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.53 - The window is only the camera
+
+- Spec 153 (G-126): narrowing or turning the window no longer moves the float, fish or rod in the world (the bounds are the map's water); the camera follows the float and the fish along the screen edge and keeps the rod in view.
+
 ## v0.50.52 - No git add . tools
 
 - TK-259 (owner, audit TK-255): the git:version-copy tool and the git:add script, which staged everything with git add ., are removed; commits stage explicit paths only.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.44 - Stamina sliders act in the fight
 
 - TK-254.1 (spec 168): ACTIVE FISH stamina edits now change the fish's stamina and endurance in the fight (the limits were fixed at the hook); the window shows every stamina value the fight reads, live stamina / endurance / phase and the stamina rules of every fight (CONFIG.stamina).
-
-## v0.50.43 - Balance windows ACTIVE FISH and ACTIVE ROD
-
-- TK-254 (spec 168): DEV overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (switches in DevTools → OVERLAY MODULES → «Вікна балансу»): every fight parameter of the hooked fish (or the Fixed Catch species) and of the equipped rod with the fight's rod rules on sliders, live; «💾 Записати у вид» saves the fish's changes to its species.

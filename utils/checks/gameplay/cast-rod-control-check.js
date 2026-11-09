@@ -40,7 +40,7 @@ function fixture({ floatX = 400, perspective = false } = {}) {
   const metric = perspective ? WaterMetric.illustrated({ ...water, maxMeters: 40, lateralContraction: true })
     : new WaterMetric(water);
   const projector = { virtualToScreen(x, y, out) { return out.set(x, y); },
-    screenToVirtual(x, y, out) { return out.set(x, y); }, focusOnVirtualPos() {} };
+    screenToVirtual(x, y, out) { return out.set(x, y); }, focusOnVirtualPos() {}, followVirtualX() {} };
   const metrics = { width: 1000, height: 1000 };
   const position = new Vector2(floatX, 0);
   const float = { getPosition: () => position, biting: true, guaranteed: false, stopped: 0, hooked: 0, ticks: 0,

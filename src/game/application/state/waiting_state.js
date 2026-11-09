@@ -71,6 +71,9 @@ export class WaitingState extends GameState {
   update(dt, bounds, envData) {
     const pos = this.deps.float.getPosition();
     this.deps.projector.focusOnVirtualPos(pos.y, dt, 0.05);
+    // Spec 153 (D1): along X the camera follows the tackle near the screen edge, keeping the rod in view.
+    this.deps.projector.followVirtualX(pos.x, this.deps.world.getRodVirtualPos(bounds).x, dt,
+      this.deps.config.locations?.cameraFollowMarginX);
 
     const input = envData.input || this.deps.input.getState();
     const eq = this.deps.inventory.getEquipped();
