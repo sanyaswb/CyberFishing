@@ -536,7 +536,7 @@ export class GameCompositionRoot {
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver,
     } = this.#composeFishModels({ contracts, itemFreshnessResolver });
     const rodAnimation = own(composeRodAnimation({
-      windowTarget: this.#windowTarget, documentTarget: this.#documentTarget, config: this.#runtimeConfig,
+      windowTarget: this.#windowTarget, config: this.#runtimeConfig,
       scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets, images: imageAssets,
       preload: this.#preload,
     }));
@@ -546,7 +546,7 @@ export class GameCompositionRoot {
       name: "boat",
       preload: this.#preload,
       compose: ({ composeBoatAnimation }) => composeBoatAnimation({
-        windowTarget: this.#windowTarget, documentTarget: this.#documentTarget,
+        windowTarget: this.#windowTarget,
         scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
         preload: this.#preload, images: imageAssets,
       }),
@@ -556,11 +556,11 @@ export class GameCompositionRoot {
       dispose: () => boatFeature.get()?.dispose?.(),
     };
     contracts.requireMethods(rodAnimation.controller, "rodAnimation",
-      ["setSkin", "advance", "getAnchor", "renderScene", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
+      ["setSkin", "advance", "getAnchor", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
         "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
     const { pipeline } = this.#rendering.composePipeline({
       surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver, rodAnimation: rodAnimation.controller, sceneRouter,
+      rarityVisualResolver, sceneRouter,
     });
     // The game clock comes before the location: startup loads only the background phase of the current game time
     // (spec 157 R4).

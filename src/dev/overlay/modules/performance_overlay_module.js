@@ -10,7 +10,6 @@ const SECTION_LABELS = Object.freeze({
   world: "  фон і світ",
   casting: "  закид",
   fishing: "  риболовля",
-  "rod-spine": "    Spine вудка (GL + копія)",
   hud: "  HUD",
   outcome: "  результат",
   overlay: "overlay (DEV, поза кадром)",
@@ -68,8 +67,6 @@ export class PerformanceOverlayModule extends OverlayModule {
     }
     const scenePixels = snapshot.gauges["scene-pixels"];
     if (scenePixels) html += this.metricRow("сцена WebGL (backing)", `${(scenePixels / 1e6).toFixed(2)} Мпікс`, { metricKey: "perf.scene" });
-    const glPixels = snapshot.gauges["gl-pixels"];
-    if (glPixels) html += this.metricRow("Spine GL поверхня", `${(glPixels / 1e6).toFixed(2)} Мпікс`, { metricKey: "perf.gl" });
     html += `<div class="debug-overlay__note debug-overlay__text debug-overlay__text--muted">GPU напряму не вимірюється сторінкою: великий «поза CPU гри» при малому CPU вказує на GPU/компоновку.</div>`;
     return `${html}<div class="debug-overlay__spacer"></div>`;
   }

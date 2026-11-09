@@ -31,8 +31,9 @@ the role that is easiest to reach from the current code.
   models; the scene renderer turns them into display objects.
 - Everything in the scene is under everything in the HUD canvas. An object kind moves to the scene only when every
   kind that must be under it is already there (rule 14).
-- While the migration runs, the 2D path for a kind stays complete as the fallback (no WebGL, lost context) until
-  spec 103 stage 5 is accepted.
+- The 2D path of every world kind is the reserve (owner, spec 170): no WebGL, a lost context or the DEV "canvas" mode.
+  It holds only what the reserve needs: Spine plays only on the scene (spine-pixi-v8), the reserve draws the rod's and
+  the boat's static pictures; there is no second Spine runtime (spine-webgl was removed with spec 103's migration).
 - Which layer draws a world kind is decided once per frame by `SceneLayerRouter` ([spec 104](../specs/104-scene-layer-infrastructure/spec.md)):
   `SCENE_KINDS` lists the kinds bottom first; a kind is on the scene only while the mode is `"webgl"`, WebGL is active,
   the scene has a renderer for it and every kind under it is there. A new world kind joins `SCENE_KINDS` at its depth
@@ -102,7 +103,7 @@ overdraw and texture memory, not from game code.
 ## Units and resolution
 
 1. Gameplay, input, layout, projection and render models use **logical (CSS) pixels**. Only `CanvasMetricsProvider`
-   (game canvas) and `SpineGlSurface` (GL) touch backing pixels. Never read `canvas.width` / `canvas.height` for
+   (game canvas) and the scene layer (`PixiSceneLayer`) touch backing pixels. Never read `canvas.width` / `canvas.height` for
    layout, input or game sizes: they are device pixels.
 2. Every on-screen canvas, 2D or WebGL, has a backing store of logical size × pixel ratio
    (`CONFIG.canvas.maxPixelRatio` caps it), its CSS size set explicitly, and draws through a base transform applied

@@ -211,7 +211,8 @@ async function checkProgress(StartupLoadProgress) {
 }
 
 async function checkSpineProvider(SpineRuntimeProvider, runtimeModule) {
-  // The runtime module is the pinned 4.3 bundle (spec 099); a module without a runtime still reports not-installed.
+  // The runtime module is the pinned 4.3 scene bundle (spec 170); a module without a runtime still reports not-installed.
+  assert.throws(() => new SpineRuntimeProvider({}), /requires importModule/u, "no default runtime: the composition names it");
   const notInstalled = { createSpineRuntime: () => null };
   let imports = 0;
   const provider = new SpineRuntimeProvider({ importModule: async () => { imports += 1; return notInstalled; } });
@@ -245,7 +246,8 @@ async function main() {
   const { AssetLoadQueue } = await import("../../../src/engine/assets/asset_load_queue.js");
   const { StartupLoadProgress } = await import("../../../src/engine/assets/startup_load_progress.js");
   const { SpineRuntimeProvider } = await import("../../../src/platform/browser/animation/spine_runtime_provider.js");
-  const runtimeModule = await import("../../../src/platform/browser/animation/spine_runtime_module.js");
+  // Spec 170: the only Spine runtime is the WebGL scene's (spine-pixi-v8 in the scene bundle).
+  const runtimeModule = await import("../../../src/platform/browser/scene/pixi_runtime_module.js");
   await checkCatalog(AssetCatalog);
   await checkVariantSelector(AssetCatalog, AssetVariantSelector);
   await checkQueue(AssetLoadQueue);

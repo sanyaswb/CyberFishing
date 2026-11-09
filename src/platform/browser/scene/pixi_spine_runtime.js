@@ -13,7 +13,7 @@ export function replacePixiPageTexture(texture, image) {
   source.updateMipmaps();
 }
 
-// The Spine runtime of the WebGL scene (spec 107 D6), the same capability shape as spine_runtime_module.js:
+// The Spine runtime of the WebGL scene (spec 107 D6; the only one since spec 170), the capability SpineRuntimeProvider loads:
 // { version, createScene(bundle, surface) } → { scene, reason, error }. SpineScene drives the skeleton with
 // spine-pixi-v8's copy of spine-core (y down); a Pixi Spine display object draws it inside the scene, with atlas pages
 // as Pixi textures (mipmaps where the GPU builds them). The scene updates the skeleton itself (bones from the setup pose
@@ -35,7 +35,6 @@ export function createPixiSpineRuntime(pixi) {
         surface,
         runtimeVersion: RUNTIME_VERSION,
         graphics: {
-          yDown: true,
           createTexture: (image, pma) => pixi.SpineTexture.from(pixi.Texture.from({ resource: image,
             alphaMode: pma ? "premultiplied-alpha" : "premultiply-alpha-on-upload" }, true).source),
           canMipmap: (width, height) => surface.canMipmap(width, height),
@@ -49,7 +48,6 @@ export function createPixiSpineRuntime(pixi) {
             view.onViewUpdate();
           },
           disposeView: (view) => view.destroy(),
-          restore: () => {},
           dispose: () => {},
         },
       });

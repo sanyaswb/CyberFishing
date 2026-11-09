@@ -7,7 +7,6 @@ export const SKELETAL_SCENE_METHODS = Object.freeze([
   "clearTrack",
   "setTrackTimeScale",
   "update",
-  "render",
   "getPoint",
   "getLocalBounds",
   "hasClip",
@@ -17,6 +16,5 @@ export const SKELETAL_SCENE_METHODS = Object.freeze([
   "getClips",
   "getBones",
   "setBoneSetup",
-  "restoreContext",
   "dispose",
 ]);

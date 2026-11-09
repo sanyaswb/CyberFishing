@@ -38,7 +38,7 @@ export class RodAnimationController {
     rainMultiplier: 1, reducedMotion: false, critical: false,
   };
   // view / viewScale: the scene's display object of the skeleton (a runtime that draws inside the WebGL scene, spec
-  // 107) and its surface-to-logical scale; null when the skeleton is drawn into the GL surface or not at all.
+  // 107) and its surface-to-logical scale; null when the skeleton is not drawn.
   #anchor = {
     mode: "rectangle", baseX: 0, baseY: 0, tipX: 0, tipY: 0, scale: 1, destX: 0, destY: 0, destWidth: 0, destHeight: 0,
     image: null, region: null, bounds: null, view: null, viewScale: 1,
@@ -200,15 +200,6 @@ export class RodAnimationController {
     return this.#anchor;
   }
 
-  // Draws the scene into the GL surface for this frame; the caller then copies glSurface.canvas. False if no scene.
-  renderScene() {
-    return this.#anchor.mode === "spine" && this.#scene ? this.#scene.render() : false;
-  }
-
-  get glSurface() {
-    return this.#glSurface;
-  }
-
   // DEV status: mode, the last unavailability reason and clips the export lacks.
   getStatus() {
     return {
@@ -332,8 +323,8 @@ export class RodAnimationController {
     } else {
       scene.clearTrack(3, config.criticalMixSec);
     }
-    // The GL surface is in device pixels (spec 100 D3): placement and scale times the canvas pixel ratio, points and
-    // the copy's destination back in logical pixels, so the copy into the 2D canvas is 1:1 in device pixels.
+    // The skeleton's surface is in device pixels (spec 100 D3): placement and scale times the canvas pixel ratio, points
+    // and the destination back in logical pixels; the scene's rod renderer draws the view at 1 / ratio.
     const ratio = context.pixelRatio > 0 ? context.pixelRatio : 1;
     this.#pixelRatio = ratio;
     const deviceScale = anchor.scale * ratio;

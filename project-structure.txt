@@ -781,7 +781,6 @@
 │  │     │  ├── rod_animation_controller.js
 │  │     │  ├── rod_animation_state_resolver.js
 │  │     │  ├── rod_line_renderer.js
-│  │     │  ├── rod_spine_renderer.js
 │  │     │  └── rod_static_renderer.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
@@ -967,8 +966,6 @@
 │        ├── animation
 │        │  ├── spine_atlas_text_reader.js
 │        │  ├── spine_bundle_loader.js
-│        │  ├── spine_gl_surface.js
-│        │  ├── spine_runtime_module.js
 │        │  ├── spine_runtime_provider.js
 │        │  ├── spine_scene.js
 │        │  └── spine_setup_pose_reader.js
@@ -1077,11 +1074,7 @@
 │           ├── startup_load_meter.js
 │           └── time_display.js
 └── vendor
-   ├── pixi
-   │  └── 8.22.0
-   │     ├── LICENSE
-   │     └── pixi-scene.js
-   └── spine-webgl
-      └── 4.3.13
+   └── pixi
+      └── 8.22.0
          ├── LICENSE
-         └── spine-webgl.js
+         └── pixi-scene.js

@@ -4,7 +4,6 @@
 // (spec 099 D2, spec 103 D2). One script owns the whole manifest, so no library can drop another's entry.
 //   node utils/vendor-libraries.js          write every vendor file and vendor/manifest.json
 //   node utils/vendor-libraries.js --check  fail when vendor/ differs from what the installed packages produce
-// - spine-webgl: a byte copy of the package's prebuilt ESM bundle (the rod until spec 103 stage 4 replaces it).
 // - pixi.js + spine-pixi-v8: one self-contained esbuild bundle of SCENE_ENTRY (esm, minified, es2022, no splitting),
 //   plus one licence file for every package whose code is in it.
 // The architecture check verifies the manifest hashes, that a vendor module imports nothing and its single importer,
@@ -21,13 +20,6 @@ const MODULE_TYPE_FILE = "vendor/package.json";
 const EXACT_VERSION = /^\d+\.\d+\.\d+$/u;
 const NODE_MODULES = "node_modules/";
 const LICENCE_FILE = /^(?:licen[cs]e|copying)(?:\.(?:md|txt))?$/iu;
-
-const SPINE_WEBGL = Object.freeze({
-  name: "@esotericsoftware/spine-webgl",
-  core: "@esotericsoftware/spine-core",
-  source: "dist/esm/spine-webgl.min.mjs",
-  importer: "src/platform/browser/animation/spine_runtime_module.js",
-});
 
 // The scene layer's library surface (spec 103): only what the scene uses, extended per stage.
 // Ticker: the runtime module keeps Pixi's own tickers stopped, so GameLoop stays the only frame driver.
@@ -124,32 +116,6 @@ class InstalledPackages {
     }
     return { name: manifest.name, version: manifest.version, integrity: lockEntry.integrity, manifest,
       directory: path.join(this.#rootDir, ...nodeModulesPath.split("/")) };
-  }
-}
-
-class SpineWebglVendorEntry {
-  static resolve(packages) {
-    const spine = packages.pinned(SPINE_WEBGL.name);
-    const core = packages.installed(`node_modules/${SPINE_WEBGL.core}`);
-    if (core.version !== spine.manifest.dependencies?.[SPINE_WEBGL.core]) {
-      throw new Error(`package-lock.json ${SPINE_WEBGL.core} does not match ${SPINE_WEBGL.name}'s dependency`);
-    }
-    const bundle = fs.readFileSync(path.join(spine.directory, ...SPINE_WEBGL.source.split("/")));
-    const license = fs.readFileSync(path.join(spine.directory, "LICENSE"));
-    const directory = `vendor/spine-webgl/${spine.version}`;
-    const entry = {
-      name: SPINE_WEBGL.name,
-      version: spine.version,
-      integrity: spine.integrity,
-      bundles: [`${SPINE_WEBGL.core}@${core.version}`],
-      source: SPINE_WEBGL.source,
-      file: `${directory}/spine-webgl.js`,
-      sha256: sha256(bundle),
-      license: `${directory}/LICENSE`,
-      licenseSha256: sha256(license),
-      importer: SPINE_WEBGL.importer,
-    };
-    return { entry, files: new Map([[entry.file, bundle], [entry.license, license]]) };
   }
 }
 
@@ -281,11 +247,9 @@ function sha256(bytes) {
 
 async function resolvePlan(rootDir) {
   const packages = new InstalledPackages(rootDir);
-  const spine = SpineWebglVendorEntry.resolve(packages);
   const scene = await PixiSceneVendorEntry.resolve(packages);
-  const manifest = { schemaVersion: 1, packages: [spine.entry, scene.entry] };
+  const manifest = { schemaVersion: 1, packages: [scene.entry] };
   const files = new Map([
-    ...spine.files,
     ...scene.files,
     [MANIFEST_FILE, Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`, "utf8")],
     [MODULE_TYPE_FILE, Buffer.from(`${JSON.stringify({ type: "module" }, null, 2)}\n`, "utf8")],

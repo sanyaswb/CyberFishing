@@ -445,7 +445,8 @@ async function checkDevToolsAndBoatConfig() {
 async function checkRealSpineSceneSlotVisibility() {
   const fs = require("node:fs");
   const path = require("node:path");
-  const spine = require("@esotericsoftware/spine-webgl");
+  // Spec 170: the scene bundle's spine-core (spine-pixi-v8), the only Spine runtime.
+  const spine = await import("../../../vendor/pixi/8.22.0/pixi-scene.js");
   const { SpineScene } = await import("../../../src/platform/browser/animation/spine_scene.js");
 
   const atlasPath = path.resolve(__dirname, "../../../assets/animations/boats/boat-lvl--3.atlas");

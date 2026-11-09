@@ -17,7 +17,7 @@ async function checkInactiveProbe() {
   const probe = new InactiveFrameProbe();
   for (const method of FRAME_PROBE_METHODS) assert.equal(typeof probe[method], "function", `inactive probe has ${method}`);
   assert.equal(probe.beginFrame(1), undefined);
-  assert.deepEqual(Object.values(FRAME_SECTIONS), ["update", "draw", "scene", "rod-spine"]);
+  assert.deepEqual(Object.values(FRAME_SECTIONS), ["update", "draw", "scene"]);
 }
 
 async function checkProfiler() {
@@ -29,7 +29,7 @@ async function checkProfiler() {
     profiler.beginFrame(timestamp);
     profiler.begin("update"); clock += updateMs; profiler.end("update");
     profiler.begin("draw");
-    if (spineMs) { profiler.begin("rod-spine"); clock += spineMs; profiler.end("rod-spine"); }
+    if (spineMs) { profiler.begin("scene"); clock += spineMs; profiler.end("scene"); }
     clock += drawMs - spineMs; profiler.end("draw");
     profiler.endFrame();
   };
@@ -40,7 +40,7 @@ async function checkProfiler() {
   near(snapshot.fps, 62.5, 1e-9, "fps from the frame intervals (fewer than a second of them: all)");
   near(snapshot.work.mean, 6, 1e-9, "game-loop work = update + draw");
   near(snapshot.sections.update.mean, 2, 1e-9, "update section");
-  near(snapshot.sections["rod-spine"].mean, 1, 1e-9, "nested Spine section inside draw");
+  near(snapshot.sections["scene"].mean, 1, 1e-9, "nested Spine section inside draw");
   near(snapshot.budgetShare, 6 / 16, 1e-9, "share of the frame interval");
   near(snapshot.unexplainedMs, 10, 1e-9, "interval not spent in the game loop");
   assert.deepEqual([snapshot.janks, snapshot.freezes], [0, 0]);
@@ -67,13 +67,13 @@ async function checkProfiler() {
   near(snapshot.fps, 62.5, 1e-9, "FPS shows the current second, not the slow start");
   assert(1000 / snapshot.interval.mean < 50, "the ring's mean interval still includes the slow frames");
 
-  profiler.gauge("gl-pixels", 1234);
+  profiler.gauge("scene-pixels", 1234);
   profiler.recordLongTask(120);
   profiler.recordLongTask(60);
   assert.equal(profiler.measure("overlay", () => { clock += 3; return "html"; }), "html");
   frame(timestamp += 20, 1, 1);
   snapshot = profiler.getSnapshot();
-  assert.equal(snapshot.gauges["gl-pixels"], 1234);
+  assert.equal(snapshot.gauges["scene-pixels"], 1234);
   assert.deepEqual(snapshot.longTasks, { count: 2, totalMs: 180, maxMs: 120, observed: false });
   assert.equal(snapshot.sections.overlay.max, 3, "DEV overlay work is its own section");
   profiler.reset();

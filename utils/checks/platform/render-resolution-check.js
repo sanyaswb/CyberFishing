@@ -104,9 +104,10 @@ function checkDrawOrder() {
     assert(match, `${id} has a FISHING_EQUIPMENT order`);
     return Number((match[1] || "0").replace(/\s+/gu, ""));
   };
-  const [line, staticRod, spineRod, float] = ["rod-line", "rod-static", "rod-spine", "float"].map(orderOf);
-  assert(float < line && line < staticRod && staticRod < spineRod,
-    `depth order (TK-158): float ${float} < line ${line} < static rod ${staticRod} < Spine rod ${spineRod}`);
+  const [line, staticRod, float] = ["rod-line", "rod-static", "float"].map(orderOf);
+  assert(float < line && line < staticRod,
+    `depth order (TK-158): float ${float} < line ${line} < static rod ${staticRod} (the 2D reserve has no Spine rod, spec 170)`);
+  assert.doesNotMatch(source, /id: "rod-spine"/u, "no 2D Spine rod component: Spine plays only on the WebGL scene (spec 170)");
   // The WebGL scene adds its pictures to the stage in the same depth order.
   const scene = fs.readFileSync(path.join(ROOT_DIR, "src/platform/browser/scene/pixi_scene_layer.js"), "utf8");
   const created = ["PixiFloatRenderer", "PixiLineRenderer", "PixiRodRenderer"].map((name) => scene.indexOf(`new ${name}(`));

@@ -1170,11 +1170,7 @@ async function checkComposition() {
   assert.match(read(SCENE_COMPOSITION),
     /SCENE_RENDERED_KINDS = Object\.freeze\(\["background", "world-entities", "fight-areas", "line", "rod", "float"\]\)/u,
     "stage 4: the scene draws every world kind (specs 105, 107)");
-  const rodComposition = read("src/bootstrap/production/rod_animation_composition.js");
-  assert.match(rodComposition, /drawsRod: \(\) => scene\.router\.drawsOnScene\("rod"\)/u,
-    "with the WebGL scene the rod's surface is the scene's (spec 107 D6)");
-  assert.match(rodComposition, /scene\.layer\.whenReady\(\)\.then[\s\S]*import\("\.\.\/\.\.\/platform\/browser\/scene\/pixi_runtime_module\.js"\)/u,
-    "the Spine runtime is the scene's own bundle, once the scene is ready");
+  await checkSpineReserve();
   assert.match(read("src/bootstrap/production/game_composition_root.js"),
     /scene: \{ layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas \}/u);
   assert.match(read(SCENE_COMPOSITION), /fightAreaStyles, probe, logger,/u, "the scene gets the 2D fight area styles");
@@ -1194,6 +1190,28 @@ async function checkComposition() {
   assert.match(root, /void sceneLayer\.whenReady\(\)\.then\(\(ready\) => \{[^}]*sceneLayer\.prepare/u,
     "the scene warms up and uploads textures once ready, without blocking the start (TK-183)");
   assert.match(root, /shell: this\.#documentTarget\.body/u, "the split stage places both canvases through the shell");
+}
+
+// Spec 170: Spine plays only inside a ready WebGL scene; the 2D reserve (no scene, the "canvas" mode, a scene that did
+// not start, the rod off the scene) keeps the static picture and never imports a Spine runtime.
+async function checkSpineReserve() {
+  const { composeRodAnimation, sceneReady } = await importSource("src/bootstrap/production/rod_animation_composition.js");
+  const layer = (ready, webglVersion = 2) => ({ whenReady: async () => ready, getStatus: () => ({ webglVersion }) });
+  const router = (onScene) => ({ drawsOnScene: (kind) => onScene && kind === "rod" });
+  for (const [name, scene] of [["no scene", null], ["the canvas mode", { webgl: false, layer: layer(true), router: router(false) }],
+    ["a scene that did not start", { webgl: true, layer: layer(false, null), router: router(false) }]]) {
+    await assert.rejects(sceneReady(scene), /scene/u, `${name}: no Spine runtime`);
+    const rod = composeRodAnimation({ windowTarget: { setTimeout, clearTimeout, matchMedia: () => ({ matches: false }) },
+      config: { ui: { rod: { spine: {} } } }, scene, assets: { spineOf: () => null }, images: { tryGet: () => null }, preload: { request: async () => {} } });
+    assert.equal(await rod.probeSpine(), false, `${name}: the rod keeps its static picture`);
+    rod.dispose();
+  }
+  await sceneReady({ webgl: true, layer: layer(true), router: router(true) });
+  const ready = composeRodAnimation({ windowTarget: { setTimeout, clearTimeout, matchMedia: () => ({ matches: false }) },
+    config: { ui: { rod: { spine: {} } } }, scene: { webgl: true, layer: layer(true), router: router(true) }, assets: { spineOf: () => null },
+    images: { tryGet: () => null }, preload: { request: async () => {} } });
+  assert.equal(await ready.probeSpine(), true, "a ready WebGL scene plays Spine through the scene's own runtime");
+  ready.dispose();
 }
 
 async function checkRuntimeModule(manifestEntry) {
@@ -1324,9 +1342,9 @@ function checkSceneInputShield() {
 
 function checkVendor() {
   const manifest = JSON.parse(read("vendor/manifest.json"));
-  assert.deepEqual(manifest.packages.map((entry) => entry.name), ["@esotericsoftware/spine-webgl", "pixi.js"],
-    "one manifest, written by utils/vendor-libraries.js, holds both libraries");
-  const entry = manifest.packages[1];
+  assert.deepEqual(manifest.packages.map((entry) => entry.name), ["pixi.js"],
+    "one manifest, written by utils/vendor-libraries.js, holds the scene library only (spec 170: no spine-webgl)");
+  const entry = manifest.packages[0];
   assert.equal(entry.importer, RUNTIME_MODULE, "the runtime module is the bundle's single importer");
   assert.equal(entry.file, `vendor/pixi/${entry.version}/pixi-scene.js`);
   for (const name of ["@esotericsoftware/spine-pixi-v8@4.3.13", "@esotericsoftware/spine-core@4.3.13"]) {

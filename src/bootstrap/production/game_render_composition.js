@@ -33,7 +33,6 @@ import { RenderComponent } from "../../engine/rendering/render_component.js";
 import { RenderFrameBuffer } from "../../game/presentation/rendering/render_frame_buffer.js";
 import { GameRenderOrder } from "../../game/presentation/rendering/game_render_order.js";
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
-import { RodSpineRenderer } from "../../game/presentation/fishing/rod_spine_renderer.js";
 import { RodStaticRenderer } from "../../game/presentation/fishing/rod_static_renderer.js";
 import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
 import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
@@ -66,7 +65,7 @@ export class GameRenderComposition {
   // sceneRouter (spec 104): a world kind's 2D component draws only while the kind is on the 2D canvas.
   composePipeline({
     surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-    rarityVisualResolver, rodAnimation, sceneRouter,
+    rarityVisualResolver, sceneRouter,
   }) {
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -93,7 +92,6 @@ export class GameRenderComposition {
     });
     const rodLineRenderer = new RodLineRenderer({ surface });
     const rodStaticRenderer = new RodStaticRenderer({ surface });
-    const rodSpineRenderer = new RodSpineRenderer({ surface, controller: rodAnimation, probe: this.#frameProbe });
     const floatRenderer = new FloatRenderer({ surface, images: imageAssets });
     const fishingSceneRenderer = new FishingSceneRenderer({
       components: [
@@ -117,13 +115,6 @@ export class GameRenderComposition {
           id: "rod-static",
           order: GameRenderOrder.values.FISHING_EQUIPMENT - 1,
           renderer: rodStaticRenderer,
-          selectModel: (model) => model.rodLine,
-          isVisible: sceneRouter.canvasVisibility("rod"),
-        }),
-        new RenderComponent({
-          id: "rod-spine",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT,
-          renderer: rodSpineRenderer,
           selectModel: (model) => model.rodLine,
           isVisible: sceneRouter.canvasVisibility("rod"),
         }),
@@ -178,7 +169,6 @@ export class GameRenderComposition {
       fightAreaRenderer,
       rodLineRenderer,
       rodStaticRenderer,
-      rodSpineRenderer,
       floatRenderer,
       fishingSceneRenderer,
       statusBarsRenderer,

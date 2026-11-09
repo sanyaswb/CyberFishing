@@ -20,17 +20,19 @@ const importSource = (file) => import(pathToFileURL(path.join(ROOT_DIR, file)).h
 const read = (file) => fs.readFileSync(path.join(ROOT_DIR, file), "utf8");
 const timers = { setTimeout, clearTimeout };
 
+// Spec 170: the Spine runtime is spine-pixi-v8 inside the scene bundle (no spine-webgl in vendor/).
 function checkVendorManifest() {
   const manifest = JSON.parse(read("vendor/manifest.json"));
-  const entry = manifest.packages.find((item) => item.name === "@esotericsoftware/spine-webgl");
-  assert.equal(entry.version, "4.3.13", "the manifest pins the runtime the module reports");
-  assert.equal(entry.importer, "src/platform/browser/animation/spine_runtime_module.js");
+  assert.equal(manifest.packages.some((item) => item.name === "@esotericsoftware/spine-webgl"), false, "no spine-webgl bundle");
+  const entry = manifest.packages.find((item) => item.name === "pixi.js");
+  assert(entry.bundles.includes("@esotericsoftware/spine-pixi-v8@4.3.13"), "the scene bundle carries spine-pixi-v8 4.3.13");
+  assert.equal(entry.importer, "src/platform/browser/scene/pixi_runtime_module.js");
   const tracked = require("node:child_process").spawnSync("git", ["ls-files", "--", EXPORT_DIR, entry.file, entry.license],
     { cwd: ROOT_DIR, encoding: "utf8" }).stdout.split(/\r?\n/u).filter(Boolean);
   for (const file of [FILES.skeleton, FILES.atlas, `${EXPORT_DIR}/bamboo-rod-v1.webp`, entry.file, entry.license]) {
     assert(tracked.includes(file), `${file} is tracked in git (Pages serves tracked files only)`);
   }
-  return entry.version;
+  return entry.bundles.find((item) => item.startsWith("@esotericsoftware/spine-pixi-v8@")).split("@").pop();
 }
 
 function checkAtlasReader(SpineAtlasTextReader) {
@@ -121,15 +123,13 @@ function fakeSurface({ height = 600, maxTextureSize = 4096 } = {}) {
 }
 
 function fakeGraphics() {
-  const graphics = { textures: [], restores: 0, disposed: 0 };
+  const graphics = { textures: [], disposed: 0 };
   graphics.createTexture = (image, pma) => {
     const texture = { image, pma, disposed: false, setFilters() {}, setWraps() {}, getImage: () => image,
       dispose() { this.disposed = true; } };
     graphics.textures.push(texture);
     return texture;
   };
-  graphics.createRenderer = () => { throw new Error("no WebGL renderer in Node"); };
-  graphics.restore = () => { graphics.restores += 1; };
   graphics.dispose = () => { graphics.disposed += 1; };
   return graphics;
 }
@@ -271,56 +271,11 @@ async function checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle) {
   assert(bounds.x <= -93.68 && bounds.x + bounds.width >= 10 && bounds.y <= -2 && bounds.y + bounds.height >= 466,
     `bounds cover the setup pose and the full bends: ${JSON.stringify(bounds)}`);
 
-  surface.emit(true);
-  assert.equal(scene.render(), false, "nothing is drawn while the context is lost");
-  surface.emit(false);
-  assert.equal(graphics.restores, 1, "a restored context re-uploads once");
   scene.dispose();
   scene.dispose();
   assert.equal(surface.listenerCount, 0, "dispose unsubscribes from the surface");
   assert(graphics.textures.every((texture) => texture.disposed), "dispose releases the page textures");
   assert.equal(graphics.disposed, 1);
-}
-
-function fakeCanvas({ webgl = true } = {}) {
-  const listeners = new Map();
-  const gl = { MAX_TEXTURE_SIZE: 0x0d33, getParameter: () => 4096, getExtension: () => null };
-  return {
-    width: 300, height: 150, contexts: [],
-    getContext(kind, attributes) { this.contexts.push([kind, attributes]); return webgl && kind === "webgl" ? gl : null; },
-    addEventListener(type, listener) { listeners.set(type, listener); },
-    removeEventListener(type) { listeners.delete(type); },
-    fire(type) { listeners.get(type)?.({ preventDefault: () => { this.prevented = true; } }); },
-    get listenerTypes() { return [...listeners.keys()]; },
-  };
-}
-
-function checkSurface(SpineGlSurface) {
-  const none = new SpineGlSurface({ createCanvas: () => fakeCanvas({ webgl: false }) });
-  assert.equal(none.ensureContext(), false, "no WebGL: no context, the caller keeps the static picture");
-  const canvas = fakeCanvas();
-  const surface = new SpineGlSurface({ createCanvas: () => canvas });
-  assert.equal(surface.ensureContext(), true);
-  assert.deepEqual(canvas.contexts.map(([kind]) => kind), ["webgl2", "webgl"], "WebGL 2 first, WebGL 1 next");
-  assert.equal(canvas.contexts[0][1].preserveDrawingBuffer, false);
-  assert.equal(canvas.contexts[0][1].premultipliedAlpha, true);
-  assert.equal(surface.maxTextureSize, 4096);
-  assert.deepEqual([surface.canMipmap(2048, 128), surface.canMipmap(2739, 89)], [true, false],
-    "WebGL 1 mipmaps power-of-two pages only (WebGL 2 any page)");
-  surface.resize(120.2, 0);
-  assert.deepEqual([surface.width, surface.height], [121, 1], "integer pixels, at least 1");
-  const seen = [];
-  const unsubscribe = surface.onContextChange((lost) => seen.push(lost));
-  canvas.fire("webglcontextlost");
-  assert.equal(canvas.prevented, true, "the lost event is prevented so the context can come back");
-  assert.equal(surface.isContextLost(), true);
-  assert.equal(surface.maxTextureSize, 0);
-  canvas.fire("webglcontextrestored");
-  assert.deepEqual(seen, [true, false]);
-  unsubscribe();
-  surface.dispose();
-  assert.deepEqual(canvas.listenerTypes, [], "dispose removes the context listeners");
-  assert.equal(surface.ensureContext(), false, "a disposed surface stays without context");
 }
 
 async function checkTransport(BrowserAssetTransport) {
@@ -658,7 +613,7 @@ function checkDevPort(controller, context, staticTip, scale) {
 }
 
 function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
-  RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config }) {
+  RodLineRenderer, RodStaticRenderer, config }) {
   const controller = new RodAnimationController({
     loadBundle: () => ({ result: new Promise(() => {}), release() {} }), loadRuntime: async () => ({ available: false }),
     glSurface: fakeSurface(), resolver: new RodAnimationStateResolver(), getConfig: () => config,
@@ -708,29 +663,11 @@ function checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationCont
   assert.deepEqual(staticSurface.calls[3], ["drawImage", "img", 2, 2, 2735, 85, 0, 0, 234, 8],
     "a 90 degree region is drawn from its rotated page footprint");
 
-  const spineSurface = recordingSurface();
-  let rendered = true;
-  const probeCalls = [];
-  const probe = { begin: (id) => probeCalls.push(["begin", id]), end: (id) => probeCalls.push(["end", id]),
-    gauge: (id, value) => probeCalls.push(["gauge", id, value]) };
-  assert.throws(() => new RodSpineRenderer({ surface: spineSurface, controller: { renderScene: () => true } }),
-    /requires a frame probe/u);
-  const spineRenderer = new RodSpineRenderer({ surface: spineSurface, probe,
-    controller: { renderScene: () => rendered, glSurface: { canvas: "gl" } } });
-  spineRenderer.render({ visible: true, rodMode: "static", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
-  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
-  rendered = false;
-  spineRenderer.render({ visible: true, rodMode: "spine", rodDestX: 1, rodDestY: 2, rodDestWidth: 30, rodDestHeight: 40 });
-  assert.deepEqual(spineSurface.calls, [["drawImage", "gl", 1, 2, 30, 40]],
-    "the GL surface is copied only in Spine mode after a draw, into its logical size (spec 100)");
-  assert.deepEqual(probeCalls.filter((call) => call[0] !== "gauge"),
-    [["begin", "rod-spine"], ["end", "rod-spine"], ["begin", "rod-spine"], ["end", "rod-spine"]],
-    "each Spine frame is one timed section (spec 101), static frames none");
 }
 
-// Spec 107 D6: the same scene on spine-pixi-v8's spine-core (y down, a Pixi Spine view) and on spine-webgl gives the
-// same line tip, bounds and bones for the same placement and tracks; the view is the scene's, updated by the scene.
-async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
+// Spec 107 D6, spec 170: the scene on spine-pixi-v8 (y down, a Pixi Spine view that owns the skeleton) gives the same
+// line tip, bounds and bones as the scene's own skeleton on the same spine-core; the view is the scene's, updated by it.
+async function checkPixiRuntime(spine, SpineScene, bundle) {
   const pixi = await importSource("vendor/pixi/8.22.0/pixi-scene.js");
   const { createPixiSpineRuntime } = await importSource("src/platform/browser/scene/pixi_spine_runtime.js");
   const { SceneSkeletalSurface } = await importSource("src/platform/browser/scene/scene_skeletal_surface.js");
@@ -739,7 +676,7 @@ async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
   let webglVersion = 2;
   const sceneSurface = new SceneSkeletalSurface({ drawsRod: () => onScene, getWebGLVersion: () => webglVersion });
   assert.deepEqual([sceneSurface.canvas, sceneSurface.isContextLost(), sceneSurface.ensureContext(),
-    sceneSurface.canMipmap(2739, 89)], [null, false, true, true], "a coordinate space: no canvas, mipmaps on WebGL 2");
+    sceneSurface.canMipmap(2739, 89)], [undefined, false, true, true], "a coordinate space: no canvas, mipmaps on WebGL 2");
   onScene = false;
   assert.equal(sceneSurface.isContextLost(), true, "while the scene does not draw the rod the controller shows the static picture");
   webglVersion = 1;
@@ -757,14 +694,14 @@ async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
     viewUpdated: () => { views.updated += 1; },
     disposeView: (view) => { views.disposed += 1; view.destroy(); } };
   const onPixi = SpineScene.create({ spine: pixi, bundle, surface: fakeSurface(), graphics: pixiGraphics, runtimeVersion: "4.3.13" });
-  const onWebgl = SpineScene.create({ spine, bundle, surface: fakeSurface(), graphics: fakeGraphics(), runtimeVersion: "4.3.13" });
-  assert(onPixi.scene && onWebgl.scene, "both runtimes build the bamboo rod");
+  const onPlain = SpineScene.create({ spine, bundle, surface: fakeSurface(), graphics: fakeGraphics(), runtimeVersion: "4.3.13" });
+  assert(onPixi.scene && onPlain.scene, "the bamboo rod builds with and without a view");
   const view = onPixi.scene.getView();
   assert(view instanceof pixi.Spine, "the Pixi scene exposes its Spine display object");
   assert.equal(view.autoUpdate, false, "the view never runs its own update (Pixi's ticker is stopped anyway)");
-  assert.equal(onWebgl.scene.getView(), null, "spine-webgl draws into its surface");
+  assert.equal(onPlain.scene.getView(), null, "without a view runtime the scene has no display object");
   const boundsA = onPixi.scene.getLocalBounds({});
-  const boundsB = onWebgl.scene.getLocalBounds({});
+  const boundsB = onPlain.scene.getLocalBounds({});
   for (const key of ["x", "y", "width", "height"]) {
     near(boundsA[key], boundsB[key], 1e-9, `bounds ${key} in skeleton units with y up from a y-down world`);
   }
@@ -778,25 +715,24 @@ async function checkPixiRuntimeParity(spine, SpineScene, bundle) {
   const a = { x: 0, y: 0 };
   const b = { x: 0, y: 0 };
   for (const step of steps) {
-    for (const scene of [onPixi.scene, onWebgl.scene]) {
+    for (const scene of [onPixi.scene, onPlain.scene]) {
       step(scene);
       scene.setPlacement(40, 520, 0.75);
       scene.update(1 / 30);
     }
-    assert(onPixi.scene.getPoint("line-tip", a) && onWebgl.scene.getPoint("line-tip", b));
-    near(a.x, b.x, 1e-6, "line tip x on both runtimes");
-    near(a.y, b.y, 1e-6, "line tip y on both runtimes (surface pixels, y down)");
+    assert(onPixi.scene.getPoint("line-tip", a) && onPlain.scene.getPoint("line-tip", b));
+    near(a.x, b.x, 1e-6, "line tip x with and without the view");
+    near(a.y, b.y, 1e-6, "line tip y with and without the view (surface pixels, y down)");
     const bonesA = onPixi.scene.getBones();
-    const bonesB = onWebgl.scene.getBones();
+    const bonesB = onPlain.scene.getBones();
     for (let index = 0; index < bonesB.length; index += 1) {
       near(bonesA[index].worldX, bonesB[index].worldX, 1e-6, `${bonesB[index].name} x`);
       near(bonesA[index].worldY, bonesB[index].worldY, 1e-6, `${bonesB[index].name} y`);
     }
   }
   assert.equal(views.updated, steps.length, "each update marks the view changed once");
-  assert.equal(onPixi.scene.render(), true, "the view draws itself in the scene's render");
   onPixi.scene.dispose();
-  onWebgl.scene.dispose();
+  onPlain.scene.dispose();
   assert.equal(views.disposed, 1, "the view is destroyed with its scene");
 }
 
@@ -828,7 +764,7 @@ async function checkSpineLoadOrder({ SpineBundleLoader, AssetLoadQueue, SpineSce
   assert.equal(upgraded.status, "ready");
   assert.equal(upgraded.pages.get(pageName).url, fullUrl, "upgrade() brings the full page");
   const fullLoad = new SpineBundleLoader({ queue: queue(), transport: transport(), assets }).load(DESCRIPTOR);
-  assert.equal((await fullLoad.result).bundle.lowPages, false, "pages full (spine-webgl): the full page at once");
+  assert.equal((await fullLoad.result).bundle.lowPages, false, "pages full (an export without low copies): the full page at once");
   assert.deepEqual(await fullLoad.upgrade(), { status: "none" }, "nothing to upgrade");
 
   // The scene: the full page into the same texture; a wrong size or a runtime without replaceTexture keeps the copy.
@@ -842,7 +778,7 @@ async function checkSpineLoadOrder({ SpineBundleLoader, AssetLoadQueue, SpineSce
     "the page's own texture takes the full image");
   scene.dispose();
   const plain = SpineScene.create({ spine, bundle: lowBundle, surface: fakeSurface(), graphics: fakeGraphics(), runtimeVersion: "4.3.13" }).scene;
-  assert.equal(plain.upgradePages(new Map([[pageName, fullImage(fullUrl)]])), false, "spine-webgl keeps its pages");
+  assert.equal(plain.upgradePages(new Map([[pageName, fullImage(fullUrl)]])), false, "a runtime without texture replacement keeps its pages");
   plain.dispose();
 
   // The Pixi swap on Pixi's own classes: the same source takes the image, its size and every texture over it follow.
@@ -926,12 +862,11 @@ async function main() {
     { ...FILES, textures: undefined, lowTextures: undefined }, "the registry names the tracked rod export");
   assert.deepEqual(assets.spineOf(DESCRIPTOR.asset).lowTextures, [`${EXPORT_DIR}/bamboo-rod-v1--low.webp`],
     "the export's half-size page (spec 166)");
-  const spine = await importSource("vendor/spine-webgl/4.3.13/spine-webgl.js");
+  const spine = await importSource("vendor/pixi/8.22.0/pixi-scene.js");
   const { SpineAtlasTextReader } = await importSource("src/platform/browser/animation/spine_atlas_text_reader.js");
   const { SpineBundleLoader } = await importSource("src/platform/browser/animation/spine_bundle_loader.js");
-  const { SpineGlSurface } = await importSource("src/platform/browser/animation/spine_gl_surface.js");
   const { SpineScene } = await importSource("src/platform/browser/animation/spine_scene.js");
-  const { createSpineRuntime } = await importSource("src/platform/browser/animation/spine_runtime_module.js");
+  const { createSpineRuntime } = await importSource("src/platform/browser/scene/pixi_runtime_module.js");
   const { BrowserAssetTransport } = await importSource("src/platform/browser/assets/browser_asset_transport.js");
   const { AssetLoadQueue } = await importSource("src/engine/assets/asset_load_queue.js");
   const { ScalarSmoother } = await importSource("src/engine/animation/scalar_smoother.js");
@@ -944,8 +879,7 @@ async function main() {
   checkAtlasReader(SpineAtlasTextReader);
   await checkBundleLoader(SpineBundleLoader, AssetLoadQueue);
   await checkScene(spine, SpineScene, SKELETAL_SCENE_METHODS, bundle);
-  await checkPixiRuntimeParity(spine, SpineScene, bundle);
-  checkSurface(SpineGlSurface);
+  await checkPixiRuntime(spine, SpineScene, bundle);
   await checkTransport(BrowserAssetTransport);
   checkSmoother(ScalarSmoother);
 
@@ -954,7 +888,6 @@ async function main() {
   const { RodAnimationController } = await importSource("src/game/presentation/fishing/rod_animation_controller.js");
   const { RodLineRenderer } = await importSource("src/game/presentation/fishing/rod_line_renderer.js");
   const { RodStaticRenderer } = await importSource("src/game/presentation/fishing/rod_static_renderer.js");
-  const { RodSpineRenderer } = await importSource("src/game/presentation/fishing/rod_spine_renderer.js");
   const { FishingEquipmentRenderModelBuilder } =
     await importSource("src/game/presentation/fishing/fishing_equipment_render_model_builder.js");
   const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
@@ -979,11 +912,11 @@ async function main() {
   await checkSpineLoadOrder({ SpineBundleLoader, AssetLoadQueue, SpineScene, spine, bundle, RodAnimationController,
     RodAnimationStateResolver, config, startPicture });
   checkRenderModel({ FishingEquipmentRenderModelBuilder, RodAnimationController, RodAnimationStateResolver,
-    RodLineRenderer, RodStaticRenderer, RodSpineRenderer, config });
+    RodLineRenderer, RodStaticRenderer, config });
   console.log(`Spine rod passed: runtime ${version} (manifest, tracked export), atlas reader, bundle loading through the `
     + "queue (shared jobs, failures, release), scene from the real export (failures, placement, line-tip at setup and full "
-    + "bends, side blend, idle loop and time scale, missing clips, bounds, context restore, dispose), the same scene on "
-    + "spine-pixi-v8 (y down, Spine view, line tip, bounds and bones equal to spine-webgl), GL and scene surfaces, "
+    + "bends, side blend, idle loop and time scale, missing clips, bounds, dispose), the scene with a spine-pixi-v8 view "
+    + "(y down, line tip, bounds and bones equal to the scene's own skeleton), the scene surface, "
     + "transport and frame-rate independent smoothing; setup pose without the runtime, pose resolver (wind, reduced "
     + "motion, rain, side weights), controller modes rectangle -> start picture -> static -> spine (unavailable runtime, context loss, "
     + "DEV static, stale loads, spring-back), static/Spine/line renderers and the bit-for-bit rod line model without a "

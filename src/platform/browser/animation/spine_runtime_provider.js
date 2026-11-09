@@ -5,7 +5,10 @@ export class SpineRuntimeProvider {
   #importModule;
   #pending = null;
 
-  constructor({ importModule = () => import("./spine_runtime_module.js") } = {}) {
+  // importModule: () => the runtime module ({ createSpineRuntime }); the composition imports the WebGL scene's runtime
+  // (pixi_runtime_module.js) once the scene is ready (spec 170: there is no other Spine runtime).
+  constructor({ importModule }) {
+    if (typeof importModule !== "function") throw new TypeError("SpineRuntimeProvider requires importModule");
     this.#importModule = importModule;
   }
 

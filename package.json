@@ -1,6 +1,6 @@
 {
   "name": "cyber-fishing",
-  "version": "0.50.50",
+  "version": "0.50.51",
   "private": true,
   "description": "CyberFishing browser game",
   "engines": {
@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@esotericsoftware/spine-pixi-v8": "4.3.13",
-    "@esotericsoftware/spine-webgl": "4.3.13",
     "acorn": "^8.16.0",
     "esbuild": "0.28.2",
     "eslint-scope": "^9.1.2",

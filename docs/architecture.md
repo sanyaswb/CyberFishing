@@ -191,15 +191,15 @@ transform, and `drawImage` chooses the image filter from each draw's scale (spec
 
 Spine ([spec 099](../specs/099-spine-rod-animation/spec.md)): `engine/animation` holds the scene port method list
 (`SKELETAL_SCENE_METHODS`) and `ScalarSmoother`. `platform/browser/animation` holds `SpineRuntimeProvider` (lazy
-import, version line), `spine_runtime_module.js` (the only importer of the pinned runtime), `SpineScene` (the only
-user of the Spine API), `SpineBundleLoader` (atlas, pages and skeleton through `AssetLoadQueue`), `SpineAtlasTextReader`
-and `SpineGlSurface` (offscreen WebGL canvas composited into the 2D game). Third-party code lives in `vendor/` and is
+import, version line; the composition names the runtime module: the WebGL scene's `pixi_runtime_module.js`, spec 170),
+`SpineScene` (the only user of the Spine API), `SpineBundleLoader` (atlas, pages and skeleton through `AssetLoadQueue`)
+and `SpineAtlasTextReader`. Third-party code lives in `vendor/` and is
 pinned by `vendor/manifest.json`. `utils/vendor-libraries.js` writes every entry from the exact npm devDependencies
 (`--check` compares). The architecture check verifies each vendor file's SHA-256, that it has no imports and that only
 its one named importer imports it. The rod (presentation, `game/presentation/fishing`): `RodAnimationStateResolver` (pure pose choice) and
 `RodAnimationController` (modes rectangle → static → spine, the `RodAnchorFrame` whose tip starts the line) are
 advanced by `FishingEquipmentRenderModelBuilder.prepareRod` while the fishing frame is built. `RodStaticRenderer`,
-`RodSpineRenderer` and `RodLineRenderer` draw from the frame model. `bootstrap/production/rod_animation_composition.js`
+and `RodLineRenderer` draw the 2D reserve from the frame model; Spine draws only on the WebGL scene (spec 170). `bootstrap/production/rod_animation_composition.js`
 wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime. DEV:
 `SpineRodDevSection` (DevTools "SPINE ВУДКА") uses only the controller's DEV port: Spine on/off, clip switches, live
 bone setup edits and the export of the edited skeleton JSON.
@@ -233,7 +233,7 @@ current, `world.current`). Stage 4 ([spec 107](../specs/107-scene-entities-rod/s
 `SceneChangeFingerprint` changes; `PixiLineRenderer`, `PixiRodRenderer` and `PixiFloatRenderer` draw the line, the rod and the
 tackle. The Spine rod runs on spine-pixi-v8 inside the scene: `SpineScene` drives a Pixi `Spine` view
 (`createPixiSpineRuntime`, y-down world) over a `SceneSkeletalSurface`, and `composeRodAnimation` picks that runtime and
-surface when the scene is WebGL (spine-webgl with its offscreen GL surface otherwise). DEV: DevTools
+surface; without a ready WebGL scene the rod and the boat keep their static pictures on the 2D reserve (spec 170). DEV: DevTools
 "🖼️ СЦЕНА WebGL" (`dev/tools/SceneLayerDevSection`, with the live water settings). Rules:
 [docs/rendering.md](rendering.md).
 

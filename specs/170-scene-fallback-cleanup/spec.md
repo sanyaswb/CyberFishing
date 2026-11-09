@@ -1,6 +1,6 @@
 # Spec 170: 2D-резерв сцени без зайвого
 
-**Створено**: 2026-11-08 · **Статус**: рішення є, до реалізації · **Задача**: `tasks.md`, «Spec 170» · **Джерело**: аудит
+**Створено**: 2026-11-08 · **Статус**: реалізовано v0.50.51 (2026-11-09), власник «По 170 відразу так»; приймання власником відкрите · **Задача**: `tasks.md`, «Spec 170» · **Джерело**: аудит
 [TK-255](../../docs/audits/2026-11-08-prod-readiness.md) P2-6, Q2; закриває [spec 103](../103-webgl-scene-layer/spec.md).
 
 ## Рішення власника (2026-11-08)
@@ -56,6 +56,21 @@ Spine-рантайми ліниві); зменшуються Pages-реліз, `
 картинки, повернення контексту → знову Spine; телефон, обидві орієнтації, «⚡ ПРОДУКТИВНІСТЬ». Pages `index.html` — як
 раніше.
 
-## Реалізація
+## Реалізація (v0.50.51)
 
-_(після реалізації)_
+- R1: видалено `spine_runtime_module.js`, `SpineGlSurface`, `RodSpineRenderer` (2D-копія GL-полотна) і його компонент
+  `rod-spine`, `vendor/spine-webgl/4.3.13/` (250 KB) із записом маніфесту й частиною `utils/vendor-libraries.js`,
+  devDependency `@esotericsoftware/spine-webgl`, секцію профайлера `rod-spine`, лічильник `gl-pixels` і рядок оверлея
+  «Spine GL поверхня». `SpineScene` — лише y-down Pixi-шлях (без GL-малювання `render()`, `restoreContext`, підписки на
+  контекст); контракт `SKELETAL_SCENE_METHODS` без `render`/`restoreContext`; `SceneSkeletalSurface` без `canvas` і
+  `onContextChange`; `SpineRuntimeProvider` без runtime за замовчуванням.
+- R2: `composeRodAnimation` / `composeBoatAnimation` — один шлях: `sceneReady(scene)` → рантайм сцени, інакше `probeSpine`
+  = false і статична картинка; сторінки експорту завжди `low` → повні.
+- R3: `?scene=canvas` і кнопки втрати/відновлення контексту лишились; перемикач режиму наживо теж (кілька рядків DEV, вмикає
+  той самий резерв).
+- R4: `scene-layer` — резерв без сцени, у режимі `canvas` і з несформованою сценою: `probeSpine` = false без імпорту Spine;
+  готова сцена — Spine з її рантайму. `spine-rod` і `bait-boat-spine-animation` — на spine-core з бандла сцени (ті самі
+  числа кінчика лінії й меж); `asset-preloader` — рантайм сцени; `render-resolution` — у 2D немає компонента Spine.
+- R5: утиліти — прибрано частину `vendor-libraries.js`; інших інструментів лише для spine-webgl не було.
+- R6: spec 103 закрита; `docs/rendering.md` (резерв), `docs/architecture.md`.
+- Production: 684 → 680 модулів.
