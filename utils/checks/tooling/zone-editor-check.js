@@ -1639,23 +1639,19 @@ controlUI.dispose();
   assert.equal(chumZones.list("lake").length, 0);
   assert.equal(writes.length, 1, "the float, the line length and test chum zones never write a game value");
 
-  // TK-069: with "Брати значення зі спорядження" the equipped line and net drive the previews; without them, the editor's.
+  // TK-069 / TK-264.5: with "Брати значення зі спорядження" the equipped line and net drive effective stats,
+  // while the scripted preview zones are suppressed; turning it off restores the editor's previews.
   const typedLine = zones.effectiveLineMeters;
   zones.setFromEquipment(true);
   assert.equal(zones.effectiveLineMeters, typedLine, "nothing equipped: the typed length still applies");
   equipment = { ...equipment, line: { effectiveStats: { lengthMeters: 6 } }, net: { effectiveStats: { active: true, length: 6 } } };
+  assert.equal(zones.effectiveLineMeters, 6, "the equipped 6 m line sets the effective line meters");
   drawn = draw();
-  assert(Math.abs(byColor(drawn.polygons, "#dddddd").points[65] - 700) < 1e-9, "the equipped 6 m line sets the line radius");
-  assert.equal(byColor(drawn.bands, "#33dd88").top, 1000 - new Net({ active: true, length: 6 }, {}).getReachPixels(),
-    "the equipped net's reach, not the selected one");
-  assert(Math.hypot(drawn.handles[0].x - 500, drawn.handles[0].y - 1000) <= 6 * 50 + 1e-6, "a dragged float is pulled in by the shorter line");
-  // A line longer than the water keeps the float on it: at the water's far edge (owner: it vanished with a 50 m line).
-  equipment = { ...equipment, line: { effectiveStats: { lengthMeters: 50 } } };
-  const typed = zones.lineMeters;
-  zones.setLineMeters(typed + 1); zones.setLineMeters(typed); // a new typed length resets a dragged float to straight ahead
-  drawn = draw();
-  assert(Math.abs(drawn.handles[0].y - 0) < 1e-9 && drawn.handles[0].x === 500, "50 m of line over 20 m of water: the float at the far edge");
+  assert.equal(drawn.polygons.length, 0, "with equipment active and no cast out, scripted preview polygons do not show");
+  assert.equal(drawn.handles.length, 0, "no phantom float handle");
   zones.setFromEquipment(false);
+  drawn = draw();
+  assert(drawn.polygons.length > 0 && drawn.handles.length === 1, "switching equipment off restores the scripted editor preview");
   equipment = { rod: equipment.rod, reel: equipment.reel };
   // R3-2/R3-3: with the equipment's values and a real cast, the game draws the overlays itself; the anchor sits on the
   // real float and, while it waits, moves it within the equipped line's reach over the water.
@@ -1700,7 +1696,11 @@ controlUI.dispose();
   castZones.drag(real, 700, 700);
   assert.deepEqual(realFloat.position, before, "and never moves it");
   gameState = "scouting"; cast = drawCast();
-  assert(cast.polygons.length > 0, "no cast out: the previews are back");
+  assert.equal(cast.polygons.length, 0, "with equipment active and no cast out, the scripted preview does not show");
+  assert.equal(cast.handles.length, 0, "no phantom float handle without a real cast");
+  castZones.setFromEquipment(false); cast = drawCast();
+  assert(cast.polygons.length > 0 && cast.handles.length === 1, "switching equipment off restores the scripted editor preview");
+  castZones.setFromEquipment(true);
 
   // Choices, live values and the game's show switches.
   zones.setNet("net_big"); drawn = draw();

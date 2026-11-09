@@ -208,9 +208,10 @@ export class CastableDependentZones {
     const look = (id, editable = false) => ({ color: BY_ID.get(id).color, editable, hovered: editable && this.#hovered === id });
     if (this.isShown("handChum")) draw.band(frame.left, this.#farY(frame, handChum), frame.right, frame.shore, look("handChum", this.#editingChumLine));
     // R3-2: with a real cast the game draws these zones from the real float itself; the editor marks the float only.
-    const cast = this.#castFloat();
-    if (cast) {
-      if (this.isShown("sector") || this.isShown("line")) {
+    // TK-264.5: with fromEquipment on, the scripted editor previews are suppressed; the editor marks the real float only while a cast is out.
+    if (this.#fromEquipment) {
+      const cast = this.#castFloat();
+      if (cast && (this.isShown("sector") || this.isShown("line"))) {
         draw.handle(cast.x, cast.y, { color: FLOAT_COLOR, editable: this.#movingFloat && cast.movable, hovered: false });
       }
       return;
@@ -245,9 +246,14 @@ export class CastableDependentZones {
     if (this.#movingFloat && (this.isShown("sector") || this.isShown("line"))) {
       const cast = this.#castFloat();
       if (cast && !cast.movable) return null;
-      if (cast) { this.#point.x = cast.x; this.#point.y = cast.y; } else {
+      if (cast) {
+        this.#point.x = cast.x;
+        this.#point.y = cast.y;
+      } else if (!this.#fromEquipment) {
         const origin = this.#planeOrigin(frame), float = this.#floatPlane(frame, origin);
         frame.metric.fromBasePlane(float.x, float.y, this.#point);
+      } else {
+        return null;
       }
       this.#projector.virtualToScreen(this.#point.x, this.#point.y, this.#screen);
       if (Math.hypot(px - this.#screen.x, py - this.#screen.y) <= EDGE_PX) return { kind: "float", cursor: "move" };
@@ -306,6 +312,7 @@ export class CastableDependentZones {
       return;
     }
     if (handle.kind === "float") {
+      if (this.#fromEquipment) return;
       const origin = this.#planeOrigin(frame);
       frame.metric.toBasePlane(x, Math.min(y, frame.shore), this.#plane);
       const limit = this.effectiveLineMeters * this.#readings.pixelsPerMeter;
