@@ -78,6 +78,10 @@ export class CastSceneRenderer {
     const clipped = this.#primitives.beginClip(model.clipRegions);
     const surface = this.#surface;
     surface.save();
+    if (model.lineY > 0) {
+      surface.fillStyle = model.dimColor || "rgba(0, 8, 16, 0.38)";
+      surface.fillRect(0, 0, model.viewportWidth, model.lineY);
+    }
     surface.beginPath();
     surface.moveTo(0, model.lineY);
     surface.lineTo(model.viewportWidth, model.lineY);

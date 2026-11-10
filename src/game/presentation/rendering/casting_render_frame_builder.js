@@ -153,6 +153,8 @@ export class CastingRenderFrameBuilder {
     target.aimingZone.viewportWidth = this.#canvasMetrics.width;
     target.aimingZone.mode = mode;
     target.aimingZone.clipRegions = clipRegions;
+    target.aimingZone.dimColor =
+      this.#config.casting?.depthLimit?.dimColor || "rgba(0, 8, 16, 0.38)";
     target.visible = true;
   }
 

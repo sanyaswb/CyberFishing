@@ -73,12 +73,14 @@
 /* While the fan is open every other action fades out completely and takes no input, on every toolbar width. */
 .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar-button,
 .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar-button,
-.game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector {
+.game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth > .depth-selector,
+.game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth > .game-version-badge {
   opacity: 0;
-  pointer-events: none;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .game-toolbar:has(> .game-toolbar__selector > .inventory-selector--open) > .game-toolbar__tackle > .game-toolbar__depth .depth-selector__panel {
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 .game-toolbar-frame,

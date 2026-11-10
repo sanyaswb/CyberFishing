@@ -548,6 +548,8 @@ async function checkComposition() {
   const css = fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/styles/inventory/inventory-selector.css"), "utf8");
   assert.ok(css.includes("border-width: calc(0.025 * var(--inventory-selector-drawing-unit))"),
     "open central button matches the visible border width of the expanded sectors");
+  assert.ok(css.includes(".inventory-selector__retention") && css.includes("touch-action: none;"),
+    "retention area declares touch-action: none (TK-267)");
   checkWideToolbarCss(fs.readFileSync(path.join(__dirname, "../../../src/game/presentation/styles/hud/toolbar.css"), "utf8"));
 }
 // TK-253: wide toolbars (> 820 px) put the actions right beside the closed selector (no reserve for the open fan) and,
@@ -572,7 +574,8 @@ function checkWideToolbarCss(source) {
     assert.ok(wide.includes(`${open} ${target}`), `the open fan hides ${target} on every toolbar width`);
   }
   const hide = wide.slice(wide.indexOf(`${open} > .game-toolbar-button`));
-  assert.ok(/^[^}]*opacity: 0; pointer-events: none;/u.test(hide), "hidden actions are transparent and take no input");
+  assert.ok(/^[^}]*opacity: 0;[^}]*visibility: hidden !important;[^}]*pointer-events: none !important;/u.test(hide),
+    "hidden actions are transparent, hidden and take no input (TK-267)");
   assert.ok(!flat.slice(containerAt).includes(".inventory-selector--open) > .game-toolbar-button"),
     "the compact block does not repeat the open-fan rule");
 }

@@ -98,6 +98,11 @@ assert.equal(
   "G-095: selecting hand chum immediately shows the reachable cast area",
 );
 assert.equal(frame.casting.aimingZone.mode, "chum", "aiming zone mode is chum");
+assert.equal(
+  frame.casting.aimingZone.dimColor,
+  "rgba(0, 8, 16, 0.38)",
+  "aiming zone dims unreachable water beyond throw limit",
+);
 const expectedLineVirtualY = waterMetric.yAtBasePixels(300);
 assert.equal(
   frame.casting.aimingZone.lineY,

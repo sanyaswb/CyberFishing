@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.67 - Hand chum throw zone dimming and selector input isolation
+
+- TK-267: hand chum throw zone dims unreachable water above the limit line (matching float depth limit); inventory selector neighbouring buttons are hidden with isolated pointer events and touch dragging is guarded against native screen scrolling.
+
 ## v0.50.66 - Test location background art refresh, pipeline rules and zones
 
 - TK-265: refreshed test location backgrounds (2560x1440 WebP/JPEG) for day, evening and night; added location pipeline specification rules and prompt templates; updated castable and collision zones to y=20 and updated depth map.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.58 - Cast rod movement preserves line reach and water bounds
 
 - TK-264: moving the cast rod against shore/obstacle no longer inflates line reach or creates phantom slack; the line stays authoritative and tackle reach clamps to valid water.
-
-## v0.50.57 - Empty tackle leaves only on a double click
-
-- TK-263 (G-131): tackle without a fish reeled into the landing zone (or a spinning lure to the shore, also during a bite) stays in the water; only a double click takes it out.
 
 

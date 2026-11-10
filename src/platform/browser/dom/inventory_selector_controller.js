@@ -39,7 +39,9 @@ export class InventorySelectorController {
     this.#listen(root, "keydown", this.#key);
     this.#listen(root, "keyup", this.#stop);
     this.#listen(root, "focusout", this.#focusOut);
-    for (const type of ["mousedown", "mouseup", "touchstart", "touchmove", "touchend", "wheel", "dblclick"]) this.#listen(root, type, this.#stop);
+    for (const type of ["mousedown", "mouseup", "touchend", "wheel", "dblclick"]) this.#listen(root, type, this.#stop);
+    for (const type of ["touchstart", "touchmove"]) this.#listen(root, type, this.#touchStop, { passive: false });
+    this.#listen(documentRef, "touchmove", this.#documentTouchMove, { passive: false });
     for (const type of ["contextmenu", "dragstart"]) this.#listen(root, type, this.#prevent);
     this.#listen(documentRef, "pointerdown", this.#outsidePress, true);
     this.#listen(documentRef, "focusin", this.#outside);
@@ -120,6 +122,13 @@ export class InventorySelectorController {
     this.#bindings.push([node, type, listener, options]);
   }
   #stop = event => event.stopPropagation();
+  #touchStop = event => {
+    event.stopPropagation();
+    if (event.cancelable) event.preventDefault();
+  };
+  #documentTouchMove = event => {
+    if (this.#active !== null && event.cancelable) event.preventDefault();
+  };
   #prevent = event => { event.preventDefault(); event.stopPropagation(); };
   #cancel = () => this.cancel();
   #visibility = () => { if (this.#document.visibilityState === "hidden") this.cancel(); };
