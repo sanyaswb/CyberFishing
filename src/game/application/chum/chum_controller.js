@@ -112,6 +112,7 @@ export class ChumController {
   }
 
   updateUI() {
+    this.refreshActiveHandChum();
     const eq = this.#inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
     const boatItem = eq.delivery || {};
@@ -163,17 +164,20 @@ export class ChumController {
       }
     }
 
-    let boatIconAsset = null;
+    let iconAsset = null;
     if (method === "boat") {
       const loadedCount = this.#countLoadedChums(eq.deliveryChums);
       const fullyLoaded = sections > 0 && loadedCount >= sections;
       const artwork = boatItem.skin?.equipment;
-      boatIconAsset = fullyLoaded
+      iconAsset = fullyLoaded
         ? artwork?.baitAsset || "items.boats.boat-lvl--3_bait"
         : artwork?.noBaitAsset || "items.boats.boat-lvl--3_no-bait";
+    } else if (method === "hand") {
+      const activeChum = this.#activeHandChum;
+      iconAsset = activeChum ? activeChum.switcherIconAsset || activeChum.iconAsset || null : null;
     }
 
-    this.#ui.setState(state, method, count, isManual, !!(eq.delivery || eq.handChum), boatIconAsset);
+    this.#ui.setState(state, method, count, isManual, !!(eq.delivery || eq.handChum), iconAsset);
     this.#syncAimingWithBoatState(method, isManual);
   }
 

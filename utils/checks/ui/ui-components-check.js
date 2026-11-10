@@ -345,6 +345,15 @@ assert.equal(tiles.children.length, 1);
   assert.equal(asked.length, created, "an unchanged picture keeps its icon node");
   chum.setState("idle", "boat", 2, false, true, "items.boats.boat-lvl--3_bait");
   assert.equal(iconDocument.byClass("chum-control__image").length, 1, "a boat with art shows the art");
+  // TK-249.3: hand chum with art in idle state shows its mix icon on the toolbar button.
+  chum.setState("idle", "hand", 15, false, true, "items.chums.carp-mix-basic.carp-mix-basic_icon");
+  const handArt = iconDocument.byClass("chum-control__image");
+  assert.equal(handArt.length, 1, "hand chum in idle state shows its art (TK-249.3)");
+  assert.equal(handArt[0].src, "items.chums.carp-mix-basic.carp-mix-basic_icon");
+  chum.setState("aiming", "hand", 15, false, true, "items.chums.carp-mix-basic.carp-mix-basic_icon");
+  assert.equal(iconDocument.byClass("chum-control__image").length, 0, "aiming state restores cancel symbol");
+  chum.setState("empty", "hand", 0, false, true, "items.chums.carp-mix-basic.carp-mix-basic_icon");
+  assert.equal(iconDocument.byClass("chum-control__image").length, 0, "empty hand chum restores empty symbol");
   const clock = new TimeDisplay({ documentRef: iconDocument, icons, onActivate: () => {} });
   const phases = [[3, "moon"], [6, "sunrise"], [12, "sun"], [19, "sunset"], [22, "moon"]].map(([hours, symbol]) => {
     clock.update(hours);

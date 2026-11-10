@@ -65,6 +65,11 @@ async function checkChumControls() {
   assert.ok(controls.button.className.includes("chum-control--boat-empty"), "empty boat button has boat-empty class");
   controls.button.listeners.click({});
   assert.equal(clicked, true, "clicking empty boat button triggers callback");
+
+  // TK-249.3: hand chum with art shows the mix icon
+  controls.setState("idle", "hand", 15, false, true, "items.chums.carp-mix-basic.carp-mix-basic_icon");
+  assert(controls.button.child, "hand chum button has image element child");
+  assert.equal(controls.button.child.src, "assets/items/chums/carp-mix-basic/carp-mix-basic_icon.webp");
 }
 
 async function checkChumControllerEmptyBoat() {
@@ -126,6 +131,18 @@ async function checkChumControllerEmptyBoat() {
   percent = 50;
   loaded.updateUI();
   assert.equal(states.at(-1), "idle", "a charged battery makes the button active again");
+
+  // TK-249.3: hand chum passes switcherIconAsset to UI
+  let handUiIcon = null;
+  const handController = new ChumController({
+    messages: FISHING_MESSAGES,
+    inventory: { getEquipped: () => ({ handChum: { quantity: 15, switcherIconAsset: "items.chums.carp-mix-basic.carp-mix-basic_icon" } }) },
+    chum: fakeChum,
+    inventoryUI: fakeInventoryUI,
+    createUi: () => ({ setState(s, m, c, man, vis, icon) { handUiIcon = icon; }, dispose() {} }),
+  });
+  handController.updateUI();
+  assert.equal(handUiIcon, "items.chums.carp-mix-basic.carp-mix-basic_icon", "passes hand chum icon to UI");
 }
 
 async function run() {

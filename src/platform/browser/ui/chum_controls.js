@@ -55,11 +55,11 @@ export class ChumControls {
     mountNode.appendChild(this.button);
   }
 
-  setState(state, method = "hand", count = 0, isManual = false, isVisible = true, boatIconAsset = null) {
-    const boatIconUrl = boatIconAsset ? this.#assets.pathOf(boatIconAsset) : null;
+  setState(state, method = "hand", count = 0, isManual = false, isVisible = true, iconAsset = null) {
+    const iconUrl = iconAsset ? this.#assets.pathOf(iconAsset) : null;
     // Keep quantities in the accessible label; the toolbar contains only icons.
     const symbol = chumSymbol(state, method);
-    const visual = symbol === "boat" && boatIconUrl ? boatIconUrl : symbol;
+    const visual = ((symbol === "boat" || symbol === "chum") && iconUrl) ? iconUrl : symbol;
     const label = method === "boat"
       ? this.#labels?.chumBoatAction || ""
       : this.#labels?.chumActionCount(count) || "";
