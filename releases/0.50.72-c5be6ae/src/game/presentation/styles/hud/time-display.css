@@ -1,0 +1,27 @@
+/* time-display DOM appearance. */
+
+.time-display {
+  position: fixed;
+  top: var(--ui-edge-top);
+  right: var(--ui-edge-right);
+  width: calc(var(--ui-clock-width) * var(--ui-hud-scale, 1));
+  padding: calc(6px * var(--ui-hud-scale, 1)) calc(10px * var(--ui-hud-scale, 1));
+  font-size: calc(20px * var(--ui-hud-scale, 1));
+  gap: calc(8px * var(--ui-hud-scale, 1));
+  cursor: default;
+  z-index: var(--ui-layer-hud);
+  pointer-events: auto;
+}
+
+.time-display__time {
+  color: var(--ui-accent);
+}
+
+.time-display__phase { display: flex; flex: none; color: var(--ui-accent); }
+.time-display__icon { width: 1.1em; height: 1.1em; }
+
+.time-display--interactive { pointer-events: auto; cursor: pointer; touch-action: manipulation; }
+.time-display--interactive:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 3px; }
+.time-display__speed { display: inline-flex; align-items: center; gap: 0.2em; color: var(--ui-muted); font-size: calc(12px * var(--ui-hud-scale, 1)); white-space: nowrap; }
+.time-display__speed-icon { width: 1.1em; height: 1.1em; }
+.time-display__speed[hidden] { display: none; }
