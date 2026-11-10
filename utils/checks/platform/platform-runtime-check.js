@@ -2773,6 +2773,7 @@ async function main() {
   checkLongPressFrames(false);
   await checkGameLoopAndAdapters();
   await checkImageContain();
+  checkDepthMapReader(runtime);
   console.log(
     "Platform runtime passed: frame delta clamp/reset and clock read counts; pending/ready/failed asset cache identity; injected canvas and location depth loading.",
   );
@@ -2793,6 +2794,52 @@ async function checkImageContain() {
   assert.deepEqual(draws[0], [fish, 10, 85, 260, 130], "a wide fish fills the box's width, centred vertically");
   assert.equal(primitives.drawImageContain({ naturalWidth: 0, naturalHeight: 0 }, 0, 0, 260, 260), false);
   assert.equal(draws.length, 1, "an unloaded image draws nothing");
+}
+
+// TK-266: depth map reader maps grayscale pixel color to depth through piecewise non-linear calibration.
+function checkDepthMapReader(runtime) {
+  const { DepthMapReader } = runtime.context;
+  const pixels = new Uint8ClampedArray([
+    255, 255, 255, 255, // (0, 0): c=255 -> 0.1 (clamped to minDepth 0.1)
+    254, 254, 254, 255, // (1, 0): c=254 -> 0.1 (or 0 if minDepth 0)
+    217, 217, 217, 255, // (2, 0): c=217 -> 0.5
+    147, 147, 147, 255, // (3, 0): c=147 -> 1.0
+    54,  54,  54,  255, // (0, 1): c=54  -> 5.0
+    35,  35,  35,  255, // (1, 1): c=35  -> 7.5
+    10,  10,  10,  255, // (2, 1): c=10  -> 15.0
+    0,   0,   0,   255, // (3, 1): c=0   -> 15.0
+  ]);
+  const reader = new DepthMapReader({ width: 4, height: 2, pixels });
+
+  // Test reference location bounds (min: 0.1, max: 15.0)
+  assert.equal(reader.getDepthAtPixel(0, 0, 0.1, 15.0), 0.1);
+  assert.equal(reader.getDepthAtPixel(1, 0, 0.1, 15.0), 0.1);
+  assert.equal(reader.getDepthAtPixel(2, 0, 0.1, 15.0), 0.5);
+  assert.equal(reader.getDepthAtPixel(3, 0, 0.1, 15.0), 1.0);
+  assert.equal(reader.getDepthAtPixel(0, 1, 0.1, 15.0), 5.0);
+  assert.equal(reader.getDepthAtPixel(1, 1, 0.1, 15.0), 7.5);
+  assert.equal(reader.getDepthAtPixel(2, 1, 0.1, 15.0), 15.0);
+  assert.equal(reader.getDepthAtPixel(3, 1, 0.1, 15.0), 15.0);
+
+  // Test with minDepth = 0
+  assert.equal(reader.getDepthAtPixel(1, 0, 0, 15.0), 0);
+
+  // Test custom depthBounds scaling (e.g. min: 1, max: 5)
+  assert.equal(reader.getDepthAtPixel(1, 0, 1.0, 5.0), 1.0);
+  assert.equal(reader.getDepthAtPixel(1, 1, 1.0, 5.0), 3.0);
+  assert.equal(reader.getDepthAtPixel(2, 1, 1.0, 5.0), 5.0);
+
+  // Test intermediate interpolation (c=235 is between 254 and 217)
+  const midReader = new DepthMapReader({
+    width: 1,
+    height: 1,
+    pixels: new Uint8ClampedArray([235, 235, 235, 255]),
+  });
+  const midDepth = midReader.getDepthAtPixel(0, 0, 0.1, 15.0);
+  assert(
+    Math.abs(midDepth - ((254 - 235) / (254 - 217)) * 0.5) < 1e-6,
+    "interpolates intermediate colors smoothly",
+  );
 }
 
 main().catch((error) => {

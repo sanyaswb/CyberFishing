@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.68 - Depth map reader non-linear calibration
+
+- TK-266: depth map reader calibrated with non-linear piecewise interpolation matching the owner's exact color-to-depth control points (0.1m at rgb(254), 0.5m at rgb(217), 1.0m at rgb(147), 5.0m at rgb(54), 7.5m at rgb(35), 15.0m at rgb(10)), eliminating harsh depth transitions near the shore.
+
 ## v0.50.67 - Hand chum throw zone dimming and selector input isolation
 
 - TK-267: hand chum throw zone dims unreachable water above the limit line (matching float depth limit); inventory selector neighbouring buttons are hidden with isolated pointer events and touch dragging is guarded against native screen scrolling.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.59 - Water boundary sliding for rod movement
 
 - TK-264.1: float now slides along the water shoreline and mask boundaries when the rod moves sideways, preventing deadlocks when leading the tackle.
-
-## v0.50.58 - Cast rod movement preserves line reach and water bounds
-
-- TK-264: moving the cast rod against shore/obstacle no longer inflates line reach or creates phantom slack; the line stays authoritative and tackle reach clamps to valid water.
 
 
