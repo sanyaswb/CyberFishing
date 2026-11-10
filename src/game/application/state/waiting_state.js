@@ -87,9 +87,13 @@ export class WaitingState extends GameState {
       : null;
 
     const hasReel = this.deps.rules.equipment?.requiresReel?.(eq) ?? true;
-    const maxLineLengthPx = this.deps.rules.equipment?.getMaxCastDistance?.(
-      eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
-    ) ?? null;
+    const canCastAnywhere =
+      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
+    const maxLineLengthPx = canCastAnywhere
+      ? null
+      : (this.deps.rules.equipment?.getMaxCastDistance?.(
+          eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
+        ) ?? null);
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
       hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
@@ -249,16 +253,21 @@ export class WaitingState extends GameState {
     const cell = this.deps.world.checkWater(vPos.x, vPos.y);
     const bounds = this.deps.world.getDynamicBounds();
 
-    const isInside = this.deps.rules.cast.canCastAt(
-      vPos.x,
-      vPos.y,
-      eq,
-      this.deps.world.getWaterMetric(),
-      this.deps.world.getRodVirtualPos(bounds),
-    );
+    const canCastAnywhere =
+      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
+    let isInside = canCastAnywhere;
+    if (!canCastAnywhere) {
+      isInside = this.deps.rules.cast.canCastAt(
+        vPos.x,
+        vPos.y,
+        eq,
+        this.deps.world.getWaterMetric(),
+        this.deps.world.getRodVirtualPos(bounds),
+      );
+    }
 
-    if (cell && isInside) {
-      const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell.depth;
+    if ((cell || canCastAnywhere) && isInside) {
+      const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell?.depth ?? 2.0;
       this.deps.castPenalty.registerCast(this.deps.clock.now);
       this.deps.commands.castLine(vPos.x, vPos.y, depth);
       return;

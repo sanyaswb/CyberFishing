@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.70 - GodMode infinite cast distance across any equipment
+
+- TK-268: GodMode infiniteCasting enables casting to any distance across the entire water map with any equipped tackle (pole, match, feeder, spinning), without tackle or line constraints restricting aim reach.
+
 ## v0.50.69 - Direct pixel depth reading without grid stepping
 
 - TK-266.1: float, feeder and tackle read exact bottom depth directly from DepthMapReader at their continuous (x, y) coordinates without 40px grid stepping, while grid cells retain fixed central depths for DevTools and zone overview.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.61 - Rod movement restricted by taut line
 
 - TK-264.3: when tackle is blocked by shore obstacles and the line is fully played out, sideways rod movement stops at maximum line reach, preventing infinite line stretching while keeping reverse movement free.
-
-## v0.50.60 - Anti-teleportation and smooth deceleration at obstacles
-
-- TK-264.2: continuous collision check prevents tackle from jumping across land ledges when moving the rod; tackle movement smoothly decelerates to zero upon encountering obstacles instead of abruptly freezing.
 
 

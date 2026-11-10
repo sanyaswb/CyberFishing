@@ -191,7 +191,9 @@ export class CastPowerAim {
     const checkWater = options.checkWater;
     const canCastAnywhere = options.canCastAnywhere === true;
     const metric = this.#getWaterMetric();
-    const maxDistance = this.#resolveMaxDistance(options.maxDistance, metric);
+    const maxDistance = canCastAnywhere
+      ? metric.topBasePixels
+      : this.#resolveMaxDistance(options.maxDistance, metric);
     const distance = maxDistance * Math.max(0, Math.min(1, release.power));
     const accuracyPx = this.#resolveAccuracyDiameter(
       options.accuracyPx,

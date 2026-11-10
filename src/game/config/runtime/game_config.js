@@ -145,7 +145,7 @@ export const CONFIG = {
       noLineBreak: false, // 3. Ліска не рветься при 100% натягу
       noRodBreak: false, // 4. Вудка ніколи не ламається
       noFishStaminaLoss: false, // 5. Стаміна риби не витрачається і завжди тримається на 100%
-      infiniteCasting: false,
+      infiniteCasting: true, // 6. Нескінченна дальність закидання вудки при будь-якій снасті
 
       // Bite debug controls. Працюють тільки коли enabled: true.
       // fixedBiteChancePercent обрізається до діапазону 0..100.

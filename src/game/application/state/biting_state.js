@@ -97,9 +97,13 @@ export class BitingState extends GameState {
     const input = envData.input || this.deps.input.getState();
     const eq = this.deps.inventory.getEquipped();
     const hasReel = this.deps.rules.equipment?.requiresReel?.(eq) ?? true;
-    const maxLineLengthPx = this.deps.rules.equipment?.getMaxCastDistance?.(
-      eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
-    ) ?? null;
+    const canCastAnywhere =
+      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
+    const maxLineLengthPx = canCastAnywhere
+      ? null
+      : (this.deps.rules.equipment?.getMaxCastDistance?.(
+          eq, Infinity, this.getSelectedHookDepthMeters?.() ?? null,
+        ) ?? null);
     const castRodMovement = this.deps.castRodControl.update({ dtMs: dt, input, bounds,
       hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),

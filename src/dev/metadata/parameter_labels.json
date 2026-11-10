@@ -1335,6 +1335,10 @@
     "label": "Fish power debuff curve",
     "description": "Power curve applied to ENDURANCE exhaustion progress before fish power is reduced."
   },
+  "debug.godMode.infiniteCasting": {
+    "label": "GOD infinite cast distance",
+    "description": "Allows casting the rod to any distance across the entire water map with any selected tackle; tackle changes do not limit cast reach."
+  },
   "debug.godMode.forceAnomalyChance": {
     "label": "GOD anomaly chance 100%",
     "description": "Canonical anomaly chance override. The switch shown under Fixed Catch is linked to this same value, so both controls always change together."

@@ -9,6 +9,10 @@ export class GameplayOverrideReader {
     return this.#config !== undefined && this.#config.debug?.godMode?.enabled;
   }
 
+  get godMode() {
+    return this.isActive;
+  }
+
   // The live GodMode settings while GodMode is on (BiteSystem reads its bite overrides from them).
   get activeSettings() {
     return this.isActive ? this.#config.debug.godMode : null;

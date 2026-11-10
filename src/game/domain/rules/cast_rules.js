@@ -1,6 +1,14 @@
 export class CastRules {
-  constructor(equipmentRules) {
-    this.equipmentRules = equipmentRules;
+  #equipmentRules;
+  #devFlags;
+
+  constructor(equipmentRules, devFlags = null) {
+    this.#equipmentRules = equipmentRules;
+    this.#devFlags = devFlags;
+  }
+
+  get equipmentRules() {
+    return this.#equipmentRules;
   }
 
   // Cast distances are base pixels (ground metres times pixelsPerMeter); the water metric places them on the map.
@@ -12,7 +20,10 @@ export class CastRules {
     rodPos,
     selectedDepthMeters = null,
   ) {
-    const maxDistance = this.equipmentRules.getEffectiveCastDistance(
+    if (this.#devFlags?.isEnabled?.("infiniteCasting")) {
+      return true;
+    }
+    const maxDistance = this.#equipmentRules.getEffectiveCastDistance(
       equipment,
       Infinity,
       null,

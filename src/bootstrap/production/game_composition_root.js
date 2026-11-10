@@ -1351,7 +1351,7 @@ export class GameCompositionRoot {
   }) {
     const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
     const baitRules = new BaitRules();
-    const castRules = new CastRules(equipmentRules);
+    const castRules = new CastRules(equipmentRules, devFlags);
     const biteRules = new BiteRules(baitRules);
     const chumRules = new ChumRules();
     const boatRules = new BoatRules();

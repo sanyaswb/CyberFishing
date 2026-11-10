@@ -60,11 +60,14 @@ export class CastService {
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = this.#getWaterMetric().distanceBasePixels(vx, vy, rodPos.x, rodPos.y);
-    const maxDist = this.#equipmentRules.getMaxCastDistance(
+    const canCastAnywhere =
+      this.#devFlags?.isEnabled?.("infiniteCasting") === true;
+    const baseMaxDist = this.#equipmentRules.getMaxCastDistance(
       eq,
       2000,
       context.currentHookDepth,
     );
+    const maxDist = canCastAnywhere ? Math.max(dist, baseMaxDist) : baseMaxDist;
     const castDistanceRatio = Math.min(1, dist / maxDist);
     const castStartTime = this.#clock.now;
 

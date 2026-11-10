@@ -9,6 +9,7 @@ const { SourceRuntime } = require("../../testing/core/source_runtime");
 const runtime = new SourceRuntime();
 const { ScoutingState } = runtime.importModule("src/game/application/state/scouting_state.js");
 const { WaitingState } = runtime.importModule("src/game/application/state/waiting_state.js");
+const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
 const { GameRenderIntent } = runtime.importModule("src/game/presentation/rendering/game_render_intent.js");
 
 const bounds = { left: 0, right: 320, top: 0, bottom: 1000 };
@@ -18,10 +19,17 @@ const deps = {
   config: { casting: { enabled: true, powerSwipePx: 90 }, debug: {}, physics: {}, ui: {} },
   rng: { next: () => 0.5, chance: () => false },
   getViewportSize: () => ({ width: 320, height: 600 }),
-  projector: { focusOnVirtualPos() {}, followVirtualX() {}, screenToVirtual: (x, y) => ({ x, y }), virtualToScreen: (x, y) => ({ x, y }) },
+  projector: { getScale: () => 1, focusOnVirtualPos() {}, followVirtualX() {}, screenToVirtual: (x, y) => ({ x, y }), virtualToScreen: (x, y) => ({ x, y }) },
   commands: { panViewport() {}, setState() {}, castLine: (...args) => casts.push(args) },
   world: {
-    getWaterMetric: () => ({ isUniform: true, distanceMeters: () => 99, topBasePixels: 1000, yAtBasePixels: (d) => 1000 - d }),
+    getWaterMetric: () => ({
+      isUniform: true,
+      distanceMeters: () => 99,
+      topBasePixels: 1000,
+      yAtBasePixels: (d) => 1000 - d,
+      virtualPixelsFromShore: (d) => d,
+      distanceBasePixels: (x1, y1, x2, y2) => Math.hypot(x1 - x2, y1 - y2),
+    }),
     checkWater: () => ({ depth: 2 }), getRodVirtualPos: () => ({ x: 160, y: 1000 }), getBiteEnv: () => ({}),
   },
   inventory: { getEquipped: () => equipment, evaluateCastReadiness: () => ({ canCast: true }) },
@@ -74,6 +82,50 @@ assert.deepEqual([flying.fishing.visible, casts.length], [false, 0], "while the 
 waiting.update(120, bounds, { input: {}, env: {} });
 assert.equal(casts.length, 1, "the re-cast lands");
 assert.equal(intentOf(waiting).fishing.visible, true, "after it lands the tackle shows again");
+
+// TK-268: GodMode infiniteCasting allows casting to any distance across the whole water metric regardless of equipped tackle.
+let godModeInfiniteCasting = false;
+deps.services.devFlags.isEnabled = (flag) => flag === "infiniteCasting" && godModeInfiniteCasting;
+deps.rules.equipment.getEffectiveCastDistance = (eq) => eq?.variant === "pole" ? 160 : 500;
+
+// Without infiniteCasting: pole rod max distance is 160, float rod is 500
+equipment.variant = "pole";
+const scoutingStandardPole = new ScoutingState(deps);
+scoutingStandardPole.enter();
+scoutingStandardPole.update(16, bounds, { input: hold });
+const aimStandardPole = intentOf(scoutingStandardPole);
+assert.equal(aimStandardPole.casting.maxDistance, 160, "without infiniteCasting pole rod is limited to 160px");
+
+// With infiniteCasting: any tackle reaches full water metric (1000px)
+godModeInfiniteCasting = true;
+const scoutingGodPole = new ScoutingState(deps);
+scoutingGodPole.enter();
+scoutingGodPole.update(16, bounds, { input: hold });
+const aimGodPole = intentOf(scoutingGodPole);
+assert.equal(aimGodPole.casting.maxDistance, 1000, "with infiniteCasting pole rod reaches full water distance (1000px)");
+
+// Changing tackle to spinning or float rod still reaches full water distance (1000px)
+equipment.variant = "spinning";
+const scoutingGodSpinning = new ScoutingState(deps);
+scoutingGodSpinning.enter();
+scoutingGodSpinning.update(16, bounds, { input: hold });
+const aimGodSpinning = intentOf(scoutingGodSpinning);
+assert.equal(aimGodSpinning.casting.maxDistance, 1000, "with infiniteCasting spinning rod reaches full water distance (1000px)");
+
+// Full power release resolves to the far water edge (distance 1000px, y = 0)
+const aim = new CastPowerAim({
+  config: deps.config,
+  projector: deps.projector,
+  rng: deps.rng,
+  getWaterMetric: () => deps.world.getWaterMetric(),
+  getViewportSize: deps.getViewportSize,
+  panViewport: deps.commands.panViewport,
+});
+const release = { active: true, power: 1.0, screenX: 160, screenY: 560 };
+const resolvedTarget = scoutingGodPole.resolveCastTarget(aim, release, bounds, equipment);
+assert.equal(resolvedTarget.success, true, "cast target resolves successfully");
+assert.equal(resolvedTarget.y <= bounds.top + 50, true,
+  "cast with power 1.0 lands near the top boundary (far water edge), actual y: " + resolvedTarget.y);
 
 console.log("Re-cast aim passed: a long-press re-cast shows the CAST bar without the rod, line or tackle, like the first "
   + "aim, keeps them hidden while the cast flies and shows them again when it lands.");

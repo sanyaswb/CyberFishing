@@ -21,6 +21,7 @@ export class GameState {
   // idle drift and FightSessionFactory all take their depth cost from EquipmentRules/CastDistanceCalculator.
   constrainTackleToLine(groundPlane, bounds, equipment, checkWater = null) {
     if (!equipment?.line) return;
+    if (this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true) return;
     const maxDistance = this.deps.rules.equipment.getMaxCastDistance(
       equipment, Infinity, this.getSelectedHookDepthMeters(),
     );
@@ -33,6 +34,9 @@ export class GameState {
     fallback = Infinity,
     castPowerCoefficient = null,
   ) {
+    if (this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true) {
+      return Infinity;
+    }
     return this.deps.rules.equipment.getEffectiveCastDistance(
       equipment,
       fallback,
@@ -76,7 +80,13 @@ export class GameState {
     target.fishing.visible = false;
     if (!visual) return true;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.getEffectiveCastDistance(eq);
+    const canCastAnywhere =
+      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
+    const metric = this.deps.world?.getWaterMetric?.();
+    const effectiveDistance = this.getEffectiveCastDistance(eq);
+    const maxDistance = canCastAnywhere && metric?.topBasePixels
+      ? metric.topBasePixels
+      : effectiveDistance;
     if (this.deps.config.debug?.casting?.showAccuracyArea) {
       target.casting.accuracyPreview = aim.getAccuracyPreview(bounds, maxDistance, this.getRodAccuracyPx(eq),
         this.getRodAccuracyPercent(eq), this.getRodAccuracyMultiplier(eq));
@@ -93,8 +103,12 @@ export class GameState {
   // Where a released cast lands for the equipped rod (same order of reads as before).
   resolveCastTarget(aim, release, bounds, equipment) {
     const canCastAnywhere =
-      this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.getEffectiveCastDistance(equipment);
+      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
+    const metric = this.deps.world?.getWaterMetric?.();
+    const effectiveDistance = this.getEffectiveCastDistance(equipment);
+    const maxDistance = canCastAnywhere && metric?.topBasePixels
+      ? metric.topBasePixels
+      : effectiveDistance;
     const accuracyPx = this.getRodAccuracyPx(equipment);
     const accuracyPercent = this.getRodAccuracyPercent(equipment);
     const accuracyMultiplier = this.getRodAccuracyMultiplier(equipment);
