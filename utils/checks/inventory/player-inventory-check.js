@@ -77,6 +77,11 @@ function checkFreshStart() {
   assert.equal(equipped.baits?.[0]?.itemId, "oil_worm", "oil worm is attached on a fresh start");
   assert.equal(equipped.net?.itemId, "net_basic", "net is equipped on a fresh start");
   assert.equal(inventory.getMaxTackleLoadKg(), 1, "line has 1kg load limit");
+  const loose = items(inventory);
+  assert.equal(loose.find((i) => i.itemId === "oil_worm")?.quantity, 50, "oil_worm pack has 50 items");
+  assert.equal(loose.find((i) => i.itemId === "bread")?.quantity, 25, "bread pack has 25 items");
+  assert.equal(loose.find((i) => i.itemId === "carp_mix_basic")?.quantity, 15, "chum mix pack has 15 items");
+  assert.equal(loose.find((i) => i.itemId === "oil_worm_100")?.quantity, 100, "oil_worm_100 pack has 100 items");
 }
 
 function checkStartingInventory() {

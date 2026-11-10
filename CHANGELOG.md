@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.72 - Pack item quantities in default starting inventory
+
+- TK-269.1: starting inventory packs now populate with their configured pack quantities (e.g. 50 oil worms, 25 bread, 15 chum mix, 100/75/50/25/10 variants) instead of flat 1s, with single items remaining 1 each and 1 bait attached to the equipped hook.
+
 ## v0.50.71 - Default night, bamboo float tackle equipped, full inventory, HUD button strokes
 
 - TK-269: default start time set to night (00:00); bamboo float rod, line, hook with oil worm, float and net equipped by default; starting inventory contains all 40 game items (1 of each); clock shadow removed; HUD and selector button borders normalized to match game-version-badge (1px solid rgba(var(--ui-accent-rgb), 0.35)).
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.63 - Suppressing scripted editor preview with equipment values
 
 - TK-264.5: enabling "take values from equipment" (fromEquipment) suppresses the simulated editor preview zones and phantom float handle; the editor marks only the real float when a cast is active.
-
-## v0.50.62 - Fixed line reach for pole rods and unspooled line overlay
-
-- TK-264.4: pole rods without a reel maintain a fixed authoritative line reach that never shrinks on retrieval, allowing the float to move freely within slack; the line radius overlay reflects the actual unspooled/fixed line boundary.
 
 
