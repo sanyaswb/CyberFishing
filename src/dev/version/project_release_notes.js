@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-249.2: editor root and view tabs show the item's switcher icon (switcherIconAsset) instead of the packaging.",
   "TK-264.5: suppressing scripted editor preview zones when taking values from game equipment (fromEquipment).",
   "TK-264.4: fixed line length radius for pole rods without reels and line radius overlay based on unspooled line.",
   "TK-264.3: cast rod movement stops when tackle is blocked and line is fully taut, preventing infinite line stretching.",

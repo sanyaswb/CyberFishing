@@ -199,6 +199,24 @@ switches.dispose(wormToggle);
   assert.equal(srcOf(cards.renderItem(pack, { variant: "inventory", ...quiet })), packArt, "the backpack card keeps the pack");
   assert.equal(srcOf(cards.renderItem(pack, { variant: "assembly-root", wholeArt: true, ...quiet })), packArt,
     "the editor preview keeps the whole pack");
+  // TK-249.2: the editor's root and view tabs (InventoryEditorTabsRenderer) show the mix's icon as well.
+  const { InventoryEditorTabsRenderer } = require("../../../src/game/presentation/inventory/inventory_editor_tabs_renderer.js");
+  const { InventoryEditorTabsResolver } = require("../../../src/game/presentation/inventory/inventory_editor_tabs_resolver.js");
+  const { INVENTORY_EDITOR_TABS_LABELS } = require("../../../src/game/presentation/inventory/inventory_editor_tabs_labels.js");
+  const tabsRenderer = new InventoryEditorTabsRenderer({
+    domFactory,
+    resolver: new InventoryEditorTabsResolver(),
+    itemRenderer: cards,
+    parametersRenderer: { render: () => null },
+    swipeController: { attach() {}, detach() {} },
+    rowScrollController: { attach() {}, detach() {} },
+    labels: INVENTORY_EDITOR_TABS_LABELS,
+    longPressDurationMs: 200,
+  });
+  const tabBlock = tabsRenderer.render({ root: pack, sockets: [] });
+  documentRef.body.append(tabBlock);
+  const rootTab = documentRef.byClass("inventory-editor-tabs__tab--root")[0];
+  assert.equal(srcOf(rootTab), mixIcon, "the editor's root tab shows the mix's icon (TK-249.2)");
 }
 
 // TK-240: a live bait stack's parameters are its fish: a thumbnail and a life scale without a number per fish; the

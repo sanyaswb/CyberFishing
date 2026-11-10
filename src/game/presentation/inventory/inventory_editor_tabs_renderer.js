@@ -107,8 +107,9 @@ export class InventoryEditorTabsRenderer {
       }
       return node;
     }
+    // TK-249.2: root and view tabs represent cells (variant "socket"), showing an equipped item's switcherIconAsset when present.
     const card = this.#items.renderItem(tab.item, { variant: "socket", showAttachments: false, showMetadata: false,
-      showResourceMeter: false, showTooltip: false, onActivate: () => this.#showByTap(tab.key) });
+      showResourceMeter: false, showTooltip: false, equippedArt: true, onActivate: () => this.#showByTap(tab.key) });
     const name = tab.label || tab.item?.name || "Предмет";
     card.setAttribute("aria-label", tab.kind === "root" ? this.#labels.root(name) : this.#labels.view(name));
     card.title = card.getAttribute("aria-label");

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.64 - Chum and bait icon in editor tabs
+
+- TK-249.2: the item editor's root and view tabs show the mix/bait icon (switcherIconAsset) instead of the packaging picture; the whole-art preview above keeps the full pack art.
+
 ## v0.50.63 - Suppressing scripted editor preview with equipment values
 
 - TK-264.5: enabling "take values from equipment" (fromEquipment) suppresses the simulated editor preview zones and phantom float handle; the editor marks only the real float when a cast is active.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.55 - Weather with intensity, fades and storms
 
 - Spec 172 stage A (TK-261): weather changes smoothly: clear, rain and storm (only after rain) with an intensity that rises and fades in real seconds (rain 1-10 min), fog in the morning and at night, lightning strikes in a storm; weather has its own random numbers and never changes the fish's. DevTools «🌦 ПОГОДА» forces states and edits the settings. No weather visuals yet.
-
-## v0.50.54 - Camera priority switch
-
-- TK-260: DevTools DEBUG «🎥 Камера тримає рибу» chooses what stays in view when the fish runs far: the rod (default, as before) or the fish; it edits CONFIG.locations.cameraFollowPriority live.
 
 
