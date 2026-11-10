@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="uk">
+
+<head>
+    <link rel="preload" as="style" href="build/dev.styles-D7VB6ZS6.css" />
+    <link rel="modulepreload" href="build/dev.boot-FDAB746B.js" />
+    <link rel="modulepreload" href="build/game_startup_meter.entry-62SKHIPB.js" />
+    <link rel="modulepreload" href="build/dev.entry-VJHQIBPY.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-IJQKA6DF.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-XAWE4EAK.js" />
+    <link rel="modulepreload" href="build/chunks/development_game_startup-H6QHX6JR.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-F6OK7ZGJ.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-EGS6GS2J.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-VCHYXGRB.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-D7RDF76X.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-QJGRN6FX.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-POEUBU5U.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-3IOJY4FE.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-22U6CROU.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-AEMBJDYY.js" />
+    <link rel="modulepreload" href="build/chunks/chunk-LFZCWPBP.js" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fishing Mechanic Prototype</title>
+  <style>
+    /* Spec 157 D0: the startup screen paints from this HTML alone, before the game's stylesheets and modules load;
+       data-game-ready (set with the first frame of play) fades it out. D5: a release page carries the start's
+       compressed size (data-startup-bytes) and shows a bar and the loaded megabytes; the repository's pages show the
+       spinner only. */
+    .startup-loader { position: fixed; inset: 0; z-index: 2147483647; display: grid; place-content: center;
+      justify-items: center; gap: 16px; background: #000; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+    .startup-loader__icon { width: 56px; height: 56px; animation: startup-loader-spin 1s linear infinite; }
+    html[data-game-ready] .startup-loader { opacity: 0; visibility: hidden; pointer-events: none; }
+    html[data-game-ready] .startup-loader__icon { animation-play-state: paused; }
+    .startup-loader__progress { width: 160px; height: 4px; border-radius: 2px; overflow: hidden;
+      background: rgba(255, 255, 255, 0.16); }
+    .startup-loader__bar { display: block; width: 100%; height: 100%; background: #7fd1ff; transform-origin: left center;
+      transform: scaleX(var(--startup-progress, 0)); transition: transform 0.2s linear; }
+    .startup-loader__bytes { margin: 0; min-height: 1.2em; font: 13px/1.2 system-ui, sans-serif;
+      font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, 0.72); }
+    .startup-loader:not([data-startup-bytes]) .startup-loader__progress,
+    .startup-loader:not([data-startup-bytes]) .startup-loader__bytes { display: none; }
+    /* Spec 157 R3: a failed start shows its text and a retry button instead of the ring and the bar. */
+    .startup-loader[data-startup-failed] .startup-loader__icon,
+    .startup-loader[data-startup-failed] .startup-loader__progress,
+    .startup-loader[data-startup-failed] .startup-loader__bytes { display: none; }
+    .startup-loader__error { max-width: 280px; margin: 0; padding: 0 16px; text-align: center;
+      font: 15px/1.35 system-ui, sans-serif; color: #fff; }
+    .startup-loader__retry { min-height: 44px; padding: 0 20px; border: 1px solid #7fd1ff; border-radius: 8px;
+      background: transparent; color: #7fd1ff; font: 15px/1.2 system-ui, sans-serif; cursor: pointer; }
+    @keyframes startup-loader-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .startup-loader__icon { animation: none; } .startup-loader__bar { transition: none; } }
+  </style>
+</head>
+
+<body class="game-shell">
+  <div class="startup-loader" data-startup-bytes="597708" role="status" aria-label="Завантаження гри">
+    <svg class="startup-loader__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255, 255, 255, 0.16)" stroke-width="4" />
+      <circle cx="24" cy="24" r="20" fill="none" stroke="#7fd1ff" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="36 90" />
+    </svg>
+    <div class="startup-loader__progress" aria-hidden="true"><span class="startup-loader__bar"></span></div>
+    <p class="startup-loader__bytes" aria-hidden="true"></p>
+  </div>
+  <!-- Spec 157 D0: the game's stylesheets follow the startup screen so they do not hold back its first paint. -->
+  <link rel="stylesheet" href="build/dev.styles-D7VB6ZS6.css" />
+  <canvas id="gameCanvas" class="game-shell__canvas"></canvas>
+  <div id="gameVersionBadge" class="game-version-badge" aria-label="Поточна версія гри"></div>
+  <script type="module" src="build/dev.boot-FDAB746B.js"></script>
+</body>
+
+</html>
