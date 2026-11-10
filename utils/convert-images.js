@@ -2,13 +2,14 @@
 // utils/convert-images.js v2.0.0 (TK-223): every raster conversion of the project goes through this tool (AGENTS.md).
 // Run it without arguments for a short guided menu; the menu prints the command it runs, so it can be repeated.
 //
-//   batch         PNG/JPG -> WebP (and/or AVIF) beside each source.
-//                 [--input assets] [--quality low|middle|high] [--format webp|avif|both] [--max-size N]
-//                 [--trim [--trim-threshold 10]] [--masters] [--dry-run]
+//   batch         PNG/JPG -> WebP (and/or AVIF) beside each source (or into --output).
+//                 [--input assets] [--output assets] [--pattern "**/*.{png,jpg}"]
+//                 [--quality low|middle|high] [--format webp|avif|both|same|jpg|png] [--max-size N]
+//                 [--crop <W>x<H>[+<X>+<Y>]] [--trim [--trim-threshold 10]] [--masters] [--dry-run]
 //                 --masters moves each converted source to asset-sources/<its path under assets/> (the master rule).
 //   thumbnails    Masters -> display art in another folder (TK-180: fish).
 //                 [--input asset-sources/fish] [--output assets/fish-display] [--size 768] [--quality middle]
-//                 [--top-fraction 1] [--trim [--trim-threshold 10]] [--dry-run]
+//                 [--top-fraction 1] [--crop <W>x<H>[+<X>+<Y>]] [--trim [--trim-threshold 10]] [--dry-run]
 //   low-copies    --manifest <json: [{ input, output, scale?, quality? }]>  (npm run assets:sync makes the name--low.webp
 //                 copies with it; a Spine atlas page gets scale 0.5, quality low and alphaQuality 50, spec 166)
 //   spine-region  --atlas <file.atlas> --output <picture.webp> [--size 1024] [--quality middle]
@@ -29,7 +30,15 @@ const QUALITY = Object.freeze({
   middle: Object.freeze({ name: "Middle", webp: 80, avif: 65 }),
   high: Object.freeze({ name: "High", webp: 95, avif: 85 }),
 });
-const FORMATS = Object.freeze({ webp: ["webp"], avif: ["avif"], both: ["webp", "avif"] });
+const FORMATS = Object.freeze({
+  webp: ["webp"],
+  avif: ["avif"],
+  both: ["webp", "avif"],
+  same: ["same"],
+  jpg: ["jpg"],
+  jpeg: ["jpeg"],
+  png: ["png"],
+});
 const LOW_COPY_MAX_SIDE = 256;
 // sharp already spreads one image over libvips threads; a few files at once keeps the cores busy on small images.
 const PARALLEL_FILES = Math.max(1, Math.min(4, (os.availableParallelism?.() ?? os.cpus().length) - 1));
@@ -74,6 +83,19 @@ function trimOf(args) {
   return { threshold };
 }
 
+function cropOf(args) {
+  if (!args.has("--crop")) return null;
+  const raw = args.get("--crop");
+  const match = /^(\d+)x(\d+)(?:\+(\d+)\+(\d+))?$/.exec(raw);
+  if (!match) throw new Error(`--crop must be <width>x<height> or <width>x<height>+<left>+<top> (got ${raw})`);
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  const left = match[3] !== undefined ? Number(match[3]) : 0;
+  const top = match[4] !== undefined ? Number(match[4]) : 0;
+  if (width < 1 || height < 1) throw new Error("--crop dimensions must be positive");
+  return { left, top, width, height };
+}
+
 // A project path: inside the repository, resolved from its root.
 function projectPath(relative, name) {
   if (!relative) throw new Error(`${name} is required`);
@@ -87,9 +109,13 @@ const kb = (bytes) => (bytes >= 1048576 ? `${(bytes / 1048576).toFixed(2)} MB` :
 
 // --- Shared pipeline ---------------------------------------------------------------------------------------------------
 
-// One source image -> a sharp pipeline: optional top crop, trim, resize inside a square (never enlarged).
-async function pipelineOf(source, { topFraction = 1, trim = null, maxSize = null }) {
-  let image = sharp(source);
+// One source image -> a sharp pipeline: optional crop, top crop, trim, resize inside a square (never enlarged).
+async function pipelineOf(source, { topFraction = 1, trim = null, maxSize = null, crop = null }) {
+  let image = sharp(typeof source === "string" ? fs.readFileSync(source) : source);
+  if (crop) {
+    image = image.extract(crop);
+    if (trim) image = sharp(await image.png().toBuffer());
+  }
   if (topFraction < 1) {
     const { width, height } = await image.metadata();
     image.extract({ left: 0, top: 0, width, height: Math.max(1, Math.floor(height * topFraction)) });
@@ -103,9 +129,23 @@ async function pipelineOf(source, { topFraction = 1, trim = null, maxSize = null
 
 async function encode(image, format, quality, target, { alphaQuality = 100 } = {}) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  const encoder = format === "avif" ? image.clone().avif({ quality: quality.avif, effort: 5 })
-    : image.clone().webp({ quality: quality.webp, alphaQuality });
-  return encoder.toFile(target);
+  const ext = (format === "same" ? path.extname(target).slice(1) : format).toLowerCase();
+  let encoder;
+  if (ext === "avif") {
+    encoder = image.clone().avif({ quality: quality.avif, effort: 5 });
+  } else if (ext === "webp") {
+    encoder = image.clone().webp({ quality: quality.webp, alphaQuality });
+  } else if (ext === "jpg" || ext === "jpeg") {
+    encoder = image.clone().jpeg({ quality: 95 });
+  } else if (ext === "png") {
+    encoder = image.clone().png({ compressionLevel: 9 });
+  } else {
+    encoder = image.clone().webp({ quality: quality.webp, alphaQuality });
+  }
+  const buffer = await encoder.toBuffer();
+  fs.writeFileSync(target, buffer);
+  const metadata = await sharp(buffer).metadata();
+  return { size: buffer.length, width: metadata.width, height: metadata.height };
 }
 
 // Runs the jobs a few at a time; every failure is reported and fails the run at the end.
@@ -139,38 +179,47 @@ function assertUniqueTargets(jobs) {
 
 async function batch(args) {
   const input = projectPath(args.get("--input", "assets"), "--input");
+  const output = args.has("--output") ? projectPath(args.get("--output"), "--output") : null;
+  const pattern = args.get("--pattern", "**/*.{png,jpg,jpeg,PNG,JPG,JPEG}");
   const quality = qualityOf(args);
-  const formats = FORMATS[args.get("--format", "webp")];
-  if (!formats) throw new Error("--format must be webp, avif or both");
-  const settings = { trim: trimOf(args), maxSize: sizeOf(args, "--max-size", null) };
+  const formatKey = args.get("--format", "webp");
+  const formats = FORMATS[formatKey];
+  if (!formats) throw new Error("--format must be webp, avif, both, same, jpg, or png");
+  const settings = { trim: trimOf(args), maxSize: sizeOf(args, "--max-size", null), crop: cropOf(args) };
   const masters = args.has("--masters");
   const dryRun = args.has("--dry-run");
   const assetsRoot = path.join(ROOT, "assets");
-  const files = glob.sync("**/*.{png,jpg,jpeg,PNG,JPG,JPEG}", { cwd: input, nodir: true, absolute: true,
+  const files = glob.sync(pattern, { cwd: input, nodir: true, absolute: true,
     ignore: ["**/node_modules/**"] }).sort();
   if (files.length === 0) {
-    console.log(`No PNG/JPG files in ${rel(input) || "."}.`);
+    console.log(`No matching files in ${rel(input) || "."}.`);
     process.exitCode = 1;
     return;
   }
   const jobs = files.map((source) => {
-    const stem = source.replace(/\.[^.]+$/, "");
+    const relative = path.relative(input, source);
+    const stem = relative.replace(/\.[^.]+$/, "");
+    const ext = path.extname(source).slice(1);
+    const targetDir = output ? path.join(output, path.dirname(relative)) : path.dirname(source);
+    const targetStem = path.join(targetDir, path.basename(stem));
     const master = masters ? path.join(ROOT, "asset-sources", path.relative(assetsRoot, source)) : null;
     if (master && path.relative(assetsRoot, source).startsWith("..")) throw new Error(`--masters needs sources under assets/: ${rel(source)}`);
     if (master && fs.existsSync(master)) throw new Error(`${rel(master)} already exists: move or remove it first`);
-    return { source, master, label: rel(source), targets: formats.map((format) => `${stem}.${format}`) };
+    const targetFormats = formats.map((format) => (format === "same" ? ext : format));
+    return { source, master, label: rel(source), targets: targetFormats.map((format) => `${targetStem}.${format}`) };
   });
   assertUniqueTargets(jobs);
-  console.log(`batch: ${files.length} files in ${rel(input) || "."}, ${quality.name} (WebP ${quality.webp}, AVIF ${quality.avif})` +
+  console.log(`batch: ${files.length} files in ${rel(input) || "."}${output ? ` -> ${rel(output)}` : ""}, ${quality.name} (WebP ${quality.webp}, AVIF ${quality.avif})` +
+    `${settings.crop ? `, crop ${settings.crop.width}x${settings.crop.height}+${settings.crop.left}+${settings.crop.top}` : ""}` +
     `${settings.maxSize ? `, max ${settings.maxSize} px` : ""}${settings.trim ? ", trimmed" : ""}${masters ? ", masters -> asset-sources" : ""}` +
     `${dryRun ? " [dry run]" : ""}`);
   let before = 0, after = 0;
   const failed = await runJobs(jobs, async (job) => {
     if (dryRun) { console.log(`  ${job.label} -> ${job.targets.map(rel).join(", ")}${job.master ? `, master ${rel(job.master)}` : ""}`); return; }
+    const size = fs.statSync(job.source).size;
     const image = await pipelineOf(job.source, settings);
     const results = [];
     for (const [index, format] of formats.entries()) results.push(await encode(image, format, quality, job.targets[index]));
-    const size = fs.statSync(job.source).size;
     before += size;
     after += results.reduce((sum, result) => sum + result.size, 0);
     if (job.master) {
@@ -192,7 +241,7 @@ async function thumbnails(args) {
   const quality = qualityOf(args);
   if (input === output) throw new Error("--input and --output must differ");
   if (!Number.isFinite(topFraction) || topFraction <= 0 || topFraction > 1) throw new Error("--top-fraction must be in (0, 1]");
-  const settings = { topFraction, trim: trimOf(args), maxSize: size };
+  const settings = { topFraction, trim: trimOf(args), maxSize: size, crop: cropOf(args) };
   const files = glob.sync("**/*.{png,jpg,jpeg,webp,avif}", { cwd: input, nodir: true }).sort();
   const jobs = files.map((relative) => ({ source: path.join(input, relative), label: relative,
     targets: [path.join(output, relative.replace(/\.[^.]+$/, ".webp"))] }));

@@ -21,4 +21,9 @@ utils/generated/
 utils/tmp/
 utils/*.log
 
+# Generation prompts
+prompts/
+prompts
+prompts.md
+
 FORCODEX.md

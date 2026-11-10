@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.66 - Test location background art refresh, pipeline rules and zones
+
+- TK-265: refreshed test location backgrounds (2560x1440 WebP/JPEG) for day, evening and night; added location pipeline specification rules and prompt templates; updated castable and collision zones to y=20 and updated depth map.
+
 ## v0.50.65 - Chum icon on toolbar button
 
 - TK-249.3: the chum button on the HUD toolbar (chum-control--idle) shows the equipped mix's WebP icon (switcherIconAsset) instead of the generic sprite symbol.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.57 - Empty tackle leaves only on a double click
 
 - TK-263 (G-131): tackle without a fish reeled into the landing zone (or a spinning lure to the shore, also during a bite) stays in the water; only a double click takes it out.
-
-## v0.50.56 - Rod side travel independent of the window
-
-- TK-262 (spec 153): the rod's side movement in a fight is the same at every window size and on every screen: measured in map units, limited only by the water, the camera keeps the rod in view.
 
 

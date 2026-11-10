@@ -171,10 +171,10 @@ export class LocationMap {
       maxX = Math.max(maxX, (z.x + z.w) * cellSize);
       maxY = Math.max(maxY, (z.y + z.h) * cellSize);
     }
-    this.#castableBounds.left = minX;
-    this.#castableBounds.right = maxX;
-    this.#castableBounds.top = minY;
-    this.#castableBounds.bottom = maxY;
+    this.#castableBounds.left = Math.max(0, minX);
+    this.#castableBounds.right = Math.min(this.#cols * cellSize, maxX);
+    this.#castableBounds.top = Math.max(0, minY);
+    this.#castableBounds.bottom = Math.min(this.#rows * cellSize, maxY);
     return this.#castableBounds;
   }
 

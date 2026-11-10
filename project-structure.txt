@@ -209,6 +209,7 @@
 │  │     ├── bamboo-rod-v1--scene--low.webp
 │  │     └── bamboo-rod-v1--scene.webp
 │  ├── locations
+│  │  ├── rules.md
 │  │  └── test
 │  │     ├── bg_test--day--low.webp
 │  │     ├── bg_test--day.webp
