@@ -37,6 +37,7 @@ export class LocationMap {
   #maskedCategories = {};
   #visibleLeft = 0;
   #visibleRight = 0;
+  #depthReader = null;
 
   constructor(locationId, locationsConfig, rng = null, resources = null, startRng = rng) {
     if (!resources || typeof resources !== "object") {
@@ -407,6 +408,20 @@ export class LocationMap {
     return this.#id;
   }
 
+  // TK-266.1: direct reading from depth map at continuous (x, y) coordinates without 40px grid stepping.
+  getDepthAtVirtualPos(vX, vY) {
+    if (this.#depthReader) {
+      return this.#depthReader.getDepthAtPixel(
+        vX,
+        vY,
+        this.#config.depthBounds.min,
+        this.#config.depthBounds.max,
+      );
+    }
+    const cell = this.getCellAtVirtualPos(vX, vY, this.#cellSize);
+    return cell ? cell.depth : (this.#config.depthBounds?.min || 0);
+  }
+
   getLocationZones() {
     return this.#config.zones || {};
   }
@@ -420,7 +435,8 @@ export class LocationMap {
     this.#isDynamicBg = !!background.dynamic;
     this.#bgAssetIds = background.assetIds || {};
     this.#bgLoaded = resources.loaded !== false;
-    this.#processDepthMap(resources.depthReader || null, cellSize);
+    this.#depthReader = resources.depthReader || null;
+    this.#processDepthMap(this.#depthReader, cellSize);
     this.#revision += 1;
   }
 }

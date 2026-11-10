@@ -18,6 +18,18 @@ export class GroundPlaneScope {
     this.#metric.fromBasePlane(baseX, baseY, this.#virtualScratch);
     return this.#checkWater(this.#virtualScratch.x, this.#virtualScratch.y);
   };
+  #planeGetDepth = (baseX, baseY) => {
+    this.#metric.fromBasePlane(baseX, baseY, this.#virtualScratch);
+    if (typeof this.#checkWater?.getDepth === "function") {
+      return this.#checkWater.getDepth(this.#virtualScratch.x, this.#virtualScratch.y);
+    }
+    const cell = this.#checkWater ? this.#checkWater(this.#virtualScratch.x, this.#virtualScratch.y) : null;
+    return cell ? cell.depth : 0;
+  };
+
+  constructor() {
+    this.#planeCheckWater.getDepth = this.#planeGetDepth;
+  }
 
   enter({ metric, entity, bounds, checkWater }) {
     const frame = this.#frame;

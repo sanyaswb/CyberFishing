@@ -90,7 +90,8 @@ export class ScoutingState extends GameState {
       }
 
       if ((cell && isInside) || canCastAnywhere) {
-        this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
+        const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell.depth;
+        this.deps.commands.castLine(vPos.x, vPos.y, depth);
       } else {
         this.deps.commands.markInvalidCast(input.clickPos);
       }

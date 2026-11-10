@@ -39,6 +39,8 @@ export class GameViewportFacade {
     this.#biteEnvironmentService = biteEnvironmentService;
     this.#getCastRodScreenX = getCastRodScreenX;
     this.#rodVisualOffsetSystem = rodVisualOffsetSystem;
+    this.checkWater = this.checkWater.bind(this);
+    this.checkWater.getDepth = (vx, vy) => this.getDepthAt(vx, vy);
   
     } catch (error) { this.dispose(); throw error; }
 }
@@ -88,6 +90,10 @@ export class GameViewportFacade {
 
   checkWater(vx, vy) {
     return this.#biteEnvironmentService.checkWater(vx, vy);
+  }
+
+  getDepthAt(vx, vy) {
+    return this.#biteEnvironmentService.getDepthAt(vx, vy);
   }
 
   getRodVirtualPos(bounds, screenXOverride = null) {

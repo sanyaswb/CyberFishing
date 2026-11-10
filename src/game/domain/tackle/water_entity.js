@@ -305,8 +305,12 @@ export class WaterEntity {
 
     let bottomDepth = this._maxDepth;
     if (checkWater) {
-      const cell = checkWater(this._position.x, this._position.y);
-      if (cell) bottomDepth = cell.depth;
+      if (typeof checkWater.getDepth === "function") {
+        bottomDepth = checkWater.getDepth(this._position.x, this._position.y);
+      } else {
+        const cell = checkWater(this._position.x, this._position.y);
+        if (cell) bottomDepth = cell.depth;
+      }
     }
 
     this._recordPoseInputs(input, pullDirection);

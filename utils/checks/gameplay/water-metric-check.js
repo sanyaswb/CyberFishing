@@ -541,6 +541,68 @@ function checkLineRadiusOverlayOutsideFight() {
     "line radius overlay uses the released/fixed line length (350 px), not the float's position (10 px)");
 }
 
+// TK-266.1: float and tackle read exact pixel depth from DepthMapReader directly at (x, y) without grid stepping.
+function checkDirectPixelDepthReading() {
+  const { LocationMap } = runtime.importModule("src/game/domain/locations/location_map.js");
+  const { GameWorld } = runtime.importModule("src/game/application/world/game_world.js");
+  const { DepthMapReader } = runtime.importModule("src/platform/browser/location/depth_map_reader.js");
+  const { FloatEntity } = runtime.importModule("src/game/domain/tackle/float_entity.js");
+  const { GroundPlaneScope } = runtime.importModule("src/game/application/world/ground_plane_scope.js");
+
+  const width = 80, height = 40;
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      let c = 217;
+      if (x === 20) c = 217;
+      else if (x === 40) c = 147;
+      else if (x === 60) c = 54;
+      pixels[idx] = c;
+      pixels[idx + 1] = c;
+      pixels[idx + 2] = c;
+      pixels[idx + 3] = 255;
+    }
+  }
+
+  const depthReader = new DepthMapReader({ width, height, pixels });
+  const cfg = {
+    cellSize: 40,
+    designCellSize: 40,
+    baseResolution: { width: 80, height: 40 },
+    enableCastable: true,
+    enableCollisions: false,
+    enableSnags: false,
+    map: {
+      test: {
+        depthBounds: { min: 0.1, max: 15.0 },
+        zones: {
+          castable: [{ x: 0, y: 0, w: 2, h: 1 }],
+          collisions: [],
+          snags: [],
+          dynamic: [],
+        },
+      },
+    },
+  };
+
+  const map = new LocationMap("test", cfg, { next: () => 0 }, { depthReader });
+  assert.equal(map.getCellAtVirtualPos(0, 0, 40).depth, 0.5, "grid cell 0 center depth is 0.5m");
+  assert.equal(map.getCellAtVirtualPos(40, 0, 40).depth, 5.0, "grid cell 1 center depth is 5.0m");
+  assert.equal(map.getDepthAtVirtualPos(40, 20), 1.0, "direct depth reading at x=40 gives exact pixel depth 1.0m");
+
+  const world = new GameWorld({
+    map,
+    projector: { pan() {}, update() {} },
+    locationConfig: cfg,
+    canvasMetrics: { width: 80, height: 40 },
+  });
+
+  assert.equal(world.getDepthAt(40, 20), 1.0, "GameWorld.getDepthAt gives exact pixel depth");
+  assert.equal(typeof world.checkWater.getDepth, "function", "world.checkWater provides getDepth function");
+  assert.equal(world.checkWater.getDepth(40, 20), 1.0, "world.checkWater.getDepth gives 1.0m at x=40");
+}
+
 checkFightSectorDuringFight();
 checkLineRadiusOverlayOutsideFight();
 checkUniformMatchesPlainArithmetic();
@@ -552,5 +614,6 @@ checkSingleMetricSource();
 checkTestLocationProfile();
 checkUnifiedWaterAreas();
 checkAccuracyIndependentOfProfile();
+checkDirectPixelDepthReading();
 checkValidation();
 console.log("Water metric passed: exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities/tangents, one metric source per location, save timing and buffer reuse.");

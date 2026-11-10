@@ -33,6 +33,8 @@ export class GameWorld {
     this.#locationConfig = locationConfig;
     this.#waterMetricSource = waterMetricSource;
     this.#isZoneMotionPaused = isZoneMotionPaused;
+    this.checkWater = this.checkWater.bind(this);
+    this.checkWater.getDepth = (vx, vy) => this.getDepthAt(vx, vy);
   }
 
   refreshLocationConfig(locationConfig, locationResources) {
@@ -84,6 +86,15 @@ export class GameWorld {
     );
     const accepted = this.#map.isCastableAt ? this.#map.isCastableAt(vx, vy) : cell?.isCastable && !cell.hasCollision;
     return cell && accepted ? cell : null;
+  }
+
+  // TK-266.1: direct reading from depth map at continuous (x, y) coordinates without 40px grid stepping.
+  getDepthAt(vx, vy) {
+    if (typeof this.#map.getDepthAtVirtualPos === "function") {
+      return this.#map.getDepthAtVirtualPos(vx, vy);
+    }
+    const cell = this.checkWater(vx, vy);
+    return cell ? cell.depth : 0;
   }
 
   update(dt, timeScale) {

@@ -47,6 +47,8 @@ export class BiteEnvironmentService {
     this.#getGameStateName = getGameStateName;
     this.#consumeExpiredFeederChum = consumeExpiredFeederChum;
     this.#biteEnvData = biteEnvData;
+    this.checkWater = this.checkWater.bind(this);
+    this.checkWater.getDepth = (vx, vy) => this.getDepthAt(vx, vy);
   }
 
   getDynamicBounds() {
@@ -57,13 +59,17 @@ export class BiteEnvironmentService {
     return this.#world.checkWater(vx, vy);
   }
 
+  getDepthAt(vx, vy) {
+    return this.#world.getDepthAt ? this.#world.getDepthAt(vx, vy) : (this.checkWater(vx, vy)?.depth || 0);
+  }
+
   getBiteEnvData() {
     const floatEntity = this.#floatRef();
     const pos = floatEntity.getPosition();
     const env = this.#env.getSnapshot();
     const cell = this.checkWater(pos.x, pos.y);
     const chum = this.#chum.getChumDataAt(pos.x, pos.y);
-    const bottomDepth = cell?.depth || 0;
+    const bottomDepth = this.getDepthAt(pos.x, pos.y);
 
     let feederBonus = 1.0;
     let feederTargets = [];

@@ -254,7 +254,10 @@ export class GameApplication {
       },
       canPlayerCast: () => this.canPlayerCast(),
       getMaxHookDepth: () => this.getMaxHookDepth(),
-      checkWater: (vx, vy) => this.checkWater(vx, vy),
+      checkWater: Object.assign((vx, vy) => this.checkWater(vx, vy), {
+        getDepth: (vx, vy) => this.getDepthAt(vx, vy),
+      }),
+      getDepthAt: (vx, vy) => this.getDepthAt(vx, vy),
       getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
       getWaterMetric: () => this.#world.getWaterMetric(),
@@ -942,6 +945,10 @@ export class GameApplication {
 
   checkWater(vx, vy) {
     return this.#viewportFacade.checkWater(vx, vy);
+  }
+
+  getDepthAt(vx, vy) {
+    return this.#viewportFacade.getDepthAt(vx, vy);
   }
 
   getEnvDataForBite() {

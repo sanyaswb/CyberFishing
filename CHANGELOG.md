@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.69 - Direct pixel depth reading without grid stepping
+
+- TK-266.1: float, feeder and tackle read exact bottom depth directly from DepthMapReader at their continuous (x, y) coordinates without 40px grid stepping, while grid cells retain fixed central depths for DevTools and zone overview.
+
 ## v0.50.68 - Depth map reader non-linear calibration
 
 - TK-266: depth map reader calibrated with non-linear piecewise interpolation matching the owner's exact color-to-depth control points (0.1m at rgb(254), 0.5m at rgb(217), 1.0m at rgb(147), 5.0m at rgb(54), 7.5m at rgb(35), 15.0m at rgb(10)), eliminating harsh depth transitions near the shore.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.60 - Anti-teleportation and smooth deceleration at obstacles
 
 - TK-264.2: continuous collision check prevents tackle from jumping across land ledges when moving the rod; tackle movement smoothly decelerates to zero upon encountering obstacles instead of abruptly freezing.
-
-## v0.50.59 - Water boundary sliding for rod movement
-
-- TK-264.1: float now slides along the water shoreline and mask boundaries when the rod moves sideways, preventing deadlocks when leading the tackle.
 
 

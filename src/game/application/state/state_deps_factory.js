@@ -28,6 +28,7 @@ export class StateDepsFactory {
     return {
       world: {
         checkWater: this.#root.checkWater,
+        getDepthAt: this.#root.getDepthAt,
         getBiteEnv: this.#root.getBiteEnv,
         getDynamicBounds: this.#root.getDynamicBounds,
         getWaterMetric: this.#root.getWaterMetric,

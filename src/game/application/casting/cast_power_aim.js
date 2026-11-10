@@ -247,6 +247,7 @@ export class CastPowerAim {
         return this.#targetResult({
           virtualPos,
           cell,
+          checkWater,
           bounds,
           originX,
           metric,
@@ -277,6 +278,7 @@ export class CastPowerAim {
       return this.#targetResult({
         virtualPos: centerVirtual,
         cell: centerCell,
+        checkWater,
         bounds,
         originX,
         metric,
@@ -305,6 +307,7 @@ export class CastPowerAim {
   #targetResult({
     virtualPos,
     cell,
+    checkWater,
     bounds,
     originX,
     metric,
@@ -321,7 +324,10 @@ export class CastPowerAim {
       success: true,
       x: virtualPos.x,
       y: virtualPos.y,
-      depth: cell?.depth ?? (canCastAnywhere ? 2.0 : 0),
+      depth:
+        (typeof checkWater?.getDepth === "function"
+          ? checkWater.getDepth(virtualPos.x, virtualPos.y)
+          : cell?.depth) ?? (canCastAnywhere ? 2.0 : 0),
       originVirtualX: rodScreenX === screenX ? originX : this.#projector.screenToVirtual(rodScreenX, 0, this.#scratchA).x,
       originVirtualY: bounds.bottom,
       rodScreenX,

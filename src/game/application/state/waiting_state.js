@@ -258,8 +258,9 @@ export class WaitingState extends GameState {
     );
 
     if (cell && isInside) {
+      const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell.depth;
       this.deps.castPenalty.registerCast(this.deps.clock.now);
-      this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
+      this.deps.commands.castLine(vPos.x, vPos.y, depth);
       return;
     }
 

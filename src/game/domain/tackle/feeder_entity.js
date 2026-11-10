@@ -71,7 +71,10 @@ export class FeederEntity extends WaterEntity {
     if (this._isSinking || !checkWater) return;
     const cell = checkWater(this._position.x, this._position.y);
     if (!cell) return;
-    this._syncToBottomDepth(cell.depth);
+    const depth = typeof checkWater.getDepth === "function"
+      ? checkWater.getDepth(this._position.x, this._position.y)
+      : cell.depth;
+    this._syncToBottomDepth(depth);
   }
 
   _syncToBottomDepth(bottomDepth) {
