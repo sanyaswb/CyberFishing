@@ -43,7 +43,7 @@ export class EnvironmentSystem {
 
   constructor(
     config,
-    initialTime = 12,
+    initialTime = 0,
     rng,
     spawnConfig = {},
     gameTimeClock = null,
@@ -55,6 +55,10 @@ export class EnvironmentSystem {
     this.#gameTimeClock = gameTimeClock;
     this.#weather = weather;
     this.#gameTimeHours = initialTime;
+    if (this.#spawnConfig?.timePhases) {
+      this.#lastHour = Math.floor(initialTime);
+      this.#updatePhase(this.#lastHour);
+    }
     if (weather) this.#snapshot.weather = weather.snapshot;
     this.#syncSnapshot();
   }

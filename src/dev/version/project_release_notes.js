@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-269: default night, bamboo float tackle equipped, full 40-item inventory, and HUD button stroke matching version-badge.",
   "TK-268: GodMode infiniteCasting allows casting to any distance across the entire water map with any equipped tackle.",
   "TK-266.1: direct pixel depth reading from DepthMapReader at exact tackle (x, y) without 40px grid stepping.",
   "TK-266: depth map reader calibrated with non-linear piecewise interpolation matching exact grayscale depth control points.",

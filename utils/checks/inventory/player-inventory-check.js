@@ -69,26 +69,35 @@ function checkFreshStart() {
   assert.equal(cache.writes.includes("player_inventory") || cache.writes.includes("player_equipment"), false,
     "the legacy save keys are only read, never written");
   assert(cache.writes.length > 0, "Inventory saves its migrated snapshot");
-  const ids = new Set(items(inventory).map((item) => item.itemId));
-  for (const configured of CONFIG.player.inventory) assert(ids.has(configured.itemId), `configured ${configured.itemId} is seeded`);
-  assert.equal(inventory.getEquipped().rod, null, "nothing is equipped on a fresh start");
-  assert.equal(inventory.getMaxTackleLoadKg(), 0, "an empty tackle has no load limit");
+  const equipped = inventory.getEquipped();
+  assert.equal(equipped.rod?.itemId, "rod_test_float", "bamboo rod is equipped on a fresh start");
+  assert.equal(equipped.line?.itemId, "line_test_1", "line is equipped on a fresh start");
+  assert.equal(equipped.float?.itemId, "float_day", "float is equipped on a fresh start");
+  assert.equal(equipped.hooks?.[0]?.itemId, "hook_basic", "hook is equipped on a fresh start");
+  assert.equal(equipped.baits?.[0]?.itemId, "oil_worm", "oil worm is attached on a fresh start");
+  assert.equal(equipped.net?.itemId, "net_basic", "net is equipped on a fresh start");
+  assert.equal(inventory.getMaxTackleLoadKg(), 1, "line has 1kg load limit");
 }
 
 function checkStartingInventory() {
   const key = "player_inventory_v2";
-  const direct = compose();
+  const { CONFIG } = compose();
+  const flatConfig = {
+    ...CONFIG.player,
+    equipment: {},
+    assemblies: [],
+    inventory: CONFIG.player.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
+  };
+  const direct = compose({ playerConfig: flatConfig });
   // A classic save key forces the legacy conversion of the same configured items.
   const classicCache = new MemoryCache();
   classicCache.values.set("player_equipment", {});
-  const converted = compose({ cache: classicCache });
+  const converted = compose({ cache: classicCache, playerConfig: flatConfig });
   assert.equal(JSON.stringify(direct.cache.values.get(key)), JSON.stringify(converted.cache.values.get(key)),
     "the current-format start saves the same bytes as the former legacy conversion of the configuration");
   assert.deepEqual(direct.cache.writes, [key], "a new player's start writes only the current save");
-  const { CONFIG } = direct;
-  assert.throws(() => compose({ playerConfig: { ...CONFIG.player, equipment: { ...CONFIG.player.equipment, rodId: "uuid-rod-spin" } } }),
-    /Starting inventory supports items and settings only \(equipment: rodId; build templates: none\)/u,
-    "starting equipment is rejected instead of silently dropped");
+  const equippedDirect = compose();
+  assert.equal(equippedDirect.inventory.getEquipped().rod?.itemId, "rod_test_float", "default starting equipment is equipped");
   const settings = compose({ playerConfig: { ...CONFIG.player, inventorySettings: { autoBait: true, autoChum: "yes" } } });
   assert.deepEqual(settings.cache.values.get(key).settings, { autoBait: true, autoChum: false, refillMemory: {} });
 }
@@ -110,7 +119,14 @@ function checkLegacySaveMigration() {
 }
 
 function checkPlayerInventoryPort() {
-  const { inventory, forwarded, actions, TackleLoadLimitPolicy } = compose();
+  const { CONFIG } = compose();
+  const flatConfig = {
+    ...CONFIG.player,
+    equipment: {},
+    assemblies: [],
+    inventory: CONFIG.player.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
+  };
+  const { inventory, forwarded, actions, TackleLoadLimitPolicy } = compose({ playerConfig: flatConfig });
   const changes = [];
   inventory.onInventoryChanged((detail) => changes.push(detail));
   const rod = items(inventory).find((item) => item.itemId === "rod_test_float");

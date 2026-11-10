@@ -55,6 +55,7 @@ import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_it
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { composeGameTime } from "./game_time_composition.js";
+import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
 import { backgroundTimeBlend } from "../../game/domain/time/background_time_blend.js";
 import { timeOfDayLayers } from "../../game/presentation/time/time_of_day_layers.js";
 import { GameWorld } from "../../game/application/world/game_world.js";
@@ -1077,7 +1078,7 @@ export class GameCompositionRoot {
     const weatherRng = new SeededRng(`${seed}:weather`);
     const weather = new WeatherModel({ rng: weatherRng,
       getSettings: () => this.#config.locations?.map?.[locId]?.weather ?? locCfg?.weather ?? null });
-    return new EnvironmentSystem(locCfg, this.#config.debug?.initialTime ?? 12, weatherRng, this.#config.spawns,
+    return new EnvironmentSystem(locCfg, this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours, weatherRng, this.#config.spawns,
       gameTimeClock, weather);
   }
 

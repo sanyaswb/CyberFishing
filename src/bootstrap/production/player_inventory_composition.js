@@ -68,6 +68,7 @@ export function createPlayerInventory({
     startingStateProvider: () => legacySaveSource.hasSave() ? null : {
       items: playerConfig.inventory || [],
       equipment: playerConfig.equipment || {},
+      assemblies: playerConfig.assemblies || [],
       buildTemplates: itemDB.builds || {},
       settings: playerConfig.inventorySettings || {},
       // The starting items already hold what the one-time grants give an existing save.

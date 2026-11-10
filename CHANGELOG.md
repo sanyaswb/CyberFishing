@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.71 - Default night, bamboo float tackle equipped, full inventory, HUD button strokes
+
+- TK-269: default start time set to night (00:00); bamboo float rod, line, hook with oil worm, float and net equipped by default; starting inventory contains all 40 game items (1 of each); clock shadow removed; HUD and selector button borders normalized to match game-version-badge (1px solid rgba(var(--ui-accent-rgb), 0.35)).
+
 ## v0.50.70 - GodMode infinite cast distance across any equipment
 
 - TK-268: GodMode infiniteCasting enables casting to any distance across the entire water map with any equipped tackle (pole, match, feeder, spinning), without tackle or line constraints restricting aim reach.
@@ -37,9 +41,5 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.62 - Fixed line reach for pole rods and unspooled line overlay
 
 - TK-264.4: pole rods without a reel maintain a fixed authoritative line reach that never shrinks on retrieval, allowing the float to move freely within slack; the line radius overlay reflects the actual unspooled/fixed line boundary.
-
-## v0.50.61 - Rod movement restricted by taut line
-
-- TK-264.3: when tackle is blocked by shore obstacles and the line is fully played out, sideways rod movement stops at maximum line reach, preventing infinite line stretching while keeping reverse movement free.
 
 
