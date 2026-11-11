@@ -40,11 +40,14 @@ export class PixiWaterRenderer {
   #driftY = 0;
   #driftSpeed = 0;
   #metric = null;
+  #glints;
 
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
   // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water; getWakeSettings: () =>
-  // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water).
-  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null, getImageSize = null }) {
+  // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water); glints: PixiWaterGlintRenderer (spec 172 D2,
+  // stepped with the water from its crests, settings CONFIG.canvas.water.glints) or null.
+  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null, getImageSize = null,
+    glints = null }) {
     if (typeof pixi?.DisplacementFilter !== "function") throw new TypeError("PixiWaterRenderer requires the Pixi namespace");
     if (typeof textures?.get !== "function") throw new TypeError("PixiWaterRenderer requires textures");
     if (typeof getSettings !== "function") throw new TypeError("PixiWaterRenderer requires getSettings");
@@ -52,6 +55,7 @@ export class PixiWaterRenderer {
     this.#getSettings = getSettings;
     this.#getWakeSettings = getWakeSettings;
     this.#getImageSize = typeof getImageSize === "function" ? getImageSize : null;
+    this.#glints = glints;
     this.#field = new WaterWaveField({ width: MAP_WIDTH, height: MAP_HEIGHT });
     this.#mapCanvas = documentTarget.createElement("canvas");
     this.#mapCanvas.width = MAP_WIDTH;
@@ -79,12 +83,13 @@ export class PixiWaterRenderer {
     // mask clips the filtered result; the mask lives in the scene for its transform and bounds and is not drawn itself.
     this.#mask = new pixi.Graphics();
     stage.addChild(this.#mask);
+    this.#glints?.mount(stage);
   }
 
   // For DEV: whether the water animates, the map size, the last step's JavaScript time and the drift speed (art px/s).
   get status() {
     return { active: this.#visible, mapWidth: MAP_WIDTH, mapHeight: MAP_HEIGHT, stepMs: this.#stepMs,
-      driftSpeed: this.#driftSpeed };
+      driftSpeed: this.#driftSpeed, glints: this.#glints?.status ?? null };
   }
 
   // world: the frame's world model, or null when the background is not on the scene; viewWidth / viewHeight: the
@@ -132,12 +137,14 @@ export class PixiWaterRenderer {
       this.#drift(world.current, settings, nowMs);
       this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale, world.waterPlane,
         world.boatWake, area);
+      this.#glints?.step(this.#field, area, world.glints, settings.glints);
     }
     return stepDue || !wasVisible;
   }
 
   dispose() {
     this.#mapTexture.destroy(true);
+    this.#glints?.dispose();
   }
 
   // The current carries the pattern by its velocity over the time since the last step, so a changed current or scale
@@ -167,6 +174,7 @@ export class PixiWaterRenderer {
   }
 
   #hide() {
+    this.#glints?.hide();
     if (!this.#visible) return false;
     this.#visible = false;
     this.#container.visible = false;

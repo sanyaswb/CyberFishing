@@ -40,6 +40,8 @@ export class WaterWaveField {
   #regions = [0, 0, 1, 1];
   #union = false;
   #distance;
+  #crests;
+  #rowScales;
 
   constructor({ width, height }) {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || height < 2) {
@@ -50,6 +52,8 @@ export class WaterWaveField {
     this.#pixels = new Uint8ClampedArray(width * height * 4);
     this.#envelope = new Float32Array(width * height);
     this.#distance = new Float32Array(width * height);
+    this.#crests = new Float32Array(width * height);
+    this.#rowScales = new Float32Array(height);
     this.#rowX = new Float64Array(width);
     this.#rowY = new Float64Array(width);
     this.#buildEnvelope();
@@ -173,6 +177,24 @@ export class WaterWaveField {
     return this.#pixels;
   }
 
+  // Spec 172 D2: how high the crossing waves stand in each texel at the last write(), −1 … 1 (the mean of the two
+  // axes' wave sums), times the water's edge fade (0 off the water); the glints sparkle where it is high. Row by row
+  // from the far edge, refilled in place.
+  get crests() {
+    return this.#crests;
+  }
+
+  // The water's edge fade per texel, 0 off the water … 1 inside (TK-066 regions); changes only with setRegions().
+  get edges() {
+    return this.#envelope;
+  }
+
+  // Each row's surface size at the last write(): 1 at the shore, the metric's farScale at the far edge (1 everywhere
+  // without a metric).
+  get rowScales() {
+    return this.#rowScales;
+  }
+
   // timeSec: the animation clock; artWidth / artHeight: the water's size in art pixels; wavelength: art pixels between
   // crests at the near edge; speed: art pixels per second the crests travel; driftX / driftY: how far the current has
   // carried the whole pattern, in art pixels at the near edge (the far water drifts slower on screen: perspective).
@@ -202,6 +224,7 @@ export class WaterWaveField {
         scale = metric.surfaceScaleAt(mapY);
         y = -metric.metersFromShore(mapY) * nearArtPerMeter;
       }
+      this.#rowScales[row] = scale;
       const xScale = artWidth / width / scale;
       // Column 0's surface position is (0.5 * xScale - driftX); centre the surface units on the field's middle.
       const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
@@ -211,11 +234,13 @@ export class WaterWaveField {
       WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, travel);
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
-        const envelope = this.#envelope[index] * scale;
+        const edge = this.#envelope[index];
+        const envelope = edge * scale;
         const offset = index * 4;
         pixels[offset] = 128 + 127 * envelope * rowX[column];
         pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
         pixels[offset + 2] = 128;
+        this.#crests[index] = edge * 0.5 * (rowX[column] + rowY[column]);
       }
     }
     return pixels;

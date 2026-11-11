@@ -27,6 +27,8 @@
         "CurveTimeline1",
         "DisplacementFilter",
         "Graphics",
+        "Particle",
+        "ParticleContainer",
         "Physics",
         "PointAttachment",
         "Rectangle",
@@ -43,7 +45,7 @@
         "installEvalFreeSystems"
       ],
       "file": "vendor/pixi/8.22.0/pixi-scene.js",
-      "sha256": "a5edbcef5705895b357787f6340c9067d77cfc73fd6664ed317246fbf981657a",
+      "sha256": "478ce37986b2d28082ee1dc26661d08e4ce110784fd5f7da0ac2b504687ef566",
       "license": "vendor/pixi/8.22.0/LICENSE",
       "licenseSha256": "bf10ca389d05447b3554dc6d1ae202f42339bfaa8c9c5e0cde1f9e4abfc5d25f",
       "importer": "src/platform/browser/scene/pixi_runtime_module.js"

@@ -21,19 +21,23 @@ const EXACT_VERSION = /^\d+\.\d+\.\d+$/u;
 const NODE_MODULES = "node_modules/";
 const LICENCE_FILE = /^(?:licen[cs]e|copying)(?:\.(?:md|txt))?$/iu;
 
-// The scene layer's library surface (spec 103): only what the scene uses, extended per stage.
+// The scene layer's library surface (spec 103): only what the scene uses, extended per stage (spec 172: Particle and
+// ParticleContainer for the water's glints).
 // Ticker: the runtime module keeps Pixi's own tickers stopped, so GameLoop stays the only frame driver.
 // Stage 4 (spec 107): Rectangle (texture frames of the static rod) and the spine-core classes SpineScene drives, from
 // the same copy of spine-core that spine-pixi-v8 renders.
 const SCENE_EXPORTS = Object.freeze({
-  "pixi.js": ["Application", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "Rectangle",
+  "pixi.js": ["Application", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "Particle",
+    "ParticleContainer", "Rectangle",
     "RenderTexture", "Sprite", "Texture", "Ticker"],
   "@esotericsoftware/spine-pixi-v8": ["AnimationState", "AnimationStateData", "AtlasAttachmentLoader", "CurveTimeline1",
     "Physics", "PointAttachment", "Skeleton", "SkeletonJson", "Spine", "SpineTexture", "TextureAtlas", "TextureFilter"],
 });
 // The layer passes skipExtensionImports, so Pixi's browser extensions (events, accessibility, DOM) never register;
-// the filter system is the one of them the scene needs, so the entry registers it.
-const SCENE_SIDE_EFFECTS = Object.freeze(["pixi.js/filters"]);
+// the filter system is the one of them the scene needs, so the entry registers it. Spec 172 D2 (the water's glints):
+// ParticleContainer draws only through its render pipes, which Pixi 8 registers in pixi.js/particle-container
+// (scene/particle-container/init: GlParticleContainerPipe and the others), not among the renderer's default pipes.
+const SCENE_SIDE_EFFECTS = Object.freeze(["pixi.js/filters", "pixi.js/particle-container"]);
 // Installers the bundle carries but runs only on request (TK-255 P1-1, TK-256). Pixi 8 compiles its uniform and buffer
 // sync code with `new Function` and refuses to start where the page's CSP forbids eval (docs/deployment.md); its
 // eval-free systems (pixi.js/unsafe-eval, installed on import) are slower, so the runtime module installs them only on

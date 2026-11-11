@@ -20,6 +20,7 @@ export class WeatherDevSection {
   #ui;
   #weather;
   #config;
+  #sky;
   #createSection;
   #renderConfigTree;
   #content = null;
@@ -27,11 +28,13 @@ export class WeatherDevSection {
   #fadeSec = 5;
 
   // weather: { getModel() → WeatherModel | null, locationId }; createSection(label, parent, path) and
-  // renderConfigTree(value, parent, path) come from DevTools; config: () => the location's weather settings.
-  constructor({ ui, weather, config, createSection, renderConfigTree }) {
+  // renderConfigTree(value, parent, path) come from DevTools; config: () => the location's weather settings; sky: () =>
+  // the location's sun and moon positions for the water's glints (MAP_DB.<id>.sky, spec 172 D2) or null.
+  constructor({ ui, weather, config, sky = () => null, createSection, renderConfigTree }) {
     this.#ui = ui;
     this.#weather = weather;
     this.#config = config;
+    this.#sky = sky;
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
   }
@@ -86,6 +89,11 @@ export class WeatherDevSection {
     if (settings) {
       this.#renderConfigTree(settings, this.#createSection("Параметри локації", content, ["WEATHER", "config"]),
         ["CONFIG", "locations", "map", this.#weather.locationId, "weather"]);
+    }
+    const sky = this.#sky();
+    if (sky) {
+      this.#renderConfigTree(sky, this.#createSection("Світила (відблиски на воді)", content, ["WEATHER", "sky"]),
+        ["CONFIG", "locations", "map", this.#weather.locationId, "sky"]);
     }
   }
 }

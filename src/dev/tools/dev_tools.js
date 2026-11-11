@@ -268,6 +268,7 @@ export class DevTools {
       const locationId = this.#weather.locationId;
       new WeatherDevSection({ ui: this.#ui, weather: this.#weather,
         config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
+        sky: () => this.#config.locations?.map?.[locationId]?.sky ?? null,
         createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
         renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options) }).render(body);
     }

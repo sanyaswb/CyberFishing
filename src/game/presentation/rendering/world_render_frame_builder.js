@@ -15,6 +15,7 @@ export class WorldRenderFrameBuilder {
   #screenB = new Vector2(0, 0);
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
   #isAssetReady;
+  #glintBuilder;
 
   constructor({
     map,
@@ -29,6 +30,8 @@ export class WorldRenderFrameBuilder {
     // time-of-day phase, so until the others arrive a missing base is drawn with the nearest loaded phase. Without it
     // every phase counts as loaded.
     isAssetReady = null,
+    // Spec 172 D2: WaterGlintModelBuilder (world.glints), or null: no glints.
+    glintBuilder = null,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -55,6 +58,7 @@ export class WorldRenderFrameBuilder {
     this.#locationId = locationId;
     this.#getWaterMetric = getWaterMetric;
     this.#isAssetReady = isAssetReady;
+    this.#glintBuilder = glintBuilder;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -84,6 +88,8 @@ export class WorldRenderFrameBuilder {
     const scale = this.#projector.getScale();
     const width = data.width * scale;
     const height = data.height * scale;
+    this.#glintBuilder?.buildInto(target.glints, data.dynamic ? data.eveningOpacity : 0,
+      data.dynamic ? data.nightOpacity : 0, position.x, width);
     if (!data.dynamic) {
       this.#addBackgroundLayer(
         target,

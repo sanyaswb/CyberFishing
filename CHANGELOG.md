@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.73 - Glints on the water
+
+- Spec 172 stage B (TK-270): the water sparkles on its wave crests: over all the water by day, in a path under the sun at sunrise and sunset and under the moon at night (the path widens toward the viewer); clouds and fog dim them. Tuned live in DevTools (water → glints); the sun and moon positions are in the location's sky settings.
+
 ## v0.50.72 - Pack item quantities in default starting inventory
 
 - TK-269.1: starting inventory packs now populate with their configured pack quantities (e.g. 50 oil worms, 25 bread, 15 chum mix, 100/75/50/25/10 variants) instead of flat 1s, with single items remaining 1 each and 1 bait attached to the equipped hook.
@@ -37,9 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.64 - Chum and bait icon in editor tabs
 
 - TK-249.2: the item editor's root and view tabs show the mix/bait icon (switcherIconAsset) instead of the packaging picture; the whole-art preview above keeps the full pack art.
-
-## v0.50.63 - Suppressing scripted editor preview with equipment values
-
-- TK-264.5: enabling "take values from equipment" (fromEquipment) suppresses the simulated editor preview zones and phantom float handle; the editor marks only the real float when a cast is active.
-
-
