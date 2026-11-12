@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.84 - Zones stay on the map
+
+- TK-278 (spec 173): in a narrow window a zone wider than the window (e.g. a full 2560 px zone) could be dragged off the map; moving and resizing now stop at the map's edges (a zone already partly beyond them never goes further out).
+
 ## v0.50.83 - DevTools edge opens on hover again
 
 - TK-274.1 (spec 173 F2): while editing zones, the cursor resting at the left edge (~150 ms) opens DevTools again; a cursor sweeping past, a held button or a zone editor gesture (drag, drawing, mask) never does; a press or a finger swipe still opens it; strip 16 px.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.75 - Procedural rain
 
 - Spec 172 stage D iteration 1 (TK-271): it rains on the location: thin drops fall at the wind's slant, smaller and slower far away, as many as the rain and storm are strong; drops on the water leave rings and small ripples. DevTools «🌦 ПОГОДА» switches rain, storm and fog on with live strength, holds the wind's direction and tunes the rain's look.
-
-## v0.50.74 - Water glints removed
-
-- TK-270.1 (owner): the water glints of v0.50.73 are removed (their look did not fit; another approach later). The scene keeps Pixi's particle container for the coming rain.

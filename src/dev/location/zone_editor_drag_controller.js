@@ -203,6 +203,12 @@ export class ZoneEditorDragController {
       ? findRectangleContainer(occupied, drag.movementBounds) : null;
     if (drag.category === "dynamic" && drag.kind !== "bounds" && drag.movementBounds && !region) return;
     let { x, y, w, h } = zone;
+    // TK-278: the map's edges hold every zone (in design cells); a zone already partly beyond them (the test water runs
+    // below the map) never goes further out. The window limits only zones that fit in it (#windowTravel), so a zone wider
+    // than a narrow window used to slide off the map.
+    const mapWidth = locations.baseResolution.width / design, mapHeight = locations.baseResolution.height / design;
+    const mapLowX = Math.min(0, occupied.x), mapHighX = Math.max(mapWidth - occupied.w, occupied.x);
+    const mapLowY = Math.min(0, occupied.y), mapHighY = Math.max(mapHeight - occupied.h, occupied.y);
     if (drag.move) {
       // The body follows pointer travel, continuous for dynamic bodies; size stays fixed inside the window.
       const free = drag.category === "dynamic" && drag.kind !== "bounds";
@@ -212,17 +218,18 @@ export class ZoneEditorDragController {
       const left = topLeft.x / design, top = topLeft.y / design;
       const bottomRight = this.#projector.screenToVirtual(this.#canvasMetrics.width, this.#canvasMetrics.height, this.#point);
       const right = bottomRight.x / design, bottom = bottomRight.y / design;
-      const lowX = containBody ? contained.x + contained.w - zone.w : region?.x;
-      const highX = containBody ? contained.x : region ? region.x + region.w - occupied.w : undefined;
-      const lowY = containBody ? contained.y + contained.h - zone.h : region?.y;
-      const highY = containBody ? contained.y : region ? region.y + region.h - occupied.h : undefined;
+      const lowX = Math.max(mapLowX, containBody ? contained.x + contained.w - zone.w : region?.x ?? -Infinity);
+      const highX = Math.min(mapHighX, containBody ? contained.x : region ? region.x + region.w - occupied.w : Infinity);
+      const lowY = Math.max(mapLowY, containBody ? contained.y + contained.h - zone.h : region?.y ?? -Infinity);
+      const highY = Math.min(mapHighY, containBody ? contained.y : region ? region.y + region.h - occupied.h : Infinity);
       if (!zone.adaptiveX) x = zone.x + this.#windowTravel(travelX, occupied.x, occupied.w, left, right, free ? 0 : step, lowX, highX);
       y = zone.y + this.#windowTravel(travelY, occupied.y, occupied.h, top, bottom, free ? 0 : step, lowY, highY);
     }
-    if (drag.left) { x = Math.min(cellX, zone.x + zone.w - step); w = zone.x + zone.w - x; }
-    if (drag.right) w = Math.max(step, cellX - zone.x);
-    if (drag.top) { y = Math.min(cellY, zone.y + zone.h - step); h = zone.y + zone.h - y; }
-    if (drag.bottom) h = Math.max(step, cellY - zone.y);
+    // Edges stop at the map's edges (or where they already are, past them).
+    if (drag.left) { x = Math.max(Math.min(0, zone.x), Math.min(cellX, zone.x + zone.w - step)); w = zone.x + zone.w - x; }
+    if (drag.right) w = Math.min(Math.max(mapWidth, zone.x + zone.w) - zone.x, Math.max(step, cellX - zone.x));
+    if (drag.top) { y = Math.max(Math.min(0, zone.y), Math.min(cellY, zone.y + zone.h - step)); h = zone.y + zone.h - y; }
+    if (drag.bottom) h = Math.min(Math.max(mapHeight, zone.y + zone.h) - zone.y, Math.max(step, cellY - zone.y));
     if (!drag.move && (region || drag.kind === "bounds")) {
       const body = contained;
       const minX = region?.x ?? -Infinity, minY = region?.y ?? -Infinity;

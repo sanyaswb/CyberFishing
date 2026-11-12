@@ -927,7 +927,9 @@ controlUI.dispose();
   pointer("pointerdown", 600, 200); pointer("pointermove", 800, 200);
   assert.equal(lake.zones.castable[0].x, 0, "a zone wider than the window never uncovers its left edge");
   pointer("pointermove", 400, 200); pointer("pointerup", 400, 200);
-  assert.equal(lake.zones.castable[0].x, -5, "it slides left until its right side meets the window's right edge");
+  // TK-278 (owner): it used to slide left off the map until its right side met the window's right edge (x -5); the
+  // map's edges hold it now (30 cells on a 25-cell map: it cannot move sideways at all).
+  assert.equal(lake.zones.castable[0].x, 0, "a zone wider than the window never slides off the map");
   lake.zones.castable = [{ x: 2, y: 3, w: 10, h: 10 }];
   // TK-055: a small editable zone inside a large one hovers both; the smallest is taken and selected.
   lake.zones.snags = [{ x: 4, y: 8, w: 2, h: 1 }];
@@ -1996,6 +1998,65 @@ controlUI.dispose();
     assert.equal(area.y + area.h, 35, "an area edge beyond the map is grabbed at the map's edge");
     tool.dispose();
   }
+  // TK-278: in a narrow window a zone as wide as the map (2560 px) is never dragged off the map: moving keeps every
+  // zone inside the map (one already partly beyond it never goes further), and edges stop at the map's edge.
+  {
+    const { LocationMap } = load("src/game/domain/locations/location_map.js");
+    const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
+    const { ZoneEditorConfigEdits } = load("src/dev/location/zone_editor_config_edits.js");
+    const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 },
+      enableCastable: true, enableCollisions: true, map: { test: { depthBounds: { min: 1, max: 5 }, zones: {
+        castable: [{ x: 0, y: 20, w: 64, h: 18 }], collisions: [{ x: 0, y: 25, w: 64, h: 4 }, { x: 10, y: 30, w: 4, h: 2 }],
+        snags: [], dynamic: [] } } } } };
+    const map = new LocationMap("test", cfg.locations, { next: () => 0 }, {});
+    const editState = new ZoneEditorState(); editState.loadedLocationId = "test"; editState.setLocation("test");
+    editState.setFlag("enabled", true); editState.setEditing("collisions", true); editState.setEditing("castable", true);
+    const scale = 0.5;
+    const projector = { update() {}, getScale: () => scale, getCanvasWidth: () => 1000,
+      virtualToScreen: (x, y, out) => out ? out.set(x * scale, y * scale) : { x: x * scale, y: y * scale },
+      screenToVirtual: (x, y, out) => out ? out.set(x / scale, y / scale) : { x: x / scale, y: y / scale } };
+    const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => map });
+    const write = (path, value) => {
+      const command = commands.prepare(path, value);
+      let target = cfg; for (const key of command.path.slice(1, -1)) target = target[key]; target[command.path.at(-1)] = command.value;
+      map.refreshConfig(cfg.locations, {});
+    };
+    let layer;
+    const element = () => ({ listeners: new Map(), classList: { add() {}, remove() {} },
+      addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener() {}, remove() {} });
+    // A narrow window: 1000 × 720 logical px show 2000 of the map's 2560 px.
+    const tool = new ZoneEditorDragController({ state: editState, map, projector, config: cfg, canvasMetrics: { width: 1000, height: 720 },
+      getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 720 }) }),
+      documentTarget: { createElement: element, body: element() }, mountNode: { prepend: node => { layer = node; } }, writeZones: write });
+    tool.sync();
+    const drag = (fromX, fromY, toX, toY) => {
+      const press = (type, x, y) => layer.listeners.get(type)({ clientX: x, clientY: y, pointerId: 5, button: 0, preventDefault() {} });
+      press("pointermove", fromX, fromY); press("pointerdown", fromX, fromY); press("pointermove", toX, toY); press("pointerup", toX, toY);
+    };
+    const wide = () => cfg.locations.map.test.zones.collisions[0];
+    // Screen = map px × 0.5: the wide zone is x 0…1280, y 500…580 (its middle 30% around 640, 540).
+    editState.select("collisions", 0);
+    drag(640, 540, 400, 540);
+    assert.equal(wide().x, 0, "a zone as wide as the map does not move left off the map");
+    drag(640, 540, 900, 540);
+    assert.equal(wide().x, 0, "nor right off the map");
+    drag(640, 540, 640, 480);
+    assert.equal(wide().y, 22, "it still moves along the map");
+    // The small zone: x 200…280, y 600…640.
+    editState.select("collisions", 1);
+    drag(240, 620, -800, 620);
+    assert.equal(cfg.locations.map.test.zones.collisions[1].x, 0, "a small zone stops at the map's left edge");
+    drag(0, 620, -900, 620);
+    const small = cfg.locations.map.test.zones.collisions[1];
+    assert.equal(JSON.stringify([small.x, small.w]), "[0,4]", "its left edge stops at the map's edge too");
+    // The water runs past the map's bottom (38 of 36 cells): dragged down it never goes further out.
+    editState.select("castable", 0);
+    drag(640, 580, 640, 900);
+    const water = cfg.locations.map.test.zones.castable[0];
+    assert(water.y + water.h <= 38, `a zone already past the map's bottom never goes further out (${water.y + water.h})`);
+    tool.dispose();
+  }
+
   // TK-277 (spec 173 F3): «Обрізати по ігровій зоні» on the test location's real castable zone (mask cells 0.5 design
   // cells): the cut lies on that grid, a ragged shore gives a mask, pieces become zones, moving zones cut their area.
   {
