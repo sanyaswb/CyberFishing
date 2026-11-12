@@ -136,10 +136,16 @@ try {
     const bundledStyles = fs.readFileSync(path.join(release.releaseDir, built.stylesheet), "utf8");
     assert(files.has(`${built.stylesheet}.map`), `${name}: the stylesheet has its source map`);
     // The cascade: a later page stylesheet stays after an earlier one. Marked by the first class unique to each file.
+    // TK-272: the page's stylesheets are read from git in one batch (one read per file per pair cost ~2 600 git
+    // processes, 73 s of a Full run).
+    const styleText = new Map();
+    const stylePaths = [...new Set(styles.map((href) => href.split("?")[0]))];
+    for (const [file, bytes] of tree.readAll(stylePaths)) styleText.set(file, bytes.toString("utf8"));
+    const textOf = (href) => styleText.get(href.split("?")[0]);
     let lastAt = -1;
     for (const href of styles) {
-      const own = tree.read(href.split("?")[0]).toString("utf8").replace(/\/\*[^]*?\*\//gu, "").match(/\.[a-z][\w-]*/gu) ?? [];
-      const others = styles.filter((other) => other !== href).map((other) => tree.read(other.split("?")[0]).toString("utf8")).join("\n");
+      const own = textOf(href).replace(/\/\*[^]*?\*\//gu, "").match(/\.[a-z][\w-]*/gu) ?? [];
+      const others = styles.filter((other) => other !== href).map(textOf).join("\n");
       const unique = own.find((selector) => !others.includes(selector) && bundledStyles.includes(selector));
       if (!unique) continue;
       const at = bundledStyles.indexOf(unique);

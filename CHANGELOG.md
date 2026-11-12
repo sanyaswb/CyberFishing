@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.76 - Faster full check
+
+- TK-272: the Pages release check reads each page's stylesheets from git in one batch instead of once per pair (about 2,600 git calls); it takes about 13 s instead of 95 s, and a full check run about 18 s instead of 100 s. It checks the same things.
+
 ## v0.50.75 - Procedural rain
 
 - Spec 172 stage D iteration 1 (TK-271): it rains on the location: thin drops fall at the wind's slant, smaller and slower far away, as many as the rain and storm are strong; drops on the water leave rings and small ripples. DevTools «🌦 ПОГОДА» switches rain, storm and fog on with live strength, holds the wind's direction and tunes the rain's look.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.67 - Hand chum throw zone dimming and selector input isolation
 
 - TK-267: hand chum throw zone dims unreachable water above the limit line (matching float depth limit); inventory selector neighbouring buttons are hidden with isolated pointer events and touch dragging is guarded against native screen scrolling.
-
-## v0.50.66 - Test location background art refresh, pipeline rules and zones
-
-- TK-265: refreshed test location backgrounds (2560x1440 WebP/JPEG) for day, evening and night; added location pipeline specification rules and prompt templates; updated castable and collision zones to y=20 and updated depth map.
