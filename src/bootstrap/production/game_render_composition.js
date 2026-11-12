@@ -35,6 +35,7 @@ import { GameRenderOrder } from "../../game/presentation/rendering/game_render_o
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { RodStaticRenderer } from "../../game/presentation/fishing/rod_static_renderer.js";
 import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
+import { WeatherRenderModelBuilder } from "../../game/presentation/rendering/weather_render_model_builder.js";
 import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
 import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_renderer.js";
 
@@ -236,6 +237,8 @@ export class GameRenderComposition {
       config,
       canvasMetrics,
       locationId: runtime.location.id,
+      // Spec 172: the weather the scene's rain (and later fog, storm) shows.
+      weatherBuilder: new WeatherRenderModelBuilder({ getEnvironment: () => runtime.env?.getSnapshot?.() ?? null }),
       boatChumBuilder: new BoatChumRenderFrameBuilder({
         chum: runtime.chum,
         getWaterMetric: appPorts.getWaterMetric,

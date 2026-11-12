@@ -887,6 +887,7 @@
 │  │     │  ├── reusable_render_list.js
 │  │     │  ├── scene_layer_router.js
 │  │     │  ├── water_circle_projection.js
+│  │     │  ├── weather_render_model_builder.js
 │  │     │  ├── world_render_frame_builder.js
 │  │     │  └── world_render_pass.js
 │  │     ├── screens
@@ -1040,6 +1041,7 @@
 │        │  ├── pixi_fight_area_renderer.js
 │        │  ├── pixi_float_renderer.js
 │        │  ├── pixi_line_renderer.js
+│        │  ├── pixi_rain_renderer.js
 │        │  ├── pixi_rod_renderer.js
 │        │  ├── pixi_runtime_module.js
 │        │  ├── pixi_scene_layer.js

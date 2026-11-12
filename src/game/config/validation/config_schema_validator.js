@@ -506,6 +506,7 @@ export class ConfigSchemaValidator {
     this.#requirePattern("CONFIG.locations.cameraFollowPriority", this.config.locations?.cameraFollowPriority, /^(?:rod|tackle)$/u,
       'must be "rod" or "tackle"');
     this.#validateSceneWaterConfig();
+    this.#validateRainConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
@@ -1233,6 +1234,42 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.canvas.water.floatRocking.${key}`, rocking[key], { min, max });
       this.#requireParameterLabel(`canvas.water.floatRocking.${key}`);
     }
+  }
+
+  // Procedural rain (spec 172 D4): every value has a DEV label, the owner tunes them live.
+  #validateRainConfig() {
+    const cfg = this.config.canvas?.rain;
+    const path = "canvas.rain";
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing rain config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    for (const [key, min, max] of [["maxDrops", 0, 5000], ["stormDropsShare", 0, 3], ["fallPx", 1, 4000],
+      ["speedPx", 1, 10000], ["speedJitter", 0, 1], ["lengthPx", 0, 400], ["widthPx", 0, 20], ["opacity", 0, 1],
+      ["minScale", 0, 1], ["windSlantDeg", 0, 60], ["stormSlantDeg", 0, 60]]) {
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+    this.#requirePattern(`CONFIG.${path}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${path}.color`);
+    const rings = cfg.rings;
+    if (!rings || typeof rings !== "object") { this.#error(`CONFIG.${path}.rings`, "missing rain rings config"); return; }
+    this.#requireParameterLabel(`${path}.rings`);
+    this.#requireBooleanWithLabel(`${path}.rings.enabled`, rings.enabled);
+    for (const [key, min, max] of [["maxRings", 0, 5000], ["sizePx", 0, 400], ["lifeSec", 0.05, 10], ["opacity", 0, 1],
+      ["flatten", 0, 1]]) {
+      this.#requireFiniteNumber(`CONFIG.${path}.rings.${key}`, rings[key], { min, max });
+      this.#requireParameterLabel(`${path}.rings.${key}`);
+    }
+    this.#requirePattern(`CONFIG.${path}.rings.color`, rings.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${path}.rings.color`);
+    const ripple = rings.ripple;
+    if (!ripple || typeof ripple !== "object") { this.#error(`CONFIG.${path}.rings.ripple`, "missing ripple config"); return; }
+    this.#requireParameterLabel(`${path}.rings.ripple`);
+    this.#requireBooleanWithLabel(`${path}.rings.ripple.enabled`, ripple.enabled);
+    this.#requireFiniteNumber(`CONFIG.${path}.rings.ripple.strength`, ripple.strength, { min: 0, max: 2 });
+    this.#requireParameterLabel(`${path}.rings.ripple.strength`);
+    this.#requireFiniteNumber(`CONFIG.${path}.rings.ripple.radiusScale`, ripple.radiusScale, { min: 0, max: 10 });
+    this.#requireParameterLabel(`${path}.rings.ripple.radiusScale`);
   }
 
   #requireParameterLabel(path) {

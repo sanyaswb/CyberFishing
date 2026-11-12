@@ -1137,7 +1137,10 @@ export class GameCompositionRoot {
               },
             },
             // DEV weather section (spec 172 stage A): the environment's weather model, read when the section is drawn.
-            weather: { getModel: () => systems.env?.weather ?? null, locationId: locId },
+            weather: { getModel: () => systems.env?.weather ?? null, locationId: locId,
+              // TK-271: the wind's direction by hand (null: automatic again).
+              getWind: () => systems.env?.getSnapshot()?.wind ?? null,
+              setWind: (direction) => systems.env?.setWindOverride(direction) },
             // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
             keepnet: {
               getView: () => this.#sessionServices.liveBait.getView(),

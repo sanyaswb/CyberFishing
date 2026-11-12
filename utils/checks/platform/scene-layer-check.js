@@ -35,7 +35,8 @@ function fakeContext2d() {
     measureText(text) { return { width: String(text).length * (Number.parseFloat(this.font.match(/(\d+)px/u)?.[1]) || 10) * 0.6 }; },
     fillText(text, x, y) { this.texts.push({ text, x, y, font: this.font, fillStyle: this.fillStyle }); },
     createRadialGradient: () => ({ stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } }),
-    fillRect() {} };
+    createLinearGradient: () => ({ stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } }),
+    fillRect() {}, beginPath() {}, arc() {}, stroke() {} };
 }
 
 function fakeElement(tagName) {
@@ -226,13 +227,15 @@ function fakePixi() {
       const dynamic = this.dynamicProperties;
       return particles.map((particle, index) => {
         const live = { x: particle.x, y: particle.y, scaleX: particle.scaleX, scaleY: particle.scaleY,
-          anchorX: particle.anchorX, anchorY: particle.anchorY, alpha: particle.alpha, tint: particle.tint };
+          anchorX: particle.anchorX, anchorY: particle.anchorY, alpha: particle.alpha, tint: particle.tint,
+          rotation: particle.rotation };
         if (uploadStatic || !this.#buffer[index]) this.#buffer[index] = { ...live };
         const stored = this.#buffer[index];
         const view = {};
         for (const key of ["x", "y"]) view[key] = dynamic.position ? live[key] : stored[key];
         for (const key of ["scaleX", "scaleY", "anchorX", "anchorY"]) view[key] = dynamic.vertex ? live[key] : stored[key];
         for (const key of ["alpha", "tint"]) view[key] = dynamic.color ? live[key] : stored[key];
+        view.rotation = dynamic.rotation ? live.rotation : stored.rotation;
         return view;
       });
     }
@@ -501,7 +504,7 @@ async function checkPixiSceneLayer() {
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
       background: "#0f171e", images, router, clock, getWaterSettings: () => water, fightAreaStyles, probe, logger,
       ...overrides };
-    return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe };
+    return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe, pixi };
   };
   for (const [name, overrides, pattern] of [
     ["pixi", { pixi: {} }, /requires the Pixi namespace/u],
@@ -566,7 +569,8 @@ async function checkPixiSceneLayer() {
     "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
   assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
     textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
-    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0 } },
+    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0 },
+    rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 } },
   "no castable zones in this frame: still water");
   base.x = -20;
   layer.render(frame);
@@ -642,6 +646,90 @@ async function checkPixiSceneLayer() {
 }
 
 // Spec 106: the water's displacement map.
+// Spec 172 D4 (TK-271): procedural rain. Drops land between the water's far edge and the screen's bottom and fall
+// to their point at the wind's slant, smaller and slower far away; the count follows the rain and the storm; drops that
+// land on water leave rings (only there) and ripples for the water's map; switching off or leaving the scene clears it;
+// the pools grow only with the settings; what the GPU draws follows each frame (scale, rotation and colour dynamic).
+async function checkRain() {
+  const { PixiRainRenderer } = await importSource("src/platform/browser/scene/pixi_rain_renderer.js");
+  const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
+  const { pixi } = fakePixi();
+  const { documentTarget } = fakeDom();
+  let seed = 7;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const rain = new PixiRainRenderer({ pixi, documentTarget, random });
+  const stage = new pixi.Container();
+  rain.mountSurface(stage);
+  rain.mountAir(stage);
+  const [rings, drops] = stage.children;
+  const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
+    maxMeters: 30, tiltDegrees: 45, farScale: .3, lateralContraction: true });
+  const water = { x: 400, y: 300, width: 400, height: 300 };
+  const world = { weather: { rain: 1, storm: 0, fog: 0, cloud: 1, windDirection: 1 },
+    clipRegions: { count: 1, getAt: () => water }, waterPlane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
+  const settings = { enabled: true, maxDrops: 200, stormDropsShare: 0.5, fallPx: 500, speedPx: 1500, speedJitter: 0.15,
+    lengthPx: 36, widthPx: 1.6, opacity: 0.4, color: "#c9d6e3", minScale: 0.3, windSlantDeg: 14, stormSlantDeg: 14,
+    rings: { enabled: true, maxRings: 120, sizePx: 16, lifeSec: 0.7, opacity: 0.4, flatten: 0.35, color: "#dfe9f2",
+      ripple: { enabled: true, strength: 0.25, radiusScale: 1.2 } } };
+  let now = 1000;
+  const frame = (overrides = {}, sec = 1 / 60) => { now += sec * 1000; return rain.update(overrides.world === undefined ? world : overrides.world, 1200, 700, now, overrides.settings ?? settings); };
+  assert.equal(frame({ settings: { ...settings, enabled: false } }), false, "switched off: nothing to draw");
+  assert.equal(frame({ world: null }), false, "off the scene: nothing to draw");
+  assert.equal(frame(), true, "rain presents a frame");
+  assert.deepEqual([rain.status.drops, rain.status.dropPool, rain.status.ringPool], [200, 300, 120],
+    "rain 1 drops maxDrops; the pool also holds the storm's share");
+  // The scene renders every frame: the first render uploads the containers' static attributes once (the pools grew);
+  // later frames change scale, rotation and colour, which the GPU sees only if they are dynamic.
+  drops.gpuView();
+  rings.gpuView();
+  for (let index = 0; index < 120; index += 1) frame();
+  const status = rain.status;
+  assert(status.slantDeg > 13 && status.slantDeg <= 14, `the slant follows the wind (${status.slantDeg.toFixed(2)}°)`);
+  const view = drops.gpuView().filter((particle) => particle.alpha > 0);
+  assert.equal(view.length, 200, "every falling drop is drawn");
+  assert(view.every((particle) => particle.rotation < 0 && particle.rotation === drops.particleChildren[0].rotation),
+    "the GPU draws the current slant (rotation is dynamic)");
+  // A drop is never below its landing point, so the farthest (smallest) drops stay above the water's far edge while
+  // nearer, larger ones reach the bottom of the screen.
+  const smallest = Math.min(...view.map((particle) => particle.scaleY));
+  const largest = Math.max(...view.map((particle) => particle.scaleY));
+  assert(largest > smallest * 2, "drops differ in size with their landing depth");
+  // Scale ≤ 0.315 needs mapY ≤ ~40 of 640 on this metric: landing within 20 px of the far edge (300 px of water).
+  assert(view.filter((particle) => particle.scaleY <= smallest * 1.05).every((particle) => particle.y <= water.y + 20),
+    "the farthest drops land at the water's far edge");
+  // A drop already below 500 px lands at least there (mapY ≥ 427 of 640: scale ≥ 0.56, nearly twice the farthest).
+  const low = view.filter((particle) => particle.y > 500);
+  assert(low.length > 0 && low.every((particle) => particle.scaleY > smallest * 1.5), "near drops are larger");
+  assert(status.rings > 0, `drops on the water leave rings (${status.rings})`);
+  const ringView = rings.gpuView().filter((particle) => particle.alpha > 0);
+  assert.equal(ringView.length, status.rings, "every live ring is drawn");
+  assert(ringView.every((particle) => particle.x >= water.x && particle.x <= water.x + water.width &&
+    particle.y >= water.y && particle.y <= water.y + water.height && particle.scaleY < particle.scaleX),
+  "rings only on the water, flattened");
+  const ripples = rain.waterRipples;
+  assert(ripples && ripples.puffs.count === status.rings && ripples.settings === settings.rings.ripple,
+    "the rings reach the water's map as ripples with their settings");
+  const puff = ripples.puffs.getAt(0);
+  assert(puff.size > 0 && puff.life >= 0 && puff.life < 1, "a ripple has a size and a share of its life");
+  const before = drops.particleChildren.slice(200, 300).map((particle) => particle.y);
+  frame({ world: { ...world, weather: { ...world.weather, storm: 1 } } });
+  assert.equal(rain.status.drops, 300, "a full storm adds its share");
+  const joined = drops.particleChildren.slice(200, 300).map((particle) => particle.y);
+  assert(joined.some((y, index) => y !== before[index]) && Math.max(...joined) - Math.min(...joined) > 200,
+    "the new drops start spread along their falls, not in one wave");
+  for (let index = 0; index < 120; index += 1) frame({ world: { ...world, weather: { ...world.weather, rain: 0, storm: 0 } } });
+  assert.deepEqual([rain.status.drops, rain.status.rings], [0, 0], "the rain stops: drops finish their fall, rings fade");
+  assert.deepEqual([rain.status.active, drops.visible], [false, false], "then it hides");
+  assert.equal(frame({ world: { ...world, weather: { ...world.weather, rain: 0 } } }), false, "and presents no frames");
+  assert.equal(rain.waterRipples, null, "no ripples without rings");
+  frame();
+  assert.equal(frame({ world: null }), true, "leaving the scene clears the rain at once");
+  assert.deepEqual([rain.status.active, rain.status.drops, rain.status.rings, drops.visible], [false, 0, 0, false]);
+  assert.deepEqual([rain.status.dropPool, rain.status.ringPool], [300, 120], "the pools stay");
+  frame({ settings: { ...settings, maxDrops: 400 } });
+  assert.equal(rain.status.dropPool, 600, "a larger setting grows the pool");
+}
+
 async function checkWaterWaveField() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
   assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
@@ -761,11 +849,14 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const app = wet.apps[0];
   app.initCall.resolve();
   assert.equal(await wet.layer.whenReady(), true);
-  const [, waterContainer, mapSprite] = app.stage.children;
+  // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod.
+  const [, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
+    "the rain's rings are mounted right after the water's mask");
   const filter = waterContainer.filters[0];
   assert.equal(filter.sprite, mapSprite, "the filter's map sprite lives in the scene (it is not drawn)");
   assert.equal(mapSprite.renderable, false);
-  const map = wet.canvasTextures[0];
+  const map = wet.canvasTextures.find((texture) => texture.canvas.width === 192);
   assert.deepEqual([map.canvas.width, map.canvas.height, map.skipCache], [192, 48, true]);
   const regions = [{ x: -100, y: 300, width: 1600, height: 400 }];
   const base = { assetId: "day", alpha: 1, x: -500, y: 0, width: 1451, height: 816 };
@@ -1436,6 +1527,7 @@ async function main() {
   await checkRouter();
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
+  await checkRain();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();

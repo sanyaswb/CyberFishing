@@ -34,6 +34,8 @@ export class GameRenderFrame {
       sensorRays: new ReusableRenderList("world.sensorRays", diagnostics),
       boatRoute: new ReusableRenderList("world.boatRoute", diagnostics),
       boatWake: new ReusableRenderList("world.boatWake", diagnostics),
+      // Spec 172: the weather the scene's effects show (rain, storm, fog, cloud 0…1; the wind's direction −1 … 1).
+      weather: { rain: 0, storm: 0, fog: 0, cloud: 0, windDirection: 0 },
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -101,6 +103,8 @@ export class GameRenderFrame {
     this.world.sensorRays.reset();
     this.world.boatRoute.reset();
     this.world.boatWake.reset();
+    const weather = this.world.weather;
+    weather.rain = 0; weather.storm = 0; weather.fog = 0; weather.cloud = 0; weather.windDirection = 0;
     this.world.debugImage.visible = false;
     this.world.annotations = null;
     this.world.backgroundHidden = false;

@@ -15,6 +15,7 @@ export class WorldRenderFrameBuilder {
   #screenB = new Vector2(0, 0);
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
   #isAssetReady;
+  #weatherBuilder;
 
   constructor({
     map,
@@ -29,6 +30,8 @@ export class WorldRenderFrameBuilder {
     // time-of-day phase, so until the others arrive a missing base is drawn with the nearest loaded phase. Without it
     // every phase counts as loaded.
     isAssetReady = null,
+    // Spec 172: WeatherRenderModelBuilder (world.weather), or null: clear weather.
+    weatherBuilder = null,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -55,6 +58,7 @@ export class WorldRenderFrameBuilder {
     this.#locationId = locationId;
     this.#getWaterMetric = getWaterMetric;
     this.#isAssetReady = isAssetReady;
+    this.#weatherBuilder = weatherBuilder;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -63,6 +67,7 @@ export class WorldRenderFrameBuilder {
       this.#config.canvas?.backgroundColor || "#0f171e";
     this.#buildBackground(target);
     this.#buildCurrent(target.current);
+    this.#weatherBuilder?.buildInto(target.weather);
     this.#buildClipRegions(target.clipRegions, target.waterPlane);
     if (this.#getWaterMetric) target.waterPlane.metric = this.#getWaterMetric();
     this.#debugBuilder?.buildInto(target, debugEnabled);

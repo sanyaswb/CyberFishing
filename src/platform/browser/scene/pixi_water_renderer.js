@@ -40,11 +40,14 @@ export class PixiWaterRenderer {
   #driftY = 0;
   #driftSpeed = 0;
   #metric = null;
+  #getRainRipples;
 
   // stage: the scene's root container (the water goes over the background); textures: the scene's SceneTextureCache;
   // documentTarget: makes the map's canvas; getSettings: () => CONFIG.canvas.water; getWakeSettings: () =>
-  // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water).
-  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null, getImageSize = null }) {
+  // CONFIG.ui.boat.wake.water (spec 156: the boat's wake bends the water); getRainRipples: () => the rain's rings as
+  // ripple puffs with their settings ({ puffs, settings }) or null (spec 172 D4).
+  constructor({ pixi, stage, textures, documentTarget, getSettings, getWakeSettings = () => null, getImageSize = null,
+    getRainRipples = () => null }) {
     if (typeof pixi?.DisplacementFilter !== "function") throw new TypeError("PixiWaterRenderer requires the Pixi namespace");
     if (typeof textures?.get !== "function") throw new TypeError("PixiWaterRenderer requires textures");
     if (typeof getSettings !== "function") throw new TypeError("PixiWaterRenderer requires getSettings");
@@ -52,6 +55,7 @@ export class PixiWaterRenderer {
     this.#getSettings = getSettings;
     this.#getWakeSettings = getWakeSettings;
     this.#getImageSize = typeof getImageSize === "function" ? getImageSize : null;
+    this.#getRainRipples = getRainRipples;
     this.#field = new WaterWaveField({ width: MAP_WIDTH, height: MAP_HEIGHT });
     this.#mapCanvas = documentTarget.createElement("canvas");
     this.#mapCanvas.width = MAP_WIDTH;
@@ -160,6 +164,8 @@ export class PixiWaterRenderer {
     const wakeArea = this.#wakeArea;
     wakeArea.left = area.left; wakeArea.top = area.top; wakeArea.right = area.right; wakeArea.bottom = area.bottom;
     pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings());
+    const rain = this.#getRainRipples();
+    if (rain) pixels = this.#field.addRipples(rain.puffs, wakeArea, rain.settings);
     this.#mapImage.data.set(pixels);
     this.#mapContext.putImageData(this.#mapImage, 0, 0);
     this.#mapTexture.source.update();

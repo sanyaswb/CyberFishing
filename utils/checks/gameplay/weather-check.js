@@ -185,4 +185,42 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(snapshot.weather.precipitation, "clear");
 }
 
-console.log("weather: states, fades, storm, lightning, fog and derived fields OK");
+// 9. TK-271: live strength without restarting the state, and the wind held by hand.
+{
+  const model = new WeatherModel({ rng: new SeededRng(13), getSettings: settings });
+  model.setFrozen(true);
+  model.force("precipitation", "rain", { intensity: 0.5, fadeSec: 0, durationSec: 100 });
+  model.update(1000, "day");
+  const left = model.snapshot.precipitationLeftSec;
+  assert.equal(model.setIntensity("rain", 0.9), true);
+  near(model.snapshot.rainTarget, 0.9, "the rain's target follows the slider");
+  near(model.snapshot.precipitationLeftSec, left, "the state and its timer stay");
+  step(model, 8);
+  near(model.snapshot.rain, 0.9, "the rain rises there with its fade (0.4 in 8 s at 20 s per full rise)");
+  model.force("precipitation", "storm", { intensity: 0.6, fadeSec: 0 });
+  model.setIntensity("rain", 0.2);
+  near(model.snapshot.rainTarget, 0.6, "a storm keeps raining at least as hard as its own strength");
+  model.setIntensity("storm", 0.95);
+  near(model.snapshot.stormTarget, 0.95, "the storm's strength");
+  near(model.snapshot.rainTarget, 0.95, "and its rain with it");
+  model.setIntensity("fog", 0.4);
+  near(model.snapshot.fogTarget, 0.4, "the fog's strength");
+  assert.equal(model.setIntensity("snow", 1), false, "unknown kinds are refused");
+
+  const location = { weather: settings(), environment: { wind: { rainMultiplier: 2.5, changesPerDay: [4, 12],
+    breezeAngleRange: [10, 15], gustAngleRange: [15, 40], gustChancePerSec: 0.4 } } };
+  const environment = new EnvironmentSystem(location, 12, new SeededRng(21), { timePhases: { day: { startHour: 0, endHour: 24 } } });
+  environment.update(16, 1);
+  environment.setWindOverride(-1);
+  assert.deepEqual([environment.getSnapshot().wind.direction, environment.getSnapshot().wind.forced], [-1, true],
+    "the wind held to the left");
+  assert.equal(environment.getPhysicsEnv().wind.direction, -1, "the physics feel the held wind");
+  for (let index = 0; index < 50; index += 1) environment.update(3600000, 1);
+  assert.equal(environment.getSnapshot().wind.direction, -1, "the random wind does not replace a held one");
+  environment.setWindOverride(0);
+  assert.equal(environment.getPhysicsEnv().wind, null, "calm: no wind in the physics");
+  environment.setWindOverride(null);
+  assert.equal(environment.getSnapshot().wind.forced, false, "null returns to the random wind");
+}
+
+console.log("weather: states, fades, storm, lightning, fog, derived fields, live strength and held wind OK");

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.75 - Procedural rain
+
+- Spec 172 stage D iteration 1 (TK-271): it rains on the location: thin drops fall at the wind's slant, smaller and slower far away, as many as the rain and storm are strong; drops on the water leave rings and small ripples. DevTools «🌦 ПОГОДА» switches rain, storm and fog on with live strength, holds the wind's direction and tunes the rain's look.
+
 ## v0.50.74 - Water glints removed
 
 - TK-270.1 (owner): the water glints of v0.50.73 are removed (their look did not fit; another approach later). The scene keeps Pixi's particle container for the coming rain.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.66 - Test location background art refresh, pipeline rules and zones
 
 - TK-265: refreshed test location backgrounds (2560x1440 WebP/JPEG) for day, evening and night; added location pipeline specification rules and prompt templates; updated castable and collision zones to y=20 and updated depth map.
-
-## v0.50.65 - Chum icon on toolbar button
-
-- TK-249.3: the chum button on the HUD toolbar (chum-control--idle) shows the equipped mix's WebP icon (switcherIconAsset) instead of the generic sprite symbol.

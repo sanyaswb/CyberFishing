@@ -18,13 +18,15 @@ export class EnvironmentSystem {
   #currentPhase = "day";
   #weather;
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
+  // Spec 172 TK-271: a direction (−1 | 0 | 1) set by DEV or a script replaces the random one until cleared (null).
+  #windOverride = null;
   #snapshot = {
     time: 0,
     phase: "day",
     isRaining: false,
     isFoggy: false,
     weather: CLEAR_WEATHER,
-    wind: { direction: 0, rainMult: 1.0, timer: 0 },
+    wind: { direction: 0, rainMult: 1.0, timer: 0, forced: false },
   };
   #physicsEnv = {
     current: null,
@@ -64,6 +66,13 @@ export class EnvironmentSystem {
   }
 
   // The weather model (DEV section, scripted weather), or null.
+  // Holds the wind's direction: -1 (to the left), 0 (calm) or 1 (to the right); null returns to the random wind. The
+  // physics and the views read it like the random one.
+  setWindOverride(direction) {
+    this.#windOverride = direction === -1 || direction === 0 || direction === 1 ? direction : null;
+    this.#syncSnapshot();
+  }
+
   get weather() {
     return this.#weather;
   }
@@ -95,7 +104,8 @@ export class EnvironmentSystem {
     this.#snapshot.phase = this.#currentPhase;
     this.#snapshot.isRaining = weather.rain > 0 && weather.rain >= rainThreshold;
     this.#snapshot.isFoggy = weather.fog > 0 && weather.fog >= fogThreshold;
-    this.#snapshot.wind.direction = this.#windState.direction;
+    this.#snapshot.wind.direction = this.#windDirection();
+    this.#snapshot.wind.forced = this.#windOverride !== null;
     this.#snapshot.wind.rainMult = this.#windState.rainMult;
     this.#snapshot.wind.timer = this.#windState.timer;
   }
@@ -128,6 +138,10 @@ export class EnvironmentSystem {
     }
   }
 
+  #windDirection() {
+    return this.#windOverride ?? this.#windState.direction;
+  }
+
   getSnapshot() {
     return this.#snapshot;
   }
@@ -138,10 +152,11 @@ export class EnvironmentSystem {
     env.current = base.current;
     env.wind = null;
 
-    if (base.wind && this.#windState.direction !== 0) {
+    const direction = this.#windDirection();
+    if (base.wind && direction !== 0) {
       const m = this.#windState.rainMult;
       const wind = this.#physicsWind;
-      wind.direction = this.#windState.direction;
+      wind.direction = direction;
       wind.breezeAngleRange[0] = base.wind.breezeAngleRange[0] * m;
       wind.breezeAngleRange[1] = base.wind.breezeAngleRange[1] * m;
       wind.gustAngleRange[0] = base.wind.gustAngleRange[0] * m;

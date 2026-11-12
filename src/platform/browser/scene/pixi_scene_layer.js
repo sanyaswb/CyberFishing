@@ -6,6 +6,7 @@ import { PixiFloatRenderer } from "./pixi_float_renderer.js";
 import { PixiLineRenderer } from "./pixi_line_renderer.js";
 import { PixiRodRenderer } from "./pixi_rod_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
+import { PixiRainRenderer } from "./pixi_rain_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -50,6 +51,8 @@ export class PixiSceneLayer {
   #clock;
   #getWaterSettings;
   #getWakeSettings;
+  #getRainSettings;
+  #rain = null;
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
@@ -89,7 +92,8 @@ export class PixiSceneLayer {
   // fightAreaStyles: { resolve() }, the fight area colours the 2D renderer uses too (spec 107); prepareRenderer: an
   // optional async step awaited before the renderer starts (pixi_runtime_module.js: eval-free systems under CSP).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
-    fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null }) {
+    fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
+    getRainSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -107,6 +111,7 @@ export class PixiSceneLayer {
     this.#getWaterSettings = getWaterSettings;
     // Spec 156: CONFIG.ui.boat.wake.water, the boat wake's ripples in the water.
     this.#getWakeSettings = getWakeSettings;
+    this.#getRainSettings = getRainSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -138,6 +143,9 @@ export class PixiSceneLayer {
     if (this.#line.update(fishing && router.drawsOnScene("line") ? fishing.rodLine : null)) changed = true;
     if (this.#rod.update(fishing && router.drawsOnScene("rod") ? fishing.rodLine : null)) changed = true;
     if (this.#float.update(fishing && router.drawsOnScene("float") ? fishing.float : null)) changed = true;
+    if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getRainSettings())) {
+      changed = true;
+    }
     if (this.#annotations.update(world?.annotations ?? null)) changed = true;
     if (this.#clearColor !== frame.world.backgroundColor) {
       this.#clearColor = frame.world.backgroundColor;
@@ -171,7 +179,7 @@ export class PixiSceneLayer {
     if (this.#app === null) return { state };
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
-      water: this.#water.status };
+      water: this.#water.status, rain: this.#rain.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -194,6 +202,7 @@ export class PixiSceneLayer {
     this.#app?.destroy({ removeView: false }, { children: true });
     this.#app = null;
     this.#water?.dispose();
+    this.#rain?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
     this.#worldEntities?.dispose();
@@ -222,9 +231,15 @@ export class PixiSceneLayer {
       this.#textures = new SceneTextureCache({ pixi: this.#pixi, images: this.#images, renderer: app.renderer });
       this.#background = new PixiBackgroundRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         renderer: app.renderer });
+      // Spec 172 D4: rain; its rings sit on the water and bend it like the boat's wake, its drops fall in front of the
+      // tackle (mounted after the rod).
+      const rain = new PixiRainRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#rain = rain;
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings,
-        getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize });
+        getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize,
+        getRainRipples: () => rain.waterRipples });
+      rain.mountSurface(app.stage);
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
         textures: this.#textures, documentTarget: this.#documentTarget });
@@ -235,6 +250,7 @@ export class PixiSceneLayer {
         textures: this.#textures });
       this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
+      rain.mountAir(app.stage);
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);

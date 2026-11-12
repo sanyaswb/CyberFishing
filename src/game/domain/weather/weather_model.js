@@ -116,6 +116,22 @@ export class WeatherModel {
     return true;
   }
 
+  // Changes a target intensity of the current state without restarting it (its timer runs on): kind "rain", "storm"
+  // or "fog", intensity 0…1. The intensity moves there with the usual fades. For DEV's live sliders and scripts; a
+  // storm keeps raining at least as hard as its own intensity.
+  setIntensity(kind, intensity) {
+    if (!Number.isFinite(Number(intensity))) return false;
+    const level = clamp01(Number(intensity));
+    if (kind === "rain") this.#rainTarget = this.#precipitation === "storm" ? Math.max(level, this.#stormTarget) : level;
+    else if (kind === "storm") {
+      this.#stormTarget = level;
+      this.#rainTarget = Math.max(this.#rainTarget, level);
+    } else if (kind === "fog") this.#fogTarget = level;
+    else return false;
+    this.#sync();
+    return true;
+  }
+
   // A lightning strike now (DEV), whatever the storm intensity.
   strike() {
     this.#emitStrike(this.#getSettings() || null);
