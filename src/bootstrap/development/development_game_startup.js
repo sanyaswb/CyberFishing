@@ -260,7 +260,9 @@ async function startGame() {
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
           const feedback = new DevToolsDependencyFeedback({ scheduler: new BrowserTimeoutScheduler(windowTarget), durationMs: 3000 });
-          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount, developmentMount, feedback);
+          // TK-274.1: the DevTools edge waits while a zone editor gesture is going on.
+          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount, developmentMount, feedback,
+            () => zoneEditorDrag?.gestureActive === true);
           // Phones hide the toolbar's version badge; the panel's footer shows the same version text.
           new GameVersionBadge({ element: ui.footer }).render();
           return {tooltipProvider, ui};

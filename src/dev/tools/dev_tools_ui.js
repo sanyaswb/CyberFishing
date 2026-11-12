@@ -25,7 +25,8 @@ export class DevToolsUI {
   #isOpen = false;
 
   constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
-    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode, dependencyFeedback = null) {
+    mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode, dependencyFeedback = null,
+    isEdgeBlocked = () => false) {
     this.#dependencyFeedback = dependencyFeedback;
     this.#storageCache = storageCache;
     this.#uiSurface = uiSurface;
@@ -35,8 +36,9 @@ export class DevToolsUI {
     this.#tooltipProvider = tooltipProvider;
     this.#initBtn(config);
     // Before the panel, so the open panel paints over the strip (TK-053).
+    // TK-274.1: isEdgeBlocked() — a zone editor gesture is going on.
     this.#edgeOpener = new DevToolsEdgeOpener({ documentRef: document, mountNode: this.#mountNode,
-      open: () => { if (!this.#isOpen) this.#onToggleCallback?.(); } });
+      open: () => { if (!this.#isOpen) this.#onToggleCallback?.(); }, isBlocked: isEdgeBlocked });
     this.#initPanel();
   }
 

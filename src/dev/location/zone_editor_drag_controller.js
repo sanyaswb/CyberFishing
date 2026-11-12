@@ -54,6 +54,12 @@ export class ZoneEditorDragController {
     return this.#layer !== null;
   }
 
+  // TK-274.1: a gesture is going on (a zone, its area or a dependent zone dragged, zones drawn, a mask painted); the
+  // DevTools edge does not open meanwhile. Merely hovering zones is not a gesture.
+  get gestureActive() {
+    return this.#drag !== null;
+  }
+
   // Once per frame from the location debug builder: shows or removes the layer when the switches change.
   sync() {
     this.#maskEditor?.sync();

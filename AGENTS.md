@@ -20,6 +20,15 @@ The owner describes the result (what the player sees and does); the technical so
 2026-11-06). Do not take the owner's technical wording literally: choose the technically correct, most efficient way
 (least CPU/GPU load, the rendering roles of docs/rendering.md, existing components) and say briefly why.
 
+**The agent is responsible for how a feature works** (owner, 2026-11-12): «під час виконання завдань які я надаю враховуй
+свої навички, кращі рішення, розповсюджені рішення в розробці, а не тільки мої вказівки (я можу щось упустити в
+технічному плані тому ти відповідальний за те як буде працювати та чи інша функція) якщо я надаю явно не оптимізовані і
+не оптимальні рішення ти повинен мене про це повідомити і запропонувати інше». Apply established practice for the kind of
+feature (interaction patterns, performance, robustness), fill technical gaps the owner's description leaves, and when the
+owner's approach is clearly not optimal, say so and propose the better one before or alongside implementing it. When the
+owner's words are ambiguous (for example «доторкання курсором» — the cursor reaching the edge, not a click), ask or choose
+the reading that matches how the feature is used, and say which one was chosen.
+
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
 Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional

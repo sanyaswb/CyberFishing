@@ -987,17 +987,27 @@ controlUI.dispose();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
   assert(!body.classes.has("game-shell--zone-editor"), "TK-052: switching the editor off brings the game's UI back");
 
-  // TK-053, TK-274 (spec 173 F2): the left-edge strip opens the panel only when touched: a mouse press or a right swipe
-  // of a finger. A pointer passing over it (dragging a zone or its movement area near the map's edge) never opens it.
-  let opens = 0;
-  const edgeMount = [];
+  // TK-053, TK-274.1 (spec 173 F2): the left-edge strip opens the panel when the mouse rests at the edge (a sweep past
+  // it does not), on a mouse press, or on a finger swipe right; never during a zone editor gesture or with a button held.
+  let opens = 0, blocked = false;
+  const edgeMount = [], timers = new Map();
+  let nextTimer = 1;
+  const clock = { set: (callback, ms) => { timers.set(nextTimer, { callback, ms }); return nextTimer++; }, clear: id => timers.delete(id) };
+  const elapse = () => { const due = [...timers.values()]; timers.clear(); for (const timer of due) timer.callback(); };
   const opener = new DevToolsEdgeOpener({ documentRef: { createElement: makeElement },
-    mountNode: { appendChild: element => edgeMount.push(element) }, open: () => opens++ });
+    mountNode: { appendChild: element => edgeMount.push(element) }, open: () => opens++, isBlocked: () => blocked, timers: clock });
   const edge = edgeMount[0], fire = (type, fields) => edge.listeners.get(type)?.({ preventDefault() {}, ...fields });
-  fire("pointerenter", { pointerType: "mouse", buttons: 1 }); assert.equal(opens, 0, "no opening while a drag holds a button");
-  fire("pointerenter", { pointerType: "mouse", buttons: 0 }); fire("pointermove", { pointerType: "mouse", pointerId: 1, clientX: 4 });
-  assert.equal(opens, 0, "a mouse passing over the edge does not open DevTools");
-  fire("pointerdown", { pointerType: "mouse", pointerId: 1, clientX: 3 }); assert.equal(opens, 1, "a mouse press on the edge opens DevTools");
+  const mouse = (type, buttons = 0) => fire(type, { pointerType: "mouse", pointerId: 1, clientX: 3, buttons });
+  mouse("pointermove"); mouse("pointerleave"); elapse();
+  assert.equal(opens, 0, "a mouse sweeping past the edge does not open DevTools");
+  mouse("pointermove"); assert.equal([...timers.values()][0]?.ms, 150, "resting at the edge waits 150 ms");
+  elapse(); assert.equal(opens, 1, "the mouse resting at the left edge opens DevTools (no click needed)");
+  mouse("pointermove", 1); elapse(); assert.equal(opens, 1, "not while a button is held (a zone being dragged)");
+  blocked = true; mouse("pointermove"); elapse(); mouse("pointerdown"); assert.equal(opens, 1, "not during a zone editor gesture");
+  blocked = false; mouse("pointerdown"); assert.equal(opens, 2, "a mouse press on the edge opens DevTools");
+  mouse("pointermove"); blocked = true; elapse(); assert.equal(opens, 2, "a gesture that starts during the wait cancels it");
+  blocked = false;
+  opens = 1;
   fire("pointerdown", { pointerType: "touch", pointerId: 7, clientX: 2 });
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 20 }); assert.equal(opens, 1, "a short touch move does not open");
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 30 }); assert.equal(opens, 2, "a swipe right from the edge opens");
@@ -1973,7 +1983,12 @@ controlUI.dispose();
     const press = (type, x, y) => layer.listeners.get(type)({ clientX: x, clientY: y, pointerId: 3, button: 0, preventDefault() {} });
     const body = map.getDynamicZones()[0];
     const x = (body.x * 40 + 400) % 2400 * scale + 40; // a column away from the body
-    press("pointermove", x, 400); press("pointerdown", x, 400); press("pointermove", x, 360); press("pointerup", x, 360);
+    press("pointermove", x, 400);
+    assert.equal(tool.gestureActive, false, "hovering a zone is not a gesture (TK-274.1: DevTools may open)");
+    press("pointerdown", x, 400); press("pointermove", x, 360);
+    assert.equal(tool.gestureActive, true, "dragging the area is a gesture (the DevTools edge waits)");
+    press("pointerup", x, 360);
+    assert.equal(tool.gestureActive, false, "released: no gesture");
     let area = cfg.locations.map.test.zones.dynamic[0].bounds[0];
     assert.deepEqual([area.y, area.h], [18, 20], "the area's top edge is dragged with no click on the body first");
     press("pointermove", x, 718); press("pointerdown", x, 718); press("pointermove", x, 700); press("pointerup", x, 700);

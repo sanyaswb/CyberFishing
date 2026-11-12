@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-274.1: DevTools edge opens when the cursor rests there 150 ms; never during a zone editor gesture.",
   "TK-277 (spec 173 F3): «Обрізати по ігровій зоні» cuts a zone to the water on the castable mask's grid; pieces -> zones; moving -> area.",
   "TK-276 (spec 173 F4): moving zone's area editable at once with «Редагувати рухомі»; edges beyond the map grabbed at its edge.",
   "TK-275 (spec 173 F1): zone editing on -> fullscreen; off leaves only the editor's own fullscreen.",

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.83 - DevTools edge opens on hover again
+
+- TK-274.1 (spec 173 F2): while editing zones, the cursor resting at the left edge (~150 ms) opens DevTools again; a cursor sweeping past, a held button or a zone editor gesture (drag, drawing, mask) never does; a press or a finger swipe still opens it; strip 16 px.
+
 ## v0.50.82 - Clip zones to the castable area
 
 - TK-277 (spec 173 F3): every zone list but the castable one has «Обрізати по ігровій зоні»: the selected zone is cut to the water exactly on the castable mask's grid (a mask where the shore is ragged; separate pieces become separate zones); a moving zone's movement area is cut instead.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.74 - Water glints removed
 
 - TK-270.1 (owner): the water glints of v0.50.73 are removed (their look did not fit; another approach later). The scene keeps Pixi's particle container for the coming rain.
-
-## v0.50.73 - Glints on the water
-
-- Spec 172 stage B (TK-270): the water sparkles on its wave crests: over all the water by day, in a path under the sun at sunrise and sunset and under the moon at night (the path widens toward the viewer); clouds and fog dim them. Tuned live in DevTools (water → glints); the sun and moon positions are in the location's sky settings.
