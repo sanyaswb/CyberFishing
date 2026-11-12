@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.90 - DevTools row lines
+
+- TK-284 (spec 174 A4): the dashed line under every DevTools row (4 px below its row, 8 px above the next) is replaced by one thin solid line only between neighbouring rows, with equal space above and below; a section's last row has no line.
+
 ## v0.50.89 - DevTools list picker
 
 - TK-283 (spec 174 A3): Fixed Catch's fish is chosen from a list (image, name, id; search by name or id; arrows, Enter, Escape) instead of typed; an id the game does not have stays visible and marked. Parameters with up to four values (inventory selector size and layout, delivery method, split side) show every option as a segmented switch instead of a button that cycles.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.81 - Movement area editable at once
 
 - TK-276 (spec 173 F4): with «Редагувати рухомі» on, the movement area of the moving zone chosen in its list can be dragged at once (no click on its body first, other selections no longer hide it); an area edge beyond the map is grabbed at the map's edge.
-
-## v0.50.80 - Zone editing goes fullscreen
-
-- TK-275 (spec 173 F1): switching zone editing on takes the page fullscreen; switching it off leaves fullscreen only when the editor entered it (a fullscreen chosen with ⛶ stays). The game's ⛶ button and the editor share one fullscreen port.

@@ -175,13 +175,20 @@
   gap: var(--ui-toolbar-gap);
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 4px 0;
-  border-bottom: 1px dashed #2a3b4c;
+  padding: 6px 0;
+}
+/* TK-284: one thin line only between two neighbouring rows, with the same space above and below it (the rows'
+   own padding); no line after a section's last row. A control group is display: contents, so its first row
+   follows the row or group before it. */
+.devtools__row + .devtools__row,
+.devtools__control-group + .devtools__row,
+.devtools__row + .devtools__control-group > .devtools__row:first-child,
+.devtools__control-group + .devtools__control-group > .devtools__row:first-child {
+  border-top: 1px solid var(--devtools-row-line, rgba(255, 255, 255, 0.09));
 }
 
 .devtools__pages { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
-.devtools__row--navigation { margin: 0; padding: 0; border-bottom: 0; }
+.devtools__pages .devtools__row--navigation { padding: 0; border-top: 0; }
 
 .devtools__label {
   flex: 1 1 0;
