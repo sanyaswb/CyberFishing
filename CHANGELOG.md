@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.92 - Test location zones inside the map
+
+- TK-280.1 (spec 173): the test location's zones are the fixed ones in the code: the water, the fish school's area and the rain zone end at the map's bottom (36 cells; they ran to 38), so the zone editor no longer shows the red notice there.
+
 ## v0.50.91 - Command after a file export
 
 - TK-285 (spec 174 A5): after a DevTools file export that is applied by a command (zones, the zone fix file, radio sound) a notice at the top of that section names the downloaded file and shows the terminal command with a copy button; a new export replaces it, the cross closes it. npm run apply:zones and apply:radio now find a bare file name in the Downloads folder, so the copied command works as it is.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.83 - DevTools edge opens on hover again
 
 - TK-274.1 (spec 173 F2): while editing zones, the cursor resting at the left edge (~150 ms) opens DevTools again; a cursor sweeping past, a held button or a zone editor gesture (drag, drawing, mask) never does; a press or a finger swipe still opens it; strip 16 px.
-
-## v0.50.82 - Clip zones to the castable area
-
-- TK-277 (spec 173 F3): every zone list but the castable one has «Обрізати по ігровій зоні»: the selected zone is cut to the water exactly on the castable mask's grid (a mask where the shore is ragged; separate pieces become separate zones); a moving zone's movement area is cut instead.

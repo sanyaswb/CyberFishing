@@ -1957,11 +1957,13 @@ controlUI.dispose();
     allState.setFlag("enabled", true); allState.setEditing("snags", true); editAll(true); editAll(false);
     assert(allState.enabled && allState.isEditable("snags") && !allState.isEditable("castable"), "what was on before stays on");
   }
-  // TK-276 (spec 173 F4), reproduced on the test location's real zones: with only «Редагувати рухомі» on, the
-  // selected moving zone's area (the whole water, { x: 0, y: 20, w: 64, h: 18 }: below the map's bottom, 36 cells) is
-  // editable at once — no click on the body first — and its edge beyond the map is grabbed at the map's edge.
+  // TK-276 (spec 173 F4), reproduced on the test location's zones as they were when it was found: with only
+  // «Редагувати рухомі» on, the selected moving zone's area (the whole water, { x: 0, y: 20, w: 64, h: 18 }: below the
+  // map's bottom, 36 cells) is editable at once — no click on the body first — and its edge beyond the map is grabbed
+  // at the map's edge. TK-280.1: the location's zones now end at the map, so the area past it is set here.
   {
-    const { ZONES } = load("src/game/config/raw/locations/zones/test.js");
+    const ZONES = JSON.parse(JSON.stringify(load("src/game/config/raw/locations/zones/test.js").ZONES));
+    ZONES.dynamic[0].bounds = [{ x: 0, y: 20, w: 64, h: 18 }];
     const { LocationMap } = load("src/game/domain/locations/location_map.js");
     const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
     const { ZoneEditorConfigEdits } = load("src/dev/location/zone_editor_config_edits.js");
@@ -2071,9 +2073,17 @@ controlUI.dispose();
   // TK-280 (spec 173): zones past the map. The test location's water, fish school area and rain run to 38 cells of a
   // 36-cell map: found, listed in a red notice at the top of the editor; «Виправити» makes a zone file with every zone
   // inside the map (the water's mask keeps its own cells), «Завантажити» downloads it; the notice stays while the code
-  // still has such zones.
+  // still has such zones. TK-280.1: the owner applied that fix file, so the location's zones are the fixed ones now;
+  // the zones as they were (water, school area and rain to 38 cells) are restored here, and the fix of them must give
+  // exactly the zones the location has.
   {
-    const { ZONES } = load("src/game/config/raw/locations/zones/test.js");
+    const applied = load("src/game/config/raw/locations/zones/test.js").ZONES;
+    const ZONES = JSON.parse(JSON.stringify(applied));
+    ZONES.castable[0] = { x: 0, y: 20, w: 64, h: 18, mask: { enabled: true, cell: [0.0078125, 0.0277777777778],
+      rects: [[19, 0, 74, 1], [103, 0, 4, 1], [17, 1, 93, 1], [119, 1, 9, 1], [11, 2, 117, 1], [7, 3, 121, 1], [4, 4, 124, 1],
+        [1, 5, 127, 1], [0, 6, 128, 30]] } };
+    ZONES.dynamic[0].bounds = [{ x: 0, y: 20, w: 64, h: 18 }];
+    ZONES.rain[0] = { x: 0, y: 0, w: 64, h: 38 };
     const { findZonesBeyondMap, fitZonesToMap } = load("src/dev/location/zone_map_bounds.js");
     const maskMath = load("src/engine/geometry/grid_mask.js");
     const format = load("src/dev/location/zone_export_format.js");
@@ -2094,6 +2104,9 @@ controlUI.dispose();
     assert.equal(json(fitted.zones.dynamic[0].bounds), json([{ x: 0, y: 20, w: 64, h: 16 }]), "the school's area ends at the map");
     assert.equal(json(fitted.zones.collisions), json(ZONES.collisions), "zones inside the map are untouched");
     assert.equal(format.validateZones(format.canonicalZones(fitted.zones)).length, 0, "the fixed zones export");
+    assert.equal(findZonesBeyondMap(applied, map).length, 0, "the location's own zones are inside the map (TK-280.1)");
+    assert.equal(json(format.canonicalZones(fitted.zones)), json(format.canonicalZones(applied)),
+      "and are exactly what «Виправити» makes of the zones that ran past it");
     const gone = fitZonesToMap({ snags: [{ x: 70, y: 1, w: 2, h: 2 }, { x: -3, y: 1, w: 5, h: 2 }] }, map);
     assert.equal(json(gone.zones.snags), json([{ x: 0, y: 1, w: 2, h: 2 }]), "a zone wholly outside goes, a partial one is cut");
     assert.equal(gone.removed.length, 1);
@@ -2169,7 +2182,11 @@ controlUI.dispose();
     assert.equal(json(split.zones), json([{ x: 2, y: 1, w: 2, h: 2 }, { x: 6, y: 1, w: 2, h: 2 }]), "separate pieces become zones");
     const moving = { id: "school", x: 10, y: 25, w: 1, h: 1, moving: true, bounds: [{ x: -2, y: 18, w: 70, h: 22 }] };
     result = clipZoneToCastable(moving, castable, { ...options, category: "dynamic" });
-    assert.equal(json(result.zones[0].bounds), json([{ x: 0, y: 20, w: 64, h: 18 }]), "a moving zone's area is cut to the water");
+    // The water's own rectangle (TK-280.1: it ends at the map's bottom now, 16 cells high).
+    const water = castable[0];
+    assert.equal(json(result.zones[0].bounds), json([{ x: water.x, y: water.y, w: water.w, h: water.h }]),
+      "a moving zone's area is cut to the water");
+    assert.equal(water.y + water.h, 36, "the water ends at the map's bottom");
     assert.equal(json([result.zones[0].x, result.zones[0].y]), json([10, 25]), "its body stays");
     assert.equal(clipZoneToCastable({ ...moving, y: 5 }, castable, { ...options, category: "dynamic" }).error, "body-outside",
       "a body out of the water is not left outside its area");
