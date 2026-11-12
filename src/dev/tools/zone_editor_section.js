@@ -41,12 +41,13 @@ export class ZoneEditorSection {
   #unsubscribe = null;
   #getMetric; #createMetric; #resetPerspective;
   #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones; #getDependentZones;
+  #fullscreen;
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
   constructor({ ui, state, config, createSection, renderTree, updateConfig, getWaterMetric, createWaterMetric,
     resetPerspective, files = null, getBaseZones = null, resetZones = null, gameVersion = "", readDynamicZones = null,
-    getDependentZones = null, maskEditor = null, zoneDrawing = null }) {
+    getDependentZones = null, maskEditor = null, zoneDrawing = null, fullscreen = null }) {
     this.#ui = ui; this.#state = state; this.#config = config; this.#createSection = createSection;
     this.#renderTree = renderTree; this.#update = updateConfig;
     this.#getMetric = getWaterMetric; this.#resetPerspective = resetPerspective;
@@ -55,6 +56,8 @@ export class ZoneEditorSection {
     this.#getDependentZones = getDependentZones;
     this.#maskEditor = maskEditor;
     this.#drawing = zoneDrawing;
+    // Spec 173 F1: ZoneEditorFullscreen; switching editing on takes the page fullscreen.
+    this.#fullscreen = fullscreen;
     this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
   }
 
@@ -203,6 +206,7 @@ export class ZoneEditorSection {
     const ui = this.#ui, state = this.#state;
     ui.createSwitcherRow("Увімкнути редагування", state.enabled, section, (value) => {
       state.setFlag("enabled", value);
+      this.#followFullscreen(value);
       this.#syncGrids();
       this.#refreshZones();
     }, ["ZONE_EDITOR", "enabled"]);
@@ -263,7 +267,7 @@ export class ZoneEditorSection {
       write(true);
       restore.push(() => write(previous));
     };
-    setFlag(() => state.enabled, value => { state.setFlag("enabled", value); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], value); this.#syncGrids(); });
+    setFlag(() => state.enabled, value => { state.setFlag("enabled", value); this.#followFullscreen(value); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], value); this.#syncGrids(); });
     for (const category of CATEGORIES) {
       if (locations[PHYSICS_KEYS[category]] === false) setConfig(PHYSICS_KEYS[category]);
       setFlag(() => state.isEditable(category), value => state.setEditing(category, value));
@@ -435,7 +439,7 @@ export class ZoneEditorSection {
   // editing) like «Редагувати все»; drawing works only on the location on screen.
   #startDrawing(category) {
     const state = this.#state;
-    if (!state.enabled) { state.setFlag("enabled", true); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], true); this.#syncGrids(); }
+    if (!state.enabled) { state.setFlag("enabled", true); this.#followFullscreen(true); this.#ui.syncValue(["ZONE_EDITOR", "enabled"], true); this.#syncGrids(); }
     if (!state.isEditable(category)) { state.setEditing(category, true); this.#snapToGrid([category]); }
     this.#maskEditor?.stop();
     this.#drawing.start(category);
@@ -607,6 +611,11 @@ export class ZoneEditorSection {
     ui.createInfoRow("Перспектива", "Фізика перспективи: увімкнено — метри води рахуються з дальністю, нахилом і масштабом вдалині; вимкнено — вода рівномірна. Дальність — точні метри від нижнього до верхнього краю зеленої зони; нахил сплющує кола (90° — коло); масштаб вдалині 0.3 — 30% ближнього розміру; звуження по ширині — вертикальні лінії сходяться вдалину. Правки діють одразу.", content);
     if (this.#resetPerspective) ui.createButtonRow("Скинути перспективу цієї локації", content, () => { this.#resetPerspective(id); this.#fillPerspective(); });
     showStatus();
+  }
+
+  // Spec 173 F1: editing on enters fullscreen; off leaves it only if the editor entered it.
+  #followFullscreen(enabled) {
+    if (enabled) this.#fullscreen?.enter(); else this.#fullscreen?.leave();
   }
 
   #editingPrerequisites() {

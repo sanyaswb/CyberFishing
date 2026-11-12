@@ -1,12 +1,13 @@
 import { UiEventShield } from "../dom/ui_event_shield.js";
+import { BrowserFullscreen } from "./browser_fullscreen.js";
 
 export class FullscreenControl {
   #document;
+  #fullscreen;
   #onError;
   #active = null;
   #onClick = async () => {
-    if (this.#document.fullscreenElement) return;
-    try { await this.#document.documentElement.requestFullscreen(); }
+    try { await this.#fullscreen.request(); }
     catch (error) { this.#onError?.(error); }
   };
   #onChange = () => {
@@ -20,6 +21,8 @@ export class FullscreenControl {
 
   constructor({ documentRef, mountNode, fullscreenDocument = documentRef, label, onError = null }) {
     this.#document = fullscreenDocument;
+    // Spec 173 F1: the request itself is shared with the DEV zone editor (a wrapper over the injected document).
+    this.#fullscreen = new BrowserFullscreen({ documentRef: fullscreenDocument });
     this.#onError = onError;
     this.button = documentRef.createElement("button");
     this.button.className = "hud-control hud-control--square game-control game-control--fullscreen";
@@ -27,7 +30,7 @@ export class FullscreenControl {
     this.button.innerHTML = "⛶";
     this.button.setAttribute("aria-label", label);
     this.button.title = label;
-    this.button.hidden = typeof fullscreenDocument.documentElement?.requestFullscreen !== "function";
+    this.button.hidden = !this.#fullscreen.supported;
     UiEventShield.makeSolid(this.button);
     this.button.addEventListener("click", this.#onClick);
     fullscreenDocument.addEventListener("fullscreenchange", this.#onChange);

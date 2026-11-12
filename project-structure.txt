@@ -1067,6 +1067,7 @@
 │        │  ├── game_clock.js
 │        │  └── monotonic_interval_ticker.js
 │        └── ui
+│           ├── browser_fullscreen.js
 │           ├── chum_controls.js
 │           ├── depth_selector.js
 │           ├── fullscreen_control.js

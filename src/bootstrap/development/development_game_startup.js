@@ -34,6 +34,8 @@ import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_b
 import { ZoneEditorState } from "../../dev/location/zone_editor_state.js";
 import { ZoneEditorConfigEdits } from "../../dev/location/zone_editor_config_edits.js";
 import { ZoneEditorBrowserPort } from "../../dev/location/zone_editor_browser_port.js";
+import { ZoneEditorFullscreen } from "../../dev/location/zone_editor_fullscreen.js";
+import { BrowserFullscreen } from "../../platform/browser/ui/browser_fullscreen.js";
 import { CastableDependentZones } from "../../dev/location/castable_dependent_zones.js";
 import { CastableZoneReadings } from "../../dev/location/castable_zone_readings.js";
 import { ZoneEditorGeometryBuilder } from "../../dev/location/zone_editor_geometry_builder.js";
@@ -248,6 +250,9 @@ async function startGame() {
         loadStepper: { settings: loadStepperSettings, getGate: () => assetLoadGate,
           readStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null, restart: () => windowTarget.location.reload() },
         zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
+        // Spec 173 F1: editing zones takes the page fullscreen (and leaves it only if it entered it).
+        zoneEditorFullscreen: new ZoneEditorFullscreen({ fullscreen: new BrowserFullscreen({ documentRef: documentTarget }),
+          onError: error => new ConsoleLogger().warn("[ZoneEditor] Fullscreen was refused.", error) }),
         createWaterMetric: options => WaterMetric.illustrated(options),
         getWaterMetric: () => readLocationMetric?.() ?? null,
         openHouse,

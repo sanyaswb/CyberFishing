@@ -7,6 +7,8 @@ const { ZoneEditorState } = load("src/dev/location/zone_editor_state.js");
 const { ZoneEditorGeometryBuilder } = load("src/dev/location/zone_editor_geometry_builder.js");
 const { ZoneEditorSection } = load("src/dev/tools/zone_editor_section.js");
 const { DevToolsEdgeOpener } = load("src/dev/tools/dev_tools_edge_opener.js");
+const { ZoneEditorFullscreen } = load("src/dev/location/zone_editor_fullscreen.js");
+const { BrowserFullscreen } = load("src/platform/browser/ui/browser_fullscreen.js");
 const { PixiAnnotationRenderer } = load("src/platform/browser/scene/pixi_annotation_renderer.js");
 const { WorldDebugRenderer } = load("src/dev/rendering/world_debug_renderer.js");
 const { WaterMetric } = load("src/game/domain/locations/water_metric.js");
@@ -1003,6 +1005,51 @@ controlUI.dispose();
   opener.dispose(); assert(edge.removed && edge.listeners.size === 0, "the strip leaves with DevTools");
   unsubscribe(); drag.dispose();
 }
+
+// TK-275 (spec 173 F1): switching editing on takes the page fullscreen; off leaves it only if the editor entered it.
+(async () => {
+  const calls = [];
+  const fakeDocument = (supported = true) => {
+    const doc = { fullscreenElement: null, documentElement: {}, exitFullscreen: async () => { calls.push("exit"); doc.fullscreenElement = null; } };
+    if (supported) doc.documentElement.requestFullscreen = async () => { calls.push("request"); doc.fullscreenElement = doc.documentElement; };
+    return doc;
+  };
+  const settle = () => new Promise(resolve => setImmediate(resolve));
+  let doc = fakeDocument();
+  let fullscreen = new ZoneEditorFullscreen({ fullscreen: new BrowserFullscreen({ documentRef: doc }) });
+  fullscreen.enter(); await settle();
+  assert.deepEqual([calls.join(), Boolean(doc.fullscreenElement), fullscreen.entered], ["request", true, true], "editing on: fullscreen");
+  fullscreen.leave(); await settle();
+  assert.deepEqual([calls.join(), doc.fullscreenElement], ["request,exit", null], "editing off: the editor's fullscreen ends");
+  calls.length = 0; doc.fullscreenElement = doc.documentElement;
+  fullscreen.enter(); fullscreen.leave(); await settle();
+  assert.equal(calls.length, 0, "a fullscreen the player chose stays");
+  doc.fullscreenElement = null; fullscreen.enter(); await settle(); doc.fullscreenElement = null; calls.length = 0;
+  fullscreen.leave(); await settle();
+  assert.equal(calls.length, 0, "left by the player (Esc) meanwhile: nothing to exit");
+  doc = fakeDocument(false); fullscreen = new ZoneEditorFullscreen({ fullscreen: new BrowserFullscreen({ documentRef: doc }) });
+  fullscreen.enter(); fullscreen.leave(); await settle();
+  assert.equal(calls.length, 0, "no Fullscreen API: nothing happens");
+  let refused = 0;
+  doc = fakeDocument(); doc.documentElement.requestFullscreen = async () => { throw new Error("not a gesture"); };
+  fullscreen = new ZoneEditorFullscreen({ fullscreen: new BrowserFullscreen({ documentRef: doc }), onError: () => refused++ });
+  fullscreen.enter(); await settle();
+  assert.deepEqual([refused, fullscreen.entered], [1, false], "a refused request is reported and not held");
+  // The section's «Увімкнути редагування» switch drives it.
+  const moves = [];
+  const fsState = new ZoneEditorState(); fsState.loadedLocationId = "test"; fsState.setLocation("test");
+  const fsRows = new Map();
+  const fsUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
+    createInputRow() {}, createRangeRow() {}, createButtonRow() {}, createSelectRow() {},
+    createSwitcherRow: (label, ...args) => fsRows.set(label, args) };
+  new ZoneEditorSection({ ui: fsUi, state: fsState, config: { locations: { cellSize: 40, designCellSize: 40,
+    baseResolution: { width: 2560, height: 1440 }, map: { test: { name: "Test", zones: {} } } } },
+    createSection: () => ({ replaceChildren() {} }), renderTree() {}, getWaterMetric: () => null, updateConfig() {},
+    fullscreen: { enter: () => moves.push("enter"), leave: () => moves.push("leave") } }).render({});
+  const editing = fsRows.get("Увімкнути редагування")[2];
+  editing(true); editing(false);
+  assert.deepEqual(moves, ["enter", "leave"], "the editing switch enters and leaves fullscreen");
+})().catch((error) => { console.error(error); process.exitCode = 1; });
 
 // TK-090: «Всі» ends every category's «Номер зони» list.
 {

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-275 (spec 173 F1): zone editing on -> fullscreen; off leaves only the editor's own fullscreen.",
   "TK-274 (spec 173 F2): DevTools edge opens only on a press or swipe, not on hover; strip 8 px.",
   "TK-273 (spec 172 D4): rain zones in the zone editor; drops land and are clipped inside them; rings stay on the water.",
   "TK-272.1: pages-release only before a push (npm run check:release); npm run check leaves it out.",

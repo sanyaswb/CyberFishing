@@ -207,7 +207,7 @@ function checkDevelopmentInputs() {
   const assetLoadPlanStore = { plan: () => editedPlan };
   class VersionBadge { constructor({ element }) { this.element = element; } render() { renderedVersions.push(this.element); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
-    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, ZoneEditorFullscreen: Renderer, BrowserFullscreen: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: DebugServiceSpy,
     ConsoleLogger: class { warn() {} }, isLiveDataRequested,
@@ -293,6 +293,8 @@ function checkDevelopmentInputs() {
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
   assert.equal(tools.options.createWaterMetric(rendererOptions).options, rendererOptions, "bootstrap composes candidate metrics for DEV validation");
   assert.equal(tools.options.getWaterMetric(), locationMetric, "editor controls read the same metric as grid/rendering");
+  assert.equal(tools.options.zoneEditorFullscreen.options.fullscreen.options.documentRef, document,
+    "the zone editor goes fullscreen through the page's own document (spec 173 F1)");
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);
   assert.equal(tools.options.configRuntime, configRuntime);
