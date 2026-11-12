@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.87 - Typing in a field no longer steers the game
+
+- TK-281 (spec 174 A1): a key pressed while a text field has focus (DevTools number and text fields) is left to the field: the arrow keys move the caret and the letters on the game's keys (A, D, W, S) can be typed; the rod, the drag and the pull no longer react to typing. Outside a field the keys work as before.
+
 ## v0.50.86 - Zones past the map: notice and fix file
 
 - TK-280 (spec 173): the zone editor shows a red notice at its top listing every zone past the map (category, number, side and value); «Виправити» makes a zone file with every zone fitted into the map (masks keep their cells), «Завантажити» downloads it; the notice stays until the code has the fixed zones (npm run apply:zones).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.78 - Rain zones in the zone editor
 
 - TK-273 (spec 172 D4): the zone editor has a new category «Дощ»: it rains only inside these zones (drops land in them and are clipped to them); rings and ripples stay on the water. The test location has one rain zone over the whole map; the category's switch off rains over the whole screen.
-
-## v0.50.77 - Release check before push
-
-- TK-272.1 (owner): the Pages release check builds the last commit, so it no longer runs in npm run check (before a commit it checked the previous commit); npm run check:release runs it before every push.

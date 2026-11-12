@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-281 (spec 174 A1): keys typed into a field stay with the field (caret arrows, A/D/W/S); the game ignores them.",
   "TK-280: red notice of zones past the map; «Виправити» -> fixed zone file -> «Завантажити»; stays until the code is fixed.",
   "TK-279: a press no longer pulls a zone partly outside the window into it; window limits only further-out moves.",
   "TK-278: zone moves and edges stop at the map's edges; wide zones no longer slide off the map in a narrow window.",

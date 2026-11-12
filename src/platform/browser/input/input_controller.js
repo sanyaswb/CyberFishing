@@ -143,6 +143,12 @@ export class InputController {
     this.#pointerPanEnabled = enabled === true;
   }
 
+  // A form field or editable content: the browser owns its keyboard (keyup still clears a key held before the focus).
+  static #isTextEntryTarget(target) {
+    const tag = String(target?.tagName || "").toUpperCase();
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable === true;
+  }
+
   #isKeyMatch(e, actionArray) {
     if (!actionArray) return false;
     return actionArray.includes(e.code) || actionArray.includes(e.key);
@@ -369,6 +375,8 @@ export class InputController {
     }, { passive: false });
 
     this.#addEventListener(window, "keydown", (e) => {
+      // TK-281: a key typed into a field belongs to the field: the caret keys, the letters and the game stay apart.
+      if (InputController.#isTextEntryTarget(e.target)) return;
       this.#keys[e.code] = true;
       this.#keys[e.key] = true;
 

@@ -171,4 +171,28 @@ assert.equal(casts, 0);
   assert.equal(pressed.pointerStart.y, 200, "the strip has no vertical offset");
   stripInput.dispose();
 }
+// TK-281: keys typed into a field stay with the field (caret arrows, the letters on the game's keys); elsewhere the
+// game keeps them.
+{
+  const keyConfig = { ...config, input: { ...config.input,
+    keys: { pull: ["Space"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"],
+      dragIncrease: ["KeyS", "ArrowDown"], dragDecrease: ["KeyW", "ArrowUp"], retrieve: ["ShiftLeft"] } } };
+  const keyCanvas = eventTarget();
+  const keyInput = new InputController(keyCanvas, null, { runtimeConfig: keyConfig, listeners: new EventLifecycle() });
+  for (const target of [{ tagName: "INPUT" }, { tagName: "TEXTAREA" }, { tagName: "SELECT" }, { tagName: "DIV", isContentEditable: true }]) {
+    for (const code of ["ArrowLeft", "ArrowUp", "KeyA", "KeyS", "ShiftLeft", "Space"]) {
+      assert.equal(windowTarget.emit("keydown", { code, key: code, target }).prevented, undefined,
+        `${code} typed into ${target.tagName} is left to the field`);
+    }
+    const typing = keyInput.getState();
+    assert.equal(typing.aimLeft || typing.dragIncrease || typing.dragDecrease || typing.isPulling || typing.retrieve, false,
+      "typing into a field does not steer the game");
+  }
+  assert.equal(windowTarget.emit("keydown", { code: "ArrowLeft", key: "ArrowLeft", target: { tagName: "CANVAS" } }).prevented, true,
+    "outside a field the game owns its keys");
+  assert.equal(keyInput.getState().aimLeft, true);
+  windowTarget.emit("keyup", { code: "ArrowLeft", key: "ArrowLeft", target: { tagName: "INPUT" } });
+  assert.equal(keyInput.getState().aimLeft, false, "a key released inside a field is released for the game too");
+  keyInput.dispose();
+}
 console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding.");
