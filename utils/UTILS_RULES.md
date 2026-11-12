@@ -49,6 +49,8 @@ wrappers, duplicate runners or general testing framework for one scenario. Produ
 2. Run the affected check while iterating. Use `npm run check:quick` for a small cross-system smoke set when useful.
 3. Before delivery run `npm run check` once. It includes the Quick and Architecture checks; do not run the same
    suites again against unchanged code. Rerun only for a failure, subsequent change or unresolved concern.
+   Checks of the `release` suite build the committed HEAD (`pages-release`), so `npm run check` leaves them out; run
+   `npm run check:release` before every push (TK-272.1).
 4. Do not change baselines or weaken guards to hide a regression. The game-cycle baseline changes only for an
    explicitly intended gameplay change with its documented reason.
 5. Remove replaced assertions and helpers with no remaining consumer. Preserve useful simulations when pruning

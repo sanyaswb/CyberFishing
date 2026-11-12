@@ -6,13 +6,24 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { CheckRunner, reportsCompletion } = require("../../run-checks.js");
+const { CheckCatalog, CheckRunner, reportsCompletion } = require("../../run-checks.js");
+const { CHECK_DEFINITIONS } = require("../../testing/suites/check_manifest.js");
 
 (async () => {
   assert.equal(reportsCompletion("Asset load plan passed: validation rules\n"), true);
   assert.equal(reportsCompletion("step one\nCheck ok\n\n"), true, "the last non-empty line counts");
   assert.equal(reportsCompletion(""), false, "no output is not a pass");
   assert.equal(reportsCompletion("first part passed\nstep two\n"), false, "an earlier line does not count");
+
+  // TK-272.1: the release checks (they build the committed HEAD) run before a push, not in the default run.
+  const catalog = new CheckCatalog(CHECK_DEFINITIONS, path.resolve(__dirname, "../../.."));
+  const all = catalog.select({ suite: "all" }).map((check) => check.id);
+  const release = catalog.select({ suite: "release" }).map((check) => check.id);
+  assert.deepEqual(release, ["pages-release"], "the release suite holds the Pages release check");
+  assert(!all.includes("pages-release") && all.length === CHECK_DEFINITIONS.length - release.length,
+    "npm run check runs every other check");
+  assert.deepEqual(catalog.select({ check: "pages-release" }).map((check) => check.id), ["pages-release"],
+    "it can still run alone");
 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-check-runner-"));
   try {
@@ -34,7 +45,8 @@ const { CheckRunner, reportsCompletion } = require("../../run-checks.js");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
-  console.log("Check runner passed: a hung check fails, the pass line is the last line of stdout, exit codes are kept.");
+  console.log("Check runner passed: a hung check fails, the pass line is the last line of stdout, exit codes are kept, " +
+    "release checks run only on their own.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

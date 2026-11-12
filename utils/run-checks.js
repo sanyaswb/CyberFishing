@@ -23,6 +23,11 @@ function reportsCompletion(stdout) {
 }
 
 // Registry of stable scenario IDs; discover checks recursively to reject orphaned tests.
+// TK-272.1 (owner): checks of the "release" suite build the committed HEAD (pages-release), so before a commit they would
+// check the previous commit. The default run ("all", npm run check) leaves them out; they run before every push with
+// npm run check:release (AGENTS.md "Pushes and Pages releases").
+const RELEASE_SUITE = "release";
+
 class CheckCatalog {
   constructor(definitions, projectRoot) {
     this.checks = Object.freeze(definitions.map((definition) => Object.freeze({ ...definition })));
@@ -39,7 +44,9 @@ class CheckCatalog {
       if (!found) throw new Error(`Unknown check: ${check}`);
       return [found];
     }
-    const checks = suite === "all" ? this.checks : this.checks.filter((item) => item.suites.includes(suite));
+    const checks = suite === "all"
+      ? this.checks.filter((item) => !item.suites.includes(RELEASE_SUITE))
+      : this.checks.filter((item) => item.suites.includes(suite));
     if (checks.length === 0) throw new Error(`Unknown or empty check suite: ${suite}`);
     return checks;
   }
@@ -164,4 +171,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { CheckRunner, reportsCompletion };
+module.exports = { CheckCatalog, CheckRunner, reportsCompletion };

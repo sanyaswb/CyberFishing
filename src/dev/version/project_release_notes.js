@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-272.1: pages-release only before a push (npm run check:release); npm run check leaves it out.",
   "TK-272: Pages release check reads stylesheets in one git batch (95 s -> 13 s; Full ~100 s -> ~18 s).",
   "TK-271 (spec 172 D, iteration 1): procedural rain (drops, rings, ripples); DevTools ПОГОДА: rain/storm/fog switches, live strength, wind.",
   "TK-270.1: water glints removed (owner); particle container kept for rain.",

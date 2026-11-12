@@ -75,8 +75,11 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   (rule at the top of `tasks.md`); the owner's open checks stay in `tasks.md` with a link to the archived implementation.
   The archive lives outside the repository, beside `CHANGELOG_ARCHIVE.md` (owner, 2026-11-07: history files do not
   weigh down the project); it is never committed.
+- **Before every push run `npm run check:release`** (owner, 2026-11-12, TK-272.1): the `pages-release` check builds the
+  committed HEAD, so it is not part of `npm run check` (before a commit it would check the previous commit). It must
+  pass on the commit being pushed.
 - Before a release check that every runtime asset path is tracked (`git ls-files`); Pages ships tracked files only, and
-  released raster art is WebP (`pages-release` check).
+  released raster art is WebP (`pages-release` check, `npm run check:release`).
 - Never publish or proxy the owner's code through third-party hosting or CDN mirrors; test builds go to `gh-pages` only.
 
 ## Working rules learned in practice

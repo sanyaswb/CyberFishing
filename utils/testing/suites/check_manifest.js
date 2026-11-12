@@ -402,7 +402,8 @@ const CHECK_DEFINITIONS = Object.freeze([
     id: "pages-release",
     title: "Immutable Pages release of the committed game",
     file: "utils/checks/tooling/pages-release-check.js",
-    suites: ["tools"],
+    // TK-272.1: it builds the committed HEAD, so it runs before a push (npm run check:release), not in npm run check.
+    suites: ["release"],
   },
   {
     id: "platform-runtime",

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.77 - Release check before push
+
+- TK-272.1 (owner): the Pages release check builds the last commit, so it no longer runs in npm run check (before a commit it checked the previous commit); npm run check:release runs it before every push.
+
 ## v0.50.76 - Faster full check
 
 - TK-272: the Pages release check reads each page's stylesheets from git in one batch instead of once per pair (about 2,600 git calls); it takes about 13 s instead of 95 s, and a full check run about 18 s instead of 100 s. It checks the same things.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.68 - Depth map reader non-linear calibration
 
 - TK-266: depth map reader calibrated with non-linear piecewise interpolation matching the owner's exact color-to-depth control points (0.1m at rgb(254), 0.5m at rgb(217), 1.0m at rgb(147), 5.0m at rgb(54), 7.5m at rgb(35), 15.0m at rgb(10)), eliminating harsh depth transitions near the shore.
-
-## v0.50.67 - Hand chum throw zone dimming and selector input isolation
-
-- TK-267: hand chum throw zone dims unreachable water above the limit line (matching float depth limit); inventory selector neighbouring buttons are hidden with isolated pointer events and touch dragging is guarded against native screen scrolling.

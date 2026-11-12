@@ -102,6 +102,14 @@
   - [x] v0.50.76: `tree.readAll` стилів сторінки один раз. Доказ: у тимчасовій копії перевірки текст усіх 72 стилів
         (34 index + 38 dev) збігся з читанням по одному. `pages-release` 95 → 13 с; Full 100 → 17,9 с (86/86, game-cycle
         без змін). Окреме питання власнику (не змінено): `pages-release` збирає останній коміт, а не незакомічені зміни.
+  - [ ] **TK-272.1 — `pages-release` лише перед push (власник, 2026-11-12: «так давай перед пуш робити»).** Перевірка
+        збирає останній коміт, тож перед комітом вона перевіряла попередній. Зміна: набір `release`, якого немає в
+        звичайному Full (`npm run check`); `npm run check:release` запускається перед кожним push разом з іншими кроками
+        публікації (AGENTS.md «Pushes and Pages releases»). Перевірка: `check-runner` — Full без release-перевірок,
+        `--suite release` лише з ними, `--check pages-release` як і раніше; один Full.
+    - [x] v0.50.77: набір `release` (`pages-release`), `npm run check:release`; `npm run check` без нього — 85 перевірок за
+          8,7 с (game-cycle без змін); `check:release` окремо — 12,8 с, пройшла. AGENTS.md («Pushes and Pages releases») і
+          UTILS_RULES.md: `npm run check:release` перед кожним push. Перевірка `check-runner` — склад наборів.
 - [ ] **[Spec 172](specs/172-location-weather/spec.md) — погода й живі ефекти локації (власник, 2026-11-08…09).**
       «Додати треба дощ, гроза, туман … спочатку продумати і додати обов'язково … storm, intensity level, fade in/out»;
       «білки води на хвилях це першочергове завдання»; Spine-шари локації (небо з хмарами й блискавками за будинками,
