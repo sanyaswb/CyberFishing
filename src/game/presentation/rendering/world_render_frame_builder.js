@@ -16,6 +16,8 @@ export class WorldRenderFrameBuilder {
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
   #isAssetReady;
   #weatherBuilder;
+  // The rain zones' bounds in map pixels (not read by anyone; #zoneRects fills bounds as it goes).
+  #rainBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
 
   constructor({
     map,
@@ -69,6 +71,7 @@ export class WorldRenderFrameBuilder {
     this.#buildCurrent(target.current);
     this.#weatherBuilder?.buildInto(target.weather);
     this.#buildClipRegions(target.clipRegions, target.waterPlane);
+    this.#buildRainRegions(target);
     if (this.#getWaterMetric) target.waterPlane.metric = this.#getWaterMetric();
     this.#debugBuilder?.buildInto(target, debugEnabled);
     if (target.backgroundHidden) {
@@ -150,10 +153,23 @@ export class WorldRenderFrameBuilder {
 
   // Also writes the virtual bounds the regions cover into `plane`, so the wave field maps over the water it fills.
   #buildClipRegions(target, plane) {
+    this.#zoneRects("castable", target, plane);
+  }
+
+  // Spec 172 D4 (TK-273): where it rains, from zones.rain like the water from zones.castable; with the switch off the
+  // rain is not zoned (the whole screen).
+  #buildRainRegions(target) {
+    const locations = this.#config.locations || {};
+    target.rainZoned = locations.enableRainZones !== false;
+    if (target.rainZoned) this.#zoneRects("rain", target.rainRegions, this.#rainBounds);
+  }
+
+  // A category's zones as screen rectangles (masks as their rectangles); plane receives their bounds in map pixels.
+  #zoneRects(category, target, plane) {
     const locations = this.#config.locations || {};
     const maps = locations.map || {};
     const locationId = locations.currentLocationId || this.#locationId;
-    const zones = maps[locationId]?.zones?.castable || [];
+    const zones = maps[locationId]?.zones?.[category] || [];
     // Authored rectangles use design cells; changing raster density must not resize the water mask.
     const cellSize = Math.max(1, Number(locations.designCellSize || locations.cellSize) || 40);
     plane.left = Infinity; plane.right = -Infinity; plane.top = Infinity; plane.bottom = -Infinity;

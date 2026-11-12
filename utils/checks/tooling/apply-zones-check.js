@@ -44,7 +44,7 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
 
     // Hash: key order never matters, and the browser and the script hash the same text.
     const shuffled = { dynamic: ZONES.dynamic.map(zone => Object.fromEntries(Object.entries(zone).reverse())), snags: ZONES.snags,
-      collisions: ZONES.collisions, castable: ZONES.castable };
+      collisions: ZONES.collisions, castable: ZONES.castable, rain: ZONES.rain };
     assert.equal(await format.zoneHash(shuffled, sha256), baseHash, "the same zones in another key order give the same hash");
     // TK-077: binary-fraction noise never reaches a file; exact fractions stay.
     const noisy = format.canonicalZones({ castable: [{ x: 0.1 + 0.2, y: 11.700000000000001, w: 0.00703125, h: 17.12571864024948 }] }).castable[0];

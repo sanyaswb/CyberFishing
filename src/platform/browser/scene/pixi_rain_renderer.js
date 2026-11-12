@@ -1,6 +1,9 @@
 // Spec 172 D4 (TK-271): procedural rain on the WebGL scene, iteration 1.
-// - Drops: streaks from a texture generated once. Each drop first picks where it lands (anywhere from the far edge of
-//   the water down to the bottom of the screen), then falls to that point at the wind's slant; its size, length and
+// - Drops: streaks from a texture generated once. Each drop first picks where it lands, then falls to that point at the
+//   wind's slant. TK-273: where it lands is inside the rain zones on screen (world.rainRegions, drawn in the zone
+//   editor; a zone is picked by its visible area), and the drops are clipped to those zones by a mask, so it rains only
+//   there; with the rain zones' switch off (world.rainZoned false) the drops land anywhere from the far edge of the
+//   water down to the bottom of the screen, unclipped. Its size, length and
 //   speed follow the water's perspective at the landing point (WaterMetric.surfaceScaleAt), so far drops are smaller and
 //   slower. The number of falling drops follows the rain's and the storm's intensity (world.weather).
 // - Impacts: a drop that lands inside a castable zone (world.clipRegions, the water) leaves a ring that widens and
@@ -51,6 +54,15 @@ export class PixiRainRenderer {
   #stepMs = 0;
   #dropColor = { text: "", value: 0xffffff };
   #ringColor = { text: "", value: 0xffffff };
+  // TK-273: the rain zones' visible rectangles (left, top, width, height) and their cumulative areas, rebuilt each
+  // frame into arrays that grow only with the number of zones; the mask is redrawn only when the rectangles change.
+  #zoned = false;
+  #zoneRects = new Float32Array(0);
+  #zoneWeights = new Float32Array(0);
+  #zoneCount = 0;
+  #zoneArea = 0;
+  #mask;
+  #maskRects = [];
 
   // documentTarget: makes the textures' canvases; random: () => 0…1 (the drops' places and timing; visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -66,6 +78,7 @@ export class PixiRainRenderer {
     this.#surface = new pixi.ParticleContainer({ texture: this.#ring, dynamicProperties: DYNAMIC });
     this.#air.visible = false;
     this.#surface.visible = false;
+    this.#mask = new pixi.Graphics();
   }
 
   // The rings go on the water: mounted right after it, under the tackle.
@@ -74,8 +87,10 @@ export class PixiRainRenderer {
   }
 
   // The drops go in front of the tackle: mounted after it.
+  // Its zone mask lives in the scene for its transform (Pixi does not draw a mask itself).
   mountAir(stage) {
     stage.addChild(this.#air);
+    stage.addChild(this.#mask);
   }
 
   // For PixiWaterRenderer: the rings as ripple puffs ({ count, getAt(i) → { x, y, size, life } }) and their settings
@@ -115,8 +130,11 @@ export class PixiRainRenderer {
       storm * Math.max(0, number(settings?.stormSlantDeg, 0)));
     this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * SLANT_FOLLOW_PER_SEC);
     const area = this.#waterArea(world.clipRegions);
+    this.#prepareZones(world, viewWidth, viewHeight);
+    // Zoned rain with no zone on screen: no new drop (falling ones finish, clipped).
+    const spawning = this.#zoned && this.#zoneArea <= 0 ? 0 : target;
     // Drops first: the rings their impacts leave this frame are drawn in this frame.
-    this.#updateDrops(elapsed, target, settings, world, area, viewWidth, viewHeight);
+    this.#updateDrops(elapsed, spawning, settings, world, area, viewWidth, viewHeight);
     this.#updateRings(elapsed, rings);
     this.#visible = true;
     this.#air.visible = true;
@@ -189,9 +207,21 @@ export class PixiRainRenderer {
   }
 
   #spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter) {
-    const top = area ? Math.max(0, Math.min(viewHeight, area.top)) : viewHeight * 0.35;
-    const y = top + this.#random() * Math.max(0, viewHeight - top);
-    this.#dropX[index] = this.#random() * viewWidth;
+    let x, y;
+    if (this.#zoned) {
+      // A zone by its visible area, then a point inside it.
+      const pick = this.#random() * this.#zoneArea;
+      let zone = 0;
+      while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
+      const offset = zone * 4;
+      x = this.#zoneRects[offset] + this.#random() * this.#zoneRects[offset + 2];
+      y = this.#zoneRects[offset + 1] + this.#random() * this.#zoneRects[offset + 3];
+    } else {
+      const top = area ? Math.max(0, Math.min(viewHeight, area.top)) : viewHeight * 0.35;
+      y = top + this.#random() * Math.max(0, viewHeight - top);
+      x = this.#random() * viewWidth;
+    }
+    this.#dropX[index] = x;
     this.#dropY[index] = y;
     this.#dropScale[index] = this.#scaleAt(y, world, area, minScale, viewHeight);
     this.#dropLife[index] = (fall / speed) * (1 + (this.#random() * 2 - 1) * jitter);
@@ -264,6 +294,60 @@ export class PixiRainRenderer {
       index += 1;
     }
     for (let rest = this.#ringCount; rest < this.#rings.length; rest += 1) this.#rings[rest].alpha = 0;
+  }
+
+  // The rain zones on screen: their visible parts and cumulative areas for picking, and the drops' mask (redrawn only
+  // when the zones' screen rectangles change; removed while the rain is not zoned).
+  #prepareZones(world, viewWidth, viewHeight) {
+    this.#zoned = world.rainZoned === true;
+    const regions = world.rainRegions;
+    const count = this.#zoned && regions ? regions.count : 0;
+    if (this.#zoneRects.length < count * 4) {
+      this.#zoneRects = new Float32Array(count * 4);
+      this.#zoneWeights = new Float32Array(count);
+    }
+    let total = 0, visible = 0;
+    for (let index = 0; index < count; index += 1) {
+      const rect = regions.getAt(index);
+      const left = Math.max(0, rect.x), top = Math.max(0, rect.y);
+      const right = Math.min(viewWidth, rect.x + rect.width), bottom = Math.min(viewHeight, rect.y + rect.height);
+      if (!(right > left && bottom > top)) continue;
+      const offset = visible * 4;
+      this.#zoneRects[offset] = left; this.#zoneRects[offset + 1] = top;
+      this.#zoneRects[offset + 2] = right - left; this.#zoneRects[offset + 3] = bottom - top;
+      total += (right - left) * (bottom - top);
+      this.#zoneWeights[visible] = total;
+      visible += 1;
+    }
+    this.#zoneCount = visible;
+    this.#zoneArea = total;
+    this.#updateMask(this.#zoned ? regions : null, count);
+  }
+
+  #updateMask(regions, count) {
+    if (!regions) {
+      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
+      if (this.#air.mask) { this.#air.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
+      return;
+    }
+    const rects = this.#maskRects;
+    let same = rects.length === count * 4;
+    for (let index = 0; same && index < count; index += 1) {
+      const region = regions.getAt(index), offset = index * 4;
+      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
+        rects[offset + 3] === region.height;
+    }
+    if (!same) {
+      rects.length = count * 4;
+      this.#mask.clear();
+      for (let index = 0; index < count; index += 1) {
+        const region = regions.getAt(index), offset = index * 4;
+        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
+        this.#mask.rect(region.x, region.y, region.width, region.height);
+      }
+      if (count > 0) this.#mask.fill(0xffffff);
+    }
+    if (this.#air.mask !== this.#mask) this.#air.mask = this.#mask;
   }
 
   // The castable zones' bounding box (reused), or null.

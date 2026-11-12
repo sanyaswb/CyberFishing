@@ -138,6 +138,21 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
   renderFrame.reset(); water.buildInto({ target: renderFrame.world });
   assert.equal(renderFrame.world.clipRegions.getAt(0).height, 80, 'disabled mask restores ordinary wave area');
   assert.equal(renderFrame.world.waterPlane.masked, false);
+  // TK-273: rain zones reach the scene like the water's: a masked rain zone gives the mask's rectangles; the switch off
+  // leaves the rain unzoned; the editor's export keeps the category.
+  zones.rain = [{ x: 0, y: 0, w: 2, h: 2, mask: { ...saved, enabled: true } }];
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  const rainRect = renderFrame.world.rainRegions.getAt(0);
+  assert(renderFrame.world.rainZoned, 'rain zones apply while their switch is on');
+  assert.equal(JSON.stringify([rainRect.x, rainRect.y, rainRect.width, rainRect.height]), '[0,0,80,20]',
+    'a masked rain zone gives its mask rectangles');
+  assert.equal(format.validateZones(format.canonicalZones(zones)).length, 0, 'the rain category exports');
+  cfg.locations.enableRainZones = false;
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  assert.deepEqual([renderFrame.world.rainZoned, renderFrame.world.rainRegions.count], [false, 0],
+    'the switch off: rain over the whole screen');
+  delete cfg.locations.enableRainZones;
+  delete zones.rain;
   zones.collisions = [{ x: 0, y: 0, w: 1, h: 1, mask: { enabled: true, cell: [.5, .5], rects: [[0, 0, 1, 2]] } }];
   zones.snags = JSON.parse(JSON.stringify(zones.collisions)); map.refreshConfig(cfg.locations, resources);
   assert(!map.isCastableAt(10, 10) && map.isCastableAt(30, 10), 'empty obstacle-mask corner accepts casts despite coarse obstacle flag');

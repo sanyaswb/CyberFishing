@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.78 - Rain zones in the zone editor
+
+- TK-273 (spec 172 D4): the zone editor has a new category «Дощ»: it rains only inside these zones (drops land in them and are clipped to them); rings and ripples stay on the water. The test location has one rain zone over the whole map; the category's switch off rains over the whole screen.
+
 ## v0.50.77 - Release check before push
 
 - TK-272.1 (owner): the Pages release check builds the last commit, so it no longer runs in npm run check (before a commit it checked the previous commit); npm run check:release runs it before every push.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.69 - Direct pixel depth reading without grid stepping
 
 - TK-266.1: float, feeder and tackle read exact bottom depth directly from DepthMapReader at their continuous (x, y) coordinates without 40px grid stepping, while grid cells retain fixed central depths for DevTools and zone overview.
-
-## v0.50.68 - Depth map reader non-linear calibration
-
-- TK-266: depth map reader calibrated with non-linear piecewise interpolation matching the owner's exact color-to-depth control points (0.1m at rgb(254), 0.5m at rgb(217), 1.0m at rgb(147), 5.0m at rgb(54), 7.5m at rgb(35), 15.0m at rgb(10)), eliminating harsh depth transitions near the shore.

@@ -23,11 +23,11 @@ export class ZoneEditorState {
   spacingMeters = 1;
   cellGridOpacity = 0.25;
   depthOpacity = 0.7;
-  categories = { castable: false, collisions: false, snags: false, dynamic: false };
-  #selectedIndices = { castable: 0, collisions: 0, snags: 0, dynamic: 0 };
-  #all = { castable: false, collisions: false, snags: false, dynamic: false };
+  categories = { castable: false, collisions: false, snags: false, dynamic: false, rain: false };
+  #selectedIndices = { castable: 0, collisions: 0, snags: 0, dynamic: 0, rain: 0 };
+  #all = { castable: false, collisions: false, snags: false, dynamic: false, rain: false };
   selection;
-  editing = { castable: false, collisions: false, snags: false, dynamic: false };
+  editing = { castable: false, collisions: false, snags: false, dynamic: false, rain: false };
   hovered = new Set();
   boundsEditing = false;
   hoveredBound = -1;

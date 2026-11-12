@@ -433,7 +433,7 @@ export class ConfigSchemaValidator {
   #validateLocationDebugConfig() {
     const locations = this.config.locations || {};
     for (const [id, location] of Object.entries(locations.map || {})) {
-      for (const category of ["castable", "collisions", "snags", "dynamic"]) {
+      for (const category of ["castable", "collisions", "snags", "dynamic", "rain"]) {
         const zones = location?.zones?.[category];
         if (!Array.isArray(zones)) continue;
         zones.forEach((zone, index) => {

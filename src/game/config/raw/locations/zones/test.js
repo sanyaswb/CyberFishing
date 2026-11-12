@@ -13,4 +13,7 @@ export const ZONES = {
   dynamic: [
     { id: "fish_school_1", type: "buff", multiplier: 1.5, x: 0, y: 20, w: 1, h: 1, moving: true, speedX: 1.2, speedY: 0.8, bounds: [{ x: 0, y: 20, w: 64, h: 18 }] },
   ],
+  rain: [
+    { x: 0, y: 0, w: 64, h: 38 },
+  ],
 };

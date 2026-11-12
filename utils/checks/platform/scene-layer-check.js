@@ -728,6 +728,27 @@ async function checkRain() {
   assert.deepEqual([rain.status.dropPool, rain.status.ringPool], [300, 120], "the pools stay");
   frame({ settings: { ...settings, maxDrops: 400 } });
   assert.equal(rain.status.dropPool, 600, "a larger setting grows the pool");
+
+  // TK-273: rain zones. Drops land only inside the zones on screen and are clipped by their mask; rings stay on the
+  // water; no zone on screen: no new drops; the switch off: the whole screen again, no mask.
+  const mask = stage.children[2];
+  const zone = { x: 100, y: 50, width: 300, height: 400 };
+  const zoned = { ...world, weather: { ...world.weather, windDirection: 0 }, rainZoned: true,
+    rainRegions: { count: 1, getAt: () => zone } };
+  for (let index = 0; index < 90; index += 1) frame({ world: zoned });
+  assert.equal(drops.mask, mask, "zoned rain is clipped by the zones' mask");
+  assert.deepEqual(mask.ops.filter((op) => op[0] === "rect"), [["rect", 100, 50, 300, 400]], "the mask is the zone");
+  const zonedDrops = drops.gpuView().filter((particle) => particle.alpha > 0);
+  assert(zonedDrops.length > 0 && zonedDrops.every((particle) => particle.x >= zone.x - 1 && particle.x <= zone.x + zone.width + 1 &&
+    particle.y <= zone.y + zone.height + 1), "every drop falls toward a point inside the rain zone");
+  const opsBefore = mask.ops.length;
+  frame({ world: zoned });
+  assert.equal(mask.ops.length, opsBefore, "an unchanged zone does not redraw the mask");
+  const empty = { ...zoned, rainRegions: { count: 0, getAt: () => null } };
+  for (let index = 0; index < 60; index += 1) frame({ world: empty });
+  assert.equal(rain.status.drops, 0, "no rain zone: no drops");
+  frame({ world: { ...zoned, rainZoned: false } });
+  assert.equal(drops.mask, null, "the switch off: no mask, the whole screen");
 }
 
 async function checkWaterWaveField() {

@@ -245,6 +245,7 @@ export const CONFIG = {
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Зачепи (жовті зони)
     enableDynamicZones: true, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
+    enableRainZones: true, // Зони дощу (сині): дощ лише в них; вимкнено — дощ на весь екран (spec 172 D4)
     showChumZones: true, // Відображення зон прикормки (жовті)
     showCatchZone: false, // Відображення синьої зони
     showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
