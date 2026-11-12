@@ -393,6 +393,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "devtools-controls",
+    title: "DevTools controls: number field, choices and export commands",
+    file: "utils/checks/tooling/devtools-controls-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "devtools-links",
     title: "DevTools linked parameters",
     file: "utils/checks/tooling/dev-tools-linked-parameter-check.js",

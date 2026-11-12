@@ -2,6 +2,7 @@ import { DevToolsControlBindingRegistry } from "../services/dev_tools_control_bi
 import { DraggableButton } from "../../platform/browser/dom/draggable_button.js";
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
+import { NumberField } from "./controls/number_field.js";
 
 export class DevToolsUI {
   #panel;
@@ -351,30 +352,26 @@ export class DevToolsUI {
     const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
-    let inputElement;
-
     if (type === "number") {
-      inputElement = document.createElement("input");
-      inputElement.type = "number";
-      inputElement.step = "any";
-      inputElement.className = "devtools__input devtools__input--number";
-      inputElement.value = val;
-      inputElement.addEventListener("change", (e) =>
-        onChangeCallback(parseFloat(e.target.value) || 0),
-      );
-    } else {
-      inputElement = document.createElement("input");
-      inputElement.type = "text";
-      inputElement.className = "devtools__input devtools__input--text";
-      inputElement.value = val;
-      inputElement.addEventListener("change", (e) => {
-        let newVal = e.target.value;
-        if (type === "array") {
-          newVal = newVal.split(",").map((n) => parseFloat(n.trim()) || 0);
-        }
-        onChangeCallback(newVal);
-      });
+      // TK-282: the DEV number field (step from the value's precision, an invalid entry is never written).
+      const field = new NumberField({ value: val, onCommit: onChangeCallback, ariaLabel: String(key), documentRef: document });
+      this.#controlBindings.register(bindingPath, (value) => field.setValue(value), row);
+      row.appendChild(field.element);
+      this.#insertTreeNode(parentElement, row, 0);
+      return;
     }
+
+    const inputElement = document.createElement("input");
+    inputElement.type = "text";
+    inputElement.className = "devtools__input devtools__input--text";
+    inputElement.value = val;
+    inputElement.addEventListener("change", (e) => {
+      let newVal = e.target.value;
+      if (type === "array") {
+        newVal = newVal.split(",").map((n) => parseFloat(n.trim()) || 0);
+      }
+      onChangeCallback(newVal);
+    });
 
     this.#controlBindings.register(bindingPath, (value) => {
       inputElement.value = Array.isArray(value) ? value.join(", ") : value;

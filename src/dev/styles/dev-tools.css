@@ -220,9 +220,63 @@
   font-family: var(--ui-font-mono);
 }
 
+/* TK-282: the number field [ − | text | + ]; one frame around the three parts, the text as wide as its number
+   (NumberField sets --devtools-number-chars). */
+.devtools__number {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: stretch;
+  height: 28px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: #0b1520;
+  overflow: hidden;
+}
+.devtools__number:focus-within { border-color: var(--ui-info); }
+.devtools__number--error,
+.devtools__number--error:focus-within { border-color: var(--ui-danger); }
 .devtools__input--number {
-  flex: 0 0 70px;
-  width: 70px;
+  box-sizing: content-box;
+  width: calc(var(--devtools-number-chars, 4) * 1ch);
+  min-width: 0;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 13px;
+}
+.devtools__input--number:focus-visible { outline: 0; }
+.devtools__number-step {
+  position: relative;
+  flex: 0 0 26px;
+  padding: 0;
+  border: 0;
+  background: rgba(var(--ui-accent-rgb), 0.1);
+  color: var(--ui-text);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--ui-duration-control) var(--ui-ease-standard);
+}
+/* The minus and plus are drawn, not typed: the same on every platform. */
+.devtools__number-step::before,
+.devtools__number-step--up::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 2px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+.devtools__number-step--up::after { transform: translate(-50%, -50%) rotate(90deg); }
+.ui-surface--desktop-hover .devtools__number-step:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__number-step:active { background: rgba(var(--ui-accent-rgb), 0.28); }
+.devtools__number-step:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (pointer: coarse) {
+  .devtools__number { height: 36px; }
+  .devtools__number-step { flex-basis: 36px; }
 }
 
 .devtools__input--text {
