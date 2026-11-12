@@ -1,4 +1,4 @@
-import { containsRectangle, findRectangleContainer } from "../../engine/math/rectangle_bounds.js";
+import { clampRectangleToArea, containsRectangle, findRectangleContainer } from "../../engine/math/rectangle_bounds.js";
 import { Vector2 } from "../../engine/math/vector2.js";
 import { gridMaskBounds, gridMaskContains } from "../../engine/geometry/grid_mask.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
@@ -31,6 +31,7 @@ export class ZoneEditorDragController {
   #drag = null;
   #cursor = "";
   #point = new Vector2();
+  #clamped = { x: 0, y: 0, w: 0, h: 0 };
   #listeners = null;
   #hovered = [];
   #maskEditor;
@@ -307,7 +308,7 @@ export class ZoneEditorDragController {
     if (!state.enabled || !state.editsLoadedLocation || state.locationId !== drag.path[3] ||
       !state.isEditable(drag.category) || !state.isZoneSelected(drag.category, drag.index) ||
       this.#config.locations[ZONE_PHYSICS_KEYS[drag.category]] === false) return false;
-    if (drag.kind === "bounds" && (!state.boundsEditing || state.selection.category !== "dynamic")) return false;
+    if (drag.kind === "bounds" && !state.boundsEditing) return false;
     const current = this.#config.locations.map[state.locationId]?.zones?.[drag.category]?.[drag.index];
     return !!current && (drag.category !== "dynamic" || current.id === drag.zoneId);
   }
@@ -376,18 +377,21 @@ export class ZoneEditorDragController {
 
   #scanBounds(px, py, location, cell, toDesign) {
     const state = this.#state;
-    if (!state.boundsEditing || !state.isEditable("dynamic") || this.#config.locations.enableDynamicZones === false || state.selection.category !== "dynamic") return null;
-    const index = state.selection.index, zones = location.zones.dynamic || NO_ZONES;
+    if (!state.boundsEditing || this.#config.locations.enableDynamicZones === false) return null;
+    const index = state.selectedIndex("dynamic"), zones = location.zones.dynamic || NO_ZONES;
     const body = this.#map.getDynamicZones().find(zone => zone.id === zones[index]?.id);
     if (!body?.bounds) return null;
     const bounds = Array.isArray(body.bounds) ? body.bounds : [body.bounds];
     const occupied = gridMaskBounds(body.mask, body.x, body.y, body.w, body.h, {});
+    // TK-276: an area edge beyond the map is grabbed where the map ends (the drawn handles sit there too).
+    const { width: mapWidth, height: mapHeight } = this.#config.locations.baseResolution;
     for (let number = 0; number < bounds.length; number++) {
-      const bound = bounds[number];
-      const topLeft = this.#projector.virtualToScreen(bound.x * cell, bound.y * cell, this.#point);
+      // The handles sit on the area's part inside the map; the drag keeps working on the area itself.
+      const bound = bounds[number], shown = clampRectangleToArea(bound, mapWidth / cell, mapHeight / cell, this.#clamped);
+      const topLeft = this.#projector.virtualToScreen(shown.x * cell, shown.y * cell, this.#point);
       const sx1 = topLeft.x, sy1 = topLeft.y;
-      const bottomRight = this.#projector.virtualToScreen((bound.x + bound.w) * cell, (bound.y + bound.h) * cell, this.#point);
-      const hit = this.#hitZone(bound, px, py, sx1, sy1, bottomRight.x, bottomRight.y);
+      const bottomRight = this.#projector.virtualToScreen((shown.x + shown.w) * cell, (shown.y + shown.h) * cell, this.#point);
+      const hit = this.#hitZone(shown, px, py, sx1, sy1, bottomRight.x, bottomRight.y);
       if (!hit) continue;
       return { ...hit, category: "dynamic", index, zones, zoneId: zones[index].id, kind: "bounds", boundIndex: number, mustContainBody: containsRectangle(bound, occupied),
         path: ["CONFIG", "locations", "map", state.locationId, "zones", "dynamic"],

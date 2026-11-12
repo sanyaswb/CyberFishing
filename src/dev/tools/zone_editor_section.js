@@ -404,7 +404,7 @@ export class ZoneEditorSection {
         }
         this.#renderTree(fields, external, [...path, index]);
       } else { const fields = { ...displayed }; delete fields.mask; this.#renderTree(fields, external, [...path, index]); }
-      if (category === "dynamic") ui.createInfoRow("Область руху", "Форма нової зони обирається перед додаванням. Для кола задається діаметр, для квадрата — сторона. Клацніть рухому зону на мапі, щоб показати ручки її області руху. Тягніть край, кут або середину області; вона завжди містить усе тіло зони.", list);
+      if (category === "dynamic") ui.createInfoRow("Область руху", "Форма нової зони обирається перед додаванням. Для кола задається діаметр, для квадрата — сторона. Область руху вибраної тут зони (номер зони вище) редагується одразу, щойно ввімкнено «Редагувати рухомі»: тягніть край, кут або середину області; вона завжди містить усе тіло зони. Край області за межами мапи береться на краю мапи.", list);
       // Any zone can go, the last one too (TK-051); the refilled list then has no delete button. Not under «Всі».
       if (!all) ui.createButtonRow("Видалити вибрану зону", external, () => {
         this.#update(path, zones.filter((_, number) => number !== index));

@@ -53,7 +53,7 @@ export class ZoneMaskEditor {
     this.stop(); this.message = "";
     const s = this.#state, source = this.#source(category, index);
     if (!source || !s.enabled || !s.editsLoadedLocation || !s.isEditable(category) || this.#config.locations[ZONE_PHYSICS_KEYS[category]] === false) return false;
-    s.select(category, index); s.boundsEditing = false; s.setHovered([]);
+    s.select(category, index); s.setHovered([]);
     this.#draft = { category, index, location: s.locationId, source, reversed: false };
     try {
       const geometry = this.geometry();

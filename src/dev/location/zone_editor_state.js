@@ -29,7 +29,6 @@ export class ZoneEditorState {
   selection;
   editing = { castable: false, collisions: false, snags: false, dynamic: false, rain: false };
   hovered = new Set();
-  boundsEditing = false;
   hoveredBound = -1;
   #zoneListeners = new Set();
 
@@ -58,9 +57,14 @@ export class ZoneEditorState {
     this.#all[category] = true;
     this.selection.category = category;
     this.hovered.clear();
-    this.boundsEditing = false;
     this.hoveredBound = -1;
     this.revision++;
+  }
+
+  // TK-276 (spec 173 F4): the selected moving zone's movement area is editable whenever moving zones are being edited
+  // (no click on the body first, and choosing another zone elsewhere does not take it away).
+  get boundsEditing() {
+    return this.enabled === true && this.editing.dynamic === true;
   }
 
   setFlag(key, value) {
@@ -70,7 +74,7 @@ export class ZoneEditorState {
     const next = value === true;
     if (this[key] === next) return;
     this[key] = next;
-    if (key === "enabled" && !next) { this.boundsEditing = false; this.hoveredBound = -1; }
+    if (key === "enabled" && !next) this.hoveredBound = -1;
     // Editor transitions own the automatic grid: on = map cells, off = no grid.
     if (key === "enabled") { this.cellGrid = next; this.grid = false; }
     if (key === "cellGrid" && next) this.grid = false;
@@ -94,7 +98,6 @@ export class ZoneEditorState {
     this.selection.category = category;
     this.#selectedIndices[category] = next;
     this.hovered.clear();
-    this.boundsEditing = false;
     this.hoveredBound = -1;
     this.revision++;
   }
@@ -115,7 +118,6 @@ export class ZoneEditorState {
   clearZoneMarks() {
     for (const category of Object.keys(this.editing)) this.editing[category] = false;
     this.hovered.clear();
-    this.boundsEditing = false;
     this.hoveredBound = -1;
     this.selection.category = "castable";
     for (const category of Object.keys(this.#selectedIndices)) { this.#selectedIndices[category] = 0; this.#all[category] = false; }
@@ -139,14 +141,14 @@ export class ZoneEditorState {
     const next = value === true;
     if (this.editing[category] === next) return;
     this.editing[category] = next;
-    if (category === "dynamic" && !next) { this.boundsEditing = false; this.hoveredBound = -1; }
+    if (category === "dynamic" && !next) this.hoveredBound = -1;
     if (!next) for (const key of this.hovered) if (key.startsWith(category + ":")) this.hovered.delete(key);
     this.revision++;
   }
 
+  // A press on a moving body selects it, and with it the area whose handles are shown.
   selectBounds(index) {
     this.select("dynamic", index, { keepAll: true });
-    if (!this.boundsEditing) { this.boundsEditing = true; this.revision++; }
   }
 
   setHoveredBound(index) {

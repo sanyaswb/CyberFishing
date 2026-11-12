@@ -1258,7 +1258,9 @@ controlUI.dispose();
   step(1000); assert.equal(liveMap.getDynamicZones()[0].x, 2, 'enabling category editing pauses actual game motion');
   const frame = {}; geo.buildInto(frame);
   assert.equal(frame.annotations.overlay.rectCount, 2, 'one live body per dynamic zone with editing and visibility together');
-  assert(!frame.annotations.rects.slice(0, frame.annotations.rectCount).some(rect => rect.lineWidth === 2), 'no static editable copies');
+  // No static editable copies of the bodies; TK-276: the selected zone's movement area is outlined as editable at once.
+  assert.equal(JSON.stringify(frame.annotations.rects.slice(0, frame.annotations.rectCount).filter(rect => rect.lineWidth === 2)
+    .map(rect => [rect.x, rect.y, rect.width, rect.height])), '[[0,0,400,400]]', 'no static editable copies; only the selected area');
   assert.equal(frame.annotations.overlay.rects[0].x, 80, 'drawing uses the current game position');
   const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => liveMap });
   assert.equal(commands.readDynamicZones('live')[0].x, 2, 'parameter fields read current coordinates');
@@ -1936,6 +1938,48 @@ controlUI.dispose();
       l.showPoleFightSector === false, "the game switches it turned on are off again");
     allState.setFlag("enabled", true); allState.setEditing("snags", true); editAll(true); editAll(false);
     assert(allState.enabled && allState.isEditable("snags") && !allState.isEditable("castable"), "what was on before stays on");
+  }
+  // TK-276 (spec 173 F4), reproduced on the test location's real zones: with only «Редагувати рухомі» on, the
+  // selected moving zone's area (the whole water, { x: 0, y: 20, w: 64, h: 18 }: below the map's bottom, 36 cells) is
+  // editable at once — no click on the body first — and its edge beyond the map is grabbed at the map's edge.
+  {
+    const { ZONES } = load("src/game/config/raw/locations/zones/test.js");
+    const { LocationMap } = load("src/game/domain/locations/location_map.js");
+    const { ZoneEditorDragController } = load("src/dev/location/zone_editor_drag_controller.js");
+    const { ZoneEditorConfigEdits } = load("src/dev/location/zone_editor_config_edits.js");
+    const cfg = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 },
+      enableCastable: true, enableDynamicZones: true, map: { test: { depthBounds: { min: 1, max: 5 },
+        zones: JSON.parse(JSON.stringify(ZONES)) } } } };
+    const map = new LocationMap("test", cfg.locations, { next: () => 0 }, {});
+    const editState = new ZoneEditorState(); editState.loadedLocationId = "test"; editState.setLocation("test");
+    editState.setFlag("enabled", true); editState.setEditing("dynamic", true);
+    const scale = 0.5;
+    const projector = { update() {}, getScale: () => scale, getCanvasWidth: () => 1280,
+      virtualToScreen: (x, y, out) => out ? out.set(x * scale, y * scale) : { x: x * scale, y: y * scale },
+      screenToVirtual: (x, y, out) => out ? out.set(x / scale, y / scale) : { x: x / scale, y: y / scale } };
+    const commands = new ZoneEditorConfigEdits({ config: cfg, getMap: () => map });
+    const write = (path, value) => {
+      const command = commands.prepare(path, value);
+      let target = cfg; for (const key of command.path.slice(1, -1)) target = target[key]; target[command.path.at(-1)] = command.value;
+      map.refreshConfig(cfg.locations, {});
+    };
+    let layer;
+    const element = () => ({ listeners: new Map(), classList: { add() {}, remove() {} },
+      addEventListener(type, fn) { this.listeners.set(type, fn); }, removeEventListener() {}, remove() {} });
+    const tool = new ZoneEditorDragController({ state: editState, map, projector, config: cfg, canvasMetrics: { width: 1280, height: 720 },
+      getCanvas: () => ({ getBoundingClientRect: () => ({ left: 0, top: 0, width: 1280, height: 720 }) }),
+      documentTarget: { createElement: element, body: element() }, mountNode: { prepend: node => { layer = node; } }, writeZones: write });
+    tool.sync();
+    const press = (type, x, y) => layer.listeners.get(type)({ clientX: x, clientY: y, pointerId: 3, button: 0, preventDefault() {} });
+    const body = map.getDynamicZones()[0];
+    const x = (body.x * 40 + 400) % 2400 * scale + 40; // a column away from the body
+    press("pointermove", x, 400); press("pointerdown", x, 400); press("pointermove", x, 360); press("pointerup", x, 360);
+    let area = cfg.locations.map.test.zones.dynamic[0].bounds[0];
+    assert.deepEqual([area.y, area.h], [18, 20], "the area's top edge is dragged with no click on the body first");
+    press("pointermove", x, 718); press("pointerdown", x, 718); press("pointermove", x, 700); press("pointerup", x, 700);
+    area = cfg.locations.map.test.zones.dynamic[0].bounds[0];
+    assert.equal(area.y + area.h, 35, "an area edge beyond the map is grabbed at the map's edge");
+    tool.dispose();
   }
   console.log("Castable fishing zones passed: real readings (Net, landing policy, fish trigger), hand chum band and far-line drag into chumCastDistance, line length for the line radius and the game's sector from a draggable conditional float, rod's real position, test chum zones as game chum records (move, resize), game show switches, own section, polygon on both renderers.");
 })().catch((error) => {

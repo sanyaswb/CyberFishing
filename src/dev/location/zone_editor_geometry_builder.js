@@ -1,5 +1,6 @@
 import { Vector2 } from "../../engine/math/vector2.js";
 import { compileGridMask } from "../../engine/geometry/grid_mask.js";
+import { clampRectangleToArea } from "../../engine/math/rectangle_bounds.js";
 import { ZONE_CATEGORY_COLORS, ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
 
 const COLORS = Object.freeze(Object.fromEntries(Object.entries(ZONE_CATEGORY_COLORS)
@@ -30,6 +31,7 @@ export class ZoneEditorGeometryBuilder {
   #canvasMetrics; #viewportWidth = 0; #viewportHeight = 0;
   #drawDependent;
   #point = new Vector2();
+  #clamped = { x: 0, y: 0, w: 0, h: 0 };
   #origin = new Vector2();
   #metric = null;
   #revision = -1; #mapRevision = -1; #scale = NaN; #x = NaN; #y = NaN;
@@ -171,9 +173,13 @@ export class ZoneEditorGeometryBuilder {
         }
         if (zone.bounds) {
           const bounds = Array.isArray(zone.bounds) ? zone.bounds : [zone.bounds];
-          const selected = category === "dynamic" && editable && state.boundsEditing && state.selection.category === "dynamic" && state.selection.index === index;
+          // TK-276: the area of the moving zone chosen in its list is editable while moving zones are edited; an edge
+          // beyond the map is drawn (and grabbed) where the map ends.
+          const selected = category === "dynamic" && editable && state.boundsEditing && state.selectedIndex("dynamic") === index;
+          const { width: mapWidth, height: mapHeight } = this.#config.locations.baseResolution;
           for (let boundIndex = 0; boundIndex < bounds.length; boundIndex++) {
-            const b = bounds[boundIndex], active = selected && state.hoveredBound === boundIndex;
+            const b = clampRectangleToArea(bounds[boundIndex], mapWidth / cell, mapHeight / cell, this.#clamped);
+            const active = selected && state.hoveredBound === boundIndex;
             const x = b.x * cell, y = b.y * cell, w = b.w * cell, h = b.h * cell;
             this.#rect(x, y, w, h, color, this.#model, selected ? EDITABLE_LINE_WIDTH : 1, active ? SHOWN.fill : 0, selected ? EDITABLE_STROKE : SHOWN.stroke);
             if (selected) this.#handles(x, y, w, h, color);
