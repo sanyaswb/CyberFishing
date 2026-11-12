@@ -4,6 +4,7 @@ import { KeepnetDevSection } from "./keepnet_dev_section.js";
 import { LoadStepperDevSection } from "./load_stepper_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
+import { DevParameterSchema } from "./config/dev_parameter_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
 import { SpineBoatDevSection } from "./spine_boat_dev_section.js";
@@ -25,6 +26,7 @@ export class DevTools {
   #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
   #parameterAliases;
+  #parameterSchema;
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
   #grantCatalogItem;
@@ -155,6 +157,12 @@ export class DevTools {
     this.#configValidation = configValidation;
     this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
     this.#parameterAliases = new DevToolsParameterAliasRegistry();
+    // The species list for parameters that name a fish: name, id and the species' image (level 1) where the game has one.
+    this.#parameterSchema = new DevParameterSchema({ sources: {
+      fish: () => (Array.isArray(this.#catalogs.fishes) ? this.#catalogs.fishes : []).filter((fish) => fish?.id)
+        .map((fish) => ({ value: fish.id, label: fish.name || fish.id, hint: fish.id,
+          imageUrl: this.#keepnet?.imagePathOf?.({ id: fish.id, level: 1 }) || "" })),
+    } });
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
@@ -889,35 +897,20 @@ export class DevTools {
   }) {
     const onChange = (newValue) =>
       this.#updateConfigValue(canonicalPath, newValue);
-    if (["CONFIG.ui.inventorySelector.size", "CONFIG.ui.inventorySelector.openSize"].includes(canonicalPath.join("."))) {
-      this.#ui.createEnumToggleRow(key, ["1", "2", "3"], String(value), parentElement,
-        next => onChange(Number(next)), displayPath, canonicalPath);
-      return;
-    }
-    const selectorChoices = {
-      "CONFIG.ui.inventorySelector.compactShape": ["half", "arc"],
-      "CONFIG.ui.inventorySelector.compactPlacement": ["center", "right", "left"],
-      "CONFIG.ui.inventorySelector.compactActionsSide": ["right", "left"],
-    }[canonicalPath.join(".")];
-    if (selectorChoices) {
-      this.#ui.createEnumToggleRow(key, selectorChoices, value, parentElement, onChange, displayPath, canonicalPath);
+    // TK-283: parameters with a list of values are described in one place (DevParameterSchema).
+    const described = this.#parameterSchema.describe(canonicalPath, value);
+    if (described) {
+      const label = this.#formatDevToolsKey(key, canonicalPath);
+      if (described.control === "choice") {
+        this.#ui.createChoiceRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath);
+      } else {
+        this.#ui.createSegmentsRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath);
+      }
       return;
     }
     if (typeof value === "boolean") {
       this.#ui.createSwitcherRow(
         key,
-        value,
-        parentElement,
-        onChange,
-        displayPath,
-        canonicalPath,
-      );
-      return;
-    }
-    if (typeof value === "string" && (key === "currentMethod" || key === "defaultSide")) {
-      this.#ui.createEnumToggleRow(
-        key,
-        key === "defaultSide" ? ["right", "left"] : ["hand", "boat"],
         value,
         parentElement,
         onChange,

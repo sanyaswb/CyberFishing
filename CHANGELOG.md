@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.89 - DevTools list picker
+
+- TK-283 (spec 174 A3): Fixed Catch's fish is chosen from a list (image, name, id; search by name or id; arrows, Enter, Escape) instead of typed; an id the game does not have stays visible and marked. Parameters with up to four values (inventory selector size and layout, delivery method, split side) show every option as a segmented switch instead of a button that cycles.
+
 ## v0.50.88 - DevTools number field
 
 - TK-282 (spec 174 A2): DevTools number fields are a field with − / + buttons: the step follows the value's precision (0.1 -> 0.2, 0.25 -> 0.26, 40 -> 41), Shift steps ten times further, Alt a tenth; arrow up/down step, Enter writes, Escape restores; a decimal comma is accepted; text that is not a number is never written (it used to write 0); holding a button repeats.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.80 - Zone editing goes fullscreen
 
 - TK-275 (spec 173 F1): switching zone editing on takes the page fullscreen; switching it off leaves fullscreen only when the editor entered it (a fullscreen chosen with ⛶ stays). The game's ⛶ button and the editor share one fullscreen port.
-
-## v0.50.79 - DevTools open only on touching the left edge
-
-- TK-274 (spec 173 F2): while the zone editor hides the DevTools button, the panel opens only by pressing the very left edge (8 px) or swiping right from it; a pointer passing over the edge while dragging zones no longer opens it.

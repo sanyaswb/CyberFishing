@@ -120,4 +120,107 @@ assert.equal(parseDecimal(".5"), 0.5);
 assert.equal(parseDecimal("1e3"), 1000);
 assert.equal(parseDecimal("Infinity"), null);
 
-console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons.");
+// --- TK-283: lists ----------------------------------------------------------------------------------------------------
+const { DevParameterSchema } = runtime.importModule("src/dev/tools/config/dev_parameter_schema.js");
+const byClass = (name, root) => document.all((element) => element.className.split(" ").includes(name), root);
+// The real species and the real config: every rule of the schema must describe a parameter the game has.
+const { FISH_DB } = runtime.importModule("src/game/config/databases/fish_database.js");
+const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+const fishOptions = FISH_DB.map((fish) => ({ value: fish.id, label: fish.name, hint: fish.id, imageUrl: "" }));
+const schema = new DevParameterSchema({ sources: { fish: () => fishOptions } });
+{
+  const fishId = CONFIG.debug.fixedCatch.fishId;
+  const described = schema.describe(["CONFIG", "debug", "fixedCatch", "fishId"], fishId);
+  assert.equal(described.control, "choice", "Fixed Catch's fish is chosen from a list");
+  assert.ok(described.options.some((option) => option.value === fishId), "the configured fish is one of the species");
+  assert.equal(described.options.length, FISH_DB.length);
+  for (const key of ["size", "openSize", "compactShape", "compactPlacement", "compactActionsSide"]) {
+    const value = CONFIG.ui.inventorySelector[key];
+    const options = schema.describe(["CONFIG", "ui", "inventorySelector", key], value)?.options.map((option) => option.value);
+    assert.ok(options?.includes(value), `inventorySelector.${key} = ${value} is one of its listed values`);
+  }
+  assert.equal(schema.describe(["CONFIG", "debug", "inventorySplit", "defaultSide"], "right").control, "segments");
+  assert.equal(schema.describe(["CONFIG", "debug", "fixedCatch", "weight"], 0.8), null, "other parameters keep their fields");
+  assert.equal(new DevParameterSchema().describe(["CONFIG", "debug", "fixedCatch", "fishId"], fishId), null,
+    "without the species list the parameter stays a text field");
+}
+function choiceRow(options, value, path) {
+  const host = createElement("div"); document.body.appendChild(host);
+  const written = [];
+  ui.createChoiceRow("fishId", options, value, host, (next) => written.push(next), path);
+  const root = byClass("devtools__choice", host)[0];
+  const button = byClass("devtools__choice-button", root)[0];
+  return { host, root, button, written, options: () => byClass("devtools__choice-option", root),
+    search: () => byClass("devtools__choice-search", root)[0] };
+}
+{
+  const first = fishOptions[0], second = fishOptions[1];
+  const row = choiceRow(fishOptions, first.value, ["test", "fish"]);
+  assert.ok(row.button.textContent.includes(first.label), "the closed field shows the chosen fish by name");
+  assert.equal(row.options().length, 0, "the list is closed until asked for");
+  row.button.click();
+  assert.equal(row.button.getAttribute("aria-expanded"), "true");
+  assert.equal(row.options().length, fishOptions.length, "the list offers every species");
+  assert.equal(row.options()[0].getAttribute("aria-selected"), "true", "the current fish is marked");
+  if (fishOptions.length >= 8) {
+    // Searching by id finds the fish; nothing typed by hand reaches the config.
+    row.search().value = second.hint.toUpperCase(); row.search().fire("input");
+    assert.ok(row.options().length >= 1 && row.options().length < fishOptions.length, "typing narrows the list");
+    assert.ok(row.options()[0].textContent.includes(second.label));
+    row.search().value = "zzzz-no-such-fish"; row.search().fire("input");
+    assert.equal(row.options().length, 0);
+    row.root.fire("keydown", { key: "Enter", target: row.search() });
+    assert.deepEqual(row.written, [], "Enter on an empty result writes nothing");
+    row.search().value = ""; row.search().fire("input");
+  }
+  // Keyboard: down to the second fish, Enter chooses it.
+  const down = row.root.fire("keydown", { key: "ArrowDown" });
+  assert.equal(down.prevented && down.stopped, true, "the list's arrows are the list's (not the page's, not the game's)");
+  row.root.fire("keydown", { key: "Enter" });
+  assert.deepEqual(row.written, [second.value], "the chosen fish's id is written");
+  assert.equal(row.options().length, 0, "choosing closes the list");
+  assert.ok(row.button.textContent.includes(second.label));
+  assert.equal(document.activeElement, row.button, "focus returns to the field");
+  // Pointer: open, press a fish.
+  row.button.click();
+  row.options()[0].fire("click");
+  assert.deepEqual(row.written, [second.value, first.value]);
+  row.button.click(); row.options()[0].fire("click");
+  assert.deepEqual(row.written, [second.value, first.value], "choosing the current fish again writes nothing");
+  // Escape and focus leaving close without a change.
+  row.button.click(); row.root.fire("keydown", { key: "Escape" });
+  assert.equal(row.options().length, 0);
+  row.button.click(); row.root.fire("focusout", { relatedTarget: document.body });
+  assert.equal(row.options().length, 0, "focus leaving the field closes the list");
+  assert.deepEqual(row.written, [second.value, first.value]);
+  // A value changed elsewhere is shown.
+  ui.syncValue(["test", "fish"], second.value);
+  assert.ok(row.button.textContent.includes(second.label));
+}
+{
+  const row = choiceRow(fishOptions, "no_such_fish", ["test", "unknown-fish"]);
+  assert.ok(row.button.textContent.includes("no_such_fish"), "an id the game does not have stays visible");
+  assert.equal(byClass("devtools__choice-hint--unknown", row.root).length, 1, "and is marked as unknown");
+  assert.deepEqual(row.written, []);
+}
+{
+  const host = createElement("div"); document.body.appendChild(host);
+  const written = [];
+  const options = [1, 2, 3].map((value) => ({ value, label: String(value) }));
+  ui.createSegmentsRow("size", options, 2, host, (next) => written.push(next), ["test", "size"]);
+  const segments = byClass("devtools__segment", host);
+  assert.deepEqual(segments.map((segment) => segment.textContent), ["1", "2", "3"], "every option is visible at once");
+  assert.deepEqual(segments.map((segment) => segment.getAttribute("aria-checked")), ["false", "true", "false"]);
+  segments[2].click();
+  assert.deepEqual(written, [3], "one press selects an option and writes its value (a number stays a number)");
+  segments[2].click();
+  assert.deepEqual(written, [3], "pressing the selected option writes nothing");
+  const key = segments[2].fire("keydown", { key: "ArrowRight" });
+  assert.deepEqual(written, [3, 1], "the arrows move the selection round the group");
+  assert.equal(key.prevented && key.stopped, true);
+  ui.syncValue(["test", "size"], 2);
+  assert.equal(segments[1].getAttribute("aria-checked"), "true", "a value changed elsewhere is shown");
+  assert.deepEqual(written, [3, 1]);
+}
+
+console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options.");

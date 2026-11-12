@@ -3,6 +3,8 @@ import { DraggableButton } from "../../platform/browser/dom/draggable_button.js"
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 import { NumberField } from "./controls/number_field.js";
+import { SegmentedControl } from "./controls/segmented_control.js";
+import { ChoiceField } from "./controls/choice_field.js";
 
 export class DevToolsUI {
   #panel;
@@ -439,38 +441,29 @@ export class DevToolsUI {
     this.#insertTreeNode(parentElement, row, 0);
   }
 
-  createEnumToggleRow(
-    key,
-    optionsArray,
-    currentValue,
-    parentElement,
-    onChangeCallback,
-    path = null,
-    bindingPath = path,
-  ) {
+  // TK-283: a short list with every option visible; options: [{ value, label }].
+  createSegmentsRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path) {
     const row = document.createElement("div");
-    row.className = "devtools__row";
+    row.className = "devtools__row devtools__row--wrap";
     this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(key, path));
+    const control = new SegmentedControl({ options, value: currentValue, onCommit: onChangeCallback,
+      ariaLabel: String(key), documentRef: document });
+    this.#controlBindings.register(bindingPath, (value) => control.setValue(value), row);
+    row.appendChild(control.element);
+    this.#insertTreeNode(parentElement, row, 0);
+  }
 
-    const label = this.#createLabelElement(key, path);
-    row.appendChild(label);
-
-    const btn = document.createElement("button");
-    btn.className = "devtools__enum";
-    btn.innerText = currentValue;
-
-    btn.addEventListener("click", () => {
-      let currentIndex = optionsArray.indexOf(btn.innerText);
-      let nextIndex = (currentIndex + 1) % optionsArray.length;
-      let newVal = optionsArray[nextIndex];
-      btn.innerText = newVal;
-      onChangeCallback(newVal);
-    });
-    this.#controlBindings.register(bindingPath, (value) => {
-      btn.innerText = String(value);
-    }, row);
-
-    row.appendChild(btn);
+  // TK-283: a list picker (name, id, image, search); options: [{ value, label, hint, imageUrl }].
+  createChoiceRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path) {
+    const row = document.createElement("div");
+    row.className = "devtools__row devtools__row--wrap";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(key, path));
+    const field = new ChoiceField({ options, value: currentValue, onCommit: onChangeCallback,
+      ariaLabel: String(key), documentRef: document });
+    this.#controlBindings.register(bindingPath, (value) => field.setValue(value), row);
+    row.appendChild(field.element);
     this.#insertTreeNode(parentElement, row, 0);
   }
 
