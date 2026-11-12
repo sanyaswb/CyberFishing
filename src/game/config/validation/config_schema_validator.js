@@ -1233,32 +1233,6 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.canvas.water.floatRocking.${key}`, rocking[key], { min, max });
       this.#requireParameterLabel(`canvas.water.floatRocking.${key}`);
     }
-    this.#validateWaterGlintConfig(cfg.glints);
-  }
-
-  // Glints on the water (spec 172 D2): every value has a DEV label, the owner tunes them live.
-  #validateWaterGlintConfig(glints) {
-    const path = "canvas.water.glints";
-    if (!glints || typeof glints !== "object") { this.#error(`CONFIG.${path}`, "missing water glints config"); return; }
-    this.#requireParameterLabel(path);
-    this.#requireBooleanWithLabel(`${path}.enabled`, glints.enabled);
-    for (const [key, min, max] of [["maxSparkles", 0, 5000], ["maxGlow", 0, 5000], ["weatherDamping", 0, 1]]) {
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, glints[key], { min, max });
-      this.#requireParameterLabel(`${path}.${key}`);
-    }
-    for (const mode of ["day", "sunPath", "moonPath"]) {
-      const cfg = glints[mode];
-      if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}.${mode}`, "missing glint mode"); continue; }
-      this.#requireParameterLabel(`${path}.${mode}`);
-      const ranges = [["intensity", 0, 5], ["threshold", 0, 0.99], ["sizePx", 0, 64], ["sizeFarPx", 0, 64]];
-      if (mode !== "day") ranges.push(["widthFar", 0, 1], ["widthNear", 0, 1], ["softness", 0, 1], ["glow", 0, 2]);
-      for (const [key, min, max] of ranges) {
-        this.#requireFiniteNumber(`CONFIG.${path}.${mode}.${key}`, cfg[key], { min, max });
-        this.#requireParameterLabel(`${path}.${mode}.${key}`);
-      }
-      this.#requirePattern(`CONFIG.${path}.${mode}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
-      this.#requireParameterLabel(`${path}.${mode}.color`);
-    }
   }
 
   #requireParameterLabel(path) {

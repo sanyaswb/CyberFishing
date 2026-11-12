@@ -22,7 +22,7 @@ const NODE_MODULES = "node_modules/";
 const LICENCE_FILE = /^(?:licen[cs]e|copying)(?:\.(?:md|txt))?$/iu;
 
 // The scene layer's library surface (spec 103): only what the scene uses, extended per stage (spec 172: Particle and
-// ParticleContainer for the water's glints).
+// ParticleContainer for the scene's particle effects, rain D4).
 // Ticker: the runtime module keeps Pixi's own tickers stopped, so GameLoop stays the only frame driver.
 // Stage 4 (spec 107): Rectangle (texture frames of the static rod) and the spine-core classes SpineScene drives, from
 // the same copy of spine-core that spine-pixi-v8 renders.
@@ -34,7 +34,7 @@ const SCENE_EXPORTS = Object.freeze({
     "Physics", "PointAttachment", "Skeleton", "SkeletonJson", "Spine", "SpineTexture", "TextureAtlas", "TextureFilter"],
 });
 // The layer passes skipExtensionImports, so Pixi's browser extensions (events, accessibility, DOM) never register;
-// the filter system is the one of them the scene needs, so the entry registers it. Spec 172 D2 (the water's glints):
+// the filter system is the one of them the scene needs, so the entry registers it. Spec 172 (particle effects, rain D4):
 // ParticleContainer draws only through its render pipes, which Pixi 8 registers in pixi.js/particle-container
 // (scene/particle-container/init: GlParticleContainerPipe and the others), not among the renderer's default pipes.
 const SCENE_SIDE_EFFECTS = Object.freeze(["pixi.js/filters", "pixi.js/particle-container"]);

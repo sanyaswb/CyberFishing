@@ -6,7 +6,6 @@ import { PixiFloatRenderer } from "./pixi_float_renderer.js";
 import { PixiLineRenderer } from "./pixi_line_renderer.js";
 import { PixiRodRenderer } from "./pixi_rod_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
-import { PixiWaterGlintRenderer } from "./pixi_water_glint_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -225,9 +224,7 @@ export class PixiSceneLayer {
         renderer: app.renderer });
       this.#water = new PixiWaterRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         documentTarget: this.#documentTarget, getSettings: this.#getWaterSettings,
-        getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize,
-        // Spec 172 D2: the glints on the water's crests, drawn right over the water.
-        glints: new PixiWaterGlintRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget }) });
+        getWakeSettings: this.#getWakeSettings, getImageSize: this.#getImageSize });
       this.#texts = new SceneTextTextures({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#worldEntities = new PixiWorldEntitiesRenderer({ pixi: this.#pixi, stage: app.stage, texts: this.#texts,
         textures: this.#textures, documentTarget: this.#documentTarget });

@@ -46,20 +46,6 @@ export const CONFIG = {
         ballastSlow: 0.3, // наскільки повільніше гойдається з важкою огрузкою
         waveTempoShare: 1, // наскільки темп іде за швидкістю й довжиною хвиль (0 — лише periodSec)
       },
-      // Відблиски на гребенях хвиль (spec 172 D2, лише WebGL): удень іскри по всій воді, на сході й заході — доріжка від
-      // сонця, вночі — від місяця (X світил — MAP_DB.<id>.sky). Режими змішуються як фони фаз доби; хмари й туман гасять.
-      glints: {
-        enabled: true,
-        maxSparkles: 500, // найбільше іскор за крок
-        maxGlow: 700, // найбільше частинок м'якого сяйва доріжки
-        weatherDamping: 1, // наскільки хмарність/туман гасять відблиски (1 — повністю при повній силі)
-        day: { intensity: 0.8, threshold: 0.72, sizePx: 4, sizeFarPx: 1.5, color: "#ffffff" },
-        // threshold — яка висота гребеня (0…1) уже блищить; ширини доріжки — частки ширини води вдалині / біля берега.
-        sunPath: { intensity: 1, threshold: 0.5, sizePx: 5, sizeFarPx: 1.5, widthFar: 0.05, widthNear: 0.3,
-          softness: 0.6, glow: 0.12, color: "#ffc27a" },
-        moonPath: { intensity: 0.9, threshold: 0.5, sizePx: 4, sizeFarPx: 1.5, widthFar: 0.04, widthNear: 0.25,
-          softness: 0.6, glow: 0.1, color: "#d8e6ff" },
-      },
     },
   },
 

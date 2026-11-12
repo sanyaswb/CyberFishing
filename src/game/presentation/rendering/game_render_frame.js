@@ -34,10 +34,6 @@ export class GameRenderFrame {
       sensorRays: new ReusableRenderList("world.sensorRays", diagnostics),
       boatRoute: new ReusableRenderList("world.boatRoute", diagnostics),
       boatWake: new ReusableRenderList("world.boatWake", diagnostics),
-      // Spec 172 D2: the glints on the water. Shares 0…1 of the day sparkles, the sun's path (sunrise, sunset) and the
-      // moon's path, blended like the time-of-day backgrounds; the sun's and moon's screen x; the weather's cloud and
-      // fog, which dim them.
-      glints: { day: 0, sunPath: 0, moonPath: 0, sunX: 0, moonX: 0, cloud: 0, fog: 0 },
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -105,8 +101,6 @@ export class GameRenderFrame {
     this.world.sensorRays.reset();
     this.world.boatRoute.reset();
     this.world.boatWake.reset();
-    const glints = this.world.glints;
-    glints.day = 0; glints.sunPath = 0; glints.moonPath = 0; glints.cloud = 0; glints.fog = 0;
     this.world.debugImage.visible = false;
     this.world.annotations = null;
     this.world.backgroundHidden = false;

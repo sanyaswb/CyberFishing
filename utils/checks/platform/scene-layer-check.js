@@ -501,7 +501,7 @@ async function checkPixiSceneLayer() {
     const options = { pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas, canvasMetrics: metrics,
       background: "#0f171e", images, router, clock, getWaterSettings: () => water, fightAreaStyles, probe, logger,
       ...overrides };
-    return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe, pixi };
+    return { layer: new PixiSceneLayer(options), dom, apps, textures, canvasTextures, probe };
   };
   for (const [name, overrides, pattern] of [
     ["pixi", { pixi: {} }, /requires the Pixi namespace/u],
@@ -566,8 +566,7 @@ async function checkPixiSceneLayer() {
     "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
   assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
     textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
-    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0,
-      glints: { active: false, sparkles: 0, glow: 0, pool: 0, stepMs: 0 } } },
+    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0 } },
   "no castable zones in this frame: still water");
   base.x = -20;
   layer.render(frame);
@@ -643,100 +642,6 @@ async function checkPixiSceneLayer() {
 }
 
 // Spec 106: the water's displacement map.
-// Spec 172 D2 (TK-270): the water's glints. The wave field's crests and row scales; sparkles only on water crests,
-// day over all the water, a path only inside its band (wider at the near edge) with its glow, the weather dimming
-// them, a fixed pool, one additive particle container, and what the GPU draws follows every step (the particles'
-// vertex and colour attributes are dynamic: a fake with Pixi's static upload rule would keep the first step's values).
-async function checkWaterGlints() {
-  const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
-  const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
-  const { PixiWaterGlintRenderer } = await importSource("src/platform/browser/scene/pixi_water_glint_renderer.js");
-  const field = new WaterWaveField({ width: 192, height: 48 });
-  field.setRegions([0, 0, 1, 1], 1);
-  const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 640, topY: 0, centerX: 1280,
-    maxMeters: 30, tiltDegrees: 45, farScale: .3, lateralContraction: true });
-  const waves = { artWidth: 2560, artHeight: 640, wavelength: 140, speed: 24,
-    plane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
-  field.write(2, waves);
-  let high = 0;
-  for (let index = 0; index < field.crests.length; index += 1) {
-    const crest = field.crests[index];
-    assert(crest >= -1 && crest <= 1, "a crest is −1 … 1");
-    assert(Math.abs(crest) <= field.edges[index] + 1e-6, "crests fade with the water's edges");
-    if (crest > 0.72) high += 1;
-  }
-  assert(high > 50 && high < field.crests.length / 4, `some crests stand high enough to sparkle (${high})`);
-  assert(field.rowScales[0] < 0.5 && Math.abs(field.rowScales[47] - 1) < 0.1, "row scales follow the perspective");
-
-  const { pixi } = fakePixi();
-  const stage = new pixi.Container();
-  const { documentTarget } = fakeDom();
-  const glints = new PixiWaterGlintRenderer({ pixi, documentTarget });
-  glints.mount(stage);
-  const container = stage.children[0];
-  assert(container instanceof pixi.ParticleContainer && container.blendMode === "add" && container.visible === false,
-    "one additive particle container, hidden until a step");
-  const area = { left: 100, top: 200, right: 1060, bottom: 520 };
-  const settings = { enabled: true, maxSparkles: 300, maxGlow: 400, weatherDamping: 1,
-    day: { intensity: 1, threshold: 0.72, sizePx: 4, sizeFarPx: 1.5, color: "#ffffff" },
-    sunPath: { intensity: 1, threshold: 0.5, sizePx: 5, sizeFarPx: 1.5, widthFar: 0.05, widthNear: 0.3, softness: 0.6,
-      glow: 0.12, color: "#ffc27a" },
-    moonPath: { intensity: 1, threshold: 0.5, sizePx: 4, sizeFarPx: 1.5, widthFar: 0.04, widthNear: 0.25, softness: 0.6,
-      glow: 0.1, color: "#d8e6ff" } };
-  const model = { day: 1, sunPath: 0, moonPath: 0, sunX: 0, moonX: 0, cloud: 0, fog: 0 };
-  assert.equal(glints.step(field, area, model, settings), true);
-  const day = glints.status;
-  assert(day.active && day.sparkles > 50 && day.sparkles <= 300 && day.glow === 0, `day sparkles, no glow (${day.sparkles})`);
-  assert.equal(day.pool, 700, "the pool holds maxSparkles + maxGlow");
-  let view = container.gpuView();
-  const lit = view.filter((particle) => particle.alpha > 0);
-  assert.equal(lit.length, day.sparkles, "unused particles are transparent");
-  assert(lit.every((particle) => particle.x >= area.left && particle.x <= area.right && particle.y >= area.top &&
-    particle.y <= area.bottom && particle.alpha <= 1 && particle.tint === 0xffffff), "sparkles lie on the water, white by day");
-  const farSize = lit.filter((particle) => particle.y < area.top + 60).map((particle) => particle.scaleX);
-  const nearSize = lit.filter((particle) => particle.y > area.bottom - 60).map((particle) => particle.scaleX);
-  assert(Math.max(...farSize) < Math.max(...nearSize), "far sparkles are smaller (perspective)");
-
-  // The moon's path: sparkles only inside the band under the moon, the band wider at the near edge, and its glow.
-  model.day = 0; model.moonPath = 1; model.moonX = area.left + 240;
-  field.write(3, waves);
-  glints.step(field, area, model, settings);
-  const night = glints.status;
-  assert(night.sparkles > 0 && night.glow > 0, `the moon's path sparkles and glows (${night.sparkles}, ${night.glow})`);
-  view = container.gpuView();
-  const half = (share) => share * (area.right - area.left) / 2 + (area.right - area.left) / 192;
-  const sparkles = view.slice(night.glow, night.glow + night.sparkles);
-  assert(sparkles.every((particle) => {
-    const near = (particle.y - area.top) / (area.bottom - area.top);
-    return Math.abs(particle.x - model.moonX) <= half(0.04 + (0.25 - 0.04) * near);
-  }), "no sparkle outside the moon's band");
-  assert(sparkles.every((particle) => particle.tint === 0xd8e6ff), "moon sparkles take the moon's colour");
-  const spread = (from, to) => {
-    const xs = sparkles.filter((particle) => particle.y >= from && particle.y < to).map((particle) => particle.x);
-    return xs.length ? Math.max(...xs) - Math.min(...xs) : 0;
-  };
-  assert(spread(area.bottom - 80, area.bottom) > spread(area.top, area.top + 80), "the path widens toward the viewer");
-  assert(view.slice(0, night.glow).every((particle) => particle.alpha <= 0.1 + 1e-9), "the glow is faint");
-  assert.equal(view.slice(night.glow + night.sparkles).filter((particle) => particle.alpha > 0).length, 0,
-    "particles left over from the day step are cleared");
-
-  // Weather: a full cloud dims everything; the pool never grows on a step, only with the settings.
-  model.cloud = 1;
-  assert.equal(glints.step(field, area, model, settings), true, "hiding reports a change");
-  assert.deepEqual([glints.status.active, container.visible], [false, false], "full cloud hides the glints");
-  assert.equal(glints.step(field, area, model, settings), false, "an already hidden step changes nothing");
-  model.cloud = 0.5;
-  glints.step(field, area, model, settings);
-  assert(glints.status.active && glints.status.pool === 700, "half cloud dims; the same pool");
-  glints.step(field, area, model, { ...settings, maxSparkles: 50, maxGlow: 50 });
-  assert(glints.status.sparkles <= 50 && glints.status.glow <= 50 && glints.status.pool === 700,
-    "smaller limits use part of the pool");
-  glints.step(field, area, model, { ...settings, enabled: false });
-  assert.equal(glints.status.active, false, "disabled glints hide");
-  glints.dispose();
-  assert.equal(container.destroyed, true, "dispose destroys the container");
-}
-
 async function checkWaterWaveField() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
   assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
@@ -860,12 +765,8 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const filter = waterContainer.filters[0];
   assert.equal(filter.sprite, mapSprite, "the filter's map sprite lives in the scene (it is not drawn)");
   assert.equal(mapSprite.renderable, false);
-  // The water's map and the glints' dot (spec 172 D2) are the scene's canvas textures; the glints go right over the
-  // water (after its mask).
-  const map = wet.canvasTextures.find((texture) => texture.canvas.width === 192);
+  const map = wet.canvasTextures[0];
   assert.deepEqual([map.canvas.width, map.canvas.height, map.skipCache], [192, 48, true]);
-  const glintIndex = app.stage.children.findIndex((child) => child instanceof wet.pixi.ParticleContainer);
-  assert.equal(glintIndex, app.stage.children.indexOf(mapSprite) + 2, "the glints are added right after the water's mask");
   const regions = [{ x: -100, y: 300, width: 1600, height: 400 }];
   const base = { assetId: "day", alpha: 1, x: -500, y: 0, width: 1451, height: 816 };
   const dusk = { assetId: "evening", alpha: 0.4, x: -500, y: 0, width: 1451, height: 816 };
@@ -1515,8 +1416,9 @@ function checkVendor() {
   };
   visit(acorn.parse(bundle, { ecmaVersion: "latest", sourceType: "module" }));
   assert.deepEqual(imports, [], "the bundle has no import, re-export or import() left");
-  // Spec 172 D2: ParticleContainer draws only through its render pipe, which Pixi 8 registers in its
-  // particle-container side-effect module, not among the default pipes; without it the glints draw nothing on real Pixi.
+  // Spec 172: ParticleContainer (the scene's particle effects, rain D4) draws only through its render pipe, which Pixi 8
+  // registers in its particle-container side-effect module, not among the default pipes; without it particles draw
+  // nothing on real Pixi.
   assert.match(bundle, /extension=\{type:\[[\w$]+\.WebGLPipes\],name:"particle"\}/u,
     "the bundle registers the WebGL particle pipe (pixi.js/particle-container)");
   const license = read(entry.license);
@@ -1534,7 +1436,6 @@ async function main() {
   await checkRouter();
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
-  await checkWaterGlints();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();

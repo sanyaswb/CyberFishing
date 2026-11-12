@@ -887,7 +887,6 @@
 │  │     │  ├── reusable_render_list.js
 │  │     │  ├── scene_layer_router.js
 │  │     │  ├── water_circle_projection.js
-│  │     │  ├── water_glint_model_builder.js
 │  │     │  ├── world_render_frame_builder.js
 │  │     │  └── world_render_pass.js
 │  │     ├── screens
@@ -1045,7 +1044,6 @@
 │        │  ├── pixi_runtime_module.js
 │        │  ├── pixi_scene_layer.js
 │        │  ├── pixi_spine_runtime.js
-│        │  ├── pixi_water_glint_renderer.js
 │        │  ├── pixi_water_renderer.js
 │        │  ├── pixi_world_entities_renderer.js
 │        │  ├── scene_change_fingerprint.js

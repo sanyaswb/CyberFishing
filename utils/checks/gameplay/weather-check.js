@@ -185,34 +185,4 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(snapshot.weather.precipitation, "clear");
 }
 
-// 9. Spec 172 D2 (TK-270): the water glints' model follows the backgrounds' blend (evening covers sunrise and sunset,
-// night the moon), takes the sunrise point before noon and the sunset point after it, and passes the weather on.
-{
-  const { WaterGlintModelBuilder } = require("../../../src/game/presentation/rendering/water_glint_model_builder.js");
-  const { backgroundTimeBlend } = require("../../../src/game/domain/time/background_time_blend.js");
-  let hours = 12;
-  let weather = null;
-  const builder = new WaterGlintModelBuilder({ getSky: () => MAP_DB.test.sky, getTimeOfDay: () => hours,
-    getWeather: () => weather });
-  const glints = { day: 0, sunPath: 0, moonPath: 0, sunX: 0, moonX: 0, cloud: 0, fog: 0 };
-  const at = (time) => {
-    hours = time;
-    const blend = backgroundTimeBlend(time, {});
-    builder.buildInto(glints, blend.evening, blend.night, -100, 2000);
-    return [glints.day, glints.sunPath, glints.moonPath].map((value) => Math.round(value * 100) / 100);
-  };
-  assert.deepEqual(at(13), [1, 0, 0], "midday: sparkles over all the water");
-  assert.deepEqual(at(18), [0.5, 0.5, 0], "sunset begins: day and the sun's path share");
-  assert.deepEqual(at(19), [0, 1, 0], "sunset: the sun's path only");
-  near(glints.sunX, -100 + MAP_DB.test.sky.sunsetX * 2000, "after noon the path comes from the sunset point");
-  assert.deepEqual(at(20), [0, 0.5, 0.5], "dusk: the sun's path gives way to the moon's");
-  assert.deepEqual(at(1), [0, 0, 1], "night: the moon's path");
-  near(glints.moonX, -100 + MAP_DB.test.sky.moonX * 2000, "the moon's x on screen");
-  assert.deepEqual(at(7), [0, 1, 0], "sunrise: the sun's path");
-  near(glints.sunX, -100 + MAP_DB.test.sky.sunriseX * 2000, "before noon the path comes from the sunrise point");
-  weather = { cloud: 0.6, fog: 0.2 };
-  at(13);
-  assert.deepEqual([glints.cloud, glints.fog], [0.6, 0.2], "the weather reaches the glints");
-}
-
-console.log("weather: states, fades, storm, lightning, fog, derived fields and the water glints' model OK");
+console.log("weather: states, fades, storm, lightning, fog and derived fields OK");

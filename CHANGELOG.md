@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.74 - Water glints removed
+
+- TK-270.1 (owner): the water glints of v0.50.73 are removed (their look did not fit; another approach later). The scene keeps Pixi's particle container for the coming rain.
+
 ## v0.50.73 - Glints on the water
 
 - Spec 172 stage B (TK-270): the water sparkles on its wave crests: over all the water by day, in a path under the sun at sunrise and sunset and under the moon at night (the path widens toward the viewer); clouds and fog dim them. Tuned live in DevTools (water → glints); the sun and moon positions are in the location's sky settings.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.65 - Chum icon on toolbar button
 
 - TK-249.3: the chum button on the HUD toolbar (chum-control--idle) shows the equipped mix's WebP icon (switcherIconAsset) instead of the generic sprite symbol.
-
-## v0.50.64 - Chum and bait icon in editor tabs
-
-- TK-249.2: the item editor's root and view tabs show the mix/bait icon (switcherIconAsset) instead of the packaging picture; the whole-art preview above keeps the full pack art.
