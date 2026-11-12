@@ -26,6 +26,7 @@ export class RadioDevSection {
   #gameVersion;
   #now;
   #content = null;
+  #exportedFile = null; // TK-285: the last downloaded settings file's name
 
   // radio: { getStatus(), batteryPercent(), discharge(percent) }; config: () => CONFIG.radio; createSection(label,
   // parent, path), renderConfigTree(value, parent, path, options) and setConfig(path, value) come from DevTools;
@@ -56,7 +57,17 @@ export class RadioDevSection {
       baseHash: await settingsHash(RADIO_SOUND_SETTINGS, hashText), exportedAt: this.#now().toISOString() });
     const name = settingsFileName(this.#gameVersion, this.#now());
     this.#files.download(name, `${JSON.stringify(file, null, 2)}\n`);
+    this.#exportedFile = name;
+    this.#showExportCommand();
     return name;
+  }
+
+  // TK-285: the terminal command that moves the downloaded settings file into the code, at the top of the section;
+  // kept while the section is refreshed, until the owner closes it.
+  #showExportCommand() {
+    if (!this.#content || !this.#exportedFile) return;
+    this.#ui.showExportCommand(this.#content, { fileName: this.#exportedFile,
+      command: `npm run apply:radio -- ${this.#exportedFile}`, onClose: () => { this.#exportedFile = null; } });
   }
 
   #fill() {
@@ -87,6 +98,7 @@ export class RadioDevSection {
     this.#renderConfigTree(config, this.#createSection("Параметри (CONFIG.radio)", content, ["RADIO", "config"]),
       ["CONFIG", "radio"], { visibilityPolicy: { isVisible: (path) =>
         !(path.length === 3 && (path[2] === "effects" || path[2] === "signal")) } });
+    this.#showExportCommand();
   }
 
   #renderParts(parent) {

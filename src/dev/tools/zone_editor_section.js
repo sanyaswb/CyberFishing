@@ -59,6 +59,7 @@ export class ZoneEditorSection {
   #clipMessage = null;
   #alert = null;
   #fixFile = null;
+  #exportedFile = null; // TK-285: { where: "saving" | "alert", fileName } of the last downloaded zone file
   #fixMessage = "";
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
@@ -178,7 +179,19 @@ export class ZoneEditorSection {
     if (!this.#files) return;
     ui.createButtonRow("Виправити", alert, () => { void this.#prepareFix(session.length ? "session" : "base"); });
     const file = this.#fixFile;
-    if (file?.locationId === id) ui.createButtonRow(`Завантажити ${file.name}`, alert, () => this.#files.download(file.name, file.text));
+    if (file?.locationId === id) ui.createButtonRow(`Завантажити ${file.name}`, alert, () => {
+      this.#files.download(file.name, file.text);
+      this.#showExportCommand(host, "alert", file.name);
+    });
+    if (this.#exportedFile?.where === "alert") this.#showExportCommand(host, "alert", this.#exportedFile.fileName);
+  }
+
+  // TK-285: the terminal command that moves a downloaded zone file into the code, at the top of the place the file was
+  // exported from; kept while that place is rebuilt, until the owner closes it.
+  #showExportCommand(host, where, fileName) {
+    this.#exportedFile = { where, fileName };
+    this.#ui.showExportCommand(host, { fileName, command: `npm run apply:zones -- ${fileName}`,
+      onClose: () => { this.#exportedFile = null; } });
   }
 
   // One notice line: «Ігрова область (закидання) 1: нижній край y + h 38 > 36 клітинок (1520 > 1440 px)».
@@ -241,6 +254,7 @@ export class ZoneEditorSection {
       this.#refreshZones();
     });
     ui.createInfoRow("Збереження", "Експорт зон завантажує файл зон цієї локації. У код його переносить команда npm run apply:zones -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни зон до коду. Імпорт зон відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.", list);
+    if (this.#exportedFile?.where === "saving") this.#showExportCommand(list, "saving", this.#exportedFile.fileName);
   }
 
   #changedCategories(id) {
@@ -267,6 +281,7 @@ export class ZoneEditorSection {
       const name = zoneFileName(id, this.#gameVersion, new Date());
       this.#files.download(name, `${JSON.stringify(file, null, 2)}\n`);
       this.#showSavingStatus(`Збережено файл ${name}.`);
+      if (this.#saving) this.#showExportCommand(this.#saving, "saving", name);
     } catch (error) {
       this.#showSavingStatus(`Експорт не вдався: ${error?.message || error}`);
     }

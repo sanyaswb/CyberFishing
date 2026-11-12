@@ -5,6 +5,7 @@ import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 import { NumberField } from "./controls/number_field.js";
 import { SegmentedControl } from "./controls/segmented_control.js";
 import { ChoiceField } from "./controls/choice_field.js";
+import { ExportCommandNotice } from "./controls/export_command_notice.js";
 
 export class DevToolsUI {
   #panel;
@@ -24,6 +25,7 @@ export class DevToolsUI {
   #controlGroups = new WeakMap();
   #dependencyFeedback;
   #dependentSwitches = new Map();
+  #exportNotices = new WeakMap();
   #edgeOpener = null;
   #isOpen = false;
 
@@ -217,6 +219,21 @@ export class DevToolsUI {
     }
     this.#insertTreeNode(parentElement, alert, 0);
     return alert;
+  }
+
+  // TK-285: after a file export, the command that applies the file, at the top of the section it was exported from;
+  // a new export in the same place replaces the notice. onClose() tells the section the notice was closed.
+  showExportCommand(parentElement, { fileName, command, onClose = null }) {
+    this.#exportNotices.get(parentElement)?.dispose();
+    const notice = new ExportCommandNotice({ fileName, command, documentRef: document,
+      copyText: (text) => {
+        const clipboard = globalThis.navigator?.clipboard;
+        if (!clipboard?.writeText) throw new Error("clipboard unavailable");
+        return clipboard.writeText(text);
+      },
+      onClose: () => { this.#exportNotices.delete(parentElement); onClose?.(); } });
+    this.#exportNotices.set(parentElement, notice);
+    parentElement.insertBefore(notice.element, parentElement.children[0] ?? null);
   }
 
   // A visible label/value row (createInfoRow puts its rows into the collapsed "Опис"); returns the value element.

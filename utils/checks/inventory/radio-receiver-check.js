@@ -1001,7 +1001,9 @@ async function stageFive() {
   const switches = new Map();
   const ui = { createInfoRow: (label, value) => rows.push([label, value]),
     createButtonRow: (label, parent, onClick) => buttons.set(label, onClick),
-    createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }) };
+    createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }),
+    showExportCommand: (parent, notice) => exportCommands.push(notice) };
+  const exportCommands = [];
   const radioConfig = { tickMs: 1000,
     effects: { vinyl: { enabled: false, wowHz: 0.5 }, walkieTalkie: { enabled: true, drive: 18 }, retro: { enabled: false, drive: 2 } },
     signal: { enabled: true, baseNoise: 0.01, weather: { enabled: false, rainNoise: 0.12 } } };
@@ -1026,6 +1028,8 @@ async function stageFive() {
     false, "and is not repeated in the rest of CONFIG.radio");
   await section.exportSettings();
   assert.equal(downloads[0][0], "radio-sound-v0.48.4-20261025-2105.json", "the export file is named by version and time");
+  assert.equal(exportCommands.at(-1).command, "npm run apply:radio -- radio-sound-v0.48.4-20261025-2105.json",
+    "after the download the section shows the command that applies this file (TK-285)");
   assert.equal(downloads[0][1].format, "cyber-fishing-radio-sound");
   assert.deepEqual(downloads[0][1].settings.signal, { baseNoise: 0.01, enabled: true, weather: { enabled: false, rainNoise: 0.12 } }, "it carries the live settings");
   assert(String(downloads[0][1].baseHash).startsWith("hash:"), "with the code's hash for the conflict check");

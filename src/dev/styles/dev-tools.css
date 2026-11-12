@@ -556,6 +556,85 @@
 }
 .devtools__alert-title { font-weight: 700; margin-bottom: 4px; }
 .devtools__alert-line { font-size: 0.92em; line-height: 1.35; }
+/* TK-285: after a file export, the command that applies the file (ExportCommandNotice), at the top of its section. */
+.devtools__export {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-success);
+  border-radius: var(--ui-radius-panel);
+  background: rgba(var(--ui-accent-rgb), 0.1);
+}
+.devtools__export-head,
+.devtools__export-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.devtools__export-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 700;
+}
+.devtools__export-hint,
+.devtools__export-status {
+  font-size: 11px;
+  color: rgba(210, 245, 255, 0.7);
+}
+.devtools__export-status:empty { display: none; }
+.devtools__export--copied .devtools__export-status { color: var(--ui-success); }
+.devtools__export-command {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: var(--ui-radius-control);
+  background: #0b1520;
+  font-family: var(--ui-font-mono);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.devtools__export-copy,
+.devtools__export-close {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--ui-text);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--ui-duration-control) var(--ui-ease-standard);
+}
+.devtools__export-close { border-color: transparent; }
+.ui-surface--desktop-hover .devtools__export-copy:hover,
+.ui-surface--desktop-hover .devtools__export-close:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__export-copy:active,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__export-close:active { background: rgba(var(--ui-accent-rgb), 0.2); }
+.devtools__export-copy:focus-visible,
+.devtools__export-close:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
+.devtools__export--copied .devtools__export-copy { border-color: var(--ui-success); color: var(--ui-success); }
+.devtools__export-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .devtools__export-copy, .devtools__export-close { flex-basis: 44px; width: 44px; height: 44px; }
+}
 /* TK-083: the zone editor's grid warning (the map is not a whole number of cells), in the middle of the screen. */
 .zone-editor-warning {
   position: fixed;

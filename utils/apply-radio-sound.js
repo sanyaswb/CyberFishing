@@ -11,7 +11,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { pathToFileURL } = require("node:url");
-const { stamp, gitDirectory, askYes, isDirty, runChecks } = require("./apply-module-helpers.js");
+const { stamp, gitDirectory, askYes, isDirty, runChecks, resolveExportedFile } = require("./apply-module-helpers.js");
 
 const FORMAT_MODULE = "src/dev/radio/radio_sound_settings_format.js";
 const sha256 = text => crypto.createHash("sha256").update(text, "utf8").digest("hex");
@@ -92,7 +92,7 @@ async function main(argv) {
     now: () => new Date(),
   });
   process.chdir(root);
-  const outcome = await applier.apply(fs.readFileSync(path.resolve(process.env.INIT_CWD || root, fileArgument), "utf8"), {
+  const outcome = await applier.apply(fs.readFileSync(resolveExportedFile(process.env.INIT_CWD || root, fileArgument), "utf8"), {
     yes: argv.includes("--yes"), force: argv.includes("--force") });
   if (outcome === "refused") process.exitCode = 1;
 }

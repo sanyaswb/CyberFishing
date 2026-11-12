@@ -1546,7 +1546,9 @@ controlUI.dispose();
     for (const map of [rows, info]) for (const key of [...map.keys()]) if (key.startsWith(`${parent.label}/`)) map.delete(key);
   }, createInfoRow: (label, value, parent) => { const element = { innerText: value }; info.set(`${parent?.label}/${label}`, element); return element; },
   createAlert: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
-  createSelectRow: record("select"), createSwitcherRow: record("switch") };
+  createSelectRow: record("select"), createSwitcherRow: record("switch"),
+  showExportCommand: (parent, notice) => exportCommands.push({ parent: parent.label, ...notice }) };
+  const exportCommands = [];
   const downloads = [], confirms = [], opened = [], writes = [], resets = [];
   let picked = null, confirmAnswer = false;
   const files = { download: (name, text) => downloads.push({ name, text }), pickFile: async () => picked,
@@ -1569,6 +1571,8 @@ controlUI.dispose();
   press("Збереження/Експорт зон"); await settle();
   const file = JSON.parse(downloads[0].text);
   assert.match(downloads[0].name, /^zones-lake-v0\.46\.22-\d{8}-\d{4}\.json$/u);
+  assert.equal(exportCommands.at(-1).command, `npm run apply:zones -- ${downloads[0].name}`,
+    "after the download «Збереження» shows the command that applies this file (TK-285)");
   assert(file.locationId === "lake" && file.zones.castable[0].x === 3 && file.zones.snags.length === 0 &&
     file.baseHash === await format.zoneHash(baseZones.lake, hashText) && format.validateZoneFile(file, cfg.locations).length === 0,
     "the file holds the location's current zones, the code's hash and passes the importer's validation");
@@ -2102,7 +2106,9 @@ controlUI.dispose();
     const ui = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
       createInputRow() {}, createRangeRow() {}, createSelectRow() {}, createSwitcherRow() {},
       createButtonRow: (label, parent, callback) => buttons.set(label, { parent, callback }),
+      showExportCommand: (parent, notice) => fixCommands.push(notice),
       createAlert: (title, lines) => { const alert = { title, lines }; alerts.push(alert); return alert; } };
+    const fixCommands = [];
     let codeZones = JSON.parse(JSON.stringify(ZONES));
     const files = { download: (name, text) => downloads.push({ name, text }), hashText: async text => String(text.length),
       confirm: () => true };
@@ -2120,6 +2126,8 @@ controlUI.dispose();
     const download = [...buttons.entries()].find(([label]) => label.startsWith("Завантажити"));
     assert(download && download[1].parent === alerts.at(-1), "after «Виправити» the notice offers «Завантажити»");
     download[1].callback();
+    assert.equal(fixCommands.at(-1).command, `npm run apply:zones -- ${downloads[0].name}`,
+      "the downloaded fix file comes with its command (TK-285)");
     const file = JSON.parse(downloads[0].text);
     assert.equal(format.validateZoneFile(file, config.locations).length, 0, "the downloaded file is a valid zone file");
     assert.equal(findZonesBeyondMap(file.zones, map).length, 0, "with every zone inside the map");

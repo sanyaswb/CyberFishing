@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-285 (spec 174 A5): after a file export the section shows the apply command with a copy button; apply tools look in Downloads.",
   "TK-284 (spec 174 A4): DevTools rows separated by a thin line centred between them; none after the last row.",
   "TK-283 (spec 174 A3): Fixed Catch fish from a list with search; short option lists as segmented switches; DevParameterSchema.",
   "TK-282 (spec 174 A2): DevTools number field with − / + and a step from the value's precision; invalid text is never written.",

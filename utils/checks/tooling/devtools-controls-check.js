@@ -14,7 +14,9 @@ document.createElement = (tag) => {
   return element;
 };
 // Rows made through DevToolsUI use the page's timers; nothing in this check waits for them.
-const runtime = new SourceRuntime({ globals: { document, setTimeout: () => 0, clearTimeout() {} } });
+const clipboard = [];
+const runtime = new SourceRuntime({ globals: { document, setTimeout: () => 0, clearTimeout() {},
+  navigator: { clipboard: { writeText: async (text) => { clipboard.push(text); } } } } });
 const { DevToolsUI } = runtime.importModule("src/dev/tools/dev_tools_ui.js");
 const { NumberField } = runtime.importModule("src/dev/tools/controls/number_field.js");
 const { addSteps, decimalsOf, parseDecimal } = runtime.importModule("src/dev/tools/controls/decimal_step.js");
@@ -223,4 +225,42 @@ function choiceRow(options, value, path) {
   assert.deepEqual(written, [3, 1]);
 }
 
-console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options.");
+// --- TK-285: the command after a file export ------------------------------------------------------------------------
+(async () => {
+  const { ExportCommandNotice } = runtime.importModule("src/dev/tools/controls/export_command_notice.js");
+  const settle = () => new Promise((resolve) => setImmediate(resolve));
+  const section = createElement("div"); document.body.appendChild(section);
+  ui.createButtonRow("Експорт зон", section, () => {});
+  let closed = 0;
+  ui.showExportCommand(section, { fileName: "zones-test.json", command: "npm run apply:zones -- zones-test.json",
+    onClose: () => closed++ });
+  const notice = () => byClass("devtools__export", section);
+  assert.equal(section.children[0], notice()[0], "the notice is at the top of the section the file was exported from");
+  assert.ok(notice()[0].textContent.includes("zones-test.json"), "it names the downloaded file");
+  assert.equal(byClass("devtools__export-command", section)[0].textContent, "npm run apply:zones -- zones-test.json");
+  byClass("devtools__export-copy", section)[0].click(); await settle();
+  assert.deepEqual(clipboard, ["npm run apply:zones -- zones-test.json"], "the copy button puts the command on the clipboard");
+  assert.equal(notice()[0].classList.contains("devtools__export--copied"), true, "and says so");
+  ui.showExportCommand(section, { fileName: "zones-next.json", command: "npm run apply:zones -- zones-next.json" });
+  assert.equal(notice().length, 1, "the next export replaces the notice");
+  assert.ok(notice()[0].textContent.includes("zones-next.json"));
+  ui.showExportCommand(section, { fileName: "zones-test.json", command: "x", onClose: () => closed++ });
+  byClass("devtools__export-close", section)[0].click();
+  assert.equal(notice().length, 0, "the close button removes it");
+  assert.equal(closed, 1, "and tells the section, which stops showing it again");
+
+  // No clipboard (a page opened over http on the local network): no error, the person is told to copy by hand.
+  const timers = [];
+  const offline = new ExportCommandNotice({ fileName: "a.json", command: "npm run apply:radio -- a.json", documentRef: document,
+    copyText: () => { throw new Error("clipboard unavailable"); },
+    scheduler: { setTimeout: (callback) => timers.push(callback), clearTimeout() {} } });
+  section.appendChild(offline.element);
+  byClass("devtools__export-copy", offline.element)[0].click(); await settle();
+  assert.equal(offline.element.classList.contains("devtools__export--copied"), false);
+  assert.ok(byClass("devtools__export-status", offline.element)[0].textContent.length > 0, "the failure is explained in the notice");
+  timers.at(-1)();
+  assert.equal(byClass("devtools__export-status", offline.element)[0].textContent, "", "the message clears after a moment");
+  offline.dispose();
+
+  console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options; export command notice.");
+})().catch((error) => { console.error(error); process.exitCode = 1; });

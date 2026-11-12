@@ -148,7 +148,8 @@ file envelope, validation, diff, module source). The DevTools "Редактор"
 opened by reloading `dev.html?location=<id>`. Its "Збереження" exports that location's zones as a file, imports such a
 file into the session's overrides and resets them to the code. `npm run apply:zones -- <file>` (`utils/apply-zones.js`)
 writes a file into the module after validation, a clean-target and conflict check, confirmation and a backup under the
-Git directory; it never commits. The radio's sound settings (TK-099) follow the same path: the data module
+Git directory; it never commits. A bare file name that is not in the command's directory is taken from the user's
+Downloads folder (TK-285: DevTools shows this command after the export). The radio's sound settings (TK-099) follow the same path: the data module
 `src/game/config/raw/radio/radio_sound_settings.js` (`RADIO_SOUND_SETTINGS`: `effects`, `signal`) feeds `CONFIG.radio`,
 `src/dev/radio/radio_sound_settings_format.js` owns its canonical form, DevTools «📻 РАДІО» exports the live values and
 `npm run apply:radio -- <file>` (`utils/apply-radio-sound.js`, shared steps in `utils/apply-module-helpers.js`) writes them

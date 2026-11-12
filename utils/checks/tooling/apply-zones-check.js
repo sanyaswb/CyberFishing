@@ -22,6 +22,22 @@ const load = file => import(pathToFileURL(path.join(root, file)).href);
 
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-apply-zones-"));
   try {
+    // TK-285: the command DevTools shows names the file only; it is found where the browser saved it.
+    {
+      const { resolveExportedFile } = require("../../apply-module-helpers.js");
+      const cwd = path.join(scratch, "project"), downloads = path.join(scratch, "Downloads");
+      fs.mkdirSync(cwd); fs.mkdirSync(downloads);
+      fs.writeFileSync(path.join(downloads, "zones-a.json"), "{}");
+      assert.equal(resolveExportedFile(cwd, "zones-a.json", { downloads }), path.join(downloads, "zones-a.json"),
+        "a bare name that is not in the command's directory is taken from Downloads");
+      fs.writeFileSync(path.join(cwd, "zones-a.json"), "{}");
+      assert.equal(resolveExportedFile(cwd, "zones-a.json", { downloads }), path.join(cwd, "zones-a.json"),
+        "a file in the command's directory wins");
+      assert.equal(resolveExportedFile(cwd, "zones-missing.json", { downloads }), path.join(cwd, "zones-missing.json"),
+        "a file found nowhere is reported at the path that was asked for");
+      assert.equal(resolveExportedFile(cwd, path.join("sub", "zones-a.json"), { downloads }), path.join(cwd, "sub", "zones-a.json"),
+        "a path is never looked for in Downloads");
+    }
     const locations = { designCellSize: 40, cellSize: 40, baseResolution: { width: 2560, height: 1440 }, map: { test: {}, pond: {} } };
     const target = path.join(scratch, "test.js");
     const backups = path.join(scratch, "backups");

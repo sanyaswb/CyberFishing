@@ -92,6 +92,15 @@ zone, cell-grid, perspective and overlay controls. `ZoneEditorSection` releases 
 Spec 173 (TK-280) adds `devtools__alert` (`DevToolsUI.createAlert`): a red notice with the panel radius among a
 section's controls, never in «Опис»; its `__title`, `__line` elements and action rows inside it; colours from
 `--ui-danger`, `--ui-danger-rgb`, `--ui-danger-text`.
+
+Spec 174 stage A (TK-282…285) moves DevTools controls into classes of `src/dev/tools/controls/`, each with its elements
+in `dev-tools.css`: `devtools__number` (`NumberField`: − / text / +, `--devtools-number-chars` from JS, `--error`),
+`devtools__segments` / `devtools__segment` (`SegmentedControl`, `--selected`), `devtools__choice*` (`ChoiceField`: the
+button, the list in the flow under it, `--open`, option `--active` / `--selected`, hint `--unknown`) and
+`devtools__export*` (`ExportCommandNotice` through `DevToolsUI.showExportCommand`, `--copied`). Rows are separated by
+one line between neighbours (`.devtools__row + .devtools__row`, TK-284); `devtools__row--wrap` lets a control take its
+own line. Minus, plus and the chevron are drawn in CSS and the notice's icons are inline SVG until the DevTools sprite
+of stage C1; `DevParameterSchema` (`src/dev/tools/config/`) names the control and option source of a parameter.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional
