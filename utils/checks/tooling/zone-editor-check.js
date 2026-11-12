@@ -2049,11 +2049,16 @@ controlUI.dispose();
     drag(0, 620, -900, 620);
     const small = cfg.locations.map.test.zones.collisions[1];
     assert.equal(JSON.stringify([small.x, small.w]), "[0,4]", "its left edge stops at the map's edge too");
-    // The water runs past the map's bottom (38 of 36 cells): dragged down it never goes further out.
+    // The water runs past the map's and the window's bottom (38 of 36 cells). TK-279: a press with a tiny move used to
+    // pull it up into the window at once; now it stays, never goes further out, and moves only where it is dragged.
     editState.select("castable", 0);
+    const water = () => cfg.locations.map.test.zones.castable[0];
+    drag(640, 580, 641, 581);
+    assert.equal(JSON.stringify([water().y, water().h]), "[20,18]", "a press on a zone partly off the window does not move it");
     drag(640, 580, 640, 900);
-    const water = cfg.locations.map.test.zones.castable[0];
-    assert(water.y + water.h <= 38, `a zone already past the map's bottom never goes further out (${water.y + water.h})`);
+    assert.equal(water().y, 20, "dragged down it never goes further out");
+    drag(640, 580, 640, 540);
+    assert.equal(water().y, 18, "dragged up it follows the pointer");
     tool.dispose();
   }
 

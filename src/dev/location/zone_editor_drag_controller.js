@@ -271,16 +271,19 @@ export class ZoneEditorDragController {
 
   // TK-058: the snapped travel along one axis, limited so the zone [start, start + size] stays inside the window
   // [low, high] (design cells); a zone larger than the window only slides while it still covers the whole window.
-  // The limits are whole steps from the start, so the zone keeps its offset to the cell grid.
+  // TK-279: a zone already partly outside the window is not pulled in by a press (it jumped on the first touch); the
+  // window only keeps it from going further out. The limits are whole steps from the start, so the zone keeps its offset
+  // to the cell grid.
   #windowTravel(travel, start, size, low, high, step, allowedLow = -Infinity, allowedHigh = Infinity) {
     const fits = size <= high - low;
+    const windowLow = Math.min(fits ? low : high - size, start), windowHigh = Math.max(fits ? high - size : low, start);
     if (step === 0) {
-      const min = Math.max(fits ? low : high - size, allowedLow) - start;
-      const max = Math.min(fits ? high - size : low, allowedHigh) - start;
+      const min = Math.max(windowLow, allowedLow) - start;
+      const max = Math.min(windowHigh, allowedHigh) - start;
       return min > max ? 0 : Math.max(min, Math.min(max, travel));
     }
-    const min = Math.ceil((Math.max(fits ? low : high - size, allowedLow) - start) / step - 1e-9) * step;
-    const max = Math.floor((Math.min(fits ? high - size : low, allowedHigh) - start) / step + 1e-9) * step;
+    const min = Math.ceil((Math.max(windowLow, allowedLow) - start) / step - 1e-9) * step;
+    const max = Math.floor((Math.min(windowHigh, allowedHigh) - start) / step + 1e-9) * step;
     return min > max ? 0 : Math.max(min, Math.min(max, travel));
   }
 

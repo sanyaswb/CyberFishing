@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.85 - No jump on the first press
+
+- TK-279 (spec 173): pressing a zone that runs past the window (the test water below the screen) no longer pulls it up into the window; it moves only where it is dragged and never further out.
+
 ## v0.50.84 - Zones stay on the map
 
 - TK-278 (spec 173): in a narrow window a zone wider than the window (e.g. a full 2560 px zone) could be dragged off the map; moving and resizing now stop at the map's edges (a zone already partly beyond them never goes further out).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.76 - Faster full check
 
 - TK-272: the Pages release check reads each page's stylesheets from git in one batch instead of once per pair (about 2,600 git calls); it takes about 13 s instead of 95 s, and a full check run about 18 s instead of 100 s. It checks the same things.
-
-## v0.50.75 - Procedural rain
-
-- Spec 172 stage D iteration 1 (TK-271): it rains on the location: thin drops fall at the wind's slant, smaller and slower far away, as many as the rain and storm are strong; drops on the water leave rings and small ripples. DevTools «🌦 ПОГОДА» switches rain, storm and fog on with live strength, holds the wind's direction and tunes the rain's look.
