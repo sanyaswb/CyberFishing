@@ -985,14 +985,17 @@ controlUI.dispose();
   assert(layer.removed && !drag.active, "switching the editor off removes the layer");
   assert(!body.classes.has("game-shell--zone-editor"), "TK-052: switching the editor off brings the game's UI back");
 
-  // TK-053: the left-edge strip opens the panel on mouse hover (no button held), a mouse press, or a right swipe.
+  // TK-053, TK-274 (spec 173 F2): the left-edge strip opens the panel only when touched: a mouse press or a right swipe
+  // of a finger. A pointer passing over it (dragging a zone or its movement area near the map's edge) never opens it.
   let opens = 0;
   const edgeMount = [];
   const opener = new DevToolsEdgeOpener({ documentRef: { createElement: makeElement },
     mountNode: { appendChild: element => edgeMount.push(element) }, open: () => opens++ });
-  const edge = edgeMount[0], fire = (type, fields) => edge.listeners.get(type)({ preventDefault() {}, ...fields });
+  const edge = edgeMount[0], fire = (type, fields) => edge.listeners.get(type)?.({ preventDefault() {}, ...fields });
   fire("pointerenter", { pointerType: "mouse", buttons: 1 }); assert.equal(opens, 0, "no opening while a drag holds a button");
-  fire("pointerenter", { pointerType: "mouse", buttons: 0 }); assert.equal(opens, 1, "a mouse at the left edge opens DevTools");
+  fire("pointerenter", { pointerType: "mouse", buttons: 0 }); fire("pointermove", { pointerType: "mouse", pointerId: 1, clientX: 4 });
+  assert.equal(opens, 0, "a mouse passing over the edge does not open DevTools");
+  fire("pointerdown", { pointerType: "mouse", pointerId: 1, clientX: 3 }); assert.equal(opens, 1, "a mouse press on the edge opens DevTools");
   fire("pointerdown", { pointerType: "touch", pointerId: 7, clientX: 2 });
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 20 }); assert.equal(opens, 1, "a short touch move does not open");
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 30 }); assert.equal(opens, 2, "a swipe right from the edge opens");

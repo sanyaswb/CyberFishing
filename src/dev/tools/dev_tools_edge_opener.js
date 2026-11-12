@@ -2,7 +2,9 @@
 const SWIPE_PX = 24;
 
 // A thin strip along the left screen edge that opens the DevTools panel while the zone editor hides its button
-// (TK-053): a mouse pointer entering it with no button held, a mouse press on it, or a finger swiping right from it.
+// (TK-053): only when touched — a mouse press on it or a finger swiping right from it. TK-274 (spec 173 F2): a pointer
+// merely passing over it opens nothing, so dragging a zone or its movement area near the map's left edge never opens
+// the panel; while the editor has captured the pointer (a drag, drawing, a mask stroke) the strip gets no events.
 // dev-tools.css shows the strip only under body.game-shell--zone-editor; it sits under the panel in DOM order.
 export class DevToolsEdgeOpener {
   #element;
@@ -18,7 +20,6 @@ export class DevToolsEdgeOpener {
     element.className = "devtools__edge";
     element.setAttribute?.("aria-hidden", "true");
     this.#listeners = [
-      ["pointerenter", event => { if (event.pointerType === "mouse" && !event.buttons) this.#open(); }],
       ["pointerdown", event => this.#down(event)],
       ["pointermove", event => this.#move(event)],
       ["pointerup", () => { this.#swipe = null; }],

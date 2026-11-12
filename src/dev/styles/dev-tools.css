@@ -340,7 +340,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 16px;
+  width: 8px; /* TK-274: only a deliberate touch of the very edge */
   height: var(--ui-logical-height, 100dvh);
   z-index: var(--ui-layer-panel);
   touch-action: none;

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.79 - DevTools open only on touching the left edge
+
+- TK-274 (spec 173 F2): while the zone editor hides the DevTools button, the panel opens only by pressing the very left edge (8 px) or swiping right from it; a pointer passing over the edge while dragging zones no longer opens it.
+
 ## v0.50.78 - Rain zones in the zone editor
 
 - TK-273 (spec 172 D4): the zone editor has a new category «Дощ»: it rains only inside these zones (drops land in them and are clipped to them); rings and ripples stay on the water. The test location has one rain zone over the whole map; the category's switch off rains over the whole screen.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.70 - GodMode infinite cast distance across any equipment
 
 - TK-268: GodMode infiniteCasting enables casting to any distance across the entire water map with any equipped tackle (pole, match, feeder, spinning), without tackle or line constraints restricting aim reach.
-
-## v0.50.69 - Direct pixel depth reading without grid stepping
-
-- TK-266.1: float, feeder and tackle read exact bottom depth directly from DepthMapReader at their continuous (x, y) coordinates without 40px grid stepping, while grid cells retain fixed central depths for DevTools and zone overview.
