@@ -1981,6 +1981,59 @@ controlUI.dispose();
     assert.equal(area.y + area.h, 35, "an area edge beyond the map is grabbed at the map's edge");
     tool.dispose();
   }
+  // TK-277 (spec 173 F3): «Обрізати по ігровій зоні» on the test location's real castable zone (mask cells 0.5 design
+  // cells): the cut lies on that grid, a ragged shore gives a mask, pieces become zones, moving zones cut their area.
+  {
+    const { ZONES } = load("src/game/config/raw/locations/zones/test.js");
+    const { clipZoneToCastable } = load("src/dev/location/zone_castable_clip.js");
+    const maskMath = load("src/engine/geometry/grid_mask.js");
+    const format = load("src/dev/location/zone_export_format.js");
+    const castable = JSON.parse(JSON.stringify(ZONES.castable));
+    const options = { category: "collisions", mapWidth: 64, fallbackStep: 1 };
+    const inWater = (x, y) => castable.some(water => x >= water.x && x < water.x + water.w && y >= water.y && y < water.y + water.h &&
+      (!water.mask?.enabled || maskMath.gridMaskContains(water.mask, (x - water.x) / water.w, (y - water.y) / water.h)));
+    const json = value => JSON.stringify(value);
+    let result = clipZoneToCastable({ x: 60, y: 30, w: 8, h: 4 }, castable, options);
+    assert.equal(json(result.zones), json([{ x: 60, y: 30, w: 4, h: 4 }]), "a rectangle past the water's edge is cut at the edge, no mask needed");
+    result = clipZoneToCastable({ x: 0, y: 18, w: 6, h: 4 }, castable, options);
+    const shore = result.zones[0];
+    // The real shore there: water from y 21 (mask row 2 starts at x 5.5, row 3 at x 3.5).
+    assert(result.zones.length === 1 && shore.mask?.enabled && json([shore.x, shore.y, shore.w, shore.h]) === json([3.5, 21, 2.5, 1]),
+      "a ragged shore gives a mask, shrunk to the water's cells");
+    assert.equal(maskMath.validateGridMask(shore.mask), null, "the mask is valid and side-connected");
+    for (let y = shore.y + 0.25; y < shore.y + shore.h; y += 0.5) for (let x = shore.x + 0.25; x < shore.x + shore.w; x += 0.5) {
+      const kept = maskMath.gridMaskContains(shore.mask, (x - shore.x) / shore.w, (y - shore.y) / shore.h);
+      assert.equal(kept, inWater(x, y), `cell (${x}, ${y}) follows the water exactly on its grid`);
+    }
+    assert.equal(format.validateZones({ collisions: result.zones }).length, 0, "a cut zone exports");
+    result = clipZoneToCastable({ x: 10, y: 25, w: 4, h: 2 }, castable, options);
+    assert.equal(result.changed, false, "a zone inside the water is unchanged");
+    assert.equal(clipZoneToCastable({ x: 10, y: 5, w: 2, h: 2 }, castable, options).error, "outside", "a zone on land is refused");
+    const split = clipZoneToCastable({ x: 2, y: 1, w: 6, h: 2 }, [{ x: 0, y: 0, w: 4, h: 4 }, { x: 6, y: 0, w: 4, h: 4 }], options);
+    assert.equal(json(split.zones), json([{ x: 2, y: 1, w: 2, h: 2 }, { x: 6, y: 1, w: 2, h: 2 }]), "separate pieces become zones");
+    const moving = { id: "school", x: 10, y: 25, w: 1, h: 1, moving: true, bounds: [{ x: -2, y: 18, w: 70, h: 22 }] };
+    result = clipZoneToCastable(moving, castable, { ...options, category: "dynamic" });
+    assert.equal(json(result.zones[0].bounds), json([{ x: 0, y: 20, w: 64, h: 18 }]), "a moving zone's area is cut to the water");
+    assert.equal(json([result.zones[0].x, result.zones[0].y]), json([10, 25]), "its body stays");
+    assert.equal(clipZoneToCastable({ ...moving, y: 5 }, castable, { ...options, category: "dynamic" }).error, "body-outside",
+      "a body out of the water is not left outside its area");
+    assert.equal(clipZoneToCastable(castable[0], castable, { ...options, category: "castable" }).error, "castable", "not for the water itself");
+    // The section's button writes the cut zones in place of the selected one.
+    const writes = [];
+    const rows = new Map();
+    const clipState = new ZoneEditorState(); clipState.loadedLocationId = "test"; clipState.setLocation("test");
+    const clipConfig = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 }, enableCollisions: true,
+      map: { test: { name: "Test", zones: { castable, collisions: [{ x: 1, y: 22, w: 2, h: 2 }, { x: 60, y: 30, w: 8, h: 4 }] } } } } };
+    const clipUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: (label, text) => rows.set(label, text),
+      createControlGroup: () => ({ replaceChildren() {} }), createInputRow() {}, createRangeRow() {}, createSelectRow() {},
+      createSwitcherRow() {}, createButtonRow: (label, parent, callback) => rows.set(label, callback) };
+    clipState.select("collisions", 1);
+    new ZoneEditorSection({ ui: clipUi, state: clipState, config: clipConfig, createSection: () => ({ replaceChildren() {} }),
+      renderTree() {}, getWaterMetric: () => null, updateConfig: (path, value) => writes.push([path.join("."), value]) }).render({});
+    rows.get("Обрізати по ігровій зоні")();
+    assert.equal(json(writes.at(-1)), json(["CONFIG.locations.map.test.zones.collisions", [{ x: 1, y: 22, w: 2, h: 2 }, { x: 60, y: 30, w: 4, h: 4 }]]),
+      "the button replaces the selected zone with its cut");
+  }
   console.log("Castable fishing zones passed: real readings (Net, landing policy, fish trigger), hand chum band and far-line drag into chumCastDistance, line length for the line radius and the game's sector from a draggable conditional float, rod's real position, test chum zones as game chum records (move, resize), game show switches, own section, polygon on both renderers.");
 })().catch((error) => {
   console.error(error);

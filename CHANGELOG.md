@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.82 - Clip zones to the castable area
+
+- TK-277 (spec 173 F3): every zone list but the castable one has «Обрізати по ігровій зоні»: the selected zone is cut to the water exactly on the castable mask's grid (a mask where the shore is ragged; separate pieces become separate zones); a moving zone's movement area is cut instead.
+
 ## v0.50.81 - Movement area editable at once
 
 - TK-276 (spec 173 F4): with «Редагувати рухомі» on, the movement area of the moving zone chosen in its list can be dragged at once (no click on its body first, other selections no longer hide it); an area edge beyond the map is grabbed at the map's edge.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.73 - Glints on the water
 
 - Spec 172 stage B (TK-270): the water sparkles on its wave crests: over all the water by day, in a path under the sun at sunrise and sunset and under the moon at night (the path widens toward the viewer); clouds and fog dim them. Tuned live in DevTools (water → glints); the sun and moon positions are in the location's sky settings.
-
-## v0.50.72 - Pack item quantities in default starting inventory
-
-- TK-269.1: starting inventory packs now populate with their configured pack quantities (e.g. 50 oil worms, 25 bread, 15 chum mix, 100/75/50/25/10 variants) instead of flat 1s, with single items remaining 1 each and 1 bait attached to the equipped hook.

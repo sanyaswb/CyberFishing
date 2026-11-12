@@ -5,6 +5,7 @@ import { snapZonesToGrid } from "../location/zone_grid_snap.js";
 import { zoneCellSizeWarning, zoneCellSizes } from "../location/zone_cell_sizes.js";
 import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
   from "../location/zone_export_format.js";
+import { clipZoneToCastable } from "../location/zone_castable_clip.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
@@ -17,6 +18,15 @@ const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної п�
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 // TK-089, TK-090: the last option of a zone number list takes every zone.
 const ALL_ZONES = "Всі";
+// Spec 173 F3 (TK-277): why «Обрізати по ігровій зоні» changed nothing.
+const CLIP_MESSAGES = Object.freeze({
+  "no-castable": "Немає ігрової зони — обрізати нема по чому.",
+  outside: "Зона повністю поза ігровою зоною — нічого не лишилося б, зону не змінено.",
+  "no-area": "У рухомої зони немає області руху.",
+  "body-outside": "Тіло рухомої зони поза ігровою зоною — спершу пересуньте його у воду.",
+  empty: "Зона порожня.",
+  inside: "Зона вже повністю в ігровій зоні — змін немає.",
+});
 
 // The location editor in DevTools (spec 129, spec 130): Локація first — everything below works on the chosen
 // location — then the editor and shared cell-grid controls directly, Зони (one list per category: the switch turns the
@@ -42,6 +52,7 @@ export class ZoneEditorSection {
   #getMetric; #createMetric; #resetPerspective;
   #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones; #getDependentZones;
   #fullscreen;
+  #clipMessage = null;
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
@@ -405,6 +416,15 @@ export class ZoneEditorSection {
         this.#renderTree(fields, external, [...path, index]);
       } else { const fields = { ...displayed }; delete fields.mask; this.#renderTree(fields, external, [...path, index]); }
       if (category === "dynamic") ui.createInfoRow("Область руху", "Форма нової зони обирається перед додаванням. Для кола задається діаметр, для квадрата — сторона. Область руху вибраної тут зони (номер зони вище) редагується одразу, щойно ввімкнено «Редагувати рухомі»: тягніть край, кут або середину області; вона завжди містить усе тіло зони. Край області за межами мапи береться на краю мапи.", list);
+      // Spec 173 F3: every category but the castable one can be cut to the water on its grid.
+      if (!all && category !== "castable") {
+        ui.createButtonRow("Обрізати по ігровій зоні", external, () => this.#clipToCastable(category, index, zones, displayed, path));
+        if (this.#clipMessage?.category === category) ui.createInfoRow("Обрізання", this.#clipMessage.text, external);
+        ui.createInfoRow("Що робить обрізання", category === "dynamic"
+          ? "Обрізає область руху вибраної зони до меж ігрової зони; тіло має лишитися в області."
+          : "Відрізає все, що за межами ігрової зони, по сітці її маски (точно по клітинках): зона стискається, за потреби отримує маску; якщо розпадається на окремі шматки — кожен стає окремою зоною.", external);
+      }
+      this.#clipMessage = null;
       // Any zone can go, the last one too (TK-051); the refilled list then has no delete button. Not under «Всі».
       if (!all) ui.createButtonRow("Видалити вибрану зону", external, () => {
         this.#update(path, zones.filter((_, number) => number !== index));
@@ -433,6 +453,26 @@ export class ZoneEditorSection {
       this.#update(path, [...zones, zone]);
       this.#select(category, zones.length);
     });
+  }
+
+  // Spec 173 F3 (TK-277): the selected zone cut to the castable area (pieces become zones in its place), one config edit.
+  #clipToCastable(category, index, zones, displayed, path) {
+    const locations = this.#config.locations, id = this.#locationId();
+    const design = Number(locations.designCellSize) || locations.cellSize;
+    const result = clipZoneToCastable(category === "dynamic" ? displayed : zones[index], locations.map[id]?.zones?.castable || [],
+      { category, mapWidth: locations.baseResolution.width / design, fallbackStep: locations.cellSize / design });
+    if (result.error || !result.changed) {
+      this.#clipMessage = { category, text: CLIP_MESSAGES[result.error ?? "inside"] };
+      this.#fillCategory(category);
+      return;
+    }
+    this.#maskEditor?.stop();
+    this.#update(path, [...zones.slice(0, index), ...result.zones, ...zones.slice(index + 1)]);
+    this.#clipMessage = { category, text: result.zones.length > 1
+      ? `Обрізано: зона розпалася на ${result.zones.length} окремі зони (номери ${index + 1}–${index + result.zones.length}).`
+      : "Обрізано по ігровій зоні." };
+    // Refills this list once, with the message (the next refill drops it).
+    this.#select(category, index);
   }
 
   // Spec 141: «Додати зону» draws new zones on the grid. It turns on what drawing needs (the editor, the category's
