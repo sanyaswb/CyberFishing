@@ -19,7 +19,14 @@ export function clipZoneToCastable(zone, castable, { category, mapWidth, fallbac
   if (!zone || !Array.isArray(castable) || castable.length === 0) return { error: "no-castable" };
   if (category === "castable") return { error: "castable" };
   if (category === "dynamic") return clipMovementArea(zone, castable, mapWidth);
-  const grid = castableGrid(castable, mapWidth, fallbackStep);
+  return clipZoneToAreas(zone, castable, castableGrid(castable, mapWidth, fallbackStep), mapWidth);
+}
+
+// The zone cut to the union of areas (zones with optional masks) on a given grid ({ stepX, stepY, originX, originY },
+// design cells): the same cell rule and pieces as above. TK-280 uses it to fit a masked zone into the map on its own
+// mask's grid.
+export function clipZoneToAreas(zone, areas, grid, mapWidth) {
+  const castable = areas;
   const { stepX, stepY, originX, originY } = grid;
   const i0 = Math.floor((zone.x - originX) / stepX + 1e-9), i1 = Math.ceil((zone.x + zone.w - originX) / stepX - 1e-9);
   const j0 = Math.floor((zone.y - originY) / stepY + 1e-9), j1 = Math.ceil((zone.y + zone.h - originY) / stepY - 1e-9);

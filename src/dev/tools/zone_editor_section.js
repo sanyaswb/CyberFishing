@@ -6,6 +6,7 @@ import { zoneCellSizeWarning, zoneCellSizes } from "../location/zone_cell_sizes.
 import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zoneFileName, zoneHash }
   from "../location/zone_export_format.js";
 import { clipZoneToCastable } from "../location/zone_castable_clip.js";
+import { findZonesBeyondMap, fitZonesToMap } from "../location/zone_map_bounds.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
@@ -18,6 +19,9 @@ const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної п�
 const CELL_SIZE = Object.freeze({ min: 5, max: 200 });
 // TK-089, TK-090: the last option of a zone number list takes every zone.
 const ALL_ZONES = "Всі";
+// Spec 173 TK-280: how the notice names a part and its side past the map.
+const SIDE_LABELS = Object.freeze({ left: "лівий край x", top: "верхній край y", right: "правий край x + w",
+  bottom: "нижній край y + h" });
 // Spec 173 F3 (TK-277): why «Обрізати по ігровій зоні» changed nothing.
 const CLIP_MESSAGES = Object.freeze({
   "no-castable": "Немає ігрової зони — обрізати нема по чому.",
@@ -53,6 +57,9 @@ export class ZoneEditorSection {
   #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones; #getDependentZones;
   #fullscreen;
   #clipMessage = null;
+  #alert = null;
+  #fixFile = null;
+  #fixMessage = "";
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
   // the code (before session overrides); resetZones(id): drops the session's zone overrides of a location.
@@ -76,6 +83,9 @@ export class ZoneEditorSection {
     const content = this.#createSection("🗺️ РЕДАКТОР", parent, ["ZONE_EDITOR"]);
     this.#root = content;
     if (!this.#state.locationId) this.#state.setLocation(this.#locationId());
+    // Spec 173 TK-280: first in the section, the notice of zones past the map.
+    this.#alert = this.#ui.createControlGroup(content, ["ZONE_EDITOR", "beyondMap"]);
+    this.#fillAlert();
     this.#location = this.#ui.createControlGroup(content, ["ZONE_EDITOR", "location"]);
     this.#fillLocation();
     this.#renderEditor(content);
@@ -144,6 +154,72 @@ export class ZoneEditorSection {
     this.#refreshZones();
     this.#fillPerspective();
     this.#fillSaving();
+  }
+
+  // Spec 173 TK-280: zones past the map — in this session or still in the code — in a red notice at the top of the
+  // editor, with «Виправити» (a zone file with every zone fitted into the map) and then «Завантажити». The notice stays
+  // until the code holds zones inside the map (npm run apply:zones with that file, then a reload) and the session too.
+  #fillAlert() {
+    const host = this.#alert;
+    if (!host) return;
+    const ui = this.#ui, id = this.#locationId(), map = this.#mapCells();
+    // The notice holds no bound values (only text and buttons), so it is simply replaced.
+    host.replaceChildren();
+    const session = findZonesBeyondMap(this.#config.locations.map[id]?.zones, map);
+    const base = this.#getBaseZones ? findZonesBeyondMap(this.#getBaseZones(id), map) : [];
+    if (!session.length && !base.length) { this.#fixFile = null; this.#fixMessage = ""; return; }
+    const design = this.#designCell();
+    const lines = (session.length ? session : base).map((item) => this.#beyondLine(item, design));
+    if (!session.length) lines.unshift("У цій сесії зони вже в межах мапи, але в коді — ще ні:");
+    lines.push(`Мапа: ${map.mapWidth} × ${map.mapHeight} клітинок (${map.mapWidth * design} × ${map.mapHeight * design} px).`);
+    lines.push("Попередження зникне, коли виправлені зони будуть у коді: npm run apply:zones -- <файл>, потім перезавантажте сторінку.");
+    if (this.#fixMessage) lines.push(this.#fixMessage);
+    const alert = ui.createAlert("⚠ Зони виходять за межі мапи", lines, host, ["ZONE_EDITOR", "beyondMap", "notice"]);
+    if (!this.#files) return;
+    ui.createButtonRow("Виправити", alert, () => { void this.#prepareFix(session.length ? "session" : "base"); });
+    const file = this.#fixFile;
+    if (file?.locationId === id) ui.createButtonRow(`Завантажити ${file.name}`, alert, () => this.#files.download(file.name, file.text));
+  }
+
+  // One notice line: «Ігрова область (закидання) 1: нижній край y + h 38 > 36 клітинок (1520 > 1440 px)».
+  #beyondLine(item, design) {
+    const part = item.part === "area" ? `, область руху ${item.areaIndex + 1}` : item.part === "body" ? ", тіло" : "";
+    const sides = item.sides.map(({ side, value, limit }) => `${SIDE_LABELS[side]} ${value} ${side === "left" || side === "top" ? "<" : ">"} ${limit} клітинок (${Math.round(value * design)} px)`);
+    return `${LABELS[item.category] ?? item.category} ${item.index + 1}${part}: ${sides.join("; ")}`;
+  }
+
+  // The zone file with every zone of this location fitted into the map, from the session's zones (or the code's when the
+  // session is already fine), ready for «Завантажити» and npm run apply:zones.
+  async #prepareFix(source) {
+    const id = this.#locationId(), locations = this.#config.locations;
+    try {
+      const baseZones = this.#getBaseZones?.(id) || {};
+      const zones = source === "session" ? locations.map[id]?.zones : baseZones;
+      const fitted = fitZonesToMap(zones, this.#mapCells());
+      const baseHash = await zoneHash(baseZones, text => this.#files.hashText(text));
+      const file = buildZoneFile({ locationId: id, zones: fitted.zones, baseHash, gameVersion: this.#gameVersion, locations,
+        exportedAt: new Date().toISOString() });
+      const errors = validateZoneFile(file, locations);
+      if (errors.length) throw new Error(errors.slice(0, 3).join("; "));
+      const name = zoneFileName(id, this.#gameVersion, new Date());
+      this.#fixFile = { locationId: id, name, text: `${JSON.stringify(file, null, 2)}
+` };
+      this.#fixMessage = `Виправлений файл готовий: ${name}${fitted.removed.length ? ` (зон повністю поза мапою прибрано: ${fitted.removed.length})` : ""}. Завантажте його й застосуйте.`;
+    } catch (error) {
+      this.#fixFile = null;
+      this.#fixMessage = `Виправити не вдалося: ${error?.message || error}`;
+    }
+    this.#fillAlert();
+  }
+
+  // The map in design cells.
+  #mapCells() {
+    const locations = this.#config.locations, design = this.#designCell();
+    return { mapWidth: locations.baseResolution.width / design, mapHeight: locations.baseResolution.height / design };
+  }
+
+  #designCell() {
+    return Number(this.#config.locations.designCellSize) || this.#config.locations.cellSize;
   }
 
   // D5: the chosen location's zone file — export, import into the session, reset to the code, and a status line.
@@ -336,6 +412,7 @@ export class ZoneEditorSection {
   }
 
   #refreshZones() {
+    this.#fillAlert();
     for (const category of CATEGORIES) this.#fillCategory(category);
     this.#syncEditingControls();
     this.#showSavingStatus();

@@ -346,6 +346,17 @@
   touch-action: none;
 }
 .game-shell--zone-editor .devtools__edge { display: block; }
+/* Spec 173 TK-280: a red notice among a section's controls (DevToolsUI.createAlert): zones past the map. */
+.devtools__alert {
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-danger);
+  border-radius: var(--ui-radius-panel);
+  background: rgba(var(--ui-danger-rgb), 0.14);
+  color: var(--ui-danger-text);
+}
+.devtools__alert-title { font-weight: 700; margin-bottom: 4px; }
+.devtools__alert-line { font-size: 0.92em; line-height: 1.35; }
 /* TK-083: the zone editor's grid warning (the map is not a whole number of cells), in the middle of the screen. */
 .zone-editor-warning {
   position: fixed;

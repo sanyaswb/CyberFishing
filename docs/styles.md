@@ -89,6 +89,9 @@ select, colour from `--devtools-swatch`) and `zone-editor-drag-layer` (a transpa
 panel while the editor is on; `--x`, `--y`, `--xy` cursor modifiers), and Revision 2 `devtools__range` /
 `devtools__range-value` (`DevToolsUI.createRangeRow`, a 0..100 slider for grid and depth opacity). The editor holds the
 zone, cell-grid, perspective and overlay controls. `ZoneEditorSection` releases value bindings before rebuilding its selected geometry controls.
+Spec 173 (TK-280) adds `devtools__alert` (`DevToolsUI.createAlert`): a red notice with the panel radius among a
+section's controls, never in «Опис»; its `__title`, `__line` elements and action rows inside it; colours from
+`--ui-danger`, `--ui-danger-rgb`, `--ui-danger-text`.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

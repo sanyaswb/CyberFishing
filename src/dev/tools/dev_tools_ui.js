@@ -195,6 +195,27 @@ export class DevToolsUI {
     return valueEl;
   }
 
+  // Spec 173 TK-280: a red notice with rounded corners among its parent's controls (never inside the collapsed «Опис»):
+  // a title and one line per problem; action rows go into the returned element through createButtonRow.
+  createAlert(titleStr, lines, parentElement, path = null) {
+    const alert = document.createElement("div");
+    alert.className = "devtools__alert";
+    alert.setAttribute("role", "alert");
+    this.#assignDevToolsPath(alert, path);
+    const title = document.createElement("div");
+    title.className = "devtools__alert-title";
+    title.innerText = titleStr;
+    alert.appendChild(title);
+    for (const line of lines) {
+      const item = document.createElement("div");
+      item.className = "devtools__alert-line";
+      item.innerText = line;
+      alert.appendChild(item);
+    }
+    this.#insertTreeNode(parentElement, alert, 0);
+    return alert;
+  }
+
   // A visible label/value row (createInfoRow puts its rows into the collapsed "Опис"); returns the value element.
   createTextRow(labelStr, value, parentElement) {
     const row = document.createElement("div");

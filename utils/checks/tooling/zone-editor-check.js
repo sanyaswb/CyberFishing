@@ -183,7 +183,8 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
     createSwitcherRow(label, value, parent, action) { remember(label, parent, action); if (label === 'Меш маски') maskSections.push(parent.label); },
     createButtonRow(label, parent, action) { remember(label, parent, action); },
     createInputRow(label, value, parent, type, action) { remember(label, parent, action); },
-    createSelectRow(label, options, value, parent, action) { remember(label, parent, action); } };
+    createSelectRow(label, options, value, parent, action) { remember(label, parent, action); },
+    createAlert: () => ({ label: 'alert' }) };
   st.setFlag('enabled', true); st.setEditing('castable', true); st.select('castable', 0);
   const section = new ZoneEditorSection({ ui, state: st, config: cfg, maskEditor: editor,
     createSection: label => ({ label, replaceChildren() {} }), renderTree(value, parent, path) {
@@ -393,7 +394,8 @@ const ui = { createControlGroup: () => ({ label: "Локація", replaceChildr
   createRangeRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
   createInfoRow(label, value) { const element = { innerText: value }; infoRows.set(label, element); return element; },
   createSelectRow(label, options, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
-  createButtonRow(label, parent, callback) { actions.set(keyOf(label, parent), callback); } };
+  createButtonRow(label, parent, callback) { actions.set(keyOf(label, parent), callback); },
+  createAlert: () => ({ label: "alert" }) };
 const stubSection = (label) => ({ label, replaceChildren() {} });
 new ZoneEditorSection({ ui, state, config, createSection: stubSection,
   getWaterMetric: () => metric,
@@ -757,7 +759,7 @@ controlUI.dispose();
   const structureUi = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }),
     syncValue(path, value) { controlValues.set(path.join("."), value); },
     releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
-    createInfoRow: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
+    createInfoRow: () => ({}), createAlert: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
     createSelectRow: record("select"), createSwitcherRow: record("switch") };
   const written = [];
   locations.enableCollisions = false;
@@ -1051,7 +1053,7 @@ controlUI.dispose();
   const moves = [];
   const fsState = new ZoneEditorState(); fsState.loadedLocationId = "test"; fsState.setLocation("test");
   const fsRows = new Map();
-  const fsUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
+  const fsUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow() {}, createRangeRow() {}, createButtonRow() {}, createSelectRow() {},
     createSwitcherRow: (label, ...args) => fsRows.set(label, args) };
   new ZoneEditorSection({ ui: fsUi, state: fsState, config: { locations: { cellSize: 40, designCellSize: 40,
@@ -1069,7 +1071,7 @@ controlUI.dispose();
     map: { test: { name: "Test", zones: { collisions: [{ x: 1, y: 1, w: 2, h: 2 }, { x: 5, y: 5, w: 2, h: 2 }] } } } } };
   const allState = new ZoneEditorState(); allState.loadedLocationId = "test"; allState.setLocation("test");
   const allRows = new Map(), allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
-  const allUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: allRecord("info"), createControlGroup: () => ({ replaceChildren() {} }),
+  const allUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: allRecord("info"), createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
     createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") };
   const sections = new Map();
@@ -1106,7 +1108,7 @@ controlUI.dispose();
   const snapState = new ZoneEditorState(); snapState.loadedLocationId = "test"; snapState.setLocation("test"); snapState.setFlag("enabled", true);
   const snapRows = new Map(), snapWrites = [];
   const snapRecord = kind => (label, ...args) => snapRows.set(label, { kind, args });
-  const snapUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+  const snapUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow: snapRecord("input"), createRangeRow: snapRecord("range"), createButtonRow: snapRecord("button"),
     createSelectRow: snapRecord("select"), createSwitcherRow: snapRecord("switch") };
   new ZoneEditorSection({ ui: snapUi, state: snapState, config: snapConfig, createSection: label => ({ label, replaceChildren() {} }),
@@ -1459,7 +1461,7 @@ controlUI.dispose();
     map.refreshConfig(cfg.locations, {});
   };
   const rows = new Map();
-  const ui = { createControlGroup: () => ({ label: 'Локація', replaceChildren() {} }), releaseValueBindings() {}, syncValue() {}, createInfoRow() {},
+  const ui = { createControlGroup: () => ({ label: 'Локація', replaceChildren() {} }), releaseValueBindings() {}, createAlert: () => ({}), syncValue() {}, createInfoRow() {},
     createSelectRow: (label, options, value, parent, action) => rows.set(`${parent.label}/${label}`, action),
     createInputRow: (label, value, parent, type, action) => rows.set(`${parent.label}/${label}`, action),
     createSwitcherRow() {}, createRangeRow() {}, createButtonRow: (label, parent, action) => rows.set(`${parent.label}/${label}`, action) };
@@ -1543,7 +1545,7 @@ controlUI.dispose();
   const ui = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }), syncValue() {}, releaseValueBindings(parent) {
     for (const map of [rows, info]) for (const key of [...map.keys()]) if (key.startsWith(`${parent.label}/`)) map.delete(key);
   }, createInfoRow: (label, value, parent) => { const element = { innerText: value }; info.set(`${parent?.label}/${label}`, element); return element; },
-  createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
+  createAlert: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
   createSelectRow: record("select"), createSwitcherRow: record("switch") };
   const downloads = [], confirms = [], opened = [], writes = [], resets = [];
   let picked = null, confirmAnswer = false;
@@ -1812,7 +1814,7 @@ controlUI.dispose();
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const sectionUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ label: "group", replaceChildren() {} }),
+  const sectionUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ label: "group", replaceChildren() {} }),
     createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"), createSelectRow: record("select"),
     createSwitcherRow: record("switch") };
   new ZoneEditorSection({ ui: sectionUi, state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
@@ -1888,7 +1890,7 @@ controlUI.dispose();
     spots.remove("lake", 0);
     assert.equal(spots.list("lake").length, 2, "a game zone cannot be removed in the editor");
     const listRows = new Map(), listRecord = kind => (label, ...args) => listRows.set(label, { kind, args });
-    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: listRecord("info"),
+    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
       createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
     state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
@@ -1898,7 +1900,7 @@ controlUI.dispose();
     listRows.get("Номер зони прикормки").args[3]("2");
     assert(spots.selected === 1 && listRows.has("Видалити вибрану зону прикормки"), "the test zone can be removed");
     // TK-089: «Всі» takes every zone, the one under the pointer; nothing is removed from there.
-    listRows.clear(); new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: listRecord("info"),
+    listRows.clear(); new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
       createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
     state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
@@ -1925,7 +1927,7 @@ controlUI.dispose();
     const all = new CastableDependentZones({ state: allState, config: allConfig, readings, projector: identity, getWaterMetric: () => flat,
       map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 }, writeConfig() {} });
     const allRows = new Map(), allWrites = [], allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
-    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
       createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
       createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") },
     state: allState, config: allConfig, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
@@ -2062,6 +2064,71 @@ controlUI.dispose();
     tool.dispose();
   }
 
+  // TK-280 (spec 173): zones past the map. The test location's water, fish school area and rain run to 38 cells of a
+  // 36-cell map: found, listed in a red notice at the top of the editor; «Виправити» makes a zone file with every zone
+  // inside the map (the water's mask keeps its own cells), «Завантажити» downloads it; the notice stays while the code
+  // still has such zones.
+  {
+    const { ZONES } = load("src/game/config/raw/locations/zones/test.js");
+    const { findZonesBeyondMap, fitZonesToMap } = load("src/dev/location/zone_map_bounds.js");
+    const maskMath = load("src/engine/geometry/grid_mask.js");
+    const format = load("src/dev/location/zone_export_format.js");
+    const json = value => JSON.stringify(value);
+    const map = { mapWidth: 64, mapHeight: 36 };
+    const found = findZonesBeyondMap(ZONES, map);
+    assert.equal(json(found.map(item => [item.category, item.index, item.part, item.sides.map(side => side.side + side.value)])),
+      json([["castable", 0, "zone", ["bottom38"]], ["dynamic", 0, "area", ["bottom38"]], ["rain", 0, "zone", ["bottom38"]]]),
+      "the zones past the map's bottom are found, with the side and value");
+    const fitted = fitZonesToMap(ZONES, map);
+    assert.equal(findZonesBeyondMap(fitted.zones, map).length, 0, "fixed: nothing past the map");
+    const water = fitted.zones.castable[0], before = ZONES.castable[0];
+    assert.equal(json([water.x, water.y, water.w, water.h]), json([0, 20, 64, 16]), "the water ends at the map's bottom");
+    for (let y = 20.25; y < 36; y += 0.5) for (let x = 0.25; x < 64; x += 0.5) {
+      assert.equal(maskMath.gridMaskContains(water.mask, x / 64, (y - 20) / 16),
+        maskMath.gridMaskContains(before.mask, x / 64, (y - 20) / 18), `the water's mask keeps its cell (${x}, ${y})`);
+    }
+    assert.equal(json(fitted.zones.dynamic[0].bounds), json([{ x: 0, y: 20, w: 64, h: 16 }]), "the school's area ends at the map");
+    assert.equal(json(fitted.zones.collisions), json(ZONES.collisions), "zones inside the map are untouched");
+    assert.equal(format.validateZones(format.canonicalZones(fitted.zones)).length, 0, "the fixed zones export");
+    const gone = fitZonesToMap({ snags: [{ x: 70, y: 1, w: 2, h: 2 }, { x: -3, y: 1, w: 5, h: 2 }] }, map);
+    assert.equal(json(gone.zones.snags), json([{ x: 0, y: 1, w: 2, h: 2 }]), "a zone wholly outside goes, a partial one is cut");
+    assert.equal(gone.removed.length, 1);
+
+    // The notice in the section: first, red, with the lines; «Виправити» → a file → «Завантажити».
+    const alerts = [], buttons = new Map(), downloads = [];
+    const state = new ZoneEditorState(); state.loadedLocationId = "test"; state.setLocation("test");
+    const config = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 },
+      map: { test: { name: "Test", zones: JSON.parse(JSON.stringify(ZONES)) } } } };
+    const ui = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
+      createInputRow() {}, createRangeRow() {}, createSelectRow() {}, createSwitcherRow() {},
+      createButtonRow: (label, parent, callback) => buttons.set(label, { parent, callback }),
+      createAlert: (title, lines) => { const alert = { title, lines }; alerts.push(alert); return alert; } };
+    let codeZones = JSON.parse(JSON.stringify(ZONES));
+    const files = { download: (name, text) => downloads.push({ name, text }), hashText: async text => String(text.length),
+      confirm: () => true };
+    const section = new ZoneEditorSection({ ui, state, config, createSection: () => ({ replaceChildren() {} }), renderTree() {},
+      getWaterMetric: () => null, updateConfig() {}, files, getBaseZones: () => codeZones, gameVersion: "0.50.86" });
+    section.render({});
+    const alert = alerts.at(-1);
+    assert(alert && alert.title.includes("за межі мапи"), "a red notice tops the editor");
+    assert(alert.lines.some(line => line.startsWith("Ігрова область (закидання) 1: нижній край y + h 38 > 36 клітинок (1520 px)")),
+      "it names the zone, the side and the values");
+    assert(buttons.get("Виправити")?.parent === alert && ![...buttons.keys()].some(label => label.startsWith("Завантажити")),
+      "«Виправити» is in the notice, no download yet");
+    buttons.get("Виправити").callback();
+    await new Promise(resolve => setImmediate(resolve));
+    const download = [...buttons.entries()].find(([label]) => label.startsWith("Завантажити"));
+    assert(download && download[1].parent === alerts.at(-1), "after «Виправити» the notice offers «Завантажити»");
+    download[1].callback();
+    const file = JSON.parse(downloads[0].text);
+    assert.equal(format.validateZoneFile(file, config.locations).length, 0, "the downloaded file is a valid zone file");
+    assert.equal(findZonesBeyondMap(file.zones, map).length, 0, "with every zone inside the map");
+    alerts.length = 0; config.locations.map.test.zones = file.zones; section.render({});
+    assert(alerts.at(-1)?.lines[0].startsWith("У цій сесії зони вже в межах мапи"), "imported in the session only: still shown, the code is not fixed");
+    alerts.length = 0; codeZones = file.zones; section.render({});
+    assert.equal(alerts.length, 0, "once the code has the fixed zones, the notice is gone");
+  }
+
   // TK-277 (spec 173 F3): «Обрізати по ігровій зоні» on the test location's real castable zone (mask cells 0.5 design
   // cells): the cut lies on that grid, a ragged shore gives a mask, pieces become zones, moving zones cut their area.
   {
@@ -2107,7 +2174,8 @@ controlUI.dispose();
       map: { test: { name: "Test", zones: { castable, collisions: [{ x: 1, y: 22, w: 2, h: 2 }, { x: 60, y: 30, w: 8, h: 4 }] } } } } };
     const clipUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: (label, text) => rows.set(label, text),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow() {}, createRangeRow() {}, createSelectRow() {},
-      createSwitcherRow() {}, createButtonRow: (label, parent, callback) => rows.set(label, callback) };
+      createSwitcherRow() {}, createButtonRow: (label, parent, callback) => rows.set(label, callback),
+      createAlert: () => ({}) };
     clipState.select("collisions", 1);
     new ZoneEditorSection({ ui: clipUi, state: clipState, config: clipConfig, createSection: () => ({ replaceChildren() {} }),
       renderTree() {}, getWaterMetric: () => null, updateConfig: (path, value) => writes.push([path.join("."), value]) }).render({});
