@@ -610,7 +610,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     'data-devtools-path="WEATHER.controls.storm"',
     'data-devtools-path="WEATHER.controls.stormStrength"',
     'data-devtools-path="WEATHER.controls.windDirection"',
-    'data-devtools-path="CONFIG.timePhases.night.startHour"',
+    'data-devtools-path="CONFIG.spawns.timePhases.night.startHour"',
     'data-devtools-path="CONFIG.canvas.water.amplitude"',
     'data-devtools-path="CONFIG.canvas.water.wavelength"',
     'data-devtools-path="CONFIG.canvas.water.speed"',
@@ -649,6 +649,23 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     settlingHtml.includes("→ ціль ×"),
     "overlay shows target multiplier while smoothing is transitioning",
   );
+  // Every emitted CONFIG.* hyperlink path must resolve on real CONFIG to a scalar leaf (I-20: never fall back to a section title).
+  for (const snippet of [html, settlingHtml]) {
+    for (const [, linkPath] of snippet.matchAll(/data-devtools-path="(CONFIG\.[^"]+)"/gu)) {
+      let cursor = GAME;
+      for (const seg of linkPath.split(".").slice(1)) {
+        assert(
+          cursor !== null && typeof cursor === "object" && Object.prototype.hasOwnProperty.call(cursor, seg),
+          `link path ${linkPath} must resolve segment "${seg}" in CONFIG`,
+        );
+        cursor = cursor[seg];
+      }
+      assert(
+        cursor !== null && typeof cursor !== "object",
+        `link path ${linkPath} must resolve to a leaf value, not a section`,
+      );
+    }
+  }
   water.seaState.enabled = false;
   sea.update(1200);
   const noSeaHtml = module.render();

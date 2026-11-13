@@ -72,6 +72,22 @@
       на заголовках), `css-usage`, `overlay-balance-windows`, повний `node utils/run-checks.js`.
     - [ ] Перевірка власника TK-296.1: `dev.html` → `OVERLAY` → «ПОГОДА й хвилі» (та `ACTIVE FISH` / `ACTIVE ROD`): посилання без пунктирних
           ліній і підкреслень (кольором `--ui-info`, з легким фоном при наведенні), заголовки без нижньої лінії — з м’яким заокругленим фоном.
+  - [x] **TK-296.2 — виправити шлях посилання «Ніч 0…1» у модулі «ПОГОДА й хвилі» та зафіксувати інцидент I-20 / R20 (власник, 2026-11-13, v0.50.110).**
+        «чому при натисканні ніч 0...1 мені підсвічується devtools__section-title» → «виправ також познач це в інцидентах
+        щоб такого не виникало пропиши алгорити перевірки і що робити якщо виникне така проблема».
+    - Знайдено: `WeatherOverlayModule` (`weather_overlay_module.js`) передавав `devtoolsPath: "CONFIG.timePhases.night.startHour"`,
+      тоді як у `CONFIG` (`game_config.js`) секція лежить за шляхом `CONFIG.spawns.timePhases.night.startHour`. Через відсутній
+      шлях `DevToolsUI.#findPathTarget` повертався префіксом до кореневої секції `"CONFIG"`, а `DevToolsDependencyFeedback.showRevealed`
+      підсвічував її перший дочірній елемент `row.children[0]` (`.devtools__section-title` секції `⚙️ НАЛАШТУВАННЯ (CONFIG)`).
+    - Зміна:
+      - `src/dev/overlay/modules/weather_overlay_module.js`: виправлено шлях на `CONFIG.spawns.timePhases.night.startHour`.
+      - `specs/177-overlay-devtools-links/spec.md`: оновлено шлях у специфікації.
+      - `utils/checks/gameplay/weather-check.js`: додано перевірку всіх `data-devtools-path="CONFIG.…"` атрибутів оверлею
+        щодо реального дерева `CONFIG` (кожен шлях мусить існувати та вказувати на скалярний листок).
+      - `docs/incidents.md`: додано інцидент `I-20`, правило `R20`, алгоритм перевірки `data-devtools-path` та інструкцію дій у разі підсвічування `.devtools__section-title`.
+    - Перевірка: `weather-check.js` впав на старому шляху `CONFIG.timePhases.night.startHour`, після виправлення — `weather`, `config-runtime` і повний `node utils/run-checks.js`.
+    - [ ] Перевірка власника TK-296.2: `dev.html` → `OVERLAY` → «ПОГОДА й хвилі» → натиснути `Ніч 0…1`: DevTools відкривається,
+          розкриває `CONFIG` → `spawns` → `timePhases` → `night` і підсвічує зеленим саме рядок параметра `startHour` (а не заголовок `.devtools__section-title`).
 
 - [x] **TK-295 — підпункти множників із поясненням у модулі оверлею «ПОГОДА Й ХВИЛІ» (власник, 2026-11-13, v0.50.106).**
       «Модуль погода й хвилі, мені не подобається що множники потрібно додати як підпукнти до основних (загальних)

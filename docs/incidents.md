@@ -33,6 +33,37 @@ rule as something the next change can follow.
 | R17 | A DEV tool that reads live game data asks for it itself (a port such as `isLiveDataRequested`); it never depends on another tool's switch (Overlay, console modules) being on. Changing a debug default is checked against every reader of the events that switch gates. | I-16 |
 | R18 | A DEV edit of a value reaches every result derived from it at the start (limits, pools, caches), not only the object that holds it. The check edits through the same path and asserts the effect on the running system (the fight's limit), not the stored value. | I-17 |
 | R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. This holds for scene effects too (rain, particles): their places are world points placed on screen each frame, and their amount follows the visible world area, not the screen. | I-18, I-19 |
+| R20 | Every `data-devtools-path` / `devtoolsPath` emitted by an overlay or UI link must be validated by automated checks against the live `CONFIG` object or mounted `DevTools` control index so it resolves to an exact leaf control (never a missing path or ancestor section fallback). | I-20 |
+
+<a id="i-20"></a>
+
+## I-20 · 2026-11-13 · v0.50.107: overlay link «Ніч 0…1» highlighted root `.devtools__section-title` instead of `startHour` (TK-296.2)
+
+- **Seen:** clicking `Ніч 0…1` in the `ПОГОДА Й ХВИЛІ` overlay opened DevTools and highlighted `.devtools__section-title` (`⚙️ НАЛАШТУВАННЯ (CONFIG)`) in green instead of revealing and highlighting the night start-hour parameter row.
+- **Cause:** `WeatherOverlayModule` (`src/dev/overlay/modules/weather_overlay_module.js:78`) emitted `devtoolsPath: "CONFIG.timePhases.night.startHour"`, whereas `timePhases` actually lives under `CONFIG.spawns.timePhases.night.startHour` (`src/game/config/runtime/game_config.js:285-297`). Because the exact `data-devtools-path="CONFIG.timePhases.night.startHour"` element did not exist in the DevTools DOM, `DevToolsUI.#findPathTarget` (`src/dev/tools/dev_tools_ui.js:617-627`) stripped trailing segments until a matching ancestor prefix remained (`"CONFIG"`, a `.devtools__section`), and `DevToolsDependencyFeedback.showRevealed` (`src/dev/services/dev_tools_dependency_feedback.js:37-40`) highlighted `row.children[0]` (the `.devtools__section-title`). Meanwhile `weather-check.js` only compared `html.includes('data-devtools-path="CONFIG.timePhases.night.startHour"')` without resolving the string against `CONFIG`.
+- **Fix:** corrected the path to `"CONFIG.spawns.timePhases.night.startHour"` in `src/dev/overlay/modules/weather_overlay_module.js` and `specs/177-overlay-devtools-links/spec.md`, and updated `utils/checks/gameplay/weather-check.js` to traverse every `data-devtools-path="CONFIG.…"` link against real `CONFIG`.
+- **Rule R20:** never write hardcoded `CONFIG.*` or `DEVTOOLS` link paths checked only as literal strings. Automated checks must resolve every emitted `data-devtools-path` against the real `CONFIG` tree (and/or mounted DevTools index) and assert that it reaches a scalar leaf parameter, not a missing key or section container.
+- **Check:** `utils/checks/gameplay/weather-check.js` (iterates every `data-devtools-path="CONFIG.…"` in rendered overlay HTML and asserts every segment exists in `GAME` / `CONFIG` and lands on a non-object leaf; failed before the fix, passes after).
+
+### Verification algorithm for new or changed DevTools links
+
+When adding or editing any `devtoolsPath` / `data-devtools-path` in overlay modules or tools:
+
+1. **For `CONFIG.*` paths:** inspect `src/game/config/runtime/game_config.js` (or run a quick check against imported `CONFIG`) and verify every dot-separated segment from `CONFIG` down to the scalar leaf property (`number`, `boolean`, `string`). Remember intermediate wrapper objects like `CONFIG.spawns.*`, `CONFIG.canvas.*`, `CONFIG.physics.*`.
+2. **For specialized DevTools section paths (e.g. `WEATHER.controls.*`):** inspect the corresponding `src/dev/tools/*_section.js` (for `data-devtools-path` / `recordPath`) and ensure the exact string matches the mounted control attribute, not just a conceptual name.
+3. **Resolving check in automated tests:** in the module's check file, parse all `data-devtools-path="..."` strings from the rendered HTML and verify:
+   - every `CONFIG.*` path traverses `CONFIG` without `undefined` and ends on a non-object leaf value (not an intermediate section object);
+   - every non-`CONFIG` control path matches an explicitly declared path on the matching `DevSection` / `DevTools` check.
+4. **Target specificity:** `DevToolsUI.#findPathTarget` prefers non-section leaf rows when `CONFIG.*` exists in both a specialized section and `CONFIG`, and falls back by prefix only if the full path is absent — so passing a test against real `CONFIG` + section paths guarantees no root `.devtools__section-title` fallback.
+
+### What to do if clicking a link highlights `.devtools__section-title`
+
+If a link opens DevTools and highlights a section header (`.devtools__section-title`) in green instead of a control row:
+
+1. **Inspect the link's `data-devtools-path` attribute** in DevTools Element Inspector or in the overlay module source.
+2. **Locate the deepest common prefix shown highlighted** (e.g. `CONFIG` means the very first segment after `CONFIG.` is wrong, or an intermediate key such as `spawns.` or `canvas.` was omitted; `CONFIG.canvas.water` means everything up to `water` exists, while the leaf key is wrong or renamed).
+3. **Compare against real `CONFIG` / section paths:** check `src/game/config/runtime/game_config.js` (or `src/dev/tools/*_section.js`) for the exact nested path and rename `devtoolsPath` accordingly — **never** work around it by weakening `#findPathTarget` or pointing links at section headers.
+4. **Harden the automated check first:** add a traversal assertion in the corresponding check script proving it fails on the broken path, apply the path fix, confirm the check passes, and record any new missed pattern here.
 
 <a id="i-18"></a>
 

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.110 - Weather overlay night link path & incident I-20
+
+- TK-296.2 (owner): fixed the «Ніч 0…1» overlay link path in `WeatherOverlayModule` from `CONFIG.timePhases.night.startHour` to `CONFIG.spawns.timePhases.night.startHour` so DevTools expands and highlights `startHour` instead of the root `.devtools__section-title`; added `CONFIG` leaf traversal assertion in `weather-check.js` and documented incident `I-20` / rule `R20` with verification and troubleshooting steps in `docs/incidents.md`.
+
 ## v0.50.109 - Overlay window close button right of scale slider
 
 - TK-297 (owner): added a close button (`ui-modal-close debug-overlay__close`, `--ui-close-size: 28px`) right of the top scale slider on every overlay module window and `ACTIVE FISH` / `ACTIVE ROD` tool window; clicking it hides the window, disables its key(s) in `OverlaySettingsStore` (including composite modules), and syncs DevTools switchers via `OverlaySettingsStore.subscribe`.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.101 - Weather in the scene section, live weather overlay
 
 - TK-291 (owner): DevTools «ПОГОДА» now lives inside «🖼️ СЦЕНА WebGL»; «Стан моря» is split into «Звичайний стан» (calm, wind, night) and «Гроза»; a new overlay «ПОГОДА й хвилі» shows the storm, rain and fog strengths, the wind's direction and strength, the night and the waves' actual amplitude, length and speed in real time.
-
-## v0.50.100 - Waves switch
-
-- TK-290 (owner): DevTools «Хвилі» switches the waves off on their own: the water and the float are still, while the ripples of rain drops and the boat keep bending the water. Ripples keep the same size by day, at night and in a storm.

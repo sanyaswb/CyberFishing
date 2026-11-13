@@ -75,7 +75,7 @@ export class WeatherOverlayModule extends OverlayModule {
       {
         color: "#aaaaff",
         metricKey: "weather.night",
-        devtoolsPath: "CONFIG.timePhases.night.startHour",
+        devtoolsPath: "CONFIG.spawns.timePhases.night.startHour",
       },
     );
     if (!waves.enabled) {
