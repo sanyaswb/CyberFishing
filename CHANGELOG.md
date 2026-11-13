@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.94 - Weather export, import, reset and apply:weather
+
+- TK-286 (spec 175): added zone-editor-style saving to DevTools «🌧 ПОГОДА» (live status vs code, JSON export with apply command notice, import validation, reset to code) backed by data modules (`rain_settings.js`, `locations/weather/<id>.js`) and `npm run apply:weather` (updates only changed modules with backups, conflict check and schema/weather checks).
+
 ## v0.50.93 - Tuned rain look and ring defaults
 
 - TK-271.1 (spec 172 D): updated default `CONFIG.canvas.rain` values to match the owner's DevTools tuning (`lengthPx` 103, `widthPx` 6.3, `minScale` 0.4, `windSlantDeg` 34, `stormSlantDeg` 48, `rings.sizePx` 65).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.85 - No jump on the first press
 
 - TK-279 (spec 173): pressing a zone that runs past the window (the test water below the screen) no longer pulls it up into the window; it moves only where it is dragged and never further out.
-
-## v0.50.84 - Zones stay on the map
-
-- TK-278 (spec 173): in a narrow window a zone wider than the window (e.g. a full 2560 px zone) could be dragged off the map; moving and resizing now stop at the map's edges (a zone already partly beyond them never goes further out).

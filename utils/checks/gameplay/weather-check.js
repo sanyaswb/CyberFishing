@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const { WeatherModel } = require("../../../src/game/domain/weather/weather_model.js");
 const { EnvironmentSystem } = require("../../../src/game/application/world/environment_system.js");
 const { SeededRng } = require("../../../src/engine/random/seeded_rng.js");
-const { MAP_DB } = require("../../../src/game/config/raw/locations/location_database.js");
+const { MAP_DB } = require("../../../src/game/config/databases/location_catalog.js");
 
 const settings = () => ({
   precipitation: {

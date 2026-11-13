@@ -6,6 +6,7 @@ import { ITEM_STAT_OVERRIDE_CONFIG } from "../raw/items/item_stat_overrides.js";
 import { MAP_DB } from "../databases/location_catalog.js";
 import { PHYSICS_CONFIG } from "../physics/physics_config.js";
 import { LIVE_BAIT_CONFIG } from "../raw/live_bait/live_bait_config.js";
+import { RAIN_SETTINGS } from "../raw/weather/rain_settings.js";
 
 export const CONFIG = {
   liveBait: LIVE_BAIT_CONFIG,
@@ -49,32 +50,8 @@ export const CONFIG = {
     },
     // Процедурний дощ (spec 172 D4, лише WebGL): краплі-штрихи падають до своїх точок, вдалині менші й повільніші;
     // нахил — за вітром; кількість — за силою дощу й грози з моделі погоди. На воді (зелені зони закидання) — кільця
-    // й брижі в картинці води. Розміри — логічні пікселі біля берега.
-    rain: {
-      enabled: true,
-      maxDrops: 700, // крапель при силі дощу 1
-      stormDropsShare: 0.6, // скільки крапель додає повна гроза (частка maxDrops)
-      fallPx: 520, // висота падіння біля берега, px
-      speedPx: 1500, // швидкість падіння біля берега, px/с
-      speedJitter: 0.15, // розкид швидкості, частка
-      lengthPx: 103, // довжина штриха біля берега, px
-      widthPx: 6.3, // товщина штриха біля берега, px
-      opacity: 0.4,
-      color: "#c9d6e3",
-      minScale: 0.4, // найменший розмір вдалині (частка ближнього)
-      windSlantDeg: 34, // нахил крапель при вітрі, градусів
-      stormSlantDeg: 48, // додатковий нахил у повну грозу, градусів
-      rings: {
-        enabled: true,
-        maxRings: 300,
-        sizePx: 65, // кінцевий діаметр кільця біля берега, px
-        lifeSec: 0.7,
-        opacity: 0.4,
-        flatten: 0.35, // сплющення кола в перспективі (висота / ширина)
-        color: "#dfe9f2",
-        ripple: { enabled: true, strength: 0.25, radiusScale: 1.2 }, // брижі в картинці води, як від човна (spec 156)
-      },
-    },
+    // й брижі в картинці води. Розміри — логічні пікселі біля берега. Параметри живуть у rain_settings.js (`npm run apply:weather`).
+    rain: RAIN_SETTINGS,
   },
 
   input: {

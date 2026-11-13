@@ -33,6 +33,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "apply-weather",
+    title: "Weather settings export/import/reset in DevTools and code application via apply:weather",
+    file: "utils/checks/tooling/apply-weather-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "zone-editor",
     title: "DEV zone editor, metre grid and bounded annotation redraw",
     file: "utils/checks/tooling/zone-editor-check.js",

@@ -45,6 +45,7 @@ export class DevTools {
   #zoneDrawing;
   #zoneEditorFullscreen;
   #zoneEditorSection = null;
+  #weatherSection = null;
   #gameVersion;
   #getWaterMetric;
   #createWaterMetric;
@@ -220,12 +221,15 @@ export class DevTools {
     );
     this.#liveData = null;
     this.#zoneEditorSection?.dispose();
+    this.#weatherSection?.dispose();
     this.#ui.dispose();
   }
 
   #populatePanel() {
     this.#zoneEditorSection?.dispose({ preserveDraft: true });
     this.#zoneEditorSection = null;
+    this.#weatherSection?.dispose();
+    this.#weatherSection = null;
     const body = this.#ui.body;
     this.#ui.clearValueBindings();
     body.innerHTML = "";
@@ -278,11 +282,21 @@ export class DevTools {
     }
     if (this.#weather) {
       const locationId = this.#weather.locationId;
-      new WeatherDevSection({ ui: this.#ui, weather: this.#weather,
+      this.#weatherSection = new WeatherDevSection({
+        ui: this.#ui,
+        weather: this.#weather,
         config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
         rainConfig: () => this.#config.canvas?.rain ?? null,
         createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options) }).render(body);
+        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
+        updateConfig: (path, value) => this.#updateConfigValue(path, value),
+        files: this.#zoneEditorFiles,
+        getBaseRain: () => this.#configRuntime?.baseConfig.canvas?.rain ?? null,
+        getBaseLocationWeather: (id) => this.#configRuntime?.baseConfig.locations?.map?.[id]?.weather ?? null,
+        resetWeather: this.#configRuntime ? (id) => this.#resetWeather(id) : null,
+        gameVersion: this.#gameVersion,
+      });
+      this.#weatherSection.render(body);
     }
     this.#renderActiveFishSection(body);
     this.#loadStepperSection?.render(body, this.#ui);
@@ -1071,14 +1085,24 @@ export class DevTools {
   // Spec 130 D5: drops the session's overrides of a location's zones (the whole list and every child path), so the
   // zones are the code's again, and tells the game to reload the location's map.
   #resetLocationZones(id) {
-    const prefix = ["locations", "map", id, "zones"].join(".");
+    this.#resetOverrideTree(["locations", "map", id, "zones"], this.#config.locations.map[id]?.zones);
+    console.log(`[DevTools] Зони ${id} скинуто до коду`);
+  }
+
+  // Spec 175 TK-286: drops the session's overrides of rain look and the location's weather so both match the code again.
+  #resetWeather(id) {
+    this.#resetOverrideTree(["canvas", "rain"], this.#config.canvas?.rain);
+    this.#resetOverrideTree(["locations", "map", id, "weather"], this.#config.locations?.map?.[id]?.weather);
+    console.log(`[DevTools] Погоду ${id} скинуто до коду`);
+  }
+
+  #resetOverrideTree(configParts, fallbackValue) {
+    const prefix = configParts.join(".");
     for (const key of Object.keys(this.#configRuntime.exportOverrides?.() || {})) {
       if (key === prefix || key.startsWith(prefix + ".")) this.#configRuntime.reset(key);
     }
-    const path = ["CONFIG", "locations", "map", id, "zones"];
-    console.log(`[DevTools] Зони ${id} скинуто до коду`);
     document.dispatchEvent(new CustomEvent("config-updated", {
-      detail: { path, value: this.#config.locations.map[id]?.zones, override: true },
+      detail: { path: ["CONFIG", ...configParts], value: fallbackValue, override: true },
     }));
   }
 

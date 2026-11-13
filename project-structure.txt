@@ -498,6 +498,8 @@
 │  │  │  │  │  └── live_bait_config.js
 │  │  │  │  ├── locations
 │  │  │  │  │  ├── location_database.js
+│  │  │  │  │  ├── weather
+│  │  │  │  │  │  └── test.js
 │  │  │  │  │  └── zones
 │  │  │  │  │     └── test.js
 │  │  │  │  ├── physics
@@ -510,8 +512,10 @@
 │  │  │  │  ├── radio
 │  │  │  │  │  ├── radio_channels.js
 │  │  │  │  │  └── radio_sound_settings.js
-│  │  │  │  └── time
-│  │  │  │     └── game_time_config.js
+│  │  │  │  ├── time
+│  │  │  │  │  └── game_time_config.js
+│  │  │  │  └── weather
+│  │  │  │     └── rain_settings.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
 │  │  │  │  ├── config_provider.js
