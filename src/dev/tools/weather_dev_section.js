@@ -200,7 +200,7 @@ export class WeatherDevSection {
 
   #renderLocationSelector(content) {
     const choices = this.#locationChoices();
-    if (choices.length <= 1) return;
+    if (!choices.length) return;
     const currentId = this.#locationId();
     const row = this.#createSection("Локація", content, ["WEATHER", "location"]);
     const onSelect = (nextId) => {
@@ -216,16 +216,23 @@ export class WeatherDevSection {
         onSelect,
         ["WEATHER", "location", "id"],
       );
-      return;
+    } else {
+      this.#ui.createSelectRow?.(
+        "локація",
+        choices,
+        currentId,
+        row,
+        onSelect,
+        ["WEATHER", "location", "id"],
+      );
     }
-    this.#ui.createSelectRow?.(
-      "локація",
-      choices,
-      currentId,
-      row,
-      onSelect,
-      ["WEATHER", "location", "id"],
-    );
+    if (currentId !== this.#weather.locationId) {
+      this.#ui.createInfoRow(
+        "активна у грі",
+        `${this.#weather.locationId} (нижче редагується ${currentId})`,
+        row,
+      );
+    }
   }
 
   #renderChances(settings, targetId, content) {

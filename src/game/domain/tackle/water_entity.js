@@ -45,6 +45,9 @@ export class WaterEntity {
   _swingDurationMs = 0;
   _swingReturnShare = 0.25;
   _swingAmp = 1;
+  _swingStartFactor = 1;
+  _swingFloorFactor = 0.75;
+  _swingCurrentFactor = 1;
   // The water's own velocity under the tackle this frame (the location current), in update-plane pixels per second.
   _waterVelocity;
   _weightedTackleConfig = null;
@@ -400,6 +403,7 @@ export class WaterEntity {
     this._windFluctuationTimer = 0;
     this._swingTimerMs = 0;
     this._swingDurationMs = 0;
+    this._swingCurrentFactor = 1;
   }
 
   _applyPhysics(boundsRect, checkWater, dt, environment) {
@@ -430,10 +434,13 @@ export class WaterEntity {
         if (environment.wind.float && Number.isFinite(Number(environment.wind.strength))) {
           const strength = Math.max(0, Math.min(1, Number(environment.wind.strength)));
           const floatWind = environment.wind.float;
-          if (strength <= 0 || dir === 0) {
+          const rawMaxAngle = Number(floatWind.maxAngleDeg);
+          const maxAngleDeg = Number.isFinite(rawMaxAngle) ? Math.max(0, rawMaxAngle) : 38;
+          if (strength <= 0 || dir === 0 || maxAngleDeg <= 0) {
             this._targetWindAngle = 0;
             this._swingTimerMs = 0;
             this._swingDurationMs = 0;
+            this._swingCurrentFactor = 1;
           } else {
             this._swingTimerMs -= dt;
             if (this._swingDurationMs <= 0 || this._swingTimerMs <= 0) {
@@ -446,17 +453,25 @@ export class WaterEntity {
               const jitterRange = Array.isArray(floatWind.amplitudeJitter)
                 ? floatWind.amplitudeJitter
                 : [0.8, 1.15];
-              this._swingDurationMs = Math.max(80, this._getRandom(cycleSec) * 1000);
+              this._swingStartFactor = this._swingDurationMs <= 0 ? 1 : this._swingCurrentFactor;
+              this._swingDurationMs = Math.max(160, this._getRandom(cycleSec) * 1000);
               this._swingTimerMs = this._swingDurationMs;
               this._swingReturnShare = Math.max(0, Math.min(0.95, this._getRandom(returnRange)));
               this._swingAmp = Math.max(0.1, this._getRandom(jitterRange));
+              this._swingFloorFactor = this._swingAmp * (1 - this._swingReturnShare);
             }
             const progress = Math.max(0, Math.min(1, 1 - this._swingTimerMs / this._swingDurationMs));
-            const wave = 0.5 - 0.5 * Math.cos(progress * Math.PI * 2);
-            const floorShare = 1 - this._swingReturnShare;
-            const swingFactor = floorShare + (this._swingAmp - floorShare) * wave;
-            const maxAngleDeg = Math.max(0, Number(floatWind.maxAngleDeg) || 38);
-            this._targetWindAngle = dir * maxAngleDeg * strength * (1 - windComp) * swingFactor;
+            let swingFactor;
+            if (progress <= 0.5) {
+              const ease = 0.5 - 0.5 * Math.cos(progress * 2 * Math.PI);
+              swingFactor = this._swingStartFactor + (this._swingAmp - this._swingStartFactor) * ease;
+            } else {
+              const ease = 0.5 - 0.5 * Math.cos((progress - 0.5) * 2 * Math.PI);
+              swingFactor = this._swingAmp + (this._swingFloorFactor - this._swingAmp) * ease;
+            }
+            this._swingCurrentFactor = swingFactor;
+            const effectiveShare = Math.max(0, Math.min(1, strength * swingFactor));
+            this._targetWindAngle = dir * maxAngleDeg * effectiveShare * (1 - windComp);
           }
         } else {
           this._windFluctuationTimer -= dt;

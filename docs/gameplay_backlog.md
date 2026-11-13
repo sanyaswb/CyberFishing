@@ -20,7 +20,7 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
-### G-128 Living continuous wind strength (0…1), gusts, waves, rain slant and float dynamic swing (P2, done in v0.50.111; owner acceptance pending)
+### G-128 Living continuous wind strength (0…1), gusts, waves, rain slant and float dynamic swing (P2, done in v0.50.112; owner acceptance pending)
 Found: 2026-11-13, owner, v0.50.110.
 Reproduce: watch `Сила вітру 0…1`, waves, rain slant and float during non-storm weather or manual wind direction switches.
 Expected: wind has a dedicated `windRng` stream and real-second episodes (`calm / light / moderate / strong` with smooth fades), rain/storm boosts, and global gusts (`0…1`); direction is `0` when strength is `0` and randomly picks `±1` when wind starts blowing; waves, rain slant and float lean follow the continuous `wind.strength`, and the float keeps a live `%` return-swing cadence under strong wind instead of sitting frozen at one angle.

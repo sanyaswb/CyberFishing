@@ -1010,9 +1010,103 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
     rowsByPath.get("button:↺ Автоматична погода").onClick();
     assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "auto button resets forced wind strength");
+
+    // TK-298.1: Location selector stays visible even when only one location is configured.
+    rowsByPath.clear();
+    const singleMapSection = new WeatherDevSection({
+      ui: fakeUi,
+      weather: { locationId: "test", getModel: () => fakeModel, getWind: () => stageCEnv.wind },
+      rainConfig: () => JSON.parse(JSON.stringify(GAME.canvas.rain)),
+      config: () => locations.test.weather,
+      locationConfig: (id) => (id === "test" ? locations.test.weather : null),
+      locationsMap: () => ({ test: locations.test }),
+      createSection: fakeUi.createDetailsSection,
+      renderConfigTree: () => {},
+    });
+    singleMapSection.render(fakeNode());
+    assert(rowsByPath.has("WEATHER.location.id"), "location selector is rendered even with a single location");
   } finally {
     globalThis.document = prevDoc;
   }
+
+  // 14. TK-298.1: regressions found by review against commit 14593885.
+  // (a) Releasing manual wind strength restores the episode's automatic target and fades within fadeSec.
+  const holdReleaseWind = new WindModel({
+    rng: new SeededRng("r1"),
+    getSettings: () => MAP_DB.test.weather.wind,
+  });
+  holdReleaseWind.update(100, { rain: 0, storm: 0 });
+  const autoTargetBeforeHold = holdReleaseWind.snapshot.targetStrength;
+  holdReleaseWind.setStrengthOverride(0.95);
+  for (let i = 0; i < 10; i += 1) holdReleaseWind.update(1000, { rain: 0, storm: 0 });
+  holdReleaseWind.setStrengthOverride(null);
+  assert.equal(
+    holdReleaseWind.snapshot.targetStrength,
+    autoTargetBeforeHold,
+    "releasing manual strength immediately restores automatic episode target",
+  );
+  for (let i = 0; i < 15; i += 1) holdReleaseWind.update(1000, { rain: 0, storm: 0 });
+  assert(
+    holdReleaseWind.snapshot.baseStrength < 0.7,
+    `baseStrength fades back toward automatic episode target after release (got ${holdReleaseWind.snapshot.baseStrength})`,
+  );
+
+  // (b) Forced non-zero direction never visits calm (0 strength with non-zero direction) across episodes.
+  const forcedDirWind = new WindModel({
+    rng: new SeededRng("r2"),
+    getSettings: () => MAP_DB.test.weather.wind,
+  });
+  forcedDirWind.setDirectionOverride(1);
+  for (let i = 0; i < 3000; i += 1) {
+    const snap = forcedDirWind.update(1000, { rain: 0, storm: 0 });
+    assert(
+      snap.strength > 0 && snap.direction === 1,
+      `forced direction=1 keeps positive wind strength across episodes (step ${i}: strength=${snap.strength}, dir=${snap.direction})`,
+    );
+  }
+  forcedDirWind.setStrengthOverride(0);
+  assert.equal(forcedDirWind.snapshot.direction, 0, "setting manual strength to 0 clears direction to 0");
+
+  // (c) Float return-swing is C1-continuous across cycle boundaries, capped by maxAngleDeg, and honors maxAngleDeg: 0.
+  const smoothFloat = new WaterEntity(
+    500,
+    400,
+    { type: "day", maxDepth: 6, quality: 0, windCompensation: [0, 0] },
+    6,
+    new SeededRng("r4"),
+  );
+  const smoothEnv = {
+    current: null,
+    wind: {
+      direction: 1,
+      strength: 0.95,
+      rainMult: 1,
+      float: {
+        maxAngleDeg: 38,
+        returnPctRange: [0.15, 0.45],
+        cycleDurationSec: [0.45, 0.6],
+        amplitudeJitter: [0.8, 1.15],
+      },
+    },
+  };
+  let prevTargetAngle = null;
+  let maxStepDeg = 0;
+  for (let step = 0; step < 300; step += 1) {
+    smoothFloat.update(bounds, 16, smoothEnv, () => true);
+    const angle = smoothFloat._targetWindAngle;
+    assert(angle <= 38 + 1e-6, `float wind target angle (${angle}) never exceeds maxAngleDeg (38)`);
+    if (prevTargetAngle !== null) {
+      maxStepDeg = Math.max(maxStepDeg, Math.abs(angle - prevTargetAngle));
+    }
+    prevTargetAngle = angle;
+  }
+  assert(
+    maxStepDeg < 2.2,
+    `float target wind angle transitions smoothly across cycle boundaries without jumps (max 16ms step: ${maxStepDeg.toFixed(2)}°)`,
+  );
+  smoothEnv.wind.float.maxAngleDeg = 0;
+  smoothFloat.update(bounds, 16, smoothEnv, () => true);
+  assert.equal(smoothFloat._targetWindAngle, 0, "maxAngleDeg: 0 disables float wind lean");
 }
 
 console.log(

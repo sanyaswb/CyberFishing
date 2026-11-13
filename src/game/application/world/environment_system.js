@@ -227,8 +227,8 @@ export class EnvironmentSystem {
       wind.direction = direction;
       wind.strength = windSnap ? windSnap.strength : 1;
       wind.rainMult = m;
-      wind.float = this.#config?.weather?.wind?.float ?? null;
-      if (base?.wind) {
+      wind.float = windSnap?.float ?? this.#config?.weather?.wind?.float ?? null;
+      if (!windSnap && base?.wind) {
         wind.breezeAngleRange[0] = base.wind.breezeAngleRange[0] * m;
         wind.breezeAngleRange[1] = base.wind.breezeAngleRange[1] * m;
         wind.gustAngleRange[0] = base.wind.gustAngleRange[0] * m;

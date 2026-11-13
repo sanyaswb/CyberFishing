@@ -24,7 +24,7 @@
 5. **`Q5` (Вудка, глобальні пориви й динаміка поплавка):**
    - **Вудка (Spine):** у цій спеці не чіпаємо — її підлаштуємо окремо під напрям вітру пізніше.
    - **Глобальні пориви (`WindModel`):** живі плавні хвилі посилень/ослаблень (`gust`) працюють на рівні світового вітру `wind.strength` (`0…1`), тому під них автоматично підлаштовуються **дощ, хвилі і поплавок**.
-   - **Окремий параметр поплавка (`floatSwing`):** нахил поплавка залежить від живої світової сили вітру, але при сильному вітрі поплавок не завмирає статично нахиленим, а має власний **діапазон `%` руху повернення з різною амплітудою і частотою** — тобто постійно «відіграє» назад у межах налаштованого відсотка й знову притискається вітром, створюючи живий нестатичний рух.
+   - **Окремий параметр поплавка (`float`):** нахил поплавка залежить від живої світової сили вітру, але при сильному вітрі поплавок не завмирає статично нахиленим, а має власний **діапазон `%` руху повернення з різною амплітудою і частотою** — тобто постійно «відіграє» назад у межах налаштованого відсотка й знову притискається вітром, створюючи живий нестатичний рух.
 
 ---
 
@@ -32,7 +32,7 @@
 
 - **Domain (`src/game/domain/weather/wind_model.js`):** чистий клас **`WindModel`** (без DOM/Canvas/Pixi/глобалів), інжектується з `windRng` і `getSettings`. Оновлюється в реальних секундах і перезаписує єдиний об’єкт `#snapshot` без алокацій у кадрі.
 - **Application (`src/game/application/world/environment_system.js`):** приймає `wind` (`WindModel`), викликає `wind.update(dtMs, { rain, storm })`, віддає об’єднаний `#snapshot.wind` та масштабований `#physicsWind` у `getPhysicsEnv()`.
-- **Physics (`src/game/domain/tackle/water_entity.js`):** читає `environment.wind` (`direction`, `strength`, параметри `floatSwing`) без власного незалежного макро-таймера поривів.
+- **Physics (`src/game/domain/tackle/water_entity.js`):** читає `environment.wind` (`direction`, `strength`, параметри `float`) без власного незалежного макро-таймера поривів.
 - **Presentation / Render:**
   - `SeaStateResolver` ([sea_state_resolver.js](../../src/game/presentation/world/sea_state_resolver.js)): плавна інтерполяція `amplitudeScale` і `speedScale` від неперервної `wind.strength` (`0…1`) замість бінарного `|direction|`.
   - `WeatherRenderModelBuilder` ([weather_render_model_builder.js](../../src/game/presentation/rendering/weather_render_model_builder.js)) → `PixiRainRenderer` ([pixi_rain_renderer.js](../../src/platform/browser/scene/pixi_rain_renderer.js)): передає `windStrength` (`0…1`) у `world.weather`; кут нахилу крапель `targetSlant = windDirection * (windStrength * windSlantDeg + storm * stormSlantDeg)`. Нуль нових draw call'ів, фільтрів чи алокацій.
@@ -67,21 +67,21 @@
 
 4. **Просте правило напрямку (`Q4`):**
    - `WIND_EPS = 1e-4`.
-   - Якщо `forcedDirection !== null`: `direction = forcedDirection` (якщо `forcedDirection === 0`, глобальний вітер в авто-режимі гаситься до `0`).
+   - Якщо `forcedDirection !== null`: `direction = forcedDirection` (якщо `forcedDirection === 0`, глобальний вітер гаситься до `0`; якщо `forcedDirection === ±1` без ручної сили, авто-епізоди не заходять у `calm`, тримаючи мінімальний вітер не нижче `light.strength[0]`).
    - Інакше (`auto`):
      - Якщо `strength <= WIND_EPS`: `strength = 0`, `direction = 0`.
      - Якщо `strength > WIND_EPS` і попередній `direction === 0`: `direction = windRng.chance(0.5) ? 1 : -1`.
-     - Поки `strength > WIND_EPS`, поточний ненульовий `direction` зберігається (і при плавному згасанні вітру до штилю він тримає бік до повного `strength === 0`, після чого стає `0`).
-     - Якщо починається новий вітряний епізод з іншого ненульового режиму (наприклад `light → moderate`), напрям може або зберегтись із шансом `keepDirectionChance`, або розвернутись — лише якщо поточна сила була на мінімумі або після короткого спаду. Простіше й чистіше: кожен ненульовий макро-епізод випадково обирає напрям, а при переході між двома нештильовими режимами зберігає поточний напрям із `keepDirectionChance`.
+     - Поки `strength > WIND_EPS`, поточний ненульовий `direction` зберігається до повного затихання в `0`, після чого скидається в `0`.
+   - Ручне виставлення `setStrengthOverride(0)` скидає напрям у `0` (`strength === 0 ⇔ direction === 0`).
 
 5. **Знімок `WindModel.snapshot` (reused object):**
-   `{ direction, strength, baseStrength, gustStrength, targetStrength, state, isGusting, forcedDirection, forcedStrength }`.
+   `{ direction, strength, baseStrength, gustStrength, targetStrength, state, episode, episodeLeftSec, isGusting, forcedDirection, forcedStrength, float }`.
 
 ---
 
 ### 3.2. Поплавок: нахил від вітру + `%` руху повернення (`WaterEntity`)
 
-У конфізі вітру (`MAP_DB.<id>.weather.wind.float` або `floatSwing`):
+У конфізі вітру (`MAP_DB.<id>.weather.wind.float`):
 ```js
 float: {
   maxAngleDeg: 38,            // максимальний базовий кут нахилу поплавка при strength = 1 (до компенсації якості поплавка)
@@ -122,7 +122,6 @@ float: {
     "rainChanceMult": 1.5,
     "stormChanceMult": 2.5
   },
-  "keepDirectionChance": 0.7,
   "states": {
     "calm":     { "durationSec": [90, 300], "strength": [0, 0],       "weight": 0.2 },
     "light":    { "durationSec": [60, 240], "strength": [0.15, 0.35], "weight": 0.4 },
@@ -183,3 +182,17 @@ float: {
 ### Перевірки
 - Автоматичні (`weather-check.js`, `apply-weather-check.js`, `config-schema`, `float-pose-check.js`, `devtools-controls`, `node utils/run-checks.js`, `npm run measure:startup`, `game-cycle`).
 - Візуальна перевірка власника у `dev.html` (оверлей + DevTools + поплавок/дощ/хвилі) та вимірювання «⚡ ПРОДУКТИВНІСТЬ» на телефоні в обох орієнтаціях.
+
+---
+
+## 6. Що реалізовано
+
+- **`v0.50.111` (TK-298, етапи A–C):**
+  - Створено `WindModel` ([wind_model.js](../../src/game/domain/weather/wind_model.js)) з виділеним потоком `windRng = new SeededRng("${seed}:wind")` у [game_composition_root.js](../../src/bootstrap/production/game_composition_root.js), інтегровано в [environment_system.js](../../src/game/application/world/environment_system.js); додано блок `wind` у [test.js](../../src/game/config/raw/locations/weather/test.js) та валідацію/експорт у [weather_export_format.js](../../src/dev/weather/weather_export_format.js).
+  - Підключено неперервну `wind.strength` до [sea_state_resolver.js](../../src/game/presentation/world/sea_state_resolver.js), [weather_render_model_builder.js](../../src/game/presentation/rendering/weather_render_model_builder.js), [pixi_rain_renderer.js](../../src/platform/browser/scene/pixi_rain_renderer.js) та [water_entity.js](../../src/game/domain/tackle/water_entity.js); видалено невикористаний `CONFIG.wind` із [game_config.js](../../src/game/config/runtime/game_config.js).
+  - Оновлено [weather_dev_section.js](../../src/dev/tools/weather_dev_section.js), [dev_tools.js](../../src/dev/tools/dev_tools.js), [weather_status_reader.js](../../src/game/presentation/world/weather_status_reader.js) та [weather_overlay_module.js](../../src/dev/overlay/modules/weather_overlay_module.js) (`WEATHER.controls.windStrength`).
+- **`v0.50.112` (TK-298.1, виправлення за рев'ю):**
+  - `WindModel`: відокремлено `#episodeTarget` від `#forcedStrength` (вимкнення ручної сили одразу повертає ціль поточного епізоду); при примусовому напрямі `±1` виключено перехід у `calm` і додано нижній поріг сили `light`, а `setStrengthOverride(0)` скидає напрям у `0`; у `snapshot` публікується живий `float`.
+  - `WaterEntity`: зроблено $C^1$-неперервний перехід коливань поплавка між циклами (`_swingStartFactor → _swingAmp → _swingFloorFactor`) без стрибків на межі циклів, обмежено кут значенням `maxAngleDeg * (1 - windComp)` і виправлено обробку `maxAngleDeg: 0`.
+  - `EnvironmentSystem`: `getPhysicsEnv()` читає живий `windSnap.float` і не перераховує legacy-діапазони, коли активна `WindModel`.
+  - `WeatherDevSection`: селектор «Локація» відображається завжди (навіть з однією локацією) та показує підказку, якщо обрана неактивна локація.

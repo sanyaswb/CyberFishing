@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.112 - Wind model release/direction fixes, smooth float swing & always-visible map selector
+
+- TK-298.1 (spec 178): restored automatic episode target immediately when releasing manual wind strength (`#episodeTarget`), kept positive wind strength across episodes while direction `±1` is forced (`strength === 0 ⇔ direction === 0`), made `WaterEntity` return-swing $C^1$-continuous across cycle boundaries with `maxAngleDeg` cap and `0` support, published live `float` settings from `WindModel` to `EnvironmentSystem.getPhysicsEnv()`, and kept the DevTools «ПОГОДА» location selector always visible.
+
 ## v0.50.111 - Living continuous wind, gusts, float return-swing & per-map DevTools chances
 
 - TK-298 (spec 178): added `WindModel` (`0…1` real-second episodes, isolated `windRng`, rain/storm boosts, global gusts, `strength === 0 ⇔ direction === 0`) and `MAP_DB.<id>.weather.wind` schema/export support; coupled continuous `wind.strength` to `SeaStateResolver`, `PixiRainRenderer` slant and `WaterEntity` dynamic return-swing rock; added DevTools «ПОГОДА» location selector, `Шанси погоди`, manual wind strength / gust controls, and live `Сила вітру 0…1` overlay hyperlink.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.103 - DevTools lists
 
 - TK-293 (spec 174 A7): every DevTools list (zone editor, Spine bone, wind direction) is the same list picker as Fixed Catch's fish instead of the browser's select; the field and its list sit under the label across the row.
-
-## v0.50.102 - DevTools dependent parameters
-
-- TK-292 (spec 174 A6): a DevTools parameter whose switch is off is inactive whatever its control (number, text, segments, list; a switch as before): it is dimmed and cannot be edited, an attempt highlights the switch that blocks it, and turning that switch on activates the rows at once. Dependencies: a config group's enabled switch (nested groups too), <name>Enabled for its <name>… siblings, locations.debugVisuals for the fight-area overlays.

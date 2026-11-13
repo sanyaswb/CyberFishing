@@ -14,6 +14,17 @@ const DEFAULT_STATES = Object.freeze({
   moderate: Object.freeze({ weight: 0.28, durationSec: Object.freeze([60, 200]), strength: Object.freeze([0.4, 0.65]) }),
   strong: Object.freeze({ weight: 0.12, durationSec: Object.freeze([45, 150]), strength: Object.freeze([0.7, 0.9]) }),
 });
+const DEFAULT_FLOAT = Object.freeze({
+  maxAngleDeg: 38,
+  returnPctRange: Object.freeze([0.15, 0.45]),
+  cycleDurationSec: Object.freeze([0.45, 1.35]),
+  amplitudeJitter: Object.freeze([0.8, 1.15]),
+});
+const DEFAULT_SETTINGS = Object.freeze({
+  fadeSec: DEFAULT_FADE_SEC,
+  states: DEFAULT_STATES,
+  float: DEFAULT_FLOAT,
+});
 
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
 const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
@@ -39,6 +50,7 @@ export class WindModel {
   #episodeLeftSec = 0;
   #baseStrength = 0;
   #baseTarget = 0;
+  #episodeTarget = 0;
   #autoDirection = 0;
   #forcedDirection = null;
   #forcedStrength = null;
@@ -59,6 +71,7 @@ export class WindModel {
     isGusting: false,
     forcedDirection: null,
     forcedStrength: null,
+    float: DEFAULT_FLOAT,
   };
 
   // rng: { next(), range(min, max), chance(p) } (dedicated wind stream); getSettings: () => MAP_DB.<id>.weather.wind.
@@ -84,22 +97,14 @@ export class WindModel {
   // dtMs: real milliseconds since the last update; rain/storm: 0…1 intensities from WeatherModel.
   update(dtMs, { rain = 0, storm = 0 } = {}) {
     const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
-    const settings = this.#getSettings() || null;
-    if (!settings) {
-      this.#baseStrength = 0;
-      this.#baseTarget = 0;
-      this.#autoDirection = 0;
-      this.#clearGust();
-      this.#sync(0);
-      return this.#snapshot;
-    }
+    const settings = this.#getSettings() || DEFAULT_SETTINGS;
 
     if (this.#forcedDirection === 0) {
       this.#baseStrength = 0;
       this.#baseTarget = 0;
       this.#autoDirection = 0;
       this.#clearGust();
-      this.#sync(0);
+      this.#sync(0, settings);
       return this.#snapshot;
     }
 
@@ -109,11 +114,11 @@ export class WindModel {
     if (this.#forcedStrength !== null) {
       this.#baseStrength = this.#forcedStrength;
       this.#baseTarget = this.#forcedStrength;
-      this.#updateActiveGust(dtSec);
+      this.#updateActiveGust(dtSec, settings);
       const strength = this.#forcedStrength <= WIND_EPS && !this.#gustActive
         ? 0
         : clamp01(this.#baseStrength + this.#gustCurrent);
-      this.#sync(strength);
+      this.#sync(strength, settings);
       return this.#snapshot;
     }
 
@@ -121,6 +126,10 @@ export class WindModel {
       this.#nextEpisode(settings);
     } else {
       this.#episodeLeftSec -= dtSec;
+    }
+
+    if ((this.#forcedDirection === -1 || this.#forcedDirection === 1) && this.#baseTarget <= WIND_EPS) {
+      this.#enterState("light", settings);
     }
 
     const fadeSec = Math.max(0, finite(settings.fadeSec, DEFAULT_FADE_SEC));
@@ -138,11 +147,18 @@ export class WindModel {
     const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finite(boost?.rainMinStrength, 0)) : 0;
     const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finite(boost?.stormMinStrength, 0)) : 0;
     const rainBonus = rainLevel * Math.max(0, finite(boost?.rainBonus, 0));
-    const boostedBase = clamp01(Math.max(this.#baseStrength, rainFloor, stormFloor) + rainBonus);
+    const dirFloor =
+      this.#forcedDirection === -1 || this.#forcedDirection === 1
+        ? Math.max(
+            0.05,
+            Number(pair(settings?.states?.light?.strength, DEFAULT_STATES.light.strength)[0]) || 0.15,
+          )
+        : 0;
+    const boostedBase = clamp01(Math.max(this.#baseStrength, rainFloor, stormFloor, dirFloor) + rainBonus);
 
     this.#updateGust(settings, boostedBase, rainLevel, stormLevel, dtSec);
     const strength = clamp01(boostedBase + this.#gustCurrent);
-    this.#sync(strength);
+    this.#sync(strength, settings);
     return this.#snapshot;
   }
 
@@ -150,38 +166,48 @@ export class WindModel {
   setDirectionOverride(direction) {
     const next = direction === -1 || direction === 0 || direction === 1 ? direction : null;
     this.#forcedDirection = next;
-    const settings = this.#getSettings() || null;
+    const settings = this.#getSettings() || DEFAULT_SETTINGS;
     if (next === 0) {
       this.#forcedStrength = null;
       this.#baseStrength = 0;
       this.#baseTarget = 0;
       this.#autoDirection = 0;
       this.#clearGust();
-      this.#sync(0);
+      this.#sync(0, settings);
       return;
     }
-    if ((next === -1 || next === 1) && this.#forcedStrength === null && this.#snapshot.strength <= WIND_EPS) {
+    if ((next === -1 || next === 1) && this.#forcedStrength === null && (this.#snapshot.strength <= WIND_EPS || this.#baseTarget <= WIND_EPS)) {
       this.#enterState("light", settings);
       this.#baseStrength = Math.max(this.#baseStrength, this.#baseTarget * 0.5 || 0.2);
     }
-    this.#sync(clamp01(Math.max(this.#forcedStrength ?? this.#baseStrength, 0) + this.#gustCurrent));
+    this.#sync(clamp01(Math.max(this.#forcedStrength ?? this.#baseStrength, 0) + this.#gustCurrent), settings);
   }
 
-  // Forced strength in 0…1, or null for automatic wind. Setting 0 clears direction to 0 unless forced.
+  // Forced strength in 0…1, or null for automatic wind. Setting 0 clears direction to 0.
   setStrengthOverride(strength) {
+    const settings = this.#getSettings() || DEFAULT_SETTINGS;
     if (strength === null || strength === undefined || !Number.isFinite(Number(strength))) {
       this.#forcedStrength = null;
-      this.#sync(clamp01(this.#baseStrength + this.#gustCurrent));
+      if (this.#episode === 0) {
+        this.#nextEpisode(settings);
+      } else {
+        this.#baseTarget = this.#episodeTarget;
+      }
+      this.#sync(clamp01(this.#baseStrength + this.#gustCurrent), settings);
       return;
     }
     const clamped = clamp01(Number(strength));
-    if (this.#forcedDirection === 0 && clamped > WIND_EPS) this.#forcedDirection = null;
+    if (clamped <= WIND_EPS) {
+      this.#forcedDirection = null;
+      this.#autoDirection = 0;
+    } else if (this.#forcedDirection === 0) {
+      this.#forcedDirection = null;
+    }
     this.#forcedStrength = clamped;
     this.#baseStrength = clamped;
     this.#baseTarget = clamped;
     this.#clearGust();
-    if (clamped <= WIND_EPS) this.#autoDirection = 0;
-    this.#sync(clamped);
+    this.#sync(clamped, settings);
   }
 
   // Triggers a single smooth global gust right now (DEV button or scripted event).
@@ -210,19 +236,22 @@ export class WindModel {
   #nextEpisode(settings) {
     const states = settings?.states;
     const hasCustomStates = Boolean(states && typeof states === "object");
+    const disallowCalm = this.#forcedDirection === -1 || this.#forcedDirection === 1;
     let total = 0;
     for (let index = 0; index < WIND_STATES.length; index += 1) {
       const name = WIND_STATES[index];
+      if (disallowCalm && name === "calm") continue;
       const weight = hasCustomStates
         ? Math.max(0, finite(states[name]?.weight, 0))
         : DEFAULT_STATES[name].weight;
       total += weight;
     }
-    let picked = "calm";
+    let picked = disallowCalm ? "light" : "calm";
     if (total > 0) {
       let roll = this.#rng.next() * total;
       for (let index = 0; index < WIND_STATES.length; index += 1) {
         const name = WIND_STATES[index];
+        if (disallowCalm && name === "calm") continue;
         const weight = hasCustomStates
           ? Math.max(0, finite(states[name]?.weight, 0))
           : DEFAULT_STATES[name].weight;
@@ -240,7 +269,8 @@ export class WindModel {
     const entry = settings?.states?.[state] ?? DEFAULT_STATES[state] ?? DEFAULT_STATES.calm;
     this.#episode += 1;
     this.#episodeLeftSec = Math.max(1, this.#roll(pair(entry.durationSec, DEFAULT_STATES[state].durationSec)));
-    this.#baseTarget = state === "calm" ? 0 : clamp01(this.#roll(pair(entry.strength, DEFAULT_STATES[state].strength)));
+    this.#episodeTarget = state === "calm" ? 0 : clamp01(this.#roll(pair(entry.strength, DEFAULT_STATES[state].strength)));
+    this.#baseTarget = this.#episodeTarget;
   }
 
   #updateGust(settings, boostedBase, rainLevel, stormLevel, dtSec) {
@@ -299,7 +329,7 @@ export class WindModel {
     return this.#rng.chance(0.5) ? 1 : -1;
   }
 
-  #sync(rawStrength) {
+  #sync(rawStrength, settings = this.#getSettings() || DEFAULT_SETTINGS) {
     const strength = rawStrength <= WIND_EPS ? 0 : clamp01(rawStrength);
     if (this.#forcedDirection === null) {
       if (strength <= 0) this.#autoDirection = 0;
@@ -308,7 +338,7 @@ export class WindModel {
     const direction = this.#forcedDirection !== null ? this.#forcedDirection : this.#autoDirection;
     const snapshot = this.#snapshot;
     snapshot.strength = direction === 0 ? 0 : strength;
-    snapshot.direction = snapshot.strength <= 0 && this.#forcedDirection === null ? 0 : direction;
+    snapshot.direction = snapshot.strength <= 0 ? 0 : direction;
     snapshot.baseStrength = clamp01(this.#baseStrength);
     snapshot.gustStrength = Math.max(0, this.#gustCurrent);
     snapshot.targetStrength = clamp01(this.#forcedStrength ?? this.#baseTarget);
@@ -318,5 +348,6 @@ export class WindModel {
     snapshot.isGusting = this.#gustActive && snapshot.gustStrength > WIND_EPS;
     snapshot.forcedDirection = this.#forcedDirection;
     snapshot.forcedStrength = this.#forcedStrength;
+    snapshot.float = settings?.float ?? DEFAULT_FLOAT;
   }
 }
