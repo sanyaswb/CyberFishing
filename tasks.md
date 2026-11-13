@@ -219,7 +219,16 @@
           `DevTools` до етапу C2 (рейка модулів). Перевірки `config-runtime` (порядок і батьки секцій), `scene-layer`,
           `asset-references` (магазин тепер у модулі), `devtools-controls`, `zone-editor`, `radio-receiver`; Full.
           Перевірки власника не потрібно (вигляд не змінився).
-    - [ ] B1 (елементи з об'єктом параметрів), етапи C, D, E — далі.
+    - [x] **TK-302 (B1) — рядок параметра з одного опису.** Знайдено: `DevToolsUI` будував кожен вид рядка окремим
+          методом із 6–8 позиційними аргументами, перемикач, текстове поле й повзунок — вбудованим кодом. v0.50.117:
+          `SwitchControl`, `TextField` (з `numberList`), `RangeField` у `controls/`; `DevToolsUI.addParameter(parent,
+          { control, label, value, onCommit, path, bindingPath, requires, options, swatch })` — один шлях для всіх
+          рядків; дерево конфігу (`ConfigTreeRenderer`) уже на ньому; старі `create*Row` лишаються тонкими
+          перехідниками для секцій (редактор зон, погода, Spine, радіо — їхні перевірки мають власні двійники) і
+          прибираються на етапі E разом із переведенням цих секцій. `dev_tools_ui.js` 716 → 640 рядків. Перевірки
+          `devtools-controls` (новий сценарій), `config-runtime` (двійник отримав `addParameter`) і перевірки секцій;
+          Full. Вигляд той самий, крім повзунка: число тепер стоїть у тій самій групі, що й повзунок.
+    - [ ] Етапи C, D, E — далі.
 
 - [ ] **[Spec 173](specs/173-zone-editor-improvements/spec.md) — редактор зон: огляд структури й доробки (власник,
       2026-11-12).** Доробки TK-274–280.1 (v0.50.79–86, v0.50.92) виконано — [архів](<D:/dev/cyber fishing/tasks-archive.md#tk-274-280>).

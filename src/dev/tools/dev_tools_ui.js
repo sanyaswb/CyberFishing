@@ -3,6 +3,9 @@ import { DraggableButton } from "../../platform/browser/dom/draggable_button.js"
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 import { NumberField } from "./controls/number_field.js";
+import { SwitchControl } from "./controls/switch_control.js";
+import { TextField } from "./controls/text_field.js";
+import { RangeField } from "./controls/range_field.js";
 import { SegmentedControl } from "./controls/segmented_control.js";
 import { ChoiceField } from "./controls/choice_field.js";
 import { ExportCommandNotice } from "./controls/export_command_notice.js";
@@ -297,71 +300,10 @@ export class DevToolsUI {
   }
 
   // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).
-  createSwitcherRow(
-    labelStr,
-    initialValue,
-    parentElement,
-    onChangeCallback,
-    path = null,
-    bindingPath = path,
-    { swatch = null, requires = [] } = {},
-  ) {
-    const row = document.createElement("div");
-    row.className = "devtools__row";
-    this.#assignDevToolsPath(row, path);
-
-    const label = this.#createLabelElement(labelStr, path, swatch);
-    row.appendChild(label);
-
-    const inputElement = document.createElement("label");
-    inputElement.className = "devtools__switch";
-
-    const cb = document.createElement("input");
-    cb.className = "devtools__switch-input";
-    cb.type = "checkbox";
-    cb.setAttribute("aria-label", labelStr);
-    cb.checked = initialValue;
-
-    const slider = document.createElement("span");
-    slider.className = "devtools__slider";
-
-    inputElement.appendChild(cb);
-    inputElement.appendChild(slider);
-    row.appendChild(inputElement);
-
-    let currentValue = initialValue === true;
-    cb.addEventListener("change", (e) => {
-      const next = e.target.checked;
-      const blocker = next ? requires.find(requirement => !requirement.isEnabled()) : null;
-      if (blocker) {
-        cb.checked = currentValue;
-        this.#refreshDependencies();
-        this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
-        return;
-      }
-      onChangeCallback(next);
-      currentValue = next;
-      if (next) this.#dependencyFeedback?.resolve(bindingPath);
-      this.#refreshDependencies();
-    });
-    this.#controlBindings.register(bindingPath, (value) => {
-      currentValue = value === true;
-      cb.checked = currentValue;
-    }, row);
-    this.#insertTreeNode(parentElement, row, 0);
-    if (requires.length) {
-      let previousBlocked = null;
-      const refresh = () => {
-        const blocked = requires.some(requirement => !requirement.isEnabled());
-        if (blocked === previousBlocked) return;
-        previousBlocked = blocked;
-        row.classList.toggle("devtools__row--dependency-disabled", blocked);
-        // Keep explanation clicks and turning an already-on value off available; activation remains guarded.
-        cb.setAttribute("aria-disabled", String(blocked));
-      };
-      this.#dependentSwitches.set(row, refresh);
-      refresh();
-    }
+  createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback, path = null, bindingPath = path,
+    { swatch = null, requires = [] } = {}) {
+    this.addParameter(parentElement, { control: "switch", label: labelStr, value: initialValue, onCommit: onChangeCallback,
+      path, bindingPath, swatch, requires });
   }
 
   #refreshDependencies() {
@@ -418,85 +360,17 @@ export class DevToolsUI {
     };
   }
 
-  createInputRow(
-    key,
-    val,
-    parentElement,
-    type,
-    onChangeCallback,
-    path = null,
-    bindingPath = path,
-    { requires = [] } = {},
-  ) {
-    const row = document.createElement("div");
-    row.className = "devtools__row";
-    this.#assignDevToolsPath(row, path);
-
-    const label = this.#createLabelElement(key, path);
-    row.appendChild(label);
-
-    if (type === "number") {
-      // TK-282: the DEV number field (step from the value's precision, an invalid entry is never written).
-      const guard = this.#guardDependentRow(row, requires, val, onChangeCallback, (value) => field.setValue(value));
-      const field = new NumberField({ value: val, onCommit: guard.commit, ariaLabel: String(key), documentRef: document });
-      this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); field.setValue(value); }, row);
-      row.appendChild(field.element);
-      this.#insertTreeNode(parentElement, row, 0);
-      return;
-    }
-
-    const inputElement = document.createElement("input");
-    const show = (value) => { inputElement.value = Array.isArray(value) ? value.join(", ") : value; };
-    const guard = this.#guardDependentRow(row, requires, val, onChangeCallback, show);
-    inputElement.type = "text";
-    inputElement.className = "devtools__input devtools__input--text";
-    inputElement.value = val;
-    inputElement.addEventListener("change", (e) => {
-      let newVal = e.target.value;
-      if (type === "array") {
-        newVal = newVal
-          .trim()
-          .split(/[\s,;]+/)
-          .filter(Boolean)
-          .map((n) => parseFloat(n) || 0);
-      }
-      guard.commit(newVal);
-    });
-
-    this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); show(value); }, row);
-    row.appendChild(inputElement);
-    this.#insertTreeNode(parentElement, row, 0);
+  // type: "number" | "array" (numbers in one text field) | anything else (text).
+  createInputRow(key, val, parentElement, type, onChangeCallback, path = null, bindingPath = path, { requires = [] } = {}) {
+    const control = type === "number" ? "number" : type === "array" ? "numberList" : "text";
+    this.addParameter(parentElement, { control, label: key, value: val, onCommit: onChangeCallback, path, bindingPath,
+      requires });
   }
 
   // A 0..100 slider with its value beside it (spec 129 Revision 2: grid and depth opacity); onChangeCallback receives
   // the whole number while dragging.
   createRangeRow(labelStr, value, parentElement, onChangeCallback, path = null) {
-    const row = document.createElement("div");
-    row.className = "devtools__row";
-    this.#assignDevToolsPath(row, path);
-    row.appendChild(this.#createLabelElement(labelStr, path));
-    const range = document.createElement("input");
-    range.type = "range";
-    range.min = "0";
-    range.max = "100";
-    range.step = "1";
-    range.className = "devtools__range";
-    range.setAttribute("aria-label", labelStr);
-    range.value = String(Math.round(value));
-    const output = document.createElement("span");
-    output.className = "devtools__range-value";
-    output.textContent = String(Math.round(value));
-    range.addEventListener("input", (event) => {
-      const next = Number(event.target.value);
-      output.textContent = String(next);
-      onChangeCallback(next);
-    });
-    this.#controlBindings.register(path, (next) => {
-      range.value = String(Math.round(next));
-      output.textContent = String(Math.round(next));
-    }, row);
-    row.append(range, output);
-    this.#insertTreeNode(parentElement, row, 0);
+    this.addParameter(parentElement, { control: "range", label: labelStr, value, onCommit: onChangeCallback, path });
   }
 
   // A list of plain values (zone numbers, bones, wind directions); onChangeCallback receives the chosen value.
@@ -505,38 +379,87 @@ export class DevToolsUI {
   createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null,
     { swatches = null } = {}) {
     const options = optionsArray.map((option) => ({ value: option, label: String(option), swatch: swatches?.[option] || "" }));
-    this.createChoiceRow(labelStr, options, currentValue, parentElement, onChangeCallback, path, null);
+    this.addParameter(parentElement, { control: "choice", label: labelStr, options, value: currentValue,
+      onCommit: onChangeCallback, path, bindingPath: null });
   }
 
   // TK-283: a short list with every option visible; options: [{ value, label }].
   createSegmentsRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
     { requires = [] } = {}) {
-    const row = document.createElement("div");
-    row.className = "devtools__row devtools__row--wrap";
-    this.#assignDevToolsPath(row, path);
-    row.appendChild(this.#createLabelElement(key, path));
-    const guard = this.#guardDependentRow(row, requires, currentValue, onChangeCallback, (value) => control.setValue(value));
-    const control = new SegmentedControl({ options, value: currentValue, onCommit: guard.commit,
-      ariaLabel: String(key), documentRef: document });
-    this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); control.setValue(value); }, row);
-    row.appendChild(control.element);
-    this.#insertTreeNode(parentElement, row, 0);
+    this.addParameter(parentElement, { control: "segments", label: key, options, value: currentValue,
+      onCommit: onChangeCallback, path, bindingPath, requires });
   }
 
   // TK-283: a list picker (name, id, image, search); options: [{ value, label, hint, imageUrl, swatch }].
-  // TK-293: the label is above, the field and its list take the row's width under it.
   createChoiceRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
     { requires = [] } = {}) {
+    this.addParameter(parentElement, { control: "choice", label: key, options, value: currentValue,
+      onCommit: onChangeCallback, path, bindingPath, requires });
+  }
+
+  // Spec 174 B1: one parameter row from one description, the way every module adds a parameter.
+  //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice"
+  //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);
+  //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
+  // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
+  addParameter(parentElement, { control, label, value, onCommit, path = null, bindingPath = path, requires = [],
+    options = [], swatch = null }) {
     const row = document.createElement("div");
-    row.className = "devtools__row devtools__row--stacked";
+    row.className = control === "choice" ? "devtools__row devtools__row--stacked"
+      : control === "segments" ? "devtools__row devtools__row--wrap" : "devtools__row";
     this.#assignDevToolsPath(row, path);
-    row.appendChild(this.#createLabelElement(key, path));
-    const guard = this.#guardDependentRow(row, requires, currentValue, onChangeCallback, (value) => field.setValue(value));
-    const field = new ChoiceField({ options, value: currentValue, onCommit: guard.commit,
-      ariaLabel: String(key), documentRef: document });
-    if (bindingPath) this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); field.setValue(value); }, row);
+    row.appendChild(this.#createLabelElement(label, path, swatch));
+    const ariaLabel = String(label);
+    let field;
+    if (control === "switch") {
+      field = this.#createSwitch(row, { value, onCommit, ariaLabel, bindingPath, requires });
+    } else if (control === "range") {
+      field = new RangeField({ value, onInput: onCommit, ariaLabel, documentRef: document });
+    } else {
+      const guard = this.#guardDependentRow(row, requires, value, onCommit, (shown) => field.setValue(shown));
+      const commit = guard.commit;
+      if (control === "number") field = new NumberField({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "numberList") field = TextField.numberList({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "segments") field = new SegmentedControl({ options, value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "choice") field = new ChoiceField({ options, value, onCommit: commit, ariaLabel, documentRef: document });
+      else field = new TextField({ value, onCommit: commit, ariaLabel, documentRef: document });
+      if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
+    }
+    if (control === "range" && bindingPath) this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
     row.appendChild(field.element);
     this.#insertTreeNode(parentElement, row, 0);
+  }
+
+  // A switch row's behaviour (spec 131): switching on is refused while a prerequisite is off (the blocker is shown);
+  // switching off stays possible; its own syncs come through bindingPath.
+  #createSwitch(row, { value, onCommit, ariaLabel, bindingPath, requires }) {
+    const field = new SwitchControl({ value, ariaLabel, documentRef: document, onCommit: (next) => {
+      const blocker = next ? requires.find((requirement) => !requirement.isEnabled()) : null;
+      if (blocker) {
+        this.#refreshDependencies();
+        this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
+        return false;
+      }
+      onCommit(next);
+      if (next) this.#dependencyFeedback?.resolve(bindingPath);
+      this.#refreshDependencies();
+      return true;
+    } });
+    this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
+    if (requires.length) {
+      let previousBlocked = null;
+      const refresh = () => {
+        const blocked = requires.some((requirement) => !requirement.isEnabled());
+        if (blocked === previousBlocked) return;
+        previousBlocked = blocked;
+        row.classList.toggle("devtools__row--dependency-disabled", blocked);
+        // Keep explanation clicks and turning an already-on value off available; activation remains guarded.
+        field.setBlocked(blocked);
+      };
+      this.#dependentSwitches.set(row, refresh);
+      refresh();
+    }
+    return field;
   }
 
   // Keep DOM and keyboard order together: controls, nested sections, then the parent's description.

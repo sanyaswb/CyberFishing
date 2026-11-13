@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-302 (spec 174 B1): addParameter + SwitchControl/TextField/RangeField; config tree on the new API.",
   "TK-301 (spec 174 B3): DevTools areas are modules (src/dev/tools/modules); dev_tools.js 973 -> 222 lines.",
   "TK-300 (spec 174 B4): sections remembered by place; hooked fish redraws only its sections; scroll kept.",
   "TK-299 (spec 174 B2): edit path and config tree moved out of DevTools; same behaviour.",

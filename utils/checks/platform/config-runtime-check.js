@@ -645,7 +645,9 @@ function checkLocationMapConfigChanges() {
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
     createButtonRow(label,parent,click){navigationButtons.set(label,click);},
-    createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,parent);controlCounts.set(id,(controlCounts.get(id)||0)+1);}}},
+    createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,parent);controlCounts.set(id,(controlCounts.get(id)||0)+1);}},
+    // Spec 174 B1: the config tree adds its rows through addParameter (one description per row).
+    addParameter(parent,{control,value,onCommit,path,bindingPath,requires}){if(control==='switch')this.createSwitcherRow('',value,parent,onCommit,path,bindingPath,{requires});}},
     {get:(target,key)=>target[key] || (()=>{})});
   const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
   const {ZoneEditorState} = source.importModule('src/dev/location/zone_editor_state.js');

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.117 - DevTools rows from one description
+
+- TK-302 (spec 174 B1): every DevTools parameter row is built from one description (DevToolsUI.addParameter) with its own control class (switch, text, number list, slider beside the number, list, segments); the config tree uses it, the older row methods remain as thin bridges until stage E.
+
 ## v0.50.116 - DevTools panel modules
 
 - TK-301 (spec 174 B3): every area of the DevTools panel is its own module (shop, overlay, config, debug, scene with weather, zone editor, database, Spine, radio, hooked fish, service) with one contract; DevTools keeps only the panel's lifecycle, navigation and module order. The panel looks and works the same.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.108 - Overlay headers with rounded background & clean links
 
 - TK-296.1 (owner): removed dotted underlines on `.debug-overlay__dev-link` and dashed divider borders in `overlay-content.css`; removed bottom borders on `.debug-overlay__heading` and gave overlay headings, tool titles, subsection titles and collapsible group `<summary>` headers rounded background pills (`overlay-content.css`, `overlay.css`).
-
-## v0.50.107 - Overlay hyperlinks to DevTools parameters
-
-- TK-296 (spec 177): added shared Overlay -> DevTools hyperlink infrastructure (`OverlayHtmlBuilder.devLink` / `OverlayModule.devLink`, `OverlayInteractionBridge` release activation without toggling parent `<details>`, `DevTools.revealParameter` / `DevToolsUI.revealPath`, and `DevToolsDependencyFeedback.showRevealed` green highlight across collapsed ancestor sections) and wired all parameters and multipliers in «ПОГОДА Й ХВИЛІ» (`WeatherOverlayModule` + `WeatherDevSection` control paths).

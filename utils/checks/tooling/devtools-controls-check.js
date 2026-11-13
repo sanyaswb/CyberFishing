@@ -334,6 +334,40 @@ function choiceRow(options, value, path) {
   }
 }
 
+// --- TK-302 (spec 174 B1): one description per parameter row -------------------------------------------------------
+{
+  const host = createElement("div"); document.body.appendChild(host);
+  const written = [];
+  const add = (spec) => ui.addParameter(host, { onCommit: (next) => written.push([spec.label, next]), ...spec });
+  add({ control: "numberList", label: "list", value: [1, 2], path: ["test", "list"] });
+  const list = byClass("devtools__input--text", host).at(-1);
+  assert.equal(list.value, "1, 2", "a number list shows its numbers");
+  list.value = "3, 4;5 x"; list.fire("change", { target: list });
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["list", [3, 4, 5, 0]]), "and writes them as numbers");
+  ui.syncValue(["test", "list"], [7, 8]);
+  assert.equal(list.value, "7, 8");
+  add({ control: "range", label: "opacity", value: 30.4, path: ["test", "opacity"] });
+  const range = byClass("devtools__range", host).at(-1);
+  assert.equal(range.value, "30", "a slider shows the whole number");
+  range.value = "55"; range.fire("input", { target: range });
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["opacity", 55]), "and writes while it moves");
+  assert.equal(byClass("devtools__range-value", host).at(-1).textContent, "55");
+  add({ control: "text", label: "name", value: "a", path: ["test", "name"], bindingPath: null });
+  const name = byClass("devtools__input--text", host).at(-1);
+  name.value = "b"; name.fire("change", { target: name });
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["name", "b"]), "a text field writes its text");
+  let parentOn = false;
+  add({ control: "switch", label: "child", value: false, path: ["test", "child"],
+    requires: [{ path: ["test", "parent"], isEnabled: () => parentOn }] });
+  const childInput = byClass("devtools__switch-input", host).at(-1);
+  childInput.checked = true; childInput.fire("change", { target: childInput });
+  assert.equal(childInput.checked, false, "a switch whose prerequisite is off stays off");
+  assert.equal(written.some(([label]) => label === "child"), false);
+  parentOn = true;
+  childInput.checked = true; childInput.fire("change", { target: childInput });
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["child", true]), "and turns on once it is on");
+}
+
 // --- TK-299 (spec 174 B2): the one edit path, moved out of DevTools ---------------------------------------------------
 {
   const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");

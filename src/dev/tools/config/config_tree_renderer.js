@@ -47,8 +47,8 @@ export class ConfigTreeRenderer {
 
       if (Array.isArray(value)) {
         if (value.length > 0 && typeof value[0] === "number") {
-          this.#ui.createInputRow(this.#formatKey(key, currentPath), value.join(", "), parentElement, "array",
-            (next) => this.#edits.update(currentPath, next), currentPath);
+          this.#ui.addParameter(parentElement, { control: "numberList", label: this.#formatKey(key, currentPath), value,
+            onCommit: (next) => this.#edits.update(currentPath, next), path: currentPath });
         } else if (value.length > 0 && typeof value[0] === "object") {
           const content = this.#createSection(key, parentElement, currentPath);
           value.forEach((item, index) => {
@@ -75,23 +75,20 @@ export class ConfigTreeRenderer {
   }
 
   renderScalar({ key, value, parentElement, displayPath, canonicalPath }) {
-    const onChange = (next) => this.#edits.update(canonicalPath, next);
     // TK-283: parameters with a list of values are described in one place (DevParameterSchema).
     const described = this.#schema.describe(canonicalPath, value);
-    // TK-292: the switches this parameter depends on; its row is inactive while one of them is off.
-    const dependency = { requires: this.#prerequisites(canonicalPath) };
-    if (described) {
-      const create = described.control === "choice" ? "createChoiceRow" : "createSegmentsRow";
-      this.#ui[create](this.#formatKey(key, canonicalPath), described.options, value, parentElement, onChange,
-        displayPath, canonicalPath, dependency);
-      return;
-    }
-    if (typeof value === "boolean") {
-      this.#ui.createSwitcherRow(key, value, parentElement, onChange, displayPath, canonicalPath, dependency);
-      return;
-    }
-    this.#ui.createInputRow(this.#formatKey(key, canonicalPath), value, parentElement,
-      typeof value === "number" ? "number" : "string", onChange, displayPath, canonicalPath, dependency);
+    const control = described?.control ?? (typeof value === "boolean" ? "switch" : typeof value === "number" ? "number" : "text");
+    this.#ui.addParameter(parentElement, {
+      control,
+      label: control === "switch" ? key : this.#formatKey(key, canonicalPath),
+      value,
+      options: described?.options,
+      onCommit: (next) => this.#edits.update(canonicalPath, next),
+      path: displayPath,
+      bindingPath: canonicalPath,
+      // TK-292: the switches this parameter depends on; its row is inactive while one of them is off.
+      requires: this.#prerequisites(canonicalPath),
+    });
   }
 
   #collect(obj, path, output, options) {

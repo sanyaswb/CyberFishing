@@ -304,9 +304,17 @@
 }
 
 /* A 0..100 slider row (spec 129 Revision 2): the slider takes the control width, the number follows it. */
+/* Spec 174 B1: the slider and its value as one control (RangeField). */
+.devtools__range-field {
+  flex: 0 1 160px;
+  min-width: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .devtools__range {
-  flex: 0 1 120px;
-  min-width: 60px;
+  flex: 1 1 auto;
+  min-width: 0;
   accent-color: var(--ui-accent);
 }
 .devtools__range-value {
