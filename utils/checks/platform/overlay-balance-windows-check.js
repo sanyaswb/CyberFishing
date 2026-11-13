@@ -255,6 +255,159 @@ async function checkWindows() {
   assert.equal(document.byClass("debug-overlay--active-fish").length, 0, "dispose removes the window");
 }
 
+async function checkScaleSliderAndSeparateWindows() {
+  const { OverlayScaleControls } = await importSource("src/dev/overlay/dom/overlay_scale_controls.js");
+  const { OverlayDomAdapter } = await importSource("src/dev/overlay/dom/overlay_dom_adapter.js");
+  const { OverlayController } = await importSource("src/dev/overlay/core/overlay_controller.js");
+  const { OverlayModuleRegistry } = await importSource("src/dev/overlay/core/overlay_module_registry.js");
+  const { OverlayInteractionBridge } = await importSource("src/dev/overlay/dom/overlay_interaction_bridge.js");
+  const { OverlayToolWindow } = await importSource("src/dev/overlay/windows/overlay_tool_window.js");
+
+  const document = new TestDocument();
+  const changed = [];
+  const committed = [];
+  const controls = new OverlayScaleControls({
+    documentTarget: document,
+    scale: 1,
+    onScaleChanged: (scale) => changed.push(scale),
+    onScaleCommitted: (scale) => committed.push(scale),
+  });
+  const rootEl = controls.create();
+  document.body.appendChild(rootEl);
+
+  assert.equal(document.byClass("debug-overlay__scale-button").length, 0, "no +/- scale buttons remain");
+  const slider = document.byClass("debug-overlay__scale-slider")[0];
+  assert.ok(slider, "scale slider exists");
+  assert.equal(slider.getAttribute("role"), "slider");
+  // Simulate a slider rect whose visual width shrinks/grows if zoom changes during drag: drag distance stays stable from startX.
+  let dynamicWidth = 200;
+  slider.getBoundingClientRect = () => ({ left: 100, width: dynamicWidth, height: 18, top: 10 });
+
+  // Pointerdown near current thumb position (ratio for scale 1.0 in [0.3..3.0] is 0.7/2.7 -> ~52px -> x=152).
+  slider.fire("pointerdown", { clientX: 152, pointerId: 1, pointerType: "mouse", button: 0 });
+  slider.fire("pointermove", { clientX: 202, pointerId: 1 });
+  const afterRight = changed.at(-1);
+  assert.ok(afterRight > 1, "dragging right increases scale");
+  dynamicWidth = 320;
+  slider.fire("pointermove", { clientX: 252, pointerId: 1 });
+  assert.ok(changed.at(-1) > afterRight, "scale keeps increasing monotonically without width feedback jitter");
+  slider.fire("pointermove", { clientX: 102, pointerId: 1 });
+  assert.ok(changed.at(-1) < 1, "dragging left past start decreases scale");
+  slider.fire("pointerup", { clientX: 102, pointerId: 1 });
+  assert.equal(committed.length, 1, "pointerup commits persisted scale once");
+  assert.equal(committed[0], changed.at(-1));
+
+  slider.fire("keydown", { key: "ArrowRight" });
+  assert.ok(changed.at(-1) > committed[0], "ArrowRight steps scale up");
+  slider.fire("keydown", { key: "End" });
+  assert.equal(slider.getAttribute("aria-valuenow"), "3");
+  slider.fire("keydown", { key: "Home" });
+  assert.equal(slider.getAttribute("aria-valuenow"), "0.3");
+  controls.dispose();
+  assert.equal(slider.listeners.get("pointerdown")?.size ?? 0, 0, "dispose removes slider listeners");
+  assert.equal(slider.listeners.get("keydown")?.size ?? 0, 0, "dispose removes keyboard listener");
+
+  // OverlayToolWindow mounts scale slider BEFORE title and body.
+  const doc2 = new TestDocument();
+  const tool = new OverlayToolWindow({
+    documentTarget: doc2,
+    mountNode: doc2.body,
+    title: "TEST TOOL",
+    modifier: "debug-overlay--active-fish",
+    createScaleControls: ({ scale, onScaleChanged, onScaleCommitted }) =>
+      new OverlayScaleControls({ documentTarget: doc2, scale, onScaleChanged, onScaleCommitted }),
+    createDragController: () => ({ attach() {}, detach() {}, clampToViewport() {} }),
+  });
+  tool.show();
+  const toolEl = doc2.byClass("debug-overlay--tool")[0];
+  assert.equal(toolEl.children[0].className, "debug-overlay__scale-controls", "tool window places scale slider at top");
+  assert.equal(toolEl.children[1].className, "debug-overlay__title");
+  tool.dispose();
+
+  // Separate per-module windows + lazy creation + per-module hide + OverlayInteractionBridge multi-root.
+  const doc3 = new TestDocument();
+  const moduleStates = { a: true, b: false };
+  const overlayEnabled = { value: true };
+  const clicksHandled = [];
+  const bridge = new OverlayInteractionBridge({
+    viewStateStore: { toggleChartPage: (id) => clicksHandled.push(["chart", id]) },
+    actions: { ping: () => clicksHandled.push(["ping"]) },
+  });
+  const registry = new OverlayModuleRegistry();
+  registry.register({
+    key: "alpha",
+    isActive: () => moduleStates.a,
+    render: () => "<button data-overlay-control=\"a\" data-overlay-action=\"run\">A</button>",
+  });
+  registry.register({
+    key: "beta",
+    isActive: () => moduleStates.b,
+    render: () => "<div data-overlay-control=\"b\" data-overlay-action=\"ping\">B</div>",
+  });
+
+  const savedScales = {};
+  const cache3 = { get: (k) => savedScales[k] ?? null, set: (k, v) => { savedScales[k] = v; } };
+  const loop = { started: 0, stopped: 0, start() { this.started++; }, stop() { this.stopped++; } };
+  const controller = new OverlayController({
+    registry,
+    documentTarget: doc3,
+    configSource: () => ({ debug: { overlay: overlayEnabled.value } }),
+    updateLoop: loop,
+    interactionBridge: bridge,
+    createWindowAdapter: (module) => new OverlayDomAdapter({
+      documentTarget: doc3,
+      mountNode: doc3.body,
+      moduleKey: module.key,
+      cache: cache3,
+      scaleStorageKey: `overlay_scale_${module.key}`,
+      createScaleControls: ({ scale, onScaleChanged, onScaleCommitted }) =>
+        new OverlayScaleControls({ documentTarget: doc3, scale, onScaleChanged, onScaleCommitted }),
+      createDragController: () => ({ attach() {}, detach() {}, clampToViewport() {} }),
+    }),
+  });
+
+  controller.start();
+  controller.update();
+  let windowsOnDom = doc3.byClass("debug-overlay");
+  assert.equal(windowsOnDom.length, 1, "only active module window is created lazily");
+  assert.equal(windowsOnDom[0].dataset.overlayModule, "alpha");
+  assert.equal(windowsOnDom[0].children[0].className, "debug-overlay__scale-controls", "module window places scale slider at top");
+  assert.equal(windowsOnDom[0].children[1].className, "debug-overlay__content");
+
+  moduleStates.b = true;
+  controller.update();
+  windowsOnDom = doc3.byClass("debug-overlay");
+  assert.equal(windowsOnDom.length, 2, "each active module gets its own independent window");
+  assert.deepEqual(windowsOnDom.map((el) => el.dataset.overlayModule), ["alpha", "beta"]);
+
+  // Multi-root click handling on second window.
+  const fakeButton = doc3.createElement("button");
+  fakeButton.setAttribute("data-overlay-control", "ping");
+  fakeButton.setAttribute("data-overlay-activate", "release");
+  fakeButton.closest = (selector) => (selector === "[data-overlay-control]" ? fakeButton : null);
+  windowsOnDom[1].appendChild(fakeButton);
+  windowsOnDom[1].fire("pointerup", { target: fakeButton });
+  assert.deepEqual(clicksHandled, [["ping"]], "interaction bridge handles events on newly created module windows");
+
+  moduleStates.a = false;
+  controller.update();
+  assert.equal(windowsOnDom[0].style.display, "none", "disabling one module hides only its window");
+  assert.notEqual(windowsOnDom[1].style.display, "none", "other active module window stays visible");
+
+  overlayEnabled.value = false;
+  controller.update();
+  assert.equal(windowsOnDom[1].style.display, "none", "master overlay toggle hides all windows");
+
+  const clickCountBeforeDispose = windowsOnDom[1].listeners.get("click")?.size ?? 0;
+  controller.dispose();
+  assert.equal(doc3.byClass("debug-overlay").length, 0, "dispose removes all module windows");
+  assert.equal(
+    windowsOnDom[1].listeners.get("click")?.size ?? 0,
+    clickCountBeforeDispose - 1,
+    "interaction bridge detaches its click listener on stop",
+  );
+}
+
 (async () => {
   const { FightBalanceParameterSchema } = await importSource("src/dev/overlay/windows/fight_balance_parameter_schema.js");
   const schema = new FightBalanceParameterSchema();
@@ -264,9 +417,10 @@ async function checkWindows() {
   await checkRodContent(schema);
   await checkPanel();
   await checkWindows();
+  await checkScaleSliderAndSeparateWindows();
   console.log("Overlay balance windows passed: slider limits, fish form (hooked fish, save to species, Fixed Catch species), "
     + "rod form (item stats, fight rod rules), panel (built once, values in place, dragged slider kept, sections remembered), "
-    + "live data only while a window is on, window shell and disposal.");
+    + "live data only while a window is on, window shell, top scale slider, separate module windows and disposal.");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

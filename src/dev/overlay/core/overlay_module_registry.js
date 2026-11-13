@@ -12,6 +12,10 @@ export class OverlayModuleRegistry {
     modules.forEach((module) => this.register(module));
   }
 
+  getModules() {
+    return [...this.#modules];
+  }
+
   renderActive(data) {
     return this.#modules
       .filter((module) => module.isActive(data))

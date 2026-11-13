@@ -4,6 +4,7 @@ export class OverlayMetricInfoBridge {
   #catalog;
   #inspector;
   #documentTarget;
+  #explicitEventTarget;
   #isStarted = false;
   #eventTarget = null;
   #onDebugLiveUpdate = (event) => {
@@ -16,17 +17,19 @@ export class OverlayMetricInfoBridge {
     catalog,
     inspector,
     documentTarget = document,
+    eventTarget = null,
   } = {}) {
     this.#catalog = catalog;
     this.#inspector = inspector;
     this.#documentTarget = documentTarget;
+    this.#explicitEventTarget = eventTarget;
   }
 
   start() {
     if (this.#isStarted) return;
     this.#isStarted = true;
     this.#listenForDebugData();
-    const content = this.#documentTarget.querySelector(".debug-overlay__content");
+    const content = this.#explicitEventTarget || this.#documentTarget.querySelector?.(".debug-overlay__content");
     this.#eventTarget = content || this.#documentTarget;
     this.#eventTarget.addEventListener("click", this.#onClick, true);
     this.#eventTarget.addEventListener("keydown", this.#onKeyDown, true);

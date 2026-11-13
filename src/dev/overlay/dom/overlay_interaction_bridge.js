@@ -1,6 +1,7 @@
 export class OverlayInteractionBridge {
   #rootElement;
   #rootElementProvider;
+  #roots = new Set();
   #viewStateStore;
   #actions;
   #isAttached = false;
@@ -21,37 +22,47 @@ export class OverlayInteractionBridge {
 
   attach() {
     if (this.#isAttached) return;
+    if (!this.#viewStateStore) return;
+    this.#isAttached = true;
     const root = this.#resolveRootElement();
-    if (!root || !this.#viewStateStore) return;
+    if (root) this.attachRoot(root);
+  }
 
+  attachRoot(root) {
+    if (!root || this.#roots.has(root) || !this.#viewStateStore) return;
     root.addEventListener("pointerdown", this.#boundPointerDownHandler, true);
     root.addEventListener("mousedown", this.#boundPointerDownHandler, true);
     root.addEventListener("pointerup", this.#boundPointerUpHandler, true);
     root.addEventListener("click", this.#boundClickHandler);
-    this.#rootElement = root;
-    this.#isAttached = true;
+    this.#roots.add(root);
+  }
+
+  detachRoot(root) {
+    if (!root || !this.#roots.has(root)) return;
+    root.removeEventListener("pointerdown", this.#boundPointerDownHandler, true);
+    root.removeEventListener("mousedown", this.#boundPointerDownHandler, true);
+    root.removeEventListener("pointerup", this.#boundPointerUpHandler, true);
+    root.removeEventListener("click", this.#boundClickHandler);
+    this.#roots.delete(root);
   }
 
   detach() {
-    if (!this.#isAttached || !this.#rootElement) return;
-    this.#rootElement.removeEventListener(
-      "pointerdown",
-      this.#boundPointerDownHandler,
-      true,
-    );
-    this.#rootElement.removeEventListener(
-      "mousedown",
-      this.#boundPointerDownHandler,
-      true,
-    );
-    this.#rootElement.removeEventListener("pointerup", this.#boundPointerUpHandler, true);
-    this.#rootElement.removeEventListener("click", this.#boundClickHandler);
+    for (const root of [...this.#roots]) {
+      this.detachRoot(root);
+    }
     this.#isAttached = false;
+  }
+
+  #ownsControl(control) {
+    for (const root of this.#roots) {
+      if (root.contains(control)) return true;
+    }
+    return false;
   }
 
   #handlePointerDown(event) {
     const control = event.target?.closest?.("[data-overlay-control]");
-    if (!control || !this.#rootElement?.contains(control)) return;
+    if (!control || !this.#ownsControl(control)) return;
     if (this.#isReleaseControl(control)) {
       event.stopPropagation();
       return;
@@ -69,7 +80,7 @@ export class OverlayInteractionBridge {
 
   #handlePointerUp(event) {
     const control = event.target?.closest?.("[data-overlay-control]");
-    if (!control || !this.#rootElement?.contains(control) || !this.#isReleaseControl(control)) return;
+    if (!control || !this.#ownsControl(control) || !this.#isReleaseControl(control)) return;
     event.preventDefault();
     event.stopPropagation();
     this.#lastPointerHandledAt = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -82,7 +93,7 @@ export class OverlayInteractionBridge {
 
   #handleClick(event) {
     const control = event.target?.closest?.("[data-overlay-control]");
-    if (!control || !this.#rootElement?.contains(control)) return;
+    if (!control || !this.#ownsControl(control)) return;
     if (this.#isReleaseControl(control)) {
       // Keyboard activation (Enter/Space) has no pointerup; a pointer release already ran the action.
       const now = typeof performance !== "undefined" ? performance.now() : Date.now();

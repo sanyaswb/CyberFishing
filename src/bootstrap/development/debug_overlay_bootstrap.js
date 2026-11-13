@@ -142,20 +142,66 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     new FishPowerOverlayModule(moduleOptions), new DebuffsOverlayModule(moduleOptions), new FightPhysicsOverlayModule({...moduleOptions, groups}),
     new PlayerMaxOverlayModule(moduleOptions), new LiveForcesOverlayModule(moduleOptions), new ChumOverlayModule(moduleOptions),
     new StaminaBalanceOverlayModule(moduleOptions), new WorstCaseOverlayModule({...moduleOptions, selector: new WorstCaseForceDebugSelector({configSource})})]);
-  const domAdapter = new OverlayDomAdapter({documentTarget, mountNode,
-    createScaleControls: options => new OverlayScaleControls(options),
-    createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget, cache: storageCache, uiSurface})});
-  const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore,
-    actions: {[STARTUP_REPORT_COPY_CONTROL]: () => { void startupModule.copyReport().then(() => controller.update()); },
-      [STARTUP_REPORT_DOWNLOAD_CONTROL]: () => { void startupModule.downloadReport().then(() => controller.update()); }}});
+  const createWindowAdapter = (module, slot) => {
+    const id = `overlay_module_${module.key}`;
+    const defaultPosition = {
+      left: 10 + (slot % 4) * 28,
+      top: 10 + (slot % 6) * 34,
+    };
+    return new OverlayDomAdapter({
+      documentTarget,
+      mountNode,
+      moduleKey: module.key,
+      cache: storageCache,
+      scaleStorageKey: `overlay_scale_${id}`,
+      createScaleControls: (options) => new OverlayScaleControls(options),
+      createDragController: (element) =>
+        new OverlayWindowDragController({
+          element,
+          config,
+          id,
+          defaultPosition,
+          windowTarget,
+          cache: storageCache,
+          uiSurface,
+        }),
+    });
+  };
+  const interactionBridge = new OverlayInteractionBridge({
+    viewStateStore,
+    actions: {
+      [STARTUP_REPORT_COPY_CONTROL]: () => {
+        void startupModule.copyReport().then(() => controller.update());
+      },
+      [STARTUP_REPORT_DOWNLOAD_CONTROL]: () => {
+        void startupModule.downloadReport().then(() => controller.update());
+      },
+    },
+  });
   let controller;
   // The overlay's own HTML rebuild is measured as the DEV "overlay" section, so its cost is never mistaken for the game's.
-  const updateLoop = new OverlayUpdateLoop({callback: () => frameProfiler.measure("overlay", () => controller.update()),
-    intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150});
-  controller = new OverlayController({registry, domAdapter, documentTarget, configSource, updateLoop, viewStateStore, interactionBridge});
+  const updateLoop = new OverlayUpdateLoop({
+    callback: () => frameProfiler.measure("overlay", () => controller.update()),
+    intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150,
+  });
+  controller = new OverlayController({
+    registry,
+    createWindowAdapter,
+    documentTarget,
+    configSource,
+    updateLoop,
+    viewStateStore,
+    interactionBridge,
+  });
   controller.start();
-  const metricInfoBridge = new OverlayMetricInfoBridge({documentTarget, catalog: new OverlayMetricCatalog(),
-    inspector: new OverlayConsoleMetricInspector({resolver: new OverlayMetricResolver({baseConfig, configSource})})});
+  const metricInfoBridge = new OverlayMetricInfoBridge({
+    documentTarget,
+    eventTarget: mountNode,
+    catalog: new OverlayMetricCatalog(),
+    inspector: new OverlayConsoleMetricInspector({
+      resolver: new OverlayMetricResolver({ baseConfig, configSource }),
+    }),
+  });
   metricInfoBridge.start();
   let disposed = false;
   return {settingsStore, viewStateStore, registry, controller, metricInfoBridge, dispose() {

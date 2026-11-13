@@ -14,6 +14,7 @@ export function composeFightBalanceWindows({ documentTarget, windowTarget, mount
   config, baseConfig, fishes, items, updateConfig }) {
   const schema = new FightBalanceParameterSchema();
   const toolWindow = (id, modifier, title) => new OverlayToolWindow({ documentTarget, mountNode, title, modifier,
+    cache: storageCache, scaleStorageKey: `overlay_scale_${id}`,
     createScaleControls: (options) => new OverlayScaleControls(options),
     createDragController: (element) => new OverlayWindowDragController({ element, config, id,
       windowTarget, cache: storageCache, uiSurface }) });

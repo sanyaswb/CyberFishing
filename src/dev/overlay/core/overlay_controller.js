@@ -1,10 +1,12 @@
+// Drives the registered overlay modules, giving each active module its own lazy-created window adapter.
 export class OverlayController {
   #registry;
-  #domAdapter;
+  #createWindowAdapter;
   #documentTarget;
   #configSource;
   #data = {};
-  #lastHtml = "";
+  #windows = new Map();
+  #createdCount = 0;
   #updateLoop;
   #viewStateStore;
   #interactionBridge;
@@ -16,15 +18,18 @@ export class OverlayController {
 
   constructor({
     registry,
-    domAdapter,
+    createWindowAdapter,
     documentTarget = document,
     configSource,
     updateLoop = null,
     viewStateStore = null,
     interactionBridge = null,
   } = {}) {
+    if (typeof createWindowAdapter !== "function") {
+      throw new TypeError("OverlayController requires createWindowAdapter");
+    }
     this.#registry = registry;
-    this.#domAdapter = domAdapter;
+    this.#createWindowAdapter = createWindowAdapter;
     this.#documentTarget = documentTarget;
     this.#configSource = configSource;
     this.#viewStateStore = viewStateStore;
@@ -35,10 +40,9 @@ export class OverlayController {
   start() {
     if (this.#isStarted) return;
     this.#isStarted = true;
-    this.#domAdapter.init();
     this.#interactionBridge?.attach?.();
     this.#unsubscribeViewState = this.#viewStateStore?.subscribe?.(() => {
-      this.#lastHtml = "";
+      for (const entry of this.#windows.values()) entry.lastHtml = "";
       this.update();
     }) || null;
     this.#documentTarget.addEventListener(
@@ -64,28 +68,56 @@ export class OverlayController {
   dispose() {
     this.stop();
     this.#data = {};
-    this.#lastHtml = "";
-    this.#domAdapter.dispose?.();
+    for (const entry of this.#windows.values()) {
+      entry.adapter.dispose?.();
+    }
+    this.#windows.clear();
+    this.#createdCount = 0;
   }
 
   update() {
     const config = this.#configSource();
     if (!config?.debug?.overlay) {
-      this.#domAdapter.hide();
+      this.#hideAll();
       return;
     }
 
-    const html = this.#registry.renderActive(this.#data);
-    if (html !== "") {
-      if (html !== this.#lastHtml) {
-        this.#domAdapter.updateHtml(html);
-        this.#lastHtml = html;
+    for (const module of this.#registry.getModules()) {
+      const existing = this.#windows.get(module);
+      if (!module.isActive(this.#data)) {
+        existing?.adapter.hide();
+        continue;
       }
-      this.#domAdapter.show();
-      return;
-    }
 
-    this.#lastHtml = "";
-    this.#domAdapter.hide();
+      const html = module.render(this.#data);
+      if (html === "") {
+        existing?.adapter.hide();
+        continue;
+      }
+
+      const entry = existing || this.#createEntry(module);
+      if (html !== entry.lastHtml) {
+        entry.adapter.updateHtml(html);
+        entry.lastHtml = html;
+      }
+      entry.adapter.show();
+    }
+  }
+
+  #createEntry(module) {
+    const slot = this.#createdCount++;
+    const adapter = this.#createWindowAdapter(module, slot);
+    adapter.init();
+    const root = adapter.getRootElement?.();
+    if (root) this.#interactionBridge?.attachRoot?.(root);
+    const entry = { adapter, lastHtml: "" };
+    this.#windows.set(module, entry);
+    return entry;
+  }
+
+  #hideAll() {
+    for (const entry of this.#windows.values()) {
+      entry.adapter.hide();
+    }
   }
 }

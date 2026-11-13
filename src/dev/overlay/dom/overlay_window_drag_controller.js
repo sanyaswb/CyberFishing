@@ -9,6 +9,7 @@ export class OverlayWindowDragController {
   #unsubscribeSurface;
   #id;
   #cache;
+  #defaultPosition;
   #holdTimer = null;
   #isDragging = false;
   #startX = 0;
@@ -26,6 +27,7 @@ export class OverlayWindowDragController {
     element,
     config,
     id = "debug_overlay",
+    defaultPosition = null,
     windowTarget = typeof window !== "undefined" ? window : null,
     cache,
     uiSurface = null,
@@ -34,6 +36,7 @@ export class OverlayWindowDragController {
     this.#config = config || {};
     this.#windowTarget = windowTarget;
     this.#id = id;
+    this.#defaultPosition = defaultPosition;
     this.#cache = cache;
     this.#uiSurface = uiSurface;
     this.#element?.classList?.add?.("draggable-window");
@@ -231,23 +234,24 @@ export class OverlayWindowDragController {
 
   #restorePosition() {
     if (!this.#element) return;
-    const savedPosition = this.#cache.get(`drag_pos_${this.#id}`);
-    if (!savedPosition) return;
+    const savedPosition = this.#cache?.get?.(`drag_pos_${this.#id}`);
+    const position = savedPosition || this.#defaultPosition;
+    if (!position) return;
 
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
     // Saved as the position on the surface; the window's zoom multiplies what is written here.
-    this.#element.style.left = this.#unzoomed(savedPosition.x ?? savedPosition.left);
-    this.#element.style.top = this.#unzoomed(savedPosition.y ?? savedPosition.top);
-    this.#element.style.right = savedPosition.right ?? "auto";
-    this.#element.style.bottom = savedPosition.bottom ?? "auto";
+    this.#element.style.left = this.#unzoomed(position.x ?? position.left);
+    this.#element.style.top = this.#unzoomed(position.y ?? position.top);
+    this.#element.style.right = position.right ?? "auto";
+    this.#element.style.bottom = position.bottom ?? "auto";
   }
 
   #savePosition() {
     if (!this.#element) return;
     const physicalRect = this.#element.getBoundingClientRect();
     const rect = this.#uiSurface?.physicalToLogicalRect(physicalRect) || physicalRect;
-    this.#cache.set(`drag_pos_${this.#id}`, {
+    this.#cache?.set?.(`drag_pos_${this.#id}`, {
       left: `${Math.max(0, rect.left)}px`,
       top: `${Math.max(0, rect.top)}px`,
       right: "auto",
@@ -257,7 +261,7 @@ export class OverlayWindowDragController {
 
   #isInteractiveTarget(target) {
     return !!target?.closest?.(
-      "button,input,select,textarea,summary,[data-overlay-control]",
+      "button,input,select,textarea,summary,[role='slider'],[data-overlay-control]",
     );
   }
 

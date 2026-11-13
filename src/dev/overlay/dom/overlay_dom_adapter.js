@@ -1,7 +1,9 @@
 import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js";
 
-// The window's size factor at start (owner, 2026-10-18: 1.5 times smaller than full size); − / + change it.
+// The window's size factor at start (owner, 2026-10-18: 1.5 times smaller than full size); top slider changes it.
 const DEFAULT_SCALE = 2 / 3;
+const MIN_SAVED_SCALE = 0.3;
+const MAX_SAVED_SCALE = 3.0;
 
 function nodeKey(node) {
   if (!node || node.nodeType !== 1 /* ELEMENT_NODE */) return null;
@@ -15,16 +17,20 @@ function nodeKey(node) {
   return null;
 }
 
-// The DEV overlay window. Its scale is the --debug-overlay-scale property: CSS zooms the content and the − / + buttons
-// with it and scales the window's padding, so the window's box is what is seen (dragging and clamping need no
-// transform correction) and its width follows the content.
+// A DEV overlay window. Its scale is the --debug-overlay-scale property: CSS zooms the content and controls with it
+// and scales the window's padding, so the window's box is what is seen (dragging and clamping need no transform
+// correction) and its width follows the content.
 export class OverlayDomAdapter {
   #documentTarget;
   #mountNode;
   #createScaleControls;
   #createDragController;
+  #moduleKey;
+  #cache;
+  #scaleStorageKey;
   #container = null;
   #content = null;
+  #scaleControls = null;
   #dragController = null;
   #scale;
   #openDetailsIds = new Set();
@@ -36,19 +42,30 @@ export class OverlayDomAdapter {
     createScaleControls,
     createDragController,
     scale = DEFAULT_SCALE,
+    moduleKey = "",
+    cache = null,
+    scaleStorageKey = "",
   } = {}) {
-    this.#scale = scale;
+    const saved = scaleStorageKey ? Number(cache?.get?.(scaleStorageKey)) : NaN;
+    this.#scale = Number.isFinite(saved) && saved >= MIN_SAVED_SCALE && saved <= MAX_SAVED_SCALE ? saved : scale;
     this.#documentTarget = documentTarget;
     this.#mountNode = mountNode;
     this.#createScaleControls = createScaleControls;
     this.#createDragController = createDragController;
+    this.#moduleKey = String(moduleKey || "");
+    this.#cache = cache;
+    this.#scaleStorageKey = String(scaleStorageKey || "");
   }
 
   init() {
     if (this.#container?.isConnected) return;
 
     this.#container = this.#documentTarget.createElement("div");
-    this.#container.id = "debugOverlay";
+    if (this.#moduleKey) {
+      this.#container.dataset.overlayModule = this.#moduleKey;
+    } else {
+      this.#container.id = "debugOverlay";
+    }
     this.#container.className = "debug-overlay";
 
     if (UiEventShield.makeSolid) {
@@ -66,14 +83,15 @@ export class OverlayDomAdapter {
         }
       }, true);
     }
-    this.#container.appendChild(this.#content);
 
-    const controls = this.#createScaleControls({
+    this.#scaleControls = this.#createScaleControls({
       documentTarget: this.#documentTarget,
       scale: this.#scale,
       onScaleChanged: (scale) => this.setScale(scale),
+      onScaleCommitted: (scale) => this.#saveScale(scale),
     });
-    this.#container.appendChild(controls.create());
+    this.#container.appendChild(this.#scaleControls.create());
+    this.#container.appendChild(this.#content);
     this.#container.style.setProperty("--debug-overlay-scale", String(this.#scale));
     this.#mountNode.appendChild(this.#container);
 
@@ -244,6 +262,10 @@ export class OverlayDomAdapter {
     }
   }
 
+  #saveScale(scale) {
+    if (this.#scaleStorageKey) this.#cache?.set?.(this.#scaleStorageKey, scale);
+  }
+
   #clampWhenStable() {
     if (this.#dragController?.isDragging?.()) return;
     this.#dragController?.clampToViewport?.();
@@ -252,6 +274,8 @@ export class OverlayDomAdapter {
   dispose() {
     this.#sizeObserver?.disconnect();
     this.#sizeObserver = null;
+    this.#scaleControls?.dispose?.();
+    this.#scaleControls = null;
     this.#dragController?.detach?.();
     this.#container?.remove();
     this.#container = null;

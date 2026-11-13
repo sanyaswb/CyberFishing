@@ -57,7 +57,7 @@
 }
 .debug-overlay__tab:focus-visible,
 .debug-overlay__metric-label:focus-visible,
-.debug-overlay__scale-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.debug-overlay__scale-slider:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .debug-overlay__metric-label {
   cursor: default;
   pointer-events: auto;
@@ -102,7 +102,7 @@
 @container ui-surface (min-width: 821px) {
   .debug-overlay {
     width: max-content;
-    min-width: 320px;
+    min-width: 240px;
   }
 }
 
@@ -130,6 +130,7 @@
   background: rgba(30, 48, 68, 0.96);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
   touch-action: none;
+  z-index: calc(var(--ui-layer-panel) + 1);
 }
 
 /* TK-188: Prevent any scrolling while dragging is active */
@@ -153,37 +154,67 @@
 .debug-overlay__scale-controls {
   flex: 0 0 auto;
   width: 100%;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   z-index: var(--ui-layer-tooltip);
   pointer-events: all;
   box-sizing: border-box;
 }
 
-.debug-overlay__scale-button {
-  width: 30px;
-  height: 30px;
-  background-color: rgba(var(--ui-accent-rgb), 0.1);
-  color: var(--ui-accent);
-  border: 1px solid var(--ui-accent);
-  border-radius: 6px;
-  font-family: var(--ui-font-mono);
-  font-weight: bold;
-  font-size: 18px;
-  cursor: pointer;
+.debug-overlay__scale-slider {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  position: relative;
+  cursor: ew-resize;
+  pointer-events: auto;
   touch-action: none;
-  box-sizing: border-box;
-  flex: 0 0 auto;
+  border-radius: var(--ui-radius-control);
 }
-.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__scale-button:active:not(:disabled) {
-  background-color: rgba(var(--ui-accent-rgb), 0.24);
+
+.debug-overlay__scale-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  position: relative;
+  pointer-events: none;
+}
+
+.debug-overlay__scale-fill {
+  height: 100%;
+  width: var(--debug-overlay-scale-percent, 15%);
+  border-radius: 999px;
+  background: var(--ui-accent);
+  pointer-events: none;
+}
+
+.debug-overlay__scale-thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--debug-overlay-scale-percent, 15%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  border: 1px solid rgba(var(--ui-surface-rgb), 0.95);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.debug-overlay__scale-value {
+  flex: 0 0 auto;
+  min-width: 34px;
+  text-align: right;
+  font-size: 10px;
+  color: var(--ui-muted);
+  pointer-events: none;
 }
 
 
