@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.99 - Rain stays with the world
+
+- TK-271.2 (owner): rain drops and the rings they leave on the water stay where they fall in the location when the camera moves or the window is resized; a narrower window shows fewer drops at the same density instead of squeezing them all in («Крапель при силі 1» is now the rain over the whole rain area).
+
 ## v0.50.98 - Living waves
 
 - TK-289 (spec 172 D7): the waves follow the weather: higher and faster with wind and travelling with it, calmer at night, much higher, longer and faster in a storm, changing over a few seconds; the float rocks with the same sea. They are no longer uniform: patches of higher and lower waves drift over the water, each wave component breathes on its own rhythm, longer waves travel faster.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.90 - DevTools row lines
 
 - TK-284 (spec 174 A4): the dashed line under every DevTools row (4 px below its row, 8 px above the next) is replaced by one thin solid line only between neighbouring rows, with equal space above and below; a section's last row has no line.
-
-## v0.50.89 - DevTools list picker
-
-- TK-283 (spec 174 A3): Fixed Catch's fish is chosen from a list (image, name, id; search by name or id; arrows, Enter, Escape) instead of typed; an id the game does not have stays visible and marked. Parameters with up to four values (inventory selector size and layout, delivery method, split side) show every option as a segmented switch instead of a button that cycles.

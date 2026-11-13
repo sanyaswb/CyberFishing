@@ -750,6 +750,48 @@ async function checkRain() {
   assert.equal(rain.status.drops, 0, "no rain zone: no drops");
   frame({ world: { ...zoned, rainZoned: false } });
   assert.equal(drops.mask, null, "the switch off: no mask, the whole screen");
+
+  // TK-271.2: drops and rings belong to the world, not the screen. A camera move carries the falling drops and the rings
+  // with the location; a narrower window shows a part of the rain zone with the same density (maxDrops is the whole
+  // zones' rain), instead of squeezing every drop into it.
+  {
+    const anchored = new PixiRainRenderer({ pixi, documentTarget, random });
+    const anchoredStage = new pixi.Container();
+    anchored.mountSurface(anchoredStage);
+    anchored.mountAir(anchoredStage);
+    const [anchoredRings, anchoredDrops] = anchoredStage.children;
+    const background = { assetId: "day", alpha: 1, x: -600, y: 0, width: 2400, height: 700 };
+    const lake = { x: -200, y: 300, width: 1600, height: 300 };
+    const strip = { x: -600, y: 250, width: 2400, height: 450 };
+    const scene = { weather: { rain: 1, storm: 0, fog: 0, cloud: 1, windDirection: 0 },
+      backgroundLayers: { count: 1, getAt: () => background }, clipRegions: { count: 1, getAt: () => lake },
+      waterPlane: { metric, left: 0, right: 2560, top: 0, bottom: 640 }, rainZoned: true,
+      rainRegions: { count: 1, getAt: () => strip } };
+    let clock = 5000;
+    const step = (width, sec = 1 / 60) => { clock += sec * 1000; anchored.update(scene, width, 700, clock, settings); };
+    for (let index = 0; index < 120; index += 1) step(1200);
+    assert.equal(anchored.status.drops, Math.round(settings.maxDrops * 1200 / 2400),
+      "half the zone on screen: half of the zone's drops (maxDrops is the whole rain zone's)");
+    for (let index = 0; index < 120; index += 1) step(600);
+    assert.equal(anchored.status.drops, Math.round(settings.maxDrops * 600 / 2400),
+      "a window half as wide shows half as many drops: the same density, not a squeezed rain");
+    for (let index = 0; index < 120; index += 1) step(1200);
+    const dropsBefore = anchoredDrops.particleChildren.filter((particle) => particle.alpha > 0).map((p) => [p.x, p.y]);
+    const ringsBefore = anchoredRings.particleChildren.filter((particle) => particle.alpha > 0).map((p) => [p.x, p.y]);
+    assert(dropsBefore.length >= 90 && ringsBefore.length > 0, "drops fall and rings spread before the camera moves");
+    for (const rect of [background, lake, strip]) rect.x -= 100;
+    step(1200, 0);
+    const dropsAfter = anchoredDrops.particleChildren.filter((particle) => particle.alpha > 0).map((p) => [p.x, p.y]);
+    const ringsAfter = anchoredRings.particleChildren.filter((particle) => particle.alpha > 0).map((p) => [p.x, p.y]);
+    assert.equal(dropsAfter.length, dropsBefore.length);
+    assert(dropsAfter.every(([x, y], index) => Math.abs(x - (dropsBefore[index][0] - 100)) < 0.01 &&
+      Math.abs(y - dropsBefore[index][1]) < 0.01), "the camera moved 100 px left: every falling drop moves with the world");
+    assert(ringsAfter.length === ringsBefore.length && ringsAfter.every(([x, y], index) =>
+      Math.abs(x - (ringsBefore[index][0] - 100)) < 0.01 && Math.abs(y - ringsBefore[index][1]) < 0.01),
+    "and every ring on the water too");
+    const puff = anchored.waterRipples.puffs.getAt(0);
+    assert(Math.abs(puff.x - ringsAfter[0][0]) < 0.01, "the water's ripples follow the rings");
+  }
 }
 
 // Spec 172 D7 (TK-289): the waves' variation and their integrated travel. Without a variation the travel alone sets the

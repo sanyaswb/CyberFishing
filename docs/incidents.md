@@ -32,9 +32,23 @@ rule as something the next change can follow.
 | R16 | A pick mode (a consumable or slot pick that narrows the list) ends with the choice it was opened for. A command that fills the picked target leaves the pick explicitly; a check selects «Усе» after the choice and expects items outside the picked kind. | I-15 |
 | R17 | A DEV tool that reads live game data asks for it itself (a port such as `isLiveDataRequested`); it never depends on another tool's switch (Overlay, console modules) being on. Changing a debug default is checked against every reader of the events that switch gates. | I-16 |
 | R18 | A DEV edit of a value reaches every result derived from it at the start (limits, pools, caches), not only the object that holds it. The check edits through the same path and asserts the effect on the running system (the fight's limit), not the stored value. | I-17 |
-| R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. | I-18 |
+| R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. This holds for scene effects too (rain, particles): their places are world points placed on screen each frame, and their amount follows the visible world area, not the screen. | I-18, I-19 |
 
 <a id="i-18"></a>
+
+## I-19 · 2026-11-13 · v0.50.75–0.50.98: rain drops and rings stayed on the screen while the camera moved (TK-271.2)
+
+- **Seen:** the owner noticed that the rain moved with the browser window: narrowing it squeezed all the drops into the
+  narrow screen, and moving the rod (the camera) carried the drops and the rings on the water along with it.
+- **Cause:** `PixiRainRenderer` kept each drop's landing point and each ring in screen coordinates
+  (`#spawnDrop`, `#impact`) and drew them there every frame, so the location moved under them; the number of drops came
+  from `maxDrops` alone, so any visible part of the rain area received all of them.
+- **Fix:** landing points and rings are shares of the location's background (`world.backgroundLayers[0]`), placed on
+  screen every frame; `maxDrops` is the rain over the whole rain area (zones, or the background below the water) and
+  the screen shows its visible share; the rain updates before the water, so the ripples read this frame's rings.
+- **Rule R19** (extended to scene effects). Check: `scene-layer` (a camera move carries every drop and ring by the same
+  100 px; a window half as wide shows half the drops; fails with the old renderer on both).
+<a id="i-19"></a>
 
 ## I-18 · 2026-11-09 · v0.50.53: narrowing the window pulled the fish, float and boat (G-126, spec 153)
 

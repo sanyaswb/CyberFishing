@@ -135,6 +135,10 @@ export class PixiSceneLayer {
     const router = this.#router;
     const world = router.drawsOnScene("background") ? frame.world : null;
     let changed = this.#background.update(world);
+    // TK-271.2: the rain first, so the water's ripples read where its rings are this frame (the draw order is the stage's).
+    if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getRainSettings())) {
+      changed = true;
+    }
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
     const pixelRatio = this.#scenePixelRatio();
     if (this.#worldEntities.update(router.drawsOnScene("world-entities") ? frame.world : null, pixelRatio)) changed = true;
@@ -143,9 +147,6 @@ export class PixiSceneLayer {
     if (this.#line.update(fishing && router.drawsOnScene("line") ? fishing.rodLine : null)) changed = true;
     if (this.#rod.update(fishing && router.drawsOnScene("rod") ? fishing.rodLine : null)) changed = true;
     if (this.#float.update(fishing && router.drawsOnScene("float") ? fishing.float : null)) changed = true;
-    if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getRainSettings())) {
-      changed = true;
-    }
     if (this.#annotations.update(world?.annotations ?? null)) changed = true;
     if (this.#clearColor !== frame.world.backgroundColor) {
       this.#clearColor = frame.world.backgroundColor;
