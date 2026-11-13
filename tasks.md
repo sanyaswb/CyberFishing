@@ -13,6 +13,14 @@
 
 Відповіді власнику — англійською (власник, 2026-11-04).
 
+- [x] **TK-287 ([Spec 176](specs/176-dev-export-core/spec.md), v0.50.95) — спільне ядро експорту/застосування конфігів DevTools (власник, 2026-11-13).**
+  «4. пункт склади план для спрощення та реалізуй його» (спрощення після TK-286: винесення спільної канонізації/diff/валідації, UI-блоку збереження та спільного CLI applier замість дублювання між `zones`, `radio` та `weather`).
+  - `src/dev/tools/export/canonical_export_format.js` → `zone_export_format.js`, `radio_sound_settings_format.js`, `weather_export_format.js`.
+  - `src/dev/tools/export/dev_saving_section.js` → `ZoneEditorSection`, `WeatherDevSection`.
+  - `utils/apply-module-helpers.js` (`runModuleApply`) → `apply-zones.js`, `apply-radio-sound.js`, `apply-weather.js`.
+  - Перевірено: `apply-zones`, `apply-radio-sound`, `apply-weather`, `zone-editor`, `radio-receiver`, `npm run check`.
+  - [ ] Перевірка власника TK-287 (v0.50.95): відкрити `dev.html` → перевірити «Збереження» в «🗺️ РЕДАКТОР» (зони) і в «🌦 ПОГОДА» (погода) — статус, експорт із банером команди, імпорт і скидання до коду працюють як раніше. Візуально агентом не перевірялося.
+
 - [x] **TK-286 ([Spec 175](specs/175-weather-export/spec.md), v0.50.94) — збереження, експорт, імпорт, скидання й `npm run apply:weather` для погоди (власник, 2026-11-13).**
   «подивися логіку збереження експорту параметрів в редакторі для зон, потрібно використати таку ж логіку для експорту параметрів погоди».
   Відповіді власника Q1–Q2: експорт/імпорт для обох блоків (`CONFIG.canvas.rain` і `MAP_DB.<id>.weather`) в одному файлі `weather-<id>-...json` та одна команда `npm run apply:weather -- <файл>` (оновлює лише змінені модулі).

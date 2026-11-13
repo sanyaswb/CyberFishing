@@ -7,6 +7,7 @@ import { buildZoneFile, canonicalZones, changedCategories, validateZoneFile, zon
   from "../location/zone_export_format.js";
 import { clipZoneToCastable } from "../location/zone_castable_clip.js";
 import { findZonesBeyondMap, fitZonesToMap } from "../location/zone_map_bounds.js";
+import { DevSavingSection } from "./export/dev_saving_section.js";
 
 const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
@@ -51,7 +52,7 @@ export class ZoneEditorSection {
   #drawing;
 
   #saving = null;
-  #savingStatus = null;
+  #savingSection;
   #unsubscribe = null;
   #getMetric; #createMetric; #resetPerspective;
   #files; #getBaseZones; #resetZones; #gameVersion; #readDynamicZones; #getDependentZones;
@@ -59,7 +60,7 @@ export class ZoneEditorSection {
   #clipMessage = null;
   #alert = null;
   #fixFile = null;
-  #exportedFile = null; // TK-285: { where: "saving" | "alert", fileName } of the last downloaded zone file
+  #fixExportedFile = null;
   #fixMessage = "";
 
   // files: ZoneEditorBrowserPort (download, pickFile, confirm, openLocation, hashText); getBaseZones(id): the zones in
@@ -78,6 +79,40 @@ export class ZoneEditorSection {
     // Spec 173 F1: ZoneEditorFullscreen; switching editing on takes the page fullscreen.
     this.#fullscreen = fullscreen;
     this.#files = files; this.#getBaseZones = getBaseZones; this.#resetZones = resetZones; this.#gameVersion = gameVersion;
+    this.#savingSection = new DevSavingSection({
+      ui,
+      files,
+      commandPrefix: "npm run apply:zones",
+      hasReset: Boolean(resetZones),
+      labels: {
+        statusLabel: "Стан зон",
+        exportLabel: "Експорт зон",
+        importLabel: "Імпорт зон",
+        resetLabel: "Скинути зміни зон до коду",
+        description: "Експорт зон завантажує файл зон цієї локації. У код його переносить команда npm run apply:zones -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни зон до коду. Імпорт зон відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.",
+      },
+      readStatus: () => {
+        const changed = this.#changedCategories(this.#locationId());
+        return changed.length
+          ? `Змінено (ще не в коді): ${changed.map(category => LABELS[category]).join(", ")}.`
+          : "Зони збігаються з кодом.";
+      },
+      buildExport: async (hashText) => {
+        const id = this.#locationId(), locations = this.#config.locations;
+        const baseHash = await zoneHash(this.#getBaseZones?.(id) || {}, hashText);
+        return {
+          fileName: zoneFileName(id, this.#gameVersion, new Date()),
+          data: buildZoneFile({ locationId: id, zones: locations.map[id]?.zones, baseHash,
+            gameVersion: this.#gameVersion, locations, exportedAt: new Date().toISOString() }),
+        };
+      },
+      onImport: (file, setStatus) => this.#applyImportedZones(file, setStatus),
+      onReset: () => {
+        this.#resetZones(this.#locationId());
+        this.#state.clearZoneMarks();
+        this.#refreshZones();
+      },
+    });
   }
 
   render(parent) {
@@ -181,17 +216,16 @@ export class ZoneEditorSection {
     const file = this.#fixFile;
     if (file?.locationId === id) ui.createButtonRow(`Завантажити ${file.name}`, alert, () => {
       this.#files.download(file.name, file.text);
-      this.#showExportCommand(host, "alert", file.name);
+      this.#showFixExportCommand(host, file.name);
     });
-    if (this.#exportedFile?.where === "alert") this.#showExportCommand(host, "alert", this.#exportedFile.fileName);
+    if (this.#fixExportedFile) this.#showFixExportCommand(host, this.#fixExportedFile);
   }
 
-  // TK-285: the terminal command that moves a downloaded zone file into the code, at the top of the place the file was
-  // exported from; kept while that place is rebuilt, until the owner closes it.
-  #showExportCommand(host, where, fileName) {
-    this.#exportedFile = { where, fileName };
+  // TK-285: the terminal command that moves a downloaded fix zone file into the code.
+  #showFixExportCommand(host, fileName) {
+    this.#fixExportedFile = fileName;
     this.#ui.showExportCommand(host, { fileName, command: `npm run apply:zones -- ${fileName}`,
-      onClose: () => { this.#exportedFile = null; } });
+      onClose: () => { this.#fixExportedFile = null; } });
   }
 
   // One notice line: «Ігрова область (закидання) 1: нижній край y + h 38 > 36 клітинок (1520 > 1440 px)».
@@ -237,24 +271,7 @@ export class ZoneEditorSection {
 
   // D5: the chosen location's zone file — export, import into the session, reset to the code, and a status line.
   #fillSaving() {
-    const list = this.#saving;
-    if (!list) return;
-    const ui = this.#ui;
-    ui.releaseValueBindings(list);
-    list.replaceChildren();
-    this.#savingStatus = ui.createInfoRow("Стан зон", "", list);
-    this.#showSavingStatus();
-    if (this.#files) {
-      ui.createButtonRow("Експорт зон", list, () => { void this.#exportZones(); });
-      ui.createButtonRow("Імпорт зон", list, () => { void this.#importZones(); });
-    }
-    if (this.#resetZones) ui.createButtonRow("Скинути зміни зон до коду", list, () => {
-      this.#resetZones(this.#locationId());
-      this.#state.clearZoneMarks();
-      this.#refreshZones();
-    });
-    ui.createInfoRow("Збереження", "Експорт зон завантажує файл зон цієї локації. У код його переносить команда npm run apply:zones -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни зон до коду. Імпорт зон відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.", list);
-    if (this.#exportedFile?.where === "saving") this.#showExportCommand(list, "saving", this.#exportedFile.fileName);
+    this.#savingSection.render(this.#saving);
   }
 
   #changedCategories(id) {
@@ -262,43 +279,18 @@ export class ZoneEditorSection {
     return base ? changedCategories(base, this.#config.locations.map[id]?.zones) : [];
   }
 
-  #showSavingStatus(message = null) {
-    const status = this.#savingStatus;
-    if (!status) return;
-    if (message) { status.innerText = message; return; }
-    const changed = this.#changedCategories(this.#locationId());
-    status.innerText = changed.length
-      ? `Змінено (ще не в коді): ${changed.map(category => LABELS[category]).join(", ")}.`
-      : "Зони збігаються з кодом.";
+  #showSavingStatus() {
+    this.#savingSection.refreshStatus();
   }
 
-  async #exportZones() {
-    const id = this.#locationId(), locations = this.#config.locations;
-    try {
-      const baseHash = await zoneHash(this.#getBaseZones?.(id) || {}, text => this.#files.hashText(text));
-      const file = buildZoneFile({ locationId: id, zones: locations.map[id]?.zones, baseHash, gameVersion: this.#gameVersion,
-        locations, exportedAt: new Date().toISOString() });
-      const name = zoneFileName(id, this.#gameVersion, new Date());
-      this.#files.download(name, `${JSON.stringify(file, null, 2)}\n`);
-      this.#showSavingStatus(`Збережено файл ${name}.`);
-      if (this.#saving) this.#showExportCommand(this.#saving, "saving", name);
-    } catch (error) {
-      this.#showSavingStatus(`Експорт не вдався: ${error?.message || error}`);
-    }
-  }
-
-  async #importZones() {
-    const text = await this.#files.pickFile();
-    if (text === null) return;
+  #applyImportedZones(file, setStatus) {
     const id = this.#locationId();
-    let file;
-    try { file = JSON.parse(text); } catch { this.#showSavingStatus("Файл не є JSON."); return; }
     if (file?.locationId && file.locationId !== id) {
-      this.#showSavingStatus(`Файл для локації ${file.locationId}; оберіть її у списку «Локація».`);
+      setStatus(`Файл для локації ${file.locationId}; оберіть її у списку «Локація».`);
       return;
     }
     const errors = validateZoneFile(file, this.#config.locations);
-    if (errors.length) { this.#showSavingStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`); return; }
+    if (errors.length) { setStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`); return; }
     this.#update(["CONFIG", "locations", "map", id, "zones"], canonicalZones(file.zones));
     this.#state.clearZoneMarks();
     this.#refreshZones();

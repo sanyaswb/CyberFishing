@@ -1,5 +1,13 @@
-// Canonical form of weather settings (spec 175): DevTools «🌧 ПОГОДА» export/import and `npm run apply:weather`
-// read and write through this module so hashes and written data modules never depend on key order.
+import {
+  canonicalHash,
+  cleanCanonical,
+  collectTemplateIssues,
+  diffCanonicalObjects,
+  formatExportFileName,
+} from "../tools/export/canonical_export_format.js";
+
+// Canonical form of weather settings (spec 175, spec 176): DevTools «🌧 ПОГОДА» export/import and
+// `npm run apply:weather` read and write through this module so hashes and written modules never depend on key order.
 export const WEATHER_FILE_FORMAT = "cyber-fishing/weather";
 export const WEATHER_FILE_VERSION = 1;
 export const RAIN_SETTINGS_MODULE = "src/game/config/raw/weather/rain_settings.js";
@@ -30,44 +38,31 @@ const RAIN_RANGES = Object.freeze([
   ["rings.ripple.radiusScale", 0, 10],
 ]);
 
+const isRecord = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+const finite = (value) => typeof value === "number" && Number.isFinite(value);
+
 export function locationWeatherModulePath(locationId) {
   return `src/game/config/raw/locations/weather/${locationId}.js`;
 }
 
-// Binary-fraction noise (TK-077) collapses onto the exact short decimal within 1e-12 while genuine decimals keep precision.
-function clean(value) {
-  if (typeof value === "number") {
-    if (!Number.isFinite(value) || Number.isInteger(value)) return value;
-    const short = Number(value.toPrecision(12));
-    return Math.abs(short - value) <= Math.abs(value) * 1e-12 ? short : value;
-  }
-  if (Array.isArray(value)) return value.map(clean);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, clean(value[key])]));
-  }
-  return value;
-}
-
 export function canonicalRain(rain = {}) {
-  return clean(rain);
+  return cleanCanonical(rain, { sortKeys: true });
 }
 
 export function canonicalLocationWeather(weather = {}) {
-  return clean(weather);
+  return cleanCanonical(weather, { sortKeys: true });
 }
 
 export async function rainHash(rain, hashText) {
-  return await hashText(JSON.stringify(canonicalRain(rain)));
+  return await canonicalHash(canonicalRain(rain), hashText);
 }
 
 export async function locationWeatherHash(weather, hashText) {
-  return await hashText(JSON.stringify(canonicalLocationWeather(weather)));
+  return await canonicalHash(canonicalLocationWeather(weather), hashText);
 }
 
 export function weatherFileName(locationId, version, date) {
-  const pad = (value) => String(value).padStart(2, "0");
-  const stamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
-  return `weather-${locationId}-v${version}-${stamp}.json`;
+  return formatExportFileName(`weather-${locationId}`, version, date);
 }
 
 export function buildWeatherFile({ locationId, rain, locationWeather, rainBaseHash, locationWeatherBaseHash, gameVersion, exportedAt }) {
@@ -86,44 +81,10 @@ export function buildWeatherFile({ locationId, rain, locationWeather, rainBaseHa
   };
 }
 
-const isRecord = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
-const finite = (value) => typeof value === "number" && Number.isFinite(value);
-
 function readPath(object, dotPath) {
   let current = object;
   for (const key of dotPath.split(".")) current = current?.[key];
   return current;
-}
-
-function collectTemplateIssues(template, candidate, path, errors) {
-  if (!isRecord(template)) {
-    if (Array.isArray(template)) {
-      if (!Array.isArray(candidate)) { errors.push(`${path}: expected array`); return; }
-      const itemType = typeof template[0];
-      if (itemType === "number" && candidate.length !== template.length) {
-        errors.push(`${path}: expected ${template.length} items`);
-      }
-      for (let i = 0; i < candidate.length; i++) {
-        if (itemType === "number" && !finite(candidate[i])) errors.push(`${path}[${i}]: expected finite number`);
-        else if (itemType !== "number" && typeof candidate[i] !== itemType) errors.push(`${path}[${i}]: expected ${itemType}`);
-      }
-      return;
-    }
-    if (typeof template === "number") {
-      if (!finite(candidate)) errors.push(`${path}: expected finite number`);
-      return;
-    }
-    if (typeof candidate !== typeof template) errors.push(`${path}: expected ${typeof template}`);
-    return;
-  }
-  if (!isRecord(candidate)) { errors.push(`${path}: expected object`); return; }
-  for (const key of Object.keys(candidate)) {
-    if (!Object.hasOwn(template, key)) errors.push(`${path}.${key}: unknown setting`);
-  }
-  for (const key of Object.keys(template)) {
-    if (!Object.hasOwn(candidate, key)) { errors.push(`${path}.${key}: missing setting`); continue; }
-    collectTemplateIssues(template[key], candidate[key], `${path}.${key}`, errors);
-  }
 }
 
 function checkRange(value, path, min, max, errors) {
@@ -213,18 +174,6 @@ export function validateWeatherFile(file, { rainTemplate, locationWeatherTemplat
     validateLocationWeatherDomain(file.locationWeather, errors);
   }
   return errors;
-}
-
-export function diffCanonicalObjects(current, next, prefix = "") {
-  if (!isRecord(current) || !isRecord(next)) {
-    return JSON.stringify(current) === JSON.stringify(next) ? [] : [{ path: prefix, from: current, to: next }];
-  }
-  const changes = [];
-  for (const key of Object.keys(current).sort()) {
-    const path = prefix ? `${prefix}.${key}` : key;
-    changes.push(...diffCanonicalObjects(current[key], next[key], path));
-  }
-  return changes;
 }
 
 export function diffWeatherParts(baseRain, nextRain, baseLocationWeather, nextLocationWeather) {

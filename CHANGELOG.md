@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.95 - Shared DevTools export and apply core
+
+- TK-287 (spec 176): extracted shared canonical JSON/template/diff helpers (`canonical_export_format.js`), `DevSavingSection` UI controller (`dev_saving_section.js`), and `runModuleApply` (`apply-module-helpers.js`) shared by zones, radio and weather exports/CLI appliers.
+
 ## v0.50.94 - Weather export, import, reset and apply:weather
 
 - TK-286 (spec 175): added zone-editor-style saving to DevTools «🌧 ПОГОДА» (live status vs code, JSON export with apply command notice, import validation, reset to code) backed by data modules (`rain_settings.js`, `locations/weather/<id>.js`) and `npm run apply:weather` (updates only changed modules with backups, conflict check and schema/weather checks).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.86 - Zones past the map: notice and fix file
 
 - TK-280 (spec 173): the zone editor shows a red notice at its top listing every zone past the map (category, number, side and value); «Виправити» makes a zone file with every zone fitted into the map (masks keep their cells), «Завантажити» downloads it; the notice stays until the code has the fixed zones (npm run apply:zones).
-
-## v0.50.85 - No jump on the first press
-
-- TK-279 (spec 173): pressing a zone that runs past the window (the test water below the screen) no longer pulls it up into the window; it moves only where it is dragged and never further out.

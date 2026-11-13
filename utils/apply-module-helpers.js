@@ -50,4 +50,86 @@ function runChecks(root, checks) {
   }
 }
 
-module.exports = { stamp, gitDirectory, askYes, isDirty, runChecks, resolveExportedFile };
+function describeLeafChanges(changes, direction) {
+  const value = (item) => (item === undefined ? "немає" : JSON.stringify(item));
+  const lines = changes.map((change) => `  ${change.path}: ${value(change.from)} -> ${value(change.to)}`);
+  return `  (${direction})\n${lines.join("\n")}`;
+}
+
+// Shared workflow for apply:zones / apply:radio / apply:weather (spec 176): JSON parse, domain plan preparation,
+// dirty check on changed modules only, conflict check (--force), diff output, confirmation (--yes), backup, write, checks.
+async function runModuleApply({
+  fileText,
+  prepare,
+  isDirty: checkDirty,
+  confirm,
+  backupDir,
+  runChecks: executeChecks,
+  log,
+  now,
+  yes = false,
+  force = false,
+}) {
+  const refuse = (reason) => {
+    log(`Не застосовано: ${reason}`);
+    return "refused";
+  };
+  let file;
+  try {
+    file = JSON.parse(fileText);
+  } catch (error) {
+    return refuse(`файл не є JSON (${error.message})`);
+  }
+  const plan = await prepare(file, refuse);
+  if (!plan) return "refused";
+  const pending = plan.parts.filter((part) => part.changes.length > 0);
+  for (const part of pending) {
+    if (checkDirty(part.target)) {
+      return refuse(`${part.target} має незакомічені зміни; закомітьте або відкиньте їх, щоб не затерти ручні правки`);
+    }
+  }
+  const conflicts = plan.parts.filter((part) => part.currentHash !== part.baseHash);
+  if (conflicts.length) {
+    for (const part of conflicts) {
+      log(part.conflictMessage);
+      log(part.describe(part.changes, "код -> файл"));
+    }
+    if (!force) return refuse(plan.forceMessage);
+  }
+  if (!pending.length) {
+    log(plan.unchangedMessage);
+    return "unchanged";
+  }
+  for (const part of pending) {
+    log(`Зміни для ${part.target}:`);
+    log(part.describe(part.changes, "зараз -> буде"));
+  }
+  const targets = pending.map((part) => part.target).join(", ");
+  if (!yes && !(await confirm(`Застосувати до ${targets}? (y/N) `))) {
+    log("Скасовано. Нічого не змінено.");
+    return "cancelled";
+  }
+  fs.mkdirSync(backupDir, { recursive: true });
+  const prefix = stamp(now());
+  for (const part of pending) {
+    const backup = path.join(backupDir, part.backupFile(prefix));
+    fs.copyFileSync(part.target, backup);
+    fs.writeFileSync(part.target, part.source());
+    log(`Записано ${part.target}. Бекап: ${backup}`);
+    log(`Відкат: copy "${backup}" "${part.target}"`);
+  }
+  executeChecks();
+  log(plan.reloadHint);
+  return "applied";
+}
+
+module.exports = {
+  stamp,
+  gitDirectory,
+  askYes,
+  isDirty,
+  runChecks,
+  resolveExportedFile,
+  describeLeafChanges,
+  runModuleApply,
+};

@@ -1,5 +1,6 @@
 import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
 import { bakeGridMask, readMaskCells, validateGridMask } from "../../engine/geometry/grid_mask.js";
+import { canonicalHash, cleanCanonical, formatExportFileName } from "../tools/export/canonical_export_format.js";
 
 // The one canonical form of a location's zones (spec 130): the DevTools export, the browser import and
 // `npm run apply:zones` read and write it through this module, so a hash or a written module never depends on key order.
@@ -10,20 +11,7 @@ const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "shape", "x", "y", 
   "bounds", "mask"]);
 const RECT_KEYS = Object.freeze(["x", "y", "w", "h"]);
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
-
-// Binary-fraction noise from moving zones between grids (TK-077: 11.700000000000001) is replaced by the short decimal it
-// sits on (within one part in 10^12), so exports, hashes and written modules carry 11.7; genuinely long values from a
-// smooth drag (17.12571864024948) and exact ones (0.00703125) stay as they are.
-function clean(value) {
-  if (typeof value === "number") {
-    if (!Number.isFinite(value) || Number.isInteger(value)) return value;
-    const short = Number(value.toPrecision(12));
-    return Math.abs(short - value) <= Math.abs(value) * 1e-12 ? short : value;
-  }
-  if (Array.isArray(value)) return value.map(clean);
-  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clean(item)]));
-  return value;
-}
+const clean = (value) => cleanCanonical(value, { sortKeys: false });
 
 function ordered(record, first) {
   const keys = first.filter(key => Object.hasOwn(record, key));
@@ -60,13 +48,11 @@ export function canonicalZonesJson(zones) {
 
 // hashText(text) -> hex SHA-256 (or a promise of it): Web Crypto in the browser, node:crypto in the script.
 export async function zoneHash(zones, hashText) {
-  return await hashText(canonicalZonesJson(zones));
+  return await canonicalHash(canonicalZones(zones), hashText);
 }
 
 export function zoneFileName(locationId, version, date) {
-  const pad = value => String(value).padStart(2, "0");
-  const stamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
-  return `zones-${locationId}-v${version}-${stamp}.json`;
+  return formatExportFileName(`zones-${locationId}`, version, date);
 }
 
 export function buildZoneFile({ locationId, zones, baseHash, gameVersion, locations, exportedAt }) {

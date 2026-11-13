@@ -1,3 +1,4 @@
+import { DevSavingSection } from "./export/dev_saving_section.js";
 import {
   buildWeatherFile,
   canonicalLocationWeather,
@@ -13,8 +14,7 @@ import {
 // model's state; rain, storm and fog switched on by hand with live strength sliders (a switched-on state freezes the
 // weather's timers, so it stays until switched off; all off returns to the automatic weather); the wind's direction
 // (automatic, left, calm, right); the transition time; a lightning strike now; the rain's look (CONFIG.canvas.rain,
-// live), the location's weather settings (CONFIG.locations.map.<id>.weather, live), and saving (status vs code,
-// export/import JSON, reset to code). The status is read when the section is drawn and after every action.
+// live), the location's weather settings (CONFIG.locations.map.<id>.weather, live), and saving via DevSavingSection.
 const PRECIPITATION_LABELS = Object.freeze({ clear: "ясно", rain: "дощ", storm: "гроза" });
 const FOG_LABELS = Object.freeze({ none: "немає", fog: "туман" });
 const WIND_CHOICES = Object.freeze([
@@ -37,28 +37,25 @@ export class WeatherDevSection {
   #createSection;
   #renderConfigTree;
   #updateConfig;
-  #files;
   #getBaseRain;
   #getBaseLocationWeather;
   #resetWeather;
   #gameVersion;
   #now;
+  #savingSection;
   #content = null;
-  #saving = null;
-  #savingStatus = null;
-  #exportedFile = null;
   #listening = false;
   #rain = 70;
   #storm = 80;
   #fog = 60;
   #fadeSec = 5;
   #onConfigUpdated = (event) => {
-    if (!this.#savingStatus) return;
+    if (!this.#savingSection.hasStatusElement) return;
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
     const isRain = path[1] === "canvas" && path[2] === "rain";
     const isLocation = path[1] === "locations" && path[2] === "map" && path[3] === this.#weather.locationId && path[4] === "weather";
-    if (isRain || isLocation) this.#showSavingStatus();
+    if (isRain || isLocation) this.#savingSection.refreshStatus();
   };
 
   // weather: { getModel() → WeatherModel | null, getWind() → { direction, forced } | null, setWind(direction | null),
@@ -87,12 +84,29 @@ export class WeatherDevSection {
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
     this.#updateConfig = updateConfig;
-    this.#files = files;
     this.#getBaseRain = getBaseRain;
     this.#getBaseLocationWeather = getBaseLocationWeather;
     this.#resetWeather = resetWeather;
     this.#gameVersion = gameVersion;
     this.#now = now;
+    this.#savingSection = new DevSavingSection({
+      ui,
+      files,
+      commandPrefix: "npm run apply:weather",
+      useTextStatus: true,
+      hasReset: Boolean(resetWeather),
+      labels: {
+        statusLabel: "Стан погоди",
+        exportLabel: "Експорт погоди",
+        importLabel: "Імпорт погоди",
+        resetLabel: "Скинути зміни погоди до коду",
+        description: "Експорт погоди завантажує файл вигляду дощу й погоди цієї локації. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.",
+      },
+      readStatus: () => this.#readSavingStatus(),
+      buildExport: (hashText) => this.#buildExport(hashText),
+      onImport: (file, setStatus) => this.#applyImport(file, setStatus),
+      onReset: () => { this.#resetWeather(this.#weather.locationId); this.#fill(); },
+    });
   }
 
   render(parent) {
@@ -109,9 +123,8 @@ export class WeatherDevSection {
       document.removeEventListener("config-updated", this.#onConfigUpdated);
     }
     this.#listening = false;
+    this.#savingSection.clear();
     this.#content = null;
-    this.#saving = null;
-    this.#savingStatus = null;
   }
 
   #fill() {
@@ -119,8 +132,7 @@ export class WeatherDevSection {
     if (!content) return;
     this.#ui.releaseValueBindings?.(content);
     content.replaceChildren();
-    this.#saving = null;
-    this.#savingStatus = null;
+    this.#savingSection.clear();
     const model = this.#weather.getModel();
     if (!model) {
       this.#ui.createInfoRow("стан", "погода не створена", content);
@@ -137,70 +149,30 @@ export class WeatherDevSection {
       this.#renderConfigTree(settings, this.#createSection("Параметри локації", content, ["WEATHER", "config"]),
         ["CONFIG", "locations", "map", this.#weather.locationId, "weather"]);
     }
-    this.#saving = this.#createSection("Збереження", content, ["WEATHER", "saving"]);
-    this.#fillSaving();
+    this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
   }
 
-  #fillSaving() {
-    const list = this.#saving;
-    if (!list) return;
-    const ui = this.#ui;
-    ui.releaseValueBindings?.(list);
-    list.replaceChildren();
-    this.#savingStatus = ui.createTextRow
-      ? ui.createTextRow("Стан погоди", "", list)
-      : ui.createInfoRow("Стан погоди", "", list);
-    this.#showSavingStatus();
-    if (this.#files) {
-      ui.createButtonRow("Експорт погоди", list, () => { void this.#exportWeather(); });
-      ui.createButtonRow("Імпорт погоди", list, () => { void this.#importWeather(); });
-    }
-    if (this.#resetWeather) {
-      ui.createButtonRow("Скинути зміни погоди до коду", list, () => {
-        this.#resetWeather(this.#weather.locationId);
-        this.#fill();
-      });
-    }
-    ui.createInfoRow("Збереження", "Експорт погоди завантажує файл вигляду дощу й погоди цієї локації. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.", list);
-    if (this.#exportedFile) this.#showExportCommand(list, this.#exportedFile);
-  }
-
-  #showSavingStatus(message = null) {
-    const status = this.#savingStatus;
-    if (!status) return;
-    if (message) { status.innerText = message; return; }
+  #readSavingStatus() {
     const id = this.#weather.locationId;
     const liveRain = this.#rainConfig(), liveWeather = this.#config();
     const baseRain = this.#getBaseRain?.(), baseWeather = this.#getBaseLocationWeather?.(id);
-    if (!liveRain || !liveWeather || !baseRain || !baseWeather) {
-      status.innerText = "Параметри погоди завантажено.";
-      return;
-    }
+    if (!liveRain || !liveWeather || !baseRain || !baseWeather) return "Параметри погоди завантажено.";
     const changed = changedWeatherParts(baseRain, liveRain, baseWeather, liveWeather);
-    status.innerText = changed.length
+    return changed.length
       ? `Змінено (ще не в коді): ${changed.map((part) => PART_LABELS[part] ?? part).join(", ")}.`
       : "Погода збігається з кодом.";
   }
 
-  #showExportCommand(host, fileName) {
-    this.#exportedFile = fileName;
-    this.#ui.showExportCommand?.(host, {
-      fileName,
-      command: `npm run apply:weather -- ${fileName}`,
-      onClose: () => { this.#exportedFile = null; },
-    });
-  }
-
-  async #exportWeather() {
+  async #buildExport(hashText) {
     const id = this.#weather.locationId;
     const liveRain = this.#rainConfig(), liveWeather = this.#config();
-    if (!liveRain || !liveWeather) { this.#showSavingStatus("Немає параметрів погоди для експорту."); return null; }
-    try {
-      const hashText = (text) => this.#files.hashText(text);
-      const baseRain = this.#getBaseRain?.() ?? liveRain;
-      const baseWeather = this.#getBaseLocationWeather?.(id) ?? liveWeather;
-      const moment = this.#now();
-      const file = buildWeatherFile({
+    if (!liveRain || !liveWeather) return { error: "Немає параметрів погоди для експорту." };
+    const baseRain = this.#getBaseRain?.() ?? liveRain;
+    const baseWeather = this.#getBaseLocationWeather?.(id) ?? liveWeather;
+    const moment = this.#now();
+    return {
+      fileName: weatherFileName(id, this.#gameVersion, moment),
+      data: buildWeatherFile({
         locationId: id,
         rain: liveRain,
         locationWeather: liveWeather,
@@ -208,26 +180,14 @@ export class WeatherDevSection {
         locationWeatherBaseHash: await locationWeatherHash(baseWeather, hashText),
         gameVersion: this.#gameVersion,
         exportedAt: moment.toISOString(),
-      });
-      const name = weatherFileName(id, this.#gameVersion, moment);
-      this.#files.download(name, `${JSON.stringify(file, null, 2)}\n`);
-      this.#showSavingStatus(`Збережено файл ${name}.`);
-      if (this.#saving) this.#showExportCommand(this.#saving, name);
-      return name;
-    } catch (error) {
-      this.#showSavingStatus(`Експорт не вдався: ${error?.message || error}`);
-      return null;
-    }
+      }),
+    };
   }
 
-  async #importWeather() {
-    const text = await this.#files.pickFile();
-    if (text === null) return;
+  #applyImport(file, setStatus) {
     const id = this.#weather.locationId;
-    let file;
-    try { file = JSON.parse(text); } catch { this.#showSavingStatus("Файл не є JSON."); return; }
     if (file?.locationId && file.locationId !== id) {
-      this.#showSavingStatus(`Файл для локації ${file.locationId}; зараз відкрито ${id}.`);
+      setStatus(`Файл для локації ${file.locationId}; зараз відкрито ${id}.`);
       return;
     }
     const errors = validateWeatherFile(file, {
@@ -235,7 +195,7 @@ export class WeatherDevSection {
       locationWeatherTemplate: this.#getBaseLocationWeather?.(id) ?? this.#config(),
     });
     if (errors.length) {
-      this.#showSavingStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`);
+      setStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`);
       return;
     }
     this.#updateConfig?.(["CONFIG", "canvas", "rain"], canonicalRain(file.rain));
