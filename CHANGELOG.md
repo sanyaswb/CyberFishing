@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.108 - Overlay headers with rounded background & clean links
+
+- TK-296.1 (owner): removed dotted underlines on `.debug-overlay__dev-link` and dashed divider borders in `overlay-content.css`; removed bottom borders on `.debug-overlay__heading` and gave overlay headings, tool titles, subsection titles and collapsible group `<summary>` headers rounded background pills (`overlay-content.css`, `overlay.css`).
+
 ## v0.50.107 - Overlay hyperlinks to DevTools parameters
 
 - TK-296 (spec 177): added shared Overlay -> DevTools hyperlink infrastructure (`OverlayHtmlBuilder.devLink` / `OverlayModule.devLink`, `OverlayInteractionBridge` release activation without toggling parent `<details>`, `DevTools.revealParameter` / `DevToolsUI.revealPath`, and `DevToolsDependencyFeedback.showRevealed` green highlight across collapsed ancestor sections) and wired all parameters and multipliers in «ПОГОДА Й ХВИЛІ» (`WeatherOverlayModule` + `WeatherDevSection` control paths).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.99 - Rain stays with the world
 
 - TK-271.2 (owner): rain drops and the rings they leave on the water stay where they fall in the location when the camera moves or the window is resized; a narrower window shows fewer drops at the same density instead of squeezing them all in («Крапель при силі 1» is now the rain over the whole rain area).
-
-## v0.50.98 - Living waves
-
-- TK-289 (spec 172 D7): the waves follow the weather: higher and faster with wind and travelling with it, calmer at night, much higher, longer and faster in a storm, changing over a few seconds; the float rocks with the same sea. They are no longer uniform: patches of higher and lower waves drift over the water, each wave component breathes on its own rhythm, longer waves travel faster.

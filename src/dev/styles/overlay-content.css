@@ -121,10 +121,20 @@
   font-weight: bold;
 }
 
+.debug-overlay__section-title,
+.debug-overlay__group-title,
+.debug-overlay__live-title,
+.debug-overlay__preview-title,
+.debug-overlay__physics-title {
+  padding: 3px 6px;
+  border-radius: var(--ui-radius-control);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .debug-overlay__divider {
   margin-top: 6px;
   padding-top: 4px;
-  border-top: 1px dashed var(--ui-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .debug-overlay__note {
@@ -229,9 +239,10 @@
 
 .debug-overlay__heading {
   margin-bottom: 8px;
+  padding: 5px 8px;
+  border-radius: var(--ui-radius-panel);
+  background: rgba(var(--ui-accent-rgb), 0.12);
   font-weight: bold;
-  border-bottom: 1px solid var(--ui-border);
-  padding-bottom: 4px;
   text-transform: uppercase;
   font-size: 13px;
 }
@@ -239,26 +250,32 @@
 .debug-overlay__dev-link {
   appearance: none;
   border: 0;
-  padding: 0;
+  padding: 0 2px;
   margin: 0;
   background: transparent;
-  color: inherit;
+  color: var(--ui-info);
   font: inherit;
   line-height: inherit;
   text-align: inherit;
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
-  text-decoration: underline dotted var(--ui-info);
-  text-underline-offset: 2px;
+  text-decoration: none;
   border-radius: var(--ui-radius-control);
+  transition: background var(--ui-duration-control) var(--ui-ease-standard), color var(--ui-duration-control) var(--ui-ease-standard);
 }
 
 .ui-surface--desktop-hover .debug-overlay__dev-link:hover,
 .ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__dev-link:active,
 .debug-overlay__dev-link:focus-visible {
-  color: var(--ui-info);
-  text-decoration-style: solid;
+  color: var(--ui-text);
+  background: var(--ui-control-hover-background);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debug-overlay__dev-link {
+    transition: none;
+  }
 }
 
 .debug-overlay__dev-link:focus-visible {

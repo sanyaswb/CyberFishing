@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-296.1: removed dotted/dashed lines and link underlines in overlay; overlay headings and collapsible group summaries now have rounded background fills.",
   "TK-296 (spec 177): overlay hyperlinks open DevTools, expand collapsed parent sections, scroll to and highlight the matching parameter in green (first applied in weather & waves overlay).",
   "TK-295: weather & waves overlay moves wave multipliers into expandable sub-items under amplitude/wavelength/speed with role, range and live values.",
   "TK-294: each DevTools OVERLAY module opens in its own draggable window; replaced −/+ buttons with a top horizontal scale slider.",

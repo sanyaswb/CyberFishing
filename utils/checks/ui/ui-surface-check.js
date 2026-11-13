@@ -156,6 +156,15 @@ assert.deepEqual(inspected, ["Fixture"], "A click on a metric's name explains it
 assert.equal(metricLabel.title, undefined, "The metric name gets no tooltip");
 const overlayCss = fs.readFileSync(path.join(__dirname, "../../../src/dev/styles/overlay.css"), "utf8");
 assert.doesNotMatch(overlayCss, /metric-label[^{]*:hover|cursor:\s*help|underline/u, "Metric rows have no hover style, help cursor or underline");
+const overlayContentCss = fs.readFileSync(path.join(__dirname, "../../../src/dev/styles/overlay-content.css"), "utf8");
+assert.doesNotMatch(overlayContentCss, /\b(?:dotted|dashed)\b|text-decoration\s*:\s*underline/u, "Overlay content removes dotted/dashed lines and link underlines (TK-296.1)");
+const headingBlock = overlayContentCss.match(/\.debug-overlay__heading\s*\{([^}]*)\}/u)?.[1] || "";
+assert.match(headingBlock, /background\s*:/u, "Overlay headings have a background fill (TK-296.1)");
+assert.match(headingBlock, /border-radius\s*:/u, "Overlay headings have rounded corners (TK-296.1)");
+assert.doesNotMatch(headingBlock, /border-bottom\s*:/u, "Overlay headings have no bottom underline border (TK-296.1)");
+const titleBlock = overlayCss.match(/\.debug-overlay__title\s*\{([^}]*)\}/u)?.[1] || "";
+assert.match(titleBlock, /background\s*:/u, "Tool window titles have a background fill (TK-296.1)");
+assert.match(titleBlock, /border-radius\s*:/u, "Tool window titles have rounded corners (TK-296.1)");
 const metricHtml = new OverlayHtmlBuilder().metricRow("Fixture", "1");
 assert.doesNotMatch(metricHtml, /\btitle=/u, "A metric row has no browser tooltip");
 bridge.dispose();

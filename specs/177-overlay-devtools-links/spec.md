@@ -1,6 +1,6 @@
 # Spec 177 — Гіперпосилання з модулів Overlay у параметри DevTools з розкриттям і підсвічуванням
 
-Статус: 2026-11-13 — реалізовано `TK-296` (`v0.50.107`), спільну інфраструктуру гіперпосилань і перше застосування в модулі «ПОГОДА Й ХВИЛІ» перевірено автоматичними тестами; чекає візуальної перевірки власника в браузері.
+Статус: 2026-11-13 — реалізовано `TK-296` (`v0.50.107`) і `TK-296.1` (`v0.50.108`), спільну інфраструктуру гіперпосилань, оновлений стиль заголовків/посилань і перше застосування в модулі «ПОГОДА Й ХВИЛІ» перевірено автоматичними тестами; чекає візуальної перевірки власника в браузері.
 Правила: AGENTS.md, DEVELOPMENT_RULES.md (одна відповідальність, композиція, DEV не в production), DESIGN_RULES.md, docs/styles.md, utils/UTILS_RULES.md.
 
 ## 1. Запит власника (2026-11-13)
@@ -22,8 +22,9 @@
 2. Активація на відпусканні (`data-overlay-activate="release"`):
    - Не запускає перехід при початку скролу пальцем або при спробі перетягнути вікно (`OverlayWindowDragController.#isInteractiveTarget` уже ігнорує `button` та `[data-overlay-control]`).
    - Підтримує клавіатурну активацію (`Enter`/`Space`) і не перемикає батьківський `<summary>` (працює `preventDefault()` + `stopPropagation()`).
-3. Візуальний стиль (`.debug-overlay__dev-link` у `overlay-content.css`):
-   - Скинута кнопка без рамки й фону, успадкований шрифт/колір, пунктирне підкреслення кольором `--ui-info`; при hover (лише `.ui-surface--desktop-hover`) / active / `:focus-visible` — суцільне підкреслення і колір `--ui-info`.
+3. Візуальний стиль (`.debug-overlay__dev-link`, `.debug-overlay__heading`, `.debug-overlay__title` у `overlay-content.css` і `overlay.css`, оновлено у `TK-296.1`):
+   - Скинута кнопка без рамки й фону в спокої, успадкований шрифт, без підкреслень і пунктирних ліній (`text-decoration: none`), колір `--ui-info`; при hover (лише `.ui-surface--desktop-hover`) / active / `:focus-visible` — заокруглена плашка `--ui-control-hover-background` і колір `--ui-text`.
+   - Розділювач `.debug-overlay__divider` без `dashed`; заголовки оверлею (`.debug-overlay__heading`, `.debug-overlay__title`, підзаголовки й `<summary>`-групи) без нижнього підкреслення, із фоном і заокругленими краями (`--ui-radius-panel` / `--ui-radius-control`).
 
 ### D2. Маршрутизація події (`OverlayInteractionBridge` -> композиція -> `DevTools`)
 - `OverlayInteractionBridge` приймає опцію `onRevealDevToolsParameter = null`.

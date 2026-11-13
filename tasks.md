@@ -30,9 +30,27 @@
   - Перевірка: розширення `weather-check.js`, `devtools-controls-check.js`, `overlay-balance-windows-check.js`,
     `css-usage`, `config-runtime`, повний `node utils/run-checks.js`.
   - [ ] Перевірка власника TK-296: `dev.html` → DevTools → `OVERLAY` → «ПОГОДА й хвилі» (закрити DevTools): натиснути
-        будь-яке підкреслене посилання в оверлеї (наприклад `Гроза 0…1`, `Амплітуда хвиль`, `штиль ×0.55`, `Ніч: затихання`,
+        будь-яке посилання в оверлеї (наприклад `Гроза 0…1`, `Амплітуда хвиль`, `штиль ×0.55`, `Ніч: затихання`,
         `Вітер`): DevTools відкривається, автоматично розгортає відповідні секції й підсвічує потрібний параметр зеленим;
         клік по посиланню всередині `<summary>` не згортає підпункти.
+  - [x] **TK-296.1 — прибрати пунктирні лінії та підкреслення й дати заголовкам оверлею фон із заокругленими краями (власник, 2026-11-13, v0.50.108).**
+        «пунктирні лінії і підкреслення прибери, заголовки повинні бути з фоном з заукругленими краями».
+    - Знайдено: у `overlay-content.css` посилання `.debug-overlay__dev-link` мали `text-decoration: underline dotted var(--ui-info)`
+      (і `solid` при наведенні), розділювач `.debug-overlay__divider` мав `border-top: 1px dashed var(--ui-border)`, а заголовки
+      `.debug-overlay__heading` мали нижнє підкреслення `border-bottom: 1px solid var(--ui-border)` без фону та заокруглення
+      (і `.debug-overlay__title` / дрібні підзаголовки в `overlay.css` й `overlay-content.css` також не мали заокругленої плашки фону).
+    - Зміна:
+      - `overlay-content.css`: прибрано `underline` / `dotted` у `.debug-overlay__dev-link` (`text-decoration: none`, колір `--ui-info`
+        і м’яка заокруглена плашка при наведенні/фокусі), замінено `dashed` у `.debug-overlay__divider` на легку суцільну лінію;
+        у `.debug-overlay__heading` прибрано `border-bottom` підкреслення і задано фон із заокругленими краями (`var(--ui-radius-panel)`,
+        `rgba(var(--ui-accent-rgb), 0.12)`), а також заокруглений фон для `.debug-overlay__section-title`, `.debug-overlay__group-title`,
+        `.debug-overlay__live-title`, `.debug-overlay__preview-title`, `.debug-overlay__physics-title`.
+      - `overlay.css`: заокруглений фон для `.debug-overlay__title` (вікна `ACTIVE FISH` / `ACTIVE ROD`) та легка заокруглена плашка для
+        заголовків згортаних груп `.debug-overlay__details > .debug-overlay__summary`.
+    - Перевірка: розширення `ui-surface-check.js` (перевірка відсутності `underline`/`dotted`/`dashed` та наявності `background`/`border-radius`
+      на заголовках), `css-usage`, `overlay-balance-windows`, повний `node utils/run-checks.js`.
+    - [ ] Перевірка власника TK-296.1: `dev.html` → `OVERLAY` → «ПОГОДА й хвилі» (та `ACTIVE FISH` / `ACTIVE ROD`): посилання без пунктирних
+          ліній і підкреслень (кольором `--ui-info`, з легким фоном при наведенні), заголовки без нижньої лінії — з м’яким заокругленим фоном.
 
 - [x] **TK-295 — підпункти множників із поясненням у модулі оверлею «ПОГОДА Й ХВИЛІ» (власник, 2026-11-13, v0.50.106).**
       «Модуль погода й хвилі, мені не подобається що множники потрібно додати як підпукнти до основних (загальних)
