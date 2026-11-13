@@ -395,6 +395,50 @@ function choiceRow(options, value, path) {
   assert.equal(rainBefore, config.canvas.rain);
 }
 
+// --- TK-300 (spec 174 B4): sections remembered by their place; a new fish on the hook redraws only its sections ------
+{
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const stored = new Map([["dev_tools_sections_state", { x: true }]]);
+  const storageCache = { get: (key, fallback) => stored.get(key) ?? fallback, set: (key, value) => stored.set(key, JSON.parse(JSON.stringify(value))),
+    remove: (key) => stored.delete(key) };
+  const panelUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const tools = new DevTools({ debug: {}, first: { x: { a: 1 } }, second: { x: { b: 2 } } }, { synchronize() {} },
+    { catalogs: { items: {}, fishes: [], maps: {} }, settingsStore: null, debugModulesSource: () => ({}), storageCache,
+      createUI: () => ({ ui: panelUi, tooltipProvider: { ready: new Promise(() => {}) } }) });
+  assert.equal(stored.has("dev_tools_sections_state"), false, "the title-keyed states of before are dropped");
+  tools.toggle();
+  const body = panelUi.body;
+  const sectionTitled = (title, root = body) => document.all((element) => element.className === "devtools__section-title" &&
+    element.innerHTML.endsWith(` ${title}`), root);
+  const isOpen = (title) => title.parentNode.children[1].style.display === "block";
+  const [firstX, secondX] = sectionTitled("x");
+  assert.ok(firstX && secondX && !isOpen(firstX) && !isOpen(secondX), "two sections titled x, both closed (the old x: true is gone)");
+  firstX.click();
+  tools.toggle(); tools.toggle();
+  const [firstAgain, secondAgain] = sectionTitled("x");
+  assert.equal(isOpen(firstAgain), true, "the opened section is open after a redraw");
+  assert.equal(isOpen(secondAgain), false, "a section with the same title elsewhere keeps its own state (it used to open too)");
+  assert.ok(JSON.stringify([...stored.values()]).includes("CONFIG.first/CONFIG.first.x"), "kept by place, not by title");
+
+  // The hooked fish: only its own sections are drawn again.
+  body.scrollTop = 480;
+  const before = body.children.slice();
+  const fish = (id, weight) => ({ detail: { hookedFish: { id, level: 1, weight, physics: { forceProfile: { power: 2 } } } } });
+  document.fire("debug-live-update", fish("carp", 1));
+  const fishSection = () => sectionTitled("ACTIVE FISH (carp)").length + sectionTitled("ACTIVE FISH (perch)").length;
+  assert.equal(fishSection(), 1, "the fish's section appears");
+  assert.equal(JSON.stringify(body.children.filter((node) => !before.includes(node)).length), "0",
+    "nothing else in the panel is replaced");
+  assert.ok(before.every((node) => node.parentNode === body), "every other section is the same node");
+  assert.equal(body.scrollTop, 480, "the panel keeps its scroll");
+  document.fire("debug-live-update", fish("perch", 2));
+  assert.equal(sectionTitled("ACTIVE FISH (perch)").length, 1, "another fish replaces it");
+  assert.equal(sectionTitled("ACTIVE FISH (carp)").length, 0);
+  document.fire("debug-live-update", { detail: {} });
+  assert.equal(fishSection(), 0, "no fish, no section");
+  tools.dispose();
+}
+
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
 (async () => {
   const { ExportCommandNotice } = runtime.importModule("src/dev/tools/controls/export_command_notice.js");

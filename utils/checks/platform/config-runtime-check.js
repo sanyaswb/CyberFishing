@@ -638,7 +638,7 @@ function checkLocationMapConfigChanges() {
   map.update(16,12);verify(11,12);
   const switches = new Map();
   const navigationButtons = new Map();
-  const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {};
+  const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {replaceChildren(){}};
   let houseOpens = 0, itemGrants = 0, overlayEdits = 0;
   const ui = new Proxy({body:panelBody,createSection(label,parent,expanded,onToggle,path,options){
       const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section); return section;
@@ -662,7 +662,7 @@ function checkLocationMapConfigChanges() {
     itemProgressionDebugProvider:{getSnapshots:()=>[{itemId:'testRod',capacity:'N/A',breakdown:[]}]},
     rodSpine:{getStatus:()=>({mode:'rectangle',missingClips:[],pixelRatio:1}),exportSkeleton:()=>({fileName:'test-rod.json',text:'{}'}),
       isSpineEnabled:()=>true,getClips:()=>[],getBones:()=>[]},
-    storageCache:{get:()=>({}),set(){}},
+    storageCache:{get:()=>({}),set(){},remove(){}},
     createWaterMetric:options=>WaterMetric.illustrated(options),
     zoneEditorState:editorState, maskEditor, getWaterMetric:()=>editorMetric.resolve(map.getCastableBoundsVirtual(config.locations.cellSize),config.locations.map[locationId].waterProjection),
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}}),

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-300 (spec 174 B4): sections remembered by place; hooked fish redraws only its sections; scroll kept.",
   "TK-299 (spec 174 B2): edit path and config tree moved out of DevTools; same behaviour.",
   "TK-298.2 (spec 178): gusts visibly increase rain drop slant and reaction speed even at 100% wind; lowered default float windCompensation upper bound from 1.0 to 0.65 so floats rock and lean out of the box; live ITEM_DB edits in DevTools immediately sync active cast float stats without recasting and support space/comma array input.",
   "TK-298.1 (spec 178): fixed manual wind strength release target restoration, forced wind direction calm invariant, C1-continuous float return-swing across cycle boundaries with maxAngleDeg cap and zero-angle support, live float settings in EnvironmentSystem, and always-visible DevTools weather location selector.",

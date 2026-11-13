@@ -18,6 +18,9 @@ import { SpineBoatDevSection } from "./spine_boat_dev_section.js";
 import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
 import { ZoneEditorSection } from "./zone_editor_section.js";
 
+const SECTION_STATES_KEY = "dev_tools_open_sections";
+const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
+
 export class DevTools {
   #config;
   #catalogs;
@@ -54,6 +57,11 @@ export class DevTools {
   #getWaterMetric;
   #createWaterMetric;
   #storageCache;
+  // Spec 174 B4: which sections are open, by their place in the tree (not by their title), read once.
+  #sectionStates;
+  #sectionKeys = new WeakMap();
+  // Spec 174 B4: the hooked fish's sections are redrawn here on their own.
+  #activeFishSlot = null;
   #assets;
   #assetLoadPlanStore;
   #loadStepperSection = null;
@@ -71,7 +79,7 @@ export class DevTools {
       (nextFishKey !== this.#activeFishKey ||
         nextFishShapeKey !== this.#activeFishShapeKey)
     ) {
-      this.#populatePanel();
+      this.#refreshActiveFish();
     }
   };
 
@@ -118,6 +126,9 @@ export class DevTools {
   ) {
     this.#assets = assets;
     this.#storageCache = storageCache;
+    // The title-keyed states of before spec 174 B4 are dropped, not carried over (a DEV convenience).
+    storageCache.remove(LEGACY_SECTION_STATES_KEY);
+    this.#sectionStates = { ...storageCache.get(SECTION_STATES_KEY, {}) };
     this.#zoneEditorState = zoneEditorState;
     this.#zoneEditorFiles = zoneEditorFiles;
     this.#readDynamicZones = readDynamicZones;
@@ -244,15 +255,15 @@ export class DevTools {
     this.#weatherSection?.dispose();
     this.#weatherSection = null;
     const body = this.#ui.body;
+    // Spec 174 B4: a full redraw (opening, import or reset of overrides) keeps the place the panel was scrolled to.
+    const scrollTop = body.scrollTop;
     this.#ui.clearValueBindings();
-    body.innerHTML = "";
+    body.replaceChildren();
     const pages = [];
     if (this.#openGame) pages.push(["До риболовлі ▶", () => this.#openGame()]);
     if (this.#openHouse)
       pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
     if (pages.length) this.#ui.createNavigation(pages, body);
-    this.#activeFishKey = this.#getActiveFishKey();
-    this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 
     this.#renderItemGrantSection(body);
     this.#renderOverlaySection(body);
@@ -310,7 +321,8 @@ export class DevTools {
         gameVersion: this.#gameVersion,
       }).render(body);
     }
-    this.#renderActiveFishSection(body);
+    this.#activeFishSlot = this.#ui.createSectionSlot(body);
+    this.#refreshActiveFish();
     this.#loadStepperSection?.render(body, this.#ui);
     const service = this.#createSectionWithCache("Сервіс", body, [
       "DEV_SERVICE",
@@ -318,6 +330,19 @@ export class DevTools {
     this.#renderRuntimeOverrideControls(service);
     this.#renderAssetLoadPlanControls(service);
     this.#renderItemProgressionSection(service);
+    body.scrollTop = scrollTop;
+  }
+
+  // Spec 174 B4: a new fish on the hook (or its tree's shape) redraws only its own sections, so the panel keeps its
+  // scroll, focus and every other control while playing.
+  #refreshActiveFish() {
+    const slot = this.#activeFishSlot;
+    this.#activeFishKey = this.#getActiveFishKey();
+    this.#activeFishShapeKey = this.#getActiveFishShapeKey();
+    if (!slot) return;
+    this.#ui.releaseValueBindings(slot);
+    slot.replaceChildren();
+    this.#renderActiveFishSection(slot);
   }
 
   // Spec 157 D6 (TK-177 item 8): the asset load plan exported as its module text, an edited plan (JSON) validated and
@@ -787,22 +812,25 @@ export class DevTools {
     }).render(body);
   }
 
+  // Spec 174 B4 (R6): a section is remembered open or closed by its place: its parent section's key and its own path
+  // (its title only when it has no path). Two sections with one title (each fish's «Опис», items with one id) no longer
+  // share a state, and a title that changes («ПЛАН ЗАВАНТАЖЕННЯ (змінено)») keeps it. The states are read once.
   #createSectionWithCache(labelStr, parentElement, path = null, options = {}) {
-    let savedStates = this.#storageCache.get("dev_tools_sections_state", {});
-    let isExpanded = savedStates[labelStr] || false;
-
-    return this.#ui.createSection(
+    const key = `${this.#sectionKeys.get(parentElement) ?? ""}/${path ? path.join(".") : labelStr}`;
+    const content = this.#ui.createSection(
       labelStr,
       parentElement,
-      isExpanded,
+      this.#sectionStates[key] === true,
       (isNowExpanded) => {
-        savedStates = this.#storageCache.get("dev_tools_sections_state", {});
-        savedStates[labelStr] = isNowExpanded;
-        this.#storageCache.set("dev_tools_sections_state", savedStates);
+        if (isNowExpanded) this.#sectionStates[key] = true;
+        else delete this.#sectionStates[key];
+        this.#storageCache.set(SECTION_STATES_KEY, this.#sectionStates);
       },
       path,
       options,
     );
+    this.#sectionKeys.set(content, key);
+    return content;
   }
 
   #getOverlayModuleLabel(key) {

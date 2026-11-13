@@ -133,6 +133,15 @@ export class DevToolsUI {
   }
 
   // Independently refreshed controls without another disclosure or layout box.
+  // Spec 174 B4: a place among a parent's sections (after those made before it) whose sections are redrawn on their
+  // own (releaseValueBindings + replaceChildren), without a box of its own and without redrawing the panel.
+  createSectionSlot(parentElement) {
+    const slot = document.createElement("div");
+    slot.className = "devtools__control-group";
+    this.#insertTreeNode(parentElement, slot, 1);
+    return slot;
+  }
+
   createControlGroup(parentElement, path = null, { disabled = false } = {}) {
     // A disabled fieldset blocks native mouse/keyboard editing of all descendants, including nested trees.
     const group = document.createElement(disabled ? "fieldset" : "div");
