@@ -2,6 +2,14 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.103 - DevTools lists
+
+- TK-293 (spec 174 A7): every DevTools list (zone editor, Spine bone, wind direction) is the same list picker as Fixed Catch's fish instead of the browser's select; the field and its list sit under the label across the row.
+
+## v0.50.102 - DevTools dependent parameters
+
+- TK-292 (spec 174 A6): a DevTools parameter whose switch is off is inactive whatever its control (number, text, segments, list; a switch as before): it is dimmed and cannot be edited, an attempt highlights the switch that blocks it, and turning that switch on activates the rows at once. Dependencies: a config group's enabled switch (nested groups too), <name>Enabled for its <name>… siblings, locations.debugVisuals for the fight-area overlays.
+
 ## v0.50.101 - Weather in the scene section, live weather overlay
 
 - TK-291 (owner): DevTools «🌦 ПОГОДА» now lives inside «🖼️ СЦЕНА WebGL»; «Стан моря» is split into «Звичайний стан» (calm, wind, night) and «Гроза»; a new overlay «🌦 Погода й хвилі» shows the storm, rain and fog strengths, the wind's direction and strength, the night and the waves' actual amplitude, length and speed in real time.
@@ -33,11 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.94 - Weather export, import, reset and apply:weather
 
 - TK-286 (spec 175): added zone-editor-style saving to DevTools «🌧 ПОГОДА» (live status vs code, JSON export with apply command notice, import validation, reset to code) backed by data modules (`rain_settings.js`, `locations/weather/<id>.js`) and `npm run apply:weather` (updates only changed modules with backups, conflict check and schema/weather checks).
-
-## v0.50.93 - Tuned rain look and ring defaults
-
-- TK-271.1 (spec 172 D): updated default `CONFIG.canvas.rain` values to match the owner's DevTools tuning (`lengthPx` 103, `widthPx` 6.3, `minScale` 0.4, `windSlantDeg` 34, `stormSlantDeg` 48, `rings.sizePx` 65).
-
-## v0.50.92 - Test location zones inside the map
-
-- TK-280.1 (spec 173): the test location's zones are the fixed ones in the code: the water, the fish school's area and the rain zone end at the map's bottom (36 cells; they ran to 38), so the zone editor no longer shows the red notice there.

@@ -1,7 +1,8 @@
 const SEARCH_FROM_OPTIONS = 8;
 
 // DEV list picker (spec 174 A3, TK-283): a button that shows the chosen option and opens the list under it.
-// options: [{ value, label, hint = "", imageUrl = "" }] — label is the name a person reads, hint the id in the data.
+// options: [{ value, label, hint = "", imageUrl = "", swatch = "" }] — label is the name a person reads, hint the id
+// in the data, swatch a "#rrggbb" colour square.
 // - The list opens in the flow under the field (never clipped by the panel's scrolling) with a search field from
 //   eight options; typing filters by name and id.
 // - Keys: Enter / Space / ArrowDown on the button open; in the list the arrows move, Enter chooses, Escape closes.
@@ -77,6 +78,7 @@ export class ChoiceField {
   #showValue() {
     const option = this.#options.find((entry) => entry.value === this.#value);
     const parts = [];
+    if (option?.swatch) parts.push(this.#createSwatch(option.swatch));
     if (option?.imageUrl) parts.push(this.#createImage(option.imageUrl));
     const label = this.#document.createElement("span");
     label.className = "devtools__choice-label";
@@ -149,6 +151,7 @@ export class ChoiceField {
       const isSelected = option.value === this.#value;
       node.setAttribute("aria-selected", String(isSelected));
       if (isSelected) node.classList.add("devtools__choice-option--selected");
+      if (option.swatch) node.appendChild(this.#createSwatch(option.swatch));
       if (option.imageUrl) node.appendChild(this.#createImage(option.imageUrl));
       const text = this.#document.createElement("span");
       text.className = "devtools__choice-text";
@@ -205,6 +208,15 @@ export class ChoiceField {
     this.#showValue();
     this.#close();
     if (changed) this.#onCommit?.(option.value);
+  }
+
+  // A colour square of the option (zone categories): the panel's shared swatch element.
+  #createSwatch(color) {
+    const swatch = this.#document.createElement("span");
+    swatch.className = "devtools__swatch";
+    swatch.setAttribute("aria-hidden", "true");
+    swatch.style.setProperty("--devtools-swatch", color);
+    return swatch;
   }
 
   #createImage(url) {

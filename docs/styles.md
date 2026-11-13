@@ -101,6 +101,14 @@ button, the list in the flow under it, `--open`, option `--active` / `--selected
 one line between neighbours (`.devtools__row + .devtools__row`, TK-284); `devtools__row--wrap` lets a control take its
 own line. Minus, plus and the chevron are drawn in CSS and the notice's icons are inline SVG until the DevTools sprite
 of stage C1; `DevParameterSchema` (`src/dev/tools/config/`) names the control and option source of a parameter.
+
+TK-292 (spec 174 A6) extends the spec 131 prerequisites from switches to every control: `DevParameterSchema.prerequisitesOf`
+names the switches (a group's `enabled`, `<name>Enabled`, named master switches) and `DevToolsUI` marks the row
+`devtools__row--dependency-disabled` (dimmed label and control, `aria-disabled`), stops pointer, keyboard and paste on it
+in the capture phase, refuses a write and shows the blocking switch with `devtools__row--blocked-prerequisite`. TK-293
+(A7): every list row is a `ChoiceField` (`createSelectRow` no longer makes a browser `select`) in a
+`devtools__row--stacked` row: the label above, the field and its list across the row under it; an option's `swatch`
+uses the shared `devtools__swatch`.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

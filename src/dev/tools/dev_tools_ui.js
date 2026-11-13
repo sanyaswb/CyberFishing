@@ -355,6 +355,53 @@ export class DevToolsUI {
     }
   }
 
+  // TK-292 (spec 174 A6): a row of any control whose prerequisites (requires: [{ path, isEnabled() }], spec 131) are
+  // unmet is inactive. Nothing in it reacts to the pointer, the keyboard or a paste, and such an attempt shows the
+  // switch that blocks it; the row becomes active again as soon as that switch is on. A value the control still tries
+  // to write is refused and the shown value restored (restore(value)), so the config is never written through an
+  // inactive row. Returns { commit(next), remember(value) } for the row's control.
+  #guardDependentRow(row, requires, initialValue, onChange, restore) {
+    let current = initialValue;
+    if (!requires.length) return { commit: onChange, remember() {} };
+    const unmet = () => requires.find(requirement => !requirement.isEnabled()) ?? null;
+    const showBlocker = (blocker) =>
+      this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
+    const intercept = (event) => {
+      // Tab still leaves the row.
+      if (event.key === "Tab") return;
+      const blocker = unmet();
+      if (!blocker) return;
+      event.preventDefault();
+      event.stopPropagation();
+      showBlocker(blocker);
+    };
+    // Capture: the row answers before its control does.
+    for (const type of ["pointerdown", "mousedown", "click", "keydown", "beforeinput"]) row.addEventListener(type, intercept, true);
+    let previousBlocked = null;
+    const refresh = () => {
+      const blocked = unmet() !== null;
+      if (blocked === previousBlocked) return;
+      previousBlocked = blocked;
+      row.classList.toggle("devtools__row--dependency-disabled", blocked);
+      row.setAttribute("aria-disabled", String(blocked));
+    };
+    this.#dependentSwitches.set(row, refresh);
+    refresh();
+    return {
+      commit: (next) => {
+        const blocker = unmet();
+        if (blocker) {
+          restore(current);
+          showBlocker(blocker);
+          return;
+        }
+        current = next;
+        onChange(next);
+      },
+      remember: (value) => { current = value; },
+    };
+  }
+
   createInputRow(
     key,
     val,
@@ -363,6 +410,7 @@ export class DevToolsUI {
     onChangeCallback,
     path = null,
     bindingPath = path,
+    { requires = [] } = {},
   ) {
     const row = document.createElement("div");
     row.className = "devtools__row";
@@ -373,14 +421,17 @@ export class DevToolsUI {
 
     if (type === "number") {
       // TK-282: the DEV number field (step from the value's precision, an invalid entry is never written).
-      const field = new NumberField({ value: val, onCommit: onChangeCallback, ariaLabel: String(key), documentRef: document });
-      this.#controlBindings.register(bindingPath, (value) => field.setValue(value), row);
+      const guard = this.#guardDependentRow(row, requires, val, onChangeCallback, (value) => field.setValue(value));
+      const field = new NumberField({ value: val, onCommit: guard.commit, ariaLabel: String(key), documentRef: document });
+      this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); field.setValue(value); }, row);
       row.appendChild(field.element);
       this.#insertTreeNode(parentElement, row, 0);
       return;
     }
 
     const inputElement = document.createElement("input");
+    const show = (value) => { inputElement.value = Array.isArray(value) ? value.join(", ") : value; };
+    const guard = this.#guardDependentRow(row, requires, val, onChangeCallback, show);
     inputElement.type = "text";
     inputElement.className = "devtools__input devtools__input--text";
     inputElement.value = val;
@@ -389,12 +440,10 @@ export class DevToolsUI {
       if (type === "array") {
         newVal = newVal.split(",").map((n) => parseFloat(n.trim()) || 0);
       }
-      onChangeCallback(newVal);
+      guard.commit(newVal);
     });
 
-    this.#controlBindings.register(bindingPath, (value) => {
-      inputElement.value = Array.isArray(value) ? value.join(", ") : value;
-    }, row);
+    this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); show(value); }, row);
     row.appendChild(inputElement);
     this.#insertTreeNode(parentElement, row, 0);
   }
@@ -430,56 +479,42 @@ export class DevToolsUI {
     this.#insertTreeNode(parentElement, row, 0);
   }
 
-  // A drop-down for long option lists (the Spine bone picker); onChangeCallback receives the chosen value.
-  // swatches: an optional { value: "#rrggbb" } map; the colour of the chosen value shows beside the drop-down.
+  // A list of plain values (zone numbers, bones, wind directions); onChangeCallback receives the chosen value.
+  // TK-293: the same list picker as every other list (ChoiceField), never the browser's own select.
+  // swatches: an optional { value: "#rrggbb" } map; each value's colour shows in the field and in the list.
   createSelectRow(labelStr, optionsArray, currentValue, parentElement, onChangeCallback, path = null,
     { swatches = null } = {}) {
-    const row = document.createElement("div");
-    row.className = "devtools__row";
-    this.#assignDevToolsPath(row, path);
-    row.appendChild(this.#createLabelElement(labelStr, path));
-    const swatch = swatches ? this.#createSwatch(swatches[currentValue]) : null;
-    if (swatch) row.appendChild(swatch);
-    const select = document.createElement("select");
-    select.className = "devtools__input devtools__input--text";
-    select.setAttribute("aria-label", labelStr);
-    for (const option of optionsArray) {
-      const element = document.createElement("option");
-      element.value = option;
-      element.textContent = option;
-      select.appendChild(element);
-    }
-    select.value = currentValue;
-    select.addEventListener("change", (event) => {
-      if (swatch) swatch.style.setProperty("--devtools-swatch", swatches[event.target.value] || "transparent");
-      onChangeCallback(event.target.value);
-    });
-    row.appendChild(select);
-    this.#insertTreeNode(parentElement, row, 0);
+    const options = optionsArray.map((option) => ({ value: option, label: String(option), swatch: swatches?.[option] || "" }));
+    this.createChoiceRow(labelStr, options, currentValue, parentElement, onChangeCallback, path, null);
   }
 
   // TK-283: a short list with every option visible; options: [{ value, label }].
-  createSegmentsRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path) {
+  createSegmentsRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
+    { requires = [] } = {}) {
     const row = document.createElement("div");
     row.className = "devtools__row devtools__row--wrap";
     this.#assignDevToolsPath(row, path);
     row.appendChild(this.#createLabelElement(key, path));
-    const control = new SegmentedControl({ options, value: currentValue, onCommit: onChangeCallback,
+    const guard = this.#guardDependentRow(row, requires, currentValue, onChangeCallback, (value) => control.setValue(value));
+    const control = new SegmentedControl({ options, value: currentValue, onCommit: guard.commit,
       ariaLabel: String(key), documentRef: document });
-    this.#controlBindings.register(bindingPath, (value) => control.setValue(value), row);
+    this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); control.setValue(value); }, row);
     row.appendChild(control.element);
     this.#insertTreeNode(parentElement, row, 0);
   }
 
-  // TK-283: a list picker (name, id, image, search); options: [{ value, label, hint, imageUrl }].
-  createChoiceRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path) {
+  // TK-283: a list picker (name, id, image, search); options: [{ value, label, hint, imageUrl, swatch }].
+  // TK-293: the label is above, the field and its list take the row's width under it.
+  createChoiceRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
+    { requires = [] } = {}) {
     const row = document.createElement("div");
-    row.className = "devtools__row devtools__row--wrap";
+    row.className = "devtools__row devtools__row--stacked";
     this.#assignDevToolsPath(row, path);
     row.appendChild(this.#createLabelElement(key, path));
-    const field = new ChoiceField({ options, value: currentValue, onCommit: onChangeCallback,
+    const guard = this.#guardDependentRow(row, requires, currentValue, onChangeCallback, (value) => field.setValue(value));
+    const field = new ChoiceField({ options, value: currentValue, onCommit: guard.commit,
       ariaLabel: String(key), documentRef: document });
-    this.#controlBindings.register(bindingPath, (value) => field.setValue(value), row);
+    if (bindingPath) this.#controlBindings.register(bindingPath, (value) => { guard.remember(value); field.setValue(value); }, row);
     row.appendChild(field.element);
     this.#insertTreeNode(parentElement, row, 0);
   }

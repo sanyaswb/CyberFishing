@@ -922,12 +922,14 @@ export class DevTools {
       this.#updateConfigValue(canonicalPath, newValue);
     // TK-283: parameters with a list of values are described in one place (DevParameterSchema).
     const described = this.#parameterSchema.describe(canonicalPath, value);
+    // TK-292: the switches this parameter depends on; its row is inactive while one of them is off.
+    const dependency = { requires: this.#prerequisites(canonicalPath) };
     if (described) {
       const label = this.#formatDevToolsKey(key, canonicalPath);
       if (described.control === "choice") {
-        this.#ui.createChoiceRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath);
+        this.#ui.createChoiceRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath, dependency);
       } else {
-        this.#ui.createSegmentsRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath);
+        this.#ui.createSegmentsRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath, dependency);
       }
       return;
     }
@@ -939,6 +941,7 @@ export class DevTools {
         onChange,
         displayPath,
         canonicalPath,
+        dependency,
       );
       return;
     }
@@ -950,7 +953,14 @@ export class DevTools {
       onChange,
       displayPath,
       canonicalPath,
+      dependency,
     );
+  }
+
+  // Spec 131 prerequisites of a parameter, read live from the config (DevParameterSchema names the switches).
+  #prerequisites(canonicalPath) {
+    return this.#parameterSchema.prerequisitesOf(canonicalPath, (path) => this.#readPath(path))
+      .map((path) => ({ path, isEnabled: () => this.#readPath(path) === true }));
   }
 
   #updateConfigValue(path, newValue) {

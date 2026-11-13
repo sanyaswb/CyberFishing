@@ -225,6 +225,115 @@ function choiceRow(options, value, path) {
   assert.deepEqual(written, [3, 1]);
 }
 
+// --- TK-293: every list is the list picker, under its label ---------------------------------------------------------
+{
+  const host = createElement("div"); document.body.appendChild(host);
+  const chosen = [];
+  ui.createSelectRow("Номер зони", ["1", "2", "Усі"], "2", host, (value) => chosen.push(value), ["test", "zone-number"],
+    { swatches: { 1: "#ff0000" } });
+  assert.equal(document.all((element) => element.tagName === "select", host).length, 0, "no browser select is left");
+  const root = byClass("devtools__choice", host)[0], button = byClass("devtools__choice-button", root)[0];
+  assert.ok(button.textContent.includes("2"), "the field shows the current value");
+  assert.equal(host.children[0].classList.contains("devtools__row--stacked"), true, "the field and its list sit under the label");
+  assert.equal(host.children[0].children[1], root, "the label comes first, the field after it");
+  button.click();
+  const options = byClass("devtools__choice-option", root);
+  assert.deepEqual(options.map((option) => option.textContent), ["1", "2", "Усі"], "the list offers the same values");
+  assert.equal(byClass("devtools__swatch", options[0]).length, 1, "a value's colour is shown in the list");
+  options[2].fire("click");
+  assert.deepEqual(chosen, ["Усі"], "the section receives the chosen value as before");
+  assert.ok(button.textContent.includes("Усі"));
+}
+
+// --- TK-292: parameters that depend on a switch -----------------------------------------------------------------------
+{
+  const { DevToolsDependencyFeedback } = runtime.importModule("src/dev/services/dev_tools_dependency_feedback.js");
+  const guardedUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"),
+    new DevToolsDependencyFeedback({ scheduler: { setTimeout: () => 1, clearTimeout() {} }, durationMs: 3000 }));
+  const host = createElement("div"); document.body.appendChild(host);
+  const group = { enabled: false };
+  const switchPath = ["CONFIG", "test", "group", "enabled"];
+  const requires = { requires: [{ path: switchPath, isEnabled: () => group.enabled }] };
+  guardedUi.createSwitcherRow("enabled", false, host, (value) => { group.enabled = value; }, switchPath);
+  const switchRow = host.children[0];
+  const written = [];
+  const write = (name) => (value) => written.push([name, value]);
+  guardedUi.createInputRow("number", 5, host, "number", write("number"), ["CONFIG", "test", "group", "number"], undefined, requires);
+  guardedUi.createInputRow("text", "abc", host, "string", write("text"), ["CONFIG", "test", "group", "text"], undefined, requires);
+  guardedUi.createSegmentsRow("segments", [{ value: "a", label: "a" }, { value: "b", label: "b" }], "a", host, write("segments"),
+    ["CONFIG", "test", "group", "segments"], undefined, requires);
+  guardedUi.createChoiceRow("choice", [{ value: "x", label: "X" }, { value: "y", label: "Y" }], "x", host, write("choice"),
+    ["CONFIG", "test", "group", "choice"], undefined, requires);
+  guardedUi.createInputRow("free", 1, host, "number", write("free"), ["CONFIG", "test", "free"]);
+  const [, numberRow, textRow, segmentsRow, choiceRow, freeRow] = host.children;
+  const dependent = [numberRow, textRow, segmentsRow, choiceRow];
+  const inactive = (row) => row.classList.contains("devtools__row--dependency-disabled");
+  const highlighted = () => switchRow.classList.contains("devtools__row--blocked-prerequisite");
+  assert.deepEqual(dependent.map(inactive), [true, true, true, true], "with the switch off every dependent row is inactive");
+  assert.equal(inactive(freeRow), false, "a parameter without that switch stays active");
+
+  // The row answers before its control: pointer, keyboard and paste are stopped and the blocking switch is shown.
+  for (const type of ["pointerdown", "click", "keydown", "beforeinput"]) {
+    const event = numberRow.fire(type, { key: "ArrowUp" });
+    assert.equal(event.prevented && event.stopped, true, `${type} on an inactive row is stopped`);
+  }
+  assert.equal(highlighted(), true, "an attempt highlights the switch that blocks it");
+  assert.equal(numberRow.fire("keydown", { key: "Tab" }).prevented, false, "Tab still leaves the row");
+  // Whatever still reaches a control is refused: nothing is written and the shown value is restored.
+  const numberInput = byClass("devtools__input--number", numberRow)[0];
+  numberInput.fire("keydown", { key: "ArrowUp" });
+  assert.equal(numberInput.value, "5", "a number is not stepped");
+  const textInput = byClass("devtools__input--text", textRow)[0];
+  textInput.value = "typed"; textInput.fire("change", { target: textInput });
+  assert.equal(textInput.value, "abc", "text is restored");
+  byClass("devtools__segment", segmentsRow)[1].click();
+  assert.equal(byClass("devtools__segment", segmentsRow)[0].getAttribute("aria-checked"), "true", "the segment stays");
+  byClass("devtools__choice-button", choiceRow)[0].click();
+  byClass("devtools__choice-option", choiceRow)[1].fire("click");
+  assert.ok(byClass("devtools__choice-button", choiceRow)[0].textContent.includes("X"), "the list keeps its value");
+  assert.deepEqual(written, [], "nothing is written through an inactive row");
+
+  // Turning the switch on makes the rows active at once (no rebuild) and ends the highlight.
+  byClass("devtools__switch-input", switchRow)[0].checked = true;
+  byClass("devtools__switch-input", switchRow)[0].fire("change", { target: byClass("devtools__switch-input", switchRow)[0] });
+  assert.equal(group.enabled, true);
+  assert.deepEqual(dependent.map(inactive), [false, false, false, false], "with the switch on the rows are active");
+  assert.equal(highlighted(), false);
+  assert.equal(numberRow.fire("pointerdown").prevented, false, "an active row lets its control work");
+  numberInput.fire("keydown", { key: "ArrowUp" });
+  byClass("devtools__segment", segmentsRow)[1].click();
+  assert.equal(JSON.stringify(written), JSON.stringify([["number", 6], ["segments", "b"]]));
+  // Off again (from anywhere: the config changed): inactive again, the values stay shown.
+  group.enabled = false; guardedUi.syncValue(switchPath, false);
+  assert.deepEqual(dependent.map(inactive), [true, true, true, true], "switching off deactivates them again");
+  assert.equal(numberInput.value, "6", "the value stays visible");
+  guardedUi.dispose();
+}
+{
+  // The dependencies of the real config: a group's `enabled`, `<name>Enabled`, and the named master switches.
+  const read = (path) => path.slice(1).reduce((value, key) => value?.[key], CONFIG);
+  const of = (text) => JSON.stringify(schema.prerequisitesOf(text.split("."), read).map((path) => path.join(".")));
+  assert.equal(of("CONFIG.debug.fixedCatch.fishId"), JSON.stringify(["CONFIG.debug.fixedCatch.enabled"]),
+    "Fixed Catch's fish and weight depend on its switch");
+  assert.equal(of("CONFIG.debug.fixedCatch.enabled"), "[]", "a switch does not depend on itself");
+  assert.equal(of("CONFIG.canvas.rain.rings.ripple.strength"),
+    JSON.stringify(["CONFIG.canvas.rain.enabled", "CONFIG.canvas.rain.rings.enabled", "CONFIG.canvas.rain.rings.ripple.enabled"]),
+    "a nested group depends on the outer switches too, outermost first");
+  assert.equal(of("CONFIG.canvas.rain.rings.enabled"), JSON.stringify(["CONFIG.canvas.rain.enabled"]));
+  assert.equal(of("CONFIG.debug.godMode.fixedBiteChancePercent"),
+    JSON.stringify(["CONFIG.debug.godMode.enabled", "CONFIG.debug.godMode.fixedBiteChanceEnabled"]),
+    "<name>Enabled gates its <name>… sibling");
+  assert.equal(of("CONFIG.debug.godMode.infiniteCasting"), JSON.stringify(["CONFIG.debug.godMode.enabled"]));
+  assert.equal(of("CONFIG.locations.showNetZone"), JSON.stringify(["CONFIG.locations.debugVisuals"]));
+  assert.equal(of("CONFIG.locations.showChumZones"), "[]", "a zone the game draws without the overlay switch is independent");
+  assert.equal(of("CONFIG.locations.cellSize"), "[]");
+  assert.equal(JSON.stringify(schema.prerequisitesOf(["ITEM_DB", "rods", "x", "enabled2"], read)), "[]", "only CONFIG has switches");
+  for (const text of ["CONFIG.locations.debugVisuals", "CONFIG.debug.overlay", "CONFIG.locations.showNetZone", "CONFIG.locations.showLastDashZone",
+    "CONFIG.locations.showCatchZone", "CONFIG.locations.showPoleFightSector", "CONFIG.locations.showFightLineRadius", "CONFIG.debug.overlayUpdateMs"]) {
+    assert.notEqual(read(text.split(".")), undefined, `${text} named by the schema exists in the config`);
+  }
+}
+
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
 (async () => {
   const { ExportCommandNotice } = runtime.importModule("src/dev/tools/controls/export_command_notice.js");

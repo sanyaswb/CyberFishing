@@ -4,9 +4,15 @@
 .devtools__control-group--disabled .devtools__row { opacity: 0.46; }
 .devtools__control-group--disabled :is(input, select, button),
 .devtools__control-group--disabled .devtools__slider { cursor: not-allowed; }
+/* Spec 131, TK-292: a row whose switch is off is inactive whatever its control (switch, number, text, segments, list). */
 .devtools__row--dependency-disabled .devtools__label,
-.devtools__row--dependency-disabled .devtools__switch { opacity: 0.46; }
+.devtools__row--dependency-disabled .devtools__switch,
+.devtools__row--dependency-disabled .devtools__number,
+.devtools__row--dependency-disabled .devtools__input,
+.devtools__row--dependency-disabled .devtools__segments,
+.devtools__row--dependency-disabled .devtools__choice { opacity: 0.46; }
 .devtools__row--dependency-disabled,
+.devtools__row--dependency-disabled :is(input, button),
 .devtools__row--dependency-disabled .devtools__slider { cursor: not-allowed; }
 .devtools__row--blocked-prerequisite {
   outline: 2px solid var(--ui-danger);
@@ -357,6 +363,16 @@
 
 /* TK-283: a row whose control may take a line of its own (segments on a narrow panel, an open list). */
 .devtools__row--wrap { flex-wrap: wrap; }
+/* TK-293: a row with a list: the label above, the field and its list under it across the row. */
+.devtools__row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.devtools__row--stacked .devtools__label,
+.devtools__row--stacked .devtools__choice { flex: 0 0 auto; }
+.devtools__choice-button .devtools__swatch,
+.devtools__choice-option .devtools__swatch { margin-right: 0; }
 
 /* TK-283: a short list with every option visible (SegmentedControl). */
 .devtools__segments {
