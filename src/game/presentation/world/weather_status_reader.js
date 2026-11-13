@@ -37,6 +37,31 @@ export class WeatherStatusReader {
       baseAmplitude: 0,
       baseWavelength: 0,
       baseSpeed: 0,
+      factors: {
+        smoothingSec: 0,
+        amplitude: {
+          wind: 1,
+          windMin: 1,
+          windMax: 1,
+          night: 1,
+          nightTarget: 1,
+          storm: 1,
+          stormTarget: 1,
+          targetScale: 1,
+        },
+        wavelength: {
+          storm: 1,
+          stormTarget: 1,
+          targetScale: 1,
+        },
+        speed: {
+          wind: 1,
+          windMax: 1,
+          storm: 1,
+          stormTarget: 1,
+          targetScale: 1,
+        },
+      },
     },
   };
 
@@ -92,6 +117,37 @@ export class WeatherStatusReader {
       : 0;
     waves.wavelength = waves.baseWavelength * waves.wavelengthScale;
     waves.speed = waves.enabled ? waves.baseSpeed * waves.speedScale : 0;
+
+    const srcFactors = sea.factors;
+    const dstFactors = waves.factors;
+    dstFactors.smoothingSec = number(
+      srcFactors?.smoothingSec ?? water.seaState?.smoothingSec,
+      0,
+    );
+    const srcAmp = srcFactors?.amplitude;
+    const dstAmp = dstFactors.amplitude;
+    dstAmp.wind = number(srcAmp?.wind, waves.amplitudeScale);
+    dstAmp.windMin = number(srcAmp?.windMin, 1);
+    dstAmp.windMax = number(srcAmp?.windMax, 1);
+    dstAmp.night = number(srcAmp?.night, 1);
+    dstAmp.nightTarget = number(srcAmp?.nightTarget, 1);
+    dstAmp.storm = number(srcAmp?.storm, 1);
+    dstAmp.stormTarget = number(srcAmp?.stormTarget, 1);
+    dstAmp.targetScale = number(srcAmp?.targetScale, waves.amplitudeScale);
+
+    const srcLength = srcFactors?.wavelength;
+    const dstLength = dstFactors.wavelength;
+    dstLength.storm = number(srcLength?.storm, waves.wavelengthScale);
+    dstLength.stormTarget = number(srcLength?.stormTarget, 1);
+    dstLength.targetScale = number(srcLength?.targetScale, waves.wavelengthScale);
+
+    const srcSpeed = srcFactors?.speed;
+    const dstSpeed = dstFactors.speed;
+    dstSpeed.wind = number(srcSpeed?.wind, 1);
+    dstSpeed.windMax = number(srcSpeed?.windMax, 1);
+    dstSpeed.storm = number(srcSpeed?.storm, 1);
+    dstSpeed.stormTarget = number(srcSpeed?.stormTarget, 1);
+    dstSpeed.targetScale = number(srcSpeed?.targetScale, waves.speedScale);
     return reading;
   }
 }

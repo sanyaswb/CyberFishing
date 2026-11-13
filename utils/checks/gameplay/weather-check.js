@@ -588,9 +588,51 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     "вправо →",
     reading.waves.amplitude.toFixed(1),
     reading.waves.speed.toFixed(1),
+    'id="weather-wave-amplitude"',
+    'id="weather-wave-length"',
+    'id="weather-wave-speed"',
+    "Вітер: висота (штиль ×0.55 … вітер ×1.15)",
+    "Ніч: затихання (день ×1.00 … ніч ×0.50)",
+    "Гроза: штормовий підйом (ясно ×1.00 … гроза ×2.00)",
+    "Гроза: розтяг хвилі (ясно ×1.00 … гроза ×1.30)",
+    "Вітер: прискорення (штиль ×1.00 … вітер ×1.25)",
+    "Гроза: штормове прискорення (ясно ×1.00 … гроза ×1.60)",
+    `×${reading.waves.amplitudeScale.toFixed(2)}`,
+    `×${reading.waves.wavelengthScale.toFixed(2)}`,
+    `×${reading.waves.speedScale.toFixed(2)}`,
   ]) {
     assert(html.includes(text), `the overlay shows ${text}`);
   }
+  assert(
+    !html.includes(`(${water.amplitude.toFixed(1)} × ${reading.waves.amplitudeScale.toFixed(2)})`),
+    "inline cramped wave formula removed from general rows in favor of sub-items",
+  );
+  near(
+    reading.waves.factors.amplitude.wind,
+    normal.windAmplitude,
+    "status reader exposes component wind amplitude factor",
+  );
+  near(
+    reading.waves.factors.amplitude.storm,
+    storm.amplitude,
+    "status reader exposes component storm amplitude factor",
+  );
+  water.seaState.smoothingSec = 4;
+  environment.weather.storm = 0;
+  environment.wind.direction = 0;
+  sea.update(1100);
+  const settlingHtml = module.render();
+  assert(
+    settlingHtml.includes("→ ціль ×"),
+    "overlay shows target multiplier while smoothing is transitioning",
+  );
+  water.seaState.enabled = false;
+  sea.update(1200);
+  const noSeaHtml = module.render();
+  assert(
+    noSeaHtml.includes("«Стан моря» вимкн.") && !noSeaHtml.includes("Вітер: висота"),
+    "when seaState is off, active sea multipliers are hidden",
+  );
   water.waves = false;
   assert.equal(
     reader.read().waves.amplitude,

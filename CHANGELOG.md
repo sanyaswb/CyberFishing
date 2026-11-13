@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.106 - Weather & waves overlay multiplier sub-items
+
+- TK-295: in the DevTools «ПОГОДА Й ХВИЛІ» overlay module, moved wave multipliers from cramped inline formulas into expandable sub-items under `Амплітуда хвиль`, `Довжина хвиль`, and `Швидкість хвиль`, explaining each factor (`База`, `Загальний множник` + transition target, `Вітер`, `Ніч`, `Гроза`), its configured range, and its live value via pre-allocated `SeaStateResolver` / `WeatherStatusReader` factors.
+
 ## v0.50.105 - Separate overlay windows with top scale slider
 
 - TK-294: every active DevTools OVERLAY module now opens in its own lazily created, independently draggable window with persisted position and scale; removed −/+ buttons and replaced them with a top horizontal `role="slider"` bar (`0.3`–`3.0`) on every overlay and tool window.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.97 - Line on the rod obeys the equipping rule
 
 - TK-288: the line already on the rod (the starting equipment, older saves) now gets the same length rule as equipping it: the bamboo pole (5 m, no reel) holds 10 m of line and the other 15 m goes back to the backpack (it used to keep all 25 m and cast 24.8 m).
-
-## v0.50.96 - Float depth 0.1 m is kept
-
-- TK-192.1: a float depth the player sets to 0.1 m is kept (it used to turn into half the range on the next frame, so the cast fell from 25 to 15 m while the track still showed 0.1); before a choice the depth is half the current tackle's deepest depth, also at the game's start and after a tackle change.

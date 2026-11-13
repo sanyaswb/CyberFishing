@@ -23,7 +23,21 @@ export class SeaStateResolver {
   #lastNowMs = NaN;
   #ready = false;
   #travelTarget = 1;
-  #state = { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1, wind: 0, night: 0, storm: 0 };
+  #state = {
+    amplitudeScale: 1,
+    speedScale: 1,
+    wavelengthScale: 1,
+    travel: 1,
+    wind: 0,
+    night: 0,
+    storm: 0,
+    factors: {
+      smoothingSec: 0,
+      amplitude: { wind: 1, windMin: 1, windMax: 1, night: 1, nightTarget: 1, storm: 1, stormTarget: 1, targetScale: 1 },
+      wavelength: { storm: 1, stormTarget: 1, targetScale: 1 },
+      speed: { wind: 1, windMax: 1, storm: 1, stormTarget: 1, targetScale: 1 },
+    },
+  };
 
   // getEnvironment: () => EnvironmentSystem's snapshot ({ time, weather, wind }) or null; getSettings: () =>
   // CONFIG.canvas.water.seaState (read every frame: DEV edits apply at once).
@@ -49,6 +63,13 @@ export class SeaStateResolver {
     if (settings?.enabled !== true) {
       state.amplitudeScale = 1; state.speedScale = 1; state.wavelengthScale = 1;
       state.wind = 0; state.night = 0; state.storm = 0;
+      const f = state.factors;
+      f.smoothingSec = 0;
+      f.amplitude.wind = 1; f.amplitude.windMin = 1; f.amplitude.windMax = 1;
+      f.amplitude.night = 1; f.amplitude.nightTarget = 1; f.amplitude.storm = 1; f.amplitude.stormTarget = 1;
+      f.amplitude.targetScale = 1;
+      f.wavelength.storm = 1; f.wavelength.stormTarget = 1; f.wavelength.targetScale = 1;
+      f.speed.wind = 1; f.speed.windMax = 1; f.speed.storm = 1; f.speed.stormTarget = 1; f.speed.targetScale = 1;
       this.#ready = false;
       return state;
     }
@@ -63,11 +84,40 @@ export class SeaStateResolver {
     const event = settings.storm;
     const calm = positive(normal?.calmAmplitude, 1);
     const windy = positive(normal?.windAmplitude, 1);
-    const amplitude = (calm + (windy - calm) * wind) * (1 + (positive(normal?.nightAmplitude, 1) - 1) * night) *
-      (1 + (positive(event?.amplitude, 1) - 1) * storm);
-    const speed = (1 + (positive(normal?.windSpeed, 1) - 1) * wind) * (1 + (positive(event?.speed, 1) - 1) * storm);
-    const wavelength = 1 + (positive(event?.wavelength, 1) - 1) * storm;
+    const nightAmpTarget = positive(normal?.nightAmplitude, 1);
+    const stormAmpTarget = positive(event?.amplitude, 1);
+    const windAmpFactor = calm + (windy - calm) * wind;
+    const nightAmpFactor = 1 + (nightAmpTarget - 1) * night;
+    const stormAmpFactor = 1 + (stormAmpTarget - 1) * storm;
+    const amplitude = windAmpFactor * nightAmpFactor * stormAmpFactor;
+
+    const windSpeedTarget = positive(normal?.windSpeed, 1);
+    const stormSpeedTarget = positive(event?.speed, 1);
+    const windSpeedFactor = 1 + (windSpeedTarget - 1) * wind;
+    const stormSpeedFactor = 1 + (stormSpeedTarget - 1) * storm;
+    const speed = windSpeedFactor * stormSpeedFactor;
+
+    const stormLengthTarget = positive(event?.wavelength, 1);
+    const wavelength = 1 + (stormLengthTarget - 1) * storm;
     const smoothing = positive(settings.smoothingSec, 0);
+    const f = state.factors;
+    f.smoothingSec = smoothing;
+    f.amplitude.wind = windAmpFactor;
+    f.amplitude.windMin = calm;
+    f.amplitude.windMax = windy;
+    f.amplitude.night = nightAmpFactor;
+    f.amplitude.nightTarget = nightAmpTarget;
+    f.amplitude.storm = stormAmpFactor;
+    f.amplitude.stormTarget = stormAmpTarget;
+    f.amplitude.targetScale = amplitude;
+    f.wavelength.storm = wavelength;
+    f.wavelength.stormTarget = stormLengthTarget;
+    f.wavelength.targetScale = wavelength;
+    f.speed.wind = windSpeedFactor;
+    f.speed.windMax = windSpeedTarget;
+    f.speed.storm = stormSpeedFactor;
+    f.speed.stormTarget = stormSpeedTarget;
+    f.speed.targetScale = speed;
     const follow = !this.#ready || smoothing <= 0 ? 1 : 1 - Math.exp(-dt / smoothing);
     this.#ready = true;
     state.amplitudeScale += (amplitude - state.amplitudeScale) * follow;
