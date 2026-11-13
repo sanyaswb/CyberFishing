@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-298.2 (spec 178): gusts visibly increase rain drop slant and reaction speed even at 100% wind; lowered default float windCompensation upper bound from 1.0 to 0.65 so floats rock and lean out of the box; live ITEM_DB edits in DevTools immediately sync active cast float stats without recasting and support space/comma array input.",
   "TK-298.1 (spec 178): fixed manual wind strength release target restoration, forced wind direction calm invariant, C1-continuous float return-swing across cycle boundaries with maxAngleDeg cap and zero-angle support, live float settings in EnvironmentSystem, and always-visible DevTools weather location selector.",
   "TK-298 (spec 178): living continuous wind (0…1) with dedicated windRng stream, real-second episodes and global gusts, rain/storm boosts, continuous wave/rain/float coupling with float return-swing oscillation, DevTools weather location selector + Weather Chances + manual wind strength/gust controls, and «Сила вітру 0…1» overlay hyperlink.",
   "TK-296.2: fixed «Ніч 0…1» overlay DevTools link path to CONFIG.spawns.timePhases.night.startHour so it highlights the startHour parameter instead of the root CONFIG section title; added CONFIG path traversal check and incident I-20 / rule R20.",

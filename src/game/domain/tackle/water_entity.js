@@ -97,6 +97,17 @@ export class WaterEntity {
     this._currentColor = this._baseColor;
   }
 
+  syncEquipmentStats(stats) {
+    if (!stats || typeof stats !== "object") return;
+    this._config = { ...this._config, ...stats };
+    if (stats.friction !== undefined) {
+      this._velocityDamping = stats.friction || 0.85;
+    }
+    if (stats.waterFriction !== undefined) {
+      this._lureResistance = stats.waterFriction || 0;
+    }
+  }
+
   _random() {
     return this._rng.next();
   }
@@ -470,7 +481,8 @@ export class WaterEntity {
               swingFactor = this._swingAmp + (this._swingFloorFactor - this._swingAmp) * ease;
             }
             this._swingCurrentFactor = swingFactor;
-            const effectiveShare = Math.max(0, Math.min(1, strength * swingFactor));
+            const gustBoost = Math.max(0, Number(environment.wind.gustStrength) || 0) * 0.5;
+            const effectiveShare = Math.max(0, Math.min(1, (strength + gustBoost) * swingFactor));
             this._targetWindAngle = dir * maxAngleDeg * effectiveShare * (1 - windComp);
           }
         } else {

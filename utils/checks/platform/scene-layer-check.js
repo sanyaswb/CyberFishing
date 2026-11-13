@@ -741,6 +741,16 @@ async function checkRain() {
     rain.status.slantDeg > 3 && rain.status.slantDeg < 4.5,
     `partial windStrength scales rain slant proportionally (${rain.status.slantDeg.toFixed(2)}°)`,
   );
+  // TK-298.2: gusts add extra rain slant and respond quickly even when windStrength is already at 1.0.
+  const fullWindWorld = { ...world, weather: { ...world.weather, windStrength: 1, windGust: 0 } };
+  for (let index = 0; index < 120; index += 1) frame({ world: fullWindWorld });
+  const baseFullSlant = rain.status.slantDeg;
+  const gustWindWorld = { ...world, weather: { ...world.weather, windStrength: 1, windGust: 0.25 } };
+  for (let index = 0; index < 30; index += 1) frame({ world: gustWindWorld });
+  assert(
+    rain.status.slantDeg > baseFullSlant + 3,
+    `windGust visibly increases rain slant within 0.5s even at 100% windStrength (${baseFullSlant.toFixed(2)}° -> ${rain.status.slantDeg.toFixed(2)}°)`,
+  );
 
   // TK-273: rain zones. Drops land only inside the zones on screen and are clipped by their mask; rings stay on the
   // water; no zone on screen: no new drops; the switch off: the whole screen again, no mask.

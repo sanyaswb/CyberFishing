@@ -1107,6 +1107,63 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   smoothEnv.wind.float.maxAngleDeg = 0;
   smoothFloat.update(bounds, 16, smoothEnv, () => true);
   assert.equal(smoothFloat._targetWindAngle, 0, "maxAngleDeg: 0 disables float wind lean");
+
+  // 15. TK-298.2:
+  // (a) Default equipped float (ITEM_DB.floats.float_day) has windCompensation upper bound < 1 so wind visibly tilts
+  //     it out of the box, and syncEquipmentStats updates a cast FloatEntity live without recasting.
+  const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
+  const { FloatEntity } = require("../../../src/game/domain/tackle/float_entity.js");
+  for (const floatId of ["float_day", "float_night", "float_sliding"]) {
+    const comp = ITEM_DB.floats[floatId]?.gameplayStats?.windCompensation;
+    assert(
+      Array.isArray(comp) && comp[1] <= 0.75,
+      `${floatId} default windCompensation[1] leaves visible wind motion (got ${JSON.stringify(comp)})`,
+    );
+  }
+  const castDefaultFloat = new FloatEntity(
+    500,
+    400,
+    { ...ITEM_DB.floats.float_day.gameplayStats, type: "day" },
+    6,
+    new SeededRng("r5"),
+  );
+  const liveFloatEnv = {
+    current: null,
+    wind: {
+      direction: 1,
+      strength: 0.9,
+      gustStrength: 0.2,
+      rainMult: 1,
+      float: { maxAngleDeg: 38, returnPctRange: [0.15, 0.3], cycleDurationSec: [0.5, 0.6], amplitudeJitter: [1, 1] },
+    },
+  };
+  castDefaultFloat.update(bounds, 50, liveFloatEnv, () => true);
+  const defaultTilt = castDefaultFloat._targetWindAngle;
+  assert(
+    defaultTilt > 8,
+    `default float_day tilts visibly under strong wind out of the box (got ${defaultTilt.toFixed(2)}°)`,
+  );
+  assert.equal(typeof castDefaultFloat.syncEquipmentStats, "function", "FloatEntity exposes syncEquipmentStats");
+  castDefaultFloat.syncEquipmentStats({ quality: 0, windCompensation: [0.1, 0.0] });
+  castDefaultFloat.update(bounds, 50, liveFloatEnv, () => true);
+  assert(
+    castDefaultFloat._targetWindAngle > defaultTilt * 2,
+    `syncEquipmentStats immediately updates live cast float wind lean without recasting (${defaultTilt.toFixed(2)}° -> ${castDefaultFloat._targetWindAngle.toFixed(2)}°)`,
+  );
+
+  // (b) WeatherRenderModelBuilder forwards windGust (gustStrength) for rain gust slant.
+  const { WeatherRenderModelBuilder } = require("../../../src/game/presentation/rendering/weather_render_model_builder.js");
+  const gustRenderTarget = { rain: 0, storm: 0, fog: 0, cloud: 0, windDirection: 0, windStrength: 0, windGust: 0 };
+  new WeatherRenderModelBuilder({
+    getEnvironment: () => ({
+      weather: { rain: 0.8, storm: 0, fog: 0, cloud: 0.8 },
+      wind: { direction: -1, strength: 0.85, gustStrength: 0.26 },
+    }),
+  }).buildInto(gustRenderTarget);
+  assert(
+    Math.abs(gustRenderTarget.windGust - 0.26) < 1e-6,
+    `WeatherRenderModelBuilder copies wind.gustStrength into target.windGust (got ${gustRenderTarget.windGust})`,
+  );
 }
 
 console.log(

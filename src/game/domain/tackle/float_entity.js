@@ -64,6 +64,19 @@ export class FloatEntity extends WaterEntity {
     this._currentScaleY = 1.0;
   }
 
+  syncEquipmentStats(stats) {
+    super.syncEquipmentStats(stats);
+    if (!stats || typeof stats !== "object") return;
+    this._weightedTackleConfig = this._config;
+    const weightCfg =
+      this._config.ballastProfiles && this._config.ballastWeight
+        ? this._config.ballastProfiles[this._config.ballastWeight]
+        : this._config;
+    if (weightCfg && weightCfg.restDraft !== undefined) {
+      this._restDraft = Math.max(0, Math.min(1, Number(weightCfg.restDraft) || 0));
+    }
+  }
+
   // The intended lean and submersion, the load and the forces of this frame, in a reused record. Line pull and water
   // velocity are in the update plane (ground base pixels on a perspective water; spec 053), x sideways, y toward the
   // shore; the line pull is a unit share along the line toward the rod.

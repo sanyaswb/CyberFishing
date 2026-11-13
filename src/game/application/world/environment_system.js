@@ -49,6 +49,7 @@ export class EnvironmentSystem {
   #physicsWind = {
     direction: 0,
     strength: 0,
+    gustStrength: 0,
     rainMult: 1.0,
     float: null,
     breezeAngleRange: [0, 0],
@@ -226,6 +227,7 @@ export class EnvironmentSystem {
       const wind = this.#physicsWind;
       wind.direction = direction;
       wind.strength = windSnap ? windSnap.strength : 1;
+      wind.gustStrength = windSnap ? windSnap.gustStrength : 0;
       wind.rainMult = m;
       wind.float = windSnap?.float ?? this.#config?.weather?.wind?.float ?? null;
       if (!windSnap && base?.wind) {

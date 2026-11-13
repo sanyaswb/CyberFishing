@@ -24,6 +24,9 @@ const STREAK_HEIGHT = 64;
 const RING_SIZE = 64;
 const MAX_STEP_SEC = 0.1;
 const SLANT_FOLLOW_PER_SEC = 2;
+const GUST_FOLLOW_BONUS_PER_SEC = 6;
+const GUST_SLANT_SHARE = 1.2;
+const MAX_SLANT_DEG = 72;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
 
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
@@ -139,9 +142,13 @@ export class PixiRainRenderer {
     const windStrength = rawWindStrength !== undefined && rawWindStrength !== null && Number.isFinite(Number(rawWindStrength))
       ? clamp01(Number(rawWindStrength))
       : Math.abs(windDir);
-    const targetSlant = windDir * (windStrength * Math.max(0, number(settings?.windSlantDeg, 0)) +
-      storm * Math.max(0, number(settings?.stormSlantDeg, 0)));
-    this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * SLANT_FOLLOW_PER_SEC);
+    const windGust = clamp01(number(weather?.windGust, 0));
+    const windSlant = Math.max(0, number(settings?.windSlantDeg, 0));
+    const stormSlant = Math.max(0, number(settings?.stormSlantDeg, 0));
+    const rawSlant = (windStrength + windGust * GUST_SLANT_SHARE) * windSlant + storm * stormSlant;
+    const targetSlant = windDir * Math.min(MAX_SLANT_DEG, rawSlant);
+    const followPerSec = SLANT_FOLLOW_PER_SEC + Math.min(1, windGust * 3) * GUST_FOLLOW_BONUS_PER_SEC;
+    this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * followPerSec);
     const area = this.#waterArea(world.clipRegions);
     this.#placeView(world, viewWidth, viewHeight);
     this.#prepareZones(world, area, viewWidth, viewHeight);

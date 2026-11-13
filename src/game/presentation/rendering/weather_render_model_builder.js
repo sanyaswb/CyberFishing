@@ -29,5 +29,8 @@ export class WeatherRenderModelBuilder {
     target.windStrength = Number.isFinite(strength)
       ? Math.min(1, Math.max(0, strength))
       : Math.abs(target.windDirection);
+    const rawGust = environment?.wind?.gustStrength;
+    const gust = rawGust !== undefined && rawGust !== null ? Number(rawGust) : 0;
+    target.windGust = Number.isFinite(gust) ? Math.min(1, Math.max(0, gust)) : 0;
   }
 }

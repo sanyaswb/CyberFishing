@@ -445,7 +445,11 @@ export class DevToolsUI {
     inputElement.addEventListener("change", (e) => {
       let newVal = e.target.value;
       if (type === "array") {
-        newVal = newVal.split(",").map((n) => parseFloat(n.trim()) || 0);
+        newVal = newVal
+          .trim()
+          .split(/[\s,;]+/)
+          .filter(Boolean)
+          .map((n) => parseFloat(n) || 0);
       }
       guard.commit(newVal);
     });

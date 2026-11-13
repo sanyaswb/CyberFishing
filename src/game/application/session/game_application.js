@@ -535,7 +535,16 @@ export class GameApplication {
   #handleItemDatabaseUpdate() {
     this.#inventory.refreshItemData();
     const eq = this.#inventory.getEquipped();
-    if (eq) this.#fightService.syncEquipment(eq);
+    if (!eq) return;
+    this.#fightService.syncEquipment(eq);
+    if (this.#float && typeof this.#float.syncEquipmentStats === "function") {
+      const activeStats = this.#equipmentRules.isSpinning(eq)
+        ? eq.baits?.[0]?.effectiveStats
+        : this.#equipmentRules.isFeeder(eq)
+          ? eq.feederRig?.effectiveStats
+          : eq.float?.effectiveStats;
+      if (activeStats) this.#float.syncEquipmentStats(activeStats);
+    }
   }
 
   #isFishDatabaseUpdate(event) {
