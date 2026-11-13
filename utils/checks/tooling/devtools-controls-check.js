@@ -514,6 +514,97 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- TK-305 (spec 174 C3): names, descriptions, changed values, search -----------------------------------------------
+{
+  const provider = { describe: (path, key) => (path === "CONFIG.rain.opacity" ? { name: "Непрозорість дощу",
+    description: "Наскільки видно краплі." } : key === "speed" ? { name: "швидкість", description: "" } : null), dispose() {} };
+  const searchUi = new DevToolsUI(() => {}, {}, provider, null, null, document.body, createElement("div"));
+  const pages = searchUi.createPages([{ id: "a", title: "A", icon: "hook" }, { id: "b", title: "B", icon: "map" }], "a", () => {});
+  const changed = new Set(["CONFIG.rain.opacity"]);
+  const resets = [];
+  const sectionOf = (page, title) => searchUi.createSection(title, page, false, () => {}, ["SECTION", title]);
+  const rain = sectionOf(pages.get("b"), "rain");
+  const add = (parent, key, path) => searchUi.addParameter(parent, { control: "number", label: key, value: 1, onCommit() {},
+    path, isChanged: () => changed.has(path.join(".")), onReset: () => { resets.push(path.join(".")); changed.delete(path.join(".")); } });
+  add(rain, "opacity", ["CONFIG", "rain", "opacity"]);
+  add(rain, "speed", ["CONFIG", "rain", "speed"]);
+  add(pages.get("a"), "flag", ["CONFIG", "flag"]);
+  const rowOf = (key) => byClass("devtools__row", searchUi.body).find((row) => row.children[0]?.dataset?.devtoolsKey === key);
+  const opacity = rowOf("opacity");
+  assert.equal(byClass("devtools__label-name", opacity)[0].innerText, "Непрозорість дощу", "the Ukrainian name is under the key");
+  assert.equal(byClass("devtools__label-key", opacity)[0].innerText, "opacity", "the key comes first, as in the code");
+  assert.equal(byClass("devtools__label-name", rowOf("flag")).length, 0, "no name, no second line");
+  const info = byClass("devtools__info", opacity)[0];
+  const description = byClass("devtools__description", opacity)[0];
+  assert.equal(description.hidden, true);
+  info.click();
+  assert.equal(description.hidden, false, "«i» opens the description under the row (reachable by touch)");
+  assert.equal(info.getAttribute("aria-expanded"), "true");
+  assert.equal(byClass("devtools__info", rowOf("speed")).length, 0, "no description, no «i»");
+  // Changed values: marked, reset one by one, the mark follows syncs.
+  assert.equal(opacity.classList.contains("devtools__row--changed"), true, "a changed value is marked");
+  assert.equal(rowOf("speed").classList.contains("devtools__row--changed"), false);
+  byClass("devtools__reset", opacity)[0].click();
+  assert.equal(JSON.stringify(resets), JSON.stringify(["CONFIG.rain.opacity"]), "its reset puts that one parameter back");
+  searchUi.syncValue(["CONFIG", "rain", "opacity"], 1);
+  assert.equal(opacity.classList.contains("devtools__row--changed"), false, "the mark follows the sync after the reset");
+  changed.add("CONFIG.rain.speed");
+  searchUi.syncValue(["CONFIG"], {});
+  assert.equal(rowOf("speed").classList.contains("devtools__row--changed"), true, "an import or reset of all refreshes every mark");
+  // Search: every module, in place, editable; sections open for the search and close after it.
+  const panel = searchUi.body.parentNode;
+  const input = byClass("devtools__search-input", panel)[0];
+  const status = byClass("devtools__search-status", panel)[0];
+  const search = (query) => { input.value = query; input.fire("input"); };
+  const body = searchUi.body;
+  search("ДОЩУ");
+  assert.equal(body.classList.contains("devtools__body--filtered"), true);
+  assert.equal(opacity.classList.contains("devtools__row--match"), true, "found by its Ukrainian name, any case");
+  assert.equal(rowOf("flag").classList.contains("devtools__row--match"), false);
+  assert.equal(rain.style.display, "block", "the section holding a match opens");
+  assert.equal(pages.get("b").classList.contains("devtools__page--match"), true, "a match in another module shows that module");
+  assert.equal(status.hidden, false);
+  assert.equal(status.textContent, "Знайдено: 1");
+  search("config.flag");
+  assert.equal(rowOf("flag").classList.contains("devtools__row--match"), true, "found by its path");
+  assert.equal(rain.style.display, "none", "a section opened by the search closes again");
+  search("nothing-like-this");
+  assert.equal(status.textContent, "Нічого не знайдено");
+  const escape = input.fire("keydown", { key: "Escape" });
+  assert.equal(escape.stopped, true, "Escape clears the search, not the panel");
+  assert.equal(input.value, "");
+  assert.equal(body.classList.contains("devtools__body--filtered"), false);
+  assert.equal(status.hidden, true);
+  // Changed only.
+  const filter = byClass("devtools__filter", panel)[0];
+  filter.click();
+  assert.equal(filter.getAttribute("aria-pressed"), "true");
+  assert.equal(rowOf("speed").classList.contains("devtools__row--match"), true, "«Змінені» shows the changed values");
+  assert.equal(opacity.classList.contains("devtools__row--match"), false);
+  filter.click();
+  assert.equal(body.classList.contains("devtools__body--filtered"), false);
+  searchUi.dispose();
+}
+{
+  // The edit path: whether a parameter is changed, and putting one back.
+  const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+  const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+  const config = { rain: { opacity: 0.5 } };
+  const overrides = new Set(["rain.opacity"]);
+  const events = [], synced = [];
+  const edits = new DevConfigEditService({ config, catalogs: {}, parameterAliases: new DevToolsParameterAliasRegistry(),
+    configRuntime: { overrideStore: { has: (key) => overrides.has(key) },
+      reset: (path) => { overrides.delete(path.slice(1).join(".")); config.rain.opacity = 1; } },
+    getHookedFish: () => null, hookedFishSync: { afterEdit() {} }, itemStatSync: { afterEdit() {} }, debugModulesSource: () => ({}),
+    syncValue: (path, value) => synced.push([path.join("."), value]),
+    eventTarget: { dispatchEvent: (event) => events.push(event.type) }, logger: { log() {} } });
+  assert.equal(edits.isOverridden(["CONFIG", "rain", "opacity"]), true);
+  edits.resetParameter(["CONFIG", "rain", "opacity"]);
+  assert.equal(edits.isOverridden(["CONFIG", "rain", "opacity"]), false);
+  assert.equal(JSON.stringify(synced), JSON.stringify([["CONFIG.rain.opacity", 1]]), "the panel shows the code's value");
+  assert.equal(JSON.stringify(events), JSON.stringify(["config-updated"]), "the game hears it like an edit");
+}
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
@@ -548,7 +639,7 @@ function choiceRow(options, value, path) {
   const host = pages[0];
   railUi.addParameter(host, { control: "number", label: "rain opacity copy", value: 1, onCommit() {},
     path: ["TEST", "copy"], requires: [{ path: ["CONFIG", "canvas", "rain", "enabled"], isEnabled: () => false }] });
-  byClass("devtools__row", host).find((row) => row.children[0]?.innerText === "rain opacity copy").fire("pointerdown");
+  byClass("devtools__row", host).find((row) => row.children[0]?.dataset.devtoolsKey === "rain opacity copy").fire("pointerdown");
   assert.deepEqual(shown(), ["config"], "the blocking switch's module is shown");
   tools.dispose();
 }

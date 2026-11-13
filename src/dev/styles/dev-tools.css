@@ -101,7 +101,8 @@
   z-index: var(--ui-layer-panel);
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* header, tools (search, changed filter), the rail with the page, footer */
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   font-family: var(--devtools-font);
   color: var(--ui-text);
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
@@ -109,6 +110,86 @@
 
 .devtools.devtools--open {
   left: 0;
+}
+
+/* Spec 174 C3: search and the changed-only filter under the title; matching rows stay in place and editable. */
+.devtools__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--devtools-line);
+  background: var(--devtools-surface-strong);
+}
+.devtools__search {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  height: 30px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-field);
+  color: var(--devtools-text-muted);
+  --devtools-icon-size: 16px;
+}
+.devtools__search:focus-within { border-color: var(--ui-info); }
+.devtools__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: 13px;
+}
+.devtools__search-input:focus-visible { outline: 0; }
+.devtools__filter {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--devtools-label);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  --devtools-icon-size: 12px;
+}
+.devtools__filter-icon { fill: var(--ui-accent); stroke: none; }
+.devtools__filter--active { border-color: var(--ui-accent); background: rgba(var(--ui-accent-rgb), 0.2); color: var(--ui-text); }
+.devtools__filter:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
+.devtools__search-status {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: var(--devtools-text-muted);
+}
+.devtools__search-status[hidden] { display: none; }
+/* While searching every module's matches show, each under its module's name; nothing else does. */
+.devtools__body--filtered .devtools__page[hidden].devtools__page--match { display: flex; }
+.devtools__body--filtered .devtools__page:not(.devtools__page--match) { display: none; }
+.devtools__body--filtered .devtools__page--match::before {
+  content: attr(aria-label);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--devtools-text-muted);
+}
+.devtools__body--filtered :is(.devtools__row, .devtools__pages, .devtools__empty, .devtools__alert, .devtools__export):not(.devtools__row--match),
+.devtools__body--filtered .devtools__section:not(.devtools__section--match) { display: none; }
+@media (pointer: coarse) {
+  .devtools__search, .devtools__filter { height: 40px; }
 }
 
 .devtools__header {
@@ -319,6 +400,64 @@
   overflow-wrap: anywhere;
   font-size: 13px;
   color: var(--devtools-label);
+}
+/* Spec 174 C3: the key, the Ukrainian name under it, the description button; a changed value's mark and reset. */
+.devtools__label-key { overflow-wrap: anywhere; }
+.devtools__label-name {
+  display: block;
+  font-size: 11px;
+  color: var(--devtools-text-muted);
+}
+.devtools__info,
+.devtools__reset {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--devtools-text-muted);
+  vertical-align: middle;
+  cursor: pointer;
+  touch-action: manipulation;
+  --devtools-icon-size: 16px;
+}
+.devtools__info { margin-left: 2px; }
+.ui-surface--desktop-hover .devtools__info:hover,
+.ui-surface--desktop-hover .devtools__reset:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__info:active,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__reset:active { color: var(--ui-text); background: rgba(var(--ui-accent-rgb), 0.16); }
+.devtools__info:focus-visible,
+.devtools__reset:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 1px; }
+.devtools__info[aria-expanded="true"] { color: var(--ui-info); }
+.devtools__reset { display: none; }
+.devtools__row--changed .devtools__reset { display: inline-grid; }
+.devtools__row--changed .devtools__label-key::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  vertical-align: middle;
+}
+.devtools__row--described { flex-wrap: wrap; }
+.devtools__description {
+  flex: 1 0 100%;
+  padding: 6px 8px;
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-field);
+  color: var(--devtools-label);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.devtools__description[hidden] { display: none; }
+@media (pointer: coarse) {
+  .devtools__info, .devtools__reset { width: 36px; height: 36px; }
 }
 
 /* A category colour square before a label or beside a select (spec 129: zone colours); JS sets --devtools-swatch. */

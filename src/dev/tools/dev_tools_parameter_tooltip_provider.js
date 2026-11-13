@@ -23,6 +23,18 @@ export class DevToolsParameterTooltipProvider {
     this.#descriptionsByKey = {};
   }
 
+  // Spec 174 C3: a parameter's Ukrainian name and description for its row. path: the dotted path ("CONFIG.ui.boat.x"
+  // or "ui.boat.x"); key: the label shown. parameter_labels.json is matched by the whole path only (its leaf names repeat
+  // across groups); the key list (dev_tool_parameter_descriptions.json) by key. null when nothing describes it.
+  describe(path, key) {
+    const normalized = String(path || "").replace(/^CONFIG\./u, "");
+    const byPath = normalized ? this.#descriptionsByKey[normalized] : null;
+    if (byPath?.path === normalized) return { name: byPath.label, description: byPath.description };
+    const byKey = this.#descriptionsByKey[String(key)];
+    if (byKey?.key) return { name: String(byKey.ua || "").replace(/_/gu, " "), description: byKey.description || "" };
+    return null;
+  }
+
   getTooltip(labelText) {
     const description = this.#descriptionsByKey[String(labelText)];
     if (!description) return "";

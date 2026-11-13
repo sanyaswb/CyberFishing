@@ -80,7 +80,7 @@ export class ConfigTreeRenderer {
     const control = described?.control ?? (typeof value === "boolean" ? "switch" : typeof value === "number" ? "number" : "text");
     this.#ui.addParameter(parentElement, {
       control,
-      label: control === "switch" ? key : this.#formatKey(key, canonicalPath),
+      label: this.#formatKey(key, canonicalPath),
       value,
       options: described?.options,
       onCommit: (next) => this.#edits.update(canonicalPath, next),
@@ -88,6 +88,9 @@ export class ConfigTreeRenderer {
       bindingPath: canonicalPath,
       // TK-292: the switches this parameter depends on; its row is inactive while one of them is off.
       requires: this.#prerequisites(canonicalPath),
+      // Spec 174 C3: a value changed in this session is marked and can be put back to the code's one by one.
+      isChanged: () => this.#edits.isOverridden(canonicalPath),
+      onReset: () => this.#edits.resetParameter(canonicalPath),
     });
   }
 
@@ -110,12 +113,9 @@ export class ConfigTreeRenderer {
       .map((path) => ({ path, isEnabled: () => read(path) === true }));
   }
 
-  // A parameter with a session override is marked with "*".
+  // The label of a key (spec 174 C3: a changed value is marked by its row, not by a "*" in its label).
   #formatKey(key, path) {
-    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled") return "Прискорення часу";
-    const overrideStore = this.#edits.configRuntime?.overrideStore;
-    if (path[0] !== "CONFIG" || !overrideStore) return key;
-    return overrideStore.has(path.slice(1).join(".")) ? `${key} *` : key;
+    return path.join(".") === "CONFIG.debug.timeAccelerationEnabled" ? "Прискорення часу" : key;
   }
 
   #renderAliases(obj, parentElement, parentPath) {

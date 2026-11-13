@@ -125,6 +125,15 @@ Spec 174 C2 (TK-304): the panel body is `devtools__main` = the module rail `devt
 module (`data-devtools-page`; only the active page is shown, `[hidden]` → `display: none`) and keeps a scroll position per
 page. A module with nothing to show draws `devtools__empty`. `DevToolsUI.createPages` / `selectPage` own this; a revealed
 parameter (spec 177) or a blocking switch (TK-292) shows its page first.
+
+Spec 174 C3 (TK-305): a label is `devtools__label-key` (the key) and, when `src/dev/metadata` names it,
+`devtools__label-name` under it; the native title holds the path. A description opens under the row from
+`devtools__info` (`aria-expanded`) as `devtools__description` (`devtools__row--described` wraps the row). A value with a
+session override is `devtools__row--changed` (a dot before the key and the `devtools__reset` button). The panel's second
+row `devtools__tools` holds `devtools__search` (+ `__search-input`), the `devtools__filter` toggle («Змінені»,
+`--active`) and `devtools__search-status`; while filtering `devtools__body--filtered` shows only
+`devtools__row--match` rows, `devtools__section--match` sections (opened by the search, closed after it) and
+`devtools__page--match` pages headed by their module name. `.devtools` rows: header, tools, main, footer.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

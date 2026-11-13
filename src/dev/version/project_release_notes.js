@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-305 (spec 174 C3): key + Ukrainian name, «i» descriptions, changed mark + one reset, search, changed filter.",
   "TK-304 (spec 174 C2): rail of seven modules; one page shown; choice and scroll remembered.",
   "TK-303 (spec 174 C1): own SVG icons instead of emoji; --devtools-* tokens; sans labels; no backdrop blur.",
   "TK-302 (spec 174 B1): addParameter + SwitchControl/TextField/RangeField; config tree on the new API.",

@@ -30,6 +30,17 @@ export class DevToolsUI {
   #dependencyFeedback;
   #dependentSwitches = new Map();
   #exportNotices = new WeakMap();
+  // Spec 174 C3: search text and descriptions of labels, rows for the filter, change marks.
+  #searchText = new WeakMap();
+  #parameterDescriptions = new WeakMap();
+  #parameterRows = new Set();
+  #changeMarks = new Map();
+  #searchQuery = "";
+  #changedOnly = false;
+  #openedBySearch = new Set();
+  #filterMarks = new Set();
+  #searchStatus = null;
+  #changedButton = null;
   // Spec 174 C2: the module rail and one page per module; only the active page shows, each keeps its own scroll.
   #rail = null;
   #pages = new Map();
@@ -113,6 +124,10 @@ export class DevToolsUI {
   }
 
   clearValueBindings() {
+    this.#parameterRows.clear();
+    this.#changeMarks.clear();
+    this.#openedBySearch.clear();
+    this.#filterMarks.clear();
     this.#dependencyFeedback?.clear();
     this.#controlBindings.clear();
     this.#dependentSwitches.clear();
@@ -122,6 +137,8 @@ export class DevToolsUI {
 
   syncValue(path, value) {
     this.#controlBindings.sync(path, value);
+    // An import or a reset of everything changes marks of paths that were not synced one by one.
+    if (path.length <= 1) for (const refresh of this.#changeMarks.values()) refresh();
     if (value === true) this.#dependencyFeedback?.resolve(path);
     this.#refreshDependencies();
   }
@@ -502,8 +519,9 @@ export class DevToolsUI {
   //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);
   //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
   // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
+  //   isChanged(): the value differs from the code (a session override) -> a marker and a reset button (onReset()).
   addParameter(parentElement, { control, label, value, onCommit, path = null, bindingPath = path, requires = [],
-    options = [], swatch = null }) {
+    options = [], swatch = null, isChanged = null, onReset = null }) {
     const row = document.createElement("div");
     row.className = control === "choice" ? "devtools__row devtools__row--stacked"
       : control === "segments" ? "devtools__row devtools__row--wrap" : "devtools__row";
@@ -526,8 +544,97 @@ export class DevToolsUI {
       if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
     }
     if (control === "range" && bindingPath) this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
+    if (isChanged && onReset) this.#addResetButton(row, bindingPath, isChanged, onReset);
+    this.#addDescription(row);
     row.appendChild(field.element);
+    this.#parameterRows.add(row);
     this.#insertTreeNode(parentElement, row, 0);
+  }
+
+  // Spec 174 C3: a changed parameter (its value is not the code's) is marked and has a reset beside its control; the
+  // mark follows every sync of its path (an edit, an import, a reset).
+  #addResetButton(row, bindingPath, isChanged, onReset) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "devtools__reset";
+    button.setAttribute("aria-label", "Повернути значення з коду");
+    button.title = "Повернути значення з коду";
+    button.appendChild(createDevIcon(document, "reset"));
+    button.addEventListener("click", () => onReset());
+    row.appendChild(button);
+    const refresh = () => row.classList.toggle("devtools__row--changed", isChanged() === true);
+    this.#changeMarks.set(row, refresh);
+    if (bindingPath) this.#controlBindings.register(bindingPath, () => refresh(), row);
+    refresh();
+  }
+
+  // Spec 174 C3: an "i" button opens the parameter's description under the row (a native title is unreachable by touch).
+  #addDescription(row) {
+    const label = row.children[0];
+    const description = this.#parameterDescriptions.get(label);
+    if (!description) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "devtools__info";
+    button.setAttribute("aria-label", "Опис параметра");
+    button.setAttribute("aria-expanded", "false");
+    button.appendChild(createDevIcon(document, "info"));
+    const text = document.createElement("div");
+    text.className = "devtools__description";
+    text.hidden = true;
+    text.innerText = description;
+    button.addEventListener("click", () => {
+      text.hidden = !text.hidden;
+      button.setAttribute("aria-expanded", String(!text.hidden));
+      row.classList.toggle("devtools__row--described", !text.hidden);
+    });
+    label.appendChild(button);
+    row.appendChild(text);
+  }
+
+  // Spec 174 C3: the header's search (key, Ukrainian name or path, every module at once) and the changed-only filter.
+  // Matching rows stay where they are and stay editable; their sections open for the time of the search and close again.
+  refreshFilter() {
+    const query = this.#searchQuery;
+    const changedOnly = this.#changedOnly;
+    const active = query.length > 0 || changedOnly;
+    for (const content of this.#openedBySearch) content.style.display = "none";
+    this.#openedBySearch.clear();
+    for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
+      "devtools__page--match");
+    this.#filterMarks.clear();
+    this.#body.classList.toggle("devtools__body--filtered", active);
+    let found = 0;
+    if (active) {
+      for (const row of this.#parameterRows) {
+        if (!this.#body.contains(row)) {
+          this.#parameterRows.delete(row);
+          continue;
+        }
+        const text = this.#searchText.get(row.children[0]) ?? "";
+        if (query && !text.includes(query)) continue;
+        if (changedOnly && !row.classList.contains("devtools__row--changed")) continue;
+        found += 1;
+        this.#mark(row, "devtools__row--match");
+        for (let node = row.parentNode; node && node !== this.#body; node = node.parentNode) {
+          if (node.classList?.contains("devtools__section-content") && node.style.display === "none") {
+            node.style.display = "block";
+            this.#openedBySearch.add(node);
+          }
+          if (node.classList?.contains("devtools__section")) this.#mark(node, "devtools__section--match");
+          if (node.classList?.contains("devtools__page")) this.#mark(node, "devtools__page--match");
+        }
+      }
+    }
+    this.#searchStatus.hidden = !active;
+    this.#searchStatus.textContent = found ? `Знайдено: ${found}` : "Нічого не знайдено";
+    this.#changedButton.setAttribute("aria-pressed", String(changedOnly));
+    this.#changedButton.classList.toggle("devtools__filter--active", changedOnly);
+  }
+
+  #mark(element, className) {
+    element.classList.add(className);
+    this.#filterMarks.add(element);
   }
 
   // A switch row's behaviour (spec 131): switching on is refused while a prerequisite is off (the blocker is shown);
@@ -569,20 +676,29 @@ export class DevToolsUI {
     parent.insertBefore(node, before ?? null);
   }
 
+  // Spec 174 C3 (Q4): the key as in the code first, the Ukrainian name (src/dev/metadata) under it when there is one.
   #createLabelElement(rawLabel, path = null, swatch = null) {
     const labelText = String(rawLabel);
-    const cleanLabelText = labelText.replace(/\s+\*$/u, "");
     const label = document.createElement("div");
     label.className = "devtools__label";
     this.#assignDevToolsPath(label, path);
-    label.dataset.devtoolsKey = cleanLabelText;
-    label.innerText = labelText;
+    label.dataset.devtoolsKey = labelText;
+    const key = document.createElement("span");
+    key.className = "devtools__label-key";
+    key.innerText = labelText;
+    label.appendChild(key);
     if (swatch) label.prepend(this.#createSwatch(swatch));
-    const tooltip = this.#getParameterTooltip(cleanLabelText);
     const pathText = this.#normalizeDevToolsPath(path);
-    if (tooltip || pathText || labelText.length > 15) {
-      label.title = [pathText, tooltip || labelText].filter(Boolean).join("\n");
+    const described = this.#tooltipProvider?.describe(pathText, labelText) ?? null;
+    if (described?.name && described.name !== labelText) {
+      const name = document.createElement("span");
+      name.className = "devtools__label-name";
+      name.innerText = described.name;
+      label.appendChild(name);
     }
+    if (pathText) label.title = pathText;
+    this.#searchText.set(label, [labelText, described?.name, pathText].filter(Boolean).join(" ").toLowerCase());
+    if (described?.description) this.#parameterDescriptions.set(label, described.description);
     return label;
   }
 
@@ -688,9 +804,6 @@ export class DevToolsUI {
     return String(path);
   }
 
-  #getParameterTooltip(labelText) {
-    return this.#tooltipProvider?.getTooltip(labelText) || "";
-  }
 
   #initBtn(config) {
     this.#btn = document.createElement("button");
@@ -714,6 +827,30 @@ export class DevToolsUI {
     this.#toggleMountNode.appendChild(this.#btn);
   }
 
+  #initTools() {
+    const search = this.#panel.querySelector(".devtools__search");
+    const input = this.#panel.querySelector(".devtools__search-input");
+    search.insertBefore(createDevIcon(document, "search", "devtools__search-icon"), search.firstElementChild);
+    this.#searchStatus = this.#panel.querySelector(".devtools__search-status");
+    this.#changedButton = this.#panel.querySelector(".devtools__filter");
+    this.#changedButton.insertBefore(createDevIcon(document, "changed", "devtools__filter-icon"), this.#changedButton.firstChild);
+    input.addEventListener("input", () => {
+      this.#searchQuery = String(input.value || "").trim().toLowerCase();
+      this.refreshFilter();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !input.value) return;
+      event.stopPropagation();
+      input.value = "";
+      this.#searchQuery = "";
+      this.refreshFilter();
+    });
+    this.#changedButton.addEventListener("click", () => {
+      this.#changedOnly = !this.#changedOnly;
+      this.refreshFilter();
+    });
+  }
+
   #initPanel() {
     this.#panel = document.createElement("div");
     this.#panel.className = "devtools";
@@ -722,6 +859,13 @@ export class DevToolsUI {
             <div class="devtools__header">
                 <h2 class="devtools__title">DevTools</h2>
                 <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
+            </div>
+            <div class="devtools__tools">
+                <label class="devtools__search">
+                    <input class="devtools__search-input" type="search" placeholder="Пошук параметра" aria-label="Пошук параметра" autocomplete="off" spellcheck="false" />
+                </label>
+                <button class="devtools__filter" type="button" aria-pressed="false" title="Лише змінені параметри">Змінені</button>
+                <div class="devtools__search-status" aria-live="polite" hidden></div>
             </div>
             <div class="devtools__main">
                 <nav class="devtools__rail" aria-label="Модулі розробника"></nav>
@@ -732,6 +876,7 @@ export class DevToolsUI {
 
     this.#mountNode.appendChild(this.#panel);
     this.#rail = this.#panel.querySelector(".devtools__rail");
+    this.#initTools();
     this.#body = this.#panel.querySelector(".devtools__body");
     this.#footer = this.#panel.querySelector(".devtools__footer");
 

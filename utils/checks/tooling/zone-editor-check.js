@@ -538,7 +538,7 @@ const controlUI = new DevToolsUI(() => {}, {}, null, null, null, controlDocument
 }
 const fullLabel = "Дальність води, м";
 controlUI.createInputRow(fullLabel, 40, controlDocument.body, "number", () => {});
-assert.equal(controlDocument.byClass("devtools__label").at(-1).innerText, fullLabel,
+assert.equal(controlDocument.byClass("devtools__label-key").at(-1).innerText, fullLabel,
   "phone users see the complete parameter name instead of a 15-character truncation");
 const notice = controlUI.createInfoRow("Стан", "Ready", controlDocument.body);
 notice.innerText = "Rejected";

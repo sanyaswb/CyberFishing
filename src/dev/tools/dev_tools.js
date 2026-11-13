@@ -210,6 +210,8 @@ export class DevTools {
       for (const module of page.modules) module.mount(host, this.#context);
       if (page.empty && host.children.length === 0) this.#ui.createEmptyNote(host, page.empty);
     }
+    // Spec 174 C3: a search or the changed-only filter stays applied across a redraw.
+    this.#ui.refreshFilter();
     body.scrollTop = scrollTop;
   }
 

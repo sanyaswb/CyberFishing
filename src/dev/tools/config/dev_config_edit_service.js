@@ -88,6 +88,21 @@ export class DevConfigEditService {
     this.#dispatch("config-updated", { path, value, override: path[0] === "CONFIG" });
   }
 
+  // Spec 174 C3: whether a CONFIG parameter has a session override (its value is not the code's).
+  isOverridden(path) {
+    return path[0] === "CONFIG" && this.#configRuntime?.overrideStore.has(path.slice(1).join(".")) === true;
+  }
+
+  // Spec 174 C3: one CONFIG parameter back to the code's value; the panel and the game hear it like an edit.
+  resetParameter(path) {
+    if (path[0] !== "CONFIG" || !this.#configRuntime) return;
+    this.#configRuntime.reset(path);
+    const value = this.read(path);
+    this.#syncValue(path, value);
+    this.#logger.log(`[DevTools] Скинуто ${path.join(".")} =`, value);
+    this.#dispatch("config-updated", { path, value, override: true });
+  }
+
   // An overrides export of another session, with its old parameter names normalised.
   importOverrides(overrides) {
     this.#configRuntime?.importOverrides(this.#parameterAliases.normalizeConfigOverrides(overrides) || overrides);
