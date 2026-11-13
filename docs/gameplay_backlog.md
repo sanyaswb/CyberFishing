@@ -879,6 +879,17 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-132 A chosen float depth of 0.1 m turns into half the range (P1, done v0.50.96)
+Found: 2026-11-13, owner, v0.50.95.
+Reproduce: starting float rig (rod 5 m without a reel, line 25 m, fixed float); open the depth track, choose 0.1 m: the cast
+limit shows 15 m (at 0.2 m: 24.8 m), the track still shows 0.1, the float goes out at 10 m.
+Expected: a chosen depth is kept; before any choice the depth is half the current tackle's deepest depth (TK-192), also at
+the start of the game and after a tackle change.
+Actual: `ScoutingState.update` treated the value 0.1 as "not chosen" and replaced it with half the range (20 m -> 10 m,
+cast 25 - 10 = 15 m); the start depth 1.0 m was never replaced, so the default did not apply at the start.
+Notes: TK-192.1. Done v0.50.96: explicit choice flag in `GameApplication`, `defaultHookDepthMeters`, `DepthSelector` tells a
+player's move from a clamp; check `float-depth` (fails on 0.50.95); game-cycle unchanged.
+
 ### G-131 Empty tackle is taken out automatically at the landing zone (P2, done v0.50.57)
 Found: 2026-11-09, owner, v0.50.56.
 Reproduce: cast, reel the float (or a spinning lure) in without a fish until it reaches the landing distance of the rod (or a
