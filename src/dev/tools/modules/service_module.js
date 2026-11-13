@@ -1,22 +1,20 @@
 // «Сервіс» (spec 174 B3, moved from DevTools): the session's config overrides (count, reset, export, import,
-// validation), the asset load plan's DEV edits (spec 157 D6) and the item progression readings.
+// validation) and the asset load plan's DEV edits (spec 157 D6).
 // The browser's prompt/alert dialogs stay until stage C5 replaces them with the panel's own text dialog.
 export class ServiceModule {
   #configRuntime;
   #configValidation;
   #assetLoadPlanStore;
-  #progressionProvider;
   #redraw;
   #windowRef;
   #logger;
 
   // redraw(): DevTools draws the panel again (after an import or a reset every value may differ).
-  constructor({ configRuntime = null, configValidation = null, assetLoadPlanStore = null, progressionProvider = null,
+  constructor({ configRuntime = null, configValidation = null, assetLoadPlanStore = null,
     redraw, windowRef, logger = console }) {
     this.#configRuntime = configRuntime;
     this.#configValidation = configValidation;
     this.#assetLoadPlanStore = assetLoadPlanStore;
-    this.#progressionProvider = progressionProvider;
     this.#redraw = redraw;
     this.#windowRef = windowRef;
     this.#logger = logger;
@@ -26,7 +24,6 @@ export class ServiceModule {
     const service = context.createSection("Сервіс", host, ["DEV_SERVICE"], { icon: "wrench" });
     this.#renderOverrides(service, context);
     this.#renderAssetLoadPlan(service, context);
-    this.#renderItemProgression(service, context);
   }
 
   #renderOverrides(parent, { ui, createSection, edits }) {
@@ -90,43 +87,8 @@ export class ServiceModule {
     });
   }
 
-  #renderItemProgression(parent, { ui, createSection }) {
-    const snapshots = this.#progressionProvider?.getSnapshots() || [];
-    if (snapshots.length === 0) return;
-    const root = createSection("ITEM PROGRESSION", parent, ["ITEM_PROGRESSION"], { icon: "chart" });
-    for (const snapshot of snapshots) {
-      const item = createSection(snapshot.itemId, root, ["ITEM_PROGRESSION", snapshot.itemId]);
-      ui.createInfoRow("Group", snapshot.group, item);
-      ui.createInfoRow("Strategy", snapshot.strategy, item);
-      ui.createInfoRow("Raw metric", String(snapshot.rawMetric), item);
-      ui.createInfoRow("Baseline min/max", snapshot.baseline, item);
-      ui.createInfoRow("Normalized rating", String(snapshot.normalizedRating), item);
-      ui.createInfoRow("Rating percent", `${snapshot.ratingPercent}%`, item);
-      ui.createInfoRow("Rating tier", snapshot.ratingTier, item);
-      ui.createInfoRow("Quality", snapshot.quality, item);
-      if (snapshot.capacity !== "N/A") {
-        ui.createInfoRow("Capacity", snapshot.capacity, item);
-        ui.createInfoRow("Capacity source", snapshot.capacitySource, item);
-      }
-      ui.createInfoRow("Out-of-range", snapshot.outOfRange, item);
-      ui.createInfoRow("Config source", snapshot.configSource, item);
-      if (snapshot.breakdown.length > 0) {
-        const breakdown = createSection("Composite breakdown", item, ["ITEM_PROGRESSION", snapshot.itemId, "breakdown"]);
-        for (const component of snapshot.breakdown) {
-          ui.createInfoRow(component.label || component.id,
-            `${ServiceModule.#percent(component.percent)}% × ${component.weight}`, breakdown);
-        }
-      }
-    }
-  }
-
   #copy(text) {
     this.#windowRef.navigator?.clipboard?.writeText?.(text).catch(() => {});
   }
 
-  static #percent(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return "N/A";
-    return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  }
 }

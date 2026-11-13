@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.119 - DevTools module rail
+
+- TK-304 (spec 174 C2): DevTools shows one module at a time from a rail of seven (Гра, Конфіг, Бази, Локація, Сцена, Діагностика, Сервіс); the chosen module and each module's scroll are remembered, an empty module says so, and a link from the overlay or a blocking switch opens its module first.
+
 ## v0.50.118 - DevTools icons
 
 - TK-303 (spec 174 C1): DevTools draws its own outline SVG icons (panel button, section chevrons, root sections, navigation, warnings, export) instead of emoji and text arrows; colours come from --devtools-* tokens, labels use the system sans font and values stay monospace; the panel has an opaque background without blur (cheaper on phones).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.110 - Weather overlay night link path & incident I-20
 
 - TK-296.2 (owner): fixed the «Ніч 0…1» overlay link path in `WeatherOverlayModule` from `CONFIG.timePhases.night.startHour` to `CONFIG.spawns.timePhases.night.startHour` so DevTools expands and highlights `startHour` instead of the root `.devtools__section-title`; added `CONFIG` leaf traversal assertion in `weather-check.js` and documented incident `I-20` / rule `R20` with verification and troubleshooting steps in `docs/incidents.md`.
-
-## v0.50.109 - Overlay window close button right of scale slider
-
-- TK-297 (owner): added a close button (`ui-modal-close debug-overlay__close`, `--ui-close-size: 28px`) right of the top scale slider on every overlay module window and `ACTIVE FISH` / `ACTIVE ROD` tool window; clicking it hides the window, disables its key(s) in `OverlaySettingsStore` (including composite modules), and syncs DevTools switchers via `OverlaySettingsStore.subscribe`.

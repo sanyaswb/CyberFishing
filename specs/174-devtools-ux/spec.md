@@ -471,3 +471,4 @@ Architecture, game-cycle (SHA256 без змін).
 | B3 | TK-301, v0.50.116 | контракт модуля (`modules/dev_panel_module.js`) і 11 модулів у `src/dev/tools/modules/`; `dev_tools.js` 973 → 222 рядки (життєвий цикл, навігація, порядок модулів) |
 | B1 | TK-302, v0.50.117 | `SwitchControl`, `TextField` (`numberList`), `RangeField`; `DevToolsUI.addParameter` — один опис рядка; дерево конфігу на ньому, `create*Row` — перехідники до етапу E |
 | C1 | TK-303, v0.50.118 | `controls/dev_icon.js` (26 іконок, вбудований SVG), іконки секцій, навігації, кнопки панелі, шеврон, попередження; без емодзі (перевірка); токени `--devtools-*`, sans для міток; без `backdrop-filter` |
+| C2 | TK-304, v0.50.119 | рейка з 7 модулів (`createPages`/`selectPage`, сторінка на модуль, пам'ять вибору, прокрутка на сторінку, порожній стан), розкриття сторінки для посилань і блокувальників; `ItemProgressionModule` окремо; погода лишається в «Сцені» (TK-291) |

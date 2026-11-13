@@ -640,7 +640,11 @@ function checkLocationMapConfigChanges() {
   const navigationButtons = new Map();
   const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {replaceChildren(){}};
   let houseOpens = 0, itemGrants = 0, overlayEdits = 0;
-  const ui = new Proxy({body:panelBody,createSection(label,parent,expanded,onToggle,path,options){
+  // Spec 174 C2: each rail module gets its own page host.
+  const pageHosts = new Map();
+  const ui = new Proxy({body:panelBody,
+    createPages(modules){pageHosts.clear();for(const module of modules)pageHosts.set(module.id,{page:module.id,children:[]});return new Map(pageHosts);},
+    createSection(label,parent,expanded,onToggle,path,options){
       const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section); return section;
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
@@ -671,25 +675,30 @@ function checkLocationMapConfigChanges() {
     openHouse:()=>houseOpens++});
   tools.toggle();
   const overlaySection = sections.find(section => section.path?.join('.') === 'OVERLAY');
-  assert.equal(overlaySection?.parent, panelBody, 'Overlay is a root section');
+  const page = id => pageHosts.get(id);
+  assert.deepEqual([...pageHosts.keys()], ['game','config','data','location','scene','diagnostics','service'],
+    'seven modules on the rail, in order (spec 174 C2, Q1)');
+  assert.equal(overlaySection?.parent, page('diagnostics'), 'Overlay is a root section of «Діагностика»');
   assert.equal(controlParents.get('CONFIG.debug.overlay'), overlaySection, 'overlay enable keeps its canonical path in Overlay');
   const inventorySection = sections.find(section => section.path?.join('.') === 'DEBUG_INVENTORY');
   assert.equal(controlParents.get('CONFIG.debug.inventory.showEffectiveStats'), inventorySection,
     'inventory diagnostics live in the combined Inventory section');
   assert.equal(controlParents.get('CONFIG.debug.inventorySplit.enabled')?.parent, inventorySection,
     'inventory split controls live under Inventory without changing their runtime paths');
-  const rootPaths = sections.filter(section => section.parent === panelBody).map(section => section.path?.join('.'));
-  assert.deepEqual(rootPaths.slice(rootPaths.indexOf('OVERLAY'), rootPaths.indexOf('OVERLAY') + 3),
-    ['OVERLAY','CONFIG','CONFIG.debug'], 'CONFIG then DEBUG immediately follow Overlay');
-  assert.equal(rootPaths.at(-1), 'DEV_SERVICE', 'service controls stay at the bottom');
+  const rootsOf = id => sections.filter(section => section.parent === page(id)).map(section => section.path?.join('.'));
+  assert.deepEqual(rootsOf('game'), ['ITEM_SHOP','CONFIG.debug'], '«Гра»: the shop first, then DEBUG');
+  assert.deepEqual(rootsOf('config'), ['CONFIG'], '«Конфіг» holds CONFIG');
+  assert.deepEqual(rootsOf('data'), ['DATABASE','ITEM_PROGRESSION'], '«Бази»: the catalogs and item progression');
+  assert.equal(rootsOf('location')[0], 'ZONE_EDITOR', '«Локація» holds the zone editor');
+  assert.deepEqual(rootsOf('scene'), ['SPINE'], '«Сцена»: Spine (no scene or radio in this composition)');
+  assert.deepEqual(rootsOf('diagnostics'), ['OVERLAY'], '«Діагностика»: Overlay (no fish on the hook)');
+  assert.deepEqual(rootsOf('service'), ['DEV_SERVICE'], '«Сервіс» holds the service tools');
   const byPath = path => sections.find(section => section.path?.join('.') === path);
-  assert.equal(byPath('ITEM_SHOP').parent,panelBody,'the shop is accessible at the top');
   assert.equal(byPath('ITEM_SHOP').options.buttonTitle,true,'the shop has a button disclosure');
-  assert(rootPaths.indexOf('ITEM_SHOP') < rootPaths.indexOf('OVERLAY'),'the shop precedes the settings');
   for(const path of ['MAP_DB','FISH_DB','ITEM_DB']) assert.equal(byPath(path).parent,byPath('DATABASE'),'database editors share one root');
   assert.equal(byPath('SPINE_ROD').parent,byPath('SPINE'),'the rod editor lives in the Spine root');
   assert.equal(byPath('SPINE_ROD').label,'test-rod','the Spine editor uses the skeleton file name');
-  for(const path of ['CONFIG_OVERRIDES','ITEM_PROGRESSION']) assert.equal(byPath(path).parent,byPath('DEV_SERVICE'),'service tools share the bottom root');
+  assert.equal(byPath('CONFIG_OVERRIDES').parent,byPath('DEV_SERVICE'),'overrides are a service tool');
   assert.equal(byPath('OVERLAY_MODULES').parent,overlaySection,'overlay modules live under Overlay');
   for(const path of ['CONFIG.debug.overlay','CONFIG.debug.inventory.showEffectiveStats','CONFIG.debug.inventorySplit.enabled'])
     assert.equal(controlCounts.get(path),1,'relocation does not leave a duplicate writable control: '+path);

@@ -118,6 +118,13 @@ currentColor`, the shared `devtools__icon` sized by `--devtools-icon-size`; cons
 `[label, activate, icon]` take an icon name. Colours of DevTools blocks are `--devtools-*` tokens on `:root` (surface,
 field, line, label, muted text, font); labels use `--devtools-font` (system sans), values keep `--ui-font-mono`. The panel
 has an opaque surface without `backdrop-filter`.
+
+Spec 174 C2 (TK-304): the panel body is `devtools__main` = the module rail `devtools__rail` (60 px column of
+`devtools__rail-button` with `devtools__rail-icon` and a short `devtools__rail-label`; the active one
+`devtools__rail-button--active` + `aria-current="page"`) beside `devtools__body`, which holds one `devtools__page` per
+module (`data-devtools-page`; only the active page is shown, `[hidden]` → `display: none`) and keeps a scroll position per
+page. A module with nothing to show draws `devtools__empty`. `DevToolsUI.createPages` / `selectPage` own this; a revealed
+parameter (spec 177) or a blocking switch (TK-292) shows its page first.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

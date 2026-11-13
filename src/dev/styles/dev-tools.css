@@ -94,7 +94,7 @@
   position: fixed;
   top: 0;
   left: -400px;
-  width: min(350px, var(--ui-logical-width, 100vw));
+  width: min(380px, var(--ui-logical-width, 100vw));
   height: var(--ui-logical-height, 100dvh);
   background: var(--devtools-surface);
   border-right: 2px solid var(--ui-accent);
@@ -150,8 +150,74 @@
   .devtools__footer { display: block; }
 }
 
+/* Spec 174 C2: the module rail beside the active module's page. */
+.devtools__main {
+  display: flex;
+  min-height: 0;
+}
+.devtools__rail {
+  flex: 0 0 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 4px;
+  border-right: 1px solid var(--devtools-line);
+  background: var(--devtools-surface-strong);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.devtools__rail-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--devtools-text-muted);
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.1;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--ui-duration-control) var(--ui-ease-standard), color var(--ui-duration-control) var(--ui-ease-standard);
+}
+.devtools__rail-icon { --devtools-icon-size: 20px; }
+.devtools__rail-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-surface--desktop-hover .devtools__rail-button:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__rail-button:active {
+  background: rgba(var(--ui-accent-rgb), 0.12);
+  color: var(--ui-text);
+}
+.devtools__rail-button--active,
+.ui-surface--desktop-hover .devtools__rail-button--active:hover {
+  background: rgba(var(--ui-accent-rgb), 0.2);
+  color: var(--ui-text);
+  box-shadow: inset 2px 0 0 var(--ui-accent);
+}
+.devtools__rail-button:focus-visible { outline: 2px solid var(--ui-info); outline-offset: -2px; }
+.devtools__page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.devtools__page[hidden] { display: none; }
+.devtools__empty {
+  padding: 12px 4px;
+  color: var(--devtools-text-muted);
+  font-size: 12px;
+}
+
 .devtools__body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 15px;
   overflow-y: auto;
   display: flex;
@@ -417,7 +483,7 @@
 .devtools__switch-input:focus-visible + .devtools__slider { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 .devtools__input:focus-visible, .devtools__toggle:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  .devtools, .devtools__action, .devtools__section-title, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
+  .devtools, .devtools__action, .devtools__section-title, .devtools__rail-button, .devtools__section-chevron, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
 }
 
 /* TK-283: a row whose control may take a line of its own (segments on a narrow panel, an open list). */

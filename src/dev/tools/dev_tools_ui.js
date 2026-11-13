@@ -30,6 +30,13 @@ export class DevToolsUI {
   #dependencyFeedback;
   #dependentSwitches = new Map();
   #exportNotices = new WeakMap();
+  // Spec 174 C2: the module rail and one page per module; only the active page shows, each keeps its own scroll.
+  #rail = null;
+  #pages = new Map();
+  #railButtons = new Map();
+  #activePage = "";
+  #pageScroll = new Map();
+  #onPageSelect = null;
   #edgeOpener = null;
   #isOpen = false;
   #pathRows = new Map();
@@ -137,6 +144,84 @@ export class DevToolsUI {
   }
 
   // Independently refreshed controls without another disclosure or layout box.
+  // Spec 174 C2: the module rail (one icon button per module) and one page per module in the panel body, replacing what
+  // the body held. modules: [{ id, title, icon }]; onSelect(id) is told when the person picks another module (to remember
+  // it). Returns Map id -> page element; modules draw into their page.
+  createPages(modules, activeId, onSelect) {
+    this.#onPageSelect = onSelect;
+    this.#pages.clear();
+    this.#railButtons.clear();
+    const buttons = [];
+    for (const module of modules) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "devtools__rail-button";
+      button.setAttribute("aria-label", module.title);
+      button.title = module.title;
+      button.dataset.devtoolsModule = module.id;
+      button.appendChild(createDevIcon(document, module.icon, "devtools__rail-icon"));
+      const label = document.createElement("span");
+      label.className = "devtools__rail-label";
+      label.textContent = module.title;
+      button.appendChild(label);
+      button.addEventListener("click", () => this.selectPage(module.id, { remember: true }));
+      buttons.push(button);
+      this.#railButtons.set(module.id, button);
+      const page = document.createElement("div");
+      page.className = "devtools__page";
+      page.dataset.devtoolsPage = module.id;
+      page.setAttribute("aria-label", module.title);
+      this.#pages.set(module.id, page);
+    }
+    this.#rail.replaceChildren(...buttons);
+    this.#body.replaceChildren(...this.#pages.values());
+    this.#activePage = "";
+    this.selectPage(this.#pages.has(activeId) ? activeId : modules[0]?.id ?? "");
+    return new Map(this.#pages);
+  }
+
+  // Shows one module's page; remember: the person chose it (the panel remembers it for the next start).
+  selectPage(id, { remember = false } = {}) {
+    if (!this.#pages.has(id)) return;
+    if (this.#activePage && this.#activePage !== id) this.#pageScroll.set(this.#activePage, this.#body.scrollTop);
+    const changed = this.#activePage !== id;
+    this.#activePage = id;
+    for (const [pageId, page] of this.#pages) page.hidden = pageId !== id;
+    for (const [pageId, button] of this.#railButtons) {
+      const active = pageId === id;
+      button.classList.toggle("devtools__rail-button--active", active);
+      if (active) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    }
+    if (changed) this.#body.scrollTop = this.#pageScroll.get(id) ?? 0;
+    if (remember) this.#onPageSelect?.(id);
+  }
+
+  // A page without content says so in one line instead of disappearing from the rail.
+  createEmptyNote(parentElement, text) {
+    const note = document.createElement("div");
+    note.className = "devtools__empty";
+    note.textContent = text;
+    this.#insertTreeNode(parentElement, note, 0);
+  }
+
+  // The page holding an element is shown first (a link from the overlay, a blocking switch in another module).
+  #revealPageOf(element) {
+    for (let node = element; node; node = node.parentNode) {
+      const id = node.dataset?.devtoolsPage;
+      if (id) {
+        this.selectPage(id);
+        return;
+      }
+    }
+  }
+
+  #showBlocker(blocker, row) {
+    const elements = this.#controlBindings.elements(blocker.path);
+    if (elements[0]) this.#revealPageOf(elements[0]);
+    this.#dependencyFeedback?.show(blocker.path, elements, row);
+  }
+
   // Spec 174 B4: a place among a parent's sections (after those made before it) whose sections are redrawn on their
   // own (releaseValueBindings + replaceChildren), without a box of its own and without redrawing the panel.
   createSectionSlot(parentElement) {
@@ -338,7 +423,7 @@ export class DevToolsUI {
     if (!requires.length) return { commit: onChange, remember() {} };
     const unmet = () => requires.find(requirement => !requirement.isEnabled()) ?? null;
     const showBlocker = (blocker) =>
-      this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
+      this.#showBlocker(blocker, row);
     const intercept = (event) => {
       // Tab still leaves the row.
       if (event.key === "Tab") return;
@@ -452,7 +537,7 @@ export class DevToolsUI {
       const blocker = next ? requires.find((requirement) => !requirement.isEnabled()) : null;
       if (blocker) {
         this.#refreshDependencies();
-        this.#dependencyFeedback?.show(blocker.path, this.#controlBindings.elements(blocker.path), row);
+        this.#showBlocker(blocker, row);
         return false;
       }
       onCommit(next);
@@ -515,6 +600,7 @@ export class DevToolsUI {
     if (!normalized) return false;
     const target = this.#findPathTarget(normalized);
     if (!target) return false;
+    this.#revealPageOf(target);
 
     if (typeof this.#dependencyFeedback?.showRevealed === "function") {
       this.#dependencyFeedback.showRevealed([target]);
@@ -637,11 +723,15 @@ export class DevToolsUI {
                 <h2 class="devtools__title">DevTools</h2>
                 <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
             </div>
-            <div class="devtools__body"></div>
+            <div class="devtools__main">
+                <nav class="devtools__rail" aria-label="Модулі розробника"></nav>
+                <div class="devtools__body"></div>
+            </div>
             <div class="devtools__footer"></div>
         `;
 
     this.#mountNode.appendChild(this.#panel);
+    this.#rail = this.#panel.querySelector(".devtools__rail");
     this.#body = this.#panel.querySelector(".devtools__body");
     this.#footer = this.#panel.querySelector(".devtools__footer");
 

@@ -514,6 +514,45 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
+{
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const stored = new Map([["dev_tools_active_module", "data"]]);
+  const storageCache = { get: (key, fallback) => stored.get(key) ?? fallback, set: (key, value) => stored.set(key, value),
+    remove: (key) => stored.delete(key) };
+  const railUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const tools = new DevTools({ debug: { flag: false }, canvas: { rain: { enabled: false, opacity: 1 } } }, { synchronize() {} },
+    { catalogs: { items: {}, fishes: [], maps: {} }, settingsStore: null, debugModulesSource: () => ({}), storageCache,
+      createUI: () => ({ ui: railUi, tooltipProvider: { ready: new Promise(() => {}) } }) });
+  tools.toggle();
+  const buttons = byClass("devtools__rail-button");
+  assert.deepEqual(buttons.map((button) => button.getAttribute("aria-label")),
+    ["Гра", "Конфіг", "Бази", "Локація", "Сцена", "Діагностика", "Сервіс"], "seven modules, in the spec's order");
+  const pages = byClass("devtools__page");
+  const shown = () => pages.filter((page) => !page.hidden).map((page) => page.dataset.devtoolsPage);
+  assert.deepEqual(shown(), ["data"], "the remembered module opens; one page at a time");
+  assert.equal(buttons[2].getAttribute("aria-current"), "page");
+  assert.equal(byClass("devtools__empty", pages[3]).length, 1, "a module with nothing to show says so (no zone editor here)");
+  railUi.body.scrollTop = 120;
+  buttons[1].click();
+  assert.deepEqual(shown(), ["config"]);
+  assert.equal(stored.get("dev_tools_active_module"), "config", "the choice is remembered");
+  assert.equal(railUi.body.scrollTop, 0, "another module starts at its own top");
+  buttons[2].click();
+  assert.equal(railUi.body.scrollTop, 120, "and coming back restores where that module was scrolled");
+  // A link from the overlay (spec 177) to a parameter of another module shows that module first.
+  assert.equal(tools.revealParameter(["CONFIG", "canvas", "rain", "opacity"]), true);
+  assert.deepEqual(shown(), ["config"], "revealing a parameter switches to its module");
+  buttons[0].click();
+  // A blocked parameter whose switch is in another module shows that module (TK-292 feedback).
+  const host = pages[0];
+  railUi.addParameter(host, { control: "number", label: "rain opacity copy", value: 1, onCommit() {},
+    path: ["TEST", "copy"], requires: [{ path: ["CONFIG", "canvas", "rain", "enabled"], isEnabled: () => false }] });
+  byClass("devtools__row", host).find((row) => row.children[0]?.innerText === "rain opacity copy").fire("pointerdown");
+  assert.deepEqual(shown(), ["config"], "the blocking switch's module is shown");
+  tools.dispose();
+}
+
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
 (async () => {
   const { ExportCommandNotice } = runtime.importModule("src/dev/tools/controls/export_command_notice.js");

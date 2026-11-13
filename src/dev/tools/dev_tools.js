@@ -18,9 +18,11 @@ import { SpineModule } from "./modules/spine_module.js";
 import { RadioModule } from "./modules/radio_module.js";
 import { ActiveFishModule } from "./modules/active_fish_module.js";
 import { ServiceModule } from "./modules/service_module.js";
+import { ItemProgressionModule } from "./modules/item_progression_module.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
 const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
+const ACTIVE_PAGE_KEY = "dev_tools_active_module";
 
 // The DevTools panel (spec 174 B3): its lifecycle (open, close, redraw, dispose), the page navigation and the order of
 // its modules. Each area of the panel is a module (src/dev/tools/modules) that draws itself into the panel with one
@@ -32,7 +34,8 @@ export class DevTools {
   #liveData = null;
   #edits;
   #context;
-  #modules;
+  #pages;
+  #activePage;
   #activeFish;
   #openGame;
   #openHouse;
@@ -117,24 +120,32 @@ export class DevTools {
 
     this.#activeFish = new ActiveFishModule({ getHookedFish: () => this.#liveData?.hookedFish,
       policy: new ActiveFishDevToolsVisibilityPolicy() });
-    // The panel's order, top to bottom.
-    this.#modules = [
-      typeof grantCatalogItem === "function" ? new ItemShopModule({ items: catalogs.items, grantCatalogItem, assets }) : null,
-      new OverlaySettingsModule({ config, settingsStore }),
-      new ConfigModule({ config }),
-      new DebugModule({ config, keepnet }),
-      new SceneModule({ config, configRuntime, scene, weather, files: zoneEditorFiles, gameVersion }),
-      zoneEditorState ? new ZoneEditorModule({ config, configRuntime, state: zoneEditorState, files: zoneEditorFiles,
-        gameVersion, readDynamicZones, getDependentZones, maskEditor, zoneDrawing, fullscreen: zoneEditorFullscreen,
-        getWaterMetric, createWaterMetric }) : null,
-      new DatabaseModule({ catalogs }),
-      new SpineModule({ config, rodSpine, boatSpine }),
-      radio ? new RadioModule({ config, radio, files: zoneEditorFiles, gameVersion }) : null,
-      this.#activeFish,
-      loadStepper ? DevTools.#loadStepperModule(loadStepper) : null,
-      new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
-        progressionProvider: itemProgressionDebugProvider, redraw: () => this.#populatePanel(), windowRef: globalThis }),
-    ].filter(Boolean).map(assertDevPanelModule);
+    // Spec 174 C2 (Q1): seven modules on the rail, each with its areas in order. Weather stays inside the scene
+    // section (owner, TK-291), so «Локація» holds the zone editor alone.
+    const shop = typeof grantCatalogItem === "function" ? new ItemShopModule({ items: catalogs.items, grantCatalogItem, assets }) : null;
+    this.#pages = [
+      { id: "game", title: "Гра", icon: "hook", navigation: true, empty: "",
+        modules: [shop, new DebugModule({ config, keepnet })] },
+      { id: "config", title: "Конфіг", icon: "sliders", empty: "", modules: [new ConfigModule({ config })] },
+      { id: "data", title: "Бази", icon: "database", empty: "",
+        modules: [new DatabaseModule({ catalogs }),
+          itemProgressionDebugProvider ? new ItemProgressionModule({ provider: itemProgressionDebugProvider }) : null] },
+      { id: "location", title: "Локація", icon: "map", empty: "Редактор зон на цій сторінці недоступний.",
+        modules: [zoneEditorState ? new ZoneEditorModule({ config, configRuntime, state: zoneEditorState, files: zoneEditorFiles,
+          gameVersion, readDynamicZones, getDependentZones, maskEditor, zoneDrawing, fullscreen: zoneEditorFullscreen,
+          getWaterMetric, createWaterMetric }) : null] },
+      { id: "scene", title: "Сцена", icon: "scene", empty: "На цій сторінці немає сцени, Spine чи радіо.",
+        modules: [new SceneModule({ config, configRuntime, scene, weather, files: zoneEditorFiles, gameVersion }),
+          new SpineModule({ config, rodSpine, boatSpine }),
+          radio ? new RadioModule({ config, radio, files: zoneEditorFiles, gameVersion }) : null] },
+      { id: "diagnostics", title: "Діагностика", icon: "bug", empty: "",
+        modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish] },
+      { id: "service", title: "Сервіс", icon: "wrench", empty: "",
+        modules: [new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
+          redraw: () => this.#populatePanel(), windowRef: globalThis }),
+        loadStepper ? DevTools.#loadStepperModule(loadStepper) : null] },
+    ].map((page) => ({ ...page, modules: page.modules.filter(Boolean).map(assertDevPanelModule) }));
+    this.#activePage = storageCache.get(ACTIVE_PAGE_KEY, "game");
 
     tooltipProvider.ready.then(() => {
       if (!this.#isDisposed && this.#isOpen) this.#populatePanel();
@@ -179,7 +190,7 @@ export class DevTools {
     this.#isDisposed = true;
     document.removeEventListener("debug-live-update", this.#onDebugLiveUpdate);
     this.#liveData = null;
-    for (const module of this.#modules) module.dispose?.();
+    for (const page of this.#pages) for (const module of page.modules) module.dispose?.();
     this.#ui.dispose();
   }
 
@@ -188,13 +199,26 @@ export class DevTools {
     // Spec 174 B4: a full redraw (opening, import or reset of overrides) keeps the place the panel was scrolled to.
     const scrollTop = body.scrollTop;
     this.#ui.clearValueBindings();
-    body.replaceChildren();
+    // Spec 174 C2: one page per module; the chosen module is remembered.
+    const hosts = this.#ui.createPages(this.#pages, this.#activePage, (id) => {
+      this.#activePage = id;
+      this.#storageCache.set(ACTIVE_PAGE_KEY, id);
+    });
+    for (const page of this.#pages) {
+      const host = hosts.get(page.id);
+      if (page.navigation) this.#renderNavigation(host);
+      for (const module of page.modules) module.mount(host, this.#context);
+      if (page.empty && host.children.length === 0) this.#ui.createEmptyNote(host, page.empty);
+    }
+    body.scrollTop = scrollTop;
+  }
+
+  // The pages of the DEV build: the game and the fisherman's house.
+  #renderNavigation(host) {
     const pages = [];
     if (this.#openGame) pages.push(["До риболовлі", () => this.#openGame(), "hook"]);
     if (this.#openHouse) pages.push(["Будинок рибалки", () => this.#openHouse(), "home"]);
-    if (pages.length) this.#ui.createNavigation(pages, body);
-    for (const module of this.#modules) module.mount(body, this.#context);
-    body.scrollTop = scrollTop;
+    if (pages.length) this.#ui.createNavigation(pages, host);
   }
 
   // Spec 174 B4 (R6): a section is remembered open or closed by its place: its parent section's key and its own path
