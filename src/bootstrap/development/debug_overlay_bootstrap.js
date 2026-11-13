@@ -59,7 +59,9 @@ import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_ove
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
   frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null, revealDevToolsParameter = null}) {
   const configSource = () => config;
-  const htmlBuilder = new OverlayHtmlBuilder();
+  // TK-309: one metric catalog for the rows (links to parameters) and the console explanations.
+  const metricCatalog = new OverlayMetricCatalog();
+  const htmlBuilder = new OverlayHtmlBuilder({ metricCatalog });
   const formatter = new OverlayValueFormatter();
   const viewStateStore = new OverlayViewStateStore({fishStatesDirectionMode: "away",
     fishStateForceDetails: {active: false, force: false, speed: false, weight: false}});
@@ -199,7 +201,8 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   const metricInfoBridge = new OverlayMetricInfoBridge({
     documentTarget,
     eventTarget: mountNode,
-    catalog: new OverlayMetricCatalog(),
+    catalog: metricCatalog,
+    revealParameter: revealDevToolsParameter,
     inspector: new OverlayConsoleMetricInspector({
       resolver: new OverlayMetricResolver({ baseConfig, configSource }),
     }),

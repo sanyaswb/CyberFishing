@@ -167,6 +167,36 @@ assert.match(titleBlock, /background\s*:/u, "Tool window titles have a backgroun
 assert.match(titleBlock, /border-radius\s*:/u, "Tool window titles have rounded corners (TK-296.1)");
 const metricHtml = new OverlayHtmlBuilder().metricRow("Fixture", "1");
 assert.doesNotMatch(metricHtml, /\btitle=/u, "A metric row has no browser tooltip");
+// TK-309: the weather module's links for every module: a metric whose catalog entry names parameters DevTools can
+// show is a link (and a release control, so a press does not drag the window); a click still explains it and opens the
+// first parameter DevTools has.
+{
+  const catalog = { getEntry: (label) => (label === "Water weight" ? { paths: ["HOOKED_FISH.physics.behaviors.<state>.x",
+    "CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight", "derived.value"] } : { paths: ["derived.only"] }) };
+  const builder = new OverlayHtmlBuilder({ metricCatalog: catalog });
+  const linked = builder.metricRow("Water weight", "1 kg");
+  assert.match(linked, /debug-overlay__metric-label--link/u, "a metric with parameters looks like the weather links");
+  assert.match(linked, /data-overlay-control="metric" data-overlay-activate="release"/u,
+    "a press on it neither drags the window nor runs another overlay action");
+  assert.match(linked, /data-devtools-paths="CONFIG\.physics\.water\.tautBodyResistancePerKg\|HOOKED_FISH\.weight"/u,
+    "state-specific and derived names are not offered");
+  assert.doesNotMatch(builder.metricRow("Other", "2"), /--link|data-devtools-paths/u, "a metric without parameters stays plain");
+  const revealed = [];
+  const linkBridge = new OverlayMetricInfoBridge({ documentTarget: hoverEnv.document, eventTarget: metricContent,
+    catalog: { getEntry: () => null }, inspector: { inspect: (entry) => inspected.push(entry.label) },
+    revealParameter: (devtoolsPath) => { revealed.push(devtoolsPath); return devtoolsPath === "HOOKED_FISH.weight"; } });
+  bridge.stop();
+  linkBridge.start();
+  const linkLabel = hoverEnv.document.createElement("span");
+  linkLabel.dataset.metric = "Water weight";
+  linkLabel.dataset.devtoolsPaths = "CONFIG.physics.water.tautBodyResistancePerKg|HOOKED_FISH.weight|CONFIG.later";
+  linkLabel.closest = (selector) => (selector === ".debug-overlay__metric-label" ? linkLabel : null);
+  metricContent.fire("click", { target: linkLabel, preventDefault() {}, stopPropagation() {} });
+  assert.equal(inspected.at(-1), "Water weight", "the formula is still explained");
+  assert.deepEqual(revealed, ["CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight"],
+    "the first parameter DevTools shows is opened; the next ones are not tried");
+  linkBridge.dispose();
+}
 bridge.dispose();
 assert.equal([...metricContent.listeners.values()].reduce((count, listeners) => count + listeners.size, 0), 0);
 hoverPresenter.dispose();

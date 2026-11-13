@@ -545,7 +545,7 @@ function checkNativeDevelopmentDisplays() {
     bindings[name] = class extends Native { constructor(options) { super(options); captured.push({module,name,options,instance:this}); } };
   }
   bindings.OverlayController = class { start() {} dispose() {} };
-  bindings.OverlayMetricCatalog = class {};
+  bindings.OverlayMetricCatalog = class { getEntry() { return null; } };
   bindings.OverlayMetricInfoBridge = class { start() {} dispose() {} };
   bindings.OverlayUpdateLoop = class { constructor(options) { assert.equal(options.intervalMs,150); } };
   const file = "src/bootstrap/development/debug_overlay_bootstrap.js", source = fs.readFileSync(path.join(root,file),"utf8");

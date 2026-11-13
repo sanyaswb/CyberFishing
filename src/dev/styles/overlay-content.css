@@ -283,3 +283,20 @@
   outline-offset: 2px;
 }
 
+/* TK-309: a metric whose parameters DevTools can show looks and answers like the weather module's links. */
+.debug-overlay__metric-label--link {
+  color: var(--ui-info);
+  cursor: pointer;
+  border-radius: var(--ui-radius-control);
+  transition: background var(--ui-duration-control) var(--ui-ease-standard), color var(--ui-duration-control) var(--ui-ease-standard);
+}
+.ui-surface--desktop-hover .debug-overlay__metric-label--link:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__metric-label--link:active,
+.debug-overlay__metric-label--link:focus-visible {
+  color: var(--ui-text);
+  background: var(--ui-control-hover-background);
+}
+@media (prefers-reduced-motion: reduce) {
+  .debug-overlay__metric-label--link { transition: none; }
+}
+

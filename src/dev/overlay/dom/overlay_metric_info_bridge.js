@@ -1,10 +1,12 @@
 // A metric's name in a DEV overlay writes its formula to the console when clicked or activated from the keyboard. Metric
-// rows have no underline, hover or tooltip on any device (owner, TK-217).
+// rows have no underline or tooltip (owner, TK-217). TK-309: a metric whose catalog entry names parameters
+// (data-devtools-paths) also opens the first of them that DevTools can show, like the weather module's links.
 export class OverlayMetricInfoBridge {
   #catalog;
   #inspector;
   #documentTarget;
   #explicitEventTarget;
+  #revealParameter;
   #isStarted = false;
   #eventTarget = null;
   #onDebugLiveUpdate = (event) => {
@@ -18,7 +20,10 @@ export class OverlayMetricInfoBridge {
     inspector,
     documentTarget = document,
     eventTarget = null,
+    // revealParameter(path) -> whether DevTools showed it (spec 177); null without DevTools.
+    revealParameter = null,
   } = {}) {
+    this.#revealParameter = revealParameter;
     this.#catalog = catalog;
     this.#inspector = inspector;
     this.#documentTarget = documentTarget;
@@ -89,5 +94,7 @@ export class OverlayMetricInfoBridge {
       row?.querySelector(".debug-overlay__value")?.textContent?.trim() || "";
     const entry = this.#catalog.getEntry(label);
     this.#inspector.inspect({ label, displayedValue: value, entry });
+    const paths = String(labelElement.dataset.devtoolsPaths || "").split("|").filter(Boolean);
+    for (const path of paths) if (this.#revealParameter?.(path) === true) break;
   }
 }

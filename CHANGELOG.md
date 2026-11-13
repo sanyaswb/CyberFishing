@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.124 - Overlay metric links
+
+- TK-309: in every overlay module a metric whose description names a game parameter looks like the weather module's links; a click opens that parameter in DevTools and still writes the formula to the console, and a press on it does not drag the window.
+
 ## v0.50.123 - Faster DevTools opening
 
 - TK-308: DevTools draws a section's rows when it is first opened (or when a search, the changed filter, an overlay link or a blocking switch needs them) instead of drawing every collapsed section on each opening: 32,528 -> 507 elements and 223 -> 8.5 ms per opening in Node; a hidden overlay window is no longer written on every update.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.115 - DevTools sections by place
 
 - TK-300 (spec 174 B4): DevTools remembers open sections by their place, not their title (two sections with one title no longer open together); a new fish on the hook redraws only its sections, so the panel keeps its scroll and focus during a fight; a full redraw keeps the scroll too. Open sections are reset once.
-
-## v0.50.114 - DevTools edit path split out
-
-- TK-299 (spec 174 B2): DevTools' edit path (config overrides, catalogs, the hooked fish, events) and its config tree drawing are separate modules (DevConfigEditService, ConfigTreeRenderer, HookedFishEditSync, ItemStatAliasSync); the panel behaves the same.

@@ -1,4 +1,15 @@
+// The DevTools roots a metric's parameter can be opened in (TK-309).
+const REVEALABLE_ROOTS = Object.freeze(["CONFIG.", "HOOKED_FISH.", "ITEM_DB.", "FISH_DB.", "MAP_DB."]);
+
 export class OverlayHtmlBuilder {
+  #metricCatalog;
+
+  // metricCatalog: OverlayMetricCatalog (getEntry(label) -> { paths }) or null; TK-309: a metric whose catalog entry
+  // names parameters gets the weather module's link look and opens the first of them in DevTools.
+  constructor({ metricCatalog = null } = {}) {
+    this.#metricCatalog = metricCatalog;
+  }
+
   formatHeader(title, color = "#00ccff") {
     return `<div class="debug-overlay__text debug-overlay__text--custom debug-overlay__heading" style="--debug-overlay-color:${this.escapeAttr(color)};">${this.escapeHtml(title)}</div>`;
   }
@@ -8,14 +19,22 @@ export class OverlayHtmlBuilder {
     const color = options.color || "#8a9bac";
     const safeMetricKey = this.escapeAttr(metricKey);
     const safeLabel = this.escapeHtml(label);
+    const paths = this.#revealablePaths(metricKey);
+    // TK-309: a link like the weather module's (opens the parameter in DevTools and still writes the formula to the
+    // console); data-overlay-control keeps a press on it from dragging the window, and as a release control the
+    // interaction bridge leaves the click to OverlayMetricInfoBridge.
+    const link = paths.length
+      ? ` debug-overlay__metric-label--link" data-overlay-control="metric" data-overlay-activate="release" data-devtools-paths="${this.escapeAttr(paths.join("|"))}`
+      : "";
+    const action = paths.length ? "Відкрити параметр у DevTools і пояснити формулу для" : "Пояснити формулу для";
 
     return `<div class="debug-overlay__row" data-overlay-metric="${safeMetricKey}">
       <span
-        class="debug-overlay__label debug-overlay__metric-label"
+        class="debug-overlay__label debug-overlay__metric-label${link}"
         data-metric="${safeMetricKey}"
         role="button"
         tabindex="0"
-        aria-label="Пояснити формулу для ${this.escapeAttr(label)}"
+        aria-label="${action} ${this.escapeAttr(label)}"
       >${safeLabel}:</span>
       <span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>
     </div>`;
@@ -47,6 +66,14 @@ export class OverlayHtmlBuilder {
       : "debug-overlay__dev-link";
     return `<button type="button" class="${className}" data-overlay-control="devtools-link"`
       + ` data-overlay-activate="release" data-devtools-path="${this.escapeAttr(path)}">${safeText}</button>`;
+  }
+
+  // The catalog's parameters of a metric that DevTools can show, in the catalog's order (state-specific ones skipped).
+  #revealablePaths(metricKey) {
+    const paths = this.#metricCatalog?.getEntry(metricKey)?.paths;
+    if (!Array.isArray(paths)) return [];
+    return paths.filter((path) => typeof path === "string" && !path.includes("<")
+      && REVEALABLE_ROOTS.some((root) => path.startsWith(root)));
   }
 
   escapeHtml(value) {

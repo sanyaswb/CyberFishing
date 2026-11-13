@@ -142,6 +142,11 @@ Spec 174 C5 (TK-307): `DevToolsUI.openTextDialog` lays `devtools__dialog-layer` 
 with `devtools__dialog` (`__dialog-head`, `__dialog-title`, `__dialog-close`, `__dialog-text`, `__dialog-message`
 (`--error`), `__dialog-actions`, `__dialog-action` (`--primary`)); `DevToolsUI.notify` shows `devtools__toast`
 (`--error`) at the panel's bottom for 4 s. No DevTools module uses the browser's prompt or alert.
+
+TK-309 (overlay): a metric row (`OverlayHtmlBuilder.metricRow`) whose metric catalog entry names a parameter DevTools can
+show gets `debug-overlay__metric-label--link` (the look of `debug-overlay__dev-link`: info colour, hover/active
+background) with `data-overlay-control="metric"`, `data-overlay-activate="release"` and `data-devtools-paths`; other
+metric rows stay plain text without hover (TK-217).
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional
