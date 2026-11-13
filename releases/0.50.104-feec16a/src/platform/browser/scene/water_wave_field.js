@@ -1,0 +1,320 @@
+// Spec 106 D2: crossing waves per axis on the water plane. Each: wavelength multiple, direction (radians from the
+// horizontal), share of the amplitude (an axis's shares add up to 1) and phase.
+const wave = (multiple, angle, share, phase) =>
+  Object.freeze({ multiple, dirX: Math.cos(angle), dirY: Math.sin(angle), share, phase });
+const WAVES_X = Object.freeze([wave(1, 0.17, 0.5, 0), wave(0.58, -0.44, 0.3, 1.7), wave(0.34, 1.05, 0.2, 4.1)]);
+const WAVES_Y = Object.freeze([wave(0.8, 0.52, 0.6, 0.9), wave(0.45, -0.87, 0.4, 2.6)]);
+// Spec 172 D7 (TK-289): each component's own slow "breathing" (a multiple of breathSec, unrelated to the others) and
+// the wave groups: two long, slow crossing waves that make patches of higher and lower waves drift over the water.
+const BREATH_X = Object.freeze([Object.freeze({ period: 1, phase: 0.4 }), Object.freeze({ period: 1.37, phase: 2.9 }),
+  Object.freeze({ period: 0.83, phase: 5.1 })]);
+const BREATH_Y = Object.freeze([Object.freeze({ period: 1.61, phase: 1.7 }), Object.freeze({ period: 0.71, phase: 4.2 })]);
+const GROUP_WAVES = Object.freeze([wave(1, 0.35, 0.5, 0), wave(0.73, -1.1, 0.5, 2.2)]);
+// Shares of the map over which the waves fade to nothing, so the displaced water meets the still art without a seam.
+const FADE_TOP = 0.18;
+const FADE_BOTTOM = 0.08;
+const FADE_SIDE = 0.03;
+const TWO_PI = Math.PI * 2;
+// Spec 156 (owner, 2026-10-30: the first ripples were invisible): a wake ripple covers at least this many map texels,
+// or a small far puff falls between texel centres and bends nothing; its crest height is normalised to 1, so
+// strength 1 shifts the art as far as the water's own full amplitude.
+const RIPPLE_MIN_TEXELS = 2.5;
+const rippleProfile = (share) => Math.sin(share * Math.PI) * (1 - share);
+const RIPPLE_PEAK = (() => {
+  let peak = 0;
+  for (let step = 1; step < 200; step += 1) peak = Math.max(peak, rippleProfile(step / 200));
+  return peak;
+})();
+
+const smoothstep = (value) => {
+  const t = value <= 0 ? 0 : value >= 1 ? 1 : value;
+  return t * t * (3 - 2 * t);
+};
+
+// The water's displacement map (spec 106 D2): a small RGBA image whose red channel shifts the art horizontally and green
+// vertically (128 = no shift), stretched over the water by DisplacementFilter. write(time, settings) refills it for a
+// moment of the animation: crossing sine waves on the water plane, smaller and calmer toward the far edge (perspective)
+// and fading out at the edges of every water region (TK-066: each castable zone; the whole map by default). The image is
+// small (the filter interpolates it), so one step costs a fraction of a millisecond and uploads a few kilobytes.
+export class WaterWaveField {
+  #width;
+  #height;
+  #pixels;
+  #envelope;
+  #rowX;
+  #rowY;
+  #regions = [0, 0, 1, 1];
+  #union = false;
+  #distance;
+  #group;
+  #travelX = new Float64Array(WAVES_X.length);
+  #travelY = new Float64Array(WAVES_Y.length);
+  #shareX = new Float64Array(WAVES_X.length);
+  #shareY = new Float64Array(WAVES_Y.length);
+  #groupTravel = new Float64Array(GROUP_WAVES.length);
+  #groupShare = new Float64Array(GROUP_WAVES.length);
+
+  constructor({ width, height }) {
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || height < 2) {
+      throw new TypeError("WaterWaveField requires an integer size of at least 2×2");
+    }
+    this.#width = width;
+    this.#height = height;
+    this.#pixels = new Uint8ClampedArray(width * height * 4);
+    this.#envelope = new Float32Array(width * height);
+    this.#distance = new Float32Array(width * height);
+    this.#rowX = new Float64Array(width);
+    this.#rowY = new Float64Array(width);
+    this.#group = new Float64Array(width);
+    this.#buildEnvelope();
+    for (let index = 3; index < this.#pixels.length; index += 4) this.#pixels[index] = 255;
+  }
+
+  // regions: count rectangles as shares of the map, flat [u0, v0, u1, v1, ...]; the waves live inside them only and fade
+  // out at each one's own edges (the shares FADE_* of that region). One region (0, 0, 1, 1) is the whole map. Called
+  // when the regions change, not per step.
+  setRegions(regions, count, union = false) {
+    const next = this.#regions;
+    let same = this.#union === union && next.length === count * 4;
+    for (let index = 0; same && index < count * 4; index += 1) same = next[index] === regions[index];
+    if (same) return false;
+    this.#union = union;
+    next.length = count * 4;
+    for (let index = 0; index < count * 4; index += 1) next[index] = regions[index];
+    this.#buildEnvelope();
+    return true;
+  }
+
+  #buildEnvelope() {
+    if (this.#union) { this.#buildUnionEnvelope(); return; }
+    const width = this.#width, height = this.#height, regions = this.#regions;
+    for (let row = 0; row < height; row += 1) {
+      const v = (row + 0.5) / height;
+      for (let column = 0; column < width; column += 1) {
+        const u = (column + 0.5) / width;
+        let value = 0;
+        for (let index = 0; index < regions.length; index += 4) {
+          const u0 = regions[index], v0 = regions[index + 1], u1 = regions[index + 2], v1 = regions[index + 3];
+          if (u < u0 || u > u1 || v < v0 || v > v1) continue;
+          const lu = (u - u0) / (u1 - u0), lv = (v - v0) / (v1 - v0);
+          const inside = smoothstep(lv / FADE_TOP) * smoothstep((1 - lv) / FADE_BOTTOM) *
+            smoothstep(lu / FADE_SIDE) * smoothstep((1 - lu) / FADE_SIDE);
+          if (inside > value) value = inside;
+        }
+        this.#envelope[row * width + column] = value;
+      }
+    }
+  }
+
+  // A baked mask is a union: internal rectangle seams must not become still lines in the waves.
+  // Rasterize only the small displacement map, then propagate distance from its exposed coastline in two passes.
+  #buildUnionEnvelope() {
+    const width = this.#width, height = this.#height, distance = this.#distance;
+    distance.fill(0);
+    for (let index = 0; index < this.#regions.length; index += 4) {
+      const left = Math.max(0, Math.ceil(this.#regions[index] * width - .5));
+      const right = Math.min(width - 1, Math.floor(this.#regions[index + 2] * width - .5));
+      const top = Math.max(0, Math.ceil(this.#regions[index + 1] * height - .5));
+      const bottom = Math.min(height - 1, Math.floor(this.#regions[index + 3] * height - .5));
+      for (let y = top; y <= bottom; y++) for (let x = left; x <= right; x++) distance[y * width + x] = Infinity;
+    }
+    const sideStep = 1 / (width * FADE_SIDE), topStep = 1 / (height * FADE_TOP), bottomStep = 1 / (height * FADE_BOTTOM);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      if (!distance[i]) continue;
+      distance[i] = Math.min(distance[i], x ? distance[i - 1] + sideStep : sideStep / 2,
+        y ? distance[i - width] + topStep : topStep / 2);
+    }
+    for (let y = height - 1; y >= 0; y--) for (let x = width - 1; x >= 0; x--) {
+      const i = y * width + x;
+      if (distance[i]) distance[i] = Math.min(distance[i], x < width - 1 ? distance[i + 1] + sideStep : sideStep / 2,
+        y < height - 1 ? distance[i + width] + bottomStep : bottomStep / 2);
+      this.#envelope[i] = smoothstep(distance[i]);
+    }
+  }
+
+  get width() {
+    return this.#width;
+  }
+
+  get height() {
+    return this.#height;
+  }
+
+  // Spec 156: the boat's wake bends the water. puffs: the frame's world.boatWake (screen x, y, size, alpha, life = the
+  // share of the puff's life gone); area: the screen rectangle this map covers ({ left, top, right, bottom }); settings:
+  // CONFIG.ui.boat.wake.water. Each puff adds a ring bump that pushes the art outward from its centre: crest height
+  // strength x the water's full amplitude, fading linearly over the puff's life (not with the foam's alpha, which is
+  // nearly transparent most of the time); radius radiusScale x half its size, at least RIPPLE_MIN_TEXELS texels; only on
+  // water (the envelope). Call after write(); only texels near a puff change.
+  // TK-290: scale converts the ripples to this map's range: the water's displacement map spans the base wave amplitude
+  // times the sea's highest factor (PixiWaterRenderer), so ripples keep their size in art pixels whatever the waves do.
+  addRipples(puffs, area, settings, scale = 1) {
+    if (!settings?.enabled || !puffs || puffs.count === 0) return this.#pixels;
+    const strength = Math.max(0, Number(settings.strength) || 0) * Math.max(0, Number(scale) || 0);
+    const radiusScale = Math.max(0, Number(settings.radiusScale) || 0);
+    const width = this.#width, height = this.#height, pixels = this.#pixels;
+    const texelWidth = (area.right - area.left) / width, texelHeight = (area.bottom - area.top) / height;
+    if (!(texelWidth > 0 && texelHeight > 0) || strength === 0 || radiusScale === 0) return pixels;
+    const minRadius = RIPPLE_MIN_TEXELS * Math.max(texelWidth, texelHeight);
+    for (let index = 0; index < puffs.count; index += 1) {
+      const puff = puffs.getAt(index);
+      if (!(puff.size > 0)) continue;
+      const radius = Math.max(puff.size * 0.5 * radiusScale, minRadius);
+      const amount = 127 * strength * Math.max(0, Math.min(1, 1 - (Number(puff.life) || 0))) / RIPPLE_PEAK;
+      const column0 = Math.max(0, Math.floor((puff.x - radius - area.left) / texelWidth));
+      const column1 = Math.min(width - 1, Math.floor((puff.x + radius - area.left) / texelWidth));
+      const row0 = Math.max(0, Math.floor((puff.y - radius - area.top) / texelHeight));
+      const row1 = Math.min(height - 1, Math.floor((puff.y + radius - area.top) / texelHeight));
+      for (let row = row0; row <= row1; row += 1) {
+        const dy = area.top + (row + 0.5) * texelHeight - puff.y;
+        for (let column = column0; column <= column1; column += 1) {
+          const dx = area.left + (column + 0.5) * texelWidth - puff.x;
+          const distance = Math.hypot(dx, dy);
+          if (distance >= radius || distance === 0) continue;
+          const share = distance / radius;
+          // One crest between the centre and the rim, fading toward the rim.
+          const push = amount * rippleProfile(share) * this.#envelope[row * width + column];
+          const offset = (row * width + column) * 4;
+          pixels[offset] = pixels[offset] + push * (dx / distance);
+          pixels[offset + 1] = pixels[offset + 1] + push * (dy / distance);
+        }
+      }
+    }
+    return pixels;
+  }
+
+  // RGBA bytes, row by row from the far edge; refilled in place by write().
+  get pixels() {
+    return this.#pixels;
+  }
+
+  // timeSec: the animation clock; artWidth / artHeight: the water's size in art pixels; wavelength: art pixels between
+  // crests at the near edge; speed: art pixels per second the crests travel; driftX / driftY: how far the current has
+  // carried the whole pattern, in art pixels at the near edge (the far water drifts slower on screen: perspective).
+  // plane: the location's water metric and the virtual bounds this field covers (GameRenderFrame world.waterPlane).
+  //
+  // The waves are a surface pattern (spec 126 R4): on a row whose surface size is s (1 at the shore, farScale at the
+  // far edge) crests are s times as far apart and s times as high in both axes, whether or not the grid contracts
+  // sideways. Rows run in calibrated ground metres (near-edge art pixels per metre), columns in surface units about
+  // the field's centre line.
+  //
+  // Spec 172 D7 (TK-289), both optional; without them the field is exactly the original one:
+  // travelPx: how far the crests have travelled, in art pixels at the near edge (integrated by the caller, so a change
+  //   of speed or direction never jumps); replaces speed × timeSec.
+  // variation: { dispersion, breath, breathSec, groupDepth, groupScale, groupSpeed }: longer components travel faster
+  //   (multiple ^ (dispersion / 2), deep water), each component's height breathes by ±breath over its own multiple of
+  //   breathSec, and the wave groups (groupScale wavelengths long, travelling at groupSpeed of the crests) raise or
+  //   lower the waves by up to groupDepth.
+  //
+  // TK-290: amplitude (0 … 1, default 1) is the waves' height as a share of the map's range: 0 writes still water (the
+  // ripples are added after write()), so the waves can be switched off while the ripples stay.
+  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null, travelPx = null,
+    variation = null, amplitude = 1 }) {
+    const waveHeight = Math.max(0, Number(amplitude) || 0);
+    if (waveHeight === 0) return this.#writeStill();
+    const width = this.#width;
+    const height = this.#height;
+    const pixels = this.#pixels;
+    const k = TWO_PI / Math.max(1, wavelength);
+    const travel = travelPx === null ? k * speed * timeSec : k * travelPx;
+    const groupDepth = variation ? Math.max(0, Math.min(1, Number(variation.groupDepth) || 0)) : 0;
+    const groupK = TWO_PI / Math.max(1, wavelength * Math.max(1, Number(variation?.groupScale) || 1));
+    this.#prepareWaves(WAVES_X, BREATH_X, this.#travelX, this.#shareX, travel, timeSec, variation);
+    this.#prepareWaves(WAVES_Y, BREATH_Y, this.#travelY, this.#shareY, travel, timeSec, variation);
+    if (groupDepth > 0) {
+      const groupTravel = groupK * Math.max(0, Number(variation.groupSpeed) || 0) * (travelPx === null ? speed * timeSec : travelPx);
+      for (let index = 0; index < GROUP_WAVES.length; index += 1) {
+        this.#groupTravel[index] = groupTravel;
+        this.#groupShare[index] = GROUP_WAVES[index].share;
+      }
+    }
+    const group = this.#group;
+    const rowX = this.#rowX;
+    const rowY = this.#rowY;
+    const metric = plane?.metric ?? null;
+    const artPerVirtual = metric ? artWidth / (plane.right - plane.left) : 1;
+    const nearArtPerMeter = metric ? metric.pixelsPerMeterY(metric.shoreY) * artPerVirtual : 0;
+    for (let row = 0; row < height; row += 1) {
+      const v = (row + .5) / height;
+      let y = v * artHeight;
+      let scale = 1;
+      if (metric) {
+        const mapY = plane.top + v * (plane.bottom - plane.top);
+        scale = metric.surfaceScaleAt(mapY);
+        y = -metric.metersFromShore(mapY) * nearArtPerMeter;
+      }
+      const xScale = artWidth / width / scale;
+      // Column 0's surface position is (0.5 * xScale - driftX); centre the surface units on the field's middle.
+      const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
+      rowX.fill(0);
+      rowY.fill(0);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, this.#travelX, this.#shareX);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, this.#travelY, this.#shareY);
+      if (groupDepth > 0) {
+        group.fill(0);
+        WaterWaveField.#addRow(GROUP_WAVES, group, groupK, xScale, y - driftY, columnDrift, this.#groupTravel, this.#groupShare);
+      }
+      for (let column = 0; column < width; column += 1) {
+        const index = row * width + column;
+        const lift = groupDepth > 0 ? 1 + groupDepth * group[column] : 1;
+        const envelope = this.#envelope[index] * scale * lift * waveHeight;
+        const offset = index * 4;
+        pixels[offset] = 128 + 127 * envelope * rowX[column];
+        pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
+        pixels[offset + 2] = 128;
+      }
+    }
+    return pixels;
+  }
+
+  // Each component's travel (its own speed with dispersion) and height (its breathing) for this write; without a
+  // variation every component has the shared travel and its own share, as originally.
+  #prepareWaves(waves, breaths, travels, shares, travel, timeSec, variation) {
+    const dispersion = variation ? Math.max(0, Number(variation.dispersion) || 0) : 0;
+    const breath = variation ? Math.max(0, Math.min(1, Number(variation.breath) || 0)) : 0;
+    const breathSec = Math.max(0.1, Number(variation?.breathSec) || 1);
+    for (let index = 0; index < waves.length; index += 1) {
+      const current = waves[index];
+      travels[index] = dispersion > 0 ? travel * Math.pow(current.multiple, dispersion / 2) : travel;
+      const own = breaths[index];
+      shares[index] = breath > 0
+        ? current.share * (1 + breath * Math.sin(TWO_PI * timeSec / (breathSec * own.period) + own.phase))
+        : current.share;
+    }
+  }
+
+  // TK-290: no waves: every texel at rest (128), so only the ripples added after this bend the art.
+  #writeStill() {
+    const pixels = this.#pixels;
+    for (let offset = 0; offset < pixels.length; offset += 4) {
+      pixels[offset] = 128;
+      pixels[offset + 1] = 128;
+      pixels[offset + 2] = 128;
+    }
+    return pixels;
+  }
+
+  // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that
+  // step replaces a sine per pixel: two sines per wave and row instead of one per pixel. travels / shares: each
+  // wave's travel phase and height for this write.
+  static #addRow(waves, target, k, xScale, y, driftX, travels, shares) {
+    for (let index = 0; index < waves.length; index += 1) {
+      const current = waves[index];
+      const share = shares[index];
+      const step = (k * current.dirX * xScale) / current.multiple;
+      const phase = (k * ((0.5 * xScale - driftX) * current.dirX + y * current.dirY) - travels[index]) / current.multiple
+        + current.phase;
+      const stepSin = Math.sin(step);
+      const stepCos = Math.cos(step);
+      let sin = Math.sin(phase);
+      let cos = Math.cos(phase);
+      for (let column = 0; column < target.length; column += 1) {
+        target[column] += share * sin;
+        const next = sin * stepCos + cos * stepSin;
+        cos = cos * stepCos - sin * stepSin;
+        sin = next;
+      }
+    }
+  }
+}
