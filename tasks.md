@@ -11,6 +11,27 @@
 
 ## Задачі в роботі
 
+- [x] **TK-297 — кнопка закриття справа від повзунка розміру у вікнах оверлею (власник, 2026-11-13, v0.50.109).**
+      «зправа від повзунка з розміром додай кнопку закриття стиль візьми з ui-modal-close inventory-header__close».
+  - Знайдено: верхня панель масштабу `OverlayScaleControls` (`.debug-overlay__scale-controls`) містить лише повзунок
+    і підпис відсотка; вікна модулів оверлею та інструментальні вікна `ACTIVE FISH` / `ACTIVE ROD` не мають кнопки
+    закриття у правому верхньому куті та підписки синхронізації вимкнення назад у перемикачі DevTools.
+  - Зміна:
+    - `OverlayScaleControls` (`overlay_scale_controls.js`) і `overlay.css`: за наявності `onClose` справа від повзунка
+      рендериться `<button type="button" class="ui-modal-close debug-overlay__close" aria-label="Закрити вікно">`
+      (стиль успадковує `ui-modal-close`, розмір/позицію у шапці вікна задає `.debug-overlay__close` через `--ui-close-size: 28px`).
+    - Закриття вимикає відповідний ключ(і) в `OverlaySettingsStore`: `OverlayModule.close()` (з перевизначенням у
+      складених модулях `FightPhysicsOverlayModule`, `LiveForcesOverlayModule`), `OverlayController.#closeModule`,
+      `OverlayDomAdapter`, `debug_overlay_bootstrap.js`, `OverlayToolWindow`, `fight_balance_windows_composition.js`.
+    - `OverlaySettingsStore.subscribe(listener)` та синхронізація `DevTools` (`syncValue(["OVERLAY_MODULES", key], enabled)`
+      з відпискою у `dispose()`), щоб перемикач у DevTools одразу перемикався у вимкнений стан.
+  - Перевірка: розширення `overlay-balance-windows-check.js` (кнопка закриття справа, клік вимикає модуль і закриває
+    вікно, композитні модулі, `OverlayToolWindow`, синхронізація `OverlaySettingsStore`), `css-usage`, `config-runtime`,
+    повний `node utils/run-checks.js`.
+  - [ ] Перевірка власника TK-297: `dev.html` → увімкнути будь-яке вікно в `OVERLAY` (наприклад «ПОГОДА й хвилі»,
+        «ACTIVE FISH»): справа від повзунка розміру є червона кнопка `×` у стилі `ui-modal-close`; клік закриває вікно
+        і вимикає перемикач модуля в DevTools.
+
 - [x] **TK-296 (spec 177) — гіперпосилання з оверлею до параметрів DevTools із розкриттям і зеленим підсвічуванням (власник, 2026-11-13, v0.50.107).**
       «чудово тепер тільки для цього модуля але заклади логіку і для майбутніх, потрібно в overlay текст зробити як
       посилання (гіппер) при натисканні відкривається devtools розкривається параметр який відповідає за параметр який

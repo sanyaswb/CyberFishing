@@ -25,6 +25,13 @@ export class FightPhysicsOverlayModule extends OverlayModule {
     return data.gameState === "playing";
   }
 
+  close() {
+    super.close();
+    for (const key of FIGHT_PHYSICS_RENDER_KEYS) {
+      this.settingsStore?.setEnabled?.(key, false);
+    }
+  }
+
   render(data) {
     const lineRemaining = Math.max(0, Number(data.lineRemainingMeters) || 0);
     const lineMaxRemaining = Math.max(

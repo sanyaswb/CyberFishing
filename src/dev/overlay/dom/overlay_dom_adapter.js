@@ -28,6 +28,7 @@ export class OverlayDomAdapter {
   #moduleKey;
   #cache;
   #scaleStorageKey;
+  #onClose;
   #container = null;
   #content = null;
   #scaleControls = null;
@@ -45,6 +46,7 @@ export class OverlayDomAdapter {
     moduleKey = "",
     cache = null,
     scaleStorageKey = "",
+    onClose = null,
   } = {}) {
     const saved = scaleStorageKey ? Number(cache?.get?.(scaleStorageKey)) : NaN;
     this.#scale = Number.isFinite(saved) && saved >= MIN_SAVED_SCALE && saved <= MAX_SAVED_SCALE ? saved : scale;
@@ -55,6 +57,7 @@ export class OverlayDomAdapter {
     this.#moduleKey = String(moduleKey || "");
     this.#cache = cache;
     this.#scaleStorageKey = String(scaleStorageKey || "");
+    this.#onClose = typeof onClose === "function" ? onClose : null;
   }
 
   init() {
@@ -89,6 +92,7 @@ export class OverlayDomAdapter {
       scale: this.#scale,
       onScaleChanged: (scale) => this.setScale(scale),
       onScaleCommitted: (scale) => this.#saveScale(scale),
+      onClose: this.#onClose,
     });
     this.#container.appendChild(this.#scaleControls.create());
     this.#container.appendChild(this.#content);

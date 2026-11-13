@@ -142,7 +142,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     new FishPowerOverlayModule(moduleOptions), new DebuffsOverlayModule(moduleOptions), new FightPhysicsOverlayModule({...moduleOptions, groups}),
     new PlayerMaxOverlayModule(moduleOptions), new LiveForcesOverlayModule(moduleOptions), new ChumOverlayModule(moduleOptions),
     new StaminaBalanceOverlayModule(moduleOptions), new WorstCaseOverlayModule({...moduleOptions, selector: new WorstCaseForceDebugSelector({configSource})})]);
-  const createWindowAdapter = (module, slot) => {
+  const createWindowAdapter = (module, slot, { onClose = null } = {}) => {
     const id = `overlay_module_${module.key}`;
     const defaultPosition = {
       left: 10 + (slot % 4) * 28,
@@ -154,6 +154,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
       moduleKey: module.key,
       cache: storageCache,
       scaleStorageKey: `overlay_scale_${id}`,
+      onClose,
       createScaleControls: (options) => new OverlayScaleControls(options),
       createDragController: (element) =>
         new OverlayWindowDragController({

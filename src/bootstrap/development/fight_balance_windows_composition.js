@@ -13,17 +13,19 @@ import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_windo
 export function composeFightBalanceWindows({ documentTarget, windowTarget, mountNode, uiSurface, settingsStore, storageCache,
   config, baseConfig, fishes, items, updateConfig }) {
   const schema = new FightBalanceParameterSchema();
-  const toolWindow = (id, modifier, title) => new OverlayToolWindow({ documentTarget, mountNode, title, modifier,
+  let windows;
+  const toolWindow = (id, modifier, title, key) => new OverlayToolWindow({ documentTarget, mountNode, title, modifier,
     cache: storageCache, scaleStorageKey: `overlay_scale_${id}`,
+    onClose: () => { settingsStore?.setEnabled?.(key, false); windows?.update?.(); },
     createScaleControls: (options) => new OverlayScaleControls(options),
     createDragController: (element) => new OverlayWindowDragController({ element, config, id,
       windowTarget, cache: storageCache, uiSurface }) });
-  const windows = new FightBalanceWindows({ documentTarget, settingsStore, cache: storageCache,
+  windows = new FightBalanceWindows({ documentTarget, settingsStore, cache: storageCache,
     createUpdateLoop: (callback) => new OverlayUpdateLoop({ callback, intervalMs: Number(config.debug?.overlayUpdateMs) || 150 }),
     windows: [
-      { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "🐟 ACTIVE FISH"),
+      { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "🐟 ACTIVE FISH", "activeFish"),
         content: new ActiveFishWindowContent({ config, baseConfig, fishes, schema, updateConfig }) },
-      { key: "activeRod", window: toolWindow("overlay_active_rod", "debug-overlay--active-rod", "🎣 ACTIVE ROD"),
+      { key: "activeRod", window: toolWindow("overlay_active_rod", "debug-overlay--active-rod", "🎣 ACTIVE ROD", "activeRod"),
         content: new ActiveRodWindowContent({ config, baseConfig, items, schema, updateConfig }) },
     ] });
   windows.start();

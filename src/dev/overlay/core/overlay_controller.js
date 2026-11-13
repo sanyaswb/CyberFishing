@@ -106,13 +106,21 @@ export class OverlayController {
 
   #createEntry(module) {
     const slot = this.#createdCount++;
-    const adapter = this.#createWindowAdapter(module, slot);
+    const adapter = this.#createWindowAdapter(module, slot, {
+      onClose: () => this.#closeModule(module),
+    });
     adapter.init();
     const root = adapter.getRootElement?.();
     if (root) this.#interactionBridge?.attachRoot?.(root);
     const entry = { adapter, lastHtml: "" };
     this.#windows.set(module, entry);
     return entry;
+  }
+
+  #closeModule(module) {
+    module.close?.();
+    this.#windows.get(module)?.adapter?.hide?.();
+    this.update();
   }
 
   #hideAll() {

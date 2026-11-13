@@ -58,6 +58,7 @@ export class DevTools {
   #loadStepperSection = null;
   #openHouse;
   #openGame;
+  #unsubscribeOverlaySettings = null;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -194,6 +195,12 @@ export class DevTools {
       if (!this.#isDisposed && this.#isOpen) this.#populatePanel();
     });
     document.addEventListener("debug-live-update", this.#onDebugLiveUpdate);
+    this.#unsubscribeOverlaySettings =
+      this.#settingsStore?.subscribe?.((key, enabled) => {
+        if (!this.#isDisposed) {
+          this.#ui.syncValue(["OVERLAY_MODULES", key], enabled);
+        }
+      }) || null;
   }
 
   mountScreenToggle(mountNode) {
@@ -235,6 +242,8 @@ export class DevTools {
     if (this.#isDisposed) return;
     this.#isDisposed = true;
     document.removeEventListener("debug-live-update", this.#onDebugLiveUpdate);
+    this.#unsubscribeOverlaySettings?.();
+    this.#unsubscribeOverlaySettings = null;
     this.#liveData = null;
     this.#zoneEditorSection?.dispose();
     this.#weatherSection?.dispose();

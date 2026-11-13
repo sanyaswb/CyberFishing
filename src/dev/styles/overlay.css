@@ -217,6 +217,16 @@
   pointer-events: none;
 }
 
+.debug-overlay__close {
+  --ui-close-size: 28px;
+  flex: 0 0 auto;
+  pointer-events: auto;
+}
+.debug-overlay__close::before,
+.debug-overlay__close::after {
+  width: 12px;
+}
+
 
 .debug-overlay__content {
   flex: 1 1 auto;

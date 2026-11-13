@@ -307,20 +307,48 @@ async function checkScaleSliderAndSeparateWindows() {
   assert.equal(slider.listeners.get("pointerdown")?.size ?? 0, 0, "dispose removes slider listeners");
   assert.equal(slider.listeners.get("keydown")?.size ?? 0, 0, "dispose removes keyboard listener");
 
-  // OverlayToolWindow mounts scale slider BEFORE title and body.
+  // TK-297: close button right of scale slider reuses ui-modal-close + debug-overlay__close.
+  const closeDoc = new TestDocument();
+  let closeCalls = 0;
+  const closeControls = new OverlayScaleControls({
+    documentTarget: closeDoc,
+    scale: 1,
+    onClose: () => closeCalls++,
+  });
+  const closeBar = closeControls.create();
+  closeDoc.body.appendChild(closeBar);
+  assert.equal(closeBar.children[0].className, "debug-overlay__scale-slider");
+  assert.equal(closeBar.children[1].className, "debug-overlay__scale-value");
+  assert.equal(closeBar.children[2].className, "ui-modal-close debug-overlay__close", "close button renders right of scale slider/value");
+  assert.equal(closeBar.children[2].getAttribute("aria-label"), "Закрити вікно");
+  const pdClose = closeBar.children[2].fire("pointerdown");
+  assert.equal(pdClose.stopped, true, "close pointerdown stops drag controller propagation");
+  const clickClose = closeBar.children[2].fire("click");
+  assert.equal(clickClose.prevented, true);
+  assert.equal(clickClose.stopped, true);
+  assert.equal(closeCalls, 1, "close click triggers onClose");
+  closeControls.dispose();
+  assert.equal(closeBar.children[2].listeners.get("click")?.size ?? 0, 0, "dispose removes close button click listener");
+
+  // OverlayToolWindow mounts scale slider + close button BEFORE title and body.
   const doc2 = new TestDocument();
+  let toolClosed = 0;
   const tool = new OverlayToolWindow({
     documentTarget: doc2,
     mountNode: doc2.body,
     title: "TEST TOOL",
     modifier: "debug-overlay--active-fish",
-    createScaleControls: ({ scale, onScaleChanged, onScaleCommitted }) =>
-      new OverlayScaleControls({ documentTarget: doc2, scale, onScaleChanged, onScaleCommitted }),
+    onClose: () => toolClosed++,
+    createScaleControls: ({ scale, onScaleChanged, onScaleCommitted, onClose }) =>
+      new OverlayScaleControls({ documentTarget: doc2, scale, onScaleChanged, onScaleCommitted, onClose }),
     createDragController: () => ({ attach() {}, detach() {}, clampToViewport() {} }),
   });
   tool.show();
   const toolEl = doc2.byClass("debug-overlay--tool")[0];
   assert.equal(toolEl.children[0].className, "debug-overlay__scale-controls", "tool window places scale slider at top");
+  assert.equal(toolEl.children[0].children[2].className, "ui-modal-close debug-overlay__close", "tool window renders close button right of slider");
+  toolEl.children[0].children[2].fire("click");
+  assert.equal(toolClosed, 1, "tool window forwards onClose to scale bar close button");
   assert.equal(toolEl.children[1].className, "debug-overlay__title");
   tool.dispose();
 
@@ -336,11 +364,28 @@ async function checkScaleSliderAndSeparateWindows() {
     onRevealDevToolsParameter: (path) => revealedPaths.push(path),
   });
   const registry = new OverlayModuleRegistry();
-  registry.register({
-    key: "alpha",
-    isActive: () => moduleStates.a,
-    render: () => "<button data-overlay-control=\"a\" data-overlay-action=\"run\">A</button>",
+  const { OverlaySettingsStore } = await importSource("src/dev/overlay/overlay_settings_store.js");
+  const { OverlayModule } = await importSource("src/dev/overlay/overlay_module.js");
+  const { OverlayHtmlBuilder } = await importSource("src/dev/overlay/services/overlay_html_builder.js");
+  const { FightPhysicsOverlayModule } = await importSource("src/dev/overlay/modules/fight_physics/fight_physics_overlay_module.js");
+  const { LiveForcesOverlayModule } = await importSource("src/dev/overlay/modules/live_forces_overlay_module.js");
+  const { FIGHT_PHYSICS_RENDER_KEYS } = await importSource("src/dev/overlay/config/overlay_modules_config.js");
+
+  const store3 = new OverlaySettingsStore({
+    alpha: true,
+    beta: false,
+    fightPhysics: true,
+    [FIGHT_PHYSICS_RENDER_KEYS[0]]: true,
+    liveY: true,
+    liveX: true,
   });
+  const storeEvents = [];
+  const unsubscribeStore = store3.subscribe((k, v) => storeEvents.push([k, v]));
+
+  registry.register(Object.assign(new OverlayModule("alpha", { settingsStore: store3, htmlBuilder: new OverlayHtmlBuilder() }), {
+    isActive: () => moduleStates.a && store3.isEnabled("alpha"),
+    render: () => "<button data-overlay-control=\"a\" data-overlay-action=\"run\">A</button>",
+  }));
   registry.register({
     key: "beta",
     isActive: () => moduleStates.b,
@@ -356,14 +401,15 @@ async function checkScaleSliderAndSeparateWindows() {
     configSource: () => ({ debug: { overlay: overlayEnabled.value } }),
     updateLoop: loop,
     interactionBridge: bridge,
-    createWindowAdapter: (module) => new OverlayDomAdapter({
+    createWindowAdapter: (module, _slot, { onClose = null } = {}) => new OverlayDomAdapter({
       documentTarget: doc3,
       mountNode: doc3.body,
       moduleKey: module.key,
       cache: cache3,
       scaleStorageKey: `overlay_scale_${module.key}`,
-      createScaleControls: ({ scale, onScaleChanged, onScaleCommitted }) =>
-        new OverlayScaleControls({ documentTarget: doc3, scale, onScaleChanged, onScaleCommitted }),
+      onClose,
+      createScaleControls: ({ scale, onScaleChanged, onScaleCommitted, onClose: closeCb }) =>
+        new OverlayScaleControls({ documentTarget: doc3, scale, onScaleChanged, onScaleCommitted, onClose: closeCb }),
       createDragController: () => ({ attach() {}, detach() {}, clampToViewport() {} }),
     }),
   });
@@ -423,6 +469,28 @@ async function checkScaleSliderAndSeparateWindows() {
   overlayEnabled.value = false;
   controller.update();
   assert.equal(windowsOnDom[1].style.display, "none", "master overlay toggle hides all windows");
+
+  // Closing alpha via its close button disables its settings key, notifies subscribers and hides only alpha.
+  overlayEnabled.value = true;
+  moduleStates.a = true;
+  controller.update();
+  assert.equal(windowsOnDom[0].style.display, "flex");
+  windowsOnDom[0].children[0].children[2].fire("click");
+  assert.equal(store3.isEnabled("alpha"), false, "window close turns off module settings key");
+  assert.deepEqual(storeEvents, [["alpha", false]], "settingsStore notifies subscribers when module closes");
+  assert.equal(windowsOnDom[0].style.display, "none", "window close hides closed module window");
+  assert.equal(windowsOnDom[1].style.display, "flex", "closing one module keeps other windows open");
+  unsubscribeStore();
+
+  // Composite modules close all contributing keys.
+  const fightMod = new FightPhysicsOverlayModule({ settingsStore: store3, htmlBuilder: new OverlayHtmlBuilder(), groups: [] });
+  fightMod.close();
+  assert.equal(store3.isEnabled("fightPhysics"), false);
+  assert.equal(store3.isEnabled(FIGHT_PHYSICS_RENDER_KEYS[0]), false, "FightPhysicsOverlayModule closes render keys");
+  const liveMod = new LiveForcesOverlayModule({ settingsStore: store3, htmlBuilder: new OverlayHtmlBuilder() });
+  liveMod.close();
+  assert.equal(store3.isEnabled("liveY"), false);
+  assert.equal(store3.isEnabled("liveX"), false, "LiveForcesOverlayModule closes both liveY and liveX");
 
   const clickCountBeforeDispose = windowsOnDom[1].listeners.get("click")?.size ?? 0;
   controller.dispose();

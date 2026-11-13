@@ -17,6 +17,7 @@ export class OverlayToolWindow {
   #createDragController;
   #cache;
   #scaleStorageKey;
+  #onClose;
   #scale;
   #container = null;
   #body = null;
@@ -34,6 +35,7 @@ export class OverlayToolWindow {
     scale = DEFAULT_SCALE,
     cache = null,
     scaleStorageKey = "",
+    onClose = null,
   }) {
     this.#documentTarget = documentTarget;
     this.#mountNode = mountNode;
@@ -43,6 +45,7 @@ export class OverlayToolWindow {
     this.#createDragController = createDragController;
     this.#cache = cache;
     this.#scaleStorageKey = String(scaleStorageKey || "");
+    this.#onClose = typeof onClose === "function" ? onClose : null;
     const saved = this.#scaleStorageKey ? Number(cache?.get?.(this.#scaleStorageKey)) : NaN;
     this.#scale = Number.isFinite(saved) && saved >= MIN_SAVED_SCALE && saved <= MAX_SAVED_SCALE ? saved : scale;
   }
@@ -94,6 +97,7 @@ export class OverlayToolWindow {
       scale: this.#scale,
       onScaleChanged: (scale) => this.#setScale(scale),
       onScaleCommitted: (scale) => this.#saveScale(scale),
+      onClose: this.#onClose,
     });
     container.append(this.#scaleControls.create(), title, this.#body);
     container.style.setProperty("--debug-overlay-scale", String(this.#scale));

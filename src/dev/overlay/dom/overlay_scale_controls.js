@@ -17,9 +17,11 @@ export class OverlayScaleControls {
   #documentTarget;
   #onScaleChanged;
   #onScaleCommitted;
+  #onClose;
   #scale;
   #slider = null;
   #valueLabel = null;
+  #closeButton = null;
   #pointerId = null;
   #startX = 0;
   #startScale = 1;
@@ -29,17 +31,21 @@ export class OverlayScaleControls {
   #onPointerMove = (event) => this.#handlePointerMove(event);
   #onPointerUp = (event) => this.#handlePointerUp(event);
   #onKeyDown = (event) => this.#handleKeyDown(event);
+  #onClosePointerDown = (event) => event?.stopPropagation?.();
+  #onCloseClick = (event) => this.#handleCloseClick(event);
 
   constructor({
     documentTarget = document,
     scale = 1,
     onScaleChanged = null,
     onScaleCommitted = null,
+    onClose = null,
   } = {}) {
     this.#documentTarget = documentTarget;
     this.#scale = normalizeScale(Number.isFinite(Number(scale)) ? Number(scale) : 1);
     this.#onScaleChanged = onScaleChanged;
     this.#onScaleCommitted = onScaleCommitted;
+    this.#onClose = typeof onClose === "function" ? onClose : null;
   }
 
   create() {
@@ -77,6 +83,16 @@ export class OverlayScaleControls {
     slider.addEventListener("keydown", this.#onKeyDown);
 
     controls.append(slider, valueLabel);
+    if (this.#onClose) {
+      const closeButton = this.#documentTarget.createElement("button");
+      closeButton.type = "button";
+      closeButton.className = "ui-modal-close debug-overlay__close";
+      closeButton.setAttribute("aria-label", "Закрити вікно");
+      closeButton.addEventListener("pointerdown", this.#onClosePointerDown);
+      closeButton.addEventListener("click", this.#onCloseClick);
+      this.#closeButton = closeButton;
+      controls.append(closeButton);
+    }
     return controls;
   }
 
@@ -93,8 +109,19 @@ export class OverlayScaleControls {
       this.#slider.removeEventListener("pointerdown", this.#onPointerDown);
       this.#slider.removeEventListener("keydown", this.#onKeyDown);
     }
+    if (this.#closeButton) {
+      this.#closeButton.removeEventListener("pointerdown", this.#onClosePointerDown);
+      this.#closeButton.removeEventListener("click", this.#onCloseClick);
+    }
     this.#slider = null;
     this.#valueLabel = null;
+    this.#closeButton = null;
+  }
+
+  #handleCloseClick(event) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    this.#onClose?.();
   }
 
   #handlePointerDown(event) {

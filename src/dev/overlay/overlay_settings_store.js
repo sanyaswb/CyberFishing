@@ -1,10 +1,15 @@
 export class OverlaySettingsStore {
   #modules;
-
+  #listeners = new Set();
 
   constructor(modules) {
     this.#modules = { ...(modules || {}) };
+  }
 
+  subscribe(listener) {
+    if (typeof listener !== "function") return () => {};
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);
   }
 
   isEnabled(key) {
@@ -18,8 +23,9 @@ export class OverlaySettingsStore {
   setEnabled(key, value) {
     if (!this.has(key)) return;
     const normalizedValue = !!value;
+    if (this.#modules[key] === normalizedValue) return;
     this.#modules[key] = normalizedValue;
-
+    for (const listener of [...this.#listeners]) listener(key, normalizedValue);
   }
 
   keys() {

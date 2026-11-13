@@ -25,6 +25,10 @@ export class OverlayModule {
     return "";
   }
 
+  close() {
+    this.settingsStore?.setEnabled?.(this.key, false);
+  }
+
   formatHeader(title, color = "#00ccff") {
     return this.htmlBuilder.formatHeader(title, color);
   }

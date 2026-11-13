@@ -17,6 +17,11 @@ export class LiveForcesOverlayModule extends OverlayModule {
     return d.gameState === "playing";
   }
 
+  close() {
+    this.settingsStore?.setEnabled?.("liveY", false);
+    this.settingsStore?.setEnabled?.("liveX", false);
+  }
+
   render(d) {
     const pY = d.playerForceY || 0,
       fY = d.fishForceY || 0;
