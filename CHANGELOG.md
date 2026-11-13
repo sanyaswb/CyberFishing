@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.116 - DevTools panel modules
+
+- TK-301 (spec 174 B3): every area of the DevTools panel is its own module (shop, overlay, config, debug, scene with weather, zone editor, database, Spine, radio, hooked fish, service) with one contract; DevTools keeps only the panel's lifecycle, navigation and module order. The panel looks and works the same.
+
 ## v0.50.115 - DevTools sections by place
 
 - TK-300 (spec 174 B4): DevTools remembers open sections by their place, not their title (two sections with one title no longer open together); a new fish on the hook redraws only its sections, so the panel keeps its scroll and focus during a fight; a full redraw keeps the scroll too. Open sections are reset once.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.107 - Overlay hyperlinks to DevTools parameters
 
 - TK-296 (spec 177): added shared Overlay -> DevTools hyperlink infrastructure (`OverlayHtmlBuilder.devLink` / `OverlayModule.devLink`, `OverlayInteractionBridge` release activation without toggling parent `<details>`, `DevTools.revealParameter` / `DevToolsUI.revealPath`, and `DevToolsDependencyFeedback.showRevealed` green highlight across collapsed ancestor sections) and wired all parameters and multipliers in «ПОГОДА Й ХВИЛІ» (`WeatherOverlayModule` + `WeatherDevSection` control paths).
-
-## v0.50.106 - Weather & waves overlay multiplier sub-items
-
-- TK-295: in the DevTools «ПОГОДА Й ХВИЛІ» overlay module, moved wave multipliers from cramped inline formulas into expandable sub-items under `Амплітуда хвиль`, `Довжина хвиль`, and `Швидкість хвиль`, explaining each factor (`База`, `Загальний множник` + transition target, `Вітер`, `Ніч`, `Гроза`), its configured range, and its live value via pre-allocated `SeaStateResolver` / `WeatherStatusReader` factors.

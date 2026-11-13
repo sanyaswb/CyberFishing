@@ -468,3 +468,4 @@ Architecture, game-cycle (SHA256 без змін).
 | A6–A7 | TK-292–293, v0.50.102–103 | залежні параметри (`prerequisitesOf`, неактивний рядок будь-якого елемента), усі списки — `ChoiceField` під міткою |
 | B2 | TK-299, v0.50.114 | `src/dev/tools/config/`: `DevConfigEditService` (запис, читання, імпорт і скидання перевизначень, події), `ConfigTreeRenderer` (дерево, правила пропуску, псевдоніми, залежності), `HookedFishEditSync`, `ItemStatAliasSync`; `dev_tools.js` 1598 → 973 рядки |
 | B4 | TK-300, v0.50.115 | стан секцій за місцем у дереві (`dev_tools_open_sections`, старий ключ видаляється), читання один раз; риба на гачку — свій слот `createSectionSlot`; повна перебудова зберігає прокрутку |
+| B3 | TK-301, v0.50.116 | контракт модуля (`modules/dev_panel_module.js`) і 11 модулів у `src/dev/tools/modules/`; `dev_tools.js` 973 → 222 рядки (життєвий цикл, навігація, порядок модулів) |

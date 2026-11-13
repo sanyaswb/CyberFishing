@@ -58,7 +58,7 @@ const MIGRATED_MODULES = Object.freeze([
   "src/bootstrap/production/inventory_ui_bootstrap.js",
   "src/bootstrap/production/inventory_selector_composition.js",
   "src/bootstrap/production/depth_selector_composition.js",
-  "src/dev/tools/dev_tools.js",
+  "src/dev/tools/modules/item_shop_module.js",
   "src/game/config/raw/fish/peaceful_fish.js",
   "src/game/config/raw/fish/predator_fish.js",
   "src/game/presentation/fish/fish_art_variants.js",
