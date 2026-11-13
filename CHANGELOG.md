@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.121 - DevTools drill-in sections
+
+- TK-306 (spec 174 C4): DevTools shows at most two levels of sections in place; a deeper section opens inside its module's page on its own, under breadcrumbs back to the module and every section above it, so labels keep the panel's full width.
+
 ## v0.50.120 - DevTools names, descriptions, search
 
 - TK-305 (spec 174 C3): DevTools rows show the key with its Ukrainian name under it and an «i» that opens the description; a changed value is marked and can be put back to the code's value by itself; a search under the title finds parameters in every module by key, name or path and keeps them editable in place; «Змінені» shows only changed values.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.112 - Wind model release/direction fixes, smooth float swing & always-visible map selector
 
 - TK-298.1 (spec 178): restored automatic episode target immediately when releasing manual wind strength (`#episodeTarget`), kept positive wind strength across episodes while direction `±1` is forced (`strength === 0 ⇔ direction === 0`), made `WaterEntity` return-swing $C^1$-continuous across cycle boundaries with `maxAngleDeg` cap and `0` support, published live `float` settings from `WindModel` to `EnvironmentSystem.getPhysicsEnv()`, and kept the DevTools «ПОГОДА» location selector always visible.
-
-## v0.50.111 - Living continuous wind, gusts, float return-swing & per-map DevTools chances
-
-- TK-298 (spec 178): added `WindModel` (`0…1` real-second episodes, isolated `windRng`, rain/storm boosts, global gusts, `strength === 0 ⇔ direction === 0`) and `MAP_DB.<id>.weather.wind` schema/export support; coupled continuous `wind.strength` to `SeaStateResolver`, `PixiRainRenderer` slant and `WaterEntity` dynamic return-swing rock; added DevTools «ПОГОДА» location selector, `Шанси погоди`, manual wind strength / gust controls, and live `Сила вітру 0…1` overlay hyperlink.

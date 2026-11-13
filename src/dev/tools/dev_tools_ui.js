@@ -11,6 +11,9 @@ import { ChoiceField } from "./controls/choice_field.js";
 import { ExportCommandNotice } from "./controls/export_command_notice.js";
 import { createDevIcon } from "./controls/dev_icon.js";
 
+// Spec 174 C4 (Q3): sections at this depth and below open inside (drill-in) instead of nesting in place.
+const MAX_INLINE_SECTION_DEPTH = 2;
+
 export class DevToolsUI {
   #panel;
   #body;
@@ -30,6 +33,9 @@ export class DevToolsUI {
   #dependencyFeedback;
   #dependentSwitches = new Map();
   #exportNotices = new WeakMap();
+  // Spec 174 C4: each section content's depth in its page, and the section shown alone (drill-in).
+  #contentDepth = new WeakMap();
+  #drill = null;
   // Spec 174 C3: search text and descriptions of labels, rows for the filter, change marks.
   #searchText = new WeakMap();
   #parameterDescriptions = new WeakMap();
@@ -165,6 +171,7 @@ export class DevToolsUI {
   // the body held. modules: [{ id, title, icon }]; onSelect(id) is told when the person picks another module (to remember
   // it). Returns Map id -> page element; modules draw into their page.
   createPages(modules, activeId, onSelect) {
+    this.#drill = null;
     this.#onPageSelect = onSelect;
     this.#pages.clear();
     this.#railButtons.clear();
@@ -200,6 +207,7 @@ export class DevToolsUI {
   // Shows one module's page; remember: the person chose it (the panel remembers it for the next start).
   selectPage(id, { remember = false } = {}) {
     if (!this.#pages.has(id)) return;
+    if (this.#drill && this.#drill.page !== this.#pages.get(id)) this.#leaveDrill();
     if (this.#activePage && this.#activePage !== id) this.#pageScroll.set(this.#activePage, this.#body.scrollTop);
     const changed = this.#activePage !== id;
     this.#activePage = id;
@@ -212,6 +220,73 @@ export class DevToolsUI {
     }
     if (changed) this.#body.scrollTop = this.#pageScroll.get(id) ?? 0;
     if (remember) this.#onPageSelect?.(id);
+  }
+
+  // Spec 174 C4: shows one section alone in its page with breadcrumbs back (the module, then every section above it).
+  // The section's content is moved into the page's drill area and put back when leaving, so its rows, bindings and
+  // states stay the same nodes.
+  focusSection(section) {
+    this.#leaveDrill();
+    const content = section.children[1];
+    const page = this.#pageOf(section);
+    if (!content || !page) return;
+    const ancestors = [];
+    for (let node = section.parentNode; node && node !== page; node = node.parentNode) {
+      if (node.classList?.contains("devtools__section")) ancestors.unshift(node);
+    }
+    const crumbs = document.createElement("nav");
+    crumbs.className = "devtools__crumbs";
+    crumbs.setAttribute("aria-label", "Шлях до секції");
+    crumbs.appendChild(this.#crumb(page.getAttribute("aria-label") || "", () => this.#leaveDrill()));
+    for (const ancestor of ancestors) {
+      crumbs.appendChild(this.#crumb(ancestor.children[0].textContent, () => {
+        if (ancestor.classList.contains("devtools__section--drill")) {
+          this.focusSection(ancestor);
+          return;
+        }
+        this.#leaveDrill();
+        if (ancestor.children[1].style.display === "none") ancestor.children[0].click();
+        ancestor.scrollIntoView?.({ block: "start" });
+      }));
+    }
+    const current = document.createElement("span");
+    current.className = "devtools__crumb devtools__crumb--current";
+    current.textContent = section.children[0].textContent;
+    current.setAttribute("aria-current", "location");
+    crumbs.appendChild(current);
+    const host = document.createElement("div");
+    host.className = "devtools__drill";
+    content.style.display = "block";
+    host.appendChild(content);
+    page.classList.add("devtools__page--drilled");
+    page.append(crumbs, host);
+    this.#drill = { section, content, page, crumbs, host };
+    this.#body.scrollTop = 0;
+  }
+
+  #crumb(text, onClick) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "devtools__crumb";
+    button.textContent = text;
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  #leaveDrill() {
+    const drill = this.#drill;
+    if (!drill) return;
+    this.#drill = null;
+    drill.content.style.display = "none";
+    drill.section.appendChild(drill.content);
+    drill.crumbs.remove();
+    drill.host.remove();
+    drill.page.classList.remove("devtools__page--drilled");
+  }
+
+  #pageOf(element) {
+    for (let node = element; node; node = node.parentNode) if (node.dataset?.devtoolsPage) return node;
+    return null;
   }
 
   // A page without content says so in one line instead of disappearing from the rail.
@@ -264,10 +339,19 @@ export class DevToolsUI {
   }
 
   // icon: an optional DevTools icon name before the title (spec 174 C1); the chevron is an icon turned by CSS.
-  createSection(labelStr, parentElement, isExpanded, onToggle, path = null, { buttonTitle = false, icon = "" } = {}) {
+  // Spec 174 C4 (Q3): a section below two visible levels opens "inside" (drill-in with breadcrumbs) instead of nesting
+  // further to the right; inline: false keeps a section in place at any depth («Опис»).
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null,
+    { buttonTitle = false, icon = "", inline = false } = {}) {
     const section = document.createElement("div");
     section.className = "devtools__section";
     this.#assignDevToolsPath(section, path);
+    const depth = (this.#contentDepth.get(parentElement) ?? -1) + 1;
+    const drill = !inline && !buttonTitle && depth >= MAX_INLINE_SECTION_DEPTH;
+    if (drill) {
+      section.classList.add("devtools__section--drill");
+      isExpanded = false;
+    }
 
     const title = document.createElement("button");
     title.className = buttonTitle ? "devtools__action devtools__action--disclosure" : "devtools__section-title";
@@ -284,8 +368,14 @@ export class DevToolsUI {
     content.className = "devtools__section-content";
     this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
+    this.#contentDepth.set(content, depth);
 
     title.addEventListener("click", () => {
+      if (drill && this.#drill?.section !== section) {
+        this.focusSection(section);
+        return;
+      }
+      if (drill) return;
       const isHidden = content.style.display === "none";
       content.style.display = isHidden ? "block" : "none";
       title.setAttribute("aria-expanded", String(isHidden));
@@ -306,7 +396,7 @@ export class DevToolsUI {
     if (!description || description.content.parentNode?.parentNode !== parentElement) {
       const record = { expanded: description?.expanded || false, content: null };
       record.content = this.createSection("Опис", parentElement, record.expanded,
-        expanded => { record.expanded = expanded; });
+        expanded => { record.expanded = expanded; }, null, { inline: true });
       this.#treeOrder.set(record.content.parentNode, 2);
       parentElement.appendChild(record.content.parentNode);
       this.#descriptions.set(parentElement, record);
@@ -598,6 +688,7 @@ export class DevToolsUI {
     const query = this.#searchQuery;
     const changedOnly = this.#changedOnly;
     const active = query.length > 0 || changedOnly;
+    if (active) this.#leaveDrill();
     for (const content of this.#openedBySearch) content.style.display = "none";
     this.#openedBySearch.clear();
     for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
@@ -717,6 +808,16 @@ export class DevToolsUI {
     const target = this.#findPathTarget(normalized);
     if (!target) return false;
     this.#revealPageOf(target);
+    // Spec 174 C4: a target inside a drill-in section is shown inside its innermost one.
+    this.#leaveDrill();
+    let innermost = null;
+    for (let node = target.parentNode; node; node = node.parentNode) {
+      if (node.classList?.contains("devtools__section--drill")) {
+        innermost = node;
+        break;
+      }
+    }
+    if (innermost) this.focusSection(innermost);
 
     if (typeof this.#dependencyFeedback?.showRevealed === "function") {
       this.#dependencyFeedback.showRevealed([target]);

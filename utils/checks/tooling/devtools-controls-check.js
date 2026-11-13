@@ -477,7 +477,7 @@ function choiceRow(options, value, path) {
   const storageCache = { get: (key, fallback) => stored.get(key) ?? fallback, set: (key, value) => stored.set(key, JSON.parse(JSON.stringify(value))),
     remove: (key) => stored.delete(key) };
   const panelUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
-  const tools = new DevTools({ debug: {}, first: { x: { a: 1 } }, second: { x: { b: 2 } } }, { synchronize() {} },
+  const tools = new DevTools({ debug: { x: { a: 1 } }, x: { b: 2 } }, { synchronize() {} },
     { catalogs: { items: {}, fishes: [], maps: {} }, settingsStore: null, debugModulesSource: () => ({}), storageCache,
       createUI: () => ({ ui: panelUi, tooltipProvider: { ready: new Promise(() => {}) } }) });
   assert.equal(stored.has("dev_tools_sections_state"), false, "the title-keyed states of before are dropped");
@@ -493,7 +493,7 @@ function choiceRow(options, value, path) {
   const [firstAgain, secondAgain] = sectionTitled("x");
   assert.equal(isOpen(firstAgain), true, "the opened section is open after a redraw");
   assert.equal(isOpen(secondAgain), false, "a section with the same title elsewhere keeps its own state (it used to open too)");
-  assert.ok(JSON.stringify([...stored.values()]).includes("CONFIG.first/CONFIG.first.x"), "kept by place, not by title");
+  assert.match(JSON.stringify([...stored.values()]), /\/CONFIG(\.debug)?\/CONFIG(\.debug)?\.x"/u, "kept by place, not by title");
 
   // The hooked fish: only its own sections are drawn again.
   body.scrollTop = 480;
@@ -603,6 +603,55 @@ function choiceRow(options, value, path) {
   assert.equal(edits.isOverridden(["CONFIG", "rain", "opacity"]), false);
   assert.equal(JSON.stringify(synced), JSON.stringify([["CONFIG.rain.opacity", 1]]), "the panel shows the code's value");
   assert.equal(JSON.stringify(events), JSON.stringify(["config-updated"]), "the game hears it like an edit");
+}
+
+// --- TK-306 (spec 174 C4): deep sections open inside, with breadcrumbs ------------------------------------------------
+{
+  const drillUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const pages = drillUi.createPages([{ id: "config", title: "Конфіг", icon: "sliders" }, { id: "other", title: "Інше", icon: "map" }],
+    "config", () => {});
+  const page = pages.get("config");
+  const toggles = [];
+  const section = (title, parent, path) => drillUi.createSection(title, parent, false, (open) => toggles.push([title, open]), path);
+  const root = section("НАЛАШТУВАННЯ", page, ["CONFIG"]);
+  const physics = section("physics", root, ["CONFIG", "physics"]);
+  const fight = section("fight", physics, ["CONFIG", "physics", "fight"]);
+  const rod = section("rodControl", fight, ["CONFIG", "physics", "fight", "rodControl"]);
+  drillUi.addParameter(rod, { control: "number", label: "ratio", value: 2, onCommit() {},
+    path: ["CONFIG", "physics", "fight", "rodControl", "ratio"] });
+  const titleOf = (content) => content.parentNode.children[0];
+  const fightSection = titleOf(fight).parentNode;
+  assert.equal(titleOf(physics).parentNode.classList.contains("devtools__section--drill"), false, "two levels stay in place");
+  assert.equal(fightSection.classList.contains("devtools__section--drill"), true, "the third level opens inside");
+  titleOf(root).click(); titleOf(physics).click();
+  titleOf(fight).click();
+  assert.equal(page.classList.contains("devtools__page--drilled"), true, "the page shows the section alone");
+  assert.equal(fight.parentNode.className, "devtools__drill", "its content is in the page's drill area");
+  assert.equal(fight.style.display, "block");
+  assert.equal(toggles.some(([title]) => title === "fight"), false, "a drill-in is not an open/closed state to remember");
+  const crumbs = () => byClass("devtools__crumb", page).map((crumb) => crumb.textContent);
+  assert.deepEqual(crumbs(), ["Конфіг", "НАЛАШТУВАННЯ", "physics", "fight"], "breadcrumbs: module, every section above, here");
+  // Deeper again: rodControl opens inside fight's place.
+  titleOf(rod).click();
+  assert.deepEqual(crumbs(), ["Конфіг", "НАЛАШТУВАННЯ", "physics", "fight", "rodControl"]);
+  assert.equal(fight.parentNode, fightSection, "the previous drill-in went back to its place");
+  // A crumb back to a drill section shows it; a crumb to an inline section leaves the drill-in and shows it in place.
+  byClass("devtools__crumb", page).find((crumb) => crumb.textContent === "fight").click();
+  assert.equal(crumbs().at(-1), "fight");
+  byClass("devtools__crumb", page).find((crumb) => crumb.textContent === "physics").click();
+  assert.equal(page.classList.contains("devtools__page--drilled"), false);
+  assert.equal(byClass("devtools__crumbs", page).length, 0);
+  assert.equal(fight.parentNode, fightSection, "every row is back in its own place");
+  // A reveal (an overlay link) of a parameter inside opens its innermost drill-in.
+  drillUi.selectPage("other");
+  assert.equal(drillUi.revealPath(["CONFIG", "physics", "fight", "rodControl", "ratio"]), true);
+  assert.equal(page.hidden, false, "its module is shown");
+  assert.equal(crumbs().at(-1), "rodControl", "and the section holding it");
+  // A search works on the whole tree: it leaves the drill-in.
+  const input = byClass("devtools__search-input", drillUi.body.parentNode)[0];
+  input.value = "ratio"; input.fire("input");
+  assert.equal(page.classList.contains("devtools__page--drilled"), false);
+  drillUi.dispose();
 }
 
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------

@@ -290,6 +290,52 @@
   gap: 10px;
 }
 .devtools__page[hidden] { display: none; }
+/* Spec 174 C4: a deep section shown alone in its page, under breadcrumbs back up the tree. */
+.devtools__page--drilled > :not(.devtools__crumbs):not(.devtools__drill) { display: none; }
+.devtools__crumbs {
+  position: sticky;
+  top: -15px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: -15px -15px 0;
+  padding: 8px 15px;
+  border-bottom: 1px solid var(--devtools-line);
+  background: var(--devtools-surface);
+  font-size: 12px;
+}
+.devtools__crumb {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--ui-accent);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.devtools__crumb + .devtools__crumb::before {
+  content: "/";
+  margin-right: 8px;
+  color: var(--devtools-text-muted);
+}
+.ui-surface--desktop-hover .devtools__crumb:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__crumb:active { background: rgba(var(--ui-accent-rgb), 0.14); }
+.devtools__crumb:focus-visible { outline: 2px solid var(--ui-info); outline-offset: -2px; }
+.devtools__crumb--current { color: var(--ui-text); font-weight: 700; cursor: default; }
+.devtools__drill > .devtools__section-content {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
+}
+@media (pointer: coarse) {
+  .devtools__crumb { min-height: 36px; }
+}
 .devtools__empty {
   padding: 12px 4px;
   color: var(--devtools-text-muted);
