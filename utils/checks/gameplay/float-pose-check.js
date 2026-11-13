@@ -357,6 +357,13 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     run({ rocking, seconds: 4, input: () => ({ signals: signals({ castSerial: 1, windDeg: 40 }) }) });
     assert(rocking.status.weather > 1 + settings.windShare * 40 / 30 - 0.01, "and reaches its strength");
   }
+  // TK-290: with the waves switched off the float does not rock (the ripples of rain and boat do not move it).
+  {
+    const calmWater = waterWith({}, { waves: false });
+    const rocking = new FloatWaveRocking({ getSettings: () => calmWater });
+    const calm = run({ water: calmWater, rocking, seconds: 3 });
+    assert.deepEqual([calm.dy, calm.dx, rocking.status.state], [0, 0, "still"], "no waves: a still float");
+  }
   // Spec 172 D7 (TK-289): the float follows the same sea state as the water: its amplitude scales the rocking, its
   // speed and wavelength the tempo.
   {

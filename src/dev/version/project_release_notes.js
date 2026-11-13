@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-290: separate waves switch; rain and boat ripples work without waves and keep their size at night and in a storm.",
   "TK-271.2: rain drops and rings stay with the world (camera, window); drop count follows the visible rain area.",
   "TK-289 (spec 172 D7): waves follow wind, night and storm (sea state shared with the float); wave groups, breathing, dispersion.",
   "TK-288: installed line fitted to the rod at load (starting pole: 10 m on the rod, 15 m back in the backpack).",

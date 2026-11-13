@@ -24,6 +24,8 @@ export const CONFIG = {
     // art's own pixels), so the look keeps its proportions at every screen size.
     water: {
       enabled: true,
+      // TK-290: хвилі окремо; вимкнено — вода спокійна (і поплавок), брижі від дощу й човна лишаються.
+      waves: true,
       frameRate: 30, // кроків анімації води за секунду; кожен крок малює кадр сцени
       amplitude: 20, // зсув арту біля берега, пікселів арту; вдалині менше
       verticalShare: 1, // частка вертикального зсуву від горизонтального

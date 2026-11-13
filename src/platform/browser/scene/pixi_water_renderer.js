@@ -43,6 +43,10 @@ export class PixiWaterRenderer {
   // direction, so a wind change turns the waves without a jump; the sea state of the last step (DEV status).
   #travelPx = 0;
   #sea = { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 };
+  // TK-290: the waves' height as a share of the map's range (0 with the waves switched off) and the ripples' conversion
+  // into that range, so they keep their size whatever the waves and the sea do.
+  #waveShare = 1;
+  #rippleScale = 1;
   #metric = null;
   #getRainRipples;
 
@@ -130,10 +134,16 @@ export class PixiWaterRenderer {
     // the waves are never stretched.
     const fullWidth = this.#getImageSize?.(base.assetId)?.width || baseTexture.width;
     const artScale = base.width / fullWidth;
-    // Spec 172 D7: the sea state (wind, night, storm) scales the waves.
+    // Spec 172 D7: the sea state (wind, night, storm) scales the waves. TK-290: the filter's range is the base amplitude
+    // (times the sea's factor only above 1); the waves take their share of it (none when switched off) and the ripples
+    // (boat, rain) keep the base amplitude as their unit, so they stay the same by day, at night and without waves.
     const sea = world.sea;
     const seaAmplitude = Math.max(0, Number(sea?.amplitudeScale ?? 1) || 0);
-    this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * seaAmplitude * artScale;
+    const waves = settings.waves !== false;
+    const range = waves ? Math.max(1, seaAmplitude) : 1;
+    this.#waveShare = waves ? seaAmplitude / range : 0;
+    this.#rippleScale = 1 / range;
+    this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * range * artScale;
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
     const metric = world.waterPlane?.metric ?? null;
     const stepDue = this.#lastStepAt === null || metric !== this.#metric || reshaped ||
@@ -177,12 +187,12 @@ export class PixiWaterRenderer {
     let pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight,
       wavelength: (Number(settings.wavelength) || 1) * Math.max(0.1, Number(this.#sea.wavelengthScale) || 1),
       speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane, travelPx: this.#travelPx,
-      variation });
+      variation, amplitude: this.#waveShare });
     const wakeArea = this.#wakeArea;
     wakeArea.left = area.left; wakeArea.top = area.top; wakeArea.right = area.right; wakeArea.bottom = area.bottom;
-    pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings());
+    pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings(), this.#rippleScale);
     const rain = this.#getRainRipples();
-    if (rain) pixels = this.#field.addRipples(rain.puffs, wakeArea, rain.settings);
+    if (rain) pixels = this.#field.addRipples(rain.puffs, wakeArea, rain.settings, this.#rippleScale);
     this.#mapImage.data.set(pixels);
     this.#mapContext.putImageData(this.#mapImage, 0, 0);
     this.#mapTexture.source.update();

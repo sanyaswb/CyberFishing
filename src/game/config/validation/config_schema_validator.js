@@ -1218,6 +1218,7 @@ export class ConfigSchemaValidator {
     const cfg = this.config.canvas?.water;
     if (!cfg || typeof cfg !== "object") { this.#error("CONFIG.canvas.water", "missing scene water config"); return; }
     this.#requireBooleanWithLabel("canvas.water.enabled", cfg.enabled);
+    this.#requireBooleanWithLabel("canvas.water.waves", cfg.waves);
     for (const [key, min, max] of [["frameRate", 1, 60], ["amplitude", 0, 64], ["verticalShare", 0, 2],
       ["wavelength", 8, 2048], ["speed", 0, 1024], ["currentScale", 0, 20]]) {
       this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });

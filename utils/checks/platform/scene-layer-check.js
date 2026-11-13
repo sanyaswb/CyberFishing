@@ -797,6 +797,73 @@ async function checkRain() {
 // Spec 172 D7 (TK-289): the waves' variation and their integrated travel. Without a variation the travel alone sets the
 // pattern (a change of speed or direction never jumps); dispersion moves components apart, breathing changes heights
 // with time, and wave groups make some patches of water higher than others.
+// TK-290: the waves have their own switch. Off: the water's map is still except the ripples (rain, boat), and the
+// float is still; the ripples keep the base amplitude as their unit, so they are the same by day, at night, in a storm
+// and without waves; the filter's range follows the sea only above 1, so a calm night does not shrink the ripples.
+async function checkWavesSwitch() {
+  const { PixiWaterRenderer } = await importSource("src/platform/browser/scene/pixi_water_renderer.js");
+  const { pixi } = fakePixi();
+  const created = [];
+  const documentTarget = { createElement: (tagName) => { const element = fakeElement(tagName); created.push(element); return element; } };
+  const water = { enabled: true, waves: true, frameRate: 30, amplitude: 8, verticalShare: 1, wavelength: 200, speed: 40,
+    currentScale: 0, variation: { enabled: false } };
+  const drop = { x: 640, y: 500, size: 80, life: 0, getAt: null };
+  const rain = { puffs: { count: 1, getAt: () => drop }, settings: { enabled: true, strength: 0.5, radiusScale: 1.5 } };
+  const stage = new pixi.Container();
+  const renderer = new PixiWaterRenderer({ pixi, stage, documentTarget, textures: { get: () => ({ width: 2560, height: 1440 }) },
+    getSettings: () => water, getRainRipples: () => rain });
+  const [, , mapSprite] = stage.children;
+  const filter = stage.children[0].filters[0];
+  const map = created.find((element) => element.width === 192).getContext("2d");
+  const background = { assetId: "day", alpha: 1, x: 0, y: 0, width: 1280, height: 720 };
+  const lake = { x: 0, y: 300, width: 1280, height: 420 };
+  const world = { visible: true, backgroundLayers: { count: 1, getAt: () => background },
+    clipRegions: { count: 1, getAt: () => lake }, waterPlane: { metric: null, masked: false, left: 0, right: 2560, top: 0, bottom: 840 },
+    current: { x: 0, y: 0 }, boatWake: { count: 0, getAt: () => null }, sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } };
+  let now = 1000;
+  const step = (amplitudeScale) => {
+    world.sea.amplitudeScale = amplitudeScale;
+    now += 100;
+    renderer.update(world, 1280, 720, now);
+    return Array.from(map.last.data);
+  };
+  // Texels farther than the drop's ripple reaches (radius 60 px of 1280 px over 192 columns, 420 px over 48 rows).
+  const far = (pixels) => {
+    let biggest = 0;
+    for (let row = 0; row < 48; row += 1) for (let column = 0; column < 192; column += 1) {
+      const x = (column + 0.5) * 1280 / 192, y = 300 + (row + 0.5) * 420 / 48;
+      if (Math.hypot(x - drop.x, y - drop.y) < 120) continue;
+      const offset = (row * 192 + column) * 4;
+      biggest = Math.max(biggest, Math.abs(pixels[offset] - 128), Math.abs(pixels[offset + 1] - 128));
+    }
+    return biggest;
+  };
+  const near = (pixels) => {
+    let biggest = 0;
+    for (let index = 0; index < pixels.length; index += 4) biggest = Math.max(biggest, Math.abs(pixels[index] - 128));
+    return biggest;
+  };
+  const artScale = 1280 / 2560;
+  const day = step(1);
+  assert(far(day) > 40, "waves on: the water moves everywhere");
+  assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "the filter's range is the base amplitude");
+  const night = step(0.5);
+  assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "a calm night keeps the range (the ripples keep their size)");
+  assert(Math.abs(far(night) - far(day) * 0.5) <= 2, `and the waves take half of it (${far(night)} vs ${far(day)})`);
+  step(2);
+  assert(Math.abs(filter.scale.x - 2 * 2 * 8 * artScale) < 1e-9, "a storm twice as high widens the range");
+  water.waves = false;
+  const still = step(1);
+  assert.equal(far(still), 0, "waves off: the water is still away from the drop");
+  assert(near(still) > 10, "but the drop's ripple still bends it");
+  assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "through the same filter range");
+  assert.deepEqual(step(0.5), still, "the ripples are the same at night");
+  assert.deepEqual(step(2), still, "and in a storm");
+  water.waves = true;
+  assert(far(step(1)) > 40, "waves on again");
+  void mapSprite;
+}
+
 async function checkWaveVariation() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
   const field = new WaterWaveField({ width: 192, height: 48 });
@@ -1639,6 +1706,7 @@ async function main() {
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
   await checkWaveVariation();
+  await checkWavesSwitch();
   await checkRain();
   await checkSceneWorldKinds();
   await checkSceneTackle();

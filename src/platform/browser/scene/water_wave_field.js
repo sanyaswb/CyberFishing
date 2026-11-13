@@ -147,9 +147,11 @@ export class WaterWaveField {
   // strength x the water's full amplitude, fading linearly over the puff's life (not with the foam's alpha, which is
   // nearly transparent most of the time); radius radiusScale x half its size, at least RIPPLE_MIN_TEXELS texels; only on
   // water (the envelope). Call after write(); only texels near a puff change.
-  addRipples(puffs, area, settings) {
+  // TK-290: scale converts the ripples to this map's range: the water's displacement map spans the base wave amplitude
+  // times the sea's highest factor (PixiWaterRenderer), so ripples keep their size in art pixels whatever the waves do.
+  addRipples(puffs, area, settings, scale = 1) {
     if (!settings?.enabled || !puffs || puffs.count === 0) return this.#pixels;
-    const strength = Math.max(0, Number(settings.strength) || 0);
+    const strength = Math.max(0, Number(settings.strength) || 0) * Math.max(0, Number(scale) || 0);
     const radiusScale = Math.max(0, Number(settings.radiusScale) || 0);
     const width = this.#width, height = this.#height, pixels = this.#pixels;
     const texelWidth = (area.right - area.left) / width, texelHeight = (area.bottom - area.top) / height;
@@ -204,8 +206,13 @@ export class WaterWaveField {
   //   (multiple ^ (dispersion / 2), deep water), each component's height breathes by ±breath over its own multiple of
   //   breathSec, and the wave groups (groupScale wavelengths long, travelling at groupSpeed of the crests) raise or
   //   lower the waves by up to groupDepth.
+  //
+  // TK-290: amplitude (0 … 1, default 1) is the waves' height as a share of the map's range: 0 writes still water (the
+  // ripples are added after write()), so the waves can be switched off while the ripples stay.
   write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null, travelPx = null,
-    variation = null }) {
+    variation = null, amplitude = 1 }) {
+    const waveHeight = Math.max(0, Number(amplitude) || 0);
+    if (waveHeight === 0) return this.#writeStill();
     const width = this.#width;
     const height = this.#height;
     const pixels = this.#pixels;
@@ -251,7 +258,7 @@ export class WaterWaveField {
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
         const lift = groupDepth > 0 ? 1 + groupDepth * group[column] : 1;
-        const envelope = this.#envelope[index] * scale * lift;
+        const envelope = this.#envelope[index] * scale * lift * waveHeight;
         const offset = index * 4;
         pixels[offset] = 128 + 127 * envelope * rowX[column];
         pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
@@ -275,6 +282,17 @@ export class WaterWaveField {
         ? current.share * (1 + breath * Math.sin(TWO_PI * timeSec / (breathSec * own.period) + own.phase))
         : current.share;
     }
+  }
+
+  // TK-290: no waves: every texel at rest (128), so only the ripples added after this bend the art.
+  #writeStill() {
+    const pixels = this.#pixels;
+    for (let offset = 0; offset < pixels.length; offset += 4) {
+      pixels[offset] = 128;
+      pixels[offset + 1] = 128;
+      pixels[offset + 2] = 128;
+    }
+    return pixels;
   }
 
   // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that

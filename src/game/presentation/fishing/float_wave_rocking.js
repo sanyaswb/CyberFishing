@@ -78,7 +78,8 @@ export class FloatWaveRocking {
       const period = Math.max(0.2, Number(rocking.periodSec) || 2);
       // Every frequency below is a multiple of 0.01, so 100 turns is a common period: the wrap never jumps.
       this.#phase = (this.#phase + TWO_PI * dt * tempo / period) % (TWO_PI * 100);
-      const seaAmplitude = sea ? FloatWaveRocking.#positive(sea.amplitudeScale) : 1;
+      // TK-290: with the waves switched off (CONFIG.canvas.water.waves false) the water is still and so is the float.
+      const seaAmplitude = water.waves === false ? 0 : sea ? FloatWaveRocking.#positive(sea.amplitudeScale) : 1;
       const strength = FloatWaveRocking.#positive(water.amplitude) * seaAmplitude / REFERENCE_AMPLITUDE * surface * bite *
         landing * weather * ballast;
       status.landing = landing;
