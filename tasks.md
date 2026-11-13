@@ -11,148 +11,26 @@
 
 ## Задачі в роботі
 
-- [ ] **TK-298 (spec 178) — живий вітер світу (`0…1`), пориви, хвилі, дощ, поплавок, селектор мапи й шанси в DevTools (власник, 2026-11-13, v0.50.111).**
-      Проєкт: [specs/178-living-wind/spec.md](specs/178-living-wind/spec.md).
-  - [x] Етап A: `WindModel` (`src/game/domain/weather/wind_model.js`), окремий `windRng`, `EnvironmentSystem`, `MAP_DB.<id>.weather.wind` і `apply:weather` + `config-schema` / `weather-check`.
-  - [x] Етап B: інтеграція у світ — `SeaStateResolver` (неперервна `wind.strength`), `WeatherRenderModelBuilder` + `PixiRainRenderer` (нахил дощу від `wind.strength`), `WaterEntity` (поплавок із власним `%`-відкатом різної амплітуди й частоти), прибирання невикористаного `CONFIG.wind`.
-  - [x] Етап C: `WeatherDevSection` (селектор мапи, секція `Шанси погоди`, `💨 Ручна сила вітру`, повзунок `сила вітру, %`, кнопка `🌬 Порив вітру зараз`), `WeatherStatusReader` + `WeatherOverlayModule` (жива `Сила вітру 0…1` → `WEATHER.controls.windStrength`) + перевірка `R20`.
-  - [x] **TK-298.1 — виправлення за результатами рев'ю spec 178 проти коміту `14593885` (власник, 2026-11-13, v0.50.112):**
-    - Знайдено (підтверджено Node-сценарієм):
-      1. Після вимкнення `💨 Ручна сила вітру` (`setStrengthOverride(null)`) `#baseTarget` у `WindModel` залишався рівним ручному значенню до кінця поточного епізоду (до 300 с).
-      2. При ручному виборі напряму (`← вліво` / `вправо →`) під час наступних епізодів `calm` сила вітру падала в `0` при ненульовому напрямі, порушуючи інваріант `strength === 0 ⇔ direction === 0`.
-      3. У `WaterEntity` на межі циклів коливання (`_swingTimerMs <= 0`) фактор нахилу стрибав миттєво до нового `1 - _swingReturnShare` (стрибок цілі до ~10° при силі `0.9`), множник `amplitudeJitter > 1` міг перевищувати `maxAngleDeg`, а `maxAngleDeg: 0` через `|| 38` підмінявся на `38`.
-      4. `EnvironmentSystem.getPhysicsEnv()` брав `wind.float` зі стартового `this.#config`, а не з живого конфігу моделі вітру, та щокадру перераховував застарілі діапазони `breezeAngleRange`/`gustAngleRange`, коли працює `WindModel`.
-      5. У `WeatherDevSection` селектор «Локація» ховався при одній локації (`choices.length <= 1`), не мав підказки при виборі неактивної мапи, а spec 178 містив згадки `keepDirectionChance` / `floatSwing` без розділу «Що реалізовано».
-    - Зміна:
-      - `WindModel`: збереження автоматичної цілі епізоду (`#episodeTarget`) окремо від `#forcedStrength` (після `setStrengthOverride(null)` вітер одразу плавно повертається до `#episodeTarget` за `fadeSec`); при фіксованому напрямі `±1` авто-епізоди не обирають `calm` і тримають силу не нижче мінімуму `light`, а `setStrengthOverride(0)` скидає примусовий напрям у штиль (`strength === 0 ⇔ direction === 0`); публікація живого `float` у `snapshot`.
-      - `WaterEntity`: неперервний $C^1$-гладкий цикл коливання поплавка від поточного фактора `_swingStartFactor` через пік до нового відкату без стрибків на межі циклів, обмеження фінального кута межею `maxAngleDeg * (1 - windComp)` та коректна обробка `maxAngleDeg = 0`.
-      - `EnvironmentSystem`: читання живого `windSnap.float` і пропуск перерахунку legacy-полів, коли активна `WindModel`.
-      - `WeatherDevSection` + `specs/178-living-wind/spec.md`: селектор «Локація» показується завжди (з рядком-підказкою, якщо обрана неактивна локація); spec синхронізовано з кодом і доповнено розділом «Що реалізовано».
-    - Перевірка: детерміновані тести в `utils/checks/gameplay/weather-check.js` на всі 5 пунктів (падають на старому коді, проходять на новому), повний `node utils/run-checks.js` та `npm run measure:startup` після коміту.
-  - [ ] Перевірка власника: візуально перевірити у браузері нахил дощу/хвилі/коливання поплавка при поривах і ручній силі вітру, оверлей «ПОГОДА Й ХВИЛІ» (`Сила вітру 0…1`), DevTools ПОГОДА (`Локація`, `Шанси погоди`, керування силою вітру й поривами) та виміряти FPS через `⚡ ПРОДУКТИВНІСТЬ` в обох орієнтаціях.
-
-- [x] **TK-297 — кнопка закриття справа від повзунка розміру у вікнах оверлею (власник, 2026-11-13, v0.50.109).**
-      «зправа від повзунка з розміром додай кнопку закриття стиль візьми з ui-modal-close inventory-header__close».
-  - Знайдено: верхня панель масштабу `OverlayScaleControls` (`.debug-overlay__scale-controls`) містить лише повзунок
-    і підпис відсотка; вікна модулів оверлею та інструментальні вікна `ACTIVE FISH` / `ACTIVE ROD` не мають кнопки
-    закриття у правому верхньому куті та підписки синхронізації вимкнення назад у перемикачі DevTools.
-  - Зміна:
-    - `OverlayScaleControls` (`overlay_scale_controls.js`) і `overlay.css`: за наявності `onClose` справа від повзунка
-      рендериться `<button type="button" class="ui-modal-close debug-overlay__close" aria-label="Закрити вікно">`
-      (стиль успадковує `ui-modal-close`, розмір/позицію у шапці вікна задає `.debug-overlay__close` через `--ui-close-size: 28px`).
-    - Закриття вимикає відповідний ключ(і) в `OverlaySettingsStore`: `OverlayModule.close()` (з перевизначенням у
-      складених модулях `FightPhysicsOverlayModule`, `LiveForcesOverlayModule`), `OverlayController.#closeModule`,
-      `OverlayDomAdapter`, `debug_overlay_bootstrap.js`, `OverlayToolWindow`, `fight_balance_windows_composition.js`.
-    - `OverlaySettingsStore.subscribe(listener)` та синхронізація `DevTools` (`syncValue(["OVERLAY_MODULES", key], enabled)`
-      з відпискою у `dispose()`), щоб перемикач у DevTools одразу перемикався у вимкнений стан.
-  - Перевірка: розширення `overlay-balance-windows-check.js` (кнопка закриття справа, клік вимикає модуль і закриває
-    вікно, композитні модулі, `OverlayToolWindow`, синхронізація `OverlaySettingsStore`), `css-usage`, `config-runtime`,
-    повний `node utils/run-checks.js`.
-  - [ ] Перевірка власника TK-297: `dev.html` → увімкнути будь-яке вікно в `OVERLAY` (наприклад «ПОГОДА й хвилі»,
-        «ACTIVE FISH»): справа від повзунка розміру є червона кнопка `×` у стилі `ui-modal-close`; клік закриває вікно
-        і вимикає перемикач модуля в DevTools.
-
-- [x] **TK-296 (spec 177) — гіперпосилання з оверлею до параметрів DevTools із розкриттям і зеленим підсвічуванням (власник, 2026-11-13, v0.50.107).**
-      «чудово тепер тільки для цього модуля але заклади логіку і для майбутніх, потрібно в overlay текст зробити як
-      посилання (гіппер) при натисканні відкривається devtools розкривається параметр який відповідає за параметр який
-      натиснуто і підсвічується зеленим».
-  - Проєкт: [specs/177-overlay-devtools-links/spec.md](specs/177-overlay-devtools-links/spec.md).
-  - Зміна:
-    - Інфраструктура для будь-яких модулів Overlay: `OverlayHtmlBuilder.devLink` / `OverlayModule.devLink` та `devtoolsPath` /
-      `labelHtml` у `plainRow`, стиль `.debug-overlay__dev-link` у `overlay-content.css`, маршрутизація
-      `data-overlay-control="devtools-link"` через `OverlayInteractionBridge` (`onRevealDevToolsParameter`), зв'язок у
-      `debug_overlay_bootstrap.js` і `development_game_startup.js`.
-    - `DevTools.revealParameter(path)`, `DevToolsUI.revealPath(path)`, `DevToolsDependencyFeedback.showRevealed` і стиль
-      `.devtools__row--revealed` у `dev-tools.css`: відкриває DevTools, знаходить цільовий рядок (перевага
-      спеціалізованим секціям над `CONFIG`), розкриває всі згорнуті предківські секції, прокручує та тимчасово
-      підсвічує рядок зеленим.
-    - `WeatherDevSection` (шляхи для `rainStrength`, `stormStrength`, `fogStrength`, `windDirection`, `strike`) і
-      `WeatherOverlayModule` (гіперпосилання для параметрів погоди, часу ночі, хвиль і кожного множника).
-  - Перевірка: розширення `weather-check.js`, `devtools-controls-check.js`, `overlay-balance-windows-check.js`,
-    `css-usage`, `config-runtime`, повний `node utils/run-checks.js`.
-  - [ ] Перевірка власника TK-296: `dev.html` → DevTools → `OVERLAY` → «ПОГОДА й хвилі» (закрити DevTools): натиснути
-        будь-яке посилання в оверлеї (наприклад `Гроза 0…1`, `Амплітуда хвиль`, `штиль ×0.55`, `Ніч: затихання`,
-        `Вітер`): DevTools відкривається, автоматично розгортає відповідні секції й підсвічує потрібний параметр зеленим;
-        клік по посиланню всередині `<summary>` не згортає підпункти.
-  - [x] **TK-296.1 — прибрати пунктирні лінії та підкреслення й дати заголовкам оверлею фон із заокругленими краями (власник, 2026-11-13, v0.50.108).**
-        «пунктирні лінії і підкреслення прибери, заголовки повинні бути з фоном з заукругленими краями».
-    - Знайдено: у `overlay-content.css` посилання `.debug-overlay__dev-link` мали `text-decoration: underline dotted var(--ui-info)`
-      (і `solid` при наведенні), розділювач `.debug-overlay__divider` мав `border-top: 1px dashed var(--ui-border)`, а заголовки
-      `.debug-overlay__heading` мали нижнє підкреслення `border-bottom: 1px solid var(--ui-border)` без фону та заокруглення
-      (і `.debug-overlay__title` / дрібні підзаголовки в `overlay.css` й `overlay-content.css` також не мали заокругленої плашки фону).
-    - Зміна:
-      - `overlay-content.css`: прибрано `underline` / `dotted` у `.debug-overlay__dev-link` (`text-decoration: none`, колір `--ui-info`
-        і м’яка заокруглена плашка при наведенні/фокусі), замінено `dashed` у `.debug-overlay__divider` на легку суцільну лінію;
-        у `.debug-overlay__heading` прибрано `border-bottom` підкреслення і задано фон із заокругленими краями (`var(--ui-radius-panel)`,
-        `rgba(var(--ui-accent-rgb), 0.12)`), а також заокруглений фон для `.debug-overlay__section-title`, `.debug-overlay__group-title`,
-        `.debug-overlay__live-title`, `.debug-overlay__preview-title`, `.debug-overlay__physics-title`.
-      - `overlay.css`: заокруглений фон для `.debug-overlay__title` (вікна `ACTIVE FISH` / `ACTIVE ROD`) та легка заокруглена плашка для
-        заголовків згортаних груп `.debug-overlay__details > .debug-overlay__summary`.
-    - Перевірка: розширення `ui-surface-check.js` (перевірка відсутності `underline`/`dotted`/`dashed` та наявності `background`/`border-radius`
-      на заголовках), `css-usage`, `overlay-balance-windows`, повний `node utils/run-checks.js`.
-    - [ ] Перевірка власника TK-296.1: `dev.html` → `OVERLAY` → «ПОГОДА й хвилі» (та `ACTIVE FISH` / `ACTIVE ROD`): посилання без пунктирних
-          ліній і підкреслень (кольором `--ui-info`, з легким фоном при наведенні), заголовки без нижньої лінії — з м’яким заокругленим фоном.
-  - [x] **TK-296.2 — виправити шлях посилання «Ніч 0…1» у модулі «ПОГОДА й хвилі» та зафіксувати інцидент I-20 / R20 (власник, 2026-11-13, v0.50.110).**
-        «чому при натисканні ніч 0...1 мені підсвічується devtools__section-title» → «виправ також познач це в інцидентах
-        щоб такого не виникало пропиши алгорити перевірки і що робити якщо виникне така проблема».
-    - Знайдено: `WeatherOverlayModule` (`weather_overlay_module.js`) передавав `devtoolsPath: "CONFIG.timePhases.night.startHour"`,
-      тоді як у `CONFIG` (`game_config.js`) секція лежить за шляхом `CONFIG.spawns.timePhases.night.startHour`. Через відсутній
-      шлях `DevToolsUI.#findPathTarget` повертався префіксом до кореневої секції `"CONFIG"`, а `DevToolsDependencyFeedback.showRevealed`
-      підсвічував її перший дочірній елемент `row.children[0]` (`.devtools__section-title` секції `⚙️ НАЛАШТУВАННЯ (CONFIG)`).
-    - Зміна:
-      - `src/dev/overlay/modules/weather_overlay_module.js`: виправлено шлях на `CONFIG.spawns.timePhases.night.startHour`.
-      - `specs/177-overlay-devtools-links/spec.md`: оновлено шлях у специфікації.
-      - `utils/checks/gameplay/weather-check.js`: додано перевірку всіх `data-devtools-path="CONFIG.…"` атрибутів оверлею
-        щодо реального дерева `CONFIG` (кожен шлях мусить існувати та вказувати на скалярний листок).
-      - `docs/incidents.md`: додано інцидент `I-20`, правило `R20`, алгоритм перевірки `data-devtools-path` та інструкцію дій у разі підсвічування `.devtools__section-title`.
-    - Перевірка: `weather-check.js` впав на старому шляху `CONFIG.timePhases.night.startHour`, після виправлення — `weather`, `config-runtime` і повний `node utils/run-checks.js`.
-    - [ ] Перевірка власника TK-296.2: `dev.html` → `OVERLAY` → «ПОГОДА й хвилі» → натиснути `Ніч 0…1`: DevTools відкривається,
-          розкриває `CONFIG` → `spawns` → `timePhases` → `night` і підсвічує зеленим саме рядок параметра `startHour` (а не заголовок `.devtools__section-title`).
-
-- [x] **TK-295 — підпункти множників із поясненням у модулі оверлею «ПОГОДА Й ХВИЛІ» (власник, 2026-11-13, v0.50.106).**
-      «Модуль погода й хвилі, мені не подобається що множники потрібно додати як підпукнти до основних (загальних)
-      параметрів і розписати що це за множник і які у нього значення».
-  - Знайдено: у `WeatherOverlayModule` (`weather_overlay_module.js`) три загальні параметри хвиль (`Амплітуда хвиль`,
-    `Довжина хвиль`, `Швидкість хвиль`) виводили формулу в дужках в одному рядку `(база × загальний_множник)`, без
-    розшифрування складових множників `SeaStateResolver` (штиль/вітер, ніч, гроза, цільовий vs згладжений множник).
-  - Зміна:
-    - `SeaStateResolver` і `WeatherStatusReader`: додати статичний (без алокацій на кадр) блок `factors` з поточними
-      складовими множниками й межами з конфігу (`amplitude`, `wavelength`, `speed`, `smoothingSec`).
-    - `WeatherOverlayModule`: загальні рядки (`Амплітуда хвиль`, `Довжина хвиль`, `Швидкість хвиль`) показують чисте
-      підсумкове значення у `<summary>`, а вкладені підпункти в `.debug-overlay__details-body` (розгорнуті за
-      замовчуванням із збереженням стану згортання) розписують базу, загальний множник (і ціль під час згладжування)
-      та кожен чинник (`Вітер`, `Ніч`, `Гроза`) з поясненням, діапазоном значень і поточним множником.
-  - Перевірка: розширення `utils/checks/gameplay/weather-check.js` (перевірка `factors` у `SeaStateResolver` і
-    `WeatherStatusReader` та структури підпунктів і значень у `WeatherOverlayModule`, включно з вимкненим `seaState`
-    і перехідним згладжуванням), `css-usage`, один Full.
-  - [ ] Перевірка власника TK-295: `dev.html` → DevTools → `OVERLAY` → `enabled` → «ПОГОДА й хвилі»: параметри хвиль
-        мають підпункти множників із описом, діапазоном і поточними значеннями, під час зміни погоди/вітру/часу доби
-        значення множників оновлюються наживо; вигляд на ПК і телефоні.
-
-- [x] **TK-294 — кожен модуль OVERLAY у власному вікні з верхнім повзуном розміру (власник, 2026-11-13, v0.50.105).**
-      «СЕКЦІЯ OVERLAY кожен модуль повинен бути окремим вікном, розмір вікна тепер повинен регулюватися не кнопками + -
-      (їх прибрати) а повзуном вгорі кожного модуля рухаючи вліво чи вправо змінюється розмір вікна».
-  - Знайдено: усі 22 модулі реєстру `OverlayModuleRegistry` зливалися в одне вікно `#debugOverlay` (`OverlayDomAdapter`,
-    `OverlayController`); кнопки `− / +` (`OverlayScaleControls`) стояли внизу вікон (`OverlayDomAdapter` і
-    `OverlayToolWindow`). При зміні `zoom` контейнера нативний `<input type="range">` усередині нього тремтів би через
-    перерахунок ширини під курсором.
-  - Зміна:
-    - `OverlayController` і `OverlayModuleRegistry`: кожен активний модуль реєстру створює і показує власне ліниве вікно
-      `OverlayDomAdapter` (своя позиція `drag_pos_overlay_module_<key>`, каскадний старт до перетягування,
-      збережений масштаб `overlay_scale_<id>`). `OverlayInteractionBridge` (додані `attachRoot`/`detachRoot`) і
-      `OverlayMetricInfoBridge` (`eventTarget: mountNode`) працюють з усіма вікнами.
-    - `OverlayScaleControls` (і його розміщення вгорі в `OverlayDomAdapter` та `OverlayToolWindow`): прибрати кнопки
-      `− / +`; натомість горизонтальний повзун `role="slider"` угорі кожного вікна (`0.3…3.0`, перетягування за
-      зафіксованим `startX` без зворотного зв'язку від `zoom`, клавіатура `←/→/Home/End`, `touch-action: none`).
-    - `OverlayWindowDragController`: `[role="slider"]` не перехоплюється під перетягування вікна; опційний `defaultPosition`.
-    - `overlay.css`: прибрано `.debug-overlay__scale-button`, оформлено верхній повзун `.debug-overlay__scale-*`.
-  - Перевірка: `overlay-balance-windows` (верхній повзун без `−/+`, стабільне перетягування за `startX`, клавіатура,
-    кілька окремих лінивих вікон модулів, незалежне приховування/показ, `OverlayInteractionBridge` для кількох вікон,
-    `dispose`), `ui-surface`, `config-runtime`, `startup-load-report`, `css-usage`, один Full.
-  - [ ] Перевірка власника TK-294: `dev.html` → DevTools → `OVERLAY` → `enabled`: увімкнені модулі («⚡ ПРОДУКТИВНІСТЬ»,
-        «ПОГОДА Й ХВИЛІ», «ЕХОЛОТ» під час закиду, «ACTIVE FISH» / «ACTIVE ROD» тощо) відкриваються окремими вікнами,
-        перетягуються незалежно й пам'ятають свої місця; кнопок `−/+` немає, угорі кожного вікна повзун плавно змінює
-        його розмір рухом вліво/вправо на ПК і телефоні.
+- [ ] **Перевірка власника TK-298 та TK-298.1 (v0.50.111–v0.50.112):** візуально перевірити у браузері нахил дощу/хвилі/коливання поплавка при поривах і ручній силі вітру, оверлей «ПОГОДА Й ХВИЛІ» (`Сила вітру 0…1` → повзунок `сила вітру, %`), DevTools ПОГОДА (`Локація`, `Шанси погоди`, `💨 Ручна сила вітру`, `🌬 Порив вітру зараз`, плавне повернення після вимкнення ручної сили, ненульова сила при фіксованому напрямі) та виміряти FPS через `⚡ ПРОДУКТИВНІСТЬ` в обох орієнтаціях.
+      ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-294-298>))
+- [ ] **Перевірка власника TK-297 (v0.50.109):** `dev.html` → увімкнути будь-яке вікно в `OVERLAY` (наприклад «ПОГОДА й хвилі»,
+      «ACTIVE FISH»): справа від повзунка розміру є червона кнопка `×` у стилі `ui-modal-close`; клік закриває вікно
+      і вимикає перемикач модуля в DevTools.
+      ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-294-298>))
+- [ ] **Перевірка власника TK-296, TK-296.1, TK-296.2 (v0.50.107–v0.50.110):** `dev.html` → DevTools → `OVERLAY` → «ПОГОДА й хвилі» (закрити DevTools): натиснути
+      будь-яке посилання в оверлеї (наприклад `Гроза 0…1`, `Амплітуда хвиль`, `штиль ×0.55`, `Ніч 0…1` → `CONFIG.spawns.timePhases.night.startHour`,
+      `Вітер`): DevTools відкривається, автоматично розгортає відповідні секції й підсвічує потрібний параметр зеленим;
+      посилання без пунктирних ліній і підкреслень, заголовки з м’яким заокругленим фоном.
+      ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-294-298>))
+- [ ] **Перевірка власника TK-295 (v0.50.106):** `dev.html` → DevTools → `OVERLAY` → `enabled` → «ПОГОДА й хвилі»: параметри хвиль
+      мають підпункти множників із описом, діапазоном і поточними значеннями, під час зміни погоди/вітру/часу доби
+      значення множників оновлюються наживо; вигляд на ПК і телефоні.
+      ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-294-298>))
+- [ ] **Перевірка власника TK-294 (v0.50.105):** `dev.html` → DevTools → `OVERLAY` → `enabled`: увімкнені модулі («⚡ ПРОДУКТИВНІСТЬ»,
+      «ПОГОДА Й ХВИЛІ», «ЕХОЛОТ» під час закиду, «ACTIVE FISH» / «ACTIVE ROD» тощо) відкриваються окремими вікнами,
+      перетягуються незалежно й пам'ятають свої місця; кнопок `−/+` немає, угорі кожного вікна повзун плавно змінює
+      його розмір рухом вліво/вправо на ПК і телефоні.
+      ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-294-298>))
 
 - [ ] **Перевірка власника TK-291 (v0.50.101):** `dev.html` → DevTools «🖼️ СЦЕНА WebGL»: всередині «ПОГОДА»; «ВОДА» →
       «Стан моря» → підсекції «Звичайний стан» і «Гроза». Оверлей «ПОГОДА й хвилі» (DevTools → Overlay → «Сцена й
