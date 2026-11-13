@@ -5,6 +5,10 @@ import { LoadStepperDevSection } from "./load_stepper_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { DevParameterSchema } from "./config/dev_parameter_schema.js";
+import { DevConfigEditService } from "./config/dev_config_edit_service.js";
+import { ConfigTreeRenderer } from "./config/config_tree_renderer.js";
+import { HookedFishEditSync } from "./config/hooked_fish_edit_sync.js";
+import { ItemStatAliasSync } from "./config/item_stat_alias_sync.js";
 import {
   OVERLAY_MODULE_GROUPS,
   OVERLAY_MODULE_LABELS,
@@ -18,7 +22,6 @@ export class DevTools {
   #config;
   #catalogs;
   #settingsStore;
-  #debugModulesSource;
   #ui;
   #isOpen = false;
   #liveData = null;
@@ -26,12 +29,11 @@ export class DevTools {
   #activeFishShapeKey = "";
   #configRuntime = null;
   #configValidation = null;
-  #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
-  #parameterAliases;
-  #parameterSchema;
+  // Spec 174 B2: every edit goes through #edits; config and catalog trees are drawn by #tree.
+  #edits;
+  #tree;
   #itemProgressionDebugProvider;
-  #itemProgressionResolver;
   #grantCatalogItem;
   #rodSpine;
   #boatSpine;
@@ -41,7 +43,6 @@ export class DevTools {
   #scene;
   #zoneEditorState;
   #zoneEditorFiles;
-  #prepareZoneEdit;
   #readDynamicZones;
   #getDependentZones;
   #maskEditor;
@@ -73,18 +74,6 @@ export class DevTools {
       this.#populatePanel();
     }
   };
-
-  #excludeKeys = [
-    "id",
-    "name",
-    "icon", // ігноруємо емодзі, щоб не створювати для них зайвих полів
-    "backgroundAssets",
-    "depthAsset",
-    "endpoint",
-    "backgroundColor",
-    "colorGradient",
-    "statuses",
-  ];
 
   constructor(
     config,
@@ -131,7 +120,6 @@ export class DevTools {
     this.#storageCache = storageCache;
     this.#zoneEditorState = zoneEditorState;
     this.#zoneEditorFiles = zoneEditorFiles;
-    this.#prepareZoneEdit = prepareZoneEdit;
     this.#readDynamicZones = readDynamicZones;
     this.#getDependentZones = getDependentZones;
     this.#maskEditor = maskEditor;
@@ -150,23 +138,32 @@ export class DevTools {
             this.#createSectionWithCache(label, parent, path),
         })
       : null;
-    if (
-      !hookedFishProfileSynchronizer ||
-      typeof hookedFishProfileSynchronizer.synchronize !== "function"
-    ) {
-      throw new TypeError("DevTools requires hookedFishProfileSynchronizer");
-    }
+    // Before the edit service: it checks the synchroniser itself (HookedFishEditSync).
+    const hookedFishSync = new HookedFishEditSync({ synchronizer: hookedFishProfileSynchronizer,
+      fishes: catalogs.fishes });
     this.#config = config;
     this.#catalogs = catalogs;
     this.#settingsStore = settingsStore;
-    this.#debugModulesSource = debugModulesSource;
-    this.#hookedFishProfileSynchronizer = hookedFishProfileSynchronizer;
     this.#configRuntime = configRuntime;
     this.#configValidation = configValidation;
     this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
-    this.#parameterAliases = new DevToolsParameterAliasRegistry();
+    this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
+    this.#grantCatalogItem = grantCatalogItem;
+    this.#rodSpine = rodSpine;
+    this.#boatSpine = boatSpine;
+    this.#radio = radio;
+    this.#weather = weather;
+    this.#keepnet = keepnet;
+    this.#scene = scene;
+    const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
+    this.#ui = ui;
+    const parameterAliases = new DevToolsParameterAliasRegistry();
+    this.#edits = new DevConfigEditService({ config, catalogs, configRuntime, configValidation, parameterAliases,
+      prepareZoneEdit, getHookedFish: () => this.#liveData?.hookedFish, hookedFishSync,
+      itemStatSync: new ItemStatAliasSync({ items: catalogs.items }), itemProgressionResolver, debugModulesSource,
+      syncValue: (path, value) => this.#ui.syncValue(path, value), eventTarget: document });
     // The species list for parameters that name a fish: name, id and the species' image (level 1) where the game has one.
-    this.#parameterSchema = new DevParameterSchema({
+    const schema = new DevParameterSchema({
       sources: {
         fish: () =>
           (Array.isArray(this.#catalogs.fishes) ? this.#catalogs.fishes : [])
@@ -180,17 +177,8 @@ export class DevTools {
             })),
       },
     });
-    this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
-    this.#itemProgressionResolver = itemProgressionResolver;
-    this.#grantCatalogItem = grantCatalogItem;
-    this.#rodSpine = rodSpine;
-    this.#boatSpine = boatSpine;
-    this.#radio = radio;
-    this.#weather = weather;
-    this.#keepnet = keepnet;
-    this.#scene = scene;
-    const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
-    this.#ui = ui;
+    this.#tree = new ConfigTreeRenderer({ ui, schema, aliases: parameterAliases, edits: this.#edits,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) });
     tooltipProvider.ready.then(() => {
       if (!this.#isDisposed && this.#isOpen) this.#populatePanel();
     });
@@ -209,7 +197,7 @@ export class DevTools {
 
   // A config edit from another DEV tool (the zone editor's drag, spec 129) through the same validated path as the panel.
   updateConfig(path, value) {
-    this.#updateConfigValue(path, value);
+    this.#edits.update(path, value);
   }
 
   // TK-252: while the panel is open the game sends its live data (the hooked fish), Overlay on or off.
@@ -279,8 +267,8 @@ export class DevTools {
         createSection: (label, parent, path) =>
           this.#createSectionWithCache(label, parent, path),
         renderTree: (value, parent, path) =>
-          this.#buildTree(value, parent, path),
-        updateConfig: (path, value) => this.#updateConfigValue(path, value),
+          this.#tree.render(value, parent, path),
+        updateConfig: (path, value) => this.#edits.update(path, value),
         getWaterMetric: this.#getWaterMetric,
         createWaterMetric: this.#createWaterMetric,
         resetPerspective: (id) => this.#resetLocationPerspective(id),
@@ -316,8 +304,8 @@ export class DevTools {
           this.#createSectionWithCache(label, parent, path),
         config: () => this.#config.radio,
         renderConfigTree: (value, parent, path, options) =>
-          this.#buildTree(value, parent, path, options),
-        setConfig: (path, value) => this.#updateConfigValue(path, value),
+          this.#tree.render(value, parent, path, options),
+        setConfig: (path, value) => this.#edits.update(path, value),
         files: this.#zoneEditorFiles,
         gameVersion: this.#gameVersion,
       }).render(body);
@@ -385,7 +373,7 @@ export class DevTools {
       key.startsWith("overlay"),
     )) {
       const path = ["CONFIG", "debug", key];
-      this.#renderScalarValue({
+      this.#tree.renderScalar({
         key: key === "overlay" ? "enabled" : key,
         value: this.#config.debug[key],
         parentElement: overlayContent,
@@ -463,7 +451,7 @@ export class DevTools {
           mapDbContent,
           ["MAP_DB", key],
         );
-        this.#buildTree(location, sectionContent, ["MAP_DB", key]);
+        this.#tree.render(location, sectionContent, ["MAP_DB", key]);
       }
     }
 
@@ -480,7 +468,7 @@ export class DevTools {
           fishDbContent,
           ["FISH_DB", index],
         );
-        this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
+        this.#tree.render(fish, sectionContent, ["FISH_DB", index]);
       });
     }
 
@@ -491,13 +479,13 @@ export class DevTools {
         ["ITEM_DB"],
       );
       for (const key of Object.keys(this.#catalogs.items)) {
-        if (this.#excludeKeys.includes(key)) continue;
+        if (ConfigTreeRenderer.isExcludedKey(key)) continue;
         const sectionContent = this.#createSectionWithCache(key, dbContent, [
           "ITEM_DB",
           key,
         ]);
         // Шлях тепер починається з "ITEM_DB"
-        this.#buildTree(this.#catalogs.items[key], sectionContent, [
+        this.#tree.render(this.#catalogs.items[key], sectionContent, [
           "ITEM_DB",
           key,
         ]);
@@ -513,14 +501,14 @@ export class DevTools {
         ["CONFIG"],
       );
       for (const key of Object.keys(this.#config)) {
-        if (this.#shouldSkipKey(["CONFIG"], key)) continue;
+        if (this.#tree.skips(["CONFIG"], key)) continue;
         const sectionContent = this.#createSectionWithCache(
           key,
           configContent,
           ["CONFIG", key],
         );
         // Шлях тепер починається з "CONFIG"
-        this.#buildTree(this.#config[key], sectionContent, ["CONFIG", key]);
+        this.#tree.render(this.#config[key], sectionContent, ["CONFIG", key]);
       }
     }
   }
@@ -534,7 +522,7 @@ export class DevTools {
       body,
       ["CONFIG", "debug"],
     );
-    this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"], {
+    this.#tree.render(this.#config.debug, debugContent, ["CONFIG", "debug"], {
       groupedDebug: true,
     });
     // TK-260: which stays in view when the fish runs far: the rod (off) or the fish / float (on). It edits the game's
@@ -548,7 +536,7 @@ export class DevTools {
         this.#config.locations.cameraFollowPriority === "tackle",
         debugContent,
         (enabled) => {
-          this.#updateConfigValue(priorityPath, enabled ? "tackle" : "rod");
+          this.#edits.update(priorityPath, enabled ? "tackle" : "rod");
           this.#ui.syncValue(switchPath, enabled);
         },
         switchPath,
@@ -558,14 +546,14 @@ export class DevTools {
       "DEBUG_INVENTORY",
     ]);
     if (this.#config.debug.inventory)
-      this.#buildTree(this.#config.debug.inventory, inventory, [
+      this.#tree.render(this.#config.debug.inventory, inventory, [
         "CONFIG",
         "debug",
         "inventory",
       ]);
     if (this.#config.debug.inventorySplit) {
       const splitPath = ["CONFIG", "debug", "inventorySplit"];
-      this.#buildTree(
+      this.#tree.render(
         this.#config.debug.inventorySplit,
         this.#createSectionWithCache("Split", inventory, splitPath),
         splitPath,
@@ -603,7 +591,7 @@ export class DevTools {
       activeFishContent,
       ["HOOKED_FISH"],
     );
-    this.#buildTree(fish, fishRuntimeContent, ["HOOKED_FISH"], {
+    this.#tree.render(fish, fishRuntimeContent, ["HOOKED_FISH"], {
       visibilityPolicy: this.#activeFishVisibilityPolicy,
       applyHookedFishLegacySkips: false,
     });
@@ -624,26 +612,15 @@ export class DevTools {
     );
 
     for (const shortcut of shortcuts) {
-      const value = this.#readPath(shortcut.path);
+      const value = this.#edits.read(shortcut.path);
       if (!value || typeof value !== "object") continue;
       const content = this.#createSectionWithCache(
         shortcut.title || shortcut.path.join("."),
         globalContent,
         shortcut.path,
       );
-      this.#buildTree(value, content, shortcut.path);
+      this.#tree.render(value, content, shortcut.path);
     }
-  }
-
-  #readPath(path) {
-    const root = this.#resolveEditableRoot(path?.[0]);
-    if (!root) return undefined;
-    let current = root;
-    for (let i = 1; i < path.length; i++) {
-      if (current == null) return undefined;
-      current = current[path[i]];
-    }
-    return current;
   }
 
   #getActiveFishKey() {
@@ -655,94 +632,10 @@ export class DevTools {
   #getActiveFishShapeKey() {
     const fish = this.#liveData?.hookedFish;
     if (!fish) return "";
-    const paths = [];
-    this.#collectVisibleScalarPaths(fish, ["HOOKED_FISH"], paths, {
+    return this.#tree.visibleScalarPaths(fish, ["HOOKED_FISH"], {
       visibilityPolicy: this.#activeFishVisibilityPolicy,
       applyHookedFishLegacySkips: false,
-    });
-    return paths.join("|");
-  }
-
-  #collectVisibleScalarPaths(obj, path, output, options = {}) {
-    if (!obj || typeof obj !== "object") return;
-
-    for (const key in obj) {
-      if (this.#shouldSkipKey(path, key, options)) continue;
-
-      const value = obj[key];
-      const currentPath = [...path, key];
-      if (options.visibilityPolicy?.isVisible?.(currentPath, value) === false) {
-        continue;
-      }
-
-      if (value && typeof value === "object") {
-        this.#collectVisibleScalarPaths(value, currentPath, output, options);
-        continue;
-      }
-
-      if (
-        typeof value === "number" ||
-        typeof value === "boolean" ||
-        typeof value === "string"
-      ) {
-        output.push(currentPath.join("."));
-      }
-    }
-  }
-
-  #shouldSkipKey(path, key, options = {}) {
-    if (
-      options.groupedDebug &&
-      path.join(".") === "CONFIG.debug" &&
-      (key.startsWith("overlay") ||
-        key === "inventory" ||
-        key === "inventorySplit")
-    )
-      return true;
-    if (!options.visibilityPolicy && this.#excludeKeys.includes(key))
-      return true;
-    if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
-      return true;
-    }
-    if (options.applyHookedFishLegacySkips !== false) {
-      if (
-        path[0] === "HOOKED_FISH" &&
-        (key === "weight" ||
-          key === "level" ||
-          key === "maxLevel" ||
-          key === "resistance" ||
-          key === "biteSequence")
-      ) {
-        return true;
-      }
-      if (path[0] === "HOOKED_FISH" && path[1] === "physics") {
-        const compatibilityKeys = new Set([
-          "basePower",
-          "baseStamina",
-          "levelBasePower",
-          "staminaWeightMultiplier",
-          "minStaminaActivityMultiplier",
-          "exhaustedSpeedRatio",
-          "baseSpeedMetersPerSec",
-          "agility",
-          "bounceCooldownMs",
-          "dirChangeMinMs",
-          "dirChangeMaxMs",
-          "lastDashTrigger",
-          "behaviors",
-          "pullResistance",
-          "fishRetrieve",
-        ]);
-        if (compatibilityKeys.has(key)) return true;
-      }
-    }
-
-    const isConfigLocationsMap =
-      path[0] === "CONFIG" && path[1] === "locations" && key === "map";
-    const isConfigSpawnsFishes =
-      path[0] === "CONFIG" && path[1] === "spawns" && key === "fishes";
-
-    return isConfigLocationsMap || isConfigSpawnsFishes;
+    }).join("|");
   }
 
   // One button per catalog item adds it to the player's inventory, so catalog-only items can be tested in game.
@@ -776,7 +669,7 @@ export class DevTools {
       builds: "📦 Комплекти",
     };
     for (const category of Object.keys(this.#catalogs.items)) {
-      if (this.#excludeKeys.includes(category)) continue;
+      if (ConfigTreeRenderer.isExcludedKey(category)) continue;
       const section = this.#createSectionWithCache(
         labels[category] || category,
         content,
@@ -823,7 +716,7 @@ export class DevTools {
       createSection: (label, parent, path) =>
         this.#createSectionWithCache(label, parent, path),
       renderConfigTree: (parent) =>
-        this.#buildTree(this.#config.ui.rod.spine, parent, [
+        this.#tree.render(this.#config.ui.rod.spine, parent, [
           "CONFIG",
           "ui",
           "rod",
@@ -841,7 +734,7 @@ export class DevTools {
       createSection: (label, parent, path) =>
         this.#createSectionWithCache(label, parent, path),
       renderConfigTree: (parent) =>
-        this.#buildTree(this.#config.ui.boat, parent, ["CONFIG", "ui", "boat"]),
+        this.#tree.render(this.#config.ui.boat, parent, ["CONFIG", "ui", "boat"]),
     }).render(body);
   }
 
@@ -861,8 +754,8 @@ export class DevTools {
       createSection: (label, parent, path) =>
         this.#createSectionWithCache(label, parent, path),
       renderConfigTree: (value, parent, path, options) =>
-        this.#buildTree(value, parent, path, options),
-      updateConfig: (path, value) => this.#updateConfigValue(path, value),
+        this.#tree.render(value, parent, path, options),
+      updateConfig: (path, value) => this.#edits.update(path, value),
       files: this.#zoneEditorFiles,
       getBaseRain: () => this.#configRuntime?.baseConfig.canvas?.rain ?? null,
       getBaseLocationWeather: (id) =>
@@ -885,7 +778,7 @@ export class DevTools {
       createSection: (label, parent, path) =>
         this.#createSectionWithCache(label, parent, path),
       renderWaterConfig: (parent) =>
-        this.#buildTree(this.#config.canvas.water, parent, [
+        this.#tree.render(this.#config.canvas.water, parent, [
           "CONFIG",
           "canvas",
           "water",
@@ -912,87 +805,9 @@ export class DevTools {
     );
   }
 
-  #formatDevToolsKey(key, path) {
-    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled")
-      return "Прискорення ⏩";
-    if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore)
-      return key;
-    const overridePath = path.slice(1).join(".");
-    return this.#configRuntime.overrideStore.has(overridePath)
-      ? `${key} *`
-      : key;
-  }
-
   #getOverlayModuleLabel(key) {
     const labels = OVERLAY_MODULE_LABELS;
     return labels?.[key]?.label || key;
-  }
-
-  #buildTree(obj, parentElement, path, options = {}) {
-    for (const key in obj) {
-      if (this.#shouldSkipKey(path, key, options)) continue;
-
-      const val = obj[key];
-      const currentPath = [...path, key];
-      if (options.visibilityPolicy?.isVisible?.(currentPath, val) === false) {
-        continue;
-      }
-
-      if (Array.isArray(val)) {
-        if (val.length > 0 && typeof val[0] === "number") {
-          this.#ui.createInputRow(
-            this.#formatDevToolsKey(key, currentPath),
-            val.join(", "),
-            parentElement,
-            "array",
-            (newVal) => this.#updateConfigValue(currentPath, newVal),
-            currentPath,
-          );
-        } else if (val.length > 0 && typeof val[0] === "object") {
-          const content = this.#createSectionWithCache(
-            key,
-            parentElement,
-            currentPath,
-          );
-          val.forEach((item, index) => {
-            const itemLabel =
-              item.id || item.variant || item.itemType || `Item [${index}]`;
-            const itemContent = this.#createSectionWithCache(
-              itemLabel,
-              content,
-              [...currentPath, index],
-            );
-            this.#buildTree(
-              item,
-              itemContent,
-              [...currentPath, index],
-              options,
-            );
-          });
-        }
-      } else if (val !== null && typeof val === "object") {
-        const content = this.#createSectionWithCache(
-          key,
-          parentElement,
-          currentPath,
-        );
-        this.#buildTree(val, content, currentPath, options);
-      } else if (
-        typeof val === "number" ||
-        typeof val === "boolean" ||
-        typeof val === "string"
-      ) {
-        this.#renderScalarValue({
-          key,
-          value: val,
-          parentElement,
-          displayPath: currentPath,
-          canonicalPath: currentPath,
-        });
-      }
-    }
-
-    this.#renderParameterAliases(obj, parentElement, path);
   }
 
   #renderItemProgressionSection(body) {
@@ -1056,193 +871,8 @@ export class DevTools {
     return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
-  #renderParameterAliases(obj, parentElement, parentPath) {
-    const aliases =
-      this.#parameterAliases?.getAliasesForParent(parentPath) || [];
-    for (const alias of aliases) {
-      if (Object.prototype.hasOwnProperty.call(obj, alias.key)) continue;
-      const value = this.#readPath(alias.canonicalPath);
-      if (
-        typeof value !== "number" &&
-        typeof value !== "boolean" &&
-        typeof value !== "string"
-      ) {
-        continue;
-      }
-      this.#renderScalarValue({
-        key: alias.key,
-        value,
-        parentElement,
-        displayPath: alias.displayPath,
-        canonicalPath: alias.canonicalPath,
-      });
-    }
-  }
-
-  #renderScalarValue({
-    key,
-    value,
-    parentElement,
-    displayPath,
-    canonicalPath,
-  }) {
-    const onChange = (newValue) =>
-      this.#updateConfigValue(canonicalPath, newValue);
-    // TK-283: parameters with a list of values are described in one place (DevParameterSchema).
-    const described = this.#parameterSchema.describe(canonicalPath, value);
-    // TK-292: the switches this parameter depends on; its row is inactive while one of them is off.
-    const dependency = { requires: this.#prerequisites(canonicalPath) };
-    if (described) {
-      const label = this.#formatDevToolsKey(key, canonicalPath);
-      if (described.control === "choice") {
-        this.#ui.createChoiceRow(
-          label,
-          described.options,
-          value,
-          parentElement,
-          onChange,
-          displayPath,
-          canonicalPath,
-          dependency,
-        );
-      } else {
-        this.#ui.createSegmentsRow(
-          label,
-          described.options,
-          value,
-          parentElement,
-          onChange,
-          displayPath,
-          canonicalPath,
-          dependency,
-        );
-      }
-      return;
-    }
-    if (typeof value === "boolean") {
-      this.#ui.createSwitcherRow(
-        key,
-        value,
-        parentElement,
-        onChange,
-        displayPath,
-        canonicalPath,
-        dependency,
-      );
-      return;
-    }
-    this.#ui.createInputRow(
-      this.#formatDevToolsKey(key, canonicalPath),
-      value,
-      parentElement,
-      typeof value === "number" ? "number" : "string",
-      onChange,
-      displayPath,
-      canonicalPath,
-      dependency,
-    );
-  }
-
-  // Spec 131 prerequisites of a parameter, read live from the config (DevParameterSchema names the switches).
-  #prerequisites(canonicalPath) {
-    return this.#parameterSchema
-      .prerequisitesOf(canonicalPath, (path) => this.#readPath(path))
-      .map((path) => ({ path, isEnabled: () => this.#readPath(path) === true }));
-  }
-
-  #updateConfigValue(path, newValue) {
-    path = this.#parameterAliases?.resolveCanonicalPath(path) || path;
-    const displayPath = path;
-    if (this.#prepareZoneEdit)
-      ({ path, value: newValue } = this.#prepareZoneEdit(path, newValue));
-    const root = this.#resolveEditableRoot(path[0]);
-    if (!root) return;
-
-    if (path[0] === "CONFIG" && this.#configRuntime) {
-      this.#configRuntime.set(path, newValue);
-      this.#refreshFightPhysicsAdapter();
-      this.#configValidation?.report(`edit ${path.join(".")}`, {
-        quietWhenValid: true,
-      });
-    } else {
-      let target = root;
-      for (let i = 1; i < path.length - 1; i++) {
-        target = target[path[i]];
-      }
-      target[path[path.length - 1]] = newValue;
-    }
-
-    this.#ui.syncValue(path, newValue);
-    if (displayPath !== path) {
-      let displayedValue = newValue;
-      for (const key of displayPath.slice(path.length))
-        displayedValue = displayedValue?.[key];
-      this.#ui.syncValue(displayPath, displayedValue);
-    }
-
-    this.#syncDebugConsoleModule(path, newValue);
-    this.#syncHookedFishProfileAliases(path, newValue, root);
-    this.#syncHookedFishLevelBalance(path);
-    if (path[0] === "HOOKED_FISH") {
-      this.#emitHookedFishUpdated(path, newValue, root);
-      return;
-    }
-    this.#syncItemDbStatAliases(path, newValue);
-    this.#invalidateItemProgression(path);
-    console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
-
-    document.dispatchEvent(
-      new CustomEvent("config-updated", {
-        detail: {
-          path,
-          value: newValue,
-          override: path[0] === "CONFIG",
-        },
-      }),
-    );
-  }
-
-  #syncDebugConsoleModule(path, newValue) {
-    if (
-      path[0] !== "CONFIG" ||
-      path[1] !== "debug" ||
-      path[2] !== "consoleModules" ||
-      path.length !== 4
-    ) {
-      return;
-    }
-
-    const moduleKey = path[3];
-    if (typeof window !== "undefined") {
-      this.#debugModulesSource()[moduleKey] = newValue === true;
-    }
-
-    document.dispatchEvent(
-      new CustomEvent("debug-module-toggled", {
-        detail: { module: moduleKey, enabled: newValue === true },
-      }),
-    );
-  }
-
-  #refreshFightPhysicsAdapter() {
-    // The canonical adapter reads this live config; Bootstrap owns its single identity.
-  }
-
   #applyImportedOverrides(overrides) {
-    const normalizedOverrides =
-      this.#parameterAliases?.normalizeConfigOverrides(overrides) || overrides;
-    this.#configRuntime?.importOverrides?.(normalizedOverrides);
-    this.#refreshFightPhysicsAdapter();
-    document.dispatchEvent(
-      new CustomEvent("config-updated", {
-        detail: {
-          path: ["CONFIG"],
-          value: this.#config,
-          importOverrides: true,
-        },
-      }),
-    );
-    this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
+    this.#edits.importOverrides(overrides);
     if (this.#isOpen) this.#populatePanel();
   }
 
@@ -1256,14 +886,7 @@ export class DevTools {
     const count = this.#configRuntime?.overrideStore?.entries?.().length || 0;
     this.#ui.createInfoRow("active overrides", String(count), content);
     this.#ui.createButtonRow("Reset all overrides", content, () => {
-      this.#configRuntime?.resetAll?.();
-      this.#refreshFightPhysicsAdapter();
-      document.dispatchEvent(
-        new CustomEvent("config-updated", {
-          detail: { path: ["CONFIG"], value: this.#config, resetAll: true },
-        }),
-      );
-      this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
+      this.#edits.resetAll();
       this.#populatePanel();
       this.#configValidation?.report("reset all overrides");
     });
@@ -1303,7 +926,7 @@ export class DevTools {
         this.#configRuntime?.reset?.(path);
       return;
     }
-    this.#updateConfigValue(path, initial);
+    this.#edits.update(path, initial);
     for (const [key, value] of Object.entries(
       this.#config.locations.map[id].waterProjection || {},
     )) {
@@ -1314,40 +937,15 @@ export class DevTools {
   // Spec 130 D5: drops the session's overrides of a location's zones (the whole list and every child path), so the
   // zones are the code's again, and tells the game to reload the location's map.
   #resetLocationZones(id) {
-    this.#resetOverrideTree(
-      ["locations", "map", id, "zones"],
-      this.#config.locations.map[id]?.zones,
-    );
+    this.#edits.resetOverrideTree(["locations", "map", id, "zones"]);
     console.log(`[DevTools] Зони ${id} скинуто до коду`);
   }
 
   // Spec 175 TK-286: drops the session's overrides of rain look and the location's weather so both match the code again.
   #resetWeather(id) {
-    this.#resetOverrideTree(["canvas", "rain"], this.#config.canvas?.rain);
-    this.#resetOverrideTree(
-      ["locations", "map", id, "weather"],
-      this.#config.locations?.map?.[id]?.weather,
-    );
+    this.#edits.resetOverrideTree(["canvas", "rain"]);
+    this.#edits.resetOverrideTree(["locations", "map", id, "weather"]);
     console.log(`[DevTools] Погоду ${id} скинуто до коду`);
-  }
-
-  #resetOverrideTree(configParts, fallbackValue) {
-    const prefix = configParts.join(".");
-    for (const key of Object.keys(
-      this.#configRuntime.exportOverrides?.() || {},
-    )) {
-      if (key === prefix || key.startsWith(prefix + "."))
-        this.#configRuntime.reset(key);
-    }
-    document.dispatchEvent(
-      new CustomEvent("config-updated", {
-        detail: {
-          path: ["CONFIG", ...configParts],
-          value: fallbackValue,
-          override: true,
-        },
-      }),
-    );
   }
 
   #exportRuntimeOverrides() {
@@ -1371,228 +969,5 @@ export class DevTools {
     } catch (error) {
       console.warn("[DevTools] Failed to import runtime overrides", error);
     }
-  }
-
-  #resolveEditableRoot(rootName) {
-    if (rootName === "ITEM_DB" && typeof this.#catalogs.items !== "undefined")
-      return this.#catalogs.items;
-    if (rootName === "FISH_DB" && typeof this.#catalogs.fishes !== "undefined")
-      return this.#catalogs.fishes;
-    if (rootName === "HOOKED_FISH") return this.#liveData?.hookedFish || null;
-    if (rootName === "MAP_DB" && typeof this.#catalogs.maps !== "undefined")
-      return this.#catalogs.maps;
-    if (rootName === "CONFIG" && typeof this.#config !== "undefined")
-      return this.#config;
-    return null;
-  }
-
-  #emitHookedFishUpdated(path, value, fish) {
-    console.log(`[DevTools] Оновлено ${path.join(".")} =`, value);
-    document.dispatchEvent(
-      new CustomEvent("debug-hooked-fish-updated", {
-        detail: { path, value, fish },
-      }),
-    );
-  }
-
-  #syncHookedFishProfileAliases(path, newValue, fish) {
-    if (path[0] !== "HOOKED_FISH" || path[1] !== "physics" || !fish?.physics) {
-      return;
-    }
-
-    const profileName = path[2];
-    const field = path[3];
-    if (!profileName || !field) return;
-
-    const aliasByProfile = {
-      forceProfile: {
-        basePower: "basePower",
-        levelBasePower: "levelBasePower",
-      },
-      staminaProfile: {
-        baseStamina: "baseStamina",
-        staminaWeightMultiplier: "staminaWeightMultiplier",
-        minStaminaActivityMultiplier: "minStaminaActivityMultiplier",
-        exhaustedSpeedRatio: "exhaustedSpeedRatio",
-      },
-      movementProfile: {
-        baseSpeed: "baseSpeed",
-        agility: "agility",
-        bounceCooldownMs: "bounceCooldownMs",
-        dirChangeMinMs: "dirChangeMinMs",
-        dirChangeMaxMs: "dirChangeMaxMs",
-        lastDashTrigger: "lastDashTrigger",
-      },
-    };
-
-    const alias = aliasByProfile[profileName]?.[field];
-    if (alias) {
-      fish.physics[alias] = newValue;
-    }
-  }
-
-  #syncHookedFishLevelBalance(path) {
-    if (path[0] !== "HOOKED_FISH") return;
-
-    const changedKey = path[path.length - 1];
-    if (
-      changedKey !== "weight" &&
-      changedKey !== "level" &&
-      changedKey !== "hasAnomaly"
-    ) {
-      return;
-    }
-
-    const fish = this.#liveData?.hookedFish;
-    if (!fish) return;
-
-    const template = this.#findFishTemplate(fish);
-    const synchronization = this.#hookedFishProfileSynchronizer.synchronize({
-      fish,
-      template,
-      changedKey,
-    });
-    const range = synchronization?.range;
-    if (!range) return;
-    fish.physics = fish.physics || {};
-    fish.physics.forceProfile = fish.physics.forceProfile || {};
-    fish.physics.movementProfile = fish.physics.movementProfile || {};
-    this.#applyFiniteNumber(
-      fish.physics.forceProfile,
-      "levelBasePower",
-      range.basePower,
-    );
-    this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
-    const levelSpeed = this.#firstFiniteNumber(
-      range.baseSpeed,
-      range.speedMultiplier,
-      range.speed,
-    );
-    this.#applyFiniteNumber(
-      fish.physics.movementProfile,
-      "baseSpeed",
-      levelSpeed,
-    );
-    this.#applyFiniteNumber(fish.physics, "baseSpeed", levelSpeed);
-  }
-
-  #findFishTemplate(fish) {
-    if (
-      typeof this.#catalogs.fishes === "undefined" ||
-      !Array.isArray(this.#catalogs.fishes)
-    )
-      return null;
-    return (
-      this.#catalogs.fishes.find((candidate) => candidate?.id === fish?.id) ||
-      null
-    );
-  }
-
-  #applyFiniteNumber(target, key, value) {
-    if (!Number.isFinite(Number(value))) return;
-    target[key] = Math.max(0, Number(value));
-  }
-
-  #firstFiniteNumber(...values) {
-    for (const value of values) {
-      if (Number.isFinite(Number(value))) return Number(value);
-    }
-    return NaN;
-  }
-
-  #syncItemDbStatAliases(path, newValue) {
-    if (path[0] !== "ITEM_DB" || path.length < 5) return;
-
-    const category = path[1];
-    const itemId = path[2];
-    const group = path[3];
-    const field = path[4];
-    const item = this.#catalogs.items?.[category]?.[itemId];
-    if (!item || typeof item !== "object") return;
-
-    if (group === "displayStats") {
-      const gameplayKey = this.#resolveDisplayStatGameplayKey(
-        item,
-        category,
-        field,
-        newValue,
-      );
-      if (!gameplayKey) return;
-      item.gameplayStats = item.gameplayStats || {};
-      item.gameplayStats[gameplayKey] = newValue;
-      return;
-    }
-
-    if (group === "gameplayStats") {
-      const displayKey = this.#resolveGameplayStatDisplayKey(item, field);
-      if (!displayKey) return;
-      item.displayStats[displayKey] = newValue;
-    }
-  }
-
-  #resolveDisplayStatGameplayKey(item, category, field, value) {
-    const key = String(field).toLowerCase();
-    if (key === "level") return "equipmentPowerLevel";
-    if (key === "power" || key === "basepower" || key === "strength") {
-      return "basePower";
-    }
-    if (key === "maxdistance" || key === "distance") return "maxDistance";
-
-    if (category !== "rods") return null;
-    const keys = Object.keys(item.displayStats || {});
-    const index = keys.indexOf(field);
-    if (index === 0 && Number.isFinite(Number(value))) {
-      return "equipmentPowerLevel";
-    }
-    if (index === 1 && Number.isFinite(Number(value))) return "basePower";
-    return null;
-  }
-
-  #resolveGameplayStatDisplayKey(item, field) {
-    const displayStats = item.displayStats;
-    if (!displayStats || typeof displayStats !== "object") return null;
-
-    for (const key of Object.keys(displayStats)) {
-      const gameplayKey = this.#resolveDisplayStatGameplayKey(
-        item,
-        "rods",
-        key,
-        displayStats[key],
-      );
-      if (gameplayKey === field) return key;
-    }
-
-    if (
-      field === "equipmentPowerLevel" &&
-      Object.prototype.hasOwnProperty.call(displayStats, "level")
-    ) {
-      return "level";
-    }
-    if (
-      field === "basePower" &&
-      Object.prototype.hasOwnProperty.call(displayStats, "power")
-    ) {
-      return "power";
-    }
-    if (
-      field === "maxDistance" &&
-      Object.prototype.hasOwnProperty.call(displayStats, "distance")
-    ) {
-      return "distance";
-    }
-    return null;
-  }
-
-  #invalidateItemProgression(path) {
-    const affectsProgression =
-      path?.[0] === "ITEM_DB" ||
-      (path?.[0] === "CONFIG" && path?.[1] === "itemProgression");
-    if (!affectsProgression) return;
-    this.#itemProgressionResolver?.invalidate?.();
-    document.dispatchEvent(
-      new CustomEvent("item-progression-updated", {
-        detail: { path },
-      }),
-    );
   }
 }

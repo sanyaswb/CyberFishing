@@ -1629,7 +1629,7 @@ async function checkDevWiring() {
     "the water's state, step cost and drift are shown");
   assert.equal(waterEditors.length, 1, "the live editor of CONFIG.canvas.water sits in the section");
   assert.match(readFlat("src/dev/tools/dev_tools.js"),
-    /renderWaterConfig: \(parent\) => this\.#buildTree\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
+    /renderWaterConfig: \(parent\) => this\.#tree\.render\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
   assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
   assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
   assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");

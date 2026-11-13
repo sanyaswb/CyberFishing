@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.114 - DevTools edit path split out
+
+- TK-299 (spec 174 B2): DevTools' edit path (config overrides, catalogs, the hooked fish, events) and its config tree drawing are separate modules (DevConfigEditService, ConfigTreeRenderer, HookedFishEditSync, ItemStatAliasSync); the panel behaves the same.
+
 ## v0.50.113 - Rain gust slant impulse, default float wind compensation & live ITEM_DB float sync
 
 - TK-298.2 (spec 178): forwarded `windGust` (`gustStrength`) into `WeatherRenderModelBuilder` and `PixiRainRenderer` so gusts add an extra drop-slant impulse and faster angle response even at `100%` wind; changed default `windCompensation` on `float_day`, `float_night` and `float_sliding` from `[0.1, 1.0]` to `[0.1, 0.65]` so floats visibly lean in wind out of the box; synced live `ITEM_DB` edits in `GameApplication.#handleItemDatabaseUpdate` directly onto the active `FloatEntity`/`WaterEntity` in water (`syncEquipmentStats`) and supported space/comma separators in DevTools array inputs.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.105 - Separate overlay windows with top scale slider
 
 - TK-294: every active DevTools OVERLAY module now opens in its own lazily created, independently draggable window with persisted position and scale; removed −/+ buttons and replaced them with a top horizontal `role="slider"` bar (`0.3`–`3.0`) on every overlay and tool window.
-
-## v0.50.104 - Weather section names
-
-- TK-291.1 (owner): DevTools sections are named «ПОГОДА» and «ВОДА», the overlay «ПОГОДА й хвилі»; the weather and DevTools sources are reformatted. The scene checks read source shapes by meaning, not by line wrapping.

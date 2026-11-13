@@ -15,7 +15,7 @@ document.createElement = (tag) => {
 };
 // Rows made through DevToolsUI use the page's timers; nothing in this check waits for them.
 const clipboard = [];
-const runtime = new SourceRuntime({ globals: { document, setTimeout: () => 0, clearTimeout() {},
+const runtime = new SourceRuntime({ globals: { document, setTimeout: () => 0, clearTimeout() {}, CustomEvent,
   navigator: { clipboard: { writeText: async (text) => { clipboard.push(text); } } } } });
 const { DevToolsUI } = runtime.importModule("src/dev/tools/dev_tools_ui.js");
 const { NumberField } = runtime.importModule("src/dev/tools/controls/number_field.js");
@@ -332,6 +332,67 @@ function choiceRow(options, value, path) {
     "CONFIG.locations.showCatchZone", "CONFIG.locations.showPoleFightSector", "CONFIG.locations.showFightLineRadius", "CONFIG.debug.overlayUpdateMs"]) {
     assert.notEqual(read(text.split(".")), undefined, `${text} named by the schema exists in the config`);
   }
+}
+
+// --- TK-299 (spec 174 B2): the one edit path, moved out of DevTools ---------------------------------------------------
+{
+  const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+  const { HookedFishEditSync } = runtime.importModule("src/dev/tools/config/hooked_fish_edit_sync.js");
+  const { ItemStatAliasSync } = runtime.importModule("src/dev/tools/config/item_stat_alias_sync.js");
+  const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+  const events = [], synced = [], logs = [], sets = [], resets = [];
+  const config = { debug: { consoleModules: { forces: false }, fixedCatch: {}, godMode: { forceAnomalyChance: false } },
+    canvas: { rain: { opacity: 1 } } };
+  const overrides = { "canvas.rain.opacity": 0.5, "canvas.rain": {}, "canvas.rainy": 1 };
+  const configRuntime = {
+    set: (path, value) => { sets.push(path.join(".")); let target = config; for (const key of path.slice(1, -1)) target = target[key]; target[path.at(-1)] = value; },
+    exportOverrides: () => overrides, reset: (key) => resets.push(key),
+  };
+  const rod = { itemType: "rod", displayStats: { level: 3, power: 4 }, gameplayStats: { equipmentPowerLevel: 3, basePower: 4 } };
+  const fish = { id: "carp", weight: 1, physics: { forceProfile: { basePower: 2 } } };
+  const synchronizations = [];
+  const modules = {};
+  const edits = new DevConfigEditService({ config, catalogs: { items: { rods: { rod } }, fishes: [{ id: "carp" }], maps: {} },
+    configRuntime, configValidation: { report() {} }, parameterAliases: new DevToolsParameterAliasRegistry(),
+    getHookedFish: () => fish,
+    hookedFishSync: new HookedFishEditSync({ fishes: [{ id: "carp" }],
+      synchronizer: { synchronize: (input) => { synchronizations.push(input.changedKey); return { range: { basePower: 7, baseSpeed: 1.5 } }; } } }),
+    itemStatSync: new ItemStatAliasSync({ items: { rods: { rod } } }), debugModulesSource: () => modules,
+    syncValue: (path, value) => synced.push([path.join("."), value]),
+    eventTarget: { dispatchEvent: (event) => events.push([event.type, JSON.stringify(event.detail.path ?? event.detail.module)]) },
+    logger: { log: (...args) => logs.push(args.join(" ")) } });
+  edits.update(["CONFIG", "debug", "consoleModules", "forces"], true);
+  assert.equal(sets.at(-1), "CONFIG.debug.consoleModules.forces", "CONFIG goes through the override store");
+  assert.equal(modules.forces, true, "a console module switch reaches the console's module list");
+  assert.equal(JSON.stringify(events.splice(0)), JSON.stringify([["debug-module-toggled", '"forces"'],
+    ["config-updated", '["CONFIG","debug","consoleModules","forces"]']]));
+  assert.equal(JSON.stringify(synced.at(-1)), JSON.stringify(["CONFIG.debug.consoleModules.forces", true]), "the panel's controls are synced");
+  edits.update(["CONFIG", "debug", "fixedCatch", "hasAnomaly"], true);
+  assert.equal(sets.at(-1), "CONFIG.debug.godMode.forceAnomalyChance", "a linked parameter is written at its canonical path");
+  edits.update(["ITEM_DB", "rods", "rod", "displayStats", "power"], 9);
+  assert.equal(rod.gameplayStats.basePower, 9, "an item's display stat keeps its gameplay stat equal");
+  edits.update(["ITEM_DB", "rods", "rod", "gameplayStats", "equipmentPowerLevel"], 5);
+  assert.equal(rod.displayStats.level, 5, "and the other way round");
+  assert.ok(events.some(([type]) => type === "item-progression-updated"), "an item edit invalidates the item progression view");
+  events.length = 0;
+  edits.update(["HOOKED_FISH", "weight"], 2);
+  assert.equal(fish.weight, 2);
+  assert.equal(JSON.stringify(synchronizations), JSON.stringify(["weight"]), "a weight edit recomputes the level balance");
+  assert.equal(fish.physics.levelBasePower, 7);
+  assert.equal(fish.physics.movementProfile.baseSpeed, 1.5);
+  edits.update(["HOOKED_FISH", "physics", "forceProfile", "basePower"], 3);
+  assert.equal(fish.physics.basePower, 3, "a profile field updates its physics alias");
+  assert.equal(JSON.stringify(events.map(([type]) => type)), JSON.stringify(["debug-hooked-fish-updated", "debug-hooked-fish-updated"]),
+    "the hooked fish is announced as such, never as a config edit");
+  assert.equal(edits.read(["HOOKED_FISH", "physics", "basePower"]), 3, "read reaches every root");
+  assert.equal(edits.read(["NOWHERE", "x"]), undefined);
+  events.length = 0;
+  const rainBefore = config.canvas.rain;
+  edits.resetOverrideTree(["canvas", "rain"]);
+  assert.equal(JSON.stringify(resets), JSON.stringify(["canvas.rain.opacity", "canvas.rain"]),
+    "a subtree reset drops that subtree's overrides only (not canvas.rainy)");
+  assert.equal(events.at(-1)[0], "config-updated");
+  assert.equal(rainBefore, config.canvas.rain);
 }
 
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
