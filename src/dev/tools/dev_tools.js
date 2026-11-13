@@ -5,7 +5,10 @@ import { LoadStepperDevSection } from "./load_stepper_dev_section.js";
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { DevParameterSchema } from "./config/dev_parameter_schema.js";
-import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
+import {
+  OVERLAY_MODULE_GROUPS,
+  OVERLAY_MODULE_LABELS,
+} from "../overlay/config/overlay_modules_config.js";
 import { SpineRodDevSection } from "./spine_rod_dev_section.js";
 import { SpineBoatDevSection } from "./spine_boat_dev_section.js";
 import { SceneLayerDevSection } from "./scene_layer_dev_section.js";
@@ -139,15 +142,18 @@ export class DevTools {
     this.#openHouse = openHouse;
     this.#openGame = openGame;
     this.#assetLoadPlanStore = assetLoadPlanStore;
-    this.#loadStepperSection = loadStepper ? new LoadStepperDevSection({ ...loadStepper,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }) : null;
+    this.#loadStepperSection = loadStepper
+      ? new LoadStepperDevSection({
+          ...loadStepper,
+          createSection: (label, parent, path) =>
+            this.#createSectionWithCache(label, parent, path),
+        })
+      : null;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
     ) {
-      throw new TypeError(
-        "DevTools requires hookedFishProfileSynchronizer",
-      );
+      throw new TypeError("DevTools requires hookedFishProfileSynchronizer");
     }
     this.#config = config;
     this.#catalogs = catalogs;
@@ -159,11 +165,20 @@ export class DevTools {
     this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
     this.#parameterAliases = new DevToolsParameterAliasRegistry();
     // The species list for parameters that name a fish: name, id and the species' image (level 1) where the game has one.
-    this.#parameterSchema = new DevParameterSchema({ sources: {
-      fish: () => (Array.isArray(this.#catalogs.fishes) ? this.#catalogs.fishes : []).filter((fish) => fish?.id)
-        .map((fish) => ({ value: fish.id, label: fish.name || fish.id, hint: fish.id,
-          imageUrl: this.#keepnet?.imagePathOf?.({ id: fish.id, level: 1 }) || "" })),
-    } });
+    this.#parameterSchema = new DevParameterSchema({
+      sources: {
+        fish: () =>
+          (Array.isArray(this.#catalogs.fishes) ? this.#catalogs.fishes : [])
+            .filter((fish) => fish?.id)
+            .map((fish) => ({
+              value: fish.id,
+              label: fish.name || fish.id,
+              hint: fish.id,
+              imageUrl:
+                this.#keepnet?.imagePathOf?.({ id: fish.id, level: 1 }) || "",
+            })),
+      },
+    });
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
     this.#grantCatalogItem = grantCatalogItem;
@@ -178,10 +193,7 @@ export class DevTools {
     tooltipProvider.ready.then(() => {
       if (!this.#isDisposed && this.#isOpen) this.#populatePanel();
     });
-    document.addEventListener(
-      "debug-live-update",
-      this.#onDebugLiveUpdate,
-    );
+    document.addEventListener("debug-live-update", this.#onDebugLiveUpdate);
   }
 
   mountScreenToggle(mountNode) {
@@ -215,10 +227,7 @@ export class DevTools {
   dispose() {
     if (this.#isDisposed) return;
     this.#isDisposed = true;
-    document.removeEventListener(
-      "debug-live-update",
-      this.#onDebugLiveUpdate,
-    );
+    document.removeEventListener("debug-live-update", this.#onDebugLiveUpdate);
     this.#liveData = null;
     this.#zoneEditorSection?.dispose();
     this.#weatherSection?.dispose();
@@ -235,7 +244,8 @@ export class DevTools {
     body.innerHTML = "";
     const pages = [];
     if (this.#openGame) pages.push(["До риболовлі ▶", () => this.#openGame()]);
-    if (this.#openHouse) pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
+    if (this.#openHouse)
+      pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
     if (pages.length) this.#ui.createNavigation(pages, body);
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
@@ -246,43 +256,61 @@ export class DevTools {
     const debugContent = this.#renderConfigDebugSection(body);
     this.#renderSceneLayerSection(body);
     if (this.#zoneEditorState) {
-      this.#zoneEditorSection = new ZoneEditorSection({ ui: this.#ui, state: this.#zoneEditorState, config: this.#config,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderTree: (value, parent, path) => this.#buildTree(value, parent, path),
-      updateConfig: (path, value) => this.#updateConfigValue(path, value),
-      getWaterMetric: this.#getWaterMetric,
-      createWaterMetric: this.#createWaterMetric,
-      resetPerspective: id => this.#resetLocationPerspective(id),
-      files: this.#zoneEditorFiles,
-      getBaseZones: id => this.#configRuntime?.baseConfig.locations.map[id]?.zones ?? null,
-      resetZones: this.#configRuntime ? id => this.#resetLocationZones(id) : null,
-      gameVersion: this.#gameVersion,
-      readDynamicZones: this.#readDynamicZones,
-      getDependentZones: this.#getDependentZones,
-      maskEditor: this.#maskEditor,
-      zoneDrawing: this.#zoneDrawing,
-      fullscreen: this.#zoneEditorFullscreen,
+      this.#zoneEditorSection = new ZoneEditorSection({
+        ui: this.#ui,
+        state: this.#zoneEditorState,
+        config: this.#config,
+        createSection: (label, parent, path) =>
+          this.#createSectionWithCache(label, parent, path),
+        renderTree: (value, parent, path) =>
+          this.#buildTree(value, parent, path),
+        updateConfig: (path, value) => this.#updateConfigValue(path, value),
+        getWaterMetric: this.#getWaterMetric,
+        createWaterMetric: this.#createWaterMetric,
+        resetPerspective: (id) => this.#resetLocationPerspective(id),
+        files: this.#zoneEditorFiles,
+        getBaseZones: (id) =>
+          this.#configRuntime?.baseConfig.locations.map[id]?.zones ?? null,
+        resetZones: this.#configRuntime
+          ? (id) => this.#resetLocationZones(id)
+          : null,
+        gameVersion: this.#gameVersion,
+        readDynamicZones: this.#readDynamicZones,
+        getDependentZones: this.#getDependentZones,
+        maskEditor: this.#maskEditor,
+        zoneDrawing: this.#zoneDrawing,
+        fullscreen: this.#zoneEditorFullscreen,
       });
       this.#zoneEditorSection.render(body);
     }
 
     this.#renderDatabaseSection(body);
     if (this.#rodSpine || this.#boatSpine) {
-      const spineSection = this.#createSectionWithCache("SPINE", body, ["SPINE"]);
+      const spineSection = this.#createSectionWithCache("SPINE", body, [
+        "SPINE",
+      ]);
       if (this.#rodSpine) this.#renderSpineRodSection(spineSection);
       if (this.#boatSpine) this.#renderSpineBoatSection(spineSection);
     }
     if (this.#radio) {
-      new RadioDevSection({ ui: this.#ui, radio: this.#radio,
-        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      new RadioDevSection({
+        ui: this.#ui,
+        radio: this.#radio,
+        createSection: (label, parent, path) =>
+          this.#createSectionWithCache(label, parent, path),
         config: () => this.#config.radio,
-        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
+        renderConfigTree: (value, parent, path, options) =>
+          this.#buildTree(value, parent, path, options),
         setConfig: (path, value) => this.#updateConfigValue(path, value),
-        files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
+        files: this.#zoneEditorFiles,
+        gameVersion: this.#gameVersion,
+      }).render(body);
     }
     this.#renderActiveFishSection(body);
     this.#loadStepperSection?.render(body, this.#ui);
-    const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
+    const service = this.#createSectionWithCache("Сервіс", body, [
+      "DEV_SERVICE",
+    ]);
     this.#renderRuntimeOverrideControls(service);
     this.#renderAssetLoadPlanControls(service);
     this.#renderItemProgressionSection(service);
@@ -293,21 +321,40 @@ export class DevTools {
   #renderAssetLoadPlanControls(service) {
     const store = this.#assetLoadPlanStore;
     if (!store) return;
-    const content = this.#createSectionWithCache(store.isEdited() ? "ПЛАН ЗАВАНТАЖЕННЯ (змінено)" : "ПЛАН ЗАВАНТАЖЕННЯ",
-      service, ["DEV_SERVICE", "ASSET_LOAD_PLAN"]);
+    const content = this.#createSectionWithCache(
+      store.isEdited() ? "ПЛАН ЗАВАНТАЖЕННЯ (змінено)" : "ПЛАН ЗАВАНТАЖЕННЯ",
+      service,
+      ["DEV_SERVICE", "ASSET_LOAD_PLAN"],
+    );
     this.#ui.createButtonRow("Експорт плану", content, () => {
       const text = store.exportText();
-      if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(text).catch(() => {});
-      window.prompt?.("Текст для src/game/config/raw/assets/asset_load_plan.js", text);
+      if (navigator?.clipboard?.writeText)
+        navigator.clipboard.writeText(text).catch(() => {});
+      window.prompt?.(
+        "Текст для src/game/config/raw/assets/asset_load_plan.js",
+        text,
+      );
     });
-    this.#ui.createButtonRow("Змінити план (з наступного старту)", content, () => {
-      const json = window.prompt?.("JSON плану завантаження", JSON.stringify(store.plan()));
-      if (!json) return;
-      let errors;
-      try { errors = store.save(JSON.parse(json)); } catch (error) { errors = [error.message]; }
-      if (errors.length > 0) window.alert?.(`План не збережено:\n${errors.join("\n")}`);
-      else window.alert?.("План збережено: діє з наступного старту.");
-    });
+    this.#ui.createButtonRow(
+      "Змінити план (з наступного старту)",
+      content,
+      () => {
+        const json = window.prompt?.(
+          "JSON плану завантаження",
+          JSON.stringify(store.plan()),
+        );
+        if (!json) return;
+        let errors;
+        try {
+          errors = store.save(JSON.parse(json));
+        } catch (error) {
+          errors = [error.message];
+        }
+        if (errors.length > 0)
+          window.alert?.(`План не збережено:\n${errors.join("\n")}`);
+        else window.alert?.("План збережено: діє з наступного старту.");
+      },
+    );
     this.#ui.createButtonRow("Скинути план до конфігу", content, () => {
       store.reset();
       window.alert?.("Скинуто: з наступного старту діє план із конфігу.");
@@ -315,11 +362,20 @@ export class DevTools {
   }
 
   #renderOverlaySection(body) {
-    const overlayContent = this.#createSectionWithCache("OVERLAY", body, ["OVERLAY"]);
-    for (const key of Object.keys(this.#config.debug || {}).filter(key => key.startsWith("overlay"))) {
+    const overlayContent = this.#createSectionWithCache("OVERLAY", body, [
+      "OVERLAY",
+    ]);
+    for (const key of Object.keys(this.#config.debug || {}).filter((key) =>
+      key.startsWith("overlay"),
+    )) {
       const path = ["CONFIG", "debug", key];
-      this.#renderScalarValue({ key: key === "overlay" ? "enabled" : key, value: this.#config.debug[key],
-        parentElement: overlayContent, displayPath: path, canonicalPath: path });
+      this.#renderScalarValue({
+        key: key === "overlay" ? "enabled" : key,
+        value: this.#config.debug[key],
+        parentElement: overlayContent,
+        displayPath: path,
+        canonicalPath: path,
+      });
     }
     const overlaySettings = this.#settingsStore;
     const overlayModules = overlaySettings?.getSnapshot?.();
@@ -374,7 +430,9 @@ export class DevTools {
   }
 
   #renderDatabaseSection(body) {
-    const database = this.#createSectionWithCache("БАЗА ДАНИХ", body, ["DATABASE"]);
+    const database = this.#createSectionWithCache("БАЗА ДАНИХ", body, [
+      "DATABASE",
+    ]);
     if (typeof this.#catalogs.maps !== "undefined") {
       const mapDbContent = this.#createSectionWithCache(
         "🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)",
@@ -423,7 +481,10 @@ export class DevTools {
           key,
         ]);
         // Шлях тепер починається з "ITEM_DB"
-        this.#buildTree(this.#catalogs.items[key], sectionContent, ["ITEM_DB", key]);
+        this.#buildTree(this.#catalogs.items[key], sectionContent, [
+          "ITEM_DB",
+          key,
+        ]);
       }
     }
   }
@@ -449,36 +510,59 @@ export class DevTools {
   }
 
   #renderConfigDebugSection(body) {
-    if (typeof this.#config === "undefined" || !this.#config?.debug) return null;
+    if (typeof this.#config === "undefined" || !this.#config?.debug)
+      return null;
 
     const debugContent = this.#createSectionWithCache(
       "🐞 DEBUG (CONFIG.debug)",
       body,
       ["CONFIG", "debug"],
     );
-    this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"], { groupedDebug: true });
+    this.#buildTree(this.#config.debug, debugContent, ["CONFIG", "debug"], {
+      groupedDebug: true,
+    });
     // TK-260: which stays in view when the fish runs far: the rod (off) or the fish / float (on). It edits the game's
     // own setting CONFIG.locations.cameraFollowPriority live (spec 153 D1).
     if (this.#config.locations) {
       // The switch binds its own path: config syncs carry "rod" / "tackle", a switch shows only true.
       const priorityPath = ["CONFIG", "locations", "cameraFollowPriority"];
       const switchPath = ["DEBUG_CAMERA", "followsTackle"];
-      this.#ui.createSwitcherRow("🎥 Камера тримає рибу (інакше — вудку в кадрі)",
-        this.#config.locations.cameraFollowPriority === "tackle", debugContent, (enabled) => {
+      this.#ui.createSwitcherRow(
+        "🎥 Камера тримає рибу (інакше — вудку в кадрі)",
+        this.#config.locations.cameraFollowPriority === "tackle",
+        debugContent,
+        (enabled) => {
           this.#updateConfigValue(priorityPath, enabled ? "tackle" : "rod");
           this.#ui.syncValue(switchPath, enabled);
-        }, switchPath);
+        },
+        switchPath,
+      );
     }
-    const inventory = this.#createSectionWithCache("Inventory", debugContent, ["DEBUG_INVENTORY"]);
-    if (this.#config.debug.inventory) this.#buildTree(this.#config.debug.inventory, inventory, ["CONFIG", "debug", "inventory"]);
+    const inventory = this.#createSectionWithCache("Inventory", debugContent, [
+      "DEBUG_INVENTORY",
+    ]);
+    if (this.#config.debug.inventory)
+      this.#buildTree(this.#config.debug.inventory, inventory, [
+        "CONFIG",
+        "debug",
+        "inventory",
+      ]);
     if (this.#config.debug.inventorySplit) {
       const splitPath = ["CONFIG", "debug", "inventorySplit"];
-      this.#buildTree(this.#config.debug.inventorySplit, this.#createSectionWithCache("Split", inventory, splitPath), splitPath);
+      this.#buildTree(
+        this.#config.debug.inventorySplit,
+        this.#createSectionWithCache("Split", inventory, splitPath),
+        splitPath,
+      );
     }
     // TK-227/228: the keepnet fill lives under DEBUG, not among the main sections.
     if (this.#keepnet) {
-      new KeepnetDevSection({ ui: this.#ui, keepnet: this.#keepnet,
-        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path) }).render(debugContent);
+      new KeepnetDevSection({
+        ui: this.#ui,
+        keepnet: this.#keepnet,
+        createSection: (label, parent, path) =>
+          this.#createSectionWithCache(label, parent, path),
+      }).render(debugContent);
     }
     return debugContent;
   }
@@ -591,9 +675,16 @@ export class DevTools {
   }
 
   #shouldSkipKey(path, key, options = {}) {
-    if (options.groupedDebug && path.join(".") === "CONFIG.debug" &&
-        (key.startsWith("overlay") || key === "inventory" || key === "inventorySplit")) return true;
-    if (!options.visibilityPolicy && this.#excludeKeys.includes(key)) return true;
+    if (
+      options.groupedDebug &&
+      path.join(".") === "CONFIG.debug" &&
+      (key.startsWith("overlay") ||
+        key === "inventory" ||
+        key === "inventorySplit")
+    )
+      return true;
+    if (!options.visibilityPolicy && this.#excludeKeys.includes(key))
+      return true;
     if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
       return true;
     }
@@ -640,28 +731,69 @@ export class DevTools {
 
   // One button per catalog item adds it to the player's inventory, so catalog-only items can be tested in game.
   #renderItemGrantSection(body) {
-    if (typeof this.#grantCatalogItem !== "function" || typeof this.#catalogs.items === "undefined") return;
-    const content = this.#createSectionWithCache("🎁 БЕЗКОШТОВНИЙ МАГАЗИН", body, ["ITEM_SHOP"], { buttonTitle: true });
-    const labels = { rods: "🎣 Вудки", reels: "🧵 Котушки", lines: "🧶 Ліски", hooks: "🪝 Гачки",
-      leaders: "🪢 Поводки", floats: "🥢 Поплавки", nets: "🕸️ Підсаки", misc: "☣️ Інше",
-      baits: "🪱 Наживки та снасті", chums: "🍞 Прикормки для риболовлі",
-      aquariumFeeds: "🐟 Прикормки для акваріума", deliveryMethods: "🚤 Доставка", batteries: "🔋 Живлення", devices: "📻 Пристрої", builds: "📦 Комплекти" };
+    if (
+      typeof this.#grantCatalogItem !== "function" ||
+      typeof this.#catalogs.items === "undefined"
+    )
+      return;
+    const content = this.#createSectionWithCache(
+      "🎁 БЕЗКОШТОВНИЙ МАГАЗИН",
+      body,
+      ["ITEM_SHOP"],
+      { buttonTitle: true },
+    );
+    const labels = {
+      rods: "🎣 Вудки",
+      reels: "🧵 Котушки",
+      lines: "🧶 Ліски",
+      hooks: "🪝 Гачки",
+      leaders: "🪢 Поводки",
+      floats: "🥢 Поплавки",
+      nets: "🕸️ Підсаки",
+      misc: "☣️ Інше",
+      baits: "🪱 Наживки та снасті",
+      chums: "🍞 Прикормки для риболовлі",
+      aquariumFeeds: "🐟 Прикормки для акваріума",
+      deliveryMethods: "🚤 Доставка",
+      batteries: "🔋 Живлення",
+      devices: "📻 Пристрої",
+      builds: "📦 Комплекти",
+    };
     for (const category of Object.keys(this.#catalogs.items)) {
       if (this.#excludeKeys.includes(category)) continue;
-      const section = this.#createSectionWithCache(labels[category] || category, content);
-      for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
+      const section = this.#createSectionWithCache(
+        labels[category] || category,
+        content,
+      );
+      for (const [itemId, item] of Object.entries(
+        this.#catalogs.items[category] || {},
+      )) {
         if (!item?.itemType || item.devExclude) continue;
         const iconAsset = item.iconAsset || item.skin?.thumbnail?.asset || "";
-        const iconUrl = iconAsset && this.#assets ? this.#assets.pathOf(iconAsset) : "";
+        const iconUrl =
+          iconAsset && this.#assets ? this.#assets.pathOf(iconAsset) : "";
         const label = `${item.name || itemId} · Безкоштовно`;
         let granted = 0;
-        this.#ui.createButtonRow(label, section, (event) => {
-          const quantity = Math.max(1, Number(item.defaultQuantity || item.packSize) || 1);
-          const result = this.#grantCatalogItem(itemId, quantity);
-          if (result?.success) granted += 1;
-          const labelNode = iconUrl ? event.currentTarget.querySelector(".devtools__action-label") : event.currentTarget;
-          labelNode.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
-        }, false, iconUrl);
+        this.#ui.createButtonRow(
+          label,
+          section,
+          (event) => {
+            const quantity = Math.max(
+              1,
+              Number(item.defaultQuantity || item.packSize) || 1,
+            );
+            const result = this.#grantCatalogItem(itemId, quantity);
+            if (result?.success) granted += 1;
+            const labelNode = iconUrl
+              ? event.currentTarget.querySelector(".devtools__action-label")
+              : event.currentTarget;
+            labelNode.innerText = result?.success
+              ? `${label} ✓×${granted}`
+              : `${label} ✗`;
+          },
+          false,
+          iconUrl,
+        );
       }
     }
   }
@@ -672,8 +804,15 @@ export class DevTools {
     new SpineRodDevSection({
       ui: this.#ui,
       controller: this.#rodSpine,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderConfigTree: (parent) => this.#buildTree(this.#config.ui.rod.spine, parent, ["CONFIG", "ui", "rod", "spine"]),
+      createSection: (label, parent, path) =>
+        this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (parent) =>
+        this.#buildTree(this.#config.ui.rod.spine, parent, [
+          "CONFIG",
+          "ui",
+          "rod",
+          "spine",
+        ]),
     }).render(body);
   }
 
@@ -683,12 +822,14 @@ export class DevTools {
     new SpineBoatDevSection({
       ui: this.#ui,
       controller: this.#boatSpine,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderConfigTree: (parent) => this.#buildTree(this.#config.ui.boat, parent, ["CONFIG", "ui", "boat"]),
+      createSection: (label, parent, path) =>
+        this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (parent) =>
+        this.#buildTree(this.#config.ui.boat, parent, ["CONFIG", "ui", "boat"]),
     }).render(body);
   }
 
-  // TK-291: the weather section («🌦 ПОГОДА»), drawn inside the WebGL scene section (its effects are the scene's), or in
+  // TK-291: the weather section («ПОГОДА»), drawn inside the WebGL scene section (its effects are the scene's), or in
   // the panel when there is no scene section. A redraw of the scene section draws it again, so the old one is disposed.
   #renderWeatherSection(parent) {
     if (!this.#weather) return;
@@ -699,12 +840,15 @@ export class DevTools {
       weather: this.#weather,
       config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
       rainConfig: () => this.#config.canvas?.rain ?? null,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
+      createSection: (label, parent, path) =>
+        this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (value, parent, path, options) =>
+        this.#buildTree(value, parent, path, options),
       updateConfig: (path, value) => this.#updateConfigValue(path, value),
       files: this.#zoneEditorFiles,
       getBaseRain: () => this.#configRuntime?.baseConfig.canvas?.rain ?? null,
-      getBaseLocationWeather: (id) => this.#configRuntime?.baseConfig.locations?.map?.[id]?.weather ?? null,
+      getBaseLocationWeather: (id) =>
+        this.#configRuntime?.baseConfig.locations?.map?.[id]?.weather ?? null,
       resetWeather: this.#configRuntime ? (id) => this.#resetWeather(id) : null,
       gameVersion: this.#gameVersion,
     });
@@ -720,8 +864,14 @@ export class DevTools {
     new SceneLayerDevSection({
       ui: this.#ui,
       scene: this.#scene,
-      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-      renderWaterConfig: (parent) => this.#buildTree(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
+      createSection: (label, parent, path) =>
+        this.#createSectionWithCache(label, parent, path),
+      renderWaterConfig: (parent) =>
+        this.#buildTree(this.#config.canvas.water, parent, [
+          "CONFIG",
+          "canvas",
+          "water",
+        ]),
       renderWeather: (parent) => this.#renderWeatherSection(parent),
     }).render(body);
   }
@@ -745,7 +895,8 @@ export class DevTools {
   }
 
   #formatDevToolsKey(key, path) {
-    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled") return "Прискорення ⏩";
+    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled")
+      return "Прискорення ⏩";
     if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore)
       return key;
     const overridePath = path.slice(1).join(".");
@@ -793,7 +944,12 @@ export class DevTools {
               content,
               [...currentPath, index],
             );
-            this.#buildTree(item, itemContent, [...currentPath, index], options);
+            this.#buildTree(
+              item,
+              itemContent,
+              [...currentPath, index],
+              options,
+            );
           });
         }
       } else if (val !== null && typeof val === "object") {
@@ -822,19 +978,17 @@ export class DevTools {
   }
 
   #renderItemProgressionSection(body) {
-    const snapshots = this.#itemProgressionDebugProvider?.getSnapshots?.() || [];
+    const snapshots =
+      this.#itemProgressionDebugProvider?.getSnapshots?.() || [];
     if (snapshots.length === 0) return;
-    const root = this.#createSectionWithCache(
-      "📈 ITEM PROGRESSION",
-      body,
-      ["ITEM_PROGRESSION"],
-    );
+    const root = this.#createSectionWithCache("📈 ITEM PROGRESSION", body, [
+      "ITEM_PROGRESSION",
+    ]);
     for (const snapshot of snapshots) {
-      const item = this.#createSectionWithCache(
+      const item = this.#createSectionWithCache(snapshot.itemId, root, [
+        "ITEM_PROGRESSION",
         snapshot.itemId,
-        root,
-        ["ITEM_PROGRESSION", snapshot.itemId],
-      );
+      ]);
       this.#ui.createInfoRow("Group", snapshot.group, item);
       this.#ui.createInfoRow("Strategy", snapshot.strategy, item);
       this.#ui.createInfoRow("Raw metric", String(snapshot.rawMetric), item);
@@ -849,11 +1003,7 @@ export class DevTools {
         `${snapshot.ratingPercent}%`,
         item,
       );
-      this.#ui.createInfoRow(
-        "Rating tier",
-        snapshot.ratingTier,
-        item,
-      );
+      this.#ui.createInfoRow("Rating tier", snapshot.ratingTier, item);
       this.#ui.createInfoRow("Quality", snapshot.quality, item);
       if (snapshot.capacity !== "N/A") {
         this.#ui.createInfoRow("Capacity", snapshot.capacity, item);
@@ -927,9 +1077,27 @@ export class DevTools {
     if (described) {
       const label = this.#formatDevToolsKey(key, canonicalPath);
       if (described.control === "choice") {
-        this.#ui.createChoiceRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath, dependency);
+        this.#ui.createChoiceRow(
+          label,
+          described.options,
+          value,
+          parentElement,
+          onChange,
+          displayPath,
+          canonicalPath,
+          dependency,
+        );
       } else {
-        this.#ui.createSegmentsRow(label, described.options, value, parentElement, onChange, displayPath, canonicalPath, dependency);
+        this.#ui.createSegmentsRow(
+          label,
+          described.options,
+          value,
+          parentElement,
+          onChange,
+          displayPath,
+          canonicalPath,
+          dependency,
+        );
       }
       return;
     }
@@ -959,21 +1127,25 @@ export class DevTools {
 
   // Spec 131 prerequisites of a parameter, read live from the config (DevParameterSchema names the switches).
   #prerequisites(canonicalPath) {
-    return this.#parameterSchema.prerequisitesOf(canonicalPath, (path) => this.#readPath(path))
+    return this.#parameterSchema
+      .prerequisitesOf(canonicalPath, (path) => this.#readPath(path))
       .map((path) => ({ path, isEnabled: () => this.#readPath(path) === true }));
   }
 
   #updateConfigValue(path, newValue) {
     path = this.#parameterAliases?.resolveCanonicalPath(path) || path;
     const displayPath = path;
-    if (this.#prepareZoneEdit) ({ path, value: newValue } = this.#prepareZoneEdit(path, newValue));
+    if (this.#prepareZoneEdit)
+      ({ path, value: newValue } = this.#prepareZoneEdit(path, newValue));
     const root = this.#resolveEditableRoot(path[0]);
     if (!root) return;
 
     if (path[0] === "CONFIG" && this.#configRuntime) {
       this.#configRuntime.set(path, newValue);
       this.#refreshFightPhysicsAdapter();
-      this.#configValidation?.report(`edit ${path.join(".")}`, { quietWhenValid: true });
+      this.#configValidation?.report(`edit ${path.join(".")}`, {
+        quietWhenValid: true,
+      });
     } else {
       let target = root;
       for (let i = 1; i < path.length - 1; i++) {
@@ -985,7 +1157,8 @@ export class DevTools {
     this.#ui.syncValue(path, newValue);
     if (displayPath !== path) {
       let displayedValue = newValue;
-      for (const key of displayPath.slice(path.length)) displayedValue = displayedValue?.[key];
+      for (const key of displayPath.slice(path.length))
+        displayedValue = displayedValue?.[key];
       this.#ui.syncValue(displayPath, displayedValue);
     }
 
@@ -1023,7 +1196,6 @@ export class DevTools {
 
     const moduleKey = path[3];
     if (typeof window !== "undefined") {
-      
       this.#debugModulesSource()[moduleKey] = newValue === true;
     }
 
@@ -1040,13 +1212,16 @@ export class DevTools {
 
   #applyImportedOverrides(overrides) {
     const normalizedOverrides =
-      this.#parameterAliases?.normalizeConfigOverrides(overrides) ||
-      overrides;
+      this.#parameterAliases?.normalizeConfigOverrides(overrides) || overrides;
     this.#configRuntime?.importOverrides?.(normalizedOverrides);
     this.#refreshFightPhysicsAdapter();
     document.dispatchEvent(
       new CustomEvent("config-updated", {
-        detail: { path: ["CONFIG"], value: this.#config, importOverrides: true },
+        detail: {
+          path: ["CONFIG"],
+          value: this.#config,
+          importOverrides: true,
+        },
       }),
     );
     this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
@@ -1074,10 +1249,16 @@ export class DevTools {
       this.#populatePanel();
       this.#configValidation?.report("reset all overrides");
     });
-    this.#ui.createButtonRow("Export overrides", content, () => this.#exportRuntimeOverrides());
-    this.#ui.createButtonRow("Import overrides", content, () => this.#importRuntimeOverrides());
+    this.#ui.createButtonRow("Export overrides", content, () =>
+      this.#exportRuntimeOverrides(),
+    );
+    this.#ui.createButtonRow("Import overrides", content, () =>
+      this.#importRuntimeOverrides(),
+    );
     if (this.#configValidation) {
-      this.#ui.createButtonRow("Validate config", content, () => this.#configValidation.report("manual check"));
+      this.#ui.createButtonRow("Validate config", content, () =>
+        this.#configValidation.report("manual check"),
+      );
     }
   }
 
@@ -1085,18 +1266,29 @@ export class DevTools {
   // they are neither saved nor exported again (they never reach the metric).
   #resetLocationPerspective(id) {
     const location = ["locations", "map", id];
-    const retired = ["perspective", "distanceProfile"].map(branch => [...location, branch].join("."));
-    for (const [key] of Object.entries(this.#configRuntime?.exportOverrides?.() || {})) {
-      if (retired.some(prefix => key === prefix || key.startsWith(prefix + "."))) this.#configRuntime.reset(key);
+    const retired = ["perspective", "distanceProfile"].map((branch) =>
+      [...location, branch].join("."),
+    );
+    for (const [key] of Object.entries(
+      this.#configRuntime?.exportOverrides?.() || {},
+    )) {
+      if (
+        retired.some((prefix) => key === prefix || key.startsWith(prefix + "."))
+      )
+        this.#configRuntime.reset(key);
     }
     const path = ["CONFIG", ...location, "waterProjection"];
-    const initial = this.#configRuntime?.baseConfig.locations.map[id]?.waterProjection;
+    const initial =
+      this.#configRuntime?.baseConfig.locations.map[id]?.waterProjection;
     if (initial === undefined) {
-      if (this.#config.locations.map[id]?.waterProjection !== undefined) this.#configRuntime?.reset?.(path);
+      if (this.#config.locations.map[id]?.waterProjection !== undefined)
+        this.#configRuntime?.reset?.(path);
       return;
     }
     this.#updateConfigValue(path, initial);
-    for (const [key, value] of Object.entries(this.#config.locations.map[id].waterProjection || {})) {
+    for (const [key, value] of Object.entries(
+      this.#config.locations.map[id].waterProjection || {},
+    )) {
       this.#ui.syncValue([...path, key], value);
     }
   }
@@ -1104,31 +1296,51 @@ export class DevTools {
   // Spec 130 D5: drops the session's overrides of a location's zones (the whole list and every child path), so the
   // zones are the code's again, and tells the game to reload the location's map.
   #resetLocationZones(id) {
-    this.#resetOverrideTree(["locations", "map", id, "zones"], this.#config.locations.map[id]?.zones);
+    this.#resetOverrideTree(
+      ["locations", "map", id, "zones"],
+      this.#config.locations.map[id]?.zones,
+    );
     console.log(`[DevTools] Зони ${id} скинуто до коду`);
   }
 
   // Spec 175 TK-286: drops the session's overrides of rain look and the location's weather so both match the code again.
   #resetWeather(id) {
     this.#resetOverrideTree(["canvas", "rain"], this.#config.canvas?.rain);
-    this.#resetOverrideTree(["locations", "map", id, "weather"], this.#config.locations?.map?.[id]?.weather);
+    this.#resetOverrideTree(
+      ["locations", "map", id, "weather"],
+      this.#config.locations?.map?.[id]?.weather,
+    );
     console.log(`[DevTools] Погоду ${id} скинуто до коду`);
   }
 
   #resetOverrideTree(configParts, fallbackValue) {
     const prefix = configParts.join(".");
-    for (const key of Object.keys(this.#configRuntime.exportOverrides?.() || {})) {
-      if (key === prefix || key.startsWith(prefix + ".")) this.#configRuntime.reset(key);
+    for (const key of Object.keys(
+      this.#configRuntime.exportOverrides?.() || {},
+    )) {
+      if (key === prefix || key.startsWith(prefix + "."))
+        this.#configRuntime.reset(key);
     }
-    document.dispatchEvent(new CustomEvent("config-updated", {
-      detail: { path: ["CONFIG", ...configParts], value: fallbackValue, override: true },
-    }));
+    document.dispatchEvent(
+      new CustomEvent("config-updated", {
+        detail: {
+          path: ["CONFIG", ...configParts],
+          value: fallbackValue,
+          override: true,
+        },
+      }),
+    );
   }
 
   #exportRuntimeOverrides() {
-    const json = JSON.stringify(this.#configRuntime?.exportOverrides?.() || {}, null, 2);
+    const json = JSON.stringify(
+      this.#configRuntime?.exportOverrides?.() || {},
+      null,
+      2,
+    );
     console.log("[DevTools] Runtime overrides export:", json);
-    if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(json).catch(() => {});
+    if (navigator?.clipboard?.writeText)
+      navigator.clipboard.writeText(json).catch(() => {});
     window.prompt?.("Copy runtime overrides JSON", json);
   }
 
@@ -1138,7 +1350,9 @@ export class DevTools {
     try {
       this.#applyImportedOverrides(JSON.parse(json));
       this.#configValidation?.report("import overrides");
-    } catch (error) { console.warn("[DevTools] Failed to import runtime overrides", error); }
+    } catch (error) {
+      console.warn("[DevTools] Failed to import runtime overrides", error);
+    }
   }
 
   #resolveEditableRoot(rootName) {
@@ -1147,8 +1361,10 @@ export class DevTools {
     if (rootName === "FISH_DB" && typeof this.#catalogs.fishes !== "undefined")
       return this.#catalogs.fishes;
     if (rootName === "HOOKED_FISH") return this.#liveData?.hookedFish || null;
-    if (rootName === "MAP_DB" && typeof this.#catalogs.maps !== "undefined") return this.#catalogs.maps;
-    if (rootName === "CONFIG" && typeof this.#config !== "undefined") return this.#config;
+    if (rootName === "MAP_DB" && typeof this.#catalogs.maps !== "undefined")
+      return this.#catalogs.maps;
+    if (rootName === "CONFIG" && typeof this.#config !== "undefined")
+      return this.#config;
     return null;
   }
 
@@ -1243,8 +1459,15 @@ export class DevTools {
   }
 
   #findFishTemplate(fish) {
-    if (typeof this.#catalogs.fishes === "undefined" || !Array.isArray(this.#catalogs.fishes)) return null;
-    return this.#catalogs.fishes.find((candidate) => candidate?.id === fish?.id) || null;
+    if (
+      typeof this.#catalogs.fishes === "undefined" ||
+      !Array.isArray(this.#catalogs.fishes)
+    )
+      return null;
+    return (
+      this.#catalogs.fishes.find((candidate) => candidate?.id === fish?.id) ||
+      null
+    );
   }
 
   #applyFiniteNumber(target, key, value) {
@@ -1348,8 +1571,10 @@ export class DevTools {
       (path?.[0] === "CONFIG" && path?.[1] === "itemProgression");
     if (!affectsProgression) return;
     this.#itemProgressionResolver?.invalidate?.();
-    document.dispatchEvent(new CustomEvent("item-progression-updated", {
-      detail: { path },
-    }));
+    document.dispatchEvent(
+      new CustomEvent("item-progression-updated", {
+        detail: { path },
+      }),
+    );
   }
 }

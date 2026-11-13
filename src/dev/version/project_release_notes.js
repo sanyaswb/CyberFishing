@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-291.1: DevTools names ПОГОДА, ВОДА, overlay «ПОГОДА й хвилі» (owner); checks read reformatted source by meaning.",
   "TK-293 (spec 174 A7): all DevTools lists use the list picker, placed under the label.",
   "TK-292 (spec 174 A6): parameters are inactive while their group's switch is off; an attempt highlights the blocking switch.",
   "TK-291: ПОГОДА inside СЦЕНА WebGL; sea state split into normal and storm; overlay «Погода й хвилі» with live values.",

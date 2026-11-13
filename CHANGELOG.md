@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.104 - Weather section names
+
+- TK-291.1 (owner): DevTools sections are named «ПОГОДА» and «ВОДА», the overlay «ПОГОДА й хвилі»; the weather and DevTools sources are reformatted. The scene checks read source shapes by meaning, not by line wrapping.
+
 ## v0.50.103 - DevTools lists
 
 - TK-293 (spec 174 A7): every DevTools list (zone editor, Spine bone, wind direction) is the same list picker as Fixed Catch's fish instead of the browser's select; the field and its list sit under the label across the row.
@@ -12,7 +16,7 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 ## v0.50.101 - Weather in the scene section, live weather overlay
 
-- TK-291 (owner): DevTools «🌦 ПОГОДА» now lives inside «🖼️ СЦЕНА WebGL»; «Стан моря» is split into «Звичайний стан» (calm, wind, night) and «Гроза»; a new overlay «🌦 Погода й хвилі» shows the storm, rain and fog strengths, the wind's direction and strength, the night and the waves' actual amplitude, length and speed in real time.
+- TK-291 (owner): DevTools «ПОГОДА» now lives inside «🖼️ СЦЕНА WebGL»; «Стан моря» is split into «Звичайний стан» (calm, wind, night) and «Гроза»; a new overlay «ПОГОДА й хвилі» shows the storm, rain and fog strengths, the wind's direction and strength, the night and the waves' actual amplitude, length and speed in real time.
 
 ## v0.50.100 - Waves switch
 
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.95 - Shared DevTools export and apply core
 
 - TK-287 (spec 176): extracted shared canonical JSON/template/diff helpers (`canonical_export_format.js`), `DevSavingSection` UI controller (`dev_saving_section.js`), and `runModuleApply` (`apply-module-helpers.js`) shared by zones, radio and weather exports/CLI appliers.
-
-## v0.50.94 - Weather export, import, reset and apply:weather
-
-- TK-286 (spec 175): added zone-editor-style saving to DevTools «🌧 ПОГОДА» (live status vs code, JSON export with apply command notice, import validation, reset to code) backed by data modules (`rain_settings.js`, `locations/weather/<id>.js`) and `npm run apply:weather` (updates only changed modules with backups, conflict check and schema/weather checks).

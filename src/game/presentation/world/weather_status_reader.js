@@ -1,25 +1,56 @@
-// TK-291: the weather and the waves as they are right now, for the DEV overlay «🌦 Погода й хвилі»: the weather model's
+// TK-291: the weather and the waves as they are right now, for the DEV overlay «ПОГОДА й хвилі»: the weather model's
 // state and strengths, the wind (direction from EnvironmentSystem, strength as the sea state uses it), the night share,
 // and the waves' actual amplitude, length and speed: the base values of CONFIG.canvas.water times the sea state's
 // current factors (SeaStateResolver, the same ones the water and the float use). read() rewrites one object in place.
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+const number = (value, fallback) =>
+  Number.isFinite(Number(value)) ? Number(value) : fallback;
 
 export class WeatherStatusReader {
   #getEnvironment;
   #seaState;
   #getWater;
   #reading = {
-    precipitation: "clear", fogState: "none", rain: 0, storm: 0, fog: 0, cloud: 0, strikes: 0, frozen: false,
-    windDirection: 0, windForced: false, windStrength: 0, night: 0, phase: "day", hours: 0,
-    waves: { enabled: true, seaEnabled: true, amplitude: 0, wavelength: 0, speed: 0, travel: 1,
-      amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, baseAmplitude: 0, baseWavelength: 0, baseSpeed: 0 },
+    precipitation: "clear",
+    fogState: "none",
+    rain: 0,
+    storm: 0,
+    fog: 0,
+    cloud: 0,
+    strikes: 0,
+    frozen: false,
+    windDirection: 0,
+    windForced: false,
+    windStrength: 0,
+    night: 0,
+    phase: "day",
+    hours: 0,
+    waves: {
+      enabled: true,
+      seaEnabled: true,
+      amplitude: 0,
+      wavelength: 0,
+      speed: 0,
+      travel: 1,
+      amplitudeScale: 1,
+      speedScale: 1,
+      wavelengthScale: 1,
+      baseAmplitude: 0,
+      baseWavelength: 0,
+      baseSpeed: 0,
+    },
   };
 
   // getEnvironment: () => EnvironmentSystem's snapshot or null; seaState: SeaStateResolver; getWater: () =>
   // CONFIG.canvas.water.
   constructor({ getEnvironment, seaState, getWater }) {
-    if (typeof getEnvironment !== "function" || typeof getWater !== "function" || !seaState) {
-      throw new TypeError("WeatherStatusReader requires getEnvironment, seaState and getWater");
+    if (
+      typeof getEnvironment !== "function" ||
+      typeof getWater !== "function" ||
+      !seaState
+    ) {
+      throw new TypeError(
+        "WeatherStatusReader requires getEnvironment, seaState and getWater",
+      );
     }
     this.#getEnvironment = getEnvironment;
     this.#seaState = seaState;
@@ -56,7 +87,9 @@ export class WeatherStatusReader {
     waves.speedScale = number(sea.speedScale, 1);
     waves.wavelengthScale = number(sea.wavelengthScale, 1);
     waves.travel = number(sea.travel, 1);
-    waves.amplitude = waves.enabled ? waves.baseAmplitude * waves.amplitudeScale : 0;
+    waves.amplitude = waves.enabled
+      ? waves.baseAmplitude * waves.amplitudeScale
+      : 0;
     waves.wavelength = waves.baseWavelength * waves.wavelengthScale;
     waves.speed = waves.enabled ? waves.baseSpeed * waves.speedScale : 0;
     return reading;

@@ -19,6 +19,10 @@ const RUNTIME_MODULE = "src/platform/browser/scene/pixi_runtime_module.js";
 const SCENE_COMPOSITION = "src/bootstrap/production/scene_layer_composition.js";
 const importSource = (file) => import(pathToFileURL(path.join(ROOT_DIR, file)).href);
 const read = (file) => fs.readFileSync(path.join(ROOT_DIR, file), "utf8");
+// The owner's formatter (Prettier) wraps long lines and adds trailing commas: source-shape assertions read the text with
+// whitespace collapsed and those commas dropped, so they check what the code says, not how it is wrapped.
+const readFlat = (file) => read(file).replace(/\s+/gu, " ").replace(/,\s*([}\])])/gu, " $1")
+  .replace(/([([])\s+/gu, "$1").replace(/\s+([)\]])/gu, "$1");
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
 function deferred() {
@@ -1494,12 +1498,12 @@ async function checkComposition() {
     /SCENE_RENDERED_KINDS = Object\.freeze\(\["background", "world-entities", "fight-areas", "line", "rod", "float"\]\)/u,
     "stage 4: the scene draws every world kind (specs 105, 107)");
   await checkSpineReserve();
-  assert.match(read("src/bootstrap/production/game_composition_root.js"),
+  assert.match(readFlat("src/bootstrap/production/game_composition_root.js"),
     /scene: \{ layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas \}/u);
-  assert.match(read(SCENE_COMPOSITION), /fightAreaStyles, probe, logger,/u, "the scene gets the 2D fight area styles");
-  assert.match(read("src/bootstrap/production/game_composition_root.js"), /fightAreaStyles: fightAreaStyleResolver/u,
+  assert.match(readFlat(SCENE_COMPOSITION), /fightAreaStyles, probe, logger,/u, "the scene gets the 2D fight area styles");
+  assert.match(readFlat("src/bootstrap/production/game_composition_root.js"), /fightAreaStyles: fightAreaStyleResolver/u,
     "one fight area style resolver for both layers");
-  assert.match(read(SCENE_COMPOSITION), /clock, getWaterSettings: \(\) => config\.canvas\?\.water,/u,
+  assert.match(readFlat(SCENE_COMPOSITION), /clock, getWaterSettings: \(\) => config\.canvas\?\.water,/u,
     "the scene times its water with the game clock and reads the water settings live (spec 106)");
   assert.equal(CONFIG.canvas.water.enabled, true, "production animates the water (spec 106)");
   const renderComposition = read("src/bootstrap/production/game_render_composition.js");
@@ -1508,7 +1512,7 @@ async function checkComposition() {
     assert(renderComposition.includes(`sceneRouter.canvasVisibility("${kind}")`), `the ${kind} 2D component is gated`);
   }
   assert.match(renderComposition, /surface\.beginFrame\(runtime\.rendering\.sceneRouter\.clearsCanvas\(\)\)/u);
-  const root = read("src/bootstrap/production/game_composition_root.js");
+  const root = readFlat("src/bootstrap/production/game_composition_root.js");
   assert.match(root, /contextAttributes: \{ alpha: transparentCanvas \}/u, "the scene mode decides the 2D canvas alpha");
   assert.match(root, /void sceneLayer\.whenReady\(\)\.then\(\(ready\) => \{[^}]*sceneLayer\.prepare/u,
     "the scene warms up and uploads textures once ready, without blocking the start (TK-183)");
@@ -1578,7 +1582,7 @@ function checkEvalFreeBundle(manifestEntry) {
 }
 
 async function checkDevWiring() {
-  const startup = read("src/bootstrap/development/development_game_startup.js");
+  const startup = readFlat("src/bootstrap/development/development_game_startup.js");
   assert.match(startup, /sceneMode: pageParams\.get\("scene"\)/u, "dev.html?scene= picks the mode for the page load");
   assert.doesNotMatch(read("src/bootstrap/production/game.js") + read("src/entrypoints/game.entry.js"), /sceneMode/u,
     "production reads CONFIG.canvas.scene only");
@@ -1606,7 +1610,7 @@ async function checkDevWiring() {
   assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
     "the water's state, step cost and drift are shown");
   assert.equal(waterEditors.length, 1, "the live editor of CONFIG.canvas.water sits in the section");
-  assert.match(read("src/dev/tools/dev_tools.js"),
+  assert.match(readFlat("src/dev/tools/dev_tools.js"),
     /renderWaterConfig: \(parent\) => this\.#buildTree\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
   assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
   assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");

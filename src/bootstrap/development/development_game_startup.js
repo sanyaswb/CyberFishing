@@ -52,7 +52,11 @@ import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_
 import { PROJECT_RELEASE_NOTES } from "../../dev/version/project_release_notes.js";
 import { RenderAllocationDiagnostics } from "../../dev/diagnostics/render_allocation_diagnostics.js";
 import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js";
-import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
+import {
+  activateBrowserStartupInterface,
+  getBrowserStartupEnvironment,
+  publishBrowserStartupConfig,
+} from "../../platform/browser/runtime/browser_startup_environment.js";
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { composeFightBalanceWindows } from "./fight_balance_windows_composition.js";
@@ -86,43 +90,74 @@ export function startDevelopmentGame() {
   startup = requested;
   requested.catch((error) => {
     if (startup === requested) startup = null;
-    new ConsoleLogger().error("[Bootstrap] CyberFishing DEV startup failed.", error);
+    new ConsoleLogger().error(
+      "[Bootstrap] CyberFishing DEV startup failed.",
+      error,
+    );
     showStartupFailure();
   });
   return requested;
 }
 
 async function startGame() {
-  const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
+  const { windowTarget, documentTarget } = getBrowserStartupEnvironment();
   // Spec 157 R9: the same stage marks as production; the DEV startup overlay reads them.
-  const startupMarks = new PerformanceStartupMarks({ performance: windowTarget.performance,
-    rootElement: documentTarget.documentElement });
+  const startupMarks = new PerformanceStartupMarks({
+    performance: windowTarget.performance,
+    rootElement: documentTarget.documentElement,
+  });
   startupMarks.mark(STARTUP_STAGES.entry);
   // DEV page switches: ?screen=house opens the House after startup; ?scene=webgl|canvas picks the scene mode (spec 104);
   // ?location=<id> starts on that location (spec 130 D2: the location editor's "Відкрити локацію").
-  const pageParams = new windowTarget.URLSearchParams(windowTarget.location.search);
+  const pageParams = new windowTarget.URLSearchParams(
+    windowTarget.location.search,
+  );
   const requestedLocation = pageParams.get("location");
-  const configRuntime = createProductionConfigContext(config => {
-    if (requestedLocation && Object.hasOwn(config.locations.map, requestedLocation)) config.locations.currentLocationId = requestedLocation;
+  const configRuntime = createProductionConfigContext((config) => {
+    if (
+      requestedLocation &&
+      Object.hasOwn(config.locations.map, requestedLocation)
+    )
+      config.locations.currentLocationId = requestedLocation;
     config.debug.godMode.enabled = true;
     config.debug.fixedCatch.enabled = true;
-    config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
+    config.liveBait = {
+      ...config.liveBait,
+      visual: { ...config.liveBait.visual, showZone: true },
+    };
   });
   startupMarks.mark(STARTUP_STAGES.config);
-  publishBrowserStartupConfig(windowTarget, configRuntime, Object.freeze({ ...PROJECT_VERSION_CONFIG, notes: PROJECT_RELEASE_NOTES }));
-  const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
+  publishBrowserStartupConfig(
+    windowTarget,
+    configRuntime,
+    Object.freeze({ ...PROJECT_VERSION_CONFIG, notes: PROJECT_RELEASE_NOTES }),
+  );
+  const disposeInterface = activateBrowserStartupInterface(documentTarget, () =>
+    GameVersionBadge.mountById(),
+  );
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
-  const uiSurface = new UiSurfaceAdapter({ hostElement: documentTarget.body,
-    documentRef: documentTarget, windowRef: windowTarget, viewport: true });
+  const uiSurface = new UiSurfaceAdapter({
+    hostElement: documentTarget.body,
+    documentRef: documentTarget,
+    windowRef: windowTarget,
+    viewport: true,
+  });
   const badge = documentTarget.getElementById("gameVersionBadge");
-  const toolbar = new GameToolbar({ documentRef: documentTarget, mountNode: uiSurface.mountRoot, versionBadge: badge });
+  const toolbar = new GameToolbar({
+    documentRef: documentTarget,
+    mountNode: uiSurface.mountRoot,
+    versionBadge: badge,
+  });
   const developmentMount = documentTarget.createElement("div");
   developmentMount.className = "game-shell__dev-ui";
   uiSurface.portalRoot.appendChild(developmentMount);
-  gameLoopGuard ??= new ActiveGameLoopGuard({logger: new ConsoleLogger(), warningTarget: windowTarget});
+  gameLoopGuard ??= new ActiveGameLoopGuard({
+    logger: new ConsoleLogger(),
+    warningTarget: windowTarget,
+  });
   listenerCounter ??= new ManagedListenerCounter();
-  const debugModules = {...(CONFIG.debug?.consoleModules || {})};
+  const debugModules = { ...(CONFIG.debug?.consoleModules || {}) };
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
   // Spec 101: one DEV frame profiler for the game loop, the render passes, the Spine rod and the overlay.
@@ -132,28 +167,55 @@ async function startGame() {
     if (!canvas) return null;
     const cssWidth = Number.parseFloat(canvas.style.width) || canvas.width || 1;
     const memory = windowTarget.performance?.memory;
-    return { backingWidth: canvas.width, backingHeight: canvas.height, pixelRatio: Number((canvas.width / cssWidth).toFixed(2)),
-      memoryMb: memory ? memory.usedJSHeapSize / 1048576 : null };
+    return {
+      backingWidth: canvas.width,
+      backingHeight: canvas.height,
+      pixelRatio: Number((canvas.width / cssWidth).toFixed(2)),
+      memoryMb: memory ? memory.usedJSHeapSize / 1048576 : null,
+    };
   };
   // DEV window positions and section states share the game's storage prefix.
-  const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
+  const storageCache = new LocalStorageCache({
+    storage: windowTarget.localStorage,
+    logger: new ConsoleLogger(),
+  });
   // Spec 157 D6: the owner's edited asset load plan (DevTools), used from the next start.
-  const assetLoadPlanStore = new DevAssetLoadPlanStore({ cache: storageCache, basePlan: ASSET_LOAD_PLAN,
-    registry: new AssetRegistry(ASSET_REGISTRY), logger: new ConsoleLogger(),
-    sources: createAssetLoadSources({ locations: CONFIG.locations, itemDb: ITEM_DB }) });
+  const assetLoadPlanStore = new DevAssetLoadPlanStore({
+    cache: storageCache,
+    basePlan: ASSET_LOAD_PLAN,
+    registry: new AssetRegistry(ASSET_REGISTRY),
+    logger: new ConsoleLogger(),
+    sources: createAssetLoadSources({
+      locations: CONFIG.locations,
+      itemDb: ITEM_DB,
+    }),
+  });
   // Spec 167: step-by-step loading (DevTools), chosen for the next start; the gate exists only while the mode is on.
-  const loadStepperSettings = new DevLoadStepperSettings({ cache: storageCache });
+  const loadStepperSettings = new DevLoadStepperSettings({
+    cache: storageCache,
+  });
   let assetLoadGate = null;
-  const createAssetLoadGate = loadStepperSettings.isEnabled() ? (plan) => assetLoadGate = new AssetLoadGate({
-    steps: new AssetLoadStepPlan(plan).steps, now: () => windowTarget.performance.now() }) : null;
+  const createAssetLoadGate = loadStepperSettings.isEnabled()
+    ? (plan) =>
+        (assetLoadGate = new AssetLoadGate({
+          steps: new AssetLoadStepPlan(plan).steps,
+          now: () => windowTarget.performance.now(),
+        }))
+    : null;
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = ITEM_DB;
   const zoneEditorState = new ZoneEditorState();
   let editorMap = null;
   let dependentZones = null;
-  const zoneEdits = new ZoneEditorConfigEdits({ config: CONFIG, getMap: () => editorMap });
+  const zoneEdits = new ZoneEditorConfigEdits({
+    config: CONFIG,
+    getMap: () => editorMap,
+  });
   const mapCatalog = CONFIG.locations.map;
-  const configValidation = composeDevConfigValidation({configRuntime, itemCatalog});
+  const configValidation = composeDevConfigValidation({
+    configRuntime,
+    itemCatalog,
+  });
   let consoleRuntime, overlayRuntime, game, watchdog;
   let readLocationMetric = null;
   let timeControl = null;
@@ -161,24 +223,49 @@ async function startGame() {
   // TK-252: the open DevTools panel reads the live data (ACTIVE FISH in the fight) with Overlay off; spec 168: so do the
   // balance windows ACTIVE FISH / ACTIVE ROD while they are on.
   let balanceWindows = null;
-  const isLiveDataRequested = () => devTools?.isOpen === true || balanceWindows?.isLiveDataRequested() === true;
-  const cheatInput = new DevCheatInput({ target: windowTarget, scheduler: windowTarget,
-    fetchCommand: (...args) => windowTarget.fetch(...args), createAbortController: () => new windowTarget.AbortController(),
-    open: () => devTools?.open() });
-  const maskEditor = new ZoneMaskEditor({ state: zoneEditorState, config: CONFIG, getMap: () => editorMap,
-    writeConfig: (path, value) => devTools?.updateConfig(path, value) });
-  const zoneDrawing = new ZoneDrawing({ state: zoneEditorState, config: CONFIG, getMap: () => editorMap,
-    writeConfig: (path, value) => devTools?.updateConfig(path, value) });
+  const isLiveDataRequested = () =>
+    devTools?.isOpen === true || balanceWindows?.isLiveDataRequested() === true;
+  const cheatInput = new DevCheatInput({
+    target: windowTarget,
+    scheduler: windowTarget,
+    fetchCommand: (...args) => windowTarget.fetch(...args),
+    createAbortController: () => new windowTarget.AbortController(),
+    open: () => devTools?.open(),
+  });
+  const maskEditor = new ZoneMaskEditor({
+    state: zoneEditorState,
+    config: CONFIG,
+    getMap: () => editorMap,
+    writeConfig: (path, value) => devTools?.updateConfig(path, value),
+  });
+  const zoneDrawing = new ZoneDrawing({
+    state: zoneEditorState,
+    config: CONFIG,
+    getMap: () => editorMap,
+    writeConfig: (path, value) => devTools?.updateConfig(path, value),
+  });
   let zoneEditorDrag = null;
   let compositionRoot = null;
-  const resumeGame = () => { void game?.start().catch((error) => windowTarget.console.error(error)); };
+  const resumeGame = () => {
+    void game?.start().catch((error) => windowTarget.console.error(error));
+  };
   // The House is a screen of this page (spec 084), composed over the session's live bait and clock.
-  const screens = new ScreenHost({ base: { suspend: () => game?.stop(), resume: resumeGame }, factories: {
-    house: createDevHouseScreenFactory({ documentTarget, windowTarget, uiSurface, config: CONFIG,
-      getSessionServices: () => compositionRoot.getSessionServices(), getGameTimeControl: () => timeControl,
-      getDevTools: () => devTools }),
-  } });
-  const openHouse = () => screens.open("house").catch((error) => windowTarget.console.error(error));
+  const screens = new ScreenHost({
+    base: { suspend: () => game?.stop(), resume: resumeGame },
+    factories: {
+      house: createDevHouseScreenFactory({
+        documentTarget,
+        windowTarget,
+        uiSurface,
+        config: CONFIG,
+        getSessionServices: () => compositionRoot.getSessionServices(),
+        getGameTimeControl: () => timeControl,
+        getDevTools: () => devTools,
+      }),
+    },
+  });
+  const openHouse = () =>
+    screens.open("house").catch((error) => windowTarget.console.error(error));
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
@@ -201,92 +288,223 @@ async function startGame() {
     startup = null;
   };
   try {
-    consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget,
-      logger: windowTarget.console, getWaterMetric: () => readLocationMetric?.() });
-    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
-      frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version,
+    consoleRuntime = createDebugConsoleRuntime({
+      config: CONFIG,
+      debugModulesSource,
+      documentTarget,
+      windowTarget,
+      logger: windowTarget.console,
+      getWaterMetric: () => readLocationMetric?.(),
+    });
+    overlayRuntime = createDebugOverlayRuntime({
+      config: CONFIG,
+      baseConfig: configRuntime.baseConfig,
+      settingsStore,
+      documentTarget,
+      windowTarget,
+      storageCache,
+      uiSurface,
+      mountNode: developmentMount,
+      frameProfiler,
+      readRenderInfo,
+      gameVersion: PROJECT_VERSION_CONFIG.version,
       // Spec 157 D6: the asset load plan's state, from the composition once it exists.
-      readAssetLoadStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null,
-      // TK-291: the weather and the waves right now for the overlay «🌦 Погода й хвилі».
-      readWeather: () => compositionRoot?.getWeatherReading?.() ?? null});
-    balanceWindows = composeFightBalanceWindows({ documentTarget, windowTarget, mountNode: developmentMount, uiSurface,
-      settingsStore, storageCache, config: CONFIG, baseConfig: configRuntime.baseConfig, fishes: FISH_DB, items: itemCatalog,
-      updateConfig: (path, value) => devTools?.updateConfig(path, value) });
+      readAssetLoadStatus: () =>
+        compositionRoot?.getAssetLoadStatus?.() ?? null,
+      // TK-291: the weather and the waves right now for the overlay «ПОГОДА й хвилі».
+      readWeather: () => compositionRoot?.getWeatherReading?.() ?? null,
+    });
+    balanceWindows = composeFightBalanceWindows({
+      documentTarget,
+      windowTarget,
+      mountNode: developmentMount,
+      uiSurface,
+      settingsStore,
+      storageCache,
+      config: CONFIG,
+      baseConfig: configRuntime.baseConfig,
+      fishes: FISH_DB,
+      items: itemCatalog,
+      updateConfig: (path, value) => devTools?.updateConfig(path, value),
+    });
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       assetLoadPlan: assetLoadPlanStore.plan(),
-      documentTarget, windowTarget, gameLoopGuard, listenerCounter,
+      documentTarget,
+      windowTarget,
+      gameLoopGuard,
+      listenerCounter,
       uiSurface,
       toolbarMountNode: toolbar.element,
       tackleMountNode: toolbar.tackleMountNode,
       depthMountNode: toolbar.depthMountNode,
       selectorMountNode: toolbar.selectorMountNode,
       createAssetLoadGate,
-      createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource, zoneEditorState}),
+      createDevFlags: (config) =>
+        new DevFlagsProvider({
+          config,
+          godModeSource: () => godMode,
+          debugModulesSource,
+          zoneEditorState,
+        }),
       createFrameProbe: () => frameProfiler,
       startupMarks,
       // TK-098: the radio's enabled effects tuned with sliders in its editor (DEV only).
-      createRadioEffectTuning: ({ config }) => new RadioEffectTuning({ config, configRuntime }),
+      createRadioEffectTuning: ({ config }) =>
+        new RadioEffectTuning({ config, configRuntime }),
       sceneMode: pageParams.get("scene"),
-      createInventorySplitSource: ({documentTarget: target, listeners}) =>
-        new DevInventorySplitSource({config: CONFIG, documentRef: target, listeners}),
-      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter),
-        isLiveDataRequested),
-      createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
-      createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
-      createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
-      createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({
-        config, biteRules, devFlags, fishFactory: new FixedCatchFishFactory(resolvers), logger: new ConsoleLogger(),
-      }),
-      createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
-      createDebugService: config => new DebugService(config, debugModulesSource, isLiveDataRequested),
-      createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
-      createWorldDebugRenderer: options => new WorldDebugRenderer(options),
-      createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation, zoneEditorState,
-        prepareZoneEdit: (path, value) => zoneEdits.prepare(path, value),
-        readDynamicZones: id => zoneEdits.readDynamicZones(id),
-        getDependentZones: () => dependentZones,
-        maskEditor,
-        zoneDrawing,
-        assetLoadPlanStore,
-        loadStepper: { settings: loadStepperSettings, getGate: () => assetLoadGate,
-          readStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null, restart: () => windowTarget.location.reload() },
-        zoneEditorFiles: new ZoneEditorBrowserPort({ windowTarget, documentTarget }), gameVersion: PROJECT_VERSION_CONFIG.version,
-        // Spec 173 F1: editing zones takes the page fullscreen (and leaves it only if it entered it).
-        zoneEditorFullscreen: new ZoneEditorFullscreen({ fullscreen: new BrowserFullscreen({ documentRef: documentTarget }),
-          onError: error => new ConsoleLogger().warn("[ZoneEditor] Fullscreen was refused.", error) }),
-        createWaterMetric: options => WaterMetric.illustrated(options),
-        getWaterMetric: () => readLocationMetric?.() ?? null,
-        openHouse,
-        catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
-        createUI: (toggle, liveConfig) => {
-          const tooltipProvider = new DevToolsParameterTooltipProvider();
-          const feedback = new DevToolsDependencyFeedback({ scheduler: new BrowserTimeoutScheduler(windowTarget), durationMs: 3000 });
-          // TK-274.1: the DevTools edge waits while a zone editor gesture is going on.
-          const ui = new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache, uiSurface, developmentMount, developmentMount, feedback,
-            () => zoneEditorDrag?.gestureActive === true);
-          // Phones hide the toolbar's version badge; the panel's footer shows the same version text.
-          new GameVersionBadge({ element: ui.footer }).render();
-          return {tooltipProvider, ui};
-        }}),
-      createTimeDisplay: options => {
-        timeControl = composeDevTimeDisplay({ ...options, config: CONFIG, uiSurface });
+      createInventorySplitSource: ({ documentTarget: target, listeners }) =>
+        new DevInventorySplitSource({
+          config: CONFIG,
+          documentRef: target,
+          listeners,
+        }),
+      createDebugEvents: ({ documentTarget: target, isEnabled }) =>
+        new BrowserDebugAdapter(
+          target,
+          isEnabled,
+          new EventBus(listenerCounter),
+          isLiveDataRequested,
+        ),
+      createGameDiagnostics: (options) =>
+        new GameDebugFacade({
+          ...options,
+          listeners: new EventLifecycle(listenerCounter),
+        }),
+      createLocationDebugMapBuilder: (options) =>
+        new LocationDebugMapBuilder(options),
+      createItemProgressionDebugSnapshotProvider: (options) =>
+        new ItemProgressionDebugSnapshotProvider(options),
+      createHookedFishOverride: ({
+        config,
+        biteRules,
+        devFlags,
+        ...resolvers
+      }) =>
+        new FixedCatchHook({
+          config,
+          biteRules,
+          devFlags,
+          fishFactory: new FixedCatchFishFactory(resolvers),
+          logger: new ConsoleLogger(),
+        }),
+      createHookedFishProfileSynchronizer: (options) =>
+        new HookedFishProfileSynchronizer(options),
+      createDebugService: (config) =>
+        new DebugService(config, debugModulesSource, isLiveDataRequested),
+      createFightDiagnosticsBuilder: () =>
+        new FightDiagnosticsSnapshotBuilder(),
+      createWorldDebugRenderer: (options) => new WorldDebugRenderer(options),
+      createDevTools: (config, synchronizer, options) =>
+        (devTools = new DevTools(config, synchronizer, {
+          ...options,
+          configRuntime,
+          configValidation,
+          zoneEditorState,
+          prepareZoneEdit: (path, value) => zoneEdits.prepare(path, value),
+          readDynamicZones: (id) => zoneEdits.readDynamicZones(id),
+          getDependentZones: () => dependentZones,
+          maskEditor,
+          zoneDrawing,
+          assetLoadPlanStore,
+          loadStepper: {
+            settings: loadStepperSettings,
+            getGate: () => assetLoadGate,
+            readStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null,
+            restart: () => windowTarget.location.reload(),
+          },
+          zoneEditorFiles: new ZoneEditorBrowserPort({
+            windowTarget,
+            documentTarget,
+          }),
+          gameVersion: PROJECT_VERSION_CONFIG.version,
+          // Spec 173 F1: editing zones takes the page fullscreen (and leaves it only if it entered it).
+          zoneEditorFullscreen: new ZoneEditorFullscreen({
+            fullscreen: new BrowserFullscreen({ documentRef: documentTarget }),
+            onError: (error) =>
+              new ConsoleLogger().warn(
+                "[ZoneEditor] Fullscreen was refused.",
+                error,
+              ),
+          }),
+          createWaterMetric: (options) => WaterMetric.illustrated(options),
+          getWaterMetric: () => readLocationMetric?.() ?? null,
+          openHouse,
+          catalogs: { items: itemCatalog, fishes: FISH_DB, maps: mapCatalog },
+          settingsStore,
+          debugModulesSource,
+          storageCache,
+          createUI: (toggle, liveConfig) => {
+            const tooltipProvider = new DevToolsParameterTooltipProvider();
+            const feedback = new DevToolsDependencyFeedback({
+              scheduler: new BrowserTimeoutScheduler(windowTarget),
+              durationMs: 3000,
+            });
+            // TK-274.1: the DevTools edge waits while a zone editor gesture is going on.
+            const ui = new DevToolsUI(
+              toggle,
+              liveConfig,
+              tooltipProvider,
+              storageCache,
+              uiSurface,
+              developmentMount,
+              developmentMount,
+              feedback,
+              () => zoneEditorDrag?.gestureActive === true,
+            );
+            // Phones hide the toolbar's version badge; the panel's footer shows the same version text.
+            new GameVersionBadge({ element: ui.footer }).render();
+            return { tooltipProvider, ui };
+          },
+        })),
+      createTimeDisplay: (options) => {
+        timeControl = composeDevTimeDisplay({
+          ...options,
+          config: CONFIG,
+          uiSurface,
+        });
         return timeControl;
       },
-      createLocationDebugRenderFrameBuilder: options => {
+      createLocationDebugRenderFrameBuilder: (options) => {
         editorMap = options.map;
         readLocationMetric = options.getWaterMetric;
         zoneEditorDrag?.dispose();
-        const writeConfig = (path, value) => devTools?.updateConfig(path, value);
-        dependentZones = new CastableDependentZones({ ...options, state: zoneEditorState, writeConfig,
-          readings: new CastableZoneReadings({ ...options, nets: itemCatalog.nets, fishes: FISH_DB }) });
-        zoneEditorDrag = new ZoneEditorDragController({ ...options, state: zoneEditorState, documentTarget,
-          mountNode: developmentMount, getCanvas: () => documentTarget.getElementById("gameCanvas"),
-          writeZones: writeConfig, dependentZones, maskEditor, zoneDrawing });
-        return new LocationDebugRenderFrameBuilder({ ...options,
-          zoneEditor: new ZoneEditorGeometryBuilder({ ...options, state: zoneEditorState, dependentZones, maskEditor, zoneDrawing }), zoneEditorTool: zoneEditorDrag,
+        const writeConfig = (path, value) =>
+          devTools?.updateConfig(path, value);
+        dependentZones = new CastableDependentZones({
+          ...options,
+          state: zoneEditorState,
+          writeConfig,
+          readings: new CastableZoneReadings({
+            ...options,
+            nets: itemCatalog.nets,
+            fishes: FISH_DB,
+          }),
+        });
+        zoneEditorDrag = new ZoneEditorDragController({
+          ...options,
+          state: zoneEditorState,
+          documentTarget,
+          mountNode: developmentMount,
+          getCanvas: () => documentTarget.getElementById("gameCanvas"),
+          writeZones: writeConfig,
+          dependentZones,
+          maskEditor,
+          zoneDrawing,
+        });
+        return new LocationDebugRenderFrameBuilder({
+          ...options,
+          zoneEditor: new ZoneEditorGeometryBuilder({
+            ...options,
+            state: zoneEditorState,
+            dependentZones,
+            maskEditor,
+            zoneDrawing,
+          }),
+          zoneEditorTool: zoneEditorDrag,
           chumPreview: dependentZones,
-          editorState: zoneEditorState });
+          editorState: zoneEditorState,
+        });
       },
       getRenderDiagnostics: () => RenderAllocationDiagnostics,
       isCatchResolutionLogEnabled: () => debugModules.catchResolution === true,
@@ -298,26 +516,49 @@ async function startGame() {
     await game.ready;
     startupMarks.mark(STARTUP_STAGES.composition);
     gameReady = true;
-    if (disposed) { game.dispose(); return game; }
+    if (disposed) {
+      game.dispose();
+      return game;
+    }
     const started = await game.start();
     if (disposed) return game;
-    if (started) markStartupReady({ marks: startupMarks, windowTarget, onReady: () => compositionRoot.startDeferredAssetLoads() });
+    if (started)
+      markStartupReady({
+        marks: startupMarks,
+        windowTarget,
+        onReady: () => compositionRoot.startDeferredAssetLoads(),
+      });
     const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
-    watchdog = memoryConfig.enabled === true ? new MemoryLeakWatchdog({intervalMs: memoryConfig.intervalMs,
-      maxSamples: memoryConfig.maxSamples, minTrendSamples: memoryConfig.minTrendSamples, thresholds: memoryConfig.thresholds,
-      metricsProvider: () => {
-        const loop = gameLoopGuard.getDiagnostics();
-        return {activeGameLoops: loop.activeCount, duplicateLoopStarts: loop.duplicateStartAttempts,
-          managedListeners: listenerCounter.getActiveCount()};
-      }}) : null;
+    watchdog =
+      memoryConfig.enabled === true
+        ? new MemoryLeakWatchdog({
+            intervalMs: memoryConfig.intervalMs,
+            maxSamples: memoryConfig.maxSamples,
+            minTrendSamples: memoryConfig.minTrendSamples,
+            thresholds: memoryConfig.thresholds,
+            metricsProvider: () => {
+              const loop = gameLoopGuard.getDiagnostics();
+              return {
+                activeGameLoops: loop.activeCount,
+                duplicateLoopStarts: loop.duplicateStartAttempts,
+                managedListeners: listenerCounter.getActiveCount(),
+              };
+            },
+          })
+        : null;
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);
     if (!started) {
-      windowTarget.console.error(new Error("[Bootstrap] CyberFishing game loop did not start."));
+      windowTarget.console.error(
+        new Error("[Bootstrap] CyberFishing game loop did not start."),
+      );
       showStartupFailure();
     }
     if (pageParams.get("screen") === "house") openHouse();
     compositionRoot.printStorageUsage();
     return game;
-  } catch (error) { cleanup(); throw error; }
+  } catch (error) {
+    cleanup();
+    throw error;
+  }
 }

@@ -149,7 +149,7 @@ export const OVERLAY_MODULE_LABELS = Object.freeze({
     original: "startup",
   }),
   weather: Object.freeze({
-    label: "🌦 Погода й хвилі",
+    label: "ПОГОДА й хвилі",
     original: "weather",
   }),
   fishBase: Object.freeze({

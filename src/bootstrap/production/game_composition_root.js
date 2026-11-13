@@ -137,8 +137,14 @@ import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_
 import { createPlayerInventory } from "./player_inventory_composition.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { composeRodAnimation } from "./rod_animation_composition.js";
-import { FRAME_PROBE_METHODS, InactiveFrameProbe } from "../../engine/diagnostics/inactive_frame_probe.js";
-import { STARTUP_MARKS_METHODS, STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
+import {
+  FRAME_PROBE_METHODS,
+  InactiveFrameProbe,
+} from "../../engine/diagnostics/inactive_frame_probe.js";
+import {
+  STARTUP_MARKS_METHODS,
+  STARTUP_STAGES,
+} from "../../engine/diagnostics/startup_stages.js";
 import { SCENE_LAYER_METHODS } from "../../engine/scene/inactive_scene_layer.js";
 import { composeSceneLayer } from "./scene_layer_composition.js";
 import { FishArtVariants } from "../../game/presentation/fish/fish_art_variants.js";
@@ -222,77 +228,112 @@ export class GameCompositionRoot {
   #tackleMountNode;
   #depthMountNode;
   #selectorMountNode;
-  constructor(config, {
-    createLocationDebugMapBuilder,
-    createItemProgressionDebugSnapshotProvider,
-    createHookedFishOverride,
-    createHookedFishProfileSynchronizer,
-    createDebugService,
-    itemDb = ITEM_DB,
-    // Spec 157 R15: the asset load plan (DEV passes the owner's edited plan; production the configured one).
-    assetLoadPlan = ASSET_LOAD_PLAN,
-    documentTarget,
-    windowTarget,
-    gameLoopGuard,
-    listenerCounter = null,
-    createDevFlags,
-    // DEV (spec 167): (plan: AssetLoadPlan) -> the step-by-step loading gate, or null; production passes none.
-    createAssetLoadGate = null,
-    createDebugEvents,
-    createGameDiagnostics,
-    createWorldDebugRenderer,
-    createDevTools,
-    createTimeDisplay,
-    createLocationDebugRenderFrameBuilder,
-    getRenderDiagnostics,
-    isCatchResolutionLogEnabled,
-    // DEV (TK-257, G-001): () -> the console logger of the fight's and the catch's developer diagnostics. Production
-    // passes none: the fight has no diagnostics logger and the production console stays empty in a fight (spec 020).
-    createDiagnosticsLogger = null,
-    // Spec 171 stage 4: the release's offline cache ({ enable() }), enabled after the full load; null without a worker.
-    offlineCache = null,
-    createFightDiagnosticsBuilder,
-    createInventorySplitSource,
-    createFrameProbe,
-    startupMarks,
-    // DEV (TK-098): ({ config }) -> the radio effects' tuning port shown in the radio's editor; absent in production.
-    createRadioEffectTuning = null,
-    sceneMode = null,
-    uiSurface = null,
-    toolbarMountNode = null,
-    tackleMountNode = toolbarMountNode,
-    depthMountNode = tackleMountNode,
-    selectorMountNode = toolbarMountNode,
-  } = {}) {
+  constructor(
+    config,
+    {
+      createLocationDebugMapBuilder,
+      createItemProgressionDebugSnapshotProvider,
+      createHookedFishOverride,
+      createHookedFishProfileSynchronizer,
+      createDebugService,
+      itemDb = ITEM_DB,
+      // Spec 157 R15: the asset load plan (DEV passes the owner's edited plan; production the configured one).
+      assetLoadPlan = ASSET_LOAD_PLAN,
+      documentTarget,
+      windowTarget,
+      gameLoopGuard,
+      listenerCounter = null,
+      createDevFlags,
+      // DEV (spec 167): (plan: AssetLoadPlan) -> the step-by-step loading gate, or null; production passes none.
+      createAssetLoadGate = null,
+      createDebugEvents,
+      createGameDiagnostics,
+      createWorldDebugRenderer,
+      createDevTools,
+      createTimeDisplay,
+      createLocationDebugRenderFrameBuilder,
+      getRenderDiagnostics,
+      isCatchResolutionLogEnabled,
+      // DEV (TK-257, G-001): () -> the console logger of the fight's and the catch's developer diagnostics. Production
+      // passes none: the fight has no diagnostics logger and the production console stays empty in a fight (spec 020).
+      createDiagnosticsLogger = null,
+      // Spec 171 stage 4: the release's offline cache ({ enable() }), enabled after the full load; null without a worker.
+      offlineCache = null,
+      createFightDiagnosticsBuilder,
+      createInventorySplitSource,
+      createFrameProbe,
+      startupMarks,
+      // DEV (TK-098): ({ config }) -> the radio effects' tuning port shown in the radio's editor; absent in production.
+      createRadioEffectTuning = null,
+      sceneMode = null,
+      uiSurface = null,
+      toolbarMountNode = null,
+      tackleMountNode = toolbarMountNode,
+      depthMountNode = tackleMountNode,
+      selectorMountNode = toolbarMountNode,
+    } = {},
+  ) {
     for (const [name, factory] of Object.entries({
-      createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
-      createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
-      createDevTools, createTimeDisplay, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
-      isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
-      createInventorySplitSource, createFrameProbe, createRadioEffectTuning, createAssetLoadGate, createDiagnosticsLogger,
+      createLocationDebugMapBuilder,
+      createItemProgressionDebugSnapshotProvider,
+      createHookedFishOverride,
+      createHookedFishProfileSynchronizer,
+      createDebugService,
+      createWorldDebugRenderer,
+      createDevTools,
+      createTimeDisplay,
+      createLocationDebugRenderFrameBuilder,
+      getRenderDiagnostics,
+      isCatchResolutionLogEnabled,
+      createDebugEvents,
+      createGameDiagnostics,
+      createFightDiagnosticsBuilder,
+      createInventorySplitSource,
+      createFrameProbe,
+      createRadioEffectTuning,
+      createAssetLoadGate,
+      createDiagnosticsLogger,
     })) {
       if (factory != null && typeof factory !== "function") {
-        throw new TypeError("GameCompositionRoot requires optional callback " + name);
+        throw new TypeError(
+          "GameCompositionRoot requires optional callback " + name,
+        );
       }
     }
-    const worldDebugFactories = [createLocationDebugMapBuilder, createWorldDebugRenderer,
-      createLocationDebugRenderFrameBuilder];
-    const worldDebugCount = worldDebugFactories.filter(factory => factory != null).length;
-    if (worldDebugCount !== 0 && worldDebugCount !== worldDebugFactories.length) {
-      throw new TypeError("GameCompositionRoot requires coherent world debug factories");
+    const worldDebugFactories = [
+      createLocationDebugMapBuilder,
+      createWorldDebugRenderer,
+      createLocationDebugRenderFrameBuilder,
+    ];
+    const worldDebugCount = worldDebugFactories.filter(
+      (factory) => factory != null,
+    ).length;
+    if (
+      worldDebugCount !== 0 &&
+      worldDebugCount !== worldDebugFactories.length
+    ) {
+      throw new TypeError(
+        "GameCompositionRoot requires coherent world debug factories",
+      );
     }
     if ((createDebugEvents == null) !== (createGameDiagnostics == null)) {
-      throw new TypeError("GameCompositionRoot requires coherent diagnostics factories");
+      throw new TypeError(
+        "GameCompositionRoot requires coherent diagnostics factories",
+      );
     }
     if (createDevTools != null && createHookedFishProfileSynchronizer == null) {
-      throw new TypeError("GameCompositionRoot requires hooked fish synchronizer for DEV tools");
+      throw new TypeError(
+        "GameCompositionRoot requires hooked fish synchronizer for DEV tools",
+      );
     }
     this.#createLocationDebugMapBuilder = createLocationDebugMapBuilder;
-    this.#createItemProgressionDebugSnapshotProvider = createItemProgressionDebugSnapshotProvider;
+    this.#createItemProgressionDebugSnapshotProvider =
+      createItemProgressionDebugSnapshotProvider;
     this.#createHookedFishOverride = createHookedFishOverride;
     // DEV landscape split inventory (spec 098); production passes none and composes no stage.
     this.#createInventorySplitSource = createInventorySplitSource;
-    this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
+    this.#createHookedFishProfileSynchronizer =
+      createHookedFishProfileSynchronizer;
     this.#createDebugService = createDebugService;
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
@@ -310,7 +351,9 @@ export class GameCompositionRoot {
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#createDiagnosticsLogger = createDiagnosticsLogger;
     if (offlineCache !== null && typeof offlineCache?.enable !== "function") {
-      throw new TypeError("GameCompositionRoot requires an offline cache with enable()");
+      throw new TypeError(
+        "GameCompositionRoot requires an offline cache with enable()",
+      );
     }
     this.#offlineCache = offlineCache;
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
@@ -320,9 +363,11 @@ export class GameCompositionRoot {
     this.#depthMountNode = depthMountNode;
     this.#selectorMountNode = selectorMountNode;
     // Frame timing port (spec 101): the DEV FrameProfiler when Development composes one, inactive otherwise.
-    this.#frameProbe = createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
-    new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
-      this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
+    this.#frameProbe =
+      createFrameProbe == null ? new InactiveFrameProbe() : createFrameProbe();
+    new DependencyContractValidator({
+      consumer: "GameCompositionRoot",
+    }).requireMethods(this.#frameProbe, "frameProbe", FRAME_PROBE_METHODS);
     // Startup stage marks (spec 157 R9): composed by both pages, read by the DEV startup overlay and the measurer.
     this.#startupMarks = startupMarks;
     // WebGL scene mode for this page load (spec 104 D1): DEV's ?scene= value; production reads CONFIG.canvas.scene.
@@ -335,14 +380,18 @@ export class GameCompositionRoot {
       createLocationDebugRenderFrameBuilder,
       frameProbe: this.#frameProbe,
     });
-    this.#storageCache = new LocalStorageCache({ storage: windowTarget?.localStorage, logger: new ConsoleLogger() });
+    this.#storageCache = new LocalStorageCache({
+      storage: windowTarget?.localStorage,
+      logger: new ConsoleLogger(),
+    });
     this.#config = config || {};
     this.#itemDb = itemDb;
     this.#assetLoadPlan = assetLoadPlan;
     this.#runtimeConfig = {};
     for (const key of Object.getOwnPropertyNames(this.#config)) {
       Object.defineProperty(this.#runtimeConfig, key, {
-        enumerable: Object.getOwnPropertyDescriptor(this.#config, key).enumerable,
+        enumerable: Object.getOwnPropertyDescriptor(this.#config, key)
+          .enumerable,
         get: () => this.#config[key],
       });
     }
@@ -362,7 +411,9 @@ export class GameCompositionRoot {
     if (this.#deferredAssetLoadsStarted) return;
     this.#deferredAssetLoadsStarted = true;
     // The asset load plan's layer-two (and layer-three after it) start with the first frame (spec 157 R15).
-    void this.#preload?.startOn("ready", { keepnetPercent: this.#keepnetPercent() });
+    void this.#preload?.startOn("ready", {
+      keepnetPercent: this.#keepnetPercent(),
+    });
     void this.#preload?.whenFullyLoaded().then(() => {
       this.#startupMarks.mark(STARTUP_STAGES.fullLoad);
       // Spec 171 stage 4: the offline cache starts only now, so it never competes with the start.
@@ -374,10 +425,12 @@ export class GameCompositionRoot {
   // The keepnet's fill when the first frame is drawn: the plan loads that stage's art first (TK-219).
   #keepnetPercent() {
     const liveBait = this.#sessionServices?.liveBait;
-    return liveBait ? new KeepnetViewModel().build(liveBait.getView()).capacityPercent : 0;
+    return liveBait
+      ? new KeepnetViewModel().build(liveBait.getView()).capacityPercent
+      : 0;
   }
 
-  // TK-291: the weather and the waves right now for the DEV overlay «🌦 Погода й хвилі»; null before create().
+  // TK-291: the weather and the waves right now for the DEV overlay «ПОГОДА й хвилі»; null before create().
   getWeatherReading() {
     return this.#weatherStatus?.read() ?? null;
   }
@@ -388,13 +441,26 @@ export class GameCompositionRoot {
     if (!this.#preload) return null;
     const file = (id) => {
       const entry = this.#assets.entryOf(id);
-      return { id, kind: entry.kind, path: entry.path ?? entry.json, bytes: entry.bytes, low: entry.low ?? null,
-        state: this.#preload.getImageState(id) };
+      return {
+        id,
+        kind: entry.kind,
+        path: entry.path ?? entry.json,
+        bytes: entry.bytes,
+        low: entry.low ?? null,
+        state: this.#preload.getImageState(id),
+      };
     };
     return {
-      layers: this.#preload.getStatus().map((layer) => ({ ...layer,
-        groups: layer.groups.map((group) => ({ ...group, files: group.ids.map(file) })) })),
-      duplicates: this.#assetDuplicates ??= this.#assets.duplicates(),
+      layers: this.#preload
+        .getStatus()
+        .map((layer) => ({
+          ...layer,
+          groups: layer.groups.map((group) => ({
+            ...group,
+            files: group.ids.map(file),
+          })),
+        })),
+      duplicates: (this.#assetDuplicates ??= this.#assets.duplicates()),
       queue: this.#preload.getQueueSnapshot(),
       // Spec 167: the DEV step-by-step loading, or null.
       stepper: this.#assetLoadGate?.getSnapshot() ?? null,
@@ -403,7 +469,8 @@ export class GameCompositionRoot {
 
   // Services of the running session that other screens share instead of composing their own (spec 084).
   getSessionServices() {
-    if (!this.#sessionServices) throw new Error("GameCompositionRoot.getSessionServices before build");
+    if (!this.#sessionServices)
+      throw new Error("GameCompositionRoot.getSessionServices before build");
     return this.#sessionServices;
   }
 
@@ -413,39 +480,87 @@ export class GameCompositionRoot {
 
   async build(canvasId) {
     const canvas = this.#documentTarget.getElementById(canvasId);
-    const stageLayout = this.#createInventorySplitSource == null ? null : new GameStageLayout({
-      shell: this.#documentTarget.body, windowRef: this.#windowTarget, uiSurface: this.#uiSurface,
-      source: this.#createInventorySplitSource({ documentTarget: this.#documentTarget,
-        listeners: new EventLifecycle(this.#listenerCounter) }),
-      policy: new InventorySplitLayoutPolicy(), listeners: new EventLifecycle(this.#listenerCounter),
-    });
+    const stageLayout =
+      this.#createInventorySplitSource == null
+        ? null
+        : new GameStageLayout({
+            shell: this.#documentTarget.body,
+            windowRef: this.#windowTarget,
+            uiSurface: this.#uiSurface,
+            source: this.#createInventorySplitSource({
+              documentTarget: this.#documentTarget,
+              listeners: new EventLifecycle(this.#listenerCounter),
+            }),
+            policy: new InventorySplitLayoutPolicy(),
+            listeners: new EventLifecycle(this.#listenerCounter),
+          });
     this.#stageLayout = stageLayout;
     // Logical CSS pixels for the game, a backing store at the device pixel ratio up to the cap (spec 100 D1).
-    const resolutionOptions = { devicePixelRatio: () => this.#windowTarget.devicePixelRatio,
-      maxPixelRatio: this.#config.canvas?.maxPixelRatio };
-    const canvasMetrics = new CanvasMetricsProvider(canvas, stageLayout ? () => stageLayout.getViewport() : null,
-      resolutionOptions);
+    const resolutionOptions = {
+      devicePixelRatio: () => this.#windowTarget.devicePixelRatio,
+      maxPixelRatio: this.#config.canvas?.maxPixelRatio,
+    };
+    const canvasMetrics = new CanvasMetricsProvider(
+      canvas,
+      stageLayout ? () => stageLayout.getViewport() : null,
+      resolutionOptions,
+    );
     canvasMetrics.resizeToViewport();
     const devFlags = this.#createDevFlags(this.#config);
-    const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
-    contracts.requireMethods(devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"]);
-    contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", ["acquire", "release", "getDiagnostics"]);
-    contracts.requireMethods(this.#startupMarks, "startupMarks", STARTUP_MARKS_METHODS);
+    const contracts = new DependencyContractValidator({
+      consumer: "GameCompositionRoot.build",
+    });
+    contracts.requireMethods(devFlags, "devFlags", [
+      "isEnabled",
+      "godModeValue",
+      "isDebugEnabled",
+    ]);
+    contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", [
+      "acquire",
+      "release",
+      "getDiagnostics",
+    ]);
+    contracts.requireMethods(
+      this.#startupMarks,
+      "startupMarks",
+      STARTUP_MARKS_METHODS,
+    );
     if (this.#listenerCounter != null) {
-      contracts.requireMethods(this.#listenerCounter, "listenerCounter", ["added", "removed"]);
+      contracts.requireMethods(this.#listenerCounter, "listenerCounter", [
+        "added",
+        "removed",
+      ]);
     }
     const audio = new BrowserAudioAdapter({ assets: this.#assets });
     const clock = new GameClock();
     // Debug events and session diagnostics exist only when DEV composes them; production gets inactive ports.
-    const debugEvents = this.#createDebugEvents == null
-      ? new InactiveDebugEvents()
-      : this.#createDebugEvents({ documentTarget: this.#documentTarget, isEnabled: () => devFlags.isDebugEnabled() });
-    const diagnostics = this.#createGameDiagnostics == null
-      ? new InactiveGameDiagnostics()
-      : this.#createGameDiagnostics({ devFlags, debugEvents, documentTarget: this.#documentTarget });
-    contracts.requireMethods(debugEvents, "debugEvents", ["on", "emit", "clear"]);
-    contracts.requireMethods(diagnostics, "diagnostics",
-      ["isDebugEnabled", "emit", "on", "subscribeHookedFishRuntimeUpdated", "dispose"]);
+    const debugEvents =
+      this.#createDebugEvents == null
+        ? new InactiveDebugEvents()
+        : this.#createDebugEvents({
+            documentTarget: this.#documentTarget,
+            isEnabled: () => devFlags.isDebugEnabled(),
+          });
+    const diagnostics =
+      this.#createGameDiagnostics == null
+        ? new InactiveGameDiagnostics()
+        : this.#createGameDiagnostics({
+            devFlags,
+            debugEvents,
+            documentTarget: this.#documentTarget,
+          });
+    contracts.requireMethods(debugEvents, "debugEvents", [
+      "on",
+      "emit",
+      "clear",
+    ]);
+    contracts.requireMethods(diagnostics, "diagnostics", [
+      "isDebugEnabled",
+      "emit",
+      "on",
+      "subscribeHookedFishRuntimeUpdated",
+      "dispose",
+    ]);
     let runtime;
     try {
       runtime = await this.create(
@@ -487,242 +602,469 @@ export class GameCompositionRoot {
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
     // Cold startup owns resources until successful construction transfers them to Application.
     const owned = [];
-    const own = value => { if (value != null) owned.push(value); return value; };
+    const own = (value) => {
+      if (value != null) owned.push(value);
+      return value;
+    };
     try {
-
-    // The item stat override table reaches the Domain policy only through composition.
-    const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: this.#config.itemStatOverrides });
-    const effectiveItemStatsResolver = new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy });
-    this.#validateRarityConfiguration();
-    this.#validateItemProgressionConfiguration(effectiveItemStatsResolver);
-    this.#validateDegradationColorConfiguration();
-    const contracts = new DependencyContractValidator({
-      stage: "bootstrap",
-      consumer: "GameCompositionRoot.create",
-    });
-    // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
-    const imageAssets = new ImageAssetProvider();
-    // Spec 166: set once the rod's Spine is composed; the lazy layer asks it long after composition.
-    let spineAvailable = () => Promise.resolve(false);
-    const assetTransport = new BrowserAssetTransport();
-    contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
-    const assetLoadPlan = new AssetLoadPlan({ plan: this.#assetLoadPlan, registry: this.#assets,
-      sources: createAssetLoadSources({ locations: this.#config.locations, itemDb: this.#itemDb }),
-      modules: Object.keys(GAME_FEATURE_MODULES) });
-    this.#assetLoadGate = this.#createAssetLoadGate?.(assetLoadPlan) ?? null;
-    this.#preload = own(new GameAssetPreloadFacade({ assets: this.#assets, imageAssets, plan: assetLoadPlan,
-      gate: this.#assetLoadGate,
-      modules: GAME_FEATURE_MODULES,
-      warmFile: (path) => assetTransport.warm(path),
-      spineAvailable: () => spineAvailable(),
-      scheduler: this.#windowTarget,
-      now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
-      // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
-      conditions: own(new BrowserLoadConditions({ documentRef: this.#documentTarget, windowRef: this.#windowTarget })) }));
-    // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
-    const {
-      rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
-    } = this.#composeStyleResolvers();
-    // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
-    const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({ config: this.#config,
-      modeOverride: this.#sceneMode, documentTarget: this.#documentTarget, gameCanvas: canvas, canvasMetrics,
-      images: imageAssets, clock, fightAreaStyles: fightAreaStyleResolver, probe: this.#frameProbe,
-      logger: new ConsoleLogger(), getImageSize: (assetId) => this.#assets.sizeOf(assetId), preload: this.#preload });
-    own(sceneLayer);
-    contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
-    const {
-      surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
-    } = this.#composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets });
-    const {
-      itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver,
-      itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter,
-    } = this.#composeItemModels({
-      rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
-    });
-    const { victoryFeature, victoryWindow } = this.#composeOutcomeInteraction({ rarityVisualResolver, own });
-    this.#victoryFeature = victoryFeature;
-    const {
-      baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver,
-      fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver,
-    } = this.#composeFishModels({ contracts, itemFreshnessResolver });
-    const rodAnimation = own(composeRodAnimation({
-      windowTarget: this.#windowTarget, config: this.#runtimeConfig,
-      scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets, images: imageAssets,
-      preload: this.#preload,
-    }));
-    // Spec 166: the lazy layer warms Spine exports only where Spine plays.
-    spineAvailable = rodAnimation.probeSpine;
-    const boatFeature = own(new LazyFeature({
-      name: "boat",
-      preload: this.#preload,
-      compose: ({ composeBoatAnimation }) => composeBoatAnimation({
-        windowTarget: this.#windowTarget,
-        scene: { layer: sceneLayer, router: sceneRouter, webgl: transparentCanvas }, assets: this.#assets,
-        preload: this.#preload, images: imageAssets,
-      }),
-    }));
-    const boatAnimation = {
-      controller: new LazyBoatAnimationController(boatFeature),
-      dispose: () => boatFeature.get()?.dispose?.(),
-    };
-    contracts.requireMethods(rodAnimation.controller, "rodAnimation",
-      ["setSkin", "advance", "getAnchor", "getStatus", "setSpineEnabled", "getClips", "setClipEnabled",
-        "getBones", "setBoneSetup", "exportSkeleton", "dispose"]);
-    const { pipeline } = this.#rendering.composePipeline({
-      surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
-      rarityVisualResolver, sceneRouter,
-    });
-    // The game clock comes before the location: startup loads only the background phase of the current game time
-    // (spec 157 R4).
-    const gameTimeClock = composeGameTime({
-      storage: this.#windowTarget.localStorage,
-      now: () => Date.now(),
-      initialHours: this.#config.debug?.initialTime,
-      timeScale: this.#config.debug?.timeScale || 1,
-    });
-    const { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric } = await this.#composeLocation({
-      locationAssetLoader, startupHours: gameTimeClock.getHours(),
-    });
-    this.#startupMarks.mark(STARTUP_STAGES.location);
-    const { inventory, castDistanceCalculator, physicsConfig } = this.#composePlayerInventory({
-      own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
-      itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
-    });
-    const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
-      config: this.#config.liveBait, fishDb: FISH_DB, rng,
-      synchronizeInventory: (items) => inventory.synchronizeAquariumFeed(items), backpackSlots: inventory.backpackSlots });
-    const onFeedStorage = (event) => { if (event.key === "fishing_game_player_inventory_v2") liveBait.synchronizeInventory(); };
-    this.#windowTarget.addEventListener("storage", onFeedStorage);
-    own({ dispose: () => this.#windowTarget.removeEventListener("storage", onFeedStorage) });
-    // A new fishing session has no in-flight cast to own a persisted hook fish.
-    liveBait.recoverInterruptedCast();
-    const liveBaitCandidate = new LiveBaitBaitCandidatePort(liveBait, FISH_DB);
-    const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(FISH_DB, this.#config.liveBait.motionSourceSpeciesId);
-    const createLiveBaitMotion = (speciesId) => {
-      const physics = liveBaitMotionProfiles.resolve(speciesId);
-      return physics ? new LiveBaitMotionAdapter({ physics, multiplier: this.#config.liveBait.motionMultiplier,
-        rng }) : null;
-    };
-    const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
-    this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt,
-      openRoomLevel: (level) => { void this.#preload.setProgress({ openedRoomLevel: level }); } });
-    // Spec 172 D7: one sea state (wind, night, storm) for the water's waves and the float's rocking. The environment
-    // is composed with the world systems below, so it is read lazily.
-    let worldSystems = null;
-    const seaState = new SeaStateResolver({ getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
-      getSettings: () => this.#config.canvas?.water?.seaState });
-    // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
-    const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water, seaState });
-    const { systems } = this.#composeWorldSystems({
-      projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
-      itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
-      fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-      gameTimeClock, rodAnimation: rodAnimation.controller, boatAnimation: boatAnimation.controller,
-      scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
-    });
-    worldSystems = systems;
-    this.#weatherStatus = new WeatherStatusReader({ getEnvironment: () => systems.env?.getSnapshot() ?? null, seaState,
-      getWater: () => this.#config.canvas?.water });
-    this.#composeInventoryUi({
-      inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
-      itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-      physicsConfig, liveBait, imageAssets,
-    });
-    this.#startupMarks.mark(STARTUP_STAGES.inventory);
-    const {
-      world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules,
-      castRules, biteRules, chumRules, boatRules, playerCastRules,
-    } = this.#composeRulesAndWorld({
-      castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
-      physicsConfig, own, gameTimeClock, imageAssets,
-    });
-    // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
-    // happen during loading, not in the first frames of play.
-    // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too, as the plan's
-    // layer-one group "scene"; an image that fails to load leaves that float a bar.
-    const floatArt = (await this.#preload.whenGroup("scene")).ids;
-    // TK-183: the first frame renders on the 2D canvas; the Pixi scene warms up after ready.
-    void sceneLayer.whenReady().then((ready) => {
-      if (ready) sceneLayer.prepare([...Object.values(systems.map.getBackgroundRenderData().assetIds).filter(Boolean), ...floatArt]);
-    });
-    // The game is ready only once the plan's first layer has loaded (spec 157 R15).
-    await this.#preload.whenLayer("layer-one");
-    this.#startupMarks.mark(STARTUP_STAGES.scene);
-    return {
-      liveBait,
-      liveBaitCandidate,
-      createLiveBaitMotion,
-      location,
-      rng,
-      projector: systems.projector,
-      map: systems.map,
-      env: systems.env,
-      input: systems.input,
-      ui: systems.ui,
-      chum: systems.chum,
-      devicePower: systems.devicePower,
-      radio: systems.radio,
-      bite: systems.bite,
-      inventory: systems.inventory,
-      inventoryUI: systems.inventoryUI,
-      keepnetUI: systems.keepnetUI,
-      world,
-      rendering: {
-        surface,
-        imageAssets,
-        assetPreloadCoordinator,
-        locationAssetLoader,
-        pipeline,
-        sceneLayer,
-        sceneRouter,
-        locationDebugMapBuilder,
+      // The item stat override table reaches the Domain policy only through composition.
+      const itemStatOverridePolicy = new ItemStatOverridePolicy({
+        config: this.#config.itemStatOverrides,
+      });
+      const effectiveItemStatsResolver = new EffectiveItemStatsResolver({
+        overridePolicy: itemStatOverridePolicy,
+      });
+      this.#validateRarityConfiguration();
+      this.#validateItemProgressionConfiguration(effectiveItemStatsResolver);
+      this.#validateDegradationColorConfiguration();
+      const contracts = new DependencyContractValidator({
+        stage: "bootstrap",
+        consumer: "GameCompositionRoot.create",
+      });
+      // One image store for the 2D passes and the WebGL scene's textures (spec 105 D2).
+      const imageAssets = new ImageAssetProvider();
+      // Spec 166: set once the rod's Spine is composed; the lazy layer asks it long after composition.
+      let spineAvailable = () => Promise.resolve(false);
+      const assetTransport = new BrowserAssetTransport();
+      contracts.requireMethods(imageAssets, "imageAssets", [
+        "preload",
+        "tryGet",
+      ]);
+      const assetLoadPlan = new AssetLoadPlan({
+        plan: this.#assetLoadPlan,
+        registry: this.#assets,
+        sources: createAssetLoadSources({
+          locations: this.#config.locations,
+          itemDb: this.#itemDb,
+        }),
+        modules: Object.keys(GAME_FEATURE_MODULES),
+      });
+      this.#assetLoadGate = this.#createAssetLoadGate?.(assetLoadPlan) ?? null;
+      this.#preload = own(
+        new GameAssetPreloadFacade({
+          assets: this.#assets,
+          imageAssets,
+          plan: assetLoadPlan,
+          gate: this.#assetLoadGate,
+          modules: GAME_FEATURE_MODULES,
+          warmFile: (path) => assetTransport.warm(path),
+          spineAvailable: () => spineAvailable(),
+          scheduler: this.#windowTarget,
+          now: () => this.#windowTarget.performance?.now?.() ?? Date.now(),
+          // Background layers wait in a hidden tab, offline or with save-data (spec 047 FR-017, spec 157 D2).
+          conditions: own(
+            new BrowserLoadConditions({
+              documentRef: this.#documentTarget,
+              windowRef: this.#windowTarget,
+            }),
+          ),
+        }),
+      );
+      // Config styles first: the scene and the 2D canvas draw the fight areas with one resolver (spec 107).
+      const {
+        rarityVisualResolver,
+        degradationColorResolver,
         hudStyleResolver,
         fightAreaStyleResolver,
+      } = this.#composeStyleResolvers();
+      // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
+      const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({
+        config: this.#config,
+        modeOverride: this.#sceneMode,
+        documentTarget: this.#documentTarget,
+        gameCanvas: canvas,
+        canvasMetrics,
+        images: imageAssets,
+        clock,
+        fightAreaStyles: fightAreaStyleResolver,
+        probe: this.#frameProbe,
+        logger: new ConsoleLogger(),
+        getImageSize: (assetId) => this.#assets.sizeOf(assetId),
+        preload: this.#preload,
+      });
+      own(sceneLayer);
+      contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
+      const {
+        surface,
+        primitives,
+        assetPreloadCoordinator,
+        locationAssetLoader,
+        locationDebugMapBuilder,
+      } = this.#composeRenderingInfrastructure({
+        canvas,
+        canvasMetrics,
+        contracts,
+        transparentCanvas,
+        imageAssets,
+      });
+      const {
+        itemFreshnessResolver,
+        itemChargeResolver,
+        itemRarityResolver,
+        itemProgressionResolver,
+        itemConditionResolver,
+        itemProgressionDebugProvider,
+        itemRarityDomAdapter,
+        itemProgressionDomAdapter,
+        itemConditionDomAdapter,
+      } = this.#composeItemModels({
         rarityVisualResolver,
-        rodAnimation,
-        boatAnimation,
-        floatRocking,
-        seaState,
+        effectiveItemStatsResolver,
+        contracts,
+        degradationColorResolver,
+      });
+      const { victoryFeature, victoryWindow } = this.#composeOutcomeInteraction(
+        { rarityVisualResolver, own },
+      );
+      this.#victoryFeature = victoryFeature;
+      const {
+        baitEffectivenessCatalogResolver,
+        hookedFishProfileSynchronizer,
+        fishRarityResolver,
+        fishAnomalyVariantResolver,
+        fishVisualVariantResolver,
+        baitEffectivenessResolver,
+      } = this.#composeFishModels({ contracts, itemFreshnessResolver });
+      const rodAnimation = own(
+        composeRodAnimation({
+          windowTarget: this.#windowTarget,
+          config: this.#runtimeConfig,
+          scene: {
+            layer: sceneLayer,
+            router: sceneRouter,
+            webgl: transparentCanvas,
+          },
+          assets: this.#assets,
+          images: imageAssets,
+          preload: this.#preload,
+        }),
+      );
+      // Spec 166: the lazy layer warms Spine exports only where Spine plays.
+      spineAvailable = rodAnimation.probeSpine;
+      const boatFeature = own(
+        new LazyFeature({
+          name: "boat",
+          preload: this.#preload,
+          compose: ({ composeBoatAnimation }) =>
+            composeBoatAnimation({
+              windowTarget: this.#windowTarget,
+              scene: {
+                layer: sceneLayer,
+                router: sceneRouter,
+                webgl: transparentCanvas,
+              },
+              assets: this.#assets,
+              preload: this.#preload,
+              images: imageAssets,
+            }),
+        }),
+      );
+      const boatAnimation = {
+        controller: new LazyBoatAnimationController(boatFeature),
+        dispose: () => boatFeature.get()?.dispose?.(),
+      };
+      contracts.requireMethods(rodAnimation.controller, "rodAnimation", [
+        "setSkin",
+        "advance",
+        "getAnchor",
+        "getStatus",
+        "setSpineEnabled",
+        "getClips",
+        "setClipEnabled",
+        "getBones",
+        "setBoneSetup",
+        "exportSkeleton",
+        "dispose",
+      ]);
+      const { pipeline } = this.#rendering.composePipeline({
+        surface,
+        imageAssets,
+        primitives,
+        hudStyleResolver,
+        fightAreaStyleResolver,
+        contracts,
+        rarityVisualResolver,
+        sceneRouter,
+      });
+      // The game clock comes before the location: startup loads only the background phase of the current game time
+      // (spec 157 R4).
+      const gameTimeClock = composeGameTime({
+        storage: this.#windowTarget.localStorage,
+        now: () => Date.now(),
+        initialHours: this.#config.debug?.initialTime,
+        timeScale: this.#config.debug?.timeScale || 1,
+      });
+      const {
+        projector,
+        locId,
+        rng,
+        locationResources,
+        locCfg,
+        location,
+        locationMap,
+        waterMetricSource,
+        getWaterMetric,
+      } = await this.#composeLocation({
+        locationAssetLoader,
+        startupHours: gameTimeClock.getHours(),
+      });
+      this.#startupMarks.mark(STARTUP_STAGES.location);
+      const { inventory, castDistanceCalculator, physicsConfig } =
+        this.#composePlayerInventory({
+          own,
+          itemRarityResolver,
+          itemProgressionResolver,
+          itemConditionResolver,
+          itemFreshnessResolver,
+          itemChargeResolver,
+          baitEffectivenessCatalogResolver,
+          effectiveItemStatsResolver,
+          itemStatOverridePolicy,
+        });
+      const liveBait = composeLiveBait({
+        storage: this.#windowTarget.localStorage,
+        config: this.#config.liveBait,
+        fishDb: FISH_DB,
+        rng,
+        synchronizeInventory: (items) =>
+          inventory.synchronizeAquariumFeed(items),
+        backpackSlots: inventory.backpackSlots,
+      });
+      const onFeedStorage = (event) => {
+        if (event.key === "fishing_game_player_inventory_v2")
+          liveBait.synchronizeInventory();
+      };
+      this.#windowTarget.addEventListener("storage", onFeedStorage);
+      own({
+        dispose: () =>
+          this.#windowTarget.removeEventListener("storage", onFeedStorage),
+      });
+      // A new fishing session has no in-flight cast to own a persisted hook fish.
+      liveBait.recoverInterruptedCast();
+      const liveBaitCandidate = new LiveBaitBaitCandidatePort(
+        liveBait,
+        FISH_DB,
+      );
+      const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(
+        FISH_DB,
+        this.#config.liveBait.motionSourceSpeciesId,
+      );
+      const createLiveBaitMotion = (speciesId) => {
+        const physics = liveBaitMotionProfiles.resolve(speciesId);
+        return physics
+          ? new LiveBaitMotionAdapter({
+              physics,
+              multiplier: this.#config.liveBait.motionMultiplier,
+              rng,
+            })
+          : null;
+      };
+      const { chumConfigObj, eq } = this.#composeChumConfig({
+        inventory,
+        effectiveItemStatsResolver,
+      });
+      this.#sessionServices = Object.freeze({
+        liveBait,
+        gameTime: gameTimeClock,
+        assets: this.#assets,
         fishArt: this.#fishArt,
-      },
-      interaction: {
-        victoryWindow,
-      },
-      fishRarityResolver,
-      itemRarityResolver,
-      fishAnomalyVariantResolver,
-      fishVisualVariantResolver,
-      fishing,
-      equipment,
-      net,
-      castPenalty,
-      depthUI,
-      timeUI,
-      holdUI,
-      debugEvents,
-      devFlags,
-      audio,
-      canvasMetrics,
-      castDistanceCalculator,
-      equipmentRules,
-      baitRules,
-      castRules,
-      biteRules,
-      chumRules,
-      boatRules,
-      playerCastRules,
-    };
-  
+        openRoomLevel: (level) => {
+          void this.#preload.setProgress({ openedRoomLevel: level });
+        },
+      });
+      // Spec 172 D7: one sea state (wind, night, storm) for the water's waves and the float's rocking. The environment
+      // is composed with the world systems below, so it is read lazily.
+      let worldSystems = null;
+      const seaState = new SeaStateResolver({
+        getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
+        getSettings: () => this.#config.canvas?.water?.seaState,
+      });
+      // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
+      const floatRocking = new FloatWaveRocking({
+        getSettings: () => this.#config.canvas?.water,
+        seaState,
+      });
+      const { systems } = this.#composeWorldSystems({
+        projector,
+        locId,
+        rng,
+        locationResources,
+        locCfg,
+        locationMap,
+        waterMetricSource,
+        getWaterMetric,
+        own,
+        canvas,
+        hookedFishProfileSynchronizer,
+        itemProgressionDebugProvider,
+        itemProgressionResolver,
+        chumConfigObj,
+        debugEvents,
+        devFlags,
+        fishRarityResolver,
+        fishAnomalyVariantResolver,
+        fishVisualVariantResolver,
+        baitEffectivenessResolver,
+        inventory,
+        clock,
+        gameTimeClock,
+        rodAnimation: rodAnimation.controller,
+        boatAnimation: boatAnimation.controller,
+        scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
+      });
+      worldSystems = systems;
+      this.#weatherStatus = new WeatherStatusReader({
+        getEnvironment: () => systems.env?.getSnapshot() ?? null,
+        seaState,
+        getWater: () => this.#config.canvas?.water,
+      });
+      this.#composeInventoryUi({
+        inventory,
+        systems,
+        own,
+        itemRarityDomAdapter,
+        rarityVisualResolver,
+        itemProgressionDomAdapter,
+        itemConditionDomAdapter,
+        degradationColorResolver,
+        castDistanceCalculator,
+        physicsConfig,
+        liveBait,
+        imageAssets,
+      });
+      this.#startupMarks.mark(STARTUP_STAGES.inventory);
+      const {
+        world,
+        fishing,
+        equipment,
+        net,
+        castPenalty,
+        depthUI,
+        timeUI,
+        holdUI,
+        equipmentRules,
+        baitRules,
+        castRules,
+        biteRules,
+        chumRules,
+        boatRules,
+        playerCastRules,
+      } = this.#composeRulesAndWorld({
+        castDistanceCalculator,
+        systems,
+        location,
+        canvasMetrics,
+        clock,
+        devFlags,
+        debugEvents,
+        eq,
+        physicsConfig,
+        own,
+        gameTimeClock,
+        imageAssets,
+      });
+      // Spec 104 D8, spec 105 D2: the scene's warm-up frame and the upload of every background phase of the location
+      // happen during loading, not in the first frames of play.
+      // Spec 127: the float art (every float's scene image and tip glow) loads and uploads here too, as the plan's
+      // layer-one group "scene"; an image that fails to load leaves that float a bar.
+      const floatArt = (await this.#preload.whenGroup("scene")).ids;
+      // TK-183: the first frame renders on the 2D canvas; the Pixi scene warms up after ready.
+      void sceneLayer.whenReady().then((ready) => {
+        if (ready)
+          sceneLayer.prepare([
+            ...Object.values(
+              systems.map.getBackgroundRenderData().assetIds,
+            ).filter(Boolean),
+            ...floatArt,
+          ]);
+      });
+      // The game is ready only once the plan's first layer has loaded (spec 157 R15).
+      await this.#preload.whenLayer("layer-one");
+      this.#startupMarks.mark(STARTUP_STAGES.scene);
+      return {
+        liveBait,
+        liveBaitCandidate,
+        createLiveBaitMotion,
+        location,
+        rng,
+        projector: systems.projector,
+        map: systems.map,
+        env: systems.env,
+        input: systems.input,
+        ui: systems.ui,
+        chum: systems.chum,
+        devicePower: systems.devicePower,
+        radio: systems.radio,
+        bite: systems.bite,
+        inventory: systems.inventory,
+        inventoryUI: systems.inventoryUI,
+        keepnetUI: systems.keepnetUI,
+        world,
+        rendering: {
+          surface,
+          imageAssets,
+          assetPreloadCoordinator,
+          locationAssetLoader,
+          pipeline,
+          sceneLayer,
+          sceneRouter,
+          locationDebugMapBuilder,
+          hudStyleResolver,
+          fightAreaStyleResolver,
+          rarityVisualResolver,
+          rodAnimation,
+          boatAnimation,
+          floatRocking,
+          seaState,
+          fishArt: this.#fishArt,
+        },
+        interaction: {
+          victoryWindow,
+        },
+        fishRarityResolver,
+        itemRarityResolver,
+        fishAnomalyVariantResolver,
+        fishVisualVariantResolver,
+        fishing,
+        equipment,
+        net,
+        castPenalty,
+        depthUI,
+        timeUI,
+        holdUI,
+        debugEvents,
+        devFlags,
+        audio,
+        canvasMetrics,
+        castDistanceCalculator,
+        equipmentRules,
+        baitRules,
+        castRules,
+        biteRules,
+        chumRules,
+        boatRules,
+        playerCastRules,
+      };
     } catch (error) {
       for (let index = owned.length - 1; index >= 0; index--) {
-        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+        try {
+          owned[index].dispose?.();
+        } catch (cleanupError) {
+          new ConsoleLogger().error(cleanupError);
+        }
       }
       throw error;
     }
-}
+  }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.
-  #composeRenderingInfrastructure({ canvas, canvasMetrics, contracts, transparentCanvas, imageAssets }) {
+  #composeRenderingInfrastructure({
+    canvas,
+    canvasMetrics,
+    contracts,
+    transparentCanvas,
+    imageAssets,
+  }) {
     const surface = new Canvas2DSurface(canvas, {
       contextAttributes: { alpha: transparentCanvas },
       resolution: canvasMetrics,
@@ -736,20 +1078,37 @@ export class GameCompositionRoot {
       assets: this.#assets,
       diagnostics: this.#readRenderDiagnostics(),
     });
-    contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
-      "preloadApplicationAssets",
-      "preloadLocation",
-      "preloadFishingAssets",
-      "preloadVictoryAssets",
-    ]);
-    const locationAssetLoader = new LocationAssetLoader({ imageAssets, canvasFactory, assets: this.#assets });
+    contracts.requireMethods(
+      assetPreloadCoordinator,
+      "assetPreloadCoordinator",
+      [
+        "preloadApplicationAssets",
+        "preloadLocation",
+        "preloadFishingAssets",
+        "preloadVictoryAssets",
+      ],
+    );
+    const locationAssetLoader = new LocationAssetLoader({
+      imageAssets,
+      canvasFactory,
+      assets: this.#assets,
+    });
     contracts.requireMethods(locationAssetLoader, "locationAssetLoader", [
       "load",
     ]);
     const locationDebugMapBuilder = this.#createOptionalDiagnostic(
-      this.#createLocationDebugMapBuilder, "locationDebugMapBuilder", [{ canvasFactory }], ["build"],
+      this.#createLocationDebugMapBuilder,
+      "locationDebugMapBuilder",
+      [{ canvasFactory }],
+      ["build"],
     );
-    return { surface, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder };
+    return {
+      surface,
+      primitives,
+      assetPreloadCoordinator,
+      locationAssetLoader,
+      locationDebugMapBuilder,
+    };
   }
 
   // Config-driven HUD, fight area, outcome, rarity and degradation styles.
@@ -768,12 +1127,20 @@ export class GameCompositionRoot {
     const degradationColorResolver = new DegradationColorResolver({
       configProvider: () => this.#config.degradationColors || {},
     });
-    return { rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver };
+    return {
+      rarityVisualResolver,
+      degradationColorResolver,
+      hudStyleResolver,
+      fightAreaStyleResolver,
+    };
   }
 
   // Item rarity, condition, freshness and progression read models with their DOM adapters.
   #composeItemModels({
-    rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
+    rarityVisualResolver,
+    effectiveItemStatsResolver,
+    contracts,
+    degradationColorResolver,
   }) {
     const itemRarityStrategyRegistry = new ItemRarityStrategyRegistry([
       new AuthoredItemRarityStrategy(),
@@ -839,11 +1206,16 @@ export class GameCompositionRoot {
       labels: ITEM_PROGRESSION_LABELS,
     });
     const itemProgressionDebugProvider = this.#createOptionalDiagnostic(
-      this.#createItemProgressionDebugSnapshotProvider, "itemProgressionDebugProvider", [{
-        itemDb: this.#itemDb || {},
-        progressionResolver: itemProgressionResolver,
-        effectiveStatsResolver: effectiveItemStatsResolver,
-      }], ["getSnapshots"],
+      this.#createItemProgressionDebugSnapshotProvider,
+      "itemProgressionDebugProvider",
+      [
+        {
+          itemDb: this.#itemDb || {},
+          progressionResolver: itemProgressionResolver,
+          effectiveStatsResolver: effectiveItemStatsResolver,
+        },
+      ],
+      ["getSnapshots"],
     );
     contracts.requireMethods(itemRarityResolver, "itemRarityResolver", [
       "resolve",
@@ -878,29 +1250,46 @@ export class GameCompositionRoot {
       "itemProgressionDomAdapter",
       ["apply", "clear"],
     );
-    return { itemFreshnessResolver, itemChargeResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
+    return {
+      itemFreshnessResolver,
+      itemChargeResolver,
+      itemRarityResolver,
+      itemProgressionResolver,
+      itemConditionResolver,
+      itemProgressionDebugProvider,
+      itemRarityDomAdapter,
+      itemProgressionDomAdapter,
+      itemConditionDomAdapter,
+    };
   }
 
   // The victory window (spec 161) as a feature loaded after ready (spec 157 R12, TK-184). Until its module arrives a
   // show() waits for it, so a catch right after the start still opens the window.
   #composeOutcomeInteraction({ rarityVisualResolver, own }) {
-    const victoryFeature = own(new LazyFeature({
-      name: "victory",
-      preload: this.#preload,
-      compose: ({ composeVictoryFeature }) => composeVictoryFeature({
-        documentRef: this.#documentTarget,
-        assets: this.#assets,
-        mountNode: this.#uiSurface.portalRoot,
-        rarityVisualResolver,
-        resolveFishImage: (fish) => this.#fishArt.displayImagePath(fish),
-        species: FISH_DB,
+    const victoryFeature = own(
+      new LazyFeature({
+        name: "victory",
+        preload: this.#preload,
+        compose: ({ composeVictoryFeature }) =>
+          composeVictoryFeature({
+            documentRef: this.#documentTarget,
+            assets: this.#assets,
+            mountNode: this.#uiSurface.portalRoot,
+            rarityVisualResolver,
+            resolveFishImage: (fish) => this.#fishArt.displayImagePath(fish),
+            species: FISH_DB,
+          }),
       }),
-    }));
+    );
     let pending = null;
     const victoryWindow = Object.freeze({
       show: (fish, handlers) => {
         const real = victoryFeature.get();
-        if (real) { pending = null; real.show(fish, handlers); return; }
+        if (real) {
+          pending = null;
+          real.show(fish, handlers);
+          return;
+        }
         pending = { fish, handlers };
         void victoryFeature.request().then((feature) => {
           if (!feature || !pending) return;
@@ -909,16 +1298,17 @@ export class GameCompositionRoot {
           feature.show(waiting, waitingHandlers);
         });
       },
-      hide: () => { pending = null; victoryFeature.get()?.hide(); },
+      hide: () => {
+        pending = null;
+        victoryFeature.get()?.hide();
+      },
     });
     return { victoryFeature, victoryWindow };
   }
 
   // Fish rarity, visual and anomaly variants, bait effectiveness and the DEV hooked fish synchronizer.
   #composeFishModels({ contracts, itemFreshnessResolver }) {
-    const fishRarityResolver = new FishRarityResolver(
-      this.#config.rarity,
-    );
+    const fishRarityResolver = new FishRarityResolver(this.#config.rarity);
     contracts.requireMethods(fishRarityResolver, "fishRarityResolver", [
       "resolve",
       "resolveLevel",
@@ -947,7 +1337,12 @@ export class GameCompositionRoot {
     contracts.requireMethods(
       baitEffectivenessResolver,
       "baitEffectivenessResolver",
-      ["resolve", "resolveMultiplier", "resolveBestMultiplier", "resolveBestMatch"],
+      [
+        "resolve",
+        "resolveMultiplier",
+        "resolveBestMultiplier",
+        "resolveBestMatch",
+      ],
     );
     contracts.requireMethods(
       baitEffectivenessCatalogResolver,
@@ -955,14 +1350,25 @@ export class GameCompositionRoot {
       ["resolve"],
     );
     const hookedFishProfileSynchronizer = this.#createOptionalDiagnostic(
-      this.#createHookedFishProfileSynchronizer, "hookedFishProfileSynchronizer", [{
-        fishRarityResolver,
-        fishVisualVariantResolver,
-      }], ["synchronize"],
+      this.#createHookedFishProfileSynchronizer,
+      "hookedFishProfileSynchronizer",
+      [
+        {
+          fishRarityResolver,
+          fishVisualVariantResolver,
+        },
+      ],
+      ["synchronize"],
     );
-    return { baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver, fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver };
+    return {
+      baitEffectivenessCatalogResolver,
+      hookedFishProfileSynchronizer,
+      fishRarityResolver,
+      fishAnomalyVariantResolver,
+      fishVisualVariantResolver,
+      baitEffectivenessResolver,
+    };
   }
-
 
   // Current location, RNG, preloaded location resources and the viewport projector.
   // startupHours: the game time at startup; its background phases (base, and the overlay at dusk or dawn) load before
@@ -983,11 +1389,20 @@ export class GameCompositionRoot {
     // The plan's layer-one starts here (its sources need the location and the startup phases); its "location" group is
     // the current phase and the depth map. The other phases are layer-two, after the first frame; the scene uploads each
     // one in the frame after it arrives.
-    const roomProgress = new RoomProgress(HOUSE_CONFIG.room, new RoomProgressLocalStore(this.#windowTarget.localStorage).load());
-    void this.#preload.start("layer-one", { locationId: locId, phases, openedRoomLevel: roomProgress.openedLevel });
+    const roomProgress = new RoomProgress(
+      HOUSE_CONFIG.room,
+      new RoomProgressLocalStore(this.#windowTarget.localStorage).load(),
+    );
+    void this.#preload.start("layer-one", {
+      locationId: locId,
+      phases,
+      openedRoomLevel: roomProgress.openedLevel,
+    });
     const locationGroup = await this.#preload.whenGroup("location");
     if (locationGroup.status === "failed") {
-      const error = new Error(`location:${locId} critical assets failed: ${locationGroup.error?.message || "load error"}`);
+      const error = new Error(
+        `location:${locId} critical assets failed: ${locationGroup.error?.message || "load error"}`,
+      );
       error.scope = `location:${locId}`;
       error.critical = true;
       throw error;
@@ -999,12 +1414,22 @@ export class GameCompositionRoot {
       { phases },
     );
     // Session starts vary even when gameplay uses a fixed seed; sampling never advances gameplay RNG.
-    const locationMap = new LocationMap(locId, this.#config.locations, rng, locationResources, { next: () => Math.random() });
+    const locationMap = new LocationMap(
+      locId,
+      this.#config.locations,
+      rng,
+      locationResources,
+      { next: () => Math.random() },
+    );
     const waterMetricResolver = new LocationWaterMetricResolver({
-      pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter, logger: new ConsoleLogger(),
+      pixelsPerMeter: new CastDistanceCalculator(this.#config).pixelsPerMeter,
+      logger: new ConsoleLogger(),
     });
-    const waterMetricSource = new LocationWaterMetricSource({ map: locationMap, getLocations: () => this.#config.locations,
-      resolver: waterMetricResolver });
+    const waterMetricSource = new LocationWaterMetricSource({
+      map: locationMap,
+      getLocations: () => this.#config.locations,
+      resolver: waterMetricResolver,
+    });
     const getWaterMetric = () => waterMetricSource.current();
     const worldPerspective = new WorldPerspective({ getWaterMetric });
     const projector = new ViewportProjector(
@@ -1012,13 +1437,30 @@ export class GameCompositionRoot {
       locId,
       worldPerspective.getPerspective.bind(worldPerspective),
     );
-    return { projector, locId, rng, locationResources, locCfg, location, locationMap, waterMetricSource, getWaterMetric };
+    return {
+      projector,
+      locId,
+      rng,
+      locationResources,
+      locCfg,
+      location,
+      locationMap,
+      waterMetricSource,
+      getWaterMetric,
+    };
   }
 
   // Physics-backed line and cast rules and the player's inventory.
   #composePlayerInventory({
-    own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
-    itemChargeResolver, baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+    own,
+    itemRarityResolver,
+    itemProgressionResolver,
+    itemConditionResolver,
+    itemFreshnessResolver,
+    itemChargeResolver,
+    baitEffectivenessCatalogResolver,
+    effectiveItemStatsResolver,
+    itemStatOverridePolicy,
   }) {
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
@@ -1032,26 +1474,30 @@ export class GameCompositionRoot {
       this.#runtimeConfig,
       physicsConfig,
     );
-    const inventory = own(createPlayerInventory({
-      itemDB: this.#itemDb,
-      playerConfig: this.#config.player,
-      events: new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
-      castDistanceCalculator,
-      lineRules,
-      runtimeConfigProvider,
-      itemRarityResolver,
-      itemProgressionResolver,
-      itemConditionResolver,
-      itemFreshnessResolver,
-      itemChargeResolver,
-      baitEffectivenessCatalogResolver,
-      effectiveStatsResolver: effectiveItemStatsResolver,
-      itemStatOverridePolicy,
-      cache: this.#storageCache,
-      assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
-      makeRandomId: createRandomInventoryId,
-      now: () => Date.now(),
-    }));
+    const inventory = own(
+      createPlayerInventory({
+        itemDB: this.#itemDb,
+        playerConfig: this.#config.player,
+        events: new InventoryEventBridge(
+          new BrowserEventTargetAdapter(this.#documentTarget),
+        ),
+        castDistanceCalculator,
+        lineRules,
+        runtimeConfigProvider,
+        itemRarityResolver,
+        itemProgressionResolver,
+        itemConditionResolver,
+        itemFreshnessResolver,
+        itemChargeResolver,
+        baitEffectivenessCatalogResolver,
+        effectiveStatsResolver: effectiveItemStatsResolver,
+        itemStatOverridePolicy,
+        cache: this.#storageCache,
+        assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
+        makeRandomId: createRandomInventoryId,
+        now: () => Date.now(),
+      }),
+    );
     return { inventory, castDistanceCalculator, physicsConfig };
   }
 
@@ -1091,125 +1537,251 @@ export class GameCompositionRoot {
   // Spec 172 stage A (owner Q1): the weather and the wind draw from their own seeded stream, derived from the session's
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
   #composeEnvironment({ locId, locCfg, gameTimeClock }) {
-    const seed = this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
+    const seed =
+      this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
     const weatherRng = new SeededRng(`${seed}:weather`);
-    const weather = new WeatherModel({ rng: weatherRng,
-      getSettings: () => this.#config.locations?.map?.[locId]?.weather ?? locCfg?.weather ?? null });
-    return new EnvironmentSystem(locCfg, this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours, weatherRng, this.#config.spawns,
-      gameTimeClock, weather);
+    const weather = new WeatherModel({
+      rng: weatherRng,
+      getSettings: () =>
+        this.#config.locations?.map?.[locId]?.weather ??
+        locCfg?.weather ??
+        null,
+    });
+    return new EnvironmentSystem(
+      locCfg,
+      this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
+      weatherRng,
+      this.#config.spawns,
+      gameTimeClock,
+      weather,
+    );
   }
 
   #composeWorldSystems({
-    projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
-    itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
-    fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
-    gameTimeClock, rodAnimation, boatAnimation, scene,
+    projector,
+    locId,
+    rng,
+    locationResources,
+    locCfg,
+    locationMap,
+    waterMetricSource,
+    getWaterMetric,
+    own,
+    canvas,
+    hookedFishProfileSynchronizer,
+    itemProgressionDebugProvider,
+    itemProgressionResolver,
+    chumConfigObj,
+    debugEvents,
+    devFlags,
+    fishRarityResolver,
+    fishAnomalyVariantResolver,
+    fishVisualVariantResolver,
+    baitEffectivenessResolver,
+    inventory,
+    clock,
+    gameTimeClock,
+    rodAnimation,
+    boatAnimation,
+    scene,
   }) {
     const uiLogger = new ConsoleLogger();
     // Spec 143: battery consumption; pending consumption is written when the page hides or closes.
-    const devicePower = own(new DevicePowerService({ batteries: inventory, config: () => this.#config.power || {} }));
-    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
-      onHide: () => devicePower.flush() }));
+    const devicePower = own(
+      new DevicePowerService({
+        batteries: inventory,
+        config: () => this.#config.power || {},
+      }),
+    );
+    own(
+      new BrowserPageHideListener({
+        documentRef: this.#documentTarget,
+        windowRef: this.#windowTarget,
+        onHide: () => devicePower.flush(),
+      }),
+    );
     const systems = {
       projector,
       devicePower,
       map: locationMap,
       waterMetricSource,
       env: this.#composeEnvironment({ locId, locCfg, gameTimeClock }),
-      input: own(new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
-        runtimeConfig: this.#runtimeConfig,
-        listeners: new EventLifecycle(this.#listenerCounter),
-        fightInputActionComposer: new FightInputActionComposer(),
-        ...(this.#stageLayout ? { getOriginX: () => this.#stageLayout.originX } : {}),
-      })),
-      ui: own(new GameControls(
-        this.#config,
-        this.#createUiLifecycle(own(this.#createOptionalDiagnostic(
-          this.#createDevTools, "devTools", [this.#config, hookedFishProfileSynchronizer, {
-            itemProgressionDebugProvider,
-            itemProgressionResolver,
-            // DEV item grant; DevTools exist only in Development, so production never calls it.
-            grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
-            assets: this.#assets,
-            // DEV Spine section (spec 099 Phase 4, spec 150): rod and boat controllers' DEV ports.
-            rodSpine: rodAnimation.controller ?? rodAnimation,
-            boatSpine: boatAnimation.controller ?? boatAnimation,
-            // DEV radio section (spec 142): status and discharging through the ordinary consumption path.
-            radio: {
-              getStatus: () => systems.radio.get()?.radio.getStatus()
-                ?? { status: "loading", powered: false, station: null, country: "—", stationCount: 0, signal: null },
-              batteryPercent: () => {
-                const batteryId = inventory.getEquipped()?.radioBattery?.instanceId;
-                return batteryId ? systems.devicePower.read(batteryId).percent : null;
-              },
-              discharge: (target) => {
-                const equipped = inventory.getEquipped();
-                const batteryId = equipped?.radioBattery?.instanceId;
-                const stored = batteryId ? inventory.readBattery(batteryId) : null;
-                if (!stored) return;
-                const units = Math.max(0, (systems.devicePower.read(batteryId).percent - target) / 100 * stored.capacityUnits);
-                systems.devicePower.consume({ deviceId: "dev", batteryInstanceId: batteryId, unitsPerSecond: units, seconds: 1 });
-                systems.devicePower.flush();
-                systems.radio.get()?.radio.update();
-              },
-            },
-            // DEV weather section (spec 172 stage A): the environment's weather model, read when the section is drawn.
-            weather: { getModel: () => systems.env?.weather ?? null, locationId: locId,
-              // TK-271: the wind's direction by hand (null: automatic again).
-              getWind: () => systems.env?.getSnapshot()?.wind ?? null,
-              setWind: (direction) => systems.env?.setWindOverride(direction) },
-            // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
-            keepnet: {
-              getView: () => this.#sessionServices.liveBait.getView(),
-              keepCatch: (fish) => this.#sessionServices.liveBait.keepCatch(fish),
-              releaseCatch: (id) => this.#sessionServices.liveBait.releaseCatch(id),
-              releaseBait: (id) => this.#sessionServices.liveBait.releaseBait(id),
-              species: FISH_DB,
-              imagePathOf: (fish) => this.#fishArt.imagePathOf(fish),
-            },
-            // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
-            scene,
-          }], ["dispose"],
-        ))),
-        { cache: this.#storageCache, labels: HUD_LABELS,
-          landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail, assets: this.#assets,
-          icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }),
-          fullscreenControl: own(new FullscreenControl({ documentRef: this.#documentTarget,
-            mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body, label: HUD_LABELS.fullscreen,
-            onError: error => uiLogger.warn(`Error attempting to enable full-screen mode: ${error.message}`) })),
-          mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
-          toolbarMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-          netMountNode: this.#tackleMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-          documentRef: this.#documentTarget, frameScheduler: this.#windowTarget },
-      )),
-      chum: own(new ChumService(locId, chumConfigObj, getWaterMetric, {
-        cache: this.#storageCache,
-        configEvents: this.#documentTarget,
-        rng,
-        now: () => clock.realNow,
-        gameTime: gameTimeClock,
-        legacyTimeScale: this.#config.debug?.timeScale,
-        devicePower,
-        onBoatReturned: (context) =>
-          inventory.handleBoatReturned?.(context),
-        // Spec 151: the cargo slot is spent at the drop, a lost boat leaves the inventory with its battery and cargo,
-        // and a saved boat is restored from the equipped boat item.
-        consumeBoatChum: (slotIndex) => inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1),
-        onBoatLost: ({ rootInstanceId }) => inventory.consumeItem(rootInstanceId, 1),
-        isInertialMotion: () => this.#config.ui?.boat?.inertialMotion === true,
-        // Spec 154: boat routes on the current map, with the boat physics' water test (GameWorld.checkWater).
-        routePlanner: new BoatRoutePlanner({
-          getRevision: () => locationMap.getRevision(),
-          getCellSize: () => this.#config.locations.cellSize,
-          getBounds: () => locationMap.getCastableBoundsVirtual(this.#config.locations.cellSize),
-          isWater: (x, y) => !!locationMap.getCellAtVirtualPos(x, y, this.#config.locations.cellSize) &&
-            locationMap.isCastableAt(x, y),
+      input: own(
+        new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
+          runtimeConfig: this.#runtimeConfig,
+          listeners: new EventLifecycle(this.#listenerCounter),
+          fightInputActionComposer: new FightInputActionComposer(),
+          ...(this.#stageLayout
+            ? { getOriginX: () => this.#stageLayout.originX }
+            : {}),
         }),
-        findBoatItem: (rootInstanceId) => {
-          const boatItem = inventory.getEquipped().delivery;
-          return boatItem?.instanceId === rootInstanceId ? boatItem : null;
-        },
-      })),
+      ),
+      ui: own(
+        new GameControls(
+          this.#config,
+          this.#createUiLifecycle(
+            own(
+              this.#createOptionalDiagnostic(
+                this.#createDevTools,
+                "devTools",
+                [
+                  this.#config,
+                  hookedFishProfileSynchronizer,
+                  {
+                    itemProgressionDebugProvider,
+                    itemProgressionResolver,
+                    // DEV item grant; DevTools exist only in Development, so production never calls it.
+                    grantCatalogItem: (itemId, quantity) =>
+                      inventory.grantCatalogItem(itemId, quantity),
+                    assets: this.#assets,
+                    // DEV Spine section (spec 099 Phase 4, spec 150): rod and boat controllers' DEV ports.
+                    rodSpine: rodAnimation.controller ?? rodAnimation,
+                    boatSpine: boatAnimation.controller ?? boatAnimation,
+                    // DEV radio section (spec 142): status and discharging through the ordinary consumption path.
+                    radio: {
+                      getStatus: () =>
+                        systems.radio.get()?.radio.getStatus() ?? {
+                          status: "loading",
+                          powered: false,
+                          station: null,
+                          country: "—",
+                          stationCount: 0,
+                          signal: null,
+                        },
+                      batteryPercent: () => {
+                        const batteryId =
+                          inventory.getEquipped()?.radioBattery?.instanceId;
+                        return batteryId
+                          ? systems.devicePower.read(batteryId).percent
+                          : null;
+                      },
+                      discharge: (target) => {
+                        const equipped = inventory.getEquipped();
+                        const batteryId = equipped?.radioBattery?.instanceId;
+                        const stored = batteryId
+                          ? inventory.readBattery(batteryId)
+                          : null;
+                        if (!stored) return;
+                        const units = Math.max(
+                          0,
+                          ((systems.devicePower.read(batteryId).percent -
+                            target) /
+                            100) *
+                            stored.capacityUnits,
+                        );
+                        systems.devicePower.consume({
+                          deviceId: "dev",
+                          batteryInstanceId: batteryId,
+                          unitsPerSecond: units,
+                          seconds: 1,
+                        });
+                        systems.devicePower.flush();
+                        systems.radio.get()?.radio.update();
+                      },
+                    },
+                    // DEV weather section (spec 172 stage A): the environment's weather model, read when the section is drawn.
+                    weather: {
+                      getModel: () => systems.env?.weather ?? null,
+                      locationId: locId,
+                      // TK-271: the wind's direction by hand (null: automatic again).
+                      getWind: () => systems.env?.getSnapshot()?.wind ?? null,
+                      setWind: (direction) =>
+                        systems.env?.setWindOverride(direction),
+                    },
+                    // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
+                    keepnet: {
+                      getView: () => this.#sessionServices.liveBait.getView(),
+                      keepCatch: (fish) =>
+                        this.#sessionServices.liveBait.keepCatch(fish),
+                      releaseCatch: (id) =>
+                        this.#sessionServices.liveBait.releaseCatch(id),
+                      releaseBait: (id) =>
+                        this.#sessionServices.liveBait.releaseBait(id),
+                      species: FISH_DB,
+                      imagePathOf: (fish) => this.#fishArt.imagePathOf(fish),
+                    },
+                    // DEV scene section (spec 104 D5): the scene layer's DEV methods and the router's runtime switch.
+                    scene,
+                  },
+                ],
+                ["dispose"],
+              ),
+            ),
+          ),
+          {
+            cache: this.#storageCache,
+            labels: HUD_LABELS,
+            landingNetArt: this.#itemDb.nets.net_basic.skin.thumbnail,
+            assets: this.#assets,
+            icons: composeHudIcons({
+              documentRef: this.#documentTarget,
+              assets: this.#assets,
+            }),
+            fullscreenControl: own(
+              new FullscreenControl({
+                documentRef: this.#documentTarget,
+                mountNode:
+                  this.#uiSurface?.mountRoot || this.#documentTarget.body,
+                label: HUD_LABELS.fullscreen,
+                onError: (error) =>
+                  uiLogger.warn(
+                    `Error attempting to enable full-screen mode: ${error.message}`,
+                  ),
+              }),
+            ),
+            mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+            toolbarMountNode:
+              this.#toolbarMountNode ||
+              this.#uiSurface?.mountRoot ||
+              this.#documentTarget.body,
+            netMountNode:
+              this.#tackleMountNode ||
+              this.#uiSurface?.mountRoot ||
+              this.#documentTarget.body,
+            documentRef: this.#documentTarget,
+            frameScheduler: this.#windowTarget,
+          },
+        ),
+      ),
+      chum: own(
+        new ChumService(locId, chumConfigObj, getWaterMetric, {
+          cache: this.#storageCache,
+          configEvents: this.#documentTarget,
+          rng,
+          now: () => clock.realNow,
+          gameTime: gameTimeClock,
+          legacyTimeScale: this.#config.debug?.timeScale,
+          devicePower,
+          onBoatReturned: (context) => inventory.handleBoatReturned?.(context),
+          // Spec 151: the cargo slot is spent at the drop, a lost boat leaves the inventory with its battery and cargo,
+          // and a saved boat is restored from the equipped boat item.
+          consumeBoatChum: (slotIndex) =>
+            inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1),
+          onBoatLost: ({ rootInstanceId }) =>
+            inventory.consumeItem(rootInstanceId, 1),
+          isInertialMotion: () =>
+            this.#config.ui?.boat?.inertialMotion === true,
+          // Spec 154: boat routes on the current map, with the boat physics' water test (GameWorld.checkWater).
+          routePlanner: new BoatRoutePlanner({
+            getRevision: () => locationMap.getRevision(),
+            getCellSize: () => this.#config.locations.cellSize,
+            getBounds: () =>
+              locationMap.getCastableBoundsVirtual(
+                this.#config.locations.cellSize,
+              ),
+            isWater: (x, y) =>
+              !!locationMap.getCellAtVirtualPos(
+                x,
+                y,
+                this.#config.locations.cellSize,
+              ) && locationMap.isCastableAt(x, y),
+          }),
+          findBoatItem: (rootInstanceId) => {
+            const boatItem = inventory.getEquipped().delivery;
+            return boatItem?.instanceId === rootInstanceId ? boatItem : null;
+          },
+        }),
+      ),
       bite: new BiteSystem(
         this.#config.spawns,
         this.#config,
@@ -1224,13 +1796,21 @@ export class GameCompositionRoot {
       inventory,
     };
     // Spec 151 D5: the inventory leaves a boat on the water unchanged (its slot, battery and cargo).
-    inventory.setBusyDevices({ rootInstanceIds: () => systems.chum.rootInstanceIdsAway() });
-    systems.radio = this.#composeRadio({ own, inventory, devicePower, weather: systems.env });
+    inventory.setBusyDevices({
+      rootInstanceIds: () => systems.chum.rootInstanceIdsAway(),
+    });
+    systems.radio = this.#composeRadio({
+      own,
+      inventory,
+      devicePower,
+      weather: systems.env,
+    });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {
-      const batteryId = deviceItem?.itemType === "battery"
-        ? deviceItem?.instanceId
-        : devicePower.batteryOf(deviceItem?.instanceId);
+      const batteryId =
+        deviceItem?.itemType === "battery"
+          ? deviceItem?.instanceId
+          : devicePower.batteryOf(deviceItem?.instanceId);
       if (!batteryId) return null;
       return { current: devicePower.read(batteryId).percent, maximum: 100 };
     });
@@ -1244,19 +1824,37 @@ export class GameCompositionRoot {
     const config = () => this.#config.radio || {};
     // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
     const tuning = this.#createRadioEffectTuning?.({ config }) || null;
-    const radio = own(new LazyFeature({ name: "radio", preload: this.#preload,
-      compose: ({ composeRadioFeature }) => composeRadioFeature({ windowTarget: this.#windowTarget,
-        documentTarget: this.#documentTarget, config, assets: this.#assets, storageCache: this.#storageCache, inventory,
-        devicePower, weather, mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
-        onActivate: () => this.#radioEditorOpener?.(), tuning }) }));
-    radio.onReady((feature) => feature.radio.setBiting(this.#stateName === "biting"));
+    const radio = own(
+      new LazyFeature({
+        name: "radio",
+        preload: this.#preload,
+        compose: ({ composeRadioFeature }) =>
+          composeRadioFeature({
+            windowTarget: this.#windowTarget,
+            documentTarget: this.#documentTarget,
+            config,
+            assets: this.#assets,
+            storageCache: this.#storageCache,
+            inventory,
+            devicePower,
+            weather,
+            mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+            onActivate: () => this.#radioEditorOpener?.(),
+            tuning,
+          }),
+      }),
+    );
+    radio.onReady((feature) =>
+      feature.radio.setBiting(this.#stateName === "biting"),
+    );
     return radio;
   }
 
   // The radio editor's controls over the lazily loaded radio: none until it arrives (the open editor refreshes then).
   #radioControlsRenderer(radio, domFactory) {
     let renderer = null;
-    const current = () => (renderer ??= radio.get()?.createControlsRenderer(domFactory) ?? null);
+    const current = () =>
+      (renderer ??= radio.get()?.createControlsRenderer(domFactory) ?? null);
     return {
       supports: (item) => current()?.supports(item) === true,
       render: (options) => current().render(options),
@@ -1266,56 +1864,76 @@ export class GameCompositionRoot {
 
   // Inventory UI over the composed facade and item read-model adapters.
   #composeInventoryUi({
-    inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
-    itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-    physicsConfig, liveBait, imageAssets,
+    inventory,
+    systems,
+    own,
+    itemRarityDomAdapter,
+    rarityVisualResolver,
+    itemProgressionDomAdapter,
+    itemConditionDomAdapter,
+    degradationColorResolver,
+    castDistanceCalculator,
+    physicsConfig,
+    liveBait,
+    imageAssets,
   }) {
     const inventoryFacade = inventory.inventoryFacade;
     if (!inventoryFacade) {
       throw new Error("Inventory composition is required");
     }
-    systems.inventoryUI = own(InventoryUiBootstrap.create({
-      facade: inventoryFacade,
-      assets: this.#assets,
-      progressive: this.#preload,
-      createDeviceControlsRenderer: (domFactory) => this.#radioControlsRenderer(systems.radio, domFactory),
-      documentRef: this.#documentTarget,
-      mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      uiSurface: this.#uiSurface,
-      warningTimers: new BrowserTimeoutScheduler(),
-      onAction: (action) => inventory.dispatchInventoryAction(action),
-      rarityDomAdapter: itemRarityDomAdapter,
-      rarityVisualResolver,
-      progressionDomAdapter: itemProgressionDomAdapter,
-      conditionDomAdapter: itemConditionDomAdapter,
-      degradationColorResolver,
-      balanceParameterResolver: new InventoryBalanceParameterResolver({
-        castDistanceCalculator,
-        retrieveSpeedCalculator: new ReelRetrieveSpeedCalculator(),
-        reelConfig: physicsConfig?.getReelConfig?.() || {},
-        physicsConfig: this.#config.physics,
-        debugConfig: this.#config.debug?.inventory,
+    systems.inventoryUI = own(
+      InventoryUiBootstrap.create({
+        facade: inventoryFacade,
+        assets: this.#assets,
+        progressive: this.#preload,
+        createDeviceControlsRenderer: (domFactory) =>
+          this.#radioControlsRenderer(systems.radio, domFactory),
+        documentRef: this.#documentTarget,
+        mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+        buttonMountNode:
+          this.#toolbarMountNode ||
+          this.#uiSurface?.mountRoot ||
+          this.#documentTarget.body,
+        uiSurface: this.#uiSurface,
+        warningTimers: new BrowserTimeoutScheduler(),
+        onAction: (action) => inventory.dispatchInventoryAction(action),
+        rarityDomAdapter: itemRarityDomAdapter,
         rarityVisualResolver,
+        progressionDomAdapter: itemProgressionDomAdapter,
+        conditionDomAdapter: itemConditionDomAdapter,
+        degradationColorResolver,
+        balanceParameterResolver: new InventoryBalanceParameterResolver({
+          castDistanceCalculator,
+          retrieveSpeedCalculator: new ReelRetrieveSpeedCalculator(),
+          reelConfig: physicsConfig?.getReelConfig?.() || {},
+          physicsConfig: this.#config.physics,
+          debugConfig: this.#config.debug?.inventory,
+          rarityVisualResolver,
+        }),
       }),
-    }));
+    );
     systems.radio.onReady(() => systems.inventoryUI?.refreshWhenOpen());
-    const itemEditor = own(new LazyFeature({
-      name: "item-editor",
-      preload: this.#preload,
-      compose: (module) => module,
-    }));
+    const itemEditor = own(
+      new LazyFeature({
+        name: "item-editor",
+        preload: this.#preload,
+        compose: (module) => module,
+      }),
+    );
     itemEditor.onReady(() => systems.inventoryUI?.refreshWhenOpen());
     this.#radioEditorOpener = () => {
       void itemEditor.request();
       const radio = systems.radio.get()?.radio;
       // The first use before the radio has arrived waits for it (spec 157 R12).
       if (!radio) {
-        void systems.radio.request().then((feature) => { if (feature) this.#radioEditorOpener?.(); });
+        void systems.radio.request().then((feature) => {
+          if (feature) this.#radioEditorOpener?.();
+        });
         return;
       }
       const status = radio.getStatus();
-      const needsBatteryFeedback = status?.status === "no-battery" || !radio.hasPower();
+      const needsBatteryFeedback =
+        status?.status === "no-battery" || !radio.hasPower();
       if (needsBatteryFeedback) {
         systems.inventoryUI?.openSlotEditor("radio", {
           feedbackSlotId: "battery",
@@ -1326,51 +1944,108 @@ export class GameCompositionRoot {
         systems.inventoryUI?.openSlotEditor("radio");
       }
     };
-    const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget, assets: this.#assets,
-      fishArt: this.#fishArt, progressive: this.#preload,
-      liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
-      buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
+    const keepnetUI = InventoryUiBootstrap.createKeepnet({
+      documentRef: this.#documentTarget,
+      assets: this.#assets,
+      fishArt: this.#fishArt,
+      progressive: this.#preload,
+      liveBait,
+      inventoryUI: systems.inventoryUI,
+      degradationColorResolver,
+      uiSurface: this.#uiSurface,
+      buttonMountNode:
+        this.#toolbarMountNode ||
+        this.#uiSurface?.mountRoot ||
+        this.#documentTarget.body,
+    });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     // Spec 162 stage 2: the chosen live bait on the hook, shared by the bait switcher and the keepnet cards.
-    const liveBaitHook = new LiveBaitHookController({ liveBait, iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath),
+    const liveBaitHook = new LiveBaitHookController({
+      liveBait,
+      iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath),
       inventory: {
         getEquipped: () => inventory.getEquipped(),
-        get isLocked() { return inventory.isLocked; },
-        removeHookBait: (instanceId) => inventory.dispatchInventoryAction({
-          type: InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS, kind: "bait", slotIndex: 0, instanceId }),
-      } });
+        get isLocked() {
+          return inventory.isLocked;
+        },
+        removeHookBait: (instanceId) =>
+          inventory.dispatchInventoryAction({
+            type: InventoryActionType.CONSUMABLE_SLOT_LONG_PRESS,
+            kind: "bait",
+            slotIndex: 0,
+            instanceId,
+          }),
+      },
+    });
     inventoryFacade.setLiveBaitHook(liveBaitHook);
     systems.inventoryUI.setLiveBaitHook(liveBaitHook);
     keepnetUI?.setLiveBaitHook(liveBaitHook);
     // Spec 163 stage 2: the backpack shows a stack per species chosen with «В інвентар».
-    const liveBaitStacks = new LiveBaitStackView({ liveBait, iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath) });
+    const liveBaitStacks = new LiveBaitStackView({
+      liveBait,
+      iconAssetOf: (imagePath) => this.#fishArt.displayIdOf(imagePath),
+    });
     inventoryFacade.setLiveBaitStacks(liveBaitStacks);
     systems.inventoryUI.setLiveBaitStacks(liveBaitStacks);
-    const selector = own(composeInventorySelector({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
-      uiSurface: this.#uiSurface, mountNode: this.#selectorMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
-      inventoryUI: systems.inventoryUI, keepnetUI, config: this.#config, logger: new ConsoleLogger(),
-      // The equipped rod's art in the selector, when the player changes the rod: ahead of the background (spec 157 D2).
-      requestArtwork: (ids) => this.#preload.request(ids),
-      equipmentSource: inventory, assets: this.#assets, progressive: this.#preload,
-      keepnetPercent: () => this.#keepnetPercent(),
-      // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
-      preloadArtwork: () => this.#preload.whenGroup("selector").then((group) => {
-        if (group.status === "failed") throw group.error;
-      }) }));
+    const selector = own(
+      composeInventorySelector({
+        documentRef: this.#documentTarget,
+        windowRef: this.#windowTarget,
+        uiSurface: this.#uiSurface,
+        mountNode:
+          this.#selectorMountNode ||
+          this.#uiSurface?.mountRoot ||
+          this.#documentTarget.body,
+        inventoryUI: systems.inventoryUI,
+        keepnetUI,
+        config: this.#config,
+        logger: new ConsoleLogger(),
+        // The equipped rod's art in the selector, when the player changes the rod: ahead of the background (spec 157 D2).
+        requestArtwork: (ids) => this.#preload.request(ids),
+        equipmentSource: inventory,
+        assets: this.#assets,
+        progressive: this.#preload,
+        keepnetPercent: () => this.#keepnetPercent(),
+        // Spec 157 R15: the selector's artwork is the plan's layer-two group "selector" (after the first frame).
+        preloadArtwork: () =>
+          this.#preload.whenGroup("selector").then((group) => {
+            if (group.status === "failed") throw group.error;
+          }),
+      }),
+    );
     // The selector's artwork waits for the started game (spec 157 R11); its sectors show sprite symbols until then.
-    this.#deferredAssetLoads.push(() => { void selector.loadArtwork(); });
+    this.#deferredAssetLoads.push(() => {
+      void selector.loadArtwork();
+    });
     // Spec 157 TK-174: the classic shortcuts swap their sprite icons for the backpack and keepnet art.
-    this.#deferredAssetLoads.push(() => { systems.inventoryUI.showShortcutArtwork(); keepnetUI?.showShortcutArtwork(); });
+    this.#deferredAssetLoads.push(() => {
+      systems.inventoryUI.showShortcutArtwork();
+      keepnetUI?.showShortcutArtwork();
+    });
     // Spec 157 R5: every keepnet fill stage warms up as the plan's layer-two group "keepnet-stages".
-    return {  };
+    return {};
   }
 
   // Gameplay rules, the game world, fishing controller and HUD widgets.
   #composeRulesAndWorld({
-    castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq, physicsConfig, gameTimeClock,
-    own, imageAssets,
+    castDistanceCalculator,
+    systems,
+    location,
+    canvasMetrics,
+    clock,
+    devFlags,
+    debugEvents,
+    eq,
+    physicsConfig,
+    gameTimeClock,
+    own,
+    imageAssets,
   }) {
-    const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
+    const equipmentRules = new EquipmentRules(
+      castDistanceCalculator,
+      this.#config,
+      INVENTORY_RULE_MESSAGES,
+    );
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules, devFlags);
     const biteRules = new BiteRules(baitRules);
@@ -1405,14 +2080,54 @@ export class GameCompositionRoot {
     );
     const castPenalty = new CastPenalty();
     const mountNode = this.#uiSurface?.mountRoot || this.#documentTarget.body;
-    const depthUI = own(composeDepthSelector({ documentRef: this.#documentTarget,
-      mountNode: this.#depthMountNode || mountNode, uiSurface: this.#uiSurface, itemDb: this.#itemDb,
-      assets: this.#assets }));
-    const timeUI = own(this.#createTimeDisplay
-      ? this.#createTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock, assets: this.#assets })
-      : composeTimeDisplay({ documentRef: this.#documentTarget, mount: mountNode, clock: gameTimeClock, assets: this.#assets }));
-    const holdUI = own(new HoldCharges({ labels: HUD_LABELS, documentRef: this.#documentTarget, mountNode }));
-    return { world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules, castRules, biteRules, chumRules, boatRules, playerCastRules };
+    const depthUI = own(
+      composeDepthSelector({
+        documentRef: this.#documentTarget,
+        mountNode: this.#depthMountNode || mountNode,
+        uiSurface: this.#uiSurface,
+        itemDb: this.#itemDb,
+        assets: this.#assets,
+      }),
+    );
+    const timeUI = own(
+      this.#createTimeDisplay
+        ? this.#createTimeDisplay({
+            documentRef: this.#documentTarget,
+            mount: mountNode,
+            clock: gameTimeClock,
+            assets: this.#assets,
+          })
+        : composeTimeDisplay({
+            documentRef: this.#documentTarget,
+            mount: mountNode,
+            clock: gameTimeClock,
+            assets: this.#assets,
+          }),
+    );
+    const holdUI = own(
+      new HoldCharges({
+        labels: HUD_LABELS,
+        documentRef: this.#documentTarget,
+        mountNode,
+      }),
+    );
+    return {
+      world,
+      fishing,
+      equipment,
+      net,
+      castPenalty,
+      depthUI,
+      timeUI,
+      holdUI,
+      equipmentRules,
+      baitRules,
+      castRules,
+      biteRules,
+      chumRules,
+      boatRules,
+      playerCastRules,
+    };
   }
 
   createApplicationServices({
@@ -1430,79 +2145,136 @@ export class GameCompositionRoot {
   }) {
     // Cold startup owns resources until successful construction transfers them to Application.
     const owned = [];
-    const own = value => { if (value != null) owned.push(value); return value; };
-    try {
-
-    const contracts = new DependencyContractValidator({
-      stage: "bootstrap",
-      consumer: "GameCompositionRoot.createApplicationServices",
-    });
-    const { fightService, castService, debugService } = this.#composeFishingServices({
-      config, rng, clock, runtime, appPorts, debugEvents, devFlags, runtimeConfig,
-    });
-
-    const { biteEnvironmentService } = this.#composeBiteEnvironment({
-      runtime, appPorts, clock, biteEnvData, config,
-    });
-
-    const castRodControl = new CastRodControl({ config, projector: runtime.projector, canvasMetrics,
-      getBaseRodVirtualPos: appPorts.getBaseRodVirtualPos });
-    const { stateMachine, stateDepsFactory } = this.#composeStateMachine({
-      runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own, castRodControl,
-    });
-
-    const { chumController } = this.#composeChumController({ own, runtime, clock, config, rng, appPorts });
-
-    const { frameBuilder } = this.#rendering.composeFrameBuilders({
-      runtime, config, canvasMetrics, appPorts, clock, contracts, fightService, devFlags,
-    });
-    const { renderCoordinator } = this.#rendering.composeCoordinator({
-      stateMachine, frameBuilder, runtime, appPorts, contracts,
-    });
-
-    const loop = new GameLoop(
-      clock,
-      (dt) => appPorts.update(dt),
-      () => appPorts.draw(),
-      this.#gameLoopGuard,
-      this.#frameProbe,
-    );
-
-    const viewportFacade = new GameViewportFacade({
-      rodVisualOffsetSystem: new RodVisualOffsetSystem(),
-      world: runtime.world,
-      projector: runtime.projector,
-      canvasMetrics,
-      config,
-      biteEnvironmentService,
-      getCastRodScreenX: () => castRodControl.getScreenX(),
-    });
-
-    return {
-      castService,
-      castRodControl,
-      fightService,
-      debugService,
-      biteEnvironmentService,
-      viewportFacade,
-      stateDepsFactory,
-      stateMachine,
-      chumController,
-      renderCoordinator,
-      loop,
-      debugEvents,
+    const own = (value) => {
+      if (value != null) owned.push(value);
+      return value;
     };
-  
+    try {
+      const contracts = new DependencyContractValidator({
+        stage: "bootstrap",
+        consumer: "GameCompositionRoot.createApplicationServices",
+      });
+      const { fightService, castService, debugService } =
+        this.#composeFishingServices({
+          config,
+          rng,
+          clock,
+          runtime,
+          appPorts,
+          debugEvents,
+          devFlags,
+          runtimeConfig,
+        });
+
+      const { biteEnvironmentService } = this.#composeBiteEnvironment({
+        runtime,
+        appPorts,
+        clock,
+        biteEnvData,
+        config,
+      });
+
+      const castRodControl = new CastRodControl({
+        config,
+        projector: runtime.projector,
+        canvasMetrics,
+        getBaseRodVirtualPos: appPorts.getBaseRodVirtualPos,
+      });
+      const { stateMachine, stateDepsFactory } = this.#composeStateMachine({
+        runtime,
+        config,
+        devFlags,
+        audio,
+        fightService,
+        appPorts,
+        rng,
+        clock,
+        own,
+        castRodControl,
+      });
+
+      const { chumController } = this.#composeChumController({
+        own,
+        runtime,
+        clock,
+        config,
+        rng,
+        appPorts,
+      });
+
+      const { frameBuilder } = this.#rendering.composeFrameBuilders({
+        runtime,
+        config,
+        canvasMetrics,
+        appPorts,
+        clock,
+        contracts,
+        fightService,
+        devFlags,
+      });
+      const { renderCoordinator } = this.#rendering.composeCoordinator({
+        stateMachine,
+        frameBuilder,
+        runtime,
+        appPorts,
+        contracts,
+      });
+
+      const loop = new GameLoop(
+        clock,
+        (dt) => appPorts.update(dt),
+        () => appPorts.draw(),
+        this.#gameLoopGuard,
+        this.#frameProbe,
+      );
+
+      const viewportFacade = new GameViewportFacade({
+        rodVisualOffsetSystem: new RodVisualOffsetSystem(),
+        world: runtime.world,
+        projector: runtime.projector,
+        canvasMetrics,
+        config,
+        biteEnvironmentService,
+        getCastRodScreenX: () => castRodControl.getScreenX(),
+      });
+
+      return {
+        castService,
+        castRodControl,
+        fightService,
+        debugService,
+        biteEnvironmentService,
+        viewportFacade,
+        stateDepsFactory,
+        stateMachine,
+        chumController,
+        renderCoordinator,
+        loop,
+        debugEvents,
+      };
     } catch (error) {
       for (let index = owned.length - 1; index >= 0; index--) {
-        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+        try {
+          owned[index].dispose?.();
+        } catch (cleanupError) {
+          new ConsoleLogger().error(cleanupError);
+        }
       }
       throw error;
     }
-}
+  }
 
   // Casting and fight services and the optional DEV debug service.
-  #composeFishingServices({ config, rng, clock, runtime, appPorts, debugEvents, devFlags, runtimeConfig }) {
+  #composeFishingServices({
+    config,
+    rng,
+    clock,
+    runtime,
+    appPorts,
+    debugEvents,
+    devFlags,
+    runtimeConfig,
+  }) {
     const { castService, fightService } = composeFishingServices({
       config,
       rng,
@@ -1524,11 +2296,17 @@ export class GameCompositionRoot {
       fightLogger: this.#createDiagnosticsLogger?.() ?? null,
       isCatchResolutionLogEnabled: this.#isCatchResolutionLogEnabled,
       // The DEV fight snapshot exists only when Development startup composes its builder.
-      fightDiagnosticsBuilder: this.#createFightDiagnosticsBuilder == null ? null : this.#createFightDiagnosticsBuilder(),
+      fightDiagnosticsBuilder:
+        this.#createFightDiagnosticsBuilder == null
+          ? null
+          : this.#createFightDiagnosticsBuilder(),
     });
 
     const debugService = this.#createOptionalDiagnostic(
-      this.#createDebugService, "debugService", [config], ["update"],
+      this.#createDebugService,
+      "debugService",
+      [config],
+      ["update"],
     );
     return { fightService, castService, debugService };
   }
@@ -1557,7 +2335,18 @@ export class GameCompositionRoot {
   }
 
   // Game states with their dependency factory.
-  #composeStateMachine({ runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own, castRodControl }) {
+  #composeStateMachine({
+    runtime,
+    config,
+    devFlags,
+    audio,
+    fightService,
+    appPorts,
+    rng,
+    clock,
+    own,
+    castRodControl,
+  }) {
     const stateFactoryRoot = {
       logger: new ConsoleLogger(),
       inventory: runtime.inventory,
@@ -1604,13 +2393,18 @@ export class GameCompositionRoot {
       liveBaitCandidate: runtime.liveBaitCandidate,
       getLiveBaitMotion: appPorts.getLiveBaitMotion,
       hookedFishOverride: this.#createOptionalDiagnostic(
-        this.#createHookedFishOverride, "hookedFishOverride", [{
-          config,
-          biteRules: runtime.biteRules,
-          devFlags,
-          fishRarityResolver: runtime.fishRarityResolver,
-          fishVisualVariantResolver: runtime.fishVisualVariantResolver,
-        }], ["apply"],
+        this.#createHookedFishOverride,
+        "hookedFishOverride",
+        [
+          {
+            config,
+            biteRules: runtime.biteRules,
+            devFlags,
+            fishRarityResolver: runtime.fishRarityResolver,
+            fishVisualVariantResolver: runtime.fishVisualVariantResolver,
+          },
+        ],
+        ["apply"],
       ),
       setState: appPorts.setState,
       castLine: appPorts.castLine,
@@ -1627,68 +2421,80 @@ export class GameCompositionRoot {
     };
 
     const stateDepsFactory = new StateDepsFactory(stateFactoryRoot);
-    const stateMachine = own(new StateMachine({
-      stateRegistry: (name) => {
-        const states = {
-          scouting: ScoutingState,
-          waiting: WaitingState,
-          biting: BitingState,
-          playing: PlayingState,
-          failed: FailedState,
-          victory: VictoryState,
-        };
-        const StateClass = states[name];
-        if (!StateClass) throw new Error(`Unknown game state: ${name}`);
-        return new StateClass(stateDepsFactory.create(name));
-      },
-      // Spec 142 stage 5: the radio gets quieter during a bite (its «Тихіше при кльові» switch).
-      onStateChanged: (name) => {
-        appPorts.onStateChanged(name);
-        this.#stateName = name;
-        if (name === "biting" || name === "victory") {
-          void this.#victoryFeature?.request();
-        }
-        runtime.radio.get()?.radio.setBiting(name === "biting");
-      },
-    }));
+    const stateMachine = own(
+      new StateMachine({
+        stateRegistry: (name) => {
+          const states = {
+            scouting: ScoutingState,
+            waiting: WaitingState,
+            biting: BitingState,
+            playing: PlayingState,
+            failed: FailedState,
+            victory: VictoryState,
+          };
+          const StateClass = states[name];
+          if (!StateClass) throw new Error(`Unknown game state: ${name}`);
+          return new StateClass(stateDepsFactory.create(name));
+        },
+        // Spec 142 stage 5: the radio gets quieter during a bite (its «Тихіше при кльові» switch).
+        onStateChanged: (name) => {
+          appPorts.onStateChanged(name);
+          this.#stateName = name;
+          if (name === "biting" || name === "victory") {
+            void this.#victoryFeature?.request();
+          }
+          runtime.radio.get()?.radio.setBiting(name === "biting");
+        },
+      }),
+    );
     return { stateMachine, stateDepsFactory };
   }
 
   // Chum and bait boat control with its HUD button.
   #composeChumController({ own, runtime, clock, config, rng, appPorts }) {
-    const chumController = own(new ChumController({
-      messages: FISHING_MESSAGES,
-      inventory: runtime.inventory,
-      chum: runtime.chum,
-      projector: runtime.projector,
-      inventoryUI: runtime.inventoryUI,
-      fishing: runtime.fishing,
-      location: runtime.location,
-      clock,
-      config,
-      rng,
-      getViewportSize: appPorts.getViewportSize,
-      panViewport: appPorts.panViewport,
-      depthUI: runtime.depthUI,
-      getDynamicBounds: appPorts.getDynamicBounds,
-      getWaterMetric: appPorts.getWaterMetric,
-      getRodVirtualPos: appPorts.getRodVirtualPos,
-      checkWater: appPorts.checkWater,
-      markInvalidCast: appPorts.markInvalidCast,
-      canPlayerCast: appPorts.canPlayerCast,
-      getGameStateName: appPorts.getGameStateName,
-      devicePower: runtime.devicePower,
-      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS, assets: this.#assets,
-        icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }),
-        documentRef: this.#documentTarget, mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body }),
-      chumRules: runtime.chumRules,
-      boatRules: runtime.boatRules,
-    }));
+    const chumController = own(
+      new ChumController({
+        messages: FISHING_MESSAGES,
+        inventory: runtime.inventory,
+        chum: runtime.chum,
+        projector: runtime.projector,
+        inventoryUI: runtime.inventoryUI,
+        fishing: runtime.fishing,
+        location: runtime.location,
+        clock,
+        config,
+        rng,
+        getViewportSize: appPorts.getViewportSize,
+        panViewport: appPorts.panViewport,
+        depthUI: runtime.depthUI,
+        getDynamicBounds: appPorts.getDynamicBounds,
+        getWaterMetric: appPorts.getWaterMetric,
+        getRodVirtualPos: appPorts.getRodVirtualPos,
+        checkWater: appPorts.checkWater,
+        markInvalidCast: appPorts.markInvalidCast,
+        canPlayerCast: appPorts.canPlayerCast,
+        getGameStateName: appPorts.getGameStateName,
+        devicePower: runtime.devicePower,
+        createUi: (onClick) =>
+          new ChumControls(onClick, {
+            labels: HUD_LABELS,
+            assets: this.#assets,
+            icons: composeHudIcons({
+              documentRef: this.#documentTarget,
+              assets: this.#assets,
+            }),
+            documentRef: this.#documentTarget,
+            mountNode:
+              this.#toolbarMountNode ||
+              this.#uiSurface?.mountRoot ||
+              this.#documentTarget.body,
+          }),
+        chumRules: runtime.chumRules,
+        boatRules: runtime.boatRules,
+      }),
+    );
     return { chumController };
   }
-
-
-
 
   #validateRarityConfiguration() {
     new RarityConfigValidator().assertValid({
@@ -1715,17 +2521,22 @@ export class GameCompositionRoot {
   #createOptionalDiagnostic(factory, name, args, methods) {
     if (factory == null) return null;
     const value = factory.apply(this, args);
-    return new DependencyContractValidator({ consumer: "GameCompositionRoot" })
-      .requireMethods(value, name, methods);
+    return new DependencyContractValidator({
+      consumer: "GameCompositionRoot",
+    }).requireMethods(value, name, methods);
   }
 
   #readRenderDiagnostics() {
     const diagnostics = this.#getRenderDiagnostics?.();
     if (diagnostics != null) {
-      new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
-        diagnostics, "renderDiagnostics", ["recordAssetRequestCreated",
-          "recordRenderPassCreated", "recordFrameCreated", "recordBufferGrowth"],
-      );
+      new DependencyContractValidator({
+        consumer: "GameCompositionRoot",
+      }).requireMethods(diagnostics, "renderDiagnostics", [
+        "recordAssetRequestCreated",
+        "recordRenderPassCreated",
+        "recordFrameCreated",
+        "recordBufferGrowth",
+      ]);
     }
     return diagnostics;
   }
@@ -1733,7 +2544,6 @@ export class GameCompositionRoot {
   #createUiLifecycle(devTools) {
     return devTools == null ? null : { dispose: () => devTools?.dispose?.() };
   }
-
 }
 
 class LazyBoatAnimationController {
@@ -1777,11 +2587,18 @@ class LazyBoatAnimationController {
   }
 
   isSpineEnabled() {
-    return this.#feature.get()?.controller?.isSpineEnabled() ?? this.#spineEnabled;
+    return (
+      this.#feature.get()?.controller?.isSpineEnabled() ?? this.#spineEnabled
+    );
   }
 
   getStatus() {
-    return this.#feature.get()?.controller?.getStatus() ?? { status: "loading", reason: "module loading" };
+    return (
+      this.#feature.get()?.controller?.getStatus() ?? {
+        status: "loading",
+        reason: "module loading",
+      }
+    );
   }
 
   getClips() {

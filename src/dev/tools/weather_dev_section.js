@@ -10,12 +10,16 @@ import {
   weatherFileName,
 } from "../weather/weather_export_format.js";
 
-// DevTools «🌦 ПОГОДА» (spec 172 stage A TK-261, rain controls TK-271, saving/export spec 175 TK-286): the weather
+// DevTools «ПОГОДА» (spec 172 stage A TK-261, rain controls TK-271, saving/export spec 175 TK-286): the weather
 // model's state; rain, storm and fog switched on by hand with live strength sliders (a switched-on state freezes the
 // weather's timers, so it stays until switched off; all off returns to the automatic weather); the wind's direction
 // (automatic, left, calm, right); the transition time; a lightning strike now; the rain's look (CONFIG.canvas.rain,
 // live), the location's weather settings (CONFIG.locations.map.<id>.weather, live), and saving via DevSavingSection.
-const PRECIPITATION_LABELS = Object.freeze({ clear: "ясно", rain: "дощ", storm: "гроза" });
+const PRECIPITATION_LABELS = Object.freeze({
+  clear: "ясно",
+  rain: "дощ",
+  storm: "гроза",
+});
 const FOG_LABELS = Object.freeze({ none: "немає", fog: "туман" });
 const WIND_CHOICES = Object.freeze([
   Object.freeze({ label: "авто", direction: null }),
@@ -24,7 +28,10 @@ const WIND_CHOICES = Object.freeze([
   Object.freeze({ label: "вправо →", direction: 1 }),
 ]);
 const WIND_NAMES = Object.freeze({ "-1": "вліво", 0: "немає", 1: "вправо" });
-const PART_LABELS = Object.freeze({ rain: "Вигляд дощу", locationWeather: "Параметри локації" });
+const PART_LABELS = Object.freeze({
+  rain: "Вигляд дощу",
+  locationWeather: "Параметри локації",
+});
 
 const percent = (value) => `${Math.round((Number(value) || 0) * 100)}%`;
 const seconds = (value) => `${Math.round(Number(value) || 0)} с`;
@@ -54,7 +61,11 @@ export class WeatherDevSection {
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
     const isRain = path[1] === "canvas" && path[2] === "rain";
-    const isLocation = path[1] === "locations" && path[2] === "map" && path[3] === this.#weather.locationId && path[4] === "weather";
+    const isLocation =
+      path[1] === "locations" &&
+      path[2] === "map" &&
+      path[3] === this.#weather.locationId &&
+      path[4] === "weather";
     if (isRain || isLocation) this.#savingSection.refreshStatus();
   };
 
@@ -100,18 +111,26 @@ export class WeatherDevSection {
         exportLabel: "Експорт погоди",
         importLabel: "Імпорт погоди",
         resetLabel: "Скинути зміни погоди до коду",
-        description: "Експорт погоди завантажує файл вигляду дощу й погоди цієї локації. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.",
+        description:
+          "Експорт погоди завантажує файл вигляду дощу й погоди цієї локації. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.",
       },
       readStatus: () => this.#readSavingStatus(),
       buildExport: (hashText) => this.#buildExport(hashText),
       onImport: (file, setStatus) => this.#applyImport(file, setStatus),
-      onReset: () => { this.#resetWeather(this.#weather.locationId); this.#fill(); },
+      onReset: () => {
+        this.#resetWeather(this.#weather.locationId);
+        this.#fill();
+      },
     });
   }
 
   render(parent) {
-    this.#content = this.#createSection("🌦 ПОГОДА", parent, ["WEATHER"]);
-    if (!this.#listening && typeof document !== "undefined" && document?.addEventListener) {
+    this.#content = this.#createSection("ПОГОДА", parent, ["WEATHER"]);
+    if (
+      !this.#listening &&
+      typeof document !== "undefined" &&
+      document?.addEventListener
+    ) {
       document.addEventListener("config-updated", this.#onConfigUpdated);
       this.#listening = true;
     }
@@ -119,7 +138,11 @@ export class WeatherDevSection {
   }
 
   dispose() {
-    if (this.#listening && typeof document !== "undefined" && document?.removeEventListener) {
+    if (
+      this.#listening &&
+      typeof document !== "undefined" &&
+      document?.removeEventListener
+    ) {
       document.removeEventListener("config-updated", this.#onConfigUpdated);
     }
     this.#listening = false;
@@ -142,22 +165,42 @@ export class WeatherDevSection {
     this.#renderControls(model, content);
     const rain = this.#rainConfig();
     if (rain) {
-      this.#renderConfigTree(rain, this.#createSection("Вигляд дощу", content, ["WEATHER", "rain"]), ["CONFIG", "canvas", "rain"]);
+      this.#renderConfigTree(
+        rain,
+        this.#createSection("Вигляд дощу", content, ["WEATHER", "rain"]),
+        ["CONFIG", "canvas", "rain"],
+      );
     }
     const settings = this.#config();
     if (settings) {
-      this.#renderConfigTree(settings, this.#createSection("Параметри локації", content, ["WEATHER", "config"]),
-        ["CONFIG", "locations", "map", this.#weather.locationId, "weather"]);
+      this.#renderConfigTree(
+        settings,
+        this.#createSection("Параметри локації", content, [
+          "WEATHER",
+          "config",
+        ]),
+        ["CONFIG", "locations", "map", this.#weather.locationId, "weather"],
+      );
     }
-    this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
+    this.#savingSection.render(
+      this.#createSection("Збереження", content, ["WEATHER", "saving"]),
+    );
   }
 
   #readSavingStatus() {
     const id = this.#weather.locationId;
-    const liveRain = this.#rainConfig(), liveWeather = this.#config();
-    const baseRain = this.#getBaseRain?.(), baseWeather = this.#getBaseLocationWeather?.(id);
-    if (!liveRain || !liveWeather || !baseRain || !baseWeather) return "Параметри погоди завантажено.";
-    const changed = changedWeatherParts(baseRain, liveRain, baseWeather, liveWeather);
+    const liveRain = this.#rainConfig(),
+      liveWeather = this.#config();
+    const baseRain = this.#getBaseRain?.(),
+      baseWeather = this.#getBaseLocationWeather?.(id);
+    if (!liveRain || !liveWeather || !baseRain || !baseWeather)
+      return "Параметри погоди завантажено.";
+    const changed = changedWeatherParts(
+      baseRain,
+      liveRain,
+      baseWeather,
+      liveWeather,
+    );
     return changed.length
       ? `Змінено (ще не в коді): ${changed.map((part) => PART_LABELS[part] ?? part).join(", ")}.`
       : "Погода збігається з кодом.";
@@ -165,8 +208,10 @@ export class WeatherDevSection {
 
   async #buildExport(hashText) {
     const id = this.#weather.locationId;
-    const liveRain = this.#rainConfig(), liveWeather = this.#config();
-    if (!liveRain || !liveWeather) return { error: "Немає параметрів погоди для експорту." };
+    const liveRain = this.#rainConfig(),
+      liveWeather = this.#config();
+    if (!liveRain || !liveWeather)
+      return { error: "Немає параметрів погоди для експорту." };
     const baseRain = this.#getBaseRain?.() ?? liveRain;
     const baseWeather = this.#getBaseLocationWeather?.(id) ?? liveWeather;
     const moment = this.#now();
@@ -177,7 +222,10 @@ export class WeatherDevSection {
         rain: liveRain,
         locationWeather: liveWeather,
         rainBaseHash: await rainHash(baseRain, hashText),
-        locationWeatherBaseHash: await locationWeatherHash(baseWeather, hashText),
+        locationWeatherBaseHash: await locationWeatherHash(
+          baseWeather,
+          hashText,
+        ),
         gameVersion: this.#gameVersion,
         exportedAt: moment.toISOString(),
       }),
@@ -192,80 +240,164 @@ export class WeatherDevSection {
     }
     const errors = validateWeatherFile(file, {
       rainTemplate: this.#getBaseRain?.() ?? this.#rainConfig(),
-      locationWeatherTemplate: this.#getBaseLocationWeather?.(id) ?? this.#config(),
+      locationWeatherTemplate:
+        this.#getBaseLocationWeather?.(id) ?? this.#config(),
     });
     if (errors.length) {
       setStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`);
       return;
     }
-    this.#updateConfig?.(["CONFIG", "canvas", "rain"], canonicalRain(file.rain));
-    this.#updateConfig?.(["CONFIG", "locations", "map", id, "weather"], canonicalLocationWeather(file.locationWeather));
+    this.#updateConfig?.(
+      ["CONFIG", "canvas", "rain"],
+      canonicalRain(file.rain),
+    );
+    this.#updateConfig?.(
+      ["CONFIG", "locations", "map", id, "weather"],
+      canonicalLocationWeather(file.locationWeather),
+    );
     this.#fill();
   }
 
   #renderStatus(weather, content) {
     const wind = this.#weather.getWind?.() ?? null;
-    this.#ui.createInfoRow("опади", `${PRECIPITATION_LABELS[weather.precipitation] ?? weather.precipitation} · ${
-      weather.frozen ? "вручну" : `ще ${seconds(weather.precipitationLeftSec)}`}`, content);
-    this.#ui.createInfoRow("дощ", `${percent(weather.rain)} → ${percent(weather.rainTarget)}`, content);
-    this.#ui.createInfoRow("гроза", `${percent(weather.storm)} → ${percent(weather.stormTarget)}`, content);
-    this.#ui.createInfoRow("туман", `${FOG_LABELS[weather.fogState] ?? weather.fogState} · ${percent(weather.fog)} → ${
-      percent(weather.fogTarget)}`, content);
-    this.#ui.createInfoRow("вітер", wind ? `${WIND_NAMES[wind.direction] ?? wind.direction}${wind.forced ? " (вручну)" : ""}`
-      : "—", content);
-    this.#ui.createInfoRow("блискавки", `${weather.strikeSerial} · остання: варіант ${weather.strikeVariant + 1}, відстань ${
-      percent(weather.strikeDistance)}`, content);
+    this.#ui.createInfoRow(
+      "опади",
+      `${PRECIPITATION_LABELS[weather.precipitation] ?? weather.precipitation} · ${
+        weather.frozen
+          ? "вручну"
+          : `ще ${seconds(weather.precipitationLeftSec)}`
+      }`,
+      content,
+    );
+    this.#ui.createInfoRow(
+      "дощ",
+      `${percent(weather.rain)} → ${percent(weather.rainTarget)}`,
+      content,
+    );
+    this.#ui.createInfoRow(
+      "гроза",
+      `${percent(weather.storm)} → ${percent(weather.stormTarget)}`,
+      content,
+    );
+    this.#ui.createInfoRow(
+      "туман",
+      `${FOG_LABELS[weather.fogState] ?? weather.fogState} · ${percent(weather.fog)} → ${percent(
+        weather.fogTarget,
+      )}`,
+      content,
+    );
+    this.#ui.createInfoRow(
+      "вітер",
+      wind
+        ? `${WIND_NAMES[wind.direction] ?? wind.direction}${wind.forced ? " (вручну)" : ""}`
+        : "—",
+      content,
+    );
+    this.#ui.createInfoRow(
+      "блискавки",
+      `${weather.strikeSerial} · остання: варіант ${weather.strikeVariant + 1}, відстань ${percent(
+        weather.strikeDistance,
+      )}`,
+      content,
+    );
     this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
   }
 
   #renderControls(model, content) {
     const weather = model.snapshot;
-    const controls = this.#createSection("Керування", content, ["WEATHER", "controls"]);
+    const controls = this.#createSection("Керування", content, [
+      "WEATHER",
+      "controls",
+    ]);
     const raining = weather.precipitation !== "clear";
-    this.#ui.createSwitcherRow("🌧 Дощ", raining, controls, (on) => {
-      if (on) this.#hold(model, "precipitation", "rain", this.#rain);
-      else this.#release(model, "precipitation", "clear");
-    }, ["WEATHER", "controls", "rain"]);
+    this.#ui.createSwitcherRow(
+      "🌧 Дощ",
+      raining,
+      controls,
+      (on) => {
+        if (on) this.#hold(model, "precipitation", "rain", this.#rain);
+        else this.#release(model, "precipitation", "clear");
+      },
+      ["WEATHER", "controls", "rain"],
+    );
     this.#ui.createRangeRow("сила дощу, %", this.#rain, controls, (value) => {
       this.#rain = Number(value) || 0;
-      if (model.snapshot.precipitation !== "clear") model.setIntensity("rain", this.#rain / 100);
+      if (model.snapshot.precipitation !== "clear")
+        model.setIntensity("rain", this.#rain / 100);
     });
-    this.#ui.createSwitcherRow("⛈ Гроза", weather.precipitation === "storm", controls, (on) => {
-      if (on) this.#hold(model, "precipitation", "storm", this.#storm);
-      else this.#hold(model, "precipitation", "rain", this.#rain);
-    }, ["WEATHER", "controls", "storm"]);
+    this.#ui.createSwitcherRow(
+      "⛈ Гроза",
+      weather.precipitation === "storm",
+      controls,
+      (on) => {
+        if (on) this.#hold(model, "precipitation", "storm", this.#storm);
+        else this.#hold(model, "precipitation", "rain", this.#rain);
+      },
+      ["WEATHER", "controls", "storm"],
+    );
     this.#ui.createRangeRow("сила грози, %", this.#storm, controls, (value) => {
       this.#storm = Number(value) || 0;
-      if (model.snapshot.precipitation === "storm") model.setIntensity("storm", this.#storm / 100);
+      if (model.snapshot.precipitation === "storm")
+        model.setIntensity("storm", this.#storm / 100);
     });
-    this.#ui.createSwitcherRow("🌫 Туман", weather.fogState === "fog", controls, (on) => {
-      if (on) this.#hold(model, "fog", "fog", this.#fog);
-      else this.#release(model, "fog", "none");
-    }, ["WEATHER", "controls", "fog"]);
+    this.#ui.createSwitcherRow(
+      "🌫 Туман",
+      weather.fogState === "fog",
+      controls,
+      (on) => {
+        if (on) this.#hold(model, "fog", "fog", this.#fog);
+        else this.#release(model, "fog", "none");
+      },
+      ["WEATHER", "controls", "fog"],
+    );
     this.#ui.createRangeRow("сила туману, %", this.#fog, controls, (value) => {
       this.#fog = Number(value) || 0;
-      if (model.snapshot.fogState === "fog") model.setIntensity("fog", this.#fog / 100);
+      if (model.snapshot.fogState === "fog")
+        model.setIntensity("fog", this.#fog / 100);
     });
     if (this.#weather.setWind) {
       const wind = this.#weather.getWind?.() ?? null;
-      const current = WIND_CHOICES.find((choice) => wind?.forced && choice.direction === wind.direction) ?? WIND_CHOICES[0];
-      this.#ui.createSelectRow("напрям вітру", WIND_CHOICES.map((choice) => choice.label), current.label, controls,
+      const current =
+        WIND_CHOICES.find(
+          (choice) => wind?.forced && choice.direction === wind.direction,
+        ) ?? WIND_CHOICES[0];
+      this.#ui.createSelectRow(
+        "напрям вітру",
+        WIND_CHOICES.map((choice) => choice.label),
+        current.label,
+        controls,
         (label) => {
-          this.#weather.setWind(WIND_CHOICES.find((choice) => choice.label === label)?.direction ?? null);
+          this.#weather.setWind(
+            WIND_CHOICES.find((choice) => choice.label === label)?.direction ??
+              null,
+          );
           this.#fill();
-        });
+        },
+      );
     }
-    this.#ui.createInputRow("перехід, с", this.#fadeSec, controls, "number", (value) => {
-      this.#fadeSec = Math.max(0, Number(value) || 0);
-    });
+    this.#ui.createInputRow(
+      "перехід, с",
+      this.#fadeSec,
+      controls,
+      "number",
+      (value) => {
+        this.#fadeSec = Math.max(0, Number(value) || 0);
+      },
+    );
     this.#ui.createButtonRow("⚡ Удар блискавки зараз", controls, () => {
       model.strike();
       this.#fill();
     });
-    this.#ui.createSwitcherRow("заморозити погоду", weather.frozen === true, controls, (frozen) => {
-      model.setFrozen(frozen);
-      this.#fill();
-    }, ["WEATHER", "frozen"]);
+    this.#ui.createSwitcherRow(
+      "заморозити погоду",
+      weather.frozen === true,
+      controls,
+      (frozen) => {
+        model.setFrozen(frozen);
+        this.#fill();
+      },
+      ["WEATHER", "frozen"],
+    );
     this.#ui.createButtonRow("↺ Автоматична погода", controls, () => {
       model.setFrozen(false);
       this.#weather.setWind?.(null);
@@ -275,7 +407,10 @@ export class WeatherDevSection {
 
   // A state switched on by hand: forced with its slider's strength and held (the weather's timers stop).
   #hold(model, process, state, strength) {
-    model.force(process, state, { intensity: strength / 100, fadeSec: this.#fadeSec });
+    model.force(process, state, {
+      intensity: strength / 100,
+      fadeSec: this.#fadeSec,
+    });
     model.setFrozen(true);
     this.#fill();
   }
@@ -284,7 +419,8 @@ export class WeatherDevSection {
   #release(model, process, state) {
     model.force(process, state, { fadeSec: this.#fadeSec });
     const weather = model.snapshot;
-    if (weather.precipitation === "clear" && weather.fogState === "none") model.setFrozen(false);
+    if (weather.precipitation === "clear" && weather.fogState === "none")
+      model.setFrozen(false);
     this.#fill();
   }
 }

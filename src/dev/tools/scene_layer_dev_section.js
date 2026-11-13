@@ -3,7 +3,8 @@
 // WebGL scene and the 2D canvas (no reload; the startup mode comes from CONFIG.canvas.scene or dev.html?scene=), and a
 // WebGL context loss and restore to test the fallback to the 2D canvas.
 const STATE_LABELS = Object.freeze({
-  inactive: "немає: режим canvas (dev.html?scene=webgl або CONFIG.canvas.scene)",
+  inactive:
+    "немає: режим canvas (dev.html?scene=webgl або CONFIG.canvas.scene)",
   loading: "завантаження Pixi",
   starting: "запуск WebGL",
   active: "активний",
@@ -12,7 +13,11 @@ const STATE_LABELS = Object.freeze({
   disposed: "закрито",
 });
 
-const ROCKING_STATES = Object.freeze({ off: "вимкнено", still: "сила 0", active: "гойдається" });
+const ROCKING_STATES = Object.freeze({
+  off: "вимкнено",
+  still: "сила 0",
+  active: "гойдається",
+});
 
 export class SceneLayerDevSection {
   #ui;
@@ -27,7 +32,13 @@ export class SceneLayerDevSection {
   // scene: { layer, router } from the composition; createSection(label, parent, path) and renderWaterConfig(parent)
   // (the live editor of CONFIG.canvas.water) from DevTools.
   // renderWeather(parent): TK-291, the weather section drawn inside this one (its effects are the scene's).
-  constructor({ ui, scene, createSection, renderWaterConfig, renderWeather = null }) {
+  constructor({
+    ui,
+    scene,
+    createSection,
+    renderWaterConfig,
+    renderWeather = null,
+  }) {
     this.#ui = ui;
     this.#layer = scene.layer;
     this.#router = scene.router;
@@ -38,7 +49,9 @@ export class SceneLayerDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("🖼️ СЦЕНА WebGL", parent, ["SCENE_LAYER"]);
+    this.#content = this.#createSection("🖼️ СЦЕНА WebGL", parent, [
+      "SCENE_LAYER",
+    ]);
     this.#fill();
   }
 
@@ -47,38 +60,83 @@ export class SceneLayerDevSection {
     if (!content) return;
     content.replaceChildren();
     const status = this.#layer.getStatus();
-    this.#ui.createInfoRow("шар WebGL", STATE_LABELS[status.state] ?? status.state, content);
+    this.#ui.createInfoRow(
+      "шар WebGL",
+      STATE_LABELS[status.state] ?? status.state,
+      content,
+    );
     if (status.webglVersion != null) {
-      this.#ui.createInfoRow("рендерер", `WebGL ${status.webglVersion} · ${status.width}×${status.height} @ ${
-        status.pixelRatio}×`, content);
-      this.#ui.createInfoRow("текстури сцени", `${status.textures} · ${(status.textureBytes / 1048576).toFixed(1)} МБ`,
-        content);
+      this.#ui.createInfoRow(
+        "рендерер",
+        `WebGL ${status.webglVersion} · ${status.width}×${status.height} @ ${
+          status.pixelRatio
+        }×`,
+        content,
+      );
+      this.#ui.createInfoRow(
+        "текстури сцени",
+        `${status.textures} · ${(status.textureBytes / 1048576).toFixed(1)} МБ`,
+        content,
+      );
     }
     if (status.water) {
-      this.#ui.createInfoRow("вода", `${status.water.active ? "анімується" : "стоїть"} · карта ${status.water.mapWidth}×${
-        status.water.mapHeight} · крок ${status.water.stepMs.toFixed(2)} мс · течія ${
-        (status.water.driftSpeed ?? 0).toFixed(1)} пікс/с`, content, ["SCENE_LAYER", "water"]);
+      this.#ui.createInfoRow(
+        "вода",
+        `${status.water.active ? "анімується" : "стоїть"} · карта ${status.water.mapWidth}×${
+          status.water.mapHeight
+        } · крок ${status.water.stepMs.toFixed(2)} мс · течія ${(
+          status.water.driftSpeed ?? 0
+        ).toFixed(1)} пікс/с`,
+        content,
+        ["SCENE_LAYER", "water"],
+      );
     }
-    this.#ui.createInfoRow("сцена малює кадр", this.#router.rendersScene() ? "так" : "ні", content);
+    this.#ui.createInfoRow(
+      "сцена малює кадр",
+      this.#router.rendersScene() ? "так" : "ні",
+      content,
+    );
     // Spec 128: the float's rocking as the render model last asked for it (frames count up while a float shows).
     const rocking = this.#floatRocking?.status;
     if (rocking) {
-      this.#ui.createInfoRow("покачування поплавка", `${ROCKING_STATES[rocking.state] ?? rocking.state} · кадрів ${
-        rocking.frames} · вгору-вниз ${rocking.dy.toFixed(1)} px · убік ${rocking.dx.toFixed(1)} px · нахил ${
-        rocking.turnDeg.toFixed(1)}° · сила ${rocking.strength.toFixed(2)} · лежить ${Math.round(rocking.lying * 100)}% · закид ×${
-        rocking.landing.toFixed(2)} · погода ×${rocking.weather.toFixed(2)} · огрузка ×${rocking.ballast.toFixed(2)} · темп ×${
-        rocking.tempo.toFixed(2)}`,
-      content, ["SCENE_LAYER", "floatRocking"]);
+      this.#ui.createInfoRow(
+        "покачування поплавка",
+        `${ROCKING_STATES[rocking.state] ?? rocking.state} · кадрів ${
+          rocking.frames
+        } · вгору-вниз ${rocking.dy.toFixed(1)} px · убік ${rocking.dx.toFixed(1)} px · нахил ${rocking.turnDeg.toFixed(
+          1,
+        )}° · сила ${rocking.strength.toFixed(2)} · лежить ${Math.round(rocking.lying * 100)}% · закид ×${rocking.landing.toFixed(
+          2,
+        )} · погода ×${rocking.weather.toFixed(2)} · огрузка ×${rocking.ballast.toFixed(2)} · темп ×${rocking.tempo.toFixed(
+          2,
+        )}`,
+        content,
+        ["SCENE_LAYER", "floatRocking"],
+      );
     }
     for (const { kind, layer, sceneRenderer } of this.#router.getRouting()) {
-      this.#ui.createInfoRow(kind, layer === "scene" ? "WebGL" : sceneRenderer ? "2D" : "2D (рендерера сцени ще немає)",
-        content, ["SCENE_LAYER", "routing", kind]);
+      this.#ui.createInfoRow(
+        kind,
+        layer === "scene"
+          ? "WebGL"
+          : sceneRenderer
+            ? "2D"
+            : "2D (рендерера сцени ще немає)",
+        content,
+        ["SCENE_LAYER", "routing", kind],
+      );
     }
     if (status.state !== "inactive") {
-      this.#ui.createSwitcherRow("Сцена WebGL (інакше все на 2D)", this.#router.mode === "webgl", content, (enabled) => {
-        this.#router.setMode(enabled ? "webgl" : "canvas");
-        this.#fill();
-      }, ["SCENE_LAYER", "mode"]);
+      this.#ui.createSwitcherRow(
+        "Сцена WebGL (інакше все на 2D)",
+        this.#router.mode === "webgl",
+        content,
+        (enabled) => {
+          this.#router.setMode(enabled ? "webgl" : "canvas");
+          this.#fill();
+        },
+        ["SCENE_LAYER", "mode"],
+      );
       this.#ui.createButtonRow("Втратити WebGL-контекст", content, () => {
         this.#layer.loseContext();
         this.#fill();
@@ -89,8 +147,9 @@ export class SceneLayerDevSection {
       });
     }
     this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
-    this.#renderWaterConfig?.(this.#createSection("🌊 Вода: хвилі й брижі (CONFIG.canvas.water)", content,
-      ["SCENE_LAYER", "waterConfig"]));
+    this.#renderWaterConfig?.(
+      this.#createSection("ВОДА", content, ["SCENE_LAYER", "waterConfig"]),
+    );
     this.#renderWeather?.(content);
   }
 }
