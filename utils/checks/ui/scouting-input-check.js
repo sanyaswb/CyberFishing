@@ -47,7 +47,7 @@ const deps = {
   rules: { equipment: { requiresReel: () => false, hasEquippedLine: () => true, canSelectDepth: () => false } },
   commands: { showMissingRodInventoryWarning: () => warnings++, castLine: () => casts++, panViewport() {} },
   ui: { updateNetButtonState() {}, setScoutingPointerDimmed() {} },
-  depthUI: { isActive: false }, currentHookDepthRef: { set() {} },
+  depthUI: { isActive: false }, currentHookDepthRef: { get: () => 1, set() {}, choose() {}, isChosen: () => false, clearChoice() {} },
 };
 const scouting = new ScoutingState(deps);
 scouting.enter();

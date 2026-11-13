@@ -38,7 +38,7 @@ const deps = {
   services: { devFlags: { isEnabled: () => false } },
   ui: { updateNetButtonState() {}, setScoutingPointerDimmed() {} },
   depthUI: { isOpen: false, isActive: false, hide() {} },
-  currentHookDepthRef: { get: () => 1, set() {} },
+  currentHookDepthRef: { get: () => 1, set() {}, choose() {}, isChosen: () => false, clearChoice() {} },
   isAimingChum: () => false,
   canPlayerCast: () => true,
   clock: { now: 1000 },

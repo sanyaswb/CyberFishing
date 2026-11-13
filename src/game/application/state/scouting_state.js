@@ -1,5 +1,6 @@
 import { CastPowerAim } from "../casting/cast_power_aim.js";
 import { GameState } from "./game_state.js";
+import { defaultHookDepthMeters } from "../../domain/fishing/default_hook_depth.js";
 
 export class ScoutingState extends GameState {
   #castAim;
@@ -109,34 +110,45 @@ export class ScoutingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const canSelectDepth = this.deps.rules.equipment.canSelectDepth(eq);
 
+    const depthRef = this.deps.currentHookDepthRef;
     if (!this.deps.canPlayerCast() || !canSelectDepth) {
       if (this.deps.depthUI.isActive) {
         this.deps.depthUI.hide();
       }
-      this.deps.currentHookDepthRef.set(
+      depthRef.set(
         this.deps.config.fightPhysicsConfig?.getLureRetrieveConfig?.()
           ?.defaultSurfaceDepthMeters ??
           0.1,
       );
+      // Without a depth to choose, a later float starts from its own default again.
+      depthRef.clearChoice();
       return;
     }
 
+    // TK-192 / TK-192.1: until the player sets a depth it is half the current tackle's deepest depth (it follows a tackle
+    // change); a chosen depth is kept, only inside the tackle's range. TK-192 marked "not chosen" with the value 0.1, which
+    // is also the shallowest depth a player can choose, so a chosen 0.1 m became half the range on the next frame.
     const maxDepth = this.deps.getMaxHookDepth();
-    const halfDepth = Math.round((maxDepth * 0.5) / 0.1) * 0.1;
-    let currentDepth = this.deps.currentHookDepthRef.get();
-    if (!Number.isFinite(currentDepth) || currentDepth <= 0 || currentDepth === 0.1) {
-      currentDepth = halfDepth;
-      this.deps.currentHookDepthRef.set(currentDepth);
+    let currentDepth = depthRef.get();
+    const chosen = depthRef.isChosen() === true;
+    if (!chosen || !Number.isFinite(currentDepth) || currentDepth <= 0) {
+      const fallback = defaultHookDepthMeters(maxDepth);
+      if (currentDepth !== fallback) {
+        currentDepth = fallback;
+        depthRef.set(currentDepth);
+        if (this.deps.depthUI.isActive) this.deps.depthUI.setValue?.(currentDepth);
+      }
     } else if (currentDepth > maxDepth) {
       currentDepth = maxDepth;
-      this.deps.currentHookDepthRef.set(currentDepth);
+      depthRef.set(currentDepth);
     }
 
     if (!this.deps.depthUI.isActive) {
       this.deps.depthUI.show(
         maxDepth,
         currentDepth,
-        (d) => this.deps.currentHookDepthRef.set(d),
+        // The player's move on the track chooses the depth; a clamp to a lower maximum does not.
+        (d, change) => (change?.byPlayer === false ? depthRef.set(d) : depthRef.choose(d)),
       );
     } else {
       this.deps.depthUI.updateMax(maxDepth);

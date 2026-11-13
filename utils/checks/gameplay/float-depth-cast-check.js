@@ -315,4 +315,54 @@ class FloatDepthCastCheck {
 
 const runtime = new RuntimeLoader().load();
 new FloatDepthCastCheck(runtime).run();
+
+// TK-192 / TK-192.1 on the starting float rig (rod_test_float 5 m without a reel, line_test_1 25 m, float_day fixed):
+// before the player sets a depth it is half the tackle's deepest depth (20 m -> 10 m); a chosen depth is kept, the
+// shallowest 0.1 m too (TK-192 marked "not chosen" with 0.1, so a chosen 0.1 m became 10 m and the cast 25 -> 15 m);
+// a tackle change re-applies the default only while nothing was chosen; a clamp to a lower maximum is not a choice.
+{
+  const assert = require("node:assert/strict");
+  const scoutRuntime = new SourceRuntime();
+  const load = (file) => scoutRuntime.importModule(file);
+  const { ScoutingState } = load("src/game/application/state/scouting_state.js");
+  const { CastDistanceCalculator } = load("src/game/domain/casting/cast_distance_calculator.js");
+  const { EquipmentRules } = load("src/game/domain/rules/equipment_rules.js");
+  const { CONFIG } = load("src/game/config/runtime/game_config.js");
+  const { ITEM_DB } = load("src/game/config/raw/items/item_database.js");
+  const item = (id) => {
+    const source = Object.values(ITEM_DB).find((group) => group?.[id])[id];
+    return { id, itemType: source.itemType, variant: source.variant, effectiveStats: { ...source.gameplayStats } };
+  };
+  let equipment = { rod: item("rod_test_float"), line: item("line_test_1"), float: item("float_day"), reel: null };
+  const rules = new EquipmentRules(new CastDistanceCalculator(CONFIG), CONFIG, {});
+  // The depth owner as GameApplication composes it.
+  let depth = 1, chosen = false;
+  const depthRef = { get: () => depth, set: (value) => { depth = value; }, choose: (value) => { depth = value; chosen = true; },
+    isChosen: () => chosen, clearChoice: () => { chosen = false; } };
+  let report = null, shown = null;
+  const depthUI = { isActive: false, isOpen: false, show(max, current, onChange) { this.isActive = true; report = onChange; shown = current; },
+    updateMax() {}, setValue(value) { shown = value; }, setIcon() {}, hide() { this.isActive = false; } };
+  const scouting = new ScoutingState({ config: CONFIG, projector: { focusOnVirtualPos() {} }, rng: {},
+    world: { getWaterMetric: () => ({ topBasePixels: 1e9 }) }, getViewportSize: () => ({ width: 1000, height: 1000 }),
+    commands: { panViewport() {} }, ui: { setScoutingPointerDimmed() {} }, isAimingChum: () => false, canPlayerCast: () => true,
+    inventory: { getEquipped: () => equipment }, rules: { equipment: rules }, depthUI, currentHookDepthRef: depthRef,
+    getMaxHookDepth: () => rules.getFloatLineBudget(equipment, null).maxDepthMeters });
+  const frame = () => scouting.update(16, { bottom: 1000 }, { input: {} });
+  const castMeters = () => rules.getCastDistanceInfo(equipment, null, depth).effectiveDistanceMeters;
+  frame();
+  assert.deepEqual([depth, shown, chosen], [10, 10, false], "before a choice: half of the tackle's 20 m");
+  report(0.2); frame();
+  assert.deepEqual([depth, chosen], [0.2, true], "a chosen 0.2 m stays");
+  assert.equal(castMeters(), 24.8, "the fixed float costs its depth: 25 - 0.2 m");
+  report(0.1); frame(); frame();
+  assert.equal(depth, 0.1, "a chosen 0.1 m (the shallowest) stays 0.1 m");
+  assert.equal(castMeters(), 25, "and casts the whole 25 m line (surface depth costs nothing)");
+  report(3, { byPlayer: false });
+  assert.equal(chosen, true, "a clamp is not a new choice");
+  equipment = { ...equipment, line: { ...equipment.line, effectiveStats: { ...equipment.line.effectiveStats, lengthMeters: 6 } } };
+  frame();
+  assert.equal(depth, 1, "a chosen depth beyond a shorter tackle's range is clamped to it (6 - 5 m)");
+  chosen = false; frame();
+  assert.equal(depth, 0.5, "an unchosen depth follows the current tackle's default (half of 1 m)");
+}
 console.log("Float depth cast check passed.");

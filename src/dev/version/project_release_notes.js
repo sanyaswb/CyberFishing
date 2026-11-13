@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-192.1: chosen 0.1 m float depth kept; unchosen depth = 50% of the current tackle's max (also at start / tackle change).",
   "TK-287 (spec 176): extracted shared DevTools export canonical/template/diff helpers, DevSavingSection UI block, and runModuleApply CLI runner across zones, radio and weather.",
   "TK-286 (spec 175): weather saving in DevTools (status vs code, export/import JSON, reset to code) and `npm run apply:weather` updating changed modules (rain_settings.js and/or locations/weather/<id>.js).",
   "TK-271.1 (spec 172 D): tuned default rain look and rings (lengthPx 103, widthPx 6.3, minScale 0.4, windSlantDeg 34, stormSlantDeg 48, rings.sizePx 65).",

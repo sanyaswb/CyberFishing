@@ -5,6 +5,7 @@ import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_e
 import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { defaultHookDepthMeters } from "../../domain/fishing/default_hook_depth.js";
 
 export class GameApplication {
   #messages;
@@ -130,6 +131,9 @@ export class GameApplication {
   castStartTime = 0;
   castDistanceRatio = 0;
   currentHookDepth = 1.0;
+  // TK-192.1: whether the player has set the float's depth on the depth track. Until then the depth is the default of
+  // the current tackle (half its deepest depth); the value itself never stands for "not chosen".
+  #hookDepthChosen = false;
   lastTime = 0;
 
   constructor({
@@ -246,10 +250,20 @@ export class GameApplication {
       getChumCastDistance: () => this.chumCastDistance,
       isAimingChum: () => this.isAimingChum,
       eatenBaits: this.eatenBaits,
+      // set: a system write (default, clamp, cast result) keeps the choice flag; choose: the player's own depth;
+      // clearChoice: the tackle can no longer take a chosen depth (no float).
       currentHookDepthRef: {
         get: () => this.currentHookDepth,
         set: (value) => {
           this.currentHookDepth = value;
+        },
+        choose: (value) => {
+          this.currentHookDepth = value;
+          this.#hookDepthChosen = true;
+        },
+        isChosen: () => this.#hookDepthChosen,
+        clearChoice: () => {
+          this.#hookDepthChosen = false;
         },
       },
       canPlayerCast: () => this.canPlayerCast(),
@@ -421,7 +435,13 @@ export class GameApplication {
 
     this.#boatInNetReach = false;
     this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
-    this.#depthUI.updateMax(this.getMaxHookDepth());
+    // TK-192.1: a new tackle has a new deepest depth: an unchosen depth becomes this tackle's default, a chosen one is
+    // only kept inside it.
+    const maxDepth = this.getMaxHookDepth();
+    if (!this.#hookDepthChosen) this.currentHookDepth = defaultHookDepthMeters(maxDepth);
+    else if (this.currentHookDepth > maxDepth) this.currentHookDepth = maxDepth;
+    this.#depthUI.updateMax(maxDepth);
+    this.#depthUI.setValue?.(this.currentHookDepth);
   }
 
   #rebuildFloat() {

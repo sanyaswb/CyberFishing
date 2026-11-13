@@ -6,6 +6,11 @@ const DEPTH_PAGE_METERS = 1;
 // Depth control of a float or jig rig: a tackle button that shows the selected depth and, when pressed, slides out a
 // horizontal depth track beside it (surface at the left, the deepest reachable depth at the right). The track follows
 // pointer drags, the wheel and the keyboard. While it is open, a press on the game canvas only closes it.
+// TK-192.1: the second argument of onChange says who changed the depth: the player on the track, or the game when a
+// lower maximum clamped it.
+const PLAYER_CHANGE = Object.freeze({ byPlayer: true });
+const SYSTEM_CHANGE = Object.freeze({ byPlayer: false });
+
 export class DepthSelector {
   #labels;
   #document;
@@ -83,9 +88,19 @@ export class DepthSelector {
     if (clamped !== this.#value) {
       this.#value = clamped;
       this.#render();
-      this.onChange?.(clamped);
+      this.onChange?.(clamped, SYSTEM_CHANGE);
       return;
     }
+    this.#render();
+  }
+
+  // TK-192.1: shows a depth the game set (the current tackle's default); it is not the player's choice, so it reports
+  // nothing. Unchanged values touch no DOM.
+  setValue(depth) {
+    if (this.#disposed || !this.isActive) return;
+    const next = this.#clamp(depth);
+    if (next === this.#value) return;
+    this.#value = next;
     this.#render();
   }
 
@@ -344,7 +359,7 @@ export class DepthSelector {
     if (next === this.#value) return;
     this.#value = next;
     this.#render();
-    this.onChange?.(next);
+    this.onChange?.(next, PLAYER_CHANGE);
   }
 
   #setRange(maxDepth) {
