@@ -39,6 +39,10 @@ export class PixiWaterRenderer {
   #driftX = 0;
   #driftY = 0;
   #driftSpeed = 0;
+  // Spec 172 D7: how far the crests have travelled (art px at the near edge), integrated from the sea state's speed and
+  // direction, so a wind change turns the waves without a jump; the sea state of the last step (DEV status).
+  #travelPx = 0;
+  #sea = { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 };
   #metric = null;
   #getRainRipples;
 
@@ -88,7 +92,7 @@ export class PixiWaterRenderer {
   // For DEV: whether the water animates, the map size, the last step's JavaScript time and the drift speed (art px/s).
   get status() {
     return { active: this.#visible, mapWidth: MAP_WIDTH, mapHeight: MAP_HEIGHT, stepMs: this.#stepMs,
-      driftSpeed: this.#driftSpeed };
+      driftSpeed: this.#driftSpeed, sea: this.#sea };
   }
 
   // world: the frame's world model, or null when the background is not on the scene; viewWidth / viewHeight: the
@@ -126,14 +130,17 @@ export class PixiWaterRenderer {
     // the waves are never stretched.
     const fullWidth = this.#getImageSize?.(base.assetId)?.width || baseTexture.width;
     const artScale = base.width / fullWidth;
-    this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * artScale;
+    // Spec 172 D7: the sea state (wind, night, storm) scales the waves.
+    const sea = world.sea;
+    const seaAmplitude = Math.max(0, Number(sea?.amplitudeScale ?? 1) || 0);
+    this.#filter.scale.x = 2 * Math.max(0, Number(settings.amplitude) || 0) * seaAmplitude * artScale;
     this.#filter.scale.y = this.#filter.scale.x * Math.max(0, Number(settings.verticalShare) || 0);
     const metric = world.waterPlane?.metric ?? null;
     const stepDue = this.#lastStepAt === null || metric !== this.#metric || reshaped ||
       nowMs - this.#lastStepAt >= 1000 / Math.max(1, Number(settings.frameRate) || 1);
     if (stepDue) {
       this.#metric = metric;
-      this.#drift(world.current, settings, nowMs);
+      this.#drift(world.current, settings, nowMs, sea);
       this.#step(nowMs, settings, (area.right - area.left) / artScale, (area.bottom - area.top) / artScale, world.waterPlane,
         world.boatWake, area);
     }
@@ -146,7 +153,7 @@ export class PixiWaterRenderer {
 
   // The current carries the pattern by its velocity over the time since the last step, so a changed current or scale
   // changes the speed from now on without a jump.
-  #drift(current, settings, nowMs) {
+  #drift(current, settings, nowMs, sea) {
     const scale = Math.max(0, Number(settings.currentScale) || 0);
     const velocityX = (Number(current?.x) || 0) * scale;
     const velocityY = (Number(current?.y) || 0) * scale;
@@ -154,13 +161,23 @@ export class PixiWaterRenderer {
     this.#driftX += velocityX * elapsedSec;
     this.#driftY += velocityY * elapsedSec;
     this.#driftSpeed = Math.hypot(velocityX, velocityY);
+    const speedScale = Math.max(0, Number(sea?.speedScale ?? 1) || 0);
+    const travel = Math.max(-1, Math.min(1, Number(sea?.travel ?? 1)));
+    this.#travelPx += Math.max(0, Number(settings.speed) || 0) * speedScale * travel * elapsedSec;
+    this.#sea.amplitudeScale = Number(sea?.amplitudeScale ?? 1);
+    this.#sea.speedScale = speedScale;
+    this.#sea.wavelengthScale = Number(sea?.wavelengthScale ?? 1);
+    this.#sea.travel = travel;
   }
 
   #step(nowMs, settings, artWidth, artHeight, plane, wake, area) {
     const started = performance.now();
     this.#lastStepAt = nowMs;
-    let pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight, wavelength: Number(settings.wavelength) || 1,
-      speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane });
+    const variation = settings.variation?.enabled === true ? settings.variation : null;
+    let pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight,
+      wavelength: (Number(settings.wavelength) || 1) * Math.max(0.1, Number(this.#sea.wavelengthScale) || 1),
+      speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane, travelPx: this.#travelPx,
+      variation });
     const wakeArea = this.#wakeArea;
     wakeArea.left = area.left; wakeArea.top = area.top; wakeArea.right = area.right; wakeArea.bottom = area.bottom;
     pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings());

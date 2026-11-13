@@ -223,4 +223,46 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(environment.getSnapshot().wind.forced, false, "null returns to the random wind");
 }
 
-console.log("weather: states, fades, storm, lightning, fog, derived fields, live strength and held wind OK");
+// 10. Spec 172 D7 (TK-289): the sea state from wind, night and storm, smooth, with the waves travelling with the wind.
+{
+  const { SeaStateResolver } = require("../../../src/game/presentation/world/sea_state_resolver.js");
+  const { CONFIG: GAME } = require("../../../src/game/config/runtime/game_config.js");
+  const settings = { ...GAME.canvas.water.seaState, smoothingSec: 2 };
+  const environment = { time: 13, weather: { storm: 0 }, wind: { direction: 0 } };
+  const sea = new SeaStateResolver({ getEnvironment: () => environment, getSettings: () => settings });
+  let now = 0;
+  const settle = (seconds = 60) => { for (let t = 0; t < seconds * 10; t += 1) { now += 100; sea.update(now); } return sea.state; };
+  sea.update(now);
+  near(sea.state.amplitudeScale, settings.calmAmplitude, "the first frame starts at its target: a calm day");
+  environment.wind.direction = 1;
+  now += 100;
+  sea.update(now);
+  assert(sea.state.amplitudeScale < settings.calmAmplitude + 0.1, "a new wind swells the waves instead of jumping");
+  near(settle().amplitudeScale, settings.windAmplitude, "wind: windAmplitude");
+  near(sea.state.speedScale, settings.windSpeed, "wind: windSpeed");
+  near(sea.state.travel, 1, "the waves travel with the wind (to the right)");
+  environment.wind.direction = -1;
+  let previous = sea.state.travel, biggest = 0;
+  for (let t = 0; t < 600; t += 1) { now += 100; sea.update(now); biggest = Math.max(biggest, Math.abs(sea.state.travel - previous)); previous = sea.state.travel; }
+  near(sea.state.travel, -1, "a wind to the left turns them left");
+  assert(biggest < 0.1, `the turn is gradual (largest step ${biggest.toFixed(3)} per 0.1 s)`);
+  environment.wind.direction = 0;
+  near(settle().travel, -1, "a calm keeps the last direction");
+  environment.time = 1;
+  near(settle().amplitudeScale, settings.calmAmplitude * settings.nightAmplitude, "night: calmer waves");
+  environment.time = 20;
+  const dusk = settle().amplitudeScale;
+  assert(dusk > settings.calmAmplitude * settings.nightAmplitude && dusk < settings.calmAmplitude,
+    "at dusk the waves calm down with the night background (half way at 20 h)");
+  environment.time = 13;
+  environment.weather.storm = 1;
+  near(settle().amplitudeScale, settings.windAmplitude * settings.stormAmplitude, "storm: full wind and stormAmplitude");
+  near(sea.state.speedScale, settings.windSpeed * settings.stormSpeed, "storm: faster");
+  near(sea.state.wavelengthScale, settings.stormWavelength, "storm: longer waves");
+  settings.enabled = false;
+  sea.update(now += 100);
+  assert.deepEqual([sea.state.amplitudeScale, sea.state.speedScale, sea.state.wavelengthScale], [1, 1, 1],
+    "switched off: the waves as configured");
+}
+
+console.log("weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind and the sea state OK");

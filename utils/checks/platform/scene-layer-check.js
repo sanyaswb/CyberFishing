@@ -569,7 +569,8 @@ async function checkPixiSceneLayer() {
     "the other phases follow one per frame, in the location's order, without presenting a frame (D2)");
   assert.deepEqual(layer.getStatus(), { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76,
     textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
-    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0 },
+    water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0,
+      sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 } },
   "no castable zones in this frame: still water");
   base.x = -20;
@@ -751,6 +752,47 @@ async function checkRain() {
   assert.equal(drops.mask, null, "the switch off: no mask, the whole screen");
 }
 
+// Spec 172 D7 (TK-289): the waves' variation and their integrated travel. Without a variation the travel alone sets the
+// pattern (a change of speed or direction never jumps); dispersion moves components apart, breathing changes heights
+// with time, and wave groups make some patches of water higher than others.
+async function checkWaveVariation() {
+  const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
+  const field = new WaterWaveField({ width: 192, height: 48 });
+  const base = { artWidth: 2560, artHeight: 640, wavelength: 200, speed: 40 };
+  const write = (time, extra) => Array.from(field.write(time, { ...base, ...extra }));
+  assert.deepEqual(write(3, { travelPx: 120 }), write(9, { travelPx: 120 }),
+    "the travelled distance sets the pattern, not the clock: a speed or direction change never jumps");
+  assert.deepEqual(write(3, { travelPx: 40 * 3 }), write(3, {}), "travelling speed × time is the original pattern");
+  const still = { dispersion: 0, breath: 0, breathSec: 6, groupDepth: 0, groupScale: 6, groupSpeed: 0.5 };
+  assert.deepEqual(write(3, { travelPx: 120, variation: still }), write(3, { travelPx: 120 }),
+    "a variation with every part at zero is the plain pattern");
+  assert.deepEqual(write(0, { travelPx: 0, variation: { ...still, dispersion: 1 } }), write(0, { travelPx: 0 }),
+    "dispersion changes nothing before the waves have moved");
+  assert.notDeepEqual(write(0, { travelPx: 500, variation: { ...still, dispersion: 1 } }), write(0, { travelPx: 500 }),
+    "after travelling, the longer components have moved further");
+  const breathing = { ...still, breath: 0.3 };
+  assert.notDeepEqual(write(1, { travelPx: 120, variation: breathing }), write(4, { travelPx: 120, variation: breathing }),
+    "each component's height breathes with time");
+  // Groups: the waves' height in 12 × 4 blocks spreads much more with groups than without.
+  const blockSpread = (pixels) => {
+    const means = [];
+    for (let by = 0; by < 4; by += 1) for (let bx = 0; bx < 12; bx += 1) {
+      let sum = 0;
+      for (let row = by * 12; row < by * 12 + 12; row += 1) for (let column = bx * 16; column < bx * 16 + 16; column += 1) {
+        sum += Math.abs(pixels[(row * 192 + column) * 4] - 128);
+      }
+      means.push(sum / 192);
+    }
+    const mean = means.reduce((a, b) => a + b, 0) / means.length;
+    return Math.sqrt(means.reduce((a, b) => a + (b - mean) ** 2, 0) / means.length) / mean;
+  };
+  const plain = blockSpread(write(2, { travelPx: 80 }));
+  const grouped = blockSpread(write(2, { travelPx: 80, variation: { ...still, groupDepth: 0.35 } }));
+  const strong = blockSpread(write(2, { travelPx: 80, variation: { ...still, groupDepth: 0.8 } }));
+  assert(plain < grouped && grouped < strong && strong > plain * 1.5,
+    `deeper wave groups make stronger patches of higher and lower waves (${plain.toFixed(3)} → ${grouped.toFixed(3)} → ${strong.toFixed(3)})`);
+}
+
 async function checkWaterWaveField() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
   assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
@@ -898,6 +940,12 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const artScale = 1451 / 2560;
   assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "amplitude in art pixels, the filter shifts by half its scale");
   assert(Math.abs(filter.scale.y - filter.scale.x * 0.5) < 1e-9, "vertical share of the shift");
+  // Spec 172 D7: the sea state scales the waves' height (a frame without world.sea keeps them as configured).
+  frame.world.sea = { amplitudeScale: 2, speedScale: 1, wavelengthScale: 1, travel: 1 };
+  wet.layer.render(frame);
+  assert(Math.abs(filter.scale.x - 2 * 2 * 8 * artScale) < 1e-9, "a sea twice as high doubles the shift");
+  delete frame.world.sea;
+  wet.layer.render(frame);
   // TK-183: when the background is a low copy, the wave scale uses the registry's full width, never stretching the waves.
   const lowWet = compose({ getImageSize: (assetId) => assetId === "day" ? { width: 2560, height: 1440 } : null });
   lowWet.apps[0].initCall.resolve();
@@ -1548,6 +1596,7 @@ async function main() {
   await checkRouter();
   await checkTextureCacheAndBackground();
   await checkWaterWaveField();
+  await checkWaveVariation();
   await checkRain();
   await checkSceneWorldKinds();
   await checkSceneTackle();

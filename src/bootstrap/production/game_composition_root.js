@@ -3,6 +3,7 @@ import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { ITEM_PROGRESSION_LABELS } from "../../game/presentation/inventory/item_progression_labels.js";
 import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
 import { FloatWaveRocking } from "../../game/presentation/fishing/float_wave_rocking.js";
+import { SeaStateResolver } from "../../game/presentation/world/sea_state_resolver.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
@@ -598,8 +599,13 @@ export class GameCompositionRoot {
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
     this.#sessionServices = Object.freeze({ liveBait, gameTime: gameTimeClock, assets: this.#assets, fishArt: this.#fishArt,
       openRoomLevel: (level) => { void this.#preload.setProgress({ openedRoomLevel: level }); } });
+    // Spec 172 D7: one sea state (wind, night, storm) for the water's waves and the float's rocking. The environment
+    // is composed with the world systems below, so it is read lazily.
+    let worldSystems = null;
+    const seaState = new SeaStateResolver({ getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
+      getSettings: () => this.#config.canvas?.water?.seaState });
     // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
-    const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water });
+    const floatRocking = new FloatWaveRocking({ getSettings: () => this.#config.canvas?.water, seaState });
     const { systems } = this.#composeWorldSystems({
       projector, locId, rng, locationResources, locCfg, locationMap, waterMetricSource, getWaterMetric, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
@@ -607,6 +613,7 @@ export class GameCompositionRoot {
       gameTimeClock, rodAnimation: rodAnimation.controller, boatAnimation: boatAnimation.controller,
       scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
+    worldSystems = systems;
     this.#composeInventoryUi({
       inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
@@ -666,6 +673,7 @@ export class GameCompositionRoot {
         rodAnimation,
         boatAnimation,
         floatRocking,
+        seaState,
         fishArt: this.#fishArt,
       },
       interaction: {

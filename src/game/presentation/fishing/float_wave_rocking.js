@@ -16,12 +16,14 @@ const MAX_STEP_SEC = 0.1;
 //   standing: up and down (bobPx) and a little sideways (swayPx);
 //   lying: up and down and a turn of the body (lyingTurnDeg); the caller turns it about the middle of its visible part.
 //
-// Strength: the water's wave amplitude, the surface size at the float (far water calmer), a bite step, and (stage 2)
+// Strength: the water's wave amplitude (times the sea state: wind, night, storm, spec 172 D7), the surface size at the
+// float (far water calmer), a bite step, and (stage 2)
 // the landing after a cast, the weather (the float's wind tilt and the rain), the ballast (a heavier float rocks less).
 // Tempo: periodSec, faster with faster or shorter waves, slower with heavy ballast. The phase is integrated, so a tempo
 // change never jumps; landing and weather change smoothly. Visual only; allocation-free.
 export class FloatWaveRocking {
   #getSettings;
+  #seaState;
   #result = { dx: 0, dy: 0, turnRad: 0 };
   #phase = 0;
   #lastNowMs = NaN;
@@ -33,10 +35,12 @@ export class FloatWaveRocking {
   #status = { frames: 0, state: "off", dx: 0, dy: 0, turnDeg: 0, strength: 0, lying: 0,
     landing: 1, weather: 1, ballast: 1, tempo: 1 };
 
-  // getSettings: () => CONFIG.canvas.water (read every frame, so DEV edits apply at once).
-  constructor({ getSettings }) {
+  // getSettings: () => CONFIG.canvas.water (read every frame, so DEV edits apply at once); seaState: SeaStateResolver
+  // (spec 172 D7: the same wind, night and storm as the water's waves), or null.
+  constructor({ getSettings, seaState = null }) {
     if (typeof getSettings !== "function") throw new TypeError("FloatWaveRocking requires getSettings");
     this.#getSettings = getSettings;
+    this.#seaState = seaState;
   }
 
   get status() {
@@ -68,12 +72,15 @@ export class FloatWaveRocking {
       const ballast = Math.max(0, 1 - FloatWaveRocking.#share(rocking.ballastCalm, 0) * draft);
       const surface = metric && Number.isFinite(position?.y) ? metric.surfaceScaleAt(position.y) : 1;
       const bite = signals?.isBiteTilt === true ? FloatWaveRocking.#share(rocking.biteShare, 1) : 1;
-      const tempo = FloatWaveRocking.#waveTempo(water, rocking) / (1 + FloatWaveRocking.#positive(rocking.ballastSlow) * draft);
+      const sea = this.#seaState?.state ?? null;
+      const tempo = FloatWaveRocking.#waveTempo(water, rocking, sea) /
+        (1 + FloatWaveRocking.#positive(rocking.ballastSlow) * draft);
       const period = Math.max(0.2, Number(rocking.periodSec) || 2);
       // Every frequency below is a multiple of 0.01, so 100 turns is a common period: the wrap never jumps.
       this.#phase = (this.#phase + TWO_PI * dt * tempo / period) % (TWO_PI * 100);
-      const strength = FloatWaveRocking.#positive(water.amplitude) / REFERENCE_AMPLITUDE * surface * bite * landing *
-        weather * ballast;
+      const seaAmplitude = sea ? FloatWaveRocking.#positive(sea.amplitudeScale) : 1;
+      const strength = FloatWaveRocking.#positive(water.amplitude) * seaAmplitude / REFERENCE_AMPLITUDE * surface * bite *
+        landing * weather * ballast;
       status.landing = landing;
       status.weather = weather;
       status.ballast = ballast;
@@ -127,9 +134,12 @@ export class FloatWaveRocking {
     result.turnRad = FloatWaveRocking.#positive(rocking.lyingTurnDeg) * RAD_PER_DEG * strength * turn * lying;
   }
 
-  // The waves' crest frequency (speed / wavelength) against the default's, mixed in by waveTempoShare.
-  static #waveTempo(water, rocking) {
-    const rate = FloatWaveRocking.#positive(water.speed) / Math.max(1, Number(water.wavelength) || 1);
+  // The waves' crest frequency (speed / wavelength, times the sea state's) against the default's, mixed in by
+  // waveTempoShare.
+  static #waveTempo(water, rocking, sea) {
+    const speed = FloatWaveRocking.#positive(water.speed) * (sea ? FloatWaveRocking.#positive(sea.speedScale) : 1);
+    const length = Math.max(1, (Number(water.wavelength) || 1) * (sea ? Math.max(0.1, Number(sea.wavelengthScale) || 1) : 1));
+    const rate = speed / length;
     const share = FloatWaveRocking.#positive(rocking.waveTempoShare);
     return Math.max(0.25, Math.min(4, 1 + share * (rate / REFERENCE_WAVE_RATE - 1)));
   }

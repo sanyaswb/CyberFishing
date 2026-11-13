@@ -357,6 +357,21 @@ assert(off.rollDeg === 12 && off.visibleShare === 1, "disabled pose shows the in
     run({ rocking, seconds: 4, input: () => ({ signals: signals({ castSerial: 1, windDeg: 40 }) }) });
     assert(rocking.status.weather > 1 + settings.windShare * 40 / 30 - 0.01, "and reaches its strength");
   }
+  // Spec 172 D7 (TK-289): the float follows the same sea state as the water: its amplitude scales the rocking, its
+  // speed and wavelength the tempo.
+  {
+    const plain = run({ from: 5 });
+    const sea = { state: { amplitudeScale: 2, speedScale: 1, wavelengthScale: 1, travel: 1 } };
+    const stormy = run({ from: 5, rocking: new FloatWaveRocking({ getSettings: () => waterWith(), seaState: sea }) });
+    assert(Math.abs(stormy.dy / plain.dy - 2) < 1e-9, `a sea twice as high rocks the float twice as much (×${(stormy.dy / plain.dy).toFixed(2)})`);
+    const calm = { state: { amplitudeScale: 0.5, speedScale: 1, wavelengthScale: 1, travel: 1 } };
+    const night = run({ from: 5, rocking: new FloatWaveRocking({ getSettings: () => waterWith(), seaState: calm }) });
+    assert(Math.abs(night.dy / plain.dy - 0.5) < 1e-9, "a calm night sea rocks it half as much");
+    const quick = { state: { amplitudeScale: 1, speedScale: 2, wavelengthScale: 1, travel: 1 } };
+    const slowRun = run({ seconds: 30 });
+    const quickRun = run({ seconds: 30, rocking: new FloatWaveRocking({ getSettings: () => waterWith(), seaState: quick }) });
+    assert(quickRun.crossings > slowRun.crossings * 1.6, `faster sea waves rock it faster (${quickRun.crossings} > ${slowRun.crossings})`);
+  }
   // Ballast: a heavier float (more of it under water) rocks less and slower.
   {
     const heavy = run({ seconds: 30, input: () => ({ signals: signals({ castSerial: 1, restDraft: 0.3 }) }) });

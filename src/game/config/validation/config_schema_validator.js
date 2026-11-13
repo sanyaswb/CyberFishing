@@ -1223,6 +1223,22 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`canvas.water.${key}`);
     }
+    // Spec 172 D7: the sea state and the waves' variation.
+    for (const [group, ranges] of [
+      ["seaState", [["smoothingSec", 0, 120], ["calmAmplitude", 0, 5], ["windAmplitude", 0, 5], ["windSpeed", 0, 5],
+        ["nightAmplitude", 0, 5], ["stormAmplitude", 0, 10], ["stormSpeed", 0, 10], ["stormWavelength", 0.1, 10]]],
+      ["variation", [["dispersion", 0, 2], ["breath", 0, 1], ["breathSec", 0.1, 120], ["groupDepth", 0, 1],
+        ["groupScale", 1, 50], ["groupSpeed", 0, 5]]],
+    ]) {
+      const part = cfg[group];
+      if (!part || typeof part !== "object") { this.#error(`CONFIG.canvas.water.${group}`, "missing config"); continue; }
+      this.#requireParameterLabel(`canvas.water.${group}`);
+      this.#requireBooleanWithLabel(`canvas.water.${group}.enabled`, part.enabled);
+      for (const [key, min, max] of ranges) {
+        this.#requireFiniteNumber(`CONFIG.canvas.water.${group}.${key}`, part[key], { min, max });
+        this.#requireParameterLabel(`canvas.water.${group}.${key}`);
+      }
+    }
     // The float's rocking on these waves (spec 128).
     const rocking = cfg.floatRocking;
     if (!rocking || typeof rocking !== "object") { this.#error("CONFIG.canvas.water.floatRocking", "missing float rocking config"); return; }

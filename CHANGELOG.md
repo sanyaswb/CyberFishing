@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.98 - Living waves
+
+- TK-289 (spec 172 D7): the waves follow the weather: higher and faster with wind and travelling with it, calmer at night, much higher, longer and faster in a storm, changing over a few seconds; the float rocks with the same sea. They are no longer uniform: patches of higher and lower waves drift over the water, each wave component breathes on its own rhythm, longer waves travel faster.
+
 ## v0.50.97 - Line on the rod obeys the equipping rule
 
 - TK-288: the line already on the rod (the starting equipment, older saves) now gets the same length rule as equipping it: the bamboo pole (5 m, no reel) holds 10 m of line and the other 15 m goes back to the backpack (it used to keep all 25 m and cast 24.8 m).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.89 - DevTools list picker
 
 - TK-283 (spec 174 A3): Fixed Catch's fish is chosen from a list (image, name, id; search by name or id; arrows, Enter, Escape) instead of typed; an id the game does not have stays visible and marked. Parameters with up to four values (inventory selector size and layout, delivery method, split side) show every option as a segmented switch instead of a button that cycles.
-
-## v0.50.88 - DevTools number field
-
-- TK-282 (spec 174 A2): DevTools number fields are a field with − / + buttons: the step follows the value's precision (0.1 -> 0.2, 0.25 -> 0.26, 40 -> 41), Shift steps ten times further, Alt a tenth; arrow up/down step, Enter writes, Escape restores; a decimal comma is accepted; text that is not a number is never written (it used to write 0); holding a button repeats.

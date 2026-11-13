@@ -36,6 +36,8 @@ export class GameRenderFrame {
       boatWake: new ReusableRenderList("world.boatWake", diagnostics),
       // Spec 172: the weather the scene's effects show (rain, storm, fog, cloud 0…1; the wind's direction −1 … 1).
       weather: { rain: 0, storm: 0, fog: 0, cloud: 0, windDirection: 0 },
+      // Spec 172 D7: the sea state the water's waves follow (multipliers of amplitude, speed, length; travel −1 … 1).
+      sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 },
       // Spec 172 D4 (TK-273): the rain zones on screen (zones.rain, masks as rectangles); rainZoned false: the switch
       // CONFIG.locations.enableRainZones is off and the rain covers the whole screen.
       rainRegions: new ReusableRenderList("world.rainRegions", diagnostics),
@@ -109,6 +111,8 @@ export class GameRenderFrame {
     this.world.boatWake.reset();
     const weather = this.world.weather;
     weather.rain = 0; weather.storm = 0; weather.fog = 0; weather.cloud = 0; weather.windDirection = 0;
+    const sea = this.world.sea;
+    sea.amplitudeScale = 1; sea.speedScale = 1; sea.wavelengthScale = 1; sea.travel = 1;
     this.world.rainRegions.reset();
     this.world.rainZoned = false;
     this.world.debugImage.visible = false;

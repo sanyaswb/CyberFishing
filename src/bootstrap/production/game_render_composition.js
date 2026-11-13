@@ -239,6 +239,9 @@ export class GameRenderComposition {
       locationId: runtime.location.id,
       // Spec 172: the weather the scene's rain (and later fog, storm) shows.
       weatherBuilder: new WeatherRenderModelBuilder({ getEnvironment: () => runtime.env?.getSnapshot?.() ?? null }),
+      // Spec 172 D7: the sea state (shared with the float's rocking), updated once a frame by the world's model.
+      seaState: runtime.rendering.seaState ?? null,
+      getNowMs: () => clock.realNow,
       boatChumBuilder: new BoatChumRenderFrameBuilder({
         chum: runtime.chum,
         getWaterMetric: appPorts.getWaterMetric,

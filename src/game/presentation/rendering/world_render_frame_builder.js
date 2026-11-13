@@ -16,6 +16,8 @@ export class WorldRenderFrameBuilder {
   #timeLayers = { base: "day", overlay: null, overlayOpacity: 0 };
   #isAssetReady;
   #weatherBuilder;
+  #seaState;
+  #getNowMs;
   // The rain zones' bounds in map pixels (not read by anyone; #zoneRects fills bounds as it goes).
   #rainBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
 
@@ -34,6 +36,9 @@ export class WorldRenderFrameBuilder {
     isAssetReady = null,
     // Spec 172: WeatherRenderModelBuilder (world.weather), or null: clear weather.
     weatherBuilder = null,
+    // Spec 172 D7: SeaStateResolver (updated here once a frame, world.sea) and the frame's real clock, or null.
+    seaState = null,
+    getNowMs = () => 0,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -61,6 +66,8 @@ export class WorldRenderFrameBuilder {
     this.#getWaterMetric = getWaterMetric;
     this.#isAssetReady = isAssetReady;
     this.#weatherBuilder = weatherBuilder;
+    this.#seaState = seaState;
+    this.#getNowMs = getNowMs;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -70,6 +77,13 @@ export class WorldRenderFrameBuilder {
     this.#buildBackground(target);
     this.#buildCurrent(target.current);
     this.#weatherBuilder?.buildInto(target.weather);
+    if (this.#seaState) {
+      const sea = this.#seaState.update(this.#getNowMs());
+      target.sea.amplitudeScale = sea.amplitudeScale;
+      target.sea.speedScale = sea.speedScale;
+      target.sea.wavelengthScale = sea.wavelengthScale;
+      target.sea.travel = sea.travel;
+    }
     this.#buildClipRegions(target.clipRegions, target.waterPlane);
     this.#buildRainRegions(target);
     if (this.#getWaterMetric) target.waterPlane.metric = this.#getWaterMetric();

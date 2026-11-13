@@ -4,6 +4,12 @@ const wave = (multiple, angle, share, phase) =>
   Object.freeze({ multiple, dirX: Math.cos(angle), dirY: Math.sin(angle), share, phase });
 const WAVES_X = Object.freeze([wave(1, 0.17, 0.5, 0), wave(0.58, -0.44, 0.3, 1.7), wave(0.34, 1.05, 0.2, 4.1)]);
 const WAVES_Y = Object.freeze([wave(0.8, 0.52, 0.6, 0.9), wave(0.45, -0.87, 0.4, 2.6)]);
+// Spec 172 D7 (TK-289): each component's own slow "breathing" (a multiple of breathSec, unrelated to the others) and
+// the wave groups: two long, slow crossing waves that make patches of higher and lower waves drift over the water.
+const BREATH_X = Object.freeze([Object.freeze({ period: 1, phase: 0.4 }), Object.freeze({ period: 1.37, phase: 2.9 }),
+  Object.freeze({ period: 0.83, phase: 5.1 })]);
+const BREATH_Y = Object.freeze([Object.freeze({ period: 1.61, phase: 1.7 }), Object.freeze({ period: 0.71, phase: 4.2 })]);
+const GROUP_WAVES = Object.freeze([wave(1, 0.35, 0.5, 0), wave(0.73, -1.1, 0.5, 2.2)]);
 // Shares of the map over which the waves fade to nothing, so the displaced water meets the still art without a seam.
 const FADE_TOP = 0.18;
 const FADE_BOTTOM = 0.08;
@@ -40,6 +46,13 @@ export class WaterWaveField {
   #regions = [0, 0, 1, 1];
   #union = false;
   #distance;
+  #group;
+  #travelX = new Float64Array(WAVES_X.length);
+  #travelY = new Float64Array(WAVES_Y.length);
+  #shareX = new Float64Array(WAVES_X.length);
+  #shareY = new Float64Array(WAVES_Y.length);
+  #groupTravel = new Float64Array(GROUP_WAVES.length);
+  #groupShare = new Float64Array(GROUP_WAVES.length);
 
   constructor({ width, height }) {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || height < 2) {
@@ -52,6 +65,7 @@ export class WaterWaveField {
     this.#distance = new Float32Array(width * height);
     this.#rowX = new Float64Array(width);
     this.#rowY = new Float64Array(width);
+    this.#group = new Float64Array(width);
     this.#buildEnvelope();
     for (let index = 3; index < this.#pixels.length; index += 4) this.#pixels[index] = 255;
   }
@@ -182,12 +196,33 @@ export class WaterWaveField {
   // far edge) crests are s times as far apart and s times as high in both axes, whether or not the grid contracts
   // sideways. Rows run in calibrated ground metres (near-edge art pixels per metre), columns in surface units about
   // the field's centre line.
-  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null }) {
+  //
+  // Spec 172 D7 (TK-289), both optional; without them the field is exactly the original one:
+  // travelPx: how far the crests have travelled, in art pixels at the near edge (integrated by the caller, so a change
+  //   of speed or direction never jumps); replaces speed × timeSec.
+  // variation: { dispersion, breath, breathSec, groupDepth, groupScale, groupSpeed }: longer components travel faster
+  //   (multiple ^ (dispersion / 2), deep water), each component's height breathes by ±breath over its own multiple of
+  //   breathSec, and the wave groups (groupScale wavelengths long, travelling at groupSpeed of the crests) raise or
+  //   lower the waves by up to groupDepth.
+  write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null, travelPx = null,
+    variation = null }) {
     const width = this.#width;
     const height = this.#height;
     const pixels = this.#pixels;
     const k = TWO_PI / Math.max(1, wavelength);
-    const travel = k * speed * timeSec;
+    const travel = travelPx === null ? k * speed * timeSec : k * travelPx;
+    const groupDepth = variation ? Math.max(0, Math.min(1, Number(variation.groupDepth) || 0)) : 0;
+    const groupK = TWO_PI / Math.max(1, wavelength * Math.max(1, Number(variation?.groupScale) || 1));
+    this.#prepareWaves(WAVES_X, BREATH_X, this.#travelX, this.#shareX, travel, timeSec, variation);
+    this.#prepareWaves(WAVES_Y, BREATH_Y, this.#travelY, this.#shareY, travel, timeSec, variation);
+    if (groupDepth > 0) {
+      const groupTravel = groupK * Math.max(0, Number(variation.groupSpeed) || 0) * (travelPx === null ? speed * timeSec : travelPx);
+      for (let index = 0; index < GROUP_WAVES.length; index += 1) {
+        this.#groupTravel[index] = groupTravel;
+        this.#groupShare[index] = GROUP_WAVES[index].share;
+      }
+    }
+    const group = this.#group;
     const rowX = this.#rowX;
     const rowY = this.#rowY;
     const metric = plane?.metric ?? null;
@@ -207,11 +242,16 @@ export class WaterWaveField {
       const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
       rowX.fill(0);
       rowY.fill(0);
-      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, travel);
-      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, travel);
+      WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, this.#travelX, this.#shareX);
+      WaterWaveField.#addRow(WAVES_Y, rowY, k, xScale, y - driftY, columnDrift, this.#travelY, this.#shareY);
+      if (groupDepth > 0) {
+        group.fill(0);
+        WaterWaveField.#addRow(GROUP_WAVES, group, groupK, xScale, y - driftY, columnDrift, this.#groupTravel, this.#groupShare);
+      }
       for (let column = 0; column < width; column += 1) {
         const index = row * width + column;
-        const envelope = this.#envelope[index] * scale;
+        const lift = groupDepth > 0 ? 1 + groupDepth * group[column] : 1;
+        const envelope = this.#envelope[index] * scale * lift;
         const offset = index * 4;
         pixels[offset] = 128 + 127 * envelope * rowX[column];
         pixels[offset + 1] = 128 + 127 * envelope * rowY[column];
@@ -221,20 +261,38 @@ export class WaterWaveField {
     return pixels;
   }
 
-  // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that
-  // step replaces a sine per pixel: two sines per wave and row instead of one per pixel.
-  static #addRow(waves, target, k, xScale, y, driftX, travel) {
+  // Each component's travel (its own speed with dispersion) and height (its breathing) for this write; without a
+  // variation every component has the shared travel and its own share, as originally.
+  #prepareWaves(waves, breaths, travels, shares, travel, timeSec, variation) {
+    const dispersion = variation ? Math.max(0, Number(variation.dispersion) || 0) : 0;
+    const breath = variation ? Math.max(0, Math.min(1, Number(variation.breath) || 0)) : 0;
+    const breathSec = Math.max(0.1, Number(variation?.breathSec) || 1);
     for (let index = 0; index < waves.length; index += 1) {
       const current = waves[index];
+      travels[index] = dispersion > 0 ? travel * Math.pow(current.multiple, dispersion / 2) : travel;
+      const own = breaths[index];
+      shares[index] = breath > 0
+        ? current.share * (1 + breath * Math.sin(TWO_PI * timeSec / (breathSec * own.period) + own.phase))
+        : current.share;
+    }
+  }
+
+  // Adds each wave's sine along one row. Its phase grows by the same step per column, so rotating (sin, cos) by that
+  // step replaces a sine per pixel: two sines per wave and row instead of one per pixel. travels / shares: each
+  // wave's travel phase and height for this write.
+  static #addRow(waves, target, k, xScale, y, driftX, travels, shares) {
+    for (let index = 0; index < waves.length; index += 1) {
+      const current = waves[index];
+      const share = shares[index];
       const step = (k * current.dirX * xScale) / current.multiple;
-      const phase = (k * ((0.5 * xScale - driftX) * current.dirX + y * current.dirY) - travel) / current.multiple
+      const phase = (k * ((0.5 * xScale - driftX) * current.dirX + y * current.dirY) - travels[index]) / current.multiple
         + current.phase;
       const stepSin = Math.sin(step);
       const stepCos = Math.cos(step);
       let sin = Math.sin(phase);
       let cos = Math.cos(phase);
       for (let column = 0; column < target.length; column += 1) {
-        target[column] += current.share * sin;
+        target[column] += share * sin;
         const next = sin * stepCos + cos * stepSin;
         cos = cos * stepCos - sin * stepSin;
         sin = next;
