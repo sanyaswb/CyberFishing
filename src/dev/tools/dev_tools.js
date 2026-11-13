@@ -280,24 +280,6 @@ export class DevTools {
         setConfig: (path, value) => this.#updateConfigValue(path, value),
         files: this.#zoneEditorFiles, gameVersion: this.#gameVersion }).render(body);
     }
-    if (this.#weather) {
-      const locationId = this.#weather.locationId;
-      this.#weatherSection = new WeatherDevSection({
-        ui: this.#ui,
-        weather: this.#weather,
-        config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
-        rainConfig: () => this.#config.canvas?.rain ?? null,
-        createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
-        renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
-        updateConfig: (path, value) => this.#updateConfigValue(path, value),
-        files: this.#zoneEditorFiles,
-        getBaseRain: () => this.#configRuntime?.baseConfig.canvas?.rain ?? null,
-        getBaseLocationWeather: (id) => this.#configRuntime?.baseConfig.locations?.map?.[id]?.weather ?? null,
-        resetWeather: this.#configRuntime ? (id) => this.#resetWeather(id) : null,
-        gameVersion: this.#gameVersion,
-      });
-      this.#weatherSection.render(body);
-    }
     this.#renderActiveFishSection(body);
     this.#loadStepperSection?.render(body, this.#ui);
     const service = this.#createSectionWithCache("Сервіс", body, ["DEV_SERVICE"]);
@@ -706,14 +688,41 @@ export class DevTools {
     }).render(body);
   }
 
+  // TK-291: the weather section («🌦 ПОГОДА»), drawn inside the WebGL scene section (its effects are the scene's), or in
+  // the panel when there is no scene section. A redraw of the scene section draws it again, so the old one is disposed.
+  #renderWeatherSection(parent) {
+    if (!this.#weather) return;
+    this.#weatherSection?.dispose();
+    const locationId = this.#weather.locationId;
+    this.#weatherSection = new WeatherDevSection({
+      ui: this.#ui,
+      weather: this.#weather,
+      config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
+      rainConfig: () => this.#config.canvas?.rain ?? null,
+      createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
+      renderConfigTree: (value, parent, path, options) => this.#buildTree(value, parent, path, options),
+      updateConfig: (path, value) => this.#updateConfigValue(path, value),
+      files: this.#zoneEditorFiles,
+      getBaseRain: () => this.#configRuntime?.baseConfig.canvas?.rain ?? null,
+      getBaseLocationWeather: (id) => this.#configRuntime?.baseConfig.locations?.map?.[id]?.weather ?? null,
+      resetWeather: this.#configRuntime ? (id) => this.#resetWeather(id) : null,
+      gameVersion: this.#gameVersion,
+    });
+    this.#weatherSection.render(parent);
+  }
+
   // DEV WebGL scene section (spec 104 D5) over the scene layer's DEV methods and the router.
   #renderSceneLayerSection(body) {
-    if (!this.#scene) return;
+    if (!this.#scene) {
+      this.#renderWeatherSection(body);
+      return;
+    }
     new SceneLayerDevSection({
       ui: this.#ui,
       scene: this.#scene,
       createSection: (label, parent, path) => this.#createSectionWithCache(label, parent, path),
       renderWaterConfig: (parent) => this.#buildTree(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
+      renderWeather: (parent) => this.#renderWeatherSection(parent),
     }).render(body);
   }
 

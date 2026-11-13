@@ -9,12 +9,11 @@ const positive = (value, fallback) => Math.max(0, number(value, fallback));
 // Spec 172 D7 (TK-289): the state of the sea, which both the water's picture and the float's rocking follow, so they
 // always agree. From the weather, the wind and the time of day it gives multipliers of the waves' amplitude, speed and
 // length and the direction they travel:
-// - wind: a calm sea has calmAmplitude, a wind windAmplitude (and windSpeed); the waves travel with the wind (a calm
-//   keeps the last direction);
-// - night: as the night background fades in (backgroundTimeBlend), the amplitude goes down to nightAmplitude (nights
-//   are mostly calm);
-// - storm: at full storm the amplitude, speed and length grow by stormAmplitude, stormSpeed, stormWavelength (a storm
-//   also counts as full wind).
+// - the normal state (settings.normal): a calm sea has calmAmplitude, a wind windAmplitude (and windSpeed); the waves
+//   travel with the wind (a calm keeps the last direction); as the night background fades in (backgroundTimeBlend),
+//   the amplitude goes down to nightAmplitude (nights are mostly calm);
+// - the storm event (settings.storm, TK-291): at full storm the amplitude, speed and length grow by its amplitude,
+//   speed and wavelength factors (a storm also counts as full wind).
 // Every value moves toward its target with the time constant smoothingSec (real time), so the sea swells and calms down
 // instead of jumping. update() runs once a frame (the world's render model); readers take state. Allocation-free.
 export class SeaStateResolver {
@@ -60,12 +59,14 @@ export class SeaStateResolver {
     if (direction !== 0) this.#travelTarget = Math.sign(direction);
     const night = Number.isFinite(Number(environment?.time))
       ? clamp01(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;
-    const calm = positive(settings.calmAmplitude, 1);
-    const windy = positive(settings.windAmplitude, 1);
-    const amplitude = (calm + (windy - calm) * wind) * (1 + (positive(settings.nightAmplitude, 1) - 1) * night) *
-      (1 + (positive(settings.stormAmplitude, 1) - 1) * storm);
-    const speed = (1 + (positive(settings.windSpeed, 1) - 1) * wind) * (1 + (positive(settings.stormSpeed, 1) - 1) * storm);
-    const wavelength = 1 + (positive(settings.stormWavelength, 1) - 1) * storm;
+    const normal = settings.normal;
+    const event = settings.storm;
+    const calm = positive(normal?.calmAmplitude, 1);
+    const windy = positive(normal?.windAmplitude, 1);
+    const amplitude = (calm + (windy - calm) * wind) * (1 + (positive(normal?.nightAmplitude, 1) - 1) * night) *
+      (1 + (positive(event?.amplitude, 1) - 1) * storm);
+    const speed = (1 + (positive(normal?.windSpeed, 1) - 1) * wind) * (1 + (positive(event?.speed, 1) - 1) * storm);
+    const wavelength = 1 + (positive(event?.wavelength, 1) - 1) * storm;
     const smoothing = positive(settings.smoothingSec, 0);
     const follow = !this.#ready || smoothing <= 0 ? 1 : 1 - Math.exp(-dt / smoothing);
     this.#ready = true;

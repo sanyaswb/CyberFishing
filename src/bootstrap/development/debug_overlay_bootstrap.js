@@ -44,6 +44,7 @@ import { OverlayValueFormatter } from "../../dev/overlay/services/overlay_value_
 import { OverlayViewStateStore } from "../../dev/overlay/services/overlay_view_state_store.js";
 import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_window_drag_controller.js";
 import { PerformanceOverlayModule } from "../../dev/overlay/modules/performance_overlay_module.js";
+import { WeatherOverlayModule } from "../../dev/overlay/modules/weather_overlay_module.js";
 import { StartupLoadOverlayModule, STARTUP_REPORT_COPY_CONTROL, STARTUP_REPORT_DOWNLOAD_CONTROL } from "../../dev/overlay/modules/startup_load_overlay_module.js";
 import { BrowserStartupTimingReader } from "../../dev/diagnostics/browser_startup_timing_reader.js";
 import { BrowserTextFileSaver } from "../../dev/services/browser_text_file_saver.js";
@@ -56,7 +57,7 @@ import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_ove
 // frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap;
 // gameVersion: written into the startup report (spec 157).
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
-  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null}) {
+  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -131,6 +132,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
     new PerformanceOverlayModule({...moduleOptions, profiler: frameProfiler, readRenderInfo}), startupModule,
+    new WeatherOverlayModule({...moduleOptions, readWeather}),
     new EchoOverlayModule(moduleOptions), new ChancesDetailOverlayModule(moduleOptions), new BehaviorOverlayModule(moduleOptions),
     new FishBalanceOverlayModule({...moduleOptions, liveForceSection: new FishLiveForceSummarySection(moduleOptions),
       forcePreviewSection: new FishStateForcePreviewSection(moduleOptions)}),

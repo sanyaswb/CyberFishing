@@ -1224,10 +1224,19 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`canvas.water.${key}`);
     }
-    // Spec 172 D7: the sea state and the waves' variation.
+    // Spec 172 D7: the sea state (TK-291: shared values, the normal state and the storm event) and the waves' variation.
+    for (const [group, part] of [["normal", [["calmAmplitude", 0, 5], ["windAmplitude", 0, 5], ["windSpeed", 0, 5],
+      ["nightAmplitude", 0, 5]]], ["storm", [["amplitude", 0, 10], ["speed", 0, 10], ["wavelength", 0.1, 10]]]]) {
+      const values = cfg.seaState?.[group];
+      if (!values || typeof values !== "object") { this.#error(`CONFIG.canvas.water.seaState.${group}`, "missing config"); continue; }
+      this.#requireParameterLabel(`canvas.water.seaState.${group}`);
+      for (const [key, min, max] of part) {
+        this.#requireFiniteNumber(`CONFIG.canvas.water.seaState.${group}.${key}`, values[key], { min, max });
+        this.#requireParameterLabel(`canvas.water.seaState.${group}.${key}`);
+      }
+    }
     for (const [group, ranges] of [
-      ["seaState", [["smoothingSec", 0, 120], ["calmAmplitude", 0, 5], ["windAmplitude", 0, 5], ["windSpeed", 0, 5],
-        ["nightAmplitude", 0, 5], ["stormAmplitude", 0, 10], ["stormSpeed", 0, 10], ["stormWavelength", 0.1, 10]]],
+      ["seaState", [["smoothingSec", 0, 120]]],
       ["variation", [["dispersion", 0, 2], ["breath", 0, 1], ["breathSec", 0.1, 120], ["groupDepth", 0, 1],
         ["groupScale", 1, 50], ["groupSpeed", 0, 5]]],
     ]) {

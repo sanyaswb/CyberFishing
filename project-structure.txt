@@ -970,6 +970,7 @@
 │  │        ├── boat_fallback_shape.js
 │  │        ├── boat_wake_emitter.js
 │  │        ├── sea_state_resolver.js
+│  │        ├── weather_status_reader.js
 │  │        └── world_scene_renderer.js
 │  └── platform
 │     └── browser

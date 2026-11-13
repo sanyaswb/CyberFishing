@@ -4,6 +4,7 @@ import { ITEM_PROGRESSION_LABELS } from "../../game/presentation/inventory/item_
 import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
 import { FloatWaveRocking } from "../../game/presentation/fishing/float_wave_rocking.js";
 import { SeaStateResolver } from "../../game/presentation/world/sea_state_resolver.js";
+import { WeatherStatusReader } from "../../game/presentation/world/weather_status_reader.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
@@ -195,6 +196,7 @@ export class GameCompositionRoot {
   #createDevTools;
   #createTimeDisplay;
   #sessionServices = null;
+  #weatherStatus = null;
   // Spec 157 R11: loads that wait until the game is ready (startDeferredAssetLoads), registered during create().
   #deferredAssetLoads = [];
   #assetDuplicates = null;
@@ -373,6 +375,11 @@ export class GameCompositionRoot {
   #keepnetPercent() {
     const liveBait = this.#sessionServices?.liveBait;
     return liveBait ? new KeepnetViewModel().build(liveBait.getView()).capacityPercent : 0;
+  }
+
+  // TK-291: the weather and the waves right now for the DEV overlay «🌦 Погода й хвилі»; null before create().
+  getWeatherReading() {
+    return this.#weatherStatus?.read() ?? null;
   }
 
   // The asset load plan's state for the DEV overlay "ЗАВАНТАЖЕННЯ" (spec 157 D6): layers -> groups -> asset ids with
@@ -614,6 +621,8 @@ export class GameCompositionRoot {
       scene: { layer: sceneLayer, router: sceneRouter, floatRocking },
     });
     worldSystems = systems;
+    this.#weatherStatus = new WeatherStatusReader({ getEnvironment: () => systems.env?.getSnapshot() ?? null, seaState,
+      getWater: () => this.#config.canvas?.water });
     this.#composeInventoryUi({
       inventory, systems, own, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,

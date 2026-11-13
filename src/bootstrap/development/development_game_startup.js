@@ -206,7 +206,9 @@ async function startGame() {
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface, mountNode: developmentMount,
       frameProfiler, readRenderInfo, gameVersion: PROJECT_VERSION_CONFIG.version,
       // Spec 157 D6: the asset load plan's state, from the composition once it exists.
-      readAssetLoadStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null});
+      readAssetLoadStatus: () => compositionRoot?.getAssetLoadStatus?.() ?? null,
+      // TK-291: the weather and the waves right now for the overlay «🌦 Погода й хвилі».
+      readWeather: () => compositionRoot?.getWeatherReading?.() ?? null});
     balanceWindows = composeFightBalanceWindows({ documentTarget, windowTarget, mountNode: developmentMount, uiSurface,
       settingsStore, storageCache, config: CONFIG, baseConfig: configRuntime.baseConfig, fishes: FISH_DB, items: itemCatalog,
       updateConfig: (path, value) => devTools?.updateConfig(path, value) });

@@ -21,17 +21,20 @@ export class SceneLayerDevSection {
   #floatRocking;
   #createSection;
   #renderWaterConfig;
+  #renderWeather;
   #content = null;
 
   // scene: { layer, router } from the composition; createSection(label, parent, path) and renderWaterConfig(parent)
   // (the live editor of CONFIG.canvas.water) from DevTools.
-  constructor({ ui, scene, createSection, renderWaterConfig }) {
+  // renderWeather(parent): TK-291, the weather section drawn inside this one (its effects are the scene's).
+  constructor({ ui, scene, createSection, renderWaterConfig, renderWeather = null }) {
     this.#ui = ui;
     this.#layer = scene.layer;
     this.#router = scene.router;
     this.#floatRocking = scene.floatRocking ?? null;
     this.#createSection = createSection;
     this.#renderWaterConfig = renderWaterConfig;
+    this.#renderWeather = renderWeather;
   }
 
   render(parent) {
@@ -86,7 +89,8 @@ export class SceneLayerDevSection {
       });
     }
     this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
-    this.#renderWaterConfig?.(this.#createSection("Брижі на воді (CONFIG.canvas.water)", content,
+    this.#renderWaterConfig?.(this.#createSection("🌊 Вода: хвилі й брижі (CONFIG.canvas.water)", content,
       ["SCENE_LAYER", "waterConfig"]));
+    this.#renderWeather?.(content);
   }
 }

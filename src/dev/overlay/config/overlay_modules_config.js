@@ -5,6 +5,8 @@ export const OVERLAY_MODULES = {
 
   performance: true,
   startup: false,
+  // TK-291: the weather and the waves right now.
+  weather: true,
   echo: true,
   state: true,
   chancesDetail: false,
@@ -104,6 +106,8 @@ export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance", "startup"];
 
 export const BALANCE_WINDOW_KEYS = ["activeFish", "activeRod"];
 
+export const SCENE_OVERLAY_MODULE_KEYS = ["weather"];
+
 export const OVERLAY_MODULE_GROUPS = Object.freeze([
   Object.freeze({
     label: "Вікна балансу",
@@ -112,6 +116,10 @@ export const OVERLAY_MODULE_GROUPS = Object.freeze([
   Object.freeze({
     label: "Performance",
     keys: Object.freeze(PERFORMANCE_OVERLAY_MODULE_KEYS),
+  }),
+  Object.freeze({
+    label: "Сцена й погода",
+    keys: Object.freeze(SCENE_OVERLAY_MODULE_KEYS),
   }),
   Object.freeze({
     label: "Balance",
@@ -139,6 +147,10 @@ export const OVERLAY_MODULE_LABELS = Object.freeze({
   startup: Object.freeze({
     label: "Завантаження",
     original: "startup",
+  }),
+  weather: Object.freeze({
+    label: "🌦 Погода й хвилі",
+    original: "weather",
   }),
   fishBase: Object.freeze({
     label: "Базова сила риби",

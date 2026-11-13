@@ -233,13 +233,13 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   let now = 0;
   const settle = (seconds = 60) => { for (let t = 0; t < seconds * 10; t += 1) { now += 100; sea.update(now); } return sea.state; };
   sea.update(now);
-  near(sea.state.amplitudeScale, settings.calmAmplitude, "the first frame starts at its target: a calm day");
+  near(sea.state.amplitudeScale, settings.normal.calmAmplitude, "the first frame starts at its target: a calm day");
   environment.wind.direction = 1;
   now += 100;
   sea.update(now);
-  assert(sea.state.amplitudeScale < settings.calmAmplitude + 0.1, "a new wind swells the waves instead of jumping");
-  near(settle().amplitudeScale, settings.windAmplitude, "wind: windAmplitude");
-  near(sea.state.speedScale, settings.windSpeed, "wind: windSpeed");
+  assert(sea.state.amplitudeScale < settings.normal.calmAmplitude + 0.1, "a new wind swells the waves instead of jumping");
+  near(settle().amplitudeScale, settings.normal.windAmplitude, "wind: windAmplitude");
+  near(sea.state.speedScale, settings.normal.windSpeed, "wind: windSpeed");
   near(sea.state.travel, 1, "the waves travel with the wind (to the right)");
   environment.wind.direction = -1;
   let previous = sea.state.travel, biggest = 0;
@@ -249,20 +249,53 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   environment.wind.direction = 0;
   near(settle().travel, -1, "a calm keeps the last direction");
   environment.time = 1;
-  near(settle().amplitudeScale, settings.calmAmplitude * settings.nightAmplitude, "night: calmer waves");
+  near(settle().amplitudeScale, settings.normal.calmAmplitude * settings.normal.nightAmplitude, "night: calmer waves");
   environment.time = 20;
   const dusk = settle().amplitudeScale;
-  assert(dusk > settings.calmAmplitude * settings.nightAmplitude && dusk < settings.calmAmplitude,
+  assert(dusk > settings.normal.calmAmplitude * settings.normal.nightAmplitude && dusk < settings.normal.calmAmplitude,
     "at dusk the waves calm down with the night background (half way at 20 h)");
   environment.time = 13;
   environment.weather.storm = 1;
-  near(settle().amplitudeScale, settings.windAmplitude * settings.stormAmplitude, "storm: full wind and stormAmplitude");
-  near(sea.state.speedScale, settings.windSpeed * settings.stormSpeed, "storm: faster");
-  near(sea.state.wavelengthScale, settings.stormWavelength, "storm: longer waves");
+  near(settle().amplitudeScale, settings.normal.windAmplitude * settings.storm.amplitude, "storm: full wind and stormAmplitude");
+  near(sea.state.speedScale, settings.normal.windSpeed * settings.storm.speed, "storm: faster");
+  near(sea.state.wavelengthScale, settings.storm.wavelength, "storm: longer waves");
   settings.enabled = false;
   sea.update(now += 100);
   assert.deepEqual([sea.state.amplitudeScale, sea.state.speedScale, sea.state.wavelengthScale], [1, 1, 1],
     "switched off: the waves as configured");
 }
 
-console.log("weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind and the sea state OK");
+// 11. TK-291: the live reading for the overlay «🌦 Погода й хвилі»: the waves' actual values are the base ones times the
+// sea state's current factors; the overlay shows them.
+{
+  const { SeaStateResolver } = require("../../../src/game/presentation/world/sea_state_resolver.js");
+  const { WeatherStatusReader } = require("../../../src/game/presentation/world/weather_status_reader.js");
+  const { WeatherOverlayModule } = require("../../../src/dev/overlay/modules/weather_overlay_module.js");
+  const { OverlayHtmlBuilder } = require("../../../src/dev/overlay/services/overlay_html_builder.js");
+  const { CONFIG: GAME } = require("../../../src/game/config/runtime/game_config.js");
+  const water = JSON.parse(JSON.stringify(GAME.canvas.water));
+  water.seaState.smoothingSec = 0;
+  const environment = { time: 13, phase: "day", weather: { precipitation: "storm", rain: 1, storm: 1, fog: 0, cloud: 1,
+    strikeSerial: 4, frozen: true }, wind: { direction: 1, forced: true } };
+  const sea = new SeaStateResolver({ getEnvironment: () => environment, getSettings: () => water.seaState });
+  const reader = new WeatherStatusReader({ getEnvironment: () => environment, seaState: sea, getWater: () => water });
+  sea.update(1000);
+  const reading = reader.read();
+  const normal = water.seaState.normal, storm = water.seaState.storm;
+  near(reading.waves.amplitude, water.amplitude * normal.windAmplitude * storm.amplitude, "amplitude = base × wind × storm");
+  near(reading.waves.wavelength, water.wavelength * storm.wavelength, "length = base × storm");
+  near(reading.waves.speed, water.speed * normal.windSpeed * storm.speed, "speed = base × wind × storm");
+  assert.deepEqual([reading.storm, reading.windDirection, reading.windStrength, reading.windForced, reading.strikes], [1, 1, 1, true, 4],
+    "storm, wind direction and strength, held wind, strikes");
+  assert.equal(reader.read(), reading, "one reading object");
+  const module = new WeatherOverlayModule({ readWeather: () => reader.read(), htmlBuilder: new OverlayHtmlBuilder() });
+  const html = module.render();
+  for (const text of ["гроза (вручну)", "вправо →", reading.waves.amplitude.toFixed(1), reading.waves.speed.toFixed(1)]) {
+    assert(html.includes(text), `the overlay shows ${text}`);
+  }
+  water.waves = false;
+  assert.equal(reader.read().waves.amplitude, 0, "waves switched off: no amplitude");
+  assert(/вимкнено/u.test(module.render()), "and the overlay says the waves are off");
+}
+
+console.log("weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state and the live reading OK");

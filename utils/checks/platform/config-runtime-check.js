@@ -556,7 +556,10 @@ function checkNativeDevelopmentDisplays() {
   const frameProfiler={getSnapshot:()=>({frames:0}),measure:(id,callback)=>callback()};
   const timingWindow={performance:{getEntriesByType:()=>[]},navigator:{},location:{href:""}};
   const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:timingWindow,frameProfiler,readRenderInfo:()=>null,gameVersion:"9.9.9"});
-  assert.equal(captured.length,21,"all main overlays (19 + performance + startup) are composed exactly once");
+  assert.equal(captured.length,22,"all main overlays (19 + performance + startup + weather) are composed exactly once");
+  // TK-291: the weather overlay reads the composition's live reading; before the game it says so.
+  const weatherRecord=captured.find(record=>record.name==="WeatherOverlayModule");
+  assert(weatherRecord&&/Гра ще не створена/u.test(weatherRecord.instance.render({})),"the weather overlay waits for the game");
   const startupRecord=captured.find(record=>record.name==="StartupLoadOverlayModule");
   assert(startupRecord,"spec 157: the startup overlay is composed");
   assert.equal(JSON.parse(startupRecord.instance.reportText()).version,"9.9.9","the report names the game version");
