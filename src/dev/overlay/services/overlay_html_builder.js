@@ -21,13 +21,32 @@ export class OverlayHtmlBuilder {
     </div>`;
   }
 
-  // A row that only reads: no explanation on hover, focus or click.
+  // A row that only reads: no explanation on hover, focus or click unless label contains devLink / devtoolsPath.
   plainRow(label, value, options = {}) {
     const color = options.color || "#8a9bac";
+    const labelHtml = options.labelHtml != null
+      ? String(options.labelHtml)
+      : options.devtoolsPath
+        ? this.devLink(label, options.devtoolsPath)
+        : this.escapeHtml(label);
     return `<div class="debug-overlay__row" data-overlay-metric="${this.escapeAttr(options.metricKey || label)}">`
-      + `<span class="debug-overlay__label">${this.escapeHtml(label)}:</span>`
+      + `<span class="debug-overlay__label">${labelHtml}:</span>`
       + `<span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>`
       + "</div>";
+  }
+
+  // Hyperlink inside any overlay text/label that opens DevTools, expands ancestors and highlights the target parameter.
+  devLink(label, devtoolsPath, { extraClass = "" } = {}) {
+    const path = Array.isArray(devtoolsPath)
+      ? devtoolsPath.map(String).join(".")
+      : String(devtoolsPath || "");
+    const safeText = this.escapeHtml(label);
+    if (!path) return safeText;
+    const className = extraClass
+      ? `debug-overlay__dev-link ${this.escapeAttr(extraClass)}`
+      : "debug-overlay__dev-link";
+    return `<button type="button" class="${className}" data-overlay-control="devtools-link"`
+      + ` data-overlay-activate="release" data-devtools-path="${this.escapeAttr(path)}">${safeText}</button>`;
   }
 
   escapeHtml(value) {

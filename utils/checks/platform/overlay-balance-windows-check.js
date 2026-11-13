@@ -329,9 +329,11 @@ async function checkScaleSliderAndSeparateWindows() {
   const moduleStates = { a: true, b: false };
   const overlayEnabled = { value: true };
   const clicksHandled = [];
+  const revealedPaths = [];
   const bridge = new OverlayInteractionBridge({
     viewStateStore: { toggleChartPage: (id) => clicksHandled.push(["chart", id]) },
     actions: { ping: () => clicksHandled.push(["ping"]) },
+    onRevealDevToolsParameter: (path) => revealedPaths.push(path),
   });
   const registry = new OverlayModuleRegistry();
   registry.register({
@@ -381,6 +383,18 @@ async function checkScaleSliderAndSeparateWindows() {
   assert.deepEqual(windowsOnDom.map((el) => el.dataset.overlayModule), ["alpha", "beta"]);
 
   // Multi-root click handling on second window.
+  // Overlay -> DevTools hyperlink triggers on keyboard click and on pointer release without toggling summary.
+  const linkBtn = doc3.createElement("button");
+  linkBtn.setAttribute("data-overlay-control", "devtools-link");
+  linkBtn.setAttribute("data-overlay-activate", "release");
+  linkBtn.setAttribute("data-devtools-path", "CONFIG.canvas.water.amplitude");
+  linkBtn.closest = (selector) => (selector === "[data-overlay-control]" ? linkBtn : null);
+  windowsOnDom[1].appendChild(linkBtn);
+  const keyboardClickEv = windowsOnDom[1].fire("click", { target: linkBtn });
+  assert.equal(keyboardClickEv.prevented, true, "keyboard click prevents summary toggle");
+  assert.equal(keyboardClickEv.stopped, true, "keyboard click stops propagation");
+  assert.deepEqual(revealedPaths, ["CONFIG.canvas.water.amplitude"], "keyboard click triggers reveal callback");
+
   const fakeButton = doc3.createElement("button");
   fakeButton.setAttribute("data-overlay-control", "ping");
   fakeButton.setAttribute("data-overlay-activate", "release");
@@ -388,6 +402,18 @@ async function checkScaleSliderAndSeparateWindows() {
   windowsOnDom[1].appendChild(fakeButton);
   windowsOnDom[1].fire("pointerup", { target: fakeButton });
   assert.deepEqual(clicksHandled, [["ping"]], "interaction bridge handles events on newly created module windows");
+
+  const pointerLinkEv = windowsOnDom[1].fire("pointerup", { target: linkBtn });
+  assert.equal(pointerLinkEv.prevented, true, "devtools-link pointerup prevents default details summary toggle");
+  assert.equal(pointerLinkEv.stopped, true, "devtools-link pointerup stops propagation");
+  const syntheticClickEv = windowsOnDom[1].fire("click", { target: linkBtn });
+  assert.equal(syntheticClickEv.prevented, true, "synthesized click after pointerup prevents summary toggle");
+  assert.equal(syntheticClickEv.stopped, true, "synthesized click stops propagation");
+  assert.deepEqual(
+    revealedPaths,
+    ["CONFIG.canvas.water.amplitude", "CONFIG.canvas.water.amplitude"],
+    "pointerup+click fires reveal callback once",
+  );
 
   moduleStates.a = false;
   controller.update();

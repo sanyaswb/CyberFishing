@@ -371,5 +371,134 @@ function choiceRow(options, value, path) {
   assert.equal(byClass("devtools__export-status", offline.element)[0].textContent, "", "the message clears after a moment");
   offline.dispose();
 
+  // --- TK-296: DevTools revealPath + DevToolsDependencyFeedback green highlight ------------------------------------
+  {
+    const revealDoc = new TestDocument();
+    const baseCreate = revealDoc.createElement.bind(revealDoc);
+    const scrolled = [];
+    revealDoc.createElement = (tag) => {
+      const element = baseCreate(tag);
+      Object.defineProperty(element, "parentElement", { get() { return this.parentNode; } });
+      element.closest = (selector) => {
+        if (!selector.startsWith(".")) return null;
+        const cls = selector.slice(1);
+        let current = element;
+        while (current) {
+          if (current.classList?.contains(cls)) return current;
+          current = current.parentNode;
+        }
+        return null;
+      };
+      element.querySelector = (selector) => {
+        if (selector.startsWith(":scope > .")) {
+          const cls = selector.slice(":scope > .".length);
+          return element.children.find((child) => child.classList.contains(cls)) || null;
+        }
+        if (selector.startsWith(".")) {
+          const cls = selector.slice(1);
+          const found = revealDoc.all((el) => el !== element && el.classList.contains(cls), element)[0];
+          if (found) return found;
+        }
+        const child = baseCreate("div");
+        child.className = selector.replace(/^\./u, "");
+        element.appendChild(child);
+        return child;
+      };
+      element.scrollIntoView = (opts) => scrolled.push({ element, opts });
+      return element;
+    };
+
+    const revealTimers = [];
+    const clearedTimerIds = new Set();
+    let nextTimerId = 1;
+    const revealRuntime = new SourceRuntime({
+      globals: {
+        document: revealDoc,
+        setTimeout: (fn) => {
+          const id = nextTimerId++;
+          revealTimers.push({ id, fn });
+          return id;
+        },
+        clearTimeout: (id) => {
+          clearedTimerIds.add(id);
+        },
+      },
+    });
+    const { DevToolsUI: RevealUI } = revealRuntime.importModule("src/dev/tools/dev_tools_ui.js");
+    const { DevToolsDependencyFeedback } = revealRuntime.importModule("src/dev/services/dev_tools_dependency_feedback.js");
+    const feedback = new DevToolsDependencyFeedback({
+      scheduler: {
+        setTimeout: (fn) => {
+          const id = nextTimerId++;
+          revealTimers.push({ id, fn });
+          return id;
+        },
+        clearTimeout: (id) => {
+          clearedTimerIds.add(id);
+        },
+      },
+      durationMs: 2400,
+    });
+    const panelParent = revealDoc.createElement("div");
+    revealDoc.body.appendChild(panelParent);
+    const revealUi = new RevealUI(() => {}, {}, null, null, null, panelParent, revealDoc.createElement("div"), feedback);
+    const rootBody = revealUi.body;
+    revealUi.togglePanel(true);
+
+    const toggled = [];
+    const configSection = revealUi.createSection("CONFIG", rootBody, false, (open) => toggled.push(["CONFIG", open]), "CONFIG");
+    const configCanvas = revealUi.createSection("canvas", configSection, false, null, "CONFIG.canvas");
+    revealUi.createInputRow("amplitude", 12, configCanvas, "number", () => {}, ["CONFIG", "canvas", "water", "amplitude"]);
+    const configAmplitudeRow = configCanvas.children.find((el) => el.classList.contains("devtools__row"));
+
+    const sceneSection = revealUi.createSection("Сцена", rootBody, false, (open) => toggled.push(["SCENE_LAYER", open]), "SCENE_LAYER");
+    const sceneWater = revealUi.createSection("water", sceneSection, false, (open) => toggled.push(["sceneWater", open]), "CONFIG.canvas.water");
+    revealUi.createRangeRow("amplitude", 12, sceneWater, () => {}, ["CONFIG", "canvas", "water", "amplitude"]);
+    const sceneAmplitudeRow = sceneWater.children.find((el) => el.classList.contains("devtools__row"));
+
+    const weatherSection = revealUi.createSection("Погода", rootBody, false, (open) => toggled.push(["WEATHER", open]), "WEATHER");
+    revealUi.createButtonRow("Блискавка", weatherSection, () => {}, null, null, ["WEATHER", "controls", "strike"]);
+    const strikeButtonRow = weatherSection.children.find((el) => el.classList.contains("devtools__row"));
+
+    // Exact path prefers specialized SCENE_LAYER section over generic CONFIG root.
+    assert.equal(revealUi.revealPath("CONFIG.canvas.water.amplitude"), true, "revealPath resolves matching parameter path");
+    const sceneSectionEl = sceneSection.closest(".devtools__section");
+    const sceneWaterEl = sceneWater.closest(".devtools__section");
+    const configSectionEl = configSection.closest(".devtools__section");
+    assert.equal(sceneSection.style.display, "block", "expands specialized parent section content");
+    assert.equal(sceneSectionEl.children[0].getAttribute("aria-expanded"), "true", "marks parent section aria-expanded");
+    assert.equal(sceneWater.style.display, "block", "expands nested water subsection content");
+    assert.equal(sceneWaterEl.children[0].getAttribute("aria-expanded"), "true", "marks subsection aria-expanded");
+    assert.equal(configSection.style.display, "none", "keeps duplicate generic CONFIG section closed");
+    assert.equal(configSectionEl.children[0].getAttribute("aria-expanded"), "false");
+    assert.equal(sceneAmplitudeRow.classList.contains("devtools__row--revealed"), true, "highlights target specialized row");
+    assert.equal(configAmplitudeRow.classList.contains("devtools__row--revealed"), false, "does not highlight duplicate generic row");
+    assert.equal(scrolled.at(-1)?.element, sceneAmplitudeRow, "scrolls revealed row into view");
+    assert.equal(scrolled.at(-1)?.opts?.block, "center");
+    assert.deepEqual(toggled, [["sceneWater", true], ["SCENE_LAYER", true]], "persists opened state via onToggle callbacks");
+
+    // Revealing another path clears previous highlight and works with createButtonRow + timeout auto-clear.
+    assert.equal(revealUi.revealPath(["WEATHER", "controls", "strike"]), true, "revealPath resolves array path for button rows");
+    assert.equal(sceneAmplitudeRow.classList.contains("devtools__row--revealed"), false, "previous reveal highlight clears");
+    assert.equal(strikeButtonRow.classList.contains("devtools__row--revealed"), true, "button row is highlighted");
+    assert.equal(weatherSection.style.display, "block", "expands weather section");
+    assert.equal(clearedTimerIds.has(revealTimers[0].id), true, "cancels superseded reveal timer");
+    revealTimers.at(-1).fn();
+    assert.equal(strikeButtonRow.classList.contains("devtools__row--revealed"), false, "highlight clears automatically after timeout");
+
+    // Prefix fallback finds parent section path and togglePanel(false) clears highlight + timer.
+    weatherSection.closest(".devtools__section").children[0].click();
+    assert.equal(weatherSection.style.display, "none", "sanity: weather section starts collapsed");
+    assert.equal(revealUi.revealPath("WEATHER.controls.missingLeaf"), true, "falls back to registered section prefix when leaf is absent");
+    assert.equal(weatherSection.style.display, "block", "expands section matched by prefix fallback");
+    const weatherTitle = weatherSection.closest(".devtools__section").children[0];
+    assert.equal(weatherTitle.classList.contains("devtools__row--revealed"), true, "highlights section header on section fallback");
+    const activeTimerId = revealTimers.at(-1).id;
+    revealUi.togglePanel(false);
+    assert.equal(clearedTimerIds.has(activeTimerId), true, "closing DevTools cancels pending reveal timer");
+    assert.equal(weatherTitle.classList.contains("devtools__row--revealed"), false, "closing DevTools clears highlight");
+    assert.equal(revealUi.revealPath("UNKNOWN.path"), false, "returns false for unknown path");
+  }
+
   console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options; export command notice.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });

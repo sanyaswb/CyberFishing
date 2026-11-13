@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.107 - Overlay hyperlinks to DevTools parameters
+
+- TK-296 (spec 177): added shared Overlay -> DevTools hyperlink infrastructure (`OverlayHtmlBuilder.devLink` / `OverlayModule.devLink`, `OverlayInteractionBridge` release activation without toggling parent `<details>`, `DevTools.revealParameter` / `DevToolsUI.revealPath`, and `DevToolsDependencyFeedback.showRevealed` green highlight across collapsed ancestor sections) and wired all parameters and multipliers in «ПОГОДА Й ХВИЛІ» (`WeatherOverlayModule` + `WeatherDevSection` control paths).
+
 ## v0.50.106 - Weather & waves overlay multiplier sub-items
 
 - TK-295: in the DevTools «ПОГОДА Й ХВИЛІ» overlay module, moved wave multipliers from cramped inline formulas into expandable sub-items under `Амплітуда хвиль`, `Довжина хвиль`, and `Швидкість хвиль`, explaining each factor (`База`, `Загальний множник` + transition target, `Вітер`, `Ніч`, `Гроза`), its configured range, and its live value via pre-allocated `SeaStateResolver` / `WeatherStatusReader` factors.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.98 - Living waves
 
 - TK-289 (spec 172 D7): the waves follow the weather: higher and faster with wind and travelling with it, calmer at night, much higher, longer and faster in a storm, changing over a few seconds; the float rocks with the same sea. They are no longer uniform: patches of higher and lower waves drift over the water, each wave component breathes on its own rhythm, longer waves travel faster.
-
-## v0.50.97 - Line on the rod obeys the equipping rule
-
-- TK-288: the line already on the rod (the starting equipment, older saves) now gets the same length rule as equipping it: the bamboo pole (5 m, no reel) holds 10 m of line and the other 15 m goes back to the backpack (it used to keep all 25 m and cast 24.8 m).

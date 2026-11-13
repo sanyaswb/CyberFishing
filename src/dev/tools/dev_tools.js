@@ -224,6 +224,13 @@ export class DevTools {
     if (!this.#isDisposed && !this.#isOpen) this.toggle();
   }
 
+  // Spec 177 (TK-296): open DevTools (if closed), expand ancestor sections and highlight the parameter green.
+  revealParameter(path) {
+    if (this.#isDisposed) return false;
+    if (!this.#isOpen) this.open();
+    return this.#ui.revealPath(path);
+  }
+
   dispose() {
     if (this.#isDisposed) return;
     this.#isDisposed = true;

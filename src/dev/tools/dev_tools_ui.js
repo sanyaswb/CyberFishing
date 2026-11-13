@@ -28,6 +28,8 @@ export class DevToolsUI {
   #exportNotices = new WeakMap();
   #edgeOpener = null;
   #isOpen = false;
+  #pathRows = new Map();
+  #pathSections = new Map();
 
   constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null, uiSurface = null,
     mountNode = uiSurface?.mountRoot || document.body, toggleMountNode = mountNode, dependencyFeedback = null,
@@ -103,6 +105,8 @@ export class DevToolsUI {
     this.#dependencyFeedback?.clear();
     this.#controlBindings.clear();
     this.#dependentSwitches.clear();
+    this.#pathRows.clear();
+    this.#pathSections.clear();
   }
 
   syncValue(path, value) {
@@ -114,6 +118,8 @@ export class DevToolsUI {
   releaseValueBindings(container) {
     this.#dependencyFeedback?.releaseWithin(container);
     this.#controlBindings.releaseWithin(container);
+    this.#prunePathMap(this.#pathRows, container);
+    this.#prunePathMap(this.#pathSections, container);
     for (const row of this.#dependentSwitches.keys()) if (container.contains(row)) this.#dependentSwitches.delete(row);
     const group = this.#controlGroups.get(container);
     if (group) {
@@ -257,9 +263,10 @@ export class DevToolsUI {
     this.#insertTreeNode(parentElement, navigation, 0);
   }
 
-  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "") {
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null) {
     const row = document.createElement("div");
     row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
+    this.#assignDevToolsPath(row, path);
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "devtools__action";
@@ -551,9 +558,91 @@ export class DevToolsUI {
     return swatch;
   }
 
+  // Spec 177 (TK-296): expand collapsed ancestors, scroll to the matching parameter row/section and highlight it green.
+  revealPath(path) {
+    const normalized = this.#normalizeDevToolsPath(path);
+    if (!normalized) return false;
+    const target = this.#findPathTarget(normalized);
+    if (!target) return false;
+
+    if (typeof this.#dependencyFeedback?.showRevealed === "function") {
+      this.#dependencyFeedback.showRevealed([target]);
+      return true;
+    }
+
+    if (target.classList?.contains("devtools__section")) {
+      const content = target.children?.[1];
+      if (content?.classList?.contains("devtools__section-content") && content.style.display === "none") {
+        target.children?.[0]?.click?.();
+      }
+    }
+    for (let parent = target.parentNode; parent; parent = parent.parentNode) {
+      if (parent.classList?.contains("devtools__section-content") && parent.style.display === "none") {
+        parent.parentNode?.children?.[0]?.click?.();
+      }
+    }
+    const highlightTarget = target.classList?.contains("devtools__section")
+      ? target.children?.[0] || target
+      : target;
+    highlightTarget.classList?.add("devtools__row--revealed");
+    target.scrollIntoView?.({ block: "center" });
+    return true;
+  }
+
   #assignDevToolsPath(element, path) {
     const normalized = this.#normalizeDevToolsPath(path);
-    if (normalized) element.dataset.devtoolsPath = normalized;
+    if (!normalized) return;
+    element.dataset.devtoolsPath = normalized;
+    if (element.classList?.contains("devtools__row") || element.classList?.contains("devtools__alert")) {
+      this.#pushPathElement(this.#pathRows, normalized, element);
+    } else if (element.classList?.contains("devtools__section")) {
+      this.#pushPathElement(this.#pathSections, normalized, element);
+    }
+  }
+
+  #pushPathElement(map, key, element) {
+    const list = map.get(key) || [];
+    list.push(element);
+    map.set(key, list);
+  }
+
+  #prunePathMap(map, container) {
+    for (const [key, list] of map) {
+      const retained = list.filter((el) => !container.contains(el));
+      if (retained.length) map.set(key, retained);
+      else map.delete(key);
+    }
+  }
+
+  #findPathTarget(normalizedPath) {
+    const segments = normalizedPath.split(".");
+    for (let len = segments.length; len >= 1; len--) {
+      const candidate = segments.slice(0, len).join(".");
+      const connectedRows = this.#connectedElements(this.#pathRows.get(candidate));
+      if (connectedRows.length) return this.#pickPreferredTarget(connectedRows);
+      const connectedSections = this.#connectedElements(this.#pathSections.get(candidate));
+      if (connectedSections.length) return this.#pickPreferredTarget(connectedSections);
+    }
+    return null;
+  }
+
+  #connectedElements(list) {
+    if (!list?.length) return [];
+    return list.filter((el) => el?.parentNode && el.isConnected !== false);
+  }
+
+  #pickPreferredTarget(elements) {
+    if (elements.length <= 1) return elements[0] || null;
+    const specialized = elements.find((el) => !this.#isInsideGenericConfig(el));
+    return specialized || elements[0];
+  }
+
+  #isInsideGenericConfig(element) {
+    let topSection = null;
+    for (let node = element; node && node !== this.#body; node = node.parentNode) {
+      if (node.classList?.contains("devtools__section")) topSection = node;
+    }
+    return topSection?.dataset?.devtoolsPath === "CONFIG";
   }
 
   #normalizeDevToolsPath(path) {

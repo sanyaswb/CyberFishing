@@ -583,14 +583,12 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     htmlBuilder: new OverlayHtmlBuilder(),
   });
   const html = module.render();
+  const visibleText = html.replace(/<[^>]+>/gu, "");
   for (const text of [
     "гроза (вручну)",
     "вправо →",
     reading.waves.amplitude.toFixed(1),
     reading.waves.speed.toFixed(1),
-    'id="weather-wave-amplitude"',
-    'id="weather-wave-length"',
-    'id="weather-wave-speed"',
     "Вітер: висота (штиль ×0.55 … вітер ×1.15)",
     "Ніч: затихання (день ×1.00 … ніч ×0.50)",
     "Гроза: штормовий підйом (ясно ×1.00 … гроза ×2.00)",
@@ -601,7 +599,32 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     `×${reading.waves.wavelengthScale.toFixed(2)}`,
     `×${reading.waves.speedScale.toFixed(2)}`,
   ]) {
-    assert(html.includes(text), `the overlay shows ${text}`);
+    assert(visibleText.includes(text), `the overlay shows ${text}`);
+  }
+  for (const attr of [
+    'id="weather-wave-amplitude"',
+    'id="weather-wave-length"',
+    'id="weather-wave-speed"',
+    'data-overlay-control="devtools-link"',
+    'data-overlay-activate="release"',
+    'data-devtools-path="WEATHER.controls.storm"',
+    'data-devtools-path="WEATHER.controls.stormStrength"',
+    'data-devtools-path="WEATHER.controls.windDirection"',
+    'data-devtools-path="CONFIG.timePhases.night.startHour"',
+    'data-devtools-path="CONFIG.canvas.water.amplitude"',
+    'data-devtools-path="CONFIG.canvas.water.wavelength"',
+    'data-devtools-path="CONFIG.canvas.water.speed"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.enabled"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.normal.calmAmplitude"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.normal.windAmplitude"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.normal.nightAmplitude"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.normal.windSpeed"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.storm.amplitude"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.storm.wavelength"',
+    'data-devtools-path="CONFIG.canvas.water.seaState.storm.speed"',
+    'data-devtools-path="WEATHER.controls.strike"',
+  ]) {
+    assert(html.includes(attr), `the overlay markup includes ${attr}`);
   }
   assert(
     !html.includes(`(${water.amplitude.toFixed(1)} × ${reading.waves.amplitudeScale.toFixed(2)})`),

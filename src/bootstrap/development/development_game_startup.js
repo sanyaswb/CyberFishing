@@ -313,6 +313,8 @@ async function startGame() {
         compositionRoot?.getAssetLoadStatus?.() ?? null,
       // TK-291: the weather and the waves right now for the overlay «ПОГОДА й хвилі».
       readWeather: () => compositionRoot?.getWeatherReading?.() ?? null,
+      // Spec 177 (TK-296): hyperlinks in overlays open DevTools at the corresponding parameter.
+      revealDevToolsParameter: (path) => devTools?.revealParameter?.(path),
     });
     balanceWindows = composeFightBalanceWindows({
       documentTarget,

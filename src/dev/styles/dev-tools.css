@@ -19,6 +19,12 @@
   outline-offset: -2px;
   border-radius: var(--ui-radius-control);
 }
+.devtools__row--revealed {
+  outline: 2px solid var(--ui-success);
+  outline-offset: -2px;
+  border-radius: var(--ui-radius-control);
+  background: rgba(var(--ui-success-rgb), 0.14);
+}
 .ui-surface--time-accelerated { --ui-clock-width: 196px; }
 .devtools__action {
   box-sizing: border-box;

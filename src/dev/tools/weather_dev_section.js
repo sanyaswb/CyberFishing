@@ -320,11 +320,17 @@ export class WeatherDevSection {
       },
       ["WEATHER", "controls", "rain"],
     );
-    this.#ui.createRangeRow("сила дощу, %", this.#rain, controls, (value) => {
-      this.#rain = Number(value) || 0;
-      if (model.snapshot.precipitation !== "clear")
-        model.setIntensity("rain", this.#rain / 100);
-    });
+    this.#ui.createRangeRow(
+      "сила дощу, %",
+      this.#rain,
+      controls,
+      (value) => {
+        this.#rain = Number(value) || 0;
+        if (model.snapshot.precipitation !== "clear")
+          model.setIntensity("rain", this.#rain / 100);
+      },
+      ["WEATHER", "controls", "rainStrength"],
+    );
     this.#ui.createSwitcherRow(
       "⛈ Гроза",
       weather.precipitation === "storm",
@@ -335,11 +341,17 @@ export class WeatherDevSection {
       },
       ["WEATHER", "controls", "storm"],
     );
-    this.#ui.createRangeRow("сила грози, %", this.#storm, controls, (value) => {
-      this.#storm = Number(value) || 0;
-      if (model.snapshot.precipitation === "storm")
-        model.setIntensity("storm", this.#storm / 100);
-    });
+    this.#ui.createRangeRow(
+      "сила грози, %",
+      this.#storm,
+      controls,
+      (value) => {
+        this.#storm = Number(value) || 0;
+        if (model.snapshot.precipitation === "storm")
+          model.setIntensity("storm", this.#storm / 100);
+      },
+      ["WEATHER", "controls", "stormStrength"],
+    );
     this.#ui.createSwitcherRow(
       "🌫 Туман",
       weather.fogState === "fog",
@@ -350,11 +362,17 @@ export class WeatherDevSection {
       },
       ["WEATHER", "controls", "fog"],
     );
-    this.#ui.createRangeRow("сила туману, %", this.#fog, controls, (value) => {
-      this.#fog = Number(value) || 0;
-      if (model.snapshot.fogState === "fog")
-        model.setIntensity("fog", this.#fog / 100);
-    });
+    this.#ui.createRangeRow(
+      "сила туману, %",
+      this.#fog,
+      controls,
+      (value) => {
+        this.#fog = Number(value) || 0;
+        if (model.snapshot.fogState === "fog")
+          model.setIntensity("fog", this.#fog / 100);
+      },
+      ["WEATHER", "controls", "fogStrength"],
+    );
     if (this.#weather.setWind) {
       const wind = this.#weather.getWind?.() ?? null;
       const current =
@@ -373,6 +391,7 @@ export class WeatherDevSection {
           );
           this.#fill();
         },
+        ["WEATHER", "controls", "windDirection"],
       );
     }
     this.#ui.createInputRow(
@@ -384,10 +403,17 @@ export class WeatherDevSection {
         this.#fadeSec = Math.max(0, Number(value) || 0);
       },
     );
-    this.#ui.createButtonRow("⚡ Удар блискавки зараз", controls, () => {
-      model.strike();
-      this.#fill();
-    });
+    this.#ui.createButtonRow(
+      "⚡ Удар блискавки зараз",
+      controls,
+      () => {
+        model.strike();
+        this.#fill();
+      },
+      false,
+      "",
+      ["WEATHER", "controls", "strike"],
+    );
     this.#ui.createSwitcherRow(
       "заморозити погоду",
       weather.frozen === true,

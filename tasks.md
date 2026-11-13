@@ -11,6 +11,29 @@
 
 ## Задачі в роботі
 
+- [x] **TK-296 (spec 177) — гіперпосилання з оверлею до параметрів DevTools із розкриттям і зеленим підсвічуванням (власник, 2026-11-13, v0.50.107).**
+      «чудово тепер тільки для цього модуля але заклади логіку і для майбутніх, потрібно в overlay текст зробити як
+      посилання (гіппер) при натисканні відкривається devtools розкривається параметр який відповідає за параметр який
+      натиснуто і підсвічується зеленим».
+  - Проєкт: [specs/177-overlay-devtools-links/spec.md](specs/177-overlay-devtools-links/spec.md).
+  - Зміна:
+    - Інфраструктура для будь-яких модулів Overlay: `OverlayHtmlBuilder.devLink` / `OverlayModule.devLink` та `devtoolsPath` /
+      `labelHtml` у `plainRow`, стиль `.debug-overlay__dev-link` у `overlay-content.css`, маршрутизація
+      `data-overlay-control="devtools-link"` через `OverlayInteractionBridge` (`onRevealDevToolsParameter`), зв'язок у
+      `debug_overlay_bootstrap.js` і `development_game_startup.js`.
+    - `DevTools.revealParameter(path)`, `DevToolsUI.revealPath(path)`, `DevToolsDependencyFeedback.showRevealed` і стиль
+      `.devtools__row--revealed` у `dev-tools.css`: відкриває DevTools, знаходить цільовий рядок (перевага
+      спеціалізованим секціям над `CONFIG`), розкриває всі згорнуті предківські секції, прокручує та тимчасово
+      підсвічує рядок зеленим.
+    - `WeatherDevSection` (шляхи для `rainStrength`, `stormStrength`, `fogStrength`, `windDirection`, `strike`) і
+      `WeatherOverlayModule` (гіперпосилання для параметрів погоди, часу ночі, хвиль і кожного множника).
+  - Перевірка: розширення `weather-check.js`, `devtools-controls-check.js`, `overlay-balance-windows-check.js`,
+    `css-usage`, `config-runtime`, повний `node utils/run-checks.js`.
+  - [ ] Перевірка власника TK-296: `dev.html` → DevTools → `OVERLAY` → «ПОГОДА й хвилі» (закрити DevTools): натиснути
+        будь-яке підкреслене посилання в оверлеї (наприклад `Гроза 0…1`, `Амплітуда хвиль`, `штиль ×0.55`, `Ніч: затихання`,
+        `Вітер`): DevTools відкривається, автоматично розгортає відповідні секції й підсвічує потрібний параметр зеленим;
+        клік по посиланню всередині `<summary>` не згортає підпункти.
+
 - [x] **TK-295 — підпункти множників із поясненням у модулі оверлею «ПОГОДА Й ХВИЛІ» (власник, 2026-11-13, v0.50.106).**
       «Модуль погода й хвилі, мені не подобається що множники потрібно додати як підпукнти до основних (загальних)
       параметрів і розписати що це за множник і які у нього значення».

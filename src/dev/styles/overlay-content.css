@@ -236,3 +236,33 @@
   font-size: 13px;
 }
 
+.debug-overlay__dev-link {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  text-decoration: underline dotted var(--ui-info);
+  text-underline-offset: 2px;
+  border-radius: var(--ui-radius-control);
+}
+
+.ui-surface--desktop-hover .debug-overlay__dev-link:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .debug-overlay__dev-link:active,
+.debug-overlay__dev-link:focus-visible {
+  color: var(--ui-info);
+  text-decoration-style: solid;
+}
+
+.debug-overlay__dev-link:focus-visible {
+  outline: 2px solid var(--ui-info);
+  outline-offset: 2px;
+}
+

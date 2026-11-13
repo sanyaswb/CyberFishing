@@ -4,32 +4,41 @@ export class OverlayInteractionBridge {
   #roots = new Set();
   #viewStateStore;
   #actions;
+  #onRevealDevToolsParameter;
   #isAttached = false;
   #boundClickHandler = (event) => this.#handleClick(event);
   #boundPointerDownHandler = (event) => this.#handlePointerDown(event);
   #boundPointerUpHandler = (event) => this.#handlePointerUp(event);
-  #lastPointerHandledAt = 0;
+  #lastPointerHandledAt = -Infinity;
 
   // actions: { [controlType]: () => void } for controls marked data-overlay-activate="release" (spec 157: copying the
   // startup report). They run on pointerup, which carries the user activation the clipboard needs on touch screens,
   // and the control is looked up at release time because the overlay may have rebuilt its HTML since pointerdown.
-  constructor({ rootElement = null, rootElementProvider = null, viewStateStore, actions = {} } = {}) {
+  // onRevealDevToolsParameter: (path) => void handles data-overlay-control="devtools-link" hyperlinks (spec 177).
+  constructor({
+    rootElement = null,
+    rootElementProvider = null,
+    viewStateStore,
+    actions = {},
+    onRevealDevToolsParameter = null,
+  } = {}) {
     this.#rootElement = rootElement;
     this.#rootElementProvider = rootElementProvider;
     this.#viewStateStore = viewStateStore;
     this.#actions = actions;
+    this.#onRevealDevToolsParameter = onRevealDevToolsParameter;
   }
 
   attach() {
     if (this.#isAttached) return;
-    if (!this.#viewStateStore) return;
+    if (!this.#hasHandlers()) return;
     this.#isAttached = true;
     const root = this.#resolveRootElement();
     if (root) this.attachRoot(root);
   }
 
   attachRoot(root) {
-    if (!root || this.#roots.has(root) || !this.#viewStateStore) return;
+    if (!root || this.#roots.has(root) || !this.#hasHandlers()) return;
     root.addEventListener("pointerdown", this.#boundPointerDownHandler, true);
     root.addEventListener("mousedown", this.#boundPointerDownHandler, true);
     root.addEventListener("pointerup", this.#boundPointerUpHandler, true);
@@ -84,7 +93,7 @@ export class OverlayInteractionBridge {
     event.preventDefault();
     event.stopPropagation();
     this.#lastPointerHandledAt = typeof performance !== "undefined" ? performance.now() : Date.now();
-    this.#actions[control.getAttribute("data-overlay-control")]?.();
+    this.#runReleaseControl(control);
   }
 
   #isReleaseControl(control) {
@@ -99,7 +108,7 @@ export class OverlayInteractionBridge {
       const now = typeof performance !== "undefined" ? performance.now() : Date.now();
       event.preventDefault();
       event.stopPropagation();
-      if (now - this.#lastPointerHandledAt >= 400) this.#actions[control.getAttribute("data-overlay-control")]?.();
+      if (now - this.#lastPointerHandledAt >= 400) this.#runReleaseControl(control);
       return;
     }
 
@@ -145,6 +154,20 @@ export class OverlayInteractionBridge {
       ...current,
       [value]: !current[value],
     });
+  }
+
+  #hasHandlers() {
+    return !!(this.#viewStateStore || this.#onRevealDevToolsParameter || Object.keys(this.#actions || {}).length);
+  }
+
+  #runReleaseControl(control) {
+    const controlType = control.getAttribute("data-overlay-control");
+    if (controlType === "devtools-link") {
+      const devtoolsPath = control.getAttribute("data-devtools-path");
+      if (devtoolsPath) this.#onRevealDevToolsParameter?.(devtoolsPath);
+      return;
+    }
+    this.#actions[controlType]?.();
   }
 
   #resolveRootElement() {

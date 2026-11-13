@@ -57,7 +57,7 @@ import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_ove
 // frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap;
 // gameVersion: written into the startup report (spec 157).
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
-  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null}) {
+  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null, revealDevToolsParameter = null}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -169,6 +169,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   };
   const interactionBridge = new OverlayInteractionBridge({
     viewStateStore,
+    onRevealDevToolsParameter: revealDevToolsParameter,
     actions: {
       [STARTUP_REPORT_COPY_CONTROL]: () => {
         void startupModule.copyReport().then(() => controller.update());

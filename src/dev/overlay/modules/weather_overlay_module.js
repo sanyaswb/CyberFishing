@@ -35,49 +35,67 @@ export class WeatherOverlayModule extends OverlayModule {
     html += this.plainRow("Опади", state, {
       color: "#ffffff",
       metricKey: "weather.precipitation",
+      devtoolsPath:
+        reading.precipitation === "storm"
+          ? "WEATHER.controls.storm"
+          : "WEATHER.controls.rain",
     });
     html += this.plainRow("Гроза 0…1", share(reading.storm), {
       color: "#ff8866",
       metricKey: "weather.storm",
+      devtoolsPath: "WEATHER.controls.stormStrength",
     });
     html += this.plainRow("Дощ 0…1", share(reading.rain), {
       color: "#88bbff",
       metricKey: "weather.rain",
+      devtoolsPath: "WEATHER.controls.rainStrength",
     });
     html += this.plainRow("Туман 0…1", share(reading.fog), {
       color: "#cccccc",
       metricKey: "weather.fog",
+      devtoolsPath: "WEATHER.controls.fogStrength",
     });
     html += this.plainRow(
       "Вітер",
       `${WIND[reading.windDirection] ?? reading.windDirection}${reading.windForced ? " (вручну)" : ""}`,
-      { color: "#ffffff", metricKey: "weather.windDirection" },
+      {
+        color: "#ffffff",
+        metricKey: "weather.windDirection",
+        devtoolsPath: "WEATHER.controls.windDirection",
+      },
     );
     html += this.plainRow("Сила вітру 0…1", share(reading.windStrength), {
       color: "#ffdd66",
       metricKey: "weather.windStrength",
+      devtoolsPath: "WEATHER.controls.windDirection",
     });
     html += this.plainRow(
       "Ніч 0…1",
       `${share(reading.night)} · ${reading.phase} · ${pixels(reading.hours)} год`,
-      { color: "#aaaaff", metricKey: "weather.night" },
+      {
+        color: "#aaaaff",
+        metricKey: "weather.night",
+        devtoolsPath: "CONFIG.timePhases.night.startHour",
+      },
     );
     if (!waves.enabled) {
       html += this.plainRow("Хвилі", "вимкнено", {
         color: "#888888",
         metricKey: "weather.waves",
+        devtoolsPath: "CONFIG.canvas.water.waves",
       });
     } else {
-      html += this.#renderWaves(waves);
+      html += this.#renderWaves(waves, reading);
     }
     html += this.plainRow("Блискавок", String(reading.strikes), {
       color: "#ffffff",
       metricKey: "weather.strikes",
+      devtoolsPath: "WEATHER.controls.strike",
     });
     return `${html}<div class="debug-overlay__spacer"></div>`;
   }
 
-  #renderWaves(waves) {
+  #renderWaves(waves, reading) {
     const seaEnabled = waves.seaEnabled === true;
     const factors = waves.factors || {};
     const smoothingSec = Number(factors.smoothingSec) || 0;
@@ -85,63 +103,85 @@ export class WeatherOverlayModule extends OverlayModule {
     const length = factors.wavelength || {};
     const speed = factors.speed || {};
 
-    let ampSub = this.#subRow("База (з арту)", `${pixels(waves.baseAmplitude)} px`, "weather.waveAmplitude.base", "#9eb8c7");
+    let ampSub = this.#subRow("База (з арту)", `${pixels(waves.baseAmplitude)} px`, "weather.waveAmplitude.base", {
+      color: "#9eb8c7",
+      devtoolsPath: "CONFIG.canvas.water.amplitude",
+    });
     ampSub += this.#subRow(
       seaEnabled ? "Загальний множник (вітер × ніч × гроза)" : "Загальний множник («Стан моря» вимкн.)",
       this.#formatScale(waves.amplitudeScale, amp.targetScale, seaEnabled, smoothingSec),
       "weather.waveAmplitude.scale",
-      "#88eedd",
+      { color: "#88eedd", devtoolsPath: "CONFIG.canvas.water.seaState.enabled" },
     );
     if (seaEnabled) {
+      const activeWindAmpPath = (Number(reading.windStrength) || 0) >= 0.5
+        ? "CONFIG.canvas.water.seaState.normal.windAmplitude"
+        : "CONFIG.canvas.water.seaState.normal.calmAmplitude";
       ampSub += this.#subRow(
-        `Вітер: висота (штиль ${factor(amp.windMin ?? 1)} … вітер ${factor(amp.windMax ?? 1)})`,
+        "Вітер: висота",
         factor(amp.wind ?? waves.amplitudeScale),
         "weather.waveAmplitude.wind",
+        {
+          labelHtml: `${this.devLink("Вітер: висота", activeWindAmpPath)} (`
+            + `${this.devLink(`штиль ${factor(amp.windMin ?? 1)}`, "CONFIG.canvas.water.seaState.normal.calmAmplitude")}`
+            + ` … ${this.devLink(`вітер ${factor(amp.windMax ?? 1)}`, "CONFIG.canvas.water.seaState.normal.windAmplitude")})`,
+        },
       );
       ampSub += this.#subRow(
         `Ніч: затихання (день ×1.00 … ніч ${factor(amp.nightTarget ?? 1)})`,
         factor(amp.night ?? 1),
         "weather.waveAmplitude.night",
+        { devtoolsPath: "CONFIG.canvas.water.seaState.normal.nightAmplitude" },
       );
       ampSub += this.#subRow(
         `Гроза: штормовий підйом (ясно ×1.00 … гроза ${factor(amp.stormTarget ?? 1)})`,
         factor(amp.storm ?? 1),
         "weather.waveAmplitude.storm",
+        { devtoolsPath: "CONFIG.canvas.water.seaState.storm.amplitude" },
       );
     }
 
-    let lengthSub = this.#subRow("База (з арту)", `${pixels(waves.baseWavelength)} px`, "weather.waveLength.base", "#9eb8c7");
+    let lengthSub = this.#subRow("База (з арту)", `${pixels(waves.baseWavelength)} px`, "weather.waveLength.base", {
+      color: "#9eb8c7",
+      devtoolsPath: "CONFIG.canvas.water.wavelength",
+    });
     lengthSub += this.#subRow(
       seaEnabled ? "Загальний множник (від грози)" : "Загальний множник («Стан моря» вимкн.)",
       this.#formatScale(waves.wavelengthScale, length.targetScale, seaEnabled, smoothingSec),
       "weather.waveLength.scale",
-      "#88eedd",
+      { color: "#88eedd", devtoolsPath: "CONFIG.canvas.water.seaState.enabled" },
     );
     if (seaEnabled) {
       lengthSub += this.#subRow(
         `Гроза: розтяг хвилі (ясно ×1.00 … гроза ${factor(length.stormTarget ?? 1)})`,
         factor(length.storm ?? waves.wavelengthScale),
         "weather.waveLength.storm",
+        { devtoolsPath: "CONFIG.canvas.water.seaState.storm.wavelength" },
       );
     }
 
-    let speedSub = this.#subRow("База швидкості", `${pixels(waves.baseSpeed)} px/с`, "weather.waveSpeed.base", "#9eb8c7");
+    let speedSub = this.#subRow("База швидкості", `${pixels(waves.baseSpeed)} px/с`, "weather.waveSpeed.base", {
+      color: "#9eb8c7",
+      devtoolsPath: "CONFIG.canvas.water.speed",
+    });
     speedSub += this.#subRow(
       seaEnabled ? "Загальний множник (вітер × гроза)" : "Загальний множник («Стан моря» вимкн.)",
       this.#formatScale(waves.speedScale, speed.targetScale, seaEnabled, smoothingSec),
       "weather.waveSpeed.scale",
-      "#88eedd",
+      { color: "#88eedd", devtoolsPath: "CONFIG.canvas.water.seaState.enabled" },
     );
     if (seaEnabled) {
       speedSub += this.#subRow(
         `Вітер: прискорення (штиль ×1.00 … вітер ${factor(speed.windMax ?? 1)})`,
         factor(speed.wind ?? 1),
         "weather.waveSpeed.wind",
+        { devtoolsPath: "CONFIG.canvas.water.seaState.normal.windSpeed" },
       );
       speedSub += this.#subRow(
         `Гроза: штормове прискорення (ясно ×1.00 … гроза ${factor(speed.stormTarget ?? 1)})`,
         factor(speed.storm ?? 1),
         "weather.waveSpeed.storm",
+        { devtoolsPath: "CONFIG.canvas.water.seaState.storm.speed" },
       );
     }
 
@@ -151,6 +191,7 @@ export class WeatherOverlayModule extends OverlayModule {
         this.plainRow("Амплітуда хвиль", `${pixels(waves.amplitude)} px арту`, {
           color: "#66ffcc",
           metricKey: "weather.waveAmplitude",
+          devtoolsPath: "CONFIG.canvas.water.amplitude",
         }),
         ampSub,
       )
@@ -159,6 +200,7 @@ export class WeatherOverlayModule extends OverlayModule {
         this.plainRow("Довжина хвиль", `${pixels(waves.wavelength)} px арту`, {
           color: "#66ffcc",
           metricKey: "weather.waveLength",
+          devtoolsPath: "CONFIG.canvas.water.wavelength",
         }),
         lengthSub,
       )
@@ -167,6 +209,7 @@ export class WeatherOverlayModule extends OverlayModule {
         this.plainRow("Швидкість хвиль", `${pixels(waves.speed)} px/с · ${waves.travel >= 0 ? "→" : "←"}`, {
           color: "#66ffcc",
           metricKey: "weather.waveSpeed",
+          devtoolsPath: "CONFIG.canvas.water.speed",
         }),
         speedSub,
       )
@@ -180,8 +223,8 @@ export class WeatherOverlayModule extends OverlayModule {
       + "</details>";
   }
 
-  #subRow(label, value, metricKey, color = "#b9c8d4") {
-    return this.plainRow(label, value, { color, metricKey });
+  #subRow(label, value, metricKey, options = {}) {
+    return this.plainRow(label, value, { color: "#b9c8d4", metricKey, ...options });
   }
 
   #formatScale(currentScale, targetScale, seaEnabled, smoothingSec) {
@@ -189,7 +232,9 @@ export class WeatherOverlayModule extends OverlayModule {
     const current = Number(currentScale) || 0;
     const target = Number.isFinite(Number(targetScale)) ? Number(targetScale) : current;
     if (Math.abs(target - current) < 0.005) return factor(current);
-    const suffix = smoothingSec > 0 ? ` (${pixels(smoothingSec)} с)` : "";
+    const suffix = smoothingSec > 0
+      ? ` (${this.devLink(`${pixels(smoothingSec)} с`, "CONFIG.canvas.water.seaState.smoothingSec")})`
+      : "";
     return `${factor(current)} → ціль ${factor(target)}${suffix}`;
   }
 }

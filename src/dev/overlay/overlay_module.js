@@ -37,6 +37,10 @@ export class OverlayModule {
     return this.htmlBuilder.plainRow(label, value, options);
   }
 
+  devLink(label, devtoolsPath, options = {}) {
+    return this.htmlBuilder.devLink(label, devtoolsPath, options);
+  }
+
   escapeAttr(value) {
     return this.htmlBuilder.escapeAttr(value);
   }
