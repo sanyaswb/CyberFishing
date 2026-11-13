@@ -888,6 +888,126 @@
   margin-bottom: 4px;
 }
 .devtools__alert-line { font-size: 0.92em; line-height: 1.35; }
+/* Spec 174 C5: the panel's text dialog (in place of prompt) over the panel only, and its result line (in place of alert). */
+.devtools__dialog-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.55);
+}
+.devtools__dialog {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(120px, 1fr) auto auto;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--ui-accent);
+  border-radius: var(--ui-radius-panel);
+  background: var(--devtools-surface);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.devtools__dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.devtools__dialog-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 700;
+}
+.devtools__dialog-close {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--ui-text);
+  cursor: pointer;
+}
+.devtools__dialog-text {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-field);
+  color: var(--ui-text);
+  font-family: var(--ui-font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.devtools__dialog-text:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 1px; }
+.devtools__dialog-message {
+  white-space: pre-line;
+  font-size: 12px;
+  color: var(--ui-success);
+}
+.devtools__dialog-message--error { color: var(--ui-danger-text); }
+.devtools__dialog-message[hidden] { display: none; }
+.devtools__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.devtools__dialog-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: transparent;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+  --devtools-icon-size: 16px;
+}
+.devtools__dialog-action--primary { border-color: var(--ui-accent); background: rgba(var(--ui-accent-rgb), 0.22); }
+.ui-surface--desktop-hover .devtools__dialog-action:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__dialog-action:active,
+.ui-surface--desktop-hover .devtools__dialog-close:hover,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__dialog-close:active { background: rgba(var(--ui-accent-rgb), 0.3); }
+.devtools__dialog-action:focus-visible,
+.devtools__dialog-close:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
+.devtools__toast {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  padding: 8px 12px;
+  border: 1px solid var(--ui-success);
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-surface-strong);
+  color: var(--ui-text);
+  font-size: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.devtools__toast--error { border-color: var(--ui-danger); }
+.devtools__toast[hidden] { display: none; }
+@media (pointer: coarse) {
+  .devtools__dialog-action { min-height: 44px; }
+  .devtools__dialog-close { width: 44px; height: 44px; flex-basis: 44px; }
+}
 /* TK-285: after a file export, the command that applies the file (ExportCommandNotice), at the top of its section. */
 .devtools__export {
   display: grid;

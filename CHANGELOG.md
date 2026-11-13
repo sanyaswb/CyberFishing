@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.122 - DevTools text dialog
+
+- TK-307 (spec 174 C5): exports and imports in DevTools «Сервіс» (overrides, the asset load plan) open the panel's own text dialog with copy, download and open-file buttons, and errors stay in it with the reason; results show as a short line at the bottom of the panel instead of the browser's prompt and alert.
+
 ## v0.50.121 - DevTools drill-in sections
 
 - TK-306 (spec 174 C4): DevTools shows at most two levels of sections in place; a deeper section opens inside its module's page on its own, under breadcrumbs back to the module and every section above it, so labels keep the panel's full width.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.113 - Rain gust slant impulse, default float wind compensation & live ITEM_DB float sync
 
 - TK-298.2 (spec 178): forwarded `windGust` (`gustStrength`) into `WeatherRenderModelBuilder` and `PixiRainRenderer` so gusts add an extra drop-slant impulse and faster angle response even at `100%` wind; changed default `windCompensation` on `float_day`, `float_night` and `float_sliding` from `[0.1, 1.0]` to `[0.1, 0.65]` so floats visibly lean in wind out of the box; synced live `ITEM_DB` edits in `GameApplication.#handleItemDatabaseUpdate` directly onto the active `FloatEntity`/`WaterEntity` in water (`syncEquipmentStats`) and supported space/comma separators in DevTools array inputs.
-
-## v0.50.112 - Wind model release/direction fixes, smooth float swing & always-visible map selector
-
-- TK-298.1 (spec 178): restored automatic episode target immediately when releasing manual wind strength (`#episodeTarget`), kept positive wind strength across episodes while direction `±1` is forced (`strength === 0 ⇔ direction === 0`), made `WaterEntity` return-swing $C^1$-continuous across cycle boundaries with `maxAngleDeg` cap and `0` support, published live `float` settings from `WindModel` to `EnvironmentSystem.getPhysicsEnv()`, and kept the DevTools «ПОГОДА» location selector always visible.

@@ -10,9 +10,12 @@ import { SegmentedControl } from "./controls/segmented_control.js";
 import { ChoiceField } from "./controls/choice_field.js";
 import { ExportCommandNotice } from "./controls/export_command_notice.js";
 import { createDevIcon } from "./controls/dev_icon.js";
+import { TextDialog } from "./controls/text_dialog.js";
 
 // Spec 174 C4 (Q3): sections at this depth and below open inside (drill-in) instead of nesting in place.
 const MAX_INLINE_SECTION_DEPTH = 2;
+// Spec 174 C5: how long a result line stays at the bottom of the panel.
+const TOAST_MS = 4000;
 
 export class DevToolsUI {
   #panel;
@@ -36,6 +39,10 @@ export class DevToolsUI {
   // Spec 174 C4: each section content's depth in its page, and the section shown alone (drill-in).
   #contentDepth = new WeakMap();
   #drill = null;
+  // Spec 174 C5: the open text dialog and the result line.
+  #dialog = null;
+  #toast = null;
+  #toastTimer = null;
   // Spec 174 C3: search text and descriptions of labels, rows for the filter, change marks.
   #searchText = new WeakMap();
   #parameterDescriptions = new WeakMap();
@@ -111,6 +118,9 @@ export class DevToolsUI {
   }
 
   dispose() {
+    this.#dialog?.close();
+    if (this.#toastTimer !== null) clearTimeout(this.#toastTimer);
+    this.#toastTimer = null;
     this.#dependencyFeedback?.dispose();
     this.#edgeOpener?.dispose();
     this.#edgeOpener = null;
@@ -287,6 +297,49 @@ export class DevToolsUI {
   #pageOf(element) {
     for (let node = element; node; node = node.parentNode) if (node.dataset?.devtoolsPage) return node;
     return null;
+  }
+
+  // Spec 174 C5: the panel's own text dialog over the panel (TextDialog); one at a time. Returns the dialog.
+  openTextDialog(options) {
+    this.#dialog?.close();
+    const dialog = new TextDialog({ ...options, documentRef: document, onClose: () => {
+      if (this.#dialog === dialog) this.#dialog = null;
+      options.onClose?.();
+    } });
+    this.#dialog = dialog;
+    this.#panel.appendChild(dialog.element);
+    dialog.focus();
+    return dialog;
+  }
+
+  // Spec 174 C5: a short result line at the bottom of the panel (in place of the browser's alert), gone after a moment.
+  notify(text, { error = false } = {}) {
+    if (!this.#toast) {
+      this.#toast = document.createElement("div");
+      this.#toast.className = "devtools__toast";
+      this.#toast.setAttribute("role", "status");
+      this.#panel.appendChild(this.#toast);
+    }
+    this.#toast.textContent = text;
+    this.#toast.hidden = false;
+    this.#toast.classList.toggle("devtools__toast--error", error);
+    if (this.#toastTimer !== null) clearTimeout(this.#toastTimer);
+    this.#toastTimer = setTimeout(() => {
+      this.#toastTimer = null;
+      if (this.#toast) this.#toast.hidden = true;
+    }, TOAST_MS);
+  }
+
+  // Copies text to the clipboard; false when the page has none (http on the local network).
+  async copyText(text) {
+    const clipboard = globalThis.navigator?.clipboard;
+    if (!clipboard?.writeText) return false;
+    try {
+      await clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // A page without content says so in one line instead of disappearing from the rail.

@@ -134,6 +134,14 @@ row `devtools__tools` holds `devtools__search` (+ `__search-input`), the `devtoo
 `--active`) and `devtools__search-status`; while filtering `devtools__body--filtered` shows only
 `devtools__row--match` rows, `devtools__section--match` sections (opened by the search, closed after it) and
 `devtools__page--match` pages headed by their module name. `.devtools` rows: header, tools, main, footer.
+
+Spec 174 C4 (TK-306): a section at depth 2 or deeper of its page is `devtools__section--drill`; its title shows it alone
+(`DevToolsUI.focusSection`): the page gets `devtools__page--drilled`, the section's content moves into `devtools__drill`
+under the sticky `devtools__crumbs` (`devtools__crumb`, current `devtools__crumb--current`) and back when leaving.
+Spec 174 C5 (TK-307): `DevToolsUI.openTextDialog` lays `devtools__dialog-layer` over the panel (absolute in `.devtools`)
+with `devtools__dialog` (`__dialog-head`, `__dialog-title`, `__dialog-close`, `__dialog-text`, `__dialog-message`
+(`--error`), `__dialog-actions`, `__dialog-action` (`--primary`)); `DevToolsUI.notify` shows `devtools__toast`
+(`--error`) at the panel's bottom for 4 s. No DevTools module uses the browser's prompt or alert.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

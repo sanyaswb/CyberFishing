@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-307 (spec 174 C5): panel text dialog + result line instead of prompt/alert.",
   "TK-306 (spec 174 C4): sections below two levels open inside with breadcrumbs.",
   "TK-305 (spec 174 C3): key + Ukrainian name, «i» descriptions, changed mark + one reset, search, changed filter.",
   "TK-304 (spec 174 C2): rail of seven modules; one page shown; choice and scroll remembered.",

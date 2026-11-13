@@ -142,7 +142,7 @@ export class DevTools {
         modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish] },
       { id: "service", title: "Сервіс", icon: "wrench", empty: "",
         modules: [new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
-          redraw: () => this.#populatePanel(), windowRef: globalThis }),
+          redraw: () => this.#populatePanel(), files: zoneEditorFiles, gameVersion }),
         loadStepper ? DevTools.#loadStepperModule(loadStepper) : null] },
     ].map((page) => ({ ...page, modules: page.modules.filter(Boolean).map(assertDevPanelModule) }));
     this.#activePage = storageCache.get(ACTIVE_PAGE_KEY, "game");

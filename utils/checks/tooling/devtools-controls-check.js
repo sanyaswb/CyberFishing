@@ -654,6 +654,70 @@ function choiceRow(options, value, path) {
   drillUi.dispose();
 }
 
+// --- TK-307 (spec 174 C5): the panel's text dialog and result line instead of prompt and alert --------------------------
+(async () => {
+  const { ServiceModule } = runtime.importModule("src/dev/tools/modules/service_module.js");
+  const serviceUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div"); serviceUi.body.appendChild(host);
+  const downloads = [], imported = [], redraws = [], picked = ['{"a": 1}'];
+  const plan = { saved: [], edited: false };
+  const module = new ServiceModule({ redraw: () => redraws.push(1), gameVersion: "0.50.122", now: () => new Date(2026, 10, 14, 9, 5),
+    configRuntime: { overrideStore: { entries: () => [["x", 1]] }, exportOverrides: () => ({ "rain.opacity": 0.5 }) },
+    files: { download: (name, text) => downloads.push([name, text]), pickFile: async () => picked.shift() ?? null },
+    assetLoadPlanStore: { isEdited: () => plan.edited, exportText: () => "export const PLAN = [];", plan: () => ({ steps: [] }),
+      save: (value) => (value.steps ? (plan.saved.push(value), []) : ["steps missing"]), reset() { plan.edited = false; } },
+    logger: { log() {}, warn() {} } });
+  const edits = { importOverrides: (value) => { if (value.bad) throw new Error("bad key"); imported.push(value); }, resetAll() {} };
+  module.mount(host, { ui: serviceUi, createSection: (label, parent, path, options) =>
+    serviceUi.createSection(label, parent, true, () => {}, path, options), edits });
+  const button = (label) => byClass("devtools__action", host).find((element) => element.textContent.includes(label) ||
+    element.innerText === label);
+  const panel = serviceUi.body.parentNode;
+  const dialog = () => byClass("devtools__dialog", panel)[0];
+  const action = (label) => byClass("devtools__dialog-action", dialog()).find((element) => element.textContent === label);
+  const text = () => byClass("devtools__dialog-text", dialog())[0];
+  const message = () => byClass("devtools__dialog-message", dialog())[0];
+  const settle = () => new Promise((resolve) => setImmediate(resolve));
+  // Export: the text in a dialog, copied or downloaded.
+  button("Export overrides").click();
+  assert.ok(dialog(), "an export opens the panel's dialog, not the browser's prompt");
+  assert.equal(JSON.parse(text().value)["rain.opacity"], 0.5);
+  assert.equal(text().readOnly, true);
+  action("Копіювати").click(); await settle();
+  // Another async scenario of this check copies too: look for this text, not the last one.
+  assert.ok(clipboard.includes(text().value), "Копіювати puts the text on the clipboard");
+  assert.equal(message().textContent, "Скопійовано.");
+  action("Завантажити файл").click();
+  assert.equal(downloads.at(-1)[0], "overrides-v0.50.122-20261114-0905.json", "and Завантажити saves it as a file");
+  const escape = byClass("devtools__dialog-layer", panel)[0].fire("keydown", { key: "Escape" });
+  assert.equal(escape.stopped, true);
+  assert.equal(dialog(), undefined, "Escape closes the dialog");
+  // Import: invalid text stays in the dialog with the reason; valid text is applied, the panel redrawn, the result shown.
+  button("Import overrides").click();
+  text().value = "{oops"; action("Застосувати").click();
+  assert.match(message().textContent, /^Це не JSON/u);
+  assert.equal(message().classList.contains("devtools__dialog-message--error"), true);
+  text().value = '{"bad": true}'; action("Застосувати").click();
+  assert.equal(message().textContent, "Не застосовано: bad key", "a refused import says why");
+  action("Відкрити файл").click(); await settle();
+  assert.equal(text().value, '{"a": 1}', "Відкрити файл reads a file into the dialog");
+  action("Застосувати").click();
+  assert.equal(JSON.stringify(imported), JSON.stringify([{ a: 1 }]));
+  assert.equal(dialog(), undefined, "a successful import closes the dialog");
+  assert.equal(redraws.length, 1);
+  const toast = byClass("devtools__toast", panel)[0];
+  assert.equal(toast.textContent, "Перевизначення застосовано.", "the result line replaces the browser's alert");
+  assert.equal(toast.hidden, false);
+  // The load plan: an edit with errors is kept in the dialog; a valid one is saved.
+  button("Змінити план (з наступного старту)").click();
+  text().value = "{}"; action("Зберегти").click();
+  assert.equal(message().textContent, "План не збережено:\nsteps missing");
+  text().value = '{"steps": []}'; action("Зберегти").click();
+  assert.equal(plan.saved.length, 1);
+  assert.equal(toast.textContent, "План збережено: діє з наступного старту.");
+  serviceUi.dispose();
+})().catch((error) => { console.error(error); process.exitCode = 1; });
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
@@ -707,7 +771,7 @@ function choiceRow(options, value, path) {
   assert.ok(notice()[0].textContent.includes("zones-test.json"), "it names the downloaded file");
   assert.equal(byClass("devtools__export-command", section)[0].textContent, "npm run apply:zones -- zones-test.json");
   byClass("devtools__export-copy", section)[0].click(); await settle();
-  assert.deepEqual(clipboard, ["npm run apply:zones -- zones-test.json"], "the copy button puts the command on the clipboard");
+  assert.ok(clipboard.includes("npm run apply:zones -- zones-test.json"), "the copy button puts the command on the clipboard");
   assert.equal(notice()[0].classList.contains("devtools__export--copied"), true, "and says so");
   ui.showExportCommand(section, { fileName: "zones-next.json", command: "npm run apply:zones -- zones-next.json" });
   assert.equal(notice().length, 1, "the next export replaces the notice");
