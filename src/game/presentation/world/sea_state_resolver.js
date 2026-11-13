@@ -76,7 +76,11 @@ export class SeaStateResolver {
     const environment = this.#getEnvironment();
     const storm = clamp01(number(environment?.weather?.storm, 0));
     const direction = Math.max(-1, Math.min(1, number(environment?.wind?.direction, 0)));
-    const wind = Math.max(Math.abs(direction), storm);
+    const rawStrength = environment?.wind?.strength;
+    const hasStrength = rawStrength !== undefined && rawStrength !== null && Number.isFinite(Number(rawStrength));
+    const wind = hasStrength
+      ? Math.max(direction === 0 && storm <= 0 ? 0 : clamp01(Number(rawStrength)), storm)
+      : Math.max(Math.abs(direction), storm);
     if (direction !== 0) this.#travelTarget = Math.sign(direction);
     const night = Number.isFinite(Number(environment?.time))
       ? clamp01(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;

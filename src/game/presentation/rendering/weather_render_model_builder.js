@@ -24,5 +24,10 @@ export class WeatherRenderModelBuilder {
     target.cloud = share(weather?.cloud);
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
+    const rawStrength = environment?.wind?.strength;
+    const strength = rawStrength !== undefined && rawStrength !== null ? Number(rawStrength) : NaN;
+    target.windStrength = Number.isFinite(strength)
+      ? Math.min(1, Math.max(0, strength))
+      : Math.abs(target.windDirection);
   }
 }

@@ -134,8 +134,12 @@ export class PixiRainRenderer {
     this.#rippleView.settings = rings?.ripple ?? null;
     this.#dropColor = PixiRainRenderer.#color(this.#dropColor, settings?.color);
     this.#ringColor = PixiRainRenderer.#color(this.#ringColor, rings?.color);
-    const wind = Math.max(-1, Math.min(1, number(weather?.windDirection, 0)));
-    const targetSlant = wind * (Math.max(0, number(settings?.windSlantDeg, 0)) +
+    const windDir = Math.max(-1, Math.min(1, number(weather?.windDirection, 0)));
+    const rawWindStrength = weather?.windStrength;
+    const windStrength = rawWindStrength !== undefined && rawWindStrength !== null && Number.isFinite(Number(rawWindStrength))
+      ? clamp01(Number(rawWindStrength))
+      : Math.abs(windDir);
+    const targetSlant = windDir * (windStrength * Math.max(0, number(settings?.windSlantDeg, 0)) +
       storm * Math.max(0, number(settings?.stormSlantDeg, 0)));
     this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * SLANT_FOLLOW_PER_SEC);
     const area = this.#waterArea(world.clipRegions);

@@ -68,5 +68,88 @@ export const WEATHER = {
   "thresholds": {
     "fog": 0.3,
     "rain": 0.15
+  },
+  "wind": {
+    "fadeSec": 14,
+    "float": {
+      "amplitudeJitter": [
+        0.8,
+        1.15
+      ],
+      "cycleDurationSec": [
+        0.45,
+        1.35
+      ],
+      "maxAngleDeg": 38,
+      "returnPctRange": [
+        0.15,
+        0.45
+      ]
+    },
+    "gust": {
+      "attackShare": 0.25,
+      "chancePerSec": 0.14,
+      "deltaRange": [
+        0.12,
+        0.3
+      ],
+      "durationSec": [
+        1.5,
+        4.5
+      ],
+      "rainChanceMult": 1.5,
+      "stormChanceMult": 2.5
+    },
+    "states": {
+      "calm": {
+        "durationSec": [
+          90,
+          300
+        ],
+        "strength": [
+          0,
+          0
+        ],
+        "weight": 0.2
+      },
+      "light": {
+        "durationSec": [
+          60,
+          240
+        ],
+        "strength": [
+          0.15,
+          0.35
+        ],
+        "weight": 0.4
+      },
+      "moderate": {
+        "durationSec": [
+          60,
+          200
+        ],
+        "strength": [
+          0.4,
+          0.65
+        ],
+        "weight": 0.28
+      },
+      "strong": {
+        "durationSec": [
+          45,
+          150
+        ],
+        "strength": [
+          0.7,
+          0.9
+        ],
+        "weight": 0.12
+      }
+    },
+    "weatherBoost": {
+      "rainBonus": 0.2,
+      "rainMinStrength": 0.25,
+      "stormMinStrength": 0.7
+    }
   }
 };

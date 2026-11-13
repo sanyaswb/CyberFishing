@@ -855,6 +855,8 @@ export class DevTools {
       ui: this.#ui,
       weather: this.#weather,
       config: () => this.#config.locations?.map?.[locationId]?.weather ?? null,
+      locationConfig: (id) => this.#config.locations?.map?.[id]?.weather ?? null,
+      locationsMap: () => this.#config.locations?.map ?? null,
       rainConfig: () => this.#config.canvas?.rain ?? null,
       createSection: (label, parent, path) =>
         this.#createSectionWithCache(label, parent, path),

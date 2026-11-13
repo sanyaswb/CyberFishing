@@ -11,6 +11,13 @@
 
 ## Задачі в роботі
 
+- [ ] **TK-298 (spec 178) — живий вітер світу (`0…1`), пориви, хвилі, дощ, поплавок, селектор мапи й шанси в DevTools (власник, 2026-11-13, v0.50.111).**
+      Проєкт: [specs/178-living-wind/spec.md](specs/178-living-wind/spec.md).
+  - [x] Етап A: `WindModel` (`src/game/domain/weather/wind_model.js`), окремий `windRng`, `EnvironmentSystem`, `MAP_DB.<id>.weather.wind` і `apply:weather` + `config-schema` / `weather-check`.
+  - [x] Етап B: інтеграція у світ — `SeaStateResolver` (неперервна `wind.strength`), `WeatherRenderModelBuilder` + `PixiRainRenderer` (нахил дощу від `wind.strength`), `WaterEntity` (поплавок із власним `%`-відкатом різної амплітуди й частоти), прибирання невикористаного `CONFIG.wind`.
+  - [x] Етап C: `WeatherDevSection` (селектор мапи, секція `Шанси погоди`, `💨 Ручна сила вітру`, повзунок `сила вітру, %`, кнопка `🌬 Порив вітру зараз`), `WeatherStatusReader` + `WeatherOverlayModule` (жива `Сила вітру 0…1` → `WEATHER.controls.windStrength`) + перевірка `R20`.
+  - [ ] Перевірка власника: візуально перевірити у браузері нахил дощу/хвилі/коливання поплавка при поривах і ручній силі вітру, оверлей «ПОГОДА Й ХВИЛІ» (`Сила вітру 0…1`), DevTools ПОГОДА (`Локація`, `Шанси погоди`, керування силою вітру й поривами) та виміряти FPS через `⚡ ПРОДУКТИВНІСТЬ` в обох орієнтаціях.
+
 - [x] **TK-297 — кнопка закриття справа від повзунка розміру у вікнах оверлею (власник, 2026-11-13, v0.50.109).**
       «зправа від повзунка з розміром додай кнопку закриття стиль візьми з ui-modal-close inventory-header__close».
   - Знайдено: верхня панель масштабу `OverlayScaleControls` (`.debug-overlay__scale-controls`) містить лише повзунок

@@ -147,6 +147,38 @@ function validateLocationWeatherDomain(weather, errors) {
     checkRange(thresholds.rain, "locationWeather.thresholds.rain", 0, 1, errors);
     checkRange(thresholds.fog, "locationWeather.thresholds.fog", 0, 1, errors);
   }
+  const wind = weather.wind;
+  if (isRecord(wind)) {
+    checkRange(wind.fadeSec, "locationWeather.wind.fadeSec", 0, Infinity, errors);
+    if (isRecord(wind.states)) {
+      for (const state of ["calm", "light", "moderate", "strong"]) {
+        const entry = wind.states[state];
+        if (!isRecord(entry)) continue;
+        checkRange(entry.weight, `locationWeather.wind.states.${state}.weight`, 0, Infinity, errors);
+        checkPair(entry.durationSec, `locationWeather.wind.states.${state}.durationSec`, 0, Infinity, true, errors);
+        checkPair(entry.strength, `locationWeather.wind.states.${state}.strength`, 0, 1, true, errors);
+      }
+    }
+    if (isRecord(wind.weatherBoost)) {
+      for (const key of ["rainMinStrength", "rainBonus", "stormMinStrength"]) {
+        checkRange(wind.weatherBoost[key], `locationWeather.wind.weatherBoost.${key}`, 0, 1, errors);
+      }
+    }
+    if (isRecord(wind.gust)) {
+      for (const key of ["chancePerSec", "rainChanceMult", "stormChanceMult"]) {
+        checkRange(wind.gust[key], `locationWeather.wind.gust.${key}`, 0, Infinity, errors);
+      }
+      checkRange(wind.gust.attackShare, "locationWeather.wind.gust.attackShare", 0.05, 0.95, errors);
+      checkPair(wind.gust.durationSec, "locationWeather.wind.gust.durationSec", 0.1, Infinity, true, errors);
+      checkPair(wind.gust.deltaRange, "locationWeather.wind.gust.deltaRange", 0, 1, true, errors);
+    }
+    if (isRecord(wind.float)) {
+      checkRange(wind.float.maxAngleDeg, "locationWeather.wind.float.maxAngleDeg", 0, 90, errors);
+      checkPair(wind.float.returnPctRange, "locationWeather.wind.float.returnPctRange", 0, 1, true, errors);
+      checkPair(wind.float.cycleDurationSec, "locationWeather.wind.float.cycleDurationSec", 0.05, Infinity, true, errors);
+      checkPair(wind.float.amplitudeJitter, "locationWeather.wind.float.amplitudeJitter", 0, 5, true, errors);
+    }
+  }
 }
 
 export function validateWeatherFile(file, { rainTemplate, locationWeatherTemplate, locations = null } = {}) {

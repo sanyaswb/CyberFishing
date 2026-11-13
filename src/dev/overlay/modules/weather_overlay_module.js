@@ -6,6 +6,12 @@ const PRECIPITATION = Object.freeze({
   storm: "гроза",
 });
 const WIND = Object.freeze({ "-1": "← вліво", 0: "немає", 1: "вправо →" });
+const WIND_STATE = Object.freeze({
+  calm: "штиль",
+  light: "слабкий",
+  moderate: "середній",
+  strong: "сильний",
+});
 
 const share = (value) => (Number(value) || 0).toFixed(2);
 const pixels = (value) => (Number(value) || 0).toFixed(1);
@@ -55,19 +61,26 @@ export class WeatherOverlayModule extends OverlayModule {
       metricKey: "weather.fog",
       devtoolsPath: "WEATHER.controls.fogStrength",
     });
+    const windStateLabel = WIND_STATE[reading.windState];
+    const windText = `${WIND[reading.windDirection] ?? reading.windDirection}${
+      windStateLabel && reading.windDirection !== 0 ? ` · ${windStateLabel}` : ""
+    }${reading.windForced ? " (вручну)" : ""}`;
     html += this.plainRow(
       "Вітер",
-      `${WIND[reading.windDirection] ?? reading.windDirection}${reading.windForced ? " (вручну)" : ""}`,
+      windText,
       {
         color: "#ffffff",
         metricKey: "weather.windDirection",
         devtoolsPath: "WEATHER.controls.windDirection",
       },
     );
-    html += this.plainRow("Сила вітру 0…1", share(reading.windStrength), {
+    const windStrengthText = `${share(reading.windStrength)}${reading.windGust ? " · порив" : ""}${
+      reading.windStrengthForced ? " (вручну)" : ""
+    }`;
+    html += this.plainRow("Сила вітру 0…1", windStrengthText, {
       color: "#ffdd66",
       metricKey: "weather.windStrength",
-      devtoolsPath: "WEATHER.controls.windDirection",
+      devtoolsPath: "WEATHER.controls.windStrength",
     });
     html += this.plainRow(
       "Ніч 0…1",

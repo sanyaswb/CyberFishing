@@ -276,12 +276,6 @@ export const CONFIG = {
     map: MAP_DB,
   },
 
-  wind: {
-    active: true,
-    speedPxPerSec: 15,
-    direction: { x: 1, y: 0.2 },
-  },
-
   spawns: {
     tickRateMs: 1000,
     antiSpam: {

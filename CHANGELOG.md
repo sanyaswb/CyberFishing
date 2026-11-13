@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.111 - Living continuous wind, gusts, float return-swing & per-map DevTools chances
+
+- TK-298 (spec 178): added `WindModel` (`0…1` real-second episodes, isolated `windRng`, rain/storm boosts, global gusts, `strength === 0 ⇔ direction === 0`) and `MAP_DB.<id>.weather.wind` schema/export support; coupled continuous `wind.strength` to `SeaStateResolver`, `PixiRainRenderer` slant and `WaterEntity` dynamic return-swing rock; added DevTools «ПОГОДА» location selector, `Шанси погоди`, manual wind strength / gust controls, and live `Сила вітру 0…1` overlay hyperlink.
+
 ## v0.50.110 - Weather overlay night link path & incident I-20
 
 - TK-296.2 (owner): fixed the «Ніч 0…1» overlay link path in `WeatherOverlayModule` from `CONFIG.timePhases.night.startHour` to `CONFIG.spawns.timePhases.night.startHour` so DevTools expands and highlights `startHour` instead of the root `.devtools__section-title`; added `CONFIG` leaf traversal assertion in `weather-check.js` and documented incident `I-20` / rule `R20` with verification and troubleshooting steps in `docs/incidents.md`.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.102 - DevTools dependent parameters
 
 - TK-292 (spec 174 A6): a DevTools parameter whose switch is off is inactive whatever its control (number, text, segments, list; a switch as before): it is dimmed and cannot be edited, an attempt highlights the switch that blocks it, and turning that switch on activates the rows at once. Dependencies: a config group's enabled switch (nested groups too), <name>Enabled for its <name>… siblings, locations.debugVisuals for the fight-area overlays.
-
-## v0.50.101 - Weather in the scene section, live weather overlay
-
-- TK-291 (owner): DevTools «ПОГОДА» now lives inside «🖼️ СЦЕНА WebGL»; «Стан моря» is split into «Звичайний стан» (calm, wind, night) and «Гроза»; a new overlay «ПОГОДА й хвилі» shows the storm, rain and fog strengths, the wind's direction and strength, the night and the waves' actual amplitude, length and speed in real time.

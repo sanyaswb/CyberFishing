@@ -6,6 +6,12 @@ const {
   WeatherModel,
 } = require("../../../src/game/domain/weather/weather_model.js");
 const {
+  WindModel,
+} = require("../../../src/game/domain/weather/wind_model.js");
+const {
+  WaterEntity,
+} = require("../../../src/game/domain/tackle/water_entity.js");
+const {
   EnvironmentSystem,
 } = require("../../../src/game/application/world/environment_system.js");
 const { SeededRng } = require("../../../src/engine/random/seeded_rng.js");
@@ -610,6 +616,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     'data-devtools-path="WEATHER.controls.storm"',
     'data-devtools-path="WEATHER.controls.stormStrength"',
     'data-devtools-path="WEATHER.controls.windDirection"',
+    'data-devtools-path="WEATHER.controls.windStrength"',
     'data-devtools-path="CONFIG.spawns.timePhases.night.startHour"',
     'data-devtools-path="CONFIG.canvas.water.amplitude"',
     'data-devtools-path="CONFIG.canvas.water.wavelength"',
@@ -683,6 +690,329 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     /вимкнено/u.test(module.render()),
     "and the overlay says the waves are off",
   );
+}
+
+// 12. Spec 178 stage A: WindModel — continuous 0…1 strength, calm/light/moderate/strong episodes, real seconds,
+// strength === 0 <-> direction === 0 invariant, rain/storm boosts, smooth gusts, manual overrides, and isolated RNG.
+{
+  const wind = new WindModel({
+    rng: new SeededRng("check:wind"),
+    getSettings: () => MAP_DB.test.weather.wind,
+  });
+  const states = new Set();
+  const dirs = new Set();
+  let sawGust = false;
+  let sawZero = false;
+  for (let i = 0; i < 6000; i += 1) {
+    const snap = wind.update(1000, { rain: 0, storm: 0 });
+    assert(snap.strength >= 0 && snap.strength <= 1, "wind strength stays in 0…1");
+    if (snap.strength === 0) {
+      assert.equal(snap.direction, 0, "zero wind strength implies zero direction");
+      sawZero = true;
+    } else {
+      assert(
+        snap.direction === -1 || snap.direction === 1,
+        "positive wind strength picks -1 or 1 direction",
+      );
+    }
+    states.add(snap.state);
+    dirs.add(snap.direction);
+    if (snap.isGusting) sawGust = true;
+  }
+  assert(sawZero && sawGust, "long run visits calm and gusts");
+  assert.deepEqual([...dirs].sort((a, b) => a - b), [-1, 0, 1], "wind visits left, calm, and right");
+  for (const expected of ["calm", "light", "moderate", "strong"]) {
+    assert(states.has(expected), `wind visits state ${expected}`);
+  }
+
+  // Smooth fade without instant jumps and storm boost pushing minimum wind high.
+  const calmFirst = new WindModel({
+    rng: new SeededRng("check:wind:storm"),
+    getSettings: () => ({
+      ...MAP_DB.test.weather.wind,
+      fadeSec: 10,
+      states: { calm: { weight: 1, durationSec: [60, 60], strength: [0, 0] } },
+    }),
+  });
+  calmFirst.update(100, { rain: 0, storm: 0 });
+  assert.equal(calmFirst.snapshot.strength, 0);
+  assert.equal(calmFirst.snapshot.direction, 0);
+  calmFirst.update(1000, { rain: 0.8, storm: 1 });
+  assert(
+    calmFirst.snapshot.strength >= MAP_DB.test.weather.wind.weatherBoost.stormMinStrength,
+    "full storm lifts wind above calm immediately via stormMinStrength",
+  );
+  assert(
+    calmFirst.snapshot.direction === -1 || calmFirst.snapshot.direction === 1,
+    "storm-driven wind picks a non-zero direction when rising from calm",
+  );
+
+  // Manual direction & strength overrides + isolated windRng vs weatherRng.
+  const custom = new WindModel({
+    rng: new SeededRng("check:wind:override"),
+    getSettings: () => MAP_DB.test.weather.wind,
+  });
+  custom.setStrengthOverride(0);
+  custom.update(100, { rain: 0, storm: 0 });
+  assert.equal(custom.snapshot.direction, 0, "forced 0 strength leaves direction calm");
+  custom.setStrengthOverride(0.45);
+  custom.update(100, { rain: 0, storm: 0 });
+  assert(
+    Math.abs(custom.snapshot.strength - 0.45) < 1e-6 &&
+      (custom.snapshot.direction === -1 || custom.snapshot.direction === 1),
+    "forced positive strength sets strength and picks a random direction",
+  );
+  assert.equal(custom.triggerGust({ delta: 0.25, durationSec: 2 }), true, "manual gust starts");
+  custom.update(500, { rain: 0, storm: 0 });
+  assert(custom.snapshot.isGusting && custom.snapshot.strength > 0.45, "gust adds smoothly over forced strength");
+  custom.setDirectionOverride(0);
+  assert.equal(custom.snapshot.strength, 0, "forced calm direction clears strength to 0");
+  custom.setDirectionOverride(null);
+  custom.setStrengthOverride(null);
+
+  // Separate windRng never disturbs weatherRng in EnvironmentSystem.
+  const makeWeatherOnly = () =>
+    new WeatherModel({ rng: new SeededRng(77), getSettings: () => MAP_DB.test.weather });
+  const weatherRef = makeWeatherOnly();
+  const weatherWithWind = makeWeatherOnly();
+  const windPart = new WindModel({ rng: new SeededRng(88), getSettings: () => MAP_DB.test.weather.wind });
+  const env = new EnvironmentSystem(
+    MAP_DB.test,
+    12,
+    new SeededRng(77),
+    { timePhases: { day: { startHour: 0, endHour: 24 } } },
+    null,
+    weatherWithWind,
+    windPart,
+  );
+  for (let i = 0; i < 40; i += 1) {
+    weatherRef.update(1000, "day");
+    env.update(1000, 1);
+  }
+  assert.deepEqual(
+    weatherWithWind.snapshot,
+    weatherRef.snapshot,
+    "updating WindModel leaves WeatherModel rng sequence completely untouched",
+  );
+  env.setWindStrengthOverride(0.6);
+  env.setWindOverride(1);
+  assert.equal(env.getSnapshot().wind.forced, true);
+  assert.equal(env.getSnapshot().wind.direction, 1);
+  assert(Math.abs(env.getSnapshot().wind.strength - 0.6) < 1e-6);
+  assert(Math.abs(env.getPhysicsEnv().wind.strength - 0.6) < 1e-6);
+  assert.deepEqual(env.getPhysicsEnv().wind.float, MAP_DB.test.weather.wind.float);
+
+  // Spec 178 stage B: SeaStateResolver scales continuously with wind.strength, and WaterEntity rocks inside returnPctRange.
+  const { SeaStateResolver } = require("../../../src/game/presentation/world/sea_state_resolver.js");
+  const { CONFIG: GAME } = require("../../../src/game/config/runtime/game_config.js");
+  const seaCfg = { ...GAME.canvas.water.seaState, smoothingSec: 0 };
+  let liveEnv = { time: 13, weather: { storm: 0 }, wind: { direction: 1, strength: 0.25 } };
+  const seaContinuous = new SeaStateResolver({ getEnvironment: () => liveEnv, getSettings: () => seaCfg });
+  seaContinuous.update(100);
+  const weakAmp = seaContinuous.state.amplitudeScale;
+  liveEnv = { time: 13, weather: { storm: 0 }, wind: { direction: 1, strength: 0.9 } };
+  seaContinuous.update(200);
+  const strongAmp = seaContinuous.state.amplitudeScale;
+  assert(
+    weakAmp > seaCfg.normal.calmAmplitude && weakAmp < strongAmp && strongAmp < seaCfg.normal.windAmplitude,
+    `waves scale smoothly between calm and full wind (${weakAmp.toFixed(3)} < ${strongAmp.toFixed(3)})`,
+  );
+
+  const rng = new SeededRng("check:float-wind-swing");
+  const floatEntity = new WaterEntity(
+    500,
+    400,
+    { type: "day", maxDepth: 6, quality: 0, windCompensation: [0, 0] },
+    6,
+    rng,
+  );
+  const floatEnv = {
+    current: null,
+    wind: {
+      direction: 1,
+      strength: 0.9,
+      rainMult: 1,
+      float: { maxAngleDeg: 40, returnPctRange: [0.3, 0.45], cycleDurationSec: [0.6, 0.8], amplitudeJitter: [1, 1] },
+    },
+  };
+  const bounds = { x: 0, y: 0, width: 1000, height: 1000 };
+  const angles = [];
+  for (let i = 0; i < 40; i += 1) {
+    floatEntity.update(bounds, 50, floatEnv, () => true);
+    angles.push(floatEntity._targetWindAngle);
+  }
+  const minAngle = Math.min(...angles);
+  const maxAngle = Math.max(...angles);
+  assert(
+    minAngle > 15 && maxAngle > minAngle + 6,
+    `strong wind tilts float and keeps live return-swing motion (${minAngle.toFixed(1)}°..${maxAngle.toFixed(1)}°)`,
+  );
+  floatEnv.wind.strength = 0;
+  floatEntity.update(bounds, 50, floatEnv, () => true);
+  assert.equal(floatEntity._targetWindAngle, 0, "calm clears float wind target angle");
+
+  // 13. Spec 178 stage C: WeatherDevSection location selector, Weather Chances two-way sync,
+  // manual wind strength & gust controls, and WeatherOverlayModule WEATHER.* link parity (R20).
+  const { WeatherDevSection } = require("../../../src/dev/tools/weather_dev_section.js");
+  const { WeatherStatusReader } = require("../../../src/game/presentation/world/weather_status_reader.js");
+  const { WeatherOverlayModule } = require("../../../src/dev/overlay/modules/weather_overlay_module.js");
+  const { OverlayHtmlBuilder } = require("../../../src/dev/overlay/services/overlay_html_builder.js");
+  const liveWind = new WindModel({ rng: new SeededRng("check:dev-wind"), getSettings: () => MAP_DB.test.weather.wind });
+  liveWind.setStrengthOverride(0.72);
+  liveWind.triggerGust({ delta: 0.2, durationSec: 2 });
+  liveWind.update(300, { rain: 0, storm: 0 });
+  const stageCEnv = {
+    time: 14,
+    phase: "day",
+    weather: { precipitation: "clear", rain: 0, storm: 0, fog: 0, cloud: 0, strikeSerial: 0, frozen: false },
+    wind: { ...liveWind.snapshot, state: "strong", forced: true },
+  };
+  const waterCfg = JSON.parse(JSON.stringify(GAME.canvas.water));
+  const stageCSea = new SeaStateResolver({ getEnvironment: () => stageCEnv, getSettings: () => waterCfg.seaState });
+  stageCSea.update(100);
+  const stageCReader = new WeatherStatusReader({
+    getEnvironment: () => stageCEnv,
+    seaState: stageCSea,
+    getWater: () => waterCfg,
+  });
+  const stageCReading = stageCReader.read();
+  assert.equal(stageCReading.windState, "strong");
+  assert.equal(stageCReading.windGust, true);
+  assert.equal(stageCReading.windStrengthForced, true);
+  const stageCOverlayHtml = new WeatherOverlayModule({
+    readWeather: () => stageCReading,
+    htmlBuilder: new OverlayHtmlBuilder(),
+  }).render();
+  assert(stageCOverlayHtml.includes("сильний"), "overlay displays wind state label");
+  assert(stageCOverlayHtml.includes("· порив (вручну)"), "overlay displays gust and manual strength tags");
+
+  const locations = {
+    test: { weather: JSON.parse(JSON.stringify(MAP_DB.test.weather)) },
+    lake: { weather: JSON.parse(JSON.stringify(MAP_DB.test.weather)) },
+  };
+  const calls = [];
+  const rowsByPath = new Map();
+  const fakeNode = () => ({
+    className: "",
+    textContent: "",
+    style: {},
+    children: [],
+    dataset: {},
+    append(child) {
+      this.children.push(child);
+    },
+    replaceChildren(...items) {
+      this.children = [...items];
+    },
+    querySelectorAll() {
+      return [];
+    },
+  });
+  const prevDoc = globalThis.document;
+  globalThis.document = {
+    createElement: () => fakeNode(),
+  };
+  try {
+    const fakeUi = {
+      syncCalls: [],
+      createDetailsSection(_label, parent, path) {
+        const body = fakeNode();
+        if (path) rowsByPath.set(path.join("."), { kind: "section" });
+        parent.append(body);
+        return body;
+      },
+      createInfoRow() {},
+      createButtonRow(label, parent, onClick, _danger, _title, path) {
+        if (path) rowsByPath.set(path.join("."), { kind: "button", label, onClick });
+        else rowsByPath.set(`button:${label}`, { kind: "button", label, onClick });
+      },
+      createSwitcherRow(label, value, parent, onChange, path) {
+        if (path) rowsByPath.set(path.join("."), { kind: "switcher", value, onChange });
+      },
+      createRangeRow(label, value, parent, onChange, path) {
+        if (path) rowsByPath.set(path.join("."), { kind: "range", value, onChange });
+      },
+      createSelectRow(label, _choices, value, parent, onChange, path) {
+        if (path) rowsByPath.set(path.join("."), { kind: "select", value, onChange });
+      },
+      createChoiceRow(label, choices, value, parent, onChange, path) {
+        if (path) rowsByPath.set(path.join("."), { kind: "choice", choices, value, onChange });
+      },
+      createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
+        if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });
+      },
+      createTextRow() {},
+      releaseValueBindings() {},
+      syncValue(path, value) {
+        this.syncCalls.push([path.join("."), value]);
+      },
+    };
+    const fakeModel = {
+      snapshot: stageCEnv.weather,
+      setFrozen(v) {
+        calls.push(["frozen", v]);
+      },
+      force() {},
+      strike() {
+        calls.push(["strike"]);
+      },
+      setIntensity() {},
+    };
+    const devWeather = new WeatherDevSection({
+      ui: fakeUi,
+      weather: {
+        locationId: "test",
+        getModel: () => fakeModel,
+        getWind: () => stageCEnv.wind,
+        setWind: (dir) => calls.push(["setWind", dir]),
+        setWindStrength: (s) => calls.push(["setWindStrength", s]),
+        triggerWindGust: () => calls.push(["triggerWindGust"]),
+      },
+      rainConfig: () => JSON.parse(JSON.stringify(GAME.canvas.rain)),
+      config: () => locations.test.weather,
+      locationConfig: (id) => locations[id]?.weather ?? null,
+      locationsMap: () => locations,
+      createSection: fakeUi.createDetailsSection,
+      renderConfigTree: () => {},
+      updateConfig: (path, val) => {
+        calls.push(["updateConfig", path.join("."), val]);
+      },
+    });
+    const host = fakeNode();
+    devWeather.render(host);
+    // Every WEATHER.* link emitted by WeatherOverlayModule must resolve to a control/section in WeatherDevSection.
+    for (const [, linkPath] of stageCOverlayHtml.matchAll(/data-devtools-path="(WEATHER\.[^"]+)"/gu)) {
+      assert(rowsByPath.has(linkPath), `WeatherDevSection registers ${linkPath} linked from WeatherOverlayModule`);
+    }
+    const locChoice = rowsByPath.get("WEATHER.location.id");
+    assert(locChoice && locChoice.value === "test", "location selector starts at active map");
+    locChoice.onChange("lake");
+    const rainChance = rowsByPath.get("WEATHER.chances.rainWeight");
+    assert.deepEqual(
+      rainChance.bindingPath,
+      ["CONFIG", "locations", "map", "lake", "weather", "precipitation", "rain", "weight"],
+      "Weather Chances binds directly to selected map's CONFIG weather tree",
+    );
+    rainChance.onChange(1.5);
+    assert(
+      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.precipitation.rain.weight" && v === 1.5),
+      "Weather Chances updates weight on selected location",
+    );
+    rowsByPath.get("WEATHER.chances.fogChance").onChange(1.5);
+    assert(
+      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chance" && v === 1),
+      "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
+    );
+    rowsByPath.get("WEATHER.controls.windStrength").onChange(82);
+    assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "strength slider drives setWindStrength");
+    assert(fakeUi.syncCalls.some(([p, v]) => p === "WEATHER.controls.windStrengthHold" && v === true), "dragging strength slider activates hold switcher");
+    rowsByPath.get("WEATHER.controls.gust").onClick();
+    assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
+    rowsByPath.get("button:↺ Автоматична погода").onClick();
+    assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "auto button resets forced wind strength");
+  } finally {
+    globalThis.document = prevDoc;
+  }
 }
 
 console.log(

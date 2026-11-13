@@ -146,6 +146,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     const unknownRainKey = JSON.parse(JSON.stringify(RAIN_SETTINGS)); unknownRainKey.secret = 1;
     const badDuration = JSON.parse(JSON.stringify(WEATHER)); badDuration.precipitation.rain.durationSec = [500, 10];
     const badPhases = JSON.parse(JSON.stringify(WEATHER)); badPhases.fog.phases = ["noon"];
+    const badWindStrength = JSON.parse(JSON.stringify(WEATHER)); badWindStrength.wind.states.light.strength = [0.2, 2.5];
+    const badFloatReturn = JSON.parse(JSON.stringify(WEATHER)); badFloatReturn.wind.float.returnPctRange = [0.6, 0.2];
     const badLocationUnknownKey = JSON.parse(JSON.stringify(WEATHER)); badLocationUnknownKey.extra = true;
 
     for (const [text, reason] of [
@@ -158,6 +160,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
       [exported(unknownRainKey, WEATHER), "unknown rain key"],
       [exported(RAIN_SETTINGS, badDuration), "reversed duration interval"],
       [exported(RAIN_SETTINGS, badPhases), "unknown fog phase"],
+      [exported(RAIN_SETTINGS, badWindStrength), "wind strength > 1"],
+      [exported(RAIN_SETTINGS, badFloatReturn), "reversed float returnPctRange"],
       [exported(RAIN_SETTINGS, badLocationUnknownKey), "unknown location weather key"],
     ]) {
       assert.equal(await applier.apply(text, { yes: true }), "refused", reason);

@@ -56,6 +56,7 @@ import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/d
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
+import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
 import { backgroundTimeBlend } from "../../game/domain/time/background_time_blend.js";
@@ -1540,12 +1541,18 @@ export class GameCompositionRoot {
     const seed =
       this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
     const weatherRng = new SeededRng(`${seed}:weather`);
+    const windRng = new SeededRng(`${seed}:wind`);
+    const getWeatherSettings = () =>
+      this.#config.locations?.map?.[locId]?.weather ??
+      locCfg?.weather ??
+      null;
     const weather = new WeatherModel({
       rng: weatherRng,
-      getSettings: () =>
-        this.#config.locations?.map?.[locId]?.weather ??
-        locCfg?.weather ??
-        null,
+      getSettings: getWeatherSettings,
+    });
+    const wind = new WindModel({
+      rng: windRng,
+      getSettings: () => getWeatherSettings()?.wind ?? null,
     });
     return new EnvironmentSystem(
       locCfg,
@@ -1554,6 +1561,7 @@ export class GameCompositionRoot {
       this.#config.spawns,
       gameTimeClock,
       weather,
+      wind,
     );
   }
 
@@ -1679,14 +1687,19 @@ export class GameCompositionRoot {
                         systems.radio.get()?.radio.update();
                       },
                     },
-                    // DEV weather section (spec 172 stage A): the environment's weather model, read when the section is drawn.
+                    // DEV weather section (spec 172 stage A, spec 178): the environment's weather & wind models.
                     weather: {
                       getModel: () => systems.env?.weather ?? null,
+                      getWindModel: () => systems.env?.wind ?? null,
                       locationId: locId,
-                      // TK-271: the wind's direction by hand (null: automatic again).
+                      // TK-271 / Spec 178: wind direction and continuous strength by hand (null: automatic).
                       getWind: () => systems.env?.getSnapshot()?.wind ?? null,
                       setWind: (direction) =>
                         systems.env?.setWindOverride(direction),
+                      setWindStrength: (strength) =>
+                        systems.env?.setWindStrengthOverride(strength),
+                      triggerWindGust: () =>
+                        systems.env?.triggerWindGust?.() ?? false,
                     },
                     // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
                     keepnet: {

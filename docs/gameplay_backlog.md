@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-128 Living continuous wind strength (0…1), gusts, waves, rain slant and float dynamic swing (P2, done in v0.50.111; owner acceptance pending)
+Found: 2026-11-13, owner, v0.50.110.
+Reproduce: watch `Сила вітру 0…1`, waves, rain slant and float during non-storm weather or manual wind direction switches.
+Expected: wind has a dedicated `windRng` stream and real-second episodes (`calm / light / moderate / strong` with smooth fades), rain/storm boosts, and global gusts (`0…1`); direction is `0` when strength is `0` and randomly picks `±1` when wind starts blowing; waves, rain slant and float lean follow the continuous `wind.strength`, and the float keeps a live `%` return-swing cadence under strong wind instead of sitting frozen at one angle.
+Actual: wind is split between discrete `±1/0` `changesPerDay` (waves read binary `0` or `1`) and isolated float-only gust timers; `Сила вітру 0…1` has no continuous levels or manual DevTools control.
+Notes: [spec 178](../specs/178-living-wind/spec.md), `TK-298`.
+
 ### G-127 Bait boat AI gets stuck, circles at obstacles and depends on the frame rate (P2, done in v0.49.11; owner acceptance pending)
 Found: 2026-10-30, owner request + Node simulation of BaitBoat (catalog level 3).
 Reproduce: U-shaped obstacle cells or a land peninsula across the course; or 144 Hz vs 60 Hz in open water.

@@ -770,7 +770,8 @@
 │  │  │  │  ├── background_time_blend.js
 │  │  │  │  └── game_time_clock.js
 │  │  │  └── weather
-│  │  │     └── weather_model.js
+│  │  │     ├── weather_model.js
+│  │  │     └── wind_model.js
 │  │  └── presentation
 │  │     ├── casting
 │  │     │  └── cast_scene_renderer.js

@@ -734,6 +734,14 @@ async function checkRain() {
   frame({ settings: { ...settings, maxDrops: 400 } });
   assert.equal(rain.status.dropPool, 600, "a larger setting grows the pool");
 
+  // Spec 178: continuous windStrength scales rain slant smoothly instead of only 0 / ±1.
+  const partialWindWorld = { ...world, weather: { ...world.weather, windStrength: 0.25 } };
+  for (let index = 0; index < 180; index += 1) frame({ world: partialWindWorld });
+  assert(
+    rain.status.slantDeg > 3 && rain.status.slantDeg < 4.5,
+    `partial windStrength scales rain slant proportionally (${rain.status.slantDeg.toFixed(2)}°)`,
+  );
+
   // TK-273: rain zones. Drops land only inside the zones on screen and are clipped by their mask; rings stay on the
   // water; no zone on screen: no new drops; the switch off: the whole screen again, no mask.
   const mask = stage.children[2];

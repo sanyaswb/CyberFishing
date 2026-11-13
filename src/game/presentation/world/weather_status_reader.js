@@ -21,6 +21,9 @@ export class WeatherStatusReader {
     windDirection: 0,
     windForced: false,
     windStrength: 0,
+    windState: "calm",
+    windGust: false,
+    windStrengthForced: false,
     night: 0,
     phase: "day",
     hours: 0,
@@ -96,10 +99,18 @@ export class WeatherStatusReader {
     reading.frozen = weather?.frozen === true;
     reading.windDirection = number(environment?.wind?.direction, 0);
     reading.windForced = environment?.wind?.forced === true;
+    reading.windState = environment?.wind?.state ?? (reading.windDirection === 0 ? "calm" : "moderate");
+    reading.windGust = environment?.wind?.isGusting === true;
+    reading.windStrengthForced =
+      environment?.wind?.forcedStrength !== null && environment?.wind?.forcedStrength !== undefined;
     reading.phase = environment?.phase ?? "day";
     reading.hours = number(environment?.time, 0);
     const sea = this.#seaState.state;
-    reading.windStrength = number(sea.wind, 0);
+    const liveWindStrength = environment?.wind?.strength;
+    reading.windStrength =
+      liveWindStrength !== undefined && liveWindStrength !== null && Number.isFinite(Number(liveWindStrength))
+        ? Math.min(1, Math.max(0, Number(liveWindStrength)))
+        : number(sea.wind, 0);
     reading.night = number(sea.night, 0);
     const water = this.#getWater() || {};
     const waves = reading.waves;

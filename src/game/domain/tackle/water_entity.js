@@ -37,10 +37,14 @@ export class WaterEntity {
   _stepId = 0;
   _isOverDepth = false;
 
-  // The wind's lean on the float's antenna in degrees (gust schedule below); the drawn pose smooths it.
+  // The wind's lean on the float's antenna in degrees (spec 178 dynamic return swing / legacy gust fallback); the drawn pose smooths it.
   _targetWindAngle = 0;
   _windTimer = 0;
   _windFluctuationTimer = 0;
+  _swingTimerMs = 0;
+  _swingDurationMs = 0;
+  _swingReturnShare = 0.25;
+  _swingAmp = 1;
   // The water's own velocity under the tackle this frame (the location current), in update-plane pixels per second.
   _waterVelocity;
   _weightedTackleConfig = null;
@@ -394,6 +398,8 @@ export class WaterEntity {
     this._targetWindAngle = 0;
     this._windTimer = 0;
     this._windFluctuationTimer = 0;
+    this._swingTimerMs = 0;
+    this._swingDurationMs = 0;
   }
 
   _applyPhysics(boundsRect, checkWater, dt, environment) {
@@ -421,40 +427,77 @@ export class WaterEntity {
           windCompRange,
         );
 
-        this._windFluctuationTimer -= dt;
-
-        if (this._windTimer > 0) {
-          this._windTimer -= dt;
-          if (this._windFluctuationTimer <= 0) {
-            const gustAngle =
-              this._getRandom(environment.wind.gustAngleRange) * dir;
-            this._targetWindAngle = gustAngle * (1 - windComp);
-            this._windFluctuationTimer = this._getRandom(
-              environment.wind.gustFluctuationMs,
-            );
+        if (environment.wind.float && Number.isFinite(Number(environment.wind.strength))) {
+          const strength = Math.max(0, Math.min(1, Number(environment.wind.strength)));
+          const floatWind = environment.wind.float;
+          if (strength <= 0 || dir === 0) {
+            this._targetWindAngle = 0;
+            this._swingTimerMs = 0;
+            this._swingDurationMs = 0;
+          } else {
+            this._swingTimerMs -= dt;
+            if (this._swingDurationMs <= 0 || this._swingTimerMs <= 0) {
+              const cycleSec = Array.isArray(floatWind.cycleDurationSec)
+                ? floatWind.cycleDurationSec
+                : [0.45, 1.35];
+              const returnRange = Array.isArray(floatWind.returnPctRange)
+                ? floatWind.returnPctRange
+                : [0.15, 0.45];
+              const jitterRange = Array.isArray(floatWind.amplitudeJitter)
+                ? floatWind.amplitudeJitter
+                : [0.8, 1.15];
+              this._swingDurationMs = Math.max(80, this._getRandom(cycleSec) * 1000);
+              this._swingTimerMs = this._swingDurationMs;
+              this._swingReturnShare = Math.max(0, Math.min(0.95, this._getRandom(returnRange)));
+              this._swingAmp = Math.max(0.1, this._getRandom(jitterRange));
+            }
+            const progress = Math.max(0, Math.min(1, 1 - this._swingTimerMs / this._swingDurationMs));
+            const wave = 0.5 - 0.5 * Math.cos(progress * Math.PI * 2);
+            const floorShare = 1 - this._swingReturnShare;
+            const swingFactor = floorShare + (this._swingAmp - floorShare) * wave;
+            const maxAngleDeg = Math.max(0, Number(floatWind.maxAngleDeg) || 38);
+            this._targetWindAngle = dir * maxAngleDeg * strength * (1 - windComp) * swingFactor;
           }
         } else {
-          if (this._windFluctuationTimer <= 0) {
-            const breezeAngle =
-              this._getRandom(environment.wind.breezeAngleRange) * dir;
-            this._targetWindAngle = breezeAngle * (1 - windComp);
-            this._windFluctuationTimer =
-              this._getRandom(environment.wind.gustFluctuationMs) * 3;
-          }
-          if (this._chance(environment.wind.gustChancePerSec * dtSec)) {
-            this._windTimer = this._getRandom(environment.wind.gustDurationMs);
-            this._windFluctuationTimer = 0;
+          this._windFluctuationTimer -= dt;
+
+          if (this._windTimer > 0) {
+            this._windTimer -= dt;
+            if (this._windFluctuationTimer <= 0) {
+              const gustAngle =
+                this._getRandom(environment.wind.gustAngleRange) * dir;
+              this._targetWindAngle = gustAngle * (1 - windComp);
+              this._windFluctuationTimer = this._getRandom(
+                environment.wind.gustFluctuationMs,
+              );
+            }
+          } else {
+            if (this._windFluctuationTimer <= 0) {
+              const breezeAngle =
+                this._getRandom(environment.wind.breezeAngleRange) * dir;
+              this._targetWindAngle = breezeAngle * (1 - windComp);
+              this._windFluctuationTimer =
+                this._getRandom(environment.wind.gustFluctuationMs) * 3;
+            }
+            if (this._chance(environment.wind.gustChancePerSec * dtSec)) {
+              this._windTimer = this._getRandom(environment.wind.gustDurationMs);
+              this._windFluctuationTimer = 0;
+            }
           }
         }
       } else {
         this._targetWindAngle = 0;
         this._windTimer = 0;
         this._windFluctuationTimer = 0;
+        this._swingTimerMs = 0;
+        this._swingDurationMs = 0;
       }
     } else {
       this._targetWindAngle = 0;
       this._windTimer = 0;
       this._windFluctuationTimer = 0;
+      this._swingTimerMs = 0;
+      this._swingDurationMs = 0;
     }
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(

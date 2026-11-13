@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-298 (spec 178): living continuous wind (0…1) with dedicated windRng stream, real-second episodes and global gusts, rain/storm boosts, continuous wave/rain/float coupling with float return-swing oscillation, DevTools weather location selector + Weather Chances + manual wind strength/gust controls, and «Сила вітру 0…1» overlay hyperlink.",
   "TK-296.2: fixed «Ніч 0…1» overlay DevTools link path to CONFIG.spawns.timePhases.night.startHour so it highlights the startHour parameter instead of the root CONFIG section title; added CONFIG path traversal check and incident I-20 / rule R20.",
   "TK-297: added a `ui-modal-close`-styled close button right of the top scale slider on every overlay module window and balance tool window, turning off its module switch in OverlaySettingsStore and DevTools.",
   "TK-296.1: removed dotted/dashed lines and link underlines in overlay; overlay headings and collapsible group summaries now have rounded background fills.",
