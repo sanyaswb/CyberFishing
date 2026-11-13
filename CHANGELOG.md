@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.125 - DevTools on phones
+
+- TK-310 (spec 174 D): on a narrow portrait phone DevTools is a bottom sheet across the width (half the height, nearly all of it with its handle) with the module rail as a row on top, so the game stays visible above it; on a landscape phone it is a compact side panel at most half the screen wide.
+
 ## v0.50.124 - Overlay metric links
 
 - TK-309: in every overlay module a metric whose description names a game parameter looks like the weather module's links; a click opens that parameter in DevTools and still writes the formula to the console, and a press on it does not drag the window.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.116 - DevTools panel modules
 
 - TK-301 (spec 174 B3): every area of the DevTools panel is its own module (shop, overlay, config, debug, scene with weather, zone editor, database, Spine, radio, hooked fish, service) with one contract; DevTools keeps only the panel's lifecycle, navigation and module order. The panel looks and works the same.
-
-## v0.50.115 - DevTools sections by place
-
-- TK-300 (spec 174 B4): DevTools remembers open sections by their place, not their title (two sections with one title no longer open together); a new fish on the hook redraws only its sections, so the panel keeps its scroll and focus during a fight; a full redraw keeps the scroll too. Open sections are reset once.

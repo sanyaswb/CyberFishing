@@ -230,6 +230,89 @@
 @container ui-surface (max-width: 820px) {
   .devtools__footer { display: block; }
 }
+/* TK-310 (spec 174 D): the sheet handle exists only in the bottom-sheet layout. */
+.devtools__sheet-handle { display: none; }
+
+/* TK-310: a landscape phone (low height): a compact side panel, half the width at most, so the game stays beside it. */
+@container ui-surface (orientation: landscape) and (max-height: 480px) {
+  .devtools { width: min(360px, 50%); }
+  .devtools__header { padding: 6px 10px; }
+  .devtools__title { font-size: 14px; }
+  .devtools__tools { padding: 6px 10px; }
+  .devtools__rail { flex-basis: 52px; padding: 6px 3px; }
+  .devtools__rail-button { min-height: 40px; padding: 4px 2px; }
+  .devtools__rail-label { display: none; }
+  .devtools__body { padding: 10px; }
+  .devtools__crumbs { top: -10px; margin: -10px -10px 0; padding: 6px 10px; }
+}
+
+/* TK-310: a narrow portrait screen: a bottom sheet across the width, half its height (the game shows above it) or nearly
+   all of it with the handle; the module rail becomes a row at the top of the sheet. */
+@container ui-surface (orientation: portrait) and (max-width: 480px) {
+  .devtools {
+    top: auto;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(var(--ui-logical-height, 100dvh) * 0.58);
+    border-right: 0;
+    border-top: 2px solid var(--ui-accent);
+    border-radius: var(--ui-radius-panel) var(--ui-radius-panel) 0 0;
+    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.5);
+    transform: translateY(105%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .devtools.devtools--open { left: 0; transform: none; }
+  .devtools.devtools--sheet-tall { height: calc(var(--ui-logical-height, 100dvh) * 0.92); }
+  .devtools__header { position: relative; padding: 14px 10px 6px; }
+  .devtools__title { font-size: 14px; }
+  .devtools__sheet-handle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: block;
+    width: 64px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    transform: translateX(-50%);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .devtools__sheet-handle::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 12px;
+    right: 12px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--devtools-text-muted);
+  }
+  .devtools__sheet-handle:focus-visible { outline: 2px solid var(--ui-info); outline-offset: -2px; }
+  .devtools__tools { padding: 6px 10px; }
+  .devtools__main { flex-direction: column; }
+  .devtools__rail {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 2px;
+    padding: 4px 6px;
+    border-right: 0;
+    border-bottom: 1px solid var(--devtools-line);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .devtools__rail-button { flex: 0 0 64px; min-height: 48px; }
+  .devtools__rail-button--active,
+  .ui-surface--desktop-hover .devtools__rail-button--active:hover { box-shadow: inset 0 -2px 0 var(--ui-accent); }
+  .devtools__body { flex: 1 1 auto; min-height: 0; padding: 10px; }
+  .devtools__crumbs { top: -10px; margin: -10px -10px 0; padding: 6px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .devtools__sheet-handle, .devtools { transition: none; }
+}
+
 
 /* Spec 174 C2: the module rail beside the active module's page. */
 .devtools__main {

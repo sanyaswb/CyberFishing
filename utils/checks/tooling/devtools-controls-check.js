@@ -749,6 +749,21 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- TK-310 (spec 174 D): the bottom sheet's handle switches between half and nearly the whole height ---------------
+{
+  const sheetUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const panel = sheetUi.body.parentNode;
+  const handle = byClass("devtools__sheet-handle", panel)[0];
+  assert.equal(handle.getAttribute("aria-expanded"), "false");
+  handle.click();
+  assert.equal(panel.classList.contains("devtools--sheet-tall"), true, "the handle makes the sheet tall");
+  assert.equal(handle.getAttribute("aria-expanded"), "true");
+  assert.equal(handle.getAttribute("aria-label"), "Згорнути панель");
+  handle.click();
+  assert.equal(panel.classList.contains("devtools--sheet-tall"), false, "and half again");
+  sheetUi.dispose();
+}
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
