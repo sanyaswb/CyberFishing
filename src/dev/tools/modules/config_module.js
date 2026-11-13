@@ -11,7 +11,8 @@ export class ConfigModule {
     const content = createSection("НАЛАШТУВАННЯ (CONFIG)", host, ["CONFIG"], { icon: "sliders" });
     for (const key of Object.keys(this.#config)) {
       if (tree.skips(["CONFIG"], key)) continue;
-      tree.render(this.#config[key], createSection(key, content, ["CONFIG", key]), ["CONFIG", key]);
+      // TK-308: each group's rows are drawn when it is first opened.
+      tree.section(key, content, ["CONFIG", key], this.#config[key]);
     }
   }
 }

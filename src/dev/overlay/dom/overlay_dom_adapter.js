@@ -116,8 +116,9 @@ export class OverlayDomAdapter {
     this.#clampWhenStable();
   }
 
+  // TK-308: the controller calls hide() on every update for inactive windows; a hidden window is not written again.
   hide() {
-    if (this.#container) this.#container.style.display = "none";
+    if (this.#container && this.#container.style.display !== "none") this.#container.style.display = "none";
   }
 
   updateHtml(html) {

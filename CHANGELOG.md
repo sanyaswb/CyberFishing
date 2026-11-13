@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.123 - Faster DevTools opening
+
+- TK-308: DevTools draws a section's rows when it is first opened (or when a search, the changed filter, an overlay link or a blocking switch needs them) instead of drawing every collapsed section on each opening: 32,528 -> 507 elements and 223 -> 8.5 ms per opening in Node; a hidden overlay window is no longer written on every update.
+
 ## v0.50.122 - DevTools text dialog
 
 - TK-307 (spec 174 C5): exports and imports in DevTools «Сервіс» (overrides, the asset load plan) open the panel's own text dialog with copy, download and open-file buttons, and errors stay in it with the reason; results show as a short line at the bottom of the panel instead of the browser's prompt and alert.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.114 - DevTools edit path split out
 
 - TK-299 (spec 174 B2): DevTools' edit path (config overrides, catalogs, the hooked fish, events) and its config tree drawing are separate modules (DevConfigEditService, ConfigTreeRenderer, HookedFishEditSync, ItemStatAliasSync); the panel behaves the same.
-
-## v0.50.113 - Rain gust slant impulse, default float wind compensation & live ITEM_DB float sync
-
-- TK-298.2 (spec 178): forwarded `windGust` (`gustStrength`) into `WeatherRenderModelBuilder` and `PixiRainRenderer` so gusts add an extra drop-slant impulse and faster angle response even at `100%` wind; changed default `windCompensation` on `float_day`, `float_night` and `float_sliding` from `[0.1, 1.0]` to `[0.1, 0.65]` so floats visibly lean in wind out of the box; synced live `ITEM_DB` edits in `GameApplication.#handleItemDatabaseUpdate` directly onto the active `FloatEntity`/`WaterEntity` in water (`syncEquipmentStats`) and supported space/comma separators in DevTools array inputs.

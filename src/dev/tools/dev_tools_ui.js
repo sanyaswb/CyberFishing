@@ -38,6 +38,8 @@ export class DevToolsUI {
   #exportNotices = new WeakMap();
   // Spec 174 C4: each section content's depth in its page, and the section shown alone (drill-in).
   #contentDepth = new WeakMap();
+  // TK-308: section contents drawn on first need.
+  #lazyContents = new Map();
   #drill = null;
   // Spec 174 C5: the open text dialog and the result line.
   #dialog = null;
@@ -140,6 +142,7 @@ export class DevToolsUI {
   }
 
   clearValueBindings() {
+    this.#lazyContents.clear();
     this.#parameterRows.clear();
     this.#changeMarks.clear();
     this.#openedBySearch.clear();
@@ -240,6 +243,7 @@ export class DevToolsUI {
     const content = section.children[1];
     const page = this.#pageOf(section);
     if (!content || !page) return;
+    this.#materialize(content);
     const ancestors = [];
     for (let node = section.parentNode; node && node !== page; node = node.parentNode) {
       if (node.classList?.contains("devtools__section")) ancestors.unshift(node);
@@ -362,7 +366,8 @@ export class DevToolsUI {
   }
 
   #showBlocker(blocker, row) {
-    const elements = this.#controlBindings.elements(blocker.path);
+    let elements = this.#controlBindings.elements(blocker.path);
+    if (!elements.length && this.materializeAll()) elements = this.#controlBindings.elements(blocker.path);
     if (elements[0]) this.#revealPageOf(elements[0]);
     this.#dependencyFeedback?.show(blocker.path, elements, row);
   }
@@ -394,8 +399,10 @@ export class DevToolsUI {
   // icon: an optional DevTools icon name before the title (spec 174 C1); the chevron is an icon turned by CSS.
   // Spec 174 C4 (Q3): a section below two visible levels opens "inside" (drill-in with breadcrumbs) instead of nesting
   // further to the right; inline: false keeps a section in place at any depth («Опис»).
+  // render(content): TK-308 — the content is drawn when the section is first opened (or when search, a reveal or a
+  // blocker needs every row: materializeAll), not when the panel opens.
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null,
-    { buttonTitle = false, icon = "", inline = false } = {}) {
+    { buttonTitle = false, icon = "", inline = false, render = null } = {}) {
     const section = document.createElement("div");
     section.className = "devtools__section";
     this.#assignDevToolsPath(section, path);
@@ -422,6 +429,7 @@ export class DevToolsUI {
     this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
     this.#contentDepth.set(content, depth);
+    if (render) this.#lazyContents.set(content, () => render(content));
 
     title.addEventListener("click", () => {
       if (drill && this.#drill?.section !== section) {
@@ -430,6 +438,7 @@ export class DevToolsUI {
       }
       if (drill) return;
       const isHidden = content.style.display === "none";
+      if (isHidden) this.#materialize(content);
       content.style.display = isHidden ? "block" : "none";
       title.setAttribute("aria-expanded", String(isHidden));
       if (onToggle) onToggle(isHidden);
@@ -438,8 +447,34 @@ export class DevToolsUI {
     section.appendChild(title);
     section.appendChild(content);
     this.#insertTreeNode(parentElement, section, 1);
+    if (isExpanded) this.#materialize(content);
 
     return content;
+  }
+
+  // TK-308: draws a lazy section's content once.
+  #materialize(content) {
+    const render = this.#lazyContents.get(content);
+    if (!render) return;
+    this.#lazyContents.delete(content);
+    render();
+  }
+
+  // TK-308: draws every section still waiting in the panel (drawing may add more; they are drawn too). Returns whether
+  // anything was drawn.
+  materializeAll() {
+    let drawn = false;
+    while (this.#lazyContents.size > 0) {
+      for (const content of [...this.#lazyContents.keys()]) {
+        if (this.#body.contains(content)) {
+          this.#materialize(content);
+          drawn = true;
+        } else {
+          this.#lazyContents.delete(content);
+        }
+      }
+    }
+    return drawn;
   }
 
   createInfoRow(labelStr, value, parentElement, path = null) {
@@ -741,7 +776,10 @@ export class DevToolsUI {
     const query = this.#searchQuery;
     const changedOnly = this.#changedOnly;
     const active = query.length > 0 || changedOnly;
-    if (active) this.#leaveDrill();
+    if (active) {
+      this.#leaveDrill();
+      this.materializeAll();
+    }
     for (const content of this.#openedBySearch) content.style.display = "none";
     this.#openedBySearch.clear();
     for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
@@ -858,7 +896,8 @@ export class DevToolsUI {
   revealPath(path) {
     const normalized = this.#normalizeDevToolsPath(path);
     if (!normalized) return false;
-    const target = this.#findPathTarget(normalized);
+    let target = this.#findPathTarget(normalized);
+    if (!target && this.materializeAll()) target = this.#findPathTarget(normalized);
     if (!target) return false;
     this.#revealPageOf(target);
     // Spec 174 C4: a target inside a drill-in section is shown inside its innermost one.

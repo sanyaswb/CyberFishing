@@ -18,7 +18,7 @@ export class ConfigTreeRenderer {
   #edits;
   #createSection;
 
-  // createSection(label, parent, path) -> the content element of a remembered disclosure.
+  // createSection(label, parent, path, options) -> the content element of a remembered disclosure.
   constructor({ ui, schema, aliases, edits, createSection }) {
     this.#ui = ui;
     this.#schema = schema;
@@ -50,20 +50,30 @@ export class ConfigTreeRenderer {
           this.#ui.addParameter(parentElement, { control: "numberList", label: this.#formatKey(key, currentPath), value,
             onCommit: (next) => this.#edits.update(currentPath, next), path: currentPath });
         } else if (value.length > 0 && typeof value[0] === "object") {
-          const content = this.#createSection(key, parentElement, currentPath);
-          value.forEach((item, index) => {
-            const itemLabel = item.id || item.variant || item.itemType || `Item [${index}]`;
-            const itemContent = this.#createSection(itemLabel, content, [...currentPath, index]);
-            this.render(item, itemContent, [...currentPath, index], options);
-          });
+          this.#createSection(key, parentElement, currentPath, { render: (content) => {
+            value.forEach((item, index) => {
+              const itemLabel = item.id || item.variant || item.itemType || `Item [${index}]`;
+              this.section(itemLabel, content, [...currentPath, index], item, options);
+            });
+          } });
         }
       } else if (value !== null && typeof value === "object") {
-        this.render(value, this.#createSection(key, parentElement, currentPath), currentPath, options);
+        this.section(key, parentElement, currentPath, value, options);
       } else if (SCALAR_TYPES.has(typeof value)) {
         this.renderScalar({ key, value, parentElement, displayPath: currentPath, canonicalPath: currentPath });
       }
     }
     this.#renderAliases(obj, parentElement, path);
+  }
+
+  // TK-308: a section of value's tree whose rows are drawn when it is first opened (or when everything is needed). The
+  // tree is read again at that moment, so a value edited meanwhile shows as it is (the hooked fish keeps the copy its
+  // visibility policy made).
+  section(label, parentElement, path, value, options = {}, sectionOptions = {}) {
+    return this.#createSection(label, parentElement, path, { ...sectionOptions, render: (content) => {
+      const live = options.visibilityPolicy ? value : this.#edits.read(path) ?? value;
+      this.render(live, content, path, options);
+    } });
   }
 
   // The dotted paths of every visible scalar under obj: the shape of the hooked fish's tree, to tell when it must be drawn

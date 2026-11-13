@@ -645,7 +645,9 @@ function checkLocationMapConfigChanges() {
   const ui = new Proxy({body:panelBody,
     createPages(modules){pageHosts.clear();for(const module of modules)pageHosts.set(module.id,{page:module.id,children:[]});return new Map(pageHosts);},
     createSection(label,parent,expanded,onToggle,path,options){
-      const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section); return section;
+      const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section);
+      // TK-308: a lazy section is drawn when opened; this double opens every section at once.
+      options?.render?.(section); return section;
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
     createButtonRow(label,parent,click){navigationButtons.set(label,click);},

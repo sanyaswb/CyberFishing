@@ -718,6 +718,37 @@ function choiceRow(options, value, path) {
   serviceUi.dispose();
 })().catch((error) => { console.error(error); process.exitCode = 1; });
 
+// --- TK-308: opening the panel draws only what is open; everything else when it is first needed ---------------------
+{
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const storage = new Map();
+  const lazyUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const config = { debug: {}, physics: { drag: 0.4, fight: { rodControl: { ratio: 2, enabled: true } } } };
+  const tools = new DevTools(config, { synchronize() {} }, { catalogs: { items: {}, fishes: [], maps: {} }, settingsStore: null,
+    debugModulesSource: () => ({}), createUI: () => ({ ui: lazyUi, tooltipProvider: { ready: new Promise(() => {}) } }),
+    storageCache: { get: (key, fallback) => storage.get(key) ?? fallback, set: (key, value) => storage.set(key, value), remove() {} } });
+  tools.toggle();
+  const rowsOf = (key) => byClass("devtools__row", lazyUi.body).filter((row) => row.children[0]?.dataset?.devtoolsKey === key);
+  assert.equal(rowsOf("drag").length, 0, "a closed section's rows are not drawn when the panel opens");
+  const physicsTitle = byClass("devtools__section-title", lazyUi.body).find((title) => title.textContent === "physics");
+  physicsTitle.click();
+  assert.equal(rowsOf("drag").length, 1, "opening the section draws its rows");
+  assert.equal(rowsOf("ratio").length, 0, "but not those of the sections inside it");
+  // Edited while closed: drawn with the value as it is now.
+  config.physics.fight.rodControl.ratio = 3;
+  const input = byClass("devtools__search-input", lazyUi.body.parentNode)[0];
+  input.value = "ratio"; input.fire("input");
+  const ratio = rowsOf("ratio");
+  assert.equal(ratio.length, 1, "a search draws the rest and finds it");
+  assert.equal(byClass("devtools__input--number", ratio[0])[0].value, "3", "with the value it has now");
+  input.value = ""; input.fire("input");
+  tools.toggle(); tools.toggle();
+  assert.equal(rowsOf("ratio").length, 0, "a redraw is lazy again");
+  assert.equal(tools.revealParameter(["CONFIG", "physics", "fight", "rodControl", "ratio"]), true,
+    "a link from the overlay draws and opens a row that was not drawn");
+  tools.dispose();
+}
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
