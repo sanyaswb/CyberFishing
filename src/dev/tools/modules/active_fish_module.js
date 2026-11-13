@@ -44,7 +44,7 @@ export class ActiveFishModule {
     if (!hookedFish) return;
     const { createSection, tree } = this.#context;
     const fish = this.#policy.normalizeHookedFish(hookedFish);
-    const content = createSection(`ACTIVE FISH (${fish.id || fish.name || "hookedFish"})`, host, ["HOOKED_FISH"]);
+    const content = createSection(`ACTIVE FISH (${fish.id || fish.name || "hookedFish"})`, host, ["HOOKED_FISH"], { icon: "fish" });
     const runtime = createSection(this.#policy.fishRuntimeRootTitle, content, ["HOOKED_FISH"]);
     tree.render(fish, runtime, ["HOOKED_FISH"], { visibilityPolicy: this.#policy, applyHookedFishLegacySkips: false });
     const shortcuts = this.#policy.getGlobalConfigShortcuts();

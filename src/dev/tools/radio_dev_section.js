@@ -1,7 +1,7 @@
 import { RADIO_SOUND_SETTINGS } from "../../game/config/raw/radio/radio_sound_settings.js";
 import { buildSettingsFile, pickSettings, settingsFileName, settingsHash } from "../radio/radio_sound_settings_format.js";
 
-// DevTools «📻 РАДІО» (spec 142 stage 5, TK-097, TK-099): the radio's status (power, station, country, stations,
+// DevTools «РАДІО» (spec 142 stage 5, TK-097, TK-099): the radio's status (power, station, country, stations,
 // signal, the battery's charge), discharging its battery to 20 / 5 / 0 % through the ordinary consumption path (DEV
 // never raises a charge: a new battery comes from the free shop), the sound parts (vinyl, walkie-talkie, the signal's
 // interference: each with its «увімкнено» switch; a part that is off hides its parameters, edited live), the export of
@@ -45,7 +45,7 @@ export class RadioDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("📻 РАДІО", parent, ["RADIO"]);
+    this.#content = this.#createSection("РАДІО", parent, ["RADIO"], { icon: "radio" });
     this.#fill();
   }
 
@@ -90,7 +90,7 @@ export class RadioDevSection {
     }
     this.#renderParts(content);
     if (this.#files) {
-      this.#ui.createButtonRow("⬇ Експорт налаштувань звуку (npm run apply:radio)", content, () => {
+      this.#ui.createButtonRow("Експорт налаштувань звуку (npm run apply:radio)", content, () => {
         this.exportSettings().catch(() => {});
       });
     }

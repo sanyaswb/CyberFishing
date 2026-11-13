@@ -190,8 +190,8 @@ export class DevTools {
     this.#ui.clearValueBindings();
     body.replaceChildren();
     const pages = [];
-    if (this.#openGame) pages.push(["До риболовлі ▶", () => this.#openGame()]);
-    if (this.#openHouse) pages.push(["Будинок рибалки 🏠", () => this.#openHouse()]);
+    if (this.#openGame) pages.push(["До риболовлі", () => this.#openGame(), "hook"]);
+    if (this.#openHouse) pages.push(["Будинок рибалки", () => this.#openHouse(), "home"]);
     if (pages.length) this.#ui.createNavigation(pages, body);
     for (const module of this.#modules) module.mount(body, this.#context);
     body.scrollTop = scrollTop;
@@ -215,7 +215,7 @@ export class DevTools {
   static #loadStepperModule(loadStepper) {
     let section = null;
     return { mount: (host, { ui, createSection }) => {
-      section ??= new LoadStepperDevSection({ ...loadStepper, createSection: (label, parent, path) => createSection(label, parent, path) });
+      section ??= new LoadStepperDevSection({ ...loadStepper, createSection });
       section.render(host, ui);
     } };
   }

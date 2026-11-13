@@ -16,7 +16,7 @@ export class SpineModule {
 
   mount(host, { ui, createSection, tree }) {
     if (!this.#rodSpine && !this.#boatSpine) return;
-    const spine = createSection("SPINE", host, ["SPINE"]);
+    const spine = createSection("SPINE", host, ["SPINE"], { icon: "spine" });
     const section = (label, parent, path) => createSection(label, parent, path);
     if (this.#rodSpine) {
       new SpineRodDevSection({ ui, controller: this.#rodSpine, createSection: section,

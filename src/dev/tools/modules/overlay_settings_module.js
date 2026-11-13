@@ -18,7 +18,7 @@ export class OverlaySettingsModule {
 
   mount(host, { ui, createSection, tree }) {
     this.#syncValue = (path, value) => ui.syncValue(path, value);
-    const overlayContent = createSection("OVERLAY", host, ["OVERLAY"]);
+    const overlayContent = createSection("OVERLAY", host, ["OVERLAY"], { icon: "layers" });
     for (const key of Object.keys(this.#config.debug || {}).filter((name) => name.startsWith("overlay"))) {
       const path = ["CONFIG", "debug", key];
       tree.renderScalar({ key: key === "overlay" ? "enabled" : key, value: this.#config.debug[key],

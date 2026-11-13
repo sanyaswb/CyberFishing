@@ -176,7 +176,7 @@ const addZone = obstacle("Додати зону")[0];
 rows.clear(); sections.length = 0;
 addZone();
 assert(state.enabled && state.isEditable("collisions") && drawing.isActive("collisions"), "«Додати зону» turns the editor and editing on and draws");
-assert(created.get("🗺️ РЕДАКТОР").classes.has("zone-editor--drawing") && created.get("Перешкоди").classes.has("zone-editor__drawing-list") &&
+assert(created.get("РЕДАКТОР").classes.has("zone-editor--drawing") && created.get("Перешкоди").classes.has("zone-editor__drawing-list") &&
   !created.get("Зачепи").classes.has("zone-editor__drawing-list"), "everything but the drawn category's list is inactive");
 assert(obstacle("Застосувати") && obstacle("Скасувати") && !obstacle("Номер зони") && !obstacle("Видалити вибрану зону") &&
   !obstacle("Додати зону"), "while drawing: apply and cancel, no number list, delete or add");
@@ -188,7 +188,7 @@ applyDrawing();
 assert(!drawing.isActive("collisions") && obstacle("Номер зони")[1] === "Всі" && obstacle("Додати зону"),
   "«Застосувати»: the number list is back on «Всі», the zones are kept");
 assert.equal(zonesOf("collisions").length, 2);
-assert(!created.get("🗺️ РЕДАКТОР").classes.has("zone-editor--drawing"), "applying makes the controls active again");
+assert(!created.get("РЕДАКТОР").classes.has("zone-editor--drawing"), "applying makes the controls active again");
 
 // Ordinary editing: a zone moved against another of its category merges with it on release; a plain click does not.
 cfg.locations.map.draw.zones.collisions = [{ x: 0, y: 2, w: 1, h: 1 }, { x: 3, y: 2, w: 1, h: 1 }, { x: 0, y: 6, w: 2, h: 1 }, { x: 1, y: 6, w: 1, h: 1 }];

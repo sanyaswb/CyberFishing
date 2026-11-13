@@ -1,21 +1,21 @@
 import { ConfigTreeRenderer } from "../config/config_tree_renderer.js";
 
 const CATEGORY_LABELS = Object.freeze({
-  rods: "🎣 Вудки",
-  reels: "🧵 Котушки",
-  lines: "🧶 Ліски",
-  hooks: "🪝 Гачки",
-  leaders: "🪢 Поводки",
-  floats: "🥢 Поплавки",
-  nets: "🕸️ Підсаки",
-  misc: "☣️ Інше",
-  baits: "🪱 Наживки та снасті",
-  chums: "🍞 Прикормки для риболовлі",
-  aquariumFeeds: "🐟 Прикормки для акваріума",
-  deliveryMethods: "🚤 Доставка",
-  batteries: "🔋 Живлення",
-  devices: "📻 Пристрої",
-  builds: "📦 Комплекти",
+  rods: "Вудки",
+  reels: "Котушки",
+  lines: "Ліски",
+  hooks: "Гачки",
+  leaders: "Поводки",
+  floats: "Поплавки",
+  nets: "Підсаки",
+  misc: "Інше",
+  baits: "Наживки та снасті",
+  chums: "Прикормки для риболовлі",
+  aquariumFeeds: "Прикормки для акваріума",
+  deliveryMethods: "Доставка",
+  batteries: "Живлення",
+  devices: "Пристрої",
+  builds: "Комплекти",
 });
 
 // «БЕЗКОШТОВНИЙ МАГАЗИН» (spec 174 B3, moved from DevTools): one button per catalog item adds it to the player's
@@ -33,7 +33,7 @@ export class ItemShopModule {
   }
 
   mount(host, { ui, createSection }) {
-    const content = createSection("🎁 БЕЗКОШТОВНИЙ МАГАЗИН", host, ["ITEM_SHOP"], { buttonTitle: true });
+    const content = createSection("БЕЗКОШТОВНИЙ МАГАЗИН", host, ["ITEM_SHOP"], { buttonTitle: true, icon: "shop" });
     for (const category of Object.keys(this.#items)) {
       if (ConfigTreeRenderer.isExcludedKey(category)) continue;
       const section = createSection(CATEGORY_LABELS[category] || category, content);

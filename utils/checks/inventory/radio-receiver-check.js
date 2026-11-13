@@ -1033,7 +1033,7 @@ async function stageFive() {
   assert.equal(downloads[0][1].format, "cyber-fishing-radio-sound");
   assert.deepEqual(downloads[0][1].settings.signal, { baseNoise: 0.01, enabled: true, weather: { enabled: false, rainNoise: 0.12 } }, "it carries the live settings");
   assert(String(downloads[0][1].baseHash).startsWith("hash:"), "with the code's hash for the conflict check");
-  assert(buttons.has("⬇ Експорт налаштувань звуку (npm run apply:radio)"), "DevTools offers the export");
+  assert(buttons.has("Експорт налаштувань звуку (npm run apply:radio)"), "DevTools offers the export");
   assert(switches.has("RADIO.effects.retro.enabled"), "retro switch is present in DevTools");
   assert(switches.has("RADIO.effects.weather.enabled"), "weather switch is present in DevTools");
   assert(rows.some(([label, value]) => label === "заряд батарейки" && value === "42.0%"));

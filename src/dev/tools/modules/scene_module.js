@@ -1,7 +1,7 @@
 import { SceneLayerDevSection } from "../scene_layer_dev_section.js";
 import { WeatherDevSection } from "../weather_dev_section.js";
 
-// «🖼️ СЦЕНА WebGL» with «ПОГОДА» inside it (TK-291) as a panel module (spec 174 B3, moved from DevTools). Without a
+// «СЦЕНА WebGL» with «ПОГОДА» inside it (TK-291) as a panel module (spec 174 B3, moved from DevTools). Without a
 // scene section the weather section stands in the panel on its own. A redraw disposes the previous weather section.
 export class SceneModule {
   #config;
@@ -32,7 +32,7 @@ export class SceneModule {
     new SceneLayerDevSection({
       ui,
       scene: this.#scene,
-      createSection: (label, parent, path) => createSection(label, parent, path),
+      createSection,
       renderWaterConfig: (parent) => tree.render(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
       renderWeather: (parent) => this.#renderWeather(parent, context),
     }).render(host);
@@ -55,7 +55,7 @@ export class SceneModule {
       locationConfig: (id) => config.locations?.map?.[id]?.weather ?? null,
       locationsMap: () => config.locations?.map ?? null,
       rainConfig: () => config.canvas?.rain ?? null,
-      createSection: (label, section, path) => createSection(label, section, path),
+      createSection,
       renderConfigTree: (value, section, path, options) => tree.render(value, section, path, options),
       updateConfig: (path, value) => edits.update(path, value),
       files: this.#files,

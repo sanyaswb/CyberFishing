@@ -10,20 +10,20 @@ export class DatabaseModule {
   }
 
   mount(host, { createSection, tree }) {
-    const database = createSection("БАЗА ДАНИХ", host, ["DATABASE"]);
+    const database = createSection("БАЗА ДАНИХ", host, ["DATABASE"], { icon: "database" });
     const { maps, fishes, items } = this.#catalogs;
-    const mapContent = createSection("🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)", database, ["MAP_DB"]);
+    const mapContent = createSection("БАЗА ЛОКАЦІЙ (MAP_DB)", database, ["MAP_DB"], { icon: "map" });
     for (const key of Object.keys(maps)) {
       const location = maps[key];
       tree.render(location, createSection(location?.id || location?.name || key, mapContent, ["MAP_DB", key]),
         ["MAP_DB", key]);
     }
-    const fishContent = createSection("🐟 БАЗА РИБИ (FISH_DB)", database, ["FISH_DB"]);
+    const fishContent = createSection("БАЗА РИБИ (FISH_DB)", database, ["FISH_DB"], { icon: "fish" });
     fishes.forEach((fish, index) => {
       tree.render(fish, createSection(fish?.id || fish?.name || `Fish [${index}]`, fishContent, ["FISH_DB", index]),
         ["FISH_DB", index]);
     });
-    const itemContent = createSection("📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)", database, ["ITEM_DB"]);
+    const itemContent = createSection("БАЗА ПРЕДМЕТІВ (ITEM_DB)", database, ["ITEM_DB"], { icon: "box" });
     for (const key of Object.keys(items)) {
       if (ConfigTreeRenderer.isExcludedKey(key)) continue;
       tree.render(items[key], createSection(key, itemContent, ["ITEM_DB", key]), ["ITEM_DB", key]);

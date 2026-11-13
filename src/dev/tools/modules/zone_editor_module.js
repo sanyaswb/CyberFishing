@@ -1,6 +1,6 @@
 import { ZoneEditorSection } from "../zone_editor_section.js";
 
-// The location editor «🗺️ РЕДАКТОР» as a panel module (spec 174 B3): its section is created on each draw and the
+// The location editor «РЕДАКТОР» as a panel module (spec 174 B3): its section is created on each draw and the
 // previous one disposed with its draft kept; the location's zone and perspective resets live here (moved from DevTools).
 export class ZoneEditorModule {
   #options;
@@ -24,7 +24,7 @@ export class ZoneEditorModule {
       ...this.#options,
       ui,
       config: this.#config,
-      createSection: (label, parent, path) => createSection(label, parent, path),
+      createSection,
       renderTree: (value, parent, path) => tree.render(value, parent, path),
       updateConfig: (path, value) => edits.update(path, value),
       resetPerspective: (id) => this.#resetPerspective(id, ui, edits),

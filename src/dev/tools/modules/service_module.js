@@ -23,14 +23,14 @@ export class ServiceModule {
   }
 
   mount(host, context) {
-    const service = context.createSection("Сервіс", host, ["DEV_SERVICE"]);
+    const service = context.createSection("Сервіс", host, ["DEV_SERVICE"], { icon: "wrench" });
     this.#renderOverrides(service, context);
     this.#renderAssetLoadPlan(service, context);
     this.#renderItemProgression(service, context);
   }
 
   #renderOverrides(parent, { ui, createSection, edits }) {
-    const content = createSection("🧩 RUNTIME OVERRIDES", parent, ["CONFIG_OVERRIDES"]);
+    const content = createSection("RUNTIME OVERRIDES", parent, ["CONFIG_OVERRIDES"], { icon: "stack" });
     const count = this.#configRuntime?.overrideStore?.entries().length || 0;
     ui.createInfoRow("active overrides", String(count), content);
     ui.createButtonRow("Reset all overrides", content, () => {
@@ -93,7 +93,7 @@ export class ServiceModule {
   #renderItemProgression(parent, { ui, createSection }) {
     const snapshots = this.#progressionProvider?.getSnapshots() || [];
     if (snapshots.length === 0) return;
-    const root = createSection("📈 ITEM PROGRESSION", parent, ["ITEM_PROGRESSION"]);
+    const root = createSection("ITEM PROGRESSION", parent, ["ITEM_PROGRESSION"], { icon: "chart" });
     for (const snapshot of snapshots) {
       const item = createSection(snapshot.itemId, root, ["ITEM_PROGRESSION", snapshot.itemId]);
       ui.createInfoRow("Group", snapshot.group, item);

@@ -767,7 +767,7 @@ controlUI.dispose();
     let node = config; for (const key of path.slice(1, -1)) node = node[key]; node[path.at(-1)] = value; },
   createSection: (label) => { const section = { label, replaceChildren() {} }; sections.push(section); return section; },
   renderTree() {}, getWaterMetric: () => metric, createWaterMetric: (options) => WaterMetric.illustrated(options) }).render({});
-  const enable = rows.get("🗺️ РЕДАКТОР/Увімкнути редагування");
+  const enable = rows.get("РЕДАКТОР/Увімкнути редагування");
   enable.args[2](true);
   assert(state.enabled && state.cellGrid, "the top-level enable control still enables editing and the cell grid");
   enable.args[2](false);
@@ -787,11 +787,11 @@ controlUI.dispose();
   for (const [category, shown] of Object.entries(shownBefore)) state.setCategory(category, shown);
   rows.get("Сітка перспективи/Показати сітку").args[2](true);
   assert(controlValues.get("ZONE_EDITOR.grid") && !controlValues.get("ZONE_EDITOR.cellGrid"), "perspective synchronizes both grid controls");
-  rows.get("🗺️ РЕДАКТОР/Показати сітку").args[2](true);
+  rows.get("РЕДАКТОР/Показати сітку").args[2](true);
   assert(!controlValues.get("ZONE_EDITOR.grid") && controlValues.get("ZONE_EDITOR.cellGrid"), "map grid synchronizes both controls");
   const physics = rows.get("Зачепи/Фізика зони");
   const editableDependency = rows.get("Зони/Редагувати ігрову").args[5].requires[0];
-  const depthSwitch = rows.get("🗺️ РЕДАКТОР/Глибина в клітинках");
+  const depthSwitch = rows.get("РЕДАКТОР/Глибина в клітинках");
   assert.equal(editableDependency.path.join('.'), 'ZONE_EDITOR.enabled');
   assert(!editableDependency.isEnabled(), 'zone editing still requires the editor');
   assert(!depthSwitch.args[5]?.requires?.length, 'depth visibility declares no editor prerequisite');
@@ -819,10 +819,10 @@ controlUI.dispose();
   rows.get("Перешкоди/Фізика зони").args[2](true);
   assert(locations.enableCollisions === true && rows.has("Перешкоди/Показати зону"), "turning the physics on shows the items");
   for (const label of ["Показати сітку", "Непрозорість сітки", "Розмір клітинки, px",
-    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`🗺️ РЕДАКТОР/${label}`), `cell grid: ${label}`);
-  assert.equal(rows.get("🗺️ РЕДАКТОР/Непрозорість сітки").kind, "range");
+    "Глибина в клітинках", "Непрозорість глибини"]) assert(rows.has(`РЕДАКТОР/${label}`), `cell grid: ${label}`);
+  assert.equal(rows.get("РЕДАКТОР/Непрозорість сітки").kind, "range");
   // TK-083: only sizes that cut the map into whole cells are offered and written.
-  const cellRow = rows.get("🗺️ РЕДАКТОР/Розмір клітинки, px");
+  const cellRow = rows.get("РЕДАКТОР/Розмір клітинки, px");
   assert.equal(cellRow.kind, "select");
   assert.deepEqual([...cellRow.args[0]], ["5", "8", "10", "20", "25", "40", "50", "100", "125", "200"], "a 1000 x 1000 map: its divisors in 5..200");
   const writesBefore = written.length;
@@ -831,7 +831,7 @@ controlUI.dispose();
   cellRow.args[3]("25");
   assert.deepEqual(written.at(-1), ["CONFIG.locations.cellSize", 25], "an offered size is written to the game config");
   locations.cellSize = 40;
-  rows.get("🗺️ РЕДАКТОР/Непрозорість глибини").args[2](40);
+  rows.get("РЕДАКТОР/Непрозорість глибини").args[2](40);
   assert.equal(state.depthOpacity, 0.4, "the depth slider sets 0..1");
   state.setNumber("depthOpacity", 0.7);
   for (const label of ["Показати сітку", "Фізика перспективи", "Крок сітки, м", "Дальність води, м", "Нахил площини, °",

@@ -154,7 +154,7 @@ export class WeatherDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("ПОГОДА", parent, ["WEATHER"]);
+    this.#content = this.#createSection("ПОГОДА", parent, ["WEATHER"], { icon: "cloud" });
     if (
       !this.#listening &&
       typeof document !== "undefined" &&
@@ -443,7 +443,7 @@ export class WeatherDevSection {
     ]);
     const raining = weather.precipitation !== "clear";
     this.#ui.createSwitcherRow(
-      "🌧 Дощ",
+      "Дощ",
       raining,
       controls,
       (on) => {
@@ -464,7 +464,7 @@ export class WeatherDevSection {
       ["WEATHER", "controls", "rainStrength"],
     );
     this.#ui.createSwitcherRow(
-      "⛈ Гроза",
+      "Гроза",
       weather.precipitation === "storm",
       controls,
       (on) => {
@@ -485,7 +485,7 @@ export class WeatherDevSection {
       ["WEATHER", "controls", "stormStrength"],
     );
     this.#ui.createSwitcherRow(
-      "🌫 Туман",
+      "Туман",
       weather.fogState === "fog",
       controls,
       (on) => {
@@ -533,7 +533,7 @@ export class WeatherDevSection {
         this.#windStrength = Math.round(Number(wind.forcedStrength) * 100);
       }
       this.#ui.createSwitcherRow(
-        "💨 Ручна сила вітру",
+        "Ручна сила вітру",
         heldStrength,
         controls,
         (on) => {
@@ -556,7 +556,7 @@ export class WeatherDevSection {
     }
     if (this.#weather.triggerWindGust) {
       this.#ui.createButtonRow(
-        "🌬 Порив вітру зараз",
+        "Порив вітру зараз",
         controls,
         () => {
           this.#weather.triggerWindGust();
@@ -577,7 +577,7 @@ export class WeatherDevSection {
       },
     );
     this.#ui.createButtonRow(
-      "⚡ Удар блискавки зараз",
+      "Удар блискавки зараз",
       controls,
       () => {
         model.strike();

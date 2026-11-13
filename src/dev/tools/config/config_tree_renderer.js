@@ -112,7 +112,7 @@ export class ConfigTreeRenderer {
 
   // A parameter with a session override is marked with "*".
   #formatKey(key, path) {
-    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled") return "Прискорення ⏩";
+    if (path.join(".") === "CONFIG.debug.timeAccelerationEnabled") return "Прискорення часу";
     const overrideStore = this.#edits.configRuntime?.overrideStore;
     if (path[0] !== "CONFIG" || !overrideStore) return key;
     return overrideStore.has(path.slice(1).join(".")) ? `${key} *` : key;

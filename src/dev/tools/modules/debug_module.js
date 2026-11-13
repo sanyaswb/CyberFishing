@@ -15,7 +15,7 @@ export class DebugModule {
   mount(host, { ui, createSection, tree, edits }) {
     const debug = this.#config.debug;
     if (!debug) return;
-    const content = createSection("🐞 DEBUG (CONFIG.debug)", host, ["CONFIG", "debug"]);
+    const content = createSection("DEBUG (CONFIG.debug)", host, ["CONFIG", "debug"], { icon: "bug" });
     tree.render(debug, content, ["CONFIG", "debug"], { groupedDebug: true });
     // TK-260: which stays in view when the fish runs far: the rod (off) or the fish / float (on). It edits the game's
     // own setting CONFIG.locations.cameraFollowPriority live (spec 153 D1).
@@ -23,7 +23,7 @@ export class DebugModule {
       // The switch binds its own path: config syncs carry "rod" / "tackle", a switch shows only true.
       const priorityPath = ["CONFIG", "locations", "cameraFollowPriority"];
       const switchPath = ["DEBUG_CAMERA", "followsTackle"];
-      ui.createSwitcherRow("🎥 Камера тримає рибу (інакше — вудку в кадрі)",
+      ui.createSwitcherRow("Камера тримає рибу (інакше — вудку в кадрі)",
         this.#config.locations.cameraFollowPriority === "tackle", content, (enabled) => {
           edits.update(priorityPath, enabled ? "tackle" : "rod");
           ui.syncValue(switchPath, enabled);

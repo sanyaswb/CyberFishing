@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.118 - DevTools icons
+
+- TK-303 (spec 174 C1): DevTools draws its own outline SVG icons (panel button, section chevrons, root sections, navigation, warnings, export) instead of emoji and text arrows; colours come from --devtools-* tokens, labels use the system sans font and values stay monospace; the panel has an opaque background without blur (cheaper on phones).
+
 ## v0.50.117 - DevTools rows from one description
 
 - TK-302 (spec 174 B1): every DevTools parameter row is built from one description (DevToolsUI.addParameter) with its own control class (switch, text, number list, slider beside the number, list, segments); the config tree uses it, the older row methods remain as thin bridges until stage E.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.109 - Overlay window close button right of scale slider
 
 - TK-297 (owner): added a close button (`ui-modal-close debug-overlay__close`, `--ui-close-size: 28px`) right of the top scale slider on every overlay module window and `ACTIVE FISH` / `ACTIVE ROD` tool window; clicking it hides the window, disables its key(s) in `OverlaySettingsStore` (including composite modules), and syncs DevTools switchers via `OverlaySettingsStore.subscribe`.
-
-## v0.50.108 - Overlay headers with rounded background & clean links
-
-- TK-296.1 (owner): removed dotted underlines on `.debug-overlay__dev-link` and dashed divider borders in `overlay-content.css`; removed bottom borders on `.debug-overlay__heading` and gave overlay headings, tool titles, subsection titles and collapsible group `<summary>` headers rounded background pills (`overlay-content.css`, `overlay.css`).

@@ -1,6 +1,6 @@
 import { RadioDevSection } from "../radio_dev_section.js";
 
-// «📻 РАДІО» as a panel module (spec 174 B3, moved from DevTools) over the radio's DEV port.
+// «РАДІО» as a panel module (spec 174 B3, moved from DevTools) over the radio's DEV port.
 export class RadioModule {
   #config;
   #radio;
@@ -18,7 +18,7 @@ export class RadioModule {
     new RadioDevSection({
       ui,
       radio: this.#radio,
-      createSection: (label, parent, path) => createSection(label, parent, path),
+      createSection,
       config: () => this.#config.radio,
       renderConfigTree: (value, parent, path, options) => tree.render(value, parent, path, options),
       setConfig: (path, value) => edits.update(path, value),

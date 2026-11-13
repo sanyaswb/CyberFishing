@@ -109,6 +109,15 @@ in the capture phase, refuses a write and shows the blocking switch with `devtoo
 (A7): every list row is a `ChoiceField` (`createSelectRow` no longer makes a browser `select`) in a
 `devtools__row--stacked` row: the label above, the field and its list across the row under it; an option's `swatch`
 uses the shared `devtools__swatch`.
+
+Spec 174 C1 (TK-303): DevTools draws no emoji or text arrows (`devtools-controls` scans `src/dev/tools/**`). Icons
+come from `src/dev/tools/controls/dev_icon.js` (`createDevIcon`: inline outline SVG on a 20 × 20 grid, `stroke:
+currentColor`, the shared `devtools__icon` sized by `--devtools-icon-size`; consumer classes `devtools__section-chevron`
+(turned 90° under `[aria-expanded="true"]`), `devtools__section-icon`, `devtools__action-icon`, `devtools__toggle-icon`,
+`devtools__alert-icon`). `createSection(..., { icon })`, `createButtonRow(..., { icon })` and navigation pages
+`[label, activate, icon]` take an icon name. Colours of DevTools blocks are `--devtools-*` tokens on `:root` (surface,
+field, line, label, muted text, font); labels use `--devtools-font` (system sans), values keep `--ui-font-mono`. The panel
+has an opaque surface without `backdrop-filter`.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

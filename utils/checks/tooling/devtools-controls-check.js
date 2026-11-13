@@ -334,6 +334,47 @@ function choiceRow(options, value, path) {
   }
 }
 
+// --- TK-303 (spec 174 C1): DevTools' own icons, no emoji ---------------------------------------------------------------
+{
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const toolsRoot = path.resolve(__dirname, "../../../src/dev/tools");
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) => (entry.isDirectory() ? walk(path.join(dir, entry.name)) : [path.join(dir, entry.name)]));
+  // Emoji and the text arrows the panel used to draw (▶ ▼ ⏩): icons replace them, the same on every platform.
+  const forbidden = /[\p{Extended_Pictographic}▶▼⏩]/u;
+  for (const file of walk(toolsRoot).filter((name) => name.endsWith(".js"))) {
+    fs.readFileSync(file, "utf8").split("\n").forEach((line, index) => {
+      assert.equal(forbidden.test(line), false, `${path.relative(toolsRoot, file)}:${index + 1} draws an emoji; use createDevIcon`);
+    });
+  }
+  const { DEV_ICONS, createDevIcon } = runtime.importModule("src/dev/tools/controls/dev_icon.js");
+  // Every icon a DevTools source names exists.
+  const named = new Set();
+  for (const file of walk(toolsRoot).filter((name) => name.endsWith(".js"))) {
+    const text = fs.readFileSync(file, "utf8");
+    for (const [, name] of text.matchAll(/icon: "([a-z]+)"/gu)) named.add(name);
+    for (const [, name] of text.matchAll(/createDevIcon\([^,]+, "([a-z]+)"/gu)) named.add(name);
+    for (const [, name] of text.matchAll(/\(\) => this\.#open(?:Game|House)\(\), "([a-z]+)"/gu)) named.add(name);
+  }
+  for (const name of named) assert.ok(DEV_ICONS[name], `icon "${name}" exists`);
+  assert.ok(named.has("gear") && named.has("chevron") && named.has("map"), "the scan found the panel's icons");
+  const icon = createDevIcon(document, "chevron", "devtools__section-chevron");
+  assert.equal(icon.getAttribute("class"), "devtools__icon devtools__section-chevron");
+  assert.equal(icon.getAttribute("aria-hidden"), "true", "icons are decoration; the label names the control");
+  // The sandbox has its own RangeError: compare by name.
+  assert.throws(() => createDevIcon(document, "nope"), (error) => error.name === "RangeError");
+  // A section title: chevron, optional icon, label; opening it is still one click.
+  const host = createElement("div"); document.body.appendChild(host);
+  const content = ui.createSection("Секція", host, false, () => {}, ["test", "section"], { icon: "map" });
+  const title = content.parentNode.children[0];
+  assert.equal(title.textContent, "Секція", "the title reads as its label only");
+  assert.equal(title.children.length, 3, "chevron, icon, label");
+  title.click();
+  assert.equal(title.getAttribute("aria-expanded"), "true");
+  assert.equal(content.style.display, "block");
+}
+
 // --- TK-302 (spec 174 B1): one description per parameter row -------------------------------------------------------
 {
   const host = createElement("div"); document.body.appendChild(host);
@@ -443,7 +484,7 @@ function choiceRow(options, value, path) {
   tools.toggle();
   const body = panelUi.body;
   const sectionTitled = (title, root = body) => document.all((element) => element.className === "devtools__section-title" &&
-    element.innerHTML.endsWith(` ${title}`), root);
+    element.textContent === title, root);
   const isOpen = (title) => title.parentNode.children[1].style.display === "block";
   const [firstX, secondX] = sectionTitled("x");
   assert.ok(firstX && secondX && !isOpen(firstX) && !isOpen(secondX), "two sections titled x, both closed (the old x: true is gone)");

@@ -512,7 +512,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
           bytes: 2048, state: "none" })) })) })) }), createSection });
     const body = node();
     section.render(body, ui);
-    const root = sections.get("⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ");
+    const root = sections.get("ПОКРОКОВЕ ЗАВАНТАЖЕННЯ");
     const row = (label) => root.rows.find((entry) => entry.label.startsWith(label));
     assert.equal(row("стан").value, "вимкнено", "mode off: no steps");
     row("Покроковий режим").change(true);
@@ -522,7 +522,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     sectionGate = new AssetLoadGate({ steps, now: () => 0 });
     section.render(body, ui);
     assert.equal(row("кроків завантажено").value, "1 / 6");
-    row("Далі ▶").click();
+    row("Далі").click();
     assert.equal(row("кроків завантажено").value, "2 / 6", "Далі releases one step and the section re-renders");
     sections.get("Шари (перейти до початку)").rows.find((entry) => entry.label.includes("third")).click();
     assert.equal(row("кроків завантажено").value, "4 / 6", "a layer button jumps to the layer's start");

@@ -116,7 +116,7 @@ export class ZoneEditorSection {
   }
 
   render(parent) {
-    const content = this.#createSection("🗺️ РЕДАКТОР", parent, ["ZONE_EDITOR"]);
+    const content = this.#createSection("РЕДАКТОР", parent, ["ZONE_EDITOR"], { icon: "map" });
     this.#root = content;
     if (!this.#state.locationId) this.#state.setLocation(this.#locationId());
     // Spec 173 TK-280: first in the section, the notice of zones past the map.
@@ -210,7 +210,7 @@ export class ZoneEditorSection {
     lines.push(`Мапа: ${map.mapWidth} × ${map.mapHeight} клітинок (${map.mapWidth * design} × ${map.mapHeight * design} px).`);
     lines.push("Попередження зникне, коли виправлені зони будуть у коді: npm run apply:zones -- <файл>, потім перезавантажте сторінку.");
     if (this.#fixMessage) lines.push(this.#fixMessage);
-    const alert = ui.createAlert("⚠ Зони виходять за межі мапи", lines, host, ["ZONE_EDITOR", "beyondMap", "notice"]);
+    const alert = ui.createAlert("Зони виходять за межі мапи", lines, host, ["ZONE_EDITOR", "beyondMap", "notice"]);
     if (!this.#files) return;
     ui.createButtonRow("Виправити", alert, () => { void this.#prepareFix(session.length ? "session" : "base"); });
     const file = this.#fixFile;

@@ -699,7 +699,7 @@ function checkLocationMapConfigChanges() {
   assert.equal(itemGrants,1,'the top shop retains its real grant action');
   assert.match(grantTarget.innerText,/✓×1$/,'grant confirmation stays with the selected item');
   assert.equal(navigationButtons.has("Каталог UI 🧩"), false, "DEV menu no longer exposes the removed UI catalog");
-  navigationButtons.get("Будинок рибалки 🏠")();
+  navigationButtons.get("Будинок рибалки")();
   assert.equal(houseOpens, 1);
   // The map receives the same live view that actual checkbox callbacks write through the authoritative store.
   map.refreshConfig(config.locations,resources);verify(12,13);

@@ -1,4 +1,27 @@
 /* DEV Tools panel, editor fields, switches and scrollbars. */
+/* Spec 174 C1: the panel's own tokens over the shared --ui-* ones; blocks use these, never raw colours. */
+:root {
+  --devtools-surface: rgb(17, 26, 34);
+  --devtools-surface-strong: #0b1520;
+  --devtools-field: #0b1520;
+  --devtools-line: rgba(255, 255, 255, 0.09);
+  --devtools-label: #c9d4dc;
+  --devtools-text-muted: rgba(210, 245, 255, 0.62);
+  --devtools-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --devtools-icon-size: 18px;
+}
+/* Spec 174 C1: every DevTools icon (createDevIcon) is an outline in the text colour. */
+.devtools__icon {
+  flex: 0 0 auto;
+  width: var(--devtools-icon-size);
+  height: var(--devtools-icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
 .game-shell__dev-ui { display: contents; }
 .devtools__control-group { display: contents; }
 .devtools__control-group--disabled .devtools__row { opacity: 0.46; }
@@ -61,6 +84,11 @@
 }
 
 .devtools__action-label { vertical-align: middle; }
+.devtools__action-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.devtools__toggle-icon { --devtools-icon-size: 22px; }
 
 .devtools {
   position: fixed;
@@ -68,16 +96,15 @@
   left: -400px;
   width: min(350px, var(--ui-logical-width, 100vw));
   height: var(--ui-logical-height, 100dvh);
-  background: rgba(17, 26, 34, 0.95);
+  background: var(--devtools-surface);
   border-right: 2px solid var(--ui-accent);
   z-index: var(--ui-layer-panel);
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  font-family: var(--ui-font-mono);
+  font-family: var(--devtools-font);
   color: var(--ui-text);
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
 }
 
 .devtools.devtools--open {
@@ -90,12 +117,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #0b1520;
+  background: var(--devtools-field);
 }
 
 .devtools__title {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--ui-success);
 }
 
@@ -108,8 +137,8 @@
   display: none;
   padding: 8px 15px;
   border-top: 1px solid var(--ui-accent);
-  background: #0b1520;
-  color: rgba(210, 245, 255, 0.82);
+  background: var(--devtools-surface-strong);
+  color: var(--devtools-text-muted);
   font-size: 11px;
   line-height: 1;
   white-space: nowrap;
@@ -164,9 +193,25 @@
   transition:
     background 0.2s,
     color 0.2s;
-  font-weight: bold;
+  font-weight: 700;
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+.devtools__section-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.devtools__section-chevron {
+  --devtools-icon-size: 14px;
+  transition: transform var(--ui-duration-control) var(--ui-ease-standard);
+}
+[aria-expanded="true"] > .devtools__section-chevron { transform: rotate(90deg); }
+.devtools__action--disclosure {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
 }
 .ui-surface--desktop-hover .devtools__section-title:hover,
 .ui-surface:not(.ui-surface--desktop-hover) .devtools__section-title:active {
@@ -196,7 +241,7 @@
 .devtools__control-group + .devtools__row,
 .devtools__row + .devtools__control-group > .devtools__row:first-child,
 .devtools__control-group + .devtools__control-group > .devtools__row:first-child {
-  border-top: 1px solid var(--devtools-row-line, rgba(255, 255, 255, 0.09));
+  border-top: 1px solid var(--devtools-line);
 }
 
 .devtools__pages { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
@@ -207,7 +252,7 @@
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: 13px;
-  color: #ccc;
+  color: var(--devtools-label);
 }
 
 /* A category colour square before a label or beside a select (spec 129: zone colours); JS sets --devtools-swatch. */
@@ -230,7 +275,7 @@
 }
 
 .devtools__input {
-  background: #0b1520;
+  background: var(--devtools-field);
   border: 1px solid var(--ui-border);
   color: var(--ui-text);
   padding: 4px 8px;
@@ -248,7 +293,7 @@
   height: 28px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
-  background: #0b1520;
+  background: var(--devtools-field);
   overflow: hidden;
 }
 .devtools__number:focus-within { border-color: var(--ui-info); }
@@ -321,7 +366,7 @@
   flex: 0 0 32px;
   text-align: right;
   font-size: 12px;
-  color: #ccc;
+  color: var(--devtools-label);
 }
 
 .devtools__switch {
@@ -395,7 +440,7 @@
   max-width: 100%;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
-  background: #0b1520;
+  background: var(--devtools-field);
   overflow: hidden;
 }
 .devtools__segment {
@@ -440,7 +485,7 @@
   padding: 2px 8px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
-  background: #0b1520;
+  background: var(--devtools-field);
   color: var(--ui-text);
   font: inherit;
   font-size: 13px;
@@ -464,7 +509,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
-  color: rgba(210, 245, 255, 0.55);
+  color: var(--devtools-text-muted);
 }
 .devtools__choice-hint--unknown { color: var(--ui-danger-text); }
 .devtools__choice-image {
@@ -492,7 +537,7 @@
   padding: 4px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
-  background: #0b1520;
+  background: var(--devtools-field);
 }
 .devtools__choice-search {
   box-sizing: border-box;
@@ -526,7 +571,7 @@
 .devtools__choice-empty {
   padding: 8px;
   font-size: 12px;
-  color: rgba(210, 245, 255, 0.55);
+  color: var(--devtools-text-muted);
 }
 @media (pointer: coarse) {
   .devtools__segment, .devtools__choice-button { min-height: 36px; }
@@ -584,7 +629,13 @@
   background: rgba(var(--ui-danger-rgb), 0.14);
   color: var(--ui-danger-text);
 }
-.devtools__alert-title { font-weight: 700; margin-bottom: 4px; }
+.devtools__alert-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
 .devtools__alert-line { font-size: 0.92em; line-height: 1.35; }
 /* TK-285: after a file export, the command that applies the file (ExportCommandNotice), at the top of its section. */
 .devtools__export {
@@ -612,7 +663,7 @@
 .devtools__export-hint,
 .devtools__export-status {
   font-size: 11px;
-  color: rgba(210, 245, 255, 0.7);
+  color: var(--devtools-text-muted);
 }
 .devtools__export-status:empty { display: none; }
 .devtools__export--copied .devtools__export-status { color: var(--ui-success); }
@@ -621,7 +672,7 @@
   min-width: 0;
   padding: 6px 8px;
   border-radius: var(--ui-radius-control);
-  background: #0b1520;
+  background: var(--devtools-field);
   font-family: var(--ui-font-mono);
   font-size: 12px;
   line-height: 1.35;
@@ -652,16 +703,6 @@
 .devtools__export-copy:focus-visible,
 .devtools__export-close:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
 .devtools__export--copied .devtools__export-copy { border-color: var(--ui-success); color: var(--ui-success); }
-.devtools__export-icon {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  pointer-events: none;
-}
 @media (pointer: coarse) {
   .devtools__export-copy, .devtools__export-close { flex-basis: 44px; width: 44px; height: 44px; }
 }
@@ -673,10 +714,10 @@
   transform: translate(-50%, -50%);
   max-width: min(90vw, 560px);
   padding: 16px 20px;
-  border: 2px solid #ff6b4a;
+  border: 2px solid var(--ui-danger);
   border-radius: 8px;
   background: rgba(30, 8, 4, 0.92);
-  color: #ffe2d9;
+  color: var(--ui-danger-text);
   font: 600 15px/1.4 system-ui, sans-serif;
   text-align: center;
   z-index: calc(var(--ui-layer-panel) + 1);

@@ -101,7 +101,7 @@ export class SpineRodDevSection {
       this.#ui.createInfoRow("експорт", "бандл ще не завантажено", parent);
       return;
     }
-    this.#ui.createButtonRow(`⬇ Експорт ${exported.fileName}`, parent, () => {
+    this.#ui.createButtonRow(`Експорт ${exported.fileName}`, parent, () => {
       const current = this.#controller.exportSkeleton();
       if (current) this.#download(current.fileName, current.text);
     });

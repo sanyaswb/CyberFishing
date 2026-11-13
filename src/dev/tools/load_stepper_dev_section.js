@@ -1,5 +1,5 @@
-// DevTools «⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ» (spec 167, TK-251): the mode switch (from the next start), a restart (reloads the
-// page: the only way back), and while the mode is on the plan's steps: the next step, "Далі ▶", "the whole layer",
+// DevTools «ПОКРОКОВЕ ЗАВАНТАЖЕННЯ» (spec 167, TK-251): the mode switch (from the next start), a restart (reloads the
+// page: the only way back), and while the mode is on the plan's steps: the next step, "Далі", "the whole layer",
 // "everything", a jump to a layer, and the files of the last loaded and the next step with their state in the image
 // store (full / low copy / not loaded). The game draws whatever has loaded, as in normal play. Buttons only (the owner
 // steps through on the phone too); the section re-renders on every change of the gate.
@@ -31,7 +31,7 @@ export class LoadStepperDevSection {
   // ui: DevToolsUI (DevTools creates it after its sections' ports).
   render(parent, ui) {
     this.#ui = ui;
-    this.#content = this.#createSection("⏯ ПОКРОКОВЕ ЗАВАНТАЖЕННЯ", parent, ["LOAD_STEPPER"]);
+    this.#content = this.#createSection("ПОКРОКОВЕ ЗАВАНТАЖЕННЯ", parent, ["LOAD_STEPPER"], { icon: "play" });
     const gate = this.#getGate();
     if (gate && !this.#subscribed) {
       this.#subscribed = true;
@@ -57,7 +57,7 @@ export class LoadStepperDevSection {
     ui.createTextRow("кроків завантажено", `${nextIndex} / ${total}`, content);
     ui.createTextRow("наступний", next ? next.label : "усе завантажено", content);
     if (next) {
-      ui.createButtonRow("Далі ▶", content, () => gate.next());
+      ui.createButtonRow("Далі", content, () => gate.next());
       ui.createButtonRow(`Завантажити весь шар (${next.layerLabel})`, content, () => gate.releaseLayer());
       ui.createButtonRow("Завантажити все", content, () => gate.releaseAll());
     }

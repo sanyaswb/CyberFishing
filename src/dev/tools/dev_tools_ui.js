@@ -9,6 +9,7 @@ import { RangeField } from "./controls/range_field.js";
 import { SegmentedControl } from "./controls/segmented_control.js";
 import { ChoiceField } from "./controls/choice_field.js";
 import { ExportCommandNotice } from "./controls/export_command_notice.js";
+import { createDevIcon } from "./controls/dev_icon.js";
 
 export class DevToolsUI {
   #panel;
@@ -77,7 +78,7 @@ export class DevToolsUI {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "hud-control hud-control--square";
-    button.textContent = "⚙️";
+    button.appendChild(createDevIcon(document, "gear", "devtools__toggle-icon"));
     button.setAttribute("aria-label", "Параметри розробника");
     const onClick = () => this.#onToggleCallback?.();
     button.addEventListener("click", onClick);
@@ -160,17 +161,22 @@ export class DevToolsUI {
     return group;
   }
 
-  createSection(labelStr, parentElement, isExpanded, onToggle, path = null, { buttonTitle = false } = {}) {
+  // icon: an optional DevTools icon name before the title (spec 174 C1); the chevron is an icon turned by CSS.
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null, { buttonTitle = false, icon = "" } = {}) {
     const section = document.createElement("div");
     section.className = "devtools__section";
     this.#assignDevToolsPath(section, path);
 
     const title = document.createElement("button");
-    title.className = buttonTitle ? "devtools__action" : "devtools__section-title";
+    title.className = buttonTitle ? "devtools__action devtools__action--disclosure" : "devtools__section-title";
     title.type = "button";
     title.setAttribute("aria-expanded", String(isExpanded));
     this.#assignDevToolsPath(title, path);
-    title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
+    const label = document.createElement("span");
+    label.className = "devtools__section-label";
+    label.textContent = labelStr;
+    title.append(createDevIcon(document, "chevron", "devtools__section-chevron"),
+      ...(icon ? [createDevIcon(document, icon, "devtools__section-icon")] : []), label);
 
     const content = document.createElement("div");
     content.className = "devtools__section-content";
@@ -180,7 +186,6 @@ export class DevToolsUI {
     title.addEventListener("click", () => {
       const isHidden = content.style.display === "none";
       content.style.display = isHidden ? "block" : "none";
-      title.innerHTML = `<span>${isHidden ? "▼" : "▶"}</span> ${labelStr}`;
       title.setAttribute("aria-expanded", String(isHidden));
       if (onToggle) onToggle(isHidden);
     });
@@ -227,7 +232,9 @@ export class DevToolsUI {
     this.#assignDevToolsPath(alert, path);
     const title = document.createElement("div");
     title.className = "devtools__alert-title";
-    title.innerText = titleStr;
+    const titleText = document.createElement("span");
+    titleText.innerText = titleStr;
+    title.append(createDevIcon(document, "warning", "devtools__alert-icon"), titleText);
     alert.appendChild(title);
     for (const line of lines) {
       const item = document.createElement("div");
@@ -271,11 +278,13 @@ export class DevToolsUI {
     const navigation = document.createElement("nav");
     navigation.className = "devtools__pages";
     navigation.setAttribute("aria-label", "Сторінки розробника");
-    for (const [label, activate] of pages) this.createButtonRow(label, navigation, activate, true);
+    // pages: [label, activate, icon?] (spec 174 C1: an icon instead of an emoji in the label).
+    for (const [label, activate, icon = ""] of pages) this.createButtonRow(label, navigation, activate, true, "", null, { icon });
     this.#insertTreeNode(parentElement, navigation, 0);
   }
 
-  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null) {
+  // iconUrl: item art before the label (the shop); icon: a DevTools icon name (spec 174 C1).
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null, { icon = "" } = {}) {
     const row = document.createElement("div");
     row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
     this.#assignDevToolsPath(row, path);
@@ -283,6 +292,12 @@ export class DevToolsUI {
     btn.type = "button";
     btn.className = "devtools__action";
     btn.innerText = labelStr;
+    if (icon) {
+      const label = document.createElement("span");
+      label.className = "devtools__action-label";
+      label.innerText = labelStr;
+      btn.replaceChildren(createDevIcon(document, icon, "devtools__action-icon"), label);
+    }
     if (iconUrl) {
       const image = document.createElement("img");
       image.className = "devtools__action-image";
@@ -593,7 +608,7 @@ export class DevToolsUI {
 
   #initBtn(config) {
     this.#btn = document.createElement("button");
-    this.#btn.innerHTML = "⚙️";
+    this.#btn.appendChild(createDevIcon(document, "gear", "devtools__toggle-icon"));
     this.#btn.className = "hud-control hud-control--square devtools__toggle";
     this.#btn.type = "button";
     this.#btn.setAttribute("aria-label", "Параметри розробника");
@@ -619,7 +634,7 @@ export class DevToolsUI {
 
     this.#panel.innerHTML = `
             <div class="devtools__header">
-                <h2 class="devtools__title">⚙️ DEV TOOLS</h2>
+                <h2 class="devtools__title">DevTools</h2>
                 <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
             </div>
             <div class="devtools__body"></div>

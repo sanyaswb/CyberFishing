@@ -1,4 +1,4 @@
-// DevTools "🖼️ СЦЕНА WebGL" (spec 104 D5): the scene layer's state, resolution and texture memory (spec 105), the
+// DevTools "СЦЕНА WebGL" (spec 104 D5): the scene layer's state, resolution and texture memory (spec 105), the
 // water's state and live settings (spec 106), the router's decision per world kind, the runtime switch between the
 // WebGL scene and the 2D canvas (no reload; the startup mode comes from CONFIG.canvas.scene or dev.html?scene=), and a
 // WebGL context loss and restore to test the fallback to the 2D canvas.
@@ -49,9 +49,7 @@ export class SceneLayerDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("🖼️ СЦЕНА WebGL", parent, [
-      "SCENE_LAYER",
-    ]);
+    this.#content = this.#createSection("СЦЕНА WebGL", parent, ["SCENE_LAYER"], { icon: "scene" });
     this.#fill();
   }
 

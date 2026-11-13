@@ -1,4 +1,4 @@
-// DevTools «🐟 САДОК» (TK-227): the keepnet's fill and buttons that bring it to 0 / 20 / 40 / 60 / 80 / 100 % of its
+// DevTools «САДОК» (TK-227): the keepnet's fill and buttons that bring it to 0 / 20 / 40 / 60 / 80 / 100 % of its
 // capacity with random fish (a random species of the game, level, weight within the level's range, the level's art and a
 // random rarity). A species without levelWeightRanges splits its depth weight range into maxLevel equal levels, like the
 // bite system's level weight (TK-228). Fish go in and out through the ordinary keep and release commands, so the save stays valid; a fish on the
@@ -26,7 +26,7 @@ export class KeepnetDevSection {
   }
 
   render(parent) {
-    this.#content = this.#createSection("🐟 САДОК", parent, ["KEEPNET"]);
+    this.#content = this.#createSection("САДОК", parent, ["KEEPNET"], { icon: "net" });
     this.#render();
   }
 

@@ -1,4 +1,5 @@
-const SVG_NS = "http://www.w3.org/2000/svg";
+import { createDevIcon } from "./dev_icon.js";
+
 const COPIED_MS = 2000;
 
 // The notice DevTools shows at the top of a section after a file export (spec 174 A5, TK-285): the downloaded file, the
@@ -36,7 +37,7 @@ export class ExportCommandNotice {
     close.type = "button";
     close.className = "devtools__export-close";
     close.setAttribute("aria-label", "Закрити");
-    close.appendChild(this.#icon(["M5 5l10 10", "M15 5L5 15"]));
+    close.appendChild(createDevIcon(documentRef, "close"));
     this.#listen(close, "click", () => { this.dispose(); onClose?.(); });
 
     const hint = documentRef.createElement("div");
@@ -51,8 +52,7 @@ export class ExportCommandNotice {
     this.#copyButton.className = "devtools__export-copy";
     this.#copyButton.setAttribute("aria-label", "Копіювати команду");
     // Two sheets: the copy icon.
-    this.#copyButton.appendChild(this.#icon(["M8 7h7a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z",
-      "M4 13V5a1 1 0 0 1 1-1h7"]));
+    this.#copyButton.appendChild(createDevIcon(documentRef, "copy"));
     this.#listen(this.#copyButton, "click", () => { void this.#copy(); });
 
     this.#status = documentRef.createElement("div");
@@ -108,20 +108,6 @@ export class ExportCommandNotice {
       this.#status.textContent = "";
       this.#root.classList.remove("devtools__export--copied");
     }, COPIED_MS);
-  }
-
-  // An outline icon on a 20 x 20 grid in the text colour (the DevTools icon sprite of stage C1 replaces these paths).
-  #icon(paths) {
-    const svg = this.#document.createElementNS(SVG_NS, "svg");
-    svg.setAttribute("class", "devtools__export-icon");
-    svg.setAttribute("viewBox", "0 0 20 20");
-    svg.setAttribute("aria-hidden", "true");
-    for (const d of paths) {
-      const path = this.#document.createElementNS(SVG_NS, "path");
-      path.setAttribute("d", d);
-      svg.appendChild(path);
-    }
-    return svg;
   }
 
   #listen(target, type, listener) {
