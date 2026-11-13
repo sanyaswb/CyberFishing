@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.97 - Line on the rod obeys the equipping rule
+
+- TK-288: the line already on the rod (the starting equipment, older saves) now gets the same length rule as equipping it: the bamboo pole (5 m, no reel) holds 10 m of line and the other 15 m goes back to the backpack (it used to keep all 25 m and cast 24.8 m).
+
 ## v0.50.96 - Float depth 0.1 m is kept
 
 - TK-192.1: a float depth the player sets to 0.1 m is kept (it used to turn into half the range on the next frame, so the cast fell from 25 to 15 m while the track still showed 0.1); before a choice the depth is half the current tackle's deepest depth, also at the game's start and after a tackle change.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.88 - DevTools number field
 
 - TK-282 (spec 174 A2): DevTools number fields are a field with − / + buttons: the step follows the value's precision (0.1 -> 0.2, 0.25 -> 0.26, 40 -> 41), Shift steps ten times further, Alt a tenth; arrow up/down step, Enter writes, Escape restores; a decimal comma is accepted; text that is not a number is never written (it used to write 0); holding a button repeats.
-
-## v0.50.87 - Typing in a field no longer steers the game
-
-- TK-281 (spec 174 A1): a key pressed while a text field has focus (DevTools number and text fields) is left to the field: the arrow keys move the caret and the letters on the game's keys (A, D, W, S) can be typed; the rod, the drag and the pull no longer react to typing. Outside a field the keys work as before.

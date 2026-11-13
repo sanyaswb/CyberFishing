@@ -879,6 +879,16 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-133 The starting pole carries a 25 m line (P1, done v0.50.97)
+Found: 2026-11-13, owner, v0.50.96.
+Reproduce: a fresh start (or any save) with the bamboo pole (5 m, no reel) and line_test_1 (25 m): the cast limit is 24.8 m at
+0.2 m depth.
+Expected: the line on a pole is exactly 2 x the rod's length (10 m), like equipping it by hand; the rest stays in the backpack.
+Actual: the starting equipment (TK-269) was written into the slots directly from the config, bypassing
+`LineAllocationPolicy`; no check fitted a line already installed in a save.
+Notes: TK-288. Done v0.50.97: `InventoryLineAllocationService.fitInstalled` at inventory composition; check `player-inventory`
+(fails on 0.50.96).
+
 ### G-132 A chosen float depth of 0.1 m turns into half the range (P1, done v0.50.96)
 Found: 2026-11-13, owner, v0.50.95.
 Reproduce: starting float rig (rod 5 m without a reel, line 25 m, fixed float); open the depth track, choose 0.1 m: the cast

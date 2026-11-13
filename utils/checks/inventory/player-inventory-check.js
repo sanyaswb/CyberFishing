@@ -332,7 +332,26 @@ function checkBoatOnWaterGuard() {
     true, "back on shore the boat can be unequipped");
 }
 
+// TK-288: the line already on the rod gets the equipping rules. The starting bamboo pole (5 m, no reel) takes exactly
+// 2 x 5 = 10 m: the starting 25 m line is cut to 10 m on the rod and 15 m back in the backpack (it used to stay 25 m
+// and cast 24.8 m); a save reloads without cutting again; taking the line off merges it back into 25 m.
+function checkInstalledLineFit() {
+  const cache = new MemoryCache();
+  const first = compose({ cache });
+  const lineLengths = (inventory) => items(inventory).filter((item) => item.itemId === "line_test_1")
+    .map((item) => item.effectiveStats?.lengthMeters).join(",");
+  assert.equal(first.inventory.getEquipped().line?.effectiveStats?.lengthMeters, 10, "the starting pole holds a 10 m line");
+  assert.equal(lineLengths(first.inventory), "15", "the rest of the 25 m line is back in the backpack");
+  const reloaded = compose({ cache });
+  assert.equal(reloaded.inventory.getEquipped().line?.effectiveStats?.lengthMeters, 10, "a reload keeps the 10 m line");
+  assert.equal(lineLengths(reloaded.inventory), "15", "and cuts nothing again");
+  const removed = reloaded.inventory.dispatchInventoryAction({ type: reloaded.actions.EQUIPMENT_SLOT_LONG_PRESS, slotId: "terminalLine" });
+  assert.equal(removed.success, true, "the line comes off the rod");
+  assert.equal(lineLengths(reloaded.inventory), "25", "and merges back into the whole 25 m line");
+}
+
 checkFreshStart();
+checkInstalledLineFit();
 checkStartingInventory();
 checkBoatOnWaterGuard();
 checkCatalogItemGrant();

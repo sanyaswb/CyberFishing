@@ -171,6 +171,63 @@ export class InventoryLineAllocationService {
     });
   }
 
+  /**
+   * TK-288: a line already installed (the starting equipment, an older save) obeys the same length rules as a line being
+   * equipped: when it is longer than the rod (and reel) take, the installed piece keeps the allowed length and the rest
+   * goes back to the backpack — merged into the same line there when it lies in the backpack, else as its own piece. The
+   * installed piece then comes off like any equipped segment (release merges it back). A line that fits, or one the rules
+   * refuse (too short, a missing reel), stays as it is. Returns { changed, equippedLengthMeters, remainingLengthMeters }.
+   * Call inside an inventory transaction.
+   */
+  fitInstalled({ line, rod, reel = null } = {}) {
+    const allocation = this.installedFit({ line, rod, reel });
+    if (!allocation) return Object.freeze({ changed: false });
+    const installed = this.#repository.require(line.instanceId);
+    const equippedLength = Math.max(0, Number(allocation.equipLengthMeters) || 0);
+    const remainingLength = Math.max(0, Number(allocation.remainingLengthMeters) || 0);
+    const remainder = {
+      ...this.#clone(installed),
+      instanceId: this.#nextInstanceId(installed),
+      quantity: 1,
+      statOverrides: { ...(installed.statOverrides || {}), lengthMeters: remainingLength },
+      location: InventoryItemLocation.inventory(),
+    };
+    delete remainder.detachedLineSegment;
+    delete remainder.sourceLineItemId;
+    delete remainder.sourceLineInstanceId;
+    const target = this.#repository.list().find((candidate) => this.#canMergeInto(remainder, candidate)) || null;
+    let remainderId;
+    if (target) {
+      this.#repository.update(target.instanceId, {
+        statOverrides: { ...(target.statOverrides || {}), lengthMeters: this.getLengthMeters(target) + remainingLength },
+        quantity: 1,
+      });
+      remainderId = target.instanceId;
+    } else {
+      remainderId = this.#repository.add(remainder).instanceId;
+    }
+    this.#repository.update(installed.instanceId, {
+      statOverrides: { ...(installed.statOverrides || {}), lengthMeters: equippedLength },
+      quantity: 1,
+      detachedLineSegment: true,
+      sourceLineItemId: installed.itemId,
+      sourceLineInstanceId: remainderId,
+    });
+    return Object.freeze({ changed: true, equippedLengthMeters: equippedLength, remainingLengthMeters: remainingLength,
+      remainderInstanceId: remainderId });
+  }
+
+  // The allocation that would cut an installed line, or null when it fits (or the rules refuse it): no writes.
+  installedFit({ line, rod, reel = null } = {}) {
+    if (!line?.instanceId || !rod) return null;
+    const raw = this.#repository.get(line.instanceId);
+    if (!raw) return null;
+    const hydrated = this.#hydrate(raw);
+    if (this.#type(hydrated) !== "fishing_line") return null;
+    const allocation = this.#policy.resolve({ lineItem: hydrated, equipment: { rod, reel } });
+    return allocation?.isValid && allocation.shouldSplit ? allocation : null;
+  }
+
   release(instanceId) {
     const item = this.#repository.get(instanceId);
     if (!item) return Object.freeze({ success: false, merged: false });

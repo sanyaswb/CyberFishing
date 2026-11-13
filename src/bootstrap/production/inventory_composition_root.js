@@ -311,6 +311,12 @@ export class InventoryCompositionRoot {
         return reservationPolicy.isReserved(item || instanceId);
       },
     });
+    // TK-288: the line already on the rod (the starting equipment, an older save) gets the same length rules as equipping
+    // it: a line longer than the rod (and reel) take is cut, the rest goes back to the backpack. Saved only when cut.
+    const installed = equipmentReadModelFactory.create(equipmentState);
+    if (lineAllocationService.installedFit(installed)) {
+      transaction.runAtomic(() => lineAllocationService.fitInstalled(installed));
+    }
     const equipmentLineReadinessPolicy =
       new InventoryEquipmentLineReadinessPolicy({
         messages: INVENTORY_MESSAGES,
