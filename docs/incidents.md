@@ -34,8 +34,17 @@ rule as something the next change can follow.
 | R18 | A DEV edit of a value reaches every result derived from it at the start (limits, pools, caches), not only the object that holds it. The check edits through the same path and asserts the effect on the running system (the fight's limit), not the stored value. | I-17 |
 | R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. This holds for scene effects too (rain, particles): their places are world points placed on screen each frame, and their amount follows the visible world area, not the screen. | I-18, I-19 |
 | R20 | Every `data-devtools-path` / `devtoolsPath` emitted by an overlay or UI link must be validated by automated checks against the live `CONFIG` object or mounted `DevTools` control index so it resolves to an exact leaf control (never a missing path or ancestor section fallback). | I-20 |
+| R21 | Layout overrides in container or media queries (phone, adaptive) come after every base rule of the same selector in the file; a base rule added later must go above them. A check parses the stylesheet and fails when a base rule of an overridden selector follows the query. | I-21 |
 
 <a id="i-20"></a>
+
+## I-21 · 2026-11-14 · v0.50.114–0.50.127: on a portrait phone the DevTools rail was a 60 px column (TK-313)
+
+- **Seen:** the owner's phone screenshot: the bottom sheet showed the module rail as a short strip with one icon («Сервіс») and the next cut off, scrolling vertically, instead of a row of icons.
+- **Cause:** the phone layouts (`@container ui-surface (orientation: portrait) and (max-width: 480px)`) were written in `src/dev/styles/dev-tools.css` above the base rules of spec 174 C2/C4 (`.devtools__rail { flex: 0 0 60px; flex-direction: column }`, `.devtools__crumbs`, `.devtools__body`). A container query adds no specificity, so the later base rules won: in the column `.devtools__main` the rail kept `flex-direction: column` and a 60 px basis, now a height. The landscape compact rail lost its 52 px width the same way. The checks run in a test DOM without a cascade, so none saw it.
+- **Fix:** all phone and adaptive layout blocks moved to the end of the file; the portrait layout is now the whole screen (owner's request) with the rail as one row of icons.
+- **Rule R21:** layout overrides in queries stay after every base rule of the same selector.
+- **Check:** `utils/checks/tooling/devtools-controls-check.js` (TK-313 block) parses `dev-tools.css` and fails when a top-level rule of a selector that a phone query overrides comes after that query; it failed on the old stylesheet (`.devtools__rail` after the landscape query) and passes now.
 
 ## I-20 · 2026-11-13 · v0.50.107: overlay link «Ніч 0…1» highlighted root `.devtools__section-title` instead of `startHour` (TK-296.2)
 

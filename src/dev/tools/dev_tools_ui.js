@@ -1043,7 +1043,6 @@ export class DevToolsUI {
 
     this.#panel.innerHTML = `
             <div class="devtools__header">
-                <button class="devtools__sheet-handle" type="button" aria-label="Розгорнути панель" aria-expanded="false"></button>
                 <h2 class="devtools__title">DevTools</h2>
                 <button class="devtools__close ui-modal-close" type="button" aria-label="Закрити інструменти">×</button>
             </div>
@@ -1072,16 +1071,5 @@ export class DevToolsUI {
     this.#panel
       .querySelector(".devtools__close")
       .addEventListener("click", this.#onToggleCallback);
-    // TK-310: on a narrow portrait screen the panel is a bottom sheet; its handle switches between a half and nearly the
-    // whole height (the game stays visible above the half sheet). Hidden by CSS in the other layouts.
-    const handle = this.#panel.querySelector(".devtools__sheet-handle");
-    handle.setAttribute("aria-expanded", "false");
-    handle.setAttribute("aria-label", "Розгорнути панель");
-    handle.addEventListener("click", () => {
-      const tall = !this.#panel.classList.contains("devtools--sheet-tall");
-      this.#panel.classList.toggle("devtools--sheet-tall", tall);
-      handle.setAttribute("aria-expanded", String(tall));
-      handle.setAttribute("aria-label", tall ? "Згорнути панель" : "Розгорнути панель");
-    });
   }
 }

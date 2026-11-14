@@ -750,19 +750,43 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
-// --- TK-310 (spec 174 D): the bottom sheet's handle switches between half and nearly the whole height ---------------
+// --- TK-313: phone layouts win the cascade: no base rule of the same selector comes after a phone container query ----
+// (TK-313: the base .devtools__rail rule sat below the portrait query and kept the rail a 60 px column on a phone).
 {
-  const sheetUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
-  const panel = sheetUi.body.parentNode;
-  const handle = byClass("devtools__sheet-handle", panel)[0];
-  assert.equal(handle.getAttribute("aria-expanded"), "false");
-  handle.click();
-  assert.equal(panel.classList.contains("devtools--sheet-tall"), true, "the handle makes the sheet tall");
-  assert.equal(handle.getAttribute("aria-expanded"), "true");
-  assert.equal(handle.getAttribute("aria-label"), "Згорнути панель");
-  handle.click();
-  assert.equal(panel.classList.contains("devtools--sheet-tall"), false, "and half again");
-  sheetUi.dispose();
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const css = fs.readFileSync(path.resolve(__dirname, "../../../src/dev/styles/dev-tools.css"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//gu, "");
+  // Top-level rules and at-rule blocks in source order: { at, selectors, offset }.
+  const blocks = [];
+  let depth = 0; let headerStart = 0; let current = null;
+  for (let i = 0; i < css.length; i++) {
+    const char = css[i];
+    if (char === "{") {
+      const header = css.slice(headerStart, i).trim();
+      if (depth === 0) current = { at: header.startsWith("@") ? header : null, selectors: [], offset: i };
+      if (depth === 0 && !header.startsWith("@")) current.selectors.push(header);
+      if (depth === 1 && current?.at) current.selectors.push(header);
+      depth++; headerStart = i + 1;
+    } else if (char === "}") {
+      depth--; headerStart = i + 1;
+      if (depth === 0) blocks.push(current);
+    } else if (char === ";" && depth <= 1 && current?.at == null) headerStart = i + 1;
+    else if (char === ";" && depth === 1) headerStart = i + 1;
+  }
+  const split = (selector) => selector.split(",").map((part) => part.replace(/\s+/gu, " ").trim());
+  const phone = blocks.filter((entry) => /@container ui-surface .*(max-width: 480px|max-height: 480px)/u.test(entry.at ?? ""));
+  assert.ok(phone.length >= 2, "the portrait and landscape phone layouts are found");
+  for (const query of phone) {
+    const overridden = new Set(query.selectors.flatMap(split));
+    for (const later of blocks.filter((entry) => entry.at == null && entry.offset > query.offset)) {
+      for (const selector of later.selectors.flatMap(split)) {
+        assert.equal(overridden.has(selector), false,
+          `base rule "${selector}" comes after "${query.at}" and overrides the phone layout; keep phone queries last`);
+      }
+    }
+  }
+  assert.ok(phone.some((query) => query.selectors.flatMap(split).includes(".devtools__rail")), "the rail has a phone layout");
 }
 
 // --- TK-312: the panel's own settings on the last rail page, remembered and applied ----------------------------------
@@ -790,7 +814,7 @@ function choiceRow(options, value, path) {
   assert.equal(panel.classList.contains("devtools--adaptive"), true, "«Адаптивна ширина» widens the panel to its content");
   assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true }),
     "and is remembered");
-  const fullscreen = byClass("devtools__switch-input", switchOf("На весь екран (телефон)"))[0];
+  const fullscreen = byClass("devtools__switch-input", switchOf("На весь екран (телефон горизонтально)"))[0];
   assert.equal(fullscreen.checked, true, "the switch shows the remembered value");
   fullscreen.checked = false; fullscreen.fire("change", { target: fullscreen });
   assert.equal(panel.classList.contains("devtools--fullscreen"), false);

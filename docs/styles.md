@@ -150,10 +150,11 @@ metric rows stay plain text without hover (TK-217).
 
 Spec 174 D (TK-310): the DevTools layouts are container queries on `ui-surface` (no JS measuring): a landscape phone
 (`orientation: landscape`, height ≤ 480) gets a compact side panel (≤ 50 % width, 52 px rail without labels); a narrow
-portrait screen (`orientation: portrait`, width ≤ 480) gets a bottom sheet (58 % of the height, 92 % with
-`devtools--sheet-tall` from the `devtools__sheet-handle`, opened by `transform`), the rail as a scrolling row on top. TK-312: the last rail page «Панель» sets root modifiers through
+portrait screen (`orientation: portrait`, width ≤ 480) gets the whole screen (TK-313; the half sheet and its handle are
+gone), sliding up by `transform`, the rail one row of icons (labels hidden, buttons share the width). These blocks stay
+at the end of `dev-tools.css`, after the base rules they override (incidents R21). TK-312: the last rail page «Панель» sets root modifiers through
 `DevToolsUI.setPanelOptions`: `devtools--adaptive` (wide layout only: `fit-content` width between 380 and 720 px, at most
-60 %, closed by `transform`) and `devtools--fullscreen` (phone layouts: the whole screen).
+60 %, closed by `transform`) and `devtools--fullscreen` (landscape phone: the whole screen; portrait always is).
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional
