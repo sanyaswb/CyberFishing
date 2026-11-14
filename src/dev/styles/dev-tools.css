@@ -192,6 +192,12 @@
 }
 .devtools__body--filtered :is(.devtools__row, .devtools__pages, .devtools__empty, .devtools__alert, .devtools__export):not(.devtools__row--match),
 .devtools__body--filtered .devtools__section:not(.devtools__section--match) { display: none; }
+/* TK-319: the reveal search keeps every row; matches are tinted, the current one outlined. */
+.devtools__body--revealing .devtools__row--match { background: rgba(var(--ui-accent-rgb), 0.1); }
+.devtools__body--revealing .devtools__row--current-match {
+  background: rgba(var(--ui-accent-rgb), 0.22);
+  box-shadow: inset 3px 0 0 var(--ui-accent);
+}
 @media (pointer: coarse) {
   .devtools__search, .devtools__filter { height: 40px; }
 }
@@ -1220,4 +1226,23 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .devtools.devtools--right, .devtools.devtools--adaptive.devtools--right { transition: none; }
+}
+/* TK-312.1: «На весь екран» on a landscape phone: the panel is the whole width, so the side panel's closed offset
+   (left/right -400px) left half of it on screen; closed, it slides out by its own width through transform, from either
+   side. Last in the file: it overrides the side layouts above (R21). */
+@container ui-surface (orientation: landscape) and (max-height: 480px) {
+  .devtools.devtools--fullscreen,
+  .devtools.devtools--fullscreen.devtools--right {
+    left: 0;
+    right: auto;
+    width: 100%;
+    transform: translateX(-105%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .devtools.devtools--fullscreen.devtools--right { transform: translateX(105%); }
+  .devtools.devtools--fullscreen.devtools--open,
+  .devtools.devtools--fullscreen.devtools--right.devtools--open { left: 0; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .devtools.devtools--fullscreen, .devtools.devtools--fullscreen.devtools--right { transition: none; }
 }

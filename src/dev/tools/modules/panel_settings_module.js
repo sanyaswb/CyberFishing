@@ -1,12 +1,15 @@
 const STORAGE_KEY = "dev_tools_panel_settings";
-const DEFAULTS = Object.freeze({ adaptiveWidth: false, fullscreen: false, side: "left" });
+const DEFAULTS = Object.freeze({ adaptiveWidth: false, fullscreen: false, side: "left", searchMode: "filter" });
+const SEARCH_MODES = Object.freeze([Object.freeze({ value: "filter", label: "Фільтр" }),
+  Object.freeze({ value: "reveal", label: "Розгорнути" })]);
 const SIDES = Object.freeze([Object.freeze({ value: "left", label: "Ліворуч" }), Object.freeze({ value: "right", label: "Праворуч" })]);
 
 // «Панель» (TK-312, owner 2026-11-14): settings of the DevTools panel itself, the last module on the rail.
 //   adaptiveWidth — on a computer the panel is as wide as its content (within limits) instead of a fixed width;
 //   fullscreen    — on a landscape phone the panel takes the whole screen instead of a side panel (a portrait phone
 //                   always shows it full screen, TK-313);
-//   side          — the edge the side panel opens from on a computer and a landscape phone: "left" | "right" (TK-317).
+//   side          — the edge the side panel opens from on a computer and a landscape phone: "left" | "right" (TK-317);
+//   searchMode    — "filter" shows only the matches, "reveal" keeps every row and opens the matches (TK-319).
 // Both are remembered (a DEV convenience in the browser's storage) and applied by DevToolsUI.setPanelOptions.
 export class PanelSettingsModule {
   #storageCache;
@@ -34,10 +37,13 @@ export class PanelSettingsModule {
       path: ["PANEL", "fullscreen"], onCommit: (value) => this.#set("fullscreen", value) });
     ui.addParameter(content, { control: "segments", label: "Сторона (ПК, горизонтально)", value: this.#options.side,
       options: SIDES, path: ["PANEL", "side"], onCommit: (value) => this.#set("side", value) });
+    ui.addParameter(content, { control: "segments", label: "Пошук", value: this.#options.searchMode,
+      options: SEARCH_MODES, path: ["PANEL", "searchMode"], onCommit: (value) => this.#set("searchMode", value) });
   }
 
   #set(key, value) {
-    const next = key === "side" ? (value === "right" ? "right" : "left") : value === true;
+    const next = key === "side" ? (value === "right" ? "right" : "left")
+      : key === "searchMode" ? (value === "reveal" ? "reveal" : "filter") : value === true;
     this.#options = { ...this.#options, [key]: next };
     this.#storageCache.set(STORAGE_KEY, this.#options);
     this.#apply(this.#options);

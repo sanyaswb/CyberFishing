@@ -161,7 +161,11 @@ at the end of `dev-tools.css`, after the base rules they override (incidents R21
 `DevToolsUI.setPanelOptions`: `devtools--adaptive` (wide layout only: `fit-content` width between 380 and 720 px, at most
 60 %, closed by `transform`) and `devtools--fullscreen` (landscape phone: the whole screen; portrait always is) and `devtools--right` (TK-317: the side
 panel opens from the right edge on a computer and a landscape phone; `devtools__edge--right` moves the zone editor's
-opening strip with it; written last in `dev-tools.css`, R21).
+opening strip with it; written last in `dev-tools.css`, R21). TK-312.1: on a landscape phone «На весь екран» closes by
+`transform` over its whole width (the -400px side offset left half of it on screen). TK-319: «Панель» → «Пошук» =
+«Розгорнути» puts `devtools__body--revealing` on the body instead of `--filtered`: every row stays, matches get
+`devtools__row--match` (tint) and one `devtools__row--current-match` (outline); Enter / Shift+Enter in the search step
+through them across modules.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

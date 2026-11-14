@@ -615,6 +615,29 @@ function choiceRow(options, value, path) {
   assert.equal(opacity.classList.contains("devtools__row--match"), false);
   filter.click();
   assert.equal(body.classList.contains("devtools__body--filtered"), false);
+  // TK-319: the reveal mode keeps every row, opens the matches and steps through them with Enter / Shift+Enter.
+  searchUi.setPanelOptions({ searchMode: "reveal" });
+  search("rain");
+  assert.equal(body.classList.contains("devtools__body--filtered"), false, "nothing is hidden");
+  assert.equal(body.classList.contains("devtools__body--revealing"), true);
+  assert.equal(rain.style.display, "block", "the section holding a match opens");
+  assert.equal(opacity.classList.contains("devtools__row--current-match"), true, "the first match is the current one");
+  assert.equal(pages.get("b").hidden, false, "its module is shown");
+  assert.equal(status.textContent, "Збіг 1 з 3 · Enter — далі");
+  input.fire("keydown", { key: "Enter" });
+  assert.equal(rowOf("speed").classList.contains("devtools__row--current-match"), true, "Enter goes to the next match");
+  assert.equal(opacity.classList.contains("devtools__row--current-match"), false);
+  input.fire("keydown", { key: "Enter", shiftKey: true });
+  assert.equal(opacity.classList.contains("devtools__row--current-match"), true, "Shift+Enter goes back");
+  input.fire("keydown", { key: "Enter", shiftKey: true });
+  assert.equal(rowOf("kind").classList.contains("devtools__row--current-match"), true, "and wraps round");
+  search("config.flag");
+  assert.equal(pages.get("a").hidden, false, "a match in another module switches to it");
+  assert.equal(rain.style.display, "none", "the section opened for the earlier search closes");
+  search("");
+  assert.equal(body.classList.contains("devtools__body--revealing"), false);
+  assert.equal(byClass("devtools__row--current-match", body).length, 0, "no mark stays after the search");
+  searchUi.setPanelOptions({ searchMode: "filter" });
   searchUi.dispose();
 }
 {
@@ -818,6 +841,14 @@ function choiceRow(options, value, path) {
     }
   }
   assert.ok(phone.some((query) => query.selectors.flatMap(split).includes(".devtools__rail")), "the rail has a phone layout");
+  // TK-312.1: a full-width panel cannot close by the side panel's -400px offset (half stayed on a landscape phone); the
+  // last landscape rule for «На весь екран» hides it by its own width, on either side, after the side layouts.
+  const landscapeFullscreen = [...css.matchAll(/@container ui-surface \(orientation: landscape\) and \(max-height: 480px\) \{([\s\S]*?)\n\}/gu)]
+    .filter((match) => /\.devtools\.devtools--fullscreen[^{]*\{[^}]*transform: translateX\(-105%\)/u.test(match[1]));
+  assert.equal(landscapeFullscreen.length, 1, "full screen on a landscape phone closes by transform over its whole width");
+  assert.match(landscapeFullscreen[0][1], /\.devtools\.devtools--fullscreen\.devtools--right \{ transform: translateX\(105%\); \}/u,
+    "and to the right when the panel is on the right");
+  assert.ok(landscapeFullscreen[0].index > css.lastIndexOf(".devtools.devtools--right {"), "after the side layouts it overrides");
 }
 
 // --- TK-312: the panel's own settings on the last rail page, remembered and applied ----------------------------------
@@ -843,7 +874,7 @@ function choiceRow(options, value, path) {
   assert.equal(adaptive.checked, false);
   adaptive.checked = true; adaptive.fire("change", { target: adaptive });
   assert.equal(panel.classList.contains("devtools--adaptive"), true, "«Адаптивна ширина» widens the panel to its content");
-  assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true, side: "left" }),
+  assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true, side: "left", searchMode: "filter" }),
     "and is remembered");
   const fullscreen = byClass("devtools__switch-input", switchOf("На весь екран (телефон горизонтально)"))[0];
   assert.equal(fullscreen.checked, true, "the switch shows the remembered value");
@@ -858,6 +889,12 @@ function choiceRow(options, value, path) {
   assert.equal(stored.get("dev_tools_panel_settings").side, "right", "and is remembered");
   sides[0].click();
   assert.equal(panel.classList.contains("devtools--right"), false);
+  // TK-319: the search mode, remembered.
+  const modes = byClass("devtools__segment", switchOf("Пошук"));
+  assert.equal(JSON.stringify(modes.map((mode) => mode.textContent)), JSON.stringify(["Фільтр", "Розгорнути"]));
+  modes[1].click();
+  assert.equal(stored.get("dev_tools_panel_settings").searchMode, "reveal", "«Розгорнути» is remembered");
+  modes[0].click();
   tools.dispose();
 }
 

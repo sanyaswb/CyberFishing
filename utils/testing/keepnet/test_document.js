@@ -10,8 +10,9 @@ class TestElement {
       removeProperty: (name) => properties.delete(name),
     };
     this.classList = {
-      add: (name) => { this.className = [...new Set([...this.className.split(" "), name])].join(" "); },
-      remove: (name) => { this.className = this.className.split(" ").filter((entry) => entry !== name).join(" "); },
+      // DOM contract: add and remove take several class names at once (TK-319 relies on it).
+      add: (...names) => { this.className = [...new Set([...this.className.split(" "), ...names])].filter(Boolean).join(" "); },
+      remove: (...names) => { this.className = this.className.split(" ").filter((entry) => !names.includes(entry)).join(" "); },
       contains: (name) => this.className.split(" ").includes(name),
       toggle: (name, force = undefined) => {
         const enabled = force === undefined ? !this.className.split(" ").includes(name) : Boolean(force);

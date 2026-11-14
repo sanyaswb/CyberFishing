@@ -54,6 +54,10 @@ export class DevToolsUI {
   #changedOnly = false;
   #openedBySearch = new Set();
   #filterMarks = new Set();
+  // TK-319: "filter" shows only the matches; "reveal" keeps every row, opens the matches' sections and steps through them.
+  #searchMode = "filter";
+  #matches = [];
+  #matchIndex = -1;
   #searchStatus = null;
   #changedButton = null;
   // Spec 174 C2: the module rail and one page per module; only the active page shows, each keeps its own scroll.
@@ -351,11 +355,17 @@ export class DevToolsUI {
   // in which layout each applies.
   // TK-317: side ("left" | "right") — the edge the side panel opens from on a computer and a landscape phone (a portrait
   // phone shows it full screen); the zone editor's opening edge follows it.
-  setPanelOptions({ adaptiveWidth = false, fullscreen = false, side = "left" } = {}) {
+  // searchMode: "filter" | "reveal" (TK-319).
+  setPanelOptions({ adaptiveWidth = false, fullscreen = false, side = "left", searchMode = "filter" } = {}) {
     this.#panel.classList.toggle("devtools--adaptive", adaptiveWidth === true);
     this.#panel.classList.toggle("devtools--fullscreen", fullscreen === true);
     this.#panel.classList.toggle("devtools--right", side === "right");
     this.#edgeOpener?.setSide(side === "right" ? "right" : "left");
+    const nextMode = searchMode === "reveal" ? "reveal" : "filter";
+    if (nextMode !== this.#searchMode) {
+      this.#searchMode = nextMode;
+      this.refreshFilter();
+    }
   }
 
   createEmptyNote(parentElement, text) {
@@ -824,9 +834,13 @@ export class DevToolsUI {
     for (const content of this.#openedBySearch) content.style.display = "none";
     this.#openedBySearch.clear();
     for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
-      "devtools__page--match");
+      "devtools__page--match", "devtools__row--current-match");
     this.#filterMarks.clear();
-    this.#body.classList.toggle("devtools__body--filtered", active);
+    const revealing = active && this.#searchMode === "reveal";
+    this.#body.classList.toggle("devtools__body--filtered", active && !revealing);
+    this.#body.classList.toggle("devtools__body--revealing", revealing);
+    this.#matches = [];
+    this.#matchIndex = -1;
     let found = 0;
     if (active) {
       for (const row of this.#parameterRows) {
@@ -839,6 +853,7 @@ export class DevToolsUI {
         if (changedOnly && !row.classList.contains("devtools__row--changed")) continue;
         found += 1;
         this.#mark(row, "devtools__row--match");
+        this.#matches.push(row);
         for (let node = row.parentNode; node && node !== this.#body; node = node.parentNode) {
           if (node.classList?.contains("devtools__section-content") && node.style.display === "none") {
             node.style.display = "block";
@@ -851,8 +866,23 @@ export class DevToolsUI {
     }
     this.#searchStatus.hidden = !active;
     this.#searchStatus.textContent = found ? `Знайдено: ${found}` : "Нічого не знайдено";
+    if (revealing && found) this.#showMatch(0);
     this.#changedButton.setAttribute("aria-pressed", String(changedOnly));
     this.#changedButton.classList.toggle("devtools__filter--active", changedOnly);
+  }
+
+  // TK-319 (reveal mode): shows one match — its page, scrolled to the middle, marked as the current one.
+  #showMatch(index) {
+    const count = this.#matches.length;
+    if (!count) return;
+    this.#matches[this.#matchIndex]?.classList.remove("devtools__row--current-match");
+    this.#matchIndex = ((index % count) + count) % count;
+    const row = this.#matches[this.#matchIndex];
+    row.classList.add("devtools__row--current-match");
+    this.#filterMarks.add(row);
+    this.#revealPageOf(row);
+    row.scrollIntoView?.({ block: "center" });
+    this.#searchStatus.textContent = `Збіг ${this.#matchIndex + 1} з ${count} · Enter — далі`;
   }
 
   #mark(element, className) {
@@ -1072,6 +1102,13 @@ export class DevToolsUI {
       this.refreshFilter();
     });
     input.addEventListener("keydown", (event) => {
+      // TK-319: in the reveal mode Enter goes to the next match, Shift+Enter to the previous one.
+      if (event.key === "Enter" && this.#searchMode === "reveal" && this.#matches.length) {
+        event.preventDefault?.();
+        event.stopPropagation();
+        this.#showMatch(this.#matchIndex + (event.shiftKey ? -1 : 1));
+        return;
+      }
       if (event.key !== "Escape" || !input.value) return;
       event.stopPropagation();
       input.value = "";
