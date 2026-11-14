@@ -11,6 +11,20 @@ import { ASH_SETTINGS } from "../raw/weather/ash_settings.js";
 
 export const CONFIG = {
   liveBait: LIVE_BAIT_CONFIG,
+  // Spec 179: what the emission does to the player. screen (stage E): darkening from the edges inward and a pulsing
+  // blur without a gas mask; includeHud — the HUD and windows too (everything but DevTools), off — only the world.
+  emission: {
+    screen: {
+      enabled: true,
+      includeHud: true, // Власник (Q6): для тесту — разом з HUD; вимкнено — розмивається лише сцена.
+      maxDarkness: 0.85, // темрява країв на повній силі викиду
+      clearRadius: [0.95, 0.15], // світла середина: частка півдіагоналі на початку → на піку
+      feather: 0.35, // ширина переходу від світлої середини до темних країв
+      maxBlurPx: 6, // розмиття на піку пульсу при повній силі, логічні px
+      pulseBase: 0.35, // частка розмиття між пульсами
+      pulseHz: [0.25, 1.4], // частота пульсу: на початку → на піку (пришвидшується)
+    },
+  },
   canvas: {
     id: "gameCanvas",
     backgroundColor: "#0f171e",

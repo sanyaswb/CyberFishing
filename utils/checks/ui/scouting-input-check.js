@@ -38,14 +38,16 @@ const config = { casting: { enabled: true }, input: { pointerThreshold: 10,
   pullHoldMinMs: 120, keys: { pull: ["Space"] },
   mapPan: { inverted: true, sensitivity: 1, maxDistancePx: 0, wheelStepPx: 40 },
 } };
-let equipment = {}, warnings = 0, casts = 0;
+let equipment = {}, warnings = 0, casts = 0, gasMaskWarnings = 0, emissionBlocks = false;
 const deps = {
   config, projector: { focusOnVirtualPos() {}, followVirtualX() {} }, rng: {},
   inventory: { getEquipped: () => equipment, evaluateCastReadiness: () => ({ canCast: !!equipment.rod }) },
   world: { getWaterMetric: () => ({}) }, getViewportSize: () => ({ width: 800, height: 600 }),
   isAimingChum: () => false, canPlayerCast: () => false,
+  castGate: { isBlocked: () => emissionBlocks },
   rules: { equipment: { requiresReel: () => false, hasEquippedLine: () => true, canSelectDepth: () => false } },
-  commands: { showMissingRodInventoryWarning: () => warnings++, castLine: () => casts++, panViewport() {} },
+  commands: { showMissingRodInventoryWarning: () => warnings++, castLine: () => casts++, panViewport() {},
+    showGasMaskRequiredWarning: () => gasMaskWarnings++ },
   ui: { updateNetButtonState() {}, setScoutingPointerDimmed() {} },
   depthUI: { isActive: false }, currentHookDepthRef: { get: () => 1, set() {}, choose() {}, isChosen: () => false, clearChoice() {} },
 };
@@ -53,6 +55,24 @@ const scouting = new ScoutingState(deps);
 scouting.enter();
 scouting.update(16, { bottom: 600 }, { input: { pointerDown: true, isPulling: false } });
 assert.equal(warnings, 0, "a pointer press must wait for click/scroll classification before opening Inventory");
+
+// Spec 179 stage E (TK-324): during an emission without a gas mask a cast is refused with one warning per press.
+{
+  const gated = new ScoutingState(deps);
+  equipment = { rod: { id: "rod" } };
+  emissionBlocks = true;
+  gated.enter();
+  gated.update(16, { bottom: 600 }, { input: { pointerDown: true, isPulling: false } });
+  assert.equal(gasMaskWarnings, 0, "a bare press may still become navigation: no warning yet");
+  gated.update(16, { bottom: 600 }, { input: { pointerDown: true, isPulling: true } });
+  gated.update(16, { bottom: 600 }, { input: { pointerDown: true, isPulling: true } });
+  assert.equal(gasMaskWarnings, 1, "a cast during an emission warns «У вас немає протигазу» once per press");
+  for (let index = 0; index < 30; index += 1) gated.update(16, { bottom: 600 }, { input: { pointerDown: false, clickPos: null } });
+  assert.equal(casts, 0, "and never casts");
+  emissionBlocks = false;
+  equipment = {};
+  gasMaskWarnings = 0;
+}
 
 const canvas = eventTarget();
 const input = new InputController(canvas, null, { runtimeConfig: config, listeners: new EventLifecycle() });

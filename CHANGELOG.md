@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.11 - Emission darkening and blur, no cast without a gas mask (spec 179 stage E, TK-324)
+
+- Without a gas mask an emission darkens the screen from the edges inward and blurs it in pulses that quicken toward the peak — the HUD and windows too, DevTools stays sharp (CONFIG.emission.screen.includeHud off: the world only). A cast during an emission opens the inventory with «У вас немає протигазу»; a fight already on goes on.
+
 ## v0.51.10 - Fiery ash during an emission (spec 179 stage C, TK-323)
 
 - During an emission glowing embers of different sizes float through the air, smoother and slower than rain: they drift with the wind, rise slowly, wander, flicker and cool from yellow to red; their number follows the emission's strength. DevTools «ПОГОДА» → «Вигляд попелу».
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.2 - Reveal search waits for Enter (TK-319.1)
 
 - DevTools «Пошук» = «Розгорнути»: typing only marks the matches and opens their sections; the panel scrolls to a match (and switches the module) only on Enter — the search key of the phone keyboard — and the next Enter goes to the next one.
-
-## v0.51.1 - Reveal search mode, landscape full screen closes fully (TK-319, TK-312.1)
-
-- DevTools: «Панель» → «Пошук» chooses «Фільтр» (only the matches) or «Розгорнути» (every row stays, the matches' sections open, the current match is outlined, Enter / Shift+Enter step through them across modules). On a landscape phone «На весь екран» now closes completely (it moved by 400 px only, half stayed on screen).

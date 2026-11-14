@@ -7,6 +7,8 @@ export const FISHING_MESSAGES = Object.freeze({
   rodNeedsReelToCast: (rodName) => `${rodName}: потрібна котушка для закидання.`,
   unnamedRod: "Ця",
   equipLineToCast: "Спочатку споряди ліску для закидання.",
+  // Spec 179 stage E: no cast during an emission without a gas mask.
+  gasMaskRequiredToCast: "У вас немає протигазу",
   noChumInInventory: "У вас немає прикормки в інвентарі!",
   loadChumIntoBoat: "Завантажте прикормку в бункери кораблика через інвентар!",
   boatNeedsBattery: "Вставте батарейку в кораблик через інвентар!",

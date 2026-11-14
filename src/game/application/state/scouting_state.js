@@ -8,6 +8,7 @@ export class ScoutingState extends GameState {
   #missingRodWarnedForPress = false;
   #missingReelWarnedForPress = false;
   #missingLineWarnedForPress = false;
+  #gasMaskWarnedForPress = false;
   #isUiDimmed = false;
 
   /** @param {ScoutingStateDeps} deps */
@@ -50,6 +51,10 @@ export class ScoutingState extends GameState {
 
     if (input.clickPos) {
       const eq = this.deps.inventory.getEquipped();
+      if (this.deps.castGate.isBlocked()) {
+        this.deps.commands.showGasMaskRequiredWarning();
+        return;
+      }
       if (!this.#canStartRodCast(eq)) {
         if (!eq?.rod) {
           this.deps.commands.showMissingRodInventoryWarning?.();
@@ -207,10 +212,23 @@ export class ScoutingState extends GameState {
       this.#missingRodWarnedForPress = false;
       this.#missingReelWarnedForPress = false;
       this.#missingLineWarnedForPress = false;
+      this.#gasMaskWarnedForPress = false;
     }
 
     const eq = this.deps.inventory.getEquipped();
     const wantsCast = wantsRodAim || input?.clickPos || input?.isDoubleClick;
+    // Spec 179 stage E: during an emission a cast needs a gas mask; the game goes on, the press warns once.
+    if (wantsCast && this.deps.castGate.isBlocked()) {
+      this.#castAim.reset();
+      this.#pendingCast = null;
+      this.#setUiDimmed(false);
+      if (!input?.clickPos && !input?.isDoubleClick && !input?.isPulling) return false;
+      if (!this.#gasMaskWarnedForPress) {
+        this.deps.commands.showGasMaskRequiredWarning();
+        this.#gasMaskWarnedForPress = true;
+      }
+      return false;
+    }
     if (wantsCast && !this.#canStartRodCast(eq)) {
       this.#castAim.reset();
       this.#pendingCast = null;

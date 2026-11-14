@@ -58,6 +58,9 @@ import { EnvironmentSystem } from "../../game/application/world/environment_syst
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
 import { resolveSessionSeed } from "../../engine/random/session_seed.js";
+import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
+import { EmissionScreenEffect } from "../../game/presentation/weather/emission_screen_effect.js";
+import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
@@ -982,6 +985,10 @@ export class GameCompositionRoot {
             ...floatArt,
           ]);
       });
+      // Spec 179 stage E: how the emission reaches the player (gas mask, the screen veil, the cast gate).
+      const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
+        getEquipped: () => systems.inventory.getEquipped() });
+      const emissionScreen = this.#composeEmissionScreen({ canvas, emissionExposure, own });
       // The game is ready only once the plan's first layer has loaded (spec 157 R15).
       await this.#preload.whenLayer("layer-one");
       this.#startupMarks.mark(STARTUP_STAGES.scene);
@@ -1048,6 +1055,8 @@ export class GameCompositionRoot {
         chumRules,
         boatRules,
         playerCastRules,
+        emissionExposure,
+        emissionScreen,
       };
     } catch (error) {
       for (let index = owned.length - 1; index >= 0; index--) {
@@ -1059,6 +1068,22 @@ export class GameCompositionRoot {
       }
       throw error;
     }
+  }
+
+  // Spec 179 stage E: the emission's darkening and blur, one DOM veil updated once a frame (a page without a UI surface
+  // has no veil: the effect still runs, nothing is drawn).
+  #composeEmissionScreen({ canvas, emissionExposure, own }) {
+    const effect = new EmissionScreenEffect();
+    const veil = this.#uiSurface
+      ? own(new EmissionVeilDomRenderer({ documentRef: this.#documentTarget, portalRoot: this.#uiSurface.portalRoot,
+        gameCanvas: canvas }))
+      : null;
+    return Object.freeze({
+      update: (dtMs) => {
+        const record = effect.update(dtMs, emissionExposure.strength(), this.#config.emission?.screen);
+        veil?.apply(record);
+      },
+    });
   }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.
@@ -2459,6 +2484,8 @@ export class GameCompositionRoot {
       showMissingRodInventoryWarning: appPorts.showMissingRodInventoryWarning,
       showMissingReelInventoryWarning: appPorts.showMissingReelInventoryWarning,
       showMissingLineInventoryWarning: appPorts.showMissingLineInventoryWarning,
+      showGasMaskRequiredWarning: appPorts.showGasMaskRequiredWarning,
+      emissionCastGate: appPorts.emissionCastGate,
       setInvalidCastMarker: appPorts.setInvalidCastMarker,
       panViewport: appPorts.panViewport,
       isDebugEnabled: appPorts.isDebugEnabled,

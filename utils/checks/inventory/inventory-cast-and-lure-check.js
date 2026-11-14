@@ -265,6 +265,7 @@ class ScoutingCastWarningCheck {
           },
           castLine: () => { castCount += 1; },
           showMissingLineInventoryWarning,
+          emissionCastGate: { isBlocked: () => false },
         };
         const deps = new StateDepsFactory(root).create("scouting");
         assert(

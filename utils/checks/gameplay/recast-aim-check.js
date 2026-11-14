@@ -41,6 +41,7 @@ const deps = {
   currentHookDepthRef: { get: () => 1, set() {}, choose() {}, isChosen: () => false, clearChoice() {} },
   isAimingChum: () => false,
   canPlayerCast: () => true,
+  castGate: { isBlocked: () => false },
   clock: { now: 1000 },
   getCastStartTime: () => 0,
   castRodControl: { isPulling: () => false, update: () => ({ rodMoved: false, floatMoved: false, deltaPx: 0 }) },

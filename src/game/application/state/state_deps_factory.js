@@ -53,6 +53,7 @@ export class StateDepsFactory {
           this.#root.showMissingReelInventoryWarning,
         showMissingLineInventoryWarning:
           this.#root.showMissingLineInventoryWarning,
+        showGasMaskRequiredWarning: this.#root.showGasMaskRequiredWarning,
       },
       rules: {
         equipment: this.#root.equipmentRules,
@@ -87,6 +88,8 @@ export class StateDepsFactory {
       rng: this.#root.rng,
       clock: this.#root.clock,
       canPlayerCast: this.#root.canPlayerCast,
+      // Spec 179 stage E: { isBlocked() } — no cast during an emission without a gas mask.
+      castGate: this.#root.emissionCastGate,
       getMaxHookDepth: this.#root.getMaxHookDepth,
       getViewportSize: this.#root.getViewportSize,
       // Live getter — value can change at runtime

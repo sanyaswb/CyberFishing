@@ -345,6 +345,7 @@ new FloatDepthCastCheck(runtime).run();
   const scouting = new ScoutingState({ config: CONFIG, projector: { focusOnVirtualPos() {} }, rng: {},
     world: { getWaterMetric: () => ({ topBasePixels: 1e9 }) }, getViewportSize: () => ({ width: 1000, height: 1000 }),
     commands: { panViewport() {} }, ui: { setScoutingPointerDimmed() {} }, isAimingChum: () => false, canPlayerCast: () => true,
+    castGate: { isBlocked: () => false },
     inventory: { getEquipped: () => equipment }, rules: { equipment: rules }, depthUI, currentHookDepthRef: depthRef,
     getMaxHookDepth: () => rules.getFloatLineBudget(equipment, null).maxDepthMeters });
   const frame = () => scouting.update(16, { bottom: 1000 }, { input: {} });

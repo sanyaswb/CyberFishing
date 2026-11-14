@@ -1382,6 +1382,83 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     "the fish, environment and DevTools read the one session seed");
 }
 
+// Spec 179 stage E (TK-324): exposure (gas mask, cast gate), the screen effect's curves and the DOM veil.
+{
+  const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");
+  const { EmissionScreenEffect } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
+  const { EmissionVeilDomRenderer } = require("../../../src/platform/browser/dom/emission_veil_dom_renderer.js");
+  const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
+  let env = { emission: { phase: "idle", intensity: 0 } };
+  let equipped = {};
+  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped });
+  assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
+  env = { emission: { phase: "onset", intensity: 0.5 } };
+  assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0.5, true], "an emission without a gas mask: effect and no cast");
+  equipped = { gasMask: { id: "mask" } };
+  assert.deepEqual([exposure.protection(), exposure.strength(), exposure.isCastBlocked()], [1, 0, false],
+    "a gas mask: no effect and casting allowed");
+  equipped = {};
+  env = { emission: { phase: "fade", intensity: 0.01 } };
+  assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
+
+  // The effect: darkening from the edges inward, blur pulsing faster toward the peak.
+  const settings = CONFIG.emission.screen;
+  assert.equal(settings.includeHud, true, "owner Q6: blur with the HUD for the test");
+  const effect = new EmissionScreenEffect();
+  const sample = (strength, seconds) => {
+    let blurMin = Infinity, blurMax = 0, crossings = 0, previous = null, record = null;
+    for (let t = 0; t < seconds; t += 1 / 60) {
+      record = effect.update(1000 / 60, strength, settings);
+      blurMin = Math.min(blurMin, record.blurPx);
+      blurMax = Math.max(blurMax, record.blurPx);
+      const above = record.blurPx > settings.maxBlurPx * strength * (1 + settings.pulseBase) / 2;
+      if (previous !== null && above && !previous) crossings += 1;
+      previous = above;
+    }
+    return { ...record, blurMin, blurMax, crossings };
+  };
+  assert.equal(effect.update(16, 0, settings).visible, false, "strength 0: the veil is hidden");
+  const low = sample(0.3, 10);
+  const peak = sample(1, 10);
+  assert.ok(low.clearRadius > peak.clearRadius && peak.clearRadius < 0.2, "the clear middle narrows toward the peak");
+  assert.ok(low.darkness < peak.darkness && Math.abs(peak.darkness - settings.maxDarkness) < 1e-9, "the edges darken");
+  assert.ok(peak.blurMax <= settings.maxBlurPx + 1e-9 && peak.blurMax > settings.maxBlurPx * 0.95, "the blur reaches its maximum");
+  assert.ok(peak.blurMin >= settings.maxBlurPx * settings.pulseBase - 1e-9 && peak.blurMin < peak.blurMax * 0.6,
+    "the blur pulses between its base and its maximum");
+  assert.ok(peak.crossings > low.crossings * 2, `the pulse speeds up toward the peak (${low.crossings} → ${peak.crossings})`);
+  assert.equal(effect.update(16, 1, { ...settings, enabled: false }).visible, false, "switched off: no veil");
+
+  // The DOM veil: placed between the UI content and the portals (DevTools) or above the scene; written only on change.
+  const makeElement = (name) => ({ name, parent: null, isConnected: false, style: { props: {}, setProperty(key, value) { this.props[key] = value; } },
+    classList: { set: new Set(), add(c) { this.set.add(c); }, remove(c) { this.set.delete(c); },
+      toggle(c, on) { if (on) this.set.add(c); else this.set.delete(c); } },
+    setAttribute() {}, remove() { this.isConnected = false; this.parent = null; } });
+  const placed = [];
+  const portalRoot = { before: (element) => { element.isConnected = true; element.parent = "before-portals"; placed.push("portals"); } };
+  const scene = { after: (element) => { element.isConnected = true; element.parent = "after-scene"; placed.push("scene"); } };
+  const gameCanvas = { before: (element) => { element.isConnected = true; element.parent = "before-canvas"; } };
+  let created = null;
+  const documentRef = { createElement: () => (created = makeElement("veil")), querySelector: (selector) => (selector === ".game-shell__scene" ? scene : null) };
+  const veil = new EmissionVeilDomRenderer({ documentRef, portalRoot, gameCanvas });
+  veil.apply({ visible: false });
+  assert.equal(created.isConnected, false, "hidden before an emission: not even in the page");
+  const frame = { visible: true, includeHud: true, darkness: 0.5, clearRadius: 0.4, feather: 0.3, blurPx: 4 };
+  veil.apply(frame);
+  assert.equal(created.parent, "before-portals", "with the HUD: right before the portals, so DevTools stays sharp");
+  assert.ok(created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "blur(4.00px)", "shown and blurred");
+  assert.equal(created.style.props["--emission-veil-darkness"], "0.500", "darkness written");
+  created.style.backdropFilter = "untouched";
+  veil.apply({ ...frame, blurPx: 4.1, darkness: 0.5001 });
+  assert.equal(created.style.backdropFilter, "untouched", "changes too small to see are not written");
+  veil.apply({ ...frame, includeHud: false });
+  assert.equal(created.parent, "after-scene", "without the HUD: right above the WebGL scene, under the 2D HUD canvas");
+  assert.ok(created.classList.set.has("emission-veil--scene"), "with the scene modifier");
+  veil.apply({ visible: false });
+  assert.ok(!created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "none",
+    "after the emission: hidden, no backdrop filter left");
+  assert.deepEqual(placed, ["portals", "scene"], "placed only when its layer changes");
+}
+
 console.log(
   "weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state, the live reading and the emission OK",
 );

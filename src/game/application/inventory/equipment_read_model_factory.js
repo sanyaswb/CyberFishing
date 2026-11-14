@@ -32,6 +32,8 @@ export class EquipmentReadModelFactory {
     const delivery = this.#rootItem(equipmentState, "delivery");
     const handChum = this.#rootItem(equipmentState, "handChum");
     const radio = this.#rootItem(equipmentState, "radio");
+    // Spec 179 stage E: the gas mask in its slot (protection from the emission).
+    const gasMask = this.#rootItem(equipmentState, "gasMask");
 
     const reelLine = reel
       ? this.#child(this.#instanceId(reel), "line", 0)
@@ -75,6 +77,7 @@ export class EquipmentReadModelFactory {
       handChum,
       radio,
       radioBattery,
+      gasMask,
     });
   }
 

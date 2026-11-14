@@ -31,6 +31,8 @@ export class GameApplication {
   #castPenalty;
   #depthUI;
   #timeUI;
+  #emissionScreen;
+  #emissionExposure;
   #holdUI;
   #hasEquippedNet = false;
   #boatInNetReach = false;
@@ -232,6 +234,9 @@ export class GameApplication {
     this.#baitRules = runtime.baitRules;
     this.#depthUI = runtime.depthUI;
     this.#timeUI = runtime.timeUI;
+    // Spec 179 stage E: the emission's veil (updated each frame) and the cast gate (a gas mask during an emission).
+    this.#emissionScreen = runtime.emissionScreen;
+    this.#emissionExposure = runtime.emissionExposure;
     this.#holdUI = runtime.holdUI;
     const appPorts = {
       update: (dt) => {
@@ -289,6 +294,8 @@ export class GameApplication {
         this.#showMissingReelInventoryWarning(),
       showMissingLineInventoryWarning: () =>
         this.#showMissingLineInventoryWarning(),
+      showGasMaskRequiredWarning: () => this.#showGasMaskRequiredWarning(),
+      emissionCastGate: { isBlocked: () => this.#emissionExposure.isCastBlocked() },
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },
@@ -725,6 +732,7 @@ export class GameApplication {
     const envSnapshot = this.#world.update(dt, timeScale);
     this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
+    this.#emissionScreen.update(dt);
     this.updateChumUI();
 
     const wasAimingChum = this.isAimingChum;
@@ -1043,6 +1051,12 @@ export class GameApplication {
   #showMissingLineInventoryWarning() {
     this.#inventoryUI.open();
     this.#inventoryUI.showWarning(this.#messages.equipLineToCast);
+  }
+
+  // Spec 179 stage E: the inventory opens with the warning, where a gas mask can be put on.
+  #showGasMaskRequiredWarning() {
+    this.#inventoryUI.open();
+    this.#inventoryUI.showWarning(this.#messages.gasMaskRequiredToCast);
   }
 
   start() {

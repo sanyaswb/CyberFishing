@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 179 E (TK-324): darkening and pulsing blur without a gas mask; no cast during an emission.",
   "Spec 179 C (TK-323): fiery ash in the air during an emission.",
   "TK-322.1: emission background loads after every map phase, low copy first.",
   "Spec 179 B (TK-322): emission background over the time of day, red rain.",

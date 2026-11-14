@@ -508,6 +508,7 @@ export class ConfigSchemaValidator {
     this.#validateSceneWaterConfig();
     this.#validateRainConfig();
     this.#validateAshConfig();
+    this.#validateEmissionScreenConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
@@ -1301,6 +1302,31 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(`${path}.rings.ripple.strength`);
     this.#requireFiniteNumber(`CONFIG.${path}.rings.ripple.radiusScale`, ripple.radiusScale, { min: 0, max: 10 });
     this.#requireParameterLabel(`${path}.rings.ripple.radiusScale`);
+  }
+
+  // Spec 179 stage E: the emission's darkening and blur (CONFIG.emission.screen).
+  #validateEmissionScreenConfig() {
+    const cfg = this.config.emission?.screen;
+    const path = "emission.screen";
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing emission screen config"); return; }
+    this.#requireParameterLabel("emission");
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireBooleanWithLabel(`${path}.includeHud`, cfg.includeHud);
+    for (const [key, min, max] of [["maxDarkness", 0, 1], ["feather", 0, 1], ["maxBlurPx", 0, 40], ["pulseBase", 0, 1]]) {
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+    for (const [key, min, max, ordered] of [["clearRadius", 0, 1, false], ["pulseHz", 0, 10, true]]) {
+      const pair = cfg[key];
+      if (!Array.isArray(pair) || pair.length !== 2 || (ordered && pair[0] > pair[1])) {
+        this.#error(`CONFIG.${path}.${key}`, ordered ? "must be [min, max] with min <= max" : "must be [start, peak]");
+        continue;
+      }
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
   }
 
   // Spec 179 stage C: the emission's fiery ash (CONFIG.canvas.ash).

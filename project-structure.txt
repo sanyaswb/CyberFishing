@@ -465,6 +465,7 @@
 │  │  │  │  └── viewport_projector.js
 │  │  │  └── world
 │  │  │     ├── current_location.js
+│  │  │     ├── emission_exposure.js
 │  │  │     ├── environment_system.js
 │  │  │     ├── game_world.js
 │  │  │     └── ground_plane_scope.js
@@ -922,6 +923,7 @@
 │  │     │  │  ├── chum-control.css
 │  │     │  │  ├── depth-selector.css
 │  │     │  │  ├── draggable-control.css
+│  │     │  │  ├── emission-veil.css
 │  │     │  │  ├── game-controls.css
 │  │     │  │  ├── hold-charges.css
 │  │     │  │  ├── hud-indicator.css
@@ -972,6 +974,8 @@
 │  │     ├── visual
 │  │     │  ├── degradation_color_config.js
 │  │     │  └── degradation_color_config_validator.js
+│  │     ├── weather
+│  │     │  └── emission_screen_effect.js
 │  │     └── world
 │  │        ├── boat_animation_controller.js
 │  │        ├── boat_chum_renderer.js
@@ -1013,6 +1017,7 @@
 │        │  └── performance_startup_marks.js
 │        ├── dom
 │        │  ├── double_activation_controller.js
+│        │  ├── emission_veil_dom_renderer.js
 │        │  ├── engine_interface.js
 │        │  ├── hint_sheet_controller.js
 │        │  ├── horizontal_scroll_controller.js
