@@ -1,0 +1,38 @@
+/* Shared sprite icon (DESIGN_RULES §8): an outline symbol that takes its colour from the text. The consumer class sizes
+   the square box; --placeholder gives an item without artwork the light-grey tone of the empty compartments. */
+.ui-icon {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.ui-icon--placeholder { color: #c2c9cf; }
+
+/* TK-314 (owner 2026-11-14): «free» is a badge, not the word «Безкоштовно»: the word FREE in a rounded outline that slowly
+   turns green and back to the text colour. Used by the house buttons and the DevTools item shop. One small element;
+   the colour animation stops for reduced motion. */
+.ui-free-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  margin-left: 0.5em;
+  padding: 0.1em 0.5em;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  vertical-align: middle;
+  animation: ui-free-badge-glow 2.8s ease-in-out infinite;
+}
+@keyframes ui-free-badge-glow {
+  50% { color: var(--ui-success); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-free-badge { animation: none; color: var(--ui-success); }
+}
