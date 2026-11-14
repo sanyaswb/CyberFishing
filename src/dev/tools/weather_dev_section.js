@@ -604,7 +604,12 @@ export class WeatherDevSection {
     if (!emission) return;
     const section = this.#createSection("Викид", content, ["WEATHER", "emission"]);
     const snapshot = emission.snapshot;
-    const left = snapshot.frozen ? "вручну" : `ще ${seconds(snapshot.phaseLeftSec)}`;
+    // TK-321.1: an idle emission has no «next in» — it starts by a roll; the row shows the cooldown or the roll's chance.
+    const idle = snapshot.phase === "idle";
+    const left = snapshot.frozen ? "вручну"
+      : !idle ? `ще ${seconds(snapshot.phaseLeftSec)}`
+        : snapshot.cooldownLeftSec > 0 ? `пауза ще ${seconds(snapshot.cooldownLeftSec)}`
+          : `шанс перевірки ${(snapshot.chance * 100).toFixed(2)}% (невдалих ${snapshot.failedChecks})`;
     this.#ui.createInfoRow("стан", `${EMISSION_LABELS[snapshot.phase] ?? snapshot.phase} · ${left}`, section);
     this.#ui.createInfoRow("сила викиду", percent(snapshot.intensity), section);
     this.#ui.createInfoRow("радіація", `${percent(snapshot.radiation)}${snapshot.radiationForced ? " (вручну)" : ""}`, section);

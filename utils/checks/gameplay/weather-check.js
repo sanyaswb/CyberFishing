@@ -1172,7 +1172,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const { EmissionModel } = require("../../../src/game/domain/weather/emission_model.js");
   const emissionSettings = () => ({
     emission: {
-      enabled: true, firstDelaySec: [10, 10], intervalSec: [100, 200], onsetSec: [20, 20], peakSec: [30, 30],
+      enabled: true, cooldownSec: 10, checkIntervalSec: 1, chancePerCheck: 1, chanceGrowthPerCheck: 0,
+      onsetSec: [20, 20], peakSec: [30, 30],
       fadeSec: [40, 40], storm: { rain: 0.9, storm: 0.8, fadeSec: 10, lightningIntervalMult: 0.5 },
     },
     radiation: { base: 0.1, emissionPeak: 0.9 },
@@ -1202,9 +1203,12 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const model = new EmissionModel({ rng: new SeededRng(3), getSettings: emissionSettings });
   model.update(0);
   assert.equal(model.snapshot.phase, "idle", "starts idle");
-  near(model.snapshot.phaseLeftSec, 10, "the first emission waits firstDelaySec");
+  near(model.snapshot.cooldownLeftSec, 10, "no rolls during the cooldown after the session's start");
+  assert.equal(model.snapshot.phaseLeftSec, 0, "an idle emission holds no time of the next one");
   near(model.snapshot.radiation, 0.1, "base radiation while idle");
-  tick(model, 10.05);
+  tick(model, 10.95);
+  assert.equal(model.snapshot.phase, "idle", "the first roll comes one check interval after the cooldown");
+  tick(model, 0.1);
   assert.equal(model.snapshot.phase, "onset", "the onset starts after the first delay");
   assert.equal(model.snapshot.serial, 1, "the first emission is counted");
   tick(model, 9.95);
@@ -1221,7 +1225,42 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.ok(Math.abs(model.snapshot.intensity - 0.5) < 0.02, `half the fade = 50% (smoothstep, ${model.snapshot.intensity})`);
   tick(model, 20.1);
   assert.equal(model.snapshot.phase, "idle", "idle after the fade");
-  assert.ok(model.snapshot.phaseLeftSec >= 99 && model.snapshot.phaseLeftSec <= 200, "the next one waits intervalSec");
+  assert.ok(Math.abs(model.snapshot.cooldownLeftSec - 10) < 0.2, "a new cooldown after the emission");
+  assert.equal(model.snapshot.phaseLeftSec, 0, "and still no time of the next one");
+
+  // (b2) TK-321.1: one roll per checkIntervalSec; each failed roll raises the chance by chanceGrowthPerCheck.
+  {
+    const rolls = { count: 0 };
+    const counted = { next: () => { rolls.count += 1; return 0.999; }, range: (min) => min };
+    const rollSettings = emissionSettings();
+    Object.assign(rollSettings.emission, { cooldownSec: 0, checkIntervalSec: 60, chancePerCheck: 0.01, chanceGrowthPerCheck: 0.02 });
+    const rolling = new EmissionModel({ rng: counted, getSettings: () => rollSettings });
+    for (let second = 0; second < 600; second += 1) rolling.update(1000);
+    assert.equal(rolls.count, 10, `ten minutes = ten rolls, not one per second (${rolls.count})`);
+    assert.equal(rolling.snapshot.failedChecks, 10, "ten failed rolls");
+    near(rolling.snapshot.chance, 0.01 + 0.02 * 10, "the chance grows with each failed roll");
+    rollSettings.emission.enabled = false;
+    for (let second = 0; second < 600; second += 1) rolling.update(1000);
+    assert.equal(rolls.count, 10, "a disabled emission does not roll");
+  }
+
+  // (b3) The location's real settings through the DevTools «РАНДОМАЙЗЕР» probe: most starts 30–60 minutes apart.
+  {
+    const { EmissionRandomProbe } = require("../../../src/dev/randomizer/emission_random_probe.js");
+    const probe = new EmissionRandomProbe({ createModel: (options) => new EmissionModel(options),
+      createRng: (seed) => new SeededRng(seed), getSettings: () => MAP_DB.test.weather });
+    const report = probe.run({ count: 400, seed: 12345 });
+    const row = (label) => report.rows.find(([name]) => name === label)?.[1] ?? "";
+    assert.match(row("змодельовано"), /^400 з 400 викидів/u, "the probe collects the requested emissions");
+    const within = Number.parseFloat(row("у проміжку 30–60 хв"));
+    assert.ok(within >= 65, `the real settings put most emissions 30–60 min apart (${within}%)`);
+    const median = Number.parseFloat(row("медіана"));
+    assert.ok(median >= 35 && median <= 55, `median start-to-start in 35–55 min (${median})`);
+    const shares = report.histogram.reduce((sum, [, share]) => sum + share, 0);
+    assert.ok(Math.abs(shares - 1) < 1e-9, "the histogram covers every interval");
+    assert.equal(JSON.stringify(probe.run({ count: 50, seed: 7 }).rows),
+      JSON.stringify(probe.run({ count: 50, seed: 7 }).rows), "a seed repeats the probe's run");
+  }
 
   // (c) Determinism, freezing, forcing and the radiation override.
   const trace = () => {
@@ -1264,7 +1303,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const held = environment.getSnapshot();
   assert.equal(held.weather.precipitation, "clear", "clear before the emission");
   near(held.radiation, 0.1, "the environment exposes the base radiation");
-  run(5.2);
+  run(6.2);
   assert.equal(held.emission.phase, "onset", "the emission started");
   assert.equal(held.weather.precipitation, "storm", "the emission turns the weather into a storm");
   assert.equal(held.weather.held, true, "the storm is held by the emission");

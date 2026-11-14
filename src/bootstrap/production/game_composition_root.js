@@ -1539,12 +1539,18 @@ export class GameCompositionRoot {
   // Spec 172 stage A (owner Q1): the weather and the wind draw from their own seeded stream, derived from the session's
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
   // Spec 179: the emission and the radiation have their own stream too (they never shift the weather's numbers).
+  // TK-321.1: a fresh random seed per session unless a DEV seed is set.
   #composeEnvironment({ locId, locCfg, gameTimeClock }) {
     const seed =
       this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
-    const emissionRng = new SeededRng(`${seed}:emission`);
+    // TK-321.1 (owner): the moment of an emission must not be computable. Without a DEV seed the session's seed is
+    // fixed ("cyber-fishing"), which would repeat the same emission timeline every launch, so the emission takes a
+    // fresh random seed per session; a DEV seed (CONFIG.debug.seed) keeps it repeatable for tests.
+    const emissionSeed = this.#config.debug?.seed ?? this.#config.rng?.seed;
+    const emissionRng = new SeededRng(emissionSeed != null ? `${emissionSeed}:emission`
+      : Math.floor(Math.random() * 4294967296));
     const getWeatherSettings = () =>
       this.#config.locations?.map?.[locId]?.weather ??
       locCfg?.weather ??

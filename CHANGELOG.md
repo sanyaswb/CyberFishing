@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.6 - Emission starts by chance, DevTools randomizer (TK-321.1)
+
+- Weather: an emission now starts by a roll once a minute (the chance grows with each failed roll, a 20-minute pause after each emission and at the start), so its moment cannot be known ahead; about 82% of emissions come 30–60 minutes apart. A fresh random emission seed per session. DevTools «Діагностика» → «РАНДОМАЙЗЕР» runs the game's real random many times and shows a short report.
+
 ## v0.51.5 - Emission and radiation model (spec 179 stage A)
 
 - Weather: the location's emission (start, peak, fade with random durations, random pause between emissions) holds a storm with its own settings and leaves it as an ordinary storm; the location's radiation (0 outside an emission on the test location, 1 at the peak) is in the environment. No visuals yet. DevTools «ПОГОДА» → «Викид»: state, start/peak/fade/end now, freeze, radiation by hand.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.128 - DevTools full screen on a portrait phone (TK-313)
 
 - Portrait phone: DevTools takes the whole screen, the module icons are one row on top; the phone CSS now follows the base rules that kept the rail a 60 px column (incidents I-21).
-
-## v0.50.127 - DevTools panel settings
-
-- TK-312: the last DevTools module «Панель» holds the panel's own settings: «Адаптивна ширина» makes the panel on a computer as wide as its content (up to 720 px and 60 % of the screen), «На весь екран» lets it take the whole screen on a phone; both are remembered.

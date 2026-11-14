@@ -145,9 +145,13 @@ function validateLocationWeatherDomain(weather, errors) {
   const emission = weather.emission;
   if (isRecord(emission)) {
     if ("enabled" in emission && typeof emission.enabled !== "boolean") errors.push("locationWeather.emission.enabled: expected boolean");
-    for (const key of ["firstDelaySec", "intervalSec", "onsetSec", "peakSec", "fadeSec"]) {
+    for (const key of ["onsetSec", "peakSec", "fadeSec"]) {
       checkPair(emission[key], `locationWeather.emission.${key}`, 0, Infinity, true, errors);
     }
+    checkRange(emission.checkIntervalSec, "locationWeather.emission.checkIntervalSec", 1, Infinity, errors);
+    checkRange(emission.chancePerCheck, "locationWeather.emission.chancePerCheck", 0, 1, errors);
+    checkRange(emission.chanceGrowthPerCheck, "locationWeather.emission.chanceGrowthPerCheck", 0, 1, errors);
+    checkRange(emission.cooldownSec, "locationWeather.emission.cooldownSec", 0, Infinity, errors);
     const storm = emission.storm;
     if (isRecord(storm)) {
       checkRange(storm.rain, "locationWeather.emission.storm.rain", 0, 1, errors);

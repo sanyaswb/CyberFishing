@@ -20,6 +20,10 @@ import { ActiveFishModule } from "./modules/active_fish_module.js";
 import { ServiceModule } from "./modules/service_module.js";
 import { ItemProgressionModule } from "./modules/item_progression_module.js";
 import { PanelSettingsModule } from "./modules/panel_settings_module.js";
+import { RandomizerModule } from "./modules/randomizer_module.js";
+import { EmissionRandomProbe } from "../randomizer/emission_random_probe.js";
+import { EmissionModel } from "../../game/domain/weather/emission_model.js";
+import { SeededRng } from "../../engine/random/seeded_rng.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
 const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
@@ -140,7 +144,13 @@ export class DevTools {
           new SpineModule({ config, rodSpine, boatSpine }),
           radio ? new RadioModule({ config, radio, files: zoneEditorFiles, gameVersion }) : null] },
       { id: "diagnostics", title: "Діагностика", icon: "bug", empty: "",
-        modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish] },
+        modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish,
+          // TK-321.1: the game's real random run many times in a row (the emission's start first).
+          new RandomizerModule({ probes: [weather ? new EmissionRandomProbe({
+            createModel: (options) => new EmissionModel(options),
+            createRng: (seed) => new SeededRng(seed),
+            getSettings: () => config.locations?.map?.[weather.locationId]?.weather ?? null,
+          }) : null] })] },
       { id: "service", title: "Сервіс", icon: "wrench", empty: "",
         modules: [new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
           redraw: () => this.#populatePanel(), files: zoneEditorFiles, gameVersion }),

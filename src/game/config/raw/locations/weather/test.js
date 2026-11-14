@@ -2,18 +2,14 @@
 // fog and lightning. `npm run apply:weather` rewrites this whole file in this form; hand edits are fine.
 export const WEATHER = {
   "emission": {
+    "chanceGrowthPerCheck": 0.003,
+    "chancePerCheck": 0.002,
+    "checkIntervalSec": 60,
+    "cooldownSec": 1200,
     "enabled": true,
     "fadeSec": [
       40,
       90
-    ],
-    "firstDelaySec": [
-      600,
-      1800
-    ],
-    "intervalSec": [
-      1800,
-      5400
     ],
     "onsetSec": [
       40,
