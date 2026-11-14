@@ -56,6 +56,7 @@ import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/d
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
+import { EmissionModel } from "../../game/domain/weather/emission_model.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
@@ -1537,11 +1538,13 @@ export class GameCompositionRoot {
   // charge from the battery in its slot (spec 143).
   // Spec 172 stage A (owner Q1): the weather and the wind draw from their own seeded stream, derived from the session's
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
+  // Spec 179: the emission and the radiation have their own stream too (they never shift the weather's numbers).
   #composeEnvironment({ locId, locCfg, gameTimeClock }) {
     const seed =
       this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
+    const emissionRng = new SeededRng(`${seed}:emission`);
     const getWeatherSettings = () =>
       this.#config.locations?.map?.[locId]?.weather ??
       locCfg?.weather ??
@@ -1554,6 +1557,10 @@ export class GameCompositionRoot {
       rng: windRng,
       getSettings: () => getWeatherSettings()?.wind ?? null,
     });
+    const emission = new EmissionModel({
+      rng: emissionRng,
+      getSettings: getWeatherSettings,
+    });
     return new EnvironmentSystem(
       locCfg,
       this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
@@ -1562,6 +1569,7 @@ export class GameCompositionRoot {
       gameTimeClock,
       weather,
       wind,
+      emission,
     );
   }
 
@@ -1691,6 +1699,8 @@ export class GameCompositionRoot {
                     weather: {
                       getModel: () => systems.env?.weather ?? null,
                       getWindModel: () => systems.env?.wind ?? null,
+                      // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
+                      getEmissionModel: () => systems.env?.emission ?? null,
                       locationId: locId,
                       // TK-271 / Spec 178: wind direction and continuous strength by hand (null: automatic).
                       getWind: () => systems.env?.getSnapshot()?.wind ?? null,

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 179 A: emission model, radiation, storm held by the emission, DevTools «Викид».",
   "TK-320.1: section description styled as the «i» hint.",
   "TK-320: mode lists, colour picker, section info «i», selectable text.",
   "TK-319.1: reveal search moves only on Enter.",

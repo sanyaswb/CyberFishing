@@ -1,6 +1,35 @@
 // Weather of the location "test" (spec 172, spec 175): precipitation clear -> rain -> storm (storm only after rain),
 // fog and lightning. `npm run apply:weather` rewrites this whole file in this form; hand edits are fine.
 export const WEATHER = {
+  "emission": {
+    "enabled": true,
+    "fadeSec": [
+      40,
+      90
+    ],
+    "firstDelaySec": [
+      600,
+      1800
+    ],
+    "intervalSec": [
+      1800,
+      5400
+    ],
+    "onsetSec": [
+      40,
+      90
+    ],
+    "peakSec": [
+      90,
+      240
+    ],
+    "storm": {
+      "fadeSec": 40,
+      "lightningIntervalMult": 0.5,
+      "rain": 1,
+      "storm": 0.9
+    }
+  },
   "fog": {
     "chance": 0.15,
     "durationSec": [
@@ -64,6 +93,10 @@ export const WEATHER = {
       ],
       "weight": 0.3
     }
+  },
+  "radiation": {
+    "base": 0,
+    "emissionPeak": 1
   },
   "thresholds": {
     "fog": 0.3,

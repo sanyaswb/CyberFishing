@@ -1,6 +1,7 @@
 "use strict";
 // Spec 172 stage A (TK-261): the weather model's states, fades, storm, lightning and fog, and the fields the bite
-// chances, the radio and the wind read from EnvironmentSystem. Fixed seeds, explicit time steps.
+// chances, the radio and the wind read from EnvironmentSystem; spec 179: the emission, radiation and its storm hold.
+// Fixed seeds, explicit time steps.
 const assert = require("node:assert/strict");
 const {
   WeatherModel,
@@ -1166,6 +1167,142 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   );
 }
 
+// Spec 179 stage A: the emission's parts, intensity, intervals, radiation, its storm hold and the environment's fields.
+{
+  const { EmissionModel } = require("../../../src/game/domain/weather/emission_model.js");
+  const emissionSettings = () => ({
+    emission: {
+      enabled: true, firstDelaySec: [10, 10], intervalSec: [100, 200], onsetSec: [20, 20], peakSec: [30, 30],
+      fadeSec: [40, 40], storm: { rain: 0.9, storm: 0.8, fadeSec: 10, lightningIntervalMult: 0.5 },
+    },
+    radiation: { base: 0.1, emissionPeak: 0.9 },
+  });
+  const tick = (model, seconds, dt = 0.1) => {
+    for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += dt) model.update(dt * 1000);
+  };
+
+  // (a) The real location: enabled, base radiation 0 (owner), a peak of 1.
+  const real = MAP_DB.test.weather;
+  assert.equal(real.emission.enabled, true, "the test location has the emission");
+  assert.equal(real.radiation.base, 0, "the test location's base radiation is 0 (owner, spec 179 Q3)");
+  assert.equal(real.radiation.emissionPeak, 1, "the emission's peak radiation is 1");
+  const realModel = new EmissionModel({ rng: new SeededRng("check:emission"), getSettings: () => real });
+  const realPhases = new Set();
+  for (let index = 0; index < 40000; index += 1) {
+    realModel.update(1000);
+    const snap = realModel.snapshot;
+    realPhases.add(snap.phase);
+    assert.ok(snap.intensity >= 0 && snap.intensity <= 1 && snap.radiation >= 0 && snap.radiation <= 1, "in 0…1");
+    if (snap.phase === "idle") assert.equal(snap.radiation, 0, "no radiation outside an emission (base 0)");
+  }
+  assert.deepEqual([...realPhases].sort(), ["fade", "idle", "onset", "peak"], "a long run visits every part");
+  assert.ok(realModel.snapshot.serial >= 5, `11 hours of real time give several emissions (${realModel.snapshot.serial})`);
+
+  // (b) Parts in order with their configured durations; intensity t² on the onset, 1 on the peak, smoothstep down.
+  const model = new EmissionModel({ rng: new SeededRng(3), getSettings: emissionSettings });
+  model.update(0);
+  assert.equal(model.snapshot.phase, "idle", "starts idle");
+  near(model.snapshot.phaseLeftSec, 10, "the first emission waits firstDelaySec");
+  near(model.snapshot.radiation, 0.1, "base radiation while idle");
+  tick(model, 10.05);
+  assert.equal(model.snapshot.phase, "onset", "the onset starts after the first delay");
+  assert.equal(model.snapshot.serial, 1, "the first emission is counted");
+  tick(model, 9.95);
+  assert.ok(Math.abs(model.snapshot.intensity - 0.25) < 0.02, `the onset rises as t² (half = 25%, ${model.snapshot.intensity})`);
+  assert.ok(Math.abs(model.snapshot.radiation - (0.1 + 0.8 * model.snapshot.intensity)) < 1e-9,
+    "radiation = base + (peak − base) × intensity");
+  tick(model, 10.1);
+  assert.equal(model.snapshot.phase, "peak", "the peak follows the onset");
+  near(model.snapshot.intensity, 1, "the peak holds the full intensity");
+  near(model.snapshot.radiation, 0.9, "the peak radiation");
+  tick(model, 30);
+  assert.equal(model.snapshot.phase, "fade", "the fade follows the peak");
+  tick(model, 20);
+  assert.ok(Math.abs(model.snapshot.intensity - 0.5) < 0.02, `half the fade = 50% (smoothstep, ${model.snapshot.intensity})`);
+  tick(model, 20.1);
+  assert.equal(model.snapshot.phase, "idle", "idle after the fade");
+  assert.ok(model.snapshot.phaseLeftSec >= 99 && model.snapshot.phaseLeftSec <= 200, "the next one waits intervalSec");
+
+  // (c) Determinism, freezing, forcing and the radiation override.
+  const trace = () => {
+    const traced = new EmissionModel({ rng: new SeededRng("check:emission:trace"), getSettings: emissionSettings });
+    const out = [];
+    for (let index = 0; index < 4000; index += 1) {
+      traced.update(500);
+      if (index % 40 === 0) out.push(traced.snapshot.phase + traced.snapshot.intensity.toFixed(6));
+    }
+    return out.join("|");
+  };
+  assert.equal(trace(), trace(), "the emission is deterministic for a seed");
+  model.force("peak", { durationSec: 5 });
+  model.setFrozen(true);
+  tick(model, 50);
+  assert.equal(model.snapshot.phase, "peak", "a frozen emission keeps its part");
+  model.setFrozen(false);
+  model.setRadiationOverride(0.42);
+  near(model.snapshot.radiation, 0.42, "radiation held by hand");
+  assert.equal(model.snapshot.radiationForced, true, "the override is reported");
+  model.setRadiationOverride(null);
+  near(model.snapshot.radiation, 0.9, "the override released");
+  const disabledSettings = emissionSettings();
+  disabledSettings.emission.enabled = false;
+  const disabled = new EmissionModel({ rng: new SeededRng(1), getSettings: () => disabledSettings });
+  tick(disabled, 500, 1);
+  assert.equal(disabled.snapshot.phase, "idle", "a disabled emission never starts on its own");
+
+  // (d) The environment: a running emission holds a storm with the emission's settings; it ends as an ordinary storm.
+  const location = { weather: { ...settings(), ...emissionSettings() } };
+  location.weather.precipitation.clear.durationSec = [100000, 100000];
+  location.weather.fog.chance = 0;
+  const weatherRng = new SeededRng(11);
+  const weather = new WeatherModel({ rng: weatherRng, getSettings: () => location.weather });
+  const emission = new EmissionModel({ rng: new SeededRng("11:emission"), getSettings: () => location.weather });
+  const environment = new EnvironmentSystem(location, 12, weatherRng,
+    { timePhases: { day: { startHour: 0, endHour: 24 } } }, null, weather, null, emission);
+  const run = (seconds) => { for (let t = 0; t < seconds - 1e-9; t += 0.1) environment.update(100, 0); };
+  run(5);
+  const held = environment.getSnapshot();
+  assert.equal(held.weather.precipitation, "clear", "clear before the emission");
+  near(held.radiation, 0.1, "the environment exposes the base radiation");
+  run(5.2);
+  assert.equal(held.emission.phase, "onset", "the emission started");
+  assert.equal(held.weather.precipitation, "storm", "the emission turns the weather into a storm");
+  assert.equal(held.weather.held, true, "the storm is held by the emission");
+  run(5);
+  assert.ok(Math.abs(held.weather.storm - 0.5) < 0.03, `the storm rises with the emission's fadeSec (${held.weather.storm})`);
+  run(80);
+  assert.equal(held.emission.phase, "fade", "still fading after onset 20 + peak 30 + 30 s");
+  assert.equal(held.weather.precipitation, "storm", "the storm holds through the whole emission");
+  near(held.weather.rainTarget, 0.9, "the emission's own rain intensity");
+  near(held.weather.stormTarget, 0.8, "the emission's own storm intensity (rain at least as hard)");
+  assert.ok(held.weather.strikeSerial > 0, "the held storm strikes lightning");
+  run(11);
+  assert.equal(held.emission.phase, "idle", "the emission ended");
+  assert.equal(held.weather.held, false, "the hold released");
+  assert.equal(held.weather.precipitation, "storm", "the weather continues as an ordinary storm");
+  assert.ok(held.weather.precipitationLeftSec > 0 && held.weather.precipitationLeftSec <= 240, "with a rolled storm duration");
+  location.weather.emission.enabled = false; // no next emission during the storm's own end
+  run(300);
+  assert.notEqual(held.weather.precipitation, "storm", "the ordinary storm ends by the usual rules");
+  near(held.radiation, 0.1, "radiation back to base");
+
+  // (e) A DEV-frozen weather keeps its hand-set state under an emission.
+  const frozenWeather = new WeatherModel({ rng: new SeededRng(5), getSettings: () => location.weather });
+  frozenWeather.force("precipitation", "rain", { intensity: 0.3, fadeSec: 0 });
+  frozenWeather.setFrozen(true);
+  frozenWeather.setHold({ rain: 1, storm: 1, fadeSec: 1, lightningIntervalMult: 0.5 });
+  frozenWeather.update(5000, "day");
+  assert.equal(frozenWeather.snapshot.precipitation, "rain", "DEV's held rain wins over the emission's storm");
+  near(frozenWeather.snapshot.rain, 0.3, "the hand-set intensity stays");
+
+  // (f) Without an emission model the environment has none and no radiation.
+  const plain = new EnvironmentSystem(location, 12, new SeededRng(2), { timePhases: { day: { startHour: 0, endHour: 24 } } },
+    null, new WeatherModel({ rng: new SeededRng(2), getSettings: () => location.weather }));
+  plain.update(1000, 0);
+  assert.equal(plain.getSnapshot().emission.phase, "idle", "no emission model: idle");
+  assert.equal(plain.getSnapshot().radiation, 0, "no emission model: radiation 0");
+}
+
 console.log(
-  "weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state and the live reading OK",
+  "weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state, the live reading and the emission OK",
 );

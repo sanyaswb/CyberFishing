@@ -3,11 +3,19 @@
 // the float read: isRaining / isFoggy from the intensity thresholds (MAP_DB.<id>.weather.thresholds) and wind.rainMult =
 // 1 + rain × (environment.wind.rainMultiplier − 1), continuous with the rain's intensity. Without a weather model the
 // weather stays clear. rng: the weather's stream (spec 172 Q1), also used by the wind.
+// Spec 179 stage A: an injected EmissionModel gives the emission's part and intensity and the location's radiation
+// (snapshot.emission, snapshot.radiation); while an emission runs (onset, peak, fade) the weather holds a storm with the
+// emission's own settings (MAP_DB.<id>.weather.emission.storm). Without an emission model: no emission, radiation 0.
 const DEFAULT_RAIN_THRESHOLD = 0.15;
 const DEFAULT_FOG_THRESHOLD = 0.3;
 const CLEAR_WEATHER = Object.freeze({
   precipitation: "clear", precipitationLeftSec: 0, episode: 0, fogState: "none", fogLeftSec: 0, rain: 0, storm: 0, fog: 0, cloud: 0,
   rainTarget: 0, stormTarget: 0, fogTarget: 0, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0, frozen: false,
+  held: false,
+});
+const NO_EMISSION = Object.freeze({
+  phase: "idle", phaseLeftSec: 0, phaseDurationSec: 0, intensity: 0, radiation: 0, serial: 0, frozen: false,
+  radiationForced: false,
 });
 
 export class EnvironmentSystem {
@@ -18,6 +26,8 @@ export class EnvironmentSystem {
   #currentPhase = "day";
   #weather;
   #wind;
+  #emission;
+  #emissionHeld = false;
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
   // Spec 172 TK-271: a direction (−1 | 0 | 1) set by DEV or a script replaces the random one until cleared (null).
   #windOverride = null;
@@ -27,6 +37,8 @@ export class EnvironmentSystem {
     isRaining: false,
     isFoggy: false,
     weather: CLEAR_WEATHER,
+    emission: NO_EMISSION,
+    radiation: 0,
     wind: {
       direction: 0,
       strength: 0,
@@ -69,6 +81,7 @@ export class EnvironmentSystem {
     gameTimeClock = null,
     weather = null,
     wind = null,
+    emission = null,
   ) {
     this.#config = config;
     this.#spawnConfig = spawnConfig;
@@ -76,12 +89,14 @@ export class EnvironmentSystem {
     this.#gameTimeClock = gameTimeClock;
     this.#weather = weather;
     this.#wind = wind;
+    this.#emission = emission;
     this.#gameTimeHours = initialTime;
     if (this.#spawnConfig?.timePhases) {
       this.#lastHour = Math.floor(initialTime);
       this.#updatePhase(this.#lastHour);
     }
     if (weather) this.#snapshot.weather = weather.snapshot;
+    if (emission) this.#snapshot.emission = emission.snapshot;
     this.#syncSnapshot();
   }
 
@@ -117,6 +132,11 @@ export class EnvironmentSystem {
     return this.#wind;
   }
 
+  // Spec 179: the emission model (DEV section, scripted emission), or null.
+  get emission() {
+    return this.#emission;
+  }
+
   // dt: real milliseconds of the frame.
   update(dt, timeScale) {
     this.#gameTimeClock?.setTimeScale(timeScale);
@@ -144,6 +164,7 @@ export class EnvironmentSystem {
     this.#snapshot.phase = this.#currentPhase;
     this.#snapshot.isRaining = weather.rain > 0 && weather.rain >= rainThreshold;
     this.#snapshot.isFoggy = weather.fog > 0 && weather.fog >= fogThreshold;
+    this.#snapshot.radiation = this.#snapshot.emission.radiation;
     const windSnap = this.#wind?.snapshot ?? null;
     const windOut = this.#snapshot.wind;
     if (windSnap) {
@@ -186,6 +207,7 @@ export class EnvironmentSystem {
   }
 
   #updateWeather(dt) {
+    this.#updateEmission(dt);
     this.#weather?.update(dt, this.#currentPhase);
     if (this.#wind) {
       this.#wind.update(dt, this.#snapshot.weather);
@@ -204,6 +226,16 @@ export class EnvironmentSystem {
           this.#rng.range(0, changesPerDay[1] - changesPerDay[0]));
       this.#windState.direction = this.#rng.pick([-1, 0, 1]);
     }
+  }
+
+  // The storm hold changes only when an emission starts or ends (no per-frame work beyond the model's update).
+  #updateEmission(dt) {
+    if (!this.#emission) return;
+    this.#emission.update(dt);
+    const active = this.#emission.snapshot.phase !== "idle";
+    if (active === this.#emissionHeld) return;
+    this.#emissionHeld = active;
+    this.#weather?.setHold(active ? (this.#config?.weather?.emission?.storm ?? {}) : null);
   }
 
   #windDirection() {

@@ -183,7 +183,9 @@
 │  │  │  ├── float-day--scene.webp
 │  │  │  ├── float-day-glow--scene--low.webp
 │  │  │  ├── float-day-glow--scene.webp
-│  │  │  └── float-day.webp
+│  │  │  ├── float-day.webp
+│  │  │  ├── float-night--low.webp
+│  │  │  └── float-night.webp
 │  │  ├── keepnet
 │  │  │  ├── keepnet--0--low.webp
 │  │  │  ├── keepnet--0.webp
@@ -770,6 +772,7 @@
 │  │  │  │  ├── background_time_blend.js
 │  │  │  │  └── game_time_clock.js
 │  │  │  └── weather
+│  │  │     ├── emission_model.js
 │  │  │     ├── weather_model.js
 │  │  │     └── wind_model.js
 │  │  └── presentation

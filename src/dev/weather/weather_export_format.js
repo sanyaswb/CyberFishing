@@ -142,6 +142,25 @@ function validateLocationWeatherDomain(weather, errors) {
     checkPair(lightning.intervalSec, "locationWeather.lightning.intervalSec", 0.05, Infinity, false, errors);
     checkPair(lightning.distance, "locationWeather.lightning.distance", 0, 1, true, errors);
   }
+  const emission = weather.emission;
+  if (isRecord(emission)) {
+    if ("enabled" in emission && typeof emission.enabled !== "boolean") errors.push("locationWeather.emission.enabled: expected boolean");
+    for (const key of ["firstDelaySec", "intervalSec", "onsetSec", "peakSec", "fadeSec"]) {
+      checkPair(emission[key], `locationWeather.emission.${key}`, 0, Infinity, true, errors);
+    }
+    const storm = emission.storm;
+    if (isRecord(storm)) {
+      checkRange(storm.rain, "locationWeather.emission.storm.rain", 0, 1, errors);
+      checkRange(storm.storm, "locationWeather.emission.storm.storm", 0, 1, errors);
+      checkRange(storm.fadeSec, "locationWeather.emission.storm.fadeSec", 0, Infinity, errors);
+      checkRange(storm.lightningIntervalMult, "locationWeather.emission.storm.lightningIntervalMult", 0.05, 10, errors);
+    }
+  }
+  const radiation = weather.radiation;
+  if (isRecord(radiation)) {
+    checkRange(radiation.base, "locationWeather.radiation.base", 0, 1, errors);
+    checkRange(radiation.emissionPeak, "locationWeather.radiation.emissionPeak", 0, 1, errors);
+  }
   const thresholds = weather.thresholds;
   if (isRecord(thresholds)) {
     checkRange(thresholds.rain, "locationWeather.thresholds.rain", 0, 1, errors);

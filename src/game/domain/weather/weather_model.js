@@ -37,6 +37,8 @@ export class WeatherModel {
   #fadeOverride = null;
   #strikeLeftSec = 0;
   #frozen = false;
+  // Spec 179: an emission holds a storm with its own settings ({ rain, storm, fadeSec, lightningIntervalMult }) or null.
+  #hold = null;
   #snapshot = {
     precipitation: "clear",
     precipitationLeftSec: 0,
@@ -54,6 +56,7 @@ export class WeatherModel {
     strikeVariant: 0,
     strikeDistance: 0,
     frozen: false,
+    held: false,
   };
 
   // rng: { next(), range(min, max), chance(p) } (the weather's own seeded stream); getSettings: () =>
@@ -76,8 +79,10 @@ export class WeatherModel {
     const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
     const settings = this.#getSettings() || null;
     if (!this.#frozen) {
-      this.#precipitationLeftSec -= dtSec;
-      if (this.#precipitationLeftSec <= 0) this.#nextPrecipitation(settings);
+      if (!this.#hold) {
+        this.#precipitationLeftSec -= dtSec;
+        if (this.#precipitationLeftSec <= 0) this.#nextPrecipitation(settings);
+      }
       this.#fogLeftSec -= dtSec;
       if (this.#fogLeftSec <= 0 || (this.#fogState === "fog" && !this.#fogAllowed(settings, phase))) {
         this.#nextFog(settings, phase);
@@ -86,8 +91,9 @@ export class WeatherModel {
     const precipitation = settings?.precipitation;
     const fog = settings?.fog;
     const snapshot = this.#snapshot;
-    snapshot.rain = this.#approach(snapshot.rain, this.#rainTarget, precipitation, dtSec);
-    snapshot.storm = this.#approach(snapshot.storm, this.#stormTarget, precipitation, dtSec);
+    const holdSec = this.#hold ? this.#hold.fadeSec : null;
+    snapshot.rain = this.#approach(snapshot.rain, this.#rainTarget, precipitation, dtSec, holdSec);
+    snapshot.storm = this.#approach(snapshot.storm, this.#stormTarget, precipitation, dtSec, holdSec);
     snapshot.fog = this.#approach(snapshot.fog, this.#fogTarget, fog, dtSec);
     this.#updateLightning(settings, dtSec);
     this.#sync();
@@ -130,6 +136,35 @@ export class WeatherModel {
     else return false;
     this.#sync();
     return true;
+  }
+
+  // Spec 179: an emission holds a storm until released. hold: { rain, storm (0…1), fadeSec (a full 0 → 1 change),
+  // lightningIntervalMult } or null. While held the precipitation timers stop and the storm moves to the hold's
+  // intensities; a release continues as an ordinary storm (rolled duration and intensity), which returns to rain by the
+  // usual rules. A DEV-frozen weather keeps its hand-set state: the hold then only changes the lightning interval.
+  setHold(hold) {
+    const settings = this.#getSettings() || null;
+    if (hold) {
+      const storm = clamp01(finite(hold.storm, 1));
+      this.#hold = {
+        rain: Math.max(storm, clamp01(finite(hold.rain, storm))),
+        storm,
+        fadeSec: Math.max(0, finite(hold.fadeSec, 0)),
+        lightningIntervalMult: Math.max(0.05, finite(hold.lightningIntervalMult, 1)),
+      };
+      if (!this.#frozen) {
+        if (this.#snapshot.storm <= 0) this.#strikeLeftSec = this.#strikeInterval(settings, storm);
+        this.#precipitation = "storm";
+        this.#episode += 1;
+        this.#rainTarget = this.#hold.rain;
+        this.#stormTarget = this.#hold.storm;
+        this.#fadeOverride = null;
+      }
+    } else if (this.#hold) {
+      this.#hold = null;
+      if (!this.#frozen) this.#enterPrecipitation("storm", settings, null, null);
+    }
+    this.#sync();
   }
 
   // A lightning strike now (DEV), whatever the storm intensity.
@@ -213,10 +248,11 @@ export class WeatherModel {
 
   // Moves value toward target: a full 0 → 1 rise takes fadeInSec, a full 1 → 0 fall fadeOutSec (a DEV/script fade
   // overrides both until the next state change).
-  #approach(value, target, config, dtSec) {
+  #approach(value, target, config, dtSec, holdSec = null) {
     if (value === target) return value;
     const rising = target > value;
-    const seconds = this.#fadeOverride ?? Math.max(0, finite(rising ? config?.fadeInSec : config?.fadeOutSec, 0));
+    const seconds = this.#fadeOverride ?? holdSec ??
+      Math.max(0, finite(rising ? config?.fadeInSec : config?.fadeOutSec, 0));
     if (seconds <= 0) return target;
     const step = dtSec / seconds;
     return rising ? Math.min(target, value + step) : Math.max(target, value - step);
@@ -235,7 +271,8 @@ export class WeatherModel {
   #strikeInterval(settings, storm) {
     const interval = pair(settings?.lightning?.intervalSec, [25, 6]);
     const base = Number(interval[0]) + (Number(interval[1]) - Number(interval[0])) * clamp01(storm);
-    return Math.max(0.5, base * this.#rng.range(0.5, 1.5));
+    const mult = this.#hold ? this.#hold.lightningIntervalMult : 1;
+    return Math.max(0.5, base * mult * this.#rng.range(0.5, 1.5));
   }
 
   #emitStrike(settings) {
@@ -263,5 +300,6 @@ export class WeatherModel {
     snapshot.stormTarget = this.#stormTarget;
     snapshot.fogTarget = this.#fogTarget;
     snapshot.frozen = this.#frozen;
+    snapshot.held = this.#hold !== null;
   }
 }

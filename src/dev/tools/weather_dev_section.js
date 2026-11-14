@@ -15,12 +15,21 @@ import {
 // weather's timers, so it stays until switched off; all off returns to the automatic weather); the wind's direction
 // (automatic, left, calm, right); the transition time; a lightning strike now; the rain's look (CONFIG.canvas.rain,
 // live), the location's weather settings (CONFIG.locations.map.<id>.weather, live), and saving via DevSavingSection.
+// Spec 179 stage A: the «Викид» subsection — the emission's part, intensity, time left and radiation; start / peak /
+// fade / end now, freeze, and the radiation held by hand (its settings are the weather tree's emission and radiation).
 const PRECIPITATION_LABELS = Object.freeze({
   clear: "ясно",
   rain: "дощ",
   storm: "гроза",
 });
 const FOG_LABELS = Object.freeze({ none: "немає", fog: "туман" });
+const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
+const EMISSION_ACTIONS = Object.freeze([
+  Object.freeze(["Почати викид", "onset"]),
+  Object.freeze(["Пік зараз", "peak"]),
+  Object.freeze(["Затихання зараз", "fade"]),
+  Object.freeze(["Завершити викид", "idle"]),
+]);
 const WIND_CHOICES = Object.freeze([
   Object.freeze({ label: "авто", direction: null }),
   Object.freeze({ label: "← вліво", direction: -1 }),
@@ -81,6 +90,7 @@ export class WeatherDevSection {
   #fog = 60;
   #windStrength = 40;
   #fadeSec = 5;
+  #radiation = 50;
   #onConfigUpdated = (event) => {
     if (!this.#savingSection.hasStatusElement) return;
     const path = event?.detail?.path;
@@ -259,6 +269,7 @@ export class WeatherDevSection {
     }
     this.#renderStatus(model.snapshot, content);
     this.#renderControls(model, content);
+    this.#renderEmission(content);
     const rain = this.#rainConfig();
     if (rain) {
       this.#renderConfigTree(
@@ -586,6 +597,38 @@ export class WeatherDevSection {
       this.#weather.setWindStrength?.(null);
       this.#fill();
     });
+  }
+
+  #renderEmission(content) {
+    const emission = this.#weather.getEmissionModel?.() ?? null;
+    if (!emission) return;
+    const section = this.#createSection("Викид", content, ["WEATHER", "emission"]);
+    const snapshot = emission.snapshot;
+    const left = snapshot.frozen ? "вручну" : `ще ${seconds(snapshot.phaseLeftSec)}`;
+    this.#ui.createInfoRow("стан", `${EMISSION_LABELS[snapshot.phase] ?? snapshot.phase} · ${left}`, section);
+    this.#ui.createInfoRow("сила викиду", percent(snapshot.intensity), section);
+    this.#ui.createInfoRow("радіація", `${percent(snapshot.radiation)}${snapshot.radiationForced ? " (вручну)" : ""}`, section);
+    this.#ui.createInfoRow("викидів за сесію", String(snapshot.serial), section);
+    for (const [label, phase] of EMISSION_ACTIONS) {
+      this.#ui.createButtonRow(label, section, () => {
+        emission.force(phase);
+        this.#fill();
+      }, false, "", ["WEATHER", "emission", phase]);
+    }
+    this.#ui.createSwitcherRow("заморозити викид", snapshot.frozen === true, section, (frozen) => {
+      emission.setFrozen(frozen);
+      this.#fill();
+    }, ["WEATHER", "emission", "frozen"]);
+    if (snapshot.radiationForced) this.#radiation = Math.round(snapshot.radiation * 100);
+    this.#ui.createSwitcherRow("Радіація вручну", snapshot.radiationForced, section, (on) => {
+      emission.setRadiationOverride(on ? this.#radiation / 100 : null);
+      this.#fill();
+    }, ["WEATHER", "emission", "radiationHold"]);
+    this.#ui.createRangeRow("радіація, %", this.#radiation, section, (value) => {
+      this.#radiation = Math.max(0, Math.min(100, Number(value) || 0));
+      emission.setRadiationOverride(this.#radiation / 100);
+      this.#ui.syncValue?.(["WEATHER", "emission", "radiationHold"], true);
+    }, ["WEATHER", "emission", "radiation"]);
   }
 
   // A state switched on by hand: forced with its slider's strength and held (the weather's timers stop).
