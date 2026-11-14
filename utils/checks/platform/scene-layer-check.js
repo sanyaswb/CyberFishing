@@ -582,8 +582,9 @@ async function checkPixiSceneLayer() {
     textures: 3, textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3,
     water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0,
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
-    rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 } },
-  "no castable zones in this frame: still water");
+    rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
+    ash: { active: false, embers: 0, pool: 0, stepMs: 0 } },
+  "no castable zones in this frame: still water; no emission: no ash");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -662,6 +663,68 @@ async function checkPixiSceneLayer() {
 // to their point at the wind's slant, smaller and slower far away; the count follows the rain and the storm; drops that
 // land on water leave rings (only there) and ripples for the water's map; switching off or leaving the scene clears it;
 // the pools grow only with the settings; what the GPU draws follows each frame (scale, rotation and colour dynamic).
+// Spec 179 stage C (TK-323): the emission's fiery ash over a fake Pixi with the particle contract.
+async function checkAsh() {
+  const { PixiAshRenderer } = await importSource("src/platform/browser/scene/pixi_ash_renderer.js");
+  const { ASH_SETTINGS } = await importSource("src/game/config/raw/weather/ash_settings.js");
+  const { pixi } = fakePixi();
+  const { documentTarget } = fakeDom();
+  let seed = 11;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const ash = new PixiAshRenderer({ pixi, documentTarget, random });
+  const stage = new pixi.Container();
+  ash.mount(stage);
+  const [embers] = stage.children;
+  assert.equal(embers.blendMode, "add", "the embers glow additively");
+  const base = { x: 0, y: 0, width: 1200, height: 700 };
+  const world = (weather, layer = base) => ({ weather: { rain: 0, storm: 0, windDirection: 1, windStrength: 1, ...weather },
+    backgroundLayers: { count: 1, getAt: () => layer } });
+  const settings = JSON.parse(JSON.stringify(ASH_SETTINGS));
+  let now = 1000;
+  const frame = (model, options = settings, sec = 1 / 60) => { now += sec * 1000; return ash.update(model, 1200, 700, now, options); };
+  assert.equal(frame(world({ emission: 1 }), { ...settings, enabled: false }), false, "switched off: nothing to draw");
+  assert.equal(frame(null), false, "off the scene: nothing to draw");
+  assert.equal(frame(world({ emission: 0 })), false, "no emission: no ash, no frames");
+  assert.equal(frame(world({ emission: 1 })), true, "an emission presents frames");
+  embers.gpuView();
+  assert.equal(ash.status.embers, settings.maxParticles, "full strength: maxParticles embers on screen");
+  assert.equal(ash.status.pool, settings.maxParticles, "a pool of exactly the settings' size");
+  frame(world({ emission: 0.25 }));
+  for (let index = 0; index < 600; index += 1) frame(world({ emission: 0.25 }));
+  assert.ok(ash.status.embers <= Math.round(settings.maxParticles * 0.25) + 2,
+    `a quarter of the strength keeps about a quarter of the embers (${ash.status.embers})`);
+  for (let index = 0; index < 60; index += 1) frame(world({ emission: 1 }));
+  // Smooth motion: an ember moves a little per frame and the GPU sees it (position, scale and colour are dynamic).
+  const before = embers.gpuView().map((particle) => [particle.x, particle.y, particle.alpha, particle.scaleX, particle.tint]);
+  frame(world({ emission: 1 }));
+  const after = embers.gpuView().map((particle) => [particle.x, particle.y, particle.alpha, particle.scaleX, particle.tint]);
+  const moved = after.filter(([x, y, alpha], index) => alpha > 0 && before[index][2] > 0 &&
+    (x !== before[index][0] || y !== before[index][1]));
+  assert.ok(moved.length > settings.maxParticles / 2, "the embers move every frame");
+  assert.ok(embers.particleChildren.every((particle, index) => after[index][2] === particle.alpha &&
+    after[index][3] === particle.scaleX && after[index][4] === particle.tint),
+    "the GPU draws every ember's current brightness, size and colour (vertex and color are dynamic)");
+  const steps = moved.map(([x, y], index) => Math.hypot(x - before[index][0], y - before[index][1]));
+  assert.ok(Math.max(...after.map(([, , alpha]) => alpha)) <= settings.opacity + 1e-9, "never brighter than the opacity");
+  assert.ok(steps.every((step) => step < 6), `slow and smooth: under 6 px per frame (${Math.max(...steps).toFixed(2)})`);
+  const visible = after.filter(([, , alpha]) => alpha > 0);
+  const sizes = visible.map(([, , , scale]) => scale);
+  assert.ok(Math.max(...sizes) > Math.min(...sizes) * 3, "embers of different sizes");
+  assert.ok(new Set(visible.map(([, , , , tint]) => tint)).size > 10, "each ember cools toward the cool colour");
+  // World-anchored: a camera move carries the embers with the location.
+  const xs = embers.particleChildren.map((particle) => particle.x);
+  frame(world({ emission: 1, windStrength: 0, windDirection: 0 }, { ...base, x: -100 }), settings, 0);
+  const shifted = embers.particleChildren.map((particle, index) => [particle.alpha > 0, particle.x - xs[index]])
+    .filter(([shown]) => shown).map(([, dx]) => dx);
+  assert.ok(shifted.length > 0 && shifted.every((dx) => Math.abs(dx + 100) < 1e-6), "a camera move shifts every ember with the world");
+  // The emission ends: the embers finish their lives, then the container hides and presents nothing.
+  for (let index = 0; index < 60 * 10; index += 1) frame(world({ emission: 0 }));
+  assert.deepEqual([ash.status.embers, ash.status.active, embers.visible], [0, false, false], "after the emission the ash is gone");
+  assert.equal(frame(world({ emission: 0 })), false, "and presents no frames");
+  assert.equal(ash.status.pool, settings.maxParticles, "the pool never grew during play");
+  ash.dispose();
+}
+
 async function checkRain() {
   const { PixiRainRenderer } = await importSource("src/platform/browser/scene/pixi_rain_renderer.js");
   const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
@@ -1752,6 +1815,7 @@ async function main() {
   await checkWaveVariation();
   await checkWavesSwitch();
   await checkRain();
+  await checkAsh();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();

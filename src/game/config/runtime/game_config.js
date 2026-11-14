@@ -7,6 +7,7 @@ import { MAP_DB } from "../databases/location_catalog.js";
 import { PHYSICS_CONFIG } from "../physics/physics_config.js";
 import { LIVE_BAIT_CONFIG } from "../raw/live_bait/live_bait_config.js";
 import { RAIN_SETTINGS } from "../raw/weather/rain_settings.js";
+import { ASH_SETTINGS } from "../raw/weather/ash_settings.js";
 
 export const CONFIG = {
   liveBait: LIVE_BAIT_CONFIG,
@@ -83,6 +84,8 @@ export const CONFIG = {
     // нахил — за вітром; кількість — за силою дощу й грози з моделі погоди. На воді (зелені зони закидання) — кільця
     // й брижі в картинці води. Розміри — логічні пікселі біля берега. Параметри живуть у rain_settings.js (`npm run apply:weather`).
     rain: RAIN_SETTINGS,
+    // Spec 179 stage C: fiery ash in the air during an emission (ash_settings.js).
+    ash: ASH_SETTINGS,
   },
 
   input: {

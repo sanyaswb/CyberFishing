@@ -7,6 +7,7 @@ import { PixiLineRenderer } from "./pixi_line_renderer.js";
 import { PixiRodRenderer } from "./pixi_rod_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
 import { PixiRainRenderer } from "./pixi_rain_renderer.js";
+import { PixiAshRenderer } from "./pixi_ash_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -53,6 +54,8 @@ export class PixiSceneLayer {
   #getWakeSettings;
   #getRainSettings;
   #rain = null;
+  #getAshSettings;
+  #ash = null;
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
@@ -93,7 +96,7 @@ export class PixiSceneLayer {
   // optional async step awaited before the renderer starts (pixi_runtime_module.js: eval-free systems under CSP).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
-    getRainSettings = () => null }) {
+    getRainSettings = () => null, getAshSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -112,6 +115,8 @@ export class PixiSceneLayer {
     // Spec 156: CONFIG.ui.boat.wake.water, the boat wake's ripples in the water.
     this.#getWakeSettings = getWakeSettings;
     this.#getRainSettings = getRainSettings;
+    // Spec 179 stage C: CONFIG.canvas.ash, the emission's fiery ash.
+    this.#getAshSettings = getAshSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -140,6 +145,9 @@ export class PixiSceneLayer {
       changed = true;
     }
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
+    if (this.#ash.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getAshSettings())) {
+      changed = true;
+    }
     const pixelRatio = this.#scenePixelRatio();
     if (this.#worldEntities.update(router.drawsOnScene("world-entities") ? frame.world : null, pixelRatio)) changed = true;
     const fishing = frame.fishing?.visible ? frame.fishing : null;
@@ -180,7 +188,7 @@ export class PixiSceneLayer {
     if (this.#app === null) return { state };
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
-      water: this.#water.status, rain: this.#rain.status };
+      water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -204,6 +212,7 @@ export class PixiSceneLayer {
     this.#app = null;
     this.#water?.dispose();
     this.#rain?.dispose();
+    this.#ash?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
     this.#worldEntities?.dispose();
@@ -252,6 +261,9 @@ export class PixiSceneLayer {
       this.#line = new PixiLineRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#rod = new PixiRodRenderer({ pixi: this.#pixi, stage: app.stage });
       rain.mountAir(app.stage);
+      // Spec 179 stage C: the ash flies in front of the rain and everything else in the world.
+      this.#ash = new PixiAshRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#ash.mount(app.stage);
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);

@@ -55,6 +55,7 @@ export class SceneModule {
       locationConfig: (id) => config.locations?.map?.[id]?.weather ?? null,
       locationsMap: () => config.locations?.map ?? null,
       rainConfig: () => config.canvas?.rain ?? null,
+      ashConfig: () => config.canvas?.ash ?? null,
       createSection,
       renderConfigTree: (value, section, path, options) => tree.render(value, section, path, options),
       updateConfig: (path, value) => edits.update(path, value),

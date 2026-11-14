@@ -73,6 +73,7 @@ export class WeatherDevSection {
   #locationConfig;
   #locationsMap;
   #rainConfig;
+  #ashConfig;
   #createSection;
   #renderConfigTree;
   #updateConfig;
@@ -114,6 +115,7 @@ export class WeatherDevSection {
     locationConfig = null,
     locationsMap = null,
     rainConfig = () => null,
+    ashConfig = () => null,
     createSection,
     renderConfigTree,
     updateConfig = null,
@@ -130,6 +132,7 @@ export class WeatherDevSection {
     this.#locationConfig = locationConfig;
     this.#locationsMap = locationsMap;
     this.#rainConfig = rainConfig;
+    this.#ashConfig = ashConfig;
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
     this.#updateConfig = updateConfig;
@@ -277,6 +280,11 @@ export class WeatherDevSection {
         this.#createSection("Вигляд дощу", content, ["WEATHER", "rain"]),
         ["CONFIG", "canvas", "rain"],
       );
+    }
+    // Spec 179 stage C: the emission's ash look (CONFIG.canvas.ash, live).
+    const ash = this.#ashConfig();
+    if (ash) {
+      this.#renderConfigTree(ash, this.#createSection("Вигляд попелу", content, ["WEATHER", "ash"]), ["CONFIG", "canvas", "ash"]);
     }
     this.#renderLocationSelector(content);
     const targetId = this.#locationId();

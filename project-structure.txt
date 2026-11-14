@@ -520,6 +520,7 @@
 │  │  │  │  ├── time
 │  │  │  │  │  └── game_time_config.js
 │  │  │  │  └── weather
+│  │  │  │     ├── ash_settings.js
 │  │  │  │     └── rain_settings.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
@@ -1050,6 +1051,7 @@
 │        │  └── game_loop.js
 │        ├── scene
 │        │  ├── pixi_annotation_renderer.js
+│        │  ├── pixi_ash_renderer.js
 │        │  ├── pixi_background_renderer.js
 │        │  ├── pixi_dashed_line.js
 │        │  ├── pixi_fight_area_renderer.js

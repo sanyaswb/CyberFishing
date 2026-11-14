@@ -507,6 +507,7 @@ export class ConfigSchemaValidator {
       'must be "rod" or "tackle"');
     this.#validateSceneWaterConfig();
     this.#validateRainConfig();
+    this.#validateAshConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
@@ -1277,6 +1278,8 @@ export class ConfigSchemaValidator {
     }
     this.#requirePattern(`CONFIG.${path}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${path}.color`);
+    this.#requirePattern(`CONFIG.${path}.emissionColor`, cfg.emissionColor, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${path}.emissionColor`);
     const rings = cfg.rings;
     if (!rings || typeof rings !== "object") { this.#error(`CONFIG.${path}.rings`, "missing rain rings config"); return; }
     this.#requireParameterLabel(`${path}.rings`);
@@ -1288,6 +1291,8 @@ export class ConfigSchemaValidator {
     }
     this.#requirePattern(`CONFIG.${path}.rings.color`, rings.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${path}.rings.color`);
+    this.#requirePattern(`CONFIG.${path}.rings.emissionColor`, rings.emissionColor, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${path}.rings.emissionColor`);
     const ripple = rings.ripple;
     if (!ripple || typeof ripple !== "object") { this.#error(`CONFIG.${path}.rings.ripple`, "missing ripple config"); return; }
     this.#requireParameterLabel(`${path}.rings.ripple`);
@@ -1296,6 +1301,34 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(`${path}.rings.ripple.strength`);
     this.#requireFiniteNumber(`CONFIG.${path}.rings.ripple.radiusScale`, ripple.radiusScale, { min: 0, max: 10 });
     this.#requireParameterLabel(`${path}.rings.ripple.radiusScale`);
+  }
+
+  // Spec 179 stage C: the emission's fiery ash (CONFIG.canvas.ash).
+  #validateAshConfig() {
+    const cfg = this.config.canvas?.ash;
+    const path = "canvas.ash";
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing ash config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    for (const [key, min, max] of [["maxParticles", 0, 2000], ["riseSpeedPx", -500, 500], ["wanderPx", 0, 500],
+      ["windDriftPx", -500, 500], ["opacity", 0, 1], ["flicker", 0, 1], ["fadeShare", 0, 0.5]]) {
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+    for (const [key, min, max] of [["sizePx", 0, 200], ["lifeSec", 0.1, 60]]) {
+      const pair = cfg[key];
+      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) {
+        this.#error(`CONFIG.${path}.${key}`, "must be [min, max] with min <= max");
+        continue;
+      }
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+    for (const key of ["hotColor", "coolColor"]) {
+      this.#requirePattern(`CONFIG.${path}.${key}`, cfg[key], /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
   }
 
   #requireParameterLabel(path) {

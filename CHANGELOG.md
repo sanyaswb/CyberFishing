@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.10 - Fiery ash during an emission (spec 179 stage C, TK-323)
+
+- During an emission glowing embers of different sizes float through the air, smoother and slower than rain: they drift with the wind, rise slowly, wander, flicker and cool from yellow to red; their number follows the emission's strength. DevTools «ПОГОДА» → «Вигляд попелу».
+
 ## v0.51.9 - Emission background after the map's phases (TK-322.1)
 
 - The emission's background now loads after every time-of-day phase of the current map, low copy first and the full picture right after, like the other backgrounds; an emission waits for the full picture.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.1 - Reveal search mode, landscape full screen closes fully (TK-319, TK-312.1)
 
 - DevTools: «Панель» → «Пошук» chooses «Фільтр» (only the matches) or «Розгорнути» (every row stays, the matches' sections open, the current match is outlined, Enter / Shift+Enter step through them across modules). On a landscape phone «На весь екран» now closes completely (it moved by 400 px only, half stayed on screen).
-
-## v0.51.0 - DevTools as an engine tool, overlay links, weather, live bait and keepnet
-
-- Minor release of v0.50.1–0.50.130 (owner-approved minor). DevTools (spec 174): a rail of modules with own SVG icons, one edit path and one parameter row description, search and the changed filter, drill-in sections with breadcrumbs, the text dialog in place of prompt, lazy sections (opening ~25× faster), number fields that step by precision, list pickers, dependent parameters, phone layouts (full screen in portrait, side panel in landscape), panel settings (adaptive width, full screen, opening side — TK-317), hints with name, description and path behind «i», copy-key buttons, and names and descriptions audited against the code (TK-318). Overlay: separate windows with scale, metric names linked to their DevTools parameters. World: the window is only the camera, procedural rain with rings, living waves, continuous wind and gusts, weather export/import. Gameplay and UI: live bait by species in the switcher and backpack, keepnet filters and preview, victory window, carp mix packs, cast rod movement within line reach and water bounds, rain zones and a fullscreen zone editor, a FREE badge for free actions, the night float icon. Release: production build without DEV, offline cache, strict CSP, a release check before every push. Game-cycle report unchanged.
