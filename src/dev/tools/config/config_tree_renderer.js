@@ -1,3 +1,5 @@
+import { ColorValue } from "../controls/color_value.js";
+
 // Draws a config or catalog object as DevTools rows (spec 174 B2, moved from DevTools): nested objects become sections,
 // scalars become the control their DevParameterSchema description names (segments, list, switch, number, text),
 // number arrays a text row; keys that are not editable data are skipped. Every row edits through the edit service
@@ -87,7 +89,9 @@ export class ConfigTreeRenderer {
   renderScalar({ key, value, parentElement, displayPath, canonicalPath }) {
     // TK-283: parameters with a list of values are described in one place (DevParameterSchema).
     const described = this.#schema.describe(canonicalPath, value);
-    const control = described?.control ?? (typeof value === "boolean" ? "switch" : typeof value === "number" ? "number" : "text");
+    // TK-320: a colour written as text (#hex, rgb/rgba) gets a swatch and a picker.
+    const control = described?.control ?? (typeof value === "boolean" ? "switch" : typeof value === "number" ? "number"
+      : typeof value === "string" && ColorValue.parse(value) ? "color" : "text");
     this.#ui.addParameter(parentElement, {
       control,
       label: this.#formatKey(key, canonicalPath),

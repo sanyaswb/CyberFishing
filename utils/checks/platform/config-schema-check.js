@@ -232,6 +232,12 @@ function checkParameterDescriptions() {
     }
   }
   assert.deepEqual(claims, [], "a default stated in a description is the code's default");
+  // TK-320: a name never states on/off — the switch shows the state, and a stale "увімкнено" over a switched-off value
+  // misleads.
+  const stateWords = /(?:^|s)(?:увімкнено|вимкнено)(?:s|$)/iu;
+  assert.deepEqual([...Object.entries(LABELS).filter(([, entry]) => stateWords.test(entry.label)).map(([key]) => key),
+    ...keyed.filter((entry) => stateWords.test(String(entry.ua || "").replace(/_/gu, " "))).map((entry) => entry.key)], [],
+    "no parameter name says «увімкнено» or «вимкнено»");
   const rowKeys = new Map();
   const collect = (node, trail) => {
     if (!node || typeof node !== "object" || Array.isArray(node)) return;

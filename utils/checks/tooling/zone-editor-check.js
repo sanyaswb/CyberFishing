@@ -540,18 +540,24 @@ const fullLabel = "Дальність води, м";
 controlUI.createInputRow(fullLabel, 40, controlDocument.body, "number", () => {});
 assert.equal(controlDocument.byClass("devtools__label-key").at(-1).innerText, fullLabel,
   "phone users see the complete parameter name instead of a 15-character truncation");
-const notice = controlUI.createInfoRow("Стан", "Ready", controlDocument.body);
+// TK-320: read-only rows of a section are its description, behind an «i» beside the section's title, at its top.
+const statusSection = controlUI.createSection("Стан редактора", controlDocument.body, false, () => {});
+controlUI.createInputRow("Крок", 1, statusSection, "number", () => {});
+const notice = controlUI.createInfoRow("Стан", "Ready", statusSection);
 notice.innerText = "Rejected";
 assert.equal(controlDocument.byClass("devtools__value").at(-1).innerText, "Rejected");
 const description = notice.parentNode.parentNode;
-assert.equal(description.classList.contains('devtools__section-content'), true, 'read-only rows use a description disclosure');
-assert.equal(description.style.display, 'none', 'descriptions start collapsed');
-assert.equal(description.parentNode.children[0].tagName,'button','the description uses a keyboard-accessible disclosure');
-assert.equal(description.parentNode.children[0].getAttribute('aria-expanded'),'false');
-description.parentNode.children[0].fire('click');
-assert.equal(description.style.display, 'block', 'the description remains readable on demand');
-assert.equal(description.parentNode.children[0].getAttribute('aria-expanded'),'true');
-const nextNotice = controlUI.createInfoRow('Second status', 'Updated', controlDocument.body);
+assert.equal(description.classList.contains('devtools__section-info'), true, 'read-only rows are the section description');
+assert.equal(description.parentNode, statusSection, 'at the top of the section');
+assert.equal(statusSection.children[0], description);
+assert.equal(description.hidden, true, 'descriptions start collapsed');
+const infoButton = statusSection.parentNode.children[2];
+assert.equal(infoButton.tagName,'button','the description opens from a keyboard-accessible «i»');
+assert.equal(infoButton.getAttribute('aria-expanded'),'false');
+infoButton.fire('click');
+assert.equal(description.hidden, false, 'the description remains readable on demand');
+assert.equal(infoButton.getAttribute('aria-expanded'),'true');
+const nextNotice = controlUI.createInfoRow('Second status', 'Updated', statusSection);
 assert.equal(nextNotice.parentNode.parentNode, description, 'one description per container groups all read-only rows');
 const editable = controlDocument.byClass('devtools__input').at(-1);
 assert.equal(description.contains(editable), false, 'editable parameters stay outside the description');
@@ -572,10 +578,11 @@ controlUI.createSwitcherRow('Direct', false, ordered, () => controlChanges++, ['
 const direct = ordered.children.find(node => node.classList.contains('devtools__row'));
 const lastInfo = controlUI.createInfoRow('Last info', '2', ordered);
 const secondNested = controlUI.createSection('Second nested', ordered, false, () => {});
-const infoSection = firstInfo.parentNode.parentNode.parentNode;
-assert.deepEqual(ordered.children, [orderGroup, direct, nested.parentNode, secondNested.parentNode, infoSection],
-  'controls precede nested sections; the one description is last even when created first');
-assert(lastInfo.parentNode.parentNode === firstInfo.parentNode.parentNode, 'late descriptions share the same bottom disclosure');
+// TK-320: the one description is first (opened by the section's «i»), controls next, nested sections last.
+const infoPanel = firstInfo.parentNode.parentNode;
+assert.deepEqual(ordered.children, [infoPanel, orderGroup, direct, nested.parentNode, secondNested.parentNode],
+  'the one description is first, controls precede nested sections, whatever the order they were created in');
+assert(lastInfo.parentNode.parentNode === firstInfo.parentNode.parentNode, 'late descriptions share the same description');
 assert(groupInfo.parentNode.parentNode === firstInfo.parentNode.parentNode, 'transparent control groups keep descriptions at their logical parent');
 const checkbox = direct.children[1].children[0];
 controlUI.syncValue(['order', 'direct'], true); checkbox.fire('change');
@@ -584,7 +591,7 @@ controlUI.releaseValueBindings(orderGroup); orderGroup.replaceChildren();
 controlUI.createSelectRow('Location', ['B'], 'B', orderGroup, () => {});
 controlUI.createInfoRow('New group status', 'updated', orderGroup);
 assert(!ordered.contains(groupInfo) && ordered.contains(firstInfo), 'group refresh removes its own status without deleting sibling descriptions');
-assert.equal(ordered.children.at(-1), infoSection, 'partial refresh leaves the description last');
+assert.equal(ordered.children[0], infoPanel, 'partial refresh leaves the description first');
 controlUI.dispose();
 // Spec 131: dependencies are live conditions, not inferred from section nesting; fake clock, real controls.
 {

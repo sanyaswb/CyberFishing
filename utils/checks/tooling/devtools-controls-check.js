@@ -145,6 +145,32 @@ const schema = new DevParameterSchema({ sources: { fish: () => fishOptions } });
   assert.equal(schema.describe(["CONFIG", "debug", "fixedCatch", "weight"], 0.8), null, "other parameters keep their fields");
   assert.equal(new DevParameterSchema().describe(["CONFIG", "debug", "fixedCatch", "fishId"], fishId), null,
     "without the species list the parameter stays a text field");
+  // TK-320: text parameters with fixed modes are lists, and every configured value is one of the listed modes (a list
+  // that hid the current value would rewrite it on the first touch).
+  const listed = [];
+  const visit = (node, path) => {
+    for (const [key, value] of Object.entries(node || {})) {
+      const next = [...path, key];
+      if (value && typeof value === "object" && !Array.isArray(value)) { visit(value, next); continue; }
+      if (typeof value !== "string") continue;
+      const found = schema.describe(next, value);
+      if (!found) continue;
+      listed.push(next.join("."));
+      assert.ok(found.options.some((option) => option.value === value), `${next.join(".")} = ${value} is one of its modes`);
+    }
+  };
+  visit(CONFIG, ["CONFIG"]);
+  visit(CONFIG.locations.map, ["MAP_DB"]);
+  for (const expected of ["CONFIG.debug.godMode.biteSequenceMode", "CONFIG.canvas.scene", "CONFIG.locations.cameraFollowPriority",
+    "CONFIG.physics.fight.playerForceBudget.allocationMode", "CONFIG.physics.fight.playerPressureFatigue.source.mode",
+    "CONFIG.physics.fight.rodControl.alignment.targetAnchorMode", "CONFIG.ui.rod.spine.bendSource",
+    "CONFIG.locations.map.test.initialAlignment.x", "MAP_DB.test.initialAlignment.y", "CONFIG.radio.effects.radio.oversample",
+    "CONFIG.liveBait.motionSourceSpeciesId"]) {
+    assert.ok(listed.includes(expected), `${expected} is chosen from a list, not typed`);
+  }
+  assert.equal(JSON.stringify(schema.describe(["CONFIG", "debug", "godMode", "biteSequenceMode"], "guaranteed").options
+    .map((option) => option.value)), JSON.stringify(["default", "normal", "guaranteed"]));
+  assert.equal(schema.describe(["CONFIG", "ui", "rod", "x"], "center"), null, "a text-or-number field stays a field");
 }
 function choiceRow(options, value, path) {
   const host = createElement("div"); document.body.appendChild(host);
@@ -810,6 +836,92 @@ function choiceRow(options, value, path) {
   assert.equal(tools.revealParameter(["CONFIG", "physics", "fight", "rodControl", "ratio"]), true,
     "a link from the overlay draws and opens a row that was not drawn");
   tools.dispose();
+}
+
+// --- TK-320: a section's description is behind an «i» beside its title and opens at the top of the section ----------
+{
+  const infoUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div"); infoUi.body.appendChild(host);
+  const content = infoUi.createSection("radio", host, false, () => {}, ["RADIO"]);
+  infoUi.addParameter(content, { control: "number", label: "volume", value: 1, onCommit() {}, path: ["RADIO", "volume"] });
+  infoUi.createInfoRow("стан", "on", content);
+  infoUi.createInfoRow("станція", "VOLIA", content);
+  const section = content.parentNode;
+  assert.equal(byClass("devtools__section-label", section).some((label) => label.textContent === "Опис"), false,
+    "no «Опис» block at the bottom of the section");
+  const panel = byClass("devtools__section-info", section)[0];
+  assert.equal(content.children[0], panel, "the description is at the top of the section");
+  assert.equal(panel.children.length, 2, "both rows are in it");
+  assert.equal(panel.hidden, true, "closed until asked for");
+  const button = byClass("devtools__section-info-button", section)[0];
+  assert.equal(button.parentNode, section, "the «i» is beside the section's title");
+  assert.equal(section.children[1], content, "the section keeps its title and content in place");
+  button.click();
+  assert.equal(panel.hidden, false, "«i» opens the description");
+  assert.equal(content.style.display, "block", "and opens a closed section with it");
+  assert.equal(button.getAttribute("aria-expanded"), "true");
+  button.click();
+  assert.equal(panel.hidden, true);
+  infoUi.dispose();
+}
+
+// --- TK-320: a colour parameter has a swatch and a picker; the value keeps its format --------------------------------
+{
+  const { ColorValue } = runtime.importModule("src/dev/tools/controls/color_value.js");
+  for (const [text, expected] of [["#3388ff", "#3388ff"], ["#fff", "#ffffff"], ["rgba(255, 0, 0, 0.5)", "rgba(255, 0, 0, 0.5)"],
+    ["rgb(1,2,3)", "rgb(1, 2, 3)"], ["#11223380", "#11223380"]]) {
+    assert.equal(ColorValue.format(ColorValue.parse(text)), expected, `${text} is written back in its format`);
+  }
+  assert.equal(ColorValue.parse("white"), null, "a named colour stays text");
+  assert.equal(ColorValue.hasAlpha(ColorValue.parse("rgba(1, 2, 3, 0.4)")), true);
+  assert.equal(ColorValue.hasAlpha(ColorValue.parse("#123456")), false);
+  // The tree draws a colour string as a colour field.
+  const colorUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div"); colorUi.body.appendChild(host);
+  const written = [];
+  const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+  const tree = new ConfigTreeRenderer({ ui: colorUi, schema, edits: { update: (path, value) => written.push([path.join("."), value]),
+    isOverridden: () => false, resetParameter() {}, read: () => undefined }, labels: {} });
+  tree.renderScalar({ key: "accuracyAreaFill", value: "rgba(0, 200, 255, 0.25)", parentElement: host,
+    displayPath: ["CONFIG", "ui", "accuracyAreaFill"], canonicalPath: ["CONFIG", "ui", "accuracyAreaFill"] });
+  const field = byClass("devtools__color", host)[0];
+  assert.ok(field, "a colour parameter is a colour field");
+  const swatch = byClass("devtools__color-swatch", field)[0];
+  const picker = byClass("devtools__color-picker", field)[0];
+  assert.equal(swatch.style.getPropertyValue("--devtools-color-value"), "rgba(0, 200, 255, 0.25)", "the swatch shows the colour");
+  assert.equal(picker.hidden, true);
+  swatch.click();
+  assert.equal(picker.hidden, false, "the swatch opens the picker");
+  const colorInput = byClass("devtools__color-input", picker)[0];
+  assert.equal(colorInput.value, "#00c8ff");
+  const alpha = byClass("devtools__color-alpha", picker)[0];
+  assert.equal(alpha.hidden, false, "an rgba colour has an opacity slider");
+  colorInput.value = "#ff0000"; colorInput.fire("input");
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["CONFIG.ui.accuracyAreaFill", "rgba(255, 0, 0, 0.25)"]),
+    "a picked colour keeps the opacity and the rgba format");
+  const alphaInput = byClass("devtools__color-alpha-input", alpha)[0];
+  alphaInput.value = "0.6"; alphaInput.fire("input");
+  assert.equal(written.at(-1)[1], "rgba(255, 0, 0, 0.6)", "the slider changes the opacity");
+  assert.equal(byClass("devtools__color-alpha-value", alpha)[0].textContent, "60%");
+  tree.renderScalar({ key: "lineColor", value: "#3388ff", parentElement: host,
+    displayPath: ["CONFIG", "ui", "lineColor"], canonicalPath: ["CONFIG", "ui", "lineColor"] });
+  const hexField = byClass("devtools__color", host)[1];
+  assert.equal(byClass("devtools__color-alpha", hexField)[0].hidden, true, "a #rrggbb colour has no opacity");
+  tree.renderScalar({ key: "name", value: "Test", parentElement: host, displayPath: ["CONFIG", "name"], canonicalPath: ["CONFIG", "name"] });
+  assert.equal(byClass("devtools__color", host).length, 2, "other text stays a text field");
+  colorUi.dispose();
+}
+
+// --- TK-320: text in DevTools can be selected and copied ----------------------------------------------------------------
+{
+  const selectUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const menu = selectUi.body.fire("contextmenu", {});
+  assert.equal(menu.stopped, true, "the browser's context menu (copy, the phone's selection menu) reaches the body's text");
+  assert.equal(menu.prevented, false, "and is not cancelled there");
+  selectUi.dispose();
+  const css = require("node:fs").readFileSync(require("node:path").resolve(__dirname, "../../../src/dev/styles/dev-tools.css"), "utf8");
+  assert.match(css, /\.devtools__body \{\s*-webkit-user-select: text;\s*user-select: text;/u,
+    "the body's text is selectable (the game shell forbids selection)");
 }
 
 // --- TK-313: phone layouts win the cascade: no base rule of the same selector comes after a phone container query ----

@@ -166,6 +166,13 @@ opening strip with it; written last in `dev-tools.css`, R21). TK-312.1: on a lan
 «Розгорнути» puts `devtools__body--revealing` on the body instead of `--filtered`: every row stays, matches get
 `devtools__row--match` (tint) and one `devtools__row--current-match` (outline); typing never scrolls or switches the
 module (TK-319.1) — Enter (the phone keyboard's search key) / Shift+Enter step through the matches across modules.
+TK-320: a section's description rows (`createInfoRow`) are `devtools__section-info` at the top of the section content,
+opened by `devtools__section-info-button` (an «i» absolutely placed at the right of the title, the section gets
+`devtools__section--has-info`); no «Опис» block at the bottom. A colour written as text (#hex, rgb, rgba) is a
+`devtools__color`: `devtools__color-swatch` (the colour over a checkerboard, `--devtools-color-value`) beside the text
+field opens `devtools__color-picker` (`devtools__color-input` and, for rgba / #rrggbbaa, `devtools__color-alpha`); the
+value keeps its format (`ColorValue`). `devtools__body` text is selectable (`user-select: text`, buttons and toggles
+excepted) and its context menu reaches the browser.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

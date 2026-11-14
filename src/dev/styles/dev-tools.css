@@ -377,7 +377,77 @@
 }
 
 .devtools__section {
+  position: relative;
   margin-top: 5px;
+}
+/* TK-320: a section's description behind an «i» at the right of its title, opened at the top of the section. */
+.devtools__section--has-info > .devtools__section-title,
+.devtools__section--has-info > .devtools__action--disclosure { padding-right: 40px; }
+.devtools__section-info-button {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+}
+.devtools__section-info {
+  margin: 4px 0 6px;
+  padding: 2px 8px;
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-field);
+}
+.devtools__section-info[hidden] { display: none; }
+/* TK-320: the body's text can be selected and copied (the game shell sets user-select: none on everything); buttons
+   and toggles stay unselectable so a tap never selects their label. */
+.devtools__body {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+.devtools__body :is(button, .devtools__segment, .devtools__switch, .devtools__toggle) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* TK-320: a colour parameter: a swatch beside its text; the swatch opens the colour and opacity picker under them. The
+   swatch shows the colour over a checkerboard, so an rgba opacity is visible. */
+.devtools__color {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.devtools__color .devtools__input { flex: 1 1 120px; min-width: 0; }
+.devtools__color-swatch {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--devtools-line);
+  border-radius: var(--ui-radius-control);
+  background:
+    linear-gradient(var(--devtools-color-value, transparent), var(--devtools-color-value, transparent)),
+    repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 10px 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.devtools__color-swatch:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 1px; }
+.devtools__color-picker {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--ui-radius-control);
+  background: var(--devtools-field);
+}
+.devtools__color-picker[hidden] { display: none; }
+.devtools__color-input { width: 100%; height: 32px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.devtools__color-alpha { display: grid; grid-template-columns: auto 1fr 3.5em; align-items: center; gap: 8px; font-size: 12px; }
+.devtools__color-alpha[hidden] { display: none; }
+.devtools__color-alpha-value { text-align: right; font-family: var(--ui-font-mono); }
+@media (pointer: coarse) {
+  .devtools__color-swatch { width: 36px; height: 36px; }
+}
+@media (pointer: coarse) {
+  .devtools__section-info-button { top: 0; right: 2px; }
 }
 
 .devtools__section-title {

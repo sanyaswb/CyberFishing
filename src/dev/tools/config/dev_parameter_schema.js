@@ -1,7 +1,8 @@
 // What DevTools knows about a parameter beyond its type (spec 174 A3, TK-283): the control that edits it and where its
 // options come from. One place instead of path checks in the tree renderer; stage B2 adds steps and limits here.
 //
-// A rule matches a whole path ("CONFIG.debug.fixedCatch.fishId") or, with `key`, the last path segment anywhere.
+// A rule matches a whole path ("CONFIG.debug.fixedCatch.fishId"), a `pattern` over the path (one rule for every location
+// or radio effect) or, with `key`, the last path segment anywhere.
 // - segments: a short list, every option visible;
 // - choice: a list picker; `source` names a list the composition supplies (fish: the species of FISH_DB).
 const RULES = Object.freeze([
@@ -13,6 +14,31 @@ const RULES = Object.freeze([
   { key: "currentMethod", type: "string", control: "segments", values: ["hand", "boat"] },
   { key: "defaultSide", type: "string", control: "segments", values: ["right", "left"] },
   { path: "CONFIG.debug.fixedCatch.fishId", control: "choice", source: "fish" },
+  // TK-320: text parameters with a fixed set of modes, each set as the code that reads it accepts it.
+  // GameplayOverrideReader.biteSequenceMode / BiteSystem: anything else is "default".
+  { path: "CONFIG.debug.godMode.biteSequenceMode", control: "segments", values: ["default", "normal", "guaranteed"] },
+  // scene_layer_composition: the WebGL scene or the 2D canvas only.
+  { path: "CONFIG.canvas.scene", control: "segments", values: ["webgl", "canvas"] },
+  // ConfigSchemaValidator: "rod" or "tackle".
+  { path: "CONFIG.locations.cameraFollowPriority", control: "segments", values: ["rod", "tackle"] },
+  // FightPhysicsConfigAdapter: "split", anything else is "independent".
+  { path: "CONFIG.physics.fight.playerForceBudget.allocationMode", control: "segments", values: ["independent", "split"] },
+  // ConfigSchemaValidator: "reel_hold" or "reel_hold_session".
+  { path: "CONFIG.physics.fight.playerPressureFatigue.source.mode", control: "segments",
+    values: ["reel_hold", "reel_hold_session"] },
+  // FightPhysicsOrchestrator: "cast_base", anything else follows the current base.
+  { path: "CONFIG.physics.fight.rodControl.alignment.targetAnchorMode", control: "segments",
+    values: ["cast_base", "current_base"] },
+  // ConfigSchemaValidator: "tension" or "rodStress".
+  { path: "CONFIG.ui.rod.spine.bendSource", control: "segments", values: ["tension", "rodStress"] },
+  // ViewportProjector: the camera's first position on a location.
+  { pattern: /^(?:CONFIG\.locations\.map|MAP_DB)\.[^.]+\.initialAlignment\.x$/u, control: "segments",
+    values: ["left", "center", "right"] },
+  { pattern: /^(?:CONFIG\.locations\.map|MAP_DB)\.[^.]+\.initialAlignment\.y$/u, control: "segments",
+    values: ["top", "center", "bottom"] },
+  // A WaveShaperNode's oversample (Web Audio): "none", "2x" or "4x".
+  { pattern: /^CONFIG\.radio\.effects\.[^.]+\.oversample$/u, control: "segments", values: ["none", "2x", "4x"] },
+  { path: "CONFIG.liveBait.motionSourceSpeciesId", control: "choice", source: "fish" },
 ]);
 
 // TK-292 (spec 174 A6): master switches that are not named `enabled`, each with the parameters that do nothing while
@@ -39,7 +65,8 @@ export class DevParameterSchema {
   describe(path, value) {
     const text = path.map(String).join(".");
     const key = String(path[path.length - 1]);
-    const rule = RULES.find((entry) => (entry.path ? entry.path === text : entry.key === key) &&
+    const rule = RULES.find((entry) => (entry.path ? entry.path === text : entry.pattern ? entry.pattern.test(text)
+      : entry.key === key) &&
       (!entry.type || typeof value === entry.type));
     if (!rule) return null;
     if (rule.values) {

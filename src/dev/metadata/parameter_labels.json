@@ -484,7 +484,7 @@
     "description": "Множник верхньої межі загального натягу відносно ліміту вудки."
   },
   "physics.fight.rodHold.anglePenalty.enabled": {
-    "label": "Кутовий штраф увімкнено",
+    "label": "Кутовий штраф",
     "description": "Дозволяє зменшувати effectiveRodHoldKg при поганому куті вудки."
   },
   "physics.fight.rodHold.anglePenalty.noPenaltyAngleDeg": {
@@ -644,7 +644,7 @@
     "description": "Визначає, яку частку від допустимого навантаження снасті може мати риба для deterministic landing."
   },
   "physics.fight.landing.lift.enabled": {
-    "label": "Landing lift увімкнено",
+    "label": "Підйом під час виведення (landing lift)",
     "description": "Чи переноситься реальна вага риби в tension під час hold у landing zone."
   },
   "physics.fight.landing.lift.liftWeightTensionRatio": {
@@ -996,7 +996,7 @@
     "description": "Дистанція, на якій риба біля берега все ще може бути підтягнута ходом вудки."
   },
   "physics.fight.reelHold.enabled": {
-    "label": "Reel hold увімкнено",
+    "label": "Підмотка під час утримання (reel hold)",
     "description": "Дозволяє підмотку катушкою після повного ходу вудки, якщо tension безпечний."
   },
   "physics.fight.reelHold.requireRodStrokeFull": {

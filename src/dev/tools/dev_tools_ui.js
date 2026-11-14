@@ -5,6 +5,7 @@ import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 import { NumberField } from "./controls/number_field.js";
 import { SwitchControl } from "./controls/switch_control.js";
 import { TextField } from "./controls/text_field.js";
+import { ColorField } from "./controls/color_field.js";
 import { RangeField } from "./controls/range_field.js";
 import { SegmentedControl } from "./controls/segmented_control.js";
 import { ChoiceField } from "./controls/choice_field.js";
@@ -31,6 +32,8 @@ export class DevToolsUI {
   #mountNode;
   #toggleMountNode;
   #descriptions = new WeakMap();
+  // TK-320: a section description's «i» by its rows' container, removed with the last row.
+  #sectionInfoButtons = new WeakMap();
   #treeOrder = new WeakMap();
   #controlGroups = new WeakMap();
   #dependencyFeedback;
@@ -177,7 +180,12 @@ export class DevToolsUI {
       for (const row of group.infoRows) {
         const content = row.parentNode;
         row.remove();
-        if (content && content.children.length === 0) content.parentNode?.remove();
+        if (content && content.children.length === 0) {
+          this.#sectionInfoButtons.get(content)?.remove();
+          content.parentNode?.classList?.contains("devtools__section-content")
+            && content.parentNode.parentNode?.classList?.remove("devtools__section--has-info");
+          content.remove();
+        }
       }
       group.infoRows.length = 0;
     }
@@ -498,18 +506,15 @@ export class DevToolsUI {
     return drawn;
   }
 
+  // TK-320 (owner): a section's description rows sit behind an «i» right of the section's title and open at the top of
+  // the section (no «Опис» block at its bottom any more); outside a section they are shown as they are.
   createInfoRow(labelStr, value, parentElement, path = null) {
     const group = this.#controlGroups.get(parentElement);
     if (group) parentElement = group.parent;
     let description = this.#descriptions.get(parentElement);
-    if (!description || description.content.parentNode?.parentNode !== parentElement) {
-      const record = { expanded: description?.expanded || false, content: null };
-      record.content = this.createSection("Опис", parentElement, record.expanded,
-        expanded => { record.expanded = expanded; }, null, { inline: true });
-      this.#treeOrder.set(record.content.parentNode, 2);
-      parentElement.appendChild(record.content.parentNode);
-      this.#descriptions.set(parentElement, record);
-      description = record;
+    if (!description || description.content.parentNode !== parentElement) {
+      description = this.#createSectionInfo(parentElement, description?.expanded || false);
+      this.#descriptions.set(parentElement, description);
     }
     const row = document.createElement("div");
     row.className = "devtools__row";
@@ -522,6 +527,36 @@ export class DevToolsUI {
     description.content.appendChild(row);
     group?.infoRows.push(row);
     return valueEl;
+  }
+
+  #createSectionInfo(content, expanded) {
+    const record = { expanded, content: document.createElement("div"), button: null };
+    record.content.className = "devtools__section-info";
+    this.#insertTreeNode(content, record.content, -1);
+    const section = content.parentNode;
+    if (!section?.classList?.contains("devtools__section") || section.children[1] !== content) return record;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "devtools__info devtools__section-info-button";
+    button.setAttribute("aria-label", "Опис секції");
+    button.appendChild(createDevIcon(document, "info"));
+    const show = (open) => {
+      record.expanded = open;
+      record.content.hidden = !open;
+      button.setAttribute("aria-expanded", String(open));
+    };
+    button.addEventListener("click", () => {
+      const open = record.content.hidden;
+      // A closed section opens with its description.
+      if (open && content.style.display === "none") section.children[0].click();
+      show(open);
+    });
+    show(expanded);
+    section.classList.add("devtools__section--has-info");
+    section.appendChild(button);
+    record.button = button;
+    this.#sectionInfoButtons.set(record.content, button);
+    return record;
   }
 
   // Spec 173 TK-280: a red notice with rounded corners among its parent's controls (never inside the collapsed «Опис»):
@@ -562,7 +597,7 @@ export class DevToolsUI {
     parentElement.insertBefore(notice.element, parentElement.children[0] ?? null);
   }
 
-  // A visible label/value row (createInfoRow puts its rows into the collapsed "Опис"); returns the value element.
+  // A visible label/value row (createInfoRow puts its rows behind the section's «i»); returns the value element.
   createTextRow(labelStr, value, parentElement) {
     const row = document.createElement("div");
     row.className = "devtools__row";
@@ -714,7 +749,7 @@ export class DevToolsUI {
   }
 
   // Spec 174 B1: one parameter row from one description, the way every module adds a parameter.
-  //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice"
+  //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice" | "color" (TK-320)
   //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);
   //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
   // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
@@ -739,6 +774,7 @@ export class DevToolsUI {
       else if (control === "numberList") field = TextField.numberList({ value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "segments") field = new SegmentedControl({ options, value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "choice") field = new ChoiceField({ options, value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "color") field = new ColorField({ value, onCommit: commit, ariaLabel, documentRef: document });
       else field = new TextField({ value, onCommit: commit, ariaLabel, documentRef: document });
       if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
     }
@@ -1154,6 +1190,10 @@ export class DevToolsUI {
     this.#footer = this.#panel.querySelector(".devtools__footer");
 
     UiEventShield.makeSolid(this.#panel);
+    // TK-320 (owner): text in the panel can be selected and copied. The shield blocks the browser's context menu for the
+    // game; inside the panel's body it reaches the browser (copy, and the phone's selection menu), and dev-tools.css
+    // lets the body's text be selected (the game shell forbids selection everywhere else).
+    this.#body.addEventListener("contextmenu", (event) => event.stopPropagation());
 
     this.#panel
       .querySelector(".devtools__close")
