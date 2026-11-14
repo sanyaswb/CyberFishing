@@ -2,6 +2,9 @@ import { Vector2 } from "../../../engine/math/vector2.js";
 import { timeOfDayLayers } from "../time/time_of_day_layers.js";
 import { compileGridMask } from "../../../engine/geometry/grid_mask.js";
 
+// Spec 179 D4: from this intensity the emission's layer counts as opaque (half an 8-bit opacity step below 1).
+const EMISSION_OPAQUE = 1 - 0.5 / 255;
+
 export class WorldRenderFrameBuilder {
   #map;
   #projector;
@@ -74,9 +77,10 @@ export class WorldRenderFrameBuilder {
     target.visible = true;
     target.backgroundColor =
       this.#config.canvas?.backgroundColor || "#0f171e";
+    // The weather first: the background reads the emission's intensity from it (spec 179 D4).
+    this.#weatherBuilder?.buildInto(target.weather);
     this.#buildBackground(target);
     this.#buildCurrent(target.current);
-    this.#weatherBuilder?.buildInto(target.weather);
     if (this.#seaState) {
       const sea = this.#seaState.update(this.#getNowMs());
       target.sea.amplitudeScale = sea.amplitudeScale;
@@ -102,10 +106,19 @@ export class WorldRenderFrameBuilder {
     for (const phase in data.assetIds) {
       if (data.assetIds[phase]) target.backgroundAssetIds.push(data.assetIds[phase]);
     }
+    const emissionId = data.stateAssetIds?.emission ?? "";
+    if (emissionId) target.backgroundAssetIds.push(emissionId);
+    // Spec 179 D4: the emission's picture over the time of day with its intensity; at full strength the layers under
+    // it are covered completely, so they are not drawn (rule 17: no fill that nobody sees).
+    const emission = this.#isLoaded(emissionId) ? Number(target.weather?.emission) || 0 : 0;
     const position = this.#projector.virtualToScreen(0, 0, this.#screenA);
     const scale = this.#projector.getScale();
     const width = data.width * scale;
     const height = data.height * scale;
+    if (emission >= EMISSION_OPAQUE) {
+      this.#addBackgroundLayer(target, emissionId, 1, position, width, height);
+      return;
+    }
     if (!data.dynamic) {
       this.#addBackgroundLayer(
         target,
@@ -115,6 +128,7 @@ export class WorldRenderFrameBuilder {
         width,
         height,
       );
+      this.#addEmissionLayer(target, emissionId, emission, position, width, height);
       return;
     }
 
@@ -124,6 +138,11 @@ export class WorldRenderFrameBuilder {
     if (layers.overlay && base === layers.base && this.#isLoaded(data.assetIds[layers.overlay])) {
       this.#addBackgroundLayer(target, data.assetIds[layers.overlay], layers.overlayOpacity, position, width, height);
     }
+    this.#addEmissionLayer(target, emissionId, emission, position, width, height);
+  }
+
+  #addEmissionLayer(target, assetId, alpha, position, width, height) {
+    if (alpha > 0) this.#addBackgroundLayer(target, assetId, alpha, position, width, height);
   }
 
   // The phase itself when its image has loaded, else the nearest loaded phase (day and night meet through evening).

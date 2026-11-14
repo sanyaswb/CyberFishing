@@ -4,7 +4,8 @@ import { WaterWaveField } from "./water_wave_field.js";
 // for the shortest far waves; the filter interpolates it. One step: ~0.15 ms of JavaScript and a 36 KB upload.
 const MAP_WIDTH = 192;
 const MAP_HEIGHT = 48;
-const LAYER_SPRITES = 2;
+// The background's layers copied into the water: base, time-of-day overlay and the emission (spec 179 D4).
+const LAYER_SPRITES = 3;
 
 // Ripples on the water (spec 106): a copy of the background's layers inside the water area, drawn over the background
 // through Pixi's DisplacementFilter, whose map (WaterWaveField) is refilled and uploaded at the water's own frame rate.

@@ -453,14 +453,15 @@ async function checkTextureCacheAndBackground() {
   assert.throws(() => new PixiBackgroundRenderer({ pixi, stage, textures: {}, renderer: app.renderer }), /requires textures/u);
   const background = new PixiBackgroundRenderer({ pixi, stage, textures: sceneTextures, renderer: app.renderer });
   const sprites = stage.children[0].children;
-  assert.deepEqual(sprites.map((sprite) => sprite.visible), [false, false], "two pooled sprites, hidden until drawn");
+  assert.deepEqual(sprites.map((sprite) => sprite.visible), [false, false, false], "three pooled sprites (base, overlay, emission), hidden until drawn");
   const base = { assetId: "day", alpha: 1, x: -12, y: 0, width: 1451, height: 816 };
   const overlay = { assetId: "evening", alpha: 0.4, x: -12, y: 0, width: 1451, height: 816 };
   let frame = worldModel({ layers: [base, overlay] });
   assert.equal(background.update(frame.world), true);
-  assert.deepEqual(sprites.map(({ texture, x, y, width, height, alpha, visible }) => [texture.resource.id, x, y, width, height,
-    alpha, visible]), [["day", -12, 0, 1451, 816, 1, true], ["evening", -12, 0, 1451, 816, 0.4, true]],
+  assert.deepEqual(sprites.slice(0, 2).map(({ texture, x, y, width, height, alpha, visible }) => [texture.resource.id, x, y,
+    width, height, alpha, visible]), [["day", -12, 0, 1451, 816, 1, true], ["evening", -12, 0, 1451, 816, 0.4, true]],
   "the base phase and one translucent phase, as the model places them");
+  assert.equal(sprites[2].visible, false, "the emission's sprite stays hidden without its layer");
   assert.equal(sceneTextures.size, 2, "the visible phases upload on the first frame");
   assert.equal(background.artDensity, 1440 / 816, "art pixels per drawn logical pixel");
   images.images.set("night", { id: "night", naturalWidth: 2560, naturalHeight: 1440 });
@@ -476,9 +477,15 @@ async function checkTextureCacheAndBackground() {
   assert.equal(background.update(frame.world), true, "a time-of-day blend step is a change");
   base.x = overlay.x = -20;
   assert.equal(background.update(frame.world), true, "a camera move is a change");
+  // Spec 179 D4: the emission's layer is the third sprite, over the time of day.
+  const emissionLayer = { assetId: "night", alpha: 0.3, x: -20, y: 0.06, width: 1451, height: 816 };
+  frame = worldModel({ layers: [base, overlay, emissionLayer] });
+  assert.equal(background.update(frame.world), true, "the emission's layer is a change");
+  assert.deepEqual([sprites[2].visible, sprites[2].alpha, sprites[2].texture.resource.id], [true, 0.3, "night"],
+    "the emission's layer over the base and the overlay");
   frame = worldModel({ layers: [base] });
   assert.equal(background.update(frame.world), true);
-  assert.deepEqual(sprites.map((sprite) => sprite.visible), [true, false], "a single phase hides the overlay sprite");
+  assert.deepEqual(sprites.map((sprite) => sprite.visible), [true, false, false], "a single phase hides the overlay sprite");
   assert.equal(background.update(frame.world), false);
   frame = worldModel({ layers: [base], color: "#112233" });
   assert.deepEqual([background.update(frame.world), app.renderer.background.color], [true, "#112233"], "the clear colour");
@@ -716,6 +723,20 @@ async function checkRain() {
     "the rings reach the water's map as ripples with their settings");
   const puff = ripples.puffs.getAt(0);
   assert(puff.size > 0 && puff.life >= 0 && puff.life < 1, "a ripple has a size and a share of its life");
+  // Spec 179 D4: the drops and the rings take the configured colours; an emission mixes them toward its own colours.
+  assert(view.every((particle) => particle.tint === 0xc9d6e3) && ringView.every((particle) => particle.tint === 0xdfe9f2),
+    "without an emission the rain keeps its colours");
+  const red = { ...settings, emissionColor: "#c00000", rings: { ...settings.rings, emissionColor: "#800000" } };
+  frame({ world: { ...world, weather: { ...world.weather, emission: 1 } }, settings: red });
+  assert(drops.gpuView().filter((particle) => particle.alpha > 0).every((particle) => particle.tint === 0xc00000),
+    "a full emission paints the drops its colour (tint is dynamic)");
+  assert(rings.gpuView().filter((particle) => particle.alpha > 0).every((particle) => particle.tint === 0x800000),
+    "and the rings");
+  frame({ world: { ...world, weather: { ...world.weather, emission: 0.5 } }, settings: red });
+  const halfTint = drops.particleChildren.find((particle) => particle.alpha > 0).tint;
+  assert.equal(halfTint, (Math.round(0xc9 + (0xc0 - 0xc9) * 0.5) << 16) | (Math.round(0xd6 * 0.5) << 8) | Math.round(0xe3 * 0.5),
+    "half an emission is half way between the colours");
+  frame();
   const before = drops.particleChildren.slice(200, 300).map((particle) => particle.y);
   frame({ world: { ...world, weather: { ...world.weather, storm: 1 } } });
   assert.equal(rain.status.drops, 300, "a full storm adds its share");
@@ -1066,8 +1087,9 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.deepEqual([mapSprite.x, mapSprite.y, mapSprite.width, mapSprite.height], [-100, 300, 1600, 400],
     "the map spans the whole zone, so the waves stay put on the water when the camera moves");
   const copy = waterContainer.children;
-  assert.deepEqual(copy.map((sprite) => [sprite.texture.resource.id, sprite.alpha, sprite.x, sprite.visible]),
+  assert.deepEqual(copy.slice(0, 2).map((sprite) => [sprite.texture.resource.id, sprite.alpha, sprite.x, sprite.visible]),
     [["day", 1, -500, true], ["evening", 0.4, -500, true]], "the water draws the same phases as the background");
+  assert.equal(copy[2].visible, false, "spec 179: the emission’s copy stays hidden without its layer");
   const artScale = 1451 / 2560;
   assert(Math.abs(filter.scale.x - 2 * 8 * artScale) < 1e-9, "amplitude in art pixels, the filter shifts by half its scale");
   assert(Math.abs(filter.scale.y - filter.scale.x * 0.5) < 1e-9, "vertical share of the shift");

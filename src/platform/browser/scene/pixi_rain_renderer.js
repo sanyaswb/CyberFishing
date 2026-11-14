@@ -31,6 +31,13 @@ const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, co
 
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
 const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+// Spec 179: a straight RGB mix of two 0xRRGGBB colours (share 0 → a, 1 → b).
+const mixColor = (a, b, share) => {
+  if (share <= 0) return a;
+  if (share >= 1) return b;
+  const channel = (shift) => Math.round(((a >> shift) & 255) + ((((b >> shift) & 255) - ((a >> shift) & 255)) * share));
+  return (channel(16) << 16) | (channel(8) << 8) | channel(0);
+};
 const parseColor = (text) => (/^#[0-9a-f]{6}$/iu.test(text) ? Number.parseInt(text.slice(1), 16) : 0xffffff);
 
 export class PixiRainRenderer {
@@ -64,6 +71,10 @@ export class PixiRainRenderer {
   #stepMs = 0;
   #dropColor = { text: "", value: 0xffffff };
   #ringColor = { text: "", value: 0xffffff };
+  #emissionDropColor = { text: "", value: 0xffffff };
+  #emissionRingColor = { text: "", value: 0xffffff };
+  #dropTint = 0xffffff;
+  #ringTint = 0xffffff;
   // TK-273: the rain zones' visible rectangles (left, top, width, height) and their cumulative areas, rebuilt each
   // frame into arrays that grow only with the number of zones; the mask is redrawn only when the rectangles change.
   #zoned = false;
@@ -137,6 +148,12 @@ export class PixiRainRenderer {
     this.#rippleView.settings = rings?.ripple ?? null;
     this.#dropColor = PixiRainRenderer.#color(this.#dropColor, settings?.color);
     this.#ringColor = PixiRainRenderer.#color(this.#ringColor, rings?.color);
+    // Spec 179 D4: an emission turns the rain red (its colours, mixed with the emission's intensity).
+    this.#emissionDropColor = PixiRainRenderer.#color(this.#emissionDropColor, settings?.emissionColor ?? settings?.color);
+    this.#emissionRingColor = PixiRainRenderer.#color(this.#emissionRingColor, rings?.emissionColor ?? rings?.color);
+    const emission = clamp01(number(weather?.emission, 0));
+    this.#dropTint = mixColor(this.#dropColor.value, this.#emissionDropColor.value, emission);
+    this.#ringTint = mixColor(this.#ringColor.value, this.#emissionRingColor.value, emission);
     const windDir = Math.max(-1, Math.min(1, number(weather?.windDirection, 0)));
     const rawWindStrength = weather?.windStrength;
     const windStrength = rawWindStrength !== undefined && rawWindStrength !== null && Number.isFinite(Number(rawWindStrength))
@@ -222,7 +239,7 @@ export class PixiRainRenderer {
       particle.scaleX = width * scale / STREAK_WIDTH;
       particle.scaleY = length * scale / STREAK_HEIGHT;
       particle.alpha = opacity * (0.55 + 0.45 * scale);
-      particle.tint = this.#dropColor.value;
+      particle.tint = this.#dropTint;
       falling += 1;
     }
     this.#falling = falling;
@@ -311,7 +328,7 @@ export class PixiRainRenderer {
       particle.scaleX = diameter / RING_SIZE;
       particle.scaleY = diameter * flatten / RING_SIZE;
       particle.alpha = show ? opacity * (1 - record.life) : 0;
-      particle.tint = this.#ringColor.value;
+      particle.tint = this.#ringTint;
       index += 1;
     }
     for (let rest = this.#ringCount; rest < this.#rings.length; rest += 1) this.#rings[rest].alpha = 0;

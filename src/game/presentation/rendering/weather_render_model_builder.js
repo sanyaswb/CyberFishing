@@ -22,6 +22,8 @@ export class WeatherRenderModelBuilder {
     target.storm = share(weather?.storm);
     target.fog = share(weather?.fog);
     target.cloud = share(weather?.cloud);
+    // Spec 179: the emission's intensity (its background layer, the rain's colour).
+    target.emission = share(environment?.emission?.intensity);
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
     const rawStrength = environment?.wind?.strength;

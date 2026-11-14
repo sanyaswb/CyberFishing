@@ -3,6 +3,7 @@
 // Hand edits are fine.
 export const RAIN_SETTINGS = {
   "color": "#c9d6e3",
+  "emissionColor": "#c23a2a",
   "enabled": true,
   "fallPx": 520,
   "lengthPx": 103,
@@ -11,6 +12,7 @@ export const RAIN_SETTINGS = {
   "opacity": 0.4,
   "rings": {
     "color": "#dfe9f2",
+    "emissionColor": "#d8573f",
     "enabled": true,
     "flatten": 0.35,
     "lifeSec": 0.7,

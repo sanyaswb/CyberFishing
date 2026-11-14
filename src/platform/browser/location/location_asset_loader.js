@@ -57,7 +57,10 @@ export class LocationAssetLoader {
       assetIds.default = locationConfig.backgroundAsset;
       manifest[locationConfig.backgroundAsset] = this.#assets.pathOf(locationConfig.backgroundAsset);
     }
-    return { dynamic, assetIds, manifest };
+    // Spec 179 D4: state backgrounds (emission) are named for the renderers; the asset load plan loads them after the
+    // first frame, so nothing here waits for them.
+    const stateAssetIds = { ...(locationConfig.stateBackgroundAssets || {}) };
+    return { dynamic, assetIds, manifest, stateAssetIds };
   }
 
   #buildDepthRecord(locationConfig) {

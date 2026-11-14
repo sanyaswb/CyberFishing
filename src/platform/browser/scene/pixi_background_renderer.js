@@ -1,5 +1,6 @@
-// The time-of-day background has an opaque base phase and at most one translucent phase (timeOfDayLayers).
-const LAYER_SPRITES = 2;
+// The time-of-day background has an opaque base phase and at most one translucent phase (timeOfDayLayers); spec 179 D4
+// adds the emission's layer above them (alone at full strength).
+const LAYER_SPRITES = 3;
 // Changes too small to see are not a reason to present a frame (spec 105 D3): a tenth of a backing pixel at ratio 2,
 // and half an 8-bit step of opacity. The camera's easing ends in such steps for many frames.
 const POSITION_EPSILON = 0.05;

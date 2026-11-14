@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.8 - Emission background and red rain (spec 179 stage B, TK-322)
+
+- Location: during an emission its own background fades in over the day/evening/night picture with the emission's strength (alone at the peak), on the water too; the rain and its rings turn red. The picture loads after the first frame, and an emission waits for it.
+
 ## v0.51.7 - Random session seed for the whole game (TK-321.2)
 
 - The game's random numbers (bites, fish weight and anomalies, weather, wind, emission) now start from a fresh random seed every launch; before, every session repeated the same sequence. CONFIG.debug.seed repeats a session on purpose; DevTools «ПОГОДА» shows the session's seed.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.130 - DevTools hint below the row, copy key, night float icon (TK-314.1, TK-315, TK-316)
 
 - DevTools: the «i» hint opens under the row and the control stays on the right; a copy button beside every parameter copies its key for a code search (Ctrl+Shift+F). The night float has its own icon with the glowing tip (convert-images glow-icon); the glow overlays in the card and the depth button are gone.
-
-## v0.50.129 - DevTools parameter hints, tighter breadcrumbs, FREE badge (TK-314)
-
-- DevTools: a parameter row is the key with «i» right after it; the Ukrainian name, description and path are in the «i» hint; breadcrumbs are tighter. Free house actions and the DevTools item shop show a FREE badge (rounded, slowly turning green) instead of «Безкоштовно».

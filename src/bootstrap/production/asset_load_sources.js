@@ -46,6 +46,11 @@ export function createAssetLoadSources({ locations, itemDb }) {
         .filter(([phase]) => phase !== "default" && !phases.includes(phase)).map(([, id]) => id)),
       candidates: () => everyLocation().flatMap((location) => backgrounds(location).map(([, id]) => id)),
     },
+    // Spec 179 D4: the current location's state backgrounds (emission), after the first frame.
+    "location.background.states": {
+      resolve: ({ locationId }) => Object.values(locationOf(locationId).stateBackgroundAssets || {}).filter(Boolean),
+      candidates: () => everyLocation().flatMap((location) => Object.values(location.stateBackgroundAssets || {})).filter(Boolean),
+    },
     "location.depthMap": {
       resolve: ({ locationId }) => [locationOf(locationId).depthAsset].filter(Boolean),
       candidates: () => everyLocation().map((location) => location.depthAsset).filter(Boolean),

@@ -103,7 +103,7 @@ function checkPair(pair, path, min, max, ordered, errors) {
 
 function validateRainDomain(rain, errors) {
   for (const [dotPath, min, max] of RAIN_RANGES) checkRange(readPath(rain, dotPath), `rain.${dotPath}`, min, max, errors);
-  for (const dotPath of ["color", "rings.color"]) {
+  for (const dotPath of ["color", "rings.color", "emissionColor", "rings.emissionColor"]) {
     const color = readPath(rain, dotPath);
     if (typeof color === "string" && !HEX_COLOR.test(color)) errors.push(`rain.${dotPath}: must be #rrggbb`);
   }

@@ -12,6 +12,7 @@ export class LocationMap {
   #rows;
   #dynamicZones;
   #bgAssetIds = {};
+  #bgStateAssetIds = {};
   #bgOpacities = { evening: 0, night: 0 };
   #isDynamicBg = false;
   #bgLoaded = false;
@@ -185,6 +186,7 @@ export class LocationMap {
     data.loaded = this.#bgLoaded;
     data.dynamic = this.#isDynamicBg;
     data.assetIds = this.#bgAssetIds;
+    data.stateAssetIds = this.#bgStateAssetIds;
     data.eveningOpacity = this.#bgOpacities.evening;
     data.nightOpacity = this.#bgOpacities.night;
     data.width = baseResolution.width;
@@ -434,6 +436,7 @@ export class LocationMap {
     const background = resources.background || {};
     this.#isDynamicBg = !!background.dynamic;
     this.#bgAssetIds = background.assetIds || {};
+    this.#bgStateAssetIds = background.stateAssetIds || {};
     this.#bgLoaded = resources.loaded !== false;
     this.#depthReader = resources.depthReader || null;
     this.#processDepthMap(this.#depthReader, cellSize);

@@ -15,6 +15,10 @@ export const MAP_DB = {
       evening: "locations.test.bg_test--evening",
       night: "locations.test.bg_test--night",
     },
+    // Spec 179 D4: backgrounds of location states drawn above the time of day with the state's intensity (emission).
+    stateBackgroundAssets: {
+      emission: "locations.test.bg_test--emission",
+    },
     depthAsset: "locations.test.test-depth",
     // x: 'left', 'center', 'right'
     // y: 'top', 'center', 'bottom', 'safeZone'

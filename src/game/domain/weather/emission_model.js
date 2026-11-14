@@ -27,6 +27,7 @@ const pair = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
 export class EmissionModel {
   #rng;
   #getSettings;
+  #canStart;
   #phase = "idle";
   #phaseLeftSec = 0;
   #phaseDurationSec = 0;
@@ -50,14 +51,17 @@ export class EmissionModel {
   };
 
   // rng: { next(), range(min, max) } (the emission's own seeded stream); getSettings: () => MAP_DB.<id>.weather (or null:
-  // no emission, radiation 0).
-  constructor({ rng, getSettings }) {
+  // no emission, radiation 0); canStart: () => boolean, whether an emission may begin now (spec 179 D4: its background
+  // has loaded); while false the rolls wait (none is counted as failed).
+  constructor({ rng, getSettings, canStart = () => true }) {
     if (typeof rng?.next !== "function" || typeof rng?.range !== "function") {
       throw new TypeError("EmissionModel requires an rng");
     }
     if (typeof getSettings !== "function") throw new TypeError("EmissionModel requires getSettings");
+    if (typeof canStart !== "function") throw new TypeError("EmissionModel canStart must be a function");
     this.#rng = rng;
     this.#getSettings = getSettings;
+    this.#canStart = canStart;
     this.#sync(this.#getSettings() || null);
   }
 
@@ -118,6 +122,7 @@ export class EmissionModel {
     this.#checkLeftSec -= left;
     if (this.#checkLeftSec > 0) return;
     this.#checkLeftSec = Math.max(1, finite(emission?.checkIntervalSec, 60));
+    if (!this.#canStart()) return;
     if (this.#rng.next() < this.#chance(emission)) this.#enter("onset", emission, null);
     else this.#failedChecks += 1;
   }

@@ -470,6 +470,36 @@ async function checkCurrentPhaseBackground() {
   assert.deepEqual(layers((id) => id !== "N"), ["E@1"], "an overlay that has not loaded is left out");
   assert.deepEqual(layers((id) => id === "D"), ["D@1"], "a missing base is drawn with the nearest loaded phase");
   assert.deepEqual(layers(() => false), [], "nothing loaded: nothing drawn (the clear colour)");
+
+  // Spec 179 D4: the emission's background over the time of day with the emission's intensity; at full strength alone.
+  data.stateAssetIds = { emission: "X" };
+  const emissionLayers = (intensity, isAssetReady = null) => {
+    const frame = new GameRenderFrame();
+    new WorldRenderFrameBuilder({ map: { getBackgroundRenderData: () => data },
+      projector: { virtualToScreen: (x, y, out) => { out.x = x; out.y = y; return out; }, getScale: () => 1 },
+      config: { canvas: {} }, canvasMetrics: { width: 100 }, locationId: "lake", isAssetReady,
+      weatherBuilder: { buildInto: (target) => { target.emission = intensity; } },
+      boatChumBuilder: { buildInto() {} } }).buildInto({ target: frame.world, invalidCastMarker: null, debugEnabled: false });
+    const out = [];
+    for (let index = 0; index < frame.world.backgroundLayers.count; index += 1) {
+      const layer = frame.world.backgroundLayers.getAt(index);
+      out.push(`${layer.assetId}@${layer.alpha}`);
+    }
+    return { out, ids: frame.world.backgroundAssetIds };
+  };
+  assert.deepEqual(emissionLayers(0).out, ["E@1", "N@0.5"], "no emission: no emission layer");
+  assert.deepEqual(emissionLayers(0.4).out, ["E@1", "N@0.5", "X@0.4"], "the emission's layer over the time of day");
+  assert.deepEqual(emissionLayers(1).out, ["X@1"], "at full strength the emission is drawn alone (rule 17)");
+  assert.deepEqual(emissionLayers(0.4, (id) => id !== "X").out, ["E@1", "N@0.5"], "not loaded yet: not drawn");
+  assert.ok(emissionLayers(0).ids.includes("X"), "the scene lists the emission's picture to upload it ahead");
+  delete data.stateAssetIds;
+
+  // Spec 179 D4: the plan loads the current location's state backgrounds after the first frame (layer-two).
+  const stateSources = createAssetLoadSources({ locations: { map: { lake: { stateBackgroundAssets: { emission: "X" } },
+    sea: { stateBackgroundAssets: { emission: "Y" } } } }, itemDb: {} });
+  assert.deepEqual(stateSources["location.background.states"].resolve({ locationId: "lake" }), ["X"],
+    "the current location's emission background");
+  assert.deepEqual(stateSources["location.background.states"].candidates(), ["X", "Y"], "every location's state backgrounds");
 }
 
 function checkMeasurer() {

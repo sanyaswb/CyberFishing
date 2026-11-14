@@ -36,6 +36,8 @@ export const ASSET_LOAD_PLAN = {
       id: "layer-two", label: "Повний ігровий цикл", start: "ready",
       groups: [
         { id: "location-phases", label: "Інші фази фону", priority: 1, readyOn: "low", assets: [{ source: "location.background.others" }] },
+        // Spec 179 D4: the emission's background; an emission waits for it, so it never shows without its picture.
+        { id: "location-states", label: "Фони станів локації (викид)", priority: 1, assets: [{ source: "location.background.states" }] },
         { id: "depth-icons", label: "Іконки вибору глибини", priority: 1, readyOn: "low", assets: [{ source: "hud.depthIcons" }] },
         { id: "selector", label: "Арт селектора інвентаря", priority: 1, readyOn: "low",
           assets: [{ id: "ui.inventory-sections" }, { id: "items.briefcases.briefcase--1--close" }, { id: "items.keepnet.keepnet--0" }] },

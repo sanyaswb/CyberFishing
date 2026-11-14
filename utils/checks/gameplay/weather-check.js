@@ -1242,6 +1242,21 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     rollSettings.emission.enabled = false;
     for (let second = 0; second < 600; second += 1) rolling.update(1000);
     assert.equal(rolls.count, 10, "a disabled emission does not roll");
+
+    // Spec 179 D4: an emission waits for its background — no rolls (none failed) until canStart allows them.
+    let ready = false;
+    const waitRolls = { count: 0 };
+    const waitSettings = emissionSettings();
+    Object.assign(waitSettings.emission, { cooldownSec: 0, checkIntervalSec: 60, chancePerCheck: 1 });
+    const waiting = new EmissionModel({ rng: { next: () => { waitRolls.count += 1; return 0; }, range: (min) => min },
+      getSettings: () => waitSettings, canStart: () => ready });
+    for (let second = 0; second < 300; second += 1) waiting.update(1000);
+    assert.deepEqual([waiting.snapshot.phase, waitRolls.count, waiting.snapshot.failedChecks], ["idle", 0, 0],
+      "no roll while the background is missing");
+    ready = true;
+    for (let second = 0; second < 61; second += 1) waiting.update(1000);
+    assert.equal(waiting.snapshot.phase, "onset", "the first roll after the background arrived starts it");
+    assert.throws(() => new EmissionModel({ rng: counted, getSettings: () => waitSettings, canStart: true }), /canStart/u);
   }
 
   // (b3) The location's real settings through the DevTools «РАНДОМАЙЗЕР» probe: most starts 30–60 minutes apart.
