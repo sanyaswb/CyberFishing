@@ -889,7 +889,6 @@ export class GameCompositionRoot {
         seaState,
       });
       const { systems } = this.#composeWorldSystems({
-        isAssetReady: (assetId) => imageAssets.isReady(assetId),
         projector,
         locId,
         rng,
@@ -1554,7 +1553,7 @@ export class GameCompositionRoot {
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
   // Spec 179: the emission and the radiation have their own stream too (they never shift the weather's numbers).
   // TK-321.2: every stream derives from the one session seed (#sessionSeed: random per launch unless a DEV seed is set).
-  #composeEnvironment({ locId, locCfg, gameTimeClock, isAssetReady }) {
+  #composeEnvironment({ locId, locCfg, gameTimeClock }) {
     const seed = this.#sessionSeed();
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
@@ -1571,12 +1570,18 @@ export class GameCompositionRoot {
       rng: windRng,
       getSettings: () => getWeatherSettings()?.wind ?? null,
     });
-    // Spec 179 D4: an emission begins only once its background has loaded (layer-two), never without its picture.
+    // Spec 179 D4 (TK-322.1): an emission begins only once the plan's group "location-states" has settled: it loads
+    // after every phase of the map, and a progressive group settles with its full files, so the low copy never stands
+    // for the emission's picture. A location without a state background has nothing to wait for.
     const emissionBackground = locCfg?.stateBackgroundAssets?.emission ?? "";
+    let emissionArtReady = !emissionBackground;
+    if (emissionBackground) {
+      void this.#preload.whenGroup("location-states").then((group) => { emissionArtReady = group?.status === "ready"; });
+    }
     const emission = new EmissionModel({
       rng: emissionRng,
       getSettings: getWeatherSettings,
-      canStart: () => !emissionBackground || isAssetReady(emissionBackground),
+      canStart: () => emissionArtReady,
     });
     return new EnvironmentSystem(
       locCfg,
@@ -1591,7 +1596,6 @@ export class GameCompositionRoot {
   }
 
   #composeWorldSystems({
-    isAssetReady,
     projector,
     locId,
     rng,
@@ -1639,7 +1643,7 @@ export class GameCompositionRoot {
       devicePower,
       map: locationMap,
       waterMetricSource,
-      env: this.#composeEnvironment({ locId, locCfg, gameTimeClock, isAssetReady }),
+      env: this.#composeEnvironment({ locId, locCfg, gameTimeClock }),
       input: own(
         new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
           runtimeConfig: this.#runtimeConfig,

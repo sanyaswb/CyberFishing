@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-322.1: emission background loads after every map phase, low copy first.",
   "Spec 179 B (TK-322): emission background over the time of day, red rain.",
   "TK-321.2: one random seed per session for bites, weather, wind and emission.",
   "TK-321.1: emission starts by a per-minute roll; DevTools «РАНДОМАЙЗЕР».",

@@ -410,8 +410,20 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     const lazyPriorities = [...new Set(ASSET_LOAD_PLAN.layers[3].groups.filter((group) => group.load !== false && !group.locked)
       .map((group) => group.priority))];
     assert.deepEqual(productionSteps.map((step) => step.id), ["layer-one:load:1", "upgrade", "layer-two:load:1",
-      "features:load:1", "features:load:2", ...lazyPriorities.map((priority) => `layer-three:low:${priority}`),
+      "layer-two:load:2", "features:load:1", "features:load:2", ...lazyPriorities.map((priority) => `layer-three:low:${priority}`),
       ...lazyPriorities.map((priority) => `layer-three:full:${priority}`)], "production steps in the facade's order");
+    // TK-322.1 (owner): the emission's background loads after every phase of the current map, progressively.
+    const layerTwo = ASSET_LOAD_PLAN.layers.find((layer) => layer.id === "layer-two");
+    const states = layerTwo.groups.find((group) => group.assets.some((entry) => entry.source === "location.background.states"));
+    const mapGroups = ASSET_LOAD_PLAN.layers.flatMap((layer) => layer.id === "layer-one" || layer.id === "layer-two" ? layer.groups : [])
+      .filter((group) => group.assets.some((entry) => ["location.background.current", "location.background.others", "location.depthMap"]
+        .includes(entry.source)));
+    assert.ok(states && mapGroups.length >= 2, "the plan has the state backgrounds and the map's phases");
+    assert.ok(mapGroups.every((group) => layerTwo.groups.includes(group) ? group.priority < states.priority : true),
+      "the emission's background waits for every phase of the current map (a later priority of layer-two)");
+    assert.equal(states.readyOn, "low", "progressive like the phases: its low copy first, then the full file");
+    const emissionStep = productionSteps.find((step) => step.ids?.includes?.("locations.test.bg_test--emission"));
+    if (emissionStep) assert.equal(emissionStep.id, `layer-two:load:${states.priority}`, "the emission's picture is in its own step");
     assert.deepEqual(productionSteps.filter((step) => step.auto).map((step) => step.id), ["layer-one:load:1"],
       "only the first frame starts on its own");
     assert.deepEqual(productionSteps[1].groupIds, ["location"], "the upgrade step names the first layer's groups with copies");
