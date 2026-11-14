@@ -621,8 +621,13 @@ function choiceRow(options, value, path) {
   assert.equal(body.classList.contains("devtools__body--filtered"), false, "nothing is hidden");
   assert.equal(body.classList.contains("devtools__body--revealing"), true);
   assert.equal(rain.style.display, "block", "the section holding a match opens");
-  assert.equal(opacity.classList.contains("devtools__row--current-match"), true, "the first match is the current one");
-  assert.equal(pages.get("b").hidden, false, "its module is shown");
+  // TK-319.1: typing does not move the panel; Enter (the phone keyboard's search key) does.
+  assert.equal(byClass("devtools__row--current-match", body).length, 0, "typing marks the matches but goes to none");
+  assert.equal(pages.get("b").hidden, true, "nor switches the module while a word is typed");
+  assert.equal(status.textContent, "Знайдено: 3 · Enter — перейти");
+  input.fire("keydown", { key: "Enter" });
+  assert.equal(opacity.classList.contains("devtools__row--current-match"), true, "Enter goes to the first match");
+  assert.equal(pages.get("b").hidden, false, "and shows its module");
   assert.equal(status.textContent, "Збіг 1 з 3 · Enter — далі");
   input.fire("keydown", { key: "Enter" });
   assert.equal(rowOf("speed").classList.contains("devtools__row--current-match"), true, "Enter goes to the next match");
@@ -632,7 +637,10 @@ function choiceRow(options, value, path) {
   input.fire("keydown", { key: "Enter", shiftKey: true });
   assert.equal(rowOf("kind").classList.contains("devtools__row--current-match"), true, "and wraps round");
   search("config.flag");
-  assert.equal(pages.get("a").hidden, false, "a match in another module switches to it");
+  assert.equal(pages.get("a").hidden, true, "typing a match in another module does not switch to it");
+  input.fire("keydown", { key: "Enter", shiftKey: true });
+  assert.equal(pages.get("a").hidden, false, "Enter (here Shift+Enter, the last match) switches to its module");
+  assert.equal(rowOf("flag").classList.contains("devtools__row--current-match"), true);
   assert.equal(rain.style.display, "none", "the section opened for the earlier search closes");
   search("");
   assert.equal(body.classList.contains("devtools__body--revealing"), false);

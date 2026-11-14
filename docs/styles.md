@@ -164,8 +164,8 @@ panel opens from the right edge on a computer and a landscape phone; `devtools__
 opening strip with it; written last in `dev-tools.css`, R21). TK-312.1: on a landscape phone «На весь екран» closes by
 `transform` over its whole width (the -400px side offset left half of it on screen). TK-319: «Панель» → «Пошук» =
 «Розгорнути» puts `devtools__body--revealing` on the body instead of `--filtered`: every row stays, matches get
-`devtools__row--match` (tint) and one `devtools__row--current-match` (outline); Enter / Shift+Enter in the search step
-through them across modules.
+`devtools__row--match` (tint) and one `devtools__row--current-match` (outline); typing never scrolls or switches the
+module (TK-319.1) — Enter (the phone keyboard's search key) / Shift+Enter step through the matches across modules.
 Scene metre-grid/zone annotations use cached WebGL Graphics; the same logical-pixel model feeds the Canvas fallback.
 Spec 126 replaces the camera model with three primary controls: exact water length, artistic surface tilt and
 far-size ratio. Default: 30 m, 30 degrees, 0.3. Angle/size edits never change authored metres or bounds. An optional

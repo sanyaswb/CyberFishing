@@ -865,8 +865,10 @@ export class DevToolsUI {
       }
     }
     this.#searchStatus.hidden = !active;
-    this.#searchStatus.textContent = found ? `Знайдено: ${found}` : "Нічого не знайдено";
-    if (revealing && found) this.#showMatch(0);
+    // TK-319.1: typing only marks the matches and opens their sections; the panel moves to one only on Enter (the
+    // phone keyboard's search key), never while a word is still being typed.
+    this.#searchStatus.textContent = !found ? "Нічого не знайдено"
+      : revealing ? `Знайдено: ${found} · Enter — перейти` : `Знайдено: ${found}`;
     this.#changedButton.setAttribute("aria-pressed", String(changedOnly));
     this.#changedButton.classList.toggle("devtools__filter--active", changedOnly);
   }
@@ -1102,11 +1104,12 @@ export class DevToolsUI {
       this.refreshFilter();
     });
     input.addEventListener("keydown", (event) => {
-      // TK-319: in the reveal mode Enter goes to the next match, Shift+Enter to the previous one.
+      // TK-319: in the reveal mode Enter goes to the next match (the first one after typing), Shift+Enter to the previous.
       if (event.key === "Enter" && this.#searchMode === "reveal" && this.#matches.length) {
         event.preventDefault?.();
         event.stopPropagation();
-        this.#showMatch(this.#matchIndex + (event.shiftKey ? -1 : 1));
+        const step = event.shiftKey ? -1 : 1;
+        this.#showMatch(this.#matchIndex < 0 && step < 0 ? this.#matches.length - 1 : this.#matchIndex + step);
         return;
       }
       if (event.key !== "Escape" || !input.value) return;
