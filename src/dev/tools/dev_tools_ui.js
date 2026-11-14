@@ -571,7 +571,9 @@ export class DevToolsUI {
   }
 
   // iconUrl: item art before the label (the shop); icon: a DevTools icon name (spec 174 C1).
-  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null, { icon = "" } = {}) {
+  // badge: a short word drawn as the shared badge after the label (TK-314: "FREE" → `ui-free-badge`).
+  createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null,
+    { icon = "", badge = "" } = {}) {
     const row = document.createElement("div");
     row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
     this.#assignDevToolsPath(row, path);
@@ -595,6 +597,18 @@ export class DevToolsUI {
       label.className = "devtools__action-label";
       label.innerText = labelStr;
       btn.replaceChildren(image, label);
+    }
+    if (badge) {
+      if (!btn.querySelector(".devtools__action-label")) {
+        const label = document.createElement("span");
+        label.className = "devtools__action-label";
+        label.innerText = labelStr;
+        btn.replaceChildren(label);
+      }
+      const mark = document.createElement("span");
+      mark.className = "ui-free-badge";
+      mark.innerText = badge;
+      btn.appendChild(mark);
     }
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
@@ -739,11 +753,12 @@ export class DevToolsUI {
     refresh();
   }
 
-  // Spec 174 C3: an "i" button opens the parameter's description under the row (a native title is unreachable by touch).
+  // Spec 174 C3, TK-314: an "i" button right after the key opens the parameter's hint under the row (a native title is
+  // unreachable by touch): the Ukrainian name, the description and the path.
   #addDescription(row) {
     const label = row.children[0];
-    const description = this.#parameterDescriptions.get(label);
-    if (!description) return;
+    const hint = this.#parameterDescriptions.get(label);
+    if (!hint) return;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "devtools__info";
@@ -753,7 +768,14 @@ export class DevToolsUI {
     const text = document.createElement("div");
     text.className = "devtools__description";
     text.hidden = true;
-    text.innerText = description;
+    for (const [className, value] of [["devtools__description-name", hint.name], ["devtools__description-text", hint.description],
+      ["devtools__description-path", hint.path]]) {
+      if (!value) continue;
+      const line = document.createElement("div");
+      line.className = className;
+      line.innerText = value;
+      text.appendChild(line);
+    }
     button.addEventListener("click", () => {
       text.hidden = !text.hidden;
       button.setAttribute("aria-expanded", String(!text.hidden));
@@ -865,15 +887,14 @@ export class DevToolsUI {
     if (swatch) label.prepend(this.#createSwatch(swatch));
     const pathText = this.#normalizeDevToolsPath(path);
     const described = this.#tooltipProvider?.describe(pathText, labelText) ?? null;
-    if (described?.name && described.name !== labelText) {
-      const name = document.createElement("span");
-      name.className = "devtools__label-name";
-      name.innerText = described.name;
-      label.appendChild(name);
-    }
     if (pathText) label.title = pathText;
     this.#searchText.set(label, [labelText, described?.name, pathText].filter(Boolean).join(" ").toLowerCase());
-    if (described?.description) this.#parameterDescriptions.set(label, described.description);
+    // TK-314: the row shows only the key; the Ukrainian name and the description live in the «i» hint (the name stays
+    // searchable above).
+    const name = described?.name && described.name !== labelText ? described.name : "";
+    if (name || described?.description) {
+      this.#parameterDescriptions.set(label, { name, description: described?.description || "", path: pathText });
+    }
     return label;
   }
 

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.129 - DevTools parameter hints, tighter breadcrumbs, FREE badge (TK-314)
+
+- DevTools: a parameter row is the key with «i» right after it; the Ukrainian name, description and path are in the «i» hint; breadcrumbs are tighter. Free house actions and the DevTools item shop show a FREE badge (rounded, slowly turning green) instead of «Безкоштовно».
+
 ## v0.50.128 - DevTools full screen on a portrait phone (TK-313)
 
 - Portrait phone: DevTools takes the whole screen, the module icons are one row on top; the phone CSS now follows the base rules that kept the rail a 60 px column (incidents I-21).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.120 - DevTools names, descriptions, search
 
 - TK-305 (spec 174 C3): DevTools rows show the key with its Ukrainian name under it and an «i» that opens the description; a changed value is marked and can be put back to the code's value by itself; a search under the title finds parameters in every module by key, name or path and keeps them editable in place; «Змінені» shows only changed values.
-
-## v0.50.119 - DevTools module rail
-
-- TK-304 (spec 174 C2): DevTools shows one module at a time from a rail of seven (Гра, Конфіг, Бази, Локація, Сцена, Діагностика, Сервіс); the chosen module and each module's scroll are remembered, an empty module says so, and a link from the overlay or a blocking switch opens its module first.

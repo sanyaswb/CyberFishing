@@ -46,6 +46,10 @@ function houseDocument() {
   documentRef.querySelectorAll = (selector) => documentRef.all((node) => matches(node, selector));
   documentRef.querySelector = (selector) => documentRef.querySelectorAll(selector)[0] || null;
   const html = readHouseMarkup();
+  // TK-314: a free action shows the shared FREE badge, never the word «Безкоштовно».
+  assert.equal(html.includes("Безкоштовно"), false, "free actions use the FREE badge, not the word");
+  assert.equal(html.match(/<span class="ui-free-badge">FREE<\/span><\/button>/gu)?.length, 4,
+    "upgrade, both installs and finish carry the FREE badge");
   const stack = [documentRef.body];
   for (const [, close, tag, attributes] of html.matchAll(/<(\/)?([a-z][a-z0-9-]*)([^>]*)>/g)) {
     if (close) { if (stack.at(-1).tagName === tag) stack.pop(); continue; }

@@ -41,15 +41,16 @@ export class ItemShopModule {
         if (!item?.itemType || item.devExclude) continue;
         const iconAsset = item.iconAsset || item.skin?.thumbnail?.asset || "";
         const iconUrl = iconAsset && this.#assets ? this.#assets.pathOf(iconAsset) : "";
-        const label = `${item.name || itemId} · Безкоштовно`;
+        const label = item.name || itemId;
         let granted = 0;
+        // TK-314: «free» is the shared FREE badge after the name; the grant result goes to the label, the badge stays.
         ui.createButtonRow(label, section, (event) => {
           const quantity = Math.max(1, Number(item.defaultQuantity || item.packSize) || 1);
           const result = this.#grantCatalogItem(itemId, quantity);
           if (result?.success) granted += 1;
-          const labelNode = iconUrl ? event.currentTarget.querySelector(".devtools__action-label") : event.currentTarget;
+          const labelNode = event.currentTarget.querySelector(".devtools__action-label");
           labelNode.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
-        }, false, iconUrl);
+        }, false, iconUrl, null, { badge: "FREE" });
       }
     }
   }

@@ -303,9 +303,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  gap: 0;
   margin: -15px -15px 0;
-  padding: 8px 15px;
+  padding: 6px 15px;
   border-bottom: 1px solid var(--devtools-line);
   background: var(--devtools-surface);
   font-size: 12px;
@@ -313,8 +313,8 @@
 .devtools__crumb {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 6px;
+  min-height: 24px;
+  padding: 0 3px;
   border: 0;
   border-radius: var(--ui-radius-control);
   background: transparent;
@@ -324,8 +324,9 @@
   touch-action: manipulation;
 }
 .devtools__crumb + .devtools__crumb::before {
+  /* TK-314: a tight separator, the crumb's own padding is the space around it. */
   content: "/";
-  margin-right: 8px;
+  margin-right: 3px;
   color: var(--devtools-text-muted);
 }
 .ui-surface--desktop-hover .devtools__crumb:hover,
@@ -338,7 +339,7 @@
   border-left: 0;
 }
 @media (pointer: coarse) {
-  .devtools__crumb { min-height: 36px; }
+  .devtools__crumb { min-height: 32px; }
 }
 .devtools__empty {
   padding: 12px 4px;
@@ -451,13 +452,9 @@
   font-size: 13px;
   color: var(--devtools-label);
 }
-/* Spec 174 C3: the key, the Ukrainian name under it, the description button; a changed value's mark and reset. */
+/* Spec 174 C3, TK-314: the key with the hint button right after it (the name, description and path are in the hint); a
+   changed value's mark and reset. */
 .devtools__label-key { overflow-wrap: anywhere; }
-.devtools__label-name {
-  display: block;
-  font-size: 11px;
-  color: var(--devtools-text-muted);
-}
 .devtools__info,
 .devtools__reset {
   flex: 0 0 auto;
@@ -506,6 +503,14 @@
   line-height: 1.4;
 }
 .devtools__description[hidden] { display: none; }
+.devtools__description-name { color: var(--ui-text); font-weight: 700; }
+.devtools__description-path {
+  margin-top: 2px;
+  color: var(--devtools-text-muted);
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
 @media (pointer: coarse) {
   .devtools__info, .devtools__reset { width: 36px; height: 36px; }
 }

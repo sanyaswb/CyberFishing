@@ -126,9 +126,12 @@ module (`data-devtools-page`; only the active page is shown, `[hidden]` → `dis
 page. A module with nothing to show draws `devtools__empty`. `DevToolsUI.createPages` / `selectPage` own this; a revealed
 parameter (spec 177) or a blocking switch (TK-292) shows its page first.
 
-Spec 174 C3 (TK-305): a label is `devtools__label-key` (the key) and, when `src/dev/metadata` names it,
-`devtools__label-name` under it; the native title holds the path. A description opens under the row from
-`devtools__info` (`aria-expanded`) as `devtools__description` (`devtools__row--described` wraps the row). A value with a
+Spec 174 C3 (TK-305, TK-314): a label is `devtools__label-key` (the key) with `devtools__info` right after it, nothing
+else; the native title holds the path. The «i» (`aria-expanded`) opens `devtools__description` under the row
+(`devtools__row--described` wraps the row) with `__description-name` (the Ukrainian name from `src/dev/metadata`),
+`__description-text` and `__description-path`; the «i» exists when there is a name or a description. Breadcrumbs
+(`devtools__crumb`) are tight: 3 px padding, the «/» separator with 3 px after it, 24 px rows (32 px for touch). The
+shared `ui-free-badge` (`ui-icon.css`) marks free actions (house buttons, `createButtonRow(..., { badge: "FREE" })`). A value with a
 session override is `devtools__row--changed` (a dot before the key and the `devtools__reset` button). The panel's second
 row `devtools__tools` holds `devtools__search` (+ `__search-input`), the `devtools__filter` toggle («Змінені»,
 `--active`) and `devtools__search-status`; while filtering `devtools__body--filtered` shows only

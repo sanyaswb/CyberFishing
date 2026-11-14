@@ -638,6 +638,7 @@ function checkLocationMapConfigChanges() {
   map.update(16,12);verify(11,12);
   const switches = new Map();
   const navigationButtons = new Map();
+  const buttonBadges = new Map();
   const sections = [], controlParents = new Map(), controlCounts = new Map(), panelBody = {replaceChildren(){}};
   let houseOpens = 0, itemGrants = 0, overlayEdits = 0;
   // Spec 174 C2: each rail module gets its own page host.
@@ -650,7 +651,7 @@ function checkLocationMapConfigChanges() {
       options?.render?.(section); return section;
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
-    createButtonRow(label,parent,click){navigationButtons.set(label,click);},
+    createButtonRow(label,parent,click,navigation,iconUrl,path,options={}){navigationButtons.set(label,click);if(options.badge)buttonBadges.set(label,options.badge);},
     createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,parent);controlCounts.set(id,(controlCounts.get(id)||0)+1);}},
     // Spec 174 B1: the config tree adds its rows through addParameter (one description per row).
     addParameter(parent,{control,value,onCommit,path,bindingPath,requires}){if(control==='switch')this.createSwitcherRow('',value,parent,onCommit,path,bindingPath,{requires});}},
@@ -706,7 +707,8 @@ function checkLocationMapConfigChanges() {
     assert.equal(controlCounts.get(path),1,'relocation does not leave a duplicate writable control: '+path);
   switches.get('OVERLAY_MODULES.player')(false);assert.equal(overlayEdits,1,'moved module controls still edit the settings store');
   const grantTarget = {innerText:''};
-  navigationButtons.get('Test rod · Безкоштовно')({currentTarget:grantTarget});
+  assert.equal(buttonBadges.get('Test rod'),'FREE','a shop item shows the FREE badge, not the word (TK-314)');
+  navigationButtons.get('Test rod')({currentTarget:{querySelector:selector=>selector==='.devtools__action-label'?grantTarget:null}});
   assert.equal(itemGrants,1,'the top shop retains its real grant action');
   assert.match(grantTarget.innerText,/✓×1$/,'grant confirmation stays with the selected item');
   assert.equal(navigationButtons.has("Каталог UI 🧩"), false, "DEV menu no longer exposes the removed UI catalog");

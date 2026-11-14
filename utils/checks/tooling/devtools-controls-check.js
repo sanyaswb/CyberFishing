@@ -532,16 +532,27 @@ function choiceRow(options, value, path) {
   add(pages.get("a"), "flag", ["CONFIG", "flag"]);
   const rowOf = (key) => byClass("devtools__row", searchUi.body).find((row) => row.children[0]?.dataset?.devtoolsKey === key);
   const opacity = rowOf("opacity");
-  assert.equal(byClass("devtools__label-name", opacity)[0].innerText, "Непрозорість дощу", "the Ukrainian name is under the key");
+  // TK-314: the label is the key and the «i» right after it, nothing else; the name, description and path are in the hint.
+  const opacityLabel = opacity.children[0];
+  assert.equal(JSON.stringify(opacityLabel.children.map((child) => child.className)),
+    JSON.stringify(["devtools__label-key", "devtools__info"]), "the label holds only the key and «i» beside it");
   assert.equal(byClass("devtools__label-key", opacity)[0].innerText, "opacity", "the key comes first, as in the code");
-  assert.equal(byClass("devtools__label-name", rowOf("flag")).length, 0, "no name, no second line");
   const info = byClass("devtools__info", opacity)[0];
   const description = byClass("devtools__description", opacity)[0];
   assert.equal(description.hidden, true);
   info.click();
-  assert.equal(description.hidden, false, "«i» opens the description under the row (reachable by touch)");
+  assert.equal(description.hidden, false, "«i» opens the hint under the row (reachable by touch)");
   assert.equal(info.getAttribute("aria-expanded"), "true");
-  assert.equal(byClass("devtools__info", rowOf("speed")).length, 0, "no description, no «i»");
+  assert.equal(JSON.stringify(description.children.map((line) => [line.className, line.innerText])), JSON.stringify([
+    ["devtools__description-name", "Непрозорість дощу"], ["devtools__description-text", "Наскільки видно краплі."],
+    ["devtools__description-path", "CONFIG.rain.opacity"]]), "the hint holds the name, the description and the path");
+  const speedLabel = rowOf("speed").children[0];
+  assert.equal(speedLabel.children.length, 2, "a name alone (no description) is in the hint too, not on the row");
+  info.click();
+  byClass("devtools__info", rowOf("speed"))[0].click();
+  assert.equal(JSON.stringify(byClass("devtools__description", rowOf("speed"))[0].children.map((line) => line.innerText)),
+    JSON.stringify(["швидкість", "CONFIG.rain.speed"]));
+  assert.equal(byClass("devtools__info", rowOf("flag")).length, 0, "nothing to tell, no «i»");
   // Changed values: marked, reset one by one, the mark follows syncs.
   assert.equal(opacity.classList.contains("devtools__row--changed"), true, "a changed value is marked");
   assert.equal(rowOf("speed").classList.contains("devtools__row--changed"), false);
