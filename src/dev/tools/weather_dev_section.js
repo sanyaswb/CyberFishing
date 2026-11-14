@@ -426,6 +426,10 @@ export class WeatherDevSection {
       )}`,
       content,
     );
+    // TK-321.2: the session's seed; written into CONFIG.debug.seed (game_config.js) it repeats this session.
+    if (this.#weather.sessionSeed !== undefined) {
+      this.#ui.createInfoRow("сід сесії", String(this.#weather.sessionSeed), content);
+    }
     this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
   }
 

@@ -57,6 +57,7 @@ import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_it
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
+import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
@@ -176,6 +177,7 @@ import { getInventoryAssemblyProfileConfig } from "../../game/config/inventory/i
 
 export class GameCompositionRoot {
   #config;
+  #seed = null;
   #itemDb;
   // Spec 157 R16: every asset by stable id; the places that load files resolve ids through it.
   #assets = new AssetRegistry(ASSET_REGISTRY);
@@ -1372,6 +1374,19 @@ export class GameCompositionRoot {
     };
   }
 
+  // TK-321.2 (owner): the session's seed for every gameplay stream (the fish's bites and catches, weather, wind,
+  // emission). Without CONFIG.debug.seed it is a fresh random 32-bit number per launch, so no two sessions repeat the
+  // same random sequence (before, an unset seed fell back to one constant for everyone); a DEV seed keeps a session
+  // repeatable for tests. Read once; DevTools shows it («ПОГОДА» → «сід сесії») to repeat a session on purpose.
+  #sessionSeed() {
+    if (this.#seed === null) {
+      const crypto = this.#windowTarget?.crypto;
+      this.#seed = resolveSessionSeed(this.#config.debug?.seed ?? this.#config.rng?.seed,
+        crypto?.getRandomValues ? (values) => crypto.getRandomValues(values) : null);
+    }
+    return this.#seed;
+  }
+
   // Current location, RNG, preloaded location resources and the viewport projector.
   // startupHours: the game time at startup; its background phases (base, and the overlay at dusk or dawn) load before
   // the game starts, the others right after it (spec 157 R4, spec 083 decision 3).
@@ -1380,9 +1395,7 @@ export class GameCompositionRoot {
       this.#config.locations,
       this.#config.player?.locationId,
     );
-    const rng = new SeededRng(
-      this.#config.debug?.seed ?? this.#config.rng?.seed,
-    );
+    const rng = new SeededRng(this.#sessionSeed());
     const locId = location.id;
     const locCfg = location.config;
     const blend = backgroundTimeBlend(startupHours, { evening: 0, night: 0 });
@@ -1539,18 +1552,12 @@ export class GameCompositionRoot {
   // Spec 172 stage A (owner Q1): the weather and the wind draw from their own seeded stream, derived from the session's
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
   // Spec 179: the emission and the radiation have their own stream too (they never shift the weather's numbers).
-  // TK-321.1: a fresh random seed per session unless a DEV seed is set.
+  // TK-321.2: every stream derives from the one session seed (#sessionSeed: random per launch unless a DEV seed is set).
   #composeEnvironment({ locId, locCfg, gameTimeClock }) {
-    const seed =
-      this.#config.debug?.seed ?? this.#config.rng?.seed ?? "cyber-fishing";
+    const seed = this.#sessionSeed();
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
-    // TK-321.1 (owner): the moment of an emission must not be computable. Without a DEV seed the session's seed is
-    // fixed ("cyber-fishing"), which would repeat the same emission timeline every launch, so the emission takes a
-    // fresh random seed per session; a DEV seed (CONFIG.debug.seed) keeps it repeatable for tests.
-    const emissionSeed = this.#config.debug?.seed ?? this.#config.rng?.seed;
-    const emissionRng = new SeededRng(emissionSeed != null ? `${emissionSeed}:emission`
-      : Math.floor(Math.random() * 4294967296));
+    const emissionRng = new SeededRng(`${seed}:emission`);
     const getWeatherSettings = () =>
       this.#config.locations?.map?.[locId]?.weather ??
       locCfg?.weather ??
@@ -1707,6 +1714,8 @@ export class GameCompositionRoot {
                       getWindModel: () => systems.env?.wind ?? null,
                       // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
                       getEmissionModel: () => systems.env?.emission ?? null,
+                      // TK-321.2: the session's seed (CONFIG.debug.seed repeats this session).
+                      sessionSeed: this.#sessionSeed(),
                       locationId: locId,
                       // TK-271 / Spec 178: wind direction and continuous strength by hand (null: automatic).
                       getWind: () => systems.env?.getSnapshot()?.wind ?? null,

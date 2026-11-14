@@ -166,6 +166,7 @@ export const CONFIG = {
     overlay: false,
     overlayUpdateMs: 150,
     initialTime: null, // Початковий час. 17.5 = 17:30. null бере спільний стартовий час із game_time_config.js.
+    seed: null, // Сід сесії (кльов, погода, вітер, викид). null — новий випадковий при кожному запуску; число — повтор сесії (TK-321.2).
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
     timeAccelerationEnabled: false,
 

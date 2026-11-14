@@ -303,7 +303,8 @@
 │  │  │  ├── grid_path_smoother.js
 │  │  │  └── grid_pathfinder.js
 │  │  ├── random
-│  │  │  └── seeded_rng.js
+│  │  │  ├── seeded_rng.js
+│  │  │  └── session_seed.js
 │  │  ├── rendering
 │  │  │  ├── composite_renderer.js
 │  │  │  ├── render_component.js

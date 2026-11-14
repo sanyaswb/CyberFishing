@@ -1342,6 +1342,31 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(plain.getSnapshot().radiation, 0, "no emission model: radiation 0");
 }
 
+// TK-321.2: one session seed for every stream — random per launch without a configured seed, kept when configured.
+{
+  const { resolveSessionSeed } = require("../../../src/engine/random/session_seed.js");
+  let fills = 0;
+  const fill = (values) => { fills += 1; values[0] = 1000 + fills; };
+  const first = resolveSessionSeed(undefined, fill);
+  const second = resolveSessionSeed(null, fill);
+  assert.notEqual(first, second, "two launches without a seed get different seeds");
+  assert.equal(fills, 2, "the seed comes from the random source");
+  assert.ok(Number.isInteger(resolveSessionSeed(undefined, null)) && resolveSessionSeed(undefined, null) > 0,
+    "without a random source the seed still is a positive integer");
+  assert.equal(resolveSessionSeed(42, fill), 42, "a configured seed is kept");
+  assert.equal(resolveSessionSeed("test", fill), "test", "a text seed is kept");
+  assert.equal(fills, 2, "a configured seed never reads the random source");
+  const sequence = (seed) => { const rng = new SeededRng(seed); return [rng.next(), rng.next(), rng.next()].join(); };
+  assert.notEqual(sequence(first), sequence(second), "different sessions give different bite sequences");
+  assert.equal(sequence(resolveSessionSeed(42)), sequence(42), "the same configured seed repeats the session");
+  const rootSource = require("node:fs").readFileSync(require("node:path").join(__dirname,
+    "../../../src/bootstrap/production/game_composition_root.js"), "utf8");
+  assert.ok(!/new SeededRng\(\s*this\.#config\.debug\?\.seed/u.test(rootSource) && !rootSource.includes('?? "cyber-fishing"'),
+    "production builds no stream from a fixed default seed");
+  assert.equal((rootSource.match(/this\.#sessionSeed\(\)/gu) || []).length >= 3, true,
+    "the fish, environment and DevTools read the one session seed");
+}
+
 console.log(
   "weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state, the live reading and the emission OK",
 );
