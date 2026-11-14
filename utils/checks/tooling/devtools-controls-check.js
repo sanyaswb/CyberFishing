@@ -149,7 +149,7 @@ const schema = new DevParameterSchema({ sources: { fish: () => fishOptions } });
 function choiceRow(options, value, path) {
   const host = createElement("div"); document.body.appendChild(host);
   const written = [];
-  ui.createChoiceRow("fishId", options, value, host, (next) => written.push(next), path);
+  ui.addParameter(host, { control: "choice", label: "fishId", options, value, onCommit: (next) => written.push(next), path });
   const root = byClass("devtools__choice", host)[0];
   const button = byClass("devtools__choice-button", root)[0];
   return { host, root, button, written, options: () => byClass("devtools__choice-option", root),
@@ -209,7 +209,8 @@ function choiceRow(options, value, path) {
   const host = createElement("div"); document.body.appendChild(host);
   const written = [];
   const options = [1, 2, 3].map((value) => ({ value, label: String(value) }));
-  ui.createSegmentsRow("size", options, 2, host, (next) => written.push(next), ["test", "size"]);
+  ui.addParameter(host, { control: "segments", label: "size", options, value: 2, onCommit: (next) => written.push(next),
+    path: ["test", "size"] });
   const segments = byClass("devtools__segment", host);
   assert.deepEqual(segments.map((segment) => segment.textContent), ["1", "2", "3"], "every option is visible at once");
   assert.deepEqual(segments.map((segment) => segment.getAttribute("aria-checked")), ["false", "true", "false"]);
@@ -260,10 +261,10 @@ function choiceRow(options, value, path) {
   const write = (name) => (value) => written.push([name, value]);
   guardedUi.createInputRow("number", 5, host, "number", write("number"), ["CONFIG", "test", "group", "number"], undefined, requires);
   guardedUi.createInputRow("text", "abc", host, "string", write("text"), ["CONFIG", "test", "group", "text"], undefined, requires);
-  guardedUi.createSegmentsRow("segments", [{ value: "a", label: "a" }, { value: "b", label: "b" }], "a", host, write("segments"),
-    ["CONFIG", "test", "group", "segments"], undefined, requires);
-  guardedUi.createChoiceRow("choice", [{ value: "x", label: "X" }, { value: "y", label: "Y" }], "x", host, write("choice"),
-    ["CONFIG", "test", "group", "choice"], undefined, requires);
+  guardedUi.addParameter(host, { control: "segments", label: "segments", options: [{ value: "a", label: "a" }, { value: "b", label: "b" }],
+    value: "a", onCommit: write("segments"), path: ["CONFIG", "test", "group", "segments"], ...requires });
+  guardedUi.addParameter(host, { control: "choice", label: "choice", options: [{ value: "x", label: "X" }, { value: "y", label: "Y" }],
+    value: "x", onCommit: write("choice"), path: ["CONFIG", "test", "group", "choice"], ...requires });
   guardedUi.createInputRow("free", 1, host, "number", write("free"), ["CONFIG", "test", "free"]);
   const [, numberRow, textRow, segmentsRow, choiceRow, freeRow] = host.children;
   const dependent = [numberRow, textRow, segmentsRow, choiceRow];

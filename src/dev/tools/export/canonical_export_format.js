@@ -4,7 +4,7 @@ const finite = (value) => typeof value === "number" && Number.isFinite(value);
 
 // Binary-fraction noise (TK-077: 11.700000000000001) collapses onto its short decimal (within 1e-12), while genuinely
 // long coordinates and exact fractions keep their value.
-export function cleanNumber(value) {
+function cleanNumber(value) {
   if (!finite(value) || Number.isInteger(value)) return value;
   const short = Number(value.toPrecision(12));
   return Math.abs(short - value) <= Math.abs(value) * 1e-12 ? short : value;

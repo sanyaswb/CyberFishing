@@ -141,6 +141,13 @@ through the actual water metric; config edits use the existing runtime overrides
 optional generic annotation model, drawn by one cached `PixiAnnotationRenderer` or by DEV's Canvas fallback, never
 both. A hidden background clears black and removes the water's copied background layers. No additional frame loop.
 
+DevTools (spec 174): `DevTools` (`src/dev/tools/dev_tools.js`) owns the panel's lifecycle, navigation and the order of
+its modules (`src/dev/tools/modules/*`, contract in `dev_panel_module.js`); every edit goes through `DevConfigEditService`
+(`src/dev/tools/config/`: override store, catalogs, the hooked fish, events), config and catalog trees are drawn by
+`ConfigTreeRenderer`, controls are classes in `src/dev/tools/controls/` and `DevToolsUI` lays them out (rail, pages,
+sections, search, drill-in, dialog). Modules still receive their collaborators through the `DevTools` constructor (one
+composition point in `development_game_startup.js`).
+
 Location zones (spec 130) are data-only modules `src/game/config/raw/locations/zones/<locationId>.js` (`ZONES`), which
 `game/config/databases/location_catalog.js` joins to the raw `MAP_DB` (raw data imports nothing); `src/dev/location/zone_export_format.js` owns their canonical form (key order, JSON, SHA-256 hash,
 file envelope, validation, diff, module source). The DevTools "Редактор" works on one chosen location
@@ -151,7 +158,7 @@ writes a file into the module after validation, a clean-target and conflict chec
 Git directory; it never commits. A bare file name that is not in the command's directory is taken from the user's
 Downloads folder (TK-285: DevTools shows this command after the export). The radio's sound settings (TK-099) follow the same path: the data module
 `src/game/config/raw/radio/radio_sound_settings.js` (`RADIO_SOUND_SETTINGS`: `effects`, `signal`) feeds `CONFIG.radio`,
-`src/dev/radio/radio_sound_settings_format.js` owns its canonical form, DevTools «📻 РАДІО» exports the live values and
+`src/dev/radio/radio_sound_settings_format.js` owns its canonical form, DevTools «РАДІО» exports the live values and
 `npm run apply:radio -- <file>` (`utils/apply-radio-sound.js`, shared steps in `utils/apply-module-helpers.js`) writes them
 back. The section "Зони риболовлі" holds the zones inside the castable area (spec 136): `CastableZoneReadings` reads their real values through the game's own classes (location, equipment, a chosen net and fish), `CastableDependentZones` previews them from the rod's real position with the editor's line length and a conditional float, and owns their hover, the hand-chum far line (the only value it writes, the location's `chumCastDistance`) and the test chum zones (`ChumTestZones`, drawn as the game's own chum records).
 

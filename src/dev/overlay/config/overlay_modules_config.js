@@ -54,7 +54,7 @@ export const OVERLAY_MODULES = {
   fightTension: false,
 };
 
-export const BALANCE_OVERLAY_MODULE_KEYS = [
+const BALANCE_OVERLAY_MODULE_KEYS = [
   "state",
   "fishBalance",
   "fishBase",
@@ -68,7 +68,7 @@ export const BALANCE_OVERLAY_MODULE_KEYS = [
   "liveX",
 ];
 
-export const OPTIONAL_OVERLAY_MODULE_KEYS = [
+const OPTIONAL_OVERLAY_MODULE_KEYS = [
   "fishSummary",
   "fishCurrentForce",
   "fishDebuffsSummary",
@@ -79,7 +79,7 @@ export const OPTIONAL_OVERLAY_MODULE_KEYS = [
   "echo",
 ];
 
-export const ADVANCED_OVERLAY_MODULE_KEYS = [
+const ADVANCED_OVERLAY_MODULE_KEYS = [
   "fightPhysics",
   "fightCore",
   "fightPlayerForce",
@@ -102,11 +102,11 @@ export const ADVANCED_OVERLAY_MODULE_KEYS = [
   "fightTension",
 ];
 
-export const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance", "startup"];
+const PERFORMANCE_OVERLAY_MODULE_KEYS = ["performance", "startup"];
 
-export const BALANCE_WINDOW_KEYS = ["activeFish", "activeRod"];
+const BALANCE_WINDOW_KEYS = ["activeFish", "activeRod"];
 
-export const SCENE_OVERLAY_MODULE_KEYS = ["weather"];
+const SCENE_OVERLAY_MODULE_KEYS = ["weather"];
 
 export const OVERLAY_MODULE_GROUPS = Object.freeze([
   Object.freeze({
@@ -174,7 +174,7 @@ export const OVERLAY_MODULE_LABELS = Object.freeze({
   }),
 });
 
-export const FIGHT_PHYSICS_CATEGORY_KEYS = [
+const FIGHT_PHYSICS_CATEGORY_KEYS = [
   "fightCore",
   "fightPlayerForce",
   "fightLineDrag",
@@ -183,7 +183,7 @@ export const FIGHT_PHYSICS_CATEGORY_KEYS = [
   "fightStroke",
 ];
 
-export const FIGHT_PHYSICS_SECTION_KEYS = [
+const FIGHT_PHYSICS_SECTION_KEYS = [
   "fightFish",
   "fightMovement",
   "fightRodHold",

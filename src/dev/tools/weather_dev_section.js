@@ -207,25 +207,8 @@ export class WeatherDevSection {
       this.#selectedLocationId = nextId;
       this.#fill();
     };
-    if (this.#ui.createChoiceRow) {
-      this.#ui.createChoiceRow(
-        "локація",
-        choices,
-        currentId,
-        row,
-        onSelect,
-        ["WEATHER", "location", "id"],
-      );
-    } else {
-      this.#ui.createSelectRow?.(
-        "локація",
-        choices,
-        currentId,
-        row,
-        onSelect,
-        ["WEATHER", "location", "id"],
-      );
-    }
+    this.#ui.addParameter(row, { control: "choice", label: "локація", options: choices, value: currentId,
+      onCommit: onSelect, path: ["WEATHER", "location", "id"] });
     if (currentId !== this.#weather.locationId) {
       this.#ui.createInfoRow(
         "активна у грі",

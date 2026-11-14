@@ -935,8 +935,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       createSelectRow(label, _choices, value, parent, onChange, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "select", value, onChange });
       },
-      createChoiceRow(label, choices, value, parent, onChange, path) {
-        if (path) rowsByPath.set(path.join("."), { kind: "choice", choices, value, onChange });
+      addParameter(parent, { control, options, value, onCommit, path }) {
+        if (control === "choice" && path) rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
       },
       createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
         if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });

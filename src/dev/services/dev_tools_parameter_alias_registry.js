@@ -1,4 +1,4 @@
-export const DEV_TOOLS_PARAMETER_ALIAS_SCHEMA = Object.freeze([
+const DEV_TOOLS_PARAMETER_ALIAS_SCHEMA = Object.freeze([
   Object.freeze({
     id: "fish_anomaly_chance_override",
     canonicalPath: Object.freeze([

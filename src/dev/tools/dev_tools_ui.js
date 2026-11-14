@@ -678,20 +678,6 @@ export class DevToolsUI {
       onCommit: onChangeCallback, path, bindingPath: null });
   }
 
-  // TK-283: a short list with every option visible; options: [{ value, label }].
-  createSegmentsRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
-    { requires = [] } = {}) {
-    this.addParameter(parentElement, { control: "segments", label: key, options, value: currentValue,
-      onCommit: onChangeCallback, path, bindingPath, requires });
-  }
-
-  // TK-283: a list picker (name, id, image, search); options: [{ value, label, hint, imageUrl, swatch }].
-  createChoiceRow(key, options, currentValue, parentElement, onChangeCallback, path = null, bindingPath = path,
-    { requires = [] } = {}) {
-    this.addParameter(parentElement, { control: "choice", label: key, options, value: currentValue,
-      onCommit: onChangeCallback, path, bindingPath, requires });
-  }
-
   // Spec 174 B1: one parameter row from one description, the way every module adds a parameter.
   //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice"
   //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);

@@ -1,8 +1,8 @@
 import { FishPhysicsProfile } from "../../game/domain/fish/fish_physics_profile.js";
 
-export const ACTIVE_FISH_DEV_TOOLS_SCHEMA = Object.freeze({
-  fishRuntimeRootTitle: "🐟 Fish runtime parameters (HOOKED_FISH)",
-  globalConfigRootTitle: "🌐 Global fight config shortcuts (CONFIG)",
+const ACTIVE_FISH_DEV_TOOLS_SCHEMA = Object.freeze({
+  fishRuntimeRootTitle: "Fish runtime parameters (HOOKED_FISH)",
+  globalConfigRootTitle: "Global fight config shortcuts (CONFIG)",
 
   visibility: Object.freeze({
     exactPaths: Object.freeze({

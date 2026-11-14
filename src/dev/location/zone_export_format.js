@@ -4,9 +4,9 @@ import { canonicalHash, cleanCanonical, formatExportFileName } from "../tools/ex
 
 // The one canonical form of a location's zones (spec 130): the DevTools export, the browser import and
 // `npm run apply:zones` read and write it through this module, so a hash or a written module never depends on key order.
-export const ZONE_FILE_FORMAT = "cyber-fishing/zones";
-export const ZONE_FILE_VERSION = 1;
-export const ZONE_CATEGORIES = Object.freeze(Object.keys(ZONE_CATEGORY_COLORS));
+const ZONE_FILE_FORMAT = "cyber-fishing/zones";
+const ZONE_FILE_VERSION = 1;
+const ZONE_CATEGORIES = Object.freeze(Object.keys(ZONE_CATEGORY_COLORS));
 const ZONE_KEYS = Object.freeze(["id", "type", "multiplier", "shape", "x", "y", "w", "h", "adaptiveX", "moving", "speedX", "speedY",
   "bounds", "mask"]);
 const RECT_KEYS = Object.freeze(["x", "y", "w", "h"]);

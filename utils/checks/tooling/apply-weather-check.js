@@ -215,6 +215,7 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
       createSwitcherRow() {},
       createRangeRow() {},
       createSelectRow() {},
+      addParameter() {},
       createInputRow() {},
       createButtonRow(label, parent, onClick) {
         buttons.set(label, onClick);

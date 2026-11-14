@@ -9,6 +9,10 @@
   --devtools-text-muted: rgba(210, 245, 255, 0.62);
   --devtools-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --devtools-icon-size: 18px;
+  --devtools-shadow: rgba(0, 0, 0, 0.5);
+  --devtools-scrim: rgba(0, 0, 0, 0.55);
+  --devtools-swatch-border: rgba(255, 255, 255, 0.45);
+  --devtools-danger-surface: rgba(30, 8, 4, 0.92);
 }
 /* Spec 174 C1: every DevTools icon (createDevIcon) is an outline in the text colour. */
 .devtools__icon {
@@ -25,7 +29,7 @@
 .game-shell__dev-ui { display: contents; }
 .devtools__control-group { display: contents; }
 .devtools__control-group--disabled .devtools__row { opacity: 0.46; }
-.devtools__control-group--disabled :is(input, select, button),
+.devtools__control-group--disabled :is(input, button),
 .devtools__control-group--disabled .devtools__slider { cursor: not-allowed; }
 /* Spec 131, TK-292: a row whose switch is off is inactive whatever its control (switch, number, text, segments, list). */
 .devtools__row--dependency-disabled .devtools__label,
@@ -105,7 +109,7 @@
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   font-family: var(--devtools-font);
   color: var(--ui-text);
-  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 0 20px var(--devtools-shadow);
 }
 
 .devtools.devtools--open {
@@ -258,7 +262,7 @@
     border-right: 0;
     border-top: 2px solid var(--ui-accent);
     border-radius: var(--ui-radius-panel) var(--ui-radius-panel) 0 0;
-    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -10px 20px var(--devtools-shadow);
     transform: translateY(105%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -596,7 +600,7 @@
   width: 10px;
   height: 10px;
   margin-right: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--devtools-swatch-border);
   border-radius: 2px;
   background: var(--devtools-swatch, transparent);
   vertical-align: middle;
@@ -979,7 +983,7 @@
   display: grid;
   place-items: center;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--devtools-scrim);
 }
 .devtools__dialog {
   box-sizing: border-box;
@@ -992,7 +996,7 @@
   border: 1px solid var(--ui-accent);
   border-radius: var(--ui-radius-panel);
   background: var(--devtools-surface);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px var(--devtools-shadow);
 }
 .devtools__dialog-head {
   display: flex;
@@ -1082,7 +1086,7 @@
   background: var(--devtools-surface-strong);
   color: var(--ui-text);
   font-size: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 16px var(--devtools-shadow);
   pointer-events: none;
 }
 .devtools__toast--error { border-color: var(--ui-danger); }
@@ -1170,7 +1174,7 @@
   padding: 16px 20px;
   border: 2px solid var(--ui-danger);
   border-radius: 8px;
-  background: rgba(30, 8, 4, 0.92);
+  background: var(--devtools-danger-surface);
   color: var(--ui-danger-text);
   font: 600 15px/1.4 system-ui, sans-serif;
   text-align: center;

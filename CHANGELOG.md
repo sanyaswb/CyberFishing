@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.126 - DevTools cleanup
+
+- TK-311 (spec 174 E): DevTools cleanup: unused row bridges and the tooltip method removed, the weather location list on the common row builder without its fallback, 17 module-internal constants no longer exported, the last emoji and raw colours gone; design rules and architecture describe the new DevTools.
+
 ## v0.50.125 - DevTools on phones
 
 - TK-310 (spec 174 D): on a narrow portrait phone DevTools is a bottom sheet across the width (half the height, nearly all of it with its handle) with the module rail as a row on top, so the game stays visible above it; on a landscape phone it is a compact side panel at most half the screen wide.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.117 - DevTools rows from one description
 
 - TK-302 (spec 174 B1): every DevTools parameter row is built from one description (DevToolsUI.addParameter) with its own control class (switch, text, number list, slider beside the number, list, segments); the config tree uses it, the older row methods remain as thin bridges until stage E.
-
-## v0.50.116 - DevTools panel modules
-
-- TK-301 (spec 174 B3): every area of the DevTools panel is its own module (shop, overlay, config, debug, scene with weather, zone editor, database, Spine, radio, hooked fish, service) with one contract; DevTools keeps only the panel's lifecycle, navigation and module order. The panel looks and works the same.

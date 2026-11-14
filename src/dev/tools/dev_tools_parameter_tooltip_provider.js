@@ -35,17 +35,6 @@ export class DevToolsParameterTooltipProvider {
     return null;
   }
 
-  getTooltip(labelText) {
-    const description = this.#descriptionsByKey[String(labelText)];
-    if (!description) return "";
-
-    if (description.path) {
-      return `${description.path} = ${description.label}:\n${description.description}`;
-    }
-
-    return `${description.key} = ${description.ua}:\n${description.description}`;
-  }
-
   async #load(urls) {
     if (typeof fetch !== "function") return;
 

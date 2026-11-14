@@ -8,8 +8,8 @@ import {
 
 // TK-099 / spec 176: the radio's sound settings file (exported by DevTools «📻 РАДІО», applied by `npm run apply:radio`)
 // and the data module src/game/config/raw/radio/radio_sound_settings.js.
-export const RADIO_SOUND_FILE_FORMAT = "cyber-fishing-radio-sound";
-export const RADIO_SOUND_FILE_VERSION = 1;
+const RADIO_SOUND_FILE_FORMAT = "cyber-fishing-radio-sound";
+const RADIO_SOUND_FILE_VERSION = 1;
 export const RADIO_SOUND_MODULE = "src/game/config/raw/radio/radio_sound_settings.js";
 
 export function canonicalSettings(value) {

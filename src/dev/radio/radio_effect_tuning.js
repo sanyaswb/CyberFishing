@@ -2,7 +2,7 @@
 // (vinyl, walkie-talkie, signal interference, «only stations with the effect») and sliders for all parameters of the
 // parts that are on. Writes go to the live configuration through the same config runtime as DevTools, so both show one
 // value. Production composes no tuning port: the player never controls the sound quality.
-export const VINYL_SFX_TRACKS = Object.freeze([
+const VINYL_SFX_TRACKS = Object.freeze([
   Object.freeze({ id: "vinyl-1", file: "vinyl-1.m4a", label: "vinyl-1 · Оберти 33⅓ (кліки)" }),
   Object.freeze({ id: "vinyl-2", file: "vinyl-2.m4a", label: "vinyl-2 · Текстура поверхні" }),
   Object.freeze({ id: "vinyl-3", file: "vinyl-3.m4a", label: "vinyl-3 · Шум та тріск борозенок" }),

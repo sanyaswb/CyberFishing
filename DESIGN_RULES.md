@@ -146,6 +146,21 @@ The future [UI catalog](specs/057-modular-ui-catalog/spec.md) demonstrates the s
 
 Before finishing a change, run relevant behavioral checks and one Full suite (includes CSS ownership/BEM, Architecture and Quick). Follow utils/UTILS_RULES.md; appearance is owner-checked. Cover empty, populated, long-content and boundary states. Responsive changes require planned checks at 240, 280, 319, 320px and wider widths, including illustration proportions, input and scrolling. When the owner performs visual acceptance, do not open a browser and explicitly report that visual verification was not performed.
 
+## 12a. DevTools (spec 174)
+
+- DevTools is a tool for the engine: seven modules on a rail (Гра, Конфіг, Бази, Локація, Сцена, Діагностика, Сервіс),
+  one page at a time; each area of the panel is a module in `src/dev/tools/modules` with `mount(host, context)`.
+- Every parameter row is built from one description (`DevToolsUI.addParameter`): the key, the Ukrainian name under it
+  (`src/dev/metadata`), an «i» for the description, the control, a reset when the value differs from the code. Number
+  fields step by the value's precision; lists are `ChoiceField` under the label; up to four values are segments.
+- A parameter that cannot work while a switch is off is inactive and shows that switch on an attempt (spec 131, TK-292);
+  its dependency is declared in `DevParameterSchema`, never guessed from nesting.
+- At most two levels of sections nest in place; deeper ones open inside with breadcrumbs. Section contents are drawn when
+  first needed; search, the changed filter and links draw the rest.
+- DevTools draws its own SVG icons (`createDevIcon`), no emoji or text arrows (checked); colours are `--devtools-*`
+  tokens; texts to copy or edit open the panel's text dialog, never the browser's prompt or alert.
+- Phones: a bottom sheet in narrow portrait, a compact side panel in landscape, by container queries on `ui-surface`.
+
 ## 13. UI performance and resize
 
 - Keep one game loop with update separate from render. Resize handlers mark pending work; coalesce a burst into at most one Canvas/viewport resize before the next game update. A DOM-only UI surface may schedule one pending measurement with `requestAnimationFrame`. Do not create another continuous render loop or render for every resize/observer event.
