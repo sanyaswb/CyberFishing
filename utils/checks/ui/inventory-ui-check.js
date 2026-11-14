@@ -3107,22 +3107,14 @@ class InventoryUiBehaviorCheck {
     assert.ok(!dayVisual.classList.contains("art-size"), "an item without artSize keeps its art at full size");
 
     const nightFloatCard = isolatedItemRenderer.renderItem(ITEM_DB.floats.float_night, { wholeArt: true });
-    const nightGlowImages = this.#findAllByClass(nightFloatCard, "inventory-item-card__glow-image");
-    assert.strictEqual(
-      nightGlowImages.length,
-      1,
-      "Night float card must render a glow overlay",
-    );
-    assert.strictEqual(
-      nightGlowImages[0].src,
-      "assets/items/floats/float-day-glow--scene.webp",
-      "Night float glow overlay must point to the float glow asset",
-    );
-    assert.strictEqual(
-      nightGlowImages[0].getAttribute("aria-hidden"),
-      "true",
-      "Glow overlay image must be aria-hidden",
-    );
+    // TK-315: the night float has its own icon (the day art with the tip glow baked in), shown wherever items are.
+    assert.strictEqual(ITEM_DB.floats.float_night.iconAsset, "items.floats.float-night", "the night float names its night icon");
+    assert.notStrictEqual(ITEM_DB.floats.float_night.iconAsset, ITEM_DB.floats.float_day.iconAsset,
+      "the night float never shows the day icon");
+    assert.strictEqual(this.#findByClass(nightFloatCard, "inventory-item-card__image").src,
+      "assets/items/floats/float-night.webp", "the night float card shows the night icon");
+    assert.strictEqual(this.#findAllByClass(nightFloatCard, "inventory-item-card__glow-image").length, 0,
+      "the glow is in the icon, not an overlay");
 
     currentView = this.#loadoutViewModel();
     ui.render(currentView);

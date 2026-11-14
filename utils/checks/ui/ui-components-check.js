@@ -43,10 +43,11 @@ const domFactory = new InventoryDomFactory(documentRef, { assets });
   for (let i = 0; i < 120; i++) depth.setIcon("F");
   assert.equal(icon.children[0], image, "unchanged equipped float retains the optimized image node");
   assert.equal(image.draggable, false);
-  depth.setItem({ itemType: "float", iconAsset: "items.floats.float-day", skin: { scene: { glow: { asset: "items.floats.float-day-glow--scene" } } } });
+  // TK-315: the night float's own icon carries its glow; the button draws one image, never an overlay.
+  depth.setItem({ itemType: "float", iconAsset: "items.floats.float-night", skin: { scene: { glow: { asset: "items.floats.float-day-glow--scene" } } } });
   assert(icon.classList.contains("depth-selector__icon--float"), "float icon has float class for 45deg rotation");
-  assert.equal(icon.children.length, 2, "night float in depth button has image and glow overlay");
-  assert.equal(icon.children[1].src, "assets/items/floats/float-day-glow--scene.webp", "night float glow is rendered in depth button");
+  assert.equal(icon.children.length, 1, "night float in depth button is one image");
+  assert.equal(icon.children[0].src, "assets/items/floats/float-night.webp", "the night float shows its night icon");
   depth.show(10, null, () => {});
   assert.equal(depth.value, 5, "default depth is 50% of available max depth");
   assert.equal((documentRef.listeners.get("pointermove") || new Set()).size, 0,

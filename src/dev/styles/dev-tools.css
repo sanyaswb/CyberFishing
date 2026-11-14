@@ -456,6 +456,7 @@
    changed value's mark and reset. */
 .devtools__label-key { overflow-wrap: anywhere; }
 .devtools__info,
+.devtools__copy-key,
 .devtools__reset {
   flex: 0 0 auto;
   display: inline-grid;
@@ -473,11 +474,17 @@
   --devtools-icon-size: 16px;
 }
 .devtools__info { margin-left: 2px; }
+/* TK-315: the copy-key button follows the «i» (or the key), quieter until hovered. */
+.devtools__copy-key { margin-left: 0; opacity: 0.7; --devtools-icon-size: 14px; }
+.ui-surface--desktop-hover .devtools__copy-key:hover, .devtools__copy-key:focus-visible { opacity: 1; }
 .ui-surface--desktop-hover .devtools__info:hover,
+.ui-surface--desktop-hover .devtools__copy-key:hover,
 .ui-surface--desktop-hover .devtools__reset:hover,
 .ui-surface:not(.ui-surface--desktop-hover) .devtools__info:active,
+.ui-surface:not(.ui-surface--desktop-hover) .devtools__copy-key:active,
 .ui-surface:not(.ui-surface--desktop-hover) .devtools__reset:active { color: var(--ui-text); background: rgba(var(--ui-accent-rgb), 0.16); }
 .devtools__info:focus-visible,
+.devtools__copy-key:focus-visible,
 .devtools__reset:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 1px; }
 .devtools__info[aria-expanded="true"] { color: var(--ui-info); }
 .devtools__reset { display: none; }
@@ -512,7 +519,7 @@
   overflow-wrap: anywhere;
 }
 @media (pointer: coarse) {
-  .devtools__info, .devtools__reset { width: 36px; height: 36px; }
+  .devtools__info, .devtools__copy-key, .devtools__reset { width: 36px; height: 36px; }
 }
 
 /* A category colour square before a label or beside a select (spec 129: zone colours); JS sets --devtools-swatch. */

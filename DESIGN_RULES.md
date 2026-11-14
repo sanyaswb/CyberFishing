@@ -155,7 +155,8 @@ Before finishing a change, run relevant behavioral checks and one Full suite (in
   one page at a time; each area of the panel is a module in `src/dev/tools/modules` with `mount(host, context)`.
 - Every parameter row is built from one description (`DevToolsUI.addParameter`): the key with an «i» right after it
   (TK-314: the Ukrainian name from `src/dev/metadata`, the description and the path are in the «i» hint, not on the
-  row), the control, a reset when the value differs from the code. Number
+  row; the hint opens under the row and never moves the control), a copy button for the key (TK-315), the control, a
+  reset when the value differs from the code. Number
   fields step by the value's precision; lists are `ChoiceField` under the label; up to four values are segments.
 - A parameter that cannot work while a switch is off is inactive and shows that switch on an attempt (spec 131, TK-292);
   its dependency is declared in `DevParameterSchema`, never guessed from nesting.

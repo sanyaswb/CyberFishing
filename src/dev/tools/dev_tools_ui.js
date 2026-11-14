@@ -730,8 +730,11 @@ export class DevToolsUI {
     }
     if (control === "range" && bindingPath) this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
     if (isChanged && onReset) this.#addResetButton(row, bindingPath, isChanged, onReset);
-    this.#addDescription(row);
     row.appendChild(field.element);
+    // TK-314.1: the hint comes after the control (a list: between its label and its field), so opening it never moves
+    // the control under it; it pushes the rows below down. TK-315: a copy button for the key beside the «i».
+    this.#addDescription(row, control === "choice" ? field.element : null);
+    this.#addCopyKey(row, path, label);
     this.#parameterRows.add(row);
     this.#insertTreeNode(parentElement, row, 0);
   }
@@ -755,7 +758,7 @@ export class DevToolsUI {
 
   // Spec 174 C3, TK-314: an "i" button right after the key opens the parameter's hint under the row (a native title is
   // unreachable by touch): the Ukrainian name, the description and the path.
-  #addDescription(row) {
+  #addDescription(row, before = null) {
     const label = row.children[0];
     const hint = this.#parameterDescriptions.get(label);
     if (!hint) return;
@@ -782,7 +785,26 @@ export class DevToolsUI {
       row.classList.toggle("devtools__row--described", !text.hidden);
     });
     label.appendChild(button);
-    row.appendChild(text);
+    row.insertBefore(text, before);
+  }
+
+  // TK-315 (owner 2026-11-14): a copy button beside every parameter puts its key as written in the code (the last segment
+  // of its path, e.g. "startHour") on the clipboard for a project-wide search (VS Code: Ctrl+Shift+F).
+  #addCopyKey(row, path, rawLabel) {
+    const segments = Array.isArray(path) ? path : String(path ?? "").split(".");
+    const key = String(segments.filter((segment) => segment !== "").at(-1) ?? rawLabel);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "devtools__copy-key";
+    button.title = `Копіювати «${key}» для пошуку в коді`;
+    button.setAttribute("aria-label", button.title);
+    button.appendChild(createDevIcon(document, "copy"));
+    button.addEventListener("click", async () => {
+      const copied = await this.copyText(key);
+      if (!this.#panel) return; // the panel was disposed while the clipboard answered
+      this.notify(copied ? `Скопійовано: ${key}` : `Не вдалося скопіювати: ${key}`, { error: !copied });
+    });
+    row.children[0].appendChild(button);
   }
 
   // Spec 174 C3: the header's search (key, Ukrainian name or path, every module at once) and the changed-only filter.

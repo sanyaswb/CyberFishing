@@ -139,10 +139,9 @@ export class DepthSelector {
     }
     const text = item.icon || "";
     const assetId = item.iconAsset || item.skin?.scene?.asset || item.skin?.thumbnail?.asset || this.#iconImages?.[text];
-    const glowAsset = item.glowAsset || item.skin?.glowAsset || item.skin?.scene?.glow?.asset;
     const isFloat = item.itemType === "float" || item.equipmentSlot === "float" || Boolean(item.skin?.scene?.waterline);
 
-    const key = JSON.stringify([text, assetId, glowAsset, isFloat]);
+    const key = JSON.stringify([text, assetId, isFloat]);
     if (key === this.#iconText) return;
     this.#iconText = key;
     this.#icon.textContent = "";
@@ -153,14 +152,6 @@ export class DepthSelector {
       if (image) {
         image.className = "game-toolbar-button__image depth-selector__image";
         this.#icon.appendChild(image);
-      }
-      if (glowAsset) {
-        const glowImage = this.#dom.image(glowAsset, "");
-        if (glowImage) {
-          glowImage.className = "depth-selector__glow-image";
-          glowImage.setAttribute("aria-hidden", "true");
-          this.#icon.appendChild(glowImage);
-        }
       }
     } else this.#showSymbol(text);
   }

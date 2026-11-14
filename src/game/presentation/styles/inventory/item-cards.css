@@ -156,19 +156,7 @@
   user-select: none;
 }
 
-.inventory-item-card__glow-image {
-  position: absolute;
-  inset: var(--inventory-image-inset, 0px);
-  width: calc(100% - 2 * var(--inventory-image-inset, 0px));
-  height: calc(100% - 2 * var(--inventory-image-inset, 0px));
-  object-fit: contain;
-  object-position: center center;
-  pointer-events: none;
-  user-select: none;
-}
-
-.inventory-item-card__visual--float .inventory-item-card__image,
-.inventory-item-card__visual--float .inventory-item-card__glow-image {
+.inventory-item-card__visual--float .inventory-item-card__image {
   transform: rotate(45deg);
 }
 
@@ -184,23 +172,8 @@
   transform: translateX(calc(var(--inventory-item-art-focus-x, 0.5) * -100%));
 }
 
-.inventory-item-card__visual--cropped .inventory-item-card__glow-image {
-  position: absolute;
-  bottom: var(--inventory-image-inset, 0px);
-  left: 50%;
-  width: auto;
-  max-width: none;
-  height: calc(100cqh / var(--inventory-item-art-visible-height, 1));
-  transform: translateX(calc(var(--inventory-item-art-focus-x, 0.5) * -100%));
-}
-
 /* anchor "top": the upper visible-height share, aligned to the top (the landing net). */
 .inventory-item-card__visual--cropped-top .inventory-item-card__image {
-  top: var(--inventory-image-inset, 0px);
-  bottom: auto;
-}
-
-.inventory-item-card__visual--cropped-top .inventory-item-card__glow-image {
   top: var(--inventory-image-inset, 0px);
   bottom: auto;
 }

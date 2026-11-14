@@ -997,7 +997,7 @@ export const ITEM_DB = {
       itemType: "float",
       variant: "night",
       icon: "float",
-      iconAsset: "items.floats.float-day",
+      iconAsset: "items.floats.float-night",
       // Поплавок на воді (spec 127): тіло з асету, верхня частка waterline (червона антена з чорним пояском) над
       // водою в спокої. glow — адитивне зелене світіння лише кінчика (нічний поплавок), pad — поле розмиття в px арту.
       skin: {

@@ -224,15 +224,6 @@ export class InventoryItemCardRenderer {
     } else {
       visual.appendChild(createItemPlaceholderIcon(this.#dom, item.icon, "inventory-item-card__icon"));
     }
-    const glowAsset = item.glowAsset || item.skin?.glowAsset || item.skin?.scene?.glow?.asset;
-    if (glowAsset) {
-      const glowImage = this.#dom.image(glowAsset, "");
-      if (glowImage) {
-        glowImage.className = "inventory-item-card__glow-image";
-        glowImage.setAttribute("aria-hidden", "true");
-        visual.appendChild(glowImage);
-      }
-    }
     card.appendChild(visual);
   }
 

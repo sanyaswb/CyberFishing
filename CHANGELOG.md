@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.130 - DevTools hint below the row, copy key, night float icon (TK-314.1, TK-315, TK-316)
+
+- DevTools: the «i» hint opens under the row and the control stays on the right; a copy button beside every parameter copies its key for a code search (Ctrl+Shift+F). The night float has its own icon with the glowing tip (convert-images glow-icon); the glow overlays in the card and the depth button are gone.
+
 ## v0.50.129 - DevTools parameter hints, tighter breadcrumbs, FREE badge (TK-314)
 
 - DevTools: a parameter row is the key with «i» right after it; the Ukrainian name, description and path are in the «i» hint; breadcrumbs are tighter. Free house actions and the DevTools item shop show a FREE badge (rounded, slowly turning green) instead of «Безкоштовно».
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.121 - DevTools drill-in sections
 
 - TK-306 (spec 174 C4): DevTools shows at most two levels of sections in place; a deeper section opens inside its module's page on its own, under breadcrumbs back to the module and every section above it, so labels keep the panel's full width.
-
-## v0.50.120 - DevTools names, descriptions, search
-
-- TK-305 (spec 174 C3): DevTools rows show the key with its Ukrainian name under it and an «i» that opens the description; a changed value is marked and can be put back to the code's value by itself; a search under the title finds parameters in every module by key, name or path and keeps them editable in place; «Змінені» shows only changed values.

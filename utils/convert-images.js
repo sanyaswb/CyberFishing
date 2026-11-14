@@ -13,6 +13,10 @@
 //   low-copies    --manifest <json: [{ input, output, scale?, quality? }]>  (npm run assets:sync makes the name--low.webp
 //                 copies with it; a Spine atlas page gets scale 0.5, quality low and alphaQuality 50, spec 166)
 //   spine-region  --atlas <file.atlas> --output <picture.webp> [--size 1024] [--quality middle]
+//   glow-icon     --base <icon> --glow <glow art> --glow-pad <px> --output <icon.webp> [--quality middle]
+//                 (TK-315) bakes a glow into an icon: the glow art is the base art padded by --glow-pad of its own
+//                 pixels on the sides and the top (the scene's tip-glow format); it is scaled to the icon, added on top
+//                 and the canvas grows by the scaled pad so the halo is kept, then fits the base's longest side.
 //
 // --trim cuts empty (transparent or uniform) edges before resizing: art carries no margins, the place that shows it sets
 // them (TK-222). The flag form of a command (--batch, --thumbnails, --low-copies, --spine-region) works the same.
@@ -302,6 +306,29 @@ async function spineRegion(args) {
   console.log(`Created ${rel(output)} from ${rel(atlasFile)}`);
 }
 
+async function glowIcon(args) {
+  const base = projectPath(args.get("--base"), "--base");
+  const glow = projectPath(args.get("--glow"), "--glow");
+  const output = projectPath(args.get("--output"), "--output");
+  const pad = Number(args.get("--glow-pad"));
+  if (!Number.isFinite(pad) || pad < 0) throw new Error("--glow-pad must be a number of glow-art pixels");
+  const quality = qualityOf(args);
+  const baseMeta = await sharp(base).metadata();
+  const glowMeta = await sharp(glow).metadata();
+  const scale = baseMeta.height / (glowMeta.height - pad);
+  const margin = Math.round(pad * scale);
+  const glowWidth = baseMeta.width + 2 * margin;
+  const glowHeight = baseMeta.height + margin;
+  const scaledGlow = await sharp(glow).resize(glowWidth, glowHeight, { fit: "fill" }).png().toBuffer();
+  const canvas = sharp({ create: { width: glowWidth, height: glowHeight, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([{ input: fs.readFileSync(base), left: margin, top: margin }, { input: scaledGlow, left: 0, top: 0, blend: "screen" }]);
+  // The halo grows the canvas; the icon keeps the base art's longest side (the item-art limit, spec 157 R6).
+  const longest = Math.max(baseMeta.width, baseMeta.height);
+  const fitted = sharp(await canvas.png().toBuffer()).resize(longest, longest, { fit: "inside", withoutEnlargement: true });
+  const result = await encode(fitted, "webp", quality, output);
+  console.log(`Created ${rel(output)} (${result.width}x${result.height}, ${kb(result.size)}) from ${rel(base)} + ${rel(glow)}`);
+}
+
 // --- Guided menu (no arguments) ----------------------------------------------------------------------------------------
 
 async function menu() {
@@ -356,7 +383,7 @@ function printHelp() {
     .join("\n").trim());
 }
 
-const COMMANDS = Object.freeze({ batch, thumbnails, "low-copies": lowCopies, "spine-region": spineRegion });
+const COMMANDS = Object.freeze({ batch, thumbnails, "low-copies": lowCopies, "spine-region": spineRegion, "glow-icon": glowIcon });
 
 async function main(argv) {
   if (argv.length === 0) return menu();

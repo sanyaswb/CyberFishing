@@ -518,7 +518,7 @@ function choiceRow(options, value, path) {
 // --- TK-305 (spec 174 C3): names, descriptions, changed values, search -----------------------------------------------
 {
   const provider = { describe: (path, key) => (path === "CONFIG.rain.opacity" ? { name: "Непрозорість дощу",
-    description: "Наскільки видно краплі." } : key === "speed" ? { name: "швидкість", description: "" } : null), dispose() {} };
+    description: "Наскільки видно краплі." } : key === "kind" ? { name: "вид", description: "Вид крапель." } : key === "speed" ? { name: "швидкість", description: "" } : null), dispose() {} };
   const searchUi = new DevToolsUI(() => {}, {}, provider, null, null, document.body, createElement("div"));
   const pages = searchUi.createPages([{ id: "a", title: "A", icon: "hook" }, { id: "b", title: "B", icon: "map" }], "a", () => {});
   const changed = new Set(["CONFIG.rain.opacity"]);
@@ -530,16 +530,21 @@ function choiceRow(options, value, path) {
   add(rain, "opacity", ["CONFIG", "rain", "opacity"]);
   add(rain, "speed", ["CONFIG", "rain", "speed"]);
   add(pages.get("a"), "flag", ["CONFIG", "flag"]);
+  searchUi.addParameter(rain, { control: "choice", label: "kind", value: "a", onCommit() {}, path: ["CONFIG", "rain", "kind"],
+    options: [{ value: "a", label: "A" }, { value: "b", label: "B" }] });
   const rowOf = (key) => byClass("devtools__row", searchUi.body).find((row) => row.children[0]?.dataset?.devtoolsKey === key);
   const opacity = rowOf("opacity");
   // TK-314: the label is the key and the «i» right after it, nothing else; the name, description and path are in the hint.
   const opacityLabel = opacity.children[0];
   assert.equal(JSON.stringify(opacityLabel.children.map((child) => child.className)),
-    JSON.stringify(["devtools__label-key", "devtools__info"]), "the label holds only the key and «i» beside it");
+    JSON.stringify(["devtools__label-key", "devtools__info", "devtools__copy-key"]),
+    "the label holds only the key, «i» and the copy button beside it (TK-315)");
   assert.equal(byClass("devtools__label-key", opacity)[0].innerText, "opacity", "the key comes first, as in the code");
   const info = byClass("devtools__info", opacity)[0];
   const description = byClass("devtools__description", opacity)[0];
   assert.equal(description.hidden, true);
+  // TK-314.1 on the old order (label, hint, control) fails here: the control must come before the hint.
+  assert.ok(opacity.children.indexOf(description) > 1, "the hint is not between the label and the number field");
   info.click();
   assert.equal(description.hidden, false, "«i» opens the hint under the row (reachable by touch)");
   assert.equal(info.getAttribute("aria-expanded"), "true");
@@ -547,7 +552,22 @@ function choiceRow(options, value, path) {
     ["devtools__description-name", "Непрозорість дощу"], ["devtools__description-text", "Наскільки видно краплі."],
     ["devtools__description-path", "CONFIG.rain.opacity"]]), "the hint holds the name, the description and the path");
   const speedLabel = rowOf("speed").children[0];
-  assert.equal(speedLabel.children.length, 2, "a name alone (no description) is in the hint too, not on the row");
+  assert.equal(speedLabel.children.length, 3, "a name alone (no description) is in the hint too, not on the row");
+  // TK-314.1: the hint follows the control, so opening it never moves the control under it; a list's hint sits between
+  // its label and its field.
+  assert.equal(opacity.children.at(-1), description, "the hint is the row's last child");
+  assert.ok(opacity.children.indexOf(description) > opacity.children.findIndex((child) => child.className?.includes?.("devtools__number")),
+    "the number field stays before the hint");
+  const kind = rowOf("kind");
+  assert.equal(JSON.stringify(kind.children.map((child) => child.className.split(" ")[0])),
+    JSON.stringify(["devtools__label", "devtools__description", kind.children.at(-1).className.split(" ")[0]]),
+    "a list: label, hint, then its field");
+  assert.notEqual(kind.children.at(-1).className.split(" ")[0], "devtools__description");
+  // TK-315: the copy button puts the key as in the code on the clipboard (for Ctrl+Shift+F) and says so.
+  byClass("devtools__copy-key", rowOf("speed"))[0].click();
+  setTimeout(() => {
+    assert.ok(clipboard.includes("speed"), "the copy button copies the parameter's key");
+  }, 0);
   info.click();
   byClass("devtools__info", rowOf("speed"))[0].click();
   assert.equal(JSON.stringify(byClass("devtools__description", rowOf("speed"))[0].children.map((line) => line.innerText)),

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-314.1/315/316: hint under the row, copy key, night float icon.",
   "TK-314: parameter hints in «i», tighter breadcrumbs, FREE badge for free actions.",
   "TK-313: portrait phone DevTools full screen, module icons in one row; phone CSS moved after base rules.",
   "TK-312: «Панель» settings: adaptive width on a computer, fullscreen on a phone.",

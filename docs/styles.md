@@ -129,7 +129,9 @@ parameter (spec 177) or a blocking switch (TK-292) shows its page first.
 Spec 174 C3 (TK-305, TK-314): a label is `devtools__label-key` (the key) with `devtools__info` right after it, nothing
 else; the native title holds the path. The «i» (`aria-expanded`) opens `devtools__description` under the row
 (`devtools__row--described` wraps the row) with `__description-name` (the Ukrainian name from `src/dev/metadata`),
-`__description-text` and `__description-path`; the «i» exists when there is a name or a description. Breadcrumbs
+`__description-text` and `__description-path`; the «i» exists when there is a name or a description. The hint is the
+row's last child (a list row: between its label and its field), so the control never moves under it (TK-314.1).
+`devtools__copy-key` (TK-315) follows the «i» on every parameter and copies the key as in the code for a code search. Breadcrumbs
 (`devtools__crumb`) are tight: 3 px padding, the «/» separator with 3 px after it, 24 px rows (32 px for touch). The
 shared `ui-free-badge` (`ui-icon.css`) marks free actions (house buttons, `createButtonRow(..., { badge: "FREE" })`). A value with a
 session override is `devtools__row--changed` (a dot before the key and the `devtools__reset` button). The panel's second
