@@ -1,10 +1,11 @@
-// Logical pixels a finger travels right from the edge before the panel opens.
+// Logical pixels a finger travels away from the edge (right from the left edge, left from the right one) before the panel
+// opens.
 const SWIPE_PX = 24;
 // How long the mouse rests at the edge before the panel opens: long enough to ignore a pointer sweeping past the edge
 // (reaching for a zone at the map's left edge), short enough to feel immediate (the common "edge reveal" pattern).
 const DWELL_MS = 150;
 
-// A strip along the left screen edge that opens the DevTools panel while the zone editor hides its button (TK-053):
+// A strip along the panel's screen edge (left by default, right with setSide("right"), TK-317) that opens the DevTools panel while the zone editor hides its button (TK-053):
 // - the mouse reaching the edge and resting there DWELL_MS (moving inside the strip with no button held), or a mouse
 //   press on it, or a finger swiping right from it (TK-274.1: the owner's «доторкання курсором» is the cursor reaching
 //   the edge, not a click);
@@ -18,6 +19,7 @@ export class DevToolsEdgeOpener {
   #timers;
   #swipe = null;
   #dwell = null;
+  #direction = 1;
   #listeners;
 
   // open(): opens the panel (no-op when it is open already); isBlocked(): a zone editor gesture is going on; timers:
@@ -43,6 +45,12 @@ export class DevToolsEdgeOpener {
     this.#element = element;
   }
 
+  // TK-317: the strip follows the panel's side; a swipe opens it away from that edge.
+  setSide(side) {
+    this.#direction = side === "right" ? -1 : 1;
+    this.#element?.classList?.toggle("devtools__edge--right", side === "right");
+  }
+
   dispose() {
     const element = this.#element;
     if (!element) return;
@@ -65,7 +73,7 @@ export class DevToolsEdgeOpener {
   #move(event) {
     if (event.pointerType === "mouse") { this.#rest(event); return; }
     const swipe = this.#swipe;
-    if (!swipe || event.pointerId !== swipe.pointerId || event.clientX - swipe.x < SWIPE_PX) return;
+    if (!swipe || event.pointerId !== swipe.pointerId || (event.clientX - swipe.x) * this.#direction < SWIPE_PX) return;
     this.#swipe = null;
     this.#element.releasePointerCapture?.(event.pointerId);
     if (!this.#isBlocked()) this.#open();

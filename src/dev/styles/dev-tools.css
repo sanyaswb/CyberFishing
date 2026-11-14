@@ -887,6 +887,7 @@
   touch-action: none;
 }
 .game-shell--zone-editor .devtools__edge { display: block; }
+.devtools__edge.devtools__edge--right { left: auto; right: 0; }
 /* Spec 173 TK-280: a red notice among a section's controls (DevToolsUI.createAlert): zones past the map. */
 .devtools__alert {
   margin: 4px 0 8px;
@@ -1193,4 +1194,30 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .devtools { transition: none; }
+}
+/* TK-317: «Сторона» = праворуч — the side panel opens from the right edge on a computer and a landscape phone (a portrait
+   phone shows it full screen, so the side does not apply there). Mirrors the left layouts above. */
+@container ui-surface not ((orientation: portrait) and (max-width: 480px)) {
+  .devtools.devtools--right {
+    left: auto;
+    right: -400px;
+    border-right: 0;
+    border-left: 2px solid var(--ui-accent);
+    box-shadow: -10px 0 20px var(--devtools-shadow);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .devtools.devtools--right.devtools--open { left: auto; right: 0; }
+  .devtools.devtools--right.devtools--fullscreen { border-left: 0; }
+}
+@container ui-surface (min-width: 821px) and (min-height: 481px) {
+  .devtools.devtools--adaptive.devtools--right {
+    left: auto;
+    right: 0;
+    transform: translateX(105%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .devtools.devtools--adaptive.devtools--right.devtools--open { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .devtools.devtools--right, .devtools.devtools--adaptive.devtools--right { transition: none; }
 }

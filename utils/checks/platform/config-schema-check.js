@@ -185,12 +185,109 @@ async function checkDevelopmentReporter() {
   }
 }
 
+// TK-318: the DevTools names and descriptions stay true to the code. Every label path resolves (database rows by the
+// tooltip provider's normalisation, alias rows through the alias registry); a description by key is kept only for a key
+// some row still shows without a path label; every overlay metric's CONFIG path exists; a "типово/за замовчуванням"
+// value or on/off claim equals the code's.
+function checkParameterDescriptions() {
+  const runtime = new SourceRuntime();
+  const { createProductionConfigContext } = runtime.importModule("src/bootstrap/production/game_config_composition.js");
+  const { FISH_DB } = runtime.importModule("src/game/config/databases/fish_database.js");
+  const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+  const config = createProductionConfigContext(null).baseConfig;
+  const read = (name) => JSON.parse(fs.readFileSync(path.join(ROOT, "src/dev/metadata", name), "utf8"));
+  const keyed = read("dev_tool_parameter_descriptions.json");
+  const metrics = read("overlay_metric_descriptions.json");
+  const aliases = new DevToolsParameterAliasRegistry();
+  const step = (node, segment) => {
+    if (segment === "*") return node && typeof node === "object" ? Object.values(node).find((value) => value && typeof value === "object" && "direction" in value) ?? Object.values(node)[0] : undefined;
+    return node && typeof node === "object" && segment in node ? node[segment] : undefined;
+  };
+  const valueAt = (labelPath) => {
+    const segments = labelPath.replace(/^CONFIG./u, "").split(".");
+    const [rootNode, rest] = segments[0] === "fish" ? [FISH_DB, null] : segments[0] === "MAP_DB" ? [config.locations.map, null] : [config, segments];
+    if (rest) return rest.reduce(step, rootNode);
+    // A database field: any record that has it.
+    for (const record of Object.values(rootNode)) {
+      const value = segments.slice(1).reduce(step, record);
+      if (value !== undefined) return value;
+    }
+    return undefined;
+  };
+  const orphans = Object.keys(LABELS).filter((labelPath) => valueAt(labelPath) === undefined &&
+    aliases.resolveCanonicalPath(["CONFIG", ...labelPath.split(".")]).join(".") === ["CONFIG", ...labelPath.split(".")].join("."));
+  assert.deepEqual(orphans, [], "every parameter label names a parameter that exists");
+  const claims = [];
+  for (const [labelPath, entry] of Object.entries(LABELS)) {
+    const value = valueAt(labelPath);
+    const text = String(entry.description || "");
+    if (typeof value === "boolean") {
+      if (/типово увімкнен|за замовчуванням увімкнен/iu.test(text) && value !== true) claims.push(`${labelPath}: says on`);
+      if (/типово вимкнен|за замовчуванням вимкнен/iu.test(text) && value !== false) claims.push(`${labelPath}: says off`);
+    }
+    const number = text.match(/(?:типово|за замовчуванням)[s:—-]*(-?d+(?:[.,]d+)?)/iu)
+      || text.match(/((-?d+(?:[.,]d+)?)s+S+s+за замовчуванням)/iu);
+    if (number && typeof value === "number" && Math.abs(Number(number[1].replace(",", ".")) - value) > 1e-9) {
+      claims.push(`${labelPath}: says ${number[1]}, code ${value}`);
+    }
+  }
+  assert.deepEqual(claims, [], "a default stated in a description is the code's default");
+  const rowKeys = new Map();
+  const collect = (node, trail) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return;
+    for (const [key, value] of Object.entries(node)) {
+      const labelPath = [...trail, key].join(".").replace(/^fish.d+./u, "fish.").replace(/^MAP_DB.[^.]+./u, "MAP_DB.")
+        .replace(/.behaviors.[^.*]+./u, ".behaviors.*.");
+      if (!LABELS[labelPath]) rowKeys.set(key, true);
+      collect(value, [...trail, key]);
+    }
+  };
+  collect(config, []);
+  collect(Object.fromEntries(FISH_DB.map((fish, index) => [index, fish])), ["fish"]);
+  collect(config.locations.map, ["MAP_DB"]);
+  assert.deepEqual(keyed.filter((entry) => !rowKeys.has(entry.key)).map((entry) => entry.key), [],
+    "a description by key serves a row that has no path label (no dead or duplicate entries)");
+  const missing = [];
+  for (const [name, entry] of Object.entries(metrics)) {
+    for (const metricPath of entry.paths || []) {
+      if (!metricPath.startsWith("CONFIG.") || metricPath.includes("<")) continue;
+      if (metricPath.slice(7).split(".").reduce(step, config) === undefined) missing.push(`${name}: ${metricPath}`);
+    }
+  }
+  assert.deepEqual(missing, [], "every overlay metric's CONFIG path exists");
+}
+
+// TK-318: database rows find their one description (FISH_DB.<index>. → fish., a behaviour state → behaviors.*.,
+// a location → MAP_DB.), exactly the paths the labels and the validator use.
+async function checkTooltipProviderPaths() {
+  const fetch = async (url) => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(ROOT, url), "utf8")) });
+  const runtime = new SourceRuntime({ globals: { fetch, AbortController } });
+  const { DevToolsParameterTooltipProvider } = runtime.importModule("src/dev/tools/dev_tools_parameter_tooltip_provider.js");
+  {
+    const provider = new DevToolsParameterTooltipProvider();
+    await provider.ready;
+    const name = (rowPath, key) => provider.describe(rowPath, key)?.name ?? null;
+    assert.equal(name("FISH_DB.1.physics.forceProfile.basePower", "basePower"), LABELS["fish.physics.forceProfile.basePower"].label,
+      "a fish database row has its field's label");
+    assert.equal(name("FISH_DB.0.physics.behaviorProfile.behaviors.lastDash.direction.radialRange", "radialRange"),
+      LABELS["fish.physics.behaviorProfile.behaviors.*.direction.radialRange"].label, "every behaviour state shares one label");
+    assert.equal(name("CONFIG.locations.map.test.waterProjection.maxMeters", "maxMeters"),
+      LABELS["MAP_DB.waterProjection.maxMeters"].label, "the zone editor's projection rows have their labels");
+    assert.equal(name("MAP_DB.test.waterProjection.farScale", "farScale"), LABELS["MAP_DB.waterProjection.farScale"].label);
+    assert.equal(name("FISH_DB.0.physics.behaviorProfile.behaviors.idle.agility", "agility"), "спритність риби",
+      "a field without a path label falls back to its key's description");
+    assert.equal(name("CONFIG.nothing.here", "nothing"), null);
+    provider.dispose();
+  }
+}
+
 checkComposedConfigs();
+checkParameterDescriptions();
 checkNegativeFixtures();
 checkReporterReadsLiveLocationProfiles();
-checkDevelopmentReporter().then(() => {
+checkTooltipProviderPaths().then(checkDevelopmentReporter).then(() => {
   console.log("Config schema passed: production and DEV configs validate with 0 errors/warnings and stay unchanged; " +
-    "labels, frozen base, override store, fish data, live overrides and version are rejected when invalid; " +
+    "labels (paths exist, stated defaults match, no dead keyed entries), frozen base, override store, fish data, live overrides and version are rejected when invalid; " +
     "the DEV reporter is quiet for valid edits, warns on problems and survives unavailable labels.");
 }).catch((error) => {
   console.error(error);

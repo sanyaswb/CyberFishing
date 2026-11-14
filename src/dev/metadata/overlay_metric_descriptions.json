@@ -191,22 +191,22 @@
     ]
   },
   "Reel hold active": {
-    "formula": "reelHoldActive = rodStrokeIsFull && playerIsHolding && reelSafeMarginKg > 0",
-    "description": "Підмотка катушкою після повного ходу вудки.",
+    "formula": "active = reelHold.enabled && hasReel && playerHoldActive && dragCanHold && rodPullActive && strokeFull && timer >= delayMs; dragCanHold = !shouldSlipDrag && (dragLocked || rawTensionKg < dragLimitKg) && reelLoadReserveRatio > 0.01",
+    "description": "Підмотка котушкою під час утримання: фрикціон тримає, у котушки є запас, хід вудки повний (якщо вимагається) і минула затримка.",
     "paths": [
       "DEBUG_DATA.holdReelRecoverActive"
     ]
   },
   "Reel safe margin": {
-    "formula": "reelSafeMarginKg = reelHoldLimitKg - totalTensionKg",
-    "description": "Запас катушки для безпечної підмотки.",
+    "formula": "reelLoadReserveRatio = clamp01((reelMaxLoadKg - rawTensionKg) / reelMaxLoadKg)",
+    "description": "Запас котушки для безпечної підмотки: частка граничного навантаження котушки, ще не зайнята натягом.",
     "paths": [
       "DEBUG_DATA.holdReelRecoverReelMaxLoadKg",
       "DEBUG_DATA.totalTensionKg"
     ]
   },
   "Reel retrieve speed": {
-    "formula": "reelRetrieveSpeedMps = baseReelRetrieveSpeedMps * clamp01(reelSafeMarginKg / reelHoldLimitKg) * bearingBonus",
+    "formula": "recoverSpeedMps = retrieveSpeedMetersPerSecond * reelLoadReserveRatio",
     "description": "Швидкість підмотки катушкою у reelHold.",
     "paths": [
       "DEBUG_DATA.holdReelRecoverSpeedMps"

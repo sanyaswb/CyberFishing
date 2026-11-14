@@ -26,8 +26,14 @@ export class DevToolsParameterTooltipProvider {
   // Spec 174 C3: a parameter's Ukrainian name and description for its row. path: the dotted path ("CONFIG.ui.boat.x"
   // or "ui.boat.x"); key: the label shown. parameter_labels.json is matched by the whole path only (its leaf names repeat
   // across groups); the key list (dev_tool_parameter_descriptions.json) by key. null when nothing describes it.
+  // TK-318: database rows share one description per field: FISH_DB.<index>. → fish., a behaviour state → behaviors.*.,
+  // a location (MAP_DB.<id>. or CONFIG.locations.map.<id>.) → MAP_DB. — the paths parameter_labels.json and the config
+  // validator use.
   describe(path, key) {
-    const normalized = String(path || "").replace(/^CONFIG\./u, "");
+    const normalized = String(path || "").replace(/^CONFIG\./u, "")
+      .replace(/^FISH_DB\.[^.]+\./u, "fish.")
+      .replace(/^(?:MAP_DB|locations\.map)\.[^.]+\./u, "MAP_DB.")
+      .replace(/\.behaviors\.[^.*]+\./u, ".behaviors.*.");
     const byPath = normalized ? this.#descriptionsByKey[normalized] : null;
     if (byPath?.path === normalized) return { name: byPath.label, description: byPath.description };
     const byKey = this.#descriptionsByKey[String(key)];
@@ -88,11 +94,6 @@ export class DevToolsParameterTooltipProvider {
         description: item.description || "",
       };
       this.#descriptionsByKey[path] = normalized;
-
-      const leafKey = path.split(".").pop();
-      if (leafKey && !this.#descriptionsByKey[leafKey]) {
-        this.#descriptionsByKey[leafKey] = normalized;
-      }
     }
   }
 }

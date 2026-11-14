@@ -17,7 +17,7 @@
   },
   "ui.boat.yOffset": {
     "label": "Зсув по Y, px",
-    "description": "Вертикальний зсув початкової координати від берегової лінії (-5 пікселів за замовчуванням)."
+    "description": "Вертикальний зсув початкової координати від берегової лінії (-70 пікселів за замовчуванням)."
   },
   "ui.float.displayScale": {
     "label": "Масштаб поплавка",
@@ -29,7 +29,7 @@
   },
   "ui.float.nightHalo": {
     "label": "Ореол нічного поплавка",
-    "description": "Зелений ореол навколо нічного поплавка, у стилі ореолу кльову. Типово увімкнено."
+    "description": "Зелений ореол навколо нічного поплавка, у стилі ореолу кльову. Типово вимкнено: світиться лише кінчик (nightTipGlow)."
   },
   "ui.float.nightTipGlow": {
     "label": "Світіння кінчика нічного поплавка",
@@ -515,58 +515,6 @@
     "label": "Множник впливу течії",
     "description": "Множить швидкість течії при розрахунку відносної швидкості риби у воді. Більше значення = течія сильніше впливає на динамічне навантаження."
   },
-  "physics.fight.playerControl.steering.xAxisMultiplier": {
-    "label": "Множник бокового контролю вудкою",
-    "description": "Множить максимальну силу керування по X для debug/read-model і бокового контролю. Більше значення = вудка сильніше контролює бік."
-  },
-  "physics.fight.playerControl.steering.inputSteeringBlend": {
-    "label": "Змішування input-напрямку",
-    "description": "Наскільки сильно горизонтальний input гравця змішується з базовим напрямком тяги до кінчика вудки."
-  },
-  "physics.fight.playerControl.steering.edgePullPenalty": {
-    "label": "Штраф тяги біля краю",
-    "description": "Legacy/балансний параметр для втрати контролю на краях. Перевірити фактичне використання перед балансуванням."
-  },
-  "physics.fight.playerControl.steering.distanceXMultiplier": {
-    "label": "Множник X-контролю за дистанцією",
-    "description": "Діапазон множника бокового контролю залежно від відносної вертикальної дистанції/глибини у debug/read-model."
-  },
-  "physics.fight.playerControl.rodAnglePenalty.enabled": {
-    "label": "Увімкнути штраф кута вудки",
-    "description": "Вмикає зниження ефективної сили гравця при поганому куті між вудкою/ліскою та оптимальним напрямком."
-  },
-  "physics.fight.playerControl.rodAnglePenalty.noPenaltyAngleDeg": {
-    "label": "Кут без штрафу",
-    "description": "До цього кута відхилення штраф до сили гравця не застосовується."
-  },
-  "physics.fight.playerControl.rodAnglePenalty.maxPenaltyAngleDeg": {
-    "label": "Кут максимального штрафу",
-    "description": "На цьому куті штраф досягає максимуму. Між noPenaltyAngleDeg і цим значенням штраф росте плавно."
-  },
-  "physics.fight.playerControl.rodAnglePenalty.maxPenaltyMultiplier": {
-    "label": "Мінімальна ефективність при штрафі кута",
-    "description": "Яка частина сили гравця лишається при максимальному штрафі. 0.65 = 65% сили."
-  },
-  "physics.fight.rodPull.enabled": {
-    "label": "Увімкнути підтягування вудкою",
-    "description": "Вмикає або вимикає активний hold/rod pull для руху риби до гравця."
-  },
-  "physics.fight.rodPull.minEffectivePullKg": {
-    "label": "Мінімальна ефективна тяга",
-    "description": "Мінімальний player pressure, після якого pull вважається достатнім для ефективного руху риби."
-  },
-  "physics.fight.rodPull.minStrokeMeters": {
-    "label": "Мінімальний корисний хід",
-    "description": "Мінімальний рух у метрах, нижче якого система не вважає, що риба реально зрушила."
-  },
-  "physics.fight.rodPull.finalLandingDistanceMeters": {
-    "label": "Останній дотяг біля берега",
-    "description": "Дозволяє останній дотяг, коли риба вже дуже близько до landing zone."
-  },
-  "physics.fight.rodPull.controlledPullLimitRatio": {
-    "label": "Ліміт контрольованої тяги",
-    "description": "Максимальний player pressure як частка від міцності снасті. 0.6 на снасті 2 кг дає максимум 1.2 кг контрольованого тиску."
-  },
   "physics.fight.rodControl.enabled": {
     "label": "Enable Rod Control X",
     "description": "Turns on lateral rod control during fight."
@@ -989,27 +937,11 @@
   },
   "fish.physics.forceProfile.basePower": {
     "label": "Базова сила виду риби",
-    "description": "Структурований профіль сили. Разом із вагою риби та levelBasePower формує staticFishForceKg."
-  },
-  "fish.physics.forceProfile.levelBasePower": {
-    "label": "Множник сили рівня риби",
-    "description": "Runtime-множник із weightConfig.levelWeightRanges для конкретного рівня/ваги спійманої риби."
+    "description": "Базова сила виду. Разом із вагою риби та множником сили рівня (levelBasePower риби на гачку, з діапазонів ваги рівнів) формує staticFishForceKg."
   },
   "fish.physics.staminaProfile.baseStamina": {
     "label": "Базова стаміна виду риби",
     "description": "Базовий запас stamina/exhaustion для виду риби. Більше значення = довше виснаження."
-  },
-  "fish.physics.staminaProfile.staminaWeightMultiplier": {
-    "label": "Множник стаміни від ваги",
-    "description": "Додає запас stamina/exhaustion для риб важчих за 1 кг. Формула шару: baseStamina * (1 + multiplier * max(0, weight - 1))."
-  },
-  "fish.physics.staminaProfile.minStaminaActivityMultiplier": {
-    "label": "Мінімальна активність від стаміни",
-    "description": "Нижня межа множника швидкості від поточної stamina. Впливає на рух риби у FishForceSystem."
-  },
-  "fish.physics.staminaProfile.exhaustedSpeedRatio": {
-    "label": "Швидкість виснаженої риби",
-    "description": "Множник швидкості, до якого риба наближається при виснаженні exhaustion."
   },
   "fish.physics.movementProfile.agility": {
     "label": "Спритність виду риби",
@@ -1208,8 +1140,8 @@
     "description": "Maximum left or right angle in degrees from the vertical-up center axis of the fight sector."
   },
   "physics.fight.poleFightSector.shoreOpeningWidthMeters": {
-    "label": "Pole fight sector shore opening",
-    "description": "Full allowed width in meters where the fight sector crosses the shoreline. Zero keeps the original pointed sector."
+    "label": "Ширина сектора на березі, м",
+    "description": "Повна ширина дозволеного сектора там, де він перетинає берегову лінію. 0 — гостра вершина сектора."
   },
   "physics.fight.playerForceBudget.enabled": {
     "label": "Player force budget enabled",
@@ -1668,12 +1600,12 @@
     "description": "Maximum extra stamina regen multiplier added at full player fatigue."
   },
   "locations.showPoleFightSector": {
-    "label": "Show pole fight sector",
-    "description": "Shows the red allowed fish movement sector bounded by the configured angle and the released line radius."
+    "label": "Показувати сектор руху риби (махова)",
+    "description": "Показує помаранчевий дозволений сектор руху риби від бази вудки, обмежений кутом сектора й випущеною ліскою; обрізаний сектор — червоний."
   },
   "locations.showFightLineRadius": {
-    "label": "Show fight line radius",
-    "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
+    "label": "Показувати межу ліски",
+    "description": "Показує світло-сіру повну радіальну межу руху риби — довжину фактично випущеної ліски."
   },
   "MAP_DB.waterProjection.maxMeters": {
     "label": "Дальність води, м",

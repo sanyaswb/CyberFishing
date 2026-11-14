@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.0 - DevTools as an engine tool, overlay links, weather, live bait and keepnet
+
+- Minor release of v0.50.1–0.50.130 (owner-approved minor). DevTools (spec 174): a rail of modules with own SVG icons, one edit path and one parameter row description, search and the changed filter, drill-in sections with breadcrumbs, the text dialog in place of prompt, lazy sections (opening ~25× faster), number fields that step by precision, list pickers, dependent parameters, phone layouts (full screen in portrait, side panel in landscape), panel settings (adaptive width, full screen, opening side — TK-317), hints with name, description and path behind «i», copy-key buttons, and names and descriptions audited against the code (TK-318). Overlay: separate windows with scale, metric names linked to their DevTools parameters. World: the window is only the camera, procedural rain with rings, living waves, continuous wind and gusts, weather export/import. Gameplay and UI: live bait by species in the switcher and backpack, keepnet filters and preview, victory window, carp mix packs, cast rod movement within line reach and water bounds, rain zones and a fullscreen zone editor, a FREE badge for free actions, the night float icon. Release: production build without DEV, offline cache, strict CSP, a release check before every push. Game-cycle report unchanged.
+
 ## v0.50.130 - DevTools hint below the row, copy key, night float icon (TK-314.1, TK-315, TK-316)
 
 - DevTools: the «i» hint opens under the row and the control stays on the right; a copy button beside every parameter copies its key for a code search (Ctrl+Shift+F). The night float has its own icon with the glowing tip (convert-images glow-icon); the glow overlays in the card and the depth button are gone.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.122 - DevTools text dialog
 
 - TK-307 (spec 174 C5): exports and imports in DevTools «Сервіс» (overrides, the asset load plan) open the panel's own text dialog with copy, download and open-file buttons, and errors stay in it with the reason; results show as a short line at the bottom of the panel instead of the browser's prompt and alert.
-
-## v0.50.121 - DevTools drill-in sections
-
-- TK-306 (spec 174 C4): DevTools shows at most two levels of sections in place; a deeper section opens inside its module's page on its own, under breadcrumbs back to the module and every section above it, so labels keep the panel's full width.

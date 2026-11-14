@@ -165,7 +165,11 @@ Before finishing a change, run relevant behavioral checks and one Full suite (in
 - DevTools draws its own SVG icons (`createDevIcon`), no emoji or text arrows (checked); colours are `--devtools-*`
   tokens; texts to copy or edit open the panel's text dialog, never the browser's prompt or alert.
 - Phones: the whole screen in narrow portrait with the rail as one row of icons (TK-313), a compact side panel in
-  landscape, by container queries on `ui-surface` written after the base rules (incidents R21).
+  landscape, by container queries on `ui-surface` written after the base rules (incidents R21). The side panel opens
+  from the left or the right edge («Панель» → «Сторона», TK-317).
+- Parameter names and descriptions (`src/dev/metadata`) describe the current code: a label names an existing parameter,
+  a stated default is the code's, a description by key serves only rows without a path label (TK-318,
+  config-schema-check).
 
 ## 13. UI performance and resize
 

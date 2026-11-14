@@ -858,7 +858,8 @@ controlUI.dispose();
     return { listeners, classes, removed: false, addEventListener: (type, fn) => listeners.set(type, fn),
       removeEventListener: (type) => listeners.delete(type), remove() { this.removed = true; },
       setPointerCapture() {}, releasePointerCapture() {},
-      classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) } }; };
+      classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name),
+        toggle: (name, on) => (on ? classes.add(name) : classes.delete(name)) } }; };
   const mounted = [], writes = [];
   const body = makeElement();
   let edited = 0;
@@ -1016,6 +1017,14 @@ controlUI.dispose();
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 20 }); assert.equal(opens, 1, "a short touch move does not open");
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 30 }); assert.equal(opens, 2, "a swipe right from the edge opens");
   fire("pointermove", { pointerType: "touch", pointerId: 7, clientX: 90 }); assert.equal(opens, 2, "one swipe opens once");
+  // TK-317: with the panel on the right the strip moves to the right edge and a swipe left opens it.
+  opener.setSide("right");
+  assert.equal(edge.classes.has("devtools__edge--right"), true, "the strip follows the panel to the right edge");
+  fire("pointerdown", { pointerType: "touch", pointerId: 8, clientX: 798 });
+  fire("pointermove", { pointerType: "touch", pointerId: 8, clientX: 830 }); assert.equal(opens, 2, "a swipe right from the right edge does not open");
+  fire("pointermove", { pointerType: "touch", pointerId: 8, clientX: 770 }); assert.equal(opens, 3, "a swipe left from the right edge opens");
+  opener.setSide("left");
+  assert.equal(edge.classes.has("devtools__edge--right"), false);
   opener.dispose(); assert(edge.removed && edge.listeners.size === 0, "the strip leaves with DevTools");
   unsubscribe(); drag.dispose();
 }

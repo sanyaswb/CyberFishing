@@ -843,12 +843,21 @@ function choiceRow(options, value, path) {
   assert.equal(adaptive.checked, false);
   adaptive.checked = true; adaptive.fire("change", { target: adaptive });
   assert.equal(panel.classList.contains("devtools--adaptive"), true, "«Адаптивна ширина» widens the panel to its content");
-  assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true }),
+  assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true, side: "left" }),
     "and is remembered");
   const fullscreen = byClass("devtools__switch-input", switchOf("На весь екран (телефон горизонтально)"))[0];
   assert.equal(fullscreen.checked, true, "the switch shows the remembered value");
   fullscreen.checked = false; fullscreen.fire("change", { target: fullscreen });
   assert.equal(panel.classList.contains("devtools--fullscreen"), false);
+  // TK-317: the side the panel opens from (computer, landscape phone), remembered.
+  assert.equal(panel.classList.contains("devtools--right"), false, "the panel opens on the left by default");
+  const sides = byClass("devtools__segment", switchOf("Сторона (ПК, горизонтально)"));
+  assert.equal(JSON.stringify(sides.map((side) => side.textContent)), JSON.stringify(["Ліворуч", "Праворуч"]));
+  sides[1].click();
+  assert.equal(panel.classList.contains("devtools--right"), true, "«Праворуч» moves the panel to the right edge");
+  assert.equal(stored.get("dev_tools_panel_settings").side, "right", "and is remembered");
+  sides[0].click();
+  assert.equal(panel.classList.contains("devtools--right"), false);
   tools.dispose();
 }
 
