@@ -1,0 +1,154 @@
+{
+  "page": "dev.html",
+  "totalBytes": 637744,
+  "files": [
+    {
+      "path": "dev.html",
+      "bytes": 1599
+    },
+    {
+      "path": "build/dev.styles-C36MBIEZ.css",
+      "bytes": 30848
+    },
+    {
+      "path": "build/dev.boot-DF2CA386.js",
+      "bytes": 576
+    },
+    {
+      "path": "build/game_startup_meter.entry-62SKHIPB.js",
+      "bytes": 1236
+    },
+    {
+      "path": "build/dev.entry-DL43GGBT.js",
+      "bytes": 263
+    },
+    {
+      "path": "build/chunks/chunk-IJQKA6DF.js",
+      "bytes": 364
+    },
+    {
+      "path": "build/chunks/chunk-XAWE4EAK.js",
+      "bytes": 160
+    },
+    {
+      "path": "build/chunks/development_game_startup-Z5M5XQW2.js",
+      "bytes": 513361
+    },
+    {
+      "path": "build/chunks/chunk-F6OK7ZGJ.js",
+      "bytes": 2915
+    },
+    {
+      "path": "build/chunks/chunk-EGS6GS2J.js",
+      "bytes": 219
+    },
+    {
+      "path": "build/chunks/chunk-VCHYXGRB.js",
+      "bytes": 1496
+    },
+    {
+      "path": "build/chunks/chunk-IRGGZMZC.js",
+      "bytes": 7946
+    },
+    {
+      "path": "build/chunks/chunk-QJGRN6FX.js",
+      "bytes": 833
+    },
+    {
+      "path": "build/chunks/chunk-WVVLZOHM.js",
+      "bytes": 21397
+    },
+    {
+      "path": "build/chunks/chunk-3IOJY4FE.js",
+      "bytes": 2044
+    },
+    {
+      "path": "build/chunks/chunk-22U6CROU.js",
+      "bytes": 376
+    },
+    {
+      "path": "build/chunks/chunk-AEMBJDYY.js",
+      "bytes": 405
+    },
+    {
+      "path": "build/chunks/chunk-LFZCWPBP.js",
+      "bytes": 925
+    },
+    {
+      "path": "assets/locations/test/bg_test--day--low.webp",
+      "bytes": 3508
+    },
+    {
+      "path": "assets/locations/test/bg_test--evening--low.webp",
+      "bytes": 3938
+    },
+    {
+      "path": "assets/locations/test/test-depth.webp",
+      "bytes": 14026
+    },
+    {
+      "path": "assets/items/floats/float-day--scene.webp",
+      "bytes": 4440
+    },
+    {
+      "path": "assets/items/floats/float-day-glow--scene.webp",
+      "bytes": 1562
+    },
+    {
+      "path": "assets/items/rods/bamboo-rod-v1--scene--low.webp",
+      "bytes": 19974
+    },
+    {
+      "path": "assets/ui/inventory/rod.svg",
+      "bytes": 373
+    },
+    {
+      "path": "assets/ui/inventory/reel.svg",
+      "bytes": 272
+    },
+    {
+      "path": "assets/ui/inventory/line.svg",
+      "bytes": 224
+    },
+    {
+      "path": "assets/ui/inventory/float.svg",
+      "bytes": 248
+    },
+    {
+      "path": "assets/ui/inventory/net.svg",
+      "bytes": 235
+    },
+    {
+      "path": "assets/ui/inventory/keepnet.svg",
+      "bytes": 337
+    },
+    {
+      "path": "assets/ui/inventory/chum.svg",
+      "bytes": 236
+    },
+    {
+      "path": "assets/ui/inventory/battery.svg",
+      "bytes": 198
+    },
+    {
+      "path": "assets/ui/inventory/boat.svg",
+      "bytes": 239
+    },
+    {
+      "path": "assets/ui/inventory/gas-mask.svg",
+      "bytes": 264
+    },
+    {
+      "path": "assets/ui/inventory/radio.svg",
+      "bytes": 245
+    },
+    {
+      "path": "assets/ui/inventory/bait.svg",
+      "bytes": 250
+    },
+    {
+      "path": "assets/ui/inventory/weight.svg",
+      "bytes": 212
+    }
+  ]
+}
