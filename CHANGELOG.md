@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.50.127 - DevTools panel settings
+
+- TK-312: the last DevTools module «Панель» holds the panel's own settings: «Адаптивна ширина» makes the panel on a computer as wide as its content (up to 720 px and 60 % of the screen), «На весь екран» lets it take the whole screen on a phone; both are remembered.
+
 ## v0.50.126 - DevTools cleanup
 
 - TK-311 (spec 174 E): DevTools cleanup: unused row bridges and the tooltip method removed, the weather location list on the common row builder without its fallback, 17 module-internal constants no longer exported, the last emoji and raw colours gone; design rules and architecture describe the new DevTools.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.118 - DevTools icons
 
 - TK-303 (spec 174 C1): DevTools draws its own outline SVG icons (panel button, section chevrons, root sections, navigation, warnings, export) instead of emoji and text arrows; colours come from --devtools-* tokens, labels use the system sans font and values stay monospace; the panel has an opaque background without blur (cheaper on phones).
-
-## v0.50.117 - DevTools rows from one description
-
-- TK-302 (spec 174 B1): every DevTools parameter row is built from one description (DevToolsUI.addParameter) with its own control class (switch, text, number list, slider beside the number, list, segments); the config tree uses it, the older row methods remain as thin bridges until stage E.

@@ -313,6 +313,31 @@
   .devtools__body { flex: 1 1 auto; min-height: 0; padding: 10px; }
   .devtools__crumbs { top: -10px; margin: -10px -10px 0; padding: 6px 10px; }
 }
+/* TK-312: «Адаптивна ширина» on a computer (the wide layout only): the panel is as wide as its content, from the usual
+   380 px up to 720 px and never more than 60 % of the screen; closed, it slides out by its own width. */
+@container ui-surface (min-width: 821px) and (min-height: 481px) {
+  .devtools.devtools--adaptive {
+    left: 0;
+    width: fit-content;
+    min-width: min(380px, 100%);
+    max-width: min(720px, 60%);
+    transform: translateX(-105%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .devtools.devtools--adaptive.devtools--open { transform: none; }
+}
+/* TK-312: «На весь екран» on a phone (portrait sheet or landscape side panel): the panel takes the whole screen. */
+@container ui-surface (max-width: 480px) {
+  .devtools.devtools--fullscreen,
+  .devtools.devtools--fullscreen.devtools--sheet-tall {
+    height: var(--ui-logical-height, 100dvh);
+    border-radius: 0;
+  }
+  .devtools.devtools--fullscreen .devtools__sheet-handle { display: none; }
+}
+@container ui-surface (orientation: landscape) and (max-height: 480px) {
+  .devtools.devtools--fullscreen { width: 100%; border-right: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .devtools__sheet-handle, .devtools { transition: none; }
 }

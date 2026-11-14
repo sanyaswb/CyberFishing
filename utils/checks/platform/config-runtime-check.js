@@ -678,8 +678,8 @@ function checkLocationMapConfigChanges() {
   tools.toggle();
   const overlaySection = sections.find(section => section.path?.join('.') === 'OVERLAY');
   const page = id => pageHosts.get(id);
-  assert.deepEqual([...pageHosts.keys()], ['game','config','data','location','scene','diagnostics','service'],
-    'seven modules on the rail, in order (spec 174 C2, Q1)');
+  assert.deepEqual([...pageHosts.keys()], ['game','config','data','location','scene','diagnostics','service','panel'],
+    'seven modules on the rail, in order (spec 174 C2, Q1), then the panel settings (TK-312)');
   assert.equal(overlaySection?.parent, page('diagnostics'), 'Overlay is a root section of «Діагностика»');
   assert.equal(controlParents.get('CONFIG.debug.overlay'), overlaySection, 'overlay enable keeps its canonical path in Overlay');
   const inventorySection = sections.find(section => section.path?.join('.') === 'DEBUG_INVENTORY');

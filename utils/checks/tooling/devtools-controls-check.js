@@ -765,6 +765,38 @@ function choiceRow(options, value, path) {
   sheetUi.dispose();
 }
 
+// --- TK-312: the panel's own settings on the last rail page, remembered and applied ----------------------------------
+{
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const stored = new Map([["dev_tools_panel_settings", { fullscreen: true }]]);
+  const storageCache = { get: (key, fallback) => stored.get(key) ?? fallback, set: (key, value) => stored.set(key, value),
+    remove: (key) => stored.delete(key) };
+  const settingsUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const panel = settingsUi.body.parentNode;
+  const tools = new DevTools({ debug: {} }, { synchronize() {} }, { catalogs: { items: {}, fishes: [], maps: {} },
+    settingsStore: null, debugModulesSource: () => ({}), storageCache,
+    createUI: () => ({ ui: settingsUi, tooltipProvider: { ready: new Promise(() => {}) } }) });
+  assert.equal(panel.classList.contains("devtools--fullscreen"), true, "a remembered setting applies before the panel opens");
+  assert.equal(panel.classList.contains("devtools--adaptive"), false);
+  tools.toggle();
+  const buttons = byClass("devtools__rail-button", panel);
+  assert.equal(buttons.at(-1).getAttribute("aria-label"), "Панель", "the settings are the last module on the rail");
+  buttons.at(-1).click();
+  const page = byClass("devtools__page", panel).find((element) => element.dataset.devtoolsPage === "panel");
+  const switchOf = (key) => byClass("devtools__row", page).find((row) => row.children[0]?.dataset?.devtoolsKey === key);
+  const adaptive = byClass("devtools__switch-input", switchOf("Адаптивна ширина (ПК)"))[0];
+  assert.equal(adaptive.checked, false);
+  adaptive.checked = true; adaptive.fire("change", { target: adaptive });
+  assert.equal(panel.classList.contains("devtools--adaptive"), true, "«Адаптивна ширина» widens the panel to its content");
+  assert.equal(JSON.stringify(stored.get("dev_tools_panel_settings")), JSON.stringify({ adaptiveWidth: true, fullscreen: true }),
+    "and is remembered");
+  const fullscreen = byClass("devtools__switch-input", switchOf("На весь екран (телефон)"))[0];
+  assert.equal(fullscreen.checked, true, "the switch shows the remembered value");
+  fullscreen.checked = false; fullscreen.fire("change", { target: fullscreen });
+  assert.equal(panel.classList.contains("devtools--fullscreen"), false);
+  tools.dispose();
+}
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
@@ -778,7 +810,8 @@ function choiceRow(options, value, path) {
   tools.toggle();
   const buttons = byClass("devtools__rail-button");
   assert.deepEqual(buttons.map((button) => button.getAttribute("aria-label")),
-    ["Гра", "Конфіг", "Бази", "Локація", "Сцена", "Діагностика", "Сервіс"], "seven modules, in the spec's order");
+    ["Гра", "Конфіг", "Бази", "Локація", "Сцена", "Діагностика", "Сервіс", "Панель"],
+    "seven modules in the spec's order, then the panel's own settings (TK-312)");
   const pages = byClass("devtools__page");
   const shown = () => pages.filter((page) => !page.hidden).map((page) => page.dataset.devtoolsPage);
   assert.deepEqual(shown(), ["data"], "the remembered module opens; one page at a time");

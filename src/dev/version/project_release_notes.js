@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-312: «Панель» settings: adaptive width on a computer, fullscreen on a phone.",
   "TK-311 (spec 174 E): unused DevTools code and CSS removed; docs updated.",
   "TK-310 (spec 174 D): portrait bottom sheet with handle, compact landscape side panel.",
   "TK-309: overlay metric names with a parameter link to DevTools in every module.",

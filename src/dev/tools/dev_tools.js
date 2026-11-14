@@ -19,6 +19,7 @@ import { RadioModule } from "./modules/radio_module.js";
 import { ActiveFishModule } from "./modules/active_fish_module.js";
 import { ServiceModule } from "./modules/service_module.js";
 import { ItemProgressionModule } from "./modules/item_progression_module.js";
+import { PanelSettingsModule } from "./modules/panel_settings_module.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
 const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
@@ -144,6 +145,9 @@ export class DevTools {
         modules: [new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
           redraw: () => this.#populatePanel(), files: zoneEditorFiles, gameVersion }),
         loadStepper ? DevTools.#loadStepperModule(loadStepper) : null] },
+      // TK-312: the panel's own settings, last on the rail.
+      { id: "panel", title: "Панель", icon: "gear", empty: "",
+        modules: [new PanelSettingsModule({ storageCache, apply: (options) => ui.setPanelOptions(options) })] },
     ].map((page) => ({ ...page, modules: page.modules.filter(Boolean).map(assertDevPanelModule) }));
     this.#activePage = storageCache.get(ACTIVE_PAGE_KEY, "game");
 

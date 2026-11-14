@@ -347,6 +347,13 @@ export class DevToolsUI {
   }
 
   // A page without content says so in one line instead of disappearing from the rail.
+  // TK-312: the panel's own settings as root modifiers: adaptive width (computers) and fullscreen (phones); CSS decides
+  // in which layout each applies.
+  setPanelOptions({ adaptiveWidth = false, fullscreen = false } = {}) {
+    this.#panel.classList.toggle("devtools--adaptive", adaptiveWidth === true);
+    this.#panel.classList.toggle("devtools--fullscreen", fullscreen === true);
+  }
+
   createEmptyNote(parentElement, text) {
     const note = document.createElement("div");
     note.className = "devtools__empty";
