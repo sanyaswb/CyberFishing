@@ -388,13 +388,21 @@
   top: 5px;
   right: 6px;
 }
+/* TK-320.1 (owner): the same box as a parameter's «i» hint (devtools__description): its rows are lines of the hint, the
+   name in the hint's bold, the value in its text colour, no row lines. */
 .devtools__section-info {
   margin: 4px 0 6px;
-  padding: 2px 8px;
+  padding: 6px 8px;
   border-radius: var(--ui-radius-control);
   background: var(--devtools-field);
+  color: var(--devtools-label);
+  font-size: 12px;
+  line-height: 1.4;
 }
 .devtools__section-info[hidden] { display: none; }
+.devtools__section-info > .devtools__row.devtools__row { padding: 1px 0; border-top: 0; align-items: baseline; }
+.devtools__section-info .devtools__label { font-size: 12px; color: var(--ui-text); font-weight: 700; }
+.devtools__section-info .devtools__value { color: var(--devtools-label); }
 /* TK-320: the body's text can be selected and copied (the game shell sets user-select: none on everything); buttons
    and toggles stay unselectable so a tap never selects their label. */
 .devtools__body {

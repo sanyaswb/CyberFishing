@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.4 - Section description styled as the «i» hint (TK-320.1)
+
+- DevTools: a section's description (behind the «i» beside its title) is the same box as a parameter's «i» hint — the same background, padding and 12 px text, names in bold, rows without lines.
+
 ## v0.51.3 - DevTools modes as lists, colour picker, section info, selectable text (TK-320)
 
 - DevTools: hints no longer say «увімкнено/вимкнено»; 11 text parameters with fixed modes (biteSequenceMode, canvas.scene, cameraFollowPriority, …) are lists; colour parameters (#hex, rgb/rgba) have a swatch that opens a colour and opacity picker, keeping the value's format; a section's description sits behind an «i» beside its title and opens at the top of the section; the panel's text can be selected and copied.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.50.126 - DevTools cleanup
 
 - TK-311 (spec 174 E): DevTools cleanup: unused row bridges and the tooltip method removed, the weather location list on the common row builder without its fallback, 17 module-internal constants no longer exported, the last emoji and raw colours gone; design rules and architecture describe the new DevTools.
-
-## v0.50.125 - DevTools on phones
-
-- TK-310 (spec 174 D): on a narrow portrait phone DevTools is a bottom sheet across the width (half the height, nearly all of it with its handle) with the module rail as a row on top, so the game stays visible above it; on a landscape phone it is a compact side panel at most half the screen wide.

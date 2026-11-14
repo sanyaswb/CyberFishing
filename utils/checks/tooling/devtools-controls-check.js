@@ -863,6 +863,19 @@ function choiceRow(options, value, path) {
   button.click();
   assert.equal(panel.hidden, true);
   infoUi.dispose();
+  // TK-320.1 (owner): it looks like every other «i» hint — the same box as a parameter's description, rows without lines.
+  const css = require("node:fs").readFileSync(require("node:path").resolve(__dirname, "../../../src/dev/styles/dev-tools.css"), "utf8");
+  const declarations = (selector) => {
+    const block = css.match(new RegExp(`\\n${selector.replace(/[.]/gu, "\\.")} \\{([^}]*)\\}`, "u"))?.[1] ?? "";
+    return Object.fromEntries(block.split(";").map((part) => part.split(":").map((side) => side.trim())).filter(([name]) => name));
+  };
+  const hint = declarations(".devtools__description");
+  const info = declarations(".devtools__section-info");
+  for (const property of ["padding", "background", "color", "font-size", "line-height", "border-radius"]) {
+    assert.equal(info[property], hint[property], `the section description's ${property} is the «i» hint's`);
+  }
+  assert.match(css, /\.devtools__section-info > \.devtools__row\.devtools__row \{[^}]*border-top: 0/u,
+    "its rows have no lines between them (beating .devtools__row + .devtools__row)");
 }
 
 // --- TK-320: a colour parameter has a swatch and a picker; the value keeps its format --------------------------------

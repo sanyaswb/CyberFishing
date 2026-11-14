@@ -168,7 +168,8 @@ opening strip with it; written last in `dev-tools.css`, R21). TK-312.1: on a lan
 module (TK-319.1) — Enter (the phone keyboard's search key) / Shift+Enter step through the matches across modules.
 TK-320: a section's description rows (`createInfoRow`) are `devtools__section-info` at the top of the section content,
 opened by `devtools__section-info-button` (an «i» absolutely placed at the right of the title, the section gets
-`devtools__section--has-info`); no «Опис» block at the bottom. A colour written as text (#hex, rgb, rgba) is a
+`devtools__section--has-info`); no «Опис» block at the bottom. It is the same box as a parameter's «i» hint
+(TK-320.1: padding, background, 12 px text; names bold, rows without lines). A colour written as text (#hex, rgb, rgba) is a
 `devtools__color`: `devtools__color-swatch` (the colour over a checkerboard, `--devtools-color-value`) beside the text
 field opens `devtools__color-picker` (`devtools__color-input` and, for rgba / #rrggbbaa, `devtools__color-alpha`); the
 value keeps its format (`ColorValue`). `devtools__body` text is selectable (`user-select: text`, buttons and toggles
