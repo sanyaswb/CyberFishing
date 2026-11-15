@@ -15,6 +15,10 @@ Small tasks and large changes (owner instruction, 2026-10-22):
 - **A fix of a task is not a new task** (owner instruction, 2026-11-07): when the owner reports a defect or asks for a
   correction of an existing `TK-NNN` (or spec step), add a sub-item under that entry (`TK-NNN.1`, `.2`, … — what the owner
   said, what was found, what changed, the check, the owner's check) instead of a new `TK` number. It still bumps the patch.
+- **Planned tasks have their own numbering** (owner instruction, 2026-11-15): work the owner sets aside for later goes to
+  the «Заплановані» section of `tasks.md` as `PL-NNN` (its own sequence, starting at `PL-001`). When a planned item moves
+  into implementation it gets the next `TK-NNN` of the common queue; the planned entry records that number
+  (`PL-NNN → TK-NNN`) and the TK entry names its `PL-NNN`.
 
 The owner describes the result (what the player sees and does); the technical solution is the agent's (owner,
 2026-11-06). Do not take the owner's technical wording literally: choose the technically correct, most efficient way
