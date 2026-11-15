@@ -505,7 +505,7 @@ async function checkPixiSceneLayer() {
   const images = fakeImages([["day", 2560, 1440], ["evening", 2560, 1440], ["night", 2560, 1440]]);
   const clock = { now: 1000 };
   const water = { enabled: true, frameRate: 30, amplitude: 8, verticalShare: 0.5, wavelength: 140, speed: 24,
-    currentScale: 3 };
+    lateralContraction: true };
   const { FightAreaStyleResolver } = await importSource("src/game/presentation/styles/fight_area_style_resolver.js");
   const fightAreaStyles = new FightAreaStyleResolver({ configProvider: () => ({}) });
   const compose = (overrides = {}) => {
@@ -667,6 +667,7 @@ async function checkPixiSceneLayer() {
 async function checkAsh() {
   const { PixiAshRenderer } = await importSource("src/platform/browser/scene/pixi_ash_renderer.js");
   const { ASH_SETTINGS } = await importSource("src/game/config/raw/weather/ash_settings.js");
+  const { WeatherLookResolver } = await importSource("src/game/presentation/weather/weather_look_resolver.js");
   const { pixi } = fakePixi();
   const { documentTarget } = fakeDom();
   let seed = 11;
@@ -679,19 +680,23 @@ async function checkAsh() {
   const base = { x: 0, y: 0, width: 1200, height: 700 };
   const world = (weather, layer = base) => ({ weather: { rain: 0, storm: 0, windDirection: 1, windStrength: 1, ...weather },
     backgroundLayers: { count: 1, getAt: () => layer } });
+  // Spec 180 D16: the renderer gets the look resolved at the emission's strength, as in production.
+  const looks = new WeatherLookResolver({ getLooks: () => ({ ash: ASH_SETTINGS }), getOverrides: () => null });
   const settings = JSON.parse(JSON.stringify(ASH_SETTINGS));
+  const full = { maxParticles: ASH_SETTINGS.strength.maxParticles[1], opacity: ASH_SETTINGS.strength.opacity[1] };
   let now = 1000;
-  const frame = (model, options = settings, sec = 1 / 60) => { now += sec * 1000; return ash.update(model, 1200, 700, now, options); };
-  assert.equal(frame(world({ emission: 1 }), { ...settings, enabled: false }), false, "switched off: nothing to draw");
+  const frame = (model, options = null, sec = 1 / 60) => { now += sec * 1000;
+    return ash.update(model, 1200, 700, now, options ?? looks.resolve("ash", model?.weather?.emission ?? 0), { wind: { ashDriftPx: 45 } }); };
+  assert.equal(frame(world({ emission: 1 }), { ...looks.resolve("ash", 1), enabled: false }), false, "switched off: nothing to draw");
   assert.equal(frame(null), false, "off the scene: nothing to draw");
   assert.equal(frame(world({ emission: 0 })), false, "no emission: no ash, no frames");
   assert.equal(frame(world({ emission: 1 })), true, "an emission presents frames");
   embers.gpuView();
-  assert.equal(ash.status.embers, settings.maxParticles, "full strength: maxParticles embers on screen");
-  assert.equal(ash.status.pool, settings.maxParticles, "a pool of exactly the settings' size");
+  assert.equal(ash.status.embers, full.maxParticles, "full strength: maxParticles embers on screen");
+  assert.equal(ash.status.pool, full.maxParticles, "a pool of exactly the settings' size");
   frame(world({ emission: 0.25 }));
   for (let index = 0; index < 600; index += 1) frame(world({ emission: 0.25 }));
-  assert.ok(ash.status.embers <= Math.round(settings.maxParticles * 0.25) + 2,
+  assert.ok(ash.status.embers <= looks.resolve("ash", 0.25).maxParticles + 2,
     `a quarter of the strength keeps about a quarter of the embers (${ash.status.embers})`);
   for (let index = 0; index < 60; index += 1) frame(world({ emission: 1 }));
   // Smooth motion: an ember moves a little per frame and the GPU sees it (position, scale and colour are dynamic).
@@ -700,12 +705,12 @@ async function checkAsh() {
   const after = embers.gpuView().map((particle) => [particle.x, particle.y, particle.alpha, particle.scaleX, particle.tint]);
   const moved = after.filter(([x, y, alpha], index) => alpha > 0 && before[index][2] > 0 &&
     (x !== before[index][0] || y !== before[index][1]));
-  assert.ok(moved.length > settings.maxParticles / 2, "the embers move every frame");
+  assert.ok(moved.length > full.maxParticles / 2, "the embers move every frame");
   assert.ok(embers.particleChildren.every((particle, index) => after[index][2] === particle.alpha &&
     after[index][3] === particle.scaleX && after[index][4] === particle.tint),
     "the GPU draws every ember's current brightness, size and colour (vertex and color are dynamic)");
   const steps = moved.map(([x, y], index) => Math.hypot(x - before[index][0], y - before[index][1]));
-  assert.ok(Math.max(...after.map(([, , alpha]) => alpha)) <= settings.opacity + 1e-9, "never brighter than the opacity");
+  assert.ok(Math.max(...after.map(([, , alpha]) => alpha)) <= full.opacity + 1e-9, "never brighter than the opacity");
   assert.ok(steps.every((step) => step < 6), `slow and smooth: under 6 px per frame (${Math.max(...steps).toFixed(2)})`);
   const visible = after.filter(([, , alpha]) => alpha > 0);
   const sizes = visible.map(([, , , scale]) => scale);
@@ -721,7 +726,7 @@ async function checkAsh() {
   for (let index = 0; index < 60 * 10; index += 1) frame(world({ emission: 0 }));
   assert.deepEqual([ash.status.embers, ash.status.active, embers.visible], [0, false, false], "after the emission the ash is gone");
   assert.equal(frame(world({ emission: 0 })), false, "and presents no frames");
-  assert.equal(ash.status.pool, settings.maxParticles, "the pool never grew during play");
+  assert.equal(ash.status.pool, full.maxParticles, "the pool never grew during play");
   ash.dispose();
 }
 
@@ -742,12 +747,16 @@ async function checkRain() {
   const water = { x: 400, y: 300, width: 400, height: 300 };
   const world = { weather: { rain: 1, storm: 0, fog: 0, cloud: 1, windDirection: 1 },
     clipRegions: { count: 1, getAt: () => water }, waterPlane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
-  const settings = { enabled: true, maxDrops: 200, stormDropsShare: 0.5, fallPx: 500, speedPx: 1500, speedJitter: 0.15,
-    lengthPx: 36, widthPx: 1.6, opacity: 0.4, color: "#c9d6e3", minScale: 0.3, windSlantDeg: 14, stormSlantDeg: 14,
+  // Spec 180: the rain's look as WeatherLookResolver hands it (already at the rain's strength) and CONFIG.weather.
+  const weatherSettings = { storm: { rainDropsShare: 0.5, rainSlantDeg: 14 },
+    wind: { rainSlantDeg: 14, slantFollowPerSec: 2, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
+  const settings = { enabled: true, maxDrops: 200, fallPx: 500, speedPx: 1500, speedJitter: 0.15,
+    lengthPx: 36, widthPx: 1.6, opacity: 0.4, color: "#c9d6e3", minScale: 0.3,
     rings: { enabled: true, maxRings: 120, sizePx: 16, lifeSec: 0.7, opacity: 0.4, flatten: 0.35, color: "#dfe9f2",
       ripple: { enabled: true, strength: 0.25, radiusScale: 1.2 } } };
   let now = 1000;
-  const frame = (overrides = {}, sec = 1 / 60) => { now += sec * 1000; return rain.update(overrides.world === undefined ? world : overrides.world, 1200, 700, now, overrides.settings ?? settings); };
+  const frame = (overrides = {}, sec = 1 / 60) => { now += sec * 1000; return rain.update(overrides.world === undefined ? world : overrides.world, 1200, 700, now, overrides.settings ?? settings,
+    weatherSettings); };
   assert.equal(frame({ settings: { ...settings, enabled: false } }), false, "switched off: nothing to draw");
   assert.equal(frame({ world: null }), false, "off the scene: nothing to draw");
   assert.equal(frame(), true, "rain presents a frame");
@@ -786,6 +795,10 @@ async function checkRain() {
     "the rings reach the water's map as ripples with their settings");
   const puff = ripples.puffs.getAt(0);
   assert(puff.size > 0 && puff.life >= 0 && puff.life < 1, "a ripple has a size and a share of its life");
+  // Spec 180 D16: each drop has its own slant around the common one (slantJitterDeg).
+  for (let index = 0; index < 30; index += 1) frame({ settings: { ...settings, slantJitterDeg: 6, lengthJitter: 0.3 } });
+  const slants = new Set(drops.gpuView().filter((particle) => particle.alpha > 0).map((particle) => particle.rotation.toFixed(4)));
+  assert(slants.size > 20, `drops slant differently (${slants.size} slants)`);
   // Spec 179 D4: the drops and the rings take the configured colours; an emission mixes them toward its own colours.
   assert(view.every((particle) => particle.tint === 0xc9d6e3) && ringView.every((particle) => particle.tint === 0xdfe9f2),
     "without an emission the rain keeps its colours");
@@ -808,6 +821,8 @@ async function checkRain() {
     "the new drops start spread along their falls, not in one wave");
   for (let index = 0; index < 120; index += 1) frame({ world: { ...world, weather: { ...world.weather, rain: 0, storm: 0 } } });
   assert.deepEqual([rain.status.drops, rain.status.rings], [0, 0], "the rain stops: drops finish their fall, rings fade");
+  for (let index = 0; index < 30; index += 1) frame({ world: { ...world, weather: { ...world.weather, rain: 0, storm: 1 } } });
+  assert.equal(rain.status.drops, 0, "spec 180 D1: a storm without rain makes no drops");
   assert.deepEqual([rain.status.active, drops.visible], [false, false], "then it hides");
   assert.equal(frame({ world: { ...world, weather: { ...world.weather, rain: 0 } } }), false, "and presents no frames");
   assert.equal(rain.waterRipples, null, "no ripples without rings");
@@ -846,7 +861,8 @@ async function checkRain() {
   assert.equal(drops.mask, mask, "zoned rain is clipped by the zones' mask");
   assert.deepEqual(mask.ops.filter((op) => op[0] === "rect"), [["rect", 100, 50, 300, 400]], "the mask is the zone");
   const zonedDrops = drops.gpuView().filter((particle) => particle.alpha > 0);
-  assert(zonedDrops.length > 0 && zonedDrops.every((particle) => particle.x >= zone.x - 1 && particle.x <= zone.x + zone.width + 1 &&
+  // ±3 px: the slant still fading toward calm (about 1°) shifts a falling drop sideways from its landing point.
+  assert(zonedDrops.length > 0 && zonedDrops.every((particle) => particle.x >= zone.x - 3 && particle.x <= zone.x + zone.width + 3 &&
     particle.y <= zone.y + zone.height + 1), "every drop falls toward a point inside the rain zone");
   const opsBefore = mask.ops.length;
   frame({ world: zoned });
@@ -912,7 +928,7 @@ async function checkWavesSwitch() {
   const created = [];
   const documentTarget = { createElement: (tagName) => { const element = fakeElement(tagName); created.push(element); return element; } };
   const water = { enabled: true, waves: true, frameRate: 30, amplitude: 8, verticalShare: 1, wavelength: 200, speed: 40,
-    currentScale: 0, variation: { enabled: false } };
+    lateralContraction: true, variation: { enabled: false } };
   const drop = { x: 640, y: 500, size: 80, life: 0, getAt: null };
   const rain = { puffs: { count: 1, getAt: () => drop }, settings: { enabled: true, strength: 0.5, radiusScale: 1.5 } };
   const stage = new pixi.Container();
@@ -1010,6 +1026,27 @@ async function checkWaveVariation() {
 
 async function checkWaterWaveField() {
   const { WaterWaveField } = await importSource("src/platform/browser/scene/water_wave_field.js");
+  // Spec 180 D9: lateralContraction on narrows the crests across the screen toward the far edge, off keeps their width.
+  {
+    const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
+    const metric = WaterMetric.illustrated({ pixelsPerMeter: 50, shoreY: 1520, topY: 800, centerX: 1280,
+      maxMeters: 30, tiltDegrees: 30, farScale: 0.3, lateralContraction: false });
+    const plane = { metric, left: 0, right: 2560, top: 800, bottom: 1520 };
+    const crossings = (lateral, row) => {
+      const field = new WaterWaveField({ width: 192, height: 48 });
+      const pixels = field.write(3.7, { artWidth: 2560, artHeight: 720, wavelength: 140, speed: 24, plane, amplitude: 1,
+        lateralContraction: lateral });
+      let count = 0;
+      for (let column = 1; column < 192; column += 1) {
+        if ((pixels[(row * 192 + column - 1) * 4] < 128) !== (pixels[(row * 192 + column) * 4] < 128)) count += 1;
+      }
+      return count;
+    };
+    const farOn = crossings(true, 8), nearOn = crossings(true, 42), farOff = crossings(false, 8), nearOff = crossings(false, 42);
+    assert(farOn > nearOn * 1.8, `contracted: far crests narrower than near (${farOn} vs ${nearOn} per row)`);
+    assert(farOff < farOn * 0.7 && Math.abs(farOff - nearOff) <= Math.max(nearOff, 4) * 0.6,
+      `not contracted: the crests keep their width across rows (${farOff} far vs ${nearOff} near)`);
+  }
   assert.throws(() => new WaterWaveField({ width: 1, height: 8 }), /at least 2×2/u);
   const field = new WaterWaveField({ width: 192, height: 48 });
   const { WaterMetric } = await importSource("src/game/domain/locations/water_metric.js");
@@ -1182,38 +1219,33 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.deepEqual([app.renders, map.updates], [3, 2], "30 steps per second: a step after 1/30 s presents one frame");
   const status = wet.layer.getStatus().water;
   assert.deepEqual([status.active, status.mapWidth, status.mapHeight, status.stepMs >= 0], [true, 192, 48, true]);
-  assert(Math.abs(status.driftSpeed - 3 * Math.hypot(5, 0.5)) < 1e-9, "the water drifts with the location's current × currentScale");
-  const mapBefore = Array.from(map.canvas.getContext("2d").last.data);
+  // Spec 180 D9 (owner): the current flows under the waves and never moves them.
+  assert.equal(status.driftSpeed, 0, "the location's current does not drift the waves");
   water.speed = 0;
-  clock.now += 40;
-  wet.layer.render(frame);
-  assert.notDeepEqual(Array.from(map.canvas.getContext("2d").last.data), mapBefore,
-    "with still waves (speed 0) the current alone still moves the pattern");
-  water.currentScale = 0;
   const heldStill = (() => { clock.now += 40; wet.layer.render(frame); return Array.from(map.canvas.getContext("2d").last.data); })();
   clock.now += 40;
   wet.layer.render(frame);
-  assert.deepEqual(Array.from(map.canvas.getContext("2d").last.data), heldStill, "currentScale 0 and speed 0: still water");
-  assert.equal(wet.layer.getStatus().water.driftSpeed, 0);
-  Object.assign(water, { speed: 24, currentScale: 3 });
+  assert.deepEqual(Array.from(map.canvas.getContext("2d").last.data), heldStill,
+    "with still waves (speed 0) the pattern stays, whatever the current");
+  water.speed = 24;
   water.frameRate = 60;
   clock.now += 17;
   wet.layer.render(frame);
-  assert.equal(app.renders, 7, "the settings are read every frame");
+  assert.equal(app.renders, 6, "the settings are read every frame");
   water.frameRate = 30;
 
   water.enabled = false;
   wet.layer.render(frame);
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [8, false], "disabled water is hidden once, then costs nothing");
+  assert.deepEqual([app.renders, waterContainer.visible], [7, false], "disabled water is hidden once, then costs nothing");
   water.enabled = true;
   clock.now += 40;
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [9, true]);
+  assert.deepEqual([app.renders, waterContainer.visible], [8, true]);
   regions[0].y = 900;
   clock.now += 40;
   wet.layer.render(frame);
-  assert.deepEqual([app.renders, waterContainer.visible], [10, false], "water below the screen is not filtered");
+  assert.deepEqual([app.renders, waterContainer.visible], [9, false], "water below the screen is not filtered");
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.

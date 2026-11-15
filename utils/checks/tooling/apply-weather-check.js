@@ -80,7 +80,7 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     });
 
     const rainOnly = JSON.parse(JSON.stringify(RAIN_SETTINGS));
-    rainOnly.maxDrops = 850;
+    rainOnly.opacity = 0.55;
     rainOnly.rings.ripple.strength = 0.4;
 
     const locOnly = JSON.parse(JSON.stringify(WEATHER));
@@ -96,9 +96,9 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation, "unchanged location weather is not touched");
     assert.equal(fs.readdirSync(backups).length, 1, "only changed module is backed up");
     const writtenRain = (await import(`${pathToFileURL(rainTarget).href}?after=rain`)).RAIN_SETTINGS;
-    assert.equal(writtenRain.maxDrops, 850);
+    assert.equal(writtenRain.opacity, 0.55);
     assert.equal(writtenRain.rings.ripple.strength, 0.4);
-    assert(logs.some((line) => line.includes("maxDrops: 700 -> 850")), "diff logs the changed field");
+    assert(logs.some((line) => line.includes("opacity: 0.4 -> 0.55")), "diff logs the changed field");
     dirtySet.clear();
 
     // Location-only update leaves rain_settings.js untouched.
@@ -266,8 +266,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     assert.equal(textRows.get("Стан погоди").innerText, "Погода збігається з кодом.");
 
     // Live edit triggers saving status refresh via config-updated.
-    liveRain.maxDrops = 900;
-    doc.fire("config-updated", { detail: { path: ["CONFIG", "canvas", "rain", "maxDrops"] } });
+    liveRain.opacity = 0.6;
+    doc.fire("config-updated", { detail: { path: ["CONFIG", "canvas", "rain", "opacity"] } });
     assert.equal(textRows.get("Стан погоди").innerText, "Змінено (ще не в коді): Вигляд дощу.");
 
     // Export writes valid canonical JSON + shows ExportCommandNotice.
@@ -278,7 +278,7 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     assert.equal(downloads[0].name, "weather-test-v0.50.93-20261113-1234.json");
     const exportedObj = JSON.parse(downloads[0].text);
     assert.deepEqual(format.validateWeatherFile(exportedObj, { rainTemplate: baseRain, locationWeatherTemplate: baseWeather }), []);
-    assert.equal(exportedObj.rain.maxDrops, 900);
+    assert.equal(exportedObj.rain.opacity, 0.6);
     assert.equal(exportNotices.length, 1);
     assert.equal(exportNotices[0].command, "npm run apply:weather -- weather-test-v0.50.93-20261113-1234.json");
 
@@ -291,17 +291,17 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     // Reset restores code state.
     buttons.get("Скинути зміни погоди до коду")();
     assert.equal(resetCalls, 1);
-    assert.equal(liveRain.maxDrops, 700);
+    assert.equal(liveRain.opacity, 0.4);
     assert.equal(textRows.get("Стан погоди").innerText, "Погода збігається з кодом.");
 
     // Import valid tuned file updates live config and status.
     const importObj = JSON.parse(JSON.stringify(exportedObj));
-    importObj.rain.maxDrops = 1100;
+    importObj.rain.opacity = 0.7;
     importObj.locationWeather.fog.chancePerCheck = 0.5;
     pickedText = JSON.stringify(importObj);
     await buttons.get("Імпорт погоди")();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    assert.equal(liveRain.maxDrops, 1100);
+    assert.equal(liveRain.opacity, 0.7);
     assert.equal(liveWeather.fog.chancePerCheck, 0.5);
     assert.equal(textRows.get("Стан погоди").innerText, "Змінено (ще не в коді): Вигляд дощу, Параметри локації.");
 

@@ -8,6 +8,9 @@
 //   the screen without one), placed on screen every frame, so a camera move carries the embers with the location. New
 //   embers start in the visible part; one that leaves it ends early. maxParticles is the count on one screen at full
 //   intensity; the live count follows the emission's intensity (world.weather.emission).
+// Spec 180 (TK-326): `settings` is the ash's look already resolved at the emission's strength (WeatherLookResolver:
+// count, opacity, rise and wander between their ends at 0 and 100); the wind's drift is the wind's
+// (`weatherSettings.wind.ashDriftPx`).
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter, a fixed pool
 // sized by the settings (it grows only when the settings grow); unused particles have alpha 0. position, vertex
 // (scale) and color (tint, alpha) change every frame, so they are dynamic (Pixi 8 ParticleBuffer.update). The scene
@@ -77,22 +80,24 @@ export class PixiAshRenderer {
   }
 
   // world: the frame's world model (null: not on the scene); viewWidth / viewHeight: the logical screen; nowMs: the
-  // frame's clock; settings: CONFIG.canvas.ash. Returns whether the scene must present a frame.
-  update(world, viewWidth, viewHeight, nowMs, settings) {
+  // frame's clock; settings: the ash's resolved look; weatherSettings: CONFIG.weather ({ wind }). Returns whether the
+  // scene must present a frame.
+  update(world, viewWidth, viewHeight, nowMs, settings, weatherSettings = null) {
     const elapsed = this.#lastNow === null ? 0 : Math.min(MAX_STEP_SEC, Math.max(0, (nowMs - this.#lastNow) / 1000));
     this.#lastNow = nowMs;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     const intensity = clamp01(number(world.weather?.emission, 0));
     const max = Math.max(0, Math.floor(number(settings?.maxParticles, 0)));
-    const target = Math.round(max * intensity);
+    const cap = Math.max(max, Math.floor(number(settings?.maxParticlesCap, max)));
+    const target = intensity > 0 ? max : 0;
     if (target === 0 && this.#count === 0) return this.#hide();
     const started = performance.now();
-    this.#ensurePool(max);
+    this.#ensurePool(cap);
     this.#placeView(world, viewWidth, viewHeight);
     this.#hot = PixiAshRenderer.#color(this.#hot, settings?.hotColor);
     this.#cool = PixiAshRenderer.#color(this.#cool, settings?.coolColor);
     this.#time = (this.#time + elapsed) % 3600;
-    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight);
+    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, number(weatherSettings?.wind?.ashDriftPx, 40));
     this.#visible = true;
     this.#container.visible = true;
     this.#stepMs = performance.now() - started;
@@ -104,14 +109,13 @@ export class PixiAshRenderer {
     this.#glow.destroy(true);
   }
 
-  #updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight) {
+  #updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, windDrift) {
     const sizeMin = Math.max(0, number(settings?.sizePx?.[0], 2));
     const sizeMax = Math.max(sizeMin, number(settings?.sizePx?.[1], 9));
     const lifeMin = Math.max(0.1, number(settings?.lifeSec?.[0], 3));
     const lifeMax = Math.max(lifeMin, number(settings?.lifeSec?.[1], 7));
     const rise = number(settings?.riseSpeedPx, 18);
     const wander = Math.max(0, number(settings?.wanderPx, 26));
-    const windDrift = number(settings?.windDriftPx, 40);
     const opacity = clamp01(number(settings?.opacity, 0.85));
     const flicker = clamp01(number(settings?.flicker, 0.35));
     const fade = clamp01(number(settings?.fadeShare, 0.25));

@@ -508,6 +508,7 @@ export class ConfigSchemaValidator {
     this.#validateSceneWaterConfig();
     this.#validateRainConfig();
     this.#validateAshConfig();
+    this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
@@ -1221,8 +1222,9 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error("CONFIG.canvas.water", "missing scene water config"); return; }
     this.#requireBooleanWithLabel("canvas.water.enabled", cfg.enabled);
     this.#requireBooleanWithLabel("canvas.water.waves", cfg.waves);
+    this.#requireBooleanWithLabel("canvas.water.lateralContraction", cfg.lateralContraction);
     for (const [key, min, max] of [["frameRate", 1, 60], ["amplitude", 0, 64], ["verticalShare", 0, 2],
-      ["wavelength", 8, 2048], ["speed", 0, 1024], ["currentScale", 0, 20]]) {
+      ["wavelength", 8, 2048], ["speed", 0, 1024]]) {
       this.#requireFiniteNumber(`CONFIG.canvas.water.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`canvas.water.${key}`);
     }
@@ -1271,12 +1273,13 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing rain config"); return; }
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
-    for (const [key, min, max] of [["maxDrops", 0, 5000], ["stormDropsShare", 0, 3], ["fallPx", 1, 4000],
-      ["speedPx", 1, 10000], ["speedJitter", 0, 1], ["lengthPx", 0, 400], ["widthPx", 0, 20], ["opacity", 0, 1],
-      ["minScale", 0, 1], ["windSlantDeg", 0, 60], ["stormSlantDeg", 0, 60]]) {
+    for (const [key, min, max] of [["fallPx", 1, 4000], ["speedJitter", 0, 1], ["opacity", 0, 1], ["speedStretch", 0, 3]]) {
       this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`${path}.${key}`);
     }
+    // Spec 180 D16: the values that change with the rain's strength, [at 0, at 100].
+    this.#validateStrengthRanges(path, cfg.strength, [["maxDrops", 0, 5000], ["lengthPx", 0, 400], ["widthPx", 0, 20],
+      ["speedPx", 1, 10000], ["minScale", 0, 1], ["lengthJitter", 0, 1], ["slantJitterDeg", 0, 45]]);
     this.#requirePattern(`CONFIG.${path}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${path}.color`);
     this.#requirePattern(`CONFIG.${path}.emissionColor`, cfg.emissionColor, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
@@ -1343,6 +1346,58 @@ export class ConfigSchemaValidator {
     }
   }
 
+  // Spec 180 D16: a look's `strength` block — every listed key a [at 0, at 100] pair within its range.
+  #validateStrengthRanges(path, ranges, keys) {
+    const strengthPath = `${path}.strength`;
+    if (!ranges || typeof ranges !== "object") { this.#error(`CONFIG.${strengthPath}`, "missing strength ranges"); return; }
+    this.#requireParameterLabel(strengthPath);
+    for (const [key, min, max] of keys) {
+      const pair = ranges[key];
+      if (!Array.isArray(pair) || pair.length !== 2) { this.#error(`CONFIG.${strengthPath}.${key}`, "must be [at 0, at 100]"); continue; }
+      this.#requireFiniteNumber(`CONFIG.${strengthPath}.${key}[0]`, pair[0], { min, max });
+      this.#requireFiniteNumber(`CONFIG.${strengthPath}.${key}[1]`, pair[1], { min, max });
+      this.#requireParameterLabel(`${strengthPath}.${key}`);
+    }
+  }
+
+  // Spec 180 D3: what the storm and the wind do, the same on every location (CONFIG.weather).
+  #validateGeneralWeatherConfig() {
+    const weather = this.config.weather;
+    if (!weather || typeof weather !== "object") { this.#error("CONFIG.weather", "missing general weather settings"); return; }
+    this.#requireParameterLabel("weather");
+    const storm = weather.storm;
+    if (!storm || typeof storm !== "object") this.#error("CONFIG.weather.storm", "missing storm settings");
+    else {
+      this.#requireParameterLabel("weather.storm");
+      for (const [key, min, max] of [["rainChanceMult", 1, 100], ["rainStrengthMult", 1, 10], ["rainDropsShare", 0, 3],
+        ["rainSlantDeg", 0, 60], ["windMinStrength", 0, 1], ["gustChanceMult", 0, 20]]) {
+        this.#requireFiniteNumber(`CONFIG.weather.storm.${key}`, storm[key], { min, max });
+        this.#requireParameterLabel(`weather.storm.${key}`);
+      }
+    }
+    const wind = weather.wind;
+    if (!wind || typeof wind !== "object") { this.#error("CONFIG.weather.wind", "missing wind settings"); return; }
+    this.#requireParameterLabel("weather.wind");
+    for (const [key, min, max] of [["rainSlantDeg", 0, 60], ["slantFollowPerSec", 0, 60], ["gustSlantShare", 0, 10],
+      ["gustFollowPerSec", 0, 60], ["ashDriftPx", -500, 500]]) {
+      this.#requireFiniteNumber(`CONFIG.weather.wind.${key}`, wind[key], { min, max });
+      this.#requireParameterLabel(`weather.wind.${key}`);
+    }
+    this.#requireParameterLabel("weather.wind.gust");
+    this.#requireFiniteNumber("CONFIG.weather.wind.gust.attackShare", wind.gust?.attackShare, { min: 0.05, max: 0.8 });
+    this.#requireParameterLabel("weather.wind.gust.attackShare");
+    for (const key of ["deltaRange", "durationSec"]) {
+      const pair = wind.gust?.[key];
+      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) this.#error(`CONFIG.weather.wind.gust.${key}`, "must be [min, max]");
+      this.#requireParameterLabel(`weather.wind.gust.${key}`);
+    }
+    this.#requireParameterLabel("weather.wind.rain");
+    for (const [key, min, max] of [["minStrength", 0, 1], ["bonus", 0, 1], ["gustChanceMult", 0, 20]]) {
+      this.#requireFiniteNumber(`CONFIG.weather.wind.rain.${key}`, wind.rain?.[key], { min, max });
+      this.#requireParameterLabel(`weather.wind.rain.${key}`);
+    }
+  }
+
   // Spec 179 stage C: the emission's fiery ash (CONFIG.canvas.ash).
   #validateAshConfig() {
     const cfg = this.config.canvas?.ash;
@@ -1350,11 +1405,12 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing ash config"); return; }
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
-    for (const [key, min, max] of [["maxParticles", 0, 2000], ["riseSpeedPx", -500, 500], ["wanderPx", 0, 500],
-      ["windDriftPx", -500, 500], ["opacity", 0, 1], ["flicker", 0, 1], ["fadeShare", 0, 0.5]]) {
+    for (const [key, min, max] of [["flicker", 0, 1], ["fadeShare", 0, 0.5]]) {
       this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
       this.#requireParameterLabel(`${path}.${key}`);
     }
+    this.#validateStrengthRanges(path, cfg.strength, [["maxParticles", 0, 2000], ["opacity", 0, 1],
+      ["riseSpeedPx", -500, 500], ["wanderPx", 0, 500]]);
     for (const [key, min, max] of [["sizePx", 0, 200], ["lifeSec", 0.1, 60]]) {
       const pair = cfg[key];
       if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) {

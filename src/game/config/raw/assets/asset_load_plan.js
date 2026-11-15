@@ -72,6 +72,9 @@ export const ASSET_LOAD_PLAN = {
           assets: [{ tag: "fish-display" }, { tag: "inventory" }, { id: "ui.status-icons" }] },
         { id: "audio", label: "Аудіо (під час запуску радіо)", priority: 9, load: false, assets: [{ tag: "audio" }] },
         // Spec 166: the boat's picture for a page without Spine; the boat asks for it when it is on the water.
+        // Spec 180 D15: the owner's striped background for checking the waves; DEV asks for it when its switch goes on.
+        { id: "dev-wave-background", label: "DEV: фон перевірки хвиль (на вимогу)", priority: 9, load: false,
+          assets: [{ id: "locations.test.bg_test--waves" }] },
         { id: "spine-fallback", label: "Статика без Spine (на вимогу)", priority: 9, load: false,
           assets: [{ id: "items.boats.boat-lvl--3" }] },
         { id: "locked", label: "Закрите прогресом (на вимогу)", priority: 10, locked: true, assets: [{ source: "progress.locked" }] },

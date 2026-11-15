@@ -17,18 +17,12 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/iu;
 const HEX_HASH = /^[0-9a-f]{64}$/iu;
 const VALID_PHASES = new Set(["morning", "day", "evening", "night"]);
 
+// Spec 180 D16: the strength block holds [at 0, at 100] pairs (checked by RAIN_STRENGTH_RANGES).
 const RAIN_RANGES = Object.freeze([
-  ["maxDrops", 0, 5000],
-  ["stormDropsShare", 0, 3],
   ["fallPx", 1, 4000],
-  ["speedPx", 1, 10000],
   ["speedJitter", 0, 1],
-  ["lengthPx", 0, 400],
-  ["widthPx", 0, 20],
+  ["speedStretch", 0, 3],
   ["opacity", 0, 1],
-  ["minScale", 0, 1],
-  ["windSlantDeg", 0, 60],
-  ["stormSlantDeg", 0, 60],
   ["rings.maxRings", 0, 5000],
   ["rings.sizePx", 0, 400],
   ["rings.lifeSec", 0.05, 10],
@@ -101,8 +95,12 @@ function checkPair(pair, path, min, max, ordered, errors) {
   }
 }
 
+const RAIN_STRENGTH_RANGES = Object.freeze([["maxDrops", 0, 5000], ["lengthPx", 0, 400], ["widthPx", 0, 20],
+  ["speedPx", 1, 10000], ["minScale", 0, 1], ["lengthJitter", 0, 1], ["slantJitterDeg", 0, 45]]);
+
 function validateRainDomain(rain, errors) {
   for (const [dotPath, min, max] of RAIN_RANGES) checkRange(readPath(rain, dotPath), `rain.${dotPath}`, min, max, errors);
+  for (const [key, min, max] of RAIN_STRENGTH_RANGES) checkPair(rain.strength?.[key], `rain.strength.${key}`, min, max, false, errors);
   for (const dotPath of ["color", "rings.color", "emissionColor", "rings.emissionColor"]) {
     const color = readPath(rain, dotPath);
     if (typeof color === "string" && !HEX_COLOR.test(color)) errors.push(`rain.${dotPath}: must be #rrggbb`);
@@ -133,8 +131,6 @@ function validateLocationWeatherDomain(weather, errors) {
   const storm = weather.storm;
   checkEvent(storm, "locationWeather.storm", errors);
   if (isRecord(storm)) {
-    checkRange(storm.rainChanceMult, "locationWeather.storm.rainChanceMult", 1, 100, errors);
-    checkRange(storm.rainStrengthMult, "locationWeather.storm.rainStrengthMult", 1, 10, errors);
     const lightning = storm.lightning;
     if (isRecord(lightning)) {
       checkRange(lightning.chance, "locationWeather.storm.lightning.chance", 0, 1, errors);

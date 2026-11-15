@@ -14,6 +14,11 @@
 //   window carries them with the location. maxDrops is the rain over the whole rain area (the rain zones, or the
 //   background below the water's far edge without zones) at strength 1; the screen shows the share of it that is visible,
 //   so a narrower window shows fewer drops at the same density instead of squeezing them all in.
+// Spec 180 (TK-326): `settings` is the rain's look already resolved at the rain's strength (WeatherLookResolver: the
+// count, length, width, speed, depth and spreads between their ends at 0 and 100); `weatherSettings` is
+// CONFIG.weather — the storm's share of extra drops and its slant (storm), the wind's slant, its gust share and how fast
+// the slant follows (wind). Each drop gets its own length (± lengthJitter), slant (± slantJitterDeg) and speed
+// (± speedJitter); a faster drop is longer by speedStretch.
 // Drawing (docs/rendering.md 16, 22, 23): two ParticleContainers, one texture each, no filter: the rings right over the
 // water (mountSurface), the drops in front of the tackle (mountAir). Fixed pools sized by the settings (they grow only
 // when the settings grow); unused particles have alpha 0. Pixi 8 uploads vertex (scale), rotation and color (tint,
@@ -23,9 +28,6 @@ const STREAK_WIDTH = 4;
 const STREAK_HEIGHT = 64;
 const RING_SIZE = 64;
 const MAX_STEP_SEC = 0.1;
-const SLANT_FOLLOW_PER_SEC = 2;
-const GUST_FOLLOW_BONUS_PER_SEC = 6;
-const GUST_SLANT_SHARE = 1.2;
 const MAX_SLANT_DEG = 72;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
 
@@ -56,6 +58,9 @@ export class PixiRainRenderer {
   #dropAge = new Float32Array(0);
   #dropLife = new Float32Array(0);
   #dropActive = new Uint8Array(0);
+  // Spec 180 D16: each drop's own length factor and slant offset (radians).
+  #dropLength = new Float32Array(0);
+  #dropSlant = new Float32Array(0);
   #ringRecords = [];
   #ringCount = 0;
   #waterRipples = Object.freeze({ owner: this, get count() { return this.owner.#ringCount; },
@@ -129,8 +134,9 @@ export class PixiRainRenderer {
   }
 
   // world: the frame's world model (null: not on the scene); viewWidth / viewHeight: the logical screen; nowMs: the
-  // frame's clock; settings: CONFIG.canvas.rain. Returns whether the scene must present a frame.
-  update(world, viewWidth, viewHeight, nowMs, settings) {
+  // frame's clock; settings: the rain's resolved look; weatherSettings: CONFIG.weather ({ storm, wind }). Returns whether
+  // the scene must present a frame.
+  update(world, viewWidth, viewHeight, nowMs, settings, weatherSettings = null) {
     const elapsed = this.#lastNow === null ? 0 : Math.min(MAX_STEP_SEC, Math.max(0, (nowMs - this.#lastNow) / 1000));
     this.#lastNow = nowMs;
     // Off the scene or switched off: no drop keeps falling.
@@ -138,14 +144,17 @@ export class PixiRainRenderer {
     const weather = world.weather;
     const rain = clamp01(number(weather?.rain, 0));
     const storm = clamp01(number(weather?.storm, 0));
+    const stormSettings = weatherSettings?.storm;
+    const windSettings = weatherSettings?.wind;
     const maxDrops = Math.max(0, Math.floor(number(settings?.maxDrops, 0)));
-    const stormShare = Math.max(0, number(settings?.stormDropsShare, 0));
+    const dropCap = Math.max(maxDrops, Math.floor(number(settings?.maxDropsCap, maxDrops)));
+    const stormShare = Math.max(0, number(stormSettings?.rainDropsShare, 0));
     // Spec 180 D1: drops come only from rain; a storm thickens the rain that falls (a storm without rain has no drops).
-    const strength = Math.min(1 + stormShare, rain * (1 + storm * stormShare));
+    const strength = rain > 0 ? 1 + storm * stormShare : 0;
     if (strength <= 0 && this.#falling === 0 && this.#ringCount === 0) return this.#hide();
     const started = performance.now();
     const rings = settings?.rings;
-    this.#ensurePools(Math.floor(maxDrops * (1 + stormShare)), Math.max(0, Math.floor(number(rings?.maxRings, 0))));
+    this.#ensurePools(Math.floor(dropCap * (1 + stormShare)), Math.max(0, Math.floor(number(rings?.maxRings, 0))));
     this.#rippleView.settings = rings?.ripple ?? null;
     this.#dropColor = PixiRainRenderer.#color(this.#dropColor, settings?.color);
     this.#ringColor = PixiRainRenderer.#color(this.#ringColor, rings?.color);
@@ -161,18 +170,20 @@ export class PixiRainRenderer {
       ? clamp01(Number(rawWindStrength))
       : Math.abs(windDir);
     const windGust = clamp01(number(weather?.windGust, 0));
-    const windSlant = Math.max(0, number(settings?.windSlantDeg, 0));
-    const stormSlant = Math.max(0, number(settings?.stormSlantDeg, 0));
-    const rawSlant = (windStrength + windGust * GUST_SLANT_SHARE) * windSlant + storm * stormSlant;
+    const windSlant = Math.max(0, number(windSettings?.rainSlantDeg, 0));
+    const stormSlant = Math.max(0, number(stormSettings?.rainSlantDeg, 0));
+    const gustShare = Math.max(0, number(windSettings?.gustSlantShare, 1.2));
+    const rawSlant = (windStrength + windGust * gustShare) * windSlant + storm * stormSlant;
     const targetSlant = windDir * Math.min(MAX_SLANT_DEG, rawSlant);
-    const followPerSec = SLANT_FOLLOW_PER_SEC + Math.min(1, windGust * 3) * GUST_FOLLOW_BONUS_PER_SEC;
+    const followPerSec = Math.max(0, number(windSettings?.slantFollowPerSec, 2)) +
+      Math.min(1, windGust * 3) * Math.max(0, number(windSettings?.gustFollowPerSec, 6));
     this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * followPerSec);
     const area = this.#waterArea(world.clipRegions);
     this.#placeView(world, viewWidth, viewHeight);
     this.#prepareZones(world, area, viewWidth, viewHeight);
     // TK-271.2: the visible share of the whole rain area's drops (none on screen: no new drop; falling ones finish).
     const visibleShare = this.#rainArea > 0 ? Math.min(1, this.#zoneArea / this.#rainArea) : 0;
-    const spawning = Math.min(Math.floor(maxDrops * (1 + stormShare)), Math.round(maxDrops * strength * visibleShare));
+    const spawning = Math.min(Math.floor(dropCap * (1 + stormShare)), Math.round(maxDrops * strength * visibleShare));
     // Drops first: the rings their impacts leave this frame are drawn in this frame.
     this.#updateDrops(elapsed, spawning, settings, world, area, viewWidth, viewHeight);
     this.#updateRings(elapsed, rings);
@@ -213,32 +224,39 @@ export class PixiRainRenderer {
     const width = Math.max(0, number(settings?.widthPx, 1.6));
     const opacity = clamp01(number(settings?.opacity, 0.4));
     const minScale = clamp01(number(settings?.minScale, 0.3));
-    const slant = Math.tan(this.#slantDeg * Math.PI / 180);
-    const rotation = -Math.atan(slant);
+    const lengthJitter = clamp01(number(settings?.lengthJitter, 0));
+    const slantJitter = Math.max(0, number(settings?.slantJitterDeg, 0)) * Math.PI / 180;
+    const stretch = Math.max(0, number(settings?.speedStretch, 0));
+    const meanLife = fall / speed;
+    const baseAngle = this.#slantDeg * Math.PI / 180;
     let falling = 0;
     for (let index = 0; index < this.#drops.length; index += 1) {
       const particle = this.#drops[index];
       if (!this.#dropActive[index]) {
         if (index >= target) { particle.alpha = 0; continue; }
         // A new drop starts somewhere along its fall, so a rising rain does not arrive in one wave.
-        this.#spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter);
+        this.#spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter, lengthJitter, slantJitter);
         this.#dropAge[index] = this.#random() * this.#dropLife[index];
       } else {
         this.#dropAge[index] += elapsed;
         if (this.#dropAge[index] >= this.#dropLife[index]) {
           this.#impact(index, world);
           if (index >= target) { this.#dropActive[index] = 0; particle.alpha = 0; continue; }
-          this.#spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter);
+          this.#spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter, lengthJitter, slantJitter);
         }
       }
       const scale = this.#dropScale[index];
       const left = 1 - this.#dropAge[index] / this.#dropLife[index];
       const distance = left * fall * scale;
+      const slant = Math.tan(baseAngle + this.#dropSlant[index]);
+      // A faster drop (shorter life than the mean) is longer by speedStretch.
+      const speedRatio = meanLife / Math.max(1e-6, this.#dropLife[index]);
+      const dropLength = length * this.#dropLength[index] * (1 + stretch * (speedRatio - 1));
       particle.x = this.#screenX(this.#dropU[index]) - distance * slant;
       particle.y = this.#screenY(this.#dropV[index]) - distance;
-      particle.rotation = rotation;
+      particle.rotation = -Math.atan(slant);
       particle.scaleX = width * scale / STREAK_WIDTH;
-      particle.scaleY = length * scale / STREAK_HEIGHT;
+      particle.scaleY = Math.max(0, dropLength) * scale / STREAK_HEIGHT;
       particle.alpha = opacity * (0.55 + 0.45 * scale);
       particle.tint = this.#dropTint;
       falling += 1;
@@ -246,7 +264,7 @@ export class PixiRainRenderer {
     this.#falling = falling;
   }
 
-  #spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter) {
+  #spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter, lengthJitter = 0, slantJitter = 0) {
     // A visible part of the rain area by its size, then a point inside it, kept as shares of the background.
     const pick = this.#random() * this.#zoneArea;
     let zone = 0;
@@ -259,6 +277,8 @@ export class PixiRainRenderer {
     this.#dropV[index] = (y - view.y) / view.height;
     this.#dropScale[index] = this.#scaleAt(y, world, area, minScale, viewHeight);
     this.#dropLife[index] = (fall / speed) * (1 + (this.#random() * 2 - 1) * jitter);
+    this.#dropLength[index] = 1 + (this.#random() * 2 - 1) * lengthJitter;
+    this.#dropSlant[index] = (this.#random() * 2 - 1) * slantJitter;
     this.#dropAge[index] = 0;
     this.#dropActive[index] = 1;
   }
@@ -449,6 +469,8 @@ export class PixiRainRenderer {
       this.#dropAge = grow(this.#dropAge, Float32Array);
       this.#dropLife = grow(this.#dropLife, Float32Array);
       this.#dropActive = grow(this.#dropActive, Uint8Array);
+      this.#dropLength = grow(this.#dropLength, Float32Array);
+      this.#dropSlant = grow(this.#dropSlant, Float32Array);
       for (let index = old; index < drops; index += 1) {
         const particle = new this.#pixi.Particle({ texture: this.#streak, anchorX: 0.5, anchorY: 1, alpha: 0 });
         this.#drops.push(particle);

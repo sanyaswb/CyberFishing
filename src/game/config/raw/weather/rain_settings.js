@@ -6,9 +6,6 @@ export const RAIN_SETTINGS = {
   "emissionColor": "#c23a2a",
   "enabled": true,
   "fallPx": 520,
-  "lengthPx": 103,
-  "maxDrops": 700,
-  "minScale": 0.4,
   "opacity": 0.4,
   "rings": {
     "color": "#dfe9f2",
@@ -26,9 +23,35 @@ export const RAIN_SETTINGS = {
     "sizePx": 65
   },
   "speedJitter": 0.15,
-  "speedPx": 1500,
-  "stormDropsShare": 0.6,
-  "stormSlantDeg": 48,
-  "widthPx": 6.3,
-  "windSlantDeg": 34
+  "speedStretch": 0.5,
+  "strength": {
+    "lengthJitter": [
+      0.08,
+      0.2
+    ],
+    "lengthPx": [
+      70,
+      103
+    ],
+    "maxDrops": [
+      80,
+      700
+    ],
+    "minScale": [
+      0.4,
+      0.4
+    ],
+    "slantJitterDeg": [
+      0.5,
+      2.5
+    ],
+    "speedPx": [
+      1200,
+      1500
+    ],
+    "widthPx": [
+      4.5,
+      6.3
+    ]
+  }
 };

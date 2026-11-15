@@ -195,8 +195,8 @@ export class WaterWaveField {
   // plane: the location's water metric and the virtual bounds this field covers (GameRenderFrame world.waterPlane).
   //
   // The waves are a surface pattern (spec 126 R4): on a row whose surface size is s (1 at the shore, farScale at the
-  // far edge) crests are s times as far apart and s times as high in both axes, whether or not the grid contracts
-  // sideways. Rows run in calibrated ground metres (near-edge art pixels per metre), columns in surface units about
+  // far edge) crests are s times as far apart along the depth and s times as high; across the screen they are s times
+  // as far apart only with lateralContraction (spec 180 D9: the water's own switch; off keeps the width of the crests). Rows run in calibrated ground metres (near-edge art pixels per metre), columns in surface units about
   // the field's centre line.
   //
   // Spec 172 D7 (TK-289), both optional; without them the field is exactly the original one:
@@ -210,7 +210,7 @@ export class WaterWaveField {
   // TK-290: amplitude (0 … 1, default 1) is the waves' height as a share of the map's range: 0 writes still water (the
   // ripples are added after write()), so the waves can be switched off while the ripples stay.
   write(timeSec, { artWidth, artHeight, wavelength, speed, driftX = 0, driftY = 0, plane = null, travelPx = null,
-    variation = null, amplitude = 1 }) {
+    variation = null, amplitude = 1, lateralContraction = true }) {
     const waveHeight = Math.max(0, Number(amplitude) || 0);
     if (waveHeight === 0) return this.#writeStill();
     const width = this.#width;
@@ -244,9 +244,10 @@ export class WaterWaveField {
         scale = metric.surfaceScaleAt(mapY);
         y = -metric.metersFromShore(mapY) * nearArtPerMeter;
       }
-      const xScale = artWidth / width / scale;
+      const lateral = lateralContraction ? scale : 1;
+      const xScale = artWidth / width / lateral;
       // Column 0's surface position is (0.5 * xScale - driftX); centre the surface units on the field's middle.
-      const columnDrift = metric ? driftX + artWidth / (2 * scale) : driftX;
+      const columnDrift = metric ? driftX + artWidth / (2 * lateral) : driftX;
       rowX.fill(0);
       rowY.fill(0);
       WaterWaveField.#addRow(WAVES_X, rowX, k, xScale, y - driftY, columnDrift, this.#travelX, this.#shareX);

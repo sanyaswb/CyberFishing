@@ -20,6 +20,8 @@ export const MAP_DB = {
       emission: "locations.test.bg_test--emission",
     },
     depthAsset: "locations.test.test-depth",
+    // Spec 180 D15: DEV only — CONFIG.debug.waveTestBackground draws it instead of the background (and in the water).
+    waveTestBackground: "locations.test.bg_test--waves",
     // x: 'left', 'center', 'right'
     // y: 'top', 'center', 'bottom', 'safeZone'
     initialAlignment: { x: "center", y: "center" },

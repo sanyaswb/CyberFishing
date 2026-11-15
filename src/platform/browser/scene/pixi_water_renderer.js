@@ -12,8 +12,10 @@ const LAYER_SPRITES = 3;
 // Between steps nothing changes, so the scene presents a frame only on a step or when the background itself changed
 // (spec 105 D3). The water area is the location's castable zones (world.clipRegions): their bounding box, clipped to the
 // screen, is the filter area, so only visible water is filtered; with several zones a mask of the zones clips the
-// filtered copy and the waves fade at each zone's edges, so the art between zones stays still (TK-066). The pattern drifts with the location's current (world.current, times
-// currentScale, D9). Settings are read every frame, so DEV edits apply at once.
+// filtered copy and the waves fade at each zone's edges, so the art between zones stays still (TK-066). Spec 180 D9
+// (owner): the current flows under the waves and never moves them; the waves travel with the wind (sea.travel).
+// lateralContraction: the waves narrow across the screen with the depth's perspective (on) or keep their width (off).
+// Settings are read every frame, so DEV edits apply at once.
 export class PixiWaterRenderer {
   #textures;
   #getSettings;
@@ -162,16 +164,12 @@ export class PixiWaterRenderer {
     this.#mapTexture.destroy(true);
   }
 
-  // The current carries the pattern by its velocity over the time since the last step, so a changed current or scale
-  // changes the speed from now on without a jump.
+  // The waves travel with the wind (sea.travel, integrated so a change of speed or direction never jumps). Spec 180 D9:
+  // the current no longer moves the pattern.
   #drift(current, settings, nowMs, sea) {
-    const scale = Math.max(0, Number(settings.currentScale) || 0);
-    const velocityX = (Number(current?.x) || 0) * scale;
-    const velocityY = (Number(current?.y) || 0) * scale;
+    void current;
     const elapsedSec = this.#lastStepAt === null ? 0 : Math.max(0, nowMs - this.#lastStepAt) / 1000;
-    this.#driftX += velocityX * elapsedSec;
-    this.#driftY += velocityY * elapsedSec;
-    this.#driftSpeed = Math.hypot(velocityX, velocityY);
+    this.#driftSpeed = 0;
     const speedScale = Math.max(0, Number(sea?.speedScale ?? 1) || 0);
     const travel = Math.max(-1, Math.min(1, Number(sea?.travel ?? 1)));
     this.#travelPx += Math.max(0, Number(settings.speed) || 0) * speedScale * travel * elapsedSec;
@@ -188,7 +186,7 @@ export class PixiWaterRenderer {
     let pixels = this.#field.write(nowMs / 1000, { artWidth, artHeight,
       wavelength: (Number(settings.wavelength) || 1) * Math.max(0.1, Number(this.#sea.wavelengthScale) || 1),
       speed: Number(settings.speed) || 0, driftX: this.#driftX, driftY: this.#driftY, plane, travelPx: this.#travelPx,
-      variation, amplitude: this.#waveShare });
+      variation, amplitude: this.#waveShare, lateralContraction: settings.lateralContraction !== false });
     const wakeArea = this.#wakeArea;
     wakeArea.left = area.left; wakeArea.top = area.top; wakeArea.right = area.right; wakeArea.bottom = area.bottom;
     pixels = this.#field.addRipples(wake, wakeArea, this.#getWakeSettings(), this.#rippleScale);

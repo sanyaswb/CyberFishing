@@ -31,11 +31,14 @@ const event = (extra = {}) => ({
 const settings = () => ({
   initial: { rain: 0, storm: 0, fog: 0 },
   rain: event(),
-  storm: event({ chancePerCheck: 0.02, rainChanceMult: 6, rainStrengthMult: 1.5,
+  storm: event({ chancePerCheck: 0.02,
     lightning: { chance: 1, startShare: [0.1, 0.1], endShare: [0.9, 0.9], intervalSec: [25, 6], jitter: 0.5, distance: [0.2, 1] } }),
   fog: event({ chancePerCheck: 1, checkIntervalSec: 10, cooldownSec: 0, durationSec: [100, 100], phases: ["morning", "night"] }),
   thresholds: { rain: 0.15, fog: 0.3 },
 });
+// Spec 180 D3: the storm's multipliers are general (CONFIG.weather.storm).
+const general = () => ({ storm: { rainChanceMult: 6, rainStrengthMult: 1.5 } });
+const { CONFIG: GAME_CONFIG } = require("../../../src/game/config/runtime/game_config.js");
 const near = (actual, expected, message, epsilon = 1e-9) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} ≠ ${expected}`);
 const step = (model, seconds, phase = "day", dt = 0.1) => {
@@ -45,7 +48,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
 // 1. The location's real settings: every strength in 0…1, all three events happen, storms raise the rain, a storm
 //    without rain is possible (owner, spec 180 item 2).
 {
-  const model = new WeatherModel({ rng: new SeededRng("check:weather"), getSettings: () => MAP_DB.test.weather });
+  const model = new WeatherModel({ rng: new SeededRng("check:weather"), getSettings: () => MAP_DB.test.weather,
+    getGeneralSettings: () => GAME_CONFIG.weather });
   const phases = ["morning", "day", "evening", "night"];
   let rainTime = 0, stormTime = 0, rainInStorm = 0, stormsWithoutRain = 0, storms = 0, rained = false, stormSerial = 0;
   for (let second = 0; second < 400 * 3600; second += 1) {
@@ -177,7 +181,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const config = settings();
   config.storm.enabled = false;
   config.rain.chanceGrowthPerCheck = 0;
-  const model = new WeatherModel({ rng: new SeededRng(4), getSettings: () => config });
+  const model = new WeatherModel({ rng: new SeededRng(4), getSettings: () => config, getGeneralSettings: general });
   model.update(1, "day");
   near(model.snapshot.events.rain.chance, 0.05, "the rain's own chance");
   model.hold("storm", 1, { fadeSec: 0 });
@@ -582,7 +586,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
 // 12. Spec 178 stage A: WindModel — continuous 0…1 strength, calm/light/moderate/strong episodes, real seconds,
 // strength === 0 <-> direction === 0 invariant, rain/storm boosts, smooth gusts, manual overrides, and isolated RNG.
 {
-  const wind = new WindModel({
+  const wind = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather,
     rng: new SeededRng("check:wind"),
     getSettings: () => MAP_DB.test.weather.wind,
   });
@@ -613,7 +617,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   }
 
   // Smooth fade without instant jumps and storm boost pushing minimum wind high.
-  const calmFirst = new WindModel({
+  const calmFirst = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather,
     rng: new SeededRng("check:wind:storm"),
     getSettings: () => ({
       ...MAP_DB.test.weather.wind,
@@ -626,7 +630,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(calmFirst.snapshot.direction, 0);
   calmFirst.update(1000, { rain: 0.8, storm: 1 });
   assert(
-    calmFirst.snapshot.strength >= MAP_DB.test.weather.wind.weatherBoost.stormMinStrength,
+    calmFirst.snapshot.strength >= GAME_CONFIG.weather.storm.windMinStrength,
     "full storm lifts wind above calm immediately via stormMinStrength",
   );
   assert(
@@ -635,7 +639,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   );
 
   // Manual direction & strength overrides + isolated windRng vs weatherRng.
-  const custom = new WindModel({
+  const custom = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather,
     rng: new SeededRng("check:wind:override"),
     getSettings: () => MAP_DB.test.weather.wind,
   });
@@ -662,7 +666,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     new WeatherModel({ rng: new SeededRng(77), getSettings: () => MAP_DB.test.weather });
   const weatherRef = makeWeatherOnly();
   const weatherWithWind = makeWeatherOnly();
-  const windPart = new WindModel({ rng: new SeededRng(88), getSettings: () => MAP_DB.test.weather.wind });
+  const windPart = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather, rng: new SeededRng(88), getSettings: () => MAP_DB.test.weather.wind });
   const env = new EnvironmentSystem(
     MAP_DB.test,
     12,
@@ -744,7 +748,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const { WeatherStatusReader } = require("../../../src/game/presentation/world/weather_status_reader.js");
   const { WeatherOverlayModule } = require("../../../src/dev/overlay/modules/weather_overlay_module.js");
   const { OverlayHtmlBuilder } = require("../../../src/dev/overlay/services/overlay_html_builder.js");
-  const liveWind = new WindModel({ rng: new SeededRng("check:dev-wind"), getSettings: () => MAP_DB.test.weather.wind });
+  const liveWind = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather, rng: new SeededRng("check:dev-wind"), getSettings: () => MAP_DB.test.weather.wind });
   liveWind.setStrengthOverride(0.72);
   liveWind.triggerGust({ delta: 0.2, durationSec: 2 });
   liveWind.update(300, { rain: 0, storm: 0 });
@@ -930,7 +934,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
 
   // 14. TK-298.1: regressions found by review against commit 14593885.
   // (a) Releasing manual wind strength restores the episode's automatic target and fades within fadeSec.
-  const holdReleaseWind = new WindModel({
+  const holdReleaseWind = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather,
     rng: new SeededRng("r1"),
     getSettings: () => MAP_DB.test.weather.wind,
   });
@@ -951,7 +955,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   );
 
   // (b) Forced non-zero direction never visits calm (0 strength with non-zero direction) across episodes.
-  const forcedDirWind = new WindModel({
+  const forcedDirWind = new WindModel({ getGeneralSettings: () => GAME_CONFIG.weather,
     rng: new SeededRng("r2"),
     getSettings: () => MAP_DB.test.weather.wind,
   });
@@ -1411,6 +1415,56 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.ok(!created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "none",
     "after the emission: hidden, no backdrop filter left");
   assert.deepEqual(placed, ["portals", "scene"], "placed only when its layer changes");
+}
+
+// Spec 180 B (TK-326): the look at a strength — values mixed between their ends, the location's override at 100,
+// integer counts rounded, caps for the pools; the DEV wave test background replaces the background.
+{
+  const { WeatherLookResolver } = require("../../../src/game/presentation/weather/weather_look_resolver.js");
+  let overrides = null;
+  const looks = new WeatherLookResolver({
+    getLooks: () => ({ rain: { color: "#ffffff", strength: { maxDrops: [80, 700], lengthPx: [70, 100] } } }),
+    getOverrides: () => overrides,
+  });
+  const half = looks.resolve("rain", 0.5);
+  assert.deepEqual([half.color, half.maxDrops, half.lengthPx, half.maxDropsCap], ["#ffffff", 390, 85, 700],
+    "plain values as they are, strength values mixed, a cap for the pool");
+  assert.equal(looks.resolve("rain", 0.5), half, "one reused object");
+  overrides = { rain: { maxDrops: 300 } };
+  assert.deepEqual([looks.resolve("rain", 1).maxDrops, looks.resolve("rain", 0).maxDrops, looks.endAt100("rain", "maxDrops")],
+    [300, 80, 300], "the location overrides the end at 100 only");
+  assert.equal(looks.resolve("rain", 1).maxDropsCap, 300, "the cap follows the override");
+  assert.equal(looks.resolve("snow", 1), null, "no look, nothing");
+  assert.equal(GAME_CONFIG.weather.storm.rainChanceMult > 1 && GAME_CONFIG.weather.wind.gust.durationSec.length, 2,
+    "CONFIG.weather holds the storm's and the wind's general settings");
+  assert.equal(MAP_DB.test.weather.storm.rainChanceMult, undefined, "the storm's multipliers left the location");
+  assert.equal(MAP_DB.test.weather.wind.weatherBoost, undefined, "the rain's and storm's effect on the wind left the location");
+
+  const { WorldRenderFrameBuilder } = require("../../../src/game/presentation/rendering/world_render_frame_builder.js");
+  const { GameRenderFrame } = require("../../../src/game/presentation/rendering/game_render_frame.js");
+  const data = { loaded: true, dynamic: true, assetIds: { day: "D", evening: "E", night: "N" }, eveningOpacity: 0,
+    nightOpacity: 0, width: 100, height: 50 };
+  const config = { canvas: {}, debug: { waveTestBackground: false }, locations: { map: { lake: { waveTestBackground: "W" } } } };
+  let loaded = new Set(["D", "E", "N"]);
+  const builder = new WorldRenderFrameBuilder({ map: { getBackgroundRenderData: () => data },
+    projector: { virtualToScreen: (x, y, out) => { out.x = x; out.y = y; return out; }, getScale: () => 1 },
+    config, canvasMetrics: { width: 100 }, locationId: "lake", isAssetReady: (id) => loaded.has(id),
+    boatChumBuilder: { buildInto() {} } });
+  const layers = () => {
+    const frame = new GameRenderFrame();
+    builder.buildInto({ target: frame.world, invalidCastMarker: null, debugEnabled: false });
+    const out = [];
+    for (let index = 0; index < frame.world.backgroundLayers.count; index += 1) out.push(frame.world.backgroundLayers.getAt(index).assetId);
+    return { out, ids: frame.world.backgroundAssetIds };
+  };
+  assert.deepEqual(layers().out, ["D"], "the day background");
+  config.debug.waveTestBackground = true;
+  assert.deepEqual(layers().out, ["D"], "the test background has not loaded: the location's stays");
+  assert.ok(layers().ids.includes("W"), "the scene is asked to upload it");
+  loaded.add("W");
+  assert.deepEqual(layers().out, ["W"], "loaded: the striped background replaces every layer");
+  config.debug.waveTestBackground = false;
+  assert.deepEqual(layers().out, ["D"], "off: back to the location's background");
 }
 
 console.log(

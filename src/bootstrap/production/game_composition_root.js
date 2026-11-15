@@ -181,6 +181,8 @@ import { getInventoryAssemblyProfileConfig } from "../../game/config/inventory/i
 export class GameCompositionRoot {
   #config;
   #seed = null;
+  // Spec 180 D16: the current location's id for the scene's look overrides (set when the location is composed).
+  #lookLocationId = null;
   #itemDb;
   // Spec 157 R16: every asset by stable id; the places that load files resolve ids through it.
   #assets = new AssetRegistry(ASSET_REGISTRY);
@@ -688,6 +690,8 @@ export class GameCompositionRoot {
         logger: new ConsoleLogger(),
         getImageSize: (assetId) => this.#assets.sizeOf(assetId),
         preload: this.#preload,
+        // Spec 180 D16: the location is composed later; its look overrides are read live once it is known.
+        getLookOverrides: () => this.#config.locations?.map?.[this.#lookLocationId]?.weather?.look ?? null,
       });
       own(sceneLayer);
       contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
@@ -892,6 +896,8 @@ export class GameCompositionRoot {
         seaState,
       });
       const { systems } = this.#composeWorldSystems({
+        // Spec 180 D15: DEV loads an on-demand image (the wave test background) into the shared image store.
+        requestImage: (assetId) => this.#preload.request([assetId]),
         projector,
         locId,
         rng,
@@ -1423,6 +1429,7 @@ export class GameCompositionRoot {
     );
     const rng = new SeededRng(this.#sessionSeed());
     const locId = location.id;
+    this.#lookLocationId = locId;
     const locCfg = location.config;
     const blend = backgroundTimeBlend(startupHours, { evening: 0, night: 0 });
     const layers = timeOfDayLayers(blend.evening, blend.night, {});
@@ -1588,13 +1595,17 @@ export class GameCompositionRoot {
       this.#config.locations?.map?.[locId]?.weather ??
       locCfg?.weather ??
       null;
+    // Spec 180 D3: the storm's and the wind's general settings (CONFIG.weather), the same on every location.
+    const getGeneralWeather = () => this.#config.weather ?? null;
     const weather = new WeatherModel({
       rng: weatherRng,
       getSettings: getWeatherSettings,
+      getGeneralSettings: getGeneralWeather,
     });
     const wind = new WindModel({
       rng: windRng,
       getSettings: () => getWeatherSettings()?.wind ?? null,
+      getGeneralSettings: getGeneralWeather,
     });
     // Spec 179 D4 (TK-322.1): an emission begins only once the plan's group "location-states" has settled: it loads
     // after every phase of the map, and a progressive group settles with its full files, so the low copy never stands
@@ -1622,6 +1633,7 @@ export class GameCompositionRoot {
   }
 
   #composeWorldSystems({
+    requestImage,
     projector,
     locId,
     rng,
@@ -1749,6 +1761,8 @@ export class GameCompositionRoot {
                       getWindModel: () => systems.env?.wind ?? null,
                       // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
                       getEmissionModel: () => systems.env?.emission ?? null,
+                      // Spec 180 D15: on-demand images for DEV (the wave test background).
+                      requestImage,
                       // TK-321.2: the session's seed (CONFIG.debug.seed repeats this session).
                       sessionSeed: this.#sessionSeed(),
                       locationId: locId,

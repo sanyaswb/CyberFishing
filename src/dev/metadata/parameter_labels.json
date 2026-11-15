@@ -87,10 +87,6 @@
     "label": "Довжина хвилі",
     "description": "Відстань між гребенями біля берега, у пікселях арту. Вдалині хвилі дрібніші (перспектива)."
   },
-  "canvas.water.currentScale": {
-    "label": "Течія на воді",
-    "description": "Множник течії локації (environment.current, та сама, що зносить снасті) для руху брижів: 1 — як у фізиці, 0 — вода не пливе. Напрямок задає локація."
-  },
   "canvas.water.speed": {
     "label": "Швидкість хвилі",
     "description": "Скільки пікселів арту за секунду проходять гребені."
@@ -183,33 +179,13 @@
     "label": "Дощ на сцені",
     "description": "Увімкнено — сцена малює дощ, коли модель погоди каже, що він іде."
   },
-  "canvas.rain.maxDrops": {
-    "label": "Крапель при силі 1",
-    "description": "Скільки крапель падає одночасно на всю площу зон дощу при силі 1 (100 %). На екрані — та частка, яку видно: у вузькому вікні крапель менше, а щільність та сама (TK-271.2)."
-  },
-  "canvas.rain.stormDropsShare": {
-    "label": "Додаток грози",
-    "description": "Скільки крапель додає повна гроза, частка від «Крапель при силі 1»."
-  },
   "canvas.rain.fallPx": {
     "label": "Висота падіння, px",
     "description": "Шлях краплі до точки падіння біля берега, логічних пікселів; вдалині коротший."
   },
-  "canvas.rain.speedPx": {
-    "label": "Швидкість, px/с",
-    "description": "Швидкість падіння біля берега; вдалині повільніша за перспективою."
-  },
   "canvas.rain.speedJitter": {
     "label": "Розкид швидкості",
     "description": "Наскільки краплі відрізняються швидкістю, частка (0 — однакові)."
-  },
-  "canvas.rain.lengthPx": {
-    "label": "Довжина краплі, px",
-    "description": "Довжина штриха біля берега, логічних пікселів."
-  },
-  "canvas.rain.widthPx": {
-    "label": "Товщина краплі, px",
-    "description": "Товщина штриха біля берега, логічних пікселів."
   },
   "canvas.rain.opacity": {
     "label": "Прозорість крапель",
@@ -218,18 +194,6 @@
   "canvas.rain.color": {
     "label": "Колір крапель",
     "description": "Колір штрихів (#rrggbb)."
-  },
-  "canvas.rain.minScale": {
-    "label": "Найменший розмір",
-    "description": "Найменший розмір дальньої краплі, частка від ближньої."
-  },
-  "canvas.rain.windSlantDeg": {
-    "label": "Нахил від вітру, °",
-    "description": "Нахил крапель, коли дме вітер (напрям — у «ПОГОДА»)."
-  },
-  "canvas.rain.stormSlantDeg": {
-    "label": "Додатковий нахил грози, °",
-    "description": "На скільки градусів більший нахил у повну грозу."
   },
   "canvas.rain.rings": {
     "label": "Кільця на воді",
@@ -1775,10 +1739,6 @@
     "label": "Попіл",
     "description": "Малювати вогняний попіл під час викиду."
   },
-  "canvas.ash.maxParticles": {
-    "label": "Іскор при силі 1",
-    "description": "Скільки іскор одночасно на одному екрані на піку викиду; на початку й затиханні — частка за силою."
-  },
   "canvas.ash.sizePx": {
     "label": "Розмір іскри, px [мін, макс]",
     "description": "Діаметр іскри в логічних пікселях; дрібних більше, ніж великих. Ближчі (глибина) — більші."
@@ -1786,22 +1746,6 @@
   "canvas.ash.lifeSec": {
     "label": "Життя іскри, с [мін, макс]",
     "description": "Скільки секунд іскра летить від появи до згасання."
-  },
-  "canvas.ash.riseSpeedPx": {
-    "label": "Підйом, px/с",
-    "description": "Повільний підйом іскор угору (від'ємне — падають)."
-  },
-  "canvas.ash.wanderPx": {
-    "label": "Хаотичність, px/с",
-    "description": "Сила плавного блукання іскри (два повільні синуси на вісь з власними частотами)."
-  },
-  "canvas.ash.windDriftPx": {
-    "label": "Знос вітром, px/с",
-    "description": "Швидкість зносу іскор вітром при повній силі вітру."
-  },
-  "canvas.ash.opacity": {
-    "label": "Непрозорість",
-    "description": "Яскравість іскри в середині життя (0…1)."
   },
   "canvas.ash.flicker": {
     "label": "Мерехтіння",
@@ -1975,14 +1919,6 @@
     "label": "Шторм",
     "description": "Шторм локації: кидок шансу, таймлайн, вплив на дощ і блискавки (spec 180)."
   },
-  "MAP_DB.weather.storm.rainChanceMult": {
-    "label": "Шанс дощу × у шторм",
-    "description": "У скільки разів зростає шанс дощу на повній силі шторму."
-  },
-  "MAP_DB.weather.storm.rainStrengthMult": {
-    "label": "Сила дощу × у шторм",
-    "description": "У скільки разів зростає сила дощу на повній силі шторму (не більше 1)."
-  },
   "MAP_DB.weather.storm.lightning": {
     "label": "Блискавки",
     "description": "Блискавки шторму: є чи ні, коли на таймлайні шторму, як часто."
@@ -2154,5 +2090,169 @@
   "MAP_DB.weather.fog.smoothSec": {
     "label": "Плавність, с",
     "description": "Найшвидша зміна сили: 0→1 за стільки секунд (ручне утримання, раннє завершення)."
+  },
+  "canvas.water.lateralContraction": {
+    "label": "Звуження хвиль по ширині",
+    "description": "Хвилі звужуються по ширині разом із перспективою глибини (як сітка з lateralContraction); вимкнено — гребені однакової ширини від берега до горизонту (spec 180 D9)."
+  },
+  "debug.waveTestBackground": {
+    "label": "Тестовий фон хвиль",
+    "description": "DEV: смугастий фон (bg_test--waves) замість фону локації й у воді, щоб бачити, як хвилі гнуть смуги (spec 180 D15)."
+  },
+  "canvas.rain.speedStretch": {
+    "label": "Розтягування від швидкості",
+    "description": "Наскільки швидша крапля довша за повільнішу (0 — однакова довжина)."
+  },
+  "canvas.rain.strength": {
+    "label": "Сила дощу: [при 0, при 100]",
+    "description": "Параметри, що змінюються з силою дощу: значення при силі 0 і при силі 100; локація може змінити значення при 100 (spec 180 D16)."
+  },
+  "canvas.rain.strength.maxDrops": {
+    "label": "Густота (крапель)",
+    "description": "Скільки крапель на всій площі дощу."
+  },
+  "canvas.rain.strength.lengthPx": {
+    "label": "Довжина краплі, px",
+    "description": "Довжина штриха біля берега."
+  },
+  "canvas.rain.strength.widthPx": {
+    "label": "Ширина краплі, px",
+    "description": "Товщина штриха біля берега."
+  },
+  "canvas.rain.strength.speedPx": {
+    "label": "Швидкість падіння, px/с",
+    "description": "Швидкість падіння біля берега; швидша — довша (розтягування)."
+  },
+  "canvas.rain.strength.minScale": {
+    "label": "Глибина (розмір далеких)",
+    "description": "Найменший масштаб далеких крапель відносно ближніх (0…1)."
+  },
+  "canvas.rain.strength.lengthJitter": {
+    "label": "Розкид довжини",
+    "description": "Кожна крапля довша чи коротша на ± цю частку."
+  },
+  "canvas.rain.strength.slantJitterDeg": {
+    "label": "Розкид нахилу, °",
+    "description": "Кожна крапля відхилена від загального нахилу на ± стільки градусів."
+  },
+  "canvas.ash.strength": {
+    "label": "Сила попелу: [при 0, при 100]",
+    "description": "Параметри, що змінюються з силою викиду: при силі 0 і при 100 (spec 180 D16)."
+  },
+  "canvas.ash.strength.maxParticles": {
+    "label": "Іскор на екрані",
+    "description": "Скільки іскор одночасно на одному екрані."
+  },
+  "canvas.ash.strength.opacity": {
+    "label": "Непрозорість",
+    "description": "Яскравість іскри в середині життя (0…1)."
+  },
+  "canvas.ash.strength.riseSpeedPx": {
+    "label": "Підйом, px/с",
+    "description": "Повільний підйом іскор (від'ємне — падають)."
+  },
+  "canvas.ash.strength.wanderPx": {
+    "label": "Хаотичність, px/с",
+    "description": "Сила плавного блукання іскри."
+  },
+  "weather": {
+    "label": "Погода: загальне",
+    "description": "Що роблять шторм і вітер — однаково для всіх локацій (spec 180 D3)."
+  },
+  "weather.storm": {
+    "label": "Шторм",
+    "description": "Множники шторму × його сила: для дощу, вітру й крапель."
+  },
+  "weather.storm.rainChanceMult": {
+    "label": "Шанс дощу ×",
+    "description": "У скільки разів шторм на повній силі підвищує шанс дощу."
+  },
+  "weather.storm.rainStrengthMult": {
+    "label": "Сила дощу ×",
+    "description": "У скільки разів шторм на повній силі підсилює дощ (не більше 1)."
+  },
+  "weather.storm.rainDropsShare": {
+    "label": "Додаток крапель",
+    "description": "Частка крапель, що додає повний шторм до дощу."
+  },
+  "weather.storm.rainSlantDeg": {
+    "label": "Нахил крапель, °",
+    "description": "Додатковий нахил крапель на повній силі шторму."
+  },
+  "weather.storm.windMinStrength": {
+    "label": "Вітер не слабший",
+    "description": "Найменша сила вітру на повній силі шторму."
+  },
+  "weather.storm.gustChanceMult": {
+    "label": "Пориви ×",
+    "description": "У скільки разів частішають пориви на повній силі шторму."
+  },
+  "weather.wind": {
+    "label": "Вітер",
+    "description": "Як вітер діє на краплі, попіл і пориви — однаково для всіх локацій."
+  },
+  "weather.wind.rainSlantDeg": {
+    "label": "Нахил крапель від вітру, °",
+    "description": "Нахил крапель на повній силі вітру."
+  },
+  "weather.wind.slantFollowPerSec": {
+    "label": "Плавність нахилу",
+    "description": "Як швидко нахил крапель іде за вітром (більше — різкіше)."
+  },
+  "weather.wind.gustSlantShare": {
+    "label": "Порив хитає краплі",
+    "description": "Наскільки порив додає до нахилу крапель (частка сили пориву)."
+  },
+  "weather.wind.gustFollowPerSec": {
+    "label": "Різкість під час пориву",
+    "description": "Наскільки швидше нахил іде за вітром під час пориву."
+  },
+  "weather.wind.ashDriftPx": {
+    "label": "Знос попелу, px/с",
+    "description": "Швидкість зносу іскор попелу на повній силі вітру."
+  },
+  "weather.wind.gust": {
+    "label": "Порив",
+    "description": "Що робить порив: на скільки посилює вітер і як довго."
+  },
+  "weather.wind.gust.attackShare": {
+    "label": "Наліт пориву",
+    "description": "Частка тривалості пориву на наростання (решта — спад)."
+  },
+  "weather.wind.gust.deltaRange": {
+    "label": "Сила пориву [мін, макс]",
+    "description": "На скільки порив додає до сили вітру (0…1)."
+  },
+  "weather.wind.gust.durationSec": {
+    "label": "Тривалість пориву, с [мін, макс]",
+    "description": "Скільки триває порив."
+  },
+  "weather.wind.rain": {
+    "label": "Вітер у дощ",
+    "description": "Як дощ підсилює вітер."
+  },
+  "weather.wind.rain.minStrength": {
+    "label": "Вітер не слабший",
+    "description": "Найменша сила вітру на повній силі дощу."
+  },
+  "weather.wind.rain.bonus": {
+    "label": "Додаток до вітру",
+    "description": "На скільки повний дощ додає до сили вітру."
+  },
+  "weather.wind.rain.gustChanceMult": {
+    "label": "Пориви ×",
+    "description": "У скільки разів частішають пориви на повній силі дощу."
+  },
+  "MAP_DB.weather.look": {
+    "label": "Вигляд локації",
+    "description": "Значення «при силі 100» для дощу й попелу саме цієї локації (без значення — загальне)."
+  },
+  "MAP_DB.weather.look.rain": {
+    "label": "Дощ локації",
+    "description": "Перевизначення вигляду дощу при силі 100."
+  },
+  "MAP_DB.weather.look.ash": {
+    "label": "Попіл локації",
+    "description": "Перевизначення вигляду попелу при силі 100."
   }
 }

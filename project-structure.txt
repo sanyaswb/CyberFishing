@@ -221,6 +221,8 @@
 │  │     ├── bg_test--evening.webp
 │  │     ├── bg_test--night--low.webp
 │  │     ├── bg_test--night.webp
+│  │     ├── bg_test--waves--low.webp
+│  │     ├── bg_test--waves.webp
 │  │     └── test-depth.webp
 │  └── ui
 │     ├── inventory
@@ -522,7 +524,9 @@
 │  │  │  │  │  └── game_time_config.js
 │  │  │  │  └── weather
 │  │  │  │     ├── ash_settings.js
-│  │  │  │     └── rain_settings.js
+│  │  │  │     ├── rain_settings.js
+│  │  │  │     ├── storm_settings.js
+│  │  │  │     └── wind_settings.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
 │  │  │  │  ├── config_provider.js
@@ -977,7 +981,8 @@
 │  │     │  ├── degradation_color_config.js
 │  │     │  └── degradation_color_config_validator.js
 │  │     ├── weather
-│  │     │  └── emission_screen_effect.js
+│  │     │  ├── emission_screen_effect.js
+│  │     │  └── weather_look_resolver.js
 │  │     └── world
 │  │        ├── boat_animation_controller.js
 │  │        ├── boat_chum_renderer.js

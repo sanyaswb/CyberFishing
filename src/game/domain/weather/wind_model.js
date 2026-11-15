@@ -46,6 +46,7 @@ function classifyState(strength) {
 export class WindModel {
   #rng;
   #getSettings;
+  #getGeneral;
   #episode = 0;
   #episodeLeftSec = 0;
   #baseStrength = 0;
@@ -75,7 +76,9 @@ export class WindModel {
   };
 
   // rng: { next(), range(min, max), chance(p) } (dedicated wind stream); getSettings: () => MAP_DB.<id>.weather.wind.
-  constructor({ rng, getSettings }) {
+  // getGeneralSettings: () => CONFIG.weather (spec 180 D3: a gust's shape, the rain's and the storm's effect on the
+  // wind — the same on every location) or null (defaults).
+  constructor({ rng, getSettings, getGeneralSettings = () => null }) {
     if (
       typeof rng?.next !== "function" ||
       typeof rng?.range !== "function" ||
@@ -86,8 +89,10 @@ export class WindModel {
     if (typeof getSettings !== "function") {
       throw new TypeError("WindModel requires getSettings");
     }
+    if (typeof getGeneralSettings !== "function") throw new TypeError("WindModel getGeneralSettings must be a function");
     this.#rng = rng;
     this.#getSettings = getSettings;
+    this.#getGeneral = getGeneralSettings;
   }
 
   get snapshot() {
@@ -143,10 +148,11 @@ export class WindModel {
           : Math.max(this.#baseTarget, this.#baseStrength - step);
     }
 
-    const boost = settings.weatherBoost;
-    const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finite(boost?.rainMinStrength, 0)) : 0;
-    const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finite(boost?.stormMinStrength, 0)) : 0;
-    const rainBonus = rainLevel * Math.max(0, finite(boost?.rainBonus, 0));
+    // Spec 180 D3: the rain's and the storm's effect on the wind are general (CONFIG.weather.wind.rain, .storm).
+    const general = this.#getGeneral();
+    const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finite(general?.wind?.rain?.minStrength, 0)) : 0;
+    const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finite(general?.storm?.windMinStrength, 0)) : 0;
+    const rainBonus = rainLevel * Math.max(0, finite(general?.wind?.rain?.bonus, 0));
     const dirFloor =
       this.#forcedDirection === -1 || this.#forcedDirection === 1
         ? Math.max(
@@ -214,7 +220,7 @@ export class WindModel {
   triggerGust({ delta = null, durationSec = null } = {}) {
     if (this.#forcedDirection === 0) return false;
     const settings = this.#getSettings() || null;
-    const gust = settings?.gust;
+    const gust = this.#getGeneral()?.wind?.gust; // spec 180 D3: a gust's shape is general
     const rolledDelta = delta !== null && Number.isFinite(Number(delta))
       ? Math.max(0, Number(delta))
       : clamp01(this.#roll(pair(gust?.deltaRange, [0.12, 0.3])));
@@ -283,9 +289,10 @@ export class WindModel {
       return;
     }
     const gust = settings?.gust;
+    const general = this.#getGeneral();
     const baseChance = Math.max(0, finite(gust?.chancePerSec, 0.14));
-    const rainMult = 1 + rainLevel * Math.max(0, finite(gust?.rainChanceMult, 1.5));
-    const stormMult = 1 + stormLevel * Math.max(0, finite(gust?.stormChanceMult, 2.5));
+    const rainMult = 1 + rainLevel * Math.max(0, finite(general?.wind?.rain?.gustChanceMult, 1.5));
+    const stormMult = 1 + stormLevel * Math.max(0, finite(general?.storm?.gustChanceMult, 2.5));
     const strengthWeight = 0.35 + 0.65 * Math.max(boostedBase, stormLevel);
     const probability = Math.min(1, baseChance * rainMult * stormMult * strengthWeight * dtSec);
     if (probability > 0 && this.#rng.chance(probability)) {
@@ -304,7 +311,7 @@ export class WindModel {
       this.#clearGust();
       return;
     }
-    const attackShare = Math.min(0.8, Math.max(0.05, finite(settings?.gust?.attackShare, 0.25)));
+    const attackShare = Math.min(0.8, Math.max(0.05, finite(this.#getGeneral()?.wind?.gust?.attackShare, 0.25)));
     const envelope = u < attackShare
       ? Math.sin((u / attackShare) * Math.PI * 0.5)
       : Math.cos(((u - attackShare) / (1 - attackShare)) * Math.PI * 0.5);

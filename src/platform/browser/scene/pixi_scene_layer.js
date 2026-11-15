@@ -55,6 +55,7 @@ export class PixiSceneLayer {
   #getRainSettings;
   #rain = null;
   #getAshSettings;
+  #getWeatherSettings;
   #ash = null;
   #fightAreaStyles;
   #documentTarget;
@@ -96,7 +97,7 @@ export class PixiSceneLayer {
   // optional async step awaited before the renderer starts (pixi_runtime_module.js: eval-free systems under CSP).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
-    getRainSettings = () => null, getAshSettings = () => null }) {
+    getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -117,6 +118,9 @@ export class PixiSceneLayer {
     this.#getRainSettings = getRainSettings;
     // Spec 179 stage C: CONFIG.canvas.ash, the emission's fiery ash.
     this.#getAshSettings = getAshSettings;
+    // Spec 180 (TK-326): the rain's and the ash's looks resolved at their strengths (getRainSettings(rain),
+    // getAshSettings(emission)) and CONFIG.weather (storm, wind) for both.
+    this.#getWeatherSettings = getWeatherSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -141,11 +145,14 @@ export class PixiSceneLayer {
     const world = router.drawsOnScene("background") ? frame.world : null;
     let changed = this.#background.update(world);
     // TK-271.2: the rain first, so the water's ripples read where its rings are this frame (the draw order is the stage's).
-    if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getRainSettings())) {
+    const weatherSettings = this.#getWeatherSettings();
+    if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now,
+      this.#getRainSettings(world?.weather?.rain ?? 0), weatherSettings)) {
       changed = true;
     }
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
-    if (this.#ash.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getAshSettings())) {
+    if (this.#ash.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now,
+      this.#getAshSettings(world?.weather?.emission ?? 0), weatherSettings)) {
       changed = true;
     }
     const pixelRatio = this.#scenePixelRatio();

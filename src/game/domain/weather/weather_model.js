@@ -3,7 +3,7 @@ import { WeatherEventProcess } from "./weather_event_process.js";
 // Spec 180 stage A (TK-325): the location's weather as independent processes — rain, storm and fog — each with its own
 // chance per check, its own timeline (duration, peak start, peak length, peak strength, rolled when it starts) and its
 // own manual hold (WeatherEventProcess). Owner (2026-11-15): a storm does not always bring rain; while it lasts the
-// rain's chance and strength rise (storm.rainChanceMult / rainStrengthMult × the storm's strength), so a stormy wind
+// rain's chance and strength rise (CONFIG.weather.storm.rainChanceMult / rainStrengthMult × the storm's strength), so a stormy wind
 // without rain is possible. Lightning belongs to the storm: when a storm starts it rolls whether it has lightning and,
 // if so, where on the storm's timeline the strikes begin and end; strikes come at random intervals, shorter as the
 // storm grows (lightning.intervalSec [at strength 0, at 1] ± jitter). Fog runs only in its time-of-day phases.
@@ -22,6 +22,7 @@ const pair = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
 export class WeatherModel {
   #rng;
   #getSettings;
+  #getGeneral;
   #processes;
   #started = false;
   #stormSerial = 0;
@@ -42,14 +43,17 @@ export class WeatherModel {
   };
 
   // rng: { next(), range(min, max), chance(p) } (the weather's own seeded stream); getSettings: () =>
-  // MAP_DB.<id>.weather (or null: always clear).
-  constructor({ rng, getSettings }) {
+  // MAP_DB.<id>.weather (or null: always clear); getGeneralSettings: () => CONFIG.weather (spec 180 D3: the storm's
+  // multipliers, the same on every location) or null (no storm effect on the rain).
+  constructor({ rng, getSettings, getGeneralSettings = () => null }) {
     if (typeof rng?.next !== "function" || typeof rng?.range !== "function" || typeof rng?.chance !== "function") {
       throw new TypeError("WeatherModel requires an rng");
     }
     if (typeof getSettings !== "function") throw new TypeError("WeatherModel requires getSettings");
+    if (typeof getGeneralSettings !== "function") throw new TypeError("WeatherModel getGeneralSettings must be a function");
     this.#rng = rng;
     this.#getSettings = getSettings;
+    this.#getGeneral = getGeneralSettings;
     this.#processes = Object.freeze(Object.fromEntries(KINDS.map((kind) => [kind,
       new WeatherEventProcess({ rng, getSettings: () => this.#getSettings()?.[kind] ?? null })])));
     this.#snapshot.events = Object.freeze(Object.fromEntries(KINDS.map((kind) => [kind, this.#processes[kind].snapshot])));
@@ -72,8 +76,9 @@ export class WeatherModel {
       this.#rollLightning(settings?.storm?.lightning, storm);
     }
     const stormStrength = storm.snapshot.strength;
-    const rainChanceMult = 1 + (Math.max(1, finite(settings?.storm?.rainChanceMult, 1)) - 1) * stormStrength;
-    const rainStrengthMult = 1 + (Math.max(1, finite(settings?.storm?.rainStrengthMult, 1)) - 1) * stormStrength;
+    const general = this.#getGeneral()?.storm;
+    const rainChanceMult = 1 + (Math.max(1, finite(general?.rainChanceMult, 1)) - 1) * stormStrength;
+    const rainStrengthMult = 1 + (Math.max(1, finite(general?.rainStrengthMult, 1)) - 1) * stormStrength;
     this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult, finite(floors?.rain, 0));
     this.#processes.fog.update(dtSec, this.#fogAllowed(settings, phase));
     this.#updateLightning(settings?.storm?.lightning, storm, dtSec);

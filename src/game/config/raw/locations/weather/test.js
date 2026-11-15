@@ -61,6 +61,10 @@ export const WEATHER = {
     "rain": 0,
     "storm": 0
   },
+  "look": {
+    "ash": {},
+    "rain": {}
+  },
   "radiation": {
     "base": 0,
     "emissionPeak": 1
@@ -131,8 +135,6 @@ export const WEATHER = {
       0.4,
       1
     ],
-    "rainChanceMult": 6,
-    "rainStrengthMult": 1.3,
     "smoothSec": 6
   },
   "thresholds": {
@@ -157,18 +159,7 @@ export const WEATHER = {
       ]
     },
     "gust": {
-      "attackShare": 0.25,
-      "chancePerSec": 0.14,
-      "deltaRange": [
-        0.12,
-        0.3
-      ],
-      "durationSec": [
-        1.5,
-        4.5
-      ],
-      "rainChanceMult": 1.5,
-      "stormChanceMult": 2.5
+      "chancePerSec": 0.14
     },
     "states": {
       "calm": {
@@ -215,11 +206,6 @@ export const WEATHER = {
         ],
         "weight": 0.12
       }
-    },
-    "weatherBoost": {
-      "rainBonus": 0.2,
-      "rainMinStrength": 0.25,
-      "stormMinStrength": 0.7
     }
   }
 };

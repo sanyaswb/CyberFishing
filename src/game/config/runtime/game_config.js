@@ -8,9 +8,17 @@ import { PHYSICS_CONFIG } from "../physics/physics_config.js";
 import { LIVE_BAIT_CONFIG } from "../raw/live_bait/live_bait_config.js";
 import { RAIN_SETTINGS } from "../raw/weather/rain_settings.js";
 import { ASH_SETTINGS } from "../raw/weather/ash_settings.js";
+import { STORM_SETTINGS } from "../raw/weather/storm_settings.js";
+import { WIND_SETTINGS } from "../raw/weather/wind_settings.js";
 
 export const CONFIG = {
   liveBait: LIVE_BAIT_CONFIG,
+  // Spec 180 D3 (TK-326): what the storm and the wind do, the same on every location (storm_settings.js,
+  // wind_settings.js); a location's weather sets only how often and how long (MAP_DB.<id>.weather).
+  weather: {
+    storm: STORM_SETTINGS,
+    wind: WIND_SETTINGS,
+  },
   // Spec 179: what the emission does to the player. screen (stage E): darkening from the edges inward and a pulsing
   // blur without a gas mask; includeHud — the HUD and windows too (everything but DevTools), off — only the world.
   emission: {
@@ -61,7 +69,7 @@ export const CONFIG = {
       verticalShare: 1, // частка вертикального зсуву від горизонтального
       wavelength: 200, // відстань між гребенями біля берега, пікселів арту
       speed: 40, // швидкість гребенів, пікселів арту за секунду
-      currentScale: 1, // множник течії локації (environment.current) для вигляду води; 1 = як у фізиці, 0 = без течії
+      lateralContraction: true, // spec 180 D9: хвилі звужуються по ширині з перспективою глибини; вимкнено — однакова ширина
       // Стан моря (spec 172 D7): хвилі й покачування поплавка залежать від вітру, ночі й грози; зміни наростають плавно.
       // Множники до amplitude / speed / wavelength; хвилі йдуть за вітром (у штиль — у попередньому напрямку).
       seaState: {
@@ -198,6 +206,7 @@ export const CONFIG = {
     overlay: false,
     overlayUpdateMs: 150,
     initialTime: null, // Початковий час. 17.5 = 17:30. null бере спільний стартовий час із game_time_config.js.
+    waveTestBackground: false, // DEV (spec 180 D15): смугастий фон замість фону локації, щоб бачити викривлення хвиль.
     seed: null, // Сід сесії (кльов, погода, вітер, викид). null — новий випадковий при кожному запуску; число — повтор сесії (TK-321.2).
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
     timeAccelerationEnabled: false,

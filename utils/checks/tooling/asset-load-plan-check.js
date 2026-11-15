@@ -240,9 +240,11 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const lazyLayer = production.layer("layer-three");
   assert.equal(lazyLayer.lazy, true, "the third layer is the lazy one");
   assert.deepEqual(lazyLayer.groups.slice(3).map((group) => group.id),
-    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "audio", "spine-fallback", "locked"], "the owner's order");
-  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id), ["audio", "spine-fallback", "locked"],
-    "only audio (TK-201: when the radio starts), the pictures for a page without Spine (spec 166) and the locked queue stay out of the background");
+    ["lazy-backgrounds", "lazy-items", "lazy-spine", "lazy-room", "lazy-rest", "audio", "dev-wave-background", "spine-fallback", "locked"],
+    "the owner's order (spec 180 D15: the DEV wave background only on demand)");
+  assert.deepEqual(lazyLayer.groups.filter((group) => !group.load).map((group) => group.id),
+    ["audio", "dev-wave-background", "spine-fallback", "locked"],
+    "only audio (TK-201: when the radio starts), the DEV wave background (spec 180 D15), the pictures for a page without Spine (spec 166) and the locked queue stay out of the background");
   // Spec 166: the rod's full start picture and the boat's picture load only for a page without Spine (on request).
   assert.equal(production.layer("layer-one").groups.find((group) => group.id === "rod-start").upgrade, "on-demand",
     "the rod's full start picture is not loaded after the first frame");

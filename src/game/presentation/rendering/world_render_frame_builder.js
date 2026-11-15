@@ -106,6 +106,18 @@ export class WorldRenderFrameBuilder {
     for (const phase in data.assetIds) {
       if (data.assetIds[phase]) target.backgroundAssetIds.push(data.assetIds[phase]);
     }
+    // Spec 180 D15 (DEV): the striped wave test background replaces every layer once it has loaded.
+    const testId = this.#config.debug?.waveTestBackground === true
+      ? this.#config.locations?.map?.[this.#locationId]?.waveTestBackground ?? "" : "";
+    if (testId) {
+      target.backgroundAssetIds.push(testId);
+      if (this.#isLoaded(testId)) {
+        const testPosition = this.#projector.virtualToScreen(0, 0, this.#screenA);
+        const testScale = this.#projector.getScale();
+        this.#addBackgroundLayer(target, testId, 1, testPosition, data.width * testScale, data.height * testScale);
+        return;
+      }
+    }
     const emissionId = data.stateAssetIds?.emission ?? "";
     if (emissionId) target.backgroundAssetIds.push(emissionId);
     // Spec 179 D4: the emission's picture over the time of day with its intensity; at full strength the layers under

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.15 - Weather settings structure (spec 180 stage B, TK-326)
+
+- Weather settings: what the storm and the wind do is now the same for every location (rain chance and strength, drop slant and how smoothly it follows the wind, gust shape); rain and ash looks change with their strength between values at 0 and 100, with per-drop length and slant spread; the waves narrow across the screen only with their own perspective switch, and the current no longer moves them; DEV striped background for checking the waves.
+
 ## v0.51.14 - Independent weather events with timelines (spec 180 stage A, TK-325)
 
 - Weather: rain, storm and fog are separate events — each starts by a chance checked every minute and rolls its whole course at the start (length, when its peak comes, how long and how strong); a storm raises the chance and strength of rain but may pass without it, and has its own lightning. DevTools: switching the storm off no longer leaves the rain on.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.6 - Emission starts by chance, DevTools randomizer (TK-321.1)
 
 - Weather: an emission now starts by a roll once a minute (the chance grows with each failed roll, a 20-minute pause after each emission and at the start), so its moment cannot be known ahead; about 82% of emissions come 30–60 minutes apart. A fresh random emission seed per session. DevTools «Діагностика» → «РАНДОМАЙЗЕР» runs the game's real random many times and shows a short report.
-
-## v0.51.5 - Emission and radiation model (spec 179 stage A)
-
-- Weather: the location's emission (start, peak, fade with random durations, random pause between emissions) holds a storm with its own settings and leaves it as an ordinary storm; the location's radiation (0 outside an emission on the test location, 1 at the peak) is in the environment. No visuals yet. DevTools «ПОГОДА» → «Викид»: state, start/peak/fade/end now, freeze, radiation by hand.
