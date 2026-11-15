@@ -84,8 +84,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     rainOnly.rings.ripple.strength = 0.4;
 
     const locOnly = JSON.parse(JSON.stringify(WEATHER));
-    locOnly.fog.chance = 0.25;
-    locOnly.precipitation.rain.weight = 0.4;
+    locOnly.fog.chancePerCheck = 0.25;
+    locOnly.rain.chancePerCheck = 0.04;
 
     // Rain-only update leaves location weather untouched (even if location target has uncommitted edits).
     resetTargets();
@@ -107,8 +107,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     assert.equal(asked, 1, "--yes skips prompt");
     assert.equal(fs.readFileSync(rainTarget, "utf8"), realRain, "unchanged rain module is not touched");
     const writtenLoc = (await import(`${pathToFileURL(locTarget).href}?after=loc`)).WEATHER;
-    assert.equal(writtenLoc.fog.chance, 0.25);
-    assert.equal(writtenLoc.precipitation.rain.weight, 0.4);
+    assert.equal(writtenLoc.fog.chancePerCheck, 0.25);
+    assert.equal(writtenLoc.rain.chancePerCheck, 0.04);
 
     // Combined update rewrites both and backs up both.
     resetTargets();
@@ -144,7 +144,7 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     const badColor = JSON.parse(JSON.stringify(RAIN_SETTINGS)); badColor.color = "blue";
     const badRange = JSON.parse(JSON.stringify(RAIN_SETTINGS)); badRange.widthPx = 99;
     const unknownRainKey = JSON.parse(JSON.stringify(RAIN_SETTINGS)); unknownRainKey.secret = 1;
-    const badDuration = JSON.parse(JSON.stringify(WEATHER)); badDuration.precipitation.rain.durationSec = [500, 10];
+    const badDuration = JSON.parse(JSON.stringify(WEATHER)); badDuration.rain.durationSec = [500, 10];
     const badPhases = JSON.parse(JSON.stringify(WEATHER)); badPhases.fog.phases = ["noon"];
     const badWindStrength = JSON.parse(JSON.stringify(WEATHER)); badWindStrength.wind.states.light.strength = [0.2, 2.5];
     const badFloatReturn = JSON.parse(JSON.stringify(WEATHER)); badFloatReturn.wind.float.returnPctRange = [0.6, 0.2];
@@ -231,9 +231,8 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     };
     const model = {
       snapshot: {
-        precipitation: "clear", precipitationLeftSec: 100, rain: 0, rainTarget: 0,
-        storm: 0, stormTarget: 0, fogState: "none", fog: 0, fogTarget: 0,
-        strikeSerial: 0, strikeVariant: 0, strikeDistance: 0.5, frozen: false,
+        precipitation: "clear", rain: 0, storm: 0, fogState: "none", fog: 0, cloud: 0, lightningActive: false,
+        strikeSerial: 0, strikeVariant: 0, strikeDistance: 0.5, frozen: false, events: null,
       },
     };
     const updates = [];
@@ -298,12 +297,12 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     // Import valid tuned file updates live config and status.
     const importObj = JSON.parse(JSON.stringify(exportedObj));
     importObj.rain.maxDrops = 1100;
-    importObj.locationWeather.fog.chance = 0.5;
+    importObj.locationWeather.fog.chancePerCheck = 0.5;
     pickedText = JSON.stringify(importObj);
     await buttons.get("Імпорт погоди")();
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(liveRain.maxDrops, 1100);
-    assert.equal(liveWeather.fog.chance, 0.5);
+    assert.equal(liveWeather.fog.chancePerCheck, 0.5);
     assert.equal(textRows.get("Стан погоди").innerText, "Змінено (ще не в коді): Вигляд дощу, Параметри локації.");
 
     section.dispose();

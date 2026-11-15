@@ -109,45 +109,57 @@ function validateRainDomain(rain, errors) {
   }
 }
 
+// Spec 180 D2/D13: an event's check, chance, cooldown and the ranges of its timeline.
+function checkEvent(event, path, errors) {
+  if (!isRecord(event)) return;
+  if ("enabled" in event && typeof event.enabled !== "boolean") errors.push(`${path}.enabled: expected boolean`);
+  checkRange(event.checkIntervalSec, `${path}.checkIntervalSec`, 1, Infinity, errors);
+  checkRange(event.chancePerCheck, `${path}.chancePerCheck`, 0, 1, errors);
+  checkRange(event.chanceGrowthPerCheck, `${path}.chanceGrowthPerCheck`, 0, 1, errors);
+  checkRange(event.cooldownSec, `${path}.cooldownSec`, 0, Infinity, errors);
+  checkRange(event.smoothSec, `${path}.smoothSec`, 0, Infinity, errors);
+  checkPair(event.durationSec, `${path}.durationSec`, 1, Infinity, true, errors);
+  checkPair(event.peakAtShare, `${path}.peakAtShare`, 0, 1, true, errors);
+  checkPair(event.peakShare, `${path}.peakShare`, 0, 1, true, errors);
+  checkPair(event.peakStrength, `${path}.peakStrength`, 0, 1, true, errors);
+}
+
 function validateLocationWeatherDomain(weather, errors) {
-  const p = weather.precipitation;
-  if (isRecord(p)) {
-    for (const key of ["fadeInSec", "fadeOutSec"]) checkRange(p[key], `locationWeather.precipitation.${key}`, 0, Infinity, errors);
-    for (const state of ["clear", "rain", "storm"]) {
-      const entry = p[state];
-      if (!isRecord(entry)) continue;
-      checkRange(entry.weight, `locationWeather.precipitation.${state}.weight`, 0, Infinity, errors);
-      checkPair(entry.durationSec, `locationWeather.precipitation.${state}.durationSec`, 0, Infinity, true, errors);
-      if (state !== "clear") {
-        checkPair(entry.intensity, `locationWeather.precipitation.${state}.intensity`, 0, 1, true, errors);
-      }
+  const initial = weather.initial;
+  if (isRecord(initial)) {
+    for (const kind of ["rain", "storm", "fog"]) checkRange(initial[kind], `locationWeather.initial.${kind}`, 0, 1, errors);
+  }
+  checkEvent(weather.rain, "locationWeather.rain", errors);
+  const storm = weather.storm;
+  checkEvent(storm, "locationWeather.storm", errors);
+  if (isRecord(storm)) {
+    checkRange(storm.rainChanceMult, "locationWeather.storm.rainChanceMult", 1, 100, errors);
+    checkRange(storm.rainStrengthMult, "locationWeather.storm.rainStrengthMult", 1, 10, errors);
+    const lightning = storm.lightning;
+    if (isRecord(lightning)) {
+      checkRange(lightning.chance, "locationWeather.storm.lightning.chance", 0, 1, errors);
+      checkPair(lightning.startShare, "locationWeather.storm.lightning.startShare", 0, 1, true, errors);
+      checkPair(lightning.endShare, "locationWeather.storm.lightning.endShare", 0, 1, true, errors);
+      checkPair(lightning.intervalSec, "locationWeather.storm.lightning.intervalSec", 0.05, Infinity, false, errors);
+      checkRange(lightning.jitter, "locationWeather.storm.lightning.jitter", 0, 1, errors);
+      checkPair(lightning.distance, "locationWeather.storm.lightning.distance", 0, 1, true, errors);
     }
   }
   const fog = weather.fog;
-  if (isRecord(fog)) {
-    checkRange(fog.chance, "locationWeather.fog.chance", 0, 1, errors);
-    for (const key of ["fadeInSec", "fadeOutSec"]) checkRange(fog[key], `locationWeather.fog.${key}`, 0, Infinity, errors);
-    checkPair(fog.idleSec, "locationWeather.fog.idleSec", 0, Infinity, true, errors);
-    checkPair(fog.durationSec, "locationWeather.fog.durationSec", 0, Infinity, true, errors);
-    checkPair(fog.intensity, "locationWeather.fog.intensity", 0, 1, true, errors);
-    if (Array.isArray(fog.phases)) {
-      if (!fog.phases.length) errors.push("locationWeather.fog.phases: must not be empty");
-      for (const phase of fog.phases) {
-        if (!VALID_PHASES.has(phase)) errors.push(`locationWeather.fog.phases: unknown phase ${phase}`);
-      }
+  checkEvent(fog, "locationWeather.fog", errors);
+  if (isRecord(fog) && Array.isArray(fog.phases)) {
+    if (!fog.phases.length) errors.push("locationWeather.fog.phases: must not be empty");
+    for (const phase of fog.phases) {
+      if (!VALID_PHASES.has(phase)) errors.push(`locationWeather.fog.phases: unknown phase ${phase}`);
     }
-  }
-  const lightning = weather.lightning;
-  if (isRecord(lightning)) {
-    checkPair(lightning.intervalSec, "locationWeather.lightning.intervalSec", 0.05, Infinity, false, errors);
-    checkPair(lightning.distance, "locationWeather.lightning.distance", 0, 1, true, errors);
   }
   const emission = weather.emission;
   if (isRecord(emission)) {
     if ("enabled" in emission && typeof emission.enabled !== "boolean") errors.push("locationWeather.emission.enabled: expected boolean");
-    for (const key of ["onsetSec", "peakSec", "fadeSec"]) {
-      checkPair(emission[key], `locationWeather.emission.${key}`, 0, Infinity, true, errors);
-    }
+    checkPair(emission.durationSec, "locationWeather.emission.durationSec", 1, Infinity, true, errors);
+    checkPair(emission.peakAtShare, "locationWeather.emission.peakAtShare", 0, 1, true, errors);
+    checkPair(emission.peakShare, "locationWeather.emission.peakShare", 0, 1, true, errors);
+    checkPair(emission.peakStrength, "locationWeather.emission.peakStrength", 0, 1, true, errors);
     checkRange(emission.checkIntervalSec, "locationWeather.emission.checkIntervalSec", 1, Infinity, errors);
     checkRange(emission.chancePerCheck, "locationWeather.emission.chancePerCheck", 0, 1, errors);
     checkRange(emission.chanceGrowthPerCheck, "locationWeather.emission.chanceGrowthPerCheck", 0, 1, errors);
@@ -156,8 +168,6 @@ function validateLocationWeatherDomain(weather, errors) {
     if (isRecord(storm)) {
       checkRange(storm.rain, "locationWeather.emission.storm.rain", 0, 1, errors);
       checkRange(storm.storm, "locationWeather.emission.storm.storm", 0, 1, errors);
-      checkRange(storm.fadeSec, "locationWeather.emission.storm.fadeSec", 0, Infinity, errors);
-      checkRange(storm.lightningIntervalMult, "locationWeather.emission.storm.lightningIntervalMult", 0.05, 10, errors);
     }
   }
   const radiation = weather.radiation;
@@ -254,7 +264,7 @@ export function rainModuleSource(rain) {
 }
 
 export function locationWeatherModuleSource(locationId, weather) {
-  return `// Weather of the location "${locationId}" (spec 172, spec 175): precipitation clear -> rain -> storm (storm only after rain),\n`
-    + "// fog and lightning. `npm run apply:weather` rewrites this whole file in this form; hand edits are fine.\n"
+  return `// Weather of the location "${locationId}" (spec 172, 175, 180): independent events rain, storm (with its lightning) and fog,\n`
+    + "// each a check + chance and a timeline rolled at its start. `npm run apply:weather` rewrites this whole file in this form.\n"
     + `export const WEATHER = ${JSON.stringify(canonicalLocationWeather(weather), null, 2)};\n`;
 }

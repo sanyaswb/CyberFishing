@@ -35,8 +35,17 @@ rule as something the next change can follow.
 | R19 | The window is only the camera: gameplay positions, bounds and shares come from the map (world units, `CONFIG.locations.baseResolution` for a reference screen), never from the canvas size, the camera or a screen-anchored point. A check runs the same scene at several window sizes and compares world values. This holds for scene effects too (rain, particles): their places are world points placed on screen each frame, and their amount follows the visible world area, not the screen. | I-18, I-19 |
 | R20 | Every `data-devtools-path` / `devtoolsPath` emitted by an overlay or UI link must be validated by automated checks against the live `CONFIG` object or mounted `DevTools` control index so it resolves to an exact leaf control (never a missing path or ancestor section fallback). | I-20 |
 | R21 | Layout overrides in container or media queries (phone, adaptive) come after every base rule of the same selector in the file; a base rule added later must go above them. A check parses the stylesheet and fails when a base rule of an overridden selector follows the query. | I-21 |
+| R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 
 <a id="i-20"></a>
+
+## I-22 · 2026-11-15 · v0.51.5–0.51.13: switching the storm off left the rain on for good (spec 180, TK-325)
+
+- **Seen:** the owner in DevTools «ПОГОДА»: rain on and off worked; storm on and off left it raining and the rain never stopped.
+- **Cause:** `src/dev/tools/weather_dev_section.js:478` — switching «Гроза» off called `#hold(model, "precipitation", "rain", …)`: it forced the precipitation into **rain** and kept the whole weather **frozen** (one shared `setFrozen`), so the rain stayed until «Дощ» was switched off by hand. Under it, `src/game/domain/weather/weather_model.js:217` made a storm a state of the same precipitation that «rains at least as hard as its strength», so a storm always meant rain. Reproduced on the real model and the `test` settings (spec 180 «Що є зараз»).
+- **Fix:** rain, storm and fog became independent processes (`WeatherEventProcess`), each with its own manual hold; a storm raises the rain's chance and strength but never sets it; the section's switches hold their own process only.
+- **Rule R22:** each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process.
+- **Check:** `utils/checks/gameplay/weather-check.js` section 5 (the owner's sequence: storm off leaves no rain; every switch released in three orders leaves the others as they were) and the DevTools scenario (the storm switch calls `hold("storm", …)` only); both fail on the old model and section.
 
 ## I-21 · 2026-11-14 · v0.50.114–0.50.127: on a portrait phone the DevTools rail was a 60 px column (TK-313)
 

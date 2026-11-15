@@ -4,14 +4,14 @@
 // 1 + rain × (environment.wind.rainMultiplier − 1), continuous with the rain's intensity. Without a weather model the
 // weather stays clear. rng: the weather's stream (spec 172 Q1), also used by the wind.
 // Spec 179 stage A: an injected EmissionModel gives the emission's part and intensity and the location's radiation
-// (snapshot.emission, snapshot.radiation); while an emission runs (onset, peak, fade) the weather holds a storm with the
-// emission's own settings (MAP_DB.<id>.weather.emission.storm). Without an emission model: no emission, radiation 0.
+// (snapshot.emission, snapshot.radiation); while an emission runs the weather's storm and rain are held at least at
+// the emission's own strengths (MAP_DB.<id>.weather.emission.storm: storm, rain) × its intensity (spec 180: floors,
+// recomputed each frame, so they rise and fall with the emission). Without an emission model: no emission, radiation 0.
 const DEFAULT_RAIN_THRESHOLD = 0.15;
 const DEFAULT_FOG_THRESHOLD = 0.3;
 const CLEAR_WEATHER = Object.freeze({
-  precipitation: "clear", precipitationLeftSec: 0, episode: 0, fogState: "none", fogLeftSec: 0, rain: 0, storm: 0, fog: 0, cloud: 0,
-  rainTarget: 0, stormTarget: 0, fogTarget: 0, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0, frozen: false,
-  held: false,
+  precipitation: "clear", fogState: "none", rain: 0, storm: 0, fog: 0, cloud: 0, strikeSerial: 0, strikeVariant: 0,
+  strikeDistance: 0, lightningActive: false, frozen: false, events: null,
 });
 const NO_EMISSION = Object.freeze({
   phase: "idle", phaseLeftSec: 0, phaseDurationSec: 0, intensity: 0, radiation: 0, serial: 0, frozen: false,
@@ -27,7 +27,7 @@ export class EnvironmentSystem {
   #weather;
   #wind;
   #emission;
-  #emissionHeld = false;
+  #weatherFloors = { storm: 0, rain: 0 };
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
   // Spec 172 TK-271: a direction (−1 | 0 | 1) set by DEV or a script replaces the random one until cleared (null).
   #windOverride = null;
@@ -207,8 +207,7 @@ export class EnvironmentSystem {
   }
 
   #updateWeather(dt) {
-    this.#updateEmission(dt);
-    this.#weather?.update(dt, this.#currentPhase);
+    this.#weather?.update(dt, this.#currentPhase, this.#updateEmission(dt));
     if (this.#wind) {
       this.#wind.update(dt, this.#snapshot.weather);
       return;
@@ -228,14 +227,17 @@ export class EnvironmentSystem {
     }
   }
 
-  // The storm hold changes only when an emission starts or ends (no per-frame work beyond the model's update).
+  // Spec 180: the emission's floors for the weather (storm, rain) × its intensity; null outside an emission.
   #updateEmission(dt) {
-    if (!this.#emission) return;
+    if (!this.#emission) return null;
     this.#emission.update(dt);
-    const active = this.#emission.snapshot.phase !== "idle";
-    if (active === this.#emissionHeld) return;
-    this.#emissionHeld = active;
-    this.#weather?.setHold(active ? (this.#config?.weather?.emission?.storm ?? {}) : null);
+    const intensity = this.#emission.snapshot.intensity;
+    if (!(intensity > 0)) return null;
+    const hold = this.#config?.weather?.emission?.storm;
+    const floors = this.#weatherFloors;
+    floors.storm = Math.max(0, Math.min(1, Number(hold?.storm) || 0)) * intensity;
+    floors.rain = Math.max(0, Math.min(1, Number(hold?.rain) || 0)) * intensity;
+    return floors;
   }
 
   #windDirection() {

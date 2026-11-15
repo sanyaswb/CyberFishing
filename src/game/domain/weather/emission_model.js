@@ -1,36 +1,29 @@
-// Spec 179 stage A: the location's emission and radiation.
-// - Emission: idle → onset → peak → fade → idle. An emission starts by chance, like a bite (owner, TK-321.1): while idle
-//   the model rolls once every checkIntervalSec (real seconds); nothing holds the moment of the next emission, so it
-//   cannot be computed ahead. The chance of a roll is chancePerCheck + chanceGrowthPerCheck × (failed rolls since the
-//   last emission), so the waits gather around the balance target instead of spreading like a flat chance (growth 0
-//   gives the flat chance). No rolls during cooldownSec after the session's start and after each emission.
-//   Each part lasts a random time from its range; the intensity (0…1) rises on the onset slowly, then faster (t²),
-//   stays 1 on the peak and falls on the fade (smoothstep down), so nothing switches at once.
+import { WeatherEventTimeline } from "./weather_event_timeline.js";
+
+// Spec 179 (stage A, TK-321.1) and spec 180 D13 (TK-325): the location's emission and radiation.
+// - An emission starts by chance, like a bite: while idle the model rolls once every checkIntervalSec (real seconds);
+//   nothing holds the moment of the next emission. The chance is chancePerCheck + chanceGrowthPerCheck × failed rolls
+//   since the last emission; no rolls during cooldownSec after the session's start and after each emission, nor while
+//   canStart() is false (its background has not loaded, spec 179 D4).
+// - Its course is the weather events' timeline (WeatherEventTimeline), rolled whole at the start: durationSec, peak
+//   start and length (shares of the duration) and peak strength. The intensity rises to the peak, holds and falls
+//   (smoothstep). The phases the views read follow it: onset (before the peak), peak, fade (after it), idle.
 // - Radiation (0…1): base + (emissionPeak − base) × intensity; a DEV or script override replaces it until cleared.
-// The rng is the emission's own stream (the weather's and the fish's numbers never change because of it). Settings are
-// read live through getSettings() (MAP_DB.<id>.weather: its `emission` and `radiation` blocks); nothing is allocated per
-// update; snapshot is one object rewritten in place.
+// The rng is the emission's own stream. Settings are read live (MAP_DB.<id>.weather: `emission`, `radiation`); nothing
+// is allocated per update; snapshot is one object rewritten in place.
 const PHASES = Object.freeze(["idle", "onset", "peak", "fade"]);
-const NEXT_PHASE = Object.freeze({ onset: "peak", peak: "fade", fade: "idle" });
-const DEFAULT_RANGES = Object.freeze({
-  onsetSec: Object.freeze([40, 90]),
-  peakSec: Object.freeze([90, 240]),
-  fadeSec: Object.freeze([40, 90]),
-});
-const PHASE_RANGE = Object.freeze({ onset: "onsetSec", peak: "peakSec", fade: "fadeSec" });
+const PHASE_OF = Object.freeze({ rise: "onset", peak: "peak", fall: "fade", idle: "idle" });
 
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
 const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const pair = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
-  Number.isFinite(Number(value[0])) && Number.isFinite(Number(value[1])) ? value : fallback);
 
 export class EmissionModel {
   #rng;
   #getSettings;
   #canStart;
-  #phase = "idle";
-  #phaseLeftSec = 0;
-  #phaseDurationSec = 0;
+  #timeline = new WeatherEventTimeline();
+  #active = false;
+  #elapsedSec = 0;
   #cooldownLeftSec = null;
   #checkLeftSec = 0;
   #failedChecks = 0;
@@ -40,6 +33,11 @@ export class EmissionModel {
     phase: "idle",
     phaseLeftSec: 0,
     phaseDurationSec: 0,
+    elapsedSec: 0,
+    durationSec: 0,
+    peakStartSec: 0,
+    peakEndSec: 0,
+    peakStrength: 0,
     intensity: 0,
     radiation: 0,
     serial: 0,
@@ -51,8 +49,8 @@ export class EmissionModel {
   };
 
   // rng: { next(), range(min, max) } (the emission's own seeded stream); getSettings: () => MAP_DB.<id>.weather (or null:
-  // no emission, radiation 0); canStart: () => boolean, whether an emission may begin now (spec 179 D4: its background
-  // has loaded); while false the rolls wait (none is counted as failed).
+  // no emission, radiation 0); canStart: () => boolean, whether an emission may begin now; while false the rolls wait
+  // (none is counted as failed).
   constructor({ rng, getSettings, canStart = () => true }) {
     if (typeof rng?.next !== "function" || typeof rng?.range !== "function") {
       throw new TypeError("EmissionModel requires an rng");
@@ -76,27 +74,34 @@ export class EmissionModel {
     const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
     if (this.#cooldownLeftSec === null) this.#startIdle(emission);
     if (!this.#frozen) {
-      if (this.#phase === "idle") this.#updateIdle(emission, dtSec);
-      else {
-        this.#phaseLeftSec -= dtSec;
-        if (this.#phaseLeftSec <= 0) this.#enter(NEXT_PHASE[this.#phase], emission, null);
+      if (this.#active) {
+        this.#elapsedSec += dtSec;
+        if (this.#elapsedSec >= this.#timeline.durationSec) this.#end(emission);
+      } else {
+        this.#updateIdle(emission, dtSec);
       }
     }
     this.#sync(settings);
   }
 
-  // Starts a part now (DEV, scripted emission): phase idle | onset | peak | fade; durationSec null rolls it from the
-  // location's range. A forced idle starts the cooldown and the rolls anew.
-  force(phase, { durationSec = null } = {}) {
+  // DEV, scripted emission: "onset" starts a new emission, "peak" / "fade" jump to the peak / its end on the current
+  // one (starting one first if none runs), "idle" ends it (the cooldown starts).
+  force(phase) {
     if (!PHASES.includes(phase)) return false;
     const emission = this.#getSettings()?.emission;
-    const duration = durationSec !== null && Number.isFinite(Number(durationSec)) ? Math.max(0, Number(durationSec)) : null;
-    this.#enter(phase, emission, duration);
+    if (this.#cooldownLeftSec === null) this.#startIdle(emission);
+    if (phase === "idle") {
+      if (this.#active) this.#end(emission);
+    } else {
+      if (phase === "onset" || !this.#active) this.#begin(emission);
+      if (phase === "peak") this.#elapsedSec = this.#timeline.peakStartSec;
+      if (phase === "fade") this.#elapsedSec = this.#timeline.peakEndSec + 1e-3;
+    }
     this.#sync(this.#getSettings() || null);
     return true;
   }
 
-  // Frozen: the current part never ends (the intensity stays where it is).
+  // Frozen: the emission's time stops (its intensity stays where it is).
   setFrozen(frozen) {
     this.#frozen = frozen === true;
     this.#sync(this.#getSettings() || null);
@@ -123,7 +128,7 @@ export class EmissionModel {
     if (this.#checkLeftSec > 0) return;
     this.#checkLeftSec = Math.max(1, finite(emission?.checkIntervalSec, 60));
     if (!this.#canStart()) return;
-    if (this.#rng.next() < this.#chance(emission)) this.#enter("onset", emission, null);
+    if (this.#rng.next() < this.#chance(emission)) this.#begin(emission);
     else this.#failedChecks += 1;
   }
 
@@ -138,46 +143,40 @@ export class EmissionModel {
     this.#failedChecks = 0;
   }
 
-  #enter(phase, emission, durationSec) {
-    if (phase === "onset" && this.#phase === "idle") this.#snapshot.serial += 1;
-    this.#phase = phase;
-    if (phase === "idle") {
-      this.#startIdle(emission);
-      this.#phaseDurationSec = 0;
-      this.#phaseLeftSec = 0;
-      return;
-    }
-    const duration = durationSec ?? this.#range(emission, PHASE_RANGE[phase]);
-    this.#phaseDurationSec = duration;
-    this.#phaseLeftSec = duration;
+  #begin(emission) {
+    this.#timeline.roll(emission, this.#rng);
+    this.#active = true;
+    this.#elapsedSec = 0;
+    this.#snapshot.serial += 1;
   }
 
-  #range(emission, key) {
-    const range = pair(emission?.[key], DEFAULT_RANGES[key]);
-    const min = Math.max(0, Number(range[0]));
-    const max = Math.max(min, Number(range[1]));
-    return max > min ? this.#rng.range(min, max) : min;
-  }
-
-  #intensity() {
-    if (this.#phase === "idle") return 0;
-    if (this.#phase === "peak") return 1;
-    const progress = this.#phaseDurationSec > 0 ? clamp01(1 - this.#phaseLeftSec / this.#phaseDurationSec) : 1;
-    if (this.#phase === "onset") return progress * progress;
-    return 1 - progress * progress * (3 - 2 * progress);
+  #end(emission) {
+    this.#active = false;
+    this.#elapsedSec = 0;
+    this.#startIdle(emission);
   }
 
   #sync(settings) {
     const snapshot = this.#snapshot;
-    const intensity = this.#intensity();
+    const timeline = this.#timeline;
+    const intensity = this.#active ? clamp01(timeline.strengthAt(this.#elapsedSec)) : 0;
     const base = clamp01(finite(settings?.radiation?.base, 0));
     const peak = clamp01(finite(settings?.radiation?.emissionPeak, 1));
-    snapshot.phase = this.#phase;
-    snapshot.phaseLeftSec = Math.max(0, this.#phaseLeftSec);
-    snapshot.phaseDurationSec = this.#phaseDurationSec;
+    const phase = this.#active ? PHASE_OF[timeline.phaseAt(this.#elapsedSec)] : "idle";
+    snapshot.phase = phase;
+    const [phaseStart, phaseEnd] = phase === "onset" ? [0, timeline.peakStartSec]
+      : phase === "peak" ? [timeline.peakStartSec, timeline.peakEndSec]
+        : phase === "fade" ? [timeline.peakEndSec, timeline.durationSec] : [0, 0];
+    snapshot.phaseDurationSec = phaseEnd - phaseStart;
+    snapshot.phaseLeftSec = this.#active ? Math.max(0, phaseEnd - this.#elapsedSec) : 0;
+    snapshot.elapsedSec = this.#active ? this.#elapsedSec : 0;
+    snapshot.durationSec = this.#active ? timeline.durationSec : 0;
+    snapshot.peakStartSec = this.#active ? timeline.peakStartSec : 0;
+    snapshot.peakEndSec = this.#active ? timeline.peakEndSec : 0;
+    snapshot.peakStrength = this.#active ? timeline.peakStrength : 0;
     snapshot.intensity = intensity;
     snapshot.radiation = this.#radiationOverride ?? clamp01(base + (peak - base) * intensity);
-    snapshot.chance = this.#phase === "idle" ? this.#chance(settings?.emission) : 0;
+    snapshot.chance = this.#active ? 0 : this.#chance(settings?.emission);
     snapshot.failedChecks = this.#failedChecks;
     snapshot.cooldownLeftSec = Math.max(0, this.#cooldownLeftSec ?? 0);
     snapshot.frozen = this.#frozen;

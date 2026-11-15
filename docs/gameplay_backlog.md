@@ -886,6 +886,18 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-134 A storm no longer always brings rain; weather events roll their own course (P2, done v0.51.14)
+Found: 2026-11-15, owner ([spec 180](../specs/180-weather-settings-structure/spec.md)): switching the storm off in DevTools
+left the rain on for good (`weather_dev_section.js:478` forced rain and froze the weather), and a storm always rained
+(`weather_model.js:217`: the storm was a state of the same precipitation).
+Change: rain, storm and fog are independent events, each a check + chance and a timeline rolled at its start (duration,
+peak start, length and strength); a storm raises the rain's chance (× 6 at full strength) and strength (× 1.3) but
+does not make it rain; lightning is rolled per storm. Bites still read `isRaining` / `isFoggy` from the thresholds.
+The test location: rain ~18 % of the time (every ~38 min), storms ~7 % (every ~3.3 h, 16 % of them without rain), fog
+~7 %; before: rain 22 %, storms 2.3 %.
+Evidence: `weather` (the defect scenario, holds in any order, storm multipliers, lightning on the timeline, fog phases,
+initial weather), `apply-weather`; game-cycle report unchanged.
+
 ### G-133 The starting pole carries a 25 m line (P1, done v0.50.97)
 Found: 2026-11-13, owner, v0.50.96.
 Reproduce: a fresh start (or any save) with the bamboo pole (5 m, no reel) and line_test_1 (25 m): the cast limit is 24.8 m at

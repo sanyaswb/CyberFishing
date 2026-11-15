@@ -17,12 +17,8 @@ import {
 // live), the location's weather settings (CONFIG.locations.map.<id>.weather, live), and saving via DevSavingSection.
 // Spec 179 stage A: the «Викид» subsection — the emission's part, intensity, time left and radiation; start / peak /
 // fade / end now, freeze, and the radiation held by hand (its settings are the weather tree's emission and radiation).
-const PRECIPITATION_LABELS = Object.freeze({
-  clear: "ясно",
-  rain: "дощ",
-  storm: "гроза",
-});
-const FOG_LABELS = Object.freeze({ none: "немає", fog: "туман" });
+const EVENT_PHASES = Object.freeze({ rise: "розгін", peak: "пік", fall: "затухання", idle: "немає" });
+const EVENT_CONTROLS = Object.freeze([["rain", "Дощ"], ["storm", "Шторм"], ["fog", "Туман"]]);
 const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
 const EMISSION_ACTIONS = Object.freeze([
   Object.freeze(["Почати викид", "onset"]),
@@ -44,10 +40,10 @@ const WIND_STATE_LABELS = Object.freeze({
   strong: "сильний",
 });
 const CHANCE_FIELDS = Object.freeze([
-  Object.freeze(["Ясно (вага)", "clearWeight", ["precipitation", "clear", "weight"], 0, Infinity]),
-  Object.freeze(["Дощ (вага)", "rainWeight", ["precipitation", "rain", "weight"], 0, Infinity]),
-  Object.freeze(["Гроза (вага)", "stormWeight", ["precipitation", "storm", "weight"], 0, Infinity]),
-  Object.freeze(["Туман (шанс 0…1)", "fogChance", ["fog", "chance"], 0, 1]),
+  // Spec 180 D2: each event's chance per check.
+  Object.freeze(["Дощ (шанс перевірки)", "rainChance", ["rain", "chancePerCheck"], 0, 1]),
+  Object.freeze(["Шторм (шанс перевірки)", "stormChance", ["storm", "chancePerCheck"], 0, 1]),
+  Object.freeze(["Туман (шанс перевірки)", "fogChance", ["fog", "chancePerCheck"], 0, 1]),
   Object.freeze(["Штиль (вага)", "windCalmWeight", ["wind", "states", "calm", "weight"], 0, Infinity]),
   Object.freeze(["Слабкий вітер (вага)", "windLightWeight", ["wind", "states", "light", "weight"], 0, Infinity]),
   Object.freeze(["Середній вітер (вага)", "windModerateWeight", ["wind", "states", "moderate", "weight"], 0, Infinity]),
@@ -86,9 +82,7 @@ export class WeatherDevSection {
   #content = null;
   #selectedLocationId = null;
   #listening = false;
-  #rain = 70;
-  #storm = 80;
-  #fog = 60;
+  #strengths = { rain: 70, storm: 80, fog: 60 };
   #windStrength = 40;
   #fadeSec = 5;
   #radiation = 50;
@@ -376,34 +370,25 @@ export class WeatherDevSection {
     this.#fill();
   }
 
+  // Spec 180 (TK-325): each process's own course — held by hand, its event (phase, elapsed / duration, peak) or, idle,
+  // its cooldown or the chance of its next check.
+  #eventText(event) {
+    if (!event) return "—";
+    const strength = percent(event.strength);
+    if (event.held) return `${strength} · вручну`;
+    if (event.active) {
+      return `${strength} · ${EVENT_PHASES[event.phase] ?? event.phase} ${seconds(event.elapsedSec)} з ${seconds(event.durationSec)}` +
+        `, пік ${percent(event.peakStrength)} ${seconds(event.peakStartSec)}–${seconds(event.peakEndSec)}`;
+    }
+    return event.cooldownLeftSec > 0 ? `${strength} · пауза ще ${seconds(event.cooldownLeftSec)}`
+      : `${strength} · шанс перевірки ${(event.chance * 100).toFixed(2)}%`;
+  }
+
   #renderStatus(weather, content) {
     const wind = this.#weather.getWind?.() ?? null;
-    this.#ui.createInfoRow(
-      "опади",
-      `${PRECIPITATION_LABELS[weather.precipitation] ?? weather.precipitation} · ${
-        weather.frozen
-          ? "вручну"
-          : `ще ${seconds(weather.precipitationLeftSec)}`
-      }`,
-      content,
-    );
-    this.#ui.createInfoRow(
-      "дощ",
-      `${percent(weather.rain)} → ${percent(weather.rainTarget)}`,
-      content,
-    );
-    this.#ui.createInfoRow(
-      "гроза",
-      `${percent(weather.storm)} → ${percent(weather.stormTarget)}`,
-      content,
-    );
-    this.#ui.createInfoRow(
-      "туман",
-      `${FOG_LABELS[weather.fogState] ?? weather.fogState} · ${percent(weather.fog)} → ${percent(
-        weather.fogTarget,
-      )}`,
-      content,
-    );
+    this.#ui.createInfoRow("дощ", this.#eventText(weather.events?.rain), content);
+    this.#ui.createInfoRow("шторм", this.#eventText(weather.events?.storm), content);
+    this.#ui.createInfoRow("туман", this.#eventText(weather.events?.fog), content);
     const windText = wind
       ? `${WIND_NAMES[wind.direction] ?? wind.direction}${
           wind.state && wind.direction !== 0
@@ -429,9 +414,8 @@ export class WeatherDevSection {
     );
     this.#ui.createInfoRow(
       "блискавки",
-      `${weather.strikeSerial} · остання: варіант ${weather.strikeVariant + 1}, відстань ${percent(
-        weather.strikeDistance,
-      )}`,
+      `${weather.lightningActive ? "ідуть" : "немає"} · ударів ${weather.strikeSerial}, остання: варіант ${weather.strikeVariant + 1}, ` +
+        `відстань ${percent(weather.strikeDistance)}`,
       content,
     );
     // TK-321.2: the session's seed; written into CONFIG.debug.seed (game_config.js) it repeats this session.
@@ -447,70 +431,21 @@ export class WeatherDevSection {
       "WEATHER",
       "controls",
     ]);
-    const raining = weather.precipitation !== "clear";
-    this.#ui.createSwitcherRow(
-      "Дощ",
-      raining,
-      controls,
-      (on) => {
-        if (on) this.#hold(model, "precipitation", "rain", this.#rain);
-        else this.#release(model, "precipitation", "clear");
-      },
-      ["WEATHER", "controls", "rain"],
-    );
-    this.#ui.createRangeRow(
-      "сила дощу, %",
-      this.#rain,
-      controls,
-      (value) => {
-        this.#rain = Number(value) || 0;
-        if (model.snapshot.precipitation !== "clear")
-          model.setIntensity("rain", this.#rain / 100);
-      },
-      ["WEATHER", "controls", "rainStrength"],
-    );
-    this.#ui.createSwitcherRow(
-      "Гроза",
-      weather.precipitation === "storm",
-      controls,
-      (on) => {
-        if (on) this.#hold(model, "precipitation", "storm", this.#storm);
-        else this.#hold(model, "precipitation", "rain", this.#rain);
-      },
-      ["WEATHER", "controls", "storm"],
-    );
-    this.#ui.createRangeRow(
-      "сила грози, %",
-      this.#storm,
-      controls,
-      (value) => {
-        this.#storm = Number(value) || 0;
-        if (model.snapshot.precipitation === "storm")
-          model.setIntensity("storm", this.#storm / 100);
-      },
-      ["WEATHER", "controls", "stormStrength"],
-    );
-    this.#ui.createSwitcherRow(
-      "Туман",
-      weather.fogState === "fog",
-      controls,
-      (on) => {
-        if (on) this.#hold(model, "fog", "fog", this.#fog);
-        else this.#release(model, "fog", "none");
-      },
-      ["WEATHER", "controls", "fog"],
-    );
-    this.#ui.createRangeRow(
-      "сила туману, %",
-      this.#fog,
-      controls,
-      (value) => {
-        this.#fog = Number(value) || 0;
-        if (model.snapshot.fogState === "fog")
-          model.setIntensity("fog", this.#fog / 100);
-      },
-      ["WEATHER", "controls", "fogStrength"],
-    );
+    // Spec 180 D1: a switch holds its own process at its slider's strength; off returns that process to its own course.
+    for (const [kind, label] of EVENT_CONTROLS) {
+      this.#ui.createSwitcherRow(label, weather.events?.[kind]?.held === true, controls, (on) => {
+        model.hold(kind, on ? this.#strengths[kind] / 100 : null, { fadeSec: this.#fadeSec });
+        this.#fill();
+      }, ["WEATHER", "controls", kind]);
+      this.#ui.createRangeRow(`сила: ${label.toLowerCase()}, %`, this.#strengths[kind], controls, (value) => {
+        this.#strengths[kind] = Math.max(0, Math.min(100, Number(value) || 0));
+        if (model.snapshot.events?.[kind]?.held) model.hold(kind, this.#strengths[kind] / 100, { fadeSec: this.#fadeSec });
+      }, ["WEATHER", "controls", `${kind}Strength`]);
+      this.#ui.createButtonRow(`${label}: подія зараз`, controls, () => {
+        model.start(kind);
+        this.#fill();
+      }, false, "", ["WEATHER", "controls", `${kind}Start`]);
+    }
     if (this.#weather.setWind) {
       const wind = this.#weather.getWind?.() ?? null;
       const current =
@@ -593,18 +528,8 @@ export class WeatherDevSection {
       "",
       ["WEATHER", "controls", "strike"],
     );
-    this.#ui.createSwitcherRow(
-      "заморозити погоду",
-      weather.frozen === true,
-      controls,
-      (frozen) => {
-        model.setFrozen(frozen);
-        this.#fill();
-      },
-      ["WEATHER", "frozen"],
-    );
     this.#ui.createButtonRow("↺ Автоматична погода", controls, () => {
-      model.setFrozen(false);
+      model.releaseAll();
       this.#weather.setWind?.(null);
       this.#weather.setWindStrength?.(null);
       this.#fill();
@@ -646,24 +571,5 @@ export class WeatherDevSection {
       emission.setRadiationOverride(this.#radiation / 100);
       this.#ui.syncValue?.(["WEATHER", "emission", "radiationHold"], true);
     }, ["WEATHER", "emission", "radiation"]);
-  }
-
-  // A state switched on by hand: forced with its slider's strength and held (the weather's timers stop).
-  #hold(model, process, state, strength) {
-    model.force(process, state, {
-      intensity: strength / 100,
-      fadeSec: this.#fadeSec,
-    });
-    model.setFrozen(true);
-    this.#fill();
-  }
-
-  // Switched off: the state ends with the transition time; with nothing else held, the weather runs on its own again.
-  #release(model, process, state) {
-    model.force(process, state, { fadeSec: this.#fadeSec });
-    const weather = model.snapshot;
-    if (weather.precipitation === "clear" && weather.fogState === "none")
-      model.setFrozen(false);
-    this.#fill();
   }
 }

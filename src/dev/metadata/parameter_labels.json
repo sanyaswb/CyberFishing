@@ -1843,37 +1843,17 @@
     "label": "Пауза, с",
     "description": "Без перевірок після старту сесії й після кожного викиду."
   },
-  "MAP_DB.weather.emission.onsetSec": {
-    "label": "Початок, с [мін, макс]",
-    "description": "Тривалість наростання викиду."
-  },
-  "MAP_DB.weather.emission.peakSec": {
-    "label": "Пік, с [мін, макс]",
-    "description": "Тривалість піку викиду."
-  },
-  "MAP_DB.weather.emission.fadeSec": {
-    "label": "Затихання, с [мін, макс]",
-    "description": "Тривалість затихання викиду."
-  },
   "MAP_DB.weather.emission.storm": {
     "label": "Гроза викиду",
     "description": "Гроза, яку тримає викид (окремо від звичайної погоди)."
   },
   "MAP_DB.weather.emission.storm.rain": {
-    "label": "Сила дощу",
-    "description": "Сила дощу під час викиду (не слабша за грозу)."
+    "label": "Дощ викиду",
+    "description": "Найменша сила дощу на піку викиду (× сила викиду)."
   },
   "MAP_DB.weather.emission.storm.storm": {
-    "label": "Сила грози",
-    "description": "Сила грози під час викиду."
-  },
-  "MAP_DB.weather.emission.storm.fadeSec": {
-    "label": "Наростання грози, с",
-    "description": "За скільки секунд гроза викиду проходить від 0 до повної сили."
-  },
-  "MAP_DB.weather.emission.storm.lightningIntervalMult": {
-    "label": "Множник інтервалу блискавок",
-    "description": "Інтервал між ударами × це число (0,5 — удвічі частіше)."
+    "label": "Шторм викиду",
+    "description": "Найменша сила шторму на піку викиду (× сила викиду)."
   },
   "MAP_DB.weather.radiation": {
     "label": "Радіація",
@@ -1970,5 +1950,209 @@
   "emission.screen.blur.enabled": {
     "label": "Розмиття",
     "description": "Показувати пульсуюче розмиття (окремо від затемнення, TK-324.2). Найдорожча частина ефекту: backdrop-filter на весь екран."
+  },
+  "MAP_DB.weather.initial": {
+    "label": "Початкова погода",
+    "description": "Погода на старті сесії: сила 0…1 дощу, шторму, туману (0 — немає; spec 180 D14)."
+  },
+  "MAP_DB.weather.initial.rain": {
+    "label": "Дощ на старті",
+    "description": "Сила дощу на старті сесії (0 — без дощу)."
+  },
+  "MAP_DB.weather.initial.storm": {
+    "label": "Шторм на старті",
+    "description": "Сила шторму на старті сесії (0 — без шторму)."
+  },
+  "MAP_DB.weather.initial.fog": {
+    "label": "Туман на старті",
+    "description": "Сила туману на старті сесії (0 — без туману)."
+  },
+  "MAP_DB.weather.rain": {
+    "label": "Дощ",
+    "description": "Дощ локації: кидок шансу й таймлайн події (spec 180)."
+  },
+  "MAP_DB.weather.storm": {
+    "label": "Шторм",
+    "description": "Шторм локації: кидок шансу, таймлайн, вплив на дощ і блискавки (spec 180)."
+  },
+  "MAP_DB.weather.storm.rainChanceMult": {
+    "label": "Шанс дощу × у шторм",
+    "description": "У скільки разів зростає шанс дощу на повній силі шторму."
+  },
+  "MAP_DB.weather.storm.rainStrengthMult": {
+    "label": "Сила дощу × у шторм",
+    "description": "У скільки разів зростає сила дощу на повній силі шторму (не більше 1)."
+  },
+  "MAP_DB.weather.storm.lightning": {
+    "label": "Блискавки",
+    "description": "Блискавки шторму: є чи ні, коли на таймлайні шторму, як часто."
+  },
+  "MAP_DB.weather.storm.lightning.chance": {
+    "label": "Шанс блискавок",
+    "description": "Шанс, що шторм матиме блискавки (кидається при старті шторму)."
+  },
+  "MAP_DB.weather.storm.lightning.startShare": {
+    "label": "Початок блискавок [мін, макс]",
+    "description": "Частка тривалості шторму, коли починаються удари."
+  },
+  "MAP_DB.weather.storm.lightning.endShare": {
+    "label": "Кінець блискавок [мін, макс]",
+    "description": "Частка тривалості шторму, коли удари закінчуються."
+  },
+  "MAP_DB.weather.storm.lightning.intervalSec": {
+    "label": "Проміжок ударів, с [слабкий, сильний]",
+    "description": "Проміжок між ударами при силі шторму 0 і 1 — на піку частіше."
+  },
+  "MAP_DB.weather.storm.lightning.jitter": {
+    "label": "Розкид проміжку",
+    "description": "Кожен проміжок ± ця частка (ритм не повторюється)."
+  },
+  "MAP_DB.weather.storm.lightning.distance": {
+    "label": "Відстань [близько, далеко]",
+    "description": "Відстань удару 0…1 (далі — тьмяніше й пізніше грім)."
+  },
+  "MAP_DB.weather.fog": {
+    "label": "Туман",
+    "description": "Туман локації: кидок шансу в дозволені фази доби й таймлайн."
+  },
+  "MAP_DB.weather.fog.phases": {
+    "label": "Фази туману",
+    "description": "У які фази доби може бути туман; вихід із фази завершує туман."
+  },
+  "MAP_DB.weather.emission.durationSec": {
+    "label": "Тривалість викиду, с [мін, макс]",
+    "description": "Уся подія: початок, пік, затихання."
+  },
+  "MAP_DB.weather.emission.peakAtShare": {
+    "label": "Початок піку [мін, макс]",
+    "description": "Де починається пік викиду — частка тривалості."
+  },
+  "MAP_DB.weather.emission.peakShare": {
+    "label": "Довжина піку [мін, макс]",
+    "description": "Скільки триває пік викиду — частка тривалості."
+  },
+  "MAP_DB.weather.emission.peakStrength": {
+    "label": "Сила піку [мін, макс]",
+    "description": "Сила викиду на піку, 0…1."
+  },
+  "MAP_DB.weather.rain.enabled": {
+    "label": "Дощ: сам",
+    "description": "Чи може дощ початися сам (кидок шансу)."
+  },
+  "MAP_DB.weather.rain.checkIntervalSec": {
+    "label": "Перевірка, с",
+    "description": "Як часто поза подією кидається шанс (реальні секунди)."
+  },
+  "MAP_DB.weather.rain.chancePerCheck": {
+    "label": "Шанс перевірки",
+    "description": "Шанс почати подію на одну перевірку (0…1)."
+  },
+  "MAP_DB.weather.rain.chanceGrowthPerCheck": {
+    "label": "Ріст шансу",
+    "description": "На скільки росте шанс із кожною невдалою перевіркою; 0 — постійний шанс."
+  },
+  "MAP_DB.weather.rain.cooldownSec": {
+    "label": "Пауза після, с",
+    "description": "Без перевірок після кінця події."
+  },
+  "MAP_DB.weather.rain.durationSec": {
+    "label": "Тривалість, с [мін, макс]",
+    "description": "Загальна тривалість події: розгін, пік і затухання (spec 180 D13)."
+  },
+  "MAP_DB.weather.rain.peakAtShare": {
+    "label": "Початок піку [мін, макс]",
+    "description": "Де починається пік — частка тривалості (0,3 = на 30 % події)."
+  },
+  "MAP_DB.weather.rain.peakShare": {
+    "label": "Довжина піку [мін, макс]",
+    "description": "Скільки триває пік — частка тривалості."
+  },
+  "MAP_DB.weather.rain.peakStrength": {
+    "label": "Сила піку [мін, макс]",
+    "description": "Сила події на піку, 0…1; кидається при старті."
+  },
+  "MAP_DB.weather.rain.smoothSec": {
+    "label": "Плавність, с",
+    "description": "Найшвидша зміна сили: 0→1 за стільки секунд (ручне утримання, раннє завершення)."
+  },
+  "MAP_DB.weather.storm.enabled": {
+    "label": "Шторм: сам",
+    "description": "Чи може шторм початися сам (кидок шансу)."
+  },
+  "MAP_DB.weather.storm.checkIntervalSec": {
+    "label": "Перевірка, с",
+    "description": "Як часто поза подією кидається шанс (реальні секунди)."
+  },
+  "MAP_DB.weather.storm.chancePerCheck": {
+    "label": "Шанс перевірки",
+    "description": "Шанс почати подію на одну перевірку (0…1)."
+  },
+  "MAP_DB.weather.storm.chanceGrowthPerCheck": {
+    "label": "Ріст шансу",
+    "description": "На скільки росте шанс із кожною невдалою перевіркою; 0 — постійний шанс."
+  },
+  "MAP_DB.weather.storm.cooldownSec": {
+    "label": "Пауза після, с",
+    "description": "Без перевірок після кінця події."
+  },
+  "MAP_DB.weather.storm.durationSec": {
+    "label": "Тривалість, с [мін, макс]",
+    "description": "Загальна тривалість події: розгін, пік і затухання (spec 180 D13)."
+  },
+  "MAP_DB.weather.storm.peakAtShare": {
+    "label": "Початок піку [мін, макс]",
+    "description": "Де починається пік — частка тривалості (0,3 = на 30 % події)."
+  },
+  "MAP_DB.weather.storm.peakShare": {
+    "label": "Довжина піку [мін, макс]",
+    "description": "Скільки триває пік — частка тривалості."
+  },
+  "MAP_DB.weather.storm.peakStrength": {
+    "label": "Сила піку [мін, макс]",
+    "description": "Сила події на піку, 0…1; кидається при старті."
+  },
+  "MAP_DB.weather.storm.smoothSec": {
+    "label": "Плавність, с",
+    "description": "Найшвидша зміна сили: 0→1 за стільки секунд (ручне утримання, раннє завершення)."
+  },
+  "MAP_DB.weather.fog.enabled": {
+    "label": "Туман: сам",
+    "description": "Чи може туман початися сам (кидок шансу)."
+  },
+  "MAP_DB.weather.fog.checkIntervalSec": {
+    "label": "Перевірка, с",
+    "description": "Як часто поза подією кидається шанс (реальні секунди)."
+  },
+  "MAP_DB.weather.fog.chancePerCheck": {
+    "label": "Шанс перевірки",
+    "description": "Шанс почати подію на одну перевірку (0…1)."
+  },
+  "MAP_DB.weather.fog.chanceGrowthPerCheck": {
+    "label": "Ріст шансу",
+    "description": "На скільки росте шанс із кожною невдалою перевіркою; 0 — постійний шанс."
+  },
+  "MAP_DB.weather.fog.cooldownSec": {
+    "label": "Пауза після, с",
+    "description": "Без перевірок після кінця події."
+  },
+  "MAP_DB.weather.fog.durationSec": {
+    "label": "Тривалість, с [мін, макс]",
+    "description": "Загальна тривалість події: розгін, пік і затухання (spec 180 D13)."
+  },
+  "MAP_DB.weather.fog.peakAtShare": {
+    "label": "Початок піку [мін, макс]",
+    "description": "Де починається пік — частка тривалості (0,3 = на 30 % події)."
+  },
+  "MAP_DB.weather.fog.peakShare": {
+    "label": "Довжина піку [мін, макс]",
+    "description": "Скільки триває пік — частка тривалості."
+  },
+  "MAP_DB.weather.fog.peakStrength": {
+    "label": "Сила піку [мін, макс]",
+    "description": "Сила події на піку, 0…1; кидається при старті."
+  },
+  "MAP_DB.weather.fog.smoothSec": {
+    "label": "Плавність, с",
+    "description": "Найшвидша зміна сили: 0→1 за стільки секунд (ручне утримання, раннє завершення)."
   }
 }

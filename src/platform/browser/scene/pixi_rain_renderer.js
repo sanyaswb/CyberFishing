@@ -140,7 +140,8 @@ export class PixiRainRenderer {
     const storm = clamp01(number(weather?.storm, 0));
     const maxDrops = Math.max(0, Math.floor(number(settings?.maxDrops, 0)));
     const stormShare = Math.max(0, number(settings?.stormDropsShare, 0));
-    const strength = Math.min(1 + stormShare, rain + storm * stormShare);
+    // Spec 180 D1: drops come only from rain; a storm thickens the rain that falls (a storm without rain has no drops).
+    const strength = Math.min(1 + stormShare, rain * (1 + storm * stormShare));
     if (strength <= 0 && this.#falling === 0 && this.#ringCount === 0) return this.#hide();
     const started = performance.now();
     const rings = settings?.rings;

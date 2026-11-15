@@ -1,98 +1,139 @@
-// Weather of the location "test" (spec 172, spec 175): precipitation clear -> rain -> storm (storm only after rain),
-// fog and lightning. `npm run apply:weather` rewrites this whole file in this form; hand edits are fine.
+// Weather of the location "test" (spec 172, 175, 180): independent events rain, storm (with its lightning) and fog,
+// each a check + chance and a timeline rolled at its start. `npm run apply:weather` rewrites this whole file in this form.
 export const WEATHER = {
   "emission": {
     "chanceGrowthPerCheck": 0.003,
     "chancePerCheck": 0.002,
     "checkIntervalSec": 60,
     "cooldownSec": 1200,
+    "durationSec": [
+      240,
+      480
+    ],
     "enabled": true,
-    "fadeSec": [
-      40,
-      90
+    "peakAtShare": [
+      0.2,
+      0.35
     ],
-    "onsetSec": [
-      40,
-      90
+    "peakShare": [
+      0.35,
+      0.5
     ],
-    "peakSec": [
-      90,
-      240
+    "peakStrength": [
+      1,
+      1
     ],
     "storm": {
-      "fadeSec": 40,
-      "lightningIntervalMult": 0.5,
       "rain": 1,
       "storm": 0.9
     }
   },
   "fog": {
-    "chance": 0.15,
+    "chanceGrowthPerCheck": 0,
+    "chancePerCheck": 0.15,
+    "checkIntervalSec": 300,
+    "cooldownSec": 300,
     "durationSec": [
-      120,
-      600
+      240,
+      900
     ],
-    "fadeInSec": 30,
-    "fadeOutSec": 45,
-    "idleSec": [
-      120,
-      600
+    "enabled": true,
+    "peakAtShare": [
+      0.15,
+      0.35
     ],
-    "intensity": [
+    "peakShare": [
+      0.3,
+      0.6
+    ],
+    "peakStrength": [
       0.4,
       1
     ],
     "phases": [
       "morning",
       "night"
-    ]
-  },
-  "lightning": {
-    "distance": [
-      0.2,
-      1
     ],
-    "intervalSec": [
-      25,
-      6
-    ]
+    "smoothSec": 10
   },
-  "precipitation": {
-    "clear": {
-      "durationSec": [
-        180,
-        900
-      ],
-      "weight": 0.7
-    },
-    "fadeInSec": 20,
-    "fadeOutSec": 30,
-    "rain": {
-      "durationSec": [
-        60,
-        600
-      ],
-      "intensity": [
-        0.3,
-        0.8
-      ],
-      "weight": 0.25
-    },
-    "storm": {
-      "durationSec": [
-        60,
-        240
-      ],
-      "intensity": [
-        0.6,
-        1
-      ],
-      "weight": 0.3
-    }
+  "initial": {
+    "fog": 0,
+    "rain": 0,
+    "storm": 0
   },
   "radiation": {
     "base": 0,
     "emissionPeak": 1
+  },
+  "rain": {
+    "chanceGrowthPerCheck": 0.001,
+    "chancePerCheck": 0.02,
+    "checkIntervalSec": 60,
+    "cooldownSec": 300,
+    "durationSec": [
+      180,
+      900
+    ],
+    "enabled": true,
+    "peakAtShare": [
+      0.15,
+      0.45
+    ],
+    "peakShare": [
+      0.15,
+      0.45
+    ],
+    "peakStrength": [
+      0.3,
+      0.85
+    ],
+    "smoothSec": 6
+  },
+  "storm": {
+    "chanceGrowthPerCheck": 0.00005,
+    "chancePerCheck": 0.0015,
+    "checkIntervalSec": 60,
+    "cooldownSec": 1800,
+    "durationSec": [
+      480,
+      1500
+    ],
+    "enabled": true,
+    "lightning": {
+      "chance": 0.7,
+      "distance": [
+        0.2,
+        1
+      ],
+      "endShare": [
+        0.5,
+        0.95
+      ],
+      "intervalSec": [
+        25,
+        6
+      ],
+      "jitter": 0.5,
+      "startShare": [
+        0,
+        0.3
+      ]
+    },
+    "peakAtShare": [
+      0.2,
+      0.5
+    ],
+    "peakShare": [
+      0.1,
+      0.35
+    ],
+    "peakStrength": [
+      0.4,
+      1
+    ],
+    "rainChanceMult": 6,
+    "rainStrengthMult": 1.3,
+    "smoothSec": 6
   },
   "thresholds": {
     "fog": 0.3,

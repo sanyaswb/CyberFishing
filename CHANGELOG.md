@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.14 - Independent weather events with timelines (spec 180 stage A, TK-325)
+
+- Weather: rain, storm and fog are separate events — each starts by a chance checked every minute and rolls its whole course at the start (length, when its peak comes, how long and how strong); a storm raises the chance and strength of rain but may pass without it, and has its own lightning. DevTools: switching the storm off no longer leaves the rain on.
+
 ## v0.51.13 - Vignette and blur switch separately (TK-324.2)
 
 - Emission screen: the darkening (emission.screen.vignette.enabled) and the blur (emission.screen.blur.enabled) switch on and off on their own in DevTools «Конфіг», so each can be measured; without darkening the veil paints no gradient.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.5 - Emission and radiation model (spec 179 stage A)
 
 - Weather: the location's emission (start, peak, fade with random durations, random pause between emissions) holds a storm with its own settings and leaves it as an ordinary storm; the location's radiation (0 outside an emission on the test location, 1 at the peak) is in the environment. No visuals yet. DevTools «ПОГОДА» → «Викид»: state, start/peak/fade/end now, freeze, radiation by hand.
-
-## v0.51.4 - Section description styled as the «i» hint (TK-320.1)
-
-- DevTools: a section's description (behind the «i» beside its title) is the same box as a parameter's «i» hint — the same background, padding and 12 px text, names in bold, rows without lines.

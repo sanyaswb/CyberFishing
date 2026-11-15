@@ -1,5 +1,6 @@
 "use strict";
-// Spec 172 stage A (TK-261): the weather model's states, fades, storm, lightning and fog, and the fields the bite
+// Spec 172 / spec 180 (TK-325): the weather's independent events (rain, storm with lightning, fog: check + chance, a
+// timeline rolled at the start, manual hold per process), and the fields the bite
 // chances, the radio and the wind read from EnvironmentSystem; spec 179: the emission, radiation and its storm hold.
 // Fixed seeds, explicit time steps.
 const assert = require("node:assert/strict");
@@ -20,394 +21,279 @@ const {
   MAP_DB,
 } = require("../../../src/game/config/databases/location_catalog.js");
 
+const { WeatherEventTimeline } = require("../../../src/game/domain/weather/weather_event_timeline.js");
+
+// Spec 180 (TK-325): a test location's events — rain, storm (with lightning) and fog — as check + chance and a timeline.
+const event = (extra = {}) => ({
+  enabled: true, checkIntervalSec: 60, chancePerCheck: 0.05, chanceGrowthPerCheck: 0, cooldownSec: 120,
+  durationSec: [600, 600], peakAtShare: [0.3, 0.3], peakShare: [0.2, 0.2], peakStrength: [0.6, 0.6], smoothSec: 0, ...extra,
+});
 const settings = () => ({
-  precipitation: {
-    clear: { weight: 0.7, durationSec: [180, 900] },
-    rain: { weight: 0.25, durationSec: [60, 600], intensity: [0.3, 0.8] },
-    storm: { weight: 0.05, durationSec: [60, 240], intensity: [0.6, 1.0] },
-    fadeInSec: 20,
-    fadeOutSec: 30,
-  },
-  fog: {
-    chance: 1,
-    phases: ["morning", "night"],
-    idleSec: [10, 10],
-    durationSec: [100, 100],
-    intensity: [0.5, 0.5],
-    fadeInSec: 10,
-    fadeOutSec: 10,
-  },
-  lightning: { intervalSec: [25, 6], distance: [0.2, 1.0] },
+  initial: { rain: 0, storm: 0, fog: 0 },
+  rain: event(),
+  storm: event({ chancePerCheck: 0.02, rainChanceMult: 6, rainStrengthMult: 1.5,
+    lightning: { chance: 1, startShare: [0.1, 0.1], endShare: [0.9, 0.9], intervalSec: [25, 6], jitter: 0.5, distance: [0.2, 1] } }),
+  fog: event({ chancePerCheck: 1, checkIntervalSec: 10, cooldownSec: 0, durationSec: [100, 100], phases: ["morning", "night"] }),
   thresholds: { rain: 0.15, fog: 0.3 },
 });
-const near = (actual, expected, message) =>
-  assert.ok(
-    Math.abs(actual - expected) < 1e-9,
-    `${message}: ${actual} ≠ ${expected}`,
-  );
+const near = (actual, expected, message, epsilon = 1e-9) =>
+  assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} ≠ ${expected}`);
 const step = (model, seconds, phase = "day", dt = 0.1) => {
-  for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += dt)
-    model.update(dt * 1000, phase);
+  for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += dt) model.update(dt * 1000, phase);
 };
 
-// 1. The location's real settings drive a model: states only from the precipitation table, always in range.
+// 1. The location's real settings: every strength in 0…1, all three events happen, storms raise the rain, a storm
+//    without rain is possible (owner, spec 180 item 2).
 {
-  const model = new WeatherModel({
-    rng: new SeededRng("check:weather"),
-    getSettings: () => MAP_DB.test.weather,
-  });
-  const seen = new Set();
-  for (let index = 0; index < 100000; index += 1) {
-    model.update(1000, "day");
-    const weather = model.snapshot;
-    seen.add(weather.precipitation);
-    for (const key of ["rain", "storm", "fog", "cloud"])
-      assert.ok(weather[key] >= 0 && weather[key] <= 1, `${key} in 0…1`);
+  const model = new WeatherModel({ rng: new SeededRng("check:weather"), getSettings: () => MAP_DB.test.weather });
+  const phases = ["morning", "day", "evening", "night"];
+  let rainTime = 0, stormTime = 0, rainInStorm = 0, stormsWithoutRain = 0, storms = 0, rained = false, stormSerial = 0;
+  for (let second = 0; second < 400 * 3600; second += 1) {
+    model.update(1000, phases[Math.floor((second / 3600) % 24 / 6)]);
+    const w = model.snapshot;
+    for (const key of ["rain", "storm", "fog", "cloud"]) assert.ok(w[key] >= 0 && w[key] <= 1, `${key} in 0…1`);
+    if (w.rain > 0.15) rainTime += 1;
+    if (w.storm > 0.05) { stormTime += 1; if (w.rain > 0.15) { rainInStorm += 1; rained = true; } }
+    if (w.events.storm.serial !== stormSerial) {
+      if (stormSerial > 0) { storms += 1; if (!rained) stormsWithoutRain += 1; }
+      stormSerial = w.events.storm.serial;
+      rained = false;
+    }
   }
-  assert.deepEqual(
-    [...seen].sort(),
-    ["clear", "rain", "storm"],
-    "a long run visits clear, rain and storm",
-  );
+  assert.ok(storms >= 20 && model.snapshot.events.rain.serial >= 100 && model.snapshot.events.fog.serial >= 20,
+    `a long run has rain, storms and fog (${model.snapshot.events.rain.serial} / ${storms} / ${model.snapshot.events.fog.serial})`);
+  assert.ok(rainInStorm / stormTime > (rainTime / (400 * 3600)) * 1.3, "it rains more during storms");
+  assert.ok(stormsWithoutRain > 0, `some storms bring no rain (${stormsWithoutRain} of ${storms})`);
 }
 
 // 2. Determinism: the same seed gives the same weather.
 {
   const run = () => {
-    const model = new WeatherModel({
-      rng: new SeededRng(42),
-      getSettings: settings,
-    });
+    const model = new WeatherModel({ rng: new SeededRng(42), getSettings: settings });
     const trace = [];
-    for (let index = 0; index < 3000; index += 1) {
+    for (let index = 0; index < 6000; index += 1) {
       model.update(500, index % 1000 < 500 ? "night" : "day");
-      if (index % 50 === 0)
-        trace.push(
-          `${model.snapshot.precipitation}:${model.snapshot.rain.toFixed(6)}:${model.snapshot.fog.toFixed(6)}`,
-        );
+      if (index % 50 === 0) trace.push(`${model.snapshot.rain.toFixed(6)}:${model.snapshot.storm.toFixed(6)}:${model.snapshot.fog.toFixed(6)}`);
     }
     return trace.join("|");
   };
   assert.equal(run(), run(), "the weather is deterministic for a seed");
 }
 
-// 3. Transitions: a storm only follows rain and only returns to rain; durations are real seconds within their ranges.
+// 3. The timeline (D13): rolled whole at the start; 0 → peak (smooth) → flat peak → 0; shares of the duration.
+{
+  const timeline = new WeatherEventTimeline();
+  const rng = new SeededRng(5);
+  timeline.roll({ durationSec: [1200, 1200], peakAtShare: [0.35, 0.35], peakShare: [0.15, 0.15], peakStrength: [0.2, 0.2] }, rng);
+  assert.deepEqual([timeline.durationSec, timeline.peakStartSec, timeline.peakEndSec], [1200, 420, 600],
+    "20 min, the peak from the 7th minute for 3 minutes (owner's example)");
+  near(timeline.peakStrength, 0.2, "the peak's strength");
+  assert.deepEqual([timeline.strengthAt(0), timeline.strengthAt(1200)], [0, 0], "0 at both ends");
+  near(timeline.strengthAt(210), 0.1, "half way up: half the peak (smoothstep is symmetric)");
+  near(timeline.strengthAt(500), 0.2, "flat on the peak");
+  assert.ok(timeline.strengthAt(900) < 0.2 && timeline.strengthAt(900) > 0, "falling after the peak");
+  assert.deepEqual([timeline.phaseAt(100), timeline.phaseAt(500), timeline.phaseAt(900), timeline.phaseAt(1300)],
+    ["rise", "peak", "fall", "idle"], "phases");
+  const slopes = [];
+  for (let t = 1; t < 420; t += 1) slopes.push(timeline.strengthAt(t) - timeline.strengthAt(t - 1));
+  assert.ok(slopes[0] < slopes[200] && slopes[418] < slopes[200], "the rise starts and ends softly (no kink at the peak)");
+  const varied = new Set();
+  for (let index = 0; index < 50; index += 1) {
+    timeline.roll(MAP_DB.test.weather.storm, rng);
+    const { durationSec, peakAtShare, peakShare, peakStrength } = MAP_DB.test.weather.storm;
+    assert.ok(timeline.durationSec >= durationSec[0] && timeline.durationSec <= durationSec[1], "duration in range");
+    assert.ok(timeline.peakStartSec >= timeline.durationSec * peakAtShare[0] - 1e-6 &&
+      timeline.peakStartSec <= timeline.durationSec * peakAtShare[1] + 1e-6, "peak start in range");
+    assert.ok(timeline.peakEndSec - timeline.peakStartSec <= timeline.durationSec * peakShare[1] + 1e-6, "peak length in range");
+    assert.ok(timeline.peakStrength >= peakStrength[0] && timeline.peakStrength <= peakStrength[1], "peak strength in range");
+    varied.add(Math.round(timeline.peakStartSec));
+  }
+  assert.ok(varied.size > 40, "the randomness moves the peak along the timeline");
+}
+
+// 4. An event's check + chance (D2): one roll per checkIntervalSec, growth per failed roll, a cooldown after the event.
+{
+  const rolls = { count: 0 };
+  const rng = { next: () => { rolls.count += 1; return 0.999; }, range: (min) => min, chance: () => false };
+  const config = settings();
+  config.rain = event({ chancePerCheck: 0.01, chanceGrowthPerCheck: 0.02, checkIntervalSec: 60 });
+  config.storm.enabled = false;
+  config.fog.enabled = false;
+  const model = new WeatherModel({ rng, getSettings: () => config });
+  for (let second = 0; second < 600; second += 1) model.update(1000, "day");
+  assert.equal(rolls.count, 10, `ten minutes = ten rolls, not one per second (${rolls.count})`);
+  near(model.snapshot.events.rain.chance, 0.01 + 0.02 * 10, "the chance grows with each failed roll");
+  assert.equal(model.snapshot.events.rain.active, false, "no event while the rolls fail");
+  model.start("rain");
+  assert.equal(model.snapshot.events.rain.active, true, "an event started");
+  const before = rolls.count;
+  for (let second = 0; second < 599; second += 1) model.update(1000, "day");
+  assert.equal(rolls.count, before, "no rolls during an event");
+  for (let second = 0; second < 2; second += 1) model.update(1000, "day");
+  assert.equal(model.snapshot.events.rain.active, false, "the event ends with its timeline");
+  assert.ok(model.snapshot.events.rain.cooldownLeftSec > 100, "then the cooldown runs");
+}
+
+// 5. The defect of spec 180 (storm switch kept the rain): every process is held alone; in any order of switching the
+//    others keep their own course. With the rain's own events off, the rain stays 0 whatever the storm does.
 {
   const config = settings();
-  config.precipitation.storm.weight = 5;
-  const model = new WeatherModel({
-    rng: new SeededRng(7),
-    getSettings: () => config,
-  });
-  // An episode may repeat its state (clear → clear with a new duration); each episode is measured on its own.
-  let previous = null,
-    episode = 0,
-    enteredAt = 0,
-    time = 0,
-    transitions = 0;
-  for (let index = 0; index < 200000 && transitions < 300; index += 1) {
-    model.update(1000, "day");
-    time += 1;
-    const state = model.snapshot.precipitation;
-    if (model.snapshot.episode !== episode) {
-      if (previous !== null) {
-        transitions += 1;
-        if (state === "storm")
-          assert.equal(previous, "rain", "a storm only follows rain");
-        if (previous === "storm")
-          assert.equal(state, "rain", "a storm returns to rain");
-        const lasted = time - enteredAt;
-        const [min, max] = config.precipitation[previous].durationSec;
-        assert.ok(
-          lasted >= min && lasted <= max + 1,
-          `${previous} lasted ${lasted} s, expected ${min}…${max}`,
-        );
+  config.rain.enabled = false;
+  config.storm.enabled = false;
+  config.fog.enabled = false;
+  const model = new WeatherModel({ rng: new SeededRng(3), getSettings: () => config });
+  const run = (seconds) => step(model, seconds);
+  model.hold("rain", 0.7, { fadeSec: 5 }); run(10);
+  near(model.snapshot.rain, 0.7, "rain switch on");
+  model.hold("rain", null, { fadeSec: 5 }); run(10);
+  assert.deepEqual([model.snapshot.rain, model.snapshot.events.rain.held], [0, false], "rain switch off: no rain");
+  model.hold("storm", 0.8, { fadeSec: 5 }); run(10);
+  assert.deepEqual([model.snapshot.storm, model.snapshot.rain], [0.8, 0], "storm switch on: a storm, and no rain made by it");
+  model.hold("storm", null, { fadeSec: 5 }); run(10);
+  assert.deepEqual([model.snapshot.storm, model.snapshot.rain, model.snapshot.frozen], [0, 0, false],
+    "storm switch off: no storm, no rain, nothing held (the old switch left the rain on)");
+  const orders = [["rain", "storm", "fog"], ["storm", "fog", "rain"], ["fog", "rain", "storm"]];
+  for (const order of orders) {
+    for (const kind of order) model.hold(kind, 0.5, { fadeSec: 0 });
+    for (const kind of order) {
+      model.hold(kind, null, { fadeSec: 0 });
+      model.update(16, "night");
+      for (const other of order.filter((name) => name !== kind)) {
+        const held = model.snapshot.events[other].held;
+        const releasedBefore = order.indexOf(other) < order.indexOf(kind);
+        assert.equal(held, !releasedBefore, `releasing ${kind} leaves ${other} as it was`);
       }
-      episode = model.snapshot.episode;
-      enteredAt = time;
     }
-    previous = state;
   }
-  assert.ok(transitions >= 300, "enough transitions observed");
+  model.hold("rain", 0.5);
+  model.hold("storm", 0.5);
+  model.releaseAll();
+  assert.equal(model.snapshot.frozen, false, "↺: every process back to its own course");
+  assert.equal(model.hold("snow", 1), false, "unknown kinds are refused");
 }
 
-// 4. Fades: a full rise takes fadeInSec, a full fall fadeOutSec; a forced fade overrides both until the next state.
+// 6. A storm raises the rain's chance and strength by its multipliers × its strength.
 {
-  const model = new WeatherModel({
-    rng: new SeededRng(3),
-    getSettings: settings,
-  });
-  model.setFrozen(true);
-  model.force("precipitation", "rain", { intensity: 0.8 });
-  step(model, 8);
-  near(model.snapshot.rain, 0.4, "rain rises by 1/20 per second");
-  step(model, 20);
-  near(model.snapshot.rain, 0.8, "rain stops at its target");
-  model.force("precipitation", "clear");
-  step(model, 15);
-  near(model.snapshot.rain, 0.3, "rain falls by 1/30 per second");
-  model.force("precipitation", "rain", { intensity: 1, fadeSec: 2 });
+  const config = settings();
+  config.storm.enabled = false;
+  config.rain.chanceGrowthPerCheck = 0;
+  const model = new WeatherModel({ rng: new SeededRng(4), getSettings: () => config });
+  model.update(1, "day");
+  near(model.snapshot.events.rain.chance, 0.05, "the rain's own chance");
+  model.hold("storm", 1, { fadeSec: 0 });
+  model.update(1, "day");
+  near(model.snapshot.events.rain.chance, 0.05 * 6, "a full storm: × rainChanceMult");
+  model.hold("storm", 0.5, { fadeSec: 0 });
+  model.update(1, "day");
+  near(model.snapshot.events.rain.chance, 0.05 * 3.5, "half a storm: half the extra");
+  model.start("rain", { peakStrength: 0.4, atPeak: true });
+  model.hold("storm", 1, { fadeSec: 0 });
   step(model, 1);
-  near(model.snapshot.rain, 0.8, "a forced 2 s fade rises by 0.5 per second");
-  model.force("precipitation", "storm", { intensity: 0.9, fadeSec: 0 });
-  near(model.snapshot.storm, 0.9, "a zero fade applies at once");
-  assert.ok(
-    model.snapshot.rain >= 0.9,
-    "a storm rains at least as hard as its intensity",
-  );
-  const before = model.snapshot.precipitationLeftSec;
-  step(model, 30);
-  assert.equal(
-    model.snapshot.precipitation,
-    "storm",
-    "frozen weather keeps its state",
-  );
-  near(
-    model.snapshot.precipitationLeftSec,
-    before,
-    "frozen weather keeps its timer",
-  );
+  near(model.snapshot.rain, 0.4 * 1.5, "the rain grows by rainStrengthMult in a full storm");
+  model.hold("storm", 0, { fadeSec: 0 });
+  step(model, 1);
+  near(model.snapshot.rain, 0.4, "and back without the storm");
 }
 
-// 5. Lightning: none without a storm; strikes at the storm's interval (±50%), variants 0…3, distances in range.
+// 7. Lightning belongs to the storm: none without it; rolled at the storm's start; only between its start and end on
+//    the storm's timeline; more often as the storm grows; a storm may have none.
 {
-  const model = new WeatherModel({
-    rng: new SeededRng(11),
-    getSettings: settings,
-  });
-  model.setFrozen(true);
-  model.force("precipitation", "rain", { intensity: 1, fadeSec: 0 });
-  step(model, 120);
-  assert.equal(
-    model.snapshot.strikeSerial,
-    0,
-    "rain without a storm has no lightning",
-  );
-  model.force("precipitation", "storm", { intensity: 1, fadeSec: 0 });
-  const strikes = [];
-  let last = model.snapshot.strikeSerial,
-    time = 0;
-  for (let index = 0; index < 6000; index += 1) {
-    model.update(100, "day");
-    time += 0.1;
-    if (model.snapshot.strikeSerial !== last) {
-      last = model.snapshot.strikeSerial;
-      strikes.push(time);
-      assert.ok(
-        [0, 1, 2, 3].includes(model.snapshot.strikeVariant),
-        "variant 0…3",
-      );
-      assert.ok(
-        model.snapshot.strikeDistance >= 0.2 &&
-          model.snapshot.strikeDistance <= 1,
-        "distance in range",
-      );
-    }
+  const config = settings();
+  config.rain.enabled = false;
+  config.storm.enabled = false;
+  config.fog.enabled = false;
+  const model = new WeatherModel({ rng: new SeededRng(17), getSettings: () => config });
+  step(model, 600, "day", 1);
+  assert.equal(model.snapshot.strikeSerial, 0, "no storm, no lightning");
+  model.start("storm");
+  const strikesAt = [];
+  let last = 0;
+  for (let second = 0; second < 600; second += 1) {
+    model.update(1000, "day");
+    if (model.snapshot.strikeSerial !== last) { last = model.snapshot.strikeSerial; strikesAt.push(second); }
   }
-  assert.ok(
-    strikes.length >= 600 / 9 && strikes.length <= 600 / 3 + 1,
-    `a full storm strikes every 3…9 s (${strikes.length} in 600 s)`,
-  );
-  for (let index = 1; index < strikes.length; index += 1) {
-    const gap = strikes[index] - strikes[index - 1];
-    assert.ok(
-      gap >= 3 - 0.11 && gap <= 9 + 0.11,
-      `strike gap ${gap.toFixed(2)} s`,
-    );
-  }
-  const serial = model.snapshot.strikeSerial;
-  model.strike();
-  assert.equal(model.snapshot.strikeSerial, serial + 1, "a strike on demand");
+  assert.ok(strikesAt.length > 5, `a storm with lightning strikes (${strikesAt.length})`);
+  assert.ok(strikesAt[0] >= 59 && strikesAt.at(-1) <= 541, "only between 10 % and 90 % of the storm (60…540 s)");
+  const gaps = strikesAt.slice(1).map((at, index) => at - strikesAt[index]);
+  const peakGaps = gaps.filter((_, index) => strikesAt[index] >= 180 && strikesAt[index] <= 300);
+  const edgeGaps = gaps.filter((_, index) => strikesAt[index] < 120);
+  const mean = (list) => list.reduce((sum, value) => sum + value, 0) / Math.max(1, list.length);
+  assert.ok(peakGaps.length > 0 && edgeGaps.length > 0 && mean(peakGaps) < mean(edgeGaps), "more often at the peak");
+  for (const variant of [model.snapshot.strikeVariant]) assert.ok(variant >= 0 && variant <= 3, "variants 0…3");
+  config.storm.lightning.chance = 0;
+  model.start("storm");
+  const before = model.snapshot.strikeSerial;
+  step(model, 600, "day", 1);
+  assert.equal(model.snapshot.strikeSerial, before, "a storm without lightning (its chance said no)");
 }
 
-// 6. Fog: only in its phases; leaving them ends the fog, which fades out.
+// 8. Fog only in its phases; leaving them ends it. The initial weather (D14) starts a session's events at their peak.
 {
-  const model = new WeatherModel({
-    rng: new SeededRng(5),
-    getSettings: settings,
-  });
-  step(model, 60, "day");
-  assert.equal(model.snapshot.fogState, "none", "no fog outside its phases");
-  step(model, 15, "night");
-  assert.equal(
-    model.snapshot.fogState,
-    "fog",
-    "fog starts in an allowed phase",
-  );
-  near(model.snapshot.fog, 0.5, "fog reaches its intensity");
-  step(model, 0.1, "day", 0.1);
-  assert.equal(
-    model.snapshot.fogState,
-    "none",
-    "leaving the phase ends the fog",
-  );
-  step(model, 2.5, "day");
-  assert.ok(
-    model.snapshot.fog > 0.2 && model.snapshot.fog < 0.3,
-    "the fog fades out instead of vanishing",
-  );
+  const config = settings();
+  config.rain.enabled = false;
+  config.storm.enabled = false;
+  const model = new WeatherModel({ rng: new SeededRng(8), getSettings: () => config });
+  step(model, 60, "day", 1);
+  assert.equal(model.snapshot.fog, 0, "no fog by day");
+  step(model, 60, "night", 1);
+  assert.equal(model.snapshot.events.fog.active, true, "fog at night");
+  step(model, 1, "day", 1);
+  assert.equal(model.snapshot.events.fog.active, false, "leaving the phase ends the fog");
+  const initial = settings();
+  initial.initial = { rain: 0.6, storm: 0, fog: 0 };
+  const started = new WeatherModel({ rng: new SeededRng(8), getSettings: () => initial });
+  started.update(16, "day");
+  near(started.snapshot.rain, 0.6, "a rainy start: the rain at its peak with the initial strength", 1e-6);
+  assert.equal(started.snapshot.storm, 0, "nothing else");
 }
 
-// 7. EnvironmentSystem: thresholds and the continuous rain multiplier; the snapshot object is reused.
+// 9. EnvironmentSystem: thresholds, the continuous rain multiplier, the reused snapshot; without a model the weather
+//    stays clear; the wind held by hand.
 {
-  const location = {
-    weather: settings(),
-    environment: { wind: { rainMultiplier: 2.5 } },
-  };
+  const config = settings();
+  config.rain.enabled = false;
+  config.storm.enabled = false;
+  config.fog.enabled = false;
+  const location = { weather: config, environment: { wind: { rainMultiplier: 2.5 } } };
   const rng = new SeededRng(9);
-  const weather = new WeatherModel({
-    rng,
-    getSettings: () => location.weather,
-  });
-  const environment = new EnvironmentSystem(
-    location,
-    12,
-    rng,
-    { timePhases: { day: { startHour: 0, endHour: 24 } } },
-    null,
-    weather,
-  );
+  const weather = new WeatherModel({ rng, getSettings: () => location.weather });
+  const environment = new EnvironmentSystem(location, 12, rng, { timePhases: { day: { startHour: 0, endHour: 24 } } }, null, weather);
   const snapshot = environment.getSnapshot();
-  weather.setFrozen(true);
-  weather.force("precipitation", "rain", { intensity: 0.1, fadeSec: 0 });
+  weather.hold("rain", 0.1, { fadeSec: 0 });
   environment.update(16, 1);
-  assert.equal(
-    snapshot.isRaining,
-    false,
-    "light drizzle below the threshold does not count as rain",
-  );
-  near(snapshot.wind.rainMult, 1.15, "rainMult follows the intensity");
-  weather.force("precipitation", "rain", { intensity: 1, fadeSec: 0 });
+  assert.equal(snapshot.isRaining, false, "light drizzle below the threshold does not count as rain");
+  near(snapshot.wind.rainMult, 1.15, "rainMult follows the strength");
+  weather.hold("rain", 1, { fadeSec: 0 });
   environment.update(16, 1);
   assert.equal(snapshot.isRaining, true, "rain above the threshold");
-  near(
-    snapshot.wind.rainMult,
-    2.5,
-    "full rain gives the configured multiplier",
-  );
-  weather.force("fog", "fog", { intensity: 0.4, fadeSec: 0 });
+  near(snapshot.wind.rainMult, 2.5, "full rain gives the configured multiplier");
+  weather.hold("fog", 0.4, { fadeSec: 0 });
   environment.update(16, 1);
   assert.equal(snapshot.isFoggy, true, "fog above the threshold");
   assert.equal(environment.getSnapshot(), snapshot, "one snapshot object");
-  assert.equal(
-    snapshot.weather,
-    weather.snapshot,
-    "the weather's own snapshot is shared, not copied",
-  );
-  weather.force("precipitation", "clear", { fadeSec: 0 });
+  assert.equal(snapshot.weather, weather.snapshot, "the weather's own snapshot is shared, not copied");
+  weather.releaseAll();
   environment.update(16, 1);
-  assert.equal(snapshot.isRaining, false);
-  assert.equal(snapshot.wind.rainMult, 1, "no rain, no multiplier");
-}
+  assert.deepEqual([snapshot.isRaining, snapshot.wind.rainMult], [false, 1], "no rain, no multiplier");
 
-// 8. Without a weather model the weather stays clear.
-{
-  const environment = new EnvironmentSystem(
-    { environment: {} },
-    12,
-    new SeededRng(1),
-    { timePhases: {} },
-  );
-  for (let index = 0; index < 100; index += 1) environment.update(1000, 240);
-  const snapshot = environment.getSnapshot();
-  assert.equal(snapshot.isRaining, false);
-  assert.equal(snapshot.isFoggy, false);
-  assert.equal(snapshot.weather.precipitation, "clear");
-}
+  const plain = new EnvironmentSystem({ environment: {} }, 12, new SeededRng(1), { timePhases: {} });
+  for (let index = 0; index < 100; index += 1) plain.update(1000, 240);
+  assert.deepEqual([plain.getSnapshot().isRaining, plain.getSnapshot().isFoggy, plain.getSnapshot().weather.precipitation],
+    [false, false, "clear"], "without a weather model the weather stays clear");
 
-// 9. TK-271: live strength without restarting the state, and the wind held by hand.
-{
-  const model = new WeatherModel({
-    rng: new SeededRng(13),
-    getSettings: settings,
-  });
-  model.setFrozen(true);
-  model.force("precipitation", "rain", {
-    intensity: 0.5,
-    fadeSec: 0,
-    durationSec: 100,
-  });
-  model.update(1000, "day");
-  const left = model.snapshot.precipitationLeftSec;
-  assert.equal(model.setIntensity("rain", 0.9), true);
-  near(model.snapshot.rainTarget, 0.9, "the rain's target follows the slider");
-  near(
-    model.snapshot.precipitationLeftSec,
-    left,
-    "the state and its timer stay",
-  );
-  step(model, 8);
-  near(
-    model.snapshot.rain,
-    0.9,
-    "the rain rises there with its fade (0.4 in 8 s at 20 s per full rise)",
-  );
-  model.force("precipitation", "storm", { intensity: 0.6, fadeSec: 0 });
-  model.setIntensity("rain", 0.2);
-  near(
-    model.snapshot.rainTarget,
-    0.6,
-    "a storm keeps raining at least as hard as its own strength",
-  );
-  model.setIntensity("storm", 0.95);
-  near(model.snapshot.stormTarget, 0.95, "the storm's strength");
-  near(model.snapshot.rainTarget, 0.95, "and its rain with it");
-  model.setIntensity("fog", 0.4);
-  near(model.snapshot.fogTarget, 0.4, "the fog's strength");
-  assert.equal(
-    model.setIntensity("snow", 1),
-    false,
-    "unknown kinds are refused",
-  );
-
-  const location = {
-    weather: settings(),
-    environment: {
-      wind: {
-        rainMultiplier: 2.5,
-        changesPerDay: [4, 12],
-        breezeAngleRange: [10, 15],
-        gustAngleRange: [15, 40],
-        gustChancePerSec: 0.4,
-      },
-    },
-  };
-  const environment = new EnvironmentSystem(location, 12, new SeededRng(21), {
-    timePhases: { day: { startHour: 0, endHour: 24 } },
-  });
-  environment.update(16, 1);
-  environment.setWindOverride(-1);
-  assert.deepEqual(
-    [
-      environment.getSnapshot().wind.direction,
-      environment.getSnapshot().wind.forced,
-    ],
-    [-1, true],
-    "the wind held to the left",
-  );
-  assert.equal(
-    environment.getPhysicsEnv().wind.direction,
-    -1,
-    "the physics feel the held wind",
-  );
-  for (let index = 0; index < 50; index += 1) environment.update(3600000, 1);
-  assert.equal(
-    environment.getSnapshot().wind.direction,
-    -1,
-    "the random wind does not replace a held one",
-  );
-  environment.setWindOverride(0);
-  assert.equal(
-    environment.getPhysicsEnv().wind,
-    null,
-    "calm: no wind in the physics",
-  );
-  environment.setWindOverride(null);
-  assert.equal(
-    environment.getSnapshot().wind.forced,
-    false,
-    "null returns to the random wind",
-  );
+  const windLocation = { weather: config, environment: { wind: { rainMultiplier: 2.5, changesPerDay: [4, 12],
+    breezeAngleRange: [10, 15], gustAngleRange: [15, 40], gustChancePerSec: 0.4 } } };
+  const windy = new EnvironmentSystem(windLocation, 12, new SeededRng(21), { timePhases: { day: { startHour: 0, endHour: 24 } } });
+  windy.update(16, 1);
+  windy.setWindOverride(-1);
+  assert.deepEqual([windy.getSnapshot().wind.direction, windy.getSnapshot().wind.forced], [-1, true], "the wind held to the left");
+  assert.equal(windy.getPhysicsEnv().wind.direction, -1, "the physics feel the held wind");
+  for (let index = 0; index < 50; index += 1) windy.update(3600000, 1);
+  assert.equal(windy.getSnapshot().wind.direction, -1, "the random wind does not replace a held one");
+  windy.setWindOverride(0);
+  assert.equal(windy.getPhysicsEnv().wind, null, "calm: no wind in the physics");
+  windy.setWindOverride(null);
+  assert.equal(windy.getSnapshot().wind.forced, false, "null returns to the random wind");
 }
 
 // 10. Spec 172 D7 (TK-289): the sea state from wind, night and storm, smooth, with the waves travelling with the wind.
@@ -950,14 +836,18 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     };
     const fakeModel = {
       snapshot: stageCEnv.weather,
-      setFrozen(v) {
-        calls.push(["frozen", v]);
+      hold(kind, strength) {
+        calls.push(["hold", kind, strength]);
       },
-      force() {},
+      start(kind) {
+        calls.push(["start", kind]);
+      },
+      releaseAll() {
+        calls.push(["releaseAll"]);
+      },
       strike() {
         calls.push(["strike"]);
       },
-      setIntensity() {},
     };
     const devWeather = new WeatherDevSection({
       ui: fakeUi,
@@ -988,22 +878,29 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     const locChoice = rowsByPath.get("WEATHER.location.id");
     assert(locChoice && locChoice.value === "test", "location selector starts at active map");
     locChoice.onChange("lake");
-    const rainChance = rowsByPath.get("WEATHER.chances.rainWeight");
+    // Spec 180 D2: the chances are each event's chance per check on the selected location.
+    const rainChance = rowsByPath.get("WEATHER.chances.rainChance");
     assert.deepEqual(
       rainChance.bindingPath,
-      ["CONFIG", "locations", "map", "lake", "weather", "precipitation", "rain", "weight"],
+      ["CONFIG", "locations", "map", "lake", "weather", "rain", "chancePerCheck"],
       "Weather Chances binds directly to selected map's CONFIG weather tree",
     );
-    rainChance.onChange(1.5);
+    rainChance.onChange(0.05);
     assert(
-      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.precipitation.rain.weight" && v === 1.5),
-      "Weather Chances updates weight on selected location",
+      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.rain.chancePerCheck" && v === 0.05),
+      "Weather Chances updates the rain's chance per check on the selected location",
     );
     rowsByPath.get("WEATHER.chances.fogChance").onChange(1.5);
     assert(
-      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chance" && v === 1),
+      calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chancePerCheck" && v === 1),
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
+    // Spec 180 D1: each switch holds its own process only; switching the storm off releases the storm alone.
+    rowsByPath.get("WEATHER.controls.storm").onChange(true);
+    rowsByPath.get("WEATHER.controls.storm").onChange(false);
+    const stormCalls = calls.filter(([k]) => k === "hold");
+    assert.deepEqual(stormCalls.map(([, kind, strength]) => [kind, strength]), [["storm", 0.8], ["storm", null]],
+      "the storm switch holds and releases the storm only (never the rain)");
     rowsByPath.get("WEATHER.controls.windStrength").onChange(82);
     assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "strength slider drives setWindStrength");
     assert(fakeUi.syncCalls.some(([p, v]) => p === "WEATHER.controls.windStrengthHold" && v === true), "dragging strength slider activates hold switcher");
@@ -1011,6 +908,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
     rowsByPath.get("button:↺ Автоматична погода").onClick();
     assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "auto button resets forced wind strength");
+    assert(calls.some(([k]) => k === "releaseAll"), "auto button returns every weather process to its own course");
 
     // TK-298.1: Location selector stays visible even when only one location is configured.
     rowsByPath.clear();
@@ -1173,8 +1071,9 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const emissionSettings = () => ({
     emission: {
       enabled: true, cooldownSec: 10, checkIntervalSec: 1, chancePerCheck: 1, chanceGrowthPerCheck: 0,
-      onsetSec: [20, 20], peakSec: [30, 30],
-      fadeSec: [40, 40], storm: { rain: 0.9, storm: 0.8, fadeSec: 10, lightningIntervalMult: 0.5 },
+      // Spec 180 D13: the shared timeline — 90 s: onset 20 s, peak 30 s, fade 40 s, full strength.
+      durationSec: [90, 90], peakAtShare: [20 / 90, 20 / 90], peakShare: [30 / 90, 30 / 90], peakStrength: [1, 1],
+      storm: { rain: 0.9, storm: 0.8 },
     },
     radiation: { base: 0.1, emissionPeak: 0.9 },
   });
@@ -1199,7 +1098,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.deepEqual([...realPhases].sort(), ["fade", "idle", "onset", "peak"], "a long run visits every part");
   assert.ok(realModel.snapshot.serial >= 5, `11 hours of real time give several emissions (${realModel.snapshot.serial})`);
 
-  // (b) Parts in order with their configured durations; intensity t² on the onset, 1 on the peak, smoothstep down.
+  // (b) Parts in order on the timeline; the intensity rises and falls along a smoothstep, 1 on the peak.
   const model = new EmissionModel({ rng: new SeededRng(3), getSettings: emissionSettings });
   model.update(0);
   assert.equal(model.snapshot.phase, "idle", "starts idle");
@@ -1212,7 +1111,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.equal(model.snapshot.phase, "onset", "the onset starts after the first delay");
   assert.equal(model.snapshot.serial, 1, "the first emission is counted");
   tick(model, 9.95);
-  assert.ok(Math.abs(model.snapshot.intensity - 0.25) < 0.02, `the onset rises as t² (half = 25%, ${model.snapshot.intensity})`);
+  assert.ok(Math.abs(model.snapshot.intensity - 0.5) < 0.02, `half the onset = 50% (smoothstep, ${model.snapshot.intensity})`);
   assert.ok(Math.abs(model.snapshot.radiation - (0.1 + 0.8 * model.snapshot.intensity)) < 1e-9,
     "radiation = base + (peak − base) × intensity");
   tick(model, 10.1);
@@ -1304,10 +1203,11 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   tick(disabled, 500, 1);
   assert.equal(disabled.snapshot.phase, "idle", "a disabled emission never starts on its own");
 
-  // (d) The environment: a running emission holds a storm with the emission's settings; it ends as an ordinary storm.
+  // (d) The environment (spec 180): a running emission holds the storm and the rain at least at its own strengths ×
+  //     its intensity; they rise and fall with it; after it the weather runs on its own.
   const location = { weather: { ...settings(), ...emissionSettings() } };
-  location.weather.precipitation.clear.durationSec = [100000, 100000];
-  location.weather.fog.chance = 0;
+  for (const kind of ["rain", "storm", "fog"]) location.weather[kind].enabled = false;
+  location.weather.storm.lightning.chance = 1;
   const weatherRng = new SeededRng(11);
   const weather = new WeatherModel({ rng: weatherRng, getSettings: () => location.weather });
   const emission = new EmissionModel({ rng: new SeededRng("11:emission"), getSettings: () => location.weather });
@@ -1316,38 +1216,31 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const run = (seconds) => { for (let t = 0; t < seconds - 1e-9; t += 0.1) environment.update(100, 0); };
   run(5);
   const held = environment.getSnapshot();
-  assert.equal(held.weather.precipitation, "clear", "clear before the emission");
+  assert.deepEqual([held.weather.storm, held.weather.rain], [0, 0], "clear before the emission");
   near(held.radiation, 0.1, "the environment exposes the base radiation");
   run(6.2);
   assert.equal(held.emission.phase, "onset", "the emission started");
-  assert.equal(held.weather.precipitation, "storm", "the emission turns the weather into a storm");
-  assert.equal(held.weather.held, true, "the storm is held by the emission");
-  run(5);
-  assert.ok(Math.abs(held.weather.storm - 0.5) < 0.03, `the storm rises with the emission's fadeSec (${held.weather.storm})`);
-  run(80);
-  assert.equal(held.emission.phase, "fade", "still fading after onset 20 + peak 30 + 30 s");
-  assert.equal(held.weather.precipitation, "storm", "the storm holds through the whole emission");
-  near(held.weather.rainTarget, 0.9, "the emission's own rain intensity");
-  near(held.weather.stormTarget, 0.8, "the emission's own storm intensity (rain at least as hard)");
-  assert.ok(held.weather.strikeSerial > 0, "the held storm strikes lightning");
-  run(11);
+  run(10);
+  const half = held.emission.intensity;
+  assert.ok(half > 0.3 && half < 0.7, `half way up the onset (${half})`);
+  near(held.weather.storm, 0.8 * half, "the storm follows the emission's strength × its own", 0.02);
+  near(held.weather.rain, 0.9 * half, "and so does the rain", 0.02);
+  run(20);
+  assert.equal(held.emission.phase, "peak", "at the peak");
+  near(held.weather.storm, 0.8, "the emission's own storm strength", 1e-6);
+  near(held.weather.rain, 0.9, "the emission's own rain strength", 1e-6);
+  assert.equal(held.weather.frozen, false, "an emission is not a manual hold");
+  run(70);
   assert.equal(held.emission.phase, "idle", "the emission ended");
-  assert.equal(held.weather.held, false, "the hold released");
-  assert.equal(held.weather.precipitation, "storm", "the weather continues as an ordinary storm");
-  assert.ok(held.weather.precipitationLeftSec > 0 && held.weather.precipitationLeftSec <= 240, "with a rolled storm duration");
-  location.weather.emission.enabled = false; // no next emission during the storm's own end
-  run(300);
-  assert.notEqual(held.weather.precipitation, "storm", "the ordinary storm ends by the usual rules");
+  assert.deepEqual([held.weather.storm, held.weather.rain], [0, 0], "its storm and rain went with it (own events off)");
   near(held.radiation, 0.1, "radiation back to base");
 
-  // (e) A DEV-frozen weather keeps its hand-set state under an emission.
-  const frozenWeather = new WeatherModel({ rng: new SeededRng(5), getSettings: () => location.weather });
-  frozenWeather.force("precipitation", "rain", { intensity: 0.3, fadeSec: 0 });
-  frozenWeather.setFrozen(true);
-  frozenWeather.setHold({ rain: 1, storm: 1, fadeSec: 1, lightningIntervalMult: 0.5 });
-  frozenWeather.update(5000, "day");
-  assert.equal(frozenWeather.snapshot.precipitation, "rain", "DEV's held rain wins over the emission's storm");
-  near(frozenWeather.snapshot.rain, 0.3, "the hand-set intensity stays");
+  // (e) A manual hold wins over the emission's floor (DevTools tests the look by hand).
+  const handWeather = new WeatherModel({ rng: new SeededRng(5), getSettings: () => location.weather });
+  handWeather.hold("rain", 0.3, { fadeSec: 0 });
+  handWeather.update(5000, "day", { storm: 1, rain: 1 });
+  near(handWeather.snapshot.rain, 0.3, "DEV's held rain stays under the emission");
+  near(handWeather.snapshot.storm, 1, "the storm follows the emission's floor");
 
   // (f) Without an emission model the environment has none and no radiation.
   const plain = new EnvironmentSystem(location, 12, new SeededRng(2), { timePhases: { day: { startHour: 0, endHour: 24 } } },
@@ -1521,5 +1414,5 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
 }
 
 console.log(
-  "weather: states, fades, storm, lightning, fog, derived fields, live strength, held wind, the sea state, the live reading and the emission OK",
+  "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading and the emission OK",
 );
