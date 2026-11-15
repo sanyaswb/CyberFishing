@@ -39,7 +39,8 @@ export class ConfigTreeRenderer {
     return this.#shouldSkipKey(path, key, options);
   }
 
-  // options: { visibilityPolicy, applyHookedFishLegacySkips, groupedDebug }
+  // options: { visibilityPolicy, applyHookedFishLegacySkips, groupedDebug, inlineSections } — inlineSections (spec 180,
+  // TK-327.1): nested objects open in place under their parent instead of inside (drill-in) at any depth.
   render(obj, parentElement, path, options = {}) {
     for (const key in obj) {
       if (this.#shouldSkipKey(path, key, options)) continue;
@@ -52,7 +53,7 @@ export class ConfigTreeRenderer {
           this.#ui.addParameter(parentElement, { control: "numberList", label: this.#formatKey(key, currentPath), value,
             onCommit: (next) => this.#edits.update(currentPath, next), path: currentPath });
         } else if (value.length > 0 && typeof value[0] === "object") {
-          this.#createSection(key, parentElement, currentPath, { render: (content) => {
+          this.#createSection(key, parentElement, currentPath, { inline: options.inlineSections === true, render: (content) => {
             value.forEach((item, index) => {
               const itemLabel = item.id || item.variant || item.itemType || `Item [${index}]`;
               this.section(itemLabel, content, [...currentPath, index], item, options);
@@ -60,7 +61,7 @@ export class ConfigTreeRenderer {
           } });
         }
       } else if (value !== null && typeof value === "object") {
-        this.section(key, parentElement, currentPath, value, options);
+        this.section(key, parentElement, currentPath, value, options, options.inlineSections === true ? { inline: true } : {});
       } else if (SCALAR_TYPES.has(typeof value)) {
         this.renderScalar({ key, value, parentElement, displayPath: currentPath, canonicalPath: currentPath });
       }

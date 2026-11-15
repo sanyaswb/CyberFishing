@@ -39,6 +39,8 @@ export class WeatherModel {
     strikeVariant: 0,
     strikeDistance: 0,
     lightningActive: false,
+    // TK-327.1: the current storm's rolled lightning (DevTools shows what was generated).
+    lightning: { has: false, startSec: 0, endSec: 0 },
     events: null,
   };
 
@@ -192,5 +194,8 @@ export class WeatherModel {
     snapshot.precipitation = snapshot.storm > 0 ? "storm" : snapshot.rain > 0 ? "rain" : "clear";
     snapshot.fogState = snapshot.fog > 0 ? "fog" : "none";
     snapshot.frozen = rain.held || storm.held || fog.held;
+    snapshot.lightning.has = this.#lightning.has;
+    snapshot.lightning.startSec = this.#lightning.startSec;
+    snapshot.lightning.endSec = this.#lightning.endSec;
   }
 }

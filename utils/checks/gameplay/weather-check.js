@@ -828,7 +828,9 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       addParameter(parent, { control, options, value, onCommit, path, min, max }) {
         if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", value, min, max, onChange: onCommit });
         if (control === "switch" && path) rowsByPath.set(path.join("."), { kind: "switch", value, onChange: onCommit });
-        if (control === "choice" && path) rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
+        if ((control === "choice" || control === "segments") && path) {
+          rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
+        }
       },
       createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
         if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });
@@ -846,6 +848,9 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       },
       start(kind) {
         calls.push(["start", kind]);
+      },
+      stop(kind) {
+        calls.push(["stop", kind]);
       },
       releaseAll() {
         calls.push(["releaseAll"]);
@@ -884,6 +889,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     }
     const locChoice = rowsByPath.get("WEATHER.location.id");
     assert(locChoice && locChoice.value === "test", "location selector starts at active map");
+    assert.deepEqual(locChoice.choices.map((option) => option.value), ["Загальні", "test", "lake"],
+      "TK-327.1: the selector lists «Загальні» and every location as {value, label} buttons");
     locChoice.onChange("lake");
     // Spec 180 D2: the chances are each event's chance per check on the selected location.
     const rainChance = rowsByPath.get("WEATHER.chances.rainChance");
@@ -902,6 +909,13 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chancePerCheck" && v === 1),
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
+    // TK-327.1: an event's switch starts a random event (like the game) and ends it; no «подія зараз» buttons.
+    rowsByPath.get("WEATHER.controls.storm").onChange(true);
+    assert(calls.some(([k, kind]) => k === "start" && kind === "storm"), "the storm switch on starts a random storm");
+    rowsByPath.get("WEATHER.controls.storm").onChange(false);
+    assert(calls.some(([k, kind]) => k === "stop" && kind === "storm"), "off ends it");
+    assert(!rowsByPath.has("WEATHER.controls.stormStart"), "no «Шторм: подія зараз» button");
+    calls.length = 0;
     // Spec 180 D1, D10: a slider holds its own element only (no «manual» switches); the storm's never touches the rain.
     rowsByPath.get("WEATHER.controls.stormStrength").onChange(40);
     const stormCalls = calls.filter(([k]) => k === "hold");
@@ -1506,6 +1520,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const sections = [];
   const buttons = new Map();
   const resets = [];
+  const inlineTrees = [];
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
@@ -1522,10 +1537,11 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
       storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
     createSection: (label, parent, path) => { sections.push([label, path?.join(".") ?? ""]); return node(); },
-    renderConfigTree: (value, parent, path) => sections.push(["tree", path.join(".")]),
+    renderConfigTree: (value, parent, path, options) => { sections.push(["tree", path.join(".")]); inlineTrees.push(options?.inlineSections === true); },
     edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree: (parts) => { resets.push(parts.join(".")); changed.clear(); } },
   });
   section.render(node());
+  assert.ok(inlineTrees.length > 0 && inlineTrees.every(Boolean), "TK-327.1: inside a section the trees open in place");
   const label = (path) => sections.filter(([, at]) => at === path).map(([text]) => text).at(-1);
   const trees = () => sections.filter(([kind]) => kind === "tree").map(([, at]) => at);
   assert.ok(!trees().includes("CONFIG.canvas.rain"), "with the location switch on, the general rain look is hidden");

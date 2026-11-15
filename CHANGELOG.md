@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.17 - Weather DevTools: in-place groups, event switches (TK-327.1)
+
+- DevTools «ПОГОДА»: inside a section every group opens in place (only a section opens inside); the location selector is buttons; rain, storm, fog and emission have switches (on starts a random event, off ends it) and the generated course shows on top; ВІТЕР lists what rain and storm do to the wind.
+
 ## v0.51.16 - Weather DevTools rebuilt (spec 180 stage C, TK-327)
 
 - DevTools «ПОГОДА»: «Загальні» or a location on top with «Параметри локації»; «Стан і керування» with a slider for rain, storm, fog, emission, ash, wind, waves and current (moving a slider holds it), the rain's and ash's look at strength 100 under their sliders, action buttons at the bottom; sections ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ with a «змінено» mark and a reset; the emission blur has five simple knobs; WebGL buttons at the very bottom.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.8 - Emission background and red rain (spec 179 stage B, TK-322)
 
 - Location: during an emission its own background fades in over the day/evening/night picture with the emission's strength (alone at the peak), on the water too; the rain and its rings turn red. The picture loads after the first frame, and an emission waits for it.
-
-## v0.51.7 - Random session seed for the whole game (TK-321.2)
-
-- The game's random numbers (bites, fish weight and anomalies, weather, wind, emission) now start from a fresh random seed every launch; before, every session repeated the same sequence. CONFIG.debug.seed repeats a session on purpose; DevTools «ПОГОДА» shows the session's seed.

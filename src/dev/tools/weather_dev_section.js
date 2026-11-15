@@ -21,15 +21,18 @@ import {
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
 // - «Збереження»: the rain's look and the location's weather (spec 175; the general storm and wind files: stage D).
+// TK-327.1 (owner): only an element's section opens inside (a different section); everything in it — its groups and
+// the trees' nested objects — opens in place under it (inline). The selector is buttons on top (no empty wrapper); each
+// event (rain, storm, fog, emission) has a switch: on starts a random event as the game would, off ends it, and the
+// event's generated course (duration, peak, strength, lightning) shows on top of «Стан і керування».
 const GENERAL = "Загальні";
 const EVENT_PHASES = Object.freeze({ rise: "розгін", peak: "пік", fall: "затухання", idle: "немає" });
 const EVENTS = Object.freeze([["rain", "Дощ"], ["storm", "Шторм"], ["fog", "Туман"]]);
 const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
+// TK-327.1: starting and ending the emission is its switch; these jump within the running one.
 const EMISSION_ACTIONS = Object.freeze([
-  Object.freeze(["Почати викид", "onset"]),
-  Object.freeze(["Пік зараз", "peak"]),
-  Object.freeze(["Затихання зараз", "fade"]),
-  Object.freeze(["Завершити викид", "idle"]),
+  Object.freeze(["Викид: пік зараз", "peak"]),
+  Object.freeze(["Викид: затихання зараз", "fade"]),
 ]);
 const WIND_CHOICES = Object.freeze([
   Object.freeze({ label: "авто", direction: null }),
@@ -229,15 +232,16 @@ export class WeatherDevSection {
     this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
   }
 
+  // TK-327.1: «Загальні» and every location as buttons on top (all visible, one press).
   #renderSelector(content) {
-    const row = this.#createSection("Налаштування", content, ["WEATHER", "location"]);
-    this.#ui.addParameter(row, { control: "choice", label: "налаштування", options: [GENERAL, ...this.#locationChoices()],
-      value: this.#selected, onCommit: (next) => { this.#selected = next; this.#fill(); }, path: ["WEATHER", "location", "id"] });
+    const options = [{ value: GENERAL, label: GENERAL }, ...this.#locationChoices().map((id) => ({ value: id, label: id }))];
+    this.#ui.addParameter(content, { control: "segments", label: "налаштування", options, value: this.#selected,
+      onCommit: (next) => { this.#selected = next; this.#fill(); }, path: ["WEATHER", "location", "id"] });
     if (this.#selected === GENERAL) return;
-    this.#ui.addParameter(row, { control: "switch", label: "Параметри локації", value: this.#locationOnly,
+    this.#ui.addParameter(content, { control: "switch", label: "Параметри локації", value: this.#locationOnly,
       onCommit: (on) => { this.#locationOnly = on === true; this.#fill(); }, path: ["WEATHER", "location", "only"] });
     if (this.#selected !== this.#weather.locationId) {
-      this.#ui.createInfoRow("активна у грі", `${this.#weather.locationId} (нижче — ${this.#selected})`, row);
+      this.#ui.createInfoRow("активна у грі", `${this.#weather.locationId} (нижче — ${this.#selected})`, content);
     }
   }
 
@@ -255,7 +259,12 @@ export class WeatherDevSection {
   }
 
   #tree(value, section, parts) {
-    if (value && typeof value === "object") this.#renderConfigTree(value, section, ["CONFIG", ...parts]);
+    if (value && typeof value === "object") this.#renderConfigTree(value, section, ["CONFIG", ...parts], { inlineSections: true });
+  }
+
+  // A group inside an element's section: opens in place (TK-327.1).
+  #group(label, parent, path) {
+    return this.#createSection(label, parent, path, { inline: true });
   }
 
   #locationParts(id, ...rest) {
@@ -282,13 +291,13 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "rain"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "rain"), this.#locationParts(mode.location, "look", "rain"));
     this.#elementSection("ДОЩ", "rain", content, parts, (section) => {
-      if (mode.general) this.#tree(general, this.#createSection("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
+      if (mode.general) this.#tree(general, this.#group("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
       if (!mode.location) return;
       const weather = this.#locationWeather(mode.location);
       this.#chanceRow("rain", mode.location, section);
-      this.#tree(weather?.rain, this.#createSection("Подія дощу (локація)", section, ["WEATHER", "rain", "event"]),
+      this.#tree(weather?.rain, this.#group("Подія дощу (локація)", section, ["WEATHER", "rain", "event"]),
         this.#locationParts(mode.location, "rain"));
-      this.#renderAt100Numbers("rain", mode.location, this.#createSection("При силі 100 (локація)", section, ["WEATHER", "rain", "at100"]));
+      this.#renderAt100Numbers("rain", mode.location, this.#group("При силі 100 (локація)", section, ["WEATHER", "rain", "at100"]));
     });
   }
 
@@ -298,12 +307,12 @@ export class WeatherDevSection {
     if (mode.location) parts.push(this.#locationParts(mode.location, "storm"));
     this.#elementSection("ШТОРМ", "storm", content, parts, (section) => {
       if (mode.general) {
-        this.#tree(this.#general()?.storm, this.#createSection("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]),
+        this.#tree(this.#general()?.storm, this.#group("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]),
           ["weather", "storm"]);
       }
       if (!mode.location) return;
       this.#chanceRow("storm", mode.location, section);
-      this.#tree(this.#locationWeather(mode.location)?.storm, this.#createSection("Подія шторму й блискавки (локація)", section,
+      this.#tree(this.#locationWeather(mode.location)?.storm, this.#group("Подія шторму й блискавки (локація)", section,
         ["WEATHER", "storm", "event"]), this.#locationParts(mode.location, "storm"));
     });
   }
@@ -314,19 +323,40 @@ export class WeatherDevSection {
     if (mode.location) parts.push(this.#locationParts(mode.location, "wind"));
     this.#elementSection("ВІТЕР", "wind", content, parts, (section) => {
       if (mode.general) {
-        this.#tree(this.#general()?.wind, this.#createSection("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
+        this.#tree(this.#general()?.wind, this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
           ["weather", "wind"]);
+        this.#renderWindByEvents(this.#group("Вплив подій на вітер (загальне)", section, ["WEATHER", "wind", "events"]));
       }
       if (!mode.location) return;
-      this.#tree(this.#locationWeather(mode.location)?.wind, this.#createSection("Стани вітру й частота поривів (локація)", section,
+      this.#tree(this.#locationWeather(mode.location)?.wind, this.#group("Стани вітру й частота поривів (локація)", section,
         ["WEATHER", "wind", "states"]), this.#locationParts(mode.location, "wind"));
     });
+  }
+
+  // TK-327.1: what each event does to the wind, in one place (the storm's keys are the same as in ШТОРМ, the rain's as in
+  // «Як діє вітер»; the emission acts through its storm).
+  #renderWindByEvents(parent) {
+    const general = this.#general();
+    const rows = [
+      ["Дощ: вітер не слабший", ["weather", "wind", "rain", "minStrength"], general?.wind?.rain?.minStrength],
+      ["Дощ: додаток до вітру", ["weather", "wind", "rain", "bonus"], general?.wind?.rain?.bonus],
+      ["Дощ: пориви ×", ["weather", "wind", "rain", "gustChanceMult"], general?.wind?.rain?.gustChanceMult],
+      ["Шторм: вітер не слабший", ["weather", "storm", "windMinStrength"], general?.storm?.windMinStrength],
+      ["Шторм: пориви ×", ["weather", "storm", "gustChanceMult"], general?.storm?.gustChanceMult],
+    ];
+    for (const [label, parts, value] of rows) {
+      if (typeof value !== "number") continue;
+      const cfgPath = ["CONFIG", ...parts];
+      this.#ui.addParameter(parent, { control: "number", label, value, path: ["WEATHER", "wind", "events", parts.at(-1), parts[1]],
+        bindingPath: cfgPath, onCommit: (next) => { if (Number.isFinite(Number(next))) this.#updateConfig?.(cfgPath, Number(next)); } });
+    }
+    this.#ui.createInfoRow("Викид", "діє на вітер через свій шторм (ВИКИД → «Подія викиду» → storm)", parent);
   }
 
   #renderFog(content, mode) {
     this.#elementSection("ТУМАН", "fog", content, [this.#locationParts(mode.location, "fog")], (section) => {
       this.#chanceRow("fog", mode.location, section);
-      this.#tree(this.#locationWeather(mode.location)?.fog, this.#createSection("Подія туману (локація)", section, ["WEATHER", "fog", "event"]),
+      this.#tree(this.#locationWeather(mode.location)?.fog, this.#group("Подія туману (локація)", section, ["WEATHER", "fog", "event"]),
         this.#locationParts(mode.location, "fog"));
     });
   }
@@ -356,9 +386,9 @@ export class WeatherDevSection {
       }
       if (mode.general) {
         const screen = this.#general()?.screen;
-        this.#tree(screen?.vignette, this.#createSection("Затемнення", section, ["WEATHER", "emission", "vignette"]),
+        this.#tree(screen?.vignette, this.#group("Затемнення", section, ["WEATHER", "emission", "vignette"]),
           ["emission", "screen", "vignette"]);
-        this.#tree(screen?.blur, this.#createSection("Розмиття", section, ["WEATHER", "emission", "blur"]), ["emission", "screen", "blur"]);
+        this.#tree(screen?.blur, this.#group("Розмиття", section, ["WEATHER", "emission", "blur"]), ["emission", "screen", "blur"]);
         if (screen) {
           this.#ui.addParameter(section, { control: "switch", label: "Розмивати разом з HUD", value: screen.includeHud !== false,
             onCommit: (on) => this.#updateConfig?.(["CONFIG", "emission", "screen", "includeHud"], on === true),
@@ -367,9 +397,9 @@ export class WeatherDevSection {
       }
       if (!mode.location) return;
       const weather = this.#locationWeather(mode.location);
-      this.#tree(weather?.emission, this.#createSection("Подія викиду (локація)", section, ["WEATHER", "emission", "event"]),
+      this.#tree(weather?.emission, this.#group("Подія викиду (локація)", section, ["WEATHER", "emission", "event"]),
         this.#locationParts(mode.location, "emission"));
-      this.#tree(weather?.radiation, this.#createSection("Радіація (локація)", section, ["WEATHER", "emission", "radiationConfig"]),
+      this.#tree(weather?.radiation, this.#group("Радіація (локація)", section, ["WEATHER", "emission", "radiationConfig"]),
         this.#locationParts(mode.location, "radiation"));
     });
   }
@@ -379,9 +409,9 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "ash"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "look", "ash"));
     this.#elementSection("ПОПІЛ", "ash", content, parts, (section) => {
-      if (mode.general) this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#createSection("Вигляд (загальний)", section,
+      if (mode.general) this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#group("Вигляд (загальний)", section,
         ["WEATHER", "ash", "look"]), ["canvas", "ash"]);
-      if (mode.location) this.#renderAt100Numbers("ash", mode.location, this.#createSection("При силі 100 (локація)", section, ["WEATHER", "ash", "at100"]));
+      if (mode.location) this.#renderAt100Numbers("ash", mode.location, this.#group("При силі 100 (локація)", section, ["WEATHER", "ash", "at100"]));
     });
   }
 
@@ -399,11 +429,11 @@ export class WeatherDevSection {
             if (on && id) this.#weather.requestImage?.(id);
             this.#updateConfig?.(["CONFIG", "debug", "waveTestBackground"], on === true);
           }, path: ["WEATHER", "water", "testBackground"], bindingPath: ["CONFIG", "debug", "waveTestBackground"] });
-        this.#tree(water, this.#createSection("Хвилі й стан моря (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
+        this.#tree(water, this.#group("Хвилі й стан моря (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
       }
       if (!mode.location) return;
       const current = this.#locationsMap?.()?.[mode.location]?.environment?.current;
-      this.#tree(current, this.#createSection("Течія (локація)", section, ["WEATHER", "water", "current"]),
+      this.#tree(current, this.#group("Течія (локація)", section, ["WEATHER", "water", "current"]),
         ["locations", "map", mode.location, "environment", "current"]);
     });
   }
@@ -412,9 +442,9 @@ export class WeatherDevSection {
     const weather = this.#locationWeather(mode.location);
     this.#elementSection("ПОЧАТОК І ПОРОГИ", "start", content,
       [this.#locationParts(mode.location, "initial"), this.#locationParts(mode.location, "thresholds")], (section) => {
-        this.#tree(weather?.initial, this.#createSection("Погода на старті сесії", section, ["WEATHER", "start", "initial"]),
+        this.#tree(weather?.initial, this.#group("Погода на старті сесії", section, ["WEATHER", "start", "initial"]),
           this.#locationParts(mode.location, "initial"));
-        this.#tree(weather?.thresholds, this.#createSection("Пороги для кльову", section, ["WEATHER", "start", "thresholds"]),
+        this.#tree(weather?.thresholds, this.#group("Пороги для кльову", section, ["WEATHER", "start", "thresholds"]),
           this.#locationParts(mode.location, "thresholds"));
       });
   }
@@ -560,22 +590,61 @@ export class WeatherDevSection {
     this.#ui.createButtonRow("↻ Оновити", controls, () => this.#fill());
   }
 
+  // TK-327.1: what the running events rolled — duration, peak (start, length, strength) and the storm's lightning.
+  #renderGenerated(weather, emission, controls) {
+    const minutes = (sec) => `${Math.floor((Number(sec) || 0) / 60)}:${String(Math.round((Number(sec) || 0) % 60)).padStart(2, "0")}`;
+    const course = (event) => `${minutes(event.durationSec)}, пік з ${minutes(event.peakStartSec)} до ${minutes(event.peakEndSec)}, ` +
+      `сила ${percent(event.peakStrength)}`;
+    for (const [kind, label] of EVENTS) {
+      const event = weather.events?.[kind];
+      if (!event?.active) continue;
+      let text = course(event);
+      if (kind === "storm") {
+        text += weather.lightning?.has
+          ? `; блискавки ${minutes(weather.lightning.startSec)}–${minutes(weather.lightning.endSec)}` : "; без блискавок";
+      }
+      this.#ui.createInfoRow(`згенеровано: ${label.toLowerCase()}`, text, controls);
+    }
+    if (emission && emission.phase !== "idle" && !emission.intensityHeld) {
+      this.#ui.createInfoRow("згенеровано: викид", course(emission), controls);
+    }
+  }
+
   #renderControls(model, content) {
     const weather = model.snapshot;
     const controls = this.#createSection("Стан і керування", content, ["WEATHER", "controls"]);
+    this.#renderGenerated(weather, this.#weather.getEmissionModel?.()?.snapshot ?? null, controls);
     this.#renderStatus(weather, controls);
     // D10: moving a slider holds that element by hand; «↺ Автоматична погода» returns everything.
     for (const [kind, label] of EVENTS) {
       const event = weather.events?.[kind];
+      // TK-327.1: on starts a random event (as the game would), off ends it and releases its slider's hold.
+      this.#ui.createSwitcherRow(label, event?.active === true || event?.held === true, controls, (on) => {
+        if (on) model.start(kind);
+        else {
+          model.hold(kind, null, { fadeSec: this.#fadeSec });
+          model.stop(kind);
+        }
+        this.#fill();
+      }, ["WEATHER", "controls", kind]);
       if (event?.held) this.#levels[kind] = Math.round(event.strength * 100);
       this.#ui.createRangeRow(`${label}: сила, %`, this.#levels[kind], controls, (value) => {
         this.#levels[kind] = clamp(value, 0, 100);
         model.hold(kind, this.#levels[kind] / 100, { fadeSec: this.#fadeSec });
       }, ["WEATHER", "controls", `${kind}Strength`]);
-      if (kind === "rain") this.#renderAt100Sliders("rain", this.#createSection("Дощ при силі 100", controls, ["WEATHER", "controls", "rainAt100"]));
+      if (kind === "rain") this.#renderAt100Sliders("rain", this.#group("Дощ при силі 100", controls, ["WEATHER", "controls", "rainAt100"]));
     }
     const emission = this.#weather.getEmissionModel?.() ?? null;
     if (emission) {
+      const snapshot = emission.snapshot;
+      this.#ui.createSwitcherRow("Викид", snapshot.phase !== "idle", controls, (on) => {
+        if (on) emission.force("onset");
+        else {
+          emission.holdIntensity(null);
+          emission.force("idle");
+        }
+        this.#fill();
+      }, ["WEATHER", "controls", "emission"]);
       this.#ui.createRangeRow("Викид: сила, %", this.#levels.emission, controls, (value) => {
         this.#levels.emission = clamp(value, 0, 100);
         emission.holdIntensity(this.#levels.emission / 100);
@@ -586,7 +655,7 @@ export class WeatherDevSection {
         this.#levels.ash = clamp(value, 0, 100);
         this.#weather.holdAsh(this.#levels.ash / 100);
       }, ["WEATHER", "controls", "ashStrength"]);
-      this.#renderAt100Sliders("ash", this.#createSection("Попіл при силі 100", controls, ["WEATHER", "controls", "ashAt100"]));
+      this.#renderAt100Sliders("ash", this.#group("Попіл при силі 100", controls, ["WEATHER", "controls", "ashAt100"]));
     }
     this.#renderWindControls(controls);
     if (this.#weather.holdWaves) {
@@ -628,12 +697,6 @@ export class WeatherDevSection {
   }
 
   #renderActions(model, emission, controls) {
-    for (const [kind, label] of EVENTS) {
-      this.#ui.createButtonRow(`${label}: подія зараз`, controls, () => {
-        model.start(kind);
-        this.#fill();
-      }, false, "", ["WEATHER", "controls", `${kind}Start`]);
-    }
     if (emission) {
       for (const [label, phase] of EMISSION_ACTIONS) {
         this.#ui.createButtonRow(label, controls, () => {
