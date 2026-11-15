@@ -8,6 +8,7 @@
 //   (eased) and sways on a slow swell: the swell's period wanders between swayPeriodSec[0] and [1] (no fixed beat), and
 //   it closes in deeper than it opens out (swayOutShare of the closing), so each closing reaches further than the
 //   opening before it. The edges darken up to maxDarkness and breathe a little with the same swell.
+// TK-324.2: vignette.enabled and blur.enabled switch each part on its own (the veil hides when both are off).
 // strength comes from EmissionExposure (intensity × (1 − protection)). random: () => 0…1 (visual only). One record
 // rewritten in place; no allocation per frame.
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
@@ -50,9 +51,12 @@ export class EmissionScreenEffect {
       return record;
     }
     const dtSec = Math.min(0.25, Math.max(0, number(dtMs, 0)) / 1000);
-    record.visible = true;
-    this.#updateVignette(record, level, dtSec, settings?.vignette);
-    record.blurPx = this.#updateBlur(level, dtSec, settings?.blur);
+    const vignetteOn = settings?.vignette?.enabled !== false;
+    const blurOn = settings?.blur?.enabled !== false;
+    record.visible = vignetteOn || blurOn;
+    if (vignetteOn) this.#updateVignette(record, level, dtSec, settings?.vignette);
+    else { record.darkness = 0; record.clearRadius = 1; }
+    record.blurPx = blurOn ? this.#updateBlur(level, dtSec, settings?.blur) : 0;
     return record;
   }
 

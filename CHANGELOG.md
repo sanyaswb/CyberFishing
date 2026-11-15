@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.13 - Vignette and blur switch separately (TK-324.2)
+
+- Emission screen: the darkening (emission.screen.vignette.enabled) and the blur (emission.screen.blur.enabled) switch on and off on their own in DevTools «Конфіг», so each can be measured; without darkening the veil paints no gradient.
+
 ## v0.51.12 - Irregular blur pulses and a swaying vignette (TK-324.1)
 
 - Emission screen: the blur comes in sharp, glitch-like pulses of random strength and an ever-changing rhythm that quickens toward the peak; the darkening has smoother edges and sways like a swell, closing in deeper than it opens out.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.4 - Section description styled as the «i» hint (TK-320.1)
 
 - DevTools: a section's description (behind the «i» beside its title) is the same box as a parameter's «i» hint — the same background, padding and 12 px text, names in bold, rows without lines.
-
-## v0.51.3 - DevTools modes as lists, colour picker, section info, selectable text (TK-320)
-
-- DevTools: hints no longer say «увімкнено/вимкнено»; 11 text parameters with fixed modes (biteSequenceMode, canvas.scene, cameraFollowPriority, …) are lists; colour parameters (#hex, rgb/rgba) have a swatch that opens a colour and opacity picker, keeping the value's format; a section's description sits behind an «i» beside its title and opens at the top of the section; the panel's text can be selected and copied.

@@ -1325,6 +1325,7 @@ export class ConfigSchemaValidator {
       const sectionPath = `${path}.${group}`;
       if (!section || typeof section !== "object") { this.#error(`CONFIG.${sectionPath}`, "missing"); continue; }
       this.#requireParameterLabel(sectionPath);
+      this.#requireBooleanWithLabel(`${sectionPath}.enabled`, section.enabled);
       for (const [key, min, max] of numbers) {
         this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}`, section[key], { min, max });
         this.#requireParameterLabel(`${sectionPath}.${key}`);

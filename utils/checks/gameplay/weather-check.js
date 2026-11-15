@@ -1468,6 +1468,22 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.ok(Math.abs(peak[peak.length - 1].dark - settings.vignette.maxDarkness) < settings.vignette.maxDarkness * 0.13,
     "the edges reach about maxDarkness and breathe a little with the swell");
   assert.equal(new EmissionScreenEffect().update(16, 1, { ...settings, enabled: false }).visible, false, "switched off: no veil");
+  // TK-324.2: each part on its own.
+  const vignetteOnly = run(() => 1, 5).at(-1);
+  const onlyVignette = new EmissionScreenEffect({ random: randomFx });
+  const blurOff = { ...settings, blur: { ...settings.blur, enabled: false } };
+  for (let index = 0; index < 120; index += 1) onlyVignette.update(16, 1, blurOff);
+  assert.deepEqual([onlyVignette.record.visible, onlyVignette.record.blurPx > 0, onlyVignette.record.darkness > 0],
+    [true, false, true], "blur off: darkening only, no blur");
+  const onlyBlur = new EmissionScreenEffect({ random: randomFx });
+  const vignetteOff = { ...settings, vignette: { ...settings.vignette, enabled: false } };
+  let blurSeen = 0;
+  for (let index = 0; index < 600; index += 1) blurSeen = Math.max(blurSeen, onlyBlur.update(16, 1, vignetteOff).blurPx);
+  assert.deepEqual([onlyBlur.record.visible, onlyBlur.record.darkness, onlyBlur.record.clearRadius, blurSeen > 0],
+    [true, 0, 1, true], "vignette off: blur only, no darkening");
+  const none = new EmissionScreenEffect().update(16, 1, { ...settings, vignette: { enabled: false }, blur: { enabled: false } });
+  assert.equal(none.visible, false, "both off: the veil hides");
+  assert.ok(vignetteOnly.visible, "both on by default");
 
   // The DOM veil: placed between the UI content and the portals (DevTools) or above the scene; written only on change.
   const makeElement = (name) => ({ name, parent: null, isConnected: false, style: { props: {}, setProperty(key, value) { this.props[key] = value; } },
@@ -1491,6 +1507,10 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   created.style.backdropFilter = "untouched";
   veil.apply({ ...frame, blurPx: 4.1, darkness: 0.5001 });
   assert.equal(created.style.backdropFilter, "untouched", "changes too small to see are not written");
+  veil.apply({ ...frame, darkness: 0 });
+  assert.ok(created.classList.set.has("emission-veil--clear"), "TK-324.2: no darkening — the gradient layer is dropped");
+  veil.apply(frame);
+  assert.ok(!created.classList.set.has("emission-veil--clear"), "and back with the darkening");
   veil.apply({ ...frame, includeHud: false });
   assert.equal(created.parent, "after-scene", "without the HUD: right above the WebGL scene, under the 2D HUD canvas");
   assert.ok(created.classList.set.has("emission-veil--scene"), "with the scene modifier");

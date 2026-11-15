@@ -52,6 +52,8 @@ export class EmissionVeilDomRenderer {
     if (Math.abs(applied.darkness - record.darkness) >= DARK_EPSILON) {
       applied.darkness = record.darkness;
       element.style.setProperty("--emission-veil-darkness", record.darkness.toFixed(3));
+      // TK-324.2: no darkening — no gradient to paint.
+      element.classList.toggle("emission-veil--clear", record.darkness < DARK_EPSILON);
     }
     if (Math.abs(applied.clearRadius - record.clearRadius) >= RADIUS_EPSILON ||
       Math.abs(applied.feather - record.feather) >= RADIUS_EPSILON) {

@@ -24,6 +24,11 @@
   display: block;
 }
 
+/* TK-324.2: without darkening (vignette off) the veil paints no gradient, only its backdrop blur. */
+.emission-veil--clear {
+  background: none;
+}
+
 .emission-veil--scene {
   position: fixed;
   z-index: -1;

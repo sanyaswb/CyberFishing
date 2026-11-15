@@ -1962,5 +1962,13 @@
   "emission.screen.blur.decaySec": {
     "label": "Спад пульсу, с",
     "description": "За скільки секунд пульс згасає."
+  },
+  "emission.screen.vignette.enabled": {
+    "label": "Затемнення",
+    "description": "Показувати затемнення від країв (окремо від розмиття, TK-324.2)."
+  },
+  "emission.screen.blur.enabled": {
+    "label": "Розмиття",
+    "description": "Показувати пульсуюче розмиття (окремо від затемнення, TK-324.2). Найдорожча частина ефекту: backdrop-filter на весь екран."
   }
 }
