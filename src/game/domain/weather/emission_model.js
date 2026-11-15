@@ -29,6 +29,7 @@ export class EmissionModel {
   #failedChecks = 0;
   #frozen = false;
   #radiationOverride = null;
+  #intensityHold = null;
   #snapshot = {
     phase: "idle",
     phaseLeftSec: 0,
@@ -46,6 +47,7 @@ export class EmissionModel {
     cooldownLeftSec: 0,
     frozen: false,
     radiationForced: false,
+    intensityHeld: false,
   };
 
   // rng: { next(), range(min, max) } (the emission's own seeded stream); getSettings: () => MAP_DB.<id>.weather (or null:
@@ -107,6 +109,13 @@ export class EmissionModel {
     this.#sync(this.#getSettings() || null);
   }
 
+  // Spec 180 D4: the emission's intensity 0…1 held by hand (DEV: tune its look at a steady strength); null releases it.
+  // While held, the phase shown is "peak" (> 0) or "idle" (0), so the screen, the cast gate and the radiation follow.
+  holdIntensity(intensity) {
+    this.#intensityHold = intensity === null || !Number.isFinite(Number(intensity)) ? null : clamp01(Number(intensity));
+    this.#sync(this.#getSettings() || null);
+  }
+
   // Radiation 0…1 held by hand (DEV, tests); null returns to base + emission.
   setRadiationOverride(radiation) {
     this.#radiationOverride = radiation === null || !Number.isFinite(Number(radiation))
@@ -159,10 +168,12 @@ export class EmissionModel {
   #sync(settings) {
     const snapshot = this.#snapshot;
     const timeline = this.#timeline;
-    const intensity = this.#active ? clamp01(timeline.strengthAt(this.#elapsedSec)) : 0;
+    const own = this.#active ? clamp01(timeline.strengthAt(this.#elapsedSec)) : 0;
+    const intensity = this.#intensityHold ?? own;
     const base = clamp01(finite(settings?.radiation?.base, 0));
     const peak = clamp01(finite(settings?.radiation?.emissionPeak, 1));
-    const phase = this.#active ? PHASE_OF[timeline.phaseAt(this.#elapsedSec)] : "idle";
+    const phase = this.#intensityHold !== null ? (this.#intensityHold > 0 ? "peak" : "idle")
+      : this.#active ? PHASE_OF[timeline.phaseAt(this.#elapsedSec)] : "idle";
     snapshot.phase = phase;
     const [phaseStart, phaseEnd] = phase === "onset" ? [0, timeline.peakStartSec]
       : phase === "peak" ? [timeline.peakStartSec, timeline.peakEndSec]
@@ -181,5 +192,6 @@ export class EmissionModel {
     snapshot.cooldownLeftSec = Math.max(0, this.#cooldownLeftSec ?? 0);
     snapshot.frozen = this.#frozen;
     snapshot.radiationForced = this.#radiationOverride !== null;
+    snapshot.intensityHeld = this.#intensityHold !== null;
   }
 }

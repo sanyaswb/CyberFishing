@@ -33,7 +33,6 @@ export class SceneModule {
       ui,
       scene: this.#scene,
       createSection,
-      renderWaterConfig: (parent) => tree.render(this.#config.canvas.water, parent, ["CONFIG", "canvas", "water"]),
       renderWeather: (parent) => this.#renderWeather(parent, context),
     }).render(host);
   }
@@ -56,6 +55,13 @@ export class SceneModule {
       locationsMap: () => config.locations?.map ?? null,
       rainConfig: () => config.canvas?.rain ?? null,
       ashConfig: () => config.canvas?.ash ?? null,
+      // Spec 180 D3/D4: the general settings the sections show with «Загальні».
+      general: () => ({ rain: config.canvas?.rain ?? null, ash: config.canvas?.ash ?? null, water: config.canvas?.water ?? null,
+        storm: config.weather?.storm ?? null, wind: config.weather?.wind ?? null, screen: config.emission?.screen ?? null,
+        debug: config.debug ?? null }),
+      // Spec 180 D8: a section's «змінено» mark and its reset to the code.
+      edits: this.#configRuntime ? { hasOverrides: (parts) => edits.hasOverridesUnder(parts),
+        resetTree: (parts) => edits.resetOverrideTree(parts) } : null,
       createSection,
       renderConfigTree: (value, section, path, options) => tree.render(value, section, path, options),
       updateConfig: (path, value) => edits.update(path, value),

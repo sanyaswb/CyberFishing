@@ -1320,8 +1320,8 @@ export class ConfigSchemaValidator {
     const groups = [
       ["vignette", [["maxDarkness", 0, 1], ["feather", 0, 1], ["swayAmplitude", 0, 0.5], ["swayOutShare", 0, 1]],
         [["clearRadius", 0, 1, false], ["swayPeriodSec", 0.5, 120, false]]],
-      ["blur", [["maxPx", 0, 40], ["baseShare", 0, 1], ["pulseJitter", 0, 1], ["attackSec", 0.01, 5], ["decaySec", 0.01, 10]],
-        [["pulseAmplitude", 0, 1, true], ["pulseIntervalSec", 0.05, 60, false]]],
+      ["blur", [["strengthPx", 0, 40], ["irregularity", 0, 1], ["sharpness", 0, 1], ["floor", 0, 1]],
+        [["pulsesPerSec", 0.05, 20, false]]],
     ];
     for (const [group, numbers, pairs] of groups) {
       const section = cfg[group];

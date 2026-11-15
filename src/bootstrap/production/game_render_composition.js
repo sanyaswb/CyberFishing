@@ -35,7 +35,6 @@ import { GameRenderOrder } from "../../game/presentation/rendering/game_render_o
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { RodStaticRenderer } from "../../game/presentation/fishing/rod_static_renderer.js";
 import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
-import { WeatherRenderModelBuilder } from "../../game/presentation/rendering/weather_render_model_builder.js";
 import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
 import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_renderer.js";
 
@@ -238,7 +237,8 @@ export class GameRenderComposition {
       canvasMetrics,
       locationId: runtime.location.id,
       // Spec 172: the weather the scene's rain (and later fog, storm) shows.
-      weatherBuilder: new WeatherRenderModelBuilder({ getEnvironment: () => runtime.env?.getSnapshot?.() ?? null }),
+      // Spec 180 D10: one instance with the composition root (DevTools holds the ash on it).
+      weatherBuilder: runtime.rendering.weatherRenderModel,
       // Spec 172 D7: the sea state (shared with the float's rocking), updated once a frame by the world's model.
       seaState: runtime.rendering.seaState ?? null,
       getNowMs: () => clock.realNow,

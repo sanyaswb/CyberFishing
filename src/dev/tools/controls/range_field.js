@@ -5,10 +5,14 @@ export class RangeField {
   #range;
   #output;
   #onInput;
+  #decimals = 0;
   #disposers = [];
 
   constructor({ value, onInput, min = 0, max = 100, step = 1, ariaLabel = "", documentRef = document }) {
     this.#onInput = onInput;
+    // Spec 180 D16: a fractional step shows its decimals (0.01 → 2), so a real value reads as itself.
+    const stepText = String(step);
+    this.#decimals = stepText.includes(".") ? Math.min(4, stepText.split(".")[1].length) : 0;
     this.#root = documentRef.createElement("span");
     this.#root.className = "devtools__range-field";
     this.#range = documentRef.createElement("input");
@@ -24,7 +28,7 @@ export class RangeField {
     this.setValue(value);
     const onRangeInput = (event) => {
       const next = Number(event.target.value);
-      this.#output.textContent = String(next);
+      this.#output.textContent = next.toFixed(this.#decimals);
       this.#onInput?.(next);
     };
     this.#range.addEventListener("input", onRangeInput);
@@ -36,7 +40,7 @@ export class RangeField {
   }
 
   setValue(value) {
-    const shown = String(Math.round(value));
+    const shown = (Number(value) || 0).toFixed(this.#decimals);
     this.#range.value = shown;
     this.#output.textContent = shown;
   }

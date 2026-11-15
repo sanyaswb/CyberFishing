@@ -81,21 +81,23 @@ export class EmissionScreenEffect {
     record.darkness = clamp01(clamp01(number(vignette?.maxDarkness, 0.85)) * eased * (1 + 0.12 * wave * eased));
   }
 
+  // Spec 180 D5: five knobs — strengthPx, pulsesPerSec [at the start, at the peak], irregularity (the gaps' spread and the
+  // heights' range), sharpness (0: soft swells, 1: sharp twitches → attack 0.2 … 0.03 s, decay 0.8 … 0.15 s), floor.
   #updateBlur(level, dtSec, blur) {
     const random = this.#random;
-    const slowSec = Math.max(0.05, pairAt(blur?.pulseIntervalSec, 0, 2.4));
-    const fastSec = Math.max(0.05, pairAt(blur?.pulseIntervalSec, 1, 0.35));
-    const jitter = clamp01(number(blur?.pulseJitter, 0.6));
-    const attack = Math.max(0.01, number(blur?.attackSec, 0.05));
-    const decay = Math.max(0.01, number(blur?.decaySec, 0.22));
+    const slowRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 0, 0.42));
+    const fastRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 1, 2.85));
+    const jitter = clamp01(number(blur?.irregularity, 0.6));
+    const sharpness = clamp01(number(blur?.sharpness, 0.88));
+    const attack = 0.2 + (0.03 - 0.2) * sharpness;
+    const decay = 0.8 + (0.15 - 0.8) * sharpness;
     this.#nextPulseSec -= dtSec;
     this.#pulseAge += dtSec;
     if (this.#nextPulseSec <= 0) {
-      const minHeight = clamp01(pairAt(blur?.pulseAmplitude, 0, 0.35));
-      const maxHeight = Math.max(minHeight, clamp01(pairAt(blur?.pulseAmplitude, 1, 1)));
-      this.#pulseHeight = minHeight + (maxHeight - minHeight) * random();
+      const minHeight = 1 - 0.65 * jitter;
+      this.#pulseHeight = minHeight + (1 - minHeight) * random();
       this.#pulseAge = 0;
-      const interval = slowSec + (fastSec - slowSec) * level;
+      const interval = 1 / (slowRate + (fastRate - slowRate) * level);
       this.#nextPulseSec = Math.max(attack + 0.02, interval * (1 + jitter * (2 * random() - 1)));
     }
     const age = this.#pulseAge;
@@ -105,8 +107,8 @@ export class EmissionScreenEffect {
       const rest = 1 - (age - attack) / decay;
       shape = rest * rest;
     }
-    const base = clamp01(number(blur?.baseShare, 0.15));
-    const peak = Math.max(0, number(blur?.maxPx, 6));
+    const base = clamp01(number(blur?.floor, 0.15));
+    const peak = Math.max(0, number(blur?.strengthPx, 6));
     return peak * level * (base + (1 - base) * shape * this.#pulseHeight);
   }
 

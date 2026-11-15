@@ -93,6 +93,13 @@ export class DevConfigEditService {
     return path[0] === "CONFIG" && this.#configRuntime?.overrideStore.has(path.slice(1).join(".")) === true;
   }
 
+  // Spec 180 D8: whether any parameter under CONFIG.<configParts...> has a session override (the «змінено» mark).
+  hasOverridesUnder(configParts) {
+    if (!this.#configRuntime) return false;
+    const prefix = configParts.join(".");
+    return Object.keys(this.#configRuntime.exportOverrides()).some((key) => key === prefix || key.startsWith(prefix + "."));
+  }
+
   // Spec 174 C3: one CONFIG parameter back to the code's value; the panel and the game hear it like an edit.
   resetParameter(path) {
     if (path[0] !== "CONFIG" || !this.#configRuntime) return;

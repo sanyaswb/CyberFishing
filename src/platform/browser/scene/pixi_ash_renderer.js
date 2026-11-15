@@ -86,7 +86,8 @@ export class PixiAshRenderer {
     const elapsed = this.#lastNow === null ? 0 : Math.min(MAX_STEP_SEC, Math.max(0, (nowMs - this.#lastNow) / 1000));
     this.#lastNow = nowMs;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
-    const intensity = clamp01(number(world.weather?.emission, 0));
+    // Spec 180 D10: the ash's own strength (follows the emission unless DevTools holds it).
+    const intensity = clamp01(number(world.weather?.ash ?? world.weather?.emission, 0));
     const max = Math.max(0, Math.floor(number(settings?.maxParticles, 0)));
     const cap = Math.max(max, Math.floor(number(settings?.maxParticlesCap, max)));
     const target = intensity > 0 ? max : 0;

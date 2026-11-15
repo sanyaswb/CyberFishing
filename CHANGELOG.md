@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.16 - Weather DevTools rebuilt (spec 180 stage C, TK-327)
+
+- DevTools «ПОГОДА»: «Загальні» or a location on top with «Параметри локації»; «Стан і керування» with a slider for rain, storm, fog, emission, ash, wind, waves and current (moving a slider holds it), the rain's and ash's look at strength 100 under their sliders, action buttons at the bottom; sections ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ with a «змінено» mark and a reset; the emission blur has five simple knobs; WebGL buttons at the very bottom.
+
 ## v0.51.15 - Weather settings structure (spec 180 stage B, TK-326)
 
 - Weather settings: what the storm and the wind do is now the same for every location (rain chance and strength, drop slant and how smoothly it follows the wind, gust shape); rain and ash looks change with their strength between values at 0 and 100, with per-drop length and slant spread; the waves narrow across the screen only with their own perspective switch, and the current no longer moves them; DEV striped background for checking the waves.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.7 - Random session seed for the whole game (TK-321.2)
 
 - The game's random numbers (bites, fish weight and anomalies, weather, wind, emission) now start from a fresh random seed every launch; before, every session repeated the same sequence. CONFIG.debug.seed repeats a session on purpose; DevTools «ПОГОДА» shows the session's seed.
-
-## v0.51.6 - Emission starts by chance, DevTools randomizer (TK-321.1)
-
-- Weather: an emission now starts by a roll once a minute (the chance grows with each failed roll, a 20-minute pause after each emission and at the start), so its moment cannot be known ahead; about 82% of emissions come 30–60 minutes apart. A fresh random emission seed per session. DevTools «Діагностика» → «РАНДОМАЙЗЕР» runs the game's real random many times and shows a short report.

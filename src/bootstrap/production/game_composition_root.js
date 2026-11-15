@@ -5,6 +5,7 @@ import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messag
 import { FloatWaveRocking } from "../../game/presentation/fishing/float_wave_rocking.js";
 import { SeaStateResolver } from "../../game/presentation/world/sea_state_resolver.js";
 import { WeatherStatusReader } from "../../game/presentation/world/weather_status_reader.js";
+import { WeatherRenderModelBuilder } from "../../game/presentation/rendering/weather_render_model_builder.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
@@ -890,6 +891,8 @@ export class GameCompositionRoot {
         getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
         getSettings: () => this.#config.canvas?.water?.seaState,
       });
+      // Spec 172 / 180: what the scene's weather effects read each frame; one instance, so DevTools can hold the ash.
+      const weatherRenderModel = new WeatherRenderModelBuilder({ getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null });
       // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
       const floatRocking = new FloatWaveRocking({
         getSettings: () => this.#config.canvas?.water,
@@ -898,6 +901,9 @@ export class GameCompositionRoot {
       const { systems } = this.#composeWorldSystems({
         // Spec 180 D15: DEV loads an on-demand image (the wave test background) into the shared image store.
         requestImage: (assetId) => this.#preload.request([assetId]),
+        // Spec 180 D10: DevTools holds the ash's and the waves' strength.
+        weatherRenderModel,
+        seaState,
         projector,
         locId,
         rng,
@@ -1018,6 +1024,7 @@ export class GameCompositionRoot {
         keepnetUI: systems.keepnetUI,
         world,
         rendering: {
+          weatherRenderModel,
           surface,
           imageAssets,
           assetPreloadCoordinator,
@@ -1634,6 +1641,8 @@ export class GameCompositionRoot {
 
   #composeWorldSystems({
     requestImage,
+    weatherRenderModel,
+    seaState,
     projector,
     locId,
     rng,
@@ -1763,6 +1772,9 @@ export class GameCompositionRoot {
                       getEmissionModel: () => systems.env?.emission ?? null,
                       // Spec 180 D15: on-demand images for DEV (the wave test background).
                       requestImage,
+                      // Spec 180 D10: the ash's and the waves' strength held by hand (null: automatic).
+                      holdAsh: (strength) => weatherRenderModel.holdAsh(strength),
+                      holdWaves: (scale) => seaState.holdAmplitude(scale),
                       // TK-321.2: the session's seed (CONFIG.debug.seed repeats this session).
                       sessionSeed: this.#sessionSeed(),
                       locationId: locId,

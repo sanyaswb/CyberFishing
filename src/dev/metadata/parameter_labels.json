@@ -1859,34 +1859,6 @@
     "label": "Розмиття",
     "description": "Різкі нерівні пульси розмиття («наче персонажа підглючує»), частішають до піку (TK-324.1)."
   },
-  "emission.screen.blur.maxPx": {
-    "label": "Розмиття, px",
-    "description": "Розмиття на вершині найсильнішого пульсу при повній силі (логічні px)."
-  },
-  "emission.screen.blur.baseShare": {
-    "label": "Між пульсами",
-    "description": "Частка розмиття, що лишається між пульсами."
-  },
-  "emission.screen.blur.pulseAmplitude": {
-    "label": "Висота пульсу [мін, макс]",
-    "description": "Кожен пульс — випадкова висота між цими частками."
-  },
-  "emission.screen.blur.pulseIntervalSec": {
-    "label": "Проміжок між пульсами, с [початок, пік]",
-    "description": "Середній проміжок між пульсами; коротшає до піку викиду."
-  },
-  "emission.screen.blur.pulseJitter": {
-    "label": "Нерівність ритму",
-    "description": "Розкид проміжку ± ця частка: ритм ніколи не повторюється."
-  },
-  "emission.screen.blur.attackSec": {
-    "label": "Наліт пульсу, с",
-    "description": "За скільки секунд пульс досягає вершини (різко)."
-  },
-  "emission.screen.blur.decaySec": {
-    "label": "Спад пульсу, с",
-    "description": "За скільки секунд пульс згасає."
-  },
   "emission.screen.vignette.enabled": {
     "label": "Затемнення",
     "description": "Показувати затемнення від країв (окремо від розмиття, TK-324.2)."
@@ -2254,5 +2226,25 @@
   "MAP_DB.weather.look.ash": {
     "label": "Попіл локації",
     "description": "Перевизначення вигляду попелу при силі 100."
+  },
+  "emission.screen.blur.strengthPx": {
+    "label": "Сила, px",
+    "description": "Розмиття найсильнішого пульсу при повній силі викиду (логічні px)."
+  },
+  "emission.screen.blur.pulsesPerSec": {
+    "label": "Частота пульсів [початок, пік]",
+    "description": "Скільки пульсів за секунду на початку викиду й на піку — частішає з силою."
+  },
+  "emission.screen.blur.irregularity": {
+    "label": "Нерівність",
+    "description": "Розкид проміжків і висот пульсів: 0 — рівний ритм, 1 — дуже хаотично."
+  },
+  "emission.screen.blur.sharpness": {
+    "label": "Різкість",
+    "description": "0 — м'які хвилі розмиття, 1 — різкі сіпання («підглючує»)."
+  },
+  "emission.screen.blur.floor": {
+    "label": "Між пульсами",
+    "description": "Частка розмиття, що лишається між пульсами."
   }
 }

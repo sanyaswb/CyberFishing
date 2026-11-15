@@ -504,7 +504,6 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     'id="weather-wave-speed"',
     'data-overlay-control="devtools-link"',
     'data-overlay-activate="release"',
-    'data-devtools-path="WEATHER.controls.storm"',
     'data-devtools-path="WEATHER.controls.stormStrength"',
     'data-devtools-path="WEATHER.controls.windDirection"',
     'data-devtools-path="WEATHER.controls.windStrength"',
@@ -826,7 +825,9 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       createSelectRow(label, _choices, value, parent, onChange, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "select", value, onChange });
       },
-      addParameter(parent, { control, options, value, onCommit, path }) {
+      addParameter(parent, { control, options, value, onCommit, path, min, max }) {
+        if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", value, min, max, onChange: onCommit });
+        if (control === "switch" && path) rowsByPath.set(path.join("."), { kind: "switch", value, onChange: onCommit });
         if (control === "choice" && path) rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
       },
       createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
@@ -862,6 +863,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
         setWind: (dir) => calls.push(["setWind", dir]),
         setWindStrength: (s) => calls.push(["setWindStrength", s]),
         triggerWindGust: () => calls.push(["triggerWindGust"]),
+        holdAsh: (v) => calls.push(["holdAsh", v]),
+        holdWaves: (v) => calls.push(["holdWaves", v]),
       },
       rainConfig: () => JSON.parse(JSON.stringify(GAME.canvas.rain)),
       config: () => locations.test.weather,
@@ -899,15 +902,34 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chancePerCheck" && v === 1),
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
-    // Spec 180 D1: each switch holds its own process only; switching the storm off releases the storm alone.
-    rowsByPath.get("WEATHER.controls.storm").onChange(true);
-    rowsByPath.get("WEATHER.controls.storm").onChange(false);
+    // Spec 180 D1, D10: a slider holds its own element only (no «manual» switches); the storm's never touches the rain.
+    rowsByPath.get("WEATHER.controls.stormStrength").onChange(40);
     const stormCalls = calls.filter(([k]) => k === "hold");
-    assert.deepEqual(stormCalls.map(([, kind, strength]) => [kind, strength]), [["storm", 0.8], ["storm", null]],
-      "the storm switch holds and releases the storm only (never the rain)");
+    assert.deepEqual(stormCalls.map(([, kind, strength]) => [kind, strength]), [["storm", 0.4]],
+      "the storm's slider holds the storm only (never the rain)");
     rowsByPath.get("WEATHER.controls.windStrength").onChange(82);
     assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "strength slider drives setWindStrength");
-    assert(fakeUi.syncCalls.some(([p, v]) => p === "WEATHER.controls.windStrengthHold" && v === true), "dragging strength slider activates hold switcher");
+    assert(!rowsByPath.has("WEATHER.controls.windStrengthHold"), "no separate «manual wind strength» switch (D10)");
+    rowsByPath.get("WEATHER.controls.ashStrength").onChange(30);
+    assert(calls.some(([k, v]) => k === "holdAsh" && Math.abs(v - 0.3) < 1e-6), "the ash's slider holds the ash");
+    rowsByPath.get("WEATHER.controls.waves").onChange(150);
+    assert(calls.some(([k, v]) => k === "holdWaves" && Math.abs(v - 1.5) < 1e-6), "the waves' slider holds their height");
+    // D16: under the rain's strength, its look at 100 for the selected location — a real value within the range.
+    const density = rowsByPath.get("WEATHER.controls.rainAt100.maxDrops");
+    assert(density && density.value === GAME_CONFIG.canvas.rain.strength.maxDrops[1] && density.max === 2000,
+      "the density slider stands at the real value at 100 within its range");
+    density.onChange(1100);
+    assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.look.rain.maxDrops" && v === 1100),
+      "with a location selected it writes that location's override at 100");
+    // D11: the location switch hides the general parts; «Загальні» shows them alone.
+    assert(rowsByPath.has("WEATHER.location.only"), "the «Параметри локації» switch shows with a location");
+    rowsByPath.clear();
+    locChoice.onChange("Загальні");
+    assert(!rowsByPath.has("WEATHER.location.only"), "no location switch with «Загальні»");
+    rowsByPath.get("WEATHER.controls.rainAt100.maxDrops").onChange(900);
+    assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.canvas.rain.strength.maxDrops" &&
+      JSON.stringify(v) === JSON.stringify([GAME_CONFIG.canvas.rain.strength.maxDrops[0], 900])),
+    "with «Загальні» it writes the general end at 100");
     rowsByPath.get("WEATHER.controls.gust").onClick();
     assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
     rowsByPath.get("button:↺ Автоматична погода").onClick();
@@ -1317,7 +1339,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     // A pulse starts where the blur jumps up sharply between two frames.
     const starts = [];
     for (let index = 1; index < samples.length; index += 1) {
-      if (samples[index].blur - samples[index - 1].blur > settings.blur.maxPx * 0.08 &&
+      if (samples[index].blur - samples[index - 1].blur > settings.blur.strengthPx * 0.08 &&
         (starts.length === 0 || samples[index].t - starts[starts.length - 1].t > 0.04)) starts.push(samples[index]);
     }
     return starts;
@@ -1337,13 +1359,14 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     const index = peak.indexOf(pulse);
     heights.push(Math.max(...peak.slice(index, index + 6).map((sample) => sample.blur)));
   }
-  assert.ok(Math.max(...heights) - Math.min(...heights) > settings.blur.maxPx * 0.3, "pulse heights vary from weak to strong");
-  assert.ok(Math.max(...heights) <= settings.blur.maxPx + 1e-9, "never above the maximum");
+  assert.ok(Math.max(...heights) - Math.min(...heights) > settings.blur.strengthPx * 0.3, "pulse heights vary from weak to strong");
+  assert.ok(Math.max(...heights) <= settings.blur.strengthPx + 1e-9, "never above the maximum");
   assert.ok(Math.max(...peak.map((sample) => sample.blur)) > Math.max(...low.map((sample) => sample.blur)) * 2,
     "the blur grows with the emission");
   // Sharp: a pulse climbs within its attack, faster than it falls.
-  const climbFrames = Math.ceil(settings.blur.attackSec * 60) + 1;
-  const fallFrames = Math.floor(settings.blur.decaySec * 60);
+  // Spec 180 D5: sharpness sets the attack (0.2 … 0.03 s) and the decay (0.8 … 0.15 s).
+  const climbFrames = Math.ceil((0.2 - 0.17 * settings.blur.sharpness) * 60) + 1;
+  const fallFrames = Math.floor((0.8 - 0.65 * settings.blur.sharpness) * 60);
   assert.ok(climbFrames < fallFrames, "a pulse rises faster than it falls (a glitch, not a breath)");
   // The vignette's swell: track the clear middle at full strength; closings reach deeper than the openings.
   const radii = peak.map((sample) => sample.radius);
@@ -1465,6 +1488,74 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.deepEqual(layers().out, ["W"], "loaded: the striped background replaces every layer");
   config.debug.waveTestBackground = false;
   assert.deepEqual(layers().out, ["D"], "off: back to the location's background");
+}
+
+// Spec 180 C (TK-327): the emission held at a steady strength; a section with edits not in the code is marked and can be
+// reset; the general parts hide with «Параметри локації».
+{
+  const { EmissionModel } = require("../../../src/game/domain/weather/emission_model.js");
+  const emission = new EmissionModel({ rng: new SeededRng(1), getSettings: () => MAP_DB.test.weather });
+  emission.update(16);
+  emission.holdIntensity(0.4);
+  assert.deepEqual([emission.snapshot.phase, emission.snapshot.intensity, emission.snapshot.intensityHeld], ["peak", 0.4, true],
+    "a held emission shows its peak at the held strength");
+  emission.holdIntensity(null);
+  assert.deepEqual([emission.snapshot.phase, emission.snapshot.intensity], ["idle", 0], "released: its own course");
+
+  const { WeatherDevSection } = require("../../../src/dev/tools/weather_dev_section.js");
+  const sections = [];
+  const buttons = new Map();
+  const resets = [];
+  const node = () => ({ replaceChildren() {}, appendChild() {} });
+  const ui = {
+    createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
+    addParameter() {}, releaseValueBindings() {},
+    createButtonRow(label, parent, onClick, navigation, icon, path) { buttons.set(path ? path.join(".") : label, onClick); },
+  };
+  const model = { snapshot: { events: {}, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 }, hold() {}, start() {},
+    releaseAll() {}, strike() {} };
+  const locations = { test: { weather: JSON.parse(JSON.stringify(MAP_DB.test.weather)) } };
+  let changed = new Set(["canvas.rain"]);
+  const section = new WeatherDevSection({
+    ui, weather: { locationId: "test", getModel: () => model, getWind: () => null },
+    config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
+    general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
+      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
+    createSection: (label, parent, path) => { sections.push([label, path?.join(".") ?? ""]); return node(); },
+    renderConfigTree: (value, parent, path) => sections.push(["tree", path.join(".")]),
+    edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree: (parts) => { resets.push(parts.join(".")); changed.clear(); } },
+  });
+  section.render(node());
+  const label = (path) => sections.filter(([, at]) => at === path).map(([text]) => text).at(-1);
+  const trees = () => sections.filter(([kind]) => kind === "tree").map(([, at]) => at);
+  assert.ok(!trees().includes("CONFIG.canvas.rain"), "with the location switch on, the general rain look is hidden");
+  assert.ok(trees().includes("CONFIG.locations.map.test.weather.rain"), "and the location's rain event shows");
+  assert.equal(label("WEATHER.rain"), "ДОЩ", "the location's rain parts are not edited: no mark");
+  sections.length = 0;
+  // «Загальні»: the general parts alone, the rain marked as changed with a reset.
+  section.dispose();
+  const general = new WeatherDevSection({
+    ui: { ...ui, addParameter(parent, options) {
+      if (options.path?.join(".") === "WEATHER.location.id") general.choose = options.onCommit;
+    } },
+    weather: { locationId: "test", getModel: () => model, getWind: () => null },
+    config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
+    general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
+      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
+    createSection: (text, parent, path) => { sections.push([text, path?.join(".") ?? ""]); return node(); },
+    renderConfigTree: (value, parent, path) => sections.push(["tree", path.join(".")]),
+    edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree: (parts) => { resets.push(parts.join(".")); changed.clear(); } },
+  });
+  general.render(node());
+  sections.length = 0;
+  general.choose("Загальні");
+  assert.ok(trees().includes("CONFIG.canvas.rain") && trees().includes("CONFIG.weather.storm") && trees().includes("CONFIG.weather.wind"),
+    "«Загальні» shows the general rain, storm and wind");
+  assert.ok(!trees().some((path) => path.startsWith("CONFIG.locations.map.test.weather")), "and no location part");
+  assert.equal(label("WEATHER.rain"), "ДОЩ · змінено", "a section with edits not in the code is marked");
+  buttons.get("WEATHER.rain.reset")();
+  assert.deepEqual(resets, ["canvas.rain"], "its reset drops that section's overrides");
+  assert.equal(label("WEATHER.rain"), "ДОЩ", "then the mark is gone");
 }
 
 console.log(

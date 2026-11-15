@@ -1739,14 +1739,13 @@ async function checkDevWiring() {
   const layer = { getStatus: () => status, loseContext: () => layerCalls.push("lose"), restoreContext: () => layerCalls.push("restore") };
   const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
   router.update();
-  const waterEditors = [];
   new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content,
-    renderWaterConfig: (parent) => waterEditors.push(parent) }).render({});
+    renderWeather: () => rows.push("WEATHER") }).render({});
   assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
     "the water's state, step cost and drift are shown");
-  assert.equal(waterEditors.length, 1, "the live editor of CONFIG.canvas.water sits in the section");
-  assert.match(readFlat("src/dev/tools/modules/scene_module.js"),
-    /renderWaterConfig: \(parent\) => tree\.render\(this\.#config\.canvas\.water, parent, \["CONFIG", "canvas", "water"\]\)/u);
+  // Spec 180 D4: the weather (with the water) above; the scene's switch, the context buttons and «Оновити» at the bottom.
+  assert(rows.indexOf("WEATHER") >= 0 && rows.indexOf("WEATHER") < rows.indexOf("Втратити WebGL-контекст") &&
+    rows.at(-1) === "↻ Оновити", "the WebGL buttons come after every section");
   assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
   assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
   assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");

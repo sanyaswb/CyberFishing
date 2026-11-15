@@ -41,6 +41,17 @@ export class SeaStateResolver {
 
   // getEnvironment: () => EnvironmentSystem's snapshot ({ time, weather, wind }) or null; getSettings: () =>
   // CONFIG.canvas.water.seaState (read every frame: DEV edits apply at once).
+  // Spec 180 D10: the waves' height × held by hand (DevTools «Керування»), null: from wind, night and storm.
+  #amplitudeHold = null;
+
+  holdAmplitude(scale) {
+    this.#amplitudeHold = scale === null || !Number.isFinite(Number(scale)) ? null : Math.max(0, Number(scale));
+  }
+
+  get amplitudeHeld() {
+    return this.#amplitudeHold !== null;
+  }
+
   constructor({ getEnvironment, getSettings }) {
     if (typeof getEnvironment !== "function" || typeof getSettings !== "function") {
       throw new TypeError("SeaStateResolver requires getEnvironment and getSettings");
@@ -93,7 +104,7 @@ export class SeaStateResolver {
     const windAmpFactor = calm + (windy - calm) * wind;
     const nightAmpFactor = 1 + (nightAmpTarget - 1) * night;
     const stormAmpFactor = 1 + (stormAmpTarget - 1) * storm;
-    const amplitude = windAmpFactor * nightAmpFactor * stormAmpFactor;
+    const amplitude = this.#amplitudeHold ?? windAmpFactor * nightAmpFactor * stormAmpFactor;
 
     const windSpeedTarget = positive(normal?.windSpeed, 1);
     const stormSpeedTarget = positive(event?.speed, 1);

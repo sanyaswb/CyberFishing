@@ -8,11 +8,21 @@ const share = (value) => {
 
 export class WeatherRenderModelBuilder {
   #getEnvironment;
+  #ashHold = null;
 
   // getEnvironment: () => EnvironmentSystem's snapshot ({ weather, wind }) or null.
   constructor({ getEnvironment }) {
     if (typeof getEnvironment !== "function") throw new TypeError("WeatherRenderModelBuilder requires getEnvironment");
     this.#getEnvironment = getEnvironment;
+  }
+
+  // Spec 180 D10: the ash's strength 0…1 held by hand (DevTools «Керування»), null: it follows the emission.
+  holdAsh(strength) {
+    this.#ashHold = strength === null || !Number.isFinite(Number(strength)) ? null : share(strength);
+  }
+
+  get ashHeld() {
+    return this.#ashHold !== null;
   }
 
   buildInto(target) {
@@ -24,6 +34,8 @@ export class WeatherRenderModelBuilder {
     target.cloud = share(weather?.cloud);
     // Spec 179: the emission's intensity (its background layer, the rain's colour).
     target.emission = share(environment?.emission?.intensity);
+    // Spec 180 D10: the ash's strength follows the emission unless DevTools holds it.
+    target.ash = this.#ashHold ?? target.emission;
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
     const rawStrength = environment?.wind?.strength;

@@ -43,8 +43,8 @@ export class WeatherOverlayModule extends OverlayModule {
       metricKey: "weather.precipitation",
       devtoolsPath:
         reading.precipitation === "storm"
-          ? "WEATHER.controls.storm"
-          : "WEATHER.controls.rain",
+          ? "WEATHER.controls.stormStrength"
+          : "WEATHER.controls.rainStrength",
     });
     html += this.plainRow("Гроза 0…1", share(reading.storm), {
       color: "#ff8866",

@@ -755,7 +755,7 @@ export class DevToolsUI {
   // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
   //   isChanged(): the value differs from the code (a session override) -> a marker and a reset button (onReset()).
   addParameter(parentElement, { control, label, value, onCommit, path = null, bindingPath = path, requires = [],
-    options = [], swatch = null, isChanged = null, onReset = null }) {
+    options = [], swatch = null, isChanged = null, onReset = null, min = 0, max = 100, step = 1 }) {
     const row = document.createElement("div");
     row.className = control === "choice" ? "devtools__row devtools__row--stacked"
       : control === "segments" ? "devtools__row devtools__row--wrap" : "devtools__row";
@@ -766,7 +766,7 @@ export class DevToolsUI {
     if (control === "switch") {
       field = this.#createSwitch(row, { value, onCommit, ariaLabel, bindingPath, requires });
     } else if (control === "range") {
-      field = new RangeField({ value, onInput: onCommit, ariaLabel, documentRef: document });
+      field = new RangeField({ value, onInput: onCommit, ariaLabel, documentRef: document, min, max, step });
     } else {
       const guard = this.#guardDependentRow(row, requires, value, onCommit, (shown) => field.setValue(shown));
       const commit = guard.commit;

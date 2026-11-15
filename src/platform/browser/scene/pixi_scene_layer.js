@@ -152,7 +152,7 @@ export class PixiSceneLayer {
     }
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
     if (this.#ash.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now,
-      this.#getAshSettings(world?.weather?.emission ?? 0), weatherSettings)) {
+      this.#getAshSettings(world?.weather?.ash ?? world?.weather?.emission ?? 0), weatherSettings)) {
       changed = true;
     }
     const pixelRatio = this.#scenePixelRatio();

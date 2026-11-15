@@ -25,18 +25,16 @@ export class SceneLayerDevSection {
   #router;
   #floatRocking;
   #createSection;
-  #renderWaterConfig;
   #renderWeather;
   #content = null;
 
-  // scene: { layer, router } from the composition; createSection(label, parent, path) and renderWaterConfig(parent)
-  // (the live editor of CONFIG.canvas.water) from DevTools.
+  // scene: { layer, router } from the composition; createSection(label, parent, path) from DevTools (spec 180: the water's
+  // settings moved into «ПОГОДА» → «ВОДА»).
   // renderWeather(parent): TK-291, the weather section drawn inside this one (its effects are the scene's).
   constructor({
     ui,
     scene,
     createSection,
-    renderWaterConfig,
     renderWeather = null,
   }) {
     this.#ui = ui;
@@ -44,7 +42,6 @@ export class SceneLayerDevSection {
     this.#router = scene.router;
     this.#floatRocking = scene.floatRocking ?? null;
     this.#createSection = createSection;
-    this.#renderWaterConfig = renderWaterConfig;
     this.#renderWeather = renderWeather;
   }
 
@@ -124,6 +121,9 @@ export class SceneLayerDevSection {
         ["SCENE_LAYER", "routing", kind],
       );
     }
+    // Spec 180 D4: the weather (with the water) first; the scene's switch, the WebGL context and «Оновити» at the very
+    // bottom, under every section.
+    this.#renderWeather?.(content);
     if (status.state !== "inactive") {
       this.#ui.createSwitcherRow(
         "Сцена WebGL (інакше все на 2D)",
@@ -145,9 +145,5 @@ export class SceneLayerDevSection {
       });
     }
     this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
-    this.#renderWaterConfig?.(
-      this.#createSection("ВОДА", content, ["SCENE_LAYER", "waterConfig"]),
-    );
-    this.#renderWeather?.(content);
   }
 }

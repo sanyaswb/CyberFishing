@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 180 C (TK-327): weather DevTools — selector, controls for every element, sections, section reset.",
   "Spec 180 B (TK-326): general storm and wind settings, strength ranges, water lateral switch, wave test background.",
   "Spec 180 A (TK-325): independent weather events with timelines; storm without guaranteed rain.",
   "TK-324.2: emission vignette and blur switch on and off separately.",
