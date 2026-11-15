@@ -1401,32 +1401,73 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   env = { emission: { phase: "fade", intensity: 0.01 } };
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
 
-  // The effect: darkening from the edges inward, blur pulsing faster toward the peak.
+  // The effect (TK-324.1): sharp irregular blur pulses that quicken and grow toward the peak; a vignette that sways on
+  // a wandering swell and closes in deeper than it opens out.
   const settings = CONFIG.emission.screen;
   assert.equal(settings.includeHud, true, "owner Q6: blur with the HUD for the test");
-  const effect = new EmissionScreenEffect();
-  const sample = (strength, seconds) => {
-    let blurMin = Infinity, blurMax = 0, crossings = 0, previous = null, record = null;
+  let seedFx = 5;
+  const randomFx = () => { seedFx = (Math.imul(seedFx, 1664525) + 1013904223) >>> 0; return seedFx / 4294967296; };
+  const run = (strengthAt, seconds) => {
+    const fx = new EmissionScreenEffect({ random: randomFx });
+    const out = [];
     for (let t = 0; t < seconds; t += 1 / 60) {
-      record = effect.update(1000 / 60, strength, settings);
-      blurMin = Math.min(blurMin, record.blurPx);
-      blurMax = Math.max(blurMax, record.blurPx);
-      const above = record.blurPx > settings.maxBlurPx * strength * (1 + settings.pulseBase) / 2;
-      if (previous !== null && above && !previous) crossings += 1;
-      previous = above;
+      const record = fx.update(1000 / 60, strengthAt(t), settings);
+      out.push({ t, blur: record.blurPx, radius: record.clearRadius, dark: record.darkness, visible: record.visible });
     }
-    return { ...record, blurMin, blurMax, crossings };
+    return out;
   };
-  assert.equal(effect.update(16, 0, settings).visible, false, "strength 0: the veil is hidden");
-  const low = sample(0.3, 10);
-  const peak = sample(1, 10);
-  assert.ok(low.clearRadius > peak.clearRadius && peak.clearRadius < 0.2, "the clear middle narrows toward the peak");
-  assert.ok(low.darkness < peak.darkness && Math.abs(peak.darkness - settings.maxDarkness) < 1e-9, "the edges darken");
-  assert.ok(peak.blurMax <= settings.maxBlurPx + 1e-9 && peak.blurMax > settings.maxBlurPx * 0.95, "the blur reaches its maximum");
-  assert.ok(peak.blurMin >= settings.maxBlurPx * settings.pulseBase - 1e-9 && peak.blurMin < peak.blurMax * 0.6,
-    "the blur pulses between its base and its maximum");
-  assert.ok(peak.crossings > low.crossings * 2, `the pulse speeds up toward the peak (${low.crossings} → ${peak.crossings})`);
-  assert.equal(effect.update(16, 1, { ...settings, enabled: false }).visible, false, "switched off: no veil");
+  const pulses = (samples) => {
+    // A pulse starts where the blur jumps up sharply between two frames.
+    const starts = [];
+    for (let index = 1; index < samples.length; index += 1) {
+      if (samples[index].blur - samples[index - 1].blur > settings.blur.maxPx * 0.08 &&
+        (starts.length === 0 || samples[index].t - starts[starts.length - 1].t > 0.04)) starts.push(samples[index]);
+    }
+    return starts;
+  };
+  assert.equal(new EmissionScreenEffect().update(16, 0, settings).visible, false, "strength 0: the veil is hidden");
+  const low = run(() => 0.3, 60);
+  const peak = run(() => 1, 60);
+  const lowPulses = pulses(low);
+  const peakPulses = pulses(peak);
+  const gaps = (list) => list.slice(1).map((pulse, index) => pulse.t - list[index].t);
+  const mean = (list) => list.reduce((sum, value) => sum + value, 0) / list.length;
+  const spread = (list) => Math.sqrt(mean(list.map((value) => (value - mean(list)) ** 2))) / mean(list);
+  assert.ok(peakPulses.length > lowPulses.length * 2, `pulses quicken toward the peak (${lowPulses.length} → ${peakPulses.length} per minute)`);
+  assert.ok(spread(gaps(peakPulses)) > 0.2 && spread(gaps(lowPulses)) > 0.2, "the rhythm is irregular (the gaps differ)");
+  const heights = [];
+  for (const pulse of peakPulses) {
+    const index = peak.indexOf(pulse);
+    heights.push(Math.max(...peak.slice(index, index + 6).map((sample) => sample.blur)));
+  }
+  assert.ok(Math.max(...heights) - Math.min(...heights) > settings.blur.maxPx * 0.3, "pulse heights vary from weak to strong");
+  assert.ok(Math.max(...heights) <= settings.blur.maxPx + 1e-9, "never above the maximum");
+  assert.ok(Math.max(...peak.map((sample) => sample.blur)) > Math.max(...low.map((sample) => sample.blur)) * 2,
+    "the blur grows with the emission");
+  // Sharp: a pulse climbs within its attack, faster than it falls.
+  const climbFrames = Math.ceil(settings.blur.attackSec * 60) + 1;
+  const fallFrames = Math.floor(settings.blur.decaySec * 60);
+  assert.ok(climbFrames < fallFrames, "a pulse rises faster than it falls (a glitch, not a breath)");
+  // The vignette's swell: track the clear middle at full strength; closings reach deeper than the openings.
+  const radii = peak.map((sample) => sample.radius);
+  const extremes = [];
+  for (let index = 1; index < radii.length - 1; index += 1) {
+    if ((radii[index] < radii[index - 1] && radii[index] <= radii[index + 1]) ||
+      (radii[index] > radii[index - 1] && radii[index] >= radii[index + 1])) extremes.push({ index, value: radii[index] });
+  }
+  const base = settings.vignette.clearRadius[1];
+  const closings = extremes.filter((point) => point.value < base).map((point) => base - point.value);
+  const openings = extremes.filter((point) => point.value > base).map((point) => point.value - base);
+  assert.ok(closings.length >= 5 && openings.length >= 5, `the middle sways in and out (${closings.length} / ${openings.length})`);
+  assert.ok(mean(closings) > mean(openings) * 1.5, "each closing reaches deeper than the opening");
+  const swellGaps = gaps(extremes.filter((point) => point.value < base).map((point) => ({ t: point.index / 60 })));
+  assert.ok(spread(swellGaps) > 0.05, "the swell has no fixed beat (its period wanders)");
+  const ramp = run((t) => Math.min(1, t / 60), 60);
+  assert.ok(ramp[600].radius > ramp[3500].radius && ramp[600].dark < ramp[3500].dark,
+    "with the emission the clear middle narrows and the edges darken");
+  assert.ok(Math.abs(peak[peak.length - 1].dark - settings.vignette.maxDarkness) < settings.vignette.maxDarkness * 0.13,
+    "the edges reach about maxDarkness and breathe a little with the swell");
+  assert.equal(new EmissionScreenEffect().update(16, 1, { ...settings, enabled: false }).visible, false, "switched off: no veil");
 
   // The DOM veil: placed between the UI content and the portals (DevTools) or above the scene; written only on change.
   const makeElement = (name) => ({ name, parent: null, isConnected: false, style: { props: {}, setProperty(key, value) { this.props[key] = value; } },
@@ -1442,7 +1483,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const veil = new EmissionVeilDomRenderer({ documentRef, portalRoot, gameCanvas });
   veil.apply({ visible: false });
   assert.equal(created.isConnected, false, "hidden before an emission: not even in the page");
-  const frame = { visible: true, includeHud: true, darkness: 0.5, clearRadius: 0.4, feather: 0.3, blurPx: 4 };
+  const frame = { visible: true, includeHud: true, darkness: 0.5, clearRadius: 0.4, feather: 0.5, blurPx: 4 };
   veil.apply(frame);
   assert.equal(created.parent, "before-portals", "with the HUD: right before the portals, so DevTools stays sharp");
   assert.ok(created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "blur(4.00px)", "shown and blurred");

@@ -1313,19 +1313,32 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
     this.#requireBooleanWithLabel(`${path}.includeHud`, cfg.includeHud);
-    for (const [key, min, max] of [["maxDarkness", 0, 1], ["feather", 0, 1], ["maxBlurPx", 0, 40], ["pulseBase", 0, 1]]) {
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
-      this.#requireParameterLabel(`${path}.${key}`);
-    }
-    for (const [key, min, max, ordered] of [["clearRadius", 0, 1, false], ["pulseHz", 0, 10, true]]) {
-      const pair = cfg[key];
-      if (!Array.isArray(pair) || pair.length !== 2 || (ordered && pair[0] > pair[1])) {
-        this.#error(`CONFIG.${path}.${key}`, ordered ? "must be [min, max] with min <= max" : "must be [start, peak]");
-        continue;
+    // TK-324.1: the vignette's swell and the blur's irregular pulses.
+    const groups = [
+      ["vignette", [["maxDarkness", 0, 1], ["feather", 0, 1], ["swayAmplitude", 0, 0.5], ["swayOutShare", 0, 1]],
+        [["clearRadius", 0, 1, false], ["swayPeriodSec", 0.5, 120, false]]],
+      ["blur", [["maxPx", 0, 40], ["baseShare", 0, 1], ["pulseJitter", 0, 1], ["attackSec", 0.01, 5], ["decaySec", 0.01, 10]],
+        [["pulseAmplitude", 0, 1, true], ["pulseIntervalSec", 0.05, 60, false]]],
+    ];
+    for (const [group, numbers, pairs] of groups) {
+      const section = cfg[group];
+      const sectionPath = `${path}.${group}`;
+      if (!section || typeof section !== "object") { this.#error(`CONFIG.${sectionPath}`, "missing"); continue; }
+      this.#requireParameterLabel(sectionPath);
+      for (const [key, min, max] of numbers) {
+        this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}`, section[key], { min, max });
+        this.#requireParameterLabel(`${sectionPath}.${key}`);
       }
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
-      this.#requireParameterLabel(`${path}.${key}`);
+      for (const [key, min, max, ordered] of pairs) {
+        const pair = section[key];
+        if (!Array.isArray(pair) || pair.length !== 2 || (ordered && pair[0] > pair[1])) {
+          this.#error(`CONFIG.${sectionPath}.${key}`, ordered ? "must be [min, max] with min <= max" : "must be [start, peak]");
+          continue;
+        }
+        this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}[0]`, pair[0], { min, max });
+        this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}[1]`, pair[1], { min, max });
+        this.#requireParameterLabel(`${sectionPath}.${key}`);
+      }
     }
   }
 

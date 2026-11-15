@@ -1903,28 +1903,64 @@
     "label": "Разом з HUD",
     "description": "Увімкнено — розмивається все, крім DevTools (HUD, кнопки, вікна); вимкнено — лише сцена під 2D-HUD."
   },
-  "emission.screen.maxDarkness": {
+  "emission.screen.vignette": {
+    "label": "Затемнення",
+    "description": "Затемнення від країв, що колихається на хвилі: зсувається глибше, ніж розсувається (TK-324.1)."
+  },
+  "emission.screen.vignette.maxDarkness": {
     "label": "Темрява країв",
     "description": "Наскільки темніють краї на повній силі викиду (0…1)."
   },
-  "emission.screen.clearRadius": {
+  "emission.screen.vignette.clearRadius": {
     "label": "Світла середина [початок, пік]",
-    "description": "Радіус світлої середини як частка півдіагоналі екрана: на початку викиду → на піку (звужується)."
+    "description": "Радіус світлої середини як частка півдіагоналі екрана: на початку викиду → на піку."
   },
-  "emission.screen.feather": {
+  "emission.screen.vignette.feather": {
     "label": "М'якість краю",
-    "description": "Ширина переходу від світлої середини до темних країв (частка півдіагоналі)."
+    "description": "Ширина плавного переходу від світлої середини до темних країв (частка півдіагоналі)."
   },
-  "emission.screen.maxBlurPx": {
+  "emission.screen.vignette.swayAmplitude": {
+    "label": "Хвиля: зсування",
+    "description": "Наскільки світла середина зсувається на хвилі (частка півдіагоналі) на повній силі."
+  },
+  "emission.screen.vignette.swayOutShare": {
+    "label": "Хвиля: розсування",
+    "description": "Розсування — ця частка від зсування, тож кожне зсування глибше за розсування."
+  },
+  "emission.screen.vignette.swayPeriodSec": {
+    "label": "Довжина хвилі, с [повільна, швидка]",
+    "description": "Довжина хвилі блукає між цими значеннями й коротшає з силою викиду — без рівного ритму."
+  },
+  "emission.screen.blur": {
+    "label": "Розмиття",
+    "description": "Різкі нерівні пульси розмиття («наче персонажа підглючує»), частішають до піку (TK-324.1)."
+  },
+  "emission.screen.blur.maxPx": {
     "label": "Розмиття, px",
-    "description": "Розмиття на вершині пульсу при повній силі (логічні px)."
+    "description": "Розмиття на вершині найсильнішого пульсу при повній силі (логічні px)."
   },
-  "emission.screen.pulseBase": {
-    "label": "Розмиття між пульсами",
-    "description": "Частка розмиття, що лишається між пульсами (0 — до нуля, 1 — без пульсу)."
+  "emission.screen.blur.baseShare": {
+    "label": "Між пульсами",
+    "description": "Частка розмиття, що лишається між пульсами."
   },
-  "emission.screen.pulseHz": {
-    "label": "Частота пульсу, Гц [початок, пік]",
-    "description": "Пульс пришвидшується від першого значення до другого разом із силою викиду."
+  "emission.screen.blur.pulseAmplitude": {
+    "label": "Висота пульсу [мін, макс]",
+    "description": "Кожен пульс — випадкова висота між цими частками."
+  },
+  "emission.screen.blur.pulseIntervalSec": {
+    "label": "Проміжок між пульсами, с [початок, пік]",
+    "description": "Середній проміжок між пульсами; коротшає до піку викиду."
+  },
+  "emission.screen.blur.pulseJitter": {
+    "label": "Нерівність ритму",
+    "description": "Розкид проміжку ± ця частка: ритм ніколи не повторюється."
+  },
+  "emission.screen.blur.attackSec": {
+    "label": "Наліт пульсу, с",
+    "description": "За скільки секунд пульс досягає вершини (різко)."
+  },
+  "emission.screen.blur.decaySec": {
+    "label": "Спад пульсу, с",
+    "description": "За скільки секунд пульс згасає."
   }
 }

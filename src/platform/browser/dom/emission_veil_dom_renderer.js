@@ -58,7 +58,7 @@ export class EmissionVeilDomRenderer {
       applied.clearRadius = record.clearRadius;
       applied.feather = record.feather;
       element.style.setProperty("--emission-veil-clear", `${(record.clearRadius * 100).toFixed(2)}%`);
-      element.style.setProperty("--emission-veil-edge", `${(Math.min(1, record.clearRadius + record.feather) * 100).toFixed(2)}%`);
+      element.style.setProperty("--emission-veil-feather", `${(record.feather * 100).toFixed(2)}%`);
     }
     if (Math.abs(applied.blurPx - record.blurPx) >= BLUR_EPSILON) {
       applied.blurPx = record.blurPx;

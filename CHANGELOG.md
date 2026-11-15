@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.12 - Irregular blur pulses and a swaying vignette (TK-324.1)
+
+- Emission screen: the blur comes in sharp, glitch-like pulses of random strength and an ever-changing rhythm that quickens toward the peak; the darkening has smoother edges and sways like a swell, closing in deeper than it opens out.
+
 ## v0.51.11 - Emission darkening and blur, no cast without a gas mask (spec 179 stage E, TK-324)
 
 - Without a gas mask an emission darkens the screen from the edges inward and blurs it in pulses that quicken toward the peak — the HUD and windows too, DevTools stays sharp (CONFIG.emission.screen.includeHud off: the world only). A cast during an emission opens the inventory with «У вас немає протигазу»; a fight already on goes on.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.3 - DevTools modes as lists, colour picker, section info, selectable text (TK-320)
 
 - DevTools: hints no longer say «увімкнено/вимкнено»; 11 text parameters with fixed modes (biteSequenceMode, canvas.scene, cameraFollowPriority, …) are lists; colour parameters (#hex, rgb/rgba) have a swatch that opens a colour and opacity picker, keeping the value's format; a section's description sits behind an «i» beside its title and opens at the top of the section; the panel's text can be selected and copied.
-
-## v0.51.2 - Reveal search waits for Enter (TK-319.1)
-
-- DevTools «Пошук» = «Розгорнути»: typing only marks the matches and opens their sections; the panel scrolls to a match (and switches the module) only on Enter — the search key of the phone keyboard — and the next Enter goes to the next one.

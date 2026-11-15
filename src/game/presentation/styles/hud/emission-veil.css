@@ -5,14 +5,19 @@
 .emission-veil {
   --emission-veil-darkness: 0;
   --emission-veil-clear: 95%;
-  --emission-veil-edge: 100%;
+  --emission-veil-feather: 50%;
   position: absolute;
   inset: 0;
   z-index: var(--ui-layer-panel);
   display: none;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0) var(--emission-veil-clear),
-    rgb(0 0 0 / var(--emission-veil-darkness)) var(--emission-veil-edge));
+  /* TK-324.1: the edge eases in along a smoothstep (stops at 25 / 50 / 75 % of the feather), so no line shows. */
+  background: radial-gradient(ellipse at center,
+    rgb(0 0 0 / 0) var(--emission-veil-clear),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.16)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.25),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.5)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.5),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.84)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.75),
+    rgb(0 0 0 / var(--emission-veil-darkness)) calc(var(--emission-veil-clear) + var(--emission-veil-feather)));
 }
 
 .emission-veil--visible {

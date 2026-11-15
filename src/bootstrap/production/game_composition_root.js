@@ -1073,7 +1073,8 @@ export class GameCompositionRoot {
   // Spec 179 stage E: the emission's darkening and blur, one DOM veil updated once a frame (a page without a UI surface
   // has no veil: the effect still runs, nothing is drawn).
   #composeEmissionScreen({ canvas, emissionExposure, own }) {
-    const effect = new EmissionScreenEffect();
+    // Visual only: the blur's irregular pulses draw from Math.random, never from a gameplay stream.
+    const effect = new EmissionScreenEffect({ random: Math.random });
     const veil = this.#uiSurface
       ? own(new EmissionVeilDomRenderer({ documentRef: this.#documentTarget, portalRoot: this.#uiSurface.portalRoot,
         gameCanvas: canvas }))
