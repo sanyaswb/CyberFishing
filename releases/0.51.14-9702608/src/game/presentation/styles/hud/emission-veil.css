@@ -1,0 +1,36 @@
+/* Spec 179 stage E (TK-324): the emission's veil. Darkening from the edges inward (a radial gradient whose clear middle
+   shrinks) and a pulsing blur of everything under it (backdrop-filter, set inline by EmissionVeilDomRenderer). It never
+   takes input. By default it covers the UI surface's content (HUD, toolbar, windows) and stays under its portals
+   (DevTools); --scene puts it right above the WebGL scene and under the 2D HUD canvas. */
+.emission-veil {
+  --emission-veil-darkness: 0;
+  --emission-veil-clear: 95%;
+  --emission-veil-feather: 50%;
+  position: absolute;
+  inset: 0;
+  z-index: var(--ui-layer-panel);
+  display: none;
+  pointer-events: none;
+  /* TK-324.1: the edge eases in along a smoothstep (stops at 25 / 50 / 75 % of the feather), so no line shows. */
+  background: radial-gradient(ellipse at center,
+    rgb(0 0 0 / 0) var(--emission-veil-clear),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.16)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.25),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.5)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.5),
+    rgb(0 0 0 / calc(var(--emission-veil-darkness) * 0.84)) calc(var(--emission-veil-clear) + var(--emission-veil-feather) * 0.75),
+    rgb(0 0 0 / var(--emission-veil-darkness)) calc(var(--emission-veil-clear) + var(--emission-veil-feather)));
+}
+
+.emission-veil--visible {
+  display: block;
+}
+
+/* TK-324.2: without darkening (vignette off) the veil paints no gradient, only its backdrop blur. */
+.emission-veil--clear {
+  background: none;
+}
+
+.emission-veil--scene {
+  position: fixed;
+  z-index: -1;
+  margin: auto;
+}
