@@ -36,6 +36,8 @@ export class WeatherRenderModelBuilder {
     target.emission = share(environment?.emission?.intensity);
     // Spec 180 D10: the ash's strength follows the emission unless DevTools holds it.
     target.ash = this.#ashHold ?? target.emission;
+    // Spec 179 stage D (TK-338): the location's radiation 0…1 (the hiss over the scene).
+    target.radiation = share(environment?.radiation);
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
     const rawStrength = environment?.wind?.strength;

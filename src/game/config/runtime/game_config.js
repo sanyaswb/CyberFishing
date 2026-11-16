@@ -122,6 +122,15 @@ export const CONFIG = {
     rain: RAIN_SETTINGS,
     // Spec 179 stage C: fiery ash in the air during an emission (ash_settings.js).
     ash: ASH_SETTINGS,
+    // Spec 179 етап D (TK-338): шипіння радіації — дрібне мерехтливе зерно над сценою, сильніше з радіацією локації.
+    // Одна згенерована текстура шуму, без фільтра; вимкнено — жодного кадру (для виміру «ПРОДУКТИВНІСТЬ»).
+    radiationGrain: {
+      enabled: true,
+      fromRadiation: 0.05, // нижче цієї радіації (0…1) зерна немає
+      maxOpacity: 0.3, // непрозорість зерна при радіації 1
+      grainPx: 2, // розмір цятки зерна, логічні пікселі
+      fps: 24, // скільки разів на секунду зерно змінюється
+    },
   },
 
   input: {

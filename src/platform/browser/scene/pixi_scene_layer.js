@@ -8,6 +8,7 @@ import { PixiRodRenderer } from "./pixi_rod_renderer.js";
 import { PixiWaterRenderer } from "./pixi_water_renderer.js";
 import { PixiRainRenderer } from "./pixi_rain_renderer.js";
 import { PixiAshRenderer } from "./pixi_ash_renderer.js";
+import { PixiRadiationGrainRenderer } from "./pixi_radiation_grain_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -57,6 +58,8 @@ export class PixiSceneLayer {
   #getAshSettings;
   #getWeatherSettings;
   #ash = null;
+  #grain = null;
+  #getGrainSettings;
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
@@ -97,7 +100,8 @@ export class PixiSceneLayer {
   // optional async step awaited before the renderer starts (pixi_runtime_module.js: eval-free systems under CSP).
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
-    getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null }) {
+    getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null,
+    getRadiationGrainSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -121,6 +125,8 @@ export class PixiSceneLayer {
     // Spec 180 (TK-326): the rain's and the ash's looks resolved at their strengths (getRainSettings(rain),
     // getAshSettings(emission)) and CONFIG.weather (storm, wind) for both.
     this.#getWeatherSettings = getWeatherSettings;
+    // Spec 179 stage D (TK-338): CONFIG.canvas.radiationGrain, the radiation's hiss.
+    this.#getGrainSettings = getRadiationGrainSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -153,6 +159,9 @@ export class PixiSceneLayer {
     if (this.#water.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now)) changed = true;
     if (this.#ash.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now,
       this.#getAshSettings(world?.weather?.ash ?? world?.weather?.emission ?? 0), weatherSettings)) {
+      changed = true;
+    }
+    if (this.#grain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getGrainSettings())) {
       changed = true;
     }
     const pixelRatio = this.#scenePixelRatio();
@@ -195,7 +204,7 @@ export class PixiSceneLayer {
     if (this.#app === null) return { state };
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
-      water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status };
+      water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -220,6 +229,7 @@ export class PixiSceneLayer {
     this.#water?.dispose();
     this.#rain?.dispose();
     this.#ash?.dispose();
+    this.#grain?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
     this.#worldEntities?.dispose();
@@ -271,6 +281,9 @@ export class PixiSceneLayer {
       // Spec 179 stage C: the ash flies in front of the rain and everything else in the world.
       this.#ash = new PixiAshRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#ash.mount(app.stage);
+      // Spec 179 stage D: the radiation's hiss lies over the whole world, in front of the ash.
+      this.#grain = new PixiRadiationGrainRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#grain.mount(app.stage);
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);

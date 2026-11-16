@@ -509,6 +509,7 @@ export class ConfigSchemaValidator {
     this.#validateSceneWaterConfig();
     this.#validateRainConfig();
     this.#validateAshConfig();
+    this.#validateRadiationGrainConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
     const cfg = this.config.ui?.rod?.spine;
@@ -1403,6 +1404,16 @@ export class ConfigSchemaValidator {
       this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
       this.#requireParameterLabel(`${path}.${key}`);
     }
+  }
+
+  // Spec 179 stage D (TK-338): the radiation's hiss (CONFIG.canvas.radiationGrain).
+  #validateRadiationGrainConfig() {
+    const path = "canvas.radiationGrain";
+    const cfg = this.config.canvas?.radiationGrain;
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing radiation grain config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireRangeNumbers(path, cfg, [["fromRadiation", 0, 1], ["maxOpacity", 0, 1], ["grainPx", 1, 16], ["fps", 1, 60]]);
   }
 
   // Spec 179 stage C: the emission's fiery ash (CONFIG.canvas.ash).

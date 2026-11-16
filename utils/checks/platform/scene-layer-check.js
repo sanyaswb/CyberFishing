@@ -583,8 +583,8 @@ async function checkPixiSceneLayer() {
     water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0,
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
-    ash: { active: false, embers: 0, pool: 0, stepMs: 0 } },
-  "no castable zones in this frame: still water; no emission: no ash");
+    ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 } },
+  "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -663,6 +663,55 @@ async function checkPixiSceneLayer() {
 // to their point at the wind's slant, smaller and slower far away; the count follows the rain and the storm; drops that
 // land on water leave rings (only there) and ripples for the water's map; switching off or leaving the scene clears it;
 // the pools grow only with the settings; what the GPU draws follows each frame (scale, rotation and colour dynamic).
+// Spec 179 stage D (TK-338): the radiation's hiss — a grain grid from one noise tile generated once, its opacity by the
+// radiation above the threshold, new grain at its own pace, frames only while it shows.
+async function checkRadiationGrain() {
+  const { PixiRadiationGrainRenderer } = await importSource("src/platform/browser/scene/pixi_radiation_grain_renderer.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const { pixi, canvasTextures } = fakePixi();
+  const { documentTarget } = fakeDom();
+  let seed = 5;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const grain = new PixiRadiationGrainRenderer({ pixi, documentTarget, random });
+  assert.equal(canvasTextures.length, 1, "one noise tile, generated once in code (no image file)");
+  assert.equal(canvasTextures[0].source.scaleMode, "nearest", "crisp specks");
+  const stage = new pixi.Container();
+  grain.mount(stage);
+  const [grid] = stage.children;
+  const settings = { ...CONFIG.canvas.radiationGrain };
+  const world = (radiation) => ({ weather: { radiation } });
+  let now = 1000;
+  const frame = (model, options = settings, ms = 1000 / 60) => { now += ms; return grain.update(model, 1200, 700, now, options); };
+  assert.equal(frame(world(0)), false, "no radiation: no hiss, no frame");
+  assert.equal(frame(world(settings.fromRadiation)), false, "at the threshold: still nothing");
+  assert.equal(grid.visible, false);
+  assert.equal(frame(world(1), { ...settings, enabled: false }), false, "switched off: nothing");
+  assert.equal(frame(null), false, "off the scene: nothing");
+  assert.equal(frame(world(1)), true, "full radiation shows the grain");
+  assert.ok(Math.abs(grid.alpha - settings.maxOpacity) < 1e-9, "at radiation 1 the grain is at its max opacity");
+  const cell = 128 * settings.grainPx;
+  assert.equal(grain.status.cells, (Math.ceil(1200 / cell) + 1) * (Math.ceil(700 / cell) + 1), "the grid covers the screen");
+  const cells = grid.children;
+  assert.ok(cells.every((sprite) => sprite.texture === canvasTextures[0]), "every cell draws the one tile");
+  const place = () => cells.map((sprite) => `${sprite.x.toFixed(2)}:${sprite.y.toFixed(2)}:${sprite.scale.x}:${sprite.scale.y}`).join("|");
+  const first = place();
+  assert.equal(frame(world(1)), false, "between grain steps: the same grain, no frame");
+  assert.equal(place(), first);
+  assert.equal(frame(world(1), settings, 1000 / settings.fps), true, "a grain step asks for a frame");
+  assert.notEqual(place(), first, "and the grain jumps and flips");
+  const stepped = place();
+  assert.equal(frame(world(0.6)), true, "a weaker radiation redraws");
+  assert.equal(place(), stepped, "the same grain at a lower opacity (it jumps only at its pace)");
+  assert.ok(grid.alpha > 0 && grid.alpha < settings.maxOpacity, "the opacity follows the radiation");
+  const before = grain.status.cells;
+  frame(world(1), settings, 1000);
+  assert.equal(grain.status.cells, before, "the grid never grows during play");
+  assert.equal(frame(world(0)), true, "the radiation gone: one frame to clear");
+  assert.deepEqual([grid.visible, grain.status.active, frame(world(0))], [false, false, false], "then hidden and idle");
+  grain.dispose();
+  assert.equal(canvasTextures[0].destroyed, true, "dispose frees the tile");
+}
+
 // Spec 179 stage C (TK-323): the emission's fiery ash over a fake Pixi with the particle contract.
 async function checkAsh() {
   const { PixiAshRenderer } = await importSource("src/platform/browser/scene/pixi_ash_renderer.js");
@@ -1860,6 +1909,7 @@ async function main() {
   await checkWavesSwitch();
   await checkRain();
   await checkAsh();
+  await checkRadiationGrain();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();
