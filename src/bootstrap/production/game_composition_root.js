@@ -163,6 +163,9 @@ import { RarityConfigValidator } from "../../game/config/validation/rarity_confi
 import { RarityVisualResolver } from "../../game/presentation/styles/rarity_visual_resolver.js";
 import { ReelRetrieveSpeedCalculator } from "../../game/domain/fishing/reel_retrieve_speed_calculator.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
+import { GeigerClickPlanner } from "../../game/presentation/weather/geiger_click_planner.js";
+import { WebAudioGeigerCounter } from "../../platform/browser/audio/web_audio_geiger_counter.js";
+import { MonotonicIntervalTicker } from "../../platform/browser/time/monotonic_interval_ticker.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { composeTimeDisplay } from "./time_display_composition.js";
 import { composeHudIcons } from "./hud_icons_composition.js";
@@ -1904,6 +1907,7 @@ export class GameCompositionRoot {
       devicePower,
       weather: systems.env,
     });
+    this.#composeGeigerCounter({ own, environment: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {
       const batteryId =
@@ -1947,6 +1951,26 @@ export class GameCompositionRoot {
       feature.radio.setBiting(this.#stateName === "biting"),
     );
     return radio;
+  }
+
+  // Spec 179 stage D, TK-339: the Geiger counter's clicks, faster with the location's radiation (CONFIG.ui.audio.geiger).
+  // Its own random (never the gameplay rng) and its own AudioContext, opened by the player's first gesture.
+  #composeGeigerCounter({ own, environment }) {
+    const seed = new Uint32Array(1);
+    this.#windowTarget.crypto?.getRandomValues?.(seed);
+    const rng = new SeededRng(seed[0] || 0x6e16e5);
+    const random = () => rng.next();
+    const counter = own(new WebAudioGeigerCounter({
+      windowRef: this.#windowTarget,
+      planner: new GeigerClickPlanner({ rng: random }),
+      getSettings: () => this.#config.ui?.audio?.geiger ?? null,
+      getRadiation: () => environment.getSnapshot()?.radiation ?? 0,
+      random,
+    }));
+    own(new MonotonicIntervalTicker({ windowRef: this.#windowTarget, intervalMs: 50,
+      now: () => this.#windowTarget.performance.now(), onTick: () => counter.tick() }));
+    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
+      onHide: () => counter.setPageHidden(true), onShow: () => counter.setPageHidden(false) }));
   }
 
   // The radio editor's controls over the lazily loaded radio: none until it arrives (the open editor refreshes then).

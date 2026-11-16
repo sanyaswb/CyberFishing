@@ -2773,6 +2773,7 @@ async function main() {
   checkLongPressFrames(false);
   await checkGameLoopAndAdapters();
   await checkImageContain();
+  await checkGeigerCounter();
   checkDepthMapReader(runtime);
   console.log(
     "Platform runtime passed: frame delta clamp/reset and clock read counts; pending/ready/failed asset cache identity; injected canvas and location depth loading.",
@@ -2784,6 +2785,93 @@ async function main() {
     "Game loop and adapters passed: 120 frames with one reused callback and pass-through deltaTime, duplicate start refused and reported, stop cancels; DEV flag sources, debug events, event target, canvas metrics, config provider, pooled and buffered audio.",
   );
 }
+// Spec 179 stage D, TK-339: the Geiger counter's clicks through WebAudio over a fake context with the real contract —
+// a context made before a gesture stays suspended (autoplay policy); buffer sources start at audio-clock times.
+async function checkGeigerCounter() {
+  const { WebAudioGeigerCounter } = await import("../../../src/platform/browser/audio/web_audio_geiger_counter.js");
+  const { GeigerClickPlanner } = await import("../../../src/game/presentation/weather/geiger_click_planner.js");
+  const listeners = new Map();
+  const contexts = [];
+  class AudioContextProbe {
+    constructor() {
+      Object.assign(this, { state: "suspended", currentTime: 10, sampleRate: 48000, destination: { id: "destination" },
+        starts: [], gains: [], buffers: 0, closed: false });
+      contexts.push(this);
+    }
+    // Like a browser: resume() settles later; the state changes when it does.
+    resume() { return Promise.resolve().then(() => { this.state = "running"; }); }
+    close() { this.closed = true; return Promise.resolve(); }
+    createGain() { const gain = { gain: { value: 1 }, connect() {}, disconnect() {} }; this.gains.push(gain); return gain; }
+    createBuffer(channels, length, rate) {
+      this.buffers += 1;
+      const data = new Float32Array(length);
+      return { length, sampleRate: rate, getChannelData: () => data };
+    }
+    createBufferSource() {
+      const source = { playbackRate: { value: 1 }, connect() {}, disconnect() {}, start: (at) => this.starts.push(at) };
+      return source;
+    }
+  }
+  const windowRef = {
+    AudioContext: AudioContextProbe,
+    addEventListener: (type, listener) => listeners.set(type, listener),
+    removeEventListener: (type, listener) => { if (listeners.get(type) === listener) listeners.delete(type); },
+  };
+  const settings = { enabled: true, volume: 0.5, fromRadiation: 0.05, clicksPerSec: [1, 400], toneHz: 3500, clickMs: 4 };
+  let radiation = 1, seed = 7;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const counter = new WebAudioGeigerCounter({ windowRef, planner: new GeigerClickPlanner({ rng: random }),
+    getSettings: () => settings, getRadiation: () => radiation, random });
+  counter.tick();
+  assert.equal(contexts.length, 0, "no AudioContext before the player's first gesture (autoplay policy)");
+  assert.ok(["pointerdown", "keydown", "touchstart"].every((type) => listeners.has(type)), "it waits for a gesture");
+  listeners.get("pointerdown")();
+  counter.tick();
+  assert.equal(contexts[0].starts.length, 0, "nothing while the context is still resuming");
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(contexts.length, 1, "the first gesture opens one context");
+  const context = contexts[0];
+  assert.equal(context.state, "running", "and resumes it");
+  listeners.get("keydown")?.();
+  assert.equal(contexts.length, 1, "later gestures make no new context");
+  assert.equal(listeners.size, 0, "the gesture listeners are removed once it runs");
+  counter.tick();
+  const first = context.starts.length;
+  assert.ok(first > 0, "radiation 1: clicks are scheduled");
+  assert.ok(context.starts.every((at) => at >= 10.02 && at < 10.2), "inside the lookahead window of the audio clock");
+  assert.equal(context.gains[0].gain.value, 0.5, "the master gain is the volume");
+  assert.equal(context.buffers, 1, "one click sound made in code");
+  counter.tick();
+  assert.equal(context.starts.length, first, "the same moment again: that window is already planned (no doubles)");
+  context.currentTime = 10.15;
+  counter.tick();
+  assert.ok(context.starts.slice(first).every((at) => at >= 10.2 && at < 10.35), "the next window starts where the last ended");
+  assert.equal(context.buffers, 1, "the click sound is made once");
+  let before = context.starts.length;
+  radiation = 0.04;
+  context.currentTime = 11;
+  counter.tick();
+  assert.equal(context.starts.length, before, "below the threshold: silence");
+  radiation = 1;
+  counter.setPageHidden(true);
+  context.currentTime = 12;
+  counter.tick();
+  assert.equal(context.starts.length, before, "a hidden page: silence");
+  counter.setPageHidden(false);
+  settings.enabled = false;
+  context.currentTime = 13;
+  counter.tick();
+  assert.equal(context.starts.length, before, "switched off: silence");
+  settings.enabled = true;
+  settings.toneHz = 5000;
+  context.currentTime = 14;
+  counter.tick();
+  assert.ok(context.starts.length > before && context.buffers === 2, "a new tone remakes the click sound once");
+  counter.dispose();
+  assert.equal(context.closed, true, "dispose closes the context");
+}
+
 // TK-222: trimmed fish art (no empty edges) is drawn whole in the catch panel's square box, centred, never cropped.
 async function checkImageContain() {
   const { CanvasPrimitives } = await import("../../../src/platform/browser/canvas/canvas_primitives.js");

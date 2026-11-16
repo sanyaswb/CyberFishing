@@ -693,6 +693,15 @@ export const CONFIG = {
 
     audio: {
       feederBiteAsset: "audio.bell_ring", // id реєстру асетів (spec 157 R16)
+      // Spec 179 етап D, TK-339: клацання лічильника Гейгера, частіші з радіацією локації (звук генерується в коді).
+      geiger: {
+        enabled: true,
+        volume: 0.4, // гучність 0…1
+        fromRadiation: 0.05, // нижче цієї радіації (0…1) лічильник мовчить
+        clicksPerSec: [1, 40], // клацань за секунду [на порозі, при радіації 1]
+        toneHz: 3500, // висота дзвону клацання, Гц
+        clickMs: 4, // тривалість одного клацання, мс
+      },
     },
 
     // The float on the water (spec 127), presentation only: displayScale multiplies its drawn size (2 = twice the

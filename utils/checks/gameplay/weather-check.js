@@ -1745,6 +1745,37 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "gusts come more often in a storm than in clear weather");
 }
 
+// Spec 179 stage D, TK-339: the Geiger counter's clicks — random gaps, a rate by the radiation above the threshold.
+{
+  const { GeigerClickPlanner } = require("../../../src/game/presentation/weather/geiger_click_planner.js");
+  const settings = { ...GAME_CONFIG.ui.audio.geiger };
+  const rng = new SeededRng("check:geiger");
+  const planner = new GeigerClickPlanner({ rng: () => rng.next() });
+  assert.equal(planner.rate(0, settings), 0, "no radiation: silence");
+  assert.equal(planner.rate(settings.fromRadiation, settings), 0, "at the threshold: silence");
+  assert.equal(planner.rate(1, { ...settings, enabled: false }), 0, "switched off: silence");
+  assert.equal(planner.rate(1, settings), settings.clicksPerSec[1], "radiation 1: the top rate");
+  const mid = planner.rate((1 + settings.fromRadiation) / 2, settings);
+  assert.ok(mid > settings.clicksPerSec[0] && mid < (settings.clicksPerSec[0] + settings.clicksPerSec[1]) / 2,
+    "between them the rate grows with the square (sparse ticks, then a crackle)");
+  // Many short windows: the count follows the rate, the times stay inside each window and ascend.
+  let total = 0;
+  for (let window = 0; window < 2000; window += 1) {
+    const count = planner.plan(0.2, 1, settings);
+    for (let index = 0; index < count; index += 1) {
+      const at = planner.times[index];
+      assert.ok(at >= 0 && at < 0.2 && (index === 0 || at >= planner.times[index - 1]), "a click inside its window, in order");
+    }
+    total += count;
+  }
+  const expected = settings.clicksPerSec[1] * 0.2 * 2000;
+  assert.ok(Math.abs(total - expected) < expected * 0.05, `the count follows the rate (${total} of ~${expected})`);
+  assert.equal(planner.plan(0.2, 0, settings), 0, "the radiation gone: no clicks");
+  const again = (seed) => { const r = new SeededRng(seed); const p = new GeigerClickPlanner({ rng: () => r.next() });
+    return Array.from(p.times.slice(0, p.plan(1, 0.8, settings))).join(); };
+  assert.equal(again(3), again(3), "a seed repeats the clicks");
+}
+
 console.log(
   "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading and the emission OK",
 );

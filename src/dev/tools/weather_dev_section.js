@@ -459,7 +459,7 @@ export class WeatherDevSection {
     const emission = this.#weather.getEmissionModel?.() ?? null;
     if (!emission && !mode.location && !this.#general()?.grain) return;
     const parts = mode.location ? [this.#locationParts(mode.location, "radiation")] : [];
-    if (mode.general) parts.push(["canvas", "radiationGrain"]);
+    if (mode.general) parts.push(["canvas", "radiationGrain"], ["ui", "audio", "geiger"]);
     this.#elementSection("РАДІАЦІЯ", "radiation", content, parts, (section) => {
       if (emission) {
         const snapshot = emission.snapshot;
@@ -477,6 +477,9 @@ export class WeatherDevSection {
       // TK-338: the radiation's hiss over the scene (general).
       if (mode.general) this.#tree(this.#general()?.grain, this.#group("Шипіння (загальне)", section, ["WEATHER", "radiation", "grain"]),
         ["canvas", "radiationGrain"]);
+      // TK-339: the Geiger counter's clicks (general).
+      if (mode.general) this.#tree(this.#general()?.geiger, this.#group("Звук лічильника (загальне)", section,
+        ["WEATHER", "radiation", "sound"]), ["ui", "audio", "geiger"]);
       if (!mode.location) return;
       this.#tree(this.#locationWeather(mode.location)?.radiation, this.#group("Радіація (локація)", section,
         ["WEATHER", "radiation", "config"]), this.#locationParts(mode.location, "radiation"));

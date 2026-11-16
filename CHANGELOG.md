@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.32 - Geiger counter clicks with the radiation (spec 179 stage D, TK-339)
+
+- A procedural Geiger counter beside the radiation's hiss: random clicks, sparse at low radiation and a crackle at the peak, silent below 5 %; it starts after the player's first touch and stays silent in a hidden tab.
+- DevTools «ПОГОДА» → «РАДІАЦІЯ» → «Звук лічильника (загальне)»: on/off, volume, threshold, clicks a second, tone and click length.
+
 ## v0.51.31 - Radiation hiss over the scene (spec 179 stage D, TK-338)
 
 - WebGL scene: fine flickering grain over the world, stronger as the location's radiation rises during an emission (none below 5 %); one noise tile made in code, no filter, no frames when there is no radiation.
@@ -43,7 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - DevTools «ПОГОДА» → «Збереження»: the file holds what the selector shows — «Загальні»: the rain, ash, storm and wind settings of every location; a location: its weather; a location with «Параметри локації» off: both. The status names every changed part of both levels and says when the export would leave some out; reset drops what the export holds.
 - `npm run apply:weather` (file format v2; v1 files still apply) writes only the changed modules among `rain_settings.js`, `ash_settings.js`, `storm_settings.js`, `wind_settings.js` and `locations/weather/<id>.js`, with base hashes, backups and range checks shared with the config schema. Water and the emission screen stay in `game_config.js`.
-
-## v0.51.22 - Adaptive width on by default in DevTools (TK-331)
-
-- DevTools «Панель»: «Адаптивна ширина (ПК)» (`adaptiveWidth`) is now enabled by default (`PanelSettingsModule` and `DevToolsUI.setPanelOptions`).

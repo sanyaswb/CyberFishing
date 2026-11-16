@@ -510,6 +510,7 @@ export class ConfigSchemaValidator {
     this.#validateRainConfig();
     this.#validateAshConfig();
     this.#validateRadiationGrainConfig();
+    this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
     const cfg = this.config.ui?.rod?.spine;
@@ -1414,6 +1415,18 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
     this.#requireRangeNumbers(path, cfg, [["fromRadiation", 0, 1], ["maxOpacity", 0, 1], ["grainPx", 1, 16], ["fps", 1, 60]]);
+  }
+
+  // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).
+  #validateGeigerConfig() {
+    // Built from segments: a "ui.…" string literal reads as an asset id to the asset-references check.
+    const path = ["ui", "audio", "geiger"].join(".");
+    const cfg = this.config.ui?.audio?.geiger;
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing Geiger counter config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireRangeNumbers(path, cfg, [["volume", 0, 1], ["fromRadiation", 0, 1], ["toneHz", 200, 12000], ["clickMs", 1, 50]]);
+    this.#requireRangePairs(path, cfg, [["clicksPerSec", 0, 500, true]]);
   }
 
   // Spec 179 stage C: the emission's fiery ash (CONFIG.canvas.ash).
