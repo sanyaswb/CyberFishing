@@ -84,12 +84,16 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   release go together: `git push origin develop`, then `npm run release:pages -- --site ../cyber-fishing-pages`, commit
   the site checkout (releases, root `index.html`, `dev.html`, `sw.js`) and push `gh-pages`. Report both
   commits and the kept previous release.
-- **Before every push run the critic's code review** (owner, 2026-11-16) by [docs/code_review.md](docs/code_review.md):
-  read every module the push changes in full as a critic — bugs and conflicts, state that is never reset, `dispose` and
-  timers, library contracts against `vendor/` (and their test doubles), per-frame cost and off-screen work, duplicated
-  logic and UI (reuse what exists: `engine/math`, the scene's shared parts), weak checks, layers and dead code. Each
-  finding becomes a `TK` (or `TK-NNN.N`) with a check that fails on the old code, a patch bump and a local commit
-  before the push; the report names what was found, what was fixed and what the owner should look at.
+- **Before every push ask the owner about the critic's code review** (owner, 2026-11-16), by
+  [docs/code_review.md](docs/code_review.md): measure what the push carries (commits, changed lines, areas), estimate
+  the review's time and effort (section 0 of that document) and ask: full review, short review (named areas) or none.
+  Only then run it or not. The review reads every module the push changes in full as a critic — bugs and conflicts,
+  state that is never reset, `dispose` and timers, library contracts against `vendor/` (and their test doubles),
+  per-frame cost and off-screen work, duplicated logic and UI (reuse what exists), weak checks, layers and dead code;
+  each finding becomes a `TK` (or `TK-NNN.N`) with a check that fails on the old code, a patch bump and a local commit
+  before the push. **Without a review** (or for the areas a short review leaves out) mark every `TK` / spec stage the
+  push carries: «Огляд перед push не проводився (власник, <date>, push <commit>)» — in `tasks.md`, or in the spec's
+  «Реалізація»; the mark stays until a later review covers that work.
 - **Before every push** move finished tasks from `tasks.md` to [tasks-archive.md](<D:/dev/cyber fishing/tasks-archive.md>)
   (rule at the top of `tasks.md`); the owner's open checks stay in `tasks.md` with a link to the archived implementation.
   The archive lives outside the repository, beside `CHANGELOG_ARCHIVE.md` (owner, 2026-11-07: history files do not
