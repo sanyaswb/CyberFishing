@@ -147,6 +147,9 @@ export class InventoryViewModelNormalizer {
       unequipWarning: this.#text(source.unequipWarning, ""),
       disassembleWarning: this.#text(source.disassembleWarning, ""),
       showReturnToKeepnet: source.showReturnToKeepnet === true,
+      // Spec 179 stage F (TK-340): an item used whole (a drink) and its button label.
+      showUse: source.showUse === true && typeof source.useLabel === "string" && source.useLabel !== "",
+      useLabel: this.#text(source.useLabel, ""),
     });
   }
 

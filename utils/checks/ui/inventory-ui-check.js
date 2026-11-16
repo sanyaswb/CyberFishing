@@ -3724,6 +3724,19 @@ class InventoryUiBehaviorCheck {
       rootInstanceId: "assembly-active",
     });
 
+    // Spec 179 stage F (TK-340): an item used whole (a drink) shows its use button instead of «Спорядити».
+    currentView = this.#editorViewModel();
+    Object.assign(currentView.panel.assembly, { equipped: false, showUnequip: false, showDisassemble: false,
+      showEquip: false, showUse: true, useLabel: "Випити" });
+    ui.render(currentView);
+    assert.strictEqual(this.#walk(ui.rootNode).filter((node) => node.tagName === "BUTTON" && node.textContent === "Спорядити")
+      .length, 0, "a drink's editor has no «Спорядити»");
+    this.#findByText(ui.rootNode, "Випити").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryActionType.ITEM_USE,
+      rootInstanceId: "assembly-active",
+    });
+
     currentView = this.#editorViewModel();
     currentView.panel.assembly.equipped = false;
     currentView.panel.assembly.canUnequip = false;

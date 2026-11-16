@@ -350,7 +350,43 @@ function checkInstalledLineFit() {
   assert.equal(lineLengths(reloaded.inventory), "25", "and merges back into the whole 25 m line");
 }
 
+// Spec 179 stage F (TK-340): the gas mask goes into its slot; the vodka opens its editor with «Випити», which applies its
+// effect and consumes the bottle; a refused effect keeps it; an item without a use refuses.
+function checkDrinkUse() {
+  const { inventory, actions } = compose();
+  const facade = inventory.inventoryFacade;
+  const mask = inventory.grantCatalogItem("gas_mask_basic");
+  assert.equal(mask.success, true, "the DEV shop can grant the gas mask");
+  const maskItem = items(inventory).find((item) => item.itemId === "gas_mask_basic");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: maskItem.instanceId })
+    .success, true);
+  assert.equal(inventory.getEquipped().gasMask?.itemId, "gas_mask_basic", "a tap puts the gas mask into its slot");
+  const granted = inventory.grantCatalogItem("vodka_bottle");
+  assert.equal(granted.success, true, "the DEV shop can grant the vodka");
+  const bottleId = granted.instanceId;
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: bottleId }).success, true);
+  const editor = facade.getViewModel().panel?.assembly;
+  assert.equal(JSON.stringify([editor?.showUse, editor?.useLabel, editor?.showEquip]), JSON.stringify([true, "Випити", false]),
+    "a drink's editor offers «Випити», not «Спорядити»");
+  const refused = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId });
+  assert.equal(refused.success, false, "no effects composed: the use is refused");
+  assert.equal(inventory.inventoryFacade.getViewModel().panel?.assembly?.rootInstanceId, bottleId, "and the bottle stays");
+  const applied = [];
+  facade.setItemEffects({ apply: (use) => { applied.push(use); return true; } });
+  const used = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId });
+  assert.equal(used.success, true, "«Випити» works");
+  assert.equal(JSON.stringify(applied), JSON.stringify([{ effect: "emissionProtection", protection: 0.5, durationSec: 600 }]),
+    "with the catalog's effect");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId }).success, false,
+    "the bottle is drunk (it is gone)");
+  assert.equal(applied.length, 1, "a gone bottle does nothing");
+  assert.equal(facade.getViewModel().panel?.mode ?? "loadout", "loadout", "the empty editor closes");
+  const notUsable = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: inventory.getEquipped().gasMask.instanceId });
+  assert.equal(notUsable.success, false, "a gas mask is not drunk");
+}
+
 checkFreshStart();
+checkDrinkUse();
 checkInstalledLineFit();
 checkStartingInventory();
 checkBoatOnWaterGuard();

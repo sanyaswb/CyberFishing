@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.33 - Gas mask and vodka against the emission (spec 179 stage F, TK-340)
+
+- The gas mask goes into its now unlocked slot: no darkening or blur during an emission, and casting is allowed.
+- Vodka: open it in the backpack and press «Випити» — the emission's darkening and blur are half as strong for 10 minutes; another bottle renews the time; casting still needs a gas mask.
+- Both come from the DEV shop for now (placeholder art); DevTools «ПОГОДА» → «Стан і керування» shows the protection and its time left.
+
 ## v0.51.32 - Geiger counter clicks with the radiation (spec 179 stage D, TK-339)
 
 - A procedural Geiger counter beside the radiation's hiss: random clicks, sparse at low radiation and a crackle at the peak, silent below 5 %; it starts after the player's first touch and stays silent in a hidden tab.
@@ -43,8 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - DevTools «ПОГОДА»: the selector is «Загальні | Всі | <locations>»; «Всі» shows the general and the location parameters together in every section (replaces the «Параметри локації» switch); export and reset with «Всі» take both levels.
 - «ВИКИД» gets the emission screen's own switch; a section's «· змінено» mark and «↺ Скинути розділ до коду» appear right after an edit, without a redraw; in «СЦЕНА WebGL» the scene switch and WebGL buttons stand under «ПОГОДА» again.
-
-## v0.51.23 - Weather export and apply for the general settings (spec 180 stage D, TK-332)
-
-- DevTools «ПОГОДА» → «Збереження»: the file holds what the selector shows — «Загальні»: the rain, ash, storm and wind settings of every location; a location: its weather; a location with «Параметри локації» off: both. The status names every changed part of both levels and says when the export would leave some out; reset drops what the export holds.
-- `npm run apply:weather` (file format v2; v1 files still apply) writes only the changed modules among `rain_settings.js`, `ash_settings.js`, `storm_settings.js`, `wind_settings.js` and `locations/weather/<id>.js`, with base hashes, backups and range checks shared with the config schema. Water and the emission screen stay in `game_config.js`.

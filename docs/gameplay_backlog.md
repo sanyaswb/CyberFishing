@@ -886,6 +886,13 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-136 A gas mask and vodka protect from the emission (P2, done v0.51.33)
+Found: 2026-11-16, owner (spec 179 stage F, TK-340): the gas mask slot was locked and neither item existed.
+Change: `gas_mask_basic` in the unlocked gasMask slot removes the emission's darkening and blur and allows casting;
+`vodka_bottle` («Випити» in its editor) halves them for 10 real minutes, a second bottle renews the time without adding
+up, casting stays closed. Both from the DEV shop only (SVG placeholders until the owner's art).
+Evidence: `weather`, `player-inventory`, `inventory-ui`, `inventory-equipment`, `item-progression`; game-cycle report unchanged.
+
 ### G-135 Fog comes by the hour and after rain, in game time (P2, done v0.51.29)
 Found: 2026-11-16, owner (spec 180 D17, TK-336): fog should be likelier at 4–7 and 19–24 and after rain, each rain
 raising the chance until a fog comes; fog ran in real seconds only in the morning/night phases, so at the game's ×240

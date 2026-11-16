@@ -257,10 +257,10 @@ class InventoryEquipmentCheck {
     Assertion.equal(missing.showCross, false, "missing inventory items never imply a locked slot");
     Assertion.that(policy.getClickWarning(missing)?.includes("немає"), "an ordinary empty slot still explains the missing item on click");
 
-    const locked = policy.resolve({ slotId: "gasMask", equipmentState: state, rod, inventoryItems: [] });
-    Assertion.equal(locked.state, r.EquipmentSlotAvailabilityState.LOCKED, "gas mask is game-locked");
-    Assertion.equal(locked.showCross, true, "locked content draws a cross");
-    Assertion.equal(locked.warning, "Протигаз ще не розблоковано.", "locked slot keeps its presentation warning");
+    // Spec 179 stage F (TK-340): the gas mask slot is open; empty, it explains the missing item like any other slot.
+    const gasMask = policy.resolve({ slotId: "gasMask", equipmentState: state, rod, inventoryItems: [] });
+    Assertion.equal(gasMask.state, r.EquipmentSlotAvailabilityState.NO_ACCESSIBLE_COMPATIBLE_ITEM, "the gas mask slot is unlocked");
+    Assertion.equal(gasMask.showCross, false, "no cross on the gas mask slot any more");
     const hidden = policy.resolve({ slotId: "float", equipmentState: state, rod, inventoryItems: [] });
     Assertion.equal(hidden.visible, false, "unsupported slot is hidden rather than crossed");
   }

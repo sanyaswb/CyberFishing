@@ -150,8 +150,8 @@ class ItemProgressionCheck {
         Assertion.that(Boolean(item.itemType), `${item.id} has an itemType`);
       }
     }
-    // TK-249: + carp_mix_basic_25/_50/_100.
-    Assertion.equal(gameplay, 40, "all catalog items including live bait, backpack, battery, radio and chum packs have explicit profiles");
+    // TK-249: + carp_mix_basic_25/_50/_100. TK-340: + gas_mask_basic and vodka_bottle.
+    Assertion.equal(gameplay, 42, "all catalog items including live bait, backpack, battery, radio, chum packs, the gas mask and the vodka have explicit profiles");
     Assertion.equal(technical, 1, "all technical records explicitly excluded");
     for (const [groupId, group] of Object.entries(
       this.#runtime.CONFIGURATION.groups,

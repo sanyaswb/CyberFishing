@@ -85,6 +85,7 @@ export class InventoryActionContract {
       case types.ASSEMBLY_UNEQUIP:
       case types.ASSEMBLY_DISASSEMBLE:
       case types.ASSEMBLY_BACK:
+      case types.ITEM_USE:
         this.#requireId(action.rootInstanceId, "rootInstanceId");
         break;
       case types.LOADOUT_SAVE:

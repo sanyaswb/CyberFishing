@@ -95,8 +95,8 @@ export const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     id: EquipmentSlotId.GAS_MASK,
     group: "auxiliary",
     visibility: "always",
+    // Spec 179 stage F (TK-340): unlocked — the gas mask exists and protects from the emission.
     acceptTypes: Object.freeze(["gas_mask"]),
-    locked: true,
   }),
   // Spec 142: the field radio receiver.
   [EquipmentSlotId.RADIO]: Object.freeze({

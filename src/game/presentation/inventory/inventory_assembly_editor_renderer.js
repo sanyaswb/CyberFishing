@@ -45,6 +45,7 @@ export class InventoryAssemblyEditorRenderer {
       onSocketLongPress = null,
       onSocketItemActivate = null,
       onReturnToKeepnet = null,
+      onUse = null,
       inlineChoices = () => true,
     } = {},
   ) {
@@ -72,6 +73,7 @@ export class InventoryAssemblyEditorRenderer {
       onBack,
       onWarning,
       onReturnToKeepnet,
+      onUse,
     }), workspace);
     if (this.#deviceControlsRenderer?.supports(model.root)) {
       editor.appendChild(this.#deviceControlsRenderer.render({
@@ -151,7 +153,7 @@ export class InventoryAssemblyEditorRenderer {
 
   #renderActions(
     model,
-    { onEquip, onUnequip, onDisassemble, onBack, onWarning, onReturnToKeepnet },
+    { onEquip, onUnequip, onDisassemble, onBack, onWarning, onReturnToKeepnet, onUse },
   ) {
     const actions = this.#dom.element(
       "div",
@@ -187,6 +189,8 @@ export class InventoryAssemblyEditorRenderer {
           onDisassemble?.();
         },
       )] : []),
+      // Spec 179 stage F (TK-340): an item used whole (a drink).
+      ...(model.showUse ? [this.#actionButton(model.useLabel, "inventory-action--primary", true, () => onUse?.())] : []),
       // Spec 163 D6: a live bait stack goes back to the keepnet view.
       ...(model.showReturnToKeepnet ? [this.#actionButton("В садок", "inventory-action--primary", true,
         () => onReturnToKeepnet?.())] : []),

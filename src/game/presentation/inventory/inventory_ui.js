@@ -719,6 +719,8 @@ export class InventoryUI {
             type: this.#actionTypes.ASSEMBLY_DISASSEMBLE,
             rootInstanceId,
           }),
+        // Spec 179 stage F (TK-340): use the item whole (a drink).
+        onUse: () => this.#dispatch({ type: this.#actionTypes.ITEM_USE, rootInstanceId }),
         onBack: () =>
           this.#dispatch({
             type: this.#actionTypes.ASSEMBLY_BACK,

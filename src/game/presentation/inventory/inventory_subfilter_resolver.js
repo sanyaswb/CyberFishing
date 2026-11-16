@@ -29,6 +29,7 @@ export class InventorySubfilterResolver {
     chum_delivery: Object.freeze({ id: "boats", label: "Кораблики" }),
     net: Object.freeze({ id: "nets", label: "Підсаки" }),
     gas_mask: Object.freeze({ id: "gas-masks", label: "Протигази" }),
+    drink: Object.freeze({ id: "drinks", label: "Напої" }),
     battery: Object.freeze({ id: "batteries", label: "Батарейки" }),
     radio: Object.freeze({ id: "radios", label: "Радіо" }),
     backpack: Object.freeze({ id: "backpacks", label: "Рюкзаки" }),

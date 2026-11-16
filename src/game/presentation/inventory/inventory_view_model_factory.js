@@ -1,3 +1,4 @@
+import { ITEM_USE_LABELS } from "./inventory_item_use_labels.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS, EQUIPMENT_SLOT_CONFIG } from "../../domain/equipment/equipment_slot_catalog.js";
 import { EQUIPMENT_SLOT_PRESENTATION } from "./equipment_slot_presentation.js";
 import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_policy.js";
@@ -518,7 +519,15 @@ export class InventoryViewModelFactory {
       showUnequip: equipped,
       canDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
       showDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
+      // Spec 179 stage F (TK-340): an item used whole from its editor (a drink: «Випити»); it is never equipped.
+      ...this.#useAction(rootView),
     };
+  }
+
+  // TK-340: the use button of an item that is used rather than equipped; the label is the item type's (presentation).
+  #useAction(rootView) {
+    const useLabel = ITEM_USE_LABELS[this.#itemType(rootView)] ?? null;
+    return useLabel ? { showUse: true, useLabel, showEquip: false } : { showUse: false, useLabel: null };
   }
 
   // Spec 165 A2: a bait's editor button follows the same plan as its card: «Замінити» while every cell holds another bait
@@ -832,7 +841,8 @@ export class InventoryViewModelFactory {
       return ["boat", "chum_delivery"].includes(itemType);
     }
     if (categoryId === "nets") return itemType === "net";
-    return itemType === "gas_mask" || itemType === "backpack" || itemType === "battery" || itemType === "radio";
+    return itemType === "gas_mask" || itemType === "drink" || itemType === "backpack" || itemType === "battery" ||
+      itemType === "radio";
   }
 
   #itemType(item) {

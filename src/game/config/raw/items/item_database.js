@@ -1357,6 +1357,39 @@ export const ITEM_DB = {
     },
   },
 
+  // Spec 179 stage F (TK-340): protection from the emission. A gas mask in its slot removes the screen's darkening and
+  // blur and allows casting during an emission (EmissionExposure). Art: SVG placeholder until the owner's art (Q9).
+  gasMasks: {
+    gas_mask_basic: {
+      id: "gas_mask_basic",
+      name: "Протигаз ГП-1",
+      itemType: "gas_mask",
+      iconAsset: "items.gas-masks.gas-mask--1",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "protection.gas_mask" },
+      displayStats: {},
+      gameplayStats: {},
+    },
+  },
+
+  // Spec 179 stage F (TK-340): drinks used from the backpack («Випити»). use.protection (0…1) weakens the emission's
+  // screen effects for use.durationSec real seconds; another bottle renews the time, it never adds up (owner Q8: −50 %
+  // for 10 minutes, one bottle one use — test mechanics). It does not allow casting: that needs a gas mask.
+  drinks: {
+    vodka_bottle: {
+      id: "vodka_bottle",
+      name: "Горілка «Зона»",
+      itemType: "drink",
+      iconAsset: "items.drinks.vodka--1",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "consumable.drink" },
+      displayStats: {},
+      gameplayStats: {
+        use: { effect: "emissionProtection", protection: 0.5, durationSec: 600 },
+      },
+    },
+  },
+
   misc: {
     backpack_basic: {
       id: "backpack_basic",

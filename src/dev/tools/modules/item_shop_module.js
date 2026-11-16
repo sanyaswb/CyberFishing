@@ -14,6 +14,8 @@ const CATEGORY_LABELS = Object.freeze({
   aquariumFeeds: "Прикормки для акваріума",
   deliveryMethods: "Доставка",
   batteries: "Живлення",
+  gasMasks: "Протигази",
+  drinks: "Напої",
   devices: "Пристрої",
   builds: "Комплекти",
 });

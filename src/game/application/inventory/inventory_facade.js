@@ -40,6 +40,11 @@ export class InventoryFacade {
     this.#commands.setLiveBaitHook(hook);
   }
 
+  // Spec 179 stage F (TK-340): what a used item does.
+  setItemEffects(effects) {
+    this.#commands.setItemEffects(effects);
+  }
+
   // Spec 163 stage 2: the backpack's live bait stacks.
   setLiveBaitStacks(stacks) {
     this.#viewModels.setLiveBaitStacks(stacks);

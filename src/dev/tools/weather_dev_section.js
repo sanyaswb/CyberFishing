@@ -714,6 +714,13 @@ export class WeatherDevSection {
       ` · після дощу ×${weather.fogRainBoost ?? 1}`, controls);
     this.#ui.createInfoRow("викид", this.#emissionText(emission), controls);
     if (emission) this.#ui.createInfoRow("радіація", `${percent(emission.radiation)}${emission.radiationForced ? " (вручну)" : ""}`, controls);
+    // TK-340: the player's protection from the emission (a gas mask wins; a drink protects partly for a while).
+    const protection = this.#weather.getProtection?.() ?? null;
+    if (protection) {
+      const text = protection.gasMask ? "протигаз (ефектів немає, закид дозволено)"
+        : protection.drink > 0 ? `горілка ${percent(protection.drink)} · ще ${seconds(protection.drinkLeftSec)}` : "немає";
+      this.#ui.createInfoRow("захист", text, controls);
+    }
     const windText = wind
       ? `${WIND_NAMES[wind.direction] ?? wind.direction}${wind.state && wind.direction !== 0 ? ` · ${WIND_STATE_LABELS[wind.state] ?? wind.state}` : ""}` +
         ` · ${percent(wind.strength)}${wind.isGusting ? " (порив)" : ""}${wind.forced || wind.forcedStrength != null ? " (вручну)" : ""}`

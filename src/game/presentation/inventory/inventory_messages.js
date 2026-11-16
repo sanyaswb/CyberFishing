@@ -7,6 +7,9 @@ export const INVENTORY_MESSAGES = Object.freeze({
   actionFailed: "Не вдалося виконати дію.",
   unknownAction: (type) => `Невідома дія інвентарю: ${type}`,
   itemNotFound: "Предмет не знайдено.",
+  // Spec 179 stage F (TK-340): an item used from its editor («Випити»).
+  itemNotUsable: "Цей предмет не можна використати.",
+  itemUseUnavailable: "Зараз цей предмет використати не можна.",
   itemFitsNoAssemblySocket: "Предмет не підходить до доступних комірок цієї збірки.",
   notAnAssembledStack: "Цей предмет не є складеним стеком.",
   slotAlreadyEmpty: "Комірка вже порожня.",

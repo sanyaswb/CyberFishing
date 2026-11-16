@@ -60,6 +60,7 @@ import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
 import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
+import { PlayerProtectionEffects } from "../../game/application/world/player_protection_effects.js";
 import { EmissionScreenEffect } from "../../game/presentation/weather/emission_screen_effect.js";
 import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
@@ -205,6 +206,8 @@ export class GameCompositionRoot {
   #createDebugService;
   #documentTarget;
   #windowTarget;
+  // Spec 179 stage F (TK-340): a used drink's protection, shared by the inventory (it applies it) and EmissionExposure.
+  #playerProtectionEffects = null;
   #gameLoopGuard;
   #listenerCounter;
   #createDevFlags;
@@ -1002,7 +1005,7 @@ export class GameCompositionRoot {
       });
       // Spec 179 stage E: how the emission reaches the player (gas mask, the screen veil, the cast gate).
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
-        getEquipped: () => systems.inventory.getEquipped() });
+        getEquipped: () => systems.inventory.getEquipped(), effects: this.#playerProtection() });
       const emissionScreen = this.#composeEmissionScreen({ canvas, emissionExposure, own });
       // The game is ready only once the plan's first layer has loaded (spec 157 R15).
       await this.#preload.whenLayer("layer-one");
@@ -1773,6 +1776,9 @@ export class GameCompositionRoot {
                       getWindModel: () => systems.env?.wind ?? null,
                       // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
                       getEmissionModel: () => systems.env?.emission ?? null,
+                      // Spec 179 stage F (TK-340): the player's protection now (a gas mask, a drink and its time left).
+                      getProtection: () => ({ gasMask: Boolean(systems.inventory?.getEquipped()?.gasMask),
+                        drink: this.#playerProtection().protection(), drinkLeftSec: this.#playerProtection().remainingSec() }),
                       // Spec 180 D15: on-demand images for DEV (the wave test background).
                       requestImage,
                       // Spec 180 D10: the ash's and the waves' strength held by hand (null: automatic).
@@ -1953,6 +1959,11 @@ export class GameCompositionRoot {
     return radio;
   }
 
+  #playerProtection() {
+    this.#playerProtectionEffects ??= new PlayerProtectionEffects({ now: () => this.#windowTarget.performance.now() });
+    return this.#playerProtectionEffects;
+  }
+
   // Spec 179 stage D, TK-339: the Geiger counter's clicks, faster with the location's radiation (CONFIG.ui.audio.geiger).
   // Its own random (never the gameplay rng) and its own AudioContext, opened by the player's first gesture.
   #composeGeigerCounter({ own, environment }) {
@@ -2101,6 +2112,7 @@ export class GameCompositionRoot {
       },
     });
     inventoryFacade.setLiveBaitHook(liveBaitHook);
+    inventoryFacade.setItemEffects(this.#playerProtection());
     systems.inventoryUI.setLiveBaitHook(liveBaitHook);
     keepnetUI?.setLiveBaitHook(liveBaitHook);
     // Spec 163 stage 2: the backpack shows a stack per species chosen with «В інвентар».

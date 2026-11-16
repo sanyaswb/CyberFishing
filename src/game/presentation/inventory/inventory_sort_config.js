@@ -56,6 +56,7 @@ export const INVENTORY_SORT_CONFIG = Object.freeze({
     "radio",
     "net",
     "gas_mask",
+    "drink",
     "equipment_loadout",
   ]),
   rarityLabels: Object.freeze({

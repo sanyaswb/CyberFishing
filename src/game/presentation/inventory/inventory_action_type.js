@@ -21,6 +21,7 @@ export const InventoryActionType = Object.freeze({
   ASSEMBLY_UNEQUIP: "inventory/assembly-unequip",
   ASSEMBLY_DISASSEMBLE: "inventory/assembly-disassemble",
   ASSEMBLY_BACK: "inventory/assembly-back",
+  ITEM_USE: "inventory/item-use",
   LOADOUT_SAVE: "inventory/loadout-save",
   LOADOUT_PREVIEW_SLOT_EQUIP: "inventory/loadout-preview-slot-equip",
   LOADOUT_EQUIP_ALL: "inventory/loadout-equip-all",

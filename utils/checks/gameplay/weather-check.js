@@ -1361,9 +1361,12 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const { EmissionScreenEffect } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
   const { EmissionVeilDomRenderer } = require("../../../src/platform/browser/dom/emission_veil_dom_renderer.js");
   const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
+  const { PlayerProtectionEffects } = require("../../../src/game/application/world/player_protection_effects.js");
   let env = { emission: { phase: "idle", intensity: 0 } };
   let equipped = {};
-  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped });
+  let clockMs = 0;
+  const effects = new PlayerProtectionEffects({ now: () => clockMs });
+  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, effects });
   assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
   env = { emission: { phase: "onset", intensity: 0.5 } };
   assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0.5, true], "an emission without a gas mask: effect and no cast");
@@ -1373,6 +1376,32 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   equipped = {};
   env = { emission: { phase: "fade", intensity: 0.01 } };
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
+
+  // Spec 179 stage F (TK-340): the vodka — half the screen effect for 10 minutes; no cast; another bottle renews the
+  // time, never adds up; the gas mask still wins.
+  const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
+  const vodka = ITEM_DB.drinks.vodka_bottle.gameplayStats.use;
+  assert.equal(JSON.stringify(vodka), JSON.stringify({ effect: "emissionProtection", protection: 0.5, durationSec: 600 }),
+    "owner Q8: −50 % for 10 minutes");
+  assert.equal(ITEM_DB.gasMasks.gas_mask_basic.itemType, "gas_mask", "the gas mask fits its slot");
+  env = { emission: { phase: "peak", intensity: 1 } };
+  assert.equal(effects.apply(vodka), true, "a drink takes effect");
+  assert.deepEqual([exposure.protection(), exposure.strength(), exposure.isCastBlocked()], [0.5, 0.5, true],
+    "vodka: half the effect, still no cast");
+  clockMs = 300000;
+  assert.equal(effects.apply(vodka), true);
+  assert.equal(effects.protection(), 0.5, "a second bottle does not add up");
+  clockMs = 300000 + 599000;
+  assert.equal(exposure.protection(), 0.5, "and renews the time (10 minutes from the second one)");
+  clockMs = 300000 + 600001;
+  assert.deepEqual([exposure.protection(), exposure.strength()], [0, 1], "over: the full effect again");
+  assert.equal(effects.apply({ effect: "unknown" }), false, "an unknown effect does nothing");
+  effects.apply(vodka);
+  equipped = { gasMask: { id: "mask" } };
+  assert.deepEqual([exposure.protection(), exposure.isCastBlocked()], [1, false], "the gas mask wins over the vodka");
+  equipped = {};
+  effects.clear();
+  env = { emission: { phase: "idle", intensity: 0 } };
 
   // The effect (TK-324.1): sharp irregular blur pulses that quicken and grow toward the peak; a vignette that sways on
   // a wandering swell and closes in deeper than it opens out.
