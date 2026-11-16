@@ -117,7 +117,7 @@
   нормовані на вікно; сила періоду — 0 з `quietChance` або `maxStrength × [0,15…1]`; переходи — косинус на
   `blendShare` коротшого сусіда (внутрішні — по центру межі, крайні — всередині ночі, тож о 21:00 і 5:00 сила 0). Болід
   падає, коли позиція перетинає його момент (`bolideSerial`); ніч, перевірена посеред (старт сесії вночі), має свій
-  болід лише попереду. DEV: `hold(strength)`, `bolideNow()`, `forceNight()`. Параметри `MAP_DB.<id>.weather.starfall`:
+  болід лише попереду. DEV: `hold(strength)`, `bolideNow()` (`forceNight()` прибрано в TK-354.1). Параметри `MAP_DB.<id>.weather.starfall`:
   `enabled, fromHour, toHour, nightChance, periods, maxStrength, quietChance, blendShare, bolideChance` (замість
   `periodSec` з плану — довжини ділять ніч). RANDOMIZER — `StarfallRandomProbe`.
 - **Етап C (TK-352, v0.51.47).** `world.weather.starfall` / `bolideSerial` пише `WeatherRenderModelBuilder`.
@@ -135,3 +135,6 @@
   «Зорепадна ніч зараз» — `forceNight()` лише у вікні; «Болід зараз» — `bolideNow()`. Загальний вигляд
   (`canvas.starfall`) не входить у файли `apply:weather` (як `radiationGrain`): правки живуть у DevTools-сесії й
   переносяться в `game_config.js` вручну; параметри ночі локації зберігаються звичайним «Збереження».
+- **TK-354.1 (v0.51.50).** Тестове керування перенесено в «Стан і керування»: «Зорепад (ніч)» (годинник гри → 23:00
+  через порт `setGameHour`, якщо не у вікні; утримання сили), «Зорепад: сила, %», «Болід зараз»; у «ЗОРЕПАД» — лише стан
+  і параметри. Замір навантаження — у tasks.md (TK-354.1).

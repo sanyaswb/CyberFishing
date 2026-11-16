@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.50 - Starfall test switch in the weather controls (TK-354.1)
+
+- DevTools «ПОГОДА» → «Стан і керування»: «Зорепад (ніч)» moves the game clock to the night and holds the starfall at «Зорепад: сила, %»; «Болід зараз» under it. «ЗОРЕПАД» keeps the night state and its settings only.
+- Measured: rain at 100 % with a storm plus a triple-dense starfall and a bolide cost about 0.1 ms of JavaScript a frame on a desktop; the starfall adds two small draw calls.
+
 ## v0.51.49 - DevTools «ЗОРЕПАД» (spec 182 stage E, TK-354)
 
 - DevTools «ПОГОДА» → «ЗОРЕПАД»: the night now (plain or a starfall night with its periods and the bolide), the strength by hand (stars at any hour), «Зорепадна ніч зараз», «Болід зараз», the stars and the bolide look (general) and the night settings (location), live.
@@ -39,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.41 - Direct swatch picker and full-width row for DevTools colours (TK-348)
 
 - DevTools `ColorField`: the colour swatch and text input now share one row spanning the full width of `devtools__row`; clicking the swatch opens `<input type="color">` directly without an extra intermediate box click and updates the swatch colour immediately, while the inline row underneath appears only for the opacity slider (`rgba`/`#rrggbbaa`).
-
-## v0.51.40 - Two − / + number fields for from-to DevTools pairs (TK-347)
-
-- DevTools: two-number `[from, to]` parameters (`lengthJitter` and weather/fish/item ranges) now render as two separate `NumberField` controls with `−` / `+` step buttons (`NumberPairField`) instead of a single comma-separated text input; longer numeric lists (RGB triplets, `liveBait.capacities`) keep list input.

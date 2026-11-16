@@ -1788,7 +1788,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   {
     const { StarfallNight } = require("../../../src/game/domain/weather/starfall_night.js");
     const starNight = new StarfallNight({ rng: new SeededRng("dev:starfall"), getSettings: () => locations.test.weather.starfall });
-    starNight.update({ hour: 22 });
+    let gameHour = 12;
+    const hours = [];
+    starNight.update({ hour: gameHour });
     const switches = new Map(), ranges = new Map(), infos = [];
     const starSections = [];
     const starButtons = new Map();
@@ -1799,7 +1801,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         createRangeRow: (label, value, parent, onChange, path) => ranges.set(path.join("."), onChange),
         createButtonRow: (label, parent, onClick, navigation, icon, path) => { starButtons.set(path ? path.join(".") : label, onClick);
           return { style: {} }; } },
-      weather: { locationId: "test", getModel: () => model, getWind: () => null, getStarfallModel: () => starNight },
+      weather: { locationId: "test", getModel: () => model, getWind: () => null, getStarfallModel: () => starNight,
+        setGameHour: (hour) => { hours.push(hour); gameHour = hour; starNight.update({ hour }); return true; } },
       config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
       general: () => ({ rain: GAME_CONFIG.canvas.rain, starfall: GAME_CONFIG.canvas.starfall }),
       createSection: (text, parent, path) => { starSections.push([text, path?.join(".") ?? ""]); return node(); },
@@ -1811,21 +1814,23 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.ok(starSections.some(([text, at]) => text === "ЗОРЕПАД" && at === "WEATHER.starfall"), "«ЗОРЕПАД» is a weather section");
     assert.ok(starTrees.includes("CONFIG.canvas.starfall") && starTrees.includes("CONFIG.locations.map.test.weather.starfall"),
       "the stars' and the bolide's look (general) and the night (location) as live trees");
-    assert.ok(infos.some(([label, value]) => label === "ніч" && /ніч/u.test(value)), "the night's state is shown");
-    switches.get("WEATHER.starfall.hold").onChange(true);
-    assert.equal(starNight.snapshot.held, true, "«Зорепад вручну» holds the strength");
-    ranges.get("WEATHER.starfall.level")(40);
-    starNight.update({ hour: 22.1 });
-    assert.equal(starNight.snapshot.strength, 0.4, "the slider sets it");
-    switches.get("WEATHER.starfall.hold").onChange(false);
-    assert.equal(starNight.snapshot.held, false, "and off returns to the night's plan");
-    const nights = starNight.snapshot.nightSerial;
-    starButtons.get("WEATHER.starfall.night")();
-    assert.deepEqual([starNight.snapshot.nightSerial, starNight.snapshot.active], [nights + 1, true],
-      "«Зорепадна ніч зараз» plans a starfall night in the window");
+    assert.ok(infos.some(([label, value]) => label === "ніч" && /поза вікном/u.test(value)), "the night's state is shown (noon: outside the window)");
+    // TK-354.1 (owner): the test controls live in «Стан і керування», not in «ЗОРЕПАД».
+    assert.ok(!switches.has("WEATHER.starfall.hold") && !starButtons.has("WEATHER.starfall.night") &&
+      !starButtons.has("WEATHER.starfall.bolide"), "«ЗОРЕПАД» has no buttons or manual controls any more");
+    switches.get("WEATHER.controls.starfall").onChange(true);
+    assert.deepEqual([hours.join(), starNight.snapshot.inWindow, starNight.snapshot.held], ["23", true, true],
+      "«Зорепад (ніч)» on: the game clock jumps to the night and the starfall is held");
+    ranges.get("WEATHER.controls.starfallStrength")(40);
+    starNight.update({ hour: 23.1 });
+    assert.equal(starNight.snapshot.strength, 0.4, "«Зорепад: сила» sets it");
+    switches.get("WEATHER.controls.starfall").onChange(false);
+    assert.equal(starNight.snapshot.held, false, "off: the night's own plan again");
+    switches.get("WEATHER.controls.starfall").onChange(true);
+    assert.equal(hours.length, 1, "already at night: the clock stays");
     const bolidesBefore = starNight.snapshot.bolideSerial;
-    starButtons.get("WEATHER.starfall.bolide")();
-    assert.equal(starNight.snapshot.bolideSerial, bolidesBefore + 1, "«Болід зараз» drops one");
+    starButtons.get("WEATHER.controls.bolide")();
+    assert.equal(starNight.snapshot.bolideSerial, bolidesBefore + 1, "«Болід зараз» under the slider drops one");
     starSection.dispose();
   }
 

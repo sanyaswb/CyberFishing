@@ -69,6 +69,8 @@ const samePath = (path, prefix) => prefix.every((key, index) => path[index] === 
 const percent = (value) => `${Math.round((Number(value) || 0) * 100)}%`;
 const seconds = (value) => `${Math.round(Number(value) || 0)} с`;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+// TK-354.1: the game hour the «Зорепад» test switch jumps to (inside the starfall's night 21:00–5:00).
+const STARFALL_TEST_HOUR = 23;
 
 export class WeatherDevSection {
   #ui;
@@ -489,8 +491,8 @@ export class WeatherDevSection {
     });
   }
 
-  // Spec 182 stage E (TK-354): the starfall — the night's state and plan, the strength by hand, a starfall night or a
-  // bolide now; the stars' and the bolide's look (general) and the night's settings (location).
+  // Spec 182 stage E (TK-354): the starfall — the night's state and plan; the stars' and the bolide's look (general) and
+  // the night's settings (location). The test controls are in «Стан і керування» (TK-354.1).
   #renderStarfall(content, mode) {
     const starfall = this.#weather.getStarfallModel?.() ?? null;
     const parts = [];
@@ -499,22 +501,8 @@ export class WeatherDevSection {
     this.#elementSection("ЗОРЕПАД", "starfall", content, parts, (section) => {
       if (starfall) {
         const snapshot = starfall.snapshot;
+        // TK-354.1 (owner): the test switch, its strength and «Болід зараз» live in «Стан і керування».
         this.#ui.createInfoRow("ніч", this.#starfallText(snapshot), section);
-        if (snapshot.held) this.#starfallLevel = Math.round(snapshot.strength * 100);
-        this.#ui.createSwitcherRow("Зорепад вручну", snapshot.held === true, section, (on) => {
-          starfall.hold(on ? this.#starfallLevel / 100 : null);
-          this.#fill();
-        }, ["WEATHER", "starfall", "hold"]);
-        this.#ui.createRangeRow("сила зорепаду, %", this.#starfallLevel, section, (value) => {
-          this.#starfallLevel = clamp(value, 0, 100);
-          starfall.hold(this.#starfallLevel / 100);
-          this.#ui.syncValue?.(["WEATHER", "starfall", "hold"], true);
-        }, ["WEATHER", "starfall", "level"]);
-        this.#ui.createButtonRow("Зорепадна ніч зараз (у вікні годин)", section, () => {
-          starfall.forceNight();
-          this.#fill();
-        }, false, "", ["WEATHER", "starfall", "night"]);
-        this.#ui.createButtonRow("Болід зараз", section, () => starfall.bolideNow(), false, "", ["WEATHER", "starfall", "bolide"]);
       }
       if (mode.general) this.#tree(this.#general()?.starfall, this.#group("Зорі й болід (загальне)", section,
         ["WEATHER", "starfall", "look"]), ["canvas", "starfall"]);
@@ -842,6 +830,7 @@ export class WeatherDevSection {
         emission.holdIntensity(this.#levels.emission / 100);
       }, ["WEATHER", "controls", "emissionStrength"]);
     }
+    this.#renderStarfallControls(controls);
     if (this.#weather.holdAsh) {
       this.#ui.createRangeRow("Попіл: сила, %", this.#levels.ash, controls, (value) => {
         this.#levels.ash = clamp(value, 0, 100);
@@ -868,6 +857,30 @@ export class WeatherDevSection {
       this.#fadeSec = Math.max(0, Number(value) || 0);
     });
     this.#renderActions(model, emission, controls);
+  }
+
+  // TK-354.1 (owner): «Зорепад» for a test — on: the game clock jumps to the night (unless it is already inside the
+  // starfall's window) and the starfall is held at the slider's strength; off: the night's own plan again. Under it the
+  // strength and «Болід зараз».
+  #renderStarfallControls(controls) {
+    const starfall = this.#weather.getStarfallModel?.() ?? null;
+    if (!starfall) return;
+    const snapshot = starfall.snapshot;
+    if (snapshot.held) this.#starfallLevel = Math.round(snapshot.strength * 100);
+    this.#ui.createSwitcherRow("Зорепад (ніч)", snapshot.held === true, controls, (on) => {
+      if (on) {
+        if (!snapshot.inWindow) this.#weather.setGameHour?.(STARFALL_TEST_HOUR);
+        starfall.hold(this.#starfallLevel / 100);
+      } else starfall.hold(null);
+      this.#fill();
+    }, ["WEATHER", "controls", "starfall"]);
+    this.#ui.createRangeRow("Зорепад: сила, %", this.#starfallLevel, controls, (value) => {
+      this.#starfallLevel = clamp(value, 0, 100);
+      starfall.hold(this.#starfallLevel / 100);
+      this.#ui.syncValue?.(["WEATHER", "controls", "starfall"], true);
+    }, ["WEATHER", "controls", "starfallStrength"]);
+    this.#ui.createButtonRow("Болід зараз", controls, () => starfall.bolideNow(), false, "",
+      ["WEATHER", "controls", "bolide"]);
   }
 
   #renderWindControls(controls) {

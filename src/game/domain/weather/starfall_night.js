@@ -105,14 +105,6 @@ export class StarfallNight {
     this.#snapshot.bolideSerial += 1;
   }
 
-  // DEV: plans a starfall night now (the check succeeds) when the clock is inside the window.
-  forceNight() {
-    const settings = this.#getSettings() || null;
-    if (!this.#snapshot.inWindow) return false;
-    this.#plan(settings, this.#snapshot.windowHours, true);
-    return true;
-  }
-
   // The night's one check, and on success its timeline and the bolide's roll.
   #checkNight(settings, windowHours) {
     this.#plan(settings, windowHours, this.#rng.chance(clamp01(finite(settings?.nightChance, 0))));
