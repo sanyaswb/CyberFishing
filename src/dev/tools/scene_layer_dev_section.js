@@ -122,28 +122,30 @@ export class SceneLayerDevSection {
       );
     }
     // Spec 180 D4: the weather (with the water) first; the scene's switch, the WebGL context and «Оновити» at the very
-    // bottom, under every section.
+    // bottom, under every section. TK-333: DevToolsUI puts a section's rows before its nested sections, so these rows
+    // go into a section slot made after the weather (a slot stands among the sections, in the order it was made).
     this.#renderWeather?.(content);
+    const bottom = this.#ui.createSectionSlot(content);
     if (status.state !== "inactive") {
       this.#ui.createSwitcherRow(
         "Сцена WebGL (інакше все на 2D)",
         this.#router.mode === "webgl",
-        content,
+        bottom,
         (enabled) => {
           this.#router.setMode(enabled ? "webgl" : "canvas");
           this.#fill();
         },
         ["SCENE_LAYER", "mode"],
       );
-      this.#ui.createButtonRow("Втратити WebGL-контекст", content, () => {
+      this.#ui.createButtonRow("Втратити WebGL-контекст", bottom, () => {
         this.#layer.loseContext();
         this.#fill();
       });
-      this.#ui.createButtonRow("Відновити WebGL-контекст", content, () => {
+      this.#ui.createButtonRow("Відновити WebGL-контекст", bottom, () => {
         this.#layer.restoreContext();
         this.#fill();
       });
     }
-    this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
+    this.#ui.createButtonRow("↻ Оновити", bottom, () => this.#fill());
   }
 }

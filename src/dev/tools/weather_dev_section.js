@@ -14,8 +14,8 @@ import {
 } from "../weather/weather_export_format.js";
 
 // DevTools «ПОГОДА» (spec 172, 175, 179; spec 180 stage C, TK-327).
-// - On top: the selector «Загальні» | a location, and with a location the switch «Параметри локації» (on: only what
-//   belongs to that location; off: the general settings as well) — spec 180 D4, D11.
+// - On top: the selector «Загальні» | «Всі» | a location (spec 180 D4, D11; TK-333): «Загальні» — the general settings,
+//   a location — only what belongs to it, «Всі» — both together in every section (the location picked last).
 // - «Стан і керування» of the location the game runs (D10): the live state of every process, then a slider per element
 //   (rain, storm, fog, emission, ash, wind, waves, current) — moving a slider holds that element by hand (no separate
 //   «manual» switches); under the rain's and the ash's sliders, collapsed, their look at strength 100 for the selected
@@ -24,13 +24,14 @@ import {
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
-//   general rain, ash, storm and wind settings; a location: its weather; a location with «Параметри локації» off: both.
+//   general rain, ash, storm and wind settings; a location: its weather; «Всі»: both.
 //   The status names every part of both levels that differs from the code, and what an export would leave out.
 // TK-327.1 (owner): only an element's section opens inside (a different section); everything in it — its groups and
 // the trees' nested objects — opens in place under it (inline). The selector is buttons on top (no empty wrapper); each
 // event (rain, storm, fog, emission) has a switch: on starts a random event as the game would, off ends it, and the
 // event's generated course (duration, peak, strength, lightning) shows on top of «Стан і керування».
 const GENERAL = "Загальні";
+const ALL = "Всі";
 const EVENT_PHASES = Object.freeze({ rise: "розгін", peak: "пік", fall: "затухання", idle: "немає" });
 const EVENTS = Object.freeze([["rain", "Дощ"], ["storm", "Шторм"], ["fog", "Туман"]]);
 const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
@@ -90,15 +91,17 @@ export class WeatherDevSection {
   #savingSection;
   #content = null;
   #selected = null;
-  #locationOnly = true;
+  #lastLocation = null;
+  #marks = [];
   #listening = false;
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100 };
   #fadeSec = 5;
   #radiation = 50;
   #onConfigUpdated = (event) => {
-    if (!this.#savingSection.hasStatusElement) return;
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
+    this.#refreshMarks();
+    if (!this.#savingSection.hasStatusElement) return;
     const rest = path.slice(1);
     const isGeneral = GENERAL_WEATHER_PART_IDS.some((part) => samePath(rest, GENERAL_WEATHER_PARTS[part].configPath));
     const isLocation = samePath(rest, ["locations", "map", this.#locationId(), "weather"]);
@@ -162,7 +165,7 @@ export class WeatherDevSection {
         importLabel: "Імпорт погоди",
         resetLabel: "Скинути зміни погоди до коду",
         description:
-          "Експорт погоди завантажує файл того, що показує вибір нагорі: «Загальні» — дощ, попіл, шторм і вітер для всіх локацій; локація — її погода; локація з вимкненим «Параметри локації» — обидва. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування; скидання скидає те саме, що йде в експорт. Вода й екран викиду в експорт не входять. Без експорту зміни зникають при перезавантаженні.",
+          "Експорт погоди завантажує файл того, що показує вибір нагорі: «Загальні» — дощ, попіл, шторм і вітер для всіх локацій; локація — її погода; «Всі» — обидва. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування; скидання скидає те саме, що йде в експорт. Вода й екран викиду в експорт не входять. Без експорту зміни зникають при перезавантаженні.",
       },
       readStatus: () => this.#readSavingStatus(),
       buildExport: (hashText) => this.#buildExport(hashText),
@@ -190,13 +193,15 @@ export class WeatherDevSection {
     }
     this.#listening = false;
     this.#savingSection.clear();
+    this.#marks = [];
     this.#content = null;
   }
 
   // The location the selector names (or the game's, with «Загальні»): export, import and the location parts use it.
   #locationId() {
     const map = this.#locationsMap?.();
-    if (this.#selected !== GENERAL && map?.[this.#selected]?.weather) return this.#selected;
+    const id = this.#selected === ALL ? this.#lastLocation : this.#selected;
+    if (id !== GENERAL && map?.[id]?.weather) return id;
     return this.#weather.locationId;
   }
 
@@ -211,10 +216,11 @@ export class WeatherDevSection {
     return ids.length ? ids : [this.#weather.locationId];
   }
 
-  // What the selector shows: the general parts, the location parts (its id), or both.
+  // What the selector shows: «Загальні» — the general parts; a location — its parts; «Всі» (TK-333) — both, for the
+  // location picked last (at first the game's).
   #mode() {
-    const location = this.#selected === GENERAL ? null : this.#locationId();
-    return { location, general: location === null || !this.#locationOnly };
+    if (this.#selected === GENERAL) return { location: null, general: true };
+    return { location: this.#locationId(), general: this.#selected === ALL };
   }
 
   #fill() {
@@ -223,6 +229,7 @@ export class WeatherDevSection {
     const rebuild = () => {
       this.#ui.releaseValueBindings?.(content);
       content.replaceChildren();
+      this.#marks = [];
       this.#savingSection.clear();
       this.#renderSelector(content);
       const model = this.#weather.getModel();
@@ -246,29 +253,48 @@ export class WeatherDevSection {
     else rebuild();
   }
 
-  // TK-327.1: «Загальні» and every location as buttons on top (all visible, one press).
+  // TK-327.1: «Загальні», «Всі» (TK-333) and every location as buttons on top (all visible, one press).
   #renderSelector(content) {
-    const options = [{ value: GENERAL, label: GENERAL }, ...this.#locationChoices().map((id) => ({ value: id, label: id }))];
+    const options = [{ value: GENERAL, label: GENERAL }, { value: ALL, label: ALL },
+      ...this.#locationChoices().map((id) => ({ value: id, label: id }))];
     this.#ui.addParameter(content, { control: "segments", label: "налаштування", options, value: this.#selected,
-      onCommit: (next) => { this.#selected = next; this.#fill(); }, path: ["WEATHER", "location", "id"] });
+      onCommit: (next) => {
+        this.#selected = next;
+        if (next !== GENERAL && next !== ALL) this.#lastLocation = next;
+        this.#fill();
+      }, path: ["WEATHER", "location", "id"] });
     if (this.#selected === GENERAL) return;
-    this.#ui.addParameter(content, { control: "switch", label: "Параметри локації", value: this.#locationOnly,
-      onCommit: (on) => { this.#locationOnly = on === true; this.#fill(); }, path: ["WEATHER", "location", "only"] });
-    if (this.#selected !== this.#weather.locationId) {
-      this.#ui.createInfoRow("активна у грі", `${this.#weather.locationId} (нижче — ${this.#selected})`, content);
+    const id = this.#locationId();
+    if (this.#selected === ALL) this.#ui.createInfoRow("показано", `загальні й локація ${id}`, content);
+    if (id !== this.#weather.locationId) {
+      this.#ui.createInfoRow("активна у грі", `${this.#weather.locationId} (нижче — ${id})`, content);
     }
   }
 
   // A section of one element; parts: the CONFIG roots it edits (for «змінено» and the reset).
+  // TK-333: the mark and the reset follow every edit in place (#refreshMarks), not only the next redraw.
   #elementSection(title, key, content, parts, body) {
-    const changed = this.#edits ? parts.some((part) => this.#edits.hasOverrides(part)) : false;
+    const changed = this.#sectionChanged(parts);
     const section = this.#createSection(changed ? `${title} · змінено` : title, content, ["WEATHER", key]);
     body(section);
-    if (changed) {
-      this.#ui.createButtonRow("↺ Скинути розділ до коду", section, () => {
-        for (const part of parts) this.#edits.resetTree(part);
-        this.#fill();
-      }, false, "", ["WEATHER", key, "reset"]);
+    if (!this.#edits) return;
+    const resetRow = this.#ui.createButtonRow("↺ Скинути розділ до коду", section, () => {
+      for (const part of parts) this.#edits.resetTree(part);
+      this.#fill();
+    }, false, "", ["WEATHER", key, "reset"]);
+    resetRow.style.display = changed ? "" : "none";
+    this.#marks.push({ section, title, parts, resetRow });
+  }
+
+  #sectionChanged(parts) {
+    return this.#edits ? parts.some((part) => this.#edits.hasOverrides(part)) : false;
+  }
+
+  #refreshMarks() {
+    for (const mark of this.#marks) {
+      const changed = this.#sectionChanged(mark.parts);
+      this.#ui.setSectionLabel(mark.section, changed ? `${mark.title} · змінено` : mark.title);
+      mark.resetRow.style.display = changed ? "" : "none";
     }
   }
 
@@ -416,6 +442,11 @@ export class WeatherDevSection {
           ["emission", "screen", "vignette"]);
         this.#tree(screen?.blur, this.#group("Розмиття", section, ["WEATHER", "emission", "blur"]), ["emission", "screen", "blur"]);
         if (screen) {
+          // TK-333: the screen effect's own switch (it had no control in this section).
+          const enabledPath = ["CONFIG", "emission", "screen", "enabled"];
+          this.#ui.addParameter(section, { control: "switch", label: "Ефект екрана (затемнення й розмиття)", value: screen.enabled !== false,
+            onCommit: (on) => this.#updateConfig?.(enabledPath, on === true),
+            path: ["WEATHER", "emission", "screenEnabled"], bindingPath: enabledPath, ...this.#changeTracking(enabledPath) });
           const includeHudPath = ["CONFIG", "emission", "screen", "includeHud"];
           this.#ui.addParameter(section, { control: "switch", label: "Розмивати разом з HUD", value: screen.includeHud !== false,
             onCommit: (on) => this.#updateConfig?.(includeHudPath, on === true),
@@ -566,8 +597,8 @@ export class WeatherDevSection {
     const mode = this.#mode();
     const generalLeft = !mode.general && changed.some((part) => part !== "locationWeather");
     const locationLeft = !mode.location && changed.includes("locationWeather");
-    const hint = generalLeft ? " Загальні не ввійдуть в експорт: оберіть «Загальні» або вимкніть «Параметри локації»."
-      : locationLeft ? ` Погода ${id} не ввійде в експорт: оберіть локацію ${id}.` : "";
+    const hint = generalLeft ? " Загальні не ввійдуть в експорт: оберіть «Загальні» або «Всі»."
+      : locationLeft ? ` Погода ${id} не ввійде в експорт: оберіть локацію ${id} або «Всі».` : "";
     return `Змінено (ще не в коді): ${labels.join(", ")}.${hint}`;
   }
 

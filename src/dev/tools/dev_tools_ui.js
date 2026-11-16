@@ -41,6 +41,8 @@ export class DevToolsUI {
   #exportNotices = new WeakMap();
   // Spec 174 C4: each section content's depth in its page, and the section shown alone (drill-in).
   #contentDepth = new WeakMap();
+  // TK-333: a section's content → its title label, so a module can change the title in place (setSectionLabel).
+  #sectionLabels = new WeakMap();
   // TK-308: section contents drawn on first need.
   #lazyContents = new Map();
   #drill = null;
@@ -481,6 +483,7 @@ export class DevToolsUI {
     this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
     this.#contentDepth.set(content, depth);
+    this.#sectionLabels.set(content, label);
     if (render) this.#lazyContents.set(content, () => render(content));
 
     title.addEventListener("click", () => {
@@ -502,6 +505,13 @@ export class DevToolsUI {
     if (isExpanded) this.#materialize(content);
 
     return content;
+  }
+
+  // TK-333: the title of the section createSection returned this content for, changed in place (no redraw, so its
+  // open groups stay open).
+  setSectionLabel(content, labelStr) {
+    const label = this.#sectionLabels.get(content);
+    if (label && label.textContent !== labelStr) label.textContent = labelStr;
   }
 
   // TK-308: draws a lazy section's content once.
@@ -685,6 +695,7 @@ export class DevToolsUI {
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
     this.#insertTreeNode(parentElement, row, 0);
+    return row;
   }
 
   // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).

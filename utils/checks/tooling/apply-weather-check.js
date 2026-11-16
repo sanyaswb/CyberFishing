@@ -304,7 +304,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     // The defect (TK-332): a storm edit is a change not in the code — the old status said «збігається з кодом».
     live.storm.windMinStrength = 0.5;
     doc.fire("config-updated", { detail: { path: ["CONFIG", "weather", "storm", "windMinStrength"] } });
-    assert.equal(status(), "Змінено (ще не в коді): Шторм. Загальні не ввійдуть в експорт: оберіть «Загальні» або вимкніть «Параметри локації».",
+    assert.equal(status(), "Змінено (ще не в коді): Шторм. Загальні не ввійдуть в експорт: оберіть «Загальні» або «Всі».",
       "a storm edit shows, and the location view says the export leaves it out");
 
     // Location view: the file holds the location only.
@@ -325,9 +325,8 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(file.baseHashes.general.storm, baseHashes.storm, "base hash is the code's, not the edit's");
     assert.deepEqual(format.validateWeatherFile(file, { generalTemplates: base }), []);
 
-    // A location with «Параметри локації» off: both levels in one file.
-    select("test");
-    parameters.get("WEATHER.location.only").onCommit(false);
+    // TK-333: «Всі» — both levels in one file.
+    select("Всі");
     liveWeather.fog.chancePerCheck = 0.5;
     doc.fire("config-updated", { detail: { path: ["CONFIG", "locations", "map", "test", "weather", "fog", "chancePerCheck"] } });
     assert.equal(status(), "Змінено (ще не в коді): Шторм, Параметри локації test.");

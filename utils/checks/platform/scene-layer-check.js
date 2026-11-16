@@ -1723,15 +1723,26 @@ async function checkDevWiring() {
     "production reads CONFIG.canvas.scene only");
   const { SceneLayerDevSection } = await importSource("src/dev/tools/scene_layer_dev_section.js");
   const { SceneLayerRouter, SCENE_KINDS } = await importSource("src/game/presentation/rendering/scene_layer_router.js");
-  const rows = [];
+  // TK-333: the fake keeps DevToolsUI's order contract (#insertTreeNode): in a parent, rows (order 0) stand before
+  // nested sections and section slots (order 1), whatever order they were made in; the rows read in DOM order.
   const actions = new Map();
   let switchHandler = null;
-  const ui = {
-    createInfoRow: (label, value) => rows.push(`${label}: ${value}`),
-    createSwitcherRow: (label, value, parent, onChange) => { rows.push(`${label}: ${value}`); switchHandler = onChange; },
-    createButtonRow: (label, parent, onClick) => { rows.push(label); actions.set(label, onClick); },
+  const nodeOf = (label) => ({ label, children: [] });
+  const insert = (parent, node, order) => {
+    node.order = order;
+    const at = parent.children.findIndex((child) => child.order > order);
+    parent.children.splice(at < 0 ? parent.children.length : at, 0, node);
+    return node;
   };
-  const content = { replaceChildren: () => { rows.length = 0; actions.clear(); } };
+  const flatten = (parent) => parent.children.flatMap((child) => (child.label === null ? flatten(child) : [child.label, ...flatten(child)]));
+  const ui = {
+    createInfoRow: (label, value, parent) => insert(parent, nodeOf(`${label}: ${value}`), 0),
+    createSwitcherRow: (label, value, parent, onChange) => { insert(parent, nodeOf(`${label}: ${value}`), 0); switchHandler = onChange; },
+    createButtonRow: (label, parent, onClick) => { actions.set(label, onClick); return insert(parent, nodeOf(label), 0); },
+    createSectionSlot: (parent) => insert(parent, nodeOf(null), 1),
+  };
+  const content = { label: null, children: [], replaceChildren() { this.children.length = 0; actions.clear(); } };
+  const rowsOf = () => flatten(content);
   const layerCalls = [];
   let status = { state: "active", webglVersion: 2, width: 400, height: 816, pixelRatio: 1.76, textures: 3,
     textureBytes: 3 * 2560 * 1440 * 4 * 4 / 3, water: { active: true, mapWidth: 192, mapHeight: 48, stepMs: 0.123,
@@ -1740,15 +1751,15 @@ async function checkDevWiring() {
   const router = new SceneLayerRouter({ kinds: SCENE_KINDS, sceneKinds: [], isSceneActive: () => true, mode: "webgl" });
   router.update();
   new SceneLayerDevSection({ ui, scene: { layer, router }, createSection: () => content,
-    renderWeather: () => rows.push("WEATHER") }).render({});
-  assert(rows.includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
+    renderWeather: (parent) => insert(parent, nodeOf("WEATHER"), 1) }).render({});
+  assert(rowsOf().includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
     "the water's state, step cost and drift are shown");
   // Spec 180 D4: the weather (with the water) above; the scene's switch, the context buttons and «Оновити» at the bottom.
-  assert(rows.indexOf("WEATHER") >= 0 && rows.indexOf("WEATHER") < rows.indexOf("Втратити WebGL-контекст") &&
-    rows.at(-1) === "↻ Оновити", "the WebGL buttons come after every section");
-  assert(rows.includes("шар WebGL: активний") && rows.includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
-  assert(rows.includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
-  assert(rows.includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
+  assert(rowsOf().indexOf("WEATHER") >= 0 && rowsOf().indexOf("WEATHER") < rowsOf().indexOf("Втратити WebGL-контекст") &&
+    rowsOf().at(-1) === "↻ Оновити", "the WebGL buttons come after every section");
+  assert(rowsOf().includes("шар WebGL: активний") && rowsOf().includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
+  assert(rowsOf().includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
+  assert(rowsOf().includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
   switchHandler(false);
   assert.equal(router.mode, "canvas", "the switch flips the router without a reload");
   actions.get("Втратити WebGL-контекст")();
@@ -1756,8 +1767,8 @@ async function checkDevWiring() {
   assert.deepEqual(layerCalls, ["lose", "restore"]);
   status = { state: "inactive" };
   actions.get("↻ Оновити")();
-  assert(rows[0].startsWith("шар WebGL: немає: режим canvas"));
-  assert(!rows.some((row) => row.startsWith("Сцена WebGL")) && !actions.has("Втратити WebGL-контекст"),
+  assert(rowsOf()[0].startsWith("шар WebGL: немає: режим canvas"));
+  assert(!rowsOf().some((row) => row.startsWith("Сцена WebGL")) && !actions.has("Втратити WebGL-контекст"),
     "\"canvas\" mode shows no switch and no context buttons");
 }
 

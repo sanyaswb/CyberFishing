@@ -815,7 +815,9 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       createButtonRow(label, parent, onClick, _danger, _title, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "button", label, onClick });
         else rowsByPath.set(`button:${label}`, { kind: "button", label, onClick });
+        return { style: {} };
       },
+      setSectionLabel() {},
       createSwitcherRow(label, value, parent, onChange, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "switcher", value, onChange });
       },
@@ -889,8 +891,8 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     }
     const locChoice = rowsByPath.get("WEATHER.location.id");
     assert(locChoice && locChoice.value === "test", "location selector starts at active map");
-    assert.deepEqual(locChoice.choices.map((option) => option.value), ["Загальні", "test", "lake"],
-      "TK-327.1: the selector lists «Загальні» and every location as {value, label} buttons");
+    assert.deepEqual(locChoice.choices.map((option) => option.value), ["Загальні", "Всі", "test", "lake"],
+      "TK-327.1, TK-333: the selector lists «Загальні», «Всі» and every location as {value, label} buttons");
     locChoice.onChange("lake");
     // Spec 180 D2: the chances are each event's chance per check on the selected location.
     const rainChance = rowsByPath.get("WEATHER.chances.rainChance");
@@ -935,11 +937,10 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     density.onChange(1100);
     assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.look.rain.maxDrops" && v === 1100),
       "with a location selected it writes that location's override at 100");
-    // D11: the location switch hides the general parts; «Загальні» shows them alone.
-    assert(rowsByPath.has("WEATHER.location.only"), "the «Параметри локації» switch shows with a location");
+    // TK-333: «Всі» replaced the «Параметри локації» switch; «Загальні» shows the general parts alone.
+    assert(!rowsByPath.has("WEATHER.location.only"), "no «Параметри локації» switch (its «off» is «Всі»)");
     rowsByPath.clear();
     locChoice.onChange("Загальні");
-    assert(!rowsByPath.has("WEATHER.location.only"), "no location switch with «Загальні»");
     rowsByPath.get("WEATHER.controls.rainAt100.maxDrops").onChange(900);
     assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.canvas.rain.strength.maxDrops" &&
       JSON.stringify(v) === JSON.stringify([GAME_CONFIG.canvas.rain.strength.maxDrops[0], 900])),
@@ -1529,8 +1530,16 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const ui = {
     createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
     addParameter() {}, releaseValueBindings() {},
-    createButtonRow(label, parent, onClick, navigation, icon, path) { buttons.set(path ? path.join(".") : label, onClick); },
+    createButtonRow(label, parent, onClick, navigation, icon, path) {
+      const row = { style: {} };
+      buttons.set(path ? path.join(".") : label, onClick);
+      if (path) resetRows.set(path.join("."), row);
+      return row;
+    },
+    setSectionLabel(content, text) { liveLabels.set(content, text); },
   };
+  const resetRows = new Map();
+  const liveLabels = new Map();
   const model = { snapshot: { events: {}, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 }, hold() {}, start() {},
     releaseAll() {}, strike() {} };
   const locations = { test: { weather: JSON.parse(JSON.stringify(MAP_DB.test.weather)) } };
@@ -1554,9 +1563,11 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   sections.length = 0;
   // «Загальні»: the general parts alone, the rain marked as changed with a reset.
   section.dispose();
+  const parameterPaths = new Set();
   const general = new WeatherDevSection({
     ui: { ...ui, addParameter(parent, options) {
       if (options.path?.join(".") === "WEATHER.location.id") general.choose = options.onCommit;
+      if (options.path) parameterPaths.add(options.path.join("."));
     } },
     weather: { locationId: "test", getModel: () => model, getWind: () => null },
     config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
@@ -1576,6 +1587,55 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   buttons.get("WEATHER.rain.reset")();
   assert.deepEqual(resets, ["canvas.rain"], "its reset drops that section's overrides");
   assert.equal(label("WEATHER.rain"), "ДОЩ", "then the mark is gone");
+
+  // TK-333 (owner): «Всі» — every section shows its general and its location parts together.
+  sections.length = 0;
+  general.choose("Всі");
+  const all = trees();
+  for (const path of ["CONFIG.canvas.rain", "CONFIG.locations.map.test.weather.rain", "CONFIG.weather.storm",
+    "CONFIG.locations.map.test.weather.storm", "CONFIG.weather.wind", "CONFIG.locations.map.test.weather.wind",
+    "CONFIG.locations.map.test.weather.fog", "CONFIG.emission.screen.vignette", "CONFIG.emission.screen.blur",
+    "CONFIG.locations.map.test.weather.emission",
+    "CONFIG.canvas.ash", "CONFIG.canvas.water"]) {
+    assert.ok(all.includes(path), `«Всі» shows ${path}`);
+  }
+  assert.ok(sections.some(([, at]) => at === "WEATHER.start"), "«Всі» shows the location's start and thresholds");
+  assert.ok(parameterPaths.has("WEATHER.emission.screenEnabled"), "the emission screen's own switch shows (it had no control)");
+  general.dispose();
+
+  // TK-333 (agent, browser): an edit marks its section «· змінено» and shows the reset at once — before, the mark waited
+  // for the next redraw (a selector press), while the edited group stayed open.
+  let onConfigUpdated = null;
+  const previousDocument = globalThis.document;
+  globalThis.document = { addEventListener: (type, handler) => { if (type === "config-updated") onConfigUpdated = handler; },
+    removeEventListener() {} };
+  try {
+    changed = new Set();
+    const contents = new Map();
+    const live = new WeatherDevSection({
+      ui, weather: { locationId: "test", getModel: () => model, getWind: () => null },
+      config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
+      general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
+        storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
+      createSection: (text, parent, path) => { const content = node(); contents.set(path?.join("."), content); return content; },
+      renderConfigTree() {},
+      edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree() {} },
+    });
+    live.render(node());
+    const stormContent = contents.get("WEATHER.storm");
+    assert.equal(resetRows.get("WEATHER.storm.reset").style.display, "none", "no edits: the section's reset is hidden");
+    changed.add("locations.map.test.weather.storm");
+    onConfigUpdated({ detail: { path: ["CONFIG", "locations", "map", "test", "weather", "storm", "chancePerCheck"] } });
+    assert.equal(liveLabels.get(stormContent), "ШТОРМ · змінено", "the edit marks its section in place");
+    assert.equal(resetRows.get("WEATHER.storm.reset").style.display, "", "and shows the section's reset");
+    changed.clear();
+    onConfigUpdated({ detail: { path: ["CONFIG", "locations", "map", "test", "weather", "storm", "chancePerCheck"] } });
+    assert.equal(liveLabels.get(stormContent), "ШТОРМ", "reset to the code: the mark goes");
+    assert.equal(resetRows.get("WEATHER.storm.reset").style.display, "none");
+    live.dispose();
+  } finally {
+    globalThis.document = previousDocument;
+  }
 }
 
 console.log(

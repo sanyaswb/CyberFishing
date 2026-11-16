@@ -37,6 +37,28 @@ rule as something the next change can follow.
 | R21 | Layout overrides in container or media queries (phone, adaptive) come after every base rule of the same selector in the file; a base rule added later must go above them. A check parses the stylesheet and fails when a base rule of an overridden selector follows the query. | I-21 |
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 | R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
+| R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
+
+<a id="i-24"></a>
+
+## I-24 · 2026-11-16 · v0.51.16–0.51.23: WebGL buttons above «ПОГОДА», the «· змінено» mark only after a redraw (TK-333)
+
+- **Seen:** the agent in the live panel (`dev.html`, owner allowed UI testing in this session): in «СЦЕНА WebGL» the
+  switch «Сцена WebGL», «Втратити / Відновити WebGL-контекст» and «↻ Оновити» stood above «ПОГОДА» (spec 180 D4: at the
+  very bottom); an edit in «ШТОРМ» updated «Збереження», but «ШТОРМ · змінено» and «↺ Скинути розділ до коду» appeared
+  only after the section was redrawn (a selector press).
+- **Cause:** `DevToolsUI.#insertTreeNode` (`src/dev/tools/dev_tools_ui.js`) puts a parent's rows (order 0) before its
+  nested sections (order 1), so rows made after the weather section still went above it; the scene-layer check's fake
+  only pushed labels in call order and passed. `WeatherDevSection.#elementSection` computed the mark once at render and
+  `#onConfigUpdated` refreshed only the saving status.
+- **Fix (v0.51.24):** the scene section puts its switch and buttons into `createSectionSlot` made after the weather;
+  `DevToolsUI.setSectionLabel` changes a title in place and `createButtonRow` returns its row; the weather section keeps
+  its element sections and on every `config-updated` refreshes their marks and shows / hides each reset row (no redraw,
+  open groups stay open).
+- **Rule R24:** see the table.
+- **Check:** `scene-layer` (the fake places rows like `#insertTreeNode`; fails on v0.51.23: «the WebGL buttons come after
+  every section») and `weather` (an edit marks «ШТОРМ · змінено» and shows its reset at once, a reset clears both;
+  fails on v0.51.23).
 
 <a id="i-20"></a>
 
