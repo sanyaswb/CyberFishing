@@ -470,12 +470,30 @@ async function stageTwo() {
   const indicatorStatus = { ...status, equipped: false, powered: false, status: "off" };
   const indicator = new RadioHudIndicator({ documentRef: doc, mountNode: doc.body, labels: RADIO_LABELS,
     radio: { getStatus: () => indicatorStatus, subscribe: (handler) => { indicatorListener = handler; return () => {}; } },
-    onActivate: () => { opened += 1; } });
+    onActivate: () => { opened += 1; }, iconUrl: "assets/ui/inventory/radio.svg", chargeColor: (percent) => `charge-${percent}` });
   const [button] = byClass(doc.body, "hud-indicator");
   assert.equal(button.hidden, true, "hidden without a radio");
-  indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing" });
+  // Spec 181 stage F (TK-346): silent — the inventory's radio drawing; sounding — the wave; the fill is the charge.
+  const [radioImage] = byClass(button, "hud-indicator__image");
+  const [chargeFill] = byClass(button, "hud-indicator__fill--level");
+  assert.equal(radioImage?.src, "assets/ui/inventory/radio.svg", "the inventory's radio drawing inside");
+  indicatorListener({ ...indicatorStatus, equipped: true, powered: false, status: "off", charge: 40 });
+  assert.equal(button.classList.contains("hud-indicator--sounding"), false, "silent: the drawing, not the wave");
+  assert.equal(JSON.stringify([chargeFill.style.getPropertyValue("--hud-indicator-level"),
+    chargeFill.style.getPropertyValue("--hud-indicator-color-full")]), JSON.stringify(["0.4", "charge-40"]),
+  "the fill rises to the charge in its degradation colour");
+  let colourReads = 0;
+  const countingIndicator = new RadioHudIndicator({ documentRef: doc, mountNode: doc.body, labels: RADIO_LABELS,
+    radio: { getStatus: () => ({ ...indicatorStatus, equipped: true, charge: 50 }), subscribe: () => () => {} },
+    iconUrl: "", chargeColor: () => { colourReads += 1; return "c"; } });
+  assert.equal(colourReads, 1, "the colour is resolved once per charge");
+  countingIndicator.dispose();
+  indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing", charge: 40 });
   assert.equal(button.hidden, false);
   assert(button.classList.contains("hud-indicator--playing"));
+  assert(button.classList.contains("hud-indicator--sounding"), "playing: the wave instead of the drawing");
+  indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing", charge: null });
+  assert.equal(chargeFill.style.getPropertyValue("--hud-indicator-level"), "0", "no battery: no fill");
   indicatorListener({ ...indicatorStatus, equipped: true, powered: true, status: "playing", signal: 0.4 });
   assert(button.classList.contains("hud-indicator--weak"), "a weak signal shows as the broken wave");
   indicatorListener({ ...indicatorStatus, equipped: true, status: "no-battery" });
@@ -628,6 +646,10 @@ async function stageTwo() {
   const hudIndicatorCss = runtime.read("src/game/presentation/styles/hud/hud-indicator.css").replace(/\s+/gu, " ");
   assert(/\.hud-indicator--empty\s*\{[^}]*color:\s*var\(--ui-danger\);[^}]*border-color:\s*var\(--ui-danger\);/u.test(hudIndicatorCss),
     "hud-indicator--empty has red color and red border");
+  assert(hudIndicatorCss.includes(".hud-indicator--radio .hud-indicator__icon { display: none; }") &&
+    hudIndicatorCss.includes(".hud-indicator--sounding .hud-indicator__icon { display: block; }") &&
+    hudIndicatorCss.includes(".hud-indicator--sounding .hud-indicator__image { display: none; }"),
+  "the wave only while the radio sounds, the drawing otherwise (spec 181 stage F)");
   assert.equal(RADIO_LABELS.noPowerWarning, "Без енергії діла не буде");
 
   // TK-152: composition root opener routes empty battery status to openSlotEditor with feedback
@@ -987,9 +1009,43 @@ async function stageFour() {
     while (service.getStatus().powered && seconds < 4000) { service.tick(1); seconds += 1; }
     assert(Math.abs(seconds - 3600) <= 2, "one ordinary battery plays the radio for 1 hour: " + seconds);
     assert.equal(service.getStatus().status, "no-battery", "an empty battery turns the radio off");
+    // Spec 181 stage F: the status carries the battery's charge in whole percent, announced only when it changes.
+    assert.equal(service.getStatus().charge, 0, "an empty battery reads 0 %");
     assert(noiseStops > 0, "and silences its noise");
   } finally {
     SourceDate.now = realNow;
+  }
+
+  // Spec 181 stage F: the status carries the worn battery's charge in whole percent (null without a battery), read on an
+  // equipment change and on each tick, announced only when the whole percent changes.
+  {
+    let percent = 100;
+    let battery = { instanceId: "b" };
+    const power = { read: () => ({ empty: percent <= 0, percent }), consume: () => ({ empty: percent <= 0, percent }) };
+    const chargeService = new RadioReceiverService({ equipment: { getEquipped: () => ({ radio: radioItem, radioBattery: battery }) },
+      power, stations: { listStations: async () => [station("s", "https://s.example/live")], listCountries: async () => [] },
+      player: { play() {}, stop() {}, setVolume() {}, refreshEffects() {}, setGainScale() {}, setStreamMuted() {}, setStreamInterrupted() {} },
+      preferences: new RadioPreferencesLocalStore({ cache: { get: () => null, set() {} } }), region: { resolve: () => "UA" },
+      config: () => ({ codecs: ["MP3"], signal: signalSettings }), secureOnly: true,
+      weather: { getSnapshot: () => ({ isRaining: false, wind: { rainMult: 1 } }) },
+      noise: { update() {}, burst() {}, stop() {} }, rng: { next: () => 0.99 }, scheduler: scheduler() });
+    chargeService.update();
+    assert.equal(chargeService.getStatus().charge, 100, "a worn full battery reads 100 %");
+    chargeService.powerOn(); await settle();
+    chargeService.handlePlayerState("playing", { effects: true });
+    const notes = [];
+    const stop = chargeService.subscribe((status) => notes.push(status.charge));
+    for (const next of [99.9, 99.6, 99.4, 98.7]) { percent = next; chargeService.tick(1); }
+    assert.equal(JSON.stringify(notes.filter((value, index) => value !== notes[index - 1])), JSON.stringify([99]),
+      "99.9 → 99.4 announce one change (100 → 99): whole percent only");
+    percent = 98.7;
+    chargeService.tick(1);
+    assert.equal(chargeService.getStatus().charge, 99);
+    battery = null;
+    chargeService.update();
+    assert.equal(chargeService.getStatus().charge, null, "no battery: no charge");
+    stop();
+    chargeService.dispose();
   }
 
   // A weak battery: sag, noise, a dropout from the radio's RNG, rain.

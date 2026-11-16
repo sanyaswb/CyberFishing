@@ -38,6 +38,8 @@ export class RadioReceiverService {
     status: "off", powered: false, equipped: false, signal: 1, station: null, country: "", stationCount: 0, effects: true,
     volume: 0.6, ducking: true, playInBackground: false, channelMode: "world", trackIndex: 0, trackCount: 0,
     walkieTalkie: true, vinyl: false, radio: false,
+    // Spec 181 stage F: the worn battery's charge, whole percent 0…100 (null: no battery) — the HUD indicator's fill.
+    charge: null,
   };
 
   // equipment: { getEquipped() } (radio, radioBattery); power: DevicePowerService; stations: { listStations(code),
@@ -297,6 +299,8 @@ export class RadioReceiverService {
   update() {
     const equipped = Boolean(this.#equipment.getEquipped()?.radio);
     if (equipped !== this.#status.equipped) this.#set({ equipped });
+    const batteryId = this.#equipment.getEquipped()?.radioBattery?.instanceId || null;
+    this.#syncCharge(batteryId ? this.#power.read(batteryId).percent : null);
     if (!this.#status.powered) return;
     if (!this.#equipment.getEquipped()?.radio) this.powerOff("no-radio");
     else if (!this.#hasCharge()) this.powerOff("no-battery");
@@ -319,6 +323,7 @@ export class RadioReceiverService {
       seconds,
       background: this.#hidden,
     });
+    this.#syncCharge(reading.percent);
     if (reading.empty) return this.powerOff("no-battery");
     // The sound effects follow CONFIG.radio.effects (DevTools); the player does not choose them (TK-097).
     this.#player.refreshEffects(this.#status.powered);
@@ -618,6 +623,13 @@ export class RadioReceiverService {
       vinyl: cfg.effects?.vinyl?.enabled ?? false,
       radio: cfg.effects?.radio?.enabled ?? false,
     });
+  }
+
+  // Whole percent, written (and announced) only when it changes.
+  #syncCharge(percent) {
+    const charge = percent === null || !Number.isFinite(Number(percent)) ? null
+      : Math.max(0, Math.min(100, Math.round(Number(percent))));
+    if (charge !== this.#status.charge) this.#set({ charge });
   }
 
   #set(values) {

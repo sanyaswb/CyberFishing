@@ -19,7 +19,7 @@ import { RadioHudIndicator } from "../../platform/browser/ui/radio_hud_indicator
 // built, so a radio left on starts playing once this module arrives.
 // Returns { radio, createControlsRenderer(domFactory), dispose() }.
 export function composeRadioFeature({ windowTarget, documentTarget, config, assets, storageCache, inventory, devicePower,
-  weather, mountNode, onActivate, tuning = null }) {
+  weather, mountNode, onActivate, chargeColor, tuning = null }) {
   const disposables = [];
   const own = (value) => { disposables.push(value); return value; };
   let radio = null;
@@ -55,7 +55,9 @@ export function composeRadioFeature({ windowTarget, documentTarget, config, asse
   const removeInventoryListener = inventory.onInventoryChanged(() => radio.update());
   own({ dispose: () => removeInventoryListener?.() });
   radio.update();
-  own(new RadioHudIndicator({ documentRef: documentTarget, radio, labels: RADIO_LABELS, mountNode, onActivate }));
+  // Spec 181 stage F: the inventory's radio drawing while it is silent; the battery's charge as the fill.
+  own(new RadioHudIndicator({ documentRef: documentTarget, radio, labels: RADIO_LABELS, mountNode, onActivate,
+    iconUrl: assets.pathOf("ui.inventory.radio"), chargeColor }));
   return {
     radio,
     createControlsRenderer: (domFactory) => new RadioControlsRenderer({ domFactory, radio, labels: RADIO_LABELS, tuning }),

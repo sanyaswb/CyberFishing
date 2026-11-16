@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.39 - Radio indicator: the radio drawing, the wave and the battery charge (spec 181 stage F, TK-346)
+
+- The radio's HUD circle shows the inventory's radio drawing while it is silent and the moving wave only while it plays; its fill from the bottom is the battery charge, green → yellow → red as it runs down.
+
 ## v0.51.38 - Debuff «Радіація» in the HUD (spec 181 stage E, TK-345)
 
 - While the location's radiation is above zero, a red badge with the radiation sign stands in the indicator column under the radio (a debuff without a timer); it fades when the radiation is gone.
@@ -44,8 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.30 - Radiation as its own weather section (TK-337)
 
 - DevTools «ПОГОДА»: «РАДІАЦІЯ» under «ВИКИД» holds the manual radiation and the location's radiation levels; «ВИКИД» keeps the event, the freeze and the screen.
-
-## v0.51.29 - Fog by the hour and after rain (spec 180 D17, TK-336)
-
-- Fog lives in game time and comes likelier at 4–7 (×4) and 19–24 (×3) on the test location; every rain that ends raises its chance (+0.5, up to ×4) until a fog starts. Outside the windows fog stays possible, rarer.
-- DevTools «ПОГОДА»: the fog's state shows its window and rain multipliers; the RANDOMIZER's «Туман» reports fogs in the windows and after rain.

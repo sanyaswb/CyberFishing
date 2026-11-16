@@ -320,6 +320,9 @@ follow in start order. A timed status's `hud-indicator__fill` drains by `transfo
 colour by cross-fading two `hud-indicator__tone` layers' opacity (compositor only; the colours are the degradation
 palette at 100/50/20 %, set once per badge as `--hud-indicator-color-*`), run by `--hud-indicator-duration` and a
 negative `--hud-indicator-delay`; `hud-indicator__count` is the tap countdown styled as `inventory-toggle__item-count`.
+The radio (spec 181 stage F) shows the inventory's radio drawing (`hud-indicator__image`) while silent and the wave only
+with `--sounding`; its `hud-indicator__fill--level` is the battery charge (`--hud-indicator-level` 0…1 as `scaleY`, the
+degradation colour of that charge), written only when the whole percent changes.
 Index and DEV compose
 `GameToolbar`; its version badge stays aligned with the bottom actions, keeps their height and clips
 excess text while shrinking horizontally. Hidden actions consume no row space.

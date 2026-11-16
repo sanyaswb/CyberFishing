@@ -1953,6 +1953,7 @@ export class GameCompositionRoot {
     const config = () => this.#config.radio || {};
     // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
     const tuning = this.#createRadioEffectTuning?.({ config }) || null;
+    const chargeColors = new DegradationColorResolver({ configProvider: () => this.#config.degradationColors || {} });
     const radio = own(
       new LazyFeature({
         name: "radio",
@@ -1969,6 +1970,8 @@ export class GameCompositionRoot {
             weather,
             mountNode: mountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
             onActivate: () => this.#radioEditorOpener?.(),
+            // Spec 181 stage F: the battery's charge in the degradation palette (the shared meters' colours).
+            chargeColor: (percent) => chargeColors.resolvePercent(percent).cssColor ?? "var(--ui-success)",
             tuning,
           }),
       }),

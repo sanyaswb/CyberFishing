@@ -1,6 +1,7 @@
 /* HUD indicators (spec 142 D12, spec 181 D3): 40 x 40 circles in a column under the clock — informational (the radio)
    first, then the player's buffs and debuffs. The column places them (.hud-indicators); each circle owns its look. The
-   radio's state modifier colours the icon and only "playing" moves the wave. */
+   radio's state modifier colours the wave and only "playing" moves it; the wave shows only while the radio sounds
+   (--sounding), otherwise the inventory's radio drawing (spec 181 stage F). */
 .hud-indicators {
   position: fixed;
   top: calc(var(--ui-edge-top) + var(--ui-hud-control-size) * var(--ui-hud-scale, 1) + var(--ui-toolbar-gap));
@@ -40,6 +41,17 @@
   height: 70%;
   overflow: hidden;
 }
+.hud-indicator__image {
+  position: relative;
+  z-index: 1;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.hud-indicator--radio .hud-indicator__icon { display: none; }
+.hud-indicator--sounding .hud-indicator__icon { display: block; }
+.hud-indicator--sounding .hud-indicator__image { display: none; }
 .hud-indicator__wave {
   fill: none;
   stroke: currentColor;
@@ -82,7 +94,15 @@
   opacity: 0.6;
   background: var(--hud-indicator-color-full, var(--ui-success));
   transform-origin: 50% 100%;
+}
+.hud-indicator--timed .hud-indicator__fill {
   animation: hud-indicator-drain var(--hud-indicator-duration, 1s) linear var(--hud-indicator-delay, 0s) both;
+}
+/* Spec 181 stage F: an informational level (the radio's battery charge), set on change only. */
+.hud-indicator__fill--level {
+  opacity: 0.45;
+  transform: scaleY(var(--hud-indicator-level, 0));
+  transition: transform 300ms ease-out;
 }
 .hud-indicator__tone { opacity: 0; }
 .hud-indicator__tone--half {
