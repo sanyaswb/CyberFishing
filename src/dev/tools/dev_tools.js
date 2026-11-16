@@ -28,7 +28,6 @@ import { WeatherEventRandomProbe } from "../randomizer/weather_event_random_prob
 import { WindGustRandomProbe } from "../randomizer/wind_gust_random_probe.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
-import { timePhaseAt } from "../../game/domain/time/time_phase.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
@@ -256,14 +255,13 @@ export class DevTools {
 
   // Spec 167: the step-by-step loading section draws itself with the panel's controls.
   // TK-321.1, spec 180 stage F (TK-335): the RANDOMIZER's probes of the location the game runs — the emission's start,
-  // rain, storm, fog and gusts — through the game's own models, rng, clock pace and phase rule.
+  // rain, storm, fog and gusts — through the game's own models, rng and clock pace.
   static #weatherProbes(config, locationId) {
     const getSettings = () => config.locations?.map?.[locationId]?.weather ?? null;
     const getGeneral = () => config.weather ?? null;
     const createRng = (seed) => new SeededRng(seed);
     const getTime = () => ({ timeScale: config.debug?.timeScale || 1,
-      initialHours: config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
-      phaseAt: (hour) => timePhaseAt(hour, config.spawns?.timePhases) });
+      initialHours: config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours });
     const createWeather = (options) => new WeatherModel(options);
     return [
       new EmissionRandomProbe({ createModel: (options) => new EmissionModel(options), createRng, getSettings }),

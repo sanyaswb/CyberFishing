@@ -4,8 +4,10 @@ import { WeatherEventTimeline } from "./weather_event_timeline.js";
 // - Idle: past its cooldown, once every checkIntervalSec it rolls chancePerCheck + chanceGrowthPerCheck × failed rolls
 //   (× the caller's chanceMult, e.g. a storm raising the rain's chance). Nothing holds the time of the next event.
 // - Active: the event's whole timeline (WeatherEventTimeline) is rolled at its start; the strength follows it (× the
-//   caller's strengthMult). The event ends when the timeline does, or early when it is no longer allowed (fog outside
-//   its time-of-day phases); then the cooldown runs.
+//   caller's strengthMult). The event ends when the timeline does, or early when it is no longer allowed; then the
+//   cooldown runs.
+// - Its own time (spec 180 D17, TK-336): the checks, the timeline and the cooldown run timeScale times faster than real
+//   time (fog lives in game time); the shown strength always eases in real seconds, so nothing pops.
 // - A floor (an emission holding a storm) raises the strength without starting or ending anything.
 // - Manual hold (DevTools, scripts): hold(strength) pins this process only; hold(null) returns it to its own course.
 //   No other process is touched: there is no shared freeze (the cause of the storm switch defect, spec 180).
@@ -65,16 +67,17 @@ export class WeatherEventProcess {
   }
 
   // dtSec: real seconds; allowed: may an event run now; chanceMult / strengthMult: other processes' effect; floor: a
-  // minimum strength (0…1) held from outside.
-  update(dtSec, allowed = true, chanceMult = 1, strengthMult = 1, floor = 0) {
+  // minimum strength (0…1) held from outside; timeScale: how fast this process's own time runs (1: real seconds).
+  update(dtSec, allowed = true, chanceMult = 1, strengthMult = 1, floor = 0, timeScale = 1) {
     const settings = this.#getSettings() || null;
     const dt = Math.max(0, finite(dtSec, 0));
+    const eventDt = dt * Math.max(0, finite(timeScale, 1));
     if (this.#checkLeftSec === null) this.#checkLeftSec = Math.max(1, finite(settings?.checkIntervalSec, 60));
     if (this.#active) {
-      this.#elapsedSec += dt;
+      this.#elapsedSec += eventDt;
       if (this.#elapsedSec >= this.#timeline.durationSec || !allowed) this.#end(settings);
     } else if (allowed && settings?.enabled !== false) {
-      this.#rollIdle(settings, dt, chanceMult);
+      this.#rollIdle(settings, eventDt, chanceMult);
     }
     const own = this.#active ? clamp01(this.#timeline.strengthAt(this.#elapsedSec) * Math.max(0, finite(strengthMult, 1))) : 0;
     const target = this.#held ?? Math.max(own, clamp01(finite(floor, 0)));

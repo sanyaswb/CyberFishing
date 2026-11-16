@@ -23,6 +23,8 @@ export class EnvironmentSystem {
   #config;
   #spawnConfig;
   #gameTimeHours;
+  // TK-336: the game clock the weather reads (fog in game time and by hour), one object rewritten every frame.
+  #weatherClock = { hour: 0, timeScale: 1 };
   #lastHour = -1;
   #currentPhase = "day";
   #weather;
@@ -150,6 +152,8 @@ export class EnvironmentSystem {
       this.#lastHour = hour;
       this.#updatePhase(hour);
     }
+    this.#weatherClock.hour = this.#gameTimeHours;
+    this.#weatherClock.timeScale = Math.max(0, Number(timeScale) || 1);
     this.#updateWeather(dt);
     this.#syncSnapshot();
   }
@@ -201,7 +205,7 @@ export class EnvironmentSystem {
   }
 
   #updateWeather(dt) {
-    this.#weather?.update(dt, this.#currentPhase, this.#updateEmission(dt));
+    this.#weather?.update(dt, this.#weatherClock, this.#updateEmission(dt));
     if (this.#wind) {
       this.#wind.update(dt, this.#snapshot.weather);
       return;

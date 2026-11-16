@@ -33,7 +33,8 @@ const settings = () => ({
   rain: event(),
   storm: event({ chancePerCheck: 0.02,
     lightning: { chance: 1, startShare: [0.1, 0.1], endShare: [0.9, 0.9], intervalSec: [25, 6], jitter: 0.5, distance: [0.2, 1] } }),
-  fog: event({ chancePerCheck: 1, checkIntervalSec: 10, cooldownSec: 0, durationSec: [100, 100], phases: ["morning", "night"] }),
+  fog: event({ chancePerCheck: 0.1, checkIntervalSec: 600, cooldownSec: 0, durationSec: [3600, 3600],
+    hours: [{ fromHour: 4, toHour: 7, chanceMult: 10 }, { fromHour: 22, toHour: 2, chanceMult: 5 }], rainBoost: { perRain: 0.5, max: 2 } }),
   thresholds: { rain: 0.15, fog: 0.3 },
 });
 // Spec 180 D3: the storm's multipliers are general (CONFIG.weather.storm).
@@ -41,8 +42,9 @@ const general = () => ({ storm: { rainChanceMult: 6, rainStrengthMult: 1.5 } });
 const { CONFIG: GAME_CONFIG } = require("../../../src/game/config/runtime/game_config.js");
 const near = (actual, expected, message, epsilon = 1e-9) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} ≠ ${expected}`);
-const step = (model, seconds, phase = "day", dt = 0.1) => {
-  for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += dt) model.update(dt * 1000, phase);
+// clock: { hour, timeScale } (TK-336: fog runs in game time and by hour) or null (real time, no hour).
+const step = (model, seconds, clock = null, dt = 0.1) => {
+  for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += dt) model.update(dt * 1000, clock);
 };
 
 // 1. The location's real settings: every strength in 0…1, all three events happen, storms raise the rain, a storm
@@ -50,10 +52,12 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
 {
   const model = new WeatherModel({ rng: new SeededRng("check:weather"), getSettings: () => MAP_DB.test.weather,
     getGeneralSettings: () => GAME_CONFIG.weather });
-  const phases = ["morning", "day", "evening", "night"];
+  // TK-336: the game's clock at its pace (fog in game time).
+  const clock = { hour: 0, timeScale: GAME_CONFIG.debug.timeScale };
   let rainTime = 0, stormTime = 0, rainInStorm = 0, stormsWithoutRain = 0, storms = 0, rained = false, stormSerial = 0;
   for (let second = 0; second < 400 * 3600; second += 1) {
-    model.update(1000, phases[Math.floor((second / 3600) % 24 / 6)]);
+    clock.hour = (second * clock.timeScale / 3600) % 24;
+    model.update(1000, clock);
     const w = model.snapshot;
     for (const key of ["rain", "storm", "fog", "cloud"]) assert.ok(w[key] >= 0 && w[key] <= 1, `${key} in 0…1`);
     if (w.rain > 0.15) rainTime += 1;
@@ -76,7 +80,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     const model = new WeatherModel({ rng: new SeededRng(42), getSettings: settings });
     const trace = [];
     for (let index = 0; index < 6000; index += 1) {
-      model.update(500, index % 1000 < 500 ? "night" : "day");
+      model.update(500, { hour: index % 1000 < 500 ? 1 : 12, timeScale: 240 });
       if (index % 50 === 0) trace.push(`${model.snapshot.rain.toFixed(6)}:${model.snapshot.storm.toFixed(6)}:${model.snapshot.fog.toFixed(6)}`);
     }
     return trace.join("|");
@@ -124,16 +128,16 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   config.storm.enabled = false;
   config.fog.enabled = false;
   const model = new WeatherModel({ rng, getSettings: () => config });
-  for (let second = 0; second < 600; second += 1) model.update(1000, "day");
+  for (let second = 0; second < 600; second += 1) model.update(1000, null);
   assert.equal(rolls.count, 10, `ten minutes = ten rolls, not one per second (${rolls.count})`);
   near(model.snapshot.events.rain.chance, 0.01 + 0.02 * 10, "the chance grows with each failed roll");
   assert.equal(model.snapshot.events.rain.active, false, "no event while the rolls fail");
   model.start("rain");
   assert.equal(model.snapshot.events.rain.active, true, "an event started");
   const before = rolls.count;
-  for (let second = 0; second < 599; second += 1) model.update(1000, "day");
+  for (let second = 0; second < 599; second += 1) model.update(1000, null);
   assert.equal(rolls.count, before, "no rolls during an event");
-  for (let second = 0; second < 2; second += 1) model.update(1000, "day");
+  for (let second = 0; second < 2; second += 1) model.update(1000, null);
   assert.equal(model.snapshot.events.rain.active, false, "the event ends with its timeline");
   assert.ok(model.snapshot.events.rain.cooldownLeftSec > 100, "then the cooldown runs");
 }
@@ -161,7 +165,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     for (const kind of order) model.hold(kind, 0.5, { fadeSec: 0 });
     for (const kind of order) {
       model.hold(kind, null, { fadeSec: 0 });
-      model.update(16, "night");
+      model.update(16, null);
       for (const other of order.filter((name) => name !== kind)) {
         const held = model.snapshot.events[other].held;
         const releasedBefore = order.indexOf(other) < order.indexOf(kind);
@@ -182,13 +186,13 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   config.storm.enabled = false;
   config.rain.chanceGrowthPerCheck = 0;
   const model = new WeatherModel({ rng: new SeededRng(4), getSettings: () => config, getGeneralSettings: general });
-  model.update(1, "day");
+  model.update(1, null);
   near(model.snapshot.events.rain.chance, 0.05, "the rain's own chance");
   model.hold("storm", 1, { fadeSec: 0 });
-  model.update(1, "day");
+  model.update(1, null);
   near(model.snapshot.events.rain.chance, 0.05 * 6, "a full storm: × rainChanceMult");
   model.hold("storm", 0.5, { fadeSec: 0 });
-  model.update(1, "day");
+  model.update(1, null);
   near(model.snapshot.events.rain.chance, 0.05 * 3.5, "half a storm: half the extra");
   model.start("rain", { peakStrength: 0.4, atPeak: true });
   model.hold("storm", 1, { fadeSec: 0 });
@@ -207,13 +211,13 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   config.storm.enabled = false;
   config.fog.enabled = false;
   const model = new WeatherModel({ rng: new SeededRng(17), getSettings: () => config });
-  step(model, 600, "day", 1);
+  step(model, 600, null, 1);
   assert.equal(model.snapshot.strikeSerial, 0, "no storm, no lightning");
   model.start("storm");
   const strikesAt = [];
   let last = 0;
   for (let second = 0; second < 600; second += 1) {
-    model.update(1000, "day");
+    model.update(1000, null);
     if (model.snapshot.strikeSerial !== last) { last = model.snapshot.strikeSerial; strikesAt.push(second); }
   }
   assert.ok(strikesAt.length > 5, `a storm with lightning strikes (${strikesAt.length})`);
@@ -227,26 +231,61 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   config.storm.lightning.chance = 0;
   model.start("storm");
   const before = model.snapshot.strikeSerial;
-  step(model, 600, "day", 1);
+  step(model, 600, null, 1);
   assert.equal(model.snapshot.strikeSerial, before, "a storm without lightning (its chance said no)");
 }
 
-// 8. Fog only in its phases; leaving them ends it. The initial weather (D14) starts a session's events at their peak.
+// 8. TK-336 (owner): fog lives in game time; its chance is × its hour window and × the rains since the last fog. The
+//    initial weather (D14) starts a session's events at their peak.
 {
   const config = settings();
   config.rain.enabled = false;
   config.storm.enabled = false;
+  const morning = { hour: 5, timeScale: 240 };
   const model = new WeatherModel({ rng: new SeededRng(8), getSettings: () => config });
-  step(model, 60, "day", 1);
-  assert.equal(model.snapshot.fog, 0, "no fog by day");
-  step(model, 60, "night", 1);
-  assert.equal(model.snapshot.events.fog.active, true, "fog at night");
-  step(model, 1, "day", 1);
-  assert.equal(model.snapshot.events.fog.active, false, "leaving the phase ends the fog");
+  step(model, 2, morning, 0.5);
+  assert.equal(model.snapshot.events.fog.active, false, "before the first check (600 game s = 2.5 real s at ×240)");
+  assert.equal(model.snapshot.fogHourMult, 10, "the morning window multiplies the chance");
+  near(model.snapshot.events.fog.chance, 1, "0.1 × 10 = 1 in the window", 1e-9);
+  step(model, 1, morning, 0.5);
+  assert.equal(model.snapshot.events.fog.active, true, "the check comes in game time and the window makes it sure");
+  step(model, 14, morning, 0.5);
+  assert.equal(model.snapshot.events.fog.active, true, "still on at 17 s (it began at 2.5 s)");
+  step(model, 1, morning, 0.5);
+  assert.equal(model.snapshot.events.fog.active, false, "a 1-game-hour fog ends after 15 real seconds at ×240");
+  const realTime = new WeatherModel({ rng: new SeededRng(8), getSettings: () => config });
+  step(realTime, 3, { hour: 5, timeScale: 1 }, 0.5);
+  assert.equal(realTime.snapshot.events.fog.active, false, "at ×1 the first check waits 600 real seconds");
+  // Outside the windows ×1; a window may pass midnight.
+  const noon = new WeatherModel({ rng: new SeededRng(8), getSettings: () => config });
+  step(noon, 1, { hour: 12, timeScale: 240 }, 0.5);
+  assert.equal(noon.snapshot.fogHourMult, 1, "no window at noon");
+  near(noon.snapshot.events.fog.chance, 0.1, "the base chance outside the windows", 1e-9);
+  step(noon, 1, { hour: 1, timeScale: 240 }, 0.5);
+  assert.equal(noon.snapshot.fogHourMult, 5, "22–2 holds one o'clock");
+  // Every rain that ends adds perRain (up to max); a fog that starts resets it.
+  config.rain.enabled = true;
+  config.fog.enabled = false;
+  const atNoon = { hour: 12, timeScale: 240 };
+  const rains = new WeatherModel({ rng: new SeededRng(9), getSettings: () => config });
+  const rainOnce = () => { rains.start("rain"); rains.update(100, atNoon); rains.stop("rain"); rains.update(100, atNoon); };
+  rains.update(100, atNoon);
+  assert.equal(rains.snapshot.fogRainBoost, 1, "no rain yet: ×1");
+  rainOnce();
+  assert.equal(rains.snapshot.fogRainBoost, 1.5, "one rain: ×1.5");
+  rainOnce();
+  rainOnce();
+  assert.equal(rains.snapshot.fogRainBoost, 2, "the boost stops at its max");
+  config.fog.enabled = true;
+  rains.update(100, atNoon);
+  near(rains.snapshot.events.fog.chance, 0.2, "the rains double the fog's chance at noon", 1e-9);
+  rains.start("fog");
+  rains.update(100, atNoon);
+  assert.equal(rains.snapshot.fogRainBoost, 1, "a fog that starts resets the rain's boost");
   const initial = settings();
   initial.initial = { rain: 0.6, storm: 0, fog: 0 };
   const started = new WeatherModel({ rng: new SeededRng(8), getSettings: () => initial });
-  started.update(16, "day");
+  started.update(16, null);
   near(started.snapshot.rain, 0.6, "a rainy start: the rain at its peak with the initial strength", 1e-6);
   assert.equal(started.snapshot.storm, 0, "nothing else");
 }
@@ -676,7 +715,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     windPart,
   );
   for (let i = 0; i < 40; i += 1) {
-    weatherRef.update(1000, "day");
+    weatherRef.update(1000, null);
     env.update(1000, 1);
   }
   assert.deepEqual(
@@ -1279,7 +1318,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   // (e) A manual hold wins over the emission's floor (DevTools tests the look by hand).
   const handWeather = new WeatherModel({ rng: new SeededRng(5), getSettings: () => location.weather });
   handWeather.hold("rain", 0.3, { fadeSec: 0 });
-  handWeather.update(5000, "day", { storm: 1, rain: 1 });
+  handWeather.update(5000, null, { storm: 1, rain: 1 });
   near(handWeather.snapshot.rain, 0.3, "DEV's held rain stays under the emission");
   near(handWeather.snapshot.storm, 1, "the storm follows the emission's floor");
 
@@ -1682,9 +1721,10 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.ok(share(row(rain, "дощить у шторм")) > share(row(rain, "дощить без шторму")),
     "the storm raises the rain's chance (it rains more often in a storm)");
   // Fog only in its phases of the day: never in an endless day.
-  const fogInDay = probe("fog", () => ({ ...time, phaseAt: () => "day" })).run({ count: 20, seed: 3 });
-  assert.equal(row(fogInDay, "результат"), "жодної події", "fog waits for its phases");
-  assert.ok(row(probe("fog").run({ count: 20, seed: 3 }), "змодельовано").startsWith("20 з 20"), "and comes in them");
+  // TK-336: fog in game time, mostly in its hour windows.
+  const fog = probe("fog").run({ count: 200, seed: 3 });
+  assert.ok(row(fog, "змодельовано").startsWith("200 з 200"), "the fog probe collects its events");
+  assert.ok(share(row(fog, "почався у вікні годин")) > 0.4, "most fogs start in the hour windows (×4, ×3 there)");
   // The live settings (DevTools edits) are read; the initial weather is left out.
   settings.initial = { rain: 1 };
   settings.rain.chancePerCheck = 0;

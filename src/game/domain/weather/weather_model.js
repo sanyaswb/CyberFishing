@@ -6,7 +6,11 @@ import { WeatherEventProcess } from "./weather_event_process.js";
 // rain's chance and strength rise (CONFIG.weather.storm.rainChanceMult / rainStrengthMult × the storm's strength), so a stormy wind
 // without rain is possible. Lightning belongs to the storm: when a storm starts it rolls whether it has lightning and,
 // if so, where on the storm's timeline the strikes begin and end; strikes come at random intervals, shorter as the
-// storm grows (lightning.intervalSec [at strength 0, at 1] ± jitter). Fog runs only in its time-of-day phases.
+// storm grows (lightning.intervalSec [at strength 0, at 1] ± jitter).
+// Fog (spec 180 D17, TK-336, owner 2026-11-16) lives in game time: its checks, timeline and cooldown run at the game
+// clock's pace (the shown strength still eases in real seconds). Its chance is × the multiplier of the game-hour window
+// it falls in (fog.hours: [{ fromHour, toHour, chanceMult }], ×1 outside) and × the rain's boost: every rain that ends
+// adds fog.rainBoost.perRain (up to fog.rainBoost.max), and the boost goes back to ×1 when a fog starts.
 // An emission holds a storm and rain from outside (update's floors, spec 179 D3). initial (spec 180 D14): the weather a
 // session starts with. All times are real seconds; the rng is the weather's own stream (spec 172 Q1). snapshot is one
 // object rewritten in place: rain, storm, fog, cloud (0…1), strike*, the processes' own snapshots, and compatibility
@@ -27,6 +31,9 @@ export class WeatherModel {
   #started = false;
   #stormSerial = 0;
   #lightning = { has: false, startSec: 0, endSec: 0, nextSec: 0 };
+  #fogRainBoost = 1;
+  #rainWasActive = false;
+  #fogSerial = 0;
   #snapshot = {
     rain: 0,
     storm: 0,
@@ -42,6 +49,9 @@ export class WeatherModel {
     // TK-327.1: the current storm's rolled lightning (DevTools shows what was generated).
     lightning: { has: false, startSec: 0, endSec: 0 },
     events: null,
+    // TK-336: the fog's chance multipliers now — of the hour window and of the rains since the last fog.
+    fogHourMult: 1,
+    fogRainBoost: 1,
   };
 
   // rng: { next(), range(min, max), chance(p) } (the weather's own seeded stream); getSettings: () =>
@@ -65,9 +75,9 @@ export class WeatherModel {
     return this.#snapshot;
   }
 
-  // dtMs: real milliseconds; phase: the time-of-day phase (fog's phases); floors: { storm, rain } 0…1 held from
-  // outside (an emission), or null.
-  update(dtMs, phase, floors = null) {
+  // dtMs: real milliseconds; clock: { hour (game hours, 0…24), timeScale (game seconds per real second) } or null (real
+  // time, no hour windows); floors: { storm, rain } 0…1 held from outside (an emission), or null.
+  update(dtMs, clock = null, floors = null) {
     const settings = this.#getSettings() || null;
     if (!this.#started) this.#startInitial(settings);
     const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
@@ -82,7 +92,7 @@ export class WeatherModel {
     const rainChanceMult = 1 + (Math.max(1, finite(general?.rainChanceMult, 1)) - 1) * stormStrength;
     const rainStrengthMult = 1 + (Math.max(1, finite(general?.rainStrengthMult, 1)) - 1) * stormStrength;
     this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult, finite(floors?.rain, 0));
-    this.#processes.fog.update(dtSec, this.#fogAllowed(settings, phase));
+    this.#updateFog(settings?.fog, clock, dtSec);
     this.#updateLightning(settings?.storm?.lightning, storm, dtSec);
     this.#sync();
   }
@@ -136,9 +146,36 @@ export class WeatherModel {
     }
   }
 
-  #fogAllowed(settings, phase) {
-    const phases = settings?.fog?.phases;
-    return Array.isArray(phases) ? phases.includes(phase) : true;
+  // TK-336: a rain that ended raises the fog's boost; a fog that started resets it.
+  #updateFog(config, clock, dtSec) {
+    const rainActive = this.#processes.rain.snapshot.active;
+    if (this.#rainWasActive && !rainActive) {
+      const boost = config?.rainBoost;
+      this.#fogRainBoost = Math.min(Math.max(1, finite(boost?.max, 1)), this.#fogRainBoost + Math.max(0, finite(boost?.perRain, 0)));
+    }
+    this.#rainWasActive = rainActive;
+    const hourMult = this.#hourMult(config?.hours, clock?.hour);
+    const fog = this.#processes.fog;
+    fog.update(dtSec, true, hourMult * this.#fogRainBoost, 1, 0, Math.max(0, finite(clock?.timeScale, 1)));
+    if (fog.snapshot.serial !== this.#fogSerial) {
+      this.#fogSerial = fog.snapshot.serial;
+      this.#fogRainBoost = 1;
+    }
+    this.#snapshot.fogHourMult = hourMult;
+    this.#snapshot.fogRainBoost = this.#fogRainBoost;
+  }
+
+  // The chance multiplier of the window that holds the hour (the largest if windows overlap); ×1 outside them or without
+  // an hour. A window with fromHour > toHour passes midnight.
+  #hourMult(windows, hour) {
+    if (!Array.isArray(windows) || !Number.isFinite(hour)) return 1;
+    let mult = null;
+    for (const window of windows) {
+      const from = finite(window?.fromHour, 0), to = finite(window?.toHour, 0);
+      const inside = from <= to ? hour >= from && hour < to : hour >= from || hour < to;
+      if (inside) mult = Math.max(mult ?? 0, Math.max(0, finite(window?.chanceMult, 1)));
+    }
+    return mult ?? 1;
   }
 
   // At a storm's start: lightning or not, and where on its timeline the strikes begin and end (shares of the duration).

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-336 (spec 180 D17): fog in game time, likelier at 4–7 and 19–24 and after each rain (reset when a fog starts).",
   "TK-333.2: the weather selector starts at «Всі» and keeps its choice while DevTools closes and opens.",
   "Spec 180 F (TK-335): RANDOMIZER probes for rain, storm, fog and gusts through the real weather and wind models; the report shows right under «Запустити».",
   "Spec 180 E (TK-334): «Конфіг» shows the whole CONFIG with the code keys — debug, read-only identifying keys, text lists and null values.",

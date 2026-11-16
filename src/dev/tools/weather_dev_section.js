@@ -688,7 +688,9 @@ export class WeatherDevSection {
     const emission = this.#weather.getEmissionModel?.()?.snapshot ?? null;
     this.#ui.createInfoRow("дощ", this.#eventText(weather.events?.rain), controls);
     this.#ui.createInfoRow("шторм", this.#eventText(weather.events?.storm), controls);
-    this.#ui.createInfoRow("туман", this.#eventText(weather.events?.fog), controls);
+    // TK-336: the fog's chance multipliers now — its hour window and the rains since the last fog.
+    this.#ui.createInfoRow("туман", `${this.#eventText(weather.events?.fog)} · вікно ×${weather.fogHourMult ?? 1}` +
+      ` · після дощу ×${weather.fogRainBoost ?? 1}`, controls);
     this.#ui.createInfoRow("викид", this.#emissionText(emission), controls);
     if (emission) this.#ui.createInfoRow("радіація", `${percent(emission.radiation)}${emission.radiationForced ? " (вручну)" : ""}`, controls);
     const windText = wind

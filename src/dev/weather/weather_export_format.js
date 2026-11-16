@@ -59,7 +59,6 @@ export const GENERAL_WEATHER_PART_IDS = Object.freeze(Object.keys(GENERAL_WEATHE
 const LOCATION_ID = /^[A-Za-z0-9_-]+$/u;
 const HEX_COLOR = /^#[0-9a-f]{6}$/iu;
 const HEX_HASH = /^[0-9a-f]{64}$/iu;
-const VALID_PHASES = new Set(["morning", "day", "evening", "night"]);
 
 // Spec 180 D16: the strength block holds [at 0, at 100] pairs (checked by RAIN_STRENGTH_RANGES).
 const RAIN_RANGES = Object.freeze([
@@ -221,11 +220,23 @@ function validateLocationWeatherDomain(weather, errors) {
   }
   const fog = weather.fog;
   checkEvent(fog, "locationWeather.fog", errors);
-  if (isRecord(fog) && Array.isArray(fog.phases)) {
-    if (!fog.phases.length) errors.push("locationWeather.fog.phases: must not be empty");
-    for (const phase of fog.phases) {
-      if (!VALID_PHASES.has(phase)) errors.push(`locationWeather.fog.phases: unknown phase ${phase}`);
-    }
+  // TK-336: the fog's hour windows (game hours 0…24, a window may pass midnight) and the rain's boost.
+  if (isRecord(fog) && "hours" in fog) {
+    if (!Array.isArray(fog.hours)) errors.push("locationWeather.fog.hours: expected array");
+    else fog.hours.forEach((window, index) => {
+      const path = `locationWeather.fog.hours[${index}]`;
+      if (!isRecord(window)) { errors.push(`${path}: expected object`); return; }
+      for (const key of ["fromHour", "toHour"]) {
+        if (!finite(window[key])) errors.push(`${path}.${key}: expected finite number`);
+        else checkRange(window[key], `${path}.${key}`, 0, 24, errors);
+      }
+      if (!finite(window.chanceMult)) errors.push(`${path}.chanceMult: expected finite number`);
+      else checkRange(window.chanceMult, `${path}.chanceMult`, 0, 100, errors);
+    });
+  }
+  if (isRecord(fog?.rainBoost)) {
+    checkRange(fog.rainBoost.perRain, "locationWeather.fog.rainBoost.perRain", 0, 10, errors);
+    checkRange(fog.rainBoost.max, "locationWeather.fog.rainBoost.max", 1, 100, errors);
   }
   const emission = weather.emission;
   if (isRecord(emission)) {

@@ -33,7 +33,9 @@ export class DevToolsParameterTooltipProvider {
     const normalized = String(path || "").replace(/^CONFIG\./u, "")
       .replace(/^FISH_DB\.[^.]+\./u, "fish.")
       .replace(/^(?:MAP_DB|locations\.map)\.[^.]+\./u, "MAP_DB.")
-      .replace(/\.behaviors\.[^.*]+\./u, ".behaviors.*.");
+      .replace(/\.behaviors\.[^.*]+\./u, ".behaviors.*.")
+      // TK-336: an item of a list of records shares one description per field (fog.hours.0.fromHour → fog.hours.*.fromHour).
+      .replace(/\.\d+(?=\.)/gu, ".*");
     const byPath = normalized ? this.#descriptionsByKey[normalized] : null;
     if (byPath?.path === normalized) return { name: byPath.label, description: byPath.description };
     const byKey = this.#descriptionsByKey[String(key)];

@@ -30,14 +30,26 @@ export const WEATHER = {
   },
   "fog": {
     "chanceGrowthPerCheck": 0,
-    "chancePerCheck": 0.15,
-    "checkIntervalSec": 300,
-    "cooldownSec": 300,
+    "chancePerCheck": 0.004,
+    "checkIntervalSec": 600,
+    "cooldownSec": 3600,
     "durationSec": [
-      240,
-      900
+      3600,
+      10800
     ],
     "enabled": true,
+    "hours": [
+      {
+        "chanceMult": 4,
+        "fromHour": 4,
+        "toHour": 7
+      },
+      {
+        "chanceMult": 3,
+        "fromHour": 19,
+        "toHour": 24
+      }
+    ],
     "peakAtShare": [
       0.15,
       0.35
@@ -50,10 +62,10 @@ export const WEATHER = {
       0.4,
       1
     ],
-    "phases": [
-      "morning",
-      "night"
-    ],
+    "rainBoost": {
+      "max": 4,
+      "perRain": 0.5
+    },
     "smoothSec": 10
   },
   "initial": {

@@ -46,7 +46,7 @@ export class WindGustRandomProbe {
     const stepMs = STEP_SEC * 1000;
     let elapsed = 0, gusting = false, startedAt = 0;
     while (starts.length < count && elapsed < limitSec) {
-      weather.update(stepMs, "day");
+      weather.update(stepMs, null);
       const snapshot = weather.snapshot;
       wind.update(stepMs, snapshot);
       elapsed += STEP_SEC;

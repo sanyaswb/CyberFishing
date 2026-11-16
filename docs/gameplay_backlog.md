@@ -886,6 +886,18 @@ Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified
 
+### G-135 Fog comes by the hour and after rain, in game time (P2, done v0.51.29)
+Found: 2026-11-16, owner (spec 180 D17, TK-336): fog should be likelier at 4–7 and 19–24 and after rain, each rain
+raising the chance until a fog comes; fog ran in real seconds only in the morning/night phases, so at the game's ×240
+pace a fog outlived a whole game day and the RANDOMIZER showed it cut to ~1.5 min by the phase's end.
+Change: fog lives in game time (checks, timeline, cooldown at the clock's pace; the shown strength still eases in real
+seconds); `fog.phases` → `fog.hours` (chance × window multiplier, ×1 outside, owner: fog stays possible all day);
+`fog.rainBoost` (+0.5 per finished rain, up to ×4, reset when a fog starts). Test location: a check every 10 game
+minutes, 0.4 % outside the windows, ×4 at 4–7, ×3 at 19–24, a fog of 1–3 game hours then an hour's pause.
+Result (RANDOMIZER, ×240): about one fog per game day, ~61 % of them in the windows, ~15 % after rain.
+Evidence: `weather` (game-time check and end, windows incl. one past midnight, the rain's boost, cap and reset; fails on
+v0.51.28), `apply-weather`, `config-schema`; game-cycle report unchanged.
+
 ### G-134 A storm no longer always brings rain; weather events roll their own course (P2, done v0.51.14)
 Found: 2026-11-15, owner ([spec 180](../specs/180-weather-settings-structure/spec.md)): switching the storm off in DevTools
 left the rain on for good (`weather_dev_section.js:478` forced rain and froze the weather), and a storm always rained
