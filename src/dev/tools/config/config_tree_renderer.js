@@ -53,7 +53,7 @@ export class ConfigTreeRenderer {
       if (Array.isArray(value)) {
         if (value.length > 0 && typeof value[0] === "number") {
           this.#ui.addParameter(parentElement, {
-            control: "numberList",
+            control: value.length === 2 ? "numberPair" : "numberList",
             label: this.#formatKey(key, currentPath),
             value,
             onCommit: (next) => this.#edits.update(currentPath, next),

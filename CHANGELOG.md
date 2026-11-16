@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.40 - Two − / + number fields for from-to DevTools pairs (TK-347)
+
+- DevTools: two-number `[from, to]` parameters (`lengthJitter` and weather/fish/item ranges) now render as two separate `NumberField` controls with `−` / `+` step buttons (`NumberPairField`) instead of a single comma-separated text input; longer numeric lists (RGB triplets, `liveBait.capacities`) keep list input.
+
 ## v0.51.39 - Radio indicator: the radio drawing, the wave and the battery charge (spec 181 stage F, TK-346)
 
 - The radio's HUD circle shows the inventory's radio drawing while it is silent and the moving wave only while it plays; its fill from the bottom is the battery charge, green → yellow → red as it runs down.
@@ -44,7 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - WebGL scene: fine flickering grain over the world, stronger as the location's radiation rises during an emission (none below 5 %); one noise tile made in code, no filter, no frames when there is no radiation.
 - DevTools «ПОГОДА» → «РАДІАЦІЯ» → «Шипіння (загальне)»: on/off, threshold, opacity, speck size and pace, live.
-
-## v0.51.30 - Radiation as its own weather section (TK-337)
-
-- DevTools «ПОГОДА»: «РАДІАЦІЯ» under «ВИКИД» holds the manual radiation and the location's radiation levels; «ВИКИД» keeps the event, the freeze and the screen.

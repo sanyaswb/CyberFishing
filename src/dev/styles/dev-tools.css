@@ -725,6 +725,21 @@
   .devtools__number { height: 36px; }
   .devtools__number-step { flex-basis: 36px; }
 }
+/* TK-347: a [from, to] numeric pair wraps under its label on narrow panels and keeps both step fields aligned. */
+.devtools__number-pair {
+  flex: 0 1 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin-left: auto;
+}
+.devtools__number-pair-separator {
+  color: var(--devtools-text-muted);
+  font-size: 13px;
+  user-select: none;
+}
 
 .devtools__input--text {
   width: 110px;
@@ -807,8 +822,9 @@
   .devtools, .devtools__action, .devtools__section-title, .devtools__rail-button, .devtools__section-chevron, .devtools__slider, .devtools__slider::before, .devtools__toggle { transition: none; }
 }
 
-/* TK-283: a row whose control may take a line of its own (segments on a narrow panel, an open list). */
+/* TK-283: a row whose control may take a line of its own (segments on a narrow panel, an open list, a from-to pair). */
 .devtools__row--wrap { flex-wrap: wrap; }
+.devtools__row--wrap > .devtools__label { flex: 1 1 110px; }
 /* TK-293: a row with a list: the label above, the field and its list under it across the row. */
 .devtools__row--stacked {
   flex-direction: column;

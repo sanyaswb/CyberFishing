@@ -3,6 +3,7 @@ import { DraggableButton } from "../../platform/browser/dom/draggable_button.js"
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 import { DevToolsEdgeOpener } from "./dev_tools_edge_opener.js";
 import { NumberField } from "./controls/number_field.js";
+import { NumberPairField } from "./controls/number_pair_field.js";
 import { SwitchControl } from "./controls/switch_control.js";
 import { TextField } from "./controls/text_field.js";
 import { ColorField } from "./controls/color_field.js";
@@ -759,10 +760,11 @@ export class DevToolsUI {
     };
   }
 
-  // type: "number" | "array" (numbers in one text field) | anything else (text).
+  // type: "number" | "array" (2 numbers: from/to step fields; other arrays: text list) | anything else (text).
   createInputRow(key, val, parentElement, type, onChangeCallback, path = null, bindingPath = path,
     { requires = [], configPath = null, isChanged = null, onReset = null } = {}) {
-    const control = type === "number" ? "number" : type === "array" ? "numberList" : "text";
+    const control = type === "number" ? "number"
+      : type === "array" ? (Array.isArray(val) && val.length === 2 ? "numberPair" : "numberList") : "text";
     this.addParameter(parentElement, { control, label: key, value: val, onCommit: onChangeCallback, path, bindingPath,
       requires, configPath, isChanged, onReset });
   }
@@ -784,7 +786,7 @@ export class DevToolsUI {
   }
 
   // Spec 174 B1: one parameter row from one description, the way every module adds a parameter.
-  //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice" | "color" (TK-320)
+  //   control: "switch" | "number" | "numberPair" (TK-347) | "text" | "numberList" | "range" | "segments" | "choice" | "color" (TK-320)
   //   | "stringList" | "nullable" | "readonly" (spec 180 stage E: text lists, a value that may be null, a shown-only key)
   //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);
   //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
@@ -794,7 +796,7 @@ export class DevToolsUI {
     requires = [], options = [], swatch = null, isChanged = null, onReset = null, min = 0, max = 100, step = 1 }) {
     const row = document.createElement("div");
     row.className = control === "choice" ? "devtools__row devtools__row--stacked"
-      : control === "segments" ? "devtools__row devtools__row--wrap" : "devtools__row";
+      : control === "segments" || control === "numberPair" ? "devtools__row devtools__row--wrap" : "devtools__row";
     this.#assignDevToolsPath(row, path);
     const canonicalPath = this.#normalizeDevToolsPath(configPath ?? bindingPath ?? path);
     if (canonicalPath) this.#rowConfigPath.set(row, canonicalPath);
@@ -809,6 +811,7 @@ export class DevToolsUI {
       const guard = this.#guardDependentRow(row, requires, value, onCommit, (shown) => field.setValue(shown));
       const commit = guard.commit;
       if (control === "number") field = new NumberField({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "numberPair") field = new NumberPairField({ value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "numberList") field = TextField.numberList({ value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "stringList") field = TextField.stringList({ value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "nullable") field = TextField.nullable({ value, onCommit: commit, ariaLabel, documentRef: document });

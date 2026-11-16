@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-347: DevTools from-to numeric pairs (lengthJitter, weather/fish/item ranges) render as two NumberField controls with − / + step buttons.",
   "Spec 181 F (TK-346): radio indicator — radio drawing when silent, wave when playing, battery charge as the fill.",
   "Spec 181 E (TK-345): the debuff «Радіація» — a red badge while the location radiation is above zero.",
   "Spec 181 D (TK-344): DevTools «СТАТУСИ» — active statuses, give / take / take all, live descriptions.",

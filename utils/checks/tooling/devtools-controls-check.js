@@ -3629,6 +3629,109 @@ function choiceRow(options, value, path) {
     ui.dispose();
   }
 
+  // --- TK-347: from-to numeric pairs render two NumberField controls with - / + step buttons ---
+  {
+    const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+    const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+    const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+    const baseConfig = {
+      canvas: { rain: { strength: { lengthJitter: [0.08, 0.2] } } },
+      emission: { screen: { vignette: { clearRadius: [0.95, 0.15] } } },
+      ui: { rgb: [10, 20, 30] },
+    };
+    const config = JSON.parse(JSON.stringify(baseConfig));
+    const overrides = new Set();
+    const readKey = (obj, parts) => parts.reduce((cur, key) => cur?.[key], obj);
+    const writeKey = (obj, parts, val) => {
+      let cur = obj;
+      for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+      cur[parts.at(-1)] = val;
+    };
+    const configRuntime = {
+      overrideStore: { has: (key) => overrides.has(key) },
+      set(path, value) {
+        const parts = path.slice(1);
+        overrides.add(parts.join("."));
+        writeKey(config, parts, value);
+      },
+      reset(path) {
+        const parts = path.slice(1);
+        overrides.delete(parts.join("."));
+        writeKey(config, parts, JSON.parse(JSON.stringify(readKey(baseConfig, parts))));
+      },
+    };
+    const pairUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"));
+    const pages = pairUi.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
+    const scenePage = pages.get("scene");
+    const aliases = new DevToolsParameterAliasRegistry();
+    const edits = new DevConfigEditService({
+      config,
+      catalogs: {},
+      configRuntime,
+      getHookedFish: () => null,
+      hookedFishSync: { afterEdit() {} },
+      itemStatSync: { afterEdit() {} },
+      debugModulesSource: () => ({}),
+      syncValue: (path, value) => pairUi.syncValue(path, value),
+      eventTarget: { dispatchEvent() {} },
+      logger: { log() {} },
+      parameterAliases: aliases,
+    });
+    const tree = new ConfigTreeRenderer({
+      ui: pairUi,
+      edits,
+      aliases,
+      schema: { describe: () => null, prerequisitesOf: () => [] },
+      createSection: (title, parent, path, options = {}) => pairUi.createSection(title, parent, false, () => {}, path, options),
+    });
+    tree.render(config.canvas.rain.strength, scenePage, ["CONFIG", "canvas", "rain", "strength"]);
+    tree.render(config.emission.screen.vignette, scenePage, ["CONFIG", "emission", "screen", "vignette"]);
+    tree.render(config.ui, scenePage, ["CONFIG", "ui"]);
+
+    const rowOf = (key) => byClass("devtools__row", scenePage).find((row) => row.children[0]?.dataset?.devtoolsKey === key);
+    const jitterRow = rowOf("lengthJitter");
+    const pair = byClass("devtools__number-pair", jitterRow)[0];
+    assert.ok(pair, "lengthJitter renders as a number pair");
+    const [fromBox, toBox] = byClass("devtools__number", pair);
+    const [fromDown, fromInput, fromUp] = fromBox.children;
+    const [toDown, toInput, toUp] = toBox.children;
+    assert.equal(fromInput.value, "0.08");
+    assert.equal(toInput.value, "0.2");
+
+    fromUp.click();
+    assert.equal(JSON.stringify(config.canvas.rain.strength.lengthJitter), JSON.stringify([0.09, 0.2]),
+      "+ steps first bound at its own precision");
+    toDown.click();
+    assert.equal(JSON.stringify(config.canvas.rain.strength.lengthJitter), JSON.stringify([0.09, 0.1]),
+      "- steps second bound independently");
+    assert.equal(jitterRow.classList.contains("devtools__row--changed"), true);
+
+    byClass("devtools__reset", jitterRow)[0].click();
+    assert.equal(JSON.stringify(config.canvas.rain.strength.lengthJitter), JSON.stringify([0.08, 0.2]),
+      "reset restores both bounds");
+    assert.equal(fromInput.value, "0.08");
+    assert.equal(toInput.value, "0.2");
+    assert.equal(jitterRow.classList.contains("devtools__row--changed"), false);
+
+    // Inverted bounds ([from > to]) stay independent without clamping.
+    const radiusRow = rowOf("clearRadius");
+    const [rFrom, rTo] = byClass("devtools__number", radiusRow);
+    rFrom.children[2].click();
+    assert.equal(JSON.stringify(config.emission.screen.vignette.clearRadius), JSON.stringify([0.96, 0.15]));
+    assert.equal(rTo.children[1].value, "0.15");
+
+    // 3+ number arrays (RGB triplets, liveBait capacities) stay comma-separated text lists.
+    const rgbRow = rowOf("rgb");
+    assert.equal(byClass("devtools__number-pair", rgbRow).length, 0);
+    assert.equal(byClass("devtools__input--text", rgbRow)[0].value, "10, 20, 30");
+
+    // createInputRow with a 2-number array also builds NumberPairField.
+    pairUi.createInputRow("customRange", [1, 5], scenePage, "array", () => {}, ["TEST", "customRange"]);
+    assert.equal(byClass("devtools__number", rowOf("customRange")).length, 2);
+
+    pairUi.dispose();
+  }
+
   console.log(
     "DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options; export command notice.",
   );
