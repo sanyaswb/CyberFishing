@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.42 - Inline ColorField row, matching NumberField height and toggle close (TK-348.1)
+
+- DevTools `ColorField`: keeps the swatch + text input on the same row as the label and reset button (wrapping together only on narrow screens) with `30 px` / `38 px` height matching `NumberField`; clicking the swatch again closes the active colour popup / opacity drawer while preserving the picked colour.
+
 ## v0.51.41 - Direct swatch picker and full-width row for DevTools colours (TK-348)
 
 - DevTools `ColorField`: the colour swatch and text input now share one row spanning the full width of `devtools__row`; clicking the swatch opens `<input type="color">` directly without an extra intermediate box click and updates the swatch colour immediately, while the inline row underneath appears only for the opacity slider (`rgba`/`#rrggbbaa`).
@@ -42,8 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - The gas mask goes into its now unlocked slot: no darkening or blur during an emission, and casting is allowed.
 - Vodka: open it in the backpack and press «Випити» — the emission's darkening and blur are half as strong for 10 minutes; another bottle renews the time; casting still needs a gas mask.
 - Both come from the DEV shop for now (placeholder art); DevTools «ПОГОДА» → «Стан і керування» shows the protection and its time left.
-
-## v0.51.32 - Geiger counter clicks with the radiation (spec 179 stage D, TK-339)
-
-- A procedural Geiger counter beside the radiation's hiss: random clicks, sparse at low radiation and a crackle at the peak, silent below 5 %; it starts after the player's first touch and stays silent in a hidden tab.
-- DevTools «ПОГОДА» → «РАДІАЦІЯ» → «Звук лічильника (загальне)»: on/off, volume, threshold, clicks a second, tone and click length.

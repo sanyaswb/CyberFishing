@@ -445,22 +445,34 @@
   -webkit-user-select: none;
   user-select: none;
 }
-/* TK-320 / TK-348: a colour parameter: the swatch and text field share one full-width row; clicking the swatch opens
-   the overlaid native <input type="color"> immediately, and rgba/alpha colours open the opacity slider underneath. */
-.devtools__color {
-  flex: 1 0 100%;
-  display: flex;
-  flex-wrap: wrap;
+/* TK-320 / TK-348.1: a colour parameter keeps its swatch and text input on the same row as the label and reset
+   button at the same height as NumberField; the swatch opens the overlaid native <input type="color"> on click and
+   closes it on the next click while keeping the picked colour. */
+.devtools__color { display: contents; }
+.devtools__color-controls {
+  flex: 0 1 auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
   min-width: 0;
+  max-width: 100%;
+  margin-left: auto;
 }
-.devtools__color .devtools__input--text { flex: 1 1 0; width: auto; min-width: 0; }
+.devtools__color-controls .devtools__input--text {
+  box-sizing: border-box;
+  flex: 1 1 110px;
+  min-width: 0;
+  width: 110px;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 13px;
+}
 .devtools__color-chip {
   position: relative;
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
 }
 .devtools__color-swatch {
   display: block;
@@ -500,7 +512,8 @@
 .devtools__color-alpha[hidden] { display: none; }
 .devtools__color-alpha-value { text-align: right; font-family: var(--ui-font-mono); }
 @media (pointer: coarse) {
-  .devtools__color-chip { width: 36px; height: 36px; }
+  .devtools__color-chip { width: 38px; height: 38px; }
+  .devtools__color-controls .devtools__input--text { height: 38px; }
 }
 @media (pointer: coarse) {
   .devtools__section-info-button { top: 0; right: 2px; }

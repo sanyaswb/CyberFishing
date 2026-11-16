@@ -2223,11 +2223,12 @@ function choiceRow(options, value, path) {
   });
   const field = byClass("devtools__color", host)[0];
   assert.ok(field, "a colour parameter is a colour field");
-  const chip = byClass("devtools__color-chip", field)[0];
+  const controls = byClass("devtools__color-controls", field)[0];
+  const chip = byClass("devtools__color-chip", controls)[0];
   const swatch = byClass("devtools__color-swatch", chip)[0];
   const colorInput = byClass("devtools__color-input", chip)[0];
   const picker = byClass("devtools__color-picker", field)[0];
-  assert.ok(chip && swatch && colorInput, "the colour input sits directly over the swatch");
+  assert.ok(controls && chip && swatch && colorInput, "the colour input sits directly over the swatch inside controls");
   assert.equal(
     swatch.style.getPropertyValue("--devtools-color-value"),
     "rgba(0, 200, 255, 0.25)",
@@ -2263,6 +2264,11 @@ function choiceRow(options, value, path) {
     byClass("devtools__color-alpha-value", alpha)[0].textContent,
     "60%",
   );
+  // Clicking the swatch again closes the picker/native window while preserving the picked colour.
+  const secondClick = colorInput.fire("click");
+  assert.equal(secondClick.prevented, true, "second click cancels re-opening the native picker");
+  assert.equal(picker.hidden, true, "second click hides the opacity drawer");
+  assert.equal(swatch.style.getPropertyValue("--devtools-color-value"), "rgba(255, 0, 0, 0.6)");
   tree.renderScalar({
     key: "lineColor",
     value: "#3388ff",
@@ -2272,8 +2278,18 @@ function choiceRow(options, value, path) {
   });
   const hexField = byClass("devtools__color", host)[1];
   const hexPicker = byClass("devtools__color-picker", hexField)[0];
-  byClass("devtools__color-input", hexField)[0].click();
+  const hexInput = byClass("devtools__color-input", hexField)[0];
+  const firstHexClick = hexInput.fire("click");
+  assert.equal(firstHexClick.prevented, false, "first click opens the native colour picker");
   assert.equal(hexPicker.hidden, true, "a #rrggbb colour keeps the inline box hidden on click (native picker opens directly)");
+  hexInput.value = "#00ff00";
+  hexInput.fire("input");
+  const secondHexClick = hexInput.fire("click");
+  assert.equal(secondHexClick.prevented, true, "second click on swatch closes the native picker while open");
+  assert.equal(byClass("devtools__color-swatch", hexField)[0].style.getPropertyValue("--devtools-color-value"), "#00ff00");
+  // After the native picker finishes closing (change), clicking the swatch opens it again.
+  hexInput.fire("change");
+  assert.equal(hexInput.fire("click").prevented, false);
   assert.equal(
     byClass("devtools__color-alpha", hexField)[0].hidden,
     true,
