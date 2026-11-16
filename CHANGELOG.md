@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.35 - Vodka halves what you see of the emission (spec 181 stage B, TK-342)
+
+- The emission's screen effect gets the full emission strength; the vodka weakens its output: exactly half the darkness and the blur at any phase (before, 50 % at the input showed only 20–30 % outside the peak), the blur keeps the emission's rhythm; the gas mask still shows nothing.
+- The vodka's three shares (darkening, blur, pulse rate) are live in DevTools «Конфіг» → statusEffects → vodka → Модифікатори.
+
 ## v0.51.34 - Player buffs and debuffs: the status architecture (spec 181 stage A, TK-341)
 
 - The vodka and the gas mask are player statuses described in `CONFIG.statusEffects` (duration, stacking, modifiers — the shares of the emission's darkening, blur and pulse rate that stay); the gas mask in its slot holds its status. Behaviour as in v0.51.33.
@@ -45,7 +50,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - DevTools «Конфіг»: every CONFIG group in the code's order with the code's keys — `debug` too; keys the game identifies data by (`id`, `name`, `icon`, `backgroundColor` …) are shown read-only. Only the catalogs merged into CONFIG stay in «Бази».
 - Text lists (`input.keys.*`, `fog.phases`), empty lists and null values (`player.equipment.*Id`) now have rows in every config tree.
-
-## v0.51.25 - Scene mode switch first in «СЦЕНА WebGL» (TK-333.1)
-
-- DevTools «СЦЕНА WebGL»: the switch «Сцена WebGL (інакше все на 2D)» is the section's first parameter, above «ПОГОДА»; the WebGL context buttons and «↻ Оновити» stay at the bottom.

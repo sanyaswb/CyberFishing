@@ -1382,11 +1382,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   statuses, slots: { gasMask: "gasMask" } });
   const equip = (value) => { equipped = value; for (const fn of inventoryListeners) fn(); };
   const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses });
-  assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
+  assert.deepEqual([exposure.intensity(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
   env = { emission: { phase: "onset", intensity: 0.5 } };
-  assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0.5, true], "an emission without a gas mask: effect and no cast");
+  assert.deepEqual([exposure.intensity(), exposure.modifier("vignette"), exposure.isCastBlocked()], [0.5, 1, true], "an emission without a gas mask: effect and no cast");
   equip({ gasMask: { id: "mask" } });
-  assert.deepEqual([statuses.has("gasMask"), exposure.strength(), exposure.isCastBlocked()], [true, 0, false],
+  assert.deepEqual([statuses.has("gasMask"), exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [true, 0, 0, false],
     "a gas mask holds its status: no effect and casting allowed");
   equip({});
   assert.equal(statuses.has("gasMask"), false, "out of its slot, the gas mask's status ends");
@@ -1407,9 +1407,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const unsubscribe = statuses.subscribe((event) => events.push(`${event.type}:${event.id}`));
   env = { emission: { phase: "peak", intensity: 1 } };
   assert.equal(statuses.apply("vodka", { source: "vodka_bottle" }), true, "a drink takes effect");
-  assert.deepEqual([exposure.modifier("vignette"), exposure.strength(), exposure.isCastBlocked()], [0.5, 0.5, true],
+  assert.deepEqual([exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [0.5, 0.5, true],
     "vodka: half the effect, still no cast");
-  for (let frame = 0; frame < 120; frame++) { clockMs += 16; exposure.strength(); statuses.list(); }
+  for (let frame = 0; frame < 120; frame++) { clockMs += 16; exposure.modifier("vignette"); statuses.list(); }
   assert.equal(events.join(), "start:vodka", "reads every frame emit nothing");
   advance(300000);
   assert.equal(statuses.apply("vodka"), true);
@@ -1419,7 +1419,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(exposure.modifier("vignette"), 0.5, "and renews the time (10 minutes from the second one)");
   advance(300000 + 600001);
   assert.equal(events.join(), "start:vodka,update:vodka,end:vodka", "the timer ends it with one event");
-  assert.deepEqual([exposure.modifier("vignette"), exposure.strength()], [1, 1], "over: the full effect again");
+  assert.deepEqual([exposure.modifier("vignette"), exposure.intensity()], [1, 1], "over: the full effect again");
   assert.equal(timers.size, 0, "no timer once nothing is timed");
   assert.equal(statuses.apply("unknown"), false, "an unknown status does nothing");
   assert.equal(statuses.apply("gasMask"), false, "a status without a timer is never applied as timed");
@@ -1538,6 +1538,39 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const none = new EmissionScreenEffect().update(16, 1, { ...settings, vignette: { enabled: false }, blur: { enabled: false } });
   assert.equal(none.visible, false, "both off: the veil hides");
   assert.ok(vignetteOnly.visible, "both on by default");
+
+  // Spec 181 D2 (TK-342): the statuses weaken the OUTPUT — the vodka's 0.5 shows exactly half of the darkness, of the
+  // clear middle's narrowing and of the blur at every phase (also 0.4 and 0.6, where the input curve made it 20–30 %),
+  // and the pulses keep the emission's rhythm; the gas mask's zeros hide the veil.
+  const shared = (strength, shares) => {
+    let seed = 11;
+    const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+    const fx = new EmissionScreenEffect({ random });
+    const out = [];
+    for (let frame = 0; frame < 600; frame += 1) {
+      const record = fx.update(1000 / 60, strength, settings, ...shares);
+      out.push({ dark: record.darkness, open: 1 - record.clearRadius, blur: record.blurPx, visible: record.visible });
+    }
+    return out;
+  };
+  const near = (a, b) => Math.abs(a - b) <= 1e-9;
+  for (const strength of [0.4, 0.6, 1]) {
+    const full = shared(strength, [1, 1, 1]);
+    const vodkaRun = shared(strength, [0.5, 0.5, 1]);
+    assert.ok(full.every((sample, index) => near(vodkaRun[index].dark, sample.dark * 0.5) &&
+      near(vodkaRun[index].open, sample.open * 0.5) && near(vodkaRun[index].blur, sample.blur * 0.5)),
+    `strength ${strength}: the vodka shows exactly half the darkness, narrowing and blur, pulse for pulse`);
+    assert.ok(full.some((sample) => sample.dark > 0.05) && full.some((sample) => sample.blur > 0.5), "the effect is there to halve");
+  }
+  const slowRun = shared(1, [1, 1, 0.5]);
+  assert.ok(pulses(slowRun.map((sample, index) => ({ t: index / 60, blur: sample.blur }))).length <
+    pulses(shared(1, [1, 1, 1]).map((sample, index) => ({ t: index / 60, blur: sample.blur }))).length * 0.75,
+  "blurRate below 1 makes the pulses rarer");
+  const stillRun = shared(1, [1, 1, 0]);
+  assert.ok(stillRun.every((sample) => near(sample.blur, settings.blur.strengthPx * settings.blur.floor)),
+    "blurRate 0: no pulse, the floor stays");
+  assert.ok(shared(1, [0, 0, 1]).every((sample) => !sample.visible && sample.dark === 0 && sample.blur === 0),
+    "the gas mask (0, 0): no veil at all");
 
   // The DOM veil: placed between the UI content and the portals (DevTools) or above the scene; written only on change.
   const makeElement = (name) => ({ name, parent: null, isConnected: false, style: { props: {}, setProperty(key, value) { this.props[key] = value; } },

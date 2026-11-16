@@ -1104,7 +1104,9 @@ export class GameCompositionRoot {
       : null;
     return Object.freeze({
       update: (dtMs) => {
-        const record = effect.update(dtMs, emissionExposure.strength(), this.#config.emission?.screen);
+        // Spec 181 D2: the full intensity, weakened at the output by the statuses' shares.
+        const record = effect.update(dtMs, emissionExposure.intensity(), this.#config.emission?.screen,
+          emissionExposure.modifier("vignette"), emissionExposure.modifier("blur"), emissionExposure.modifier("blurRate"));
         veil?.apply(record);
       },
     });

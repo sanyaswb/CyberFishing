@@ -9,8 +9,11 @@
 //   it closes in deeper than it opens out (swayOutShare of the closing), so each closing reaches further than the
 //   opening before it. The edges darken up to maxDarkness and breathe a little with the same swell.
 // TK-324.2: vignette.enabled and blur.enabled switch each part on its own (the veil hides when both are off).
-// strength comes from EmissionExposure (intensity × (1 − protection)). random: () => 0…1 (visual only). One record
-// rewritten in place; no allocation per frame.
+// Spec 181 D2 (TK-342): strength is the emission's full intensity (EmissionExposure.intensity()); the player's statuses
+// weaken the OUTPUT by three shares that stay (EmissionExposure.modifier): the darkness × vignette share (the clear middle
+// opens toward the whole screen by the same share), the blur's px × blur share, the pulses' rate × blurRate share — so
+// 0.5 shows exactly half of the effect at any phase and the pulses keep the emission's rhythm; two zero shares (the gas
+// mask) hide the veil. random: () => 0…1 (visual only). One record rewritten in place; no allocation per frame.
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
 const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const pairAt = (pair, index, fallback) => number(Array.isArray(pair) ? pair[index] : undefined, fallback);
@@ -36,10 +39,14 @@ export class EmissionScreenEffect {
     return this.#record;
   }
 
-  // dtMs: real milliseconds since the last frame; strength: 0…1; settings: CONFIG.emission.screen.
-  update(dtMs, strength, settings) {
+  // dtMs: real milliseconds since the last frame; strength: 0…1; settings: CONFIG.emission.screen; vignetteShare,
+  // blurShare, blurRateShare: 0…1, the shares of the output that stay (spec 181 D2).
+  update(dtMs, strength, settings, vignetteShare = 1, blurShare = 1, blurRateShare = 1) {
     const record = this.#record;
-    const level = settings?.enabled !== false ? clamp01(number(strength, 0)) : 0;
+    const vignetteKept = clamp01(number(vignetteShare, 1));
+    const blurKept = clamp01(number(blurShare, 1));
+    const shown = vignetteKept > 0 || blurKept > 0;
+    const level = settings?.enabled !== false && shown ? clamp01(number(strength, 0)) : 0;
     record.includeHud = settings?.includeHud !== false;
     record.strength = level;
     if (level <= 0) {
@@ -51,12 +58,15 @@ export class EmissionScreenEffect {
       return record;
     }
     const dtSec = Math.min(0.25, Math.max(0, number(dtMs, 0)) / 1000);
-    const vignetteOn = settings?.vignette?.enabled !== false;
-    const blurOn = settings?.blur?.enabled !== false;
+    const vignetteOn = settings?.vignette?.enabled !== false && vignetteKept > 0;
+    const blurOn = settings?.blur?.enabled !== false && blurKept > 0;
     record.visible = vignetteOn || blurOn;
-    if (vignetteOn) this.#updateVignette(record, level, dtSec, settings?.vignette);
-    else { record.darkness = 0; record.clearRadius = 1; }
-    record.blurPx = blurOn ? this.#updateBlur(level, dtSec, settings?.blur) : 0;
+    if (vignetteOn) {
+      this.#updateVignette(record, level, dtSec, settings?.vignette);
+      record.darkness *= vignetteKept;
+      record.clearRadius = 1 - (1 - record.clearRadius) * vignetteKept;
+    } else { record.darkness = 0; record.clearRadius = 1; }
+    record.blurPx = blurOn ? this.#updateBlur(level, dtSec, settings?.blur, clamp01(number(blurRateShare, 1))) * blurKept : 0;
     return record;
   }
 
@@ -83,7 +93,7 @@ export class EmissionScreenEffect {
 
   // Spec 180 D5: five knobs — strengthPx, pulsesPerSec [at the start, at the peak], irregularity (the gaps' spread and the
   // heights' range), sharpness (0: soft swells, 1: sharp twitches → attack 0.2 … 0.03 s, decay 0.8 … 0.15 s), floor.
-  #updateBlur(level, dtSec, blur) {
+  #updateBlur(level, dtSec, blur, rateShare) {
     const random = this.#random;
     const slowRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 0, 0.42));
     const fastRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 1, 2.85));
@@ -93,12 +103,14 @@ export class EmissionScreenEffect {
     const decay = 0.8 + (0.15 - 0.8) * sharpness;
     this.#nextPulseSec -= dtSec;
     this.#pulseAge += dtSec;
-    if (this.#nextPulseSec <= 0) {
+    // Spec 181 D2: the blurRate share slows the pulses; 0 — no new pulse (the floor stays; asked again in a moment).
+    const rate = (slowRate + (fastRate - slowRate) * level) * rateShare;
+    if (this.#nextPulseSec <= 0 && rate <= 0) this.#nextPulseSec = 0.25;
+    else if (this.#nextPulseSec <= 0) {
       const minHeight = 1 - 0.65 * jitter;
       this.#pulseHeight = minHeight + (1 - minHeight) * random();
       this.#pulseAge = 0;
-      const interval = 1 / (slowRate + (fastRate - slowRate) * level);
-      this.#nextPulseSec = Math.max(attack + 0.02, interval * (1 + jitter * (2 * random() - 1)));
+      this.#nextPulseSec = Math.max(attack + 0.02, (1 / rate) * (1 + jitter * (2 * random() - 1)));
     }
     const age = this.#pulseAge;
     let shape = 0;
