@@ -105,6 +105,20 @@ export const WEATHER = {
     ],
     "smoothSec": 6
   },
+  "starfall": {
+    "blendShare": 0.35,
+    "bolideChance": 0.03,
+    "enabled": true,
+    "fromHour": 21,
+    "maxStrength": 1,
+    "nightChance": 0.35,
+    "periods": [
+      3,
+      6
+    ],
+    "quietChance": 0.25,
+    "toHour": 5
+  },
   "storm": {
     "chanceGrowthPerCheck": 0.00005,
     "chancePerCheck": 0.0015,

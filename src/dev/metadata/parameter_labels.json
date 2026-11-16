@@ -2482,5 +2482,45 @@
   "canvas.radiationGrain.edges.feather": {
     "label": "Перехід",
     "description": "Ширина переходу від середини до повного шипіння по краях (частка півдіагоналі)."
+  },
+  "MAP_DB.weather.starfall": {
+    "label": "Зорепад (локація)",
+    "description": "Ніч зорепаду (spec 182): одна перевірка на початку вікна; зорепадна ніч — кілька періодів різної сили з плавними переходами; болід — не більше одного за ніч."
+  },
+  "MAP_DB.weather.starfall.enabled": {
+    "label": "Зорепад",
+    "description": "Чи буває зорепад на цій локації."
+  },
+  "MAP_DB.weather.starfall.fromHour": {
+    "label": "Початок ночі, год",
+    "description": "Ігрова година, коли починається вікно зорепаду й робиться перевірка ночі (21)."
+  },
+  "MAP_DB.weather.starfall.toHour": {
+    "label": "Кінець ночі, год",
+    "description": "Ігрова година, коли вікно закінчується (5; вікно може переходити через північ)."
+  },
+  "MAP_DB.weather.starfall.nightChance": {
+    "label": "Шанс ночі",
+    "description": "Шанс (0…1), що ніч буде зорепадною; перевірка одна — на початку вікна."
+  },
+  "MAP_DB.weather.starfall.periods": {
+    "label": "Періодів [мін, макс]",
+    "description": "Скільки періодів різної сили ділять ніч (місця й довжини випадкові)."
+  },
+  "MAP_DB.weather.starfall.maxStrength": {
+    "label": "Найбільша сила",
+    "description": "Верхня межа сили періоду (густота зір 0…1)."
+  },
+  "MAP_DB.weather.starfall.quietChance": {
+    "label": "Частка тиші",
+    "description": "Шанс, що період буде з силою 0 (тиша посеред зорепадної ночі)."
+  },
+  "MAP_DB.weather.starfall.blendShare": {
+    "label": "Плавність переходу",
+    "description": "Частка коротшого з сусідніх періодів, за яку сила плавно (косинусом) переходить до наступної."
+  },
+  "MAP_DB.weather.starfall.bolideChance": {
+    "label": "Шанс боліда",
+    "description": "Шанс (дуже малий) одного боліда за зорепадну ніч; рахується раз після вдалої перевірки ночі."
   }
 }

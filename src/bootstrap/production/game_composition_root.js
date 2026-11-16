@@ -58,6 +58,7 @@ import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_it
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
+import { StarfallNight } from "../../game/domain/weather/starfall_night.js";
 import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
@@ -1618,6 +1619,8 @@ export class GameCompositionRoot {
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
     const emissionRng = new SeededRng(`${seed}:emission`);
+    // Spec 182 (TK-351): the starfall's own stream (visual only, it never shifts the weather's numbers).
+    const starfallRng = new SeededRng(`${seed}:starfall`);
     const getWeatherSettings = () =>
       this.#config.locations?.map?.[locId]?.weather ??
       locCfg?.weather ??
@@ -1647,6 +1650,7 @@ export class GameCompositionRoot {
       getSettings: getWeatherSettings,
       canStart: () => emissionArtReady,
     });
+    const starfall = new StarfallNight({ rng: starfallRng, getSettings: () => getWeatherSettings()?.starfall ?? null });
     return new EnvironmentSystem(
       locCfg,
       this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
@@ -1656,6 +1660,7 @@ export class GameCompositionRoot {
       weather,
       wind,
       emission,
+      starfall,
     );
   }
 

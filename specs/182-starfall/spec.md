@@ -111,3 +111,12 @@
   стан і секція редактора, малювання будь-де (як дощ і попіл), валідатор масок, `world.skyRegions` / `skyZoned` у
   `GameRenderFrame` і `WorldRenderFrameBuilder`. Для test — `{ x: 0, y: 0, w: 64, h: 16 }` (верх локації; власник
   підганяє під небо).
+- **Етап B (TK-351, v0.51.46).** `src/game/domain/weather/starfall_night.js` — не процес `WeatherModel`, а окрема модель
+  поруч у `EnvironmentSystem` (свій потік `seed:starfall`, тож погода й риба не зсуваються; оновлюється після погоди,
+  `blocked` = викид не idle). Сила — функція позиції в ночі (ігрова година), без dt. Довжини періодів — ваги 0,4…1,6,
+  нормовані на вікно; сила періоду — 0 з `quietChance` або `maxStrength × [0,15…1]`; переходи — косинус на
+  `blendShare` коротшого сусіда (внутрішні — по центру межі, крайні — всередині ночі, тож о 21:00 і 5:00 сила 0). Болід
+  падає, коли позиція перетинає його момент (`bolideSerial`); ніч, перевірена посеред (старт сесії вночі), має свій
+  болід лише попереду. DEV: `hold(strength)`, `bolideNow()`, `forceNight()`. Параметри `MAP_DB.<id>.weather.starfall`:
+  `enabled, fromHour, toHour, nightChance, periods, maxStrength, quietChance, blendShare, bolideChance` (замість
+  `periodSec` з плану — довжини ділять ніч). RANDOMIZER — `StarfallRandomProbe`.

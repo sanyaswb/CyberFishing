@@ -14,6 +14,10 @@ const CLEAR_WEATHER = Object.freeze({
   precipitation: "clear", fogState: "none", rain: 0, storm: 0, fog: 0, cloud: 0, strikeSerial: 0, strikeVariant: 0,
   strikeDistance: 0, lightningActive: false, frozen: false, events: null,
 });
+// Spec 182 D2 (TK-351): without a starfall model — no starfall.
+const NO_STARFALL = Object.freeze({ inWindow: false, active: false, strength: 0, planned: 0, held: false, nightSerial: 0,
+  periodCount: 0, periodStartHours: Object.freeze([]), periodLevels: Object.freeze([]), windowHours: 0, positionHours: 0,
+  bolideAtHours: null, bolideSerial: 0 });
 const NO_EMISSION = Object.freeze({
   phase: "idle", phaseLeftSec: 0, phaseDurationSec: 0, intensity: 0, radiation: 0, serial: 0, frozen: false,
   radiationForced: false,
@@ -30,6 +34,7 @@ export class EnvironmentSystem {
   #weather;
   #wind;
   #emission;
+  #starfall;
   #weatherFloors = { storm: 0, rain: 0 };
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
   // Spec 172 TK-271: a direction (−1 | 0 | 1) set by DEV or a script replaces the random one until cleared (null).
@@ -42,6 +47,8 @@ export class EnvironmentSystem {
     weather: CLEAR_WEATHER,
     emission: NO_EMISSION,
     radiation: 0,
+    // Spec 182: the starfall's night (strength 0…1, the plan, the bolide's serial).
+    starfall: NO_STARFALL,
     wind: {
       direction: 0,
       strength: 0,
@@ -85,6 +92,7 @@ export class EnvironmentSystem {
     weather = null,
     wind = null,
     emission = null,
+    starfall = null,
   ) {
     this.#config = config;
     this.#spawnConfig = spawnConfig;
@@ -93,6 +101,7 @@ export class EnvironmentSystem {
     this.#weather = weather;
     this.#wind = wind;
     this.#emission = emission;
+    this.#starfall = starfall;
     this.#gameTimeHours = initialTime;
     if (this.#spawnConfig?.timePhases) {
       this.#lastHour = Math.floor(initialTime);
@@ -100,6 +109,7 @@ export class EnvironmentSystem {
     }
     if (weather) this.#snapshot.weather = weather.snapshot;
     if (emission) this.#snapshot.emission = emission.snapshot;
+    if (starfall) this.#snapshot.starfall = starfall.snapshot;
     this.#syncSnapshot();
   }
 
@@ -140,6 +150,11 @@ export class EnvironmentSystem {
     return this.#emission;
   }
 
+  // Spec 182: the starfall's night (DEV section), or null.
+  get starfall() {
+    return this.#starfall;
+  }
+
   // dt: real milliseconds of the frame.
   update(dt, timeScale) {
     this.#gameTimeClock?.setTimeScale(timeScale);
@@ -155,6 +170,8 @@ export class EnvironmentSystem {
     this.#weatherClock.hour = this.#gameTimeHours;
     this.#weatherClock.timeScale = Math.max(0, Number(timeScale) || 1);
     this.#updateWeather(dt);
+    // Spec 182 D2, Q3: no starfall while an emission runs (the night's timeline goes on).
+    this.#starfall?.update(this.#weatherClock, this.#snapshot.emission.phase !== "idle");
     this.#syncSnapshot();
   }
 

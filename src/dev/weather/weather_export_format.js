@@ -255,6 +255,19 @@ function validateLocationWeatherDomain(weather, errors) {
       checkRange(storm.storm, "locationWeather.emission.storm.storm", 0, 1, errors);
     }
   }
+  // Spec 182 D2 (TK-351): the starfall's night.
+  const starfall = weather.starfall;
+  if (isRecord(starfall)) {
+    if ("enabled" in starfall && typeof starfall.enabled !== "boolean") errors.push("locationWeather.starfall.enabled: expected boolean");
+    checkRange(starfall.fromHour, "locationWeather.starfall.fromHour", 0, 24, errors);
+    checkRange(starfall.toHour, "locationWeather.starfall.toHour", 0, 24, errors);
+    checkRange(starfall.nightChance, "locationWeather.starfall.nightChance", 0, 1, errors);
+    checkPair(starfall.periods, "locationWeather.starfall.periods", 1, 24, true, errors);
+    checkRange(starfall.maxStrength, "locationWeather.starfall.maxStrength", 0, 1, errors);
+    checkRange(starfall.quietChance, "locationWeather.starfall.quietChance", 0, 1, errors);
+    checkRange(starfall.blendShare, "locationWeather.starfall.blendShare", 0, 1, errors);
+    checkRange(starfall.bolideChance, "locationWeather.starfall.bolideChance", 0, 1, errors);
+  }
   const radiation = weather.radiation;
   if (isRecord(radiation)) {
     checkRange(radiation.base, "locationWeather.radiation.base", 0, 1, errors);

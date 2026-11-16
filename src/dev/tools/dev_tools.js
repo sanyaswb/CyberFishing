@@ -26,6 +26,8 @@ import { EmissionRandomProbe } from "../randomizer/emission_random_probe.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { WeatherEventRandomProbe } from "../randomizer/weather_event_random_probe.js";
+import { StarfallRandomProbe } from "../randomizer/starfall_random_probe.js";
+import { StarfallNight } from "../../game/domain/weather/starfall_night.js";
 import { WindGustRandomProbe } from "../randomizer/wind_gust_random_probe.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
@@ -272,6 +274,8 @@ export class DevTools {
         getSettings, getGeneral, getTime })),
       new WindGustRandomProbe({ createWeather, createWind: (options) => new WindModel(options), createRng, getSettings,
         getGeneral }),
+      // Spec 182 stage B (TK-351): the starfall's nights.
+      new StarfallRandomProbe({ createModel: (options) => new StarfallNight(options), createRng, getSettings }),
     ];
   }
 

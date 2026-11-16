@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.46 - The starfall's night timeline (spec 182 stage B, TK-351)
+
+- A starfall night is checked once at 21:00; a starfall night plans several periods of random strength (some quiet) that rise and fall smoothly until 5:00, and at most one bolide at a random moment; none during an emission. Settings in the location's weather (`starfall`).
+- DevTools «РАНДОМАЙЗЕР» → «Зорепад»: the share of starfall nights, periods, quiet stretches, the strength by the night's hours and the bolides. Stars on screen come with stage C.
+
 ## v0.51.45 - Sky zone for the starfall (spec 182 stage A, TK-350)
 
 - The zone editor gets «Небо (де падають зорі)»: the sky where the starfall will fall, its own zones and switch `enableSkyZones`; the test location's sky is the top of the location for now. No stars yet (stages B–D).
@@ -37,8 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.37 - DevTools «СТАТУСИ» (spec 181 stage D, TK-344)
 
 - DevTools «Гра» → «СТАТУСИ»: the active buffs and debuffs with their time left and modifiers, «Видати» / «Зняти» / «Зняти всі», and the descriptions (`CONFIG.statusEffects`) as live parameters — the vodka's duration and shares change at once.
-
-## v0.51.36 - Status badge in the HUD (spec 181 stage C, TK-343)
-
-- A drunk vodka shows a round badge with a bottle under the radio: its green fill drains from the top down as the time runs out, turns yellow and red, and the badge fades away at the end; a tap shows the time left.
-- The radio and the statuses share one column under the clock; debuffs get a red outline. The fill is a CSS animation: no per-frame work.

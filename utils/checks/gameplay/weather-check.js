@@ -1911,6 +1911,118 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(again(3), again(3), "a seed repeats the clicks");
 }
 
+// Spec 182 stage B (TK-351): the starfall's night — one check as the clock enters 21:00, a timeline of periods of
+// random strength (zero too) with cosine transitions, strength only inside 21–5, at most one bolide a night (its chance
+// rolled once after a successful check), nothing during an emission, the same plan from the same seed.
+{
+  const { StarfallNight } = require("../../../src/game/domain/weather/starfall_night.js");
+  const base = MAP_DB.test.weather.starfall;
+  assert.equal(JSON.stringify([base.enabled, base.fromHour, base.toHour]), JSON.stringify([true, 21, 5]), "owner Q1: 21:00–5:00");
+  const STEP = 1 / 60; // one game minute
+  // Runs `days` game days from noon, a game minute a step; returns per night: its samples, bolides, the plan.
+  const run = (settings, days, seed = "check:starfall", blockedAt = () => false) => {
+    const night = new StarfallNight({ rng: new SeededRng(seed), getSettings: () => settings });
+    const clock = { hour: 12 };
+    const nights = [];
+    let current = null;
+    let outsideMax = 0;
+    for (let step = 0; step < days * 24 * 60; step += 1) {
+      clock.hour = (12 + step * STEP) % 24;
+      const bolides = night.snapshot.bolideSerial;
+      night.update(clock, blockedAt(clock.hour));
+      const snapshot = night.snapshot;
+      if (snapshot.inWindow && (!current || current.serial !== snapshot.nightSerial)) {
+        current = { serial: snapshot.nightSerial, active: snapshot.active, levels: [...snapshot.periodLevels],
+          count: snapshot.periodCount, samples: [], bolides: 0, bolideAt: snapshot.bolideAtHours };
+        nights.push(current);
+      }
+      if (snapshot.inWindow) current.samples.push(snapshot.strength);
+      else outsideMax = Math.max(outsideMax, snapshot.strength);
+      if (current && snapshot.bolideSerial !== bolides) current.bolides += 1;
+    }
+    return { nights, outsideMax, model: night };
+  };
+  const always = { ...base, nightChance: 1, bolideChance: 1 };
+  const { nights: sure, outsideMax } = run(always, 6);
+  assert.equal(sure.length, 6, "one check a night, as the clock enters 21:00");
+  assert.equal(outsideMax, 0, "no starfall outside 21:00–5:00");
+  for (const night of sure) {
+    assert.ok(night.active && night.count >= base.periods[0] && night.count <= base.periods[1],
+      `a starfall night has ${base.periods[0]}–${base.periods[1]} periods (${night.count})`);
+    assert.ok(night.samples[0] < 0.05 && night.samples.at(-1) < 0.05, "it rises from 0 at 21:00 and returns to 0 by 5:00");
+    const jumps = night.samples.slice(1).map((value, index) => Math.abs(value - night.samples[index]));
+    assert.ok(Math.max(...jumps) < 0.12, `smooth transitions, no jumps (${Math.max(...jumps).toFixed(3)} a game minute)`);
+    assert.ok(Math.max(...night.samples) <= base.maxStrength + 1e-9, "never above maxStrength");
+    assert.equal(night.bolides, 1, "bolideChance 1: exactly one bolide a night");
+  }
+  // Q4: the strength rises and falls several times a night, not evenly: count the turns of its course.
+  const turns = (samples) => {
+    let count = 0, direction = 0;
+    for (let index = 1; index < samples.length; index += 1) {
+      const delta = samples[index] - samples[index - 1];
+      if (Math.abs(delta) < 1e-6) continue;
+      const next = Math.sign(delta);
+      if (direction !== 0 && next !== direction) count += 1;
+      direction = next;
+    }
+    return count;
+  };
+  const many = run({ ...base, nightChance: 1 }, 40).nights;
+  assert.ok(many.some((night) => turns(night.samples) >= 3), "a night rises and falls several times");
+  assert.ok(many.some((night) => night.levels.includes(0)), "a quiet (zero) period happens");
+  assert.ok(new Set(many.map((night) => night.levels.map((level) => level.toFixed(3)).join())).size === many.length,
+    "every night has its own plan");
+  // The night's chance: about nightChance of the nights; the bolide is rare and at most one.
+  const chance = run(base, 400).nights;
+  const share = chance.filter((night) => night.active).length / chance.length;
+  assert.ok(Math.abs(share - base.nightChance) < 0.08, `about ${base.nightChance} of the nights (${share.toFixed(2)})`);
+  assert.ok(chance.every((night) => night.bolides <= 1 && (night.active || night.bolides === 0)),
+    "at most one bolide, only on a starfall night");
+  assert.ok(chance.every((night) => !night.active ? night.samples.every((value) => value === 0) : true), "no starfall: 0 all night");
+  assert.equal(run({ ...base, nightChance: 1, bolideChance: 0 }, 5).nights.reduce((sum, night) => sum + night.bolides, 0), 0,
+    "bolideChance 0: no bolide");
+  // Q3: no starfall during an emission (the timeline goes on), its bolide skipped.
+  const blocked = run(always, 2, "check:starfall", (hour) => hour >= 21 || hour < 5).nights;
+  assert.ok(blocked.every((night) => night.samples.every((value) => value === 0) && night.bolides === 0),
+    "an emission all night: no stars, no bolide");
+  // The same seed — the same nights.
+  const plan = (seed) => run(always, 3, seed).nights.map((night) => night.levels.join("/") + "@" + night.bolideAt).join("|");
+  assert.equal(plan("a"), plan("a"), "a seed repeats the nights");
+  assert.notEqual(plan("a"), plan("b"), "another seed, other nights");
+  // A session that starts at night has its own check; DEV hold and a bolide now.
+  const late = new StarfallNight({ rng: new SeededRng(1), getSettings: () => always });
+  late.update({ hour: 23 });
+  assert.equal([late.snapshot.inWindow, late.snapshot.active, late.snapshot.nightSerial].join(), "true,true,1",
+    "starting at 23:00 checks this night");
+  late.hold(0.7);
+  late.update({ hour: 23.5 });
+  assert.equal(late.snapshot.strength, 0.7, "DEV hold pins the strength");
+  late.hold(null);
+  const serial = late.snapshot.bolideSerial;
+  late.bolideNow();
+  assert.equal(late.snapshot.bolideSerial, serial + 1, "DEV: a bolide now");
+  // The environment carries the night and blocks it during an emission.
+  const emission = { snapshot: { phase: "peak", intensity: 1, radiation: 0 }, update() {} };
+  const starEnv = new EnvironmentSystem({ environment: {} }, 23, new SeededRng(4), { timePhases: {} }, null, null, null,
+    emission, new StarfallNight({ rng: new SeededRng(4), getSettings: () => ({ ...always, quietChance: 0 }) }));
+  starEnv.update(16, 1);
+  assert.equal(starEnv.getSnapshot().starfall.active, true, "the environment's snapshot carries the night");
+  assert.equal(starEnv.getSnapshot().starfall.strength, 0, "an emission on: no starfall");
+  // DevTools «РАНДОМАЙЗЕР»: the starfall's nights through the real model on the location's settings.
+  const { StarfallRandomProbe } = require("../../../src/dev/randomizer/starfall_random_probe.js");
+  const starProbe = new StarfallRandomProbe({ createModel: (options) => new StarfallNight(options),
+    createRng: (seed) => new SeededRng(seed), getSettings: () => MAP_DB.test.weather });
+  const report = starProbe.run({ count: 300, seed: 9 });
+  const row = (label) => report.rows.find(([name]) => name === label)?.[1] ?? "";
+  assert.ok(row("змодельовано").startsWith("300 ночей"), "the probe runs the asked nights");
+  const nightShare = Number(row("зорепадних ночей").match(/\(([\d.]+)%\)/u)?.[1]) / 100;
+  assert.ok(Math.abs(nightShare - base.nightChance) < 0.08, `the probe's share follows nightChance (${nightShare})`);
+  assert.equal(report.histogram.length, 8, "the histogram: the night's 8 hours (21:00 … 4:00)");
+  assert.equal(report.histogram[0][0], "21:00");
+  assert.equal(JSON.stringify(starProbe.run({ count: 50, seed: 3 })), JSON.stringify(starProbe.run({ count: 50, seed: 3 })),
+    "a seed repeats the report");
+}
+
 console.log(
-  "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading and the emission OK",
+  "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading, the emission and the starfall's night OK",
 );
