@@ -176,6 +176,9 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     screen) that jumps and flips `fps` times a second; no filter, no per-frame texture, and no frame between jumps or
     below `canvas.radiationGrain.fromRadiation`. Its cost is one full-screen layer while it shows: measure on a phone
     with «ПРОДУКТИВНІСТЬ» and switch it off (`enabled`) if frames drop (owner, spec 179).
+    TK-338.1: the tile is cut into 32 px frames made once; each cell takes a random frame and flip at a jump and its
+    alpha from its distance to the screen's centre (`radiationGrain.edges`: denser at the edges, `centerShare` 1 — even).
+    Smaller cells mean more sprites (one batch, one texture); alpha is written only at a jump.
     Spec 180 D9: the water's waves narrow across the screen with depth only while `canvas.water.lateralContraction` is
     on (the location's `waterProjection.lateralContraction` is the grid's own, separate switch).
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

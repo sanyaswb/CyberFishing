@@ -1454,6 +1454,10 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
     this.#requireRangeNumbers(path, cfg, [["fromRadiation", 0, 1], ["maxOpacity", 0, 1], ["grainPx", 1, 16], ["fps", 1, 60]]);
+    // TK-338.1: denser at the edges than in the middle.
+    if (!cfg.edges || typeof cfg.edges !== "object") { this.#error(`CONFIG.${path}.edges`, "missing"); return; }
+    this.#requireParameterLabel(`${path}.edges`);
+    this.#requireRangeNumbers(`${path}.edges`, cfg.edges, [["centerShare", 0, 1], ["clearRadius", 0, 1], ["feather", 0.01, 2]]);
   }
 
   // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).

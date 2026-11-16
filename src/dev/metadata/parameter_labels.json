@@ -2466,5 +2466,21 @@
   "statusEffects.radiation.modifiers": {
     "label": "Модифікатори",
     "description": "Частки впливу, що лишаються: 1 — без змін, 0 — немає. У радіації поки немає."
+  },
+  "canvas.radiationGrain.edges": {
+    "label": "По краях",
+    "description": "Густіше по краях, менше посередині, як віньєтка (TK-338.1). «Посередині» 1 — рівномірно по всьому екрану."
+  },
+  "canvas.radiationGrain.edges.centerShare": {
+    "label": "Посередині",
+    "description": "Сила шипіння в середині екрана як частка від країв: 0 — посередині немає, 1 — рівномірно."
+  },
+  "canvas.radiationGrain.edges.clearRadius": {
+    "label": "Спокійна середина",
+    "description": "Радіус середини зі слабшим шипінням — частка півдіагоналі від центру екрана."
+  },
+  "canvas.radiationGrain.edges.feather": {
+    "label": "Перехід",
+    "description": "Ширина переходу від середини до повного шипіння по краях (частка півдіагоналі)."
   }
 }

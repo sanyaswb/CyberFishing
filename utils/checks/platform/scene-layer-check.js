@@ -689,11 +689,25 @@ async function checkRadiationGrain() {
   assert.equal(frame(null), false, "off the scene: nothing");
   assert.equal(frame(world(1)), true, "full radiation shows the grain");
   assert.ok(Math.abs(grid.alpha - settings.maxOpacity) < 1e-9, "at radiation 1 the grain is at its max opacity");
-  const cell = 128 * settings.grainPx;
+  const cell = 32 * settings.grainPx;
   assert.equal(grain.status.cells, (Math.ceil(1200 / cell) + 1) * (Math.ceil(700 / cell) + 1), "the grid covers the screen");
   const cells = grid.children;
-  assert.ok(cells.every((sprite) => sprite.texture === canvasTextures[0]), "every cell draws the one tile");
+  assert.ok(cells.every((sprite) => sprite.texture.source === canvasTextures[0].source && sprite.texture.frame.width === 32),
+    "every cell draws a 32 px frame of the one tile");
+  assert.ok(new Set(cells.map((sprite) => sprite.texture)).size > 8, "the frames vary from cell to cell");
   const place = () => cells.map((sprite) => `${sprite.x.toFixed(2)}:${sprite.y.toFixed(2)}:${sprite.scale.x}:${sprite.scale.y}`).join("|");
+  // TK-338.1: denser at the edges than in the middle (each cell's alpha by its distance from the centre).
+  const alphaNear = (fromCentre) => {
+    const picked = cells.filter((sprite) => sprite.visible !== false && Math.abs(Math.hypot(sprite.x - 600, sprite.y - 350) /
+      Math.hypot(600, 350) - fromCentre) < 0.08);
+    return picked.reduce((sum, sprite) => sum + sprite.alpha, 0) / picked.length;
+  };
+  const edges = settings.edges;
+  assert.ok(edges.centerShare < 1, "by default the middle hisses less");
+  assert.ok(Math.abs(alphaNear(0.05) - edges.centerShare) < 1e-9, "the middle at centerShare");
+  assert.ok(Math.abs(alphaNear(1) - 1) < 1e-9 && alphaNear(0.6) > alphaNear(0.3), "rising to full at the edges");
+  frame(world(1), { ...settings, edges: { ...edges, centerShare: 1 } }, 1000 / settings.fps);
+  assert.ok(cells.every((sprite) => sprite.alpha === 1), "centerShare 1: even grain over the whole screen");
   const first = place();
   assert.equal(frame(world(1)), false, "between grain steps: the same grain, no frame");
   assert.equal(place(), first);
@@ -777,6 +791,7 @@ async function checkAsh() {
   assert.equal(frame(world({ emission: 0 })), false, "and presents no frames");
   assert.equal(ash.status.pool, full.maxParticles, "the pool never grew during play");
   ash.dispose();
+
 }
 
 async function checkRain() {

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.43 - Radiation hiss denser at the edges (TK-338.1)
+
+- The radiation's hiss is denser at the screen's edges and weaker in the middle, like a vignette; DevTools «РАДІАЦІЯ» → «Шипіння (загальне)» → «По краях»: the middle's share (1 — even over the whole screen), the calm middle's radius and the transition.
+
 ## v0.51.42 - Inline ColorField row, matching NumberField height and toggle close (TK-348.1)
 
 - DevTools `ColorField`: keeps the swatch + text input on the same row as the label and reset button (wrapping together only on narrow screens) with `30 px` / `38 px` height matching `NumberField`; clicking the swatch again closes the active colour popup / opacity drawer while preserving the picked colour.
@@ -40,9 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The vodka and the gas mask are player statuses described in `CONFIG.statusEffects` (duration, stacking, modifiers — the shares of the emission's darkening, blur and pulse rate that stay); the gas mask in its slot holds its status. Behaviour as in v0.51.33.
 - DevTools «ПОГОДА» → «Стан і керування» → «статуси» lists the active ones with their time left; the descriptions are editable in «Конфіг» → statusEffects.
-
-## v0.51.33 - Gas mask and vodka against the emission (spec 179 stage F, TK-340)
-
-- The gas mask goes into its now unlocked slot: no darkening or blur during an emission, and casting is allowed.
-- Vodka: open it in the backpack and press «Випити» — the emission's darkening and blur are half as strong for 10 minutes; another bottle renews the time; casting still needs a gas mask.
-- Both come from the DEV shop for now (placeholder art); DevTools «ПОГОДА» → «Стан і керування» shows the protection and its time left.
