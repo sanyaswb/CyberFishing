@@ -90,8 +90,7 @@ export class WeatherDevSection {
   #now;
   #savingSection;
   #content = null;
-  #selected = null;
-  #lastLocation = null;
+  #view;
   #marks = [];
   #listening = false;
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100 };
@@ -134,6 +133,7 @@ export class WeatherDevSection {
     resetWeather = null,
     gameVersion = "",
     now = () => new Date(),
+    view = {},
   }) {
     this.#ui = ui;
     this.#weather = weather;
@@ -152,7 +152,10 @@ export class WeatherDevSection {
     this.#resetWeather = resetWeather;
     this.#gameVersion = gameVersion;
     this.#now = now;
-    this.#selected = weather?.locationId ?? GENERAL;
+    // TK-333.2 (owner): «Всі» by default, and the choice outlives the section — the panel draws a new section every
+    // time it opens, so the choice lives in view (owned by the module, which lives as long as the page).
+    this.#view = view;
+    this.#view.selected ??= ALL;
     this.#savingSection = new DevSavingSection({
       ui,
       files,
@@ -200,7 +203,7 @@ export class WeatherDevSection {
   // The location the selector names (or the game's, with «Загальні»): export, import and the location parts use it.
   #locationId() {
     const map = this.#locationsMap?.();
-    const id = this.#selected === ALL ? this.#lastLocation : this.#selected;
+    const id = this.#view.selected === ALL ? this.#view.lastLocation : this.#view.selected;
     if (id !== GENERAL && map?.[id]?.weather) return id;
     return this.#weather.locationId;
   }
@@ -219,8 +222,8 @@ export class WeatherDevSection {
   // What the selector shows: «Загальні» — the general parts; a location — its parts; «Всі» (TK-333) — both, for the
   // location picked last (at first the game's).
   #mode() {
-    if (this.#selected === GENERAL) return { location: null, general: true };
-    return { location: this.#locationId(), general: this.#selected === ALL };
+    if (this.#view.selected === GENERAL) return { location: null, general: true };
+    return { location: this.#locationId(), general: this.#view.selected === ALL };
   }
 
   #fill() {
@@ -257,15 +260,15 @@ export class WeatherDevSection {
   #renderSelector(content) {
     const options = [{ value: GENERAL, label: GENERAL }, { value: ALL, label: ALL },
       ...this.#locationChoices().map((id) => ({ value: id, label: id }))];
-    this.#ui.addParameter(content, { control: "segments", label: "налаштування", options, value: this.#selected,
+    this.#ui.addParameter(content, { control: "segments", label: "налаштування", options, value: this.#view.selected,
       onCommit: (next) => {
-        this.#selected = next;
-        if (next !== GENERAL && next !== ALL) this.#lastLocation = next;
+        this.#view.selected = next;
+        if (next !== GENERAL && next !== ALL) this.#view.lastLocation = next;
         this.#fill();
       }, path: ["WEATHER", "location", "id"] });
-    if (this.#selected === GENERAL) return;
+    if (this.#view.selected === GENERAL) return;
     const id = this.#locationId();
-    if (this.#selected === ALL) this.#ui.createInfoRow("показано", `загальні й локація ${id}`, content);
+    if (this.#view.selected === ALL) this.#ui.createInfoRow("показано", `загальні й локація ${id}`, content);
     if (id !== this.#weather.locationId) {
       this.#ui.createInfoRow("активна у грі", `${this.#weather.locationId} (нижче — ${id})`, content);
     }
@@ -512,13 +515,13 @@ export class WeatherDevSection {
   #at100(kind, key) {
     const range = (this.#general()?.[kind] ?? (kind === "rain" ? this.#rainConfig() : this.#ashConfig()))?.strength?.[key];
     const generalEnd = Array.isArray(range) ? Number(range[1]) : NaN;
-    if (this.#selected === GENERAL) return generalEnd;
+    if (this.#view.selected === GENERAL) return generalEnd;
     const override = this.#locationWeather(this.#locationId())?.look?.[kind]?.[key];
     return Number.isFinite(Number(override)) ? Number(override) : generalEnd;
   }
 
   #setAt100(kind, key, value) {
-    if (this.#selected === GENERAL) {
+    if (this.#view.selected === GENERAL) {
       const look = this.#general()?.[kind] ?? (kind === "rain" ? this.#rainConfig() : this.#ashConfig());
       const range = look?.strength?.[key];
       if (!Array.isArray(range)) return;
@@ -535,7 +538,7 @@ export class WeatherDevSection {
 
   // The sliders under an element's strength: each at its real value within its range (D16).
   #renderAt100Sliders(kind, parent) {
-    const selectedId = this.#selected === GENERAL ? null : this.#locationId();
+    const selectedId = this.#view.selected === GENERAL ? null : this.#locationId();
     for (const [key, [min, max, step]] of Object.entries(STRENGTH_LIMITS[kind])) {
       const value = this.#at100(kind, key);
       if (!Number.isFinite(value)) continue;

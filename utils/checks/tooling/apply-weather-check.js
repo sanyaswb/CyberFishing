@@ -268,6 +268,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     };
     const configPaths = Object.fromEntries(PARTS.map((part) => [`CONFIG.${format.GENERAL_WEATHER_PARTS[part].configPath.join(".")}`, part]));
     const section = new WeatherDevSection({
+      view: { selected: "test" }, // the saving workflow starts from the location view
       ui: fakeUi,
       weather: { locationId: "test", getModel: () => model, getWind: () => null },
       config: () => liveWeather,

@@ -890,7 +890,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
       assert(rowsByPath.has(linkPath), `WeatherDevSection registers ${linkPath} linked from WeatherOverlayModule`);
     }
     const locChoice = rowsByPath.get("WEATHER.location.id");
-    assert(locChoice && locChoice.value === "test", "location selector starts at active map");
+    assert(locChoice && locChoice.value === "Всі", "TK-333.2: the selector starts at «Всі»");
     assert.deepEqual(locChoice.choices.map((option) => option.value), ["Загальні", "Всі", "test", "lake"],
       "TK-327.1, TK-333: the selector lists «Загальні», «Всі» and every location as {value, label} buttons");
     locChoice.onChange("lake");
@@ -1545,6 +1545,7 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   const locations = { test: { weather: JSON.parse(JSON.stringify(MAP_DB.test.weather)) } };
   let changed = new Set(["canvas.rain"]);
   const section = new WeatherDevSection({
+    view: { selected: "test" }, // this block reads the location view
     ui, weather: { locationId: "test", getModel: () => model, getWind: () => null },
     config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
     general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
@@ -1602,6 +1603,23 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   assert.ok(sections.some(([, at]) => at === "WEATHER.start"), "«Всі» shows the location's start and thresholds");
   assert.ok(parameterPaths.has("WEATHER.emission.screenEnabled"), "the emission screen's own switch shows (it had no control)");
   general.dispose();
+
+  // TK-333.2 (owner): «Всі» by default; the choice outlives the section (the panel draws a new one when it opens again).
+  const view = {};
+  const sectionWith = () => new WeatherDevSection({
+    view, ui: { ...ui, addParameter(parent, options) { if (options.path?.join(".") === "WEATHER.location.id") sectionWith.last = options; } },
+    weather: { locationId: "test", getModel: () => model, getWind: () => null },
+    config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
+    general: () => ({ rain: GAME_CONFIG.canvas.rain }), createSection: () => node(), renderConfigTree() {} });
+  const first = sectionWith();
+  first.render(node());
+  assert.equal(sectionWith.last.value, "Всі", "a fresh panel shows «Всі»");
+  sectionWith.last.onCommit("Загальні");
+  first.dispose();
+  const reopened = sectionWith();
+  reopened.render(node());
+  assert.equal(sectionWith.last.value, "Загальні", "closing and opening the panel keeps the choice");
+  reopened.dispose();
 
   // TK-333 (agent, browser): an edit marks its section «· змінено» and shows the reset at once — before, the mark waited
   // for the next redraw (a selector press), while the edited group stayed open.

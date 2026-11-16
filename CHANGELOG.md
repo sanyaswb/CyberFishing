@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.28 - Weather selector starts at «Всі» and keeps its choice (TK-333.2)
+
+- DevTools «ПОГОДА»: the selector opens at «Всі»; a choice of «Загальні» or a location stays when DevTools is closed and opened again (until the page reloads).
+
 ## v0.51.27 - RANDOMIZER probes for rain, storm, fog and gusts (spec 180 stage F, TK-335)
 
 - DevTools «Діагностика» → «РАНДОМАЙЗЕР»: «Дощ», «Шторм», «Туман» and «Пориви» run the game's own weather and wind models on the location's current settings — share of time, events per hour, length, peak strength, intervals and their spread; rain in and out of a storm, storms with lightning, gusts in clear weather, rain and storm.
@@ -41,7 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.19 - Include cross-section changes inside DevTools «Конфіг» flat filter (TK-328.1)
 
 - DevTools «Змінені» inside «Конфіг»: includes changed parameters owned by other sections (location weather under `CONFIG.locations.map.*`, `CONFIG.debug.*`, database catalogs) alongside `ConfigModule`, deduplicated into one continuous flat list without section or page headers.
-
-## v0.51.18 - DevTools «Змінені» filter by owning module and flat «Конфіг» (TK-328)
-
-- DevTools «Змінені»: outside «Конфіг», edited parameters show under the specialized module where they were changed (e.g., «Сцена» instead of surfacing the duplicate «Конфіг» tree above it); inside «Конфіг», «Змінені» shows only «Конфіг» changes as a flat list without sections; numeric lists (`numberList`) and custom weather/debug config rows now track changed state and resets.

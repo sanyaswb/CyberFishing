@@ -14,6 +14,8 @@ export class SceneModule {
   #files;
   #gameVersion;
   #weatherSection = null;
+  // TK-333.2: the weather selector's choice ({ selected, lastLocation }), kept while the panel closes and opens.
+  #weatherView = {};
 
   // scene: the WebGL scene's DEV port or null; weather: the weather's DEV port or null; files: the browser file port.
   constructor({ config, configRuntime = null, scene = null, weather = null, files = null, gameVersion = "" }) {
@@ -84,6 +86,7 @@ export class SceneModule {
         console.log(`[DevTools] Погоду ${[general ? "загальні" : null, locationId].filter(Boolean).join(" і ")} скинуто до коду`);
       } : null,
       gameVersion: this.#gameVersion,
+      view: this.#weatherView,
     });
     this.#weatherSection.render(parent);
   }
