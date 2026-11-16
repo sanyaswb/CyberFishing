@@ -19,6 +19,11 @@
 //   than the others (bolide.lifeSec), with a glowing head (bolide.glowPx) that flickers a little; it starts in a
 //   visible sky zone (none on screen: it is skipped) and fades like the others. Two sprites of its own (the streak and a
 //   glow drawn once), additive, in front of the ordinary stars, in the same masked layer.
+// - TK-357 (owner), the bolide's burst: with bolide.burst.chance it burns out before it leaves the sky, at a random
+//   share of its whole path in burst.atShare (never before 20 % by default): its head flares (burst.flashPx, over
+//   burst.flashSec) and is gone; the tail stops where it is and fades smoothly (burst.tailFadeSec); sparks fly off the
+//   flare (burst.particles, speed, life, size: a fixed pool of glow particles, drag and a little gravity, shrinking and
+//   fading). A bolide that leaves the sky before its moment does not burst (it is clipped and fades as before).
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter; a fixed pool
 // sized by the settings (it grows only when they grow); unused particles have alpha 0. Frames only while a star flies.
 const STREAK_W = 64;
@@ -26,6 +31,10 @@ const GLOW = 32;
 const STREAK_H = 8;
 const MAX_STEP_SEC = 0.1;
 const MAX_POOL = 96;
+// TK-357: the bolide's burst sparks (one pool, the glow texture).
+const MAX_SPARKS = 32;
+const SPARK_DRAG_PER_SEC = 2.2;
+const SPARK_GRAVITY_PX = 60;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
 
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
@@ -49,7 +58,20 @@ export class PixiStarfallRenderer {
   #bolideContainer;
   #bolideTail;
   #bolideHead;
-  #bolide = { alive: false, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 1, length: 0, phase: 0 };
+  #bolide = { alive: false, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 1, length: 0, phase: 0,
+    // TK-357: the burst — planned (burstAt, s of its life; Infinity: none), then running (burstAge) with the tail's
+    // alpha and length frozen at the flare.
+    burstAt: Infinity, bursting: false, burstAge: 0, tailAlpha: 0, tailLength: 0, sparksLeft: 0 };
+  #sparks;
+  #sparkParticles = [];
+  #sx = new Float32Array(MAX_SPARKS);
+  #sy = new Float32Array(MAX_SPARKS);
+  #svx = new Float32Array(MAX_SPARKS);
+  #svy = new Float32Array(MAX_SPARKS);
+  #sage = new Float32Array(MAX_SPARKS);
+  #slife = new Float32Array(MAX_SPARKS);
+  #ssize = new Float32Array(MAX_SPARKS);
+  #flashColor = { text: "", value: 0xffffff };
   #bolideSerial = null;
   #bolideColor = { text: "", value: 0xffffff };
   #particles = [];
@@ -96,8 +118,17 @@ export class PixiStarfallRenderer {
     this.#bolideHead = new pixi.Sprite(this.#glow);
     this.#bolideHead.anchor.set(0.5, 0.5);
     this.#bolideContainer.addChild(this.#bolideTail, this.#bolideHead);
+    this.#sparks = new pixi.ParticleContainer({ texture: this.#glow, dynamicProperties: DYNAMIC });
+    this.#sparks.blendMode = "add";
+    this.#sparks.visible = false;
+    for (let index = 0; index < MAX_SPARKS; index += 1) {
+      const particle = new pixi.Particle({ texture: this.#glow, anchorX: 0.5, anchorY: 0.5, alpha: 0 });
+      this.#sparkParticles.push(particle);
+      this.#sparks.addParticle(particle);
+    }
+    this.#sparks.update();
     this.#layer = new pixi.Container();
-    this.#layer.addChild(this.#container, this.#bolideContainer);
+    this.#layer.addChild(this.#container, this.#bolideContainer, this.#sparks);
     this.#mask = new pixi.Graphics();
   }
 
@@ -109,7 +140,8 @@ export class PixiStarfallRenderer {
   }
 
   get status() {
-    return { active: this.#visible, stars: this.#count, pool: this.#particles.length, bolide: this.#bolide.alive };
+    return { active: this.#visible, stars: this.#count, pool: this.#particles.length,
+      bolide: this.#bolide.alive || this.#bolide.bursting, burst: this.#bolide.bursting, sparks: this.#bolide.sparksLeft };
   }
 
   // world: the frame's world model (null: not on the scene); viewWidth / viewHeight: the logical screen; nowMs: the
@@ -123,7 +155,7 @@ export class PixiStarfallRenderer {
     if (world) this.#bolideSerial = serial;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     const strength = clamp01(number(world.weather?.starfall, 0));
-    if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !bolideDue) {
+    if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !this.#bolide.bursting && !bolideDue) {
       this.#spawnDebt = 0;
       return this.#hide();
     }
@@ -232,12 +264,18 @@ export class PixiStarfallRenderer {
     bolide.life = between(look.lifeSec, 2.2, 3.2, random());
     bolide.age = 0;
     bolide.phase = random() * Math.PI * 2;
+    // TK-357: whether it burns out early, and when (a share of its whole path; never before atShare[0]).
+    const burst = look.burst ?? {};
+    const bursts = random() < clamp01(number(burst.chance, 0));
+    bolide.burstAt = bursts ? bolide.life * clamp01(between(burst.atShare, 0.2, 0.9, random())) : Infinity;
+    bolide.bursting = false;
     bolide.alive = true;
   }
 
   // Returns whether the bolide is in the air this frame (or just went out).
   #updateBolide(elapsed, settings) {
     const bolide = this.#bolide;
+    if (bolide.bursting) return this.#updateBurst(elapsed, settings);
     if (!bolide.alive) {
       if (this.#bolideContainer.visible) { this.#bolideContainer.visible = false; return true; }
       return false;
@@ -250,6 +288,7 @@ export class PixiStarfallRenderer {
     bolide.y += bolide.vy * elapsed;
     if (bolide.age < bolide.life * (1 - fade) && !this.#insideZone(bolide.x, bolide.y)) {
       bolide.age = bolide.life * (1 - fade);
+      bolide.burstAt = Infinity; // it left the sky first: no burst
     }
     const share = bolide.age / bolide.life;
     const flare = Math.min(1, share / 0.05);
@@ -273,6 +312,89 @@ export class PixiStarfallRenderer {
     head.alpha = alpha;
     head.tint = this.#bolideColor.value;
     this.#bolideContainer.visible = true;
+    if (bolide.age >= bolide.burstAt) this.#startBurst(look, tail.alpha, Math.min(bolide.length, speed * bolide.age));
+    return true;
+  }
+
+  // TK-357: the flare — the head is gone, the tail freezes, the sparks fly off from the head's point.
+  #startBurst(look, tailAlpha, tailLength) {
+    const bolide = this.#bolide;
+    const burst = look.burst ?? {};
+    bolide.alive = false;
+    bolide.bursting = true;
+    bolide.burstAge = 0;
+    bolide.tailAlpha = tailAlpha;
+    bolide.tailLength = tailLength;
+    this.#flashColor = PixiStarfallRenderer.#parse(this.#flashColor, burst.color);
+    const random = this.#random;
+    const low = Math.max(0, Math.floor(pairAt(burst.particles, 0, 10)));
+    const high = Math.max(low, Math.floor(pairAt(burst.particles, 1, 18)));
+    const count = Math.min(MAX_SPARKS, low + Math.floor(random() * (high - low + 1)));
+    const heading = Math.atan2(bolide.vy, bolide.vx);
+    for (let index = 0; index < MAX_SPARKS; index += 1) {
+      if (index >= count) { this.#slife[index] = 0; this.#sage[index] = 1; continue; }
+      // Mostly forward (the bolide's momentum), some to the sides and back.
+      const angle = heading + (random() * 2 - 1) * Math.PI * (random() < 0.7 ? 0.45 : 1);
+      const speed = between(burst.particleSpeedPx, 60, 220, random());
+      this.#sx[index] = bolide.x;
+      this.#sy[index] = bolide.y;
+      this.#svx[index] = Math.cos(angle) * speed + bolide.vx * 0.25;
+      this.#svy[index] = Math.sin(angle) * speed + bolide.vy * 0.25;
+      this.#sage[index] = 0;
+      this.#slife[index] = between(burst.particleLifeSec, 0.4, 1.1, random());
+      this.#ssize[index] = between(burst.particleSizePx, 2, 5, random());
+    }
+    bolide.sparksLeft = count;
+    this.#sparks.visible = true;
+  }
+
+  // TK-357: the flare grows and fades, the frozen tail fades, the sparks slow, fall a little, shrink and fade.
+  #updateBurst(elapsed, settings) {
+    const bolide = this.#bolide;
+    const look = settings.bolide ?? {};
+    const burst = look.burst ?? {};
+    bolide.burstAge += elapsed;
+    const t = bolide.burstAge;
+    const flashSec = Math.max(0.05, number(burst.flashSec, 0.35));
+    const tailFadeSec = Math.max(0.05, number(burst.tailFadeSec, 1.4));
+    const flash = clamp01(t / flashSec);
+    const head = this.#bolideHead;
+    const glowPx = Math.max(1, number(look.glowPx, 28));
+    const flashPx = Math.max(glowPx, number(burst.flashPx, 90));
+    head.scale.set((glowPx + (flashPx - glowPx) * Math.sqrt(flash)) / GLOW);
+    head.alpha = clamp01(number(look.opacity, 1)) * (1 - flash) * (1 - flash);
+    head.tint = this.#flashColor.value;
+    const tail = this.#bolideTail;
+    const tailShare = clamp01(t / tailFadeSec);
+    tail.alpha = bolide.tailAlpha * (1 - tailShare * tailShare * (3 - 2 * tailShare));
+    tail.scale.set(Math.max(0.01, bolide.tailLength / STREAK_W), tail.scale.y);
+    const drag = Math.exp(-SPARK_DRAG_PER_SEC * elapsed);
+    let sparks = 0;
+    for (let index = 0; index < MAX_SPARKS; index += 1) {
+      const particle = this.#sparkParticles[index];
+      const life = this.#slife[index];
+      this.#sage[index] += elapsed;
+      if (life <= 0 || this.#sage[index] >= life) { particle.alpha = 0; continue; }
+      this.#svx[index] *= drag;
+      this.#svy[index] = this.#svy[index] * drag + SPARK_GRAVITY_PX * elapsed;
+      this.#sx[index] += this.#svx[index] * elapsed;
+      this.#sy[index] += this.#svy[index] * elapsed;
+      const left = 1 - this.#sage[index] / life;
+      particle.x = this.#sx[index];
+      particle.y = this.#sy[index];
+      const scale = this.#ssize[index] * (0.4 + 0.6 * left) / GLOW * 2;
+      particle.scaleX = scale;
+      particle.scaleY = scale;
+      particle.alpha = clamp01(number(look.opacity, 1)) * left;
+      particle.tint = this.#flashColor.value;
+      sparks += 1;
+    }
+    bolide.sparksLeft = sparks;
+    if (flash >= 1 && tailShare >= 1 && sparks === 0) {
+      bolide.bursting = false;
+      this.#bolideContainer.visible = false;
+      this.#sparks.visible = false;
+    }
     return true;
   }
 
@@ -375,6 +497,10 @@ export class PixiStarfallRenderer {
 
   #clear() {
     this.#bolide.alive = false;
+    this.#bolide.bursting = false;
+    this.#bolide.sparksLeft = 0;
+    this.#sparks.visible = false;
+    for (const particle of this.#sparkParticles) particle.alpha = 0;
     this.#bolideContainer.visible = false;
     this.#alive.fill(0);
     this.#count = 0;

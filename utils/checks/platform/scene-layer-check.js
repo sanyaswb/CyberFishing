@@ -609,7 +609,7 @@ async function checkPixiSceneLayer() {
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
-    starfall: { active: false, stars: 0, pool: 0, bolide: false } },
+    starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 } },
   "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars");
   base.x = -20;
   layer.render(frame);
@@ -855,6 +855,8 @@ async function checkStarfall() {
   // longer, wider, brighter, slower tail with a glowing head, flying longer than the stars; then it is gone.
   const [tail, head] = bolideLayer.children;
   const look = settings.bolide;
+  const burstChance = look.burst.chance;
+  look.burst.chance = 0; // the whole flight first (TK-357's burst below)
   for (let step = 0; step < 10; step += 1) frame(world(0));
   assert.equal(frame(world(0)), false, "a quiet night: no frames");
   bolides += 1;
@@ -877,6 +879,61 @@ async function checkStarfall() {
   assert.ok(tail.scale.y * 8 === look.widthPx && look.widthPx > settings.widthPx, "a wider trail");
   assert.ok(maxAlpha > settings.opacity, "brighter than the stars");
   assert.equal(bolideLayer.visible, false, "then gone");
+  // TK-357 (owner): the burst — with its chance the bolide burns out before it leaves the sky, at a share of its whole
+  // path (never before 20 %): its head flares and is gone, the tail stops and fades smoothly, sparks fly off the flare.
+  assert.ok(burstChance > 0 && look.burst.atShare[0] >= 0.2, "by default a bolide may burn out, never before 20 % of its path");
+  const sparkLayer = starLayer.children[2];
+  assert.equal(sparkLayer.blendMode, "add", "the sparks glow, in the masked layer");
+  const wideSky = [{ x: -4000, y: 0, width: 9200, height: 700 }];
+  const burstRun = (atShare) => {
+    look.burst.chance = 1;
+    look.burst.atShare = [atShare, atShare];
+    for (let step = 0; step < 5; step += 1) frame(world(0, wideSky));
+    bolides += 1;
+    frame(world(0, wideSky));
+    let before = 0;
+    while (!stars.status.burst && before < 600) { frame(world(0, wideSky)); before += 1; }
+    return before / 60;
+  };
+  const halfway = burstRun(0.5);
+  assert.ok(halfway >= look.lifeSec[0] * 0.5 - 0.05 && halfway <= look.lifeSec[1] * 0.5 + 0.05,
+    `it bursts at its share of the path (${halfway.toFixed(2)} s)`);
+  const flare = { x: head.x, y: head.y };
+  const tailAt = { x: tail.x, y: tail.y, rotation: tail.rotation, length: tail.scale.x };
+  const sparksAtStart = stars.status.sparks;
+  assert.ok(sparksAtStart >= look.burst.particles[0] && sparksAtStart <= look.burst.particles[1], `sparks fly off (${sparksAtStart})`);
+  const glowScale = look.glowPx / 32;
+  let maxFlash = 0, tailAlphas = [], frozen = true, outward = 0, burstFrames = 0;
+  const sparkDistance = () => Math.max(...sparkLayer.particleChildren.filter((particle) => particle.alpha > 0)
+    .map((particle) => Math.hypot(particle.x - flare.x, particle.y - flare.y)), 0);
+  let lastDistance = 0;
+  while (stars.status.bolide && burstFrames < 600) {
+    frame(world(0, wideSky));
+    burstFrames += 1;
+    if (!stars.status.bolide) break;
+    maxFlash = Math.max(maxFlash, head.scale.x);
+    tailAlphas.push(tail.alpha);
+    frozen &&= tail.x === tailAt.x && tail.y === tailAt.y && tail.rotation === tailAt.rotation && tail.scale.x === tailAt.length;
+    const distance = sparkDistance();
+    if (burstFrames <= 10 && distance > lastDistance) outward += 1;
+    lastDistance = distance;
+  }
+  assert.ok(maxFlash > glowScale * 2, "the head flares up");
+  assert.ok(head.alpha === 0 || !bolideLayer.visible, "and is gone");
+  assert.ok(frozen, "the tail stops where it was");
+  assert.ok(tailAlphas.every((alpha, index) => index === 0 || alpha <= tailAlphas[index - 1] + 1e-9) && tailAlphas.at(-1) < 0.02,
+    "and fades smoothly to nothing");
+  const burstSec = burstFrames / 60;
+  assert.ok(burstSec >= look.burst.tailFadeSec - 0.05 && burstSec <= Math.max(look.burst.tailFadeSec, look.burst.particleLifeSec[1]) + 0.1,
+    `the burst ends with the tail's fade (${burstSec.toFixed(2)} s)`);
+  assert.ok(outward >= 8, "the sparks fly away from the flare");
+  assert.deepEqual([stars.status.bolide, stars.status.sparks, bolideLayer.visible, sparkLayer.visible], [false, 0, false, false],
+    "then nothing is left");
+  const early = burstRun(0.2);
+  assert.ok(early >= look.lifeSec[0] * 0.2 - 0.05, `never before 20 % of its path (${early.toFixed(2)} s)`);
+  for (let step = 0; step < 600 && stars.status.bolide; step += 1) frame(world(0, wideSky));
+  look.burst.chance = burstChance;
+  look.burst.atShare = [0.2, 0.9];
   bolides += 1;
   frame(world(0, [{ x: 0, y: 900, width: 100, height: 100 }]));
   assert.equal(stars.status.bolide, false, "no sky on screen: the bolide is skipped");

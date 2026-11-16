@@ -2606,5 +2606,49 @@
   "canvas.starfall.bolide.opacity": {
     "label": "Яскравість",
     "description": "Непрозорість боліда в найяскравіший момент."
+  },
+  "canvas.starfall.bolide.burst": {
+    "label": "Згоряння боліда",
+    "description": "Болід може згоріти раніше, ніж вилетить за небо (TK-357): спалах, голова зникає, хвіст зупиняється й гасне, іскри відлітають."
+  },
+  "canvas.starfall.bolide.burst.chance": {
+    "label": "Шанс згоріти",
+    "description": "Шанс, що болід згорить раніше, ніж вилетить за межі неба (0…1)."
+  },
+  "canvas.starfall.bolide.burst.atShare": {
+    "label": "Коли [мін, макс]",
+    "description": "Момент згоряння — частка всього шляху боліда (не раніше 20 %)."
+  },
+  "canvas.starfall.bolide.burst.flashPx": {
+    "label": "Спалах, px",
+    "description": "Розмір спалаху в момент згоряння."
+  },
+  "canvas.starfall.bolide.burst.flashSec": {
+    "label": "Спалах, с",
+    "description": "Скільки триває спалах (росте й гасне)."
+  },
+  "canvas.starfall.bolide.burst.tailFadeSec": {
+    "label": "Згасання хвоста, с",
+    "description": "Хвіст зупиняється там, де був, і плавно гасне за цей час."
+  },
+  "canvas.starfall.bolide.burst.particles": {
+    "label": "Іскор [мін, макс]",
+    "description": "Скільки іскор відлітає від спалаху (не більше 32)."
+  },
+  "canvas.starfall.bolide.burst.particleSpeedPx": {
+    "label": "Швидкість іскор, px/с",
+    "description": "Найповільніша й найшвидша іскра (сповільнюються й трохи падають)."
+  },
+  "canvas.starfall.bolide.burst.particleLifeSec": {
+    "label": "Життя іскри, с",
+    "description": "Скільки живе іскра (зменшується й гасне)."
+  },
+  "canvas.starfall.bolide.burst.particleSizePx": {
+    "label": "Розмір іскри, px",
+    "description": "Найменша й найбільша іскра."
+  },
+  "canvas.starfall.bolide.burst.color": {
+    "label": "Колір спалаху",
+    "description": "Колір спалаху й іскор."
   }
 }

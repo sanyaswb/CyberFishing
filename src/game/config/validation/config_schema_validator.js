@@ -1483,6 +1483,16 @@ export class ConfigSchemaValidator {
     this.#requireRangePairs(bolidePath, bolide, [["lengthPx", 1, 4000, true], ["speedPx", 1, 5000, true], ["lifeSec", 0.1, 20, true]]);
     this.#requirePattern(`CONFIG.${bolidePath}.color`, bolide.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${bolidePath}.color`);
+    // TK-357: the bolide's burst.
+    const burst = bolide.burst;
+    if (!burst || typeof burst !== "object") { this.#error(`CONFIG.${bolidePath}.burst`, "missing bolide burst config"); return; }
+    const burstPath = `${bolidePath}.burst`;
+    this.#requireParameterLabel(burstPath);
+    this.#requireRangeNumbers(burstPath, burst, [["chance", 0, 1], ["flashPx", 1, 400], ["flashSec", 0.05, 5], ["tailFadeSec", 0.05, 10]]);
+    this.#requireRangePairs(burstPath, burst, [["atShare", 0, 1, true], ["particles", 0, 32, true],
+      ["particleSpeedPx", 0, 2000, true], ["particleLifeSec", 0.05, 5, true], ["particleSizePx", 0.5, 40, true]]);
+    this.#requirePattern(`CONFIG.${burstPath}.color`, burst.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${burstPath}.color`);
   }
 
   // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).

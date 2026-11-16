@@ -192,6 +192,9 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     `includeInBuild` back on when any of them drops it, so it would be drawn as content; mask the common parent. The
     stencil is the starfall's only extra GPU cost (two small batches inside it): measure on a phone with
     «ПРОДУКТИВНІСТЬ» on a strong starfall over rain.
+    TK-357: the bolide's burst sparks are a third small batch in the same masked layer: one `ParticleContainer` with
+    the glow texture and a fixed pool of 32 made once (unused particles alpha 0); the flare reuses the head's sprite
+    and the frozen tail its streak — no new texture, filter or allocation during the burst.
     TK-355: like the rain, the ash's `maxParticles` and the starfall's `perMinute` are the location's (the ash over the
     background, the stars over the whole sky); a screen shows its visible share, so a narrow phone screen draws fewer
     at the same density. Every weather effect works on the visible part only: new particles start on screen, one that

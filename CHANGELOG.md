@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.54 - The bolide can burn out (TK-357)
+
+- A bolide may now burn out before it leaves the sky (never before 20 % of its path): its head flares and is gone, its tail stops where it was and fades smoothly, and sparks fly off the flare, slowing and falling a little. Tunable in DevTools «Конфіг» → canvas → starfall → bolide → burst.
+
 ## v0.51.53 - Starfall mask on one layer (TK-356.1)
 
 - The falling stars and the bolide share one layer under one sky mask: one stencil pass a frame instead of two, and the mask can no longer show up as a white shape when it is taken off one of them. The scene checks now model Pixi masks.
@@ -40,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.45 - Sky zone for the starfall (spec 182 stage A, TK-350)
 
 - The zone editor gets «Небо (де падають зорі)»: the sky where the starfall will fall, its own zones and switch `enableSkyZones`; the test location's sky is the top of the location for now. No stars yet (stages B–D).
-
-## v0.51.44 - Separate rain and ash zones (TK-349)
-
-- The zone editor gets «Попіл»: the emission's ash (dust) flies only in its own zones, apart from the rain's; embers start inside a visible ash zone and fade out when they drift out; the switch `enableAshZones` off — ash over the whole screen.

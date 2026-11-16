@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-357: bolide burst — flare, frozen fading tail, sparks; bolide.burst settings.",
   "TK-356.1: one masked starfall layer (stars + bolide), Pixi mask contract in the scene check double.",
   "TK-356: sky zone mask (Pixi Graphics on both the ordinary stars and the bolide, redrawn only on zone changes) clips tails and glow cleanly at the sky boundary.",
   "TK-355: ash maxParticles and starfall perMinute per location, the screen shows its visible share (like the rain).",
