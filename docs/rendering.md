@@ -184,7 +184,8 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the
     sky, under the water and the world): one streak texture drawn once, one additive `ParticleContainer` with a fixed
     pool, stars only in `world.skyRegions`, a frame only while a star flies (a starfall night between stars presents
-    none).
+    none). The bolide (TK-353) is its own additive `Container` of two sprites (the streak and a glow drawn once) right
+    after the stars: a `ParticleContainer` draws one texture for all its particles.
     Spec 180 D9: the water's waves narrow across the screen with depth only while `canvas.water.lateralContraction` is
     on (the location's `waterProjection.lateralContraction` is the grid's own, separate switch).
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

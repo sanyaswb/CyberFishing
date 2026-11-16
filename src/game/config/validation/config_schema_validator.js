@@ -1474,6 +1474,15 @@ export class ConfigSchemaValidator {
       ["lifeSec", 0.05, 10, true]]);
     this.#requirePattern(`CONFIG.${path}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${path}.color`);
+    // Stage D (TK-353): the bolide.
+    const bolide = cfg.bolide;
+    if (!bolide || typeof bolide !== "object") { this.#error(`CONFIG.${path}.bolide`, "missing bolide config"); return; }
+    const bolidePath = `${path}.bolide`;
+    this.#requireParameterLabel(bolidePath);
+    this.#requireRangeNumbers(bolidePath, bolide, [["widthPx", 0.5, 40], ["angleDeg", 0, 90], ["glowPx", 1, 200], ["opacity", 0, 1]]);
+    this.#requireRangePairs(bolidePath, bolide, [["lengthPx", 1, 4000, true], ["speedPx", 1, 5000, true], ["lifeSec", 0.1, 20, true]]);
+    this.#requirePattern(`CONFIG.${bolidePath}.color`, bolide.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${bolidePath}.color`);
   }
 
   // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).

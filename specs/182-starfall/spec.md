@@ -125,3 +125,8 @@
   частинка з якорем на голові, поворот уздовж польоту, `scaleX` = хвіст / 64 (хвіст = min(lengthPx, пройдений шлях));
   народження — накопичувач `rate × dt × (0,5…1,5)` (без рівного ритму); пул `min(96, ⌈perMinute[1]/60 × lifeSec[1] × 2⌉ + 4)`.
   `CONFIG.canvas.starfall` поки в `game_config.js` (не в модулях `apply:weather`); DevTools-розділ — етап E.
+- **Етап D (TK-353, v0.51.48).** Болід — не частинка `ParticleContainer` (там одна текстура на всі частинки), а свій
+  `Container` (additive) із двома спрайтами: слід (та сама текстура сліду, якір на голові) і сяйво голови (текстура
+  32×32 з коду раз, мерехтіння ±12 %). Запуск — на зміну `world.weather.bolideSerial` (перший кадр лише запам'ятовує
+  лічильник), також коли сила ночі 0; старт у верхній половині видимої зони неба. `CONFIG.canvas.starfall.bolide`:
+  `lengthPx, widthPx, speedPx, lifeSec, angleDeg, glowPx, color, opacity`; згасання — спільне `fadeShare`.

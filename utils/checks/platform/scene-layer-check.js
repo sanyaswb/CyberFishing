@@ -584,7 +584,7 @@ async function checkPixiSceneLayer() {
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
-    starfall: { active: false, stars: 0, pool: 0 } },
+    starfall: { active: false, stars: 0, pool: 0, bolide: false } },
   "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars");
   base.x = -20;
   layer.render(frame);
@@ -737,14 +737,16 @@ async function checkStarfall() {
   let seed = 7;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   const stars = new PixiStarfallRenderer({ pixi, documentTarget, random });
-  assert.equal(canvasTextures.length, 1, "one streak texture, drawn once in code");
+  assert.equal(canvasTextures.length, 2, "a streak and the bolide's glow, drawn once in code");
   const stage = new pixi.Container();
   stars.mount(stage);
-  const [container] = stage.children;
+  const [container, bolideLayer] = stage.children;
   assert.equal(container.blendMode, "add", "the stars glow additively");
+  assert.equal(bolideLayer.blendMode, "add", "the bolide too, in front of the stars");
   const settings = JSON.parse(JSON.stringify(CONFIG.canvas.starfall));
   const sky = { x: 0, y: 0, width: 1200, height: 250 };
-  const world = (strength, zones = [sky]) => ({ weather: { starfall: strength }, skyZoned: true,
+  let bolides = 0;
+  const world = (strength, zones = [sky]) => ({ weather: { starfall: strength, bolideSerial: bolides }, skyZoned: true,
     skyRegions: { count: zones.length, getAt: (index) => zones[index] }, backgroundLayers: { count: 0 } });
   let now = 1000;
   const frame = (model, options = settings) => { now += 1000 / 60; return stars.update(model, 1200, 700, now, options); };
@@ -799,8 +801,38 @@ async function checkStarfall() {
   assert.deepEqual([stars.status.stars, stars.status.active, container.visible, frame(world(0))], [0, false, false, false],
     "the night's strength gone: the last stars finish, then nothing");
   assert.equal(stars.status.pool, pool, "the pool never grew during play");
+  // Stage D (TK-353): the bolide — one big star when the night's bolideSerial changes, even with the strength at 0: a
+  // longer, wider, brighter, slower tail with a glowing head, flying longer than the stars; then it is gone.
+  const [tail, head] = bolideLayer.children;
+  const look = settings.bolide;
+  for (let step = 0; step < 10; step += 1) frame(world(0));
+  assert.equal(frame(world(0)), false, "a quiet night: no frames");
+  bolides += 1;
+  assert.equal(frame(world(0)), true, "the serial changes: a bolide falls (also in a quiet stretch)");
+  assert.deepEqual([stars.status.bolide, bolideLayer.visible], [true, true]);
+  const startX = head.x, startY = head.y;
+  assert.ok(startX >= sky.x && startX <= sky.x + sky.width && startY >= sky.y && startY <= sky.y + sky.height,
+    "it starts in the sky");
+  let flown = 0, maxTail = 0, maxAlpha = 0;
+  while (stars.status.bolide && flown < 60 * 10) {
+    frame(world(0));
+    flown += 1;
+    if (stars.status.bolide) { maxTail = Math.max(maxTail, tail.scale.x * 64); maxAlpha = Math.max(maxAlpha, tail.alpha); }
+  }
+  const flownSec = flown / 60;
+  assert.ok(flownSec >= look.lifeSec[0] * (1 - settings.fadeShare) - 0.05 && flownSec <= look.lifeSec[1] + 0.05,
+    `it flies its own time (${flownSec.toFixed(2)} s)`);
+  assert.ok(look.lifeSec[0] > settings.lifeSec[1] && look.speedPx[1] < settings.speedPx[0], "longer and slower than any star");
+  assert.ok(maxTail > settings.lengthPx[1] && maxTail <= look.lengthPx[1] + 1e-6, `a longer tail (${maxTail.toFixed(0)} px)`);
+  assert.ok(tail.scale.y * 8 === look.widthPx && look.widthPx > settings.widthPx, "a wider trail");
+  assert.ok(maxAlpha > settings.opacity, "brighter than the stars");
+  assert.equal(bolideLayer.visible, false, "then gone");
+  bolides += 1;
+  frame(world(0, [{ x: 0, y: 900, width: 100, height: 100 }]));
+  assert.equal(stars.status.bolide, false, "no sky on screen: the bolide is skipped");
   stars.dispose();
   assert.equal(canvasTextures[0].destroyed, true, "dispose frees the streak");
+  assert.equal(canvasTextures[1].destroyed, true, "and the glow");
 }
 
 // Spec 179 stage C (TK-323): the emission's fiery ash over a fake Pixi with the particle contract.
@@ -1330,7 +1362,8 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.equal(await wet.layer.whenReady(), true);
   // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod. Spec 182: the falling stars
   // right over the background, under the water.
-  const [, stars, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  const [, stars, bolide, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  assert(bolide.children?.length === 2, "the bolide's layer right after the stars");
   assert(stars instanceof wet.pixi.ParticleContainer && stars.blendMode === "add", "the starfall lies right over the background");
   assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
     "the rain's rings are mounted right after the water's mask");
@@ -1372,7 +1405,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
   if (lowTexture) lowTexture.width = 640;
   lowWet.layer.render(frame);
-  const lowFilter = lowWet.apps[0].stage.children[2].filters[0];
+  const lowFilter = lowWet.apps[0].stage.children[3].filters[0];
   assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
 
   assert.equal(map.updates, 1, "each step uploads the map once");
@@ -1415,7 +1448,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
-  const zoneMask = app.stage.children[4];
+  const zoneMask = app.stage.children[5];
   const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
   frame.world.clipRegions = list(two);
   clock.now += 40;

@@ -2570,5 +2570,41 @@
   "canvas.starfall.opacity": {
     "label": "Яскравість",
     "description": "Непрозорість зорі в найяскравіший момент."
+  },
+  "canvas.starfall.bolide": {
+    "label": "Болід",
+    "description": "Велика зоря (spec 182): не більше одного за зорепадну ніч; довша, ширша, яскравіша, повільніша й летить довше за звичайні."
+  },
+  "canvas.starfall.bolide.lengthPx": {
+    "label": "Довжина хвоста, px",
+    "description": "Найкоротший і найдовший хвіст боліда."
+  },
+  "canvas.starfall.bolide.widthPx": {
+    "label": "Товщина, px",
+    "description": "Товщина сліду боліда."
+  },
+  "canvas.starfall.bolide.speedPx": {
+    "label": "Швидкість, px/с",
+    "description": "Найповільніший і найшвидший болід (повільніше за звичайні зорі)."
+  },
+  "canvas.starfall.bolide.lifeSec": {
+    "label": "Політ, с",
+    "description": "Скільки летить болід (довше за звичайні зорі)."
+  },
+  "canvas.starfall.bolide.angleDeg": {
+    "label": "Нахил, °",
+    "description": "Кут падіння від горизонту; вліво чи вправо — випадково."
+  },
+  "canvas.starfall.bolide.glowPx": {
+    "label": "Сяйво голови, px",
+    "description": "Розмір яскравої голови боліда."
+  },
+  "canvas.starfall.bolide.color": {
+    "label": "Колір",
+    "description": "Колір боліда."
+  },
+  "canvas.starfall.bolide.opacity": {
+    "label": "Яскравість",
+    "description": "Непрозорість боліда в найяскравіший момент."
   }
 }

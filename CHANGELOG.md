@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.48 - The bolide (spec 182 stage D, TK-353)
+
+- At most once a starfall night, at any moment (quiet stretches too), a big star falls: a long wide bright tail with a glowing, slightly flickering head, slower and longer than the others; it fades like them. Its look is live in DevTools «Конфіг» → canvas → starfall → bolide.
+
 ## v0.51.47 - Falling stars on the scene (spec 182 stage C, TK-352)
 
 - On a starfall night short bright streaks fly down at a slant in the sky zones, more or fewer as the night's strength rises and falls; a star that leaves the sky fades. They lie over the sky, under the water and the world; frames only while a star flies.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.39 - Radio indicator: the radio drawing, the wave and the battery charge (spec 181 stage F, TK-346)
 
 - The radio's HUD circle shows the inventory's radio drawing while it is silent and the moving wave only while it plays; its fill from the bottom is the battery charge, green → yellow → red as it runs down.
-
-## v0.51.38 - Debuff «Радіація» in the HUD (spec 181 stage E, TK-345)
-
-- While the location's radiation is above zero, a red badge with the radiation sign stands in the indicator column under the radio (a debuff without a timer); it fades when the radiation is gone.

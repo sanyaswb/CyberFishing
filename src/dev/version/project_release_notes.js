@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 182 D (TK-353): the bolide — one big bright long slow star a starfall night, with a glowing head.",
   "Spec 182 C (TK-352): PixiStarfallRenderer — ordinary falling stars in the sky zones at the night's strength.",
   "Spec 182 B (TK-351): StarfallNight — one check at 21:00, periods of random strength with cosine transitions, at most one bolide; RANDOMIZER probe.",
   "Spec 182 A (TK-350): sky zones (zones.sky) for the starfall in the zone editor and the world frame.",

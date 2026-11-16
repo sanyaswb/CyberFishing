@@ -8,9 +8,15 @@
 //   the count follows the strength without a fixed rhythm) at a random point of a visible sky zone (world.skyRegions,
 //   picked by area; with the switch off — the background's top third). A star that leaves every sky zone fades out
 //   over its fade share (no mask: soft, like the ash).
+// - Stage D (TK-353), the bolide: when the night's bolideSerial changes (StarfallNight: at most one a night, at any
+//   moment, quiet stretches too) one big star falls: a long tail (bolide.lengthPx), wider, brighter, slower and longer
+//   than the others (bolide.lifeSec), with a glowing head (bolide.glowPx) that flickers a little; it starts in a visible
+//   sky zone (none on screen: it is skipped) and fades like the others. Two sprites of its own (the streak and a glow
+//   drawn once), additive, in front of the ordinary stars.
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter; a fixed pool
 // sized by the settings (it grows only when they grow); unused particles have alpha 0. Frames only while a star flies.
 const STREAK_W = 64;
+const GLOW = 32;
 const STREAK_H = 8;
 const MAX_STEP_SEC = 0.1;
 const MAX_POOL = 96;
@@ -25,7 +31,14 @@ export class PixiStarfallRenderer {
   #pixi;
   #random;
   #streak;
+  #glow;
   #container;
+  #bolideContainer;
+  #bolideTail;
+  #bolideHead;
+  #bolide = { alive: false, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 1, length: 0, phase: 0 };
+  #bolideSerial = null;
+  #bolideColor = { text: "", value: 0xffffff };
   #particles = [];
   // Per star: head position (screen px), velocity (px/s), age and life (s), tail length (px), alive.
   #x = new Float32Array(0);
@@ -58,15 +71,25 @@ export class PixiStarfallRenderer {
     this.#container = new pixi.ParticleContainer({ texture: this.#streak, dynamicProperties: DYNAMIC });
     this.#container.blendMode = "add";
     this.#container.visible = false;
+    this.#glow = pixi.Texture.from(PixiStarfallRenderer.#drawGlow(documentTarget), true);
+    this.#bolideContainer = new pixi.Container();
+    this.#bolideContainer.blendMode = "add";
+    this.#bolideContainer.visible = false;
+    this.#bolideTail = new pixi.Sprite(this.#streak);
+    this.#bolideTail.anchor.set(1, 0.5);
+    this.#bolideHead = new pixi.Sprite(this.#glow);
+    this.#bolideHead.anchor.set(0.5, 0.5);
+    this.#bolideContainer.addChild(this.#bolideTail, this.#bolideHead);
   }
 
   // Right over the background's sky, under the water and everything in the world (rendering.md 14).
   mount(stage) {
     stage.addChild(this.#container);
+    stage.addChild(this.#bolideContainer);
   }
 
   get status() {
-    return { active: this.#visible, stars: this.#count, pool: this.#particles.length };
+    return { active: this.#visible, stars: this.#count, pool: this.#particles.length, bolide: this.#bolide.alive };
   }
 
   // world: the frame's world model (null: not on the scene); viewWidth / viewHeight: the logical screen; nowMs: the
@@ -74,10 +97,16 @@ export class PixiStarfallRenderer {
   update(world, viewWidth, viewHeight, nowMs, settings) {
     const elapsed = this.#lastNow === null ? 0 : Math.min(MAX_STEP_SEC, Math.max(0, (nowMs - this.#lastNow) / 1000));
     this.#lastNow = nowMs;
+    // A bolide falls when the night's serial changes (the first frame only takes the serial as it is).
+    const serial = number(world?.weather?.bolideSerial, 0);
+    const bolideDue = this.#bolideSerial !== null && serial !== this.#bolideSerial;
+    if (world) this.#bolideSerial = serial;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     const strength = clamp01(number(world.weather?.starfall, 0));
-    if (strength <= 0 && this.#count === 0) { this.#spawnDebt = 0; return this.#hide(); }
+    if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !bolideDue) { this.#spawnDebt = 0; return this.#hide(); }
     this.#prepareZones(world, viewWidth, viewHeight);
+    if (bolideDue && this.#zoneCount > 0) this.#spawnBolide(settings);
+    const bolideFlying = this.#updateBolide(elapsed, settings);
     const lifeMax = Math.max(0.1, pairAt(settings.lifeSec, 1, 0.9));
     const perMinuteMax = Math.max(0, pairAt(settings.perMinute, 1, 30));
     this.#ensurePool(Math.min(MAX_POOL, Math.ceil(perMinuteMax / 60 * lifeMax * 2) + 4));
@@ -91,11 +120,12 @@ export class PixiStarfallRenderer {
     this.#visible = true;
     this.#container.visible = true;
     // A frame only while a star flies (or the last one just went out); a starfall night between stars presents none.
-    return shown || this.#count > 0 || before > 0;
+    return shown || this.#count > 0 || before > 0 || bolideFlying;
   }
 
   dispose() {
     this.#streak.destroy(true);
+    this.#glow.destroy(true);
   }
 
   #updateStars(elapsed, settings) {
@@ -155,6 +185,71 @@ export class PixiStarfallRenderer {
     this.#life[index] = pairAt(settings.lifeSec, 0, 0.4) + (pairAt(settings.lifeSec, 1, 0.9) - pairAt(settings.lifeSec, 0, 0.4)) * random();
     this.#age[index] = 0;
     this.#alive[index] = 1;
+  }
+
+  // Stage D: the bolide starts in the upper half of a visible sky zone, on a shallower slant than the stars.
+  #spawnBolide(settings) {
+    const random = this.#random;
+    const look = settings.bolide ?? {};
+    const pick = random() * this.#zoneArea;
+    let zone = 0;
+    while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
+    const offset = zone * 4;
+    const bolide = this.#bolide;
+    bolide.x = this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2];
+    bolide.y = this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3] * 0.5;
+    const angle = number(look.angleDeg, 22) * Math.PI / 180;
+    const slow = pairAt(look.speedPx, 0, 250);
+    const speed = slow + (pairAt(look.speedPx, 1, 400) - slow) * random();
+    const side = random() < 0.5 ? -1 : 1;
+    bolide.vx = side * Math.cos(angle) * speed;
+    bolide.vy = Math.sin(angle) * speed;
+    const short = pairAt(look.lengthPx, 0, 300);
+    bolide.length = short + (pairAt(look.lengthPx, 1, 500) - short) * random();
+    const brief = pairAt(look.lifeSec, 0, 2.2);
+    bolide.life = brief + (pairAt(look.lifeSec, 1, 3.2) - brief) * random();
+    bolide.age = 0;
+    bolide.phase = random() * Math.PI * 2;
+    bolide.alive = true;
+  }
+
+  // Returns whether the bolide is in the air this frame (or just went out).
+  #updateBolide(elapsed, settings) {
+    const bolide = this.#bolide;
+    if (!bolide.alive) {
+      if (this.#bolideContainer.visible) { this.#bolideContainer.visible = false; return true; }
+      return false;
+    }
+    const look = settings.bolide ?? {};
+    const fade = clamp01(number(settings.fadeShare, 0.4));
+    bolide.age += elapsed;
+    if (bolide.age >= bolide.life) { bolide.alive = false; this.#bolideContainer.visible = false; return true; }
+    bolide.x += bolide.vx * elapsed;
+    bolide.y += bolide.vy * elapsed;
+    if (bolide.age < bolide.life * (1 - fade) && !this.#insideZone(bolide.x, bolide.y)) bolide.age = bolide.life * (1 - fade);
+    const share = bolide.age / bolide.life;
+    const flare = Math.min(1, share / 0.05);
+    const envelope = share > 1 - fade ? (1 - share) / Math.max(1e-6, fade) : 1;
+    const alpha = clamp01(number(look.opacity, 1)) * flare * clamp01(envelope);
+    this.#bolideColor = PixiStarfallRenderer.#parse(this.#bolideColor, look.color);
+    const speed = Math.hypot(bolide.vx, bolide.vy);
+    const tail = this.#bolideTail;
+    tail.x = bolide.x;
+    tail.y = bolide.y;
+    tail.rotation = Math.atan2(bolide.vy, bolide.vx);
+    tail.scale.set(Math.max(0.01, Math.min(bolide.length, speed * bolide.age) / STREAK_W),
+      Math.max(0.5, number(look.widthPx, 5)) / STREAK_H);
+    tail.alpha = alpha;
+    tail.tint = this.#bolideColor.value;
+    const head = this.#bolideHead;
+    const flicker = 1 + 0.12 * Math.sin(bolide.age * 23 + bolide.phase);
+    head.x = bolide.x;
+    head.y = bolide.y;
+    head.scale.set(Math.max(1, number(look.glowPx, 28)) / GLOW * flicker);
+    head.alpha = alpha;
+    head.tint = this.#bolideColor.value;
+    this.#bolideContainer.visible = true;
+    return true;
   }
 
   // The sky zones' visible parts on screen with cumulative areas; without zones — the background's top third.
@@ -222,6 +317,8 @@ export class PixiStarfallRenderer {
   }
 
   #clear() {
+    this.#bolide.alive = false;
+    this.#bolideContainer.visible = false;
     this.#alive.fill(0);
     this.#count = 0;
     this.#spawnDebt = 0;
@@ -239,6 +336,26 @@ export class PixiStarfallRenderer {
     const text = typeof value === "string" ? value : "#ffffff";
     if (text === cache.text) return cache;
     return { text, value: parseColor(text) };
+  }
+
+  // A soft round glow (the bolide's head), bright in the middle, clear at the edge; drawn once.
+  static #drawGlow(documentTarget) {
+    const canvas = documentTarget.createElement("canvas");
+    canvas.width = GLOW;
+    canvas.height = GLOW;
+    const context = canvas.getContext("2d");
+    const image = context.createImageData(GLOW, GLOW);
+    const data = image.data;
+    for (let y = 0; y < GLOW; y += 1) {
+      for (let x = 0; x < GLOW; x += 1) {
+        const distance = Math.hypot(x + 0.5 - GLOW / 2, y + 0.5 - GLOW / 2) / (GLOW / 2);
+        const offset = (y * GLOW + x) * 4;
+        data[offset] = 255; data[offset + 1] = 255; data[offset + 2] = 255;
+        data[offset + 3] = Math.round(255 * Math.max(0, 1 - distance) ** 2);
+      }
+    }
+    context.putImageData(image, 0, 0);
+    return canvas;
   }
 
   // A streak: clear at the left (the tail), bright at the right (the head), soft above and below; drawn once.
