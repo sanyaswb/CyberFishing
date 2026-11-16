@@ -3,7 +3,8 @@
 //   to the left or the right), its tail grows to lengthPx behind it, it flares in fast and fades over its last share of
 //   life. One streak texture (a bright head fading to a clear tail) is drawn once in code; each star is a particle
 //   anchored at its head, rotated along its flight and stretched to its tail's length.
-// - How many: perMinute [at strength 0, at 1] over the visible sky, at the night's strength (world.weather.starfall,
+// - How many: perMinute [at strength 0, at 1] over the whole sky (TK-355, like the rain: the sky zones whole, or the
+//   background's top third), × the share of it on screen, so a narrow phone screen shows fewer at the same density, at the night's strength (world.weather.starfall,
 //   StarfallNight: rises and falls through the night). Stars start at random moments (an accumulator of the rate, so
 //   the count follows the strength without a fixed rhythm) at a random point of a visible sky zone (world.skyRegions,
 //   picked by area; with the switch off — the background's top third). A star that leaves every sky zone fades out
@@ -58,6 +59,7 @@ export class PixiStarfallRenderer {
   #zoneWeights = new Float32Array(1);
   #zoneCount = 0;
   #zoneArea = 0;
+  #wholeArea = 0;
 
   // documentTarget: makes the streak's canvas; random: () => 0…1 (visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -112,7 +114,8 @@ export class PixiStarfallRenderer {
     this.#ensurePool(Math.min(MAX_POOL, Math.ceil(perMinuteMax / 60 * lifeMax * 2) + 4));
     this.#color = PixiStarfallRenderer.#parse(this.#color, settings.color);
     const low = Math.max(0, pairAt(settings.perMinute, 0, 0));
-    const rate = strength > 0 && this.#zoneCount > 0 ? (low + (perMinuteMax - low) * strength) / 60 : 0;
+    const share = this.#wholeArea > 0 ? Math.min(1, this.#zoneArea / this.#wholeArea) : 0;
+    const rate = strength > 0 && this.#zoneCount > 0 ? (low + (perMinuteMax - low) * strength) / 60 * share : 0;
     this.#spawnDebt += rate * elapsed * (0.5 + this.#random());
     const before = this.#count;
     this.#updateStars(elapsed, settings);
@@ -261,7 +264,7 @@ export class PixiStarfallRenderer {
       this.#zoneRects = new Float32Array(count * 4);
       this.#zoneWeights = new Float32Array(count);
     }
-    let total = 0, visible = 0;
+    let total = 0, visible = 0, whole = 0;
     for (let index = 0; index < count; index += 1) {
       let rectX, rectY, rectWidth, rectHeight;
       if (zoned) {
@@ -273,6 +276,7 @@ export class PixiStarfallRenderer {
         rectX = base ? base.x : 0; rectY = base ? base.y : 0;
         rectWidth = base ? base.width : viewWidth; rectHeight = (base ? base.height : viewHeight) / 3;
       }
+      if (rectWidth > 0 && rectHeight > 0) whole += rectWidth * rectHeight;
       const left = Math.max(0, rectX), top = Math.max(0, rectY);
       const right = Math.min(viewWidth, rectX + rectWidth), bottom = Math.min(viewHeight, rectY + rectHeight);
       if (!(right > left && bottom > top)) continue;
@@ -285,6 +289,7 @@ export class PixiStarfallRenderer {
     }
     this.#zoneCount = visible;
     this.#zoneArea = total;
+    this.#wholeArea = whole;
   }
 
   #insideZone(x, y) {

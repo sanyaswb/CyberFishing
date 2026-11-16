@@ -186,6 +186,10 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     pool, stars only in `world.skyRegions`, a frame only while a star flies (a starfall night between stars presents
     none). The bolide (TK-353) is its own additive `Container` of two sprites (the streak and a glow drawn once) right
     after the stars: a `ParticleContainer` draws one texture for all its particles.
+    TK-355: like the rain, the ash's `maxParticles` and the starfall's `perMinute` are the location's (the ash over the
+    background, the stars over the whole sky); a screen shows its visible share, so a narrow phone screen draws fewer
+    at the same density. Every weather effect works on the visible part only: new particles start on screen, one that
+    leaves it ends or fades, the water's filter area and the hiss's grid are clipped to the screen.
     Spec 180 D9: the water's waves narrow across the screen with depth only while `canvas.water.lateralContraction` is
     on (the location's `waterProjection.lateralContraction` is the grid's own, separate switch).
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

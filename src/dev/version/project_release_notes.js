@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-355: ash maxParticles and starfall perMinute per location, the screen shows its visible share (like the rain).",
   "TK-354.1: starfall test switch, strength and bolide in «Стан і керування»; load measured (~0.1 ms/frame JS with rain).",
   "Spec 182 E (TK-354): DevTools «ЗОРЕПАД» — night state, strength by hand, a night or a bolide now, look and night settings.",
   "Spec 182 D (TK-353): the bolide — one big bright long slow star a starfall night, with a glowing head.",

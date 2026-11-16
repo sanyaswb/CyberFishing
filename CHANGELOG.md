@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.51 - Ash and starfall density per location, like the rain (TK-355)
+
+- The ash count and the stars a minute are now the whole location count (the ash over the background, the stars over the whole sky), and a screen shows its visible share: a narrow phone screen shows fewer embers and stars at the same density instead of squeezing them all in. A screen that shows the whole location looks as before.
+
 ## v0.51.50 - Starfall test switch in the weather controls (TK-354.1)
 
 - DevTools «ПОГОДА» → «Стан і керування»: «Зорепад (ніч)» moves the game clock to the night and holds the starfall at «Зорепад: сила, %»; «Болід зараз» under it. «ЗОРЕПАД» keeps the night state and its settings only.
@@ -40,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.42 - Inline ColorField row, matching NumberField height and toggle close (TK-348.1)
 
 - DevTools `ColorField`: keeps the swatch + text input on the same row as the label and reset button (wrapping together only on narrow screens) with `30 px` / `38 px` height matching `NumberField`; clicking the swatch again closes the active colour popup / opacity drawer while preserving the picked colour.
-
-## v0.51.41 - Direct swatch picker and full-width row for DevTools colours (TK-348)
-
-- DevTools `ColorField`: the colour swatch and text input now share one row spanning the full width of `devtools__row`; clicking the swatch opens `<input type="color">` directly without an extra intermediate box click and updates the swatch colour immediately, while the inline row underneath appears only for the opacity slider (`rgba`/`#rrggbbaa`).

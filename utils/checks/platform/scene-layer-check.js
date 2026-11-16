@@ -792,6 +792,21 @@ async function checkStarfall() {
   assert.ok(full.brightBelow <= 2, `a star that leaves the sky fades (${full.brightBelow} bright below it)`);
   assert.equal(stars.status.pool, Math.min(96, Math.ceil(settings.perMinute[1] / 60 * settings.lifeSec[1] * 2) + 4),
     "a pool sized by the settings");
+  // TK-355: perMinute is the whole sky's; a phone screen showing a third of the sky gets about a third of the stars.
+  const narrowSky = [{ x: -400, y: 0, width: 1200, height: 250 }];
+  let narrow = 0;
+  const shownNarrow = new Map();
+  for (let step = 0; step < 60 * 60; step += 1) {
+    now += 1000 / 60;
+    stars.update(world(1, narrowSky), 400, 700, now, settings);
+    container.particleChildren.forEach((particle, index) => {
+      if (particle.alpha > 0 && !(shownNarrow.get(index) > 0)) narrow += 1;
+      shownNarrow.set(index, particle.alpha);
+    });
+  }
+  assert.ok(narrow > full.spawned / 3 * 0.55 && narrow < full.spawned / 3 * 1.45,
+    `a third of the sky on screen: about a third of the stars (${narrow} vs ${full.spawned})`);
+  for (let step = 0; step < 120; step += 1) frame(world(0));
   const weak = run(0.25, 60);
   assert.ok(weak.spawned < full.spawned * 0.5, `a quarter of the strength: fewer stars (${weak.spawned} vs ${full.spawned})`);
   assert.ok(weak.presented < weak.frames * 0.6, `between stars no frames (${weak.presented} of ${weak.frames})`);
@@ -820,8 +835,8 @@ async function checkStarfall() {
     if (stars.status.bolide) { maxTail = Math.max(maxTail, tail.scale.x * 64); maxAlpha = Math.max(maxAlpha, tail.alpha); }
   }
   const flownSec = flown / 60;
-  assert.ok(flownSec >= look.lifeSec[0] * (1 - settings.fadeShare) - 0.05 && flownSec <= look.lifeSec[1] + 0.05,
-    `it flies its own time (${flownSec.toFixed(2)} s)`);
+  assert.ok(flownSec > settings.lifeSec[1] && flownSec <= look.lifeSec[1] + 0.05,
+    `it flies longer than any star, within its own time (${flownSec.toFixed(2)} s)`);
   assert.ok(look.lifeSec[0] > settings.lifeSec[1] && look.speedPx[1] < settings.speedPx[0], "longer and slower than any star");
   assert.ok(maxTail > settings.lengthPx[1] && maxTail <= look.lengthPx[1] + 1e-6, `a longer tail (${maxTail.toFixed(0)} px)`);
   assert.ok(tail.scale.y * 8 === look.widthPx && look.widthPx > settings.widthPx, "a wider trail");
@@ -901,6 +916,19 @@ async function checkAsh() {
   assert.equal(ash.status.pool, full.maxParticles, "the pool never grew during play");
   ash.dispose();
 
+  // TK-355 (owner: «як у дощу»): maxParticles is the location's count; a narrow phone screen that shows a third of the
+  // background shows about a third of the embers (the same density), not all of them squeezed in.
+  const phoneAsh = new PixiAshRenderer({ pixi, documentTarget, random });
+  phoneAsh.mount(new pixi.Container());
+  let phoneNow = 1000;
+  const phoneLayer = { x: -400, y: 0, width: 1200, height: 700 };
+  for (let index = 0; index < 5; index += 1) {
+    phoneNow += 1000 / 60;
+    phoneAsh.update(world({ emission: 1 }, phoneLayer), 400, 700, phoneNow, looks.resolve("ash", 1), { wind: { ashDriftPx: 45 } });
+  }
+  assert.equal(phoneAsh.status.embers, Math.round(full.maxParticles / 3), "a phone screen showing a third: a third of the embers");
+  phoneAsh.dispose();
+
   // TK-349: the ash's own zones (zones.ash, apart from the rain's): embers start only inside a visible zone, their count
   // follows the zones' visible share of the screen, and one that drifts out fades away.
   const zonedAsh = new PixiAshRenderer({ pixi, documentTarget, random });
@@ -916,7 +944,7 @@ async function checkAsh() {
   const shown = () => zonedEmbers.particleChildren.filter((particle) => particle.alpha > 0);
   const inside = (particle, margin = 0) => particle.x >= zone.x - margin && particle.x <= zone.x + zone.width + margin &&
     particle.y >= zone.y - margin && particle.y <= zone.y + zone.height + margin;
-  assert.equal(zonedAsh.status.embers, Math.round(full.maxParticles / 4), "a quarter of the screen: a quarter of the embers");
+  assert.equal(zonedAsh.status.embers, Math.round(full.maxParticles / 4), "a zone of a quarter of the location: a quarter of the embers");
   assert.ok(shown().length > 0 && shown().every((particle) => inside(particle, 6)), "new embers start inside the ash zone");
   for (let index = 0; index < 600; index += 1) zonedFrame([zone]);
   const brightOutside = shown().filter((particle) => !inside(particle, 40) && particle.alpha > full.opacity * 0.5);

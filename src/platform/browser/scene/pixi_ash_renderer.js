@@ -6,11 +6,13 @@
 //   no allocation). A depth share (0.4…1) scales its size and speed, so near embers are larger and faster.
 // - World-anchored like the rain (TK-271.2): positions are shares of the location's background (world.backgroundLayers[0];
 //   the screen without one), placed on screen every frame, so a camera move carries the embers with the location. New
-//   embers start in the visible part; one that leaves it ends early. maxParticles is the count on one screen at full
-//   intensity; the live count follows the emission's intensity (world.weather.emission).
+//   embers start in the visible part; one that leaves it ends early. TK-355 (owner: «як у дощу»): maxParticles is the
+//   count over the whole location (its background) at full intensity; the screen shows the share of it that is
+//   visible, so a narrow phone screen shows fewer embers at the same density instead of squeezing them all in. The live
+//   count follows the emission's intensity (world.weather.emission).
 // - TK-349: where it flies — the ash zones on screen (world.ashRegions, zones.ash in the zone editor, apart from the
 //   rain's). New embers start inside a visible zone (picked by its visible area), the count is maxParticles × the zones'
-//   visible share of the screen, and an ember that drifts out of every zone fades out over its fade share (no mask, so
+//   visible area / the location's area (TK-355), and an ember that drifts out of every zone fades out over its fade share (no mask, so
 //   the edge stays soft). With the switch off (world.ashZoned false) the whole screen is the ash's.
 // Spec 180 (TK-326): `settings` is the ash's look already resolved at the emission's strength (WeatherLookResolver:
 // count, opacity, rise and wander between their ends at 0 and 100); the wind's drift is the wind's
@@ -100,14 +102,19 @@ export class PixiAshRenderer {
     const intensity = clamp01(number(world.weather?.ash ?? world.weather?.emission, 0));
     const max = Math.max(0, Math.floor(number(settings?.maxParticles, 0)));
     const cap = Math.max(max, Math.floor(number(settings?.maxParticlesCap, max)));
+    this.#placeView(world, viewWidth, viewHeight);
     this.#prepareZones(world, viewWidth, viewHeight);
-    const screenArea = Math.max(1, viewWidth * viewHeight);
-    const share = this.#zoned ? Math.min(1, this.#zoneArea / screenArea) : 1;
+    // TK-355: the visible share of the location's ash (its zones, or the whole background) at the location's density.
+    const view = this.#view;
+    const locationArea = Math.max(1, view.width * view.height);
+    const visibleArea = this.#zoned ? this.#zoneArea
+      : Math.max(0, Math.min(viewWidth, view.x + view.width) - Math.max(0, view.x)) *
+        Math.max(0, Math.min(viewHeight, view.y + view.height) - Math.max(0, view.y));
+    const share = Math.min(1, visibleArea / locationArea);
     const target = intensity > 0 ? Math.round(max * share) : 0;
     if (target === 0 && this.#count === 0) return this.#hide();
     const started = performance.now();
     this.#ensurePool(cap);
-    this.#placeView(world, viewWidth, viewHeight);
     this.#hot = PixiAshRenderer.#color(this.#hot, settings?.hotColor);
     this.#cool = PixiAshRenderer.#color(this.#cool, settings?.coolColor);
     this.#time = (this.#time + elapsed) % 3600;
