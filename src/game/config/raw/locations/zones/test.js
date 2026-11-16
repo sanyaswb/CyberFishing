@@ -16,4 +16,7 @@ export const ZONES = {
   rain: [
     { x: 0, y: 0, w: 64, h: 36 },
   ],
+  ash: [
+    { x: 0, y: 0, w: 64, h: 36 },
+  ],
 };

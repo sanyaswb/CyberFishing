@@ -154,6 +154,20 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
   assert.deepEqual([renderFrame.world.rainZoned, renderFrame.world.rainRegions.count], [false, 0],
     'the switch off: rain over the whole screen');
   delete cfg.locations.enableRainZones;
+  // TK-349: the ash has its own zones (zones.ash), apart from the rain's; its own switch.
+  zones.ash = [{ x: 1, y: 0, w: 1, h: 1 }];
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  const ashRect = renderFrame.world.ashRegions.getAt(0);
+  assert(renderFrame.world.ashZoned && renderFrame.world.ashRegions.count === 1, 'ash zones apply while their switch is on');
+  assert.equal(JSON.stringify([ashRect.x, ashRect.width, renderFrame.world.rainRegions.getAt(0).x]), '[40,40,0]',
+    'the ash zone is its own, apart from the rain zone');
+  assert.equal(format.validateZones(format.canonicalZones(zones)).length, 0, 'the ash category exports');
+  cfg.locations.enableAshZones = false;
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  assert.deepEqual([renderFrame.world.ashZoned, renderFrame.world.ashRegions.count], [false, 0],
+    'the ash switch off: ash over the whole screen');
+  delete cfg.locations.enableAshZones;
+  delete zones.ash;
   delete zones.rain;
   zones.collisions = [{ x: 0, y: 0, w: 1, h: 1, mask: { enabled: true, cell: [.5, .5], rects: [[0, 0, 1, 2]] } }];
   zones.snags = JSON.parse(JSON.stringify(zones.collisions)); map.refreshConfig(cfg.locations, resources);

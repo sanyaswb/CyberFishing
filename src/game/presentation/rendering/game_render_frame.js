@@ -42,6 +42,10 @@ export class GameRenderFrame {
       // CONFIG.locations.enableRainZones is off and the rain covers the whole screen.
       rainRegions: new ReusableRenderList("world.rainRegions", diagnostics),
       rainZoned: false,
+      // TK-349: where the emission's ash (dust) flies, zones.ash — its own zones, apart from the rain's; ashZoned false:
+      // CONFIG.locations.enableAshZones is off and the ash covers the whole screen.
+      ashRegions: new ReusableRenderList("world.ashRegions", diagnostics),
+      ashZoned: false,
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -116,6 +120,8 @@ export class GameRenderFrame {
     sea.amplitudeScale = 1; sea.speedScale = 1; sea.wavelengthScale = 1; sea.travel = 1;
     this.world.rainRegions.reset();
     this.world.rainZoned = false;
+    this.world.ashRegions.reset();
+    this.world.ashZoned = false;
     this.world.debugImage.visible = false;
     this.world.annotations = null;
     this.world.backgroundHidden = false;

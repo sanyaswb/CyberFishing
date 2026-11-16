@@ -9,9 +9,9 @@ import { clipZoneToCastable } from "../location/zone_castable_clip.js";
 import { findZonesBeyondMap, fitZonesToMap } from "../location/zone_map_bounds.js";
 import { DevSavingSection } from "./export/dev_saving_section.js";
 
-const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain"]);
+const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain", "ash"]);
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
-  dynamic: "Рухомі зони", rain: "Дощ (де падають краплі)" });
+  dynamic: "Рухомі зони", rain: "Дощ (де падають краплі)", ash: "Попіл (де летить пил викиду)" });
 const PHYSICS_KEYS = ZONE_PHYSICS_KEYS;
 // Spec 136 (Revision 2): the show switches of the zones inside the castable area, in "Зони риболовлі".
 const FISHING_SHOW_LABELS = Object.freeze({ handChum: "Зона ручної прикормки", net: "Показати зону підсаки",
@@ -315,7 +315,7 @@ export class ZoneEditorSection {
 
   #renderEditingControls(parent) {
     const labels = { castable: "Редагувати ігрову", collisions: "Редагувати перешкоди", snags: "Редагувати зачепи", dynamic: "Редагувати рухомі",
-      rain: "Редагувати дощ" };
+      rain: "Редагувати дощ", ash: "Редагувати попіл" };
     for (const category of CATEGORIES) {
       const path = ["ZONE_EDITOR", "editing", category];
       this.#ui.createSwitcherRow(labels[category], this.#state.isEditable(category), parent, value => {

@@ -313,6 +313,7 @@ export const CONFIG = {
     enableSnags: true, // Зачепи (жовті зони)
     enableDynamicZones: true, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     enableRainZones: true, // Зони дощу (сині): дощ лише в них; вимкнено — дощ на весь екран (spec 172 D4)
+    enableAshZones: true, // Зони попелу (помаранчеві, TK-349): попіл викиду лише в них; вимкнено — на весь екран
     showChumZones: true, // Відображення зон прикормки (жовті)
     showCatchZone: false, // Відображення синьої зони
     showLastDashZone: false, // Відображення фіолетової lastDash trigger zone

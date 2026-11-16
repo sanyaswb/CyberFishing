@@ -792,6 +792,29 @@ async function checkAsh() {
   assert.equal(ash.status.pool, full.maxParticles, "the pool never grew during play");
   ash.dispose();
 
+  // TK-349: the ash's own zones (zones.ash, apart from the rain's): embers start only inside a visible zone, their count
+  // follows the zones' visible share of the screen, and one that drifts out fades away.
+  const zonedAsh = new PixiAshRenderer({ pixi, documentTarget, random });
+  const zonedStage = new pixi.Container();
+  zonedAsh.mount(zonedStage);
+  const [zonedEmbers] = zonedStage.children;
+  const zone = { x: 600, y: 0, width: 600, height: 350 };
+  const zonedWorld = (regions) => ({ ...world({ emission: 1, windStrength: 0, windDirection: 0 }), ashZoned: true,
+    ashRegions: { count: regions.length, getAt: (index) => regions[index] } });
+  const zonedFrame = (regions) => { now += 1000 / 60;
+    return zonedAsh.update(zonedWorld(regions), 1200, 700, now, looks.resolve("ash", 1), { wind: { ashDriftPx: 45 } }); };
+  zonedFrame([zone]);
+  const shown = () => zonedEmbers.particleChildren.filter((particle) => particle.alpha > 0);
+  const inside = (particle, margin = 0) => particle.x >= zone.x - margin && particle.x <= zone.x + zone.width + margin &&
+    particle.y >= zone.y - margin && particle.y <= zone.y + zone.height + margin;
+  assert.equal(zonedAsh.status.embers, Math.round(full.maxParticles / 4), "a quarter of the screen: a quarter of the embers");
+  assert.ok(shown().length > 0 && shown().every((particle) => inside(particle, 6)), "new embers start inside the ash zone");
+  for (let index = 0; index < 600; index += 1) zonedFrame([zone]);
+  const brightOutside = shown().filter((particle) => !inside(particle, 40) && particle.alpha > full.opacity * 0.5);
+  assert.ok(brightOutside.length <= 1, `an ember that leaves the zone fades out (${brightOutside.length} bright outside)`);
+  for (let index = 0; index < 60 * 10; index += 1) zonedFrame([{ x: 2000, y: 0, width: 100, height: 100 }]);
+  assert.equal(zonedAsh.status.embers, 0, "no ash zone on screen: no ash");
+  zonedAsh.dispose();
 }
 
 async function checkRain() {

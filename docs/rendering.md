@@ -179,6 +179,8 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     TK-338.1: the tile is cut into 32 px frames made once; each cell takes a random frame and flip at a jump and its
     alpha from its distance to the screen's centre (`radiationGrain.edges`: denser at the edges, `centerShare` 1 — even).
     Smaller cells mean more sprites (one batch, one texture); alpha is written only at a jump.
+    TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
+    inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 180 D9: the water's waves narrow across the screen with depth only while `canvas.water.lateralContraction` is
     on (the location's `waterProjection.lateralContraction` is the grid's own, separate switch).
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

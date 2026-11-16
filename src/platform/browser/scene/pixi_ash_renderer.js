@@ -8,6 +8,10 @@
 //   the screen without one), placed on screen every frame, so a camera move carries the embers with the location. New
 //   embers start in the visible part; one that leaves it ends early. maxParticles is the count on one screen at full
 //   intensity; the live count follows the emission's intensity (world.weather.emission).
+// - TK-349: where it flies — the ash zones on screen (world.ashRegions, zones.ash in the zone editor, apart from the
+//   rain's). New embers start inside a visible zone (picked by its visible area), the count is maxParticles × the zones'
+//   visible share of the screen, and an ember that drifts out of every zone fades out over its fade share (no mask, so
+//   the edge stays soft). With the switch off (world.ashZoned false) the whole screen is the ash's.
 // Spec 180 (TK-326): `settings` is the ash's look already resolved at the emission's strength (WeatherLookResolver:
 // count, opacity, rise and wander between their ends at 0 and 100); the wind's drift is the wind's
 // (`weatherSettings.wind.ashDriftPx`).
@@ -53,6 +57,12 @@ export class PixiAshRenderer {
   #visible = false;
   #stepMs = 0;
   #view = { x: 0, y: 0, width: 1, height: 1 };
+  // TK-349: the ash zones' visible rectangles (left, top, width, height) and cumulative areas; grow with the zone count.
+  #zoned = false;
+  #zoneRects = new Float32Array(0);
+  #zoneWeights = new Float32Array(0);
+  #zoneCount = 0;
+  #zoneArea = 0;
   #hot = { text: "", value: 0xffffff };
   #cool = { text: "", value: 0xffffff };
 
@@ -90,7 +100,10 @@ export class PixiAshRenderer {
     const intensity = clamp01(number(world.weather?.ash ?? world.weather?.emission, 0));
     const max = Math.max(0, Math.floor(number(settings?.maxParticles, 0)));
     const cap = Math.max(max, Math.floor(number(settings?.maxParticlesCap, max)));
-    const target = intensity > 0 ? max : 0;
+    this.#prepareZones(world, viewWidth, viewHeight);
+    const screenArea = Math.max(1, viewWidth * viewHeight);
+    const share = this.#zoned ? Math.min(1, this.#zoneArea / screenArea) : 1;
+    const target = intensity > 0 ? Math.round(max * share) : 0;
     if (target === 0 && this.#count === 0) return this.#hide();
     const started = performance.now();
     this.#ensurePool(cap);
@@ -147,6 +160,10 @@ export class PixiAshRenderer {
         particle.alpha = 0;
         continue;
       }
+      // TK-349: out of every ash zone — it fades out from here (its age jumps to the start of the fade).
+      if (this.#zoned && age < life * (1 - fade) && !this.#insideZone(view.x + u * view.width, view.y + v * view.height)) {
+        this.#age[index] = life * (1 - fade);
+      }
       const depth = this.#depth[index];
       const freq = this.#freq[index];
       const phase = this.#phase[index];
@@ -175,8 +192,19 @@ export class PixiAshRenderer {
 
   #spawn(index, left, top, right, bottom, sizeMin, sizeMax, lifeMin, lifeMax) {
     const random = this.#random;
-    this.#u[index] = left + (right - left) * random();
-    this.#v[index] = top + (bottom - top) * random();
+    if (this.#zoned && this.#zoneCount > 0) {
+      // A visible ash zone by its area, then a point inside it (screen → shares of the background).
+      const pick = random() * this.#zoneArea;
+      let zone = 0;
+      while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
+      const offset = zone * 4;
+      const view = this.#view;
+      this.#u[index] = (this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2] - view.x) / Math.max(1, view.width);
+      this.#v[index] = (this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3] - view.y) / Math.max(1, view.height);
+    } else {
+      this.#u[index] = left + (right - left) * random();
+      this.#v[index] = top + (bottom - top) * random();
+    }
     this.#depth[index] = 0.4 + 0.6 * random();
     this.#size[index] = sizeMin + (sizeMax - sizeMin) * random() * random();
     this.#life[index] = lifeMin + (lifeMax - lifeMin) * random();
@@ -184,6 +212,41 @@ export class PixiAshRenderer {
     this.#freq[index] = 0.35 + 0.9 * random();
     this.#phase[index] = TWO_PI * random();
     this.#alive[index] = 1;
+  }
+
+  // TK-349: the ash zones' visible parts on screen with cumulative areas for picking (none: no new ember).
+  #prepareZones(world, viewWidth, viewHeight) {
+    this.#zoned = world.ashZoned === true;
+    const regions = world.ashRegions;
+    const count = this.#zoned && regions ? regions.count : 0;
+    if (this.#zoneRects.length < count * 4) {
+      this.#zoneRects = new Float32Array(count * 4);
+      this.#zoneWeights = new Float32Array(count);
+    }
+    let total = 0, visible = 0;
+    for (let index = 0; index < count; index += 1) {
+      const rect = regions.getAt(index);
+      const left = Math.max(0, rect.x), top = Math.max(0, rect.y);
+      const right = Math.min(viewWidth, rect.x + rect.width), bottom = Math.min(viewHeight, rect.y + rect.height);
+      if (!(right > left && bottom > top)) continue;
+      const offset = visible * 4;
+      this.#zoneRects[offset] = left; this.#zoneRects[offset + 1] = top;
+      this.#zoneRects[offset + 2] = right - left; this.#zoneRects[offset + 3] = bottom - top;
+      total += (right - left) * (bottom - top);
+      this.#zoneWeights[visible] = total;
+      visible += 1;
+    }
+    this.#zoneCount = visible;
+    this.#zoneArea = total;
+  }
+
+  #insideZone(x, y) {
+    for (let zone = 0; zone < this.#zoneCount; zone += 1) {
+      const offset = zone * 4;
+      const left = this.#zoneRects[offset], top = this.#zoneRects[offset + 1];
+      if (x >= left && y >= top && x <= left + this.#zoneRects[offset + 2] && y <= top + this.#zoneRects[offset + 3]) return true;
+    }
+    return false;
   }
 
   // The embers' world: the background's first layer (the location's picture on screen), else the screen.
