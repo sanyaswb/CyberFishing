@@ -64,6 +64,7 @@ export class SceneModule {
       general: () => ({ rain: config.canvas?.rain ?? null, ash: config.canvas?.ash ?? null, water: config.canvas?.water ?? null,
         storm: config.weather?.storm ?? null, wind: config.weather?.wind ?? null, screen: config.emission?.screen ?? null,
         grain: config.canvas?.radiationGrain ?? null, geiger: config.ui?.audio?.geiger ?? null,
+        starfall: config.canvas?.starfall ?? null,
         debug: config.debug ?? null }),
       // Spec 180 D8: a section's «змінено» mark and its reset to the code.
       edits: this.#configRuntime ? {

@@ -94,6 +94,8 @@ export class WeatherDevSection {
   #marks = [];
   #listening = false;
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100 };
+  // Spec 182 stage E: the starfall's strength by hand, %.
+  #starfallLevel = 70;
   #fadeSec = 5;
   #radiation = 50;
   #onConfigUpdated = (event) => {
@@ -249,6 +251,7 @@ export class WeatherDevSection {
       this.#renderEmission(content, mode);
       this.#renderRadiation(content, mode);
       this.#renderAsh(content, mode);
+      this.#renderStarfall(content, mode);
       this.#renderWater(content, mode);
       if (mode.location) this.#renderStart(content, mode);
       this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
@@ -484,6 +487,51 @@ export class WeatherDevSection {
       this.#tree(this.#locationWeather(mode.location)?.radiation, this.#group("Радіація (локація)", section,
         ["WEATHER", "radiation", "config"]), this.#locationParts(mode.location, "radiation"));
     });
+  }
+
+  // Spec 182 stage E (TK-354): the starfall — the night's state and plan, the strength by hand, a starfall night or a
+  // bolide now; the stars' and the bolide's look (general) and the night's settings (location).
+  #renderStarfall(content, mode) {
+    const starfall = this.#weather.getStarfallModel?.() ?? null;
+    const parts = [];
+    if (mode.general) parts.push(["canvas", "starfall"]);
+    if (mode.location) parts.push(this.#locationParts(mode.location, "starfall"));
+    this.#elementSection("ЗОРЕПАД", "starfall", content, parts, (section) => {
+      if (starfall) {
+        const snapshot = starfall.snapshot;
+        this.#ui.createInfoRow("ніч", this.#starfallText(snapshot), section);
+        if (snapshot.held) this.#starfallLevel = Math.round(snapshot.strength * 100);
+        this.#ui.createSwitcherRow("Зорепад вручну", snapshot.held === true, section, (on) => {
+          starfall.hold(on ? this.#starfallLevel / 100 : null);
+          this.#fill();
+        }, ["WEATHER", "starfall", "hold"]);
+        this.#ui.createRangeRow("сила зорепаду, %", this.#starfallLevel, section, (value) => {
+          this.#starfallLevel = clamp(value, 0, 100);
+          starfall.hold(this.#starfallLevel / 100);
+          this.#ui.syncValue?.(["WEATHER", "starfall", "hold"], true);
+        }, ["WEATHER", "starfall", "level"]);
+        this.#ui.createButtonRow("Зорепадна ніч зараз (у вікні годин)", section, () => {
+          starfall.forceNight();
+          this.#fill();
+        }, false, "", ["WEATHER", "starfall", "night"]);
+        this.#ui.createButtonRow("Болід зараз", section, () => starfall.bolideNow(), false, "", ["WEATHER", "starfall", "bolide"]);
+      }
+      if (mode.general) this.#tree(this.#general()?.starfall, this.#group("Зорі й болід (загальне)", section,
+        ["WEATHER", "starfall", "look"]), ["canvas", "starfall"]);
+      if (mode.location) this.#tree(this.#locationWeather(mode.location)?.starfall, this.#group("Ніч зорепаду (локація)", section,
+        ["WEATHER", "starfall", "night"]), this.#locationParts(mode.location, "starfall"));
+    });
+  }
+
+  // The night now: outside the window, a plain night, or a starfall night with its plan, strength and bolide.
+  #starfallText(snapshot) {
+    const clock = (hours) => `${Math.floor(hours)}:${String(Math.round((hours % 1) * 60) % 60).padStart(2, "0")}`;
+    const strength = `сила ${percent(snapshot.strength)}${snapshot.held ? " (вручну)" : ""}`;
+    if (!snapshot.inWindow) return `поза вікном · ${strength}`;
+    if (!snapshot.active) return `звичайна ніч (перевірка не прокнула) · ${strength}`;
+    const periods = snapshot.periodLevels.map((level) => Math.round(level * 100)).join(", ");
+    const bolide = snapshot.bolideAtHours === null ? "без боліда" : `болід через ${clock(Math.max(0, snapshot.bolideAtHours - snapshot.positionHours))} год`;
+    return `зорепадна ніч · періоди ${periods} · ${strength} · ${bolide}`;
   }
 
   #renderAsh(content, mode) {

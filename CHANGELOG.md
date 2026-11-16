@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.49 - DevTools «ЗОРЕПАД» (spec 182 stage E, TK-354)
+
+- DevTools «ПОГОДА» → «ЗОРЕПАД»: the night now (plain or a starfall night with its periods and the bolide), the strength by hand (stars at any hour), «Зорепадна ніч зараз», «Болід зараз», the stars and the bolide look (general) and the night settings (location), live.
+
 ## v0.51.48 - The bolide (spec 182 stage D, TK-353)
 
 - At most once a starfall night, at any moment (quiet stretches too), a big star falls: a long wide bright tail with a glowing, slightly flickering head, slower and longer than the others; it fades like them. Its look is live in DevTools «Конфіг» → canvas → starfall → bolide.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.40 - Two − / + number fields for from-to DevTools pairs (TK-347)
 
 - DevTools: two-number `[from, to]` parameters (`lengthJitter` and weather/fish/item ranges) now render as two separate `NumberField` controls with `−` / `+` step buttons (`NumberPairField`) instead of a single comma-separated text input; longer numeric lists (RGB triplets, `liveBait.capacities`) keep list input.
-
-## v0.51.39 - Radio indicator: the radio drawing, the wave and the battery charge (spec 181 stage F, TK-346)
-
-- The radio's HUD circle shows the inventory's radio drawing while it is silent and the moving wave only while it plays; its fill from the bottom is the battery charge, green → yellow → red as it runs down.

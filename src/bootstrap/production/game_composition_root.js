@@ -1795,6 +1795,8 @@ export class GameCompositionRoot {
                       getWindModel: () => systems.env?.wind ?? null,
                       // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
                       getEmissionModel: () => systems.env?.emission ?? null,
+                      // Spec 182 stage E: the starfall's night (state, hold, a night or a bolide now).
+                      getStarfallModel: () => systems.env?.starfall ?? null,
                       // Spec 181: the player's statuses now (the vodka and its time left, the gas mask held by its slot).
                       getStatuses: () => this.#playerStatuses(),
                       // Spec 180 D15: on-demand images for DEV (the wave test background).

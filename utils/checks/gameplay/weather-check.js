@@ -1783,6 +1783,52 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(parameterPaths.has("WEATHER.emission.screenEnabled"), "the emission screen's own switch shows (it had no control)");
   general.dispose();
 
+  // Spec 182 stage E (TK-354): «ЗОРЕПАД» — the night's state, the strength by hand, a starfall night and a bolide now,
+  // the look (general) and the night (location) as live trees, over the real StarfallNight.
+  {
+    const { StarfallNight } = require("../../../src/game/domain/weather/starfall_night.js");
+    const starNight = new StarfallNight({ rng: new SeededRng("dev:starfall"), getSettings: () => locations.test.weather.starfall });
+    starNight.update({ hour: 22 });
+    const switches = new Map(), ranges = new Map(), infos = [];
+    const starSections = [];
+    const starButtons = new Map();
+    const starSection = new WeatherDevSection({
+      view: { selected: "Всі" },
+      ui: { ...ui, createInfoRow: (label, value) => { infos.push([label, value]); return {}; },
+        createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }),
+        createRangeRow: (label, value, parent, onChange, path) => ranges.set(path.join("."), onChange),
+        createButtonRow: (label, parent, onClick, navigation, icon, path) => { starButtons.set(path ? path.join(".") : label, onClick);
+          return { style: {} }; } },
+      weather: { locationId: "test", getModel: () => model, getWind: () => null, getStarfallModel: () => starNight },
+      config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
+      general: () => ({ rain: GAME_CONFIG.canvas.rain, starfall: GAME_CONFIG.canvas.starfall }),
+      createSection: (text, parent, path) => { starSections.push([text, path?.join(".") ?? ""]); return node(); },
+      renderConfigTree: (value, parent, path) => starSections.push(["tree", path.join(".")]),
+      edits: { hasOverrides: () => false, resetTree() {} },
+    });
+    starSection.render(node());
+    const starTrees = starSections.filter(([kind]) => kind === "tree").map(([, at]) => at);
+    assert.ok(starSections.some(([text, at]) => text === "ЗОРЕПАД" && at === "WEATHER.starfall"), "«ЗОРЕПАД» is a weather section");
+    assert.ok(starTrees.includes("CONFIG.canvas.starfall") && starTrees.includes("CONFIG.locations.map.test.weather.starfall"),
+      "the stars' and the bolide's look (general) and the night (location) as live trees");
+    assert.ok(infos.some(([label, value]) => label === "ніч" && /ніч/u.test(value)), "the night's state is shown");
+    switches.get("WEATHER.starfall.hold").onChange(true);
+    assert.equal(starNight.snapshot.held, true, "«Зорепад вручну» holds the strength");
+    ranges.get("WEATHER.starfall.level")(40);
+    starNight.update({ hour: 22.1 });
+    assert.equal(starNight.snapshot.strength, 0.4, "the slider sets it");
+    switches.get("WEATHER.starfall.hold").onChange(false);
+    assert.equal(starNight.snapshot.held, false, "and off returns to the night's plan");
+    const nights = starNight.snapshot.nightSerial;
+    starButtons.get("WEATHER.starfall.night")();
+    assert.deepEqual([starNight.snapshot.nightSerial, starNight.snapshot.active], [nights + 1, true],
+      "«Зорепадна ніч зараз» plans a starfall night in the window");
+    const bolidesBefore = starNight.snapshot.bolideSerial;
+    starButtons.get("WEATHER.starfall.bolide")();
+    assert.equal(starNight.snapshot.bolideSerial, bolidesBefore + 1, "«Болід зараз» drops one");
+    starSection.dispose();
+  }
+
   // TK-333.2 (owner): «Всі» by default; the choice outlives the section (the panel draws a new one when it opens again).
   const view = {};
   const sectionWith = () => new WeatherDevSection({
