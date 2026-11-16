@@ -572,13 +572,25 @@ async function stageTwo() {
     advance(clock + 300);
     assert.equal(sickBadge.parentNode, null, "and is removed after the fade");
     assert.equal(badgeList().length, 1, "the vodka stays");
+    // Spec 181 D4 (TK-345): «Радіація» held by the location — a red badge with the radiation sign, no fill, no countdown.
+    statuses.hold("radiation", true, { source: "location" });
+    const radiationBadge = badgeList()[1];
+    assert(radiationBadge.classList.contains("hud-indicator--debuff") && !radiationBadge.classList.contains("hud-indicator--timed") &&
+      !radiationBadge.children.some((child) => child.className === "hud-indicator__fill"), "a held debuff: no fill");
+    assert.equal(radiationBadge.children.find((child) => child.className === "hud-indicator__icon")?.dataset.symbol, "radiation");
+    radiationBadge.click();
+    assert.equal(radiationBadge.children.find((child) => child.className === "hud-indicator__count").hidden, true,
+      "no countdown without a timer");
+    statuses.hold("radiation", false);
+    advance(clock + 300);
+    assert.equal(radiationBadge.parentNode, null, "the radiation gone, its badge fades away");
     // A badge built while a status is half gone starts its fill at that point (negative delay).
     badges.dispose();
     assert.equal(badgeList().length, 0, "dispose removes the badges");
     clock += 1000;
     const rebuilt = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
       colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock });
-    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-31301ms", "the time already gone");
+    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-31601ms", "the time already gone");
     rebuilt.dispose();
     radioLate.dispose();
     column.dispose();

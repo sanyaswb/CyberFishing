@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.38 - Debuff «Радіація» in the HUD (spec 181 stage E, TK-345)
+
+- While the location's radiation is above zero, a red badge with the radiation sign stands in the indicator column under the radio (a debuff without a timer); it fades when the radiation is gone.
+
 ## v0.51.37 - DevTools «СТАТУСИ» (spec 181 stage D, TK-344)
 
 - DevTools «Гра» → «СТАТУСИ»: the active buffs and debuffs with their time left and modifiers, «Видати» / «Зняти» / «Зняти всі», and the descriptions (`CONFIG.statusEffects`) as live parameters — the vodka's duration and shares change at once.
@@ -45,7 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Fog lives in game time and comes likelier at 4–7 (×4) and 19–24 (×3) on the test location; every rain that ends raises its chance (+0.5, up to ×4) until a fog starts. Outside the windows fog stays possible, rarer.
 - DevTools «ПОГОДА»: the fog's state shows its window and rain multipliers; the RANDOMIZER's «Туман» reports fogs in the windows and after rain.
-
-## v0.51.28 - Weather selector starts at «Всі» and keeps its choice (TK-333.2)
-
-- DevTools «ПОГОДА»: the selector opens at «Всі»; a choice of «Загальні» or a location stays when DevTools is closed and opened again (until the page reloads).

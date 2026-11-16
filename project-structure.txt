@@ -476,7 +476,8 @@
 │  │  │     ├── equipment_status_source.js
 │  │  │     ├── game_world.js
 │  │  │     ├── ground_plane_scope.js
-│  │  │     └── player_status_effects.js
+│  │  │     ├── player_status_effects.js
+│  │  │     └── radiation_status_source.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish

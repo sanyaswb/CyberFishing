@@ -1450,6 +1450,28 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   defs.long.modifiers.emission.blur = 1;
   assert.equal(rules.modifier("emission", "blur"), 0.25, "a live edit reaches the modifier at once");
   rules.dispose();
+  // Spec 181 D4 (TK-345, owner Q2): the debuff «Радіація» is held while the location's radiation is above zero, without a
+  // timer and modifiers; it calls the statuses only when the state changes.
+  const { RadiationStatusSource } = require("../../../src/game/application/world/radiation_status_source.js");
+  const radiationDef = CONFIG.statusEffects.radiation;
+  assert.equal(JSON.stringify([radiationDef.kind, radiationDef.badge, radiationDef.durationSec, radiationDef.icon]),
+    JSON.stringify(["debuff", true, 0, "radiation"]), "a debuff badge without a timer");
+  let radiationEnv = { radiation: 0 };
+  const radiationEvents = [];
+  const stopRadiationEvents = statuses.subscribe((event) => radiationEvents.push(`${event.type}:${event.id}`));
+  const radiationSource = new RadiationStatusSource({ getEnvironment: () => radiationEnv, statuses });
+  radiationSource.update();
+  assert.equal(statuses.has("radiation"), false, "no radiation: no debuff");
+  radiationEnv = { radiation: 0.02 };
+  for (let frame = 0; frame < 60; frame += 1) { radiationEnv.radiation += 0.01; radiationSource.update(); }
+  assert.equal(statuses.has("radiation"), true, "radiation above zero holds the debuff");
+  assert.equal(statuses.remainingSec("radiation"), Infinity, "without a timer");
+  assert.equal(statuses.modifier("emission", "vignette"), 1, "it changes no effect of the emission");
+  radiationEnv = { radiation: 0 };
+  radiationSource.update();
+  radiationSource.update();
+  assert.equal(radiationEvents.join(), "start:radiation,end:radiation", "one start and one end, never per frame");
+  stopRadiationEvents();
   clockMs = 0;
   timers.clear();
   env = { emission: { phase: "idle", intensity: 0 } };

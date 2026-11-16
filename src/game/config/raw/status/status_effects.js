@@ -20,6 +20,17 @@ export const STATUS_EFFECTS = {
       },
     },
   },
+  // Радіація (spec 181 D4, Q2): дебаф без таймера, поки радіація локації > 0; модифікаторів немає — ефекти задає викид.
+  radiation: {
+    kind: "debuff",
+    icon: "radiation",
+    badge: true,
+    durationSec: 0,
+    stacking: "renew",
+    maxStacks: 1,
+    timeBase: "real",
+    modifiers: {},
+  },
   // Протигаз у слоті (spec 181 Q3: без значка — його видно в слоті): ефектів викиду немає; закид дозволяє сам слот.
   gasMask: {
     kind: "buff",

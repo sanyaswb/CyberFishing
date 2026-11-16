@@ -181,3 +181,7 @@
   без subscribe: розділ перемальовує «Активні» після своїх кнопок і на «↻ Оновити»). Статус, який тримає джерело
   (протигаз), показано, але не видається й не знімається тут. Описи — `tree.render(CONFIG.statusEffects)`; глибокі гілки
   відкриваються як drill-in (правила DevToolsUI).
+- **Етап E (TK-345, v0.51.38).** `CONFIG.statusEffects.radiation` (`kind: "debuff"`, `durationSec: 0`, `modifiers: {}`).
+  `RadiationStatusSource` (`src/game/application/world/radiation_status_source.js`) читає `snapshot.radiation` у кадровому
+  оновленні ефекту викиду і викликає `hold` лише при зміні стану (без алокацій щокадру). Значок без таймера — без заливки
+  й відліку. Будинок (Q5) ще не підключено: `RadiationStatusSource` отримає стан «у будинку», коли він з'явиться.

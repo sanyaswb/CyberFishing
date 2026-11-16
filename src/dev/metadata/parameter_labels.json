@@ -2337,7 +2337,7 @@
   },
   "statusEffects.vodka.icon": {
     "label": "Значок",
-    "description": "Малюнок значка в HUD (presentation/hud/status_icons.js)."
+    "description": "Малюнок значка в HUD (символ спрайта inventory-sections.svg)."
   },
   "statusEffects.vodka.badge": {
     "label": "Значок у HUD",
@@ -2389,7 +2389,7 @@
   },
   "statusEffects.gasMask.icon": {
     "label": "Значок",
-    "description": "Малюнок значка в HUD (presentation/hud/status_icons.js)."
+    "description": "Малюнок значка в HUD (символ спрайта inventory-sections.svg)."
   },
   "statusEffects.gasMask.badge": {
     "label": "Значок у HUD",
@@ -2430,5 +2430,41 @@
   "statusEffects.gasMask.modifiers.emission.blurRate": {
     "label": "Частота пульсів",
     "description": "Частка частоти пульсів розмиття (1 — ритм викиду той самий)."
+  },
+  "statusEffects.radiation": {
+    "label": "Радіація",
+    "description": "Дебаф без таймера, поки радіація локації > 0 (spec 181 D4): червоний значок у HUD; ефекти задає сам викид."
+  },
+  "statusEffects.radiation.kind": {
+    "label": "Вид",
+    "description": "buff — баф, debuff — дебаф (червона обводка значка)."
+  },
+  "statusEffects.radiation.icon": {
+    "label": "Значок",
+    "description": "Малюнок значка в HUD (символ спрайта inventory-sections.svg)."
+  },
+  "statusEffects.radiation.badge": {
+    "label": "Значок у HUD",
+    "description": "Показувати круглий значок під радіо."
+  },
+  "statusEffects.radiation.durationSec": {
+    "label": "Тривалість, с",
+    "description": "0 — без таймера: діє, поки радіація локації > 0."
+  },
+  "statusEffects.radiation.stacking": {
+    "label": "Повторне застосування",
+    "description": "renew — час починається знову; max — довший із залишку й повного часу; add — ще один стек (до «Стеків»)."
+  },
+  "statusEffects.radiation.maxStacks": {
+    "label": "Стеків",
+    "description": "Скільки разів складається (для add)."
+  },
+  "statusEffects.radiation.timeBase": {
+    "label": "Час",
+    "description": "real — реальний час сторінки (spec 181 Q1)."
+  },
+  "statusEffects.radiation.modifiers": {
+    "label": "Модифікатори",
+    "description": "Частки впливу, що лишаються: 1 — без змін, 0 — немає. У радіації поки немає."
   }
 }

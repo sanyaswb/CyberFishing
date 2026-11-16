@@ -62,6 +62,7 @@ import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
 import { EquipmentStatusSource } from "../../game/application/world/equipment_status_source.js";
+import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
@@ -1013,7 +1014,10 @@ export class GameCompositionRoot {
       own(new EquipmentStatusSource({ inventory: systems.inventory, statuses: this.#playerStatuses(), slots: { gasMask: "gasMask" } }));
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
         getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses() });
-      const emissionScreen = this.#composeEmissionScreen({ canvas, emissionExposure, own });
+      // Spec 181 D4: the debuff «Радіація» while the location's radiation is above zero (checked with the frame).
+      const radiationStatus = new RadiationStatusSource({ getEnvironment: () => systems.env.getSnapshot(),
+        statuses: this.#playerStatuses() });
+      const emissionScreen = this.#composeEmissionScreen({ canvas, emissionExposure, own, radiationStatus });
       // The game is ready only once the plan's first layer has loaded (spec 157 R15).
       await this.#preload.whenLayer("layer-one");
       this.#startupMarks.mark(STARTUP_STAGES.scene);
@@ -1098,7 +1102,7 @@ export class GameCompositionRoot {
 
   // Spec 179 stage E: the emission's darkening and blur, one DOM veil updated once a frame (a page without a UI surface
   // has no veil: the effect still runs, nothing is drawn).
-  #composeEmissionScreen({ canvas, emissionExposure, own }) {
+  #composeEmissionScreen({ canvas, emissionExposure, own, radiationStatus }) {
     // Visual only: the blur's irregular pulses draw from Math.random, never from a gameplay stream.
     const effect = new EmissionScreenEffect({ random: Math.random });
     const veil = this.#uiSurface
@@ -1107,6 +1111,7 @@ export class GameCompositionRoot {
       : null;
     return Object.freeze({
       update: (dtMs) => {
+        radiationStatus.update();
         // Spec 181 D2: the full intensity, weakened at the output by the statuses' shares.
         const record = effect.update(dtMs, emissionExposure.intensity(), this.#config.emission?.screen,
           emissionExposure.modifier("vignette"), emissionExposure.modifier("blur"), emissionExposure.modifier("blurRate"));
