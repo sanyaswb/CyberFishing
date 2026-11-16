@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.41 - Direct swatch picker and full-width row for DevTools colours (TK-348)
+
+- DevTools `ColorField`: the colour swatch and text input now share one row spanning the full width of `devtools__row`; clicking the swatch opens `<input type="color">` directly without an extra intermediate box click and updates the swatch colour immediately, while the inline row underneath appears only for the opacity slider (`rgba`/`#rrggbbaa`).
+
 ## v0.51.40 - Two − / + number fields for from-to DevTools pairs (TK-347)
 
 - DevTools: two-number `[from, to]` parameters (`lengthJitter` and weather/fish/item ranges) now render as two separate `NumberField` controls with `−` / `+` step buttons (`NumberPairField`) instead of a single comma-separated text input; longer numeric lists (RGB triplets, `liveBait.capacities`) keep list input.
@@ -43,8 +47,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A procedural Geiger counter beside the radiation's hiss: random clicks, sparse at low radiation and a crackle at the peak, silent below 5 %; it starts after the player's first touch and stays silent in a hidden tab.
 - DevTools «ПОГОДА» → «РАДІАЦІЯ» → «Звук лічильника (загальне)»: on/off, volume, threshold, clicks a second, tone and click length.
-
-## v0.51.31 - Radiation hiss over the scene (spec 179 stage D, TK-338)
-
-- WebGL scene: fine flickering grain over the world, stronger as the location's radiation rises during an emission (none below 5 %); one noise tile made in code, no filter, no frames when there is no radiation.
-- DevTools «ПОГОДА» → «РАДІАЦІЯ» → «Шипіння (загальне)»: on/off, threshold, opacity, speck size and pace, live.

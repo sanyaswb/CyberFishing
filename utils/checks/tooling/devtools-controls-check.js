@@ -2223,17 +2223,19 @@ function choiceRow(options, value, path) {
   });
   const field = byClass("devtools__color", host)[0];
   assert.ok(field, "a colour parameter is a colour field");
-  const swatch = byClass("devtools__color-swatch", field)[0];
+  const chip = byClass("devtools__color-chip", field)[0];
+  const swatch = byClass("devtools__color-swatch", chip)[0];
+  const colorInput = byClass("devtools__color-input", chip)[0];
   const picker = byClass("devtools__color-picker", field)[0];
+  assert.ok(chip && swatch && colorInput, "the colour input sits directly over the swatch");
   assert.equal(
     swatch.style.getPropertyValue("--devtools-color-value"),
     "rgba(0, 200, 255, 0.25)",
     "the swatch shows the colour",
   );
   assert.equal(picker.hidden, true);
-  swatch.click();
-  assert.equal(picker.hidden, false, "the swatch opens the picker");
-  const colorInput = byClass("devtools__color-input", picker)[0];
+  colorInput.click();
+  assert.equal(picker.hidden, false, "for an rgba colour, clicking the swatch reveals the inline opacity slider");
   assert.equal(colorInput.value, "#00c8ff");
   const alpha = byClass("devtools__color-alpha", picker)[0];
   assert.equal(alpha.hidden, false, "an rgba colour has an opacity slider");
@@ -2243,6 +2245,11 @@ function choiceRow(options, value, path) {
     JSON.stringify(written.at(-1)),
     JSON.stringify(["CONFIG.ui.accuracyAreaFill", "rgba(255, 0, 0, 0.25)"]),
     "a picked colour keeps the opacity and the rgba format",
+  );
+  assert.equal(
+    swatch.style.getPropertyValue("--devtools-color-value"),
+    "rgba(255, 0, 0, 0.25)",
+    "the swatch immediately updates to the picked colour",
   );
   const alphaInput = byClass("devtools__color-alpha-input", alpha)[0];
   alphaInput.value = "0.6";
@@ -2264,6 +2271,9 @@ function choiceRow(options, value, path) {
     canonicalPath: ["CONFIG", "ui", "lineColor"],
   });
   const hexField = byClass("devtools__color", host)[1];
+  const hexPicker = byClass("devtools__color-picker", hexField)[0];
+  byClass("devtools__color-input", hexField)[0].click();
+  assert.equal(hexPicker.hidden, true, "a #rrggbb colour keeps the inline box hidden on click (native picker opens directly)");
   assert.equal(
     byClass("devtools__color-alpha", hexField)[0].hidden,
     true,

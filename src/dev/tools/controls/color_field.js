@@ -1,9 +1,10 @@
 import { ColorValue } from "./color_value.js";
 import { TextField } from "./text_field.js";
 
-// TK-320 (owner): a colour parameter: a swatch of the colour beside its text. The swatch opens a picker under the field:
-// the browser's colour input and, for a colour with opacity (rgba, #rrggbbaa), an opacity slider. Every change is
-// written at once in the value's own format; the text stays editable for an exact value.
+// TK-320 / TK-348 (owner): a colour parameter on a full-width row — the colour swatch and editable text field share one
+// row spanning the full width of the parameter row. Clicking the swatch activates the overlaid native <input type="color">
+// immediately (no intermediate picker box); for colours with opacity (rgba, #rrggbbaa), clicking also opens the inline
+// opacity slider underneath. Every change updates the swatch, text field and config immediately.
 export class ColorField {
   #root;
   #swatch;
@@ -21,22 +22,27 @@ export class ColorField {
     this.#onCommit = onCommit;
     this.#root = documentRef.createElement("div");
     this.#root.className = "devtools__color";
-    this.#swatch = documentRef.createElement("button");
-    this.#swatch.type = "button";
+
+    const chip = documentRef.createElement("span");
+    chip.className = "devtools__color-chip";
+    this.#swatch = documentRef.createElement("span");
     this.#swatch.className = "devtools__color-swatch";
-    this.#swatch.setAttribute("aria-label", `Вибрати колір${ariaLabel ? `: ${ariaLabel}` : ""}`);
-    this.#swatch.setAttribute("aria-expanded", "false");
+    this.#swatch.setAttribute("aria-hidden", "true");
+
+    this.#colorInput = documentRef.createElement("input");
+    this.#colorInput.type = "color";
+    this.#colorInput.className = "devtools__color-input";
+    this.#colorInput.setAttribute("aria-label", `Вибрати колір${ariaLabel ? `: ${ariaLabel}` : ""}`);
+    chip.append(this.#swatch, this.#colorInput);
+
     this.#text = new TextField({ value, ariaLabel, documentRef, onCommit: (text) => {
       this.#show(text);
       this.#onCommit?.(text);
     } });
+
     this.#picker = documentRef.createElement("div");
     this.#picker.className = "devtools__color-picker";
     this.#picker.hidden = true;
-    this.#colorInput = documentRef.createElement("input");
-    this.#colorInput.type = "color";
-    this.#colorInput.className = "devtools__color-input";
-    this.#colorInput.setAttribute("aria-label", "Колір");
     this.#alphaRow = documentRef.createElement("label");
     this.#alphaRow.className = "devtools__color-alpha";
     const alphaName = documentRef.createElement("span");
@@ -51,13 +57,12 @@ export class ColorField {
     this.#alphaValue = documentRef.createElement("span");
     this.#alphaValue.className = "devtools__color-alpha-value";
     this.#alphaRow.append(alphaName, this.#alphaInput, this.#alphaValue);
-    this.#picker.append(this.#colorInput, this.#alphaRow);
-    this.#root.append(this.#swatch, this.#text.element, this.#picker);
+    this.#picker.append(this.#alphaRow);
 
-    this.#listen(this.#swatch, "click", () => {
-      const open = this.#picker.hidden;
-      this.#picker.hidden = !open;
-      this.#swatch.setAttribute("aria-expanded", String(open));
+    this.#root.append(chip, this.#text.element, this.#picker);
+
+    this.#listen(this.#colorInput, "click", () => {
+      if (!this.#alphaRow.hidden) this.#picker.hidden = false;
     });
     this.#listen(this.#colorInput, "input", () => {
       const picked = ColorValue.parse(this.#colorInput.value);
@@ -92,14 +97,19 @@ export class ColorField {
     this.#onCommit?.(text);
   }
 
-  // The swatch, the picker and the opacity slider follow the value (a typed or synced one too).
+  // The swatch, the native colour input and the opacity slider follow the value (a typed or synced one too).
   #show(value) {
     this.#color = ColorValue.parse(value);
     this.#swatch.style.setProperty("--devtools-color-value", this.#color ? String(value).trim() : "transparent");
-    if (!this.#color) return;
+    if (!this.#color) {
+      this.#alphaRow.hidden = true;
+      this.#picker.hidden = true;
+      return;
+    }
     this.#colorInput.value = ColorValue.toHex6(this.#color);
-    const alpha = ColorValue.hasAlpha(this.#color);
-    this.#alphaRow.hidden = !alpha;
+    const hasAlpha = this.#color.format === "rgba" || this.#color.format === "hex8";
+    this.#alphaRow.hidden = !hasAlpha;
+    if (!hasAlpha) this.#picker.hidden = true;
     this.#alphaInput.value = String(this.#color.a);
     this.#alphaValue.textContent = `${Math.round(this.#color.a * 100)}%`;
   }

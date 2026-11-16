@@ -796,7 +796,9 @@ export class DevToolsUI {
     requires = [], options = [], swatch = null, isChanged = null, onReset = null, min = 0, max = 100, step = 1 }) {
     const row = document.createElement("div");
     row.className = control === "choice" ? "devtools__row devtools__row--stacked"
-      : control === "segments" || control === "numberPair" ? "devtools__row devtools__row--wrap" : "devtools__row";
+      : control === "segments" || control === "numberPair" || control === "color"
+        ? "devtools__row devtools__row--wrap"
+        : "devtools__row";
     this.#assignDevToolsPath(row, path);
     const canonicalPath = this.#normalizeDevToolsPath(configPath ?? bindingPath ?? path);
     if (canonicalPath) this.#rowConfigPath.set(row, canonicalPath);

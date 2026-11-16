@@ -11,11 +11,14 @@
 
 ## Задачі в роботі
 
-- [ ] **TK-347 — DevTools: пари «від – до» (`lengthJitter`, діапазони погоди, компенсації тощо) з двома числовими полями і кнопками `+`/`−` (власник, 2026-11-16).** «такі параметри як lengthJitter там де є: від - до, незручно реалізовані, потрібно зробити такі параметри теж з кнопками + -».
-  - Знайдено: `ConfigTreeRenderer` та `DevToolsUI.createInputRow` рендерили всі числові масиви як одне текстове поле `TextField.numberList` без кнопок `+`/`−` (хоча 72 з 79 числових масивів — пари `[від, до]`).
-  - Змінено: додано компонент `NumberPairField` (композиція двох `NumberField` із розділювачем `–` у `.devtools__number-pair` у рядку з `.devtools__row--wrap`), `ConfigTreeRenderer` і `DevToolsUI` використовують `"numberPair"` для пар довжини 2 і зберігають `"numberList"` для списків іншої довжини (`capacities`, RGB-трійки).
-  - [x] v0.51.40: зроблено (`NumberPairField`, `DevToolsUI`, `ConfigTreeRenderer`, `dev-tools.css`, тести в `devtools-controls-check.js`). Візуально агентом не перевірялося.
+- [ ] **TK-348 — DevTools `ColorField`: `swatch` + текст на всю ширину `devtools__row`, миттєве відкриття `<input type="color">` без проміжного вікна (власник, 2026-11-16).** «розмісти devtools__color-swatch в один ряд з devtools__input devtools__input--text та зроби обидві шириною як у devtools__row, при натисканні на devtools__color-swatch відразу відкривається devtools__color-input … зроби щоб це спливаюче вікно відкривалося при натискані на світчер і світчер змінював колір коли я обрав інший».
+  - Знайдено: `.devtools__color` ділило рядок із `.devtools__label`, а клік по `.devtools__color-swatch` спершу відкривав коробку `.devtools__color-picker` і вимагав другого кліку по `.devtools__color-input`.
+  - Змінено: рядок `"color"` використовує `devtools__row--wrap`, `.devtools__color` займає повну ширину `devtools__row` із `.devtools__color-chip` + `.devtools__input--text` в один ряд; `<input type="color" class="devtools__color-input">` прозоро накладено на `.devtools__color-swatch` у `.devtools__color-chip`, тож перший клік одразу відкриває системний вибір кольору й оновлює колір світчера; `.devtools__color-picker` лишається тільки для повзунка прозорості (`rgba`/`#rrggbbaa`).
+  - [x] v0.51.41: зроблено (`ColorField`, `DevToolsUI`, `dev-tools.css`, тести `devtools-controls-check.js`). Візуально агентом не перевірялося.
   - Перевірка: `devtools-controls`; Full (`npm run check`).
+  - [ ] Перевірка власника: `dev.html` → «Конфіг» або «ПОГОДА» → будь-який параметр кольору (наприклад `color` або `accuracyAreaFill`) — світчер і текстове поле в одному рядку на всю ширину `devtools__row`, один клік по кольоровому квадратику одразу відкриває системну палітру, вибір кольору одразу змінює колір світчера; для `rgba`-кольорів під рядком відкривається повзунок «Непрозорість».
+
+- [x] **TK-347 — DevTools: пари «від – до» (`lengthJitter`, діапазони погоди, компенсації тощо) з двома числовими полями і кнопками `+`/`−` (v0.51.40).** Виконано (`b23e924a`).
   - [ ] Перевірка власника: `dev.html` → «Сцена» → «ПОГОДА» → «ДОЩ» → «Вигляд (загальний)» → `lengthJitter` (та інші пари `[від, до]`) — два окремих поля з кнопками `−`/`+`, крок відповідає точності кожного числа, скидання та синхронізація працюють на обох полях.
 
 - [ ] **Перевірка власника TK-331 (v0.51.22):** ([архів](<D:/dev/cyber fishing/tasks-archive.md#tk-328-331>)) `dev.html` на ПК у чистому профілі (або після видалення `dev_tools_panel_settings` у `localStorage`) — DevTools відкривається з адаптивною шириною, у вкладці «Панель» перемикач «Адаптивна ширина (ПК)» увімкнений.
