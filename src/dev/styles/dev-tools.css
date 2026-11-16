@@ -13,6 +13,8 @@
   --devtools-scrim: rgba(0, 0, 0, 0.55);
   --devtools-swatch-border: rgba(255, 255, 255, 0.45);
   --devtools-danger-surface: rgba(30, 8, 4, 0.92);
+  --devtools-filter-active: #ff79b8;
+  --devtools-filter-active-rgb: 255, 79, 163;
 }
 /* Spec 174 C1: every DevTools icon (createDevIcon) is an outline in the text colour. */
 .devtools__icon {
@@ -171,7 +173,21 @@
   --devtools-icon-size: 12px;
 }
 .devtools__filter-icon { fill: var(--ui-accent); stroke: none; }
-.devtools__filter--active { border-color: var(--ui-accent); background: rgba(var(--ui-accent-rgb), 0.2); color: var(--ui-text); }
+/* TK-329: pulsing pink background while «Змінені» hides untouched parameters, so testers notice the active filter. */
+.devtools__filter--active {
+  border-color: var(--devtools-filter-active);
+  background: rgba(var(--devtools-filter-active-rgb), 0.34);
+  color: var(--ui-text);
+  animation: devtools-filter-pulse 1.8s ease-in-out infinite;
+}
+.devtools__filter--active .devtools__filter-icon { fill: var(--devtools-filter-active); }
+@keyframes devtools-filter-pulse {
+  0%, 100% { background: rgba(var(--devtools-filter-active-rgb), 0.16); }
+  50% { background: rgba(var(--devtools-filter-active-rgb), 0.56); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .devtools__filter--active { animation: none; }
+}
 .devtools__filter:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
 .devtools__search-status {
   flex: 1 0 100%;

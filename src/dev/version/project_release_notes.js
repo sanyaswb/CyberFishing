@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-329: DevTools «Змінені» filter button pulses with a smooth pink background while active.",
   "TK-328.1: in DevTools «Конфіг» with «Змінені», include changed parameters from every section (skipped CONFIG.locations.map, CONFIG.debug, database catalogs) as one flat deduplicated list.",
   "TK-328: DevTools «Змінені» shows changes in their owning section instead of duplicating into «Конфіг», flattens «Конфіг» when entered, and tracks numberList and custom weather/debug config controls.",
   "TK-327.1: weather DevTools — groups open in place, selector buttons, event switches with the generated course, wind by events.",
