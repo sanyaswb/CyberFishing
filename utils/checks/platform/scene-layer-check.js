@@ -583,8 +583,9 @@ async function checkPixiSceneLayer() {
     water: { active: false, mapWidth: 192, mapHeight: 48, stepMs: 0, driftSpeed: 0,
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
-    ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 } },
-  "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss");
+    ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
+    starfall: { active: false, stars: 0, pool: 0 } },
+  "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -724,6 +725,82 @@ async function checkRadiationGrain() {
   assert.deepEqual([grid.visible, grain.status.active, frame(world(0))], [false, false, false], "then hidden and idle");
   grain.dispose();
   assert.equal(canvasTextures[0].destroyed, true, "dispose frees the tile");
+}
+
+// Spec 182 stage C (TK-352): the starfall's ordinary stars — only in the sky zones, as many a minute as the night's
+// strength asks, streaks that fly down at a slant and fade, a fixed pool, frames only while a star flies.
+async function checkStarfall() {
+  const { PixiStarfallRenderer } = await importSource("src/platform/browser/scene/pixi_starfall_renderer.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const { pixi, canvasTextures } = fakePixi();
+  const { documentTarget } = fakeDom();
+  let seed = 7;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const stars = new PixiStarfallRenderer({ pixi, documentTarget, random });
+  assert.equal(canvasTextures.length, 1, "one streak texture, drawn once in code");
+  const stage = new pixi.Container();
+  stars.mount(stage);
+  const [container] = stage.children;
+  assert.equal(container.blendMode, "add", "the stars glow additively");
+  const settings = JSON.parse(JSON.stringify(CONFIG.canvas.starfall));
+  const sky = { x: 0, y: 0, width: 1200, height: 250 };
+  const world = (strength, zones = [sky]) => ({ weather: { starfall: strength }, skyZoned: true,
+    skyRegions: { count: zones.length, getAt: (index) => zones[index] }, backgroundLayers: { count: 0 } });
+  let now = 1000;
+  const frame = (model, options = settings) => { now += 1000 / 60; return stars.update(model, 1200, 700, now, options); };
+  assert.equal(frame(world(0)), false, "no starfall: nothing, no frame");
+  assert.equal(frame(world(1), { ...settings, enabled: false }), false, "switched off: nothing");
+  assert.equal(frame(null), false, "off the scene: nothing");
+  // A minute at full strength: count the stars as they appear, where they start and how they fly.
+  const run = (strength, seconds, zones) => {
+    const shownBefore = new Map();
+    let spawned = 0, frames = 0, presented = 0, outsideStart = 0, maxTail = 0, brightBelow = 0;
+    const lastY = new Map();
+    let falling = 0, moves = 0;
+    for (let step = 0; step < seconds * 60; step += 1) {
+      if (frame(world(strength, zones))) presented += 1;
+      frames += 1;
+      container.particleChildren.forEach((particle, index) => {
+        const was = shownBefore.get(index) ?? 0;
+        if (particle.alpha > 0 && was === 0) {
+          spawned += 1;
+          if (!(particle.x >= sky.x - 20 && particle.x <= sky.x + sky.width + 20 && particle.y >= sky.y - 20 &&
+            particle.y <= sky.y + sky.height + 20)) outsideStart += 1;
+        } else if (particle.alpha > 0 && was > 0) {
+          moves += 1;
+          if (particle.y > lastY.get(index)) falling += 1;
+        }
+        if (particle.alpha > 0) {
+          maxTail = Math.max(maxTail, particle.scaleX * 64);
+          if (particle.y > sky.y + sky.height + 150 && particle.alpha > settings.opacity * 0.5) brightBelow += 1;
+        }
+        shownBefore.set(index, particle.alpha);
+        lastY.set(index, particle.y);
+      });
+    }
+    return { spawned, frames, presented, outsideStart, maxTail, brightBelow, falling, moves };
+  };
+  const full = run(1, 60);
+  const expected = settings.perMinute[1];
+  assert.ok(full.spawned > expected * 0.6 && full.spawned < expected * 1.4,
+    `full strength: about perMinute stars a minute (${full.spawned} of ~${expected})`);
+  assert.equal(full.outsideStart, 0, "every star starts inside the sky zone");
+  assert.ok(full.falling === full.moves && full.moves > 0, "the stars fly down");
+  assert.ok(full.maxTail <= settings.lengthPx[1] + 1e-6 && full.maxTail > settings.lengthPx[0] * 0.5, "the tail grows to its length");
+  assert.ok(full.brightBelow <= 2, `a star that leaves the sky fades (${full.brightBelow} bright below it)`);
+  assert.equal(stars.status.pool, Math.min(96, Math.ceil(settings.perMinute[1] / 60 * settings.lifeSec[1] * 2) + 4),
+    "a pool sized by the settings");
+  const weak = run(0.25, 60);
+  assert.ok(weak.spawned < full.spawned * 0.5, `a quarter of the strength: fewer stars (${weak.spawned} vs ${full.spawned})`);
+  assert.ok(weak.presented < weak.frames * 0.6, `between stars no frames (${weak.presented} of ${weak.frames})`);
+  assert.equal(run(1, 10, [{ x: 0, y: 900, width: 100, height: 100 }]).spawned, 0, "no sky zone on screen: no stars");
+  const pool = stars.status.pool;
+  for (let step = 0; step < 120; step += 1) frame(world(0));
+  assert.deepEqual([stars.status.stars, stars.status.active, container.visible, frame(world(0))], [0, false, false, false],
+    "the night's strength gone: the last stars finish, then nothing");
+  assert.equal(stars.status.pool, pool, "the pool never grew during play");
+  stars.dispose();
+  assert.equal(canvasTextures[0].destroyed, true, "dispose frees the streak");
 }
 
 // Spec 179 stage C (TK-323): the emission's fiery ash over a fake Pixi with the particle contract.
@@ -1251,8 +1328,10 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const app = wet.apps[0];
   app.initCall.resolve();
   assert.equal(await wet.layer.whenReady(), true);
-  // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod.
-  const [, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod. Spec 182: the falling stars
+  // right over the background, under the water.
+  const [, stars, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  assert(stars instanceof wet.pixi.ParticleContainer && stars.blendMode === "add", "the starfall lies right over the background");
   assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
     "the rain's rings are mounted right after the water's mask");
   const filter = waterContainer.filters[0];
@@ -1293,7 +1372,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
   if (lowTexture) lowTexture.width = 640;
   lowWet.layer.render(frame);
-  const lowFilter = lowWet.apps[0].stage.children[1].filters[0];
+  const lowFilter = lowWet.apps[0].stage.children[2].filters[0];
   assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
 
   assert.equal(map.updates, 1, "each step uploads the map once");
@@ -1336,7 +1415,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
-  const zoneMask = app.stage.children[3];
+  const zoneMask = app.stage.children[4];
   const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
   frame.world.clipRegions = list(two);
   clock.now += 40;
@@ -1948,6 +2027,7 @@ async function main() {
   await checkRain();
   await checkAsh();
   await checkRadiationGrain();
+  await checkStarfall();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();

@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.47 - Falling stars on the scene (spec 182 stage C, TK-352)
+
+- On a starfall night short bright streaks fly down at a slant in the sky zones, more or fewer as the night's strength rises and falls; a star that leaves the sky fades. They lie over the sky, under the water and the world; frames only while a star flies.
+- Their look is live in DevTools «Конфіг» → canvas → starfall (stars a minute, tail, speed, slant, colour).
+
 ## v0.51.46 - The starfall's night timeline (spec 182 stage B, TK-351)
 
 - A starfall night is checked once at 21:00; a starfall night plans several periods of random strength (some quiet) that rise and fall smoothly until 5:00, and at most one bolide at a random moment; none during an emission. Settings in the location's weather (`starfall`).
@@ -38,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.38 - Debuff «Радіація» in the HUD (spec 181 stage E, TK-345)
 
 - While the location's radiation is above zero, a red badge with the radiation sign stands in the indicator column under the radio (a debuff without a timer); it fades when the radiation is gone.
-
-## v0.51.37 - DevTools «СТАТУСИ» (spec 181 stage D, TK-344)
-
-- DevTools «Гра» → «СТАТУСИ»: the active buffs and debuffs with their time left and modifiers, «Видати» / «Зняти» / «Зняти всі», and the descriptions (`CONFIG.statusEffects`) as live parameters — the vodka's duration and shares change at once.

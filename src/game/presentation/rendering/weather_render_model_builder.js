@@ -38,6 +38,10 @@ export class WeatherRenderModelBuilder {
     target.ash = this.#ashHold ?? target.emission;
     // Spec 179 stage D (TK-338): the location's radiation 0…1 (the hiss over the scene).
     target.radiation = share(environment?.radiation);
+    // Spec 182 (TK-352): the starfall's strength now (StarfallNight; 0 outside its nights and during an emission) and
+    // the bolides that fell.
+    target.starfall = share(environment?.starfall?.strength);
+    target.bolideSerial = Number(environment?.starfall?.bolideSerial) || 0;
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
     const rawStrength = environment?.wind?.strength;

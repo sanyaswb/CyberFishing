@@ -2522,5 +2522,53 @@
   "MAP_DB.weather.starfall.bolideChance": {
     "label": "Шанс боліда",
     "description": "Шанс (дуже малий) одного боліда за зорепадну ніч; рахується раз після вдалої перевірки ночі."
+  },
+  "canvas.starfall": {
+    "label": "Зорепад: зорі (загальне)",
+    "description": "Вигляд звичайних зір зорепаду (spec 182): частота за силою ночі, хвіст, швидкість, нахил; падають лише в зонах неба."
+  },
+  "canvas.starfall.enabled": {
+    "label": "Зорі",
+    "description": "Малювати зорі зорепаду на сцені WebGL."
+  },
+  "canvas.starfall.perMinute": {
+    "label": "Зір за хвилину [0, 100 %]",
+    "description": "Скільки зір падає за хвилину на видимому небі при силі ночі 0 і 100 %."
+  },
+  "canvas.starfall.lengthPx": {
+    "label": "Довжина хвоста, px",
+    "description": "Найкоротший і найдовший хвіст зорі (логічні пікселі)."
+  },
+  "canvas.starfall.widthPx": {
+    "label": "Товщина, px",
+    "description": "Товщина сліду зорі."
+  },
+  "canvas.starfall.speedPx": {
+    "label": "Швидкість, px/с",
+    "description": "Найповільніша й найшвидша зоря."
+  },
+  "canvas.starfall.lifeSec": {
+    "label": "Політ, с",
+    "description": "Скільки летить зоря (найкоротше й найдовше)."
+  },
+  "canvas.starfall.angleDeg": {
+    "label": "Нахил, °",
+    "description": "Кут падіння від горизонту; вліво чи вправо — випадково."
+  },
+  "canvas.starfall.angleJitterDeg": {
+    "label": "Розкид нахилу, °",
+    "description": "На скільки градусів нахил окремої зорі відрізняється (±)."
+  },
+  "canvas.starfall.fadeShare": {
+    "label": "Згасання",
+    "description": "Частка польоту, за яку зоря згасає (і та, що вилетіла за небо)."
+  },
+  "canvas.starfall.color": {
+    "label": "Колір",
+    "description": "Колір зорі."
+  },
+  "canvas.starfall.opacity": {
+    "label": "Яскравість",
+    "description": "Непрозорість зорі в найяскравіший момент."
   }
 }

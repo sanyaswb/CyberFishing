@@ -9,6 +9,7 @@ import { PixiWaterRenderer } from "./pixi_water_renderer.js";
 import { PixiRainRenderer } from "./pixi_rain_renderer.js";
 import { PixiAshRenderer } from "./pixi_ash_renderer.js";
 import { PixiRadiationGrainRenderer } from "./pixi_radiation_grain_renderer.js";
+import { PixiStarfallRenderer } from "./pixi_starfall_renderer.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -60,6 +61,8 @@ export class PixiSceneLayer {
   #ash = null;
   #grain = null;
   #getGrainSettings;
+  #starfall = null;
+  #getStarfallSettings;
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
@@ -101,7 +104,7 @@ export class PixiSceneLayer {
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
     getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null,
-    getRadiationGrainSettings = () => null }) {
+    getRadiationGrainSettings = () => null, getStarfallSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -127,6 +130,8 @@ export class PixiSceneLayer {
     this.#getWeatherSettings = getWeatherSettings;
     // Spec 179 stage D (TK-338): CONFIG.canvas.radiationGrain, the radiation's hiss.
     this.#getGrainSettings = getRadiationGrainSettings;
+    // Spec 182 stage C (TK-352): CONFIG.canvas.starfall, the falling stars' look.
+    this.#getStarfallSettings = getStarfallSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -150,6 +155,9 @@ export class PixiSceneLayer {
     const router = this.#router;
     const world = router.drawsOnScene("background") ? frame.world : null;
     let changed = this.#background.update(world);
+    if (this.#starfall.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getStarfallSettings())) {
+      changed = true;
+    }
     // TK-271.2: the rain first, so the water's ripples read where its rings are this frame (the draw order is the stage's).
     const weatherSettings = this.#getWeatherSettings();
     if (this.#rain.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now,
@@ -204,7 +212,8 @@ export class PixiSceneLayer {
     if (this.#app === null) return { state };
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
-      water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status };
+      water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status,
+      starfall: this.#starfall.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -230,6 +239,7 @@ export class PixiSceneLayer {
     this.#rain?.dispose();
     this.#ash?.dispose();
     this.#grain?.dispose();
+    this.#starfall?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
     this.#worldEntities?.dispose();
@@ -258,6 +268,9 @@ export class PixiSceneLayer {
       this.#textures = new SceneTextureCache({ pixi: this.#pixi, images: this.#images, renderer: app.renderer });
       this.#background = new PixiBackgroundRenderer({ pixi: this.#pixi, stage: app.stage, textures: this.#textures,
         renderer: app.renderer });
+      // Spec 182 stage C: the falling stars right over the background's sky, under the water and the whole world.
+      this.#starfall = new PixiStarfallRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#starfall.mount(app.stage);
       // Spec 172 D4: rain; its rings sit on the water and bend it like the boat's wake, its drops fall in front of the
       // tackle (mounted after the rod).
       const rain = new PixiRainRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });

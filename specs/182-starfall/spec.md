@@ -120,3 +120,8 @@
   болід лише попереду. DEV: `hold(strength)`, `bolideNow()`, `forceNight()`. Параметри `MAP_DB.<id>.weather.starfall`:
   `enabled, fromHour, toHour, nightChance, periods, maxStrength, quietChance, blendShare, bolideChance` (замість
   `periodSec` з плану — довжини ділять ніч). RANDOMIZER — `StarfallRandomProbe`.
+- **Етап C (TK-352, v0.51.47).** `world.weather.starfall` / `bolideSerial` пише `WeatherRenderModelBuilder`.
+  `PixiStarfallRenderer` (`src/platform/browser/scene/`): текстура сліду 64×8 (голова справа, прозорий хвіст ліворуч),
+  частинка з якорем на голові, поворот уздовж польоту, `scaleX` = хвіст / 64 (хвіст = min(lengthPx, пройдений шлях));
+  народження — накопичувач `rate × dt × (0,5…1,5)` (без рівного ритму); пул `min(96, ⌈perMinute[1]/60 × lifeSec[1] × 2⌉ + 4)`.
+  `CONFIG.canvas.starfall` поки в `game_config.js` (не в модулях `apply:weather`); DevTools-розділ — етап E.

@@ -181,6 +181,10 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     Smaller cells mean more sprites (one batch, one texture); alpha is written only at a jump.
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
+    Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the
+    sky, under the water and the world): one streak texture drawn once, one additive `ParticleContainer` with a fixed
+    pool, stars only in `world.skyRegions`, a frame only while a star flies (a starfall night between stars presents
+    none).
     Spec 180 D9: the water's waves narrow across the screen with depth only while `canvas.water.lateralContraction` is
     on (the location's `waterProjection.lateralContraction` is the grid's own, separate switch).
 15. Configuration shares are named and documented as shares of the screen (`ui.rod.spine.heightRatio`), never as

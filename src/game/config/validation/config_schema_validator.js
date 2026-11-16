@@ -511,6 +511,7 @@ export class ConfigSchemaValidator {
     this.#validateRainConfig();
     this.#validateAshConfig();
     this.#validateRadiationGrainConfig();
+    this.#validateStarfallConfig();
     this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
@@ -1458,6 +1459,21 @@ export class ConfigSchemaValidator {
     if (!cfg.edges || typeof cfg.edges !== "object") { this.#error(`CONFIG.${path}.edges`, "missing"); return; }
     this.#requireParameterLabel(`${path}.edges`);
     this.#requireRangeNumbers(`${path}.edges`, cfg.edges, [["centerShare", 0, 1], ["clearRadius", 0, 1], ["feather", 0.01, 2]]);
+  }
+
+  // Spec 182 stage C (TK-352): the starfall's ordinary stars (CONFIG.canvas.starfall).
+  #validateStarfallConfig() {
+    const path = "canvas.starfall";
+    const cfg = this.config.canvas?.starfall;
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing starfall config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireRangeNumbers(path, cfg, [["widthPx", 0.5, 20], ["angleDeg", 0, 90], ["angleJitterDeg", 0, 45],
+      ["fadeShare", 0, 1], ["opacity", 0, 1]]);
+    this.#requireRangePairs(path, cfg, [["perMinute", 0, 600, true], ["lengthPx", 1, 2000, true], ["speedPx", 1, 5000, true],
+      ["lifeSec", 0.05, 10, true]]);
+    this.#requirePattern(`CONFIG.${path}.color`, cfg.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+    this.#requireParameterLabel(`${path}.color`);
   }
 
   // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).
