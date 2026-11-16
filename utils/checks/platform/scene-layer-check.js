@@ -1754,7 +1754,9 @@ async function checkDevWiring() {
     renderWeather: (parent) => insert(parent, nodeOf("WEATHER"), 1) }).render({});
   assert(rowsOf().includes("вода: анімується · карта 192×48 · крок 0.12 мс · течія 15.0 пікс/с"),
     "the water's state, step cost and drift are shown");
-  // Spec 180 D4: the weather (with the water) above; the scene's switch, the context buttons and «Оновити» at the bottom.
+  // TK-333.1 (owner): the scene's mode switch is the first row of the section.
+  assert(rowsOf()[0].startsWith("Сцена WebGL (інакше все на 2D)"), "the mode switch is the section's first parameter");
+  // Spec 180 D4: the weather (with the water) above; the context buttons and «Оновити» at the bottom.
   assert(rowsOf().indexOf("WEATHER") >= 0 && rowsOf().indexOf("WEATHER") < rowsOf().indexOf("Втратити WebGL-контекст") &&
     rowsOf().at(-1) === "↻ Оновити", "the WebGL buttons come after every section");
   assert(rowsOf().includes("шар WebGL: активний") && rowsOf().includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));

@@ -55,6 +55,19 @@ export class SceneLayerDevSection {
     if (!content) return;
     content.replaceChildren();
     const status = this.#layer.getStatus();
+    // TK-333.1 (owner): the scene's mode is the section's first parameter, above its state and the weather.
+    if (status.state !== "inactive") {
+      this.#ui.createSwitcherRow(
+        "Сцена WebGL (інакше все на 2D)",
+        this.#router.mode === "webgl",
+        content,
+        (enabled) => {
+          this.#router.setMode(enabled ? "webgl" : "canvas");
+          this.#fill();
+        },
+        ["SCENE_LAYER", "mode"],
+      );
+    }
     this.#ui.createInfoRow(
       "шар WebGL",
       STATE_LABELS[status.state] ?? status.state,
@@ -121,22 +134,12 @@ export class SceneLayerDevSection {
         ["SCENE_LAYER", "routing", kind],
       );
     }
-    // Spec 180 D4: the weather (with the water) first; the scene's switch, the WebGL context and «Оновити» at the very
-    // bottom, under every section. TK-333: DevToolsUI puts a section's rows before its nested sections, so these rows
-    // go into a section slot made after the weather (a slot stands among the sections, in the order it was made).
+    // Spec 180 D4: the weather (with the water) above; the WebGL context and «Оновити» at the very bottom, under every
+    // section. TK-333: DevToolsUI puts a section's rows before its nested sections, so these rows go into a section slot
+    // made after the weather (a slot stands among the sections, in the order it was made).
     this.#renderWeather?.(content);
     const bottom = this.#ui.createSectionSlot(content);
     if (status.state !== "inactive") {
-      this.#ui.createSwitcherRow(
-        "Сцена WebGL (інакше все на 2D)",
-        this.#router.mode === "webgl",
-        bottom,
-        (enabled) => {
-          this.#router.setMode(enabled ? "webgl" : "canvas");
-          this.#fill();
-        },
-        ["SCENE_LAYER", "mode"],
-      );
       this.#ui.createButtonRow("Втратити WebGL-контекст", bottom, () => {
         this.#layer.loseContext();
         this.#fill();
