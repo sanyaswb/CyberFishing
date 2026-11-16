@@ -1,5 +1,5 @@
 const STORAGE_KEY = "dev_tools_panel_settings";
-const DEFAULTS = Object.freeze({ adaptiveWidth: false, fullscreen: false, side: "left", searchMode: "filter" });
+const DEFAULTS = Object.freeze({ adaptiveWidth: true, fullscreen: false, side: "left", searchMode: "filter" });
 const SEARCH_MODES = Object.freeze([Object.freeze({ value: "filter", label: "Фільтр" }),
   Object.freeze({ value: "reveal", label: "Розгорнути" })]);
 const SIDES = Object.freeze([Object.freeze({ value: "left", label: "Ліворуч" }), Object.freeze({ value: "right", label: "Праворуч" })]);

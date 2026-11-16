@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.22 - Adaptive width on by default in DevTools (TK-331)
+
+- DevTools «Панель»: «Адаптивна ширина (ПК)» (`adaptiveWidth`) is now enabled by default (`PanelSettingsModule` and `DevToolsUI.setPanelOptions`).
+
 ## v0.51.21 - Immediate Weather DevTools redraw inside drill-in sections (TK-330)
 
 - Weather DevTools: clicking «Викид: пік зараз», toggles, or action buttons inside drilled-in «Стан і керування» (or any drilled weather subsection) now refreshes the visible drill-in immediately via `DevToolsUI.preserveDrill`; `EmissionModel.force` also clears manual intensity hold when entering an active phase.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.13 - Vignette and blur switch separately (TK-324.2)
 
 - Emission screen: the darkening (emission.screen.vignette.enabled) and the blur (emission.screen.blur.enabled) switch on and off on their own in DevTools «Конфіг», so each can be measured; without darkening the veil paints no gradient.
-
-## v0.51.12 - Irregular blur pulses and a swaying vignette (TK-324.1)
-
-- Emission screen: the blur comes in sharp, glitch-like pulses of random strength and an ever-changing rhythm that quickens toward the peak; the darkening has smoother edges and sways like a swell, closing in deeper than it opens out.

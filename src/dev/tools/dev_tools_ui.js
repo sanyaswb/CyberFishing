@@ -387,7 +387,7 @@ export class DevToolsUI {
   // TK-317: side ("left" | "right") — the edge the side panel opens from on a computer and a landscape phone (a portrait
   // phone shows it full screen); the zone editor's opening edge follows it.
   // searchMode: "filter" | "reveal" (TK-319).
-  setPanelOptions({ adaptiveWidth = false, fullscreen = false, side = "left", searchMode = "filter" } = {}) {
+  setPanelOptions({ adaptiveWidth = true, fullscreen = false, side = "left", searchMode = "filter" } = {}) {
     this.#panel.classList.toggle("devtools--adaptive", adaptiveWidth === true);
     this.#panel.classList.toggle("devtools--fullscreen", fullscreen === true);
     this.#panel.classList.toggle("devtools--right", side === "right");

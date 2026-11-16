@@ -11,6 +11,12 @@
 
 ## Задачі в роботі
 
+- [ ] **TK-331 — DevTools «Панель»: увімкнути `adaptiveWidth` («Адаптивна ширина (ПК)») за замовчуванням (власник, 2026-11-16).** «так постав по дефолту цей параметр ввімкненим».
+  - Змінено: `DEFAULTS.adaptiveWidth` у `src/dev/tools/modules/panel_settings_module.js` та параметр за замовчуванням `DevToolsUI.setPanelOptions` на `true`; оновлено тест `TK-312` у `utils/checks/tooling/devtools-controls-check.js`.
+  - [x] v0.51.22: зроблено. Візуально агентом не перевірялося.
+  - Перевірка: `devtools-controls`; Full (`npm run check`).
+  - [ ] Перевірка власника: `dev.html` на ПК у чистому профілі (або після видалення `dev_tools_panel_settings` у `localStorage`) — DevTools відкривається з адаптивною шириною, у вкладці «Панель» перемикач «Адаптивна ширина (ПК)» увімкнений.
+
 - [ ] **TK-330 — DevTools «ПОГОДА»: миттєве оновлення секцій при перерисовці всередині drill-in і скидання hold при примусовому старті викиду (власник, 2026-11-16).** «ну я натиснув викид зараз і світчер emission не ввімкнувся але коли я закрив вкладку і відкрив розділ заново то він вже активний, працює не стабільно і не зрозуміло».
   - Знайдено: при відкритому `СЦЕНА WebGL` (`depth 0`) → `ПОГОДА` (`depth 1`) розділи `Стан і керування`, `ДОЩ…ПОЧАТОК І ПОРОГИ`, `Збереження` знаходяться на `depth 2 >= MAX_INLINE_SECTION_DEPTH` (`dev_tools_ui.js:17`) і відкриваються як drill-in (`focusSection` переносить `content` у `.devtools__drill`). Натискання «Викид: пік зараз» або будь-якого перемикача/кнопки викликало `WeatherDevSection.#fill()`, що перемальовував прихований `this.#content`, лишаючи на екрані старий `oldControls` у `.devtools__drill` до закриття/повторного відкриття панелі. Додатково `EmissionModel.force("onset"|"peak"|"fade")` не знімав `#intensityHold`, тож при `hold = 0` фаза лишалася `"idle"`.
   - Змінено: додано `DevToolsUI.preserveDrill(container, rebuild)` (`#leaveDrill()` перед знищенням/звільненням старих біндингів і повернення фокусу на перебудований drill-in або оновлення активного фільтра), обгорнуто `WeatherDevSection.#fill()`, і у `EmissionModel.force` скинуто `#intensityHold = null` для активних фаз.
