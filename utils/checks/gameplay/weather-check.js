@@ -178,6 +178,22 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   model.releaseAll();
   assert.equal(model.snapshot.frozen, false, "↺: every process back to its own course");
   assert.equal(model.hold("snow", 1), false, "unknown kinds are refused");
+  // TK-358: the DevTools fade («перехід, с») lasts while held and until the release has arrived; the rain's own events
+  // afterwards ease in at the location's smoothSec again (it stayed at the hold's fade before).
+  config.rain.enabled = true;
+  config.rain.smoothSec = 4;
+  model.hold("rain", 0.6, { fadeSec: 0 });
+  model.update(16, null);
+  model.hold("rain", null, { fadeSec: 0 });
+  model.update(16, null);
+  assert.equal(model.snapshot.rain, 0, "released at once (fade 0)");
+  model.start("rain", { peakStrength: 1, atPeak: true });
+  model.update(1000, null);
+  assert.equal(model.snapshot.rain, 1, "start at the peak shows the peak");
+  model.stop("rain");
+  model.update(1000, null);
+  near(model.snapshot.rain, 1 - 1 / config.rain.smoothSec, "an ordinary end fades at the settings' smoothSec, not the hold's 0");
+  config.rain.enabled = false;
 }
 
 // 6. A storm raises the rain's chance and strength by its multipliers × its strength.

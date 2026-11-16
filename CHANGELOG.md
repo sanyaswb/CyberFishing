@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.56 - DevTools weather fade no longer sticks (TK-358.1)
+
+- After a DevTools weather switch (rain, storm, fog) was turned off, its quick fade stayed for the rest of the session, so the natural events of that kind came and went faster than the location smoothSec. The fade now lasts only while held and until the release has arrived.
+
 ## v0.51.55 - Weather code review: shared parts, fixed bugs (TK-358)
 
 - The rain, water, ash and starfall share one implementation of their zones on screen, zone masks, background placement and colours; the weather modules use the engine number helpers. The look is unchanged.
@@ -40,8 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - On a starfall night short bright streaks fly down at a slant in the sky zones, more or fewer as the night's strength rises and falls; a star that leaves the sky fades. They lie over the sky, under the water and the world; frames only while a star flies.
 - Their look is live in DevTools «Конфіг» → canvas → starfall (stars a minute, tail, speed, slant, colour).
-
-## v0.51.46 - The starfall's night timeline (spec 182 stage B, TK-351)
-
-- A starfall night is checked once at 21:00; a starfall night plans several periods of random strength (some quiet) that rise and fall smoothly until 5:00, and at most one bolide at a random moment; none during an emission. Settings in the location's weather (`starfall`).
-- DevTools «РАНДОМАЙЗЕР» → «Зорепад»: the share of starfall nights, periods, quiet stretches, the strength by the night's hours and the bolides. Stars on screen come with stage C.

@@ -86,6 +86,8 @@ export class WeatherEventProcess {
       : snapshot.strength < target ? Math.min(target, snapshot.strength + dt / smoothSec)
         : Math.max(target, snapshot.strength - dt / smoothSec);
     snapshot.target = target;
+    // TK-358: a hold's fade lasts while held and until the release has arrived; then the settings' smoothSec again.
+    if (this.#held === null && this.#smoothSecOverride !== null && snapshot.strength === target) this.#smoothSecOverride = null;
     this.#sync(settings, chanceMult);
   }
 
