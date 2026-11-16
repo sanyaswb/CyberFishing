@@ -2322,5 +2322,113 @@
   "emission.screen.blur.floor": {
     "label": "Між пульсами",
     "description": "Частка розмиття, що лишається між пульсами."
+  },
+  "statusEffects": {
+    "label": "Статуси гравця (бафи й дебафи)",
+    "description": "Описи бафів і дебафів (spec 181): тривалість, складання, модифікатори — частки впливу, що лишаються."
+  },
+  "statusEffects.vodka": {
+    "label": "Горілка",
+    "description": "Баф від випитої горілки: ефекти викиду на екрані слабші, поки діє."
+  },
+  "statusEffects.vodka.kind": {
+    "label": "Вид",
+    "description": "buff — баф, debuff — дебаф (червона обводка значка)."
+  },
+  "statusEffects.vodka.icon": {
+    "label": "Значок",
+    "description": "Малюнок значка в HUD (presentation/hud/status_icons.js)."
+  },
+  "statusEffects.vodka.badge": {
+    "label": "Значок у HUD",
+    "description": "Показувати круглий значок під радіо."
+  },
+  "statusEffects.vodka.durationSec": {
+    "label": "Тривалість, с",
+    "description": "Скільки діє (реальні секунди). 0 — без таймера: діє, поки його тримає джерело (слот, радіація)."
+  },
+  "statusEffects.vodka.stacking": {
+    "label": "Повторне застосування",
+    "description": "renew — час починається знову; max — довший із залишку й повного часу; add — ще один стек (до «Стеків»)."
+  },
+  "statusEffects.vodka.maxStacks": {
+    "label": "Стеків",
+    "description": "Скільки разів складається (для add)."
+  },
+  "statusEffects.vodka.timeBase": {
+    "label": "Час",
+    "description": "real — реальний час сторінки (spec 181 Q1)."
+  },
+  "statusEffects.vodka.modifiers": {
+    "label": "Модифікатори",
+    "description": "Частки впливу, що лишаються: 1 — без змін, 0 — немає."
+  },
+  "statusEffects.vodka.modifiers.emission": {
+    "label": "Викид на екрані",
+    "description": "Як статус змінює затемнення й розмиття викиду."
+  },
+  "statusEffects.vodka.modifiers.emission.vignette": {
+    "label": "Затемнення",
+    "description": "Частка затемнення викиду, що лишається (0,5 — рівно вдвічі слабше на будь-якій фазі)."
+  },
+  "statusEffects.vodka.modifiers.emission.blur": {
+    "label": "Розмиття",
+    "description": "Частка сили розмиття (px), що лишається."
+  },
+  "statusEffects.vodka.modifiers.emission.blurRate": {
+    "label": "Частота пульсів",
+    "description": "Частка частоти пульсів розмиття (1 — ритм викиду той самий)."
+  },
+  "statusEffects.gasMask": {
+    "label": "Протигаз",
+    "description": "Баф, поки протигаз у слоті: ефектів викиду на екрані немає (значка немає — його видно в слоті)."
+  },
+  "statusEffects.gasMask.kind": {
+    "label": "Вид",
+    "description": "buff — баф, debuff — дебаф (червона обводка значка)."
+  },
+  "statusEffects.gasMask.icon": {
+    "label": "Значок",
+    "description": "Малюнок значка в HUD (presentation/hud/status_icons.js)."
+  },
+  "statusEffects.gasMask.badge": {
+    "label": "Значок у HUD",
+    "description": "Показувати круглий значок під радіо."
+  },
+  "statusEffects.gasMask.durationSec": {
+    "label": "Тривалість, с",
+    "description": "Скільки діє (реальні секунди). 0 — без таймера: діє, поки його тримає джерело (слот, радіація)."
+  },
+  "statusEffects.gasMask.stacking": {
+    "label": "Повторне застосування",
+    "description": "renew — час починається знову; max — довший із залишку й повного часу; add — ще один стек (до «Стеків»)."
+  },
+  "statusEffects.gasMask.maxStacks": {
+    "label": "Стеків",
+    "description": "Скільки разів складається (для add)."
+  },
+  "statusEffects.gasMask.timeBase": {
+    "label": "Час",
+    "description": "real — реальний час сторінки (spec 181 Q1)."
+  },
+  "statusEffects.gasMask.modifiers": {
+    "label": "Модифікатори",
+    "description": "Частки впливу, що лишаються: 1 — без змін, 0 — немає."
+  },
+  "statusEffects.gasMask.modifiers.emission": {
+    "label": "Викид на екрані",
+    "description": "Як статус змінює затемнення й розмиття викиду."
+  },
+  "statusEffects.gasMask.modifiers.emission.vignette": {
+    "label": "Затемнення",
+    "description": "Частка затемнення викиду, що лишається (0,5 — рівно вдвічі слабше на будь-якій фазі)."
+  },
+  "statusEffects.gasMask.modifiers.emission.blur": {
+    "label": "Розмиття",
+    "description": "Частка сили розмиття (px), що лишається."
+  },
+  "statusEffects.gasMask.modifiers.emission.blurRate": {
+    "label": "Частота пульсів",
+    "description": "Частка частоти пульсів розмиття (1 — ритм викиду той самий)."
   }
 }

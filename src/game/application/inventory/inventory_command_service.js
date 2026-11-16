@@ -117,7 +117,8 @@ export class InventoryCommandService {
   // after the inventory; without them a stack is never a bait candidate.
   setLiveBaitHook(hook) { this.#liveBaitHook = hook || null; }
   setLiveBaitStacks(stacks) { this.#liveBaitStacks = stacks || null; }
-  // Spec 179 stage F (TK-340): what a used item does (PlayerProtectionEffects), composed after the inventory.
+  // Spec 179 stage F (TK-340), spec 181: what a used item does (PlayerStatusEffects: apply(statusId, { source })),
+  // composed after the inventory.
   setItemEffects(effects) { this.#itemEffects = effects || null; }
 
   // Spec 151: devices away from the player (a bait boat on the water) report their roots here.
@@ -763,18 +764,18 @@ export class InventoryCommandService {
     return result;
   }
 
-  // TK-340: an item with gameplayStats.use is used whole: its effect starts (or renews) and one is consumed. The effect
-  // goes first, so a refused use keeps the item; the editor closes when the last one is gone.
+  // TK-340, spec 181: an item with gameplayStats.use ({ statusId }) is used whole: its status starts (or stacks by its
+  // rule) and one is consumed. The status goes first, so a refused use keeps the item; the editor closes when the last one is gone.
   #useItem(instanceId) {
     const source = this.#repository.get(instanceId);
     if (!source) return this.#failure(this.#messages.itemNotFound);
     // The hydrated item carries its gameplay stats as effectiveStats (authored stats with the instance's overrides).
     const use = this.#hydrate(source)?.effectiveStats?.use;
-    if (!use || typeof use !== "object") return this.#failure(this.#messages.itemNotUsable);
-    if (!this.#itemEffects?.apply(use)) return this.#failure(this.#messages.itemUseUnavailable);
+    if (!use || typeof use !== "object" || typeof use.statusId !== "string") return this.#failure(this.#messages.itemNotUsable);
+    if (!this.#itemEffects?.apply(use.statusId, { source: source.itemId })) return this.#failure(this.#messages.itemUseUnavailable);
     this.#transaction.runAtomic(() => this.#itemRemoval.consume(instanceId, 1));
     if (!this.#repository.has(instanceId)) this.#uiState.showLoadoutPanel();
-    return this.#success({ used: true, effect: use.effect });
+    return this.#success({ used: true, statusId: use.statusId });
   }
 
   #disassembleAssembly(rootInstanceId) {

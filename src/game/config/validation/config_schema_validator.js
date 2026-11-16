@@ -7,6 +7,7 @@ import { InventorySelectorConfigValidator } from "./inventory_selector_config_va
 import { WATER_PROJECTION_RANGES } from "../../domain/locations/illustrated_depth_profile.js";
 import { validateGridMask } from "../../../engine/geometry/grid_mask.js";
 import { ASH_SETTINGS_RANGES, STORM_SETTINGS_RANGES, WIND_SETTINGS_RANGES } from "./weather_settings_ranges.js";
+import { STATUS_KINDS, STATUS_STACKING, STATUS_TIME_BASES } from "../../domain/status/status_effect_rules.js";
 
 export class ConfigSchemaValidator {
   static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
@@ -513,6 +514,7 @@ export class ConfigSchemaValidator {
     this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
+    this.#validateStatusEffectsConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
     if (!cfg || typeof cfg !== "object") { this.#error(path, "missing Spine rod config"); return; }
@@ -1345,6 +1347,43 @@ export class ConfigSchemaValidator {
         this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}[0]`, pair[0], { min, max });
         this.#requireFiniteNumber(`CONFIG.${sectionPath}.${key}[1]`, pair[1], { min, max });
         this.#requireParameterLabel(`${sectionPath}.${key}`);
+      }
+    }
+  }
+
+  // Spec 181 D1: the player's buffs and debuffs (CONFIG.statusEffects): kind, timer, stacking and the modifiers' shares.
+  #validateStatusEffectsConfig() {
+    const all = this.config.statusEffects;
+    if (!all || typeof all !== "object") { this.#error("CONFIG.statusEffects", "missing status effects config"); return; }
+    this.#requireParameterLabel("statusEffects");
+    const oneOf = (path, value, allowed) => {
+      if (!allowed.includes(value)) this.#error(`CONFIG.${path}`, `must be one of ${allowed.join(", ")}`);
+      this.#requireParameterLabel(path);
+    };
+    for (const [id, status] of Object.entries(all)) {
+      const path = `statusEffects.${id}`;
+      if (!status || typeof status !== "object") { this.#error(`CONFIG.${path}`, "must be an object"); continue; }
+      this.#requireParameterLabel(path);
+      oneOf(`${path}.kind`, status.kind, STATUS_KINDS);
+      oneOf(`${path}.stacking`, status.stacking, STATUS_STACKING);
+      oneOf(`${path}.timeBase`, status.timeBase, STATUS_TIME_BASES);
+      this.#requirePattern(`CONFIG.${path}.icon`, status.icon, /^[A-Za-z][\w-]*$/u, "must be an icon id");
+      this.#requireParameterLabel(`${path}.icon`);
+      this.#requireBooleanWithLabel(`${path}.badge`, status.badge);
+      this.#requireFiniteNumber(`CONFIG.${path}.durationSec`, status.durationSec, { min: 0, max: 86400 });
+      this.#requireParameterLabel(`${path}.durationSec`);
+      this.#requireFiniteNumber(`CONFIG.${path}.maxStacks`, status.maxStacks, { min: 1, max: 99 });
+      this.#requireParameterLabel(`${path}.maxStacks`);
+      const modifiers = status.modifiers;
+      if (!modifiers || typeof modifiers !== "object") { this.#error(`CONFIG.${path}.modifiers`, "must be an object"); continue; }
+      this.#requireParameterLabel(`${path}.modifiers`);
+      for (const [system, keys] of Object.entries(modifiers)) {
+        if (!keys || typeof keys !== "object") { this.#error(`CONFIG.${path}.modifiers.${system}`, "must be an object"); continue; }
+        this.#requireParameterLabel(`${path}.modifiers.${system}`);
+        for (const [key, share] of Object.entries(keys)) {
+          this.#requireFiniteNumber(`CONFIG.${path}.modifiers.${system}.${key}`, share, { min: 0, max: 1 });
+          this.#requireParameterLabel(`${path}.modifiers.${system}.${key}`);
+        }
       }
     }
   }

@@ -714,12 +714,13 @@ export class WeatherDevSection {
       ` · після дощу ×${weather.fogRainBoost ?? 1}`, controls);
     this.#ui.createInfoRow("викид", this.#emissionText(emission), controls);
     if (emission) this.#ui.createInfoRow("радіація", `${percent(emission.radiation)}${emission.radiationForced ? " (вручну)" : ""}`, controls);
-    // TK-340: the player's protection from the emission (a gas mask wins; a drink protects partly for a while).
-    const protection = this.#weather.getProtection?.() ?? null;
-    if (protection) {
-      const text = protection.gasMask ? "протигаз (ефектів немає, закид дозволено)"
-        : protection.drink > 0 ? `горілка ${percent(protection.drink)} · ще ${seconds(protection.drinkLeftSec)}` : "немає";
-      this.#ui.createInfoRow("захист", text, controls);
+    // TK-340, spec 181: the player's statuses against the emission (the gas mask held by its slot, the vodka's time).
+    const statuses = this.#weather.getStatuses?.() ?? null;
+    if (statuses) {
+      const active = statuses.list();
+      const text = active.length === 0 ? "немає" : active.map((entry) => entry.held ? entry.id
+        : `${entry.id} · ще ${seconds(statuses.remainingSec(entry.id))}`).join(", ");
+      this.#ui.createInfoRow("статуси", text, controls);
     }
     const windText = wind
       ? `${WIND_NAMES[wind.direction] ?? wind.direction}${wind.state && wind.direction !== 0 ? ` · ${WIND_STATE_LABELS[wind.state] ?? wind.state}` : ""}` +

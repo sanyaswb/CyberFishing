@@ -1361,46 +1361,97 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const { EmissionScreenEffect } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
   const { EmissionVeilDomRenderer } = require("../../../src/platform/browser/dom/emission_veil_dom_renderer.js");
   const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
-  const { PlayerProtectionEffects } = require("../../../src/game/application/world/player_protection_effects.js");
+  const { PlayerStatusEffects } = require("../../../src/game/application/world/player_status_effects.js");
+  const { EquipmentStatusSource } = require("../../../src/game/application/world/equipment_status_source.js");
   let env = { emission: { phase: "idle", intensity: 0 } };
   let equipped = {};
   let clockMs = 0;
-  const effects = new PlayerProtectionEffects({ now: () => clockMs });
-  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, effects });
+  // A scheduler double with the timer contract: one pending callback per id, run when the test moves the clock.
+  const timers = new Map();
+  let timerId = 0;
+  const scheduler = { setTimeout: (fn, ms) => { timers.set(++timerId, { fn, at: clockMs + ms }); return timerId; },
+    clearTimeout: (id) => timers.delete(id) };
+  const advance = (toMs) => {
+    clockMs = toMs;
+    for (const [id, timer] of [...timers]) if (timer.at <= clockMs) { timers.delete(id); timer.fn(); }
+  };
+  const statuses = new PlayerStatusEffects({ now: () => clockMs, getDefinitions: () => CONFIG.statusEffects, scheduler });
+  const inventoryListeners = new Set();
+  const equipmentSource = new EquipmentStatusSource({ inventory: { getEquipped: () => equipped,
+    onInventoryChanged: (fn) => { inventoryListeners.add(fn); return () => inventoryListeners.delete(fn); } },
+  statuses, slots: { gasMask: "gasMask" } });
+  const equip = (value) => { equipped = value; for (const fn of inventoryListeners) fn(); };
+  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses });
   assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
   env = { emission: { phase: "onset", intensity: 0.5 } };
   assert.deepEqual([exposure.strength(), exposure.isCastBlocked()], [0.5, true], "an emission without a gas mask: effect and no cast");
-  equipped = { gasMask: { id: "mask" } };
-  assert.deepEqual([exposure.protection(), exposure.strength(), exposure.isCastBlocked()], [1, 0, false],
-    "a gas mask: no effect and casting allowed");
-  equipped = {};
+  equip({ gasMask: { id: "mask" } });
+  assert.deepEqual([statuses.has("gasMask"), exposure.strength(), exposure.isCastBlocked()], [true, 0, false],
+    "a gas mask holds its status: no effect and casting allowed");
+  equip({});
+  assert.equal(statuses.has("gasMask"), false, "out of its slot, the gas mask's status ends");
   env = { emission: { phase: "fade", intensity: 0.01 } };
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
 
-  // Spec 179 stage F (TK-340): the vodka — half the screen effect for 10 minutes; no cast; another bottle renews the
-  // time, never adds up; the gas mask still wins.
+  // Spec 181 stage A (TK-341): the vodka is a status (CONFIG.statusEffects.vodka) — half the screen effect for 10 minutes;
+  // no cast; another bottle renews the time, never adds up; the gas mask still wins; events only on a change.
   const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
   const vodka = ITEM_DB.drinks.vodka_bottle.gameplayStats.use;
-  assert.equal(JSON.stringify(vodka), JSON.stringify({ effect: "emissionProtection", protection: 0.5, durationSec: 600 }),
-    "owner Q8: −50 % for 10 minutes");
+  assert.equal(JSON.stringify(vodka), JSON.stringify({ statusId: "vodka" }), "the bottle names its status");
+  const vodkaStatus = CONFIG.statusEffects.vodka;
+  assert.equal(JSON.stringify([vodkaStatus.kind, vodkaStatus.durationSec, vodkaStatus.stacking, vodkaStatus.timeBase,
+    vodkaStatus.modifiers.emission]), JSON.stringify(["buff", 600, "renew", "real", { vignette: 0.5, blur: 0.5, blurRate: 1 }]),
+  "owner Q8: −50 % for 10 minutes, real time (spec 181 Q1)");
   assert.equal(ITEM_DB.gasMasks.gas_mask_basic.itemType, "gas_mask", "the gas mask fits its slot");
+  const events = [];
+  const unsubscribe = statuses.subscribe((event) => events.push(`${event.type}:${event.id}`));
   env = { emission: { phase: "peak", intensity: 1 } };
-  assert.equal(effects.apply(vodka), true, "a drink takes effect");
-  assert.deepEqual([exposure.protection(), exposure.strength(), exposure.isCastBlocked()], [0.5, 0.5, true],
+  assert.equal(statuses.apply("vodka", { source: "vodka_bottle" }), true, "a drink takes effect");
+  assert.deepEqual([exposure.modifier("vignette"), exposure.strength(), exposure.isCastBlocked()], [0.5, 0.5, true],
     "vodka: half the effect, still no cast");
-  clockMs = 300000;
-  assert.equal(effects.apply(vodka), true);
-  assert.equal(effects.protection(), 0.5, "a second bottle does not add up");
-  clockMs = 300000 + 599000;
-  assert.equal(exposure.protection(), 0.5, "and renews the time (10 minutes from the second one)");
-  clockMs = 300000 + 600001;
-  assert.deepEqual([exposure.protection(), exposure.strength()], [0, 1], "over: the full effect again");
-  assert.equal(effects.apply({ effect: "unknown" }), false, "an unknown effect does nothing");
-  effects.apply(vodka);
-  equipped = { gasMask: { id: "mask" } };
-  assert.deepEqual([exposure.protection(), exposure.isCastBlocked()], [1, false], "the gas mask wins over the vodka");
-  equipped = {};
-  effects.clear();
+  for (let frame = 0; frame < 120; frame++) { clockMs += 16; exposure.strength(); statuses.list(); }
+  assert.equal(events.join(), "start:vodka", "reads every frame emit nothing");
+  advance(300000);
+  assert.equal(statuses.apply("vodka"), true);
+  assert.equal(statuses.modifier("emission", "vignette"), 0.5, "a second bottle does not add up");
+  assert.equal(statuses.list().length, 1, "one status, renewed");
+  advance(300000 + 599000);
+  assert.equal(exposure.modifier("vignette"), 0.5, "and renews the time (10 minutes from the second one)");
+  advance(300000 + 600001);
+  assert.equal(events.join(), "start:vodka,update:vodka,end:vodka", "the timer ends it with one event");
+  assert.deepEqual([exposure.modifier("vignette"), exposure.strength()], [1, 1], "over: the full effect again");
+  assert.equal(timers.size, 0, "no timer once nothing is timed");
+  assert.equal(statuses.apply("unknown"), false, "an unknown status does nothing");
+  assert.equal(statuses.apply("gasMask"), false, "a status without a timer is never applied as timed");
+  statuses.apply("vodka");
+  equip({ gasMask: { id: "mask" } });
+  assert.deepEqual([exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [0, 0, false],
+    "the gas mask wins over the vodka (the product of the shares)");
+  statuses.clear();
+  assert.equal(JSON.stringify(statuses.list().map((entry) => entry.id)), JSON.stringify(["gasMask"]),
+    "«Зняти всі» ends the timed statuses; the slot keeps holding the gas mask's");
+  equip({});
+  unsubscribe();
+  equipmentSource.dispose();
+  // The stacking rules on their own descriptions: max keeps the longer time, add stacks up to maxStacks (the share once
+  // per stack); a DevTools edit of a description reaches the next apply and the modifiers at once.
+  const defs = { long: { kind: "debuff", durationSec: 100, stacking: "max", maxStacks: 1, modifiers: { emission: { blur: 0.5 } } },
+    stack: { kind: "buff", durationSec: 10, stacking: "add", maxStacks: 2, modifiers: { emission: { blur: 0.5 } } } };
+  clockMs = 0;
+  const rules = new PlayerStatusEffects({ now: () => clockMs, getDefinitions: () => defs, scheduler });
+  rules.apply("long");
+  clockMs = 10000;
+  defs.long.durationSec = 50;
+  rules.apply("long");
+  assert.equal(rules.remainingSec("long"), 90, "max: a shorter apply keeps the longer time left");
+  rules.apply("stack"); rules.apply("stack"); rules.apply("stack");
+  assert.equal(rules.list().find((entry) => entry.id === "stack").stacks, 2, "add: up to maxStacks");
+  assert.equal(rules.modifier("emission", "blur"), 0.5 * 0.25, "the product over statuses, a share per stack");
+  defs.long.modifiers.emission.blur = 1;
+  assert.equal(rules.modifier("emission", "blur"), 0.25, "a live edit reaches the modifier at once");
+  rules.dispose();
+  clockMs = 0;
+  timers.clear();
   env = { emission: { phase: "idle", intensity: 0 } };
 
   // The effect (TK-324.1): sharp irregular blur pulses that quicken and grow toward the peak; a vignette that sways on

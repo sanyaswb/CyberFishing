@@ -10,6 +10,7 @@ import { RAIN_SETTINGS } from "../raw/weather/rain_settings.js";
 import { ASH_SETTINGS } from "../raw/weather/ash_settings.js";
 import { STORM_SETTINGS } from "../raw/weather/storm_settings.js";
 import { WIND_SETTINGS } from "../raw/weather/wind_settings.js";
+import { STATUS_EFFECTS } from "../raw/status/status_effects.js";
 
 export const CONFIG = {
   liveBait: LIVE_BAIT_CONFIG,
@@ -47,6 +48,8 @@ export const CONFIG = {
       },
     },
   },
+  // Spec 181 D1: the player's buffs and debuffs (status_effects.js); PlayerStatusEffects reads them live.
+  statusEffects: STATUS_EFFECTS,
   canvas: {
     id: "gameCanvas",
     backgroundColor: "#0f171e",

@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.34 - Player buffs and debuffs: the status architecture (spec 181 stage A, TK-341)
+
+- The vodka and the gas mask are player statuses described in `CONFIG.statusEffects` (duration, stacking, modifiers — the shares of the emission's darkening, blur and pulse rate that stay); the gas mask in its slot holds its status. Behaviour as in v0.51.33.
+- DevTools «ПОГОДА» → «Стан і керування» → «статуси» lists the active ones with their time left; the descriptions are editable in «Конфіг» → statusEffects.
+
 ## v0.51.33 - Gas mask and vodka against the emission (spec 179 stage F, TK-340)
 
 - The gas mask goes into its now unlocked slot: no darkening or blur during an emission, and casting is allowed.
@@ -44,8 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.25 - Scene mode switch first in «СЦЕНА WebGL» (TK-333.1)
 
 - DevTools «СЦЕНА WebGL»: the switch «Сцена WebGL (інакше все на 2D)» is the section's first parameter, above «ПОГОДА»; the WebGL context buttons and «↻ Оновити» stay at the bottom.
-
-## v0.51.24 - Weather DevTools «Всі», live section marks, WebGL buttons at the bottom (TK-333)
-
-- DevTools «ПОГОДА»: the selector is «Загальні | Всі | <locations>»; «Всі» shows the general and the location parameters together in every section (replaces the «Параметри локації» switch); export and reset with «Всі» take both levels.
-- «ВИКИД» gets the emission screen's own switch; a section's «· змінено» mark and «↺ Скинути розділ до коду» appear right after an edit, without a redraw; in «СЦЕНА WebGL» the scene switch and WebGL buttons stand under «ПОГОДА» again.

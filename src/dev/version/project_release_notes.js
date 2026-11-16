@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 181 A (TK-341): PlayerStatusEffects (buffs/debuffs, CONFIG.statusEffects, stacking renew/max/add, modifiers); vodka and gas mask as statuses.",
   "Spec 179 F (TK-340): gas mask (slot unlocked) and vodka («Випити»: −50 % of the emission's screen effects for 10 min); DEV shop; SVG placeholders.",
   "TK-339: procedural Geiger counter clicks, faster with the location radiation; settings in «РАДІАЦІЯ» → «Звук лічильника».",
   "Spec 179 D (TK-338): the radiation hiss — fine flickering grain over the scene, stronger with the location radiation.",

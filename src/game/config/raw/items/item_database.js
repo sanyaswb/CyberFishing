@@ -1372,9 +1372,9 @@ export const ITEM_DB = {
     },
   },
 
-  // Spec 179 stage F (TK-340): drinks used from the backpack («Випити»). use.protection (0…1) weakens the emission's
-  // screen effects for use.durationSec real seconds; another bottle renews the time, it never adds up (owner Q8: −50 %
-  // for 10 minutes, one bottle one use — test mechanics). It does not allow casting: that needs a gas mask.
+  // Spec 179 stage F (TK-340), spec 181: drinks used from the backpack («Випити»). use.statusId starts the player's status
+  // (CONFIG.statusEffects: the vodka — the emission's screen effects weaker for 10 minutes; another bottle renews the
+  // time, never adds up, owner Q8). It does not allow casting: that needs a gas mask.
   drinks: {
     vodka_bottle: {
       id: "vodka_bottle",
@@ -1385,7 +1385,7 @@ export const ITEM_DB = {
       progressionProfile: { groupId: "consumable.drink" },
       displayStats: {},
       gameplayStats: {
-        use: { effect: "emissionProtection", protection: 0.5, durationSec: 600 },
+        use: { statusId: "vodka" },
       },
     },
   },

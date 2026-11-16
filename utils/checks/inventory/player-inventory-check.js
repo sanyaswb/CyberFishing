@@ -372,11 +372,11 @@ function checkDrinkUse() {
   assert.equal(refused.success, false, "no effects composed: the use is refused");
   assert.equal(inventory.inventoryFacade.getViewModel().panel?.assembly?.rootInstanceId, bottleId, "and the bottle stays");
   const applied = [];
-  facade.setItemEffects({ apply: (use) => { applied.push(use); return true; } });
+  facade.setItemEffects({ apply: (statusId, options) => { applied.push([statusId, options]); return true; } });
   const used = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId });
   assert.equal(used.success, true, "«Випити» works");
-  assert.equal(JSON.stringify(applied), JSON.stringify([{ effect: "emissionProtection", protection: 0.5, durationSec: 600 }]),
-    "with the catalog's effect");
+  assert.equal(JSON.stringify(applied), JSON.stringify([["vodka", { source: "vodka_bottle" }]]),
+    "with the catalog's status (spec 181)");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId }).success, false,
     "the bottle is drunk (it is gone)");
   assert.equal(applied.length, 1, "a gone bottle does nothing");
